@@ -1,28 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Extra context</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="app"><div class="shell">
-
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Extra context</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
-    <div class="meta"><span class="dot"></span><span>Step 7 of 10</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 8 of 11</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 7 of 10</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:70%"></div></div>
+    <div class="progress-row"><span>Step 8 of 11</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:72%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">A little context</div>
   <h2>Anything else Dan should know before the call?</h2>
-  <p class="step-desc">Body style, fuel type, must-haves, deal-breakers, kids, dogs, long commutes — anything that helps. Or just leave it blank.</p>
+  <p class="step-desc">Must-haves, deal-breakers, fuel preference, kids, dogs, long commutes — or just leave it blank.</p>
   <div class="input-card">
     <div class="field-group">
       <label>Extra notes (optional)</label>
@@ -31,16 +23,10 @@
   </div>
   <div class="nav">
     <a class="btn-ghost" href="step5.html">&larr; Back</a>
-    <button class="btn" onclick="goNext()">Continue &rarr;</button>
+    <button class="btn" onclick="go()">Continue &rarr;</button>
   </div>
-</div>
-</div></div>
+</div></div></div>
 <script>
-  const saved = sessionStorage.getItem("notes");
-  if(saved) document.getElementById("notes").value = saved;
-  function goNext(){
-    sessionStorage.setItem("notes", document.getElementById("notes").value);
-    window.location.href = "step7.html";
-  }
-</script>
-</body></html>
+  const s=sessionStorage.getItem("notes"); if(s) document.getElementById("notes").value=s;
+  function go(){ sessionStorage.setItem("notes",document.getElementById("notes").value); window.location.href="step7.html"; }
+</script></body></html>

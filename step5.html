@@ -1,98 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Part exchange</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="app"><div class="shell">
-
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Part exchange</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
-    <div class="meta"><span class="dot"></span><span>Step 6 of 10</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 7 of 11</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 6 of 10</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:60%"></div></div>
+    <div class="progress-row"><span>Step 7 of 11</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:63%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Part exchange</div>
   <h2>Do you have a car to part exchange?</h2>
   <p class="step-desc">If yes, grab a quick online buyer quote first as your baseline — then drop that figure here. Dan will use it as a starting point and aim to beat it where possible.</p>
   <div class="grid three" style="margin-bottom:20px">
-    <button class="choice" data-val="Yes" onclick="pick(this,'yes')">
-      <span class="choice-emoji">🚘</span>
-      <span class="choice-title">Yes</span>
-      <span class="choice-desc">I have something to trade in.</span>
-    </button>
-    <button class="choice" data-val="No" onclick="pick(this,'no')">
-      <span class="choice-emoji">✨</span>
-      <span class="choice-title">No</span>
-      <span class="choice-desc">No part exchange this time.</span>
-    </button>
-    <button class="choice" data-val="Maybe" onclick="pick(this,'yes')">
-      <span class="choice-emoji">🧐</span>
-      <span class="choice-title">Maybe</span>
-      <span class="choice-desc">I might, not sure yet.</span>
-    </button>
+    <button class="choice" data-val="Yes" onclick="pick(this,'yes')"><span class="choice-emoji">🚘</span><span class="choice-title">Yes</span><span class="choice-desc">I have something to trade in.</span></button>
+    <button class="choice" data-val="No" onclick="pick(this,'no')"><span class="choice-emoji">✨</span><span class="choice-title">No</span><span class="choice-desc">No part exchange this time.</span></button>
+    <button class="choice" data-val="Maybe" onclick="pick(this,'yes')"><span class="choice-emoji">🧐</span><span class="choice-title">Maybe</span><span class="choice-desc">I might, not sure yet.</span></button>
   </div>
-
   <div class="input-card" id="pxCard" style="display:none;margin-bottom:20px">
     <div class="two-col">
-      <div class="field-group">
-        <label>Current car</label>
-        <input id="currentCar" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/>
-      </div>
-      <div class="field-group">
-        <label>Mileage</label>
-        <input id="mileage" type="text" placeholder="e.g. 28,000"/>
-      </div>
+      <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
+      <div class="field-group"><label>Mileage</label><input id="ml" type="text" placeholder="e.g. 28,000"/></div>
     </div>
-    <div class="field-group">
-      <label>Online buyer quote (your baseline)</label>
-      <input id="wbacVal" type="text" placeholder="e.g. £11,400"/>
-    </div>
+    <div class="field-group"><label>Online buyer quote (your baseline)</label><input id="wv" type="text" placeholder="e.g. £11,400"/></div>
     <p class="hint">Use any instant online buyer for a rough quote — Dan can often improve on that figure.</p>
   </div>
-
   <div class="nav">
     <a class="btn-ghost" id="backBtn" href="step4m.html">&larr; Back</a>
-    <button class="btn" onclick="goNext()">Continue &rarr;</button>
+    <button class="btn" onclick="go()">Continue &rarr;</button>
   </div>
-</div>
-</div></div>
+</div></div></div>
 <script>
-  let chosen = sessionStorage.getItem("partExchange") || "";
-  document.querySelectorAll(".choice").forEach(b => {
-    if(b.dataset.val === chosen) b.classList.add("selected");
-  });
-  if(chosen === "Yes" || chosen === "Maybe") document.getElementById("pxCard").style.display="grid";
-
-  const pt = sessionStorage.getItem("purchaseType");
-  if(pt === "Outright") document.getElementById("backBtn").href = "step4c.html";
-  if(pt === "Not sure yet") document.getElementById("backBtn").href = "step4m.html";
-
-  const cc = sessionStorage.getItem("currentCar"); if(cc) document.getElementById("currentCar").value=cc;
-  const ml = sessionStorage.getItem("mileage"); if(ml) document.getElementById("mileage").value=ml;
-  const wv = sessionStorage.getItem("wbacVal"); if(wv) document.getElementById("wbacVal").value=wv;
-
-  function pick(btn, show){
+  let chosen=sessionStorage.getItem("partExchange")||"";
+  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
+  if(chosen==="Yes"||chosen==="Maybe") document.getElementById("pxCard").style.display="grid";
+  const pt=sessionStorage.getItem("purchaseType");
+  if(pt==="Outright") document.getElementById("backBtn").href="step4c.html";
+  const cc=sessionStorage.getItem("currentCar"); if(cc) document.getElementById("cc").value=cc;
+  const ml=sessionStorage.getItem("mileage"); if(ml) document.getElementById("ml").value=ml;
+  const wv=sessionStorage.getItem("wbacVal"); if(wv) document.getElementById("wv").value=wv;
+  function pick(btn,show){
     document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
-    btn.classList.add("selected");
-    chosen = btn.dataset.val;
-    sessionStorage.setItem("partExchange", chosen);
-    document.getElementById("pxCard").style.display = show==="yes" ? "grid" : "none";
+    btn.classList.add("selected"); chosen=btn.dataset.val;
+    sessionStorage.setItem("partExchange",chosen);
+    document.getElementById("pxCard").style.display=show==="yes"?"grid":"none";
   }
-  function goNext(){
+  function go(){
     if(!chosen){ alert("Let Dan know whether you have a part exchange."); return; }
-    sessionStorage.setItem("currentCar", document.getElementById("currentCar").value);
-    sessionStorage.setItem("mileage", document.getElementById("mileage").value);
-    sessionStorage.setItem("wbacVal", document.getElementById("wbacVal").value);
-    window.location.href = "step6.html";
+    sessionStorage.setItem("currentCar",document.getElementById("cc").value);
+    sessionStorage.setItem("mileage",document.getElementById("ml").value);
+    sessionStorage.setItem("wbacVal",document.getElementById("wv").value);
+    window.location.href="step6.html";
   }
-</script>
-</body></html>
+</script></body></html>

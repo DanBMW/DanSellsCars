@@ -1,52 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Deposit</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="app"><div class="shell">
-
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Deposit</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
-    <div class="meta"><span class="dot"></span><span>Step 4 of 10</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 5 of 11</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 4 of 10</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:40%"></div></div>
+    <div class="progress-row"><span>Step 5 of 11</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:45%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Deposit</div>
   <h2>How much deposit could you put toward your new car?</h2>
   <p class="step-desc">Deposit before monthly budget — because it shapes the whole deal. Zero is absolutely fine.</p>
   <div class="input-card">
-    <div class="range-display">
-      <span class="range-label">Deposit</span>
-      <strong id="depositVal">£2,000</strong>
-    </div>
-    <input type="range" id="depositRange" min="0" max="15000" step="250" value="2000"
-      oninput="document.getElementById('depositVal').textContent='£'+Number(this.value).toLocaleString('en-GB')"/>
+    <div class="range-display"><span class="range-label">Deposit</span><strong id="dv">£2,000</strong></div>
+    <input type="range" id="dr" min="0" max="15000" step="250" value="2000" oninput="document.getElementById('dv').textContent='£'+Number(this.value).toLocaleString('en-GB')"/>
     <p class="hint">Slide to a rough figure. This does not commit you to anything.</p>
   </div>
   <div class="nav">
     <a class="btn-ghost" href="step3.html">&larr; Back</a>
-    <button class="btn" onclick="goNext()">Continue &rarr;</button>
+    <button class="btn" onclick="go()">Continue &rarr;</button>
   </div>
-</div>
-</div></div>
+</div></div></div>
 <script>
-  const saved = sessionStorage.getItem("deposit");
-  if(saved){
-    document.getElementById("depositRange").value = saved;
-    document.getElementById("depositVal").textContent = "£"+Number(saved).toLocaleString("en-GB");
-  }
-  function goNext(){
-    sessionStorage.setItem("deposit", document.getElementById("depositRange").value);
-    window.location.href = "step4m.html";
-  }
-</script>
-</body></html>
+  const s=sessionStorage.getItem("deposit"); if(s){ document.getElementById("dr").value=s; document.getElementById("dv").textContent="£"+Number(s).toLocaleString("en-GB"); }
+  function go(){ sessionStorage.setItem("deposit",document.getElementById("dr").value); window.location.href="step4m.html"; }
+</script></body></html>

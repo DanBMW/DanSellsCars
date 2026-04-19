@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Body style</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 2 of 11</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 2 of 11</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:18%"></div></div>
+  </div>
+<div class="step-wrap">
+  <div class="step-kicker">Shape of car</div>
+  <h2>Which styles would you consider?</h2>
+  <p class="step-desc">Tick everything that appeals — there are no wrong answers. Dan will use this to build your shortlist.</p>
+  <p class="select-hint">✦ Tap to select, tap again to deselect. Pick as many as you like.</p>
+  <div class="model-grid">
+    <button class="model-card" data-val="hatchback" onclick="toggle(this)">
+      <div class="tick-indicator">✓</div>
+      <div class="model-svg-wrap"><svg viewBox="0 0 200 75" xmlns="http://www.w3.org/2000/svg" fill="none">
+<path d="M22 56 L30 32 L62 18 L132 16 L158 30 L174 56 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" fill="rgba(59,130,246,0.08)"/>
+<circle cx="52" cy="58" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<circle cx="148" cy="58" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<line x1="64" y1="18" x2="64" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="130" y1="16" x2="130" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="64" y1="38" x2="130" y2="38" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+</svg></div>
+      <span class="model-name">Hatchback</span>
+      <span class="model-examples">1 Series · 2 Series Gran Coupé</span>
+    </button>
+    <button class="model-card" data-val="saloon" onclick="toggle(this)">
+      <div class="tick-indicator">✓</div>
+      <div class="model-svg-wrap"><svg viewBox="0 0 200 75" xmlns="http://www.w3.org/2000/svg" fill="none">
+<path d="M18 56 L28 38 L56 20 L142 18 L165 36 L178 56 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" fill="rgba(59,130,246,0.08)"/>
+<circle cx="48" cy="58" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<circle cx="150" cy="58" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<line x1="58" y1="20" x2="58" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="130" y1="18" x2="130" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="58" y1="38" x2="130" y2="38" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+</svg></div>
+      <span class="model-name">Saloon</span>
+      <span class="model-examples">3 Series · 5 Series · 7 Series · i4 · i5 · i7</span>
+    </button>
+    <button class="model-card" data-val="touring" onclick="toggle(this)">
+      <div class="tick-indicator">✓</div>
+      <div class="model-svg-wrap"><svg viewBox="0 0 200 75" xmlns="http://www.w3.org/2000/svg" fill="none">
+<path d="M18 56 L26 36 L54 20 L152 18 L170 36 L178 56 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" fill="rgba(59,130,246,0.08)"/>
+<circle cx="46" cy="58" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<circle cx="150" cy="58" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<line x1="56" y1="20" x2="56" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="152" y1="18" x2="152" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="56" y1="38" x2="152" y2="38" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+</svg></div>
+      <span class="model-name">Touring / Estate</span>
+      <span class="model-examples">3 Series Touring · 5 Series Touring · i5 Touring</span>
+    </button>
+    <button class="model-card" data-val="suv" onclick="toggle(this)">
+      <div class="tick-indicator">✓</div>
+      <div class="model-svg-wrap"><svg viewBox="0 0 200 75" xmlns="http://www.w3.org/2000/svg" fill="none">
+<path d="M14 58 L16 28 L36 12 L162 10 L180 28 L182 58 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" fill="rgba(59,130,246,0.08)"/>
+<circle cx="46" cy="61" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<circle cx="152" cy="61" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<line x1="38" y1="12" x2="38" y2="32" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="160" y1="10" x2="160" y2="32" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="38" y1="32" x2="160" y2="32" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+</svg></div>
+      <span class="model-name">SUV / SAV</span>
+      <span class="model-examples">X1 · X2 · X3 · X4 · X5 · X6 · X7 · iX1 · iX2 · iX3 · iX</span>
+    </button>
+    <button class="model-card" data-val="coupe" onclick="toggle(this)">
+      <div class="tick-indicator">✓</div>
+      <div class="model-svg-wrap"><svg viewBox="0 0 200 75" xmlns="http://www.w3.org/2000/svg" fill="none">
+<path d="M18 58 L32 42 L72 20 L150 18 L170 38 L180 58 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" fill="rgba(59,130,246,0.08)"/>
+<circle cx="48" cy="60" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<circle cx="152" cy="60" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<line x1="74" y1="20" x2="74" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="142" y1="18" x2="142" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="74" y1="38" x2="142" y2="38" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+</svg></div>
+      <span class="model-name">Coupé</span>
+      <span class="model-examples">4 Series · 8 Series · Z4</span>
+    </button>
+    <button class="model-card" data-val="convertible" onclick="toggle(this)">
+      <div class="tick-indicator">✓</div>
+      <div class="model-svg-wrap"><svg viewBox="0 0 200 75" xmlns="http://www.w3.org/2000/svg" fill="none">
+<path d="M20 58 L32 42 L74 32 L148 30 L170 42 L180 58 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" fill="rgba(59,130,246,0.08)"/>
+<circle cx="50" cy="60" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<circle cx="152" cy="60" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<path d="M76 32 Q111 16 148 30" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="5 3" opacity="0.55"/>
+</svg></div>
+      <span class="model-name">Convertible</span>
+      <span class="model-examples">4 Series Conv. · Z4 Roadster</span>
+    </button>
+    <button class="model-card" data-val="gran_coupe" onclick="toggle(this)">
+      <div class="tick-indicator">✓</div>
+      <div class="model-svg-wrap"><svg viewBox="0 0 200 75" xmlns="http://www.w3.org/2000/svg" fill="none">
+<path d="M16 58 L26 38 L60 18 L150 16 L170 36 L182 58 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" fill="rgba(59,130,246,0.08)"/>
+<circle cx="46" cy="60" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<circle cx="154" cy="60" r="11" stroke="currentColor" stroke-width="2.5" fill="rgba(59,130,246,0.08)"/>
+<line x1="62" y1="18" x2="62" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="148" y1="16" x2="148" y2="38" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<line x1="62" y1="38" x2="148" y2="38" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+<line x1="105" y1="17" x2="105" y2="38" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+</svg></div>
+      <span class="model-name">Gran Coupé</span>
+      <span class="model-examples">4 Series Gran Coupé · 8 Series Gran Coupé · M8</span>
+    </button>
+  </div>
+  <div class="nav">
+    <a class="btn-ghost" href="step1.html">&larr; Back</a>
+    <button class="btn" onclick="goNext()">Continue &rarr;</button>
+  </div>
+</div>
+</div></div>
+<script>
+  let selected = JSON.parse(sessionStorage.getItem("bodyStyles") || "[]");
+  document.querySelectorAll(".model-card").forEach(card => {
+    if(selected.includes(card.dataset.val)) card.classList.add("selected");
+  });
+  function toggle(card){
+    card.classList.toggle("selected");
+    selected = Array.from(document.querySelectorAll(".model-card.selected")).map(c=>c.dataset.val);
+    sessionStorage.setItem("bodyStyles", JSON.stringify(selected));
+  }
+  function goNext(){
+    sessionStorage.setItem("bodyStyles", JSON.stringify(selected));
+    window.location.href = "step2.html";
+  }
+</script>
+</body></html>

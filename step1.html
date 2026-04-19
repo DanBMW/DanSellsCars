@@ -7,48 +7,24 @@
 </head>
 <body>
 <div class="app"><div class="shell">
-
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
-    <div class="meta"><span class="dot"></span><span>Step 1 of 10</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 1 of 11</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 1 of 10</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:10%"></div></div>
+    <div class="progress-row"><span>Step 1 of 11</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:9%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Your world</div>
   <h2>What sounds most like you?</h2>
   <p class="step-desc">One tap. Dan uses this to point you toward the right shape of car before anything else.</p>
-  <div class="grid" id="lifestyleGrid">
-    <button class="choice" data-val="Family life" onclick="pick(this)">
-      <span class="choice-emoji">🏡</span>
-      <span class="choice-title">Family life</span>
-      <span class="choice-desc">School runs, weekends away, room for real life.</span>
-    </button>
-    <button class="choice" data-val="Business miles" onclick="pick(this)">
-      <span class="choice-emoji">💼</span>
-      <span class="choice-title">Business miles</span>
-      <span class="choice-desc">Commuting, clients, looking sharp and staying comfortable.</span>
-    </button>
-    <button class="choice" data-val="Driver first" onclick="pick(this)">
-      <span class="choice-emoji">🏎️</span>
-      <span class="choice-title">Driver first</span>
-      <span class="choice-desc">Feel, performance — something that makes you smile every drive.</span>
-    </button>
-    <button class="choice" data-val="Future-forward" onclick="pick(this)">
-      <span class="choice-emoji">⚡</span>
-      <span class="choice-title">Future-forward</span>
-      <span class="choice-desc">Electric or hybrid, lower running costs, modern tech.</span>
-    </button>
-    <button class="choice" data-val="Keep it simple" onclick="pick(this)">
-      <span class="choice-emoji">👍</span>
-      <span class="choice-title">Keep it simple</span>
-      <span class="choice-desc">Practical, easy, good value — no drama.</span>
-    </button>
+  <div class="grid">
+    <button class="choice" data-val="Family life" onclick="pick(this)"><span class="choice-emoji">🏡</span><span class="choice-title">Family life</span><span class="choice-desc">School runs, weekends away, room for real life.</span></button>
+    <button class="choice" data-val="Business miles" onclick="pick(this)"><span class="choice-emoji">💼</span><span class="choice-title">Business miles</span><span class="choice-desc">Commuting, clients, looking sharp.</span></button>
+    <button class="choice" data-val="Driver first" onclick="pick(this)"><span class="choice-emoji">🏎️</span><span class="choice-title">Driver first</span><span class="choice-desc">Feel, performance — every drive better.</span></button>
+    <button class="choice" data-val="Future-forward" onclick="pick(this)"><span class="choice-emoji">⚡</span><span class="choice-title">Future-forward</span><span class="choice-desc">Electric or hybrid, lower running costs.</span></button>
+    <button class="choice" data-val="Keep it simple" onclick="pick(this)"><span class="choice-emoji">👍</span><span class="choice-title">Keep it simple</span><span class="choice-desc">Practical, easy, good value — no drama.</span></button>
   </div>
   <div class="nav">
     <a class="btn-ghost" href="index.html">&larr; Back</a>
@@ -57,21 +33,18 @@
 </div>
 </div></div>
 <script>
-  let chosen = sessionStorage.getItem("lifestyle") || "";
-  document.querySelectorAll(".choice").forEach(b => {
-    if(b.dataset.val === chosen) b.classList.add("selected");
-  });
+  let chosen = sessionStorage.getItem("lifestyle")||"";
+  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
   function pick(btn){
-    document.querySelectorAll(".choice").forEach(b => b.classList.remove("selected"));
-    btn.classList.add("selected");
-    chosen = btn.dataset.val;
-    sessionStorage.setItem("lifestyle", chosen);
-    setTimeout(()=>window.location.href="step2.html", 200);
+    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected"); chosen=btn.dataset.val;
+    sessionStorage.setItem("lifestyle",chosen);
+    setTimeout(()=>window.location.href="step1b.html",200);
   }
   function goNext(){
     if(!chosen){ alert("Pick the one that feels most like you."); return; }
-    sessionStorage.setItem("lifestyle", chosen);
-    window.location.href="step2.html";
+    sessionStorage.setItem("lifestyle",chosen);
+    window.location.href="step1b.html";
   }
 </script>
 </body></html>

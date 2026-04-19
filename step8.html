@@ -1,131 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Review</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="app"><div class="shell">
-
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Review</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
-    <div class="meta"><span class="dot"></span><span>Step 9 of 10</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 10 of 11</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 9 of 10</span><span>Under 2 minutes</span></div>
+    <div class="progress-row"><span>Step 10 of 11</span><span>Under 2 minutes</span></div>
     <div class="progress-track"><div class="progress-fill" style="width:90%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Review</div>
   <h2>This is what Dan receives.</h2>
-  <p class="step-desc">A clean summary lands in his inbox and on your booking. Check it looks right, then send it.</p>
-  <div class="summary-grid" id="summaryGrid"></div>
+  <p class="step-desc">Check it looks right, then send it. His inbox and your booking link are next.</p>
+  <div class="summary-grid" id="sg"></div>
   <div class="nav">
     <a class="btn-ghost" href="step7.html">&larr; Back</a>
-    <button class="btn" id="submitBtn" onclick="submitLead()">Send to Dan &amp; book my call &rarr;</button>
+    <button class="btn" id="sb" onclick="submit()">Send to Dan &amp; book my call &rarr;</button>
   </div>
   <p class="hint" style="margin-top:14px">Sending this also opens your booking page with your details pre-filled.</p>
-</div>
-</div></div>
+</div></div></div>
 <script>
-  const fields = [
-    ["Name", "fullName"],
-    ["Email", "email"],
-    ["Mobile", "phone"],
-    ["Postcode", "postcode"],
-    ["Best time to call", "bestTime"],
-    ["Lifestyle", "lifestyle"],
-    ["Change timeline", "timeline"],
-    ["Funding route", "purchaseType"],
-    ["Deposit", "deposit", true],
-    ["Monthly budget", "monthlyBudget", true],
-    ["Cash budget", "cashBudget", true],
-    ["Alt finance budget", "altMonthly", true],
-    ["Part exchange", "partExchange"],
-    ["Current car", "currentCar"],
-    ["Mileage", "mileage"],
-    ["Online buyer quote", "wbacVal"],
-    ["Extra notes", "notes"]
+  const fields=[
+    ["Name","fullName"],["Email","email"],["Mobile","phone"],["Postcode","postcode"],["Best time","bestTime"],
+    ["Lifestyle","lifestyle"],["Body styles","bodyStyles"],["Change timeline","timeline"],["Funding route","purchaseType"],
+    ["Deposit","deposit",true],["Monthly budget","monthlyBudget",true],["Cash budget","cashBudget",true],
+    ["Alt finance budget","altMonthly",true],["Part exchange","partExchange"],["Current car","currentCar"],
+    ["Mileage","mileage"],["Online buyer quote","wbacVal"],["Extra notes","notes"]
   ];
-
-  const grid = document.getElementById("summaryGrid");
-  fields.forEach(([label, key, isMoney]) => {
-    let val = sessionStorage.getItem(key) || "";
-    if(!val) return;
-    if(isMoney && val) val = "£" + Number(val).toLocaleString("en-GB");
-    const div = document.createElement("div");
-    div.className = "summary-item";
-    div.innerHTML = "<b>" + label + "</b><div>" + val + "</div>";
-    grid.appendChild(div);
+  const sg=document.getElementById("sg");
+  fields.forEach(([label,key,isMoney])=>{
+    let val=sessionStorage.getItem(key)||""; if(!val) return;
+    if(key==="bodyStyles"){ try{ val=JSON.parse(val).join(", "); }catch(e){} }
+    if(isMoney&&val) val="£"+Number(val).toLocaleString("en-GB");
+    const d=document.createElement("div"); d.className="summary-item";
+    d.innerHTML="<b>"+label+"</b><div>"+val+"</div>"; sg.appendChild(d);
   });
-
-  function buildSummary(){
-    return fields.map(([label,key,isMoney]) => {
-      let val = sessionStorage.getItem(key) || "Not given";
-      if(isMoney && sessionStorage.getItem(key)) val = "£"+Number(sessionStorage.getItem(key)).toLocaleString("en-GB");
+  function buildText(){
+    return fields.map(([label,key,isMoney])=>{
+      let val=sessionStorage.getItem(key)||"Not given";
+      if(key==="bodyStyles"){ try{ val=JSON.parse(val).join(", "); }catch(e){} }
+      if(isMoney&&sessionStorage.getItem(key)) val="£"+Number(sessionStorage.getItem(key)).toLocaleString("en-GB");
       return label+": "+val;
     }).join("\n");
   }
-
-  async function submitLead(){
-    const btn = document.getElementById("submitBtn");
-    btn.textContent = "Sending...";
-    btn.disabled = true;
-
-    const name  = sessionStorage.getItem("fullName") || "";
-    const email = sessionStorage.getItem("email") || "";
-    const phone = sessionStorage.getItem("phone") || "";
-    const summary = buildSummary();
-
-    const calParams = new URLSearchParams({
-      name: name,
-      email: email,
-      notes: summary
-    });
-    const bookingUrl = "https://cal.eu/danbmwruxley/telephone-appointment?" + calParams.toString();
-
-    const payload = {
-      name, email, phone,
-      postcode: sessionStorage.getItem("postcode")||"",
-      best_time: sessionStorage.getItem("bestTime")||"",
-      lifestyle: sessionStorage.getItem("lifestyle")||"",
-      change_timeline: sessionStorage.getItem("timeline")||"",
-      funding_route: sessionStorage.getItem("purchaseType")||"",
-      deposit: sessionStorage.getItem("deposit") ? "£"+Number(sessionStorage.getItem("deposit")).toLocaleString("en-GB") : "",
-      monthly_budget: sessionStorage.getItem("monthlyBudget") ? "£"+Number(sessionStorage.getItem("monthlyBudget")).toLocaleString("en-GB") : "",
-      cash_budget: sessionStorage.getItem("cashBudget") ? "£"+Number(sessionStorage.getItem("cashBudget")).toLocaleString("en-GB") : "",
-      alt_finance: sessionStorage.getItem("altMonthly") ? "£"+Number(sessionStorage.getItem("altMonthly")).toLocaleString("en-GB") : "",
-      part_exchange: sessionStorage.getItem("partExchange")||"",
-      current_car: sessionStorage.getItem("currentCar")||"",
-      mileage: sessionStorage.getItem("mileage")||"",
-      online_buyer_quote: sessionStorage.getItem("wbacVal")||"",
-      notes: sessionStorage.getItem("notes")||"",
-      lead_summary: summary,
-      _subject: "DanSells lead — " + name,
-      _replyto: email
+  async function submit(){
+    const btn=document.getElementById("sb"); btn.textContent="Sending..."; btn.disabled=true;
+    const name=sessionStorage.getItem("fullName")||"";
+    const email=sessionStorage.getItem("email")||"";
+    const summary=buildText();
+    const calUrl="https://cal.eu/danbmwruxley/telephone-appointment?"+new URLSearchParams({name,email,notes:summary}).toString();
+    const payload={
+      name,email,phone:sessionStorage.getItem("phone")||"",postcode:sessionStorage.getItem("postcode")||"",
+      best_time:sessionStorage.getItem("bestTime")||"",lifestyle:sessionStorage.getItem("lifestyle")||"",
+      body_styles:sessionStorage.getItem("bodyStyles")||"",change_timeline:sessionStorage.getItem("timeline")||"",
+      funding_route:sessionStorage.getItem("purchaseType")||"",
+      deposit:sessionStorage.getItem("deposit")?"£"+Number(sessionStorage.getItem("deposit")).toLocaleString("en-GB"):"",
+      monthly_budget:sessionStorage.getItem("monthlyBudget")?"£"+Number(sessionStorage.getItem("monthlyBudget")).toLocaleString("en-GB"):"",
+      cash_budget:sessionStorage.getItem("cashBudget")?"£"+Number(sessionStorage.getItem("cashBudget")).toLocaleString("en-GB"):"",
+      alt_finance:sessionStorage.getItem("altMonthly")?"£"+Number(sessionStorage.getItem("altMonthly")).toLocaleString("en-GB"):"",
+      part_exchange:sessionStorage.getItem("partExchange")||"",current_car:sessionStorage.getItem("currentCar")||"",
+      mileage:sessionStorage.getItem("mileage")||"",online_buyer_quote:sessionStorage.getItem("wbacVal")||"",
+      notes:sessionStorage.getItem("notes")||"",lead_summary:summary,
+      _subject:"DanSells lead — "+name,_replyto:email
     };
-
+    sessionStorage.setItem("bookingUrl",calUrl);
     try{
-      const res = await fetch("https://formspree.io/f/YOUR_FORMSPREE_ID", {
-        method:"POST",
-        headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body: JSON.stringify(payload)
-      });
-      if(res.ok){
-        sessionStorage.setItem("bookingUrl", bookingUrl);
-        window.location.href = "thankyou.html";
-      } else {
-        sessionStorage.setItem("bookingUrl", bookingUrl);
-        window.location.href = "thankyou.html";
-      }
-    } catch(e){
-      sessionStorage.setItem("bookingUrl", bookingUrl);
-      window.location.href = "thankyou.html";
-    }
+      await fetch("https://formspree.io/f/YOUR_FORMSPREE_ID",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
+    }catch(e){}
+    window.location.href="thankyou.html";
   }
-</script>
-</body></html>
+</script></body></html>

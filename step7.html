@@ -1,23 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Your details</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="app"><div class="shell">
-
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Your details</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
-    <div class="meta"><span class="dot"></span><span>Step 8 of 10</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 9 of 11</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 8 of 10</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:80%"></div></div>
+    <div class="progress-row"><span>Step 9 of 11</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:81%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Almost done</div>
@@ -25,53 +17,31 @@
   <p class="step-desc">This is what turns a great experience into an actual conversation with a real human.</p>
   <div class="input-card">
     <div class="two-col">
-      <div class="field-group">
-        <label>Full name *</label>
-        <input id="fullName" type="text" placeholder="Your name"/>
-      </div>
-      <div class="field-group">
-        <label>Email *</label>
-        <input id="email" type="email" placeholder="you@example.com"/>
-      </div>
+      <div class="field-group"><label>Full name *</label><input id="fn" type="text" placeholder="Your name"/></div>
+      <div class="field-group"><label>Email *</label><input id="em" type="email" placeholder="you@example.com"/></div>
     </div>
     <div class="two-col">
-      <div class="field-group">
-        <label>Mobile *</label>
-        <input id="phone" type="tel" placeholder="07..."/>
-      </div>
-      <div class="field-group">
-        <label>Postcode (optional)</label>
-        <input id="postcode" type="text" placeholder="e.g. TN13 1AA"/>
-      </div>
+      <div class="field-group"><label>Mobile *</label><input id="ph" type="tel" placeholder="07..."/></div>
+      <div class="field-group"><label>Postcode (optional)</label><input id="pc" type="text" placeholder="e.g. TN13 1AA"/></div>
     </div>
-    <div class="field-group">
-      <label>Best time to call (optional)</label>
-      <input id="bestTime" type="text" placeholder="e.g. Weekdays after 5pm"/>
-    </div>
+    <div class="field-group"><label>Best time to call (optional)</label><input id="bt" type="text" placeholder="e.g. Weekdays after 5pm"/></div>
     <div class="tick-box">✔ By continuing you agree that Dan may use these details to contact you about your new BMW enquiry.</div>
   </div>
   <div class="nav">
     <a class="btn-ghost" href="step6.html">&larr; Back</a>
-    <button class="btn" onclick="goNext()">Review my answers &rarr;</button>
+    <button class="btn" onclick="go()">Review my answers &rarr;</button>
   </div>
-</div>
-</div></div>
+</div></div></div>
 <script>
-  ["fullName","email","phone","postcode","bestTime"].forEach(id => {
-    const val = sessionStorage.getItem(id);
-    if(val) document.getElementById(id).value = val;
+  [["fn","fullName"],["em","email"],["ph","phone"],["pc","postcode"],["bt","bestTime"]].forEach(([id,key])=>{
+    const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
   });
-  function goNext(){
-    const n=document.getElementById("fullName").value.trim();
-    const e=document.getElementById("email").value.trim();
-    const p=document.getElementById("phone").value.trim();
+  function go(){
+    const n=document.getElementById("fn").value.trim(),e=document.getElementById("em").value.trim(),p=document.getElementById("ph").value.trim();
     if(!n||!e||!p){ alert("Name, email and mobile are needed so Dan can actually help."); return; }
-    sessionStorage.setItem("fullName",n);
-    sessionStorage.setItem("email",e);
-    sessionStorage.setItem("phone",p);
-    sessionStorage.setItem("postcode",document.getElementById("postcode").value.trim());
-    sessionStorage.setItem("bestTime",document.getElementById("bestTime").value.trim());
-    window.location.href = "step8.html";
+    sessionStorage.setItem("fullName",n); sessionStorage.setItem("email",e); sessionStorage.setItem("phone",p);
+    sessionStorage.setItem("postcode",document.getElementById("pc").value.trim());
+    sessionStorage.setItem("bestTime",document.getElementById("bt").value.trim());
+    window.location.href="step8.html";
   }
-</script>
-</body></html>
+</script></body></html>

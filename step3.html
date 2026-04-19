@@ -1,69 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Funding route</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="app"><div class="shell">
-
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Funding route</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
-    <div class="meta"><span class="dot"></span><span>Step 3 of 10</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 4 of 11</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 3 of 10</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:30%"></div></div>
+    <div class="progress-row"><span>Step 4 of 11</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:36%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Budget route</div>
   <h2>How are you thinking of funding your next BMW?</h2>
-  <p class="step-desc">Pick your most likely route. Dan can always walk you through alternatives on the call.</p>
+  <p class="step-desc">Pick your most likely route. Dan can walk you through alternatives on the call.</p>
   <div class="grid three">
-    <button class="choice" data-val="Finance" onclick="pick(this)">
-      <span class="choice-emoji">💳</span>
-      <span class="choice-title">Finance</span>
-      <span class="choice-desc">Monthly budget matters most.</span>
-    </button>
-    <button class="choice" data-val="Outright" onclick="pick(this)">
-      <span class="choice-emoji">💷</span>
-      <span class="choice-title">Outright</span>
-      <span class="choice-desc">Total budget matters most.</span>
-    </button>
-    <button class="choice" data-val="Not sure yet" onclick="pick(this)">
-      <span class="choice-emoji">🤔</span>
-      <span class="choice-title">Not sure yet</span>
-      <span class="choice-desc">Show me the smartest route.</span>
-    </button>
+    <button class="choice" data-val="Finance" onclick="pick(this)"><span class="choice-emoji">💳</span><span class="choice-title">Finance</span><span class="choice-desc">Monthly budget matters most.</span></button>
+    <button class="choice" data-val="Outright" onclick="pick(this)"><span class="choice-emoji">💷</span><span class="choice-title">Outright</span><span class="choice-desc">Total budget matters most.</span></button>
+    <button class="choice" data-val="Not sure yet" onclick="pick(this)"><span class="choice-emoji">🤔</span><span class="choice-title">Not sure yet</span><span class="choice-desc">Show me the smartest route.</span></button>
   </div>
   <div class="nav">
     <a class="btn-ghost" href="step2.html">&larr; Back</a>
     <button class="btn" onclick="goNext()">Continue &rarr;</button>
   </div>
-</div>
-</div></div>
+</div></div></div>
 <script>
-  let chosen = sessionStorage.getItem("purchaseType") || "";
-  document.querySelectorAll(".choice").forEach(b => {
-    if(b.dataset.val === chosen) b.classList.add("selected");
-  });
-  function pick(btn){
-    document.querySelectorAll(".choice").forEach(b => b.classList.remove("selected"));
-    btn.classList.add("selected");
-    chosen = btn.dataset.val;
-    sessionStorage.setItem("purchaseType", chosen);
-  }
-  function goNext(){
-    if(!chosen){ alert("Pick the route that feels most likely."); return; }
-    if(chosen === "Finance" || chosen === "Not sure yet"){
-      window.location.href = "step4.html";
-    } else {
-      window.location.href = "step4b.html";
-    }
-  }
-</script>
-</body></html>
+  let chosen=sessionStorage.getItem("purchaseType")||"";
+  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
+  function pick(btn){ document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected")); btn.classList.add("selected"); chosen=btn.dataset.val; sessionStorage.setItem("purchaseType",chosen); }
+  function goNext(){ if(!chosen){ alert("Pick the route that feels most likely."); return; } window.location.href = (chosen==="Outright") ? "step4b.html" : "step4.html"; }
+</script></body></html>

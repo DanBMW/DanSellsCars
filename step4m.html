@@ -1,52 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Monthly budget</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="app"><div class="shell">
-
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Monthly budget</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
-    <div class="meta"><span class="dot"></span><span>Step 5 of 10</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 6 of 11</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 5 of 10</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
+    <div class="progress-row"><span>Step 6 of 11</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:54%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Monthly budget</div>
   <h2>What monthly figure would feel comfortable?</h2>
   <p class="step-desc">Keep it honest. Dan would rather work with your real number than waste your time with fantasy maths.</p>
   <div class="input-card">
-    <div class="range-display">
-      <span class="range-label">Per month</span>
-      <strong id="monthlyVal">£450</strong>
-    </div>
-    <input type="range" id="monthlyRange" min="200" max="2000" step="25" value="450"
-      oninput="document.getElementById('monthlyVal').textContent='£'+Number(this.value).toLocaleString('en-GB')"/>
+    <div class="range-display"><span class="range-label">Per month</span><strong id="mv">£450</strong></div>
+    <input type="range" id="mr" min="200" max="2000" step="25" value="450" oninput="document.getElementById('mv').textContent='£'+Number(this.value).toLocaleString('en-GB')"/>
     <p class="hint">A rough guide is enough at this stage.</p>
   </div>
   <div class="nav">
     <a class="btn-ghost" href="step4.html">&larr; Back</a>
-    <button class="btn" onclick="goNext()">Continue &rarr;</button>
+    <button class="btn" onclick="go()">Continue &rarr;</button>
   </div>
-</div>
-</div></div>
+</div></div></div>
 <script>
-  const saved = sessionStorage.getItem("monthlyBudget");
-  if(saved){
-    document.getElementById("monthlyRange").value = saved;
-    document.getElementById("monthlyVal").textContent = "£"+Number(saved).toLocaleString("en-GB");
-  }
-  function goNext(){
-    sessionStorage.setItem("monthlyBudget", document.getElementById("monthlyRange").value);
-    window.location.href = "step5.html";
-  }
-</script>
-</body></html>
+  const s=sessionStorage.getItem("monthlyBudget"); if(s){ document.getElementById("mr").value=s; document.getElementById("mv").textContent="£"+Number(s).toLocaleString("en-GB"); }
+  function go(){ sessionStorage.setItem("monthlyBudget",document.getElementById("mr").value); window.location.href="step5.html"; }
+</script></body></html>
