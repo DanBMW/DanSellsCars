@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | You're in</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-name">DanSells</span>
+      <span class="brand-sub">Powered by BMW Ruxley</span>
+    </div>
+    <div class="meta"><span class="dot"></span><span>Done</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="success-wrap">
+      <div class="step-kicker">You're in</div>
+      <h2>Nice work. Dan's got everything he needs.</h2>
+      <p>
+        Your details have landed in Dan's inbox with your full qualifier summary attached. 
+        He will review it before your call so you pick up mid-conversation, not at the beginning.
+        <br><br>
+        One last thing — book your telephone appointment below. 
+        Your name and email will be pre-filled. Just pick a time that works.
+      </p>
+      <div class="btn-row">
+        <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">
+          Book my call with Dan &rarr;
+        </a>
+        <a class="btn-ghost" href="index.html">Start again</a>
+      </div>
+      <p class="hint" style="margin-top:18px">
+        Can't book right now? Dan will be in touch. Your details are already with him.
+      </p>
+    </div>
+  </div>
+</div></div>
+<script>
+  const url = sessionStorage.getItem("bookingUrl");
+  if(url) document.getElementById("bookBtn").href = url;
+  setTimeout(() => {
+    const u = sessionStorage.getItem("bookingUrl");
+    if(u) window.open(u, "_blank");
+  }, 1000);
+</script>
+</body></html>

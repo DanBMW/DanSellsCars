@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Cash budget</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="app"><div class="shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-name">DanSells</span>
+      <span class="brand-sub">Powered by BMW Ruxley</span>
+    </div>
+    <div class="meta"><span class="dot"></span><span>Step 4 of 10</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 4 of 10</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:40%"></div></div>
+  </div>
+<div class="step-wrap">
+  <div class="step-kicker">Total budget</div>
+  <h2>What overall budget are you aiming to stay within?</h2>
+  <p class="step-desc">This gives Dan the guardrails to shortlist the right models first.</p>
+  <div class="input-card">
+    <div class="range-display">
+      <span class="range-label">Total budget</span>
+      <strong id="cashVal">£35,000</strong>
+    </div>
+    <input type="range" id="cashRange" min="10000" max="150000" step="1000" value="35000"
+      oninput="document.getElementById('cashVal').textContent='£'+Number(this.value).toLocaleString('en-GB')"/>
+    <p class="hint">A guide figure is all Dan needs at this stage.</p>
+  </div>
+  <div class="nav">
+    <a class="btn-ghost" href="step3.html">&larr; Back</a>
+    <button class="btn" onclick="goNext()">Continue &rarr;</button>
+  </div>
+</div>
+</div></div>
+<script>
+  const saved = sessionStorage.getItem("cashBudget");
+  if(saved){
+    document.getElementById("cashRange").value = saved;
+    document.getElementById("cashVal").textContent = "£"+Number(saved).toLocaleString("en-GB");
+  }
+  function goNext(){
+    sessionStorage.setItem("cashBudget", document.getElementById("cashRange").value);
+    window.location.href = "step4c.html";
+  }
+</script>
+</body></html>

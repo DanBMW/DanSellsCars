@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Finance alternative</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="app"><div class="shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-name">DanSells</span>
+      <span class="brand-sub">Powered by BMW Ruxley</span>
+    </div>
+    <div class="meta"><span class="dot"></span><span>Step 5 of 10</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 5 of 10</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
+  </div>
+<div class="step-wrap">
+  <div class="step-kicker">Quick comparison</div>
+  <h2>If you considered finance, what monthly budget might still work?</h2>
+  <p class="step-desc">Even if outright is your plan, this lets Dan show you whether a finance route could actually unlock a better car.</p>
+  <div class="input-card">
+    <div class="range-display">
+      <span class="range-label">Possible monthly</span>
+      <strong id="altVal">£450</strong>
+    </div>
+    <input type="range" id="altRange" min="200" max="2000" step="25" value="450"
+      oninput="document.getElementById('altVal').textContent='£'+Number(this.value).toLocaleString('en-GB')"/>
+    <p class="hint">No commitment — just useful context.</p>
+  </div>
+  <div class="nav">
+    <a class="btn-ghost" href="step4b.html">&larr; Back</a>
+    <button class="btn" onclick="goNext()">Continue &rarr;</button>
+  </div>
+</div>
+</div></div>
+<script>
+  const saved = sessionStorage.getItem("altMonthly");
+  if(saved){
+    document.getElementById("altRange").value = saved;
+    document.getElementById("altVal").textContent = "£"+Number(saved).toLocaleString("en-GB");
+  }
+  function goNext(){
+    sessionStorage.setItem("altMonthly", document.getElementById("altRange").value);
+    window.location.href = "step5.html";
+  }
+</script>
+</body></html>
