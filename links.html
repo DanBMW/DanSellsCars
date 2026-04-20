@@ -24,6 +24,14 @@
     .copy-btn.copied{background:rgba(58,170,106,.18);border-color:rgba(58,170,106,.35);color:#7adba4;}
     .section-label{text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;color:#a8c8f0;font-weight:600;margin:22px 0 10px;}
   </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XZL1RF6SV6');
+  </script>
 </head>
 <body>
 <div class="app"><div class="shell">
@@ -78,8 +86,19 @@
       <button class="copy-btn" onclick="copy('u4',this)">Copy</button>
     </div>
 
+
+    <div class="section-label">Referral scheme</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <strong>Refer a friend</strong>
+        <span>Send this to past customers. £250 BMW credit or £125 cash for every completed referral.</span>
+        <span class="link-url" id="u5">https://danbmwruxley.github.io/danbmwruxley/refer.html</span>
+      </div>
+      <button class="copy-btn" onclick="copy('u5',this)">Copy</button>
+    </div>
+
   </div>
-</div></div>
 <script>
   function copy(id, btn){
     const url = document.getElementById(id).textContent.trim();
