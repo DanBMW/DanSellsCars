@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Service Qualifier</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <style>
+    .px-note{background:rgba(28,107,186,.10);border:1px solid rgba(28,107,186,.22);border-radius:14px;padding:14px 16px;font-size:.84rem;color:#a8c8f0;line-height:1.55;margin-bottom:20px;}
+  </style>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
+    <div class="meta"><span>Step 6b of 7</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
+    <div class="step-kicker">Your current car</div>
+    <h2>A few details about the car you are trading in.</h2>
+    <div class="px-note">🔍 When your car comes in, I will take a look at it in person. No need to send photos — I will assess it myself on the day.</div>
+    <div style="display:grid;gap:14px;">
+      <div class="field-group">
+        <label>Registration *</label>
+        <input id="sqReg" type="text" placeholder="e.g. AB12 CDE" style="text-transform:uppercase"/>
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <label>Approximate mileage *</label>
+          <input id="sqMileage" type="text" placeholder="e.g. 32,000"/>
+        </div>
+        <div class="field-group">
+          <label>Any finance outstanding?</label>
+          <select id="sqFinance">
+            <option value="">Select...</option>
+            <option>Yes — unsure of amount</option>
+            <option>Yes — I know the settlement figure</option>
+            <option>No — I own it outright</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Overall condition</label>
+        <select id="sqCondition">
+          <option value="">Select...</option>
+          <option>Excellent — no marks or issues</option>
+          <option>Good — minor marks only</option>
+          <option>Average — a few things to note</option>
+          <option>Poor — needs work</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Service history</label>
+        <select id="sqService">
+          <option value="">Select...</option>
+          <option>Full BMW dealer history</option>
+          <option>Full independent history</option>
+          <option>Partial history</option>
+          <option>No history</option>
+          <option>Not sure</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Have you checked an online buyer quote? (optional)</label>
+        <input id="sqWBAC" type="text" placeholder="e.g. We Buy Any Car quoted £14,500"/>
+      </div>
+      <button class="btn" style="width:100%;margin-top:6px;" onclick="goNext()">Continue</button>
+    </div>
+  </div>
+</div></div>
+<script>
+  document.getElementById("sqReg").addEventListener("input",function(){this.value=this.value.toUpperCase();});
+  function goNext(){
+    const reg = document.getElementById("sqReg").value.trim();
+    const mil = document.getElementById("sqMileage").value.trim();
+    if(!reg||!mil){ alert("Please add your registration and mileage to continue."); return; }
+    sessionStorage.setItem("sqPXReg", reg);
+    sessionStorage.setItem("sqPXMileage", mil);
+    sessionStorage.setItem("sqPXFinance", document.getElementById("sqFinance").value);
+    sessionStorage.setItem("sqPXCondition", document.getElementById("sqCondition").value);
+    sessionStorage.setItem("sqPXService", document.getElementById("sqService").value);
+    sessionStorage.setItem("sqPXWBAC", document.getElementById("sqWBAC").value.trim());
+    location.href="sq7.html";
+  }
+</script>
+</body></html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | All done</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <style>
+    .appt-cards{display:grid;gap:12px;margin:18px 0 22px;}
+    .appt-card{
+      display:flex;align-items:center;gap:16px;
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);
+      border-radius:18px;padding:18px;text-decoration:none;
+      transition:background .18s,transform .18s;
+    }
+    .appt-card:hover{background:rgba(255,255,255,.08);transform:translateY(-1px);}
+    .appt-card.primary{background:rgba(28,107,186,.13);border-color:rgba(28,107,186,.32);}
+    .appt-icon{font-size:1.8rem;flex-shrink:0;width:44px;text-align:center;}
+    .appt-body strong{display:block;font-size:.95rem;font-weight:700;color:#f0f2f5;margin-bottom:3px;}
+    .appt-body span{font-size:.82rem;color:#8a94a6;line-height:1.45;}
+    .appt-arrow{margin-left:auto;color:#8a94a6;font-size:1rem;}
+  </style>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
+    <div class="meta"><span class="dot"></span><span>Done</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-kicker">All done</div>
+    <h2 id="doneHeading">Thank you.</h2>
+    <p>Your answers have come through to me directly. I have everything I need to have a genuinely useful conversation rather than a generic one.</p>
+    <p style="margin-top:12px;">Whether you want to chat briefly today while the car is in, book a proper call this week, or come in for a sit-down at a time that suits you — all three options are below. Or just leave it with me and I will be in touch.</p>
+
+    <div class="step-kicker" style="margin-top:24px;margin-bottom:4px;">How would you like to connect?</div>
+    <div class="appt-cards">
+
+      <a class="appt-card primary" href="https://cal.eu/danbmwruxley/chat-with-a-sales-executive" target="_blank" rel="noopener">
+        <div class="appt-icon">☕</div>
+        <div class="appt-body">
+          <strong>Quick chat today</strong>
+          <span>A brief initial conversation while your car is with us. No pressure, no pitch.</span>
+        </div>
+        <div class="appt-arrow">›</div>
+      </a>
+
+      <a class="appt-card" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">
+        <div class="appt-icon">📞</div>
+        <div class="appt-body">
+          <strong>Telephone appointment</strong>
+          <span>Book a proper call at a time that suits you this week.</span>
+        </div>
+        <div class="appt-arrow">›</div>
+      </a>
+
+      <a class="appt-card" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
+        <div class="appt-icon">🤝</div>
+        <div class="appt-body">
+          <strong>Face to face at Ruxley</strong>
+          <span>Come in for a proper sit-down. See the cars, talk numbers, no rush.</span>
+        </div>
+        <div class="appt-arrow">›</div>
+      </a>
+
+    </div>
+
+    <p class="hint">Not ready to book yet? No problem. I will reach out once I have read through your answers.</p>
+  </div>
+</div></div>
+<script>
+  const first = sessionStorage.getItem("sqFirst")||"";
+  if(first) document.getElementById("doneHeading").textContent = "Thank you, " + first + ".";
+</script>
+</body></html>

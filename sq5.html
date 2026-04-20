@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Service Qualifier</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
+    <div class="meta"><span>Step 5 of 7</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="progress-bar"><div class="progress-fill" style="width:70%"></div></div>
+    <div class="step-kicker">Budget</div>
+    <h2 id="budgetTitle">What sort of budget are you working with?</h2>
+    <p class="step-desc" id="budgetDesc">A ballpark is fine — this just helps me pitch the right cars.</p>
+    <div id="financeBlock">
+      <div class="choices" id="monthlyChoices">
+        <button class="choice" data-val="Under £300/month" onclick="pickM(this)"><span class="choice-emoji">💰</span><span class="choice-title">Under £300/month</span></button>
+        <button class="choice" data-val="£300–£450/month" onclick="pickM(this)"><span class="choice-emoji">💰</span><span class="choice-title">£300 to £450/month</span></button>
+        <button class="choice" data-val="£450–£600/month" onclick="pickM(this)"><span class="choice-emoji">💰</span><span class="choice-title">£450 to £600/month</span></button>
+        <button class="choice" data-val="£600–£800/month" onclick="pickM(this)"><span class="choice-emoji">💰</span><span class="choice-title">£600 to £800/month</span></button>
+        <button class="choice" data-val="Over £800/month" onclick="pickM(this)"><span class="choice-emoji">💰</span><span class="choice-title">Over £800/month</span></button>
+        <button class="choice" data-val="Not sure on monthly yet" onclick="pickM(this)"><span class="choice-emoji">🤷</span><span class="choice-title">Not sure yet</span></button>
+      </div>
+      <div class="field-group" style="margin-top:18px;">
+        <label>Deposit (optional)</label>
+        <input id="depositInput" type="text" placeholder="e.g. £2,000 or none"/>
+      </div>
+    </div>
+    <div id="cashBlock" style="display:none;">
+      <div class="choices" id="cashChoices">
+        <button class="choice" data-val="Under £25,000" onclick="pickC(this)"><span class="choice-emoji">💷</span><span class="choice-title">Under £25,000</span></button>
+        <button class="choice" data-val="£25,000–£35,000" onclick="pickC(this)"><span class="choice-emoji">💷</span><span class="choice-title">£25,000 to £35,000</span></button>
+        <button class="choice" data-val="£35,000–£50,000" onclick="pickC(this)"><span class="choice-emoji">💷</span><span class="choice-title">£35,000 to £50,000</span></button>
+        <button class="choice" data-val="£50,000–£70,000" onclick="pickC(this)"><span class="choice-emoji">💷</span><span class="choice-title">£50,000 to £70,000</span></button>
+        <button class="choice" data-val="Over £70,000" onclick="pickC(this)"><span class="choice-emoji">💷</span><span class="choice-title">Over £70,000</span></button>
+        <button class="choice" data-val="Not sure on total yet" onclick="pickC(this)"><span class="choice-emoji">🤷</span><span class="choice-title">Not sure yet</span></button>
+      </div>
+    </div>
+    <button class="btn" id="nextBtn" style="display:none;width:100%;margin-top:20px;" onclick="goNext()">Continue</button>
+  </div>
+</div></div>
+<script>
+  const payType = sessionStorage.getItem("sqPayType")||"both";
+  let chosen = false;
+
+  if(payType==="cash"){
+    document.getElementById("financeBlock").style.display="none";
+    document.getElementById("cashBlock").style.display="block";
+    document.getElementById("budgetTitle").textContent="What is your total budget?";
+    document.getElementById("budgetDesc").textContent="A ballpark is absolutely fine.";
+  }
+
+  function pickM(btn){
+    document.querySelectorAll("#monthlyChoices .choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    sessionStorage.setItem("sqMonthly", btn.dataset.val);
+    chosen = true;
+    document.getElementById("nextBtn").style.display="block";
+  }
+
+  function pickC(btn){
+    document.querySelectorAll("#cashChoices .choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    sessionStorage.setItem("sqTotal", btn.dataset.val);
+    chosen = true;
+    document.getElementById("nextBtn").style.display="block";
+  }
+
+  function goNext(){
+    if(!chosen){ alert("Please select a budget range to continue."); return; }
+    const dep = document.getElementById("depositInput");
+    if(dep && dep.value.trim()) sessionStorage.setItem("sqDeposit", dep.value.trim());
+    location.href="sq6.html";
+  }
+</script>
+</body></html>

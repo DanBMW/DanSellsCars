@@ -98,17 +98,16 @@
       <button class="copy-btn" onclick="copy('u5',this)">Copy</button>
     </div>
 
+
+    <div class="section-label">Service customers</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <strong>Service customer qualifier</strong>
+        <span>Send to customers visiting for a service. Tailored landing page, no photo request, 3 booking options at the end.</span>
+        <span class="link-url" id="u6">https://dan-sells.co.uk/service.html</span>
+      </div>
+      <button class="copy-btn" onclick="copy('u6',this)">Copy</button>
+    </div>
+
   </div>
-<script>
-  function copy(id, btn){
-    const url = document.getElementById(id).textContent.trim();
-    navigator.clipboard.writeText(url).then(()=>{
-      btn.textContent = "Copied";
-      btn.classList.add("copied");
-      setTimeout(()=>{ btn.textContent="Copy"; btn.classList.remove("copied"); }, 2000);
-    }).catch(()=>{
-      prompt("Copy this link:", url);
-    });
-  }
-</script>
-</body></html>

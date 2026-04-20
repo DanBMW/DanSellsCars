@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Service Qualifier</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
+    <div class="meta"><span>Step 4 of 7</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="progress-bar"><div class="progress-fill" style="width:56%"></div></div>
+    <div class="step-kicker">How you'd pay</div>
+    <h2>Would you look at finance or buy outright?</h2>
+    <p class="step-desc">No right or wrong answer — this just helps me prepare the right scenarios.</p>
+    <div class="choices" id="choices">
+      <button class="choice" data-val="Monthly finance (PCP)" onclick="pick(this,'finance')">
+        <span class="choice-emoji">📆</span>
+        <span class="choice-title">Monthly payments</span>
+        <span class="choice-sub">PCP — most popular option</span>
+      </button>
+      <button class="choice" data-val="Outright cash purchase" onclick="pick(this,'cash')">
+        <span class="choice-emoji">💷</span>
+        <span class="choice-title">Outright purchase</span>
+        <span class="choice-sub">Pay in full</span>
+      </button>
+      <button class="choice" data-val="Not sure — want to see both" onclick="pick(this,'both')">
+        <span class="choice-emoji">🤷</span>
+        <span class="choice-title">Show me both</span>
+        <span class="choice-sub">Happy to compare options</span>
+      </button>
+    </div>
+  </div>
+</div></div>
+<script>
+  function pick(btn, type){
+    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    sessionStorage.setItem("sqPayment", btn.dataset.val);
+    sessionStorage.setItem("sqPayType", type);
+    setTimeout(()=>location.href="sq5.html",320);
+  }
+</script>
+</body></html>

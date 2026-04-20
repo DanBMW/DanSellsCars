@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Service Qualifier</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
+    <div class="meta"><span>Step 3 of 7</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="progress-bar"><div class="progress-fill" style="width:42%"></div></div>
+    <div class="step-kicker">Timing</div>
+    <h2>When would a change realistically suit you?</h2>
+    <p class="step-desc">This helps me pitch the conversation at the right level — not too pushy, not too far away.</p>
+    <div class="choices" id="choices">
+      <button class="choice" data-val="Now — if the deal is right" onclick="pick(this)">
+        <span class="choice-emoji">🔥</span>
+        <span class="choice-title">Now — if the deal is right</span>
+        <span class="choice-sub">Ready to move quickly</span>
+      </button>
+      <button class="choice" data-val="Within 3 months" onclick="pick(this)">
+        <span class="choice-emoji">📅</span>
+        <span class="choice-title">Within 3 months</span>
+        <span class="choice-sub">Planning ahead</span>
+      </button>
+      <button class="choice" data-val="3–6 months" onclick="pick(this)">
+        <span class="choice-emoji">🗓️</span>
+        <span class="choice-title">3 to 6 months</span>
+        <span class="choice-sub">Getting closer</span>
+      </button>
+      <button class="choice" data-val="Later this year" onclick="pick(this)">
+        <span class="choice-emoji">🌅</span>
+        <span class="choice-title">Later this year</span>
+        <span class="choice-sub">Thinking ahead</span>
+      </button>
+      <button class="choice" data-val="No specific timeframe — just exploring" onclick="pick(this)">
+        <span class="choice-emoji">🧭</span>
+        <span class="choice-title">Just exploring</span>
+        <span class="choice-sub">No fixed timeframe</span>
+      </button>
+    </div>
+  </div>
+</div></div>
+<script>
+  function pick(btn){
+    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    sessionStorage.setItem("sqTiming", btn.dataset.val);
+    setTimeout(()=>location.href="sq4.html",320);
+  }
+</script>
+</body></html>

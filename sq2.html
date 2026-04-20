@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Service Qualifier</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
+    <div class="meta"><span>Step 2 of 7</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="progress-bar"><div class="progress-fill" style="width:28%"></div></div>
+    <div class="step-kicker">The dream</div>
+    <h2>If you could change today, what would you go for?</h2>
+    <p class="step-desc">No commitment — this is just so I know where to focus. Pick the closest match.</p>
+    <div class="choices" id="choices">
+      <button class="choice" data-val="Something similar to what I have" onclick="pick(this)">
+        <span class="choice-emoji">🔄</span>
+        <span class="choice-title">Something similar</span>
+        <span class="choice-sub">Newer version of what I have</span>
+      </button>
+      <button class="choice" data-val="A larger BMW — more space" onclick="pick(this)">
+        <span class="choice-emoji">⬆️</span>
+        <span class="choice-title">Step up in size</span>
+        <span class="choice-sub">More space, bigger model</span>
+      </button>
+      <button class="choice" data-val="An electric or plug-in hybrid BMW" onclick="pick(this)">
+        <span class="choice-emoji">⚡</span>
+        <span class="choice-title">Electric or plug-in hybrid</span>
+        <span class="choice-sub">Ready to go cleaner</span>
+      </button>
+      <button class="choice" data-val="Something more performance-focused" onclick="pick(this)">
+        <span class="choice-emoji">🏎️</span>
+        <span class="choice-title">More performance</span>
+        <span class="choice-sub">M Sport or M model</span>
+      </button>
+      <button class="choice" data-val="An SUV or crossover" onclick="pick(this)">
+        <span class="choice-emoji">🏔️</span>
+        <span class="choice-title">SUV or crossover</span>
+        <span class="choice-sub">X3, X5, X7 territory</span>
+      </button>
+      <button class="choice" data-val="Not sure — open to suggestions" onclick="pick(this)">
+        <span class="choice-emoji">🤷</span>
+        <span class="choice-title">Open to suggestions</span>
+        <span class="choice-sub">Tell me what works for me</span>
+      </button>
+    </div>
+  </div>
+</div></div>
+<script>
+  function pick(btn){
+    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    sessionStorage.setItem("sqModel", btn.dataset.val);
+    setTimeout(()=>location.href="sq3.html",320);
+  }
+</script>
+</body></html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Service Qualifier</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
+    <div class="meta"><span>Step 6 of 7</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="progress-bar"><div class="progress-fill" style="width:84%"></div></div>
+    <div class="step-kicker">Your current car</div>
+    <h2>Would you part exchange your current BMW?</h2>
+    <p class="step-desc">Since your car is here today, I can take a proper look at it if you would like. No obligation.</p>
+    <div class="choices" id="choices">
+      <button class="choice" data-val="Yes" onclick="pick(this,'yes')">
+        <span class="choice-emoji">✅</span>
+        <span class="choice-title">Yes</span>
+        <span class="choice-sub">I would want to trade it in</span>
+      </button>
+      <button class="choice" data-val="Maybe" onclick="pick(this,'yes')">
+        <span class="choice-emoji">🤔</span>
+        <span class="choice-title">Maybe</span>
+        <span class="choice-sub">Depends on the figure</span>
+      </button>
+      <button class="choice" data-val="No" onclick="pick(this,'no')">
+        <span class="choice-emoji">❌</span>
+        <span class="choice-title">No</span>
+        <span class="choice-sub">Keeping it or selling privately</span>
+      </button>
+    </div>
+  </div>
+</div></div>
+<script>
+  function pick(btn, hasPX){
+    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    sessionStorage.setItem("sqPX", btn.dataset.val);
+    setTimeout(()=>location.href = hasPX==="yes" ? "sq6b.html" : "sq7.html", 320);
+  }
+</script>
+</body></html>
