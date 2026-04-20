@@ -1,7 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>DanSells | All done</title><link rel="stylesheet" href="style.css"/></head>
+<title>DanSells | All done</title><link rel="stylesheet" href="style.css"/>
+<style>
+.photo-options{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+.btn-green{
+  background:#1a7a3c;
+  color:#fff;font-weight:700;padding:12px 20px;border-radius:13px;border:none;
+  cursor:pointer;box-shadow:0 6px 18px rgba(26,122,60,.28);
+  transition:background .18s,transform .18s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:.92rem;
+}
+.btn-green:hover{background:#155f2e;transform:translateY(-1px);}
+.btn-email{
+  background:rgba(255,255,255,.06);
+  color:var(--text);font-weight:600;padding:12px 20px;border-radius:13px;
+  border:1px solid rgba(255,255,255,.10);cursor:pointer;
+  transition:background .18s,transform .18s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:.92rem;
+}
+.btn-email:hover{background:rgba(255,255,255,.10);transform:translateY(-1px);}
+</style>
+</head>
 <body><div class="app"><div class="shell">
   <div class="topbar">
     <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
@@ -29,9 +49,17 @@
         <div class="checklist-item" id="pxStep" style="display:none">
           <div class="check-icon">2</div>
           <div class="check-body">
-            <strong>Send your part exchange photos on WhatsApp</strong>
-            <span>It takes about a minute to take them. Photos let me sharpen the part exchange figure before your call. Without them I am working from an estimate only.</span>
-            <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener" style="margin-top:11px;display:inline-block;background:#1a7a3c;box-shadow:0 6px 18px rgba(26,122,60,.28);">Send photos on WhatsApp</a>
+            <strong>Send your part exchange photos</strong>
+            <span>Takes about a minute to take them. Photos let me sharpen the part exchange figure before the call. Without them I am working from an estimate only.</span>
+            <div class="photo-options">
+              <a class="btn-green" id="waBtn" href="#" target="_blank" rel="noopener">
+                📲 WhatsApp
+              </a>
+              <a class="btn-email" id="emailBtn" href="#" target="_blank" rel="noopener">
+                ✉️ Email instead
+              </a>
+            </div>
+            <span style="color:#8a94a6;font-size:.75rem;margin-top:6px;display:block;">Whichever is easier for you. Both land with me directly.</span>
           </div>
         </div>
 
@@ -56,18 +84,36 @@
   if(hasPX){
     document.getElementById("pxStep").style.display="flex";
     document.getElementById("step3num").textContent="3";
+
     const name=sessionStorage.getItem("fullName")||"";
     const reg=sessionStorage.getItem("currentCar")||"my car";
     const mileage=sessionStorage.getItem("mileage")||"";
     const wbac=sessionStorage.getItem("wbacVal")||"";
+    const cond=sessionStorage.getItem("pxCondition")||"";
+    const service=sessionStorage.getItem("pxService")||"";
+
     const waMsg=`Hi Dan, here are my part exchange photos.
 
 Car: ${reg}
-Mileage: ${mileage}${wbac?"\nOnline buyer quote: "+wbac:""}
+Mileage: ${mileage}${wbac?"\nOnline buyer quote: "+wbac:""}${cond?"\nCondition: "+cond:""}${service?"\nService history: "+service:""}
 Name: ${name}
 
 Photos coming now`;
+
     document.getElementById("waBtn").href=`https://wa.me/447827138197?text=${encodeURIComponent(waMsg)}`;
+
+    const emailSubject=`Part exchange photos — ${reg} — ${name}`;
+    const emailBody=`Hi Dan,
+
+Here are my part exchange photos.
+
+Car: ${reg}
+Mileage: ${mileage}${wbac?"\nOnline buyer quote: "+wbac:""}${cond?"\nCondition: "+cond:""}${service?"\nService history: "+service:""}
+Name: ${name}
+
+Photos attached.`;
+
+    document.getElementById("emailBtn").href=`mailto:daniel.cane@hedinautomotive.co.uk?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
   }
 
   setTimeout(()=>{

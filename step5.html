@@ -3,58 +3,19 @@
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>DanSells | Part Exchange</title><link rel="stylesheet" href="style.css"/>
 <style>
-/* Condition slider */
-.condition-track{
-  display:grid;
-  gap:10px;
-  margin-bottom:22px;
-}
 .condition-option{
-  width:100%;
-  text-align:left;
-  padding:15px 18px;
-  border-radius:16px;
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.08);
-  cursor:pointer;
-  transition:border-color .18s,background .18s,transform .15s;
-  display:flex;
-  align-items:flex-start;
-  gap:14px;
+  width:100%;text-align:left;padding:15px 18px;border-radius:16px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;transition:border-color .18s,background .18s,transform .15s;
+  display:flex;align-items:flex-start;gap:14px;
 }
-.condition-option:hover{
-  border-color:rgba(28,107,186,.45);
-  background:rgba(28,107,186,.08);
-  transform:translateY(-1px);
-}
-.condition-option.selected{
-  border-color:rgba(74,144,217,.7);
-  background:rgba(28,107,186,.13);
-  box-shadow:0 0 0 1px rgba(74,144,217,.2);
-}
-.condition-badge{
-  width:38px;
-  height:38px;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.2rem;
-  flex-shrink:0;
-  background:rgba(255,255,255,.05);
-}
+.condition-option:hover{border-color:rgba(28,107,186,.45);background:rgba(28,107,186,.08);transform:translateY(-1px);}
+.condition-option.selected{border-color:rgba(74,144,217,.7);background:rgba(28,107,186,.13);box-shadow:0 0 0 1px rgba(74,144,217,.2);}
+.condition-badge{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:rgba(255,255,255,.05);}
 .condition-body{display:flex;flex-direction:column;gap:3px;}
 .condition-title{font-size:.97rem;font-weight:700;color:#f0f2f5;}
 .condition-desc{font-size:.82rem;color:#8a94a6;line-height:1.45;}
-.condition-tag{
-  display:inline-block;
-  font-size:.72rem;
-  font-weight:600;
-  padding:3px 9px;
-  border-radius:999px;
-  margin-top:3px;
-  letter-spacing:.04em;
-}
+.condition-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:3px;letter-spacing:.04em;}
 </style>
 </head>
 <body><div class="app"><div class="shell">
@@ -69,7 +30,7 @@
 <div class="step-wrap">
   <div class="step-kicker">Part exchange</div>
   <h2>Do you have a car to part exchange?</h2>
-  <p class="step-desc">If yes, grab a quick online buyer quote as a rough baseline, drop the figure in here, and I will tell you whether I can improve on it.</p>
+  <p class="step-desc">If yes, grab a quick online buyer quote as a rough baseline, drop the figure in here and I will tell you whether I can improve on it.</p>
 
   <div class="grid three" style="margin-bottom:18px">
     <button class="choice" data-val="Yes" onclick="pick(this,'yes')">
@@ -103,9 +64,54 @@
       </div>
     </div>
 
-    <div class="step-kicker" style="margin-bottom:10px">How would you honestly describe the condition?</div>
-    <div class="condition-track" id="conditionTrack">
+    <!-- SERVICE HISTORY -->
+    <div class="step-kicker" style="margin-bottom:10px">Service history</div>
+    <div style="display:grid;gap:9px;margin-bottom:22px" id="serviceTrack">
+      <button class="condition-option" data-val="Full BMW dealer history" onclick="pickService(this)">
+        <div class="condition-badge">🏆</div>
+        <div class="condition-body">
+          <span class="condition-title">Full BMW dealer history</span>
+          <span class="condition-desc">Every service stamp from a BMW dealership. The strongest possible history for a BMW.</span>
+          <span class="condition-tag" style="background:rgba(58,170,106,.15);color:#7adba4;">Best for value</span>
+        </div>
+      </button>
+      <button class="condition-option" data-val="Full independent history" onclick="pickService(this)">
+        <div class="condition-badge">✅</div>
+        <div class="condition-body">
+          <span class="condition-title">Full independent history</span>
+          <span class="condition-desc">Serviced every time but at an independent garage rather than a BMW centre.</span>
+          <span class="condition-tag" style="background:rgba(58,170,106,.12);color:#7adba4;">Good for value</span>
+        </div>
+      </button>
+      <button class="condition-option" data-val="Partial history" onclick="pickService(this)">
+        <div class="condition-badge">📋</div>
+        <div class="condition-body">
+          <span class="condition-title">Partial history</span>
+          <span class="condition-desc">Some stamps or receipts but gaps in the service record.</span>
+          <span class="condition-tag" style="background:rgba(28,107,186,.15);color:#a8c8f0;">Some impact on value</span>
+        </div>
+      </button>
+      <button class="condition-option" data-val="No history" onclick="pickService(this)">
+        <div class="condition-badge">❌</div>
+        <div class="condition-body">
+          <span class="condition-title">No history</span>
+          <span class="condition-desc">No service stamps or receipts available. Can still be appraised, just worth being upfront.</span>
+          <span class="condition-tag" style="background:rgba(186,80,28,.15);color:#f0a07a;">Will affect value</span>
+        </div>
+      </button>
+      <button class="condition-option" data-val="Not sure" onclick="pickService(this)">
+        <div class="condition-badge">🤷</div>
+        <div class="condition-body">
+          <span class="condition-title">Not sure</span>
+          <span class="condition-desc">I will need to have a look or check with the previous owner.</span>
+          <span class="condition-tag" style="background:rgba(255,255,255,.07);color:#8a94a6;">To be confirmed</span>
+        </div>
+      </button>
+    </div>
 
+    <!-- CONDITION -->
+    <div class="step-kicker" style="margin-bottom:10px">Overall condition</div>
+    <div style="display:grid;gap:9px;margin-bottom:22px" id="condTrack">
       <button class="condition-option" data-val="Showroom" onclick="pickCond(this)">
         <div class="condition-badge">💎</div>
         <div class="condition-body">
@@ -114,7 +120,6 @@
           <span class="condition-tag" style="background:rgba(58,170,106,.15);color:#7adba4;">Top end value</span>
         </div>
       </button>
-
       <button class="condition-option" data-val="Excellent" onclick="pickCond(this)">
         <div class="condition-badge">⭐</div>
         <div class="condition-body">
@@ -123,7 +128,6 @@
           <span class="condition-tag" style="background:rgba(58,170,106,.12);color:#7adba4;">Strong value</span>
         </div>
       </button>
-
       <button class="condition-option" data-val="Good" onclick="pickCond(this)">
         <div class="condition-badge">👍</div>
         <div class="condition-body">
@@ -132,35 +136,32 @@
           <span class="condition-tag" style="background:rgba(28,107,186,.15);color:#a8c8f0;">Good value</span>
         </div>
       </button>
-
       <button class="condition-option" data-val="Fair" onclick="pickCond(this)">
         <div class="condition-badge">😐</div>
         <div class="condition-body">
           <span class="condition-title">Fair</span>
-          <span class="condition-desc">Some small scratches or dents visible. Noticeable marks that a buyer would spot on a walk-round. Nothing major though.</span>
+          <span class="condition-desc">Some small scratches or dents visible. Noticeable marks that a buyer would spot on a walk-round.</span>
           <span class="condition-tag" style="background:rgba(201,168,76,.12);color:#e0c97a;">Average value</span>
         </div>
       </button>
-
       <button class="condition-option" data-val="Poor" onclick="pickCond(this)">
         <div class="condition-badge">⚠️</div>
         <div class="condition-body">
           <span class="condition-title">Poor</span>
-          <span class="condition-desc">Significant bodywork damage, deep scratches, heavily kerbed alloys or interior damage. Would need repair work before retail.</span>
+          <span class="condition-desc">Significant bodywork damage, deep scratches, heavily kerbed alloys or interior damage.</span>
           <span class="condition-tag" style="background:rgba(186,80,28,.15);color:#f0a07a;">Lower value</span>
         </div>
       </button>
-
       <button class="condition-option" data-val="Not sure" onclick="pickCond(this)">
         <div class="condition-badge">🤷</div>
         <div class="condition-body">
           <span class="condition-title">Not sure</span>
-          <span class="condition-desc">Send me a few photos on WhatsApp after and I will give you a proper assessment.</span>
+          <span class="condition-desc">Send me a few photos and I will give you a proper assessment.</span>
           <span class="condition-tag" style="background:rgba(255,255,255,.07);color:#8a94a6;">I will assess from photos</span>
         </div>
       </button>
-
     </div>
+
   </div>
 
   <div class="nav">
@@ -171,14 +172,18 @@
 <script>
   let chosen = sessionStorage.getItem("partExchange")||"";
   let condChosen = sessionStorage.getItem("pxCondition")||"";
+  let serviceChosen = sessionStorage.getItem("pxService")||"";
 
   document.querySelectorAll(".choice").forEach(b=>{
     if(b.dataset.val===chosen) b.classList.add("selected");
   });
   if(chosen==="Yes"||chosen==="Maybe") document.getElementById("pxDetails").style.display="block";
 
-  document.querySelectorAll(".condition-option").forEach(b=>{
+  document.querySelectorAll("#condTrack .condition-option").forEach(b=>{
     if(b.dataset.val===condChosen) b.classList.add("selected");
+  });
+  document.querySelectorAll("#serviceTrack .condition-option").forEach(b=>{
+    if(b.dataset.val===serviceChosen) b.classList.add("selected");
   });
 
   const pt = sessionStorage.getItem("purchaseType");
@@ -197,10 +202,17 @@
   }
 
   function pickCond(btn){
-    document.querySelectorAll(".condition-option").forEach(b=>b.classList.remove("selected"));
+    document.querySelectorAll("#condTrack .condition-option").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected");
     condChosen = btn.dataset.val;
     sessionStorage.setItem("pxCondition", condChosen);
+  }
+
+  function pickService(btn){
+    document.querySelectorAll("#serviceTrack .condition-option").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    serviceChosen = btn.dataset.val;
+    sessionStorage.setItem("pxService", serviceChosen);
   }
 
   function go(){
