@@ -29,9 +29,11 @@
           <div class="check-body">
             <strong>Send Dan your part exchange photos on WhatsApp</strong>
             <span>Takes about 1 minute. Photos let Dan give you the most accurate value — without them it's always an estimate.</span>
-            <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener" style="margin-top:12px;display:inline-block;background:linear-gradient(90deg,#22c55e,#16a34a)">
-              📲 Send photos on WhatsApp &rarr;
-            </a>
+            <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;">
+              <a id="waBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:#1a7a3c;color:#fff;font-weight:700;padding:12px 18px;border-radius:13px;text-decoration:none;font-size:.9rem;box-shadow:0 6px 16px rgba(26,122,60,.28);">📲 WhatsApp</a>
+              <a id="emailApBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.06);color:#f0f2f5;font-weight:600;padding:12px 18px;border-radius:13px;border:1px solid rgba(255,255,255,.10);text-decoration:none;font-size:.9rem;">✉️ Email instead</a>
+            </div>
+            <span style="color:#8a94a6;font-size:.75rem;margin-top:6px;display:block;">Whichever is easier. Both land with me directly.</span>
           </div>
         </div>
       </div>
@@ -97,4 +99,19 @@ Sending photos now 📸`;
   const apSummary=sessionStorage.getItem("apSummary")||"";
   const calUrl=`https://cal.eu/danbmwruxley/telephone-appointment?name=${encodeURIComponent(name)}&notes=${encodeURIComponent(apSummary)}`;
   document.getElementById("calBtn").href=calUrl;
+
+  const emailSubj=`Part exchange photos — ${sessionStorage.getItem("apReg")||"vehicle"} — ${sessionStorage.getItem("apName")||""}`;
+  const emailBod=`Hi Dan,
+
+Here are my part exchange photos for appraisal.
+
+Car: ${sessionStorage.getItem("apReg")||""} — ${sessionStorage.getItem("apMakeModel")||""}
+Mileage: ${sessionStorage.getItem("apMileage")||""}
+Condition: ${sessionStorage.getItem("apOverall")||""}
+Service history: ${sessionStorage.getItem("apServiceHistory")||""}
+Name: ${sessionStorage.getItem("apName")||""}
+
+Photos attached.`;
+  const apEmailBtn=document.getElementById("emailApBtn");
+  if(apEmailBtn) apEmailBtn.href=`mailto:daniel.cane@hedinautomotive.co.uk?subject=${encodeURIComponent(emailSubj)}&body=${encodeURIComponent(emailBod)}`;
 </script></body></html>

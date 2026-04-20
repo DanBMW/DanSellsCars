@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | My Links</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .link-card{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;padding:20px 22px;margin-bottom:12px;
+    }
+    .link-info strong{display:block;font-size:1rem;font-weight:700;color:#f0f2f5;margin-bottom:4px;}
+    .link-info span{font-size:.84rem;color:#8a94a6;line-height:1.45;}
+    .link-url{font-size:.75rem;color:#a8c8f0;margin-top:5px;word-break:break-all;display:block;}
+    .copy-btn{
+      background:rgba(28,107,186,.15);border:1px solid rgba(28,107,186,.3);
+      color:#a8c8f0;font-size:.8rem;font-weight:600;padding:8px 14px;
+      border-radius:10px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+      transition:background .18s;font-family:var(--font);
+    }
+    .copy-btn:hover{background:rgba(28,107,186,.28);}
+    .copy-btn.copied{background:rgba(58,170,106,.18);border-color:rgba(58,170,106,.35);color:#7adba4;}
+    .section-label{text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;color:#a8c8f0;font-weight:600;margin:22px 0 10px;}
+  </style>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">My links</span></div>
+    <div class="meta"><span class="dot"></span><span>Private reference</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-kicker">Your pages</div>
+    <h2>All your links in one place.</h2>
+    <p class="step-desc">Share these directly with customers. The main page is for everyone. The others are shared only when relevant.</p>
+
+    <div class="section-label">Main pages — shareable with anyone</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <strong>Main qualifier</strong>
+        <span>The "Forget Car Pow" page. Send this to any cold or warm lead to kick off the process.</span>
+        <span class="link-url" id="u1">https://danbmwruxley.github.io/danbmwruxley/index.html</span>
+      </div>
+      <button class="copy-btn" onclick="copy('u1',this)">Copy</button>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <strong>Pro version</strong>
+        <span>"Your new BMW. Made simple." Cleaner tone for warm contacts and referrals.</span>
+        <span class="link-url" id="u2">https://danbmwruxley.github.io/danbmwruxley/pro.html</span>
+      </div>
+      <button class="copy-btn" onclick="copy('u2',this)">Copy</button>
+    </div>
+
+    <div class="section-label">Shared only when relevant</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <strong>Standalone vehicle appraisal</strong>
+        <span>Send this when someone wants a part exchange value independently of buying a BMW.</span>
+        <span class="link-url" id="u3">https://danbmwruxley.github.io/danbmwruxley/appraisal.html</span>
+      </div>
+      <button class="copy-btn" onclick="copy('u3',this)">Copy</button>
+    </div>
+
+    <div class="section-label">Booking</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <strong>Telephone appointment</strong>
+        <span>Direct cal.com booking link. Included automatically at the end of both qualifier flows.</span>
+        <span class="link-url" id="u4">https://cal.eu/danbmwruxley/telephone-appointment</span>
+      </div>
+      <button class="copy-btn" onclick="copy('u4',this)">Copy</button>
+    </div>
+
+  </div>
+</div></div>
+<script>
+  function copy(id, btn){
+    const url = document.getElementById(id).textContent.trim();
+    navigator.clipboard.writeText(url).then(()=>{
+      btn.textContent = "Copied";
+      btn.classList.add("copied");
+      setTimeout(()=>{ btn.textContent="Copy"; btn.classList.remove("copied"); }, 2000);
+    }).catch(()=>{
+      prompt("Copy this link:", url);
+    });
+  }
+</script>
+</body></html>
