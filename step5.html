@@ -1,7 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>DanSells | Part exchange</title><link rel="stylesheet" href="style.css"/></head>
+<title>DanSells | Part Exchange</title><link rel="stylesheet" href="style.css"/>
+<style>
+/* Condition slider */
+.condition-track{
+  display:grid;
+  gap:10px;
+  margin-bottom:22px;
+}
+.condition-option{
+  width:100%;
+  text-align:left;
+  padding:15px 18px;
+  border-radius:16px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;
+  transition:border-color .18s,background .18s,transform .15s;
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+}
+.condition-option:hover{
+  border-color:rgba(28,107,186,.45);
+  background:rgba(28,107,186,.08);
+  transform:translateY(-1px);
+}
+.condition-option.selected{
+  border-color:rgba(74,144,217,.7);
+  background:rgba(28,107,186,.13);
+  box-shadow:0 0 0 1px rgba(74,144,217,.2);
+}
+.condition-badge{
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.2rem;
+  flex-shrink:0;
+  background:rgba(255,255,255,.05);
+}
+.condition-body{display:flex;flex-direction:column;gap:3px;}
+.condition-title{font-size:.97rem;font-weight:700;color:#f0f2f5;}
+.condition-desc{font-size:.82rem;color:#8a94a6;line-height:1.45;}
+.condition-tag{
+  display:inline-block;
+  font-size:.72rem;
+  font-weight:600;
+  padding:3px 9px;
+  border-radius:999px;
+  margin-top:3px;
+  letter-spacing:.04em;
+}
+</style>
+</head>
 <body><div class="app"><div class="shell">
   <div class="topbar">
     <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
@@ -14,45 +69,146 @@
 <div class="step-wrap">
   <div class="step-kicker">Part exchange</div>
   <h2>Do you have a car to part exchange?</h2>
-  <p class="step-desc">If yes, grab a quick online buyer quote first as your baseline — then drop that figure here. Dan will use it as a starting point and aim to beat it where possible.</p>
-  <div class="grid three" style="margin-bottom:20px">
-    <button class="choice" data-val="Yes" onclick="pick(this,'yes')"><span class="choice-emoji">🚘</span><span class="choice-title">Yes</span><span class="choice-desc">I have something to trade in.</span></button>
-    <button class="choice" data-val="No" onclick="pick(this,'no')"><span class="choice-emoji">✨</span><span class="choice-title">No</span><span class="choice-desc">No part exchange this time.</span></button>
-    <button class="choice" data-val="Maybe" onclick="pick(this,'yes')"><span class="choice-emoji">🧐</span><span class="choice-title">Maybe</span><span class="choice-desc">I might, not sure yet.</span></button>
+  <p class="step-desc">If yes, grab a quick online buyer quote as a rough baseline, drop the figure in here, and I will tell you whether I can improve on it.</p>
+
+  <div class="grid three" style="margin-bottom:18px">
+    <button class="choice" data-val="Yes" onclick="pick(this,'yes')">
+      <span class="choice-emoji">🚘</span>
+      <span class="choice-title">Yes</span>
+      <span class="choice-desc">I have a car to trade in.</span>
+    </button>
+    <button class="choice" data-val="No" onclick="pick(this,'no')">
+      <span class="choice-emoji">✨</span>
+      <span class="choice-title">No</span>
+      <span class="choice-desc">No part exchange this time.</span>
+    </button>
+    <button class="choice" data-val="Maybe" onclick="pick(this,'yes')">
+      <span class="choice-emoji">🧐</span>
+      <span class="choice-title">Maybe</span>
+      <span class="choice-desc">Not decided yet.</span>
+    </button>
   </div>
-  <div class="input-card" id="pxCard" style="display:none;margin-bottom:20px">
-    <div class="two-col">
-      <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
-      <div class="field-group"><label>Mileage</label><input id="ml" type="text" placeholder="e.g. 28,000"/></div>
+
+  <div id="pxDetails" style="display:none">
+
+    <div class="input-card" style="margin-bottom:16px">
+      <div class="two-col">
+        <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
+        <div class="field-group"><label>Mileage</label><input id="ml" type="text" placeholder="e.g. 28,000"/></div>
+      </div>
+      <div class="field-group">
+        <label>Online buyer quote (your baseline)</label>
+        <input id="wv" type="text" placeholder="e.g. £11,400"/>
+        <span class="hint" style="margin-top:4px">Use any instant online buyer for a rough figure. I can often improve on it.</span>
+      </div>
     </div>
-    <div class="field-group"><label>Online buyer quote (your baseline)</label><input id="wv" type="text" placeholder="e.g. £11,400"/></div>
-    <p class="hint">Use any instant online buyer for a rough quote — Dan can often improve on that figure.</p>
+
+    <div class="step-kicker" style="margin-bottom:10px">How would you honestly describe the condition?</div>
+    <div class="condition-track" id="conditionTrack">
+
+      <button class="condition-option" data-val="Showroom" onclick="pickCond(this)">
+        <div class="condition-badge">💎</div>
+        <div class="condition-body">
+          <span class="condition-title">Showroom</span>
+          <span class="condition-desc">No marks, no chips, no scuffs anywhere. Tyres like new. You could put it straight on a forecourt.</span>
+          <span class="condition-tag" style="background:rgba(58,170,106,.15);color:#7adba4;">Top end value</span>
+        </div>
+      </button>
+
+      <button class="condition-option" data-val="Excellent" onclick="pickCond(this)">
+        <div class="condition-badge">⭐</div>
+        <div class="condition-body">
+          <span class="condition-title">Excellent</span>
+          <span class="condition-desc">Just one scuffed alloy or a very minor stone chip. Nothing anyone would really notice.</span>
+          <span class="condition-tag" style="background:rgba(58,170,106,.12);color:#7adba4;">Strong value</span>
+        </div>
+      </button>
+
+      <button class="condition-option" data-val="Good" onclick="pickCond(this)">
+        <div class="condition-badge">👍</div>
+        <div class="condition-body">
+          <span class="condition-title">Good</span>
+          <span class="condition-desc">A few scuffed alloys and some stone chips on the bonnet or bumpers. Honest wear for the age and mileage.</span>
+          <span class="condition-tag" style="background:rgba(28,107,186,.15);color:#a8c8f0;">Good value</span>
+        </div>
+      </button>
+
+      <button class="condition-option" data-val="Fair" onclick="pickCond(this)">
+        <div class="condition-badge">😐</div>
+        <div class="condition-body">
+          <span class="condition-title">Fair</span>
+          <span class="condition-desc">Some small scratches or dents visible. Noticeable marks that a buyer would spot on a walk-round. Nothing major though.</span>
+          <span class="condition-tag" style="background:rgba(201,168,76,.12);color:#e0c97a;">Average value</span>
+        </div>
+      </button>
+
+      <button class="condition-option" data-val="Poor" onclick="pickCond(this)">
+        <div class="condition-badge">⚠️</div>
+        <div class="condition-body">
+          <span class="condition-title">Poor</span>
+          <span class="condition-desc">Significant bodywork damage, deep scratches, heavily kerbed alloys or interior damage. Would need repair work before retail.</span>
+          <span class="condition-tag" style="background:rgba(186,80,28,.15);color:#f0a07a;">Lower value</span>
+        </div>
+      </button>
+
+      <button class="condition-option" data-val="Not sure" onclick="pickCond(this)">
+        <div class="condition-badge">🤷</div>
+        <div class="condition-body">
+          <span class="condition-title">Not sure</span>
+          <span class="condition-desc">Send me a few photos on WhatsApp after and I will give you a proper assessment.</span>
+          <span class="condition-tag" style="background:rgba(255,255,255,.07);color:#8a94a6;">I will assess from photos</span>
+        </div>
+      </button>
+
+    </div>
   </div>
+
   <div class="nav">
-    <a class="btn-ghost" id="backBtn" href="step4m.html">&larr; Back</a>
-    <button class="btn" onclick="go()">Continue &rarr;</button>
+    <a class="btn-ghost" id="backBtn" href="step4m.html">Back</a>
+    <button class="btn" onclick="go()">Continue</button>
   </div>
 </div></div></div>
 <script>
-  let chosen=sessionStorage.getItem("partExchange")||"";
-  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
-  if(chosen==="Yes"||chosen==="Maybe") document.getElementById("pxCard").style.display="grid";
-  const pt=sessionStorage.getItem("purchaseType");
+  let chosen = sessionStorage.getItem("partExchange")||"";
+  let condChosen = sessionStorage.getItem("pxCondition")||"";
+
+  document.querySelectorAll(".choice").forEach(b=>{
+    if(b.dataset.val===chosen) b.classList.add("selected");
+  });
+  if(chosen==="Yes"||chosen==="Maybe") document.getElementById("pxDetails").style.display="block";
+
+  document.querySelectorAll(".condition-option").forEach(b=>{
+    if(b.dataset.val===condChosen) b.classList.add("selected");
+  });
+
+  const pt = sessionStorage.getItem("purchaseType");
   if(pt==="Outright") document.getElementById("backBtn").href="step4c.html";
+
   const cc=sessionStorage.getItem("currentCar"); if(cc) document.getElementById("cc").value=cc;
   const ml=sessionStorage.getItem("mileage"); if(ml) document.getElementById("ml").value=ml;
   const wv=sessionStorage.getItem("wbacVal"); if(wv) document.getElementById("wv").value=wv;
-  function pick(btn,show){
+
+  function pick(btn, show){
     document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
-    btn.classList.add("selected"); chosen=btn.dataset.val;
-    sessionStorage.setItem("partExchange",chosen);
-    document.getElementById("pxCard").style.display=show==="yes"?"grid":"none";
+    btn.classList.add("selected");
+    chosen = btn.dataset.val;
+    sessionStorage.setItem("partExchange", chosen);
+    document.getElementById("pxDetails").style.display = show==="yes" ? "block" : "none";
   }
+
+  function pickCond(btn){
+    document.querySelectorAll(".condition-option").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    condChosen = btn.dataset.val;
+    sessionStorage.setItem("pxCondition", condChosen);
+  }
+
   function go(){
-    if(!chosen){ alert("Let Dan know whether you have a part exchange."); return; }
-    sessionStorage.setItem("currentCar",document.getElementById("cc").value);
-    sessionStorage.setItem("mileage",document.getElementById("ml").value);
-    sessionStorage.setItem("wbacVal",document.getElementById("wv").value);
-    window.location.href="step6.html";
+    if(!chosen){ alert("Let me know whether you have a part exchange."); return; }
+    sessionStorage.setItem("currentCar", document.getElementById("cc")?document.getElementById("cc").value.trim():"");
+    sessionStorage.setItem("mileage", document.getElementById("ml")?document.getElementById("ml").value.trim():"");
+    sessionStorage.setItem("wbacVal", document.getElementById("wv")?document.getElementById("wv").value.trim():"");
+    window.location.href = "step6.html";
   }
-</script></body></html>
+</script>
+</body></html>
