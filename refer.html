@@ -159,8 +159,19 @@
     <div class="success-msg" id="successMsg">
       <div style="font-size:2.5rem;margin-bottom:10px;">🎉</div>
       <h3>Referral received!</h3>
-      <p>Dan will be in touch shortly to follow up with <span id="friendNameConfirm">your friend</span>.<br>When the deal completes, your reward will be sorted.</p>
-      <p style="margin-top:14px;font-size:.82rem;color:#8a94a6;">Want to refer someone else? <a href="refer.html" style="color:#a8c8f0;text-decoration:underline;">Submit another referral</a></p>
+      <p>Dan will be in touch shortly to follow up with <span id="friendNameConfirm">your friend</span>. When the deal completes, your reward will be sorted.</p>
+
+      <div style="margin-top:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px 16px;">
+        <p style="font-size:.88rem;font-weight:700;color:#d0dae8;margin-bottom:6px;">Want to share the link with them directly?</p>
+        <p style="font-size:.8rem;color:#8a94a6;margin-bottom:14px;">Send them this link and they can fill in Dan's qualifier at their own pace before the call.</p>
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
+          <span style="font-size:.78rem;color:#a8c8f0;flex:1;word-break:break-all;" id="shareLink">https://dan-sells.co.uk/pro.html</span>
+          <button onclick="copyShareLink(this)" style="background:rgba(28,107,186,.20);border:1px solid rgba(28,107,186,.35);color:#a8c8f0;font-size:.75rem;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;white-space:nowrap;font-family:var(--font);">Copy</button>
+        </div>
+        <a href="https://wa.me/?text=https://dan-sells.co.uk/pro.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:#1a7a3c;color:#fff;font-weight:700;padding:11px 18px;border-radius:12px;text-decoration:none;font-size:.85rem;">📲 Share on WhatsApp</a>
+      </div>
+
+      <p style="margin-top:16px;font-size:.82rem;color:#8a94a6;">Want to refer someone else? <a href="refer.html" style="color:#a8c8f0;text-decoration:underline;">Submit another referral</a></p>
     </div>
 
     <div class="terms">
@@ -211,6 +222,14 @@
     document.getElementById("referralForm").style.display = "none";
     document.getElementById("successMsg").style.display = "block";
     document.getElementById("friendNameConfirm").textContent = frName;
+  }
+
+  function copyShareLink(btn){
+    navigator.clipboard.writeText(document.getElementById("shareLink").textContent.trim()).then(()=>{
+      btn.textContent="Copied!";
+      setTimeout(()=>btn.textContent="Copy",2000);
+    }).catch(()=>{ prompt("Copy this link:",document.getElementById("shareLink").textContent.trim()); });
+  
   }
 </script>
 </body></html>
