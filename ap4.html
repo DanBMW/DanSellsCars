@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Finance & Contact</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Vehicle Appraisal</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 4 of 6</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 4 of 6</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:66%"></div></div>
+  </div>
+<div class="step-wrap">
+  <div class="step-kicker">Finance & details</div>
+  <h2>Almost done — a couple of quick ones.</h2>
+  <p class="step-desc">Nearly there. These last details complete the picture for Dan.</p>
+
+  <div class="input-card" style="margin-bottom:18px">
+    <div class="step-kicker" style="margin-bottom:10px">Outstanding finance?</div>
+    <div class="grid three" style="margin-bottom:0">
+      <button class="choice" data-val="No finance" onclick="pickFin(this)"><span class="choice-emoji">✅</span><span class="choice-title">No</span><span class="choice-desc">Owned outright.</span></button>
+      <button class="choice" data-val="Yes — I know the settlement figure" onclick="pickFin(this)"><span class="choice-emoji">💳</span><span class="choice-title">Yes — I know the figure</span><span class="choice-desc">I have a settlement amount.</span></button>
+      <button class="choice" data-val="Yes — I need to check" onclick="pickFin(this)"><span class="choice-emoji">🔍</span><span class="choice-title">Yes — need to check</span><span class="choice-desc">I will find out the settlement.</span></button>
+    </div>
+    <div class="field-group" id="settlementField" style="display:none;margin-top:14px">
+      <label>Settlement figure</label>
+      <input id="settlement" type="text" placeholder="e.g. £8,400"/>
+    </div>
+  </div>
+
+  <div class="input-card">
+    <div class="two-col">
+      <div class="field-group"><label>Your name *</label><input id="apName" type="text" placeholder="Full name"/></div>
+      <div class="field-group"><label>Mobile *</label><input id="apPhone" type="tel" placeholder="07..."/></div>
+    </div>
+    <div class="field-group"><label>Email</label><input id="apEmail" type="email" placeholder="you@example.com"/></div>
+    <div class="field-group"><label>Any additional notes</label><input id="apNotes" type="text" placeholder="e.g. one previous owner, private plate included, private plate not included..."/></div>
+    <div class="tick-box">✔ Dan will use these details to contact you about your part exchange appraisal only.</div>
+  </div>
+
+  <div class="nav">
+    <a class="btn-ghost" href="ap3.html">&larr; Back</a>
+    <button class="btn" onclick="go()">Continue &rarr;</button>
+  </div>
+</div></div></div>
+<script>
+  let finChosen=sessionStorage.getItem("apFinance")||"";
+  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===finChosen) b.classList.add("selected"); });
+  if(finChosen==="Yes — I know the settlement figure") document.getElementById("settlementField").style.display="block";
+  [["apName","apName"],["apPhone","apPhone"],["apEmail","apEmail"],["apNotes","apNotes"],["settlement","apSettlement"]].forEach(([id,key])=>{
+    const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
+  });
+  function pickFin(btn){
+    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected"); finChosen=btn.dataset.val; sessionStorage.setItem("apFinance",finChosen);
+    document.getElementById("settlementField").style.display=finChosen==="Yes — I know the settlement figure"?"block":"none";
+  }
+  function go(){
+    const n=document.getElementById("apName").value.trim(), p=document.getElementById("apPhone").value.trim();
+    if(!n||!p){ alert("Name and mobile are needed so Dan can get back to you."); return; }
+    sessionStorage.setItem("apName",n); sessionStorage.setItem("apPhone",p);
+    sessionStorage.setItem("apEmail",document.getElementById("apEmail").value.trim());
+    sessionStorage.setItem("apNotes",document.getElementById("apNotes").value.trim());
+    sessionStorage.setItem("apSettlement",document.getElementById("settlement").value.trim());
+    window.location.href="ap5.html";
+  }
+</script></body></html>

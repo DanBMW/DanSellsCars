@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Condition</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Vehicle Appraisal</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 3 of 6</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 3 of 6</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
+  </div>
+<div class="step-wrap">
+  <div class="step-kicker">Condition</div>
+  <h2>Rate each area of your car.</h2>
+  <p class="step-desc">Be honest — Dan's seen everything. Accurate ratings get the most accurate value back.</p>
+
+  <div class="input-card" style="margin-bottom:20px">
+    <p style="color:#93c5fd;font-size:.85rem;font-weight:600;margin-bottom:4px">⭐⭐⭐⭐⭐ Excellent &nbsp;|&nbsp; ⭐⭐⭐⭐ Good &nbsp;|&nbsp; ⭐⭐⭐ Average &nbsp;|&nbsp; ⭐⭐ Poor &nbsp;|&nbsp; ⭐ Damaged</p>
+
+    <div class="rating-row">
+      <span class="rating-label">🚗 Bodywork</span>
+      <div class="stars" id="sr-bodywork" data-key="apBodywork"></div>
+    </div>
+    <div class="rating-row">
+      <span class="rating-label">🪟 Glass & mirrors</span>
+      <div class="stars" id="sr-glass" data-key="apGlass"></div>
+    </div>
+    <div class="rating-row">
+      <span class="rating-label">🛞 Tyres</span>
+      <div class="stars" id="sr-tyres" data-key="apTyres"></div>
+    </div>
+    <div class="rating-row">
+      <span class="rating-label">💺 Interior</span>
+      <div class="stars" id="sr-interior" data-key="apInterior"></div>
+    </div>
+    <div class="rating-row">
+      <span class="rating-label">🔧 Mechanical</span>
+      <div class="stars" id="sr-mechanical" data-key="apMechanical"></div>
+    </div>
+  </div>
+
+  <div class="input-card" style="margin-bottom:20px">
+    <div class="step-kicker" style="margin-bottom:10px">Overall quick rating</div>
+    <div class="grid three" style="margin-bottom:0">
+      <button class="choice" data-val="Excellent — showroom ready" onclick="pickOverall(this)"><span class="choice-emoji">💎</span><span class="choice-title">Excellent</span><span class="choice-desc">Showroom ready, no issues.</span></button>
+      <button class="choice" data-val="Good — minor marks only" onclick="pickOverall(this)"><span class="choice-emoji">👍</span><span class="choice-title">Good</span><span class="choice-desc">Minor marks, drives perfectly.</span></button>
+      <button class="choice" data-val="Average — some wear" onclick="pickOverall(this)"><span class="choice-emoji">😐</span><span class="choice-title">Average</span><span class="choice-desc">Typical wear for age and mileage.</span></button>
+      <button class="choice" data-val="Below average — noticeable damage" onclick="pickOverall(this)"><span class="choice-emoji">⚠️</span><span class="choice-title">Below average</span><span class="choice-desc">Noticeable damage or issues.</span></button>
+      <button class="choice" data-val="Poor — significant damage" onclick="pickOverall(this)"><span class="choice-emoji">🔴</span><span class="choice-title">Poor</span><span class="choice-desc">Significant damage or mechanical problems.</span></button>
+      <button class="choice" data-val="Not sure" onclick="pickOverall(this)"><span class="choice-emoji">🤷</span><span class="choice-title">Not sure</span><span class="choice-desc">Dan can assess from photos.</span></button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <a class="btn-ghost" href="ap2.html">&larr; Back</a>
+    <button class="btn" onclick="go()">Continue &rarr;</button>
+  </div>
+</div></div></div>
+
+<style>
+.rating-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.rating-row:last-child{border-bottom:none}
+.rating-label{font-size:.95rem;font-weight:600;flex:1}
+.stars{display:flex;gap:6px;}
+.star{font-size:1.4rem;cursor:pointer;opacity:.3;transition:.15s ease;line-height:1;}
+.star.on{opacity:1;}
+</style>
+<script>
+  let overallChosen=sessionStorage.getItem("apOverall")||"";
+  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===overallChosen) b.classList.add("selected"); });
+
+  document.querySelectorAll(".stars").forEach(container=>{
+    const key=container.dataset.key;
+    const saved=parseInt(sessionStorage.getItem(key)||"0");
+    for(let i=1;i<=5;i++){
+      const s=document.createElement("span");
+      s.className="star"+(i<=saved?" on":"");
+      s.textContent="⭐";
+      s.dataset.val=i;
+      s.onclick=()=>setRating(container,i,key);
+      container.appendChild(s);
+    }
+  });
+
+  function setRating(container,val,key){
+    sessionStorage.setItem(key,val);
+    container.querySelectorAll(".star").forEach((s,idx)=>s.classList.toggle("on",idx<val));
+  }
+
+  function pickOverall(btn){ document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected")); btn.classList.add("selected"); overallChosen=btn.dataset.val; sessionStorage.setItem("apOverall",overallChosen); }
+
+  function go(){
+    sessionStorage.setItem("apOverall",overallChosen);
+    window.location.href="ap4.html";
+  }
+</script></body></html>

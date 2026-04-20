@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Appraisal Sent</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Vehicle Appraisal</span></div>
+    <div class="meta"><span class="dot"></span><span>Done ✓</span></div>
+  </div>
+  <div class="step-wrap">
+
+    <div class="success-wrap" style="margin-bottom:24px">
+      <div class="step-kicker">Appraisal submitted</div>
+      <h2 style="font-size:2rem;margin-bottom:14px">Dan has your details.</h2>
+      <p style="margin-bottom:24px">Your vehicle appraisal is in Dan's inbox. To get the most accurate value, complete this quick checklist — it takes about 3 minutes total.</p>
+
+      <div style="display:grid;gap:12px;margin-bottom:28px">
+        <div class="checklist-item" id="c1">
+          <div class="check-icon">1</div>
+          <div class="check-body">
+            <strong>Book your telephone appointment</strong>
+            <span>Dan reviews your appraisal before the call so you start mid-conversation.</span>
+            <a class="btn" id="calBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" style="margin-top:12px;display:inline-block">Book my call with Dan &rarr;</a>
+          </div>
+        </div>
+
+        <div class="checklist-item" id="c2">
+          <div class="check-icon">2</div>
+          <div class="check-body">
+            <strong>Send Dan your part exchange photos on WhatsApp</strong>
+            <span>Takes about 1 minute. Photos let Dan give you the most accurate value — without them it's always an estimate.</span>
+            <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener" style="margin-top:12px;display:inline-block;background:linear-gradient(90deg,#22c55e,#16a34a)">
+              📲 Send photos on WhatsApp &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:24px;margin-bottom:24px">
+      <div class="step-kicker" style="margin-bottom:12px">📸 Photo guide — 8 shots, 1 minute</div>
+      <p class="step-desc" style="margin-bottom:18px">These 8 photos give Dan everything needed to make a confident offer. Shoot in landscape, natural light, no flash.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="photoGuide"></div>
+    </div>
+
+  </div>
+</div></div>
+
+<style>
+.checklist-item{display:flex;gap:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px;}
+.check-icon{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;flex-shrink:0;}
+.check-body{display:flex;flex-direction:column;gap:6px;}
+.check-body strong{font-size:1rem;font-weight:700;}
+.check-body span{color:var(--muted);font-size:.88rem;line-height:1.5;}
+.photo-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px;display:flex;gap:10px;align-items:flex-start;}
+.photo-num{width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,.25);border:1px solid rgba(59,130,246,.4);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#93c5fd;flex-shrink:0;}
+.photo-info strong{font-size:.9rem;font-weight:700;display:block;margin-bottom:3px;}
+.photo-info span{font-size:.78rem;color:var(--muted);line-height:1.4;}
+</style>
+
+<script>
+  const photos=[
+    ["🔲 Front 3/4","Stand at front corner, 45°, headlight height. Turn wheels toward camera for best look."],
+    ["🔲 Rear 3/4","Same angle from the rear corner. Shows the full silhouette and boot line."],
+    ["🔲 Driver side full","Stand back — get the whole car in one landscape shot."],
+    ["🔲 Passenger side full","Repeat from the other side. Shows both flanks."],
+    ["📊 Dashboard","From rear seat looking forward. Screen on. Steering wheel centred."],
+    ["💺 Front seats","From the door opening. Recline slightly for space."],
+    ["🔢 Odometer / mileage","Close-up of the instrument cluster showing exact mileage."],
+    ["⚠️ Any damage","Close-up of any scuffs, chips or marks. Honesty gets better offers."],
+  ];
+
+  const guide=document.getElementById("photoGuide");
+  photos.forEach(([title,tip],i)=>{
+    guide.innerHTML+=`<div class="photo-card"><div class="photo-num">${i+1}</div><div class="photo-info"><strong>${title}</strong><span>${tip}</span></div></div>`;
+  });
+
+  const name=sessionStorage.getItem("apName")||"";
+  const reg=sessionStorage.getItem("apReg")||"your car";
+  const mileage=sessionStorage.getItem("apMileage")||"";
+  const overall=sessionStorage.getItem("apOverall")||"";
+  const service=sessionStorage.getItem("apServiceHistory")||"";
+
+  const waMsg=`Hi Dan, here are my part exchange photos for appraisal.
+
+Car: ${reg}${sessionStorage.getItem("apMakeModel")?" — "+sessionStorage.getItem("apMakeModel"):""}
+Mileage: ${mileage}
+Condition: ${overall}
+Service History: ${service}
+Name: ${name}
+
+Sending photos now 📸`;
+
+  const waUrl=`https://wa.me/447827138197?text=${encodeURIComponent(waMsg)}`;
+  document.getElementById("waBtn").href=waUrl;
+
+  const apSummary=sessionStorage.getItem("apSummary")||"";
+  const calUrl=`https://cal.eu/danbmwruxley/telephone-appointment?name=${encodeURIComponent(name)}&notes=${encodeURIComponent(apSummary)}`;
+  document.getElementById("calBtn").href=calUrl;
+</script></body></html>

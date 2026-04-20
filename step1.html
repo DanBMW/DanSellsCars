@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Your world</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="app"><div class="shell">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Your world</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
   <div class="topbar">
     <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
     <div class="meta"><span class="dot"></span><span>Step 1 of 11</span></div>
@@ -17,18 +13,38 @@
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Your world</div>
-  <h2>What sounds most like you?</h2>
-  <p class="step-desc">One tap. Dan uses this to point you toward the right shape of car before anything else.</p>
+  <h2>Which of these sounds most like you?</h2>
+  <p class="step-desc">One tap is enough. I use this to point you toward the right shape of car before anything else.</p>
   <div class="grid">
-    <button class="choice" data-val="Family life" onclick="pick(this)"><span class="choice-emoji">🏡</span><span class="choice-title">Family life</span><span class="choice-desc">School runs, weekends away, room for real life.</span></button>
-    <button class="choice" data-val="Business miles" onclick="pick(this)"><span class="choice-emoji">💼</span><span class="choice-title">Business miles</span><span class="choice-desc">Commuting, clients, looking sharp.</span></button>
-    <button class="choice" data-val="Driver first" onclick="pick(this)"><span class="choice-emoji">🏎️</span><span class="choice-title">Driver first</span><span class="choice-desc">Feel, performance — every drive better.</span></button>
-    <button class="choice" data-val="Future-forward" onclick="pick(this)"><span class="choice-emoji">⚡</span><span class="choice-title">Future-forward</span><span class="choice-desc">Electric or hybrid, lower running costs.</span></button>
-    <button class="choice" data-val="Keep it simple" onclick="pick(this)"><span class="choice-emoji">👍</span><span class="choice-title">Keep it simple</span><span class="choice-desc">Practical, easy, good value — no drama.</span></button>
+    <button class="choice" data-val="Family life" onclick="pick(this)">
+      <span class="choice-emoji">🏡</span>
+      <span class="choice-title">Family life</span>
+      <span class="choice-desc">School runs, weekends away, room for real life.</span>
+    </button>
+    <button class="choice" data-val="Business miles" onclick="pick(this)">
+      <span class="choice-emoji">💼</span>
+      <span class="choice-title">Business miles</span>
+      <span class="choice-desc">Commuting, client visits, looking the part.</span>
+    </button>
+    <button class="choice" data-val="Driver first" onclick="pick(this)">
+      <span class="choice-emoji">🏎️</span>
+      <span class="choice-title">Driver first</span>
+      <span class="choice-desc">Feel, performance and every drive better than the last.</span>
+    </button>
+    <button class="choice" data-val="Future-forward" onclick="pick(this)">
+      <span class="choice-emoji">⚡</span>
+      <span class="choice-title">Future-forward</span>
+      <span class="choice-desc">Electric or hybrid, lower running costs.</span>
+    </button>
+    <button class="choice" data-val="Keep it simple" onclick="pick(this)">
+      <span class="choice-emoji">👍</span>
+      <span class="choice-title">Keep it simple</span>
+      <span class="choice-desc">Practical, reliable and good value. No drama.</span>
+    </button>
   </div>
   <div class="nav">
-    <a class="btn-ghost" href="index.html">&larr; Back</a>
-    <button class="btn" onclick="goNext()">Continue &rarr;</button>
+    <a class="btn-ghost" href="index.html">Back</a>
+    <button class="btn" onclick="goNext()">Continue</button>
   </div>
 </div>
 </div></div>
@@ -43,7 +59,6 @@
   }
   function goNext(){
     if(!chosen){ alert("Pick the one that feels most like you."); return; }
-    sessionStorage.setItem("lifestyle",chosen);
     window.location.href="step1b.html";
   }
 </script>

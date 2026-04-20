@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Vehicle Appraisal</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Vehicle Appraisal</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 1 of 6</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 1 of 6</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:16%"></div></div>
+  </div>
+<div class="step-wrap">
+  <div class="step-kicker">Your vehicle</div>
+  <h2>Tell Dan about your current car.</h2>
+  <p class="step-desc">The more accurate you are, the more accurate Dan's part exchange figure will be.</p>
+  <div class="input-card">
+    <div class="two-col">
+      <div class="field-group"><label>Registration *</label><input id="reg" type="text" placeholder="e.g. AB21 XYZ" style="text-transform:uppercase"/></div>
+      <div class="field-group"><label>Mileage *</label><input id="ml" type="number" placeholder="e.g. 32000"/></div>
+    </div>
+    <div class="two-col">
+      <div class="field-group"><label>Make & Model</label><input id="makemodel" type="text" placeholder="e.g. BMW 3 Series 320i M Sport"/></div>
+      <div class="field-group"><label>Year</label><input id="yr" type="text" placeholder="e.g. 2021"/></div>
+    </div>
+    <div class="two-col">
+      <div class="field-group"><label>Colour</label><input id="col" type="text" placeholder="e.g. Alpine White"/></div>
+      <div class="field-group"><label>Fuel type</label>
+        <select id="fuel" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);padding:13px 16px;border-radius:14px;outline:none;color:#f8fafc">
+          <option value="" style="background:#0a1020">Select...</option>
+          <option value="Petrol" style="background:#0a1020">Petrol</option>
+          <option value="Diesel" style="background:#0a1020">Diesel</option>
+          <option value="Hybrid" style="background:#0a1020">Hybrid (PHEV)</option>
+          <option value="Mild Hybrid" style="background:#0a1020">Mild Hybrid (MHEV)</option>
+          <option value="Electric" style="background:#0a1020">Full Electric (BEV)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group"><label>Any notable extras / spec</label><input id="spec" type="text" placeholder="e.g. Pro Pack, heated seats, panoramic roof, M Sport Pro"/></div>
+  </div>
+  <div class="nav">
+    <a class="btn-ghost" href="appraisal.html">&larr; Back</a>
+    <button class="btn" onclick="go()">Continue &rarr;</button>
+  </div>
+</div></div></div>
+<script>
+  [["reg","apReg"],["ml","apMileage"],["makemodel","apMakeModel"],["yr","apYear"],["col","apColour"],["fuel","apFuel"],["spec","apSpec"]].forEach(([id,key])=>{
+    const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
+  });
+  function go(){
+    const r=document.getElementById("reg").value.trim(), m=document.getElementById("ml").value.trim();
+    if(!r||!m){ alert("Registration and mileage are needed to start."); return; }
+    sessionStorage.setItem("apReg",r.toUpperCase());
+    sessionStorage.setItem("apMileage",m);
+    sessionStorage.setItem("apMakeModel",document.getElementById("makemodel").value.trim());
+    sessionStorage.setItem("apYear",document.getElementById("yr").value.trim());
+    sessionStorage.setItem("apColour",document.getElementById("col").value.trim());
+    sessionStorage.setItem("apFuel",document.getElementById("fuel").value);
+    sessionStorage.setItem("apSpec",document.getElementById("spec").value.trim());
+    window.location.href="ap2.html";
+  }
+</script></body></html>

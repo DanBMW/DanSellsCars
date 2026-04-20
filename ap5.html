@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells | Review Appraisal</title><link rel="stylesheet" href="style.css"/></head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Vehicle Appraisal</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 5 of 6</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 5 of 6</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:83%"></div></div>
+  </div>
+<div class="step-wrap">
+  <div class="step-kicker">Review</div>
+  <h2>Here's what Dan receives.</h2>
+  <p class="step-desc">Check it looks right — then submit and move on to the photo step.</p>
+  <div class="summary-grid" id="sg"></div>
+  <div class="nav">
+    <a class="btn-ghost" href="ap4.html">&larr; Back</a>
+    <button class="btn" id="sb" onclick="submitAppraisal()">Send to Dan &rarr;</button>
+  </div>
+</div></div></div>
+<script>
+  const starLabels={1:"⭐ Damaged",2:"⭐⭐ Poor",3:"⭐⭐⭐ Average",4:"⭐⭐⭐⭐ Good",5:"⭐⭐⭐⭐⭐ Excellent"};
+  const fields=[
+    ["Registration","apReg"],["Make & Model","apMakeModel"],["Year","apYear"],["Colour","apColour"],
+    ["Mileage","apMileage"],["Fuel","apFuel"],["Spec / Extras","apSpec"],
+    ["Service History","apServiceHistory"],
+    ["Bodywork","apBodywork",true],["Glass & Mirrors","apGlass",true],["Tyres","apTyres",true],
+    ["Interior","apInterior",true],["Mechanical","apMechanical",true],
+    ["Overall condition","apOverall"],["Outstanding finance","apFinance"],["Settlement figure","apSettlement"],
+    ["Name","apName"],["Mobile","apPhone"],["Email","apEmail"],["Notes","apNotes"]
+  ];
+  const sg=document.getElementById("sg");
+  fields.forEach(([label,key,isStar])=>{
+    let val=sessionStorage.getItem(key)||""; if(!val) return;
+    if(isStar) val=starLabels[parseInt(val)]||val;
+    const d=document.createElement("div"); d.className="summary-item";
+    d.innerHTML="<b>"+label+"</b><div>"+val+"</div>"; sg.appendChild(d);
+  });
+  function buildText(){
+    return ["=== VEHICLE APPRAISAL ==="].concat(fields.map(([label,key,isStar])=>{
+      let val=sessionStorage.getItem(key)||"Not given";
+      if(isStar&&sessionStorage.getItem(key)) val=starLabels[parseInt(sessionStorage.getItem(key))]||val;
+      return label+": "+val;
+    })).join("\n");
+  }
+  async function submitAppraisal(){
+    const btn=document.getElementById("sb"); btn.textContent="Sending..."; btn.disabled=true;
+    const name=sessionStorage.getItem("apName")||"";
+    const email=sessionStorage.getItem("apEmail")||"";
+    const reg=sessionStorage.getItem("apReg")||"";
+    const summary=buildText();
+    const payload={
+      name,email,phone:sessionStorage.getItem("apPhone")||"",
+      registration:reg,make_model:sessionStorage.getItem("apMakeModel")||"",
+      year:sessionStorage.getItem("apYear")||"",mileage:sessionStorage.getItem("apMileage")||"",
+      colour:sessionStorage.getItem("apColour")||"",fuel:sessionStorage.getItem("apFuel")||"",
+      spec:sessionStorage.getItem("apSpec")||"",service_history:sessionStorage.getItem("apServiceHistory")||"",
+      bodywork:sessionStorage.getItem("apBodywork")||"",glass:sessionStorage.getItem("apGlass")||"",
+      tyres:sessionStorage.getItem("apTyres")||"",interior:sessionStorage.getItem("apInterior")||"",
+      mechanical:sessionStorage.getItem("apMechanical")||"",overall:sessionStorage.getItem("apOverall")||"",
+      finance:sessionStorage.getItem("apFinance")||"",settlement:sessionStorage.getItem("apSettlement")||"",
+      notes:sessionStorage.getItem("apNotes")||"",lead_summary:summary,
+      _subject:"Vehicle Appraisal — "+reg+" — "+name,_replyto:email||"noreply@dansells.co.uk"
+    };
+    sessionStorage.setItem("apSummary",summary);
+    try{
+      await fetch("https://formspree.io/f/YOUR_FORMSPREE_ID",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
+    }catch(e){}
+    window.location.href="ap6.html";
+  }
+</script></body></html>

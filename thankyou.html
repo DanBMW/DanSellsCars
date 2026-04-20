@@ -1,27 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>DanSells | You're in</title><link rel="stylesheet" href="style.css"/></head>
+<title>DanSells | All done</title><link rel="stylesheet" href="style.css"/></head>
 <body><div class="app"><div class="shell">
   <div class="topbar">
     <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
-    <div class="meta"><span class="dot"></span><span>Done ✓</span></div>
+    <div class="meta"><span class="dot"></span><span>Done</span></div>
   </div>
   <div class="step-wrap">
     <div class="success-wrap">
-      <div class="step-kicker">You're in</div>
-      <h2>Nice work. Dan's got everything he needs.</h2>
-      <p>Your details have landed in Dan's inbox with your full qualifier summary attached. He will review it before your call so you pick up mid-conversation, not at the beginning.<br><br>One last thing — book your telephone appointment below. Your name and email will be pre-filled. Just pick a time that works.</p>
-      <div class="btn-row">
-        <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">Book my call with Dan &rarr;</a>
-        <a class="btn-ghost" href="index.html">Start again</a>
+      <div class="step-kicker">All done</div>
+      <h2>That is everything I need.</h2>
+      <p>Your details have landed in my inbox with your full summary attached. I will read through it before we speak so we can get straight into the good stuff from the first minute of the call.</p>
+
+      <p style="color:#a8c8f0;font-weight:600;font-size:.88rem;margin-bottom:15px;">Two more things and you are done:</p>
+
+      <div style="display:grid;gap:11px;margin-bottom:26px">
+
+        <div class="checklist-item">
+          <div class="check-icon">1</div>
+          <div class="check-body">
+            <strong>Book your telephone appointment</strong>
+            <span>I will already have read your summary before the call so there is no need to explain everything from scratch.</span>
+            <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" style="margin-top:11px;display:inline-block">Book my call with Dan</a>
+          </div>
+        </div>
+
+        <div class="checklist-item" id="pxStep" style="display:none">
+          <div class="check-icon">2</div>
+          <div class="check-body">
+            <strong>Send your part exchange photos on WhatsApp</strong>
+            <span>It takes about a minute to take them. Photos let me sharpen the part exchange figure before your call. Without them I am working from an estimate only.</span>
+            <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener" style="margin-top:11px;display:inline-block;background:#1a7a3c;box-shadow:0 6px 18px rgba(26,122,60,.28);">Send photos on WhatsApp</a>
+          </div>
+        </div>
+
+        <div class="checklist-item">
+          <div class="check-icon" id="step3num">2</div>
+          <div class="check-body">
+            <strong>That is it from you</strong>
+            <span>I will come prepared with model options, finance scenarios and a part exchange estimate ready to talk through.</span>
+          </div>
+        </div>
       </div>
-      <p class="hint" style="margin-top:18px">Can't book right now? Dan will be in touch. Your details are already with him.</p>
+
+      <p class="hint">If you cannot book right now, no problem. I will be in touch. Your details are already with me.</p>
     </div>
   </div>
 </div></div>
 <script>
-  const url=sessionStorage.getItem("bookingUrl");
-  if(url) document.getElementById("bookBtn").href=url;
-  setTimeout(()=>{ const u=sessionStorage.getItem("bookingUrl"); if(u) window.open(u,"_blank"); },1000);
+  const bookingUrl=sessionStorage.getItem("bookingUrl");
+  if(bookingUrl) document.getElementById("bookBtn").href=bookingUrl;
+
+  const hasPX=["Yes","Maybe"].includes(sessionStorage.getItem("partExchange")||"");
+  if(hasPX){
+    document.getElementById("pxStep").style.display="flex";
+    document.getElementById("step3num").textContent="3";
+    const name=sessionStorage.getItem("fullName")||"";
+    const reg=sessionStorage.getItem("currentCar")||"my car";
+    const mileage=sessionStorage.getItem("mileage")||"";
+    const wbac=sessionStorage.getItem("wbacVal")||"";
+    const waMsg=`Hi Dan, here are my part exchange photos.
+
+Car: ${reg}
+Mileage: ${mileage}${wbac?"\nOnline buyer quote: "+wbac:""}
+Name: ${name}
+
+Photos coming now`;
+    document.getElementById("waBtn").href=`https://wa.me/447827138197?text=${encodeURIComponent(waMsg)}`;
+  }
+
+  setTimeout(()=>{
+    const u=sessionStorage.getItem("bookingUrl"); if(u) window.open(u,"_blank");
+  },1000);
 </script></body></html>
