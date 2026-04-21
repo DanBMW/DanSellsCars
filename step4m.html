@@ -26,6 +26,10 @@
   <div class="input-card">
     <div class="range-display"><span class="range-label">Per month</span><strong id="mv">£450</strong></div>
     <input type="range" id="mr" min="200" max="2000" step="25" value="450" oninput="document.getElementById('mv').textContent='£'+Number(this.value).toLocaleString('en-GB')"/>
+    <div style="margin-top:18px;">
+      <div class="range-display"><span class="range-label">Annual mileage</span><strong id="amv">12,000</strong></div>
+      <input type="range" id="amr" min="6000" max="40000" step="1000" value="12000" oninput="document.getElementById('amv').textContent=Number(this.value).toLocaleString('en-GB')"/>
+    </div>
     <p class="hint">A rough guide is enough at this stage.</p>
   </div>
   <div class="nav">
@@ -35,5 +39,6 @@
 </div></div></div>
 <script>
   const s=sessionStorage.getItem("monthlyBudget"); if(s){ document.getElementById("mr").value=s; document.getElementById("mv").textContent="£"+Number(s).toLocaleString("en-GB"); }
-  function go(){ sessionStorage.setItem("monthlyBudget",document.getElementById("mr").value); window.location.href="step5.html"; }
+  const a=sessionStorage.getItem("annualMileage"); if(a){ document.getElementById("amr").value=a; document.getElementById("amv").textContent=Number(a).toLocaleString("en-GB"); }
+  function go(){ sessionStorage.setItem("monthlyBudget",document.getElementById("mr").value); sessionStorage.setItem("annualMileage",document.getElementById("amr").value); window.location.href="step5.html"; }
 </script></body></html>
