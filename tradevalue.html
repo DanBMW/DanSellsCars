@@ -13,25 +13,10 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .container {
-      max-width: 640px;
-      margin: 0 auto;
-    }
-    header {
-      text-align: center;
-      padding: 30px 0 20px;
-    }
-    header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 1px;
-    }
-    header p {
-      color: #888;
-      font-size: 0.9rem;
-      margin-top: 6px;
-    }
+    .container { max-width: 640px; margin: 0 auto; }
+    header { text-align: center; padding: 30px 0 20px; }
+    header h1 { font-size: 1.8rem; font-weight: 700; color: #fff; letter-spacing: 1px; }
+    header p { color: #888; font-size: 0.9rem; margin-top: 6px; }
     .card {
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
@@ -40,187 +25,86 @@
       margin-bottom: 20px;
     }
     label {
-      display: block;
-      font-size: 0.8rem;
-      color: #888;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      display: block; font-size: 0.8rem; color: #888;
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
     }
     input, select {
-      width: 100%;
-      background: #111;
-      border: 1px solid #333;
-      border-radius: 8px;
-      color: #fff;
-      padding: 12px 14px;
-      font-size: 1rem;
-      margin-bottom: 16px;
-      outline: none;
-      transition: border 0.2s;
+      width: 100%; background: #111; border: 1px solid #333;
+      border-radius: 8px; color: #fff; padding: 12px 14px;
+      font-size: 1rem; margin-bottom: 16px; outline: none; transition: border 0.2s;
     }
-    input:focus, select:focus {
-      border-color: #1c69d4;
-    }
+    input:focus, select:focus { border-color: #1c69d4; }
     .row { display: flex; gap: 12px; }
     .row > div { flex: 1; }
     button#lookupBtn {
-      width: 100%;
-      background: #1c69d4;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 14px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-      letter-spacing: 0.5px;
+      width: 100%; background: #1c69d4; color: #fff; border: none;
+      border-radius: 8px; padding: 14px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s; letter-spacing: 0.5px;
     }
     button#lookupBtn:hover { background: #1558b0; }
-    button#lookupBtn:disabled {
-      background: #333;
-      color: #666;
-      cursor: not-allowed;
-    }
-
-    /* Status */
+    button#lookupBtn:disabled { background: #333; color: #666; cursor: not-allowed; }
     #statusBox {
-      display: none;
-      text-align: center;
-      padding: 20px;
-      background: #111;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      margin-bottom: 20px;
+      display: none; text-align: center; padding: 20px;
+      background: #111; border: 1px solid #2a2a2a;
+      border-radius: 12px; margin-bottom: 20px;
     }
     .spinner {
-      width: 36px; height: 36px;
-      border: 3px solid #333;
-      border-top-color: #1c69d4;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 12px;
+      width: 36px; height: 36px; border: 3px solid #333;
+      border-top-color: #1c69d4; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 12px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     #statusText { color: #888; font-size: 0.9rem; }
-
-    /* Results */
     #resultsBox { display: none; }
     .price-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-bottom: 20px;
     }
     .price-card {
-      background: #111;
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      padding: 16px 12px;
-      text-align: center;
+      background: #111; border: 1px solid #2a2a2a;
+      border-radius: 10px; padding: 16px 12px; text-align: center;
     }
-    .price-card.highlight {
-      border-color: #1c69d4;
-      background: #0d1f3c;
-    }
+    .price-card.highlight { border-color: #1c69d4; background: #0d1f3c; }
     .price-card .label {
-      font-size: 0.7rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
+      font-size: 0.7rem; color: #666; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 8px;
     }
-    .price-card .value {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #fff;
-    }
+    .price-card .value { font-size: 1.4rem; font-weight: 700; color: #fff; }
     .price-card.highlight .value { color: #4d9fff; }
-    .price-card .sub {
-      font-size: 0.7rem;
-      color: #555;
-      margin-top: 4px;
-    }
-
+    .price-card .sub { font-size: 0.7rem; color: #555; margin-top: 4px; }
     .trade-recommendation {
-      background: #0d1f3c;
-      border: 1px solid #1c69d4;
-      border-radius: 10px;
-      padding: 18px;
-      margin-bottom: 20px;
-      text-align: center;
+      background: #0d1f3c; border: 1px solid #1c69d4;
+      border-radius: 10px; padding: 18px; margin-bottom: 20px; text-align: center;
     }
     .trade-recommendation .trade-label {
-      font-size: 0.75rem;
-      color: #4d9fff;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
+      font-size: 0.75rem; color: #4d9fff;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
     }
-    .trade-recommendation .trade-value {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #fff;
-    }
-    .trade-recommendation .trade-note {
-      font-size: 0.8rem;
-      color: #666;
-      margin-top: 6px;
-    }
-
+    .trade-recommendation .trade-value { font-size: 2rem; font-weight: 800; color: #fff; }
+    .trade-recommendation .trade-note { font-size: 0.8rem; color: #666; margin-top: 6px; }
     .listings-header {
-      font-size: 0.8rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 10px;
+      font-size: 0.8rem; color: #666; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 10px;
     }
     .listing-item {
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: #111; border: 1px solid #222; border-radius: 8px;
+      padding: 12px 14px; margin-bottom: 8px;
+      display: flex; justify-content: space-between; align-items: center;
     }
-    .listing-item .listing-title {
-      font-size: 0.85rem;
-      color: #ccc;
-      flex: 1;
-    }
-    .listing-item .listing-mileage {
-      font-size: 0.75rem;
-      color: #555;
-      margin-top: 2px;
-    }
+    .listing-item .listing-title { font-size: 0.85rem; color: #ccc; flex: 1; }
+    .listing-item .listing-mileage { font-size: 0.75rem; color: #555; margin-top: 2px; }
     .listing-item .listing-price {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #4d9fff;
-      margin-left: 12px;
-      white-space: nowrap;
+      font-size: 1rem; font-weight: 700; color: #4d9fff;
+      margin-left: 12px; white-space: nowrap;
     }
     .disclaimer {
-      font-size: 0.72rem;
-      color: #444;
-      text-align: center;
-      line-height: 1.5;
-      padding: 10px 0 20px;
+      font-size: 0.72rem; color: #444; text-align: center;
+      line-height: 1.5; padding: 10px 0 20px;
     }
-
     #errorBox {
-      display: none;
-      background: #1a0a0a;
-      border: 1px solid #5a1a1a;
-      border-radius: 10px;
-      padding: 16px;
-      color: #ff6b6b;
-      font-size: 0.85rem;
-      text-align: center;
-      margin-bottom: 20px;
+      display: none; background: #1a0a0a; border: 1px solid #5a1a1a;
+      border-radius: 10px; padding: 16px; color: #ff6b6b;
+      font-size: 0.85rem; text-align: center; margin-bottom: 20px;
     }
   </style>
 </head>
@@ -260,22 +144,11 @@
           <option>6 Series</option>
           <option>7 Series</option>
           <option>8 Series</option>
-          <option>X1</option>
-          <option>X2</option>
-          <option>X3</option>
-          <option>X4</option>
-          <option>X5</option>
-          <option>X6</option>
-          <option>X7</option>
+          <option>X1</option><option>X2</option><option>X3</option>
+          <option>X4</option><option>X5</option><option>X6</option><option>X7</option>
           <option>Z4</option>
-          <option>M2</option>
-          <option>M3</option>
-          <option>M4</option>
-          <option>M5</option>
-          <option>iX</option>
-          <option>i4</option>
-          <option>i5</option>
-          <option>i7</option>
+          <option>M2</option><option>M3</option><option>M4</option><option>M5</option>
+          <option>iX</option><option>i4</option><option>i5</option><option>i7</option>
         </select>
       </div>
       <div>
@@ -321,7 +194,7 @@
     <div class="trade-recommendation">
       <div class="trade-label">Recommended Trade Value</div>
       <div class="trade-value" id="tradeValue">—</div>
-      <div class="trade-note" id="tradeNote">Estimated at 78–82% of market average</div>
+      <div class="trade-note">Estimated at 80% of market average · Subject to inspection</div>
     </div>
 
     <div class="listings-header">Similar listings found</div>
@@ -335,7 +208,6 @@
   </div>
 
 </div>
-
 <script>
   const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
   let pollTimer = null;
@@ -357,8 +229,7 @@
       return;
     }
 
-    hideResults();
-    hideError();
+    hideResults(); hideError();
     showStatus('Starting market search...');
     setBtn(true);
     pollCount = 0;
@@ -378,8 +249,7 @@
 
       if (!data.runId) {
         showError('Failed to start market search. Please try again.');
-        setBtn(false);
-        return;
+        setBtn(false); return;
       }
 
       pollForResult(data.runId);
@@ -399,15 +269,13 @@
         const res  = await fetch(`${WORKER}?target=market-poll&runId=${runId}`);
         const data = await res.json();
 
-        if (data.status === 'complete') {
+        if (data.status === 'SUCCEEDED' || data.status === 'complete') {
           clearInterval(pollTimer);
-          hideStatus();
-          setBtn(false);
+          hideStatus(); setBtn(false);
           renderResults(data);
-        } else if (data.status === 'error' || pollCount > 30) {
+        } else if (data.status === 'FAILED' || data.status === 'error' || pollCount > 30) {
           clearInterval(pollTimer);
-          hideStatus();
-          setBtn(false);
+          hideStatus(); setBtn(false);
           showError(data.error || 'Search timed out. Please try again.');
         }
       } catch (e) {
@@ -427,329 +295,80 @@
     const idx = Math.min(Math.floor(pollCount / 2), msgs.length - 1);
     document.getElementById('statusText').textContent = msgs[idx];
   }
-function renderResults(data) {
-  // Data comes back as {status:"SUCCEEDED", items:[...]}
-  const listings = data.items || data.listings || data.data?.items || [];
 
-  if (!listings || listings.length === 0) {
-    showError('No comparable listings found. Try adjusting the year or model.');
-    return;
+  function renderResults(data) {
+    // Handle {status:"SUCCEEDED", items:[...]} shape from AutoTrader
+    const listings = data.items || data.listings || data.data?.items || data.data || [];
+
+    if (!listings || listings.length === 0) {
+      showError('No comparable listings found. Try adjusting the year or model.');
+      return;
+    }
+
+    const prices = listings
+      .map(l => l.pricing?.mainPrice || 0)
+      .filter(p => p > 1000)
+      .sort((a, b) => a - b);
+
+    if (prices.length === 0) {
+      showError('Could not parse listing prices. Please try again.');
+      return;
+    }
+
+    const low   = prices[0];
+    const high  = prices[prices.length - 1];
+    const avg   = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const trade = avg * 0.80;
+
+    document.getElementById('priceLow').textContent    = fmt(low);
+    document.getElementById('priceAvg').textContent    = fmt(avg);
+    document.getElementById('priceHigh').textContent   = fmt(high);
+    document.getElementById('tradeValue').textContent  = fmt(trade);
+    document.getElementById('listingCount').textContent = prices.length;
+
+    const container = document.getElementById('listingsList');
+    container.innerHTML = '';
+
+    listings.slice(0, 8).forEach(l => {
+      const price  = l.pricing?.mainPrice || 0;
+      const title  = l.subtitle || l.model || 'BMW listing';
+      const miles  = l.mileage?.value
+        ? l.mileage.value.toLocaleString('en-GB') + ' miles'
+        : '—';
+      const year   = l.year || '';
+      const colour = l.specifications?.exteriorColor || '';
+
+      const div = document.createElement('div');
+      div.className = 'listing-item';
+      div.innerHTML = `
+        <div>
+          <div class="listing-title">${year} ${title} ${colour}</div>
+          <div class="listing-mileage">${miles}</div>
+        </div>
+        <div class="listing-price">${price > 0 ? fmt(price) : '—'}</div>
+      `;
+      container.appendChild(div);
+    });
+
+    document.getElementById('resultsBox').style.display = 'block';
   }
 
-  const prices = listings
-    .map(l => l.pricing?.mainPrice || 0)
-    .filter(p => p > 1000)
-    .sort((a, b) => a - b);
-
-  if (prices.length === 0) {
-    showError('Could not parse listing prices. Please try again.');
-    return;
-  }
-
-  const low   = prices[0];
-  const high  = prices[prices.length - 1];
-  const avg   = prices.reduce((a, b) => a + b, 0) / prices.length;
-  const trade = avg * 0.80;
-
-  document.getElementById('priceLow').textContent   = fmt(low);
-  document.getElementById('priceAvg').textContent   = fmt(avg);
-  document.getElementById('priceHigh').textContent  = fmt(high);
-  document.getElementById('tradeValue').textContent = fmt(trade);
-  document.getElementById('listingCount').textContent = prices.length;
-
-  const container = document.getElementById('listingsList');
-  container.innerHTML = '';
-
-  listings.slice(0, 8).forEach(l => {
-    const price  = l.pricing?.mainPrice || 0;
-    const title  = l.subtitle || l.model || 'BMW listing';
-    const miles  = l.mileage?.value
-      ? l.mileage.value.toLocaleString('en-GB') + ' miles'
-      : '—';
-    const year   = l.year || '';
-    const colour = l.specifications?.exteriorColor || '';
-
-    const div = document.createElement('div');
-    div.className = 'listing-item';
-    div.innerHTML = `
-      <div>
-        <div class="listing-title">${year} ${title} ${colour}</div>
-        <div class="listing-mileage">${miles}</div>
-      </div>
-      <div class="listing-price">${price > 0 ? fmt(price) : '—'}</div>
-    `;
-    container.appendChild(div);
-  });
-
-  document.getElementById('resultsBox').style.display = 'block';
-}
-  
   function showStatus(msg) {
     document.getElementById('statusText').textContent = msg;
     document.getElementById('statusBox').style.display = 'block';
   }
-  function hideStatus() {
-    document.getElementById('statusBox').style.display = 'none';
-  }
+  function hideStatus() { document.getElementById('statusBox').style.display = 'none'; }
   function showError(msg) {
     const b = document.getElementById('errorBox');
-    b.textContent = msg;
-    b.style.display = 'block';
+    b.textContent = msg; b.style.display = 'block';
   }
-  function hideError() {
-    document.getElementById('errorBox').style.display = 'none';
-  }
-  function hideResults() {
-    document.getElementById('resultsBox').style.display = 'none';
-  }
+  function hideError() { document.getElementById('errorBox').style.display = 'none'; }
+  function hideResults() { document.getElementById('resultsBox').style.display = 'none'; }
   function setBtn(disabled) {
     const btn = document.getElementById('lookupBtn');
     btn.disabled = disabled;
     btn.textContent = disabled ? 'Searching...' : 'Get Trade Value';
   }
-</script>
-</body>
-</html>  <div class="toggle-row" onclick="togglePanel('sPanel','sArrow')">⚙️ Dealer Settings <span id="sArrow">▼</span></div>
-  <div class="panel" id="sPanel">
-    <div class="grid2">
-      <div><label>Recon Cost (£)</label><input type="number" id="recon" value="350" min="0"></div>
-      <div><label>Target Margin (£)</label><input type="number" id="margin" value="800" min="0"></div>
-    </div>
-    <div class="grid2">
-      <div><label>Retail Threshold (£)</label><input type="number" id="threshold" value="3000" min="0"></div>
-      <div><label>Avg Miles/Year</label><input type="number" id="avgMpY" value="10000" min="0"></div>
-    </div>
-  </div>
-
-  <button class="btn" id="valuateBtn" onclick="runValuation()">🔍 Get Trade Valuation</button>
-  <div class="loading" id="loading"><span class="spinner"></span><span id="loadingMsg">Fetching vehicle data...</span></div>
-  <div class="error-msg" id="errorMsg"></div>
-
-  <div class="results" id="results">
-    <div class="vehicle-banner">
-      <div class="vicon">🚗</div>
-      <div>
-        <div class="vname" id="vehicleName">—</div>
-        <div class="vmeta" id="vehicleMeta">—</div>
-      </div>
-    </div>
-    <div class="flags" id="flagsRow"></div>
-    <div id="mileageAlert" class="mileage-alert" style="display:none"></div>
-    <div class="mot-section" id="motSection" style="display:none">
-      <h3>📋 MOT History <span id="motCount" style="color:#60a5fa;font-weight:normal;text-transform:none;letter-spacing:0"></span></h3>
-      <div id="motRows"></div>
-      <div class="advisory-list" id="advisoryList"></div>
-    </div>
-    <div class="breakdown" id="breakdownTable"></div>
-    <div class="trade-box">
-      <div class="tlbl">Trade / Part-Exchange Offer</div>
-      <div class="trange" id="tradeRange">—</div>
-      <div class="tmid" id="tradeMid">—</div>
-    </div>
-    <div class="disposal-badge" id="disposalBadge">
-      🔨 Auction / Wholesale route recommended — below retail threshold. Consider BCA or Manheim.
-    </div>
-    <div class="ext-links" id="extLinks"></div>
-    <button class="wa-btn" id="waBtn" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
-  </div>
-
-  <div class="footer-note">
-    DVLA VES API <span class="badge">GOV.UK LIVE</span>
-    DVSA MOT History API <span class="badge">GOV.UK LIVE</span><br>
-    Proxy: Cloudflare Workers · Benchmarks: CarGurus · AutoTrader · Motorway · WBAC
-  </div>
-</div>
-
-<script>
-const PROXY = "https://vehicleproxy.danielcane1992.workers.dev";
-
-const condRates  = { excellent:0.00, good:0.03, fair:0.08, poor:0.15, damaged:0.25 };
-const condLabels = { excellent:"Excellent (0%)", good:"Good (3%)", fair:"Fair (8%)", poor:"Poor (15%)", damaged:"Damaged (25%)" };
-
-function getMileageRate(cmv) {
-  if (cmv > 20000) return 0.05;
-  if (cmv > 10000) return 0.03;
-  if (cmv > 4000)  return 0.015;
-  return 0.005;
-}
-function fallbackCMV(year, make) {
-  const age = 2026 - (parseInt(year) || 2015);
-  const premium = ["BMW","MERCEDES","AUDI","LEXUS","PORSCHE","JAGUAR","LAND ROVER","VOLVO","TESLA"];
-  const base = premium.includes((make||"").toUpperCase()) ? 28000 : 16000;
-  return Math.max(500, base * Math.pow(0.83, age));
-}
-function fmt(n) { return "£" + Math.max(0,Math.round(n)).toLocaleString("en-GB"); }
-function togglePanel(id, arrowId) {
-  const p = document.getElementById(id);
-  p.classList.toggle("open");
-  document.getElementById(arrowId).textContent = p.classList.contains("open") ? "▲" : "▼";
-}
-function setLoading(msg) { document.getElementById("loadingMsg").textContent = msg; }
-function showError(msg)  { const e = document.getElementById("errorMsg"); e.textContent = "⚠️ " + msg; e.style.display = "block"; }
-function clearError()    { document.getElementById("errorMsg").style.display = "none"; }
-
-let lastResult = {};
-
-async function runValuation() {
-  const reg       = document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
-  const mileage   = parseInt(document.getElementById("mileage").value);
-  const condition = document.getElementById("condition").value;
-  const recon     = parseFloat(document.getElementById("recon").value)     || 350;
-  const margin    = parseFloat(document.getElementById("margin").value)    || 800;
-  const threshold = parseFloat(document.getElementById("threshold").value) || 3000;
-  const avgMpY    = parseFloat(document.getElementById("avgMpY").value)    || 10000;
-
-  if (!reg)     { showError("Please enter a registration number."); return; }
-  if (!mileage) { showError("Please enter the mileage."); return; }
-  clearError();
-
-  document.getElementById("results").style.display      = "none";
-  document.getElementById("loading").style.display      = "block";
-  document.getElementById("valuateBtn").disabled        = true;
-  document.getElementById("flagsRow").innerHTML         = "";
-  document.getElementById("motSection").style.display   = "none";
-  document.getElementById("mileageAlert").style.display = "none";
-  document.getElementById("waBtn").style.display        = "none";
-
-  let dvlaData = null, motData = null;
-  const flags = [];
-
-  try {
-    setLoading("Fetching DVLA vehicle data...");
-    const r = await fetch(`${PROXY}?target=dvla&reg=${reg}`);
-    if (r.ok) dvlaData = await r.json();
-  } catch(e) { console.warn("DVLA:", e); }
-
-  try {
-    setLoading("Fetching MOT history...");
-    const r = await fetch(`${PROXY}?target=mot&reg=${reg}`);
-    if (r.ok) motData = await r.json();
-    if (Array.isArray(motData)) motData = motData[0];
-  } catch(e) { console.warn("MOT:", e); }
-
-  const make   = dvlaData?.make || motData?.make || "Unknown";
-  const year   = dvlaData?.yearOfManufacture || motData?.firstUsedDate?.substring(0,4) || "—";
-  const fuel   = dvlaData?.fuelType || "—";
-  const cc     = dvlaData?.engineCapacity ? dvlaData.engineCapacity + "cc" : "—";
-  const motExp = dvlaData?.motExpiryDate || "—";
-  const taxSt  = dvlaData?.taxStatus || "—";
-  const colour = dvlaData?.colour || "—";
-
-  document.getElementById("vehicleName").textContent =
-    (year !== "—" ? year + " " : "") + make +
-    (dvlaData?.model ? " " + dvlaData.model : "") +
-    (colour !== "—" ? " · " + colour : "");
-  document.getElementById("vehicleMeta").textContent =
-    [fuel, cc, motExp !== "—" ? "MOT: "+motExp : "", taxSt !== "—" ? "Tax: "+taxSt : ""]
-    .filter(x => x && x !== "—" && !x.endsWith(": —")).join(" · ") ||
-    reg + " · " + mileage.toLocaleString() + " miles";
-
-  let advisoryPenalty = 0, latestMotMileage = null;
-  const allAdvisories = [];
-
-  if (motData?.motTests?.length > 0) {
-    const tests = motData.motTests.slice(0, 6);
-    document.getElementById("motRows").innerHTML = tests.map(t => {
-      const pass    = (t.testResult||"").toLowerCase() === "passed";
-      const dateStr = t.completedDate ? t.completedDate.substring(0,10) : "—";
-      const odo     = t.odometerValue ? parseInt(t.odometerValue).toLocaleString() + " mi" : "—";
-      if (t.odometerValue && !latestMotMileage) latestMotMileage = parseInt(t.odometerValue);
-      (t.rfrAndComments||[]).filter(c=>c.type==="ADVISORY").forEach(a=>allAdvisories.push(a.text));
-      return `<div class="mot-row">
-        <span class="mdate">${dateStr}</span>
-        <span class="mmiles">${odo}</span>
-        <span class="mresult ${pass?"pass":"fail"}">${pass?"✅ Pass":"❌ Fail"}</span>
-      </div>`;
-    }).join("");
-
-    const latestAdv = (motData.motTests[0]?.rfrAndComments||[]).filter(c=>c.type==="ADVISORY").slice(0,5);
-    document.getElementById("advisoryList").innerHTML = latestAdv.map(a=>
-      `<div class="advisory-item">⚠️ ${a.text}</div>`).join("");
-    document.getElementById("motCount").textContent = "("+motData.motTests.length+" tests)";
-    document.getElementById("motSection").style.display = "block";
-
-    if (latestMotMileage && mileage < latestMotMileage * 0.97) {
-      const al = document.getElementById("mileageAlert");
-      al.innerHTML = `🚨 <strong>Mileage Alert:</strong> Last MOT recorded ${latestMotMileage.toLocaleString()} miles — customer states ${mileage.toLocaleString()} miles. Investigate before offering.`;
-      al.style.display = "block";
-      flags.push({cls:"bad", text:"⚠️ Mileage Query"});
-    }
-    if (allAdvisories.length > 0) {
-      const rate = allAdvisories.length <= 2 ? 0.015 : allAdvisories.length <= 4 ? 0.03 : 0.05;
-      advisoryPenalty = fallbackCMV(year, make) * rate;
-      flags.push({cls:"warn", text:allAdvisories.length+" Advisor"+(allAdvisories.length>1?"ies":"y")});
-    }
-    if ((motData.motTests[0]?.testResult||"").toLowerCase() !== "passed")
-      flags.push({cls:"bad", text:"❌ Last MOT Failed"});
-  }
-
-  if (dvlaData?.motStatus === "Valid")   flags.push({cls:"ok",   text:"✅ MOT Valid"});
-  if (dvlaData?.taxStatus === "Taxed")   flags.push({cls:"ok",   text:"✅ Taxed"});
-  if (dvlaData?.taxStatus === "Untaxed") flags.push({cls:"warn", text:"⚠️ Untaxed"});
-  if (dvlaData)  flags.push({cls:"ok",   text:"DVLA Live"});
-  if (motData)   flags.push({cls:"ok",   text:"MOT Live"});
-  if (!dvlaData && !motData) flags.push({cls:"info", text:"ℹ️ Check proxy"});
-
-  document.getElementById("flagsRow").innerHTML = flags.map(f=>
-    `<span class="flag ${f.cls}">${f.text}</span>`).join("");
-
-  const cmv        = fallbackCMV(year, make);
-  const avgMileage = (2026 - (parseInt(year)||2015)) * avgMpY;
-  const mileageAdj = (avgMileage - mileage) * getMileageRate(cmv);
-  const adjCMV     = cmv + mileageAdj;
-  const condDeduct = adjCMV * condRates[condition];
-  const tradeValue = adjCMV - condDeduct - advisoryPenalty - recon - margin;
-  const tradeLow   = Math.max(0, tradeValue - 150);
-  const tradeHigh  = tradeValue + 150;
-
-  const rows = [
-    ["Base Market Value (CMV)", fmt(cmv), "neutral"],
-    ["Mileage Adjustment", (mileageAdj>=0?"+":"")+fmt(Math.abs(mileageAdj)), mileageAdj>=0?"pos":"neg"],
-    ["Adjusted CMV", fmt(adjCMV), "neutral"],
-    ["Condition — "+condLabels[condition], "−"+fmt(condDeduct), "neg"],
-    ...(advisoryPenalty>0 ? [["MOT Advisories ("+allAdvisories.length+")", "−"+fmt(advisoryPenalty), "neg"]] : []),
-    ["Recon Estimate", "−"+fmt(recon), "neg"],
-    ["Dealer Margin Target", "−"+fmt(margin), "neg"],
-  ];
-  document.getElementById("breakdownTable").innerHTML = rows.map(([l,v,c])=>
-    `<div class="brow"><span class="blbl">${l}</span><span class="bval ${c}">${v}</span></div>`).join("");
-
-  document.getElementById("tradeRange").textContent = fmt(tradeLow) + " – " + fmt(tradeHigh);
-  document.getElementById("tradeMid").textContent   = "Recommended offer: " + fmt(tradeValue);
-  document.getElementById("disposalBadge").style.display = tradeValue < threshold ? "block" : "none";
-
-  const regClean = reg.replace(/\s/g,"");
-  const yr = year !== "—" ? year : "";
-  document.getElementById("extLinks").innerHTML = `
-    <a class="ext-btn cg" href="https://www.cargurus.co.uk/Cars/new/nl_DVLA_d0#listing=searchParams%3A%7B%22zip%22%3A%22SS2%22%7D" target="_blank">
-      📊 CarGurus UK<span>Live market prices</span></a>
-    <a class="ext-btn at" href="https://www.autotrader.co.uk/car-search?make=${encodeURIComponent(make)}&year-from=${yr}&year-to=${yr}&postcode=SS2+5AZ&radius=1500" target="_blank">
-      🚗 AutoTrader<span>Comparable listings</span></a>
-    <a class="ext-btn mw" href="https://motorway.co.uk/sell-my-car?vrm=${regClean}" target="_blank">
-      ⚡ Motorway<span>Market offer</span></a>
-    <a class="ext-btn wb" href="https://www.webuyanycar.com/car-valuation/?vrm=${regClean}&mileage=${mileage}" target="_blank">
-      💰 WeBuyAnyCar<span>Floor price</span></a>`;
-
-  lastResult = {reg, make, year, mileage, condition, tradeValue, tradeLow, tradeHigh, adjCMV};
-  document.getElementById("waBtn").style.display   = "block";
-  document.getElementById("results").style.display = "block";
-  document.getElementById("loading").style.display = "none";
-  document.getElementById("valuateBtn").disabled   = false;
-}
-
-function shareWhatsApp() {
-  const r = lastResult;
-  const msg =
-    `🚘 *Trade Valuation — ${r.reg}*\n` +
-    `${r.year} ${r.make} · ${r.mileage.toLocaleString()} miles · ${r.condition}\n\n` +
-    `Market Value: ${fmt(r.adjCMV)}\n` +
-    `*Trade Offer: ${fmt(r.tradeLow)} – ${fmt(r.tradeHigh)}*\n` +
-    `Recommended: *${fmt(r.tradeValue)}*\n\n` +
-    `_BMW Hedin Ruxley · Internal valuation_`;
-  window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
-}
-
-document.addEventListener("keydown", e => { if (e.key==="Enter") runValuation(); });
 </script>
 </body>
 </html>
