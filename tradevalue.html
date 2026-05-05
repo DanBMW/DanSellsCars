@@ -1,115 +1,528 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BMW Hedin Ruxley — Trade Valuation Tool</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0a0a0a; color: #e5e7eb; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px; }
-  .card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 28px; width: 100%; max-width: 580px; box-shadow: 0 25px 60px rgba(0,0,0,0.6); }
-  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-  .logo-icon { width: 42px; height: 42px; background: #1d4ed8; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  .logo h1 { font-size: 18px; font-weight: 700; color: #fff; }
-  .logo p { font-size: 12px; color: #6b7280; }
-  label { display: block; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
-  input, select { width: 100%; background: #1f2937; border: 1px solid #374151; border-radius: 10px; color: #f9fafb; font-size: 15px; padding: 12px 14px; outline: none; transition: border-color 0.2s; margin-bottom: 16px; }
-  input:focus, select:focus { border-color: #3b82f6; }
-  input::placeholder { color: #4b5563; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .toggle-row { font-size: 12px; color: #4b5563; cursor: pointer; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; user-select: none; }
-  .toggle-row:hover { color: #9ca3af; }
-  .panel { display: none; background: #0f172a; border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid #1e293b; }
-  .panel.open { display: block; }
-  .panel input { margin-bottom: 10px; font-size: 13px; }
-  .panel label { font-size: 10px; }
-  .btn { width: 100%; background: #1d4ed8; color: white; font-size: 15px; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
-  .btn:hover { background: #2563eb; }
-  .btn:disabled { background: #1f2937; color: #4b5563; cursor: not-allowed; }
-  .loading { display: none; text-align: center; padding: 24px 0; color: #6b7280; font-size: 14px; }
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #374151; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error-msg { background: #1a0a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 12px 14px; color: #fca5a5; font-size: 13px; margin-top: 16px; display: none; }
-  .results { margin-top: 24px; display: none; }
-  .vehicle-banner { background: linear-gradient(135deg,#0f172a,#1e293b); border: 1px solid #334155; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; }
-  .vehicle-banner .vicon { font-size: 28px; }
-  .vehicle-banner .vname { font-size: 17px; font-weight: 800; color: #fff; }
-  .vehicle-banner .vmeta { font-size: 12px; color: #64748b; margin-top: 3px; }
-  .flags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-  .flag { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
-  .flag.ok   { background:#052e16; color:#4ade80; border:1px solid #166534; }
-  .flag.warn { background:#422006; color:#fb923c; border:1px solid #9a3412; }
-  .flag.bad  { background:#1a0808; color:#f87171; border:1px solid #991b1b; }
-  .flag.info { background:#0c1a2e; color:#60a5fa; border:1px solid #1e3a5f; }
-  .mileage-alert { background:#1a0808; border:1px solid #991b1b; border-radius:8px; padding:10px 12px; font-size:12px; color:#fca5a5; margin-bottom:14px; }
-  .mot-section { background:#1a2234; border-radius:10px; padding:14px; margin-bottom:14px; }
-  .mot-section h3 { font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:10px; }
-  .mot-row { display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px solid #1e293b; }
-  .mot-row:last-child { border-bottom:none; }
-  .mot-row .mdate { color:#64748b; }
-  .mot-row .mmiles { color:#e2e8f0; font-weight:600; }
-  .mot-row .mresult { font-weight:700; }
-  .mot-row .mresult.pass { color:#4ade80; }
-  .mot-row .mresult.fail { color:#f87171; }
-  .advisory-list { margin-top:8px; }
-  .advisory-item { font-size:11px; color:#f59e0b; background:#1c1400; border-radius:5px; padding:4px 8px; margin-top:4px; }
-  .breakdown { background:#1f2937; border-radius:10px; overflow:hidden; margin-bottom:14px; }
-  .brow { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid #111827; font-size:13px; }
-  .brow:last-child { border-bottom:none; }
-  .brow .blbl { color:#9ca3af; }
-  .brow .bval { font-weight:700; }
-  .brow .bval.pos { color:#34d399; }
-  .brow .bval.neg { color:#f87171; }
-  .brow .bval.neutral { color:#e5e7eb; }
-  .trade-box { background:linear-gradient(135deg,#1e3a8a,#1d4ed8); border-radius:12px; padding:20px; text-align:center; margin-bottom:14px; }
-  .trade-box .tlbl { font-size:10px; color:#93c5fd; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
-  .trade-box .trange { font-size:30px; font-weight:800; color:#fff; }
-  .trade-box .tmid { font-size:12px; color:#bfdbfe; margin-top:4px; }
-  .disposal-badge { background:#1c0a00; border:1px solid #9a3412; border-radius:8px; padding:10px 14px; font-size:13px; color:#fed7aa; margin-bottom:14px; display:none; }
-  .ext-links { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-  .ext-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:12px 10px; border-radius:9px; font-size:12px; font-weight:700; text-decoration:none; cursor:pointer; border:none; transition:opacity 0.2s; line-height:1.4; }
-  .ext-btn:hover { opacity:0.8; }
-  .ext-btn.cg  { background:#0e2240; color:#60a5fa; border:1px solid #1e3a5f; }
-  .ext-btn.at  { background:#1a0e00; color:#fbbf24; border:1px solid #78350f; }
-  .ext-btn.mw  { background:#0e1a0e; color:#4ade80; border:1px solid #14532d; }
-  .ext-btn.wb  { background:#1a1a0e; color:#a3e635; border:1px solid #365314; }
-  .ext-btn span { font-size:10px; font-weight:400; opacity:0.7; }
-  .wa-btn { width:100%; background:#075e54; color:#fff; font-size:14px; font-weight:700; padding:13px; border:none; border-radius:10px; cursor:pointer; margin-bottom:14px; display:none; }
-  .wa-btn:hover { background:#128c7e; }
-  .footer-note { font-size:11px; color:#374151; text-align:center; margin-top:6px; line-height:1.6; }
-  .badge { display:inline-block; background:#14532d; color:#86efac; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; margin-left:3px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BMW Trade Value Tool</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #f0f0f0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 20px;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+    header p {
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    input, select {
+      width: 100%;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #fff;
+      padding: 12px 14px;
+      font-size: 1rem;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: #1c69d4;
+    }
+    .row { display: flex; gap: 12px; }
+    .row > div { flex: 1; }
+    button#lookupBtn {
+      width: 100%;
+      background: #1c69d4;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      letter-spacing: 0.5px;
+    }
+    button#lookupBtn:hover { background: #1558b0; }
+    button#lookupBtn:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    /* Status */
+    #statusBox {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #333;
+      border-top-color: #1c69d4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #statusText { color: #888; font-size: 0.9rem; }
+
+    /* Results */
+    #resultsBox { display: none; }
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .price-card {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px 12px;
+      text-align: center;
+    }
+    .price-card.highlight {
+      border-color: #1c69d4;
+      background: #0d1f3c;
+    }
+    .price-card .label {
+      font-size: 0.7rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .price-card .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .price-card.highlight .value { color: #4d9fff; }
+    .price-card .sub {
+      font-size: 0.7rem;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .trade-recommendation {
+      background: #0d1f3c;
+      border: 1px solid #1c69d4;
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .trade-recommendation .trade-label {
+      font-size: 0.75rem;
+      color: #4d9fff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .trade-recommendation .trade-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .trade-recommendation .trade-note {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    .listings-header {
+      font-size: 0.8rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .listing-item {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .listing-item .listing-title {
+      font-size: 0.85rem;
+      color: #ccc;
+      flex: 1;
+    }
+    .listing-item .listing-mileage {
+      font-size: 0.75rem;
+      color: #555;
+      margin-top: 2px;
+    }
+    .listing-item .listing-price {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #4d9fff;
+      margin-left: 12px;
+      white-space: nowrap;
+    }
+    .disclaimer {
+      font-size: 0.72rem;
+      color: #444;
+      text-align: center;
+      line-height: 1.5;
+      padding: 10px 0 20px;
+    }
+
+    #errorBox {
+      display: none;
+      background: #1a0a0a;
+      border: 1px solid #5a1a1a;
+      border-radius: 10px;
+      padding: 16px;
+      color: #ff6b6b;
+      font-size: 0.85rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo">
-    <div class="logo-icon">🚘</div>
+<div class="container">
+
+  <header>
+    <h1>BMW Trade Value</h1>
+    <p>Real-time market data · Instant trade estimate</p>
+  </header>
+
+  <div class="card">
     <div>
-      <h1>Trade Valuation Tool</h1>
-      <p>BMW Hedin Ruxley · Internal Use Only</p>
+      <label>Registration</label>
+      <input type="text" id="reg" placeholder="e.g. AB12 CDE" maxlength="8" />
     </div>
+    <div class="row">
+      <div>
+        <label>Mileage</label>
+        <input type="number" id="mileage" placeholder="e.g. 45000" />
+      </div>
+      <div>
+        <label>Year</label>
+        <input type="number" id="year" placeholder="e.g. 2020" min="2000" max="2026" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Model</label>
+        <select id="model">
+          <option value="">Select model...</option>
+          <option>1 Series</option>
+          <option>2 Series</option>
+          <option>3 Series</option>
+          <option>4 Series</option>
+          <option>5 Series</option>
+          <option>6 Series</option>
+          <option>7 Series</option>
+          <option>8 Series</option>
+          <option>X1</option>
+          <option>X2</option>
+          <option>X3</option>
+          <option>X4</option>
+          <option>X5</option>
+          <option>X6</option>
+          <option>X7</option>
+          <option>Z4</option>
+          <option>M2</option>
+          <option>M3</option>
+          <option>M4</option>
+          <option>M5</option>
+          <option>iX</option>
+          <option>i4</option>
+          <option>i5</option>
+          <option>i7</option>
+        </select>
+      </div>
+      <div>
+        <label>Fuel Type</label>
+        <select id="fuel">
+          <option value="">Any</option>
+          <option>Petrol</option>
+          <option>Diesel</option>
+          <option>Hybrid</option>
+          <option>Electric</option>
+        </select>
+      </div>
+    </div>
+    <button id="lookupBtn" onclick="startLookup()">Get Trade Value</button>
   </div>
 
-  <label>Registration Number</label>
-  <input type="text" id="reg" placeholder="e.g. AB12CDE" maxlength="8"
-    style="text-transform:uppercase;letter-spacing:0.12em;font-weight:700;font-size:18px;"
-    oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')">
-
-  <div class="grid2">
-    <div><label>Mileage</label><input type="number" id="mileage" placeholder="e.g. 45000" min="0"></div>
-    <div>
-      <label>Condition</label>
-      <select id="condition">
-        <option value="excellent">⭐ Excellent</option>
-        <option value="good" selected>✅ Good</option>
-        <option value="fair">🟡 Fair</option>
-        <option value="poor">🔴 Poor</option>
-        <option value="damaged">💥 Damaged</option>
-      </select>
-    </div>
+  <div id="statusBox">
+    <div class="spinner"></div>
+    <div id="statusText">Starting market search...</div>
   </div>
 
-  <div class="toggle-row" onclick="togglePanel('sPanel','sArrow')">⚙️ Dealer Settings <span id="sArrow">▼</span></div>
+  <div id="errorBox"></div>
+
+  <div id="resultsBox">
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="label">Market Low</div>
+        <div class="value" id="priceLow">—</div>
+        <div class="sub">Cheapest listed</div>
+      </div>
+      <div class="price-card highlight">
+        <div class="label">Market Avg</div>
+        <div class="value" id="priceAvg">—</div>
+        <div class="sub">Based on <span id="listingCount">0</span> listings</div>
+      </div>
+      <div class="price-card">
+        <div class="label">Market High</div>
+        <div class="value" id="priceHigh">—</div>
+        <div class="sub">Top listed</div>
+      </div>
+    </div>
+
+    <div class="trade-recommendation">
+      <div class="trade-label">Recommended Trade Value</div>
+      <div class="trade-value" id="tradeValue">—</div>
+      <div class="trade-note" id="tradeNote">Estimated at 78–82% of market average</div>
+    </div>
+
+    <div class="listings-header">Similar listings found</div>
+    <div id="listingsList"></div>
+
+    <p class="disclaimer">
+      Trade values are estimates based on current retail market data. Actual trade price
+      subject to physical inspection, service history, and condition. Data sourced from
+      AutoTrader UK listings at time of search.
+    </p>
+  </div>
+
+</div>
+
+<script>
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+  let pollTimer = null;
+  let pollCount = 0;
+
+  function fmt(n) {
+    return '£' + Math.round(n).toLocaleString('en-GB');
+  }
+
+  async function startLookup() {
+    const reg     = document.getElementById('reg').value.trim();
+    const mileage = document.getElementById('mileage').value.trim();
+    const year    = document.getElementById('year').value.trim();
+    const model   = document.getElementById('model').value.trim();
+    const fuel    = document.getElementById('fuel').value.trim();
+
+    if (!reg || !mileage || !year || !model) {
+      showError('Please fill in Registration, Mileage, Year and Model.');
+      return;
+    }
+
+    hideResults();
+    hideError();
+    showStatus('Starting market search...');
+    setBtn(true);
+    pollCount = 0;
+
+    try {
+      const params = new URLSearchParams({
+        target: 'market-start',
+        make: 'BMW',
+        model: model,
+        year: year,
+        mileage: mileage,
+        fuel: fuel || ''
+      });
+
+      const res  = await fetch(`${WORKER}?${params}`);
+      const data = await res.json();
+
+      if (!data.runId) {
+        showError('Failed to start market search. Please try again.');
+        setBtn(false);
+        return;
+      }
+
+      pollForResult(data.runId);
+
+    } catch (e) {
+      showError('Network error. Check your connection and try again.');
+      setBtn(false);
+    }
+  }
+
+  function pollForResult(runId) {
+    pollTimer = setInterval(async () => {
+      pollCount++;
+      updateStatus();
+
+      try {
+        const res  = await fetch(`${WORKER}?target=market-poll&runId=${runId}`);
+        const data = await res.json();
+
+        if (data.status === 'complete') {
+          clearInterval(pollTimer);
+          hideStatus();
+          setBtn(false);
+          renderResults(data);
+        } else if (data.status === 'error' || pollCount > 30) {
+          clearInterval(pollTimer);
+          hideStatus();
+          setBtn(false);
+          showError(data.error || 'Search timed out. Please try again.');
+        }
+      } catch (e) {
+        // keep polling on network blip
+      }
+    }, 3000);
+  }
+
+  function updateStatus() {
+    const msgs = [
+      'Searching AutoTrader UK...',
+      'Fetching market listings...',
+      'Analysing similar vehicles...',
+      'Calculating trade value...',
+      'Almost there...'
+    ];
+    const idx = Math.min(Math.floor(pollCount / 2), msgs.length - 1);
+    document.getElementById('statusText').textContent = msgs[idx];
+  }
+
+  function renderResults(data) {
+    // Support both flat and nested response shapes
+    const listings = data.listings || data.data?.listings || data.data || [];
+
+    if (!listings || listings.length === 0) {
+      showError('No comparable listings found. Try adjusting the year or model.');
+      return;
+    }
+
+    // Extract prices
+    const prices = listings
+      .map(l => {
+        const raw = l.price || l.retailPrice || l.pricingDetail?.retail || 0;
+        return typeof raw === 'string'
+          ? parseInt(raw.replace(/[^0-9]/g, ''), 10)
+          : raw;
+      })
+      .filter(p => p > 1000)
+      .sort((a, b) => a - b);
+
+    if (prices.length === 0) {
+      showError('Could not parse listing prices. Please try again.');
+      return;
+    }
+
+    const low  = prices[0];
+    const high = prices[prices.length - 1];
+    const avg  = prices.reduce((a, b) => a + b, 0) / prices.length;
+
+    // Trade value = 80% of average (typical dealer buy price)
+    const trade = avg * 0.80;
+
+    document.getElementById('priceLow').textContent    = fmt(low);
+    document.getElementById('priceAvg').textContent    = fmt(avg);
+    document.getElementById('priceHigh').textContent   = fmt(high);
+    document.getElementById('tradeValue').textContent  = fmt(trade);
+    document.getElementById('listingCount').textContent = prices.length;
+
+    // Render listing rows
+    const container = document.getElementById('listingsList');
+    container.innerHTML = '';
+
+    listings.slice(0, 8).forEach(l => {
+      const rawPrice = l.price || l.retailPrice || l.pricingDetail?.retail || 0;
+      const price = typeof rawPrice === 'string'
+        ? parseInt(rawPrice.replace(/[^0-9]/g, ''), 10)
+        : rawPrice;
+
+      const title   = l.title || l.name || l.description || 'BMW listing';
+      const miles   = l.mileage || l.odometerReadingMiles || '—';
+      const mileStr = typeof miles === 'number'
+        ? miles.toLocaleString('en-GB') + ' miles'
+        : miles;
+
+      const div = document.createElement('div');
+      div.className = 'listing-item';
+      div.innerHTML = `
+        <div>
+          <div class="listing-title">${title.substring(0, 60)}</div>
+          <div class="listing-mileage">${mileStr}</div>
+        </div>
+        <div class="listing-price">${price > 0 ? fmt(price) : '—'}</div>
+      `;
+      container.appendChild(div);
+    });
+
+    document.getElementById('resultsBox').style.display = 'block';
+  }
+
+  function showStatus(msg) {
+    document.getElementById('statusText').textContent = msg;
+    document.getElementById('statusBox').style.display = 'block';
+  }
+  function hideStatus() {
+    document.getElementById('statusBox').style.display = 'none';
+  }
+  function showError(msg) {
+    const b = document.getElementById('errorBox');
+    b.textContent = msg;
+    b.style.display = 'block';
+  }
+  function hideError() {
+    document.getElementById('errorBox').style.display = 'none';
+  }
+  function hideResults() {
+    document.getElementById('resultsBox').style.display = 'none';
+  }
+  function setBtn(disabled) {
+    const btn = document.getElementById('lookupBtn');
+    btn.disabled = disabled;
+    btn.textContent = disabled ? 'Searching...' : 'Get Trade Value';
+  }
+</script>
+</body>
+</html>  <div class="toggle-row" onclick="togglePanel('sPanel','sArrow')">⚙️ Dealer Settings <span id="sArrow">▼</span></div>
   <div class="panel" id="sPanel">
     <div class="grid2">
       <div><label>Recon Cost (£)</label><input type="number" id="recon" value="350" min="0"></div>
