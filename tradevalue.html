@@ -427,76 +427,63 @@
     const idx = Math.min(Math.floor(pollCount / 2), msgs.length - 1);
     document.getElementById('statusText').textContent = msgs[idx];
   }
+function renderResults(data) {
+  // Data comes back as {status:"SUCCEEDED", items:[...]}
+  const listings = data.items || data.listings || data.data?.items || [];
 
-  function renderResults(data) {
-    // Support both flat and nested response shapes
-    const listings = data.listings || data.data?.listings || data.data || [];
-
-    if (!listings || listings.length === 0) {
-      showError('No comparable listings found. Try adjusting the year or model.');
-      return;
-    }
-
-    // Extract prices
-    const prices = listings
-      .map(l => {
-        const raw = l.price || l.retailPrice || l.pricingDetail?.retail || 0;
-        return typeof raw === 'string'
-          ? parseInt(raw.replace(/[^0-9]/g, ''), 10)
-          : raw;
-      })
-      .filter(p => p > 1000)
-      .sort((a, b) => a - b);
-
-    if (prices.length === 0) {
-      showError('Could not parse listing prices. Please try again.');
-      return;
-    }
-
-    const low  = prices[0];
-    const high = prices[prices.length - 1];
-    const avg  = prices.reduce((a, b) => a + b, 0) / prices.length;
-
-    // Trade value = 80% of average (typical dealer buy price)
-    const trade = avg * 0.80;
-
-    document.getElementById('priceLow').textContent    = fmt(low);
-    document.getElementById('priceAvg').textContent    = fmt(avg);
-    document.getElementById('priceHigh').textContent   = fmt(high);
-    document.getElementById('tradeValue').textContent  = fmt(trade);
-    document.getElementById('listingCount').textContent = prices.length;
-
-    // Render listing rows
-    const container = document.getElementById('listingsList');
-    container.innerHTML = '';
-
-    listings.slice(0, 8).forEach(l => {
-      const rawPrice = l.price || l.retailPrice || l.pricingDetail?.retail || 0;
-      const price = typeof rawPrice === 'string'
-        ? parseInt(rawPrice.replace(/[^0-9]/g, ''), 10)
-        : rawPrice;
-
-      const title   = l.title || l.name || l.description || 'BMW listing';
-      const miles   = l.mileage || l.odometerReadingMiles || '—';
-      const mileStr = typeof miles === 'number'
-        ? miles.toLocaleString('en-GB') + ' miles'
-        : miles;
-
-      const div = document.createElement('div');
-      div.className = 'listing-item';
-      div.innerHTML = `
-        <div>
-          <div class="listing-title">${title.substring(0, 60)}</div>
-          <div class="listing-mileage">${mileStr}</div>
-        </div>
-        <div class="listing-price">${price > 0 ? fmt(price) : '—'}</div>
-      `;
-      container.appendChild(div);
-    });
-
-    document.getElementById('resultsBox').style.display = 'block';
+  if (!listings || listings.length === 0) {
+    showError('No comparable listings found. Try adjusting the year or model.');
+    return;
   }
 
+  const prices = listings
+    .map(l => l.pricing?.mainPrice || 0)
+    .filter(p => p > 1000)
+    .sort((a, b) => a - b);
+
+  if (prices.length === 0) {
+    showError('Could not parse listing prices. Please try again.');
+    return;
+  }
+
+  const low   = prices[0];
+  const high  = prices[prices.length - 1];
+  const avg   = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const trade = avg * 0.80;
+
+  document.getElementById('priceLow').textContent   = fmt(low);
+  document.getElementById('priceAvg').textContent   = fmt(avg);
+  document.getElementById('priceHigh').textContent  = fmt(high);
+  document.getElementById('tradeValue').textContent = fmt(trade);
+  document.getElementById('listingCount').textContent = prices.length;
+
+  const container = document.getElementById('listingsList');
+  container.innerHTML = '';
+
+  listings.slice(0, 8).forEach(l => {
+    const price  = l.pricing?.mainPrice || 0;
+    const title  = l.subtitle || l.model || 'BMW listing';
+    const miles  = l.mileage?.value
+      ? l.mileage.value.toLocaleString('en-GB') + ' miles'
+      : '—';
+    const year   = l.year || '';
+    const colour = l.specifications?.exteriorColor || '';
+
+    const div = document.createElement('div');
+    div.className = 'listing-item';
+    div.innerHTML = `
+      <div>
+        <div class="listing-title">${year} ${title} ${colour}</div>
+        <div class="listing-mileage">${miles}</div>
+      </div>
+      <div class="listing-price">${price > 0 ? fmt(price) : '—'}</div>
+    `;
+    container.appendChild(div);
+  });
+
+  document.getElementById('resultsBox').style.display = 'block';
+}
+  
   function showStatus(msg) {
     document.getElementById('statusText').textContent = msg;
     document.getElementById('statusBox').style.display = 'block';
