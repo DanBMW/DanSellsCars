@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMW Hedin Ruxley — Trade Valuation Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0a0a0a; color: #e5e7eb; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px; }
+  .card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 28px; width: 100%; max-width: 580px; box-shadow: 0 25px 60px rgba(0,0,0,0.6); }
+  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .logo-icon { width: 42px; height: 42px; background: #1d4ed8; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .logo h1 { font-size: 18px; font-weight: 700; color: #fff; }
+  .logo p { font-size: 12px; color: #6b7280; }
+  label { display: block; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+  input, select { width: 100%; background: #1f2937; border: 1px solid #374151; border-radius: 10px; color: #f9fafb; font-size: 15px; padding: 12px 14px; outline: none; transition: border-color 0.2s; margin-bottom: 16px; }
+  input:focus, select:focus { border-color: #3b82f6; }
+  input::placeholder { color: #4b5563; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .toggle-row { font-size: 12px; color: #4b5563; cursor: pointer; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; user-select: none; }
+  .toggle-row:hover { color: #9ca3af; }
+  .panel { display: none; background: #0f172a; border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid #1e293b; }
+  .panel.open { display: block; }
+  .panel input { margin-bottom: 10px; font-size: 13px; }
+  .panel label { font-size: 10px; }
+  .panel-note { font-size: 11px; color: #374151; margin-top: 4px; line-height: 1.5; }
+  .btn { width: 100%; background: #1d4ed8; color: white; font-size: 15px; font-weight: 700; padding: 14px; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
+  .btn:hover { background: #2563eb; }
+  .btn:disabled { background: #1f2937; color: #4b5563; cursor: not-allowed; }
+  .loading { display: none; text-align: center; padding: 24px 0; color: #6b7280; font-size: 14px; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #374151; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-msg { background: #1a0a0a; border: 1px solid #7f1d1d; border-radius: 8px; padding: 12px 14px; color: #fca5a5; font-size: 13px; margin-top: 16px; display: none; }
+  .results { margin-top: 24px; display: none; }
+  .vehicle-banner { background: linear-gradient(135deg,#0f172a,#1e293b); border: 1px solid #334155; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; }
+  .vehicle-banner .vicon { font-size: 28px; }
+  .vehicle-banner .vname { font-size: 17px; font-weight: 800; color: #fff; }
+  .vehicle-banner .vmeta { font-size: 12px; color: #64748b; margin-top: 3px; }
+  .flags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .flag { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+  .flag.ok   { background:#052e16; color:#4ade80; border:1px solid #166534; }
+  .flag.warn { background:#422006; color:#fb923c; border:1px solid #9a3412; }
+  .flag.bad  { background:#1a0808; color:#f87171; border:1px solid #991b1b; }
+  .flag.info { background:#0c1a2e; color:#60a5fa; border:1px solid #1e3a5f; }
+  .mileage-alert { background:#1a0808; border:1px solid #991b1b; border-radius:8px; padding:10px 12px; font-size:12px; color:#fca5a5; margin-bottom:14px; }
+  .mot-section { background:#1a2234; border-radius:10px; padding:14px; margin-bottom:14px; }
+  .mot-section h3 { font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:10px; }
+  .mot-row { display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px solid #1e293b; }
+  .mot-row:last-child { border-bottom:none; }
+  .mot-row .mdate { color:#64748b; }
+  .mot-row .mmiles { color:#e2e8f0; font-weight:600; }
+  .mot-row .mresult { font-weight:700; }
+  .mot-row .mresult.pass { color:#4ade80; }
+  .mot-row .mresult.fail { color:#f87171; }
+  .advisory-list { margin-top:8px; }
+  .advisory-item { font-size:11px; color:#f59e0b; background:#1c1400; border-radius:5px; padding:4px 8px; margin-top:4px; }
+  .breakdown { background:#1f2937; border-radius:10px; overflow:hidden; margin-bottom:14px; }
+  .brow { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid #111827; font-size:13px; }
+  .brow:last-child { border-bottom:none; }
+  .brow .blbl { color:#9ca3af; }
+  .brow .bval { font-weight:700; }
+  .brow .bval.pos { color:#34d399; }
+  .brow .bval.neg { color:#f87171; }
+  .brow .bval.neutral { color:#e5e7eb; }
+  .trade-box { background:linear-gradient(135deg,#1e3a8a,#1d4ed8); border-radius:12px; padding:20px; text-align:center; margin-bottom:14px; }
+  .trade-box .tlbl { font-size:10px; color:#93c5fd; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
+  .trade-box .trange { font-size:30px; font-weight:800; color:#fff; }
+  .trade-box .tmid { font-size:12px; color:#bfdbfe; margin-top:4px; }
+  .disposal-badge { background:#1c0a00; border:1px solid #9a3412; border-radius:8px; padding:10px 14px; font-size:13px; color:#fed7aa; margin-bottom:14px; display:none; }
+  .ext-links { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .ext-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:12px 10px; border-radius:9px; font-size:12px; font-weight:700; text-decoration:none; cursor:pointer; border:none; transition:opacity 0.2s; line-height:1.4; }
+  .ext-btn:hover { opacity:0.8; }
+  .ext-btn.cg  { background:#0e2240; color:#60a5fa; border:1px solid #1e3a5f; }
+  .ext-btn.at  { background:#1a0e00; color:#fbbf24; border:1px solid #78350f; }
+  .ext-btn.mw  { background:#0e1a0e; color:#4ade80; border:1px solid #14532d; }
+  .ext-btn.wb  { background:#1a1a0e; color:#a3e635; border:1px solid #365314; }
+  .ext-btn span { font-size:10px; font-weight:400; opacity:0.7; }
+  .wa-btn { width:100%; background:#075e54; color:#fff; font-size:14px; font-weight:700; padding:13px; border:none; border-radius:10px; cursor:pointer; margin-bottom:14px; display:none; }
+  .wa-btn:hover { background:#128c7e; }
+  .footer-note { font-size:11px; color:#374151; text-align:center; margin-top:6px; line-height:1.6; }
+  .badge { display:inline-block; background:#14532d; color:#86efac; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; margin-left:3px; }
+  .api-status { font-size:11px; padding:3px 8px; border-radius:5px; display:inline-block; margin-left:6px; }
+  .api-status.live { background:#052e16; color:#4ade80; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="logo">
+    <div class="logo-icon">🚘</div>
+    <div>
+      <h1>Trade Valuation Tool</h1>
+      <p>BMW Hedin Ruxley · Internal Use Only</p>
+    </div>
+  </div>
+
+  <label>Registration Number</label>
+  <input type="text" id="reg" placeholder="e.g. AB12CDE" maxlength="8"
+    style="text-transform:uppercase;letter-spacing:0.12em;font-weight:700;font-size:18px;"
+    oninput="this.value=this.value.toUpperCase().replace(/s/g,'')">
+
+  <div class="grid2">
+    <div><label>Mileage</label><input type="number" id="mileage" placeholder="e.g. 45000" min="0"></div>
+    <div>
+      <label>Condition</label>
+      <select id="condition">
+        <option value="excellent">⭐ Excellent</option>
+        <option value="good" selected>✅ Good</option>
+        <option value="fair">🟡 Fair</option>
+        <option value="poor">🔴 Poor</option>
+        <option value="damaged">💥 Damaged</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="toggle-row" onclick="togglePanel('sPanel','sArrow')">⚙️ Dealer Settings <span id="sArrow">▼</span></div>
+  <div class="panel" id="sPanel">
+    <div class="grid2">
+      <div><label>Recon Cost (£)</label><input type="number" id="recon" value="350" min="0"></div>
+      <div><label>Target Margin (£)</label><input type="number" id="margin" value="800" min="0"></div>
+    </div>
+    <div class="grid2">
+      <div><label>Retail Threshold (£)</label><input type="number" id="threshold" value="3000" min="0"></div>
+      <div><label>Avg Miles/Year</label><input type="number" id="avgMpY" value="10000" min="0"></div>
+    </div>
+  </div>
+
+  <div class="toggle-row" onclick="togglePanel('aPanel','aArrow')">🔑 API Keys <span id="aArrow">▼</span></div>
+  <div class="panel" id="aPanel">
+    <label>DVLA VES API Key <span class="api-status live">● LIVE</span></label>
+    <input type="text" id="dvlaKey" value="kjaLVeD0UC1KtpcUyZlgd8aSJXiTI4wYaGzLItut">
+    <label>DVSA MOT — Client ID <span class="api-status live">● LIVE</span></label>
+    <input type="text" id="motClientId" value="3416ab6a-fcf5-48ea-856b-b9218798388e">
+    <label>DVSA MOT — Client Secret</label>
+    <input type="password" id="motClientSecret" value="xGd8Q~kzRIEsfewRoNN1OVbuCsYNisxo_M4xqabU">
+    <label>DVSA MOT — API Key</label>
+    <input type="text" id="motApiKey" value="nthRMqfE9V94TEmiBvTiX1KiLuKs0RdjaTrA1jqQ">
+    <p class="panel-note">🔒 Keys stored in this file only. Sent exclusively to official GOV.UK APIs.</p>
+  </div>
+
+  <button class="btn" id="valuateBtn" onclick="runValuation()">🔍 Get Trade Valuation</button>
+  <div class="loading" id="loading"><span class="spinner"></span><span id="loadingMsg">Fetching vehicle data...</span></div>
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="results" id="results">
+    <div class="vehicle-banner">
+      <div class="vicon">🚗</div>
+      <div>
+        <div class="vname" id="vehicleName">—</div>
+        <div class="vmeta" id="vehicleMeta">—</div>
+      </div>
+    </div>
+
+    <div class="flags" id="flagsRow"></div>
+    <div id="mileageAlert" class="mileage-alert" style="display:none"></div>
+
+    <div class="mot-section" id="motSection" style="display:none">
+      <h3>📋 MOT History <span id="motCount" style="color:#60a5fa;font-weight:normal;text-transform:none;letter-spacing:0"></span></h3>
+      <div id="motRows"></div>
+      <div class="advisory-list" id="advisoryList"></div>
+    </div>
+
+    <div class="breakdown" id="breakdownTable"></div>
+
+    <div class="trade-box">
+      <div class="tlbl">Trade / Part-Exchange Offer</div>
+      <div class="trange" id="tradeRange">—</div>
+      <div class="tmid" id="tradeMid">—</div>
+    </div>
+
+    <div class="disposal-badge" id="disposalBadge">
+      🔨 Auction / Wholesale route recommended — below retail threshold. Consider BCA or Manheim.
+    </div>
+
+    <div class="ext-links" id="extLinks"></div>
+    <button class="wa-btn" id="waBtn" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
+  </div>
+
+  <div class="footer-note">
+    DVLA VES API <span class="badge">GOV.UK FREE</span>
+    DVSA MOT History API <span class="badge">GOV.UK FREE</span><br>
+    Benchmarks: CarGurus · AutoTrader · Motorway · WeBuyAnyCar
+  </div>
+</div>
+
+<script>
+const MOT_TOKEN_URL = "https://login.microsoftonline.com/a455b827-244f-4c97-b5b4-ce5d13b4d00c/oauth2/v2.0/token";
+const MOT_SCOPE     = "https://tapi.dvsa.gov.uk/.default";
+const MOT_BASE      = "https://history.mot.api.gov.uk/v1/trade/vehicles/registration/";
+
+const condRates  = { excellent:0.00, good:0.03, fair:0.08, poor:0.15, damaged:0.25 };
+const condLabels = { excellent:"Excellent (0%)", good:"Good (3%)", fair:"Fair (8%)", poor:"Poor (15%)", damaged:"Damaged (25%)" };
+
+function getMileageRate(cmv) {
+  if (cmv > 20000) return 0.05;
+  if (cmv > 10000) return 0.03;
+  if (cmv > 4000)  return 0.015;
+  return 0.005;
+}
+function fallbackCMV(year, make) {
+  const age = 2026 - (parseInt(year) || 2015);
+  const premium = ["BMW","MERCEDES","AUDI","LEXUS","PORSCHE","JAGUAR","LAND ROVER","VOLVO","TESLA"];
+  const base = premium.includes((make||"").toUpperCase()) ? 28000 : 16000;
+  return Math.max(500, base * Math.pow(0.83, age));
+}
+function fmt(n) { return "£" + Math.max(0,Math.round(n)).toLocaleString("en-GB"); }
+function togglePanel(id, arrowId) {
+  const p = document.getElementById(id);
+  p.classList.toggle("open");
+  document.getElementById(arrowId).textContent = p.classList.contains("open") ? "▲" : "▼";
+}
+function setLoading(msg) { document.getElementById("loadingMsg").textContent = msg; }
+function showError(msg)  { const e = document.getElementById("errorMsg"); e.textContent = "⚠️ " + msg; e.style.display = "block"; }
+function clearError()    { document.getElementById("errorMsg").style.display = "none"; }
+
+async function getMOTToken(clientId, clientSecret) {
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: clientId,
+    client_secret: clientSecret,
+    scope: MOT_SCOPE
+  });
+  const r = await fetch(MOT_TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString()
+  });
+  if (!r.ok) throw new Error("MOT token failed: " + r.status);
+  const data = await r.json();
+  return data.access_token;
+}
+
+let lastResult = {};
+
+async function runValuation() {
+  const reg       = document.getElementById("reg").value.trim().replace(/s/g,"").toUpperCase();
+  const mileage   = parseInt(document.getElementById("mileage").value);
+  const condition = document.getElementById("condition").value;
+  const recon     = parseFloat(document.getElementById("recon").value)     || 350;
+  const margin    = parseFloat(document.getElementById("margin").value)    || 800;
+  const threshold = parseFloat(document.getElementById("threshold").value) || 3000;
+  const avgMpY    = parseFloat(document.getElementById("avgMpY").value)    || 10000;
+  const dvlaKey         = document.getElementById("dvlaKey").value.trim();
+  const motClientId     = document.getElementById("motClientId").value.trim();
+  const motClientSecret = document.getElementById("motClientSecret").value.trim();
+  const motApiKey       = document.getElementById("motApiKey").value.trim();
+
+  if (!reg)     { showError("Please enter a registration number."); return; }
+  if (!mileage) { showError("Please enter the mileage."); return; }
+  clearError();
+
+  document.getElementById("results").style.display      = "none";
+  document.getElementById("loading").style.display      = "block";
+  document.getElementById("valuateBtn").disabled        = true;
+  document.getElementById("flagsRow").innerHTML         = "";
+  document.getElementById("motSection").style.display   = "none";
+  document.getElementById("mileageAlert").style.display = "none";
+  document.getElementById("waBtn").style.display        = "none";
+
+  let dvlaData = null, motData = null;
+  const flags = [];
+
+  if (dvlaKey) {
+    try {
+      setLoading("Fetching DVLA vehicle data...");
+      const r = await fetch("https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles", {
+        method: "POST",
+        headers: { "x-api-key": dvlaKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ registrationNumber: reg })
+      });
+      if (r.ok) dvlaData = await r.json();
+    } catch(e) { console.warn("DVLA:", e); }
+  }
+
+  if (motClientId && motClientSecret && motApiKey) {
+    try {
+      setLoading("Authenticating with DVSA...");
+      const token = await getMOTToken(motClientId, motClientSecret);
+      setLoading("Fetching MOT history...");
+      const r = await fetch(MOT_BASE + reg, {
+        headers: {
+          "Authorization": "Bearer " + token,
+          "x-api-key": motApiKey,
+          "Accept": "application/json"
+        }
+      });
+      if (r.ok) { const d = await r.json(); motData = Array.isArray(d) ? d[0] : d; }
+    } catch(e) { console.warn("MOT:", e); }
+  }
+
+  const make   = dvlaData?.make || motData?.make || "Unknown";
+  const year   = dvlaData?.yearOfManufacture || motData?.firstUsedDate?.substring(0,4) || "—";
+  const fuel   = dvlaData?.fuelType || "—";
+  const cc     = dvlaData?.engineCapacity ? dvlaData.engineCapacity + "cc" : "—";
+  const motExp = dvlaData?.motExpiryDate || "—";
+  const taxSt  = dvlaData?.taxStatus || "—";
+  const colour = dvlaData?.colour || "—";
+
+  document.getElementById("vehicleName").textContent =
+    (year !== "—" ? year + " " : "") + make +
+    (dvlaData?.model ? " " + dvlaData.model : "") +
+    (colour !== "—" ? " · " + colour : "");
+  document.getElementById("vehicleMeta").textContent =
+    [fuel, cc, motExp !== "—" ? "MOT: "+motExp : "", taxSt !== "—" ? "Tax: "+taxSt : ""]
+    .filter(x => x && !x.endsWith("—")).join(" · ") ||
+    reg + " · " + mileage.toLocaleString() + " miles";
+
+  let advisoryPenalty = 0, latestMotMileage = null;
+  const allAdvisories = [];
+
+  if (motData?.motTests?.length > 0) {
+    const tests = motData.motTests.slice(0, 6);
+    document.getElementById("motRows").innerHTML = tests.map(t => {
+      const pass    = (t.testResult||"").toLowerCase() === "passed";
+      const dateStr = t.completedDate ? t.completedDate.substring(0,10) : "—";
+      const odo     = t.odometerValue ? parseInt(t.odometerValue).toLocaleString() + " mi" : "—";
+      if (t.odometerValue && !latestMotMileage) latestMotMileage = parseInt(t.odometerValue);
+      (t.rfrAndComments||[]).filter(c=>c.type==="ADVISORY").forEach(a=>allAdvisories.push(a.text));
+      return `<div class="mot-row">
+        <span class="mdate">${dateStr}</span>
+        <span class="mmiles">${odo}</span>
+        <span class="mresult ${pass?"pass":"fail"}">${pass?"✅ Pass":"❌ Fail"}</span>
+      </div>`;
+    }).join("");
+
+    const latestAdv = (motData.motTests[0]?.rfrAndComments||[]).filter(c=>c.type==="ADVISORY").slice(0,5);
+    document.getElementById("advisoryList").innerHTML = latestAdv.map(a=>
+      `<div class="advisory-item">⚠️ ${a.text}</div>`).join("");
+    document.getElementById("motCount").textContent = "("+motData.motTests.length+" tests)";
+    document.getElementById("motSection").style.display = "block";
+
+    if (latestMotMileage && mileage < latestMotMileage * 0.97) {
+      const al = document.getElementById("mileageAlert");
+      al.innerHTML = `🚨 <strong>Mileage Alert:</strong> Last MOT recorded ${latestMotMileage.toLocaleString()} miles — customer states ${mileage.toLocaleString()} miles. Investigate before offering.`;
+      al.style.display = "block";
+      flags.push({cls:"bad", text:"⚠️ Mileage Query"});
+    }
+
+    if (allAdvisories.length > 0) {
+      const rate = allAdvisories.length <= 2 ? 0.015 : allAdvisories.length <= 4 ? 0.03 : 0.05;
+      advisoryPenalty = fallbackCMV(year, make) * rate;
+      flags.push({cls:"warn", text:allAdvisories.length+" Advisor"+(allAdvisories.length>1?"ies":"y")});
+    }
+    if ((motData.motTests[0]?.testResult||"").toLowerCase() !== "passed")
+      flags.push({cls:"bad", text:"❌ Last MOT Failed"});
+  }
+
+  if (dvlaData?.motStatus === "Valid")   flags.push({cls:"ok",   text:"✅ MOT Valid"});
+  if (dvlaData?.taxStatus === "Taxed")   flags.push({cls:"ok",   text:"✅ Taxed"});
+  if (dvlaData?.taxStatus === "Untaxed") flags.push({cls:"warn", text:"⚠️ Untaxed"});
+  if (dvlaData)                          flags.push({cls:"ok",   text:"DVLA Live"});
+  if (motData)                           flags.push({cls:"ok",   text:"MOT Live"});
+  if (!dvlaData && !motData)             flags.push({cls:"info", text:"ℹ️ Demo Mode"});
+
+  document.getElementById("flagsRow").innerHTML = flags.map(f=>
+    `<span class="flag ${f.cls}">${f.text}</span>`).join("");
+
+  const cmv        = fallbackCMV(year, make);
+  const avgMileage = (2026 - (parseInt(year)||2015)) * avgMpY;
+  const mileageAdj = (avgMileage - mileage) * getMileageRate(cmv);
+  const adjCMV     = cmv + mileageAdj;
+  const condDeduct = adjCMV * condRates[condition];
+  const tradeValue = adjCMV - condDeduct - advisoryPenalty - recon - margin;
+  const tradeLow   = Math.max(0, tradeValue - 150);
+  const tradeHigh  = tradeValue + 150;
+
+  const rows = [
+    ["Base Market Value (CMV)", fmt(cmv), "neutral"],
+    ["Mileage Adjustment", (mileageAdj>=0?"+":"")+fmt(Math.abs(mileageAdj)), mileageAdj>=0?"pos":"neg"],
+    ["Adjusted CMV", fmt(adjCMV), "neutral"],
+    ["Condition — "+condLabels[condition], "−"+fmt(condDeduct), "neg"],
+    ...(advisoryPenalty>0 ? [["MOT Advisories ("+allAdvisories.length+")", "−"+fmt(advisoryPenalty), "neg"]] : []),
+    ["Recon Estimate", "−"+fmt(recon), "neg"],
+    ["Dealer Margin Target", "−"+fmt(margin), "neg"],
+  ];
+  document.getElementById("breakdownTable").innerHTML = rows.map(([l,v,c])=>
+    `<div class="brow"><span class="blbl">${l}</span><span class="bval ${c}">${v}</span></div>`).join("");
+
+  document.getElementById("tradeRange").textContent = fmt(tradeLow) + " – " + fmt(tradeHigh);
+  document.getElementById("tradeMid").textContent   = "Recommended offer: " + fmt(tradeValue);
+  document.getElementById("disposalBadge").style.display = tradeValue < threshold ? "block" : "none";
+
+  const regClean = reg.replace(/s/g,"");
+  const yr = year !== "—" ? year : "";
+  document.getElementById("extLinks").innerHTML = `
+    <a class="ext-btn cg" href="https://www.cargurus.co.uk/Cars/new/nl_DVLA_d0#listing=searchParams%3A%7B%22zip%22%3A%22SS2%22%7D" target="_blank">
+      📊 CarGurus UK<span>Live market prices</span></a>
+    <a class="ext-btn at" href="https://www.autotrader.co.uk/car-search?make=${encodeURIComponent(make)}&year-from=${yr}&year-to=${yr}&postcode=SS2+5AZ&radius=1500" target="_blank">
+      🚗 AutoTrader<span>Comparable listings</span></a>
+    <a class="ext-btn mw" href="https://motorway.co.uk/sell-my-car?vrm=${regClean}" target="_blank">
+      ⚡ Motorway<span>Market offer</span></a>
+    <a class="ext-btn wb" href="https://www.webuyanycar.com/car-valuation/?vrm=${regClean}&mileage=${mileage}" target="_blank">
+      💰 WeBuyAnyCar<span>Floor price</span></a>`;
+
+  lastResult = {reg, make, year, mileage, condition, tradeValue, tradeLow, tradeHigh, adjCMV};
+  document.getElementById("waBtn").style.display   = "block";
+  document.getElementById("results").style.display = "block";
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("valuateBtn").disabled   = false;
+}
+
+function shareWhatsApp() {
+  const r = lastResult;
+  const msg =
+    `🚘 *Trade Valuation — ${r.reg}*
+` +
+    `${r.year} ${r.make} · ${r.mileage.toLocaleString()} miles · ${r.condition}
+
+` +
+    `Market Value: ${fmt(r.adjCMV)}
+` +
+    `*Trade Offer: ${fmt(r.tradeLow)} – ${fmt(r.tradeHigh)}*
+` +
+    `Recommended: *${fmt(r.tradeValue)}*
+
+` +
+    `_BMW Hedin Ruxley · Internal valuation_`;
+  window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+}
+
+document.addEventListener("keydown", e => { if (e.key==="Enter") runValuation(); });
+</script>
+</body>
+</html>
