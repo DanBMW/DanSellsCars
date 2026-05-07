@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DanSells Electric — Step 2</title>
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Electric Vehicle Specialist</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 2 of 7</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 2 of 7</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:28%"></div></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-kicker">Timing &amp; budget</div>
+    <h2>When are you looking to change, and how?</h2>
+    <p class="step-desc">Dan uses this to tailor his recommendation and calculate your saving accurately.</p>
+
+    <div class="step-kicker" style="margin-bottom:12px">Change timeline</div>
+    <div class="grid two" style="margin-bottom:22px">
+      <button class="choice" data-val="Ready now" onclick="pickTimeline(this)"><span class="choice-emoji">&#9989;</span><span class="choice-title">Ready now</span><span class="choice-desc">I would change today if the deal is right.</span></button>
+      <button class="choice" data-val="1-3 months" onclick="pickTimeline(this)"><span class="choice-emoji">&#128197;</span><span class="choice-title">1&ndash;3 months</span><span class="choice-desc">Planning ahead, want to get informed.</span></button>
+      <button class="choice" data-val="3-6 months" onclick="pickTimeline(this)"><span class="choice-emoji">&#128336;</span><span class="choice-title">3&ndash;6 months</span><span class="choice-desc">Researching, not rushing.</span></button>
+      <button class="choice" data-val="Just exploring" onclick="pickTimeline(this)"><span class="choice-emoji">&#128270;</span><span class="choice-title">Just exploring</span><span class="choice-desc">Curious about what is possible.</span></button>
+    </div>
+
+    <div class="step-kicker" style="margin-bottom:12px">Funding preference</div>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:22px">
+      <button class="choice" data-val="PCP Finance"   onclick="pickFunding(this)"><span class="choice-emoji">&#128176;</span><span class="choice-title">PCP Finance</span><span class="choice-desc">Monthly payments, option to buy.</span></button>
+      <button class="choice" data-val="HP Finance"    onclick="pickFunding(this)"><span class="choice-emoji">&#128184;</span><span class="choice-title">HP Finance</span><span class="choice-desc">Own it outright at the end.</span></button>
+      <button class="choice" data-val="Outright cash" onclick="pickFunding(this)"><span class="choice-emoji">&#128181;</span><span class="choice-title">Outright cash</span><span class="choice-desc">Total price is what matters.</span></button>
+    </div>
+
+    <div id="budgetWrap" style="display:none">
+      <div class="step-kicker" style="margin-bottom:10px">Current monthly payment on your car</div>
+      <div class="input-card" style="margin-bottom:16px">
+        <div class="range-display"><span class="range-label">Current monthly</span><strong id="cpv">&pound;350 / mo</strong></div>
+        <input type="range" id="cpr" min="0" max="1500" step="25" value="350"
+               oninput="document.getElementById('cpv').textContent='£'+Number(this.value).toLocaleString('en-GB')+' / mo'">
+        <p class="hint">Include your current finance, PCP or lease. Set to zero if you own outright.</p>
+      </div>
+      <div class="step-kicker" style="margin-bottom:10px">Target monthly budget for the new EV</div>
+      <div class="input-card" style="margin-bottom:8px">
+        <div class="range-display"><span class="range-label">Monthly budget</span><strong id="mbv">&pound;400 / mo</strong></div>
+        <input type="range" id="mbr" min="100" max="1500" step="25" value="400"
+               oninput="document.getElementById('mbv').textContent='£'+Number(this.value).toLocaleString('en-GB')+' / mo'">
+      </div>
+    </div>
+
+    <div id="cashWrap" style="display:none">
+      <div class="step-kicker" style="margin-bottom:10px">Cash budget</div>
+      <div class="input-card" style="margin-bottom:8px">
+        <div class="range-display"><span class="range-label">Cash budget</span><strong id="cbv">&pound;30,000</strong></div>
+        <input type="range" id="cbr" min="10000" max="130000" step="1000" value="30000"
+               oninput="document.getElementById('cbv').textContent='£'+Number(this.value).toLocaleString('en-GB')">
+      </div>
+    </div>
+
+    <div class="nav" style="margin-top:20px">
+      <a class="btn-ghost" href="ev-step1.html">&larr; Back</a>
+      <button class="btn" onclick="go()">Continue &rarr;</button>
+    </div>
+  </div>
+</div></div>
+<script>
+  let timelineChosen = sessionStorage.getItem('evTimeline');
+  let fundingChosen  = sessionStorage.getItem('evFunding');
+  document.querySelectorAll('[onclick="pickTimeline(this)"]').forEach(b => { if (b.dataset.val === timelineChosen) b.classList.add('selected'); });
+  document.querySelectorAll('[onclick="pickFunding(this)"]').forEach(b => { if (b.dataset.val === fundingChosen) b.classList.add('selected'); });
+  if (fundingChosen) showBudget(fundingChosen);
+  const cp = sessionStorage.getItem('evCurrentPayment'); if (cp) { document.getElementById('cpr').value = cp; document.getElementById('cpv').textContent = '£'+Number(cp).toLocaleString('en-GB')+' / mo'; }
+  const mb = sessionStorage.getItem('evMonthlyBudget');  if (mb) { document.getElementById('mbr').value = mb; document.getElementById('mbv').textContent = '£'+Number(mb).toLocaleString('en-GB')+' / mo'; }
+  const cb = sessionStorage.getItem('evCashBudget');     if (cb) { document.getElementById('cbr').value = cb; document.getElementById('cbv').textContent = '£'+Number(cb).toLocaleString('en-GB'); }
+  function pickTimeline(btn) {
+    document.querySelectorAll('[onclick="pickTimeline(this)"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected'); timelineChosen = btn.dataset.val;
+  }
+  function showBudget(val) {
+    document.getElementById('budgetWrap').style.display = val !== 'Outright cash' ? 'block' : 'none';
+    document.getElementById('cashWrap').style.display   = val === 'Outright cash'  ? 'block' : 'none';
+  }
+  function pickFunding(btn) {
+    document.querySelectorAll('[onclick="pickFunding(this)"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected'); fundingChosen = btn.dataset.val; showBudget(fundingChosen);
+  }
+  function go() {
+    if (!timelineChosen) { alert('Please let Dan know your rough timing.'); return; }
+    if (!fundingChosen)  { alert('Please choose your preferred funding route.'); return; }
+    sessionStorage.setItem('evTimeline',       timelineChosen);
+    sessionStorage.setItem('evFunding',        fundingChosen);
+    sessionStorage.setItem('evCurrentPayment', document.getElementById('cpr').value);
+    sessionStorage.setItem('evMonthlyBudget',  document.getElementById('mbr').value);
+    sessionStorage.setItem('evCashBudget',     document.getElementById('cbr').value);
+    window.location.href = 'ev-step3.html';
+  }
+</script>
+</body></html>
