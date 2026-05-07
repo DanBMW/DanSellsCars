@@ -135,7 +135,39 @@
         </div>
       </button>
     </div>
+<!-- OUTSTANDING FINANCE -->
+<div class="step-kicker" style="margin-bottom:10px">Outstanding finance</div>
+<div style="display:grid;gap:9px;margin-bottom:22px" id="financeTrack">
+  <button type="button" class="condition-option" data-val="No finance" onclick="pickFinance(this)">
+    <div class="condition-badge">✅</div>
+    <div class="condition-body">
+      <span class="condition-title">No — I own it outright</span>
+      <span class="condition-desc">No outstanding finance. The car is yours to trade in freely.</span>
+    </div>
+  </button>
+  <button type="button" class="condition-option" data-val="Finance — settlement unknown" onclick="pickFinance(this)">
+    <div class="condition-badge">💳</div>
+    <div class="condition-body">
+      <span class="condition-title">Yes — not sure of the settlement figure</span>
+      <span class="condition-desc">Dan can help work this out before the call.</span>
+    </div>
+  </button>
+  <button type="button" class="condition-option" data-val="Finance — settlement known" onclick="pickFinance(this)">
+    <div class="condition-badge">💳</div>
+    <div class="condition-body">
+      <span class="condition-title">Yes — I know the settlement figure</span>
+      <span class="condition-desc">Enter it below so Dan can factor it into the deal.</span>
+    </div>
+  </button>
+</div>
 
+<!-- Settlement figure — only shown when they know it -->
+<div id="settlementWrap" style="display:none;margin-bottom:22px">
+  <div class="field-group">
+    <label>Settlement figure</label>
+    <input id="settlementFig" type="text" placeholder="e.g. 7,500">
+  </div>
+</div>
     <!-- CONDITION -->
     <div class="step-kicker" style="margin-bottom:10px">Overall condition *</div>
     <div style="display:grid;gap:9px;margin-bottom:22px" id="condTrack">
@@ -204,6 +236,14 @@
   if(chosen==="Yes"||chosen==="Maybe") document.getElementById("pxDetails").style.display="block";
 
   document.querySelectorAll("#condTrack .condition-option").forEach(b=>{ if(b.dataset.val===condChosen) b.classList.add("selected"); });
+  document.querySelectorAll('#financeTrack .condition-option').forEach(b => {
+  if (b.dataset.val === financeChosen) b.classList.add('selected');
+});
+const savedSettlement = sessionStorage.getItem('pxSettlement');
+if (savedSettlement) document.getElementById('settlementFig').value = savedSettlement;
+if (financeChosen === 'Finance — settlement known') {
+  document.getElementById('settlementWrap').style.display = 'block';
+}
   document.querySelectorAll("#serviceTrack .condition-option").forEach(b=>{ if(b.dataset.val===serviceChosen) b.classList.add("selected"); });
 
   const pt = sessionStorage.getItem("purchaseType");
@@ -221,7 +261,17 @@
     sessionStorage.setItem("partExchange", chosen);
     document.getElementById("pxDetails").style.display = show==="yes" ? "block" : "none";
   }
+let financeChosen = sessionStorage.getItem('pxFinance');
 
+function pickFinance(btn) {
+  document.querySelectorAll('#financeTrack .condition-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  financeChosen = btn.dataset.val;
+  sessionStorage.setItem('pxFinance', financeChosen);
+  // Show settlement input only if they know the figure
+  document.getElementById('settlementWrap').style.display =
+    financeChosen === 'Finance — settlement known' ? 'block' : 'none';
+}
   function pickCond(btn){
     document.querySelectorAll("#condTrack .condition-option").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected");
@@ -242,10 +292,14 @@
     if(chosen!=="No" && !reg){ alert('Please enter your registration.'); return; }
     if(chosen!=="No" && !serviceChosen){ alert('Please choose your service history.'); return; }
     if(chosen!=="No" && !condChosen){ alert('Please choose the overall condition.'); return; }
+    if (chosen !== 'No' && !financeChosen) {
+  alert('Please let Dan know about any outstanding finance on your part exchange.');
+  return;
+    }
     sessionStorage.setItem("reg", reg.toUpperCase());
     sessionStorage.setItem("currentCar", document.getElementById("cc")?document.getElementById("cc").value.trim():"");
     sessionStorage.setItem("mileage", document.getElementById("ml")?document.getElementById("ml").value.trim():"");
-    sessionStorage.setItem("wbacVal", document.getElementById("wv")?document.getElementById("wv").value.trim():"");
+    sessionStorage.setItem("wbacVal", document.getElementById("wv")?document.getElementById("wv").value.trim():"");sessionStorage.setItem('pxSettlement', document.getElementById('settlementFig')?.value.trim() || '');
     window.location.href = "step6.html";
   }
 </script>
