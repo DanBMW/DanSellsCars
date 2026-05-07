@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DanSells Electric — Step 5</title>
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Electric Vehicle Specialist</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 5 of 7</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 5 of 7</span><span>Almost done</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:71%"></div></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-kicker">A little context</div>
+    <h2>Anything else Dan should know?</h2>
+    <p class="step-desc">Range worries, must-haves, deal-breakers, specific colours, kids, dogs, long commutes &mdash; or just leave it blank. Dan has answered every question imaginable, nothing is too basic.</p>
+    <div class="input-card">
+      <div class="field-group">
+        <label>Extra notes (optional)</label>
+        <textarea id="notes" placeholder="e.g. I am nervous about range on the motorway. I do 300 miles a week. I need boot space for a labrador and two car seats..."></textarea>
+      </div>
+    </div>
+    <div class="nav">
+      <a class="btn-ghost" href="ev-step4.html">&larr; Back</a>
+      <button class="btn" onclick="go()">Continue &rarr;</button>
+    </div>
+  </div>
+</div></div>
+<script>
+  const s = sessionStorage.getItem('evNotes');
+  if (s) document.getElementById('notes').value = s;
+  function go() {
+    sessionStorage.setItem('evNotes', document.getElementById('notes').value);
+    window.location.href = 'ev-step6.html';
+  }
+</script>
+</body></html>
