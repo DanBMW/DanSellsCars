@@ -44,9 +44,17 @@
   [["fn","fullName"],["em","email"],["ph","phone"],["pc","postcode"],["bt","bestTime"]].forEach(([id,key])=>{
     const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
   });
+  function isValidEmail(email) {
+  return /^[^s@]+@[^s@]+.[^s@]+$/.test(email);
+  }
   function go(){
     const n=document.getElementById("fn").value.trim(),e=document.getElementById("em").value.trim(),p=document.getElementById("ph").value.trim();
     if(!n||!e||!p){ alert("Name, email and mobile are needed so Dan can actually help."); return; }
+    if (!isValidEmail(e)) {
+  alert('Please enter a valid email address (e.g. you@example.com) so Dan can get back to you.');
+  document.getElementById('em').focus();
+  return;
+    }
     sessionStorage.setItem("fullName",n); sessionStorage.setItem("email",e); sessionStorage.setItem("phone",p);
     sessionStorage.setItem("postcode",document.getElementById("pc").value.trim());
     sessionStorage.setItem("bestTime",document.getElementById("bt").value.trim());
