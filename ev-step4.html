@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DanSells Electric — Step 4</title>
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<style>
+  .co{width:100%;text-align:left;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:border-color .18s,background .18s,transform .15s;display:flex;align-items:flex-start;gap:14px;}
+  .co:hover{border-color:rgba(28,107,186,.45);background:rgba(28,107,186,.08);transform:translateY(-1px);}
+  .co.selected{border-color:rgba(74,144,217,.7);background:rgba(28,107,186,.13);box-shadow:0 0 0 1px rgba(74,144,217,.2);}
+  .co-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:rgba(255,255,255,.05);}
+  .co-body{display:flex;flex-direction:column;gap:3px;}
+  .co-title{font-size:.94rem;font-weight:700;color:#f0f2f5;}
+  .co-desc{font-size:.82rem;color:#8a94a6;line-height:1.45;}
+  .co-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:3px;}
+  .reg-plate{width:100%;min-height:54px;background:#f4d24a;color:#000;font-weight:900;letter-spacing:.14em;text-transform:uppercase;border:3px solid #111;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);text-align:center;font-size:1.05rem;font-family:Arial,Helvetica,sans-serif;}
+</style>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Electric Vehicle Specialist</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 4 of 7</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 4 of 7</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:57%"></div></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-kicker">Part exchange</div>
+    <h2>Do you have a car to part exchange?</h2>
+    <p class="step-desc">If yes, grab a quick online buyer quote as a rough baseline. Drop the figure in and Dan will tell you whether he can improve on it.</p>
+
+    <div class="grid three" style="margin-bottom:18px">
+      <button class="choice" data-val="Yes"   onclick="pick(this,'yes')"><span class="choice-emoji">&#128664;</span><span class="choice-title">Yes</span><span class="choice-desc">I have a car to trade in.</span></button>
+      <button class="choice" data-val="No"    onclick="pick(this,'no')"><span class="choice-emoji">&#10060;</span><span class="choice-title">No</span><span class="choice-desc">No part exchange this time.</span></button>
+      <button class="choice" data-val="Maybe" onclick="pick(this,'yes')"><span class="choice-emoji">&#129300;</span><span class="choice-title">Maybe</span><span class="choice-desc">Not decided yet.</span></button>
+    </div>
+
+    <div id="pxDetails" style="display:none">
+      <div class="input-card" style="margin-bottom:16px">
+        <div class="field-group" style="margin-bottom:16px">
+          <label for="reg">Registration</label>
+          <input id="reg" type="text" class="reg-plate" placeholder="AB12 CDE" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="two-col">
+          <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"></div>
+          <div class="field-group"><label>Mileage</label><input id="ml" type="text" placeholder="e.g. 28,000"></div>
+        </div>
+        <div class="field-group">
+          <label>Online buyer quote &mdash; your baseline</label>
+          <input id="wv" type="text" placeholder="e.g. 11,400">
+          <span class="hint" style="margin-top:4px">Use any instant online buyer for a rough figure. Dan can often improve on it.</span>
+        </div>
+      </div>
+
+      <div class="step-kicker" style="margin-bottom:10px">Service history</div>
+      <div style="display:grid;gap:9px;margin-bottom:18px" id="serviceTrack">
+        <button type="button" class="co" data-val="Full dealer history" onclick="pickService(this)">
+          <div class="co-badge">&#11088;</div>
+          <div class="co-body"><span class="co-title">Full dealer history</span><span class="co-desc">Every service stamp from a dealership.</span><span class="co-tag" style="background:rgba(58,170,106,.15);color:#7adba4">Best for value</span></div>
+        </button>
+        <button type="button" class="co" data-val="Full independent history" onclick="pickService(this)">
+          <div class="co-badge">&#128295;</div>
+          <div class="co-body"><span class="co-title">Full independent history</span><span class="co-desc">Serviced every time, independent garage.</span><span class="co-tag" style="background:rgba(58,170,106,.12);color:#7adba4">Good for value</span></div>
+        </button>
+        <button type="button" class="co" data-val="Partial history" onclick="pickService(this)">
+          <div class="co-badge">&#128196;</div>
+          <div class="co-body"><span class="co-title">Partial history</span><span class="co-desc">Some stamps or receipts but gaps.</span><span class="co-tag" style="background:rgba(28,107,186,.15);color:#a8c8f0">Some impact on value</span></div>
+        </button>
+        <button type="button" class="co" data-val="No history" onclick="pickService(this)">
+          <div class="co-badge">&#10060;</div>
+          <div class="co-body"><span class="co-title">No history</span><span class="co-desc">No stamps or receipts. Still appraised honestly.</span><span class="co-tag" style="background:rgba(186,80,28,.15);color:#f0a07a">Will affect value</span></div>
+        </button>
+        <button type="button" class="co" data-val="Not sure" onclick="pickService(this)">
+          <div class="co-badge">&#129300;</div>
+          <div class="co-body"><span class="co-title">Not sure</span><span class="co-desc">Need to check or confirm.</span></div>
+        </button>
+      </div>
+
+      <div class="step-kicker" style="margin-bottom:10px">Outstanding finance on your current car</div>
+      <div style="display:grid;gap:9px;margin-bottom:18px" id="financeTrack">
+        <button type="button" class="co" data-val="No finance" onclick="pickFinance(this)">
+          <div class="co-badge">&#9989;</div>
+          <div class="co-body"><span class="co-title">No &mdash; I own it outright</span><span class="co-desc">No outstanding finance. Free to trade in.</span></div>
+        </button>
+        <button type="button" class="co" data-val="Finance — settlement unknown" onclick="pickFinance(this)">
+          <div class="co-badge">&#128179;</div>
+          <div class="co-body"><span class="co-title">Yes &mdash; not sure of the settlement</span><span class="co-desc">Dan can help work this out before the call.</span></div>
+        </button>
+        <button type="button" class="co" data-val="Finance — settlement known" onclick="pickFinance(this)">
+          <div class="co-badge">&#128179;</div>
+          <div class="co-body"><span class="co-title">Yes &mdash; I know the settlement figure</span><span class="co-desc">Enter it below so Dan can factor it into the deal.</span></div>
+        </button>
+      </div>
+      <div id="settlementWrap" style="display:none;margin-bottom:18px">
+        <div class="field-group"><label>Settlement figure</label><input id="settlementFig" type="text" placeholder="e.g. 7,500"></div>
+      </div>
+
+      <div class="step-kicker" style="margin-bottom:10px">Overall condition</div>
+      <div style="display:grid;gap:9px;margin-bottom:8px" id="condTrack">
+        <button type="button" class="co" data-val="Showroom" onclick="pickCond(this)">
+          <div class="co-badge">&#127775;</div>
+          <div class="co-body"><span class="co-title">Showroom</span><span class="co-desc">No marks, no chips, tyres like new.</span><span class="co-tag" style="background:rgba(58,170,106,.15);color:#7adba4">Top end value</span></div>
+        </button>
+        <button type="button" class="co" data-val="Excellent" onclick="pickCond(this)">
+          <div class="co-badge">&#128077;</div>
+          <div class="co-body"><span class="co-title">Excellent</span><span class="co-desc">One scuffed alloy or minor stone chip.</span><span class="co-tag" style="background:rgba(58,170,106,.12);color:#7adba4">Strong value</span></div>
+        </button>
+        <button type="button" class="co" data-val="Good" onclick="pickCond(this)">
+          <div class="co-badge">&#128076;</div>
+          <div class="co-body"><span class="co-title">Good</span><span class="co-desc">A few scuffs, stone chips. Honest wear.</span><span class="co-tag" style="background:rgba(28,107,186,.15);color:#a8c8f0">Good value</span></div>
+        </button>
+        <button type="button" class="co" data-val="Fair" onclick="pickCond(this)">
+          <div class="co-badge">&#128075;</div>
+          <div class="co-body"><span class="co-title">Fair</span><span class="co-desc">Small scratches or dents a buyer would notice.</span><span class="co-tag" style="background:rgba(201,168,76,.12);color:#e0c97a">Average value</span></div>
+        </button>
+        <button type="button" class="co" data-val="Poor" onclick="pickCond(this)">
+          <div class="co-badge">&#128078;</div>
+          <div class="co-body"><span class="co-title">Poor</span><span class="co-desc">Significant bodywork or interior damage.</span><span class="co-tag" style="background:rgba(186,80,28,.15);color:#f0a07a">Lower value</span></div>
+        </button>
+        <button type="button" class="co" data-val="Not sure" onclick="pickCond(this)">
+          <div class="co-badge">&#128247;</div>
+          <div class="co-body"><span class="co-title">Not sure</span><span class="co-desc">Send Dan a few photos and he will assess it.</span></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="nav" style="margin-top:20px">
+      <a class="btn-ghost" href="ev-step3.html">&larr; Back</a>
+      <button class="btn" onclick="go()">Continue &rarr;</button>
+    </div>
+  </div>
+</div></div>
+<script>
+  let pxChosen      = sessionStorage.getItem('evPX');
+  let serviceChosen = sessionStorage.getItem('evPXService');
+  let financeChosen = sessionStorage.getItem('evPXFinance');
+  let condChosen    = sessionStorage.getItem('evPXCond');
+
+  document.querySelectorAll('.choice').forEach(b => { if (b.dataset.val === pxChosen) b.classList.add('selected'); });
+  if (pxChosen === 'Yes' || pxChosen === 'Maybe') document.getElementById('pxDetails').style.display = 'block';
+  document.querySelectorAll('#serviceTrack .co').forEach(b => { if (b.dataset.val === serviceChosen) b.classList.add('selected'); });
+  document.querySelectorAll('#financeTrack .co').forEach(b => { if (b.dataset.val === financeChosen) b.classList.add('selected'); });
+  document.querySelectorAll('#condTrack .co').forEach(b =>    { if (b.dataset.val === condChosen)    b.classList.add('selected'); });
+  if (financeChosen === 'Finance — settlement known') document.getElementById('settlementWrap').style.display = 'block';
+
+  const reg = sessionStorage.getItem('evReg');        if (reg) document.getElementById('reg').value = reg;
+  const cc  = sessionStorage.getItem('evCurrentCar'); if (cc)  document.getElementById('cc').value  = cc;
+  const ml  = sessionStorage.getItem('evPXMileage');  if (ml)  document.getElementById('ml').value  = ml;
+  const wv  = sessionStorage.getItem('evWBAC');       if (wv)  document.getElementById('wv').value  = wv;
+  const sf  = sessionStorage.getItem('evSettlement'); if (sf)  document.getElementById('settlementFig').value = sf;
+
+  function pick(btn, show) {
+    document.querySelectorAll('.choice').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected'); pxChosen = btn.dataset.val;
+    document.getElementById('pxDetails').style.display = show === 'yes' ? 'block' : 'none';
+  }
+  function pickService(btn) {
+    document.querySelectorAll('#serviceTrack .co').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected'); serviceChosen = btn.dataset.val;
+  }
+  function pickFinance(btn) {
+    document.querySelectorAll('#financeTrack .co').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected'); financeChosen = btn.dataset.val;
+    document.getElementById('settlementWrap').style.display = financeChosen === 'Finance — settlement known' ? 'block' : 'none';
+  }
+  function pickCond(btn) {
+    document.querySelectorAll('#condTrack .co').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected'); condChosen = btn.dataset.val;
+  }
+  function go() {
+    if (!pxChosen) { alert('Please let Dan know about a part exchange.'); return; }
+    const reg = document.getElementById('reg').value.trim();
+    if (pxChosen !== 'No' && !reg)           { alert('Please enter your registration.'); return; }
+    if (pxChosen !== 'No' && !serviceChosen) { alert('Please choose your service history.'); return; }
+    if (pxChosen !== 'No' && !financeChosen) { alert('Please let Dan know about any outstanding finance.'); return; }
+    if (pxChosen !== 'No' && !condChosen)    { alert('Please choose the overall condition.'); return; }
+    sessionStorage.setItem('evPX',         pxChosen);
+    sessionStorage.setItem('evReg',        reg.toUpperCase());
+    sessionStorage.setItem('evCurrentCar', document.getElementById('cc').value.trim());
+    sessionStorage.setItem('evPXMileage',  document.getElementById('ml').value.trim());
+    sessionStorage.setItem('evWBAC',       document.getElementById('wv').value.trim());
+    sessionStorage.setItem('evPXService',  serviceChosen || '');
+    sessionStorage.setItem('evPXFinance',  financeChosen || '');
+    sessionStorage.setItem('evSettlement', document.getElementById('settlementFig').value.trim());
+    sessionStorage.setItem('evPXCond',     condChosen || '');
+    window.location.href = 'ev-step5.html';
+  }
+</script>
+</body></html>
