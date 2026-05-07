@@ -7,77 +7,351 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <style>
-  .ev-hero{padding:44px 36px 36px;}
-  .ev-story{padding:0 36px 40px;}
-  .story-block{background:rgba(58,170,106,.06);border:1px solid rgba(58,170,106,.16);border-radius:20px;padding:26px 28px;margin-bottom:20px;}
-  .story-block p{color:#c8d4e4;font-size:.97rem;line-height:1.72;margin-bottom:12px;}
+  /* ── Hero intro ── */
+  .ev-intro{
+    position:relative;
+    padding:48px 32px 40px;
+    overflow:hidden;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .ev-intro::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(ellipse 70% 60% at 80% 50%, rgba(28,107,186,.18) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 20% 80%, rgba(58,170,106,.10) 0%, transparent 60%);
+    pointer-events:none;
+  }
+  .intro-grid{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:24px;
+    align-items:center;
+    position:relative;
+    z-index:1;
+  }
+  .intro-photo-wrap{
+    position:relative;
+    width:96px;
+    flex-shrink:0;
+  }
+  .intro-photo{
+    width:96px;
+    height:96px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid rgba(74,144,217,.5);
+    display:block;
+  }
+  .intro-photo-ring{
+    position:absolute;
+    inset:-5px;
+    border-radius:50%;
+    border:1.5px solid rgba(74,144,217,.2);
+    animation:pulse-ring 3s ease-in-out infinite;
+  }
+  .intro-badge{
+    position:absolute;
+    bottom:2px;
+    right:2px;
+    width:24px;
+    height:24px;
+    background:#1c6bba;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.75rem;
+    border:2px solid #0e1117;
+  }
+  @keyframes pulse-ring{
+    0%,100%{transform:scale(1);opacity:.4;}
+    50%{transform:scale(1.06);opacity:.9;}
+  }
+  .intro-text .intro-name{
+    font-size:1.1rem;
+    font-weight:800;
+    color:#f0f2f5;
+    display:block;
+    margin-bottom:2px;
+  }
+  .intro-text .intro-role{
+    font-size:.8rem;
+    color:#4a90d9;
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    display:block;
+    margin-bottom:8px;
+  }
+  .intro-text .intro-bio{
+    font-size:.86rem;
+    color:#8a94a6;
+    line-height:1.6;
+  }
+
+  /* ── Electric divider ── */
+  .ev-divider{
+    height:1px;
+    background:linear-gradient(90deg, transparent, rgba(74,144,217,.4) 30%, rgba(58,170,106,.4) 70%, transparent);
+    margin:0;
+  }
+
+  /* ── Hook section ── */
+  .ev-hook{
+    padding:40px 32px 32px;
+    position:relative;
+    overflow:hidden;
+  }
+  .ev-hook::before{
+    content:'';
+    position:absolute;
+    top:-60px;right:-60px;
+    width:280px;height:280px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(58,170,106,.07) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .hook-eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-size:.75rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#3aaa6a;
+    background:rgba(58,170,106,.08);
+    border:1px solid rgba(58,170,106,.2);
+    border-radius:999px;
+    padding:5px 14px;
+    margin-bottom:18px;
+  }
+  .hook-eyebrow span{font-size:.9rem;}
+  .ev-hook h1{
+    font-size:1.65rem;
+    font-weight:900;
+    line-height:1.25;
+    color:#f0f2f5;
+    margin-bottom:14px;
+    letter-spacing:-.02em;
+  }
+  .ev-hook h1 em{
+    font-style:normal;
+    color:#3aaa6a;
+  }
+  .hook-lead{
+    font-size:.97rem;
+    color:#c8d4e4;
+    line-height:1.7;
+    margin-bottom:26px;
+  }
+
+  /* ── Saving cards ── */
+  .savings-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .saving-card{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;
+    padding:16px 10px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .saving-card::after{
+    content:'';
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:2px;
+    background:var(--accent-line);
+  }
+  .saving-card:nth-child(1){--accent-line:linear-gradient(90deg,#3aaa6a,#2d8f5a);}
+  .saving-card:nth-child(2){--accent-line:linear-gradient(90deg,#1c6bba,#4a90d9);}
+  .saving-card:nth-child(3){--accent-line:linear-gradient(90deg,#c9a84c,#e0c97a);}
+  .saving-num{font-size:1.7rem;font-weight:900;letter-spacing:-.04em;display:block;margin-bottom:4px;}
+  .saving-card:nth-child(1) .saving-num{color:#3aaa6a;}
+  .saving-card:nth-child(2) .saving-num{color:#4a90d9;}
+  .saving-card:nth-child(3) .saving-num{color:#c9a84c;}
+  .saving-label{font-size:.73rem;color:#8a94a6;line-height:1.4;display:block;}
+
+  /* ── Disclaimer ── */
+  .savings-disclaimer{
+    font-size:.72rem;
+    color:#5a6478;
+    line-height:1.55;
+    margin-bottom:22px;
+    padding:0 2px;
+  }
+  .savings-disclaimer sup{font-size:.65rem;}
+
+  /* ── CTA block ── */
+  .cta-block{
+    background:linear-gradient(135deg, rgba(28,107,186,.12), rgba(58,170,106,.08));
+    border:1px solid rgba(74,144,217,.2);
+    border-radius:20px;
+    padding:24px;
+    margin-bottom:10px;
+  }
+  .cta-block p{
+    font-size:.9rem;
+    color:#c8d4e4;
+    line-height:1.6;
+    margin-bottom:16px;
+  }
+  .btn-ev{
+    display:block;
+    width:100%;
+    text-align:center;
+    background:linear-gradient(135deg,#1c6bba,#2d8f5a);
+    color:#fff;
+    font-weight:800;
+    font-size:1.05rem;
+    padding:16px 24px;
+    border-radius:14px;
+    text-decoration:none;
+    letter-spacing:.01em;
+    box-shadow:0 4px 24px rgba(28,107,186,.25);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .btn-ev:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(28,107,186,.35);}
+
+  /* ── Reassurance ── */
+  .reassure-row{display:grid;gap:8px;margin-top:16px;}
+  .reassure-item{
+    display:flex;align-items:center;gap:10px;
+    font-size:.85rem;color:#8a94a6;
+    padding:10px 14px;
+    background:rgba(255,255,255,.02);
+    border:1px solid rgba(255,255,255,.05);
+    border-radius:10px;
+  }
+  .reassure-icon{font-size:.95rem;flex-shrink:0;}
+
+  /* ── Story ── */
+  .ev-story{padding:0 32px 40px;}
+  .story-block{
+    background:rgba(58,170,106,.05);
+    border:1px solid rgba(58,170,106,.14);
+    border-radius:18px;
+    padding:24px 26px;
+    margin-bottom:20px;
+  }
+  .story-block p{color:#c8d4e4;font-size:.95rem;line-height:1.75;margin-bottom:12px;}
   .story-block p:last-child{margin-bottom:0;}
-  .savings-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
-  .saving-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px 14px;text-align:center;}
-  .saving-num{font-size:1.9rem;font-weight:900;color:#3aaa6a;letter-spacing:-.04em;display:block;}
-  .saving-label{font-size:.78rem;color:#8a94a6;line-height:1.4;margin-top:4px;display:block;}
-  .benefit-list{display:grid;gap:10px;margin-bottom:28px;}
-  .benefit-item{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px 16px;}
-  .benefit-icon{font-size:1.4rem;flex-shrink:0;line-height:1;margin-top:1px;}
-  .benefit-body strong{display:block;font-size:.94rem;font-weight:700;color:#f0f2f5;margin-bottom:3px;}
-  .benefit-body span{font-size:.84rem;color:#8a94a6;line-height:1.5;}
-  .dan-card{display:flex;align-items:center;gap:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px;margin-bottom:26px;}
-  .dan-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(28,107,186,.4);}
-  .dan-card-body strong{display:block;font-size:.96rem;font-weight:700;color:#f0f2f5;margin-bottom:3px;}
-  .dan-card-body span{font-size:.83rem;color:#8a94a6;line-height:1.5;}
-  .reassure-row{display:grid;gap:9px;margin-bottom:28px;}
-  .reassure-item{display:flex;align-items:center;gap:10px;font-size:.88rem;color:#c8d4e4;}
-  .reassure-icon{font-size:1rem;flex-shrink:0;}
-  @media(max-width:600px){.savings-row{grid-template-columns:1fr 1fr;}.ev-hero,.ev-story{padding:22px 18px 26px;}.dan-card{flex-direction:column;text-align:center;}}
+
+  /* ── Benefits ── */
+  .benefit-list{display:grid;gap:10px;margin-bottom:26px;}
+  .benefit-item{
+    display:flex;align-items:flex-start;gap:12px;
+    background:rgba(255,255,255,.02);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:14px;padding:14px 16px;
+  }
+  .benefit-icon{font-size:1.3rem;flex-shrink:0;line-height:1;margin-top:2px;}
+  .benefit-body strong{display:block;font-size:.93rem;font-weight:700;color:#f0f2f5;margin-bottom:3px;}
+  .benefit-body span{font-size:.83rem;color:#8a94a6;line-height:1.5;}
+
+  @media(max-width:580px){
+    .savings-row{grid-template-columns:1fr 1fr;}
+    .savings-row .saving-card:last-child{grid-column:1/-1;}
+    .intro-grid{grid-template-columns:1fr;text-align:center;}
+    .intro-photo-wrap{margin:0 auto;}
+    .ev-intro,.ev-hook,.ev-story{padding-left:20px;padding-right:20px;}
+  }
 </style>
 </head>
 <body>
 <div class="app"><div class="shell">
+
   <div class="topbar">
     <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Electric Vehicle Specialist</span></div>
     <div class="meta"><span class="dot"></span><span>BMW Ruxley</span></div>
   </div>
-  <div class="ev-hero">
-    <div class="eyebrow">&#9889; Fill this in &mdash; Dan will tell you exactly how much you can save</div>
-    <h1>Switching to electric is the smartest financial move most people never make.</h1>
-    <p class="lead">I made the switch. I know exactly what it feels like &mdash; the range anxiety, the questions, the hesitation. And then the moment it clicked. Now I save <strong style="color:#3aaa6a">up to &pound;100&ndash;120 every week</strong> compared to running a petrol car.</p>
-    <div class="savings-row">
-      <div class="saving-card"><span class="saving-num">&pound;100<span style="font-size:1.1rem">+</span></span><span class="saving-label">Weekly saving vs petrol</span></div>
-      <div class="saving-card"><span class="saving-num" style="color:#4a90d9">50%</span><span class="saving-label">Lower service costs on average</span></div>
-      <div class="saving-card"><span class="saving-num" style="color:#c9a84c">2&times;</span><span class="saving-label">Longer service intervals</span></div>
+
+  <!-- ── Personal intro ── -->
+  <div class="ev-intro">
+    <div class="intro-grid">
+      <div class="intro-photo-wrap">
+        <div class="intro-photo-ring"></div>
+        <img src="dan.jpg" alt="Dan Cane" class="intro-photo">
+        <div class="intro-badge">&#9889;</div>
+      </div>
+      <div class="intro-text">
+        <span class="intro-name">Dan Cane</span>
+        <span class="intro-role">BMW EV Specialist &mdash; Hedin Ruxley</span>
+        <span class="intro-bio">Former petrol head. Switched to electric and never looked back. I help people make the same move every day &mdash; with honest answers, no pressure and real numbers.</span>
+      </div>
     </div>
-    <a href="ev-step1.html" class="btn-hero" style="width:100%;display:block;text-align:center;">&#9889; Let&rsquo;s talk electric &rarr;</a>
-    <p class="hint" style="margin-top:10px;text-align:center;">Under 2 minutes &bull; No commitment &bull; Dan reads every reply personally</p>
-    <div class="reassure-row" style="margin-top:22px">
+  </div>
+
+  <div class="ev-divider"></div>
+
+  <!-- ── Hook ── -->
+  <div class="ev-hook">
+    <div class="hook-eyebrow"><span>&#9889;</span> Fill this in &mdash; Dan will tell you exactly what you could save</div>
+    <h1>Could switching to electric save you <em>serious money every week?</em></h1>
+    <p class="hook-lead">I made the switch myself. I know the questions, the doubts, the hesitation. And I know the moment it all clicks. Let me work out the real numbers for your exact situation &mdash; no guesswork, no generalisations.</p>
+
+    <div class="savings-row">
+      <div class="saving-card">
+        <span class="saving-num">&pound;100<span style="font-size:1rem">+</span><sup style="font-size:.65rem;font-weight:700">*</sup></span>
+        <span class="saving-label">Weekly saving vs petrol*</span>
+      </div>
+      <div class="saving-card">
+        <span class="saving-num">50%<sup style="font-size:.65rem;font-weight:700">*</sup></span>
+        <span class="saving-label">Lower service costs*</span>
+      </div>
+      <div class="saving-card">
+        <span class="saving-num">2&times;</span>
+        <span class="saving-label">Longer service intervals</span>
+      </div>
+    </div>
+
+    <p class="savings-disclaimer">* Figures based on Dan&rsquo;s personal experience and typical high-mileage comparisons. Actual savings vary and depend on individual mileage, driving style, charging habits, energy tariff and vehicle choice. Dan will calculate a personalised estimate based on your specific situation.</p>
+
+    <div class="cta-block">
+      <p>Take two minutes to fill this in. Dan will come back with your personal saving estimate, a shortlist of the right BMW EVs for you, and honest answers to every question you have &mdash; however basic you think they are.</p>
+      <a href="ev-step1.html" class="btn-ev">&#9889; Let&rsquo;s talk electric &rarr;</a>
+    </div>
+
+    <div class="reassure-row">
       <div class="reassure-item"><span class="reassure-icon">&#128172;</span>Dan answers every question himself &mdash; no call centres, no scripts</div>
       <div class="reassure-item"><span class="reassure-icon">&#9989;</span>No question is too basic. Dan has heard them all and loves answering them</div>
       <div class="reassure-item"><span class="reassure-icon">&#128274;</span>Your details stay with Dan only &mdash; never shared or sold</div>
-      <div class="reassure-item"><span class="reassure-icon">&#9889;</span>Dan drives electric every day &mdash; real answers from real experience</div>
+      <div class="reassure-item"><span class="reassure-icon">&#9889;</span>Dan drives electric every day &mdash; real answers, real experience</div>
     </div>
   </div>
+
+  <div class="ev-divider"></div>
+
+  <!-- ── Story ── -->
   <div class="ev-story">
-    <div class="step-kicker">Dan&rsquo;s story</div>
+    <div class="step-kicker" style="margin-bottom:14px">Dan&rsquo;s story</div>
     <div class="story-block">
       <p>I have always been a petrol head. I grew up around cars, I love the sound of a good engine, and I was probably the last person you would have expected to go electric. So when I say this genuinely surprised me &mdash; take that seriously.</p>
-      <p>When I switched, the savings were immediate. No more fuel stops. Dramatically lower running costs. Servicing intervals that feel almost too good to be true. The car is smoother, quieter, and faster off the line than anything I had driven before.</p>
+      <p>When I switched, the savings were noticeable straight away. No more fuel stops. Lower running costs. Servicing intervals that feel almost too good to be true. The car is smoother, quieter, and faster off the line than anything I had driven before.</p>
       <p>Since then I have helped many, many people make the same move &mdash; from committed petrol heads to nervous first-timers. Every single one has come back with the same reaction: <em>&ldquo;Why didn&rsquo;t I do this sooner?&rdquo;</em></p>
     </div>
-    <div class="dan-card">
-      <img src="dan.jpg" alt="Dan" class="dan-avatar">
-      <div class="dan-card-body">
-        <strong>Dan Cane &mdash; BMW EV Specialist, Hedin Ruxley</strong>
-        <span>Former and current petrol head. Real-world EV experience every day. End-to-end support from your first question through to handover &mdash; including home charger installation referrals so everything is sorted before your car arrives.</span>
-      </div>
-    </div>
+
     <div class="step-kicker" style="margin-bottom:14px">Why electric, why now</div>
     <div class="benefit-list">
       <div class="benefit-item"><div class="benefit-icon">&#9889;</div><div class="benefit-body"><strong>Smoother, faster, quieter</strong><span>Instant torque. No gear changes. No engine noise. Once you feel it, everything else feels old-fashioned.</span></div></div>
-      <div class="benefit-item"><div class="benefit-icon">&#128182;</div><div class="benefit-body"><strong>Up to &pound;100&ndash;120 a week cheaper to run</strong><span>Charging at home costs a fraction of filling up. The savings are real and they stack up fast.</span></div></div>
+      <div class="benefit-item"><div class="benefit-icon">&#128182;</div><div class="benefit-body"><strong>Potentially significant weekly savings<sup>*</sup></strong><span>Charging at home typically costs a fraction of filling up with petrol. How much you save depends on your mileage, tariff and driving style &mdash; Dan will work this out for you personally.</span></div></div>
       <div class="benefit-item"><div class="benefit-icon">&#128295;</div><div class="benefit-body"><strong>Cheaper to service, less often</strong><span>No oil changes. Fewer moving parts. BMW electric service intervals are typically twice as long as petrol.</span></div></div>
       <div class="benefit-item"><div class="benefit-icon">&#127968;</div><div class="benefit-body"><strong>Home charger sorted for you</strong><span>Dan can refer you to trusted installers with savings available. Your charger is ready before your car arrives.</span></div></div>
       <div class="benefit-item"><div class="benefit-icon">&#129309;</div><div class="benefit-body"><strong>End-to-end support, not just a sale</strong><span>Dan has done this many times and is still there after the keys are handed over. No call centres. Just Dan.</span></div></div>
     </div>
-    <a href="ev-step1.html" class="btn-hero" style="width:100%;display:block;text-align:center;">&#9889; Let&rsquo;s talk electric &rarr;</a>
+
+    <a href="ev-step1.html" class="btn-ev">&#9889; Let&rsquo;s talk electric &rarr;</a>
+
+    <p style="font-size:.72rem;color:#5a6478;line-height:1.55;margin-top:14px;padding:0 2px;">* Savings are not guaranteed and will vary based on individual mileage, driving behaviour, charging method, energy tariff and vehicle specification. Dan will provide a personalised estimate based on the information you share.</p>
   </div>
+
 </div></div>
 </body></html>
