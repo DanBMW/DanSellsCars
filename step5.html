@@ -231,6 +231,7 @@
   let chosen = sessionStorage.getItem("partExchange")||"";
   let condChosen = sessionStorage.getItem("pxCondition")||"";
   let serviceChosen = sessionStorage.getItem("pxService")||"";
+  let financeChosen = sessionStorage.getItem('pxFinance');
 
   document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
   if(chosen==="Yes"||chosen==="Maybe") document.getElementById("pxDetails").style.display="block";
@@ -261,7 +262,6 @@ if (financeChosen === 'Finance — settlement known') {
     sessionStorage.setItem("partExchange", chosen);
     document.getElementById("pxDetails").style.display = show==="yes" ? "block" : "none";
   }
-let financeChosen = sessionStorage.getItem('pxFinance');
 
 function pickFinance(btn) {
   document.querySelectorAll('#financeTrack .condition-option').forEach(b => b.classList.remove('selected'));
