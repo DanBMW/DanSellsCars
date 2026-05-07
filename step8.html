@@ -35,7 +35,8 @@
     ["Name","fullName"],["Email","email"],["Mobile","phone"],["Postcode","postcode"],["Best time","bestTime"],
     ["Lifestyle","lifestyle"],["Body styles","bodyStyles"],["Change timeline","timeline"],["Funding route","purchaseType"],
     ["Deposit","deposit",true],['Annual mileage','annualMileage'],["Monthly budget","monthlyBudget",true],["Cash budget","cashBudget",true],
-    ["Alt finance budget","altMonthly",true],["Part exchange","partExchange"],["Current car","currentCar"],
+    ["Alt finance budget","altMonthly",true],["Part exchange","partExchange"],['PX finance',         'pxFinance'],
+['PX settlement',      'pxSettlement'],["Current car","currentCar"],
     ["Mileage","mileage"],["Online buyer quote","wbacVal"],["Extra notes","notes"]
   ];
   const sg=document.getElementById("sg");
@@ -71,6 +72,8 @@
       cash_budget:sessionStorage.getItem("cashBudget")?"£"+Number(sessionStorage.getItem("cashBudget")).toLocaleString("en-GB"):"",
       alt_finance:sessionStorage.getItem("altMonthly")?"£"+Number(sessionStorage.getItem("altMonthly")).toLocaleString("en-GB"):"",
       part_exchange:sessionStorage.getItem("partExchange")||"",current_car:sessionStorage.getItem("currentCar")||"",
+      pxfinance:      sessionStorage.getItem('pxFinance'),
+pxsettlement:   sessionStorage.getItem('pxSettlement'),
       mileage:sessionStorage.getItem("mileage")||"",online_buyer_quote:sessionStorage.getItem("wbacVal")||"",
       notes:sessionStorage.getItem("notes")||"",lead_summary:summary,
       _subject:"DanSells lead — "+name,_replyto:email
