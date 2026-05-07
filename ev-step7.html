@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DanSells Electric — Review</title>
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Electric Vehicle Specialist</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 7 of 7</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 7 of 7</span><span>Last step</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-kicker">Review</div>
+    <h2>This is what Dan receives.</h2>
+    <p class="step-desc">Check it looks right, then send. Dan will come back with your saving calculation and a booking link.</p>
+    <div class="summary-grid" id="sg"></div>
+    <button class="btn" id="sb" style="width:100%;margin-bottom:10px" onclick="submit()">Send to Dan &amp; book my call &rarr;</button>
+    <p class="hint" style="text-align:center">Sending this also opens your booking page with your details pre-filled.</p>
+  </div>
+</div></div>
+<script>
+  const TRIP_LABELS = ['Never','Maybe once a year','A few times a year','Monthly','Weekly','Daily'];
+  const fields = [
+    ['Name',                   'evName'],
+    ['Email',                  'evEmail'],
+    ['Mobile',                 'evPhone'],
+    ['Postcode',               'evPostcode'],
+    ['Best time',              'evBestTime'],
+    ['Lifestyle',              'evLifestyle', false, true],
+    ['EV style',               'evStyle'],
+    ['Change timeline',        'evTimeline'],
+    ['Funding',                'evFunding'],
+    ['Current monthly payment','evCurrentPayment', true],
+    ['Monthly budget',         'evMonthlyBudget',  true],
+    ['Cash budget',            'evCashBudget',     true],
+    ['Annual mileage',         'evMileage'],
+    ['200+ mile days',         'evLongTripsLabel'],
+    ['Driveway / charging',    'evDriveway'],
+    ['Home charger',           'evCharger'],
+    ['Part exchange',          'evPX'],
+    ['PX reg',                 'evReg'],
+    ['Current car',            'evCurrentCar'],
+    ['PX mileage',             'evPXMileage'],
+    ['Online buyer quote',     'evWBAC',           true],
+    ['PX service history',     'evPXService'],
+    ['PX finance',             'evPXFinance'],
+    ['PX settlement',          'evSettlement',     true],
+    ['PX condition',           'evPXCond'],
+    ['Extra notes',            'evNotes'],
+  ];
+
+  const sg = document.getElementById('sg');
+  fields.forEach(([label, key, isMoney, isJSON]) => {
+    let val = sessionStorage.getItem(key);
+    if (!val) return;
+    if (isJSON) { try { val = JSON.parse(val).join(', '); } catch(e) {} }
+    if (isMoney && val && !isNaN(val)) val = '£' + Number(val).toLocaleString('en-GB');
+    const d = document.createElement('div');
+    d.className = 'summary-item';
+    d.innerHTML = '<b>' + label + '</b><div>' + val + '</div>';
+    sg.appendChild(d);
+  });
+
+  async function submit() {
+    const btn = document.getElementById('sb');
+    btn.textContent = 'Sending...'; btn.disabled = true;
+    const name  = sessionStorage.getItem('evName')  || '';
+    const email = sessionStorage.getItem('evEmail') || '';
+    const mil   = sessionStorage.getItem('evMileage') || '0';
+    const cp    = sessionStorage.getItem('evCurrentPayment') || '0';
+    const calUrl = 'https://cal.eu/danbmwruxley/telephone-appointment?' + new URLSearchParams({name, email}).toString();
+    const fmt = (k) => sessionStorage.getItem(k) ? '£' + Number(sessionStorage.getItem(k)).toLocaleString('en-GB') : '';
+    const payload = {
+      subject:           'EV Lead — ' + name,
+      replyto:           email,
+      leadtype:          'Electric Vehicle Enquiry',
+      name, email,
+      phone:             sessionStorage.getItem('evPhone'),
+      postcode:          sessionStorage.getItem('evPostcode'),
+      besttime:          sessionStorage.getItem('evBestTime'),
+      lifestyle:         sessionStorage.getItem('evLifestyle'),
+      evstyle:           sessionStorage.getItem('evStyle'),
+      timeline:          sessionStorage.getItem('evTimeline'),
+      funding:           sessionStorage.getItem('evFunding'),
+      currentpayment:    fmt('evCurrentPayment') + '/mo',
+      monthlybudget:     fmt('evMonthlyBudget')  + '/mo',
+      cashbudget:        fmt('evCashBudget'),
+      annualmileage:     Number(mil).toLocaleString('en-GB'),
+      longtrips200miles: sessionStorage.getItem('evLongTripsLabel'),
+      driveway:          sessionStorage.getItem('evDriveway'),
+      homecharger:       sessionStorage.getItem('evCharger'),
+      partexchange:      sessionStorage.getItem('evPX'),
+      pxreg:             sessionStorage.getItem('evReg'),
+      currentcar:        sessionStorage.getItem('evCurrentCar'),
+      pxmileage:         sessionStorage.getItem('evPXMileage'),
+      onlinebuyerquote:  fmt('evWBAC'),
+      pxservicehistory:  sessionStorage.getItem('evPXService'),
+      pxfinance:         sessionStorage.getItem('evPXFinance'),
+      pxsettlement:      fmt('evSettlement'),
+      pxcondition:       sessionStorage.getItem('evPXCond'),
+      notes:             sessionStorage.getItem('evNotes'),
+    };
+    try {
+      await fetch('https://formspree.io/f/xqewleog', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+    } catch(e) {}
+    sessionStorage.setItem('evBookingUrl', calUrl);
+    window.location.href = 'ev-thankyou.html';
+  }
+</script>
+</body></html>
