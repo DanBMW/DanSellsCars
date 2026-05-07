@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DanSells Electric — Step 6</title>
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Electric Vehicle Specialist</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 6 of 7</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 6 of 7</span><span>Almost done</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:85%"></div></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-kicker">Almost done</div>
+    <h2>Where should Dan reach you?</h2>
+    <p class="step-desc">Dan will work out your exact weekly saving and come back to you personally. No call centres. No scripts. No spam. Just Dan &mdash; who has done this himself and answers every question.</p>
+    <div class="input-card" style="margin-bottom:16px">
+      <div class="two-col">
+        <div class="field-group"><label>Full name</label><input id="fn" type="text" placeholder="Your name"></div>
+        <div class="field-group"><label>Email</label><input id="em" type="email" placeholder="you@example.com"></div>
+      </div>
+      <div class="two-col">
+        <div class="field-group"><label>Mobile</label><input id="ph" type="tel" placeholder="07..."></div>
+        <div class="field-group"><label>Postcode (optional)</label><input id="pc" type="text" placeholder="e.g. TN13 1AA"></div>
+      </div>
+      <div class="field-group"><label>Best time to call (optional)</label><input id="bt" type="text" placeholder="e.g. Weekdays after 5pm"></div>
+    </div>
+    <div class="tick-box" style="margin-bottom:20px">&#10004; By continuing you agree that Dan may use these details to contact you about your EV enquiry.</div>
+    <div class="nav">
+      <a class="btn-ghost" href="ev-step5.html">&larr; Back</a>
+      <button class="btn" onclick="go()">Review my answers &rarr;</button>
+    </div>
+  </div>
+</div></div>
+<script>
+  function isValidEmail(e) { return /^[^s@]+@[^s@]+.[^s@]+$/.test(e); }
+  [['fn','evName'],['em','evEmail'],['ph','evPhone'],['pc','evPostcode'],['bt','evBestTime']].forEach(([id,key]) => {
+    const v = sessionStorage.getItem(key); if (v) document.getElementById(id).value = v;
+  });
+  function go() {
+    const n = document.getElementById('fn').value.trim();
+    const e = document.getElementById('em').value.trim();
+    const p = document.getElementById('ph').value.trim();
+    if (!n || !e || !p) { alert('Name, email and mobile are needed so Dan can get back to you.'); return; }
+    if (!isValidEmail(e)) { alert('Please enter a valid email address (e.g. you@example.com).'); document.getElementById('em').focus(); return; }
+    sessionStorage.setItem('evName',     n);
+    sessionStorage.setItem('evEmail',    e);
+    sessionStorage.setItem('evPhone',    p);
+    sessionStorage.setItem('evPostcode', document.getElementById('pc').value.trim());
+    sessionStorage.setItem('evBestTime', document.getElementById('bt').value.trim());
+    window.location.href = 'ev-step7.html';
+  }
+</script>
+</body></html>
