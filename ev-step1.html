@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DanSells Electric — Step 1</title>
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Electric Vehicle Specialist</span></div>
+    <div class="meta"><span class="dot"></span><span>Step 1 of 7</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row"><span>Step 1 of 7</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:14%"></div></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-kicker">Your lifestyle</div>
+    <h2>Tell Dan a little about how you use your car.</h2>
+    <p class="step-desc">Pick all that apply &mdash; this shapes everything Dan recommends.</p>
+    <div class="grid two" style="margin-bottom:22px">
+      <button class="choice" data-val="Daily commuter" onclick="toggleLife(this)"><span class="choice-emoji">&#128664;</span><span class="choice-title">Daily commuter</span><span class="choice-desc">Regular A-to-B, familiar routes.</span></button>
+      <button class="choice" data-val="Family car" onclick="toggleLife(this)"><span class="choice-emoji">&#128106;</span><span class="choice-title">Family car</span><span class="choice-desc">School runs, weekends, space matters.</span></button>
+      <button class="choice" data-val="Long motorway miles" onclick="toggleLife(this)"><span class="choice-emoji">&#128739;</span><span class="choice-title">Long motorway miles</span><span class="choice-desc">Regular long-distance journeys.</span></button>
+      <button class="choice" data-val="Weekend / leisure" onclick="toggleLife(this)"><span class="choice-emoji">&#9968;</span><span class="choice-title">Weekend / leisure</span><span class="choice-desc">Low mileage, enjoyment focused.</span></button>
+      <button class="choice" data-val="Business use" onclick="toggleLife(this)"><span class="choice-emoji">&#128188;</span><span class="choice-title">Business use</span><span class="choice-desc">Company car or business mileage.</span></button>
+      <button class="choice" data-val="Mostly city" onclick="toggleLife(this)"><span class="choice-emoji">&#127961;</span><span class="choice-title">Mostly city</span><span class="choice-desc">Short trips, stop-start, urban.</span></button>
+    </div>
+    <div class="step-kicker" style="margin-bottom:12px">EV style preference</div>
+    <p class="step-desc" style="margin-bottom:16px">Pick the shape that appeals most.</p>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+      <button class="choice" data-val="Gran Coupe" onclick="pickStyle(this)">
+        <span class="choice-emoji">&#128663;</span><span class="choice-title">Gran Coup&eacute;</span>
+        <span class="choice-desc">i4 &bull; i5 &bull; i7<br>Sleek, driver-focused.</span>
+      </button>
+      <button class="choice" data-val="Small SAV" onclick="pickStyle(this)">
+        <span class="choice-emoji">&#128665;</span><span class="choice-title">Small SAV/SUV</span>
+        <span class="choice-desc">iX1 &bull; iX2<br>Compact and practical.</span>
+      </button>
+      <button class="choice" data-val="Large SAV" onclick="pickStyle(this)">
+        <span class="choice-emoji">&#129500;</span><span class="choice-title">Med / Large SAV</span>
+        <span class="choice-desc">iX3 &bull; iX &bull; iX5<br>Space and presence.</span>
+      </button>
+    </div>
+    <div class="nav">
+      <a class="btn-ghost" href="ev.html">&larr; Back</a>
+      <button class="btn" onclick="go()">Continue &rarr;</button>
+    </div>
+  </div>
+</div></div>
+<script>
+  let lifeChoices = JSON.parse(sessionStorage.getItem('evLifestyle') || '[]');
+  let styleChosen = sessionStorage.getItem('evStyle');
+  document.querySelectorAll('[onclick="toggleLife(this)"]').forEach(b => { if (lifeChoices.includes(b.dataset.val)) b.classList.add('selected'); });
+  document.querySelectorAll('[onclick="pickStyle(this)"]').forEach(b => { if (b.dataset.val === styleChosen) b.classList.add('selected'); });
+  function toggleLife(btn) {
+    btn.classList.toggle('selected');
+    lifeChoices = [...document.querySelectorAll('[onclick="toggleLife(this)"].selected')].map(b => b.dataset.val);
+  }
+  function pickStyle(btn) {
+    document.querySelectorAll('[onclick="pickStyle(this)"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected'); styleChosen = btn.dataset.val;
+  }
+  function go() {
+    if (!lifeChoices.length) { alert('Please choose at least one lifestyle option.'); return; }
+    if (!styleChosen) { alert('Please pick a body style.'); return; }
+    sessionStorage.setItem('evLifestyle', JSON.stringify(lifeChoices));
+    sessionStorage.setItem('evStyle', styleChosen);
+    window.location.href = 'ev-step2.html';
+  }
+</script>
+</body></html>
