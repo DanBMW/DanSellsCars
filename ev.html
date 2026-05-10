@@ -41,6 +41,10 @@
     .faq-item p{margin:0;color:#c8d4e4;line-height:1.65;font-size:.92rem}
     .mini-link{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font-size:.92rem;font-weight:700;color:#69a8ff}
     .disclaimer{font-size:.8rem;color:#8a94a6;line-height:1.6}
+    .infrastructure{display:grid;gap:14px}
+    @media(min-width:760px){.infrastructure{grid-template-columns:1fr 1fr}}
+    .info-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px}
+    .info-box p{margin:0;color:#c8d4e4;line-height:1.65}
   </style>
 </head>
 <body>
@@ -55,6 +59,16 @@
       </div>
 
       <div class="hero-wrap">
+        <div class="hero-photo-wrap">
+          <div class="hero-photo-col">
+            <img class="dan-photo" src="1000084208.jpg" alt="Dan at BMW Hedin Ruxley" loading="lazy" width="400" height="300">
+            <div class="dan-caption">
+              <strong>Dan</strong>
+              BMW Hedin Ruxley
+            </div>
+          </div>
+        </div>
+
         <div class="hero-text-col">
           <div class="ev-hero-badge">⚡ Let's talk electric</div>
           <h1>I made the switch myself. I know the questions.</h1>
@@ -66,7 +80,7 @@
             <span class="trust-pill">3-year unlimited mileage vehicle cover</span>
             <span class="trust-pill">8-year / 100k battery cover</span>
             <span class="trust-pill">Personal saving estimate</span>
-            <span class="trust-pill">BMW EV advice</span>
+            <span class="trust-pill">Straight EV advice</span>
           </div>
 
           <a class="mini-link" href="#calculator">Take two minutes and check the numbers.</a>
@@ -137,7 +151,7 @@
             <div class="result-row"><span>Estimated monthly saving</span><strong id="monthlySaving">£0</strong></div>
           </div>
 
-          <p class="ev-note" id="calcNote" style="margin-top:14px;">Based on overnight home charging at 7.9p/kWh versus your current fuel price.</p>
+          <p class="ev-note" style="margin-top:14px;">Based on overnight home charging at 7.9p/kWh versus your current fuel price. Your actual savings will vary depending on mileage, driving style and charging habits.</p>
         </div>
       </div>
 
@@ -154,80 +168,28 @@
 
       <div class="section">
         <div class="section-head">
-          <div class="section-kicker">Model highlights</div>
-          <h2>Popular BMW EVs worth a look.</h2>
+          <div class="section-kicker">Charging reality</div>
+          <h2>Charging is getting easier.</h2>
         </div>
-        <div class="ev-grid">
-          <div class="ev-story">
-            <h3>BMW i4</h3>
-            <p>Sporty saloon feel, strong all-round usability, and BMW range figures around 333–370 miles depending on version [web:254].</p>
+        <div class="infrastructure">
+          <div class="info-box">
+            <p>The UK now has more than 118,000 public chargers, spread across more than 45,000 locations, and the network keeps growing [web:292][web:295][web:297].</p>
           </div>
-          <div class="ev-story">
-            <h3>BMW i5</h3>
-            <p>Executive-car comfort with BMW quoting up to 357 miles of all-electric range [web:255][web:253].</p>
-          </div>
-          <div class="ev-story">
-            <h3>BMW iX</h3>
-            <p>A larger, more commanding EV for buyers who want space, presence, and relaxed long-distance driving.</p>
+          <div class="info-box">
+            <p>By comparison, government figures say there are about 8,329 petrol stations in the UK, with an estimated 60,802 fuel pumps. The charging network is already large and expanding fast [web:300][web:296].</p>
           </div>
         </div>
       </div>
 
       <div class="section">
         <div class="section-head">
-          <div class="section-kicker">Lead form</div>
-          <h2>Tell Dan what you need.</h2>
+          <div class="section-kicker">Lead flow</div>
+          <h2>Want Dan to narrow it down for you?</h2>
         </div>
-        <p class="ev-note">Leave your details and Dan will come back personally with the best BMW EV options for your driving, budget, and timeline.</p>
-
-        <form class="input-card" action="https://formspree.io/f/xqewleog" method="POST" id="evForm">
-          <div class="two-col">
-            <div class="field-group">
-              <label>Name</label>
-              <input name="name" id="name" type="text" placeholder="Your name" required>
-            </div>
-            <div class="field-group">
-              <label>Mobile</label>
-              <input name="phone" id="phone" type="tel" placeholder="Your number" required>
-            </div>
-          </div>
-
-          <div class="two-col">
-            <div class="field-group">
-              <label>Email</label>
-              <input name="email" id="email" type="email" placeholder="Your email" required>
-            </div>
-            <div class="field-group">
-              <label>Current car</label>
-              <input name="current_car" id="currentCar" type="text" placeholder="What you drive now">
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label>What are you looking for?</label>
-            <textarea name="message" id="message" rows="5" placeholder="Tell Dan about your mileage, charging access, budget, and the BMW EV you are considering."></textarea>
-          </div>
-
-          <input type="hidden" name="_subject" value="New BMW EV enquiry">
-          <input type="hidden" name="_redirect" value="ev-thankyou.html">
-          <input type="hidden" name="calc_summary" id="calcSummary">
-          <input type="hidden" name="fuel_type" id="fuelTypeOut">
-          <input type="hidden" name="engine_size" id="engineSizeOut">
-          <input type="hidden" name="fuel_price" id="fuelPriceOut">
-          <input type="hidden" name="current_mpg" id="currentMpgOut">
-          <input type="hidden" name="annual_mileage" id="annualMileageOut">
-          <input type="hidden" name="ev_efficiency" id="evEfficiencyOut">
-          <input type="hidden" name="ev_charge_rate" id="chargeRateOut">
-          <input type="hidden" name="annual_fuel_cost" id="fuelCostOut">
-          <input type="hidden" name="annual_ev_cost" id="evCostOut">
-          <input type="hidden" name="annual_saving" id="annualSavingOut">
-          <input type="hidden" name="monthly_saving" id="monthlySavingOut">
-
-          <div class="btn-row">
-            <button class="btn" type="submit">Send to Dan</button>
-            <a class="btn-ghost" href="ev-step1.html">Prefer the guided route?</a>
-          </div>
-        </form>
+        <div class="ev-story">
+          <p>Rather than a basic enquiry form, the next step is the guided EV qualification path. It lets Dan work out what you drive now, what you need the car to do, and what kind of numbers make sense before anyone talks about the wrong car.</p>
+          <a class="mini-link" href="ev-step1.html">Start the EV qualification here.</a>
+        </div>
       </div>
 
       <div class="section">
@@ -238,23 +200,38 @@
 
         <div class="faq-item">
           <h3>How long is the BMW battery warranty?</h3>
-          <p>BMW states that the high-voltage battery in fully electric vehicles is covered for up to 8 years or 100,000 miles from first registration, whichever comes first, alongside 3-year unlimited mileage electric vehicle cover [web:237][web:238][web:233].</p>
+          <p>BMW’s Electric Warranty includes three-year unlimited mileage vehicle cover and battery protection for up to 8 years or 100,000 miles from first registration, whichever comes first [web:237][web:238][web:233].</p>
         </div>
 
         <div class="faq-item">
-          <h3>How much range do BMW EVs offer?</h3>
-          <p>BMW lists the i4 at around 333–370 miles depending on version, and the i5 at up to 357 miles [web:254][web:255].</p>
+          <h3>Do I need home charging to go electric?</h3>
+          <p>Home charging makes life easier, but it is not the only way. Plenty of drivers mix home, work and public charging depending on their routine.</p>
         </div>
 
         <div class="faq-item">
-          <h3>Can I still part-exchange my current car?</h3>
-          <p>Yes. Dan can help you work out whether the numbers make sense before you commit.</p>
+          <h3>Is public charging still a pain?</h3>
+          <p>It is much better than it used to be. The UK network is now huge, and rapid chargers are growing quickly, so motorway stops are less of a gamble than people think [web:292][web:295][web:299].</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Will an EV suit my mileage?</h3>
+          <p>That depends on your commute, how often you travel long distance, and whether you can charge at home. The calculator above is a good start, but Dan will go through it properly with you.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>What if I am not ready to commit?</h3>
+          <p>That is completely fine. This page is built to help you work it out first, not push you into a decision you are not comfortable with.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Can I part-exchange my current car?</h3>
+          <p>Yes. That is usually the cleanest way to move into an EV, and Dan can help you see whether the numbers stack up.</p>
         </div>
       </div>
 
       <div class="section">
         <div class="btn-row">
-          <a class="btn" href="#calculator">Considering electric? Click here.</a>
+          <a class="btn" href="ev-step1.html">Start the EV qualification</a>
           <a class="btn-ghost" href="index.html">Back to home</a>
         </div>
       </div>
@@ -275,21 +252,6 @@
     const evCost = document.getElementById('evCost');
     const annualSaving = document.getElementById('annualSaving');
     const monthlySaving = document.getElementById('monthlySaving');
-    const calcSummary = document.getElementById('calcSummary');
-
-    const out = {
-      fuelType: document.getElementById('fuelTypeOut'),
-      engineSize: document.getElementById('engineSizeOut'),
-      fuelPrice: document.getElementById('fuelPriceOut'),
-      currentMpg: document.getElementById('currentMpgOut'),
-      annualMileage: document.getElementById('annualMileageOut'),
-      evEfficiency: document.getElementById('evEfficiencyOut'),
-      chargeRate: document.getElementById('chargeRateOut'),
-      fuelCost: document.getElementById('fuelCostOut'),
-      evCost: document.getElementById('evCostOut'),
-      annualSaving: document.getElementById('annualSavingOut'),
-      monthlySaving: document.getElementById('monthlySavingOut')
-    };
 
     function fmt(n){ return '£' + Math.round(n).toLocaleString('en-GB'); }
 
@@ -313,20 +275,6 @@
       evCost.textContent = fmt(annualEv);
       annualSaving.textContent = fmt(save);
       monthlySaving.textContent = fmt(save / 12);
-
-      out.fuelType.value = fuelType.value;
-      out.engineSize.value = engineSize.value;
-      out.fuelPrice.value = pPerL.toFixed(1);
-      out.currentMpg.value = mpg.toFixed(0);
-      out.annualMileage.value = miles.toFixed(0);
-      out.evEfficiency.value = eff.toFixed(1);
-      out.chargeRate.value = kwhRate.toFixed(1);
-      out.fuelCost.value = annualFuel.toFixed(2);
-      out.evCost.value = annualEv.toFixed(2);
-      out.annualSaving.value = save.toFixed(2);
-      out.monthlySaving.value = (save / 12).toFixed(2);
-
-      calcSummary.value = `Fuel type: ${fuelType.options[fuelType.selectedIndex].text}; Engine: ${engineSize.value}L; Current fuel price: ${pPerL.toFixed(1)}p/l; Current MPG: ${mpg}; Annual mileage: ${miles.toLocaleString('en-GB')}; EV efficiency: ${eff.toFixed(1)} miles/kWh; Home charging: ${kwhRate.toFixed(1)}p/kWh; Annual fuel cost: ${fmt(annualFuel)}; Annual EV cost: ${fmt(annualEv)}; Annual saving: ${fmt(save)}; Monthly saving: ${fmt(save/12)}; Based on overnight charging at 7.9p/kWh.`;
     }
 
     [annualMileage, fuelType, engineSize, fuelPrice, currentMpg, evEfficiency, chargeRate].forEach(el => el.addEventListener('input', calc));
