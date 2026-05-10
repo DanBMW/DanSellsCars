@@ -14,42 +14,55 @@
     gtag('config', 'G-XZL1RF6SV6');
   </script>
   <style>
-    .ev-note{font-size:.88rem;color:#8a94a6;line-height:1.6}
-    .ev-story{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px}
-    .ev-story p{margin:0 0 14px;color:#c8d4e4;line-height:1.75}
-    .ev-story p:last-child{margin-bottom:0}
-    .trust-strip{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0}
+    .ev-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(28,107,186,.12);border:1px solid rgba(28,107,186,.28);border-radius:999px;padding:6px 14px;font-size:.8rem;font-weight:700;color:#a8c8f0;margin-bottom:18px}
+    .trust-strip{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0}
     .trust-pill{padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:.82rem;color:#d7deea}
+    .ev-block{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px;margin-bottom:14px}
+    .ev-block p{margin:0 0 12px;color:#c8d4e4;line-height:1.75;font-size:.95rem}
+    .ev-block p:last-child{margin-bottom:0}
+    .ev-note{font-size:.82rem;color:#8a94a6;line-height:1.6;margin-top:12px}
+    .section{margin-top:36px}
+    .section-kicker{font-size:.73rem;text-transform:uppercase;letter-spacing:.09em;color:#7aa7ea;font-weight:800;margin-bottom:6px}
+    .section h2{margin:0 0 16px;font-size:1.55rem}
     .calc-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
     .calc-grid{display:grid;gap:14px}
-    @media(min-width:760px){.calc-grid{grid-template-columns:1fr 1fr}}
-    .field-group label{display:block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;color:#aeb9ca}
-    .field-group input,.field-group select,.field-group textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:13px 14px;color:#f8fafc;outline:none}
-    .field-group input[type="range"]{padding:0;height:40px}
-    .calc-result{display:grid;gap:10px;margin-top:14px}
-    .result-row{display:flex;justify-content:space-between;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px}
-    .result-row span{color:#aeb9ca}
-    .result-row strong{font-size:1rem}
-    .save-big{font-size:1.3rem;color:#7dd3fc}
-    .section{margin-top:34px}
-    .section-head{margin-bottom:14px}
-    .section-kicker{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#7aa7ea;font-weight:800;margin-bottom:6px}
-    .section-head h2{margin:0;font-size:1.6rem}
-    .faq-item{border-top:1px solid rgba(255,255,255,.08);padding:16px 0}
+    @media(min-width:640px){.calc-grid{grid-template-columns:1fr 1fr}}
+    .f-label{display:block;font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:7px;color:#aeb9ca}
+    .f-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:12px 14px;color:#f8fafc;font-size:.95rem;outline:none;box-sizing:border-box}
+    .f-input[type="range"]{padding:0;height:38px;cursor:pointer}
+    .f-input[type="range"]::-webkit-slider-runnable-track{background:rgba(28,107,186,.3);border-radius:999px;height:6px}
+    .f-input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#3b82f6;margin-top:-7px;cursor:pointer}
+    .range-bounds{display:flex;justify-content:space-between;font-size:.75rem;color:#8a94a6;margin-top:4px}
+    .calc-results{display:grid;gap:10px;margin-top:18px}
+    .result-row{display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 16px}
+    .result-row span{color:#8a94a6;font-size:.9rem}
+    .result-row strong{font-size:1rem;color:#e2e8f0}
+    .result-row.highlight{background:rgba(28,107,186,.10);border-color:rgba(28,107,186,.25)}
+    .result-row.highlight strong{font-size:1.35rem;color:#7dd3fc}
+    .calc-cta{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
+    .infra-grid{display:grid;gap:14px}
+    @media(min-width:640px){.infra-grid{grid-template-columns:1fr 1fr}}
+    .infra-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px}
+    .infra-box .big-stat{font-size:2.2rem;font-weight:800;color:#7dd3fc;line-height:1;margin-bottom:8px}
+    .infra-box p{margin:0;color:#c8d4e4;font-size:.88rem;line-height:1.65}
+    .faq-item{border-top:1px solid rgba(255,255,255,.07);padding:16px 0}
     .faq-item:first-child{border-top:none;padding-top:0}
-    .faq-item h3{margin:0 0 6px;font-size:1rem}
-    .faq-item p{margin:0;color:#c8d4e4;line-height:1.65;font-size:.92rem}
-    .mini-link{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font-size:.92rem;font-weight:700;color:#69a8ff}
-    .disclaimer{font-size:.8rem;color:#8a94a6;line-height:1.6}
-    .infrastructure{display:grid;gap:14px}
-    @media(min-width:760px){.infrastructure{grid-template-columns:1fr 1fr}}
-    .info-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px}
-    .info-box p{margin:0;color:#c8d4e4;line-height:1.65}
+    .faq-item h3{margin:0 0 7px;font-size:.98rem;color:#e2e8f0}
+    .faq-item p{margin:0;color:#c8d4e4;line-height:1.7;font-size:.9rem}
+    .hero-photo-wrap{display:flex;flex-direction:column;gap:28px;align-items:flex-start;margin-bottom:28px}
+    @media(min-width:680px){.hero-photo-wrap{flex-direction:row;align-items:flex-start;gap:36px}}
+    .hero-photo-col{flex-shrink:0;width:180px}
+    .dan-photo{width:100%;max-width:180px;aspect-ratio:3/4;object-fit:cover;object-position:center top;border-radius:20px;border:1px solid rgba(255,255,255,.10);box-shadow:0 16px 40px rgba(0,0,0,.45);display:block}
+    .dan-caption{margin-top:10px;text-align:center;font-size:.76rem;color:#8a94a6;line-height:1.5}
+    .dan-caption strong{display:block;color:#d0dae8;font-size:.84rem;font-weight:700}
+    .hero-text-col{flex:1}
+    .mpg-hint{font-size:.78rem;color:#7aa7ea;margin-top:5px}
   </style>
 </head>
 <body>
   <div class="app">
     <div class="shell">
+
       <div class="topbar">
         <div class="brand">
           <span class="brand-name">DanSells</span>
@@ -58,62 +71,58 @@
         <div class="meta"><span class="dot"></span><span>New BMW EVs</span></div>
       </div>
 
-      <div class="hero-wrap">
-        <div class="hero-photo-wrap">
-          <div class="hero-photo-col">
-           <img class="dan-photo" src="dan.jpg" alt="Dan at BMW Hedin Ruxley" loading="lazy" width="400" height="300">
-            <div class="dan-caption">
-              <strong>Dan</strong>
-              BMW Hedin Ruxley
-            </div>
+      <!-- HERO -->
+      <div class="hero-photo-wrap">
+        <div class="hero-photo-col">
+          <img class="dan-photo" src="dan.jpg" alt="Dan, BMW sales executive at Hedin Ruxley" loading="eager" width="180" height="240">
+          <div class="dan-caption">
+            <strong>Dan</strong>BMW Hedin Ruxley
           </div>
         </div>
-
         <div class="hero-text-col">
-          <div class="ev-hero-badge">⚡ Let's talk electric</div>
-          <h1>I made the switch myself. I know the questions.</h1>
-          <p class="hero-copy">I have always been a petrol head. I grew up around cars, I love the sound of a good engine and I was probably the last person you would have expected to go electric. So when I say this genuinely surprised me, take that seriously.</p>
-          <p class="hero-copy">When I switched, the savings were noticeable straight away. No more fuel stops. Lower running costs. Servicing intervals that feel almost too good to be true. The car is smoother, quieter and faster off the line than anything I had driven before.</p>
-          <p class="hero-copy">Since then I have helped many people make the same move, from committed petrol heads to nervous first-timers. Every single one has come back with the same reaction: <em>Why didn't I do this sooner?</em></p>
-
+          <div class="ev-badge">⚡ Let's talk electric</div>
+          <h1>I made the switch myself.<br>I know the questions.</h1>
+          <p style="color:#c8d4e4;line-height:1.75;margin-bottom:12px">I have always been a petrol head. I grew up around cars, I love the sound of a good engine and I was probably the last person you would have expected to go electric. So when I say this genuinely surprised me, take that seriously.</p>
+          <p style="color:#c8d4e4;line-height:1.75;margin-bottom:12px">When I switched, the savings were noticeable straight away. No more fuel stops. Lower running costs. Servicing intervals that feel almost too good to be true. The car is smoother, quieter and faster off the line than anything I had driven before.</p>
+          <p style="color:#c8d4e4;line-height:1.75;margin-bottom:18px">Since then I have helped many people make the same move, from committed petrol heads to nervous first-timers. Every single one has come back with the same reaction: <em>Why didn't I do this sooner?</em></p>
           <div class="trust-strip">
             <span class="trust-pill">3-year unlimited mileage vehicle cover</span>
             <span class="trust-pill">8-year / 100k battery cover</span>
             <span class="trust-pill">Personal saving estimate</span>
             <span class="trust-pill">Straight EV advice</span>
           </div>
-
-          <a class="mini-link" href="#calculator">Take two minutes and check the numbers.</a>
+          <div class="btn-row" style="margin-top:20px">
+            <a class="btn" href="#calculator">Check your savings</a>
+            <a class="btn-ghost" href="ev-step1.html">Let's talk electric →</a>
+          </div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="ev-story">
-          <p>Take two minutes to fill this in. Dan will come back with your personal saving estimate, a shortlist of the right BMW EVs for you and honest answers to every question you have, however basic you think they are.</p>
-          <p class="disclaimer">Savings are not guaranteed and will vary based on individual mileage, driving behaviour, charging method, energy tariff and vehicle specification. Dan will provide a personalised estimate based on the information you share.</p>
-        </div>
+      <!-- REASSURANCE -->
+      <div class="ev-block">
+        <p>Take two minutes to work out the numbers. Dan will come back with your personal saving estimate, a shortlist of the right BMW EVs for you and honest answers to every question you have, however basic you think they are.</p>
+        <p class="ev-note">Savings are not guaranteed and will vary based on individual mileage, driving behaviour, charging method, energy tariff and vehicle specification. Dan will provide a personalised estimate based on the information you share.</p>
       </div>
 
+      <!-- CALCULATOR -->
       <div class="section" id="calculator">
-        <div class="section-head">
-          <div class="section-kicker">Fuel saving calculator</div>
-          <h2>See what switching could save you.</h2>
-        </div>
+        <div class="section-kicker">Fuel saving calculator</div>
+        <h2>See what switching could save you.</h2>
 
         <div class="calc-card">
           <div class="calc-grid">
-            <div class="field-group">
-              <label>Current fuel type</label>
-              <select id="fuelType">
+            <div>
+              <label class="f-label">Current fuel type</label>
+              <select class="f-input" id="fuelType">
                 <option value="petrol">Petrol</option>
                 <option value="diesel">Diesel</option>
                 <option value="hybrid">Hybrid</option>
                 <option value="phev">Plug-in hybrid</option>
               </select>
             </div>
-            <div class="field-group">
-              <label>Engine size</label>
-              <select id="engineSize">
+            <div>
+              <label class="f-label">Engine size</label>
+              <select class="f-input" id="engineSize">
                 <option value="1.0">1.0L</option>
                 <option value="1.5" selected>1.5L</option>
                 <option value="2.0">2.0L</option>
@@ -122,163 +131,240 @@
                 <option value="5.0">5.0L</option>
               </select>
             </div>
-            <div class="field-group">
-              <label>Current fuel price (p/l)</label>
-              <input id="fuelPrice" type="number" value="156.8" step="0.1" min="0">
+            <div>
+              <label class="f-label">Current fuel price (p/l)</label>
+              <input class="f-input" id="fuelPrice" type="number" value="156.8" step="0.1" min="0">
             </div>
-            <div class="field-group">
-              <label>Current MPG estimate (update accordingly)</label>
-              <input id="currentMpg" type="number" value="30" step="1" min="1">
+            <div>
+              <label class="f-label" for="mpgSlider">
+                Your MPG &mdash; <span id="mpgLabel">45</span> mpg
+                <span class="mpg-hint" id="mpgHint">Typical for a 1.5L petrol</span>
+              </label>
+              <input class="f-input" id="mpgSlider" type="range" min="20" max="80" step="1" value="45">
+              <div class="range-bounds">
+                <span id="mpgMin">20 mpg</span>
+                <span id="mpgMax">80 mpg</span>
+              </div>
             </div>
-            <div class="field-group" style="grid-column:1 / -1;">
-              <label>Annual mileage: <span id="mileageLabel">12000</span> miles</label>
-              <input id="annualMileage" type="range" min="6000" max="30000" step="500" value="12000">
+            <div style="grid-column:1 / -1">
+              <label class="f-label">Annual mileage &mdash; <span id="mileageLabel">12,000</span> miles</label>
+              <input class="f-input" id="annualMileage" type="range" min="4000" max="30000" step="500" value="12000">
+              <div class="range-bounds"><span>4,000</span><span>30,000</span></div>
             </div>
-            <div class="field-group">
-              <label>EV efficiency (miles/kWh)</label>
-              <input id="evEfficiency" type="number" value="3.2" step="0.1" min="1">
+            <div>
+              <label class="f-label">EV efficiency (miles/kWh)</label>
+              <input class="f-input" id="evEfficiency" type="number" value="3.2" step="0.1" min="1">
             </div>
-            <div class="field-group">
-              <label>Home charging rate (p/kWh)</label>
-              <input id="chargeRate" type="number" value="7.9" step="0.1" min="0">
+            <div>
+              <label class="f-label">Home charging rate (p/kWh)</label>
+              <input class="f-input" id="chargeRate" type="number" value="7.9" step="0.1" min="0">
             </div>
           </div>
 
-          <div class="calc-result">
-            <div class="result-row"><span>Annual fuel cost</span><strong id="fuelCost">£0</strong></div>
-            <div class="result-row"><span>Annual EV charging cost</span><strong id="evCost">£0</strong></div>
-            <div class="result-row"><span>Estimated annual saving</span><strong class="save-big" id="annualSaving">£0</strong></div>
-            <div class="result-row"><span>Estimated monthly saving</span><strong id="monthlySaving">£0</strong></div>
+          <div class="calc-results">
+            <div class="result-row">
+              <span>Annual fuel cost</span>
+              <strong id="resFuelCost">—</strong>
+            </div>
+            <div class="result-row">
+              <span>Annual EV charging cost</span>
+              <strong id="resEvCost">—</strong>
+            </div>
+            <div class="result-row highlight">
+              <span>Estimated annual saving</span>
+              <strong id="resAnnualSaving">—</strong>
+            </div>
+            <div class="result-row">
+              <span>Estimated monthly saving</span>
+              <strong id="resMonthlySaving">—</strong>
+            </div>
           </div>
 
-          <p class="ev-note" style="margin-top:14px;">Based on overnight home charging at 7.9p/kWh versus your current fuel price. Your actual savings will vary depending on mileage, driving style and charging habits.</p>
-        </div>
-      </div>
+          <p class="ev-note">Based on overnight home charging at 7.9p/kWh versus your current fuel price. Your actual saving will vary depending on mileage, driving style and charging habits.</p>
 
-      <div class="section">
-        <div class="section-head">
-          <div class="section-kicker">Why BMW EV</div>
-          <h2>Why people choose a BMW electric car.</h2>
-        </div>
-        <div class="ev-story">
-          <p>BMW states that the high-voltage battery in fully electric vehicles is covered for up to 8 years or 100,000 miles from first registration, whichever comes first, alongside 3-year unlimited mileage electric vehicle cover [web:237][web:238][web:233].</p>
-          <p>That gives buyers confidence on both everyday ownership and long-term battery protection. If you are comparing petrol, hybrid, plug-in hybrid and full electric, this is where the real-life numbers start to matter.</p>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-head">
-          <div class="section-kicker">Charging reality</div>
-          <h2>Charging is getting easier.</h2>
-        </div>
-        <div class="infrastructure">
-          <div class="info-box">
-            <p>The UK now has more than 118,000 public chargers, spread across more than 45,000 locations, and the network keeps growing [web:292][web:295][web:297].</p>
-          </div>
-          <div class="info-box">
-            <p>By comparison, government figures say there are about 8,329 petrol stations in the UK, with an estimated 60,802 fuel pumps. The charging network is already large and expanding fast [web:300][web:296].</p>
+          <div class="calc-cta">
+            <a class="btn" href="ev-step1.html" id="findOutMore">These numbers look good — let's go →</a>
           </div>
         </div>
       </div>
 
+      <!-- WHY BMW EV -->
       <div class="section">
-        <div class="section-head">
-          <div class="section-kicker">Lead flow</div>
-          <h2>Want Dan to narrow it down for you?</h2>
-        </div>
-        <div class="ev-story">
-          <p>Rather than a basic enquiry form, the next step is the guided EV qualification path. It lets Dan work out what you drive now, what you need the car to do, and what kind of numbers make sense before anyone talks about the wrong car.</p>
-          <a class="mini-link" href="ev-step1.html">Start the EV qualification here.</a>
+        <div class="section-kicker">Why BMW EV</div>
+        <h2>Why people choose a BMW electric car.</h2>
+        <div class="ev-block">
+          <p>BMW electric vehicles include three-year unlimited mileage vehicle cover, plus high-voltage battery protection for up to 8 years or 100,000 miles from first registration, whichever comes first.</p>
+          <p>That gives buyers confidence on both everyday ownership and long-term battery protection. If you are still weighing up petrol, hybrid, plug-in hybrid and full electric, this is where the real-life numbers start to matter.</p>
         </div>
       </div>
 
+      <!-- CHARGING REALITY -->
       <div class="section">
-        <div class="section-head">
-          <div class="section-kicker">Questions</div>
-          <h2>Quick EV answers.</h2>
+        <div class="section-kicker">Charging reality</div>
+        <h2>Charging is much easier than most people think.</h2>
+        <div class="infra-grid">
+          <div class="infra-box">
+            <div class="big-stat">118,000+</div>
+            <p>Public chargers across the UK at more than 45,000 locations, and the number is still growing rapidly.</p>
+          </div>
+          <div class="infra-box">
+            <div class="big-stat">8,329</div>
+            <p>Petrol stations left in the UK. The charging network has already overtaken fuel infrastructure in reach and is pulling further ahead each year.</p>
+          </div>
         </div>
+        <div class="ev-block" style="margin-top:14px">
+          <p>Most EV owners do the majority of their charging at home overnight, which means they start every day with a full charge and rarely think about it at all. Public chargers are there when you need them, not as a daily necessity.</p>
+        </div>
+      </div>
+
+      <!-- READY CTA -->
+      <div class="section">
+        <div class="ev-block" style="text-align:center;padding:32px 24px">
+          <p style="font-size:1.1rem;font-weight:700;color:#e2e8f0;margin-bottom:8px">Ready to see if it works for you?</p>
+          <p>Answer a few quick questions and Dan will put together a personal recommendation. No obligation, no scripts, no pressure.</p>
+          <div class="btn-row" style="justify-content:center;margin-top:16px">
+            <a class="btn" href="ev-step1.html">Start here →</a>
+            <a class="btn-ghost" href="index.html">Back to home</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="section">
+        <div class="section-kicker">Common questions</div>
+        <h2>Things people usually ask Dan first.</h2>
 
         <div class="faq-item">
           <h3>How long is the BMW battery warranty?</h3>
-          <p>BMW’s Electric Warranty includes three-year unlimited mileage vehicle cover and battery protection for up to 8 years or 100,000 miles from first registration, whichever comes first [web:237][web:238][web:233].</p>
+          <p>BMW electric vehicles include three-year unlimited mileage vehicle cover, plus high-voltage battery protection for up to 8 years or 100,000 miles from first registration, whichever comes first.</p>
         </div>
-
         <div class="faq-item">
-          <h3>Do I need home charging to go electric?</h3>
-          <p>Home charging makes life easier, but it is not the only way. Plenty of drivers mix home, work and public charging depending on their routine.</p>
+          <h3>Do I need home charging to make it work?</h3>
+          <p>It helps, but plenty of people manage without it. If you have a driveway or garage, a home charger makes the whole thing easier. If not, Dan will help you work out a charging routine that fits your life.</p>
         </div>
-
         <div class="faq-item">
-          <h3>Is public charging still a pain?</h3>
-          <p>It is much better than it used to be. The UK network is now huge, and rapid chargers are growing quickly, so motorway stops are less of a gamble than people think [web:292][web:295][web:299].</p>
+          <h3>Is public charging actually reliable now?</h3>
+          <p>It is far better than it was. The UK now has over 118,000 public chargers, and rapid chargers on motorways are improving quickly. Most EV owners rarely rely on public charging for day-to-day driving.</p>
         </div>
-
         <div class="faq-item">
-          <h3>Will an EV suit my mileage?</h3>
-          <p>That depends on your commute, how often you travel long distance, and whether you can charge at home. The calculator above is a good start, but Dan will go through it properly with you.</p>
+          <h3>What about longer journeys — will I make it?</h3>
+          <p>That depends on your mileage and the model you choose. Dan will go through your actual routes with you, not a theoretical scenario. Most people are pleasantly surprised once they see the numbers.</p>
         </div>
-
         <div class="faq-item">
-          <h3>What if I am not ready to commit?</h3>
-          <p>That is completely fine. This page is built to help you work it out first, not push you into a decision you are not comfortable with.</p>
+          <h3>I am not ready to commit yet — is that okay?</h3>
+          <p>Completely fine. This is here to help you work it out at your own pace. Dan is not going to push you towards something that does not make sense for your situation.</p>
         </div>
-
         <div class="faq-item">
-          <h3>Can I part-exchange my current car?</h3>
-          <p>Yes. That is usually the cleanest way to move into an EV, and Dan can help you see whether the numbers stack up.</p>
+          <h3>Can I use my current car as a part exchange?</h3>
+          <p>Yes, and that is often the cleanest way to move into an EV. Dan can give you a realistic idea of what your car is worth and whether the switch makes financial sense before you do anything.</p>
         </div>
       </div>
 
-      <div class="section">
+      <div class="section" style="padding-bottom:40px">
         <div class="btn-row">
-          <a class="btn" href="ev-step1.html">Start the EV qualification</a>
+          <a class="btn" href="ev-step1.html">Let's talk electric →</a>
           <a class="btn-ghost" href="index.html">Back to home</a>
         </div>
       </div>
+
     </div>
   </div>
 
   <script>
-    const annualMileage = document.getElementById('annualMileage');
-    const mileageLabel = document.getElementById('mileageLabel');
-    const fuelType = document.getElementById('fuelType');
-    const engineSize = document.getElementById('engineSize');
-    const fuelPrice = document.getElementById('fuelPrice');
-    const currentMpg = document.getElementById('currentMpg');
-    const evEfficiency = document.getElementById('evEfficiency');
-    const chargeRate = document.getElementById('chargeRate');
+    // Real-world UK MPG defaults by fuel type + engine size
+    // Sources: Honest John Real MPG, Emissions Analytics, Nimblefins UK data
+    const mpgDefaults = {
+      petrol: { '1.0':38, '1.5':44, '2.0':38, '3.0':32, '4.0':26, '5.0':22 },
+      diesel: { '1.0':46, '1.5':52, '2.0':48, '3.0':42, '4.0':36, '5.0':30 },
+      hybrid: { '1.0':52, '1.5':58, '2.0':54, '3.0':46, '4.0':38, '5.0':32 },
+      phev:   { '1.0':45, '1.5':48, '2.0':45, '3.0':40, '4.0':34, '5.0':28 }
+    };
 
-    const fuelCost = document.getElementById('fuelCost');
-    const evCost = document.getElementById('evCost');
-    const annualSaving = document.getElementById('annualSaving');
-    const monthlySaving = document.getElementById('monthlySaving');
+    const mpgRanges = {
+      petrol: { '1.0':[28,52], '1.5':[34,58], '2.0':[28,50], '3.0':[24,44], '4.0':[18,36], '5.0':[14,30] },
+      diesel: { '1.0':[36,58], '1.5':[42,64], '2.0':[36,62], '3.0':[32,54], '4.0':[26,46], '5.0':[22,40] },
+      hybrid: { '1.0':[42,64], '1.5':[48,70], '2.0':[42,66], '3.0':[36,58], '4.0':[28,48], '5.0':[24,42] },
+      phev:   { '1.0':[34,56], '1.5':[36,62], '2.0':[34,58], '3.0':[28,52], '4.0':[24,44], '5.0':[18,38] }
+    };
+
+    const mpgHints = {
+      petrol: { '1.0':'Typical for a 1.0L petrol', '1.5':'Typical for a 1.5L petrol', '2.0':'Typical for a 2.0L petrol', '3.0':'Typical for a 3.0L petrol', '4.0':'Typical for a 4.0L petrol', '5.0':'Typical for a 5.0L petrol' },
+      diesel: { '1.0':'Typical for a 1.0L diesel', '1.5':'Typical for a 1.5L diesel', '2.0':'Typical for a 2.0L diesel', '3.0':'Typical for a 3.0L diesel', '4.0':'Typical for a 4.0L diesel', '5.0':'Typical for a 5.0L diesel' },
+      hybrid: { '1.0':'Typical for a 1.0L hybrid', '1.5':'Typical for a 1.5L hybrid', '2.0':'Typical for a 2.0L hybrid', '3.0':'Typical for a 3.0L hybrid', '4.0':'Typical for a 4.0L hybrid', '5.0':'Typical for a 5.0L hybrid' },
+      phev:   { '1.0':'Typical for a 1.0L PHEV', '1.5':'Typical for a 1.5L PHEV', '2.0':'Typical for a 2.0L PHEV', '3.0':'Typical for a 3.0L PHEV', '4.0':'Typical for a 4.0L PHEV', '5.0':'Typical for a 5.0L PHEV' }
+    };
+
+    const els = {
+      miles: document.getElementById('annualMileage'),
+      milesLabel: document.getElementById('mileageLabel'),
+      fuel: document.getElementById('fuelType'),
+      eng: document.getElementById('engineSize'),
+      price: document.getElementById('fuelPrice'),
+      mpgSlider: document.getElementById('mpgSlider'),
+      mpgLabel: document.getElementById('mpgLabel'),
+      mpgHint: document.getElementById('mpgHint'),
+      mpgMin: document.getElementById('mpgMin'),
+      mpgMax: document.getElementById('mpgMax'),
+      eff: document.getElementById('evEfficiency'),
+      rate: document.getElementById('chargeRate'),
+      rFuel: document.getElementById('resFuelCost'),
+      rEv: document.getElementById('resEvCost'),
+      rAnn: document.getElementById('resAnnualSaving'),
+      rMon: document.getElementById('resMonthlySaving'),
+      btn: document.getElementById('findOutMore')
+    };
 
     function fmt(n){ return '£' + Math.round(n).toLocaleString('en-GB'); }
 
-    function calc(){
-      const miles = parseFloat(annualMileage.value || 0);
-      const mpg = parseFloat(currentMpg.value || 1);
-      const pPerL = parseFloat(fuelPrice.value || 0);
-      const kwhRate = parseFloat(chargeRate.value || 0);
-      const eff = parseFloat(evEfficiency.value || 3.2);
-
-      const currentGallons = miles / mpg;
-      const currentLitres = currentGallons * 4.54609;
-      const annualFuel = currentLitres * (pPerL / 100);
-
-      const evKwh = miles / eff;
-      const annualEv = evKwh * (kwhRate / 100);
-      const save = Math.max(0, annualFuel - annualEv);
-
-      mileageLabel.textContent = miles.toLocaleString('en-GB');
-      fuelCost.textContent = fmt(annualFuel);
-      evCost.textContent = fmt(annualEv);
-      annualSaving.textContent = fmt(save);
-      monthlySaving.textContent = fmt(save / 12);
+    function updateMpgSlider(){
+      const ft = els.fuel.value;
+      const es = els.eng.value;
+      const range = mpgRanges[ft][es];
+      const def = mpgDefaults[ft][es];
+      els.mpgSlider.min = range[0];
+      els.mpgSlider.max = range[1];
+      els.mpgSlider.value = def;
+      els.mpgLabel.textContent = def;
+      els.mpgMin.textContent = range[0] + ' mpg';
+      els.mpgMax.textContent = range[1] + ' mpg';
+      els.mpgHint.textContent = mpgHints[ft][es];
+      calc();
     }
 
-    [annualMileage, fuelType, engineSize, fuelPrice, currentMpg, evEfficiency, chargeRate].forEach(el => el.addEventListener('input', calc));
-    calc();
+    function calc(){
+      const miles = parseFloat(els.miles.value) || 0;
+      const mpg = parseFloat(els.mpgSlider.value) || 1;
+      const ppl = parseFloat(els.price.value) || 0;
+      const kwh = parseFloat(els.rate.value) || 0;
+      const eff = parseFloat(els.eff.value) || 3.2;
+
+      els.milesLabel.textContent = miles.toLocaleString('en-GB');
+      els.mpgLabel.textContent = mpg;
+
+      const litres = (miles / mpg) * 4.54609;
+            const fuelCost = litres * (ppl / 100);
+      const evCost = (miles / eff) * (kwh / 100);
+      const saving = Math.max(0, fuelCost - evCost);
+
+      els.rFuel.textContent = fmt(fuelCost);
+      els.rEv.textContent = fmt(evCost);
+      els.rAnn.textContent = fmt(saving);
+      els.rMon.textContent = fmt(saving / 12);
+
+      els.btn.textContent = Math.round(saving) > 0
+        ? `Save around ${fmt(saving)} a year — let's go →`
+        : `Let's see what works for you →`;
+    }
+
+    els.fuel.addEventListener('change', updateMpgSlider);
+    els.eng.addEventListener('change', updateMpgSlider);
+    els.mpgSlider.addEventListener('input', calc);
+    els.miles.addEventListener('input', calc);
+    els.price.addEventListener('input', calc);
+    els.eff.addEventListener('input', calc);
+    els.rate.addEventListener('input', calc);
+
+    updateMpgSlider();
   </script>
 </body>
 </html>
