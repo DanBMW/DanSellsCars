@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>New BMW Electric Cars in Kent | Dan Sells EVs</title>
-  <meta name="description" content="Explore new BMW electric cars with Dan. Compare savings, charging, finance, and BMW's 8-year battery warranty. No scripts, just straight answers." />
+  <meta name="description" content="Thinking about a BMW EV? Get Dan's personal saving estimate, compare running costs, and see if electric is right for you. Honest advice, no scripts." />
   <link rel="stylesheet" href="style.css" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>
@@ -14,30 +14,33 @@
     gtag('config', 'G-XZL1RF6SV6');
   </script>
   <style>
-    .ev-hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(28,107,186,.12);border:1px solid rgba(28,107,186,.28);border-radius:999px;padding:6px 14px;font-size:.8rem;font-weight:700;color:#a8c8f0;margin-bottom:18px}
-    .ev-grid{display:grid;gap:18px}
-    @media(min-width:760px){.ev-grid{grid-template-columns:repeat(3,1fr)}}
-    .ev-card,.calc-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px}
-    .ev-card h3,.calc-card h3{margin:0 0 8px;font-size:1.05rem}
-    .ev-card p{margin:0;color:#c8d4e4;font-size:.92rem;line-height:1.6}
-    .trust-strip{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 8px}
+    .ev-note{font-size:.88rem;color:#8a94a6;line-height:1.6}
+    .ev-story{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px}
+    .ev-story p{margin:0 0 14px;color:#c8d4e4;line-height:1.75}
+    .ev-story p:last-child{margin-bottom:0}
+    .trust-strip{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0}
     .trust-pill{padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:.82rem;color:#d7deea}
-    .mini-link{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font-size:.92rem;font-weight:700;color:#69a8ff}
-    .cta-panel{background:linear-gradient(135deg, rgba(28,107,186,.18), rgba(13,18,28,.8));border:1px solid rgba(28,107,186,.25);border-radius:20px;padding:24px}
+    .calc-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
+    .calc-grid{display:grid;gap:14px}
+    @media(min-width:760px){.calc-grid{grid-template-columns:1fr 1fr}}
+    .field-group label{display:block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;color:#aeb9ca}
+    .field-group input,.field-group select,.field-group textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:13px 14px;color:#f8fafc;outline:none}
+    .field-group input[type="range"]{padding:0;height:40px}
+    .calc-result{display:grid;gap:10px;margin-top:14px}
+    .result-row{display:flex;justify-content:space-between;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px}
+    .result-row span{color:#aeb9ca}
+    .result-row strong{font-size:1rem}
+    .save-big{font-size:1.3rem;color:#7dd3fc}
+    .section{margin-top:34px}
+    .section-head{margin-bottom:14px}
+    .section-kicker{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#7aa7ea;font-weight:800;margin-bottom:6px}
+    .section-head h2{margin:0;font-size:1.6rem}
     .faq-item{border-top:1px solid rgba(255,255,255,.08);padding:16px 0}
     .faq-item:first-child{border-top:none;padding-top:0}
     .faq-item h3{margin:0 0 6px;font-size:1rem}
     .faq-item p{margin:0;color:#c8d4e4;line-height:1.65;font-size:.92rem}
-    .calc-grid{display:grid;gap:14px}
-    @media(min-width:760px){.calc-grid{grid-template-columns:1fr 1fr}}
-    .field-group label{display:block;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;color:#aeb9ca}
-    .field-group input,.field-group select{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:13px 14px;color:#f8fafc;outline:none}
-    .field-group input[type="range"]{padding:0;height:40px}
-    .calc-result{display:grid;gap:10px;margin-top:14px}
-    .result-row{display:flex;justify-content:space-between;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px}
-    .result-row span:first-child{color:#aeb9ca}
-    .result-row strong{font-size:1rem}
-    .save-big{font-size:1.3rem;color:#7dd3fc}
+    .mini-link{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font-size:.92rem;font-weight:700;color:#69a8ff}
+    .disclaimer{font-size:.8rem;color:#8a94a6;line-height:1.6}
   </style>
 </head>
 <body>
@@ -53,62 +56,36 @@
 
       <div class="hero-wrap">
         <div class="hero-text-col">
-          <div class="ev-hero-badge">⚡ Considering electric? Straight answers from Dan.</div>
-          <h1>New BMW Electric Cars, Built for Real Life.</h1>
-          <p class="hero-copy">Explore the latest BMW EVs with clear advice on range, charging, finance, and whether electric genuinely suits your driving. Dan will give you the honest version, not a sales script.</p>
+          <div class="ev-hero-badge">⚡ Let's talk electric</div>
+          <h1>I made the switch myself. I know the questions.</h1>
+          <p class="hero-copy">I have always been a petrol head. I grew up around cars, I love the sound of a good engine and I was probably the last person you would have expected to go electric. So when I say this genuinely surprised me, take that seriously.</p>
+          <p class="hero-copy">When I switched, the savings were noticeable straight away. No more fuel stops. Lower running costs. Servicing intervals that feel almost too good to be true. The car is smoother, quieter and faster off the line than anything I had driven before.</p>
+          <p class="hero-copy">Since then I have helped many people make the same move, from committed petrol heads to nervous first-timers. Every single one has come back with the same reaction: <em>Why didn't I do this sooner?</em></p>
 
           <div class="trust-strip">
-            <span class="trust-pill">8-year battery cover</span>
-            <span class="trust-pill">3-year EV warranty</span>
-            <span class="trust-pill">Charging advice</span>
-            <span class="trust-pill">Savings calculator</span>
-            <span class="trust-pill">Personal response from Dan</span>
+            <span class="trust-pill">3-year unlimited mileage vehicle cover</span>
+            <span class="trust-pill">8-year / 100k battery cover</span>
+            <span class="trust-pill">Personal saving estimate</span>
+            <span class="trust-pill">BMW EV advice</span>
           </div>
 
-          <div class="btn-row" style="margin-top:18px;">
-            <a class="btn" href="#enquire">Enquire about BMW EVs</a>
-            <a class="btn-ghost" href="#calculator">Check savings</a>
-          </div>
-
-          <a class="mini-link" href="index.html">Considering electric? Click here.</a>
+          <a class="mini-link" href="#calculator">Take two minutes and check the numbers.</a>
         </div>
       </div>
 
       <div class="section">
-        <div class="section-head">
-          <div class="section-kicker">Why BMW EV</div>
-          <h2>Why people choose a BMW electric car.</h2>
-        </div>
-        <p class="step-desc">BMW states that the high-voltage battery in fully electric vehicles is covered for up to 8 years or 100,000 miles, whichever comes first, alongside 3-year unlimited mileage electric vehicle cover [web:235][web:238].</p>
-        <p class="step-desc">That gives buyers a useful confidence layer when comparing petrol, diesel, hybrid, and full electric ownership [web:235].</p>
-      </div>
-
-      <div class="section" id="models">
-        <div class="section-head">
-          <div class="section-kicker">Model highlights</div>
-          <h2>Popular BMW EVs worth a look.</h2>
-        </div>
-        <div class="ev-grid">
-          <div class="ev-card">
-            <h3>BMW i4</h3>
-            <p>Sporty saloon feel, strong all-round usability, and BMW range figures around 333–370 miles depending on version [web:254].</p>
-          </div>
-          <div class="ev-card">
-            <h3>BMW i5</h3>
-            <p>Executive-car comfort with BMW quoting up to 357 miles of all-electric range [web:255][web:253].</p>
-          </div>
-          <div class="ev-card">
-            <h3>BMW iX</h3>
-            <p>A larger, more commanding EV for buyers who want space, presence, and relaxed long-distance driving.</p>
-          </div>
+        <div class="ev-story">
+          <p>Take two minutes to fill this in. Dan will come back with your personal saving estimate, a shortlist of the right BMW EVs for you and honest answers to every question you have, however basic you think they are.</p>
+          <p class="disclaimer">Savings are not guaranteed and will vary based on individual mileage, driving behaviour, charging method, energy tariff and vehicle specification. Dan will provide a personalised estimate based on the information you share.</p>
         </div>
       </div>
 
       <div class="section" id="calculator">
         <div class="section-head">
-          <div class="section-kicker">Savings calculator</div>
+          <div class="section-kicker">Fuel saving calculator</div>
           <h2>See what switching could save you.</h2>
         </div>
+
         <div class="calc-card">
           <div class="calc-grid">
             <div class="field-group">
@@ -136,20 +113,20 @@
               <input id="fuelPrice" type="number" value="156.8" step="0.1" min="0">
             </div>
             <div class="field-group">
-              <label>EV efficiency (miles/kWh)</label>
-              <input id="evEfficiency" type="number" value="3.2" step="0.1" min="1">
+              <label>Current MPG estimate</label>
+              <input id="currentMpg" type="number" value="45" step="1" min="1">
             </div>
             <div class="field-group" style="grid-column:1 / -1;">
               <label>Annual mileage: <span id="mileageLabel">12000</span> miles</label>
               <input id="annualMileage" type="range" min="4000" max="30000" step="500" value="12000">
             </div>
             <div class="field-group">
-              <label>Home charging rate (p/kWh)</label>
-              <input id="chargeRate" type="number" value="7.9" step="0.1" min="0">
+              <label>EV efficiency (miles/kWh)</label>
+              <input id="evEfficiency" type="number" value="3.2" step="0.1" min="1">
             </div>
             <div class="field-group">
-              <label>Current MPG estimate</label>
-              <input id="currentMpg" type="number" value="45" step="1" min="1">
+              <label>Home charging rate (p/kWh)</label>
+              <input id="chargeRate" type="number" value="7.9" step="0.1" min="0">
             </div>
           </div>
 
@@ -160,31 +137,48 @@
             <div class="result-row"><span>Estimated monthly saving</span><strong id="monthlySaving">£0</strong></div>
           </div>
 
-          <p class="step-desc" id="calcNote" style="margin-top:14px;">Based on overnight home charging at 7.9p/kWh versus your current fuel price.</p>
-          <a class="mini-link" href="#enquire">Push this into an EV enquiry.</a>
+          <p class="ev-note" id="calcNote" style="margin-top:14px;">Based on overnight home charging at 7.9p/kWh versus your current fuel price.</p>
         </div>
       </div>
 
       <div class="section">
         <div class="section-head">
-          <div class="section-kicker">Need a comparison</div>
-          <h2>Not sure if electric is right yet?</h2>
+          <div class="section-kicker">Why BMW EV</div>
+          <h2>Why people choose a BMW electric car.</h2>
         </div>
-        <div class="cta-panel">
-          <p class="step-desc" style="margin-top:0;">If you are still weighing up petrol, hybrid, plug-in hybrid, and full electric, Dan can help you compare the trade-offs quickly. Use the calculator above, then send your details and Dan will take it from there.</p>
-          <div class="btn-row">
-            <a class="btn" href="#enquire">Get EV advice</a>
-            <a class="btn-ghost" href="Value.html">Value my current car</a>
+        <div class="ev-story">
+          <p>BMW states that the high-voltage battery in fully electric vehicles is covered for up to 8 years or 100,000 miles from first registration, whichever comes first, alongside 3-year unlimited mileage electric vehicle cover [web:237][web:238][web:233].</p>
+          <p>That gives buyers confidence on both everyday ownership and long-term battery protection. If you are comparing petrol, hybrid, plug-in hybrid and full electric, this is where the real-life numbers start to matter.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <div class="section-kicker">Model highlights</div>
+          <h2>Popular BMW EVs worth a look.</h2>
+        </div>
+        <div class="ev-grid">
+          <div class="ev-story">
+            <h3>BMW i4</h3>
+            <p>Sporty saloon feel, strong all-round usability, and BMW range figures around 333–370 miles depending on version [web:254].</p>
+          </div>
+          <div class="ev-story">
+            <h3>BMW i5</h3>
+            <p>Executive-car comfort with BMW quoting up to 357 miles of all-electric range [web:255][web:253].</p>
+          </div>
+          <div class="ev-story">
+            <h3>BMW iX</h3>
+            <p>A larger, more commanding EV for buyers who want space, presence, and relaxed long-distance driving.</p>
           </div>
         </div>
       </div>
 
-      <div class="section" id="enquire">
+      <div class="section">
         <div class="section-head">
           <div class="section-kicker">Lead form</div>
           <h2>Tell Dan what you need.</h2>
         </div>
-        <p class="step-desc">Leave your details and Dan will come back personally with the best BMW EV options for your driving, budget, and timeline.</p>
+        <p class="ev-note">Leave your details and Dan will come back personally with the best BMW EV options for your driving, budget, and timeline.</p>
 
         <form class="input-card" action="https://formspree.io/f/xqewleog" method="POST" id="evForm">
           <div class="two-col">
@@ -197,6 +191,7 @@
               <input name="phone" id="phone" type="tel" placeholder="Your number" required>
             </div>
           </div>
+
           <div class="two-col">
             <div class="field-group">
               <label>Email</label>
@@ -207,6 +202,7 @@
               <input name="current_car" id="currentCar" type="text" placeholder="What you drive now">
             </div>
           </div>
+
           <div class="field-group">
             <label>What are you looking for?</label>
             <textarea name="message" id="message" rows="5" placeholder="Tell Dan about your mileage, charging access, budget, and the BMW EV you are considering."></textarea>
@@ -218,9 +214,10 @@
           <input type="hidden" name="fuel_type" id="fuelTypeOut">
           <input type="hidden" name="engine_size" id="engineSizeOut">
           <input type="hidden" name="fuel_price" id="fuelPriceOut">
-          <input type="hidden" name="annual_mileage" id="annualMileageOut">
-          <input type="hidden" name="ev_charging_rate" id="chargeRateOut">
           <input type="hidden" name="current_mpg" id="currentMpgOut">
+          <input type="hidden" name="annual_mileage" id="annualMileageOut">
+          <input type="hidden" name="ev_efficiency" id="evEfficiencyOut">
+          <input type="hidden" name="ev_charge_rate" id="chargeRateOut">
           <input type="hidden" name="annual_fuel_cost" id="fuelCostOut">
           <input type="hidden" name="annual_ev_cost" id="evCostOut">
           <input type="hidden" name="annual_saving" id="annualSavingOut">
@@ -238,23 +235,26 @@
           <div class="section-kicker">Questions</div>
           <h2>Quick EV answers.</h2>
         </div>
+
         <div class="faq-item">
           <h3>How long is the BMW battery warranty?</h3>
-          <p>BMW states that the high-voltage battery in fully electric vehicles is covered for up to 8 years or 100,000 miles, whichever comes first [web:235][web:238].</p>
+          <p>BMW states that the high-voltage battery in fully electric vehicles is covered for up to 8 years or 100,000 miles from first registration, whichever comes first, alongside 3-year unlimited mileage electric vehicle cover [web:237][web:238][web:233].</p>
         </div>
+
         <div class="faq-item">
           <h3>How much range do BMW EVs offer?</h3>
           <p>BMW lists the i4 at around 333–370 miles depending on version, and the i5 at up to 357 miles [web:254][web:255].</p>
         </div>
+
         <div class="faq-item">
           <h3>Can I still part-exchange my current car?</h3>
           <p>Yes. Dan can help you work out whether the numbers make sense before you commit.</p>
         </div>
       </div>
 
-      <div class="section" style="padding-bottom:30px;">
+      <div class="section">
         <div class="btn-row">
-          <a class="btn" href="#enquire">Considering electric? Click here.</a>
+          <a class="btn" href="#calculator">Considering electric? Click here.</a>
           <a class="btn-ghost" href="index.html">Back to home</a>
         </div>
       </div>
@@ -267,9 +267,9 @@
     const fuelType = document.getElementById('fuelType');
     const engineSize = document.getElementById('engineSize');
     const fuelPrice = document.getElementById('fuelPrice');
+    const currentMpg = document.getElementById('currentMpg');
     const evEfficiency = document.getElementById('evEfficiency');
     const chargeRate = document.getElementById('chargeRate');
-    const currentMpg = document.getElementById('currentMpg');
 
     const fuelCost = document.getElementById('fuelCost');
     const evCost = document.getElementById('evCost');
@@ -281,9 +281,10 @@
       fuelType: document.getElementById('fuelTypeOut'),
       engineSize: document.getElementById('engineSizeOut'),
       fuelPrice: document.getElementById('fuelPriceOut'),
-      annualMileage: document.getElementById('annualMileageOut'),
-      chargeRate: document.getElementById('chargeRateOut'),
       currentMpg: document.getElementById('currentMpgOut'),
+      annualMileage: document.getElementById('annualMileageOut'),
+      evEfficiency: document.getElementById('evEfficiencyOut'),
+      chargeRate: document.getElementById('chargeRateOut'),
       fuelCost: document.getElementById('fuelCostOut'),
       evCost: document.getElementById('evCostOut'),
       annualSaving: document.getElementById('annualSavingOut'),
@@ -295,13 +296,14 @@
     function calc(){
       const miles = parseFloat(annualMileage.value || 0);
       const mpg = parseFloat(currentMpg.value || 1);
-      const price = parseFloat(fuelPrice.value || 0);
+      const pPerL = parseFloat(fuelPrice.value || 0);
       const kwhRate = parseFloat(chargeRate.value || 0);
       const eff = parseFloat(evEfficiency.value || 3.2);
-      const pPerL = price;
+
       const currentGallons = miles / mpg;
       const currentLitres = currentGallons * 4.54609;
       const annualFuel = currentLitres * (pPerL / 100);
+
       const evKwh = miles / eff;
       const annualEv = evKwh * (kwhRate / 100);
       const save = Math.max(0, annualFuel - annualEv);
@@ -314,20 +316,21 @@
 
       out.fuelType.value = fuelType.value;
       out.engineSize.value = engineSize.value;
-      out.fuelPrice.value = price.toFixed(1);
-      out.annualMileage.value = miles.toFixed(0);
-      out.chargeRate.value = kwhRate.toFixed(1);
+      out.fuelPrice.value = pPerL.toFixed(1);
       out.currentMpg.value = mpg.toFixed(0);
+      out.annualMileage.value = miles.toFixed(0);
+      out.evEfficiency.value = eff.toFixed(1);
+      out.chargeRate.value = kwhRate.toFixed(1);
       out.fuelCost.value = annualFuel.toFixed(2);
       out.evCost.value = annualEv.toFixed(2);
       out.annualSaving.value = save.toFixed(2);
       out.monthlySaving.value = (save / 12).toFixed(2);
 
-      calcSummary.value = `Fuel type: ${fuelType.options[fuelType.selectedIndex].text}; Engine: ${engineSize.value}L; Fuel price: ${price.toFixed(1)}p/l; Annual mileage: ${miles.toLocaleString('en-GB')}; EV charging: ${kwhRate.toFixed(1)}p/kWh; Current MPG: ${mpg}; Annual fuel cost: ${fmt(annualFuel)}; Annual EV cost: ${fmt(annualEv)}; Annual saving: ${fmt(save)}; Monthly saving: ${fmt(save/12)}; Based on overnight charging at 7.9p/kWh.`;
+      calcSummary.value = `Fuel type: ${fuelType.options[fuelType.selectedIndex].text}; Engine: ${engineSize.value}L; Current fuel price: ${pPerL.toFixed(1)}p/l; Current MPG: ${mpg}; Annual mileage: ${miles.toLocaleString('en-GB')}; EV efficiency: ${eff.toFixed(1)} miles/kWh; Home charging: ${kwhRate.toFixed(1)}p/kWh; Annual fuel cost: ${fmt(annualFuel)}; Annual EV cost: ${fmt(annualEv)}; Annual saving: ${fmt(save)}; Monthly saving: ${fmt(save/12)}; Based on overnight charging at 7.9p/kWh.`;
     }
 
-    [annualMileage, fuelType, engineSize, fuelPrice, evEfficiency, chargeRate, currentMpg].forEach(el => el.addEventListener('input', calc));
+    [annualMileage, fuelType, engineSize, fuelPrice, currentMpg, evEfficiency, chargeRate].forEach(el => el.addEventListener('input', calc));
     calc();
   </script>
 </body>
-            </html>
+</html>
