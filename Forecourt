@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forecourt Check</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ==================== TOKENS ==================== */
+:root,[data-theme="light"]{
+  --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;
+  --color-surface-offset:#f3f0ec;--color-surface-offset-2:#edeae5;
+  --color-surface-dynamic:#e6e4df;--color-divider:#dcd9d5;--color-border:#d4d1ca;
+  --color-text:#28251d;--color-text-muted:#7a7974;--color-text-faint:#bab9b4;
+  --color-text-inverse:#f9f8f4;
+  --color-primary:#01696f;--color-primary-hover:#0c4e54;--color-primary-active:#0f3638;
+  --color-primary-highlight:#cedcd8;
+  --color-success:#437a22;--color-success-hover:#2e5c10;--color-success-highlight:#d4dfcc;
+  --color-error:#a12c7b;--color-error-highlight:#e0ced7;
+  --color-warning:#964219;--color-warning-highlight:#ddcfc6;
+  --color-orange:#da7101;--color-gold:#d19900;--color-gold-highlight:#e9e0c6;
+  --radius-sm:.375rem;--radius-md:.5rem;--radius-lg:.75rem;--radius-xl:1rem;--radius-full:9999px;
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;
+  --space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;
+  --text-xs:clamp(0.75rem,0.7rem + 0.25vw,0.875rem);
+  --text-sm:clamp(0.875rem,0.8rem + 0.35vw,1rem);
+  --text-base:clamp(1rem,0.95rem + 0.25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem + 0.75vw,1.5rem);
+  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+  --shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);
+  --shadow-md:0 4px 12px oklch(0.2 0.01 80/0.08);
+  --shadow-lg:0 12px 32px oklch(0.2 0.01 80/0.12);
+  --transition:180ms cubic-bezier(0.16,1,0.3,1);
+  --font-body:'Satoshi',system-ui,sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+[data-theme="dark"]{
+  --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
+  --color-surface-offset:#1d1c1a;--color-surface-offset-2:#22211f;
+  --color-surface-dynamic:#2d2c2a;--color-divider:#262523;--color-border:#393836;
+  --color-text:#cdccca;--color-text-muted:#797876;--color-text-faint:#5a5957;
+  --color-text-inverse:#2b2a28;
+  --color-primary:#4f98a3;--color-primary-hover:#227f8b;--color-primary-active:#1a626b;
+  --color-primary-highlight:#313b3b;
+  --color-success:#6daa45;--color-success-hover:#4d8f25;--color-success-highlight:#3a4435;
+  --color-error:#d163a7;--color-error-highlight:#4c3d46;
+  --color-warning:#bb653b;--color-warning-highlight:#564942;
+  --color-orange:#fdab43;--color-gold:#e8af34;--color-gold-highlight:#4d4332;
+  --shadow-sm:0 1px 2px oklch(0 0 0/0.2);
+  --shadow-md:0 4px 12px oklch(0 0 0/0.3);
+  --shadow-lg:0 12px 32px oklch(0 0 0/0.4);
+}
+
+/* ==================== BASE ==================== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);line-height:1.6}
+img,svg{display:block;max-width:100%}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;transition:color var(--transition),background var(--transition),border-color var(--transition),box-shadow var(--transition),transform var(--transition)}
+input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{text-wrap:balance;line-height:1.2}
+p{text-wrap:pretty;max-width:72ch}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+ul[role="list"]{list-style:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}
+
+/* ==================== APP SHELL ==================== */
+.app{display:flex;flex-direction:column;min-height:100dvh}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:var(--space-3) var(--space-4);
+  background:var(--color-surface);
+  border-bottom:1px solid var(--color-border);
+  box-shadow:var(--shadow-sm);
+}
+.topbar-brand{display:flex;align-items:center;gap:var(--space-2)}
+.topbar-logo{display:flex;align-items:center;color:var(--color-primary)}
+.topbar-title{font-weight:700;font-size:var(--text-base);letter-spacing:-0.01em}
+.topbar-actions{display:flex;align-items:center;gap:var(--space-2)}
+.icon-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:var(--radius-md);
+  color:var(--color-text-muted);
+}
+.icon-btn:hover{background:var(--color-surface-offset);color:var(--color-text)}
+.icon-btn:active{transform:scale(0.95)}
+
+.main{flex:1;padding:var(--space-4);max-width:960px;margin:0 auto;width:100%}
+
+/* ==================== VIEWS ==================== */
+.view{display:none}
+.view.active{display:block}
+
+/* ==================== TABS ==================== */
+.tabs{display:flex;gap:var(--space-1);padding:var(--space-1);background:var(--color-surface-offset);border-radius:var(--radius-lg);margin-bottom:var(--space-6)}
+.tab{flex:1;padding:var(--space-2) var(--space-4);border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:500;color:var(--color-text-muted);text-align:center}
+.tab:hover{color:var(--color-text)}
+.tab.active{background:var(--color-surface-2);color:var(--color-primary);box-shadow:var(--shadow-sm)}
+
+/* ==================== CARDS ==================== */
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6);box-shadow:var(--shadow-sm)}
+.card+.card{margin-top:var(--space-4)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)}
+.card-title{font-size:var(--text-lg);font-weight:700}
+.card-subtitle{font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-1)}
+
+/* ==================== FORMS ==================== */
+.form-group{margin-bottom:var(--space-4)}
+.form-label{display:block;font-size:var(--text-sm);font-weight:500;margin-bottom:var(--space-2)}
+.form-input{
+  width:100%;padding:var(--space-3) var(--space-4);
+  background:var(--color-surface-2);border:1px solid var(--color-border);
+  border-radius:var(--radius-md);font-size:var(--text-base);
+  transition:border-color var(--transition),box-shadow var(--transition);
+}
+.form-input:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px color-mix(in oklab,var(--color-primary) 20%,transparent)}
+.form-input::placeholder{color:var(--color-text-faint)}
+
+/* ==================== BUTTONS ==================== */
+.btn{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-5);border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:600;line-height:1;min-height:44px;transition:all var(--transition)}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--color-primary);color:var(--color-text-inverse)}
+.btn-primary:hover{background:var(--color-primary-hover)}
+.btn-primary:active{background:var(--color-primary-active)}
+.btn-secondary{background:var(--color-surface-offset);color:var(--color-text);border:1px solid var(--color-border)}
+.btn-secondary:hover{background:var(--color-surface-dynamic)}
+.btn-ghost{color:var(--color-text-muted)}
+.btn-ghost:hover{color:var(--color-text);background:var(--color-surface-offset)}
+.btn-danger{background:var(--color-error);color:#fff}
+.btn-success{background:var(--color-success);color:#fff}
+.btn-success:hover{background:var(--color-success-hover)}
+.btn-sm{padding:var(--space-2) var(--space-3);font-size:var(--text-xs);min-height:32px}
+.btn-full{width:100%;justify-content:center}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+/* ==================== BADGE ==================== */
+.badge{display:inline-flex;align-items:center;gap:var(--space-1);padding:2px var(--space-2);border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:600}
+.badge-primary{background:var(--color-primary-highlight);color:var(--color-primary)}
+.badge-success{background:var(--color-success-highlight);color:var(--color-success)}
+.badge-warning{background:var(--color-warning-highlight);color:var(--color-warning)}
+.badge-error{background:var(--color-error-highlight);color:var(--color-error)}
+.badge-neutral{background:var(--color-surface-offset-2);color:var(--color-text-muted)}
+.badge-gold{background:var(--color-gold-highlight);color:var(--color-gold)}
+
+/* ==================== REG INPUT ==================== */
+.reg-input-wrap{display:flex;gap:var(--space-3);align-items:flex-start}
+.reg-input-wrap .form-input{font-family:var(--font-mono);font-weight:500;text-transform:uppercase;letter-spacing:.08em;font-size:var(--text-lg)}
+.reg-list{margin-top:var(--space-4)}
+.reg-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:var(--space-3) var(--space-4);
+  background:var(--color-surface-2);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  margin-bottom:var(--space-2);
+  transition:all var(--transition);
+}
+.reg-plate{font-family:var(--font-mono);font-weight:600;font-size:var(--text-base);letter-spacing:.04em}
+.reg-info{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px}
+.reg-actions{display:flex;gap:var(--space-2);align-items:center}
+
+/* ==================== VEHICLE LOOKUP ==================== */
+.vehicle-badge{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  padding:var(--space-2) var(--space-3);
+  background:var(--color-gold-highlight);color:var(--color-gold);
+  border-radius:var(--radius-md);font-size:var(--text-xs);font-weight:600;
+  margin-top:var(--space-2)
+}
+
+/* ==================== ALLOCATION ==================== */
+.exec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:var(--space-4);margin-top:var(--space-4)}
+.exec-card{
+  background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-xl);padding:var(--space-5);box-shadow:var(--shadow-sm);
+  transition:box-shadow var(--transition);
+}
+.exec-card:hover{box-shadow:var(--shadow-md)}
+.exec-card-head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4)}
+.exec-avatar{
+  width:40px;height:40px;border-radius:var(--radius-full);
+  background:var(--color-primary-highlight);color:var(--color-primary);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--text-sm);
+  flex-shrink:0
+}
+.exec-name{font-weight:600;font-size:var(--text-base)}
+.exec-count{font-size:var(--text-xs);color:var(--color-text-muted)}
+.exec-cars{display:flex;flex-direction:column;gap:var(--space-2)}
+.exec-car-tag{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:var(--space-2) var(--space-3);
+  background:var(--color-surface-offset);border-radius:var(--radius-md);
+  font-family:var(--font-mono);font-size:var(--text-xs);font-weight:500;
+}
+
+/* ==================== CHECKLIST ==================== */
+.checklist-header{
+  display:flex;align-items:center;gap:var(--space-4);
+  padding:var(--space-4) var(--space-5);
+  background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-xl);margin-bottom:var(--space-4);
+  box-shadow:var(--shadow-sm);
+}
+.checklist-reg{font-family:var(--font-mono);font-size:var(--text-xl);font-weight:700;letter-spacing:.04em}
+.checklist-vehicle{font-size:var(--text-sm);color:var(--color-text-muted)}
+.progress-bar{height:6px;background:var(--color-surface-dynamic);border-radius:var(--radius-full);margin-top:var(--space-3);overflow:hidden}
+.progress-fill{height:100%;background:var(--color-primary);border-radius:var(--radius-full);transition:width .4s ease}
+
+.check-items{display:flex;flex-direction:column;gap:var(--space-3)}
+.check-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:var(--space-4) var(--space-5);
+  background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+  transition:all var(--transition);
+}
+.check-item.answered-yes{background:var(--color-success-highlight);border-color:color-mix(in oklab,var(--color-success) 30%,transparent)}
+.check-item.answered-no{background:var(--color-error-highlight);border-color:color-mix(in oklab,var(--color-error) 30%,transparent)}
+.check-item-label{font-weight:500;font-size:var(--text-sm);flex:1;margin-right:var(--space-4)}
+.check-item-note{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px}
+.yn-btns{display:flex;gap:var(--space-2);flex-shrink:0}
+.yn-btn{
+  min-width:48px;height:36px;border-radius:var(--radius-md);
+  font-size:var(--text-xs);font-weight:700;padding:0 var(--space-3);
+  border:1.5px solid var(--color-border);color:var(--color-text-muted);
+  transition:all var(--transition);
+}
+.yn-btn:active{transform:scale(0.95)}
+.yn-btn.yes.active{background:var(--color-success);border-color:var(--color-success);color:#fff}
+.yn-btn.no.active{background:var(--color-error);border-color:var(--color-error);color:#fff}
+.yn-btn.yes:not(.active):hover{border-color:var(--color-success);color:var(--color-success)}
+.yn-btn.no:not(.active):hover{border-color:var(--color-error);color:var(--color-error)}
+
+/* ==================== CAR QUEUE ==================== */
+.queue-list{display:flex;flex-direction:column;gap:var(--space-3)}
+.queue-item{
+  display:flex;align-items:center;gap:var(--space-3);
+  padding:var(--space-4) var(--space-5);
+  background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);
+  cursor:pointer;transition:all var(--transition);
+}
+.queue-item:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.queue-item.complete{opacity:.65}
+.queue-item.in-progress{border-color:var(--color-primary);border-width:1.5px}
+.queue-reg{font-family:var(--font-mono);font-weight:700;font-size:var(--text-base);letter-spacing:.04em;min-width:90px}
+.queue-vehicle{flex:1;font-size:var(--text-sm);color:var(--color-text-muted)}
+.queue-status{flex-shrink:0}
+
+/* ==================== REPORT ==================== */
+.report-section{margin-bottom:var(--space-6)}
+.report-section-title{font-size:var(--text-base);font-weight:700;padding-bottom:var(--space-3);border-bottom:1px solid var(--color-divider);margin-bottom:var(--space-4)}
+.report-car{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4);margin-bottom:var(--space-3)}
+.report-car-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)}
+.report-car-reg{font-family:var(--font-mono);font-weight:700}
+.report-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr));gap:var(--space-2)}
+.report-item{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);background:var(--color-surface-offset)}
+.report-item.pass{background:var(--color-success-highlight);color:var(--color-success)}
+.report-item.fail{background:var(--color-error-highlight);color:var(--color-error)}
+.report-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.report-dot.pass{background:var(--color-success)}
+.report-dot.fail{background:var(--color-error)}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);margin-bottom:var(--space-6)}
+.kpi-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4);text-align:center;box-shadow:var(--shadow-sm)}
+.kpi-val{font-size:var(--text-xl);font-weight:700;color:var(--color-primary)}
+.kpi-label{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1)}
+
+/* ==================== EXEC SELECTOR ==================== */
+.exec-name-row{display:flex;gap:var(--space-3);align-items:flex-start}
+.divider{height:1px;background:var(--color-divider);margin:var(--space-5) 0}
+
+/* ==================== MOBILE ==================== */
+@media(max-width:600px){
+  .topbar{padding:var(--space-3)}
+  .main{padding:var(--space-3)}
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+  .yn-btn{min-width:42px}
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.view.active .card,.view.active .queue-item,.view.active .check-item{animation:slideUp .2s ease forwards}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.skeleton{background:linear-gradient(90deg,var(--color-surface-offset) 25%,var(--color-surface-dynamic) 50%,var(--color-surface-offset) 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:var(--radius-sm)}
+
+/* ==================== TOAST ==================== */
+#toast-container{position:fixed;bottom:var(--space-6);left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:var(--space-2);align-items:center;pointer-events:none}
+.toast{background:var(--color-text);color:var(--color-bg);padding:var(--space-3) var(--space-5);border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:500;box-shadow:var(--shadow-lg);pointer-events:auto;animation:slideUp .2s ease}
+.toast.success{background:var(--color-success)}
+.toast.error{background:var(--color-error)}
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--space-12) var(--space-8);color:var(--color-text-muted)}
+.empty-icon{width:48px;height:48px;color:var(--color-text-faint);margin-bottom:var(--space-4)}
+.empty-state h3{color:var(--color-text);font-size:var(--text-base);margin-bottom:var(--space-2)}
+.empty-state p{font-size:var(--text-sm);max-width:32ch;margin-bottom:var(--space-4)}
+
+/* ==================== MISC ==================== */
+.flex{display:flex}.items-center{align-items:center}.gap-2{gap:var(--space-2)}.gap-3{gap:var(--space-3)}.justify-between{justify-content:space-between}
+.mt-4{margin-top:var(--space-4)}.mt-2{margin-top:var(--space-2)}.mb-4{margin-bottom:var(--space-4)}
+.text-muted{color:var(--color-text-muted)}.text-sm{font-size:var(--text-sm)}.text-xs{font-size:var(--text-xs)}.font-mono{font-family:var(--font-mono)}.font-bold{font-weight:700}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="Forecourt Check Logo">
+        <rect width="32" height="32" rx="8" fill="var(--color-primary)"/>
+        <path d="M6 20 L10 12 L16 16 L20 10 L26 18" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="26" cy="18" r="2" fill="white"/>
+        <rect x="8" y="22" width="16" height="2" rx="1" fill="white" opacity="0.6"/>
+      </svg>
+    </div>
+    <span class="topbar-title">Forecourt Check</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="user-toggle" title="Switch role" aria-label="Switch role">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ROLE INDICATOR -->
+<div id="role-bar" style="background:var(--color-primary-highlight);color:var(--color-primary);font-size:var(--text-xs);font-weight:600;text-align:center;padding:var(--space-1) var(--space-4)">
+  VIEW: MANAGER — tap the person icon to switch
+</div>
+
+<main class="main">
+
+<!-- ====== MANAGER VIEW ====== -->
+<div id="view-manager" class="view active">
+  <div class="tabs" role="tablist">
+    <button class="tab active" role="tab" data-tab="tab-register">Register Cars</button>
+    <button class="tab" role="tab" data-tab="tab-allocate">Allocate</button>
+    <button class="tab" role="tab" data-tab="tab-report">Reports</button>
+  </div>
+
+  <!-- TAB: REGISTER CARS -->
+  <div id="tab-register" class="tab-panel">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Add Vehicles to Forecourt</div>
+          <div class="card-subtitle">Enter registration plates to begin this week's check</div>
+        </div>
+        <span class="badge badge-primary" id="reg-count-badge">0 cars</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-input">Registration Plate</label>
+        <div class="reg-input-wrap">
+          <input type="text" id="reg-input" class="form-input" placeholder="e.g. EA79MHO" maxlength="8" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase">
+          <button class="btn btn-primary" id="add-reg-btn" style="flex-shrink:0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add
+          </button>
+        </div>
+        <div id="vehicle-lookup-result" style="margin-top:var(--space-2)"></div>
+      </div>
+
+      <div class="reg-list" id="reg-list">
+        <div class="empty-state">
+          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <h3>No vehicles yet</h3>
+          <p>Add registration plates above to start the forecourt check</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: ALLOCATE -->
+  <div id="tab-allocate" class="tab-panel hidden">
+    <div class="card mb-4">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Sales Executives</div>
+          <div class="card-subtitle">Add today's team and allocate cars</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="exec-input">Executive Name</label>
+        <div class="exec-name-row">
+          <input type="text" id="exec-input" class="form-input" placeholder="e.g. James, Sarah…">
+          <button class="btn btn-secondary" id="add-exec-btn" style="flex-shrink:0">Add</button>
+        </div>
+      </div>
+      <div id="exec-names-list" style="display:flex;flex-wrap:wrap;gap:var(--space-2)"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Auto Allocate</div>
+          <div class="card-subtitle">Distribute cars evenly across active executives</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap">
+        <div class="form-group" style="margin:0;display:flex;align-items:center;gap:var(--space-2)">
+          <label class="form-label" style="margin:0;white-space:nowrap">Max per exec:</label>
+          <input type="number" id="max-per-exec" class="form-input" value="8" min="1" max="20" style="width:80px">
+        </div>
+        <button class="btn btn-primary" id="auto-allocate-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+          Auto-allocate
+        </button>
+        <button class="btn btn-ghost btn-sm" id="clear-allocation-btn">Clear</button>
+      </div>
+      <div class="exec-grid" id="exec-grid" style="margin-top:var(--space-4)">
+        <div class="empty-state" style="grid-column:1/-1">
+          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <h3>No executives yet</h3>
+          <p>Add team members and then click Auto-allocate</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: REPORTS -->
+  <div id="tab-report" class="tab-panel hidden">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Check Reports</div>
+          <div class="card-subtitle">Summary of completed forecourt checks</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="export-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+      <div id="report-content">
+        <div class="empty-state">
+          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <h3>No reports yet</h3>
+          <p>Reports appear once executives complete their car checks</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== EXEC VIEW ====== -->
+<div id="view-exec" class="view">
+  <div class="card mb-4">
+    <div class="card-header">
+      <div>
+        <div class="card-title" id="exec-view-name">My Cars to Check</div>
+        <div class="card-subtitle">Tap a car to open its checklist</div>
+      </div>
+      <select id="exec-selector" class="form-input" style="max-width:160px;padding:var(--space-2) var(--space-3)">
+        <option value="">Select you…</option>
+      </select>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="exec-progress-fill" style="width:0%"></div></div>
+    <div class="text-xs text-muted mt-2" id="exec-progress-label">0 / 0 cars checked</div>
+  </div>
+
+  <div id="exec-queue" class="queue-list">
+    <div class="empty-state">
+      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <h3>No cars allocated</h3>
+      <p>Select your name above — the manager will allocate cars</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== CHECKLIST VIEW ====== -->
+<div id="view-checklist" class="view">
+  <button class="btn btn-ghost btn-sm mb-4" id="back-to-queue">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    Back to my list
+  </button>
+
+  <div class="checklist-header">
+    <div style="flex:1">
+      <div class="checklist-reg" id="checklist-reg-display">-</div>
+      <div class="checklist-vehicle" id="checklist-vehicle-display">-</div>
+      <div class="progress-bar"><div class="progress-fill" id="checklist-progress" style="width:0%"></div></div>
+    </div>
+    <div id="checklist-status-badge"></div>
+  </div>
+
+  <div class="check-items" id="check-items-list"></div>
+
+  <div style="margin-top:var(--space-6)">
+    <button class="btn btn-success btn-full" id="complete-check-btn" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Mark Complete &amp; Submit
+    </button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+const CHECK_ITEMS = [
+  {id:'clean',label:'Clean Inside & Out',note:'Interior vacuumed, exterior washed'},
+  {id:'fuel',label:'Min ¼ Tank Fuel',note:'Fuel gauge at least quarter full'},
+  {id:'charged',label:'Fully Charged (EV/PHEV)',note:'Electric vehicles only — 80%+ charge'},
+  {id:'aircon',label:'Aircon Off',note:'Air conditioning switched off'},
+  {id:'radio',label:'Radio Off',note:'No audio playing'},
+  {id:'address',label:'No Address in Sat Nav',note:'Clear navigation history'},
+  {id:'phones',label:'No Phones Paired',note:'Bluetooth devices cleared'},
+  {id:'personal',label:'No Personal Items',note:'No staff belongings inside'},
+  {id:'receipts',label:'No Receipts in Glovebox',note:'Glovebox empty of paperwork'},
+  {id:'tyre_inflator',label:'Tyre Inflator Kit',note:'Inflation kit present and accessible'},
+  {id:'first_aid',label:'First Aid Kit',note:'Kit present and in-date'},
+  {id:'mileage',label:'Mileage Reset',note:'Trip computer reset to zero'},
+  {id:'warning',label:'No Warning Lights',note:'Dashboard clear of all warnings'},
+  {id:'profiles',label:'No Profile Set',note:'No driver profiles or seat memory stored'},
+];
+
+let state = {
+  role:'manager',
+  vehicles:[],
+  executives:[],
+  checks:{},
+  currentCheckReg:null,
+  currentExec:null,
+  activeManagerTab:'tab-register',
+};
+
+(function(){
+  const btn=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
+  let d=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  r.setAttribute('data-theme',d);
+  btn&&btn.addEventListener('click',()=>{d=d==='dark'?'light':'dark';r.setAttribute('data-theme',d);btn.innerHTML=d==='dark'?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>':'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'})
+})();
+
+function toast(msg,type=''){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className='toast'+(type?' '+type:'');
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(),2800);
+}
+
+document.getElementById('user-toggle').addEventListener('click',()=>{
+  state.role=state.role==='manager'?'exec':'manager';
+  document.getElementById('view-manager').className='view'+(state.role==='manager'?' active':'');
+  document.getElementById('view-exec').className='view'+(state.role==='exec'?' active':'');
+  document.getElementById('view-checklist').className='view';
+  document.getElementById('role-bar').textContent=state.role==='manager'?'VIEW: MANAGER — tap the person icon to switch':'VIEW: SALES EXECUTIVE — tap the person icon to switch';
+  document.getElementById('role-bar').style.background=state.role==='manager'?'var(--color-primary-highlight)':'var(--color-gold-highlight)';
+  document.getElementById('role-bar').style.color=state.role==='manager'?'var(--color-primary)':'var(--color-gold)';
+  if(state.role==='exec') renderExecQueue();
+});
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
+    document.getElementById(tab.dataset.tab).classList.remove('hidden');
+    state.activeManagerTab=tab.dataset.tab;
+    if(tab.dataset.tab==='tab-report') renderReport();
+  });
+});
+
+async function lookupVehicle(reg){
+  const clean=reg.replace(/s/g,'').toUpperCase();
+  const el=document.getElementById('vehicle-lookup-result');
+  el.innerHTML='<div class="skeleton" style="height:28px;width:220px"></div>';
+  try{
+    const res=await fetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles',{
+      method:'POST',
+      headers:{'x-api-key':'kjaLVeD0UC1KtpcUyZIgd8aSJXiTI4wYaGzLItut','Content-Type':'application/json'},
+      body:JSON.stringify({registrationNumber:clean})
+    });
+    if(res.ok){
+      const d=await res.json();
+      const label=[d.make,d.colour,d.yearOfManufacture].filter(Boolean).join(' · ');
+      el.innerHTML=`<div class="vehicle-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>${label||clean}</div>`;
+      return{make:d.make||'',model:d.model||'',colour:d.colour||'',year:d.yearOfManufacture||''};
+    }
+  }catch(e){}
+  el.innerHTML='';
+  return{make:'',model:'',colour:'',year:''};
+}
+
+const regInput=document.getElementById('reg-input');
+regInput.addEventListener('keydown',e=>{if(e.key==='Enter') addReg()});
+document.getElementById('add-reg-btn').addEventListener('click',addReg);
+
+function addReg(){
+  const raw=regInput.value.trim().toUpperCase().replace(/s/g,'');
+  if(!raw){toast('Enter a registration plate','error');return;}
+  if(state.vehicles.find(v=>v.reg===raw)){toast(`${raw} already added`,'error');return;}
+  state.vehicles.push({reg:raw,make:'',model:'',colour:'',year:'',status:'pending'});
+  state.checks[raw]=CHECK_ITEMS.reduce((acc,ci)=>({...acc,[ci.id]:null}),{complete:false});
+  regInput.value='';
+  document.getElementById('vehicle-lookup-result').innerHTML='';
+  renderRegList();
+  saveState();
+  toast(`${raw} added`,'success');
+  lookupVehicle(raw).then(info=>{
+    const v=state.vehicles.find(x=>x.reg===raw);
+    if(v){Object.assign(v,info);renderRegList();saveState();}
+  });
+}
+
+function renderRegList(){
+  const list=document.getElementById('reg-list');
+  const count=state.vehicles.length;
+  document.getElementById('reg-count-badge').textContent=count+' car'+(count!==1?'s':'');
+  if(!count){list.innerHTML=`<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><h3>No vehicles yet</h3><p>Add registration plates above to start the forecourt check</p></div>`;return;}
+  list.innerHTML=state.vehicles.map((v,i)=>`
+    <div class="reg-item">
+      <div>
+        <div class="reg-plate">${v.reg}</div>
+        <div class="reg-info">${[v.make,v.colour,v.year].filter(Boolean).join(' · ')||'Looking up vehicle…'}</div>
+      </div>
+      <div class="reg-actions">
+        <span class="badge ${v.status==='complete'?'badge-success':v.status==='in-progress'?'badge-primary':'badge-neutral'}">${v.status}</span>
+        <button class="btn btn-ghost btn-sm" onclick="removeReg('${v.reg}')" aria-label="Remove ${v.reg}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function removeReg(reg){
+  state.vehicles=state.vehicles.filter(v=>v.reg!==reg);
+  delete state.checks[reg];
+  state.executives.forEach(e=>{e.cars=e.cars.filter(r=>r!==reg);});
+  renderRegList();
+  saveState();
+  toast(`${reg} removed`);
+}
+
+document.getElementById('add-exec-btn').addEventListener('click',addExec);
+document.getElementById('exec-input').addEventListener('keydown',e=>{if(e.key==='Enter') addExec()});
+
+function addExec(){
+  const name=document.getElementById('exec-input').value.trim();
+  if(!name) return;
+  if(state.executives.find(e=>e.name.toLowerCase()===name.toLowerCase())){toast('Already added','error');return;}
+  const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  state.executives.push({name,initials,cars:[]});
+  document.getElementById('exec-input').value='';
+  renderExecNames();renderExecGrid();renderExecSelector();
+  saveState();
+  toast(`${name} added`,'success');
+}
+
+function removeExec(name){
+  const exec=state.executives.find(e=>e.name===name);
+  if(exec){exec.cars.forEach(r=>{const v=state.vehicles.find(x=>x.reg===r);if(v)v.status='pending';});}
+  state.executives=state.executives.filter(e=>e.name!==name);
+  renderExecNames();renderExecGrid();renderExecSelector();
+  saveState();
+}
+
+function renderExecNames(){
+  const el=document.getElementById('exec-names-list');
+  el.innerHTML=state.executives.map(e=>`
+    <span class="badge badge-primary" style="font-size:var(--text-sm);padding:var(--space-2) var(--space-3)">
+      ${e.name}
+      <button onclick="removeExec('${e.name}')" style="margin-left:var(--space-1);cursor:pointer;opacity:.7" aria-label="Remove ${e.name}">×</button>
+    </span>
+  `).join('');
+}
+
+document.getElementById('auto-allocate-btn').addEventListener('click',()=>{
+  if(!state.executives.length){toast('Add executives first','error');return;}
+  const pending=state.vehicles.filter(v=>v.status==='pending');
+  if(!pending.length){toast('No unallocated cars','error');return;}
+  const max=parseInt(document.getElementById('max-per-exec').value)||8;
+  state.executives.forEach(e=>e.cars=[]);
+  let ei=0;
+  pending.forEach(v=>{
+    let attempts=0;
+    while(state.executives[ei].cars.length>=max&&attempts<state.executives.length){ei=(ei+1)%state.executives.length;attempts++;}
+    if(state.executives[ei].cars.length<max){state.executives[ei].cars.push(v.reg);}
+    ei=(ei+1)%state.executives.length;
+  });
+  renderExecGrid();renderExecSelector();
+  saveState();
+  toast('Cars allocated successfully','success');
+});
+
+document.getElementById('clear-allocation-btn').addEventListener('click',()=>{
+  state.executives.forEach(e=>{e.cars.forEach(r=>{const v=state.vehicles.find(x=>x.reg===r);if(v)v.status='pending';});e.cars=[];});
+  renderExecGrid();
+  saveState();
+  toast('Allocation cleared');
+});
+
+function renderExecGrid(){
+  const grid=document.getElementById('exec-grid');
+  if(!state.executives.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><h3>No executives yet</h3><p>Add team members above</p></div>`;return;}
+  grid.innerHTML=state.executives.map(e=>`
+    <div class="exec-card">
+      <div class="exec-card-head">
+        <div class="exec-avatar">${e.initials}</div>
+        <div>
+          <div class="exec-name">${e.name}</div>
+          <div class="exec-count">${e.cars.length} car${e.cars.length!==1?'s':''} allocated</div>
+        </div>
+      </div>
+      <div class="exec-cars">
+        ${e.cars.map(r=>{const v=state.vehicles.find(x=>x.reg===r)||{reg:r,status:'pending',make:''};return`<div class="exec-car-tag"><span>${r}</span><span class="badge badge-${v.status==='complete'?'success':v.status==='in-progress'?'primary':'neutral'} text-xs">${v.status}</span></div>`;}).join('')}
+        ${!e.cars.length?'<div class="text-xs text-muted">No cars yet</div>':''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderExecSelector(){
+  const sel=document.getElementById('exec-selector');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Select you…</option>'+state.executives.map(e=>`<option value="${e.name}">${e.name}</option>`).join('');
+  if(cur) sel.value=cur;
+}
+
+document.getElementById('exec-selector').addEventListener('change',e=>{
+  state.currentExec=e.target.value||null;
+  renderExecQueue();
+});
+
+function renderExecQueue(){
+  const exec=state.executives.find(e=>e.name===state.currentExec);
+  const el=document.getElementById('exec-queue');
+  const progFill=document.getElementById('exec-progress-fill');
+  const progLabel=document.getElementById('exec-progress-label');
+  if(!exec||!exec.cars.length){el.innerHTML=`<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><h3>No cars allocated</h3><p>Select your name above or wait for the manager to allocate</p></div>`;progFill.style.width='0%';progLabel.textContent='0 / 0 cars checked';return;}
+  const done=exec.cars.filter(r=>state.vehicles.find(v=>v.reg===r&&v.status==='complete')).length;
+  const total=exec.cars.length;
+  progFill.style.width=((done/total)*100)+'%';
+  progLabel.textContent=`${done} / ${total} cars checked`;
+  el.innerHTML=exec.cars.map(r=>{
+    const v=state.vehicles.find(x=>x.reg===r)||{reg:r,status:'pending',make:''};
+    const isComplete=v.status==='complete';
+    const inProg=v.status==='in-progress';
+    return`<div class="queue-item ${isComplete?'complete':''} ${inProg?'in-progress':''}" onclick="openChecklist('${r}')">
+      <div class="queue-reg">${r}</div>
+      <div class="queue-vehicle">${[v.make,v.colour,v.year].filter(Boolean).join(' ')||'Vehicle details pending'}</div>
+      <div class="queue-status">${isComplete?'<span class="badge badge-success">✓ Done</span>':inProg?'<span class="badge badge-primary">In progress</span>':'<span class="badge badge-neutral">Pending</span>'}</div>
+    </div>`;
+  }).join('');
+}
+
+function openChecklist(reg){
+  const v=state.vehicles.find(x=>x.reg===reg);
+  if(!v) return;
+  state.currentCheckReg=reg;
+  if(v.status!=='complete') v.status='in-progress';
+  document.getElementById('view-exec').className='view';
+  document.getElementById('view-checklist').className='view active';
+  document.getElementById('checklist-reg-display').textContent=reg;
+  document.getElementById('checklist-vehicle-display').textContent=[v.make,v.colour,v.year].filter(Boolean).join(' ')||'Vehicle';
+  renderChecklist();
+}
+
+document.getElementById('back-to-queue').addEventListener('click',()=>{
+  document.getElementById('view-checklist').className='view';
+  document.getElementById('view-exec').className='view active';
+  renderExecQueue();
+});
+
+function renderChecklist(){
+  const reg=state.currentCheckReg;
+  const answers=state.checks[reg];
+  const list=document.getElementById('check-items-list');
+  const answered=CHECK_ITEMS.filter(ci=>answers[ci.id]!==null).length;
+  const pct=(answered/CHECK_ITEMS.length)*100;
+  document.getElementById('checklist-progress').style.width=pct+'%';
+  const allAnswered=answered===CHECK_ITEMS.length;
+  document.getElementById('complete-check-btn').disabled=!allAnswered;
+  const fails=CHECK_ITEMS.filter(ci=>answers[ci.id]==='no').length;
+  const badge=document.getElementById('checklist-status-badge');
+  badge.innerHTML=allAnswered?(fails?`<span class="badge badge-error">${fails} issue${fails>1?'s':''}</span>`:'<span class="badge badge-success">All pass</span>'):`<span class="badge badge-neutral">${answered}/${CHECK_ITEMS.length}</span>`;
+  list.innerHTML=CHECK_ITEMS.map(ci=>{
+    const ans=answers[ci.id];
+    return`<div class="check-item ${ans==='yes'?'answered-yes':ans==='no'?'answered-no':''}" id="ci-${ci.id}">
+      <div>
+        <div class="check-item-label">${ci.label}</div>
+        <div class="check-item-note">${ci.note}</div>
+      </div>
+      <div class="yn-btns">
+        <button class="yn-btn yes ${ans==='yes'?'active':''}" onclick="setAnswer('${ci.id}','yes')" aria-pressed="${ans==='yes'}">YES</button>
+        <button class="yn-btn no ${ans==='no'?'active':''}" onclick="setAnswer('${ci.id}','no')" aria-pressed="${ans==='no'}">NO</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setAnswer(itemId,val){
+  const reg=state.currentCheckReg;
+  state.checks[reg][itemId]=state.checks[reg][itemId]===val?null:val;
+  renderChecklist();
+  saveState();
+}
+
+document.getElementById('complete-check-btn').addEventListener('click',()=>{
+  const reg=state.currentCheckReg;
+  const v=state.vehicles.find(x=>x.reg===reg);
+  if(v) v.status='complete';
+  state.checks[reg].complete=true;
+  saveState();
+  toast(`${reg} check submitted`,'success');
+  document.getElementById('view-checklist').className='view';
+  document.getElementById('view-exec').className='view active';
+  renderExecQueue();
+  renderExecGrid();
+  renderRegList();
+});
+
+function renderReport(){
+  const completed=state.vehicles.filter(v=>v.status==='complete');
+  const total=state.vehicles.length;
+  const issues=completed.filter(v=>CHECK_ITEMS.some(ci=>state.checks[v.reg]&&state.checks[v.reg][ci.id]==='no')).length;
+  const el=document.getElementById('report-content');
+  if(!completed.length){el.innerHTML=`<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h3>No reports yet</h3><p>Reports appear once executives complete their car checks</p></div>`;return;}
+  const kpis=`<div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-val">${completed.length}</div><div class="kpi-label">Checked</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:var(--color-text-muted)">${total-completed.length}</div><div class="kpi-label">Pending</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:${issues?'var(--color-error)':'var(--color-success)'}">${issues}</div><div class="kpi-label">Issues</div></div>
+  </div>`;
+  const cars=completed.map(v=>{
+    const answers=state.checks[v.reg]||{};
+    const failItems=CHECK_ITEMS.filter(ci=>answers[ci.id]==='no');
+    return`<div class="report-car">
+      <div class="report-car-head">
+        <div><span class="report-car-reg font-mono font-bold">${v.reg}</span><span class="text-xs text-muted" style="margin-left:var(--space-3)">${[v.make,v.colour].filter(Boolean).join(' ')||''}</span></div>
+        ${failItems.length?`<span class="badge badge-error">${failItems.length} issue${failItems.length>1?'s':''}</span>`:'<span class="badge badge-success">All clear</span>'}
+      </div>
+      <div class="report-items">
+        ${CHECK_ITEMS.map(ci=>answers[ci.id]?`<div class="report-item ${answers[ci.id]==='yes'?'pass':'fail'}"><div class="report-dot ${answers[ci.id]==='yes'?'pass':'fail'}"></div>${ci.label}</div>`:'').join('')}
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=kpis+`<div class="report-section"><div class="report-section-title">Completed Checks (${completed.length})</div>${cars}</div>`;
+}
+
+document.getElementById('export-btn').addEventListener('click',()=>{
+  const completed=state.vehicles.filter(v=>v.status==='complete');
+  if(!completed.length){toast('No completed checks to export','error');return;}
+  const headers=['Registration','Make','Colour','Year',...CHECK_ITEMS.map(c=>c.label)];
+  const rows=completed.map(v=>{const ans=state.checks[v.reg]||{};return[v.reg,v.make,v.colour,v.year,...CHECK_ITEMS.map(c=>ans[c.id]||'')];});
+  const csv=[headers,...rows].map(r=>r.map(x=>`"${x}"`).join(',')).join('
+');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`forecourt-check-${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  toast('CSV exported','success');
+});
+
+// ==================== PERSISTENCE ====================
+const STORAGE_KEY='forecourt_check_v1';
+
+function saveState(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify({vehicles:state.vehicles,executives:state.executives,checks:state.checks}));}catch(e){console.warn('Save failed',e);}
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const saved=JSON.parse(raw);
+    if(saved.vehicles)   state.vehicles=saved.vehicles;
+    if(saved.executives) state.executives=saved.executives;
+    if(saved.checks)     state.checks=saved.checks;
+    state.vehicles.forEach(v=>{
+      if(!state.checks[v.reg]) state.checks[v.reg]=CHECK_ITEMS.reduce((a,ci)=>({...a,[ci.id]:null}),{complete:false});
+      CHECK_ITEMS.forEach(ci=>{if(!(ci.id in state.checks[v.reg])) state.checks[v.reg][ci.id]=null;});
+    });
+  }catch(e){console.warn('Load failed',e);}
+}
+
+// ==================== NEW WEEK ====================
+document.getElementById('export-btn').insertAdjacentHTML('afterend',
+  `<button class="btn btn-ghost btn-sm" id="clear-all-btn" style="color:var(--color-error)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    New Week
+  </button>`
+);
+document.getElementById('clear-all-btn').addEventListener('click',()=>{
+  if(!confirm('Start a new week? This will clear ALL vehicles, allocations and check data.')) return;
+  state.vehicles=[];state.executives=[];state.checks={};
+  try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+  renderRegList();renderExecGrid();renderExecNames();renderExecSelector();renderReport();
+  toast('New week started','success');
+});
+
+// ==================== BOOT ====================
+loadState();
+renderRegList();
+renderExecGrid();
+renderExecNames();
+renderExecSelector();
+</script>
+</body>
+</html>
