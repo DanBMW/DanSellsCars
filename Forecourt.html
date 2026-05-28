@@ -24,8 +24,8 @@ button{cursor:pointer;font:inherit}input,select,textarea{font:inherit}
 .sub{font-size:13px;color:#888;margin-bottom:12px}
 label.lbl{display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;margin-top:12px}
 .row{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}.row input{flex:1}
-input[type=text],input[type=number]{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;background:#fafafa;outline:none}
-input:focus{border-color:#016b71;background:#fff}
+input[type=text],input[type=number],input[type=password],select{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;background:#fafafa;outline:none}
+input:focus,select:focus{border-color:#016b71;background:#fff}
 input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-size:18px;font-weight:700;letter-spacing:0.06em}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:700;border:none;min-height:44px;cursor:pointer}
 .btn-green{background:#016b71;color:#fff}.btn-green:hover{background:#015358}
@@ -49,10 +49,14 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
 .exec-card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .avatar{width:42px;height:42px;border-radius:50%;background:#d0e4e3;color:#016b71;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .exec-car{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f8f8f6;border-radius:6px;font-family:'Courier New',monospace;font-size:12px;font-weight:600;margin-bottom:4px}
+/* EXEC ENTRY HERO */
+.exec-hero{background:linear-gradient(135deg,#016b71,#014f53);border-radius:16px;padding:24px 20px;margin-bottom:16px;color:#fff;text-align:center}
+.exec-hero h2{font-size:22px;font-weight:800;margin-bottom:6px}
+.exec-hero p{font-size:14px;opacity:0.85;margin-bottom:20px}
 .who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:4px}
-.who-btn{padding:16px 10px;background:#f8f8f6;border:2px solid #e8e8e4;border-radius:12px;font-size:15px;font-weight:700;color:#1a1a1a;cursor:pointer;text-align:center;transition:all 0.15s}
-.who-btn:hover{border-color:#016b71;background:#e8f4f5;color:#016b71}
-.who-initials{width:36px;height:36px;border-radius:50%;background:#d0e4e3;color:#016b71;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.who-btn{padding:18px 10px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;text-align:center;transition:all 0.15s;backdrop-filter:blur(4px)}
+.who-btn:hover{background:rgba(255,255,255,0.25);border-color:#fff}
+.who-initials{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;color:#fff}
 .queue-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1.5px solid #e8e8e4;border-radius:12px;margin-bottom:10px;cursor:pointer}
 .queue-item:hover{border-color:#016b71;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
 .queue-item.done{opacity:0.6;border-color:#3d7a1c}
@@ -72,16 +76,20 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
 .yn button{min-width:52px;height:40px;border-radius:8px;font-size:13px;font-weight:700;border:1.5px solid #ddd;background:#fff;color:#aaa;cursor:pointer}
 .yn button.y.on{background:#3d7a1c;border-color:#3d7a1c;color:#fff}
 .yn button.n.on{background:#c0294a;border-color:#c0294a;color:#fff}
+.notes-box{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;resize:none;min-height:70px;outline:none;margin-top:4px}
+.notes-box:focus{border-color:#016b71;background:#fff}
 .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
 .kpi{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px;text-align:center}
 .kpi-num{font-size:30px;font-weight:700;color:#016b71}
 .kpi-lbl{font-size:11px;color:#888;margin-top:4px}
 .report-car{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px;margin-bottom:10px}
-.report-car-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.report-car-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
 .report-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:5px}
 .ri{display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;font-size:11px}
 .ri.pass{background:#d6e8cc;color:#3d7a1c}.ri.fail{background:#fce4ec;color:#c0294a}
 .ri-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.week-tab{display:inline-block;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:#666;margin:0 4px 8px 0}
+.week-tab.active{background:#016b71;color:#fff;border-color:#016b71}
 .empty{text-align:center;padding:40px 20px;color:#aaa}.empty p{font-size:14px;margin-top:8px}
 #toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:6px;align-items:center;width:90%;max-width:340px;pointer-events:none}
 .toast{background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:99px;font-size:14px;font-weight:600;text-align:center;animation:fadeup 0.2s ease}
@@ -92,6 +100,9 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
 .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:#aaa}
 .sync-dot.live{background:#3d7a1c;box-shadow:0 0 0 2px #d6e8cc}
 .sync-dot.err{background:#c0294a}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 10px 30px rgba(0,0,0,0.2);text-align:center}
 @media(max-width:480px){
   .check-reg{font-size:22px}.kpi-num{font-size:22px}
   .yn button{min-width:46px;height:38px;font-size:12px}
@@ -106,15 +117,29 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
   <h1>&#x1F697; Forecourt Check</h1>
   <div class="topbar-btns">
     <button onclick="switchRole()">&#x1F464; Role</button>
-    <button id="sync-status-btn" onclick="checkConnection()" style="display:flex;align-items:center;">
+    <button id="sync-status-btn" onclick="checkConn()" style="display:flex;align-items:center;">
       <span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting...</span>
     </button>
   </div>
 </div>
-<div id="role-bar" style="background:#d0e4e3;color:#016b71;">MANAGER VIEW</div>
+<!-- Default to EXEC role styling -->
+<div id="role-bar" style="background:#fef3c7;color:#92610a;">EXECUTIVE VIEW</div>
+
+<!-- PIN MODAL -->
+<div id="pin-modal" class="modal-bg">
+  <div class="modal">
+    <h2 style="font-size:18px;margin-bottom:4px;">Manager Access</h2>
+    <p class="sub" style="margin-bottom:16px;">Enter PIN to access manager tools</p>
+    <input type="password" id="pin-input" pattern="[0-9]*" inputmode="numeric" style="text-align:center;font-size:28px;letter-spacing:8px;margin-bottom:16px;" placeholder="••••" onkeydown="if(event.key==='Enter')checkPin()">
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-grey" style="flex:1;justify-content:center;" onclick="closeModal('pin-modal')">Cancel</button>
+      <button class="btn btn-green" style="flex:1;justify-content:center;" onclick="checkPin()">Enter</button>
+    </div>
+  </div>
+</div>
 
 <!-- MANAGER -->
-<div id="screen-manager" class="screen active">
+<div id="screen-manager" class="screen">
   <div class="main">
     <div class="tabs">
       <button class="tab-btn active" onclick="showTab('t-reg',this)">Register Cars</button>
@@ -125,7 +150,7 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
     <div id="t-reg" class="tab-pane active">
       <div class="card">
         <h2>Add Vehicles to Forecourt</h2>
-        <p class="sub">Enter each registration and press Add. All devices sync instantly.</p>
+        <p class="sub">Enter each registration and press Add.</p>
         <label class="lbl">Registration Plate</label>
         <div class="row">
           <input type="text" id="reg-input" class="mono" placeholder="e.g. LV73OKH" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -148,7 +173,7 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
       </div>
       <div class="card">
         <h2>Auto-Allocate Cars</h2>
-        <p class="sub">Splits cars evenly. Execs see their list immediately on their phones.</p>
+        <p class="sub">Splits cars evenly across executives on shift.</p>
         <div class="row" style="align-items:center;flex-wrap:wrap;gap:10px;">
           <label class="lbl" style="margin:0;white-space:nowrap;">Max per exec:</label>
           <input type="number" id="max-per-exec" value="8" min="1" max="30" style="width:80px;padding:8px 10px;">
@@ -157,46 +182,38 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
         </div>
         <div class="exec-grid" id="exec-grid"><div class="empty"><p>Add executives then click Allocate</p></div></div>
       </div>
-      <div class="highlight-card">
-        <h2 style="color:#016b71;margin-bottom:6px;">&#x1F4F1; Tell Executives</h2>
-        <p style="font-size:13px;color:#555;margin-bottom:4px;">Send this URL to every exec via WhatsApp. They open it, tap Role to switch to Executive, tap their name and start checking.</p>
-        <div style="font-family:'Courier New',monospace;font-size:13px;background:#fff;padding:10px;border-radius:8px;border:1px solid #cde;word-break:break-all;" id="share-url">Loading...</div>
-        <button class="btn btn-green" style="width:100%;justify-content:center;margin-top:10px;" onclick="shareURL()">&#x1F4E4; Share URL via WhatsApp</button>
-      </div>
     </div>
 
     <div id="t-report" class="tab-pane">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
-          <div>
-            <h2>Check Reports</h2>
-            <p class="sub" style="margin:0;">Live — updates as execs submit checks</p>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+          <div><h2>Check Reports</h2><p class="sub" style="margin:0;">Live updates as execs submit</p></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-grey btn-sm" onclick="exportCSV()">&#11015; CSV</button>
             <button class="btn btn-red btn-sm" onclick="newWeek()">&#128197; New Week</button>
           </div>
         </div>
+        <div id="week-tabs" style="margin-bottom:12px;"></div>
         <div id="report-content"><div class="empty"><p>No completed checks yet</p></div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- EXECUTIVE -->
-<div id="screen-exec" class="screen">
+<!-- EXECUTIVE (Default Active) -->
+<div id="screen-exec" class="screen active">
   <div class="main">
     <div id="exec-no-data" style="display:none;">
       <div class="highlight-card">
         <h2 style="color:#016b71;margin-bottom:6px;">&#x231B; Waiting for data...</h2>
-        <p style="font-size:13px;color:#555;">The manager needs to add cars and allocate them first. This page will update automatically when they do.</p>
+        <p style="font-size:13px;color:#555;">The manager needs to add cars and allocate them first. This page updates automatically.</p>
       </div>
     </div>
     <div id="exec-has-data" style="display:none;">
       <div id="exec-picker-screen">
-        <div class="card">
-          <h2>Who are you?</h2>
-          <p class="sub">Tap your name to see your cars</p>
+        <div class="exec-hero">
+          <h2>&#x1F44B; Good to see you!</h2>
+          <p>Tap your name below to load your cars and start checking</p>
           <div class="who-grid" id="who-grid"></div>
         </div>
       </div>
@@ -231,7 +248,13 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
       <div id="check-badge"></div>
     </div>
     <div id="check-items-list"></div>
-    <div style="margin-top:20px;margin-bottom:30px;">
+    <!-- NOTES -->
+    <div class="card" style="margin-top:4px;">
+      <h2 style="font-size:15px;margin-bottom:4px;">&#x1F4DD; Notes <span style="font-size:12px;color:#aaa;font-weight:400;">(optional)</span></h2>
+      <p style="font-size:12px;color:#888;margin-bottom:8px;">Damage, issues, anything the manager should know</p>
+      <textarea class="notes-box" id="check-notes" placeholder="e.g. Small scuff on rear bumper, passenger window slow..." oninput="saveNotesDraft()"></textarea>
+    </div>
+    <div style="margin-top:16px;margin-bottom:30px;">
       <button class="btn-success" id="submit-btn" disabled onclick="submitCheck()">&#10003; Mark Complete &amp; Submit</button>
     </div>
   </div>
@@ -239,10 +262,9 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
 
 <div id="toasts"></div>
 
-<!-- Firebase SDKs -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, get, update, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 var CHECK_IDS=['clean','fuel','charged','aircon','radio','satnav','bt','personal','receipts','tyre','aid','mileage','warning','profile'];
 var CHECK_LABELS=['Clean Inside and Out','Min 1/4 Tank Fuel','Fully Charged EV-PHEV','Aircon Off','Radio Off','No Address in Sat Nav','No Phones Paired','No Personal Items','No Receipts in Glovebox','Tyre Inflator Kit Present','First Aid Kit Present','Mileage Reset','No Warning Lights','No Profile Set'];
@@ -261,7 +283,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-var vehicles=[],execs=[],answers={},role='manager',curReg=null,curExec=null;
+// Role defaults to exec now
+var vehicles=[],execs=[],answers={},role='exec',curReg=null,curExec=null,curWeek=null,allWeeks={};
+
+function weekKey(){
+  var d=new Date();
+  var day=d.getDay();
+  var diff=d.getDate()-day+(day===0?-6:1);
+  var mon=new Date(d.setDate(diff));
+  return 'week_'+mon.getFullYear()+'_'+(mon.getMonth()+1)+'_'+mon.getDate();
+}
+function weekLabel(key){
+  var parts=key.replace('week_','').split('_');
+  if(parts.length<3)return key;
+  var d=new Date(parts[0],parts[1]-1,parts[2]);
+  return 'w/c '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+}
+
+var WEEK=weekKey();
 
 function setSyncStatus(state){
   var dot=document.getElementById('sync-dot');
@@ -270,8 +309,7 @@ function setSyncStatus(state){
   else if(state==='err'){dot.className='sync-dot err';lbl.textContent='Offline';}
   else{dot.className='sync-dot';lbl.textContent='Connecting...';}
 }
-
-window.checkConnection=function(){toast('Firebase connected','info');}
+window.checkConn=function(){toast('Firebase: '+document.getElementById('sync-label').textContent,'info');};
 
 function toast(msg,type){
   var c=document.getElementById('toasts');
@@ -287,8 +325,33 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
 }
 
+window.openModal=function(id){document.getElementById(id).classList.add('open');};
+window.closeModal=function(id){document.getElementById(id).classList.remove('open');};
+
 window.switchRole=function(){
-  role=(role==='manager')?'exec':'manager';
+  if(role==='exec'){
+    document.getElementById('pin-input').value='';
+    window.openModal('pin-modal');
+    setTimeout(function(){document.getElementById('pin-input').focus();},100);
+  }else{
+    role='exec';
+    updateRoleUI();
+  }
+};
+
+window.checkPin=function(){
+  var pin = document.getElementById('pin-input').value;
+  if(pin==='1992'){
+    window.closeModal('pin-modal');
+    role='manager';
+    updateRoleUI();
+  }else{
+    toast('Incorrect PIN','err');
+    document.getElementById('pin-input').value='';
+  }
+};
+
+function updateRoleUI(){
   var bar=document.getElementById('role-bar');
   if(role==='manager'){
     showScreen('screen-manager');
@@ -301,42 +364,45 @@ window.switchRole=function(){
     curExec=null;
     renderExecScreen();
   }
-};
+}
 
 window.showTab=function(id,btn){
   document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
-  if(id==='t-report')renderReport();
+  if(id==='t-report'){curWeek=WEEK;renderWeekTabs();renderReport();}
 };
 
 /* ---- FIREBASE LISTENERS ---- */
-onValue(ref(db,'forecourt/vehicles'), function(snap){
+onValue(ref(db,'forecourt/current/vehicles'), function(snap){
   vehicles=[];
   var d=snap.val();
   if(d)Object.keys(d).forEach(function(k){vehicles.push(d[k]);});
-  renderRegList();
-  renderExecGrid();
+  renderRegList();renderExecGrid();
   if(role==='exec')renderExecScreen();
-  renderReport();
   setSyncStatus('live');
-}, function(){setSyncStatus('err');});
+},function(){setSyncStatus('err');});
 
-onValue(ref(db,'forecourt/execs'), function(snap){
+onValue(ref(db,'forecourt/current/execs'), function(snap){
   execs=[];
   var d=snap.val();
   if(d)Object.keys(d).forEach(function(k){execs.push(d[k]);});
-  renderExecTags();
-  renderExecGrid();
+  renderExecTags();renderExecGrid();
   if(role==='exec')renderExecScreen();
-}, function(){});
+},function(){});
 
-onValue(ref(db,'forecourt/answers'), function(snap){
+onValue(ref(db,'forecourt/current/answers'), function(snap){
   answers=snap.val()||{};
-  renderReport();
+  if(role==='manager')renderReport();
   if(curExec)renderQueue();
-}, function(){});
+},function(){});
+
+/* Archive weeks listener */
+onValue(ref(db,'forecourt/archive'), function(snap){
+  allWeeks=snap.val()||{};
+  if(role==='manager')renderWeekTabs();
+},function(){});
 
 /* ---- VEHICLES ---- */
 document.getElementById('reg-input').addEventListener('keydown',function(e){if(e.key==='Enter')window.addReg();});
@@ -345,31 +411,26 @@ window.addReg=function(){
   var raw=document.getElementById('reg-input').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(!raw){toast('Enter a registration plate','err');return;}
   if(vehicles.find(function(v){return v.reg===raw;})){toast(raw+' already added','err');return;}
-  var v={reg:raw,status:'pending'};
-  set(ref(db,'forecourt/vehicles/'+raw),v).then(function(){
-    set(ref(db,'forecourt/answers/'+raw),blank());
+  set(ref(db,'forecourt/current/vehicles/'+raw),{reg:raw,status:'pending'}).then(function(){
+    set(ref(db,'forecourt/current/answers/'+raw),blank());
     document.getElementById('reg-input').value='';
     toast(raw+' added','ok');
-  }).catch(function(){toast('Save failed - check connection','err');});
+  }).catch(function(){toast('Save failed','err');});
 };
 
 window.removeReg=function(reg){
-  remove(ref(db,'forecourt/vehicles/'+reg));
-  remove(ref(db,'forecourt/answers/'+reg));
+  remove(ref(db,'forecourt/current/vehicles/'+reg));
+  remove(ref(db,'forecourt/current/answers/'+reg));
   execs.forEach(function(e){
     if(e.cars&&e.cars.indexOf(reg)!==-1){
       e.cars=e.cars.filter(function(r){return r!==reg;});
-      set(ref(db,'forecourt/execs/'+e.name.replace(/\s/g,'_')),e);
+      set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),e);
     }
   });
   toast(reg+' removed');
 };
 
-function blank(){
-  var o={done:false};
-  CHECK_IDS.forEach(function(id){o[id]=null;});
-  return o;
-}
+function blank(){var o={done:false,notes:''};CHECK_IDS.forEach(function(id){o[id]=null;});return o;}
 
 function renderRegList(){
   var el=document.getElementById('reg-list');
@@ -395,21 +456,15 @@ window.addExec=function(){
   if(execs.find(function(e){return e.name.toLowerCase()===name.toLowerCase();})){toast('Already added','err');return;}
   var ini=name.split(' ').map(function(p){return p[0]||'';}).join('').toUpperCase().slice(0,2);
   var e={name:name,initials:ini,cars:[]};
-  var key=name.replace(/\s/g,'_');
-  set(ref(db,'forecourt/execs/'+key),e).then(function(){
-    document.getElementById('exec-input').value='';
-    toast(name+' added','ok');
+  set(ref(db,'forecourt/current/execs/'+name.replace(/\s/g,'_')),e).then(function(){
+    document.getElementById('exec-input').value='';toast(name+' added','ok');
   });
 };
 
 window.removeExec=function(name){
   var e=execs.find(function(x){return x.name===name;});
-  if(e&&e.cars){
-    e.cars.forEach(function(r){
-      update(ref(db,'forecourt/vehicles/'+r),{status:'pending'});
-    });
-  }
-  remove(ref(db,'forecourt/execs/'+name.replace(/\s/g,'_')));
+  if(e&&e.cars)e.cars.forEach(function(r){update(ref(db,'forecourt/current/vehicles/'+r),{status:'pending'});});
+  remove(ref(db,'forecourt/current/execs/'+name.replace(/\s/g,'_')));
 };
 
 function renderExecTags(){
@@ -433,18 +488,14 @@ window.allocate=function(){
     if(localExecs[ei].cars.length<max)localExecs[ei].cars.push(v.reg);
     ei=(ei+1)%localExecs.length;
   });
-  localExecs.forEach(function(e){
-    set(ref(db,'forecourt/execs/'+e.name.replace(/\s/g,'_')),e);
-  });
+  localExecs.forEach(function(e){set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),e);});
   toast('Cars allocated!','ok');
 };
 
 window.clearAlloc=function(){
   execs.forEach(function(e){
-    if(e.cars){
-      e.cars.forEach(function(r){update(ref(db,'forecourt/vehicles/'+r),{status:'pending'});});
-    }
-    set(ref(db,'forecourt/execs/'+e.name.replace(/\s/g,'_')),{name:e.name,initials:e.initials,cars:[]});
+    if(e.cars)e.cars.forEach(function(r){update(ref(db,'forecourt/current/vehicles/'+r),{status:'pending'});});
+    set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),{name:e.name,initials:e.initials,cars:[]});
   });
   toast('Allocation cleared');
 };
@@ -458,14 +509,13 @@ function renderExecGrid(){
     h+='<div class="exec-card"><div class="exec-card-head">'+
        '<div class="avatar">'+e.initials+'</div>'+
        '<div><strong>'+e.name+'</strong><div style="font-size:12px;color:#888;">'+cars.length+' car'+(cars.length!==1?'s':'')+'</div></div></div>';
-    if(cars.length){
-      cars.forEach(function(r){
-        var v=vehicles.find(function(x){return x.reg===r;});
-        var st=v?v.status:'pending';
-        var bc=st==='done'?'b-green':st==='in-progress'?'b-blue':'b-grey';
-        h+='<div class="exec-car"><span>'+r+'</span><span class="badge '+bc+'">'+st+'</span></div>';
-      });
-    }else{h+='<div style="font-size:12px;color:#aaa;padding:4px 0;">No cars yet</div>';}
+    cars.forEach(function(r){
+      var v=vehicles.find(function(x){return x.reg===r;});
+      var st=v?v.status:'pending';
+      var bc=st==='done'?'b-green':st==='in-progress'?'b-blue':'b-grey';
+      h+='<div class="exec-car"><span>'+r+'</span><span class="badge '+bc+'">'+st+'</span></div>';
+    });
+    if(!cars.length)h+='<div style="font-size:12px;color:#aaa;padding:4px 0;">No cars yet</div>';
     h+='</div>';
   });
   el.innerHTML=h;
@@ -494,11 +544,10 @@ function showWhoGrid(){
          '<div class="who-initials">'+ini+'</div>'+e.name+'</button>';
     }
   });
-  el.innerHTML=h||'<div class="empty"><p>No cars allocated yet</p></div>';
+  el.innerHTML=h||'<div style="color:rgba(255,255,255,0.7);font-size:14px;padding:10px;">No cars allocated yet</div>';
 }
 
 window.pickExec=function(name){curExec=name;showExecQueue();};
-
 window.clearExecSelection=function(){curExec=null;showWhoGrid();};
 
 function showExecQueue(){
@@ -537,13 +586,21 @@ window.openCheck=function(reg){
   var v=vehicles.find(function(x){return x.reg===reg;});
   if(!v)return;
   curReg=reg;
-  if(v.status!=='done')update(ref(db,'forecourt/vehicles/'+reg),{status:'in-progress'});
+  if(v.status!=='done')update(ref(db,'forecourt/current/vehicles/'+reg),{status:'in-progress'});
   showScreen('screen-check');
   document.getElementById('check-reg-display').textContent=reg;
+  var notesEl=document.getElementById('check-notes');
+  notesEl.value=(answers[reg]&&answers[reg].notes)||'';
   renderCheckItems();
 };
 
 window.backToQueue=function(){showScreen('screen-exec');renderQueue();};
+
+window.saveNotesDraft=function(){
+  var val=document.getElementById('check-notes').value;
+  if(answers[curReg])answers[curReg].notes=val;
+  update(ref(db,'forecourt/current/answers/'+curReg),{notes:val});
+};
 
 function renderCheckItems(){
   var ans=answers[curReg]||blank();
@@ -572,56 +629,100 @@ function renderCheckItems(){
 window.setAnswer=function(id,val){
   if(!answers[curReg])answers[curReg]=blank();
   answers[curReg][id]=(answers[curReg][id]===val)?null:val;
-  update(ref(db,'forecourt/answers/'+curReg),{[id]:answers[curReg][id]});
+  update(ref(db,'forecourt/current/answers/'+curReg),{[id]:answers[curReg][id]});
   renderCheckItems();
 };
 
 window.submitCheck=function(){
-  update(ref(db,'forecourt/vehicles/'+curReg),{status:'done'});
-  update(ref(db,'forecourt/answers/'+curReg),{done:true});
+  var notes=document.getElementById('check-notes').value;
+  update(ref(db,'forecourt/current/vehicles/'+curReg),{status:'done'});
+  update(ref(db,'forecourt/current/answers/'+curReg),{done:true,notes:notes});
+  /* archive snapshot */
+  var snap={reg:curReg,checkedAt:Date.now(),exec:curExec||'',answers:answers[curReg]||{},notes:notes};
+  set(ref(db,'forecourt/archive/'+WEEK+'/'+curReg),snap);
   toast(curReg+' submitted!','ok');
   showScreen('screen-exec');renderQueue();
 };
 
 /* ---- REPORTS ---- */
+function renderWeekTabs(){
+  var el=document.getElementById('week-tabs');
+  if(!el)return;
+  var keys=[WEEK];
+  Object.keys(allWeeks).forEach(function(k){if(keys.indexOf(k)===-1)keys.push(k);});
+  keys.sort().reverse();
+  if(!curWeek||keys.indexOf(curWeek)===-1)curWeek=keys[0];
+  var h='';
+  keys.forEach(function(k){
+    var lbl=k===WEEK?'This Week':weekLabel(k);
+    h+='<span class="week-tab'+(k===curWeek?' active':'')+'" onclick="selectWeek(\''+k+'\')">'+lbl+'</span>';
+  });
+  el.innerHTML=h;
+}
+
+window.selectWeek=function(key){curWeek=key;renderWeekTabs();renderReport();};
+
 function renderReport(){
-  var done=vehicles.filter(function(v){return v.status==='done';});
-  var total=vehicles.length;
-  var issues=done.filter(function(v){return CHECK_IDS.some(function(id){return answers[v.reg]&&answers[v.reg][id]==='no';});}).length;
   var el=document.getElementById('report-content');
   if(!el)return;
-  if(!done.length){el.innerHTML='<div class="empty"><p>No completed checks yet</p></div>';return;}
+  if(!curWeek||curWeek===WEEK){
+    /* current week from live data */
+    var done=vehicles.filter(function(v){return v.status==='done';});
+    var total=vehicles.length;
+    var issues=done.filter(function(v){return CHECK_IDS.some(function(id){return answers[v.reg]&&answers[v.reg][id]==='no';});}).length;
+    if(!done.length){el.innerHTML='<div class="empty"><p>No completed checks yet</p></div>';return;}
+    el.innerHTML=buildReportHTML(done,answers,total,issues);
+  }else{
+    /* archived week */
+    var wdata=allWeeks[curWeek]||{};
+    var wVehicles=Object.keys(wdata).map(function(k){return {reg:k,status:'done'};});
+    var wAnswers={};
+    Object.keys(wdata).forEach(function(k){wAnswers[k]=wdata[k].answers||{};});
+    var wIssues=wVehicles.filter(function(v){return CHECK_IDS.some(function(id){return wAnswers[v.reg]&&wAnswers[v.reg][id]==='no';});}).length;
+    if(!wVehicles.length){el.innerHTML='<div class="empty"><p>No data for this week</p></div>';return;}
+    el.innerHTML=buildReportHTML(wVehicles,wAnswers,wVehicles.length,wIssues,wdata);
+  }
+}
+
+function buildReportHTML(doneVehicles,ans,total,issues,archiveData){
   var h='<div class="kpi-row">'+
-    '<div class="kpi"><div class="kpi-num">'+done.length+'</div><div class="kpi-lbl">Checked</div></div>'+
-    '<div class="kpi"><div class="kpi-num" style="color:#888;">'+(total-done.length)+'</div><div class="kpi-lbl">Pending</div></div>'+
+    '<div class="kpi"><div class="kpi-num">'+doneVehicles.length+'</div><div class="kpi-lbl">Checked</div></div>'+
+    '<div class="kpi"><div class="kpi-num" style="color:#888;">'+(total-doneVehicles.length)+'</div><div class="kpi-lbl">Pending</div></div>'+
     '<div class="kpi"><div class="kpi-num" style="color:'+(issues?'#c0294a':'#3d7a1c')+';">'+issues+'</div><div class="kpi-lbl">Issues</div></div>'+
     '</div>';
-  done.forEach(function(v){
-    var ans=answers[v.reg]||{};
-    var fails=CHECK_IDS.filter(function(id){return ans[id]==='no';}).length;
+  doneVehicles.forEach(function(v){
+    var a=ans[v.reg]||{};
+    var fails=CHECK_IDS.filter(function(id){return a[id]==='no';}).length;
+    var execName='';
+    if(archiveData&&archiveData[v.reg])execName=archiveData[v.reg].exec||'';
+    else{execs.forEach(function(e){if(e.cars&&e.cars.indexOf(v.reg)!==-1)execName=e.name;});}
+    var notes=a.notes||(archiveData&&archiveData[v.reg]?archiveData[v.reg].notes:'');
     h+='<div class="report-car"><div class="report-car-head">'+
-       '<strong style="font-family:Courier New,monospace;font-size:16px;">'+v.reg+'</strong>'+
+       '<div><strong style="font-family:Courier New,monospace;font-size:16px;">'+v.reg+'</strong>'+
+       (execName?'<span style="font-size:12px;color:#888;margin-left:8px;">'+execName+'</span>':'')+
+       '</div>'+
        (fails?'<span class="badge b-red">'+fails+' issue'+(fails>1?'s':'')+'</span>':'<span class="badge b-green">All clear</span>')+
        '</div><div class="report-items">';
     CHECK_IDS.forEach(function(id,i){
-      if(ans[id])h+='<div class="ri '+(ans[id]==='yes'?'pass':'fail')+'"><div class="ri-dot"></div>'+CHECK_LABELS[i]+'</div>';
+      if(a[id])h+='<div class="ri '+(a[id]==='yes'?'pass':'fail')+'"><div class="ri-dot"></div>'+CHECK_LABELS[i]+'</div>';
     });
-    h+='</div></div>';
+    h+='</div>';
+    if(notes)h+='<div style="margin-top:8px;padding:8px 10px;background:#fffbe6;border-radius:6px;font-size:12px;color:#666;border-left:3px solid #f0c040;">&#x1F4DD; '+notes+'</div>';
+    h+='</div>';
   });
-  el.innerHTML=h;
+  return h;
 }
 
 window.exportCSV=function(){
   var done=vehicles.filter(function(v){return v.status==='done';});
   if(!done.length){toast('No completed checks to export','err');return;}
-  var headers=['Registration','Executive'].concat(CHECK_LABELS);
+  var headers=['Registration','Executive','Notes'].concat(CHECK_LABELS);
   var rows=done.map(function(v){
-    var ans=answers[v.reg]||{};
-    var exc='';
-    execs.forEach(function(e){if(e.cars&&e.cars.indexOf(v.reg)!==-1)exc=e.name;});
-    return [v.reg,exc].concat(CHECK_IDS.map(function(id){return ans[id]||'';}));
+    var a=answers[v.reg]||{};
+    var exc='';execs.forEach(function(e){if(e.cars&&e.cars.indexOf(v.reg)!==-1)exc=e.name;});
+    return [v.reg,exc,a.notes||''].concat(CHECK_IDS.map(function(id){return a[id]||'';}));
   });
-  var csv=[headers].concat(rows).map(function(r){return r.map(function(x){return '"'+x+'"';}).join(',');}).join('\n');
+  var csv=[headers].concat(rows).map(function(r){return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download='forecourt-'+new Date().toISOString().slice(0,10)+'.csv';
@@ -629,24 +730,13 @@ window.exportCSV=function(){
 };
 
 window.newWeek=function(){
-  if(!confirm('Start a new week? This clears ALL data from the database.'))return;
-  remove(ref(db,'forecourt'));
+  if(!confirm('Start a new week? Current data moves to archive. Are you sure?'))return;
+  remove(ref(db,'forecourt/current'));
   toast('New week started!','ok');
 };
 
-/* ---- SHARE URL ---- */
-var pageURL=window.location.href.split('?')[0];
-var urlEl=document.getElementById('share-url');
-if(urlEl)urlEl.textContent=pageURL;
-
-window.shareURL=function(){
-  var msg='Forecourt Check App - open this link on your phone:\n'+pageURL+'\n\nTap Role to switch to Executive View, then tap your name.';
-  if(navigator.share){navigator.share({title:'Forecourt Check',text:msg}).catch(function(){});}
-  else{
-    if(navigator.clipboard){navigator.clipboard.writeText(pageURL).then(function(){toast('URL copied!','ok');});}
-    else{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');}
-  }
-};
+/* Start in Exec View natively */
+renderExecScreen();
 
 </script>
 </body>
