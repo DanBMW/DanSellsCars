@@ -5,199 +5,141 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Forecourt Check</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f0ee; color: #1a1a1a; font-size: 16px; }
-button { cursor: pointer; font: inherit; }
-input, select { font: inherit; }
-
-/* TOPBAR */
-.topbar { background: #016b71; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-.topbar h1 { font-size: 18px; font-weight: 700; }
-.topbar-btns { display: flex; gap: 8px; }
-.topbar button { background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; }
-.topbar button:hover { background: rgba(255,255,255,0.3); }
-
-/* ROLE BAR */
-#role-bar { background: #d0e4e3; color: #016b71; text-align: center; padding: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.03em; }
-
-/* MAIN */
-.main { padding: 16px; max-width: 860px; margin: 0 auto; }
-
-/* SCREENS */
-.screen { display: none; }
-.screen.active { display: block; }
-
-/* TABS */
-.tabs { display: flex; gap: 4px; background: #ddd; border-radius: 10px; padding: 4px; margin-bottom: 16px; }
-.tab-btn { flex: 1; padding: 10px 4px; background: none; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; color: #666; }
-.tab-btn.active { background: #fff; color: #016b71; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-.tab-pane { display: none; }
-.tab-pane.active { display: block; }
-
-/* CARD */
-.card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-.card h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
-.card p.sub { font-size: 13px; color: #888; margin-bottom: 16px; }
-
-/* FORM */
-label.lbl { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; margin-top: 12px; }
-.row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
-.row input { flex: 1; }
-input[type=text], input[type=number], select {
-  width: 100%; padding: 12px 14px; border: 1.5px solid #ddd; border-radius: 8px;
-  font-size: 15px; background: #fafafa; outline: none;
-}
-input[type=text]:focus, input[type=number]:focus, select:focus { border-color: #016b71; background: #fff; }
-input.mono { font-family: 'Courier New', monospace; text-transform: uppercase; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; }
-
-/* BUTTONS */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; border: none; min-height: 44px; }
-.btn:active { transform: scale(0.97); }
-.btn-green { background: #016b71; color: #fff; }
-.btn-green:hover { background: #015358; }
-.btn-grey { background: #eee; color: #333; }
-.btn-grey:hover { background: #ddd; }
-.btn-red { background: #fff; color: #c0294a; border: 1.5px solid #f0c0cc; }
-.btn-red:hover { background: #fff0f3; }
-.btn-success { background: #3d7a1c; color: #fff; width: 100%; justify-content: center; font-size: 16px; padding: 16px; border-radius: 10px; }
-.btn-success:hover:not(:disabled) { background: #2e5c10; }
-.btn-success:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-sm { padding: 7px 14px; font-size: 12px; min-height: 34px; }
-.btn-icon { background: none; border: none; padding: 4px 8px; font-size: 18px; color: #999; }
-.btn-icon:hover { color: #c0294a; }
-
-/* BADGES */
-.badge { display: inline-block; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; }
-.b-grey { background: #eee; color: #666; }
-.b-blue { background: #d0e4e3; color: #016b71; }
-.b-green { background: #d6e8cc; color: #3d7a1c; }
-.b-red { background: #fce4ec; color: #c0294a; }
-
-/* REG LIST */
-.reg-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f8f8f6; border: 1px solid #e8e8e4; border-radius: 8px; margin-bottom: 8px; }
-.reg-plate { font-family: 'Courier New', monospace; font-weight: 700; font-size: 16px; letter-spacing: 0.04em; }
-
-/* TAG */
-.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.tag { display: inline-flex; align-items: center; gap: 4px; background: #d0e4e3; color: #016b71; padding: 5px 12px; border-radius: 99px; font-size: 13px; font-weight: 600; }
-.tag button { background: none; border: none; color: #016b71; font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1; }
-
-/* EXEC GRID */
-.exec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; }
-.exec-card { background: #fff; border: 1.5px solid #e8e8e4; border-radius: 12px; padding: 16px; }
-.exec-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; background: #d0e4e3; color: #016b71; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.exec-car { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #f8f8f6; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
-
-/* QUEUE */
-.queue-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #fff; border: 1.5px solid #e8e8e4; border-radius: 12px; margin-bottom: 10px; cursor: pointer; }
-.queue-item:hover { border-color: #016b71; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.queue-item.done { opacity: 0.6; border-color: #3d7a1c; }
-.queue-item.in-progress { border-color: #016b71; border-width: 2px; }
-.q-reg { font-family: 'Courier New', monospace; font-weight: 700; font-size: 17px; min-width: 90px; }
-.q-info { flex: 1; font-size: 13px; color: #888; }
-
-/* PROGRESS */
-.prog-track { height: 6px; background: #e8e8e4; border-radius: 99px; overflow: hidden; margin-top: 10px; }
-.prog-fill { height: 100%; background: #016b71; border-radius: 99px; transition: width 0.35s ease; }
-
-/* CHECKLIST */
-.check-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #fff; border: 1.5px solid #e8e8e4; border-radius: 12px; margin-bottom: 14px; }
-.check-reg { font-family: 'Courier New', monospace; font-size: 28px; font-weight: 700; letter-spacing: 0.04em; }
-.check-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; background: #fff; border: 1.5px solid #e8e8e4; border-radius: 10px; margin-bottom: 8px; }
-.check-item.yes { background: #f0f8eb; border-color: #8ec86a; }
-.check-item.no  { background: #fff0f4; border-color: #f0a0b8; }
-.check-lbl { font-weight: 600; font-size: 14px; }
-.check-note { font-size: 12px; color: #888; margin-top: 2px; }
-.yn { display: flex; gap: 6px; flex-shrink: 0; }
-.yn button { min-width: 52px; height: 40px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1.5px solid #ddd; background: #fff; color: #aaa; }
-.yn button:active { transform: scale(0.94); }
-.yn button.y.on { background: #3d7a1c; border-color: #3d7a1c; color: #fff; }
-.yn button.n.on { background: #c0294a; border-color: #c0294a; color: #fff; }
-.yn button.y:hover:not(.on) { border-color: #3d7a1c; color: #3d7a1c; }
-.yn button.n:hover:not(.on) { border-color: #c0294a; color: #c0294a; }
-
-/* REPORT */
-.kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
-.kpi { background: #fff; border: 1px solid #e8e8e4; border-radius: 10px; padding: 14px; text-align: center; }
-.kpi-num { font-size: 30px; font-weight: 700; color: #016b71; }
-.kpi-lbl { font-size: 11px; color: #888; margin-top: 4px; }
-.report-car { background: #fff; border: 1px solid #e8e8e4; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
-.report-car-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.report-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 5px; }
-.ri { display: flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 6px; font-size: 11px; }
-.ri.pass { background: #d6e8cc; color: #3d7a1c; }
-.ri.fail { background: #fce4ec; color: #c0294a; }
-.ri-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-
-/* EMPTY */
-.empty { text-align: center; padding: 40px 20px; color: #aaa; }
-.empty p { font-size: 14px; margin-top: 8px; }
-
-/* TOAST */
-#toasts { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; gap: 6px; align-items: center; width: 90%; max-width: 320px; pointer-events: none; }
-.toast { background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 99px; font-size: 14px; font-weight: 600; text-align: center; animation: fadeup 0.2s ease; }
-.toast.ok  { background: #3d7a1c; }
-.toast.err { background: #c0294a; }
-@keyframes fadeup { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-
-/* BACK BTN */
-.back-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; color: #016b71; font-weight: 700; font-size: 14px; padding: 8px 0; margin-bottom: 12px; cursor: pointer; }
-
-/* MOBILE */
-@media (max-width: 480px) {
-  .check-reg { font-size: 22px; }
-  .kpi-num { font-size: 22px; }
-  .yn button { min-width: 46px; height: 38px; font-size: 12px; }
-  .tabs { gap: 2px; }
-  .tab-btn { font-size: 12px; padding: 8px 2px; }
-  .btn { padding: 10px 14px; font-size: 13px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f0ee;color:#1a1a1a;font-size:16px}
+button{cursor:pointer;font:inherit}input,select,textarea{font:inherit}
+.topbar{background:#016b71;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h1{font-size:18px;font-weight:700}
+.topbar-btns{display:flex;gap:8px}
+.topbar button{background:rgba(255,255,255,0.2);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600}
+#role-bar{text-align:center;padding:7px;font-size:12px;font-weight:700;letter-spacing:0.03em}
+.main{padding:16px;max-width:860px;margin:0 auto}
+.screen{display:none}.screen.active{display:block}
+.tabs{display:flex;gap:4px;background:#ddd;border-radius:10px;padding:4px;margin-bottom:16px}
+.tab-btn{flex:1;padding:10px 4px;background:none;border:none;border-radius:8px;font-size:13px;font-weight:600;color:#666;cursor:pointer}
+.tab-btn.active{background:#fff;color:#016b71;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+.card h2{font-size:17px;font-weight:700;margin-bottom:4px}
+.sub{font-size:13px;color:#888;margin-bottom:12px}
+label.lbl{display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;margin-top:12px}
+.row{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}.row input{flex:1}
+input[type=text],input[type=number]{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;background:#fafafa;outline:none}
+input:focus{border-color:#016b71;background:#fff}
+input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-size:18px;font-weight:700;letter-spacing:0.06em}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:700;border:none;min-height:44px;cursor:pointer}
+.btn-green{background:#016b71;color:#fff}.btn-green:hover{background:#015358}
+.btn-grey{background:#eee;color:#333}.btn-grey:hover{background:#ddd}
+.btn-red{background:#fff;color:#c0294a;border:1.5px solid #f0c0cc}
+.btn-sm{padding:7px 14px;font-size:12px;min-height:34px}
+.btn-icon{background:none;border:none;padding:4px 8px;font-size:18px;color:#999;cursor:pointer}
+.btn-success{background:#3d7a1c;color:#fff;width:100%;justify-content:center;font-size:16px;padding:16px;border-radius:10px;display:flex;align-items:center;border:none;cursor:pointer}
+.btn-success:hover:not(:disabled){background:#2e5c10}
+.btn-success:disabled{opacity:0.4;cursor:not-allowed}
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.b-grey{background:#eee;color:#666}.b-blue{background:#d0e4e3;color:#016b71}
+.b-green{background:#d6e8cc;color:#3d7a1c}.b-red{background:#fce4ec;color:#c0294a}
+.reg-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f8f6;border:1px solid #e8e8e4;border-radius:8px;margin-bottom:8px}
+.reg-plate{font-family:'Courier New',monospace;font-weight:700;font-size:16px;letter-spacing:0.04em}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{display:inline-flex;align-items:center;gap:4px;background:#d0e4e3;color:#016b71;padding:5px 12px;border-radius:99px;font-size:13px;font-weight:600}
+.tag button{background:none;border:none;color:#016b71;font-size:16px;cursor:pointer;padding:0 2px;line-height:1}
+.exec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}
+.exec-card{background:#fff;border:1.5px solid #e8e8e4;border-radius:12px;padding:16px}
+.exec-card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.avatar{width:42px;height:42px;border-radius:50%;background:#d0e4e3;color:#016b71;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.exec-car{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f8f8f6;border-radius:6px;font-family:'Courier New',monospace;font-size:12px;font-weight:600;margin-bottom:4px}
+.who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:4px}
+.who-btn{padding:16px 10px;background:#f8f8f6;border:2px solid #e8e8e4;border-radius:12px;font-size:15px;font-weight:700;color:#1a1a1a;cursor:pointer;text-align:center;transition:all 0.15s}
+.who-btn:hover{border-color:#016b71;background:#e8f4f5;color:#016b71}
+.who-initials{width:36px;height:36px;border-radius:50%;background:#d0e4e3;color:#016b71;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.queue-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1.5px solid #e8e8e4;border-radius:12px;margin-bottom:10px;cursor:pointer}
+.queue-item:hover{border-color:#016b71;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.queue-item.done{opacity:0.6;border-color:#3d7a1c}
+.queue-item.in-progress{border-color:#016b71;border-width:2px}
+.q-reg{font-family:'Courier New',monospace;font-weight:700;font-size:17px;min-width:90px}
+.q-info{flex:1;font-size:13px;color:#888}
+.prog-track{height:6px;background:#e8e8e4;border-radius:99px;overflow:hidden;margin-top:10px}
+.prog-fill{height:100%;background:#016b71;border-radius:99px;transition:width 0.35s ease}
+.check-header{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#fff;border:1.5px solid #e8e8e4;border-radius:12px;margin-bottom:14px}
+.check-reg{font-family:'Courier New',monospace;font-size:28px;font-weight:700;letter-spacing:0.04em}
+.check-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:#fff;border:1.5px solid #e8e8e4;border-radius:10px;margin-bottom:8px}
+.check-item.yes{background:#f0f8eb;border-color:#8ec86a}
+.check-item.no{background:#fff0f4;border-color:#f0a0b8}
+.check-lbl{font-weight:600;font-size:14px}
+.check-note{font-size:12px;color:#888;margin-top:2px}
+.yn{display:flex;gap:6px;flex-shrink:0}
+.yn button{min-width:52px;height:40px;border-radius:8px;font-size:13px;font-weight:700;border:1.5px solid #ddd;background:#fff;color:#aaa;cursor:pointer}
+.yn button.y.on{background:#3d7a1c;border-color:#3d7a1c;color:#fff}
+.yn button.n.on{background:#c0294a;border-color:#c0294a;color:#fff}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.kpi{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px;text-align:center}
+.kpi-num{font-size:30px;font-weight:700;color:#016b71}
+.kpi-lbl{font-size:11px;color:#888;margin-top:4px}
+.report-car{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px;margin-bottom:10px}
+.report-car-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.report-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:5px}
+.ri{display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;font-size:11px}
+.ri.pass{background:#d6e8cc;color:#3d7a1c}.ri.fail{background:#fce4ec;color:#c0294a}
+.ri-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.empty{text-align:center;padding:40px 20px;color:#aaa}.empty p{font-size:14px;margin-top:8px}
+#toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:6px;align-items:center;width:90%;max-width:340px;pointer-events:none}
+.toast{background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:99px;font-size:14px;font-weight:600;text-align:center;animation:fadeup 0.2s ease}
+.toast.ok{background:#3d7a1c}.toast.err{background:#c0294a}.toast.info{background:#016b71}
+@keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#016b71;font-weight:700;font-size:14px;padding:8px 0;margin-bottom:12px;cursor:pointer}
+.highlight-card{background:#e8f4f5;border:1.5px solid #016b71;border-radius:12px;padding:16px;margin-bottom:16px}
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:#aaa}
+.sync-dot.live{background:#3d7a1c;box-shadow:0 0 0 2px #d6e8cc}
+.sync-dot.err{background:#c0294a}
+@media(max-width:480px){
+  .check-reg{font-size:22px}.kpi-num{font-size:22px}
+  .yn button{min-width:46px;height:38px;font-size:12px}
+  .tab-btn{font-size:11px;padding:8px 2px}
+  .btn{padding:10px 14px;font-size:13px}
 }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
-  <h1>&#128663; Forecourt Check</h1>
+  <h1>&#x1F697; Forecourt Check</h1>
   <div class="topbar-btns">
-    <button onclick="switchRole()">&#128100; Switch Role</button>
-    <button onclick="toggleDark()">&#9790; Theme</button>
+    <button onclick="switchRole()">&#x1F464; Role</button>
+    <button id="sync-status-btn" onclick="checkConnection()" style="display:flex;align-items:center;">
+      <span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting...</span>
+    </button>
   </div>
 </div>
+<div id="role-bar" style="background:#d0e4e3;color:#016b71;">MANAGER VIEW</div>
 
-<!-- ROLE BAR -->
-<div id="role-bar">MANAGER VIEW &mdash; tap Switch Role to become an executive</div>
-
-<!-- ======= MANAGER SCREEN ======= -->
+<!-- MANAGER -->
 <div id="screen-manager" class="screen active">
   <div class="main">
     <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('t-reg', this)">Register Cars</button>
-      <button class="tab-btn" onclick="showTab('t-alloc', this)">Allocate</button>
-      <button class="tab-btn" onclick="showTab('t-report', this)">Reports</button>
+      <button class="tab-btn active" onclick="showTab('t-reg',this)">Register Cars</button>
+      <button class="tab-btn" onclick="showTab('t-alloc',this)">Allocate</button>
+      <button class="tab-btn" onclick="showTab('t-report',this)">Reports</button>
     </div>
 
-    <!-- TAB: REGISTER -->
     <div id="t-reg" class="tab-pane active">
       <div class="card">
         <h2>Add Vehicles to Forecourt</h2>
-        <p class="sub">Type each registration plate and press Add</p>
-        <label class="lbl" for="reg-input">Registration Plate</label>
+        <p class="sub">Enter each registration and press Add. All devices sync instantly.</p>
+        <label class="lbl">Registration Plate</label>
         <div class="row">
           <input type="text" id="reg-input" class="mono" placeholder="e.g. LV73OKH" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
           <button class="btn btn-green" onclick="addReg()">+ Add</button>
         </div>
-        <div id="reg-list"><div class="empty"><div>&#128663;</div><p>No vehicles added yet</p></div></div>
+        <div id="reg-list"><div class="empty"><p>No vehicles added yet</p></div></div>
       </div>
     </div>
 
-    <!-- TAB: ALLOCATE -->
     <div id="t-alloc" class="tab-pane">
       <div class="card">
         <h2>Team On Shift Today</h2>
-        <p class="sub">Add each executive who is working today</p>
-        <label class="lbl" for="exec-input">Executive Name</label>
+        <p class="sub">Add each executive working today</p>
+        <label class="lbl">Executive Name</label>
         <div class="row">
           <input type="text" id="exec-input" placeholder="e.g. James, Sarah...">
           <button class="btn btn-green" onclick="addExec()">+ Add</button>
@@ -206,576 +148,506 @@ input.mono { font-family: 'Courier New', monospace; text-transform: uppercase; f
       </div>
       <div class="card">
         <h2>Auto-Allocate Cars</h2>
-        <p class="sub">Distributes cars evenly across executives</p>
-        <div class="row" style="align-items:center; flex-wrap:wrap; gap:10px;">
-          <label class="lbl" style="margin:0; white-space:nowrap;">Max per exec:</label>
-          <input type="number" id="max-per-exec" value="8" min="1" max="30" style="width:80px; padding:8px 10px;">
-          <button class="btn btn-green" onclick="allocate()">&#9654; Auto-Allocate</button>
+        <p class="sub">Splits cars evenly. Execs see their list immediately on their phones.</p>
+        <div class="row" style="align-items:center;flex-wrap:wrap;gap:10px;">
+          <label class="lbl" style="margin:0;white-space:nowrap;">Max per exec:</label>
+          <input type="number" id="max-per-exec" value="8" min="1" max="30" style="width:80px;padding:8px 10px;">
+          <button class="btn btn-green" onclick="allocate()">&#9654; Allocate</button>
           <button class="btn btn-grey btn-sm" onclick="clearAlloc()">Clear</button>
         </div>
-        <div class="exec-grid" id="exec-grid"><div class="empty"><p>Add executives above then click Auto-Allocate</p></div></div>
+        <div class="exec-grid" id="exec-grid"><div class="empty"><p>Add executives then click Allocate</p></div></div>
+      </div>
+      <div class="highlight-card">
+        <h2 style="color:#016b71;margin-bottom:6px;">&#x1F4F1; Tell Executives</h2>
+        <p style="font-size:13px;color:#555;margin-bottom:4px;">Send this URL to every exec via WhatsApp. They open it, tap Role to switch to Executive, tap their name and start checking.</p>
+        <div style="font-family:'Courier New',monospace;font-size:13px;background:#fff;padding:10px;border-radius:8px;border:1px solid #cde;word-break:break-all;" id="share-url">Loading...</div>
+        <button class="btn btn-green" style="width:100%;justify-content:center;margin-top:10px;" onclick="shareURL()">&#x1F4E4; Share URL via WhatsApp</button>
       </div>
     </div>
 
-    <!-- TAB: REPORT -->
     <div id="t-report" class="tab-pane">
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-          <div><h2>Check Reports</h2><p class="sub" style="margin:0;">Summary of all completed checks</p></div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-grey btn-sm" onclick="exportCSV()">&#11015; Export CSV</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+          <div>
+            <h2>Check Reports</h2>
+            <p class="sub" style="margin:0;">Live — updates as execs submit checks</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-grey btn-sm" onclick="exportCSV()">&#11015; CSV</button>
             <button class="btn btn-red btn-sm" onclick="newWeek()">&#128197; New Week</button>
           </div>
         </div>
         <div id="report-content"><div class="empty"><p>No completed checks yet</p></div></div>
       </div>
     </div>
-
   </div>
-</div><!-- /manager screen -->
+</div>
 
-<!-- ======= EXECUTIVE SCREEN ======= -->
+<!-- EXECUTIVE -->
 <div id="screen-exec" class="screen">
   <div class="main">
-    <div class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-        <div><h2>My Cars to Check</h2><p class="sub" style="margin:0;">Tap a car to open its checklist</p></div>
-        <select id="exec-select" onchange="selectExec(this.value)" style="max-width:170px; padding:8px 12px; font-size:14px;">
-          <option value="">&#128100; Select me...</option>
-        </select>
+    <div id="exec-no-data" style="display:none;">
+      <div class="highlight-card">
+        <h2 style="color:#016b71;margin-bottom:6px;">&#x231B; Waiting for data...</h2>
+        <p style="font-size:13px;color:#555;">The manager needs to add cars and allocate them first. This page will update automatically when they do.</p>
       </div>
-      <div class="prog-track" style="margin-top:12px;"><div class="prog-fill" id="exec-prog" style="width:0%"></div></div>
-      <div style="font-size:12px; color:#888; margin-top:6px;" id="exec-prog-label">0 / 0 checked</div>
     </div>
-    <div id="exec-queue"><div class="empty"><p>Select your name above to see your allocated cars</p></div></div>
+    <div id="exec-has-data" style="display:none;">
+      <div id="exec-picker-screen">
+        <div class="card">
+          <h2>Who are you?</h2>
+          <p class="sub">Tap your name to see your cars</p>
+          <div class="who-grid" id="who-grid"></div>
+        </div>
+      </div>
+      <div id="exec-queue-screen" style="display:none;">
+        <div class="card" style="padding:14px 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div>
+              <div style="font-size:13px;color:#888;">Checking as</div>
+              <div style="font-size:18px;font-weight:700;" id="exec-active-name">-</div>
+            </div>
+            <button class="btn btn-grey btn-sm" onclick="clearExecSelection()">&#8592; Change</button>
+          </div>
+          <div class="prog-track" style="margin-top:12px;"><div class="prog-fill" id="exec-prog" style="width:0%"></div></div>
+          <div style="font-size:12px;color:#888;margin-top:6px;" id="exec-prog-label">0 / 0 checked</div>
+        </div>
+        <div id="exec-queue"></div>
+      </div>
+    </div>
   </div>
-</div><!-- /exec screen -->
+</div>
 
-<!-- ======= CHECKLIST SCREEN ======= -->
+<!-- CHECKLIST -->
 <div id="screen-check" class="screen">
   <div class="main">
     <button class="back-btn" onclick="backToQueue()">&#8592; Back to my list</button>
     <div class="check-header">
       <div style="flex:1;">
-        <div class="check-reg" id="check-reg-display">â€”</div>
-        <div style="font-size:13px; color:#888; margin-top:2px;" id="check-sub-display">Vehicle</div>
+        <div class="check-reg" id="check-reg-display">-</div>
+        <div style="font-size:13px;color:#888;margin-top:2px;">Complete all checks below</div>
         <div class="prog-track"><div class="prog-fill" id="check-prog" style="width:0%"></div></div>
       </div>
       <div id="check-badge"></div>
     </div>
     <div id="check-items-list"></div>
-    <div style="margin-top:20px; margin-bottom:30px;">
+    <div style="margin-top:20px;margin-bottom:30px;">
       <button class="btn-success" id="submit-btn" disabled onclick="submitCheck()">&#10003; Mark Complete &amp; Submit</button>
     </div>
   </div>
-</div><!-- /check screen -->
+</div>
 
-<!-- TOAST CONTAINER -->
 <div id="toasts"></div>
 
-<script>
-// ============================================================
-// DATA
-// ============================================================
-var CHECKS = [
-  {id:'clean',   label:'Clean Inside & Out',         note:'Interior vacuumed, exterior washed'},
-  {id:'fuel',    label:'Min 1/4 Tank Fuel',           note:'Fuel gauge at least a quarter full'},
-  {id:'charged', label:'Fully Charged (EV/PHEV)',     note:'Electric vehicles â€” 80%+ charge'},
-  {id:'aircon',  label:'Aircon Off',                  note:'Air conditioning switched off'},
-  {id:'radio',   label:'Radio Off',                   note:'No audio playing'},
-  {id:'satnav',  label:'No Address in Sat Nav',       note:'Clear navigation history'},
-  {id:'bt',      label:'No Phones Paired',            note:'Bluetooth devices cleared'},
-  {id:'personal',label:'No Personal Items',           note:'No staff belongings inside'},
-  {id:'receipts',label:'No Receipts in Glovebox',     note:'Glovebox empty of paperwork'},
-  {id:'tyre',    label:'Tyre Inflator Kit Present',   note:'Inflation kit accessible in boot'},
-  {id:'aid',     label:'First Aid Kit Present',       note:'Kit present and in-date'},
-  {id:'mileage', label:'Mileage Reset',               note:'Trip computer reset to zero'},
-  {id:'warning', label:'No Warning Lights',           note:'Dashboard clear of all warnings'},
-  {id:'profile', label:'No Profile Set',              note:'No driver profiles or seat memory stored'}
-];
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-var vehicles  = [];  // [{reg, status:'pending'|'in-progress'|'done'}]
-var execs     = [];  // [{name, initials, cars:[]}]
-var answers   = {};  // {reg: {id: 'yes'|'no'|null, done:false}}
-var role      = 'manager';
-var curReg    = null;
-var curExec   = null;
-var darkMode  = false;
+var CHECK_IDS=['clean','fuel','charged','aircon','radio','satnav','bt','personal','receipts','tyre','aid','mileage','warning','profile'];
+var CHECK_LABELS=['Clean Inside and Out','Min 1/4 Tank Fuel','Fully Charged EV-PHEV','Aircon Off','Radio Off','No Address in Sat Nav','No Phones Paired','No Personal Items','No Receipts in Glovebox','Tyre Inflator Kit Present','First Aid Kit Present','Mileage Reset','No Warning Lights','No Profile Set'];
+var CHECK_NOTES=['Interior vacuumed, exterior washed','Fuel gauge at least a quarter full','Electric vehicles 80 percent or more','Air conditioning switched off','No audio playing','Clear navigation history','Bluetooth devices cleared','No staff belongings inside','Glovebox empty of paperwork','Inflation kit accessible in boot','Kit present and in-date','Trip computer reset to zero','Dashboard clear of all warnings','No driver profiles stored'];
 
-var STORE_KEY = 'forecourt_v3';
+const firebaseConfig = {
+  apiKey: "AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",
+  authDomain: "forecourt-1b6bc.firebaseapp.com",
+  databaseURL: "https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "forecourt-1b6bc",
+  storageBucket: "forecourt-1b6bc.firebasestorage.app",
+  messagingSenderId: "1073459223252",
+  appId: "1:1073459223252:web:d65abed953fc641fc7b941"
+};
 
-// ============================================================
-// STORAGE
-// ============================================================
-function save() {
-  try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({vehicles:vehicles, execs:execs, answers:answers}));
-  } catch(e) {}
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+var vehicles=[],execs=[],answers={},role='manager',curReg=null,curExec=null;
+
+function setSyncStatus(state){
+  var dot=document.getElementById('sync-dot');
+  var lbl=document.getElementById('sync-label');
+  if(state==='live'){dot.className='sync-dot live';lbl.textContent='Live';}
+  else if(state==='err'){dot.className='sync-dot err';lbl.textContent='Offline';}
+  else{dot.className='sync-dot';lbl.textContent='Connecting...';}
 }
 
-function load() {
-  try {
-    var raw = localStorage.getItem(STORE_KEY);
-    if (!raw) return;
-    var d = JSON.parse(raw);
-    if (d.vehicles) vehicles = d.vehicles;
-    if (d.execs)    execs    = d.execs;
-    if (d.answers)  answers  = d.answers;
-    // backfill missing answer keys
-    vehicles.forEach(function(v) {
-      if (!answers[v.reg]) answers[v.reg] = makeBlank();
-      CHECKS.forEach(function(c) {
-        if (answers[v.reg][c.id] === undefined) answers[v.reg][c.id] = null;
-      });
-    });
-  } catch(e) {}
-}
+window.checkConnection=function(){toast('Firebase connected','info');}
 
-function makeBlank() {
-  var obj = {done: false};
-  CHECKS.forEach(function(c) { obj[c.id] = null; });
-  return obj;
-}
-
-// ============================================================
-// TOAST
-// ============================================================
-function toast(msg, type) {
-  var c = document.getElementById('toasts');
-  var t = document.createElement('div');
-  t.className = 'toast' + (type ? ' ' + type : '');
-  t.textContent = msg;
+function toast(msg,type){
+  var c=document.getElementById('toasts');
+  var t=document.createElement('div');
+  t.className='toast'+(type?' '+type:'');
+  t.textContent=msg;
   c.appendChild(t);
-  setTimeout(function() { t.parentNode && t.parentNode.removeChild(t); }, 2500);
+  setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},2500);
 }
 
-// ============================================================
-// THEME
-// ============================================================
-function toggleDark() {
-  darkMode = !darkMode;
-  document.body.style.background    = darkMode ? '#1a1a18' : '#f0f0ee';
-  document.body.style.color         = darkMode ? '#d4d4d0' : '#1a1a1a';
-  document.querySelectorAll('.card, .exec-card, .queue-item, .check-item, .reg-item, .kpi, .report-car, .check-header').forEach(function(el) {
-    el.style.background = darkMode ? '#242422' : '';
-    el.style.borderColor = darkMode ? '#333' : '';
-    el.style.color = darkMode ? '#d4d4d0' : '';
-  });
-}
-
-// ============================================================
-// ROLE SWITCH
-// ============================================================
-function switchRole() {
-  role = role === 'manager' ? 'exec' : 'manager';
-  showScreen(role === 'manager' ? 'screen-manager' : 'screen-exec');
-  var bar = document.getElementById('role-bar');
-  if (role === 'manager') {
-    bar.textContent = 'MANAGER VIEW â€” tap Switch Role to become an executive';
-    bar.style.background = '#d0e4e3';
-    bar.style.color = '#016b71';
-  } else {
-    bar.textContent = 'EXECUTIVE VIEW â€” tap Switch Role to go back to manager';
-    bar.style.background = '#fef3c7';
-    bar.style.color = '#92610a';
-    refreshExecSelect();
-    renderQueue();
-  }
-}
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById(id).classList.add('active');
 }
 
-// ============================================================
-// TABS
-// ============================================================
-function showTab(tabId, btn) {
-  document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-  document.getElementById(tabId).classList.add('active');
+window.switchRole=function(){
+  role=(role==='manager')?'exec':'manager';
+  var bar=document.getElementById('role-bar');
+  if(role==='manager'){
+    showScreen('screen-manager');
+    bar.textContent='MANAGER VIEW';
+    bar.style.background='#d0e4e3';bar.style.color='#016b71';
+  }else{
+    showScreen('screen-exec');
+    bar.textContent='EXECUTIVE VIEW';
+    bar.style.background='#fef3c7';bar.style.color='#92610a';
+    curExec=null;
+    renderExecScreen();
+  }
+};
+
+window.showTab=function(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
   btn.classList.add('active');
-  if (tabId === 't-report') renderReport();
-}
+  if(id==='t-report')renderReport();
+};
 
-// ============================================================
-// ADD REG
-// ============================================================
-document.getElementById('reg-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') addReg();
-});
-
-function addReg() {
-  var raw = document.getElementById('reg-input').value.trim().toUpperCase().replace(/\s/g, '');
-  if (!raw) { toast('Please enter a registration plate', 'err'); return; }
-  for (var i = 0; i < vehicles.length; i++) {
-    if (vehicles[i].reg === raw) { toast(raw + ' is already added', 'err'); return; }
-  }
-  vehicles.push({reg: raw, status: 'pending'});
-  answers[raw] = makeBlank();
-  document.getElementById('reg-input').value = '';
-  renderRegList();
-  save();
-  toast(raw + ' added', 'ok');
-}
-
-function removeReg(reg) {
-  vehicles = vehicles.filter(function(v) { return v.reg !== reg; });
-  delete answers[reg];
-  execs.forEach(function(e) { e.cars = e.cars.filter(function(r) { return r !== reg; }); });
+/* ---- FIREBASE LISTENERS ---- */
+onValue(ref(db,'forecourt/vehicles'), function(snap){
+  vehicles=[];
+  var d=snap.val();
+  if(d)Object.keys(d).forEach(function(k){vehicles.push(d[k]);});
   renderRegList();
   renderExecGrid();
-  save();
-  toast(reg + ' removed');
-}
-
-function renderRegList() {
-  var el = document.getElementById('reg-list');
-  var count = vehicles.length;
-  if (!count) {
-    el.innerHTML = '<div class="empty"><div>&#128663;</div><p>No vehicles added yet</p></div>';
-    return;
-  }
-  var html = '';
-  vehicles.forEach(function(v) {
-    var badgeClass = v.status === 'done' ? 'b-green' : v.status === 'in-progress' ? 'b-blue' : 'b-grey';
-    html += '<div class="reg-item">' +
-      '<div><div class="reg-plate">' + v.reg + '</div></div>' +
-      '<div style="display:flex;align-items:center;gap:8px;">' +
-        '<span class="badge ' + badgeClass + '">' + v.status + '</span>' +
-        '<button class="btn-icon" onclick="removeReg('' + v.reg + '')">&#215;</button>' +
-      '</div>' +
-    '</div>';
-  });
-  el.innerHTML = html;
-}
-
-// ============================================================
-// EXECUTIVES
-// ============================================================
-document.getElementById('exec-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') addExec();
-});
-
-function addExec() {
-  var name = document.getElementById('exec-input').value.trim();
-  if (!name) return;
-  for (var i = 0; i < execs.length; i++) {
-    if (execs[i].name.toLowerCase() === name.toLowerCase()) { toast('Already added', 'err'); return; }
-  }
-  var parts = name.split(' ');
-  var initials = parts.map(function(p) { return p[0]; }).join('').toUpperCase().slice(0, 2);
-  execs.push({name: name, initials: initials, cars: []});
-  document.getElementById('exec-input').value = '';
-  renderExecTags();
-  renderExecGrid();
-  refreshExecSelect();
-  save();
-  toast(name + ' added', 'ok');
-}
-
-function removeExec(name) {
-  var e = execs.find(function(x) { return x.name === name; });
-  if (e) {
-    e.cars.forEach(function(r) {
-      var v = vehicles.find(function(x) { return x.reg === r; });
-      if (v) v.status = 'pending';
-    });
-  }
-  execs = execs.filter(function(x) { return x.name !== name; });
-  renderExecTags();
-  renderExecGrid();
-  refreshExecSelect();
-  save();
-}
-
-function renderExecTags() {
-  var el = document.getElementById('exec-tags');
-  if (!execs.length) { el.innerHTML = ''; return; }
-  var html = '';
-  execs.forEach(function(e) {
-    html += '<span class="tag">' + e.name + '<button onclick="removeExec('' + e.name + '')">&times;</button></span>';
-  });
-  el.innerHTML = html;
-}
-
-// ============================================================
-// ALLOCATE
-// ============================================================
-function allocate() {
-  if (!execs.length) { toast('Add executives first', 'err'); return; }
-  var pending = vehicles.filter(function(v) { return v.status === 'pending'; });
-  if (!pending.length) { toast('No unallocated cars remaining', 'err'); return; }
-  var max = parseInt(document.getElementById('max-per-exec').value) || 8;
-  execs.forEach(function(e) { e.cars = []; });
-  var ei = 0;
-  pending.forEach(function(v) {
-    var tries = 0;
-    while (execs[ei].cars.length >= max && tries < execs.length) {
-      ei = (ei + 1) % execs.length;
-      tries++;
-    }
-    if (execs[ei].cars.length < max) execs[ei].cars.push(v.reg);
-    ei = (ei + 1) % execs.length;
-  });
-  renderExecGrid();
-  refreshExecSelect();
-  save();
-  toast('Cars allocated!', 'ok');
-}
-
-function clearAlloc() {
-  execs.forEach(function(e) {
-    e.cars.forEach(function(r) {
-      var v = vehicles.find(function(x) { return x.reg === r; });
-      if (v && v.status === 'pending') {} else if (v) v.status = 'pending';
-    });
-    e.cars = [];
-  });
-  renderExecGrid();
-  save();
-  toast('Allocation cleared');
-}
-
-function renderExecGrid() {
-  var el = document.getElementById('exec-grid');
-  if (!execs.length) {
-    el.innerHTML = '<div class="empty"><p>Add executives above then click Auto-Allocate</p></div>';
-    return;
-  }
-  var html = '';
-  execs.forEach(function(e) {
-    html += '<div class="exec-card"><div class="exec-card-head"><div class="avatar">' + e.initials + '</div><div><strong>' + e.name + '</strong><div style="font-size:12px;color:#888;">' + e.cars.length + ' car' + (e.cars.length !== 1 ? 's' : '') + '</div></div></div>';
-    if (e.cars.length) {
-      e.cars.forEach(function(r) {
-        var v = vehicles.find(function(x) { return x.reg === r; });
-        var st = v ? v.status : 'pending';
-        var bc = st === 'done' ? 'b-green' : st === 'in-progress' ? 'b-blue' : 'b-grey';
-        html += '<div class="exec-car"><span>' + r + '</span><span class="badge ' + bc + '">' + st + '</span></div>';
-      });
-    } else {
-      html += '<div style="font-size:12px;color:#aaa;padding:4px 0;">No cars yet</div>';
-    }
-    html += '</div>';
-  });
-  el.innerHTML = html;
-      }
-      
-// ============================================================
-// EXEC VIEW
-// ============================================================
-function refreshExecSelect() {
-  var sel = document.getElementById('exec-select');
-  var cur = sel.value;
-  sel.innerHTML = '<option value="">&#128100; Select me...</option>';
-  execs.forEach(function(e) {
-    var opt = document.createElement('option');
-    opt.value = e.name;
-    opt.textContent = e.name;
-    sel.appendChild(opt);
-  });
-  if (cur) sel.value = cur;
-}
-
-function selectExec(name) {
-  curExec = name || null;
-  renderQueue();
-}
-
-function renderQueue() {
-  var el = document.getElementById('exec-queue');
-  var exec = curExec ? execs.find(function(e) { return e.name === curExec; }) : null;
-  if (!exec || !exec.cars.length) {
-    el.innerHTML = '<div class="empty"><p>' + (curExec ? 'No cars allocated to you yet' : 'Select your name above to see your cars') + '</p></div>';
-    document.getElementById('exec-prog').style.width = '0%';
-    document.getElementById('exec-prog-label').textContent = '0 / 0 checked';
-    return;
-  }
-  var done = exec.cars.filter(function(r) {
-    var v = vehicles.find(function(x) { return x.reg === r; });
-    return v && v.status === 'done';
-  }).length;
-  var total = exec.cars.length;
-  document.getElementById('exec-prog').style.width = Math.round((done / total) * 100) + '%';
-  document.getElementById('exec-prog-label').textContent = done + ' / ' + total + ' checked';
-  var html = '';
-  exec.cars.forEach(function(r) {
-    var v = vehicles.find(function(x) { return x.reg === r; });
-    var st = v ? v.status : 'pending';
-    var cls = st === 'done' ? 'done' : st === 'in-progress' ? 'in-progress' : '';
-    var badge = st === 'done'
-      ? '<span class="badge b-green">&#10003; Done</span>'
-      : st === 'in-progress'
-        ? '<span class="badge b-blue">In progress</span>'
-        : '<span class="badge b-grey">Pending</span>';
-    html += '<div class="queue-item ' + cls + '" onclick="openCheck('' + r + '')">' +
-      '<div class="q-reg">' + r + '</div>' +
-      '<div class="q-info">Tap to check</div>' +
-      badge +
-    '</div>';
-  });
-  el.innerHTML = html;
-}
-
-// ============================================================
-// CHECKLIST
-// ============================================================
-function openCheck(reg) {
-  var v = vehicles.find(function(x) { return x.reg === reg; });
-  if (!v) return;
-  curReg = reg;
-  if (v.status !== 'done') v.status = 'in-progress';
-  save();
-  showScreen('screen-check');
-  document.getElementById('check-reg-display').textContent = reg;
-  document.getElementById('check-sub-display').textContent = 'Complete all checks below';
-  renderCheckItems();
-}
-
-function backToQueue() {
-  showScreen('screen-exec');
-  renderQueue();
-}
-
-function renderCheckItems() {
-  var reg = curReg;
-  var ans = answers[reg];
-  if (!ans) { ans = makeBlank(); answers[reg] = ans; }
-  var answered = 0;
-  CHECKS.forEach(function(c) { if (ans[c.id] !== null) answered++; });
-  var pct = Math.round((answered / CHECKS.length) * 100);
-  document.getElementById('check-prog').style.width = pct + '%';
-  var allDone = answered === CHECKS.length;
-  document.getElementById('submit-btn').disabled = !allDone;
-  var fails = 0;
-  CHECKS.forEach(function(c) { if (ans[c.id] === 'no') fails++; });
-  var badgeEl = document.getElementById('check-badge');
-  if (allDone) {
-    badgeEl.innerHTML = fails
-      ? '<span class="badge b-red">' + fails + ' issue' + (fails > 1 ? 's' : '') + '</span>'
-      : '<span class="badge b-green">All pass &#10003;</span>';
-  } else {
-    badgeEl.innerHTML = '<span class="badge b-grey">' + answered + ' / ' + CHECKS.length + '</span>';
-  }
-  var html = '';
-  CHECKS.forEach(function(c) {
-    var a = ans[c.id];
-    var cls = a === 'yes' ? 'yes' : a === 'no' ? 'no' : '';
-    html += '<div class="check-item ' + cls + '">' +
-      '<div style="flex:1; margin-right:12px;">' +
-        '<div class="check-lbl">' + c.label + '</div>' +
-        '<div class="check-note">' + c.note + '</div>' +
-      '</div>' +
-      '<div class="yn">' +
-        '<button class="y' + (a === 'yes' ? ' on' : '') + '" onclick="setAnswer('' + c.id + '','yes')">YES</button>' +
-        '<button class="n' + (a === 'no' ? ' on' : '') + '" onclick="setAnswer('' + c.id + '','no')">NO</button>' +
-      '</div>' +
-    '</div>';
-  });
-  document.getElementById('check-items-list').innerHTML = html;
-}
-
-function setAnswer(id, val) {
-  var ans = answers[curReg];
-  ans[id] = (ans[id] === val) ? null : val;
-  save();
-  renderCheckItems();
-}
-
-function submitCheck() {
-  var v = vehicles.find(function(x) { return x.reg === curReg; });
-  if (v) v.status = 'done';
-  answers[curReg].done = true;
-  save();
-  toast(curReg + ' submitted! âœ“', 'ok');
-  showScreen('screen-exec');
-  renderQueue();
-  renderExecGrid();
-  renderRegList();
-}
-  
-// ============================================================
-// REPORT
-// ============================================================
-function renderReport() {
-  var done  = vehicles.filter(function(v) { return v.status === 'done'; });
-  var total = vehicles.length;
-  var issues = done.filter(function(v) {
-    return CHECKS.some(function(c) { return answers[v.reg] && answers[v.reg][c.id] === 'no'; });
-  }).length;
-  var el = document.getElementById('report-content');
-  if (!done.length) {
-    el.innerHTML = '<div class="empty"><p>No completed checks yet. Executives need to submit checks first.</p></div>';
-    return;
-  }
-  var html = '<div class="kpi-row">' +
-    '<div class="kpi"><div class="kpi-num">' + done.length + '</div><div class="kpi-lbl">Checked</div></div>' +
-    '<div class="kpi"><div class="kpi-num" style="color:#888;">' + (total - done.length) + '</div><div class="kpi-lbl">Pending</div></div>' +
-    '<div class="kpi"><div class="kpi-num" style="color:' + (issues ? '#c0294a' : '#3d7a1c') + ';">' + issues + '</div><div class="kpi-lbl">Issues</div></div>' +
-  '</div>';
-  done.forEach(function(v) {
-    var ans = answers[v.reg] || {};
-    var fails = CHECKS.filter(function(c) { return ans[c.id] === 'no'; }).length;
-    html += '<div class="report-car"><div class="report-car-head">' +
-      '<strong style="font-family:Courier New,monospace;font-size:16px;">' + v.reg + '</strong>' +
-      (fails ? '<span class="badge b-red">' + fails + ' issue' + (fails > 1 ? 's' : '') + '</span>' : '<span class="badge b-green">All clear</span>') +
-    '</div><div class="report-items">';
-    CHECKS.forEach(function(c) {
-      if (ans[c.id]) {
-        html += '<div class="ri ' + (ans[c.id] === 'yes' ? 'pass' : 'fail') + '"><div class="ri-dot"></div>' + c.label + '</div>';
-      }
-    });
-    html += '</div></div>';
-  });
-  el.innerHTML = html;
-}
-
-// ============================================================
-// EXPORT CSV
-// ============================================================
-function exportCSV() {
-  var done = vehicles.filter(function(v) { return v.status === 'done'; });
-  if (!done.length) { toast('No completed checks to export', 'err'); return; }
-  var headers = ['Registration'].concat(CHECKS.map(function(c) { return c.label; }));
-  var rows = done.map(function(v) {
-    var ans = answers[v.reg] || {};
-    return [v.reg].concat(CHECKS.map(function(c) { return ans[c.id] || ''; }));
-  });
-  var csv = [headers].concat(rows).map(function(r) {
-    return r.map(function(x) { return '"' + x + '"'; }).join(',');
-  }).join('
-');
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
-  a.download = 'forecourt-' + new Date().toISOString().slice(0, 10) + '.csv';
-  a.click();
-  toast('CSV exported!', 'ok');
-}
-
-// ============================================================
-// NEW WEEK
-// ============================================================
-function newWeek() {
-  if (!confirm('Start a new week? This clears ALL vehicles, allocations and check data.')) return;
-  vehicles = []; execs = []; answers = {};
-  try { localStorage.removeItem(STORE_KEY); } catch(e) {}
-  renderRegList();
-  renderExecGrid();
-  renderExecTags();
-  refreshExecSelect();
+  if(role==='exec')renderExecScreen();
   renderReport();
-  toast('New week started!', 'ok');
+  setSyncStatus('live');
+}, function(){setSyncStatus('err');});
+
+onValue(ref(db,'forecourt/execs'), function(snap){
+  execs=[];
+  var d=snap.val();
+  if(d)Object.keys(d).forEach(function(k){execs.push(d[k]);});
+  renderExecTags();
+  renderExecGrid();
+  if(role==='exec')renderExecScreen();
+}, function(){});
+
+onValue(ref(db,'forecourt/answers'), function(snap){
+  answers=snap.val()||{};
+  renderReport();
+  if(curExec)renderQueue();
+}, function(){});
+
+/* ---- VEHICLES ---- */
+document.getElementById('reg-input').addEventListener('keydown',function(e){if(e.key==='Enter')window.addReg();});
+
+window.addReg=function(){
+  var raw=document.getElementById('reg-input').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!raw){toast('Enter a registration plate','err');return;}
+  if(vehicles.find(function(v){return v.reg===raw;})){toast(raw+' already added','err');return;}
+  var v={reg:raw,status:'pending'};
+  set(ref(db,'forecourt/vehicles/'+raw),v).then(function(){
+    set(ref(db,'forecourt/answers/'+raw),blank());
+    document.getElementById('reg-input').value='';
+    toast(raw+' added','ok');
+  }).catch(function(){toast('Save failed - check connection','err');});
+};
+
+window.removeReg=function(reg){
+  remove(ref(db,'forecourt/vehicles/'+reg));
+  remove(ref(db,'forecourt/answers/'+reg));
+  execs.forEach(function(e){
+    if(e.cars&&e.cars.indexOf(reg)!==-1){
+      e.cars=e.cars.filter(function(r){return r!==reg;});
+      set(ref(db,'forecourt/execs/'+e.name.replace(/\s/g,'_')),e);
+    }
+  });
+  toast(reg+' removed');
+};
+
+function blank(){
+  var o={done:false};
+  CHECK_IDS.forEach(function(id){o[id]=null;});
+  return o;
 }
 
-// ============================================================
-// BOOT
-// ============================================================
-load();
-renderRegList();
-renderExecGrid();
-renderExecTags();
-refreshExecSelect();
+function renderRegList(){
+  var el=document.getElementById('reg-list');
+  if(!vehicles.length){el.innerHTML='<div class="empty"><p>No vehicles added yet</p></div>';return;}
+  var h='';
+  vehicles.forEach(function(v){
+    var bc=v.status==='done'?'b-green':v.status==='in-progress'?'b-blue':'b-grey';
+    h+='<div class="reg-item"><div class="reg-plate">'+v.reg+'</div>'+
+       '<div style="display:flex;align-items:center;gap:8px;">'+
+       '<span class="badge '+bc+'">'+v.status+'</span>'+
+       '<button class="btn-icon" onclick="removeReg(\''+v.reg+'\')">&times;</button>'+
+       '</div></div>';
+  });
+  el.innerHTML=h;
+}
+
+/* ---- EXECS ---- */
+document.getElementById('exec-input').addEventListener('keydown',function(e){if(e.key==='Enter')window.addExec();});
+
+window.addExec=function(){
+  var name=document.getElementById('exec-input').value.trim();
+  if(!name)return;
+  if(execs.find(function(e){return e.name.toLowerCase()===name.toLowerCase();})){toast('Already added','err');return;}
+  var ini=name.split(' ').map(function(p){return p[0]||'';}).join('').toUpperCase().slice(0,2);
+  var e={name:name,initials:ini,cars:[]};
+  var key=name.replace(/\s/g,'_');
+  set(ref(db,'forecourt/execs/'+key),e).then(function(){
+    document.getElementById('exec-input').value='';
+    toast(name+' added','ok');
+  });
+};
+
+window.removeExec=function(name){
+  var e=execs.find(function(x){return x.name===name;});
+  if(e&&e.cars){
+    e.cars.forEach(function(r){
+      update(ref(db,'forecourt/vehicles/'+r),{status:'pending'});
+    });
+  }
+  remove(ref(db,'forecourt/execs/'+name.replace(/\s/g,'_')));
+};
+
+function renderExecTags(){
+  var el=document.getElementById('exec-tags');
+  if(!execs.length){el.innerHTML='';return;}
+  var h='';
+  execs.forEach(function(e){h+='<span class="tag">'+e.name+'<button onclick="removeExec(\''+e.name+'\')">&times;</button></span>';});
+  el.innerHTML=h;
+}
+
+window.allocate=function(){
+  if(!execs.length){toast('Add executives first','err');return;}
+  var pending=vehicles.filter(function(v){return v.status==='pending';});
+  if(!pending.length){toast('No unallocated cars','err');return;}
+  var max=parseInt(document.getElementById('max-per-exec').value)||8;
+  var localExecs=execs.map(function(e){return {name:e.name,initials:e.initials,cars:[]};});
+  var ei=0;
+  pending.forEach(function(v){
+    var tries=0;
+    while(localExecs[ei].cars.length>=max&&tries<localExecs.length){ei=(ei+1)%localExecs.length;tries++;}
+    if(localExecs[ei].cars.length<max)localExecs[ei].cars.push(v.reg);
+    ei=(ei+1)%localExecs.length;
+  });
+  localExecs.forEach(function(e){
+    set(ref(db,'forecourt/execs/'+e.name.replace(/\s/g,'_')),e);
+  });
+  toast('Cars allocated!','ok');
+};
+
+window.clearAlloc=function(){
+  execs.forEach(function(e){
+    if(e.cars){
+      e.cars.forEach(function(r){update(ref(db,'forecourt/vehicles/'+r),{status:'pending'});});
+    }
+    set(ref(db,'forecourt/execs/'+e.name.replace(/\s/g,'_')),{name:e.name,initials:e.initials,cars:[]});
+  });
+  toast('Allocation cleared');
+};
+
+function renderExecGrid(){
+  var el=document.getElementById('exec-grid');
+  if(!execs.length){el.innerHTML='<div class="empty"><p>Add executives then click Allocate</p></div>';return;}
+  var h='';
+  execs.forEach(function(e){
+    var cars=e.cars||[];
+    h+='<div class="exec-card"><div class="exec-card-head">'+
+       '<div class="avatar">'+e.initials+'</div>'+
+       '<div><strong>'+e.name+'</strong><div style="font-size:12px;color:#888;">'+cars.length+' car'+(cars.length!==1?'s':'')+'</div></div></div>';
+    if(cars.length){
+      cars.forEach(function(r){
+        var v=vehicles.find(function(x){return x.reg===r;});
+        var st=v?v.status:'pending';
+        var bc=st==='done'?'b-green':st==='in-progress'?'b-blue':'b-grey';
+        h+='<div class="exec-car"><span>'+r+'</span><span class="badge '+bc+'">'+st+'</span></div>';
+      });
+    }else{h+='<div style="font-size:12px;color:#aaa;padding:4px 0;">No cars yet</div>';}
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+
+/* ---- EXEC SCREEN ---- */
+function renderExecScreen(){
+  var nd=document.getElementById('exec-no-data');
+  var hd=document.getElementById('exec-has-data');
+  if(!execs.length||!execs.some(function(e){return e.cars&&e.cars.length;})){
+    nd.style.display='block';hd.style.display='none';return;
+  }
+  nd.style.display='none';hd.style.display='block';
+  if(curExec){showExecQueue();}else{showWhoGrid();}
+}
+
+function showWhoGrid(){
+  document.getElementById('exec-picker-screen').style.display='block';
+  document.getElementById('exec-queue-screen').style.display='none';
+  var el=document.getElementById('who-grid');
+  var h='';
+  execs.forEach(function(e){
+    if(e.cars&&e.cars.length){
+      var ini=e.initials||e.name.slice(0,2).toUpperCase();
+      h+='<button class="who-btn" onclick="pickExec(\''+e.name+'\')">'+
+         '<div class="who-initials">'+ini+'</div>'+e.name+'</button>';
+    }
+  });
+  el.innerHTML=h||'<div class="empty"><p>No cars allocated yet</p></div>';
+}
+
+window.pickExec=function(name){curExec=name;showExecQueue();};
+
+window.clearExecSelection=function(){curExec=null;showWhoGrid();};
+
+function showExecQueue(){
+  document.getElementById('exec-picker-screen').style.display='none';
+  document.getElementById('exec-queue-screen').style.display='block';
+  document.getElementById('exec-active-name').textContent=curExec||'-';
+  renderQueue();
+}
+
+function renderQueue(){
+  var el=document.getElementById('exec-queue');
+  var ex=curExec?execs.find(function(e){return e.name===curExec;}):null;
+  var cars=ex?ex.cars||[]:[];
+  if(!cars.length){
+    el.innerHTML='<div class="empty"><p>No cars allocated to you yet</p></div>';
+    document.getElementById('exec-prog').style.width='0%';
+    document.getElementById('exec-prog-label').textContent='0 / 0 checked';
+    return;
+  }
+  var done=cars.filter(function(r){var v=vehicles.find(function(x){return x.reg===r;});return v&&v.status==='done';}).length;
+  document.getElementById('exec-prog').style.width=Math.round(done/cars.length*100)+'%';
+  document.getElementById('exec-prog-label').textContent=done+' / '+cars.length+' checked';
+  var h='';
+  cars.forEach(function(r){
+    var v=vehicles.find(function(x){return x.reg===r;});
+    var st=v?v.status:'pending';
+    var cls=st==='done'?'done':st==='in-progress'?'in-progress':'';
+    var badge=st==='done'?'<span class="badge b-green">Done</span>':st==='in-progress'?'<span class="badge b-blue">In progress</span>':'<span class="badge b-grey">Pending</span>';
+    h+='<div class="queue-item '+cls+'" onclick="openCheck(\''+r+'\')"><div class="q-reg">'+r+'</div><div class="q-info">Tap to check</div>'+badge+'</div>';
+  });
+  el.innerHTML=h;
+}
+
+/* ---- CHECKLIST ---- */
+window.openCheck=function(reg){
+  var v=vehicles.find(function(x){return x.reg===reg;});
+  if(!v)return;
+  curReg=reg;
+  if(v.status!=='done')update(ref(db,'forecourt/vehicles/'+reg),{status:'in-progress'});
+  showScreen('screen-check');
+  document.getElementById('check-reg-display').textContent=reg;
+  renderCheckItems();
+};
+
+window.backToQueue=function(){showScreen('screen-exec');renderQueue();};
+
+function renderCheckItems(){
+  var ans=answers[curReg]||blank();
+  var answered=0;
+  CHECK_IDS.forEach(function(id){if(ans[id]!==null&&ans[id]!==undefined)answered++;});
+  document.getElementById('check-prog').style.width=Math.round(answered/CHECK_IDS.length*100)+'%';
+  var allDone=answered===CHECK_IDS.length;
+  document.getElementById('submit-btn').disabled=!allDone;
+  var fails=0;CHECK_IDS.forEach(function(id){if(ans[id]==='no')fails++;});
+  var be=document.getElementById('check-badge');
+  if(allDone){be.innerHTML=fails?'<span class="badge b-red">'+fails+' issue'+(fails>1?'s':'')+'</span>':'<span class="badge b-green">All pass</span>';}
+  else{be.innerHTML='<span class="badge b-grey">'+answered+' / '+CHECK_IDS.length+'</span>';}
+  var h='';
+  CHECK_IDS.forEach(function(id,i){
+    var a=ans[id],cls=a==='yes'?'yes':a==='no'?'no':'';
+    h+='<div class="check-item '+cls+'">'+
+       '<div style="flex:1;margin-right:12px;"><div class="check-lbl">'+CHECK_LABELS[i]+'</div><div class="check-note">'+CHECK_NOTES[i]+'</div></div>'+
+       '<div class="yn">'+
+       '<button class="y'+(a==='yes'?' on':'')+'" onclick="setAnswer(\''+id+'\',\'yes\')">YES</button>'+
+       '<button class="n'+(a==='no'?' on':'')+'" onclick="setAnswer(\''+id+'\',\'no\')">NO</button>'+
+       '</div></div>';
+  });
+  document.getElementById('check-items-list').innerHTML=h;
+}
+
+window.setAnswer=function(id,val){
+  if(!answers[curReg])answers[curReg]=blank();
+  answers[curReg][id]=(answers[curReg][id]===val)?null:val;
+  update(ref(db,'forecourt/answers/'+curReg),{[id]:answers[curReg][id]});
+  renderCheckItems();
+};
+
+window.submitCheck=function(){
+  update(ref(db,'forecourt/vehicles/'+curReg),{status:'done'});
+  update(ref(db,'forecourt/answers/'+curReg),{done:true});
+  toast(curReg+' submitted!','ok');
+  showScreen('screen-exec');renderQueue();
+};
+
+/* ---- REPORTS ---- */
+function renderReport(){
+  var done=vehicles.filter(function(v){return v.status==='done';});
+  var total=vehicles.length;
+  var issues=done.filter(function(v){return CHECK_IDS.some(function(id){return answers[v.reg]&&answers[v.reg][id]==='no';});}).length;
+  var el=document.getElementById('report-content');
+  if(!el)return;
+  if(!done.length){el.innerHTML='<div class="empty"><p>No completed checks yet</p></div>';return;}
+  var h='<div class="kpi-row">'+
+    '<div class="kpi"><div class="kpi-num">'+done.length+'</div><div class="kpi-lbl">Checked</div></div>'+
+    '<div class="kpi"><div class="kpi-num" style="color:#888;">'+(total-done.length)+'</div><div class="kpi-lbl">Pending</div></div>'+
+    '<div class="kpi"><div class="kpi-num" style="color:'+(issues?'#c0294a':'#3d7a1c')+';">'+issues+'</div><div class="kpi-lbl">Issues</div></div>'+
+    '</div>';
+  done.forEach(function(v){
+    var ans=answers[v.reg]||{};
+    var fails=CHECK_IDS.filter(function(id){return ans[id]==='no';}).length;
+    h+='<div class="report-car"><div class="report-car-head">'+
+       '<strong style="font-family:Courier New,monospace;font-size:16px;">'+v.reg+'</strong>'+
+       (fails?'<span class="badge b-red">'+fails+' issue'+(fails>1?'s':'')+'</span>':'<span class="badge b-green">All clear</span>')+
+       '</div><div class="report-items">';
+    CHECK_IDS.forEach(function(id,i){
+      if(ans[id])h+='<div class="ri '+(ans[id]==='yes'?'pass':'fail')+'"><div class="ri-dot"></div>'+CHECK_LABELS[i]+'</div>';
+    });
+    h+='</div></div>';
+  });
+  el.innerHTML=h;
+}
+
+window.exportCSV=function(){
+  var done=vehicles.filter(function(v){return v.status==='done';});
+  if(!done.length){toast('No completed checks to export','err');return;}
+  var headers=['Registration','Executive'].concat(CHECK_LABELS);
+  var rows=done.map(function(v){
+    var ans=answers[v.reg]||{};
+    var exc='';
+    execs.forEach(function(e){if(e.cars&&e.cars.indexOf(v.reg)!==-1)exc=e.name;});
+    return [v.reg,exc].concat(CHECK_IDS.map(function(id){return ans[id]||'';}));
+  });
+  var csv=[headers].concat(rows).map(function(r){return r.map(function(x){return '"'+x+'"';}).join(',');}).join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='forecourt-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();toast('CSV exported!','ok');
+};
+
+window.newWeek=function(){
+  if(!confirm('Start a new week? This clears ALL data from the database.'))return;
+  remove(ref(db,'forecourt'));
+  toast('New week started!','ok');
+};
+
+/* ---- SHARE URL ---- */
+var pageURL=window.location.href.split('?')[0];
+var urlEl=document.getElementById('share-url');
+if(urlEl)urlEl.textContent=pageURL;
+
+window.shareURL=function(){
+  var msg='Forecourt Check App - open this link on your phone:\n'+pageURL+'\n\nTap Role to switch to Executive View, then tap your name.';
+  if(navigator.share){navigator.share({title:'Forecourt Check',text:msg}).catch(function(){});}
+  else{
+    if(navigator.clipboard){navigator.clipboard.writeText(pageURL).then(function(){toast('URL copied!','ok');});}
+    else{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');}
+  }
+};
+
 </script>
 </body>
 </html>
