@@ -266,9 +266,9 @@ input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-siz
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, update, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-var CHECK_IDS=['clean','fuel','charged','aircon','radio','satnav','bt','personal','receipts','tyre','aid','mileage','warning','profile'];
-var CHECK_LABELS=['Clean Inside and Out','Min 1/4 Tank Fuel','Fully Charged EV-PHEV','Aircon Off','Radio Off','No Address in Sat Nav','No Phones Paired','No Personal Items','No Receipts in Glovebox','Tyre Inflator Kit Present','First Aid Kit Present','Mileage Reset','No Warning Lights','No Profile Set'];
-var CHECK_NOTES=['Interior vacuumed, exterior washed','Fuel gauge at least a quarter full','Electric vehicles 80 percent or more','Air conditioning switched off','No audio playing','Clear navigation history','Bluetooth devices cleared','No staff belongings inside','Glovebox empty of paperwork','Inflation kit accessible in boot','Kit present and in-date','Trip computer reset to zero','Dashboard clear of all warnings','No driver profiles stored'];
+var CHECK_IDS=['clean','fuel','charged','aircon','radio','satnav','bt','personal','receipts','tyre','aid','mileage','warning','profile','priceboard'];
+var CHECK_LABELS=['Clean Inside and Out','Min 1/4 Tank Fuel','Fully Charged EV-PHEV','Aircon Off','Radio Off','No Address in Sat Nav','No Phones Paired','No Personal Items','No Receipts in Glovebox','Tyre Inflator Kit Present','First Aid Kit Present','Mileage Reset','No Warning Lights','No Profile Set','Price Board & AUC Plate Present'];
+var CHECK_NOTES=['Interior vacuumed, exterior washed','Fuel gauge at least a quarter full','Electric vehicles 80 percent or more','Air conditioning switched off','No audio playing','Clear navigation history','Bluetooth devices cleared','No staff belongings inside','Glovebox empty of paperwork','Inflation kit accessible in boot','Kit present and in-date','Trip computer reset to zero','Dashboard clear of all warnings','No driver profiles stored','Price board displayed, AUC plate fitted'];
 
 const firebaseConfig = {
   apiKey: "AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",
