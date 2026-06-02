@@ -5,739 +5,137 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Forecourt Check</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f0ee;color:#1a1a1a;font-size:16px}
-button{cursor:pointer;font:inherit}input,select,textarea{font:inherit}
-.topbar{background:#016b71;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.topbar h1{font-size:18px;font-weight:700}
-.topbar-btns{display:flex;gap:8px}
-.topbar button{background:rgba(255,255,255,0.2);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600}
-#role-bar{text-align:center;padding:7px;font-size:12px;font-weight:700;letter-spacing:0.03em}
-.main{padding:16px;max-width:860px;margin:0 auto}
-.screen{display:none}.screen.active{display:block}
-.tabs{display:flex;gap:4px;background:#ddd;border-radius:10px;padding:4px;margin-bottom:16px}
-.tab-btn{flex:1;padding:10px 4px;background:none;border:none;border-radius:8px;font-size:13px;font-weight:600;color:#666;cursor:pointer}
-.tab-btn.active{background:#fff;color:#016b71;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
-.tab-pane{display:none}.tab-pane.active{display:block}
-.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
-.card h2{font-size:17px;font-weight:700;margin-bottom:4px}
-.sub{font-size:13px;color:#888;margin-bottom:12px}
-label.lbl{display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;margin-top:12px}
-.row{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}.row input{flex:1}
-input[type=text],input[type=number],input[type=password],select{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;background:#fafafa;outline:none}
-input:focus,select:focus{border-color:#016b71;background:#fff}
-input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-size:18px;font-weight:700;letter-spacing:0.06em}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:700;border:none;min-height:44px;cursor:pointer}
-.btn-green{background:#016b71;color:#fff}.btn-green:hover{background:#015358}
-.btn-grey{background:#eee;color:#333}.btn-grey:hover{background:#ddd}
-.btn-red{background:#fff;color:#c0294a;border:1.5px solid #f0c0cc}
-.btn-sm{padding:7px 14px;font-size:12px;min-height:34px}
-.btn-icon{background:none;border:none;padding:4px 8px;font-size:18px;color:#999;cursor:pointer}
-.btn-success{background:#3d7a1c;color:#fff;width:100%;justify-content:center;font-size:16px;padding:16px;border-radius:10px;display:flex;align-items:center;border:none;cursor:pointer}
-.btn-success:hover:not(:disabled){background:#2e5c10}
-.btn-success:disabled{opacity:0.4;cursor:not-allowed}
-.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
-.b-grey{background:#eee;color:#666}.b-blue{background:#d0e4e3;color:#016b71}
-.b-green{background:#d6e8cc;color:#3d7a1c}.b-red{background:#fce4ec;color:#c0294a}
-.reg-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f8f6;border:1px solid #e8e8e4;border-radius:8px;margin-bottom:8px}
-.reg-plate{font-family:'Courier New',monospace;font-weight:700;font-size:16px;letter-spacing:0.04em}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tag{display:inline-flex;align-items:center;gap:4px;background:#d0e4e3;color:#016b71;padding:5px 12px;border-radius:99px;font-size:13px;font-weight:600}
-.tag button{background:none;border:none;color:#016b71;font-size:16px;cursor:pointer;padding:0 2px;line-height:1}
-.exec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}
-.exec-card{background:#fff;border:1.5px solid #e8e8e4;border-radius:12px;padding:16px}
-.exec-card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.avatar{width:42px;height:42px;border-radius:50%;background:#d0e4e3;color:#016b71;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.exec-car{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f8f8f6;border-radius:6px;font-family:'Courier New',monospace;font-size:12px;font-weight:600;margin-bottom:4px}
-/* EXEC ENTRY HERO */
-.exec-hero{background:linear-gradient(135deg,#016b71,#014f53);border-radius:16px;padding:24px 20px;margin-bottom:16px;color:#fff;text-align:center}
-.exec-hero h2{font-size:22px;font-weight:800;margin-bottom:6px}
-.exec-hero p{font-size:14px;opacity:0.85;margin-bottom:20px}
-.who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:4px}
-.who-btn{padding:18px 10px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;text-align:center;transition:all 0.15s;backdrop-filter:blur(4px)}
-.who-btn:hover{background:rgba(255,255,255,0.25);border-color:#fff}
-.who-initials{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;color:#fff}
-.queue-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1.5px solid #e8e8e4;border-radius:12px;margin-bottom:10px;cursor:pointer}
-.queue-item:hover{border-color:#016b71;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-.queue-item.done{opacity:0.6;border-color:#3d7a1c}
-.queue-item.in-progress{border-color:#016b71;border-width:2px}
-.q-reg{font-family:'Courier New',monospace;font-weight:700;font-size:17px;min-width:90px}
-.q-info{flex:1;font-size:13px;color:#888}
-.prog-track{height:6px;background:#e8e8e4;border-radius:99px;overflow:hidden;margin-top:10px}
-.prog-fill{height:100%;background:#016b71;border-radius:99px;transition:width 0.35s ease}
-.check-header{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#fff;border:1.5px solid #e8e8e4;border-radius:12px;margin-bottom:14px}
-.check-reg{font-family:'Courier New',monospace;font-size:28px;font-weight:700;letter-spacing:0.04em}
-.check-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:#fff;border:1.5px solid #e8e8e4;border-radius:10px;margin-bottom:8px}
-.check-item.yes{background:#f0f8eb;border-color:#8ec86a}
-.check-item.no{background:#fff0f4;border-color:#f0a0b8}
-.check-lbl{font-weight:600;font-size:14px}
-.check-note{font-size:12px;color:#888;margin-top:2px}
-.yn{display:flex;gap:6px;flex-shrink:0}
-.yn button{min-width:52px;height:40px;border-radius:8px;font-size:13px;font-weight:700;border:1.5px solid #ddd;background:#fff;color:#aaa;cursor:pointer}
-.yn button.y.on{background:#3d7a1c;border-color:#3d7a1c;color:#fff}
-.yn button.n.on{background:#c0294a;border-color:#c0294a;color:#fff}
-.notes-box{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;resize:none;min-height:70px;outline:none;margin-top:4px}
-.notes-box:focus{border-color:#016b71;background:#fff}
-.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
-.kpi{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px;text-align:center}
-.kpi-num{font-size:30px;font-weight:700;color:#016b71}
-.kpi-lbl{font-size:11px;color:#888;margin-top:4px}
-.report-car{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px;margin-bottom:10px}
-.report-car-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
-.report-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:5px}
-.ri{display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;font-size:11px}
-.ri.pass{background:#d6e8cc;color:#3d7a1c}.ri.fail{background:#fce4ec;color:#c0294a}
-.ri-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
-.week-tab{display:inline-block;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:#666;margin:0 4px 8px 0}
-.week-tab.active{background:#016b71;color:#fff;border-color:#016b71}
-.empty{text-align:center;padding:40px 20px;color:#aaa}.empty p{font-size:14px;margin-top:8px}
-#toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:6px;align-items:center;width:90%;max-width:340px;pointer-events:none}
-.toast{background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:99px;font-size:14px;font-weight:600;text-align:center;animation:fadeup 0.2s ease}
-.toast.ok{background:#3d7a1c}.toast.err{background:#c0294a}.toast.info{background:#016b71}
-@keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.back-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#016b71;font-weight:700;font-size:14px;padding:8px 0;margin-bottom:12px;cursor:pointer}
-.highlight-card{background:#e8f4f5;border:1.5px solid #016b71;border-radius:12px;padding:16px;margin-bottom:16px}
-.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:#aaa}
-.sync-dot.live{background:#3d7a1c;box-shadow:0 0 0 2px #d6e8cc}
-.sync-dot.err{background:#c0294a}
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
-.modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 10px 30px rgba(0,0,0,0.2);text-align:center}
-@media(max-width:480px){
-  .check-reg{font-size:22px}.kpi-num{font-size:22px}
-  .yn button{min-width:46px;height:38px;font-size:12px}
-  .tab-btn{font-size:11px;padding:8px 2px}
-  .btn{padding:10px 14px;font-size:13px}
+:root{
+  --brand-blue:#4D94D8;
+  --brand-blue-dark:#1f4f82;
+  --brand-gold:#F0BA6C;
+  --brand-ink:#12263a;
+  --brand-bg:#eef3f8;
+  --card:#ffffff;
+  --line:#d9e3ee;
+  --muted:#6b7a8c;
+  --success:#2f8f57;
+  --success-bg:#e7f6ee;
+  --danger:#c54242;
+  --danger-bg:#fff1f1;
+  --shadow:0 10px 25px rgba(18,38,58,.08);
 }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#f7f9fc 0%,var(--brand-bg) 100%);color:var(--brand-ink);font-size:16px}
+button{cursor:pointer;font:inherit}input,textarea{font:inherit}
+.topbar{background:linear-gradient(135deg,var(--brand-blue-dark),var(--brand-blue));color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 8px 18px rgba(31,79,130,.18)}
+.topbar h1{font-size:18px;font-weight:800;letter-spacing:.01em}.topbar-btns{display:flex;gap:8px}.topbar button{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.18);padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;backdrop-filter:blur(4px)}
+#role-bar{text-align:center;padding:8px;font-size:12px;font-weight:800;letter-spacing:.06em}
+.main{padding:16px;max-width:980px;margin:0 auto}.screen{display:none}.screen.active{display:block}
+.tabs{display:flex;gap:4px;background:#dbe6f1;border-radius:12px;padding:4px;margin-bottom:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}.tab-btn{flex:1;padding:11px 4px;background:none;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#5a6b7f;cursor:pointer}.tab-btn.active{background:#fff;color:var(--brand-blue-dark);box-shadow:var(--shadow)}.tab-pane{display:none}.tab-pane.active{display:block}
+.card{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.7)}.card h2{font-size:17px;font-weight:800;margin-bottom:4px}.sub{font-size:13px;color:var(--muted);margin-bottom:12px}
+label.lbl{display:block;font-size:13px;font-weight:700;color:#425466;margin-bottom:6px;margin-top:12px}.row{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}.row input,.row textarea{flex:1}
+input[type=text],input[type=number],input[type=password],textarea,select{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#f8fbfe;outline:none;color:var(--brand-ink)}input:focus,textarea:focus,select:focus{border-color:var(--brand-blue);background:#fff;box-shadow:0 0 0 4px rgba(77,148,216,.12)}input.mono{font-family:'Courier New',monospace;text-transform:uppercase;font-size:18px;font-weight:700;letter-spacing:.06em}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:10px;font-size:14px;font-weight:800;border:none;min-height:44px;cursor:pointer}.btn-blue{background:linear-gradient(135deg,var(--brand-blue-dark),var(--brand-blue));color:#fff;box-shadow:0 8px 18px rgba(77,148,216,.25)}.btn-grey{background:#eef3f8;color:#334155}.btn-red{background:#fff;color:var(--danger);border:1.5px solid #f2caca}.btn-sm{padding:7px 14px;font-size:12px;min-height:34px}.btn-icon{background:none;border:none;padding:4px 8px;font-size:18px;color:#7c8b9a;cursor:pointer}.btn-success{background:linear-gradient(135deg,#2c7a4f,var(--success));color:#fff;width:100%;justify-content:center;font-size:16px;padding:16px;border-radius:12px;display:flex;align-items:center;border:none;cursor:pointer;box-shadow:0 10px 18px rgba(47,143,87,.18)}.btn-success:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800}.b-grey{background:#edf2f7;color:#5f6e7d}.b-blue{background:#e8f2fb;color:var(--brand-blue-dark)}.b-green{background:var(--success-bg);color:var(--success)}.b-red{background:var(--danger-bg);color:var(--danger)}.b-amber{background:#fff5e8;color:#9a6418}
+.reg-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#f8fbfe;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;box-shadow:0 4px 10px rgba(18,38,58,.03)}.reg-plate{font-family:'Courier New',monospace;font-weight:700;font-size:16px;letter-spacing:.04em}.muted{font-size:12px;color:var(--muted)}
+.drag-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}.drag-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 12px rgba(18,38,58,.04)}.drag-controls{display:flex;gap:6px}.drag-btn{border:none;background:#eef3f8;color:#47627f;border-radius:8px;padding:8px 10px;font-weight:800}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.tag{display:inline-flex;align-items:center;gap:4px;background:#e8f2fb;color:var(--brand-blue-dark);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700}.tag button{background:none;border:none;color:var(--brand-blue-dark);font-size:16px;cursor:pointer;padding:0 2px;line-height:1}
+.exec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}.exec-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 8px 18px rgba(18,38,58,.05)}.exec-card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--brand-blue),var(--brand-blue-dark));color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.exec-car{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f8fbfe;border-radius:8px;font-family:'Courier New',monospace;font-size:12px;font-weight:600;margin-bottom:4px}
+.exec-hero{background:linear-gradient(135deg,var(--brand-blue-dark),var(--brand-blue));border-radius:18px;padding:24px 20px;margin-bottom:16px;color:#fff;text-align:center;box-shadow:0 16px 28px rgba(77,148,216,.22)}.exec-hero h2{font-size:22px;font-weight:800;margin-bottom:6px}.exec-hero p{font-size:14px;opacity:.9;margin-bottom:20px}.who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:4px}.who-btn{padding:18px 10px;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.22);border-radius:14px;font-size:15px;font-weight:800;color:#fff;cursor:pointer;text-align:center;backdrop-filter:blur(5px)}.who-initials{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.22);font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;color:#fff}
+.queue-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1.5px solid var(--line);border-radius:14px;margin-bottom:10px;cursor:pointer;box-shadow:0 6px 14px rgba(18,38,58,.05)}.queue-item.done{opacity:.74;border-color:#9fd3b2}.queue-item.in-progress{border-color:var(--brand-blue);border-width:2px}.q-reg{font-family:'Courier New',monospace;font-weight:700;font-size:17px;min-width:100px}.q-info{flex:1;font-size:13px;color:var(--muted)}
+.prog-track{height:6px;background:#e6edf5;border-radius:999px;overflow:hidden;margin-top:10px}.prog-fill{height:100%;background:linear-gradient(90deg,var(--brand-blue),var(--brand-gold));border-radius:999px;transition:width .35s ease}
+.check-header{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#fff;border:1.5px solid var(--line);border-radius:16px;margin-bottom:14px;box-shadow:var(--shadow)}.check-reg{font-family:'Courier New',monospace;font-size:28px;font-weight:700;letter-spacing:.04em}
+.check-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:#fff;border:1.5px solid var(--line);border-radius:12px;margin-bottom:8px}.check-item.yes{background:var(--success-bg);border-color:#a8dabf}.check-item.no{background:var(--danger-bg);border-color:#efb0b0}.check-item.soldpass{background:var(--success-bg);border-color:#a8dabf}.check-item.disabled{background:#f4f7fa;border-color:#e6edf5;opacity:.55}.check-lbl{font-weight:700;font-size:14px}.check-note{font-size:12px;color:var(--muted);margin-top:2px}.yn{display:flex;gap:6px;flex-shrink:0}.yn button{min-width:52px;height:40px;border-radius:10px;font-size:13px;font-weight:800;border:1.5px solid var(--line);background:#fff;color:#8a96a3;cursor:pointer}.yn button.y.on{background:var(--success);border-color:var(--success);color:#fff}.yn button.n.on{background:var(--danger);border-color:var(--danger);color:#fff}.yn button.sold-safe.on{background:var(--success);border-color:var(--success);color:#fff}.yn button:disabled{opacity:.45;cursor:not-allowed}
+.notes-box{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;background:#f8fbfe;resize:none;min-height:70px;outline:none;margin-top:4px}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;box-shadow:0 6px 14px rgba(18,38,58,.05)}.kpi-num{font-size:30px;font-weight:800;color:var(--brand-blue-dark)}.kpi-lbl{font-size:11px;color:var(--muted);margin-top:4px}
+.report-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.pill-filter{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#526274;font-size:12px;font-weight:800}.pill-filter.active{background:linear-gradient(135deg,var(--brand-blue-dark),var(--brand-blue));color:#fff;border-color:transparent}
+.report-car{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 8px 18px rgba(18,38,58,.05)}.report-car-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}.report-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:5px}.ri{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:7px;font-size:11px}.ri.pass{background:var(--success-bg);color:var(--success)}.ri.fail{background:var(--danger-bg);color:var(--danger)}.ri-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.notice{background:linear-gradient(135deg,#fff8e9,#fff4da);border:1.5px solid #ecd392;border-radius:14px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;box-shadow:0 8px 18px rgba(240,186,108,.16)}.notice strong{display:block;color:#6f5800}.notice small{color:#8b6f18}
+.week-tab{display:inline-block;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#5a6b7f;margin:0 4px 8px 0}.week-tab.active{background:linear-gradient(135deg,var(--brand-blue-dark),var(--brand-blue));color:#fff;border-color:transparent}
+.empty{text-align:center;padding:40px 20px;color:#9aa6b3}.empty p{font-size:14px;margin-top:8px}#toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:6px;align-items:center;width:90%;max-width:340px;pointer-events:none}.toast{background:#1d2b39;color:#fff;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:700;text-align:center;box-shadow:var(--shadow)}.toast.ok{background:var(--success)}.toast.err{background:var(--danger)}.toast.info{background:var(--brand-blue-dark)}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--brand-blue-dark);font-weight:800;font-size:14px;padding:8px 0;margin-bottom:12px;cursor:pointer}.highlight-card{background:linear-gradient(135deg,#f9fbfd,#eef5fb);border:1.5px solid #cfe0f0;border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:var(--shadow)}.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:#aaa}.sync-dot.live{background:var(--success);box-shadow:0 0 0 2px #d7f0df}.sync-dot.err{background:var(--danger)}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(18,38,58,.5);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}.modal-bg.open{display:flex}.modal{background:#fff;border-radius:18px;padding:24px;width:100%;max-width:360px;box-shadow:0 18px 40px rgba(18,38,58,.25);text-align:center;border:1px solid rgba(255,255,255,.8)}
+@media(max-width:480px){.check-reg{font-size:22px}.kpi-num{font-size:22px}.yn button{min-width:46px;height:38px;font-size:12px}.tab-btn{font-size:11px;padding:8px 2px}.btn{padding:10px 14px;font-size:13px}.report-toolbar{flex-direction:column;align-items:stretch}.row{flex-direction:column}}
 </style>
 </head>
 <body>
-
-<div class="topbar">
-  <h1>&#x1F697; Forecourt Check</h1>
-  <div class="topbar-btns">
-    <button onclick="switchRole()">&#x1F464; Role</button>
-    <button id="sync-status-btn" onclick="checkConn()" style="display:flex;align-items:center;">
-      <span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting...</span>
-    </button>
-  </div>
-</div>
-<!-- Default to EXEC role styling -->
-<div id="role-bar" style="background:#fef3c7;color:#92610a;">EXECUTIVE VIEW</div>
-
-<!-- PIN MODAL -->
-<div id="pin-modal" class="modal-bg">
-  <div class="modal">
-    <h2 style="font-size:18px;margin-bottom:4px;">Manager Access</h2>
-    <p class="sub" style="margin-bottom:16px;">Enter PIN to access manager tools</p>
-    <input type="password" id="pin-input" pattern="[0-9]*" inputmode="numeric" style="text-align:center;font-size:28px;letter-spacing:8px;margin-bottom:16px;" placeholder="••••" onkeydown="if(event.key==='Enter')checkPin()">
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-grey" style="flex:1;justify-content:center;" onclick="closeModal('pin-modal')">Cancel</button>
-      <button class="btn btn-green" style="flex:1;justify-content:center;" onclick="checkPin()">Enter</button>
-    </div>
-  </div>
-</div>
-
-<!-- MANAGER -->
-<div id="screen-manager" class="screen">
-  <div class="main">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('t-reg',this)">Register Cars</button>
-      <button class="tab-btn" onclick="showTab('t-alloc',this)">Allocate</button>
-      <button class="tab-btn" onclick="showTab('t-report',this)">Reports</button>
-    </div>
-
-    <div id="t-reg" class="tab-pane active">
-      <div class="card">
-        <h2>Add Vehicles to Forecourt</h2>
-        <p class="sub">Enter each registration and press Add.</p>
-        <label class="lbl">Registration Plate</label>
-        <div class="row">
-          <input type="text" id="reg-input" class="mono" placeholder="e.g. LV73OKH" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
-          <button class="btn btn-green" onclick="addReg()">+ Add</button>
-        </div>
-        <div id="reg-list"><div class="empty"><p>No vehicles added yet</p></div></div>
-      </div>
-    </div>
-
-    <div id="t-alloc" class="tab-pane">
-      <div class="card">
-        <h2>Team On Shift Today</h2>
-        <p class="sub">Add each executive working today</p>
-        <label class="lbl">Executive Name</label>
-        <div class="row">
-          <input type="text" id="exec-input" placeholder="e.g. James, Sarah...">
-          <button class="btn btn-green" onclick="addExec()">+ Add</button>
-        </div>
-        <div class="tags" id="exec-tags"></div>
-      </div>
-      <div class="card">
-        <h2>Auto-Allocate Cars</h2>
-        <p class="sub">Splits cars evenly across executives on shift.</p>
-        <div class="row" style="align-items:center;flex-wrap:wrap;gap:10px;">
-          <label class="lbl" style="margin:0;white-space:nowrap;">Max per exec:</label>
-          <input type="number" id="max-per-exec" value="8" min="1" max="30" style="width:80px;padding:8px 10px;">
-          <button class="btn btn-green" onclick="allocate()">&#9654; Allocate</button>
-          <button class="btn btn-grey btn-sm" onclick="clearAlloc()">Clear</button>
-        </div>
-        <div class="exec-grid" id="exec-grid"><div class="empty"><p>Add executives then click Allocate</p></div></div>
-      </div>
-    </div>
-
-    <div id="t-report" class="tab-pane">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-          <div><h2>Check Reports</h2><p class="sub" style="margin:0;">Live updates as execs submit</p></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-grey btn-sm" onclick="exportCSV()">&#11015; CSV</button>
-            <button class="btn btn-red btn-sm" onclick="newWeek()">&#128197; New Week</button>
-          </div>
-        </div>
-        <div id="week-tabs" style="margin-bottom:12px;"></div>
-        <div id="report-content"><div class="empty"><p>No completed checks yet</p></div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- EXECUTIVE (Default Active) -->
-<div id="screen-exec" class="screen active">
-  <div class="main">
-    <div id="exec-no-data" style="display:none;">
-      <div class="highlight-card">
-        <h2 style="color:#016b71;margin-bottom:6px;">&#x231B; Waiting for data...</h2>
-        <p style="font-size:13px;color:#555;">The manager needs to add cars and allocate them first. This page updates automatically.</p>
-      </div>
-    </div>
-    <div id="exec-has-data" style="display:none;">
-      <div id="exec-picker-screen">
-        <div class="exec-hero">
-          <h2>&#x1F44B; Good to see you!</h2>
-          <p>Tap your name below to load your cars and start checking</p>
-          <div class="who-grid" id="who-grid"></div>
-        </div>
-      </div>
-      <div id="exec-queue-screen" style="display:none;">
-        <div class="card" style="padding:14px 16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-            <div>
-              <div style="font-size:13px;color:#888;">Checking as</div>
-              <div style="font-size:18px;font-weight:700;" id="exec-active-name">-</div>
-            </div>
-            <button class="btn btn-grey btn-sm" onclick="clearExecSelection()">&#8592; Change</button>
-          </div>
-          <div class="prog-track" style="margin-top:12px;"><div class="prog-fill" id="exec-prog" style="width:0%"></div></div>
-          <div style="font-size:12px;color:#888;margin-top:6px;" id="exec-prog-label">0 / 0 checked</div>
-        </div>
-        <div id="exec-queue"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- CHECKLIST -->
-<div id="screen-check" class="screen">
-  <div class="main">
-    <button class="back-btn" onclick="backToQueue()">&#8592; Back to my list</button>
-    <div class="check-header">
-      <div style="flex:1;">
-        <div class="check-reg" id="check-reg-display">-</div>
-        <div style="font-size:13px;color:#888;margin-top:2px;">Complete all checks below</div>
-        <div class="prog-track"><div class="prog-fill" id="check-prog" style="width:0%"></div></div>
-      </div>
-      <div id="check-badge"></div>
-    </div>
-    <div id="check-items-list"></div>
-    <!-- NOTES -->
-    <div class="card" style="margin-top:4px;">
-      <h2 style="font-size:15px;margin-bottom:4px;">&#x1F4DD; Notes <span style="font-size:12px;color:#aaa;font-weight:400;">(optional)</span></h2>
-      <p style="font-size:12px;color:#888;margin-bottom:8px;">Damage, issues, anything the manager should know</p>
-      <textarea class="notes-box" id="check-notes" placeholder="e.g. Small scuff on rear bumper, passenger window slow..." oninput="saveNotesDraft()"></textarea>
-    </div>
-    <div style="margin-top:16px;margin-bottom:30px;">
-      <button class="btn-success" id="submit-btn" disabled onclick="submitCheck()">&#10003; Mark Complete &amp; Submit</button>
-    </div>
-  </div>
-</div>
-
+<div class="topbar"><h1>&#x1F697; Forecourt Check</h1><div class="topbar-btns"><button onclick="switchRole()">&#x1F464; Role</button><button id="sync-status-btn" onclick="checkConn()" style="display:flex;align-items:center;"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting...</span></button></div></div>
+<div id="role-bar" style="background:#e8f2fb;color:#1f4f82;">EXECUTIVE VIEW</div>
+<div id="pin-modal" class="modal-bg"><div class="modal"><h2 style="font-size:18px;margin-bottom:4px;">Manager Access</h2><p class="sub" style="margin-bottom:16px;">Enter PIN to access manager tools</p><input type="password" id="pin-input" inputmode="numeric" style="text-align:center;font-size:28px;letter-spacing:8px;margin-bottom:16px;" placeholder="••••" onkeydown="if(event.key==='Enter')checkPin()"><div style="display:flex;gap:8px;"><button class="btn btn-grey" style="flex:1;justify-content:center;" onclick="closeModal('pin-modal')">Cancel</button><button class="btn btn-blue" style="flex:1;justify-content:center;" onclick="checkPin()">Enter</button></div></div></div>
+<div id="confirm-modal" class="modal-bg"><div class="modal"><h2 id="confirm-title" style="font-size:18px;margin-bottom:6px;">Please confirm</h2><p id="confirm-text" class="sub" style="margin-bottom:16px;">You are about to do something important.</p><div style="display:flex;gap:8px;"><button class="btn btn-grey" style="flex:1;justify-content:center;" onclick="closeModal('confirm-modal')">Cancel</button><button class="btn btn-red" id="confirm-ok" style="flex:1;justify-content:center;">Continue</button></div></div></div>
+<div id="screen-manager" class="screen"><div class="main"><div class="tabs"><button class="tab-btn active" onclick="showTab('t-reg',this)">Register Cars</button><button class="tab-btn" onclick="showTab('t-alloc',this)">Allocate</button><button class="tab-btn" onclick="showTab('t-report',this)">Reports</button></div>
+<div id="t-reg" class="tab-pane active"><div class="card"><h2>Add Vehicles to Forecourt</h2><p class="sub">Single add still works, and you can paste multiple registrations comma separated. Cars stay in the order entered. [code_file:106]</p><label class="lbl">Registration Plate</label><div class="row"><input type="text" id="reg-input" class="mono" placeholder="e.g. AA66 FFF" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn btn-blue" onclick="addReg()">+ Add</button></div><label class="lbl">Paste Multiple Registrations</label><div class="row"><textarea id="reg-bulk" rows="4" placeholder="AA66FFF, LV73OKH, AB12CDE"></textarea><button class="btn btn-blue" onclick="addBulkRegs()">+ Add All</button></div><div id="reg-list"><div class="empty"><p>No vehicles added yet</p></div></div></div><div class="card"><h2>Manual Reorder</h2><p class="sub">Use the arrows to match the physical forecourt order without re-entering cars. [code_file:106]</p><div id="reorder-list" class="drag-list"><div class="empty"><p>No vehicles to reorder yet</p></div></div></div></div>
+<div id="t-alloc" class="tab-pane"><div class="card"><h2>Team On Shift Today</h2><p class="sub">Add each executive working today</p><label class="lbl">Executive Name</label><div class="row"><input type="text" id="exec-input" placeholder="e.g. James, Sarah..."><button class="btn btn-blue" onclick="addExec()">+ Add</button></div><div class="tags" id="exec-tags"></div></div><div class="card"><h2>Auto-Allocate Cars</h2><p class="sub">Splits cars evenly across executives on shift.</p><div class="row" style="align-items:center;flex-wrap:wrap;gap:10px;"><label class="lbl" style="margin:0;white-space:nowrap;">Max per exec:</label><input type="number" id="max-per-exec" value="8" min="1" max="30" style="width:80px;padding:8px 10px;"><button class="btn btn-blue" onclick="allocate()">&#9654; Allocate</button><button class="btn btn-grey btn-sm" onclick="confirmClearAlloc()">Clear</button></div><div class="exec-grid" id="exec-grid"><div class="empty"><p>Add executives then click Allocate</p></div></div></div><div class="highlight-card"><h2 style="color:#1f4f82;margin-bottom:6px;">&#x1F4F1; Share with Sales Executives</h2><p style="font-size:13px;color:#516173;margin-bottom:8px;">Once cars are allocated, send the team a ready-made message with the app link.</p><div style="font-family:'Courier New',monospace;font-size:13px;background:#fff;padding:10px;border-radius:10px;border:1px solid #d3e0ed;word-break:break-all;" id="share-url">Loading...</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;"><button class="btn btn-blue" style="width:100%;justify-content:center;" onclick="shareExecMessage('whatsapp')">&#x1F4F2; WhatsApp</button><button class="btn btn-grey" style="width:100%;justify-content:center;" onclick="shareExecMessage('email')">&#x2709;&#xFE0F; Email</button></div><button class="btn btn-grey btn-sm" style="width:100%;justify-content:center;margin-top:8px;" onclick="copyExecMessage()">&#x1F4CB; Copy Message</button></div></div>
+<div id="t-report" class="tab-pane"><div id="manager-notices"></div><div class="card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;"><div><h2>Check Reports</h2><p class="sub" style="margin:0;">Live updates as execs submit, including who checked each car and when. [code_file:106]</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-grey btn-sm" onclick="exportCSV()">&#11015; CSV</button><button class="btn btn-red btn-sm" onclick="confirmNewWeek()">&#128197; New Week</button></div></div><div class="report-toolbar"><button class="pill-filter active" id="filter-all" onclick="setReportFilter('all')">All</button><button class="pill-filter" id="filter-unchecked" onclick="setReportFilter('unchecked')">Unchecked only</button><button class="pill-filter" id="filter-issues" onclick="setReportFilter('issues')">Issues only</button></div><div id="week-tabs" style="margin-bottom:12px;"></div><div id="report-content"><div class="empty"><p>No completed checks yet</p></div></div></div></div></div></div>
+<div id="screen-exec" class="screen active"><div class="main"><div id="exec-no-data" style="display:none;"><div class="highlight-card"><h2 style="color:#1f4f82;margin-bottom:6px;">&#x231B; Waiting for data...</h2><p style="font-size:13px;color:#516173;">The manager needs to add cars and allocate them first. This page updates automatically.</p></div></div><div id="exec-has-data" style="display:none;"><div id="exec-picker-screen"><div class="exec-hero"><h2>&#x1F44B; Good to see you!</h2><p>Tap your name below to load your cars and start checking</p><div class="who-grid" id="who-grid"></div></div></div><div id="exec-queue-screen" style="display:none;"><div class="card" style="padding:14px 16px;"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;"><div><div style="font-size:13px;color:#6b7a8c;">Checking as</div><div style="font-size:18px;font-weight:800;" id="exec-active-name">-</div></div><button class="btn btn-grey btn-sm" onclick="clearExecSelection()">&#8592; Change</button></div><div class="prog-track" style="margin-top:12px;"><div class="prog-fill" id="exec-prog" style="width:0%"></div></div><div style="font-size:12px;color:#6b7a8c;margin-top:6px;" id="exec-prog-label">0 / 0 checked</div></div><div id="exec-queue"></div></div></div></div></div>
+<div id="screen-check" class="screen"><div class="main"><button class="back-btn" onclick="backToQueue()">&#8592; Back to my list</button><div class="check-header"><div style="flex:1;"><div class="check-reg" id="check-reg-display">-</div><div style="font-size:13px;color:#6b7a8c;margin-top:2px;">Complete all checks below</div><div class="prog-track"><div class="prog-fill" id="check-prog" style="width:0%"></div></div></div><div id="check-badge"></div></div><div id="check-items-list"></div><div class="card" style="margin-top:4px;"><h2 style="font-size:15px;margin-bottom:4px;">&#x1F4DD; Notes <span style="font-size:12px;color:#99a4b1;font-weight:400;">(optional)</span></h2><p style="font-size:12px;color:#6b7a8c;margin-bottom:8px;">Damage, issues, anything the manager should know</p><textarea class="notes-box" id="check-notes" placeholder="e.g. Small scuff on rear bumper, passenger window slow..." oninput="saveNotesDraft()"></textarea></div><div style="margin-top:16px;margin-bottom:30px;"><button class="btn-success" id="submit-btn" disabled onclick="submitCheck()">&#10003; Mark Complete &amp; Submit</button></div></div></div>
 <div id="toasts"></div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, update, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-var CHECK_IDS=['clean','fuel','charged','aircon','radio','satnav','bt','personal','receipts','tyre','aid','mileage','warning','profile','priceboard'];
-var CHECK_LABELS=['Clean Inside and Out','Min 1/4 Tank Fuel','Fully Charged EV-PHEV','Aircon Off','Radio Off','No Address in Sat Nav','No Phones Paired','No Personal Items','No Receipts in Glovebox','Tyre Inflator Kit Present','First Aid Kit Present','Mileage Reset','No Warning Lights','No Profile Set','Price Board & AUC Plate Present'];
-var CHECK_NOTES=['Interior vacuumed, exterior washed','Fuel gauge at least a quarter full','Electric vehicles 80 percent or more','Air conditioning switched off','No audio playing','Clear navigation history','Bluetooth devices cleared','No staff belongings inside','Glovebox empty of paperwork','Inflation kit accessible in boot','Kit present and in-date','Trip computer reset to zero','Dashboard clear of all warnings','No driver profiles stored','Price board displayed, AUC plate fitted'];
-
-const firebaseConfig = {
-  apiKey: "AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",
-  authDomain: "forecourt-1b6bc.firebaseapp.com",
-  databaseURL: "https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "forecourt-1b6bc",
-  storageBucket: "forecourt-1b6bc.firebasestorage.app",
-  messagingSenderId: "1073459223252",
-  appId: "1:1073459223252:web:d65abed953fc641fc7b941"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// Role defaults to exec now
-var vehicles=[],execs=[],answers={},role='exec',curReg=null,curExec=null,curWeek=null,allWeeks={};
-
-function weekKey(){
-  var d=new Date();
-  var day=d.getDay();
-  var diff=d.getDate()-day+(day===0?-6:1);
-  var mon=new Date(d.setDate(diff));
-  return 'week_'+mon.getFullYear()+'_'+(mon.getMonth()+1)+'_'+mon.getDate();
-}
-function weekLabel(key){
-  var parts=key.replace('week_','').split('_');
-  if(parts.length<3)return key;
-  var d=new Date(parts[0],parts[1]-1,parts[2]);
-  return 'w/c '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
-}
-
-var WEEK=weekKey();
-
-function setSyncStatus(state){
-  var dot=document.getElementById('sync-dot');
-  var lbl=document.getElementById('sync-label');
-  if(state==='live'){dot.className='sync-dot live';lbl.textContent='Live';}
-  else if(state==='err'){dot.className='sync-dot err';lbl.textContent='Offline';}
-  else{dot.className='sync-dot';lbl.textContent='Connecting...';}
-}
-window.checkConn=function(){toast('Firebase: '+document.getElementById('sync-label').textContent,'info');};
-
-function toast(msg,type){
-  var c=document.getElementById('toasts');
-  var t=document.createElement('div');
-  t.className='toast'+(type?' '+type:'');
-  t.textContent=msg;
-  c.appendChild(t);
-  setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},2500);
-}
-
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-}
-
-window.openModal=function(id){document.getElementById(id).classList.add('open');};
-window.closeModal=function(id){document.getElementById(id).classList.remove('open');};
-
-window.switchRole=function(){
-  if(role==='exec'){
-    document.getElementById('pin-input').value='';
-    window.openModal('pin-modal');
-    setTimeout(function(){document.getElementById('pin-input').focus();},100);
-  }else{
-    role='exec';
-    updateRoleUI();
-  }
-};
-
-window.checkPin=function(){
-  var pin = document.getElementById('pin-input').value;
-  if(pin==='1992'){
-    window.closeModal('pin-modal');
-    role='manager';
-    updateRoleUI();
-  }else{
-    toast('Incorrect PIN','err');
-    document.getElementById('pin-input').value='';
-  }
-};
-
-function updateRoleUI(){
-  var bar=document.getElementById('role-bar');
-  if(role==='manager'){
-    showScreen('screen-manager');
-    bar.textContent='MANAGER VIEW';
-    bar.style.background='#d0e4e3';bar.style.color='#016b71';
-  }else{
-    showScreen('screen-exec');
-    bar.textContent='EXECUTIVE VIEW';
-    bar.style.background='#fef3c7';bar.style.color='#92610a';
-    curExec=null;
-    renderExecScreen();
-  }
-}
-
-window.showTab=function(id,btn){
-  document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-  if(id==='t-report'){curWeek=WEEK;renderWeekTabs();renderReport();}
-};
-
-/* ---- FIREBASE LISTENERS ---- */
-onValue(ref(db,'forecourt/current/vehicles'), function(snap){
-  vehicles=[];
-  var d=snap.val();
-  if(d)Object.keys(d).forEach(function(k){vehicles.push(d[k]);});
-  renderRegList();renderExecGrid();
-  if(role==='exec')renderExecScreen();
-  setSyncStatus('live');
-},function(){setSyncStatus('err');});
-
-onValue(ref(db,'forecourt/current/execs'), function(snap){
-  execs=[];
-  var d=snap.val();
-  if(d)Object.keys(d).forEach(function(k){execs.push(d[k]);});
-  renderExecTags();renderExecGrid();
-  if(role==='exec')renderExecScreen();
-},function(){});
-
-onValue(ref(db,'forecourt/current/answers'), function(snap){
-  answers=snap.val()||{};
-  if(role==='manager')renderReport();
-  if(curExec)renderQueue();
-},function(){});
-
-/* Archive weeks listener */
-onValue(ref(db,'forecourt/archive'), function(snap){
-  allWeeks=snap.val()||{};
-  if(role==='manager')renderWeekTabs();
-},function(){});
-
-/* ---- VEHICLES ---- */
-document.getElementById('reg-input').addEventListener('keydown',function(e){if(e.key==='Enter')window.addReg();});
-
-window.addReg=function(){
-  var raw=document.getElementById('reg-input').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(!raw){toast('Enter a registration plate','err');return;}
-  if(vehicles.find(function(v){return v.reg===raw;})){toast(raw+' already added','err');return;}
-  set(ref(db,'forecourt/current/vehicles/'+raw),{reg:raw,status:'pending'}).then(function(){
-    set(ref(db,'forecourt/current/answers/'+raw),blank());
-    document.getElementById('reg-input').value='';
-    toast(raw+' added','ok');
-  }).catch(function(){toast('Save failed','err');});
-};
-
-window.removeReg=function(reg){
-  remove(ref(db,'forecourt/current/vehicles/'+reg));
-  remove(ref(db,'forecourt/current/answers/'+reg));
-  execs.forEach(function(e){
-    if(e.cars&&e.cars.indexOf(reg)!==-1){
-      e.cars=e.cars.filter(function(r){return r!==reg;});
-      set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),e);
-    }
-  });
-  toast(reg+' removed');
-};
-
-function blank(){var o={done:false,notes:''};CHECK_IDS.forEach(function(id){o[id]=null;});return o;}
-
-function renderRegList(){
-  var el=document.getElementById('reg-list');
-  if(!vehicles.length){el.innerHTML='<div class="empty"><p>No vehicles added yet</p></div>';return;}
-  var h='';
-  vehicles.forEach(function(v){
-    var bc=v.status==='done'?'b-green':v.status==='in-progress'?'b-blue':'b-grey';
-    h+='<div class="reg-item"><div class="reg-plate">'+v.reg+'</div>'+
-       '<div style="display:flex;align-items:center;gap:8px;">'+
-       '<span class="badge '+bc+'">'+v.status+'</span>'+
-       '<button class="btn-icon" onclick="removeReg(\''+v.reg+'\')">&times;</button>'+
-       '</div></div>';
-  });
-  el.innerHTML=h;
-}
-
-/* ---- EXECS ---- */
-document.getElementById('exec-input').addEventListener('keydown',function(e){if(e.key==='Enter')window.addExec();});
-
-window.addExec=function(){
-  var name=document.getElementById('exec-input').value.trim();
-  if(!name)return;
-  if(execs.find(function(e){return e.name.toLowerCase()===name.toLowerCase();})){toast('Already added','err');return;}
-  var ini=name.split(' ').map(function(p){return p[0]||'';}).join('').toUpperCase().slice(0,2);
-  var e={name:name,initials:ini,cars:[]};
-  set(ref(db,'forecourt/current/execs/'+name.replace(/\s/g,'_')),e).then(function(){
-    document.getElementById('exec-input').value='';toast(name+' added','ok');
-  });
-};
-
-window.removeExec=function(name){
-  var e=execs.find(function(x){return x.name===name;});
-  if(e&&e.cars)e.cars.forEach(function(r){update(ref(db,'forecourt/current/vehicles/'+r),{status:'pending'});});
-  remove(ref(db,'forecourt/current/execs/'+name.replace(/\s/g,'_')));
-};
-
-function renderExecTags(){
-  var el=document.getElementById('exec-tags');
-  if(!execs.length){el.innerHTML='';return;}
-  var h='';
-  execs.forEach(function(e){h+='<span class="tag">'+e.name+'<button onclick="removeExec(\''+e.name+'\')">&times;</button></span>';});
-  el.innerHTML=h;
-}
-
-window.allocate=function(){
-  if(!execs.length){toast('Add executives first','err');return;}
-  var pending=vehicles.filter(function(v){return v.status==='pending';});
-  if(!pending.length){toast('No unallocated cars','err');return;}
-  var max=parseInt(document.getElementById('max-per-exec').value)||8;
-  var localExecs=execs.map(function(e){return {name:e.name,initials:e.initials,cars:[]};});
-  var ei=0;
-  pending.forEach(function(v){
-    var tries=0;
-    while(localExecs[ei].cars.length>=max&&tries<localExecs.length){ei=(ei+1)%localExecs.length;tries++;}
-    if(localExecs[ei].cars.length<max)localExecs[ei].cars.push(v.reg);
-    ei=(ei+1)%localExecs.length;
-  });
-  localExecs.forEach(function(e){set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),e);});
-  toast('Cars allocated!','ok');
-};
-
-window.clearAlloc=function(){
-  execs.forEach(function(e){
-    if(e.cars)e.cars.forEach(function(r){update(ref(db,'forecourt/current/vehicles/'+r),{status:'pending'});});
-    set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),{name:e.name,initials:e.initials,cars:[]});
-  });
-  toast('Allocation cleared');
-};
-
-function renderExecGrid(){
-  var el=document.getElementById('exec-grid');
-  if(!execs.length){el.innerHTML='<div class="empty"><p>Add executives then click Allocate</p></div>';return;}
-  var h='';
-  execs.forEach(function(e){
-    var cars=e.cars||[];
-    h+='<div class="exec-card"><div class="exec-card-head">'+
-       '<div class="avatar">'+e.initials+'</div>'+
-       '<div><strong>'+e.name+'</strong><div style="font-size:12px;color:#888;">'+cars.length+' car'+(cars.length!==1?'s':'')+'</div></div></div>';
-    cars.forEach(function(r){
-      var v=vehicles.find(function(x){return x.reg===r;});
-      var st=v?v.status:'pending';
-      var bc=st==='done'?'b-green':st==='in-progress'?'b-blue':'b-grey';
-      h+='<div class="exec-car"><span>'+r+'</span><span class="badge '+bc+'">'+st+'</span></div>';
-    });
-    if(!cars.length)h+='<div style="font-size:12px;color:#aaa;padding:4px 0;">No cars yet</div>';
-    h+='</div>';
-  });
-  el.innerHTML=h;
-}
-
-/* ---- EXEC SCREEN ---- */
-function renderExecScreen(){
-  var nd=document.getElementById('exec-no-data');
-  var hd=document.getElementById('exec-has-data');
-  if(!execs.length||!execs.some(function(e){return e.cars&&e.cars.length;})){
-    nd.style.display='block';hd.style.display='none';return;
-  }
-  nd.style.display='none';hd.style.display='block';
-  if(curExec){showExecQueue();}else{showWhoGrid();}
-}
-
-function showWhoGrid(){
-  document.getElementById('exec-picker-screen').style.display='block';
-  document.getElementById('exec-queue-screen').style.display='none';
-  var el=document.getElementById('who-grid');
-  var h='';
-  execs.forEach(function(e){
-    if(e.cars&&e.cars.length){
-      var ini=e.initials||e.name.slice(0,2).toUpperCase();
-      h+='<button class="who-btn" onclick="pickExec(\''+e.name+'\')">'+
-         '<div class="who-initials">'+ini+'</div>'+e.name+'</button>';
-    }
-  });
-  el.innerHTML=h||'<div style="color:rgba(255,255,255,0.7);font-size:14px;padding:10px;">No cars allocated yet</div>';
-}
-
-window.pickExec=function(name){curExec=name;showExecQueue();};
-window.clearExecSelection=function(){curExec=null;showWhoGrid();};
-
-function showExecQueue(){
-  document.getElementById('exec-picker-screen').style.display='none';
-  document.getElementById('exec-queue-screen').style.display='block';
-  document.getElementById('exec-active-name').textContent=curExec||'-';
-  renderQueue();
-}
-
-function renderQueue(){
-  var el=document.getElementById('exec-queue');
-  var ex=curExec?execs.find(function(e){return e.name===curExec;}):null;
-  var cars=ex?ex.cars||[]:[];
-  if(!cars.length){
-    el.innerHTML='<div class="empty"><p>No cars allocated to you yet</p></div>';
-    document.getElementById('exec-prog').style.width='0%';
-    document.getElementById('exec-prog-label').textContent='0 / 0 checked';
-    return;
-  }
-  var done=cars.filter(function(r){var v=vehicles.find(function(x){return x.reg===r;});return v&&v.status==='done';}).length;
-  document.getElementById('exec-prog').style.width=Math.round(done/cars.length*100)+'%';
-  document.getElementById('exec-prog-label').textContent=done+' / '+cars.length+' checked';
-  var h='';
-  cars.forEach(function(r){
-    var v=vehicles.find(function(x){return x.reg===r;});
-    var st=v?v.status:'pending';
-    var cls=st==='done'?'done':st==='in-progress'?'in-progress':'';
-    var badge=st==='done'?'<span class="badge b-green">Done</span>':st==='in-progress'?'<span class="badge b-blue">In progress</span>':'<span class="badge b-grey">Pending</span>';
-    h+='<div class="queue-item '+cls+'" onclick="openCheck(\''+r+'\')"><div class="q-reg">'+r+'</div><div class="q-info">Tap to check</div>'+badge+'</div>';
-  });
-  el.innerHTML=h;
-}
-
-/* ---- CHECKLIST ---- */
-window.openCheck=function(reg){
-  var v=vehicles.find(function(x){return x.reg===reg;});
-  if(!v)return;
-  curReg=reg;
-  if(v.status!=='done')update(ref(db,'forecourt/current/vehicles/'+reg),{status:'in-progress'});
-  showScreen('screen-check');
-  document.getElementById('check-reg-display').textContent=reg;
-  var notesEl=document.getElementById('check-notes');
-  notesEl.value=(answers[reg]&&answers[reg].notes)||'';
-  renderCheckItems();
-};
-
-window.backToQueue=function(){showScreen('screen-exec');renderQueue();};
-
-window.saveNotesDraft=function(){
-  var val=document.getElementById('check-notes').value;
-  if(answers[curReg])answers[curReg].notes=val;
-  update(ref(db,'forecourt/current/answers/'+curReg),{notes:val});
-};
-
-function renderCheckItems(){
-  var ans=answers[curReg]||blank();
-  var answered=0;
-  CHECK_IDS.forEach(function(id){if(ans[id]!==null&&ans[id]!==undefined)answered++;});
-  document.getElementById('check-prog').style.width=Math.round(answered/CHECK_IDS.length*100)+'%';
-  var allDone=answered===CHECK_IDS.length;
-  document.getElementById('submit-btn').disabled=!allDone;
-  var fails=0;CHECK_IDS.forEach(function(id){if(ans[id]==='no')fails++;});
-  var be=document.getElementById('check-badge');
-  if(allDone){be.innerHTML=fails?'<span class="badge b-red">'+fails+' issue'+(fails>1?'s':'')+'</span>':'<span class="badge b-green">All pass</span>';}
-  else{be.innerHTML='<span class="badge b-grey">'+answered+' / '+CHECK_IDS.length+'</span>';}
-  var h='';
-  CHECK_IDS.forEach(function(id,i){
-    var a=ans[id],cls=a==='yes'?'yes':a==='no'?'no':'';
-    h+='<div class="check-item '+cls+'">'+
-       '<div style="flex:1;margin-right:12px;"><div class="check-lbl">'+CHECK_LABELS[i]+'</div><div class="check-note">'+CHECK_NOTES[i]+'</div></div>'+
-       '<div class="yn">'+
-       '<button class="y'+(a==='yes'?' on':'')+'" onclick="setAnswer(\''+id+'\',\'yes\')">YES</button>'+
-       '<button class="n'+(a==='no'?' on':'')+'" onclick="setAnswer(\''+id+'\',\'no\')">NO</button>'+
-       '</div></div>';
-  });
-  document.getElementById('check-items-list').innerHTML=h;
-}
-
-window.setAnswer=function(id,val){
-  if(!answers[curReg])answers[curReg]=blank();
-  answers[curReg][id]=(answers[curReg][id]===val)?null:val;
-  update(ref(db,'forecourt/current/answers/'+curReg),{[id]:answers[curReg][id]});
-  renderCheckItems();
-};
-
-window.submitCheck=function(){
-  var notes=document.getElementById('check-notes').value;
-  update(ref(db,'forecourt/current/vehicles/'+curReg),{status:'done'});
-  update(ref(db,'forecourt/current/answers/'+curReg),{done:true,notes:notes});
-  /* archive snapshot */
-  var snap={reg:curReg,checkedAt:Date.now(),exec:curExec||'',answers:answers[curReg]||{},notes:notes};
-  set(ref(db,'forecourt/archive/'+WEEK+'/'+curReg),snap);
-  toast(curReg+' submitted!','ok');
-  showScreen('screen-exec');renderQueue();
-};
-
-/* ---- REPORTS ---- */
-function renderWeekTabs(){
-  var el=document.getElementById('week-tabs');
-  if(!el)return;
-  var keys=[WEEK];
-  Object.keys(allWeeks).forEach(function(k){if(keys.indexOf(k)===-1)keys.push(k);});
-  keys.sort().reverse();
-  if(!curWeek||keys.indexOf(curWeek)===-1)curWeek=keys[0];
-  var h='';
-  keys.forEach(function(k){
-    var lbl=k===WEEK?'This Week':weekLabel(k);
-    h+='<span class="week-tab'+(k===curWeek?' active':'')+'" onclick="selectWeek(\''+k+'\')">'+lbl+'</span>';
-  });
-  el.innerHTML=h;
-}
-
-window.selectWeek=function(key){curWeek=key;renderWeekTabs();renderReport();};
-
-function renderReport(){
-  var el=document.getElementById('report-content');
-  if(!el)return;
-  if(!curWeek||curWeek===WEEK){
-    /* current week from live data */
-    var done=vehicles.filter(function(v){return v.status==='done';});
-    var total=vehicles.length;
-    var issues=done.filter(function(v){return CHECK_IDS.some(function(id){return answers[v.reg]&&answers[v.reg][id]==='no';});}).length;
-    if(!done.length){el.innerHTML='<div class="empty"><p>No completed checks yet</p></div>';return;}
-    el.innerHTML=buildReportHTML(done,answers,total,issues);
-  }else{
-    /* archived week */
-    var wdata=allWeeks[curWeek]||{};
-    var wVehicles=Object.keys(wdata).map(function(k){return {reg:k,status:'done'};});
-    var wAnswers={};
-    Object.keys(wdata).forEach(function(k){wAnswers[k]=wdata[k].answers||{};});
-    var wIssues=wVehicles.filter(function(v){return CHECK_IDS.some(function(id){return wAnswers[v.reg]&&wAnswers[v.reg][id]==='no';});}).length;
-    if(!wVehicles.length){el.innerHTML='<div class="empty"><p>No data for this week</p></div>';return;}
-    el.innerHTML=buildReportHTML(wVehicles,wAnswers,wVehicles.length,wIssues,wdata);
-  }
-}
-
-function buildReportHTML(doneVehicles,ans,total,issues,archiveData){
-  var h='<div class="kpi-row">'+
-    '<div class="kpi"><div class="kpi-num">'+doneVehicles.length+'</div><div class="kpi-lbl">Checked</div></div>'+
-    '<div class="kpi"><div class="kpi-num" style="color:#888;">'+(total-doneVehicles.length)+'</div><div class="kpi-lbl">Pending</div></div>'+
-    '<div class="kpi"><div class="kpi-num" style="color:'+(issues?'#c0294a':'#3d7a1c')+';">'+issues+'</div><div class="kpi-lbl">Issues</div></div>'+
-    '</div>';
-  doneVehicles.forEach(function(v){
-    var a=ans[v.reg]||{};
-    var fails=CHECK_IDS.filter(function(id){return a[id]==='no';}).length;
-    var execName='';
-    if(archiveData&&archiveData[v.reg])execName=archiveData[v.reg].exec||'';
-    else{execs.forEach(function(e){if(e.cars&&e.cars.indexOf(v.reg)!==-1)execName=e.name;});}
-    var notes=a.notes||(archiveData&&archiveData[v.reg]?archiveData[v.reg].notes:'');
-    h+='<div class="report-car"><div class="report-car-head">'+
-       '<div><strong style="font-family:Courier New,monospace;font-size:16px;">'+v.reg+'</strong>'+
-       (execName?'<span style="font-size:12px;color:#888;margin-left:8px;">'+execName+'</span>':'')+
-       '</div>'+
-       (fails?'<span class="badge b-red">'+fails+' issue'+(fails>1?'s':'')+'</span>':'<span class="badge b-green">All clear</span>')+
-       '</div><div class="report-items">';
-    CHECK_IDS.forEach(function(id,i){
-      if(a[id])h+='<div class="ri '+(a[id]==='yes'?'pass':'fail')+'"><div class="ri-dot"></div>'+CHECK_LABELS[i]+'</div>';
-    });
-    h+='</div>';
-    if(notes)h+='<div style="margin-top:8px;padding:8px 10px;background:#fffbe6;border-radius:6px;font-size:12px;color:#666;border-left:3px solid #f0c040;">&#x1F4DD; '+notes+'</div>';
-    h+='</div>';
-  });
-  return h;
-}
-
-window.exportCSV=function(){
-  var done=vehicles.filter(function(v){return v.status==='done';});
-  if(!done.length){toast('No completed checks to export','err');return;}
-  var headers=['Registration','Executive','Notes'].concat(CHECK_LABELS);
-  var rows=done.map(function(v){
-    var a=answers[v.reg]||{};
-    var exc='';execs.forEach(function(e){if(e.cars&&e.cars.indexOf(v.reg)!==-1)exc=e.name;});
-    return [v.reg,exc,a.notes||''].concat(CHECK_IDS.map(function(id){return a[id]||'';}));
-  });
-  var csv=[headers].concat(rows).map(function(r){return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='forecourt-'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();toast('CSV exported!','ok');
-};
-
-window.newWeek=function(){
-  if(!confirm('Start a new week? Current data moves to archive. Are you sure?'))return;
-  remove(ref(db,'forecourt/current'));
-  toast('New week started!','ok');
-};
-
-/* Start in Exec View natively */
+import { getDatabase, ref, set, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const app=initializeApp(firebaseConfig); const db=getDatabase(app);
+var CHECK_IDS=['soldboard','clean','fuel','charged','aircon','radio','satnav','bt','personal','receipts','tyre','aid','mileage','warning','profile','priceboard'];
+var CHECK_LABELS=['Sold Board in Window?','Clean Inside and Out','Min 1/4 Tank Fuel','Fully Charged EV-PHEV','Aircon Off','Radio Off','No Address in Sat Nav','No Phones Paired','No Personal Items','No Receipts in Glovebox','Tyre Inflator Kit Present','First Aid Kit Present','Mileage Reset','No Warning Lights','No Profile Set','Price Board & AUC Plate Present'];
+var CHECK_NOTES=['If YES, the car is sold and all remaining checks are skipped','Interior vacuumed, exterior washed','Fuel gauge at least a quarter full','Electric vehicles 80 percent or more','Air conditioning switched off','No audio playing','Clear navigation history','Bluetooth devices cleared','No staff belongings inside','Glovebox empty of paperwork','Inflation kit accessible in boot','Kit present and in-date','Trip computer reset to zero','Dashboard clear of all warnings','No driver profiles stored','Price board displayed, AUC plate fitted'];
+var vehicles=[],execs=[],answers={},role='exec',curReg=null,curExec=null,curWeek=null,allWeeks={},managerNotices={},reportFilter='all';
+function weekKey(){var d=new Date();var day=d.getDay();var diff=d.getDate()-day+(day===0?-6:1);var mon=new Date(d.setDate(diff));return 'week_'+mon.getFullYear()+'_'+(mon.getMonth()+1)+'_'+mon.getDate()} function weekLabel(key){var p=key.replace('week_','').split('_');if(p.length<3)return key;var d=new Date(p[0],p[1]-1,p[2]);return 'w/c '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear()} var WEEK=weekKey();
+function fmtDate(ts){if(!ts) return ''; return new Date(ts).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+function toast(msg,type){var c=document.getElementById('toasts');var t=document.createElement('div');t.className='toast'+(type?' '+type:'');t.textContent=msg;c.appendChild(t);setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t)},2500)}
+function setSyncStatus(state){var dot=document.getElementById('sync-dot');var lbl=document.getElementById('sync-label');if(state==='live'){dot.className='sync-dot live';lbl.textContent='Live'}else if(state==='err'){dot.className='sync-dot err';lbl.textContent='Offline'}else{dot.className='sync-dot';lbl.textContent='Connecting...'}} window.checkConn=function(){toast('Firebase: '+document.getElementById('sync-label').textContent,'info')};
+function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active')} window.openModal=function(id){document.getElementById(id).classList.add('open')}; window.closeModal=function(id){document.getElementById(id).classList.remove('open')};
+window.switchRole=function(){if(role==='exec'){document.getElementById('pin-input').value='';openModal('pin-modal');setTimeout(function(){document.getElementById('pin-input').focus()},100)}else{role='exec';updateRoleUI()}};
+window.checkPin=function(){var pin=document.getElementById('pin-input').value;if(pin==='1992'){closeModal('pin-modal');role='manager';updateRoleUI()}else{toast('Incorrect PIN','err');document.getElementById('pin-input').value=''}};
+function updateRoleUI(){var bar=document.getElementById('role-bar');if(role==='manager'){showScreen('screen-manager');bar.textContent='MANAGER VIEW';bar.style.background='#eef5fb';bar.style.color='#1f4f82'}else{showScreen('screen-exec');bar.textContent='EXECUTIVE VIEW';bar.style.background='#fff5e8';bar.style.color='#9a6418';curExec=null;renderExecScreen()}}
+window.showTab=function(id,btn){document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='t-report'){curWeek=WEEK;renderWeekTabs();renderNotices();renderReport()}};
+function normaliseReg(raw){var reg=(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(reg.length===7)reg=reg.slice(0,4)+' '+reg.slice(4);return reg}
+function regKey(displayReg){return displayReg.replace(/\s/g,'')}
+function blank(){var o={done:false,notes:'',checkedBy:'',sold:false,checkedAt:null};CHECK_IDS.forEach(function(id){o[id]=null});return o}
+function orderedVehicles(){return vehicles.slice().sort(function(a,b){return (a.order||0)-(b.order||0)})}
+function soldMode(ans){return ans&&ans.soldboard==='yes'}
+function allChecksComplete(ans){if(!ans)return false; if(ans.soldboard==='yes') return true; return CHECK_IDS.every(function(id){return ans[id]!==null&&ans[id]!==undefined})}
+function issuesCount(ans){if(!ans)return 0; var n=0; CHECK_IDS.forEach(function(id){ if(id==='soldboard'){ if(ans[id]==='yes') n++; } else if(ans[id]==='no') n++;}); return n }
+function isExecFinished(name){var ex=execs.find(function(e){return e.name===name}); if(!ex||!ex.cars||!ex.cars.length) return false; return ex.cars.every(function(r){var v=vehicles.find(function(x){return x.key===r}); return v&&v.status==='done'})}
+function createManagerNotice(text,id){set(ref(db,'forecourt/current/notices/'+id),{text:text,createdAt:Date.now(),closed:false})}
+window.dismissNotice=function(id){update(ref(db,'forecourt/current/notices/'+id),{closed:true})};
+function renderNotices(){var el=document.getElementById('manager-notices'); if(!el) return; var arr=Object.keys(managerNotices||{}).map(function(k){return {id:k,data:managerNotices[k]}}).filter(function(n){return !n.data.closed}).sort(function(a,b){return (b.data.createdAt||0)-(a.data.createdAt||0)}); if(!arr.length){el.innerHTML=''; return} var h=''; arr.forEach(function(n){h+='<div class="notice"><div><strong>'+n.data.text+'</strong><small>'+fmtDate(n.data.createdAt||Date.now())+'</small></div><button class="btn btn-grey btn-sm" onclick="dismissNotice(\''+n.id+'\')">Close</button></div>'}); el.innerHTML=h}
+function confirmAction(title,text,fn){document.getElementById('confirm-title').textContent=title;document.getElementById('confirm-text').textContent=text;document.getElementById('confirm-ok').onclick=function(){closeModal('confirm-modal');fn()};openModal('confirm-modal')}
+window.confirmClearAlloc=function(){confirmAction('Clear allocations?','This will remove all current allocations and put every vehicle back to pending. Completed checks stay on the report until you start a new week.',function(){clearAllocNow()})};
+window.confirmNewWeek=function(){confirmAction('Start new week?','This will archive the current week, clear current vehicles, current allocations and current notices. Make sure you have finished reviewing today\'s reports before continuing.',function(){newWeekNow()})};
+window.addReg=function(){var raw=document.getElementById('reg-input').value.trim();var disp=normaliseReg(raw); if(!disp){toast('Enter a registration plate','err');return} var key=regKey(disp); if(vehicles.find(function(v){return v.key===key})){toast(disp+' already added','err');return} var nextOrder=orderedVehicles().length?Math.max.apply(null,orderedVehicles().map(function(v){return v.order||0}))+1:1; set(ref(db,'forecourt/current/vehicles/'+key),{key:key,reg:disp,status:'pending',order:nextOrder}).then(function(){set(ref(db,'forecourt/current/answers/'+key),blank());document.getElementById('reg-input').value='';toast(disp+' added','ok')}).catch(function(){toast('Save failed','err')})};
+window.addBulkRegs=function(){var raw=document.getElementById('reg-bulk').value.trim(); if(!raw){toast('Paste registrations first','err');return} var parts=raw.split(',').map(function(x){return normaliseReg(x)}).filter(function(x){return x}); var existing={}; vehicles.forEach(function(v){existing[v.key]=true}); var orderBase=orderedVehicles().length?Math.max.apply(null,orderedVehicles().map(function(v){return v.order||0})):0; var adds=[]; parts.forEach(function(disp){var key=regKey(disp); if(!existing[key]){existing[key]=true; adds.push({key:key,reg:disp,order:orderBase+adds.length+1})} }); if(!adds.length){toast('No new registrations found','err');return} Promise.all(adds.map(function(v){return set(ref(db,'forecourt/current/vehicles/'+v.key),{key:v.key,reg:v.reg,status:'pending',order:v.order}).then(function(){return set(ref(db,'forecourt/current/answers/'+v.key),blank())})})).then(function(){document.getElementById('reg-bulk').value=''; toast(adds.length+' registrations added','ok')})};
+window.removeReg=function(key){remove(ref(db,'forecourt/current/vehicles/'+key));remove(ref(db,'forecourt/current/answers/'+key));execs.forEach(function(e){if(e.cars&&e.cars.indexOf(key)!==-1){e.cars=e.cars.filter(function(r){return r!==key});set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),e)}});toast('Vehicle removed')};
+window.moveVehicle=function(key,dir){var list=orderedVehicles(); var idx=list.findIndex(function(v){return v.key===key}); if(idx<0) return; var swapIdx=dir==='up'?idx-1:idx+1; if(swapIdx<0||swapIdx>=list.length) return; var a=list[idx], b=list[swapIdx]; var aOrder=a.order, bOrder=b.order; Promise.all([update(ref(db,'forecourt/current/vehicles/'+a.key),{order:bOrder}),update(ref(db,'forecourt/current/vehicles/'+b.key),{order:aOrder})]).then(function(){toast('Forecourt order updated','ok')})};
+function renderReorderList(){var el=document.getElementById('reorder-list'); var list=orderedVehicles(); if(!list.length){el.innerHTML='<div class="empty"><p>No vehicles to reorder yet</p></div>';return} var h=''; list.forEach(function(v,i){h+='<div class="drag-item"><div><div class="reg-plate">'+v.reg+'</div><div class="muted">Position '+(i+1)+'</div></div><div class="drag-controls"><button class="drag-btn" onclick="moveVehicle(\''+v.key+'\',\'up\')" '+(i===0?'disabled':'')+'>↑</button><button class="drag-btn" onclick="moveVehicle(\''+v.key+'\',\'down\')" '+(i===list.length-1?'disabled':'')+'>↓</button></div></div>'}); el.innerHTML=h}
+function renderRegList(){var el=document.getElementById('reg-list'); var list=orderedVehicles(); if(!list.length){el.innerHTML='<div class="empty"><p>No vehicles added yet</p></div>';renderReorderList();return} var h=''; list.forEach(function(v){var bc=v.status==='done'?'b-green':v.status==='in-progress'?'b-blue':'b-grey';h+='<div class="reg-item"><div><div class="reg-plate">'+v.reg+'</div><div class="muted">Forecourt order '+(v.order||0)+'</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="badge '+bc+'">'+v.status+'</span><button class="btn-icon" onclick="removeReg(\''+v.key+'\')">&times;</button></div></div>'}); el.innerHTML=h; renderReorderList()}
+document.getElementById('reg-input').addEventListener('keydown',function(e){if(e.key==='Enter')addReg()}); document.getElementById('exec-input').addEventListener('keydown',function(e){if(e.key==='Enter')addExec()});
+window.addExec=function(){var name=document.getElementById('exec-input').value.trim(); if(!name)return; if(execs.find(function(e){return e.name.toLowerCase()===name.toLowerCase()})){toast('Already added','err');return} var ini=name.split(' ').map(function(p){return p[0]||''}).join('').toUpperCase().slice(0,2); set(ref(db,'forecourt/current/execs/'+name.replace(/\s/g,'_')),{name:name,initials:ini,cars:[]}).then(function(){document.getElementById('exec-input').value=''; toast(name+' added','ok')})};
+window.removeExec=function(name){var e=execs.find(function(x){return x.name===name}); if(e&&e.cars)e.cars.forEach(function(r){update(ref(db,'forecourt/current/vehicles/'+r),{status:'pending'})}); remove(ref(db,'forecourt/current/execs/'+name.replace(/\s/g,'_')))};
+function renderExecTags(){var el=document.getElementById('exec-tags'); if(!execs.length){el.innerHTML='';return} var h=''; execs.forEach(function(e){h+='<span class="tag">'+e.name+'<button onclick="removeExec(\''+e.name+'\')">&times;</button></span>'}); el.innerHTML=h}
+window.allocate=function(){if(!execs.length){toast('Add executives first','err');return} var pending=orderedVehicles().filter(function(v){return v.status==='pending'}); if(!pending.length){toast('No unallocated cars','err');return} var max=parseInt(document.getElementById('max-per-exec').value)||8; var localExecs=execs.map(function(e){return {name:e.name,initials:e.initials,cars:[]}}); var ei=0; pending.forEach(function(v){var tries=0; while(localExecs[ei].cars.length>=max&&tries<localExecs.length){ei=(ei+1)%localExecs.length;tries++} if(localExecs[ei].cars.length<max)localExecs[ei].cars.push(v.key); ei=(ei+1)%localExecs.length}); localExecs.forEach(function(e){set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),e)}); toast('Cars allocated!','ok')};
+function clearAllocNow(){execs.forEach(function(e){if(e.cars)e.cars.forEach(function(r){update(ref(db,'forecourt/current/vehicles/'+r),{status:'pending'})}); set(ref(db,'forecourt/current/execs/'+e.name.replace(/\s/g,'_')),{name:e.name,initials:e.initials,cars:[]})}); toast('Allocation cleared','ok')}
+function renderExecGrid(){var el=document.getElementById('exec-grid'); if(!execs.length){el.innerHTML='<div class="empty"><p>Add executives then click Allocate</p></div>';return} var h=''; execs.forEach(function(e){var cars=e.cars||[]; h+='<div class="exec-card"><div class="exec-card-head"><div class="avatar">'+e.initials+'</div><div><strong>'+e.name+'</strong><div style="font-size:12px;color:#6b7a8c;">'+cars.length+' car'+(cars.length!==1?'s':'')+'</div></div></div>'; cars.forEach(function(r){var v=vehicles.find(function(x){return x.key===r}); var st=v?v.status:'pending'; var bc=st==='done'?'b-green':st==='in-progress'?'b-blue':'b-grey'; h+='<div class="exec-car"><span>'+(v?v.reg:r)+'</span><span class="badge '+bc+'">'+st+'</span></div>'}); if(!cars.length)h+='<div style="font-size:12px;color:#9aa6b3;padding:4px 0;">No cars yet</div>'; h+='</div>'}); el.innerHTML=h}
+function renderExecScreen(){var nd=document.getElementById('exec-no-data');var hd=document.getElementById('exec-has-data');if(!execs.length||!execs.some(function(e){return e.cars&&e.cars.length})){nd.style.display='block';hd.style.display='none';return}nd.style.display='none';hd.style.display='block';if(curExec){showExecQueue()}else{showWhoGrid()}}
+function showWhoGrid(){document.getElementById('exec-picker-screen').style.display='block';document.getElementById('exec-queue-screen').style.display='none'; var el=document.getElementById('who-grid'); var h=''; execs.forEach(function(e){if(e.cars&&e.cars.length){h+='<button class="who-btn" onclick="pickExec(\''+e.name+'\')"><div class="who-initials">'+(e.initials||e.name.slice(0,2).toUpperCase())+'</div>'+e.name+'</button>'}}); el.innerHTML=h||'<div style="color:rgba(255,255,255,0.7);font-size:14px;padding:10px;">No cars allocated yet</div>'}
+window.pickExec=function(name){curExec=name;showExecQueue()}; window.clearExecSelection=function(){curExec=null;showWhoGrid()};
+function showExecQueue(){document.getElementById('exec-picker-screen').style.display='none';document.getElementById('exec-queue-screen').style.display='block';document.getElementById('exec-active-name').textContent=curExec||'-';renderQueue()}
+function renderQueue(){var el=document.getElementById('exec-queue'); var ex=curExec?execs.find(function(e){return e.name===curExec}):null; var cars=ex?ex.cars||[]:[]; if(!cars.length){el.innerHTML='<div class="empty"><p>No cars allocated to you yet</p></div>';document.getElementById('exec-prog').style.width='0%';document.getElementById('exec-prog-label').textContent='0 / 0 checked';return} var done=cars.filter(function(r){var v=vehicles.find(function(x){return x.key===r});return v&&v.status==='done'}).length;document.getElementById('exec-prog').style.width=Math.round(done/cars.length*100)+'%';document.getElementById('exec-prog-label').textContent=done+' / '+cars.length+' checked'; var h=''; cars.forEach(function(r){var v=vehicles.find(function(x){return x.key===r}); var st=v?v.status:'pending'; var cls=st==='done'?'done':st==='in-progress'?'in-progress':''; var badge=st==='done'?'<span class="badge b-green">Done</span>':st==='in-progress'?'<span class="badge b-blue">In progress</span>':'<span class="badge b-grey">Pending</span>'; h+='<div class="queue-item '+cls+'" onclick="openCheck(\''+r+'\')"><div class="q-reg">'+(v?v.reg:r)+'</div><div class="q-info">Tap to check</div>'+badge+'</div>'}); el.innerHTML=h}
+window.openCheck=function(key){var v=vehicles.find(function(x){return x.key===key}); if(!v)return; curReg=key; if(v.status!=='done')update(ref(db,'forecourt/current/vehicles/'+key),{status:'in-progress'}); showScreen('screen-check'); document.getElementById('check-reg-display').textContent=v.reg; document.getElementById('check-notes').value=(answers[key]&&answers[key].notes)||''; renderCheckItems()};
+window.backToQueue=function(){showScreen('screen-exec');renderQueue()}; window.saveNotesDraft=function(){var val=document.getElementById('check-notes').value; if(answers[curReg])answers[curReg].notes=val; update(ref(db,'forecourt/current/answers/'+curReg),{notes:val})};
+window.setAnswer=function(id,val){if(!answers[curReg])answers[curReg]=blank(); var ans=answers[curReg]; if(id==='soldboard'){ans[id]=(ans[id]===val)?null:val; if(ans[id]==='yes'){CHECK_IDS.forEach(function(cid){if(cid!=='soldboard')ans[cid]=null}); ans.done=false; ans.sold=true} else if(ans[id]==='no'){ans.sold=false} update(ref(db,'forecourt/current/answers/'+curReg),ans); renderCheckItems(); return} if(soldMode(ans)) return; ans[id]=(ans[id]===val)?null:val; update(ref(db,'forecourt/current/answers/'+curReg),{[id]:ans[id]}); renderCheckItems()};
+function renderCheckItems(){var ans=answers[curReg]||blank(); var sold=soldMode(ans); var answered=sold?1:CHECK_IDS.filter(function(id){return ans[id]!==null&&ans[id]!==undefined}).length; var total=sold?1:CHECK_IDS.length; document.getElementById('check-prog').style.width=Math.round(answered/total*100)+'%'; var allDone=allChecksComplete(ans); document.getElementById('submit-btn').disabled=!allDone; var fails=issuesCount(ans); document.getElementById('check-badge').innerHTML=allDone?(fails?'<span class="badge b-red">'+fails+' issue'+(fails>1?'s':'')+'</span>':'<span class="badge b-green">All pass</span>'):'<span class="badge b-grey">'+answered+' / '+total+'</span>'; var h=''; CHECK_IDS.forEach(function(id,i){var a=ans[id]; var disabled=sold&&id!=='soldboard'; var cls=''; if(id==='soldboard'){cls=a==='no'?'soldpass':a==='yes'?'no':''} else {cls=disabled?'disabled':a==='yes'?'yes':a==='no'?'no':''} var yesClass='y'+((id==='soldboard'&&a==='no')?' sold-safe':'')+(a==='yes'&&id!=='soldboard'?' on':'')+(a==='no'&&id==='soldboard'?' on':''); var noClass='n'+(a==='no'&&id!=='soldboard'?' on':'')+(a==='yes'&&id==='soldboard'?' on':''); h+='<div class="check-item '+cls+'"><div style="flex:1;margin-right:12px;"><div class="check-lbl">'+CHECK_LABELS[i]+'</div><div class="check-note">'+CHECK_NOTES[i]+'</div></div><div class="yn"><button class="'+yesClass+'" '+(disabled?'disabled':'')+' onclick="setAnswer(\''+id+'\',\'yes\')">YES</button><button class="'+noClass+'" '+(disabled?'disabled':'')+' onclick="setAnswer(\''+id+'\',\'no\')">NO</button></div></div>'}); document.getElementById('check-items-list').innerHTML=h}
+window.submitCheck=function(){var ans=answers[curReg]||blank(); var notes=document.getElementById('check-notes').value; var v=vehicles.find(function(x){return x.key===curReg}); var now=Date.now(); ans.done=true; ans.notes=notes; ans.checkedBy=curExec||''; ans.checkedAt=now; update(ref(db,'forecourt/current/answers/'+curReg),ans); update(ref(db,'forecourt/current/vehicles/'+curReg),{status:'done'}); set(ref(db,'forecourt/archive/'+WEEK+'/'+curReg),{reg:v?v.reg:curReg,checkedAt:now,exec:curExec||'',answers:ans,notes:notes}); if(isExecFinished(curExec)){var id='done_'+curExec.replace(/\s/g,'_')+'_'+Date.now(); createManagerNotice(curExec+' has completed all allocated cars for today.',id)} toast((v?v.reg:curReg)+' submitted!','ok'); showScreen('screen-exec'); renderQueue()};
+function renderWeekTabs(){var el=document.getElementById('week-tabs'); if(!el)return; var keys=[WEEK]; Object.keys(allWeeks).forEach(function(k){if(keys.indexOf(k)===-1)keys.push(k)}); keys.sort().reverse(); if(!curWeek||keys.indexOf(curWeek)===-1)curWeek=keys[0]; var h=''; keys.forEach(function(k){var lbl=k===WEEK?'This Week':weekLabel(k); h+='<span class="week-tab'+(k===curWeek?' active':'')+'" onclick="selectWeek(\''+k+'\')">'+lbl+'</span>'}); el.innerHTML=h}
+window.selectWeek=function(key){curWeek=key;renderWeekTabs();renderReport()};
+window.setReportFilter=function(filter){reportFilter=filter; ['all','unchecked','issues'].forEach(function(f){document.getElementById('filter-'+f).classList.toggle('active',f===filter)}); renderReport()};
+function buildReportHTML(doneVehicles,ans,total,issues,archiveData){var h='<div class="kpi-row"><div class="kpi"><div class="kpi-num">'+doneVehicles.length+'</div><div class="kpi-lbl">Checked</div></div><div class="kpi"><div class="kpi-num" style="color:#6b7a8c;">'+(total-doneVehicles.length)+'</div><div class="kpi-lbl">Pending</div></div><div class="kpi"><div class="kpi-num" style="color:'+(issues?'#c54242':'#2f8f57')+';">'+issues+'</div><div class="kpi-lbl">Issues</div></div></div>'; doneVehicles.forEach(function(v){var key=v.key||v.reg.replace(/\s/g,''); var a=ans[key]||{}; var fails=issuesCount(a); if(reportFilter==='issues' && fails===0) return; var execName=(a.checkedBy||''); if(!execName&&archiveData&&archiveData[key])execName=archiveData[key].exec||''; var checkedAt=(a.checkedAt||((archiveData&&archiveData[key])?archiveData[key].checkedAt:null)); var notes=a.notes||(archiveData&&archiveData[key]?archiveData[key].notes:''); h+='<div class="report-car"><div class="report-car-head"><div><strong style="font-family:Courier New,monospace;font-size:16px;">'+v.reg+'</strong>'+(execName?'<span style="font-size:12px;color:#6b7a8c;margin-left:8px;">Checked by '+execName+'</span>':'')+(checkedAt?'<div class="muted" style="margin-top:4px;">Completed '+fmtDate(checkedAt)+'</div>':'')+'</div>'+(fails?'<span class="badge b-red">'+fails+' issue'+(fails>1?'s':'')+'</span>':'<span class="badge b-green">All clear</span>')+'</div><div class="report-items">'; CHECK_IDS.forEach(function(id,i){if(a[id]!==null&&a[id]!==undefined){var isPass=(id==='soldboard')?(a[id]==='no'):(a[id]==='yes'); h+='<div class="ri '+(isPass?'pass':'fail')+'"><div class="ri-dot"></div>'+CHECK_LABELS[i]+': '+String(a[id]).toUpperCase()+'</div>'}}); h+='</div>'; if(notes)h+='<div style="margin-top:8px;padding:8px 10px;background:#fffaf0;border-radius:8px;font-size:12px;color:#6a5a36;border-left:3px solid var(--brand-gold);">&#x1F4DD; '+notes+'</div>'; h+='</div>'}); return h}
+function renderUncheckedSection(list){var pending=list.filter(function(v){return v.status!=='done'}); if(reportFilter!=='unchecked') return ''; if(!pending.length) return '<div class="empty"><p>No unchecked cars remaining</p></div>'; var h='<div class="card" style="padding:14px;margin-bottom:12px;"><h2 style="font-size:15px;">Unchecked vehicles</h2><p class="sub" style="margin-top:4px;">These cars are still pending or in progress.</p>'; pending.forEach(function(v){h+='<div class="reg-item"><div class="reg-plate">'+v.reg+'</div><span class="badge '+(v.status==='in-progress'?'b-blue':'b-grey')+'">'+v.status+'</span></div>'}); h+='</div>'; return h}
+function renderReport(){var el=document.getElementById('report-content'); if(!el)return; if(!curWeek||curWeek===WEEK){var all=orderedVehicles(); var done=all.filter(function(v){return v.status==='done'}); var total=all.length; var issues=done.filter(function(v){return issuesCount(answers[v.key])>0}).length; if(reportFilter==='unchecked'){el.innerHTML=renderUncheckedSection(all); return} if(!done.length){el.innerHTML='<div class="empty"><p>No completed checks yet</p></div>';return} var html=buildReportHTML(done,answers,total,issues); if(!html.replace(/\s/g,'')){el.innerHTML='<div class="empty"><p>No cars match this filter</p></div>';return} el.innerHTML=html} else {var wdata=allWeeks[curWeek]||{}; var keys=Object.keys(wdata); var wVehicles=keys.map(function(k){return {key:k,reg:wdata[k].reg||k,status:'done'}}); var wAnswers={}; keys.forEach(function(k){wAnswers[k]=wdata[k].answers||{}}); var wIssues=wVehicles.filter(function(v){return issuesCount(wAnswers[v.key])>0}).length; if(reportFilter==='unchecked'){el.innerHTML='<div class="empty"><p>Unchecked view is only available for this week</p></div>';return} if(!wVehicles.length){el.innerHTML='<div class="empty"><p>No data for this week</p></div>';return} var html=buildReportHTML(wVehicles,wAnswers,wVehicles.length,wIssues,wdata); if(!html.replace(/\s/g,'')){el.innerHTML='<div class="empty"><p>No cars match this filter</p></div>';return} el.innerHTML=html}}
+window.exportCSV=function(){var done=orderedVehicles().filter(function(v){return v.status==='done'}); if(!done.length){toast('No completed checks to export','err');return} var headers=['Registration','Checked By','Checked At','Notes'].concat(CHECK_LABELS); var rows=done.map(function(v){var a=answers[v.key]||{}; return [v.reg,a.checkedBy||'',fmtDate(a.checkedAt)||'',a.notes||''].concat(CHECK_IDS.map(function(id){return a[id]||''}))}); var csv=[headers].concat(rows).map(function(r){return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(',')}).join('\n'); var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='forecourt-'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); toast('CSV exported!','ok')};
+function newWeekNow(){remove(ref(db,'forecourt/current')); toast('New week started!','ok')}
+var pageURL=window.location.href.split('?')[0]; var urlEl=document.getElementById('share-url'); if(urlEl)urlEl.textContent=pageURL; function buildExecShareMessage(){return "It's that time of week again! Please complete all forecourt checks as a priority using the link below:\n"+pageURL+"\n\nOpen the link, tap your name, and complete all of your allocated cars."} window.shareExecMessage=function(channel){if(!execs.length||!execs.some(function(e){return e.cars&&e.cars.length})){toast('Allocate cars first','err');return} var msg=buildExecShareMessage(); if(channel==='whatsapp'){window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');return} if(channel==='email'){window.location.href='mailto:?subject='+encodeURIComponent('Forecourt checks to complete')+'&body='+encodeURIComponent(msg)}}; window.copyExecMessage=function(){var msg=buildExecShareMessage(); if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){toast('Message copied!','ok')})}else{toast('Copy not supported on this device','err')}};
+onValue(ref(db,'forecourt/current/vehicles'),function(snap){vehicles=[]; var d=snap.val(); if(d)Object.keys(d).forEach(function(k){vehicles.push(d[k])}); renderRegList();renderExecGrid(); if(role==='exec')renderExecScreen(); if(role==='manager')renderReport(); setSyncStatus('live')},function(){setSyncStatus('err')});
+onValue(ref(db,'forecourt/current/execs'),function(snap){execs=[]; var d=snap.val(); if(d)Object.keys(d).forEach(function(k){execs.push(d[k])}); renderExecTags();renderExecGrid(); if(role==='exec')renderExecScreen()});
+onValue(ref(db,'forecourt/current/answers'),function(snap){answers=snap.val()||{}; if(role==='manager')renderReport(); if(curExec)renderQueue()});
+onValue(ref(db,'forecourt/current/notices'),function(snap){managerNotices=snap.val()||{}; if(role==='manager')renderNotices()});
+onValue(ref(db,'forecourt/archive'),function(snap){allWeeks=snap.val()||{}; if(role==='manager')renderWeekTabs()});
 renderExecScreen();
-
 </script>
 </body>
 </html>
