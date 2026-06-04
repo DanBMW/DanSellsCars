@@ -81,7 +81,9 @@ fields.forEach(([label, key, isMoney]) => {
   if(isMoney && val) val = Number(val).toLocaleString("en-GB");
   const d = document.createElement("div");
   d.className = "summary-item";
-  d.innerHTML = \`<b>\${label}</b><div>\${val}</div>\`;
+d.innerHTML = `<b>${label}</b><div>${val}</div>`;
+return `${label}: ${val}`;
+subject: `DanSells lead ${name}`,
   sg.appendChild(d);
 });
 
