@@ -25,14 +25,14 @@
   <p class="step-desc">This is what turns a great experience into an actual conversation with a real human.</p>
   <div class="input-card">
     <div class="two-col">
-      <div class="field-group"><label>Full name *</label><input id="fn" type="text" placeholder="Your name"/></div>
-      <div class="field-group"><label>Email *</label><input id="em" type="email" placeholder="you@example.com"/></div>
+      <div class="field-group"><label for="fn">Full name *</label><input id="fn" type="text" placeholder="Your name"/></div>
+      <div class="field-group"><label for="em">Email *</label><input id="em" type="email" placeholder="you@example.com"/></div>
     </div>
     <div class="two-col">
-      <div class="field-group"><label>Mobile *</label><input id="ph" type="tel" placeholder="07..."/></div>
-      <div class="field-group"><label>Postcode (optional)</label><input id="pc" type="text" placeholder="e.g. TN13 1AA"/></div>
+      <div class="field-group"><label for="ph">Mobile *</label><input id="ph" type="tel" placeholder="07..."/></div>
+      <div class="field-group"><label for="pc">Postcode (optional)</label><input id="pc" type="text" placeholder="e.g. TN13 1AA"/></div>
     </div>
-    <div class="field-group"><label>Best time to call (optional)</label><input id="bt" type="text" placeholder="e.g. Weekdays after 5pm"/></div>
+    <div class="field-group"><label for="bt">Best time to call (optional)</label><input id="bt" type="text" placeholder="e.g. Weekdays after 5pm"/></div>
     <div class="tick-box">✔ By continuing you agree that Dan may use these details to contact you about your new BMW enquiry.</div>
   </div>
   <div class="nav">
@@ -45,7 +45,7 @@
     const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
   });
   function isValidEmail(email) {
-  return /^[^s@]+@[^s@]+.[^s@]+$/.test(email);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
   function go(){
     const n=document.getElementById("fn").value.trim(),e=document.getElementById("em").value.trim(),p=document.getElementById("ph").value.trim();

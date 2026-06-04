@@ -141,7 +141,5 @@ Photos attached.`;
     document.getElementById("emailBtn").href=`mailto:daniel.cane@hedinautomotive.co.uk?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
   }
 
-  setTimeout(()=>{
-    const u=sessionStorage.getItem("bookingUrl"); if(u) window.open(u,"_blank");
-  },1000);
+  // Booking URL is pre-filled on the bookBtn above — user clicks to open their appointment page.
 </script></body></html>
