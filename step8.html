@@ -3,19 +3,15 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>DanSells Review</title>
+<title>DanSells | Review</title>
 <link rel="stylesheet" href="style.css"/>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 </head>
 <body>
 <div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
     <div class="meta"><span class="dot"></span><span>Step 11 of 12</span></div>
   </div>
   <div class="progress-wrap">
@@ -29,140 +25,136 @@
     <div class="summary-grid" id="sg"></div>
     <div class="nav">
       <a class="btn-ghost" href="step7.html">&larr; Back</a>
-      <button class="btn" id="sb" onclick="submit()">Send to Dan &amp; book my call &rarr;</button>
+      <button class="btn" id="sb" onclick="sendForm()">Send to Dan &amp; book my call &rarr;</button>
     </div>
     <p class="hint" style="margin-top:14px;">Sending this also opens your booking page with your details pre-filled.</p>
   </div>
 </div></div>
-
 <script>
-// [label, sessionStorageKey, isMoney]
-const fields = [
-  ["Name",           "fullName"],
-  ["Email",          "email"],
-  ["Mobile",         "phone"],
-  ["Postcode",       "postcode"],
-  ["Best time",      "bestTime"],
-  ["Lifestyle",      "lifestyle"],
-  ["Body styles",    "bodyStyles"],
-  ["Change timeline","timeline"],
-  ["Funding route",  "purchaseType"],
-  ["Deposit",        "deposit",        true],
-  ["Annual mileage", "annualMileage"],
-  ["Monthly budget", "monthlyBudget",  true],
-  ["Cash budget",    "cashBudget",     true],
-  ["Alt finance",    "altMonthly",     true],
-  ["Part exchange",  "partExchange"],
-  ["PX finance",     "pxFinance"],
-  ["PX settlement",  "pxSettlement"],
-  ["Current car",    "currentCar"],
-  ["Mileage",        "mileage"],
+// [label, sessionStorage key, isMoney]
+var fields = [
+  ["Name",              "fullName"],
+  ["Email",             "email"],
+  ["Mobile",            "phone"],
+  ["Postcode",          "postcode"],
+  ["Best time",         "bestTime"],
+  ["Lifestyle",         "lifestyle"],
+  ["Body styles",       "bodyStyles"],
+  ["Change timeline",   "timeline"],
+  ["Funding route",     "purchaseType"],
+  ["Deposit",           "deposit",         true],
+  ["Annual mileage",    "annualMileage"],
+  ["Monthly budget",    "monthlyBudget",   true],
+  ["Cash budget",       "cashBudget",      true],
+  ["Alt finance",       "altMonthly",      true],
+  ["Part exchange",     "partExchange"],
+  ["PX finance",        "pxFinance"],
+  ["PX settlement",     "pxSettlement"],
+  ["Current car",       "currentCar"],
+  ["Mileage",           "mileage"],
   ["Online buyer quote","wbacVal"],
-  ["Extra notes",    "notes"],
-  // ── NEW: spec fields ──
-  ["Colours",        "specColours"],
-  ["Trim",           "specTrim"],
-  ["Needs",          "specNeeds"],
-  ["Wants",          "specWants"]
+  ["Extra notes",       "notes"],
+  ["Colours",           "specColours"],
+  ["Trim",              "specTrim"],
+  ["Needs",             "specNeeds"],
+  ["Wants",             "specWants"]
 ];
 
-// Keys that store JSON arrays
-const ARRAY_KEYS = new Set(["bodyStyles","specColours","specNeeds","specWants"]);
+// Keys whose values are stored as JSON arrays
+var ARRAY_KEYS = ["bodyStyles","specColours","specNeeds","specWants"];
 
-const sg = document.getElementById("sg");
+function isArray(key){ return ARRAY_KEYS.indexOf(key) !== -1; }
 
-fields.forEach(([label, key, isMoney]) => {
-  let val = sessionStorage.getItem(key);
-  if(!val) return;
-  if(ARRAY_KEYS.has(key)){
-    try { val = JSON.parse(val).join(", "); } catch(e){}
-    if(!val) return;
+function readVal(key){
+  var raw = sessionStorage.getItem(key);
+  if(!raw) return "";
+  if(isArray(key)){
+    try { var arr = JSON.parse(raw); return Array.isArray(arr) ? arr.join(", ") : raw; }
+    catch(e){ return raw; }
   }
-  if(isMoney && val) val = Number(val).toLocaleString("en-GB");
-  const d = document.createElement("div");
+  return raw;
+}
+
+// Build summary grid
+var sg = document.getElementById("sg");
+fields.forEach(function(f){
+  var label = f[0], key = f[1], isMoney = f[2];
+  var val = readVal(key);
+  if(!val) return;
+  if(isMoney){ var n = Number(val.replace(/,/g,"")); if(!isNaN(n)) val = n.toLocaleString("en-GB"); }
+  var d = document.createElement("div");
   d.className = "summary-item";
-d.innerHTML = `<b>${label}</b><div>${val}</div>`;
-return `${label}: ${val}`;
-subject: `DanSells lead ${name}`,
+  d.innerHTML = "<b>" + label + "</b><div>" + val + "</div>";
   sg.appendChild(d);
 });
 
 function buildText(){
-  return fields.map(([label, key, isMoney]) => {
-    let val = sessionStorage.getItem(key) || "Not given";
-    if(ARRAY_KEYS.has(key)){
-      try { val = JSON.parse(val).join(", ") || "Not given"; } catch(e){}
+  return fields.map(function(f){
+    var label = f[0], key = f[1], isMoney = f[2];
+    var val = readVal(key) || "Not given";
+    if(isMoney && readVal(key)){
+      var n = Number(readVal(key).replace(/,/g,""));
+      if(!isNaN(n)) val = n.toLocaleString("en-GB");
     }
-    if(isMoney && sessionStorage.getItem(key)){
-      val = Number(sessionStorage.getItem(key)).toLocaleString("en-GB");
-    }
-    return \`\${label}: \${val}\`;
+    return label + ": " + val;
   }).join("\n");
 }
 
-async function submit(){
-  const btn     = document.getElementById("sb");
-  btn.textContent = "Sending...";
-  btn.disabled  = true;
+function sendForm(){
+  var btn = document.getElementById("sb");
+  btn.textContent = "Sending…";
+  btn.disabled = true;
 
-  const name    = sessionStorage.getItem("fullName");
-  const email   = sessionStorage.getItem("email");
-  const summary = buildText();
+  var name    = sessionStorage.getItem("fullName") || "";
+  var email   = sessionStorage.getItem("email")    || "";
+  var summary = buildText();
 
-  const calUrl = "https://cal.eu/danbmwruxley/telephone-appointment?" +
-    new URLSearchParams({name, email, notes: summary}).toString();
-
-  // Helper: parse array keys nicely
-  function arrVal(key){
-    try { return JSON.parse(sessionStorage.getItem(key)||"[]").join(", "); }
-    catch(e){ return ""; }
-  }
-
-  const payload = {
-    name,
-    email,
-    phone:           sessionStorage.getItem("phone"),
-    postcode:        sessionStorage.getItem("postcode"),
-    besttime:        sessionStorage.getItem("bestTime"),
-    lifestyle:       sessionStorage.getItem("lifestyle"),
-    bodystyles:      sessionStorage.getItem("bodyStyles"),
-    changetimeline:  sessionStorage.getItem("timeline"),
-    fundingroute:    sessionStorage.getItem("purchaseType"),
-    deposit:         sessionStorage.getItem("deposit")       ? Number(sessionStorage.getItem("deposit")).toLocaleString("en-GB")       : "",
-    monthlybudget:   sessionStorage.getItem("monthlyBudget") ? Number(sessionStorage.getItem("monthlyBudget")).toLocaleString("en-GB") : "",
-    annualmileage:   sessionStorage.getItem("annualMileage"),
-    cashbudget:      sessionStorage.getItem("cashBudget")    ? Number(sessionStorage.getItem("cashBudget")).toLocaleString("en-GB")    : "",
-    altfinance:      sessionStorage.getItem("altMonthly")    ? Number(sessionStorage.getItem("altMonthly")).toLocaleString("en-GB")    : "",
-    partexchange:    sessionStorage.getItem("partExchange"),
-    currentcar:      sessionStorage.getItem("currentCar"),
-    pxfinance:       sessionStorage.getItem("pxFinance"),
-    pxsettlement:    sessionStorage.getItem("pxSettlement"),
-    mileage:         sessionStorage.getItem("mileage"),
-    onlinebuyerquote:sessionStorage.getItem("wbacVal"),
-    notes:           sessionStorage.getItem("notes"),
-    // ── NEW spec fields ──
-    colours:         arrVal("specColours"),
-    trim:            sessionStorage.getItem("specTrim") || "",
-    spec_needs:      arrVal("specNeeds"),
-    spec_wants:      arrVal("specWants"),
-    spec_bypass:     sessionStorage.getItem("specBypass") || "",
-    // ── meta ──
-    leadsummary:     summary,
-    subject:         \`DanSells lead \${name}\`,
-    replyto:         email
-  };
+  var calUrl = "https://cal.eu/danbmwruxley/telephone-appointment?" +
+    new URLSearchParams({name: name, email: email, notes: summary}).toString();
 
   sessionStorage.setItem("bookingUrl", calUrl);
 
-  try {
-    await fetch("https://formspree.io/f/xqewleog", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify(payload)
-    });
-  } catch(e){}
+  var payload = {
+    name:             name,
+    email:            email,
+    phone:            sessionStorage.getItem("phone")         || "",
+    postcode:         sessionStorage.getItem("postcode")      || "",
+    besttime:         sessionStorage.getItem("bestTime")      || "",
+    lifestyle:        sessionStorage.getItem("lifestyle")     || "",
+    bodystyles:       readVal("bodyStyles"),
+    changetimeline:   sessionStorage.getItem("timeline")      || "",
+    fundingroute:     sessionStorage.getItem("purchaseType")  || "",
+    deposit:          readVal("deposit")       ? Number((readVal("deposit")||"0").replace(/,/g,"")).toLocaleString("en-GB") : "",
+    monthlybudget:    readVal("monthlyBudget") ? Number((readVal("monthlyBudget")||"0").replace(/,/g,"")).toLocaleString("en-GB") : "",
+    annualmileage:    sessionStorage.getItem("annualMileage") || "",
+    cashbudget:       readVal("cashBudget")    ? Number((readVal("cashBudget")||"0").replace(/,/g,"")).toLocaleString("en-GB") : "",
+    altfinance:       readVal("altMonthly")    ? Number((readVal("altMonthly")||"0").replace(/,/g,"")).toLocaleString("en-GB") : "",
+    partexchange:     sessionStorage.getItem("partExchange")  || "",
+    currentcar:       sessionStorage.getItem("currentCar")    || "",
+    pxfinance:        sessionStorage.getItem("pxFinance")     || "",
+    pxsettlement:     sessionStorage.getItem("pxSettlement")  || "",
+    mileage:          sessionStorage.getItem("mileage")       || "",
+    onlinebuyerquote: sessionStorage.getItem("wbacVal")       || "",
+    notes:            sessionStorage.getItem("notes")         || "",
+    colours:          readVal("specColours"),
+    trim:             sessionStorage.getItem("specTrim")      || "",
+    spec_needs:       readVal("specNeeds"),
+    spec_wants:       readVal("specWants"),
+    spec_bypass:      sessionStorage.getItem("specBypass")    || "",
+    leadsummary:      summary,
+    subject:          "DanSells lead: " + name,
+    replyto:          email
+  };
 
-  window.location.href = "thankyou.html";
+  fetch("https://formspree.io/f/xqewleog", {
+    method: "POST",
+    headers: {"Content-Type":"application/json","Accept":"application/json"},
+    body: JSON.stringify(payload)
+  })
+  .catch(function(){})
+  .finally(function(){
+    window.location.href = "thankyou.html";
+  });
 }
 </script>
 </body>
