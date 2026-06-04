@@ -1,87 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>DanSells | Review</title><link rel="stylesheet" href="style.css"/>  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XZL1RF6SV6');
-  </script>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells Review</title>
+<link rel="stylesheet" href="style.css"/>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 </head>
-<body><div class="app"><div class="shell">
+<body>
+<div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
-    <div class="meta"><span class="dot"></span><span>Step 10 of 11</span></div>
+    <div class="brand">
+      <span class="brand-name">DanSells</span>
+      <span class="brand-sub">Powered by BMW Ruxley</span>
+    </div>
+    <div class="meta"><span class="dot"></span><span>Step 11 of 12</span></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-row"><span>Step 10 of 11</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:90%"></div></div>
+    <div class="progress-row"><span>Step 11 of 12</span><span>Under 2 minutes</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:92%"></div></div>
   </div>
-<div class="step-wrap">
-  <div class="step-kicker">Review</div>
-  <h2>This is what Dan receives.</h2>
-  <p class="step-desc">Check it looks right, then send it. His inbox and your booking link are next.</p>
-  <div class="summary-grid" id="sg"></div>
-  <div class="nav">
-    <a class="btn-ghost" href="step7.html">&larr; Back</a>
-    <button class="btn" id="sb" onclick="submit()">Send to Dan &amp; book my call &rarr;</button>
+  <div class="step-wrap">
+    <div class="step-kicker">Review</div>
+    <h2>This is what Dan receives.</h2>
+    <p class="step-desc">Check it looks right, then send it. His inbox and your booking link are next.</p>
+    <div class="summary-grid" id="sg"></div>
+    <div class="nav">
+      <a class="btn-ghost" href="step7.html">&larr; Back</a>
+      <button class="btn" id="sb" onclick="submit()">Send to Dan &amp; book my call &rarr;</button>
+    </div>
+    <p class="hint" style="margin-top:14px;">Sending this also opens your booking page with your details pre-filled.</p>
   </div>
-  <p class="hint" style="margin-top:14px">Sending this also opens your booking page with your details pre-filled.</p>
-</div></div></div>
+</div></div>
+
 <script>
-  const fields=[
-    ["Name","fullName"],["Email","email"],["Mobile","phone"],["Postcode","postcode"],["Best time","bestTime"],
-    ["Lifestyle","lifestyle"],["Body styles","bodyStyles"],["Change timeline","timeline"],["Funding route","purchaseType"],
-    ["Deposit","deposit",true],['Annual mileage','annualMileage'],["Monthly budget","monthlyBudget",true],["Cash budget","cashBudget",true],
-    ["Alt finance budget","altMonthly",true],["Part exchange","partExchange"],['PX finance',         'pxFinance'],
-['PX settlement',      'pxSettlement'],["Current car","currentCar"],
-    ["Mileage","mileage"],["Online buyer quote","wbacVal"],["Extra notes","notes"]
-  ];
-  const sg=document.getElementById("sg");
-  fields.forEach(([label,key,isMoney])=>{
-    let val=sessionStorage.getItem(key)||""; if(!val) return;
-    if(key==="bodyStyles"){ try{ val=JSON.parse(val).join(", "); }catch(e){} }
-    if(isMoney&&val) val="£"+Number(val).toLocaleString("en-GB");
-    const d=document.createElement("div"); d.className="summary-item";
-    d.innerHTML="<b>"+label+"</b><div>"+val+"</div>"; sg.appendChild(d);
-  });
-  function buildText(){
-    return fields.map(([label,key,isMoney])=>{
-      let val=sessionStorage.getItem(key)||"Not given";
-      if(key==="bodyStyles"){ try{ val=JSON.parse(val).join(", "); }catch(e){} }
-      if(isMoney&&sessionStorage.getItem(key)) val="£"+Number(sessionStorage.getItem(key)).toLocaleString("en-GB");
-      return label+": "+val;
-    }).join("\n");
+// [label, sessionStorageKey, isMoney]
+const fields = [
+  ["Name",           "fullName"],
+  ["Email",          "email"],
+  ["Mobile",         "phone"],
+  ["Postcode",       "postcode"],
+  ["Best time",      "bestTime"],
+  ["Lifestyle",      "lifestyle"],
+  ["Body styles",    "bodyStyles"],
+  ["Change timeline","timeline"],
+  ["Funding route",  "purchaseType"],
+  ["Deposit",        "deposit",        true],
+  ["Annual mileage", "annualMileage"],
+  ["Monthly budget", "monthlyBudget",  true],
+  ["Cash budget",    "cashBudget",     true],
+  ["Alt finance",    "altMonthly",     true],
+  ["Part exchange",  "partExchange"],
+  ["PX finance",     "pxFinance"],
+  ["PX settlement",  "pxSettlement"],
+  ["Current car",    "currentCar"],
+  ["Mileage",        "mileage"],
+  ["Online buyer quote","wbacVal"],
+  ["Extra notes",    "notes"],
+  // ── NEW: spec fields ──
+  ["Colours",        "specColours"],
+  ["Trim",           "specTrim"],
+  ["Needs",          "specNeeds"],
+  ["Wants",          "specWants"]
+];
+
+// Keys that store JSON arrays
+const ARRAY_KEYS = new Set(["bodyStyles","specColours","specNeeds","specWants"]);
+
+const sg = document.getElementById("sg");
+
+fields.forEach(([label, key, isMoney]) => {
+  let val = sessionStorage.getItem(key);
+  if(!val) return;
+  if(ARRAY_KEYS.has(key)){
+    try { val = JSON.parse(val).join(", "); } catch(e){}
+    if(!val) return;
   }
-  async function submit(){
-    const btn=document.getElementById("sb"); btn.textContent="Sending..."; btn.disabled=true;
-    const name=sessionStorage.getItem("fullName")||"";
-    const email=sessionStorage.getItem("email")||"";
-    const summary=buildText();
-    const calUrl="https://cal.eu/danbmwruxley/telephone-appointment?"+new URLSearchParams({name,email,notes:summary}).toString();
-    const payload={
-      name,email,phone:sessionStorage.getItem("phone")||"",postcode:sessionStorage.getItem("postcode")||"",
-      best_time:sessionStorage.getItem("bestTime")||"",lifestyle:sessionStorage.getItem("lifestyle")||"",
-      body_styles:sessionStorage.getItem("bodyStyles")||"",change_timeline:sessionStorage.getItem("timeline")||"",
-      funding_route:sessionStorage.getItem("purchaseType")||"",
-      deposit:sessionStorage.getItem("deposit")?"£"+Number(sessionStorage.getItem("deposit")).toLocaleString("en-GB"):"",
-      monthly_budget:sessionStorage.getItem("monthlyBudget")?"£"+Number(sessionStorage.getItem("monthlyBudget")).toLocaleString("en-GB"):"",
-      annualmileage: sessionStorage.getItem('annualMileage'),
-      cash_budget:sessionStorage.getItem("cashBudget")?"£"+Number(sessionStorage.getItem("cashBudget")).toLocaleString("en-GB"):"",
-      alt_finance:sessionStorage.getItem("altMonthly")?"£"+Number(sessionStorage.getItem("altMonthly")).toLocaleString("en-GB"):"",
-      part_exchange:sessionStorage.getItem("partExchange")||"",current_car:sessionStorage.getItem("currentCar")||"",
-      pxfinance:      sessionStorage.getItem('pxFinance'),
-pxsettlement:   sessionStorage.getItem('pxSettlement'),
-      mileage:sessionStorage.getItem("mileage")||"",online_buyer_quote:sessionStorage.getItem("wbacVal")||"",
-      notes:sessionStorage.getItem("notes")||"",lead_summary:summary,
-      _subject:"DanSells lead — "+name,_replyto:email
-    };
-    sessionStorage.setItem("bookingUrl",calUrl);
-    try{
-      await fetch("https://formspree.io/f/xqewleog",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
-    }catch(e){}
-    window.location.href="thankyou.html";
+  if(isMoney && val) val = Number(val).toLocaleString("en-GB");
+  const d = document.createElement("div");
+  d.className = "summary-item";
+  d.innerHTML = \`<b>\${label}</b><div>\${val}</div>\`;
+  sg.appendChild(d);
+});
+
+function buildText(){
+  return fields.map(([label, key, isMoney]) => {
+    let val = sessionStorage.getItem(key) || "Not given";
+    if(ARRAY_KEYS.has(key)){
+      try { val = JSON.parse(val).join(", ") || "Not given"; } catch(e){}
+    }
+    if(isMoney && sessionStorage.getItem(key)){
+      val = Number(sessionStorage.getItem(key)).toLocaleString("en-GB");
+    }
+    return \`\${label}: \${val}\`;
+  }).join("\n");
+}
+
+async function submit(){
+  const btn     = document.getElementById("sb");
+  btn.textContent = "Sending...";
+  btn.disabled  = true;
+
+  const name    = sessionStorage.getItem("fullName");
+  const email   = sessionStorage.getItem("email");
+  const summary = buildText();
+
+  const calUrl = "https://cal.eu/danbmwruxley/telephone-appointment?" +
+    new URLSearchParams({name, email, notes: summary}).toString();
+
+  // Helper: parse array keys nicely
+  function arrVal(key){
+    try { return JSON.parse(sessionStorage.getItem(key)||"[]").join(", "); }
+    catch(e){ return ""; }
   }
-</script></body></html>
+
+  const payload = {
+    name,
+    email,
+    phone:           sessionStorage.getItem("phone"),
+    postcode:        sessionStorage.getItem("postcode"),
+    besttime:        sessionStorage.getItem("bestTime"),
+    lifestyle:       sessionStorage.getItem("lifestyle"),
+    bodystyles:      sessionStorage.getItem("bodyStyles"),
+    changetimeline:  sessionStorage.getItem("timeline"),
+    fundingroute:    sessionStorage.getItem("purchaseType"),
+    deposit:         sessionStorage.getItem("deposit")       ? Number(sessionStorage.getItem("deposit")).toLocaleString("en-GB")       : "",
+    monthlybudget:   sessionStorage.getItem("monthlyBudget") ? Number(sessionStorage.getItem("monthlyBudget")).toLocaleString("en-GB") : "",
+    annualmileage:   sessionStorage.getItem("annualMileage"),
+    cashbudget:      sessionStorage.getItem("cashBudget")    ? Number(sessionStorage.getItem("cashBudget")).toLocaleString("en-GB")    : "",
+    altfinance:      sessionStorage.getItem("altMonthly")    ? Number(sessionStorage.getItem("altMonthly")).toLocaleString("en-GB")    : "",
+    partexchange:    sessionStorage.getItem("partExchange"),
+    currentcar:      sessionStorage.getItem("currentCar"),
+    pxfinance:       sessionStorage.getItem("pxFinance"),
+    pxsettlement:    sessionStorage.getItem("pxSettlement"),
+    mileage:         sessionStorage.getItem("mileage"),
+    onlinebuyerquote:sessionStorage.getItem("wbacVal"),
+    notes:           sessionStorage.getItem("notes"),
+    // ── NEW spec fields ──
+    colours:         arrVal("specColours"),
+    trim:            sessionStorage.getItem("specTrim") || "",
+    spec_needs:      arrVal("specNeeds"),
+    spec_wants:      arrVal("specWants"),
+    spec_bypass:     sessionStorage.getItem("specBypass") || "",
+    // ── meta ──
+    leadsummary:     summary,
+    subject:         \`DanSells lead \${name}\`,
+    replyto:         email
+  };
+
+  sessionStorage.setItem("bookingUrl", calUrl);
+
+  try {
+    await fetch("https://formspree.io/f/xqewleog", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch(e){}
+
+  window.location.href = "thankyou.html";
+}
+</script>
+</body>
+</html>
