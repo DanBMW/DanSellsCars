@@ -6,218 +6,100 @@
 <title>DanSells | Colour &amp; Spec</title>
 <link rel="stylesheet" href="style.css"/>
 <style>
-/* ─── Section label ─────────────────────────────── */
-.sec-label{
-  font-size:.72rem;font-weight:700;letter-spacing:.09em;
-  text-transform:uppercase;color:#a8c8f0;margin-bottom:12px;
-}
-/* ─── Bypass card ───────────────────────────────── */
-.bypass-card{
-  display:flex;align-items:center;gap:14px;
-  padding:16px 20px;border-radius:18px;
-  background:rgba(255,255,255,.04);
-  border:2px solid rgba(255,255,255,.08);
-  cursor:pointer;margin-bottom:24px;
-  transition:border-color .18s,background .18s;
-  -webkit-tap-highlight-color:transparent;
-}
+.sec-label{font-size:.72rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#a8c8f0;margin-bottom:12px;}
+.bypass-card{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:18px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.08);cursor:pointer;margin-bottom:24px;transition:border-color .18s,background .18s;-webkit-tap-highlight-color:transparent;}
 .bypass-card:hover{border-color:rgba(74,144,217,.5);background:rgba(28,107,186,.07);}
-.bypass-card.on{border-color:rgba(74,144,217,.8);background:rgba(28,107,186,.15);
-  box-shadow:0 0 0 1px rgba(74,144,217,.25);}
+.bypass-card.on{border-color:rgba(74,144,217,.8);background:rgba(28,107,186,.15);box-shadow:0 0 0 1px rgba(74,144,217,.25);}
 .bypass-icon{font-size:1.5rem;flex-shrink:0;line-height:1;}
-.bypass-text strong{display:block;font-size:.95rem;font-weight:700;
-  color:var(--text);margin-bottom:2px;}
+.bypass-text strong{display:block;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:2px;}
 .bypass-text span{font-size:.82rem;color:var(--muted);}
-
-/* ─── Divider ───────────────────────────────────── */
 .spec-divider{height:1px;background:rgba(255,255,255,.07);margin:22px 0;}
-
-/* ─── Colour grid ───────────────────────────────── */
-.colour-grid{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(0,1fr));
-  gap:9px;margin-bottom:8px;
-}
+.colour-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:8px;}
 @media(max-width:480px){.colour-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
 @media(max-width:360px){.colour-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
-.cswatch{
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  padding:11px 6px 9px;border-radius:14px;
-  background:rgba(255,255,255,.04);
-  border:2px solid rgba(255,255,255,.07);
-  cursor:pointer;font-size:.75rem;font-weight:600;
-  color:#9aaec4;text-align:center;
-  transition:border-color .17s,background .17s,transform .14s;
-  -webkit-tap-highlight-color:transparent;
-  user-select:none;
-}
+.cswatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 6px 9px;border-radius:14px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.07);cursor:pointer;font-size:.75rem;font-weight:600;color:#9aaec4;text-align:center;transition:border-color .17s,background .17s,transform .14s;-webkit-tap-highlight-color:transparent;user-select:none;}
 .cswatch:hover{border-color:rgba(74,144,217,.4);background:rgba(28,107,186,.08);transform:translateY(-2px);}
-.cswatch.on{border-color:rgba(74,144,217,.85);background:rgba(28,107,186,.16);
-  color:var(--text);box-shadow:0 0 0 1px rgba(74,144,217,.22);}
-.cdot{
-  width:28px;height:28px;border-radius:50%;flex-shrink:0;
-  border:2px solid rgba(255,255,255,.12);
-}
+.cswatch.on{border-color:rgba(74,144,217,.85);background:rgba(28,107,186,.16);color:var(--text);box-shadow:0 0 0 1px rgba(74,144,217,.22);}
+.cdot{width:28px;height:28px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.12);}
 .cswatch.on .cdot{border-color:rgba(74,144,217,.55);}
-
-/* ─── Trim grid ─────────────────────────────────── */
-.trim-grid{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px;margin-bottom:6px;
-}
+.trim-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px;}
 @media(max-width:480px){.trim-grid{grid-template-columns:1fr;}}
-.trim-card{
-  padding:14px 16px;border-radius:16px;
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.08);
-  cursor:pointer;
-  transition:border-color .17s,background .17s,transform .14s;
-  -webkit-tap-highlight-color:transparent;
-}
+.trim-card{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:border-color .17s,background .17s,transform .14s;-webkit-tap-highlight-color:transparent;}
 .trim-card:hover{border-color:rgba(74,144,217,.45);background:rgba(28,107,186,.08);transform:translateY(-2px);}
-.trim-card.on{border-color:rgba(74,144,217,.75);background:rgba(28,107,186,.14);
-  box-shadow:0 0 0 1px rgba(74,144,217,.2);}
+.trim-card.on{border-color:rgba(74,144,217,.75);background:rgba(28,107,186,.14);box-shadow:0 0 0 1px rgba(74,144,217,.2);}
 .trim-title{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:3px;}
 .trim-desc{font-size:.77rem;color:var(--muted);line-height:1.4;}
-
-/* ─── Feature chips (pool) ──────────────────────── */
-.chip-pool{
-  display:flex;flex-wrap:wrap;gap:8px;
-  min-height:46px;padding:2px 0;margin-bottom:4px;
-}
-.fchip{
-  padding:8px 13px;border-radius:999px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.09);
-  font-size:.83rem;font-weight:600;color:#c4d2e4;
-  cursor:grab;
-  transition:background .15s,border-color .15s,transform .14s,opacity .15s;
-  touch-action:none;
-  user-select:none;-webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-}
+.chip-pool{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:2px 0;margin-bottom:4px;}
+.fchip{padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);font-size:.83rem;font-weight:600;color:#c4d2e4;cursor:grab;transition:background .15s,border-color .15s,transform .14s,opacity .15s;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
 .fchip:active{cursor:grabbing;}
 .fchip:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.18);}
 .fchip.dragging{opacity:.35;transform:scale(.94);}
-.fchip.ghost{
-  position:fixed;pointer-events:none;z-index:9999;
-  padding:8px 13px;border-radius:999px;
-  background:rgba(28,107,186,.4);border:1px solid rgba(74,144,217,.6);
-  font-size:.83rem;font-weight:600;color:#d4e6f8;
-  white-space:nowrap;opacity:.9;transform:scale(1.06);
-}
-/* chips sitting inside a zone get remove cursor */
+.fchip.ghost{position:fixed;pointer-events:none;z-index:9999;padding:8px 13px;border-radius:999px;background:rgba(28,107,186,.4);border:1px solid rgba(74,144,217,.6);font-size:.83rem;font-weight:600;color:#d4e6f8;white-space:nowrap;opacity:.9;transform:scale(1.06);}
 .fchip.in-zone{cursor:pointer;}
-
-/* ─── Drop zones ────────────────────────────────── */
 .zones-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
-.zone-wrap{}
-.zone-label{
-  font-size:.72rem;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;margin-bottom:7px;
-}
+.zone-label{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;}
 .zone-label.needs{color:#3aaa6a;}
 .zone-label.wants{color:#c9a84c;}
-.drop-zone{
-  min-height:78px;border-radius:16px;
-  border:2px dashed rgba(255,255,255,.12);
-  background:rgba(255,255,255,.025);
-  padding:10px;
-  display:flex;flex-wrap:wrap;align-content:flex-start;gap:7px;
-  transition:border-color .17s,background .17s;
-  position:relative;
-}
-.drop-zone.over{
-  border-color:rgba(74,144,217,.6);
-  background:rgba(28,107,186,.09);
-}
-.zone-empty{
-  position:absolute;inset:0;display:flex;align-items:center;
-  justify-content:center;pointer-events:none;
-  font-size:.8rem;color:rgba(255,255,255,.18);
-}
-
-/* ─── Mobile tap hint ───────────────────────────── */
-.tap-hint{
-  font-size:.75rem;color:rgba(255,255,255,.28);
-  margin-top:6px;line-height:1.5;display:none;
-}
+.drop-zone{min-height:78px;border-radius:16px;border:2px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.025);padding:10px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:7px;transition:border-color .17s,background .17s;position:relative;}
+.drop-zone.over{border-color:rgba(74,144,217,.6);background:rgba(28,107,186,.09);}
+.zone-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:.8rem;color:rgba(255,255,255,.18);}
+.tap-hint{font-size:.75rem;color:rgba(255,255,255,.28);margin-top:6px;line-height:1.5;display:none;}
 .drag-hint{font-size:.75rem;color:rgba(255,255,255,.28);margin-top:6px;}
-@media(hover:none),(max-width:700px){
-  .tap-hint{display:block;}
-  .drag-hint{display:none;}
-}
-/* pending-select highlight on zones */
-.drop-zone.tap-ready{
-  border-color:rgba(74,144,217,.5);
-  background:rgba(28,107,186,.07);
-  cursor:pointer;
-}
+@media(hover:none),(max-width:700px){.tap-hint{display:block;}.drag-hint{display:none;}}
+.drop-zone.tap-ready{border-color:rgba(74,144,217,.5);background:rgba(28,107,186,.07);cursor:pointer;}
 </style>
-<!-- GA -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 </head>
 <body>
 <div class="app"><div class="shell">
-
-  <!-- Top bar -->
   <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Powered by BMW Ruxley</span>
-    </div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
     <div class="meta"><span class="dot"></span><span>Step 8 of 12</span></div>
   </div>
-
-  <!-- Progress -->
   <div class="progress-wrap">
     <div class="progress-row"><span>Step 8 of 12</span><span>Under 2 minutes</span></div>
     <div class="progress-track"><div class="progress-fill" style="width:67%"></div></div>
   </div>
-
-  <!-- Content -->
   <div class="step-wrap">
     <div class="step-kicker">Colour &amp; Spec</div>
     <h2>What matters to you in the car?</h2>
     <p class="step-desc">Takes less than a minute. The more you share, the closer I can get to the right car first time.</p>
 
-    <!-- ── BYPASS ───────────────────────────────── -->
+    <!-- COLOUR — always visible, always required -->
+    <div class="sec-label">Preferred colour(s) — tick all you'd be happy with</div>
+    <div class="colour-grid" id="colourGrid">
+      <div class="cswatch" data-val="White"  onclick="toggleColour(this)"><div class="cdot" style="background:#f0f0f0;"></div>White</div>
+      <div class="cswatch" data-val="Black"  onclick="toggleColour(this)"><div class="cdot" style="background:#111;"></div>Black</div>
+      <div class="cswatch" data-val="Silver" onclick="toggleColour(this)"><div class="cdot" style="background:linear-gradient(135deg,#b8b8b8,#e2e2e2);"></div>Silver</div>
+      <div class="cswatch" data-val="Grey"   onclick="toggleColour(this)"><div class="cdot" style="background:#666;"></div>Grey</div>
+      <div class="cswatch" data-val="Blue"   onclick="toggleColour(this)"><div class="cdot" style="background:#1c4f9c;"></div>Blue</div>
+      <div class="cswatch" data-val="Red"    onclick="toggleColour(this)"><div class="cdot" style="background:#b71c1c;"></div>Red</div>
+      <div class="cswatch" data-val="Green"  onclick="toggleColour(this)"><div class="cdot" style="background:#1b5e20;"></div>Green</div>
+      <div class="cswatch" data-val="Brown"  onclick="toggleColour(this)"><div class="cdot" style="background:#795548;"></div>Brown</div>
+      <div class="cswatch" data-val="Orange" onclick="toggleColour(this)"><div class="cdot" style="background:#d84315;"></div>Orange</div>
+      <div class="cswatch" data-val="Yellow" onclick="toggleColour(this)"><div class="cdot" style="background:#c8b400;"></div>Yellow</div>
+      <div class="cswatch" data-val="Open to any" onclick="toggleColour(this)" style="grid-column:span 2;flex-direction:row;justify-content:center;padding:10px 14px;gap:10px;">
+        <div class="cdot" style="background:conic-gradient(red,yellow,lime,aqua,blue,magenta,red);flex-shrink:0;"></div>
+        <span>Open to any</span>
+      </div>
+    </div>
+    <p class="hint" style="margin-bottom:20px;">Select all you'd accept. Tap "Open to any" if colour doesn't matter.</p>
+
+    <div class="spec-divider"></div>
+
+    <!-- BYPASS — sits after colour, only hides trim & features -->
     <div class="bypass-card" id="bypassCard" onclick="toggleBypass()">
       <div class="bypass-icon">✅</div>
       <div class="bypass-text">
-        <strong>I'm happy with standard specification</strong>
-        <span>Skip this section — any clean, well-priced car works for me.</span>
+        <strong>I'm happy with standard trim &amp; spec</strong>
+        <span>Skip trim &amp; feature preferences — colour above is all I need to share.</span>
       </div>
     </div>
 
-    <!-- ── DETAIL (hidden when bypass active) ───── -->
+    <!-- TRIM + FEATURES — hidden when bypass active -->
     <div id="specDetail">
-
-      <!-- COLOUR -->
-      <div class="sec-label">Preferred colour(s) — tick all you'd be happy with</div>
-      <div class="colour-grid" id="colourGrid">
-        <div class="cswatch" data-val="White"  onclick="toggleColour(this)"><div class="cdot" style="background:#f0f0f0;"></div>White</div>
-        <div class="cswatch" data-val="Black"  onclick="toggleColour(this)"><div class="cdot" style="background:#111;"></div>Black</div>
-        <div class="cswatch" data-val="Silver" onclick="toggleColour(this)"><div class="cdot" style="background:linear-gradient(135deg,#b8b8b8,#e2e2e2);"></div>Silver</div>
-        <div class="cswatch" data-val="Grey"   onclick="toggleColour(this)"><div class="cdot" style="background:#666;"></div>Grey</div>
-        <div class="cswatch" data-val="Blue"   onclick="toggleColour(this)"><div class="cdot" style="background:#1c4f9c;"></div>Blue</div>
-        <div class="cswatch" data-val="Red"    onclick="toggleColour(this)"><div class="cdot" style="background:#b71c1c;"></div>Red</div>
-        <div class="cswatch" data-val="Green"  onclick="toggleColour(this)"><div class="cdot" style="background:#1b5e20;"></div>Green</div>
-        <div class="cswatch" data-val="Brown"  onclick="toggleColour(this)"><div class="cdot" style="background:#795548;"></div>Brown</div>
-        <div class="cswatch" data-val="Orange" onclick="toggleColour(this)"><div class="cdot" style="background:#d84315;"></div>Orange</div>
-        <div class="cswatch" data-val="Yellow" onclick="toggleColour(this)"><div class="cdot" style="background:#c8b400;"></div>Yellow</div>
-        <div class="cswatch" data-val="Open to any" onclick="toggleColour(this)" style="grid-column:span 2;flex-direction:row;justify-content:center;padding:10px 14px;">
-          <div class="cdot" style="background:conic-gradient(red,yellow,lime,aqua,blue,magenta,red);"></div>
-          <span>Open to any</span>
-        </div>
-      </div>
-      <p class="hint" style="margin-bottom:20px;">Select all that work. Leave blank if you have no preference.</p>
-
-      <div class="spec-divider"></div>
-
-      <!-- TRIM -->
-      <div class="sec-label" style="margin-top:18px;">Trim level preference</div>
+      <div class="sec-label">Trim level preference</div>
       <div class="trim-grid" id="trimGrid">
         <div class="trim-card" data-val="Standard / SE" onclick="pickTrim(this)">
           <div class="trim-title">Standard / SE</div>
@@ -243,333 +125,172 @@
 
       <div class="spec-divider"></div>
 
-      <!-- FEATURES DRAG & DROP -->
       <div class="sec-label" style="margin-top:18px;">Features — sort into Needs &amp; Wants</div>
-      <p class="drag-hint" style="margin-bottom:10px;">Drag a feature chip into the <strong style="color:#3aaa6a;">Needs</strong> or <strong style="color:#c9a84c;">Wants</strong> bucket. Tap a chip in a bucket to move it back.</p>
-      <p class="tap-hint" style="margin-bottom:10px;">Tap a feature, then tap <strong style="color:#3aaa6a;">Need it</strong> or <strong style="color:#c9a84c;">Want it</strong> to place it. Tap a placed chip to remove it.</p>
+      <p class="drag-hint" style="margin-bottom:10px;">Drag a chip into <strong style="color:#3aaa6a;">Needs</strong> or <strong style="color:#c9a84c;">Wants</strong>. Tap a placed chip to return it to the pool.</p>
+      <p class="tap-hint" style="margin-bottom:10px;">Tap a feature then tap <strong style="color:#3aaa6a;">Need it</strong> or <strong style="color:#c9a84c;">Want it</strong>. Tap a placed chip to remove it.</p>
 
-      <!-- Pool -->
       <div class="chip-pool" id="chipPool"></div>
 
-      <!-- Zones -->
       <div class="zones-row">
-        <div class="zone-wrap">
+        <div>
           <div class="zone-label needs">✅ Needs <small style="font-weight:400;opacity:.6;">(must-haves)</small></div>
-          <div class="drop-zone" id="needsZone"
-               ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'needs')">
+          <div class="drop-zone" id="needsZone" ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'needs')">
             <div class="zone-empty" id="needsEmpty">Drop here</div>
           </div>
         </div>
-        <div class="zone-wrap">
+        <div>
           <div class="zone-label wants">⭐ Wants <small style="font-weight:400;opacity:.6;">(nice to have)</small></div>
-          <div class="drop-zone" id="wantsZone"
-               ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'wants')">
+          <div class="drop-zone" id="wantsZone" ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'wants')">
             <div class="zone-empty" id="wantsEmpty">Drop here</div>
           </div>
         </div>
       </div>
-      <p class="hint" style="margin-top:8px;">Leave a chip in the pool if it doesn't matter. No pressure to fill both buckets.</p>
+      <p class="hint" style="margin-top:8px;">Leave a chip in the pool if it doesn't matter.</p>
+    </div>
 
-    </div><!-- /specDetail -->
-
-    <!-- NAV -->
     <div class="nav" style="margin-top:28px;">
       <a class="btn-ghost" href="step5.html">&larr; Back</a>
       <button class="btn" onclick="go()">Continue &rarr;</button>
     </div>
   </div>
-
 </div></div>
 
 <script>
-/* ══════════════════════════════════════════════════
-   STATE
-══════════════════════════════════════════════════ */
-const FEATURES = [
-  "Navigation","Heated seats","Panoramic roof","Reversing camera",
-  "Parking sensors","Cruise control","Apple CarPlay","Android Auto",
-  "Leather seats","Heated steering wheel","Keyless entry",
-  "Wireless charging","Head-up display","Tow bar",
-  "Premium sound system","Electric tailgate","Driving assist pack",
-  "Ventilated seats","Adaptive headlights","360° camera"
-];
+const FEATURES=["Navigation","Heated seats","Panoramic roof","Reversing camera","Parking sensors","Cruise control","Apple CarPlay","Android Auto","Leather seats","Heated steering wheel","Keyless entry","Wireless charging","Head-up display","Tow bar","Premium sound system","Electric tailgate","Driving assist pack","Ventilated seats","Adaptive headlights","360° camera"];
+let colours=[],trim="",bypass=false,needs=[],wants=[];
+let dragSpec=null,touchChip=null,ghostEl=null,tx0=0,ty0=0,tapPending=null;
 
-let colours  = [];
-let trim     = "";
-let bypass   = false;
-let needs    = [];
-let wants    = [];
-
-/* ══════════════════════════════════════════════════
-   RESTORE FROM sessionStorage
-══════════════════════════════════════════════════ */
 (function restore(){
-  bypass = sessionStorage.getItem("specBypass") === "true";
-  try { colours = JSON.parse(sessionStorage.getItem("specColours")||"[]"); } catch(e){}
-  trim   = sessionStorage.getItem("specTrim") || "";
-  try { needs  = JSON.parse(sessionStorage.getItem("specNeeds") ||"[]"); } catch(e){}
-  try { wants  = JSON.parse(sessionStorage.getItem("specWants") ||"[]"); } catch(e){}
-
-  if(bypass){
-    document.getElementById("bypassCard").classList.add("on");
-    document.getElementById("specDetail").style.display = "none";
-  }
-
-  // restore colour swatches
-  document.querySelectorAll(".cswatch").forEach(s=>{
-    if(colours.includes(s.dataset.val)) s.classList.add("on");
-  });
-  // restore trim
-  document.querySelectorAll(".trim-card").forEach(c=>{
-    if(c.dataset.val === trim) c.classList.add("on");
-  });
+  bypass=sessionStorage.getItem("specBypass")==="true";
+  try{colours=JSON.parse(sessionStorage.getItem("specColours")||"[]");}catch(e){}
+  trim=sessionStorage.getItem("specTrim")||"";
+  try{needs=JSON.parse(sessionStorage.getItem("specNeeds")||"[]");}catch(e){}
+  try{wants=JSON.parse(sessionStorage.getItem("specWants")||"[]");}catch(e){}
+  document.querySelectorAll(".cswatch").forEach(s=>{if(colours.includes(s.dataset.val))s.classList.add("on");});
+  if(bypass){document.getElementById("bypassCard").classList.add("on");document.getElementById("specDetail").style.display="none";}
+  document.querySelectorAll(".trim-card").forEach(c=>{if(c.dataset.val===trim)c.classList.add("on");});
 })();
 
-/* ══════════════════════════════════════════════════
-   BYPASS
-══════════════════════════════════════════════════ */
 function toggleBypass(){
-  bypass = !bypass;
-  document.getElementById("bypassCard").classList.toggle("on", bypass);
-  document.getElementById("specDetail").style.display = bypass ? "none" : "block";
+  bypass=!bypass;
+  document.getElementById("bypassCard").classList.toggle("on",bypass);
+  document.getElementById("specDetail").style.display=bypass?"none":"block";
 }
 
-/* ══════════════════════════════════════════════════
-   COLOURS
-══════════════════════════════════════════════════ */
 function toggleColour(el){
-  if(bypass) return;
-  const v = el.dataset.val;
-  if(v === "Open to any"){
-    const alreadyOn = el.classList.contains("on");
-    document.querySelectorAll(".cswatch").forEach(s => s.classList.remove("on"));
-    if(!alreadyOn){ el.classList.add("on"); colours = ["Open to any"]; }
-    else colours = [];
+  const v=el.dataset.val;
+  if(v==="Open to any"){
+    const on=el.classList.contains("on");
+    document.querySelectorAll(".cswatch").forEach(s=>s.classList.remove("on"));
+    if(!on){el.classList.add("on");colours=["Open to any"];}else colours=[];
     return;
   }
-  // deselect "Open to any"
-  document.querySelectorAll(".cswatch[data-val='Open to any']").forEach(s => s.classList.remove("on"));
-  colours = colours.filter(c => c !== "Open to any");
+  document.querySelectorAll(".cswatch[data-val='Open to any']").forEach(s=>s.classList.remove("on"));
+  colours=colours.filter(c=>c!=="Open to any");
   el.classList.toggle("on");
-  if(el.classList.contains("on")){ if(!colours.includes(v)) colours.push(v); }
-  else colours = colours.filter(c => c !== v);
+  if(el.classList.contains("on")){if(!colours.includes(v))colours.push(v);}
+  else colours=colours.filter(c=>c!==v);
 }
 
-/* ══════════════════════════════════════════════════
-   TRIM
-══════════════════════════════════════════════════ */
 function pickTrim(el){
-  if(bypass) return;
-  document.querySelectorAll(".trim-card").forEach(c => c.classList.remove("on"));
-  el.classList.add("on");
-  trim = el.dataset.val;
+  document.querySelectorAll(".trim-card").forEach(c=>c.classList.remove("on"));
+  el.classList.add("on");trim=el.dataset.val;
 }
 
-/* ══════════════════════════════════════════════════
-   CHIP POOL + ZONES — render
-══════════════════════════════════════════════════ */
-function renderAll(){
-  renderPool();
-  renderZone("needsZone","needsEmpty", needs, "needs");
-  renderZone("wantsZone","wantsEmpty", wants, "wants");
-}
-
+function renderAll(){renderPool();renderZone("needsZone","needsEmpty",needs,"needs");renderZone("wantsZone","wantsEmpty",wants,"wants");}
 function renderPool(){
-  const pool = document.getElementById("chipPool");
-  pool.innerHTML = "";
-  FEATURES.forEach(f => {
-    if(needs.includes(f) || wants.includes(f)) return;
-    pool.appendChild(makeChip(f, "pool"));
-  });
+  const pool=document.getElementById("chipPool");pool.innerHTML="";
+  FEATURES.forEach(f=>{if(needs.includes(f)||wants.includes(f))return;pool.appendChild(makeChip(f,"pool"));});
 }
-
-function renderZone(zoneId, emptyId, arr, bucket){
-  const zone  = document.getElementById(zoneId);
-  const empty = document.getElementById(emptyId);
-  // remove old chips
-  [...zone.querySelectorAll(".fchip")].forEach(c => c.remove());
-  empty.style.display = arr.length ? "none" : "flex";
-  arr.forEach(f => zone.appendChild(makeChip(f, bucket)));
+function renderZone(zoneId,emptyId,arr,bucket){
+  const zone=document.getElementById(zoneId),empty=document.getElementById(emptyId);
+  [...zone.querySelectorAll(".fchip")].forEach(c=>c.remove());
+  empty.style.display=arr.length?"none":"flex";
+  arr.forEach(f=>zone.appendChild(makeChip(f,bucket)));
 }
-
-/* ══════════════════════════════════════════════════
-   MAKE CHIP — handles desktop drag + touch drag + tap
-══════════════════════════════════════════════════ */
-let dragSpec   = null;  // spec string being dragged (desktop)
-let touchChip  = null;  // chip el being touch-dragged
-let ghostEl    = null;  // floating ghost clone
-let tx0 = 0, ty0 = 0;  // touch start coords
-let tapPending = null;  // spec string awaiting zone tap (mobile tap flow)
-
-function makeChip(spec, loc){
-  const chip = document.createElement("div");
-  chip.className = "fchip" + (loc !== "pool" ? " in-zone" : "");
-  chip.textContent = spec;
-  chip.dataset.spec = spec;
-  chip.draggable = true;
-
-  /* ── desktop drag ── */
-  chip.addEventListener("dragstart", e => {
-    dragSpec = spec;
-    requestAnimationFrame(()=> chip.classList.add("dragging"));
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", spec);
-  });
-  chip.addEventListener("dragend", () => {
-    chip.classList.remove("dragging");
-    dragSpec = null;
-  });
-
-  /* ── touch drag ── */
-  chip.addEventListener("touchstart", onTouchStart, {passive:true});
-  chip.addEventListener("touchmove",  onTouchMove,  {passive:false});
-  chip.addEventListener("touchend",   onTouchEnd,   {passive:true});
-
-  /* ── click: remove from zone, OR start tap-assign from pool ── */
-  chip.addEventListener("click", () => {
-    if(loc === "needs" || loc === "wants"){
-      // remove back to pool
-      needs = needs.filter(s=>s!==spec);
-      wants = wants.filter(s=>s!==spec);
-      renderAll();
-      return;
-    }
-    // pool chip — start tap flow
-    if(tapPending === spec){ cancelTap(); return; }  // second tap = cancel
-    if(tapPending) cancelTap();
-    tapPending = spec;
-    // highlight zones
+function makeChip(spec,loc){
+  const chip=document.createElement("div");
+  chip.className="fchip"+(loc!=="pool"?" in-zone":"");
+  chip.textContent=spec;chip.dataset.spec=spec;chip.draggable=true;
+  chip.addEventListener("dragstart",e=>{dragSpec=spec;requestAnimationFrame(()=>chip.classList.add("dragging"));e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",spec);});
+  chip.addEventListener("dragend",()=>{chip.classList.remove("dragging");dragSpec=null;});
+  chip.addEventListener("touchstart",onTouchStart,{passive:true});
+  chip.addEventListener("touchmove",onTouchMove,{passive:false});
+  chip.addEventListener("touchend",onTouchEnd,{passive:true});
+  chip.addEventListener("click",()=>{
+    if(loc==="needs"||loc==="wants"){needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);renderAll();return;}
+    if(tapPending===spec){cancelTap();return;}
+    if(tapPending)cancelTap();
+    tapPending=spec;
     document.getElementById("needsZone").classList.add("tap-ready");
     document.getElementById("wantsZone").classList.add("tap-ready");
-    document.getElementById("needsZone").addEventListener("click", tapNeeds);
-    document.getElementById("wantsZone").addEventListener("click", tapWants);
-    chip.style.border = "2px solid rgba(74,144,217,.7)";
-    chip.style.background = "rgba(28,107,186,.2)";
+    document.getElementById("needsZone").addEventListener("click",tapNeeds);
+    document.getElementById("wantsZone").addEventListener("click",tapWants);
+    chip.style.border="2px solid rgba(74,144,217,.7)";chip.style.background="rgba(28,107,186,.2)";
   });
-
   return chip;
 }
-
-function tapNeeds(){ assignTap("needs"); }
-function tapWants(){ assignTap("wants"); }
+function tapNeeds(){assignTap("needs");}
+function tapWants(){assignTap("wants");}
 function assignTap(bucket){
-  if(!tapPending) return;
-  const spec = tapPending;
-  needs = needs.filter(s=>s!==spec);
-  wants = wants.filter(s=>s!==spec);
-  if(bucket==="needs") needs.push(spec);
-  else                 wants.push(spec);
-  cancelTap();
-  renderAll();
+  if(!tapPending)return;const spec=tapPending;
+  needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);
+  if(bucket==="needs")needs.push(spec);else wants.push(spec);
+  cancelTap();renderAll();
 }
 function cancelTap(){
-  tapPending = null;
+  tapPending=null;
   document.getElementById("needsZone").classList.remove("tap-ready");
   document.getElementById("wantsZone").classList.remove("tap-ready");
-  document.getElementById("needsZone").removeEventListener("click", tapNeeds);
-  document.getElementById("wantsZone").removeEventListener("click", tapWants);
+  document.getElementById("needsZone").removeEventListener("click",tapNeeds);
+  document.getElementById("wantsZone").removeEventListener("click",tapWants);
 }
-
-/* ══════════════════════════════════════════════════
-   DESKTOP DRAG-OVER / DROP
-══════════════════════════════════════════════════ */
-function dzOver(e){
-  e.preventDefault();
-  e.currentTarget.classList.add("over");
+function dzOver(e){e.preventDefault();e.currentTarget.classList.add("over");}
+function dzLeave(e){e.currentTarget.classList.remove("over");}
+function dzDrop(e,bucket){
+  e.preventDefault();e.currentTarget.classList.remove("over");
+  const spec=e.dataTransfer.getData("text/plain")||dragSpec;if(!spec)return;
+  needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);
+  if(bucket==="needs")needs.push(spec);else wants.push(spec);renderAll();
 }
-function dzLeave(e){
-  e.currentTarget.classList.remove("over");
-}
-function dzDrop(e, bucket){
-  e.preventDefault();
-  e.currentTarget.classList.remove("over");
-  const spec = e.dataTransfer.getData("text/plain") || dragSpec;
-  if(!spec) return;
-  needs = needs.filter(s=>s!==spec);
-  wants = wants.filter(s=>s!==spec);
-  if(bucket==="needs") needs.push(spec);
-  else                 wants.push(spec);
-  renderAll();
-}
-
-/* ══════════════════════════════════════════════════
-   TOUCH DRAG
-══════════════════════════════════════════════════ */
-function onTouchStart(e){
-  touchChip = e.currentTarget;
-  tx0 = e.touches[0].clientX;
-  ty0 = e.touches[0].clientY;
-}
+function onTouchStart(e){touchChip=e.currentTarget;tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;}
 function onTouchMove(e){
-  if(!touchChip) return;
-  const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
-  if(!ghostEl){
-    const dx = Math.abs(tx-tx0), dy = Math.abs(ty-ty0);
-    if(dx < 7 && dy < 7) return;   // ignore small wiggles
-    e.preventDefault();
-    ghostEl = document.createElement("div");
-    ghostEl.className = "fchip ghost";
-    ghostEl.textContent = touchChip.dataset.spec;
-    document.body.appendChild(ghostEl);
-    touchChip.classList.add("dragging");
-    cancelTap(); // cancel any pending tap flow
-  } else {
-    e.preventDefault();
-  }
-  ghostEl.style.left = (tx - 44) + "px";
-  ghostEl.style.top  = (ty - 18) + "px";
-  const el = document.elementFromPoint(tx, ty);
-  const nz = document.getElementById("needsZone");
-  const wz = document.getElementById("wantsZone");
-  nz.classList.toggle("over", nz===el || nz.contains(el));
-  wz.classList.toggle("over", wz===el || wz.contains(el));
+  if(!touchChip)return;const tx=e.touches[0].clientX,ty=e.touches[0].clientY;
+  if(!ghostEl){if(Math.abs(tx-tx0)<7&&Math.abs(ty-ty0)<7)return;e.preventDefault();ghostEl=document.createElement("div");ghostEl.className="fchip ghost";ghostEl.textContent=touchChip.dataset.spec;document.body.appendChild(ghostEl);touchChip.classList.add("dragging");cancelTap();}else{e.preventDefault();}
+  ghostEl.style.left=(tx-44)+"px";ghostEl.style.top=(ty-18)+"px";
+  const el=document.elementFromPoint(tx,ty),nz=document.getElementById("needsZone"),wz=document.getElementById("wantsZone");
+  nz.classList.toggle("over",nz===el||nz.contains(el));wz.classList.toggle("over",wz===el||wz.contains(el));
 }
 function onTouchEnd(e){
-  if(ghostEl){ ghostEl.remove(); ghostEl=null; }
-  const nz = document.getElementById("needsZone");
-  const wz = document.getElementById("wantsZone");
-  nz.classList.remove("over");
-  wz.classList.remove("over");
-  if(!touchChip){ return; }
-  const spec = touchChip.dataset.spec;
-  touchChip.classList.remove("dragging");
-  const tx = e.changedTouches[0].clientX, ty = e.changedTouches[0].clientY;
-  const el = document.elementFromPoint(tx, ty);
-  if(nz===el || nz.contains(el)){
-    needs = needs.filter(s=>s!==spec);
-    wants = wants.filter(s=>s!==spec);
-    needs.push(spec);
-    renderAll();
-  } else if(wz===el || wz.contains(el)){
-    needs = needs.filter(s=>s!==spec);
-    wants = wants.filter(s=>s!==spec);
-    wants.push(spec);
-    renderAll();
-  }
-  touchChip = null;
+  if(ghostEl){ghostEl.remove();ghostEl=null;}
+  const nz=document.getElementById("needsZone"),wz=document.getElementById("wantsZone");
+  nz.classList.remove("over");wz.classList.remove("over");
+  if(!touchChip)return;const spec=touchChip.dataset.spec;touchChip.classList.remove("dragging");
+  const tx=e.changedTouches[0].clientX,ty=e.changedTouches[0].clientY,el=document.elementFromPoint(tx,ty);
+  if(nz===el||nz.contains(el)){needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);needs.push(spec);renderAll();}
+  else if(wz===el||wz.contains(el)){needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);wants.push(spec);renderAll();}
+  touchChip=null;
 }
 
-/* ══════════════════════════════════════════════════
-   SAVE + NAVIGATE
-══════════════════════════════════════════════════ */
 function go(){
-  sessionStorage.setItem("specBypass", bypass ? "true" : "false");
+  if(colours.length===0){
+    alert("Please select at least one colour preference, or tap 'Open to any'.");
+    document.getElementById("colourGrid").scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  sessionStorage.setItem("specBypass",bypass?"true":"false");
+  sessionStorage.setItem("specColours",JSON.stringify(colours));
   if(bypass){
-    sessionStorage.setItem("specColours","[]");
     sessionStorage.setItem("specTrim","Happy with standard");
     sessionStorage.setItem("specNeeds","[]");
     sessionStorage.setItem("specWants","[]");
   } else {
-    sessionStorage.setItem("specColours", JSON.stringify(colours));
-    sessionStorage.setItem("specTrim",    trim);
-    sessionStorage.setItem("specNeeds",   JSON.stringify(needs));
-    sessionStorage.setItem("specWants",   JSON.stringify(wants));
+    sessionStorage.setItem("specTrim",trim);
+    sessionStorage.setItem("specNeeds",JSON.stringify(needs));
+    sessionStorage.setItem("specWants",JSON.stringify(wants));
   }
-  window.location.href = "step6.html";
+  window.location.href="step6.html";
 }
-
-/* ── initial render ── */
 renderAll();
 </script>
-</body>
-</html>
+</body></html>
