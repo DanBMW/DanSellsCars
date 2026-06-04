@@ -6,35 +6,34 @@
   <title>BMW Electric Cars in Kent | Dan Sells EVs</title>
   <meta name="description" content="A professional BMW EV landing page for Kent with a savings calculator, business tax summary, and a simple guide to the i4 eDrive40, iX1, iX3, and iX." />
   <link rel="stylesheet" href="style.css" />
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XZL1RF6SV6');
-  </script>
   <style>
     .hero-grid{display:grid;gap:18px}
     @media(min-width:860px){.hero-grid{grid-template-columns:1.05fr .95fr;align-items:start}}
-    .mini{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#7aa7ea;font-weight:800}
-    .subtle{color:#9fb2c8;line-height:1.7}
-    .panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
+    .hero-media{display:grid;gap:12px}
+    .hero-photo{width:100%;border-radius:18px;display:block;object-fit:cover;aspect-ratio:4/3;border:1px solid rgba(255,255,255,.08)}
+    .hero-caption{font-size:.8rem;color:#8f9db1;line-height:1.5}
+    .tabs-wrap{margin-top:22px}
+    .nav-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .nav-tab{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:#dfe8f3;padding:10px 14px;border-radius:999px;font-weight:700;cursor:pointer}
+    .nav-tab.active{background:rgba(28,107,186,.22);border-color:rgba(28,107,186,.35);color:#eef6ff}
+    .panel-section{display:none}
+    .panel-section.active{display:block}
     .cards{display:grid;gap:14px}
     @media(min-width:720px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1040px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px}
     .card h3{margin:8px 0 6px;font-size:1rem;color:#e7edf5}
     .card p{margin:0;color:#9fb2c8;font-size:.88rem;line-height:1.6}
-    .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(28,107,186,.12);border:1px solid rgba(28,107,186,.28);border-radius:999px;padding:6px 12px;font-size:.8rem;font-weight:700;color:#a8c8f0}
-    .story{display:grid;gap:10px;margin-top:14px}
-    .story-item{padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
-    .story-item strong{color:#eff4fa}
+    .mini{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#7aa7ea;font-weight:800}
+    .subtle{color:#9fb2c8;line-height:1.7}
+    .panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
     .calc-shell{display:grid;gap:18px}
     @media(min-width:920px){.calc-shell{grid-template-columns:1.08fr .92fr}}
     .calc-tabs{display:flex;gap:8px;background:rgba(255,255,255,.04);border-radius:14px;padding:5px;margin-bottom:16px}
     .tab{flex:1;border:0;background:transparent;color:#9fb2c8;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer}
     .tab.active{background:rgba(28,107,186,.24);color:#d6ecff}
-    .tab-panel{display:none}.tab-panel.active{display:block}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
     .fields{display:grid;gap:12px}
     @media(min-width:650px){.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .label{display:block;margin-bottom:7px;font-size:.76rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#aeb9ca}
@@ -86,7 +85,7 @@
         <div>
           <div class="badge">&#9889; The i4 eDrive40 changed my mind</div>
           <h1>BMW electric cars for real life in Kent.</h1>
-          <p class="subtle">A professional, customer-facing guide for personal customers and business owners. Compare the BMW i4 eDrive40, iX1, iX3 and iX, see how charging affects running costs, and review the current business tax position in plain English.</p>
+          <p class="subtle">A professional guide for personal customers and business owners. Compare the BMW i4 eDrive40, iX1, iX3 and iX, see how charging affects running costs, and review the current business tax position in plain English.</p>
           <div class="story">
             <div class="story-item"><strong>i4 eDrive40:</strong> the car that changed my mind. Smooth, fast and convincing for drivers who still care about the feel of a car.</div>
             <div class="story-item"><strong>iX1:</strong> the practical choice. Strong everyday usability, clear visibility and family-friendly space.</div>
@@ -94,190 +93,199 @@
           </div>
           <div class="btn-row" style="margin-top:18px">
             <a class="btn" href="#calculator">Use the calculator</a>
-            <a class="btn-ghost" href="#models">See the range</a>
+            <a class="btn-ghost" href="ev-step1.html">Talk to Dan about electric</a>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="mini">Page overview</div>
-          <h2 style="margin-top:8px">Simple, clear and easy to navigate.</h2>
-          <p class="subtle">Use the calculator first. Then review the model cards, business tax summary, environmental note and FAQ. The layout is intentionally restrained so it works well on mobile and still feels polished on desktop.</p>
-          <div class="note">All tax information is general guidance only and should be confirmed with your accountant before you act on it. Rates and allowances are timestamped where shown.</div>
+        <div class="panel hero-media">
+          <img class="hero-photo" src="YOUR_PHOTO_LINK_HERE" alt="Dan with a BMW electric vehicle" />
+          <div class="hero-caption">Replace <strong>YOUR_PHOTO_LINK_HERE</strong> with your actual photo path or URL. Keep this image in the hero so the personal story stays central.</div>
         </div>
-      </div>
-            <div class="section" id="models">
-        <div class="section-kicker">BMW EV range</div>
-        <h2>Four BMW EVs, four different use cases.</h2>
-        <div class="cards">
-          <div class="card">
-            <div class="mini">Driver's choice</div>
-            <h3>BMW i4 eDrive40</h3>
-            <p>The emotional switch. Low, sleek, quick and suited to customers who want a BMW that still feels engaging.</p>
-          </div>
-          <div class="card">
-            <div class="mini">Practical choice</div>
-            <h3>BMW iX1</h3>
-            <p>Compact SUV layout, easy access, everyday space and a strong option for families or busy owners.</p>
-          </div>
-          <div class="card">
-            <div class="mini">Premium SUV</div>
-            <h3>BMW iX3</h3>
-            <p>A larger SUV option for customers who want comfort, space and a more upright driving position.</p>
-          </div>
-          <div class="card">
-            <div class="mini">Flagship</div>
-            <h3>BMW iX</h3>
-            <p>The luxury EV in the line-up, aimed at buyers who want the biggest BMW EV statement.</p>
+      </div>      <div class="tabs-wrap">
+        <div class="nav-tabs" role="tablist" aria-label="BMW EV sections">
+          <button class="nav-tab active" data-section="overview">Overview</button>
+          <button class="nav-tab" data-section="calculator">Calculator</button>
+          <button class="nav-tab" data-section="range">BMW Range</button>
+          <button class="nav-tab" data-section="tax">Business Tax</button>
+          <button class="nav-tab" data-section="faq">FAQ</button>
+        </div>
+
+        <div class="panel-section active" id="overview">
+          <div class="section">
+            <div class="section-kicker">Overview</div>
+            <h2>Simple, clear and easy to navigate.</h2>
+            <p class="subtle">Use the calculator first. Then review the model cards, business tax summary and FAQ. The layout is intentionally restrained so it works well on mobile and still feels polished on desktop.</p>
+            <div class="note">All tax information is general guidance only and should be confirmed with your accountant before you act on it. Rates and allowances are timestamped where shown.</div>
           </div>
         </div>
-      </div>
+                <div class="panel-section" id="calculator">
+          <div class="section">
+            <div class="section-kicker">EV fuel calculator</div>
+            <h2>See what switching could save you.</h2>
+            <div class="calc-shell">
+              <div class="panel">
+                <div class="calc-tabs">
+                  <button class="tab active" data-tab="fuel">Fuel saving</button>
+                  <button class="tab" data-tab="tco">Total cost</button>
+                </div>
 
-      <div class="section" id="calculator">
-        <div class="section-kicker">EV fuel calculator</div>
-        <h2>See what switching could save you.</h2>
-        <div class="calc-shell">
-          <div class="panel">
-            <div class="calc-tabs">
-              <button class="tab active" data-tab="fuel">Fuel saving</button>
-              <button class="tab" data-tab="tco">Total cost</button>
-            </div>
+                <div class="tab-panel active" id="fuel">
+                  <div class="fields two">
+                    <div>
+                      <label class="label">Current fuel type</label>
+                      <select class="input" id="fuelType">
+                        <option>Petrol</option>
+                        <option>Diesel</option>
+                        <option>Hybrid</option>
+                        <option>PHEV</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="label">Engine size</label>
+                      <select class="input" id="engineSize">
+                        <option value="1.0">1.0L</option>
+                        <option value="1.5" selected>1.5L</option>
+                        <option value="2.0">2.0L</option>
+                        <option value="3.0">3.0L</option>
+                        <option value="4.0">4.0L</option>
+                        <option value="5.0">5.0L</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="label">Current fuel price (p/l)</label>
+                      <input class="input" id="fuelPrice" type="number" value="156.8" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Annual mileage</label>
+                      <input class="input" id="annualMileage" type="range" min="4000" max="30000" step="500" value="12000">
+                      <div class="note" id="mileageLabel">12,000 miles</div>
+                    </div>
+                    <div>
+                      <label class="label">Your MPG</label>
+                      <input class="input" id="mpgSlider" type="range" min="20" max="80" step="1" value="45">
+                      <div class="note"><span id="mpgMin">20 mpg</span> &bull; <span id="mpgMax">80 mpg</span> &bull; <span id="mpgHint">Typical for a 1.5L petrol</span></div>
+                    </div>
+                    <div>
+                      <label class="label">EV efficiency (miles/kWh)</label>
+                      <input class="input" id="evEfficiency" type="number" value="3.2" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Home charging rate (p/kWh)</label>
+                      <input class="input" id="homeRate" type="number" value="7.9" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Public charging rate (p/kWh)</label>
+                      <input class="input" id="publicRate" type="number" value="49.0" step="0.1">
+                    </div>
+                  </div>
 
-            <div class="tab-panel active" id="fuel">
-              <div class="fields two">
-                <div>
-                  <label class="label">Current fuel type</label>
-                  <select class="input" id="fuelType">
-                    <option>Petrol</option>
-                    <option>Diesel</option>
-                    <option>Hybrid</option>
-                    <option>PHEV</option>
-                  </select>
+                  <div style="margin-top:14px">
+                    <div class="mini" style="margin-bottom:8px">Where do you usually charge?</div>
+                    <div class="selector" id="chargeSel">
+                      <button class="choice selected" data-mode="home">Mostly at home<small>Lower cost, best for driveway or garage charging.</small></button>
+                      <button class="choice" data-mode="mixed">Mixed charging<small>Use a blend of home and public charging.</small></button>
+                      <button class="choice" data-mode="public">Mostly public<small>Helpful if you cannot charge at home.</small></button>
+                    </div>
+                  </div>
+
+                  <div class="output" style="margin-top:16px">
+                    <div class="row"><span>Annual fuel cost</span><strong id="resFuelCost">—</strong></div>
+                    <div class="row"><span>Annual EV charging cost</span><strong id="resEvCost">—</strong></div>
+                    <div class="row main"><span>Estimated annual saving</span><strong id="resAnnualSaving">—</strong></div>
+                    <div class="row"><span>Estimated monthly saving</span><strong id="resMonthlySaving">—</strong></div>
+                  </div>
+                  <p class="note">The EV figure changes based on where you charge. Home charging is usually the cheapest; public charging can be materially higher. These are indicative estimates only.</p>
                 </div>
-                <div>
-                  <label class="label">Engine size</label>
-                  <select class="input" id="engineSize">
-                    <option value="1.0">1.0L</option>
-                    <option value="1.5" selected>1.5L</option>
-                    <option value="2.0">2.0L</option>
-                    <option value="3.0">3.0L</option>
-                    <option value="4.0">4.0L</option>
-                    <option value="5.0">5.0L</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="label">Current fuel price (p/l)</label>
-                  <input class="input" id="fuelPrice" type="number" value="156.8" step="0.1">
-                </div>
-                <div>
-                  <label class="label">Annual mileage</label>
-                  <input class="input" id="annualMileage" type="range" min="4000" max="30000" step="500" value="12000">
-                  <div class="note" id="mileageLabel">12,000 miles</div>
-                </div>
-                <div>
-                  <label class="label">Your MPG</label>
-                  <input class="input" id="mpgSlider" type="range" min="20" max="80" step="1" value="45">
-                  <div class="note"><span id="mpgMin">20 mpg</span> &bull; <span id="mpgMax">80 mpg</span> &bull; <span id="mpgHint">Typical for a 1.5L petrol</span></div>
-                </div>
-                <div>
-                  <label class="label">EV efficiency (miles/kWh)</label>
-                  <input class="input" id="evEfficiency" type="number" value="3.2" step="0.1">
-                </div>
-                <div>
-                  <label class="label">Home charging rate (p/kWh)</label>
-                  <input class="input" id="homeRate" type="number" value="7.9" step="0.1">
-                </div>
-                <div>
-                  <label class="label">Public charging rate (p/kWh)</label>
-                  <input class="input" id="publicRate" type="number" value="49.0" step="0.1">
+
+                <div class="tab-panel" id="tco">
+                  <div class="fields two">
+                    <div>
+                      <label class="label">Current monthly cost (£)</label>
+                      <input class="input" id="tcoCurrentMonthly" type="number" value="350" step="10">
+                    </div>
+                    <div>
+                      <label class="label">BMW EV monthly cost (£)</label>
+                      <input class="input" id="tcoEvMonthly" type="number" value="450" step="10">
+                    </div>
+                    <div>
+                      <label class="label">Annual mileage</label>
+                      <input class="input" id="tcoMileage" type="number" value="12000" step="500">
+                    </div>
+                    <div>
+                      <label class="label">Fuel price (p/l)</label>
+                      <input class="input" id="tcoFuelPrice" type="number" value="156.8" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Current MPG</label>
+                      <input class="input" id="tcoMpg" type="number" value="40" step="1">
+                    </div>
+                    <div>
+                      <label class="label">EV efficiency (miles/kWh)</label>
+                      <input class="input" id="tcoEff" type="number" value="3.2" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Home charge rate (p/kWh)</label>
+                      <input class="input" id="tcoHome" type="number" value="7.9" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Public charge rate (p/kWh)</label>
+                      <input class="input" id="tcoPublic" type="number" value="49.0" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Charging split (%) home</label>
+                      <input class="input" id="tcoHomeShare" type="range" min="0" max="100" step="5" value="80">
+                      <div class="note"><span id="homeShareLabel">80</span>% home / <span id="publicShareLabel">20</span>% public</div>
+                    </div>
+                    <div>
+                      <label class="label">Servicing saving (£/yr)</label>
+                      <input class="input" id="tcoService" type="number" value="300" step="25">
+                    </div>
+                  </div>
+
+                  <div class="output" style="margin-top:16px">
+                    <div class="row"><span>Current car total (annual)</span><strong id="tcoCurrentTotal">—</strong></div>
+                    <div class="row"><span>BMW EV total (annual)</span><strong id="tcoEvTotal">—</strong></div>
+                    <div class="row main"><span>Annual TCO saving</span><strong id="tcoSaving">—</strong></div>
+                    <div class="row"><span>5-year TCO saving</span><strong id="tco5yr">—</strong></div>
+                  </div>
+                  <p class="note">Includes finance, fuel or charging, and a basic service allowance. It does not include insurance, tyres, or depreciation.</p>
                 </div>
               </div>
 
-              <div style="margin-top:14px">
-                <div class="mini" style="margin-bottom:8px">Where do you usually charge?</div>
-                <div class="selector" id="chargeSel">
-                  <button class="choice selected" data-mode="home">Mostly at home<small>Lower cost, best for driveway or garage charging.</small></button>
-                  <button class="choice" data-mode="mixed">Mixed charging<small>Use a blend of home and public charging.</small></button>
-                  <button class="choice" data-mode="public">Mostly public<small>Helpful if you cannot charge at home.</small></button>
+              <div class="panel">
+                <div class="mini">BMW EV range</div>
+                <h2 style="margin-top:8px">Four models, four use cases.</h2>
+                <div class="cards" style="grid-template-columns:1fr;">
+                  <div class="card"><h3>BMW i4 eDrive40</h3><p>The driver-focused choice for customers who want a lower, more engaging electric BMW.</p></div>
+                  <div class="card"><h3>BMW iX1</h3><p>The practical SUV choice with everyday usability and a family-friendly footprint.</p></div>
+                  <div class="card"><h3>BMW iX3</h3><p>The larger premium SUV choice for comfort, space and a more upright driving position.</p></div>
+                  <div class="card"><h3>BMW iX</h3><p>The flagship electric SUV for buyers who want the biggest BMW EV statement.</p></div>
                 </div>
               </div>
-
-              <div class="output" style="margin-top:16px">
-                <div class="row"><span>Annual fuel cost</span><strong id="resFuelCost">—</strong></div>
-                <div class="row"><span>Annual EV charging cost</span><strong id="resEvCost">—</strong></div>
-                <div class="row main"><span>Estimated annual saving</span><strong id="resAnnualSaving">—</strong></div>
-                <div class="row"><span>Estimated monthly saving</span><strong id="resMonthlySaving">—</strong></div>
-              </div>
-              <p class="note">The EV figure changes based on where you charge. Home charging is usually the cheapest; public charging can be materially higher. These are indicative estimates only.</p>
-            </div>
-                  <div class="tab-panel" id="tco">
-              <div class="fields two">
-                <div>
-                  <label class="label">Current monthly cost (£)</label>
-                  <input class="input" id="tcoCurrentMonthly" type="number" value="350" step="10">
-                </div>
-                <div>
-                  <label class="label">BMW EV monthly cost (£)</label>
-                  <input class="input" id="tcoEvMonthly" type="number" value="450" step="10">
-                </div>
-                <div>
-                  <label class="label">Annual mileage</label>
-                  <input class="input" id="tcoMileage" type="number" value="12000" step="500">
-                </div>
-                <div>
-                  <label class="label">Fuel price (p/l)</label>
-                  <input class="input" id="tcoFuelPrice" type="number" value="156.8" step="0.1">
-                </div>
-                <div>
-                  <label class="label">Current MPG</label>
-                  <input class="input" id="tcoMpg" type="number" value="40" step="1">
-                </div>
-                <div>
-                  <label class="label">EV efficiency (miles/kWh)</label>
-                  <input class="input" id="tcoEff" type="number" value="3.2" step="0.1">
-                </div>
-                <div>
-                  <label class="label">Home charge rate (p/kWh)</label>
-                  <input class="input" id="tcoHome" type="number" value="7.9" step="0.1">
-                </div>
-                <div>
-                  <label class="label">Public charge rate (p/kWh)</label>
-                  <input class="input" id="tcoPublic" type="number" value="49.0" step="0.1">
-                </div>
-                <div>
-                  <label class="label">Charging split (%) home</label>
-                  <input class="input" id="tcoHomeShare" type="range" min="0" max="100" step="5" value="80">
-                  <div class="note"><span id="homeShareLabel">80</span>% home / <span id="publicShareLabel">20</span>% public</div>
-                </div>
-                <div>
-                  <label class="label">Servicing saving (£/yr)</label>
-                  <input class="input" id="tcoService" type="number" value="300" step="25">
-                </div>
-              </div>
-
-              <div class="output" style="margin-top:16px">
-                <div class="row"><span>Current car total (annual)</span><strong id="tcoCurrentTotal">—</strong></div>
-                <div class="row"><span>BMW EV total (annual)</span><strong id="tcoEvTotal">—</strong></div>
-                <div class="row main"><span>Annual TCO saving</span><strong id="tcoSaving">—</strong></div>
-                <div class="row"><span>5-year TCO saving</span><strong id="tco5yr">—</strong></div>
-              </div>
-              <p class="note">Includes finance, fuel or charging, and a basic service allowance. It does not include insurance, tyres, or depreciation.</p>
             </div>
           </div>
-
-          <div class="panel">
-            <div class="mini">Business owners</div>
-            <h2 style="margin-top:8px">Tax summary</h2>
+                </div>
+                <div class="panel-section" id="tax">
+          <div class="section">
+            <div class="section-kicker">Business tax</div>
+            <h2>Tax summary for new electric vehicles.</h2>
             <p class="subtle">For new electric BMWs bought through a business, the headline point is straightforward: 100% first-year allowance can apply to qualifying expenditure, and EV chargepoints may also qualify. Leases are treated separately, so an accountant should confirm the exact treatment for your business.</p>
-            <div class="cards" style="grid-template-columns:1fr;">
+
+            <div class="cards" style="grid-template-columns:1fr; margin-top:16px;">
               <div class="card">
-                <h3>What can usually be done</h3>
-                <p>Purchase a new EV through the business and potentially claim first-year allowance. Lease it and check the business expense treatment. Install an EV charger and check whether it qualifies for allowance as well.</p>
+                <h3>Purchase</h3>
+                <p>Buying a new EV through the business may allow first-year allowance on qualifying expenditure. Confirm the timing and your structure with your accountant.</p>
               </div>
               <div class="card">
-                <h3>Important caveat</h3>
-                <p>This is general information only, not financial advice. The exact result depends on your structure, VAT position, vehicle use and your accountant's guidance.</p>
+                <h3>Leasing</h3>
+                <p>Leases are usually treated differently from purchases, so the tax effect should be checked before you commit.</p>
+              </div>
+              <div class="card">
+                <h3>Chargepoints</h3>
+                <p>Qualifying EV chargepoints may also attract first-year allowance, subject to the current HMRC rules.</p>
               </div>
             </div>
+
             <div style="margin-top:14px">
               <div class="mini">BIK comparison</div>
               <table class="bik-table">
@@ -295,50 +303,63 @@
             </div>
           </div>
         </div>
-      </div>
-            <div class="section">
-        <div class="section-kicker">Environment</div>
-        <h2>Top-line BMW sustainability message</h2>
-        <div class="env">
-          <div class="env-grid">
-            <div class="env-stat"><strong>~12,000</strong><span>miles to carbon break-even versus a petrol equivalent, according to BMW's lifecycle messaging.</span></div>
-            <div class="env-stat"><strong>42%</strong><span>reduction in the battery production footprint in BMW's latest EV manufacturing process.</span></div>
-            <div class="env-stat"><strong>200M</strong><span>tonnes of CO₂ BMW Group aims to avoid by 2030.</span></div>
+
+        <div class="panel-section" id="faq">
+          <div class="section">
+            <div class="section-kicker">FAQ</div>
+            <h2>Short answers to common questions.</h2>
+            <div class="faq">
+              <details>
+                <summary>Do I need home charging?</summary>
+                <p>It helps, but it is not essential. The calculator lets you compare home, mixed and public charging so the saving is realistic.</p>
+              </details>
+              <details>
+                <summary>Is the tax position fixed?</summary>
+                <p>No. The summary is based on current UK guidance, but your accountant should confirm the exact result for your business and vehicle choice.</p>
+              </details>
+              <details>
+                <summary>Which BMW should I look at first?</summary>
+                <p>The i4 eDrive40 if you want the most emotional, driver-focused car. The iX1 if practicality is the priority.</p>
+              </details>
+            </div>
           </div>
-          <p class="note" style="margin-top:14px">BMW's message is straightforward: EVs have a lower carbon footprint over time, especially when driven and charged regularly. The real-world impact still depends on mileage, charging habits and electricity source.</p>
         </div>
-      </div>
-
-      <div class="section">
-        <div class="section-kicker">Charging</div>
-        <h2>Public charging in Kent</h2>
-        <p class="subtle">Most owners will do the majority of charging at home. Public charging matters when you travel, so this map gives a useful starting point.</p>
-        <div class="map">
-          <iframe src="https://map.openchargemap.io/?mode=embedded&latitude=51.2720&longitude=0.5230&zoom=10&country=GB" title="Charging points in Kent" loading="lazy"></iframe>
+                <div class="section">
+          <div class="section-kicker">Environment</div>
+          <h2>Top-line BMW sustainability message.</h2>
+          <div class="env">
+            <div class="env-grid">
+              <div class="env-stat"><strong>~12,000</strong><span>miles to carbon break-even versus a petrol equivalent, according to BMW's lifecycle messaging.</span></div>
+              <div class="env-stat"><strong>42%</strong><span>reduction in the battery production footprint in BMW's latest EV manufacturing process.</span></div>
+              <div class="env-stat"><strong>200M</strong><span>tonnes of CO₂ BMW Group aims to avoid by 2030.</span></div>
+            </div>
+            <p class="note" style="margin-top:14px">BMW's message is straightforward: EVs have a lower carbon footprint over time, especially when driven and charged regularly. The real-world impact still depends on mileage, charging habits and electricity source.</p>
+          </div>
         </div>
-      </div>
 
-      <div class="section">
-        <div class="section-kicker">FAQ</div>
-        <h2>Short answers to common questions</h2>
-        <div class="faq">
-          <details>
-            <summary>Do I need home charging?</summary>
-            <p>It helps, but it is not essential. The calculator lets you compare home, mixed and public charging so the saving is realistic.</p>
-          </details>
-          <details>
-            <summary>Is the tax position fixed?</summary>
-            <p>No. The summary is based on current UK guidance, but your accountant should confirm the exact result for your business and vehicle choice.</p>
-          </details>
-          <details>
-            <summary>Which BMW should I look at first?</summary>
-            <p>The i4 eDrive40 if you want the most emotional, driver-focused car. The iX1 if practicality is the priority.</p>
-          </details>
+        <div class="section">
+          <div class="section-kicker">Charging</div>
+          <h2>Public charging in Kent</h2>
+          <p class="subtle">Most owners will do the majority of charging at home. Public charging matters when you travel, so this map gives a useful starting point.</p>
+          <div class="map">
+            <iframe src="https://map.openchargemap.io/?mode=embedded&latitude=51.2720&longitude=0.5230&zoom=10&country=GB" title="Charging points in Kent" loading="lazy"></iframe>
+          </div>
         </div>
       </div>
     </div>
   </div>
-    <script>
+
+  <script>
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const sections = document.querySelectorAll('.panel-section');
+
+    navTabs.forEach(btn => btn.addEventListener('click', () => {
+      navTabs.forEach(b => b.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.section).classList.add('active');
+    }));
+
     const tabs = document.querySelectorAll('.tab');
     const panels = document.querySelectorAll('.tab-panel');
 
@@ -489,3 +510,5 @@
   </script>
 </body>
 </html>
+        
+      
