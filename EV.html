@@ -1,318 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>BMW Electric Cars Kent | Dan BMW Ruxley</title>
-
-<style>
-
-/* BASE */
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-  background:#0b0f14;
-  color:#e8eef6;
-  scroll-behavior:smooth;
-}
-
-.container{
-  max-width:1150px;
-  margin:auto;
-  padding:30px 20px;
-}
-
-h1{font-size:2.8rem; line-height:1.15;}
-h2{font-size:2rem;}
-p{color:#9fb2c8; line-height:1.7;}
-
-.section{margin-top:80px;}
-
-/* HERO */
-.hero{
-  display:grid;
-  gap:30px;
-}
-
-@media(min-width:900px){
-  .hero{grid-template-columns:1fr 1fr;}
-}
-
-.card{
-  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-  border:1px solid rgba(255,255,255,.08);
-  padding:28px;
-  border-radius:22px;
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-4px);
-}
-
-.btn{
-  display:inline-block;
-  background:#1c6bba;
-  padding:14px 26px;
-  border-radius:999px;
-  text-decoration:none;
-  color:white;
-  font-weight:600;
-}
-
-.btn:hover{
-  background:#2b7ed3;
-}
-
-.btn-ghost{
-  border:1px solid rgba(255,255,255,.2);
-  padding:14px 26px;
-  border-radius:999px;
-  color:white;
-  text-decoration:none;
-  margin-left:10px;
-}
-
-img{width:100%; border-radius:18px;}
-
-.highlight{
-  color:#7dd3fc;
-  font-weight:600;
-}
-
-/* CALCULATOR */
-.calc-box input{
-  width:100%;
-  padding:12px;
-  margin-top:6px;
-  margin-bottom:14px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.1);
-  background:#121821;
-  color:white;
-}
-
-.output{
-  margin-top:16px;
-  padding:16px;
-  background:rgba(28,107,186,.12);
-  border:1px solid rgba(28,107,186,.25);
-  border-radius:16px;
-  font-size:1.05rem;
-}
-
-/* GRID */
-.grid{
-  display:grid;
-  gap:14px;
-}
-@media(min-width:700px){
-  .grid{grid-template-columns:1fr 1fr;}
-}
-
-/* CTA */
-.center{text-align:center;}
-
-.small{
-  font-size:.85rem;
-  color:#9fb2c8;
-}
-
-/* ANIMATION */
-.fade{
-  opacity:0;
-  transform:translateY(20px);
-  transition:0.6s;
-}
-
-.fade.show{
-  opacity:1;
-  transform:translateY(0);
-}
-
-</style>
-
-<script>
-
-/* SCROLL FADE */
-window.addEventListener("scroll",()=>{
-  document.querySelectorAll(".fade").forEach(el=>{
-    if(el.getBoundingClientRect().top < window.innerHeight-100){
-      el.classList.add("show");
-    }
-  });
-});
-
-/* CALCULATOR */
-function calc(){
-  let miles = document.getElementById("miles").value;
-  let mpg = document.getElementById("mpg").value;
-  let fuel = document.getElementById("fuel").value;
-
-  let litres = miles / mpg * 4.546;
-  let fuelCost = litres * fuel / 100;
-  let evCost = miles / 3.2 * 0.08;
-
-  let saving = fuelCost - evCost;
-
-  document.getElementById("output").innerHTML =
-    "Annual fuel: £" + Math.round(fuelCost) +
-    "<br>EV charging: £" + Math.round(evCost) +
-    "<br><strong class='highlight'>Saving: £" + Math.round(saving) + "</strong>";
-}
-
-</script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMW Electric Cars in Kent | Dan Sells EVs</title>
+  <meta name="description" content="BMW EV guide for Kent with a simple and advanced savings calculator, business tax summary and Dan's personal i4 eDrive40 story." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .hero-grid{display:grid;gap:18px}
+    @media(min-width:860px){.hero-grid{grid-template-columns:1.05fr .95fr;align-items:start}}
+    .hero-photo{width:100%;border-radius:18px;display:block;object-fit:cover;aspect-ratio:4/3;border:1px solid rgba(255,255,255,.08)}
+    .hero-caption{font-size:.8rem;color:#8f9db1;line-height:1.5}
+    .tabs-wrap{margin-top:22px}
+    .nav-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .nav-tab{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:#dfe8f3;padding:10px 14px;border-radius:999px;font-weight:700;cursor:pointer}
+    .nav-tab.active{background:rgba(28,107,186,.22);border-color:rgba(28,107,186,.35);color:#eef6ff}
+    .panel-section{display:none}
+    .panel-section.active{display:block}
+    .panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
+    .cards{display:grid;gap:14px}
+    @media(min-width:720px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(min-width:1040px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px}
+    .card h3{margin:8px 0 6px;font-size:1rem;color:#e7edf5}
+    .card p{margin:0;color:#9fb2c8;font-size:.88rem;line-height:1.6}
+    .mini{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#7aa7ea;font-weight:800}
+    .subtle{color:#9fb2c8;line-height:1.7}
+    .calc-shell{display:grid;gap:18px}
+    @media(min-width:920px){.calc-shell{grid-template-columns:1.08fr .92fr}}
+    .calc-tabs{display:flex;gap:8px;background:rgba(255,255,255,.04);border-radius:14px;padding:5px;margin-bottom:16px}
+    .tab{flex:1;border:0;background:transparent;color:#9fb2c8;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer}
+    .tab.active{background:rgba(28,107,186,.24);color:#d6ecff}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+    .fields{display:grid;gap:12px}
+    @media(min-width:650px){.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .label{display:block;margin-bottom:7px;font-size:.76rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#aeb9ca}
+    .input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;color:#f8fafc;font-size:.95rem;box-sizing:border-box;outline:none}
+    .output{display:grid;gap:10px}
+    .row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .row span{color:#9fb2c8;font-size:.9rem}
+    .row strong{color:#eef4fb}
+    .row.main{background:rgba(28,107,186,.11);border-color:rgba(28,107,186,.26)}
+    .row.main strong{font-size:1.2rem;color:#7dd3fc}
+    .note{font-size:.78rem;color:#8c97ab;line-height:1.6;margin-top:12px}
+    .selector{display:grid;gap:10px}
+    .choice{border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);padding:13px 14px;color:#dfe8f3;text-align:left;cursor:pointer}
+    .choice.selected{border-color:rgba(74,144,217,.7);background:rgba(28,107,186,.13)}
+    .choice small{display:block;color:#8f9db1;margin-top:4px;line-height:1.5}
+    .faq{display:grid;gap:12px}
+    details{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 16px}
+    summary{cursor:pointer;font-weight:700;color:#ecf2f8}
+    details p{margin:10px 0 0;color:#9fb2c8;line-height:1.7}
+    .env{background:rgba(58,170,106,.07);border:1px solid rgba(58,170,106,.18);border-radius:20px;padding:22px}
+    .env-grid{display:grid;gap:12px}
+    @media(min-width:700px){.env-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .env-stat{text-align:center;padding:12px 10px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .env-stat strong{display:block;color:#7adba4;font-size:1.55rem;line-height:1.1;margin-bottom:4px}
+    .env-stat span{font-size:.82rem;color:#a7bbc8;line-height:1.45}
+    .bik-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.88rem}
+    .bik-table th,.bik-table td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
+    .bik-table th{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:#7aa7ea}
+    .ev-rate{color:#7adba4;font-weight:700}
+    .petrol-rate{color:#ff8a8a;font-weight:700}
+    .disclaimer{font-size:.76rem;color:#8c97ab;line-height:1.55;margin-top:12px}
+    .story{display:grid;gap:10px;margin-top:18px}
+    .story-item{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:#dfe8f3;line-height:1.6}
+  </style>
 </head>
-
 <body>
+  <div class="app">
+    <div class="shell">
+      <div class="topbar">
+        <div class="brand">
+          <span class="brand-name">DanSells</span>
+          <span class="brand-sub">Electric Vehicle Specialist &bull; BMW Ruxley</span>
+        </div>
+        <div class="meta"><span class="dot"></span><span>BMW EVs</span></div>
+      </div>
 
-<div class="container">
+      <div class="hero-grid hero-wrap">
+        <div>
+          <div class="eyebrow">#calculatorSee your savings</div>
+          <h1>I was a petrol head.<br>Then I drove the i4 eDrive40.</h1>
+          <p class="lead">I loved engines, proper driving, and everything that comes with it. I was probably the last person you would expect to go electric. Then I drove the i4 eDrive40 — and it genuinely surprised me.</p>
+          <p class="subtle">No fuel stops. Lower running costs. Smoother driving. Faster off the line than I expected. Since then I have helped many customers make the same move, from committed petrol heads to nervous first timers.</p>
+          <div class="story">
+            <div class="story-item"><strong>The one that changes minds:</strong> the i4 eDrive40 is the BMW EV that made me rethink everything I thought I knew about electric cars.</div>
+            <div class="story-item"><strong>Best all-rounder:</strong> the iX1 is the easy everyday choice with practical space and strong usability.</div>
+            <div class="story-item"><strong>Comfort and space:</strong> the iX3 and iX suit buyers who want a larger premium SUV feel.</div>
+          </div>
+          <div class="btn-row" style="margin-top:18px">
+            <a class="btn" href="#calculator">See your savings</a>
+            <a class="btn-ghost" href="ev-step1.html">Speak to Dan</a>
+          </div>
+        </div>
+        <div>
+          <img class="hero-photo" src="1000095889.jpg" alt="Dan at BMW Ruxley" />
+          <div class="hero-caption">Dan • BMW Ruxley<br>Electric Vehicle Specialist</div>
+        </div>
+      </div>
 
-<!-- HERO -->
-<div class="hero fade">
-  <div>
-    <h1>
-      Thinking about going electric?<br>
-      I’ll give you a straight answer.
-    </h1>
+      <div class="tabs-wrap">
+        <div class="nav-tabs" role="tablist" aria-label="BMW EV sections">
+          <button class="nav-tab active" data-section="overview">Overview</button>
+          <button class="nav-tab" data-section="calculator">Calculator</button>
+          <button class="nav-tab" data-section="range">BMW Range</button>
+          <button class="nav-tab" data-section="tax">Business Tax</button>
+          <button class="nav-tab" data-section="faq">FAQ</button>
+        </div>
 
-    <p>
-      I was a petrol head. I loved engines, proper driving, and everything that comes with it.
-      I was probably the last person you would expect to go electric.
-    </p>
+        <div class="panel-section active" id="overview">
+          <div class="panel">
+            <div class="mini">Overview</div>
+            <h2>Simple, clear and easy to navigate.</h2>
+            <p class="subtle">Use the simple calculator for a fast answer. Switch to the advanced calculator for charging split, depreciation and finance comparisons. The page is intentionally restrained so it works cleanly on mobile.</p>
+            <p class="note">All tax information is general guidance only and should be confirmed with your accountant before you act on it.</p>
+          </div>
+        </div>
 
-    <p class="highlight">
-      Then I drove the i4 eDrive40 — and it genuinely surprised me.
-    </p>
+        <div class="panel-section" id="calculator">
+          <div class="panel">
+            <div class="mini">EV fuel calculator</div>
+            <h2>Choose simple or advanced.</h2>
+            <div class="calc-shell">
+              <div>
+                <div class="calc-tabs">
+                  <button class="tab active" data-tab="simple">Simple</button>
+                  <button class="tab" data-tab="advanced">Advanced</button>
+                </div>
 
-    #calculatorSee your savings</a>
-    <a href="ev-step1.html" class="btn-ghost">Speak to Dan</a>
+                <div class="tab-panel active" id="simple">
+                  <div class="fields two">
+                    <div>
+                      <label class="label">Current fuel type</label>
+                      <select class="input" id="fuelType">
+                        <option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>PHEV</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="label">Engine size</label>
+                      <select class="input" id="engineSize">
+                        <option value="1.0">1.0L</option><option value="1.5" selected>1.5L</option><option value="2.0">2.0L</option><option value="3.0">3.0L</option><option value="4.0">4.0L</option><option value="5.0">5.0L</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="label">Current fuel price (p/l)</label>
+                      <input class="input" id="fuelPrice" type="number" value="156.8" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Annual mileage</label>
+                      <input class="input" id="annualMileage" type="range" min="4000" max="30000" step="500" value="12000">
+                      <div class="note" id="mileageLabel">12,000 miles</div>
+                    </div>
+                    <div>
+                      <label class="label">Your MPG</label>
+                      <input class="input" id="mpgSlider" type="range" min="20" max="80" step="1" value="45">
+                      <div class="note"><span id="mpgMin">20 mpg</span> &bull; <span id="mpgMax">80 mpg</span> &bull; <span id="mpgHint">Typical for a 1.5L petrol</span></div>
+                    </div>
+                    <div>
+                      <label class="label">EV efficiency (miles/kWh)</label>
+                      <input class="input" id="evEfficiency" type="number" value="3.2" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Home charging rate (p/kWh)</label>
+                      <input class="input" id="homeRate" type="number" value="7.9" step="0.1">
+                    </div>
+                    <div>
+                      <label class="label">Public charging rate (p/kWh)</label>
+                      <input class="input" id="publicRate" type="number" value="49.0" step="0.1">
+                    </div>
+                  </div>
+                  <div style="margin-top:14px">
+                    <div class="mini" style="margin-bottom:8px">Where do you usually charge?</div>
+                    <div class="selector" id="chargeSel">
+                      <button class="choice selected" data-mode="home">Mostly at home<small>Lower cost, best for driveway or garage charging.</small></button>
+                      <button class="choice" data-mode="mixed">Mixed charging<small>Use a blend of home and public charging.</small></button>
+                      <button class="choice" data-mode="public">Mostly public<small>Helpful if you cannot charge at home.</small></button>
+                    </div>
+                  </div>
+                  <div class="output" style="margin-top:16px">
+                    <div class="row"><span>Annual fuel cost</span><strong id="resFuelCost">—</strong></div>
+                    <div class="row"><span>Annual EV charging cost</span><strong id="resEvCost">—</strong></div>
+                    <div class="row main"><span>Estimated annual saving</span><strong id="resAnnualSaving">—</strong></div>
+                    <div class="row"><span>Estimated monthly saving</span><strong id="resMonthlySaving">—</strong></div>
+                  </div>
+                  <p class="note">The EV figure changes based on where you charge. These are indicative estimates only.</p>
+                </div>
 
-    <p class="small">
-      BMW Sales Executive • BMW Ruxley<br>
-      Around 15 minutes from Dartford Crossing<br>
-      WhatsApp: +44 7827 138197
-    </p>
+                <div class="tab-panel" id="advanced">
+                  <div class="fields two">
+                    <div><label class="label">Current monthly cost (£)</label><input class="input" id="tcoCurrentMonthly" type="number" value="350" step="10"></div>
+                    <div><label class="label">BMW EV monthly cost (£)</label><input class="input" id="tcoEvMonthly" type="number" value="450" step="10"></div>
+                    <div><label class="label">Annual mileage</label><input class="input" id="tcoMileage" type="number" value="12000" step="500"></div>
+                    <div><label class="label">Fuel price (p/l)</label><input class="input" id="tcoFuelPrice" type="number" value="156.8" step="0.1"></div>
+                    <div><label class="label">Current MPG</label><input class="input" id="tcoMpg" type="number" value="40" step="1"></div>
+                    <div><label class="label">EV efficiency (miles/kWh)</label><input class="input" id="tcoEff" type="number" value="3.2" step="0.1"></div>
+                    <div><label class="label">Home charge rate (p/kWh)</label><input class="input" id="tcoHome" type="number" value="7.9" step="0.1"></div>
+                    <div><label class="label">Public charge rate (p/kWh)</label><input class="input" id="tcoPublic" type="number" value="49.0" step="0.1"></div>
+                    <div><label class="label">Charging split (%) home</label><input class="input" id="tcoHomeShare" type="range" min="0" max="100" step="5" value="80"><div class="note"><span id="homeShareLabel">80</span>% home / <span id="publicShareLabel">20</span>% public</div></div>
+                    <div><label class="label">Servicing saving (£/yr)</label><input class="input" id="tcoService" type="number" value="300" step="25"></div>
+                    <div><label class="label">Current depreciation (£/yr)</label><input class="input" id="tcoDepCurrent" type="number" value="2200" step="50"></div>
+                    <div><label class="label">EV depreciation (£/yr)</label><input class="input" id="tcoDepEv" type="number" value="2400" step="50"></div>
+                  </div>
+                  <div class="output" style="margin-top:16px">
+                    <div class="row"><span>Current car total (annual)</span><strong id="tcoCurrentTotal">—</strong></div>
+                    <div class="row"><span>BMW EV total (annual)</span><strong id="tcoEvTotal">—</strong></div>
+                    <div class="row main"><span>Annual TCO saving</span><strong id="tcoSaving">—</strong></div>
+                    <div class="row"><span>5-year TCO saving</span><strong id="tco5yr">—</strong></div>
+                  </div>
+                  <p class="note">This adds finance, fuel or charging, servicing and depreciation. It does not include insurance or tyres.</p>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="mini">BMW EV range</div>
+                <h2 style="margin-top:8px">Four models, four use cases.</h2>
+                <div class="cards" style="grid-template-columns:1fr;">
+                  <div class="card"><h3>BMW i4 eDrive40</h3><p>The driver-focused choice for customers who want a lower, more engaging electric BMW.</p></div>
+                  <div class="card"><h3>BMW iX1</h3><p>The practical SUV choice with everyday usability and a family-friendly footprint.</p></div>
+                  <div class="card"><h3>BMW iX3</h3><p>The larger premium SUV choice for comfort, space and a more upright driving position.</p></div>
+                  <div class="card"><h3>BMW iX</h3><p>The flagship electric SUV for buyers who want the biggest BMW EV statement.</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section" id="range"><div class="panel"><div class="mini">Range</div><h2>BMW EV range guide</h2><p class="subtle">The i4 eDrive40 is the emotional pick. The iX1 is the easy all-rounder. The iX3 and iX sit higher in the range with more space and a more premium feel.</p></div></div>
+        <div class="panel-section" id="tax"><div class="panel"><div class="mini">Business tax</div><h2>Tax summary for new electric vehicles.</h2><p class="subtle">For new electric BMWs bought through a business, 100% first-year allowance can apply to qualifying expenditure, and EV chargepoints may also qualify. Leases are treated separately, so an accountant should confirm the exact treatment for your business.</p><table class="bik-table"><thead><tr><th>Tax year</th><th>EV BIK rate</th><th>Petrol/diesel band</th></tr></thead><tbody><tr><td>2025/26</td><td class="ev-rate">3%</td><td class="petrol-rate">20–37%</td></tr><tr><td>2026/27</td><td class="ev-rate">4%</td><td class="petrol-rate">20–37%</td></tr><tr><td>2027/28</td><td class="ev-rate">5%</td><td class="petrol-rate">20–37%</td></tr><tr><td>2028/29</td><td class="ev-rate">7%</td><td class="petrol-rate">20–37%</td></tr></tbody></table><div class="disclaimer">Timestamp: June 2026. Please confirm with your accountant before deciding.</div></div></div>
+        <div class="panel-section" id="faq"><div class="panel"><div class="mini">FAQ</div><h2>Short answers to common questions.</h2><div class="faq"><details><summary>Do I need home charging?</summary><p>It helps, but it is not essential. The calculator lets you compare home, mixed and public charging so the saving is realistic.</p></details><details><summary>Is the tax position fixed?</summary><p>No. The summary is based on current UK guidance, but your accountant should confirm the exact result for your business and vehicle choice.</p></details><details><summary>Which BMW should I look at first?</summary><p>The i4 eDrive40 if you want the most emotional, driver-focused car. The iX1 if practicality is the priority.</p></details></div></div></div>
+      </div>
+    </div>
   </div>
 
-  <div class="card">
-    <img src="dan.jpg">
-    <p class="small">
-      Dan • BMW Ruxley<br>
-      Electric Vehicle Specialist
-    </p>
-  </div>
-</div>
-
-<!-- STORY -->
-<div class="section fade">
-  <h2>Why I actually made the switch</h2>
-
-  <div class="card">
-
-    <p>
-      I have always been a petrol head. I grew up around cars, I love the sound of a good engine and I was probably the last person you would have expected to go electric.
-    </p>
-
-    <p>
-      So when I say this genuinely surprised me, take that seriously.
-    </p>
-
-    <p>
-      When I switched, the savings were noticeable straight away. No more fuel stops. Lower running costs. Servicing intervals that feel almost too good to be true.
-      The car is smoother, quieter and faster off the line than anything I had driven before.
-    </p>
-
-    <p>
-      Since then I have helped many people make the same move, from committed petrol heads to nervous first timers.
-    </p>
-
-    <p class="highlight">
-      Every single one says the same thing… Why didn’t I do this sooner?
-    </p>
-
-  </div>
-</div>
-
-<!-- CALCULATOR -->
-<div class="section fade" id="calculator">
-
-  <h2>What could you actually save?</h2>
-  <p>Real numbers, based on how you drive.</p>
-
-  <div class="card calc-box">
-
-    <label>Miles per year</label>
-    <input id="miles" value="12000">
-
-    <label>MPG</label>
-    <input id="mpg" value="40">
-
-    <label>Fuel price (p per litre)</label>
-    <input id="fuel" value="155">
-
-    <button class="btn" onclick="calc()">Calculate</button>
-
-    <div id="output" class="output"></div>
-
-  </div>
-
-</div>
-
-<!-- MODELS -->
-<div class="section fade">
-  <h2>Which BMW suits you?</h2>
-
-  <div class="grid">
-    <div class="card"><strong>i4 eDrive40</strong><p>The one that changes minds</p></div>
-    <div class="card"><strong>iX1</strong><p>Best all rounder</p></div>
-    <div class="card"><strong>iX3</strong><p>Comfort and space</p></div>
-    <div class="card"><strong>iX</strong><p>Flagship experience</p></div>
-  </div>
-</div>
-
-<!-- BUSINESS -->
-<div class="section fade">
-  <h2>Business benefits</h2>
-
-  <div class="card">
-    <p>100 percent first year allowance on qualifying EVs</p>
-    <p>Ultra low BIK starting from 3 percent</p>
-    <p>Charge point installations may also qualify</p>
-    <p class="small">Always confirm with your accountant</p>
-  </div>
-</div>
-
-<!-- CTA -->
-<div class="section fade center">
-
-  <div class="card">
-
-    <h2>Want a proper answer for your situation?</h2>
-
-    <p>
-      I’ll help you understand if electric actually works for you.
-      No pressure. Just honest advice.
-    </p>
-
-    <a href="ev-step1.html" class="btn">Start here</a>
-
-    <p style="margin-top:12px;">
-      WhatsApp: +44 7827 138197
-    </p>
-
-    <p class="small">
-      BMW Ruxley • 15 minutes from Dartford Crossing
-    </p>
-
-  </div>
-
-</div>
-
-</div>
-
+  <script>
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const sections = document.querySelectorAll('.panel-section');
+    navTabs.forEach(btn => btn.addEventListener('click', () => {
+      navTabs.forEach(b => b.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.section).classList.add('active');
+    }));
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.tab-panel');
+    tabs.forEach(btn => btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    }));
+    const fuelType = document.getElementById('fuelType');
+    const engineSize = document.getElementById('engineSize');
+    const fuelPrice = document.getElementById('fuelPrice');
+    const annualMileage = document.getElementById('annualMileage');
+    const mpgSlider = document.getElementById('mpgSlider');
+    const evEfficiency = document.getElementById('evEfficiency');
+    const homeRate = document.getElementById('homeRate');
+    const publicRate = document.getElementById('publicRate');
+    const resFuelCost = document.getElementById('resFuelCost');
+    const resEvCost = document.getElementById('resEvCost');
+    const resAnnualSaving = document.getElementById('resAnnualSaving');
+    const resMonthlySaving = document.getElementById('resMonthlySaving');
+    const mileageLabel = document.getElementById('mileageLabel');
+    const mpgMin = document.getElementById('mpgMin');
+    const mpgMax = document.getElementById('mpgMax');
+    const mpgHint = document.getElementById('mpgHint');
+    const mpgDefaults = {petrol:{'1.0':38,'1.5':44,'2.0':38,'3.0':32,'4.0':26,'5.0':22},diesel:{'1.0':46,'1.5':52,'2.0':48,'3.0':42,'4.0':36,'5.0':30},hybrid:{'1.0':52,'1.5':58,'2.0':54,'3.0':46,'4.0':38,'5.0':32},phev:{'1.0':45,'1.5':48,'2.0':45,'3.0':40,'4.0':34,'5.0':28}};
+    const mpgRanges = {petrol:{'1.0':[28,52],'1.5':[34,58],'2.0':[28,50],'3.0':[24,44],'4.0':[18,36],'5.0':[14,30]},diesel:{'1.0':[36,58],'1.5':[42,64],'2.0':[36,62],'3.0':[32,54],'4.0':[26,46],'5.0':[22,40]},hybrid:{'1.0':[42,64],'1.5':[48,70],'2.0':[42,66],'3.0':[36,58],'4.0':[28,48],'5.0':[24,42]},phev:{'1.0':[34,56],'1.5':[36,62],'2.0':[34,58],'3.0':[28,52],'4.0':[24,44],'5.0':[18,38]}};
+    const mpgHints = {petrol:{'1.0':'Typical for a 1.0L petrol','1.5':'Typical for a 1.5L petrol','2.0':'Typical for a 2.0L petrol','3.0':'Typical for a 3.0L petrol','4.0':'Typical for a 4.0L petrol','5.0':'Typical for a 5.0L petrol'},diesel:{'1.0':'Typical for a 1.0L diesel','1.5':'Typical for a 1.5L diesel','2.0':'Typical for a 2.0L diesel','3.0':'Typical for a 3.0L diesel','4.0':'Typical for a 4.0L diesel','5.0':'Typical for a 5.0L diesel'},hybrid:{'1.0':'Typical for a 1.0L hybrid','1.5':'Typical for a 1.5L hybrid','2.0':'Typical for a 2.0L hybrid','3.0':'Typical for a 3.0L hybrid','4.0':'Typical for a 4.0L hybrid','5.0':'Typical for a 5.0L hybrid'},phev:{'1.0':'Typical for a 1.0L PHEV','1.5':'Typical for a 1.5L PHEV','2.0':'Typical for a 2.0L PHEV','3.0':'Typical for a 3.0L PHEV','4.0':'Typical for a 4.0L PHEV','5.0':'Typical for a 5.0L PHEV'}};
+    let chargeMode = 'home';
+    document.querySelectorAll('#chargeSel .choice').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('#chargeSel .choice').forEach(x => x.classList.remove('selected')); b.classList.add('selected'); chargeMode = b.dataset.mode; calcFuel(); }));
+    const fmt = n => '£' + Math.round(n).toLocaleString('en-GB');
+    function updateMpg(){ const ft=fuelType.value.toLowerCase(), es=engineSize.value, range=mpgRanges[ft][es], def=mpgDefaults[ft][es]; mpgSlider.min=range[0]; mpgSlider.max=range[1]; mpgSlider.value=def; mpgMin.textContent=range[0]+' mpg'; mpgMax.textContent=range[1]+' mpg'; mpgHint.textContent=mpgHints[ft][es]; calcFuel(); }
+    function calcFuel(){ const miles=+annualMileage.value||0, mpg=+mpgSlider.value||1, ppl=+fuelPrice.value||0, eff=+evEfficiency.value||3.2, home=+homeRate.value||0, pub=+publicRate.value||0; mileageLabel.textContent=miles.toLocaleString('en-GB')+' miles'; const litres=(miles/mpg)*4.54609; const fuel=litres*(ppl/100); const homeShare=chargeMode==='home'?1:chargeMode==='mixed'?0.8:0.1; const ev=(miles/eff)*((home*homeShare+pub*(1-homeShare))/100); const save=Math.max(0,fuel-ev); resFuelCost.textContent=fmt(fuel); resEvCost.textContent=fmt(ev); resAnnualSaving.textContent=fmt(save); resMonthlySaving.textContent=fmt(save/12); }
+    [fuelType,engineSize,fuelPrice,annualMileage,mpgSlider,evEfficiency,homeRate,publicRate].forEach(el=>el.addEventListener('input',()=>{ if(el===fuelType||el===engineSize) updateMpg(); else calcFuel(); }));
+    updateMpg();
+    const tcoCurrentMonthly=document.getElementById('tcoCurrentMonthly'), tcoEvMonthly=document.getElementById('tcoEvMonthly'), tcoMileage=document.getElementById('tcoMileage'), tcoFuelPrice=document.getElementById('tcoFuelPrice'), tcoMpg=document.getElementById('tcoMpg'), tcoEff=document.getElementById('tcoEff'), tcoHome=document.getElementById('tcoHome'), tcoPublic=document.getElementById('tcoPublic'), tcoHomeShare=document.getElementById('tcoHomeShare'), tcoService=document.getElementById('tcoService'), tcoDepCurrent=document.getElementById('tcoDepCurrent'), tcoDepEv=document.getElementById('tcoDepEv');
+    const tcoCurrentTotal=document.getElementById('tcoCurrentTotal'), tcoEvTotal=document.getElementById('tcoEvTotal'), tcoSaving=document.getElementById('tcoSaving'), tco5yr=document.getElementById('tco5yr'), homeShareLabel=document.getElementById('homeShareLabel'), publicShareLabel=document.getElementById('publicShareLabel');
+    function calcTco(){ const currentMonthly=+tcoCurrentMonthly.value||0, evMonthly=+tcoEvMonthly.value||0, miles=+tcoMileage.value||0, ppl=+tcoFuelPrice.value||0, mpg=+tcoMpg.value||1, eff=+tcoEff.value||3.2, home=+tcoHome.value||0, pub=+tcoPublic.value||0, homeShare=+tcoHomeShare.value||0, service=+tcoService.value||0, depCurrent=+tcoDepCurrent.value||0, depEv=+tcoDepEv.value||0, publicShare=100-homeShare; homeShareLabel.textContent=homeShare; publicShareLabel.textContent=publicShare; const fuel=((miles/mpg)*4.54609)*(ppl/100); const ev=((miles/eff)*((home*(homeShare/100)+pub*(publicShare/100))/100)); const cur=currentMonthly*12+fuel+depCurrent; const evt=evMonthly*12+ev+depEv-service; const sav=cur-evt; tcoCurrentTotal.textContent=fmt(cur); tcoEvTotal.textContent=fmt(evt); tcoSaving.textContent=(sav>=0?'':'-')+fmt(Math.abs(sav))+'/yr'; tco5yr.textContent=(sav*5>=0?'':'-')+fmt(Math.abs(sav*5)); }
+    [tcoCurrentMonthly,tcoEvMonthly,tcoMileage,tcoFuelPrice,tcoMpg,tcoEff,tcoHome,tcoPublic,tcoHomeShare,tcoService,tcoDepCurrent,tcoDepEv].forEach(el=>el.addEventListener('input',calcTco));
+    calcTco();
+  </script>
 </body>
 </html>
-
