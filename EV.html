@@ -164,7 +164,7 @@ function calcAdvanced(){
 }
 const milesEl=document.getElementById('miles'), mpgEl=document.getElementById('mpg'), fuelEl=document.getElementById('fuel'), chargeEl=document.getElementById('charge');
 const aMiles=document.getElementById('aMiles'), aMpg=document.getElementById('aMpg'), aFuel=document.getElementById('aFuel'), whpmEl=document.getElementById('whpm'), aCharge=document.getElementById('aCharge'), serviceEl=document.getElementById('service'), evServiceEl=document.getElementById('evService'), taxsaveEl=document.getElementById('taxsave');
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById(t.dataset.tab).classList.add('active');calcSimple();calcAdvanced();}));
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const parent=t.parentElement; if(parent){parent.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));} t.classList.add('active'); const section=t.closest('section')||document; section.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const target=document.getElementById(t.dataset.tab); if(target) target.classList.add('active'); calcSimple();calcAdvanced();}));
 [milesEl,mpgEl,fuelEl,chargeEl].forEach(el=>el.addEventListener('input',calcSimple));
 [aMiles,aMpg,aFuel,whpmEl,aCharge,serviceEl,evServiceEl,taxsaveEl].forEach(el=>el.addEventListener('input',calcAdvanced));
 function reveal(){document.querySelectorAll('.fade').forEach(el=>{if(el.getBoundingClientRect().top<window.innerHeight-70)el.classList.add('show')})}
