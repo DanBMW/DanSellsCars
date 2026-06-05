@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dan Sells Electric BMWs</title>
+<title>Dan Sells Electric BMWs</title><script>function togglePopup(){const p=document.getElementById('popup');if(!p)return;p.classList.toggle('hide')}</script>
 <style>
 :root{--bg:#070b11;--panel:#0d1420;--panel2:#111b2b;--text:#e8eef7;--muted:#9bb0c7;--line:rgba(255,255,255,.08);--accent:#4ea1ff;--accent2:#34d399;--warn:#f59e0b;--bad:#f87171;--radius:22px}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(1200px 700px at 20% 0%,rgba(78,161,255,.14),transparent 45%),linear-gradient(180deg,#05070b, #0b1119 65%, #070b11);color:var(--text)}
@@ -12,7 +12,7 @@ a{color:inherit;text-decoration:none}.wrap{max-width:1120px;margin:0 auto;paddin
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap"><div id="popup" class="card" style="position:fixed;right:16px;left:16px;bottom:16px;z-index:30;display:none"> <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"> <div><strong>Quick note</strong><div class="small">Use the full step 1 form to send Dan everything needed for a proper review.</div></div> <button aria-label="Close" onclick="togglePopup()" style="border:none;background:transparent;color:#fff;font-size:22px;line-height:1;cursor:pointer">×</button></div> <div class="btnrow" style="margin-top:12px"><a class="btn primary" href="ev-step1.html">Go to EV step 1</a><button class="btn secondary" onclick="togglePopup()">Minimise</button></div></div>
   <div class="top">
     <div class="brand"><strong>Dan Sells</strong><span>BMW Ruxley Electric Vehicle Specialist</span></div>
     <div class="pill meta">Around 15 minutes from Dartford Crossing</div>
@@ -27,7 +27,7 @@ a{color:inherit;text-decoration:none}.wrap{max-width:1120px;margin:0 auto;paddin
       <div class="btnrow">
         <a class="btn primary" href="#calculator">See your savings</a>
         <a class="btn secondary" href="#business">Business benefits</a>
-        <a class="btn ghost" href="#contact">Speak to Dan</a>
+        <a class="btn ghost" href="ev-step1.html">Start full review</a><a class="btn ghost" href="#contact">Speak to Dan</a>
       </div>
       <p class="sub" style="margin-top:14px">BMW Sales Executive · BMW Ruxley<br>WhatsApp +44 7827 138197</p>
     </div>
@@ -124,7 +124,7 @@ a{color:inherit;text-decoration:none}.wrap{max-width:1120px;margin:0 auto;paddin
       <h2>Want a proper answer for your situation?</h2>
       <p>I will help you work out whether electric actually fits your driving, your budget, and your daily routine. No pressure, just honest advice.</p>
       <div class="btnrow">
-        <a class="btn primary" href="https://wa.me/447827138197" target="_blank">WhatsApp Dan</a>
+        <a class="btn primary" href="https://wa.me/447827138197" target="_blank">WhatsApp Dan</a><a class="btn secondary" href="ev-step1.html">Complete step 1</a>
         <a class="btn secondary" href="#calculator">Check savings</a>
         <a class="btn ghost" href="mailto:dan@bmwruxley.co.uk">Email Dan</a>
       </div>
@@ -168,7 +168,8 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{doc
 [milesEl,mpgEl,fuelEl,chargeEl].forEach(el=>el.addEventListener('input',calcSimple));
 [aMiles,aMpg,aFuel,whpmEl,aCharge,serviceEl,evServiceEl,taxsaveEl].forEach(el=>el.addEventListener('input',calcAdvanced));
 function reveal(){document.querySelectorAll('.fade').forEach(el=>{if(el.getBoundingClientRect().top<window.innerHeight-70)el.classList.add('show')})}
-window.addEventListener('scroll',reveal);window.addEventListener('load',()=>{reveal();calcSimple();calcAdvanced()});
+window.addEventListener('scroll',reveal);window.addEventListener('load',()=>{reveal();calcSimple();calcAdvanced();const p=document.getElementById('popup');if(p)p.style.display='block'})
 </script>
+<style>#popup.hide{display:none!important}</style>
 </body>
 </html>
