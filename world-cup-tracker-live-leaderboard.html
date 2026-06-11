@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Cup Tracker</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9;
+      --color-surface-offset: #edeae5; --color-border: #d4d1ca; --color-divider: #dcd9d5;
+      --color-text: #28251d; --color-text-muted: #6c6a65; --color-text-faint: #9e9c96;
+      --color-primary: #01696f; --color-primary-hover: #0c4e54; --color-primary-highlight: #cedcd8;
+      --color-success: #437a22; --color-success-highlight: #d4dfcc;
+      --color-warning: #964219; --color-warning-highlight: #ddcfc6;
+      --radius-sm: .375rem; --radius-md: .5rem; --radius-lg: .75rem; --radius-xl: 1rem; --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.06); --shadow-md: 0 8px 24px rgba(0,0,0,.08);
+      --font-body: 'Satoshi', Inter, sans-serif; --font-display: 'Satoshi', Inter, sans-serif;
+      --transition: 180ms cubic-bezier(0.16,1,0.3,1);
+      --content-wide: 1200px;
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d; --color-surface-offset: #2d2c2a;
+      --color-border: #393836; --color-divider: #262523; --color-text: #e2e0db; --color-text-muted: #a39f99; --color-text-faint: #74706b;
+      --color-primary: #4f98a3; --color-primary-hover: #227f8b; --color-primary-highlight: #313b3b;
+      --color-success: #6daa45; --color-success-highlight: #3a4435; --color-warning: #bb653b; --color-warning-highlight: #564942;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.22); --shadow-md: 0 12px 32px rgba(0,0,0,.34);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+    body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);line-height:1.6;background:var(--color-bg);color:var(--color-text)}
+    img,svg{display:block;max-width:100%;height:auto}
+    button,input,select{font:inherit;color:inherit}
+    button{cursor:pointer;border:none;background:none}
+    a{color:inherit}
+    :focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+    .skip-link{position:absolute;left:-9999px;top:auto}.skip-link:focus{left:var(--space-4);top:var(--space-4);background:var(--color-surface);padding:var(--space-2) var(--space-3);z-index:1000;border-radius:var(--radius-md)}
+    .app{min-height:100dvh;display:grid;grid-template-columns:300px 1fr}
+    .sidebar{border-right:1px solid var(--color-divider);background:color-mix(in srgb, var(--color-surface) 88%, transparent);padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-5);position:sticky;top:0;height:100dvh;overflow:auto}
+    .brand{display:flex;align-items:center;gap:var(--space-3)}
+    .logo{width:40px;height:40px;padding:8px;border-radius:12px;background:var(--color-primary-highlight);color:var(--color-primary)}
+    .logo svg{width:100%;height:100%}
+    .brand-copy h1{font-size:var(--text-lg);line-height:1.15}
+    .brand-copy p{font-size:var(--text-sm);color:var(--color-text-muted)}
+    .theme-toggle,.mobile-menu-btn{min-height:44px;min-width:44px;border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent);border-radius:var(--radius-full);display:grid;place-items:center;background:var(--color-surface-2);transition:all var(--transition)}
+    .theme-toggle:hover,.mobile-menu-btn:hover,.btn:hover,.chip:hover{transform:translateY(-1px)}
+    .sidebar-section h2{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:var(--space-3)}
+    .player-list{display:grid;gap:var(--space-2);list-style:none}
+    .player-link{width:100%;text-align:left;padding:var(--space-3);border-radius:var(--radius-lg);background:transparent;border:1px solid transparent;transition:all var(--transition)}
+    .player-link:hover,.player-link.active{background:var(--color-primary-highlight);color:var(--color-primary);border-color:color-mix(in srgb, var(--color-primary) 20%, transparent)}
+    .meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+    .meta-card{padding:var(--space-3);background:var(--color-surface-2);border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent);border-radius:var(--radius-lg)}
+    .meta-card span{display:block;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:var(--space-1)}
+    .meta-card strong{font-size:var(--text-lg);font-variant-numeric:tabular-nums lining-nums}
+    .main{min-width:0}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--color-divider);position:sticky;top:0;background:color-mix(in srgb, var(--color-bg) 84%, transparent);backdrop-filter:blur(12px);z-index:20}
+    .topbar-left{display:flex;align-items:center;gap:var(--space-3)}
+    .topbar h2{font-size:var(--text-lg)}
+    .shell{max-width:var(--content-wide);margin:0 auto;padding:var(--space-5);display:grid;gap:var(--space-5)}
+    .hero{display:grid;grid-template-columns:1.3fr .7fr;gap:var(--space-5)}
+    .panel{background:var(--color-surface);border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm)}
+    .hero-card{padding:var(--space-6);display:grid;gap:var(--space-4)}
+    .eyebrow{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-primary);font-weight:700}
+    .hero-card h3{font-size:var(--text-xl);line-height:1.05;max-width:16ch}
+    .hero-card p{color:var(--color-text-muted);max-width:58ch}
+    .toolbar{display:flex;flex-wrap:wrap;gap:var(--space-3)}
+    .search{flex:1 1 280px;position:relative}.search input{width:100%;min-height:48px;padding:0 48px 0 44px;border-radius:var(--radius-full);border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent);background:var(--color-surface-2)}
+    .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--color-text-muted)}
+    .btn,.chip{min-height:44px;padding:0 var(--space-4);border-radius:var(--radius-full);border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent);background:var(--color-surface-2);transition:all var(--transition)}
+    .btn.primary{background:var(--color-primary);color:white;border-color:transparent}
+    .btn.primary:hover{background:var(--color-primary-hover)}
+    .chip.active{background:var(--color-primary-highlight);color:var(--color-primary);border-color:color-mix(in srgb, var(--color-primary) 20%, transparent)}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-4)}
+    .kpi{padding:var(--space-4)}
+    .kpi-label{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted)}
+    .kpi-value{font-size:var(--text-xl);line-height:1.1;font-weight:900;font-variant-numeric:tabular-nums lining-nums;margin-top:var(--space-2)}
+    .kpi-note{font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-2)}
+    .content-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:var(--space-5)}
+    .section-card{padding:var(--space-5);display:grid;gap:var(--space-4)}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4)}
+    .section-head h3{font-size:var(--text-lg)}
+    .section-head p{font-size:var(--text-sm);color:var(--color-text-muted)}
+    .team-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}
+    .team-card{padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-surface-2);border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent);display:grid;gap:var(--space-2)}
+    .team-card .team-name{font-weight:700}
+    .team-card .team-meta{font-size:var(--text-sm);color:var(--color-text-muted)}
+    .team-status{justify-self:start;font-size:var(--text-xs);padding:6px 10px;border-radius:var(--radius-full);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .status-alive{background:var(--color-success-highlight);color:var(--color-success)}
+    .status-risk{background:var(--color-warning-highlight);color:var(--color-warning)}
+    .status-out{background:color-mix(in srgb, var(--color-text) 12%, transparent);color:var(--color-text-muted)}
+    .table-wrap{overflow:auto;border-radius:var(--radius-lg);border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent)}
+    table{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
+    th,td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--color-divider);font-variant-numeric:tabular-nums lining-nums}
+    th{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);background:var(--color-surface-2);position:sticky;top:0}
+    tbody tr:hover{background:color-mix(in srgb, var(--color-primary-highlight) 35%, transparent)}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--radius-full);background:var(--color-surface-offset);font-size:var(--text-xs);font-weight:700}
+    .footer-note{font-size:var(--text-sm);color:var(--color-text-muted)}
+    .empty{padding:var(--space-8);text-align:center;color:var(--color-text-muted);border:1px dashed var(--color-border);border-radius:var(--radius-lg)}
+    @media (max-width: 1100px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(320px,88vw);transform:translateX(-100%);transition:transform var(--transition);z-index:40;box-shadow:var(--shadow-md)}
+      .sidebar.open{transform:translateX(0)}
+      .hero,.content-grid{grid-template-columns:1fr}
+      .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .team-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (min-width: 1101px){.mobile-menu-btn{display:none}}
+    @media (max-width: 720px){
+      .shell,.topbar,.sidebar{padding:var(--space-4)}
+      .kpi-grid,.team-grid,.meta-grid{grid-template-columns:1fr}
+      .hero-card h3{max-width:12ch}
+      .toolbar{flex-direction:column;align-items:stretch}
+      .btn,.chip{width:100%;justify-content:center}
+    }
+    @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="Sweepstake players">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 13.5 24 6l16 7.5v21L24 42 8 34.5v-21Z" stroke="currentColor" stroke-width="3"/>
+            <path d="M16 19.5 24 16l8 3.5v9L24 32l-8-3.5v-9Z" fill="currentColor" opacity=".25"/>
+            <path d="M24 16v16M16 19.5l8 4 8-4" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-copy">
+          <h1>World Cup Tracker</h1>
+          <p>Team sweepstake dashboard</p>
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-card"><span>Players</span><strong id="playerCount">0</strong></div>
+        <div class="meta-card"><span>Teams</span><strong id="teamCount">0</strong></div>
+      </div>
+
+      <section class="sidebar-section">
+        <h2>Entrants</h2>
+        <ul class="player-list" id="playerList"></ul>
+      </section>
+
+      <section class="sidebar-section">
+        <h2>How to use</h2>
+        <p class="footer-note">Use the status chips to mark teams as alive, at risk, or out. The leaderboard updates instantly based on live selections.</p>
+      </section>
+    </aside>
+
+    <main class="main" id="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="menuBtn" aria-label="Open player menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/></svg>
+          </button>
+          <div>
+            <h2>2026 sweepstake board</h2>
+            <p class="footer-note">Built for quick updates during the tournament. Auto-sync uses your football-data.org token.</p>
+          </div>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" data-theme-toggle>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </header>
+
+      <div class="shell">
+        <section class="hero">
+          <div class="panel hero-card">
+            <div class="eyebrow">Sweepstake control centre</div>
+            <h3>Track every draw, team, and leaderboard move in one place.</h3>
+            <p>This tracker is preloaded with your full team allocation and includes editable statuses, automatic points, searchable teams, and a live ranking table for the office.</p>
+            <div class="toolbar">
+              <label class="search" aria-label="Search players or teams">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+                <input id="searchInput" type="search" placeholder="Search by player or country" />
+              </label>
+              <button class="btn primary" id="resetBtn">Reset statuses</button>
+            </div>
+          </div>
+          <div class="panel section-card">
+            <div class="section-head">
+              <div>
+                <h3>Scoring</h3>
+                <p>Simple default rules you can edit later.</p>
+              </div>
+              <span class="pill">Auto-sync ready</span>
+            </div>
+            <div class="team-card"><div class="team-name">Alive</div><div class="team-meta">3 points</div></div>
+            <div class="team-card"><div class="team-name">At risk</div><div class="team-meta">1 point</div></div>
+            <div class="team-card"><div class="team-name">Out</div><div class="team-meta">0 points</div></div>
+            <p class="footer-note">This version works offline in the browser tab, so it is easy to open on a TV, laptop, or phone during matches.</p>
+          </div>
+        </section>
+
+        <section class="kpi-grid" aria-label="Tracker stats">
+          <article class="panel kpi"><div class="kpi-label">Total entrants</div><div class="kpi-value" id="kpiPlayers">0</div><div class="kpi-note">Everyone in the sweepstake</div></article>
+          <article class="panel kpi"><div class="kpi-label">Teams assigned</div><div class="kpi-value" id="kpiTeams">0</div><div class="kpi-note">Three teams each</div></article>
+          <article class="panel kpi"><div class="kpi-label">Alive teams</div><div class="kpi-value" id="kpiAlive">0</div><div class="kpi-note">Still in the running</div></article>
+          <article class="panel kpi"><div class="kpi-label">Leader score</div><div class="kpi-value" id="kpiLeader">0</div><div class="kpi-note">Highest current points</div></article>
+        </section>
+
+        <section class="content-grid">
+          <section class="panel section-card" aria-labelledby="detailHeading">
+            <div class="section-head">
+              <div>
+                <h3 id="detailHeading">Player detail</h3>
+                <p>Select any entrant from the left to update their countries.</p>
+              </div>
+              <span class="pill" id="selectedSummary">3 teams assigned</span>
+            </div>
+            <div id="selectedPlayerCard"></div>
+          </section>
+
+          <section class="panel section-card" aria-labelledby="leaderboardHeading">
+            <div class="section-head">
+              <div>
+                <h3 id="leaderboardHeading">Leaderboard</h3>
+                <p>Ranks update as soon as you change statuses.</p>
+              </div>
+              <span class="pill">Auto-sync on</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Rank</th><th>Player</th><th>Points</th><th>Alive</th><th>At risk</th><th>Out</th></tr>
+                </thead>
+                <tbody id="leaderboardBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const entrants = [
+      { name: 'Carl', teams: ['Germany', 'Iraq', 'Haiti'] },
+      { name: 'Sergio', teams: ['Paraguay', 'Uruguay', 'England'] },
+      { name: 'Chloe', teams: ['Jordan', 'Algeria', 'Netherlands'] },
+      { name: 'Molly', teams: ['Panama', 'Turkey', 'Uzbekistan'] },
+      { name: 'Danny', teams: ['Tunisia', 'Iran', 'Argentina'] },
+      { name: 'Clive', teams: ['Cape Verde', 'Austria', 'Mexico'] },
+      { name: 'Tomi', teams: ['Scotland', 'Canada', 'France'] },
+      { name: 'Karis', teams: ['Sweden', 'Qatar', 'Morocco'] },
+      { name: 'Dan', teams: ['Ivory Coast', 'Egypt', 'Spain'] },
+      { name: 'Millie', teams: ['Czechia', 'Japan', 'Colombia'] },
+      { name: 'Will', teams: ['Cameroon', 'Australia', 'Portugal'] },
+      { name: 'Nathan', teams: ['Saudi Arabia', 'Norway', 'Croatia'] },
+      { name: 'Toby', teams: ['New Zealand', 'Switzerland', 'Belgium'] },
+      { name: 'Billy', teams: ['Curacao', 'Ecuador', 'Senegal'] },
+      { name: 'Simon', teams: ['Bosnia', 'South Africa', 'USA'] },
+      { name: 'Gary', teams: ['DR Congo', 'South Korea', 'Brazil'] }
+    ].map(player => ({
+      ...player,
+      teams: player.teams.map(team => ({ name: team, status: 'alive' }))
+    }));
+
+    const scoring = { alive: 3, risk: 1, out: 0 };
+    const statusLabels = { alive: 'Alive', risk: 'At risk', out: 'Out' };
+    const statusClasses = { alive: 'status-alive', risk: 'status-risk', out: 'status-out' };
+    let selectedPlayer = entrants[0].name;
+    let searchTerm = '';
+
+    const qs = sel => document.querySelector(sel);
+    const playerList = qs('#playerList');
+    const selectedPlayerCard = qs('#selectedPlayerCard');
+    const leaderboardBody = qs('#leaderboardBody');
+    const searchInput = qs('#searchInput');
+    const selectedSummary = qs('#selectedSummary');
+    const sidebar = qs('#sidebar');
+
+    function getStats(player) {
+      const counts = { alive: 0, risk: 0, out: 0, points: 0 };
+      player.teams.forEach(team => {
+        counts[team.status] += 1;
+        counts.points += scoring[team.status];
+      });
+      return counts;
+    }
+
+    function getFilteredEntrants() {
+      if (!searchTerm.trim()) return entrants;
+      const needle = searchTerm.toLowerCase();
+      return entrants.filter(player =>
+        player.name.toLowerCase().includes(needle) ||
+        player.teams.some(team => team.name.toLowerCase().includes(needle))
+      );
+    }
+
+    function renderSidebar() {
+      const filtered = getFilteredEntrants();
+      playerList.innerHTML = filtered.map(player => {
+        const stats = getStats(player);
+        return `<li><button class="player-link ${player.name === selectedPlayer ? 'active' : ''}" data-player="${player.name}">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+            <span style="font-weight:700">${player.name}</span>
+            <span style="font-size:var(--text-xs);color:var(--color-text-muted)">${stats.points} pts</span>
+          </div>
+        </button></li>`;
+      }).join('') || '<li class="empty">No matching players or teams.</li>';
+
+      playerList.querySelectorAll('[data-player]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedPlayer = btn.dataset.player;
+          renderAll();
+          if (window.innerWidth <= 1100) sidebar.classList.remove('open');
+        });
+      });
+    }
+
+    function renderSelectedPlayer() {
+      const player = entrants.find(p => p.name === selectedPlayer) || entrants[0];
+      const stats = getStats(player);
+      selectedSummary.textContent = `${stats.points} points · ${stats.alive} alive · ${stats.risk} at risk · ${stats.out} out`;
+      selectedPlayerCard.innerHTML = `
+        <div class="section-head">
+          <div>
+            <h3>${player.name}</h3>
+            <p>Update each country's tournament status below.</p>
+          </div>
+          <span class="pill">${player.teams.length} teams</span>
+        </div>
+        <div class="team-grid" style="margin-top: var(--space-4);">
+          ${player.teams.map((team, index) => `
+            <article class="team-card">
+              <div class="team-name">${team.name}</div>
+              <div class="team-meta">Current score: ${scoring[team.status]} pts</div>
+              <span class="team-status ${statusClasses[team.status]}">${statusLabels[team.status]}</span>
+              <label class="team-meta" for="${player.name}-${index}">Set status</label>
+              <select id="${player.name}-${index}" data-player="${player.name}" data-team-index="${index}" style="min-height:44px;padding:0 12px;border-radius:var(--radius-md);border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent);background:var(--color-surface);">
+                <option value="alive" ${team.status === 'alive' ? 'selected' : ''}>Alive</option>
+                <option value="risk" ${team.status === 'risk' ? 'selected' : ''}>At risk</option>
+                <option value="out" ${team.status === 'out' ? 'selected' : ''}>Out</option>
+              </select>
+            </article>
+          `).join('')}
+        </div>
+      `;
+
+      selectedPlayerCard.querySelectorAll('select[data-player]').forEach(select => {
+        select.addEventListener('change', e => {
+          const player = entrants.find(p => p.name === e.target.dataset.player);
+          player.teams[Number(e.target.dataset.teamIndex)].status = e.target.value;
+          renderAll(false);
+        });
+      });
+    }
+
+    function renderLeaderboard() {
+      const ranking = [...entrants].map(player => ({ ...getStats(player), name: player.name }))
+        .sort((a, b) => b.points - a.points || b.alive - a.alive || a.name.localeCompare(b.name));
+      leaderboardBody.innerHTML = ranking.map((row, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td style="font-weight:700">${row.name}</td>
+          <td>${row.points}</td>
+          <td>${row.alive}</td>
+          <td>${row.risk}</td>
+          <td>${row.out}</td>
+        </tr>
+      `).join('');
+
+      qs('#kpiLeader').textContent = ranking[0] ? `${ranking[0].points}` : '0';
+    }
+
+    const apiConfig = {
+      enabled: true,
+      provider: 'football-data.org',
+      endpoint: 'https://api.football-data.org/v4/competitions/WC/matches?status=LIVE',
+      refreshMs: 30000,
+      token: '69d67f972b2b46b8a9d03c56885b115a',
+      headers: { 'X-Auth-Token': '69d67f972b2b46b8a9d03c56885b115a' },
+      labels: { alive: 'Alive', risk: 'At risk', out: 'Out' }
+    };
+
+    function statusFromFixture(fixture) {
+      const state = String(fixture?.state?.name || fixture?.status || fixture?.phase || '').toLowerCase();
+      if (/finished|ft|full|ended|post/.test(state)) return 'out';
+      if (/inplay|live|1h|2h|ht|extra|pen|paused/.test(state)) return 'risk';
+      return 'alive';
+    }
+
+    async function syncLiveData() {
+      if (!apiConfig.enabled) return;
+      try {
+        const response = await fetch(apiConfig.endpoint, { headers: { Accept: 'application/json', ...apiConfig.headers } });
+        if (!response.ok) throw new Error('API request failed');
+        const data = await response.json();
+        const fixtures = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+        const statusMap = new Map();
+        fixtures.forEach(fixture => {
+          const status = statusFromFixture(fixture);
+          [fixture?.home_team?.name, fixture?.away_team?.name, fixture?.participants?.home?.name, fixture?.participants?.away?.name]
+            .filter(Boolean)
+            .forEach(team => statusMap.set(String(team).trim(), status));
+        });
+        entrants.forEach(player => player.teams.forEach(team => {
+          if (statusMap.has(team.name)) team.status = statusMap.get(team.name);
+        }));
+        renderAll();
+      } catch (error) {
+        console.warn('Live sync unavailable', error);
+      }
+    }
+
+    function renderKPIs() {
+      const allTeams = entrants.flatMap(player => player.teams);
+      qs('#playerCount').textContent = entrants.length;
+      qs('#teamCount').textContent = allTeams.length;
+      qs('#kpiPlayers').textContent = entrants.length;
+      qs('#kpiTeams').textContent = allTeams.length;
+      qs('#kpiAlive').textContent = allTeams.filter(team => team.status === 'alive').length;
+    }
+
+    function renderAll(refreshSidebar = true) {
+      if (refreshSidebar) renderSidebar();
+      else renderSidebar();
+      renderSelectedPlayer();
+      renderLeaderboard();
+      renderKPIs();
+    }
+
+    searchInput.addEventListener('input', e => {
+      searchTerm = e.target.value;
+      renderSidebar();
+    });
+
+    qs('#resetBtn').addEventListener('click', () => {
+      entrants.forEach(player => player.teams.forEach(team => team.status = 'alive'));
+      renderAll(false);
+    });
+
+    qs('#menuBtn').addEventListener('click', () => sidebar.classList.toggle('open'));
+
+    (function(){
+      const toggle = qs('#themeToggle');
+      const root = document.documentElement;
+      let mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', mode);
+      toggle.addEventListener('click', () => {
+        mode = mode === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', mode);
+        toggle.innerHTML = mode === 'dark'
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+      });
+    })();
+
+    renderAll();
+    setInterval(syncLiveData, apiConfig.refreshMs);
+    syncLiveData();
+  </script>
+</body>
+</html>
