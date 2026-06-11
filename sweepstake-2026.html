@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup Sweepstake 2026</title>
+<style>
+:root {
+  --bg:#f4f1eb; --surface:#fff; --surface2:#f7f4ef; --text:#1f1d19;
+  --muted:#6c665d; --border:#ddd6cd; --green:#1f7a2e; --greenbg:#dff1e1;
+  --red:#b42318; --redbg:#fde2e0; --gold:#9a6a00; --goldbg:#f7ecd0;
+  --shadow:0 12px 30px rgba(0,0,0,.08);
+  font-family:Arial,sans-serif;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); }
+header { background:linear-gradient(135deg,#0f766e,#1d4ed8); color:#fff; padding:24px; }
+header h1 { margin:0 0 6px; font-size:28px; }
+header p  { margin:0; opacity:.9; }
+.wrap { max-width:1300px; margin:0 auto; padding:20px; display:grid; gap:18px; }
+.hero, .panel { background:var(--surface); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); }
+.hero { padding:18px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center; }
+.badge { padding:8px 14px; border-radius:999px; font-weight:700; font-size:14px; }
+.badge.ok  { background:var(--greenbg); color:var(--green); }
+.badge.bad { background:var(--redbg);   color:var(--red);   }
+.badge.gold{ background:var(--goldbg);  color:var(--gold);  }
+.grid { display:grid; grid-template-columns:1fr 1.1fr; gap:18px; }
+@media(max-width:900px){ .grid { grid-template-columns:1fr; } }
+.panel { padding:16px; }
+.search { width:100%; padding:12px 16px; border-radius:12px; border:1px solid var(--border); font-size:16px; background:#fff; }
+.table { width:100%; border-collapse:collapse; }
+.table th, .table td { padding:12px 10px; border-bottom:1px solid var(--border); text-align:left; font-size:14px; }
+.table th { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); background:var(--surface2); }
+.table tr.top1 td { background:#fffbe6; font-weight:800; }
+.list { display:grid; gap:12px; }
+.card { border:1px solid var(--border); border-radius:16px; padding:14px; background:#fff; }
+.card.rank1 { border-color:#d4af37; box-shadow:0 0 0 2px #fdf3c8 inset; }
+.card.rank2 { border-color:#aaa;    box-shadow:0 0 0 2px #efefef inset; }
+.card.rank3 { border-color:#b87333; box-shadow:0 0 0 2px #f9ece3 inset; }
+.card-header { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.card-name   { font-weight:800; font-size:18px; }
+.card-rank   { font-size:22px; font-weight:900; color:var(--muted); }
+.card-rank.r1 { color:#d4af37; }
+.card-rank.r2 { color:#999; }
+.card-rank.r3 { color:#b87333; }
+.meta { margin-top:8px; color:var(--muted); font-size:13px; display:flex; gap:10px; flex-wrap:wrap; }
+.teams { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
+@media(max-width:560px){ .teams { grid-template-columns:1fr; } }
+.team { padding:10px 12px; border-radius:12px; font-weight:700; font-size:13px; border:1px solid transparent; }
+.alive { background:var(--greenbg); color:var(--green); }
+.out   { background:var(--redbg);   color:var(--red);   text-decoration:line-through; opacity:.65; }
+.team .pts-tag { font-size:11px; font-weight:600; display:block; margin-top:3px; opacity:.8; }
+.small { color:var(--muted); font-size:13px; }
+.top-badges { display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+.refresh-btn { padding:10px 20px; border-radius:999px; border:none; background:#1d4ed8; color:#fff; font-weight:700; font-size:14px; cursor:pointer; margin-top:6px; }
+.refresh-btn:hover    { background:#1e40af; }
+.refresh-btn:disabled { opacity:.6; cursor:not-allowed; }
+.legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:10px; }
+.legend span { display:flex; align-items:center; gap:4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap" style="padding-top:0;padding-bottom:0;">
+    <h1>&#127942; World Cup Sweepstake 2026</h1>
+    <p>1st &#163;150 &bull; 2nd &#163;60 &bull; 3rd &#163;30 &bull; Prizes go to owners of the WC winner, runner-up &amp; 3rd place team</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <div class="badge ok">16 players &bull; 48 teams</div>
+      <h2 style="margin:10px 0 6px;">Sweepstake Leaderboard</h2>
+      <div class="small">Prizes awarded to owners of the <strong>World Cup winner, runner-up &amp; 3rd place team</strong>.<br>
+      Win/loss points are a live tiebreaker only &mdash; scores zero out when a team is eliminated.</div>
+    </div>
+    <div class="top-badges">
+      <div class="badge gold"  id="leaderText">&#129351; Leader: loading...</div>
+      <div class="badge bad"   id="bottomText">&#128308; Bottom: loading...</div>
+      <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">&#128260; Refresh Scores</button>
+      <div class="small" id="lastUpdated" style="text-align:right;">Not yet synced</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <input id="search" class="search" placeholder="&#128269; Search player or team...">
+  </section>
+
+  <div class="grid">
+    <section class="panel">
+      <h3 style="margin-top:0;">&#127941; Leaderboard</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pos</th>
+            <th>Player</th>
+            <th>Teams alive</th>
+            <th>W/L pts</th>
+            <th>&#9989; Wins</th>
+            <th>&#10060; Losses</th>
+          </tr>
+        </thead>
+        <tbody id="board"></tbody>
+      </table>
+      <div class="legend">
+        <span>&#128994; = still alive</span>
+        <span>&#128308; = eliminated (pts zeroed)</span>
+        <span>&#127942; = prizes follow WC 1st/2nd/3rd</span>
+      </div>
+      <div class="small" style="margin-top:8px;">
+        <strong>Scoring:</strong> +1 per win, &minus;1 per loss (draws = 0). Points reset to 0 on elimination.<br>
+        <strong>Final prizes</strong> go to owners of the WC winner, runner-up &amp; 3rd place team. W/L points are tiebreaker only.
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3 style="margin-top:0;">&#127960; Player Cards</h3>
+      <div class="list" id="cards"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const entrants = [
+  { name:"Carl",   teams:[{name:"Germany",      status:"alive",wins:0,losses:0},{name:"Iraq",         status:"alive",wins:0,losses:0},{name:"Haiti",       status:"alive",wins:0,losses:0}]},
+  { name:"Sergio", teams:[{name:"Paraguay",     status:"alive",wins:0,losses:0},{name:"Uruguay",      status:"alive",wins:0,losses:0},{name:"England",     status:"alive",wins:0,losses:0}]},
+  { name:"Chloe",  teams:[{name:"Jordan",       status:"alive",wins:0,losses:0},{name:"Algeria",      status:"alive",wins:0,losses:0},{name:"Netherlands", status:"alive",wins:0,losses:0}]},
+  { name:"Molly",  teams:[{name:"Panama",       status:"alive",wins:0,losses:0},{name:"Turkey",       status:"alive",wins:0,losses:0},{name:"Uzbekistan",  status:"alive",wins:0,losses:0}]},
+  { name:"Danny",  teams:[{name:"Tunisia",      status:"alive",wins:0,losses:0},{name:"Iran",         status:"alive",wins:0,losses:0},{name:"Argentina",   status:"alive",wins:0,losses:0}]},
+  { name:"Clive",  teams:[{name:"Cape Verde",   status:"alive",wins:0,losses:0},{name:"Austria",      status:"alive",wins:0,losses:0},{name:"Mexico",      status:"alive",wins:0,losses:0}]},
+  { name:"Tomi",   teams:[{name:"Scotland",     status:"alive",wins:0,losses:0},{name:"Canada",       status:"alive",wins:0,losses:0},{name:"France",      status:"alive",wins:0,losses:0}]},
+  { name:"Karis",  teams:[{name:"Sweden",       status:"alive",wins:0,losses:0},{name:"Qatar",        status:"alive",wins:0,losses:0},{name:"Morocco",     status:"alive",wins:0,losses:0}]},
+  { name:"Dan",    teams:[{name:"Ivory Coast",  status:"alive",wins:0,losses:0},{name:"Egypt",        status:"alive",wins:0,losses:0},{name:"Spain",       status:"alive",wins:0,losses:0}]},
+  { name:"Millie", teams:[{name:"Czechia",      status:"alive",wins:0,losses:0},{name:"Japan",        status:"alive",wins:0,losses:0},{name:"Colombia",    status:"alive",wins:0,losses:0}]},
+  { name:"Will",   teams:[{name:"Cameroon",     status:"alive",wins:0,losses:0},{name:"Australia",    status:"alive",wins:0,losses:0},{name:"Portugal",    status:"alive",wins:0,losses:0}]},
+  { name:"Nathan", teams:[{name:"Saudi Arabia", status:"alive",wins:0,losses:0},{name:"Norway",       status:"alive",wins:0,losses:0},{name:"Croatia",     status:"alive",wins:0,losses:0}]},
+  { name:"Toby",   teams:[{name:"New Zealand",  status:"alive",wins:0,losses:0},{name:"Switzerland",  status:"alive",wins:0,losses:0},{name:"Belgium",     status:"alive",wins:0,losses:0}]},
+  { name:"Billy",  teams:[{name:"Curacao",      status:"alive",wins:0,losses:0},{name:"Ecuador",      status:"alive",wins:0,losses:0},{name:"Senegal",     status:"alive",wins:0,losses:0}]},
+  { name:"Simon",  teams:[{name:"Bosnia",       status:"alive",wins:0,losses:0},{name:"South Africa", status:"alive",wins:0,losses:0},{name:"USA",         status:"alive",wins:0,losses:0}]},
+  { name:"Gary",   teams:[{name:"DR Congo",     status:"alive",wins:0,losses:0},{name:"South Korea",  status:"alive",wins:0,losses:0},{name:"Brazil",      status:"alive",wins:0,losses:0}]}
+];
+
+const apiConfig = {
+  primaryFinished: "https://api.football-data.org/v4/competitions/WC/matches?status=FINISHED",
+  primaryLive:     "https://api.football-data.org/v4/competitions/WC/matches?status=LIVE",
+  backupFinished:  "https://api.zafronix.com/fifa/worldcup/v1/matches?year=2026",
+  backupLive:      "https://api.zafronix.com/fifa/worldcup/v1/matches/live",
+  headers:         {"X-Auth-Token":"69d67f972b2b46b8a9d03c56885b115a"},
+  backupHeaders:   {"X-API-Key":"zwc_free_0cd1254b71c4a86941d4899c"},
+  refreshMs:       60000
+};
+
+const norm = s => String(s||"").trim().toLowerCase();
+const el   = id => document.getElementById(id);
+
+// Knockout rounds where losing = eliminated
+const KNOCKOUT_STATUSES = /round_of_32|round_of_16|quarter|semi|final/i;
+
+function getTeamNames(match) {
+  return [
+    match?.homeTeam?.name, match?.home_team?.name,
+    match?.awayTeam?.name, match?.away_team?.name
+  ].filter(Boolean).map(norm);
+}
+
+function getWinner(match) {
+  const score = match?.score || match?.result;
+  const ht = score?.fullTime?.home ?? score?.home ?? match?.home_score;
+  const at = score?.fullTime?.away ?? score?.away ?? match?.away_score;
+  if (ht == null || at == null) return null;
+  const home = norm(match?.homeTeam?.name || match?.home_team?.name || "");
+  const away = norm(match?.awayTeam?.name || match?.away_team?.name || "");
+  if (ht > at) return { winner: home, loser: away };
+  if (at > ht) return { winner: away, loser: home };
+  return { winner: null, loser: null }; // draw
+}
+
+function isKnockout(match) {
+  const stage = String(match?.stage || match?.round?.name || match?.matchday || "");
+  return KNOCKOUT_STATUSES.test(stage);
+}
+
+function applyResults(matches) {
+  // Reset wins/losses each sync; re-derive from full match history
+  entrants.forEach(p => p.teams.forEach(t => {
+    if (t.status === "alive") { t.wins = 0; t.losses = 0; }
+  }));
+
+  const eliminated = new Set();
+
+  matches.forEach(m => {
+    const statusStr = norm(m?.status || m?.state?.name || "");
+    const finished  = /finish|ft|full|ended|post/.test(statusStr);
+    if (!finished) return;
+
+    const result  = getWinner(m);
+    if (!result)  return;
+
+    const knockout = isKnockout(m);
+
+    entrants.forEach(p => p.teams.forEach(t => {
+      const tn = norm(t.name);
+      const home = norm(m?.homeTeam?.name || m?.home_team?.name || "");
+      const away = norm(m?.awayTeam?.name || m?.away_team?.name || "");
+      if (tn !== home && tn !== away) return;
+
+      if (result.winner) {
+        if (tn === result.winner) t.wins++;
+        if (tn === result.loser)  {
+          t.losses++;
+          if (knockout) eliminated.add(tn);
+        }
+      }
+      // draws: no change to wins/losses
+    }));
+  });
+
+  // Mark eliminated teams and zero their points
+  entrants.forEach(p => p.teams.forEach(t => {
+    if (eliminated.has(norm(t.name))) {
+      t.status = "out";
+      t.wins   = 0;
+      t.losses = 0;
+    }
+  }));
+}
+
+function calcStats(p) {
+  const alive  = p.teams.filter(t => t.status === "alive");
+  const out    = p.teams.filter(t => t.status !== "alive");
+  const wlPts  = alive.reduce((s, t) => s + t.wins - t.losses, 0);
+  const wins   = alive.reduce((s, t) => s + t.wins, 0);
+  const losses = alive.reduce((s, t) => s + t.losses, 0);
+  return { aliveCount: alive.length, outCount: out.length, wlPts, wins, losses };
+}
+
+function rankLabel(i) {
+  if (i === 0) return { label:"&#129351;", cls:"r1" };
+  if (i === 1) return { label:"&#129352;", cls:"r2" };
+  if (i === 2) return { label:"&#129353;", cls:"r3" };
+  return { label: i + 1, cls:"" };
+}
+
+function render() {
+  const q = norm(el("search").value);
+  const filtered = entrants.filter(p =>
+    !q || norm(p.name).includes(q) || p.teams.some(t => norm(t.name).includes(q))
+  );
+
+  const ranked = filtered
+    .map(p => ({ ...p, ...calcStats(p) }))
+    .sort((a, b) =>
+      b.aliveCount - a.aliveCount ||
+      b.wlPts      - a.wlPts      ||
+      a.name.localeCompare(b.name)
+    );
+
+  if (ranked[0]) el("leaderText").innerHTML = `&#129351; Leader: ${ranked[0].name} (${ranked[0].aliveCount} alive, ${ranked[0].wlPts >= 0 ? "+" : ""}${ranked[0].wlPts} pts)`;
+  if (ranked[ranked.length-1]) el("bottomText").innerHTML = `&#128308; Bottom: ${ranked[ranked.length-1].name} (${ranked[ranked.length-1].aliveCount} alive)`;
+
+  el("board").innerHTML = ranked.map((r, i) => {
+    const { label } = rankLabel(i);
+    const cls = i === 0 ? "top1" : "";
+    const pts = r.wlPts >= 0 ? `+${r.wlPts}` : `${r.wlPts}`;
+    return `<tr class="${cls}">
+      <td>${label}</td>
+      <td><strong>${r.name}</strong></td>
+      <td>${r.aliveCount}</td>
+      <td>${pts}</td>
+      <td>${r.wins}</td>
+      <td>${r.losses}</td>
+    </tr>`;
+  }).join("");
+
+  el("cards").innerHTML = ranked.map((r, i) => {
+    const { label, cls } = rankLabel(i);
+    const cc  = i === 0 ? "rank1" : i === 1 ? "rank2" : i === 2 ? "rank3" : "";
+    const pts = r.wlPts >= 0 ? `+${r.wlPts}` : `${r.wlPts}`;
+    return `<div class="card ${cc}">
+      <div class="card-header">
+        <span class="card-name">${r.name}</span>
+        <span class="card-rank ${cls}">${label}</span>
+      </div>
+      <div class="meta">
+        <span>${pts} W/L pts</span>
+        <span>&#9989; ${r.aliveCount} alive</span>
+        <span>&#10060; ${r.outCount} out</span>
+      </div>
+      <div class="teams">
+        ${r.teams.map(t => {
+          const pts2 = t.status === "alive"
+            ? `<span class="pts-tag">W:${t.wins} L:${t.losses} (${t.wins - t.losses >= 0 ? "+" : ""}${t.wins - t.losses})</span>`
+            : `<span class="pts-tag">eliminated — zeroed</span>`;
+          return `<div class="team ${t.status}">
+            ${t.status === "alive" ? "&#128994;" : "&#128308;"} ${t.name}
+            ${pts2}
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+let allMatches = [];
+
+async function fetchFrom(provider) {
+  try {
+    const fUrl = provider === "primary" ? apiConfig.primaryFinished : apiConfig.backupFinished;
+    const lUrl = provider === "primary" ? apiConfig.primaryLive     : apiConfig.backupLive;
+    const hdrs = provider === "primary" ? apiConfig.headers         : apiConfig.backupHeaders;
+    const [fr, lr] = await Promise.all([
+      fetch(fUrl, { headers: { Accept:"application/json", ...hdrs } }),
+      fetch(lUrl, { headers: { Accept:"application/json", ...hdrs } })
+    ]);
+    const fd = await fr.json();
+    const ld = await lr.json();
+    const toArr = d => Array.isArray(d?.matches) ? d.matches : Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : [];
+    return [...toArr(fd), ...toArr(ld)];
+  } catch(e) { return null; }
+}
+
+async function syncLive() {
+  let matches = await fetchFrom("primary");
+  if (!matches || matches.length === 0) matches = await fetchFrom("backup");
+  if (!matches || matches.length === 0) { render(); return; }
+  allMatches = matches;
+  applyResults(allMatches);
+  render();
+}
+
+async function manualRefresh() {
+  const btn = el("refreshBtn");
+  const lu  = el("lastUpdated");
+  btn.innerHTML = "&#9203; Refreshing...";
+  btn.disabled  = true;
+  await syncLive();
+  lu.textContent = "Last updated: " + new Date().toLocaleTimeString();
+  btn.innerHTML  = "&#128260; Refresh Scores";
+  btn.disabled   = false;
+}
+
+el("search").addEventListener("input", render);
+render();
+setInterval(syncLive, apiConfig.refreshMs);
+syncLive();
+</script>
+</body>
+</html>
