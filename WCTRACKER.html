@@ -1,99 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>World Cup Tracker</title>
-<style>
-:root{--bg:#f5f3ef;--surface:#ffffff;--surface2:#f1ede8;--text:#1f1d19;--muted:#6f6a61;--border:#d9d4cd;--green:#2f7d32;--greenbg:#dff0df;--red:#b3261e;--redbg:#f7dddd;--gold:#9b6b00;--goldbg:#f6ead1;--blue:#0b7285;--shadow:0 10px 30px rgba(0,0,0,.08);font-family:Arial,sans-serif}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text)}
-header{padding:24px;background:linear-gradient(135deg,#0b7285,#164e63);color:#fff} header h1{margin:0 0 6px} header p{margin:0;opacity:.9}
-.wrap{max-width:1200px;margin:0 auto;padding:20px;display:grid;gap:18px}
-.hero{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
-.badge{padding:8px 12px;border-radius:999px;background:var(--surface2);font-weight:700}
-.grid{display:grid;grid-template-columns:1fr 1.1fr;gap:18px} @media(max-width:900px){.grid{grid-template-columns:1fr}}
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:16px}
-.search{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:16px;background:#fff}
-.list{display:grid;gap:12px;margin-top:14px}
-.card{border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff}
-.card.top{border-color:var(--gold);box-shadow:0 0 0 2px var(--goldbg) inset}
-.name{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:800;font-size:18px}
-.meta{margin-top:8px;color:var(--muted);font-size:14px;display:flex;gap:10px;flex-wrap:wrap}
-.teams{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px} @media(max-width:560px){.teams{grid-template-columns:1fr}}
-.team{padding:10px;border-radius:12px;font-weight:700;border:1px solid transparent} .alive{background:var(--greenbg);color:var(--green)} .out{background:var(--redbg);color:var(--red)}
-.table{width:100%;border-collapse:collapse} .table th,.table td{padding:12px 10px;border-bottom:1px solid var(--border);text-align:left;font-size:14px} .table th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-.small{color:var(--muted);font-size:13px} .controls{display:flex;gap:10px;flex-wrap:wrap} .btn{padding:11px 14px;border:none;border-radius:12px;background:#0b7285;color:#fff;font-weight:800;cursor:pointer}
-.live{color:#b91c1c;font-weight:800} .ok{color:var(--green);font-weight:800}
-</style>
-</head>
-<body>
-<header><div class="wrap"><h1>World Cup Sweepstake Tracker</h1><p>Auto-sorting leaderboard with live-result polling ready.</p></div></header>
-<div class="wrap">
-  <section class="hero"><div><div class="badge">No user input required</div><h2 style="margin:10px 0 6px">Automatically populated sweepstake board</h2><div class="small">Sorted by teams still alive, then points, then alphabetical.</div></div><div class="controls"><button class="btn" id="syncBtn">Sync now</button><div class="badge live" id="statusText">Auto-sync off until API key is added</div></div></section>
-  <section class="panel"><input id="search" class="search" placeholder="Search player or team" /></section>
-  <div class="grid">
-    <section class="panel"><h3 style="margin-top:0">Leaderboard</h3><table class="table"><thead><tr><th>Rank</th><th>Player</th><th>Teams left</th><th>Points</th><th>Alive</th><th>Out</th></tr></thead><tbody id="board"></tbody></table></section>
-    <section class="panel"><h3 style="margin-top:0">Player cards</h3><div class="list" id="cards"></div></section>
-  </div>
-</div>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>WCTRACKER</title>
+<style>:root{--bg:#f4f1eb;--surface:#fff;--surface2:#f7f4ef;--text:#1f1d19;--muted:#6c665d;--border:#ddd6cd;--green:#1f7a2e;--greenbg:#dff1e1;--red:#b42318;--redbg:#fde2e0;--gold:#9a6a00;--goldbg:#f7ecd0;--shadow:0 12px 30px rgba(0,0,0,.08);font-family:Arial,sans-serif}*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text)} header{background:linear-gradient(135deg,#0f766e,#1d4ed8);color:#fff;padding:22px} header h1{margin:0 0 6px} header p{margin:0;opacity:.92} .wrap{max-width:1300px;margin:0 auto;padding:18px;display:grid;gap:16px} .hero,.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)} .hero{padding:16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center} .badge{padding:8px 12px;border-radius:999px;background:var(--surface2);font-weight:700} .badge.ok{background:var(--greenbg);color:var(--green)} .badge.bad{background:var(--redbg);color:var(--red)} .grid{display:grid;grid-template-columns:1fr 1.1fr;gap:16px} @media(max-width:980px){.grid{grid-template-columns:1fr}} .panel{padding:14px} .search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);font-size:16px} .table{width:100%;border-collapse:collapse} .table th,.table td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left;font-size:14px} .table th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)} .list{display:grid;gap:12px} .card{border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff} .card.top{border-color:var(--gold);box-shadow:0 0 0 2px var(--goldbg) inset} .name{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:800;font-size:18px} .meta{margin-top:8px;color:var(--muted);font-size:14px;display:flex;gap:10px;flex-wrap:wrap} .teams{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px} @media(max-width:560px){.teams{grid-template-columns:1fr}} .team{padding:10px;border-radius:12px;font-weight:700;border:1px solid transparent} .alive{background:var(--greenbg);color:var(--green)} .out{background:var(--redbg);color:var(--red)} .small{color:var(--muted);font-size:13px}</style></head><body>
+<header><div class="wrap"><h1>World Cup Sweepstake Tracker</h1><p>Automatically populated with your final draw results.</p></div></header>
+<div class="wrap"><section class="hero"><div><div class="badge ok">Auto-populated</div><h2 style="margin:10px 0 6px">Leaderboard-style sweepstake board</h2><div class="small">Sorted by teams still in the running, then points, then alphabetical.</div></div><div class="badge bad" id="statusText">Auto-sync off until API key is enabled</div></section>
+<section class="panel"><input id="search" class="search" placeholder="Search player or team"></section>
+<div class="grid"><section class="panel"><h3 style="margin-top:0">Leaderboard</h3><table class="table"><thead><tr><th>Rank</th><th>Player</th><th>Teams left</th><th>Points</th><th>Alive</th><th>Out</th></tr></thead><tbody id="board"></tbody></table></section><section class="panel"><h3 style="margin-top:0">Player cards</h3><div class="list" id="cards"></div></section></div></div>
 <script>
-const entrants = [{ name: 'Carl', teams: [['Germany', 'alive'], ['Iraq', 'alive'], ['Haiti', 'alive']] },
-      { name: 'Sergio', teams: [['Paraguay', 'alive'], ['Uruguay', 'alive'], ['England', 'alive']] },
-      { name: 'Chloe', teams: [['Jordan', 'alive'], ['Algeria', 'alive'], ['Netherlands', 'alive']] },
-      { name: 'Molly', teams: [['Panama', 'alive'], ['Turkey', 'alive'], ['Uzbekistan', 'alive']] },
-      { name: 'Danny', teams: [['Tunisia', 'alive'], ['Iran', 'alive'], ['Argentina', 'alive']] },
-      { name: 'Clive', teams: [['Cape Verde', 'alive'], ['Austria', 'alive'], ['Mexico', 'alive']] },
-      { name: 'Tomi', teams: [['Scotland', 'alive'], ['Canada', 'alive'], ['France', 'alive']] },
-      { name: 'Karis', teams: [['Sweden', 'alive'], ['Qatar', 'alive'], ['Morocco', 'alive']] },
-      { name: 'Dan', teams: [['Ivory Coast', 'alive'], ['Egypt', 'alive'], ['Spain', 'alive']] },
-      { name: 'Millie', teams: [['Czechia', 'alive'], ['Japan', 'alive'], ['Colombia', 'alive']] },
-      { name: 'Will', teams: [['Cameroon', 'alive'], ['Australia', 'alive'], ['Portugal', 'alive']] },
-      { name: 'Nathan', teams: [['Saudi Arabia', 'alive'], ['Norway', 'alive'], ['Croatia', 'alive']] },
-      { name: 'Toby', teams: [['New Zealand', 'alive'], ['Switzerland', 'alive'], ['Belgium', 'alive']] },
-      { name: 'Billy', teams: [['Curacao', 'alive'], ['Ecuador', 'alive'], ['Senegal', 'alive']] },
-      { name: 'Simon', teams: [['Bosnia', 'alive'], ['South Africa', 'alive'], ['USA', 'alive']] },
-      { name: 'Gary', teams: [['DR Congo', 'alive'], ['South Korea', 'alive'], ['Brazil', 'alive']] }];
-const apiConfig = {
-  enabled: false,
-  provider: 'football-data.org',
-  endpoint: 'https://api.football-data.org/v4/competitions/WC/matches?status=LIVE',
-  refreshMs: 30000,
-  headers: { 'X-Auth-Token': '69d67f972b2b46b8a9d03c56885b115a' }
-};
-const scores = {alive:3,out:0};
-const el = id => document.getElementById(id);
-const normalize = s => String(s).trim().toLowerCase();
-function stats(p){const alive=p.teams.filter(t=>t.status==='alive').length;const out=p.teams.length-alive;const points=alive*scores.alive+out*scores.out;return {alive,out,points,remaining:alive};}
-function render(){
- const q = normalize(el('search').value);
- const filtered = entrants.filter(p => !q || normalize(p.name).includes(q) || p.teams.some(t => normalize(t.name).includes(q)));
- const ranking = [...filtered].map(p => ({name:p.name,...stats(p),teams:p.teams})).sort((a,b)=>b.remaining-a.remaining||b.points-a.points||a.name.localeCompare(b.name));
- el('board').innerHTML = ranking.map((r,i)=>`<tr class="${i===0?'top':''}"><td>${i+1}</td><td>${r.name}</td><td>${r.remaining}</td><td>${r.points}</td><td>${r.alive}</td><td>${r.out}</td></tr>`).join('');
- el('cards').innerHTML = ranking.map((r,i)=>`<div class="card ${i===0?'top':''}"><div class="name"><span>${r.name}</span><span>${r.remaining} left</span></div><div class="meta"><span>${r.points} points</span><span>${r.alive} alive</span><span>${r.out} out</span></div><div class="teams">${r.teams.map(t=>`<div class="team ${t.status==='alive'?'alive':'out'}">${t.name}</div>`).join('')}</div></div>`).join('');
-}
-async function syncLive(){
- if(!apiConfig.enabled){ el('statusText').textContent = 'Auto-sync off until API key is added'; return; }
- try{
-   const res = await fetch(apiConfig.endpoint, {headers: {Accept:'application/json', ...apiConfig.headers}});
-   const data = await res.json();
-   const fixtures = Array.isArray(data?.matches) ? data.matches : Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
-   const live = new Set(); const finished = new Set();
-   fixtures.forEach(f => {
-     const state = String(f?.status || f?.state?.name || '').toLowerCase();
-     const hs = [f?.homeTeam?.name, f?.home_team?.name, f?.participants?.home?.name].filter(Boolean);
-     const as = [f?.awayTeam?.name, f?.away_team?.name, f?.participants?.away?.name].filter(Boolean);
-     const names = [...hs, ...as];
-     if(/live|inplay|1h|2h|ht|extra|pen/.test(state)) names.forEach(n => live.add(normalize(n)));
-     if(/finished|ft|full|ended|post/.test(state)) names.forEach(n => finished.add(normalize(n)));
-   });
-   entrants.forEach(p => p.teams.forEach(t => { if(finished.has(normalize(t.name))) t.status='out'; else if(live.has(normalize(t.name))) t.status='alive'; }));
-   el('statusText').textContent = 'Live sync connected';
-   render();
- }catch(e){ el('statusText').textContent = 'Live sync unavailable'; }
-}
-el('search').addEventListener('input', render);
-el('syncBtn').addEventListener('click', syncLive);
-render(); setInterval(syncLive, apiConfig.refreshMs);
-</script>
-</body>
-</html>
+const entrants = [{ name: 'Carl', teams: [{ name: 'Germany', status: 'alive' }, { name: 'Iraq', status: 'alive' }, { name: 'Haiti', status: 'alive' }] },
+  { name: 'Sergio', teams: [{ name: 'Paraguay', status: 'alive' }, { name: 'Uruguay', status: 'alive' }, { name: 'England', status: 'alive' }] },
+  { name: 'Chloe', teams: [{ name: 'Jordan', status: 'alive' }, { name: 'Algeria', status: 'alive' }, { name: 'Netherlands', status: 'alive' }] },
+  { name: 'Molly', teams: [{ name: 'Panama', status: 'alive' }, { name: 'Turkey', status: 'alive' }, { name: 'Uzbekistan', status: 'alive' }] },
+  { name: 'Danny', teams: [{ name: 'Tunisia', status: 'alive' }, { name: 'Iran', status: 'alive' }, { name: 'Argentina', status: 'alive' }] },
+  { name: 'Clive', teams: [{ name: 'Cape Verde', status: 'alive' }, { name: 'Austria', status: 'alive' }, { name: 'Mexico', status: 'alive' }] },
+  { name: 'Tomi', teams: [{ name: 'Scotland', status: 'alive' }, { name: 'Canada', status: 'alive' }, { name: 'France', status: 'alive' }] },
+  { name: 'Karis', teams: [{ name: 'Sweden', status: 'alive' }, { name: 'Qatar', status: 'alive' }, { name: 'Morocco', status: 'alive' }] },
+  { name: 'Dan', teams: [{ name: 'Ivory Coast', status: 'alive' }, { name: 'Egypt', status: 'alive' }, { name: 'Spain', status: 'alive' }] },
+  { name: 'Millie', teams: [{ name: 'Czechia', status: 'alive' }, { name: 'Japan', status: 'alive' }, { name: 'Colombia', status: 'alive' }] },
+  { name: 'Will', teams: [{ name: 'Cameroon', status: 'alive' }, { name: 'Australia', status: 'alive' }, { name: 'Portugal', status: 'alive' }] },
+  { name: 'Nathan', teams: [{ name: 'Saudi Arabia', status: 'alive' }, { name: 'Norway', status: 'alive' }, { name: 'Croatia', status: 'alive' }] },
+  { name: 'Toby', teams: [{ name: 'New Zealand', status: 'alive' }, { name: 'Switzerland', status: 'alive' }, { name: 'Belgium', status: 'alive' }] },
+  { name: 'Billy', teams: [{ name: 'Curacao', status: 'alive' }, { name: 'Ecuador', status: 'alive' }, { name: 'Senegal', status: 'alive' }] },
+  { name: 'Simon', teams: [{ name: 'Bosnia', status: 'alive' }, { name: 'South Africa', status: 'alive' }, { name: 'USA', status: 'alive' }] },
+  { name: 'Gary', teams: [{ name: 'DR Congo', status: 'alive' }, { name: 'South Korea', status: 'alive' }, { name: 'Brazil', status: 'alive' }] }];
+const apiConfig = {enabled:false, provider:'football-data.org', endpoint:'https://api.football-data.org/v4/competitions/WC/matches?status=LIVE', refreshMs:30000, headers:{'X-Auth-Token':'69d67f972b2b46b8a9d03c56885b115a'}};
+const el=id=>document.getElementById(id); const norm=s=>String(s).trim().toLowerCase();
+function stats(p){const alive=p.teams.filter(t=>t.status==='alive').length; const out=p.teams.length-alive; return {alive,out,remaining:alive,points:alive*3};}
+function render(){const q=norm(el('search').value); const filtered=entrants.filter(p=>!q||norm(p.name).includes(q)||p.teams.some(t=>norm(t.name).includes(q))); const ranking=[...filtered].map(p=>({name:p.name,teams:p.teams,...stats(p)})).sort((a,b)=>b.remaining-a.remaining||b.points-a.points||a.name.localeCompare(b.name)); el('board').innerHTML=ranking.map((r,i)=>`<tr class="${i===0?'top':''}"><td>${i+1}</td><td>${r.name}</td><td>${r.remaining}</td><td>${r.points}</td><td>${r.alive}</td><td>${r.out}</td></tr>`).join(''); el('cards').innerHTML=ranking.map((r,i)=>`<div class="card ${i===0?'top':''}"><div class="name"><span>${r.name}</span><span>${r.remaining} left</span></div><div class="meta"><span>${r.points} points</span><span>${r.alive} alive</span><span>${r.out} out</span></div><div class="teams">${r.teams.map(t=>`<div class="team ${t.status==='alive'?'alive':'out'}">${t.name}</div>`).join('')}</div></div>`).join('');}
+async function syncLive(){if(!apiConfig.enabled) return; try{const res=await fetch(apiConfig.endpoint,{headers:{Accept:'application/json',...apiConfig.headers}}); const data=await res.json(); const fixtures=Array.isArray(data?.matches)?data.matches:Array.isArray(data?.data)?data.data:Array.isArray(data)?data:[]; const finished=new Set(), live=new Set(); fixtures.forEach(f=>{const s=String(f?.status||f?.state?.name||'').toLowerCase(); const names=[f?.homeTeam?.name,f?.home_team?.name,f?.participants?.home?.name,f?.awayTeam?.name,f?.away_team?.name,f?.participants?.away?.name].filter(Boolean); if(/live|inplay|1h|2h|ht|extra|pen/.test(s)) names.forEach(n=>live.add(norm(n))); if(/finished|ft|full|ended|post/.test(s)) names.forEach(n=>finished.add(norm(n)));}); entrants.forEach(p=>p.teams.forEach(t=>{const n=norm(t.name); if(finished.has(n)) t.status='out'; else if(live.has(n)) t.status='alive';})); el('statusText').textContent='Live sync connected'; render();}catch(e){el('statusText').textContent='Live sync unavailable';}}
+el('search').addEventListener('input', render); render(); setInterval(syncLive, apiConfig.refreshMs);
+</script></body></html>
