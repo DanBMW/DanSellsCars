@@ -6,47 +6,47 @@
 <title>DanSells | Colour &amp; Spec</title>
 <link rel="stylesheet" href="style.css"/>
 <style>
-.sec-label{font-size:.72rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#a8c8f0;margin-bottom:12px;}
-.bypass-card{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:18px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.08);cursor:pointer;margin-bottom:24px;transition:border-color .18s,background .18s;-webkit-tap-highlight-color:transparent;}
-.bypass-card:hover{border-color:rgba(74,144,217,.5);background:rgba(28,107,186,.07);}
-.bypass-card.on{border-color:rgba(74,144,217,.8);background:rgba(28,107,186,.15);box-shadow:0 0 0 1px rgba(74,144,217,.25);}
+.sec-label{font-size:.72rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#1559cf;margin-bottom:12px;}
+.bypass-card{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:18px;background:rgba(16,21,29,.03);border:2px solid rgba(16,21,29,.10);cursor:pointer;margin-bottom:24px;transition:border-color .18s,background .18s;-webkit-tap-highlight-color:transparent;}
+.bypass-card:hover{border-color:rgba(21,89,207,.5);background:rgba(21,89,207,.07);}
+.bypass-card.on{border-color:rgba(21,89,207,.8);background:rgba(21,89,207,.15);box-shadow:0 0 0 1px rgba(21,89,207,.25);}
 .bypass-icon{font-size:1.5rem;flex-shrink:0;line-height:1;}
 .bypass-text strong{display:block;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:2px;}
 .bypass-text span{font-size:.82rem;color:var(--muted);}
-.spec-divider{height:1px;background:rgba(255,255,255,.07);margin:22px 0;}
+.spec-divider{height:1px;background:rgba(16,21,29,.06);margin:22px 0;}
 .colour-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:8px;}
 @media(max-width:480px){.colour-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
 @media(max-width:360px){.colour-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
-.cswatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 6px 9px;border-radius:14px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.07);cursor:pointer;font-size:.75rem;font-weight:600;color:#9aaec4;text-align:center;transition:border-color .17s,background .17s,transform .14s;-webkit-tap-highlight-color:transparent;user-select:none;}
-.cswatch:hover{border-color:rgba(74,144,217,.4);background:rgba(28,107,186,.08);transform:translateY(-2px);}
-.cswatch.on{border-color:rgba(74,144,217,.85);background:rgba(28,107,186,.16);color:var(--text);box-shadow:0 0 0 1px rgba(74,144,217,.22);}
-.cdot{width:28px;height:28px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.12);}
-.cswatch.on .cdot{border-color:rgba(74,144,217,.55);}
+.cswatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 6px 9px;border-radius:14px;background:rgba(16,21,29,.03);border:2px solid rgba(16,21,29,.06);cursor:pointer;font-size:.75rem;font-weight:600;color:#9aaec4;text-align:center;transition:border-color .17s,background .17s,transform .14s;-webkit-tap-highlight-color:transparent;user-select:none;}
+.cswatch:hover{border-color:rgba(21,89,207,.4);background:rgba(21,89,207,.08);transform:translateY(-2px);}
+.cswatch.on{border-color:rgba(21,89,207,.85);background:rgba(21,89,207,.16);color:var(--text);box-shadow:0 0 0 1px rgba(21,89,207,.22);}
+.cdot{width:28px;height:28px;border-radius:50%;flex-shrink:0;border:2px solid rgba(16,21,29,.14);}
+.cswatch.on .cdot{border-color:rgba(21,89,207,.55);}
 .trim-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px;}
 @media(max-width:480px){.trim-grid{grid-template-columns:1fr;}}
-.trim-card{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:border-color .17s,background .17s,transform .14s;-webkit-tap-highlight-color:transparent;}
-.trim-card:hover{border-color:rgba(74,144,217,.45);background:rgba(28,107,186,.08);transform:translateY(-2px);}
-.trim-card.on{border-color:rgba(74,144,217,.75);background:rgba(28,107,186,.14);box-shadow:0 0 0 1px rgba(74,144,217,.2);}
+.trim-card{padding:14px 16px;border-radius:16px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);cursor:pointer;transition:border-color .17s,background .17s,transform .14s;-webkit-tap-highlight-color:transparent;}
+.trim-card:hover{border-color:rgba(21,89,207,.45);background:rgba(21,89,207,.08);transform:translateY(-2px);}
+.trim-card.on{border-color:rgba(21,89,207,.75);background:rgba(21,89,207,.14);box-shadow:0 0 0 1px rgba(21,89,207,.2);}
 .trim-title{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:3px;}
 .trim-desc{font-size:.77rem;color:var(--muted);line-height:1.4;}
 .chip-pool{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:2px 0;margin-bottom:4px;}
-.fchip{padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);font-size:.83rem;font-weight:600;color:#c4d2e4;cursor:grab;transition:background .15s,border-color .15s,transform .14s,opacity .15s;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+.fchip{padding:8px 13px;border-radius:999px;background:rgba(16,21,29,.05);border:1px solid rgba(255,255,255,.09);font-size:.83rem;font-weight:600;color:#44536a;cursor:grab;transition:background .15s,border-color .15s,transform .14s,opacity .15s;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
 .fchip:active{cursor:grabbing;}
-.fchip:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.18);}
+.fchip:hover{background:rgba(16,21,29,.12);border-color:rgba(16,21,29,.22);}
 .fchip.dragging{opacity:.35;transform:scale(.94);}
-.fchip.ghost{position:fixed;pointer-events:none;z-index:9999;padding:8px 13px;border-radius:999px;background:rgba(28,107,186,.4);border:1px solid rgba(74,144,217,.6);font-size:.83rem;font-weight:600;color:#d4e6f8;white-space:nowrap;opacity:.9;transform:scale(1.06);}
+.fchip.ghost{position:fixed;pointer-events:none;z-index:9999;padding:8px 13px;border-radius:999px;background:rgba(21,89,207,.4);border:1px solid rgba(21,89,207,.6);font-size:.83rem;font-weight:600;color:#1559cf;white-space:nowrap;opacity:.9;transform:scale(1.06);}
 .fchip.in-zone{cursor:pointer;}
 .zones-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
 .zone-label{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;}
 .zone-label.needs{color:#3aaa6a;}
-.zone-label.wants{color:#c9a84c;}
-.drop-zone{min-height:78px;border-radius:16px;border:2px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.025);padding:10px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:7px;transition:border-color .17s,background .17s;position:relative;}
-.drop-zone.over{border-color:rgba(74,144,217,.6);background:rgba(28,107,186,.09);}
-.zone-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:.8rem;color:rgba(255,255,255,.18);}
+.zone-label.wants{color:#8a6a1e;}
+.drop-zone{min-height:78px;border-radius:16px;border:2px dashed rgba(16,21,29,.14);background:rgba(255,255,255,.025);padding:10px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:7px;transition:border-color .17s,background .17s;position:relative;}
+.drop-zone.over{border-color:rgba(21,89,207,.6);background:rgba(21,89,207,.09);}
+.zone-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:.8rem;color:rgba(16,21,29,.22);}
 .tap-hint{font-size:.75rem;color:rgba(255,255,255,.28);margin-top:6px;line-height:1.5;display:none;}
 .drag-hint{font-size:.75rem;color:rgba(255,255,255,.28);margin-top:6px;}
 @media(hover:none),(max-width:700px){.tap-hint{display:block;}.drag-hint{display:none;}}
-.drop-zone.tap-ready{border-color:rgba(74,144,217,.5);background:rgba(28,107,186,.07);cursor:pointer;}
+.drop-zone.tap-ready{border-color:rgba(21,89,207,.5);background:rgba(21,89,207,.07);cursor:pointer;}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
@@ -126,8 +126,8 @@
       <div class="spec-divider"></div>
 
       <div class="sec-label" style="margin-top:18px;">Features — sort into Needs &amp; Wants</div>
-      <p class="drag-hint" style="margin-bottom:10px;">Drag a chip into <strong style="color:#3aaa6a;">Needs</strong> or <strong style="color:#c9a84c;">Wants</strong>. Tap a placed chip to return it to the pool.</p>
-      <p class="tap-hint" style="margin-bottom:10px;">Tap a feature then tap <strong style="color:#3aaa6a;">Need it</strong> or <strong style="color:#c9a84c;">Want it</strong>. Tap a placed chip to remove it.</p>
+      <p class="drag-hint" style="margin-bottom:10px;">Drag a chip into <strong style="color:#3aaa6a;">Needs</strong> or <strong style="color:#8a6a1e;">Wants</strong>. Tap a placed chip to return it to the pool.</p>
+      <p class="tap-hint" style="margin-bottom:10px;">Tap a feature then tap <strong style="color:#3aaa6a;">Need it</strong> or <strong style="color:#8a6a1e;">Want it</strong>. Tap a placed chip to remove it.</p>
 
       <div class="chip-pool" id="chipPool"></div>
 
@@ -226,7 +226,7 @@ function makeChip(spec,loc){
     document.getElementById("wantsZone").classList.add("tap-ready");
     document.getElementById("needsZone").addEventListener("click",tapNeeds);
     document.getElementById("wantsZone").addEventListener("click",tapWants);
-    chip.style.border="2px solid rgba(74,144,217,.7)";chip.style.background="rgba(28,107,186,.2)";
+    chip.style.border="2px solid rgba(21,89,207,.7)";chip.style.background="rgba(21,89,207,.2)";
   });
   return chip;
 }

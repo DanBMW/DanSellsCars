@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | New BMW the right way</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .hero-photo-wrap{display:flex;flex-direction:column;gap:28px;align-items:flex-start;}
+    @media(min-width:680px){
+      .hero-photo-wrap{flex-direction:row;align-items:flex-start;gap:36px;}
+      .hero-photo-col{flex-shrink:0;width:220px;}
+      .hero-text-col{flex:1;}
+    }
+    .dan-photo{width:100%;max-width:220px;aspect-ratio:3/4;object-fit:cover;object-position:center top;border-radius:20px;border:1px solid rgba(16,21,29,.12);box-shadow:0 16px 40px rgba(16,21,29,.10);display:block;}
+    .dan-caption{margin-top:10px;text-align:center;font-size:.78rem;color:#5f6b7c;line-height:1.5;}
+    .dan-caption strong{display:block;color:#3c4a5e;font-size:.85rem;font-weight:700;}
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XZL1RF6SV6');
+  </script>
+</head>
+<body>
+<div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Powered by BMW Ruxley</span></div>
+    <div class="meta"><span class="dot"></span><span>Takes about 2 minutes</span></div>
+  </div>
+  <div class="hero-wrap">
+    <div class="eyebrow">New BMW buying done properly</div>
+    <h1>Forget Car&nbsp;Pow.<br>Forget Auto&nbsp;Fader.<br>Forget Pinch&nbsp;&amp;&nbsp;Kaz&#8209;who?</h1>
+    <div class="hero-photo-wrap">
+      <div class="hero-photo-col">
+        <img src="img/photo01.jpg" alt="Dan, BMW Sales Executive at Hedin Ruxley" class="dan-photo" width="220" height="293" loading="eager"/>
+        <p class="dan-caption"><strong>Dan</strong>BMW Sales Executive<br>Hedin Ruxley, South East</p>
+      </div>
+      <div class="hero-text-col">
+        <p class="lead" style="margin-top:0">Hi, I am Dan. I am a BMW specialist at Hedin Ruxley in the South East and I have sat on both sides of this process.</p>
+        <p class="lead" style="margin-top:14px">Fill this in and I will have everything I need to make your next conversation about BMW ownership actually useful. No scripts, no pressure, no nonsense. BMW's current range spans fully electric, plug-in hybrid, petrol and diesel so there really is something for everyone.*</p>
+        <p class="asterisk">*My goal is that everyone who fills this in walks away with a genuine BMW offer that works for them. Subject to availability, finance approval where needed, and the numbers making sense for both of us.</p>
+        <div class="badge-row">
+          <div class="chip">No call centres</div>
+          <div class="chip">One real person</div>
+          <div class="chip">BMW Ruxley, South East</div>
+          <div class="chip">Both sides of the table</div>
+        </div>
+        <a class="btn-hero" href="step1.html">Let's do this</a>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<div class="showroom-strip" aria-label="BMW Hedin Ruxley">
+  <div class="strip-track"><img src="img/photo02.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo03.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo04.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo05.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo06.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo07.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo02.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo03.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo04.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo05.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo06.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+<img src="img/photo07.jpg" alt="BMW Hedin Ruxley showroom" class="strip-img" width="400" height="300" loading="lazy"/>
+</div>
+</div>
+<div class="showroom-divider">
+  <div class="div-bg" style="background-image:url('img/photo05.jpg')"></div>
+  <div class="div-overlay"></div>
+  <div class="div-content">
+    <h3>Where to next?</h3>
+    <p>BMW Hedin Ruxley — come in and see what's on the floor.</p>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+  <img src="" alt="Showroom" loading="lazy" width="1200" height="800"/>
+</div>
+
+
+<script>
+function openLightbox(src){
+  var lb = document.getElementById('lightbox');
+  lb.querySelector('img').src = src;
+  lb.classList.add('open');
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+}
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLightbox(); });
+</script>
+
+</body></html>

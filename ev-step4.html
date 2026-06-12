@@ -7,13 +7,13 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <style>
-  .co{width:100%;text-align:left;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:border-color .18s,background .18s,transform .15s;display:flex;align-items:flex-start;gap:14px;}
-  .co:hover{border-color:rgba(28,107,186,.45);background:rgba(28,107,186,.08);transform:translateY(-1px);}
-  .co.selected{border-color:rgba(74,144,217,.7);background:rgba(28,107,186,.13);box-shadow:0 0 0 1px rgba(74,144,217,.2);}
-  .co-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:rgba(255,255,255,.05);}
+  .co{width:100%;text-align:left;padding:14px 16px;border-radius:16px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);cursor:pointer;transition:border-color .18s,background .18s,transform .15s;display:flex;align-items:flex-start;gap:14px;}
+  .co:hover{border-color:rgba(21,89,207,.45);background:rgba(21,89,207,.08);transform:translateY(-1px);}
+  .co.selected{border-color:rgba(21,89,207,.7);background:rgba(21,89,207,.13);box-shadow:0 0 0 1px rgba(21,89,207,.2);}
+  .co-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:rgba(16,21,29,.04);}
   .co-body{display:flex;flex-direction:column;gap:3px;}
-  .co-title{font-size:.94rem;font-weight:700;color:#f0f2f5;}
-  .co-desc{font-size:.82rem;color:#8a94a6;line-height:1.45;}
+  .co-title{font-size:.94rem;font-weight:700;color:#141a22;}
+  .co-desc{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
   .co-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:3px;}
   .reg-plate{width:100%;min-height:54px;background:#f4d24a;color:#000;font-weight:900;letter-spacing:.14em;text-transform:uppercase;border:3px solid #111;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);text-align:center;font-size:1.05rem;font-family:Arial,Helvetica,sans-serif;}
 </style>
@@ -68,11 +68,11 @@
         </button>
         <button type="button" class="co" data-val="Partial history" onclick="pickService(this)">
           <div class="co-badge">&#128196;</div>
-          <div class="co-body"><span class="co-title">Partial history</span><span class="co-desc">Some stamps or receipts but gaps.</span><span class="co-tag" style="background:rgba(28,107,186,.15);color:#a8c8f0">Some impact on value</span></div>
+          <div class="co-body"><span class="co-title">Partial history</span><span class="co-desc">Some stamps or receipts but gaps.</span><span class="co-tag" style="background:rgba(21,89,207,.15);color:#1559cf">Some impact on value</span></div>
         </button>
         <button type="button" class="co" data-val="No history" onclick="pickService(this)">
           <div class="co-badge">&#10060;</div>
-          <div class="co-body"><span class="co-title">No history</span><span class="co-desc">No stamps or receipts. Still appraised honestly.</span><span class="co-tag" style="background:rgba(186,80,28,.15);color:#f0a07a">Will affect value</span></div>
+          <div class="co-body"><span class="co-title">No history</span><span class="co-desc">No stamps or receipts. Still appraised honestly.</span><span class="co-tag" style="background:rgba(186,80,28,.15);color:#b4501e">Will affect value</span></div>
         </button>
         <button type="button" class="co" data-val="Not sure" onclick="pickService(this)">
           <div class="co-badge">&#129300;</div>
@@ -111,15 +111,15 @@
         </button>
         <button type="button" class="co" data-val="Good" onclick="pickCond(this)">
           <div class="co-badge">&#128076;</div>
-          <div class="co-body"><span class="co-title">Good</span><span class="co-desc">A few scuffs, stone chips. Honest wear.</span><span class="co-tag" style="background:rgba(28,107,186,.15);color:#a8c8f0">Good value</span></div>
+          <div class="co-body"><span class="co-title">Good</span><span class="co-desc">A few scuffs, stone chips. Honest wear.</span><span class="co-tag" style="background:rgba(21,89,207,.15);color:#1559cf">Good value</span></div>
         </button>
         <button type="button" class="co" data-val="Fair" onclick="pickCond(this)">
           <div class="co-badge">&#128075;</div>
-          <div class="co-body"><span class="co-title">Fair</span><span class="co-desc">Small scratches or dents a buyer would notice.</span><span class="co-tag" style="background:rgba(201,168,76,.12);color:#e0c97a">Average value</span></div>
+          <div class="co-body"><span class="co-title">Fair</span><span class="co-desc">Small scratches or dents a buyer would notice.</span><span class="co-tag" style="background:rgba(201,168,76,.12);color:#8a6a1e">Average value</span></div>
         </button>
         <button type="button" class="co" data-val="Poor" onclick="pickCond(this)">
           <div class="co-badge">&#128078;</div>
-          <div class="co-body"><span class="co-title">Poor</span><span class="co-desc">Significant bodywork or interior damage.</span><span class="co-tag" style="background:rgba(186,80,28,.15);color:#f0a07a">Lower value</span></div>
+          <div class="co-body"><span class="co-title">Poor</span><span class="co-desc">Significant bodywork or interior damage.</span><span class="co-tag" style="background:rgba(186,80,28,.15);color:#b4501e">Lower value</span></div>
         </button>
         <button type="button" class="co" data-val="Not sure" onclick="pickCond(this)">
           <div class="co-badge">&#128247;</div>

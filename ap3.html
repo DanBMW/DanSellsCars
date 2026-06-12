@@ -5,22 +5,22 @@
 <style>
 .condition-option{
   width:100%;text-align:left;padding:15px 18px;border-radius:16px;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);
   cursor:pointer;transition:border-color .18s,background .18s,transform .15s;
   display:flex;align-items:flex-start;gap:14px;
 }
-.condition-option:hover{border-color:rgba(28,107,186,.45);background:rgba(28,107,186,.08);transform:translateY(-1px);}
-.condition-option.selected{border-color:rgba(74,144,217,.7);background:rgba(28,107,186,.13);box-shadow:0 0 0 1px rgba(74,144,217,.2);}
-.condition-badge{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:rgba(255,255,255,.05);}
+.condition-option:hover{border-color:rgba(21,89,207,.45);background:rgba(21,89,207,.08);transform:translateY(-1px);}
+.condition-option.selected{border-color:rgba(21,89,207,.7);background:rgba(21,89,207,.13);box-shadow:0 0 0 1px rgba(21,89,207,.2);}
+.condition-badge{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:rgba(16,21,29,.04);}
 .condition-body{display:flex;flex-direction:column;gap:3px;}
-.condition-title{font-size:.97rem;font-weight:700;color:#f0f2f5;}
-.condition-desc{font-size:.82rem;color:#8a94a6;line-height:1.45;}
+.condition-title{font-size:.97rem;font-weight:700;color:#141a22;}
+.condition-desc{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
 .condition-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:3px;letter-spacing:.04em;}
 
-.rating-section{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:18px 20px;margin-bottom:18px;}
-.rating-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.rating-section{background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);border-radius:20px;padding:18px 20px;margin-bottom:18px;}
+.rating-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(16,21,29,.04);}
 .rating-row:last-child{border-bottom:none}
-.rating-label{font-size:.93rem;font-weight:600;color:#f0f2f5;flex:1;}
+.rating-label{font-size:.93rem;font-weight:600;color:#141a22;flex:1;}
 .stars{display:flex;gap:5px;}
 .star{font-size:1.25rem;cursor:pointer;opacity:.22;transition:.12s ease;line-height:1;}
 .star.on{opacity:1;}
@@ -70,7 +70,7 @@
       <div class="condition-body">
         <span class="condition-title">Good</span>
         <span class="condition-desc">A few scuffed alloys and some stone chips on the bonnet or bumpers. Honest wear for the age and mileage.</span>
-        <span class="condition-tag" style="background:rgba(28,107,186,.15);color:#a8c8f0;">Good value</span>
+        <span class="condition-tag" style="background:rgba(21,89,207,.15);color:#1559cf;">Good value</span>
       </div>
     </button>
     <button class="condition-option" data-val="Fair" onclick="pickCond(this)">
@@ -94,7 +94,7 @@
       <div class="condition-body">
         <span class="condition-title">Not sure</span>
         <span class="condition-desc">Send me a few photos on WhatsApp and I will give you a proper assessment from those.</span>
-        <span class="condition-tag" style="background:rgba(255,255,255,.07);color:#8a94a6;">I will assess from photos</span>
+        <span class="condition-tag" style="background:rgba(16,21,29,.06);color:#5f6b7c;">I will assess from photos</span>
       </div>
     </button>
   </div>
