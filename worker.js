@@ -51,7 +51,7 @@ async function dvlaLookup(reg, env) {
 
   const res = await fetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles', {
     method:  'POST',
-    headers: { 'x-api-key': env.DVLA_KEY, 'Content-Type': 'application/json' },
+    headers: { 'x-api-key': env.DVLA_API_KEY || env.DVLA_KEY, 'Content-Type': 'application/json' },
     body:    JSON.stringify({ registrationNumber: reg.replace(/\s/g, '').toUpperCase() })
   });
 
