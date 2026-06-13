@@ -23,7 +23,11 @@
     <div style="display:grid;gap:14px;">
       <div class="field-group">
         <label>Registration *</label>
-        <input id="sqReg" type="text" placeholder="e.g. AB12 CDE" style="text-transform:uppercase"/>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <input id="sqReg" type="text" placeholder="e.g. AB12 CDE" style="text-transform:uppercase;flex:1" oninput="this.value=this.value.toUpperCase()"/>
+          <button type="button" class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="padding:12px 14px;white-space:nowrap;font-size:.88rem">Look Up</button>
+        </div>
+        <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:10px 14px;font-size:.85rem;color:#0e3f96;margin-top:8px">Found: <strong id="dvlaDesc"></strong></div>
       </div>
       <div class="two-col">
         <div class="field-group">
@@ -70,7 +74,41 @@
   </div>
 </div></div>
 <script>
-  document.getElementById("sqReg").addEventListener("input",function(){this.value=this.value.toUpperCase();});
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+  function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
+
+  async function dvlaLookup(){
+    const reg=document.getElementById("sqReg").value.trim().replace(/\s/g,"").toUpperCase();
+    if(!reg) return;
+    const btn=document.getElementById("dvlaBtn");
+    btn.disabled=true; btn.textContent="…";
+    document.getElementById("dvlaBanner").style.display="none";
+    try{
+      const res=await fetch(WORKER+"?target=dvla-lookup&reg="+encodeURIComponent(reg));
+      const d=await res.json();
+      if(d.make){
+        const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||""), fuel=(d.fuelType||"").toLowerCase();
+        sessionStorage.setItem("sqDvlaMake",d.make||"");
+        sessionStorage.setItem("sqDvlaModel",d.model||"");
+        sessionStorage.setItem("sqDvlaYear",yr);
+        sessionStorage.setItem("sqDvlaFuel",d.fuelType||"");
+        const parts=[yr,make,model,toTC(d.colour||""),toTC(d.fuelType||"")].filter(Boolean);
+        document.getElementById("dvlaDesc").textContent=parts.join(" · ");
+        document.getElementById("dvlaBanner").style.display="block";
+        startMarket(d.make||"",d.model||"",yr,fuel);
+      }
+    }catch(e){}
+    btn.disabled=false; btn.textContent="Look Up";
+  }
+
+  function startMarket(make,model,year,fuel){
+    if(!make||!year) return;
+    const p=new URLSearchParams({target:"market-start",make,model,year,fuel});
+    fetch(WORKER+"?"+p).then(r=>r.json()).then(d=>{
+      if(d.runId) sessionStorage.setItem("sqMarketRunId",d.runId);
+    }).catch(()=>{});
+  }
+
   function goNext(){
     const reg = document.getElementById("sqReg").value.trim();
     const mil = document.getElementById("sqMileage").value.trim();
