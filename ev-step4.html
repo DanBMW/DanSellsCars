@@ -43,7 +43,9 @@
       <div class="input-card" style="margin-bottom:16px">
         <div class="field-group" style="margin-bottom:16px">
           <label for="reg">Registration</label>
-          <input id="reg" type="text" class="reg-plate" placeholder="AB12 CDE" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false">
+          <input id="reg" type="text" class="reg-plate" placeholder="AB12 CDE" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
+          <button type="button" class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="margin-top:8px;width:100%;padding:10px 14px;font-size:.88rem">Look Up</button>
+          <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:10px 14px;font-size:.85rem;color:#0e3f96;margin-top:8px">Found: <strong id="dvlaDesc"></strong></div>
         </div>
         <div class="two-col">
           <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"></div>
@@ -135,6 +137,9 @@
   </div>
 </div></div>
 <script>
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+  function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
+
   let pxChosen      = sessionStorage.getItem('evPX');
   let serviceChosen = sessionStorage.getItem('evPXService');
   let financeChosen = sessionStorage.getItem('evPXFinance');
@@ -152,6 +157,40 @@
   const ml  = sessionStorage.getItem('evPXMileage');  if (ml)  document.getElementById('ml').value  = ml;
   const wv  = sessionStorage.getItem('evWBAC');       if (wv)  document.getElementById('wv').value  = wv;
   const sf  = sessionStorage.getItem('evSettlement'); if (sf)  document.getElementById('settlementFig').value = sf;
+
+  async function dvlaLookup(){
+    const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
+    if(!reg) return;
+    const btn=document.getElementById("dvlaBtn");
+    btn.disabled=true; btn.textContent="…";
+    document.getElementById("dvlaBanner").style.display="none";
+    try{
+      const res=await fetch(WORKER+"?target=dvla-lookup&reg="+encodeURIComponent(reg));
+      const d=await res.json();
+      if(d.make){
+        const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||""), fuel=(d.fuelType||"").toLowerCase();
+        const ccField=document.getElementById("cc");
+        if(ccField && !ccField.value) ccField.value=[yr,make,model].filter(Boolean).join(" ");
+        sessionStorage.setItem("evDvlaMake",d.make||"");
+        sessionStorage.setItem("evDvlaModel",d.model||"");
+        sessionStorage.setItem("evDvlaYear",yr);
+        sessionStorage.setItem("evDvlaFuel",d.fuelType||"");
+        const parts=[yr,make,model,toTC(d.colour||""),toTC(d.fuelType||"")].filter(Boolean);
+        document.getElementById("dvlaDesc").textContent=parts.join(" · ");
+        document.getElementById("dvlaBanner").style.display="block";
+        startMarket(d.make||"",d.model||"",yr,fuel);
+      }
+    }catch(e){}
+    btn.disabled=false; btn.textContent="Look Up";
+  }
+
+  function startMarket(make,model,year,fuel){
+    if(!make||!year) return;
+    const p=new URLSearchParams({target:"market-start",make,model,year,fuel});
+    fetch(WORKER+"?"+p).then(r=>r.json()).then(d=>{
+      if(d.runId) sessionStorage.setItem("evMarketRunId",d.runId);
+    }).catch(()=>{});
+  }
 
   function pick(btn, show) {
     document.querySelectorAll('.choice').forEach(b => b.classList.remove('selected'));

@@ -69,6 +69,29 @@
     sg.appendChild(d);
   });
 
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+
+  async function pollMarket(runId){
+    if(!runId) return null;
+    for(let i=0;i<5;i++){
+      await new Promise(r=>setTimeout(r,2000));
+      try{
+        const r=await fetch(WORKER+'?target=market-poll&runId='+encodeURIComponent(runId));
+        const d=await r.json();
+        if(d.status==='SUCCEEDED'){
+          const prices=(d.items||[]).map(l=>l.pricing&&l.pricing.mainPrice?l.pricing.mainPrice:0).filter(p=>p>500).sort((a,b)=>a-b);
+          if(prices.length){
+            const avg=prices.reduce((a,b)=>a+b,0)/prices.length;
+            return{low:'£'+Math.round(prices[0]).toLocaleString('en-GB'),avg:'£'+Math.round(avg).toLocaleString('en-GB'),high:'£'+Math.round(prices[prices.length-1]).toLocaleString('en-GB'),trade:'£'+Math.round(avg*0.80).toLocaleString('en-GB')};
+          }
+          break;
+        }
+        if(d.status==='FAILED') break;
+      }catch(e){break;}
+    }
+    return null;
+  }
+
   async function submit() {
     const btn = document.getElementById('sb');
     btn.textContent = 'Sending...'; btn.disabled = true;
@@ -78,6 +101,7 @@
     const cp    = sessionStorage.getItem('evCurrentPayment') || '0';
     const calUrl = 'https://cal.eu/danbmwruxley/telephone-appointment?' + new URLSearchParams({name, email}).toString();
     const fmt = (k) => sessionStorage.getItem(k) ? '£' + Number(sessionStorage.getItem(k)).toLocaleString('en-GB') : '';
+    const market = await pollMarket(sessionStorage.getItem('evMarketRunId'));
     const payload = {
       subject:           'EV Lead — ' + name,
       replyto:           email,
@@ -107,6 +131,10 @@
       pxsettlement:      fmt('evSettlement'),
       pxcondition:       sessionStorage.getItem('evPXCond'),
       notes:             sessionStorage.getItem('evNotes'),
+      px_market_low:           market ? market.low   : '',
+      px_market_avg:           market ? market.avg   : '',
+      px_market_high:          market ? market.high  : '',
+      px_market_trade_estimate: market ? market.trade : '',
     };
     try {
       await fetch('https://formspree.io/f/xqewleog', {

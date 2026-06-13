@@ -30,6 +30,29 @@
   </div>
 </div></div>
 <script>
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+
+  async function pollMarket(runId){
+    if(!runId) return null;
+    for(let i=0;i<5;i++){
+      await new Promise(r=>setTimeout(r,2000));
+      try{
+        const r=await fetch(WORKER+'?target=market-poll&runId='+encodeURIComponent(runId));
+        const d=await r.json();
+        if(d.status==='SUCCEEDED'){
+          const prices=(d.items||[]).map(l=>l.pricing&&l.pricing.mainPrice?l.pricing.mainPrice:0).filter(p=>p>500).sort((a,b)=>a-b);
+          if(prices.length){
+            const avg=prices.reduce((a,b)=>a+b,0)/prices.length;
+            return{low:'£'+Math.round(prices[0]).toLocaleString('en-GB'),avg:'£'+Math.round(avg).toLocaleString('en-GB'),high:'£'+Math.round(prices[prices.length-1]).toLocaleString('en-GB'),trade:'£'+Math.round(avg*0.80).toLocaleString('en-GB')};
+          }
+          break;
+        }
+        if(d.status==='FAILED') break;
+      }catch(e){break;}
+    }
+    return null;
+  }
+
   async function submit(){
     const first = document.getElementById("sqFirst").value.trim();
     const last = document.getElementById("sqLast").value.trim();
@@ -41,6 +64,7 @@
     sessionStorage.setItem("sqPhone", phone);
     sessionStorage.setItem("sqEmail", document.getElementById("sqEmail").value.trim());
 
+    const market = await pollMarket(sessionStorage.getItem("sqMarketRunId"));
     const payload = {
       _subject: "Service Qualifier — " + first + " " + last,
       _replyto: document.getElementById("sqEmail").value.trim()||"noreply@dan-sells.co.uk",
@@ -62,7 +86,11 @@
       px_finance: sessionStorage.getItem("sqPXFinance")||"",
       px_condition: sessionStorage.getItem("sqPXCondition")||"",
       px_service_history: sessionStorage.getItem("sqPXService")||"",
-      px_wbac_quote: sessionStorage.getItem("sqPXWBAC")||""
+      px_wbac_quote: sessionStorage.getItem("sqPXWBAC")||"",
+      px_market_low:           market ? market.low   : "",
+      px_market_avg:           market ? market.avg   : "",
+      px_market_high:          market ? market.high  : "",
+      px_market_trade_estimate: market ? market.trade : ""
     };
 
     try{

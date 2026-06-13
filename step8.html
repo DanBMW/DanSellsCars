@@ -100,7 +100,30 @@ function buildText(){
   }).join("\n");
 }
 
-function sendForm(){
+var WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+
+async function pollMarket(runId){
+  if(!runId) return null;
+  for(var i=0;i<5;i++){
+    await new Promise(function(r){setTimeout(r,2000);});
+    try{
+      var r=await fetch(WORKER+'?target=market-poll&runId='+encodeURIComponent(runId));
+      var d=await r.json();
+      if(d.status==='SUCCEEDED'){
+        var prices=(d.items||[]).map(function(l){return l.pricing&&l.pricing.mainPrice?l.pricing.mainPrice:0;}).filter(function(p){return p>500;}).sort(function(a,b){return a-b;});
+        if(prices.length){
+          var avg=prices.reduce(function(a,b){return a+b;},0)/prices.length;
+          return{low:'£'+Math.round(prices[0]).toLocaleString('en-GB'),avg:'£'+Math.round(avg).toLocaleString('en-GB'),high:'£'+Math.round(prices[prices.length-1]).toLocaleString('en-GB'),trade:'£'+Math.round(avg*0.80).toLocaleString('en-GB')};
+        }
+        break;
+      }
+      if(d.status==='FAILED') break;
+    }catch(e){break;}
+  }
+  return null;
+}
+
+async function sendForm(){
   var btn = document.getElementById("sb");
   btn.textContent = "Sending…";
   btn.disabled = true;
@@ -113,6 +136,8 @@ function sendForm(){
     new URLSearchParams({name: name, email: email, notes: summary}).toString();
 
   sessionStorage.setItem("bookingUrl", calUrl);
+
+  var market = await pollMarket(sessionStorage.getItem('pxMarketRunId'));
 
   var payload = {
     name:             name,
@@ -143,7 +168,11 @@ function sendForm(){
     spec_bypass:      sessionStorage.getItem("specBypass")    || "",
     leadsummary:      summary,
     subject:          "DanSells lead: " + name,
-    replyto:          email
+    replyto:          email,
+    px_market_low:          market ? market.low   : "",
+    px_market_avg:          market ? market.avg   : "",
+    px_market_high:         market ? market.high  : "",
+    px_market_trade_estimate: market ? market.trade : ""
   };
 
   fetch("https://formspree.io/f/xqewleog", {
