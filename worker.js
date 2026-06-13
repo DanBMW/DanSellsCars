@@ -28,7 +28,8 @@ export default {
 
     try {
       let body;
-      if      (target === 'dvla-lookup')  body = await dvlaLookup(url.searchParams.get('reg') || '', env);
+      if      (target === 'debug')         body = { dvla_api_key_set: !!env.DVLA_API_KEY, dvla_api_key_length: env.DVLA_API_KEY ? env.DVLA_API_KEY.length : 0, apify_token_set: !!env.APIFY_TOKEN };
+      else if (target === 'dvla-lookup')  body = await dvlaLookup(url.searchParams.get('reg') || '', env);
       else if (target === 'market-start') body = await marketStart(url.searchParams, env);
       else if (target === 'market-poll')  body = await marketPoll(url.searchParams.get('runId') || '', env);
       else                                body = { error: 'Unknown target' };
