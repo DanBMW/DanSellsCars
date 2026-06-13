@@ -25,8 +25,17 @@
   <p class="step-desc">The more accurate you are, the more accurate Dan's part exchange figure will be.</p>
   <div class="input-card">
     <div class="two-col">
-      <div class="field-group"><label>Registration *</label><input id="reg" type="text" placeholder="e.g. AB21 XYZ" style="text-transform:uppercase"/></div>
+      <div class="field-group">
+        <label>Registration *</label>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <input id="reg" type="text" placeholder="e.g. AB21 XYZ" style="text-transform:uppercase;flex:1" oninput="this.value=this.value.toUpperCase()"/>
+          <button class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="padding:12px 14px;white-space:nowrap;font-size:.88rem">Look Up</button>
+        </div>
+      </div>
       <div class="field-group"><label>Mileage *</label><input id="ml" type="number" placeholder="e.g. 32000"/></div>
+    </div>
+    <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:11px 15px;font-size:.88rem;color:#0e3f96;margin-bottom:0">
+      Found: <strong id="dvlaDesc"></strong>
     </div>
     <div class="two-col">
       <div class="field-group"><label>Make & Model</label><input id="makemodel" type="text" placeholder="e.g. BMW 3 Series 320i M Sport"/></div>
@@ -35,13 +44,13 @@
     <div class="two-col">
       <div class="field-group"><label>Colour</label><input id="col" type="text" placeholder="e.g. Alpine White"/></div>
       <div class="field-group"><label>Fuel type</label>
-        <select id="fuel" style="width:100%;background:rgba(16,21,29,.04);border:1px solid rgba(255,255,255,.09);padding:13px 16px;border-radius:14px;outline:none;color:#141a22">
-          <option value="" style="background:#0a1020">Select...</option>
-          <option value="Petrol" style="background:#0a1020">Petrol</option>
-          <option value="Diesel" style="background:#0a1020">Diesel</option>
-          <option value="Hybrid" style="background:#0a1020">Hybrid (PHEV)</option>
-          <option value="Mild Hybrid" style="background:#0a1020">Mild Hybrid (MHEV)</option>
-          <option value="Electric" style="background:#0a1020">Full Electric (BEV)</option>
+        <select id="fuel">
+          <option value="">Select...</option>
+          <option value="Petrol">Petrol</option>
+          <option value="Diesel">Diesel</option>
+          <option value="Hybrid">Hybrid (PHEV)</option>
+          <option value="Mild Hybrid">Mild Hybrid (MHEV)</option>
+          <option value="Electric">Full Electric (BEV)</option>
         </select>
       </div>
     </div>
@@ -53,9 +62,44 @@
   </div>
 </div></div></div>
 <script>
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+
+  function toTC(str){ return (str||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
+
   [["reg","apReg"],["ml","apMileage"],["makemodel","apMakeModel"],["yr","apYear"],["col","apColour"],["fuel","apFuel"],["spec","apSpec"]].forEach(([id,key])=>{
     const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
   });
+
+  async function dvlaLookup(){
+    const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
+    if(!reg) return;
+    const btn=document.getElementById("dvlaBtn");
+    btn.disabled=true; btn.textContent="…";
+    document.getElementById("dvlaBanner").style.display="none";
+    try{
+      const res=await fetch(`${WORKER}?target=dvla-lookup&reg=${encodeURIComponent(reg)}`);
+      const d=await res.json();
+      if(d.make){
+        const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||""), col=toTC(d.colour||""), fuel=(d.fuelType||"").toLowerCase();
+        if(make)  document.getElementById("makemodel").value=[make,model].filter(Boolean).join(" ");
+        if(yr)    document.getElementById("yr").value=yr;
+        if(col)   document.getElementById("col").value=col;
+        const fuelSel=document.getElementById("fuel");
+        const fuelMap={petrol:"Petrol",diesel:"Diesel",hybrid:"Hybrid","mild hybrid":"Mild Hybrid",electricity:"Electric",electric:"Electric"};
+        if(fuelMap[fuel]) fuelSel.value=fuelMap[fuel];
+        const parts=[yr,make,model,col,toTC(d.fuelType||"")].filter(Boolean);
+        document.getElementById("dvlaDesc").textContent=parts.join(" · ");
+        document.getElementById("dvlaBanner").style.display="block";
+      }
+    }catch(e){}
+    btn.disabled=false; btn.textContent="Look Up";
+  }
+
+  (function init(){
+    const p=new URLSearchParams(window.location.search), reg=p.get("reg");
+    if(reg){ document.getElementById("reg").value=reg.toUpperCase(); dvlaLookup(); }
+  })();
+
   function go(){
     const r=document.getElementById("reg").value.trim(), m=document.getElementById("ml").value.trim();
     if(!r||!m){ alert("Registration and mileage are needed to start."); return; }

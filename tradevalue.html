@@ -1,448 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade Value Tool</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DanSells | Get Your Valuation</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XZL1RF6SV6');
+  </script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0a0a0a;
-      color: #f0f0f0;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container { max-width: 640px; margin: 0 auto; }
-    header { text-align: center; padding: 30px 0 20px; }
-    header h1 { font-size: 1.8rem; font-weight: 700; color: #fff; letter-spacing: 1px; }
-    header p { color: #888; font-size: 0.9rem; margin-top: 6px; }
-
-    .card {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 20px;
-    }
-
-    .reg-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
-      align-items: flex-end;
-    }
-    .reg-row > div:first-child { flex: 1; }
-    .reg-row button {
-      background: #2a2a2a;
-      color: #fff;
-      border: 1px solid #444;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.2s;
-      margin-bottom: 16px;
-    }
-    .reg-row button:hover { background: #333; }
-
-    label {
-      display: block; font-size: 0.8rem; color: #888;
-      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    input, select {
-      width: 100%; background: #111; border: 1px solid #333;
-      border-radius: 8px; color: #fff; padding: 12px 14px;
-      font-size: 1rem; margin-bottom: 0; outline: none; transition: border 0.2s;
-    }
-    input:focus, select:focus { border-color: #1c69d4; }
-    .field { margin-bottom: 16px; }
-
-    .row { display: flex; gap: 12px; }
-    .row > .field { flex: 1; }
-
-    .vehicle-info {
-      display: none;
-      background: #111;
-      border: 1px solid #1c69d4;
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 16px;
-      font-size: 0.85rem;
-      color: #4d9fff;
-    }
-    .vehicle-info span { color: #fff; font-weight: 600; }
-
-    button#lookupBtn {
-      width: 100%; background: #1c69d4; color: #fff; border: none;
-      border-radius: 8px; padding: 14px; font-size: 1rem; font-weight: 600;
-      cursor: pointer; transition: background 0.2s; letter-spacing: 0.5px;
-      margin-top: 4px;
-    }
-    button#lookupBtn:hover { background: #1558b0; }
-    button#lookupBtn:disabled { background: #333; color: #666; cursor: not-allowed; }
-
-    #statusBox {
-      display: none; text-align: center; padding: 20px;
-      background: #111; border: 1px solid #2a2a2a;
-      border-radius: 12px; margin-bottom: 20px;
-    }
-    .spinner {
-      width: 36px; height: 36px; border: 3px solid #333;
-      border-top-color: #1c69d4; border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin: 0 auto 12px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #statusText { color: #888; font-size: 0.9rem; }
-
-    #resultsBox { display: none; }
-
-    .price-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 12px; margin-bottom: 20px;
-    }
-    .price-card {
-      background: #111; border: 1px solid #2a2a2a;
-      border-radius: 10px; padding: 16px 12px; text-align: center;
-    }
-    .price-card.highlight { border-color: #1c69d4; background: #0d1f3c; }
-    .price-card .plabel {
-      font-size: 0.7rem; color: #666; text-transform: uppercase;
-      letter-spacing: 0.5px; margin-bottom: 8px;
-    }
-    .price-card .value { font-size: 1.4rem; font-weight: 700; color: #fff; }
-    .price-card.highlight .value { color: #4d9fff; }
-    .price-card .sub { font-size: 0.7rem; color: #555; margin-top: 4px; }
-
-    .trade-recommendation {
-      background: #0d1f3c; border: 1px solid #1c69d4;
-      border-radius: 10px; padding: 18px; margin-bottom: 20px; text-align: center;
-    }
-    .trade-label { font-size: 0.75rem; color: #4d9fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-    .trade-value { font-size: 2rem; font-weight: 800; color: #fff; }
-    .trade-note { font-size: 0.8rem; color: #666; margin-top: 6px; }
-
-    .listings-header {
-      font-size: 0.8rem; color: #666; text-transform: uppercase;
-      letter-spacing: 0.5px; margin-bottom: 10px;
-    }
-    .listing-item {
-      background: #111; border: 1px solid #222; border-radius: 8px;
-      padding: 12px 14px; margin-bottom: 8px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .listing-title { font-size: 0.85rem; color: #ccc; flex: 1; }
-    .listing-mileage { font-size: 0.75rem; color: #555; margin-top: 2px; }
-    .listing-price { font-size: 1rem; font-weight: 700; color: #4d9fff; margin-left: 12px; white-space: nowrap; }
-
-    .disclaimer {
-      font-size: 0.72rem; color: #444; text-align: center;
-      line-height: 1.5; padding: 10px 0 20px;
-    }
-    #errorBox {
-      display: none; background: #1a0a0a; border: 1px solid #5a1a1a;
-      border-radius: 10px; padding: 16px; color: #ff6b6b;
-      font-size: 0.85rem; text-align: center; margin-bottom: 20px;
-    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .lookup-row{display:flex;gap:8px;align-items:flex-end;}
+    .lookup-row input{flex:1;min-width:0;}
+    .lookup-row .btn{padding:12px 16px;white-space:nowrap;font-size:.9rem;}
+    .vehicle-banner{display:none;background:var(--blue-tint);border:1px solid rgba(21,89,207,.25);border-radius:12px;padding:12px 16px;font-size:.9rem;color:var(--blue-deep);}
+    .vehicle-banner strong{font-weight:700;}
+    .spinner-inline{display:inline-block;width:18px;height:18px;border:2px solid rgba(21,89,207,.25);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
   </style>
 </head>
 <body>
-<div class="container">
+<div class="app"><div class="shell">
 
-  <header>
-    <h1>Trade Value Tool</h1>
-    <p>Real-time market data · Instant trade estimate</p>
-  </header>
-
-  <div class="card">
-
-    <div class="reg-row">
-      <div>
-        <label>Registration</label>
-        <input type="text" id="reg" placeholder="e.g. AB12 CDE" maxlength="8"
-          oninput="this.value=this.value.toUpperCase()" />
-      </div>
-      <button onclick="lookupReg()">Look Up Reg</button>
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-name">DanSells</span>
+      <span class="brand-sub">Part Exchange Valuation</span>
     </div>
-
-    <div class="vehicle-info" id="vehicleInfo">
-      Found: <span id="vehicleDesc">, </span>
-    </div>
-
-    <div class="row">
-      <div class="field">
-        <label>Make</label>
-        <input type="text" id="make" placeholder="e.g. BMW" />
-      </div>
-      <div class="field">
-        <label>Model</label>
-        <input type="text" id="model" placeholder="e.g. 3 Series" />
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="field">
-        <label>Year</label>
-        <input type="number" id="year" placeholder="e.g. 2020" min="2000" max="2026" />
-      </div>
-      <div class="field">
-        <label>Mileage</label>
-        <input type="number" id="mileage" placeholder="e.g. 45000" />
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Fuel Type</label>
-      <select id="fuel">
-        <option value="">Any</option>
-        <option>Petrol</option>
-        <option>Diesel</option>
-        <option>Hybrid</option>
-        <option>Electric</option>
-      </select>
-    </div>
-
-    <button id="lookupBtn" onclick="startLookup()">Get Trade Value</button>
+    <div class="meta"><span class="dot"></span><span>Free · No obligation</span></div>
   </div>
 
-  <div id="statusBox">
-    <div class="spinner"></div>
-    <div id="statusText">Starting market search...</div>
-  </div>
+  <!-- FORM SECTION -->
+  <div class="step-wrap" id="formSection">
+    <div class="step-kicker">Your part exchange</div>
+    <h2>What's your car worth?</h2>
+    <p class="step-desc">Enter your reg and a few details. Dan will come back with a real, honest offer — no computer algorithms, just genuine market knowledge.</p>
 
-  <div id="errorBox"></div>
+    <div class="input-card">
+      <!-- Registration + lookup -->
+      <div class="two-col">
+        <div class="field-group">
+          <label>Registration *</label>
+          <div class="lookup-row">
+            <input id="reg" type="text" placeholder="e.g. AB21 XYZ" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
+            <button class="btn" id="lookupBtn" onclick="lookupReg()">Look Up</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Mileage *</label>
+          <input id="mileage" type="number" placeholder="e.g. 45000" min="0"/>
+        </div>
+      </div>
 
-  <div id="resultsBox">
-    <div class="price-grid">
-      <div class="price-card">
-        <div class="plabel">Market Low</div>
-        <div class="value" id="priceLow">, </div>
-        <div class="sub">Cheapest listed</div>
+      <!-- Vehicle confirmation banner -->
+      <div class="vehicle-banner" id="vehicleBanner">
+        Found: <strong id="vehicleDesc"></strong>
       </div>
-      <div class="price-card highlight">
-        <div class="plabel">Market Avg</div>
-        <div class="value" id="priceAvg">, </div>
-        <div class="sub">Based on <span id="listingCount">0</span> listings</div>
+
+      <!-- Contact -->
+      <div class="two-col">
+        <div class="field-group">
+          <label>Your name *</label>
+          <input id="custName" type="text" placeholder="e.g. John Smith"/>
+        </div>
+        <div class="field-group">
+          <label>Phone *</label>
+          <input id="custPhone" type="tel" placeholder="e.g. 07700 123456"/>
+        </div>
       </div>
-      <div class="price-card">
-        <div class="plabel">Market High</div>
-        <div class="value" id="priceHigh">, </div>
-        <div class="sub">Top listed</div>
+      <div class="field-group">
+        <label>Email</label>
+        <input id="custEmail" type="email" placeholder="e.g. john@example.com"/>
       </div>
     </div>
 
-    <div class="trade-recommendation">
-      <div class="trade-label">Recommended Trade Value</div>
-      <div class="trade-value" id="tradeValue">, </div>
-      <div class="trade-note">Estimated at 80% of market average · Subject to inspection</div>
+    <!-- Error -->
+    <div id="errorBox" style="display:none;background:rgba(180,0,0,.07);border:1px solid rgba(180,0,0,.22);border-radius:12px;padding:12px 16px;color:#b91c1c;font-size:.9rem;margin-bottom:16px;"></div>
+
+    <!-- Progress indicator -->
+    <div id="statusBox" style="display:none;text-align:center;padding:24px;">
+      <div class="spinner-inline" style="width:28px;height:28px;display:block;margin:0 auto 10px;"></div>
+      <p id="statusText" style="color:var(--muted);font-size:.9rem;"></p>
     </div>
 
-    <div class="listings-header">Similar listings found</div>
-    <div id="listingsList"></div>
+    <div class="nav">
+      <a class="btn-ghost" href="appraisal.html">&larr; Back</a>
+      <button class="btn" id="submitBtn" onclick="submitValuation()">Request My Valuation &rarr;</button>
+    </div>
 
-    <p class="disclaimer">
-      Trade values are estimates based on current retail market data. Actual trade price
-      subject to physical inspection, service history, and condition. Data sourced from
-      AutoTrader UK at time of search.
-    </p>
+    <p style="color:var(--muted);font-size:.8rem;margin-top:16px;text-align:center;">Dan reviews every request personally and typically responds within a few hours.</p>
   </div>
 
-</div>
+  <!-- THANK YOU SECTION -->
+  <div class="step-wrap" id="thankYouSection" style="display:none;">
+    <div class="success-wrap">
+      <div class="step-kicker">Valuation requested</div>
+      <h2 style="margin-bottom:14px">Dan has your details.</h2>
+      <p>Your registration and contact details are with Dan now. He'll be in touch with an honest valuation — typically within a few hours during the working day.</p>
+      <p style="margin-bottom:28px">To help Dan give you the most accurate figure, send a few photos of your car on WhatsApp — takes about a minute.</p>
+      <div class="btn-row">
+        <a class="btn" id="waLink" href="https://wa.me/447827138197" target="_blank" rel="noopener">📲 Send photos on WhatsApp</a>
+        <a class="btn-ghost" href="index.html">Back to home</a>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+
 <script>
-  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
-  let pollTimer = null;
-  let pollCount = 0;
+  const WORKER   = 'https://vehicleproxy.danielcane1992.workers.dev';
+  const FORMSPREE = 'https://formspree.io/f/xqewleog';
 
-  function fmt(n) {
-    return '£' + Math.round(n).toLocaleString('en-GB');
-  }
-
-  // --- DVLA Reg Lookup ---
-  async function lookupReg() {
-    const reg = document.getElementById('reg').value.trim().replace(/\s/g, '');
-    if (!reg) { showError('Please enter a registration number.'); return; }
-    hideError();
-
-    try {
-      const res = await fetch(`${WORKER}?target=dvla-lookup&reg=${reg}`);
-      const data = await res.json();
-
-      if (data.make) {
-        document.getElementById('make').value  = toTitleCase(data.make || '');
-        document.getElementById('model').value = toTitleCase(data.model || '');
-        document.getElementById('year').value  = data.yearOfManufacture || data.year || '';
-
-        // Set fuel type dropdown
-        const fuelRaw  = (data.fuelType || '').toLowerCase();
-        const fuelMap  = { petrol:'Petrol', diesel:'Diesel', hybrid:'Hybrid', electric:'Electric' };
-        const fuelSel  = document.getElementById('fuel');
-        for (let opt of fuelSel.options) {
-          if (opt.value.toLowerCase() === fuelRaw) { fuelSel.value = opt.value; break; }
-        }
-
-        const desc = `${data.yearOfManufacture || ''} ${toTitleCase(data.make || '')} ${toTitleCase(data.model || '')} · ${toTitleCase(data.colour || '')} · ${toTitleCase(data.fuelType || '')}`;
-        document.getElementById('vehicleDesc').textContent = desc;
-        document.getElementById('vehicleInfo').style.display = 'block';
-      } else {
-        showError('Could not find vehicle for that registration. Please fill in details manually.');
-      }
-    } catch(e) {
-      showError('Reg lookup failed. Please fill in details manually.');
-    }
-  }
+  let dvla = {};
 
   function toTitleCase(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    return (str || '').replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
   }
 
-  // --- Market Lookup ---
-  async function startLookup() {
-    const reg     = document.getElementById('reg').value.trim();
-    const mileage = document.getElementById('mileage').value.trim();
-    const year    = document.getElementById('year').value.trim();
-    const make    = document.getElementById('make').value.trim();
-    const model   = document.getElementById('model').value.trim();
-    const fuel    = document.getElementById('fuel').value.trim();
-
-    if (!mileage || !year || !make || !model) {
-      showError('Please fill in Make, Model, Year and Mileage (or use Look Up Reg).');
-      return;
-    }
-
-    hideResults(); hideError();
-    showStatus('Starting market search...');
-    setBtn(true);
-    pollCount = 0;
+  async function lookupReg() {
+    const reg = document.getElementById('reg').value.trim().replace(/\s/g, '').toUpperCase();
+    if (!reg) return;
+    const btn = document.getElementById('lookupBtn');
+    btn.disabled = true;
+    btn.textContent = '…';
+    hideBanner(); hideError();
 
     try {
-      const params = new URLSearchParams({
-        target: 'market-start',
-        make, model, year, mileage,
-        fuel: fuel || ''
+      const res  = await fetch(`${WORKER}?target=dvla-lookup&reg=${encodeURIComponent(reg)}`);
+      const data = await res.json();
+      if (data.make) {
+        dvla = data;
+        const parts = [
+          data.yearOfManufacture || data.year || '',
+          toTitleCase(data.make),
+          toTitleCase(data.model),
+          toTitleCase(data.colour),
+          toTitleCase(data.fuelType)
+        ].filter(Boolean);
+        document.getElementById('vehicleDesc').textContent = parts.join(' · ');
+        showBanner();
+      }
+    } catch(e) {}
+
+    btn.disabled = false;
+    btn.textContent = 'Look Up';
+  }
+
+  async function submitValuation() {
+    const reg    = document.getElementById('reg').value.trim().toUpperCase();
+    const miles  = document.getElementById('mileage').value.trim();
+    const name   = document.getElementById('custName').value.trim();
+    const phone  = document.getElementById('custPhone').value.trim();
+    const email  = document.getElementById('custEmail').value.trim();
+
+    hideError();
+    if (!reg || !miles || !name || !phone) {
+      showError('Please fill in Registration, Mileage, Name and Phone number.');
+      return;
+    }
+
+    setSubmitDisabled(true);
+    showStatus('Looking up market data…');
+
+    let marketLow = '', marketAvg = '', marketHigh = '', tradeEst = '', listingsJson = '';
+
+    try {
+      const make  = dvla.make  || '';
+      const model = dvla.model || '';
+      const year  = dvla.yearOfManufacture || dvla.year || '';
+      const fuel  = dvla.fuelType || '';
+
+      if (make && year) {
+        const params = new URLSearchParams({ target:'market-start', make, model, year, mileage:miles, fuel });
+        const startRes  = await Promise.race([
+          fetch(`${WORKER}?${params}`),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))
+        ]);
+        const startData = await startRes.json();
+
+        if (startData.runId) {
+          for (let i = 0; i < 15; i++) {
+            await delay(3000);
+            const pollRes  = await fetch(`${WORKER}?target=market-poll&runId=${encodeURIComponent(startData.runId)}`);
+            const pollData = await pollRes.json();
+
+            if (pollData.status === 'SUCCEEDED' || pollData.status === 'complete') {
+              const listings = pollData.items || pollData.listings || (pollData.data && pollData.data.items) || pollData.data || [];
+              const prices = listings.map(l => l.pricing && l.pricing.mainPrice ? l.pricing.mainPrice : 0).filter(p => p > 500).sort((a,b) => a - b);
+              if (prices.length > 0) {
+                const avg = prices.reduce((a,b) => a + b, 0) / prices.length;
+                marketLow  = fmt(prices[0]);
+                marketAvg  = fmt(avg);
+                marketHigh = fmt(prices[prices.length - 1]);
+                tradeEst   = fmt(avg * 0.80);
+                listingsJson = JSON.stringify(listings.slice(0, 8).map(l => ({
+                  title:   l.subtitle || l.model || '',
+                  year:    l.year || '',
+                  mileage: (l.mileage && l.mileage.value) ? l.mileage.value : '',
+                  price:   (l.pricing && l.pricing.mainPrice) ? l.pricing.mainPrice : 0,
+                  colour:  (l.specifications && l.specifications.exteriorColor) ? l.specifications.exteriorColor : ''
+                })));
+              }
+              break;
+            } else if (pollData.status === 'FAILED' || pollData.status === 'error') {
+              break;
+            }
+          }
+        }
+      }
+    } catch(e) {}
+
+    updateStatus('Sending to Dan…');
+
+    try {
+      const payload = {
+        _subject:        `Valuation Request — ${reg}`,
+        _replyto:        email || 'noreply@dan-sells.co.uk',
+        registration:    reg,
+        make:            toTitleCase(dvla.make  || ''),
+        model:           toTitleCase(dvla.model || ''),
+        year:            String(dvla.yearOfManufacture || dvla.year || ''),
+        colour:          toTitleCase(dvla.colour   || ''),
+        fuel:            toTitleCase(dvla.fuelType || ''),
+        mileage:         miles,
+        customer_name:   name,
+        customer_phone:  phone,
+        customer_email:  email,
+        market_low:      marketLow,
+        market_avg:      marketAvg,
+        market_high:     marketHigh,
+        trade_estimate:  tradeEst,
+        market_listings: listingsJson
+      };
+
+      const res = await fetch(FORMSPREE, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body:    JSON.stringify(payload)
       });
 
-      const res  = await fetch(`${WORKER}?${params}`);
-      const data = await res.json();
-
-      if (!data.runId) {
-        showError('Failed to start market search. Please try again.');
-        setBtn(false); return;
+      if (res.ok) {
+        hideStatus();
+        const waMsg = `Hi Dan, I just submitted a valuation request online.\n\nCar: ${reg}${dvla.make ? ' · ' + toTitleCase(dvla.make) + (dvla.model ? ' ' + toTitleCase(dvla.model) : '') : ''}\nMileage: ${Number(miles).toLocaleString('en-GB')} miles\nName: ${name}\n\nHere are my photos 📸`;
+        document.getElementById('waLink').href = `https://wa.me/447827138197?text=${encodeURIComponent(waMsg)}`;
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('thankYouSection').style.display = 'block';
+      } else {
+        hideStatus();
+        showError('Something went wrong submitting your details. Please message Dan directly on WhatsApp.');
+        setSubmitDisabled(false);
       }
-
-      pollForResult(data.runId);
-
     } catch(e) {
-      showError('Network error. Check your connection and try again.');
-      setBtn(false);
+      hideStatus();
+      showError('Network error. Please try again or message Dan on WhatsApp.');
+      setSubmitDisabled(false);
     }
   }
 
-  function pollForResult(runId) {
-    pollTimer = setInterval(async () => {
-      pollCount++;
-      updateStatus();
+  function fmt(n) { return '£' + Math.round(n).toLocaleString('en-GB'); }
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = msg; b.style.display = 'block'; }
+  function hideError()    { document.getElementById('errorBox').style.display = 'none'; }
+  function showBanner()   { document.getElementById('vehicleBanner').style.display = 'block'; }
+  function hideBanner()   { document.getElementById('vehicleBanner').style.display = 'none'; }
+  function showStatus(msg){ document.getElementById('statusText').textContent = msg; document.getElementById('statusBox').style.display = 'block'; }
+  function updateStatus(m){ document.getElementById('statusText').textContent = m; }
+  function hideStatus()   { document.getElementById('statusBox').style.display = 'none'; }
+  function setSubmitDisabled(d){ const b = document.getElementById('submitBtn'); b.disabled = d; b.textContent = d ? 'Please wait…' : 'Request My Valuation →'; }
 
-      try {
-        const res  = await fetch(`${WORKER}?target=market-poll&runId=${runId}`);
-        const data = await res.json();
-
-        if (data.status === 'SUCCEEDED' || data.status === 'complete') {
-          clearInterval(pollTimer);
-          hideStatus(); setBtn(false);
-          renderResults(data);
-        } else if (data.status === 'FAILED' || data.status === 'error' || pollCount > 30) {
-          clearInterval(pollTimer);
-          hideStatus(); setBtn(false);
-          showError(data.error || 'Search timed out. Please try again.');
-        }
-      } catch(e) { /* keep polling */ }
-    }, 3000);
-  }
-
-  function updateStatus() {
-    const msgs = [
-      'Searching AutoTrader UK...',
-      'Fetching market listings...',
-      'Analysing similar vehicles...',
-      'Calculating trade value...',
-      'Almost there...'
-    ];
-    document.getElementById('statusText').textContent =
-      msgs[Math.min(Math.floor(pollCount / 2), msgs.length - 1)];
-  }
-
-  function renderResults(data) {
-    const listings = data.items || data.listings || data.data?.items || data.data || [];
-
-    if (!listings || listings.length === 0) {
-      showError('No comparable listings found. Try adjusting the year or model.');
-      return;
+  (function init() {
+    const p = new URLSearchParams(window.location.search);
+    const reg = p.get('reg');
+    if (reg) {
+      document.getElementById('reg').value = reg.toUpperCase();
+      lookupReg();
     }
-
-    const prices = listings
-      .map(l => l.pricing?.mainPrice || 0)
-      .filter(p => p > 500)
-      .sort((a, b) => a - b);
-
-    if (prices.length === 0) {
-      showError('Could not parse listing prices. Please try again.');
-      return;
-    }
-
-    const low   = prices[0];
-    const high  = prices[prices.length - 1];
-    const avg   = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const trade = avg * 0.80;
-
-    document.getElementById('priceLow').textContent     = fmt(low);
-    document.getElementById('priceAvg').textContent     = fmt(avg);
-    document.getElementById('priceHigh').textContent    = fmt(high);
-    document.getElementById('tradeValue').textContent   = fmt(trade);
-    document.getElementById('listingCount').textContent = prices.length;
-
-    const container = document.getElementById('listingsList');
-    container.innerHTML = '';
-
-    listings.slice(0, 8).forEach(l => {
-      const price  = l.pricing?.mainPrice || 0;
-      const title  = l.subtitle || l.model || 'Listing';
-      const miles  = l.mileage?.value
-        ? l.mileage.value.toLocaleString('en-GB') + ' miles' : ', ';
-      const yr     = l.year || '';
-      const colour = l.specifications?.exteriorColor || '';
-
-      const div = document.createElement('div');
-      div.className = 'listing-item';
-      div.innerHTML = `
-        <div>
-          <div class="listing-title">${yr} ${title} ${colour}</div>
-          <div class="listing-mileage">${miles}</div>
-        </div>
-        <div class="listing-price">${price > 0 ? fmt(price) : ', '}</div>
-      `;
-      container.appendChild(div);
-    });
-
-    document.getElementById('resultsBox').style.display = 'block';
-  }
-
-  function showStatus(msg) {
-    document.getElementById('statusText').textContent = msg;
-    document.getElementById('statusBox').style.display = 'block';
-  }
-  function hideStatus()  { document.getElementById('statusBox').style.display  = 'none'; }
-  function hideResults() { document.getElementById('resultsBox').style.display = 'none'; }
-  function hideError()   { document.getElementById('errorBox').style.display   = 'none'; }
-  function showError(msg) {
-    const b = document.getElementById('errorBox');
-    b.textContent = msg; b.style.display = 'block';
-  }
-  function setBtn(disabled) {
-    const btn = document.getElementById('lookupBtn');
-    btn.disabled = disabled;
-    btn.textContent = disabled ? 'Searching...' : 'Get Trade Value';
-  }
+  })();
 </script>
 </body>
 </html>
