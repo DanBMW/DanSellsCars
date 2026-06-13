@@ -60,11 +60,16 @@
         Found: <strong id="vehicleDesc"></strong>
       </div>
 
-      <!-- Make & Model (shown after lookup, manual entry) -->
-      <div class="field-group" id="makeModelWrap" style="display:none">
-        <label>Make &amp; Model</label>
-        <input id="makeModel" type="text" placeholder="e.g. BMW 3 Series 320i M Sport"/>
-        <span class="hint" style="margin-top:4px">Check your V5C if unsure — helps Dan give a sharper figure.</span>
+      <!-- Make + Model (shown after lookup) -->
+      <div class="two-col" id="makeModelWrap" style="display:none">
+        <div class="field-group">
+          <label>Make</label>
+          <input id="dvlaMake" type="text" placeholder="e.g. BMW"/>
+        </div>
+        <div class="field-group">
+          <label>Model</label>
+          <input id="dvlaModel" type="text" placeholder="e.g. 3 Series 320i M Sport"/>
+        </div>
       </div>
 
       <!-- Contact -->
@@ -149,8 +154,10 @@
         ].filter(Boolean);
         document.getElementById('vehicleDesc').textContent = parts.join(' · ');
         showBanner();
-        const mm = document.getElementById('makeModel');
-        if (!mm.value) mm.value = [toTitleCase(data.make), toTitleCase(data.model || '')].filter(Boolean).join(' ');
+        const makeEl = document.getElementById('dvlaMake');
+        const modelEl = document.getElementById('dvlaModel');
+        if (!makeEl.value) makeEl.value = toTitleCase(data.make || '');
+        if (!modelEl.value && data.model) modelEl.value = toTitleCase(data.model);
         document.getElementById('makeModelWrap').style.display = 'block';
       }
     } catch(e) {}
@@ -230,8 +237,8 @@
         _subject:        `Valuation Request — ${reg}`,
         _replyto:        email || 'noreply@dan-sells.co.uk',
         registration:    reg,
-        make:            toTitleCase(dvla.make  || ''),
-        model:           document.getElementById('makeModel').value.trim() || toTitleCase(dvla.model || ''),
+        make:            document.getElementById('dvlaMake').value.trim()  || toTitleCase(dvla.make  || ''),
+        model:           document.getElementById('dvlaModel').value.trim() || toTitleCase(dvla.model || ''),
         year:            String(dvla.yearOfManufacture || dvla.year || ''),
         colour:          toTitleCase(dvla.colour   || ''),
         fuel:            toTitleCase(dvla.fuelType || ''),
