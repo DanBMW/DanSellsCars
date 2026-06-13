@@ -167,7 +167,7 @@
     </div>
 
     <div class="vehicle-info" id="vehicleInfo">
-      Found: <span id="vehicleDesc">—</span>
+      Found: <span id="vehicleDesc">, </span>
     </div>
 
     <div class="row">
@@ -217,24 +217,24 @@
     <div class="price-grid">
       <div class="price-card">
         <div class="plabel">Market Low</div>
-        <div class="value" id="priceLow">—</div>
+        <div class="value" id="priceLow">, </div>
         <div class="sub">Cheapest listed</div>
       </div>
       <div class="price-card highlight">
         <div class="plabel">Market Avg</div>
-        <div class="value" id="priceAvg">—</div>
+        <div class="value" id="priceAvg">, </div>
         <div class="sub">Based on <span id="listingCount">0</span> listings</div>
       </div>
       <div class="price-card">
         <div class="plabel">Market High</div>
-        <div class="value" id="priceHigh">—</div>
+        <div class="value" id="priceHigh">, </div>
         <div class="sub">Top listed</div>
       </div>
     </div>
 
     <div class="trade-recommendation">
       <div class="trade-label">Recommended Trade Value</div>
-      <div class="trade-value" id="tradeValue">—</div>
+      <div class="trade-value" id="tradeValue">, </div>
       <div class="trade-note">Estimated at 80% of market average · Subject to inspection</div>
     </div>
 
@@ -408,7 +408,7 @@
       const price  = l.pricing?.mainPrice || 0;
       const title  = l.subtitle || l.model || 'Listing';
       const miles  = l.mileage?.value
-        ? l.mileage.value.toLocaleString('en-GB') + ' miles' : '—';
+        ? l.mileage.value.toLocaleString('en-GB') + ' miles' : ', ';
       const yr     = l.year || '';
       const colour = l.specifications?.exteriorColor || '';
 
@@ -419,7 +419,7 @@
           <div class="listing-title">${yr} ${title} ${colour}</div>
           <div class="listing-mileage">${miles}</div>
         </div>
-        <div class="listing-price">${price > 0 ? fmt(price) : '—'}</div>
+        <div class="listing-price">${price > 0 ? fmt(price) : ', '}</div>
       `;
       container.appendChild(div);
     });

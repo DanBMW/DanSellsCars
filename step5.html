@@ -141,27 +141,27 @@
   <button type="button" class="condition-option" data-val="No finance" onclick="pickFinance(this)">
     <div class="condition-badge">✅</div>
     <div class="condition-body">
-      <span class="condition-title">No — I own it outright</span>
+      <span class="condition-title">No, I own it outright</span>
       <span class="condition-desc">No outstanding finance. The car is yours to trade in freely.</span>
     </div>
   </button>
-  <button type="button" class="condition-option" data-val="Finance — settlement unknown" onclick="pickFinance(this)">
+  <button type="button" class="condition-option" data-val="Finance, settlement unknown" onclick="pickFinance(this)">
     <div class="condition-badge">💳</div>
     <div class="condition-body">
-      <span class="condition-title">Yes — not sure of the settlement figure</span>
+      <span class="condition-title">Yes, not sure of the settlement figure</span>
       <span class="condition-desc">Dan can help work this out before the call.</span>
     </div>
   </button>
-  <button type="button" class="condition-option" data-val="Finance — settlement known" onclick="pickFinance(this)">
+  <button type="button" class="condition-option" data-val="Finance, settlement known" onclick="pickFinance(this)">
     <div class="condition-badge">💳</div>
     <div class="condition-body">
-      <span class="condition-title">Yes — I know the settlement figure</span>
+      <span class="condition-title">Yes, I know the settlement figure</span>
       <span class="condition-desc">Enter it below so Dan can factor it into the deal.</span>
     </div>
   </button>
 </div>
 
-<!-- Settlement figure — only shown when they know it -->
+<!-- Settlement figure, only shown when they know it -->
 <div id="settlementWrap" style="display:none;margin-bottom:22px">
   <div class="field-group">
     <label>Settlement figure</label>
@@ -242,7 +242,7 @@
 });
 const savedSettlement = sessionStorage.getItem('pxSettlement');
 if (savedSettlement) document.getElementById('settlementFig').value = savedSettlement;
-if (financeChosen === 'Finance — settlement known') {
+if (financeChosen === 'Finance, settlement known') {
   document.getElementById('settlementWrap').style.display = 'block';
 }
   document.querySelectorAll("#serviceTrack .condition-option").forEach(b=>{ if(b.dataset.val===serviceChosen) b.classList.add("selected"); });
@@ -270,7 +270,7 @@ function pickFinance(btn) {
   sessionStorage.setItem('pxFinance', financeChosen);
   // Show settlement input only if they know the figure
   document.getElementById('settlementWrap').style.display =
-    financeChosen === 'Finance — settlement known' ? 'block' : 'none';
+    financeChosen === 'Finance, settlement known' ? 'block' : 'none';
 }
   function pickCond(btn){
     document.querySelectorAll("#condTrack .condition-option").forEach(b=>b.classList.remove("selected"));

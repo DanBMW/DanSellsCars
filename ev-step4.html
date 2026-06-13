@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DanSells Electric — Step 4</title>
+<title>DanSells Electric, Step 4</title>
 <link rel="stylesheet" href="style.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
@@ -86,11 +86,11 @@
           <div class="co-badge">&#9989;</div>
           <div class="co-body"><span class="co-title">No &mdash; I own it outright</span><span class="co-desc">No outstanding finance. Free to trade in.</span></div>
         </button>
-        <button type="button" class="co" data-val="Finance — settlement unknown" onclick="pickFinance(this)">
+        <button type="button" class="co" data-val="Finance, settlement unknown" onclick="pickFinance(this)">
           <div class="co-badge">&#128179;</div>
           <div class="co-body"><span class="co-title">Yes &mdash; not sure of the settlement</span><span class="co-desc">Dan can help work this out before the call.</span></div>
         </button>
-        <button type="button" class="co" data-val="Finance — settlement known" onclick="pickFinance(this)">
+        <button type="button" class="co" data-val="Finance, settlement known" onclick="pickFinance(this)">
           <div class="co-badge">&#128179;</div>
           <div class="co-body"><span class="co-title">Yes &mdash; I know the settlement figure</span><span class="co-desc">Enter it below so Dan can factor it into the deal.</span></div>
         </button>
@@ -145,7 +145,7 @@
   document.querySelectorAll('#serviceTrack .co').forEach(b => { if (b.dataset.val === serviceChosen) b.classList.add('selected'); });
   document.querySelectorAll('#financeTrack .co').forEach(b => { if (b.dataset.val === financeChosen) b.classList.add('selected'); });
   document.querySelectorAll('#condTrack .co').forEach(b =>    { if (b.dataset.val === condChosen)    b.classList.add('selected'); });
-  if (financeChosen === 'Finance — settlement known') document.getElementById('settlementWrap').style.display = 'block';
+  if (financeChosen === 'Finance, settlement known') document.getElementById('settlementWrap').style.display = 'block';
 
   const reg = sessionStorage.getItem('evReg');        if (reg) document.getElementById('reg').value = reg;
   const cc  = sessionStorage.getItem('evCurrentCar'); if (cc)  document.getElementById('cc').value  = cc;
@@ -165,7 +165,7 @@
   function pickFinance(btn) {
     document.querySelectorAll('#financeTrack .co').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected'); financeChosen = btn.dataset.val;
-    document.getElementById('settlementWrap').style.display = financeChosen === 'Finance — settlement known' ? 'block' : 'none';
+    document.getElementById('settlementWrap').style.display = financeChosen === 'Finance, settlement known' ? 'block' : 'none';
   }
   function pickCond(btn) {
     document.querySelectorAll('#condTrack .co').forEach(b => b.classList.remove('selected'));

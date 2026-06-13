@@ -21,15 +21,15 @@
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Finance & details</div>
-  <h2>Almost done — a couple of quick ones.</h2>
+  <h2>Almost done, a couple of quick ones.</h2>
   <p class="step-desc">Nearly there. These last details complete the picture for Dan.</p>
 
   <div class="input-card" style="margin-bottom:18px">
     <div class="step-kicker" style="margin-bottom:10px">Outstanding finance?</div>
     <div class="grid three" style="margin-bottom:0">
       <button class="choice" data-val="No finance" onclick="pickFin(this)"><span class="choice-emoji">✅</span><span class="choice-title">No</span><span class="choice-desc">Owned outright.</span></button>
-      <button class="choice" data-val="Yes — I know the settlement figure" onclick="pickFin(this)"><span class="choice-emoji">💳</span><span class="choice-title">Yes — I know the figure</span><span class="choice-desc">I have a settlement amount.</span></button>
-      <button class="choice" data-val="Yes — I need to check" onclick="pickFin(this)"><span class="choice-emoji">🔍</span><span class="choice-title">Yes — need to check</span><span class="choice-desc">I will find out the settlement.</span></button>
+      <button class="choice" data-val="Yes, I know the settlement figure" onclick="pickFin(this)"><span class="choice-emoji">💳</span><span class="choice-title">Yes, I know the figure</span><span class="choice-desc">I have a settlement amount.</span></button>
+      <button class="choice" data-val="Yes, I need to check" onclick="pickFin(this)"><span class="choice-emoji">🔍</span><span class="choice-title">Yes, need to check</span><span class="choice-desc">I will find out the settlement.</span></button>
     </div>
     <div class="field-group" id="settlementField" style="display:none;margin-top:14px">
       <label>Settlement figure</label>
@@ -55,14 +55,14 @@
 <script>
   let finChosen=sessionStorage.getItem("apFinance")||"";
   document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===finChosen) b.classList.add("selected"); });
-  if(finChosen==="Yes — I know the settlement figure") document.getElementById("settlementField").style.display="block";
+  if(finChosen==="Yes, I know the settlement figure") document.getElementById("settlementField").style.display="block";
   [["apName","apName"],["apPhone","apPhone"],["apEmail","apEmail"],["apNotes","apNotes"],["settlement","apSettlement"]].forEach(([id,key])=>{
     const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
   });
   function pickFin(btn){
     document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected"); finChosen=btn.dataset.val; sessionStorage.setItem("apFinance",finChosen);
-    document.getElementById("settlementField").style.display=finChosen==="Yes — I know the settlement figure"?"block":"none";
+    document.getElementById("settlementField").style.display=finChosen==="Yes, I know the settlement figure"?"block":"none";
   }
   function go(){
     const n=document.getElementById("apName").value.trim(), p=document.getElementById("apPhone").value.trim();

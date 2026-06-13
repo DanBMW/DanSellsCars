@@ -20,7 +20,7 @@
     <div class="success-wrap" style="margin-bottom:24px">
       <div class="step-kicker">Appraisal submitted</div>
       <h2 style="font-size:2rem;margin-bottom:14px">Dan has your details.</h2>
-      <p style="margin-bottom:24px">Your vehicle appraisal is in Dan's inbox. To get the most accurate value, complete this quick checklist — it takes about 3 minutes total.</p>
+      <p style="margin-bottom:24px">Your vehicle appraisal is in Dan's inbox. To get the most accurate value, complete this quick checklist, it takes about 3 minutes total.</p>
 
       <div style="display:grid;gap:12px;margin-bottom:28px">
         <div class="checklist-item" id="c1">
@@ -36,7 +36,7 @@
           <div class="check-icon">2</div>
           <div class="check-body">
             <strong>Send Dan your part exchange photos on WhatsApp</strong>
-            <span>Takes about 1 minute. Photos let Dan give you the most accurate value — without them it's always an estimate.</span>
+            <span>Takes about 1 minute. Photos let Dan give you the most accurate value, without them it's always an estimate.</span>
             <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;">
               <a id="waBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:#1a7a3c;color:#fff;font-weight:700;padding:12px 18px;border-radius:13px;text-decoration:none;font-size:.9rem;box-shadow:0 6px 16px rgba(26,122,60,.28);">📲 WhatsApp</a>
               <a id="emailApBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:rgba(16,21,29,.05);color:#141a22;font-weight:600;padding:12px 18px;border-radius:13px;border:1px solid rgba(16,21,29,.12);text-decoration:none;font-size:.9rem;">✉️ Email instead</a>
@@ -48,7 +48,7 @@
     </div>
 
     <div style="background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);border-radius:24px;padding:24px;margin-bottom:24px">
-      <div class="step-kicker" style="margin-bottom:12px">📸 Photo guide — 8 shots, 1 minute</div>
+      <div class="step-kicker" style="margin-bottom:12px">📸 Photo guide, 8 shots, 1 minute</div>
       <p class="step-desc" style="margin-bottom:18px">These 8 photos give Dan everything needed to make a confident offer. Shoot in landscape, natural light, no flash.</p>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="photoGuide"></div>
     </div>
@@ -72,7 +72,7 @@
   const photos=[
     ["🔲 Front 3/4","Stand at front corner, 45°, headlight height. Turn wheels toward camera for best look."],
     ["🔲 Rear 3/4","Same angle from the rear corner. Shows the full silhouette and boot line."],
-    ["🔲 Driver side full","Stand back — get the whole car in one landscape shot."],
+    ["🔲 Driver side full","Stand back, get the whole car in one landscape shot."],
     ["🔲 Passenger side full","Repeat from the other side. Shows both flanks."],
     ["📊 Dashboard","From rear seat looking forward. Screen on. Steering wheel centred."],
     ["💺 Front seats","From the door opening. Recline slightly for space."],
@@ -93,7 +93,7 @@
 
   const waMsg=`Hi Dan, here are my part exchange photos for appraisal.
 
-Car: ${reg}${sessionStorage.getItem("apMakeModel")?" — "+sessionStorage.getItem("apMakeModel"):""}
+Car: ${reg}${sessionStorage.getItem("apMakeModel")?", "+sessionStorage.getItem("apMakeModel"):""}
 Mileage: ${mileage}
 Condition: ${overall}
 Service History: ${service}
@@ -108,12 +108,12 @@ Sending photos now 📸`;
   const calUrl=`https://cal.eu/danbmwruxley/telephone-appointment?name=${encodeURIComponent(name)}&notes=${encodeURIComponent(apSummary)}`;
   document.getElementById("calBtn").href=calUrl;
 
-  const emailSubj=`Part exchange photos — ${sessionStorage.getItem("apReg")||"vehicle"} — ${sessionStorage.getItem("apName")||""}`;
+  const emailSubj=`Part exchange photos, ${sessionStorage.getItem("apReg")||"vehicle"}, ${sessionStorage.getItem("apName")||""}`;
   const emailBod=`Hi Dan,
 
 Here are my part exchange photos for appraisal.
 
-Car: ${sessionStorage.getItem("apReg")||""} — ${sessionStorage.getItem("apMakeModel")||""}
+Car: ${sessionStorage.getItem("apReg")||""}, ${sessionStorage.getItem("apMakeModel")||""}
 Mileage: ${sessionStorage.getItem("apMileage")||""}
 Condition: ${sessionStorage.getItem("apOverall")||""}
 Service history: ${sessionStorage.getItem("apServiceHistory")||""}

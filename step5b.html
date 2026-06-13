@@ -66,8 +66,8 @@
     <h2>What matters to you in the car?</h2>
     <p class="step-desc">Takes less than a minute. The more you share, the closer I can get to the right car first time.</p>
 
-    <!-- COLOUR — always visible, always required -->
-    <div class="sec-label">Preferred colour(s) — tick all you'd be happy with</div>
+    <!-- COLOUR, always visible, always required -->
+    <div class="sec-label">Preferred colour(s), tick all you'd be happy with</div>
     <div class="colour-grid" id="colourGrid">
       <div class="cswatch" data-val="White"  onclick="toggleColour(this)"><div class="cdot" style="background:#f0f0f0;"></div>White</div>
       <div class="cswatch" data-val="Black"  onclick="toggleColour(this)"><div class="cdot" style="background:#111;"></div>Black</div>
@@ -88,22 +88,22 @@
 
     <div class="spec-divider"></div>
 
-    <!-- BYPASS — sits after colour, only hides trim & features -->
+    <!-- BYPASS, sits after colour, only hides trim & features -->
     <div class="bypass-card" id="bypassCard" onclick="toggleBypass()">
       <div class="bypass-icon">✅</div>
       <div class="bypass-text">
         <strong>I'm happy with standard trim &amp; spec</strong>
-        <span>Skip trim &amp; feature preferences — colour above is all I need to share.</span>
+        <span>Skip trim &amp; feature preferences, colour above is all I need to share.</span>
       </div>
     </div>
 
-    <!-- TRIM + FEATURES — hidden when bypass active -->
+    <!-- TRIM + FEATURES, hidden when bypass active -->
     <div id="specDetail">
       <div class="sec-label">Trim level preference</div>
       <div class="trim-grid" id="trimGrid">
         <div class="trim-card" data-val="Standard / SE" onclick="pickTrim(this)">
           <div class="trim-title">Standard / SE</div>
-          <div class="trim-desc">Well-equipped base spec — best value per pound.</div>
+          <div class="trim-desc">Well-equipped base spec, best value per pound.</div>
         </div>
         <div class="trim-card" data-val="Sport" onclick="pickTrim(this)">
           <div class="trim-title">Sport</div>
@@ -118,14 +118,14 @@
           <div class="trim-desc">Premium materials, comfort focus, full tech pack.</div>
         </div>
         <div class="trim-card" data-val="No preference" onclick="pickTrim(this)" style="grid-column:1/-1;">
-          <div class="trim-title">No strong preference — best value wins</div>
+          <div class="trim-title">No strong preference, best value wins</div>
           <div class="trim-desc">Show me what's available at my budget regardless of trim.</div>
         </div>
       </div>
 
       <div class="spec-divider"></div>
 
-      <div class="sec-label" style="margin-top:18px;">Features — sort into Needs &amp; Wants</div>
+      <div class="sec-label" style="margin-top:18px;">Features, sort into Needs &amp; Wants</div>
       <p class="drag-hint" style="margin-bottom:10px;">Drag a chip into <strong style="color:#3aaa6a;">Needs</strong> or <strong style="color:#8a6a1e;">Wants</strong>. Tap a placed chip to return it to the pool.</p>
       <p class="tap-hint" style="margin-bottom:10px;">Tap a feature then tap <strong style="color:#3aaa6a;">Need it</strong> or <strong style="color:#8a6a1e;">Want it</strong>. Tap a placed chip to remove it.</p>
 

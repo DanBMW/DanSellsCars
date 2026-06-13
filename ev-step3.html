@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DanSells Electric — Step 3</title>
+<title>DanSells Electric, Step 3</title>
 <link rel="stylesheet" href="style.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
@@ -55,7 +55,7 @@
 
     <div class="step-kicker" style="margin-bottom:12px">Do you have a driveway or off-street parking?</div>
     <div style="display:grid;gap:9px;margin-bottom:16px" id="driveTrack">
-      <button type="button" class="co" data-val="Yes — driveway or garage" onclick="pickDrive(this)">
+      <button type="button" class="co" data-val="Yes, driveway or garage" onclick="pickDrive(this)">
         <div class="co-badge">&#127968;</div>
         <div class="co-body"><span class="co-title">Yes &mdash; driveway or garage</span><span class="co-desc">Perfect for a home charger. Cheapest and most convenient way to charge. Dan can refer you to a trusted installer.</span></div>
       </button>
@@ -103,7 +103,7 @@
 
   document.querySelectorAll('#driveTrack .co').forEach(b => { if (b.dataset.val === driveChosen) b.classList.add('selected'); });
   document.querySelectorAll('[onclick="pickCharger(this)"]').forEach(b => { if (b.dataset.val === chargerChosen) b.classList.add('selected'); });
-  if (driveChosen === 'Yes — driveway or garage') document.getElementById('chargerInfoWrap').style.display = 'block';
+  if (driveChosen === 'Yes, driveway or garage') document.getElementById('chargerInfoWrap').style.display = 'block';
 
   function updateTrip(v) {
     tripVal = v;
@@ -112,7 +112,7 @@
   function pickDrive(btn) {
     document.querySelectorAll('#driveTrack .co').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected'); driveChosen = btn.dataset.val;
-    document.getElementById('chargerInfoWrap').style.display = driveChosen === 'Yes — driveway or garage' ? 'block' : 'none';
+    document.getElementById('chargerInfoWrap').style.display = driveChosen === 'Yes, driveway or garage' ? 'block' : 'none';
   }
   function pickCharger(btn) {
     document.querySelectorAll('[onclick="pickCharger(this)"]').forEach(b => b.classList.remove('selected'));

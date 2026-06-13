@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BMW Hedin Ruxley — Trade Valuation Tool</title>
+<title>BMW Hedin Ruxley, Trade Valuation Tool</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0a0a0a; color: #e5e7eb; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px; }
@@ -129,11 +129,11 @@
   <div class="panel" id="aPanel">
     <label>DVLA VES API Key <span class="api-status live">● LIVE</span></label>
     <input type="text" id="dvlaKey" value="kjaLVeD0UC1KtpcUyZlgd8aSJXiTI4wYaGzLItut">
-    <label>DVSA MOT — Client ID <span class="api-status live">● LIVE</span></label>
+    <label>DVSA MOT, Client ID <span class="api-status live">● LIVE</span></label>
     <input type="text" id="motClientId" value="3416ab6a-fcf5-48ea-856b-b9218798388e">
-    <label>DVSA MOT — Client Secret</label>
+    <label>DVSA MOT, Client Secret</label>
     <input type="password" id="motClientSecret" value="xGd8Q~kzRIEsfewRoNN1OVbuCsYNisxo_M4xqabU">
-    <label>DVSA MOT — API Key</label>
+    <label>DVSA MOT, API Key</label>
     <input type="text" id="motApiKey" value="nthRMqfE9V94TEmiBvTiX1KiLuKs0RdjaTrA1jqQ">
     <p class="panel-note">🔒 Keys stored in this file only. Sent exclusively to official GOV.UK APIs.</p>
   </div>
@@ -146,8 +146,8 @@
     <div class="vehicle-banner">
       <div class="vicon">🚗</div>
       <div>
-        <div class="vname" id="vehicleName">—</div>
-        <div class="vmeta" id="vehicleMeta">—</div>
+        <div class="vname" id="vehicleName">, </div>
+        <div class="vmeta" id="vehicleMeta">, </div>
       </div>
     </div>
 
@@ -164,12 +164,12 @@
 
     <div class="trade-box">
       <div class="tlbl">Trade / Part-Exchange Offer</div>
-      <div class="trange" id="tradeRange">—</div>
-      <div class="tmid" id="tradeMid">—</div>
+      <div class="trange" id="tradeRange">, </div>
+      <div class="tmid" id="tradeMid">, </div>
     </div>
 
     <div class="disposal-badge" id="disposalBadge">
-      🔨 Auction / Wholesale route recommended — below retail threshold. Consider BCA or Manheim.
+      🔨 Auction / Wholesale route recommended, below retail threshold. Consider BCA or Manheim.
     </div>
 
     <div class="ext-links" id="extLinks"></div>
@@ -289,20 +289,20 @@ async function runValuation() {
   }
 
   const make   = dvlaData?.make || motData?.make || "Unknown";
-  const year   = dvlaData?.yearOfManufacture || motData?.firstUsedDate?.substring(0,4) || "—";
-  const fuel   = dvlaData?.fuelType || "—";
-  const cc     = dvlaData?.engineCapacity ? dvlaData.engineCapacity + "cc" : "—";
-  const motExp = dvlaData?.motExpiryDate || "—";
-  const taxSt  = dvlaData?.taxStatus || "—";
-  const colour = dvlaData?.colour || "—";
+  const year   = dvlaData?.yearOfManufacture || motData?.firstUsedDate?.substring(0,4) || ", ";
+  const fuel   = dvlaData?.fuelType || ", ";
+  const cc     = dvlaData?.engineCapacity ? dvlaData.engineCapacity + "cc" : ", ";
+  const motExp = dvlaData?.motExpiryDate || ", ";
+  const taxSt  = dvlaData?.taxStatus || ", ";
+  const colour = dvlaData?.colour || ", ";
 
   document.getElementById("vehicleName").textContent =
-    (year !== "—" ? year + " " : "") + make +
+    (year !== ", " ? year + " " : "") + make +
     (dvlaData?.model ? " " + dvlaData.model : "") +
-    (colour !== "—" ? " · " + colour : "");
+    (colour !== ", " ? " · " + colour : "");
   document.getElementById("vehicleMeta").textContent =
-    [fuel, cc, motExp !== "—" ? "MOT: "+motExp : "", taxSt !== "—" ? "Tax: "+taxSt : ""]
-    .filter(x => x && !x.endsWith("—")).join(" · ") ||
+    [fuel, cc, motExp !== ", " ? "MOT: "+motExp : "", taxSt !== ", " ? "Tax: "+taxSt : ""]
+    .filter(x => x && !x.endsWith(", ")).join(" · ") ||
     reg + " · " + mileage.toLocaleString() + " miles";
 
   let advisoryPenalty = 0, latestMotMileage = null;
@@ -312,8 +312,8 @@ async function runValuation() {
     const tests = motData.motTests.slice(0, 6);
     document.getElementById("motRows").innerHTML = tests.map(t => {
       const pass    = (t.testResult||"").toLowerCase() === "passed";
-      const dateStr = t.completedDate ? t.completedDate.substring(0,10) : "—";
-      const odo     = t.odometerValue ? parseInt(t.odometerValue).toLocaleString() + " mi" : "—";
+      const dateStr = t.completedDate ? t.completedDate.substring(0,10) : ", ";
+      const odo     = t.odometerValue ? parseInt(t.odometerValue).toLocaleString() + " mi" : ", ";
       if (t.odometerValue && !latestMotMileage) latestMotMileage = parseInt(t.odometerValue);
       (t.rfrAndComments||[]).filter(c=>c.type==="ADVISORY").forEach(a=>allAdvisories.push(a.text));
       return `<div class="mot-row">
@@ -331,7 +331,7 @@ async function runValuation() {
 
     if (latestMotMileage && mileage < latestMotMileage * 0.97) {
       const al = document.getElementById("mileageAlert");
-      al.innerHTML = `🚨 <strong>Mileage Alert:</strong> Last MOT recorded ${latestMotMileage.toLocaleString()} miles — customer states ${mileage.toLocaleString()} miles. Investigate before offering.`;
+      al.innerHTML = `🚨 <strong>Mileage Alert:</strong> Last MOT recorded ${latestMotMileage.toLocaleString()} miles, customer states ${mileage.toLocaleString()} miles. Investigate before offering.`;
       al.style.display = "block";
       flags.push({cls:"bad", text:"⚠️ Mileage Query"});
     }
@@ -368,7 +368,7 @@ async function runValuation() {
     ["Base Market Value (CMV)", fmt(cmv), "neutral"],
     ["Mileage Adjustment", (mileageAdj>=0?"+":"")+fmt(Math.abs(mileageAdj)), mileageAdj>=0?"pos":"neg"],
     ["Adjusted CMV", fmt(adjCMV), "neutral"],
-    ["Condition — "+condLabels[condition], "−"+fmt(condDeduct), "neg"],
+    ["Condition, "+condLabels[condition], "−"+fmt(condDeduct), "neg"],
     ...(advisoryPenalty>0 ? [["MOT Advisories ("+allAdvisories.length+")", "−"+fmt(advisoryPenalty), "neg"]] : []),
     ["Recon Estimate", "−"+fmt(recon), "neg"],
     ["Dealer Margin Target", "−"+fmt(margin), "neg"],
@@ -376,12 +376,12 @@ async function runValuation() {
   document.getElementById("breakdownTable").innerHTML = rows.map(([l,v,c])=>
     `<div class="brow"><span class="blbl">${l}</span><span class="bval ${c}">${v}</span></div>`).join("");
 
-  document.getElementById("tradeRange").textContent = fmt(tradeLow) + " – " + fmt(tradeHigh);
+  document.getElementById("tradeRange").textContent = fmt(tradeLow) + ", " + fmt(tradeHigh);
   document.getElementById("tradeMid").textContent   = "Recommended offer: " + fmt(tradeValue);
   document.getElementById("disposalBadge").style.display = tradeValue < threshold ? "block" : "none";
 
   const regClean = reg.replace(/s/g,"");
-  const yr = year !== "—" ? year : "";
+  const yr = year !== ", " ? year : "";
   document.getElementById("extLinks").innerHTML = `
     <a class="ext-btn cg" href="https://www.cargurus.co.uk/Cars/new/nl_DVLA_d0#listing=searchParams%3A%7B%22zip%22%3A%22SS2%22%7D" target="_blank">
       📊 CarGurus UK<span>Live market prices</span></a>
@@ -402,14 +402,14 @@ async function runValuation() {
 function shareWhatsApp() {
   const r = lastResult;
   const msg =
-    `🚘 *Trade Valuation — ${r.reg}*
+    `🚘 *Trade Valuation, ${r.reg}*
 ` +
     `${r.year} ${r.make} · ${r.mileage.toLocaleString()} miles · ${r.condition}
 
 ` +
     `Market Value: ${fmt(r.adjCMV)}
 ` +
-    `*Trade Offer: ${fmt(r.tradeLow)} – ${fmt(r.tradeHigh)}*
+    `*Trade Offer: ${fmt(r.tradeLow)}, ${fmt(r.tradeHigh)}*
 ` +
     `Recommended: *${fmt(r.tradeValue)}*
 
