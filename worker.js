@@ -2,8 +2,8 @@
  * Cloudflare Worker — vehicleproxy
  * Deploy at: https://vehicleproxy.danielcane1992.workers.dev
  *
- * Required environment variables (set in Cloudflare dashboard → Worker → Settings → Variables):
- *   DVLA_KEY     — DVLA VES API key (kjaLVeD0UC1KtpcUyZlgd8aSJXiTI4wYaGzLItut)
+ * Required environment variables (Cloudflare dashboard → Worker → Settings → Variables):
+ *   DVLA_API_KEY — DVLA VES API key (same name as before — do NOT rename)
  *   APIFY_TOKEN  — Apify API token (apify.com → Settings → Integrations → Personal API tokens)
  *
  * Actor ID: Ca7tBqNduWgy2A2pq (AutoTrader scraper)
@@ -47,11 +47,11 @@ export default {
 
 /* ── DVLA lookup ────────────────────────────────────────────────── */
 async function dvlaLookup(reg, env) {
-  if (!reg) return { error: 'No registration provided' };
+  if (!reg) return { error: 'No reg provided' };
 
   const res = await fetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles', {
     method:  'POST',
-    headers: { 'x-api-key': env.DVLA_API_KEY || env.DVLA_KEY, 'Content-Type': 'application/json' },
+    headers: { 'x-api-key': env.DVLA_API_KEY, 'Content-Type': 'application/json' },
     body:    JSON.stringify({ registrationNumber: reg.replace(/\s/g, '').toUpperCase() })
   });
 
@@ -66,9 +66,7 @@ async function dvlaLookup(reg, env) {
     colour:            d.colour            || '',
     fuelType:          d.fuelType          || '',
     motExpiryDate:     d.motExpiryDate     || '',
-    taxDueDate:        d.taxDueDate        || '',
-    taxStatus:         d.taxStatus         || '',
-    motStatus:         d.motStatus         || ''
+    taxDueDate:        d.taxDueDate        || ''
   };
 }
 
