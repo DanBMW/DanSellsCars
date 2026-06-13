@@ -28,7 +28,15 @@ export default {
 
     try {
       let body;
-      if      (target === 'debug')         body = { dvla_api_key_set: !!env.DVLA_API_KEY, dvla_api_key_length: env.DVLA_API_KEY ? env.DVLA_API_KEY.length : 0, apify_token_set: !!env.APIFY_TOKEN };
+      if      (target === 'debug') {
+        const dvlaTest = await fetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles', {
+          method: 'POST',
+          headers: { 'x-api-key': env.DVLA_API_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ registrationNumber: 'LX26FZD' })
+        });
+        const dvlaBody = await dvlaTest.text();
+        body = { dvla_api_key_set: !!env.DVLA_API_KEY, dvla_api_key_length: env.DVLA_API_KEY ? env.DVLA_API_KEY.length : 0, dvla_key_starts: env.DVLA_API_KEY ? env.DVLA_API_KEY.slice(0,4) : '', apify_token_set: !!env.APIFY_TOKEN, dvla_status: dvlaTest.status, dvla_response: dvlaBody };
+      }
       else if (target === 'dvla-lookup')  body = await dvlaLookup(url.searchParams.get('reg') || '', env);
       else if (target === 'market-start') body = await marketStart(url.searchParams, env);
       else if (target === 'market-poll')  body = await marketPoll(url.searchParams.get('runId') || '', env);
