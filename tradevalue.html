@@ -60,6 +60,13 @@
         Found: <strong id="vehicleDesc"></strong>
       </div>
 
+      <!-- Make & Model (shown after lookup, manual entry) -->
+      <div class="field-group" id="makeModelWrap" style="display:none">
+        <label>Make &amp; Model</label>
+        <input id="makeModel" type="text" placeholder="e.g. BMW 3 Series 320i M Sport"/>
+        <span class="hint" style="margin-top:4px">Check your V5C if unsure — helps Dan give a sharper figure.</span>
+      </div>
+
       <!-- Contact -->
       <div class="two-col">
         <div class="field-group">
@@ -142,6 +149,9 @@
         ].filter(Boolean);
         document.getElementById('vehicleDesc').textContent = parts.join(' · ');
         showBanner();
+        const mm = document.getElementById('makeModel');
+        if (!mm.value) mm.value = [toTitleCase(data.make), toTitleCase(data.model || '')].filter(Boolean).join(' ');
+        document.getElementById('makeModelWrap').style.display = 'block';
       }
     } catch(e) {}
 
@@ -221,7 +231,7 @@
         _replyto:        email || 'noreply@dan-sells.co.uk',
         registration:    reg,
         make:            toTitleCase(dvla.make  || ''),
-        model:           toTitleCase(dvla.model || ''),
+        model:           document.getElementById('makeModel').value.trim() || toTitleCase(dvla.model || ''),
         year:            String(dvla.yearOfManufacture || dvla.year || ''),
         colour:          toTitleCase(dvla.colour   || ''),
         fuel:            toTitleCase(dvla.fuelType || ''),
