@@ -97,7 +97,7 @@
   <label>Registration Number</label>
   <input type="text" id="reg" placeholder="e.g. AB12CDE" maxlength="8"
     style="text-transform:uppercase;letter-spacing:0.12em;font-weight:700;font-size:18px;"
-    oninput="this.value=this.value.toUpperCase().replace(/s/g,'')">
+    oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')">
 
   <div class="grid2">
     <div><label>Mileage</label><input type="number" id="mileage" placeholder="e.g. 45000" min="0"></div>
@@ -233,7 +233,7 @@ async function getMOTToken(clientId, clientSecret) {
 let lastResult = {};
 
 async function runValuation() {
-  const reg       = document.getElementById("reg").value.trim().replace(/s/g,"").toUpperCase();
+  const reg       = document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
   const mileage   = parseInt(document.getElementById("mileage").value);
   const condition = document.getElementById("condition").value;
   const recon     = parseFloat(document.getElementById("recon").value)     || 350;
@@ -380,7 +380,7 @@ async function runValuation() {
   document.getElementById("tradeMid").textContent   = "Recommended offer: " + fmt(tradeValue);
   document.getElementById("disposalBadge").style.display = tradeValue < threshold ? "block" : "none";
 
-  const regClean = reg.replace(/s/g,"");
+  const regClean = reg.replace(/\s/g,"");
   const yr = year !== ", " ? year : "";
   document.getElementById("extLinks").innerHTML = `
     <a class="ext-btn cg" href="https://www.cargurus.co.uk/Cars/new/nl_DVLA_d0#listing=searchParams%3A%7B%22zip%22%3A%22SS2%22%7D" target="_blank">

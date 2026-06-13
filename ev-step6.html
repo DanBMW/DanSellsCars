@@ -69,7 +69,7 @@
 
 <script>
   function isValidEmail(e) {
-    return /^[^s@]+@[^s@]+.[^s@]+$/.test(e.trim());
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
   }
 
   [['fn','evName'],['em','evEmail'],['ph','evPhone'],['pc','evPostcode'],['bt','evBestTime']].forEach(([id,key]) => {

@@ -260,7 +260,7 @@
 
   // --- DVLA Reg Lookup ---
   async function lookupReg() {
-    const reg = document.getElementById('reg').value.trim().replace(/s/g, '');
+    const reg = document.getElementById('reg').value.trim().replace(/\s/g, '');
     if (!reg) { showError('Please enter a registration number.'); return; }
     hideError();
 
