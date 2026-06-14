@@ -58,7 +58,25 @@
       </div>
     </div>
 
-    <div class="tick-box" style="margin-bottom:20px">&#10004; By continuing you agree that Dan may use these details to contact you about your EV enquiry.</div>
+    <div class="tick-box" style="margin-bottom:14px">&#10004; By continuing you agree that Dan may use these details to contact you about your EV enquiry.</div>
+
+    <div class="input-card" style="margin-bottom:18px;">
+      <p style="font-size:.88rem;font-weight:600;color:#141a22;margin:0 0 6px;">Stay in the loop? <span style="font-weight:400;color:#5f6b7c;">(optional)</span></p>
+      <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 14px;line-height:1.55;">Occasional EV and BMW news, new model alerts, and exclusive offers — directly from Dan. No bulk emails, no third parties. Unsubscribe any time.</p>
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:14px;">
+        <input type="checkbox" id="mktOptIn" style="width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#1559cf;" onchange="document.getElementById('mktChannels').style.display=this.checked?'block':'none'">
+        <span style="font-size:.85rem;color:#2d3748;line-height:1.45;">Yes, I'd like to receive occasional BMW and EV updates from Dan</span>
+      </label>
+      <div id="mktChannels" style="display:none;">
+        <p style="font-size:.78rem;color:#5f6b7c;margin:0 0 10px;font-weight:600;">How would you prefer to hear from Dan?</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Email" class="mktCh" style="accent-color:#1559cf;"> Email</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="WhatsApp" class="mktCh" style="accent-color:#1559cf;"> WhatsApp</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="SMS" class="mktCh" style="accent-color:#1559cf;"> SMS</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Phone call" class="mktCh" style="accent-color:#1559cf;"> Phone call</label>
+        </div>
+      </div>
+    </div>
 
     <div class="nav">
       <a class="btn-ghost" href="ev-step5.html">&larr; Back</a>
@@ -76,6 +94,13 @@
     const v = sessionStorage.getItem(key);
     if (v) document.getElementById(id).value = v;
   });
+  // Restore marketing prefs
+  if (sessionStorage.getItem('evMarketingOptIn') === 'Yes') {
+    document.getElementById('mktOptIn').checked = true;
+    document.getElementById('mktChannels').style.display = 'block';
+    const mc = sessionStorage.getItem('evMarketingChannels') || '';
+    document.querySelectorAll('.mktCh').forEach(cb => { if (mc.includes(cb.value)) cb.checked = true; });
+  }
 
   function go() {
     const n = document.getElementById('fn').value.trim();
@@ -84,22 +109,18 @@
     const pc = document.getElementById('pc').value.trim();
     const bt = document.getElementById('bt').value.trim();
 
-    if (!n || !e || !p) {
-      alert('Name, email and mobile are needed so Dan can get back to you.');
-      return;
-    }
-
-    if (!isValidEmail(e)) {
-      alert('Please enter a valid email address (e.g. you@example.com).');
-      document.getElementById('em').focus();
-      return;
-    }
+    if (!n || !e || !p) { alert('Name, email and mobile are needed so Dan can get back to you.'); return; }
+    if (!isValidEmail(e)) { alert('Please enter a valid email address (e.g. you@example.com).'); document.getElementById('em').focus(); return; }
 
     sessionStorage.setItem('evName', n);
     sessionStorage.setItem('evEmail', e);
     sessionStorage.setItem('evPhone', p);
     sessionStorage.setItem('evPostcode', pc);
     sessionStorage.setItem('evBestTime', bt);
+    const optIn = document.getElementById('mktOptIn').checked ? 'Yes' : 'No';
+    const channels = Array.from(document.querySelectorAll('.mktCh:checked')).map(c => c.value).join(', ');
+    sessionStorage.setItem('evMarketingOptIn', optIn);
+    sessionStorage.setItem('evMarketingChannels', channels);
 
     window.location.href = 'ev-step7.html';
   }

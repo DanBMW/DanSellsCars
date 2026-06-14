@@ -162,6 +162,8 @@
       pxsettlement:      fmt('evSettlement'),
       pxcondition:       sessionStorage.getItem('evPXCond'),
       notes:             sessionStorage.getItem('evNotes'),
+      marketing_opt_in:  sessionStorage.getItem('evMarketingOptIn')    || 'No',
+      marketing_channels:sessionStorage.getItem('evMarketingChannels') || '',
       customer_story:    story,
       px_market_low:           market ? market.low   : '',
       px_market_avg:           market ? market.avg   : '',

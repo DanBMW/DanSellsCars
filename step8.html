@@ -59,7 +59,9 @@ var fields = [
   ["Colours",           "specColours"],
   ["Trim",              "specTrim"],
   ["Needs",             "specNeeds"],
-  ["Wants",             "specWants"]
+  ["Wants",             "specWants"],
+  ["Marketing opt-in",  "marketingOptIn"],
+  ["Marketing channels","marketingChannels"]
 ];
 
 // Keys whose values are stored as JSON arrays
@@ -234,6 +236,8 @@ async function sendForm(){
     spec_bypass:      sessionStorage.getItem("specBypass")    || "",
     leadsummary:      summary,
     customer_story:   story,
+    marketing_opt_in:      sessionStorage.getItem("marketingOptIn")    || "No",
+    marketing_channels:    sessionStorage.getItem("marketingChannels") || "",
     subject:          "DanSells lead: " + name,
     replyto:          email,
     px_market_low:          market ? market.low   : "",

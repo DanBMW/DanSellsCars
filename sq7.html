@@ -25,6 +25,25 @@
       <div class="field-group"><label>Mobile *</label><input id="sqPhone" type="tel" placeholder="07..."/></div>
       <div class="field-group"><label>Email (optional)</label><input id="sqEmail" type="email" placeholder="you@example.com"/></div>
       <div class="tick-box">✔ Your details are shared only with Dan and used only to follow up on your enquiry.</div>
+
+      <div style="border:1px solid rgba(21,89,207,.18);border-radius:14px;padding:16px 18px;background:rgba(21,89,207,.04);">
+        <p style="font-size:.88rem;font-weight:600;color:#141a22;margin:0 0 6px;">Stay in the loop? <span style="font-weight:400;color:#5f6b7c;">(optional)</span></p>
+        <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 12px;line-height:1.55;">Occasional BMW news, model alerts, and exclusive offers from Dan. No bulk emails. Unsubscribe any time.</p>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:12px;">
+          <input type="checkbox" id="mktOptIn" style="width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#1559cf;" onchange="document.getElementById('mktChannels').style.display=this.checked?'block':'none'">
+          <span style="font-size:.85rem;color:#2d3748;line-height:1.45;">Yes, I'd like to receive occasional BMW updates from Dan</span>
+        </label>
+        <div id="mktChannels" style="display:none;">
+          <p style="font-size:.78rem;color:#5f6b7c;margin:0 0 8px;font-weight:600;">How would you prefer to hear from Dan?</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Email" class="mktCh" style="accent-color:#1559cf;"> Email</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="WhatsApp" class="mktCh" style="accent-color:#1559cf;"> WhatsApp</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="SMS" class="mktCh" style="accent-color:#1559cf;"> SMS</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Phone call" class="mktCh" style="accent-color:#1559cf;"> Phone call</label>
+          </div>
+        </div>
+      </div>
+
       <button class="btn" style="width:100%;" onclick="submit()">Send to Dan</button>
     </div>
   </div>
@@ -88,6 +107,8 @@
 
     const sqStory = generateSQStory(first, last);
     sessionStorage.setItem("sqCustomerStory", sqStory);
+    const sqMktOptIn = document.getElementById("mktOptIn").checked ? "Yes" : "No";
+    const sqMktChannels = Array.from(document.querySelectorAll(".mktCh:checked")).map(c=>c.value).join(", ");
 
     const market = await pollMarket(sessionStorage.getItem("sqMarketRunId"));
     const payload = {
@@ -117,7 +138,9 @@
       px_market_avg:           market ? market.avg   : "",
       px_market_high:          market ? market.high  : "",
       px_market_trade_estimate: market ? market.trade : "",
-      customer_story:          sqStory
+      customer_story:          sqStory,
+      marketing_opt_in:        sqMktOptIn,
+      marketing_channels:      sqMktChannels
     };
 
     try{
