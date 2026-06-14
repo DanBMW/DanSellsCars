@@ -24,10 +24,6 @@
   <h2>Anything else Dan should know before the call?</h2>
   <p class="step-desc">Must-haves, deal-breakers, fuel preference, kids, dogs, long commutes, or just leave it blank.</p>
   <div class="input-card">
-    <div class="field-group" style="margin-bottom:16px">
-      <label>Model preference (optional)</label>
-      <input id="modelPref" type="text" placeholder="e.g. 3 Series, 320i M Sport, X3 30e — or leave blank if you're open"/>
-    </div>
     <div class="field-group">
       <label>Extra notes (optional)</label>
       <textarea id="notes" placeholder="e.g. I want something premium, fits two child seats, great on the motorway and keeps monthly sensible."></textarea>
@@ -40,9 +36,7 @@
 </div></div></div>
 <script>
   const s=sessionStorage.getItem("notes"); if(s) document.getElementById("notes").value=s;
-  const mp=sessionStorage.getItem("modelPref"); if(mp) document.getElementById("modelPref").value=mp;
   function go(){
-    sessionStorage.setItem("modelPref",document.getElementById("modelPref").value.trim());
     sessionStorage.setItem("notes",document.getElementById("notes").value);
     window.location.href="step7.html";
   }

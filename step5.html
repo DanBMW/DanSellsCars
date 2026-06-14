@@ -82,6 +82,10 @@
         <button type="button" class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="margin-top:8px;width:100%;padding:10px 14px;font-size:.88rem">Look Up</button>
         <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:10px 14px;font-size:.85rem;color:#0e3f96;margin-top:8px">Found: <strong id="dvlaDesc"></strong></div>
       </div>
+      <div class="field-group" style="margin-bottom:16px">
+        <label>Model</label>
+        <input id="pxModel" type="text" placeholder="e.g. 3 Series, 320i"/>
+      </div>
       <div class="two-col">
         <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
         <div class="field-group"><label>Mileage</label><input id="ml" type="text" placeholder="e.g. 28,000"/></div>
@@ -259,6 +263,7 @@ if (financeChosen === 'Finance, settlement known') {
   const cc=sessionStorage.getItem("currentCar"); if(cc) document.getElementById("cc").value=cc;
   const ml=sessionStorage.getItem("mileage"); if(ml) document.getElementById("ml").value=ml;
   const wv=sessionStorage.getItem("wbacVal"); if(wv) document.getElementById("wv").value=wv;
+  const pm=sessionStorage.getItem("pxModel"); if(pm) document.getElementById("pxModel").value=pm;
 
   async function dvlaLookup(){
     const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
@@ -273,6 +278,8 @@ if (financeChosen === 'Finance, settlement known') {
         const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||""), fuel=(d.fuelType||"").toLowerCase();
         const ccField=document.getElementById("cc");
         if(ccField && !ccField.value) ccField.value=[yr,make,model].filter(Boolean).join(" ");
+        const modelField=document.getElementById("pxModel");
+        if(modelField && !modelField.value && model) modelField.value=model;
         sessionStorage.setItem("pxDvlaMake",d.make||"");
         sessionStorage.setItem("pxDvlaModel",d.model||"");
         sessionStorage.setItem("pxDvlaYear",yr);
@@ -338,7 +345,9 @@ function pickFinance(btn) {
     sessionStorage.setItem("reg", reg.toUpperCase());
     sessionStorage.setItem("currentCar", document.getElementById("cc")?document.getElementById("cc").value.trim():"");
     sessionStorage.setItem("mileage", document.getElementById("ml")?document.getElementById("ml").value.trim():"");
-    sessionStorage.setItem("wbacVal", document.getElementById("wv")?document.getElementById("wv").value.trim():"");sessionStorage.setItem('pxSettlement', document.getElementById('settlementFig')?.value.trim() || '');
+    sessionStorage.setItem("wbacVal", document.getElementById("wv")?document.getElementById("wv").value.trim():"");
+    sessionStorage.setItem("pxModel", document.getElementById("pxModel")?document.getElementById("pxModel").value.trim():"");
+    sessionStorage.setItem('pxSettlement', document.getElementById('settlementFig')?.value.trim() || '');
     window.location.href = "step5b.html";
   }
 </script>

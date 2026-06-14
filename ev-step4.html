@@ -47,6 +47,10 @@
           <button type="button" class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="margin-top:8px;width:100%;padding:10px 14px;font-size:.88rem">Look Up</button>
           <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:10px 14px;font-size:.85rem;color:#0e3f96;margin-top:8px">Found: <strong id="dvlaDesc"></strong></div>
         </div>
+        <div class="field-group" style="margin-bottom:16px">
+          <label>Model</label>
+          <input id="evPXModel" type="text" placeholder="e.g. 3 Series, 320i"/>
+        </div>
         <div class="two-col">
           <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"></div>
           <div class="field-group"><label>Mileage</label><input id="ml" type="text" placeholder="e.g. 28,000"></div>
@@ -157,6 +161,7 @@
   const ml  = sessionStorage.getItem('evPXMileage');  if (ml)  document.getElementById('ml').value  = ml;
   const wv  = sessionStorage.getItem('evWBAC');       if (wv)  document.getElementById('wv').value  = wv;
   const sf  = sessionStorage.getItem('evSettlement'); if (sf)  document.getElementById('settlementFig').value = sf;
+  const epm = sessionStorage.getItem('evPXModel');    if (epm) document.getElementById('evPXModel').value = epm;
 
   async function dvlaLookup(){
     const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
@@ -171,6 +176,8 @@
         const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||""), fuel=(d.fuelType||"").toLowerCase();
         const ccField=document.getElementById("cc");
         if(ccField && !ccField.value) ccField.value=[yr,make,model].filter(Boolean).join(" ");
+        const modelField=document.getElementById("evPXModel");
+        if(modelField && !modelField.value && model) modelField.value=model;
         sessionStorage.setItem("evDvlaMake",d.make||"");
         sessionStorage.setItem("evDvlaModel",d.model||"");
         sessionStorage.setItem("evDvlaYear",yr);
@@ -220,6 +227,7 @@
     sessionStorage.setItem('evPX',         pxChosen);
     sessionStorage.setItem('evReg',        reg.toUpperCase());
     sessionStorage.setItem('evCurrentCar', document.getElementById('cc').value.trim());
+    sessionStorage.setItem('evPXModel',   document.getElementById('evPXModel').value.trim());
     sessionStorage.setItem('evPXMileage',  document.getElementById('ml').value.trim());
     sessionStorage.setItem('evWBAC',       document.getElementById('wv').value.trim());
     sessionStorage.setItem('evPXService',  serviceChosen || '');

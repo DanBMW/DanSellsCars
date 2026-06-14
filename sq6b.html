@@ -29,6 +29,10 @@
         </div>
         <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:10px 14px;font-size:.85rem;color:#0e3f96;margin-top:8px">Found: <strong id="dvlaDesc"></strong></div>
       </div>
+      <div class="field-group">
+        <label>Model</label>
+        <input id="sqPXModel" type="text" placeholder="e.g. 3 Series, 320i"/>
+      </div>
       <div class="two-col">
         <div class="field-group">
           <label>Approximate mileage *</label>
@@ -76,6 +80,8 @@
 <script>
   const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
   function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
+  const sqpm=sessionStorage.getItem("sqPXModel"); if(sqpm) document.getElementById("sqPXModel").value=sqpm;
+  const sqreg=sessionStorage.getItem("sqPXReg"); if(sqreg) document.getElementById("sqReg").value=sqreg;
 
   async function dvlaLookup(){
     const reg=document.getElementById("sqReg").value.trim().replace(/\s/g,"").toUpperCase();
@@ -95,6 +101,8 @@
         const parts=[yr,make,model,toTC(d.colour||""),toTC(d.fuelType||"")].filter(Boolean);
         document.getElementById("dvlaDesc").textContent=parts.join(" · ");
         document.getElementById("dvlaBanner").style.display="block";
+        const modelField=document.getElementById("sqPXModel");
+        if(modelField && !modelField.value && model) modelField.value=model;
         startMarket(d.make||"",d.model||"",yr,fuel);
       }
     }catch(e){}
@@ -114,6 +122,7 @@
     const mil = document.getElementById("sqMileage").value.trim();
     if(!reg||!mil){ alert("Please add your registration and mileage to continue."); return; }
     sessionStorage.setItem("sqPXReg", reg);
+    sessionStorage.setItem("sqPXModel", document.getElementById("sqPXModel").value.trim());
     sessionStorage.setItem("sqPXMileage", mil);
     sessionStorage.setItem("sqPXFinance", document.getElementById("sqFinance").value);
     sessionStorage.setItem("sqPXCondition", document.getElementById("sqCondition").value);
