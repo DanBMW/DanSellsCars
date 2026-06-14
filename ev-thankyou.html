@@ -24,11 +24,23 @@
         <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">Book a call with Dan</a>
         <a class="btn-ghost" href="EV.html">Back to EV page</a>
       </div>
+
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
+        <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing 👋</p>
+        <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Thank you for filling this in. Why not pop Dan a quick message to say hi?</p>
+        <a id="hiWaBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1a7a3c;color:#fff;font-weight:700;padding:12px 20px;border-radius:13px;text-decoration:none;font-family:var(--font);font-size:.92rem;">💬 Say hi on WhatsApp</a>
+      </div>
     </div>
   </div>
 </div></div>
 <script>
   const url = sessionStorage.getItem('evBookingUrl');
   if (url) document.getElementById('bookBtn').href = url;
+
+  (function(){
+    const n=(sessionStorage.getItem('evName')||'').split(' ')[0]||'there';
+    const msg="Hi Dan, It's "+n+", I've just submitted my details through your website, I look forward to hearing from you";
+    document.getElementById('hiWaBtn').href='https://wa.me/447827138197?text='+encodeURIComponent(msg);
+  })();
 </script>
 </body></html>

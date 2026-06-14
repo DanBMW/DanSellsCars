@@ -98,12 +98,25 @@
       </div>
 
       <p class="hint">If you cannot book right now, no problem. I will be in touch. Your details are already with me.</p>
+
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
+        <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing 👋</p>
+        <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Thank you for sending your details through. Why not pop Dan a quick message to say hi?</p>
+        <a id="hiWaBtn" href="#" class="btn-green" target="_blank" rel="noopener">💬 Say hi on WhatsApp</a>
+      </div>
     </div>
   </div>
 </div></div>
 <script>
   const bookingUrl=sessionStorage.getItem("bookingUrl");
   if(bookingUrl) document.getElementById("bookBtn").href=bookingUrl;
+
+  // WhatsApp hi nudge
+  (function(){
+    const n=(sessionStorage.getItem("fullName")||"").split(" ")[0]||"there";
+    const msg="Hi Dan, It’s "+n+", I’ve just submitted my details through your website, I look forward to hearing from you";
+    document.getElementById("hiWaBtn").href="https://wa.me/447827138197?text="+encodeURIComponent(msg);
+  })();
 
   const hasPX=["Yes","Maybe"].includes(sessionStorage.getItem("partExchange")||"");
   if(hasPX){
