@@ -93,6 +93,33 @@
     return null;
   }
 
+  function generateEVStory(){
+    const fn=sessionStorage.getItem('evName')||'someone special';
+    const first=fn.split(' ')[0];
+    const tl=sessionStorage.getItem('evTimeline')||'the near future';
+    const mil=sessionStorage.getItem('evMileage')||'';
+    const fund=sessionStorage.getItem('evFunding')||'';
+    const mo=sessionStorage.getItem('evMonthlyBudget')||'';
+    const ca=sessionStorage.getItem('evCashBudget')||'';
+    const dep=sessionStorage.getItem('evDeposit')||'';
+    const dw=sessionStorage.getItem('evDriveway')||'';
+    const cc=sessionStorage.getItem('evCurrentCar')||'their current car';
+    const epm=sessionStorage.getItem('evPXModel')||'';
+    const hpx=['Yes','Maybe'].includes(sessionStorage.getItem('evPX')||'');
+    const nt=sessionStorage.getItem('evNotes')||'';
+    const es=sessionStorage.getItem('evStyle')||'BMW EV';
+    const fmt=v=>v?Number(v.replace(/,/g,'')).toLocaleString('en-GB'):'';
+    const mStr=mil?fmt(mil)+' miles a year':'';
+    const bStr=fund==='Cash / outright'?(ca?'£'+fmt(ca)+' outright':''):(mo?'£'+fmt(mo)+' a month':'');
+    const dStr=dep?'£'+fmt(dep)+' deposit':'';
+    const pxStr=hpx?[cc,epm].filter(Boolean).join(' '):'';
+    const bLine=(bStr&&dStr)?'Budget: '+bStr+', with '+dStr+' ready to go':bStr?'Budget: '+bStr:dStr?dStr+' ready to go':'';
+    const dwNote=dw==='Yes'?'They have a driveway, which opens up the best overnight charging tariffs.':dw==='No'?"They don't have a driveway yet, so Dan will factor in the best alternatives.":'';
+    const pxLine=pxStr?'Their '+pxStr+' was noted as a part exchange.':'';
+    const ntLine=nt?'In their own words: “'+nt+'”':'';
+    return 'There once was someone called '+fn+' who had been watching the electric revolution from a thoughtful distance — until the range, the technology, and the savings all started making serious sense.\n\n'+(mStr?'With '+mStr+' ahead of them':'Ready for a change')+', '+first+' reached out to Dan — someone who made this switch himself and knows what the questions sound like from both sides. A '+es+' had the appeal: the performance you expect from a BMW, the running costs you didn\'t expect to be quite so good. '+(bLine?bLine+'. ':'')+dwNote+' '+pxLine+'\n\n'+(ntLine?ntLine+'\n\n':'')+'Dan will map out the weekly saving versus the '+cc+', crunch the real numbers, and come back with a proper personalised answer — not a brochure, a conversation built around '+first+'\'s actual life.';
+  }
+
   async function submit() {
     const btn = document.getElementById('sb');
     btn.textContent = 'Sending...'; btn.disabled = true;
@@ -103,6 +130,8 @@
     const calUrl = 'https://cal.eu/danbmwruxley/telephone-appointment?' + new URLSearchParams({name, email}).toString();
     const fmt = (k) => sessionStorage.getItem(k) ? '£' + Number(sessionStorage.getItem(k)).toLocaleString('en-GB') : '';
     const market = await pollMarket(sessionStorage.getItem('evMarketRunId'));
+    const story = generateEVStory();
+    sessionStorage.setItem('evCustomerStory', story);
     const payload = {
       subject:           'EV Lead — ' + name,
       replyto:           email,
@@ -133,6 +162,7 @@
       pxsettlement:      fmt('evSettlement'),
       pxcondition:       sessionStorage.getItem('evPXCond'),
       notes:             sessionStorage.getItem('evNotes'),
+      customer_story:    story,
       px_market_low:           market ? market.low   : '',
       px_market_avg:           market ? market.avg   : '',
       px_market_high:          market ? market.high  : '',

@@ -53,6 +53,28 @@
     return null;
   }
 
+  function generateSQStory(first, last){
+    const fn=first+' '+last;
+    const op=sessionStorage.getItem("sqOpenness")||"";
+    const mo=sessionStorage.getItem("sqModel")||"a new BMW";
+    const ti=sessionStorage.getItem("sqTiming")||"the near future";
+    const pay=sessionStorage.getItem("sqPayment")||"";
+    const monthly=sessionStorage.getItem("sqMonthly")||"";
+    const total=sessionStorage.getItem("sqTotal")||"";
+    const dep=sessionStorage.getItem("sqDeposit")||"";
+    const hpx=(sessionStorage.getItem("sqPX")||"No")!=="No";
+    const pxReg=sessionStorage.getItem("sqPXReg")||"";
+    const pxMod=sessionStorage.getItem("sqPXModel")||"";
+    const fmt=v=>v?Number(v.replace(/,/g,"")).toLocaleString("en-GB"):"";
+    const bStr=monthly?"£"+fmt(monthly)+" a month":total?"£"+fmt(total)+" total":"";
+    const dStr=dep?"£"+fmt(dep)+" deposit":"";
+    const bLine=(bStr&&dStr)?"Working to "+bStr+" with "+dStr+" ready to go":bStr?"Working to "+bStr:dStr?dStr+" ready to go":"";
+    const pxLine=hpx?("They mentioned "+([pxReg,pxMod].filter(Boolean).join(" ")||"a car")+" as a part exchange."):"";
+    const opLine=op?first+" described themselves as: "+op.toLowerCase()+".":"";
+    const payLine=pay?", thinking "+pay.toLowerCase():"";
+    return "There once was someone called "+fn+" whose car came in for a service — and who took two minutes to fill in Dan's short questionnaire while they waited.\n\n"+opLine+" Interested in "+mo+" and thinking about it within "+ti+", "+first+" gave Dan exactly the context he needed. "+bLine+payLine+(bLine||payLine?". ":"")+pxLine+" The kind of brief that turns a follow-up into a proper conversation rather than a cold call.\n\nDan will read it through before getting in touch. Whether it's a quick chat while the car is still in, a proper call this week, or a sit-down at Ruxley — "+first+" will know they're speaking to someone who already has the full picture.";
+  }
+
   async function submit(){
     const first = document.getElementById("sqFirst").value.trim();
     const last = document.getElementById("sqLast").value.trim();
@@ -63,6 +85,9 @@
     sessionStorage.setItem("sqLast", last);
     sessionStorage.setItem("sqPhone", phone);
     sessionStorage.setItem("sqEmail", document.getElementById("sqEmail").value.trim());
+
+    const sqStory = generateSQStory(first, last);
+    sessionStorage.setItem("sqCustomerStory", sqStory);
 
     const market = await pollMarket(sessionStorage.getItem("sqMarketRunId"));
     const payload = {
@@ -91,7 +116,8 @@
       px_market_low:           market ? market.low   : "",
       px_market_avg:           market ? market.avg   : "",
       px_market_high:          market ? market.high  : "",
-      px_market_trade_estimate: market ? market.trade : ""
+      px_market_trade_estimate: market ? market.trade : "",
+      customer_story:          sqStory
     };
 
     try{

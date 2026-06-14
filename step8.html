@@ -125,6 +125,65 @@ async function pollMarket(runId){
   return null;
 }
 
+function generateStory(){
+  var fn=sessionStorage.getItem("fullName")||"someone special";
+  var first=fn.split(" ")[0];
+  var ls=sessionStorage.getItem("lifestyle")||"";
+  var bs;try{bs=JSON.parse(sessionStorage.getItem("bodyStyles")||"[]");}catch(e){bs=[];}
+  var pt=sessionStorage.getItem("purchaseType")||"";
+  var mo=sessionStorage.getItem("monthlyBudget")||"";
+  var ca=sessionStorage.getItem("cashBudget")||"";
+  var dep=sessionStorage.getItem("deposit")||"";
+  var mil=sessionStorage.getItem("annualMileage")||"";
+  var tl=sessionStorage.getItem("timeline")||"the near future";
+  var cc=sessionStorage.getItem("currentCar")||"";
+  var pm=sessionStorage.getItem("pxModel")||"";
+  var hpx=["Yes","Maybe"].includes(sessionStorage.getItem("partExchange")||"");
+  var nt=sessionStorage.getItem("notes")||"";
+  var mpref=sessionStorage.getItem("modelPref")||"";
+  var nd;try{nd=JSON.parse(sessionStorage.getItem("specNeeds")||"[]");}catch(e){nd=[];}
+  var wt;try{wt=JSON.parse(sessionStorage.getItem("specWants")||"[]");}catch(e){wt=[];}
+
+  var sm={hatchback:"hatchback",saloon:"saloon",touring:"estate",suv:"SUV",coupe:"coupé",convertible:"convertible",gran_coupe:"Gran Coupé"};
+  var sn=bs.map(function(s){return sm[s]||s;});
+  var fs=sn.length===0?"BMW":sn.length===1?sn[0]:sn.slice(0,-1).join(", ")+" or "+sn[sn.length-1];
+  var fmt=function(v){return v?Number(v.replace(/,/g,"")).toLocaleString("en-GB"):"";};
+  var mStr=mil?fmt(mil)+" miles a year":"";
+  var bStr=pt==="Outright"?(ca?"£"+fmt(ca)+" to spend outright":""):(mo?"£"+fmt(mo)+" a month":"");
+  var dStr=dep?"£"+fmt(dep)+" deposit":"";
+  var pxStr=hpx?[cc,pm].filter(Boolean).join(" "):"";
+  var mNote=mpref?" — specifically, "+mpref:"";
+
+  var bLine=(bStr&&dStr)?"With "+bStr+" in mind and "+dStr+" ready to go":bStr?"With "+bStr+" in mind":dStr?"With "+dStr+" to put down":"Ready to move";
+  var sLine="";
+  if(nd.length||wt.length){
+    var p=[];
+    if(nd.length) p.push("must-haves: "+nd.join(", ").toLowerCase());
+    if(wt.length) p.push("wishlist: "+wt.join(", ").toLowerCase());
+    sLine="On spec, "+p.join("; ")+".";
+  }
+  var pxLine=pxStr?"Their "+pxStr+" was flagged as a part exchange.":"";
+  var ntLine=nt?"In their own words: “"+nt+"”":"";
+  var p3=(ntLine?ntLine+"\n\n":"");
+
+  if(ls==="Family life"){
+    return fn+" decided that real life — the school run, the weekend away, the everyday — deserved a proper BMW.\n\nAfter "+tl+" of considering the options, a "+fs+mNote+" made it to the top of the list. "+bLine+", "+first+" answered every question Dan had set. "+sLine+" "+pxLine+(mStr?" With "+mStr+" on the road each year, space and comfort were non-negotiable.":"")+"\n\n"+p3+"Dan read through the brief and got straight to work. A family buyer who knows what they need and is ready to move — one of the best kinds of brief there is.";
+  }
+  if(ls==="Business miles"){
+    return "There once was someone called "+fn+" who knew that in their line of work, the car they arrived in said something about them.\n\n"+(mStr?"With "+mStr+" on the road each year, they":"They")+" had been watching a "+fs+mNote+" for "+tl+" — something that did the long runs in total comfort and still looked exceptional on arrival. "+bLine+", "+first+" submitted a brief that was clear, specific, and genuinely easy to work with. "+sLine+" "+pxLine+"\n\n"+p3+"Dan had everything he needed. When someone this professional hands you a brief, you don’t keep them waiting.";
+  }
+  if(ls==="Driver first"){
+    return "Some people need a car. "+fn+" wants one — properly.\n\nA "+fs+mNote+" had been on the wishlist for "+tl+", and "+first+" finally did something about it. "+bLine+", they submitted a brief built around the things that actually matter: feel, precision, and a drive worth looking forward to every single morning. "+sLine+" "+pxLine+(mStr?" "+mStr+", every mile to be enjoyed.":"")+"\n\n"+p3+"Dan’s read the brief. He’s quietly excited. This is what happens when someone who really cares about the drive sits down and just writes it all out.";
+  }
+  if(ls==="Future-forward"){
+    return "There once was someone called "+fn+" who had been paying close attention to where cars were heading — and decided the future looked rather good.\n\nElectric, hybrid, or something clever in between: after "+tl+", "+first+" was ready to stop reading the reviews and start talking to someone who actually knew the answers. A "+fs+mNote+" was on the radar. "+bLine+". "+sLine+" "+pxLine+"\n\n"+p3+"Dan had the full picture. Someone who has thought it through, asked the right questions, and come to exactly the right person to find the answers.";
+  }
+  if(ls==="Keep it simple"){
+    return "There once was someone called "+fn+" who had a refreshingly clear idea of what they wanted: reliability, great value, and a "+fs+mNote+" that did exactly what it was supposed to.\n\nAfter "+tl+", "+first+" gave Dan a brief that was clean, direct, and easy to act on. "+bLine+". "+sLine+" "+pxLine+(mStr?" "+mStr+" a year, every one covered in quiet comfort.":"")+"\n\n"+p3+"Dan appreciated the clarity. No waffle, no vague wish lists — just a great buyer who knows what they want and is ready to get it.";
+  }
+  return "There once was someone called "+fn+" who decided that "+tl+" was the right moment to find their next BMW.\n\nA "+fs+mNote+" had caught their attention, and after careful consideration, they sat down and filled in Dan’s questionnaire completely. "+bLine+", they handed Dan a brief with everything he needed. "+sLine+" "+pxLine+"\n\n"+p3+"Dan is on it. A considered buyer with a clear eye for the right brand and the right time to buy.";
+}
+
 async function sendForm(){
   var btn = document.getElementById("sb");
   btn.textContent = "Sending…";
@@ -140,6 +199,9 @@ async function sendForm(){
   sessionStorage.setItem("bookingUrl", calUrl);
 
   var market = await pollMarket(sessionStorage.getItem('pxMarketRunId'));
+
+  var story = generateStory();
+  sessionStorage.setItem('customerStory', story);
 
   var payload = {
     name:             name,
@@ -171,6 +233,7 @@ async function sendForm(){
     spec_wants:       readVal("specWants"),
     spec_bypass:      sessionStorage.getItem("specBypass")    || "",
     leadsummary:      summary,
+    customer_story:   story,
     subject:          "DanSells lead: " + name,
     replyto:          email,
     px_market_low:          market ? market.low   : "",

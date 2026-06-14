@@ -77,6 +77,20 @@
 
     <p class="hint">Not ready to book yet? No problem. I will reach out once I have read through your answers.</p>
 
+    <div id="storyBox" style="display:none;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:22px 24px;margin:20px 0 0;">
+      <div class="step-kicker" style="margin-bottom:10px;">✨ Your BMW story</div>
+      <p id="storyText" style="font-size:.87rem;line-height:1.75;color:#2d3748;white-space:pre-line;margin:0 0 18px;"></p>
+      <div style="border-top:1px solid rgba(21,89,207,.15);padding-top:14px;">
+        <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 4px;font-weight:600;">Share your story 📲</p>
+        <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends and manifest your BMW — in a few weeks you could be sharing your own handover photo. ✨</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a id="shareX" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#000;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">𝕏 Post</a>
+          <a id="shareWa" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">💬 Share</a>
+          <button id="copyBtn" onclick="copyStory()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,21,29,.08);color:var(--text);padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
     <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
       <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing 👋</p>
       <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Thank you for taking a moment to fill that in. Why not pop Dan a quick message to say hi?</p>
@@ -93,6 +107,36 @@
     const msg="Hi Dan, It's "+n+", I've just submitted my details through your website, I look forward to hearing from you";
     document.getElementById("hiWaBtn").href="https://wa.me/447827138197?text="+encodeURIComponent(msg);
   })();
+
+  (function(){
+    var story=sessionStorage.getItem("sqCustomerStory");
+    if(!story) return;
+    document.getElementById("storyText").textContent=story;
+    document.getElementById("storyBox").style.display="block";
+    var firstName=sessionStorage.getItem("sqFirst")||"";
+    var fullName=firstName+" "+(sessionStorage.getItem("sqLast")||"");
+    function socialify(s){
+      if(fullName.trim()&&firstName&&fullName.trim()!==firstName) s=s.split(fullName.trim()).join(firstName);
+      s=s.replace(/£[\d,]+(?:\s*(?:a month|total|[^,.)]{0,20}))?/gi,function(m){
+        return /month/i.test(m)?"a monthly budget":/total/i.test(m)?"a clear budget":"a great budget";
+      });
+      s=s.replace(/[\d,]+\s+miles(?: a year)?/gi,"plenty of miles a year");
+      s=s.replace(/ {2,}/g," ").trim();
+      return s+"\n\nFind yours at dan-sells.co.uk 🚗✨";
+    }
+    var social=socialify(story);
+    document.getElementById("shareX").href="https://twitter.com/intent/tweet?text="+encodeURIComponent(social);
+    document.getElementById("shareWa").href="https://wa.me/?text="+encodeURIComponent(social);
+    window._socialStory=social;
+  })();
+  function copyStory(){
+    if(!window._socialStory) return;
+    navigator.clipboard.writeText(window._socialStory).then(function(){
+      var b=document.getElementById("copyBtn");
+      b.textContent="✓ Copied!";
+      setTimeout(function(){b.textContent="📋 Copy";},2000);
+    });
+  }
 </script>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
