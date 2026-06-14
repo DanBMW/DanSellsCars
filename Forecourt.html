@@ -137,5 +137,5 @@ onValue(ref(db,'forecourt/current/notices'),function(snap){managerNotices=snap.v
 onValue(ref(db,'forecourt/archive'),function(snap){allWeeks=snap.val()||{}; if(role==='manager')renderWeekTabs()});
 renderExecScreen();
 </script>
-</body>
+<script src="scroll-hint.js"></script></body>
 </html>

@@ -39,4 +39,4 @@
   document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
   function pick(btn){ document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected")); btn.classList.add("selected"); chosen=btn.dataset.val; sessionStorage.setItem("timeline",chosen); setTimeout(()=>window.location.href="step3.html",200); }
   function goNext(){ if(!chosen){ alert("Let Dan know your rough timing."); return; } window.location.href="step3.html"; }
-</script></body></html>
+</script><script src="scroll-hint.js"></script></body></html>

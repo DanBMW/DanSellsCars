@@ -38,4 +38,4 @@
   document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
   function pick(btn){ document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected")); btn.classList.add("selected"); chosen=btn.dataset.val; sessionStorage.setItem("purchaseType",chosen); goNext(); }
   function goNext(){ if(!chosen){ alert("Pick the route that feels most likely."); return; } window.location.href = (chosen==="Outright") ? "step4b.html" : "step4.html"; }
-</script></body></html>
+</script><script src="scroll-hint.js"></script></body></html>
