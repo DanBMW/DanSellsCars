@@ -185,7 +185,7 @@ Photos attached.`;
       });
       s=s.replace(/[\d,]+\s+miles(?: a year)?/gi,"plenty of miles a year");
       s=s.replace(/ {2,}/g," ").trim();
-      return s+"\n\nFind your perfect BMW at dan-sells.co.uk 🚗✨";
+      return "Here's my BMW Story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk — Dan helps find the right BMW for your budget and lifestyle 🚗✨";
     }
     var social=socialify(story);
     document.getElementById("shareX").href="https://twitter.com/intent/tweet?text="+encodeURIComponent(social);
@@ -222,13 +222,17 @@ Photos attached.`;
       ctx.fillStyle="rgba(255,255,255,0.48)";
       ctx.font="25px Arial,sans-serif";
       ctx.fillText("Powered by BMW Ruxley",W/2,130);
+      ctx.fillStyle="rgba(255,255,255,0.75)";
+      ctx.font="italic 30px Georgia,serif";
+      ctx.textAlign="center";
+      ctx.fillText("Here's my BMW Story with Dan",W/2,172);
       ctx.strokeStyle="rgba(40,110,255,0.55)"; ctx.lineWidth=1.5;
-      ctx.beginPath(); ctx.moveTo(90,158); ctx.lineTo(W-90,158); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(90,195); ctx.lineTo(W-90,195); ctx.stroke();
       ctx.fillStyle="rgba(255,255,255,0.86)";
       ctx.font="28px Arial,sans-serif";
       ctx.textAlign="left";
       var paras=text.split("\n\n").slice(0,2);
-      var y=200,maxY=H-170,pad=84,lh=42,maxW=W-pad*2;
+      var y=220,maxY=H-170,pad=84,lh=42,maxW=W-pad*2;
       for(var pi=0;pi<paras.length;pi++){
         var words=paras[pi].replace(/\n/g," ").split(" ");
         var line="";
