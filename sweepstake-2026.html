@@ -140,6 +140,26 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .tname{display:block;}
 .tstats{display:block;font-size:10px;font-weight:600;margin-top:4px;opacity:.85;}
 .tgd-pos{color:#15803d;} .tgd-neg{color:#b91c1c;} .tgd-zero{color:var(--muted);}
+
+/* ── SHARE BTN ── */
+.share-btn{
+  padding:5px 13px;border-radius:999px;border:1.5px solid var(--pitch);
+  background:#fff;color:var(--pitch);font-size:12px;font-weight:700;cursor:pointer;
+  transition:background .15s,color .15s;white-space:nowrap;
+}
+.share-btn:hover{background:var(--pitch);color:#fff;}
+.share-btn.copied{background:#16a34a;color:#fff;border-color:#16a34a;}
+
+/* ── LEADERBOARD KEY ── */
+.lb-key{margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
+.lb-key summary{font-size:11px;color:var(--muted);font-weight:700;cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;}
+.lb-key summary::-webkit-details-marker{display:none;}
+.lb-key summary::after{content:" ▾";}
+.lb-key[open] summary::after{content:" ▴";}
+.key-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;margin-top:8px;}
+@media(max-width:480px){.key-grid{grid-template-columns:1fr;}}
+.key-grid span{font-size:11px;color:var(--muted);}
+.key-grid span b{color:var(--text);}
 </style>
 </head>
 <body>
@@ -222,7 +242,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 
     <!-- LEADERBOARD -->
     <div class="panel">
-      <div class="panel-h">🏟️ Leaderboard</div>
+      <div class="panel-h" style="justify-content:space-between;">🏟️ Leaderboard <button class="share-btn" id="shareBtn" onclick="shareSnapshot()">📤 Share snapshot</button></div>
       <table class="table">
         <thead><tr>
           <th>Pos</th><th>Player</th><th title="Teams still alive">🟢</th>
@@ -233,6 +253,17 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
         <tbody id="board"></tbody>
       </table>
       <div class="hint" style="margin-top:10px">Ranked: teams alive → pts → goal diff → goals for &bull; Eliminated teams zero out</div>
+      <details class="lb-key">
+        <summary>📖 Column key</summary>
+        <div class="key-grid">
+          <span><b>🟢</b> Teams still in the tournament</span>
+          <span><b>P</b> Games played (alive teams only)</span>
+          <span><b>Pts</b> +1 per win, −1 per loss, 0 draws</span>
+          <span><b>W / D / L</b> Wins, draws, losses</span>
+          <span><b>GF / GA</b> Goals scored / conceded</span>
+          <span><b>GD</b> Goal difference (GF minus GA)</span>
+        </div>
+      </details>
     </div>
 
     <!-- CARDS -->
@@ -495,6 +526,41 @@ el("search").addEventListener("input",render);
 render();
 syncLive();
 setInterval(syncLive,60000);
+
+// ── SHARE SNAPSHOT ────────────────────────────────────────────────────────
+function buildShareText(){
+  const all=sortedAll();
+  const MEDALS=["🥇","🥈","🥉"];
+  const now=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+  const totalAlive=entrants.reduce((s,p)=>s+p.teams.filter(t=>t.status==="alive").length,0);
+  const lines=all.map((r,i)=>{
+    const pos=MEDALS[i]||`${i+1}.`;
+    const aliveNames=r.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"none left";
+    const pts=r.wlPts>=0?"+"+r.wlPts:String(r.wlPts);
+    const gd=r.gd>=0?"+"+r.gd:String(r.gd);
+    return `${pos} ${r.name} — ${r.aliveCount} alive (${aliveNames}) · ${pts} pts · GD ${gd}`;
+  });
+  const totalMatches=el("hMatches").textContent;
+  const totalGoals=el("hGoals").textContent;
+  const summary=`${totalAlive} teams still in · ${totalMatches} matches played · ${totalGoals} goals`;
+  return `A little fun. ⚽ Hedin Ruxley World Cup Sweepstake 2026\nSnapshot as at ${now} — ${summary}\n\n${lines.join("\n")}\n\nFull leaderboard: dan-sells.co.uk/sweepstake-2026.html`;
+}
+
+function shareSnapshot(){
+  const text=buildShareText();
+  const btn=el("shareBtn");
+  const reset=()=>{btn.textContent="📤 Share snapshot";btn.classList.remove("copied");};
+  navigator.clipboard?.writeText(text).then(()=>{
+    btn.textContent="✅ Copied!";btn.classList.add("copied");
+    setTimeout(reset,2500);
+  }).catch(()=>{
+    const ta=document.createElement("textarea");
+    ta.value=text;ta.style.cssText="position:fixed;opacity:0;pointer-events:none;";
+    document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
+    btn.textContent="✅ Copied!";btn.classList.add("copied");
+    setTimeout(reset,2500);
+  });
+}
 </script>
 <script src="scroll-hint.js"></script></body>
 </html>
