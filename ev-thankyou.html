@@ -148,4 +148,38 @@
     });
   }
 </script>
-<script src="scroll-hint.js"></script></body></html>
+<script src="scroll-hint.js"></script>
+<!-- Appointment type modal — auto-shown after submission -->
+<div id="appt-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(10,18,30,.65);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:560px;padding:28px 22px 40px;box-shadow:0 -16px 48px rgba(10,18,30,.2);animation:apptSlide .32s ease-out;">
+    <div style="width:38px;height:4px;background:#e2e8ef;border-radius:2px;margin:0 auto 22px;"></div>
+    <p style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5f6b7c;margin:0 0 6px;text-align:center;">One quick thing</p>
+    <h2 style="font-size:1.2rem;font-weight:700;color:#11161d;margin:0 0 6px;text-align:center;font-family:var(--display);">How would you like to connect with Dan?</h2>
+    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your summary before we speak — no need to start from scratch.</p>
+    <div style="display:grid;gap:10px;margin-bottom:14px;">
+      <a id="modal-phone" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#eef4ff;border:1.5px solid rgba(21,89,207,.22);border-radius:16px;text-decoration:none;color:#11161d;">
+        <span style="font-size:26px;flex-shrink:0;">📞</span>
+        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Telephone call</strong><span style="font-size:.8rem;color:#5f6b7c;">Pick a time that suits you this week</span></div>
+        <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
+      </a>
+      <a id="modal-visit" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8f9fb;border:1.5px solid rgba(16,21,29,.1);border-radius:16px;text-decoration:none;color:#11161d;">
+        <span style="font-size:26px;flex-shrink:0;">🤝</span>
+        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in, see the cars, talk numbers — no rush</span></div>
+        <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
+      </a>
+    </div>
+    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:#5f6b7c;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now — I'll do this later</button>
+  </div>
+</div>
+<style>@keyframes apptSlide{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}</style>
+<script>
+function closeApptModal(){document.getElementById('appt-modal').style.display='none';}
+(function(){
+  var name=(sessionStorage.getItem('evName')||'').trim();
+  var email=sessionStorage.getItem('evEmail')||'';
+  function calUrl(base){var p=new URLSearchParams();if(name)p.set('name',name);if(email)p.set('email',email);var qs=p.toString();return qs?base+'?'+qs:base;}
+  document.getElementById('modal-phone').href=calUrl('https://cal.eu/danbmwruxley/telephone-appointment');
+  document.getElementById('modal-visit').href=calUrl('https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales');
+  setTimeout(function(){document.getElementById('appt-modal').style.display='flex';},800);
+})();
+</script></body></html>
