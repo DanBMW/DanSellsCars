@@ -12,8 +12,8 @@
 .wait-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .wait-hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,14,34,.88) 40%,rgba(6,14,34,.35));}
 .wait-hero-text{position:relative;padding:22px 20px;color:#fff;}
-.wait-hero-text h1{font-size:1.55rem;font-weight:800;margin:0 0 6px;font-family:var(--display);}
-.wait-hero-text p{font-size:.88rem;color:rgba(255,255,255,.78);margin:0;line-height:1.55;}
+.wait-hero-text h1{font-size:1.55rem;font-weight:800;margin:0 0 6px;font-family:var(--display);color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);}
+.wait-hero-text p{font-size:.88rem;color:rgba(255,255,255,.85);margin:0;line-height:1.55;text-shadow:0 1px 4px rgba(0,0,0,.4);}
 
 /* ── Funnel chips ── */
 .wchip{display:inline-flex;align-items:center;padding:10px 16px;border-radius:22px;background:rgba(16,21,29,.04);border:2px solid rgba(16,21,29,.1);font-size:.88rem;font-weight:600;color:#5a6878;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent;user-select:none;}
@@ -111,13 +111,13 @@ canvas{display:block;touch-action:none;border-radius:10px;}
       <div class="wait-hero-overlay"></div>
       <div class="wait-hero-text">
         <h1>Dan won't be long.</h1>
-        <p>Make yourself comfortable. Help yourself to as many teas or coffees as you'd like — the machine is just around the corner. The wi-fi password is on the desk.</p>
+        <p>Make yourself comfortable. Help yourself to as many teas or coffees as you like. The machine is just around the corner. WiFi is <strong style="color:#fff;">Hedin guest</strong></p>
       </div>
     </div>
-    <p style="font-size:.9rem;color:var(--muted);line-height:1.65;margin-bottom:20px;">Take two minutes to fill in your BMW profile while you wait — Dan will have already read it when he comes over. Then pick a game. On the house.</p>
+    <p style="font-size:.9rem;color:var(--muted);line-height:1.65;margin-bottom:20px;">Take two minutes to fill in your BMW profile while you wait. Dan will have already read it when he comes over. Then pick a game. On the house.</p>
     <div id="shoot-card" style="background:rgba(21,89,207,.06);border:1.5px solid rgba(21,89,207,.2);border-radius:16px;padding:16px 18px;margin-bottom:20px;">
       <p style="font-size:.88rem;font-weight:700;color:#0e3f96;margin:0 0 4px;">Got to shoot? &#128075;</p>
-      <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px;line-height:1.5;">No worries at all. Take one minute now and you'll leave with an appointment in the diary — Dan will be ready for you when you're back.</p>
+      <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px;line-height:1.5;">No worries at all. Take one minute now and you'll leave with an appointment in the diary. Dan will be ready for you when you're back.</p>
       <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener" class="btn" style="display:inline-block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;">Book my slot before I go &rarr;</a>
     </div>
     <button class="btn" style="width:100%;margin-bottom:14px;" onclick="startFunnel()">Let's get started &rarr;</button>
@@ -131,6 +131,9 @@ canvas{display:block;touch-action:none;border-radius:10px;}
       <div class="qdot" id="dot1"></div>
       <div class="qdot" id="dot2"></div>
       <div class="qdot" id="dot3"></div>
+      <div class="qdot" id="dot4"></div>
+      <div class="qdot" id="dot5"></div>
+      <div class="qdot" id="dot6"></div>
     </div>
     <div id="quiz-inner"></div>
   </div>
@@ -143,7 +146,7 @@ canvas{display:block;touch-action:none;border-radius:10px;}
     <div class="game-grid" id="gameGrid"></div>
     <div style="background:rgba(21,89,207,.06);border:1.5px solid rgba(21,89,207,.2);border-radius:16px;padding:16px 18px;margin-top:16px;">
       <p style="font-size:.85rem;font-weight:700;color:#0e3f96;margin:0 0 3px;">Got to shoot? &#128075;</p>
-      <p style="font-size:.8rem;color:var(--muted);margin:0 0 10px;line-height:1.5;">Book a slot with Dan before you leave — takes one minute and you'll be all set for your next visit.</p>
+      <p style="font-size:.8rem;color:var(--muted);margin:0 0 10px;line-height:1.5;">Book a slot with Dan before you leave. Takes one minute and you'll be all set for your next visit.</p>
       <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener" class="btn" style="display:inline-block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;font-size:.88rem;">Book my slot &rarr;</a>
     </div>
   </div>
@@ -255,13 +258,16 @@ function skipToGames(){show('s-games');updateGameCards();}
 ══════════════════════════════════════ */
 const Q=[
   {id:'name',type:'text',q:"First, what's your name?",ph:'Your first name'},
+  {id:'contact',type:'contact',q:'How can Dan get back to you?'},
   {id:'purpose',type:'single',q:'What brings you in today?',opts:['Looking at a new BMW','Interested in upgrading','Here for a test drive','Just having a look']},
+  {id:'purchase_type',type:'single',q:'Personal or business purchase?',opts:['Personal','Business','Not sure yet']},
+  {id:'payment',type:'single',q:'How are you thinking of paying?',opts:['Cash purchase','Finance / PCP','Not decided yet']},
   {id:'model',type:'multi',q:'Any model catching your eye?',opts:['1 Series','2 Series','3 Series','4 Series','5 Series','X1','X3','X5','M Sport','Electric / iX','Not sure yet']},
   {id:'timing',type:'single',q:'How soon are you thinking of changing?',opts:['Ready to go now','Within 3 months','Just exploring for now']}
 ];
-let qIdx=0,qAns={name:'',purpose:'',model:[],timing:''};
+let qIdx=0,qAns={name:'',email:'',phone:'',purpose:'',purchase_type:'',payment:'',model:[],timing:''};
 
-function startFunnel(){qIdx=0;qAns={name:'',purpose:'',model:[],timing:''};show('s-quiz');renderQ();}
+function startFunnel(){qIdx=0;qAns={name:'',email:'',phone:'',purpose:'',purchase_type:'',payment:'',model:[],timing:''};show('s-quiz');renderQ();}
 
 function renderQ(){
   const q=Q[qIdx];
@@ -278,6 +284,9 @@ function renderQ(){
     inp.style.marginBottom='20px';
     inp.addEventListener('keydown',e=>{if(e.key==='Enter')nextQ();});
     wrap.appendChild(inp);
+  } else if(q.type==='contact'){
+    const em=document.createElement('input');em.type='email';em.placeholder='Email address';em.className='input';em.id='qemail';em.value=qAns.email||'';em.style.marginBottom='10px';wrap.appendChild(em);
+    const ph=document.createElement('input');ph.type='tel';ph.placeholder='Phone number';ph.className='input';ph.id='qphone';ph.value=qAns.phone||'';ph.style.marginBottom='20px';wrap.appendChild(ph);
   } else {
     const row=document.createElement('div');row.className='chip-row';row.style.marginBottom='20px';
     q.opts.forEach(o=>{
@@ -311,6 +320,7 @@ function renderQ(){
   }
   inn.appendChild(wrap);
   if(q.type==='text')document.getElementById('qinput').focus();
+  else if(q.type==='contact')document.getElementById('qemail').focus();
 }
 
 function nextQ(){
@@ -319,6 +329,11 @@ function nextQ(){
     const v=(document.getElementById('qinput').value||'').trim();
     if(!v){document.getElementById('qinput').style.borderColor='#e53e3e';return;}
     qAns.name=v;
+  } else if(q.type==='contact'){
+    const email=(document.getElementById('qemail').value||'').trim();
+    const phone=(document.getElementById('qphone').value||'').trim();
+    if(!email&&!phone){document.getElementById('qemail').style.borderColor='#e53e3e';document.getElementById('qphone').style.borderColor='#e53e3e';return;}
+    qAns.email=email;qAns.phone=phone;
   }
   if(qIdx<Q.length-1){qIdx++;renderQ();}
   else{submitFunnel();}
@@ -329,7 +344,7 @@ function submitFunnel(){
   const first=nm.split(' ')[0]||'there';
   fetch('https://formspree.io/f/xqewleog',{
     method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({_subject:'Waiting Room — '+nm,source:'waiting-room',customer_name:nm,purpose:qAns.purpose,model_interest:Array.isArray(qAns.model)?qAns.model.join(', '):qAns.model,timing:qAns.timing})
+    body:JSON.stringify({_subject:'Waiting Room — '+nm,source:'waiting-room',customer_name:nm,customer_email:qAns.email,customer_phone:qAns.phone,purpose:qAns.purpose,purchase_type:qAns.purchase_type,payment_method:qAns.payment,model_interest:Array.isArray(qAns.model)?qAns.model.join(', '):qAns.model,timing:qAns.timing})
   }).catch(()=>{});
   const inn=document.getElementById('quiz-inner');
   inn.innerHTML='<div class="success-banner"><strong>Thanks '+first+'! Dan has your answers 🎮</strong><span>He\'ll have read this before he comes over. Now pick your game while you wait.</span></div>';
