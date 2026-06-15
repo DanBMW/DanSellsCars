@@ -52,10 +52,10 @@ body::before{
 }
 
 .app{position:relative;z-index:1;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:28px 16px 56px;}
-.shell{width:100%;max-width:960px;background:var(--paper);border:1px solid var(--line-soft);border-radius:24px;overflow:hidden;box-shadow:var(--shadow-card);}
+.shell{width:100%;max-width:960px;background:var(--paper);border:1px solid var(--line-soft);border-radius:24px;overflow:clip;box-shadow:var(--shadow-card);}
 
 /* Top bar */
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 28px;border-bottom:1px solid var(--line-soft);background:var(--paper);}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 28px;border-bottom:1px solid var(--line-soft);background:var(--paper);position:sticky;top:0;z-index:50;}
 .brand-name{display:block;font-family:var(--display);font-size:1.02rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text);}
 .brand-name::after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--blue);margin-left:7px;transform:translateY(-1px);}
 .brand-sub{display:block;font-size:.76rem;color:var(--muted);margin-top:2px;letter-spacing:.02em;}
