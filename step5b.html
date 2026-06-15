@@ -29,24 +29,15 @@
 .trim-card.on{border-color:rgba(21,89,207,.75);background:rgba(21,89,207,.14);box-shadow:0 0 0 1px rgba(21,89,207,.2);}
 .trim-title{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:3px;}
 .trim-desc{font-size:.77rem;color:var(--muted);line-height:1.4;}
-.chip-pool{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:2px 0;margin-bottom:4px;}
-.fchip{padding:8px 13px;border-radius:999px;background:rgba(16,21,29,.05);border:1px solid rgba(255,255,255,.09);font-size:.83rem;font-weight:600;color:#44536a;cursor:grab;transition:background .15s,border-color .15s,transform .14s,opacity .15s;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
-.fchip:active{cursor:grabbing;}
-.fchip:hover{background:rgba(16,21,29,.12);border-color:rgba(16,21,29,.22);}
-.fchip.dragging{opacity:.35;transform:scale(.94);}
-.fchip.ghost{position:fixed;pointer-events:none;z-index:9999;padding:8px 13px;border-radius:999px;background:rgba(21,89,207,.4);border:1px solid rgba(21,89,207,.6);font-size:.83rem;font-weight:600;color:#1559cf;white-space:nowrap;opacity:.9;transform:scale(1.06);}
-.fchip.in-zone{cursor:pointer;}
-.zones-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
-.zone-label{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;}
-.zone-label.needs{color:#3aaa6a;}
-.zone-label.wants{color:#8a6a1e;}
-.drop-zone{min-height:78px;border-radius:16px;border:2px dashed rgba(16,21,29,.14);background:rgba(255,255,255,.025);padding:10px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:7px;transition:border-color .17s,background .17s;position:relative;}
-.drop-zone.over{border-color:rgba(21,89,207,.6);background:rgba(21,89,207,.09);}
-.zone-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:.8rem;color:rgba(16,21,29,.22);}
-.tap-hint{font-size:.75rem;color:rgba(255,255,255,.28);margin-top:6px;line-height:1.5;display:none;}
-.drag-hint{font-size:.75rem;color:rgba(255,255,255,.28);margin-top:6px;}
-@media(hover:none),(max-width:700px){.tap-hint{display:block;}.drag-hint{display:none;}}
-.drop-zone.tap-ready{border-color:rgba(21,89,207,.5);background:rgba(21,89,207,.07);cursor:pointer;}
+.feat-grid{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:6px;}
+.fchip{display:inline-flex;align-items:center;gap:6px;padding:11px 15px;border-radius:13px;background:rgba(16,21,29,.04);border:2px solid rgba(16,21,29,.09);font-size:.87rem;font-weight:600;color:#5a6878;cursor:pointer;transition:background .15s,border-color .15s,transform .12s,color .15s;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+.fchip:hover{border-color:rgba(21,89,207,.3);background:rgba(21,89,207,.06);}
+.fchip:active{transform:scale(.94);}
+.fchip.is-need{background:rgba(34,197,94,.11);border-color:rgba(34,197,94,.6);color:#14532d;}
+.fchip.is-want{background:rgba(234,179,8,.10);border-color:rgba(234,179,8,.55);color:#78350f;}
+.feat-legend{font-size:.79rem;color:#5a6878;margin:0 0 14px;display:flex;flex-wrap:wrap;gap:6px 16px;line-height:1.6;}
+.legend-need{font-weight:700;color:#166534;}
+.legend-want{font-weight:700;color:#78350f;}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
@@ -125,27 +116,14 @@
 
       <div class="spec-divider"></div>
 
-      <div class="sec-label" style="margin-top:18px;">Features, sort into Needs &amp; Wants</div>
-      <p class="drag-hint" style="margin-bottom:10px;">Drag a chip into <strong style="color:#3aaa6a;">Needs</strong> or <strong style="color:#8a6a1e;">Wants</strong>. Tap a placed chip to return it to the pool.</p>
-      <p class="tap-hint" style="margin-bottom:10px;">Tap a feature then tap <strong style="color:#3aaa6a;">Need it</strong> or <strong style="color:#8a6a1e;">Want it</strong>. Tap a placed chip to remove it.</p>
-
-      <div class="chip-pool" id="chipPool"></div>
-
-      <div class="zones-row">
-        <div>
-          <div class="zone-label needs">✅ Needs <small style="font-weight:400;opacity:.6;">(must-haves)</small></div>
-          <div class="drop-zone" id="needsZone" ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'needs')">
-            <div class="zone-empty" id="needsEmpty">Drop here</div>
-          </div>
-        </div>
-        <div>
-          <div class="zone-label wants">⭐ Wants <small style="font-weight:400;opacity:.6;">(nice to have)</small></div>
-          <div class="drop-zone" id="wantsZone" ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'wants')">
-            <div class="zone-empty" id="wantsEmpty">Drop here</div>
-          </div>
-        </div>
+      <div class="sec-label" style="margin-top:18px;">Must-haves &amp; Nice-to-haves</div>
+      <div class="feat-legend">
+        <span>Tap once → <span class="legend-need">✅ Must have</span></span>
+        <span>Tap again → <span class="legend-want">⭐ Nice to have</span></span>
+        <span>Tap again to clear</span>
       </div>
-      <p class="hint" style="margin-top:8px;">Leave a chip in the pool if it doesn't matter.</p>
+      <div class="feat-grid" id="featGrid"></div>
+      <p class="hint" style="margin-top:8px;">Leave a feature untouched if it doesn't matter to you.</p>
     </div>
 
     <div class="nav" style="margin-top:28px;">
@@ -156,16 +134,17 @@
 </div></div>
 
 <script>
-const FEATURES=["Navigation","Heated seats","Panoramic roof","Reversing camera","Parking sensors","Cruise control","Apple CarPlay","Android Auto","Leather seats","Heated steering wheel","Keyless entry","Wireless charging","Head-up display","Tow bar","Premium sound system","Electric tailgate","Driving assist pack","Ventilated seats","Adaptive headlights","360° camera"];
-let colours=[],trim="",bypass=false,needs=[],wants=[];
-let dragSpec=null,touchChip=null,ghostEl=null,tx0=0,ty0=0,tapPending=null;
+const FEATURES=["Heated Seats","Heated Steering Wheel","Panoramic Roof","360° Camera","Electric Seats","Parking Sensors","Reversing Camera","Apple CarPlay / Android Auto","Leather Seats","Keyless Entry","Head-Up Display","Wireless Charging","Adaptive Cruise Control","Premium Sound System","Navigation"];
+const chipState={};
+FEATURES.forEach(f=>{chipState[f]='';});
+let colours=[],trim="",bypass=false;
 
 (function restore(){
   bypass=sessionStorage.getItem("specBypass")==="true";
   try{colours=JSON.parse(sessionStorage.getItem("specColours")||"[]");}catch(e){}
   trim=sessionStorage.getItem("specTrim")||"";
-  try{needs=JSON.parse(sessionStorage.getItem("specNeeds")||"[]");}catch(e){}
-  try{wants=JSON.parse(sessionStorage.getItem("specWants")||"[]");}catch(e){}
+  try{JSON.parse(sessionStorage.getItem("specNeeds")||"[]").forEach(f=>{if(f in chipState)chipState[f]='need';});}catch(e){}
+  try{JSON.parse(sessionStorage.getItem("specWants")||"[]").forEach(f=>{if(f in chipState)chipState[f]='want';});}catch(e){}
   document.querySelectorAll(".cswatch").forEach(s=>{if(colours.includes(s.dataset.val))s.classList.add("on");});
   if(bypass){document.getElementById("bypassCard").classList.add("on");document.getElementById("specDetail").style.display="none";}
   document.querySelectorAll(".trim-card").forEach(c=>{if(c.dataset.val===trim)c.classList.add("on");});
@@ -197,79 +176,23 @@ function pickTrim(el){
   el.classList.add("on");trim=el.dataset.val;
 }
 
-function renderAll(){renderPool();renderZone("needsZone","needsEmpty",needs,"needs");renderZone("wantsZone","wantsEmpty",wants,"wants");}
-function renderPool(){
-  const pool=document.getElementById("chipPool");pool.innerHTML="";
-  FEATURES.forEach(f=>{if(needs.includes(f)||wants.includes(f))return;pool.appendChild(makeChip(f,"pool"));});
+function cycleChip(f){
+  const s=chipState[f];
+  chipState[f]=s===''?'need':s==='need'?'want':'';
+  renderChips();
 }
-function renderZone(zoneId,emptyId,arr,bucket){
-  const zone=document.getElementById(zoneId),empty=document.getElementById(emptyId);
-  [...zone.querySelectorAll(".fchip")].forEach(c=>c.remove());
-  empty.style.display=arr.length?"none":"flex";
-  arr.forEach(f=>zone.appendChild(makeChip(f,bucket)));
-}
-function makeChip(spec,loc){
-  const chip=document.createElement("div");
-  chip.className="fchip"+(loc!=="pool"?" in-zone":"");
-  chip.textContent=spec;chip.dataset.spec=spec;chip.draggable=true;
-  chip.addEventListener("dragstart",e=>{dragSpec=spec;requestAnimationFrame(()=>chip.classList.add("dragging"));e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",spec);});
-  chip.addEventListener("dragend",()=>{chip.classList.remove("dragging");dragSpec=null;});
-  chip.addEventListener("touchstart",onTouchStart,{passive:true});
-  chip.addEventListener("touchmove",onTouchMove,{passive:false});
-  chip.addEventListener("touchend",onTouchEnd,{passive:true});
-  chip.addEventListener("click",()=>{
-    if(loc==="needs"||loc==="wants"){needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);renderAll();return;}
-    if(tapPending===spec){cancelTap();return;}
-    if(tapPending)cancelTap();
-    tapPending=spec;
-    document.getElementById("needsZone").classList.add("tap-ready");
-    document.getElementById("wantsZone").classList.add("tap-ready");
-    document.getElementById("needsZone").addEventListener("click",tapNeeds);
-    document.getElementById("wantsZone").addEventListener("click",tapWants);
-    chip.style.border="2px solid rgba(21,89,207,.7)";chip.style.background="rgba(21,89,207,.2)";
+
+function renderChips(){
+  const grid=document.getElementById("featGrid");
+  grid.innerHTML="";
+  FEATURES.forEach(f=>{
+    const st=chipState[f];
+    const chip=document.createElement("div");
+    chip.className="fchip"+(st==='need'?" is-need":st==='want'?" is-want":"");
+    chip.onclick=()=>cycleChip(f);
+    chip.textContent=(st==='need'?"✅ ":st==='want'?"⭐ ":"")+f;
+    grid.appendChild(chip);
   });
-  return chip;
-}
-function tapNeeds(){assignTap("needs");}
-function tapWants(){assignTap("wants");}
-function assignTap(bucket){
-  if(!tapPending)return;const spec=tapPending;
-  needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);
-  if(bucket==="needs")needs.push(spec);else wants.push(spec);
-  cancelTap();renderAll();
-}
-function cancelTap(){
-  tapPending=null;
-  document.getElementById("needsZone").classList.remove("tap-ready");
-  document.getElementById("wantsZone").classList.remove("tap-ready");
-  document.getElementById("needsZone").removeEventListener("click",tapNeeds);
-  document.getElementById("wantsZone").removeEventListener("click",tapWants);
-}
-function dzOver(e){e.preventDefault();e.currentTarget.classList.add("over");}
-function dzLeave(e){e.currentTarget.classList.remove("over");}
-function dzDrop(e,bucket){
-  e.preventDefault();e.currentTarget.classList.remove("over");
-  const spec=e.dataTransfer.getData("text/plain")||dragSpec;if(!spec)return;
-  needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);
-  if(bucket==="needs")needs.push(spec);else wants.push(spec);renderAll();
-}
-function onTouchStart(e){touchChip=e.currentTarget;tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;}
-function onTouchMove(e){
-  if(!touchChip)return;const tx=e.touches[0].clientX,ty=e.touches[0].clientY;
-  if(!ghostEl){if(Math.abs(tx-tx0)<7&&Math.abs(ty-ty0)<7)return;e.preventDefault();ghostEl=document.createElement("div");ghostEl.className="fchip ghost";ghostEl.textContent=touchChip.dataset.spec;document.body.appendChild(ghostEl);touchChip.classList.add("dragging");cancelTap();}else{e.preventDefault();}
-  ghostEl.style.left=(tx-44)+"px";ghostEl.style.top=(ty-18)+"px";
-  const el=document.elementFromPoint(tx,ty),nz=document.getElementById("needsZone"),wz=document.getElementById("wantsZone");
-  nz.classList.toggle("over",nz===el||nz.contains(el));wz.classList.toggle("over",wz===el||wz.contains(el));
-}
-function onTouchEnd(e){
-  if(ghostEl){ghostEl.remove();ghostEl=null;}
-  const nz=document.getElementById("needsZone"),wz=document.getElementById("wantsZone");
-  nz.classList.remove("over");wz.classList.remove("over");
-  if(!touchChip)return;const spec=touchChip.dataset.spec;touchChip.classList.remove("dragging");
-  const tx=e.changedTouches[0].clientX,ty=e.changedTouches[0].clientY,el=document.elementFromPoint(tx,ty);
-  if(nz===el||nz.contains(el)){needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);needs.push(spec);renderAll();}
-  else if(wz===el||wz.contains(el)){needs=needs.filter(s=>s!==spec);wants=wants.filter(s=>s!==spec);wants.push(spec);renderAll();}
-  touchChip=null;
 }
 
 function go(){
@@ -286,11 +209,11 @@ function go(){
     sessionStorage.setItem("specWants","[]");
   } else {
     sessionStorage.setItem("specTrim",trim);
-    sessionStorage.setItem("specNeeds",JSON.stringify(needs));
-    sessionStorage.setItem("specWants",JSON.stringify(wants));
+    sessionStorage.setItem("specNeeds",JSON.stringify(FEATURES.filter(f=>chipState[f]==='need')));
+    sessionStorage.setItem("specWants",JSON.stringify(FEATURES.filter(f=>chipState[f]==='want')));
   }
   window.location.href="step6.html";
 }
-renderAll();
+renderChips();
 </script>
 <script src="scroll-hint.js"></script></body></html>
