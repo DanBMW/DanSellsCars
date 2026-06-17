@@ -6,6 +6,9 @@
 <title>BMW buying guides | DanSells</title>
 <meta name="description" content="Honest, jargon-free BMW buying guides from a Sales Executive at Hedin Ruxley in Sidcup. PCP, finance, electric and more, in plain English.">
 <link rel="canonical" href="https://dan-sells.co.uk/guides.html">
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,600,700,800,900&display=swap"/>
+<link rel="stylesheet" href="style.css"/>
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="DanSells">
@@ -19,127 +22,109 @@
 <meta name="twitter:image" content="https://dan-sells.co.uk/dan.jpg">
 
 <style>
-:root{
-  --bg:#15171a;
-  --bg-raised:#1d2025;
-  --bg-card:#23272d;
-  --line:#32373f;
-  --ink:#f3f5f7;
-  --ink-soft:#aeb6c0;
-  --ink-faint:#7d8893;
-  --blue:#0a84ff;
-  --blue-deep:#0066cc;
-  --radius:16px;
-  --maxw:760px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  background:var(--bg);
-  color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  line-height:1.65;
-  -webkit-font-smoothing:antialiased;
-}
-a{color:var(--blue);text-decoration:none}
-a:hover{text-decoration:underline}
+.guide-wrap{max-width:760px;margin:0 auto;padding:0 24px}
 
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 24px;border-bottom:1px solid var(--line);
-  position:sticky;top:0;background:rgba(21,23,26,.85);
-  backdrop-filter:saturate(160%) blur(12px);z-index:50;
-}
-.brand{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;color:var(--ink)}
-.brand:hover{text-decoration:none}
-.topbar .cta{
-  background:var(--blue);color:#fff;font-weight:700;font-size:.92rem;
-  padding:9px 16px;border-radius:999px;
-}
-.topbar .cta:hover{background:var(--blue-deep);text-decoration:none}
-
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-
-.crumb{font-size:.82rem;color:var(--ink-faint);padding:22px 0 0}
-.crumb a{color:var(--ink-faint)}
+.crumb{font-size:.82rem;color:var(--muted);padding:22px 0 0}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
 
 .eyebrow{
-  display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.04em;
-  text-transform:uppercase;color:var(--blue);margin:26px 0 14px;
+  display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--blue);margin:24px 0 12px;
 }
-h1{
-  font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.1;letter-spacing:-.025em;
-  font-weight:800;margin-bottom:18px;
-}
-.standfirst{font-size:1.18rem;color:var(--ink-soft);margin-bottom:36px}
 
-/* Guide cards */
+.guide-h1{
+  font-family:var(--display);
+  font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.1;letter-spacing:-.025em;
+  font-weight:700;margin-bottom:16px;color:var(--text);
+}
+.standfirst{font-size:1.12rem;color:var(--body);margin-bottom:36px;line-height:1.65}
+
+/* Guide card grid */
 .guides-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:20px;
+  gap:18px;
   margin:8px 0 52px;
 }
 .guide-card{
-  background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
   padding:24px;display:flex;flex-direction:column;gap:10px;
-  text-decoration:none;transition:border-color .18s,transform .18s;
+  text-decoration:none;transition:border-color .18s,transform .18s,box-shadow .18s;
+  box-shadow:var(--shadow-card);
 }
-.guide-card:hover{border-color:var(--blue);transform:translateY(-2px);text-decoration:none}
+.guide-card:hover{
+  border-color:var(--blue);transform:translateY(-2px);
+  box-shadow:var(--shadow-pop);text-decoration:none;
+}
 .guide-card .gc-tag{
-  font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--blue);
+  font-size:.72rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--blue);
 }
-.guide-card .gc-title{font-size:1.05rem;font-weight:800;color:var(--ink);line-height:1.3}
-.guide-card .gc-desc{font-size:.9rem;color:var(--ink-soft);line-height:1.55;flex:1}
+.guide-card .gc-title{
+  font-size:1.05rem;font-weight:700;color:var(--text);
+  line-height:1.3;font-family:var(--display);
+}
+.guide-card .gc-desc{font-size:.9rem;color:var(--body);line-height:1.55;flex:1}
 .guide-card .gc-link{font-size:.85rem;font-weight:700;color:var(--blue);margin-top:4px}
 
 /* CTA band */
 .cta-band{
-  background:linear-gradient(135deg,#0a84ff 0%,#0052a3 100%);
+  background:linear-gradient(135deg,var(--blue) 0%,var(--blue-deep) 100%);
   border-radius:20px;padding:38px 32px;margin:10px 0 20px;text-align:center;
 }
-.cta-band h2{margin:0 0 10px;color:#fff;font-size:1.6rem}
-.cta-band p{color:rgba(255,255,255,.92);margin-bottom:22px;max-width:46ch;margin-inline:auto}
+.cta-band h2{margin:0 0 10px;color:#fff;font-size:1.6rem;font-family:var(--display)}
+.cta-band p{color:rgba(255,255,255,.9);margin-bottom:22px;max-width:46ch;margin-inline:auto;line-height:1.6}
 .cta-band a.go{
-  display:inline-block;background:#fff;color:#0a3d70;font-weight:800;
-  padding:14px 30px;border-radius:999px;font-size:1.02rem;
+  display:inline-block;background:#fff;color:var(--blue-deep);font-weight:800;
+  padding:14px 30px;border-radius:999px;font-size:1rem;text-decoration:none;
+  transition:transform .18s,box-shadow .18s;
 }
-.cta-band a.go:hover{text-decoration:none;transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.cta-band a.go:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.22)}
 
-footer{border-top:1px solid var(--line);margin-top:50px;padding:34px 0 60px}
-footer .wrap{color:var(--ink-faint);font-size:.82rem}
-footer .links{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:18px}
-footer .links a{color:var(--ink-soft);font-size:.9rem}
-.disclaimer{font-size:.74rem;line-height:1.5;color:var(--ink-faint);margin-top:14px}
-
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto;transition:none!important}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <a class="brand" href="https://dan-sells.co.uk/index.html">DanSells</a>
-  <a class="cta" href="https://dan-sells.co.uk/step1.html">Find my BMW &rarr;</a>
-</div>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-logo" href="index.html">DanSells</a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" onclick="toggleNav(this)">&#9776;</button>
+    <nav class="site-nav" id="siteNav">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric</a>
+      <a href="appraisal.html">Value my car</a>
+      <a href="service.html">Car in for service?</a>
+      <a href="accessories.html">BMW Accessories</a>
+      <a href="index.html#protect">Protect my BMW</a>
+      <a href="refer.html">Refer a friend</a>
+      <a href="guides.html">Guides</a>
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="Dan on Instagram" class="nav-ig">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a class="nav-cta" href="step1.html">Start in 2 minutes</a>
+    </nav>
+  </div>
+</header>
 
-<div class="wrap">
-  <nav class="crumb"><a href="https://dan-sells.co.uk/index.html">Home</a> &nbsp;&rsaquo;&nbsp; Guides</nav>
+<div class="guide-wrap">
+  <nav class="crumb"><a href="index.html">Home</a> &nbsp;&rsaquo;&nbsp; Guides</nav>
 
   <span class="eyebrow">Buying guides &middot; plain English</span>
-  <h1>BMW buying guides, no jargon</h1>
+  <h1 class="guide-h1">BMW buying guides, no jargon</h1>
   <p class="standfirst">Most people come to me having seen a headline monthly figure online with no idea what's actually behind it. These guides are the version I'd give you across the desk: no scripts, no invented figures, no pressure to pick one thing over another. Read them first, then if you want to see real numbers for your situation, I'm here.</p>
 
   <div class="guides-grid">
 
-    <a class="guide-card" href="https://dan-sells.co.uk/bmw-pcp-explained.html">
+    <a class="guide-card" href="bmw-pcp-explained.html">
       <span class="gc-tag">Finance</span>
       <span class="gc-title">BMW PCP explained, and whether it's right for you</span>
       <span class="gc-desc">How PCP actually works: deposit, monthly payments, the balloon payment, and the three choices you get at the end of the agreement.</span>
       <span class="gc-link">Read the guide &rarr;</span>
     </a>
 
-    <a class="guide-card" href="https://dan-sells.co.uk/bmw-finance-compared.html">
+    <a class="guide-card" href="bmw-finance-compared.html">
       <span class="gc-tag">Finance</span>
       <span class="gc-title">PCP vs HP vs leasing: which works out cheapest for you?</span>
       <span class="gc-desc">A plain-English comparison of every way to pay for a BMW, including why keeping cash in the bank can be smarter than paying outright.</span>
@@ -151,27 +136,45 @@ footer .links a{color:var(--ink-soft);font-size:.9rem}
   <div class="cta-band">
     <h2>Ready to talk through numbers?</h2>
     <p>If you've done your reading and want to see what any of this looks like for your situation, I'm here. Answer a few quick questions and I'll come back with real figures, no scripts.</p>
-    <a class="go" href="https://dan-sells.co.uk/step1.html">Start in 2 minutes &rarr;</a>
+    <a class="go" href="step1.html">Start in 2 minutes &rarr;</a>
   </div>
 </div>
 
-<footer>
-  <div class="wrap">
-    <div class="links">
-      <a href="https://dan-sells.co.uk/step1.html">Find my BMW</a>
-      <a href="https://dan-sells.co.uk/guides.html">Guides</a>
-      <a href="https://dan-sells.co.uk/EV.html">Electric</a>
-      <a href="https://dan-sells.co.uk/appraisal.html">Value my car</a>
-      <a href="https://dan-sells.co.uk/service.html">Car in for service?</a>
-      <a href="https://dan-sells.co.uk/bmw-sidcup.html">BMW Sidcup</a>
-      <a href="https://dan-sells.co.uk/bmw-sevenoaks.html">BMW Sevenoaks</a>
-      <a href="https://www.instagram.com/dan_sells_bmw">Instagram</a>
-      <a href="https://dan-sells.co.uk/privacy.html">Privacy Policy</a>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
+      <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
+      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup &mdash; serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
     </div>
-    <p>Based at Hedin Ruxley on Maidstone Road, Sidcup &mdash; serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
-    <p class="disclaimer">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Hedin Automotive Group is a credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
+    <nav aria-label="Footer">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric</a>
+      <a href="guides.html">Guides</a>
+      <a href="appraisal.html">Value my car</a>
+      <a href="service.html">Car in for service?</a>
+      <a href="accessories.html">BMW Accessories</a>
+      <a href="refer.html">Refer a friend</a>
+      <a href="bmw-sidcup.html">BMW Sidcup</a>
+      <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </nav>
   </div>
+  <p class="footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Hedin Automotive Group is a credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
 </footer>
 
+<a class="wa-float" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20new%20BMW" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  <span>Chat with Dan</span>
+</a>
+
+<script>
+function toggleNav(btn){
+  const nav=document.getElementById('siteNav');
+  const open=nav.classList.toggle('open');
+  btn.setAttribute('aria-expanded',open);
+}
+</script>
 </body>
 </html>

@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>PCP vs HP vs leasing a BMW: which is actually cheapest for you? | DanSells</title>
-<meta name="description" content="A BMW Sales Executive compares PCP, Hire Purchase, leasing and paying cash in plain English — and explains why cash isn't always the smartest way to buy. Sidcup, Bexley, Sevenoaks.">
+<meta name="description" content="A BMW Sales Executive compares PCP, Hire Purchase, leasing and paying cash in plain English, and explains why cash isn't always the smartest way to buy. Sidcup, Bexley, Sevenoaks.">
 <link rel="canonical" href="https://dan-sells.co.uk/bmw-finance-compared.html">
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,600,700,800,900&display=swap"/>
+<link rel="stylesheet" href="style.css"/>
 
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="DanSells">
@@ -28,7 +31,7 @@
       "name": "What's the difference between PCP, HP and leasing?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "PCP (Personal Contract Purchase) has lower monthly payments and a final optional payment if you want to keep the car, with the choice to hand it back or part exchange at the end. Hire Purchase (HP) spreads the full price over the term so you own the car outright at the end with nothing left to pay, but monthly payments are higher. Leasing (Personal Contract Hire) is long-term rental: you pay to use the car for a fixed term then return it, never owning it, but it often has the lowest payments and includes options like maintenance."
+        "text": "PCP (Personal Contract Purchase) has lower monthly payments and a final optional payment if you want to keep the car, with the choice to hand it back or part exchange at the end. Hire Purchase (HP) spreads the full price over the term so you own the car outright at the end with nothing left to pay, but monthly payments are higher. Leasing (Personal Contract Hire) is long-term rental: you pay to use the car for a fixed term then return it, never owning it. Leasing often includes road tax in the payment, which PCP and HP do not."
       }
     },
     {
@@ -44,7 +47,7 @@
       "name": "Which car finance is best?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "There is no single best option; it depends on how long you keep cars, your annual mileage, whether you want to own the car, and your wider financial picture. PCP suits people who change cars every few years and want lower payments. HP suits people who want to own the car outright. Leasing suits people who always want a new car and never want ownership. The right choice should be matched to the individual."
+        "text": "There is no single best option; it depends on how long you keep cars, your annual mileage, whether you want to own the car, and your wider financial picture. PCP suits people who change cars every few years and want lower payments. HP suits people who want to own the car outright. Leasing suits people who always want a new car and never want ownership, and road tax is typically included. The right choice should be matched to the individual."
       }
     }
   ]
@@ -52,152 +55,150 @@
 </script>
 
 <style>
-:root{
-  --bg:#15171a;
-  --bg-raised:#1d2025;
-  --bg-card:#23272d;
-  --line:#32373f;
-  --ink:#f3f5f7;
-  --ink-soft:#aeb6c0;
-  --ink-faint:#7d8893;
-  --blue:#0a84ff;
-  --blue-deep:#0066cc;
-  --good:#34c759;
-  --radius:16px;
-  --maxw:760px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  background:var(--bg);
-  color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  line-height:1.65;
-  -webkit-font-smoothing:antialiased;
-}
-a{color:var(--blue);text-decoration:none}
-a:hover{text-decoration:underline}
+/* ── Guide article layout ── */
+.guide-wrap{max-width:760px;margin:0 auto;padding:0 24px}
 
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 24px;border-bottom:1px solid var(--line);
-  position:sticky;top:0;background:rgba(21,23,26,.85);
-  backdrop-filter:saturate(160%) blur(12px);z-index:50;
-}
-.brand{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;color:var(--ink)}
-.brand:hover{text-decoration:none}
-.topbar .cta{
-  background:var(--blue);color:#fff;font-weight:700;font-size:.92rem;
-  padding:9px 16px;border-radius:999px;
-}
-.topbar .cta:hover{background:var(--blue-deep);text-decoration:none}
-
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-
-.crumb{font-size:.82rem;color:var(--ink-faint);padding:22px 0 0}
-.crumb a{color:var(--ink-faint)}
+.crumb{font-size:.82rem;color:var(--muted);padding:22px 0 0}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
 
 .eyebrow{
-  display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.04em;
-  text-transform:uppercase;color:var(--blue);margin:26px 0 14px;
+  display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--blue);margin:24px 0 12px;
 }
-h1{
+
+.guide-h1{
+  font-family:var(--display);
   font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.1;letter-spacing:-.025em;
-  font-weight:800;margin-bottom:18px;
+  font-weight:700;margin-bottom:16px;color:var(--text);
 }
-.standfirst{font-size:1.18rem;color:var(--ink-soft);margin-bottom:26px}
+.standfirst{font-size:1.12rem;color:var(--body);margin-bottom:24px;line-height:1.65}
+
 .byline{
   display:flex;align-items:center;gap:12px;
-  padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:16px 0;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
   margin-bottom:36px;
 }
 .byline img{width:44px;height:44px;border-radius:50%;object-fit:cover}
-.byline .who{font-weight:700;font-size:.95rem}
-.byline .role{font-size:.83rem;color:var(--ink-faint)}
+.byline .who{font-weight:700;font-size:.95rem;color:var(--text)}
+.byline .role{font-size:.83rem;color:var(--muted)}
 
-article h2{
-  font-size:clamp(1.4rem,3.5vw,1.85rem);letter-spacing:-.02em;font-weight:800;
-  margin:44px 0 14px;line-height:1.2;
+/* Article body */
+.guide-body h2{
+  font-family:var(--display);
+  font-size:clamp(1.35rem,3.5vw,1.75rem);letter-spacing:-.02em;font-weight:700;
+  margin:44px 0 14px;line-height:1.2;color:var(--text);
 }
-article h3{font-size:1.18rem;font-weight:700;margin:30px 0 10px}
-article p{margin-bottom:18px;color:#e4e8ec}
-article ul,article ol{margin:0 0 20px 22px;color:#e4e8ec}
-article li{margin-bottom:9px}
-article strong{color:var(--ink)}
+.guide-body h3{font-size:1.1rem;font-weight:700;margin:28px 0 10px;color:var(--text)}
+.guide-body p{margin-bottom:18px;color:var(--body);line-height:1.7}
+.guide-body ul,.guide-body ol{margin:0 0 20px 22px;color:var(--body);line-height:1.7}
+.guide-body li{margin-bottom:9px}
+.guide-body strong{color:var(--text)}
+.guide-body a{color:var(--blue)}
 
+/* Callout / key box */
 .keybox{
-  background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);
-  padding:22px 24px;margin:30px 0;
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px 24px;margin:28px 0;
+  box-shadow:var(--shadow-card);
 }
-.keybox .label{font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+.keybox .label{
+  font-size:.72rem;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--blue);margin-bottom:10px;
+}
+.keybox p{color:var(--body);margin:0;line-height:1.65}
+.keybox ul{color:var(--body);margin:8px 0 0 18px}
+.keybox li{margin-bottom:8px}
 
 /* Comparison table */
 .compare{
-  width:100%;border-collapse:collapse;margin:24px 0;font-size:.9rem;
+  width:100%;border-collapse:collapse;margin:20px 0;font-size:.88rem;
   border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
 }
-.compare th,.compare td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-.compare thead th{background:var(--bg-raised);font-weight:800;color:var(--ink)}
-.compare tbody th{background:transparent;font-weight:700;color:var(--ink-soft);font-size:.85rem}
+.compare th,.compare td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.compare thead th{background:var(--surface);font-weight:800;color:var(--text);font-family:var(--font)}
+.compare tbody th{background:transparent;font-weight:700;color:var(--muted);font-size:.83rem}
 .compare tr:last-child td,.compare tr:last-child th{border-bottom:none}
 .scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
 
-.faq{margin:34px 0}
-.faq details{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;background:var(--bg-card)}
-.faq summary{padding:16px 20px;font-weight:700;cursor:pointer;list-style:none;position:relative}
+/* FAQ */
+.faq{margin:32px 0}
+.faq details{
+  border:1px solid var(--line);border-radius:12px;margin-bottom:10px;
+  background:var(--paper);box-shadow:var(--shadow-card);
+}
+.faq summary{
+  padding:16px 20px;font-weight:700;cursor:pointer;list-style:none;
+  position:relative;color:var(--text);font-size:.97rem;
+}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:"+";position:absolute;right:20px;color:var(--blue);font-size:1.3rem;line-height:1}
+.faq summary::after{content:"+";position:absolute;right:20px;color:var(--blue);font-size:1.2rem;line-height:1}
 .faq details[open] summary::after{content:"–"}
-.faq details p{padding:0 20px 18px;margin:0;color:#dfe3e8}
+.faq details p{padding:0 20px 18px;margin:0;color:var(--body);line-height:1.65}
 
+/* CTA band */
 .cta-band{
-  background:linear-gradient(135deg,#0a84ff 0%,#0052a3 100%);
+  background:linear-gradient(135deg,var(--blue) 0%,var(--blue-deep) 100%);
   border-radius:20px;padding:38px 32px;margin:50px 0 20px;text-align:center;
 }
-.cta-band h2{margin:0 0 10px;color:#fff;font-size:1.6rem}
-.cta-band p{color:rgba(255,255,255,.92);margin-bottom:22px;max-width:46ch;margin-inline:auto}
+.cta-band h2{margin:0 0 10px;color:#fff;font-size:1.6rem;font-family:var(--display)}
+.cta-band p{color:rgba(255,255,255,.9);margin-bottom:22px;max-width:46ch;margin-inline:auto;line-height:1.6}
 .cta-band a.go{
-  display:inline-block;background:#fff;color:#0a3d70;font-weight:800;
-  padding:14px 30px;border-radius:999px;font-size:1.02rem;
+  display:inline-block;background:#fff;color:var(--blue-deep);font-weight:800;
+  padding:14px 30px;border-radius:999px;font-size:1rem;text-decoration:none;
+  transition:transform .18s,box-shadow .18s;
 }
-.cta-band a.go:hover{text-decoration:none;transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.cta-band a.go:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.22)}
 
-.related{border-top:1px solid var(--line);margin-top:48px;padding-top:30px}
-.related h3{font-size:1.1rem;margin-bottom:16px}
-.related a{display:block;padding:6px 0;color:var(--ink-soft)}
+/* Related */
+.related{border-top:1px solid var(--line);margin-top:48px;padding-top:28px}
+.related h3{font-size:1rem;margin-bottom:14px;color:var(--text);font-weight:700}
+.related a{display:block;padding:5px 0;color:var(--body);font-size:.95rem}
+.related a:hover{color:var(--blue)}
 
-footer{border-top:1px solid var(--line);margin-top:50px;padding:34px 0 60px}
-footer .wrap{color:var(--ink-faint);font-size:.82rem}
-footer .links{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:18px}
-footer .links a{color:var(--ink-soft);font-size:.9rem}
-.disclaimer{font-size:.74rem;line-height:1.5;color:var(--ink-faint);margin-top:14px}
-
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto;transition:none!important}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <a class="brand" href="https://dan-sells.co.uk/index.html">DanSells</a>
-  <a class="cta" href="https://dan-sells.co.uk/step1.html">Find my BMW &rarr;</a>
-</div>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-logo" href="index.html">DanSells</a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" onclick="toggleNav(this)">&#9776;</button>
+    <nav class="site-nav" id="siteNav">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric</a>
+      <a href="appraisal.html">Value my car</a>
+      <a href="service.html">Car in for service?</a>
+      <a href="accessories.html">BMW Accessories</a>
+      <a href="index.html#protect">Protect my BMW</a>
+      <a href="refer.html">Refer a friend</a>
+      <a href="guides.html">Guides</a>
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="Dan on Instagram" class="nav-ig">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a class="nav-cta" href="step1.html">Start in 2 minutes</a>
+    </nav>
+  </div>
+</header>
 
-<div class="wrap">
-  <nav class="crumb"><a href="https://dan-sells.co.uk/index.html">Home</a> &nbsp;&rsaquo;&nbsp; <a href="https://dan-sells.co.uk/guides.html">Guides</a> &nbsp;&rsaquo;&nbsp; PCP vs HP vs leasing</nav>
+<div class="guide-wrap">
+  <nav class="crumb"><a href="index.html">Home</a> &nbsp;&rsaquo;&nbsp; <a href="guides.html">Guides</a> &nbsp;&rsaquo;&nbsp; PCP vs HP vs leasing</nav>
 
   <span class="eyebrow">Buying &amp; finance &middot; plain English</span>
-  <h1>PCP vs HP vs leasing a BMW: which is actually cheapest for you?</h1>
+  <h1 class="guide-h1">PCP vs HP vs leasing a BMW: which is actually cheapest for you?</h1>
   <p class="standfirst">There's no single right answer here, and anyone who tells you otherwise is selling something. The best option depends entirely on you. Here's how I work it out with customers, including why paying cash isn't the slam-dunk most people assume, because you can't spend part of a car when life throws you a bill.</p>
 
   <div class="byline">
-    <img src="https://dan-sells.co.uk/dan.jpg" alt="Dan, BMW Sales Executive at Hedin Ruxley">
+    <img src="dan.jpg" alt="Dan, BMW Sales Executive at Hedin Ruxley">
     <div>
       <div class="who">Dan Cane</div>
       <div class="role">BMW Sales Executive &middot; Hedin Ruxley, South East</div>
     </div>
   </div>
 
-  <article>
+  <div class="guide-body">
     <p>This is probably the most common question I get asked, and the honest answer frustrates people at first: <strong>it depends</strong>. There genuinely isn't one option that's best for everyone. PCP, Hire Purchase, leasing and cash each win for different people, and my actual job is matching the right one to you. That means your mileage, how long you keep cars, whether owning it matters, and what else you'd do with the money.</p>
 
     <p>So rather than crown a winner, let me show you how each one works and who it's genuinely best for. By the end you'll know roughly where you sit, and we can confirm it properly in a two-minute conversation.</p>
@@ -209,26 +210,28 @@ footer .links a{color:var(--ink-soft);font-size:.9rem}
         <tr><th></th><th>PCP</th><th>HP</th><th>Leasing</th><th>Cash</th></tr>
       </thead>
       <tbody>
-        <tr><th>Monthly cost</th><td>Low</td><td>Higher</td><td>Lowest</td><td>None</td></tr>
+        <tr><th>Monthly cost</th><td>Low</td><td>Higher</td><td>Competitive</td><td>None</td></tr>
         <tr><th>Do you own it?</th><td>Optional at end</td><td>Yes, at the end</td><td>Never</td><td>Immediately</td></tr>
         <tr><th>Deposit</th><td>Flexible</td><td>Flexible</td><td>Usually small</td><td>Full price</td></tr>
         <tr><th>Value risk</th><td>Protected by BMW</td><td>Yours</td><td>Not your problem</td><td>All yours</td></tr>
         <tr><th>Mileage limits</th><td>Yes</td><td>No</td><td>Yes</td><td>No</td></tr>
-        <tr><th>Best for</th><td>Changing every 3–4 yrs</td><td>Keeping long-term</td><td>Always-new, never own</td><td>Depends — read on</td></tr>
+        <tr><th>Road tax (VED)</th><td>Yours to pay</td><td>Yours to pay</td><td>Typically included</td><td>Yours to pay</td></tr>
+        <tr><th>Best for</th><td>Changing every 3–4 yrs</td><td>Keeping long-term</td><td>Always-new, never own</td><td>When APR makes it right</td></tr>
       </tbody>
     </table>
     </div>
 
     <h2>PCP — the flexible all-rounder</h2>
     <p>PCP keeps your monthly payments low because you're only paying for the value the car loses while you have it, not the whole price. At the end you choose: hand it back, pay the final payment to keep it, or part exchange into your next one. Crucially, BMW guarantees that future value, so if used prices fall, that's their risk, not yours.</p>
-    <p><strong>Best for:</strong> most people who like a new BMW every three or four years and want affordable payments with their value protected. It's the most popular route for good reason. <a href="https://dan-sells.co.uk/bmw-pcp-explained.html">I've explained PCP in full here</a> if you want the detail.</p>
+    <p><strong>Best for:</strong> most people who like a new BMW every three or four years and want affordable payments with their value protected. It's the most popular route for good reason. <a href="bmw-pcp-explained.html">I've explained PCP in full here</a> if you want the detail.</p>
 
     <h2>Hire Purchase — straightforward ownership</h2>
     <p>HP is the simplest to understand: you spread the entire price of the car over the term, and at the end you own it outright with nothing left to pay. Payments are higher than PCP because you're chipping away at the full value, but there's no final lump sum and no mileage limit.</p>
     <p><strong>Best for:</strong> people who keep cars for the long haul, eight or ten years, and want to end up owning it free and clear. If you're not the type to change every few years, HP often makes more sense than PCP.</p>
 
-    <h2>Leasing — new car, no ownership, lowest payments</h2>
-    <p>Leasing (technically Personal Contract Hire) is long-term rental. You pay a modest initial payment then fixed monthlies to use the car for a set term, hand it back at the end, and that's it, you never own it. Because there's no ownership and no final payment to fund, the monthlies are often the lowest of the lot, and you can usually bundle in maintenance.</p>
+    <h2>Leasing — new car, no ownership, road tax included</h2>
+    <p>Leasing (technically Personal Contract Hire) is long-term rental. You pay a modest initial payment then fixed monthlies to use the car for a set term, hand it back at the end, and that's it, you never own it. The payments are competitive, and one genuine practical advantage is that road tax (VED) is typically included in the payment, which PCP and HP don't cover. Maintenance can usually be bundled in too.</p>
+    <p>A word of caution though: leasing isn't automatically cheaper than PCP on a straight monthly comparison. The numbers vary by model, term and offer, and I've seen it go either way. What leasing does give you is predictability and simplicity, with no ownership decision at the end and no depreciation risk to carry.</p>
     <p>I arrange leasing regularly, so don't think of it as the odd one out. <strong>Best for:</strong> people who simply want to drive a new BMW for a fixed monthly cost, never want the hassle of ownership or resale, and stay within a predictable mileage. Business users in particular often find the numbers work well.</p>
 
     <h2>And now: the cash myth</h2>
@@ -239,7 +242,7 @@ footer .links a{color:var(--ink-soft);font-size:.9rem}
     <div class="keybox">
       <div class="label">Why cash isn't always king</div>
       <p style="margin:0 0 12px">Three things people forget when they reach for the chequebook:</p>
-      <ul style="margin:0 0 0 18px">
+      <ul>
         <li><strong>A car isn't spendable.</strong> Cash kept in your account stays liquid and usable. Cash turned into a car can't be unwound when life throws you a bill.</li>
         <li><strong>You lose the guaranteed future value.</strong> Pay cash and the car's resale risk is entirely yours. On PCP, BMW carries it.</li>
         <li><strong>You often forfeit manufacturer deposit contributions.</strong> Those low-rate offers and deposit contributions are usually only on the table <em>with</em> finance. Pay cash and you can leave real money behind.</li>
@@ -250,26 +253,26 @@ footer .links a{color:var(--ink-soft);font-size:.9rem}
 
     <p>And one thing worth saying plainly: not everyone has the privilege of a large cash deposit sitting around, and that's completely fine. If that's you, finance isn't a compromise or a second-best, it's exactly the right tool, and it's the reason a brand-new BMW is within reach at all. There's no judgement here either way. The job is simply to find what works for your situation.</p>
 
-    <div class="keybox" style="border-color:#0a84ff">
+    <div class="keybox" style="border-color:var(--blue)">
       <div class="label">Important — I'm not a financial adviser</div>
-      <p style="margin:0">Everything on this page is general information to help you understand your options, not regulated financial advice or a personal recommendation. I'm Dan, a BMW Sales Executive, not an FCA-authorised financial adviser. Any figures or comparisons here are illustrative and depend on your circumstances and lender approval. If you want a personal recommendation on what's right for your finances, you should speak to an independent financial adviser who is authorised and regulated by the Financial Conduct Authority. What I <em>can</em> do is lay out the real numbers clearly and honestly so you can make your own informed decision.</p>
+      <p>Everything on this page is general information to help you understand your options, not regulated financial advice or a personal recommendation. I'm Dan, a BMW Sales Executive, not an FCA-authorised financial adviser. Any figures or comparisons here are illustrative and depend on your circumstances and lender approval. If you want a personal recommendation on what's right for your finances, speak to an independent financial adviser authorised and regulated by the Financial Conduct Authority. What I <em>can</em> do is lay out the real numbers clearly and honestly so you can make your own informed decision.</p>
     </div>
 
     <h2>So which should you choose?</h2>
-    <p>Short version: PCP if you like changing every few years and want flexibility; HP if you're keeping it long-term and want to own it; leasing if you just want a new car at the lowest monthly with no ownership; and cash only once you've checked the APR actually makes it worth giving up your liquidity and any contribution.</p>
+    <p>Short version: PCP if you like changing every few years and want flexibility; HP if you're keeping it long-term and want to own it; leasing if you just want a new car at a predictable monthly with no ownership and road tax sorted; and cash only once you've checked the APR actually makes it worth giving up your liquidity and any contribution.</p>
     <p>But that's the textbook map. Where you actually land depends on your numbers, and that's the bit I'm here for. Tell me how you use a car and what matters to you, and I'll lay all four side by side with real figures, no pressure, and no agenda about which one I'd prefer.</p>
 
     <div class="cta-band">
       <h2>Let's find your best option</h2>
       <p>Answer a few quick questions and I'll come back with real numbers across PCP, HP and leasing, and tell you honestly which one wins for you.</p>
-      <a class="go" href="https://dan-sells.co.uk/step1.html">Start in 2 minutes &rarr;</a>
+      <a class="go" href="step1.html">Start in 2 minutes &rarr;</a>
     </div>
 
     <h2>Common questions</h2>
     <div class="faq">
       <details>
         <summary>Is leasing or PCP better?</summary>
-        <p>Leasing usually has lower monthly payments and zero ownership hassle, but you never own the car and can't build any equity towards your next one. PCP costs a little more monthly but gives you the choice to keep the car or roll any equity into your next deal. If you never want to own and just want the lowest cost to drive new, leasing wins. If you want flexibility and a possible route to ownership, PCP wins.</p>
+        <p>It depends on the specific deal and what matters to you. Leasing has no ownership at the end and road tax is typically included, which makes the overall cost more predictable. PCP costs a little more on some deals but gives you the choice to keep the car or roll any equity into your next one. If you never want to own and want simplicity, leasing works well. If you want flexibility and a possible route to ownership, PCP is usually the better fit.</p>
       </details>
       <details>
         <summary>Does financing a car hurt my credit?</summary>
@@ -283,30 +286,48 @@ footer .links a{color:var(--ink-soft);font-size:.9rem}
 
     <div class="related">
       <h3>Keep reading</h3>
-      <a href="https://dan-sells.co.uk/bmw-pcp-explained.html">&rarr; BMW PCP explained, plainly, and whether it's right for you</a>
-      <a href="https://dan-sells.co.uk/EV.html">&rarr; Thinking electric? See what switching to an electric BMW really costs</a>
-      <a href="https://dan-sells.co.uk/appraisal.html">&rarr; What's your current car worth? Get a free, honest appraisal</a>
+      <a href="bmw-pcp-explained.html">&rarr; BMW PCP explained, plainly, and whether it's right for you</a>
+      <a href="EV.html">&rarr; Thinking electric? See what switching to an electric BMW really costs</a>
+      <a href="appraisal.html">&rarr; What's your current car worth? Get a free, honest appraisal</a>
     </div>
-  </article>
+  </div>
 </div>
 
-<footer>
-  <div class="wrap">
-    <div class="links">
-      <a href="https://dan-sells.co.uk/step1.html">Find my BMW</a>
-      <a href="https://dan-sells.co.uk/guides.html">Guides</a>
-      <a href="https://dan-sells.co.uk/EV.html">Electric</a>
-      <a href="https://dan-sells.co.uk/appraisal.html">Value my car</a>
-      <a href="https://dan-sells.co.uk/service.html">Car in for service?</a>
-      <a href="https://dan-sells.co.uk/bmw-sidcup.html">BMW Sidcup</a>
-      <a href="https://dan-sells.co.uk/bmw-sevenoaks.html">BMW Sevenoaks</a>
-      <a href="https://www.instagram.com/dan_sells_bmw">Instagram</a>
-      <a href="https://dan-sells.co.uk/privacy.html">Privacy Policy</a>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
+      <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
+      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup &mdash; serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
     </div>
-    <p>Based at Hedin Ruxley on Maidstone Road, Sidcup &mdash; serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
-    <p class="disclaimer">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Hedin Automotive Group is a credit broker, not a lender. Finance subject to status and individual credit assessment. PCP, HP and leasing figures and comparisons are illustrative and not a personal recommendation or financial advice. Your actual APR, payments and terms depend on your circumstances, vehicle specification and lender approval. Written quotations available on request. This page is intended for UK residents only.</p>
+    <nav aria-label="Footer">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric</a>
+      <a href="guides.html">Guides</a>
+      <a href="appraisal.html">Value my car</a>
+      <a href="service.html">Car in for service?</a>
+      <a href="accessories.html">BMW Accessories</a>
+      <a href="refer.html">Refer a friend</a>
+      <a href="bmw-sidcup.html">BMW Sidcup</a>
+      <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </nav>
   </div>
+  <p class="footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Hedin Automotive Group is a credit broker, not a lender. Finance subject to status and individual credit assessment. PCP, HP and leasing figures and comparisons are illustrative and not a personal recommendation or financial advice. Your actual APR, payments and terms depend on your circumstances, vehicle specification and lender approval. Written quotations available on request. This page is intended for UK residents only.</p>
 </footer>
 
+<a class="wa-float" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20new%20BMW" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  <span>Chat with Dan</span>
+</a>
+
+<script>
+function toggleNav(btn){
+  const nav=document.getElementById('siteNav');
+  const open=nav.classList.toggle('open');
+  btn.setAttribute('aria-expanded',open);
+}
+</script>
 </body>
 </html>
