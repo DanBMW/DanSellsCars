@@ -13,40 +13,4 @@
   <url><loc>https://dan-sells.co.uk/refer.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://dan-sells.co.uk/start.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://dan-sells.co.uk/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <!-- Standard funnel steps -->
-  <url><loc>https://dan-sells.co.uk/step1.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://dan-sells.co.uk/step2.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/step3.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/step4.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/step5.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/step6.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/step7.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/step8.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <!-- EV funnel steps -->
-  <url><loc>https://dan-sells.co.uk/ev-step1.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://dan-sells.co.uk/ev-step2.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ev-step3.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ev-step4.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ev-step5.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ev-step6.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ev-step7.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <!-- Appraisal funnel steps -->
-  <url><loc>https://dan-sells.co.uk/ap1.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ap2.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ap3.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ap4.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ap5.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/ap6.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <!-- Service qualifier funnel steps -->
-  <url><loc>https://dan-sells.co.uk/sq1.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/sq2.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/sq3.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/sq4.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/sq5.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/sq6.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://dan-sells.co.uk/sq7.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <!-- Thank-you / confirmation pages -->
-  <url><loc>https://dan-sells.co.uk/thankyou.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://dan-sells.co.uk/ev-thankyou.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://dan-sells.co.uk/sq_done.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>
