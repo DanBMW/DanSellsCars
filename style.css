@@ -295,6 +295,11 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .hero-video.vid-paused .play-icon{display:block !important;}
 @media(max-width:600px){.hero-vid-content{padding-bottom:52px;}.hero-pause-btn{right:20px;bottom:56px;}}
 @media(prefers-reduced-motion:reduce){.hero-vid{display:none;}.hero-video{background:#0e1420;min-height:440px;}}
+.dan-profile{display:flex;align-items:center;gap:14px;padding:36px 0 4px;}
+.dan-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15);flex-shrink:0;}
+.dan-profile-info{display:flex;flex-direction:column;gap:3px;}
+.dan-profile-info strong{font-size:.95rem;color:#fff;font-weight:600;}
+.dan-profile-info span{font-size:.8rem;color:rgba(255,255,255,.45);letter-spacing:.02em;}
 
 .page{max-width:1140px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
 
