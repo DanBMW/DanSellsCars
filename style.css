@@ -298,8 +298,8 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .dan-profile{display:flex;align-items:center;gap:20px;padding:36px 0 4px;}
 .dan-avatar{width:162px;height:162px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.2);flex-shrink:0;}
 .dan-profile-info{display:flex;flex-direction:column;gap:5px;}
-.dan-profile-info strong{font-size:1.1rem;color:#fff;font-weight:700;}
-.dan-profile-info span{font-size:.9rem;color:rgba(255,255,255,.75);letter-spacing:.02em;}
+.dan-profile-info strong{font-size:1.1rem;color:var(--text);font-weight:700;}
+.dan-profile-info span{font-size:.9rem;color:var(--muted);letter-spacing:.02em;}
 
 .page{max-width:1140px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
 
