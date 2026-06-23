@@ -370,6 +370,13 @@
         <details>
           <summary>When do I sign my finance documents?</summary>
           <p>Finance documents are sent close to the end of the process and will come through for signing <strong>within one week of your handover date</strong>. Keep an eye out for emails from <strong>ShareDocs</strong> and <strong>Hyland Cloud</strong>. That's where your documents will appear. Signing them ahead of collection day means we can spend your time on the car rather than paperwork.</p>
+          <div class="ty-doc-notice">
+            <span class="ty-doc-notice-icon">⚠️</span>
+            <div>
+              <strong>Borrowing over £60,000?</strong>
+              <p>If your finance agreement involves a borrowed amount over £60,000, you will need to come into the dealership in person to sign your documents. Please bring a valid photo ID and a recent proof of address. Dan will confirm whether this applies to you ahead of your handover date.</p>
+            </div>
+          </div>
         </details>
         <details>
           <summary>Who do I contact about my finance after purchase?</summary>
@@ -564,6 +571,16 @@
 </a>
 
 <script>
+// Name personalisation — reads ?name=Ruth from URL
+(function(){
+  var raw=(new URLSearchParams(window.location.search)).get('name')||'';
+  var name=raw.replace(/[<>"'&]/g,'').trim().slice(0,40);
+  if(!name)return;
+  var h1=document.querySelector('.ty-hero h1');
+  if(h1)h1.innerHTML='You\'ve begun your journey, '+name+'.<br>Congratulations.';
+  document.title='Welcome, '+name+' | DanSells';
+})();
+
 // Header scroll
 const hdr=document.getElementById('siteHeader');
 window.addEventListener('scroll',()=>{hdr.classList.toggle('scrolled',window.scrollY>80);},{passive:true});
