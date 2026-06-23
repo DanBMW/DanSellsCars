@@ -114,7 +114,7 @@
           <h2>3 steps required to firm up your order and secure the car fully*</h2>
           <p>Until these are in place, your order isn't fully secured. The sooner they're done, the sooner everything moves. Don't leave them sitting.</p>
         </div>
-        <div class="ty-check-item">
+        <div class="ty-check-item" style="border-bottom:none;padding-bottom:0;">
           <div class="ty-check-label">
             <span class="ty-check-num">1</span>
             <div>
@@ -126,6 +126,7 @@
             <button class="ty-check-btn" data-q="deposit" data-v="no" onclick="checkAnswer(this)">Not yet</button>
           </div>
         </div>
+        <div class="ty-order-wa-prompt" id="depositWaPrompt" aria-live="polite"></div>
         <div class="ty-check-item">
           <div class="ty-check-label">
             <span class="ty-check-num">2</span>
@@ -683,6 +684,16 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     });
     btn.classList.add(v==='no'?'ty-check-btn-no':'ty-check-btn-yes');
     answers[q]=v;
+
+    // Show WhatsApp nudge if deposit not yet paid
+    var depositWa=document.getElementById('depositWaPrompt');
+    if(depositWa){
+      if(answers.deposit==='no'){
+        depositWa.innerHTML='<div class="ty-order-wa-inner"><p>No problem. Let Dan know you\'re ready and he\'ll take it from there.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20I\'m%20available%20now%20to%20place%20my%20deposit" target="_blank" rel="noopener">'+WA_ICON+' Message Dan to place your deposit</a></div>';
+      } else {
+        depositWa.innerHTML='';
+      }
+    }
 
     // Show WhatsApp nudge if order form not yet signed
     var orderWa=document.getElementById('orderWaPrompt');
