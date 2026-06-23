@@ -558,4 +558,39 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .ty-wa-btn:hover{background:#1ea355;transform:translateY(-1px);}
 .ty-wa-btn svg{flex-shrink:0;}
 
+/* ITC notice */
+.ty-itc-notice{display:flex;align-items:flex-start;gap:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-left:3px solid #7fb2ff;border-radius:14px;padding:20px 22px;max-width:620px;margin-bottom:32px;}
+.ty-itc-notice-icon{color:#7fb2ff;flex-shrink:0;margin-top:1px;}
+.ty-itc-notice-body strong{color:#fff;font-size:.95rem;display:block;margin-bottom:6px;}
+.ty-itc-notice-body p{color:rgba(255,255,255,.72);font-size:.86rem;line-height:1.65;margin:0;}
+.ty-itc-notice-body strong+p strong{color:rgba(255,255,255,.9);}
+
+/* Checklist */
+.ty-checklist-wrap{background:#f7f8fa;padding:44px 0;border-bottom:1px solid var(--line);}
+.ty-checklist{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:32px 36px;max-width:720px;box-shadow:var(--shadow-card);}
+.ty-checklist-head{margin-bottom:24px;}
+.ty-checklist-head h2{font-family:var(--display);font-size:clamp(1.15rem,2.5vw,1.45rem);font-weight:600;color:var(--text);margin-bottom:6px;letter-spacing:-.015em;}
+.ty-checklist-head p{font-size:.9rem;color:var(--body);line-height:1.6;margin:0;}
+.ty-check-item{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-bottom:1px solid var(--line);}
+.ty-check-item:last-of-type{border-bottom:none;padding-bottom:0;}
+.ty-check-label{display:flex;align-items:center;gap:14px;}
+.ty-check-num{width:28px;height:28px;border-radius:50%;background:var(--blue-tint);border:1px solid rgba(21,89,207,.25);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:var(--blue);flex-shrink:0;}
+.ty-check-label p{font-weight:600;color:var(--text);font-size:.97rem;margin:0;}
+.ty-check-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.ty-check-btn{padding:9px 20px;border-radius:9px;border:1.5px solid var(--line);background:transparent;font-weight:700;font-size:.88rem;cursor:pointer;color:var(--text);transition:all .17s;font-family:var(--font);}
+.ty-check-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-tint);}
+.ty-check-btn-yes{background:var(--blue)!important;border-color:var(--blue)!important;color:#fff!important;}
+.ty-check-btn-no{background:#ef4444!important;border-color:#ef4444!important;color:#fff!important;}
+.ty-check-btn-na{font-size:.83rem;padding:9px 14px;}
+.ty-checklist-status{margin-top:20px;min-height:1.4em;}
+.ty-status-ok{display:inline-flex;align-items:center;gap:8px;color:#16a34a;font-weight:700;font-size:.93rem;}
+.ty-status-ok::before{content:'✓';font-size:1.05rem;}
+.ty-status-warn{display:inline-flex;align-items:center;gap:8px;color:#c0392b;font-weight:700;font-size:.93rem;}
+.ty-status-warn::before{content:'!';font-size:1rem;}
+@media(max-width:640px){.ty-checklist{padding:22px 18px;}.ty-check-item{gap:14px;}.ty-check-label p{font-size:.92rem;}}
+
+/* FAQ section lock state */
+.ty-faq-section{opacity:.25;pointer-events:none;user-select:none;transition:opacity .45s ease,filter .45s ease;filter:grayscale(.4);}
+.ty-faq-section.unlocked{opacity:1;pointer-events:auto;user-select:auto;filter:none;}
+
 @media(max-width:700px){.ty-hero{padding:92px 0 56px;}.ty-finance-cta{flex-direction:column;}.ty-finance-band{padding:48px 0;margin:32px 0 0;}.ty-quote-band{margin:32px 0 0;}.ty-protection-band{margin:32px 0 0;}}

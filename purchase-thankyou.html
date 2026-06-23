@@ -79,15 +79,18 @@
   <section class="ty-hero">
     <div class="page">
       <p class="section-kicker">Thank you for your business</p>
-      <h1>Your BMW journey<br>starts right here.</h1>
-      <p class="ty-hero-sub">Dan has everything he needs to get things moving — but there are a few simple steps that unlock the next stage. Here's everything you need to know, answered honestly and without jargon.</p>
+      <h1>You've begun your journey.<br>Congratulations.</h1>
+      <p class="ty-hero-sub">This page is your personal post-purchase guide. Everything you need to know, broken down for your type of purchase and answered without jargon.</p>
 
-      <div class="ty-steps-row">
-        <div class="ty-step-pill">Deposit confirmed</div>
-        <div class="ty-step-pill">Signed order form</div>
-        <div class="ty-step-pill">Finance proposal</div>
+      <div class="ty-itc-notice">
+        <div class="ty-itc-notice-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="ty-itc-notice-body">
+          <strong>An important email is on its way to you</strong>
+          <p>Shortly after your purchase, you will receive an email from <strong>ITC Compliance</strong>, an FCA-authorised firm that manages regulated disclosures on behalf of BMW Financial Services. This email contains your pre-contract credit information, full commission disclosure, and a summary of your rights under the Consumer Credit Act 1974. It has been issued to satisfy obligations under the FCA Consumer Duty regulations. Please read it carefully and keep it for your records.</p>
+        </div>
       </div>
-      <p style="color:rgba(255,255,255,.55);font-size:.84rem;margin-bottom:28px;line-height:1.5;">These three things together begin your journey. The faster they're all confirmed, the faster Dan can move.</p>
 
       <div class="ty-finance-cta">
         <span class="ty-finance-cta-icon">📄</span>
@@ -102,13 +105,58 @@
     </div>
   </section>
 
+  <!-- ── PRE-FLIGHT CHECKLIST ── -->
+  <div class="ty-checklist-wrap">
+    <div class="page">
+      <div class="ty-checklist" id="checklistCard">
+        <div class="ty-checklist-head">
+          <h2>Have you completed these steps yet?</h2>
+          <p>Work through the three checks below. Once everything's confirmed, your full guide will appear underneath.</p>
+        </div>
+        <div class="ty-check-item">
+          <div class="ty-check-label">
+            <span class="ty-check-num">1</span>
+            <p>Have you paid your deposit?</p>
+          </div>
+          <div class="ty-check-btns" role="group" aria-label="Deposit paid">
+            <button class="ty-check-btn" data-q="deposit" data-v="yes" onclick="checkAnswer(this)">Yes</button>
+            <button class="ty-check-btn" data-q="deposit" data-v="no" onclick="checkAnswer(this)">No</button>
+          </div>
+        </div>
+        <div class="ty-check-item">
+          <div class="ty-check-label">
+            <span class="ty-check-num">2</span>
+            <p>Have you completed your finance proposal?</p>
+          </div>
+          <div class="ty-check-btns" role="group" aria-label="Finance proposal completed">
+            <button class="ty-check-btn" data-q="finance" data-v="yes" onclick="checkAnswer(this)">Yes</button>
+            <button class="ty-check-btn" data-q="finance" data-v="no" onclick="checkAnswer(this)">No</button>
+            <button class="ty-check-btn ty-check-btn-na" data-q="finance" data-v="na" onclick="checkAnswer(this)">Not applicable</button>
+          </div>
+        </div>
+        <div class="ty-check-item">
+          <div class="ty-check-label">
+            <span class="ty-check-num">3</span>
+            <p>Have you signed your order form?</p>
+          </div>
+          <div class="ty-check-btns" role="group" aria-label="Order form signed">
+            <button class="ty-check-btn" data-q="order" data-v="yes" onclick="checkAnswer(this)">Yes</button>
+            <button class="ty-check-btn" data-q="order" data-v="no" onclick="checkAnswer(this)">No</button>
+          </div>
+        </div>
+        <div class="ty-checklist-status" id="checklistStatus" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── CATEGORY SELECTOR + PANELS ── -->
+  <div id="faqSection" class="ty-faq-section">
   <div class="page">
     <section class="section" style="padding-top:48px;">
       <div class="section-head reveal">
         <div class="section-kicker">Your next steps</div>
         <h2>Which describes your purchase?</h2>
-        <p class="step-desc" style="margin-bottom:0">Select the option that matches what you've bought — everything relevant to you will appear below.</p>
+        <p class="step-desc" style="margin-bottom:0">Select the option that matches what you've bought. Everything relevant to you will appear below.</p>
       </div>
 
       <div class="ty-tabs reveal" role="tablist" aria-label="Purchase type">
@@ -134,7 +182,7 @@
         <div class="ty-panel-intro reveal">
           <div class="section-kicker" style="margin-bottom:8px;">Stock new car</div>
           <h2>Your specific next steps</h2>
-          <p>You've chosen a car that's in stock and going through PDI (Pre-Delivery Inspection) and handover prep. Here's what's unique to your purchase — answers that apply to everyone are in the sections further down the page.</p>
+          <p>You've chosen a car that's in stock and going through PDI (Pre-Delivery Inspection) and handover prep. Here's what's unique to your purchase. Answers that apply to everyone are in the sections further down the page.</p>
         </div>
         <div class="ty-faq reveal">
           <details open>
@@ -143,7 +191,7 @@
           </details>
           <details>
             <summary>Can I put my personal registration on it?</summary>
-            <p>Yes — and Dan handles this for you. You'll need to provide your DVLA V317 transfer form along with your current V5C logbook (the registration document for the plate you're moving across). The DVLA transfer fee is charged before delivery. Get this to Dan as early as possible — leaving it late can push back your handover date.</p>
+            <p>Yes, Dan handles this for you. You'll need to provide your DVLA V317 transfer form along with your current V5C logbook (the registration document for the plate you're moving across). The DVLA transfer fee is charged before delivery. Get this to Dan as early as possible, as leaving it late can push back your handover date.</p>
           </details>
           <details>
             <summary>Can I order accessories now?</summary>
@@ -151,11 +199,11 @@
           </details>
           <details>
             <summary>Will my part exchange valuation still be valid when I collect?</summary>
-            <p>Yes — your agreed valuation stands. Because the gap between buying a stock car and collecting it is relatively short, we don't revalue your part exchange unless an unusually long period of time passes. If anything changes or you have concerns, just speak to Dan directly.</p>
+            <p>Yes, your agreed valuation stands. Because the gap between buying a stock car and collecting it is relatively short, we don't revalue your part exchange unless an unusually long period of time passes. If anything changes or you have concerns, just speak to Dan directly.</p>
           </details>
           <details>
             <summary>What do I need to bring on collection day?</summary>
-            <p>Bring a valid photo ID (driving licence or passport) and proof of your insurance. If you have a part exchange, bring the V5C logbook for your current car plus both sets of keys — and if that car has outstanding finance, bring your settlement figure confirmation too. Your handover specialist will confirm the full list before the day.</p>
+            <p>Bring a valid photo ID (driving licence or passport) and proof of your insurance. If you have a part exchange, bring the V5C logbook for your current car plus both sets of keys. If that car has outstanding finance, bring your settlement figure confirmation too. Your handover specialist will confirm the full list before the day.</p>
           </details>
         </div>
       </section>
@@ -165,7 +213,7 @@
         <div class="ty-panel-intro reveal">
           <div class="section-kicker" style="margin-bottom:8px;">Factory order</div>
           <h2>Your specific next steps</h2>
-          <p>Your BMW will be built exactly to your specification. Dan will keep you updated at every milestone — here's what's unique to a factory order. General answers that apply to everyone are in the sections further down.</p>
+          <p>Your BMW will be built exactly to your specification. Dan will keep you updated at every milestone. Here's what's unique to a factory order. General answers that apply to everyone are in the sections further down.</p>
         </div>
         <div class="ty-faq reveal">
           <details open>
@@ -174,15 +222,15 @@
           </details>
           <details>
             <summary>Can I track my order?</summary>
-            <p>There's no customer-facing tracking portal, but you won't be left wondering. Dan will update you when your car enters production, when it leaves the factory, when it arrives in the UK, and again when it reaches Hedin Ruxley. If you'd like a status check at any point, just message Dan — he can look it up for you.</p>
+            <p>There's no customer-facing tracking portal, but you won't be left wondering. Dan will update you when your car enters production, when it leaves the factory, when it arrives in the UK, and again when it reaches Hedin Ruxley. If you'd like a status check at any point, just message Dan and he can look it up for you.</p>
           </details>
           <details>
             <summary>Can I put my personal registration on it?</summary>
-            <p>Yes — Dan handles this for you. You'll need to provide your DVLA V317 transfer form and your current V5C logbook for the plate you're transferring. Get this to Dan well ahead of your handover date so nothing delays the day. The DVLA transfer fee is charged before delivery.</p>
+            <p>Yes, Dan handles this for you. You'll need to provide your DVLA V317 transfer form and your current V5C logbook for the plate you're transferring. Get this to Dan well ahead of your handover date so nothing delays the day. The DVLA transfer fee is charged before delivery.</p>
           </details>
           <details>
             <summary>Can I change my spec after the order is placed?</summary>
-            <p>Only within a very short window, and only if a build slot hasn't yet been allocated. Once the car enters production, no changes are possible at all. If you want to change anything, contact Dan immediately — even a short delay could mean missing the window entirely.</p>
+            <p>Only within a very short window, and only if a build slot hasn't yet been allocated. Once the car enters production, no changes are possible at all. If you want to change anything, contact Dan immediately. Even a short delay could mean missing the window entirely.</p>
           </details>
           <details>
             <summary>When will I hear from someone?</summary>
@@ -190,11 +238,11 @@
           </details>
           <details>
             <summary>Will my part exchange valuation still be valid when I collect?</summary>
-            <p>This depends on your situation. If your current car is on finance, we will equity lock your equity — meaning the equity figure agreed at the time of your order is protected throughout the build period, regardless of how long the wait is. If your car is owned outright, we will revalue it approximately one week before your handover date to ensure we're working with an up-to-date figure.</p>
+            <p>This depends on your situation. If your current car is on finance, we will equity lock your equity. This means the equity figure agreed at the time of your order is protected throughout the build period, regardless of how long the wait is. If your car is owned outright, we will revalue it approximately one week before your handover date to ensure we're working with an up-to-date figure.</p>
           </details>
           <details>
             <summary>What do I need to bring on handover day?</summary>
-            <p>Bring a valid photo ID, proof of your insurance, and — if you have a part exchange — the V5C logbook and both sets of keys for your current car. If there's outstanding finance on your part exchange, bring your settlement figure confirmation too. Your handover specialist will confirm the full list closer to the time.</p>
+            <p>Bring a valid photo ID, proof of your insurance, and, if you have a part exchange, the V5C logbook and both sets of keys for your current car. If there's outstanding finance on your part exchange, bring your settlement figure confirmation too. Your handover specialist will confirm the full list closer to the time.</p>
           </details>
         </div>
       </section>
@@ -204,7 +252,7 @@
         <div class="ty-panel-intro reveal">
           <div class="section-kicker" style="margin-bottom:8px;">BMW Approved Used</div>
           <h2>Your specific next steps</h2>
-          <p>You've bought a BMW Approved Used vehicle — certified by BMW and prepared by our team. Here's what's specific to your purchase. General answers that apply to all buyers are in the sections below.</p>
+          <p>You've bought a BMW Approved Used vehicle, certified by BMW and prepared by our team. Here's what's specific to your purchase. General answers that apply to all buyers are in the sections below.</p>
         </div>
         <div class="ty-faq reveal">
           <details open>
@@ -213,11 +261,11 @@
           </details>
           <details>
             <summary>Can I put my personal registration on it?</summary>
-            <p>Yes, you can — but for approved used vehicles, this is handled directly between you and the DVLA rather than through us. You'll need the DVLA V317 form to transfer your plate. Dan can walk you through the process and point you to the right paperwork, but the dealer doesn't arrange private plate transfers on used cars. It's best to do this once you've received your new V5C from the DVLA, which arrives by post within about a week of collection.</p>
+            <p>Yes, you can. For approved used vehicles, this is handled directly between you and the DVLA rather than through us. You'll need the DVLA V317 form to transfer your plate. Dan can walk you through the process and point you to the right paperwork, but the dealer doesn't arrange private plate transfers on used cars. It's best to do this once you've received your new V5C from the DVLA, which arrives by post within about a week of collection.</p>
           </details>
           <details>
             <summary>Can I order accessories?</summary>
-            <p>Yes. Genuine BMW accessories are still available. Speak to Dan as soon as you can — some accessories need to be fitted before your collection date, so the more notice we have the better. He'll get a quote together and confirm what can be done in the timeframe.</p>
+            <p>Yes. Genuine BMW accessories are still available. Speak to Dan as soon as you can, as some accessories need to be fitted before your collection date and the more notice we have the better. He'll get a quote together and confirm what can be done in the timeframe.</p>
           </details>
           <details>
             <summary>When will I hear from someone?</summary>
@@ -225,15 +273,15 @@
           </details>
           <details>
             <summary>Will my part exchange valuation still be valid when I collect?</summary>
-            <p>Yes — your agreed valuation stands. Because collection happens within a relatively short window (up to 2 weeks), we don't revalue unless an unusual amount of time passes. If you have any concerns, just speak to Dan.</p>
+            <p>Yes, your agreed valuation stands. Because collection happens within a relatively short window (up to 2 weeks), we don't revalue unless an unusual amount of time passes. If you have any concerns, just speak to Dan.</p>
           </details>
           <details>
             <summary>What comes with a BMW Approved Used car?</summary>
-            <p>Every BMW Approved Used vehicle comes with a minimum 12-month MOT, a minimum 12-month BMW warranty covering mechanical and electrical components, and BMW Roadside Assistance. Dan can provide the full vehicle inspection report for your specific car — just ask. You'll also receive the service history on collection day. Warranties can be extended — ask Dan if you'd like to know more.</p>
+            <p>Every BMW Approved Used vehicle comes with a minimum 12-month MOT, a minimum 12-month BMW warranty covering mechanical and electrical components, and BMW Roadside Assistance. Dan can provide the full vehicle inspection report for your specific car. Just ask. You'll also receive the service history on collection day. Warranties can be extended. Ask Dan if you'd like to know more.</p>
           </details>
           <details>
             <summary>What do I need to bring on collection day?</summary>
-            <p>A valid photo ID, proof of your insurance, and — if you have a part exchange — the V5C logbook and both sets of keys for your current car. If there's outstanding finance on your part exchange, bring the settlement figure too. Your handover specialist will confirm the full list before the day.</p>
+            <p>A valid photo ID, proof of your insurance, and, if you have a part exchange, the V5C logbook and both sets of keys for your current car. If there's outstanding finance on your part exchange, bring the settlement figure too. Your handover specialist will confirm the full list before the day.</p>
           </details>
         </div>
       </section>
@@ -256,11 +304,11 @@
       <div class="ty-faq reveal">
         <details open>
           <summary>How long does handover take?</summary>
-          <p>Your handover will take anywhere from around 50 minutes up to 2 hours, so please allow plenty of time and don't feel rushed. We'll walk you through all the controls and features of your car so you leave feeling completely at home behind the wheel. It's really helpful to sign any documents we send over ahead of collection day — that way we can spend your time with us on the fun parts rather than paperwork. Keep an eye out for emails from <strong>ShareDocs</strong> and <strong>Hyland Cloud</strong>, which is where your finance documents will come through.</p>
+          <p>Your handover will take anywhere from around 50 minutes up to 2 hours, so please allow plenty of time and don't feel rushed. We'll walk you through all the controls and features of your car so you leave feeling completely at home behind the wheel. It's really helpful to sign any documents we send over ahead of collection day, so we can spend your time with us on the fun parts rather than paperwork. Keep an eye out for emails from <strong>ShareDocs</strong> and <strong>Hyland Cloud</strong>, which is where your finance documents will come through.</p>
         </details>
         <details>
           <summary>Should I set up the My BMW app before I come in?</summary>
-          <p>Yes please — download and register for the My BMW app ahead of your visit. Having it set up in advance means we can connect you to your new car much faster on the day.</p>
+          <p>Yes please. Download and register for the My BMW app ahead of your visit. Having it set up in advance means we can connect you to your new car much faster on the day.</p>
           <p style="margin-top:10px;">
             <a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20just%20to%20let%20you%20know%20I%27ve%20downloaded%20and%20registered%20for%20the%20My%20BMW%20app" target="_blank" rel="noopener">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -289,15 +337,15 @@
       <div class="ty-faq reveal">
         <details>
           <summary>When will I get my V5C logbook?</summary>
-          <p>Your V5C will be posted to you directly by the DVLA, and you should receive it within about a week of collecting your car — whether new or used. There's nothing you need to do; it will arrive automatically.</p>
+          <p>Your V5C will be posted to you directly by the DVLA, and you should receive it within about a week of collecting your car, whether new or used. There's nothing you need to do; it will arrive automatically.</p>
         </details>
         <details>
           <summary>Is the car taxed?</summary>
-          <p>New cars include the first year's road tax, so you're all set to drive away. For used cars, taxing the vehicle is the new owner's responsibility — but don't worry, we'll sort this with you during handover so you leave fully road-legal.</p>
+          <p>New cars include the first year's road tax, so you're all set to drive away. For used cars, taxing the vehicle is the new owner's responsibility, but don't worry, we'll sort this with you during handover so you leave fully road-legal.</p>
         </details>
         <details>
           <summary>What about MOT and warranty?</summary>
-          <p>Every car we sell comes with at least <strong>12 months' MOT</strong> and <strong>12 months' warranty</strong> as standard. New cars come with a <strong>3-year manufacturer warranty</strong>. All warranties can be extended — just ask Dan if you'd like to know more.</p>
+          <p>Every car we sell comes with at least <strong>12 months' MOT</strong> and <strong>12 months' warranty</strong> as standard. New cars come with a <strong>3-year manufacturer warranty</strong>. All warranties can be extended. Just ask Dan if you'd like to know more.</p>
         </details>
       </div>
 
@@ -306,7 +354,7 @@
       <div class="ty-faq reveal">
         <details>
           <summary>How do I charge my electric vehicle?</summary>
-          <p>Electric vehicles come supplied with a cable to plug into an untethered charge box. They do <strong>not</strong> include a 3-pin plug cable unless this was specifically ordered. We can refer you to <strong>Pod Point</strong> for your home charging setup — and you'll get a saving through our referral.</p>
+          <p>Electric vehicles come supplied with a cable to plug into an untethered charge box. They do <strong>not</strong> include a 3-pin plug cable unless this was specifically ordered. We can refer you to <strong>Pod Point</strong> for your home charging setup, and you'll get a saving through our referral.</p>
           <p style="margin-top:10px;">
             <a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20can%20you%20send%20me%20a%20Pod%20Point%20referral%20please" target="_blank" rel="noopener">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -321,11 +369,11 @@
       <div class="ty-faq reveal">
         <details>
           <summary>When do I sign my finance documents?</summary>
-          <p>Finance documents are sent close to the end of the process and will come through for signing <strong>within one week of your handover date</strong>. Keep an eye out for emails from <strong>ShareDocs</strong> and <strong>Hyland Cloud</strong> — that's where your documents will appear. Signing them ahead of collection day means we can spend your time on the car rather than paperwork.</p>
+          <p>Finance documents are sent close to the end of the process and will come through for signing <strong>within one week of your handover date</strong>. Keep an eye out for emails from <strong>ShareDocs</strong> and <strong>Hyland Cloud</strong>. That's where your documents will appear. Signing them ahead of collection day means we can spend your time on the car rather than paperwork.</p>
         </details>
         <details>
           <summary>Who do I contact about my finance after purchase?</summary>
-          <p>We're a broker rather than a lender, so once your finance is in place your agreement sits with your chosen lender. For anything after purchase — overpayments, changes to your agreement, settlement figures, or end-of-agreement options — please contact your lender directly, as they'll have everything to hand.</p>
+          <p>We're a broker rather than a lender, so once your finance is in place your agreement sits with your chosen lender. For anything after purchase, such as overpayments, changes to your agreement, settlement figures, or end-of-agreement options, please contact your lender directly as they'll have everything to hand.</p>
         </details>
         <details>
           <summary>How can I pay for my car?</summary>
@@ -348,17 +396,18 @@
         </details>
         <details>
           <summary>Will I hear from you again after collection?</summary>
-          <p>Absolutely — we don't disappear after handover. Dan will check in with you <strong>roughly every 6 months</strong> throughout your ownership, and when the time is right we'll be on hand to help you into your next car, making the whole process as easy as it was this time.</p>
+          <p>Absolutely. We don't disappear after handover. Dan will check in with you <strong>roughly every 6 months</strong> throughout your ownership, and when the time is right we'll be on hand to help you into your next car, making the whole process as easy as it was this time.</p>
         </details>
         <details>
           <summary>About the BMW customer satisfaction survey</summary>
           <p>After your purchase, BMW will send you a short satisfaction survey about your experience with us. It would mean a great deal to our team if you felt able to give us top marks.</p>
-          <p style="margin-top:10px;">Here's how BMW scores it: the survey works on an <strong>all-or-nothing basis</strong> — anything less than the highest score on a question is counted as a fail, even on points that might seem minor or not quite relevant to your visit. So here's our ask: if anything about your experience wasn't a perfect 10, <strong>please come to us first, before you complete the survey</strong>. We'd love the chance to put it right for you.</p>
+          <p style="margin-top:10px;">Here's how BMW scores it: the survey works on an <strong>all-or-nothing basis</strong>, meaning anything less than the highest score on a question is counted as a fail, even on points that might seem minor or not quite relevant to your visit. So here's our ask: if anything about your experience wasn't a perfect 10, <strong>please come to us first, before you complete the survey</strong>. We'd love the chance to put it right for you.</p>
         </details>
       </div>
 
     </section>
   </div><!-- end general FAQ .page -->
+  </div><!-- end #faqSection -->
 
 
   <!-- ── FINANCE BAND ── -->
@@ -366,7 +415,7 @@
     <div class="page">
       <div class="section-kicker">Finance</div>
       <h2>Your finance proposal form</h2>
-      <p>If you're using BMW finance, this is your most important next step. The finance proposal covers your personal details, employment, and your preferences for the finance structure — it gives Dan everything he needs to get a formal application moving.</p>
+      <p>If you're using BMW finance, this is your most important next step. The finance proposal covers your personal details, employment, and your preferences for the finance structure, giving Dan everything he needs to get a formal application moving.</p>
       <p style="color:rgba(255,255,255,.72);font-size:.97rem;line-height:1.7;max-width:60ch;margin-bottom:8px;">Download the form below, complete it, and email it back. It takes around five minutes. Nothing gets formally arranged until this is back with Dan.</p>
       <button class="ty-email-block" onclick="copyEmail()" title="Click to copy email address">
         daniel.cane@hedinautomotive.co.uk
@@ -374,7 +423,7 @@
       </button>
       <div class="ty-finance-actions">
         <a class="btn" href="finance-proposal.html" rel="noopener">Download finance proposal form &rarr;</a>
-        <a class="btn-ghost ty-ghost-white" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Finance%20proposal%20%E2%80%94%20%5BYour%20name%5D&body=Hi%20Dan%2C%0A%0APlease%20find%20my%20completed%20finance%20proposal%20form%20attached.%0A%0AThanks">Email Dan directly</a>
+        <a class="btn-ghost ty-ghost-white" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Finance%20proposal%20%5BYour%20name%5D&body=Hi%20Dan%2C%0A%0APlease%20find%20my%20completed%20finance%20proposal%20form%20attached.%0A%0AThanks">Email Dan directly</a>
       </div>
     </div>
   </section>
@@ -387,8 +436,8 @@
     <div class="ty-quote-band reveal">
       <img src="dan.jpg" alt="Dan, BMW Sales Executive at Hedin Ruxley"/>
       <blockquote>
-        <p>"Once your signed documents are back with me, I move quickly. You'll always know exactly where you are in the process — I'll keep you updated at every stage."</p>
-        <cite>Dan &mdash; BMW Sales Executive, Hedin Ruxley</cite>
+        <p>"Once your signed documents are back with me, I move quickly. You'll always know exactly where you are in the process. I'll keep you updated at every stage."</p>
+        <cite>Dan, BMW Sales Executive at Hedin Ruxley</cite>
       </blockquote>
     </div>
 
@@ -397,13 +446,13 @@
       <div class="ty-protection-band reveal">
         <div class="section-kicker">It's not too late</div>
         <h2 style="font-family:var(--display);font-size:clamp(1.4rem,3vw,1.9rem);font-weight:600;letter-spacing:-.02em;margin-bottom:10px;">Protect your investment</h2>
-        <p style="color:var(--body);font-size:.97rem;line-height:1.7;max-width:64ch;margin-bottom:6px;">BMW protection products can be added up to an absolute maximum of 30 days after purchase — but we strongly recommend sorting this <strong>before you collect</strong>. Once the car is on your driveway, some products become significantly harder (or impossible) to arrange.</p>
-        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:24px;">Speak to Dan about any of the products below — it's a five-minute conversation that can save you thousands later.</p>
+        <p style="color:var(--body);font-size:.97rem;line-height:1.7;max-width:64ch;margin-bottom:6px;">BMW protection products can be added up to an absolute maximum of 30 days after purchase. We strongly recommend sorting this <strong>before you collect</strong>, as once the car is on your driveway, some products become significantly harder (or impossible) to arrange.</p>
+        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:24px;">Speak to Dan about any of the products below. It's a five-minute conversation that can save you thousands later.</p>
         <div class="ty-prot-grid">
           <div class="ty-prot-card">
             <span class="ty-prot-card-icon">🛡️</span>
             <h3>Paint Protection Film</h3>
-            <p>A near-invisible film that protects your paintwork from stone chips, road debris, and light scratches. Self-healing in the sun. Best applied before the car leaves us — it's a very different job once it's been driven.</p>
+            <p>A near-invisible film that protects your paintwork from stone chips, road debris, and light scratches. Self-healing in the sun. Best applied before the car leaves us; it's a very different job once it's been driven.</p>
             <span class="ty-prot-deadline">Best before pickup</span>
           </div>
           <div class="ty-prot-card">
@@ -415,13 +464,13 @@
           <div class="ty-prot-card">
             <span class="ty-prot-card-icon">🔧</span>
             <h3>Tyre &amp; Alloy Cover</h3>
-            <p>Covers the cost of repairing or replacing tyres and alloy wheels damaged by road hazards — potholes, kerbs, and the like. A single alloy repair can cost £100+, and a tyre replacement more. This pays for itself quickly.</p>
+            <p>Covers the cost of repairing or replacing tyres and alloy wheels damaged by road hazards: potholes, kerbs, and the like. A single alloy repair can cost £100+, and a tyre replacement more. This pays for itself quickly.</p>
             <span class="ty-prot-deadline">Up to 30 days after purchase</span>
           </div>
           <div class="ty-prot-card">
             <span class="ty-prot-card-icon">✨</span>
             <h3>BMW Cosmetic Insurance</h3>
-            <p>Covers minor cosmetic damage — small dents, door dings, light scratches to paintwork and interior. The kind of everyday damage that adds up quickly but doesn't meet the threshold for a standard insurance claim.</p>
+            <p>Covers minor cosmetic damage: small dents, door dings, light scratches to paintwork and interior. The kind of everyday damage that adds up quickly but doesn't meet the threshold for a standard insurance claim.</p>
             <span class="ty-prot-deadline">Up to 30 days after purchase</span>
           </div>
         </div>
@@ -474,8 +523,8 @@
           <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">dan-sells.co.uk is the personal website of Dan Cane, a Sales Executive employed at Hedin Automotive Group (BMW Ruxley). This website is operated entirely independently and does not represent the views, policies, opinions, or positions of BMW AG, BMW (UK) Limited, Hedin Automotive Group, or any associated or affiliated entity. BMW&reg; and the BMW roundel are registered trademarks of BMW AG, referenced solely to identify the products discussed.</p>
         </div>
         <div>
-          <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">Credit Broking — Important Information</p>
-          <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Hedin Automotive Group acts as a credit broker and not a lender. Finance introductions are made primarily through BMW Financial Services (GB) Limited, authorised and regulated by the Financial Conduct Authority. Finance approval is not guaranteed and is subject to status, individual credit assessment, and affordability. The finance proposal form on this website is provided to facilitate a preliminary conversation — it does not constitute a formal application or commitment.</p>
+          <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">Credit Broking: Important Information</p>
+          <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Hedin Automotive Group acts as a credit broker and not a lender. Finance introductions are made primarily through BMW Financial Services (GB) Limited, authorised and regulated by the Financial Conduct Authority. Finance approval is not guaranteed and is subject to status, individual credit assessment, and affordability. The finance proposal form on this website is provided to facilitate a preliminary conversation and does not constitute a formal application or commitment.</p>
         </div>
         <div>
           <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">No Financial Advice</p>
@@ -492,7 +541,7 @@
     <div>
       <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
       <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
-      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup — serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup, serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
     </div>
     <nav aria-label="Footer">
       <a href="step1.html">Find my BMW</a>
@@ -574,6 +623,32 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   var saved=sessionStorage.getItem('ty_panel');
   var def=document.querySelector('.ty-tab[data-panel="'+saved+'"]')||document.querySelector('.ty-tab');
   if(def)activate(def);
+})();
+
+// Checklist unlock
+(function(){
+  var answers={};
+  window.checkAnswer=function(btn){
+    var q=btn.dataset.q, v=btn.dataset.v;
+    btn.closest('.ty-check-btns').querySelectorAll('.ty-check-btn').forEach(function(b){
+      b.classList.remove('ty-check-btn-yes','ty-check-btn-no');
+    });
+    btn.classList.add(v==='no'?'ty-check-btn-no':'ty-check-btn-yes');
+    answers[q]=v;
+    var deposit=answers.deposit, finance=answers.finance, order=answers.order;
+    var allAnswered=deposit&&finance&&order;
+    var status=document.getElementById('checklistStatus');
+    var faq=document.getElementById('faqSection');
+    if(!allAnswered){status.innerHTML='';return;}
+    if(deposit==='no'||order==='no'||(finance==='no')){
+      status.innerHTML='<span class="ty-status-warn">One or more steps aren\'t complete yet. Get in touch with Dan before moving on.</span>';
+      faq.classList.remove('unlocked');
+    } else {
+      status.innerHTML='<span class="ty-status-ok">You\'re all set. Your full guide is now available below.</span>';
+      faq.classList.add('unlocked');
+      setTimeout(function(){faq.scrollIntoView({behavior:'smooth',block:'start'});},300);
+    }
+  };
 })();
 
 // Email copy to clipboard
