@@ -566,11 +566,17 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .ty-itc-notice-body strong+p strong{color:rgba(255,255,255,.9);}
 
 /* Checklist */
-.ty-checklist-wrap{background:#f7f8fa;padding:44px 0;border-bottom:1px solid var(--line);}
-.ty-checklist{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:32px 36px;max-width:720px;box-shadow:var(--shadow-card);}
+.ty-checklist-wrap{background:#fffbf5;padding:44px 0;border-bottom:1px solid rgba(168,133,59,.2);border-top:1px solid rgba(168,133,59,.15);}
+.ty-checklist{background:#fff;border:1px solid rgba(168,133,59,.3);border-top:3px solid #d97706;border-radius:var(--radius);padding:32px 36px;max-width:720px;box-shadow:0 4px 24px -8px rgba(217,119,6,.12);}
+.ty-checklist-kicker{display:inline-flex;align-items:center;gap:6px;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:4px 12px;font-size:.75rem;font-weight:800;color:#92400e;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;}
+.ty-checklist-kicker::before{content:'!';display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#d97706;color:#fff;font-size:.65rem;font-weight:900;flex-shrink:0;}
 .ty-checklist-head{margin-bottom:24px;}
 .ty-checklist-head h2{font-family:var(--display);font-size:clamp(1.15rem,2.5vw,1.45rem);font-weight:600;color:var(--text);margin-bottom:6px;letter-spacing:-.015em;}
 .ty-checklist-head p{font-size:.9rem;color:var(--body);line-height:1.6;margin:0;}
+.ty-check-hint{font-size:.78rem;color:var(--muted);font-weight:400;display:block;margin-top:2px;}
+.ty-order-wa-prompt{padding:14px 0 4px;}
+.ty-order-wa-inner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#f0fdf4;border:1px solid rgba(37,211,102,.25);border-radius:10px;padding:12px 16px;}
+.ty-order-wa-inner p{font-size:.88rem;color:var(--body);margin:0;flex:1;min-width:180px;}
 .ty-check-item{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-bottom:1px solid var(--line);}
 .ty-check-item:last-of-type{border-bottom:none;padding-bottom:0;}
 .ty-check-label{display:flex;align-items:center;gap:14px;}
