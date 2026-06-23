@@ -330,7 +330,7 @@
         </details>
         <details>
           <summary>How many keys do I get?</summary>
-          <p>If your car has <strong>Comfort Access</strong> (keyless entry and start), it will come with <strong>1 key</strong> in most cases. Cars <strong>without Comfort Access</strong> come with <strong>2 keys</strong>.</p>
+          <p>If your car has <strong>Comfort Access</strong> (keyless entry — all BMWs are keyless start as standard), it will come with <strong>1 key</strong> in most cases. Cars <strong>without Comfort Access</strong> come with <strong>2 keys</strong>.</p>
         </details>
         <details>
           <summary>Do I need to sort my own insurance?</summary>
@@ -708,13 +708,19 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     var status=document.getElementById('checklistStatus');
     var faq=document.getElementById('faqSection');
     if(!allAnswered){status.innerHTML='';return;}
-    if(deposit==='no'||order==='no'||finance==='no'){
+    var depositOk=deposit!=='no';
+    var financeOk=finance!=='no';
+    if(!depositOk||!financeOk){
       status.innerHTML='<span class="ty-status-warn">Complete the outstanding steps above first, then your guide will unlock.</span>';
       faq.classList.remove('unlocked');
     } else {
-      status.innerHTML='<span class="ty-status-ok">All done. Your full guide is now available below.</span>';
       faq.classList.add('unlocked');
       if(window._hideFab)window._hideFab();
+      if(order==='no'){
+        status.innerHTML='<span class="ty-status-ok">Great. Read the guide below whilst you wait for your order form to arrive via ShareDocs.</span>';
+      } else {
+        status.innerHTML='<span class="ty-status-ok">All done. Your full guide is now available below.</span>';
+      }
       setTimeout(function(){faq.scrollIntoView({behavior:'smooth',block:'start'});},300);
     }
   };
