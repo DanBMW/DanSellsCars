@@ -434,6 +434,16 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 @media(max-width:500px){.ig-feed{height:140px}}
 
 /* WhatsApp floating button */
+/* Action required FAB */
+.ty-action-fab{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:199;transition:opacity .35s ease,transform .35s ease;}
+.ty-action-fab.ty-fab-hidden{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(14px);}
+.ty-action-fab-btn{display:inline-flex;align-items:center;gap:8px;background:#d97706;color:#fff;font-family:var(--font);font-weight:700;font-size:.88rem;padding:12px 22px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 8px 28px -6px rgba(217,119,6,.55);transition:background .18s,transform .18s;animation:fabPulse 2.4s ease-in-out infinite;white-space:nowrap;}
+.ty-action-fab-btn:hover{background:#b45309;transform:translateY(-2px);}
+.ty-action-fab-btn svg{animation:fabArrow 1.6s ease-in-out infinite;}
+@keyframes fabPulse{0%,100%{box-shadow:0 8px 28px -6px rgba(217,119,6,.55);}50%{box-shadow:0 10px 32px -4px rgba(217,119,6,.75),0 0 0 7px rgba(217,119,6,.1);}}
+@keyframes fabArrow{0%,100%{transform:translateY(0);}50%{transform:translateY(4px);}}
+@media(max-width:500px){.ty-action-fab{bottom:22px;}.ty-action-fab-btn{font-size:.82rem;padding:11px 18px;}}
+
 .wa-float{
   position:fixed;bottom:24px;right:24px;z-index:200;
   display:flex;align-items:center;gap:10px;

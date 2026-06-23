@@ -551,6 +551,14 @@
     </div>
   </section>
 
+  <!-- ── ACTION REQUIRED FAB ── -->
+  <div class="ty-action-fab" id="actionFab">
+    <button class="ty-action-fab-btn" onclick="document.getElementById('checklistCard').scrollIntoView({behavior:'smooth',block:'start'})" aria-label="Scroll to action required checklist">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      Action required below
+    </button>
+  </div>
+
 </main>
 
 <footer class="site-footer">
@@ -652,6 +660,18 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   if(def)activate(def);
 })();
 
+// Action FAB: hide when checklist is on screen, kill when complete
+(function(){
+  var fab=document.getElementById('actionFab');
+  var done=false;
+  if(!fab)return;
+  new IntersectionObserver(function(es){
+    if(done)return;
+    fab.classList.toggle('ty-fab-hidden',es[0].isIntersecting);
+  },{threshold:0.15}).observe(document.getElementById('checklistCard'));
+  window._hideFab=function(){done=true;fab.classList.add('ty-fab-hidden');};
+})();
+
 // Checklist unlock
 (function(){
   var answers={};
@@ -685,6 +705,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     } else {
       status.innerHTML='<span class="ty-status-ok">All done. Your full guide is now available below.</span>';
       faq.classList.add('unlocked');
+      if(window._hideFab)window._hideFab();
       setTimeout(function(){faq.scrollIntoView({behavior:'smooth',block:'start'});},300);
     }
   };
