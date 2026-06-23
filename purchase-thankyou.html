@@ -735,32 +735,15 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 })();
 
 // Action FAB: hide when checklist is on screen, kill when complete
-// Also suppresses the blue scroll-hint button while the FAB is visible
 (function(){
   var fab=document.getElementById('actionFab');
   var done=false;
   if(!fab)return;
-
-  function setScrollHint(show){
-    setTimeout(function(){
-      var sh=document.querySelector('button[aria-label="Scroll down"]');
-      if(!sh)return;
-      if(show){sh.style.opacity='';sh.style.pointerEvents='';}
-      else{sh.style.opacity='0';sh.style.pointerEvents='none';}
-    },60);
-  }
-
   new IntersectionObserver(function(es){
     if(done)return;
-    var inView=es[0].isIntersecting;
-    fab.classList.toggle('ty-fab-hidden',inView);
-    setScrollHint(inView);
+    fab.classList.toggle('ty-fab-hidden',es[0].isIntersecting);
   },{threshold:0.15}).observe(document.getElementById('checklistCard'));
-
-  window._hideFab=function(){done=true;fab.classList.add('ty-fab-hidden');setScrollHint(true);};
-
-  // On load: FAB is visible so hide the scroll-hint button
-  setScrollHint(false);
+  window._hideFab=function(){done=true;fab.classList.add('ty-fab-hidden');};
 })();
 
 // Checklist unlock
@@ -829,6 +812,5 @@ function copyEmail(){
   });
 }
 </script>
-<script src="scroll-hint.js"></script>
 </body>
 </html>
