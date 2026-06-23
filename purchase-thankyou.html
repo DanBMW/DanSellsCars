@@ -114,7 +114,7 @@
           <h2>3 steps required to firm up your order and secure the car fully*</h2>
           <p>Until these are in place, your order isn't fully secured. The sooner they're done, the sooner everything moves. Don't leave them sitting.</p>
         </div>
-        <div class="ty-check-item" style="border-bottom:none;padding-bottom:0;">
+        <div class="ty-check-item">
           <div class="ty-check-label">
             <span class="ty-check-num">1</span>
             <div>
@@ -126,13 +126,12 @@
             <button class="ty-check-btn" data-q="deposit" data-v="no" onclick="checkAnswer(this)">Not yet</button>
           </div>
         </div>
-        <div class="ty-order-wa-prompt" id="depositWaPrompt" aria-live="polite"></div>
         <div class="ty-check-item">
           <div class="ty-check-label">
             <span class="ty-check-num">2</span>
             <div>
               <p>Have you completed your finance proposal?</p>
-              <span class="ty-check-hint">Download it from the link above in the blue section</span>
+              <span class="ty-check-hint">Sent to you by Dan to complete and return</span>
             </div>
           </div>
           <div class="ty-check-btns" role="group" aria-label="Finance proposal completed">
@@ -154,7 +153,9 @@
             <button class="ty-check-btn" data-q="order" data-v="no" onclick="checkAnswer(this)">Not yet</button>
           </div>
         </div>
-        <div class="ty-order-wa-prompt" id="orderWaPrompt" aria-live="polite"></div>
+
+        <!-- Action prompts — shown below all questions -->
+        <div class="ty-action-prompts" id="actionPrompts" aria-live="polite"></div>
         <div class="ty-checklist-status" id="checklistStatus" aria-live="polite"></div>
       </div>
     </div>
@@ -685,24 +686,21 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     btn.classList.add(v==='no'?'ty-check-btn-no':'ty-check-btn-yes');
     answers[q]=v;
 
-    // Show WhatsApp nudge if deposit not yet paid
-    var depositWa=document.getElementById('depositWaPrompt');
-    if(depositWa){
+    // Rebuild the action prompts panel below all questions
+    var prompts=document.getElementById('actionPrompts');
+    if(prompts){
+      var html='';
       if(answers.deposit==='no'){
-        depositWa.innerHTML='<div class="ty-order-wa-inner"><p>No problem. Let Dan know you\'re ready and he\'ll take it from there.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20I\'m%20available%20now%20to%20place%20my%20deposit" target="_blank" rel="noopener">'+WA_ICON+' Message Dan to place your deposit</a></div>';
-      } else {
-        depositWa.innerHTML='';
+        html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Deposit</p><div class="ty-order-wa-inner"><p>No problem. Let Dan know you\'re ready and he\'ll take it from there.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20I\'m%20available%20now%20to%20place%20my%20deposit" target="_blank" rel="noopener">'+WA_ICON+' Message Dan to place your deposit</a></div></div>';
       }
-    }
-
-    // Show WhatsApp nudge if order form not yet signed
-    var orderWa=document.getElementById('orderWaPrompt');
-    if(orderWa){
+      if(answers.finance==='no'){
+        html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Finance proposal</p><div class="ty-finance-prompt-inner"><p>Download the form, fill it in, and email it back to Dan. It takes around five minutes.</p><a class="ty-fp-link" href="finance-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download finance proposal form</a></div></div>';
+      }
       if(answers.order==='no'){
-        orderWa.innerHTML='<div class="ty-order-wa-inner"><p>No problem. Message Dan now and he\'ll send it straight over.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%20could%20you%20send%20me%20the%20order%20form%20across%20for%20signing%20please" target="_blank" rel="noopener">'+WA_ICON+' Message Dan for your order form</a></div>';
-      } else {
-        orderWa.innerHTML='';
+        html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Order form</p><div class="ty-order-wa-inner"><p>No problem. Message Dan now and he\'ll send it straight over.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%20could%20you%20send%20me%20the%20order%20form%20across%20for%20signing%20please" target="_blank" rel="noopener">'+WA_ICON+' Message Dan for your order form</a></div></div>';
       }
+      prompts.innerHTML=html;
+      prompts.style.marginTop=html?'20px':'0';
     }
 
     var deposit=answers.deposit, finance=answers.finance, order=answers.order;
