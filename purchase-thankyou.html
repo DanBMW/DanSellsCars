@@ -82,26 +82,6 @@
       <h1>You've begun your journey.<br>Congratulations.</h1>
       <p class="ty-hero-sub">This page is your personal post-purchase guide. Everything you need to know, broken down for your type of purchase and answered without jargon.</p>
 
-      <div class="ty-itc-notice">
-        <div class="ty-itc-notice-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        </div>
-        <div class="ty-itc-notice-body">
-          <strong>An important email is on its way to you</strong>
-          <p>Shortly after your purchase, you will receive an email from <strong>ITC Compliance</strong>, an FCA-authorised firm that manages regulated disclosures on behalf of BMW Financial Services. This email contains your pre-contract credit information, full commission disclosure, and a summary of your rights under the Consumer Credit Act 1974. It has been issued to satisfy obligations under the FCA Consumer Duty regulations. Please read it carefully and keep it for your records.</p>
-        </div>
-      </div>
-
-      <div class="ty-finance-cta">
-        <span class="ty-finance-cta-icon">📄</span>
-        <div class="ty-finance-cta-body">
-          <p>If you're using <strong>BMW finance</strong>, your next step is to download the finance proposal form below, complete it, and email it back to Dan. It takes about five minutes and gets things moving straight away.</p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <a class="btn" href="finance-proposal.html" rel="noopener">Download finance proposal form &rarr;</a>
-            <span style="color:rgba(255,255,255,.5);font-size:.84rem;">Then email to: <strong style="color:#e2c677;">daniel.cane@hedinautomotive.co.uk</strong></span>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -161,7 +141,39 @@
     </div>
   </div>
 
+  <!-- ── POST-CHECKLIST NOTICES ── -->
+  <div class="ty-post-checklist">
+    <div class="page">
+      <div class="ty-itc-notice">
+        <div class="ty-itc-notice-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="ty-itc-notice-body">
+          <strong>An important email is on its way to you</strong>
+          <p>Shortly after your purchase, you will receive an email from <strong>ITC Compliance</strong>, an FCA-authorised firm that manages regulated disclosures on behalf of BMW Financial Services. This email contains your pre-contract credit information, full commission disclosure, and a summary of your rights under the Consumer Credit Act 1974. It has been issued to satisfy obligations under the FCA Consumer Duty regulations. Please read it carefully and keep it for your records.</p>
+        </div>
+      </div>
+      <div class="ty-finance-cta">
+        <span class="ty-finance-cta-icon">📄</span>
+        <div class="ty-finance-cta-body">
+          <p>If you're using <strong>BMW finance</strong>, your next step is to download the finance proposal form below, complete it, and email it back to Dan. It takes about five minutes and gets things moving straight away.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <a class="btn" href="finance-proposal.html" rel="noopener">Download finance proposal form &rarr;</a>
+            <span class="ty-finance-cta-email">Then email to: <strong>daniel.cane@hedinautomotive.co.uk</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── CATEGORY SELECTOR + PANELS ── -->
+  <div class="ty-faq-lock-wrap">
+  <div id="faqOverlay" class="ty-faq-overlay" aria-hidden="true">
+    <div class="ty-faq-overlay-inner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Complete the above for more information
+    </div>
+  </div>
   <div id="faqSection" class="ty-faq-section">
   <div class="page">
     <section class="section" style="padding-top:48px;">
@@ -452,6 +464,7 @@
     </section>
   </div><!-- end general FAQ .page -->
   </div><!-- end #faqSection -->
+  </div><!-- end .ty-faq-lock-wrap -->
 
 
   <!-- ── FINANCE BAND ── -->
@@ -774,6 +787,8 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     } else {
       faq.classList.add('unlocked');
       if(window._hideFab)window._hideFab();
+      var overlay=document.getElementById('faqOverlay');
+      if(overlay)overlay.classList.add('hidden');
       if(order==='no'){
         status.innerHTML='<span class="ty-status-ok">Great. Read the guide below whilst you wait for your order form to arrive via ShareDocs.</span>';
       } else {

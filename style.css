@@ -497,13 +497,15 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .ty-step-pill{display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:9px 18px;color:rgba(255,255,255,.88);font-size:.86rem;font-weight:600;font-family:var(--font);}
 .ty-step-pill::before{content:'✓';color:#4ade80;font-weight:900;font-size:.9rem;}
 
-.ty-finance-cta{display:flex;align-items:flex-start;gap:18px;background:rgba(168,133,59,.1);border:1px solid rgba(168,133,59,.32);border-radius:18px;padding:22px 26px;max-width:620px;}
+.ty-finance-cta{display:flex;align-items:flex-start;gap:18px;background:rgba(168,133,59,.07);border:1px solid rgba(168,133,59,.28);border-radius:18px;padding:22px 26px;}
 .ty-finance-cta-icon{font-size:1.8rem;flex-shrink:0;line-height:1;margin-top:2px;}
 .ty-finance-cta-body{display:flex;flex-direction:column;gap:12px;}
-.ty-finance-cta-body p{color:rgba(255,255,255,.82);font-size:.94rem;line-height:1.6;margin:0;}
-.ty-finance-cta-body strong{color:#e2c677;}
+.ty-finance-cta-body p{color:var(--body);font-size:.94rem;line-height:1.6;margin:0;}
+.ty-finance-cta-body strong{color:#8c6d2f;}
 .ty-finance-cta-body .btn{background:#a8853b;border:none;box-shadow:none;font-size:.88rem;padding:10px 18px;}
 .ty-finance-cta-body .btn:hover{background:#8c6d2f;}
+.ty-finance-cta-email{color:var(--muted);font-size:.84rem;}
+.ty-finance-cta-email strong{color:#8c6d2f;}
 
 .ty-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:8px;}
 .ty-tab{display:flex;flex-direction:column;gap:6px;padding:22px 20px;border-radius:var(--radius);background:var(--paper);border:2px solid var(--line);cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s,transform .18s;text-align:left;font-family:var(--font);width:100%;}
@@ -569,11 +571,20 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .ty-wa-btn svg{flex-shrink:0;}
 
 /* ITC notice */
-.ty-itc-notice{display:flex;align-items:flex-start;gap:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-left:3px solid #7fb2ff;border-radius:14px;padding:20px 22px;max-width:620px;margin-bottom:32px;}
-.ty-itc-notice-icon{color:#7fb2ff;flex-shrink:0;margin-top:1px;}
-.ty-itc-notice-body strong{color:#fff;font-size:.95rem;display:block;margin-bottom:6px;}
-.ty-itc-notice-body p{color:rgba(255,255,255,.72);font-size:.86rem;line-height:1.65;margin:0;}
-.ty-itc-notice-body strong+p strong{color:rgba(255,255,255,.9);}
+.ty-itc-notice{display:flex;align-items:flex-start;gap:16px;background:rgba(21,89,207,.04);border:1px solid rgba(21,89,207,.15);border-left:3px solid var(--blue);border-radius:14px;padding:20px 22px;margin-bottom:20px;}
+.ty-itc-notice-icon{color:var(--blue);flex-shrink:0;margin-top:1px;}
+.ty-itc-notice-body strong{color:var(--text);font-size:.95rem;display:block;margin-bottom:6px;}
+.ty-itc-notice-body p{color:var(--body);font-size:.86rem;line-height:1.65;margin:0;}
+.ty-itc-notice-body strong+p strong{color:var(--text);}
+
+/* Post-checklist notices block */
+.ty-post-checklist{padding:32px 0 8px;}
+
+/* FAQ lock overlay */
+.ty-faq-lock-wrap{position:relative;}
+.ty-faq-overlay{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:flex-start;justify-content:center;z-index:5;pointer-events:none;}
+.ty-faq-overlay-inner{position:sticky;top:42vh;display:inline-flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--blue);border-radius:14px;padding:14px 28px;font-weight:700;font-size:.97rem;color:var(--blue);box-shadow:0 8px 32px rgba(21,89,207,.16);}
+.ty-faq-overlay.hidden{display:none;}
 
 /* Checklist */
 .ty-checklist-wrap{background:#fffbf5;padding:44px 0;border-bottom:1px solid rgba(168,133,59,.2);border-top:1px solid rgba(168,133,59,.15);}
