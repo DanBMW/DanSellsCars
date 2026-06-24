@@ -208,7 +208,17 @@
     .ix3-dan-body p{font-size:.88rem;color:#5f6b7c;line-height:1.6;margin:0 0 16px;}
     .ix3-dan-ctas{display:flex;flex-wrap:wrap;gap:10px;}
 
-    /* ── PHOTOS ── */
+    /* ── SHOWROOM GALLERY ── */
+    .ix3-showroom-gallery{display:grid;grid-template-columns:1fr;gap:10px;margin:0 0 48px;border-radius:18px;overflow:hidden;}
+    @media(min-width:560px){.ix3-showroom-gallery{grid-template-columns:5fr 4fr;}}
+    .ix3-sg-main{position:relative;aspect-ratio:4/3;overflow:hidden;background:#0a0c0f;}
+    .ix3-sg-main img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
+    .ix3-sg-side{position:relative;aspect-ratio:4/3;overflow:hidden;background:#0a0c0f;}
+    @media(min-width:560px){.ix3-sg-side{aspect-ratio:auto;}}
+    .ix3-sg-side img{width:100%;height:100%;object-fit:cover;object-position:center left;display:block;}
+    .ix3-sg-caption{position:absolute;bottom:0;left:0;right:0;padding:12px 16px;background:linear-gradient(transparent,rgba(0,0,0,.65));font-size:.72rem;font-weight:600;color:rgba(255,255,255,.8);letter-spacing:.06em;text-transform:uppercase;}
+
+    /* ── PHOTOS (spec sheets) ── */
     .ix3-photos{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:56px;}
     @media(min-width:560px){.ix3-photos{grid-template-columns:repeat(3,1fr);}}
     .ix3-photo{border-radius:12px;overflow:hidden;aspect-ratio:3/4;background:#f0f1f3;}
@@ -349,6 +359,18 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <div class="ix3-stock-alert-text">
           <span>This is one specific car in stock.</span> Once it's gone, it's gone. Register your interest now and Dan will confirm availability and arrange a viewing or test drive at Hedin Ruxley.
+        </div>
+      </div>
+
+      <!-- ── SHOWROOM GALLERY ── -->
+      <div class="ix3-showroom-gallery" aria-label="BMW iX3 in the Hedin Ruxley showroom">
+        <div class="ix3-sg-main">
+          <img src="ix3-showroom1.jpg" alt="BMW iX3 50 xDrive M Sport Pro in Black Sapphire — front three-quarter view in Hedin Ruxley showroom" loading="eager"/>
+          <div class="ix3-sg-caption">Hedin Ruxley showroom &middot; This exact car</div>
+        </div>
+        <div class="ix3-sg-side">
+          <img src="ix3-showroom2.jpg" alt="BMW iX3 50 xDrive M Sport Pro side profile — The New BMW iX3" loading="eager"/>
+          <div class="ix3-sg-caption">Available now &middot; Black Sapphire</div>
         </div>
       </div>
 
