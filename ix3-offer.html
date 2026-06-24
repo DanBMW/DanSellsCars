@@ -163,7 +163,26 @@
     .ix3-spec-cell-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8a94a0;margin-bottom:5px;}
     .ix3-spec-cell-value{font-size:1rem;font-weight:700;color:#141a22;line-height:1.2;}
 
-    /* ── FINANCE CARD ── */
+    /* ── BUSINESS CONTRACT HIRE ── */
+    .ix3-bch-section{margin-bottom:56px;}
+    .ix3-bch-intro{font-size:.95rem;color:#3c4a5e;line-height:1.75;margin:0 0 8px;max-width:68ch;}
+    .ix3-bch-note{display:inline-flex;align-items:center;gap:8px;background:rgba(26,122,60,.07);border:1px solid rgba(26,122,60,.2);border-radius:10px;padding:9px 14px;font-size:.82rem;color:#1a7a3c;font-weight:600;margin:0 0 24px;}
+    .ix3-bch-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+    @media(min-width:560px){.ix3-bch-grid{grid-template-columns:1fr 1fr;}}
+    .ix3-bch-card{border:1px solid rgba(16,21,29,.12);border-radius:18px;overflow:hidden;}
+    .ix3-bch-card-head{background:#141a22;padding:18px 20px;}
+    .ix3-bch-card-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5591ff;margin-bottom:4px;}
+    .ix3-bch-card-price{font-family:var(--display);font-size:2rem;font-weight:700;color:#fff;line-height:1;}
+    .ix3-bch-card-unit{font-size:.78rem;color:rgba(255,255,255,.5);margin-top:4px;}
+    .ix3-bch-card-body{padding:18px 20px;background:#fff;display:flex;flex-direction:column;gap:9px;}
+    .ix3-bch-row{display:flex;justify-content:space-between;align-items:baseline;font-size:.84rem;padding-bottom:9px;border-bottom:1px solid rgba(16,21,29,.07);}
+    .ix3-bch-row:last-child{border-bottom:none;padding-bottom:0;}
+    .ix3-bch-row-label{color:#5f6b7c;}
+    .ix3-bch-row-val{font-weight:700;color:#141a22;}
+    .ix3-bch-maintained{display:flex;align-items:center;gap:8px;background:rgba(21,89,207,.05);border:1px solid rgba(21,89,207,.12);border-radius:10px;padding:10px 14px;margin-top:4px;font-size:.8rem;color:#1559cf;font-weight:600;}
+    .ix3-bch-legal{font-size:.72rem;color:#8a94a0;line-height:1.6;margin-top:20px;}
+
+    /* ── FINANCE SECTION ── */
     .ix3-finance-section{margin-bottom:56px;}
     .ix3-finance-card{background:linear-gradient(160deg,#0a1628 0%,#0d2145 100%);border-radius:20px;padding:32px 28px;overflow:hidden;position:relative;}
     .ix3-finance-card::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:rgba(85,145,255,.07);pointer-events:none;}
@@ -566,6 +585,93 @@
             <span class="ix3-eq-name">Tyre Repair Kit Plus</span>
           </div>
         </div>
+      </div>
+
+      <!-- ── BUSINESS CONTRACT HIRE ── -->
+      <div class="ix3-bch-section" id="business-lease">
+        <div class="ix3-section-kicker">Business Contract Hire</div>
+        <h3 class="ix3-section-title">Taking this through a business? Two options.</h3>
+        <p class="ix3-bch-intro">Both quotes are Business Contract Hire with maintenance included (BPP Alphabet), 48 months, 6,000 miles per annum. All prices exclude VAT. Choose your initial rental profile below.</p>
+        <div class="ix3-bch-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          0 g/km CO&#x2082; &mdash; zero Benefit-in-Kind tax for employees in the 2025/26 tax year
+        </div>
+
+        <div class="ix3-bch-grid">
+
+          <!-- Quote A: 6+47 -->
+          <div class="ix3-bch-card">
+            <div class="ix3-bch-card-head">
+              <div class="ix3-bch-card-label">Profile 1 &mdash; 6 + 47 payments</div>
+              <div class="ix3-bch-card-price">&pound;943.70</div>
+              <div class="ix3-bch-card-unit">per month (excl. VAT) &middot; inc. maintenance</div>
+            </div>
+            <div class="ix3-bch-card-body">
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Total initial rental</span>
+                <span class="ix3-bch-row-val">&pound;5,662.20 excl. VAT</span>
+              </div>
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Finance rental</span>
+                <span class="ix3-bch-row-val">&pound;902.68 excl. VAT</span>
+              </div>
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Service (maintenance) rental</span>
+                <span class="ix3-bch-row-val">&pound;41.02 excl. VAT</span>
+              </div>
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Excess mileage</span>
+                <span class="ix3-bch-row-val">25.14p per mile excl. VAT</span>
+              </div>
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Term &middot; Annual mileage</span>
+                <span class="ix3-bch-row-val">48 months &middot; 6,000 mi</span>
+              </div>
+              <div class="ix3-bch-maintained">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                Maintenance included &mdash; BPP Alphabet Maintained
+              </div>
+            </div>
+          </div>
+
+          <!-- Quote B: 3+47 -->
+          <div class="ix3-bch-card">
+            <div class="ix3-bch-card-head">
+              <div class="ix3-bch-card-label">Profile 2 &mdash; 3 + 47 payments</div>
+              <div class="ix3-bch-card-price">&pound;1,007.96</div>
+              <div class="ix3-bch-card-unit">per month (excl. VAT) &middot; inc. maintenance</div>
+            </div>
+            <div class="ix3-bch-card-body">
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Total initial rental</span>
+                <span class="ix3-bch-row-val">&pound;3,023.88 excl. VAT</span>
+              </div>
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Finance rental</span>
+                <span class="ix3-bch-row-val">&pound;964.48 excl. VAT</span>
+              </div>
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Service (maintenance) rental</span>
+                <span class="ix3-bch-row-val">&pound;43.48 excl. VAT</span>
+              </div>
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Excess mileage</span>
+                <span class="ix3-bch-row-val">25.14p per mile excl. VAT</span>
+              </div>
+              <div class="ix3-bch-row">
+                <span class="ix3-bch-row-label">Term &middot; Annual mileage</span>
+                <span class="ix3-bch-row-val">48 months &middot; 6,000 mi</span>
+              </div>
+              <div class="ix3-bch-maintained">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                Maintenance included &mdash; BPP Alphabet Maintained
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ix3-bch-legal">Business Contract Hire. P11D value &pound;73,346.00. CO&#x2082; emissions 0 g/km. All rentals shown exclude VAT. Quotes valid until 22/07/2026. 48-month term, 6,000 miles per annum. Excess mileage charged at 25.14p per mile (excl. VAT). Profile 1: 6 initial rentals of &pound;5,662.20 (excl. VAT), followed by 47 monthly rentals of &pound;943.70 (excl. VAT). Profile 2: 3 initial rentals of &pound;3,023.88 (excl. VAT), followed by 47 monthly rentals of &pound;1,007.96 (excl. VAT). Maintenance provided by BPP Alphabet Maintained. Finance subject to status. Available to UK businesses. Hedin Automotive Ltd is authorised and regulated by the Financial Conduct Authority as a credit broker, not a lender. Subject to availability. Written quotations available on request. BIK tax treatment is based on current HMRC rates and is subject to individual circumstances — please consult your accountant or tax adviser.</div>
       </div>
 
       <!-- ── WHY EV ── -->
