@@ -139,7 +139,7 @@
       <a href="appraisal.html">Value my car</a>
       <a href="service.html">Car in for service?</a>
       <a href="accessories.html">BMW Accessories</a>
-      <a href="#protect" onclick="closeDrawer()">Protect my BMW</a>
+      <a href="#protect" onclick="scrollToSection('protect'); return false;">Protect my BMW</a>
       <a href="refer.html">Refer a friend</a>
       <a href="guides.html">Guides</a>
       <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram &#x2197;</a>
@@ -583,6 +583,8 @@ function openDrawer(){
   document.getElementById('navToggle').setAttribute('aria-expanded','true');
   document.getElementById('navDrawer').removeAttribute('aria-hidden');
   document.body.style.overflow='hidden';
+  var sh=document.querySelector('[aria-label="Scroll down"]');
+  if(sh){sh.style.opacity='0';sh.style.pointerEvents='none';}
 }
 function closeDrawer(){
   document.getElementById('navDrawer').classList.remove('open');
@@ -590,6 +592,15 @@ function closeDrawer(){
   document.getElementById('navToggle').setAttribute('aria-expanded','false');
   document.getElementById('navDrawer').setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  var sh=document.querySelector('[aria-label="Scroll down"]');
+  if(sh){sh.style.opacity='';sh.style.pointerEvents='';}
+}
+function scrollToSection(id){
+  closeDrawer();
+  setTimeout(function(){
+    var el=document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth'});
+  },50);
 }
 
 // Hero video pause/play

@@ -320,8 +320,8 @@
 <script>
 const hdr=document.getElementById('siteHeader');
 window.addEventListener('scroll',()=>{hdr.classList.toggle('scrolled',window.scrollY>80);},{passive:true});
-function openDrawer(){document.getElementById('navDrawer').classList.add('open');document.getElementById('navOverlay').classList.add('open');document.getElementById('navToggle').setAttribute('aria-expanded','true');document.getElementById('navDrawer').removeAttribute('aria-hidden');document.body.style.overflow='hidden';}
-function closeDrawer(){document.getElementById('navDrawer').classList.remove('open');document.getElementById('navOverlay').classList.remove('open');document.getElementById('navToggle').setAttribute('aria-expanded','false');document.getElementById('navDrawer').setAttribute('aria-hidden','true');document.body.style.overflow='';}
+function openDrawer(){document.getElementById('navDrawer').classList.add('open');document.getElementById('navOverlay').classList.add('open');document.getElementById('navToggle').setAttribute('aria-expanded','true');document.getElementById('navDrawer').removeAttribute('aria-hidden');document.body.style.overflow='hidden';var sh=document.querySelector('[aria-label="Scroll down"]');if(sh){sh.style.opacity='0';sh.style.pointerEvents='none';}}
+function closeDrawer(){document.getElementById('navDrawer').classList.remove('open');document.getElementById('navOverlay').classList.remove('open');document.getElementById('navToggle').setAttribute('aria-expanded','false');document.getElementById('navDrawer').setAttribute('aria-hidden','true');document.body.style.overflow='';var sh=document.querySelector('[aria-label="Scroll down"]');if(sh){sh.style.opacity='';sh.style.pointerEvents='';}}
 function openOfferModal(){document.getElementById('omForm').style.display='block';document.getElementById('omSuccess').style.display='none';document.getElementById('offerModal').classList.add('open');document.body.style.overflow='hidden';}
 function closeOfferModal(){document.getElementById('offerModal').classList.remove('open');document.body.style.overflow='';}
 function submitInterest(){
