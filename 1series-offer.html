@@ -299,6 +299,8 @@ function openDrawer(){
   document.getElementById('navToggle').setAttribute('aria-expanded','true');
   document.getElementById('navDrawer').removeAttribute('aria-hidden');
   document.body.style.overflow='hidden';
+  var sh=document.querySelector('[aria-label="Scroll down"]');
+  if(sh){sh.style.opacity='0';sh.style.pointerEvents='none';}
 }
 function closeDrawer(){
   document.getElementById('navDrawer').classList.remove('open');
@@ -306,6 +308,8 @@ function closeDrawer(){
   document.getElementById('navToggle').setAttribute('aria-expanded','false');
   document.getElementById('navDrawer').setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  var sh=document.querySelector('[aria-label="Scroll down"]');
+  if(sh){sh.style.opacity='';sh.style.pointerEvents='';}
 }
 
 function openOfferModal(){
