@@ -159,9 +159,10 @@
       <div class="ty-finance-cta">
         <span class="ty-finance-cta-icon">📄</span>
         <div class="ty-finance-cta-body">
-          <p>If you're using <strong>BMW finance</strong>, your next step is to download the finance proposal form below, complete it, and email it back to Dan. It takes about five minutes and gets things moving straight away.</p>
+          <p>If you're using <strong>BMW finance</strong>, your next step is to complete a finance proposal form and email it back to Dan. Choose your form type below — personal or business (limited company / partnership).</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <a class="btn" href="finance-proposal.html" rel="noopener">Download finance proposal form &rarr;</a>
+            <a class="btn" href="finance-proposal.html" rel="noopener">Personal proposal form &rarr;</a>
+            <a class="btn" href="business-proposal.html" rel="noopener" style="background:var(--blue-deep);">Business / company form &rarr;</a>
             <span class="ty-finance-cta-email">Then email to: <strong>daniel.cane@hedinautomotive.co.uk</strong></span>
           </div>
         </div>
@@ -494,14 +495,15 @@
     <div class="page">
       <div class="section-kicker">Finance</div>
       <h2>Your finance proposal form</h2>
-      <p>If you're using BMW finance, this is your most important next step. The finance proposal covers your personal details, employment, and your preferences for the finance structure, giving Dan everything he needs to get a formal application moving.</p>
-      <p style="color:rgba(255,255,255,.72);font-size:.97rem;line-height:1.7;max-width:60ch;margin-bottom:8px;">Download the form below, complete it, and email it back. It takes around five minutes. Nothing gets formally arranged until this is back with Dan.</p>
+      <p>If you're using BMW finance, this is your most important next step. The proposal covers your personal or company details, employment, and your preferences for the finance structure — giving Dan everything he needs to get a formal application moving.</p>
+      <p style="color:rgba(255,255,255,.72);font-size:.97rem;line-height:1.7;max-width:60ch;margin-bottom:8px;">Choose your form type below, complete it, and email it back. It takes around five minutes. Nothing gets formally arranged until this is back with Dan.</p>
       <button class="ty-email-block" onclick="copyEmail()" title="Click to copy email address">
         daniel.cane@hedinautomotive.co.uk
         <span class="ty-email-block-copy" id="emailCopyLabel">click to copy</span>
       </button>
       <div class="ty-finance-actions">
-        <a class="btn" href="finance-proposal.html" rel="noopener">Download finance proposal form &rarr;</a>
+        <a class="btn" href="finance-proposal.html" rel="noopener">Personal proposal form &rarr;</a>
+        <a class="btn" href="business-proposal.html" rel="noopener" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);">Business / company form &rarr;</a>
         <a class="btn-ghost ty-ghost-white" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Finance%20proposal%20%5BYour%20name%5D&body=Hi%20Dan%2C%0A%0APlease%20find%20my%20completed%20finance%20proposal%20form%20attached.%0A%0AThanks">Email Dan directly</a>
       </div>
     </div>
@@ -770,7 +772,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
         html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Deposit</p><div class="ty-order-wa-inner"><p>No problem. Let Dan know you\'re ready and he\'ll take it from there.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20I\'m%20available%20now%20to%20place%20my%20deposit" target="_blank" rel="noopener">'+WA_ICON+' Message Dan to place your deposit</a></div></div>';
       }
       if(answers.finance==='no'){
-        html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Finance proposal</p><div class="ty-finance-prompt-inner"><p>Download the form, fill it in, and email it back to Dan. It takes around five minutes.</p><a class="ty-fp-link" href="finance-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download finance proposal form</a></div></div>';
+        html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Finance proposal</p><div class="ty-finance-prompt-inner"><p>Complete the relevant form below, fill it in, and email it back to Dan. It takes around five minutes.</p><a class="ty-fp-link" href="finance-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Personal proposal form</a><a class="ty-fp-link" href="business-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Business / company form</a></div></div>';
       }
       if(answers.order==='no'){
         html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Order form</p><div class="ty-order-wa-inner"><p>No problem. Message Dan now and he\'ll send it straight over.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%20could%20you%20send%20me%20the%20order%20form%20across%20for%20signing%20please" target="_blank" rel="noopener">'+WA_ICON+' Message Dan for your order form</a></div></div>';

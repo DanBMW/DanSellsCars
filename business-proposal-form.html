@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Company Finance Proposal Form | DanSells</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    :root{
+      --bmw-blue:#1c69d4;
+      --header-bg:#1c69d4;
+      --header-text:#fff;
+      --border:#b0b8c8;
+      --row-bg:#f7f9fc;
+      --alt-bg:#eef2fa;
+      --label:#1a2540;
+      --body-font:'Arial',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{background:#e8eaf0;font-family:var(--body-font);font-size:12px;color:var(--label);}
+
+    .no-print-bar{
+      background:#1c69d4;color:#fff;padding:10px 20px;display:flex;align-items:center;
+      justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100;
+      box-shadow:0 2px 8px rgba(0,0,0,.18);
+    }
+    .no-print-bar strong{font-size:13px;}
+    .no-print-bar p{font-size:11px;opacity:.85;margin-top:2px;}
+    .print-btn{
+      background:#fff;color:#1c69d4;border:none;border-radius:6px;padding:8px 16px;
+      font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;
+      flex-shrink:0;font-family:var(--body-font);
+    }
+    .print-btn:hover{background:#e8f0ff;}
+
+    .page-wrap{max-width:780px;margin:18px auto;background:#fff;box-shadow:0 2px 16px rgba(0,0,0,.14);padding:22px 24px 30px;}
+
+    /* ─── Document header ─── */
+    .doc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+    .doc-title h1{font-size:15px;font-weight:700;color:var(--label);letter-spacing:.01em;}
+    .doc-title p{font-size:11px;color:#555;margin-top:3px;}
+    .bmw-logo{display:flex;flex-direction:column;align-items:center;gap:2px;}
+    .bmw-logo-circle{
+      width:42px;height:42px;border-radius:50%;border:2px solid #111;
+      display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden;
+    }
+    .bmw-logo-circle span:nth-child(1){background:#fff;}
+    .bmw-logo-circle span:nth-child(2){background:#1c69d4;}
+    .bmw-logo-circle span:nth-child(3){background:#1c69d4;}
+    .bmw-logo-circle span:nth-child(4){background:#fff;}
+    .bmw-logo small{font-size:9px;font-weight:700;letter-spacing:.1em;color:#111;}
+
+    /* ─── Section tables ─── */
+    .section-block{margin-bottom:10px;}
+    .section-header{
+      background:var(--header-bg);color:var(--header-text);
+      font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+      padding:5px 8px;
+    }
+    .section-subheader{
+      background:#2d4a8a;color:#fff;
+      font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+      padding:4px 8px;margin-top:6px;
+    }
+    table{width:100%;border-collapse:collapse;}
+    td{border:1px solid var(--border);padding:3px 6px;vertical-align:top;}
+    .label-cell{
+      background:var(--alt-bg);font-size:10px;font-weight:600;color:#2a3650;
+      width:38%;white-space:nowrap;
+    }
+    .input-cell{background:#fff;width:62%;}
+    .input-cell input[type="text"],
+    .input-cell input[type="email"],
+    .input-cell input[type="date"],
+    .input-cell select,
+    .input-cell textarea{
+      width:100%;border:none;outline:none;font-family:var(--body-font);
+      font-size:11px;color:#1a2540;background:transparent;padding:1px 2px;
+      resize:none;
+    }
+    .input-cell textarea{min-height:36px;line-height:1.4;}
+
+    .half-table td.label-cell{width:28%;}
+    .half-table td.input-cell{width:22%;}
+
+    .note-cell{
+      background:#fffbe6;border:1px solid var(--border);padding:4px 8px;
+      font-size:9.5px;color:#6b5900;font-style:italic;
+    }
+
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;}
+
+    .yesno-cell{display:flex;align-items:center;gap:12px;padding:4px 2px;}
+    .yesno-cell label{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;cursor:pointer;}
+    .yesno-cell input[type="radio"]{width:14px;height:14px;cursor:pointer;accent-color:#1c69d4;}
+
+    .inline-pair{display:flex;gap:16px;align-items:center;}
+    .inline-pair span{font-size:10px;white-space:nowrap;color:#2a3650;font-weight:600;}
+    .inline-pair input{border:none;border-bottom:1px solid #aaa;width:36px;font-size:11px;text-align:center;outline:none;background:transparent;padding:1px;}
+
+    /* ─── Footer ─── */
+    .doc-footer{margin-top:16px;border-top:1px solid #ccc;padding-top:10px;font-size:9.5px;color:#666;line-height:1.5;}
+    .doc-footer strong{color:#333;}
+
+    /* ─── Print styles ─── */
+    @media print{
+      html,body{background:#fff;}
+      .no-print-bar{display:none!important;}
+      .page-wrap{margin:0;box-shadow:none;padding:10px 14px 20px;}
+      @page{size:A4;margin:12mm 12mm 16mm;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="no-print-bar" id="printBar">
+  <div>
+    <strong>Company Finance Proposal Form</strong>
+    <p>Fill in all fields, then click Print / Save as PDF — attach the PDF to your email to Dan.</p>
+  </div>
+  <button class="print-btn" onclick="window.print()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Print / Save as PDF
+  </button>
+</div>
+
+<div class="page-wrap" id="formPage">
+
+  <!-- Document header -->
+  <div class="doc-header">
+    <div class="doc-title">
+      <h1>COMPANY PROPOSAL FORM</h1>
+      <p>Limited Company / Partnership</p>
+    </div>
+    <div class="bmw-logo">
+      <div class="bmw-logo-circle">
+        <span></span><span></span>
+        <span></span><span></span>
+      </div>
+      <small>BMW</small>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 1 + 2: General Details & Main Address (side by side)
+  ════════════════════════════════════════════════════════ -->
+  <div class="two-col">
+
+    <!-- General Details -->
+    <div class="section-block">
+      <div class="section-header">General Details</div>
+      <table>
+        <tr>
+          <td class="label-cell">Company Type (Ltd/Partnership)</td>
+          <td class="input-cell"><input type="text" name="company_type"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Company Name</td>
+          <td class="input-cell"><input type="text" name="company_name"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">CRO</td>
+          <td class="input-cell"><input type="text" name="cro"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Time Trading</td>
+          <td class="input-cell">
+            <div class="inline-pair">
+              <input type="text" name="time_trading_years" maxlength="3" placeholder="0"/>
+              <span>Years</span>
+              <input type="text" name="time_trading_months" maxlength="2" placeholder="0"/>
+              <span>Months</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="label-cell">Director Name</td>
+          <td class="input-cell"><input type="text" name="director_name"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Company Residential Status (Owner/Tenant)</td>
+          <td class="input-cell"><input type="text" name="residential_status"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Contact Name</td>
+          <td class="input-cell"><input type="text" name="contact_name"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Contact Position</td>
+          <td class="input-cell"><input type="text" name="contact_position"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Company Telephone Number</td>
+          <td class="input-cell"><input type="text" name="company_tel"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Company Post Code</td>
+          <td class="input-cell"><input type="text" name="company_postcode"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">VAT Number</td>
+          <td class="input-cell"><input type="text" name="vat_number"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Website Telephone Number</td>
+          <td class="input-cell"><input type="text" name="website_tel"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Driver Name</td>
+          <td class="input-cell"><input type="text" name="driver_name"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Colours / Extras</td>
+          <td class="input-cell"><input type="text" name="colours_extras"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Driver Telephone Number</td>
+          <td class="input-cell"><input type="text" name="driver_tel"/></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Main Address Details -->
+    <div class="section-block">
+      <div class="section-header">Main Address Details</div>
+      <table>
+        <tr>
+          <td class="label-cell">Company Current Address</td>
+          <td class="input-cell"><textarea name="company_address"></textarea></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Company Current Postcode</td>
+          <td class="input-cell"><input type="text" name="company_current_postcode"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Time at Address</td>
+          <td class="input-cell">
+            <div class="inline-pair">
+              <input type="text" name="addr_years" maxlength="3" placeholder="0"/>
+              <span>Years</span>
+              <input type="text" name="addr_months" maxlength="2" placeholder="0"/>
+              <span>Months</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" class="note-cell">Complete if Current Address less than 3 years</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Company Previous Address</td>
+          <td class="input-cell"><textarea name="company_prev_address"></textarea></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Company Previous Postcode</td>
+          <td class="input-cell"><input type="text" name="company_prev_postcode"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Time at Address</td>
+          <td class="input-cell">
+            <div class="inline-pair">
+              <input type="text" name="prev_addr_years" maxlength="3" placeholder="0"/>
+              <span>Years</span>
+              <input type="text" name="prev_addr_months" maxlength="2" placeholder="0"/>
+              <span>Months</span>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Company Bank Details -->
+      <div class="section-header" style="margin-top:10px;">Company Bank Details</div>
+      <table>
+        <tr>
+          <td class="label-cell">Account Name</td>
+          <td class="input-cell"><input type="text" name="bank_account_name"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Account Number</td>
+          <td class="input-cell"><input type="text" name="bank_account_number"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Bank Sort Code</td>
+          <td class="input-cell"><input type="text" name="bank_sort_code"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Time with Bank</td>
+          <td class="input-cell">
+            <div class="inline-pair">
+              <input type="text" name="bank_years" maxlength="3" placeholder="0"/>
+              <span>Years</span>
+              <input type="text" name="bank_months" maxlength="2" placeholder="0"/>
+              <span>Months</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="label-cell">Bank Branch (if known)</td>
+          <td class="input-cell"><input type="text" name="bank_branch"/></td>
+        </tr>
+      </table>
+
+      <!-- Trade Details -->
+      <div class="section-header" style="margin-top:10px;">Trade Details</div>
+      <table>
+        <tr>
+          <td class="label-cell">Trading Name</td>
+          <td class="input-cell"><input type="text" name="trading_name"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Trading Address</td>
+          <td class="input-cell"><textarea name="trading_address"></textarea></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Postcode</td>
+          <td class="input-cell"><input type="text" name="trading_postcode"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Employment Industry</td>
+          <td class="input-cell"><input type="text" name="trade_industry"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Time Trading</td>
+          <td class="input-cell">
+            <div class="inline-pair">
+              <input type="text" name="trade_years" maxlength="3" placeholder="0"/>
+              <span>Years</span>
+              <input type="text" name="trade_months" maxlength="2" placeholder="0"/>
+              <span>Months</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="label-cell">Total Number of Directors</td>
+          <td class="input-cell"><input type="text" name="total_directors"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Current Number of Employees</td>
+          <td class="input-cell"><input type="text" name="num_employees"/></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Date Incorporated</td>
+          <td class="input-cell"><input type="text" name="date_incorporated" placeholder="dd/mm/yyyy"/></td>
+        </tr>
+      </table>
+    </div>
+
+  </div><!-- end .two-col -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION: Signing Director's Details
+  ════════════════════════════════════════════════════════ -->
+  <div class="section-block" style="margin-top:4px;">
+    <div class="section-header">Signing Director's Details</div>
+
+    <div class="two-col" style="gap:0 10px;">
+
+      <!-- Personal Details (left column) -->
+      <div>
+        <div class="section-subheader">Personal Details</div>
+        <table>
+          <tr>
+            <td class="label-cell">Title</td>
+            <td class="input-cell"><input type="text" name="title"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Forename</td>
+            <td class="input-cell"><input type="text" name="forename"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Middle Name</td>
+            <td class="input-cell"><input type="text" name="middle_name"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Surname</td>
+            <td class="input-cell"><input type="text" name="surname"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Former Name (if Applicable)</td>
+            <td class="input-cell"><input type="text" name="former_name"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Date of Birth (dd/mm/yyyy)</td>
+            <td class="input-cell"><input type="text" name="dob" placeholder="dd/mm/yyyy"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Gender</td>
+            <td class="input-cell"><input type="text" name="gender"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Marital Status</td>
+            <td class="input-cell"><input type="text" name="marital_status"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Residential Status</td>
+            <td class="input-cell"><input type="text" name="dir_residential_status"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Employment Status</td>
+            <td class="input-cell"><input type="text" name="dir_employment_status"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Dependants</td>
+            <td class="input-cell"><input type="text" name="dependants"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Home Telephone Number</td>
+            <td class="input-cell"><input type="text" name="home_tel"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Mobile Telephone Number</td>
+            <td class="input-cell"><input type="text" name="mobile_tel"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">E-Mail Address</td>
+            <td class="input-cell"><input type="email" name="email"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Previous BMW Group Customer (Yes/No)</td>
+            <td class="input-cell">
+              <div class="yesno-cell">
+                <label><input type="radio" name="prev_bmw_customer" value="yes"/> Yes</label>
+                <label><input type="radio" name="prev_bmw_customer" value="no"/> No</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="label-cell">Annual Personal Income</td>
+            <td class="input-cell"><input type="text" name="annual_income" placeholder="£"/></td>
+          </tr>
+        </table>
+
+        <div class="section-subheader" style="margin-top:6px;">Current Address Details</div>
+        <table>
+          <tr>
+            <td class="label-cell">Current Address</td>
+            <td class="input-cell"><textarea name="dir_current_address"></textarea></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Current Postcode</td>
+            <td class="input-cell"><input type="text" name="dir_current_postcode"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Time at Address</td>
+            <td class="input-cell">
+              <div class="inline-pair">
+                <input type="text" name="dir_addr_years" maxlength="3" placeholder="0"/>
+                <span>Years</span>
+                <input type="text" name="dir_addr_months" maxlength="2" placeholder="0"/>
+                <span>Months</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <div class="section-subheader" style="margin-top:6px;">Previous Address Details</div>
+        <table>
+          <tr>
+            <td colspan="2" class="note-cell">Complete if current address less than 3 years</td>
+          </tr>
+          <tr>
+            <td class="label-cell">Previous Address</td>
+            <td class="input-cell"><textarea name="dir_prev_address"></textarea></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Previous Postcode</td>
+            <td class="input-cell"><input type="text" name="dir_prev_postcode"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Time at Address</td>
+            <td class="input-cell">
+              <div class="inline-pair">
+                <input type="text" name="dir_prev_addr_years" maxlength="3" placeholder="0"/>
+                <span>Years</span>
+                <input type="text" name="dir_prev_addr_months" maxlength="2" placeholder="0"/>
+                <span>Months</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div><!-- end left col -->
+
+      <!-- Right column: Employment -->
+      <div>
+        <div class="section-subheader">Current Employment Details</div>
+        <table>
+          <tr>
+            <td class="label-cell">Employment Status</td>
+            <td class="input-cell"><input type="text" name="emp_status"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Current Employer Name</td>
+            <td class="input-cell"><input type="text" name="employer_name"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Job Description</td>
+            <td class="input-cell"><input type="text" name="job_description"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Employment Industry</td>
+            <td class="input-cell"><input type="text" name="emp_industry"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Current Employer Address</td>
+            <td class="input-cell"><textarea name="employer_address"></textarea></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Current Employer Postcode</td>
+            <td class="input-cell"><input type="text" name="employer_postcode"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Time with Employer</td>
+            <td class="input-cell">
+              <div class="inline-pair">
+                <input type="text" name="emp_years" maxlength="3" placeholder="0"/>
+                <span>Years</span>
+                <input type="text" name="emp_months" maxlength="2" placeholder="0"/>
+                <span>Months</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <div class="section-subheader" style="margin-top:6px;">Previous Employment Details</div>
+        <table>
+          <tr>
+            <td colspan="2" class="note-cell">Complete if current employment less than 2 years</td>
+          </tr>
+          <tr>
+            <td class="label-cell">Previous Employer Name</td>
+            <td class="input-cell"><input type="text" name="prev_employer_name"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Job Description</td>
+            <td class="input-cell"><input type="text" name="prev_job_description"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Employment Industry</td>
+            <td class="input-cell"><input type="text" name="prev_emp_industry"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Previous Employer Address</td>
+            <td class="input-cell"><textarea name="prev_employer_address"></textarea></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Previous Employer Postcode</td>
+            <td class="input-cell"><input type="text" name="prev_employer_postcode"/></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Time with Employer</td>
+            <td class="input-cell">
+              <div class="inline-pair">
+                <input type="text" name="prev_emp_years" maxlength="3" placeholder="0"/>
+                <span>Years</span>
+                <input type="text" name="prev_emp_months" maxlength="2" placeholder="0"/>
+                <span>Months</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Guarantee -->
+        <div class="section-subheader" style="margin-top:6px;">Guarantee</div>
+        <table>
+          <tr>
+            <td class="label-cell" style="font-size:9.5px;line-height:1.4;">Are you happy to be proposed as a guarantor for this application?</td>
+            <td class="input-cell">
+              <div class="yesno-cell">
+                <label><input type="radio" name="guarantor" value="yes"/> Yes</label>
+                <label><input type="radio" name="guarantor" value="no"/> No</label>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div><!-- end right col -->
+
+    </div><!-- end .two-col signing director -->
+
+  </div><!-- end signing director section-block -->
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <strong>How to return this form:</strong> Once complete, use the Print / Save as PDF button above and email the PDF to
+    <strong>daniel.cane@hedinautomotive.co.uk</strong> with the subject line
+    <strong>"Company Finance Proposal: [Company Name]"</strong>. Your information is handled in accordance with UK GDPR and used solely to facilitate your finance application.
+  </div>
+
+</div><!-- end .page-wrap -->
+
+</body>
+</html>
