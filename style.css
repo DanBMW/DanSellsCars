@@ -624,6 +624,7 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .ty-status-ok::before{content:'✓';font-size:1.05rem;}
 .ty-status-warn{display:inline-flex;align-items:center;gap:8px;color:#c0392b;font-weight:700;font-size:.93rem;}
 .ty-status-warn::before{content:'!';font-size:1rem;}
+.ty-status-hint{display:inline-block;color:var(--muted);font-size:.9rem;}
 @media(max-width:640px){.ty-checklist{padding:22px 18px;}.ty-check-item{gap:14px;}.ty-check-label p{font-size:.92rem;}}
 
 /* £60k in-person signing notice */

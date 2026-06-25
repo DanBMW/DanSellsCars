@@ -77,7 +77,7 @@
 
   <!-- ── HERO ── -->
   <section class="ty-hero">
-    <video autoplay muted loop playsinline class="ty-hero-vid" aria-hidden="true">
+    <video autoplay muted loop playsinline poster="dan.jpg" class="ty-hero-vid" aria-hidden="true">
       <source src="vid-dan.mp4" type="video/mp4"/>
     </video>
     <div class="ty-hero-vid-overlay"></div>
@@ -241,7 +241,7 @@
           </details>
           <details>
             <summary>What do I need to bring on collection day?</summary>
-            <p>Bring a valid photo ID (driving licence or passport) and proof of your insurance. If you have a part exchange, bring the V5C logbook for your current car plus both sets of keys. If that car has outstanding finance, bring your settlement figure confirmation too. Your handover specialist will confirm the full list before the day.</p>
+            <p>Bring a valid photo ID (driving licence or passport) and proof of your insurance. If you have a part exchange, bring the V5C logbook for your current car plus both sets of keys. If that car has outstanding finance, bring your settlement figure confirmation too. If your finance agreement involves a borrowed amount over £60,000, you will need to sign your documents in person and bring a valid photo ID and proof of address. Your handover specialist will confirm the full list before the day.</p>
           </details>
         </div>
       </section>
@@ -290,7 +290,7 @@
           </details>
           <details>
             <summary>What do I need to bring on handover day?</summary>
-            <p>Bring a valid photo ID, proof of your insurance, and, if you have a part exchange, the V5C logbook and both sets of keys for your current car. If there's outstanding finance on your part exchange, bring your settlement figure confirmation too. Your handover specialist will confirm the full list closer to the time.</p>
+            <p>Bring a valid photo ID, proof of your insurance, and, if you have a part exchange, the V5C logbook and both sets of keys for your current car. If there's outstanding finance on your part exchange, bring your settlement figure confirmation too. If your finance agreement involves a borrowed amount over £60,000, you will need to sign your documents in person and bring a valid photo ID and proof of address. Your handover specialist will confirm the full list closer to the time.</p>
           </details>
         </div>
       </section>
@@ -305,7 +305,7 @@
         <div class="ty-faq reveal">
           <details open>
             <summary>When can I collect my car?</summary>
-            <p>You can collect any time between 48 hours and a maximum of 2 weeks from today. The 48-hour minimum gives us time to complete any remaining prep. Our handover specialist will be in touch within 48 hours to schedule your collection slot. If you have a specific date in mind, let Dan know and we'll do our best to accommodate you.</p>
+            <p>You can collect any time between 48 hours and a maximum of 2 weeks from today. The 48-hour minimum gives us time to complete any remaining preparation, including a multipoint inspection (PDI) and any final detailing. Our handover specialist will be in touch within 48 hours to schedule your collection slot. If you have a specific date in mind, let Dan know and we'll do our best to accommodate you.</p>
           </details>
           <details>
             <summary>Can I put my personal registration on it?</summary>
@@ -334,7 +334,7 @@
           </details>
           <details>
             <summary>What do I need to bring on collection day?</summary>
-            <p>A valid photo ID, proof of your insurance, and, if you have a part exchange, the V5C logbook and both sets of keys for your current car. If there's outstanding finance on your part exchange, bring the settlement figure too. Your handover specialist will confirm the full list before the day.</p>
+            <p>A valid photo ID, proof of your insurance, and, if you have a part exchange, the V5C logbook and both sets of keys for your current car. If there's outstanding finance on your part exchange, bring the settlement figure too. If your finance agreement involves a borrowed amount over £60,000, you will need to sign your documents in person and bring a valid photo ID and proof of address. Your handover specialist will confirm the full list before the day.</p>
           </details>
         </div>
       </section>
@@ -464,13 +464,19 @@
           <p>If you notice any issue with your car after driving away, please contact Dan in the first instance and he'll advise you on the best way forward. We're here to help and want to make sure everything is exactly as it should be.</p>
         </details>
         <details>
+          <summary>How do I raise a complaint?</summary>
+          <p>For any concern about your vehicle, your handover experience, or anything else related to your purchase, please contact Dan directly in the first instance. Most things can be resolved quickly with a conversation, and that will always be the fastest route to a resolution.</p>
+          <p style="margin-top:10px;">For matters relating to regulated credit-broking or finance, Hedin Automotive Group operates a formal complaints process. If you raise a complaint and remain dissatisfied with the outcome, you may be entitled to refer the matter to the <strong>Financial Ombudsman Service</strong>, an independent body that can investigate disputes free of charge. More information is available at <a href="https://www.financial-ombudsman.org.uk" target="_blank" rel="noopener" style="color:var(--blue);">financial-ombudsman.org.uk</a>.</p>
+        </details>
+        <details>
           <summary>Will I hear from you again after collection?</summary>
           <p>Absolutely. We don't disappear after handover. Dan will check in with you <strong>roughly every 6 months</strong> throughout your ownership, and when the time is right we'll be on hand to help you into your next car, making the whole process as easy as it was this time.</p>
         </details>
         <details>
           <summary>About the BMW customer satisfaction survey</summary>
-          <p>After your purchase, BMW will send you a short satisfaction survey about your experience with us. It would mean a great deal to our team if you felt able to give us top marks.</p>
-          <p style="margin-top:10px;">Here's how BMW scores it: the survey works on an <strong>all-or-nothing basis</strong>, meaning anything less than the highest score on a question is counted as a fail, even on points that might seem minor or not quite relevant to your visit. So here's our ask: if anything about your experience wasn't a perfect 10, <strong>please come to us first, before you complete the survey</strong>. We'd love the chance to put it right for you.</p>
+          <p>After your purchase, BMW will send you a short survey asking about your experience. Your feedback genuinely matters. It goes directly to BMW and it's one of the main ways they measure how well we've looked after you.</p>
+          <p style="margin-top:10px;">My promise to you is simple. I want your experience to be one you'd happily score honestly, so if anything hasn't been right, at any point, please tell me. A quick message is all it takes and I'll do everything I can to put it right. I'd always rather hear from you directly than have you sit on something that's bothering you.</p>
+          <p style="margin-top:10px;">When the survey arrives, please answer it honestly. If I've earned it, a strong score makes a real difference to me and the team, and if I haven't yet, give me the chance to fix it first.</p>
         </details>
       </div>
 
@@ -790,7 +796,15 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     var allAnswered=deposit&&finance&&order;
     var status=document.getElementById('checklistStatus');
     var faq=document.getElementById('faqSection');
-    if(!allAnswered){status.innerHTML='';return;}
+    if(!allAnswered){
+      var missing=[];
+      if(!deposit)missing.push('deposit');
+      if(!finance)missing.push('finance proposal');
+      if(!order)missing.push('order form');
+      var label=missing.length===1?'Just answer the <strong>'+missing[0]+'</strong> question above to unlock your guide.':'Just answer the <strong>'+missing.join('</strong> and <strong>')+'</strong> questions above to unlock your guide.';
+      status.innerHTML='<span class="ty-status-hint">'+label+'</span>';
+      return;
+    }
     var depositOk=deposit!=='no';
     var financeOk=finance!=='no';
     if(!depositOk||!financeOk){
