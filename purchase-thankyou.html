@@ -806,6 +806,24 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   };
 })();
 
+// URL checklist pre-population — ?c=101 (deposit/finance/order: 1=yes 0=no 2=n/a)
+document.addEventListener('DOMContentLoaded',function(){
+  var params=new URLSearchParams(window.location.search);
+  var code=params.get('c');
+  if(!code||code.length<3)return;
+  var map=[
+    {q:'deposit', vals:{'1':'yes','0':'no'}},
+    {q:'finance', vals:{'1':'yes','0':'no','2':'na'}},
+    {q:'order',   vals:{'1':'yes','0':'no'}}
+  ];
+  map.forEach(function(item,i){
+    var val=item.vals[code[i]];
+    if(!val)return;
+    var btn=document.querySelector('.ty-check-btn[data-q="'+item.q+'"][data-v="'+val+'"]');
+    if(btn)btn.click();
+  });
+});
+
 // Email copy to clipboard
 function copyEmail(){
   navigator.clipboard.writeText('daniel.cane@hedinautomotive.co.uk').then(function(){
