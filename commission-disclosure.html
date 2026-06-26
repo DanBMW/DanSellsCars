@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Commission Disclosure — BMW Financial Services</title>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root {
   --blue: #4D94D8;
@@ -260,9 +261,9 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
       <div id="record-box" style="margin-top:12px"></div>
     </div>
 
-    <div class="card" style="text-align:center">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Need a printed copy of this record?</p>
-      <button class="btn btn-ghost" style="display:inline-flex" onclick="window.print()">&#x1F5A8; Print this page</button>
+    <div class="card">
+      <button class="btn btn-primary" onclick="downloadPDF()" style="margin-bottom:10px">&#x2B07; Download Signed PDF</button>
+      <button class="btn btn-ghost" onclick="window.print()" style="width:100%;justify-content:center">&#x1F5A8; Print this page</button>
     </div>
 
     <p class="bmw-footer">
@@ -281,7 +282,7 @@ import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.
 const FB = { apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E", authDomain:"forecourt-1b6bc.firebaseapp.com", databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app", projectId:"forecourt-1b6bc", storageBucket:"forecourt-1b6bc.firebasestorage.app", messagingSenderId:"1073459223252", appId:"1:1073459223252:web:d65abed953fc641fc7b941" };
 const db = getDatabase(initializeApp(FB));
 
-let calcType = 2, commAmount = 0, commPct = 0, sigPad = null;
+let calcType = 2, commAmount = 0, commPct = 0, sigPad = null, signedRecord = null;
 
 // ---- Dealer setup ----
 window.onCalcChange = function() {
@@ -378,6 +379,7 @@ window.submitForm = async function() {
 
   try {
     await set(ref(db, "disclosures/" + recordId), record);
+    signedRecord = record;
   } catch(e) {
     btn.disabled = false;
     btn.textContent = "I Agree & Submit ✓";
@@ -418,6 +420,135 @@ window.submitForm = async function() {
   `;
 
   showScreen("screen-done");
+};
+
+// ---- PDF download ----
+window.downloadPDF = function() {
+  if (!signedRecord) { alert("No signed record — please complete the form first."); return; }
+  const r = signedRecord;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, mg = 18, cw = W - mg * 2;
+  let y = 18;
+
+  // Helper: add wrapped text and advance y
+  function tx(txt, x, size, bold, color, maxW, align, gap) {
+    maxW = maxW || cw; align = align || 'left'; gap = (gap === undefined) ? 2 : gap;
+    doc.setFontSize(size);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setTextColor(...(color || [18, 38, 58]));
+    const lines = doc.splitTextToSize(txt, maxW);
+    doc.text(lines, align === 'center' ? W/2 : x, y, { align });
+    y += lines.length * (size * 0.38) + gap;
+  }
+
+  function hline() {
+    doc.setDrawColor(180, 200, 220); doc.setLineWidth(0.4);
+    doc.line(mg, y, W - mg, y); y += 4;
+  }
+
+  function tableRow(lbl, val, ticked) {
+    const h = 7, tickX = W - mg - 10;
+    doc.setFillColor(238, 243, 248); doc.rect(mg,       y, 86,       h, 'F');
+    doc.setFillColor(255, 255, 255); doc.rect(mg + 86,  y, cw-96,    h, 'F');
+    doc.setFillColor(246, 249, 252); doc.rect(tickX,    y, 10,       h, 'F');
+    doc.setDrawColor(180, 200, 220); doc.setLineWidth(0.2);
+    doc.rect(mg, y, cw, h);
+    doc.line(mg + 86, y, mg + 86, y + h);
+    doc.line(tickX,   y, tickX,   y + h);
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(50, 70, 95);
+    doc.text(doc.splitTextToSize(lbl, 82)[0], mg + 2, y + 4.8);
+    doc.setFont('helvetica','bold'); doc.setTextColor(18, 38, 58);
+    doc.text(val, mg + 88, y + 4.8);
+    if (ticked) {
+      doc.setDrawColor(30, 80, 150); doc.setLineWidth(0.7);
+      doc.line(tickX+2, y+4.5, tickX+4, y+6);
+      doc.line(tickX+4, y+6,   tickX+8, y+2);
+    }
+    y += h;
+  }
+
+  const fmtL = n => '£' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const isC1 = r.commissionCalcType === 1;
+
+  // Title
+  tx('COMMISSION DISCLOSURE FORM', mg, 13, true, null, cw, 'center', 3);
+  tx('THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.', mg, 8, true, null, cw, 'center', 4);
+  hline();
+
+  // Retailer
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('Retailer:', mg, y);
+  doc.setFont('helvetica','normal'); doc.text('Ruxley BMW', mg + 22, y);
+  y += 8;
+
+  // Retailer role section
+  tx("What is the Retailer's role?", mg, 10, true, null, cw, 'left', 2);
+  tx('The Retailer has an arrangement with us to introduce their customers to us. When they introduce you to us, they are acting as a "credit broker". We will pay them a commission for this when you enter into an agreement with us. The Retailer will usually have a selection of lenders or intermediaries, but will normally send your details to us first.', mg, 8, false, null, cw, 'left', 2);
+  tx('When the Retailer introduces you to us, they are not acting independently. The commission amount might influence them. The Retailer is not giving you advice or recommendations. Depending on your situation, you may find a better deal if you look around.', mg, 8, false, null, cw, 'left', 4);
+
+  // Commission section
+  tx('What commission will we pay to the Retailer?', mg, 10, true, null, cw, 'left', 2);
+  tx('If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways, depending on the vehicle being financed. The one that applies in your case is ticked and completed below.', mg, 8, false, null, cw, 'left', 3);
+
+  tx('Commission calculation 1: This is a fixed amount that we pay to the Retailer for introducing you.', mg, 8, isC1, null, cw, 'left', 1);
+  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '—', isC1);
+  y += 3;
+
+  tx('Commission calculation 2: The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.', mg, 8, !isC1, null, cw, 'left', 1);
+  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '—', !isC1);
+  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '—', false);
+  y += 3;
+
+  tx('The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.', mg, 8, false, null, cw, 'left', 2);
+  tx('The APR interest rate that you pay for your finance agreement with us is fixed. The Retailer cannot change the APR and/or the commission for your finance agreement. We take into account the payment of commission when we set the APRs which we offer to customers.', mg, 8, false, null, cw, 'left', 2);
+  tx('If you have any questions, please discuss them with your Retailer before signing. DO NOT sign or proceed with your finance if you have any concerns or if the amount shown above is not completed.', mg, 8, true, null, cw, 'left', 4);
+
+  // Customer consent
+  tx('Customer consent', mg, 9, true, null, cw, 'left', 2);
+  tx('You can choose whether to continue with the finance deal or look around for other alternatives. If you understand what we have explained and are comfortable to proceed, please sign the below.', mg, 8, false, null, cw, 'left', 4);
+
+  // Declaration
+  tx('CUSTOMER DECLARATION', mg, 10, true, null, cw, 'left', 2);
+  tx('I understand the information in this document. I understand that the Retailer is not acting impartially and will be paid the commission amount disclosed above. I confirm that I am happy to proceed with the finance and consent to the Retailer being paid this amount.', mg, 8, false, null, cw, 'left', 5);
+
+  // Overflow to new page if needed
+  if (y > 218) { doc.addPage(); y = 20; }
+
+  // Signature
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(18,38,58);
+  doc.text('Customer signature:', mg, y); y += 3;
+  try { doc.addImage(r.signature, 'PNG', mg, y, 75, 18); } catch(_) {}
+  y += 20;
+  doc.setDrawColor(18,38,58); doc.setLineWidth(0.3);
+  doc.line(mg, y, mg + 75, y); y += 6;
+
+  // Printed name + date
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(18,38,58);
+  doc.text('Print customer name:', mg, y);
+  doc.setFont('helvetica','bold'); doc.text(r.customerName, mg + 42, y);
+  doc.setFont('helvetica','normal'); doc.text('Date:', W/2 + 10, y);
+  doc.setFont('helvetica','bold');
+  doc.text(new Date(r.signedAt).toLocaleDateString('en-GB'), W/2 + 24, y);
+  y += 10;
+  hline();
+
+  if (y > 255) { doc.addPage(); y = 20; }
+
+  // Audit trail
+  tx('AUDIT RECORD', mg, 7, true, [60, 85, 110], cw, 'left', 2);
+  tx('Record ID: ' + r.id, mg, 7, false, [60, 85, 110], cw, 'left', 1);
+  tx('Signed at: ' + new Date(r.signedAt).toLocaleString('en-GB'), mg, 7, false, [60, 85, 110], cw, 'left', 1);
+  tx('IP Address: ' + r.ipAddress, mg, 7, false, [60, 85, 110], cw, 'left', 1);
+  tx('Disclosure version: ' + r.disclosureVersion + '   |   Retailer: ' + r.retailer, mg, 7, false, [60, 85, 110], cw, 'left', 4);
+
+  doc.setDrawColor(180, 200, 220); doc.setLineWidth(0.2); doc.line(mg, y, W-mg, y); y += 3;
+  tx('BMW Financial Services (GB) Limited  |  Registered in England and Wales 01288537', mg, 7, false, [120, 140, 160], cw, 'center', 1);
+  tx('Summit ONE, Summit Avenue, Farnborough, Hampshire GU14 0FB  |  Authorised and regulated by the Financial Conduct Authority', mg, 7, false, [120, 140, 160], cw, 'center', 0);
+
+  const safeName = r.customerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const dateStr  = new Date(r.signedAt).toLocaleDateString('en-GB').replace(/\//g, '-');
+  doc.save('commission-disclosure_' + safeName + '_' + dateStr + '.pdf');
 };
 
 // ---- Helpers ----
