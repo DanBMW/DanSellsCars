@@ -1,113 +1,526 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | My Links</title>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    .link-card{
-      display:flex;align-items:center;justify-content:space-between;gap:16px;
-      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;padding:20px 22px;margin-bottom:12px;
-    }
-    .link-info strong{display:block;font-size:1rem;font-weight:700;color:#f0f2f5;margin-bottom:4px;}
-    .link-info span{font-size:.84rem;color:#8a94a6;line-height:1.45;}
-    .link-url{font-size:.75rem;color:#a8c8f0;margin-top:5px;word-break:break-all;display:block;}
-    .copy-btn{
-      background:rgba(28,107,186,.15);border:1px solid rgba(28,107,186,.3);
-      color:#a8c8f0;font-size:.8rem;font-weight:600;padding:8px 14px;
-      border-radius:10px;cursor:pointer;white-space:nowrap;flex-shrink:0;
-      transition:background .18s;font-family:var(--font);
-    }
-    .copy-btn:hover{background:rgba(28,107,186,.28);}
-    .copy-btn.copied{background:rgba(58,170,106,.18);border-color:rgba(58,170,106,.35);color:#7adba4;}
-    .section-label{text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;color:#a8c8f0;font-weight:600;margin:22px 0 10px;}
-  </style>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XZL1RF6SV6');
-  </script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dan — Internal Links</title>
+<meta name="robots" content="noindex,nofollow"/>
+<style>
+:root{
+  --bg:#0b1120;--surface:#111827;--surface2:#1a2336;--border:rgba(255,255,255,.08);
+  --text:#e8edf5;--muted:#6b7a94;--accent:#3b82f6;--accent-dim:rgba(59,130,246,.15);
+  --success:#22c55e;--success-dim:rgba(34,197,94,.14);
+  --warn:#f59e0b;--warn-dim:rgba(245,158,11,.12);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.12);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+a{color:inherit;text-decoration:none}
+
+/* ── LOCK SCREEN ── */
+#lock{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+#lock.hidden{display:none}
+.lock-box{width:100%;max-width:380px;text-align:center}
+.lock-icon{font-size:48px;margin-bottom:20px;display:block}
+.lock-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
+.lock-sub{font-size:14px;color:var(--muted);margin-bottom:28px}
+.pin-row{display:flex;gap:10px;margin-bottom:12px}
+#pin-input{
+  flex:1;padding:14px 16px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:18px;font-weight:700;
+  letter-spacing:.2em;outline:none;text-align:center;font-family:var(--font);
+}
+#pin-input:focus{border-color:var(--accent)}
+#pin-input.shake{animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#unlock-btn{
+  padding:14px 20px;border-radius:12px;background:var(--accent);border:none;
+  color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);
+  transition:opacity .15s;
+}
+#unlock-btn:hover{opacity:.88}
+.lock-err{font-size:13px;color:var(--red);margin-top:8px;min-height:20px}
+
+/* ── MAIN CONTENT ── */
+#content{display:none;min-height:100vh}
+#content.show{display:block}
+
+.topbar{
+  background:rgba(11,17,32,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.brand{display:flex;flex-direction:column}
+.brand-name{font-size:16px;font-weight:800;color:var(--text);letter-spacing:.01em}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.lock-btn{
+  background:var(--surface2);border:1px solid var(--border);border-radius:9px;
+  color:var(--muted);font-size:12px;font-weight:700;padding:7px 12px;
+  cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;
+  transition:color .15s;
+}
+.lock-btn:hover{color:var(--text)}
+
+.wrap{max-width:700px;margin:0 auto;padding:24px 16px 60px}
+
+.section-title{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);margin:28px 0 10px;
+}
+.section-title:first-child{margin-top:0}
+
+.link-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 18px;margin-bottom:8px;display:flex;align-items:center;
+  justify-content:space-between;gap:14px;transition:border-color .15s,background .15s;
+}
+.link-card:hover{background:var(--surface2);border-color:rgba(255,255,255,.14)}
+.link-info{flex:1;min-width:0}
+.link-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.link-desc{font-size:12px;color:var(--muted);line-height:1.45}
+.link-url{font-size:11px;color:#5b8ac7;margin-top:4px;display:block;word-break:break-all;opacity:.8}
+.link-actions{display:flex;gap:7px;flex-shrink:0}
+.btn-open{
+  background:var(--accent-dim);border:1px solid rgba(59,130,246,.25);color:#93c5fd;
+  font-size:12px;font-weight:700;padding:7px 12px;border-radius:9px;cursor:pointer;
+  white-space:nowrap;font-family:var(--font);text-decoration:none;display:inline-flex;
+  align-items:center;transition:background .15s;
+}
+.btn-open:hover{background:rgba(59,130,246,.25)}
+.btn-copy{
+  background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+  font-size:12px;font-weight:700;padding:7px 12px;border-radius:9px;cursor:pointer;
+  white-space:nowrap;font-family:var(--font);transition:background .15s,color .15s;
+}
+.btn-copy:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.btn-copy.copied{background:var(--success-dim);border-color:rgba(34,197,94,.3);color:var(--success)}
+
+/* Tag badges */
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.tag-dealer{background:var(--warn-dim);color:var(--warn)}
+.tag-new{background:var(--success-dim);color:var(--success)}
+
+@media(max-width:500px){
+  .link-card{flex-wrap:wrap}
+  .link-actions{width:100%;justify-content:flex-end}
+}
+</style>
 </head>
 <body>
-<div class="app"><div class="shell">
+
+<!-- ── LOCK SCREEN ── -->
+<div id="lock">
+  <div class="lock-box">
+    <span class="lock-icon">&#x1F512;</span>
+    <div class="lock-title">Dan's Links</div>
+    <div class="lock-sub">Enter your PIN to access</div>
+    <div class="pin-row">
+      <input type="password" id="pin-input" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" autocomplete="off" maxlength="20" onkeydown="if(event.key==='Enter')unlock()">
+      <button id="unlock-btn" onclick="unlock()">Unlock</button>
+    </div>
+    <div class="lock-err" id="lock-err"></div>
+  </div>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div id="content">
+
   <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">My links</span></div>
-    <div class="meta"><span class="dot"></span><span>Private reference</span></div>
+    <div class="brand">
+      <span class="brand-name">Dan &mdash; Links</span>
+      <span class="brand-sub">Private reference &middot; dan-sells.co.uk</span>
+    </div>
+    <button class="lock-btn" onclick="lockPage()">&#x1F512; Lock</button>
   </div>
-  <div class="step-wrap">
-    <div class="step-kicker">Your pages</div>
-    <h2>All your links in one place.</h2>
-    <p class="step-desc">Share these directly with customers. The main page is for everyone. The others are shared only when relevant.</p>
 
-    <div class="section-label">Main pages — shareable with anyone</div>
+  <div class="wrap">
+
+    <!-- Customer Qualifiers -->
+    <div class="section-title">Customer Qualifiers</div>
 
     <div class="link-card">
       <div class="link-info">
-        <strong>Main qualifier</strong>
-        <span>The "Forget Car Pow" page. Send this to any cold or warm lead to kick off the process.</span>
-        <span class="link-url" id="u1">https://danbmwruxley.github.io/danbmwruxley/index.html</span>
+        <div class="link-name">Main Qualifier</div>
+        <div class="link-desc">The core landing page. Send to any cold or warm lead to kick off the process.</div>
+        <span class="link-url" id="u-index">https://dan-sells.co.uk/</span>
       </div>
-      <button class="copy-btn" onclick="copy('u1',this)">Copy</button>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-index',this)">Copy</button>
+      </div>
     </div>
 
     <div class="link-card">
       <div class="link-info">
-        <strong>Pro version</strong>
-        <span>"Your new BMW. Made simple." Cleaner tone for warm contacts and referrals.</span>
-        <span class="link-url" id="u2">https://danbmwruxley.github.io/danbmwruxley/pro.html</span>
+        <div class="link-name">Pro Version</div>
+        <div class="link-desc">"Your new BMW. Made simple." Cleaner tone — use for warm contacts and referrals.</div>
+        <span class="link-url" id="u-pro">https://dan-sells.co.uk/pro.html</span>
       </div>
-      <button class="copy-btn" onclick="copy('u2',this)">Copy</button>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/pro.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-pro',this)">Copy</button>
+      </div>
     </div>
-
-    <div class="section-label">Shared only when relevant</div>
 
     <div class="link-card">
       <div class="link-info">
-        <strong>Standalone vehicle appraisal</strong>
-        <span>Send this when someone wants a part exchange value independently of buying a BMW.</span>
-        <span class="link-url" id="u3">https://danbmwruxley.github.io/danbmwruxley/appraisal.html</span>
+        <div class="link-name">Service Customer Qualifier</div>
+        <div class="link-desc">Tailored for customers in for a service. No photo request, 3 booking options at the end.</div>
+        <span class="link-url" id="u-service">https://dan-sells.co.uk/service.html</span>
       </div>
-      <button class="copy-btn" onclick="copy('u3',this)">Copy</button>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/service.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-service',this)">Copy</button>
+      </div>
     </div>
-
-    <div class="section-label">Booking</div>
 
     <div class="link-card">
       <div class="link-info">
-        <strong>Telephone appointment</strong>
-        <span>Direct cal.com booking link. Included automatically at the end of both qualifier flows.</span>
-        <span class="link-url" id="u4">https://cal.eu/danbmwruxley/telephone-appointment</span>
+        <div class="link-name">EV Qualifier</div>
+        <div class="link-desc">Electric vehicle-specific qualifier flow.</div>
+        <span class="link-url" id="u-ev">https://dan-sells.co.uk/EV.html</span>
       </div>
-      <button class="copy-btn" onclick="copy('u4',this)">Copy</button>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/EV.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-ev',this)">Copy</button>
+      </div>
     </div>
 
-
-    <div class="section-label">Referral scheme</div>
+    <!-- Appraisal & Finance -->
+    <div class="section-title">Appraisal &amp; Finance</div>
 
     <div class="link-card">
       <div class="link-info">
-        <strong>Refer a friend</strong>
-        <span>Send this to past customers. £250 BMW credit or £125 cash for every completed referral.</span>
-        <span class="link-url" id="u5">https://danbmwruxley.github.io/danbmwruxley/refer.html</span>
+        <div class="link-name">Vehicle Appraisal</div>
+        <div class="link-desc">Send when someone wants a part-exchange value independently of buying a BMW.</div>
+        <span class="link-url" id="u-appraisal">https://dan-sells.co.uk/appraisal.html</span>
       </div>
-      <button class="copy-btn" onclick="copy('u5',this)">Copy</button>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/appraisal.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-appraisal',this)">Copy</button>
+      </div>
     </div>
-
-
-    <div class="section-label">Service customers</div>
 
     <div class="link-card">
       <div class="link-info">
-        <strong>Service customer qualifier</strong>
-        <span>Send to customers visiting for a service. Tailored landing page, no photo request, 3 booking options at the end.</span>
-        <span class="link-url" id="u6">https://dan-sells.co.uk/service.html</span>
+        <div class="link-name">Trade Value</div>
+        <div class="link-desc">Quick trade-in value tool.</div>
+        <span class="link-url" id="u-tradevalue">https://dan-sells.co.uk/tradevalue.html</span>
       </div>
-      <button class="copy-btn" onclick="copy('u6',this)">Copy</button>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/tradevalue.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-tradevalue',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Finance Proposal</div>
+        <div class="link-desc">Finance proposal builder / sender.</div>
+        <span class="link-url" id="u-finance">https://dan-sells.co.uk/finance-proposal.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/finance-proposal.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-finance',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Business / Fleet Proposal</div>
+        <div class="link-desc">Proposal page for business or fleet customers.</div>
+        <span class="link-url" id="u-biz">https://dan-sells.co.uk/business-proposal.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/business-proposal.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-biz',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Business Proposal Form</div>
+        <div class="link-desc">Form for business customers to submit their requirements.</div>
+        <span class="link-url" id="u-bizform">https://dan-sells.co.uk/business-proposal-form.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/business-proposal-form.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-bizform',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Compliance & Paperwork -->
+    <div class="section-title">Compliance &amp; Paperwork <span class="tag tag-dealer">Dealer Only</span></div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Commission Disclosure Form <span class="tag tag-new">New</span></div>
+        <div class="link-desc">BMW Financial Services commission disclosure — dealer fills commission details, customer reads and signs. Supports in-person and remote (WhatsApp/SMS link).</div>
+        <span class="link-url" id="u-commission">https://dan-sells.co.uk/commission-disclosure.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/commission-disclosure.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-commission',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">RAV Special Instructions <span class="tag tag-new">New</span></div>
+        <div class="link-desc">New car registration form — dealer enters IVS/Chassis/Reg, customer fills DVLA details and signs. Supports in-person and remote link.</div>
+        <span class="link-url" id="u-rav">https://dan-sells.co.uk/rav-form.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/rav-form.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-rav',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Forecourt -->
+    <div class="section-title">Forecourt</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Forecourt</div>
+        <div class="link-desc">Live forecourt / current stock view.</div>
+        <span class="link-url" id="u-forecourt">https://dan-sells.co.uk/Forecourt.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/Forecourt.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-forecourt',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Offers & Products -->
+    <div class="section-title">Current Offers &amp; Products</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">1 Series Offer</div>
+        <div class="link-desc">Specific offer page for the 1 Series.</div>
+        <span class="link-url" id="u-1series">https://dan-sells.co.uk/1series-offer.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/1series-offer.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-1series',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">iX3 Offer</div>
+        <div class="link-desc">Specific offer page for the iX3.</div>
+        <span class="link-url" id="u-ix3">https://dan-sells.co.uk/ix3-offer.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/ix3-offer.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-ix3',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">X1 Offer</div>
+        <div class="link-desc">Specific offer page for the X1.</div>
+        <span class="link-url" id="u-x1">https://dan-sells.co.uk/x1-offer.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/x1-offer.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-x1',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Accessories</div>
+        <div class="link-desc">Accessories add-on page.</div>
+        <span class="link-url" id="u-acc">https://dan-sells.co.uk/accessories.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/accessories.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-acc',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">All-Weather Mats</div>
+        <div class="link-desc">All-weather mats product / add-on page.</div>
+        <span class="link-url" id="u-mats">https://dan-sells.co.uk/all-weather-mats.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/all-weather-mats.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-mats',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Dash Cam</div>
+        <div class="link-desc">Dash cam add-on page.</div>
+        <span class="link-url" id="u-dash">https://dan-sells.co.uk/dash-cam.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/dash-cam.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-dash',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Guides & Resources -->
+    <div class="section-title">Guides &amp; Resources</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Guides</div>
+        <div class="link-desc">Resource hub / buying guides.</div>
+        <span class="link-url" id="u-guides">https://dan-sells.co.uk/guides.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/guides.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-guides',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">PCP Explained</div>
+        <div class="link-desc">How BMW PCP finance works — good to share with undecided finance customers.</div>
+        <span class="link-url" id="u-pcp">https://dan-sells.co.uk/bmw-pcp-explained.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/bmw-pcp-explained.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-pcp',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Finance Options Compared</div>
+        <div class="link-desc">Side-by-side comparison of BMW finance options.</div>
+        <span class="link-url" id="u-fincomp">https://dan-sells.co.uk/bmw-finance-compared.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/bmw-finance-compared.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-fincomp',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Referral & Booking -->
+    <div class="section-title">Referral &amp; Booking</div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Refer a Friend</div>
+        <div class="link-desc">£250 BMW credit or £125 cash for every completed referral. Send to past customers.</div>
+        <span class="link-url" id="u-refer">https://dan-sells.co.uk/refer.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/refer.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-refer',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Telephone Appointment Booking</div>
+        <div class="link-desc">Direct cal.com booking link. Included automatically at the end of qualifier flows.</div>
+        <span class="link-url" id="u-cal">https://cal.eu/danbmwruxley/telephone-appointment</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-cal',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">Sweepstake 2026</div>
+        <div class="link-desc">Customer sweepstake / competition page.</div>
+        <span class="link-url" id="u-sweep">https://dan-sells.co.uk/sweepstake-2026.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/sweepstake-2026.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-sweep',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="link-card">
+      <div class="link-info">
+        <div class="link-name">World Cup Leaderboard</div>
+        <div class="link-desc">Live leaderboard for the World Cup tracker.</div>
+        <span class="link-url" id="u-wc">https://dan-sells.co.uk/world-cup-tracker-live-leaderboard.html</span>
+      </div>
+      <div class="link-actions">
+        <a class="btn-open" href="https://dan-sells.co.uk/world-cup-tracker-live-leaderboard.html" target="_blank">Open</a>
+        <button class="btn-copy" onclick="copyUrl('u-wc',this)">Copy</button>
+      </div>
     </div>
 
   </div>
+</div>
+
+<script>
+// SHA-256 hash of the PIN — PIN itself is never stored here
+const HASH = 'ceb6c40818dd34c00bc9947130bc3af23857eec81e73d9f087dc2c9c5450f37d';
+const SK   = 'dan_links_unlocked';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function showContent() {
+  document.getElementById('lock').classList.add('hidden');
+  document.getElementById('content').classList.add('show');
+}
+
+// If already unlocked this session, skip lock screen
+if (sessionStorage.getItem(SK) === '1') { showContent(); }
+
+async function unlock() {
+  const val = document.getElementById('pin-input').value;
+  if (!val) return;
+  const h = await sha256(val);
+  if (h === HASH) {
+    sessionStorage.setItem(SK, '1');
+    showContent();
+  } else {
+    const input = document.getElementById('pin-input');
+    document.getElementById('lock-err').textContent = 'Incorrect PIN — try again.';
+    input.value = '';
+    input.classList.remove('shake');
+    void input.offsetWidth;
+    input.classList.add('shake');
+    setTimeout(() => document.getElementById('lock-err').textContent = '', 3000);
+  }
+}
+
+function lockPage() {
+  sessionStorage.removeItem(SK);
+  document.getElementById('content').classList.remove('show');
+  document.getElementById('lock').classList.remove('hidden');
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-input').focus();
+}
+
+function copyUrl(id, btn) {
+  const url = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
