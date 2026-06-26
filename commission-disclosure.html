@@ -463,7 +463,7 @@ function buildPDF(r) {
     doc.setTextColor(...(color || [18, 38, 58]));
     const lines = doc.splitTextToSize(txt, maxW);
     doc.text(lines, align === 'center' ? W/2 : x, y, { align });
-    y += lines.length * (size * 0.38) + gap;
+    y += lines.length * (size * 0.40) + gap;
   }
 
   function hline() {
@@ -472,7 +472,7 @@ function buildPDF(r) {
   }
 
   function tableRow(lbl, val, ticked) {
-    const h = 7, tickX = W - mg - 10;
+    const h = 8, tickX = W - mg - 10;
     doc.setFillColor(238, 243, 248); doc.rect(mg,       y, 86,       h, 'F');
     doc.setFillColor(255, 255, 255); doc.rect(mg + 86,  y, cw-96,    h, 'F');
     doc.setFillColor(246, 249, 252); doc.rect(tickX,    y, 10,       h, 'F');
@@ -510,7 +510,7 @@ function buildPDF(r) {
   hline();
 
   tx('COMMISSION DISCLOSURE FORM', mg, 13, true, [18,38,58], cw, 'center', 3);
-  tx('THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.', mg, 8, true, null, cw, 'center', 4);
+  tx('THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.', mg, 9, true, null, cw, 'center', 4);
   hline();
 
   // Retailer
@@ -521,33 +521,33 @@ function buildPDF(r) {
 
   // Retailer role section
   tx("What is the Retailer's role?", mg, 10, true, null, cw, 'left', 2);
-  tx('The Retailer has an arrangement with us to introduce their customers to us. When they introduce you to us, they are acting as a "credit broker". We will pay them a commission for this when you enter into an agreement with us. The Retailer will usually have a selection of lenders or intermediaries, but will normally send your details to us first.', mg, 8, false, null, cw, 'left', 2);
-  tx('When the Retailer introduces you to us, they are not acting independently. The commission amount might influence them. The Retailer is not giving you advice or recommendations. Depending on your situation, you may find a better deal if you look around.', mg, 8, false, null, cw, 'left', 4);
+  tx('The Retailer has an arrangement with us to introduce their customers to us. When they introduce you to us, they are acting as a "credit broker". We will pay them a commission for this when you enter into an agreement with us. The Retailer will usually have a selection of lenders or intermediaries, but will normally send your details to us first.', mg, 9, false, null, cw, 'left', 2);
+  tx('When the Retailer introduces you to us, they are not acting independently. The commission amount might influence them. The Retailer is not giving you advice or recommendations. Depending on your situation, you may find a better deal if you look around.', mg, 9, false, null, cw, 'left', 4);
 
   // Commission section
   tx('What commission will we pay to the Retailer?', mg, 10, true, null, cw, 'left', 2);
-  tx('If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways, depending on the vehicle being financed. The one that applies in your case is ticked and completed below.', mg, 8, false, null, cw, 'left', 3);
+  tx('If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways, depending on the vehicle being financed. The one that applies in your case is ticked and completed below.', mg, 9, false, null, cw, 'left', 3);
 
-  tx('Commission calculation 1: This is a fixed amount that we pay to the Retailer for introducing you.', mg, 8, isC1, null, cw, 'left', 1);
+  tx('Commission calculation 1: This is a fixed amount that we pay to the Retailer for introducing you.', mg, 9, isC1, null, cw, 'left', 1);
   tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '—', isC1);
   y += 3;
 
-  tx('Commission calculation 2: The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.', mg, 8, !isC1, null, cw, 'left', 1);
+  tx('Commission calculation 2: The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.', mg, 9, !isC1, null, cw, 'left', 1);
   tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '—', !isC1);
   tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '—', false);
   y += 3;
 
-  tx('The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.', mg, 8, false, null, cw, 'left', 2);
-  tx('The APR interest rate that you pay for your finance agreement with us is fixed. The Retailer cannot change the APR and/or the commission for your finance agreement. We take into account the payment of commission when we set the APRs which we offer to customers.', mg, 8, false, null, cw, 'left', 2);
-  tx('If you have any questions, please discuss them with your Retailer before signing. DO NOT sign or proceed with your finance if you have any concerns or if the amount shown above is not completed.', mg, 8, true, null, cw, 'left', 4);
+  tx('The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.', mg, 9, false, null, cw, 'left', 2);
+  tx('The APR interest rate that you pay for your finance agreement with us is fixed. The Retailer cannot change the APR and/or the commission for your finance agreement. We take into account the payment of commission when we set the APRs which we offer to customers.', mg, 9, false, null, cw, 'left', 2);
+  tx('If you have any questions, please discuss them with your Retailer before signing. DO NOT sign or proceed with your finance if you have any concerns or if the amount shown above is not completed.', mg, 9, true, null, cw, 'left', 4);
 
   // Customer consent
   tx('Customer consent', mg, 9, true, null, cw, 'left', 2);
-  tx('You can choose whether to continue with the finance deal or look around for other alternatives. If you understand what we have explained and are comfortable to proceed, please sign the below.', mg, 8, false, null, cw, 'left', 4);
+  tx('You can choose whether to continue with the finance deal or look around for other alternatives. If you understand what we have explained and are comfortable to proceed, please sign the below.', mg, 9, false, null, cw, 'left', 4);
 
   // Declaration
   tx('CUSTOMER DECLARATION', mg, 10, true, null, cw, 'left', 2);
-  tx('I understand the information in this document. I understand that the Retailer is not acting impartially and will be paid the commission amount disclosed above. I confirm that I am happy to proceed with the finance and consent to the Retailer being paid this amount.', mg, 8, false, null, cw, 'left', 5);
+  tx('I understand the information in this document. I understand that the Retailer is not acting impartially and will be paid the commission amount disclosed above. I confirm that I am happy to proceed with the finance and consent to the Retailer being paid this amount.', mg, 9, false, null, cw, 'left', 5);
 
   // Overflow to new page if needed
   if (y > 218) { doc.addPage(); y = 20; }

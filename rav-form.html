@@ -37,10 +37,16 @@ h2{font-size:18px;font-weight:800;margin-bottom:4px}
 
 label.lbl{display:block;font-size:13px;font-weight:700;color:#425466;margin-bottom:6px;margin-top:14px}
 
-input[type=text],input[type=email],input[type=tel],textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#f8fbfe;outline:none;color:var(--ink)}
+input[type=text],input[type=email],input[type=tel],textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#f8fbfe;outline:none;color:var(--ink);transition:border-color .2s,background .2s}
 textarea{resize:vertical;min-height:80px}
 input:focus,textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(77,148,216,.12)}
 input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
+
+/* Field completion states */
+input.field-empty,textarea.field-empty{border-color:#e05252!important;background:#fff8f8!important}
+input.field-done,textarea.field-done{border-color:#2f8f57!important;background:#f0f9f4!important}
+.sig-wrap.field-empty{border-color:#e05252!important;border-style:dashed!important}
+.sig-wrap.field-done{border-color:#2f8f57!important;border-style:solid!important;background:#f0f9f4!important}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:800;border:none;min-height:48px;cursor:pointer;width:100%;transition:all .15s}
 .btn-primary{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;box-shadow:0 8px 18px rgba(77,148,216,.28)}
@@ -249,7 +255,7 @@ window.goToSign = function() {
     String(d.getMonth()+1).padStart(2,"0") + "/" + d.getFullYear();
 
   showScreen("screen-sign");
-  setTimeout(initSig, 120);
+  setTimeout(() => { initSig(); initFieldTracking(); }, 120);
 };
 
 function initSig() {
@@ -264,11 +270,41 @@ function initSig() {
   sigPad.addEventListener("beginStroke", () => {
     document.getElementById("sig-hint").style.display = "none";
   });
+  sigPad.addEventListener("endStroke", () => {
+    wrap.classList.add("field-done");
+    wrap.classList.remove("field-empty");
+  });
+}
+
+const FIELD_IDS = ["inp-name","inp-address","inp-postcode","inp-tel","inp-email","inp-dob"];
+
+function updateFieldStates() {
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const filled = el.value.trim().length > 0;
+    el.classList.toggle("field-done", filled);
+    el.classList.toggle("field-empty", !filled);
+  });
+}
+
+function initFieldTracking() {
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", updateFieldStates);
+    el.addEventListener("blur", updateFieldStates);
+  });
+  document.getElementById("sig-wrap").classList.add("field-empty");
+  updateFieldStates();
 }
 
 window.clearSig = function() {
   if (sigPad) sigPad.clear();
   document.getElementById("sig-hint").style.display = "block";
+  const sw = document.getElementById("sig-wrap");
+  sw.classList.remove("field-done");
+  sw.classList.add("field-empty");
 };
 
 window.submitForm = async function() {
@@ -585,7 +621,7 @@ if (p.get("mode") === "customer" && p.get("ivs") && p.get("dealer")) {
     String(d.getDate()).padStart(2,"0") + "/" +
     String(d.getMonth()+1).padStart(2,"0") + "/" + d.getFullYear();
   showScreen("screen-sign");
-  setTimeout(initSig, 120);
+  setTimeout(() => { initSig(); initFieldTracking(); }, 120);
 }
 </script>
 </body>

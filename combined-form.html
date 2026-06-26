@@ -353,7 +353,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
 
 <!-- Floating scroll hint — customer signing screen only -->
 <div class="sfab" id="sfab">
-  <div class="sfab-lbl" id="sfab-lbl">items remaining to sign</div>
+  <div class="sfab-lbl" id="sfab-lbl">fields to complete</div>
   <button class="sfab-btn" aria-label="Scroll down" onclick="window.scrollBy({top:Math.min(Math.round(window.innerHeight*.72),420),behavior:'smooth'})">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
   </button>
@@ -948,7 +948,7 @@ function updateScrollFab() {
     lbl.textContent = '✓ Ready to submit';
     lbl.classList.add('done');
   } else {
-    lbl.textContent = n + (n === 1 ? ' item' : ' items') + ' remaining to sign';
+    lbl.textContent = n + (n === 1 ? ' field' : ' fields') + ' to complete';
     lbl.classList.remove('done');
   }
   fab.classList.add('vis');
