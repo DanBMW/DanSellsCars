@@ -662,28 +662,28 @@ let vehicleType = null;
 
 function toggleChip(key) {
   chipState[key] = !chipState[key];
-  document.getElementById(‘chip-’ + key).classList.toggle(‘on’, chipState[key]);
+  document.getElementById('chip-' + key).classList.toggle('on', chipState[key]);
 }
 
 function selectType(t) {
   vehicleType = (vehicleType === t) ? null : t;
-  [‘stock’,’order’,’used’].forEach(function(k) {
-    const el = document.getElementById(‘vchip-’ + k);
-    el.classList.toggle(‘on-type’, vehicleType === k);
-    el.classList.remove(‘on’);
+  ['stock','order','used'].forEach(function(k) {
+    const el = document.getElementById('vchip-' + k);
+    el.classList.toggle('on-type', vehicleType === k);
+    el.classList.remove('on');
   });
 }
 
 function sharePurchaseWA() {
-  const name  = document.getElementById(‘ty-name’).value.trim();
-  const code  = (chipState.deposit ? ‘1’ : ‘0’) + (chipState.finance ? ‘1’ : ‘0’) + (chipState.order ? ‘1’ : ‘0’);
+  const name  = document.getElementById('ty-name').value.trim();
+  const code  = (chipState.deposit ? '1' : '0') + (chipState.finance ? '1' : '0') + (chipState.order ? '1' : '0');
   const params = new URLSearchParams({ c: code });
-  if (name) params.set(‘name’, name);
-  if (vehicleType) params.set(‘type’, vehicleType);
-  const link = ‘https://dan-sells.co.uk/purchase-thankyou.html?’ + params.toString();
-  const greeting = name ? ‘Congratulations ‘ + name + ‘ on your’ : ‘Congratulations on your’;
-  const msg = greeting + ‘ purchase with BMW Ruxley, please find some useful information and FAQ\’s within the link below.\n\n’ + link;
-  window.open(‘https://wa.me/?text=’ + encodeURIComponent(msg), ‘_blank’);
+  if (name) params.set('name', name);
+  if (vehicleType) params.set('type', vehicleType);
+  const link = 'https://dan-sells.co.uk/purchase-thankyou.html?' + params.toString();
+  const greeting = name ? 'Congratulations ' + name + ' on your' : 'Congratulations on your';
+  const msg = greeting + " purchase with BMW Ruxley, please find some useful information and FAQ's within the link below.\n\n" + link;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 </script>
 </body>
