@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Download RAV Registration Form — Hedin Automotive Ltd</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--blue:#4D94D8;--blue-dark:#1f4f82;--ink:#12263a;--bg:#eef3f8;--line:#d9e3ee;--muted:#6b7a8c;--danger:#c54242;--shadow:0 10px 25px rgba(18,38,58,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#f7f9fc 0%,var(--bg) 100%);color:var(--ink);min-height:100vh}
+.topbar{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 18px rgba(31,79,130,.18)}
+.topbar-title{font-size:17px;font-weight:800}.topbar-sub{font-size:11px;opacity:.8;margin-top:2px}
+.main{padding:16px;max-width:560px;margin:0 auto;padding-bottom:48px}
+.card{background:rgba(255,255,255,.95);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.7)}
+.pill{display:inline-block;background:var(--blue-dark);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;margin-bottom:12px;text-transform:uppercase}
+h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.record-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid #eef1f5;font-size:13px;gap:12px}
+.record-row:last-child{border-bottom:none}
+.record-lbl{color:var(--muted);font-weight:600;flex-shrink:0}
+.record-val{font-weight:700;color:var(--ink);text-align:right;word-break:break-all}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:800;border:none;min-height:48px;cursor:pointer;width:100%;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;box-shadow:0 8px 18px rgba(77,148,216,.28)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(77,148,216,.38)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state-loading,.state-error,.state-ready{display:none}
+.state-loading.show,.state-error.show,.state-ready.show{display:block}
+.error-box{background:#fff5f5;border:1.5px solid #f5c0c0;border-radius:12px;padding:16px;color:var(--danger);font-size:14px;font-weight:600}
+.footer-note{font-size:11px;color:#8a96a3;text-align:center;margin-top:20px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">RAV Form Download</div>
+    <div class="topbar-sub">New Car Registration &mdash; Hedin Automotive Ltd</div>
+  </div>
+  <div style="font-size:20px">&#x1F512;</div>
+</div>
+
+<div class="main">
+
+  <div class="card state-loading" id="state-loading">
+    <div style="display:flex;align-items:center;gap:14px;padding:8px 0">
+      <div class="spinner" style="border-color:rgba(77,148,216,.3);border-top-color:var(--blue-dark)"></div>
+      <div>
+        <div style="font-weight:800;font-size:15px">Loading record&hellip;</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px">Fetching from secure database</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card state-error" id="state-error">
+    <div class="error-box" id="error-msg">Record not found.</div>
+  </div>
+
+  <div class="state-ready" id="state-ready">
+    <div class="card">
+      <span class="pill">RAV Registration Record</span>
+      <div id="record-box" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <button class="btn btn-primary" id="dl-btn" onclick="triggerDownload()">
+        &#x2B07; Download Signed Registration Form (PDF)
+      </button>
+      <p style="font-size:11px;color:#9aa8b5;text-align:center;margin-top:10px">
+        Generates the completed RAV Special Instructions form with the customer&rsquo;s signature.
+      </p>
+    </div>
+  </div>
+
+  <p class="footer-note">
+    Hedin Automotive Ltd &mdash; Ruxley BMW<br>
+    New Car Registration &mdash; V5 Registration Document
+  </p>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = { apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E", authDomain:"forecourt-1b6bc.firebaseapp.com", databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app", projectId:"forecourt-1b6bc", storageBucket:"forecourt-1b6bc.firebasestorage.app", messagingSenderId:"1073459223252", appId:"1:1073459223252:web:d65abed953fc641fc7b941" };
+const db = getDatabase(initializeApp(FB));
+
+let loadedRecord = null;
+
+function show(id) {
+  ['state-loading','state-error','state-ready'].forEach(s => {
+    document.getElementById(s).classList.toggle('show', s === id);
+  });
+}
+function err(msg) {
+  document.getElementById('error-msg').textContent = msg;
+  show('state-error');
+}
+
+const recordId = new URLSearchParams(location.search).get('id');
+if (!recordId) {
+  err('No record ID in the URL. Please use the link from your email.');
+} else {
+  show('state-loading');
+  try {
+    const snap = await get(ref(db, 'rav_forms/' + recordId));
+    if (!snap.exists()) {
+      err('Record not found. The link may be incomplete or the record may not exist.');
+    } else {
+      loadedRecord = snap.val();
+      const r = loadedRecord;
+      const fmtDate = new Date(r.signedAt).toLocaleString('en-GB', {
+        day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
+      });
+      document.getElementById('record-box').innerHTML = `
+        <div class="record-row"><span class="record-lbl">Record ID</span><span class="record-val" style="font-family:monospace;font-size:11px">${r.id}</span></div>
+        <div class="record-row"><span class="record-lbl">Customer</span><span class="record-val">${r.customerName}</span></div>
+        <div class="record-row"><span class="record-lbl">Email</span><span class="record-val">${r.customerEmail}</span></div>
+        <div class="record-row"><span class="record-lbl">IVS / Chassis / Reg</span><span class="record-val">${r.ivsChassisReg}</span></div>
+        <div class="record-row"><span class="record-lbl">Postcode</span><span class="record-val">${r.postcode}</span></div>
+        <div class="record-row"><span class="record-lbl">Date of Birth</span><span class="record-val">${r.dateOfBirth}</span></div>
+        <div class="record-row"><span class="record-lbl">Sales Executive</span><span class="record-val">${r.dealerName}</span></div>
+        <div class="record-row"><span class="record-lbl">Submitted at</span><span class="record-val">${fmtDate}</span></div>
+      `;
+      show('state-ready');
+    }
+  } catch(e) {
+    err('Could not load record: ' + e.message);
+  }
+}
+
+window.triggerDownload = function() {
+  if (!loadedRecord) return;
+  const btn = document.getElementById('dl-btn');
+  btn.innerHTML = '<div class="spinner"></div> Generating PDF&hellip;';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    try {
+      const doc = buildPDF(loadedRecord);
+      const safeName = loadedRecord.customerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const dateStr  = new Date(loadedRecord.signedAt).toLocaleDateString('en-GB').replace(/\//g, '-');
+      doc.save('rav-registration_' + safeName + '_' + dateStr + '.pdf');
+    } catch(e) {
+      alert('PDF generation failed: ' + e.message);
+    }
+    btn.innerHTML = '&#x2B07; Download Signed Registration Form (PDF)';
+    btn.disabled = false;
+  }, 50);
+};
+
+function buildPDF(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, mg = 18, cw = W - mg * 2;
+  let y = 16;
+
+  function hline(col) {
+    doc.setDrawColor(...(col || [180, 200, 220])); doc.setLineWidth(0.4);
+    doc.line(mg, y, W - mg, y); y += 5;
+  }
+
+  function fRow(lbl, val, grey) {
+    doc.setFontSize(8.5);
+    const lblW = 56;
+    const lines = val ? doc.splitTextToSize(val, cw - lblW - 4) : [''];
+    const h = grey ? 9 : Math.max(10, lines.length * 4.8 + 5);
+
+    if (grey) {
+      doc.setFillColor(218, 228, 242);
+      doc.rect(mg, y, cw, h, 'F');
+      doc.setDrawColor(180, 200, 220); doc.setLineWidth(0.2);
+      doc.rect(mg, y, cw, h);
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(40, 60, 95);
+      doc.text(lbl, W / 2, y + 6.2, { align: 'center' });
+    } else {
+      doc.setFillColor(238, 243, 248); doc.rect(mg, y, lblW, h, 'F');
+      doc.setFillColor(255, 255, 255); doc.rect(mg + lblW, y, cw - lblW, h, 'F');
+      doc.setDrawColor(180, 200, 220); doc.setLineWidth(0.2);
+      doc.rect(mg, y, cw, h);
+      doc.line(mg + lblW, y, mg + lblW, y + h);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 70, 95);
+      doc.text(lbl, mg + 2.5, y + (h / 2) + 1.8);
+      if (lines[0]) {
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(18, 38, 58);
+        doc.text(lines, mg + lblW + 2.5, y + (lines.length > 1 ? 5.5 : (h / 2) + 1.8));
+      }
+    }
+    y += h;
+  }
+
+  // Header
+  doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(18, 38, 58);
+  doc.text('Hedin', mg, y);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 80, 105);
+  doc.text('Automotive Ltd', mg, y + 6.5);
+  doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 74, 152);
+  doc.text('BMW', W - mg, y, { align: 'right' });
+  doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(20, 20, 20);
+  doc.text('MINI', W - mg, y + 8, { align: 'right' });
+  y += 20;
+  hline([150, 165, 185]);
+
+  doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
+  doc.text('RAV SPECIAL INSTRUCTIONS', W / 2, y, { align: 'center' }); y += 9;
+  doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(18, 38, 58);
+  doc.text('New Car Registration Form', W / 2, y, { align: 'center' }); y += 12;
+
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(18, 38, 58);
+  const introLines = doc.splitTextToSize('We will register your vehicle with the DVLA using the information below and this will be printed on to your V5 Registration Document.', cw);
+  doc.text(introLines, mg, y); y += introLines.length * 4.5 + 6;
+
+  fRow('Name', r.customerName);
+  fRow('Address:', r.address);
+  fRow('Postcode:', r.postcode);
+  fRow('Telephone Number:', r.telephone);
+  fRow('Email:', r.customerEmail);
+  fRow('Date of Birth:', r.dateOfBirth);
+  fRow('This section for Hedin Automotive Ltd use only', '', true);
+  fRow('IVS/Chassis/Reg:', r.ivsChassisReg);
+  y += 6;
+
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(18, 38, 58);
+  const confLines = doc.splitTextToSize('I confirm that the details above are correct and understand that these will be used for registering the vehicle with the DVLA.', cw);
+  doc.text(confLines, mg, y); y += confLines.length * 4.5 + 8;
+
+  if (y > 210) { doc.addPage(); y = 20; }
+
+  const lblW2 = 42, sigW = 72, dateKeyW = 18;
+
+  function sigRow(label, sigImg, date, isCustomer) {
+    const h = isCustomer ? 28 : 22;
+    doc.setFillColor(255, 255, 255); doc.rect(mg, y, cw, h, 'F');
+    doc.setDrawColor(180, 200, 220); doc.setLineWidth(0.2);
+    doc.rect(mg, y, cw, h);
+    doc.line(mg + lblW2, y, mg + lblW2, y + h);
+    doc.line(mg + lblW2 + sigW, y, mg + lblW2 + sigW, y + h);
+    doc.line(mg + lblW2 + sigW + dateKeyW, y, mg + lblW2 + sigW + dateKeyW, y + h);
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 70, 95);
+    const lblParts = label.split('\n');
+    lblParts.forEach((l, i) => doc.text(l, mg + 2, y + 7 + i * 5));
+
+    if (sigImg) {
+      try { doc.addImage(sigImg, 'PNG', mg + lblW2 + 1, y + 1, sigW - 2, h - 2); } catch(_) {}
+    } else {
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(18, 38, 58);
+      doc.text(r.dealerName || '', mg + lblW2 + 2, y + (h / 2) + 1);
+      doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(110, 115, 125);
+      doc.text('signed electronically', mg + lblW2 + 2, y + (h / 2) + 6);
+    }
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 70, 95);
+    doc.text('Date:', mg + lblW2 + sigW + 2, y + 8);
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(18, 38, 58);
+    doc.text(date, mg + lblW2 + sigW + dateKeyW + 2, y + 14);
+
+    y += h;
+  }
+
+  const signedDate = new Date(r.signedAt).toLocaleDateString('en-GB');
+  sigRow('Sales\nExecutive\nSignature', null, signedDate, false);
+  sigRow('Customer\nSignature:', r.signature, signedDate, true);
+
+  y += 8;
+  hline([160, 175, 195]);
+
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 115, 130);
+  doc.text('Hedin Automotive Ltd', W / 2, y, { align: 'center' }); y += 5;
+  doc.text('Ruxley BMW', W / 2, y, { align: 'center' }); y += 8;
+
+  hline([185, 195, 210]);
+
+  doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(60, 85, 110);
+  doc.text('AUDIT RECORD', mg, y); y += 4;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Record ID: ' + r.id, mg, y); y += 3.5;
+  doc.text('Submitted at: ' + new Date(r.signedAt).toLocaleString('en-GB'), mg, y); y += 3.5;
+  doc.text('IP Address: ' + r.ipAddress, mg, y); y += 3.5;
+  doc.text('Form: RAV Special Instructions V1.0  |  Retailer: ' + r.retailer, mg, y);
+
+  return doc;
+}
+</script>
+</body>
+</html>
