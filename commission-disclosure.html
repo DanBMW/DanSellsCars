@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commission Disclosure — BMW Financial Services</title>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+<style>
+:root {
+  --blue: #4D94D8;
+  --blue-dark: #1f4f82;
+  --ink: #12263a;
+  --bg: #eef3f8;
+  --card: #ffffff;
+  --line: #d9e3ee;
+  --muted: #6b7a8c;
+  --success: #2f8f57;
+  --success-bg: #e7f6ee;
+  --danger: #c54242;
+  --shadow: 0 10px 25px rgba(18,38,58,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#f7f9fc 0%,var(--bg) 100%);color:var(--ink);font-size:16px;min-height:100vh}
+button{cursor:pointer;font:inherit}input,textarea{font:inherit}
+
+.topbar{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 8px 18px rgba(31,79,130,.18)}
+.topbar-title{font-size:17px;font-weight:800;letter-spacing:.01em}
+.topbar-sub{font-size:11px;opacity:.8;margin-top:2px}
+.lock-icon{font-size:20px}
+
+.main{padding:16px;max-width:680px;margin:0 auto;padding-bottom:48px}
+
+.card{background:rgba(255,255,255,.95);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.7)}
+
+.pill{display:inline-block;background:var(--blue-dark);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;margin-bottom:12px;text-transform:uppercase}
+.pill-grey{background:#dde6f0;color:#3a5068}
+
+h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.55}
+
+label.lbl{display:block;font-size:13px;font-weight:700;color:#425466;margin-bottom:6px;margin-top:14px}
+
+input[type=text],input[type=email],input[type=number]{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#f8fbfe;outline:none;color:var(--ink)}
+input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(77,148,216,.12)}
+input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
+
+.radio-group{display:flex;gap:10px;margin-top:8px}
+.radio-opt{flex:1;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#f8fbfe;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:#5a6b7f;transition:border-color .15s,background .15s}
+.radio-opt input[type=radio]{width:18px;height:18px;accent-color:var(--blue-dark);flex-shrink:0}
+.radio-opt.on{border-color:var(--blue-dark);background:#eaf3fd;color:var(--ink)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:800;border:none;min-height:48px;cursor:pointer;width:100%;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;box-shadow:0 8px 18px rgba(77,148,216,.28)}
+.btn-primary:hover{box-shadow:0 12px 24px rgba(77,148,216,.38);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-ghost{background:#eef3f8;color:var(--ink);width:auto}
+
+/* ---- Disclosure document ---- */
+.disclosure-doc{background:#f8fbfe;border:1px solid var(--line);border-radius:12px;padding:18px;font-size:14px;line-height:1.65;color:#22384f}
+.disclosure-doc .doc-heading{font-size:13px;font-weight:800;letter-spacing:.01em;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px;color:var(--ink)}
+.disclosure-doc h3{font-size:13px;font-weight:800;margin:14px 0 6px}
+.disclosure-doc p{margin-bottom:10px}
+.disclosure-doc .bold-warning{font-weight:800;color:var(--ink)}
+
+.comm-table{border:1px solid #c8d8e8;border-radius:8px;overflow:hidden;margin:8px 0 12px;font-size:14px}
+.comm-row{display:flex;align-items:stretch;border-bottom:1px solid #c8d8e8}
+.comm-row:last-child{border-bottom:none}
+.comm-cell-lbl{padding:9px 12px;background:#eef3f8;font-weight:700;color:#3a5068;flex:0 0 55%;border-right:1px solid #c8d8e8}
+.comm-cell-val{padding:9px 12px;font-weight:800;flex:1;color:var(--ink)}
+.tick-col{flex:0 0 40px;display:flex;align-items:center;justify-content:center;border-left:1px solid #c8d8e8;background:#f4f8fc}
+.tick-box{width:26px;height:26px;border:2px solid #a0b8d0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:var(--blue-dark)}
+
+/* ---- Signature ---- */
+.sig-wrap{border:2px dashed var(--line);border-radius:12px;background:#fff;position:relative;overflow:hidden;margin-top:8px}
+.sig-wrap canvas{display:block;width:100%;height:160px;touch-action:none}
+.sig-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;color:#b8c8d8;pointer-events:none;text-align:center}
+.sig-clear{margin-top:6px;text-align:right}
+.sig-clear button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 12px;font-size:13px;font-weight:700}
+
+/* ---- Notice ---- */
+.notice{background:linear-gradient(135deg,#fff8e9,#fff4da);border:1.5px solid #ecd392;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:700;color:#6f5800;margin-bottom:16px}
+
+/* ---- Success ---- */
+.success-hero{text-align:center;padding:32px 20px;background:linear-gradient(135deg,#f0f9f4,#e7f6ee);border:1.5px solid #a8dabe;border-radius:16px;margin-bottom:16px}
+.success-hero .s-icon{font-size:48px;margin-bottom:10px}
+.success-hero h2{font-size:22px;font-weight:800;color:var(--success);margin-bottom:6px}
+.success-hero p{font-size:14px;color:#4a6b59}
+
+.record-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid #eef1f5;font-size:13px;gap:12px}
+.record-row:last-child{border-bottom:none}
+.record-lbl{color:var(--muted);font-weight:600;flex-shrink:0}
+.record-val{font-weight:700;color:var(--ink);text-align:right;word-break:break-all}
+
+.bmw-footer{font-size:11px;color:#8a96a3;text-align:center;margin-top:20px;line-height:1.6}
+
+.screen{display:none}
+.screen.active{display:block}
+
+@media(max-width:480px){
+  .radio-group{flex-direction:column}
+  h2{font-size:16px}
+  .comm-cell-lbl{flex:0 0 50%}
+}
+@media print{
+  .topbar,.btn,.sig-clear,.notice,#screen-setup{display:none!important}
+  body{background:#fff}
+  .card{box-shadow:none;border:1px solid #ddd}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Commission Disclosure</div>
+    <div class="topbar-sub">BMW Financial Services &mdash; Ruxley BMW</div>
+  </div>
+  <div class="lock-icon">&#x1F512;</div>
+</div>
+
+<div class="main">
+
+  <!-- ===== SCREEN 1: Dealer Setup ===== -->
+  <div id="screen-setup" class="screen active">
+    <div class="card">
+      <span class="pill pill-grey">Dealer Only</span>
+      <h2>Prepare Commission Details</h2>
+      <p class="sub">Complete this section before handing the device to the customer. They will not see this screen.</p>
+
+      <label class="lbl">Commission Calculation Type</label>
+      <div class="radio-group">
+        <label class="radio-opt" id="opt1">
+          <input type="radio" name="calc" value="1" onchange="onCalcChange()">
+          Calc 1 &mdash; Fixed Amount
+        </label>
+        <label class="radio-opt on" id="opt2">
+          <input type="radio" name="calc" value="2" onchange="onCalcChange()" checked>
+          Calc 2 &mdash; Percentage
+        </label>
+      </div>
+
+      <label class="lbl">Commission Amount (&pound;)</label>
+      <input type="number" id="inp-amount" placeholder="e.g. 1716.58" step="0.01" min="0">
+
+      <div id="pct-wrap">
+        <label class="lbl">Commission Percentage (%)</label>
+        <input type="number" id="inp-pct" placeholder="e.g. 9.9" step="0.1" min="0" max="100">
+      </div>
+
+      <div style="margin-top:22px">
+        <button class="btn btn-primary" onclick="goToSign()">Review &amp; Hand to Customer &#8594;</button>
+      </div>
+    </div>
+    <p class="bmw-footer">Signed records are stored securely in your Firebase database.</p>
+  </div>
+
+  <!-- ===== SCREEN 2: Disclosure + Signature ===== -->
+  <div id="screen-sign" class="screen">
+
+    <div class="notice">&#x26A0;&#xFE0F; Please read this document carefully before signing. Ask the Retailer if you have any questions before proceeding.</div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div>
+          <span class="pill">BMW Financial Services</span>
+          <h2 style="margin-top:6px">Commission Disclosure Form</h2>
+          <span style="display:inline-block;background:#e2ecf7;color:#2a527a;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:4px">V3.0 &mdash; 26.11.2024</span>
+        </div>
+        <div style="text-align:right;font-size:13px;color:var(--muted)">
+          <div style="font-weight:800;color:var(--ink)">Ruxley BMW</div>
+          <div>BMW Group Authorised Retailer</div>
+        </div>
+      </div>
+
+      <div class="disclosure-doc">
+        <p class="doc-heading">THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.</p>
+
+        <p><strong>Retailer:</strong> Ruxley BMW</p>
+
+        <h3>What is the Retailer&rsquo;s role?</h3>
+        <p>The Retailer has an arrangement with us to introduce their customers to us. When they introduce you to us, they are acting as a &ldquo;credit broker&rdquo;. We will pay them a commission for this when you enter into an agreement with us. The Retailer will usually have a selection of lenders or intermediaries, but will normally send your details to us first.</p>
+        <p>When the Retailer introduces you to us, they are not acting independently. The commission amount might influence them. The Retailer is not giving you advice or recommendations. Depending on your situation, you may find a better deal if you look around.</p>
+
+        <h3>What commission will we pay to the Retailer?</h3>
+        <p>If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways, depending on the vehicle being financed. The one that applies in your case is ticked and completed below.</p>
+
+        <p><strong>Commission calculation 1:</strong> This is a fixed amount that we pay to the Retailer for introducing you.</p>
+        <div class="comm-table" id="calc1-table">
+          <div class="comm-row">
+            <div class="comm-cell-lbl">Commission Amount</div>
+            <div class="comm-cell-val" id="d-amount-1">&mdash;</div>
+            <div class="tick-col"><div class="tick-box" id="tick1"></div></div>
+          </div>
+        </div>
+
+        <p><strong>Commission calculation 2:</strong> The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.</p>
+        <div class="comm-table" id="calc2-table">
+          <div class="comm-row">
+            <div class="comm-cell-lbl">Commission Amount</div>
+            <div class="comm-cell-val" id="d-amount-2">&mdash;</div>
+            <div class="tick-col"><div class="tick-box" id="tick2"></div></div>
+          </div>
+          <div class="comm-row" id="d-pct-row">
+            <div class="comm-cell-lbl">Percentage used to calculate the commission</div>
+            <div class="comm-cell-val" id="d-pct">&mdash;</div>
+            <div class="tick-col"></div>
+          </div>
+        </div>
+
+        <p>The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.</p>
+        <p>The APR interest rate that you pay for your finance agreement with us is fixed. The Retailer cannot change the APR and/or the commission for your finance agreement. We take into account the payment of commission when we set the APRs which we offer to customers.</p>
+        <p class="bold-warning">If you have any questions, please discuss them with your Retailer before signing. DO NOT sign or proceed with your finance if you have any concerns or if the amount shown above is not completed.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="pill">Customer Consent</span>
+      <p style="font-size:14px;margin-top:8px;line-height:1.65">You can choose whether to continue with the finance deal or look around for other alternatives. If you understand what we have explained and are comfortable to proceed, please complete and sign below.</p>
+    </div>
+
+    <div class="card">
+      <span class="pill">Customer Declaration</span>
+      <p style="font-size:14px;margin-top:10px;margin-bottom:18px;line-height:1.65">
+        I understand the information in this document. I understand that the Retailer is not acting impartially and will be paid the commission amount disclosed above. I confirm that I am happy to proceed with the finance and consent to the Retailer being paid this amount.
+      </p>
+
+      <label class="lbl">Full Name</label>
+      <input type="text" id="inp-name" placeholder="Your full name" autocomplete="name">
+
+      <label class="lbl">Email Address <span style="font-weight:400;color:#9aa8b5">(for your records)</span></label>
+      <input type="email" id="inp-email" placeholder="your@email.com" autocomplete="email">
+
+      <label class="lbl">Date</label>
+      <input type="text" id="inp-date" readonly>
+
+      <label class="lbl" style="margin-top:18px">Customer Signature <span style="font-weight:400;color:var(--danger);font-size:12px">* Draw in the box below</span></label>
+      <div class="sig-wrap" id="sig-wrap">
+        <canvas id="sig-canvas"></canvas>
+        <div class="sig-hint" id="sig-hint">Sign here with your finger or mouse</div>
+      </div>
+      <div class="sig-clear"><button onclick="clearSig()">Clear &amp; redraw</button></div>
+
+      <div style="margin-top:22px">
+        <button class="btn btn-primary" id="submit-btn" onclick="submitForm()">I Agree &amp; Submit &#x2713;</button>
+      </div>
+      <p style="font-size:11px;color:#9aa8b5;text-align:center;margin-top:10px">Your signature and this record are stored securely with a timestamp. You will receive a confirmation email.</p>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 3: Success ===== -->
+  <div id="screen-done" class="screen">
+    <div class="success-hero">
+      <div class="s-icon">&#x2705;</div>
+      <h2>Disclosure Signed</h2>
+      <p>Your signature has been recorded securely.<br>A confirmation has been sent to your email.</p>
+    </div>
+
+    <div class="card">
+      <span class="pill">Signing Record</span>
+      <div id="record-box" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card" style="text-align:center">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Need a printed copy of this record?</p>
+      <button class="btn btn-ghost" style="display:inline-flex" onclick="window.print()">&#x1F5A8; Print this page</button>
+    </div>
+
+    <p class="bmw-footer">
+      BMW Financial Services (GB) Limited &mdash; Registered in England and Wales 01288537<br>
+      Summit ONE, Summit Avenue, Farnborough, Hampshire GU14 0FB<br>
+      Authorised and regulated by the Financial Conduct Authority
+    </p>
+  </div>
+
+</div><!-- /main -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = { apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E", authDomain:"forecourt-1b6bc.firebaseapp.com", databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app", projectId:"forecourt-1b6bc", storageBucket:"forecourt-1b6bc.firebasestorage.app", messagingSenderId:"1073459223252", appId:"1:1073459223252:web:d65abed953fc641fc7b941" };
+const db = getDatabase(initializeApp(FB));
+
+let calcType = 2, commAmount = 0, commPct = 0, sigPad = null;
+
+// ---- Dealer setup ----
+window.onCalcChange = function() {
+  calcType = parseInt(document.querySelector('input[name="calc"]:checked').value);
+  document.getElementById("opt1").classList.toggle("on", calcType === 1);
+  document.getElementById("opt2").classList.toggle("on", calcType === 2);
+  document.getElementById("pct-wrap").style.display = calcType === 2 ? "block" : "none";
+};
+
+window.goToSign = function() {
+  commAmount = parseFloat(document.getElementById("inp-amount").value);
+  commPct    = parseFloat(document.getElementById("inp-pct").value);
+
+  if (!commAmount || commAmount <= 0) { alert("Please enter the commission amount."); return; }
+  if (calcType === 2 && (!commPct || commPct <= 0)) { alert("Please enter the commission percentage."); return; }
+
+  const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+  // Fill disclosure values
+  document.getElementById("d-amount-1").textContent = calcType === 1 ? fmt(commAmount) : "—";
+  document.getElementById("d-amount-2").textContent = calcType === 2 ? fmt(commAmount) : "—";
+  document.getElementById("d-pct").textContent       = calcType === 2 ? commPct + "%" : "—";
+  document.getElementById("tick1").textContent = calcType === 1 ? "✓" : "";
+  document.getElementById("tick2").textContent = calcType === 2 ? "✓" : "";
+  document.getElementById("d-pct-row").style.display = calcType === 2 ? "flex" : "none";
+
+  // Today's date
+  const d = new Date();
+  document.getElementById("inp-date").value =
+    String(d.getDate()).padStart(2,"0") + "/" +
+    String(d.getMonth()+1).padStart(2,"0") + "/" +
+    d.getFullYear();
+
+  showScreen("screen-sign");
+  setTimeout(initSig, 120);
+};
+
+// ---- Signature pad ----
+function initSig() {
+  const canvas = document.getElementById("sig-canvas");
+  const wrap   = document.getElementById("sig-wrap");
+  const dpr    = window.devicePixelRatio || 1;
+  canvas.width  = wrap.offsetWidth * dpr;
+  canvas.height = 160 * dpr;
+  canvas.style.height = "160px";
+  canvas.getContext("2d").scale(dpr, dpr);
+
+  sigPad = new SignaturePad(canvas, { penColor: "#12263a", backgroundColor: "rgba(0,0,0,0)" });
+  sigPad.addEventListener("beginStroke", () => {
+    document.getElementById("sig-hint").style.display = "none";
+  });
+}
+
+window.clearSig = function() {
+  if (sigPad) sigPad.clear();
+  document.getElementById("sig-hint").style.display = "block";
+};
+
+// ---- Submit ----
+window.submitForm = async function() {
+  const name  = document.getElementById("inp-name").value.trim();
+  const email = document.getElementById("inp-email").value.trim();
+
+  if (!name)                          { alert("Please enter your full name.");         return; }
+  if (!/\S+@\S+\.\S+/.test(email))   { alert("Please enter a valid email address.");  return; }
+  if (!sigPad || sigPad.isEmpty())    { alert("Please draw your signature.");          return; }
+
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true;
+  btn.textContent = "Saving…";
+
+  const sigData  = sigPad.toDataURL("image/png");
+  const now      = new Date();
+  const recordId = "disc_" + Date.now() + "_" + Math.random().toString(36).substr(2,6);
+
+  // Best-effort IP for audit trail (GDPR: legitimate interest — contract execution)
+  let ip = "unavailable";
+  try { const r = await fetch("https://api.ipify.org?format=json"); ip = (await r.json()).ip; } catch(_) {}
+
+  const record = {
+    id: recordId,
+    disclosureVersion: "V3.0 26.11.2024",
+    retailer: "Ruxley BMW",
+    commissionCalcType: calcType,
+    commissionAmount: commAmount,
+    commissionPct: calcType === 2 ? commPct : null,
+    customerName: name,
+    customerEmail: email,
+    signedAt: now.toISOString(),
+    userAgent: navigator.userAgent,
+    ipAddress: ip,
+    signature: sigData
+  };
+
+  try {
+    await set(ref(db, "disclosures/" + recordId), record);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = "I Agree & Submit ✓";
+    alert("Could not save — please check your connection and try again.");
+    return;
+  }
+
+  // Notify Dan via Formspree (metadata only — signature stays in Firebase)
+  const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  try {
+    await fetch("https://formspree.io/f/xqewleog", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        _subject: "Commission Disclosure Signed — " + name,
+        customer_name: name,
+        customer_email: email,
+        commission_type: "Calculation " + calcType + (calcType === 2 ? " (percentage)" : " (fixed)"),
+        commission_amount: fmt(commAmount),
+        commission_pct: calcType === 2 ? commPct + "%" : "N/A",
+        signed_at: now.toLocaleString("en-GB"),
+        record_id: recordId
+      })
+    });
+  } catch(_) {}
+
+  // Success screen
+  const fmtDate = new Date(record.signedAt).toLocaleString("en-GB", {
+    day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"
+  });
+  document.getElementById("record-box").innerHTML = `
+    <div class="record-row"><span class="record-lbl">Record ID</span><span class="record-val" style="font-family:monospace;font-size:11px">${recordId}</span></div>
+    <div class="record-row"><span class="record-lbl">Customer</span><span class="record-val">${name}</span></div>
+    <div class="record-row"><span class="record-lbl">Email</span><span class="record-val">${email}</span></div>
+    <div class="record-row"><span class="record-lbl">Commission</span><span class="record-val">${fmt(commAmount)}${calcType === 2 ? " @ " + commPct + "%" : " (fixed)"}</span></div>
+    <div class="record-row"><span class="record-lbl">Signed at</span><span class="record-val">${fmtDate}</span></div>
+    <div class="record-row"><span class="record-lbl">Disclosure version</span><span class="record-val">V3.0 — 26.11.2024</span></div>
+  `;
+
+  showScreen("screen-done");
+};
+
+// ---- Helpers ----
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+// URL param pre-fill: ?calc=2&amount=1716.58&pct=9.9
+const p = new URLSearchParams(location.search);
+if (p.get("calc"))   { const v = p.get("calc"); document.querySelector(`input[name="calc"][value="${v}"]`).checked = true; }
+if (p.get("amount")) document.getElementById("inp-amount").value = p.get("amount");
+if (p.get("pct"))    document.getElementById("inp-pct").value    = p.get("pct");
+onCalcChange();
+</script>
+</body>
+</html>
