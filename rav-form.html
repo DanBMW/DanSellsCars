@@ -316,7 +316,7 @@ window.submitForm = async function() {
   };
 
   try {
-    await set(ref(db, "rav_forms/" + recordId), record);
+    await set(ref(db, "disclosures/" + recordId), record);
     signedRecord = record;
   } catch(e) {
     btn.disabled = false; btn.textContent = "I Confirm & Submit ✓";

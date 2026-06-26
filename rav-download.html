@@ -105,7 +105,7 @@ if (!recordId) {
 } else {
   show('state-loading');
   try {
-    const snap = await get(ref(db, 'rav_forms/' + recordId));
+    const snap = await get(ref(db, 'disclosures/' + recordId));
     if (!snap.exists()) {
       err('Record not found. The link may be incomplete or the record may not exist.');
     } else {
