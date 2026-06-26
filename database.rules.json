@@ -11,6 +11,7 @@
     "disclosures": {
       ".read": "auth != null",
       "$disclosureId": {
+        ".read": true,
         ".write": "!data.exists()"
       }
     }

@@ -278,12 +278,9 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const FB = { apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E", authDomain:"forecourt-1b6bc.firebaseapp.com", databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app", projectId:"forecourt-1b6bc", storageBucket:"forecourt-1b6bc.firebasestorage.app", messagingSenderId:"1073459223252", appId:"1:1073459223252:web:d65abed953fc641fc7b941" };
-const app     = initializeApp(FB);
-const db      = getDatabase(app);
-const storage = getStorage(app);
+const db = getDatabase(initializeApp(FB));
 
 let calcType = 2, commAmount = 0, commPct = 0, sigPad = null, signedRecord = null;
 
@@ -390,18 +387,10 @@ window.submitForm = async function() {
     return;
   }
 
-  // Generate PDF and upload to Firebase Storage so the email contains a direct download link
-  btn.textContent = "Uploading PDF…";
-  let pdfURL = null;
-  try {
-    const pdfDoc  = buildPDF(record);
-    const pdfBlob = pdfDoc.output('blob');
-    const pdfRef  = sRef(storage, 'disclosures/' + recordId + '.pdf');
-    await uploadBytes(pdfRef, pdfBlob, { contentType: 'application/pdf' });
-    pdfURL = await getDownloadURL(pdfRef);
-  } catch(_) {}
+  // Build a secure download link — the record ID acts as a secret key
+  const downloadLink = location.origin + '/commission-download.html?id=' + recordId;
 
-  // Email Dan via Formspree — includes the PDF download link
+  // Email Dan via Formspree — includes the one-click PDF download link
   const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   try {
     await fetch("https://formspree.io/f/xqewleog", {
@@ -416,7 +405,7 @@ window.submitForm = async function() {
         commission_pct: calcType === 2 ? commPct + "%" : "N/A",
         signed_at: now.toLocaleString("en-GB"),
         record_id: recordId,
-        signed_pdf: pdfURL || "PDF not available — retrieve from Firebase using Record ID above"
+        download_pdf: downloadLink
       })
     });
   } catch(_) {}
