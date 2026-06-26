@@ -101,6 +101,13 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
 .footer-note{font-size:11px;color:#8a96a3;text-align:center;margin-top:20px;line-height:1.6}
 .screen{display:none}.screen.active{display:block}
 
+@keyframes shBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+.sfab{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:9999;display:none;flex-direction:column;align-items:center;gap:6px;pointer-events:none;transition:opacity .3s}
+.sfab.vis{display:flex;pointer-events:auto}
+.sfab-lbl{font-size:11px;font-weight:800;padding:5px 14px;border-radius:20px;white-space:nowrap;color:#fff;background:rgba(21,89,207,.9);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(21,89,207,.32);letter-spacing:.02em;text-align:center}
+.sfab-lbl.done{background:rgba(34,120,70,.9);box-shadow:0 4px 14px rgba(34,120,70,.3)}
+.sfab-btn{width:44px;height:44px;border-radius:50%;background:rgba(21,89,207,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,89,207,.4);padding:0;animation:shBounce 1.7s ease-in-out infinite}
+
 .or-div{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-weight:700;margin:18px 0 14px;text-transform:uppercase;letter-spacing:.05em}
 .or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--line)}
 .link-display{background:#f0f7ff;border:1.5px solid #c2daf5;border-radius:10px;padding:11px 13px;font-size:11px;font-family:monospace;word-break:break-all;color:#1f4f82;margin-bottom:10px;line-height:1.5}
@@ -344,6 +351,14 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
 
 </div><!-- /main -->
 
+<!-- Floating scroll hint — customer signing screen only -->
+<div class="sfab" id="sfab">
+  <div class="sfab-lbl" id="sfab-lbl">items remaining to sign</div>
+  <button class="sfab-btn" aria-label="Scroll down" onclick="window.scrollBy({top:Math.min(Math.round(window.innerHeight*.72),420),behavior:'smooth'})">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -464,11 +479,13 @@ function initSig() {
   sigPad.addEventListener("beginStroke", () => {
     document.getElementById("sig-hint").style.display = "none";
   });
+  sigPad.addEventListener("endStroke", updateScrollFab);
 }
 
 window.clearSig = function() {
   if (sigPad) sigPad.clear();
   document.getElementById("sig-hint").style.display = "block";
+  updateScrollFab();
 };
 
 // ---- Submit ----
@@ -898,7 +915,45 @@ function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   window.scrollTo(0,0);
+  setTimeout(updateScrollFab, 60);
 }
+
+// ---- Scroll FAB: remaining items counter ----
+function countRemaining() {
+  let n = 0;
+  function chk(id) {
+    const el = document.getElementById(id);
+    if (el && !el.value.trim()) n++;
+  }
+  chk('inp-name');
+  chk('inp-email');
+  if (includeRAV) { chk('inp-address'); chk('inp-postcode'); chk('inp-tel'); chk('inp-dob'); }
+  if (!sigPad || sigPad.isEmpty()) n++;
+  return n;
+}
+
+function updateScrollFab() {
+  const fab = document.getElementById('sfab');
+  const lbl = document.getElementById('sfab-lbl');
+  const onSign  = document.getElementById('screen-sign').classList.contains('active');
+  const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 90;
+  const canScroll = document.documentElement.scrollHeight > window.innerHeight + 24;
+  if (!onSign || atBottom || !canScroll) { fab.classList.remove('vis'); return; }
+  const n = countRemaining();
+  if (n === 0) {
+    lbl.textContent = '✓ Ready to submit';
+    lbl.classList.add('done');
+  } else {
+    lbl.textContent = n + (n === 1 ? ' item' : ' items') + ' remaining to sign';
+    lbl.classList.remove('done');
+  }
+  fab.classList.add('vis');
+}
+
+window.addEventListener('scroll', updateScrollFab, { passive: true });
+['inp-name','inp-email','inp-address','inp-postcode','inp-tel','inp-dob'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateScrollFab);
+});
 
 // ---- URL param pre-fill (remote customer link) ----
 const p = new URLSearchParams(location.search);
