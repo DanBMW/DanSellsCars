@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documents for Signing — Ruxley BMW</title>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --blue:#4D94D8;--blue-dark:#1f4f82;--ink:#12263a;--bg:#eef3f8;
+  --line:#d9e3ee;--muted:#6b7a8c;--success:#2f8f57;--danger:#c54242;
+  --shadow:0 10px 25px rgba(18,38,58,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#f7f9fc 0%,var(--bg) 100%);color:var(--ink);font-size:16px;min-height:100vh}
+button{cursor:pointer;font:inherit}input,textarea{font:inherit}
+
+.topbar{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 8px 18px rgba(31,79,130,.18)}
+.topbar-title{font-size:17px;font-weight:800}.topbar-sub{font-size:11px;opacity:.8;margin-top:2px}
+
+.main{padding:16px;max-width:680px;margin:0 auto;padding-bottom:48px}
+.card{background:rgba(255,255,255,.95);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.7)}
+
+.pill{display:inline-block;background:var(--blue-dark);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;margin-bottom:12px;text-transform:uppercase}
+.pill-grey{background:#dde6f0;color:#3a5068}
+
+h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.55}
+label.lbl{display:block;font-size:13px;font-weight:700;color:#425466;margin-bottom:6px;margin-top:14px}
+
+input[type=text],input[type=email],input[type=tel],input[type=number],textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#f8fbfe;outline:none;color:var(--ink)}
+textarea{resize:vertical;min-height:80px}
+input:focus,textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(77,148,216,.12)}
+input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
+
+.radio-group{display:flex;gap:10px;margin-top:8px}
+.radio-opt{flex:1;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#f8fbfe;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:#5a6b7f;transition:border-color .15s,background .15s}
+.radio-opt input[type=radio]{width:18px;height:18px;accent-color:var(--blue-dark);flex-shrink:0}
+.radio-opt.on{border-color:var(--blue-dark);background:#eaf3fd;color:var(--ink)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:800;border:none;min-height:48px;cursor:pointer;width:100%;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;box-shadow:0 8px 18px rgba(77,148,216,.28)}
+.btn-primary:hover{box-shadow:0 12px 24px rgba(77,148,216,.38);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-ghost{background:#eef3f8;color:var(--ink);width:auto}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--line);border-radius:14px;background:#f8fbfe;cursor:pointer;user-select:none;transition:border-color .15s,background .15s;margin-bottom:8px}
+.toggle-row.active{border-color:var(--blue-dark);background:#eaf3fd}
+.toggle-icon{font-size:22px;flex-shrink:0}
+.toggle-info{flex:1;min-width:0}
+.toggle-name{font-size:14px;font-weight:800;color:var(--ink)}
+.toggle-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.toggle-sw{width:44px;height:24px;background:#c8d4e0;border-radius:999px;position:relative;flex-shrink:0;transition:background .2s}
+.toggle-sw.on{background:var(--blue-dark)}
+.toggle-sw::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle-sw.on::after{transform:translateX(20px)}
+.toggle-content{overflow:hidden;transition:max-height .25s ease;max-height:0}
+.toggle-content.open{max-height:400px}
+.toggle-content-inner{padding:4px 0 8px}
+
+/* Sig */
+.sig-wrap{border:2px dashed var(--line);border-radius:12px;background:#fff;position:relative;overflow:hidden;margin-top:8px}
+.sig-wrap canvas{display:block;width:100%;height:160px;touch-action:none}
+.sig-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;color:#b8c8d8;pointer-events:none;text-align:center}
+.sig-clear{margin-top:6px;text-align:right}
+.sig-clear button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 12px;font-size:13px;font-weight:700}
+
+/* Disclosure doc */
+.disclosure-doc{background:#f8fbfe;border:1px solid var(--line);border-radius:12px;padding:18px;font-size:14px;line-height:1.65;color:#22384f}
+.disclosure-doc .doc-heading{font-size:13px;font-weight:800;letter-spacing:.01em;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px;color:var(--ink)}
+.disclosure-doc h3{font-size:13px;font-weight:800;margin:14px 0 6px}
+.disclosure-doc p{margin-bottom:10px}
+.comm-table{border:1px solid #c8d8e8;border-radius:8px;overflow:hidden;margin:8px 0 12px;font-size:14px}
+.comm-row{display:flex;align-items:stretch;border-bottom:1px solid #c8d8e8}
+.comm-row:last-child{border-bottom:none}
+.comm-cell-lbl{padding:9px 12px;background:#eef3f8;font-weight:700;color:#3a5068;flex:0 0 55%;border-right:1px solid #c8d8e8}
+.comm-cell-val{padding:9px 12px;font-weight:800;flex:1;color:var(--ink)}
+.tick-col{flex:0 0 40px;display:flex;align-items:center;justify-content:center;border-left:1px solid #c8d8e8;background:#f4f8fc}
+.tick-box{width:26px;height:26px;border:2px solid #a0b8d0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:var(--blue-dark)}
+
+.notice{background:linear-gradient(135deg,#fff8e9,#fff4da);border:1.5px solid #ecd392;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:700;color:#6f5800;margin-bottom:16px}
+
+.success-hero{text-align:center;padding:32px 20px;background:linear-gradient(135deg,#f0f9f4,#e7f6ee);border:1.5px solid #a8dabe;border-radius:16px;margin-bottom:16px}
+.success-hero .s-icon{font-size:48px;margin-bottom:10px}
+.success-hero h2{font-size:22px;font-weight:800;color:var(--success);margin-bottom:6px}
+.success-hero p{font-size:14px;color:#4a6b59}
+
+.record-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid #eef1f5;font-size:13px;gap:12px}
+.record-row:last-child{border-bottom:none}
+.record-lbl{color:var(--muted);font-weight:600;flex-shrink:0}
+.record-val{font-weight:700;color:var(--ink);text-align:right;word-break:break-all}
+
+.doc-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;margin-right:6px;margin-bottom:10px}
+.doc-badge-comm{background:#e2ecf7;color:#2a527a}
+.doc-badge-rav{background:#e7f6ee;color:#2f8f57}
+
+.dvla-divider{background:#e2eaf5;border-radius:8px;padding:9px 14px;margin:18px 0 4px;font-size:12px;font-weight:700;color:#3a5068;text-align:center;letter-spacing:.03em}
+
+.footer-note{font-size:11px;color:#8a96a3;text-align:center;margin-top:20px;line-height:1.6}
+.screen{display:none}.screen.active{display:block}
+
+.or-div{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-weight:700;margin:18px 0 14px;text-transform:uppercase;letter-spacing:.05em}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--line)}
+.link-display{background:#f0f7ff;border:1.5px solid #c2daf5;border-radius:10px;padding:11px 13px;font-size:11px;font-family:monospace;word-break:break-all;color:#1f4f82;margin-bottom:10px;line-height:1.5}
+.btn-copy{background:var(--blue-dark);color:#fff;border:none;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:800;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px}
+.share-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-wa{background:#25D366;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-sms{background:#eef3f8;color:var(--ink);border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-gen{background:#eef3f8;color:var(--ink);border:none;border-radius:12px;padding:13px 24px;font-size:15px;font-weight:800;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px}
+.sel-warn{background:#fff5f5;border:1.5px solid #fcc;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--danger);margin-top:10px;display:none}
+
+@media(max-width:480px){.radio-group{flex-direction:column}h2{font-size:16px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Documents for Signing</div>
+    <div class="topbar-sub">Ruxley BMW &mdash; Hedin Automotive Ltd</div>
+  </div>
+  <div style="font-size:20px">&#x1F512;</div>
+</div>
+
+<div class="main">
+
+<!-- ===== SCREEN 1: Dealer Setup ===== -->
+<div id="screen-setup" class="screen active">
+  <div class="card">
+    <span class="pill pill-grey">Dealer Only</span>
+    <h2>Select Documents to Sign</h2>
+    <p class="sub">Toggle on the documents you need, fill in the details, then hand the device or send a link to your customer.</p>
+
+    <!-- Commission Disclosure Toggle -->
+    <div class="toggle-row active" id="row-comm" onclick="toggleDoc('comm')">
+      <div class="toggle-icon">&#x1F4CB;</div>
+      <div class="toggle-info">
+        <div class="toggle-name">Commission Disclosure</div>
+        <div class="toggle-desc">BMW Financial Services &mdash; required for all financed vehicles</div>
+      </div>
+      <div class="toggle-sw on" id="sw-comm"></div>
+    </div>
+    <div class="toggle-content open" id="tc-comm">
+      <div class="toggle-content-inner">
+        <label class="lbl">Commission Calculation Type</label>
+        <div class="radio-group">
+          <label class="radio-opt" id="opt1">
+            <input type="radio" name="calc" value="1" onchange="onCalcChange()">
+            Calc 1 &mdash; Fixed Amount
+          </label>
+          <label class="radio-opt on" id="opt2">
+            <input type="radio" name="calc" value="2" onchange="onCalcChange()" checked>
+            Calc 2 &mdash; Percentage
+          </label>
+        </div>
+        <label class="lbl">Commission Amount (&pound;)</label>
+        <input type="number" id="inp-amount" placeholder="e.g. 1716.58" step="0.01" min="0">
+        <div id="pct-wrap">
+          <label class="lbl">Commission Percentage (%)</label>
+          <input type="number" id="inp-pct" placeholder="e.g. 9.9" step="0.1" min="0" max="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- RAV Toggle -->
+    <div class="toggle-row active" id="row-rav" onclick="toggleDoc('rav')">
+      <div class="toggle-icon">&#x1F697;</div>
+      <div class="toggle-info">
+        <div class="toggle-name">RAV Special Instructions</div>
+        <div class="toggle-desc">New car registration form &mdash; DVLA V5 details</div>
+      </div>
+      <div class="toggle-sw on" id="sw-rav"></div>
+    </div>
+    <div class="toggle-content open" id="tc-rav">
+      <div class="toggle-content-inner">
+        <label class="lbl">IVS / Chassis / Registration Number</label>
+        <input type="text" id="inp-ivs" placeholder="e.g. WBA12345678 / AB12 CDE">
+      </div>
+    </div>
+
+    <div class="sel-warn" id="sel-warn">Please select at least one document before continuing.</div>
+
+    <label class="lbl" style="margin-top:18px">Your Name (Sales Executive)</label>
+    <input type="text" id="inp-dealer" placeholder="Your full name" autocomplete="name">
+
+    <div style="margin-top:22px">
+      <button class="btn btn-primary" id="proceed-btn" onclick="goToSign()">&#x1F4F1; Hand Device to Customer &#8594;</button>
+    </div>
+
+    <div class="or-div">or send remotely</div>
+    <p class="sub" style="margin:0 0 12px">Generate a link for your customer to complete and sign from their own device.</p>
+    <button class="btn-gen" onclick="generateRemoteLink()">&#x1F517; Generate Customer Link</button>
+
+    <div id="link-card" style="display:none;margin-top:14px">
+      <div class="link-display" id="link-text"></div>
+      <button class="btn-copy" id="copy-btn" onclick="copyLink()">&#x1F4CB; Copy Link</button>
+      <div class="share-row">
+        <button class="btn-wa" onclick="shareWA()">&#x1F4F2; WhatsApp</button>
+        <button class="btn-sms" onclick="shareSMS()">&#x2709;&#xFE0F; SMS / Email</button>
+      </div>
+    </div>
+  </div>
+  <p class="footer-note">Signed records are stored securely in your Firebase database.</p>
+</div>
+
+<!-- ===== SCREEN 2: Customer ===== -->
+<div id="screen-sign" class="screen">
+
+  <div class="notice" id="notice-bar">&#x26A0;&#xFE0F; Please read and check all information carefully before signing.</div>
+
+  <!-- Commission Disclosure Document -->
+  <div id="comm-doc-section" style="display:none">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div>
+          <span class="pill">BMW Financial Services</span>
+          <h2 style="margin-top:6px">Commission Disclosure Form</h2>
+          <span style="display:inline-block;background:#e2ecf7;color:#2a527a;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:4px">V3.0 &mdash; 26.11.2024</span>
+        </div>
+        <div style="text-align:right;font-size:13px;color:var(--muted)">
+          <div style="font-weight:800;color:var(--ink)">Ruxley BMW</div>
+          <div>BMW Group Authorised Retailer</div>
+        </div>
+      </div>
+      <div class="disclosure-doc">
+        <p class="doc-heading">THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.</p>
+        <p><strong>Retailer:</strong> Ruxley BMW</p>
+        <h3>What is the Retailer&rsquo;s role?</h3>
+        <p>The Retailer has an arrangement with us to introduce their customers to us. When they introduce you to us, they are acting as a &ldquo;credit broker&rdquo;. We will pay them a commission for this when you enter into an agreement with us. The Retailer will usually have a selection of lenders or intermediaries, but will normally send your details to us first.</p>
+        <p>When the Retailer introduces you to us, they are not acting independently. The commission amount might influence them. The Retailer is not giving you advice or recommendations. Depending on your situation, you may find a better deal if you look around.</p>
+        <h3>What commission will we pay to the Retailer?</h3>
+        <p>If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways, depending on the vehicle being financed. The one that applies in your case is ticked and completed below.</p>
+        <p><strong>Commission calculation 1:</strong> This is a fixed amount that we pay to the Retailer for introducing you.</p>
+        <div class="comm-table">
+          <div class="comm-row">
+            <div class="comm-cell-lbl">Commission Amount</div>
+            <div class="comm-cell-val" id="d-amount-1">&mdash;</div>
+            <div class="tick-col"><div class="tick-box" id="tick1"></div></div>
+          </div>
+        </div>
+        <p><strong>Commission calculation 2:</strong> The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.</p>
+        <div class="comm-table">
+          <div class="comm-row">
+            <div class="comm-cell-lbl">Commission Amount</div>
+            <div class="comm-cell-val" id="d-amount-2">&mdash;</div>
+            <div class="tick-col"><div class="tick-box" id="tick2"></div></div>
+          </div>
+          <div class="comm-row" id="d-pct-row">
+            <div class="comm-cell-lbl">Percentage used to calculate the commission</div>
+            <div class="comm-cell-val" id="d-pct">&mdash;</div>
+            <div class="tick-col"></div>
+          </div>
+        </div>
+        <p>The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.</p>
+        <p>The APR interest rate that you pay for your finance agreement with us is fixed. The Retailer cannot change the APR and/or the commission for your finance agreement. We take into account the payment of commission when we set the APRs which we offer to customers.</p>
+        <p><strong>If you have any questions, please discuss them with your Retailer before signing. DO NOT sign or proceed with your finance if you have any concerns or if the amount shown above is not completed.</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Details Card -->
+  <div class="card">
+    <div id="doc-badges"></div>
+
+    <!-- RAV intro (shown if RAV included) -->
+    <div id="rav-intro" style="display:none;background:#f8fbfe;border:1px solid var(--line);border-radius:10px;padding:14px;font-size:14px;line-height:1.65;margin-bottom:4px">
+      We will register your vehicle with the DVLA using the information below and this will be printed on to your V5 Registration Document.
+    </div>
+
+    <label class="lbl">Full Name</label>
+    <input type="text" id="inp-name" placeholder="Your full name" autocomplete="name">
+
+    <div id="rav-detail-fields" style="display:none">
+      <label class="lbl">Address</label>
+      <textarea id="inp-address" placeholder="House number and street name&#10;Town / City"></textarea>
+      <label class="lbl">Postcode</label>
+      <input type="text" id="inp-postcode" placeholder="e.g. BR5 3QP" autocomplete="postal-code">
+      <label class="lbl">Telephone Number</label>
+      <input type="tel" id="inp-tel" placeholder="e.g. 07700 900123" autocomplete="tel">
+    </div>
+
+    <label class="lbl">Email <span style="font-weight:400;color:#9aa8b5">(for your confirmation copy)</span></label>
+    <input type="email" id="inp-email" placeholder="your@email.com" autocomplete="email">
+
+    <div id="rav-dob-field" style="display:none">
+      <label class="lbl">Date of Birth</label>
+      <input type="text" id="inp-dob" placeholder="DD/MM/YYYY">
+    </div>
+
+    <div id="rav-ivs-section" style="display:none">
+      <div class="dvla-divider">This section for Hedin Automotive Ltd use only</div>
+      <label class="lbl">IVS / Chassis / Reg</label>
+      <input type="text" id="disp-ivs" readonly>
+    </div>
+  </div>
+
+  <!-- Declaration + Signature -->
+  <div class="card">
+    <span class="pill">Declaration</span>
+
+    <div id="decl-comm" style="display:none;font-size:14px;margin-top:10px;margin-bottom:10px;line-height:1.65">
+      I understand the information in this document. I understand that the Retailer is not acting impartially and will be paid the commission amount disclosed above. I confirm that I am happy to proceed with the finance and consent to the Retailer being paid this amount.
+    </div>
+    <div id="decl-rav" style="display:none;font-size:14px;margin-top:10px;margin-bottom:10px;line-height:1.65">
+      I confirm that the details above are correct and understand that these will be used for registering the vehicle with the DVLA.
+    </div>
+
+    <label class="lbl" style="margin-top:14px">Date</label>
+    <input type="text" id="inp-date" readonly>
+
+    <label class="lbl" style="margin-top:18px">Signature <span style="font-weight:400;color:var(--danger);font-size:12px">* Draw in the box below</span></label>
+    <div class="sig-wrap" id="sig-wrap">
+      <canvas id="sig-canvas"></canvas>
+      <div class="sig-hint" id="sig-hint">Sign here with your finger or mouse</div>
+    </div>
+    <div class="sig-clear"><button onclick="clearSig()">Clear &amp; redraw</button></div>
+
+    <div style="margin-top:22px">
+      <button class="btn btn-primary" id="submit-btn" onclick="submitForm()">I Agree &amp; Submit &#x2713;</button>
+    </div>
+    <p style="font-size:11px;color:#9aa8b5;text-align:center;margin-top:10px">Your details and signature are stored securely with a timestamp.</p>
+  </div>
+
+</div>
+
+<!-- ===== SCREEN 3: Success ===== -->
+<div id="screen-done" class="screen">
+  <div class="success-hero">
+    <div class="s-icon">&#x2705;</div>
+    <h2>Documents Signed</h2>
+    <p>Your signature has been recorded securely.<br>A confirmation will be sent to your email.</p>
+  </div>
+  <div class="card">
+    <span class="pill">Signing Record</span>
+    <div id="record-box" style="margin-top:12px"></div>
+  </div>
+  <div class="card" id="dl-buttons"></div>
+  <p class="footer-note">
+    Hedin Automotive Ltd &mdash; Ruxley BMW &mdash; BMW Group Authorised Retailer
+  </p>
+</div>
+
+</div><!-- /main -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = { apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E", authDomain:"forecourt-1b6bc.firebaseapp.com", databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app", projectId:"forecourt-1b6bc", storageBucket:"forecourt-1b6bc.firebasestorage.app", messagingSenderId:"1073459223252", appId:"1:1073459223252:web:d65abed953fc641fc7b941" };
+const db = getDatabase(initializeApp(FB));
+
+let includeComm = true, includeRAV = true;
+let calcType = 2, commAmount = 0, commPct = 0;
+let ivsChassisReg = '', dealerName = '';
+let sigPad = null, signedRecord = null;
+
+// ---- Toggles ----
+window.toggleDoc = function(which) {
+  if (which === 'comm') {
+    includeComm = !includeComm;
+    document.getElementById('sw-comm').classList.toggle('on', includeComm);
+    document.getElementById('row-comm').classList.toggle('active', includeComm);
+    document.getElementById('tc-comm').classList.toggle('open', includeComm);
+  } else {
+    includeRAV = !includeRAV;
+    document.getElementById('sw-rav').classList.toggle('on', includeRAV);
+    document.getElementById('row-rav').classList.toggle('active', includeRAV);
+    document.getElementById('tc-rav').classList.toggle('open', includeRAV);
+  }
+  const warn = document.getElementById('sel-warn');
+  warn.style.display = (!includeComm && !includeRAV) ? 'block' : 'none';
+};
+
+window.onCalcChange = function() {
+  calcType = parseInt(document.querySelector('input[name="calc"]:checked').value);
+  document.getElementById("opt1").classList.toggle("on", calcType === 1);
+  document.getElementById("opt2").classList.toggle("on", calcType === 2);
+  document.getElementById("pct-wrap").style.display = calcType === 2 ? "block" : "none";
+};
+
+// ---- Dealer screen → Customer screen ----
+window.goToSign = function() {
+  if (!includeComm && !includeRAV) {
+    document.getElementById('sel-warn').style.display = 'block';
+    return;
+  }
+  dealerName = document.getElementById("inp-dealer").value.trim();
+  if (!dealerName) { alert("Please enter your name."); return; }
+
+  if (includeComm) {
+    commAmount = parseFloat(document.getElementById("inp-amount").value);
+    commPct    = parseFloat(document.getElementById("inp-pct").value);
+    if (!commAmount || commAmount <= 0) { alert("Please enter the commission amount."); return; }
+    if (calcType === 2 && (!commPct || commPct <= 0)) { alert("Please enter the commission percentage."); return; }
+  }
+  if (includeRAV) {
+    ivsChassisReg = document.getElementById("inp-ivs").value.trim();
+    if (!ivsChassisReg) { alert("Please enter the IVS / Chassis / Reg."); return; }
+  }
+
+  prepareCustomerScreen();
+  showScreen("screen-sign");
+  setTimeout(initSig, 120);
+};
+
+function prepareCustomerScreen() {
+  const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const d = new Date();
+  document.getElementById("inp-date").value =
+    String(d.getDate()).padStart(2,"0") + "/" +
+    String(d.getMonth()+1).padStart(2,"0") + "/" + d.getFullYear();
+
+  // Commission disclosure section
+  document.getElementById("comm-doc-section").style.display = includeComm ? "block" : "none";
+  if (includeComm) {
+    const isC1 = calcType === 1;
+    document.getElementById("d-amount-1").textContent = isC1 ? fmt(commAmount) : "—";
+    document.getElementById("d-amount-2").textContent = !isC1 ? fmt(commAmount) : "—";
+    document.getElementById("d-pct").textContent = !isC1 ? commPct + "%" : "—";
+    document.getElementById("tick1").textContent = isC1 ? "✓" : "";
+    document.getElementById("tick2").textContent = !isC1 ? "✓" : "";
+    document.getElementById("d-pct-row").style.display = !isC1 ? "flex" : "none";
+  }
+
+  // RAV fields
+  document.getElementById("rav-intro").style.display        = includeRAV ? "block" : "none";
+  document.getElementById("rav-detail-fields").style.display = includeRAV ? "block" : "none";
+  document.getElementById("rav-dob-field").style.display     = includeRAV ? "block" : "none";
+  document.getElementById("rav-ivs-section").style.display   = includeRAV ? "block" : "none";
+  if (includeRAV) document.getElementById("disp-ivs").value  = ivsChassisReg;
+
+  // Declarations
+  document.getElementById("decl-comm").style.display = includeComm ? "block" : "none";
+  document.getElementById("decl-rav").style.display  = includeRAV  ? "block" : "none";
+
+  // Notice text
+  const notices = {
+    both: "⚠️ Please read the commission disclosure carefully, and check your registration details. Ask your sales executive if you have any questions before signing.",
+    comm: "⚠️ Please read this commission disclosure carefully before signing. Ask your Retailer if you have any questions before proceeding.",
+    rav:  "⚠️ Please check your registration details carefully. These will be used to register your new vehicle with the DVLA and will appear on your V5."
+  };
+  document.getElementById("notice-bar").textContent =
+    (includeComm && includeRAV) ? notices.both : includeComm ? notices.comm : notices.rav;
+
+  // Doc badges
+  let b = '';
+  if (includeComm) b += '<span class="doc-badge doc-badge-comm">Commission Disclosure</span>';
+  if (includeRAV)  b += '<span class="doc-badge doc-badge-rav">RAV Registration</span>';
+  document.getElementById("doc-badges").innerHTML = b;
+}
+
+// ---- Signature pad ----
+function initSig() {
+  const canvas = document.getElementById("sig-canvas");
+  const wrap   = document.getElementById("sig-wrap");
+  const dpr    = window.devicePixelRatio || 1;
+  canvas.width  = wrap.offsetWidth * dpr;
+  canvas.height = 160 * dpr;
+  canvas.style.height = "160px";
+  canvas.getContext("2d").scale(dpr, dpr);
+  sigPad = new SignaturePad(canvas, { penColor: "#12263a", backgroundColor: "rgba(0,0,0,0)" });
+  sigPad.addEventListener("beginStroke", () => {
+    document.getElementById("sig-hint").style.display = "none";
+  });
+}
+
+window.clearSig = function() {
+  if (sigPad) sigPad.clear();
+  document.getElementById("sig-hint").style.display = "block";
+};
+
+// ---- Submit ----
+window.submitForm = async function() {
+  const name  = document.getElementById("inp-name").value.trim();
+  const email = document.getElementById("inp-email").value.trim();
+  let address = '', postcode = '', tel = '', dob = '';
+
+  if (!name)                        { alert("Please enter your full name.");        return; }
+  if (!/\S+@\S+\.\S+/.test(email)) { alert("Please enter a valid email address."); return; }
+
+  if (includeRAV) {
+    address  = document.getElementById("inp-address").value.trim();
+    postcode = document.getElementById("inp-postcode").value.trim().toUpperCase();
+    tel      = document.getElementById("inp-tel").value.trim();
+    dob      = document.getElementById("inp-dob").value.trim();
+    if (!address)  { alert("Please enter your address.");          return; }
+    if (!postcode) { alert("Please enter your postcode.");         return; }
+    if (!tel)      { alert("Please enter your telephone number."); return; }
+    if (!dob)      { alert("Please enter your date of birth.");    return; }
+  }
+  if (!sigPad || sigPad.isEmpty()) { alert("Please draw your signature."); return; }
+
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true; btn.textContent = "Saving…";
+
+  const sigData  = sigPad.toDataURL("image/png");
+  const now      = new Date();
+  const forms    = [...(includeComm ? ['comm'] : []), ...(includeRAV ? ['rav'] : [])];
+  const recordId = "multi_" + Date.now() + "_" + Math.random().toString(36).substr(2,6);
+
+  let ip = "unavailable";
+  try { const r = await fetch("https://api.ipify.org?format=json"); ip = (await r.json()).ip; } catch(_) {}
+
+  const record = {
+    id: recordId,
+    forms,
+    retailer: "Hedin Automotive Ltd — Ruxley BMW",
+    dealerName,
+    customerName: name,
+    customerEmail: email,
+    signedAt: now.toISOString(),
+    userAgent: navigator.userAgent,
+    ipAddress: ip,
+    signature: sigData,
+    ...(includeComm && {
+      disclosureVersion: "V3.0 26.11.2024",
+      commissionCalcType: calcType,
+      commissionAmount: commAmount,
+      commissionPct: calcType === 2 ? commPct : null
+    }),
+    ...(includeRAV && { ivsChassisReg, address, postcode, telephone: tel, dateOfBirth: dob })
+  };
+
+  try {
+    await set(ref(db, "disclosures/" + recordId), record);
+    signedRecord = record;
+  } catch(e) {
+    btn.disabled = false; btn.textContent = "I Agree & Submit ✓";
+    alert("Could not save — please check your connection and try again.");
+    return;
+  }
+
+  const downloadLink = location.origin + '/combined-download.html?id=' + recordId;
+  const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const formLabel = forms.map(f => f === 'comm' ? 'Commission Disclosure' : 'RAV Registration').join(' + ');
+
+  try {
+    await fetch("https://formspree.io/f/xqewleog", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        _subject: formLabel + " Signed — " + name,
+        form_type: formLabel,
+        customer_name: name,
+        customer_email: email,
+        dealer_name: dealerName,
+        ...(includeComm && {
+          commission_type: "Calculation " + calcType + (calcType === 2 ? " (percentage)" : " (fixed)"),
+          commission_amount: fmt(commAmount),
+          commission_pct: calcType === 2 ? commPct + "%" : "N/A"
+        }),
+        ...(includeRAV && { ivs_chassis_reg: ivsChassisReg, postcode }),
+        submitted_at: now.toLocaleString("en-GB"),
+        record_id: recordId,
+        download_pdf: downloadLink
+      })
+    });
+  } catch(_) {}
+
+  // Success screen
+  const fmtDate = new Date(record.signedAt).toLocaleString("en-GB", {
+    day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"
+  });
+  document.getElementById("record-box").innerHTML = `
+    <div class="record-row"><span class="record-lbl">Record ID</span><span class="record-val" style="font-family:monospace;font-size:11px">${recordId}</span></div>
+    <div class="record-row"><span class="record-lbl">Documents</span><span class="record-val">${formLabel}</span></div>
+    <div class="record-row"><span class="record-lbl">Customer</span><span class="record-val">${name}</span></div>
+    <div class="record-row"><span class="record-lbl">Email</span><span class="record-val">${email}</span></div>
+    ${includeComm ? `<div class="record-row"><span class="record-lbl">Commission</span><span class="record-val">${fmt(commAmount)}${calcType===2?" @ "+commPct+"%":" (fixed)"}</span></div>` : ""}
+    ${includeRAV  ? `<div class="record-row"><span class="record-lbl">IVS / Chassis / Reg</span><span class="record-val">${ivsChassisReg}</span></div>` : ""}
+    <div class="record-row"><span class="record-lbl">Signed at</span><span class="record-val">${fmtDate}</span></div>
+  `;
+
+  const dlDiv = document.getElementById("dl-buttons");
+  dlDiv.innerHTML = '';
+  if (includeComm) dlDiv.innerHTML += `<button class="btn btn-primary" onclick="window.dlComm()" style="margin-bottom:10px">&#x2B07; Download Commission Disclosure PDF</button>`;
+  if (includeRAV)  dlDiv.innerHTML += `<button class="btn btn-primary" onclick="window.dlRAV()">&#x2B07; Download RAV Registration PDF</button>`;
+
+  showScreen("screen-done");
+};
+
+// ---- PDF: Commission (compact — 1 page) ----
+function buildCommissionPDF(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, mg = 10, cw = W - mg * 2;
+  let y = 10;
+
+  function tx(txt, x, size, bold, color, maxW, align, gap) {
+    maxW = maxW || cw; align = align || 'left'; gap = (gap === undefined) ? 1.5 : gap;
+    doc.setFontSize(size);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setTextColor(...(color || [18, 38, 58]));
+    const lines = doc.splitTextToSize(txt, maxW);
+    doc.text(lines, align === 'center' ? W/2 : x, y, { align });
+    y += lines.length * (size * 0.4) + gap;
+  }
+  function hline(col) {
+    doc.setDrawColor(...(col || [180,200,220])); doc.setLineWidth(0.35);
+    doc.line(mg, y, W-mg, y); y += 4;
+  }
+  function tableRow(lbl, val, ticked) {
+    const h = 5.5, tickX = W - mg - 9;
+    doc.setFillColor(238,243,248); doc.rect(mg, y, 86, h, 'F');
+    doc.setFillColor(255,255,255); doc.rect(mg+86, y, cw-95, h, 'F');
+    doc.setFillColor(246,249,252); doc.rect(tickX, y, 9, h, 'F');
+    doc.setDrawColor(180,200,220); doc.setLineWidth(0.18);
+    doc.rect(mg, y, cw, h);
+    doc.line(mg+86, y, mg+86, y+h);
+    doc.line(tickX, y, tickX, y+h);
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(50,70,95);
+    doc.text(doc.splitTextToSize(lbl, 82)[0], mg+1.5, y+3.8);
+    doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+    doc.text(val, mg+88, y+3.8);
+    if (ticked) {
+      doc.setDrawColor(30,80,150); doc.setLineWidth(0.6);
+      doc.line(tickX+1.5, y+3.5, tickX+3.2, y+5);
+      doc.line(tickX+3.2, y+5, tickX+7.5, y+1.5);
+    }
+    y += h;
+  }
+
+  const fmtL = n => '£' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const isC1 = r.commissionCalcType === 1;
+
+  // Header
+  doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('BMW', mg, y);
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('GROUP', mg, y+5.5);
+  doc.setFontSize(7); doc.text('Financial Services', mg, y+10);
+  doc.setFontSize(6); doc.setTextColor(100,100,100);
+  doc.text('V3.0 26.11.2024', mg, y+15);
+  y += 20;
+  hline();
+
+  tx('COMMISSION DISCLOSURE FORM', mg, 11, true, [18,38,58], cw, 'center', 2);
+  tx('THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.', mg, 7, true, null, cw, 'center', 3);
+  hline();
+
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('Retailer:', mg, y);
+  doc.setFont('helvetica','normal'); doc.text('Ruxley BMW', mg+18, y); y += 5;
+
+  tx("What is the Retailer's role?", mg, 8, true, null, cw, 'left', 1.5);
+  tx('The Retailer has an arrangement with us to introduce their customers to us. When they introduce you to us, they are acting as a "credit broker". We will pay them a commission for this when you enter into an agreement with us. The Retailer will usually have a selection of lenders or intermediaries, but will normally send your details to us first.', mg, 6.5, false, null, cw, 'left', 1.5);
+  tx('When the Retailer introduces you to us, they are not acting independently. The commission amount might influence them. The Retailer is not giving you advice or recommendations. Depending on your situation, you may find a better deal if you look around.', mg, 6.5, false, null, cw, 'left', 3);
+
+  tx('What commission will we pay to the Retailer?', mg, 8, true, null, cw, 'left', 1.5);
+  tx('If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways. The one that applies in your case is ticked and completed below.', mg, 6.5, false, null, cw, 'left', 2);
+
+  tx('Commission calculation 1: This is a fixed amount that we pay to the Retailer for introducing you.', mg, 6.5, isC1, null, cw, 'left', 1);
+  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '—', isC1);
+  y += 2;
+
+  tx('Commission calculation 2: The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.', mg, 6.5, !isC1, null, cw, 'left', 1);
+  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '—', !isC1);
+  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '—', false);
+  y += 2;
+
+  tx('The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.', mg, 6.5, false, null, cw, 'left', 1.5);
+  tx('The APR interest rate that you pay for your finance agreement with us is fixed. The Retailer cannot change the APR and/or the commission for your finance agreement. We take into account the payment of commission when we set the APRs which we offer to customers.', mg, 6.5, false, null, cw, 'left', 1.5);
+  tx('If you have any questions, please discuss them with your Retailer before signing. DO NOT sign or proceed with your finance if you have any concerns or if the amount shown above is not completed.', mg, 6.5, true, null, cw, 'left', 3);
+
+  tx('Customer consent', mg, 8, true, null, cw, 'left', 1.5);
+  tx('You can choose whether to continue with the finance deal or look around for other alternatives. If you understand what we have explained and are comfortable to proceed, please sign below.', mg, 6.5, false, null, cw, 'left', 3);
+
+  tx('CUSTOMER DECLARATION', mg, 8, true, null, cw, 'left', 1.5);
+  tx('I understand the information in this document. I understand that the Retailer is not acting impartially and will be paid the commission amount disclosed above. I confirm that I am happy to proceed with the finance and consent to the Retailer being paid this amount.', mg, 6.5, false, null, cw, 'left', 4);
+
+  // Signature
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(18,38,58);
+  doc.text('Customer signature:', mg, y); y += 2.5;
+  try { doc.addImage(r.signature, 'PNG', mg, y, 70, 14); } catch(_) {}
+  y += 15;
+  doc.setDrawColor(18,38,58); doc.setLineWidth(0.25); doc.line(mg, y, mg+70, y); y += 5;
+
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('Print name:', mg, y);
+  doc.setFont('helvetica','bold'); doc.text(r.customerName, mg+22, y);
+  doc.setFont('helvetica','normal'); doc.text('Date:', W/2+10, y);
+  doc.setFont('helvetica','bold'); doc.text(new Date(r.signedAt).toLocaleDateString('en-GB'), W/2+22, y);
+  y += 7;
+  hline([160,180,200]);
+
+  // Audit
+  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(60,85,110);
+  doc.text('AUDIT RECORD', mg, y); y += 3;
+  doc.setFont('helvetica','normal');
+  doc.text('Record ID: '+r.id+'   |   Signed: '+new Date(r.signedAt).toLocaleString('en-GB')+'   |   IP: '+r.ipAddress, mg, y); y += 3;
+  doc.setDrawColor(180,200,220); doc.setLineWidth(0.15); doc.line(mg, y, W-mg, y); y += 2.5;
+  doc.setTextColor(130,145,160);
+  doc.text('BMW Financial Services (GB) Limited  |  Registered in England and Wales 01288537  |  Summit ONE, Summit Avenue, Farnborough, Hampshire GU14 0FB  |  Authorised and regulated by the FCA', mg, y, { maxWidth: cw });
+
+  return doc;
+}
+
+// ---- PDF: RAV ----
+function buildRAVPDF(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, mg = 18, cw = W - mg * 2;
+  let y = 16;
+
+  function hline(col) {
+    doc.setDrawColor(...(col||[180,200,220])); doc.setLineWidth(0.4);
+    doc.line(mg, y, W-mg, y); y += 5;
+  }
+  function fRow(lbl, val, grey) {
+    doc.setFontSize(8.5);
+    const lblW = 56;
+    const lines = val ? doc.splitTextToSize(val, cw-lblW-4) : [''];
+    const h = grey ? 9 : Math.max(10, lines.length*4.8+5);
+    if (grey) {
+      doc.setFillColor(218,228,242); doc.rect(mg, y, cw, h, 'F');
+      doc.setDrawColor(180,200,220); doc.setLineWidth(0.2); doc.rect(mg, y, cw, h);
+      doc.setFont('helvetica','bold'); doc.setTextColor(40,60,95);
+      doc.text(lbl, W/2, y+6.2, {align:'center'});
+    } else {
+      doc.setFillColor(238,243,248); doc.rect(mg, y, lblW, h, 'F');
+      doc.setFillColor(255,255,255); doc.rect(mg+lblW, y, cw-lblW, h, 'F');
+      doc.setDrawColor(180,200,220); doc.setLineWidth(0.2);
+      doc.rect(mg, y, cw, h); doc.line(mg+lblW, y, mg+lblW, y+h);
+      doc.setFont('helvetica','normal'); doc.setTextColor(50,70,95);
+      doc.text(lbl, mg+2.5, y+(h/2)+1.8);
+      if (lines[0]) {
+        doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+        doc.text(lines, mg+lblW+2.5, y+(lines.length>1?5.5:(h/2)+1.8));
+      }
+    }
+    y += h;
+  }
+
+  // Header — BMW only (no MINI)
+  doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('Hedin', mg, y);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(60,80,105);
+  doc.text('Automotive Ltd', mg, y+6.5);
+  doc.setFontSize(15); doc.setFont('helvetica','bold'); doc.setTextColor(0,74,152);
+  doc.text('BMW', W-mg, y, {align:'right'});
+  y += 20; hline([150,165,185]);
+
+  doc.setFontSize(15); doc.setFont('helvetica','bold'); doc.setTextColor(185,28,28);
+  doc.text('RAV SPECIAL INSTRUCTIONS', W/2, y, {align:'center'}); y += 9;
+  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('New Car Registration Form', W/2, y, {align:'center'}); y += 12;
+
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(18,38,58);
+  const intro = doc.splitTextToSize('We will register your vehicle with the DVLA using the information below and this will be printed on to your V5 Registration Document.', cw);
+  doc.text(intro, mg, y); y += intro.length*4.5+6;
+
+  fRow('Name', r.customerName);
+  fRow('Address:', r.address);
+  fRow('Postcode:', r.postcode);
+  fRow('Telephone Number:', r.telephone);
+  fRow('Email:', r.customerEmail);
+  fRow('Date of Birth:', r.dateOfBirth);
+  fRow('This section for Hedin Automotive Ltd use only', '', true);
+  fRow('IVS/Chassis/Reg:', r.ivsChassisReg);
+  y += 6;
+
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(18,38,58);
+  const conf = doc.splitTextToSize('I confirm that the details above are correct and understand that these will be used for registering the vehicle with the DVLA.', cw);
+  doc.text(conf, mg, y); y += conf.length*4.5+8;
+
+  if (y > 210) { doc.addPage(); y = 20; }
+
+  const lblW2 = 42, sigW = 72, dateKeyW = 18;
+  function sigRow(label, sigImg, date, h) {
+    doc.setFillColor(255,255,255); doc.rect(mg, y, cw, h, 'F');
+    doc.setDrawColor(180,200,220); doc.setLineWidth(0.2);
+    doc.rect(mg, y, cw, h);
+    doc.line(mg+lblW2, y, mg+lblW2, y+h);
+    doc.line(mg+lblW2+sigW, y, mg+lblW2+sigW, y+h);
+    doc.line(mg+lblW2+sigW+dateKeyW, y, mg+lblW2+sigW+dateKeyW, y+h);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(50,70,95);
+    label.split('\n').forEach((l,i) => doc.text(l, mg+2, y+7+i*5));
+    if (sigImg) {
+      try { doc.addImage(sigImg, 'PNG', mg+lblW2+1, y+1, sigW-2, h-2); } catch(_) {}
+    } else {
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+      doc.text(r.dealerName||'', mg+lblW2+2, y+(h/2)+1);
+      doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(110,115,125);
+      doc.text('signed electronically', mg+lblW2+2, y+(h/2)+6);
+    }
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(50,70,95);
+    doc.text('Date:', mg+lblW2+sigW+2, y+8);
+    doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+    doc.text(date, mg+lblW2+sigW+dateKeyW+2, y+14);
+    y += h;
+  }
+
+  const signedDate = new Date(r.signedAt).toLocaleDateString('en-GB');
+  sigRow('Sales\nExecutive\nSignature', null, signedDate, 22);
+  sigRow('Customer\nSignature:', r.signature, signedDate, 28);
+  y += 8; hline([160,175,195]);
+
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(100,115,130);
+  doc.text('Hedin Automotive Ltd', W/2, y, {align:'center'}); y += 5;
+  doc.text('Ruxley BMW', W/2, y, {align:'center'}); y += 8;
+  hline([185,195,210]);
+
+  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(60,85,110);
+  doc.text('AUDIT RECORD', mg, y); y += 4;
+  doc.setFont('helvetica','normal');
+  doc.text('Record ID: '+r.id, mg, y); y += 3.5;
+  doc.text('Submitted at: '+new Date(r.signedAt).toLocaleString('en-GB'), mg, y); y += 3.5;
+  doc.text('IP Address: '+r.ipAddress, mg, y); y += 3.5;
+  doc.text('Form: RAV Special Instructions V1.0  |  Retailer: '+r.retailer, mg, y);
+
+  return doc;
+}
+
+window.dlComm = function() {
+  if (!signedRecord) return;
+  const r = signedRecord;
+  const doc = buildCommissionPDF(r);
+  const safe = r.customerName.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  const ds   = new Date(r.signedAt).toLocaleDateString('en-GB').replace(/\//g,'-');
+  doc.save('commission-disclosure_'+safe+'_'+ds+'.pdf');
+};
+window.dlRAV = function() {
+  if (!signedRecord) return;
+  const r = signedRecord;
+  const doc = buildRAVPDF(r);
+  const safe = r.customerName.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  const ds   = new Date(r.signedAt).toLocaleDateString('en-GB').replace(/\//g,'-');
+  doc.save('rav-registration_'+safe+'_'+ds+'.pdf');
+};
+
+// ---- Remote link ----
+window.generateRemoteLink = function() {
+  if (!includeComm && !includeRAV) {
+    document.getElementById('sel-warn').style.display = 'block'; return;
+  }
+  dealerName = document.getElementById("inp-dealer").value.trim();
+  if (!dealerName) { alert("Please enter your name first."); return; }
+  if (includeComm) {
+    commAmount = parseFloat(document.getElementById("inp-amount").value);
+    commPct    = parseFloat(document.getElementById("inp-pct").value);
+    if (!commAmount || commAmount <= 0) { alert("Please enter the commission amount first."); return; }
+    if (calcType === 2 && (!commPct || commPct <= 0)) { alert("Please enter the commission percentage first."); return; }
+  }
+  if (includeRAV) {
+    ivsChassisReg = document.getElementById("inp-ivs").value.trim();
+    if (!ivsChassisReg) { alert("Please enter the IVS / Chassis / Reg first."); return; }
+  }
+  const f = includeComm && includeRAV ? 'cr' : includeComm ? 'c' : 'r';
+  const params = new URLSearchParams({ f, dlr: dealerName, mode: 'customer' });
+  if (includeComm) { params.set('calc', calcType); params.set('amt', commAmount); if (calcType===2) params.set('pct', commPct); }
+  if (includeRAV)  { params.set('ivs', ivsChassisReg); }
+  const link = location.origin + '/combined-form.html?' + params.toString();
+  document.getElementById("link-text").textContent = link;
+  document.getElementById("link-card").style.display = "block";
+  document.getElementById("link-card").scrollIntoView({ behavior:'smooth', block:'nearest' });
+};
+
+window.copyLink = function() {
+  const link = document.getElementById("link-text").textContent;
+  const btn  = document.getElementById("copy-btn");
+  navigator.clipboard.writeText(link).then(() => {
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => { btn.innerHTML = "&#x1F4CB; Copy Link"; }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => { btn.innerHTML = "&#x1F4CB; Copy Link"; }, 2000);
+  });
+};
+window.shareWA = function() {
+  const link = document.getElementById("link-text").textContent;
+  window.open('https://wa.me/?text='+encodeURIComponent('Please tap the link below to review and sign your documents:\n\n'+link), '_blank');
+};
+window.shareSMS = function() {
+  const link = document.getElementById("link-text").textContent;
+  window.location.href = 'sms:?body='+encodeURIComponent('Please tap the link to review and sign your documents: '+link);
+};
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+// ---- URL param pre-fill (remote customer link) ----
+const p = new URLSearchParams(location.search);
+if (p.get("mode") === "customer" && p.get("f") && p.get("dlr")) {
+  const f = p.get("f");
+  includeComm = f.includes('c');
+  includeRAV  = f.includes('r');
+  dealerName  = p.get("dlr");
+
+  // Sync toggle UI state
+  document.getElementById('sw-comm').classList.toggle('on', includeComm);
+  document.getElementById('row-comm').classList.toggle('active', includeComm);
+  document.getElementById('tc-comm').classList.toggle('open', includeComm);
+  document.getElementById('sw-rav').classList.toggle('on', includeRAV);
+  document.getElementById('row-rav').classList.toggle('active', includeRAV);
+  document.getElementById('tc-rav').classList.toggle('open', includeRAV);
+
+  if (includeComm) {
+    calcType   = parseInt(p.get("calc") || "2");
+    commAmount = parseFloat(p.get("amt") || "0");
+    commPct    = parseFloat(p.get("pct") || "0");
+    document.querySelector(`input[name="calc"][value="${calcType}"]`).checked = true;
+    document.getElementById("inp-amount").value = commAmount;
+    if (calcType === 2) document.getElementById("inp-pct").value = commPct;
+    onCalcChange();
+  }
+  if (includeRAV) { ivsChassisReg = p.get("ivs") || ''; }
+
+  prepareCustomerScreen();
+  showScreen("screen-sign");
+  setTimeout(initSig, 120);
+}
+</script>
+</body>
+</html>

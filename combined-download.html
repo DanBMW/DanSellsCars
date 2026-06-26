@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Download Signed Documents — Ruxley BMW</title>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--blue:#4D94D8;--blue-dark:#1f4f82;--ink:#12263a;--bg:#eef3f8;--line:#d9e3ee;--muted:#6b7a8c;--success:#2f8f57;--danger:#c54242;--shadow:0 10px 25px rgba(18,38,58,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#f7f9fc 0%,var(--bg) 100%);color:var(--ink);min-height:100vh}
+.topbar{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 18px rgba(31,79,130,.18)}
+.topbar-title{font-size:17px;font-weight:800}.topbar-sub{font-size:11px;opacity:.8;margin-top:2px}
+.main{padding:16px;max-width:560px;margin:0 auto;padding-bottom:48px}
+.card{background:rgba(255,255,255,.95);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.7)}
+.pill{display:inline-block;background:var(--blue-dark);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;margin-bottom:12px;text-transform:uppercase}
+h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.record-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid #eef1f5;font-size:13px;gap:12px}
+.record-row:last-child{border-bottom:none}
+.record-lbl{color:var(--muted);font-weight:600;flex-shrink:0}
+.record-val{font-weight:700;color:var(--ink);text-align:right;word-break:break-all}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:800;border:none;min-height:48px;cursor:pointer;width:100%;transition:all .15s;margin-bottom:10px}
+.btn:last-child{margin-bottom:0}
+.btn-primary{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;box-shadow:0 8px 18px rgba(77,148,216,.28)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(77,148,216,.38)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state-loading,.state-error,.state-ready{display:none}
+.state-loading.show,.state-error.show,.state-ready.show{display:block}
+.error-box{background:#fff5f5;border:1.5px solid #f5c0c0;border-radius:12px;padding:16px;color:var(--danger);font-size:14px;font-weight:600}
+.doc-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;margin-right:6px;margin-bottom:10px}
+.doc-badge-comm{background:#e2ecf7;color:#2a527a}
+.doc-badge-rav{background:#e7f6ee;color:#2f8f57}
+.footer-note{font-size:11px;color:#8a96a3;text-align:center;margin-top:20px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Download Signed Documents</div>
+    <div class="topbar-sub">Hedin Automotive Ltd &mdash; Ruxley BMW</div>
+  </div>
+  <div style="font-size:20px">&#x1F512;</div>
+</div>
+
+<div class="main">
+
+  <div class="card state-loading" id="state-loading">
+    <div style="display:flex;align-items:center;gap:14px;padding:8px 0">
+      <div class="spinner" style="border-color:rgba(77,148,216,.3);border-top-color:var(--blue-dark)"></div>
+      <div>
+        <div style="font-weight:800;font-size:15px">Loading record&hellip;</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px">Fetching from secure database</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card state-error" id="state-error">
+    <div class="error-box" id="error-msg">Record not found.</div>
+  </div>
+
+  <div class="state-ready" id="state-ready">
+    <div class="card">
+      <span class="pill">Signing Record</span>
+      <div id="badge-row" style="margin-top:10px;margin-bottom:4px"></div>
+      <div id="record-box"></div>
+    </div>
+    <div class="card" id="dl-card"></div>
+  </div>
+
+  <p class="footer-note">
+    Hedin Automotive Ltd &mdash; Ruxley BMW &mdash; BMW Group Authorised Retailer
+  </p>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = { apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E", authDomain:"forecourt-1b6bc.firebaseapp.com", databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app", projectId:"forecourt-1b6bc", storageBucket:"forecourt-1b6bc.firebasestorage.app", messagingSenderId:"1073459223252", appId:"1:1073459223252:web:d65abed953fc641fc7b941" };
+const db = getDatabase(initializeApp(FB));
+
+let loadedRecord = null;
+
+function show(id) {
+  ['state-loading','state-error','state-ready'].forEach(s => {
+    document.getElementById(s).classList.toggle('show', s === id);
+  });
+}
+function err(msg) {
+  document.getElementById('error-msg').textContent = msg;
+  show('state-error');
+}
+
+const recordId = new URLSearchParams(location.search).get('id');
+
+if (!recordId) {
+  err('No record ID in the URL. Please use the link from your email.');
+} else {
+  show('state-loading');
+  try {
+    const snap = await get(ref(db, 'disclosures/' + recordId));
+    if (!snap.exists()) {
+      err('Record not found. It may have been removed, or the link may be incomplete.');
+    } else {
+      loadedRecord = snap.val();
+      const r = loadedRecord;
+      const forms = Array.isArray(r.forms) ? r.forms : [];
+      const hasComm = forms.includes('comm');
+      const hasRAV  = forms.includes('rav');
+      const fmt  = n => '£' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      const fmtDate = new Date(r.signedAt).toLocaleString('en-GB', {
+        day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
+      });
+
+      let badges = '';
+      if (hasComm) badges += '<span class="doc-badge doc-badge-comm">Commission Disclosure</span>';
+      if (hasRAV)  badges += '<span class="doc-badge doc-badge-rav">RAV Registration</span>';
+      document.getElementById('badge-row').innerHTML = badges;
+
+      let rows = `
+        <div class="record-row"><span class="record-lbl">Record ID</span><span class="record-val" style="font-family:monospace;font-size:11px">${r.id}</span></div>
+        <div class="record-row"><span class="record-lbl">Customer</span><span class="record-val">${r.customerName}</span></div>
+        <div class="record-row"><span class="record-lbl">Email</span><span class="record-val">${r.customerEmail}</span></div>
+      `;
+      if (hasComm) rows += `<div class="record-row"><span class="record-lbl">Commission</span><span class="record-val">${fmt(r.commissionAmount)}${r.commissionCalcType === 2 ? ' @ ' + r.commissionPct + '%' : ' (fixed)'}</span></div>`;
+      if (hasRAV)  rows += `<div class="record-row"><span class="record-lbl">IVS / Chassis / Reg</span><span class="record-val">${r.ivsChassisReg}</span></div>`;
+      rows += `<div class="record-row"><span class="record-lbl">Signed at</span><span class="record-val">${fmtDate}</span></div>`;
+      document.getElementById('record-box').innerHTML = rows;
+
+      let dlHTML = '';
+      if (hasComm) dlHTML += `<button class="btn btn-primary" id="btn-comm" onclick="dlComm()">&#x2B07; Download Commission Disclosure PDF</button>`;
+      if (hasRAV)  dlHTML += `<button class="btn btn-primary" id="btn-rav"  onclick="dlRAV()">&#x2B07; Download RAV Registration PDF</button>`;
+      document.getElementById('dl-card').innerHTML = dlHTML;
+
+      show('state-ready');
+    }
+  } catch(e) {
+    err('Could not load record: ' + e.message);
+  }
+}
+
+function withSpinner(btnId, label, fn) {
+  const btn = document.getElementById(btnId);
+  if (!btn || !loadedRecord) return;
+  btn.innerHTML = '<div class="spinner"></div> Generating PDF&hellip;';
+  btn.disabled = true;
+  setTimeout(() => {
+    try { fn(loadedRecord); } catch(e) { alert('PDF generation failed: ' + e.message); }
+    btn.innerHTML = label;
+    btn.disabled = false;
+  }, 50);
+}
+
+window.dlComm = function() {
+  withSpinner('btn-comm', '&#x2B07; Download Commission Disclosure PDF', r => {
+    const doc = buildCommissionPDF(r);
+    const safe = r.customerName.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    const ds   = new Date(r.signedAt).toLocaleDateString('en-GB').replace(/\//g,'-');
+    doc.save('commission-disclosure_'+safe+'_'+ds+'.pdf');
+  });
+};
+
+window.dlRAV = function() {
+  withSpinner('btn-rav', '&#x2B07; Download RAV Registration PDF', r => {
+    const doc = buildRAVPDF(r);
+    const safe = r.customerName.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    const ds   = new Date(r.signedAt).toLocaleDateString('en-GB').replace(/\//g,'-');
+    doc.save('rav-registration_'+safe+'_'+ds+'.pdf');
+  });
+};
+
+// ---- PDF: Commission (compact — 1 page) ----
+function buildCommissionPDF(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, mg = 10, cw = W - mg * 2;
+  let y = 10;
+
+  function tx(txt, x, size, bold, color, maxW, align, gap) {
+    maxW = maxW || cw; align = align || 'left'; gap = (gap === undefined) ? 1.5 : gap;
+    doc.setFontSize(size);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setTextColor(...(color || [18, 38, 58]));
+    const lines = doc.splitTextToSize(txt, maxW);
+    doc.text(lines, align === 'center' ? W/2 : x, y, { align });
+    y += lines.length * (size * 0.4) + gap;
+  }
+  function hline(col) {
+    doc.setDrawColor(...(col || [180,200,220])); doc.setLineWidth(0.35);
+    doc.line(mg, y, W-mg, y); y += 4;
+  }
+  function tableRow(lbl, val, ticked) {
+    const h = 5.5, tickX = W - mg - 9;
+    doc.setFillColor(238,243,248); doc.rect(mg, y, 86, h, 'F');
+    doc.setFillColor(255,255,255); doc.rect(mg+86, y, cw-95, h, 'F');
+    doc.setFillColor(246,249,252); doc.rect(tickX, y, 9, h, 'F');
+    doc.setDrawColor(180,200,220); doc.setLineWidth(0.18);
+    doc.rect(mg, y, cw, h);
+    doc.line(mg+86, y, mg+86, y+h);
+    doc.line(tickX, y, tickX, y+h);
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(50,70,95);
+    doc.text(doc.splitTextToSize(lbl, 82)[0], mg+1.5, y+3.8);
+    doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+    doc.text(val, mg+88, y+3.8);
+    if (ticked) {
+      doc.setDrawColor(30,80,150); doc.setLineWidth(0.6);
+      doc.line(tickX+1.5, y+3.5, tickX+3.2, y+5);
+      doc.line(tickX+3.2, y+5, tickX+7.5, y+1.5);
+    }
+    y += h;
+  }
+
+  const fmtL = n => '£' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const isC1 = r.commissionCalcType === 1;
+
+  doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('BMW', mg, y);
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('GROUP', mg, y+5.5);
+  doc.setFontSize(7); doc.text('Financial Services', mg, y+10);
+  doc.setFontSize(6); doc.setTextColor(100,100,100);
+  doc.text('V3.0 26.11.2024', mg, y+15);
+  y += 20;
+  hline();
+
+  tx('COMMISSION DISCLOSURE FORM', mg, 11, true, [18,38,58], cw, 'center', 2);
+  tx('THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.', mg, 7, true, null, cw, 'center', 3);
+  hline();
+
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('Retailer:', mg, y);
+  doc.setFont('helvetica','normal'); doc.text('Ruxley BMW', mg+18, y); y += 5;
+
+  tx("What is the Retailer's role?", mg, 8, true, null, cw, 'left', 1.5);
+  tx('The Retailer has an arrangement with us to introduce their customers to us. When they introduce you to us, they are acting as a "credit broker". We will pay them a commission for this when you enter into an agreement with us. The Retailer will usually have a selection of lenders or intermediaries, but will normally send your details to us first.', mg, 6.5, false, null, cw, 'left', 1.5);
+  tx('When the Retailer introduces you to us, they are not acting independently. The commission amount might influence them. The Retailer is not giving you advice or recommendations. Depending on your situation, you may find a better deal if you look around.', mg, 6.5, false, null, cw, 'left', 3);
+
+  tx('What commission will we pay to the Retailer?', mg, 8, true, null, cw, 'left', 1.5);
+  tx('If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways. The one that applies in your case is ticked and completed below.', mg, 6.5, false, null, cw, 'left', 2);
+
+  tx('Commission calculation 1: This is a fixed amount that we pay to the Retailer for introducing you.', mg, 6.5, isC1, null, cw, 'left', 1);
+  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '—', isC1);
+  y += 2;
+
+  tx('Commission calculation 2: The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.', mg, 6.5, !isC1, null, cw, 'left', 1);
+  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '—', !isC1);
+  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '—', false);
+  y += 2;
+
+  tx('The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.', mg, 6.5, false, null, cw, 'left', 1.5);
+  tx('The APR interest rate that you pay for your finance agreement with us is fixed. The Retailer cannot change the APR and/or the commission for your finance agreement. We take into account the payment of commission when we set the APRs which we offer to customers.', mg, 6.5, false, null, cw, 'left', 1.5);
+  tx('If you have any questions, please discuss them with your Retailer before signing. DO NOT sign or proceed with your finance if you have any concerns or if the amount shown above is not completed.', mg, 6.5, true, null, cw, 'left', 3);
+
+  tx('Customer consent', mg, 8, true, null, cw, 'left', 1.5);
+  tx('You can choose whether to continue with the finance deal or look around for other alternatives. If you understand what we have explained and are comfortable to proceed, please sign below.', mg, 6.5, false, null, cw, 'left', 3);
+
+  tx('CUSTOMER DECLARATION', mg, 8, true, null, cw, 'left', 1.5);
+  tx('I understand the information in this document. I understand that the Retailer is not acting impartially and will be paid the commission amount disclosed above. I confirm that I am happy to proceed with the finance and consent to the Retailer being paid this amount.', mg, 6.5, false, null, cw, 'left', 4);
+
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(18,38,58);
+  doc.text('Customer signature:', mg, y); y += 2.5;
+  try { doc.addImage(r.signature, 'PNG', mg, y, 70, 14); } catch(_) {}
+  y += 15;
+  doc.setDrawColor(18,38,58); doc.setLineWidth(0.25); doc.line(mg, y, mg+70, y); y += 5;
+
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('Print name:', mg, y);
+  doc.setFont('helvetica','bold'); doc.text(r.customerName, mg+22, y);
+  doc.setFont('helvetica','normal'); doc.text('Date:', W/2+10, y);
+  doc.setFont('helvetica','bold'); doc.text(new Date(r.signedAt).toLocaleDateString('en-GB'), W/2+22, y);
+  y += 7;
+  hline([160,180,200]);
+
+  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(60,85,110);
+  doc.text('AUDIT RECORD', mg, y); y += 3;
+  doc.setFont('helvetica','normal');
+  doc.text('Record ID: '+r.id+'   |   Signed: '+new Date(r.signedAt).toLocaleString('en-GB')+'   |   IP: '+r.ipAddress, mg, y); y += 3;
+  doc.setDrawColor(180,200,220); doc.setLineWidth(0.15); doc.line(mg, y, W-mg, y); y += 2.5;
+  doc.setTextColor(130,145,160);
+  doc.text('BMW Financial Services (GB) Limited  |  Registered in England and Wales 01288537  |  Summit ONE, Summit Avenue, Farnborough, Hampshire GU14 0FB  |  Authorised and regulated by the FCA', mg, y, { maxWidth: cw });
+
+  return doc;
+}
+
+// ---- PDF: RAV ----
+function buildRAVPDF(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, mg = 18, cw = W - mg * 2;
+  let y = 16;
+
+  function hline(col) {
+    doc.setDrawColor(...(col||[180,200,220])); doc.setLineWidth(0.4);
+    doc.line(mg, y, W-mg, y); y += 5;
+  }
+  function fRow(lbl, val, grey) {
+    doc.setFontSize(8.5);
+    const lblW = 56;
+    const lines = val ? doc.splitTextToSize(val, cw-lblW-4) : [''];
+    const h = grey ? 9 : Math.max(10, lines.length*4.8+5);
+    if (grey) {
+      doc.setFillColor(218,228,242); doc.rect(mg, y, cw, h, 'F');
+      doc.setDrawColor(180,200,220); doc.setLineWidth(0.2); doc.rect(mg, y, cw, h);
+      doc.setFont('helvetica','bold'); doc.setTextColor(40,60,95);
+      doc.text(lbl, W/2, y+6.2, {align:'center'});
+    } else {
+      doc.setFillColor(238,243,248); doc.rect(mg, y, lblW, h, 'F');
+      doc.setFillColor(255,255,255); doc.rect(mg+lblW, y, cw-lblW, h, 'F');
+      doc.setDrawColor(180,200,220); doc.setLineWidth(0.2);
+      doc.rect(mg, y, cw, h); doc.line(mg+lblW, y, mg+lblW, y+h);
+      doc.setFont('helvetica','normal'); doc.setTextColor(50,70,95);
+      doc.text(lbl, mg+2.5, y+(h/2)+1.8);
+      if (lines[0]) {
+        doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+        doc.text(lines, mg+lblW+2.5, y+(lines.length>1?5.5:(h/2)+1.8));
+      }
+    }
+    y += h;
+  }
+
+  // Header — BMW only (no MINI)
+  doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('Hedin', mg, y);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(60,80,105);
+  doc.text('Automotive Ltd', mg, y+6.5);
+  doc.setFontSize(15); doc.setFont('helvetica','bold'); doc.setTextColor(0,74,152);
+  doc.text('BMW', W-mg, y, {align:'right'});
+  y += 20; hline([150,165,185]);
+
+  doc.setFontSize(15); doc.setFont('helvetica','bold'); doc.setTextColor(185,28,28);
+  doc.text('RAV SPECIAL INSTRUCTIONS', W/2, y, {align:'center'}); y += 9;
+  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('New Car Registration Form', W/2, y, {align:'center'}); y += 12;
+
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(18,38,58);
+  const intro = doc.splitTextToSize('We will register your vehicle with the DVLA using the information below and this will be printed on to your V5 Registration Document.', cw);
+  doc.text(intro, mg, y); y += intro.length*4.5+6;
+
+  fRow('Name', r.customerName);
+  fRow('Address:', r.address);
+  fRow('Postcode:', r.postcode);
+  fRow('Telephone Number:', r.telephone);
+  fRow('Email:', r.customerEmail);
+  fRow('Date of Birth:', r.dateOfBirth);
+  fRow('This section for Hedin Automotive Ltd use only', '', true);
+  fRow('IVS/Chassis/Reg:', r.ivsChassisReg);
+  y += 6;
+
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(18,38,58);
+  const conf = doc.splitTextToSize('I confirm that the details above are correct and understand that these will be used for registering the vehicle with the DVLA.', cw);
+  doc.text(conf, mg, y); y += conf.length*4.5+8;
+
+  if (y > 210) { doc.addPage(); y = 20; }
+
+  const lblW2 = 42, sigW = 72, dateKeyW = 18;
+  function sigRow(label, sigImg, date, h) {
+    doc.setFillColor(255,255,255); doc.rect(mg, y, cw, h, 'F');
+    doc.setDrawColor(180,200,220); doc.setLineWidth(0.2);
+    doc.rect(mg, y, cw, h);
+    doc.line(mg+lblW2, y, mg+lblW2, y+h);
+    doc.line(mg+lblW2+sigW, y, mg+lblW2+sigW, y+h);
+    doc.line(mg+lblW2+sigW+dateKeyW, y, mg+lblW2+sigW+dateKeyW, y+h);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(50,70,95);
+    label.split('\n').forEach((l,i) => doc.text(l, mg+2, y+7+i*5));
+    if (sigImg) {
+      try { doc.addImage(sigImg, 'PNG', mg+lblW2+1, y+1, sigW-2, h-2); } catch(_) {}
+    } else {
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+      doc.text(r.dealerName||'', mg+lblW2+2, y+(h/2)+1);
+      doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(110,115,125);
+      doc.text('signed electronically', mg+lblW2+2, y+(h/2)+6);
+    }
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(50,70,95);
+    doc.text('Date:', mg+lblW2+sigW+2, y+8);
+    doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+    doc.text(date, mg+lblW2+sigW+dateKeyW+2, y+14);
+    y += h;
+  }
+
+  const signedDate = new Date(r.signedAt).toLocaleDateString('en-GB');
+  sigRow('Sales\nExecutive\nSignature', null, signedDate, 22);
+  sigRow('Customer\nSignature:', r.signature, signedDate, 28);
+  y += 8; hline([160,175,195]);
+
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(100,115,130);
+  doc.text('Hedin Automotive Ltd', W/2, y, {align:'center'}); y += 5;
+  doc.text('Ruxley BMW', W/2, y, {align:'center'}); y += 8;
+  hline([185,195,210]);
+
+  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(60,85,110);
+  doc.text('AUDIT RECORD', mg, y); y += 4;
+  doc.setFont('helvetica','normal');
+  doc.text('Record ID: '+r.id, mg, y); y += 3.5;
+  doc.text('Submitted at: '+new Date(r.signedAt).toLocaleString('en-GB'), mg, y); y += 3.5;
+  doc.text('IP Address: '+r.ipAddress, mg, y); y += 3.5;
+  doc.text('Form: RAV Special Instructions V1.0  |  Retailer: '+r.retailer, mg, y);
+
+  return doc;
+}
+</script>
+</body>
+</html>

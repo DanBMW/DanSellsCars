@@ -411,11 +411,9 @@ function buildPDF(r) {
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 80, 105);
   doc.text('Automotive Ltd', mg, y + 6.5);
 
-  // BMW and MINI text logos (right side)
+  // BMW text logo (right side)
   doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 74, 152);
   doc.text('BMW', W - mg, y, { align: 'right' });
-  doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(20, 20, 20);
-  doc.text('MINI', W - mg, y + 8, { align: 'right' });
 
   y += 20;
   hline([150, 165, 185]);
