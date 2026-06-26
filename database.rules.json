@@ -1,0 +1,18 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "forecourt": {
+      ".read": true,
+      ".write": true
+    },
+
+    "disclosures": {
+      ".read": "auth != null",
+      "$disclosureId": {
+        ".write": "!data.exists()"
+      }
+    }
+  }
+}
