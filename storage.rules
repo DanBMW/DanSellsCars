@@ -1,0 +1,12 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /disclosures/{fileName} {
+      // Anyone can upload a signed disclosure PDF (generated in the customer's browser)
+      allow write: if request.resource.size < 2 * 1024 * 1024
+                   && request.resource.contentType == 'application/pdf';
+      // Public read so the link in Dan's email works without signing in
+      allow read: if true;
+    }
+  }
+}
