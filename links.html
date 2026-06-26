@@ -142,6 +142,10 @@ a{color:inherit;text-decoration:none}
 .btn-row{display:flex;gap:7px}
 .btn-row .btn-open,.btn-row .btn-copy,.btn-row .btn-wa{flex:1;justify-content:center}
 
+/* Vehicle type chips — exclusive (radio-style), blue accent */
+.chip.on-type{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.38);color:#93c5fd}
+.chip.on-type .chip-dot{opacity:1}
+
 @media(max-width:500px){
   .link-card{flex-wrap:wrap}
   .link-actions{width:100%;justify-content:flex-end}
@@ -236,7 +240,14 @@ a{color:inherit;text-decoration:none}
     <!-- Purchase Thank You sender -->
     <div class="widget-card">
       <div class="widget-name">&#x1F389; Purchase Thank You</div>
-      <div class="widget-desc">Mark what&rsquo;s been completed, enter customer name, then share the purchase page via WhatsApp.</div>
+      <div class="widget-desc">Select the car type, mark what&rsquo;s been completed, enter the customer name, then share.</div>
+      <div class="widget-title" style="margin-bottom:8px;">Car type</div>
+      <div class="chip-row" style="margin-bottom:16px;">
+        <div class="chip" id="vchip-stock" onclick="selectType('stock')"><span class="chip-dot"></span>Stock New Car</div>
+        <div class="chip" id="vchip-order" onclick="selectType('order')"><span class="chip-dot"></span>Factory Order</div>
+        <div class="chip" id="vchip-used" onclick="selectType('used')"><span class="chip-dot"></span>BMW Used</div>
+      </div>
+      <div class="widget-title" style="margin-bottom:8px;">Documents</div>
       <div class="chip-row">
         <div class="chip" id="chip-deposit" onclick="toggleChip('deposit')"><span class="chip-dot"></span>Deposit Paid</div>
         <div class="chip" id="chip-finance" onclick="toggleChip('finance')"><span class="chip-dot"></span>Proposal Form</div>
@@ -647,19 +658,32 @@ function shareCalWA(type) {
 
 // ── Purchase Thank You ──
 const chipState = { deposit: false, finance: false, order: false };
+let vehicleType = null;
+
 function toggleChip(key) {
   chipState[key] = !chipState[key];
-  document.getElementById('chip-' + key).classList.toggle('on', chipState[key]);
+  document.getElementById(‘chip-’ + key).classList.toggle(‘on’, chipState[key]);
 }
+
+function selectType(t) {
+  vehicleType = (vehicleType === t) ? null : t;
+  [‘stock’,’order’,’used’].forEach(function(k) {
+    const el = document.getElementById(‘vchip-’ + k);
+    el.classList.toggle(‘on-type’, vehicleType === k);
+    el.classList.remove(‘on’);
+  });
+}
+
 function sharePurchaseWA() {
-  const name  = document.getElementById('ty-name').value.trim();
-  const code  = (chipState.deposit ? '1' : '0') + (chipState.finance ? '1' : '0') + (chipState.order ? '1' : '0');
+  const name  = document.getElementById(‘ty-name’).value.trim();
+  const code  = (chipState.deposit ? ‘1’ : ‘0’) + (chipState.finance ? ‘1’ : ‘0’) + (chipState.order ? ‘1’ : ‘0’);
   const params = new URLSearchParams({ c: code });
-  if (name) params.set('name', name);
-  const link = 'https://dan-sells.co.uk/purchase-thankyou.html?' + params.toString();
-  const greeting = name ? 'Congratulations ' + name + ' on your' : 'Congratulations on your';
-  const msg = greeting + ' purchase with BMW Ruxley, please find some useful information and FAQ’s within the link below.\n\n' + link;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  if (name) params.set(‘name’, name);
+  if (vehicleType) params.set(‘type’, vehicleType);
+  const link = ‘https://dan-sells.co.uk/purchase-thankyou.html?’ + params.toString();
+  const greeting = name ? ‘Congratulations ‘ + name + ‘ on your’ : ‘Congratulations on your’;
+  const msg = greeting + ‘ purchase with BMW Ruxley, please find some useful information and FAQ\’s within the link below.\n\n’ + link;
+  window.open(‘https://wa.me/?text=’ + encodeURIComponent(msg), ‘_blank’);
 }
 </script>
 </body>
