@@ -553,8 +553,9 @@ window.submitForm = async function() {
   const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   const formLabel = forms.map(f => f === 'comm' ? 'Commission Disclosure' : 'RAV Registration').join(' + ');
 
+  let formspreeOk = false;
   try {
-    await fetch("https://formspree.io/f/xqewleog", {
+    const fsRes = await fetch("https://formspree.io/f/xqewleog", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
@@ -574,7 +575,9 @@ window.submitForm = async function() {
         download_pdf: downloadLink
       })
     });
-  } catch(_) {}
+    formspreeOk = fsRes.ok;
+    if (!fsRes.ok) console.error("Formspree error", fsRes.status, await fsRes.text());
+  } catch(e) { console.error("Formspree fetch failed", e); }
 
   // Success screen
   const fmtDate = new Date(record.signedAt).toLocaleString("en-GB", {
@@ -592,6 +595,7 @@ window.submitForm = async function() {
 
   const dlDiv = document.getElementById("dl-buttons");
   dlDiv.innerHTML = '';
+  if (!formspreeOk) dlDiv.innerHTML += `<div style="background:#fff5f5;border:1.5px solid #fcc;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:#c54242;margin-bottom:14px">&#x26A0;&#xFE0F; Email notification may not have sent — please download the PDFs below and keep for your records. Record ID: ${recordId}</div>`;
   if (includeComm) dlDiv.innerHTML += `<button class="btn btn-primary" onclick="window.dlComm()" style="margin-bottom:10px">&#x2B07; Download Commission Disclosure PDF</button>`;
   if (includeRAV)  dlDiv.innerHTML += `<button class="btn btn-primary" onclick="window.dlRAV()">&#x2B07; Download RAV Registration PDF</button>`;
 
