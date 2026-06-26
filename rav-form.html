@@ -324,7 +324,7 @@ window.submitForm = async function() {
     return;
   }
 
-  const downloadLink = location.origin + '/rav-download.html?id=' + recordId;
+  const downloadLink = 'rav-download.html?id=' + recordId;
 
   try {
     await fetch("https://formspree.io/f/xqewleog", {
@@ -341,7 +341,7 @@ window.submitForm = async function() {
         date_of_birth: dob,
         submitted_at: now.toLocaleString("en-GB"),
         record_id: recordId,
-        download_pdf: downloadLink
+        record_download: downloadLink
       })
     });
   } catch(_) {}

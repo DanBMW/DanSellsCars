@@ -549,7 +549,7 @@ window.submitForm = async function() {
     return;
   }
 
-  const downloadLink = location.origin + '/combined-download.html?id=' + recordId;
+  const downloadLink = 'combined-download.html?id=' + recordId;
   const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   const formLabel = forms.map(f => f === 'comm' ? 'Commission Disclosure' : 'RAV Registration').join(' + ');
 
@@ -572,7 +572,7 @@ window.submitForm = async function() {
         ...(includeRAV && { ivs_chassis_reg: ivsChassisReg, postcode }),
         submitted_at: now.toLocaleString("en-GB"),
         record_id: recordId,
-        download_pdf: downloadLink
+        record_download: downloadLink
       })
     });
     formspreeOk = fsRes.ok;

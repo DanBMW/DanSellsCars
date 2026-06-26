@@ -410,7 +410,7 @@ window.submitForm = async function() {
   }
 
   // Build a secure download link — the record ID acts as a secret key
-  const downloadLink = location.origin + '/commission-download.html?id=' + recordId;
+  const downloadLink = 'commission-download.html?id=' + recordId;
 
   // Email Dan via Formspree — includes the one-click PDF download link
   const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -427,7 +427,7 @@ window.submitForm = async function() {
         commission_pct: calcType === 2 ? commPct + "%" : "N/A",
         signed_at: now.toLocaleString("en-GB"),
         record_id: recordId,
-        download_pdf: downloadLink
+        record_download: downloadLink
       })
     });
   } catch(_) {}
