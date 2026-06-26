@@ -205,7 +205,19 @@ function buildPDF(r) {
   const fmtL = n => '£' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   const isC1 = r.commissionCalcType === 1;
 
-  tx('COMMISSION DISCLOSURE FORM', mg, 13, true, null, cw, 'center', 3);
+  // Header — mirrors BMW Financial Services form layout
+  doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('BMW', mg, y);
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.text('GROUP', mg, y + 7);
+  doc.setFontSize(8);
+  doc.text('Financial Services', mg, y + 12);
+  doc.setFontSize(7); doc.setTextColor(100,100,100);
+  doc.text('V3.0 26.11.2024', mg, y + 18);
+  y += 26;
+  hline();
+
+  tx('COMMISSION DISCLOSURE FORM', mg, 13, true, [18,38,58], cw, 'center', 3);
   tx('THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.', mg, 8, true, null, cw, 'center', 4);
   hline();
 

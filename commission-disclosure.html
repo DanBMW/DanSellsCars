@@ -97,6 +97,14 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
 .screen{display:none}
 .screen.active{display:block}
 
+.or-div{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-weight:700;margin:18px 0 14px;text-transform:uppercase;letter-spacing:.05em}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--line)}
+.link-display{background:#f0f7ff;border:1.5px solid #c2daf5;border-radius:10px;padding:11px 13px;font-size:11px;font-family:monospace;word-break:break-all;color:#1f4f82;margin-bottom:10px;line-height:1.5}
+.btn-copy{background:var(--blue-dark);color:#fff;border:none;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:800;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px}
+.share-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-wa{background:#25D366;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-sms{background:#eef3f8;color:var(--ink);border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-gen{background:#eef3f8;color:var(--ink);border:none;border-radius:12px;padding:13px 24px;font-size:15px;font-weight:800;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px}
 @media(max-width:480px){
   .radio-group{flex-direction:column}
   h2{font-size:16px}
@@ -149,7 +157,21 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
       </div>
 
       <div style="margin-top:22px">
-        <button class="btn btn-primary" onclick="goToSign()">Review &amp; Hand to Customer &#8594;</button>
+        <button class="btn btn-primary" onclick="goToSign()">&#x1F4F1; Hand Device to Customer &#8594;</button>
+      </div>
+
+      <div class="or-div">or send remotely</div>
+
+      <p class="sub" style="margin:0 0 12px">Generate a link to send to your customer so they can sign from their own phone or computer.</p>
+      <button class="btn-gen" onclick="generateRemoteLink()">&#x1F517; Generate Customer Link</button>
+
+      <div id="link-card" style="display:none;margin-top:14px">
+        <div class="link-display" id="link-text"></div>
+        <button class="btn-copy" id="copy-btn" onclick="copyLink()">&#x1F4CB; Copy Link</button>
+        <div class="share-row">
+          <button class="btn-wa" onclick="shareWA()">&#x1F4F2; WhatsApp</button>
+          <button class="btn-sms" onclick="shareSMS()">&#x2709;&#xFE0F; SMS / Email</button>
+        </div>
       </div>
     </div>
     <p class="bmw-footer">Signed records are stored securely in your Firebase database.</p>
@@ -474,7 +496,20 @@ function buildPDF(r) {
   const isC1 = r.commissionCalcType === 1;
 
   // Title
-  tx('COMMISSION DISCLOSURE FORM', mg, 13, true, null, cw, 'center', 3);
+  // Header — mirrors BMW Financial Services form layout
+  doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
+  doc.text('BMW', mg, y);
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.text('GROUP', mg, y + 7);
+  doc.setFontSize(8);
+  doc.text('Financial Services', mg, y + 12);
+  // Version bottom-left
+  doc.setFontSize(7); doc.setTextColor(100,100,100);
+  doc.text('V3.0 26.11.2024', mg, y + 18);
+  y += 26;
+  hline();
+
+  tx('COMMISSION DISCLOSURE FORM', mg, 13, true, [18,38,58], cw, 'center', 3);
   tx('THIS IS IMPORTANT INFORMATION PROVIDED BY BMW FINANCIAL SERVICES ABOUT THE COMMISSION WE PAY TO THE RETAILER.', mg, 8, true, null, cw, 'center', 4);
   hline();
 
@@ -560,6 +595,44 @@ window.downloadPDF = function() {
   doc.save('commission-disclosure_' + safeName + '_' + dateStr + '.pdf');
 };
 
+// ---- Remote link generation ----
+window.generateRemoteLink = function() {
+  const amount = parseFloat(document.getElementById("inp-amount").value);
+  const pct    = parseFloat(document.getElementById("inp-pct").value);
+  if (!amount || amount <= 0)                           { alert("Please enter the commission amount first."); return; }
+  if (calcType === 2 && (!pct || pct <= 0))             { alert("Please enter the commission percentage first."); return; }
+  const params = new URLSearchParams({ calc: calcType, amount: amount, mode: 'customer' });
+  if (calcType === 2) params.set('pct', pct);
+  const link = location.origin + '/commission-disclosure.html?' + params.toString();
+  document.getElementById("link-text").textContent = link;
+  document.getElementById("link-card").style.display = "block";
+  document.getElementById("link-card").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+window.copyLink = function() {
+  const link = document.getElementById("link-text").textContent;
+  const btn  = document.getElementById("copy-btn");
+  navigator.clipboard.writeText(link).then(() => {
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => { btn.innerHTML = "&#x1F4CB; Copy Link"; }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => { btn.innerHTML = "&#x1F4CB; Copy Link"; }, 2000);
+  });
+};
+
+window.shareWA = function() {
+  const link = document.getElementById("link-text").textContent;
+  window.open('https://wa.me/?text=' + encodeURIComponent('Please tap the link below to review and sign your BMW finance commission disclosure:\n\n' + link), '_blank');
+};
+
+window.shareSMS = function() {
+  const link = document.getElementById("link-text").textContent;
+  window.location.href = 'sms:?body=' + encodeURIComponent('Please tap the link to review and sign your BMW finance commission disclosure: ' + link);
+};
+
 // ---- Helpers ----
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
@@ -567,12 +640,15 @@ function showScreen(id) {
   window.scrollTo(0, 0);
 }
 
-// URL param pre-fill: ?calc=2&amount=1716.58&pct=9.9
+// URL param pre-fill — when mode=customer, skip dealer screen automatically
 const p = new URLSearchParams(location.search);
 if (p.get("calc"))   { const v = p.get("calc"); document.querySelector(`input[name="calc"][value="${v}"]`).checked = true; }
 if (p.get("amount")) document.getElementById("inp-amount").value = p.get("amount");
 if (p.get("pct"))    document.getElementById("inp-pct").value    = p.get("pct");
 onCalcChange();
+if (p.get("mode") === "customer" && p.get("calc") && p.get("amount")) {
+  if (parseInt(p.get("calc")) !== 2 || p.get("pct")) goToSign();
+}
 </script>
 </body>
 </html>
