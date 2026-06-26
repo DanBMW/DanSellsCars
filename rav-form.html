@@ -546,14 +546,26 @@ window.copyLink = function() {
   });
 };
 
+function buildShareMessage(link) {
+  return (
+    'Dear Customer,\n\n' +
+    'Please find the link below containing important documentation relating to the registration of your new BMW, which requires your review and electronic signature before we can proceed.\n\n' +
+    'This form captures the details in which your vehicle will be registered with the DVLA, which will appear on your V5C Registration Document. Please read all information carefully and ensure everything is correct before signing.\n\n' +
+    'Please tap the link below at your earliest convenience:\n\n' +
+    link + '\n\n' +
+    'Should you have any questions, please do not hesitate to contact me directly.\n\n' +
+    'Kind regards,\n' + (dealerName || 'Your BMW Sales Executive') + '\nBMW Sales Executive | Ruxley BMW\nHedin Automotive Ltd'
+  );
+}
+
 window.shareWA = function() {
   const link = document.getElementById("link-text").textContent;
-  window.open('https://wa.me/?text=' + encodeURIComponent('Please tap the link below to complete and sign your vehicle registration form:\n\n' + link), '_blank');
+  window.open('https://wa.me/?text=' + encodeURIComponent(buildShareMessage(link)), '_blank');
 };
 
 window.shareSMS = function() {
   const link = document.getElementById("link-text").textContent;
-  window.location.href = 'sms:?body=' + encodeURIComponent('Please tap the link to complete and sign your vehicle registration form: ' + link);
+  window.location.href = 'sms:?body=' + encodeURIComponent(buildShareMessage(link));
 };
 
 function showScreen(id) {

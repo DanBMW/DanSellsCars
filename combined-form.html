@@ -870,13 +870,28 @@ window.copyLink = function() {
     setTimeout(() => { btn.innerHTML = "&#x1F4CB; Copy Link"; }, 2000);
   });
 };
+function buildShareMessage(link) {
+  let docLines = [];
+  if (includeRAV)  docLines.push('Included within this link are the details in which your vehicle will be registered with the DVLA. These will appear on your V5C Registration Document — please read them carefully and ensure all information is correct before signing.');
+  if (includeComm) docLines.push('Also included is a BMW Financial Services Commission Disclosure Form, which provides important information regarding the commission paid to your retailer in connection with your finance arrangement. Please read this carefully before signing.');
+  return (
+    'Dear Customer,\n\n' +
+    'Please find the link below containing important documentation relating to your new BMW, which requires your review and electronic signature before we can proceed.\n\n' +
+    docLines.join('\n\n') + '\n\n' +
+    'Please tap the link below at your earliest convenience:\n\n' +
+    link + '\n\n' +
+    'Should you have any questions, please do not hesitate to contact me directly.\n\n' +
+    'Kind regards,\n' + dealerName + '\nBMW Sales Executive | Ruxley BMW\nHedin Automotive Ltd'
+  );
+}
+
 window.shareWA = function() {
   const link = document.getElementById("link-text").textContent;
-  window.open('https://wa.me/?text='+encodeURIComponent('Please tap the link below to review and sign your documents:\n\n'+link), '_blank');
+  window.open('https://wa.me/?text=' + encodeURIComponent(buildShareMessage(link)), '_blank');
 };
 window.shareSMS = function() {
   const link = document.getElementById("link-text").textContent;
-  window.location.href = 'sms:?body='+encodeURIComponent('Please tap the link to review and sign your documents: '+link);
+  window.location.href = 'sms:?body=' + encodeURIComponent(buildShareMessage(link));
 };
 
 function showScreen(id) {

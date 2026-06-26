@@ -623,14 +623,27 @@ window.copyLink = function() {
   });
 };
 
+function buildShareMessage(link) {
+  const dealer = document.getElementById('inp-dealer').value.trim() || 'Your BMW Sales Executive';
+  return (
+    'Dear Customer,\n\n' +
+    'Please find the link below containing an important BMW Financial Services document relating to your finance arrangement, which requires your careful review and electronic signature.\n\n' +
+    'This Commission Disclosure Form provides important information about the commission paid to your retailer when arranging finance on your behalf. Please read this carefully before signing.\n\n' +
+    'Please tap the link below at your earliest convenience:\n\n' +
+    link + '\n\n' +
+    'Should you have any questions, please do not hesitate to contact me directly.\n\n' +
+    'Kind regards,\n' + dealer + '\nBMW Sales Executive | Ruxley BMW\nHedin Automotive Ltd'
+  );
+}
+
 window.shareWA = function() {
   const link = document.getElementById("link-text").textContent;
-  window.open('https://wa.me/?text=' + encodeURIComponent('Please tap the link below to review and sign your BMW finance commission disclosure:\n\n' + link), '_blank');
+  window.open('https://wa.me/?text=' + encodeURIComponent(buildShareMessage(link)), '_blank');
 };
 
 window.shareSMS = function() {
   const link = document.getElementById("link-text").textContent;
-  window.location.href = 'sms:?body=' + encodeURIComponent('Please tap the link to review and sign your BMW finance commission disclosure: ' + link);
+  window.location.href = 'sms:?body=' + encodeURIComponent(buildShareMessage(link));
 };
 
 // ---- Helpers ----
