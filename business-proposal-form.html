@@ -119,7 +119,10 @@
       .no-print-bar{display:none!important;}
       .page-wrap{margin:0;box-shadow:none;padding:10px 14px 20px;}
       @page{size:A4;margin:12mm 12mm 16mm;}
+      .print-val{display:block;font-size:11px;color:#1a2540;word-break:break-all;white-space:pre-wrap;padding:1px 2px;min-height:1em;}
+      .print-val-radio{display:block;font-size:11px;color:#1a2540;font-weight:600;padding:2px;}
     }
+    .print-val,.print-val-radio{display:none;}
   </style>
 </head>
 <body>
@@ -598,5 +601,39 @@
 
 </div><!-- end .page-wrap -->
 
+<script>
+(function(){
+  var frozen=false;
+  function freeze(){
+    if(frozen)return;
+    frozen=true;
+    document.querySelectorAll('.input-cell input[type="text"],.input-cell input[type="email"],.input-cell textarea').forEach(function(el){
+      var d=document.createElement('span');
+      d.className='print-val';
+      d.textContent=el.value;
+      el.parentNode.insertBefore(d,el);
+      el.style.display='none';
+    });
+    document.querySelectorAll('.yesno-cell').forEach(function(cell){
+      var checked=cell.querySelector('input[type="radio"]:checked');
+      var d=document.createElement('span');
+      d.className='print-val-radio';
+      d.textContent=checked?checked.value.charAt(0).toUpperCase()+checked.value.slice(1):'—';
+      cell.parentNode.insertBefore(d,cell);
+      cell.style.display='none';
+    });
+  }
+  function thaw(){
+    if(!frozen)return;
+    frozen=false;
+    document.querySelectorAll('.print-val,.print-val-radio').forEach(function(d){d.remove();});
+    document.querySelectorAll('.input-cell input,.input-cell textarea,.yesno-cell').forEach(function(el){el.style.display='';});
+  }
+  window.addEventListener('beforeprint',freeze);
+  window.addEventListener('afterprint',thaw);
+  var _orig=window.print;
+  window.print=function(){freeze();setTimeout(function(){_orig.call(window);setTimeout(thaw,800);},30);};
+})();
+</script>
 </body>
 </html>
