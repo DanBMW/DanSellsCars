@@ -422,9 +422,12 @@ const PHONE_CALLS = [
   { caller:'Sophie Marchetti', type:'hot', preview:'Ready to buy — needs callback',
     q:"Sophie: 'Hi, I've been looking at the 1 Series online. I'm ready to come in — is there someone I can speak to?'",
     opts:[{t:"Arrange callback and note her details.",p:80},{t:"Tell her to come in whenever.",p:30}]},
-  { caller:'Kevin Marsh', type:'complaint', preview:'Data breach complaint',
+  { caller:'Kevin Marsh', type:'complaint', preview:'Data breach complaint', oneshot:true,
     q:"Kevin: 'I received a call from someone I've never heard of with my full name, address and the car I enquired about. I believe one of your staff — Sergio — has sent my personal details to a third party. I'm absolutely furious.'",
-    opts:[{t:"I am so sorry to hear this — let me transfer you to my manager right away. This will be dealt with immediately.",p:50},{t:"I'm sure it was a misunderstanding — I'll personally look into it.",p:-30},{t:"Sucks to be you, love. These things happen.",p:-60}]}
+    opts:[{t:"I am so sorry to hear this — let me transfer you to my manager right away. This will be dealt with immediately.",p:50},{t:"I'm sure it was a misunderstanding — I'll personally look into it.",p:-30},{t:"Sucks to be you, love. These things happen.",p:-60}]},
+  { caller:'Priya Kapoor — Fleet', type:'hot', preview:'Company car test drive request',
+    q:"Priya: 'Hi, I manage company cars for a local firm — one of our directors wants to test drive the 3 Series this week. Who should I speak to?'",
+    opts:[{t:"I'll book that test drive in right now — what day suits the director?",p:70},{t:"We're fully booked this week I'm afraid.",p:-30}]}
 ];
 
 const EMAILS = [
@@ -465,7 +468,17 @@ const SERVICE_SCENARIOS = [
     is_prospect:true,
     steps:[{ q:"They mentioned going electric. What do you do?",
       opts:[{t:"Let's talk EVs first! Then we'll get Matt to sort the brakes.",p:40,ho:false},
-            {t:"Matt in Service can handle the brakes — I'll get him.",p:-20,ho:true}]}]}
+            {t:"Matt in Service can handle the brakes — I'll get him.",p:-20,ho:true}]}]},
+  { opening:"Hi, just having a browse if that's alright — not looking to buy today, just curious.",
+    is_prospect:true,
+    steps:[{ q:"A browser with no pressure. How do you engage?",
+      opts:[{t:"Of course — take your time. I'm here if anything catches your eye. Any model in mind?",p:40,ho:false},
+            {t:"Well, we have offers ending this weekend if you want to talk numbers.",p:-20,ho:false}]}]},
+  { opening:"Hi, I'm expecting an insurance payout in about three months after my write-off — not ready to commit yet, but thought I'd start looking.",
+    is_prospect:true,
+    steps:[{ q:"Three months away from buying. What's the right move?",
+      opts:[{t:"Perfect time to start. Let's find the right car now and I'll rebook you for when the payout lands.",p:40,ho:false},
+            {t:"Three months is a while away — pop back when you're ready and we'll see what's in stock.",p:-20,ho:false}]}]}
 ];
 
 const MGRS = {
@@ -539,7 +552,8 @@ function initG() {
     nextEmail: rand(EMAIL_MIN,EMAIL_MAX),
     nextSpawn: 5,
     jobSchedule:[],
-    svcSchedule:[]
+    svcSchedule:[],
+    sergioGdprFired:false
   };
 }
 
@@ -566,12 +580,14 @@ function initThree(){
 
   clock3 = new THREE.Clock();
 
-  // Lights
-  scene.add(new THREE.AmbientLight(0xffffff,0.55));
-  const sun = new THREE.DirectionalLight(0xffffff,0.85);
-  sun.position.set(4,14,6); sun.castShadow=true; scene.add(sun);
-  const showL = new THREE.PointLight(0xffffff,0.45,28);
-  showL.position.set(-7,6,0); scene.add(showL);
+  // Lights — warm showroom / cool forecourt split
+  scene.add(new THREE.AmbientLight(0xfff5e8,0.38));
+  const sun = new THREE.DirectionalLight(0xffffff,0.72);
+  sun.position.set(8,16,6); sun.castShadow=true; scene.add(sun);
+  const showL = new THREE.PointLight(0xfff8e0,0.7,32);
+  showL.position.set(-7,7,0); scene.add(showL);
+  const foreL = new THREE.PointLight(0xddeeff,0.55,26);
+  foreL.position.set(7,7,0); scene.add(foreL);
 
   buildWorld();
   buildPlayer();
@@ -585,8 +601,15 @@ function initThree(){
 }
 
 function buildWorld(){
-  // Showroom floor
-  const sf = new THREE.Mesh(new THREE.PlaneGeometry(14,19),new THREE.MeshLambertMaterial({color:0xe4ddd4}));
+  // Showroom floor — tiled texture
+  const sfCv=document.createElement('canvas'); sfCv.width=256; sfCv.height=256;
+  const sfCtx=sfCv.getContext('2d');
+  sfCtx.fillStyle='#e4ddd4'; sfCtx.fillRect(0,0,256,256);
+  sfCtx.strokeStyle='rgba(155,142,130,0.5)'; sfCtx.lineWidth=2;
+  for(let i=1;i<8;i++){const v=i/8*256;sfCtx.beginPath();sfCtx.moveTo(v,0);sfCtx.lineTo(v,256);sfCtx.stroke();sfCtx.beginPath();sfCtx.moveTo(0,v);sfCtx.lineTo(256,v);sfCtx.stroke();}
+  const sfTex=new THREE.CanvasTexture(sfCv);
+  sfTex.wrapS=sfTex.wrapT=THREE.RepeatWrapping; sfTex.repeat.set(5,7);
+  const sf=new THREE.Mesh(new THREE.PlaneGeometry(14,19),new THREE.MeshLambertMaterial({map:sfTex}));
   sf.rotation.x=-Math.PI/2; sf.position.set(-7,0.01,0); sf.receiveShadow=true;
   sf.userData={type:'floor'}; scene.add(sf); floorObjs.push(sf);
 
@@ -607,20 +630,64 @@ function buildWorld(){
   });
 
   // Glass divider (two segments with doorway gap)
-  const gMat=new THREE.MeshLambertMaterial({color:0x1c69d4,transparent:true,opacity:0.35});
+  const gMat=new THREE.MeshLambertMaterial({color:0x1c69d4,transparent:true,opacity:0.28});
   const g1=new THREE.Mesh(new THREE.BoxGeometry(0.18,3.5,7),gMat);
   g1.position.set(0.09,1.75,-6); scene.add(g1);
   const g2=new THREE.Mesh(new THREE.BoxGeometry(0.18,3.5,7),gMat);
   g2.position.set(0.09,1.75,6); scene.add(g2);
+  // Chrome base strip along glass divider
+  const chromeMat=new THREE.MeshLambertMaterial({color:0xbbbbbb});
+  const cBase=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.1,19),chromeMat);
+  cBase.position.set(0.09,0.05,0); scene.add(cBase);
+  // Chrome top caps on glass panels
+  [-6,6].forEach(pz=>{
+    const cTop=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.08,7),chromeMat);
+    cTop.position.set(0.09,3.54,pz); scene.add(cTop);
+  });
 
   // Back wall
   const bw=new THREE.Mesh(new THREE.BoxGeometry(14,4,0.28),new THREE.MeshLambertMaterial({color:0xcccccc}));
   bw.position.set(-7,2,-9.5); scene.add(bw);
+  // Wainscoting panel strip (lower wall)
+  const wains=new THREE.Mesh(new THREE.BoxGeometry(14,0.72,0.14),new THREE.MeshLambertMaterial({color:0xa8a4a0}));
+  wains.position.set(-7,0.4,-9.42); scene.add(wains);
+  const skirt=new THREE.Mesh(new THREE.BoxGeometry(14,0.1,0.16),new THREE.MeshLambertMaterial({color:0x888480}));
+  skirt.position.set(-7,0.05,-9.41); scene.add(skirt);
+  // BMW Roundel canvas texture on back wall
+  const rndCv=document.createElement('canvas'); rndCv.width=128; rndCv.height=128;
+  const rCtx=rndCv.getContext('2d');
+  rCtx.fillStyle='#1a1a1a'; rCtx.beginPath(); rCtx.arc(64,64,62,0,Math.PI*2); rCtx.fill();
+  rCtx.fillStyle='#1c69d4';
+  rCtx.beginPath(); rCtx.moveTo(64,64); rCtx.arc(64,64,54,Math.PI,1.5*Math.PI); rCtx.closePath(); rCtx.fill();
+  rCtx.beginPath(); rCtx.moveTo(64,64); rCtx.arc(64,64,54,0,0.5*Math.PI); rCtx.closePath(); rCtx.fill();
+  rCtx.fillStyle='#ffffff';
+  rCtx.beginPath(); rCtx.moveTo(64,64); rCtx.arc(64,64,54,1.5*Math.PI,2*Math.PI); rCtx.closePath(); rCtx.fill();
+  rCtx.beginPath(); rCtx.moveTo(64,64); rCtx.arc(64,64,54,0.5*Math.PI,Math.PI); rCtx.closePath(); rCtx.fill();
+  rCtx.strokeStyle='#1a1a1a'; rCtx.lineWidth=4; rCtx.beginPath(); rCtx.arc(64,64,54,0,Math.PI*2); rCtx.stroke();
+  rCtx.strokeStyle='rgba(30,30,30,0.6)'; rCtx.lineWidth=2; rCtx.beginPath(); rCtx.moveTo(64,10); rCtx.lineTo(64,118); rCtx.stroke(); rCtx.beginPath(); rCtx.moveTo(10,64); rCtx.lineTo(118,64); rCtx.stroke();
+  rCtx.fillStyle='#1a1a1a'; rCtx.font='bold 13px Arial'; rCtx.textAlign='center'; rCtx.fillText('BMW',64,108);
+  const rndTex=new THREE.CanvasTexture(rndCv);
+  const rndMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.8,1.8),new THREE.MeshBasicMaterial({map:rndTex,transparent:true}));
+  rndMesh.position.set(-7,2.4,-9.36); scene.add(rndMesh);
+  // Dealership name on wall
+  const plqCv=document.createElement('canvas'); plqCv.width=512; plqCv.height=96;
+  const plqCtx=plqCv.getContext('2d');
+  plqCtx.font='bold 46px Arial'; plqCtx.fillStyle='rgba(28,105,212,0.95)'; plqCtx.textAlign='center'; plqCtx.fillText('BMW HEDIN RUXLEY',256,68);
+  const plqMesh=new THREE.Mesh(new THREE.PlaneGeometry(5,0.9),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(plqCv),transparent:true}));
+  plqMesh.position.set(-3.5,3.3,-9.36); scene.add(plqMesh);
 
   // Stations
   addStation('coffee',-12,-8.3,0xc0392b,'☕');
   addStation('toilet',-9,-8.3,0x2471a3,'🚻');
   addStation('sofa',-5.5,-8.3,0x7d3c98,'🛋️');
+
+  // Decorative plants in showroom corners and near entrance
+  [[-13,6],[-13,-6],[-1.5,7],[-1.5,-7]].forEach(([px,pz])=>{
+    const pot=new THREE.Mesh(new THREE.CylinderGeometry(0.19,0.14,0.3,8),new THREE.MeshLambertMaterial({color:0x7a5c40}));
+    pot.position.set(px,0.15,pz); scene.add(pot);
+    const plant=new THREE.Mesh(new THREE.SphereGeometry(0.32,7,5),new THREE.MeshLambertMaterial({color:0x2d7a2d}));
+    plant.scale.set(1,1.35,1); plant.position.set(px,0.65,pz); scene.add(plant);
+  });
 
   // Showroom hero cars on plinths
   const showCarDefs=[
@@ -677,39 +744,103 @@ function buildCar(col){
   const g=new THREE.Group();
   const bMat=new THREE.MeshLambertMaterial({color:col});
   const dMat=new THREE.MeshLambertMaterial({color:0x111111});
-  const wMat=new THREE.MeshLambertMaterial({color:0x88aacc,transparent:true,opacity:0.75});
+  const wMat=new THREE.MeshLambertMaterial({color:0x88aacc,transparent:true,opacity:0.7});
+  const lMat=new THREE.MeshBasicMaterial({color:0xffffcc}); // headlights always bright
+  const rLMat=new THREE.MeshBasicMaterial({color:0xff2200}); // rear lights
+  const pMat=new THREE.MeshLambertMaterial({color:0xeeeeee}); // plate
+  const hubMat=new THREE.MeshLambertMaterial({color:0xbbbbbb}); // alloy hub
 
-  // Body
-  const body=new THREE.Mesh(new THREE.BoxGeometry(2.0,0.48,0.95),bMat);
-  body.position.y=0.24; g.add(body);
-  // Cabin
-  const cab=new THREE.Mesh(new THREE.BoxGeometry(1.15,0.42,0.88),bMat);
-  cab.position.set(-0.08,0.68,0); g.add(cab);
+  // Main body sill
+  const body=new THREE.Mesh(new THREE.BoxGeometry(2.1,0.46,1.0),bMat);
+  body.position.y=0.27; g.add(body);
+  // Hood (front overhang, slightly lower)
+  const hood=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.3,1.0),bMat);
+  hood.position.set(0.82,0.18,0); g.add(hood);
+  // Boot/trunk (rear, lower)
+  const boot=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.25,1.0),bMat);
+  boot.position.set(-0.88,0.155,0); g.add(boot);
+  // Cabin roof
+  const cab=new THREE.Mesh(new THREE.BoxGeometry(1.1,0.4,0.9),bMat);
+  cab.position.set(-0.05,0.7,0); g.add(cab);
   // Windscreen
-  const ws=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.33,0.84),wMat);
-  ws.position.set(0.48,0.64,0); g.add(ws);
+  const ws=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.34,0.87),wMat);
+  ws.position.set(0.47,0.67,0); g.add(ws);
   // Rear window
-  const rw=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.33,0.84),wMat);
-  rw.position.set(-0.66,0.64,0); g.add(rw);
-  // Kidney grille
-  const gr=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.14,0.28),dMat);
-  gr.position.set(0.98,0.22,0); g.add(gr);
-  // Wheels
-  [[0.62,0,0.52],[0.62,0,-0.52],[-0.62,0,0.52],[-0.62,0,-0.52]].forEach(([wx,wy,wz])=>{
-    const w=new THREE.Mesh(new THREE.CylinderGeometry(0.21,0.21,0.14,10),dMat);
+  const rw=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.32,0.87),wMat);
+  rw.position.set(-0.56,0.66,0); g.add(rw);
+  // Side windows
+  [-0.455,0.455].forEach(zo=>{
+    const sw=new THREE.Mesh(new THREE.BoxGeometry(0.87,0.25,0.04),wMat);
+    sw.position.set(-0.03,0.7,zo); g.add(sw);
+  });
+  // Twin kidney grille
+  [-0.15,0.15].forEach(zo=>{
+    const gr=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.17,0.13),dMat);
+    gr.position.set(1.06,0.29,zo); g.add(gr);
+  });
+  // Front bumper bar
+  const fb=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.09,1.0),dMat);
+  fb.position.set(1.06,0.08,0); g.add(fb);
+  // Headlights (LED-strip style)
+  [-0.36,0.36].forEach(zo=>{
+    const hl=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.08,0.19),lMat);
+    hl.position.set(1.04,0.36,zo); g.add(hl);
+  });
+  // Rear lights
+  [-0.36,0.36].forEach(zo=>{
+    const tl=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.13,0.22),rLMat);
+    tl.position.set(-1.07,0.27,zo); g.add(tl);
+  });
+  // Rear bumper
+  const rb=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.07,1.0),dMat);
+  rb.position.set(-1.07,0.06,0); g.add(rb);
+  // Number plates
+  [1.07,-1.07].forEach(xp=>{
+    const pl=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.07,0.32),pMat);
+    pl.position.set(xp,0.16,0); g.add(pl);
+  });
+  // Side mirrors
+  [-0.51,0.51].forEach(zo=>{
+    const mir=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.06,0.05),dMat);
+    mir.position.set(0.38,0.61,zo); g.add(mir);
+  });
+  // Wheels + alloy hub caps
+  [[0.68,0.22,0.55],[0.68,0.22,-0.55],[-0.62,0.22,0.55],[-0.62,0.22,-0.55]].forEach(([wx,wy,wz])=>{
+    const w=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.14,12),dMat);
     w.rotation.z=Math.PI/2; w.position.set(wx,wy,wz); g.add(w);
+    const hub=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.11,0.15,8),hubMat);
+    hub.rotation.z=Math.PI/2; hub.position.set(wx,wy,wz); g.add(hub);
   });
   return g;
 }
 
 function buildPlayer(){
   const g=new THREE.Group();
-  const bMat=new THREE.MeshLambertMaterial({color:0x2980b9});
-  const hMat=new THREE.MeshLambertMaterial({color:0xf0c090});
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.85,10),bMat);
+  const suitMat=new THREE.MeshLambertMaterial({color:0x1a3a72});
+  const shirtMat=new THREE.MeshLambertMaterial({color:0xfafafa});
+  const skinMat=new THREE.MeshLambertMaterial({color:0xf0c090});
+  const hairMat=new THREE.MeshLambertMaterial({color:0x3a2010});
+  const tieMat=new THREE.MeshLambertMaterial({color:0x1c69d4});
+  // Suit body (slightly tapered)
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.21,0.23,0.82,10),suitMat);
   body.position.y=0.42; g.add(body);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,10),hMat);
+  // Shoulders
+  [-0.22,0.22].forEach(zo=>{
+    const sh=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.07,0.14),suitMat);
+    sh.position.set(0,0.73,zo); g.add(sh);
+  });
+  // White shirt strip
+  const shirt=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.2,0.08),shirtMat);
+  shirt.position.set(0.17,0.67,0); g.add(shirt);
+  // Tie
+  const tie=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.15,0.05),tieMat);
+  tie.position.set(0.17,0.6,0); g.add(tie);
+  // Head
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.2,9,8),skinMat);
   head.position.y=1.05; g.add(head);
+  // Hair
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(0.19,8,4),hairMat);
+  hair.scale.set(1.06,0.55,1.06); hair.position.set(0,1.18,-0.01); g.add(hair);
   playerMesh=g;
   playerPos=V3(-7,0,1);
   playerTarget=playerPos.clone();
@@ -719,15 +850,21 @@ function buildPlayer(){
 
 // ─── CUSTOMER MESHES ──────────────────────────────────────────
 const C_COLS=[0xe74c3c,0x27ae60,0xf39c12,0x9b59b6,0x1abc9c,0xe67e22,0xc0392b,0x16a085];
+const SKIN_COLS=[0xf0c090,0xe8a870,0xc07840,0x8b5a2b,0xfadbb4,0xd4956b,0xa07040,0xf5cfa0];
+const HAIR_COLS=[0x1a1a1a,0x3a2010,0xaa7733,0xcc4422,0x888888,0x2a1a0a,0x4a3000,0x1a1a40];
 
 function createCustMesh(c){
   if(c.arch&&c.arch.id==='motability'){ createWheelchairMesh(c); return; }
   const g=new THREE.Group();
   const col=C_COLS[c.id%C_COLS.length];
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.78,10),new THREE.MeshLambertMaterial({color:col}));
+  const skinCol=SKIN_COLS[c.id%SKIN_COLS.length];
+  const hairCol=HAIR_COLS[c.id%HAIR_COLS.length];
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.19,0.21,0.78,10),new THREE.MeshLambertMaterial({color:col}));
   body.position.y=0.39; g.add(body);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,10),new THREE.MeshLambertMaterial({color:0xf0c090}));
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,8,7),new THREE.MeshLambertMaterial({color:skinCol}));
   head.position.y=0.96; g.add(head);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(0.17,7,4),new THREE.MeshLambertMaterial({color:hairCol}));
+  hair.scale.set(1.05,0.55,1.05); hair.position.set(0,1.07,-0.01); g.add(hair);
   const rGeo=new THREE.RingGeometry(0.4,0.56,24);
   const rMat=new THREE.MeshBasicMaterial({color:0x2ecc71,side:THREE.DoubleSide});
   const ring=new THREE.Mesh(rGeo,rMat);
@@ -791,10 +928,14 @@ function removeCustMesh(id){
 
 function createServiceMesh(c){
   const g=new THREE.Group();
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.78,10),new THREE.MeshLambertMaterial({color:0xe67e22}));
+  const skinCol=SKIN_COLS[c.id%SKIN_COLS.length];
+  const hairCol=HAIR_COLS[(c.id+3)%HAIR_COLS.length];
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.19,0.21,0.78,10),new THREE.MeshLambertMaterial({color:0xe67e22}));
   body.position.y=0.39; g.add(body);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,10),new THREE.MeshLambertMaterial({color:0xf0c090}));
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,8,7),new THREE.MeshLambertMaterial({color:skinCol}));
   head.position.y=0.96; g.add(head);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(0.17,7,4),new THREE.MeshLambertMaterial({color:hairCol}));
+  hair.scale.set(1.05,0.55,1.05); hair.position.set(0,1.07,-0.01); g.add(hair);
   const rGeo=new THREE.RingGeometry(0.4,0.56,24);
   const rMat=new THREE.MeshBasicMaterial({color:0x2ecc71,side:THREE.DoubleSide});
   const ring=new THREE.Mesh(rGeo,rMat);
@@ -1168,7 +1309,9 @@ function crash(msg){
 // ─── PHONE ───────────────────────────────────────────────────
 function triggerPhone(){
   G.phoneActive=true; G.phoneAnswered=false; G.phoneTimer=8;
-  G.phoneData=PHONE_CALLS[0|Math.random()*PHONE_CALLS.length];
+  const pool=PHONE_CALLS.filter(c=>!c.oneshot||!G.sergioGdprFired);
+  G.phoneData=pool[0|Math.random()*pool.length];
+  if(G.phoneData.oneshot) G.sergioGdprFired=true;
   G.nextPhone=rand(G.phoneMin,G.phoneMax);
   document.getElementById('ph-caller').textContent=G.phoneData.caller;
   document.getElementById('ph-preview').textContent=G.phoneData.preview;
