@@ -344,14 +344,12 @@ const ARCHETYPES = [
       opts:[{t:"The car warns you well in advance and the sat-nav routes you to rapid chargers automatically. If range anxiety is a concern, the 330e PHEV might suit you better.",p:3},{t:"You'd need to call BMW Assist.",p:1},{t:"It doesn't happen — the battery management is very smart.",p:0}]}
   ]},
   { id:'motability', label:'♿', questions:[
-    { q:"I'm on Motability — do you deal with that scheme here?",
-      opts:[{t:"Absolutely — I handle Motability regularly. Which car were you looking at? I'll pull up the current advance payment list.",p:3},{t:"You'd need to contact Motability directly first.",p:0},{t:"Yes, we do. Do you have your allowance amount handy?",p:2}]},
-    { q:"My higher rate allowance is £3,000. Can I get anything decent on that?",
-      opts:[{t:"Yes — several X1 and 1 Series variants are available for less than that. Let me go through the current list with you.",p:3},{t:"Should be fine, I'd imagine.",p:0},{t:"Let me check the latest Motability price guide right now.",p:2}]},
-    { q:"Do I need to sort my own insurance on Motability?",
-      opts:[{t:"No — insurance is included in the scheme for up to two named drivers, plus servicing and breakdown cover.",p:3},{t:"Yes, you arrange insurance separately.",p:0},{t:"I believe it's included but let me confirm that.",p:1}]},
-    { q:"My current car goes back in six weeks. Is that enough time to sort this?",
-      opts:[{t:"It can be tight — let me check stock today. If needed I can look at cars already on order to make sure we hit your return date.",p:3},{t:"Should be fine.",p:0},{t:"Might be close — which model are you looking at?",p:2}]}
+    { q:"Hi — I'm on Motability. Can I get a BMW through the scheme here?",
+      opts:[
+        {t:"I'm sorry — BMW no longer participates in the Motability scheme. I can point you toward dealers that do, and if you'd like to explore other finance options I'm very happy to help.",p:3,resolveEarly:{pts:35,msg:"Well handled — BMW left Motability years ago. +35"}},
+        {t:"Absolutely — I deal with Motability all the time! Let me pull up the price list.",p:0,resolveEarly:{pts:-25,msg:"BMW hasn't done Motability for years! −25"}},
+        {t:"Let me just go and check on that for you...",p:0,resolveEarly:{pts:-15,msg:"You should know this off the top of your head! −15"}}
+      ]}
   ]},
   { id:'company_car', label:'💼', questions:[
     { q:"I need the BIK percentages on the 320i and the 320e before I make any decisions.",
@@ -682,23 +680,65 @@ function buildPlayer(){
 const C_COLS=[0xe74c3c,0x27ae60,0xf39c12,0x9b59b6,0x1abc9c,0xe67e22,0xc0392b,0x16a085];
 
 function createCustMesh(c){
+  if(c.arch&&c.arch.id==='motability'){ createWheelchairMesh(c); return; }
   const g=new THREE.Group();
   const col=C_COLS[c.id%C_COLS.length];
   const body=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.78,10),new THREE.MeshLambertMaterial({color:col}));
   body.position.y=0.39; g.add(body);
   const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,10),new THREE.MeshLambertMaterial({color:0xf0c090}));
   head.position.y=0.96; g.add(head);
-  // Patience ring
   const rGeo=new THREE.RingGeometry(0.4,0.56,24);
   const rMat=new THREE.MeshBasicMaterial({color:0x2ecc71,side:THREE.DoubleSide});
   const ring=new THREE.Mesh(rGeo,rMat);
   ring.rotation.x=-Math.PI/2; ring.position.y=0.04; g.add(ring);
-
   g.position.set(c.pos.x,0,c.pos.z);
   g.userData={type:'customer',cid:c.id};
   scene.add(g);
   interactables.push({mesh:g,type:'customer',cid:c.id});
-  customerMeshes[c.id]={group:g,ringMat:rMat};
+  customerMeshes[c.id]={group:g,ringMat:rMat,ring};
+}
+
+function createWheelchairMesh(c){
+  const g=new THREE.Group();
+  const col=C_COLS[c.id%C_COLS.length];
+  const frameMat=new THREE.MeshLambertMaterial({color:0x999999});
+  const darkMat=new THREE.MeshLambertMaterial({color:0x222222});
+  // Big rear wheels
+  [-0.32,0.32].forEach(xo=>{
+    const w=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.07,18),darkMat);
+    w.rotation.z=Math.PI/2; w.position.set(xo,0.28,0.0); g.add(w);
+    const rim=new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.26,0.04,18),frameMat);
+    rim.rotation.z=Math.PI/2; rim.position.set(xo,0.28,0.0); g.add(rim);
+  });
+  // Small front castors
+  [-0.2,0.2].forEach(xo=>{
+    const sw=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,0.05,10),darkMat);
+    sw.rotation.z=Math.PI/2; sw.position.set(xo,0.09,0.24); g.add(sw);
+  });
+  // Seat
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.07,0.44),frameMat);
+  seat.position.set(0,0.37,0); g.add(seat);
+  // Backrest
+  const back=new THREE.Mesh(new THREE.BoxGeometry(0.50,0.44,0.07),frameMat);
+  back.position.set(0,0.62,-0.19); g.add(back);
+  // Footrest bar
+  const fr=new THREE.Mesh(new THREE.BoxGeometry(0.48,0.05,0.06),frameMat);
+  fr.position.set(0,0.14,0.26); g.add(fr);
+  // Seated person body (shorter, sitting)
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.36,10),new THREE.MeshLambertMaterial({color:col}));
+  body.position.set(0,0.58,0); g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.17,10,10),new THREE.MeshLambertMaterial({color:0xf0c090}));
+  head.position.set(0,0.86,0); g.add(head);
+  // Patience ring
+  const rGeo=new THREE.RingGeometry(0.45,0.60,24);
+  const rMat=new THREE.MeshBasicMaterial({color:0x2ecc71,side:THREE.DoubleSide});
+  const ring=new THREE.Mesh(rGeo,rMat);
+  ring.rotation.x=-Math.PI/2; ring.position.y=0.02; g.add(ring);
+  g.position.set(c.pos.x,0,c.pos.z);
+  g.userData={type:'customer',cid:c.id};
+  scene.add(g);
+  interactables.push({mesh:g,type:'customer',cid:c.id});
+  customerMeshes[c.id]={group:g,ringMat:rMat,ring};
 }
 
 function removeCustMesh(id){
@@ -726,7 +766,7 @@ function createServiceMesh(c){
   g.userData={type:'customer',cid:c.id};
   scene.add(g);
   interactables.push({mesh:g,type:'customer',cid:c.id});
-  customerMeshes[c.id]={group:g,ringMat:rMat};
+  customerMeshes[c.id]={group:g,ringMat:rMat,ring};
 }
 
 function updateRing(c){
@@ -734,8 +774,7 @@ function updateRing(c){
   const pct=c.patience/100;
   const col=pct>0.6?0x2ecc71:pct>0.3?0xf39c12:0xe74c3c;
   cm.ringMat.color.setHex(col);
-  const ring=cm.group.children[2];
-  if(ring){ ring.scale.setScalar(Math.max(0.1,pct)); }
+  if(cm.ring){ cm.ring.scale.setScalar(Math.max(0.1,pct)); }
 }
 
 // ─── TAP HANDLER ─────────────────────────────────────────────
@@ -984,26 +1023,39 @@ function startConvo(c){
 
 function renderConvoQ(){
   const q=G.convoQs[G.convoStep];
-  document.getElementById('cv-qnum').textContent=`Q${G.convoStep+1}/4`;
+  if(!q){ finishConvo(); return; }
+  const total=G.convoQs.length;
+  document.getElementById('cv-qnum').textContent=`Q${G.convoStep+1}/${total}`;
   document.getElementById('cv-q').textContent=q.q;
   const opts=shuffle(q.opts);
   const el=document.getElementById('cv-opts'); el.innerHTML='';
   opts.forEach(o=>{
     const d=document.createElement('div'); d.className='cv-opt'; d.textContent=o.t;
-    const fn=()=>convoAns(o.p);
+    const fn=()=>convoAns(o);
     d.addEventListener('click',fn);
     d.addEventListener('touchend',e=>{e.preventDefault();fn();});
     el.appendChild(d);
   });
 }
 
-function convoAns(pts){
+function convoAns(o){
+  if(o.resolveEarly){
+    document.getElementById('convo-pop').classList.add('hidden');
+    G.convoActive=false;
+    const c=G.activeCustomer; G.totalInter++;
+    if(o.resolveEarly.pts>0) G.happyInter++;
+    addScore(o.resolveEarly.pts);
+    toast(o.resolveEarly.msg);
+    removeCust(c.id);
+    return;
+  }
+  const pts=o.p;
   G.convoPoints+=pts;
   if(pts>=3){ addScore(15); toast('+15 ✓'); }
   else if(pts>=1){ toast('Okay response'); }
   else{ toast('Poor answer…'); }
   G.convoStep++;
-  if(G.convoStep>=4) finishConvo();
+  if(G.convoStep>=G.convoQs.length) finishConvo();
   else renderConvoQ();
 }
 
