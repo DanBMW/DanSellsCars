@@ -239,10 +239,10 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const DEAL_TARGET = 3;
-const DAY_SECS = 160;
+const DAY_SECS = 300;
 const MAX_CUSTOMERS = 4;
-const PHONE_MIN = 25, PHONE_MAX = 40;
-const EMAIL_MIN = 50, EMAIL_MAX = 80;
+const PHONE_MIN = 60, PHONE_MAX = 90;
+const EMAIL_MIN = 110, EMAIL_MAX = 160;
 const FB_CONFIG = {apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 let fbDb = null;
 try { firebase.initializeApp(FB_CONFIG); fbDb = firebase.database(); } catch(e) { console.warn('Firebase init failed', e); }
@@ -425,7 +425,7 @@ function initG() {
     crashed:false, crashPending:false,
     nextPhone: rand(PHONE_MIN,PHONE_MAX),
     nextEmail: rand(EMAIL_MIN,EMAIL_MAX),
-    nextSpawn: 3,
+    nextSpawn: 5,
     jobSchedule:[],
     svcSchedule:[]
   };
@@ -719,10 +719,10 @@ function tick(dt){
   if(G.dayTime>=DAY_SECS){ endGame(); return; }
 
   // Bars
-  G.energy=Math.max(0,G.energy-dt*4.5);
-  G.bladder=Math.min(100,G.bladder+dt*3.8);
+  G.energy=Math.max(0,G.energy-dt*0.28);
+  G.bladder=Math.min(100,G.bladder+dt*1.4);
   const idle=!G.convoActive&&!G.phoneActive&&!G.emailActive&&!G.svcActive;
-  if(idle) G.patience=Math.min(100,G.patience+dt*1.5);
+  if(idle) G.patience=Math.min(100,G.patience+dt*2.5);
 
   // Crash checks
   if(!G.crashPending){
@@ -735,7 +735,7 @@ function tick(dt){
   tickCustomers(dt);
 
   G.nextSpawn-=dt;
-  if(G.nextSpawn<=0){ spawnCustomer(); G.nextSpawn=rand(12,22); }
+  if(G.nextSpawn<=0){ spawnCustomer(); G.nextSpawn=rand(20,35); }
 
   if(!G.phoneActive&&!G.emailActive){
     G.nextPhone-=dt;
@@ -855,7 +855,7 @@ function tickCustomers(dt){
       const cm=customerMeshes[c.id];
       if(cm){ cm.group.position.set(c.pos.x,0,c.pos.z); cm.group.rotation.y=Math.atan2(dx,dz); }
     }
-    c.patience-=dt*6;
+    c.patience-=dt*3.5;
     updateRing(c);
     if(c.patience<=0) custWalkOff(c);
   });
@@ -1063,7 +1063,7 @@ function triggerJob(type){
   showBay(tp);
   const mgr=type==='forecourt'?'Will':'Serge';
   G.jobActive=true; G.jobCarrying=false;
-  G.jobData={carObj,targetPos:tp,type,timeLeft:45,mgr};
+  G.jobData={carObj,targetPos:tp,type,timeLeft:60,mgr};
   document.getElementById('job-banner').classList.remove('hidden');
   toast(`${mgr}: Move that car! ⏱️`);
 }
@@ -1246,12 +1246,12 @@ function startGame(){
 
   // Schedule jobs
   G.jobSchedule=[
-    {time:rand(28,48),type:'forecourt'},
-    {time:rand(75,105),type:'forecourt'},
-    {time:rand(55,80),type:'showroom'}
+    {time:rand(60,100),type:'forecourt'},
+    {time:rand(180,230),type:'forecourt'},
+    {time:rand(130,170),type:'showroom'}
   ];
   // Schedule service walk-ins
-  G.svcSchedule=[rand(18,38),rand(80,112)];
+  G.svcSchedule=[rand(45,80),rand(190,240)];
 
   document.getElementById('hud').classList.remove('hidden');
   showScreen(''); // hide all screens, show game
