@@ -51,6 +51,9 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 #crash-ov.hidden{display:none}
 @keyframes crashFlash{0%{opacity:1}100%{opacity:0}}
 
+/* LB tab active state */
+.lb-tab-active{outline:3px solid #fff;opacity:1!important}
+
 /* Level badge */
 #level-badge{font-size:.72rem;font-weight:900;color:#ff4444;letter-spacing:.06em;text-shadow:0 0 8px #ff0000;margin-top:2px}
 #level-badge.hidden{display:none}
@@ -1413,43 +1416,46 @@ function endGame(){
 
   const lbPath=currentLevel===2?'forecourt/leaderboard_hard':'forecourt/leaderboard';
   document.getElementById('lb-heading').textContent=currentLevel===2?'☠️ Impossible Leaderboard':'🏆 Leaderboard';
+  // Show loading state immediately — before any async work
+  document.getElementById('lb').innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading scores…</div>';
+  showScreen('end-screen');
 
-  const myEntry={name:playerName,score:G.score,deals:G.deals,ts:Date.now()};
+  const finalScore=G.score;
+  const myEntry={name:playerName,score:finalScore,deals:G.deals,ts:Date.now()};
   if(fbDb){
     fbDb.ref(lbPath).push(myEntry)
-      .then(()=> loadLB(G.score,lbPath))
-      .catch(()=> renderLB([myEntry],G.score));
+      .then(()=>loadLB(finalScore,lbPath))
+      .catch(()=>loadLB(finalScore,lbPath)); // load existing scores even if push failed
   } else {
-    renderLB([myEntry],G.score);
+    renderLB([myEntry],finalScore);
   }
-
-  showScreen('end-screen');
 }
 
 function loadLB(myScore,path){
   path=path||'forecourt/leaderboard';
-  if(!fbDb){ renderLB([],myScore); return; }
-  document.getElementById('lb').innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading scores…</div>';
+  if(!fbDb){ renderLB([{name:playerName,score:myScore,deals:G.deals}],myScore); return; }
   fbDb.ref(path).orderByChild('score').limitToLast(20).once('value')
     .then(snap=>{
       const entries=[];
-      snap.forEach(c=>entries.push(c.val()));
+      snap.forEach(c=>{ const v=c.val(); if(v)entries.push(v); });
       entries.sort((a,b)=>b.score-a.score);
       renderLB(entries.slice(0,10),myScore);
     })
-    .catch(()=>renderLB([],myScore));
+    .catch(()=>{
+      document.getElementById('lb').innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Could not load scores.</div>';
+    });
 }
 
 function loadLBInto(el,path){
   el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading…</div>';
-  if(!fbDb){ renderLB([],null,el); return; }
+  if(!fbDb){ el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">No connection.</div>'; return; }
   fbDb.ref(path).orderByChild('score').limitToLast(20).once('value')
     .then(snap=>{
-      const entries=[]; snap.forEach(c=>entries.push(c.val()));
+      const entries=[]; snap.forEach(c=>{ const v=c.val(); if(v)entries.push(v); });
       entries.sort((a,b)=>b.score-a.score);
       renderLB(entries.slice(0,10),null,el);
     })
-    .catch(()=>renderLB([],null,el));
+    .catch(()=>{ el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Could not load scores.</div>'; });
 }
 
 function renderLB(lb,myScore,targetEl){
@@ -1815,17 +1821,24 @@ window.addEventListener('load',()=>{
   wire('ph-ans-btn',answerPhone);
   wire('ph-dec-btn',declinePhone);
 
+  function setLBTab(active){
+    document.getElementById('lb-tab-normal').classList.toggle('lb-tab-active',active==='normal');
+    document.getElementById('lb-tab-hard').classList.toggle('lb-tab-active',active==='hard');
+  }
+
   wire('view-lb-btn',()=>{
-    const el=document.getElementById('lb-overlay-list');
     showScreen('lb-overlay');
-    loadLBInto(el,'forecourt/leaderboard');
+    setLBTab('normal');
+    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard');
   });
   wire('lb-overlay-close',()=>{ showScreen('name-screen'); updateImpossibleBtn(); });
 
   wire('lb-tab-normal',()=>{
+    setLBTab('normal');
     loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard');
   });
   wire('lb-tab-hard',()=>{
+    setLBTab('hard');
     loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard_hard');
   });
 });
