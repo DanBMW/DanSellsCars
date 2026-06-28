@@ -157,7 +157,10 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
     <button class="btn" id="lb-tab-hard" style="padding:7px 14px;font-size:.82rem;background:#6b0000;border:2px solid #ff3333">☠️ Impossible</button>
   </div>
   <div id="lb-overlay-list" style="width:100%;max-width:340px;max-height:55vh;overflow-y:auto;margin:4px 0"></div>
-  <button class="btn" id="lb-overlay-close" style="margin-top:10px">← Back</button>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="btn" id="lb-overlay-close" style="margin-top:0">← Back</button>
+    <button class="btn" id="lb-share-btn" style="margin-top:0;background:#25D366;min-width:110px">📤 Share</button>
+  </div>
 </div>
 
 <!-- HOW TO PLAY -->
@@ -505,6 +508,7 @@ const V3 = (x,y,z) => new THREE.Vector3(x,y,z);
 
 // ─── LEVEL / IMPOSSIBLE MODE ──────────────────────────────────
 let currentLevel = 1;
+let lbCache = {entries:[], label:'Normal Leaderboard'};
 let pigeons = [];
 let thieves = [];
 let stolenCars = [];
@@ -1446,14 +1450,16 @@ function loadLB(myScore,path){
     });
 }
 
-function loadLBInto(el,path){
+function loadLBInto(el,path,label){
   el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading…</div>';
   if(!fbDb){ el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">No connection.</div>'; return; }
   fbDb.ref(path).once('value')
     .then(snap=>{
       const entries=[]; snap.forEach(c=>{ const v=c.val(); if(v&&typeof v==='object')entries.push(v); });
       entries.sort((a,b)=>(b.score||0)-(a.score||0));
-      renderLB(entries.slice(0,10),null,el);
+      const top=entries.slice(0,10);
+      lbCache={entries:top,label:label||'Normal Leaderboard'};
+      renderLB(top,null,el);
     })
     .catch(()=>{ el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Could not load scores.</div>'; });
 }
@@ -1774,6 +1780,26 @@ function tickRyan(dt){
   if(ryanTimer<=0){ scene.remove(ryanMesh); ryanMesh=null; document.getElementById('ryan-alert').classList.add('hidden'); }
 }
 
+// ─── SHARE LEADERBOARD ───────────────────────────────────────
+function shareLB(){
+  if(!lbCache.entries.length){ toast('No scores loaded yet.'); return; }
+  const lines=[
+    `🏆 Forecourt Frenzy — ${lbCache.label}`,
+    'BMW Hedin Ruxley',
+    ''
+  ];
+  lbCache.entries.forEach((e,i)=>{
+    lines.push(`#${i+1} ${e.name} — ${e.score} pts · ${e.deals} deals`);
+  });
+  lines.push('','🚗 dan-sells.co.uk');
+  const text=lines.join('\n');
+  if(navigator.share){
+    navigator.share({title:'Forecourt Frenzy Leaderboard',text}).catch(()=>{});
+  } else {
+    window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+  }
+}
+
 // ─── LEVEL UNLOCK ─────────────────────────────────────────────
 function updateImpossibleBtn(){
   const btn=document.getElementById('impossible-btn');
@@ -1829,17 +1855,18 @@ window.addEventListener('load',()=>{
   wire('view-lb-btn',()=>{
     showScreen('lb-overlay');
     setLBTab('normal');
-    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard');
+    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard','Normal Leaderboard');
   });
   wire('lb-overlay-close',()=>{ showScreen('name-screen'); updateImpossibleBtn(); });
+  wire('lb-share-btn',shareLB);
 
   wire('lb-tab-normal',()=>{
     setLBTab('normal');
-    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard');
+    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard','Normal Leaderboard');
   });
   wire('lb-tab-hard',()=>{
     setLBTab('hard');
-    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard_hard');
+    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard_hard','☠️ Impossible Leaderboard');
   });
 });
 </script>
