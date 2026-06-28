@@ -129,6 +129,14 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
   <p style="color:#aaa;margin-bottom:18px">BMW Hedin Ruxley · Survive the shift.</p>
   <input type="text" id="name-input" placeholder="Your name" maxlength="20" autocomplete="off">
   <button class="btn" id="name-btn">Continue</button>
+  <button class="btn" id="view-lb-btn" style="background:#222;border:1px solid #333;margin-top:6px">🏆 Leaderboard</button>
+</div>
+
+<!-- LEADERBOARD OVERLAY -->
+<div id="lb-overlay" class="screen hidden">
+  <h2>🏆 Leaderboard</h2>
+  <div id="lb-overlay-list" style="width:100%;max-width:340px;max-height:60vh;overflow-y:auto;margin:8px 0"></div>
+  <button class="btn" id="lb-overlay-close" style="margin-top:10px">← Back</button>
 </div>
 
 <!-- HOW TO PLAY -->
@@ -324,6 +332,56 @@ const ARCHETYPES = [
       opts:[{t:"That's workable — let me show you what we can structure within that. I'll be realistic about what fits.",p:3},{t:"You might need to stretch to £400 for the right car.",p:0},{t:"Let me run some finance figures for you.",p:2}]},
     { q:"Do we need to do it today? My husband isn't here.",
       opts:[{t:"Not at all — I can save this configuration and hold any offer while you both have a think.",p:3},{t:"The offer is only good today, I'm afraid.",p:0},{t:"I can put a soft hold on it if you'd like.",p:2}]}
+  ]},
+  { id:'ev_curious', label:'⚡', questions:[
+    { q:"I've been reading about EVs everywhere. Is now actually a good time to go electric?",
+      opts:[{t:"It depends on how you use your car — let me ask a few questions and give you an honest answer.",p:3},{t:"Yes, definitely — the future is electric!",p:0},{t:"What's your biggest concern? Range, charging, or cost?",p:2}]},
+    { q:"What's the actual real-world range on the i4? Not the official WLTP figure.",
+      opts:[{t:"WLTP is around 365 miles but real-world you'd expect 270–310 depending on speed, weather and heating use.",p:3},{t:"About 400 miles easily.",p:0},{t:"It varies a lot — your driving style makes a big difference.",p:1}]},
+    { q:"How long does charging at home actually take?",
+      opts:[{t:"With a 7kW home wallbox, around 8–10 hours overnight — most people just plug in when they get home.",p:3},{t:"About 30 minutes with a fast charger.",p:0},{t:"Depends on the charger — a wallbox is the way to go at home.",p:2}]},
+    { q:"What if I run out of charge miles from anywhere?",
+      opts:[{t:"The car warns you well in advance and the sat-nav routes you to rapid chargers automatically. If range anxiety is a concern, the 330e PHEV might suit you better.",p:3},{t:"You'd need to call BMW Assist.",p:1},{t:"It doesn't happen — the battery management is very smart.",p:0}]}
+  ]},
+  { id:'motability', label:'♿', questions:[
+    { q:"I'm on Motability — do you deal with that scheme here?",
+      opts:[{t:"Absolutely — I handle Motability regularly. Which car were you looking at? I'll pull up the current advance payment list.",p:3},{t:"You'd need to contact Motability directly first.",p:0},{t:"Yes, we do. Do you have your allowance amount handy?",p:2}]},
+    { q:"My higher rate allowance is £3,000. Can I get anything decent on that?",
+      opts:[{t:"Yes — several X1 and 1 Series variants are available for less than that. Let me go through the current list with you.",p:3},{t:"Should be fine, I'd imagine.",p:0},{t:"Let me check the latest Motability price guide right now.",p:2}]},
+    { q:"Do I need to sort my own insurance on Motability?",
+      opts:[{t:"No — insurance is included in the scheme for up to two named drivers, plus servicing and breakdown cover.",p:3},{t:"Yes, you arrange insurance separately.",p:0},{t:"I believe it's included but let me confirm that.",p:1}]},
+    { q:"My current car goes back in six weeks. Is that enough time to sort this?",
+      opts:[{t:"It can be tight — let me check stock today. If needed I can look at cars already on order to make sure we hit your return date.",p:3},{t:"Should be fine.",p:0},{t:"Might be close — which model are you looking at?",p:2}]}
+  ]},
+  { id:'company_car', label:'💼', questions:[
+    { q:"I need the BIK percentages on the 320i and the 320e before I make any decisions.",
+      opts:[{t:"Good thinking. The 320e PHEV is currently at 8% BIK versus 27% for the 320i — massive difference depending on your tax rate.",p:3},{t:"I'll need to look that up for you.",p:1},{t:"Happy to run the numbers — what's your tax bracket?",p:2}]},
+    { q:"My company needs the P11D value on the order form. Can you provide that today?",
+      opts:[{t:"Yes — I'll print the full P11D breakdown for whichever spec you choose before you leave.",p:3},{t:"That usually comes later in the process.",p:0},{t:"Absolutely — which trim level are we looking at?",p:2}]},
+    { q:"Does this come with a fleet maintenance package or does my company arrange that separately?",
+      opts:[{t:"BMW Business Partnership includes maintenance options I can show you. Alternatively your company fleet team may have an arrangement already.",p:3},{t:"That's really up to your company.",p:0},{t:"There are fleet maintenance options — let me walk you through them.",p:2}]},
+    { q:"My current lease ends in five weeks. Can you realistically deliver in time?",
+      opts:[{t:"Let me check stock right now. If we have the right car, we can often turnaround in 10–14 days.",p:3},{t:"Probably not if I'm honest — that's very tight.",p:0},{t:"It's tight but not impossible — what spec do you need?",p:2}]}
+  ]},
+  { id:'young_driver', label:'🎓', questions:[
+    { q:"This would be my first ever BMW. I'm 24 — is that a bit much?",
+      opts:[{t:"Not at all — PCP means you can get into a newer car for less monthly than you might think. What's your budget?",p:3},{t:"You're a bit young for this market, really.",p:0},{t:"Not at all! What matters most — looks, tech, performance?",p:2}]},
+    { q:"My mate says PCP is basically renting. Is that right?",
+      opts:[{t:"Partly — you don't own it at the end unless you pay the balloon, but you're protected by the guaranteed future value. Worth understanding fully before deciding.",p:3},{t:"It's not renting, it's finance — totally different.",p:0},{t:"Let me walk you through exactly how it works — it's worth knowing.",p:2}]},
+    { q:"I want it in Portimao Blue but I can't see one anywhere on the forecourt.",
+      opts:[{t:"That's a popular factory-order colour — if we don't have one in stock I can check incoming orders. Lead time is usually 8–12 weeks.",p:3},{t:"You might need to be flexible on colour.",p:0},{t:"Let me check what's on order — we may already have one coming.",p:2}]},
+    { q:"My mum thinks I should just buy a cheap second-hand hatchback. What would you say?",
+      opts:[{t:"It's a fair point — let me show you the actual monthly figures and you can compare. No pressure either way.",p:3},{t:"Mums don't always know best about cars!",p:0},{t:"A newer car on PCP can sometimes cost less monthly than an older car on HP — worth a look at the numbers.",p:2}]}
+  ]},
+  { id:'loyal_bmw', label:'🏅', questions:[
+    { q:"I've bought BMWs here for fifteen years. What's actually new that I might not know about?",
+      opts:[{t:"The iDrive 8 curved display is a big leap, and the PHEV torque on the 30e models is genuinely impressive. Let me show you.",p:3},{t:"Not a huge amount has changed to be honest.",p:0},{t:"Great question — what was your last model? I can point out what's genuinely different.",p:2}]},
+    { q:"Honestly — is the new 5 Series actually better than the old one, or just more expensive?",
+      opts:[{t:"Genuinely better — rear-wheel steering and the full hybrid options make a real difference. But I'll be straight with you rather than just sell it.",p:3},{t:"Of course it's better — it's newer!",p:0},{t:"Depends what you valued in your current car. What do you love about it?",p:2}]},
+    { q:"I want M Sport but not the standard pack contents. Can we build something bespoke?",
+      opts:[{t:"Absolutely — factory order lets us mix and match options. I'll pull up the configurator now.",p:3},{t:"You pretty much have to take the pack as it comes.",p:0},{t:"Yes — we can factory order to your exact spec. Takes longer but it's worth it.",p:2}]},
+    { q:"I've still got 14 months left on my finance. Is it worth looking at coming out early?",
+      opts:[{t:"Let me get the settlement figure — sometimes it makes sense to move early, especially if equity has built. I'll be honest either way.",p:3},{t:"It'll cost you to come out early, so probably not.",p:0},{t:"Depends on the settlement versus the equity. Let me run the numbers with you.",p:2}]}
   ]}
 ];
 
@@ -1108,14 +1166,28 @@ function resolveService(o){
 }
 
 // ─── CAR JOBS ─────────────────────────────────────────────────
+function safeJobTarget(type, excludeObj){
+  const MIN=2.8;
+  for(let i=0;i<40;i++){
+    const tp=type==='forecourt'
+      ? V3(rand(2.5,11.5),0.14,rand(-6.5,6.5))
+      : V3(rand(-12.5,-2.5),0.14,rand(-5.5,5.5));
+    const ok=carObjs.every(c=>{
+      if(c===excludeObj)return true;
+      const dx=c.mesh.position.x-tp.x, dz=c.mesh.position.z-tp.z;
+      return Math.sqrt(dx*dx+dz*dz)>=MIN;
+    });
+    if(ok)return tp;
+  }
+  return type==='forecourt'?V3(10,0.14,0):V3(-9,0.14,0);
+}
+
 function triggerJob(type){
   const avail=carObjs.filter(c=>c.zone===type&&c.isMovable&&!c.inUse);
   if(!avail.length)return;
   const carObj=avail[0|Math.random()*avail.length];
   carObj.inUse=true;
-  const tp=type==='forecourt'
-    ? V3(rand(2,12),0.14,rand(-7,7))
-    : V3(rand(-13,-2),0.14,rand(-6,6));
+  const tp=safeJobTarget(type,carObj);
   hlCar(carObj.mesh);
   showBay(tp);
   const mgr=type==='forecourt'?'Will':'Serge';
@@ -1238,8 +1310,8 @@ function loadLB(myScore){
     .catch(()=>renderLB([],myScore));
 }
 
-function renderLB(lb,myScore){
-  const el=document.getElementById('lb'); el.innerHTML='';
+function renderLB(lb,myScore,targetEl){
+  const el=targetEl||document.getElementById('lb'); el.innerHTML='';
   if(!lb.length){ el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">No scores yet.</div>'; return; }
   lb.forEach((e,i)=>{
     const r=document.createElement('div');
@@ -1344,6 +1416,22 @@ window.addEventListener('load',()=>{
   wire('again-btn',startMeeting);
   wire('ph-ans-btn',answerPhone);
   wire('ph-dec-btn',declinePhone);
+
+  wire('view-lb-btn',()=>{
+    const el=document.getElementById('lb-overlay-list');
+    el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading…</div>';
+    showScreen('lb-overlay');
+    if(fbDb){
+      fbDb.ref('forecourt/leaderboard').orderByChild('score').limitToLast(20).once('value')
+        .then(snap=>{
+          const entries=[]; snap.forEach(c=>entries.push(c.val()));
+          entries.sort((a,b)=>b.score-a.score);
+          renderLB(entries.slice(0,10),null,el);
+        })
+        .catch(()=>renderLB([],null,el));
+    } else { renderLB([],null,el); }
+  });
+  wire('lb-overlay-close',()=>showScreen('name-screen'));
 });
 </script>
 </body>
