@@ -64,6 +64,13 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 @keyframes ryanPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.04)}}
 #ryan-alert:not(.hidden){animation:ryanPulse 0.6s infinite}
 
+/* Wee warning */
+#wee-warn{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(41,128,185,.93);color:#fff;padding:9px 20px;border-radius:24px;font-size:.92rem;font-weight:700;display:flex;align-items:center;gap:10px;z-index:160;pointer-events:none;box-shadow:0 2px 12px rgba(0,0,0,.5);white-space:nowrap}
+#wee-warn.hidden{display:none}
+#wee-arrow{font-size:1.1rem;display:inline-block;transition:transform .15s linear}
+@keyframes weePulse{0%{box-shadow:0 2px 12px rgba(41,128,185,.5)}50%{box-shadow:0 2px 20px rgba(41,128,185,.95)}100%{box-shadow:0 2px 12px rgba(41,128,185,.5)}}
+#wee-warn:not(.hidden){animation:weePulse 0.7s infinite}
+
 /* Phone popup */
 #phone-pop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:200;background:rgba(0,0,0,.6)}
 #phone-pop.hidden{display:none}
@@ -222,6 +229,7 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 
 <!-- OVERLAYS -->
 <div id="ryan-alert" class="hidden"></div>
+<div id="wee-warn" class="hidden"><span id="wee-arrow">▲</span><span>Don't forget to wee!</span></div>
 <div id="toast" class="hidden"></div>
 <div id="job-banner" class="hidden"></div>
 <div id="crash-ov" class="hidden"></div>
@@ -1160,6 +1168,20 @@ function updateHUD(){
   if(sw)ws+=`🏛️ ${sw}`;
   if(fw)ws+=(ws?' · ':'')+`🚙 ${fw}`;
   document.getElementById('wait-d').textContent=ws;
+
+  updateWeeWarn();
+}
+
+function updateWeeWarn(){
+  const el=document.getElementById('wee-warn'); if(!el)return;
+  // 10 s from full: 100 - (1.4 * 10) = 86
+  const show=G.bladder>=86&&G.running&&!G.crashPending;
+  el.classList.toggle('hidden',!show);
+  if(!show)return;
+  // Rotate arrow to point toward toilet in screen space
+  const ndc=new THREE.Vector3(-9,0.5,-8.3).project(camera);
+  const angle=Math.atan2(ndc.x,ndc.y)*180/Math.PI;
+  document.getElementById('wee-arrow').style.transform=`rotate(${angle}deg)`;
 }
 
 function setBar(id,val,invert){
