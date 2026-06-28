@@ -377,21 +377,28 @@ const SERVICE_SCENARIOS = [
             {t:"Matt in Service can handle the brakes — I'll get him.",p:-20,ho:true}]}]}
 ];
 
+const MGRS = {
+  nathan: 'https://images.ctfassets.net/ellvqflvqiui/606Q3hdxnJZm1dfUC4m6n6/1ecfa9149371b67f9c4857d3a9bbdd40/Nathan-Jobson-BMW-New-Car-Sales-Manager360.jpg?fm=jpg&fl=progressive&q=80',
+  will:   'https://images.ctfassets.net/ellvqflvqiui/4805pOLAzQKXnRqfjPpDg5/5920e11f5196043a41600a29c9be495c/Will-Potter-BMW-Used-Car-Sales-Manager360.jpg?fm=jpg&fl=progressive&q=80',
+  serge:  'https://images.ctfassets.net/ellvqflvqiui/F8OuMyCm2gNiJsfiQhntO/a42fcf00ffa6f477739281fa43b81294/Sergio-Garaguso-Retail-Manager360.jpg?fm=jpg&fl=progressive&q=80',
+  matt:   'https://images.ctfassets.net/ellvqflvqiui/2mE2cZoHVMejTXz0tXxzsH/67c789e865d29a02ba741b40c70e36f7/Matthew-Ricketts-BMW-Aftersales-Manager360.jpg?fm=jpg&fl=progressive&q=80',
+  dan:    'https://images.ctfassets.net/ellvqflvqiui/5le0zAB0VRgFlbEuZ1nunM/0f757210452eff77dac2cf32ce181e85/Daniel_Coleman_-_Parts_Manager-360.jpg?fm=jpg&fl=progressive&q=80'
+};
 const MTG_POSITIVE = [
-  { speaker:'Nathan (Sales Manager)', avatar:'N', color:'#1c69d4', text:"Morning all — cracking month so far, we're top three in the region. Don't get comfy though, I still want three units on the glass today. Push the finance, it's free money for the customer. And I want every single enquiry logged on Drive — no exceptions." },
-  { speaker:'Will (Sales Manager)', avatar:'W', color:'#2980b9', text:"PPU's healthy, keep it that way — don't go giving the metal away just to hit a number. Few cars need shuffling on the forecourt later, I'll give you a shout. Good lad. Oh — and CitNow walkarounds on anything you pitch. Every time." },
-  { speaker:'Serge (Sales Manager)', avatar:'S', color:'#8e44ad', text:"Compliance is spotless this month and I'd like to keep it that way. Treat 'em fair, explain the finance properly, no pressure selling. LaunchPad goes out after every customer interaction — every one. I'll need a car repositioning on the showroom floor at some point." },
-  { speaker:'Matt (Aftersales)', avatar:'M', color:'#27ae60', text:"Service is rammed but we're on top of it. Two rules, as ever: don't be a Clive and drive through the showroom, and do NOT give the keys to car thieves like Millie." },
-  { speaker:'Dan Coleman (Parts)', avatar:'dan', color:'#e67e22', text:"Parts are in for once, miracle of miracles. If anyone needs a wheel lock key, you know where I am. Now go on, shoo." },
-  { speaker:'Nathan', avatar:'N', color:'#1c69d4', text:"Right — coffee's your mate, the toilet's your enemy, customers walk if you're slow. Drive. LaunchPad. CitNow. Every enquiry, every customer, every time. Now go sell some Beemers." }
+  { speaker:'Nathan (Sales Manager)', photo:MGRS.nathan, text:"Morning all — cracking month so far, we're top three in the region. Don't get comfy though, I still want three units on the glass today. Push the finance, it's free money for the customer. And I want every single enquiry logged on Drive — no exceptions." },
+  { speaker:'Will (Sales Manager)', photo:MGRS.will, text:"PPU's healthy, keep it that way — don't go giving the metal away just to hit a number. Few cars need shuffling on the forecourt later, I'll give you a shout. Good lad. Oh — and CitNow walkarounds on anything you pitch. Every time." },
+  { speaker:'Serge (Sales Manager)', photo:MGRS.serge, text:"Compliance is spotless this month and I'd like to keep it that way. Treat 'em fair, explain the finance properly, no pressure selling. LaunchPad goes out after every customer interaction — every one. I'll need a car repositioning on the showroom floor at some point." },
+  { speaker:'Matt (Aftersales)', photo:MGRS.matt, text:"Service is rammed but we're on top of it. Two rules, as ever: don't be a Clive and drive through the showroom, and do NOT give the keys to car thieves like Millie." },
+  { speaker:'Dan Coleman (Parts)', photo:MGRS.dan, text:"Parts are in for once, miracle of miracles. If anyone needs a wheel lock key, you know where I am. Now go on, shoo." },
+  { speaker:'Nathan', photo:MGRS.nathan, text:"Right — coffee's your mate, the toilet's your enemy, customers walk if you're slow. Drive. LaunchPad. CitNow. Every enquiry, every customer, every time. Now go sell some Beemers." }
 ];
 const MTG_NEGATIVE = [
-  { speaker:'Nathan (Sales Manager)', avatar:'N', color:'#1c69d4', text:"Sit down. Board's a disgrace — we're bottom of the group and Munich's been on the phone. I need three units MINIMUM today and the finance penetration is frankly embarrassing. And I checked Drive last night — half of you haven't logged a single enquiry this week. Sort. It. Out." },
-  { speaker:'Will (Sales Manager)', avatar:'W', color:'#2980b9', text:"And whoever's been chucking discount about like confetti — the PPU is on the floor. Don't. Give. The metal. Away. I'll have cars for you to move and I want them moved sharpish. CitNow walkarounds on every prospect — I want to see them in the system." },
-  { speaker:'Serge (Sales Manager)', avatar:'S', color:'#8e44ad', text:"We had a complaint flagged last week. Consumer Duty, people — fair treatment, explain the finance, no pressure. LaunchPad goes out after every customer, no excuses. I'm watching the showroom like a hawk today, and I'll want a car repositioned." },
-  { speaker:'Matt (Aftersales)', avatar:'M', color:'#27ae60', text:"Service is chaos and I haven't got time for nonsense. So I'll say it again: don't be a Clive and drive through the showroom, and for the love of God don't give the keys to car thieves like Millie. AGAIN." },
-  { speaker:'Dan Coleman (Parts)', avatar:'dan', color:'#e67e22', text:"Parts are back-ordered, half of Germany's on holiday, and everyone's blaming me. Don't even ASK me about that bonnet badge today." },
-  { speaker:'Nathan', avatar:'N', color:'#1c69d4', text:"Drive logged, LaunchPad sent, CitNow recorded — or we'll be having a very different meeting tomorrow. Coffee, toilet, don't let customers walk. Out you go." }
+  { speaker:'Nathan (Sales Manager)', photo:MGRS.nathan, text:"Sit down. Board's a disgrace — we're bottom of the group and Munich's been on the phone. I need three units MINIMUM today and the finance penetration is frankly embarrassing. And I checked Drive last night — half of you haven't logged a single enquiry this week. Sort. It. Out." },
+  { speaker:'Will (Sales Manager)', photo:MGRS.will, text:"And whoever's been chucking discount about like confetti — the PPU is on the floor. Don't. Give. The metal. Away. I'll have cars for you to move and I want them moved sharpish. CitNow walkarounds on every prospect — I want to see them in the system." },
+  { speaker:'Serge (Sales Manager)', photo:MGRS.serge, text:"We had a complaint flagged last week. Consumer Duty, people — fair treatment, explain the finance, no pressure. LaunchPad goes out after every customer, no excuses. I'm watching the showroom like a hawk today, and I'll want a car repositioned." },
+  { speaker:'Matt (Aftersales)', photo:MGRS.matt, text:"Service is chaos and I haven't got time for nonsense. So I'll say it again: don't be a Clive and drive through the showroom, and for the love of God don't give the keys to car thieves like Millie. AGAIN." },
+  { speaker:'Dan Coleman (Parts)', photo:MGRS.dan, text:"Parts are back-ordered, half of Germany's on holiday, and everyone's blaming me. Don't even ASK me about that bonnet badge today." },
+  { speaker:'Nathan', photo:MGRS.nathan, text:"Drive logged, LaunchPad sent, CitNow recorded — or we'll be having a very different meeting tomorrow. Coffee, toilet, don't let customers walk. Out you go." }
 ];
 
 // ─── THREE.JS GLOBALS ────────────────────────────────────────
@@ -1214,10 +1221,7 @@ function startMeeting(){
 }
 
 function makeAvatar(s){
-  if(s.avatar==='dan'){
-    return `<img src="dan.jpg" class="bubble-avatar" alt="Dan">`;
-  }
-  return `<div class="bubble-avatar initials" style="background:${s.color}">${s.avatar}</div>`;
+  return `<img src="${s.photo}" class="bubble-avatar" alt="${s.speaker}" onerror="this.style.display='none'">`;
 }
 
 function renderBubbles(){
