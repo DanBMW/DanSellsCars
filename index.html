@@ -67,7 +67,8 @@
     .offers-sub{font-size:.82rem;color:rgba(255,255,255,.55);margin:0 0 24px;}
     .offer-cards{display:grid;gap:14px;}
     @media(min-width:580px){.offer-cards{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}}
-    .offer-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:0;transition:background .18s,transform .18s;}
+    .offer-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:0;transition:background .18s,transform .18s;position:relative;overflow:hidden;}
+    .sold-ribbon{position:absolute;top:22px;right:-32px;width:130px;background:#c0392b;color:#fff;text-align:center;padding:6px 0;font-size:.65rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;transform:rotate(45deg);pointer-events:none;opacity:1;}
     .offer-card:hover{background:rgba(255,255,255,.10);transform:translateY(-2px);}
     .offer-badge{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5591ff;margin-bottom:8px;}
     .offer-model{font-size:1rem;font-weight:800;color:#fff;line-height:1.3;margin:0 0 4px;}
@@ -267,20 +268,22 @@
             <button class="offer-cta" onclick="openOfferModal('BMW 2 Series Gran Coupé','£399 initial rental, £399/month PCH, 48 months, 6,000 miles p.a., total payable £19,152')">Register interest &rarr;</button>
           </div>
 
-          <div class="offer-card" style="border-color:rgba(192,57,43,.4);background:rgba(192,57,43,.06);">
-            <div class="offer-badge" style="color:#c0392b;">Urgent — collection this month</div>
-            <div class="offer-model">BMW X1 xDrive25e M Sport</div>
+          <div class="offer-card" style="border-color:rgba(16,21,29,.15);background:rgba(16,21,29,.03);opacity:.7;">
+            <div class="sold-ribbon">SOLD</div>
+            <div class="offer-badge" style="color:#8a94a0;">No longer available</div>
+            <div class="offer-model" style="text-decoration:line-through;color:#8a94a0;">BMW X1 xDrive25e M Sport</div>
             <div class="offer-spec">Williams F1 Ceramic included · Sapphire Black or Portimao Blue · 6,000 miles p.a.</div>
             <div class="offer-figures">
-              <div class="offer-fig"><div class="offer-fig-val">£479</div><div class="offer-fig-lbl">Per month</div></div>
-              <div class="offer-fig"><div class="offer-fig-val">£1,499</div><div class="offer-fig-lbl">Initial rental</div></div>
+              <div class="offer-fig"><div class="offer-fig-val" style="color:#8a94a0;">£479</div><div class="offer-fig-lbl">Per month</div></div>
+              <div class="offer-fig"><div class="offer-fig-val" style="color:#8a94a0;">£1,499</div><div class="offer-fig-lbl">Initial rental</div></div>
             </div>
-            <div class="offer-apr">Personal Contract Hire · 48 months · Total payable £24,012</div>
-            <a class="offer-cta" href="x1-offer.html" style="background:#c0392b;">View X1 offer &rarr;</a>
+            <div class="offer-apr">This car has been sold. Ask Dan about the next X1.</div>
+            <a class="offer-cta" href="x1-offer.html" style="background:#5f6b7c;">Notify me when the next one arrives</a>
           </div>
 
           <div class="offer-card" style="border-color:rgba(16,21,29,.15);background:rgba(16,21,29,.03);grid-column:1/-1;opacity:.7;">
-            <div class="offer-badge" style="color:#c0392b;">SOLD</div>
+            <div class="sold-ribbon">SOLD</div>
+            <div class="offer-badge" style="color:#8a94a0;">No longer available</div>
             <div class="offer-model" style="text-decoration:line-through;color:#8a94a0;">BMW iX3 50 xDrive M Sport Pro</div>
             <div class="offer-spec">Black Sapphire · Adelaide Grey Individual Leather · 22&rdquo; M alloys · 452mi range · AWD · 469hp · Technology Plus Pack</div>
             <div class="offer-figures">
