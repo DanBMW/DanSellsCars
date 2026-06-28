@@ -5,7 +5,10 @@
 
     "forecourt": {
       ".read": true,
-      ".write": true
+      ".write": true,
+      "leaderboard": {
+        ".indexOn": ["score"]
+      }
     },
 
     "disclosures": {
