@@ -77,24 +77,28 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 .em-opt{background:#122012;border:1px solid #444;border-radius:8px;padding:10px 12px;margin:6px 0;cursor:pointer;font-size:.83rem;color:#ddd;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .em-opt:active{background:#27ae60;color:#fff}
 
-/* Convo popup */
-#convo-pop{position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,28,.97);border-top:3px solid #1c69d4;padding:15px;z-index:200;max-height:58vh;overflow-y:auto}
-#convo-pop.hidden{display:none}
-#cv-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-#cv-name{font-weight:700;font-size:1rem;color:#1c69d4}
-#cv-qnum{font-size:.8rem;color:#777}
-#cv-q{font-size:.9rem;color:#eee;margin-bottom:12px;line-height:1.45}
-.cv-opt{background:#13133a;border:1px solid #333;border-radius:8px;padding:10px 13px;margin:6px 0;cursor:pointer;font-size:.83rem;color:#ddd;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.cv-opt:active{background:#1c69d4;color:#fff}
+/* Shared popup type badge */
+.pop-type-badge{display:inline-block;font-size:.7rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:10px}
 
-/* Service popup */
-#svc-pop{position:fixed;bottom:0;left:0;right:0;background:rgba(6,18,6,.97);border-top:3px solid #27ae60;padding:15px;z-index:200;max-height:58vh;overflow-y:auto}
+/* Convo popup — face to face */
+#convo-pop{position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,24,.98);border-top:4px solid #1c69d4;padding:14px 15px 18px;z-index:200;max-height:62vh;overflow-y:auto}
+#convo-pop.hidden{display:none}
+#cv-badge{background:#1c69d4;color:#fff}
+#cv-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+#cv-name{font-weight:800;font-size:1.05rem;color:#fff}
+#cv-qnum{font-size:.8rem;color:#666;background:#1a1a30;padding:2px 8px;border-radius:10px}
+#cv-q{font-size:.92rem;color:#ddd;margin-bottom:12px;line-height:1.5;border-left:3px solid #1c69d4;padding-left:10px}
+.cv-opt{background:#10103a;border:1px solid #2a2a55;border-radius:10px;padding:11px 14px;margin:7px 0;cursor:pointer;font-size:.85rem;color:#ccc;touch-action:manipulation;-webkit-tap-highlight-color:transparent;line-height:1.4}
+.cv-opt:active{background:#1c69d4;color:#fff;border-color:#1c69d4}
+
+/* Service popup — in-person service walk-in */
+#svc-pop{position:fixed;bottom:0;left:0;right:0;background:rgba(4,18,10,.98);border-top:4px solid #f39c12;padding:14px 15px 18px;z-index:200;max-height:62vh;overflow-y:auto}
 #svc-pop.hidden{display:none}
-#svc-name{font-weight:700;font-size:1rem;color:#2ecc71;margin-bottom:6px}
-#svc-step{font-size:.78rem;color:#777;margin-bottom:4px}
-#svc-q{font-size:.9rem;color:#eee;margin-bottom:12px;line-height:1.45}
-.svc-opt{background:#0a1a0a;border:1px solid #333;border-radius:8px;padding:10px 13px;margin:6px 0;cursor:pointer;font-size:.83rem;color:#ddd;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.svc-opt:active{background:#27ae60;color:#fff}
+#svc-badge{background:#f39c12;color:#1a1000}
+#svc-name{font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:8px}
+#svc-q{font-size:.92rem;color:#ddd;margin-bottom:12px;line-height:1.5;border-left:3px solid #f39c12;padding-left:10px}
+.svc-opt{background:#100e04;border:1px solid #3a3010;border-radius:10px;padding:11px 14px;margin:7px 0;cursor:pointer;font-size:.85rem;color:#ccc;touch-action:manipulation;-webkit-tap-highlight-color:transparent;line-height:1.4}
+.svc-opt:active{background:#f39c12;color:#000;border-color:#f39c12}
 
 /* Meeting screen */
 #meeting-screen{overflow-y:auto;max-height:100vh;justify-content:flex-start;padding-top:30px}
@@ -158,7 +162,7 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
     <div class="stat-row"><span>Final Score</span><span class="stat-val" id="e-score">0</span></div>
     <div class="stat-row"><span>Deals</span><span class="stat-val" id="e-deals">0</span></div>
     <div class="stat-row"><span>Finance %</span><span class="stat-val" id="e-fin">0%</span></div>
-    <div class="stat-row"><span>Happy customers</span><span class="stat-val" id="e-happy">0%</span></div>
+    <div class="stat-row"><span>VOC (Voice of Customer)</span><span class="stat-val" id="e-happy">0%</span></div>
   </div>
   <p id="verdict"></p>
   <h3 style="color:#1c69d4;margin-bottom:6px">Leaderboard</h3>
@@ -191,6 +195,7 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 <!-- PHONE -->
 <div id="phone-pop" class="hidden">
   <div id="phone-box">
+    <div class="pop-type-badge" style="background:#1c69d4;color:#fff">📱 Incoming call</div>
     <div id="ph-icon" class="ringing">📱</div>
     <div id="ph-caller"></div>
     <div id="ph-preview"></div>
@@ -209,7 +214,7 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 <!-- EMAIL -->
 <div id="email-pop" class="hidden">
   <div id="email-box">
-    <div style="font-size:.8rem;color:#2ecc71;margin-bottom:4px">📧 New Email</div>
+    <div class="pop-type-badge" style="background:#27ae60;color:#fff">📧 New Email</div>
     <div id="em-subject"></div>
     <div id="em-body"></div>
     <div id="em-opts"></div>
@@ -218,6 +223,7 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 
 <!-- CONVERSATION -->
 <div id="convo-pop" class="hidden">
+  <div id="cv-badge" class="pop-type-badge">💬 Face to face</div>
   <div id="cv-header"><span id="cv-name"></span><span id="cv-qnum"></span></div>
   <div id="cv-q"></div>
   <div id="cv-opts"></div>
@@ -225,8 +231,8 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 
 <!-- SERVICE TRIAGE -->
 <div id="svc-pop" class="hidden">
+  <div id="svc-badge" class="pop-type-badge">🔧 Service walk-in</div>
   <div id="svc-name"></div>
-  <div id="svc-step"></div>
   <div id="svc-q"></div>
   <div id="svc-opts"></div>
 </div>
@@ -644,6 +650,27 @@ function removeCustMesh(id){
   delete customerMeshes[id];
 }
 
+function createServiceMesh(c){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.78,10),new THREE.MeshLambertMaterial({color:0xe67e22}));
+  body.position.y=0.39; g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,10),new THREE.MeshLambertMaterial({color:0xf0c090}));
+  head.position.y=0.96; g.add(head);
+  const rGeo=new THREE.RingGeometry(0.4,0.56,24);
+  const rMat=new THREE.MeshBasicMaterial({color:0x2ecc71,side:THREE.DoubleSide});
+  const ring=new THREE.Mesh(rGeo,rMat);
+  ring.rotation.x=-Math.PI/2; ring.position.y=0.04; g.add(ring);
+  const icv=document.createElement('canvas'); icv.width=64; icv.height=64;
+  const ictx=icv.getContext('2d'); ictx.font='44px serif'; ictx.textAlign='center'; ictx.fillText('🔧',32,48);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(icv),transparent:true}));
+  sp.scale.set(0.8,0.8,1); sp.position.set(0,1.6,0); g.add(sp);
+  g.position.set(c.pos.x,0,c.pos.z);
+  g.userData={type:'customer',cid:c.id};
+  scene.add(g);
+  interactables.push({mesh:g,type:'customer',cid:c.id});
+  customerMeshes[c.id]={group:g,ringMat:rMat};
+}
+
 function updateRing(c){
   const cm=customerMeshes[c.id]; if(!cm)return;
   const pct=c.patience/100;
@@ -675,7 +702,11 @@ function onTap(e){
       if(isDescendant(iHits[0].object,inter.mesh)){
         if(inter.type==='customer'){
           const c=G.customers.find(x=>x.id===inter.cid);
-          if(c&&!c.interacting){ walkTo(c.pos.clone(),()=>startConvo(c)); return; }
+          if(c&&!c.interacting){
+            if(c.isService){ walkTo(c.pos.clone(),()=>startSvcConvo(c)); }
+            else { walkTo(c.pos.clone(),()=>startConvo(c)); }
+            return;
+          }
         }
         if(inter.type==='station'){
           walkTo(inter.mesh.position.clone(),()=>useStation(inter.key)); return;
@@ -759,7 +790,7 @@ function tick(dt){
   });
   // Service schedule
   G.svcSchedule=G.svcSchedule.filter(t=>{
-    if(G.dayTime>=t&&!G.svcActive&&!G.phoneActive&&!G.emailActive&&!G.convoActive){
+    if(G.dayTime>=t&&!G.svcActive&&!G.customers.some(c=>c.isService)){
       triggerService(); return false;
     } return true;
   });
@@ -873,7 +904,7 @@ function tickCustomers(dt){
 function custWalkOff(c){
   addScore(-10); G.patience=Math.max(0,G.patience-5);
   G.totalInter++;
-  toast(`${c.name} got bored and left! −10`);
+  toast(c.isService?`${c.name} left without being seen! −10 🔧`:`${c.name} got bored and left! −10`);
   removeCust(c.id);
 }
 
@@ -1023,18 +1054,32 @@ function resolveEmail(o){
 
 // ─── SERVICE TRIAGE ───────────────────────────────────────────
 function triggerService(){
-  G.svcActive=true;
   const sc=SERVICE_SCENARIOS[0|Math.random()*SERVICE_SCENARIOS.length];
   const name=NAMES[0|Math.random()*NAMES.length];
-  G.svcData={sc,name,step:0};
-  document.getElementById('svc-name').textContent=`👤 ${name}`;
+  const sp=SP_SHOW[0|Math.random()*SP_SHOW.length];
+  const wt=WP_SHOW[0|Math.random()*WP_SHOW.length];
+  const svcCust={
+    id:G.cidCounter++, name, isService:true, svcScenario:sc,
+    zone:'showroom',
+    pos:V3(sp.x,0,sp.z), target:V3(wt.x,0,wt.z),
+    patience:100, interacting:false
+  };
+  G.customers.push(svcCust);
+  createServiceMesh(svcCust);
+  toast(`${name} has walked in 🔧 — tap them to help`);
+}
+
+function startSvcConvo(c){
+  if(c.interacting||G.svcActive)return;
+  c.interacting=true; G.svcActive=true;
+  G.svcData={sc:c.svcScenario,name:c.name,step:0,cust:c};
+  document.getElementById('svc-name').textContent=c.name;
   renderSvcStep();
   document.getElementById('svc-pop').classList.remove('hidden');
 }
 
 function renderSvcStep(){
   const {sc,step}=G.svcData;
-  document.getElementById('svc-step').textContent=step===0?'Service walk-in':`Step ${step}`;
   document.getElementById('svc-q').textContent=step===0?sc.opening:sc.steps[step-1].q;
   const el=document.getElementById('svc-opts'); el.innerHTML='';
   if(step===0){
@@ -1055,9 +1100,11 @@ function renderSvcStep(){
 function resolveService(o){
   document.getElementById('svc-pop').classList.add('hidden');
   G.svcActive=false;
-  addScore(o.p);
+  addScore(o.p); G.totalInter++;
+  if(o.p>0) G.happyInter++;
   if(o.p<0) G.patience=Math.max(0,G.patience-10);
   toast(o.p>0?`✅ Correct triage! +${o.p}`:`❌ Wrong call… ${o.p}`);
+  if(G.svcData?.cust) removeCust(G.svcData.cust.id);
 }
 
 // ─── CAR JOBS ─────────────────────────────────────────────────
@@ -1159,7 +1206,7 @@ function endGame(){
 
   let v='';
   if(G.deals>=DEAL_TARGET&&happyPct>=70)
-    v=`Target smashed, ${happyPct}% of customers happy, finance at ${finPct}%. Nathan's buzzing, Will's happy with the PPU, Serge has nothing to moan about. Salesperson of the month. 🏆`;
+    v=`Target smashed, VOC at ${happyPct}%, finance at ${finPct}%. Nathan's buzzing, Will's happy with the PPU, Serge has nothing to moan about. Salesperson of the month. 🏆`;
   else if(G.deals>=DEAL_TARGET)
     v=`Hit the target but a few customers left unhappy. Serge wants "a quick word." Still, deals are deals.`;
   else
