@@ -51,6 +51,16 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 #crash-ov.hidden{display:none}
 @keyframes crashFlash{0%{opacity:1}100%{opacity:0}}
 
+/* Level badge */
+#level-badge{font-size:.72rem;font-weight:900;color:#ff4444;letter-spacing:.06em;text-shadow:0 0 8px #ff0000;margin-top:2px}
+#level-badge.hidden{display:none}
+
+/* Ryan stolen-car alert */
+#ryan-alert{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(180,0,0,.96);color:#fff;padding:14px 22px;border-radius:14px;font-size:1rem;font-weight:800;z-index:400;text-align:center;pointer-events:none;border:3px solid #ff4444;box-shadow:0 0 28px rgba(255,0,0,.6);max-width:300px}
+#ryan-alert.hidden{display:none}
+@keyframes ryanPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.04)}}
+#ryan-alert:not(.hidden){animation:ryanPulse 0.6s infinite}
+
 /* Phone popup */
 #phone-pop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:200;background:rgba(0,0,0,.6)}
 #phone-pop.hidden{display:none}
@@ -128,14 +138,22 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
   <h1>🚗 Forecourt Frenzy</h1>
   <p style="color:#aaa;margin-bottom:18px">BMW Hedin Ruxley · Survive the shift.</p>
   <input type="text" id="name-input" placeholder="Your name" maxlength="20" autocomplete="off">
-  <button class="btn" id="name-btn">Continue</button>
-  <button class="btn" id="view-lb-btn" style="background:#222;border:1px solid #333;margin-top:6px">🏆 Leaderboard</button>
+  <div style="margin-top:14px;width:100%;max-width:300px;display:flex;flex-direction:column;gap:8px">
+    <button class="btn" id="name-btn" style="margin-top:0">▶ Level 1 — Normal</button>
+    <button class="btn" id="impossible-btn" style="margin-top:0;background:#6b0000;border:2px solid #ff3333;letter-spacing:.04em">☠️ Level 2 — Impossible</button>
+    <p id="impossible-lock" style="color:#666;font-size:.75rem;margin:0;text-align:center">🔒 Complete Level 1 to unlock</p>
+  </div>
+  <button class="btn" id="view-lb-btn" style="background:#222;border:1px solid #333;margin-top:10px">🏆 Leaderboard</button>
 </div>
 
 <!-- LEADERBOARD OVERLAY -->
 <div id="lb-overlay" class="screen hidden">
   <h2>🏆 Leaderboard</h2>
-  <div id="lb-overlay-list" style="width:100%;max-width:340px;max-height:60vh;overflow-y:auto;margin:8px 0"></div>
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <button class="btn" id="lb-tab-normal" style="padding:7px 14px;font-size:.82rem">Normal</button>
+    <button class="btn" id="lb-tab-hard" style="padding:7px 14px;font-size:.82rem;background:#6b0000;border:2px solid #ff3333">☠️ Impossible</button>
+  </div>
+  <div id="lb-overlay-list" style="width:100%;max-width:340px;max-height:55vh;overflow-y:auto;margin:4px 0"></div>
   <button class="btn" id="lb-overlay-close" style="margin-top:10px">← Back</button>
 </div>
 
@@ -173,7 +191,7 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
     <div class="stat-row"><span>VOC (Voice of Customer)</span><span class="stat-val" id="e-happy">0%</span></div>
   </div>
   <p id="verdict"></p>
-  <h3 style="color:#1c69d4;margin-bottom:6px">Leaderboard</h3>
+  <h3 id="lb-heading" style="color:#1c69d4;margin-bottom:6px">Leaderboard</h3>
   <div id="lb"></div>
   <div class="end-btns">
     <button class="btn" id="again-btn">Play Again</button>
@@ -192,10 +210,12 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
     <div id="score-d">Score: 0</div>
     <div id="clock-d">09:00</div>
     <div id="deals-d">Deals: 0 / 3</div>
+    <div id="level-badge" class="hidden">☠️ IMPOSSIBLE</div>
   </div>
 </div>
 
 <!-- OVERLAYS -->
+<div id="ryan-alert" class="hidden"></div>
 <div id="toast" class="hidden"></div>
 <div id="job-banner" class="hidden"></div>
 <div id="crash-ov" class="hidden"></div>
@@ -395,7 +415,10 @@ const PHONE_CALLS = [
     opts:[{t:"Hang up.",p:5},{t:"Stay on the line.",p:-5}]},
   { caller:'Sophie Marchetti', type:'hot', preview:'Ready to buy — needs callback',
     q:"Sophie: 'Hi, I've been looking at the 1 Series online. I'm ready to come in — is there someone I can speak to?'",
-    opts:[{t:"Arrange callback and note her details.",p:80},{t:"Tell her to come in whenever.",p:30}]}
+    opts:[{t:"Arrange callback and note her details.",p:80},{t:"Tell her to come in whenever.",p:30}]},
+  { caller:'Kevin Marsh', type:'complaint', preview:'Data breach complaint',
+    q:"Kevin: 'I received a call from someone I've never heard of with my full name, address and the car I enquired about. I believe one of your staff — Sergio — has sent my personal details to a third party. I'm absolutely furious.'",
+    opts:[{t:"I am so sorry to hear this — let me transfer you to my manager right away. This will be dealt with immediately.",p:50},{t:"I'm sure it was a misunderstanding — I'll personally look into it.",p:-30},{t:"Sucks to be you, love. These things happen.",p:-60}]}
 ];
 
 const EMAILS = [
@@ -477,6 +500,13 @@ let stationMeshes = {};
 
 const V3 = (x,y,z) => new THREE.Vector3(x,y,z);
 
+// ─── LEVEL / IMPOSSIBLE MODE ──────────────────────────────────
+let currentLevel = 1;
+let pigeons = [];
+let thieves = [];
+let stolenCars = [];
+let ryanMesh = null, ryanPos = null, ryanVel = null, ryanTimer = 0, ryanSpeakTimer = 0;
+
 // ─── GAME STATE ───────────────────────────────────────────────
 let G = {};
 let playerName = 'Player';
@@ -494,6 +524,9 @@ function initG() {
     svcActive:false, svcData:null,
     jobActive:false, jobCarrying:false, jobData:null,
     crashed:false, crashPending:false,
+    maxCustomers: MAX_CUSTOMERS,
+    spawnMin:20, spawnMax:35,
+    phoneMin:PHONE_MIN, phoneMax:PHONE_MAX,
     nextPhone: rand(PHONE_MIN,PHONE_MAX),
     nextEmail: rand(EMAIL_MIN,EMAIL_MAX),
     nextSpawn: 5,
@@ -592,7 +625,7 @@ function buildWorld(){
     plinth.position.set(d.x,0.07,d.z); scene.add(plinth);
     const car=buildCar(d.col);
     car.position.set(d.x,0.14,d.z); car.rotation.y=0.5; scene.add(car);
-    carObjs.push({mesh:car,zone:'showroom',isMovable:d.mov,inUse:false});
+    carObjs.push({mesh:car,zone:'showroom',isMovable:d.mov,inUse:false,stolen:false,origPos:V3(d.x,0.14,d.z),origRotY:0.5});
   });
 
   // Forecourt cars
@@ -604,7 +637,7 @@ function buildWorld(){
   fcDefs.forEach(d=>{
     const car=buildCar(d.col);
     car.position.set(d.x,0.14,d.z); scene.add(car);
-    carObjs.push({mesh:car,zone:'forecourt',isMovable:d.mov,inUse:false});
+    carObjs.push({mesh:car,zone:'forecourt',isMovable:d.mov,inUse:false,stolen:false,origPos:V3(d.x,0.14,d.z),origRotY:0});
   });
 }
 
@@ -791,6 +824,28 @@ function onTap(e){
   const ray=new THREE.Raycaster();
   ray.setFromCamera(mouse,camera);
 
+  // Impossible level: pigeon and thief tapping
+  if(currentLevel===2){
+    const activePigeons=pigeons.filter(p=>p.mesh&&!p.caught);
+    if(activePigeons.length){
+      const pHits=ray.intersectObjects(activePigeons.map(p=>p.mesh),true);
+      if(pHits.length){
+        const hit=pHits[0].object;
+        const p=activePigeons.find(p=>isDescendant(hit,p.mesh));
+        if(p){ catchPigeon(p); return; }
+      }
+    }
+    const activeThieves=thieves.filter(t=>t.mesh&&!t.caught);
+    if(activeThieves.length){
+      const tHits=ray.intersectObjects(activeThieves.map(t=>t.mesh),true);
+      if(tHits.length){
+        const hit=tHits[0].object;
+        const th=activeThieves.find(t=>isDescendant(hit,t.mesh));
+        if(th){ catchThief(th); return; }
+      }
+    }
+  }
+
   // Check interactables
   const iMeshes=interactables.map(o=>o.mesh);
   const iHits=ray.intersectObjects(iMeshes,true);
@@ -870,9 +925,10 @@ function tick(dt){
 
   updateHUD();
   tickCustomers(dt);
+  if(currentLevel===2){ tickPigeons(dt); tickThieves(dt); tickStolenCars(dt); tickRyan(dt); }
 
   G.nextSpawn-=dt;
-  if(G.nextSpawn<=0){ spawnCustomer(); G.nextSpawn=rand(20,35); }
+  if(G.nextSpawn<=0){ spawnCustomer(); G.nextSpawn=rand(G.spawnMin,G.spawnMax); }
 
   if(!G.phoneActive&&!G.emailActive){
     G.nextPhone-=dt;
@@ -968,7 +1024,7 @@ const WP_SHOW=[{x:-11,z:-3},{x:-7,z:3},{x:-3,z:-2},{x:-10,z:5},{x:-5,z:0}];
 const WP_FORE=[{x:3,z:-5},{x:5.5,z:-5},{x:8,z:-5},{x:3,z:2},{x:5.5,z:2},{x:8,z:4}];
 
 function spawnCustomer(){
-  if(G.customers.length>=MAX_CUSTOMERS)return;
+  if(G.customers.length>=G.maxCustomers)return;
   const zone=Math.random()<0.5?'showroom':'forecourt';
   const sp=(zone==='showroom'?SP_SHOW:SP_FORE)[0|Math.random()*(zone==='showroom'?SP_SHOW.length:SP_FORE.length)];
   const wp=(zone==='showroom'?WP_SHOW:WP_FORE)[0|Math.random()*(zone==='showroom'?WP_SHOW.length:WP_FORE.length)];
@@ -1100,7 +1156,7 @@ function crash(msg){
 function triggerPhone(){
   G.phoneActive=true; G.phoneAnswered=false; G.phoneTimer=8;
   G.phoneData=PHONE_CALLS[0|Math.random()*PHONE_CALLS.length];
-  G.nextPhone=rand(PHONE_MIN,PHONE_MAX);
+  G.nextPhone=rand(G.phoneMin,G.phoneMax);
   document.getElementById('ph-caller').textContent=G.phoneData.caller;
   document.getElementById('ph-preview').textContent=G.phoneData.preview;
   document.getElementById('ph-init-btns').style.display='flex';
@@ -1129,6 +1185,7 @@ function declinePhone(){
   document.getElementById('phone-pop').classList.add('hidden');
   G.phoneActive=false;
   if(G.phoneData.type==='hot'){ addScore(-20); toast('Missed hot lead! −20'); }
+  else if(G.phoneData.type==='complaint'){ addScore(-30); toast('GDPR complaint ignored! −30'); }
   else{ addScore(5); toast('Junk call declined. +5'); }
 }
 
@@ -1225,7 +1282,7 @@ function safeJobTarget(type, excludeObj){
       ? V3(rand(2.5,11.5),0.14,rand(-6.5,6.5))
       : V3(rand(-12.5,-2.5),0.14,rand(-5.5,5.5));
     const ok=carObjs.every(c=>{
-      if(c===excludeObj)return true;
+      if(c===excludeObj||c.stolen)return true;
       const dx=c.mesh.position.x-tp.x, dz=c.mesh.position.z-tp.z;
       return Math.sqrt(dx*dx+dz*dz)>=MIN;
     });
@@ -1235,7 +1292,7 @@ function safeJobTarget(type, excludeObj){
 }
 
 function triggerJob(type){
-  const avail=carObjs.filter(c=>c.zone===type&&c.isMovable&&!c.inUse);
+  const avail=carObjs.filter(c=>c.zone===type&&c.isMovable&&!c.inUse&&!c.stolen);
   if(!avail.length)return;
   const carObj=avail[0|Math.random()*avail.length];
   carObj.inUse=true;
@@ -1316,7 +1373,17 @@ function endGame(){
   G.running=false;
   document.getElementById('hud').classList.add('hidden');
   document.getElementById('job-banner').classList.add('hidden');
+  document.getElementById('ryan-alert').classList.add('hidden');
   ['convo-pop','phone-pop','email-pop','svc-pop'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+
+  // Clean up impossible level objects
+  pigeons.forEach(p=>{ if(p.mesh)scene.remove(p.mesh); }); pigeons=[];
+  thieves.forEach(t=>{ if(t.mesh)scene.remove(t.mesh); }); thieves=[];
+  stolenCars.forEach(s=>{ if(s.mesh&&s.mesh.parent)scene.remove(s.mesh); }); stolenCars=[];
+  if(ryanMesh){ scene.remove(ryanMesh); ryanMesh=null; } ryanTimer=0;
+
+  // Unlock level 2 after completing level 1
+  if(currentLevel===1) localStorage.setItem('ff_l1_done','1');
 
   const happyPct=G.totalInter>0?Math.round(G.happyInter/G.totalInter*100):100;
   const finPct=G.deals>0?Math.round(G.finDeals/G.deals*100):0;
@@ -1337,10 +1404,13 @@ function endGame(){
     v=`Only ${G.deals} of ${DEAL_TARGET} on the glass. Nathan's drafting a one-to-one and Will's muttering about the PPU.`;
   document.getElementById('verdict').textContent=v;
 
+  const lbPath=currentLevel===2?'forecourt/leaderboard_hard':'forecourt/leaderboard';
+  document.getElementById('lb-heading').textContent=currentLevel===2?'☠️ Impossible Leaderboard':'🏆 Leaderboard';
+
   const myEntry={name:playerName,score:G.score,deals:G.deals,ts:Date.now()};
   if(fbDb){
-    fbDb.ref('forecourt/leaderboard').push(myEntry)
-      .then(()=> loadLB(G.score))
+    fbDb.ref(lbPath).push(myEntry)
+      .then(()=> loadLB(G.score,lbPath))
       .catch(()=> renderLB([myEntry],G.score));
   } else {
     renderLB([myEntry],G.score);
@@ -1349,10 +1419,11 @@ function endGame(){
   showScreen('end-screen');
 }
 
-function loadLB(myScore){
+function loadLB(myScore,path){
+  path=path||'forecourt/leaderboard';
   if(!fbDb){ renderLB([],myScore); return; }
   document.getElementById('lb').innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading scores…</div>';
-  fbDb.ref('forecourt/leaderboard').orderByChild('score').limitToLast(20).once('value')
+  fbDb.ref(path).orderByChild('score').limitToLast(20).once('value')
     .then(snap=>{
       const entries=[];
       snap.forEach(c=>entries.push(c.val()));
@@ -1360,6 +1431,18 @@ function loadLB(myScore){
       renderLB(entries.slice(0,10),myScore);
     })
     .catch(()=>renderLB([],myScore));
+}
+
+function loadLBInto(el,path){
+  el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading…</div>';
+  if(!fbDb){ renderLB([],null,el); return; }
+  fbDb.ref(path).orderByChild('score').limitToLast(20).once('value')
+    .then(snap=>{
+      const entries=[]; snap.forEach(c=>entries.push(c.val()));
+      entries.sort((a,b)=>b.score-a.score);
+      renderLB(entries.slice(0,10),null,el);
+    })
+    .catch(()=>renderLB([],null,el));
 }
 
 function renderLB(lb,myScore,targetEl){
@@ -1416,13 +1499,33 @@ function mtgNext(){
 function startGame(){
   // Clean up old customers
   Object.keys(customerMeshes).forEach(id=>removeCustMesh(parseInt(id)));
-  // Reset car inUse
-  carObjs.forEach(c=>{ c.inUse=false; });
+  // Clean up impossible level objects from previous run
+  pigeons.forEach(p=>{ if(p.mesh)scene.remove(p.mesh); }); pigeons=[];
+  thieves.forEach(t=>{ if(t.mesh)scene.remove(t.mesh); }); thieves=[];
+  stolenCars.forEach(s=>{ if(s.mesh&&s.mesh.parent)scene.remove(s.mesh); }); stolenCars=[];
+  if(ryanMesh){ scene.remove(ryanMesh); ryanMesh=null; } ryanTimer=0;
+  document.getElementById('ryan-alert').classList.add('hidden');
+  // Restore stolen/moved cars
+  carObjs.forEach(c=>{
+    c.inUse=false; c.stolen=false;
+    if(c.origPos) c.mesh.position.copy(c.origPos);
+    if(c.origRotY!==undefined) c.mesh.rotation.y=c.origRotY;
+    if(!c.mesh.parent) scene.add(c.mesh);
+  });
   // Clean job glows
   if(jobGlow){ scene.remove(jobGlow); jobGlow=null; }
   if(jobBayGlow){ scene.remove(jobBayGlow); jobBayGlow=null; }
 
   initG();
+
+  // Apply level config
+  if(currentLevel===2){
+    G.maxCustomers=6;
+    G.spawnMin=10; G.spawnMax=18;
+    G.phoneMin=25; G.phoneMax=45;
+    G.nextPhone=rand(25,45);
+  }
+
   G.running=true;
 
   // Reset player
@@ -1436,11 +1539,228 @@ function startGame(){
     {time:rand(130,170),type:'showroom'}
   ];
   // Schedule service walk-ins
-  G.svcSchedule=[rand(45,80),rand(190,240)];
+  G.svcSchedule=currentLevel===2
+    ? [rand(25,45),rand(70,90),rand(120,150),rand(185,220)]
+    : [rand(45,80),rand(190,240)];
+
+  // Level badge
+  const badge=document.getElementById('level-badge');
+  if(currentLevel===2) badge.classList.remove('hidden');
+  else badge.classList.add('hidden');
 
   document.getElementById('hud').classList.remove('hidden');
-  showScreen(''); // hide all screens, show game
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+
+  if(currentLevel===2){ spawnPigeons(); spawnThieves(); }
+}
+
+// ─── PIGEONS ─────────────────────────────────────────────────
+function createPigeonMesh(){
+  const g=new THREE.Group();
+  const grey=new THREE.MeshLambertMaterial({color:0x999999});
+  const dk=new THREE.MeshLambertMaterial({color:0x555555});
+  const wh=new THREE.MeshLambertMaterial({color:0xeeeeee});
+  const body=new THREE.Mesh(new THREE.SphereGeometry(0.15,8,6),grey);
+  body.scale.set(1.4,1,1); g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.09,8,6),grey);
+  head.position.set(0.19,0.07,0); g.add(head);
+  const beak=new THREE.Mesh(new THREE.ConeGeometry(0.03,0.08,6),dk);
+  beak.rotation.z=-Math.PI/2; beak.position.set(0.27,0.06,0); g.add(beak);
+  [-1,1].forEach(s=>{
+    const w=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.04,0.18),wh);
+    w.position.set(-0.02,0.05,s*0.18); g.add(w);
+  });
+  const tail=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.03,0.12),dk);
+  tail.position.set(-0.21,0,0); g.add(tail);
+  return g;
+}
+
+function spawnPigeons(){
+  [{x:-11,z:-4,y:2.2},{x:-8,z:2,y:2.4},{x:-4,z:-5,y:2.0},{x:-6,z:5,y:2.3}].forEach(pos=>{
+    const mesh=createPigeonMesh();
+    mesh.position.set(pos.x,pos.y,pos.z);
+    scene.add(mesh);
+    pigeons.push({mesh,pos:V3(pos.x,pos.y,pos.z),vel:V3(rand(-1,1)*0.8,0,rand(-1,1)*0.8),bobT:Math.random()*Math.PI*2,caught:false,respawnTimer:0});
+  });
+}
+
+function tickPigeons(dt){
+  pigeons.forEach(p=>{
+    if(p.caught){
+      p.respawnTimer-=dt;
+      if(p.respawnTimer<=0&&G.running&&currentLevel===2){
+        p.caught=false;
+        p.pos.set(rand(-12,-2),rand(2.0,2.5),rand(-7,7));
+        p.vel.set(rand(-1,1)*0.8,0,rand(-1,1)*0.8);
+        p.bobT=0;
+        p.mesh=createPigeonMesh();
+        p.mesh.position.copy(p.pos);
+        scene.add(p.mesh);
+      }
+      return;
+    }
+    p.bobT+=dt*2.5;
+    p.pos.x+=p.vel.x*dt; p.pos.z+=p.vel.z*dt;
+    p.pos.y=2.2+Math.sin(p.bobT)*0.15;
+    if(p.pos.x<-13||p.pos.x>-0.5) p.vel.x*=-1;
+    if(p.pos.z<-8||p.pos.z>8) p.vel.z*=-1;
+    p.pos.x=Math.max(-13,Math.min(-0.5,p.pos.x));
+    p.pos.z=Math.max(-8,Math.min(8,p.pos.z));
+    if(p.mesh){ p.mesh.position.copy(p.pos); p.mesh.rotation.y=Math.atan2(p.vel.x,p.vel.z); }
+  });
+}
+
+function catchPigeon(p){
+  p.caught=true;
+  if(p.mesh){ scene.remove(p.mesh); p.mesh=null; }
+  addScore(10); toast('Pigeon terminated 🐦 +10');
+  p.respawnTimer=12;
+}
+
+// ─── THIEVES ─────────────────────────────────────────────────
+function createThiefMesh(){
+  const g=new THREE.Group();
+  const blk=new THREE.MeshLambertMaterial({color:0x111111});
+  const eye=new THREE.MeshLambertMaterial({color:0xffffff});
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.85,10),blk);
+  body.position.y=0.42; g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,10),blk);
+  head.position.y=1.05; g.add(head);
+  [-0.08,0.08].forEach(xo=>{
+    const e=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.04,0.05),eye);
+    e.position.set(xo,1.07,0.17); g.add(e);
+  });
+  const rGeo=new THREE.RingGeometry(0.4,0.58,24);
+  const rMat=new THREE.MeshBasicMaterial({color:0xff0000,side:THREE.DoubleSide});
+  const ring=new THREE.Mesh(rGeo,rMat);
+  ring.rotation.x=-Math.PI/2; ring.position.y=0.04; ring.scale.setScalar(0); g.add(ring);
+  return {group:g,ring,ringMat:rMat};
+}
+
+function spawnThieves(){
+  const fcCars=carObjs.filter(c=>c.zone==='forecourt'&&!c.stolen);
+  const targets=shuffle([...fcCars]).slice(0,3);
+  const eps=[{x:13,z:8},{x:13,z:0},{x:13,z:-8}];
+  targets.forEach((carObj,i)=>{
+    const ep=eps[i];
+    const {group,ring,ringMat}=createThiefMesh();
+    group.position.set(ep.x,0,ep.z);
+    scene.add(group);
+    thieves.push({mesh:group,ring,ringMat,pos:V3(ep.x,0,ep.z),carObj,state:'walking',timer:30,caught:false});
+  });
+}
+
+function tickThieves(dt){
+  thieves.forEach(th=>{
+    if(th.caught)return;
+    if(th.state==='walking'){
+      const tp=th.carObj.mesh.position;
+      const dx=tp.x-th.pos.x, dz=tp.z-th.pos.z;
+      const dist=Math.sqrt(dx*dx+dz*dz);
+      if(dist<0.5){ th.state='at_car'; th.timer=30; }
+      else{
+        const spd=2.5*dt;
+        th.pos.x+=dx/dist*spd; th.pos.z+=dz/dist*spd;
+        th.mesh.position.copy(th.pos);
+        th.mesh.rotation.y=Math.atan2(dx,dz);
+      }
+    } else if(th.state==='at_car'){
+      th.timer-=dt;
+      const pct=1-(th.timer/30);
+      if(th.ring) th.ring.scale.setScalar(Math.min(1,pct));
+      if(th.ringMat) th.ringMat.color.setHex(pct>0.7?0xff0000:pct>0.4?0xff6600:0xffaa00);
+      if(th.timer<=0) stealCar(th);
+    }
+  });
+}
+
+function catchThief(th){
+  th.caught=true;
+  if(th.mesh){ scene.remove(th.mesh); th.mesh=null; }
+  addScore(30);
+  toast("Thief spooked and ran away — 'You've made Ryan very happy' 😄 +30");
+}
+
+function stealCar(th){
+  if(th.carObj.stolen){ th.caught=true; return; }
+  th.state='done'; th.caught=true;
+  if(th.mesh){ scene.remove(th.mesh); th.mesh=null; }
+  th.carObj.stolen=true;
+  addScore(-50);
+  stolenCars.push({mesh:th.carObj.mesh,vel:V3(14,0,rand(-2,2)),timer:5});
+  activateRyan();
+  toast('🚨 A car has been stolen!');
+}
+
+function tickStolenCars(dt){
+  stolenCars.forEach(sc=>{
+    sc.timer-=dt;
+    sc.mesh.position.x+=sc.vel.x*dt;
+    sc.mesh.position.z+=sc.vel.z*dt;
+    sc.mesh.rotation.y+=dt*2;
+    if(sc.timer<=0&&sc.mesh.parent) scene.remove(sc.mesh);
+  });
+  stolenCars=stolenCars.filter(sc=>sc.timer>0);
+}
+
+// ─── RYAN NPC ─────────────────────────────────────────────────
+function createRyanMesh(){
+  const g=new THREE.Group();
+  const navy=new THREE.MeshLambertMaterial({color:0x1a2060});
+  const skin=new THREE.MeshLambertMaterial({color:0xfaaa88});
+  const red=new THREE.MeshLambertMaterial({color:0xcc2200});
+  const brow=new THREE.MeshLambertMaterial({color:0x882200});
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.85,10),navy);
+  body.position.y=0.42; g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,10),skin);
+  head.position.y=1.05; g.add(head);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(0.18,8,4),red);
+  hair.scale.set(1,0.55,1); hair.position.set(0,1.25,0); g.add(hair);
+  [-0.08,0.08].forEach(xo=>{
+    const br=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.025,0.04),brow);
+    br.position.set(xo,1.12,0.18); br.rotation.z=xo>0?0.3:-0.3; g.add(br);
+  });
+  const cv=document.createElement('canvas'); cv.width=64; cv.height=64;
+  const ctx=cv.getContext('2d'); ctx.font='44px serif'; ctx.textAlign='center'; ctx.fillText('😡',32,48);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true}));
+  sp.scale.set(0.9,0.9,1); sp.position.set(0,1.7,0); g.add(sp);
+  return g;
+}
+
+function activateRyan(){
+  if(ryanMesh) scene.remove(ryanMesh);
+  ryanMesh=createRyanMesh();
+  ryanPos=V3(-8,0,-2);
+  ryanMesh.position.copy(ryanPos);
+  scene.add(ryanMesh);
+  ryanVel=V3(rand(-1,1)*3,0,rand(-1,1)*3);
+  ryanTimer=18; ryanSpeakTimer=0;
+  const el=document.getElementById('ryan-alert');
+  el.textContent="🚨 Ryan: 'A CAR HAS BEEN STOLEN!'";
+  el.classList.remove('hidden');
+}
+
+function tickRyan(dt){
+  if(!ryanMesh||ryanTimer<=0)return;
+  ryanTimer-=dt; ryanSpeakTimer-=dt;
+  if(ryanSpeakTimer<=0){ toast("Ryan: 'A CAR HAS BEEN STOLEN!' 🚨"); ryanSpeakTimer=3; }
+  ryanPos.x+=ryanVel.x*dt; ryanPos.z+=ryanVel.z*dt;
+  if(ryanPos.x<-13||ryanPos.x>-0.5){ ryanVel.x*=-1; ryanPos.x=Math.max(-13,Math.min(-0.5,ryanPos.x)); }
+  if(ryanPos.z<-8||ryanPos.z>8){ ryanVel.z*=-1; ryanPos.z=Math.max(-8,Math.min(8,ryanPos.z)); }
+  if(Math.random()<dt*0.5) ryanVel.set(rand(-1,1)*3,0,rand(-1,1)*3);
+  ryanMesh.position.copy(ryanPos);
+  ryanMesh.rotation.y=Math.atan2(ryanVel.x,ryanVel.z);
+  if(ryanTimer<=0){ scene.remove(ryanMesh); ryanMesh=null; document.getElementById('ryan-alert').classList.add('hidden'); }
+}
+
+// ─── LEVEL UNLOCK ─────────────────────────────────────────────
+function updateImpossibleBtn(){
+  const btn=document.getElementById('impossible-btn');
+  const lock=document.getElementById('impossible-lock');
+  const done=localStorage.getItem('ff_l1_done')==='1';
+  btn.style.opacity=done?'1':'0.4';
+  btn.style.pointerEvents=done?'':'none';
+  if(lock) lock.style.display=done?'none':'block';
 }
 
 // ─── BUTTON WIRING ────────────────────────────────────────────
@@ -1455,35 +1775,44 @@ window.addEventListener('load',()=>{
   gameLoop();
 
   showScreen('name-screen');
+  updateImpossibleBtn();
+
+  function pickName(){ return document.getElementById('name-input').value.trim()||'Player'; }
 
   wire('name-btn',()=>{
-    const v=document.getElementById('name-input').value.trim();
-    playerName=v||'Player';
+    playerName=pickName(); currentLevel=1;
     showScreen('howto-screen');
   });
-  document.getElementById('name-input').addEventListener('keydown',e=>{ if(e.key==='Enter'){ playerName=document.getElementById('name-input').value.trim()||'Player'; showScreen('howto-screen'); } });
+
+  wire('impossible-btn',()=>{
+    if(localStorage.getItem('ff_l1_done')!=='1')return;
+    playerName=pickName(); currentLevel=2;
+    showScreen('howto-screen');
+  });
+
+  document.getElementById('name-input').addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ playerName=pickName(); currentLevel=1; showScreen('howto-screen'); }
+  });
 
   wire('howto-btn',startMeeting);
   wire('mtg-btn',mtgNext);
-  wire('again-btn',startMeeting);
+  wire('again-btn',()=>{ showScreen('name-screen'); updateImpossibleBtn(); });
   wire('ph-ans-btn',answerPhone);
   wire('ph-dec-btn',declinePhone);
 
   wire('view-lb-btn',()=>{
     const el=document.getElementById('lb-overlay-list');
-    el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading…</div>';
     showScreen('lb-overlay');
-    if(fbDb){
-      fbDb.ref('forecourt/leaderboard').orderByChild('score').limitToLast(20).once('value')
-        .then(snap=>{
-          const entries=[]; snap.forEach(c=>entries.push(c.val()));
-          entries.sort((a,b)=>b.score-a.score);
-          renderLB(entries.slice(0,10),null,el);
-        })
-        .catch(()=>renderLB([],null,el));
-    } else { renderLB([],null,el); }
+    loadLBInto(el,'forecourt/leaderboard');
   });
-  wire('lb-overlay-close',()=>showScreen('name-screen'));
+  wire('lb-overlay-close',()=>{ showScreen('name-screen'); updateImpossibleBtn(); });
+
+  wire('lb-tab-normal',()=>{
+    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard');
+  });
+  wire('lb-tab-hard',()=>{
+    loadLBInto(document.getElementById('lb-overlay-list'),'forecourt/leaderboard_hard');
+  });
 });
 </script>
 </body>

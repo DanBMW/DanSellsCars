@@ -8,6 +8,9 @@
       ".write": true,
       "leaderboard": {
         ".indexOn": ["score"]
+      },
+      "leaderboard_hard": {
+        ".indexOn": ["score"]
       }
     },
 
