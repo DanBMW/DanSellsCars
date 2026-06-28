@@ -231,6 +231,8 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 
 <canvas id="c"></canvas>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 'use strict';
@@ -241,7 +243,9 @@ const DAY_SECS = 160;
 const MAX_CUSTOMERS = 4;
 const PHONE_MIN = 25, PHONE_MAX = 40;
 const EMAIL_MIN = 50, EMAIL_MAX = 80;
-const LB_KEY = 'ff_lb';
+const FB_CONFIG = {apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+let fbDb = null;
+try { firebase.initializeApp(FB_CONFIG); fbDb = firebase.database(); } catch(e) { console.warn('Firebase init failed', e); }
 
 // ─── DATA ─────────────────────────────────────────────────────
 
@@ -1152,18 +1156,34 @@ function endGame(){
     v=`Only ${G.deals} of ${DEAL_TARGET} on the glass. Nathan's drafting a one-to-one and Will's muttering about the PPU.`;
   document.getElementById('verdict').textContent=v;
 
-  const lb=JSON.parse(localStorage.getItem(LB_KEY)||'[]');
-  lb.push({name:playerName,score:G.score,deals:G.deals});
-  lb.sort((a,b)=>b.score-a.score);
-  const top=lb.slice(0,10);
-  localStorage.setItem(LB_KEY,JSON.stringify(top));
-  renderLB(top,G.score);
+  const myEntry={name:playerName,score:G.score,deals:G.deals,ts:Date.now()};
+  if(fbDb){
+    fbDb.ref('forecourt/leaderboard').push(myEntry)
+      .then(()=> loadLB(G.score))
+      .catch(()=> renderLB([myEntry],G.score));
+  } else {
+    renderLB([myEntry],G.score);
+  }
 
   showScreen('end-screen');
 }
 
+function loadLB(myScore){
+  if(!fbDb){ renderLB([],myScore); return; }
+  document.getElementById('lb').innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading scores…</div>';
+  fbDb.ref('forecourt/leaderboard').orderByChild('score').limitToLast(20).once('value')
+    .then(snap=>{
+      const entries=[];
+      snap.forEach(c=>entries.push(c.val()));
+      entries.sort((a,b)=>b.score-a.score);
+      renderLB(entries.slice(0,10),myScore);
+    })
+    .catch(()=>renderLB([],myScore));
+}
+
 function renderLB(lb,myScore){
   const el=document.getElementById('lb'); el.innerHTML='';
+  if(!lb.length){ el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">No scores yet.</div>'; return; }
   lb.forEach((e,i)=>{
     const r=document.createElement('div');
     r.className='lb-row'+(i%2?' alt':'')+(e.score===myScore&&e.name===playerName?' me':'');
@@ -1261,7 +1281,13 @@ window.addEventListener('load',()=>{
   wire('howto-btn',startMeeting);
   wire('mtg-btn',mtgNext);
   wire('again-btn',startMeeting);
-  wire('clear-btn',()=>{ localStorage.removeItem(LB_KEY); renderLB([],G.score); toast('Leaderboard cleared.'); });
+  wire('clear-btn',()=>{
+    if(!fbDb){ renderLB([],G.score); toast('Leaderboard cleared.'); return; }
+    if(!confirm('Clear the shared leaderboard for everyone?')) return;
+    fbDb.ref('forecourt/leaderboard').remove()
+      .then(()=>{ renderLB([],G.score); toast('Leaderboard cleared.'); })
+      .catch(()=>toast('Could not clear leaderboard.'));
+  });
   wire('ph-ans-btn',answerPhone);
   wire('ph-dec-btn',declinePhone);
 });
