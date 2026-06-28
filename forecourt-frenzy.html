@@ -98,7 +98,10 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
 
 /* Meeting screen */
 #meeting-screen{overflow-y:auto;max-height:100vh;justify-content:flex-start;padding-top:30px}
-.bubble{background:#12122a;border:2px solid #1c69d4;border-radius:14px;padding:14px 18px;max-width:380px;width:100%;margin-bottom:10px;font-size:.88rem;line-height:1.5;text-align:left}
+.bubble{background:#12122a;border:2px solid #1c69d4;border-radius:14px;padding:12px 14px;max-width:400px;width:100%;margin-bottom:10px;font-size:.88rem;line-height:1.5;text-align:left;display:flex;gap:12px;align-items:flex-start}
+.bubble-avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;object-fit:cover;object-position:top;border:2px solid #1c69d4}
+.bubble-avatar.initials{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff}
+.bubble-body{flex:1}
 .speaker{font-weight:700;color:#1c69d4;margin-bottom:3px;font-size:.8rem}
 
 /* End screen */
@@ -135,7 +138,7 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
       <li><strong>Phone &amp; email:</strong> Pop up mid-shift. The world keeps moving while you deal with them.</li>
       <li><strong>Car jobs:</strong> Will (forecourt) and Serge (showroom) ask you to move cars. Tap the highlighted car to pick it up, then tap the green bay to drop it — beat the timer.</li>
       <li><strong>Bars:</strong> ⚡ Energy drains (refill: ☕ coffee). 🚻 Bladder fills (clear: 🚻 toilet). 😤 Patience takes hits (restore: 🛋️ sofa). Max one out = crash.</li>
-      <li><strong>Target:</strong> 3 deals. Hit it + CSI ≥ 80% for full bonus.</li>
+      <li><strong>Target:</strong> 3 deals. Hit it with good customer handling for the full bonus.</li>
     </ul>
   </div>
   <button class="btn" id="howto-btn">Got it →</button>
@@ -154,15 +157,14 @@ input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px
   <div class="stats-box">
     <div class="stat-row"><span>Final Score</span><span class="stat-val" id="e-score">0</span></div>
     <div class="stat-row"><span>Deals</span><span class="stat-val" id="e-deals">0</span></div>
-    <div class="stat-row"><span>CSI</span><span class="stat-val" id="e-csi">0%</span></div>
     <div class="stat-row"><span>Finance %</span><span class="stat-val" id="e-fin">0%</span></div>
+    <div class="stat-row"><span>Happy customers</span><span class="stat-val" id="e-happy">0%</span></div>
   </div>
   <p id="verdict"></p>
   <h3 style="color:#1c69d4;margin-bottom:6px">Leaderboard</h3>
   <div id="lb"></div>
   <div class="end-btns">
     <button class="btn" id="again-btn">Play Again</button>
-    <button class="btn red" id="clear-btn">Clear Leaderboard</button>
   </div>
 </div>
 
@@ -376,20 +378,20 @@ const SERVICE_SCENARIOS = [
 ];
 
 const MTG_POSITIVE = [
-  { speaker:'Nathan (Sales Manager)', text:"Morning all — cracking month so far, we're top three in the region. Don't get comfy though, I still want three units on the glass today. Push the finance, it's free money for the customer's peace of mind and our penetration." },
-  { speaker:'Will (Sales Manager)', text:"PPU's healthy, keep it that way — don't go giving the metal away just to hit a number. Few cars need shuffling on the forecourt later, I'll give you a shout. Good lad." },
-  { speaker:'Serge (Sales Manager)', text:"Compliance is spotless this month and I'd like to keep it that way. Treat 'em fair, explain the finance properly, no pressure selling. I'll need a car repositioning on the showroom floor at some point." },
-  { speaker:'Matt (Aftersales)', text:"Service is rammed but we're on top of it. Two rules, as ever: don't be a Clive and drive through the showroom, and do NOT give the keys to car thieves like Millie." },
-  { speaker:'Dan Coleman (Parts)', text:"Parts are in for once, miracle of miracles. If anyone needs a wheel lock key, you know where I am. Now go on, shoo." },
-  { speaker:'Nathan', text:"Right — coffee's your mate, the toilet's your enemy, and customers walk if you're slow. Keep that CSI above 80 and we're laughing. Go sell some Beemers." }
+  { speaker:'Nathan (Sales Manager)', avatar:'N', color:'#1c69d4', text:"Morning all — cracking month so far, we're top three in the region. Don't get comfy though, I still want three units on the glass today. Push the finance, it's free money for the customer. And I want every single enquiry logged on Drive — no exceptions." },
+  { speaker:'Will (Sales Manager)', avatar:'W', color:'#2980b9', text:"PPU's healthy, keep it that way — don't go giving the metal away just to hit a number. Few cars need shuffling on the forecourt later, I'll give you a shout. Good lad. Oh — and CitNow walkarounds on anything you pitch. Every time." },
+  { speaker:'Serge (Sales Manager)', avatar:'S', color:'#8e44ad', text:"Compliance is spotless this month and I'd like to keep it that way. Treat 'em fair, explain the finance properly, no pressure selling. LaunchPad goes out after every customer interaction — every one. I'll need a car repositioning on the showroom floor at some point." },
+  { speaker:'Matt (Aftersales)', avatar:'M', color:'#27ae60', text:"Service is rammed but we're on top of it. Two rules, as ever: don't be a Clive and drive through the showroom, and do NOT give the keys to car thieves like Millie." },
+  { speaker:'Dan Coleman (Parts)', avatar:'dan', color:'#e67e22', text:"Parts are in for once, miracle of miracles. If anyone needs a wheel lock key, you know where I am. Now go on, shoo." },
+  { speaker:'Nathan', avatar:'N', color:'#1c69d4', text:"Right — coffee's your mate, the toilet's your enemy, customers walk if you're slow. Drive. LaunchPad. CitNow. Every enquiry, every customer, every time. Now go sell some Beemers." }
 ];
 const MTG_NEGATIVE = [
-  { speaker:'Nathan (Sales Manager)', text:"Sit down. Board's a disgrace — we're bottom of the group and Munich's been on the phone. I need three units MINIMUM today and the finance penetration is frankly embarrassing. Sort it." },
-  { speaker:'Will (Sales Manager)', text:"And whoever's been chucking discount about like confetti — the PPU is on the floor. Don't. Give. The metal. Away. I'll have cars for you to move and I want them moved sharpish." },
-  { speaker:'Serge (Sales Manager)', text:"We had a complaint flagged last week. Consumer Duty, people — fair treatment, explain the finance, no pressure. I'm watching the showroom like a hawk today, and I'll want a car repositioned." },
-  { speaker:'Matt (Aftersales)', text:"Service is chaos and I haven't got time for nonsense. So I'll say it again: don't be a Clive and drive through the showroom, and for the love of God don't give the keys to car thieves like Millie. AGAIN." },
-  { speaker:'Dan Coleman (Parts)', text:"Parts are back-ordered, half of Germany's on holiday, and everyone's blaming me. Don't even ASK me about that bonnet badge today." },
-  { speaker:'Nathan', text:"Coffee, toilet, and don't let customers walk. CSI stays above 80 or we'll be having a very different meeting tomorrow. Out you go." }
+  { speaker:'Nathan (Sales Manager)', avatar:'N', color:'#1c69d4', text:"Sit down. Board's a disgrace — we're bottom of the group and Munich's been on the phone. I need three units MINIMUM today and the finance penetration is frankly embarrassing. And I checked Drive last night — half of you haven't logged a single enquiry this week. Sort. It. Out." },
+  { speaker:'Will (Sales Manager)', avatar:'W', color:'#2980b9', text:"And whoever's been chucking discount about like confetti — the PPU is on the floor. Don't. Give. The metal. Away. I'll have cars for you to move and I want them moved sharpish. CitNow walkarounds on every prospect — I want to see them in the system." },
+  { speaker:'Serge (Sales Manager)', avatar:'S', color:'#8e44ad', text:"We had a complaint flagged last week. Consumer Duty, people — fair treatment, explain the finance, no pressure. LaunchPad goes out after every customer, no excuses. I'm watching the showroom like a hawk today, and I'll want a car repositioned." },
+  { speaker:'Matt (Aftersales)', avatar:'M', color:'#27ae60', text:"Service is chaos and I haven't got time for nonsense. So I'll say it again: don't be a Clive and drive through the showroom, and for the love of God don't give the keys to car thieves like Millie. AGAIN." },
+  { speaker:'Dan Coleman (Parts)', avatar:'dan', color:'#e67e22', text:"Parts are back-ordered, half of Germany's on holiday, and everyone's blaming me. Don't even ASK me about that bonnet badge today." },
+  { speaker:'Nathan', avatar:'N', color:'#1c69d4', text:"Drive logged, LaunchPad sent, CitNow recorded — or we'll be having a very different meeting tomorrow. Coffee, toilet, don't let customers walk. Out you go." }
 ];
 
 // ─── THREE.JS GLOBALS ────────────────────────────────────────
@@ -413,7 +415,7 @@ let playerName = 'Player';
 function initG() {
   G = {
     running:false,
-    score:0, deals:0, finDeals:0, csiHits:0, totalInter:0,
+    score:0, deals:0, finDeals:0, happyInter:0, totalInter:0,
     energy:100, bladder:0, patience:100,
     dayTime:0,
     customers:[], cidCounter:0,
@@ -863,7 +865,7 @@ function tickCustomers(dt){
 
 function custWalkOff(c){
   addScore(-10); G.patience=Math.max(0,G.patience-5);
-  G.csiHits++; G.totalInter++;
+  G.totalInter++;
   toast(`${c.name} got bored and left! −10`);
   removeCust(c.id);
 }
@@ -914,12 +916,13 @@ function finishConvo(){
   G.convoActive=false;
   const c=G.activeCustomer; G.totalInter++;
   if(G.convoPoints>=8){
-    addScore(120); G.deals++; G.finDeals++;
+    addScore(120); G.deals++; G.finDeals++; G.happyInter++;
     toast(`🎉 Deal done with ${c.name}! +120`);
   } else if(G.convoPoints>=3){
-    addScore(20); toast(`🤔 "${c.name} needs to speak to the wife…" +20`);
+    addScore(20); G.happyInter++;
+    toast(`🤔 "${c.name} needs to speak to the wife…" +20`);
   } else {
-    addScore(-25); G.patience=Math.max(0,G.patience-15); G.csiHits++;
+    addScore(-25); G.patience=Math.max(0,G.patience-15);
     toast(`${c.name} walked off. −25 😬`);
   }
   removeCust(c.id);
@@ -977,7 +980,7 @@ function answerPhone(){
 function declinePhone(){
   document.getElementById('phone-pop').classList.add('hidden');
   G.phoneActive=false;
-  if(G.phoneData.type==='hot'){ addScore(-20); G.csiHits++; toast('Missed hot lead! −20'); }
+  if(G.phoneData.type==='hot'){ addScore(-20); toast('Missed hot lead! −20'); }
   else{ addScore(5); toast('Junk call declined. +5'); }
 }
 
@@ -1007,8 +1010,8 @@ function triggerEmail(){
 function resolveEmail(o){
   document.getElementById('email-pop').classList.add('hidden');
   G.emailActive=false;
-  addScore(o.p); if(o.csi) G.csiHits++;
-  toast(o.p>0?`📧 Good response! +${o.p}`:`📧 Wrong response… ${o.p}${o.csi?' (CSI hit)':''}`);
+  addScore(o.p);
+  toast(o.p>0?`📧 Good response! +${o.p}`:`📧 Wrong response… ${o.p}`);
 }
 
 // ─── SERVICE TRIAGE ───────────────────────────────────────────
@@ -1137,21 +1140,21 @@ function endGame(){
   document.getElementById('job-banner').classList.add('hidden');
   ['convo-pop','phone-pop','email-pop','svc-pop'].forEach(id=>document.getElementById(id).classList.add('hidden'));
 
-  const csiPct=G.totalInter>0?Math.round(100-G.csiHits/G.totalInter*100):100;
+  const happyPct=G.totalInter>0?Math.round(G.happyInter/G.totalInter*100):100;
   const finPct=G.deals>0?Math.round(G.finDeals/G.deals*100):0;
   if(G.deals>=DEAL_TARGET) addScore(200);
-  if(csiPct>=80) addScore(80);
+  if(happyPct>=70) addScore(80);
 
   document.getElementById('e-score').textContent=G.score;
   document.getElementById('e-deals').textContent=`${G.deals} / ${DEAL_TARGET}`;
-  document.getElementById('e-csi').textContent=`${csiPct}%`;
   document.getElementById('e-fin').textContent=`${finPct}%`;
+  document.getElementById('e-happy').textContent=`${happyPct}%`;
 
   let v='';
-  if(G.deals>=DEAL_TARGET&&csiPct>=80)
-    v=`Target smashed, CSI ${csiPct}%, finance at ${finPct}%. Nathan's buzzing, Will's happy with the PPU, Serge has nothing to moan about. Salesperson of the month. 🏆`;
+  if(G.deals>=DEAL_TARGET&&happyPct>=70)
+    v=`Target smashed, ${happyPct}% of customers happy, finance at ${finPct}%. Nathan's buzzing, Will's happy with the PPU, Serge has nothing to moan about. Salesperson of the month. 🏆`;
   else if(G.deals>=DEAL_TARGET)
-    v=`Hit the target but CSI slipped to ${csiPct}%. Serge wants "a quick word" about Consumer Duty. Still, deals are deals.`;
+    v=`Hit the target but a few customers left unhappy. Serge wants "a quick word." Still, deals are deals.`;
   else
     v=`Only ${G.deals} of ${DEAL_TARGET} on the glass. Nathan's drafting a one-to-one and Will's muttering about the PPU.`;
   document.getElementById('verdict').textContent=v;
@@ -1210,12 +1213,19 @@ function startMeeting(){
   showScreen('meeting-screen');
 }
 
+function makeAvatar(s){
+  if(s.avatar==='dan'){
+    return `<img src="dan.jpg" class="bubble-avatar" alt="Dan">`;
+  }
+  return `<div class="bubble-avatar initials" style="background:${s.color}">${s.avatar}</div>`;
+}
+
 function renderBubbles(){
   const el=document.getElementById('mtg-bubbles'); el.innerHTML='';
   for(let i=0;i<=Math.min(mtgStep,mtgScripts.length-1);i++){
     const s=mtgScripts[i];
     const d=document.createElement('div'); d.className='bubble';
-    d.innerHTML=`<div class="speaker">${s.speaker}</div>${s.text}`;
+    d.innerHTML=`${makeAvatar(s)}<div class="bubble-body"><div class="speaker">${s.speaker}</div>${s.text}</div>`;
     el.appendChild(d);
   }
   document.getElementById('mtg-btn').textContent=mtgStep>=mtgScripts.length-1?'Start the day! 🚗':'Next →';
@@ -1281,13 +1291,6 @@ window.addEventListener('load',()=>{
   wire('howto-btn',startMeeting);
   wire('mtg-btn',mtgNext);
   wire('again-btn',startMeeting);
-  wire('clear-btn',()=>{
-    if(!fbDb){ renderLB([],G.score); toast('Leaderboard cleared.'); return; }
-    if(!confirm('Clear the shared leaderboard for everyone?')) return;
-    fbDb.ref('forecourt/leaderboard').remove()
-      .then(()=>{ renderLB([],G.score); toast('Leaderboard cleared.'); })
-      .catch(()=>toast('Could not clear leaderboard.'));
-  });
   wire('ph-ans-btn',answerPhone);
   wire('ph-dec-btn',declinePhone);
 });
