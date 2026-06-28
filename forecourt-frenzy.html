@@ -1434,11 +1434,11 @@ function endGame(){
 function loadLB(myScore,path){
   path=path||'forecourt/leaderboard';
   if(!fbDb){ renderLB([{name:playerName,score:myScore,deals:G.deals}],myScore); return; }
-  fbDb.ref(path).orderByChild('score').limitToLast(20).once('value')
+  fbDb.ref(path).once('value')
     .then(snap=>{
       const entries=[];
-      snap.forEach(c=>{ const v=c.val(); if(v)entries.push(v); });
-      entries.sort((a,b)=>b.score-a.score);
+      snap.forEach(c=>{ const v=c.val(); if(v&&typeof v==='object')entries.push(v); });
+      entries.sort((a,b)=>(b.score||0)-(a.score||0));
       renderLB(entries.slice(0,10),myScore);
     })
     .catch(()=>{
@@ -1449,10 +1449,10 @@ function loadLB(myScore,path){
 function loadLBInto(el,path){
   el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Loading…</div>';
   if(!fbDb){ el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">No connection.</div>'; return; }
-  fbDb.ref(path).orderByChild('score').limitToLast(20).once('value')
+  fbDb.ref(path).once('value')
     .then(snap=>{
-      const entries=[]; snap.forEach(c=>{ const v=c.val(); if(v)entries.push(v); });
-      entries.sort((a,b)=>b.score-a.score);
+      const entries=[]; snap.forEach(c=>{ const v=c.val(); if(v&&typeof v==='object')entries.push(v); });
+      entries.sort((a,b)=>(b.score||0)-(a.score||0));
       renderLB(entries.slice(0,10),null,el);
     })
     .catch(()=>{ el.innerHTML='<div style="color:#888;font-size:.85rem;padding:8px">Could not load scores.</div>'; });
