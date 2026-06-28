@@ -505,6 +505,7 @@ let currentLevel = 1;
 let pigeons = [];
 let thieves = [];
 let stolenCars = [];
+let thiefSchedule = [];
 let ryanMesh = null, ryanPos = null, ryanVel = null, ryanTimer = 0, ryanSpeakTimer = 0;
 
 // ─── GAME STATE ───────────────────────────────────────────────
@@ -925,7 +926,12 @@ function tick(dt){
 
   updateHUD();
   tickCustomers(dt);
-  if(currentLevel===2){ tickPigeons(dt); tickThieves(dt); tickStolenCars(dt); tickRyan(dt); }
+  if(currentLevel===2){
+    tickPigeons(dt); tickThieves(dt); tickStolenCars(dt); tickRyan(dt);
+    thiefSchedule=thiefSchedule.filter(ts=>{
+      if(G.dayTime>=ts.time){ spawnOneThief(ts.carObj,ts.epIdx); return false; } return true;
+    });
+  }
 
   G.nextSpawn-=dt;
   if(G.nextSpawn<=0){ spawnCustomer(); G.nextSpawn=rand(G.spawnMin,G.spawnMax); }
@@ -1380,6 +1386,7 @@ function endGame(){
   pigeons.forEach(p=>{ if(p.mesh)scene.remove(p.mesh); }); pigeons=[];
   thieves.forEach(t=>{ if(t.mesh)scene.remove(t.mesh); }); thieves=[];
   stolenCars.forEach(s=>{ if(s.mesh&&s.mesh.parent)scene.remove(s.mesh); }); stolenCars=[];
+  thiefSchedule=[];
   if(ryanMesh){ scene.remove(ryanMesh); ryanMesh=null; } ryanTimer=0;
 
   // Unlock level 2 after completing level 1
@@ -1503,6 +1510,7 @@ function startGame(){
   pigeons.forEach(p=>{ if(p.mesh)scene.remove(p.mesh); }); pigeons=[];
   thieves.forEach(t=>{ if(t.mesh)scene.remove(t.mesh); }); thieves=[];
   stolenCars.forEach(s=>{ if(s.mesh&&s.mesh.parent)scene.remove(s.mesh); }); stolenCars=[];
+  thiefSchedule=[];
   if(ryanMesh){ scene.remove(ryanMesh); ryanMesh=null; } ryanTimer=0;
   document.getElementById('ryan-alert').classList.add('hidden');
   // Restore stolen/moved cars
@@ -1551,7 +1559,7 @@ function startGame(){
   document.getElementById('hud').classList.remove('hidden');
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
 
-  if(currentLevel===2){ spawnPigeons(); spawnThieves(); }
+  if(currentLevel===2){ spawnPigeons(); scheduleThieves(); }
 }
 
 // ─── PIGEONS ─────────────────────────────────────────────────
@@ -1637,17 +1645,24 @@ function createThiefMesh(){
   return {group:g,ring,ringMat:rMat};
 }
 
-function spawnThieves(){
+function scheduleThieves(){
   const fcCars=carObjs.filter(c=>c.zone==='forecourt'&&!c.stolen);
   const targets=shuffle([...fcCars]).slice(0,3);
+  thiefSchedule=[
+    {time:rand(30,70),  carObj:targets[0], epIdx:0},
+    {time:rand(100,150),carObj:targets[1], epIdx:1},
+    {time:rand(190,250),carObj:targets[2], epIdx:2}
+  ];
+}
+
+function spawnOneThief(carObj, epIdx){
   const eps=[{x:13,z:8},{x:13,z:0},{x:13,z:-8}];
-  targets.forEach((carObj,i)=>{
-    const ep=eps[i];
-    const {group,ring,ringMat}=createThiefMesh();
-    group.position.set(ep.x,0,ep.z);
-    scene.add(group);
-    thieves.push({mesh:group,ring,ringMat,pos:V3(ep.x,0,ep.z),carObj,state:'walking',timer:30,caught:false});
-  });
+  const ep=eps[epIdx%3];
+  const {group,ring,ringMat}=createThiefMesh();
+  group.position.set(ep.x,0,ep.z);
+  scene.add(group);
+  thieves.push({mesh:group,ring,ringMat,pos:V3(ep.x,0,ep.z),carObj,state:'walking',timer:30,caught:false});
+  toast('⚠️ Suspicious figure spotted on the forecourt!');
 }
 
 function tickThieves(dt){
