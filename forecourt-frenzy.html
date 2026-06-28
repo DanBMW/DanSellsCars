@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Forecourt Frenzy — BMW Hedin Ruxley</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;touch-action:none}
+#c{display:block;width:100vw;height:100vh}
+
+.screen{position:fixed;inset:0;background:rgba(0,0,0,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:20px;color:#fff}
+.screen.hidden{display:none}
+.screen h1{font-size:2rem;color:#1c69d4;margin-bottom:8px;text-align:center}
+.screen h2{font-size:1.4rem;color:#1c69d4;margin-bottom:14px;text-align:center}
+.screen p{font-size:.95rem;margin-bottom:8px;line-height:1.5;text-align:center}
+.screen ul{text-align:left;padding-left:18px;max-width:380px}
+.screen li{font-size:.9rem;margin-bottom:7px;line-height:1.45}
+
+.btn{background:#1c69d4;color:#fff;border:none;padding:13px 30px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:14px;touch-action:manipulation;min-width:150px;-webkit-tap-highlight-color:transparent}
+.btn:active{background:#1455a8}
+.btn.red{background:#c0392b}
+.btn.red:active{background:#a93226}
+
+input[type=text]{font-size:1.1rem;padding:12px 16px;border-radius:8px;border:2px solid #1c69d4;background:#111;color:#fff;width:260px;margin-bottom:6px;text-align:center}
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;padding:8px 12px;z-index:50;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start}
+#hud.hidden{display:none}
+#bars{display:flex;flex-direction:column;gap:5px;min-width:140px}
+.bar-row{display:flex;align-items:center;gap:6px}
+.bar-lbl{font-size:.82rem;width:20px;text-align:center}
+.bar-out{background:rgba(0,0,0,.55);border-radius:4px;height:10px;flex:1;max-width:96px}
+.bar-in{height:100%;border-radius:4px;transition:width .25s,background .25s}
+#right-hud{text-align:right;color:#fff}
+#score-d{font-size:1.15rem;font-weight:700;text-shadow:0 1px 3px #000}
+#clock-d{font-size:.92rem;text-shadow:0 1px 3px #000}
+#deals-d{font-size:.82rem;text-shadow:0 1px 3px #000}
+#wait-d{font-size:.78rem;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:10px;margin-top:4px;display:inline-block}
+
+/* Toast */
+#toast{position:fixed;top:76px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);color:#fff;padding:7px 18px;border-radius:20px;font-size:.88rem;z-index:300;transition:opacity .4s;white-space:nowrap;pointer-events:none}
+#toast.hidden{opacity:0}
+
+/* Job banner */
+#job-banner{position:fixed;top:76px;left:50%;transform:translateX(-50%);background:#e67e22;color:#fff;padding:7px 16px;border-radius:20px;font-size:.82rem;z-index:150;text-align:center;white-space:nowrap;pointer-events:none}
+#job-banner.hidden{display:none}
+
+/* Crash overlay */
+#crash-ov{position:fixed;inset:0;background:rgba(200,0,0,.35);z-index:260;pointer-events:none}
+#crash-ov.hidden{display:none}
+@keyframes crashFlash{0%{opacity:1}100%{opacity:0}}
+
+/* Phone popup */
+#phone-pop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:200;background:rgba(0,0,0,.6)}
+#phone-pop.hidden{display:none}
+#phone-box{background:#12122a;border:3px solid #1c69d4;border-radius:20px;padding:24px;max-width:300px;width:90%;text-align:center;color:#fff}
+#ph-icon{font-size:2.8rem;display:inline-block}
+@keyframes ring{from{transform:rotate(-18deg)}to{transform:rotate(18deg)}}
+.ringing{animation:ring .45s infinite alternate}
+#ph-caller{font-weight:700;margin:8px 0;font-size:1.05rem}
+#ph-preview{font-size:.85rem;color:#aaa;margin-bottom:10px}
+#ph-timer{font-size:.8rem;color:#f39c12;margin-bottom:10px}
+.ph-btns{display:flex;gap:10px;justify-content:center}
+.ph-btns .btn{margin-top:0;padding:10px 18px}
+#ph-q-area{margin-top:10px}
+#ph-q-text{font-size:.9rem;margin-bottom:10px;line-height:1.4}
+.pop-opt{background:#1e1e3a;border:1px solid #444;border-radius:8px;padding:9px 12px;margin:5px 0;cursor:pointer;font-size:.83rem;color:#ddd;touch-action:manipulation;text-align:left;-webkit-tap-highlight-color:transparent}
+.pop-opt:active{background:#1c69d4;color:#fff}
+
+/* Email popup */
+#email-pop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:200;background:rgba(0,0,0,.6)}
+#email-pop.hidden{display:none}
+#email-box{background:#0e1e0e;border:3px solid #27ae60;border-radius:16px;padding:20px;max-width:320px;width:90%;color:#fff;max-height:85vh;overflow-y:auto}
+#em-subject{font-weight:700;font-size:.95rem;margin:6px 0;color:#2ecc71}
+#em-body{font-size:.83rem;color:#ccc;margin-bottom:12px;line-height:1.5}
+.em-opt{background:#122012;border:1px solid #444;border-radius:8px;padding:10px 12px;margin:6px 0;cursor:pointer;font-size:.83rem;color:#ddd;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.em-opt:active{background:#27ae60;color:#fff}
+
+/* Convo popup */
+#convo-pop{position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,28,.97);border-top:3px solid #1c69d4;padding:15px;z-index:200;max-height:58vh;overflow-y:auto}
+#convo-pop.hidden{display:none}
+#cv-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+#cv-name{font-weight:700;font-size:1rem;color:#1c69d4}
+#cv-qnum{font-size:.8rem;color:#777}
+#cv-q{font-size:.9rem;color:#eee;margin-bottom:12px;line-height:1.45}
+.cv-opt{background:#13133a;border:1px solid #333;border-radius:8px;padding:10px 13px;margin:6px 0;cursor:pointer;font-size:.83rem;color:#ddd;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.cv-opt:active{background:#1c69d4;color:#fff}
+
+/* Service popup */
+#svc-pop{position:fixed;bottom:0;left:0;right:0;background:rgba(6,18,6,.97);border-top:3px solid #27ae60;padding:15px;z-index:200;max-height:58vh;overflow-y:auto}
+#svc-pop.hidden{display:none}
+#svc-name{font-weight:700;font-size:1rem;color:#2ecc71;margin-bottom:6px}
+#svc-step{font-size:.78rem;color:#777;margin-bottom:4px}
+#svc-q{font-size:.9rem;color:#eee;margin-bottom:12px;line-height:1.45}
+.svc-opt{background:#0a1a0a;border:1px solid #333;border-radius:8px;padding:10px 13px;margin:6px 0;cursor:pointer;font-size:.83rem;color:#ddd;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.svc-opt:active{background:#27ae60;color:#fff}
+
+/* Meeting screen */
+#meeting-screen{overflow-y:auto;max-height:100vh;justify-content:flex-start;padding-top:30px}
+.bubble{background:#12122a;border:2px solid #1c69d4;border-radius:14px;padding:14px 18px;max-width:380px;width:100%;margin-bottom:10px;font-size:.88rem;line-height:1.5;text-align:left}
+.speaker{font-weight:700;color:#1c69d4;margin-bottom:3px;font-size:.8rem}
+
+/* End screen */
+#end-screen{overflow-y:auto;max-height:100vh;padding:20px}
+.stats-box{background:#111;border-radius:12px;padding:14px 22px;margin:10px 0;width:100%;max-width:340px}
+.stat-row{display:flex;justify-content:space-between;padding:4px 0;font-size:.92rem}
+.stat-val{font-weight:700;color:#1c69d4}
+#verdict{font-size:.88rem;text-align:center;max-width:340px;margin:10px 0;color:#ddd;line-height:1.5}
+#lb{width:100%;max-width:340px;margin:8px 0}
+.lb-row{display:flex;justify-content:space-between;padding:5px 8px;border-radius:6px;font-size:.87rem}
+.lb-row.alt{background:rgba(255,255,255,.05)}
+.lb-row.me{background:#1c69d4;font-weight:700}
+.end-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- NAME ENTRY -->
+<div id="name-screen" class="screen">
+  <h1>🚗 Forecourt Frenzy</h1>
+  <p style="color:#aaa;margin-bottom:18px">BMW Hedin Ruxley · Survive the shift.</p>
+  <input type="text" id="name-input" placeholder="Your name" maxlength="20" autocomplete="off">
+  <button class="btn" id="name-btn">Continue</button>
+</div>
+
+<!-- HOW TO PLAY -->
+<div id="howto-screen" class="screen hidden">
+  <h2>How to Play</h2>
+  <div style="max-width:380px;text-align:left;overflow-y:auto;max-height:65vh">
+    <ul>
+      <li><strong>Move:</strong> Tap the floor to walk. Tap a customer, car or station to walk over and interact.</li>
+      <li><strong>Customers:</strong> 4 questions decide the deal. Reach them before the patience ring empties. Type is hidden — read the conversation.</li>
+      <li><strong>Service walk-ins:</strong> Some only want Service → send them to Matt fast. But if they mention buying, engage the sale first or you'll lose it.</li>
+      <li><strong>Phone &amp; email:</strong> Pop up mid-shift. The world keeps moving while you deal with them.</li>
+      <li><strong>Car jobs:</strong> Will (forecourt) and Serge (showroom) ask you to move cars. Tap the highlighted car to pick it up, then tap the green bay to drop it — beat the timer.</li>
+      <li><strong>Bars:</strong> ⚡ Energy drains (refill: ☕ coffee). 🚻 Bladder fills (clear: 🚻 toilet). 😤 Patience takes hits (restore: 🛋️ sofa). Max one out = crash.</li>
+      <li><strong>Target:</strong> 3 deals. Hit it + CSI ≥ 80% for full bonus.</li>
+    </ul>
+  </div>
+  <button class="btn" id="howto-btn">Got it →</button>
+</div>
+
+<!-- MORNING MEETING -->
+<div id="meeting-screen" class="screen hidden">
+  <h2 id="mtg-title">Morning Meeting</h2>
+  <div id="mtg-bubbles" style="max-width:400px;width:100%"></div>
+  <button class="btn" id="mtg-btn">Next →</button>
+</div>
+
+<!-- END SCREEN -->
+<div id="end-screen" class="screen hidden">
+  <h2>End of Day</h2>
+  <div class="stats-box">
+    <div class="stat-row"><span>Final Score</span><span class="stat-val" id="e-score">0</span></div>
+    <div class="stat-row"><span>Deals</span><span class="stat-val" id="e-deals">0</span></div>
+    <div class="stat-row"><span>CSI</span><span class="stat-val" id="e-csi">0%</span></div>
+    <div class="stat-row"><span>Finance %</span><span class="stat-val" id="e-fin">0%</span></div>
+  </div>
+  <p id="verdict"></p>
+  <h3 style="color:#1c69d4;margin-bottom:6px">Leaderboard</h3>
+  <div id="lb"></div>
+  <div class="end-btns">
+    <button class="btn" id="again-btn">Play Again</button>
+    <button class="btn red" id="clear-btn">Clear Leaderboard</button>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div id="bars">
+    <div class="bar-row"><span class="bar-lbl">⚡</span><div class="bar-out"><div class="bar-in" id="b-energy" style="width:100%;background:#2ecc71"></div></div></div>
+    <div class="bar-row"><span class="bar-lbl">🚻</span><div class="bar-out"><div class="bar-in" id="b-bladder" style="width:0%;background:#3498db"></div></div></div>
+    <div class="bar-row"><span class="bar-lbl">😤</span><div class="bar-out"><div class="bar-in" id="b-patience" style="width:100%;background:#2ecc71"></div></div></div>
+    <div><span id="wait-d"></span></div>
+  </div>
+  <div id="right-hud">
+    <div id="score-d">Score: 0</div>
+    <div id="clock-d">09:00</div>
+    <div id="deals-d">Deals: 0 / 3</div>
+  </div>
+</div>
+
+<!-- OVERLAYS -->
+<div id="toast" class="hidden"></div>
+<div id="job-banner" class="hidden"></div>
+<div id="crash-ov" class="hidden"></div>
+
+<!-- PHONE -->
+<div id="phone-pop" class="hidden">
+  <div id="phone-box">
+    <div id="ph-icon" class="ringing">📱</div>
+    <div id="ph-caller"></div>
+    <div id="ph-preview"></div>
+    <div id="ph-timer"></div>
+    <div id="ph-init-btns" class="ph-btns">
+      <button class="btn" id="ph-ans-btn">Answer</button>
+      <button class="btn red" id="ph-dec-btn">Decline</button>
+    </div>
+    <div id="ph-q-area" style="display:none">
+      <div id="ph-q-text"></div>
+      <div id="ph-opts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL -->
+<div id="email-pop" class="hidden">
+  <div id="email-box">
+    <div style="font-size:.8rem;color:#2ecc71;margin-bottom:4px">📧 New Email</div>
+    <div id="em-subject"></div>
+    <div id="em-body"></div>
+    <div id="em-opts"></div>
+  </div>
+</div>
+
+<!-- CONVERSATION -->
+<div id="convo-pop" class="hidden">
+  <div id="cv-header"><span id="cv-name"></span><span id="cv-qnum"></span></div>
+  <div id="cv-q"></div>
+  <div id="cv-opts"></div>
+</div>
+
+<!-- SERVICE TRIAGE -->
+<div id="svc-pop" class="hidden">
+  <div id="svc-name"></div>
+  <div id="svc-step"></div>
+  <div id="svc-q"></div>
+  <div id="svc-opts"></div>
+</div>
+
+<canvas id="c"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+
+// ─── CONSTANTS ────────────────────────────────────────────────
+const DEAL_TARGET = 3;
+const DAY_SECS = 160;
+const MAX_CUSTOMERS = 4;
+const PHONE_MIN = 25, PHONE_MAX = 40;
+const EMAIL_MIN = 50, EMAIL_MAX = 80;
+const LB_KEY = 'ff_lb';
+
+// ─── DATA ─────────────────────────────────────────────────────
+
+const NAMES = ['Priya Khan','Gary Frost','Niamh Doyle','Tom Barker','Sandra Lee',
+  'Raj Patel','Dave Morris','Zara Ahmed','Colin Hughes','Fiona Grant',
+  'Steve Walsh','Aisha Osei','Mark Henley','Janet Webb','Omar Khan',
+  'Lucy Browne','Kevin Dunn','Chloe Park','Ian Fletcher','Sara Gomez',
+  'Pete Ashton','Moira Daly','Ben Castillo','Tracy Newman','Yusuf Ali',
+  'Diana Ford','Jack Rowe','Meena Rao','Brian Holt','Kate Simmons'];
+
+const ARCHETYPES = [
+  { id:'tyre_kicker', label:'🔍', questions:[
+    { q:"What's your best price on this one? I've been to three dealers already.",
+      opts:[{t:"That depends — have you found the right car for you yet?",p:3},{t:"I can knock a few hundred off if you buy today.",p:0},{t:"Our prices are fixed, I'm afraid.",p:1}]},
+    { q:"I just want the cheapest option available.",
+      opts:[{t:"Let's make sure it's cheap AND right for you — what are you using it for?",p:3},{t:"Cheapest we've got is over there.",p:0},{t:"I understand — what's your budget?",p:2}]},
+    { q:"Can you match the price from that other dealer in Croydon?",
+      opts:[{t:"I'd need to know exactly what they quoted and on which spec.",p:3},{t:"Probably — I'll just need manager approval.",p:1},{t:"We don't price-match competitors.",p:0}]},
+    { q:"Are you going to make this worth my while?",
+      opts:[{t:"Absolutely — if this is the right car, I'll make sure the deal makes sense for you.",p:3},{t:"I can throw in a tank of fuel.",p:1},{t:"I think the price speaks for itself.",p:0}]}
+  ]},
+  { id:'cash_buyer', label:'💵', questions:[
+    { q:"I want to pay cash. Nice and simple. What can you do?",
+      opts:[{t:"Of course — cash is straightforward. Which model caught your eye?",p:3},{t:"Have you considered finance? You might get a better deal.",p:0},{t:"Cash is fine. Let me show you what we have in stock.",p:2}]},
+    { q:"I don't want any extras — just the car.",
+      opts:[{t:"Completely fine — let's make sure the spec is right and we'll get you sorted.",p:3},{t:"You'll definitely want gap insurance at least.",p:0},{t:"No problem, though I'll briefly mention what's available.",p:1}]},
+    { q:"How quickly can you get the paperwork done?",
+      opts:[{t:"Same day if everything checks out — I'll get the order form now.",p:3},{t:"Usually takes a week or two.",p:0},{t:"A few days — there's a process.",p:1}]},
+    { q:"I've bought three BMWs from here before. Am I getting a loyalty discount?",
+      opts:[{t:"Let me check what I can do — loyal customers deserve recognition.",p:3},{t:"Our prices are the same for everyone, I'm afraid.",p:0},{t:"I'll ask my manager what we can offer you.",p:2}]}
+  ]},
+  { id:'finance_curious', label:'🤔', questions:[
+    { q:"I've heard PCP is a rip-off. Why would I bother?",
+      opts:[{t:"I understand the concern — let me explain how it actually works, honestly.",p:3},{t:"It's not a rip-off at all! Everyone does it.",p:0},{t:"It has pros and cons — depends on how you use a car.",p:2}]},
+    { q:"What exactly happens at the end of the PCP?",
+      opts:[{t:"You have three choices: hand it back, part-exchange it, or pay the balloon to own it.",p:3},{t:"You just hand it back.",p:1},{t:"You buy it outright.",p:0}]},
+    { q:"What's this balloon payment I keep hearing about?",
+      opts:[{t:"It's the guaranteed future value — the amount to own the car at the end. Set at the start so you always know where you stand.",p:3},{t:"It's just a lump sum you might have to pay.",p:1},{t:"It's not something to worry about.",p:0}]},
+    { q:"What if I go over the agreed mileage?",
+      opts:[{t:"You'll pay a pence-per-mile excess — that's why we agree a realistic mileage at the start.",p:3},{t:"It usually works out fine.",p:0},{t:"There's a small charge — we can work it out later.",p:1}]}
+  ]},
+  { id:'part_ex', label:'🔄', questions:[
+    { q:"I've got a 2021 X1 to trade in. How much will you give me?",
+      opts:[{t:"I'll get it properly appraised — can you tell me about service history and mileage?",p:3},{t:"Probably around £12k, we'll see.",p:0},{t:"I'll need to run it through our system.",p:2}]},
+    { q:"I've been offered more by webuyanycar. Can you beat it?",
+      opts:[{t:"Let me get a proper valuation first — the convenience of part-ex sometimes offsets a small difference.",p:3},{t:"We'll match it.",p:0},{t:"Their prices aren't always what they seem at handover.",p:1}]},
+    { q:"What's the difference between part-ex and selling it myself?",
+      opts:[{t:"Part-ex is simpler and faster but private sale often gets more. I'll be straight with you on our offer.",p:3},{t:"Part-ex is always better — less hassle.",p:0},{t:"Depends on how much time you want to spend.",p:1}]},
+    { q:"There's a small dent on the door. Will that affect the price?",
+      opts:[{t:"Yes, we have to factor cosmetic damage in — I'll be transparent about that.",p:3},{t:"Barely, we'll knock almost nothing off.",p:0},{t:"We'll get a proper assessment done.",p:2}]}
+  ]},
+  { id:'browser', label:'👀', questions:[
+    { q:"I'm just looking, thanks.",
+      opts:[{t:"No problem at all — take your time. I'm here if anything catches your eye.",p:3},{t:"Can I show you our latest deals?",p:0},{t:"We've got some great offers on at the moment!",p:1}]},
+    { q:"(Returns to the same car twice) This one looks good, actually.",
+      opts:[{t:"Good eye — would you like to sit inside? Great way to get a feel for it.",p:3},{t:"That's our top seller. Ready to do a deal?",p:0},{t:"It's popular. Prices start from £28k.",p:1}]},
+    { q:"I'm not really ready to buy yet.",
+      opts:[{t:"Completely fine — what would help you feel ready? More info, a test drive?",p:3},{t:"Well, we have offers ending this weekend.",p:0},{t:"No pressure — shall I get you a brochure?",p:2}]},
+    { q:"What's the difference between Sport and M Sport?",
+      opts:[{t:"M Sport has sportier styling, bigger alloys, bodykit and firmer suspension. Sport is great spec too — what matters most to you?",p:3},{t:"M Sport is better, worth the extra.",p:1},{t:"M Sport is more expensive.",p:0}]}
+  ]},
+  { id:'family', label:'👨‍👩‍👧', questions:[
+    { q:"We've got two kids. Is there enough room in the back?",
+      opts:[{t:"How old are the kids? That makes a difference for legroom and boot space.",p:3},{t:"The X1 is very popular with families.",p:1},{t:"Plenty of room — it's a BMW!",p:0}]},
+    { q:"Safety's the most important thing for us.",
+      opts:[{t:"Absolutely — these come with five-star NCAP, autonomous emergency braking and lane assist as standard.",p:3},{t:"BMWs are very safe cars.",p:1},{t:"I'll show you the safety pack options.",p:0}]},
+    { q:"We're on a tight budget — around £350 a month.",
+      opts:[{t:"That's workable — let me show you what we can structure within that. I'll be realistic about what fits.",p:3},{t:"You might need to stretch to £400 for the right car.",p:0},{t:"Let me run some finance figures for you.",p:2}]},
+    { q:"Do we need to do it today? My husband isn't here.",
+      opts:[{t:"Not at all — I can save this configuration and hold any offer while you both have a think.",p:3},{t:"The offer is only good today, I'm afraid.",p:0},{t:"I can put a soft hold on it if you'd like.",p:2}]}
+  ]}
+];
+
+const PHONE_CALLS = [
+  { caller:'Unknown Number', type:'junk', preview:'Extended warranty offer',
+    q:"Caller: 'This is about your BMW's extended warranty...'",
+    opts:[{t:"Thanks, not interested.",p:5},{t:"Tell me more...",p:-10}]},
+  { caller:'James Reed', type:'hot', preview:'Wants to put a deposit on the X1 today',
+    q:"James: 'Hi, I came in last week — I'd like to go ahead with the X1. Can someone call me back?'",
+    opts:[{t:"Call him back immediately and take the deposit.",p:80},{t:"I'll pass it to the manager.",p:40}]},
+  { caller:'PPI Helpline', type:'junk', preview:'Automated PPI call',
+    q:"Automated voice: 'You may be entitled to compensation...'",
+    opts:[{t:"Hang up.",p:5},{t:"Stay on the line.",p:-5}]},
+  { caller:'Sophie Marchetti', type:'hot', preview:'Ready to buy — needs callback',
+    q:"Sophie: 'Hi, I've been looking at the 1 Series online. I'm ready to come in — is there someone I can speak to?'",
+    opts:[{t:"Arrange callback and note her details.",p:80},{t:"Tell her to come in whenever.",p:30}]}
+];
+
+const EMAILS = [
+  { subject:'RE: My recent experience',
+    body:"Dear BMW Hedin Ruxley, I visited last Tuesday and felt rushed into a decision on finance without things being properly explained. I'm quite unhappy.",
+    opts:[{t:"Acknowledge, apologise, and offer to arrange a call to put it right.",p:50,csi:false},
+          {t:"The finance was fully explained at point of sale.",p:-15,csi:true},
+          {t:"Thank you for your feedback. We'll pass it on.",p:-5,csi:true}]},
+  { subject:'Comfort Access Keys Query',
+    body:"Hi, I've just ordered a BMW with Comfort Access. How many keys do I get with the car?",
+    opts:[{t:"You receive 1 key with Comfort Access.",p:50,csi:false},
+          {t:"You'll receive 2 keys.",p:-15,csi:true},
+          {t:"You'll receive 3 keys.",p:-15,csi:true}]},
+  { subject:'Deposit enquiry — Dan Hughes',
+    body:"I spoke to someone last week about a 3 Series. I'd like to place a deposit to hold it. Can someone call me today please?",
+    opts:[{t:"Call him back today and take the deposit properly.",p:50,csi:false},
+          {t:"Reply saying we'll be in touch when available.",p:-15,csi:true},
+          {t:"Forward to the manager to deal with.",p:20,csi:false}]}
+];
+
+const SERVICE_SCENARIOS = [
+  { opening:"Hi, I've got a warning light on my dash — not sure what it means. Is this the right place?",
+    is_prospect:false,
+    steps:[{ q:"How do you handle this?",
+      opts:[{t:"Let me grab Matt from Service — he'll sort you right away.",p:40,ho:true},
+            {t:"Tell me more — when did it come on?",p:-20,ho:false}]}]},
+  { opening:"My car's in for a service and my lease is nearly up — I'm actually thinking about what's next.",
+    is_prospect:true,
+    steps:[{ q:"Your lease is nearly up — when does it end?",
+      opts:[{t:"Three months? Perfect timing — let me show you what might suit you next.",p:40,ho:false},
+            {t:"I'll just get Matt to update you on your car.",p:-20,ho:true}]}]},
+  { opening:"I need to book my car in for an MOT. Who do I speak to?",
+    is_prospect:false,
+    steps:[{ q:"Who do you direct this person to?",
+      opts:[{t:"Matt in Service handles all that — I'll walk you over.",p:40,ho:true},
+            {t:"Actually, while you're here — have you thought about upgrading?",p:-20,ho:false}]}]},
+  { opening:"My brakes have been squeaking a bit. Also — don't laugh — I've been thinking about going electric.",
+    is_prospect:true,
+    steps:[{ q:"They mentioned going electric. What do you do?",
+      opts:[{t:"Let's talk EVs first! Then we'll get Matt to sort the brakes.",p:40,ho:false},
+            {t:"Matt in Service can handle the brakes — I'll get him.",p:-20,ho:true}]}]}
+];
+
+const MTG_POSITIVE = [
+  { speaker:'Nathan (Sales Manager)', text:"Morning all — cracking month so far, we're top three in the region. Don't get comfy though, I still want three units on the glass today. Push the finance, it's free money for the customer's peace of mind and our penetration." },
+  { speaker:'Will (Sales Manager)', text:"PPU's healthy, keep it that way — don't go giving the metal away just to hit a number. Few cars need shuffling on the forecourt later, I'll give you a shout. Good lad." },
+  { speaker:'Serge (Sales Manager)', text:"Compliance is spotless this month and I'd like to keep it that way. Treat 'em fair, explain the finance properly, no pressure selling. I'll need a car repositioning on the showroom floor at some point." },
+  { speaker:'Matt (Aftersales)', text:"Service is rammed but we're on top of it. Two rules, as ever: don't be a Clive and drive through the showroom, and do NOT give the keys to car thieves like Millie." },
+  { speaker:'Dan Coleman (Parts)', text:"Parts are in for once, miracle of miracles. If anyone needs a wheel lock key, you know where I am. Now go on, shoo." },
+  { speaker:'Nathan', text:"Right — coffee's your mate, the toilet's your enemy, and customers walk if you're slow. Keep that CSI above 80 and we're laughing. Go sell some Beemers." }
+];
+const MTG_NEGATIVE = [
+  { speaker:'Nathan (Sales Manager)', text:"Sit down. Board's a disgrace — we're bottom of the group and Munich's been on the phone. I need three units MINIMUM today and the finance penetration is frankly embarrassing. Sort it." },
+  { speaker:'Will (Sales Manager)', text:"And whoever's been chucking discount about like confetti — the PPU is on the floor. Don't. Give. The metal. Away. I'll have cars for you to move and I want them moved sharpish." },
+  { speaker:'Serge (Sales Manager)', text:"We had a complaint flagged last week. Consumer Duty, people — fair treatment, explain the finance, no pressure. I'm watching the showroom like a hawk today, and I'll want a car repositioned." },
+  { speaker:'Matt (Aftersales)', text:"Service is chaos and I haven't got time for nonsense. So I'll say it again: don't be a Clive and drive through the showroom, and for the love of God don't give the keys to car thieves like Millie. AGAIN." },
+  { speaker:'Dan Coleman (Parts)', text:"Parts are back-ordered, half of Germany's on holiday, and everyone's blaming me. Don't even ASK me about that bonnet badge today." },
+  { speaker:'Nathan', text:"Coffee, toilet, and don't let customers walk. CSI stays above 80 or we'll be having a very different meeting tomorrow. Out you go." }
+];
+
+// ─── THREE.JS GLOBALS ────────────────────────────────────────
+let scene, camera, renderer, clock3;
+let playerMesh, playerPos, playerTarget;
+let playerMoving = false;
+let pendingAction = null;
+let floorObjs = [];
+let interactables = [];
+let customerMeshes = {};
+let carObjs = [];
+let jobGlow = null, jobBayGlow = null;
+let stationMeshes = {};
+
+const V3 = (x,y,z) => new THREE.Vector3(x,y,z);
+
+// ─── GAME STATE ───────────────────────────────────────────────
+let G = {};
+let playerName = 'Player';
+
+function initG() {
+  G = {
+    running:false,
+    score:0, deals:0, finDeals:0, csiHits:0, totalInter:0,
+    energy:100, bladder:0, patience:100,
+    dayTime:0,
+    customers:[], cidCounter:0,
+    convoActive:false, activeCustomer:null, convoStep:0, convoPoints:0, convoQs:[],
+    phoneActive:false, phoneAnswered:false, phoneTimer:8, phoneData:null,
+    emailActive:false,
+    svcActive:false, svcData:null,
+    jobActive:false, jobCarrying:false, jobData:null,
+    crashed:false, crashPending:false,
+    nextPhone: rand(PHONE_MIN,PHONE_MAX),
+    nextEmail: rand(EMAIL_MIN,EMAIL_MAX),
+    nextSpawn: 3,
+    jobSchedule:[],
+    svcSchedule:[]
+  };
+}
+
+// ─── UTILS ───────────────────────────────────────────────────
+function rand(a,b){ return a + Math.random()*(b-a); }
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];} return b; }
+function isDescendant(child,parent){ let o=child; while(o){if(o===parent)return true;o=o.parent;} return false; }
+
+// ─── THREE.JS INIT ───────────────────────────────────────────
+function initThree(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x111118);
+  scene.fog = new THREE.Fog(0x111118,35,65);
+
+  camera = new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,100);
+  camera.position.set(0,18,12);
+  camera.lookAt(0,0,0);
+
+  const canvas = document.getElementById('c');
+  renderer = new THREE.WebGLRenderer({canvas,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.shadowMap.enabled=true;
+
+  clock3 = new THREE.Clock();
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff,0.55));
+  const sun = new THREE.DirectionalLight(0xffffff,0.85);
+  sun.position.set(4,14,6); sun.castShadow=true; scene.add(sun);
+  const showL = new THREE.PointLight(0xffffff,0.45,28);
+  showL.position.set(-7,6,0); scene.add(showL);
+
+  buildWorld();
+  buildPlayer();
+
+  addEventListener('resize',()=>{
+    camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+  });
+
+  canvas.addEventListener('pointerdown',onTap);
+}
+
+function buildWorld(){
+  // Showroom floor
+  const sf = new THREE.Mesh(new THREE.PlaneGeometry(14,19),new THREE.MeshLambertMaterial({color:0xe4ddd4}));
+  sf.rotation.x=-Math.PI/2; sf.position.set(-7,0.01,0); sf.receiveShadow=true;
+  sf.userData={type:'floor'}; scene.add(sf); floorObjs.push(sf);
+
+  // Floor label (canvas texture)
+  addFloorLabel('SHOWROOM',-7,0.02,0);
+  addFloorLabel('FORECOURT',7.25,0.02,0);
+
+  // Forecourt floor
+  const ff = new THREE.Mesh(new THREE.PlaneGeometry(13.5,19),new THREE.MeshLambertMaterial({color:0x323232}));
+  ff.rotation.x=-Math.PI/2; ff.position.set(7.25,0.01,0); ff.receiveShadow=true;
+  ff.userData={type:'floor'}; scene.add(ff); floorObjs.push(ff);
+
+  // Parking bay lines (yellow)
+  const ymAt=new THREE.MeshBasicMaterial({color:0xf1c40f});
+  [-3,-1,1,3,5].forEach(i=>{
+    const l=new THREE.Mesh(new THREE.PlaneGeometry(0.08,19),ymAt);
+    l.rotation.x=-Math.PI/2; l.position.set(0.5+i*2.2,0.02,0); scene.add(l);
+  });
+
+  // Glass divider (two segments with doorway gap)
+  const gMat=new THREE.MeshLambertMaterial({color:0x1c69d4,transparent:true,opacity:0.35});
+  const g1=new THREE.Mesh(new THREE.BoxGeometry(0.18,3.5,7),gMat);
+  g1.position.set(0.09,1.75,-6); scene.add(g1);
+  const g2=new THREE.Mesh(new THREE.BoxGeometry(0.18,3.5,7),gMat);
+  g2.position.set(0.09,1.75,6); scene.add(g2);
+
+  // Back wall
+  const bw=new THREE.Mesh(new THREE.BoxGeometry(14,4,0.28),new THREE.MeshLambertMaterial({color:0xcccccc}));
+  bw.position.set(-7,2,-9.5); scene.add(bw);
+
+  // Stations
+  addStation('coffee',-12,-8.3,0xc0392b,'☕');
+  addStation('toilet',-9,-8.3,0x2471a3,'🚻');
+  addStation('sofa',-5.5,-8.3,0x7d3c98,'🛋️');
+
+  // Showroom hero cars on plinths
+  const showCarDefs=[
+    {x:-11.5,z:-3.5,col:0xffffff,mov:true},
+    {x:-7,z:3,col:0x1c69d4,mov:false},
+    {x:-3.2,z:-2,col:0x1a1a1a,mov:false}
+  ];
+  showCarDefs.forEach(d=>{
+    const plinth=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,0.14,24),new THREE.MeshLambertMaterial({color:0x1c69d4}));
+    plinth.position.set(d.x,0.07,d.z); scene.add(plinth);
+    const car=buildCar(d.col);
+    car.position.set(d.x,0.14,d.z); car.rotation.y=0.5; scene.add(car);
+    carObjs.push({mesh:car,zone:'showroom',isMovable:d.mov,inUse:false});
+  });
+
+  // Forecourt cars
+  const fcDefs=[
+    {x:2.8,z:-5.5,col:0xe74c3c,mov:true},{x:5.5,z:-5.5,col:0x27ae60,mov:true},
+    {x:8.2,z:-5.5,col:0xf39c12,mov:false},{x:2.8,z:2,col:0x9b59b6,mov:false},
+    {x:5.5,z:2,col:0x1abc9c,mov:false},{x:8.2,z:5,col:0xe67e22,mov:false}
+  ];
+  fcDefs.forEach(d=>{
+    const car=buildCar(d.col);
+    car.position.set(d.x,0.14,d.z); scene.add(car);
+    carObjs.push({mesh:car,zone:'forecourt',isMovable:d.mov,inUse:false});
+  });
+}
+
+function addFloorLabel(text,x,y,z){
+  const cv=document.createElement('canvas'); cv.width=512; cv.height=128;
+  const ctx=cv.getContext('2d');
+  ctx.font='bold 72px Arial'; ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.textAlign='center';
+  ctx.fillText(text,256,90);
+  const tex=new THREE.CanvasTexture(cv);
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(10,2.5),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));
+  m.rotation.x=-Math.PI/2; m.position.set(x,y+0.01,z); scene.add(m);
+}
+
+function addStation(key,x,z,col,emoji){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.0,1.1),new THREE.MeshLambertMaterial({color:col}));
+  m.position.set(x,0.5,z); m.castShadow=true;
+  m.userData={type:'station',key,emoji}; scene.add(m);
+  stationMeshes[key]=m;
+  interactables.push({mesh:m,type:'station',key});
+
+  // Emoji sprite above station
+  const cv=document.createElement('canvas'); cv.width=64; cv.height=64;
+  const ctx=cv.getContext('2d'); ctx.font='44px serif'; ctx.textAlign='center'; ctx.fillText(emoji,32,48);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true}));
+  sp.scale.set(1.2,1.2,1); sp.position.set(x,2,z); scene.add(sp);
+}
+
+function buildCar(col){
+  const g=new THREE.Group();
+  const bMat=new THREE.MeshLambertMaterial({color:col});
+  const dMat=new THREE.MeshLambertMaterial({color:0x111111});
+  const wMat=new THREE.MeshLambertMaterial({color:0x88aacc,transparent:true,opacity:0.75});
+
+  // Body
+  const body=new THREE.Mesh(new THREE.BoxGeometry(2.0,0.48,0.95),bMat);
+  body.position.y=0.24; g.add(body);
+  // Cabin
+  const cab=new THREE.Mesh(new THREE.BoxGeometry(1.15,0.42,0.88),bMat);
+  cab.position.set(-0.08,0.68,0); g.add(cab);
+  // Windscreen
+  const ws=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.33,0.84),wMat);
+  ws.position.set(0.48,0.64,0); g.add(ws);
+  // Rear window
+  const rw=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.33,0.84),wMat);
+  rw.position.set(-0.66,0.64,0); g.add(rw);
+  // Kidney grille
+  const gr=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.14,0.28),dMat);
+  gr.position.set(0.98,0.22,0); g.add(gr);
+  // Wheels
+  [[0.62,0,0.52],[0.62,0,-0.52],[-0.62,0,0.52],[-0.62,0,-0.52]].forEach(([wx,wy,wz])=>{
+    const w=new THREE.Mesh(new THREE.CylinderGeometry(0.21,0.21,0.14,10),dMat);
+    w.rotation.z=Math.PI/2; w.position.set(wx,wy,wz); g.add(w);
+  });
+  return g;
+}
+
+function buildPlayer(){
+  const g=new THREE.Group();
+  const bMat=new THREE.MeshLambertMaterial({color:0x2980b9});
+  const hMat=new THREE.MeshLambertMaterial({color:0xf0c090});
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.85,10),bMat);
+  body.position.y=0.42; g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,10),hMat);
+  head.position.y=1.05; g.add(head);
+  playerMesh=g;
+  playerPos=V3(-7,0,1);
+  playerTarget=playerPos.clone();
+  playerMesh.position.copy(playerPos);
+  scene.add(playerMesh);
+}
+
+// ─── CUSTOMER MESHES ──────────────────────────────────────────
+const C_COLS=[0xe74c3c,0x27ae60,0xf39c12,0x9b59b6,0x1abc9c,0xe67e22,0xc0392b,0x16a085];
+
+function createCustMesh(c){
+  const g=new THREE.Group();
+  const col=C_COLS[c.id%C_COLS.length];
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.78,10),new THREE.MeshLambertMaterial({color:col}));
+  body.position.y=0.39; g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,10),new THREE.MeshLambertMaterial({color:0xf0c090}));
+  head.position.y=0.96; g.add(head);
+  // Patience ring
+  const rGeo=new THREE.RingGeometry(0.4,0.56,24);
+  const rMat=new THREE.MeshBasicMaterial({color:0x2ecc71,side:THREE.DoubleSide});
+  const ring=new THREE.Mesh(rGeo,rMat);
+  ring.rotation.x=-Math.PI/2; ring.position.y=0.04; g.add(ring);
+
+  g.position.set(c.pos.x,0,c.pos.z);
+  g.userData={type:'customer',cid:c.id};
+  scene.add(g);
+  interactables.push({mesh:g,type:'customer',cid:c.id});
+  customerMeshes[c.id]={group:g,ringMat:rMat};
+}
+
+function removeCustMesh(id){
+  const cm=customerMeshes[id]; if(!cm)return;
+  scene.remove(cm.group);
+  interactables=interactables.filter(o=>!(o.type==='customer'&&o.cid===id));
+  delete customerMeshes[id];
+}
+
+function updateRing(c){
+  const cm=customerMeshes[c.id]; if(!cm)return;
+  const pct=c.patience/100;
+  const col=pct>0.6?0x2ecc71:pct>0.3?0xf39c12:0xe74c3c;
+  cm.ringMat.color.setHex(col);
+  const ring=cm.group.children[2];
+  if(ring){ ring.scale.setScalar(Math.max(0.1,pct)); }
+}
+
+// ─── TAP HANDLER ─────────────────────────────────────────────
+function onTap(e){
+  if(!G.running||G.crashed)return;
+  if(G.convoActive||G.phoneActive||G.emailActive||G.svcActive)return;
+
+  const rect=renderer.domElement.getBoundingClientRect();
+  const cx=e.clientX, cy=e.clientY;
+  const mouse=new THREE.Vector2(
+    ((cx-rect.left)/rect.width)*2-1,
+    -((cy-rect.top)/rect.height)*2+1
+  );
+  const ray=new THREE.Raycaster();
+  ray.setFromCamera(mouse,camera);
+
+  // Check interactables
+  const iMeshes=interactables.map(o=>o.mesh);
+  const iHits=ray.intersectObjects(iMeshes,true);
+  if(iHits.length){
+    for(const inter of interactables){
+      if(isDescendant(iHits[0].object,inter.mesh)){
+        if(inter.type==='customer'){
+          const c=G.customers.find(x=>x.id===inter.cid);
+          if(c&&!c.interacting){ walkTo(c.pos.clone(),()=>startConvo(c)); return; }
+        }
+        if(inter.type==='station'){
+          walkTo(inter.mesh.position.clone(),()=>useStation(inter.key)); return;
+        }
+        break;
+      }
+    }
+  }
+
+  // Check job car
+  if(G.jobActive&&!G.jobCarrying&&G.jobData){
+    const carMesh=G.jobData.carObj.mesh;
+    const carHits=ray.intersectObjects([carMesh],true);
+    if(carHits.length){ walkTo(carMesh.position.clone(),pickUpCar); return; }
+  }
+
+  // Check job bay
+  if(G.jobActive&&G.jobCarrying&&jobBayGlow){
+    const bayHits=ray.intersectObject(jobBayGlow);
+    if(bayHits.length){ walkTo(jobBayGlow.position.clone(),dropCar); return; }
+  }
+
+  // Floor move
+  const fHits=ray.intersectObjects(floorObjs);
+  if(fHits.length){
+    const pt=fHits[0].point;
+    playerTarget.set(pt.x,0,pt.z);
+    playerMoving=true; pendingAction=null;
+  }
+}
+
+function walkTo(pos,action){
+  playerTarget.set(pos.x,0,pos.z);
+  playerMoving=true;
+  pendingAction=action;
+}
+
+// ─── GAME LOOP ────────────────────────────────────────────────
+function gameLoop(){
+  requestAnimationFrame(gameLoop);
+  const dt=Math.min(clock3.getDelta(),0.05);
+  if(G.running&&!G.crashed) tick(dt);
+  movePlayer(dt);
+  easeCamera(dt);
+  renderer.render(scene,camera);
+}
+
+function tick(dt){
+  G.dayTime+=dt;
+  if(G.dayTime>=DAY_SECS){ endGame(); return; }
+
+  // Bars
+  G.energy=Math.max(0,G.energy-dt*4.5);
+  G.bladder=Math.min(100,G.bladder+dt*3.8);
+  const idle=!G.convoActive&&!G.phoneActive&&!G.emailActive&&!G.svcActive;
+  if(idle) G.patience=Math.min(100,G.patience+dt*1.5);
+
+  // Crash checks
+  if(!G.crashPending){
+    if(G.energy<=0) crash("Energy crash! ⚡ You're running on fumes!");
+    else if(G.bladder>=100) crash("Bladder emergency! 🚻 Not a good look…");
+    else if(G.patience<=0) crash("Patience snapped! 😤 Deep breaths…");
+  }
+
+  updateHUD();
+  tickCustomers(dt);
+
+  G.nextSpawn-=dt;
+  if(G.nextSpawn<=0){ spawnCustomer(); G.nextSpawn=rand(12,22); }
+
+  if(!G.phoneActive&&!G.emailActive){
+    G.nextPhone-=dt;
+    G.nextEmail-=dt;
+    if(G.nextPhone<=0&&!G.svcActive&&!G.convoActive) triggerPhone();
+    else if(G.nextEmail<=0&&!G.svcActive&&!G.convoActive) triggerEmail();
+  }
+
+  // Job schedule
+  G.jobSchedule=G.jobSchedule.filter(j=>{
+    if(G.dayTime>=j.time&&!G.jobActive){ triggerJob(j.type); return false; } return true;
+  });
+  // Service schedule
+  G.svcSchedule=G.svcSchedule.filter(t=>{
+    if(G.dayTime>=t&&!G.svcActive&&!G.phoneActive&&!G.emailActive&&!G.convoActive){
+      triggerService(); return false;
+    } return true;
+  });
+
+  // Job timer
+  if(G.jobActive&&G.jobData){
+    G.jobData.timeLeft-=dt;
+    updateJobBanner();
+    if(G.jobData.timeLeft<=0) failJob();
+  }
+
+  // Phone countdown
+  if(G.phoneActive&&!G.phoneAnswered){
+    G.phoneTimer-=dt;
+    const tel=document.getElementById('ph-timer');
+    if(tel) tel.textContent=`Auto-declines in ${Math.ceil(G.phoneTimer)}s…`;
+    if(G.phoneTimer<=0) declinePhone();
+  }
+}
+
+// ─── PLAYER MOVE ──────────────────────────────────────────────
+function movePlayer(dt){
+  if(!playerMoving)return;
+  const dx=playerTarget.x-playerPos.x, dz=playerTarget.z-playerPos.z;
+  const dist=Math.sqrt(dx*dx+dz*dz);
+  if(dist<0.18){
+    playerPos.copy(playerTarget); playerMoving=false;
+    if(pendingAction){ const a=pendingAction; pendingAction=null; a(); }
+  } else {
+    const spd=6*dt, move=Math.min(spd,dist);
+    playerPos.x+=dx/dist*move; playerPos.z+=dz/dist*move;
+    playerMesh.rotation.y=Math.atan2(dx,dz);
+  }
+  playerMesh.position.copy(playerPos);
+  if(G.jobCarrying&&G.jobData) G.jobData.carObj.mesh.position.set(playerPos.x+0.6,0.3,playerPos.z);
+}
+
+function easeCamera(dt){
+  camera.position.x+=(playerPos.x-camera.position.x)*3*dt;
+  camera.position.z+=(playerPos.z+12-camera.position.z)*3*dt;
+  camera.lookAt(playerPos.x,0,playerPos.z);
+}
+
+// ─── HUD ──────────────────────────────────────────────────────
+function updateHUD(){
+  setBar('b-energy',G.energy,false);
+  setBar('b-bladder',G.bladder,true);
+  setBar('b-patience',G.patience,false);
+
+  document.getElementById('score-d').textContent=`Score: ${G.score}`;
+
+  const mins=G.dayTime/DAY_SECS*510;
+  const h=Math.floor(9+mins/60), m=Math.floor(mins%60);
+  document.getElementById('clock-d').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  document.getElementById('deals-d').textContent=`Deals: ${G.deals} / ${DEAL_TARGET}`;
+
+  const sw=G.customers.filter(c=>!c.interacting&&c.zone==='showroom').length;
+  const fw=G.customers.filter(c=>!c.interacting&&c.zone==='forecourt').length;
+  let ws='';
+  if(sw)ws+=`🏛️ ${sw}`;
+  if(fw)ws+=(ws?' · ':'')+`🚙 ${fw}`;
+  document.getElementById('wait-d').textContent=ws;
+}
+
+function setBar(id,val,invert){
+  const el=document.getElementById(id); if(!el)return;
+  const pct=Math.max(0,Math.min(100,val));
+  el.style.width=pct+'%';
+  const danger=invert?pct>72:pct<28;
+  const warn=invert?pct>45:pct<55;
+  el.style.background=danger?'#e74c3c':warn?'#f39c12':'#2ecc71';
+}
+
+// ─── CUSTOMERS ────────────────────────────────────────────────
+const SP_SHOW=[{x:-13,z:8},{x:-13,z:-7},{x:-1.5,z:8},{x:-1.5,z:-7}];
+const SP_FORE=[{x:1.2,z:8},{x:13,z:4},{x:13,z:-4},{x:1.2,z:-8}];
+const WP_SHOW=[{x:-11,z:-3},{x:-7,z:3},{x:-3,z:-2},{x:-10,z:5},{x:-5,z:0}];
+const WP_FORE=[{x:3,z:-5},{x:5.5,z:-5},{x:8,z:-5},{x:3,z:2},{x:5.5,z:2},{x:8,z:4}];
+
+function spawnCustomer(){
+  if(G.customers.length>=MAX_CUSTOMERS)return;
+  const zone=Math.random()<0.5?'showroom':'forecourt';
+  const sp=(zone==='showroom'?SP_SHOW:SP_FORE)[0|Math.random()*(zone==='showroom'?SP_SHOW.length:SP_FORE.length)];
+  const wp=(zone==='showroom'?WP_SHOW:WP_FORE)[0|Math.random()*(zone==='showroom'?WP_SHOW.length:WP_FORE.length)];
+  const arch=ARCHETYPES[0|Math.random()*ARCHETYPES.length];
+  const name=NAMES[0|Math.random()*NAMES.length];
+  const c={ id:G.cidCounter++, name, arch, zone,
+    pos:V3(sp.x,0,sp.z), target:V3(wp.x,0,wp.z),
+    patience:100, interacting:false };
+  G.customers.push(c);
+  createCustMesh(c);
+}
+
+function tickCustomers(dt){
+  G.customers.forEach(c=>{
+    if(c.interacting)return;
+    const dx=c.target.x-c.pos.x, dz=c.target.z-c.pos.z;
+    const dist=Math.sqrt(dx*dx+dz*dz);
+    if(dist>0.25){
+      const spd=1.5*dt;
+      c.pos.x+=dx/dist*spd; c.pos.z+=dz/dist*spd;
+      const cm=customerMeshes[c.id];
+      if(cm){ cm.group.position.set(c.pos.x,0,c.pos.z); cm.group.rotation.y=Math.atan2(dx,dz); }
+    }
+    c.patience-=dt*6;
+    updateRing(c);
+    if(c.patience<=0) custWalkOff(c);
+  });
+}
+
+function custWalkOff(c){
+  addScore(-10); G.patience=Math.max(0,G.patience-5);
+  G.csiHits++; G.totalInter++;
+  toast(`${c.name} got bored and left! −10`);
+  removeCust(c.id);
+}
+
+function removeCust(id){
+  G.customers=G.customers.filter(c=>c.id!==id);
+  removeCustMesh(id);
+}
+
+// ─── CONVERSATION ─────────────────────────────────────────────
+function startConvo(c){
+  if(c.interacting)return;
+  c.interacting=true; G.convoActive=true; G.activeCustomer=c;
+  G.convoStep=0; G.convoPoints=0;
+  G.convoQs=JSON.parse(JSON.stringify(c.arch.questions));
+  document.getElementById('cv-name').textContent=`${c.name} ${c.arch.label}`;
+  renderConvoQ();
+  document.getElementById('convo-pop').classList.remove('hidden');
+}
+
+function renderConvoQ(){
+  const q=G.convoQs[G.convoStep];
+  document.getElementById('cv-qnum').textContent=`Q${G.convoStep+1}/4`;
+  document.getElementById('cv-q').textContent=q.q;
+  const opts=shuffle(q.opts);
+  const el=document.getElementById('cv-opts'); el.innerHTML='';
+  opts.forEach(o=>{
+    const d=document.createElement('div'); d.className='cv-opt'; d.textContent=o.t;
+    const fn=()=>convoAns(o.p);
+    d.addEventListener('click',fn);
+    d.addEventListener('touchend',e=>{e.preventDefault();fn();});
+    el.appendChild(d);
+  });
+}
+
+function convoAns(pts){
+  G.convoPoints+=pts;
+  if(pts>=3){ addScore(15); toast('+15 ✓'); }
+  else if(pts>=1){ toast('Okay response'); }
+  else{ toast('Poor answer…'); }
+  G.convoStep++;
+  if(G.convoStep>=4) finishConvo();
+  else renderConvoQ();
+}
+
+function finishConvo(){
+  document.getElementById('convo-pop').classList.add('hidden');
+  G.convoActive=false;
+  const c=G.activeCustomer; G.totalInter++;
+  if(G.convoPoints>=8){
+    addScore(120); G.deals++; G.finDeals++;
+    toast(`🎉 Deal done with ${c.name}! +120`);
+  } else if(G.convoPoints>=3){
+    addScore(20); toast(`🤔 "${c.name} needs to speak to the wife…" +20`);
+  } else {
+    addScore(-25); G.patience=Math.max(0,G.patience-15); G.csiHits++;
+    toast(`${c.name} walked off. −25 😬`);
+  }
+  removeCust(c.id);
+}
+
+// ─── STATIONS ─────────────────────────────────────────────────
+function useStation(key){
+  if(key==='coffee'){ G.energy=Math.min(100,G.energy+45); toast('☕ Energy +45'); }
+  else if(key==='toilet'){ G.bladder=0; toast('🚻 Phew. Bladder cleared.'); }
+  else if(key==='sofa'){ G.patience=Math.min(100,G.patience+40); toast('🛋️ Patience +40'); }
+}
+
+// ─── CRASH ────────────────────────────────────────────────────
+function crash(msg){
+  if(G.crashPending)return;
+  G.crashed=true; G.crashPending=true;
+  addScore(-40); toast(`💥 ${msg} −40`);
+  const el=document.getElementById('crash-ov');
+  el.classList.remove('hidden');
+  el.style.animation='none'; el.offsetHeight;
+  el.style.animation='crashFlash 1.5s ease-out forwards';
+  G.energy=Math.max(G.energy,50); G.bladder=Math.min(G.bladder,50); G.patience=Math.max(G.patience,50);
+  setTimeout(()=>{ G.crashed=false; G.crashPending=false; el.classList.add('hidden'); },1500);
+}
+
+// ─── PHONE ───────────────────────────────────────────────────
+function triggerPhone(){
+  G.phoneActive=true; G.phoneAnswered=false; G.phoneTimer=8;
+  G.phoneData=PHONE_CALLS[0|Math.random()*PHONE_CALLS.length];
+  G.nextPhone=rand(PHONE_MIN,PHONE_MAX);
+  document.getElementById('ph-caller').textContent=G.phoneData.caller;
+  document.getElementById('ph-preview').textContent=G.phoneData.preview;
+  document.getElementById('ph-init-btns').style.display='flex';
+  document.getElementById('ph-q-area').style.display='none';
+  document.getElementById('ph-icon').className='ringing';
+  document.getElementById('phone-pop').classList.remove('hidden');
+}
+
+function answerPhone(){
+  G.phoneAnswered=true;
+  document.getElementById('ph-init-btns').style.display='none';
+  document.getElementById('ph-timer').textContent='';
+  document.getElementById('ph-icon').className='';
+  document.getElementById('ph-q-area').style.display='block';
+  document.getElementById('ph-q-text').textContent=G.phoneData.q;
+  const el=document.getElementById('ph-opts'); el.innerHTML='';
+  G.phoneData.opts.forEach(o=>{
+    const d=document.createElement('div'); d.className='pop-opt'; d.textContent=o.t;
+    const fn=()=>resolvePhone(o.p);
+    d.addEventListener('click',fn); d.addEventListener('touchend',e=>{e.preventDefault();fn();});
+    el.appendChild(d);
+  });
+}
+
+function declinePhone(){
+  document.getElementById('phone-pop').classList.add('hidden');
+  G.phoneActive=false;
+  if(G.phoneData.type==='hot'){ addScore(-20); G.csiHits++; toast('Missed hot lead! −20'); }
+  else{ addScore(5); toast('Junk call declined. +5'); }
+}
+
+function resolvePhone(pts){
+  document.getElementById('phone-pop').classList.add('hidden');
+  G.phoneActive=false;
+  addScore(pts); toast(pts>0?`📱 Good call! +${pts}`:`📱 Wrong call… ${pts}`);
+}
+
+// ─── EMAIL ───────────────────────────────────────────────────
+function triggerEmail(){
+  G.emailActive=true;
+  G.nextEmail=rand(EMAIL_MIN,EMAIL_MAX);
+  const em=EMAILS[0|Math.random()*EMAILS.length];
+  document.getElementById('em-subject').textContent=em.subject;
+  document.getElementById('em-body').textContent=em.body;
+  const el=document.getElementById('em-opts'); el.innerHTML='';
+  em.opts.forEach(o=>{
+    const d=document.createElement('div'); d.className='em-opt'; d.textContent=o.t;
+    const fn=()=>resolveEmail(o);
+    d.addEventListener('click',fn); d.addEventListener('touchend',e=>{e.preventDefault();fn();});
+    el.appendChild(d);
+  });
+  document.getElementById('email-pop').classList.remove('hidden');
+}
+
+function resolveEmail(o){
+  document.getElementById('email-pop').classList.add('hidden');
+  G.emailActive=false;
+  addScore(o.p); if(o.csi) G.csiHits++;
+  toast(o.p>0?`📧 Good response! +${o.p}`:`📧 Wrong response… ${o.p}${o.csi?' (CSI hit)':''}`);
+}
+
+// ─── SERVICE TRIAGE ───────────────────────────────────────────
+function triggerService(){
+  G.svcActive=true;
+  const sc=SERVICE_SCENARIOS[0|Math.random()*SERVICE_SCENARIOS.length];
+  const name=NAMES[0|Math.random()*NAMES.length];
+  G.svcData={sc,name,step:0};
+  document.getElementById('svc-name').textContent=`👤 ${name}`;
+  renderSvcStep();
+  document.getElementById('svc-pop').classList.remove('hidden');
+}
+
+function renderSvcStep(){
+  const {sc,step}=G.svcData;
+  document.getElementById('svc-step').textContent=step===0?'Service walk-in':`Step ${step}`;
+  document.getElementById('svc-q').textContent=step===0?sc.opening:sc.steps[step-1].q;
+  const el=document.getElementById('svc-opts'); el.innerHTML='';
+  if(step===0){
+    const d=document.createElement('div'); d.className='svc-opt'; d.textContent='How do you respond?';
+    const fn=()=>{ G.svcData.step=1; renderSvcStep(); };
+    d.addEventListener('click',fn); d.addEventListener('touchend',e=>{e.preventDefault();fn();});
+    el.appendChild(d);
+  } else {
+    sc.steps[step-1].opts.forEach(o=>{
+      const d=document.createElement('div'); d.className='svc-opt'; d.textContent=o.t;
+      const fn=()=>resolveService(o);
+      d.addEventListener('click',fn); d.addEventListener('touchend',e=>{e.preventDefault();fn();});
+      el.appendChild(d);
+    });
+  }
+}
+
+function resolveService(o){
+  document.getElementById('svc-pop').classList.add('hidden');
+  G.svcActive=false;
+  addScore(o.p);
+  if(o.p<0) G.patience=Math.max(0,G.patience-10);
+  toast(o.p>0?`✅ Correct triage! +${o.p}`:`❌ Wrong call… ${o.p}`);
+}
+
+// ─── CAR JOBS ─────────────────────────────────────────────────
+function triggerJob(type){
+  const avail=carObjs.filter(c=>c.zone===type&&c.isMovable&&!c.inUse);
+  if(!avail.length)return;
+  const carObj=avail[0|Math.random()*avail.length];
+  carObj.inUse=true;
+  const tp=type==='forecourt'
+    ? V3(rand(2,12),0.14,rand(-7,7))
+    : V3(rand(-13,-2),0.14,rand(-6,6));
+  hlCar(carObj.mesh);
+  showBay(tp);
+  const mgr=type==='forecourt'?'Will':'Serge';
+  G.jobActive=true; G.jobCarrying=false;
+  G.jobData={carObj,targetPos:tp,type,timeLeft:45,mgr};
+  document.getElementById('job-banner').classList.remove('hidden');
+  toast(`${mgr}: Move that car! ⏱️`);
+}
+
+function hlCar(mesh){
+  if(jobGlow) scene.remove(jobGlow);
+  jobGlow=new THREE.Mesh(new THREE.RingGeometry(1.2,1.55,24),new THREE.MeshBasicMaterial({color:0xf1c40f,side:THREE.DoubleSide}));
+  jobGlow.rotation.x=-Math.PI/2; jobGlow.position.set(mesh.position.x,0.04,mesh.position.z);
+  scene.add(jobGlow);
+}
+
+function showBay(pos){
+  if(jobBayGlow) scene.remove(jobBayGlow);
+  jobBayGlow=new THREE.Mesh(new THREE.PlaneGeometry(2.5,2.5),new THREE.MeshBasicMaterial({color:0x00ff00,transparent:true,opacity:0.35,side:THREE.DoubleSide}));
+  jobBayGlow.rotation.x=-Math.PI/2; jobBayGlow.position.set(pos.x,0.03,pos.z);
+  scene.add(jobBayGlow);
+}
+
+function pickUpCar(){
+  if(!G.jobActive||G.jobCarrying)return;
+  G.jobCarrying=true;
+  if(jobGlow){ scene.remove(jobGlow); jobGlow=null; }
+  toast('Car picked up! Tap the green bay.');
+}
+
+function dropCar(){
+  if(!G.jobActive||!G.jobCarrying)return;
+  G.jobCarrying=false;
+  const t=G.jobData.targetPos;
+  G.jobData.carObj.mesh.position.set(t.x,0.14,t.z);
+  addScore(60); toast(`${G.jobData.mgr} is happy! +60`);
+  cleanJob();
+}
+
+function failJob(){
+  addScore(-15); G.patience=Math.max(0,G.patience-8);
+  toast(`${G.jobData.mgr}: "Why is that car still there?!" −15`);
+  cleanJob();
+}
+
+function cleanJob(){
+  if(G.jobData?.carObj) G.jobData.carObj.inUse=false;
+  G.jobActive=false; G.jobCarrying=false; G.jobData=null;
+  if(jobGlow){ scene.remove(jobGlow); jobGlow=null; }
+  if(jobBayGlow){ scene.remove(jobBayGlow); jobBayGlow=null; }
+  document.getElementById('job-banner').classList.add('hidden');
+}
+
+function updateJobBanner(){
+  if(!G.jobActive||!G.jobData)return;
+  const t=Math.ceil(G.jobData.timeLeft);
+  const act=G.jobCarrying?'Tap the green bay':'Tap the highlighted car';
+  document.getElementById('job-banner').textContent=`🚗 ${G.jobData.mgr}: ${act} ⏱️ ${t}s`;
+}
+
+// ─── SCORE / TOAST ────────────────────────────────────────────
+function addScore(n){ G.score+=n; }
+
+let toastTid=null;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.remove('hidden'); el.style.opacity='1';
+  if(toastTid) clearTimeout(toastTid);
+  toastTid=setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.classList.add('hidden'),400); },2000);
+}
+
+// ─── END GAME ────────────────────────────────────────────────
+function endGame(){
+  G.running=false;
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('job-banner').classList.add('hidden');
+  ['convo-pop','phone-pop','email-pop','svc-pop'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+
+  const csiPct=G.totalInter>0?Math.round(100-G.csiHits/G.totalInter*100):100;
+  const finPct=G.deals>0?Math.round(G.finDeals/G.deals*100):0;
+  if(G.deals>=DEAL_TARGET) addScore(200);
+  if(csiPct>=80) addScore(80);
+
+  document.getElementById('e-score').textContent=G.score;
+  document.getElementById('e-deals').textContent=`${G.deals} / ${DEAL_TARGET}`;
+  document.getElementById('e-csi').textContent=`${csiPct}%`;
+  document.getElementById('e-fin').textContent=`${finPct}%`;
+
+  let v='';
+  if(G.deals>=DEAL_TARGET&&csiPct>=80)
+    v=`Target smashed, CSI ${csiPct}%, finance at ${finPct}%. Nathan's buzzing, Will's happy with the PPU, Serge has nothing to moan about. Salesperson of the month. 🏆`;
+  else if(G.deals>=DEAL_TARGET)
+    v=`Hit the target but CSI slipped to ${csiPct}%. Serge wants "a quick word" about Consumer Duty. Still, deals are deals.`;
+  else
+    v=`Only ${G.deals} of ${DEAL_TARGET} on the glass. Nathan's drafting a one-to-one and Will's muttering about the PPU.`;
+  document.getElementById('verdict').textContent=v;
+
+  const lb=JSON.parse(localStorage.getItem(LB_KEY)||'[]');
+  lb.push({name:playerName,score:G.score,deals:G.deals});
+  lb.sort((a,b)=>b.score-a.score);
+  const top=lb.slice(0,10);
+  localStorage.setItem(LB_KEY,JSON.stringify(top));
+  renderLB(top,G.score);
+
+  showScreen('end-screen');
+}
+
+function renderLB(lb,myScore){
+  const el=document.getElementById('lb'); el.innerHTML='';
+  lb.forEach((e,i)=>{
+    const r=document.createElement('div');
+    r.className='lb-row'+(i%2?' alt':'')+(e.score===myScore&&e.name===playerName?' me':'');
+    r.innerHTML=`<span>#${i+1} ${e.name}</span><span>${e.score} pts · ${e.deals} deals</span>`;
+    el.appendChild(r);
+  });
+}
+
+// ─── SCREEN FLOW ─────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ─── MORNING MEETING ──────────────────────────────────────────
+let mtgScripts=[], mtgStep=0;
+
+function startMeeting(){
+  const pos=Math.random()<0.5;
+  mtgScripts=pos?MTG_POSITIVE:MTG_NEGATIVE;
+  mtgStep=0;
+  document.getElementById('mtg-title').textContent=`Morning Meeting — ${pos?'Good news':'Brace yourselves'}`;
+  renderBubbles();
+  showScreen('meeting-screen');
+}
+
+function renderBubbles(){
+  const el=document.getElementById('mtg-bubbles'); el.innerHTML='';
+  for(let i=0;i<=Math.min(mtgStep,mtgScripts.length-1);i++){
+    const s=mtgScripts[i];
+    const d=document.createElement('div'); d.className='bubble';
+    d.innerHTML=`<div class="speaker">${s.speaker}</div>${s.text}`;
+    el.appendChild(d);
+  }
+  document.getElementById('mtg-btn').textContent=mtgStep>=mtgScripts.length-1?'Start the day! 🚗':'Next →';
+  el.scrollTop=el.scrollHeight;
+}
+
+function mtgNext(){
+  if(mtgStep<mtgScripts.length-1){ mtgStep++; renderBubbles(); }
+  else startGame();
+}
+
+// ─── GAME START ───────────────────────────────────────────────
+function startGame(){
+  // Clean up old customers
+  Object.keys(customerMeshes).forEach(id=>removeCustMesh(parseInt(id)));
+  // Reset car inUse
+  carObjs.forEach(c=>{ c.inUse=false; });
+  // Clean job glows
+  if(jobGlow){ scene.remove(jobGlow); jobGlow=null; }
+  if(jobBayGlow){ scene.remove(jobBayGlow); jobBayGlow=null; }
+
+  initG();
+  G.running=true;
+
+  // Reset player
+  playerPos.set(-7,0,1); playerTarget.copy(playerPos);
+  playerMesh.position.copy(playerPos); playerMoving=false; pendingAction=null;
+
+  // Schedule jobs
+  G.jobSchedule=[
+    {time:rand(28,48),type:'forecourt'},
+    {time:rand(75,105),type:'forecourt'},
+    {time:rand(55,80),type:'showroom'}
+  ];
+  // Schedule service walk-ins
+  G.svcSchedule=[rand(18,38),rand(80,112)];
+
+  document.getElementById('hud').classList.remove('hidden');
+  showScreen(''); // hide all screens, show game
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+}
+
+// ─── BUTTON WIRING ────────────────────────────────────────────
+function wire(id,fn){
+  const el=document.getElementById(id); if(!el)return;
+  el.addEventListener('click',fn);
+  el.addEventListener('touchend',e=>{e.preventDefault();fn();});
+}
+
+window.addEventListener('load',()=>{
+  initThree();
+  gameLoop();
+
+  showScreen('name-screen');
+
+  wire('name-btn',()=>{
+    const v=document.getElementById('name-input').value.trim();
+    playerName=v||'Player';
+    showScreen('howto-screen');
+  });
+  document.getElementById('name-input').addEventListener('keydown',e=>{ if(e.key==='Enter'){ playerName=document.getElementById('name-input').value.trim()||'Player'; showScreen('howto-screen'); } });
+
+  wire('howto-btn',startMeeting);
+  wire('mtg-btn',mtgNext);
+  wire('again-btn',startMeeting);
+  wire('clear-btn',()=>{ localStorage.removeItem(LB_KEY); renderLB([],G.score); toast('Leaderboard cleared.'); });
+  wire('ph-ans-btn',answerPhone);
+  wire('ph-dec-btn',declinePhone);
+});
+</script>
+</body>
+</html>
