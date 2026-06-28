@@ -47,7 +47,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .stat-pill em{color:var(--gold);font-style:normal;}
 
 /* ── WRAP ── */
-.wrap{max-width:1300px;margin:0 auto;padding:18px 20px;display:grid;gap:14px;}
+.wrap{max-width:1300px;margin:0 auto;padding:18px 20px;display:grid;gap:14px;grid-template-columns:minmax(0,1fr);}
 
 /* ── SYNC BAR ── */
 .syncbar{
@@ -102,9 +102,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .search:focus{border-color:var(--pitch);}
 
 /* ── GRID ── */
-.grid{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;}
+.grid{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;min-width:0;}
 @media(max-width:920px){.grid{grid-template-columns:1fr;}}
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.05);}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.05);min-width:0;overflow-x:auto;}
 .panel-h{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
 
 /* ── LEADERBOARD TABLE ── */

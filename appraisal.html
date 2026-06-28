@@ -5,39 +5,122 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>DanSells | Free Vehicle Appraisal</title>
   <link rel="stylesheet" href="style.css"/>
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XZL1RF6SV6');
-  </script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 </head>
 <body>
-<div class="app"><div class="shell">
-  <div class="topbar">
-    <div class="brand">
-      <span class="brand-name">DanSells</span>
-      <span class="brand-sub">Free Vehicle Appraisal</span>
+
+<header class="site-header" id="siteHeader">
+  <div class="site-header-inner">
+    <a class="site-logo" href="index.html">DanSells</a>
+    <div class="nav-actions">
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="Dan on Instagram" class="nav-icon-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20a%20free%20appraisal%20of%20my%20car" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" class="nav-icon-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+      <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false" id="navToggle" onclick="openDrawer()">
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="0" y1="1" x2="22" y2="1"/>
+          <line x1="0" y1="8" x2="22" y2="8"/>
+          <line x1="0" y1="15" x2="22" y2="15"/>
+        </svg>
+      </button>
     </div>
-    <div class="meta"><span class="dot"></span><span>Takes about 2 minutes</span></div>
   </div>
-  <div class="hero-wrap">
-    <div class="eyebrow">Find out what your car is worth</div>
-    <h1>Free appraisal.<br>No obligation.</h1>
-    <p class="lead">
-      Fill this in and I will give you an honest part exchange figure based on real market knowledge, not a computer algorithm. Then send a few photos on WhatsApp and I can sharpen the number even further.
-    </p>
-    <p class="asterisk">All figures are subject to a physical inspection. The appraisal gives me what I need to come to the table with a strong starting offer.</p>
-    <div class="badge-row">
-      <div class="chip">Any make, any model</div>
-      <div class="chip">Photos via WhatsApp</div>
-      <div class="chip">Takes 2 minutes</div>
-      <div class="chip">No obligation</div>
+</header>
+
+<div class="nav-drawer" id="navDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <div class="nav-drawer-inner">
+    <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <p class="drawer-brand">DanSells</p>
+    <nav class="drawer-nav" aria-label="Main navigation">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric BMWs</a>
+      <a href="appraisal.html">Value my car</a>
+      <a href="service.html">Car in for service?</a>
+      <a href="accessories.html">BMW Accessories</a>
+      <a href="index.html#protect">Protect my BMW</a>
+      <a href="refer.html">Refer a friend</a>
+      <a href="guides.html">Guides</a>
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram &#x2197;</a>
+    </nav>
+    <a class="drawer-cta" href="step1.html">Find a BMW &rarr;</a>
+  </div>
+</div>
+<div class="nav-drawer-overlay" id="navOverlay" onclick="closeDrawer()"></div>
+
+<main>
+  <div class="page">
+    <section class="section" style="padding-top:72px;padding-bottom:80px">
+      <div class="hero-wrap">
+        <div class="eyebrow">Find out what your car is worth</div>
+        <h1>Free appraisal.<br>No obligation.</h1>
+        <p class="lead">Fill this in and I will give you an honest part exchange figure based on real market knowledge, not a computer algorithm. Then send a few photos on WhatsApp and I can sharpen the number even further.</p>
+        <p class="asterisk">All figures are subject to a physical inspection. The appraisal gives me what I need to come to the table with a strong starting offer.</p>
+        <div class="badge-row">
+          <div class="chip">Any make, any model</div>
+          <div class="chip">Photos via WhatsApp</div>
+          <div class="chip">Takes 2 minutes</div>
+          <div class="chip">No obligation</div>
+        </div>
+        <a class="btn-hero" href="ap1.html">Start my appraisal</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
+      <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
+      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup — serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
     </div>
-    <a class="btn-hero" href="ap1.html">Start my appraisal</a>
-    <p style="margin-top:18px;font-size:.88rem;color:var(--muted)">Want a quick market estimate first? <a href="tradevalue.html" style="color:var(--blue);font-weight:600;text-decoration:none">Get an instant valuation &rarr;</a></p>
+    <nav aria-label="Footer">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric BMWs</a>
+      <a href="appraisal.html">Value my car</a>
+      <a href="service.html">Car in for service?</a>
+      <a href="accessories.html">BMW Accessories</a>
+      <a href="refer.html">Refer a friend</a>
+      <a href="bmw-sidcup.html">BMW Sidcup</a>
+      <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </nav>
   </div>
-</div></div>
-<script src="scroll-hint.js"></script></body></html>
+  <p class="footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Hedin Automotive Group is a credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
+</footer>
+
+<a class="wa-float" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20a%20free%20appraisal%20of%20my%20car" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  <span>Chat with Dan</span>
+</a>
+
+<script>
+function openDrawer(){
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navOverlay').classList.add('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded','true');
+  document.getElementById('navDrawer').removeAttribute('aria-hidden');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navOverlay').classList.remove('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded','false');
+  document.getElementById('navDrawer').setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
+</script>
+<script src="scroll-hint.js"></script>
+</body>
+</html>
