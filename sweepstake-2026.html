@@ -207,21 +207,21 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
     <div class="prize-card p1">
       <span class="pz-medal">🥇</span>
       <span class="pz-amount">£150</span>
-      <span class="pz-label">WC Winner's owner</span>
+      <span class="pz-label">Current leader (wins if their team lifts the trophy)</span>
       <span class="pz-owner" id="pz1owner">TBD</span>
       <span class="pz-detail" id="pz1detail">—</span>
     </div>
     <div class="prize-card p2">
       <span class="pz-medal">🥈</span>
       <span class="pz-amount">£60</span>
-      <span class="pz-label">WC Runner-up's owner</span>
+      <span class="pz-label">2nd place (wins if their team reaches the final)</span>
       <span class="pz-owner" id="pz2owner">TBD</span>
       <span class="pz-detail" id="pz2detail">—</span>
     </div>
     <div class="prize-card p3">
       <span class="pz-medal">🥉</span>
       <span class="pz-amount">£30</span>
-      <span class="pz-label">WC 3rd place's owner</span>
+      <span class="pz-label">3rd place (wins if their team finishes 3rd)</span>
       <span class="pz-owner" id="pz3owner">TBD</span>
       <span class="pz-detail" id="pz3detail">—</span>
     </div>
@@ -229,7 +229,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 
   <!-- DISCLAIMER -->
   <div class="disclaimer">
-    🏆 <strong>Prize note:</strong> The £150, £60 and £30 prizes are awarded to the owners of the teams that <strong>actually finish 1st, 2nd and 3rd in the World Cup</strong> — not necessarily the leaderboard leaders. The leaderboard is a live tracker of tournament progress. Final prizes are confirmed after the World Cup Final and the 3rd place play-off. In the event of a tie, the player with the higher goal difference across alive teams is ranked higher.
+    🏆 <strong>Prize note:</strong> The £150, £60 and £30 prizes are awarded to the owners of the teams that <strong>actually finish 1st, 2nd and 3rd in the World Cup</strong> — not necessarily the leaderboard leaders. The leaderboard is a live tracker of tournament progress. Final prizes are confirmed after the World Cup Final and the 3rd place play-off. In the event of a tie, the ranking order is: teams still alive → win/loss points → goal difference → goals scored.
   </div>
 
   <!-- SEARCH -->
@@ -307,6 +307,12 @@ function canon(s){
 }
 
 // ── DRAW DATA ─────────────────────────────────────────────────────────────
+// Teams confirmed eliminated at the group stage (no KO match to detect).
+// Add team canonical names here as each group stage elimination is confirmed.
+const GROUP_EXITS=new Set([
+  "germany" // eliminated 29 Jun 2026 — failed to advance from group stage
+]);
+
 const T=(name,c)=>({name,c,status:"alive",w:0,d:0,l:0,gf:0,ga:0});
 const entrants=[
   {name:"Carl",   teams:[T("Germany","germany"),   T("Iraq","iraq"),         T("Haiti","haiti")]},
@@ -328,6 +334,15 @@ const entrants=[
 ];
 
 function buildMap(){const m={};entrants.forEach(p=>p.teams.forEach(t=>{m[t.c]=t;}));return m;}
+
+function applyGroupExits(){
+  const map=buildMap();
+  GROUP_EXITS.forEach(c=>{
+    const t=map[c];
+    if(t){t.status="out";t.w=0;t.d=0;t.l=0;t.gf=0;t.ga=0;}
+  });
+}
+applyGroupExits(); // apply before initial render so Germany is shown as out immediately
 
 const KO=/round.of.32|round.of.16|r32|r16|quarter|semi|third|final/i;
 
@@ -370,6 +385,25 @@ function applyMatches(matches,src){
       if(at){at.d++;at.gf+=as;at.ga+=hs;}
     }
   });
+  // Auto-detect group exits: any sweepstake team absent from ALL KO-round
+  // fixtures (scheduled or finished) is out. Guard with inKO.size>=16 so
+  // this only fires once the R32 bracket is drawn — not during group stage.
+  const inKO=new Set();
+  matches.forEach(raw=>{
+    const m=normalizeMatch(raw,src);
+    if(KO.test(String(m.stage))){
+      const h=canon(m.homeTeam),a=canon(m.awayTeam);
+      if(h)inKO.add(h);if(a)inKO.add(a);
+    }
+  });
+  if(inKO.size>=16){
+    Object.entries(map).forEach(([c,t])=>{
+      if(t.status==="alive"&&!inKO.has(c)){
+        t.status="out";t.w=0;t.d=0;t.l=0;t.gf=0;t.ga=0;
+      }
+    });
+  }
+  applyGroupExits(); // manual overrides — covers gap before R32 fixtures appear in the API
 }
 
 // ── API ───────────────────────────────────────────────────────────────────
@@ -449,14 +483,13 @@ function render(){
     const{sym}=medal(ri);
     const tr=ri<=2?`r${ri}`:"";
     const gd=r.gd;
-    const gdStr=gd>0?`+${gd}`:String(gd);
     return`<tr class="${tr}">
       <td>${sym}</td><td><strong>${r.name}</strong></td>
       <td>${r.aliveCount}</td><td>${r.played}</td>
       <td class="${r.wlPts===0?"zero-cell":"pts-cell"}">${fmtPts(r.wlPts)}</td>
       <td>${r.w}</td><td class="${r.d===0?"zero-cell":""}">${r.d}</td><td>${r.l}</td>
       <td>${r.gf}</td><td>${r.ga}</td>
-      <td class="${gd>0?"pts-cell":gd<0?"":"zero-cell"}">${gdStr}</td>
+      <td>${fmtGD(gd)}</td>
     </tr>`;
   }).join("");
 
@@ -493,7 +526,10 @@ function render(){
   }).join("");
 }
 
+let _syncing=false;
 async function syncLive(){
+  if(_syncing) return;
+  _syncing=true;
   const{matches,src}=await fetchMatches();
   const badge=el("syncBadge");
   if(matches.length>0){
@@ -501,7 +537,7 @@ async function syncLive(){
     const fin=matches.filter(m=>(m.status||"").toLowerCase()==="finished");
     const totalGoals=fin.reduce((s,m)=>{
       const nm=normalizeMatch(m,src);
-      return s+(nm.homeScore||0)+(nm.awayScore||0);
+      return s+(nm.homeScore??0)+(nm.awayScore??0);
     },0);
     badge.className="badge ok";
     badge.innerHTML=`✓ Live · ${src} · ${fin.length} results`;
@@ -513,6 +549,7 @@ async function syncLive(){
   }
   el("apiLog").textContent="Updated: "+new Date().toLocaleTimeString();
   render();
+  _syncing=false;
 }
 
 async function manualRefresh(){
