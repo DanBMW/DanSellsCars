@@ -385,7 +385,25 @@ function applyMatches(matches,src){
       if(at){at.d++;at.gf+=as;at.ga+=hs;}
     }
   });
-  applyGroupExits(); // re-apply after each API sync so group-stage exits are never overwritten
+  // Auto-detect group exits: any sweepstake team absent from ALL KO-round
+  // fixtures (scheduled or finished) is out. Guard with inKO.size>=16 so
+  // this only fires once the R32 bracket is drawn — not during group stage.
+  const inKO=new Set();
+  matches.forEach(raw=>{
+    const m=normalizeMatch(raw,src);
+    if(KO.test(String(m.stage))){
+      const h=canon(m.homeTeam),a=canon(m.awayTeam);
+      if(h)inKO.add(h);if(a)inKO.add(a);
+    }
+  });
+  if(inKO.size>=16){
+    Object.entries(map).forEach(([c,t])=>{
+      if(t.status==="alive"&&!inKO.has(c)){
+        t.status="out";t.w=0;t.d=0;t.l=0;t.gf=0;t.ga=0;
+      }
+    });
+  }
+  applyGroupExits(); // manual overrides — covers gap before R32 fixtures appear in the API
 }
 
 // ── API ───────────────────────────────────────────────────────────────────
