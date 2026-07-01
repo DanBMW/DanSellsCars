@@ -6,32 +6,20 @@
   This page is intentionally NOT linked from index.html, the hamburger nav, the footer,
   or sitemap.xml, and carries a noindex meta tag below. Only share the direct URL.
 
-  All "CONFIRM"/compliance-TODO banners that used to render visibly on the page have
-  been moved into this comment (2026-07-01) so the live preview looks clean to anyone
-  with the link. OPEN ITEMS — do not remove the noindex tag or add nav/sitemap links
-  until every item below is actually resolved:
-    1. Media: 7 of 8 1 Series colour photos are real (assets/colours/) — Alpine White,
-       Black Sapphire, Skyscraper Grey, Portimao Blue, Thundernight, Cape York Green,
-       Fire Red. Still needed: a real Brooklyn Grey photo (currently silently reuses the
-       Skyscraper Grey shot — data-placeholder="true" on that swatch), and per-colour
-       2 Series Gran Coupé photos (only Alpine White has a real 2 Series shot; the other
-       7 swatches on the 2 Series panel reuse 1 Series hatchback photos, also flagged
-       data-placeholder="true"). Hero + both rep-card default images need a real
-       hero video/photo too (currently reuse the Alpine White 1 Series photo).
-    2. 2 Series colour-picker label previously said "(2 Series photos below marked
-       CONFIRM are 1 Series placeholders...)" — now removed from view; the underlying
-       data-placeholder="true" attributes still mark exactly which swatches are stand-ins.
-    3. PCP figures: only the headline rate (2.9% representative APR) is confirmed. Full
-       representative example (deposit, term, optional final payment/GMFV) is NOT yet
-       confirmed — the visible copy just says "ask Dan for a personalised quote" so no
-       false figures are shown, but a full PCP box should be added once those numbers exist.
-    4. Insurance disclosure paragraph (bottom of page): underwriter/insurer name not yet
-       confirmed on the visible copy (currently says "BMW Insurance" generically). The
-       exact FCA insurance-mediation permission wording and firm reference number for
-       Hedin Automotive Ltd's insurance-intermediary role has NOT been confirmed or
-       signed off by compliance — this paragraph is placeholder wording and MUST be
-       reviewed before this offer is genuinely marketed/linked publicly.
-    5. 3-year service plan paragraph: exact plan terms/exclusions not yet confirmed.
+  OPEN ITEMS — do not remove the noindex tag or add nav/sitemap links until resolved:
+    1. Media: 7 of 8 1 Series colour photos are real (assets/colours/). Brooklyn Grey has
+       no photo yet — the Skyscraper Grey shot is shown with a visible "Shown in
+       Skyscraper Grey" pill until a real one arrives.
+    2. 2 Series: only one real Gran Coupé photo exists (Alpine White). All 2 Series colour
+       selections show that photo with a visible "Shown in Alpine White" pill — honest
+       "image for illustration" treatment. Replace with real per-colour Gran Coupé shots
+       when supplied.
+    3. Hero: static image (Fire Red 1 Series). Swap in real hero video when Dan supplies it.
+    4. PCP: only the 2.9% representative APR headline is confirmed. Full representative
+       example (deposit, term, GMFV) not yet confirmed — visible copy says "ask Dan".
+    5. Insurance disclosure paragraph: underwriter name + FCA insurance-mediation wording
+       and firm reference number NOT yet signed off by compliance. Placeholder wording.
+    6. 3-year service plan: exact plan terms/exclusions not yet confirmed.
   Go-live checklist (do NOT action without explicit sign-off):
     - Fold this content into 1series-offer.html + new 2series-offer.html
     - Update index.html offer-card copy/pricing/links to match
@@ -44,6 +32,7 @@
   <title>Sorted For A Year — BMW 1 &amp; 2 Series M Sport Offer | Dan at Hedin Ruxley</title>
   <meta name="description" content="Free 1st year's BMW Insurance and 3 years servicing included on the new BMW 1 Series and 2 Series M Sport. In stock at Hedin Ruxley."/>
   <link rel="stylesheet" href="style.css"/>
+  <link rel="preload" as="image" href="assets/colours/1series-fire-red.jpg"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -52,94 +41,167 @@
     gtag('config', 'G-XZL1RF6SV6');
   </script>
   <style>
-    /* ── OFFER PAGE LAYOUT (matches 1series-offer.html convention) ── */
-    .offer-page-hero{position:relative;width:100%;height:100svh;min-height:520px;max-height:820px;overflow:hidden;display:flex;align-items:flex-end;}
-    .offer-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;}
-    .offer-hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.18) 0%,rgba(0,0,0,.55) 100%);}
-    .offer-hero-content{position:relative;z-index:2;width:100%;padding:0 0 60px;}
-    .offer-hero-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:12px;}
-    .offer-hero-title{font-family:var(--display);font-size:clamp(2.6rem,8vw,5.2rem);font-weight:700;letter-spacing:-.02em;line-height:.98;color:#fff;margin:0 0 16px;}
-    .offer-hero-sub{font-size:clamp(.9rem,2vw,1.1rem);font-weight:600;color:rgba(255,255,255,.85);margin:0;max-width:46ch;line-height:1.5;}
-    .offer-hero-scroll{display:inline-flex;align-items:center;gap:8px;margin-top:32px;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:9px 18px;backdrop-filter:blur(6px);transition:background .18s,color .18s;}
-    .offer-hero-scroll:hover{background:rgba(255,255,255,.15);color:#fff;}
+    html{scroll-behavior:smooth;}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
 
-    /* ── MAIN CONTENT ── */
-    .offer-content-wrap{background:#fff;padding:64px 0 0;}
-    .offer-inner{max-width:900px;margin:0 auto;padding:0 24px;}
-    .offer-headline{font-family:var(--display);font-size:clamp(1.6rem,4vw,2.5rem);font-weight:700;color:#141a22;letter-spacing:-.01em;line-height:1.1;margin:0 0 8px;}
-    .offer-sub-headline{font-size:.95rem;font-weight:600;letter-spacing:.02em;color:#5f6b7c;margin:0 0 28px;line-height:1.5;}
-    .offer-intro{font-size:.97rem;color:#3c4a5e;line-height:1.75;margin:0 0 12px;}
-    .offer-bullets{list-style:none;padding:0;margin:0 0 32px;}
-    .offer-bullets li{font-size:.95rem;color:#2d3748;line-height:1.65;padding:4px 0 4px 20px;position:relative;}
-    .offer-bullets li::before{content:'•';position:absolute;left:0;color:#1559cf;font-weight:700;}
+    /* ── HERO ── */
+    .sfy-hero{position:relative;background:linear-gradient(155deg,#080f1d 0%,#0a1a38 55%,#0d2145 100%);overflow:hidden;padding:150px 0 40px;}
+    .sfy-hero::before{content:'';position:absolute;top:-30%;right:-15%;width:70%;height:120%;background:radial-gradient(closest-side,rgba(21,89,207,.28),transparent 70%);pointer-events:none;}
+    .sfy-hero::after{content:'';position:absolute;bottom:-40%;left:-10%;width:50%;height:90%;background:radial-gradient(closest-side,rgba(85,145,255,.12),transparent 70%);pointer-events:none;}
+    .sfy-hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;}
+    @media(max-width:840px){.sfy-hero-grid{grid-template-columns:1fr;gap:28px;}.sfy-hero{padding:120px 0 32px;}}
+    .sfy-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#7fa8ff;background:rgba(85,145,255,.12);border:1px solid rgba(85,145,255,.3);border-radius:999px;padding:7px 14px;margin:0 0 20px;}
+    .sfy-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.25);animation:sfyPulse 2s infinite;}
+    @keyframes sfyPulse{0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,.25);}50%{box-shadow:0 0 0 6px rgba(74,222,128,.08);}}
+    .sfy-title{font-family:var(--display);font-size:clamp(3rem,8.5vw,5.6rem);font-weight:700;letter-spacing:-.02em;line-height:.95;color:#fff;margin:0 0 18px;}
+    .sfy-title em{font-style:normal;background:linear-gradient(100deg,#5591ff 10%,#8db4ff 60%,#5591ff 90%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+    .sfy-sub{font-size:clamp(.95rem,2vw,1.12rem);color:rgba(255,255,255,.78);line-height:1.65;margin:0 0 26px;max-width:48ch;}
+    .sfy-chip-row{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 30px;}
+    .sfy-chip{font-size:.78rem;font-weight:700;color:#eaf1ff;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:8px 14px;backdrop-filter:blur(4px);}
+    .sfy-chip.gold{color:#ffdf8e;border-color:rgba(255,223,142,.35);background:rgba(255,223,142,.08);}
+    .sfy-hero-ctas{display:flex;flex-wrap:wrap;gap:12px;}
+    .sfy-btn{display:inline-flex;align-items:center;gap:9px;background:#1559cf;color:#fff;font-weight:700;font-size:.95rem;padding:15px 28px;border-radius:13px;text-decoration:none;border:none;cursor:pointer;font-family:var(--font);transition:background .18s,transform .18s,box-shadow .18s;box-shadow:0 12px 32px -10px rgba(21,89,207,.55);}
+    .sfy-btn:hover{background:#2a6ae0;transform:translateY(-2px);box-shadow:0 18px 40px -12px rgba(21,89,207,.65);}
+    .sfy-btn-ghost{display:inline-flex;align-items:center;gap:9px;background:transparent;color:#fff;font-weight:700;font-size:.95rem;padding:14px 26px;border-radius:13px;text-decoration:none;border:1.5px solid rgba(255,255,255,.35);transition:background .18s,border-color .18s;}
+    .sfy-btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6);}
+    .sfy-hero-car{position:relative;}
+    .sfy-hero-car::before{content:'';position:absolute;inset:12% -6% -4% -6%;background:radial-gradient(closest-side,rgba(21,89,207,.35),transparent 75%);filter:blur(18px);}
+    .sfy-hero-car img{position:relative;width:100%;height:auto;border-radius:22px;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);animation:sfyFloat 7s ease-in-out infinite;}
+    @keyframes sfyFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+    @media(prefers-reduced-motion:reduce){.sfy-hero-car img{animation:none;}.sfy-eyebrow .dot{animation:none;}}
+    .sfy-hero-caption{position:absolute;bottom:14px;left:14px;z-index:2;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.85);background:rgba(8,15,29,.55);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:6px 12px;backdrop-filter:blur(6px);}
 
-    /* ── MODEL TOGGLE ── */
-    .model-toggle{display:inline-flex;gap:4px;background:rgba(16,21,29,.05);border-radius:999px;padding:4px;margin:0 0 28px;}
-    .model-toggle-btn{border:none;background:transparent;padding:10px 24px;border-radius:999px;font-family:var(--font);font-size:.88rem;font-weight:700;color:#5f6b7c;cursor:pointer;transition:background .18s,color .18s;}
-    .model-toggle-btn.active{background:#1559cf;color:#fff;}
+    /* ── TICKER ── */
+    .sfy-ticker{background:#0b1220;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(16,21,29,.08);overflow:hidden;padding:13px 0;}
+    .sfy-ticker-track{display:flex;gap:44px;width:max-content;animation:sfyTicker 32s linear infinite;}
+    .sfy-ticker span{font-size:.74rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);white-space:nowrap;}
+    .sfy-ticker span b{color:#7fa8ff;font-weight:800;}
+    @keyframes sfyTicker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+    @media(prefers-reduced-motion:reduce){.sfy-ticker-track{animation:none;}}
 
+    /* ── STAT STRIP ── */
+    .sfy-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:0 0 8px;}
+    .sfy-stat{background:#fff;border:1px solid rgba(16,21,29,.09);border-radius:18px;padding:22px 20px;box-shadow:var(--shadow-card);}
+    .sfy-stat-num{font-family:var(--display);font-size:2rem;font-weight:700;color:#1559cf;line-height:1;margin:0 0 6px;}
+    .sfy-stat-num small{font-size:.95rem;color:#5f6b7c;font-family:var(--font);font-weight:700;}
+    .sfy-stat-lbl{font-size:.83rem;color:#3c4a5e;font-weight:600;line-height:1.45;}
+
+    /* ── CONFIGURATOR ── */
+    .sfy-config{background:#fff;border:1px solid rgba(16,21,29,.09);border-radius:24px;box-shadow:var(--shadow-card);overflow:hidden;}
+    .sfy-config-head{padding:26px 26px 0;}
+    .model-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(16,21,29,.05);border-radius:16px;padding:6px;margin:0;}
+    .model-toggle-btn{border:none;background:transparent;padding:14px 10px;border-radius:12px;font-family:var(--font);cursor:pointer;transition:background .18s,color .18s,box-shadow .18s;text-align:center;}
+    .model-toggle-btn .mt-name{display:block;font-size:.92rem;font-weight:800;color:#3c4a5e;}
+    .model-toggle-btn .mt-price{display:block;font-size:.74rem;font-weight:600;color:#8a94a0;margin-top:3px;}
+    .model-toggle-btn.active{background:#1559cf;box-shadow:0 8px 20px -8px rgba(21,89,207,.6);}
+    .model-toggle-btn.active .mt-name{color:#fff;}
+    .model-toggle-btn.active .mt-price{color:rgba(255,255,255,.75);}
     .model-panel{display:none;}
     .model-panel.active{display:block;}
-
-    /* ── COLOUR SWATCHER ── */
-    .colour-picker{margin:0 0 28px;}
-    .colour-picker-label{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5f6b7c;margin:0 0 10px;}
-    .swatch-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
-    .swatch{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(16,21,29,.12);transition:border-color .18s,transform .18s;}
-    .swatch.active{border-color:#1559cf;transform:scale(1.12);}
-    .swatch-name{font-size:.85rem;font-weight:700;color:#141a22;margin-left:4px;}
-
-    /* ── FEATURE GRID (shared, both models) ── */
-    .included-section{margin:8px 0 48px;}
-    .included-kicker{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1559cf;margin:0 0 12px;}
-    .included-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;}
-    .included-card{display:flex;align-items:flex-start;gap:10px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.08);border-radius:14px;padding:14px 16px;}
-    .included-check{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:#1559cf;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;margin-top:1px;}
-    .included-text{font-size:.87rem;font-weight:600;color:#2d3748;line-height:1.4;}
-    .included-card.highlight{background:rgba(21,89,207,.06);border-color:rgba(21,89,207,.2);}
-
-    /* ── REPRESENTATIVE OFFER ── */
-    .rep-divider{border:none;border-top:1px solid rgba(16,21,29,.1);margin:0 0 40px;}
-    .rep-section{padding-bottom:24px;}
-    .rep-kicker{font-size:clamp(1.1rem,3.2vw,1.5rem);font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#141a22;margin:0 0 20px;}
-    .rep-card{display:flex;flex-direction:column;gap:0;border:1px solid rgba(16,21,29,.1);border-radius:20px;overflow:hidden;}
-    @media(min-width:620px){.rep-card{flex-direction:row;}}
-    .rep-card-img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:center;}
-    @media(min-width:620px){.rep-card-img{width:42%;aspect-ratio:auto;}}
-    .rep-card-body{flex:1;padding:28px 24px;}
-    .rep-offer-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1559cf;margin:0 0 6px;}
-    .rep-offer-title{font-size:1.05rem;font-weight:800;color:#141a22;margin:0 0 6px;}
-    .rep-offer-note{font-size:.82rem;color:#5f6b7c;margin:0 0 20px;line-height:1.5;}
-    .rep-figures{border-top:1px solid rgba(16,21,29,.08);padding-top:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+    .sfy-config-body{display:grid;grid-template-columns:1.1fr .9fr;gap:0;}
+    @media(max-width:760px){.sfy-config-body{grid-template-columns:1fr;}}
+    .sfy-config-img{position:relative;background:linear-gradient(160deg,#f2efe9,#e7e2d8);min-height:280px;}
+    .sfy-config-img img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .22s ease;}
+    .sfy-config-img img.fading{opacity:0;}
+    .shownin-pill{position:absolute;bottom:12px;left:12px;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#3c4a5e;background:rgba(255,255,255,.85);border:1px solid rgba(16,21,29,.12);border-radius:999px;padding:5px 11px;backdrop-filter:blur(4px);}
+    .shownin-pill:empty{display:none;}
+    .sfy-config-detail{padding:26px;}
+    .colour-picker-label{font-size:.74rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#5f6b7c;margin:0 0 12px;}
+    .swatch-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px;}
+    .swatch{width:38px;height:38px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(16,21,29,.14),0 1px 3px rgba(16,21,29,.12);transition:border-color .18s,transform .18s;}
+    .swatch:hover{transform:scale(1.1);}
+    .swatch.active{border-color:#1559cf;transform:scale(1.14);box-shadow:inset 0 0 0 1px rgba(16,21,29,.14),0 0 0 3px rgba(21,89,207,.18);}
+    .swatch-selected{font-size:.82rem;color:#5f6b7c;margin:4px 0 20px;}
+    .swatch-selected b{color:#141a22;}
+    .rep-figures{border-top:1px solid rgba(16,21,29,.08);padding-top:16px;display:flex;flex-direction:column;gap:9px;margin-bottom:18px;}
     .rep-fig-row{display:flex;justify-content:space-between;align-items:baseline;font-size:.88rem;}
     .rep-fig-label{color:#5f6b7c;}
     .rep-fig-value{font-weight:700;color:#141a22;font-size:.95rem;}
-    .rep-fig-value.big{font-size:1.2rem;color:#1559cf;}
-    .rep-view-btn{display:inline-block;background:#1559cf;color:#fff;font-weight:700;font-size:.88rem;padding:12px 22px;border-radius:11px;text-decoration:none;border:none;cursor:pointer;transition:background .18s;width:100%;text-align:center;box-sizing:border-box;}
-    .rep-view-btn:hover{background:#0e3f96;}
-
-    /* ── PCP CALLOUT ── */
-    .pcp-callout{background:rgba(16,21,29,.03);border:1px dashed rgba(16,21,29,.18);border-radius:14px;padding:16px 18px;font-size:.85rem;color:#3c4a5e;line-height:1.6;margin:0 0 48px;}
+    .rep-fig-value.big{font-family:var(--display);font-size:1.55rem;color:#1559cf;}
+    .rep-offer-label{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#1559cf;margin:0 0 5px;}
+    .rep-offer-title{font-size:1.15rem;font-weight:800;color:#141a22;margin:0 0 5px;}
+    .rep-offer-note{font-size:.8rem;color:#5f6b7c;margin:0 0 16px;line-height:1.5;}
+    .rep-view-btn{display:block;background:#1559cf;color:#fff;font-weight:700;font-size:.92rem;padding:14px 22px;border-radius:12px;text-decoration:none;border:none;cursor:pointer;transition:background .18s,transform .18s;width:100%;text-align:center;box-sizing:border-box;font-family:var(--font);}
+    .rep-view-btn:hover{background:#0e3f96;transform:translateY(-1px);}
+    .sfy-config-foot{padding:0 26px 24px;}
+    .pcp-callout{background:rgba(21,89,207,.05);border:1px dashed rgba(21,89,207,.3);border-radius:14px;padding:15px 18px;font-size:.85rem;color:#3c4a5e;line-height:1.6;margin:20px 0 0;}
     .pcp-callout strong{color:#141a22;}
 
+    /* ── INCLUDED ── */
+    .included-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:13px;}
+    .included-card{display:flex;align-items:flex-start;gap:13px;background:#fff;border:1px solid rgba(16,21,29,.09);border-radius:16px;padding:18px;box-shadow:var(--shadow-card);transition:transform .18s,box-shadow .18s;}
+    .included-card:hover{transform:translateY(-3px);}
+    .included-icon{flex:0 0 auto;width:38px;height:38px;border-radius:11px;background:rgba(21,89,207,.09);color:#1559cf;display:flex;align-items:center;justify-content:center;}
+    .included-card.highlight{background:linear-gradient(150deg,#0d2145,#123067);border-color:rgba(85,145,255,.35);}
+    .included-card.highlight .included-icon{background:rgba(255,255,255,.12);color:#8db4ff;}
+    .included-card.highlight .included-title{color:#fff;}
+    .included-card.highlight .included-sub{color:rgba(255,255,255,.6);}
+    .included-title{font-size:.9rem;font-weight:800;color:#141a22;line-height:1.3;margin:2px 0 3px;}
+    .included-sub{font-size:.78rem;color:#5f6b7c;line-height:1.5;}
+
+    /* ── STEPS ── */
+    .sfy-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;counter-reset:step;}
+    .sfy-step{background:#fff;border:1px solid rgba(16,21,29,.09);border-radius:18px;padding:24px 22px;box-shadow:var(--shadow-card);position:relative;}
+    .sfy-step-num{font-family:var(--display);font-size:2.4rem;font-weight:700;line-height:1;color:rgba(21,89,207,.16);margin:0 0 10px;}
+    .sfy-step h3{font-size:1rem;font-weight:800;color:#141a22;margin:0 0 7px;}
+    .sfy-step p{font-size:.86rem;color:#3c4a5e;line-height:1.6;margin:0;}
+
+    /* ── DAN BAND ── */
+    .sfy-dan{background:linear-gradient(150deg,#0a1628,#0d2145);border-radius:24px;padding:36px 30px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
+    .sfy-dan img{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid rgba(85,145,255,.5);flex:0 0 auto;}
+    .sfy-dan-quote{flex:1;min-width:260px;}
+    .sfy-dan-quote p{font-family:var(--display);font-size:clamp(1.05rem,2.4vw,1.4rem);font-weight:600;color:#fff;line-height:1.45;margin:0 0 10px;}
+    .sfy-dan-quote span{font-size:.82rem;color:rgba(255,255,255,.55);font-weight:600;}
+    .sfy-dan .sfy-btn{flex:0 0 auto;background:#22c15e;box-shadow:0 12px 32px -10px rgba(34,193,94,.5);}
+    .sfy-dan .sfy-btn:hover{background:#2ed46e;box-shadow:0 18px 40px -12px rgba(34,193,94,.6);}
+
+    /* ── FAQ ── */
+    .sfy-faq{max-width:760px;}
+    .sfy-faq details{background:#fff;border:1px solid rgba(16,21,29,.09);border-radius:15px;margin-bottom:10px;box-shadow:var(--shadow-card);overflow:hidden;}
+    .sfy-faq summary{list-style:none;cursor:pointer;padding:17px 20px;font-size:.93rem;font-weight:700;color:#141a22;display:flex;justify-content:space-between;align-items:center;gap:14px;}
+    .sfy-faq summary::-webkit-details-marker{display:none;}
+    .sfy-faq summary::after{content:'+';font-size:1.25rem;font-weight:600;color:#1559cf;transition:transform .2s;flex:0 0 auto;}
+    .sfy-faq details[open] summary::after{transform:rotate(45deg);}
+    .sfy-faq details p{font-size:.86rem;color:#3c4a5e;line-height:1.65;margin:0;padding:0 20px 18px;}
+
+    /* ── STICKY DEAL BAR ── */
+    .deal-bar{position:fixed;left:0;right:0;bottom:0;z-index:900;background:rgba(10,22,40,.92);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.1);padding:11px 18px;display:flex;align-items:center;justify-content:center;gap:16px;transform:translateY(110%);transition:transform .3s ease;}
+    .deal-bar.show{transform:translateY(0);}
+    .deal-bar-text{font-size:.82rem;color:rgba(255,255,255,.85);font-weight:600;}
+    .deal-bar-text b{color:#fff;}
+    .deal-bar-text .db-star{color:#7fa8ff;}
+    .deal-bar button{background:#1559cf;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:.85rem;font-weight:700;font-family:var(--font);cursor:pointer;transition:background .18s;white-space:nowrap;}
+    .deal-bar button:hover{background:#2a6ae0;}
+    @media(max-width:560px){.deal-bar{gap:10px;padding:10px 12px;}.deal-bar-text{font-size:.74rem;}}
+    body.bar-visible .wa-float{transform:translateY(-62px);}
+    .wa-float{transition:transform .3s ease;}
+
+    /* ── SECTIONS ── */
+    .sfy-section{padding:52px 0 8px;}
+    .sfy-kicker{font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1559cf;margin:0 0 10px;display:flex;align-items:center;gap:10px;}
+    .sfy-kicker::before{content:'';width:26px;height:3px;border-radius:2px;background:#a8853b;}
+    .sfy-h2{font-family:var(--display);font-size:clamp(1.5rem,3.6vw,2.2rem);font-weight:700;color:#141a22;letter-spacing:-.01em;line-height:1.12;margin:0 0 12px;}
+    .sfy-lede{font-size:.95rem;color:#3c4a5e;line-height:1.7;margin:0 0 28px;max-width:60ch;}
+
     /* ── LEGAL ── */
-    .offer-legal{font-size:.72rem;color:#8a94a0;line-height:1.65;padding:28px 24px 40px;border-top:1px solid rgba(16,21,29,.07);max-width:900px;margin:0 auto;}
+    .offer-legal{font-size:.72rem;color:#8a94a0;line-height:1.65;padding:36px 24px 110px;border-top:1px solid rgba(16,21,29,.07);max-width:900px;margin:40px auto 0;}
     .offer-legal p{margin:0 0 12px;}
 
-    /* ── MODAL (shared pattern) ── */
-    .offer-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px;}
+    /* ── MODAL ── */
+    .offer-modal-bg{display:none;position:fixed;inset:0;background:rgba(5,10,20,.72);z-index:1000;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
     .offer-modal-bg.open{display:flex;}
-    .offer-modal{background:#fff;border-radius:22px;padding:28px 24px;width:100%;max-width:420px;position:relative;}
-    .offer-modal h3{font-size:1.05rem;font-weight:800;color:#141a22;margin:0 0 4px;}
-    .offer-modal .om-sub{font-size:.82rem;color:#5f6b7c;margin:0 0 20px;line-height:1.5;}
-    .offer-modal .om-field{margin-bottom:14px;}
+    .offer-modal{background:#fff;border-radius:24px;padding:30px 26px;width:100%;max-width:430px;position:relative;box-shadow:0 40px 90px -20px rgba(0,0,0,.5);}
+    .offer-modal h3{font-size:1.08rem;font-weight:800;color:#141a22;margin:0 0 4px;}
+    .offer-modal .om-pick{display:inline-block;font-size:.74rem;font-weight:700;color:#1559cf;background:rgba(21,89,207,.08);border-radius:999px;padding:5px 12px;margin:0 0 14px;}
+    .offer-modal .om-sub{font-size:.82rem;color:#5f6b7c;margin:0 0 18px;line-height:1.5;}
+    .offer-modal .om-field{margin-bottom:13px;}
     .offer-modal .om-field label{display:block;font-size:.78rem;font-weight:600;color:#44536a;margin-bottom:5px;}
-    .offer-modal .om-field input{width:100%;box-sizing:border-box;padding:11px 14px;border:1px solid rgba(16,21,29,.18);border-radius:10px;font-size:.9rem;font-family:var(--font);color:#141a22;background:#fafbfc;}
-    .offer-modal .om-field input:focus{outline:none;border-color:#1559cf;background:#fff;}
+    .offer-modal .om-field input{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid rgba(16,21,29,.18);border-radius:11px;font-size:.9rem;font-family:var(--font);color:#141a22;background:#fafbfc;}
+    .offer-modal .om-field input:focus{outline:none;border-color:#1559cf;background:#fff;box-shadow:0 0 0 3px rgba(21,89,207,.12);}
     .offer-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.2rem;color:#5f6b7c;cursor:pointer;line-height:1;}
     .offer-modal .om-legal{font-size:.68rem;color:#8a94a0;line-height:1.55;margin:14px 0 0;}
-    .om-success{display:none;text-align:center;padding:16px 0 8px;}
-    .om-success p{font-size:.95rem;font-weight:700;color:#1d6b40;margin:0 0 6px;}
+    .om-success{display:none;text-align:center;padding:18px 0 10px;}
+    .om-success p{font-size:.98rem;font-weight:700;color:#1d6b40;margin:0 0 6px;}
     .om-success span{font-size:.82rem;color:#5f6b7c;}
   </style>
 </head>
@@ -197,69 +259,108 @@
 
 <main>
 
-  <!-- HERO — placeholder image until Dan supplies real video/photos -->
-  <section class="offer-page-hero" aria-label="Sorted For A Year cinematic">
-    <img src="assets/colours/1series-alpine-white.jpg" alt="BMW 120 M Sport in Alpine White" class="offer-hero-img"/>
-    <!-- TODO: replace <img> above with a <video class="offer-hero-img" autoplay muted loop playsinline> once Dan supplies footage -->
-    <div class="offer-hero-overlay"></div>
-    <div class="offer-hero-content">
-      <div class="page">
-        <p class="offer-hero-eyebrow">Hedin Ruxley &middot; South East &middot; 1 &amp; 2 Series M Sport &middot; In stock</p>
-        <h1 class="offer-hero-title">SORTED<br>FOR A YEAR.</h1>
-        <p class="offer-hero-sub">Free 1st year&rsquo;s BMW Insurance. 3 years&rsquo; servicing included. On the new 1 Series and 2 Series M Sport.</p>
-        <a href="#offer-details" class="offer-hero-scroll">See the offer &darr;</a>
+  <!-- HERO -->
+  <section class="sfy-hero" aria-label="Sorted For A Year">
+    <div class="page">
+      <div class="sfy-hero-grid">
+        <div>
+          <p class="sfy-eyebrow"><span class="dot"></span>Hedin Ruxley &middot; In stock now</p>
+          <h1 class="sfy-title">SORTED<br>FOR A <em>YEAR.</em></h1>
+          <p class="sfy-sub">Pick your new 120 or 220 Gran Coup&eacute; M Sport. Choose from eight colours. Dan sorts your first year&rsquo;s BMW Insurance and three years&rsquo; servicing &mdash; on us&#42;.</p>
+          <div class="sfy-chip-row">
+            <span class="sfy-chip gold">&#9733; Year-1 insurance on us&#42;</span>
+            <span class="sfy-chip">3 years&rsquo; servicing&#42;</span>
+            <span class="sfy-chip">1 Series &pound;389/mo</span>
+            <span class="sfy-chip">2 Series &pound;399/mo</span>
+          </div>
+          <div class="sfy-hero-ctas">
+            <a class="sfy-btn" href="#build">Build yours &darr;</a>
+            <a class="sfy-btn-ghost" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20the%20Sorted%20For%20A%20Year%20offer" target="_blank" rel="noopener">WhatsApp Dan</a>
+          </div>
+        </div>
+        <div class="sfy-hero-car">
+          <!-- TODO: replace with real hero video when Dan supplies footage -->
+          <img src="assets/colours/1series-fire-red.jpg" alt="BMW 120 M Sport in Fire Red" width="1080" height="699" fetchpriority="high"/>
+          <span class="sfy-hero-caption">120 M Sport &middot; Fire Red</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <div class="offer-content-wrap" id="offer-details">
-    <div class="offer-inner">
+  <!-- TICKER -->
+  <div class="sfy-ticker" aria-hidden="true">
+    <div class="sfy-ticker-track">
+      <span>Free 1st year&rsquo;s insurance&#42; <b>&#10022;</b></span><span>3 years&rsquo; servicing&#42; <b>&#10022;</b></span><span>M Sport spec <b>&#10022;</b></span><span>8 colours <b>&#10022;</b></span><span>Parks itself <b>&#10022;</b></span><span>One month down <b>&#10022;</b></span><span>In stock now <b>&#10022;</b></span>
+      <span>Free 1st year&rsquo;s insurance&#42; <b>&#10022;</b></span><span>3 years&rsquo; servicing&#42; <b>&#10022;</b></span><span>M Sport spec <b>&#10022;</b></span><span>8 colours <b>&#10022;</b></span><span>Parks itself <b>&#10022;</b></span><span>One month down <b>&#10022;</b></span><span>In stock now <b>&#10022;</b></span>
+    </div>
+  </div>
 
-      <h2 class="offer-headline">Sorted for a year.</h2>
-      <p class="offer-sub-headline">Free 1st year&rsquo;s BMW Insurance &middot; 3 years&rsquo; servicing included &middot; M Sport, your choice of colour.</p>
+  <div class="page">
 
-      <p class="offer-intro">Two new BMWs, one straightforward deal: pick your 1 Series or 2 Series M Sport, choose your colour, and Dan sorts the insurance for year one and the servicing for the next three &mdash; on us&#42;.</p>
+    <!-- THE DEAL IN 10 SECONDS -->
+    <section class="sfy-section" aria-label="The deal at a glance">
+      <div class="sfy-stats">
+        <div class="sfy-stat reveal">
+          <p class="sfy-stat-num">&pound;389<small> / &pound;399</small></p>
+          <p class="sfy-stat-lbl">A month. 120 M Sport or 220 Gran Coup&eacute; M Sport. Brand new.</p>
+        </div>
+        <div class="sfy-stat reveal">
+          <p class="sfy-stat-num">1</p>
+          <p class="sfy-stat-lbl">Payment down in advance. Just one month&rsquo;s rental &mdash; not a &pound;2,000 deposit.</p>
+        </div>
+        <div class="sfy-stat reveal">
+          <p class="sfy-stat-num">12<small> months</small></p>
+          <p class="sfy-stat-lbl">Of BMW Insurance on us&#42;. The bit that usually stings &mdash; handled.</p>
+        </div>
+        <div class="sfy-stat reveal">
+          <p class="sfy-stat-num">3<small> years</small></p>
+          <p class="sfy-stat-lbl">Of servicing included&#42;. Book it in, hand over the keys, done.</p>
+        </div>
+      </div>
+    </section>
 
-      <ul class="offer-bullets">
-        <li>Free 1st year&rsquo;s BMW Insurance&#42; &mdash; subject to acceptance</li>
-        <li>3 years&rsquo; servicing included&#42;</li>
-        <li>Apple CarPlay &amp; Android Auto</li>
-        <li>Heated front seats</li>
-        <li>Rear-view camera</li>
-        <li>Alcantara interior</li>
-        <li>Parking Assist &mdash; the car parks itself</li>
-      </ul>
-
-      <!-- MODEL TOGGLE -->
-      <div class="model-toggle" role="tablist" aria-label="Choose a model">
-        <button class="model-toggle-btn active" id="toggle1series" onclick="switchModel('1series')" role="tab" aria-selected="true">1 Series</button>
-        <button class="model-toggle-btn" id="toggle2series" onclick="switchModel('2series')" role="tab" aria-selected="false">2 Series</button>
+    <!-- CONFIGURATOR -->
+    <section class="sfy-section" id="build">
+      <div class="section-head reveal">
+        <p class="sfy-kicker">Build yours</p>
+        <h2 class="sfy-h2">Two cars. Eight colours.<br>One very easy decision.</h2>
+        <p class="sfy-lede">Pick a model, tap a colour, register your interest &mdash; and Dan will call you back to sort the rest. No call centre. No scripts.</p>
       </div>
 
-      <!-- ── 1 SERIES PANEL ── -->
-      <div class="model-panel active" id="panel-1series">
-
-        <div class="colour-picker">
-          <p class="colour-picker-label">Choose your colour</p>
-          <div class="swatch-row">
-            <button class="swatch active" style="background:#f2f2f2;" data-img="assets/colours/1series-alpine-white.jpg" data-alt="BMW 120 M Sport in Alpine White" data-name="Alpine White" onclick="selectColour(this,'1series')" aria-label="Alpine White"></button>
-            <button class="swatch" style="background:#181818;" data-img="assets/colours/1series-black-sapphire.jpg" data-alt="BMW 120 M Sport in Black Sapphire" data-name="Black Sapphire" onclick="selectColour(this,'1series')" aria-label="Black Sapphire"></button>
-            <button class="swatch" style="background:#909598;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 120 M Sport in Skyscraper Grey" data-name="Skyscraper Grey" onclick="selectColour(this,'1series')" aria-label="Skyscraper Grey"></button>
-            <button class="swatch" style="background:#566069;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 120 M Sport in Brooklyn Grey — placeholder photo, real photo not yet supplied" data-name="Brooklyn Grey" data-placeholder="true" onclick="selectColour(this,'1series')" aria-label="Brooklyn Grey (photo not yet supplied)"></button>
-            <button class="swatch" style="background:#283e70;" data-img="assets/colours/1series-portimao-blue.jpg" data-alt="BMW 120 M Sport in Portimao Blue" data-name="Portimao Blue" onclick="selectColour(this,'1series')" aria-label="Portimao Blue"></button>
-            <button class="swatch" style="background:#2b1933;" data-img="assets/colours/1series-thundernight.jpg" data-alt="BMW 120 M Sport in Thundernight" data-name="Thundernight" onclick="selectColour(this,'1series')" aria-label="Thundernight"></button>
-            <button class="swatch" style="background:#384941;" data-img="assets/colours/1series-cape-york-green.jpg" data-alt="BMW 120 M Sport in Cape York Green" data-name="Cape York Green" onclick="selectColour(this,'1series')" aria-label="Cape York Green"></button>
-            <button class="swatch" style="background:#5d1016;" data-img="assets/colours/1series-fire-red.jpg" data-alt="BMW 120 M Sport in Fire Red" data-name="Fire Red" onclick="selectColour(this,'1series')" aria-label="Fire Red"></button>
+      <div class="sfy-config reveal">
+        <div class="sfy-config-head">
+          <div class="model-toggle" role="tablist" aria-label="Choose a model">
+            <button class="model-toggle-btn active" id="toggle1series" onclick="switchModel('1series')" role="tab" aria-selected="true">
+              <span class="mt-name">1 Series</span>
+              <span class="mt-price">120 M Sport &middot; &pound;389/mo</span>
+            </button>
+            <button class="model-toggle-btn" id="toggle2series" onclick="switchModel('2series')" role="tab" aria-selected="false">
+              <span class="mt-name">2 Series</span>
+              <span class="mt-price">220 Gran Coup&eacute; M Sport &middot; &pound;399/mo</span>
+            </button>
           </div>
-          <p style="font-size:.78rem;color:#5f6b7c;margin:10px 0 0;">Selected: <span class="swatch-name" id="colourName-1series" style="color:#141a22;">Alpine White</span> <span id="placeholderNote-1series"></span></p>
         </div>
 
-        <hr class="rep-divider"/>
-        <div class="rep-section">
-          <p class="rep-kicker">Representative offer &mdash; BMW 1 Series</p>
-          <div class="rep-card">
-            <img src="assets/colours/1series-alpine-white.jpg" alt="BMW 120 M Sport in Alpine White" class="rep-card-img" id="repImg-1series"/>
-            <div class="rep-card-body">
+        <!-- ── 1 SERIES PANEL ── -->
+        <div class="model-panel active" id="panel-1series">
+          <div class="sfy-config-body">
+            <div class="sfy-config-img">
+              <img src="assets/colours/1series-alpine-white.jpg" alt="BMW 120 M Sport in Alpine White" id="repImg-1series" width="1080" height="699"/>
+              <span class="shownin-pill" id="shownin-1series"></span>
+            </div>
+            <div class="sfy-config-detail">
+              <p class="colour-picker-label">Choose your colour</p>
+              <div class="swatch-row">
+                <button class="swatch active" style="background:#f2f2f2;" data-img="assets/colours/1series-alpine-white.jpg" data-alt="BMW 120 M Sport in Alpine White" data-name="Alpine White" onclick="selectColour(this,'1series')" aria-label="Alpine White"></button>
+                <button class="swatch" style="background:#181818;" data-img="assets/colours/1series-black-sapphire.jpg" data-alt="BMW 120 M Sport in Black Sapphire" data-name="Black Sapphire" onclick="selectColour(this,'1series')" aria-label="Black Sapphire"></button>
+                <button class="swatch" style="background:#909598;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 120 M Sport in Skyscraper Grey" data-name="Skyscraper Grey" onclick="selectColour(this,'1series')" aria-label="Skyscraper Grey"></button>
+                <button class="swatch" style="background:#566069;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 120 M Sport in Brooklyn Grey — shown in Skyscraper Grey" data-name="Brooklyn Grey" data-shownin="Skyscraper Grey" onclick="selectColour(this,'1series')" aria-label="Brooklyn Grey"></button>
+                <button class="swatch" style="background:#283e70;" data-img="assets/colours/1series-portimao-blue.jpg" data-alt="BMW 120 M Sport in Portimao Blue" data-name="Portimao Blue" onclick="selectColour(this,'1series')" aria-label="Portimao Blue"></button>
+                <button class="swatch" style="background:#2b1933;" data-img="assets/colours/1series-thundernight.jpg" data-alt="BMW 120 M Sport in Thundernight" data-name="Thundernight" onclick="selectColour(this,'1series')" aria-label="Thundernight"></button>
+                <button class="swatch" style="background:#384941;" data-img="assets/colours/1series-cape-york-green.jpg" data-alt="BMW 120 M Sport in Cape York Green" data-name="Cape York Green" onclick="selectColour(this,'1series')" aria-label="Cape York Green"></button>
+                <button class="swatch" style="background:#5d1016;" data-img="assets/colours/1series-fire-red.jpg" data-alt="BMW 120 M Sport in Fire Red" data-name="Fire Red" onclick="selectColour(this,'1series')" aria-label="Fire Red"></button>
+              </div>
+              <p class="swatch-selected">Selected: <b id="colourName-1series">Alpine White</b></p>
               <div class="rep-offer-label">BMW PCH &middot; Representative example</div>
               <div class="rep-offer-title">BMW 120 M Sport</div>
               <div class="rep-offer-note">Free 1st year&rsquo;s BMW Insurance&#42; and 3 years&rsquo; servicing&#42; included. Road fund licence included for the duration of the lease.</div>
@@ -274,32 +375,27 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ── 2 SERIES PANEL ── -->
-      <div class="model-panel" id="panel-2series">
-
-        <div class="colour-picker">
-          <p class="colour-picker-label">Choose your colour</p>
-          <div class="swatch-row">
-            <button class="swatch active" style="background:#f2f2f2;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Alpine White" data-name="Alpine White" onclick="selectColour(this,'2series')" aria-label="Alpine White"></button>
-            <button class="swatch" style="background:#181818;" data-img="assets/colours/1series-black-sapphire.jpg" data-alt="BMW 220 Gran Coupé M Sport in Black Sapphire — placeholder photo (1 Series shown)" data-name="Black Sapphire" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Black Sapphire"></button>
-            <button class="swatch" style="background:#909598;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 220 Gran Coupé M Sport in Skyscraper Grey — placeholder photo (1 Series shown)" data-name="Skyscraper Grey" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Skyscraper Grey"></button>
-            <button class="swatch" style="background:#566069;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 220 Gran Coupé M Sport in Brooklyn Grey — placeholder photo, real photo not yet supplied" data-name="Brooklyn Grey" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Brooklyn Grey (photo not yet supplied)"></button>
-            <button class="swatch" style="background:#283e70;" data-img="assets/colours/1series-portimao-blue.jpg" data-alt="BMW 220 Gran Coupé M Sport in Portimao Blue — placeholder photo (1 Series shown)" data-name="Portimao Blue" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Portimao Blue"></button>
-            <button class="swatch" style="background:#2b1933;" data-img="assets/colours/1series-thundernight.jpg" data-alt="BMW 220 Gran Coupé M Sport in Thundernight — placeholder photo (1 Series shown)" data-name="Thundernight" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Thundernight"></button>
-            <button class="swatch" style="background:#384941;" data-img="assets/colours/1series-cape-york-green.jpg" data-alt="BMW 220 Gran Coupé M Sport in Cape York Green — placeholder photo (1 Series shown)" data-name="Cape York Green" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Cape York Green"></button>
-            <button class="swatch" style="background:#5d1016;" data-img="assets/colours/1series-fire-red.jpg" data-alt="BMW 220 Gran Coupé M Sport in Fire Red — placeholder photo (1 Series shown)" data-name="Fire Red" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Fire Red"></button>
-          </div>
-          <p style="font-size:.78rem;color:#5f6b7c;margin:10px 0 0;">Selected: <span class="swatch-name" id="colourName-2series" style="color:#141a22;">Alpine White</span> <span id="placeholderNote-2series"></span></p>
-        </div>
-
-        <hr class="rep-divider"/>
-        <div class="rep-section">
-          <p class="rep-kicker">Representative offer &mdash; BMW 2 Series</p>
-          <div class="rep-card">
-            <img src="assets/colours/2series-reference-white.jpg" alt="BMW 220 Gran Coupé M Sport in Alpine White" class="rep-card-img" id="repImg-2series"/>
-            <div class="rep-card-body">
+        <!-- ── 2 SERIES PANEL ── -->
+        <div class="model-panel" id="panel-2series">
+          <div class="sfy-config-body">
+            <div class="sfy-config-img">
+              <img src="assets/colours/2series-reference-white.jpg" alt="BMW 220 Gran Coupé M Sport in Alpine White" id="repImg-2series" width="1080" height="780"/>
+              <span class="shownin-pill" id="shownin-2series"></span>
+            </div>
+            <div class="sfy-config-detail">
+              <p class="colour-picker-label">Choose your colour</p>
+              <div class="swatch-row">
+                <button class="swatch active" style="background:#f2f2f2;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Alpine White" data-name="Alpine White" onclick="selectColour(this,'2series')" aria-label="Alpine White"></button>
+                <button class="swatch" style="background:#181818;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Black Sapphire — shown in Alpine White" data-name="Black Sapphire" data-shownin="Alpine White" onclick="selectColour(this,'2series')" aria-label="Black Sapphire"></button>
+                <button class="swatch" style="background:#909598;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Skyscraper Grey — shown in Alpine White" data-name="Skyscraper Grey" data-shownin="Alpine White" onclick="selectColour(this,'2series')" aria-label="Skyscraper Grey"></button>
+                <button class="swatch" style="background:#566069;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Brooklyn Grey — shown in Alpine White" data-name="Brooklyn Grey" data-shownin="Alpine White" onclick="selectColour(this,'2series')" aria-label="Brooklyn Grey"></button>
+                <button class="swatch" style="background:#283e70;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Portimao Blue — shown in Alpine White" data-name="Portimao Blue" data-shownin="Alpine White" onclick="selectColour(this,'2series')" aria-label="Portimao Blue"></button>
+                <button class="swatch" style="background:#2b1933;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Thundernight — shown in Alpine White" data-name="Thundernight" data-shownin="Alpine White" onclick="selectColour(this,'2series')" aria-label="Thundernight"></button>
+                <button class="swatch" style="background:#384941;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Cape York Green — shown in Alpine White" data-name="Cape York Green" data-shownin="Alpine White" onclick="selectColour(this,'2series')" aria-label="Cape York Green"></button>
+                <button class="swatch" style="background:#5d1016;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Fire Red — shown in Alpine White" data-name="Fire Red" data-shownin="Alpine White" onclick="selectColour(this,'2series')" aria-label="Fire Red"></button>
+              </div>
+              <p class="swatch-selected">Selected: <b id="colourName-2series">Alpine White</b></p>
               <div class="rep-offer-label">BMW PCH &middot; Representative example</div>
               <div class="rep-offer-title">BMW 220 Gran Coup&eacute; M Sport</div>
               <div class="rep-offer-note">Free 1st year&rsquo;s BMW Insurance&#42; and 3 years&rsquo; servicing&#42; included. Road fund licence included for the duration of the lease.</div>
@@ -316,34 +412,125 @@
         </div>
       </div>
 
-      <p class="pcp-callout"><strong>Prefer to own it?</strong> PCP is also available on both models &mdash; 2.9% representative APR. Ask Dan for a personalised quote.</p>
+      <p class="pcp-callout reveal"><strong>Prefer to own it?</strong> PCP is also available on both models &mdash; 2.9% representative APR. Ask Dan for a personalised quote.</p>
+    </section>
 
-      <!-- WHAT'S INCLUDED (shared across both models) -->
-      <div class="included-section">
-        <p class="included-kicker">What&rsquo;s included</p>
-        <div class="included-grid">
-          <div class="included-card highlight"><span class="included-check">&#10003;</span><span class="included-text">Free 1st year&rsquo;s BMW Insurance&#42;</span></div>
-          <div class="included-card highlight"><span class="included-check">&#10003;</span><span class="included-text">3 years&rsquo; servicing included&#42;</span></div>
-          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Apple CarPlay &amp; Android Auto</span></div>
-          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Heated front seats</span></div>
-          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Rear-view camera</span></div>
-          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Alcantara interior</span></div>
-          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Parking Assist &mdash; parks itself</span></div>
+    <!-- WHAT'S INCLUDED -->
+    <section class="sfy-section" aria-label="What's included">
+      <div class="section-head reveal">
+        <p class="sfy-kicker">What&rsquo;s included</p>
+        <h2 class="sfy-h2">Not the stripped-out base car.<br>The one you actually want.</h2>
+      </div>
+      <div class="included-grid">
+        <div class="included-card highlight reveal">
+          <span class="included-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <div><p class="included-title">Free 1st year&rsquo;s BMW Insurance&#42;</p><p class="included-sub">Subject to acceptance. Dan checks your eligibility before you commit to anything.</p></div>
+        </div>
+        <div class="included-card highlight reveal">
+          <span class="included-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.5 4.5 0 00-6.4 6.4L3 18v3h3l5.3-5.3a4.5 4.5 0 006.4-6.4L14 13l-3-3 3.7-3.7z"/></svg></span>
+          <div><p class="included-title">3 years&rsquo; servicing included&#42;</p><p class="included-sub">Scheduled servicing covered for three years. Just book it in.</p></div>
+        </div>
+        <div class="included-card reveal">
+          <span class="included-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="10" y1="18.5" x2="14" y2="18.5"/></svg></span>
+          <div><p class="included-title">Apple CarPlay &amp; Android Auto</p><p class="included-sub">Your maps, music and messages on the big screen from day one.</p></div>
+        </div>
+        <div class="included-card reveal">
+          <span class="included-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg></span>
+          <div><p class="included-title">Heated front seats</p><p class="included-sub">Both of you, warm, before the end of the street. January solved.</p></div>
+        </div>
+        <div class="included-card reveal">
+          <span class="included-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+          <div><p class="included-title">Rear-view camera</p><p class="included-sub">See exactly what&rsquo;s behind you. Kerbed alloys become a memory.</p></div>
+        </div>
+        <div class="included-card reveal">
+          <span class="included-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2L12 3z"/></svg></span>
+          <div><p class="included-title">Alcantara interior</p><p class="included-sub">The M Sport cabin that makes every commute feel like an upgrade.</p></div>
+        </div>
+        <div class="included-card reveal">
+          <span class="included-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 16V8h3.5a2.5 2.5 0 010 5H9"/></svg></span>
+          <div><p class="included-title">Parking Assist</p><p class="included-sub">The car finds the space and parks itself. Genuinely. Ask Dan for a demo.</p></div>
         </div>
       </div>
+    </section>
 
-    </div><!-- end .offer-inner -->
+    <!-- HOW IT WORKS -->
+    <section class="sfy-section" aria-label="How it works">
+      <div class="section-head reveal">
+        <p class="sfy-kicker">How it works</p>
+        <h2 class="sfy-h2">From this page to your driveway<br>in three steps.</h2>
+      </div>
+      <div class="sfy-steps">
+        <div class="sfy-step reveal">
+          <p class="sfy-step-num">01</p>
+          <h3>Pick your car &amp; colour</h3>
+          <p>Choose 120 or 220 Gran Coup&eacute;, tap a colour, register your interest. Takes about a minute.</p>
+        </div>
+        <div class="sfy-step reveal">
+          <p class="sfy-step-num">02</p>
+          <h3>Dan calls you back</h3>
+          <p>Insurance eligibility&#42;, finance options, part-exchange &mdash; one straight conversation with Dan, not a call centre.</p>
+        </div>
+        <div class="sfy-step reveal">
+          <p class="sfy-step-num">03</p>
+          <h3>Drive away sorted</h3>
+          <p>Insured for year one&#42;. Serviced for three&#42;. Cars are in stock &mdash; no six-month factory wait.</p>
+        </div>
+      </div>
+    </section>
 
-    <div class="offer-legal">
-      <p>&#42;Free 1st year&rsquo;s BMW Insurance available on new BMW 1 Series and 2 Series M Sport models ordered through Hedin Automotive BMW Ruxley, subject to insurer acceptance and standard underwriting criteria (including but not limited to driver age, location, claims and driving history). Insurance is provided by BMW Insurance. Hedin Automotive Ltd acts as an insurance intermediary/introducer in connection with this offer and is not the insurer.</p>
-      <p>3 years&rsquo; servicing included on both models, subject to Hedin Automotive&rsquo;s standard service plan terms.</p>
-      <p>Finance subject to status. Available to UK residents aged 18 and over. Hedin Automotive Ltd is authorised and regulated by the Financial Conduct Authority as a credit broker, not a lender. BMW Financial Services (GB) Limited (FCA No. 312705) is the lender. Representative examples shown are Personal Contract Hire (PCH), a regulated consumer hire agreement, not consumer credit; no APR applies to PCH agreements. You do not own the vehicle and there is no option to purchase at the end of a PCH agreement.</p>
-      <p>BMW 1 Series representative example: initial rental &pound;389.00, followed by 47 monthly rentals of &pound;389.00, total amount payable &pound;18,672.00, 48 month term, 6,000 miles per annum. BMW 2 Series representative example: initial rental &pound;399.00, followed by 47 monthly rentals of &pound;399.00, total amount payable &pound;19,152.00, 48 month term, 6,000 miles per annum. Excess mileage charges apply on all agreements &mdash; rate available on request.</p>
-      <p>PCP (Personal Contract Purchase) is also available on both models, representative 2.9% APR. Written quotations available on request for both PCH and PCP.</p>
-      <p>Offers subject to availability and may be withdrawn or changed without notice. Prices correct at date of publication.</p>
-    </div>
+    <!-- DAN BAND -->
+    <section class="sfy-section" aria-label="A word from Dan">
+      <div class="sfy-dan reveal">
+        <img src="dan.jpg" alt="Dan, BMW Sales Executive at Hedin Ruxley"/>
+        <div class="sfy-dan-quote">
+          <p>&ldquo;Insurance is the bit that stings on a new car &mdash; especially year one. On these two, it&rsquo;s handled. One message and I&rsquo;ll get you covered. Literally.&rdquo;</p>
+          <span>Dan &middot; BMW Sales Executive, Hedin Ruxley</span>
+        </div>
+        <a class="sfy-btn" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20the%20Sorted%20For%20A%20Year%20offer" target="_blank" rel="noopener">Message Dan</a>
+      </div>
+    </section>
 
-  </div><!-- end .offer-content-wrap -->
+    <!-- FAQ -->
+    <section class="sfy-section" aria-label="Frequently asked questions">
+      <div class="section-head reveal">
+        <p class="sfy-kicker">Good questions</p>
+        <h2 class="sfy-h2">The things everyone asks.</h2>
+      </div>
+      <div class="sfy-faq reveal">
+        <details>
+          <summary>Who qualifies for the free first year&rsquo;s insurance?</summary>
+          <p>The insurance is provided by BMW Insurance and is subject to acceptance and standard underwriting &mdash; things like your age, address, and driving history. Dan checks your eligibility up front, before you commit to anything, so there are no surprises.</p>
+        </details>
+        <details>
+          <summary>What&rsquo;s the &ldquo;one payment down&rdquo; exactly?</summary>
+          <p>Your initial rental is simply one month&rsquo;s payment &mdash; &pound;389 on the 1 Series or &pound;399 on the 2 Series. Not a &pound;1,500&ndash;&pound;2,000 deposit like most new-car offers.</p>
+        </details>
+        <details>
+          <summary>Can I buy the car instead of leasing it?</summary>
+          <p>Yes &mdash; PCP is available on both models at 2.9% APR representative, so you can own it at the end if that suits you better. Ask Dan for a personalised quote and he&rsquo;ll show you both routes side by side.</p>
+        </details>
+        <details>
+          <summary>What does the 3 years&rsquo; servicing cover?</summary>
+          <p>Scheduled servicing for three years under Hedin Automotive&rsquo;s service plan. Dan will run through exactly what&rsquo;s included when you speak.</p>
+        </details>
+        <details>
+          <summary>How quickly could I be driving it?</summary>
+          <p>These cars are in stock at Ruxley &mdash; not factory orders. Once your finance and insurance are sorted, handover can be arranged in days, not months. Availability changes fast though, so register your interest early.</p>
+        </details>
+      </div>
+    </section>
+
+  </div><!-- /.page -->
+
+  <!-- LEGAL -->
+  <div class="offer-legal">
+    <p>&#42;Free 1st year&rsquo;s BMW Insurance available on new BMW 1 Series and 2 Series M Sport models ordered through Hedin Automotive BMW Ruxley, subject to insurer acceptance and standard underwriting criteria (including but not limited to driver age, location, claims and driving history). Insurance is provided by BMW Insurance. Hedin Automotive Ltd acts as an insurance intermediary/introducer in connection with this offer and is not the insurer.</p>
+    <p>3 years&rsquo; servicing included on both models, subject to Hedin Automotive&rsquo;s standard service plan terms.</p>
+    <p>Finance subject to status. Available to UK residents aged 18 and over. Hedin Automotive Ltd is authorised and regulated by the Financial Conduct Authority as a credit broker, not a lender. BMW Financial Services (GB) Limited (FCA No. 312705) is the lender. Representative examples shown are Personal Contract Hire (PCH), a regulated consumer hire agreement, not consumer credit; no APR applies to PCH agreements. You do not own the vehicle and there is no option to purchase at the end of a PCH agreement.</p>
+    <p>BMW 1 Series representative example: initial rental &pound;389.00, followed by 47 monthly rentals of &pound;389.00, total amount payable &pound;18,672.00, 48 month term, 6,000 miles per annum. BMW 2 Series representative example: initial rental &pound;399.00, followed by 47 monthly rentals of &pound;399.00, total amount payable &pound;19,152.00, 48 month term, 6,000 miles per annum. Excess mileage charges apply on all agreements &mdash; rate available on request.</p>
+    <p>PCP (Personal Contract Purchase) is also available on both models, representative 2.9% APR. Written quotations available on request for both PCH and PCP.</p>
+    <p>Vehicle images are for illustration. Where your chosen colour is not pictured, the image is labelled with the colour shown. Offers subject to availability and may be withdrawn or changed without notice. Prices correct at date of publication.</p>
+  </div>
 
 </main>
 
@@ -357,7 +544,7 @@
     <nav aria-label="Footer">
       <a href="step1.html">Find my BMW</a>
       <a href="EV.html">Electric BMWs</a>
-      <a href="index.html#offers" onclick="closeDrawer()">New Car Offers</a>
+      <a href="index.html#offers">New Car Offers</a>
       <a href="offers.html">Hot Used Cars</a>
       <a href="appraisal.html">Value my car</a>
       <a href="service.html">Car in for service?</a>
@@ -378,16 +565,23 @@
   <span>Chat with Dan</span>
 </a>
 
+<!-- STICKY DEAL BAR -->
+<div class="deal-bar" id="dealBar" aria-hidden="true">
+  <span class="deal-bar-text"><b>1 Series &pound;389</b> &middot; <b>2 Series &pound;399</b> a month &mdash; <span class="db-star">year-1 insurance on us&#42;</span></span>
+  <button onclick="openOfferModal(currentModel)">Register interest &rarr;</button>
+</div>
+
 <!-- INTEREST MODAL -->
 <div class="offer-modal-bg" id="offerModal" onclick="if(event.target===this)closeOfferModal()">
   <div class="offer-modal">
     <button class="offer-modal-close" onclick="closeOfferModal()" aria-label="Close">&#x2715;</button>
     <div id="omForm">
       <h3 id="omTitle">Register interest</h3>
-      <p class="om-sub">Dan will confirm availability and talk you through next steps. No pressure.</p>
-      <div class="om-field"><label>Full name *</label><input id="omName" type="text" placeholder="Your name"/></div>
-      <div class="om-field"><label>Mobile *</label><input id="omPhone" type="tel" placeholder="07..."/></div>
-      <div class="om-field"><label>Email *</label><input id="omEmail" type="email" placeholder="you@example.com"/></div>
+      <span class="om-pick" id="omPick">BMW 120 M Sport &middot; Alpine White</span>
+      <p class="om-sub">Dan will confirm availability, check your insurance eligibility&#42; and talk you through next steps. No pressure.</p>
+      <div class="om-field"><label>Full name *</label><input id="omName" type="text" placeholder="Your name" autocomplete="name"/></div>
+      <div class="om-field"><label>Mobile *</label><input id="omPhone" type="tel" placeholder="07..." autocomplete="tel"/></div>
+      <div class="om-field"><label>Email *</label><input id="omEmail" type="email" placeholder="you@example.com" autocomplete="email"/></div>
       <button onclick="submitInterest()" style="display:block;width:100%;margin-top:4px;padding:14px;background:#1559cf;color:#fff;font-weight:700;font-size:.95rem;border:none;border-radius:12px;cursor:pointer;font-family:var(--font);">Send to Dan &rarr;</button>
       <p class="om-legal">By submitting you agree Dan may contact you about this offer. Hedin Automotive Ltd is a credit broker, not a lender. Finance subject to status. 18s and over only.</p>
     </div>
@@ -419,6 +613,7 @@ function closeDrawer(){
 
 var currentModel='1series';
 var selectedColour={'1series':'Alpine White','2series':'Alpine White'};
+var MODEL_LABELS={'1series':'BMW 120 M Sport','2series':'BMW 220 Gran Coupé M Sport'};
 
 function switchModel(model){
   currentModel=model;
@@ -436,19 +631,26 @@ function selectColour(el,model){
   var name=el.getAttribute('data-name');
   var img=el.getAttribute('data-img');
   var altText=el.getAttribute('data-alt');
-  var isPlaceholder=el.getAttribute('data-placeholder')==='true';
+  var shownin=el.getAttribute('data-shownin')||'';
   selectedColour[model]=name;
   document.getElementById('colourName-'+model).textContent=name;
+  document.getElementById('shownin-'+model).textContent=shownin?('Shown in '+shownin):'';
   var repImg=document.getElementById('repImg-'+model);
-  repImg.src=img;
-  repImg.alt=altText;
-  document.getElementById('placeholderNote-'+model).textContent=isPlaceholder?'— photo is a placeholder, real shot to follow':'';
+  if(repImg.getAttribute('src')!==img){
+    repImg.classList.add('fading');
+    setTimeout(function(){
+      repImg.src=img;repImg.alt=altText;
+      repImg.classList.remove('fading');
+    },180);
+  }else{
+    repImg.alt=altText;
+  }
 }
 
 function openOfferModal(model){
   currentModel=model;
-  var label=model==='1series'?'BMW 120 M Sport':'BMW 220 Gran Coupé M Sport';
-  document.getElementById('omTitle').textContent='Register interest — '+label;
+  document.getElementById('omTitle').textContent='Register interest — '+MODEL_LABELS[model];
+  document.getElementById('omPick').textContent=MODEL_LABELS[model]+' · '+selectedColour[model];
   document.getElementById('omForm').style.display='block';
   document.getElementById('omSuccess').style.display='none';
   document.getElementById('offerModal').classList.add('open');
@@ -465,7 +667,7 @@ function submitInterest(){
   var e=document.getElementById('omEmail').value.trim();
   if(!n||!p||!e){alert('Please fill in all three fields so Dan can get back to you.');return;}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
-  var model=currentModel==='1series'?'BMW 120 M Sport':'BMW 220 Gran Coupé M Sport';
+  var model=MODEL_LABELS[currentModel];
   var monthly=currentModel==='1series'?'£389.00':'£399.00';
   var colour=selectedColour[currentModel];
   fetch('https://formspree.io/f/xqewleog',{
@@ -482,6 +684,22 @@ function submitInterest(){
     document.getElementById('omSuccess').style.display='block';
   });
 }
+
+// Scroll reveals (same pattern as index.html)
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// Sticky deal bar — appears after the hero, hidden near the very bottom legal/footer
+const dealBar=document.getElementById('dealBar');
+const heroEl=document.querySelector('.sfy-hero');
+window.addEventListener('scroll',()=>{
+  const past=window.scrollY>(heroEl.offsetHeight-80);
+  const nearBottom=(window.innerHeight+window.scrollY)>(document.body.offsetHeight-320);
+  const show=past&&!nearBottom;
+  dealBar.classList.toggle('show',show);
+  dealBar.setAttribute('aria-hidden',show?'false':'true');
+  document.body.classList.toggle('bar-visible',show);
+},{passive:true});
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeOfferModal();closeDrawer();}});
 </script>
