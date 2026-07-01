@@ -57,14 +57,24 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 .howto-box p{font-size:.82rem;line-height:1.55;color:#c8d0dd}
 .key{display:inline-block;background:#242b3a;border:1px solid #445;border-radius:4px;padding:1px 7px;font-family:'Courier New',monospace;font-weight:700;font-size:.78rem}
 
-/* Meeting */
-#meet-card{background:#12182a;border:3px solid #1c69d4;border-radius:14px;padding:18px;max-width:360px;width:94%;text-align:center;box-shadow:0 6px 0 #000}
-#meet-photo{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid #ffd24a;margin-bottom:8px;background:#223}
-#meet-name{font-weight:800;color:#ffd24a;font-size:.9rem;margin-bottom:8px;font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:1px}
-#meet-text{font-size:.88rem;line-height:1.55;color:#dde4ef;min-height:96px;text-align:left}
-#meet-dots{margin:10px 0 2px;color:#445;font-size:.8rem;letter-spacing:3px}
+/* Meeting — GTA cutscene style */
+#meet-screen{background:linear-gradient(rgba(6,8,14,.9),rgba(6,8,14,.96)),repeating-linear-gradient(135deg,#0e1522 0 24px,#0a0f19 24px 48px)}
+#meet-screen::before,#meet-screen::after{content:'';position:fixed;left:0;right:0;height:36px;background:#000;z-index:2;pointer-events:none}
+#meet-screen::before{top:0;border-bottom:2px solid rgba(255,210,74,.25)}
+#meet-screen::after{bottom:0;border-top:2px solid rgba(255,210,74,.25)}
+#meet-lvname{font-family:'Courier New',monospace;font-weight:900;font-style:italic;font-size:1.8rem;color:#ffd24a;text-transform:uppercase;letter-spacing:1px;text-shadow:3px 3px 0 #b3541e,5px 5px 0 #000;margin-bottom:24px;text-align:center;line-height:1.1}
+#meet-stage{display:flex;align-items:flex-start;max-width:440px;width:96%;cursor:pointer}
+#meet-polaroid{background:#f5f2ea;padding:7px 7px 4px;transform:rotate(-4deg);box-shadow:6px 8px 0 rgba(0,0,0,.6);flex-shrink:0;z-index:1}
+#meet-photo{width:112px;height:112px;object-fit:cover;display:block;background:#223;filter:saturate(.92) contrast(1.06)}
+#meet-name{font-family:'Courier New',monospace;font-weight:900;font-size:.6rem;color:#1a1a1a;text-transform:uppercase;text-align:center;padding:5px 2px 2px;letter-spacing:.4px;line-height:1.25;max-width:112px}
+#meet-bubble{position:relative;background:#fff;color:#141414;border:3px solid #141414;border-radius:16px;padding:14px 16px;margin-left:16px;margin-top:4px;font-size:.9rem;line-height:1.5;font-weight:600;min-height:132px;flex:1;box-shadow:5px 6px 0 rgba(0,0,0,.6)}
+#meet-bubble::before{content:'';position:absolute;left:-16px;top:32px;border:12px solid transparent;border-right-color:#141414}
+#meet-bubble::after{content:'';position:absolute;left:-10px;top:35px;border:9px solid transparent;border-right-color:#fff}
+#meet-cursor{animation:blink .65s infinite;font-weight:900}
+@keyframes blink{50%{opacity:0}}
+#meet-dots{margin:16px 0 2px;color:#3a4150;font-size:.8rem;letter-spacing:4px}
 #meet-dots .on{color:#ffd24a}
-#meet-lvname{font-family:'Courier New',monospace;color:#7fb2d9;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+#meet-tap{font-size:.68rem;color:#556077;letter-spacing:1.5px;text-transform:uppercase;margin-top:8px}
 
 /* ── HUD ─────────────────────────────────── */
 #hud{position:fixed;top:0;left:0;right:0;padding:8px 10px;z-index:50;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start}
@@ -90,7 +100,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 /* Context prompt + action button */
 #prompt{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.78);border:2px solid #ffd24a;color:#fff;padding:6px 16px;border-radius:18px;font-size:.82rem;font-weight:700;z-index:60;pointer-events:none;white-space:nowrap}
 #prompt.hidden{display:none}
-#act-btn{position:fixed;right:16px;bottom:calc(30px + env(safe-area-inset-bottom,0px));width:84px;height:84px;border-radius:50%;background:rgba(28,105,212,.92);border:3px solid #fff;color:#fff;font-size:1.7rem;font-weight:900;z-index:70;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,.6);touch-action:none}
+#act-btn{position:fixed;left:16px;bottom:calc(30px + env(safe-area-inset-bottom,0px));width:84px;height:84px;border-radius:50%;background:rgba(28,105,212,.92);border:3px solid #fff;color:#fff;font-size:1.7rem;font-weight:900;z-index:70;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,.6);touch-action:none}
 #act-btn.pressed,#act-btn:active{transform:scale(.93)}
 #act-btn.hidden{display:none}
 #act-btn.glow{background:rgba(201,138,27,.95);animation:actGlow .6s infinite alternate}
@@ -101,7 +111,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 #joy.hidden{display:none}
 #joy-base{position:absolute;width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.10);border:2px solid rgba(255,255,255,.28);display:none}
 #joy-knob{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.38);border:2px solid rgba(255,255,255,.55);display:none}
-#joy-hint{position:absolute;left:12px;bottom:calc(48px + env(safe-area-inset-bottom,0px));color:rgba(255,255,255,.55);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:2px dashed rgba(255,255,255,.3);border-radius:14px;padding:14px 18px}
+#joy-hint{position:absolute;right:12px;bottom:calc(48px + env(safe-area-inset-bottom,0px));color:rgba(255,255,255,.55);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:2px dashed rgba(255,255,255,.3);border-radius:14px;padding:14px 18px}
 
 /* Banners / toast */
 #toast{position:fixed;top:106px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);color:#fff;padding:7px 18px;border-radius:18px;font-size:.85rem;font-weight:600;z-index:300;transition:opacity .4s;white-space:nowrap;pointer-events:none;border:1px solid #ffffff2e}
@@ -193,11 +203,11 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
   <h1 class="logo" style="font-size:1.4rem">How to play</h1>
   <div class="howto-box">
     <h3>🕹️ Move</h3>
-    <p>Phone: drag the <b>left side</b> of the screen — a joystick appears. Desktop: <span class="key">WASD</span> or arrow keys.</p>
+    <p>Phone: drag the <b>right side</b> of the screen — a joystick appears under your thumb. Desktop: <span class="key">WASD</span> or arrow keys.</p>
     <h3>👋 Interact</h3>
-    <p>Walk up to anything and hit the <b>blue action button</b> (or <span class="key">E</span> / <span class="key">Space</span>). Talk to customers, use the coffee machine, shoo pigeons…</p>
+    <p>Walk up to anything and hit the <b>blue action button</b> (bottom-left) — or tap the left side of the screen, or press <span class="key">E</span> / <span class="key">Space</span>. Talk to customers, use the coffee machine, shoo pigeons…</p>
     <h3>🚗 Drive</h3>
-    <p>You can get in any forecourt car! Managers will ask you to <b>move cars between bays</b>, and hot customers may want a <b>test drive</b> round the block — hit every checkpoint and don't prang it.</p>
+    <p>You can get in any forecourt car! <b>Push the direction you want to go</b> — the car turns and follows. Managers will ask you to <b>move cars between bays</b>, and hot customers may want a <b>test drive</b> round the block — hit every checkpoint and don't prang it.</p>
     <h3>📊 Survive the day</h3>
     <p>⚡ Energy drains — refill at the <b>coffee machine</b>. 🚻 Bladder fills — use the <b>toilet</b>. 😤 Composure takes hits — recover on the <b>sofa</b>. Max one out = you crash and lose points.</p>
     <h3>🎯 Win</h3>
@@ -206,16 +216,16 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
   <button class="btn" id="howto-back">Back</button>
 </div>
 
-<!-- ═══ MEETING ═══ -->
+<!-- ═══ MEETING (GTA cutscene) ═══ -->
 <div id="meet-screen" class="screen hidden">
   <div id="meet-lvname"></div>
-  <div id="meet-card">
-    <img id="meet-photo" alt="">
-    <div id="meet-name"></div>
-    <div id="meet-text"></div>
-    <div id="meet-dots"></div>
-    <button class="btn" id="meet-next">Next</button>
+  <div id="meet-stage">
+    <div id="meet-polaroid"><img id="meet-photo" alt=""><div id="meet-name"></div></div>
+    <div id="meet-bubble"><span id="meet-text"></span><span id="meet-cursor">▌</span></div>
   </div>
+  <div id="meet-dots"></div>
+  <div id="meet-tap">tap to continue</div>
+  <button class="btn gold" id="meet-next">Next</button>
 </div>
 
 <!-- ═══ END OF DAY ═══ -->
@@ -915,14 +925,14 @@ function queueAct(){
 }
 
 // Unified pointer handling on the game canvas:
-//  left 55% of screen = joystick, right side = action, mouse click = action.
+//  right 55% of screen = joystick, left side = action, mouse click = action.
 //  Falls back to touch events where PointerEvent is unavailable.
 const joyPointers={};
 function gameDown(px,py,id,isMouse){
   if(ST!=='play'||R.popup)return;
   enableMobileUI();
   if(isMouse){ queueAct(); return; }
-  if(px<innerWidth*0.55){
+  if(px>innerWidth*0.45){
     if(joyPid===null){ joyPointers[id]=true; joyStart(px,py); }
   } else queueAct();
 }
@@ -987,19 +997,27 @@ function updatePlayer(dt){
 
 function updateDrive(dt,iv){
   const c=P.driving;
-  const fwd=-iv.y;                       // stick up = accelerate
+  // Screen-relative driving: push the direction you want to go —
+  // the car turns toward it and drives. Up = up, left = left, etc.
   if(R.popup){ c.v*=(1-2*dt); }
-  else{
-    if(fwd>0.1) c.v+=130*fwd*dt;
-    else if(fwd<-0.1) c.v-=150*(-fwd)*dt;
-    else c.v*=(1-1.6*dt);
+  else if(iv.m>0.12){
+    const ta=Math.atan2(iv.y,iv.x);
+    let da=ta-c.h;
+    while(da>Math.PI)da-=Math.PI*2;
+    while(da<-Math.PI)da+=Math.PI*2;
+    const turn=3.4*dt;
+    c.h+=clamp(da,-turn,turn);
+    // full throttle when facing the push direction, gentle while turning
+    const face=Math.max(0.18,Math.cos(da));
+    c.v+=155*iv.m*face*dt;
+  } else {
+    c.v*=(1-2.2*dt);
   }
-  c.v=clamp(c.v,-55,155);
+  c.v=clamp(c.v,-40,155);
   // grass slows you
   const onGrass=c.x<16||c.x>WORLD_W-16||c.y<16||c.y>WORLD_H-16;
   if(onGrass)c.v*=(1-2.5*dt);
   if(Math.abs(c.v)>2){
-    c.h+=iv.x*2.3*dt*clamp(c.v/70,-1,1);
     const ox=c.x, oy=c.y;
     c.x+=Math.cos(c.h)*c.v*dt;
     c.y+=Math.sin(c.h)*c.v*dt;
@@ -1953,23 +1971,42 @@ function startMeeting(lv){
   document.getElementById('meet-screen').classList.remove('hidden');
   showMeet();
 }
+let typeTimer=null;
 function showMeet(){
   const arr=MEETINGS[MEET.lv], m=arr[MEET.i];
   document.getElementById('meet-photo').src=m.ph;
   document.getElementById('meet-name').textContent=m.sp;
-  document.getElementById('meet-text').textContent=m.tx;
   document.getElementById('meet-dots').innerHTML=arr.map((_,i)=>'<span'+(i===MEET.i?' class="on"':'')+'>●</span>').join(' ');
   document.getElementById('meet-next').textContent=MEET.i<arr.length-1?'Next':'Start the day →';
+  // typewriter
+  const el=document.getElementById('meet-text'), cur=document.getElementById('meet-cursor');
+  if(typeTimer){ clearInterval(typeTimer); typeTimer=null; }
+  el.textContent=''; cur.style.display='';
+  let i=0;
+  typeTimer=setInterval(()=>{
+    i+=2;
+    el.textContent=m.tx.slice(0,i);
+    if(i>=m.tx.length){ clearInterval(typeTimer); typeTimer=null; cur.style.display='none'; }
+  },16);
 }
-document.getElementById('meet-next').onclick=()=>{
-  const arr=MEETINGS[MEET.lv];
+function advanceMeet(){
+  const arr=MEETINGS[MEET.lv], m=arr[MEET.i];
+  // first tap finishes the typewriter, second advances
+  if(typeTimer){
+    clearInterval(typeTimer); typeTimer=null;
+    document.getElementById('meet-text').textContent=m.tx;
+    document.getElementById('meet-cursor').style.display='none';
+    return;
+  }
   MEET.i++;
   if(MEET.i<arr.length)showMeet();
   else{
     document.getElementById('meet-screen').classList.add('hidden');
     beginPlay(MEET.lv);
   }
-};
+}
+document.getElementById('meet-next').onclick=e=>{ e.stopPropagation(); advanceMeet(); };
+document.getElementById('meet-stage').onclick=advanceMeet;
 function beginPlay(lv){
   initRun(lv);
   ST='play';
