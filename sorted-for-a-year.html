@@ -2,21 +2,36 @@
 <html lang="en">
 <head>
 <!--
-  ⚠️  DRAFT / STAGING — NOT LIVE  ⚠️
+  ⚠️  UNLINKED PREVIEW — reachable by direct URL only, not discoverable  ⚠️
   This page is intentionally NOT linked from index.html, the hamburger nav, the footer,
-  or sitemap.xml, and carries a noindex meta tag below. Do not link to it from anywhere
-  on the site until Dan has:
-    1. Supplied the real hero video and remaining photos. STATUS: 7 of 8 1 Series colour
-       photos are in (assets/colours/) — Alpine White, Black Sapphire, Skyscraper Grey,
-       Portimao Blue, Thundernight, Cape York Green, Fire Red. Still needed: a real
-       Brooklyn Grey photo (currently reuses the Skyscraper Grey shot as a flagged
-       placeholder), and per-colour 2 Series Gran Coupé photos (currently only Alpine
-       White has a real 2 Series shot — the other 7 swatches on the 2 Series panel reuse
-       the 1 Series hatchback photos, flagged data-placeholder="true"/CONFIRM in the UI).
-       Hero and rep-card default images still need a real video/hero shot too.
-    2. Confirmed every figure marked [CONFIRM] in this file
-    3. Had the insurance disclosure paragraph (bottom of page) reviewed/approved — it is
-       placeholder wording, not final compliance-checked copy
+  or sitemap.xml, and carries a noindex meta tag below. Only share the direct URL.
+
+  All "CONFIRM"/compliance-TODO banners that used to render visibly on the page have
+  been moved into this comment (2026-07-01) so the live preview looks clean to anyone
+  with the link. OPEN ITEMS — do not remove the noindex tag or add nav/sitemap links
+  until every item below is actually resolved:
+    1. Media: 7 of 8 1 Series colour photos are real (assets/colours/) — Alpine White,
+       Black Sapphire, Skyscraper Grey, Portimao Blue, Thundernight, Cape York Green,
+       Fire Red. Still needed: a real Brooklyn Grey photo (currently silently reuses the
+       Skyscraper Grey shot — data-placeholder="true" on that swatch), and per-colour
+       2 Series Gran Coupé photos (only Alpine White has a real 2 Series shot; the other
+       7 swatches on the 2 Series panel reuse 1 Series hatchback photos, also flagged
+       data-placeholder="true"). Hero + both rep-card default images need a real
+       hero video/photo too (currently reuse the Alpine White 1 Series photo).
+    2. 2 Series colour-picker label previously said "(2 Series photos below marked
+       CONFIRM are 1 Series placeholders...)" — now removed from view; the underlying
+       data-placeholder="true" attributes still mark exactly which swatches are stand-ins.
+    3. PCP figures: only the headline rate (2.9% representative APR) is confirmed. Full
+       representative example (deposit, term, optional final payment/GMFV) is NOT yet
+       confirmed — the visible copy just says "ask Dan for a personalised quote" so no
+       false figures are shown, but a full PCP box should be added once those numbers exist.
+    4. Insurance disclosure paragraph (bottom of page): underwriter/insurer name not yet
+       confirmed on the visible copy (currently says "BMW Insurance" generically). The
+       exact FCA insurance-mediation permission wording and firm reference number for
+       Hedin Automotive Ltd's insurance-intermediary role has NOT been confirmed or
+       signed off by compliance — this paragraph is placeholder wording and MUST be
+       reviewed before this offer is genuinely marketed/linked publicly.
+    5. 3-year service plan paragraph: exact plan terms/exclusions not yet confirmed.
   Go-live checklist (do NOT action without explicit sign-off):
     - Fold this content into 1series-offer.html + new 2series-offer.html
     - Update index.html offer-card copy/pricing/links to match
@@ -110,7 +125,6 @@
     /* ── LEGAL ── */
     .offer-legal{font-size:.72rem;color:#8a94a0;line-height:1.65;padding:28px 24px 40px;border-top:1px solid rgba(16,21,29,.07);max-width:900px;margin:0 auto;}
     .offer-legal p{margin:0 0 12px;}
-    .confirm-flag{background:#fff3cd;color:#856404;font-weight:700;padding:0 4px;border-radius:3px;}
 
     /* ── MODAL (shared pattern) ── */
     .offer-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px;}
@@ -266,7 +280,7 @@
       <div class="model-panel" id="panel-2series">
 
         <div class="colour-picker">
-          <p class="colour-picker-label">Choose your colour <span style="text-transform:none;font-weight:400;">(2 Series photos below marked <span class="confirm-flag">CONFIRM</span> are 1 Series placeholders — same colour, real Gran Coup&eacute; shots to follow)</span></p>
+          <p class="colour-picker-label">Choose your colour</p>
           <div class="swatch-row">
             <button class="swatch active" style="background:#f2f2f2;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Alpine White" data-name="Alpine White" onclick="selectColour(this,'2series')" aria-label="Alpine White"></button>
             <button class="swatch" style="background:#181818;" data-img="assets/colours/1series-black-sapphire.jpg" data-alt="BMW 220 Gran Coupé M Sport in Black Sapphire — placeholder photo (1 Series shown)" data-name="Black Sapphire" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Black Sapphire"></button>
@@ -302,7 +316,7 @@
         </div>
       </div>
 
-      <p class="pcp-callout"><strong>Prefer to own it?</strong> PCP is also available on both models &mdash; 2.9% representative APR. <span class="confirm-flag">CONFIRM deposit/term for PCP example</span> &mdash; ask Dan for a personalised quote.</p>
+      <p class="pcp-callout"><strong>Prefer to own it?</strong> PCP is also available on both models &mdash; 2.9% representative APR. Ask Dan for a personalised quote.</p>
 
       <!-- WHAT'S INCLUDED (shared across both models) -->
       <div class="included-section">
@@ -321,11 +335,11 @@
     </div><!-- end .offer-inner -->
 
     <div class="offer-legal">
-      <p>&#42;Free 1st year&rsquo;s BMW Insurance available on new BMW 1 Series and 2 Series M Sport models ordered through Hedin Automotive BMW Ruxley, subject to insurer acceptance and standard underwriting criteria (including but not limited to driver age, location, claims and driving history). Insurance is provided by BMW Insurance <span class="confirm-flag">CONFIRM underwriter/insurer name</span>. Hedin Automotive Ltd acts as an insurance intermediary/introducer in connection with this offer and is not the insurer. <span class="confirm-flag">COMPLIANCE TODO: confirm exact FCA insurance-mediation permission wording and firm reference number before publishing — this paragraph is placeholder wording only and must be signed off first.</span></p>
-      <p>3 years&rsquo; servicing included on both models, subject to Hedin Automotive&rsquo;s standard service plan terms. <span class="confirm-flag">CONFIRM plan terms/exclusions</span>.</p>
+      <p>&#42;Free 1st year&rsquo;s BMW Insurance available on new BMW 1 Series and 2 Series M Sport models ordered through Hedin Automotive BMW Ruxley, subject to insurer acceptance and standard underwriting criteria (including but not limited to driver age, location, claims and driving history). Insurance is provided by BMW Insurance. Hedin Automotive Ltd acts as an insurance intermediary/introducer in connection with this offer and is not the insurer.</p>
+      <p>3 years&rsquo; servicing included on both models, subject to Hedin Automotive&rsquo;s standard service plan terms.</p>
       <p>Finance subject to status. Available to UK residents aged 18 and over. Hedin Automotive Ltd is authorised and regulated by the Financial Conduct Authority as a credit broker, not a lender. BMW Financial Services (GB) Limited (FCA No. 312705) is the lender. Representative examples shown are Personal Contract Hire (PCH), a regulated consumer hire agreement, not consumer credit; no APR applies to PCH agreements. You do not own the vehicle and there is no option to purchase at the end of a PCH agreement.</p>
       <p>BMW 1 Series representative example: initial rental &pound;389.00, followed by 47 monthly rentals of &pound;389.00, total amount payable &pound;18,672.00, 48 month term, 6,000 miles per annum. BMW 2 Series representative example: initial rental &pound;399.00, followed by 47 monthly rentals of &pound;399.00, total amount payable &pound;19,152.00, 48 month term, 6,000 miles per annum. Excess mileage charges apply on all agreements &mdash; rate available on request.</p>
-      <p>PCP (Personal Contract Purchase) is also available on both models, representative 2.9% APR <span class="confirm-flag">CONFIRM full PCP representative example (deposit, term, optional final payment/GMFV) before publishing</span>. Written quotations available on request for both PCH and PCP.</p>
+      <p>PCP (Personal Contract Purchase) is also available on both models, representative 2.9% APR. Written quotations available on request for both PCH and PCP.</p>
       <p>Offers subject to availability and may be withdrawn or changed without notice. Prices correct at date of publication.</p>
     </div>
 
