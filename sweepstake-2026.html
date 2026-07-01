@@ -307,10 +307,10 @@ function canon(s){
 }
 
 // ── DRAW DATA ─────────────────────────────────────────────────────────────
-// Teams confirmed eliminated at the group stage (no KO match to detect).
-// Add team canonical names here as each group stage elimination is confirmed.
+// Manual fallback for any team the auto-detection misses (e.g. before the
+// R32 fixture list appears in the API). Add canonical team names as needed.
 const GROUP_EXITS=new Set([
-  "germany" // eliminated 29 Jun 2026 — failed to advance from group stage
+  // example: "germany"
 ]);
 
 const T=(name,c)=>({name,c,status:"alive",w:0,d:0,l:0,gf:0,ga:0});
@@ -351,12 +351,16 @@ function normalizeMatch(m,src){
     status:(m.status||"").toLowerCase(),
     homeScore:m.score?.fullTime?.home??null,
     awayScore:m.score?.fullTime?.away??null,
+    penaltyHome:m.score?.penalties?.home??null,
+    penaltyAway:m.score?.penalties?.away??null,
     homeTeam:m.homeTeam?.name||"",awayTeam:m.awayTeam?.name||"",
     stage:m.stage||m.group||""
   };
   return{
     status:(m.status||"").toLowerCase(),
     homeScore:m.homeScore??null,awayScore:m.awayScore??null,
+    penaltyHome:m.penalties?.home??null,
+    penaltyAway:m.penalties?.away??null,
     homeTeam:m.homeTeam||"",awayTeam:m.awayTeam||"",
     stage:m.stage||m.stageNormalized||""
   };
@@ -383,6 +387,11 @@ function applyMatches(matches,src){
     } else {
       if(ht){ht.d++;ht.gf+=hs;ht.ga+=as;}
       if(at){at.d++;at.gf+=as;at.ga+=hs;}
+      // Penalty shootout in KO round — draw stands but one side is eliminated
+      if(ko&&m.penaltyHome!==null&&m.penaltyAway!==null){
+        if(m.penaltyHome<m.penaltyAway&&ht){ht.status="out";ht.w=0;ht.d=0;ht.l=0;ht.gf=0;ht.ga=0;}
+        if(m.penaltyAway<m.penaltyHome&&at){at.status="out";at.w=0;at.d=0;at.l=0;at.gf=0;at.ga=0;}
+      }
     }
   });
   // Auto-detect group exits: any sweepstake team absent from ALL KO-round
@@ -580,7 +589,7 @@ function buildShareText(){
   const totalMatches=el("hMatches").textContent;
   const totalGoals=el("hGoals").textContent;
   const summary=`${totalAlive} teams still in · ${totalMatches} matches played · ${totalGoals} goals`;
-  return `A little fun. ⚽ Hedin Ruxley World Cup Sweepstake 2026\nSnapshot as at ${now} — ${summary}\n\n${lines.join("\n")}\n\nFull leaderboard: dan-sells.co.uk/sweepstake-2026.html`;
+  return `⚽ Hedin Ruxley World Cup Sweepstake 2026\nhttps://dan-sells.co.uk/sweepstake-2026.html\n\nSnapshot as at ${now} — ${summary}\n\n${lines.join("\n")}`;
 }
 
 function shareSnapshot(){
