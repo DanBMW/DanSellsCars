@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  ⚠️  UNLINKED PREVIEW — reachable by direct URL only, not discoverable  ⚠️
+  This page is intentionally NOT linked from index.html, the hamburger nav, the footer,
+  or sitemap.xml, and carries a noindex meta tag below. Only share the direct URL.
+
+  All "CONFIRM"/compliance-TODO banners that used to render visibly on the page have
+  been moved into this comment (2026-07-01) so the live preview looks clean to anyone
+  with the link. OPEN ITEMS — do not remove the noindex tag or add nav/sitemap links
+  until every item below is actually resolved:
+    1. Media: 7 of 8 1 Series colour photos are real (assets/colours/) — Alpine White,
+       Black Sapphire, Skyscraper Grey, Portimao Blue, Thundernight, Cape York Green,
+       Fire Red. Still needed: a real Brooklyn Grey photo (currently silently reuses the
+       Skyscraper Grey shot — data-placeholder="true" on that swatch), and per-colour
+       2 Series Gran Coupé photos (only Alpine White has a real 2 Series shot; the other
+       7 swatches on the 2 Series panel reuse 1 Series hatchback photos, also flagged
+       data-placeholder="true"). Hero + both rep-card default images need a real
+       hero video/photo too (currently reuse the Alpine White 1 Series photo).
+    2. 2 Series colour-picker label previously said "(2 Series photos below marked
+       CONFIRM are 1 Series placeholders...)" — now removed from view; the underlying
+       data-placeholder="true" attributes still mark exactly which swatches are stand-ins.
+    3. PCP figures: only the headline rate (2.9% representative APR) is confirmed. Full
+       representative example (deposit, term, optional final payment/GMFV) is NOT yet
+       confirmed — the visible copy just says "ask Dan for a personalised quote" so no
+       false figures are shown, but a full PCP box should be added once those numbers exist.
+    4. Insurance disclosure paragraph (bottom of page): underwriter/insurer name not yet
+       confirmed on the visible copy (currently says "BMW Insurance" generically). The
+       exact FCA insurance-mediation permission wording and firm reference number for
+       Hedin Automotive Ltd's insurance-intermediary role has NOT been confirmed or
+       signed off by compliance — this paragraph is placeholder wording and MUST be
+       reviewed before this offer is genuinely marketed/linked publicly.
+    5. 3-year service plan paragraph: exact plan terms/exclusions not yet confirmed.
+  Go-live checklist (do NOT action without explicit sign-off):
+    - Fold this content into 1series-offer.html + new 2series-offer.html
+    - Update index.html offer-card copy/pricing/links to match
+    - Add both URLs to sitemap.xml
+    - Remove the noindex meta tag below
+-->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="robots" content="noindex,nofollow"/>
+  <title>Sorted For A Year — BMW 1 &amp; 2 Series M Sport Offer | Dan at Hedin Ruxley</title>
+  <meta name="description" content="Free 1st year's BMW Insurance and 3 years servicing included on the new BMW 1 Series and 2 Series M Sport. In stock at Hedin Ruxley."/>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XZL1RF6SV6');
+  </script>
+  <style>
+    /* ── OFFER PAGE LAYOUT (matches 1series-offer.html convention) ── */
+    .offer-page-hero{position:relative;width:100%;height:100svh;min-height:520px;max-height:820px;overflow:hidden;display:flex;align-items:flex-end;}
+    .offer-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;}
+    .offer-hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.18) 0%,rgba(0,0,0,.55) 100%);}
+    .offer-hero-content{position:relative;z-index:2;width:100%;padding:0 0 60px;}
+    .offer-hero-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:12px;}
+    .offer-hero-title{font-family:var(--display);font-size:clamp(2.6rem,8vw,5.2rem);font-weight:700;letter-spacing:-.02em;line-height:.98;color:#fff;margin:0 0 16px;}
+    .offer-hero-sub{font-size:clamp(.9rem,2vw,1.1rem);font-weight:600;color:rgba(255,255,255,.85);margin:0;max-width:46ch;line-height:1.5;}
+    .offer-hero-scroll{display:inline-flex;align-items:center;gap:8px;margin-top:32px;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:9px 18px;backdrop-filter:blur(6px);transition:background .18s,color .18s;}
+    .offer-hero-scroll:hover{background:rgba(255,255,255,.15);color:#fff;}
+
+    /* ── MAIN CONTENT ── */
+    .offer-content-wrap{background:#fff;padding:64px 0 0;}
+    .offer-inner{max-width:900px;margin:0 auto;padding:0 24px;}
+    .offer-headline{font-family:var(--display);font-size:clamp(1.6rem,4vw,2.5rem);font-weight:700;color:#141a22;letter-spacing:-.01em;line-height:1.1;margin:0 0 8px;}
+    .offer-sub-headline{font-size:.95rem;font-weight:600;letter-spacing:.02em;color:#5f6b7c;margin:0 0 28px;line-height:1.5;}
+    .offer-intro{font-size:.97rem;color:#3c4a5e;line-height:1.75;margin:0 0 12px;}
+    .offer-bullets{list-style:none;padding:0;margin:0 0 32px;}
+    .offer-bullets li{font-size:.95rem;color:#2d3748;line-height:1.65;padding:4px 0 4px 20px;position:relative;}
+    .offer-bullets li::before{content:'•';position:absolute;left:0;color:#1559cf;font-weight:700;}
+
+    /* ── MODEL TOGGLE ── */
+    .model-toggle{display:inline-flex;gap:4px;background:rgba(16,21,29,.05);border-radius:999px;padding:4px;margin:0 0 28px;}
+    .model-toggle-btn{border:none;background:transparent;padding:10px 24px;border-radius:999px;font-family:var(--font);font-size:.88rem;font-weight:700;color:#5f6b7c;cursor:pointer;transition:background .18s,color .18s;}
+    .model-toggle-btn.active{background:#1559cf;color:#fff;}
+
+    .model-panel{display:none;}
+    .model-panel.active{display:block;}
+
+    /* ── COLOUR SWATCHER ── */
+    .colour-picker{margin:0 0 28px;}
+    .colour-picker-label{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5f6b7c;margin:0 0 10px;}
+    .swatch-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+    .swatch{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(16,21,29,.12);transition:border-color .18s,transform .18s;}
+    .swatch.active{border-color:#1559cf;transform:scale(1.12);}
+    .swatch-name{font-size:.85rem;font-weight:700;color:#141a22;margin-left:4px;}
+
+    /* ── FEATURE GRID (shared, both models) ── */
+    .included-section{margin:8px 0 48px;}
+    .included-kicker{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1559cf;margin:0 0 12px;}
+    .included-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;}
+    .included-card{display:flex;align-items:flex-start;gap:10px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.08);border-radius:14px;padding:14px 16px;}
+    .included-check{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:#1559cf;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;margin-top:1px;}
+    .included-text{font-size:.87rem;font-weight:600;color:#2d3748;line-height:1.4;}
+    .included-card.highlight{background:rgba(21,89,207,.06);border-color:rgba(21,89,207,.2);}
+
+    /* ── REPRESENTATIVE OFFER ── */
+    .rep-divider{border:none;border-top:1px solid rgba(16,21,29,.1);margin:0 0 40px;}
+    .rep-section{padding-bottom:24px;}
+    .rep-kicker{font-size:clamp(1.1rem,3.2vw,1.5rem);font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#141a22;margin:0 0 20px;}
+    .rep-card{display:flex;flex-direction:column;gap:0;border:1px solid rgba(16,21,29,.1);border-radius:20px;overflow:hidden;}
+    @media(min-width:620px){.rep-card{flex-direction:row;}}
+    .rep-card-img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:center;}
+    @media(min-width:620px){.rep-card-img{width:42%;aspect-ratio:auto;}}
+    .rep-card-body{flex:1;padding:28px 24px;}
+    .rep-offer-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1559cf;margin:0 0 6px;}
+    .rep-offer-title{font-size:1.05rem;font-weight:800;color:#141a22;margin:0 0 6px;}
+    .rep-offer-note{font-size:.82rem;color:#5f6b7c;margin:0 0 20px;line-height:1.5;}
+    .rep-figures{border-top:1px solid rgba(16,21,29,.08);padding-top:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+    .rep-fig-row{display:flex;justify-content:space-between;align-items:baseline;font-size:.88rem;}
+    .rep-fig-label{color:#5f6b7c;}
+    .rep-fig-value{font-weight:700;color:#141a22;font-size:.95rem;}
+    .rep-fig-value.big{font-size:1.2rem;color:#1559cf;}
+    .rep-view-btn{display:inline-block;background:#1559cf;color:#fff;font-weight:700;font-size:.88rem;padding:12px 22px;border-radius:11px;text-decoration:none;border:none;cursor:pointer;transition:background .18s;width:100%;text-align:center;box-sizing:border-box;}
+    .rep-view-btn:hover{background:#0e3f96;}
+
+    /* ── PCP CALLOUT ── */
+    .pcp-callout{background:rgba(16,21,29,.03);border:1px dashed rgba(16,21,29,.18);border-radius:14px;padding:16px 18px;font-size:.85rem;color:#3c4a5e;line-height:1.6;margin:0 0 48px;}
+    .pcp-callout strong{color:#141a22;}
+
+    /* ── LEGAL ── */
+    .offer-legal{font-size:.72rem;color:#8a94a0;line-height:1.65;padding:28px 24px 40px;border-top:1px solid rgba(16,21,29,.07);max-width:900px;margin:0 auto;}
+    .offer-legal p{margin:0 0 12px;}
+
+    /* ── MODAL (shared pattern) ── */
+    .offer-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px;}
+    .offer-modal-bg.open{display:flex;}
+    .offer-modal{background:#fff;border-radius:22px;padding:28px 24px;width:100%;max-width:420px;position:relative;}
+    .offer-modal h3{font-size:1.05rem;font-weight:800;color:#141a22;margin:0 0 4px;}
+    .offer-modal .om-sub{font-size:.82rem;color:#5f6b7c;margin:0 0 20px;line-height:1.5;}
+    .offer-modal .om-field{margin-bottom:14px;}
+    .offer-modal .om-field label{display:block;font-size:.78rem;font-weight:600;color:#44536a;margin-bottom:5px;}
+    .offer-modal .om-field input{width:100%;box-sizing:border-box;padding:11px 14px;border:1px solid rgba(16,21,29,.18);border-radius:10px;font-size:.9rem;font-family:var(--font);color:#141a22;background:#fafbfc;}
+    .offer-modal .om-field input:focus{outline:none;border-color:#1559cf;background:#fff;}
+    .offer-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.2rem;color:#5f6b7c;cursor:pointer;line-height:1;}
+    .offer-modal .om-legal{font-size:.68rem;color:#8a94a0;line-height:1.55;margin:14px 0 0;}
+    .om-success{display:none;text-align:center;padding:16px 0 8px;}
+    .om-success p{font-size:.95rem;font-weight:700;color:#1d6b40;margin:0 0 6px;}
+    .om-success span{font-size:.82rem;color:#5f6b7c;}
+  </style>
+</head>
+<body class="has-video-hero">
+
+<header class="site-header" id="siteHeader">
+  <div class="site-header-inner">
+    <a class="site-logo" href="index.html">DanSells</a>
+    <div class="nav-actions">
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="Dan on Instagram" class="nav-icon-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20the%20Sorted%20For%20A%20Year%20offer" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" class="nav-icon-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+      <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false" id="navToggle" onclick="openDrawer()">
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="0" y1="1" x2="22" y2="1"/>
+          <line x1="0" y1="8" x2="22" y2="8"/>
+          <line x1="0" y1="15" x2="22" y2="15"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- NAV DRAWER (standard site nav — this page is deliberately not added to it) -->
+<div class="nav-drawer" id="navDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <div class="nav-drawer-inner">
+    <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <p class="drawer-brand">DanSells</p>
+    <nav class="drawer-nav" aria-label="Main navigation">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric BMWs</a>
+      <a href="index.html#offers" onclick="closeDrawer()">New Car Offers</a>
+      <a href="offers.html">Hot Used Cars</a>
+      <a href="appraisal.html">Value my car</a>
+      <a href="service.html">Car in for service?</a>
+      <a href="accessories.html">BMW Accessories</a>
+      <a href="index.html#protect" onclick="closeDrawer()">Protect my BMW</a>
+      <a href="refer.html">Refer a friend</a>
+      <a href="guides.html">Guides</a>
+      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment &#x2197;</a>
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram &#x2197;</a>
+    </nav>
+    <a class="drawer-cta" href="step1.html">Find a BMW &rarr;</a>
+  </div>
+</div>
+<div class="nav-drawer-overlay" id="navOverlay" onclick="closeDrawer()"></div>
+
+<main>
+
+  <!-- HERO — placeholder image until Dan supplies real video/photos -->
+  <section class="offer-page-hero" aria-label="Sorted For A Year cinematic">
+    <img src="assets/colours/1series-alpine-white.jpg" alt="BMW 120 M Sport in Alpine White" class="offer-hero-img"/>
+    <!-- TODO: replace <img> above with a <video class="offer-hero-img" autoplay muted loop playsinline> once Dan supplies footage -->
+    <div class="offer-hero-overlay"></div>
+    <div class="offer-hero-content">
+      <div class="page">
+        <p class="offer-hero-eyebrow">Hedin Ruxley &middot; South East &middot; 1 &amp; 2 Series M Sport &middot; In stock</p>
+        <h1 class="offer-hero-title">SORTED<br>FOR A YEAR.</h1>
+        <p class="offer-hero-sub">Free 1st year&rsquo;s BMW Insurance. 3 years&rsquo; servicing included. On the new 1 Series and 2 Series M Sport.</p>
+        <a href="#offer-details" class="offer-hero-scroll">See the offer &darr;</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="offer-content-wrap" id="offer-details">
+    <div class="offer-inner">
+
+      <h2 class="offer-headline">Sorted for a year.</h2>
+      <p class="offer-sub-headline">Free 1st year&rsquo;s BMW Insurance &middot; 3 years&rsquo; servicing included &middot; M Sport, your choice of colour.</p>
+
+      <p class="offer-intro">Two new BMWs, one straightforward deal: pick your 1 Series or 2 Series M Sport, choose your colour, and Dan sorts the insurance for year one and the servicing for the next three &mdash; on us&#42;.</p>
+
+      <ul class="offer-bullets">
+        <li>Free 1st year&rsquo;s BMW Insurance&#42; &mdash; subject to acceptance</li>
+        <li>3 years&rsquo; servicing included&#42;</li>
+        <li>Apple CarPlay &amp; Android Auto</li>
+        <li>Heated front seats</li>
+        <li>Rear-view camera</li>
+        <li>Alcantara interior</li>
+        <li>Parking Assist &mdash; the car parks itself</li>
+      </ul>
+
+      <!-- MODEL TOGGLE -->
+      <div class="model-toggle" role="tablist" aria-label="Choose a model">
+        <button class="model-toggle-btn active" id="toggle1series" onclick="switchModel('1series')" role="tab" aria-selected="true">1 Series</button>
+        <button class="model-toggle-btn" id="toggle2series" onclick="switchModel('2series')" role="tab" aria-selected="false">2 Series</button>
+      </div>
+
+      <!-- ── 1 SERIES PANEL ── -->
+      <div class="model-panel active" id="panel-1series">
+
+        <div class="colour-picker">
+          <p class="colour-picker-label">Choose your colour</p>
+          <div class="swatch-row">
+            <button class="swatch active" style="background:#f2f2f2;" data-img="assets/colours/1series-alpine-white.jpg" data-alt="BMW 120 M Sport in Alpine White" data-name="Alpine White" onclick="selectColour(this,'1series')" aria-label="Alpine White"></button>
+            <button class="swatch" style="background:#181818;" data-img="assets/colours/1series-black-sapphire.jpg" data-alt="BMW 120 M Sport in Black Sapphire" data-name="Black Sapphire" onclick="selectColour(this,'1series')" aria-label="Black Sapphire"></button>
+            <button class="swatch" style="background:#909598;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 120 M Sport in Skyscraper Grey" data-name="Skyscraper Grey" onclick="selectColour(this,'1series')" aria-label="Skyscraper Grey"></button>
+            <button class="swatch" style="background:#566069;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 120 M Sport in Brooklyn Grey — placeholder photo, real photo not yet supplied" data-name="Brooklyn Grey" data-placeholder="true" onclick="selectColour(this,'1series')" aria-label="Brooklyn Grey (photo not yet supplied)"></button>
+            <button class="swatch" style="background:#283e70;" data-img="assets/colours/1series-portimao-blue.jpg" data-alt="BMW 120 M Sport in Portimao Blue" data-name="Portimao Blue" onclick="selectColour(this,'1series')" aria-label="Portimao Blue"></button>
+            <button class="swatch" style="background:#2b1933;" data-img="assets/colours/1series-thundernight.jpg" data-alt="BMW 120 M Sport in Thundernight" data-name="Thundernight" onclick="selectColour(this,'1series')" aria-label="Thundernight"></button>
+            <button class="swatch" style="background:#384941;" data-img="assets/colours/1series-cape-york-green.jpg" data-alt="BMW 120 M Sport in Cape York Green" data-name="Cape York Green" onclick="selectColour(this,'1series')" aria-label="Cape York Green"></button>
+            <button class="swatch" style="background:#5d1016;" data-img="assets/colours/1series-fire-red.jpg" data-alt="BMW 120 M Sport in Fire Red" data-name="Fire Red" onclick="selectColour(this,'1series')" aria-label="Fire Red"></button>
+          </div>
+          <p style="font-size:.78rem;color:#5f6b7c;margin:10px 0 0;">Selected: <span class="swatch-name" id="colourName-1series" style="color:#141a22;">Alpine White</span> <span id="placeholderNote-1series"></span></p>
+        </div>
+
+        <hr class="rep-divider"/>
+        <div class="rep-section">
+          <p class="rep-kicker">Representative offer &mdash; BMW 1 Series</p>
+          <div class="rep-card">
+            <img src="assets/colours/1series-alpine-white.jpg" alt="BMW 120 M Sport in Alpine White" class="rep-card-img" id="repImg-1series"/>
+            <div class="rep-card-body">
+              <div class="rep-offer-label">BMW PCH &middot; Representative example</div>
+              <div class="rep-offer-title">BMW 120 M Sport</div>
+              <div class="rep-offer-note">Free 1st year&rsquo;s BMW Insurance&#42; and 3 years&rsquo; servicing&#42; included. Road fund licence included for the duration of the lease.</div>
+              <div class="rep-figures">
+                <div class="rep-fig-row"><span class="rep-fig-label">Monthly rental</span><span class="rep-fig-value big">&pound;389.00</span></div>
+                <div class="rep-fig-row"><span class="rep-fig-label">Initial rental (1 payment down)</span><span class="rep-fig-value">&pound;389.00</span></div>
+                <div class="rep-fig-row"><span class="rep-fig-label">Term</span><span class="rep-fig-value">48 months</span></div>
+                <div class="rep-fig-row"><span class="rep-fig-label">Annual mileage</span><span class="rep-fig-value">6,000 miles</span></div>
+                <div class="rep-fig-row"><span class="rep-fig-label">Total amount payable</span><span class="rep-fig-value">&pound;18,672.00</span></div>
+              </div>
+              <button class="rep-view-btn" onclick="openOfferModal('1series')">Register interest &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 2 SERIES PANEL ── -->
+      <div class="model-panel" id="panel-2series">
+
+        <div class="colour-picker">
+          <p class="colour-picker-label">Choose your colour</p>
+          <div class="swatch-row">
+            <button class="swatch active" style="background:#f2f2f2;" data-img="assets/colours/2series-reference-white.jpg" data-alt="BMW 220 Gran Coupé M Sport in Alpine White" data-name="Alpine White" onclick="selectColour(this,'2series')" aria-label="Alpine White"></button>
+            <button class="swatch" style="background:#181818;" data-img="assets/colours/1series-black-sapphire.jpg" data-alt="BMW 220 Gran Coupé M Sport in Black Sapphire — placeholder photo (1 Series shown)" data-name="Black Sapphire" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Black Sapphire"></button>
+            <button class="swatch" style="background:#909598;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 220 Gran Coupé M Sport in Skyscraper Grey — placeholder photo (1 Series shown)" data-name="Skyscraper Grey" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Skyscraper Grey"></button>
+            <button class="swatch" style="background:#566069;" data-img="assets/colours/1series-skyscraper-grey.jpg" data-alt="BMW 220 Gran Coupé M Sport in Brooklyn Grey — placeholder photo, real photo not yet supplied" data-name="Brooklyn Grey" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Brooklyn Grey (photo not yet supplied)"></button>
+            <button class="swatch" style="background:#283e70;" data-img="assets/colours/1series-portimao-blue.jpg" data-alt="BMW 220 Gran Coupé M Sport in Portimao Blue — placeholder photo (1 Series shown)" data-name="Portimao Blue" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Portimao Blue"></button>
+            <button class="swatch" style="background:#2b1933;" data-img="assets/colours/1series-thundernight.jpg" data-alt="BMW 220 Gran Coupé M Sport in Thundernight — placeholder photo (1 Series shown)" data-name="Thundernight" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Thundernight"></button>
+            <button class="swatch" style="background:#384941;" data-img="assets/colours/1series-cape-york-green.jpg" data-alt="BMW 220 Gran Coupé M Sport in Cape York Green — placeholder photo (1 Series shown)" data-name="Cape York Green" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Cape York Green"></button>
+            <button class="swatch" style="background:#5d1016;" data-img="assets/colours/1series-fire-red.jpg" data-alt="BMW 220 Gran Coupé M Sport in Fire Red — placeholder photo (1 Series shown)" data-name="Fire Red" data-placeholder="true" onclick="selectColour(this,'2series')" aria-label="Fire Red"></button>
+          </div>
+          <p style="font-size:.78rem;color:#5f6b7c;margin:10px 0 0;">Selected: <span class="swatch-name" id="colourName-2series" style="color:#141a22;">Alpine White</span> <span id="placeholderNote-2series"></span></p>
+        </div>
+
+        <hr class="rep-divider"/>
+        <div class="rep-section">
+          <p class="rep-kicker">Representative offer &mdash; BMW 2 Series</p>
+          <div class="rep-card">
+            <img src="assets/colours/2series-reference-white.jpg" alt="BMW 220 Gran Coupé M Sport in Alpine White" class="rep-card-img" id="repImg-2series"/>
+            <div class="rep-card-body">
+              <div class="rep-offer-label">BMW PCH &middot; Representative example</div>
+              <div class="rep-offer-title">BMW 220 Gran Coup&eacute; M Sport</div>
+              <div class="rep-offer-note">Free 1st year&rsquo;s BMW Insurance&#42; and 3 years&rsquo; servicing&#42; included. Road fund licence included for the duration of the lease.</div>
+              <div class="rep-figures">
+                <div class="rep-fig-row"><span class="rep-fig-label">Monthly rental</span><span class="rep-fig-value big">&pound;399.00</span></div>
+                <div class="rep-fig-row"><span class="rep-fig-label">Initial rental (1 payment down)</span><span class="rep-fig-value">&pound;399.00</span></div>
+                <div class="rep-fig-row"><span class="rep-fig-label">Term</span><span class="rep-fig-value">48 months</span></div>
+                <div class="rep-fig-row"><span class="rep-fig-label">Annual mileage</span><span class="rep-fig-value">6,000 miles</span></div>
+                <div class="rep-fig-row"><span class="rep-fig-label">Total amount payable</span><span class="rep-fig-value">&pound;19,152.00</span></div>
+              </div>
+              <button class="rep-view-btn" onclick="openOfferModal('2series')">Register interest &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="pcp-callout"><strong>Prefer to own it?</strong> PCP is also available on both models &mdash; 2.9% representative APR. Ask Dan for a personalised quote.</p>
+
+      <!-- WHAT'S INCLUDED (shared across both models) -->
+      <div class="included-section">
+        <p class="included-kicker">What&rsquo;s included</p>
+        <div class="included-grid">
+          <div class="included-card highlight"><span class="included-check">&#10003;</span><span class="included-text">Free 1st year&rsquo;s BMW Insurance&#42;</span></div>
+          <div class="included-card highlight"><span class="included-check">&#10003;</span><span class="included-text">3 years&rsquo; servicing included&#42;</span></div>
+          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Apple CarPlay &amp; Android Auto</span></div>
+          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Heated front seats</span></div>
+          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Rear-view camera</span></div>
+          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Alcantara interior</span></div>
+          <div class="included-card"><span class="included-check">&#10003;</span><span class="included-text">Parking Assist &mdash; parks itself</span></div>
+        </div>
+      </div>
+
+    </div><!-- end .offer-inner -->
+
+    <div class="offer-legal">
+      <p>&#42;Free 1st year&rsquo;s BMW Insurance available on new BMW 1 Series and 2 Series M Sport models ordered through Hedin Automotive BMW Ruxley, subject to insurer acceptance and standard underwriting criteria (including but not limited to driver age, location, claims and driving history). Insurance is provided by BMW Insurance. Hedin Automotive Ltd acts as an insurance intermediary/introducer in connection with this offer and is not the insurer.</p>
+      <p>3 years&rsquo; servicing included on both models, subject to Hedin Automotive&rsquo;s standard service plan terms.</p>
+      <p>Finance subject to status. Available to UK residents aged 18 and over. Hedin Automotive Ltd is authorised and regulated by the Financial Conduct Authority as a credit broker, not a lender. BMW Financial Services (GB) Limited (FCA No. 312705) is the lender. Representative examples shown are Personal Contract Hire (PCH), a regulated consumer hire agreement, not consumer credit; no APR applies to PCH agreements. You do not own the vehicle and there is no option to purchase at the end of a PCH agreement.</p>
+      <p>BMW 1 Series representative example: initial rental &pound;389.00, followed by 47 monthly rentals of &pound;389.00, total amount payable &pound;18,672.00, 48 month term, 6,000 miles per annum. BMW 2 Series representative example: initial rental &pound;399.00, followed by 47 monthly rentals of &pound;399.00, total amount payable &pound;19,152.00, 48 month term, 6,000 miles per annum. Excess mileage charges apply on all agreements &mdash; rate available on request.</p>
+      <p>PCP (Personal Contract Purchase) is also available on both models, representative 2.9% APR. Written quotations available on request for both PCH and PCP.</p>
+      <p>Offers subject to availability and may be withdrawn or changed without notice. Prices correct at date of publication.</p>
+    </div>
+
+  </div><!-- end .offer-content-wrap -->
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
+      <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
+      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup &mdash; serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+    </div>
+    <nav aria-label="Footer">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric BMWs</a>
+      <a href="index.html#offers" onclick="closeDrawer()">New Car Offers</a>
+      <a href="offers.html">Hot Used Cars</a>
+      <a href="appraisal.html">Value my car</a>
+      <a href="service.html">Car in for service?</a>
+      <a href="accessories.html">BMW Accessories</a>
+      <a href="refer.html">Refer a friend</a>
+      <a href="guides.html">Guides</a>
+      <a href="bmw-sidcup.html">BMW Sidcup</a>
+      <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </nav>
+  </div>
+  <p class="footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Hedin Automotive Group is a credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
+</footer>
+
+<a class="wa-float" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20the%20Sorted%20For%20A%20Year%20offer" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  <span>Chat with Dan</span>
+</a>
+
+<!-- INTEREST MODAL -->
+<div class="offer-modal-bg" id="offerModal" onclick="if(event.target===this)closeOfferModal()">
+  <div class="offer-modal">
+    <button class="offer-modal-close" onclick="closeOfferModal()" aria-label="Close">&#x2715;</button>
+    <div id="omForm">
+      <h3 id="omTitle">Register interest</h3>
+      <p class="om-sub">Dan will confirm availability and talk you through next steps. No pressure.</p>
+      <div class="om-field"><label>Full name *</label><input id="omName" type="text" placeholder="Your name"/></div>
+      <div class="om-field"><label>Mobile *</label><input id="omPhone" type="tel" placeholder="07..."/></div>
+      <div class="om-field"><label>Email *</label><input id="omEmail" type="email" placeholder="you@example.com"/></div>
+      <button onclick="submitInterest()" style="display:block;width:100%;margin-top:4px;padding:14px;background:#1559cf;color:#fff;font-weight:700;font-size:.95rem;border:none;border-radius:12px;cursor:pointer;font-family:var(--font);">Send to Dan &rarr;</button>
+      <p class="om-legal">By submitting you agree Dan may contact you about this offer. Hedin Automotive Ltd is a credit broker, not a lender. Finance subject to status. 18s and over only.</p>
+    </div>
+    <div class="om-success" id="omSuccess">
+      <p>Done &mdash; Dan has your details. &#x2713;</p>
+      <span>He will be in touch shortly to confirm availability and next steps.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const hdr=document.getElementById('siteHeader');
+window.addEventListener('scroll',()=>{hdr.classList.toggle('scrolled',window.scrollY>80);},{passive:true});
+
+function openDrawer(){
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navOverlay').classList.add('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded','true');
+  document.getElementById('navDrawer').removeAttribute('aria-hidden');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navOverlay').classList.remove('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded','false');
+  document.getElementById('navDrawer').setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+
+var currentModel='1series';
+var selectedColour={'1series':'Alpine White','2series':'Alpine White'};
+
+function switchModel(model){
+  currentModel=model;
+  document.getElementById('panel-1series').classList.toggle('active',model==='1series');
+  document.getElementById('panel-2series').classList.toggle('active',model==='2series');
+  document.getElementById('toggle1series').classList.toggle('active',model==='1series');
+  document.getElementById('toggle2series').classList.toggle('active',model==='2series');
+  document.getElementById('toggle1series').setAttribute('aria-selected',model==='1series');
+  document.getElementById('toggle2series').setAttribute('aria-selected',model==='2series');
+}
+
+function selectColour(el,model){
+  el.closest('.swatch-row').querySelectorAll('.swatch').forEach(function(s){s.classList.remove('active');});
+  el.classList.add('active');
+  var name=el.getAttribute('data-name');
+  var img=el.getAttribute('data-img');
+  var altText=el.getAttribute('data-alt');
+  var isPlaceholder=el.getAttribute('data-placeholder')==='true';
+  selectedColour[model]=name;
+  document.getElementById('colourName-'+model).textContent=name;
+  var repImg=document.getElementById('repImg-'+model);
+  repImg.src=img;
+  repImg.alt=altText;
+  document.getElementById('placeholderNote-'+model).textContent=isPlaceholder?'— photo is a placeholder, real shot to follow':'';
+}
+
+function openOfferModal(model){
+  currentModel=model;
+  var label=model==='1series'?'BMW 120 M Sport':'BMW 220 Gran Coupé M Sport';
+  document.getElementById('omTitle').textContent='Register interest — '+label;
+  document.getElementById('omForm').style.display='block';
+  document.getElementById('omSuccess').style.display='none';
+  document.getElementById('offerModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeOfferModal(){
+  document.getElementById('offerModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function submitInterest(){
+  var n=document.getElementById('omName').value.trim();
+  var p=document.getElementById('omPhone').value.trim();
+  var e=document.getElementById('omEmail').value.trim();
+  if(!n||!p||!e){alert('Please fill in all three fields so Dan can get back to you.');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
+  var model=currentModel==='1series'?'BMW 120 M Sport':'BMW 220 Gran Coupé M Sport';
+  var monthly=currentModel==='1series'?'£389.00':'£399.00';
+  var colour=selectedColour[currentModel];
+  fetch('https://formspree.io/f/xqewleog',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      _subject:'Sorted For A Year offer interest — '+n,
+      name:n,phone:p,email:e,
+      offer:model+' ('+colour+') — '+monthly+'/month, 48 months PCH, free 1st year insurance + 3yr servicing',
+      replyto:e
+    })
+  }).catch(function(){}).finally(function(){
+    document.getElementById('omForm').style.display='none';
+    document.getElementById('omSuccess').style.display='block';
+  });
+}
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeOfferModal();closeDrawer();}});
+</script>
+<script src="scroll-hint.js"></script>
+</body>
+</html>
