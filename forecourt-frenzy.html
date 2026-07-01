@@ -9,7 +9,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{background:#07080c;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
-#c{display:block;width:100vw;height:100vh;image-rendering:pixelated;image-rendering:crisp-edges}
+#c{display:block;width:100vw;height:100vh;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none}
 
 /* CRT vignette */
 #crt{position:fixed;inset:0;pointer-events:none;z-index:40;
@@ -90,17 +90,18 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 /* Context prompt + action button */
 #prompt{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.78);border:2px solid #ffd24a;color:#fff;padding:6px 16px;border-radius:18px;font-size:.82rem;font-weight:700;z-index:60;pointer-events:none;white-space:nowrap}
 #prompt.hidden{display:none}
-#act-btn{position:fixed;right:18px;bottom:26px;width:76px;height:76px;border-radius:50%;background:rgba(28,105,212,.92);border:3px solid #fff;color:#fff;font-size:1.6rem;font-weight:900;z-index:70;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,.6);touch-action:manipulation}
-#act-btn:active{transform:scale(.93)}
+#act-btn{position:fixed;right:16px;bottom:calc(30px + env(safe-area-inset-bottom,0px));width:84px;height:84px;border-radius:50%;background:rgba(28,105,212,.92);border:3px solid #fff;color:#fff;font-size:1.7rem;font-weight:900;z-index:70;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,.6);touch-action:none}
+#act-btn.pressed,#act-btn:active{transform:scale(.93)}
 #act-btn.hidden{display:none}
 #act-btn.glow{background:rgba(201,138,27,.95);animation:actGlow .6s infinite alternate}
 @keyframes actGlow{to{box-shadow:0 0 24px #ffd24a}}
 
-/* Joystick */
-#joy{position:fixed;left:0;bottom:0;width:52vw;height:46vh;z-index:65;touch-action:none}
+/* Joystick (visual only — input is handled on the canvas) */
+#joy{position:fixed;inset:0;z-index:65;pointer-events:none}
 #joy.hidden{display:none}
-#joy-base{position:absolute;width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.09);border:2px solid rgba(255,255,255,.25);display:none}
-#joy-knob{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid rgba(255,255,255,.5);display:none}
+#joy-base{position:absolute;width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.10);border:2px solid rgba(255,255,255,.28);display:none}
+#joy-knob{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.38);border:2px solid rgba(255,255,255,.55);display:none}
+#joy-hint{position:absolute;left:12px;bottom:calc(48px + env(safe-area-inset-bottom,0px));color:rgba(255,255,255,.55);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:2px dashed rgba(255,255,255,.3);border-radius:14px;padding:14px 18px}
 
 /* Banners / toast */
 #toast{position:fixed;top:106px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);color:#fff;padding:7px 18px;border-radius:18px;font-size:.85rem;font-weight:600;z-index:300;transition:opacity .4s;white-space:nowrap;pointer-events:none;border:1px solid #ffffff2e}
@@ -260,7 +261,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 <div id="wee-warn" class="hidden"><span id="wee-arrow">▲</span><span>Don't forget to wee!</span></div>
 <div id="prompt" class="hidden"></div>
 <button id="act-btn" class="hidden">E</button>
-<div id="joy" class="hidden"><div id="joy-base"></div><div id="joy-knob"></div></div>
+<div id="joy" class="hidden"><div id="joy-base"></div><div id="joy-knob"></div><div id="joy-hint">🕹️ drag here to move</div></div>
 <div id="toast" class="hidden"></div>
 <div id="job-banner" class="hidden"></div>
 <div id="alert-banner" class="hidden"></div>
@@ -868,39 +869,92 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
 
-const joyEl=document.getElementById('joy'), joyBase=document.getElementById('joy-base'), joyKnob=document.getElementById('joy-knob');
-let joyId=null, joyCX=0, joyCY=0;
-joyEl.addEventListener('touchstart',e=>{
-  const t=e.changedTouches[0]; joyId=t.identifier;
-  joyCX=t.clientX; joyCY=t.clientY;
-  joyBase.style.display=joyKnob.style.display='block';
-  joyBase.style.left=(joyCX-48)+'px'; joyBase.style.top=(joyCY-48)+'px';
-  joyKnob.style.left=(joyCX-22)+'px'; joyKnob.style.top=(joyCY-22)+'px';
-  e.preventDefault();
-},{passive:false});
-joyEl.addEventListener('touchmove',e=>{
-  for(const t of e.changedTouches){
-    if(t.identifier!==joyId)continue;
-    let dx=t.clientX-joyCX, dy=t.clientY-joyCY;
-    const m=Math.hypot(dx,dy), max=44;
-    if(m>max){ dx=dx/m*max; dy=dy/m*max; }
-    joyVec.x=dx/max; joyVec.y=dy/max;
-    joyKnob.style.left=(joyCX+dx-22)+'px'; joyKnob.style.top=(joyCY+dy-22)+'px';
-  }
-  e.preventDefault();
-},{passive:false});
-function joyEnd(e){
-  for(const t of e.changedTouches){
-    if(t.identifier!==joyId)continue;
-    joyId=null; joyVec.x=joyVec.y=0;
-    joyBase.style.display=joyKnob.style.display='none';
-  }
+// Touch device detection — static checks plus a dynamic fallback on the
+// first real touch, so controls appear even if detection lied at load.
+let mobileUI=('ontouchstart' in window)||navigator.maxTouchPoints>0||
+  (window.matchMedia&&matchMedia('(pointer:coarse)').matches);
+function enableMobileUI(){
+  if(!mobileUI){ mobileUI=true; if(ST==='play')showTouchControls(); }
 }
-joyEl.addEventListener('touchend',joyEnd); joyEl.addEventListener('touchcancel',joyEnd);
+addEventListener('touchstart',enableMobileUI,{once:true,passive:true});
+function showTouchControls(){
+  document.getElementById('joy').classList.remove('hidden');
+  document.getElementById('act-btn').classList.remove('hidden');
+}
+
+const joyEl=document.getElementById('joy'), joyBase=document.getElementById('joy-base'),
+      joyKnob=document.getElementById('joy-knob'), joyHint=document.getElementById('joy-hint');
+let joyPid=null, joyCX=0, joyCY=0, joyMoved=false;
+function joyStart(x,y){
+  joyPid='on'; joyCX=x; joyCY=y;
+  joyVec.x=joyVec.y=0;
+  joyBase.style.display=joyKnob.style.display='block';
+  joyBase.style.left=(x-52)+'px'; joyBase.style.top=(y-52)+'px';
+  joyKnob.style.left=(x-24)+'px'; joyKnob.style.top=(y-24)+'px';
+}
+function joyMove(x,y){
+  let dx=x-joyCX, dy=y-joyCY;
+  const m=Math.hypot(dx,dy), max=46;
+  if(m>max){ dx=dx/m*max; dy=dy/m*max; }
+  joyVec.x=dx/max; joyVec.y=dy/max;
+  joyKnob.style.left=(joyCX+dx-24)+'px'; joyKnob.style.top=(joyCY+dy-24)+'px';
+  if(m>8&&!joyMoved){ joyMoved=true; if(joyHint)joyHint.style.display='none'; }
+}
+function joyEnd(){
+  joyPid=null; joyVec.x=joyVec.y=0;
+  joyBase.style.display=joyKnob.style.display='none';
+}
 
 const actBtn=document.getElementById('act-btn');
-actBtn.addEventListener('touchstart',e=>{ e.preventDefault(); actQueued=true; },{passive:false});
-actBtn.addEventListener('mousedown',e=>{ e.preventDefault(); actQueued=true; });
+let lastAct=0;
+function queueAct(){
+  const n=Date.now();
+  if(n-lastAct>200){ lastAct=n; actQueued=true; }
+  actBtn.classList.add('pressed');
+  setTimeout(()=>actBtn.classList.remove('pressed'),140);
+}
+
+// Unified pointer handling on the game canvas:
+//  left 55% of screen = joystick, right side = action, mouse click = action.
+//  Falls back to touch events where PointerEvent is unavailable.
+const joyPointers={};
+function gameDown(px,py,id,isMouse){
+  if(ST!=='play'||R.popup)return;
+  enableMobileUI();
+  if(isMouse){ queueAct(); return; }
+  if(px<innerWidth*0.55){
+    if(joyPid===null){ joyPointers[id]=true; joyStart(px,py); }
+  } else queueAct();
+}
+if(window.PointerEvent){
+  canvas.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    gameDown(e.clientX,e.clientY,e.pointerId,e.pointerType==='mouse');
+  });
+  addEventListener('pointermove',e=>{ if(joyPointers[e.pointerId])joyMove(e.clientX,e.clientY); });
+  const up=e=>{ if(joyPointers[e.pointerId]){ delete joyPointers[e.pointerId]; joyEnd(); } };
+  addEventListener('pointerup',up); addEventListener('pointercancel',up);
+} else {
+  canvas.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    for(const t of e.changedTouches) gameDown(t.clientX,t.clientY,t.identifier,false);
+  },{passive:false});
+  canvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    for(const t of e.changedTouches){ if(joyPointers[t.identifier])joyMove(t.clientX,t.clientY); }
+  },{passive:false});
+  const tEnd=e=>{ for(const t of e.changedTouches){ if(joyPointers[t.identifier]){ delete joyPointers[t.identifier]; joyEnd(); } } };
+  canvas.addEventListener('touchend',tEnd); canvas.addEventListener('touchcancel',tEnd);
+}
+
+// Action button: cover every event family, deduped by queueAct's timer
+if(window.PointerEvent){
+  actBtn.addEventListener('pointerdown',e=>{ e.preventDefault(); queueAct(); });
+} else {
+  actBtn.addEventListener('touchstart',e=>{ e.preventDefault(); queueAct(); },{passive:false});
+  actBtn.addEventListener('mousedown',e=>{ e.preventDefault(); queueAct(); });
+}
+actBtn.addEventListener('click',e=>{ e.preventDefault(); queueAct(); });
 
 function inputVec(){
   let x=0,y=0;
@@ -908,7 +962,7 @@ function inputVec(){
   if(keys.KeyS||keys.ArrowDown)y+=1;
   if(keys.KeyA||keys.ArrowLeft)x-=1;
   if(keys.KeyD||keys.ArrowRight)x+=1;
-  if(joyId!==null){ x=joyVec.x; y=joyVec.y; }
+  if(joyPid!==null){ x=joyVec.x; y=joyVec.y; }
   const m=Math.hypot(x,y);
   if(m>1){x/=m;y/=m;}
   return {x,y,m:Math.min(m,1)};
@@ -1141,7 +1195,11 @@ function updateCustomers(dt){
   for(const c of R.custs){
     if(c.interacting)continue;
     c.bob+=dt*9;
-    if(c.wq.length){
+    // customers notice you: pause and face the player when you're close
+    const engaged=!P.driving&&c.state!=='leave'&&c.state!=='in'&&dist2(P.x,P.y,c.x,c.y)<30*30;
+    if(engaged){
+      c.f=Math.atan2(P.y-c.y,P.x-c.x);
+    } else if(c.wq.length){
       const [tx,ty]=c.wq[0];
       const dx=tx-c.x, dy=ty-c.y, d=Math.hypot(dx,dy);
       if(d<6){ c.wq.shift(); if(!c.wq.length&&c.state==='in')c.state=c.isSvc?'waitsvc':'wander'; if(!c.wq.length&&c.state==='leave'){c.done=true;} }
@@ -1610,7 +1668,7 @@ function update(dt){
     ab.textContent=INTERACT.label.split(' ')[0];
   } else {
     pr.classList.add('hidden');
-    if(P.driving||('ontouchstart' in window)){ ab.classList.remove('hidden'); ab.classList.remove('glow'); ab.textContent='·'; }
+    if(P.driving||mobileUI){ ab.classList.remove('hidden'); ab.classList.remove('glow'); ab.textContent='·'; }
     else ab.classList.add('hidden');
   }
   if(actQueued){
@@ -1916,10 +1974,7 @@ function beginPlay(lv){
   initRun(lv);
   ST='play';
   document.getElementById('hud').classList.remove('hidden');
-  if('ontouchstart' in window){
-    document.getElementById('joy').classList.remove('hidden');
-    document.getElementById('act-btn').classList.remove('hidden');
-  }
+  if(mobileUI)showTouchControls();
 }
 
 document.getElementById('howto-btn').onclick=()=>{
