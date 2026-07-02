@@ -20,6 +20,13 @@
   display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:.92rem;
 }
 .btn-email:hover{background:rgba(16,21,29,.12);transform:translateY(-1px);}
+.ty-plan{background:#fff;border:1px solid rgba(16,21,29,.12);border-radius:16px;padding:20px 22px 16px;margin:0 0 24px;box-shadow:0 1px 2px rgba(16,21,29,.05),0 12px 32px -12px rgba(16,21,29,.12);}
+.ty-plan-kicker{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1559cf;margin:0 0 6px;}
+.ty-plan h3{font-size:1.15rem;font-weight:700;color:#11161d;margin:0 0 12px;}
+.ty-plan ol{list-style:none;margin:0;padding:0;counter-reset:plan;}
+.ty-plan li{counter-increment:plan;display:flex;gap:12px;padding:9px 0;border-top:1px solid rgba(16,21,29,.06);font-size:.9rem;line-height:1.6;color:#2d3748;}
+.ty-plan li::before{content:counter(plan);flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(21,89,207,.1);color:#0e3f96;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+.ty-plan li strong{color:#11161d;}
 </style>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
@@ -40,6 +47,12 @@
       <div class="step-kicker">All done</div>
       <h2>That is everything I need.</h2>
       <p>Your details have landed in my inbox with your full summary attached. I will read through it before we speak so we can get straight into the good stuff from the first minute of the call.</p>
+
+      <div class="ty-plan" id="nextPlan" style="display:none;">
+        <div class="ty-plan-kicker">The plan</div>
+        <h3 id="planTitle">Here's the plan</h3>
+        <ol id="planList"></ol>
+      </div>
       <!-- REASSURANCE TESTIMONIAL -->
 <div style="margin:24px 0 28px;">
   <div class="testimonials-kicker">★ You're in good hands</div>
@@ -59,7 +72,7 @@
           <div class="check-icon">1</div>
           <div class="check-body">
             <strong>Book your appointment</strong>
-            <span>I will already have read your summary before we speak so there is no need to explain everything from scratch. Choose whichever works best for you.</span>
+            <span>Book it now and I'll arrive prepared: shortlist done, finance worked through, part exchange figure in hand. Phone call or face to face, whichever suits you.</span>
             <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;">
               <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:12px 18px;">
                 📞 Telephone call
@@ -104,14 +117,14 @@
         <p id="storyText" style="font-size:.87rem;line-height:1.75;color:#2d3748;white-space:pre-line;margin:0 0 18px;"></p>
         <div style="border-top:1px solid rgba(21,89,207,.15);padding-top:14px;">
           <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 4px;font-weight:600;">Share your story 📲</p>
-          <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends and manifest your BMW — in a few weeks you could be sharing your own handover photo. ✨</p>
+          <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends. In a few weeks you could be sharing your own handover photo.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <a id="shareX" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#000;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">𝕏 Post</a>
             <a id="shareWa" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">💬 Share</a>
             <button id="copyBtn" onclick="copyStory()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,21,29,.08);color:var(--text);padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📋 Copy</button>
             <button onclick="shareInstagram()" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📸 Instagram</button>
           </div>
-          <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry — your surname and exact figures are removed before sharing.</p>
+          <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry, your surname and exact figures are removed before sharing.</p>
         </div>
       </div>
 
@@ -129,6 +142,44 @@
 <script>
   const bookingUrl=sessionStorage.getItem("bookingUrl");
   if(bookingUrl) document.getElementById("bookBtn").href=bookingUrl;
+
+  // Personalised "what happens next" plan, built from their answers.
+  (function(){
+    const gv=k=>sessionStorage.getItem(k)||"";
+    const name=gv("fullName"); if(!name) return;
+    const first=name.split(" ")[0];
+    const money=v=>{const n=Number(String(v).replace(/,/g,""));return isNaN(n)?"":"£"+n.toLocaleString("en-GB");};
+    let bodyNames=[];
+    try{
+      const map={hatchback:"hatchbacks",saloon:"saloons",touring:"Tourings",suv:"SUVs",coupe:"coupés",convertible:"convertibles",gran_coupe:"Gran Coupés"};
+      bodyNames=JSON.parse(gv("bodyStyles")||"[]").map(b=>map[b]||b);
+    }catch(e){}
+    const mpref=gv("modelPref");
+    let carPhrase = mpref ? "built around the "+mpref
+      : bodyNames.length ? "of "+(bodyNames.length>2?bodyNames.slice(0,2).join(", ")+" and more":bodyNames.join(" and "))
+      : "of options";
+    let budgetPhrase="";
+    if(gv("purchaseType")==="Outright"&&gv("cashBudget")) budgetPhrase=" inside your "+money(gv("cashBudget"))+" budget";
+    else if(gv("monthlyBudget")){
+      budgetPhrase=" around "+money(gv("monthlyBudget"))+" a month";
+      const d=Number(gv("deposit").replace(/,/g,""));
+      if(d>0) budgetPhrase+=" with "+money(gv("deposit"))+" down";
+    }
+    const hasPx=["Yes","Maybe"].includes(gv("partExchange"));
+    const pxCar=gv("currentCar")||gv("pxModel")||"your current car";
+
+    const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const items=[];
+    items.push("Your brief is with me now. I read every one personally.");
+    items.push("Within <strong>two working days</strong> you'll have a shortlist "+esc(carPhrase)+esc(budgetPhrase)+", with my honest take on each one.");
+    if(hasPx) items.push("I'll prepare a part exchange figure for <strong>"+esc(pxCar)+"</strong>. Photos help me sharpen it before we speak, more on that below.");
+    items.push("Fastest route: <strong>book a call or a visit now</strong> and I'll come prepared with options, so the conversation starts at the good part.");
+
+    document.getElementById("planTitle").textContent=first+", here's the plan";
+    const ol=document.getElementById("planList");
+    items.forEach(t=>{const li=document.createElement("li");li.innerHTML="<span>"+t+"</span>";ol.appendChild(li);});
+    document.getElementById("nextPlan").style.display="block";
+  })();
 
   // WhatsApp hi nudge
   (function(){
@@ -188,7 +239,7 @@ Photos attached.`;
       });
       s=s.replace(/[\d,]+\s+miles(?: a year)?/gi,"plenty of miles a year");
       s=s.replace(/ {2,}/g," ").trim();
-      return "Here's my BMW Story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk — Dan helps find the right BMW for your budget and lifestyle 🚗✨";
+      return "Here's my BMW Story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk. Dan helps find the right BMW for your budget and lifestyle.";
     }
     var social=socialify(story);
     document.getElementById("shareX").href="https://twitter.com/intent/tweet?text="+encodeURIComponent(social);
@@ -280,13 +331,13 @@ Photos attached.`;
     });
   }
 </script><script src="scroll-hint.js"></script>
-<!-- Appointment type modal — auto-shown after submission -->
+<!-- Appointment type modal, auto-shown after submission -->
 <div id="appt-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(10,18,30,.65);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;">
   <div style="background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:560px;padding:28px 22px 40px;box-shadow:0 -16px 48px rgba(10,18,30,.2);animation:apptSlide .32s ease-out;">
     <div style="width:38px;height:4px;background:#e2e8ef;border-radius:2px;margin:0 auto 22px;"></div>
     <p style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5f6b7c;margin:0 0 6px;text-align:center;">One quick thing</p>
     <h2 style="font-size:1.2rem;font-weight:700;color:#11161d;margin:0 0 6px;text-align:center;font-family:var(--display);">How would you like to connect with Dan?</h2>
-    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your summary before we speak — no need to start from scratch.</p>
+    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan reads your brief before you speak and comes prepared with options. No starting from scratch.</p>
     <div style="display:grid;gap:10px;margin-bottom:14px;">
       <a id="modal-phone" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#eef4ff;border:1.5px solid rgba(21,89,207,.22);border-radius:16px;text-decoration:none;color:#11161d;">
         <span style="font-size:26px;flex-shrink:0;">📞</span>
@@ -295,11 +346,11 @@ Photos attached.`;
       </a>
       <a id="modal-visit" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8f9fb;border:1.5px solid rgba(16,21,29,.1);border-radius:16px;text-decoration:none;color:#11161d;">
         <span style="font-size:26px;flex-shrink:0;">🤝</span>
-        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in, see the cars, talk numbers — no rush</span></div>
+        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in, see the cars, talk numbers. No rush</span></div>
         <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
       </a>
     </div>
-    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:#5f6b7c;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now — I'll do this later</button>
+    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:#5f6b7c;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now, I'll do this later</button>
   </div>
 </div>
 <style>@keyframes apptSlide{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}</style>

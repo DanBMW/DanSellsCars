@@ -24,6 +24,66 @@ body.fv2 .step-wrap{animation:fv2In .34s cubic-bezier(.22,.61,.36,1) both;}
 .fv2-fill{height:100%;background:var(--blue);border-radius:999px;transition:width .5s cubic-bezier(.22,.61,.36,1);}
 @media(max-width:700px){.fv2-progress{padding:14px 18px 0;}}
 
+/* ── Progress car ─────────────────────────────────────────── */
+.fv2-prog-lane{position:relative;}
+.fv2-prog-car{
+  position:absolute;bottom:2px;left:0;color:var(--blue);line-height:0;
+  transform:translateX(-82%);pointer-events:none;
+  filter:drop-shadow(0 2px 3px rgba(21,89,207,.3));
+}
+.fv2-prog-car svg{display:block;}
+
+/* ── Brief ticket ─────────────────────────────────────────── */
+.fv2-ticket{
+  display:flex;align-items:center;gap:8px;padding:10px 28px 0;
+  overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+}
+.fv2-ticket::-webkit-scrollbar{display:none;}
+.fv2-ticket-label{
+  font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);flex-shrink:0;
+}
+.fv2-ticket-chip{
+  flex-shrink:0;font-size:.72rem;font-weight:600;color:var(--body);
+  background:rgba(16,21,29,.035);border:1px solid var(--line-soft);border-radius:999px;
+  padding:4px 11px;white-space:nowrap;animation:fv2ChipIn .35s ease backwards;
+}
+@keyframes fv2ChipIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(max-width:700px){.fv2-ticket{padding:9px 18px 0;}}
+@media (prefers-reduced-motion:reduce){.fv2-ticket-chip{animation:none;}}
+
+/* ── Ignition send moment ─────────────────────────────────── */
+.fv2-ign{
+  display:none;position:fixed;inset:0;z-index:400;align-items:center;justify-content:center;
+  background:radial-gradient(120% 120% at 50% 30%,#141b26,#080c12);
+  opacity:0;transition:opacity .35s ease;
+}
+.fv2-ign.show{opacity:1;}
+.fv2-ign-inner{text-align:center;padding:24px;}
+.fv2-ign-ring{
+  width:150px;height:150px;margin:0 auto 26px;border-radius:50%;padding:7px;position:relative;
+  background:conic-gradient(#96a0ac,#3a4350,#d2d9e1,#4a5462,#a9b2bd,#3a4350,#96a0ac);
+  transition:transform .22s ease,box-shadow .3s ease;
+  box-shadow:0 10px 40px rgba(0,0,0,.5),0 0 0 rgba(21,89,207,0);
+}
+.fv2-ign.pressed .fv2-ign-ring{transform:scale(.94);box-shadow:0 6px 30px rgba(0,0,0,.6),0 0 70px rgba(21,89,207,.35);}
+.fv2-ign.running .fv2-ign-ring::after{
+  content:'';position:absolute;inset:-9px;border-radius:50%;
+  border:2px solid transparent;border-top-color:#3a7be0;border-right-color:rgba(58,123,224,.35);
+  animation:fv2IgnSpin .85s linear infinite;
+}
+@keyframes fv2IgnSpin{to{transform:rotate(360deg)}}
+.fv2-ign-btn{
+  width:100%;height:100%;border-radius:50%;
+  background:radial-gradient(circle at 50% 30%,#242c39,#0c1118 70%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  color:#e9edf3;font-family:var(--font);
+  box-shadow:inset 0 2px 8px rgba(255,255,255,.07),inset 0 -8px 16px rgba(0,0,0,.55);
+}
+.fv2-ign-btn .l1{font-size:.82rem;font-weight:800;letter-spacing:.24em;}
+.fv2-ign-btn .l2{font-size:.66rem;font-weight:800;letter-spacing:.3em;color:#d43a3a;}
+.fv2-ign-status{color:rgba(255,255,255,.72);font-size:.9rem;font-family:var(--font);letter-spacing:.02em;}
+
 /* ── Option cards (single + multi select) ─────────────────── */
 .fv2-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:8px;}
 .fv2-options.three{grid-template-columns:repeat(3,minmax(0,1fr));}
