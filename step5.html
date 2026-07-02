@@ -55,6 +55,7 @@
       <button type="button" class="fv2-plate-btn" id="dvlaBtn" onclick="dvlaLookup()">Look up</button>
     </div>
     <div id="dvlaBanner" class="fv2-banner" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Found: <strong id="dvlaDesc"></strong></span></div>
+    <div id="motNote" class="fv2-mot"></div>
 
     <div class="input-card" style="margin:16px 0 0;">
       <div class="two-col">
@@ -195,6 +196,48 @@
   const wv=sessionStorage.getItem("wbacVal"); if(wv) document.getElementById("wv").value=wv;
   const pm=sessionStorage.getItem("pxModel"); if(pm) document.getElementById("pxModel").value=pm;
 
+  // MOT status: due date for the customer, history + status for Dan's email.
+  // Under 3 months (or expired) carries the renew-before-PX requirement.
+  function applyMot(d){
+    const box=document.getElementById("motNote");
+    box.style.display="none"; box.className="fv2-mot";
+    sessionStorage.setItem("pxMotExpiry",""); sessionStorage.setItem("pxMotStatus",""); sessionStorage.setItem("pxMotHistory","");
+    if(Array.isArray(d.motHistory)&&d.motHistory.length){
+      const lines=d.motHistory.map(t=>{
+        let s=t.date+" "+t.result+(t.mileage?" at "+t.mileage:"");
+        const extra=[];
+        if(t.failures) extra.push(t.failures+" failure item"+(t.failures>1?"s":""));
+        if(t.advisories) extra.push(t.advisories+" advisor"+(t.advisories>1?"ies":"y"));
+        if(extra.length) s+=" ("+extra.join(", ")+")";
+        return s;
+      });
+      sessionStorage.setItem("pxMotHistory",lines.join(" | "));
+    }
+    const expiry=d.motExpiryDate||d.motDueDate||"";
+    if(!expiry) return;
+    const exp=new Date(expiry+"T12:00:00");
+    if(isNaN(exp)) return;
+    sessionStorage.setItem("pxMotExpiry",expiry);
+    const days=Math.ceil((exp-Date.now())/86400000);
+    const nice=exp.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+    let status,cls,msg;
+    if(days<0){
+      status="EXPIRED "+nice; cls="bad";
+      msg="This car's MOT expired on "+nice+". A valid MOT will be needed before the part exchange completes.";
+    } else if(days<=92){
+      const when=days===0?"today":days===1?"tomorrow":"in "+days+" days";
+      status="Due "+nice+" ("+(days===0?"today":days+" days")+")"; cls="warn";
+      msg="MOT due "+when+", on "+nice+". As it's within 3 months, we'll need the MOT completed before the part exchange goes through.";
+    } else {
+      status="Valid until "+nice; cls="ok";
+      msg="MOT valid until "+nice+". Nothing needed there.";
+    }
+    sessionStorage.setItem("pxMotStatus",status);
+    box.classList.add("fv2-mot--"+cls);
+    box.textContent=msg;
+    box.style.display="block";
+  }
+
   async function dvlaLookup(){
     const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
     if(!reg) return;
@@ -202,8 +245,12 @@
     btn.disabled=true; btn.textContent="Looking up…";
     document.getElementById("dvlaBanner").style.display="none";
     try{
-      const res=await fetch(WORKER+"?target=dvla-lookup&reg="+encodeURIComponent(reg));
-      const d=await res.json();
+      // Combined DVLA + MOT lookup; falls back to the legacy DVLA-only
+      // target until the updated worker is deployed.
+      let d=await (await fetch(WORKER+"?target=vehicle-lookup&reg="+encodeURIComponent(reg))).json();
+      if(!d || (!d.make && !d.model)){
+        d=await (await fetch(WORKER+"?target=dvla-lookup&reg="+encodeURIComponent(reg))).json();
+      }
       if(d.make){
         const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||""), fuel=(d.fuelType||"").toLowerCase();
         const ccField=document.getElementById("cc");
@@ -217,6 +264,7 @@
         const parts=[yr,make,model,toTC(d.colour||""),toTC(d.fuelType||"")].filter(Boolean);
         document.getElementById("dvlaDesc").textContent=parts.join(" · ");
         document.getElementById("dvlaBanner").style.display="flex";
+        applyMot(d);
       }
     }catch(e){}
     btn.disabled=false; btn.textContent="Look up";
