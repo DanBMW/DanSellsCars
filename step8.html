@@ -137,7 +137,11 @@ var groups = [
       ["Service history", readVal("pxService")],
       ["Outstanding finance", readVal("pxFinance")],
       ["Settlement figure", readVal("pxSettlement")],
-      ["Condition", readVal("pxCondition")]
+      ["Condition", readVal("pxCondition")],
+      ["Photos", (function(){
+        try { var n = JSON.parse(sessionStorage.getItem("pxPhotos")||"[]").length; if(n) return n + " uploaded"; } catch(e){}
+        return sessionStorage.getItem("pxPhotoBypass")==="true" ? "Sending via WhatsApp after" : "";
+      })()]
     ] : [["Part exchange", readVal("partExchange") || "No"]]
   },
   { title:"Colour & spec", edit:"step5b.html", rows:[
@@ -293,7 +297,16 @@ async function sendForm(){
 
   var name    = sessionStorage.getItem("fullName") || "";
   var email   = sessionStorage.getItem("email")    || "";
+
+  var pxPhotos = [];
+  try { pxPhotos = JSON.parse(sessionStorage.getItem("pxPhotos") || "[]"); } catch(e) {}
+  var pxPhotosVia = pxPhotos.length ? "Uploaded in funnel"
+    : sessionStorage.getItem("pxPhotoBypass") === "true" ? "Will WhatsApp after submitting" : "";
+
   var summary = buildText();
+  if (["Yes","Maybe"].indexOf(sessionStorage.getItem("partExchange") || "") !== -1) {
+    summary += "\nPX photos: " + (pxPhotos.length ? pxPhotos.length + " uploaded" : (pxPhotosVia || "None"));
+  }
 
   var calUrl = "https://cal.eu/danbmwruxley/telephone-appointment?" +
     new URLSearchParams({name: name, email: email, notes: summary}).toString();
@@ -340,8 +353,11 @@ async function sendForm(){
     marketing_channels:    sessionStorage.getItem("marketingChannels") || "",
     subject:          "DanSells lead: " + name,
     replyto:          email,
-    px_autotrader_comparables: autotraderLink()
+    px_autotrader_comparables: autotraderLink(),
+    px_photo_count:   pxPhotos.length ? String(pxPhotos.length) : "",
+    px_photos_via:    pxPhotosVia
   };
+  pxPhotos.forEach(function(u, i){ payload["px_photo_" + (i + 1)] = u; });
 
   var moment = showIgnition();
   var post = fetch("https://formspree.io/f/xqewleog", {

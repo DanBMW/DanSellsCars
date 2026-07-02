@@ -262,6 +262,27 @@ body.fv2 input[type="range"]::-moz-range-thumb{width:20px;height:20px;border-rad
 .fv2-toggle-body strong{font-size:.92rem;font-weight:700;color:var(--text);}
 .fv2-toggle-body span{font-size:.8rem;color:var(--muted);line-height:1.45;}
 
+/* ── PX photo upload (step 5) ─────────────────────────────── */
+.px-drop{
+  display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:15px;
+  border:1.5px dashed rgba(21,89,207,.45);border-radius:14px;background:rgba(21,89,207,.05);
+  color:var(--blue-deep);font-weight:700;font-size:.9rem;cursor:pointer;font-family:var(--font);
+  transition:background .15s,border-color .15s;-webkit-tap-highlight-color:transparent;
+}
+.px-drop:hover{background:rgba(21,89,207,.1);border-color:rgba(21,89,207,.7);}
+.px-drop svg{width:18px;height:18px;flex-shrink:0;}
+.px-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
+.px-thumbs:empty{display:none;}
+.px-thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#eef1f5;}
+.px-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.px-thumb .st{
+  position:absolute;inset:auto 0 0 0;padding:3px 0;font-size:.6rem;font-weight:800;text-align:center;
+  letter-spacing:.04em;color:#fff;font-family:var(--font);
+}
+.px-thumb.up .st{background:rgba(16,21,29,.55);}
+.px-thumb.done .st{background:rgba(26,122,60,.85);}
+.px-thumb.fail .st{background:rgba(186,80,28,.9);cursor:pointer;}
+
 /* ── Inline validation ────────────────────────────────────── */
 .fv2-note{
   display:none;align-items:flex-start;gap:9px;background:rgba(186,80,28,.08);border:1px solid rgba(186,80,28,.3);
