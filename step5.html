@@ -1,236 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>DanSells | Part Exchange</title><link rel="stylesheet" href="style.css"/>
-<style>
-.condition-option{
-  width:100%;text-align:left;padding:15px 18px;border-radius:16px;
-  background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);
-  cursor:pointer;transition:border-color .18s,background .18s,transform .15s;
-  display:flex;align-items:flex-start;gap:14px;
-}
-.condition-option:hover{border-color:rgba(21,89,207,.45);background:rgba(21,89,207,.08);transform:translateY(-1px);}
-.condition-option.selected{border-color:rgba(21,89,207,.7);background:rgba(21,89,207,.13);box-shadow:0 0 0 1px rgba(21,89,207,.2);}
-.condition-badge{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:rgba(16,21,29,.04);}
-.condition-body{display:flex;flex-direction:column;gap:3px;}
-.condition-title{font-size:.97rem;font-weight:700;color:#141a22;}
-.condition-desc{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
-.condition-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:3px;letter-spacing:.04em;}
-.reg-plate{
-  width:100%;
-  min-height:56px;
-  background:#f4d24a;
-  color:#000;
-  font-weight:900;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  border:3px solid #111;
-  border-radius:6px;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25), 0 2px 0 rgba(0,0,0,.25);
-  text-align:center;
-  font-size:1.05rem;
-  font-family:Arial, Helvetica, sans-serif;
-}
-.reg-plate::placeholder{color:rgba(16,21,29,.10);font-weight:800;letter-spacing:.12em;}
-</style>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XZL1RF6SV6');
-  </script>
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Find my BMW | Step 5 of 8 | DanSells</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="funnel.css"/>
+<script src="funnel-ui.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XZL1RF6SV6');
+</script>
 </head>
-<body><div class="app"><div class="shell">
+<body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
     <a href="index.html" style="text-decoration:none;"><span class="brand-name">DanSells</span></a>
-    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20BMW%20finder" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20BMW%20finder" target="_blank" rel="noopener" aria-label="Message Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-row"><span>Step 7 of 11</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:64%"></div></div>
+  <div class="fv2-progress">
+    <div class="fv2-progress-row"><span class="fv2-progress-step">Step 5 <span>of 8</span></span><span class="fv2-progress-label">Part exchange</span></div>
+    <div class="fv2-track"><div class="fv2-fill" style="width:62.5%"></div></div>
   </div>
 <div class="step-wrap">
   <div class="step-kicker">Part exchange</div>
-  <h2>Do you have a car to part exchange?</h2>
-  <p class="step-desc">If yes, grab a quick online buyer quote as a rough baseline, drop the figure in here and I will tell you whether I can improve on it.</p>
+  <h2>Anything to part exchange?</h2>
+  <p class="step-desc">If there is, your registration does most of the work. The lookup fills in the car's details for you.</p>
 
-  <div class="grid three" style="margin-bottom:18px">
-    <button class="choice" data-val="Yes" onclick="pick(this,'yes')">
-      <span class="choice-emoji">🚘</span>
-      <span class="choice-title">Yes</span>
-      <span class="choice-desc">I have a car to trade in.</span>
+  <div class="fv2-options three" style="margin-bottom:6px;">
+    <button class="fv2-opt" data-val="Yes" onclick="pick(this,'yes')">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l1.4-3.8A2 2 0 0 1 8.3 6.9h7.4a2 2 0 0 1 1.9 1.3L19 12"/><path d="M4 17v-3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M4 17v2M20 17v2"/><path d="M7.2 14.5h.01M16.8 14.5h.01"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Yes</span><span class="fv2-opt-desc">I have a car to trade in.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
-    <button class="choice" data-val="No" onclick="pick(this,'no')">
-      <span class="choice-emoji">✨</span>
-      <span class="choice-title">No</span>
-      <span class="choice-desc">No part exchange this time.</span>
+    <button class="fv2-opt" data-val="No" onclick="pick(this,'no')">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">No</span><span class="fv2-opt-desc">No part exchange this time.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
-    <button class="choice" data-val="Maybe" onclick="pick(this,'yes')">
-      <span class="choice-emoji">🧐</span>
-      <span class="choice-title">Maybe</span>
-      <span class="choice-desc">Not decided yet.</span>
+    <button class="fv2-opt" data-val="Maybe" onclick="pick(this,'yes')">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 3.4c-.8.5-1.1 1-1.1 1.9"/><path d="M12 17.4v.01"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Maybe</span><span class="fv2-opt-desc">Depends on the figure.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
   </div>
 
-  <div id="pxDetails" style="display:none">
-    <div class="input-card" style="margin-bottom:16px">
-      <div class="field-group" style="margin-bottom:16px">
-        <label for="reg">Registration *</label>
-        <input id="reg" type="text" class="reg-plate" placeholder="AB12 CDE" required maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()"/>
-        <button type="button" class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="margin-top:8px;width:100%;padding:10px 14px;font-size:.88rem">Look Up</button>
-        <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:10px 14px;font-size:.85rem;color:#0e3f96;margin-top:8px">Found: <strong id="dvlaDesc"></strong></div>
-      </div>
-      <div class="field-group" style="margin-bottom:16px">
-        <label>Model</label>
-        <input id="pxModel" type="text" placeholder="e.g. 3 Series, 320i"/>
+  <div id="pxDetails" class="fv2-reveal" style="display:none">
+    <div class="fv2-sec">Your registration</div>
+    <p class="fv2-sec-sub">I'll pull the make, model and year for you.</p>
+    <div class="fv2-plate-wrap">
+      <input id="reg" type="text" class="fv2-plate" placeholder="AB12 CDE" required maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()"/>
+      <button type="button" class="fv2-plate-btn" id="dvlaBtn" onclick="dvlaLookup()">Look up</button>
+    </div>
+    <div id="dvlaBanner" class="fv2-banner" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Found: <strong id="dvlaDesc"></strong></span></div>
+
+    <div class="input-card" style="margin:16px 0 0;">
+      <div class="two-col">
+        <div class="field-group"><label>Car <span style="font-weight:400;color:var(--muted);">(year, make)</span></label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
+        <div class="field-group"><label>Model</label><input id="pxModel" type="text" placeholder="e.g. 3 Series, 320i"/></div>
       </div>
       <div class="two-col">
-        <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
-        <div class="field-group"><label>Mileage</label><input id="ml" type="text" placeholder="e.g. 28,000"/></div>
+        <div class="field-group"><label>Mileage</label><input id="ml" type="text" inputmode="numeric" placeholder="e.g. 28,000"/></div>
+        <div class="field-group"><label>Online quote, if you have one <span style="font-weight:400;color:var(--muted);">(optional)</span></label><input id="wv" type="text" placeholder="e.g. £11,400"/></div>
       </div>
-      <div class="field-group">
-        <label>Online buyer quote (your baseline)</label>
-        <input id="wv" type="text" placeholder="e.g. £11,400"/>
-        <span class="hint" style="margin-top:4px">Use any instant online buyer for a rough figure. I can often improve on it.</span>
+      <p class="hint" style="margin-top:-6px;">If an online buyer has already given you a figure, drop it in. I can usually tell you quickly whether I can beat it.</p>
+    </div>
+
+    <div class="fv2-sec">Service history</div>
+    <div class="fv2-rows" id="serviceTrack">
+      <button type="button" class="fv2-row" data-val="Full dealer history" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Full dealer history</span><span class="fv2-row-desc">Every service at a main dealer. The strongest history a BMW can have.</span><span class="fv2-tag good">Best for value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Full independent history" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Full independent history</span><span class="fv2-row-desc">Serviced on time, every time, at independent garages.</span><span class="fv2-tag good">Good for value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Partial history" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Partial history</span><span class="fv2-row-desc">Some stamps or receipts, with gaps in the record.</span><span class="fv2-tag ok">Some impact on value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="No history" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">No history</span><span class="fv2-row-desc">Nothing to hand. Still fine to appraise, just worth being upfront.</span><span class="fv2-tag low">Will affect value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Not sure" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Not sure</span><span class="fv2-row-desc">I'll need to check the paperwork or the previous owner.</span><span class="fv2-tag na">To be confirmed</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+    </div>
+
+    <div class="fv2-sec">Outstanding finance</div>
+    <div class="fv2-rows" id="financeTrack">
+      <button type="button" class="fv2-row" data-val="No finance" onclick="pickFinance(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">None, I own it outright</span><span class="fv2-row-desc">The car is yours to trade in freely.</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Finance, settlement unknown" onclick="pickFinance(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Yes, settlement figure unknown</span><span class="fv2-row-desc">No problem, I can help work it out before we speak.</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Finance, settlement known" onclick="pickFinance(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Yes, I know the settlement figure</span><span class="fv2-row-desc">Enter it below and I'll factor it into the deal.</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+    </div>
+    <div id="settlementWrap" class="fv2-reveal" style="display:none;margin:-8px 0 22px;">
+      <div class="input-card" style="margin:0;">
+        <div class="field-group"><label>Settlement figure</label><input id="settlementFig" type="text" inputmode="numeric" placeholder="e.g. 7,500"></div>
       </div>
     </div>
 
-    <!-- SERVICE HISTORY -->
-    <div class="step-kicker" style="margin-bottom:10px">Service history *</div>
-    <div style="display:grid;gap:9px;margin-bottom:22px" id="serviceTrack">
-      <button type="button" class="condition-option" data-val="Full dealer history" onclick="pickService(this)">
-        <div class="condition-badge">🏆</div>
-        <div class="condition-body">
-          <span class="condition-title">Full dealer history</span>
-          <span class="condition-desc">Every service stamp from a dealership. The strongest possible history for a BMW.</span>
-          <span class="condition-tag" style="background:rgba(58,170,106,.15);color:#7adba4;">Best for value</span>
-        </div>
+    <div class="fv2-sec">Overall condition</div>
+    <p class="fv2-sec-sub">Honest is best. It means the figure I give you actually holds.</p>
+    <div class="fv2-rows" id="condTrack">
+      <button type="button" class="fv2-row" data-val="Showroom" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Showroom</span><span class="fv2-row-desc">No marks, chips or scuffs anywhere. Could go straight on a forecourt.</span><span class="fv2-tag good">Top end value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="condition-option" data-val="Full independent history" onclick="pickService(this)">
-        <div class="condition-badge">✅</div>
-        <div class="condition-body">
-          <span class="condition-title">Full independent history</span>
-          <span class="condition-desc">Serviced every time but at an independent garage rather than a Main Dealer.</span>
-          <span class="condition-tag" style="background:rgba(58,170,106,.12);color:#7adba4;">Good for value</span>
-        </div>
+      <button type="button" class="fv2-row" data-val="Excellent" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Excellent</span><span class="fv2-row-desc">One scuffed alloy or a very minor stone chip at most.</span><span class="fv2-tag good">Strong value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="condition-option" data-val="Partial history" onclick="pickService(this)">
-        <div class="condition-badge">📋</div>
-        <div class="condition-body">
-          <span class="condition-title">Partial history</span>
-          <span class="condition-desc">Some stamps or receipts but gaps in the service record.</span>
-          <span class="condition-tag" style="background:rgba(21,89,207,.15);color:#1559cf;">Some impact on value</span>
-        </div>
+      <button type="button" class="fv2-row" data-val="Good" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Good</span><span class="fv2-row-desc">A few scuffed alloys and some stone chips. Honest wear for the age and miles.</span><span class="fv2-tag ok">Good value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="condition-option" data-val="No history" onclick="pickService(this)">
-        <div class="condition-badge">❌</div>
-        <div class="condition-body">
-          <span class="condition-title">No history</span>
-          <span class="condition-desc">No service stamps or receipts available. Can still be appraised, just worth being upfront.</span>
-          <span class="condition-tag" style="background:rgba(186,80,28,.15);color:#b4501e;">Will affect value</span>
-        </div>
+      <button type="button" class="fv2-row" data-val="Fair" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Fair</span><span class="fv2-row-desc">Some visible scratches or small dents a buyer would spot on a walk-round.</span><span class="fv2-tag mid">Average value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="condition-option" data-val="Not sure" onclick="pickService(this)">
-        <div class="condition-badge">🤷</div>
-        <div class="condition-body">
-          <span class="condition-title">Not sure</span>
-          <span class="condition-desc">I will need to have a look or check with the previous owner.</span>
-          <span class="condition-tag" style="background:rgba(16,21,29,.06);color:#5f6b7c;">To be confirmed</span>
-        </div>
+      <button type="button" class="fv2-row" data-val="Poor" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Poor</span><span class="fv2-row-desc">Significant bodywork, deep scratches, heavily kerbed alloys or interior damage.</span><span class="fv2-tag low">Lower value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-    </div>
-<!-- OUTSTANDING FINANCE -->
-<div class="step-kicker" style="margin-bottom:10px">Outstanding finance</div>
-<div style="display:grid;gap:9px;margin-bottom:22px" id="financeTrack">
-  <button type="button" class="condition-option" data-val="No finance" onclick="pickFinance(this)">
-    <div class="condition-badge">✅</div>
-    <div class="condition-body">
-      <span class="condition-title">No, I own it outright</span>
-      <span class="condition-desc">No outstanding finance. The car is yours to trade in freely.</span>
-    </div>
-  </button>
-  <button type="button" class="condition-option" data-val="Finance, settlement unknown" onclick="pickFinance(this)">
-    <div class="condition-badge">💳</div>
-    <div class="condition-body">
-      <span class="condition-title">Yes, not sure of the settlement figure</span>
-      <span class="condition-desc">Dan can help work this out before the call.</span>
-    </div>
-  </button>
-  <button type="button" class="condition-option" data-val="Finance, settlement known" onclick="pickFinance(this)">
-    <div class="condition-badge">💳</div>
-    <div class="condition-body">
-      <span class="condition-title">Yes, I know the settlement figure</span>
-      <span class="condition-desc">Enter it below so Dan can factor it into the deal.</span>
-    </div>
-  </button>
-</div>
-
-<!-- Settlement figure, only shown when they know it -->
-<div id="settlementWrap" style="display:none;margin-bottom:22px">
-  <div class="field-group">
-    <label>Settlement figure</label>
-    <input id="settlementFig" type="text" placeholder="e.g. 7,500">
-  </div>
-</div>
-    <!-- CONDITION -->
-    <div class="step-kicker" style="margin-bottom:10px">Overall condition *</div>
-    <div style="display:grid;gap:9px;margin-bottom:22px" id="condTrack">
-      <button type="button" class="condition-option" data-val="Showroom" onclick="pickCond(this)">
-        <div class="condition-badge">💎</div>
-        <div class="condition-body">
-          <span class="condition-title">Showroom</span>
-          <span class="condition-desc">No marks, no chips, no scuffs anywhere. Tyres like new. You could put it straight on a forecourt.</span>
-          <span class="condition-tag" style="background:rgba(58,170,106,.15);color:#7adba4;">Top end value</span>
-        </div>
-      </button>
-      <button type="button" class="condition-option" data-val="Excellent" onclick="pickCond(this)">
-        <div class="condition-badge">⭐</div>
-        <div class="condition-body">
-          <span class="condition-title">Excellent</span>
-          <span class="condition-desc">Just one scuffed alloy or a very minor stone chip. Nothing anyone would really notice.</span>
-          <span class="condition-tag" style="background:rgba(58,170,106,.12);color:#7adba4;">Strong value</span>
-        </div>
-      </button>
-      <button type="button" class="condition-option" data-val="Good" onclick="pickCond(this)">
-        <div class="condition-badge">👍</div>
-        <div class="condition-body">
-          <span class="condition-title">Good</span>
-          <span class="condition-desc">A few scuffed alloys and some stone chips on the bonnet or bumpers. Honest wear for the age and mileage.</span>
-          <span class="condition-tag" style="background:rgba(21,89,207,.15);color:#1559cf;">Good value</span>
-        </div>
-      </button>
-      <button type="button" class="condition-option" data-val="Fair" onclick="pickCond(this)">
-        <div class="condition-badge">😐</div>
-        <div class="condition-body">
-          <span class="condition-title">Fair</span>
-          <span class="condition-desc">Some small scratches or dents visible. Noticeable marks that a buyer would spot on a walk-round.</span>
-          <span class="condition-tag" style="background:rgba(201,168,76,.12);color:#8a6a1e;">Average value</span>
-        </div>
-      </button>
-      <button type="button" class="condition-option" data-val="Poor" onclick="pickCond(this)">
-        <div class="condition-badge">⚠️</div>
-        <div class="condition-body">
-          <span class="condition-title">Poor</span>
-          <span class="condition-desc">Significant bodywork damage, deep scratches, heavily kerbed alloys or interior damage.</span>
-          <span class="condition-tag" style="background:rgba(186,80,28,.15);color:#b4501e;">Lower value</span>
-        </div>
-      </button>
-      <button type="button" class="condition-option" data-val="Not sure" onclick="pickCond(this)">
-        <div class="condition-badge">🤷</div>
-        <div class="condition-body">
-          <span class="condition-title">Not sure</span>
-          <span class="condition-desc">Send me a few photos and I will give you a proper assessment.</span>
-          <span class="condition-tag" style="background:rgba(16,21,29,.06);color:#5f6b7c;">I will assess from photos</span>
-        </div>
+      <button type="button" class="fv2-row" data-val="Not sure" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Not sure</span><span class="fv2-row-desc">Send me a few photos afterwards and I'll assess it properly.</span><span class="fv2-tag na">Assessed from photos</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
     </div>
   </div>
 
-  <div class="nav">
-    <a class="btn-ghost" id="backBtn" href="step4m.html">Back</a>
-    <button class="btn" onclick="go()">Continue</button>
+  <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span id="errText"></span></div>
+  <div class="fv2-nav">
+    <a class="fv2-back" href="step3.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
+    <button class="fv2-next" onclick="go()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
 </div></div></div>
 <script>
@@ -239,22 +155,19 @@
   let serviceChosen = sessionStorage.getItem("pxService")||"";
   let financeChosen = sessionStorage.getItem('pxFinance');
 
-  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
+  document.querySelectorAll(".fv2-opt").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
   if(chosen==="Yes"||chosen==="Maybe") document.getElementById("pxDetails").style.display="block";
 
-  document.querySelectorAll("#condTrack .condition-option").forEach(b=>{ if(b.dataset.val===condChosen) b.classList.add("selected"); });
-  document.querySelectorAll('#financeTrack .condition-option').forEach(b => {
-  if (b.dataset.val === financeChosen) b.classList.add('selected');
-});
-const savedSettlement = sessionStorage.getItem('pxSettlement');
-if (savedSettlement) document.getElementById('settlementFig').value = savedSettlement;
-if (financeChosen === 'Finance, settlement known') {
-  document.getElementById('settlementWrap').style.display = 'block';
-}
-  document.querySelectorAll("#serviceTrack .condition-option").forEach(b=>{ if(b.dataset.val===serviceChosen) b.classList.add("selected"); });
-
-  const pt = sessionStorage.getItem("purchaseType");
-  if(pt==="Outright") document.getElementById("backBtn").href="step4c.html";
+  document.querySelectorAll("#condTrack .fv2-row").forEach(b=>{ if(b.dataset.val===condChosen) b.classList.add("selected"); });
+  document.querySelectorAll('#financeTrack .fv2-row').forEach(b => {
+    if (b.dataset.val === financeChosen) b.classList.add('selected');
+  });
+  const savedSettlement = sessionStorage.getItem('pxSettlement');
+  if (savedSettlement) document.getElementById('settlementFig').value = savedSettlement;
+  if (financeChosen === 'Finance, settlement known') {
+    document.getElementById('settlementWrap').style.display = 'block';
+  }
+  document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>{ if(b.dataset.val===serviceChosen) b.classList.add("selected"); });
 
   const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
   function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
@@ -269,7 +182,7 @@ if (financeChosen === 'Finance, settlement known') {
     const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
     if(!reg) return;
     const btn=document.getElementById("dvlaBtn");
-    btn.disabled=true; btn.textContent="…";
+    btn.disabled=true; btn.textContent="Looking up…";
     document.getElementById("dvlaBanner").style.display="none";
     try{
       const res=await fetch(WORKER+"?target=dvla-lookup&reg="+encodeURIComponent(reg));
@@ -286,62 +199,61 @@ if (financeChosen === 'Finance, settlement known') {
         sessionStorage.setItem("pxDvlaFuel",d.fuelType||"");
         const parts=[yr,make,model,toTC(d.colour||""),toTC(d.fuelType||"")].filter(Boolean);
         document.getElementById("dvlaDesc").textContent=parts.join(" · ");
-        document.getElementById("dvlaBanner").style.display="block";
-        startMarket(d.make||"",d.model||"",yr,fuel);
+        document.getElementById("dvlaBanner").style.display="flex";
       }
     }catch(e){}
-    btn.disabled=false; btn.textContent="Look Up";
+    btn.disabled=false; btn.textContent="Look up";
   }
 
-  function startMarket(make,model,year,fuel){
-    if(!make||!year) return;
-    const p=new URLSearchParams({target:"market-start",make,model,year,fuel});
-    fetch(WORKER+"?"+p).then(r=>r.json()).then(d=>{
-      if(d.runId) sessionStorage.setItem("pxMarketRunId",d.runId);
-    }).catch(()=>{});
+  function hideErr(){ document.getElementById("err").classList.remove("show"); }
+  function showErr(msg){
+    document.getElementById("errText").textContent=msg;
+    const el=document.getElementById("err");
+    el.classList.add("show");
+    el.scrollIntoView({behavior:"smooth",block:"center"});
   }
 
   function pick(btn, show){
-    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    document.querySelectorAll(".fv2-opt").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected");
     chosen = btn.dataset.val;
     sessionStorage.setItem("partExchange", chosen);
     document.getElementById("pxDetails").style.display = show==="yes" ? "block" : "none";
+    hideErr();
+    if(show==="no") setTimeout(()=>window.location.href="step5b.html",240);
   }
 
-function pickFinance(btn) {
-  document.querySelectorAll('#financeTrack .condition-option').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  financeChosen = btn.dataset.val;
-  sessionStorage.setItem('pxFinance', financeChosen);
-  // Show settlement input only if they know the figure
-  document.getElementById('settlementWrap').style.display =
-    financeChosen === 'Finance, settlement known' ? 'block' : 'none';
-}
+  function pickFinance(btn) {
+    document.querySelectorAll('#financeTrack .fv2-row').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    financeChosen = btn.dataset.val;
+    sessionStorage.setItem('pxFinance', financeChosen);
+    document.getElementById('settlementWrap').style.display =
+      financeChosen === 'Finance, settlement known' ? 'block' : 'none';
+    hideErr();
+  }
   function pickCond(btn){
-    document.querySelectorAll("#condTrack .condition-option").forEach(b=>b.classList.remove("selected"));
+    document.querySelectorAll("#condTrack .fv2-row").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected");
     condChosen = btn.dataset.val;
     sessionStorage.setItem("pxCondition", condChosen);
+    hideErr();
   }
-
   function pickService(btn){
-    document.querySelectorAll("#serviceTrack .condition-option").forEach(b=>b.classList.remove("selected"));
+    document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected");
     serviceChosen = btn.dataset.val;
     sessionStorage.setItem("pxService", serviceChosen);
+    hideErr();
   }
 
   function go(){
-    if(!chosen){ alert("Let me know whether you have a part exchange."); return; }
+    if(!chosen){ showErr("Let me know whether you have a car to part exchange."); return; }
     const reg=document.getElementById('reg').value.trim();
-    if(chosen!=="No" && !reg){ alert('Please enter your registration.'); return; }
-    if(chosen!=="No" && !serviceChosen){ alert('Please choose your service history.'); return; }
-    if(chosen!=="No" && !condChosen){ alert('Please choose the overall condition.'); return; }
-    if (chosen !== 'No' && !financeChosen) {
-  alert('Please let Dan know about any outstanding finance on your part exchange.');
-  return;
-    }
+    if(chosen!=="No" && !reg){ showErr("Add your registration. It does most of the work for you."); return; }
+    if(chosen!=="No" && !serviceChosen){ showErr("Choose the closest match for your service history."); return; }
+    if(chosen!=="No" && !financeChosen){ showErr("Let me know about any outstanding finance on the car."); return; }
+    if(chosen!=="No" && !condChosen){ showErr("Choose the closest match for the car's overall condition."); return; }
     sessionStorage.setItem("reg", reg.toUpperCase());
     sessionStorage.setItem("currentCar", document.getElementById("cc")?document.getElementById("cc").value.trim():"");
     sessionStorage.setItem("mileage", document.getElementById("ml")?document.getElementById("ml").value.trim():"");

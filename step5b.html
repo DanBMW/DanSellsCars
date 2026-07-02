@@ -1,134 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>DanSells | Colour &amp; Spec</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Find my BMW | Step 6 of 8 | DanSells</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <link rel="stylesheet" href="style.css"/>
-<style>
-.sec-label{font-size:.72rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#1559cf;margin-bottom:12px;}
-.bypass-card{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:18px;background:rgba(16,21,29,.03);border:2px solid rgba(16,21,29,.10);cursor:pointer;margin-bottom:24px;transition:border-color .18s,background .18s;-webkit-tap-highlight-color:transparent;}
-.bypass-card:hover{border-color:rgba(21,89,207,.5);background:rgba(21,89,207,.07);}
-.bypass-card.on{border-color:rgba(21,89,207,.8);background:rgba(21,89,207,.15);box-shadow:0 0 0 1px rgba(21,89,207,.25);}
-.bypass-icon{font-size:1.5rem;flex-shrink:0;line-height:1;}
-.bypass-text strong{display:block;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:2px;}
-.bypass-text span{font-size:.82rem;color:var(--muted);}
-.spec-divider{height:1px;background:rgba(16,21,29,.06);margin:22px 0;}
-.colour-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:8px;}
-@media(max-width:480px){.colour-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
-@media(max-width:360px){.colour-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
-.cswatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 6px 9px;border-radius:14px;background:rgba(16,21,29,.03);border:2px solid rgba(16,21,29,.06);cursor:pointer;font-size:.75rem;font-weight:600;color:#9aaec4;text-align:center;transition:border-color .17s,background .17s,transform .14s;-webkit-tap-highlight-color:transparent;user-select:none;}
-.cswatch:hover{border-color:rgba(21,89,207,.4);background:rgba(21,89,207,.08);transform:translateY(-2px);}
-.cswatch.on{border-color:rgba(21,89,207,.85);background:rgba(21,89,207,.16);color:var(--text);box-shadow:0 0 0 1px rgba(21,89,207,.22);}
-.cdot{width:28px;height:28px;border-radius:50%;flex-shrink:0;border:2px solid rgba(16,21,29,.14);}
-.cswatch.on .cdot{border-color:rgba(21,89,207,.55);}
-.trim-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px;}
-@media(max-width:480px){.trim-grid{grid-template-columns:1fr;}}
-.trim-card{padding:14px 16px;border-radius:16px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);cursor:pointer;transition:border-color .17s,background .17s,transform .14s;-webkit-tap-highlight-color:transparent;}
-.trim-card:hover{border-color:rgba(21,89,207,.45);background:rgba(21,89,207,.08);transform:translateY(-2px);}
-.trim-card.on{border-color:rgba(21,89,207,.75);background:rgba(21,89,207,.14);box-shadow:0 0 0 1px rgba(21,89,207,.2);}
-.trim-title{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:3px;}
-.trim-desc{font-size:.77rem;color:var(--muted);line-height:1.4;}
-.feat-grid{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:6px;}
-.fchip{display:inline-flex;align-items:center;gap:6px;padding:11px 15px;border-radius:13px;background:rgba(16,21,29,.04);border:2px solid rgba(16,21,29,.09);font-size:.87rem;font-weight:600;color:#5a6878;cursor:pointer;transition:background .15s,border-color .15s,transform .12s,color .15s;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
-.fchip:hover{border-color:rgba(21,89,207,.3);background:rgba(21,89,207,.06);}
-.fchip:active{transform:scale(.94);}
-.fchip.is-need{background:rgba(34,197,94,.11);border-color:rgba(34,197,94,.6);color:#14532d;}
-.fchip.is-want{background:rgba(234,179,8,.10);border-color:rgba(234,179,8,.55);color:#78350f;}
-.feat-legend{font-size:.79rem;color:#5a6878;margin:0 0 14px;display:flex;flex-wrap:wrap;gap:6px 16px;line-height:1.6;}
-.legend-need{font-weight:700;color:#166534;}
-.legend-want{font-weight:700;color:#78350f;}
-</style>
+<link rel="stylesheet" href="funnel.css"/>
+<script src="funnel-ui.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 </head>
-<body>
-<div class="app"><div class="shell">
+<body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
     <a href="index.html" style="text-decoration:none;"><span class="brand-name">DanSells</span></a>
-    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20BMW%20finder" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20BMW%20finder" target="_blank" rel="noopener" aria-label="Message Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-row"><span>Step 8 of 11</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:73%"></div></div>
+  <div class="fv2-progress">
+    <div class="fv2-progress-row"><span class="fv2-progress-step">Step 6 <span>of 8</span></span><span class="fv2-progress-label">Colour &amp; spec</span></div>
+    <div class="fv2-track"><div class="fv2-fill" style="width:75%"></div></div>
   </div>
   <div class="step-wrap">
-    <div class="step-kicker">Colour &amp; Spec</div>
-    <h2>What matters to you in the car?</h2>
-    <p class="step-desc">Takes less than a minute. The more you share, the closer I can get to the right car first time.</p>
+    <div class="step-kicker">Colour &amp; spec</div>
+    <h2>Any preferences on the car itself?</h2>
+    <p class="step-desc">Colour is the only thing I need. Everything else is optional and just sharpens the shortlist.</p>
 
-    <!-- COLOUR, always visible, always required -->
-    <div class="sec-label">Preferred colour(s), tick all you'd be happy with</div>
-    <div class="colour-grid" id="colourGrid">
-      <div class="cswatch" data-val="White"  onclick="toggleColour(this)"><div class="cdot" style="background:#f0f0f0;"></div>White</div>
-      <div class="cswatch" data-val="Black"  onclick="toggleColour(this)"><div class="cdot" style="background:#111;"></div>Black</div>
-      <div class="cswatch" data-val="Silver" onclick="toggleColour(this)"><div class="cdot" style="background:linear-gradient(135deg,#b8b8b8,#e2e2e2);"></div>Silver</div>
-      <div class="cswatch" data-val="Grey"   onclick="toggleColour(this)"><div class="cdot" style="background:#666;"></div>Grey</div>
-      <div class="cswatch" data-val="Blue"   onclick="toggleColour(this)"><div class="cdot" style="background:#1c4f9c;"></div>Blue</div>
-      <div class="cswatch" data-val="Red"    onclick="toggleColour(this)"><div class="cdot" style="background:#b71c1c;"></div>Red</div>
-      <div class="cswatch" data-val="Green"  onclick="toggleColour(this)"><div class="cdot" style="background:#1b5e20;"></div>Green</div>
-      <div class="cswatch" data-val="Brown"  onclick="toggleColour(this)"><div class="cdot" style="background:#795548;"></div>Brown</div>
-      <div class="cswatch" data-val="Orange" onclick="toggleColour(this)"><div class="cdot" style="background:#d84315;"></div>Orange</div>
-      <div class="cswatch" data-val="Yellow" onclick="toggleColour(this)"><div class="cdot" style="background:#c8b400;"></div>Yellow</div>
-      <div class="cswatch" data-val="Open to any" onclick="toggleColour(this)" style="grid-column:span 2;flex-direction:row;justify-content:center;padding:10px 14px;gap:10px;">
-        <div class="cdot" style="background:conic-gradient(red,yellow,lime,aqua,blue,magenta,red);flex-shrink:0;"></div>
-        <span>Open to any</span>
-      </div>
-    </div>
-    <p class="hint" style="margin-bottom:20px;">Select all you'd accept. Tap "Open to any" if colour doesn't matter.</p>
-
-    <div class="spec-divider"></div>
-
-    <!-- BYPASS, sits after colour, only hides trim & features -->
-    <div class="bypass-card" id="bypassCard" onclick="toggleBypass()">
-      <div class="bypass-icon">✅</div>
-      <div class="bypass-text">
-        <strong>I'm happy with standard trim &amp; spec</strong>
-        <span>Skip trim &amp; feature preferences, colour above is all I need to share.</span>
+    <div class="fv2-sec">Colours you'd accept <small>(tick all that apply)</small></div>
+    <div class="fv2-swatches" id="colourGrid">
+      <div class="fv2-swatch" data-val="White"  onclick="toggleColour(this)"><div class="dot" style="background:#f0f0f0;"></div>White</div>
+      <div class="fv2-swatch" data-val="Black"  onclick="toggleColour(this)"><div class="dot" style="background:#111;"></div>Black</div>
+      <div class="fv2-swatch" data-val="Silver" onclick="toggleColour(this)"><div class="dot" style="background:linear-gradient(135deg,#b8b8b8,#e2e2e2);"></div>Silver</div>
+      <div class="fv2-swatch" data-val="Grey"   onclick="toggleColour(this)"><div class="dot" style="background:#666;"></div>Grey</div>
+      <div class="fv2-swatch" data-val="Blue"   onclick="toggleColour(this)"><div class="dot" style="background:#1c4f9c;"></div>Blue</div>
+      <div class="fv2-swatch" data-val="Red"    onclick="toggleColour(this)"><div class="dot" style="background:#b71c1c;"></div>Red</div>
+      <div class="fv2-swatch" data-val="Green"  onclick="toggleColour(this)"><div class="dot" style="background:#1b5e20;"></div>Green</div>
+      <div class="fv2-swatch" data-val="Brown"  onclick="toggleColour(this)"><div class="dot" style="background:#795548;"></div>Brown</div>
+      <div class="fv2-swatch" data-val="Orange" onclick="toggleColour(this)"><div class="dot" style="background:#d84315;"></div>Orange</div>
+      <div class="fv2-swatch" data-val="Yellow" onclick="toggleColour(this)"><div class="dot" style="background:#c8b400;"></div>Yellow</div>
+      <div class="fv2-swatch any" data-val="Open to any" onclick="toggleColour(this)">
+        <div class="dot" style="background:conic-gradient(#8a94a0,#c3ccd6,#5f6b7c,#8a94a0);"></div>
+        <span>Open to any colour</span>
       </div>
     </div>
 
-    <!-- TRIM + FEATURES, hidden when bypass active -->
+    <button type="button" class="fv2-toggle" id="bypassCard" onclick="toggleBypass()" style="margin:22px 0 0;">
+      <span class="fv2-toggle-sw"></span>
+      <span class="fv2-toggle-body"><strong>Happy with standard trim &amp; spec</strong><span>Skip the detail below. Colour is all I need from you.</span></span>
+    </button>
+
     <div id="specDetail">
-      <div class="sec-label">Trim level preference</div>
-      <div class="trim-grid" id="trimGrid">
-        <div class="trim-card" data-val="Standard / SE" onclick="pickTrim(this)">
-          <div class="trim-title">Standard / SE</div>
-          <div class="trim-desc">Well-equipped base spec, best value per pound.</div>
-        </div>
-        <div class="trim-card" data-val="Sport" onclick="pickTrim(this)">
-          <div class="trim-title">Sport</div>
-          <div class="trim-desc">Sharper styling, alloys, enhanced interior trim.</div>
-        </div>
-        <div class="trim-card" data-val="M Sport / Performance" onclick="pickTrim(this)">
-          <div class="trim-title">M Sport / Performance</div>
-          <div class="trim-desc">Body kit, sport suspension, sporty interior finish.</div>
-        </div>
-        <div class="trim-card" data-val="Luxury / High spec" onclick="pickTrim(this)">
-          <div class="trim-title">Luxury / High spec</div>
-          <div class="trim-desc">Premium materials, comfort focus, full tech pack.</div>
-        </div>
-        <div class="trim-card" data-val="No preference" onclick="pickTrim(this)" style="grid-column:1/-1;">
-          <div class="trim-title">No strong preference, best value wins</div>
-          <div class="trim-desc">Show me what's available at my budget regardless of trim.</div>
-        </div>
+      <div class="fv2-sec">Trim level</div>
+      <div class="fv2-options" id="trimGrid">
+        <button class="fv2-opt" data-val="Standard / SE" onclick="pickTrim(this)">
+          <span class="fv2-opt-body"><span class="fv2-opt-title">Standard / SE</span><span class="fv2-opt-desc">Well equipped as standard, the best value per pound.</span></span>
+          <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </button>
+        <button class="fv2-opt" data-val="Sport" onclick="pickTrim(this)">
+          <span class="fv2-opt-body"><span class="fv2-opt-title">Sport</span><span class="fv2-opt-desc">Sharper styling, alloys, enhanced interior trim.</span></span>
+          <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </button>
+        <button class="fv2-opt" data-val="M Sport / Performance" onclick="pickTrim(this)">
+          <span class="fv2-opt-body"><span class="fv2-opt-title">M Sport / Performance</span><span class="fv2-opt-desc">Body kit, sport suspension, the full sporting look.</span></span>
+          <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </button>
+        <button class="fv2-opt" data-val="Luxury / High spec" onclick="pickTrim(this)">
+          <span class="fv2-opt-body"><span class="fv2-opt-title">Luxury / High spec</span><span class="fv2-opt-desc">Premium materials, comfort focus, full tech.</span></span>
+          <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </button>
+        <button class="fv2-opt" data-val="No preference" onclick="pickTrim(this)" style="grid-column:1/-1;">
+          <span class="fv2-opt-body"><span class="fv2-opt-title">No strong preference</span><span class="fv2-opt-desc">Show me the best value at my budget, regardless of trim.</span></span>
+          <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </button>
       </div>
 
-      <div class="spec-divider"></div>
-
-      <div class="sec-label" style="margin-top:18px;">Must-haves &amp; Nice-to-haves</div>
-      <div class="feat-legend">
-        <span>Tap once → <span class="legend-need">✅ Must have</span></span>
-        <span>Tap again → <span class="legend-want">⭐ Nice to have</span></span>
-        <span>Tap again to clear</span>
-      </div>
-      <div class="feat-grid" id="featGrid"></div>
-      <p class="hint" style="margin-top:8px;">Leave a feature untouched if it doesn't matter to you.</p>
+      <div class="fv2-sec">Features that matter</div>
+      <p class="fv2-legend">Tap once for a <b>must-have</b>, twice for a <b>nice-to-have</b>, a third time to clear. Leave anything that doesn't matter.</p>
+      <div class="fv2-feats" id="featGrid"></div>
     </div>
 
-    <div class="nav" style="margin-top:28px;">
-      <a class="btn-ghost" href="step5.html">&larr; Back</a>
-      <button class="btn" onclick="go()">Continue &rarr;</button>
+    <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span>Select at least one colour, or tap "Open to any colour".</span></div>
+    <div class="fv2-nav">
+      <a class="fv2-back" href="step5.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
+      <button class="fv2-next" onclick="go()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
     </div>
   </div>
 </div></div>
@@ -145,9 +97,9 @@ let colours=[],trim="",bypass=false;
   trim=sessionStorage.getItem("specTrim")||"";
   try{JSON.parse(sessionStorage.getItem("specNeeds")||"[]").forEach(f=>{if(f in chipState)chipState[f]='need';});}catch(e){}
   try{JSON.parse(sessionStorage.getItem("specWants")||"[]").forEach(f=>{if(f in chipState)chipState[f]='want';});}catch(e){}
-  document.querySelectorAll(".cswatch").forEach(s=>{if(colours.includes(s.dataset.val))s.classList.add("on");});
+  document.querySelectorAll(".fv2-swatch").forEach(s=>{if(colours.includes(s.dataset.val))s.classList.add("on");});
   if(bypass){document.getElementById("bypassCard").classList.add("on");document.getElementById("specDetail").style.display="none";}
-  document.querySelectorAll(".trim-card").forEach(c=>{if(c.dataset.val===trim)c.classList.add("on");});
+  document.querySelectorAll("#trimGrid .fv2-opt").forEach(c=>{if(c.dataset.val===trim)c.classList.add("selected");});
 })();
 
 function toggleBypass(){
@@ -157,14 +109,15 @@ function toggleBypass(){
 }
 
 function toggleColour(el){
+  document.getElementById("err").classList.remove("show");
   const v=el.dataset.val;
   if(v==="Open to any"){
     const on=el.classList.contains("on");
-    document.querySelectorAll(".cswatch").forEach(s=>s.classList.remove("on"));
+    document.querySelectorAll(".fv2-swatch").forEach(s=>s.classList.remove("on"));
     if(!on){el.classList.add("on");colours=["Open to any"];}else colours=[];
     return;
   }
-  document.querySelectorAll(".cswatch[data-val='Open to any']").forEach(s=>s.classList.remove("on"));
+  document.querySelectorAll(".fv2-swatch[data-val='Open to any']").forEach(s=>s.classList.remove("on"));
   colours=colours.filter(c=>c!=="Open to any");
   el.classList.toggle("on");
   if(el.classList.contains("on")){if(!colours.includes(v))colours.push(v);}
@@ -172,8 +125,8 @@ function toggleColour(el){
 }
 
 function pickTrim(el){
-  document.querySelectorAll(".trim-card").forEach(c=>c.classList.remove("on"));
-  el.classList.add("on");trim=el.dataset.val;
+  document.querySelectorAll("#trimGrid .fv2-opt").forEach(c=>c.classList.remove("selected"));
+  el.classList.add("selected");trim=el.dataset.val;
 }
 
 function cycleChip(f){
@@ -187,17 +140,23 @@ function renderChips(){
   grid.innerHTML="";
   FEATURES.forEach(f=>{
     const st=chipState[f];
-    const chip=document.createElement("div");
-    chip.className="fchip"+(st==='need'?" is-need":st==='want'?" is-want":"");
+    const chip=document.createElement("button");
+    chip.type="button";
+    chip.className="fv2-feat"+(st==='need'?" need":st==='want'?" want":"");
     chip.onclick=()=>cycleChip(f);
-    chip.textContent=(st==='need'?"✅ ":st==='want'?"⭐ ":"")+f;
+    const tag=document.createElement("span");
+    tag.className="st";
+    tag.textContent=st==='need'?"Must":"Nice";
+    chip.appendChild(document.createTextNode(f));
+    chip.appendChild(tag);
     grid.appendChild(chip);
   });
 }
 
 function go(){
   if(colours.length===0){
-    alert("Please select at least one colour preference, or tap 'Open to any'.");
+    const el=document.getElementById("err");
+    el.classList.add("show");
     document.getElementById("colourGrid").scrollIntoView({behavior:"smooth",block:"center"});
     return;
   }
@@ -212,7 +171,7 @@ function go(){
     sessionStorage.setItem("specNeeds",JSON.stringify(FEATURES.filter(f=>chipState[f]==='need')));
     sessionStorage.setItem("specWants",JSON.stringify(FEATURES.filter(f=>chipState[f]==='want')));
   }
-  window.location.href="step6.html";
+  window.location.href="step7.html";
 }
 renderChips();
 </script>
