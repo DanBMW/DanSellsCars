@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Find my BMW — Step 4 of 8 | DanSells</title>
+<title>Find my BMW | Step 4 of 8 | DanSells</title>
 <link rel="stylesheet" href="style.css"/>
 <link rel="stylesheet" href="funnel.css"/>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
@@ -25,7 +25,7 @@
 <div class="step-wrap">
   <div class="step-kicker">Budget</div>
   <h2>How would you like to fund it?</h2>
-  <p class="step-desc">Rough figures are all I need — nothing here commits you to anything, and I'll talk you through the alternatives when we speak.</p>
+  <p class="step-desc">Rough figures are all I need. Nothing here commits you to anything, and I'll talk you through the alternatives when we speak.</p>
 
   <div class="fv2-options three" id="routeGrid">
     <button class="fv2-opt" data-val="Finance" onclick="pickRoute(this)">
@@ -47,7 +47,7 @@
 
   <!-- FINANCE / NOT SURE -->
   <div id="financeBlock" class="fv2-reveal" style="display:none;">
-    <div class="fv2-sec">Deposit <small>— zero is absolutely fine</small></div>
+    <div class="fv2-sec">Deposit <small>(zero is absolutely fine)</small></div>
     <div class="fv2-amount">
       <div class="fv2-amount-row"><span class="fv2-amount-label">Towards the car</span><span class="fv2-amount-value" id="depV">£2,000</span></div>
       <input type="range" id="depR" min="0" max="15000" step="250" value="2000"/>
@@ -70,7 +70,7 @@
         <button class="fv2-chip" data-v="650">£650</button>
         <button class="fv2-chip" data-v="850">£850</button>
       </div>
-      <p class="fv2-amount-note">Your real number beats an optimistic one — I'd rather build the deal around what's actually comfortable.</p>
+      <p class="fv2-amount-note">Your real number beats an optimistic one. I'd rather build the deal around what's actually comfortable.</p>
     </div>
   </div>
 
@@ -90,13 +90,13 @@
     </div>
     <button type="button" class="fv2-toggle" id="altToggle" onclick="toggleAlt()" style="margin:14px 0 0;">
       <span class="fv2-toggle-sw"></span>
-      <span class="fv2-toggle-body"><strong>Show me a finance comparison too</strong><span>Optional — sometimes a finance route unlocks a better car for the same money.</span></span>
+      <span class="fv2-toggle-body"><strong>Show me a finance comparison too</strong><span>Optional. Sometimes a finance route unlocks a better car for the same money.</span></span>
     </button>
     <div id="altBlock" class="fv2-reveal" style="display:none;margin-top:12px;">
       <div class="fv2-amount">
         <div class="fv2-amount-row"><span class="fv2-amount-label">Monthly that could work</span><span class="fv2-amount-value" id="altV">£450</span></div>
         <input type="range" id="altR" min="200" max="2000" step="25" value="450"/>
-        <p class="fv2-amount-note">No commitment — it just lets me show you both routes side by side.</p>
+        <p class="fv2-amount-note">No commitment, it just lets me show you both routes side by side.</p>
       </div>
     </div>
   </div>
@@ -117,7 +117,7 @@
     </div>
   </div>
 
-  <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span>Choose the route that feels most likely — you can explore the others with me later.</span></div>
+  <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span>Choose the route that feels most likely. You can explore the others with me later.</span></div>
   <div class="fv2-nav">
     <a class="fv2-back" href="step2.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
     <button class="fv2-next" onclick="goNext()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>

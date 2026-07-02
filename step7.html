@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Find my BMW — Step 7 of 8 | DanSells</title>
+<title>Find my BMW | Step 7 of 8 | DanSells</title>
 <link rel="stylesheet" href="style.css"/>
 <link rel="stylesheet" href="funnel.css"/>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
@@ -25,7 +25,7 @@
 <div class="step-wrap">
   <div class="step-kicker">Your details</div>
   <h2>Where should I send your options?</h2>
-  <p class="step-desc">Your brief comes straight to me — no call centres, and your details are never passed on.</p>
+  <p class="step-desc">Your brief comes straight to me. No call centres, and your details are never passed on.</p>
 
   <div class="input-card">
     <div class="two-col">
@@ -39,7 +39,7 @@
     <div class="field-group"><label>Best time to call <span style="font-weight:400;color:var(--muted);">(optional)</span></label><input id="bt" type="text" placeholder="e.g. Weekdays after 5pm"/></div>
   </div>
 
-  <div class="fv2-sec">Anything specific in mind? <small>— optional</small></div>
+  <div class="fv2-sec">Anything specific in mind? <small>(optional)</small></div>
   <div class="input-card">
     <div class="field-group">
       <label>A particular model</label>
@@ -47,13 +47,13 @@
     </div>
     <div class="field-group">
       <label>Anything else worth knowing</label>
-      <textarea id="notes" placeholder="Deal-breakers, must-haves, two child seats, a dog in the boot, long motorway runs — whatever shapes the right car for you."></textarea>
+      <textarea id="notes" placeholder="Deal-breakers, must-haves, two child seats, a dog in the boot, long motorway runs. Whatever shapes the right car for you."></textarea>
     </div>
   </div>
 
   <div class="fv2-consent">
     <label><input type="checkbox" id="mktOptIn" onchange="document.getElementById('mktChannels').style.display=this.checked?'block':'none'">
-    <span><strong>Keep me posted</strong> — occasional BMW news, new model alerts and offers, directly from me. No bulk email, no third parties, unsubscribe any time.</span></label>
+    <span><strong>Keep me posted.</strong> Occasional BMW news, new model alerts and offers, directly from me. No bulk email, no third parties, unsubscribe any time.</span></label>
     <div id="mktChannels" style="display:none;">
       <div class="fv2-mkt-ch">
         <label><input type="checkbox" value="Email" class="mktCh" style="accent-color:var(--blue);"> Email</label>
@@ -71,7 +71,7 @@
   </div>
   <div class="fv2-trust">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-    <span>By continuing you agree that Dan may use these details to contact you about your enquiry. Nothing is shared or sold — see the <a href="privacy.html" style="color:var(--body);">privacy policy</a>.</span>
+    <span>By continuing you agree that Dan may use these details to contact you about your enquiry. Nothing is shared or sold. See the <a href="privacy.html" style="color:var(--body);">privacy policy</a>.</span>
   </div>
 </div></div></div>
 <script>
@@ -99,7 +99,7 @@
     const n=document.getElementById("fn").value.trim(),e=document.getElementById("em").value.trim(),p=document.getElementById("ph").value.trim();
     if(!n){ showErr("Your name is needed so I know who I'm talking to.","fn"); return; }
     if(!e){ showErr("An email address is needed so I can send your options over.","em"); return; }
-    if(!isValidEmail(e)){ showErr("That email doesn't look quite right — e.g. you@example.com.","em"); return; }
+    if(!isValidEmail(e)){ showErr("That email doesn't look quite right (e.g. you@example.com).","em"); return; }
     if(!p){ showErr("A mobile number is needed so we can actually speak.","ph"); return; }
     sessionStorage.setItem("fullName",n); sessionStorage.setItem("email",e); sessionStorage.setItem("phone",p);
     sessionStorage.setItem("postcode",document.getElementById("pc").value.trim());
