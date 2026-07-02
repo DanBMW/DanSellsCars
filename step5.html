@@ -68,6 +68,23 @@
       <p class="hint" style="margin-top:-6px;">If an online buyer has already given you a figure, drop it in. I can usually tell you quickly whether I can beat it.</p>
     </div>
 
+    <div id="pxPhotoSec">
+      <div class="fv2-sec">Photos of the car <small>(optional, they sharpen your figure)</small></div>
+      <p class="fv2-sec-sub">Front, rear, both sides, the interior, and any marks. Straight off your camera roll is fine.</p>
+      <div id="pxUpArea">
+        <label class="px-drop" for="pxFiles">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8z"/><circle cx="12" cy="12.5" r="3.4"/></svg>
+          Add photos here (up to 8)
+        </label>
+        <input id="pxFiles" type="file" accept="image/*" multiple style="display:none;">
+        <div class="px-thumbs" id="pxThumbs"></div>
+      </div>
+      <button type="button" class="fv2-toggle" id="waLaterBtn" onclick="toggleWaLater()" style="margin-top:10px;">
+        <span class="fv2-toggle-sw"></span>
+        <span class="fv2-toggle-body"><strong>I'll send these to Dan on WhatsApp straight after completing this</strong><span>No problem. The final page gives you a one-tap WhatsApp button with your details already filled in.</span></span>
+      </button>
+    </div>
+
     <div class="fv2-sec">Service history</div>
     <div class="fv2-rows" id="serviceTrack">
       <button type="button" class="fv2-row" data-val="Full dealer history" onclick="pickService(this)">
@@ -204,6 +221,104 @@
     }catch(e){}
     btn.disabled=false; btn.textContent="Look up";
   }
+
+  // ── PX photo upload: straight to Cloudinary, URLs ride along in the
+  // one Formspree submission on the review step. The toggle lets people
+  // skip and WhatsApp them after instead. ──
+  const CLD = window.FV2_CLOUDINARY || { cloud: "zcigf45n", preset: "dansells-px" };
+  const MAX_PHOTOS = 8;
+  let photoItems = [];
+  let waLater = sessionStorage.getItem("pxPhotoBypass") === "true";
+  try {
+    JSON.parse(sessionStorage.getItem("pxPhotos") || "[]").forEach(u => {
+      photoItems.push({ preview: u, url: u, state: "done" });
+    });
+  } catch(e) {}
+
+  function persistPhotos(){
+    sessionStorage.setItem("pxPhotos", JSON.stringify(
+      photoItems.filter(i => i.state === "done").map(i => i.url)
+    ));
+  }
+
+  function paintPhotos(){
+    const grid = document.getElementById("pxThumbs");
+    grid.innerHTML = "";
+    photoItems.forEach(item => {
+      const t = document.createElement("div");
+      t.className = "px-thumb " + item.state;
+      const im = document.createElement("img");
+      im.src = item.preview;
+      t.appendChild(im);
+      const st = document.createElement("div");
+      st.className = "st";
+      st.textContent = item.state === "up" ? "Uploading…" : item.state === "done" ? "Uploaded" : "Failed. Tap to retry";
+      t.appendChild(st);
+      if (item.state === "fail") t.onclick = function(){ uploadPhoto(item); };
+      grid.appendChild(t);
+    });
+  }
+
+  function shrinkPhoto(file){
+    return new Promise(function(res){
+      const img = new Image();
+      img.onload = function(){
+        const sc = Math.min(1, 1600 / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(img.width * sc));
+        c.height = Math.max(1, Math.round(img.height * sc));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(img.src);
+        c.toBlob(function(b){ res(b || file); }, "image/jpeg", .82);
+      };
+      img.onerror = function(){ res(file); };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  async function uploadPhoto(item){
+    item.state = "up"; paintPhotos();
+    try {
+      if (!item.blob) item.blob = await shrinkPhoto(item.file);
+      const fd = new FormData();
+      fd.append("file", item.blob);
+      fd.append("upload_preset", CLD.preset);
+      const r = await fetch("https://api.cloudinary.com/v1_1/" + CLD.cloud + "/image/upload", { method: "POST", body: fd });
+      const d = await r.json();
+      if (d.error && /preset/i.test(d.error.message || "")) {
+        document.getElementById("pxPhotoSec").style.display = "none";
+        return;
+      }
+      if (!d.secure_url) throw new Error("no url");
+      item.url = d.secure_url;
+      item.state = "done";
+      persistPhotos();
+    } catch(e) {
+      item.state = "fail";
+    }
+    paintPhotos();
+  }
+
+  function refreshWaLater(){
+    document.getElementById("waLaterBtn").classList.toggle("on", waLater);
+    document.getElementById("pxUpArea").style.display = waLater ? "none" : "block";
+  }
+  function toggleWaLater(){
+    waLater = !waLater;
+    sessionStorage.setItem("pxPhotoBypass", waLater ? "true" : "false");
+    refreshWaLater();
+  }
+  refreshWaLater();
+  paintPhotos();
+
+  document.getElementById("pxFiles").addEventListener("change", function(e){
+    Array.from(e.target.files).slice(0, MAX_PHOTOS - photoItems.length).forEach(function(f){
+      const item = { file: f, preview: URL.createObjectURL(f), state: "up", url: "" };
+      photoItems.push(item);
+      uploadPhoto(item);
+    });
+    e.target.value = "";
+  });
 
   function hideErr(){ document.getElementById("err").classList.remove("show"); }
   function showErr(msg){

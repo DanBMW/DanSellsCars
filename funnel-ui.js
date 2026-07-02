@@ -10,7 +10,7 @@
 (function(){
   var KEYS = ["lifestyle","bodyStyles","timeline","purchaseType","deposit","monthlyBudget",
     "annualMileage","cashBudget","altMonthly","partExchange","reg","currentCar","mileage",
-    "wbacVal","pxModel","pxService","pxFinance","pxSettlement","pxCondition","pxDvlaMake",
+    "wbacVal","pxModel","pxService","pxFinance","pxSettlement","pxCondition","pxPhotos","pxPhotoBypass","pxDvlaMake",
     "pxDvlaModel","pxDvlaYear","pxDvlaFuel","specBypass","specColours","specTrim","specNeeds",
     "specWants","modelPref","notes","fullName","email","phone","postcode","bestTime",
     "marketingOptIn","marketingChannels","fv2Pct"];
@@ -124,6 +124,10 @@
     var px = g("partExchange");
     if (px === "No") items.push("No PX");
     else if (px) items.push("PX: " + (g("pxModel") || g("currentCar") || g("reg") || "yes"));
+    try {
+      var ph = JSON.parse(g("pxPhotos") || "[]");
+      if (ph.length) items.push(ph.length + (ph.length === 1 ? " photo" : " photos"));
+    } catch(e) {}
     try {
       var cl = JSON.parse(g("specColours") || "[]");
       if (cl.length) items.push(cl[0] === "Open to any" ? "Any colour" : cl.slice(0,2).join(", ") + (cl.length > 2 ? " +" + (cl.length - 2) : ""));
