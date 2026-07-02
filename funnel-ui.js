@@ -10,7 +10,7 @@
 (function(){
   var KEYS = ["lifestyle","bodyStyles","timeline","purchaseType","deposit","monthlyBudget",
     "annualMileage","cashBudget","altMonthly","partExchange","reg","currentCar","mileage",
-    "wbacVal","pxModel","pxService","pxFinance","pxSettlement","pxCondition","pxPhotos","pxPhotoBypass","pxDvlaMake",
+    "wbacVal","pxModel","pxService","pxFinance","pxSettlement","pxCondition","pxPhotos","pxPhotoBypass","pxMotExpiry","pxMotStatus","pxMotHistory","pxDvlaMake",
     "pxDvlaModel","pxDvlaYear","pxDvlaFuel","specBypass","specColours","specTrim","specNeeds",
     "specWants","modelPref","notes","fullName","email","phone","postcode","bestTime",
     "marketingOptIn","marketingChannels","fv2Pct"];
