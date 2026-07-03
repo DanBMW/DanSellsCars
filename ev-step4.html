@@ -1,241 +1,589 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DanSells Electric, Step 4</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BMW EV Finder | Step 4 of 6 | DanSells</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="funnel.css"/>
+<script src="ev-funnel-ui.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
-<style>
-  .co{width:100%;text-align:left;padding:14px 16px;border-radius:16px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);cursor:pointer;transition:border-color .18s,background .18s,transform .15s;display:flex;align-items:flex-start;gap:14px;}
-  .co:hover{border-color:rgba(21,89,207,.45);background:rgba(21,89,207,.08);transform:translateY(-1px);}
-  .co.selected{border-color:rgba(21,89,207,.7);background:rgba(21,89,207,.13);box-shadow:0 0 0 1px rgba(21,89,207,.2);}
-  .co-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:rgba(16,21,29,.04);}
-  .co-body{display:flex;flex-direction:column;gap:3px;}
-  .co-title{font-size:.94rem;font-weight:700;color:#141a22;}
-  .co-desc{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
-  .co-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:3px;}
-  .reg-plate{width:100%;min-height:54px;background:#f4d24a;color:#000;font-weight:900;letter-spacing:.14em;text-transform:uppercase;border:3px solid #111;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);text-align:center;font-size:1.05rem;font-family:Arial,Helvetica,sans-serif;}
-</style>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XZL1RF6SV6');
+</script>
 </head>
-<body>
-<div class="app"><div class="shell">
+<body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
     <a href="index.html" style="text-decoration:none;"><span class="brand-name">DanSells</span></a>
-    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20EV%20finder" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20EV%20finder" target="_blank" rel="noopener" aria-label="Message Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-row"><span>Step 4 of 7</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:57%"></div></div>
+  <div class="fv2-progress">
+    <div class="fv2-progress-row"><span class="fv2-progress-step">Step 4 <span>of 6</span></span><span class="fv2-progress-label">Your current car</span></div>
+    <div class="fv2-track"><div class="fv2-fill" style="width:66.7%"></div></div>
   </div>
-  <div class="step-wrap">
-    <div class="step-kicker">Part exchange</div>
-    <h2>Do you have a car to part exchange?</h2>
-    <p class="step-desc">If yes, grab a quick online buyer quote as a rough baseline. Drop the figure in and Dan will tell you whether he can improve on it.</p>
+<div class="step-wrap">
+  <div class="step-kicker">Your current car</div>
+  <h2>What's the plan for your current car?</h2>
+  <p class="step-desc">Part exchange it, or keep it and just see the numbers. Either way, your registration does the work — I'll pull the car's details and show what switching to electric saves you.</p>
 
-    <div class="grid three" style="margin-bottom:18px">
-      <button class="choice" data-val="Yes"   onclick="pick(this,'yes')"><span class="choice-emoji">&#128664;</span><span class="choice-title">Yes</span><span class="choice-desc">I have a car to trade in.</span></button>
-      <button class="choice" data-val="No"    onclick="pick(this,'no')"><span class="choice-emoji">&#10060;</span><span class="choice-title">No</span><span class="choice-desc">No part exchange this time.</span></button>
-      <button class="choice" data-val="Maybe" onclick="pick(this,'yes')"><span class="choice-emoji">&#129300;</span><span class="choice-title">Maybe</span><span class="choice-desc">Not decided yet.</span></button>
+  <div class="fv2-options" id="planGrid">
+    <button class="fv2-opt" data-val="Yes" onclick="pickPlan(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3.5h5v5"/><path d="M21 3.5 13.5 11"/><path d="M8 20.5H3v-5"/><path d="m3 20.5 7.5-7.5"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Part exchange it</span><span class="fv2-opt-desc">Trade it in against the EV.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Maybe" onclick="pickPlan(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 3.4c-.8.5-1.1 1-1.1 1.9"/><path d="M12 17.4v.01"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Maybe</span><span class="fv2-opt-desc">Depends on the figure I'm offered.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Keeping it" onclick="pickPlan(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a7 7 0 0 1 7 7c0 4.2-4.1 8.5-6.3 10.5a1 1 0 0 1-1.4 0C9.1 18.5 5 14.2 5 10a7 7 0 0 1 7-7z"/><path d="M12 6.5 10 10.4h4L12 14.3"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Keeping it &mdash; just curious</span><span class="fv2-opt-desc">Show me what electric would save me.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="No" onclick="pickPlan(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">No car to change</span><span class="fv2-opt-desc">This EV is an addition, or a first car.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+  </div>
+
+  <!-- Registration + saving: everyone with a car sees this -->
+  <div id="regSection" class="fv2-reveal" style="display:none">
+    <div class="fv2-sec">Your registration <small>(required)</small></div>
+    <p class="fv2-sec-sub">I'll pull the make, model, fuel type and official CO&#8322; figure &mdash; that's what powers the saving estimate below.</p>
+    <div class="fv2-plate-wrap">
+      <input id="reg" type="text" class="fv2-plate" placeholder="AB12 CDE" required maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()"/>
+      <button type="button" class="fv2-plate-btn" id="dvlaBtn" onclick="dvlaLookup()">Look up</button>
     </div>
+    <div id="dvlaBanner" class="fv2-banner" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Found: <strong id="dvlaDesc"></strong></span></div>
+    <div id="motNote" class="fv2-mot"></div>
 
-    <div id="pxDetails" style="display:none">
-      <div class="input-card" style="margin-bottom:16px">
-        <div class="field-group" style="margin-bottom:16px">
-          <label for="reg">Registration</label>
-          <input id="reg" type="text" class="reg-plate" placeholder="AB12 CDE" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
-          <button type="button" class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="margin-top:8px;width:100%;padding:10px 14px;font-size:.88rem">Look Up</button>
-          <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:10px 14px;font-size:.85rem;color:#0e3f96;margin-top:8px">Found: <strong id="dvlaDesc"></strong></div>
-        </div>
-        <div class="field-group" style="margin-bottom:16px">
-          <label>Model</label>
-          <input id="evPXModel" type="text" placeholder="e.g. 3 Series, 320i"/>
-        </div>
-        <div class="two-col">
-          <div class="field-group"><label>Current car</label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"></div>
-          <div class="field-group"><label>Mileage</label><input id="ml" type="text" placeholder="e.g. 28,000"></div>
-        </div>
-        <div class="field-group">
-          <label>Online buyer quote &mdash; your baseline</label>
-          <input id="wv" type="text" placeholder="e.g. 11,400">
-          <span class="hint" style="margin-top:4px">Use any instant online buyer for a rough figure. Dan can often improve on it.</span>
-        </div>
-      </div>
-
-      <div class="step-kicker" style="margin-bottom:10px">Service history</div>
-      <div style="display:grid;gap:9px;margin-bottom:18px" id="serviceTrack">
-        <button type="button" class="co" data-val="Full dealer history" onclick="pickService(this)">
-          <div class="co-badge">&#11088;</div>
-          <div class="co-body"><span class="co-title">Full dealer history</span><span class="co-desc">Every service stamp from a dealership.</span><span class="co-tag" style="background:rgba(58,170,106,.15);color:#7adba4">Best for value</span></div>
-        </button>
-        <button type="button" class="co" data-val="Full independent history" onclick="pickService(this)">
-          <div class="co-badge">&#128295;</div>
-          <div class="co-body"><span class="co-title">Full independent history</span><span class="co-desc">Serviced every time, independent garage.</span><span class="co-tag" style="background:rgba(58,170,106,.12);color:#7adba4">Good for value</span></div>
-        </button>
-        <button type="button" class="co" data-val="Partial history" onclick="pickService(this)">
-          <div class="co-badge">&#128196;</div>
-          <div class="co-body"><span class="co-title">Partial history</span><span class="co-desc">Some stamps or receipts but gaps.</span><span class="co-tag" style="background:rgba(21,89,207,.15);color:#1559cf">Some impact on value</span></div>
-        </button>
-        <button type="button" class="co" data-val="No history" onclick="pickService(this)">
-          <div class="co-badge">&#10060;</div>
-          <div class="co-body"><span class="co-title">No history</span><span class="co-desc">No stamps or receipts. Still appraised honestly.</span><span class="co-tag" style="background:rgba(186,80,28,.15);color:#b4501e">Will affect value</span></div>
-        </button>
-        <button type="button" class="co" data-val="Not sure" onclick="pickService(this)">
-          <div class="co-badge">&#129300;</div>
-          <div class="co-body"><span class="co-title">Not sure</span><span class="co-desc">Need to check or confirm.</span></div>
-        </button>
-      </div>
-
-      <div class="step-kicker" style="margin-bottom:10px">Outstanding finance on your current car</div>
-      <div style="display:grid;gap:9px;margin-bottom:18px" id="financeTrack">
-        <button type="button" class="co" data-val="No finance" onclick="pickFinance(this)">
-          <div class="co-badge">&#9989;</div>
-          <div class="co-body"><span class="co-title">No &mdash; I own it outright</span><span class="co-desc">No outstanding finance. Free to trade in.</span></div>
-        </button>
-        <button type="button" class="co" data-val="Finance, settlement unknown" onclick="pickFinance(this)">
-          <div class="co-badge">&#128179;</div>
-          <div class="co-body"><span class="co-title">Yes &mdash; not sure of the settlement</span><span class="co-desc">Dan can help work this out before the call.</span></div>
-        </button>
-        <button type="button" class="co" data-val="Finance, settlement known" onclick="pickFinance(this)">
-          <div class="co-badge">&#128179;</div>
-          <div class="co-body"><span class="co-title">Yes &mdash; I know the settlement figure</span><span class="co-desc">Enter it below so Dan can factor it into the deal.</span></div>
-        </button>
-      </div>
-      <div id="settlementWrap" style="display:none;margin-bottom:18px">
-        <div class="field-group"><label>Settlement figure</label><input id="settlementFig" type="text" placeholder="e.g. 7,500"></div>
-      </div>
-
-      <div class="step-kicker" style="margin-bottom:10px">Overall condition</div>
-      <div style="display:grid;gap:9px;margin-bottom:8px" id="condTrack">
-        <button type="button" class="co" data-val="Showroom" onclick="pickCond(this)">
-          <div class="co-badge">&#127775;</div>
-          <div class="co-body"><span class="co-title">Showroom</span><span class="co-desc">No marks, no chips, tyres like new.</span><span class="co-tag" style="background:rgba(58,170,106,.15);color:#7adba4">Top end value</span></div>
-        </button>
-        <button type="button" class="co" data-val="Excellent" onclick="pickCond(this)">
-          <div class="co-badge">&#128077;</div>
-          <div class="co-body"><span class="co-title">Excellent</span><span class="co-desc">One scuffed alloy or minor stone chip.</span><span class="co-tag" style="background:rgba(58,170,106,.12);color:#7adba4">Strong value</span></div>
-        </button>
-        <button type="button" class="co" data-val="Good" onclick="pickCond(this)">
-          <div class="co-badge">&#128076;</div>
-          <div class="co-body"><span class="co-title">Good</span><span class="co-desc">A few scuffs, stone chips. Honest wear.</span><span class="co-tag" style="background:rgba(21,89,207,.15);color:#1559cf">Good value</span></div>
-        </button>
-        <button type="button" class="co" data-val="Fair" onclick="pickCond(this)">
-          <div class="co-badge">&#128075;</div>
-          <div class="co-body"><span class="co-title">Fair</span><span class="co-desc">Small scratches or dents a buyer would notice.</span><span class="co-tag" style="background:rgba(201,168,76,.12);color:#8a6a1e">Average value</span></div>
-        </button>
-        <button type="button" class="co" data-val="Poor" onclick="pickCond(this)">
-          <div class="co-badge">&#128078;</div>
-          <div class="co-body"><span class="co-title">Poor</span><span class="co-desc">Significant bodywork or interior damage.</span><span class="co-tag" style="background:rgba(186,80,28,.15);color:#b4501e">Lower value</span></div>
-        </button>
-        <button type="button" class="co" data-val="Not sure" onclick="pickCond(this)">
-          <div class="co-badge">&#128247;</div>
-          <div class="co-body"><span class="co-title">Not sure</span><span class="co-desc">Send Dan a few photos and he will assess it.</span></div>
-        </button>
-      </div>
+    <!-- The saving card -->
+    <div id="saveCard" class="ev-save" style="display:none">
+      <div class="ev-save-head"><span class="ev-save-kick">Your electric saving</span><span class="ev-save-badge">Rough estimate</span></div>
+      <div class="ev-save-hero"><span id="saveHero">£0</span><small id="saveHeroUnit">a year</small></div>
+      <p class="ev-save-sub" id="saveSub"></p>
+      <div class="ev-save-rows" id="saveRows"></div>
+      <p class="ev-save-note" id="saveNote"></p>
     </div>
-
-    <div class="nav" style="margin-top:20px">
-      <a class="btn-ghost" href="ev-step3.html">&larr; Back</a>
-      <button class="btn" onclick="go()">Continue &rarr;</button>
+    <div id="saveAlt" class="ev-save-alt" style="display:none"></div>
+    <div id="dvsaNudge" class="ev-dvsa" style="display:none">
+      <span id="dvsaText"></span>
+      <button type="button" id="dvsaBtn" onclick="useDvsaMiles()">Use it</button>
     </div>
   </div>
-</div></div>
+
+  <!-- PX-only details -->
+  <div id="pxDetails" class="fv2-reveal" style="display:none">
+    <div class="input-card" style="margin:16px 0 0;">
+      <div class="two-col">
+        <div class="field-group"><label>Car <span style="font-weight:400;color:var(--muted);">(year, make)</span></label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
+        <div class="field-group"><label>Model</label><input id="pxModel" type="text" placeholder="e.g. 3 Series, 320i"/></div>
+      </div>
+      <div class="two-col">
+        <div class="field-group"><label>Mileage</label><input id="ml" type="text" inputmode="numeric" placeholder="e.g. 28,000"/></div>
+        <div class="field-group"><label>Online quote, if you have one <span style="font-weight:400;color:var(--muted);">(optional)</span></label><input id="wv" type="text" placeholder="e.g. £11,400"/></div>
+      </div>
+      <p class="hint" style="margin-top:-6px;">If an online buyer has already given you a figure, drop it in. I can usually tell you quickly whether I can beat it.</p>
+    </div>
+
+    <div id="pxPhotoSec">
+      <div class="fv2-sec">Photos of the car <small>(optional, they sharpen your figure)</small></div>
+      <p class="fv2-sec-sub">Front, rear, both sides, the interior, and any marks. Straight off your camera roll is fine.</p>
+      <div id="pxUpArea">
+        <label class="px-drop" for="pxFiles">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8z"/><circle cx="12" cy="12.5" r="3.4"/></svg>
+          Add photos here (up to 8)
+        </label>
+        <input id="pxFiles" type="file" accept="image/*" multiple style="display:none;">
+        <div class="px-thumbs" id="pxThumbs"></div>
+      </div>
+      <button type="button" class="fv2-toggle" id="waLaterBtn" onclick="toggleWaLater()" style="margin-top:10px;">
+        <span class="fv2-toggle-sw"></span>
+        <span class="fv2-toggle-body"><strong>I'll send these to Dan on WhatsApp straight after completing this</strong><span>No problem. The final page gives you a one-tap WhatsApp button with your details already filled in.</span></span>
+      </button>
+    </div>
+
+    <div class="fv2-sec">Service history</div>
+    <div class="fv2-rows" id="serviceTrack">
+      <button type="button" class="fv2-row" data-val="Full dealer history" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Full dealer history</span><span class="fv2-row-desc">Every service at a main dealer. The strongest history a car can have.</span><span class="fv2-tag good">Best for value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Full independent history" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Full independent history</span><span class="fv2-row-desc">Serviced on time, every time, at independent garages.</span><span class="fv2-tag good">Good for value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Partial history" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Partial history</span><span class="fv2-row-desc">Some stamps or receipts, with gaps in the record.</span><span class="fv2-tag ok">Some impact on value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="No history" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">No history</span><span class="fv2-row-desc">Nothing to hand. Still fine to appraise, just worth being upfront.</span><span class="fv2-tag low">Will affect value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Not sure" onclick="pickService(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Not sure</span><span class="fv2-row-desc">I'll need to check the paperwork or the previous owner.</span><span class="fv2-tag na">To be confirmed</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+    </div>
+
+    <div class="fv2-sec">Outstanding finance</div>
+    <div class="fv2-rows" id="financeTrack">
+      <button type="button" class="fv2-row" data-val="No finance" onclick="pickFinance(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">None, I own it outright</span><span class="fv2-row-desc">The car is yours to trade in freely.</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Finance, settlement unknown" onclick="pickFinance(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Yes, settlement figure unknown</span><span class="fv2-row-desc">No problem, I can help work it out before we speak.</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Finance, settlement known" onclick="pickFinance(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Yes, I know the settlement figure</span><span class="fv2-row-desc">Enter it below and I'll factor it into the deal.</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+    </div>
+    <div id="settlementWrap" class="fv2-reveal" style="display:none;margin:-8px 0 22px;">
+      <div class="input-card" style="margin:0;">
+        <div class="field-group"><label>Settlement figure</label><input id="settlementFig" type="text" inputmode="numeric" placeholder="e.g. 7,500"></div>
+      </div>
+    </div>
+
+    <div class="fv2-sec">Overall condition</div>
+    <p class="fv2-sec-sub">Honest is best. It means the figure I give you actually holds.</p>
+    <div class="fv2-rows" id="condTrack">
+      <button type="button" class="fv2-row" data-val="Showroom" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Showroom</span><span class="fv2-row-desc">No marks, chips or scuffs anywhere. Could go straight on a forecourt.</span><span class="fv2-tag good">Top end value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Excellent" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Excellent</span><span class="fv2-row-desc">One scuffed alloy or a very minor stone chip at most.</span><span class="fv2-tag good">Strong value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Good" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Good</span><span class="fv2-row-desc">A few scuffed alloys and some stone chips. Honest wear for the age and miles.</span><span class="fv2-tag ok">Good value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Fair" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Fair</span><span class="fv2-row-desc">Some visible scratches or small dents a buyer would spot on a walk-round.</span><span class="fv2-tag mid">Average value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Poor" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Poor</span><span class="fv2-row-desc">Significant bodywork, deep scratches, heavily kerbed alloys or interior damage.</span><span class="fv2-tag low">Lower value</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+      <button type="button" class="fv2-row" data-val="Not sure" onclick="pickCond(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Not sure</span><span class="fv2-row-desc">Send me a few photos afterwards and I'll assess it properly.</span><span class="fv2-tag na">Assessed from photos</span></span>
+        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span id="errText"></span></div>
+  <div class="fv2-nav">
+    <a class="fv2-back" href="ev-step3.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
+    <button class="fv2-next" onclick="go()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+  <div class="fv2-trust">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+    <span>The saving is a rough guide built from public DVLA and DVSA data about the car, never about you. Dan confirms the exact numbers with you.</span>
+  </div>
+</div></div></div>
 <script>
   const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
-  function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
+  function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()).replace(/\bBmw\b/g,'BMW').replace(/\bVw\b/g,'VW').replace(/\bMg\b/g,'MG'); }
 
-  let pxChosen      = sessionStorage.getItem('evPX');
-  let serviceChosen = sessionStorage.getItem('evPXService');
-  let financeChosen = sessionStorage.getItem('evPXFinance');
-  let condChosen    = sessionStorage.getItem('evPXCond');
+  let chosen        = sessionStorage.getItem("evPX")        || "";
+  let serviceChosen = sessionStorage.getItem("evPXService") || "";
+  let financeChosen = sessionStorage.getItem("evPXFinance") || "";
+  let condChosen    = sessionStorage.getItem("evPXCond")    || "";
 
-  document.querySelectorAll('.choice').forEach(b => { if (b.dataset.val === pxChosen) b.classList.add('selected'); });
-  if (pxChosen === 'Yes' || pxChosen === 'Maybe') document.getElementById('pxDetails').style.display = 'block';
-  document.querySelectorAll('#serviceTrack .co').forEach(b => { if (b.dataset.val === serviceChosen) b.classList.add('selected'); });
-  document.querySelectorAll('#financeTrack .co').forEach(b => { if (b.dataset.val === financeChosen) b.classList.add('selected'); });
-  document.querySelectorAll('#condTrack .co').forEach(b =>    { if (b.dataset.val === condChosen)    b.classList.add('selected'); });
-  if (financeChosen === 'Finance, settlement known') document.getElementById('settlementWrap').style.display = 'block';
+  const HAS_CAR = v => v === "Yes" || v === "Maybe" || v === "Keeping it";
+  const IS_PX   = v => v === "Yes" || v === "Maybe";
 
-  const reg = sessionStorage.getItem('evReg');        if (reg) document.getElementById('reg').value = reg;
-  const cc  = sessionStorage.getItem('evCurrentCar'); if (cc)  document.getElementById('cc').value  = cc;
-  const ml  = sessionStorage.getItem('evPXMileage');  if (ml)  document.getElementById('ml').value  = ml;
-  const wv  = sessionStorage.getItem('evWBAC');       if (wv)  document.getElementById('wv').value  = wv;
-  const sf  = sessionStorage.getItem('evSettlement'); if (sf)  document.getElementById('settlementFig').value = sf;
-  const epm = sessionStorage.getItem('evPXModel');    if (epm) document.getElementById('evPXModel').value = epm;
+  function refreshPlan(){
+    document.querySelectorAll("#planGrid .fv2-opt").forEach(b=>b.classList.toggle("selected", b.dataset.val===chosen));
+    document.getElementById("regSection").style.display = HAS_CAR(chosen) ? "block" : "none";
+    document.getElementById("pxDetails").style.display  = IS_PX(chosen)   ? "block" : "none";
+  }
+  refreshPlan();
+
+  document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>{ if(b.dataset.val===serviceChosen) b.classList.add("selected"); });
+  document.querySelectorAll("#financeTrack .fv2-row").forEach(b=>{ if(b.dataset.val===financeChosen) b.classList.add("selected"); });
+  document.querySelectorAll("#condTrack .fv2-row").forEach(b=>{ if(b.dataset.val===condChosen) b.classList.add("selected"); });
+  if(financeChosen === "Finance, settlement known") document.getElementById("settlementWrap").style.display = "block";
+
+  const reg=sessionStorage.getItem("evReg");        if(reg) document.getElementById("reg").value=reg;
+  const cc=sessionStorage.getItem("evCurrentCar");  if(cc)  document.getElementById("cc").value=cc;
+  const ml=sessionStorage.getItem("evPXMileage");   if(ml)  document.getElementById("ml").value=ml;
+  const wv=sessionStorage.getItem("evWBAC");        if(wv)  document.getElementById("wv").value=wv;
+  const pm=sessionStorage.getItem("evPXModel");     if(pm)  document.getElementById("pxModel").value=pm;
+  const sf=sessionStorage.getItem("evSettlement");  if(sf)  document.getElementById("settlementFig").value=sf;
+
+  /* ── MOT status: due date for the customer, history for Dan's email ── */
+  function applyMot(d){
+    const box=document.getElementById("motNote");
+    box.style.display="none"; box.className="fv2-mot";
+    sessionStorage.setItem("evMotExpiry",""); sessionStorage.setItem("evMotStatus",""); sessionStorage.setItem("evMotHistory","");
+    if(Array.isArray(d.motHistory)&&d.motHistory.length){
+      const lines=d.motHistory.map(t=>{
+        let s=t.date+" "+t.result+(t.mileage?" at "+t.mileage:"");
+        const extra=[];
+        if(t.failures) extra.push(t.failures+" failure item"+(t.failures>1?"s":""));
+        if(t.advisories) extra.push(t.advisories+" advisor"+(t.advisories>1?"ies":"y"));
+        if(extra.length) s+=" ("+extra.join(", ")+")";
+        return s;
+      });
+      sessionStorage.setItem("evMotHistory",lines.join(" | "));
+    }
+    const expiry=d.motExpiryDate||d.motDueDate||"";
+    if(!expiry) return;
+    const exp=new Date(expiry+"T12:00:00");
+    if(isNaN(exp)) return;
+    sessionStorage.setItem("evMotExpiry",expiry);
+    const days=Math.ceil((exp-Date.now())/86400000);
+    const nice=exp.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+    let status,cls,msg;
+    if(days<0){
+      status="EXPIRED "+nice; cls="bad";
+      msg="This car's MOT expired on "+nice+". A valid MOT will be needed before any part exchange completes.";
+    } else if(days<=92){
+      const when=days===0?"today":days===1?"tomorrow":"in "+days+" days";
+      status="Due "+nice+" ("+(days===0?"today":days+" days")+")"; cls="warn";
+      msg="MOT due "+when+", on "+nice+". As it's within 3 months, the MOT would need completing before a part exchange goes through.";
+    } else {
+      status="Valid until "+nice; cls="ok";
+      msg="MOT valid until "+nice+". Nothing needed there.";
+    }
+    sessionStorage.setItem("evMotStatus",status);
+    box.classList.add("fv2-mot--"+cls);
+    box.textContent=msg;
+    box.style.display="block";
+  }
+
+  /* ── DVSA odometer trail -> what the car actually covers per year ── */
+  function dvsaAnnual(d){
+    const tests=Array.isArray(d.motHistory)?d.motHistory:[];
+    const pts=tests.map(t=>{
+      let odo=(t.odo!=null)?Number(t.odo):parseInt(String(t.mileage||"").replace(/[^\d]/g,""),10);
+      const unit=(t.odoUnit||(/km/i.test(t.mileage||"")?"KM":"MI")).toUpperCase();
+      if(unit==="KM"&&odo) odo=Math.round(odo*0.6214);
+      return { date:new Date((t.date||"")+"T12:00:00"), odo:odo };
+    }).filter(p=>p.odo&&!isNaN(p.date.getTime()));
+    if(pts.length<2) return 0;
+    pts.sort((a,b)=>a.date-b.date);
+    const years=(pts[pts.length-1].date-pts[0].date)/(365.25*86400000);
+    if(years<1.5) return 0;
+    const est=Math.round((pts[pts.length-1].odo-pts[0].odo)/years);
+    return (est>500&&est<60000)?est:0;
+  }
+
+  function refreshDvsaNudge(){
+    const box=document.getElementById("dvsaNudge");
+    box.style.display="none";
+    const est=parseInt(sessionStorage.getItem("evDvsaAnnualMiles")||"",10)||0;
+    const stated=parseInt(sessionStorage.getItem("evMileage")||"",10)||0;
+    if(!est||!stated) return;
+    if(Math.abs(est-stated)/stated<=0.2) return;
+    document.getElementById("dvsaText").textContent="DVSA MOT records suggest this car actually covers about "+est.toLocaleString("en-GB")+" miles a year — you said "+stated.toLocaleString("en-GB")+". Want the saving worked out on the real figure?";
+    document.getElementById("dvsaBtn").textContent="Use "+Math.round(est/1000)+"k";
+    box.style.display="flex";
+  }
+  function useDvsaMiles(){
+    const est=parseInt(sessionStorage.getItem("evDvsaAnnualMiles")||"",10)||0;
+    if(!est) return;
+    sessionStorage.setItem("evMileage",String(Math.round(est/500)*500));
+    document.getElementById("dvsaNudge").style.display="none";
+    renderSavings(true);
+  }
+
+  /* ── The saving card ── */
+  function countUp(el,target,unit){
+    const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const final=window.evMoney10(target);
+    if(reduce){ el.textContent=final; return; }
+    const t0=performance.now(),dur=900;
+    function tick(t){
+      const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
+      el.textContent=window.evMoney10(target*e);
+      if(p<1) requestAnimationFrame(tick); else el.textContent=final;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function renderSavings(animate){
+    const card=document.getElementById("saveCard");
+    const alt=document.getElementById("saveAlt");
+    card.style.display="none"; alt.style.display="none";
+    if(!HAS_CAR(chosen)) return;
+    const s=window.evSavings();
+    if(!s) return;
+    if(s.alreadyEV){
+      alt.textContent="This one's already electric — you know the good news firsthand. If you're thinking of changing it, I'll line up the right next EV and the cost to change.";
+      alt.style.display="block";
+      return;
+    }
+    const g=k=>sessionStorage.getItem(k)||"";
+    const street=(g("evDriveway")||"").indexOf("Street")===0;
+    const m10=window.evMoney10;
+    const carName=[g("evDvlaYear"),toTC(g("evDvlaMake")),toTC(g("evDvlaModel"))].filter(Boolean).join(" ")||"your current car";
+
+    const R=window.EV_RATES, pct=Math.round(R.homeShare*100);
+    let hero, sub, rows=[];
+    if(street){
+      hero=Math.max(0,s.savePub);
+      sub=hero>100
+        ? "back in your pocket every year on a realistic public mix — mostly fast chargers ("+Math.round(R.publicFast*100)+"p/kWh) with rapid top-ups. Find the cheap networks on your routes — I'll help — and it heads toward "+m10(s.saveOff)+"."
+        : "Public charging can cost nearly as much as "+s.fuelLabel+" — this is exactly where I earn my keep. On the call I'll map the cheap networks around you, and with home or workplace charging you'd be looking at up to "+m10(s.saveOff)+" a year.";
+      rows=[
+        ["Your "+carName+" — "+s.fuelLabel+", ~"+s.mpg+" mpg", m10(s.fuelCost)+"/yr", false],
+        ["BMW EV on public charging ("+pct+"% fast, "+(100-pct)+"% rapid)", m10(s.evPub)+"/yr", hero>100],
+        ["BMW EV if you can charge at home or work", m10(s.evOff)+"/yr", false]
+      ];
+    } else {
+      hero=s.saveHome;
+      sub="back in your pocket every year. That assumes "+pct+"% of your charging at home overnight and "+(100-pct)+"% on public rapids for the longer days — about "+m10(hero/52)+" a week"+(s.hybrid?", and you're already part-electric, so you know the drill":"")+".";
+      rows=[
+        ["Your "+carName+" — "+s.fuelLabel+", ~"+s.mpg+" mpg", m10(s.fuelCost)+"/yr", false],
+        ["BMW EV — "+pct+"% overnight tariff ("+Math.round(R.homeOffpeak*100)+"p/kWh), "+(100-pct)+"% public rapid", m10(s.evHome)+"/yr", true],
+        ["BMW EV all at the standard home rate ("+Math.round(R.homeStandard*100)+"p/kWh)", m10(s.evStd)+"/yr", false]
+      ];
+    }
+
+    const rowsEl=document.getElementById("saveRows");
+    rowsEl.innerHTML="";
+    rows.forEach(r=>{
+      const d=document.createElement("div");
+      d.className="ev-save-row"+(r[2]?" win":"");
+      const sp=document.createElement("span"); sp.textContent=r[0];
+      const st=document.createElement("strong"); st.textContent=r[1];
+      d.appendChild(sp); d.appendChild(st);
+      rowsEl.appendChild(d);
+    });
+    document.getElementById("saveSub").textContent=sub;
+    document.getElementById("saveNote").innerHTML=
+      "Based on your "+Number(s.miles).toLocaleString("en-GB")+" miles a year (<a href='ev-step3.html'>edit</a>), "+
+      s.fuelLabel+" at £"+s.litrePrice.toFixed(2)+"/litre (UK average) and ~"+s.mpg+" mpg from the "+s.mpgSrc+", EV at "+R.evMilesPerKwh+" mi/kWh. "+
+      "Fuel only — servicing savings come on top. Dan does the exact maths with you.";
+    card.style.display="block";
+    countUp(document.getElementById("saveHero"),hero);
+    if(animate!==false) refreshDvsaNudge();
+  }
+
+  // Re-render on load if we already have DVLA data (back-navigation, resume)
+  if(sessionStorage.getItem("evDvlaFuel")){
+    const parts=[sessionStorage.getItem("evDvlaYear"),toTC(sessionStorage.getItem("evDvlaMake")||""),toTC(sessionStorage.getItem("evDvlaModel")||""),toTC(sessionStorage.getItem("evDvlaColour")||""),toTC(sessionStorage.getItem("evDvlaFuel")||"")].filter(Boolean);
+    if(parts.length){
+      document.getElementById("dvlaDesc").textContent=parts.join(" · ");
+      document.getElementById("dvlaBanner").style.display="flex";
+    }
+    renderSavings(false);
+    refreshDvsaNudge();
+  }
 
   async function dvlaLookup(){
-    const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
-    if(!reg) return;
+    const regVal=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
+    if(!regVal) return;
     const btn=document.getElementById("dvlaBtn");
-    btn.disabled=true; btn.textContent="…";
+    btn.disabled=true; btn.textContent="Looking up…";
     document.getElementById("dvlaBanner").style.display="none";
     try{
-      const res=await fetch(WORKER+"?target=dvla-lookup&reg="+encodeURIComponent(reg));
-      const d=await res.json();
+      // Combined DVLA + MOT lookup; falls back to the legacy DVLA-only
+      // target until the updated worker is deployed.
+      let d=await (await fetch(WORKER+"?target=vehicle-lookup&reg="+encodeURIComponent(regVal))).json();
+      if(!d || (!d.make && !d.model)){
+        d=await (await fetch(WORKER+"?target=dvla-lookup&reg="+encodeURIComponent(regVal))).json();
+      }
       if(d.make){
-        const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||""), fuel=(d.fuelType||"").toLowerCase();
+        const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||"");
         const ccField=document.getElementById("cc");
         if(ccField && !ccField.value) ccField.value=[yr,make,model].filter(Boolean).join(" ");
-        const modelField=document.getElementById("evPXModel");
+        const modelField=document.getElementById("pxModel");
         if(modelField && !modelField.value && model) modelField.value=model;
         sessionStorage.setItem("evDvlaMake",d.make||"");
         sessionStorage.setItem("evDvlaModel",d.model||"");
         sessionStorage.setItem("evDvlaYear",yr);
         sessionStorage.setItem("evDvlaFuel",d.fuelType||"");
+        sessionStorage.setItem("evDvlaColour",d.colour||"");
+        sessionStorage.setItem("evDvlaCo2",d.co2Emissions?String(d.co2Emissions):"");
+        sessionStorage.setItem("evDvlaCc",d.engineCapacity?String(d.engineCapacity):"");
         const parts=[yr,make,model,toTC(d.colour||""),toTC(d.fuelType||"")].filter(Boolean);
         document.getElementById("dvlaDesc").textContent=parts.join(" · ");
-        document.getElementById("dvlaBanner").style.display="block";
-        startMarket(d.make||"",d.model||"",yr,fuel);
+        document.getElementById("dvlaBanner").style.display="flex";
+        applyMot(d);
+        const est=dvsaAnnual(d);
+        sessionStorage.setItem("evDvsaAnnualMiles",est?String(est):"");
+        // Latest MOT odometer autofills the PX mileage field
+        if(est||((d.motHistory||[]).length)){
+          const latest=(d.motHistory||[]).map(t=>(t.odo!=null)?Number(t.odo):parseInt(String(t.mileage||"").replace(/[^\d]/g,""),10)).filter(Boolean);
+          const mlField=document.getElementById("ml");
+          if(latest.length&&mlField&&!mlField.value) mlField.value=Math.max.apply(null,latest).toLocaleString("en-GB");
+        }
+        renderSavings(true);
+      } else {
+        showErr("I couldn't find that registration. Double-check it, or just fill the car details in by hand.");
       }
-    }catch(e){}
-    btn.disabled=false; btn.textContent="Look Up";
+    }catch(e){
+      showErr("The lookup didn't respond. No problem — fill the car details in by hand and I'll do the rest.");
+    }
+    btn.disabled=false; btn.textContent="Look up";
   }
 
-  function startMarket(make,model,year,fuel){
-    if(!make||!year) return;
-    const p=new URLSearchParams({target:"market-start",make,model,year,fuel});
-    fetch(WORKER+"?"+p).then(r=>r.json()).then(d=>{
-      if(d.runId) sessionStorage.setItem("evMarketRunId",d.runId);
-    }).catch(()=>{});
+  /* ── PX photo upload: straight to Cloudinary, URLs ride along in the
+     one Formspree submission on the review step. ── */
+  const CLD = window.FV2_CLOUDINARY || { cloud: "zcigf45n", preset: "dansells-px" };
+  const MAX_PHOTOS = 8;
+  let photoItems = [];
+  let waLater = sessionStorage.getItem("evPXPhotoBypass") === "true";
+  try {
+    JSON.parse(sessionStorage.getItem("evPXPhotos") || "[]").forEach(u => {
+      photoItems.push({ preview: u, url: u, state: "done" });
+    });
+  } catch(e) {}
+
+  function persistPhotos(){
+    sessionStorage.setItem("evPXPhotos", JSON.stringify(
+      photoItems.filter(i => i.state === "done").map(i => i.url)
+    ));
+  }
+  function paintPhotos(){
+    const grid = document.getElementById("pxThumbs");
+    grid.innerHTML = "";
+    photoItems.forEach(item => {
+      const t = document.createElement("div");
+      t.className = "px-thumb " + item.state;
+      const im = document.createElement("img");
+      im.src = item.preview;
+      t.appendChild(im);
+      const st = document.createElement("div");
+      st.className = "st";
+      st.textContent = item.state === "up" ? "Uploading…" : item.state === "done" ? "Uploaded" : "Failed. Tap to retry";
+      t.appendChild(st);
+      if (item.state === "fail") t.onclick = function(){ uploadPhoto(item); };
+      grid.appendChild(t);
+    });
+  }
+  function shrinkPhoto(file){
+    return new Promise(function(res){
+      const img = new Image();
+      img.onload = function(){
+        const sc = Math.min(1, 1600 / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(img.width * sc));
+        c.height = Math.max(1, Math.round(img.height * sc));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(img.src);
+        c.toBlob(function(b){ res(b || file); }, "image/jpeg", .82);
+      };
+      img.onerror = function(){ res(file); };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  async function uploadPhoto(item){
+    item.state = "up"; paintPhotos();
+    try {
+      if (!item.blob) item.blob = await shrinkPhoto(item.file);
+      const fd = new FormData();
+      fd.append("file", item.blob);
+      fd.append("upload_preset", CLD.preset);
+      const r = await fetch("https://api.cloudinary.com/v1_1/" + CLD.cloud + "/image/upload", { method: "POST", body: fd });
+      const d = await r.json();
+      if (d.error && /preset/i.test(d.error.message || "")) {
+        document.getElementById("pxPhotoSec").style.display = "none";
+        return;
+      }
+      if (!d.secure_url) throw new Error("no url");
+      item.url = d.secure_url;
+      item.state = "done";
+      persistPhotos();
+    } catch(e) {
+      item.state = "fail";
+    }
+    paintPhotos();
+  }
+  function refreshWaLater(){
+    document.getElementById("waLaterBtn").classList.toggle("on", waLater);
+    document.getElementById("pxUpArea").style.display = waLater ? "none" : "block";
+  }
+  function toggleWaLater(){
+    waLater = !waLater;
+    sessionStorage.setItem("evPXPhotoBypass", waLater ? "true" : "false");
+    refreshWaLater();
+  }
+  refreshWaLater();
+  paintPhotos();
+  document.getElementById("pxFiles").addEventListener("change", function(e){
+    Array.from(e.target.files).slice(0, MAX_PHOTOS - photoItems.length).forEach(function(f){
+      const item = { file: f, preview: URL.createObjectURL(f), state: "up", url: "" };
+      photoItems.push(item);
+      uploadPhoto(item);
+    });
+    e.target.value = "";
+  });
+
+  function hideErr(){ document.getElementById("err").classList.remove("show"); }
+  function showErr(msg){
+    document.getElementById("errText").textContent=msg;
+    const el=document.getElementById("err");
+    el.classList.add("show");
+    el.scrollIntoView({behavior:"smooth",block:"center"});
   }
 
-  function pick(btn, show) {
-    document.querySelectorAll('.choice').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); pxChosen = btn.dataset.val;
-    document.getElementById('pxDetails').style.display = show === 'yes' ? 'block' : 'none';
+  function pickPlan(btn){
+    chosen = btn.dataset.val;
+    sessionStorage.setItem("evPX", chosen);
+    hideErr(); refreshPlan(); renderSavings(true);
+    if(chosen==="No") setTimeout(()=>window.location.href="ev-step5.html",240);
   }
-  function pickService(btn) {
-    document.querySelectorAll('#serviceTrack .co').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); serviceChosen = btn.dataset.val;
+  function pickService(btn){
+    document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    serviceChosen = btn.dataset.val;
+    sessionStorage.setItem("evPXService", serviceChosen);
+    hideErr();
   }
-  function pickFinance(btn) {
-    document.querySelectorAll('#financeTrack .co').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); financeChosen = btn.dataset.val;
-    document.getElementById('settlementWrap').style.display = financeChosen === 'Finance, settlement known' ? 'block' : 'none';
+  function pickFinance(btn){
+    document.querySelectorAll("#financeTrack .fv2-row").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    financeChosen = btn.dataset.val;
+    sessionStorage.setItem("evPXFinance", financeChosen);
+    document.getElementById("settlementWrap").style.display = financeChosen === "Finance, settlement known" ? "block" : "none";
+    hideErr();
   }
-  function pickCond(btn) {
-    document.querySelectorAll('#condTrack .co').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); condChosen = btn.dataset.val;
+  function pickCond(btn){
+    document.querySelectorAll("#condTrack .fv2-row").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    condChosen = btn.dataset.val;
+    sessionStorage.setItem("evPXCond", condChosen);
+    hideErr();
   }
-  function go() {
-    if (!pxChosen) { alert('Please let Dan know about a part exchange.'); return; }
-    const reg = document.getElementById('reg').value.trim();
-    if (pxChosen !== 'No' && !reg)           { alert('Please enter your registration.'); return; }
-    if (pxChosen !== 'No' && !serviceChosen) { alert('Please choose your service history.'); return; }
-    if (pxChosen !== 'No' && !financeChosen) { alert('Please let Dan know about any outstanding finance.'); return; }
-    if (pxChosen !== 'No' && !condChosen)    { alert('Please choose the overall condition.'); return; }
-    sessionStorage.setItem('evPX',         pxChosen);
-    sessionStorage.setItem('evReg',        reg.toUpperCase());
-    sessionStorage.setItem('evCurrentCar', document.getElementById('cc').value.trim());
-    sessionStorage.setItem('evPXModel',   document.getElementById('evPXModel').value.trim());
-    sessionStorage.setItem('evPXMileage',  document.getElementById('ml').value.trim());
-    sessionStorage.setItem('evWBAC',       document.getElementById('wv').value.trim());
-    sessionStorage.setItem('evPXService',  serviceChosen || '');
-    sessionStorage.setItem('evPXFinance',  financeChosen || '');
-    sessionStorage.setItem('evSettlement', document.getElementById('settlementFig').value.trim());
-    sessionStorage.setItem('evPXCond',     condChosen || '');
-    window.location.href = 'ev-step5.html';
+
+  function go(){
+    if(!chosen){ showErr("Let me know the plan for your current car — or that there isn't one."); return; }
+    const regVal=document.getElementById("reg").value.trim();
+    if(HAS_CAR(chosen) && !regVal){ showErr("Add your registration. It powers the saving estimate and does most of the work for you."); return; }
+    if(IS_PX(chosen) && !serviceChosen){ showErr("Choose the closest match for your service history."); return; }
+    if(IS_PX(chosen) && !financeChosen){ showErr("Let me know about any outstanding finance on the car."); return; }
+    if(IS_PX(chosen) && !condChosen){ showErr("Choose the closest match for the car's overall condition."); return; }
+    sessionStorage.setItem("evPX", chosen);
+    sessionStorage.setItem("evReg", regVal.toUpperCase());
+    sessionStorage.setItem("evCurrentCar", document.getElementById("cc").value.trim());
+    sessionStorage.setItem("evPXModel", document.getElementById("pxModel").value.trim());
+    sessionStorage.setItem("evPXMileage", document.getElementById("ml").value.trim());
+    sessionStorage.setItem("evWBAC", document.getElementById("wv").value.trim());
+    sessionStorage.setItem("evSettlement", document.getElementById("settlementFig").value.trim());
+    if(!IS_PX(chosen)){
+      sessionStorage.setItem("evPXService","");
+      sessionStorage.setItem("evPXFinance","");
+      sessionStorage.setItem("evPXCond","");
+      sessionStorage.setItem("evSettlement","");
+    }
+    window.location.href = "ev-step5.html";
   }
 </script>
 <script src="scroll-hint.js"></script></body></html>

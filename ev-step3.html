@@ -1,133 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DanSells Electric, Step 3</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BMW EV Finder | Step 3 of 6 | DanSells</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="funnel.css"/>
+<script src="ev-funnel-ui.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XZL1RF6SV6');
+</script>
 <style>
-  .co{width:100%;text-align:left;padding:14px 16px;border-radius:16px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);cursor:pointer;transition:border-color .18s,background .18s,transform .15s;display:flex;align-items:flex-start;gap:14px;}
-  .co:hover{border-color:rgba(21,89,207,.45);background:rgba(21,89,207,.08);transform:translateY(-1px);}
-  .co.selected{border-color:rgba(21,89,207,.7);background:rgba(21,89,207,.13);box-shadow:0 0 0 1px rgba(21,89,207,.2);}
-  .co-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:rgba(16,21,29,.04);}
-  .co-body{display:flex;flex-direction:column;gap:3px;}
-  .co-title{font-size:.94rem;font-weight:700;color:#141a22;}
-  .co-desc{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
-  .trip-labels{display:flex;justify-content:space-between;font-size:.72rem;color:#5f6b7c;margin-top:6px;padding:0 2px;}
-  .trip-val-display{font-size:1.35rem;font-weight:800;color:#141a22;text-align:center;margin:10px 0 4px;}
+  .trip-scale{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:8px;padding:0 2px;}
+  .trip-scale span{flex:1;text-align:center;}
+  .trip-scale span:first-child{text-align:left;}
+  .trip-scale span:last-child{text-align:right;}
 </style>
 </head>
-<body>
-<div class="app"><div class="shell">
+<body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
     <a href="index.html" style="text-decoration:none;"><span class="brand-name">DanSells</span></a>
-    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20EV%20finder" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20EV%20finder" target="_blank" rel="noopener" aria-label="Message Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-row"><span>Step 3 of 7</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:42%"></div></div>
+  <div class="fv2-progress">
+    <div class="fv2-progress-row"><span class="fv2-progress-step">Step 3 <span>of 6</span></span><span class="fv2-progress-label">Miles &amp; charging</span></div>
+    <div class="fv2-track"><div class="fv2-fill" style="width:50%"></div></div>
   </div>
-  <div class="step-wrap">
-    <div class="step-kicker">Mileage &amp; charging</div>
-    <h2>How far do you drive, and where will you charge?</h2>
-    <p class="step-desc">Your mileage is the most important number for Dan&rsquo;s saving calculation. Be as accurate as you can.</p>
+<div class="step-wrap">
+  <div class="step-kicker">Miles &amp; charging</div>
+  <h2>How far, and where will you charge?</h2>
+  <p class="step-desc">Your mileage is the single most important number here. On the next step I'll use it, plus real DVLA data on your current car, to show what switching would save you.</p>
 
-    <div class="input-card" style="margin-bottom:22px">
-      <div class="range-display">
-        <span class="range-label">Annual mileage</span>
-        <strong id="amv">10,000 miles</strong>
-      </div>
-      <input type="range" id="amr" min="2000" max="50000" step="1000" value="10000"
-             oninput="document.getElementById('amv').textContent=Number(this.value).toLocaleString('en-GB')+' miles'">
-      <p class="hint">Higher mileage = bigger weekly saving. Dan will use this to build your exact comparison.</p>
+  <div class="fv2-sec">Annual mileage</div>
+  <div class="fv2-amount">
+    <div class="fv2-amount-row"><span class="fv2-amount-label">Miles per year</span><span class="fv2-amount-value" id="milV">10,000</span></div>
+    <input type="range" id="milR" min="2000" max="50000" step="1000" value="10000"/>
+    <div class="fv2-chips" data-for="milR">
+      <button class="fv2-chip" data-v="6000">6k</button>
+      <button class="fv2-chip" data-v="8000">8k</button>
+      <button class="fv2-chip" data-v="10000">10k</button>
+      <button class="fv2-chip" data-v="12000">12k</button>
+      <button class="fv2-chip" data-v="15000">15k</button>
+      <button class="fv2-chip" data-v="20000">20k</button>
     </div>
-
-    <div class="step-kicker" style="margin-bottom:10px">How often do you travel more than 200 miles in one day?</div>
-    <p class="step-desc" style="margin-bottom:14px">This is the range question Dan gets asked most. Be honest &mdash; it directly affects which BMW EV is right for you.</p>
-    <div class="input-card" style="margin-bottom:22px">
-      <div class="trip-val-display" id="tripLabel">Never</div>
-      <input type="range" id="tripSlider" min="0" max="5" step="1" value="0" oninput="updateTrip(this.value)">
-      <div class="trip-labels">
-        <span>Never</span><span>Once a year</span><span>Few times</span><span>Monthly</span><span>Weekly</span><span>Daily</span>
-      </div>
-    </div>
-
-    <div class="step-kicker" style="margin-bottom:12px">Do you have a driveway or off-street parking?</div>
-    <div style="display:grid;gap:9px;margin-bottom:16px" id="driveTrack">
-      <button type="button" class="co" data-val="Yes, driveway or garage" onclick="pickDrive(this)">
-        <div class="co-badge">&#127968;</div>
-        <div class="co-body"><span class="co-title">Yes &mdash; driveway or garage</span><span class="co-desc">Perfect for a home charger. Cheapest and most convenient way to charge. Dan can refer you to a trusted installer.</span></div>
-      </button>
-      <button type="button" class="co" data-val="Street parking only" onclick="pickDrive(this)">
-        <div class="co-badge">&#128652;</div>
-        <div class="co-body"><span class="co-title">Street parking only</span><span class="co-desc">No driveway. Dan will go through public networks, workplace charging and rapid chargers on your routes.</span></div>
-      </button>
-      <button type="button" class="co" data-val="Communal or apartment parking" onclick="pickDrive(this)">
-        <div class="co-badge">&#127963;</div>
-        <div class="co-body"><span class="co-title">Communal / apartment parking</span><span class="co-desc">May have or be able to get a charge point. Dan can help work out the options.</span></div>
-      </button>
-      <button type="button" class="co" data-val="Not sure" onclick="pickDrive(this)">
-        <div class="co-badge">&#129300;</div>
-        <div class="co-body"><span class="co-title">Not sure yet</span><span class="co-desc">Dan will go through this on the call.</span></div>
-      </button>
-    </div>
-
-    <div id="chargerInfoWrap" style="display:none;margin-bottom:16px">
-      <div class="tick-box">&#9889; Great news &mdash; a home charger is the most cost-effective way to charge. Dan can refer you to trusted installers with exclusive savings, sorted before handover.</div>
-    </div>
-
-    <div class="step-kicker" style="margin-bottom:12px">Home charger installation</div>
-    <div class="grid two" style="margin-bottom:24px">
-      <button class="choice" data-val="Yes - want charger info" onclick="pickCharger(this)"><span class="choice-emoji">&#128268;</span><span class="choice-title">Yes, interested</span><span class="choice-desc">Dan can refer me with savings available.</span></button>
-      <button class="choice" data-val="No charger needed"       onclick="pickCharger(this)"><span class="choice-emoji">&#10060;</span><span class="choice-title">Not needed</span><span class="choice-desc">Already have one or will sort myself.</span></button>
-    </div>
-
-    <div class="nav">
-      <a class="btn-ghost" href="ev-step2.html">&larr; Back</a>
-      <button class="btn" onclick="go()">Continue &rarr;</button>
-    </div>
+    <p class="fv2-amount-note">The more you drive, the more electric saves you. Be as accurate as you can — the saving estimate is built on this.</p>
   </div>
-</div></div>
+
+  <div class="fv2-sec">Days over 200 miles</div>
+  <p class="fv2-sec-sub">The range question I get asked most. Be honest — it directly shapes which electric BMW is right for you.</p>
+  <div class="fv2-amount">
+    <div class="fv2-amount-row"><span class="fv2-amount-label">How often?</span><span class="fv2-amount-value" id="tripV" style="font-size:1.4rem;">Never</span></div>
+    <input type="range" id="tripR" min="0" max="5" step="1" value="0"/>
+    <div class="trip-scale"><span>Never</span><span>Yearly</span><span>Few times</span><span>Monthly</span><span>Weekly</span><span>Daily</span></div>
+  </div>
+
+  <div class="fv2-sec">Where the car sleeps</div>
+  <div class="fv2-rows" id="driveTrack">
+    <button type="button" class="fv2-row" data-val="Yes, driveway or garage" onclick="pickDrive(this)">
+      <span class="fv2-row-body"><span class="fv2-row-title">Driveway or garage</span><span class="fv2-row-desc">Perfect for a home charger — the cheapest and easiest way to run an EV.</span><span class="fv2-tag good">Best for savings</span></span>
+      <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button type="button" class="fv2-row" data-val="Street parking only" onclick="pickDrive(this)">
+      <span class="fv2-row-body"><span class="fv2-row-title">Street parking only</span><span class="fv2-row-desc">No driveway. I'll go through public networks, workplace charging and the cheap options on your routes.</span></span>
+      <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button type="button" class="fv2-row" data-val="Communal or apartment parking" onclick="pickDrive(this)">
+      <span class="fv2-row-body"><span class="fv2-row-title">Communal / apartment parking</span><span class="fv2-row-desc">May already have, or be able to get, a charge point. I can help work out the options.</span></span>
+      <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button type="button" class="fv2-row" data-val="Not sure" onclick="pickDrive(this)">
+      <span class="fv2-row-body"><span class="fv2-row-title">Not sure yet</span><span class="fv2-row-desc">No problem — we'll go through it on the call.</span></span>
+      <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+  </div>
+
+  <div id="chargerInfoWrap" class="fv2-reveal" style="display:none;margin:-10px 0 22px;">
+    <div class="fv2-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5 4.8 13.5H11L9.8 21.5 19.2 10h-6.4L13 2.5z"/></svg><span>A home charger on an overnight tariff is where the big savings live. I can refer you to trusted installers with exclusive discounts, sorted before handover.</span></div>
+  </div>
+
+  <div class="fv2-sec">Home charger installation</div>
+  <div class="fv2-options" id="chargerGrid">
+    <button class="fv2-opt" data-val="Yes - want charger info" onclick="pickCharger(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v5M15 3v5"/><path d="M7 8h10v4a5 5 0 0 1-5 5 5 5 0 0 1-5-5V8z"/><path d="M12 17v4"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Yes, interested</span><span class="fv2-opt-desc">Refer me — with the savings available.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="No charger needed" onclick="pickCharger(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Not needed</span><span class="fv2-opt-desc">Already have one, or I'll sort it myself.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+  </div>
+
+  <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span id="errText"></span></div>
+  <div class="fv2-nav">
+    <a class="fv2-back" href="ev-step2.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
+    <button class="fv2-next" onclick="go()">Show my saving<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+</div></div></div>
 <script>
-  const TRIP_LABELS = ['Never','Maybe once a year','A few times a year','Monthly','Weekly','Daily'];
-  let driveChosen   = sessionStorage.getItem('evDriveway');
-  let chargerChosen = sessionStorage.getItem('evCharger');
-  let tripVal       = sessionStorage.getItem('evLongTrips') || '0';
+  const TRIP_LABELS = ["Never","Maybe once a year","A few times a year","Monthly","Weekly","Daily"];
+  const fmtNum = v => Number(v).toLocaleString("en-GB");
 
-  const am = sessionStorage.getItem('evMileage');
-  if (am) { document.getElementById('amr').value = am; document.getElementById('amv').textContent = Number(am).toLocaleString('en-GB') + ' miles'; }
-
-  document.getElementById('tripSlider').value = tripVal;
-  document.getElementById('tripLabel').textContent = TRIP_LABELS[parseInt(tripVal)];
-
-  document.querySelectorAll('#driveTrack .co').forEach(b => { if (b.dataset.val === driveChosen) b.classList.add('selected'); });
-  document.querySelectorAll('[onclick="pickCharger(this)"]').forEach(b => { if (b.dataset.val === chargerChosen) b.classList.add('selected'); });
-  if (driveChosen === 'Yes, driveway or garage') document.getElementById('chargerInfoWrap').style.display = 'block';
-
-  function updateTrip(v) {
-    tripVal = v;
-    document.getElementById('tripLabel').textContent = TRIP_LABELS[parseInt(v)];
+  function wire(rangeId, valueId, fmt){
+    const r = document.getElementById(rangeId), v = document.getElementById(valueId);
+    function paint(){
+      v.textContent = fmt(r.value);
+      const pct = (r.value - r.min) / (r.max - r.min) * 100;
+      r.style.setProperty("--fv2-pct", pct + "%");
+      document.querySelectorAll('.fv2-chips[data-for="'+rangeId+'"] .fv2-chip').forEach(c=>{
+        c.classList.toggle("on", Number(c.dataset.v) === Number(r.value));
+      });
+    }
+    r.addEventListener("input", paint);
+    paint();
+    return { r, paint };
   }
-  function pickDrive(btn) {
-    document.querySelectorAll('#driveTrack .co').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); driveChosen = btn.dataset.val;
-    document.getElementById('chargerInfoWrap').style.display = driveChosen === 'Yes, driveway or garage' ? 'block' : 'none';
+  const mil  = wire("milR","milV",fmtNum);
+  const trip = wire("tripR","tripV",v=>TRIP_LABELS[parseInt(v,10)]);
+  document.querySelectorAll(".fv2-chips .fv2-chip").forEach(c=>{
+    c.addEventListener("click", ()=>{
+      const r = document.getElementById(c.parentElement.dataset.for);
+      r.value = c.dataset.v;
+      r.dispatchEvent(new Event("input"));
+    });
+  });
+
+  let driveChosen   = sessionStorage.getItem("evDriveway") || "";
+  let chargerChosen = sessionStorage.getItem("evCharger")  || "";
+  const restore = (key, s) => { const v = sessionStorage.getItem(key); if(v!=null && v!==""){ s.r.value = v; s.paint(); } };
+  restore("evMileage", mil); restore("evLongTrips", trip);
+
+  function refresh(){
+    document.querySelectorAll("#driveTrack .fv2-row").forEach(b=>b.classList.toggle("selected", b.dataset.val===driveChosen));
+    document.querySelectorAll("#chargerGrid .fv2-opt").forEach(b=>b.classList.toggle("selected", b.dataset.val===chargerChosen));
+    document.getElementById("chargerInfoWrap").style.display = driveChosen === "Yes, driveway or garage" ? "block" : "none";
   }
-  function pickCharger(btn) {
-    document.querySelectorAll('[onclick="pickCharger(this)"]').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); chargerChosen = btn.dataset.val;
+  refresh();
+
+  function hideErr(){ document.getElementById("err").classList.remove("show"); }
+  function showErr(msg){
+    document.getElementById("errText").textContent = msg;
+    document.getElementById("err").classList.add("show");
   }
-  function go() {
-    if (!driveChosen)   { alert('Please let Dan know about your parking and charging situation.'); return; }
-    if (!chargerChosen) { alert('Please let Dan know whether you want home charger info.'); return; }
-    sessionStorage.setItem('evMileage',       document.getElementById('amr').value);
-    sessionStorage.setItem('evLongTrips',      tripVal);
-    sessionStorage.setItem('evLongTripsLabel', TRIP_LABELS[parseInt(tripVal)]);
-    sessionStorage.setItem('evDriveway',       driveChosen);
-    sessionStorage.setItem('evCharger',        chargerChosen);
-    window.location.href = 'ev-step4.html';
+  function pickDrive(btn){
+    driveChosen = btn.dataset.val;
+    sessionStorage.setItem("evDriveway", driveChosen);
+    hideErr(); refresh();
+  }
+  function pickCharger(btn){
+    chargerChosen = btn.dataset.val;
+    sessionStorage.setItem("evCharger", chargerChosen);
+    hideErr(); refresh();
+  }
+  function go(){
+    if(!driveChosen){ showErr("Let me know where the car sleeps — it decides how you'd charge."); return; }
+    if(!chargerChosen){ showErr("Let me know whether you'd like home charger info."); return; }
+    sessionStorage.setItem("evMileage", mil.r.value);
+    sessionStorage.setItem("evLongTrips", trip.r.value);
+    sessionStorage.setItem("evLongTripsLabel", TRIP_LABELS[parseInt(trip.r.value,10)]);
+    sessionStorage.setItem("evDriveway", driveChosen);
+    sessionStorage.setItem("evCharger", chargerChosen);
+    window.location.href = "ev-step4.html";
   }
 </script>
 <script src="scroll-hint.js"></script></body></html>

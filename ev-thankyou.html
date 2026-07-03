@@ -1,51 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DanSells Electric, Done</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DanSells Electric | All done</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="funnel.css"/>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 </head>
-<body>
-<div class="app"><div class="shell">
+<body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
     <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Electric Vehicle Specialist</span></div>
-    <div class="meta"><span class="dot"></span><span>Done &#9889;</span></div>
+    <div class="meta"><span class="dot"></span><span>Done</span></div>
   </div>
   <div class="step-wrap">
     <div class="success-wrap">
       <div class="step-kicker">All done</div>
-      <h2>Dan&rsquo;s on it. &#9889;</h2>
-      <p>Your answers and mileage are with Dan now. He will work out your exact weekly saving versus your current petrol car and come back to you personally &mdash; usually the same day.</p>
-      <p style="margin-bottom:8px">Dan answers every question himself. There are no stupid questions. Whether it is range, charging, servicing costs, or whether electric is actually right for you &mdash; Dan will give you a straight answer.</p>
-      <p style="margin-bottom:24px;color:#5f6b7c;font-size:.88rem">Dan is your main point of contact — with a handover team and brilliant people around him who will look after you from start to finish.</p>
+      <h2>Your EV brief is with Dan.</h2>
+      <p>He'll check the exact saving versus your current car — real tariffs, real routes, servicing included — and come back to you personally, usually the same day.</p>
+
+      <div id="saveRecap" style="display:none;background:linear-gradient(135deg,#0d1f3c,#0e3f96);border:1px solid rgba(58,123,224,.4);border-radius:16px;padding:18px 22px;margin:0 0 20px;">
+        <p style="margin:0 0 2px;font-size:.66rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#9dbcf5;">Your rough electric saving</p>
+        <p style="margin:0;font-family:var(--display);font-size:2rem;font-weight:600;color:#fff;"><span id="saveRecapVal"></span><span style="font-size:1rem;font-weight:500;color:#b9caea;"> a year</span></p>
+        <p style="margin:6px 0 0;font-size:.8rem;color:#b9caea;line-height:1.5;">Fuel versus electricity only — Dan confirms the exact figure with you, servicing savings on top.</p>
+      </div>
+
+      <p style="margin-bottom:8px">There are no stupid questions. Range, charging, servicing, whether electric is actually right for you — you'll get a straight answer on all of it.</p>
+      <p style="margin-bottom:24px;color:#5f6b7c;font-size:.88rem">Dan is your main point of contact, with a handover team and brilliant people around him from start to finish.</p>
       <div class="btn-row">
         <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">Book a call with Dan</a>
-        <a class="btn-ghost" href="EV.html">Back to EV page</a>
+        <a class="btn-ghost" href="EV.html">Back to the EV page</a>
+      </div>
+
+      <div id="pxWaBox" style="display:none;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:18px 22px;margin:20px 0 0;">
+        <p style="margin:0 0 4px;font-weight:700;color:#0e3f96;font-size:.92rem;">Your part exchange photos</p>
+        <p style="margin:0 0 12px;font-size:.84rem;color:#3c4a5e;line-height:1.6;">You said you'd WhatsApp them over — one tap below and your details are already filled in. Front, rear, both sides, interior, and any marks.</p>
+        <a id="pxWaBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1a7a3c;color:#fff;font-weight:700;padding:12px 20px;border-radius:13px;text-decoration:none;font-family:var(--font);font-size:.9rem;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Send photos on WhatsApp</a>
       </div>
 
       <div id="storyBox" style="display:none;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:22px 24px;margin:20px 0 0;">
-        <div class="step-kicker" style="margin-bottom:10px;">✨ Your EV story</div>
+        <div class="step-kicker" style="margin-bottom:10px;">Your EV story</div>
         <p id="storyText" style="font-size:.87rem;line-height:1.75;color:#2d3748;white-space:pre-line;margin:0 0 18px;"></p>
         <div style="border-top:1px solid rgba(21,89,207,.15);padding-top:14px;">
-          <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 4px;font-weight:600;">Share your story 📲</p>
-          <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends and manifest your BMW — in a few weeks you could be sharing your own handover photo. ✨</p>
+          <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 4px;font-weight:600;">Share your story</p>
+          <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends — in a few weeks you could be sharing your own handover photo.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <a id="shareX" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#000;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">𝕏 Post</a>
-            <a id="shareWa" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">💬 Share</a>
-            <button id="copyBtn" onclick="copyStory()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,21,29,.08);color:var(--text);padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📋 Copy</button>
-            <button onclick="shareInstagram()" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📸 Instagram</button>
+            <a id="shareWa" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Share</a>
+            <button id="copyBtn" onclick="copyStory()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,21,29,.08);color:var(--text);padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg> Copy</button>
+            <button onclick="shareInstagram()" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.2 6.8v.01"/></svg> Instagram</button>
           </div>
           <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry — your surname and exact figures are removed before sharing.</p>
         </div>
       </div>
 
       <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
-        <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing 👋</p>
+        <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing</p>
         <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Thank you for filling this in. Why not pop Dan a quick message to say hi?</p>
-        <a id="hiWaBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1a7a3c;color:#fff;font-weight:700;padding:12px 20px;border-radius:13px;text-decoration:none;font-family:var(--font);font-size:.92rem;">💬 Say hi on WhatsApp</a>
+        <a id="hiWaBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1a7a3c;color:#fff;font-weight:700;padding:12px 20px;border-radius:13px;text-decoration:none;font-family:var(--font);font-size:.92rem;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Say hi on WhatsApp</a>
       </div>
       <div style="text-align:center;margin-top:24px;padding-bottom:8px;">
         <a href="index.html" style="color:#5f6b7c;font-size:.85rem;text-decoration:none;">← Back to homepage</a>
@@ -57,10 +70,28 @@
   const url = sessionStorage.getItem('evBookingUrl');
   if (url) document.getElementById('bookBtn').href = url;
 
+  // Saving recap from the review step
+  (function(){
+    const v = sessionStorage.getItem('evSavingHero');
+    if (!v) return;
+    document.getElementById('saveRecapVal').textContent = v;
+    document.getElementById('saveRecap').style.display = 'block';
+  })();
+
   (function(){
     const n=(sessionStorage.getItem('evName')||'').split(' ')[0]||'there';
-    const msg="Hi Dan, It's "+n+", I've just submitted my details through your website, I look forward to hearing from you";
+    const msg="Hi Dan, It's "+n+", I've just submitted my EV details through your website, I look forward to hearing from you";
     document.getElementById('hiWaBtn').href='https://wa.me/447827138197?text='+encodeURIComponent(msg);
+  })();
+
+  // Photos-via-WhatsApp follow-through
+  (function(){
+    if (sessionStorage.getItem('evPXPhotoBypass') !== 'true') return;
+    const n=(sessionStorage.getItem('evName')||'').split(' ')[0]||'';
+    const car=sessionStorage.getItem('evCurrentCar')||sessionStorage.getItem('evReg')||'my part exchange';
+    const msg="Hi Dan, it's "+(n||'me')+" — here are the photos of "+car+" for my EV enquiry.";
+    document.getElementById('pxWaBtn').href='https://wa.me/447827138197?text='+encodeURIComponent(msg);
+    document.getElementById('pxWaBox').style.display='block';
   })();
 
   (function(){
@@ -72,12 +103,13 @@
     var firstName=fullName.split(' ')[0]||'';
     function socialify(s){
       if(fullName&&firstName&&fullName!==firstName) s=s.split(fullName).join(firstName);
-      s=s.replace(/£[\d,]+(?:\s*(?:a month|outright|[^,.)]{0,20}))?/gi,function(m){
-        return /month/i.test(m)?'a monthly budget':/outright/i.test(m)?'a clear budget':'a great budget';
+      s=s.replace(/around £[\d,]+ a year in fuel alone/gi,'a serious yearly fuel saving');
+      s=s.replace(/£[\d,]+(?:\s*(?:a month|a year|outright|[^,.)]{0,20}))?/gi,function(m){
+        return /month/i.test(m)?'a monthly budget':/year/i.test(m)?'a real yearly saving':/outright/i.test(m)?'a clear budget':'a great budget';
       });
       s=s.replace(/[\d,]+\s+miles(?: a year)?/gi,'plenty of miles a year');
       s=s.replace(/ {2,}/g,' ').trim();
-      return "Here's my BMW Story with Dan 👇\n\n"+s+'\n\nCreate your own at dan-sells.co.uk — Dan helps find the right BMW for your budget and lifestyle 🚗✨';
+      return "Here's my BMW EV story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk — Dan works out what switching to electric would actually save you 🚗⚡";
     }
     var social=socialify(story);
     document.getElementById('shareX').href='https://twitter.com/intent/tweet?text='+encodeURIComponent(social);
@@ -89,7 +121,7 @@
     navigator.clipboard.writeText(window._socialStory).then(function(){
       var b=document.getElementById('copyBtn');
       b.textContent='✓ Copied!';
-      setTimeout(function(){b.textContent='📋 Copy';},2000);
+      setTimeout(function(){b.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg> Copy';},2000);
     });
   }
   function generateInstagramImage(text,onDone){
@@ -108,7 +140,7 @@
       ctx.fillText('Powered by BMW Ruxley',W/2,130);
       ctx.strokeStyle='rgba(40,110,255,0.55)';ctx.lineWidth=1.5;
       ctx.fillStyle='rgba(255,255,255,0.75)';ctx.font='italic 30px Georgia,serif';ctx.textAlign='center';
-      ctx.fillText("Here's my BMW Story with Dan",W/2,172);
+      ctx.fillText("Here's my BMW EV story with Dan",W/2,172);
       ctx.beginPath();ctx.moveTo(90,195);ctx.lineTo(W-90,195);ctx.stroke();
       ctx.fillStyle='rgba(255,255,255,0.86)';ctx.font='28px Arial,sans-serif';ctx.textAlign='left';
       var paras=text.split('\n\n').slice(0,2),y=220,maxY=H-170,pad=84,lh=42,maxW=W-pad*2;
@@ -126,7 +158,7 @@
       ctx.textAlign='center';ctx.fillStyle='#5591ff';ctx.font='bold 38px Arial,sans-serif';
       ctx.fillText('dan-sells.co.uk',W/2,H-100);
       ctx.fillStyle='rgba(255,255,255,0.40)';ctx.font='22px Arial,sans-serif';
-      ctx.fillText('Your perfect BMW. Two minutes to find it.',W/2,H-58);
+      ctx.fillText('What would electric save you? Two minutes to find out.',W/2,H-58);
       onDone(cvs);
     }
     var img=new Image();
@@ -137,12 +169,12 @@
     if(!window._socialStory)return;
     generateInstagramImage(window._socialStory,function(cvs){
       cvs.toBlob(function(blob){
-        var file=new File([blob],'my-bmw-story.png',{type:'image/png'});
+        var file=new File([blob],'my-bmw-ev-story.png',{type:'image/png'});
         if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-          navigator.share({files:[file],title:'My BMW story'}).catch(function(){});
+          navigator.share({files:[file],title:'My BMW EV story'}).catch(function(){});
         } else {
           var url=URL.createObjectURL(blob),a=document.createElement('a');
-          a.href=url;a.download='my-bmw-story.png';a.click();
+          a.href=url;a.download='my-bmw-ev-story.png';a.click();
           setTimeout(function(){URL.revokeObjectURL(url);},3000);
         }
       },'image/png');
@@ -156,15 +188,15 @@
     <div style="width:38px;height:4px;background:#e2e8ef;border-radius:2px;margin:0 auto 22px;"></div>
     <p style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5f6b7c;margin:0 0 6px;text-align:center;">One quick thing</p>
     <h2 style="font-size:1.2rem;font-weight:700;color:#11161d;margin:0 0 6px;text-align:center;font-family:var(--display);">How would you like to connect with Dan?</h2>
-    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your summary before we speak — no need to start from scratch.</p>
+    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your summary before you speak — no need to start from scratch.</p>
     <div style="display:grid;gap:10px;margin-bottom:14px;">
       <a id="modal-phone" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#eef4ff;border:1.5px solid rgba(21,89,207,.22);border-radius:16px;text-decoration:none;color:#11161d;">
-        <span style="font-size:26px;flex-shrink:0;">📞</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1559cf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M5 4h4l1.6 4-2.2 1.6a13 13 0 0 0 6 6L16 13.4l4 1.6v4a2 2 0 0 1-2.2 2A17 17 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg>
         <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Telephone call</strong><span style="font-size:.8rem;color:#5f6b7c;">Pick a time that suits you this week</span></div>
         <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
       </a>
       <a id="modal-visit" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8f9fb;border:1.5px solid rgba(16,21,29,.1);border-radius:16px;text-decoration:none;color:#11161d;">
-        <span style="font-size:26px;flex-shrink:0;">🤝</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1559cf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c.6-3.4 3-5.2 6-5.2s5.4 1.8 6 5.2"/><path d="M15.5 5.2a3.2 3.2 0 0 1 0 5.6M17.7 15.1c2 .7 3.4 2.3 3.8 4.9"/></svg>
         <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in, see the cars, talk numbers — no rush</span></div>
         <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
       </a>
