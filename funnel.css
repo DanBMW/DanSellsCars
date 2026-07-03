@@ -342,6 +342,50 @@ body.fv2 .field-group input.fv2-invalid,body.fv2 .field-group textarea.fv2-inval
 .fv2-rev-item div{font-size:.88rem;font-weight:600;color:var(--text);text-align:right;line-height:1.45;overflow-wrap:anywhere;}
 @media(max-width:520px){.fv2-rev-item{flex-direction:column;gap:2px;}.fv2-rev-item div{text-align:left;}}
 
+/* ── EV saving card (EV funnel only) ──────────────────────── */
+.ev-save{
+  position:relative;overflow:hidden;border-radius:18px;padding:22px 22px 18px;margin:18px 0 4px;
+  background:linear-gradient(135deg,#0d1f3c,#12305e 55%,#0e3f96);
+  border:1px solid rgba(58,123,224,.4);color:#eaf0fa;
+  box-shadow:0 18px 44px -16px rgba(14,63,150,.5);animation:fv2In .35s ease both;
+}
+.ev-save::after{
+  content:'';position:absolute;top:-40%;right:-12%;width:55%;height:180%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(90,150,255,.28),transparent 70%);
+}
+.ev-save-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;}
+.ev-save-kick{font-size:.66rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#9dbcf5;}
+.ev-save-badge{font-size:.64rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#cfdcf6;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:3px 10px;flex-shrink:0;}
+.ev-save-hero{font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1;margin:2px 0 6px;font-variant-numeric:tabular-nums;}
+.ev-save-hero span{font-size:2.7rem;color:#fff;}
+.ev-save-hero small{font-size:1.05rem;font-weight:500;color:#b9caea;margin-left:6px;}
+.ev-save-sub{font-size:.88rem;color:#c6d4ee;line-height:1.55;margin:0 0 16px;position:relative;}
+.ev-save-rows{display:grid;gap:7px;position:relative;}
+.ev-save-row{
+  display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 14px;
+}
+.ev-save-row span{font-size:.8rem;color:#b9caea;line-height:1.45;}
+.ev-save-row strong{font-size:.92rem;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.ev-save-row.win{background:rgba(52,199,123,.12);border-color:rgba(52,199,123,.35);}
+.ev-save-row.win strong{color:#7fe3ac;}
+.ev-save-note{font-size:.72rem;color:#8fa4cc;line-height:1.6;margin:14px 0 0;position:relative;}
+.ev-save-note a{color:#9dbcf5;}
+.ev-save-alt{
+  border-radius:14px;padding:14px 16px;margin:18px 0 4px;font-size:.88rem;line-height:1.6;
+  background:var(--blue-tint);border:1px solid rgba(21,89,207,.25);color:var(--blue-deep);animation:fv2In .3s ease both;
+}
+/* DVSA cross-check nudge under the saving card */
+.ev-dvsa{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  border-radius:12px;padding:11px 14px;margin-top:10px;font-size:.83rem;line-height:1.5;
+  background:rgba(168,133,59,.09);border:1px solid rgba(168,133,59,.35);color:#775a20;animation:fv2In .3s ease both;
+}
+.ev-dvsa button{
+  border:none;border-radius:999px;padding:7px 14px;font-family:var(--font);font-size:.78rem;font-weight:700;
+  background:var(--gold);color:#fff;cursor:pointer;flex-shrink:0;
+}
+
 /* ── Consent / marketing card ─────────────────────────────── */
 .fv2-consent{background:rgba(16,21,29,.025);border:1px solid var(--line-soft);border-radius:14px;padding:16px 18px;margin-top:12px;}
 .fv2-consent p{font-size:.8rem;color:var(--muted);line-height:1.55;margin:0 0 10px;}

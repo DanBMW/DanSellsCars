@@ -69,6 +69,10 @@ async function dvlaLookup(reg, env) {
     year:              d.yearOfManufacture || null,
     colour:            d.colour            || '',
     fuelType:          d.fuelType          || '',
+    co2Emissions:      d.co2Emissions      || null,
+    engineCapacity:    d.engineCapacity    || null,
+    taxStatus:         d.taxStatus         || '',
+    motStatus:         d.motStatus         || '',
     motExpiryDate:     d.motExpiryDate     || '',
     taxDueDate:        d.taxDueDate        || ''
   };
@@ -136,6 +140,8 @@ async function vehicleLookup(reg, env) {
         date:       (t.completedDate || '').slice(0, 10),
         result:     t.testResult || '',
         mileage:    t.odometerValue ? Number(t.odometerValue).toLocaleString('en-GB') + ' ' + (t.odometerUnit || 'MI').toLowerCase() : '',
+        odo:        t.odometerValue ? Number(t.odometerValue) : null,
+        odoUnit:    (t.odometerUnit || 'MI').toUpperCase(),
         expiry:     t.expiryDate || '',
         advisories: defects.filter(d => (d.type || '').toUpperCase() === 'ADVISORY').length,
         failures:   defects.filter(d => ['MAJOR', 'DANGEROUS', 'FAIL', 'PRS'].includes((d.type || '').toUpperCase())).length,
