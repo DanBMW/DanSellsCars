@@ -57,15 +57,32 @@
      mpg comes from DVLA CO2 where available (fuel-burn chemistry:
      a litre of petrol makes ~2,392g of CO2, diesel ~2,640g), with
      engine-size fallbacks when a reg predates CO2 records.
-     Prices are typical UK figures, spelled out to the customer. */
+     Prices are real UK figures, spelled out to the customer.
+     Last checked 3 Jul 2026 — sources noted per line; refresh these
+     every couple of months:
+       petrol/diesel  RAC Fuel Watch UK average
+       homeStandard   Ofgem price cap unit rate (Jul–Sep 2026: 26.11p)
+       homeOffpeak    overnight EV tariffs (Intelligent Octopus Go is
+                      5.49p from Apr 2026; 7p is a safe cross-supplier
+                      figure so the card never over-promises)
+       publicFast     Zapmap price index, 3–49kW (May 2026: 54p)
+       publicRapid    Zapmap price index, 50kW+ (May 2026: 79p)
+     Charging behaviour: drivers with home charging are assumed to do
+     80% of their miles on the overnight rate and 20% on public rapids
+     (the long-trip top-ups). Street-only drivers get 80% fast public /
+     20% rapid instead. */
   var RATES = {
-    petrolPerLitre: 1.35,   // typical UK unleaded, £/L
-    dieselPerLitre: 1.43,   // typical UK diesel, £/L
+    petrolPerLitre: 1.51,   // RAC Fuel Watch, late Jun 2026
+    dieselPerLitre: 1.67,   // RAC Fuel Watch, late Jun 2026
     evMilesPerKwh:  3.3,    // real-world BMW EV average
-    homeOffpeak:    0.075,  // overnight EV tariff, £/kWh
-    homeStandard:   0.245,  // standard home rate, £/kWh
-    publicBlend:    0.56    // mixed public network charging, £/kWh
+    homeOffpeak:    0.07,   // overnight EV tariff, £/kWh
+    homeStandard:   0.26,   // Ofgem cap unit rate, £/kWh
+    publicFast:     0.54,   // public 3–49kW, £/kWh
+    publicRapid:    0.79,   // public 50kW+, £/kWh
+    homeShare:      0.8     // share of charging done at home overnight
   };
+  RATES.homeMix   = RATES.homeShare * RATES.homeOffpeak + (1 - RATES.homeShare) * RATES.publicRapid;
+  RATES.publicMix = RATES.homeShare * RATES.publicFast  + (1 - RATES.homeShare) * RATES.publicRapid;
   window.EV_RATES = RATES;
 
   window.evSavings = function(){
@@ -101,9 +118,10 @@
     var litrePrice = diesel ? RATES.dieselPerLitre : RATES.petrolPerLitre;
     var fuelCost = miles / mpg * 4.546 * litrePrice;
     var kwh = miles / RATES.evMilesPerKwh;
-    var evOff = kwh * RATES.homeOffpeak;
-    var evStd = kwh * RATES.homeStandard;
-    var evPub = kwh * RATES.publicBlend;
+    var evHome = kwh * RATES.homeMix;      // 80% overnight + 20% public rapid
+    var evOff  = kwh * RATES.homeOffpeak;  // best case: everything overnight
+    var evStd  = kwh * RATES.homeStandard;
+    var evPub  = kwh * RATES.publicMix;    // street-only: 80% fast + 20% rapid
 
     return {
       alreadyEV: false,
@@ -114,7 +132,8 @@
       mpg: Math.round(mpg),
       mpgSrc: mpgSrc,
       fuelCost: fuelCost,
-      evOff: evOff, evStd: evStd, evPub: evPub,
+      evHome: evHome, evOff: evOff, evStd: evStd, evPub: evPub,
+      saveHome: fuelCost - evHome,
       saveOff: fuelCost - evOff,
       saveStd: fuelCost - evStd,
       savePub: fuelCost - evPub
@@ -201,7 +220,7 @@
       dw.indexOf("Street") === 0 ? "Street parking" : dw.indexOf("Communal") === 0 ? "Communal parking" : "Charging TBC");
     try {
       var s = window.evSavings && window.evSavings();
-      if (s && !s.alreadyEV && s.saveOff > 100) items.push("~" + window.evMoney10(s.saveOff) + "/yr saving");
+      if (s && !s.alreadyEV && s.saveHome > 100) items.push("~" + window.evMoney10(s.saveHome) + "/yr saving");
     } catch(e) {}
     var px = g("evPX");
     if (px === "No") items.push("No PX");

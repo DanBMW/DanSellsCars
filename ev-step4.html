@@ -333,24 +333,25 @@
     const m10=window.evMoney10;
     const carName=[g("evDvlaYear"),toTC(g("evDvlaMake")),toTC(g("evDvlaModel"))].filter(Boolean).join(" ")||"your current car";
 
+    const R=window.EV_RATES, pct=Math.round(R.homeShare*100);
     let hero, sub, rows=[];
     if(street){
       hero=Math.max(0,s.savePub);
       sub=hero>100
-        ? "back in your pocket every year on a typical mix of public charging. Find the cheap chargers on your routes — I'll help — and it heads toward "+m10(s.saveOff)+"."
-        : "Public rapid charging can cost nearly as much as "+s.fuelLabel+" — this is exactly where I earn my keep. On the call I'll map the cheap networks around you, and with home or workplace charging you'd be looking at up to "+m10(s.saveOff)+" a year.";
+        ? "back in your pocket every year on a realistic public mix — mostly fast chargers ("+Math.round(R.publicFast*100)+"p/kWh) with rapid top-ups. Find the cheap networks on your routes — I'll help — and it heads toward "+m10(s.saveOff)+"."
+        : "Public charging can cost nearly as much as "+s.fuelLabel+" — this is exactly where I earn my keep. On the call I'll map the cheap networks around you, and with home or workplace charging you'd be looking at up to "+m10(s.saveOff)+" a year.";
       rows=[
         ["Your "+carName+" — "+s.fuelLabel+", ~"+s.mpg+" mpg", m10(s.fuelCost)+"/yr", false],
-        ["BMW EV on mixed public charging", m10(s.evPub)+"/yr", hero>100],
+        ["BMW EV on public charging ("+pct+"% fast, "+(100-pct)+"% rapid)", m10(s.evPub)+"/yr", hero>100],
         ["BMW EV if you can charge at home or work", m10(s.evOff)+"/yr", false]
       ];
     } else {
-      hero=s.saveOff;
-      sub="back in your pocket every year, charging at home on an overnight EV tariff. That's about "+m10(hero/52)+" a week"+(s.hybrid?" — and you're already part-electric, so you know the drill":"")+".";
+      hero=s.saveHome;
+      sub="back in your pocket every year. That assumes "+pct+"% of your charging at home overnight and "+(100-pct)+"% on public rapids for the longer days — about "+m10(hero/52)+" a week"+(s.hybrid?", and you're already part-electric, so you know the drill":"")+".";
       rows=[
         ["Your "+carName+" — "+s.fuelLabel+", ~"+s.mpg+" mpg", m10(s.fuelCost)+"/yr", false],
-        ["BMW EV on an overnight tariff (7.5p/kWh)", m10(s.evOff)+"/yr", true],
-        ["BMW EV on a standard home rate (24.5p/kWh)", m10(s.evStd)+"/yr", false]
+        ["BMW EV — "+pct+"% overnight tariff ("+Math.round(R.homeOffpeak*100)+"p/kWh), "+(100-pct)+"% public rapid", m10(s.evHome)+"/yr", true],
+        ["BMW EV all at the standard home rate ("+Math.round(R.homeStandard*100)+"p/kWh)", m10(s.evStd)+"/yr", false]
       ];
     }
 
@@ -367,7 +368,7 @@
     document.getElementById("saveSub").textContent=sub;
     document.getElementById("saveNote").innerHTML=
       "Based on your "+Number(s.miles).toLocaleString("en-GB")+" miles a year (<a href='ev-step3.html'>edit</a>), "+
-      s.fuelLabel+" at £"+s.litrePrice.toFixed(2)+"/litre and ~"+s.mpg+" mpg from the "+s.mpgSrc+", EV at "+window.EV_RATES.evMilesPerKwh+" mi/kWh. "+
+      s.fuelLabel+" at £"+s.litrePrice.toFixed(2)+"/litre (UK average) and ~"+s.mpg+" mpg from the "+s.mpgSrc+", EV at "+R.evMilesPerKwh+" mi/kWh. "+
       "Fuel only — servicing savings come on top. Dan does the exact maths with you.";
     card.style.display="block";
     countUp(document.getElementById("saveHero"),hero);

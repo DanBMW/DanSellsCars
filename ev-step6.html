@@ -78,24 +78,25 @@ var savings = window.evSavings();
   var street=(g("evDriveway")||"").indexOf("Street")===0;
   var m10=window.evMoney10;
   var carName=[g("evDvlaYear"),toTC(g("evDvlaMake")),toTC(g("evDvlaModel"))].filter(Boolean).join(" ")||"your current car";
+  var R=window.EV_RATES, pct=Math.round(R.homeShare*100);
   var hero, sub, rows;
   if(street){
     hero=Math.max(0,savings.savePub);
     sub=hero>100
-      ? "back in your pocket every year on a typical mix of public charging — smart charging moves it toward "+m10(savings.saveOff)+"."
+      ? "back in your pocket every year on a realistic public mix — smart charging moves it toward "+m10(savings.saveOff)+"."
       : "Public charging prices vary hugely — with home or workplace charging you'd be looking at up to "+m10(savings.saveOff)+" a year. I'll map the options with you.";
     rows=[
       ["Your "+carName+" — "+savings.fuelLabel+", ~"+savings.mpg+" mpg", m10(savings.fuelCost)+"/yr", false],
-      ["BMW EV on mixed public charging", m10(savings.evPub)+"/yr", hero>100],
+      ["BMW EV on public charging ("+pct+"% fast, "+(100-pct)+"% rapid)", m10(savings.evPub)+"/yr", hero>100],
       ["BMW EV if you can charge at home or work", m10(savings.evOff)+"/yr", false]
     ];
   } else {
-    hero=savings.saveOff;
-    sub="back in your pocket every year, charging at home on an overnight EV tariff — about "+m10(hero/52)+" a week.";
+    hero=savings.saveHome;
+    sub="back in your pocket every year, assuming "+pct+"% overnight home charging and "+(100-pct)+"% public rapids — about "+m10(hero/52)+" a week.";
     rows=[
       ["Your "+carName+" — "+savings.fuelLabel+", ~"+savings.mpg+" mpg", m10(savings.fuelCost)+"/yr", false],
-      ["BMW EV on an overnight tariff (7.5p/kWh)", m10(savings.evOff)+"/yr", true],
-      ["BMW EV on a standard home rate (24.5p/kWh)", m10(savings.evStd)+"/yr", false]
+      ["BMW EV — "+pct+"% overnight tariff ("+Math.round(R.homeOffpeak*100)+"p/kWh), "+(100-pct)+"% public rapid", m10(savings.evHome)+"/yr", true],
+      ["BMW EV all at the standard home rate ("+Math.round(R.homeStandard*100)+"p/kWh)", m10(savings.evStd)+"/yr", false]
     ];
   }
   document.getElementById("saveHero").textContent=m10(hero);
@@ -264,8 +265,8 @@ function generateEVStory(){
   var dwNote=dw&&dw.indexOf("Yes")===0?"They have a driveway, which opens up the best overnight charging tariffs.":dw&&dw.indexOf("Street")===0?"No driveway yet, so Dan will factor in the smartest charging alternatives.":"";
   var pxLine=plan==="Yes"||plan==="Maybe"?"Their "+[cc,epm].filter(Boolean).join(" ")+" was noted as a part exchange.":plan==="Keeping it"?"They're keeping their "+cc+" for now — this was about seeing the numbers in black and white.":"";
   var saveLine="";
-  if(savings&&!savings.alreadyEV&&savings.saveOff>100){
-    saveLine="The rough maths came back at around "+window.evMoney10(savings.saveOff)+" a year in fuel alone. ";
+  if(savings&&!savings.alreadyEV&&savings.saveHome>100){
+    saveLine="The rough maths came back at around "+window.evMoney10(savings.saveHome)+" a year in fuel alone. ";
   }
   var ntLine=nt?"In their own words: “"+nt+"”":"";
   return "There once was someone called "+fn+" who had been watching the electric revolution from a thoughtful distance — until the range, the technology, and the savings all started making serious sense.\n\n"+(mStr?"With "+mStr+" ahead of them":"Ready for a change")+", "+first+" was "+tl+" and reached out to Dan — someone who made this switch himself and knows what the questions sound like from both sides. A "+es+" had the appeal: the performance you expect from a BMW, the running costs you didn't expect to be quite so good. "+(bLine?bLine+" ":"")+saveLine+dwNote+" "+pxLine+"\n\n"+(ntLine?ntLine+"\n\n":"")+"Dan will check the exact weekly saving versus the "+cc+", crunch the real numbers, and come back with a proper personalised answer — not a brochure, a conversation built around "+first+"'s actual life.";
@@ -313,7 +314,7 @@ async function sendForm(){
   var m10=window.evMoney10;
   var s=savings;
   if(s&&!s.alreadyEV){
-    sessionStorage.setItem("evSavingHero", m10((readVal("evDriveway")||"").indexOf("Street")===0?Math.max(0,s.savePub):s.saveOff));
+    sessionStorage.setItem("evSavingHero", m10((readVal("evDriveway")||"").indexOf("Street")===0?Math.max(0,s.savePub):s.saveHome));
   }
 
   var payload = {
@@ -355,13 +356,15 @@ async function sendForm(){
     dvsa_annual_mileage_estimate: readVal("evDvsaAnnualMiles") ? Number(readVal("evDvsaAnnualMiles")).toLocaleString("en-GB") : "",
     est_mpg_used:                s && !s.alreadyEV ? String(s.mpg) + " (" + s.mpgSrc + ")" : "",
     est_fuel_cost_year:          s && !s.alreadyEV ? m10(s.fuelCost) : "",
+    est_ev_cost_home_mix:        s && !s.alreadyEV ? m10(s.evHome) : "",
     est_ev_cost_home_offpeak:    s && !s.alreadyEV ? m10(s.evOff) : "",
     est_ev_cost_home_standard:   s && !s.alreadyEV ? m10(s.evStd) : "",
     est_ev_cost_public_mix:      s && !s.alreadyEV ? m10(s.evPub) : "",
+    est_saving_home_mix_year:    s && !s.alreadyEV ? m10(s.saveHome) : "",
     est_saving_home_offpeak_year:s && !s.alreadyEV ? m10(s.saveOff) : "",
     est_saving_home_standard_year:s && !s.alreadyEV ? m10(s.saveStd) : "",
     est_saving_public_mix_year:  s && !s.alreadyEV ? m10(s.savePub) : "",
-    savings_basis:               s && !s.alreadyEV ? "Petrol £" + window.EV_RATES.petrolPerLitre.toFixed(2) + "/L, diesel £" + window.EV_RATES.dieselPerLitre.toFixed(2) + "/L, EV " + window.EV_RATES.evMilesPerKwh + " mi/kWh, off-peak 7.5p, standard 24.5p, public mix 56p" : (s && s.alreadyEV ? "Current car already electric" : ""),
+    savings_basis:               s && !s.alreadyEV ? "Petrol £" + window.EV_RATES.petrolPerLitre.toFixed(2) + "/L, diesel £" + window.EV_RATES.dieselPerLitre.toFixed(2) + "/L (RAC Jun 2026), EV " + window.EV_RATES.evMilesPerKwh + " mi/kWh; home mix = 80% overnight 7p + 20% public rapid 79p; standard rate 26p (Ofgem Jul 2026); public mix = 80% fast 54p + 20% rapid 79p (Zapmap May 2026)" : (s && s.alreadyEV ? "Current car already electric" : ""),
     notes:             readVal("evNotes"),
     marketing_opt_in:  readVal("evMarketingOptIn") || "No",
     marketing_channels:readVal("evMarketingChannels"),
