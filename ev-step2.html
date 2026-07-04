@@ -75,15 +75,19 @@
   <!-- FINANCE / NOT SURE -->
   <div id="financeBlock" class="fv2-reveal" style="display:none;">
     <div class="fv2-sec">What you pay now <small>(if anything)</small></div>
-    <div class="fv2-amount">
+    <button type="button" class="fv2-toggle" id="ownToggle" onclick="toggleOwn()" style="margin-bottom:10px;">
+      <span class="fv2-toggle-sw"></span>
+      <span class="fv2-toggle-body"><strong>I own it outright — nothing to pay</strong><span>No finance, PCP or lease on my current car.</span></span>
+    </button>
+    <div class="fv2-amount" id="curPayWrap">
       <div class="fv2-amount-row"><span class="fv2-amount-label">Current car, per month</span><span class="fv2-amount-value" id="curV">£0</span></div>
       <input type="range" id="curR" min="0" max="1500" step="25" value="0"/>
       <div class="fv2-chips" data-for="curR">
-        <button class="fv2-chip" data-v="0">Nothing / owned</button>
         <button class="fv2-chip" data-v="250">£250</button>
         <button class="fv2-chip" data-v="350">£350</button>
         <button class="fv2-chip" data-v="500">£500</button>
         <button class="fv2-chip" data-v="700">£700</button>
+        <button class="fv2-chip" data-v="1000">£1,000</button>
       </div>
       <p class="fv2-amount-note">Your current finance, PCP or lease. It lets me show the electric monthly against what you already pay — with the fuel saving taken off — so you see the true difference.</p>
     </div>
@@ -171,6 +175,14 @@
   const restore = (key, s) => { const v = sessionStorage.getItem(key); if(v){ s.r.value = v; s.paint(); } };
   restore("evCurrentPayment", cur); restore("evDeposit", dep); restore("evMonthlyBudget", mon); restore("evCashBudget", cash);
 
+  let ownChosen = sessionStorage.getItem("evOwnsOutright") === "Yes";
+  function refreshOwn(){
+    document.getElementById("ownToggle").classList.toggle("on", ownChosen);
+    document.getElementById("curPayWrap").style.display = ownChosen ? "none" : "block";
+  }
+  function toggleOwn(){ ownChosen = !ownChosen; refreshOwn(); }
+  refreshOwn();
+
   function show(id, on){ document.getElementById(id).style.display = on ? "block" : "none"; }
   function refresh(){
     const isCash = routeChosen === "Outright";
@@ -203,9 +215,10 @@
     sessionStorage.setItem("evFunding", routeChosen);
     if(routeChosen === "Outright"){
       sessionStorage.setItem("evCashBudget", cash.r.value);
-      sessionStorage.removeItem("evDeposit"); sessionStorage.removeItem("evMonthlyBudget"); sessionStorage.removeItem("evCurrentPayment");
+      sessionStorage.removeItem("evDeposit"); sessionStorage.removeItem("evMonthlyBudget"); sessionStorage.removeItem("evCurrentPayment"); sessionStorage.removeItem("evOwnsOutright");
     } else {
-      sessionStorage.setItem("evCurrentPayment", cur.r.value);
+      sessionStorage.setItem("evOwnsOutright", ownChosen ? "Yes" : "No");
+      sessionStorage.setItem("evCurrentPayment", ownChosen ? "0" : cur.r.value);
       sessionStorage.setItem("evDeposit", dep.r.value);
       sessionStorage.setItem("evMonthlyBudget", mon.r.value);
       sessionStorage.removeItem("evCashBudget");

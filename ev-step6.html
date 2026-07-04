@@ -118,6 +118,14 @@ var savings = window.evSavings();
 var hasCar = ["Yes","Maybe","Keeping it"].indexOf(readVal("evPX")) !== -1;
 var isPX   = ["Yes","Maybe"].indexOf(readVal("evPX")) !== -1;
 
+// "Owned outright" when they toggled it; else "£X/mo"; else blank (not asked/outright)
+function currentPaymentText(){
+  if(readVal("evOwnsOutright") === "Yes") return "Owned outright — nothing to pay";
+  var v = readVal("evCurrentPayment");
+  if(!v || Number(v) === 0) return "";
+  return money("evCurrentPayment") + "/mo";
+}
+
 var groups = [
   { title:"Your details", edit:"ev-step5.html", rows:[
     ["Name", readVal("evName")],
@@ -133,7 +141,7 @@ var groups = [
   { title:"Budget & timing", edit:"ev-step2.html", rows:[
     ["Timeline", readVal("evTimeline")],
     ["Funding route", readVal("evFunding")],
-    ["Current monthly payment", readVal("evCurrentPayment") ? (Number(readVal("evCurrentPayment"))===0 ? "Nothing / owned outright" : money("evCurrentPayment") + "/mo") : ""],
+    ["Current monthly payment", currentPaymentText()],
     ["Deposit", money("evDeposit")],
     ["Monthly budget", money("evMonthlyBudget")],
     ["Total budget", money("evCashBudget")]
@@ -211,11 +219,16 @@ var fields = [
 ];
 function buildText(){
   return fields.map(function(f){
-    var val = f[3] ? readList(f[1]) : readVal(f[1]);
-    if(!val) val = "Not given";
-    else if(f[2]){
-      var n = Number(val.replace(/,/g,""));
-      if(!isNaN(n)) val = "£" + n.toLocaleString("en-GB");
+    var val;
+    if(f[1] === "evCurrentPayment"){
+      val = currentPaymentText() || "Not given";
+    } else {
+      val = f[3] ? readList(f[1]) : readVal(f[1]);
+      if(!val) val = "Not given";
+      else if(f[2]){
+        var n = Number(val.replace(/,/g,""));
+        if(!isNaN(n)) val = "£" + n.toLocaleString("en-GB");
+      }
     }
     return f[0] + ": " + val;
   }).join("\n");
@@ -330,7 +343,7 @@ async function sendForm(){
     evstyle:           readVal("evStyle"),
     timeline:          readVal("evTimeline"),
     funding:           readVal("evFunding"),
-    currentpayment:    readVal("evCurrentPayment") ? (Number(readVal("evCurrentPayment"))===0 ? "Nothing / owned outright" : money("evCurrentPayment") + "/mo") : "",
+    currentpayment:    currentPaymentText(),
     deposit:           money("evDeposit"),
     monthlybudget:     money("evMonthlyBudget") ? money("evMonthlyBudget") + "/mo" : "",
     cashbudget:        money("evCashBudget"),
