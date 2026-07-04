@@ -133,6 +133,7 @@ var groups = [
   { title:"Budget & timing", edit:"ev-step2.html", rows:[
     ["Timeline", readVal("evTimeline")],
     ["Funding route", readVal("evFunding")],
+    ["Current monthly payment", readVal("evCurrentPayment") ? (Number(readVal("evCurrentPayment"))===0 ? "Nothing / owned outright" : money("evCurrentPayment") + "/mo") : ""],
     ["Deposit", money("evDeposit")],
     ["Monthly budget", money("evMonthlyBudget")],
     ["Total budget", money("evCashBudget")]
@@ -198,8 +199,8 @@ groups.forEach(function(g){
 var fields = [
   ["Name","evName"],["Email","evEmail"],["Mobile","evPhone"],["Postcode","evPostcode"],
   ["Best time","evBestTime"],["Lifestyle","evLifestyle",false,true],["EV shape","evStyle"],
-  ["Timeline","evTimeline"],["Funding","evFunding"],["Deposit","evDeposit",true],
-  ["Monthly budget","evMonthlyBudget",true],["Cash budget","evCashBudget",true],
+  ["Timeline","evTimeline"],["Funding","evFunding"],["Current monthly payment","evCurrentPayment",true],
+  ["Deposit","evDeposit",true],["Monthly budget","evMonthlyBudget",true],["Cash budget","evCashBudget",true],
   ["Annual mileage","evMileage"],["200+ mile days","evLongTripsLabel"],
   ["Charging at home","evDriveway"],["Home charger","evCharger"],
   ["Current car plan","evPX"],["Registration","evReg"],["Current car","evCurrentCar"],
@@ -329,6 +330,7 @@ async function sendForm(){
     evstyle:           readVal("evStyle"),
     timeline:          readVal("evTimeline"),
     funding:           readVal("evFunding"),
+    currentpayment:    readVal("evCurrentPayment") ? (Number(readVal("evCurrentPayment"))===0 ? "Nothing / owned outright" : money("evCurrentPayment") + "/mo") : "",
     deposit:           money("evDeposit"),
     monthlybudget:     money("evMonthlyBudget") ? money("evMonthlyBudget") + "/mo" : "",
     cashbudget:        money("evCashBudget"),
@@ -351,6 +353,7 @@ async function sendForm(){
     px_mot_expiry:     readVal("evMotExpiry"),
     px_mot_history:    readVal("evMotHistory"),
     dvla_fuel:         readVal("evDvlaFuel"),
+    dvla_colour:       readVal("evDvlaColour"),
     dvla_co2:          readVal("evDvlaCo2"),
     dvla_engine_cc:    readVal("evDvlaCc"),
     dvsa_annual_mileage_estimate: readVal("evDvsaAnnualMiles") ? Number(readVal("evDvsaAnnualMiles")).toLocaleString("en-GB") : "",

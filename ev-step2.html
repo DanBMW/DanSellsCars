@@ -74,6 +74,19 @@
 
   <!-- FINANCE / NOT SURE -->
   <div id="financeBlock" class="fv2-reveal" style="display:none;">
+    <div class="fv2-sec">What you pay now <small>(if anything)</small></div>
+    <div class="fv2-amount">
+      <div class="fv2-amount-row"><span class="fv2-amount-label">Current car, per month</span><span class="fv2-amount-value" id="curV">£0</span></div>
+      <input type="range" id="curR" min="0" max="1500" step="25" value="0"/>
+      <div class="fv2-chips" data-for="curR">
+        <button class="fv2-chip" data-v="0">Nothing / owned</button>
+        <button class="fv2-chip" data-v="250">£250</button>
+        <button class="fv2-chip" data-v="350">£350</button>
+        <button class="fv2-chip" data-v="500">£500</button>
+        <button class="fv2-chip" data-v="700">£700</button>
+      </div>
+      <p class="fv2-amount-note">Your current finance, PCP or lease. It lets me show the electric monthly against what you already pay — with the fuel saving taken off — so you see the true difference.</p>
+    </div>
     <div class="fv2-sec">Deposit <small>(zero is absolutely fine)</small></div>
     <div class="fv2-amount">
       <div class="fv2-amount-row"><span class="fv2-amount-label">Towards the car</span><span class="fv2-amount-value" id="depV">£2,000</span></div>
@@ -140,6 +153,7 @@
     paint();
     return { r, paint };
   }
+  const cur  = wire("curR","curV",v=>Number(v)===0?"Nothing":fmtGBP(v));
   const dep  = wire("depR","depV",fmtGBP);
   const mon  = wire("monR","monV",fmtGBP);
   const cash = wire("cashR","cashV",fmtGBP);
@@ -155,7 +169,7 @@
   let timelineChosen = sessionStorage.getItem("evTimeline") || "";
   let routeChosen    = sessionStorage.getItem("evFunding")  || "";
   const restore = (key, s) => { const v = sessionStorage.getItem(key); if(v){ s.r.value = v; s.paint(); } };
-  restore("evDeposit", dep); restore("evMonthlyBudget", mon); restore("evCashBudget", cash);
+  restore("evCurrentPayment", cur); restore("evDeposit", dep); restore("evMonthlyBudget", mon); restore("evCashBudget", cash);
 
   function show(id, on){ document.getElementById(id).style.display = on ? "block" : "none"; }
   function refresh(){
@@ -189,8 +203,9 @@
     sessionStorage.setItem("evFunding", routeChosen);
     if(routeChosen === "Outright"){
       sessionStorage.setItem("evCashBudget", cash.r.value);
-      sessionStorage.removeItem("evDeposit"); sessionStorage.removeItem("evMonthlyBudget");
+      sessionStorage.removeItem("evDeposit"); sessionStorage.removeItem("evMonthlyBudget"); sessionStorage.removeItem("evCurrentPayment");
     } else {
+      sessionStorage.setItem("evCurrentPayment", cur.r.value);
       sessionStorage.setItem("evDeposit", dep.r.value);
       sessionStorage.setItem("evMonthlyBudget", mon.r.value);
       sessionStorage.removeItem("evCashBudget");

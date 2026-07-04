@@ -11,7 +11,7 @@
       mileage given in step 3. Pure read of sessionStorage, safe to call
       from any page. */
 (function(){
-  var KEYS = ["evLifestyle","evStyle","evTimeline","evFunding","evDeposit","evMonthlyBudget",
+  var KEYS = ["evLifestyle","evStyle","evTimeline","evFunding","evCurrentPayment","evDeposit","evMonthlyBudget",
     "evCashBudget","evMileage","evLongTrips","evLongTripsLabel","evDriveway","evCharger",
     "evPX","evReg","evCurrentCar","evPXModel","evPXMileage","evWBAC","evPXService",
     "evPXFinance","evSettlement","evPXCond","evPXPhotos","evPXPhotoBypass",
