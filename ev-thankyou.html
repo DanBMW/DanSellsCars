@@ -23,6 +23,7 @@
       <div id="saveRecap" style="display:none;background:linear-gradient(135deg,#0d1f3c,#0e3f96);border:1px solid rgba(58,123,224,.4);border-radius:16px;padding:18px 22px;margin:0 0 20px;">
         <p style="margin:0 0 2px;font-size:.66rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#9dbcf5;">Your rough electric saving</p>
         <p style="margin:0;font-family:var(--display);font-size:2rem;font-weight:600;color:#fff;"><span id="saveRecapVal"></span><span style="font-size:1rem;font-weight:500;color:#b9caea;"> a year</span></p>
+        <p id="saveRecap4yr" style="margin:6px 0 0;font-size:.9rem;font-weight:600;color:#7fe3ac;display:none;">That's around <span id="saveRecap4yrVal"></span> over 4 years.</p>
         <p style="margin:6px 0 0;font-size:.8rem;color:#b9caea;line-height:1.5;">Fuel versus electricity only — Dan confirms the exact figure with you, servicing savings on top.</p>
       </div>
 
@@ -75,6 +76,11 @@
     const v = sessionStorage.getItem('evSavingHero');
     if (!v) return;
     document.getElementById('saveRecapVal').textContent = v;
+    const v4 = sessionStorage.getItem('evSaving4yr');
+    if (v4) {
+      document.getElementById('saveRecap4yrVal').textContent = v4;
+      document.getElementById('saveRecap4yr').style.display = 'block';
+    }
     document.getElementById('saveRecap').style.display = 'block';
   })();
 

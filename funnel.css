@@ -360,6 +360,14 @@ body.fv2 .field-group input.fv2-invalid,body.fv2 .field-group textarea.fv2-inval
 .ev-save-hero span{font-size:2.7rem;color:#fff;}
 .ev-save-hero small{font-size:1.05rem;font-weight:500;color:#b9caea;margin-left:6px;}
 .ev-save-sub{font-size:.88rem;color:#c6d4ee;line-height:1.55;margin:0 0 16px;position:relative;}
+.ev-save-4yr{
+  position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  background:rgba(52,199,123,.13);border:1px solid rgba(52,199,123,.4);border-radius:14px;
+  padding:13px 16px;margin:0 0 16px;
+}
+.ev-save-4yr-label{font-size:.82rem;color:#c6d4ee;line-height:1.35;}
+.ev-save-4yr-label strong{display:block;font-size:.64rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#7fe3ac;margin-bottom:2px;}
+.ev-save-4yr-val{font-family:var(--display);font-size:1.7rem;font-weight:600;color:#fff;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .ev-save-rows{display:grid;gap:7px;position:relative;}
 .ev-save-row{
   display:flex;justify-content:space-between;align-items:baseline;gap:14px;

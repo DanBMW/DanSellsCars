@@ -68,6 +68,10 @@
       <div class="ev-save-head"><span class="ev-save-kick">Your electric saving</span><span class="ev-save-badge">Rough estimate</span></div>
       <div class="ev-save-hero"><span id="saveHero">£0</span><small id="saveHeroUnit">a year</small></div>
       <p class="ev-save-sub" id="saveSub"></p>
+      <div class="ev-save-4yr" id="save4yrBox" style="display:none">
+        <span class="ev-save-4yr-label"><strong>Over 4 years, roughly</strong>The typical time people keep a car</span>
+        <span class="ev-save-4yr-val" id="save4yr">£0</span>
+      </div>
       <div class="ev-save-rows" id="saveRows"></div>
       <p class="ev-save-note" id="saveNote"></p>
     </div>
@@ -372,6 +376,10 @@
       "Fuel only — servicing savings come on top. Dan does the exact maths with you.";
     card.style.display="block";
     countUp(document.getElementById("saveHero"),hero);
+    const box4=document.getElementById("save4yrBox");
+    // 4-year total = 4x the rounded annual figure, so £610/yr reads as £2,440
+    if(hero>0){ countUp(document.getElementById("save4yr"),Math.round(hero/10)*10*4); box4.style.display="flex"; }
+    else box4.style.display="none";
     if(animate!==false) refreshDvsaNudge();
   }
 

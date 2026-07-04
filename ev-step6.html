@@ -29,6 +29,10 @@
       <div class="ev-save-head"><span class="ev-save-kick">Your electric saving</span><span class="ev-save-badge">Rough estimate</span></div>
       <div class="ev-save-hero"><span id="saveHero">£0</span><small>a year</small></div>
       <p class="ev-save-sub" id="saveSub"></p>
+      <div class="ev-save-4yr" id="save4yrBox" style="display:none">
+        <span class="ev-save-4yr-label"><strong>Over 4 years, roughly</strong>The typical time people keep a car</span>
+        <span class="ev-save-4yr-val" id="save4yr">£0</span>
+      </div>
       <div class="ev-save-rows" id="saveRows"></div>
       <p class="ev-save-note" id="saveNote"></p>
     </div>
@@ -100,6 +104,10 @@ var savings = window.evSavings();
     ];
   }
   document.getElementById("saveHero").textContent=m10(hero);
+  if(hero>0){
+    document.getElementById("save4yr").textContent=m10(Math.round(hero/10)*10*4);
+    document.getElementById("save4yrBox").style.display="flex";
+  }
   document.getElementById("saveSub").textContent=sub;
   var rowsEl=document.getElementById("saveRows");
   rows.forEach(function(r){
@@ -327,8 +335,11 @@ async function sendForm(){
 
   var m10=window.evMoney10;
   var s=savings;
+  var heroVal=0;
   if(s&&!s.alreadyEV){
-    sessionStorage.setItem("evSavingHero", m10((readVal("evDriveway")||"").indexOf("Street")===0?Math.max(0,s.savePub):s.saveHome));
+    heroVal=(readVal("evDriveway")||"").indexOf("Street")===0?Math.max(0,s.savePub):s.saveHome;
+    sessionStorage.setItem("evSavingHero", m10(heroVal));
+    sessionStorage.setItem("evSaving4yr", heroVal>0 ? m10(Math.round(heroVal/10)*10*4) : "");
   }
 
   var payload = {
@@ -377,6 +388,7 @@ async function sendForm(){
     est_ev_cost_home_standard:   s && !s.alreadyEV ? m10(s.evStd) : "",
     est_ev_cost_public_mix:      s && !s.alreadyEV ? m10(s.evPub) : "",
     est_saving_home_mix_year:    s && !s.alreadyEV ? m10(s.saveHome) : "",
+    est_saving_4yr_total:        heroVal>0 ? m10(Math.round(heroVal/10)*10*4) : "",
     est_saving_home_offpeak_year:s && !s.alreadyEV ? m10(s.saveOff) : "",
     est_saving_home_standard_year:s && !s.alreadyEV ? m10(s.saveStd) : "",
     est_saving_public_mix_year:  s && !s.alreadyEV ? m10(s.savePub) : "",
