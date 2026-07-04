@@ -39,6 +39,11 @@
     .result-row.fouryear span{color:#166534;font-weight:600}
     .result-row.fouryear span small{display:block;font-weight:400;color:#3c8556;font-size:.78rem;margin-top:1px}
     .result-row.fouryear strong{font-size:1.35rem;color:#166534}
+    @keyframes pulseAttn{0%{box-shadow:0 0 0 0 rgba(21,89,207,.32)}70%{box-shadow:0 0 0 12px rgba(21,89,207,0)}100%{box-shadow:0 0 0 0 rgba(21,89,207,0)}}
+    .pulse-attn{animation:pulseAttn 1.5s ease-out infinite;border-radius:14px;padding:11px 13px;margin:-11px -13px;background:rgba(21,89,207,.06)}
+    @media(prefers-reduced-motion:reduce){.pulse-attn{animation:none}}
+    .mileage-req{display:none;color:#b4501e;font-weight:700}
+    .mileage-note{display:none;font-size:.82rem;color:#8a3c15;margin:9px 0 0;line-height:1.5}
     .calc-cta{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
     .reg-lookup{background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.22);border-radius:16px;padding:18px 18px 20px;margin-bottom:18px}
     .reg-lookup .rl-title{font-size:.95rem;font-weight:800;color:#141a22;margin:0 0 3px}
@@ -208,10 +213,11 @@
               <span id="mpgMax">80 mpg</span>
             </div>
           </div>
-          <div style="grid-column:1 / -1">
-            <label class="f-label">Annual mileage &mdash; <span id="mileageLabel">12,000</span> miles</label>
-            <input class="f-input" id="annualMileage" type="range" min="4000" max="30000" step="500" value="12000">
+          <div style="grid-column:1 / -1" id="mileageField">
+            <label class="f-label">Annual mileage &mdash; <span id="mileageLabel">10,000</span> miles<span class="mileage-req" id="mileageReq"> &middot; please set this</span></label>
+            <input class="f-input" id="annualMileage" type="range" min="4000" max="30000" step="500" value="10000">
             <div class="range-bounds"><span>4,000</span><span>30,000</span></div>
+            <p class="mileage-note" id="mileageNote">I couldn&rsquo;t find MOT mileage records for this car, so I&rsquo;ve set a typical <strong>10,000 miles</strong> &mdash; slide it to your real annual mileage for an accurate saving.</p>
           </div>
           <div>
             <label class="f-label">EV efficiency (miles/kWh)</label>
@@ -522,6 +528,15 @@
   els.rate.addEventListener('input', calc);
   els.pub.addEventListener('input', calc);
 
+  // Pulse + "please set this" on the mileage field when we couldn't read
+  // it from MOT history; clears the moment the customer moves the slider.
+  function setMileageNeeded(on){
+    document.getElementById('mileageField').classList.toggle('pulse-attn', on);
+    document.getElementById('mileageNote').style.display = on ? 'block' : 'none';
+    document.getElementById('mileageReq').style.display = on ? 'inline' : 'none';
+  }
+  els.miles.addEventListener('input', function(){ setMileageNeeded(false); });
+
   updateMpgSlider();
 
   /* ── Number-plate lookup: prefill the calculator from DVLA + DVSA ──
@@ -618,18 +633,27 @@
       // Current fuel price to match the fuel type (RAC UK averages)
       els.price.value = (mapped === 'diesel') ? '167.1' : '151.0';
 
-      // Annual mileage from the DVSA MOT odometer trail
+      // Annual mileage from the DVSA MOT odometer trail. When there's no
+      // MOT history to estimate from, default to 10k and pulse the field
+      // so the customer sets their own figure.
       var est = dvsaAnnual(d.motHistory);
       var mileNote = '';
       if (est) {
         var snapped = Math.min(30000, Math.max(4000, Math.round(est/500)*500));
         els.miles.value = snapped;
+        setMileageNeeded(false);
         mileNote = ' · ~'+est.toLocaleString('en-GB')+' miles/yr';
+      } else {
+        els.miles.value = 10000;
+        setMileageNeeded(true);
       }
 
       calc();
       var desc = [yr,make,model,toTC(d.colour||'')].filter(Boolean).join(' ');
-      showRegBanner('Found: <strong>'+desc+'</strong>'+mpgNote+mileNote+'. Fields filled in below &mdash; tweak anything that isn&rsquo;t quite right.', false);
+      var tail = est
+        ? '. Fields filled in below &mdash; tweak anything that isn&rsquo;t quite right.'
+        : '. No MOT mileage history for this one, so please set your annual mileage below (started at 10,000).';
+      showRegBanner('Found: <strong>'+desc+'</strong>'+mpgNote+mileNote+tail, false);
     } catch(e) {
       showRegBanner("The lookup didn't respond just now. Enter your details below by hand and the calculator still works.", true);
     } finally {
