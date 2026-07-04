@@ -404,3 +404,23 @@ body.fv2 .field-group input.fv2-invalid,body.fv2 .field-group textarea.fv2-inval
   display:inline-flex;align-items:center;gap:7px;font-size:.82rem;font-weight:600;color:var(--body);
   background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 13px;cursor:pointer;
 }
+
+/* ── Settlement "how to" helper (step 4 EV) ─────────────────── */
+.fv2-sec-help{
+  margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;
+  font-family:var(--font);font-size:.72rem;font-weight:600;letter-spacing:.01em;text-transform:none;
+  color:var(--blue);padding:0;line-height:1;
+}
+.fv2-sec-help svg{width:14px;height:14px;flex-shrink:0;}
+.fv2-sec-help:hover{text-decoration:underline;}
+.fv2-help-body{
+  background:var(--blue-tint);border:1px solid rgba(21,89,207,.2);border-radius:12px;
+  padding:13px 15px;margin-top:10px;font-size:.83rem;line-height:1.55;color:var(--text);
+  animation:fv2In .25s ease both;
+}
+.fv2-help-body p{margin:0 0 8px;}
+.fv2-help-body p:last-child{margin-bottom:0;}
+.fv2-help-body ul{margin:0 0 8px;padding-left:18px;}
+.fv2-help-body li{margin-bottom:6px;}
+.fv2-help-body li:last-child{margin-bottom:0;}
+.fv2-help-body strong{font-weight:700;color:var(--text);}

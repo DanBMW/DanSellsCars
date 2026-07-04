@@ -264,6 +264,22 @@ function autotraderLink(){
   return "https://www.autotrader.co.uk/car-search?" + p.toString();
 }
 
+// Dan-only rough-valuation links for the lead email — never shown to the
+// customer. Deep-link the instant online buyers, pre-filled with the reg
+// and PX mileage, so Dan can pull a live floor/market figure in one tap.
+function pxReg(){ return (readVal("evReg") || "").replace(/\s/g,"").toUpperCase(); }
+function pxMiles(){ return (readVal("evPXMileage") || "").replace(/[^\d]/g,""); }
+function webuyanycarLink(){
+  var r = pxReg(); if(!r) return "";
+  var m = pxMiles();
+  return "https://www.webuyanycar.com/car-valuation/?vrm=" + encodeURIComponent(r) +
+    (m ? "&mileage=" + encodeURIComponent(m) : "");
+}
+function motorwayLink(){
+  var r = pxReg(); if(!r) return "";
+  return "https://motorway.co.uk/sell-my-car?vrm=" + encodeURIComponent(r);
+}
+
 /* ── The EV story ── */
 function generateEVStory(){
   var fn=readVal("evName")||"someone special";
@@ -399,6 +415,8 @@ async function sendForm(){
     customer_story:    story,
     leadsummary:       summary,
     px_autotrader_comparables: autotraderLink(),
+    px_valuation_webuyanycar:  webuyanycarLink(),
+    px_valuation_motorway:     motorwayLink(),
     px_photo_count:    pxPhotos.length ? String(pxPhotos.length) : "",
     px_photos_via:     pxPhotosVia
   };

@@ -137,7 +137,12 @@
       </button>
     </div>
 
-    <div class="fv2-sec">Outstanding finance</div>
+    <div class="fv2-sec">Outstanding finance
+      <button type="button" class="fv2-sec-help" id="settleHelpBtn" onclick="toggleSettleHelp()" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        How to find your settlement
+      </button>
+    </div>
     <div class="fv2-rows" id="financeTrack">
       <button type="button" class="fv2-row" data-val="No finance" onclick="pickFinance(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">None, I own it outright</span><span class="fv2-row-desc">The car is yours to trade in freely.</span></span>
@@ -151,6 +156,15 @@
         <span class="fv2-row-body"><span class="fv2-row-title">Yes, I know the settlement figure</span><span class="fv2-row-desc">Enter it below and I'll factor it into the deal.</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
+    </div>
+    <div id="settleHelp" class="fv2-help-body" style="display:none;margin:10px 0 0;">
+      <p>Your <strong>settlement figure</strong> is the amount left to clear the finance and end the agreement today &mdash; it's not the same as your remaining balance. Here's how to get it:</p>
+      <ul>
+        <li><strong>In your finance provider's app</strong> &mdash; most show a live <em>settlement</em> or <em>early settlement</em> figure instantly.</li>
+        <li><strong>By phone</strong> &mdash; call your lender and ask for a &ldquo;settlement figure.&rdquo; They'll give you one that's valid for a set number of days.</li>
+        <li><strong>BMW or MINI Financial Services?</strong> Open the <strong>My BMW</strong> (or MINI) app, or call BMW Financial Services &mdash; the settlement figure is shown right there.</li>
+      </ul>
+      <p>Can't get it right now? Pick <strong>&ldquo;settlement figure unknown&rdquo;</strong> above and I'll help you work it out before we speak.</p>
     </div>
     <div id="settlementWrap" class="fv2-reveal" style="display:none;margin:-8px 0 22px;">
       <div class="input-card" style="margin:0;">
@@ -533,6 +547,14 @@
     });
     e.target.value = "";
   });
+
+  /* ── Settlement "how to" explainer (customer-facing helper) ── */
+  function toggleSettleHelp(){
+    const body=document.getElementById("settleHelp");
+    const open=body.style.display==="block";
+    body.style.display=open?"none":"block";
+    document.getElementById("settleHelpBtn").setAttribute("aria-expanded",open?"false":"true");
+  }
 
   function hideErr(){ document.getElementById("err").classList.remove("show"); }
   function showErr(msg){
