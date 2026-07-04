@@ -35,6 +35,10 @@
     .result-row strong{font-size:1rem;color:#141a22}
     .result-row.highlight{background:rgba(21,89,207,.10);border-color:rgba(21,89,207,.25)}
     .result-row.highlight strong{font-size:1.35rem;color:#0e7ab8}
+    .result-row.fouryear{background:rgba(26,122,60,.10);border-color:rgba(26,122,60,.28)}
+    .result-row.fouryear span{color:#166534;font-weight:600}
+    .result-row.fouryear span small{display:block;font-weight:400;color:#3c8556;font-size:.78rem;margin-top:1px}
+    .result-row.fouryear strong{font-size:1.35rem;color:#166534}
     .calc-cta{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
     .reg-lookup{background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.22);border-radius:16px;padding:18px 18px 20px;margin-bottom:18px}
     .reg-lookup .rl-title{font-size:.95rem;font-weight:800;color:#141a22;margin:0 0 3px}
@@ -241,6 +245,10 @@
           <div class="result-row">
             <span>Estimated monthly saving</span>
             <strong id="resMonthlySaving">&nbsp;</strong>
+          </div>
+          <div class="result-row fouryear">
+            <span>Over 4 years, roughly<small>The typical time people keep a car</small></span>
+            <strong id="resFourYear">&nbsp;</strong>
           </div>
         </div>
 
@@ -453,6 +461,7 @@
     rEv: document.getElementById('resEvCost'),
     rAnn: document.getElementById('resAnnualSaving'),
     rMon: document.getElementById('resMonthlySaving'),
+    r4yr: document.getElementById('resFourYear'),
     btn: document.getElementById('findOutMore')
   };
 
@@ -496,6 +505,8 @@
     els.rEv.textContent = fmt(evCost);
     els.rAnn.textContent = fmt(saving);
     els.rMon.textContent = fmt(saving / 12);
+    // 4-year total based on the rounded annual figure, so it reads as a clean x4
+    els.r4yr.textContent = fmt(Math.round(saving) * 4);
 
     els.btn.textContent = Math.round(saving) > 0
       ? `Save around ${fmt(saving)} a year and let's go →`
