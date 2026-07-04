@@ -68,9 +68,9 @@
        publicFast     Zapmap price index, 3–49kW (May 2026: 54p)
        publicRapid    Zapmap price index, 50kW+ (May 2026: 79p)
      Charging behaviour: drivers with home charging are assumed to do
-     80% of their miles on the overnight rate and 20% on public rapids
-     (the long-trip top-ups). Street-only drivers get 80% fast public /
-     20% rapid instead. */
+     90% of their miles on the overnight rate and 10% on public rapids
+     (the roughly 1-in-10 longer trips). Street-only drivers get 90%
+     fast public / 10% rapid instead. */
   var RATES = {
     petrolPerLitre: 1.51,   // RAC Fuel Watch, late Jun 2026
     dieselPerLitre: 1.67,   // RAC Fuel Watch, late Jun 2026
@@ -79,7 +79,7 @@
     homeStandard:   0.26,   // Ofgem cap unit rate, £/kWh
     publicFast:     0.54,   // public 3–49kW, £/kWh
     publicRapid:    0.79,   // public 50kW+, £/kWh
-    homeShare:      0.8     // share of charging done at home overnight
+    homeShare:      0.9     // share of charging done at home overnight
   };
   RATES.homeMix   = RATES.homeShare * RATES.homeOffpeak + (1 - RATES.homeShare) * RATES.publicRapid;
   RATES.publicMix = RATES.homeShare * RATES.publicFast  + (1 - RATES.homeShare) * RATES.publicRapid;
@@ -118,10 +118,10 @@
     var litrePrice = diesel ? RATES.dieselPerLitre : RATES.petrolPerLitre;
     var fuelCost = miles / mpg * 4.546 * litrePrice;
     var kwh = miles / RATES.evMilesPerKwh;
-    var evHome = kwh * RATES.homeMix;      // 80% overnight + 20% public rapid
+    var evHome = kwh * RATES.homeMix;      // 90% overnight + 10% public rapid
     var evOff  = kwh * RATES.homeOffpeak;  // best case: everything overnight
     var evStd  = kwh * RATES.homeStandard;
-    var evPub  = kwh * RATES.publicMix;    // street-only: 80% fast + 20% rapid
+    var evPub  = kwh * RATES.publicMix;    // street-only: 90% fast + 10% rapid
 
     return {
       alreadyEV: false,

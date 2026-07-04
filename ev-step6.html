@@ -392,7 +392,7 @@ async function sendForm(){
     est_saving_home_offpeak_year:s && !s.alreadyEV ? m10(s.saveOff) : "",
     est_saving_home_standard_year:s && !s.alreadyEV ? m10(s.saveStd) : "",
     est_saving_public_mix_year:  s && !s.alreadyEV ? m10(s.savePub) : "",
-    savings_basis:               s && !s.alreadyEV ? "Petrol £" + window.EV_RATES.petrolPerLitre.toFixed(2) + "/L, diesel £" + window.EV_RATES.dieselPerLitre.toFixed(2) + "/L (RAC Jun 2026), EV " + window.EV_RATES.evMilesPerKwh + " mi/kWh; home mix = 80% overnight 7p + 20% public rapid 79p; standard rate 26p (Ofgem Jul 2026); public mix = 80% fast 54p + 20% rapid 79p (Zapmap May 2026)" : (s && s.alreadyEV ? "Current car already electric" : ""),
+    savings_basis:               s && !s.alreadyEV ? (function(){var R=window.EV_RATES,p=Math.round(R.homeShare*100),q=100-p;return "Petrol £"+R.petrolPerLitre.toFixed(2)+"/L, diesel £"+R.dieselPerLitre.toFixed(2)+"/L (RAC Jun 2026), EV "+R.evMilesPerKwh+" mi/kWh; home mix = "+p+"% overnight 7p + "+q+"% public rapid 79p; standard rate 26p (Ofgem Jul 2026); public mix = "+p+"% fast 54p + "+q+"% rapid 79p (Zapmap May 2026)";})() : (s && s.alreadyEV ? "Current car already electric" : ""),
     notes:             readVal("evNotes"),
     marketing_opt_in:  readVal("evMarketingOptIn") || "No",
     marketing_channels:readVal("evMarketingChannels"),

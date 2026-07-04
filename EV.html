@@ -36,6 +36,19 @@
     .result-row.highlight{background:rgba(21,89,207,.10);border-color:rgba(21,89,207,.25)}
     .result-row.highlight strong{font-size:1.35rem;color:#0e7ab8}
     .calc-cta{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
+    .reg-lookup{background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.22);border-radius:16px;padding:18px 18px 20px;margin-bottom:18px}
+    .reg-lookup .rl-title{font-size:.95rem;font-weight:800;color:#141a22;margin:0 0 3px}
+    .reg-lookup .rl-sub{font-size:.83rem;color:#5f6b7c;margin:0 0 13px;line-height:1.55}
+    .reg-row{display:flex;gap:10px;align-items:stretch}
+    .reg-plate{flex:1;min-width:0;min-height:52px;background:#f7d117;color:#111;font-weight:800;letter-spacing:.12em;text-transform:uppercase;text-align:center;border:2px solid #10151d;border-radius:8px;font-size:1.2rem;font-family:"Arial Narrow",Arial,sans-serif;outline:none}
+    .reg-plate::placeholder{color:rgba(16,21,29,.3);font-weight:700}
+    .reg-plate:focus{box-shadow:0 0 0 3px rgba(21,89,207,.25)}
+    .reg-btn{flex-shrink:0;padding:0 22px;border-radius:10px;border:none;background:#141a22;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;transition:background .15s}
+    .reg-btn:hover{background:#000}
+    .reg-btn:disabled{opacity:.55;cursor:default}
+    .reg-banner{display:none;align-items:center;gap:9px;background:rgba(26,122,60,.09);border:1px solid rgba(26,122,60,.28);border-radius:12px;padding:10px 13px;font-size:.85rem;color:#14582c;margin-top:11px;line-height:1.45}
+    .reg-banner.err{background:rgba(186,80,28,.08);border-color:rgba(186,80,28,.3);color:#8a3c15}
+    .reg-banner strong{font-weight:800}
     .infra-grid{display:grid;gap:14px}
     @media(min-width:640px){.infra-grid{grid-template-columns:1fr 1fr}}
     .infra-box{background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.10);border-radius:18px;padding:20px}
@@ -146,6 +159,15 @@
       <h2>See what switching could save you.</h2>
 
       <div class="calc-card">
+        <div class="reg-lookup">
+          <p class="rl-title">Start with your number plate</p>
+          <p class="rl-sub">Enter your reg and I&rsquo;ll pull your car&rsquo;s fuel type, engine size, real-world MPG and mileage straight from DVLA and DVSA records &mdash; no typing needed.</p>
+          <div class="reg-row">
+            <input id="regInput" class="reg-plate" placeholder="AB12 CDE" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
+            <button type="button" class="reg-btn" id="regBtn" onclick="regLookup()">Look up</button>
+          </div>
+          <div id="regBanner" class="reg-banner"></div>
+        </div>
         <div class="calc-grid">
           <div>
             <label class="f-label">Current fuel type</label>
@@ -169,7 +191,7 @@
           </div>
           <div>
             <label class="f-label">Current fuel price (p/l)</label>
-            <input class="f-input" id="fuelPrice" type="number" value="156.8" step="0.1" min="0">
+            <input class="f-input" id="fuelPrice" type="number" value="151.0" step="0.1" min="0">
           </div>
           <div>
             <label class="f-label" for="mpgSlider">
@@ -195,7 +217,13 @@
             <label class="f-label">Home charging rate (p/kWh)</label>
             <input class="f-input" id="chargeRate" type="number" value="7.9" step="0.1" min="0">
           </div>
+          <div>
+            <label class="f-label">Public charging rate (p/kWh)</label>
+            <input class="f-input" id="publicRate" type="number" value="79" step="1" min="0">
+          </div>
         </div>
+
+        <p class="ev-note" style="margin-top:14px">Charging mix: <strong>90% at home overnight, 10% public rapid</strong> for the occasional longer trip. Adjust any figure above to match your own situation.</p>
 
         <div class="calc-results">
           <div class="result-row">
@@ -216,7 +244,7 @@
           </div>
         </div>
 
-        <p class="ev-note">Based on overnight home charging at 7.9p/kWh versus your current fuel price. Your actual saving will vary depending on mileage, driving style and charging habits.</p>
+        <p class="ev-note">Based on a 90% home / 10% public charging mix versus your current fuel price. Your actual saving will vary depending on mileage, driving style, tariff and charging habits.</p>
 
         <div class="calc-cta">
           <a class="btn" href="ev-step1.html" id="findOutMore">These numbers look good and let's go &rarr;</a>
@@ -420,6 +448,7 @@
     mpgMax: document.getElementById('mpgMax'),
     eff: document.getElementById('evEfficiency'),
     rate: document.getElementById('chargeRate'),
+    pub: document.getElementById('publicRate'),
     rFuel: document.getElementById('resFuelCost'),
     rEv: document.getElementById('resEvCost'),
     rAnn: document.getElementById('resAnnualSaving'),
@@ -448,15 +477,19 @@
     const miles = parseFloat(els.miles.value) || 0;
     const mpg = parseFloat(els.mpgSlider.value) || 1;
     const ppl = parseFloat(els.price.value) || 0;
-    const kwh = parseFloat(els.rate.value) || 0;
+    const homeKwh = parseFloat(els.rate.value) || 0;
+    const pubKwh = parseFloat(els.pub.value) || 0;
     const eff = parseFloat(els.eff.value) || 3.2;
 
     els.milesLabel.textContent = miles.toLocaleString('en-GB');
     els.mpgLabel.textContent = mpg;
 
+    // 90% of miles charged at home overnight, 10% on public rapids
+    const HOME_SHARE = 0.9;
+    const blendedKwh = HOME_SHARE * homeKwh + (1 - HOME_SHARE) * pubKwh;
     const litres = (miles / mpg) * 4.54609;
     const fuelCost = litres * (ppl / 100);
-    const evCost = (miles / eff) * (kwh / 100);
+    const evCost = (miles / eff) * (blendedKwh / 100);
     const saving = Math.max(0, fuelCost - evCost);
 
     els.rFuel.textContent = fmt(fuelCost);
@@ -476,8 +509,123 @@
   els.price.addEventListener('input', calc);
   els.eff.addEventListener('input', calc);
   els.rate.addEventListener('input', calc);
+  els.pub.addEventListener('input', calc);
 
   updateMpgSlider();
+
+  /* ── Number-plate lookup: prefill the calculator from DVLA + DVSA ──
+     Uses the same Cloudflare worker as the finder funnel. Fills fuel
+     type, engine size, MPG (from the official CO2 figure) and annual
+     mileage (from the DVSA MOT odometer trail). All fields stay
+     editable afterwards. */
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+  function toTC(s){ return (s||'').replace(/\w\S*/g,function(t){return t.charAt(0).toUpperCase()+t.slice(1).toLowerCase();}).replace(/\bBmw\b/g,'BMW').replace(/\bVw\b/g,'VW').replace(/\bMg\b/g,'MG'); }
+
+  function mapFuel(f){
+    f = (f||'').toLowerCase();
+    if (/electric/.test(f) && !/hybrid/.test(f)) return 'ev';
+    if (/plug-in|plugin|phev/.test(f)) return 'phev';
+    if (/hybrid/.test(f)) return 'hybrid';
+    if (/heavy oil|diesel/.test(f)) return 'diesel';
+    if (/petrol|gas bi|gas\/|hybrid electric/.test(f)) return 'petrol';
+    return 'petrol';
+  }
+  function mapEngine(cc){
+    cc = parseInt(cc, 10) || 0;
+    if (!cc) return null;
+    if (cc < 1300) return '1.0';
+    if (cc < 1750) return '1.5';
+    if (cc < 2500) return '2.0';
+    if (cc < 3500) return '3.0';
+    if (cc < 4500) return '4.0';
+    return '5.0';
+  }
+  // Estimate annual miles from the MOT odometer trail (earliest -> latest)
+  function dvsaAnnual(hist){
+    var pts = (Array.isArray(hist)?hist:[]).map(function(t){
+      var odo = (t.odo!=null) ? Number(t.odo) : parseInt(String(t.mileage||'').replace(/[^\d]/g,''),10);
+      var unit = (t.odoUnit || (/km/i.test(t.mileage||'')?'KM':'MI')).toUpperCase();
+      if (unit==='KM' && odo) odo = Math.round(odo*0.6214);
+      return { date:new Date((t.date||'')+'T12:00:00'), odo:odo };
+    }).filter(function(p){ return p.odo && !isNaN(p.date.getTime()); });
+    if (pts.length < 2) return 0;
+    pts.sort(function(a,b){ return a.date-b.date; });
+    var years = (pts[pts.length-1].date - pts[0].date) / (365.25*86400000);
+    if (years < 1.5) return 0;
+    var est = Math.round((pts[pts.length-1].odo - pts[0].odo) / years);
+    return (est>500 && est<60000) ? est : 0;
+  }
+
+  function showRegBanner(html, isErr){
+    var b = document.getElementById('regBanner');
+    b.innerHTML = html;
+    b.className = 'reg-banner' + (isErr ? ' err' : '');
+    b.style.display = 'flex';
+  }
+
+  async function regLookup(){
+    var reg = document.getElementById('regInput').value.trim().replace(/\s/g,'').toUpperCase();
+    if (!reg) return;
+    var btn = document.getElementById('regBtn');
+    btn.disabled = true; btn.textContent = 'Looking up…';
+    try {
+      var d = await (await fetch(WORKER+'?target=vehicle-lookup&reg='+encodeURIComponent(reg))).json();
+      if (!d || (!d.make && !d.model)) {
+        d = await (await fetch(WORKER+'?target=dvla-lookup&reg='+encodeURIComponent(reg))).json();
+      }
+      if (!d || !d.make) { showRegBanner("I couldn't find that reg. Enter your details below by hand and the calculator still works.", true); return; }
+
+      var make = toTC(d.make), model = toTC(d.model||''), yr = String(d.yearOfManufacture||d.year||'');
+      var mapped = mapFuel(d.fuelType);
+
+      if (mapped === 'ev') {
+        showRegBanner('Found: <strong>'+[yr,make,model].filter(Boolean).join(' ')+'</strong> — that&rsquo;s already electric! You&rsquo;re living the saving. If you&rsquo;re thinking of your next EV, Dan can line one up.', false);
+        return;
+      }
+
+      els.fuel.value = mapped;
+      var eng = mapEngine(d.engineCapacity);
+      if (eng) els.eng.value = eng;
+      updateMpgSlider(); // sets the MPG range + default for that fuel/engine
+
+      // Real-world MPG from the official CO2 figure, if we have it
+      var co2 = parseFloat(d.co2Emissions) || 0;
+      var mpgNote = '';
+      if (co2 > 0) {
+        var mpg = (mapped === 'diesel' ? 7440 : 6760) / co2;
+        if (mapped === 'hybrid' || mapped === 'phev') mpg *= 1.15;
+        mpg = Math.round(mpg);
+        var lo = parseInt(els.mpgSlider.min,10), hi = parseInt(els.mpgSlider.max,10);
+        if (mpg < lo) els.mpgSlider.min = mpg;
+        if (mpg > hi) els.mpgSlider.max = mpg;
+        els.mpgSlider.value = mpg;
+        els.mpgLabel.textContent = mpg;
+        els.mpgHint.textContent = "From this car's official CO₂ figure";
+        mpgNote = ' · ~'+mpg+' mpg';
+      }
+
+      // Current fuel price to match the fuel type (RAC UK averages)
+      els.price.value = (mapped === 'diesel') ? '167.1' : '151.0';
+
+      // Annual mileage from the DVSA MOT odometer trail
+      var est = dvsaAnnual(d.motHistory);
+      var mileNote = '';
+      if (est) {
+        var snapped = Math.min(30000, Math.max(4000, Math.round(est/500)*500));
+        els.miles.value = snapped;
+        mileNote = ' · ~'+est.toLocaleString('en-GB')+' miles/yr';
+      }
+
+      calc();
+      var desc = [yr,make,model,toTC(d.colour||'')].filter(Boolean).join(' ');
+      showRegBanner('Found: <strong>'+desc+'</strong>'+mpgNote+mileNote+'. Fields filled in below &mdash; tweak anything that isn&rsquo;t quite right.', false);
+    } catch(e) {
+      showRegBanner("The lookup didn't respond just now. Enter your details below by hand and the calculator still works.", true);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Look up';
+    }
+  }
+  window.regLookup = regLookup;
 
   function openDrawer(){
     document.getElementById('navDrawer').classList.add('open');
