@@ -17,8 +17,11 @@
     3. Hero: static image (Fire Red 1 Series). Swap in real hero video when Dan supplies it.
     4. PCP: only the 2.9% representative APR headline is confirmed. Full representative
        example (deposit, term, GMFV) not yet confirmed — visible copy says "ask Dan".
-    5. Insurance disclosure paragraph: underwriter name + FCA insurance-mediation wording
-       and firm reference number NOT yet signed off by compliance. Placeholder wording.
+    5. Insurance: real BMW Insurance scheme eligibility criteria (F70/F74) are now
+       included — see the "Will you qualify?" #qualify section and the legal fine print.
+       STILL OUTSTANDING: the underwriter/insurer legal name and the exact FCA
+       insurance-mediation permission wording + firm reference number for Hedin
+       Automotive Ltd's introducer role are NOT yet signed off by compliance.
     6. 3-year service plan: exact plan terms/exclusions not yet confirmed.
   Go-live checklist (do NOT action without explicit sign-off):
     - Fold this content into 1series-offer.html + new 2series-offer.html
@@ -204,6 +207,23 @@
     .om-success{display:none;text-align:center;padding:18px 0 10px;}
     .om-success p{font-size:.98rem;font-weight:700;color:#1d6b40;margin:0 0 6px;}
     .om-success span{font-size:.82rem;color:#5f6b7c;}
+
+    /* ── ELIGIBILITY ── */
+    .elig-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    @media(max-width:760px){.elig-grid{grid-template-columns:1fr;}}
+    .elig-card{background:#fff;border:1px solid rgba(16,21,29,.09);border-radius:18px;padding:26px 24px;box-shadow:var(--shadow-card);}
+    .elig-card-head{display:flex;align-items:center;gap:12px;margin:0 0 16px;}
+    .elig-card-icon{flex:0 0 auto;width:40px;height:40px;border-radius:12px;background:rgba(21,89,207,.09);color:#1559cf;display:flex;align-items:center;justify-content:center;}
+    .elig-card-head h3{font-size:1.02rem;font-weight:800;color:#141a22;margin:0;}
+    .elig-list{list-style:none;padding:0;margin:0;}
+    .elig-list li{position:relative;padding:0 0 0 26px;margin:0 0 11px;font-size:.87rem;color:#3c4a5e;line-height:1.55;}
+    .elig-list li:last-child{margin-bottom:0;}
+    .elig-list li::before{content:'';position:absolute;left:0;top:6px;width:14px;height:14px;border-radius:50%;background:rgba(21,89,207,.12);}
+    .elig-list li::after{content:'';position:absolute;left:5px;top:9px;width:4px;height:7px;border-right:2px solid #1559cf;border-bottom:2px solid #1559cf;transform:rotate(40deg);}
+    .elig-note{display:flex;align-items:flex-start;gap:12px;background:linear-gradient(150deg,#0d2145,#123067);border-radius:16px;padding:18px 20px;margin-top:16px;}
+    .elig-note svg{flex:0 0 auto;color:#8db4ff;margin-top:1px;}
+    .elig-note p{font-size:.86rem;color:rgba(255,255,255,.85);line-height:1.55;margin:0;}
+    .elig-note b{color:#fff;}
   </style>
 </head>
 <body class="has-video-hero">
@@ -500,7 +520,7 @@
       <div class="sfy-faq reveal">
         <details>
           <summary>Who qualifies for the free first year&rsquo;s insurance?</summary>
-          <p>The insurance is provided by BMW Insurance and is subject to acceptance and standard underwriting &mdash; things like your age, address, and driving history. Dan checks your eligibility up front, before you commit to anything, so there are no surprises.</p>
+          <p>In short: drivers aged 25&ndash;80, permanent UK residents with a full UK or EU licence, a broadly clean record (no more than three minor convictions in five years, no major convictions or bans), with the car kept at your home address. The cover is provided by BMW Insurance and is subject to acceptance. <a href="#qualify" style="color:#1559cf;font-weight:700;">See the full eligibility criteria &darr;</a> &mdash; and Dan checks it all with you up front, so there are no surprises.</p>
         </details>
         <details>
           <summary>What&rsquo;s the &ldquo;one payment down&rdquo; exactly?</summary>
@@ -521,11 +541,55 @@
       </div>
     </section>
 
+    <!-- ELIGIBILITY -->
+    <section class="sfy-section" id="qualify" aria-label="Insurance eligibility">
+      <div class="section-head reveal">
+        <p class="sfy-kicker">Will you qualify?</p>
+        <h2 class="sfy-h2">The free insurance, in plain English.</h2>
+        <p class="sfy-lede">The first year&rsquo;s cover is provided by BMW Insurance. Here&rsquo;s who and what it&rsquo;s built for &mdash; Dan checks it all with you before you commit to anything.</p>
+      </div>
+      <div class="elig-grid reveal">
+        <div class="elig-card">
+          <div class="elig-card-head">
+            <span class="elig-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></span>
+            <h3>The driver</h3>
+          </div>
+          <ul class="elig-list">
+            <li>Aged 25&ndash;80 (minimum age 30 on M135 &amp; M235 models).</li>
+            <li>Permanent UK resident with a full UK or full EU licence.</li>
+            <li>No more than three minor convictions (e.g. SP30) in the past five years, and no major convictions or bans (e.g. DR10).</li>
+            <li>You, or your spouse, partner or civil partner (not a business partner), is the main driver.</li>
+            <li>The main driver is the first registered keeper of the car.</li>
+            <li>Up to 4 additional drivers can be added at no extra cost.</li>
+            <li>No insurance previously cancelled, declined, or with special terms applied.</li>
+            <li>The main driver can pass an identity check at their address.</li>
+          </ul>
+        </div>
+        <div class="elig-card">
+          <div class="elig-card-head">
+            <span class="elig-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M5 17a2 2 0 01-2-2v-2.5L5 8h14l2 4.5V15a2 2 0 01-2 2M5 17v2M19 17v2"/><circle cx="7.5" cy="14.5" r="1"/><circle cx="16.5" cy="14.5" r="1"/></svg></span>
+            <h3>The car &amp; how it&rsquo;s used</h3>
+          </div>
+          <ul class="elig-list">
+            <li>New 1 Series (F70) &amp; 2 Series Gran Coup&eacute; (F74) ordered between 1 July and 30 September 2026, registered by 31 March 2027.</li>
+            <li>The BMW is kept at your home address.</li>
+            <li>Owned and registered by you, your spouse/partner/civil partner (not a business partner), your parent, guardian or grandparent, or a lease company.</li>
+            <li>Cover for Social, Domestic &amp; Pleasure (SDP), SDP &amp; Commuting, or SDP&amp;C including Business Use (Class 1).</li>
+            <li>Your BMW is not used for Hire &amp; Reward.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="elig-note reveal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p><b>Meeting this criteria doesn&rsquo;t guarantee acceptance</b> &mdash; cover is at the discretion of the insurance underwriter. Dan will confirm your eligibility before anything is agreed.</p>
+      </div>
+    </section>
+
   </div><!-- /.page -->
 
   <!-- LEGAL -->
   <div class="offer-legal">
-    <p>&#42;Free 1st year&rsquo;s BMW Insurance available on new BMW 1 Series and 2 Series M Sport models ordered through Hedin Automotive BMW Ruxley, subject to insurer acceptance and standard underwriting criteria (including but not limited to driver age, location, claims and driving history). Insurance is provided by BMW Insurance. Hedin Automotive Ltd acts as an insurance intermediary/introducer in connection with this offer and is not the insurer.</p>
+    <p>&#42;Free 1st year&rsquo;s BMW Insurance available on new BMW 1 Series (F70) and 2 Series Gran Coup&eacute; (F74) models ordered between 1 July and 30 September 2026 and registered by 31 March 2027 through Hedin Automotive BMW Ruxley. Insurance is provided by BMW Insurance and is subject to acceptance and eligibility criteria, including but not limited to: main driver aged 25&ndash;80 (minimum 30 on M135/M235 models), permanent UK resident holding a full UK or full EU licence, no more than three minor convictions in the past five years and no major convictions or bans, no insurance previously cancelled/declined/subject to special terms, the vehicle kept at the driver&rsquo;s home address and not used for Hire &amp; Reward. Meeting the criteria does not guarantee acceptance, which is at the discretion of the insurance underwriter. Hedin Automotive Ltd acts as an insurance intermediary/introducer in connection with this offer and is not the insurer.</p>
     <p>3 years&rsquo; servicing included on both models, subject to Hedin Automotive&rsquo;s standard service plan terms.</p>
     <p>Finance subject to status. Available to UK residents aged 18 and over. Hedin Automotive Ltd is authorised and regulated by the Financial Conduct Authority as a credit broker, not a lender. BMW Financial Services (GB) Limited (FCA No. 312705) is the lender. Representative examples shown are Personal Contract Hire (PCH), a regulated consumer hire agreement, not consumer credit; no APR applies to PCH agreements. You do not own the vehicle and there is no option to purchase at the end of a PCH agreement.</p>
     <p>BMW 1 Series representative example: initial rental &pound;389.00, followed by 47 monthly rentals of &pound;389.00, total amount payable &pound;18,672.00, 48 month term, 6,000 miles per annum. BMW 2 Series representative example: initial rental &pound;399.00, followed by 47 monthly rentals of &pound;399.00, total amount payable &pound;19,152.00, 48 month term, 6,000 miles per annum. Excess mileage charges apply on all agreements &mdash; rate available on request.</p>
