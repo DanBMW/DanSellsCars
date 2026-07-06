@@ -2,36 +2,20 @@
 <html lang="en">
 <head>
 <!--
-  ⚠️  UNLINKED PREVIEW — reachable by direct URL only, not discoverable  ⚠️
-  This page is intentionally NOT linked from index.html, the hamburger nav, the footer,
-  or sitemap.xml, and carries a noindex meta tag below. Only share the direct URL.
+  LIVE — this page is published, linked from the hamburger ("New Car Offers" section)
+  and included in sitemap.xml (published on Dan's request; offer approved by Hedin).
 
-  OPEN ITEMS — do not remove the noindex tag or add nav/sitemap links until resolved:
-    1. Media: 7 of 8 1 Series colour photos are real (assets/colours/). Brooklyn Grey has
-       no photo yet — the Skyscraper Grey shot is shown with a visible "Shown in
-       Skyscraper Grey" pill until a real one arrives.
-    2. 2 Series: only one real Gran Coupé photo exists (Alpine White). All 2 Series colour
-       selections show that photo with a visible "Shown in Alpine White" pill — honest
-       "image for illustration" treatment. Replace with real per-colour Gran Coupé shots
-       when supplied.
-    3. Hero: static image (Fire Red 1 Series). Swap in real hero video when Dan supplies it.
-    4. PCP: only the 2.9% representative APR headline is confirmed. Full representative
-       example (deposit, term, GMFV) not yet confirmed — visible copy says "ask Dan".
-    5. Insurance: real BMW Insurance scheme eligibility criteria (F70/F74) are now
-       included — see the "Will you qualify?" #qualify section and the legal fine print.
-       STILL OUTSTANDING: the underwriter/insurer legal name and the exact FCA
-       insurance-mediation permission wording + firm reference number for Hedin
-       Automotive Ltd's introducer role are NOT yet signed off by compliance.
-    6. 3-year service plan: exact plan terms/exclusions not yet confirmed.
-  Go-live checklist (do NOT action without explicit sign-off):
-    - Fold this content into 1series-offer.html + new 2series-offer.html
-    - Update index.html offer-card copy/pricing/links to match
-    - Add both URLs to sitemap.xml
-    - Remove the noindex meta tag below
+  Cosmetic enhancements still welcome when Dan supplies the assets (none block go-live):
+    1. Brooklyn Grey has no photo yet — the Skyscraper Grey shot is shown with a visible
+       "Shown in Skyscraper Grey" pill until a real one arrives.
+    2. 2 Series: only the Alpine White Gran Coupé photo is real; other colours show it with
+       a "Shown in Alpine White" pill (honest illustration) until real per-colour shots land.
+    3. Hero: static Fire Red image — swap in real hero video when supplied.
+    4. PCP: only the 2.9% representative APR headline is shown; full representative example
+       to be added if/when confirmed (copy currently says "ask Dan").
 -->
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <meta name="robots" content="noindex,nofollow"/>
   <title>Sorted For A Year — BMW 1 &amp; 2 Series M Sport Offer | Dan at Hedin Ruxley</title>
   <meta name="description" content="Free 1st year's BMW Insurance and 3 years servicing included on the new BMW 1 Series and 2 Series M Sport. In stock at Hedin Ruxley."/>
   <link rel="stylesheet" href="style.css"/>
@@ -263,6 +247,7 @@
       <a href="step1.html">Find my BMW</a>
       <a href="EV.html">Electric BMWs</a>
       <a href="index.html#offers" onclick="closeDrawer()">New Car Offers</a>
+      <a href="sorted-for-a-year.html">1 &amp; 2 Series Offer</a>
       <a href="offers.html">Hot Used Cars</a>
       <a href="appraisal.html">Value my car</a>
       <a href="service.html">Car in for service?</a>
@@ -770,5 +755,6 @@ window.addEventListener('scroll',()=>{
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeOfferModal();closeDrawer();}});
 </script>
 <script src="scroll-hint.js"></script>
+<script src="disclaimer.js"></script>
 </body>
 </html>
