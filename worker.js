@@ -3,8 +3,11 @@
  * Deploy at: https://vehicleproxy.danielcane1992.workers.dev
  *
  * Required environment variables (Cloudflare dashboard → Worker → Settings → Variables):
- *   DVLA_API_KEY — DVLA VES API key (same name as before — do NOT rename)
- *   APIFY_TOKEN  — Apify API token (apify.com → Settings → Integrations → Personal API tokens)
+ *   DVLA_API_KEY      — DVLA VES API key (same name as before — do NOT rename)
+ *   APIFY_TOKEN       — Apify API token (apify.com → Settings → Integrations)
+ *   MOT_CLIENT_ID     — DVSA MOT History API client id
+ *   MOT_CLIENT_SECRET — DVSA MOT History API client secret
+ *   MOT_API_KEY       — DVSA MOT History API key
  *
  * Actor ID: Ca7tBqNduWgy2A2pq (AutoTrader scraper)
  */
@@ -28,10 +31,11 @@ export default {
 
     try {
       let body;
-      if      (target === 'dvla-lookup')  body = await dvlaLookup(url.searchParams.get('reg') || '', env);
-      else if (target === 'market-start') body = await marketStart(url.searchParams, env);
-      else if (target === 'market-poll')  body = await marketPoll(url.searchParams.get('runId') || '', env);
-      else                                body = { error: 'Unknown target' };
+      if      (target === 'dvla-lookup')    body = await dvlaLookup(url.searchParams.get('reg') || '', env);
+      else if (target === 'vehicle-lookup') body = await vehicleLookup(url.searchParams.get('reg') || '', env);
+      else if (target === 'market-start')   body = await marketStart(url.searchParams, env);
+      else if (target === 'market-poll')    body = await marketPoll(url.searchParams.get('runId') || '', env);
+      else                                  body = { error: 'Unknown target' };
 
       return new Response(JSON.stringify(body), {
         headers: { ...CORS, 'Content-Type': 'application/json' }
@@ -65,9 +69,92 @@ async function dvlaLookup(reg, env) {
     year:              d.yearOfManufacture || null,
     colour:            d.colour            || '',
     fuelType:          d.fuelType          || '',
+    co2Emissions:      d.co2Emissions      || null,
+    engineCapacity:    d.engineCapacity    || null,
+    taxStatus:         d.taxStatus         || '',
+    motStatus:         d.motStatus         || '',
     motExpiryDate:     d.motExpiryDate     || '',
     taxDueDate:        d.taxDueDate        || ''
   };
+}
+
+/* ── DVSA MOT History API ───────────────────────────────────────── */
+const MOT_TOKEN_URL = 'https://login.microsoftonline.com/a455b827-244f-4c97-b5b4-ce5d13b4d00c/oauth2/v2.0/token';
+const MOT_SCOPE = 'https://tapi.dvsa.gov.uk/.default';
+let motToken = { value: null, exp: 0 };
+
+async function getMotToken(env) {
+  if (motToken.value && Date.now() < motToken.exp - 60000) return motToken.value;
+  const res = await fetch(MOT_TOKEN_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'client_credentials',
+      client_id:     env.MOT_CLIENT_ID,
+      client_secret: env.MOT_CLIENT_SECRET,
+      scope:         MOT_SCOPE,
+    }),
+  });
+  if (!res.ok) return null;
+  const d = await res.json();
+  motToken = { value: d.access_token, exp: Date.now() + (d.expires_in || 3600) * 1000 };
+  return motToken.value;
+}
+
+async function motLookup(reg, env) {
+  if (!env.MOT_CLIENT_ID || !env.MOT_CLIENT_SECRET || !env.MOT_API_KEY) return null;
+  const token = await getMotToken(env);
+  if (!token) return null;
+  const res = await fetch(
+    'https://history.mot.api.gov.uk/v1/trade/vehicles/registration/' +
+      encodeURIComponent(reg.replace(/\s/g, '').toUpperCase()),
+    { headers: { Authorization: 'Bearer ' + token, 'X-API-Key': env.MOT_API_KEY } }
+  );
+  if (!res.ok) return null;
+  return res.json();
+}
+
+/* ── Combined lookup: DVLA (tax/MOT dates) + MOT History (model, tests) ── */
+async function vehicleLookup(reg, env) {
+  if (!reg) return { error: 'No reg provided' };
+  const [dvla, mot] = await Promise.all([
+    dvlaLookup(reg, env).catch(() => ({})),
+    motLookup(reg, env).catch(() => null),
+  ]);
+  const out = (dvla && !dvla.error) ? { ...dvla } : {};
+  if (mot) {
+    if (mot.model) out.model = mot.model;
+    if (!out.make && mot.make) out.make = mot.make;
+    if (!out.colour && mot.primaryColour) out.colour = mot.primaryColour;
+    if (!out.fuelType && mot.fuelType) out.fuelType = mot.fuelType;
+    if (!out.yearOfManufacture && mot.manufactureDate) {
+      out.yearOfManufacture = parseInt(mot.manufactureDate.slice(0, 4), 10) || null;
+      out.year = out.yearOfManufacture;
+    }
+    // New vehicles that haven't had a first MOT yet
+    if (mot.motTestDueDate) out.motDueDate = mot.motTestDueDate;
+    const tests = Array.isArray(mot.motTests) ? mot.motTests : [];
+    out.motHistory = tests.slice(0, 5).map(t => {
+      const defects = Array.isArray(t.defects) ? t.defects : [];
+      return {
+        date:       (t.completedDate || '').slice(0, 10),
+        result:     t.testResult || '',
+        mileage:    t.odometerValue ? Number(t.odometerValue).toLocaleString('en-GB') + ' ' + (t.odometerUnit || 'MI').toLowerCase() : '',
+        odo:        t.odometerValue ? Number(t.odometerValue) : null,
+        odoUnit:    (t.odometerUnit || 'MI').toUpperCase(),
+        expiry:     t.expiryDate || '',
+        advisories: defects.filter(d => (d.type || '').toUpperCase() === 'ADVISORY').length,
+        failures:   defects.filter(d => ['MAJOR', 'DANGEROUS', 'FAIL', 'PRS'].includes((d.type || '').toUpperCase())).length,
+      };
+    });
+    // Best MOT expiry: DVLA's live date, else latest passed test's expiry
+    if (!out.motExpiryDate) {
+      const passed = tests.find(t => (t.testResult || '').toUpperCase() === 'PASSED' && t.expiryDate);
+      if (passed) out.motExpiryDate = passed.expiryDate;
+    }
+  }
+  if (!out.make && !out.model) return { error: 'Vehicle not found' };
+  return out;
 }
 
 /* ── Market start ───────────────────────────────────────────────── */

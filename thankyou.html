@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>DanSells | All done</title><link rel="stylesheet" href="style.css"/>
+<title>DanSells | All done</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/><link rel="stylesheet" href="style.css"/>
 <style>
 .photo-options{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
 .btn-green{
@@ -20,6 +21,23 @@
   display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:.92rem;
 }
 .btn-email:hover{background:rgba(16,21,29,.12);transform:translateY(-1px);}
+.px-drop{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px;margin-top:12px;border:1.5px dashed rgba(21,89,207,.45);border-radius:14px;background:rgba(21,89,207,.05);color:#0e3f96;font-weight:700;font-size:.9rem;cursor:pointer;transition:background .15s,border-color .15s;font-family:var(--font);}
+.px-drop:hover{background:rgba(21,89,207,.1);border-color:rgba(21,89,207,.7);}
+.px-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
+.px-thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid rgba(16,21,29,.12);background:#eef1f5;}
+.px-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.px-thumb .st{position:absolute;inset:auto 0 0 0;padding:3px 0;font-size:.62rem;font-weight:800;text-align:center;letter-spacing:.04em;color:#fff;font-family:var(--font);}
+.px-thumb.up .st{background:rgba(16,21,29,.55);}
+.px-thumb.done .st{background:rgba(26,122,60,.85);}
+.px-thumb.fail .st{background:rgba(186,80,28,.9);cursor:pointer;}
+.px-upmsg{font-size:.82rem;margin-top:10px;color:#166534;font-weight:600;display:none;}
+.ty-plan{background:#fff;border:1px solid rgba(16,21,29,.12);border-radius:16px;padding:20px 22px 16px;margin:0 0 24px;box-shadow:0 1px 2px rgba(16,21,29,.05),0 12px 32px -12px rgba(16,21,29,.12);}
+.ty-plan-kicker{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1559cf;margin:0 0 6px;}
+.ty-plan h3{font-size:1.15rem;font-weight:700;color:#11161d;margin:0 0 12px;}
+.ty-plan ol{list-style:none;margin:0;padding:0;counter-reset:plan;}
+.ty-plan li{counter-increment:plan;display:flex;gap:12px;padding:9px 0;border-top:1px solid rgba(16,21,29,.06);font-size:.9rem;line-height:1.6;color:#2d3748;}
+.ty-plan li::before{content:counter(plan);flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(21,89,207,.1);color:#0e3f96;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+.ty-plan li strong{color:#11161d;}
 </style>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
@@ -40,6 +58,12 @@
       <div class="step-kicker">All done</div>
       <h2>That is everything I need.</h2>
       <p>Your details have landed in my inbox with your full summary attached. I will read through it before we speak so we can get straight into the good stuff from the first minute of the call.</p>
+
+      <div class="ty-plan" id="nextPlan" style="display:none;">
+        <div class="ty-plan-kicker">The plan</div>
+        <h3 id="planTitle">Here's the plan</h3>
+        <ol id="planList"></ol>
+      </div>
       <!-- REASSURANCE TESTIMONIAL -->
 <div style="margin:24px 0 28px;">
   <div class="testimonials-kicker">★ You're in good hands</div>
@@ -59,13 +83,13 @@
           <div class="check-icon">1</div>
           <div class="check-body">
             <strong>Book your appointment</strong>
-            <span>I will already have read your summary before we speak so there is no need to explain everything from scratch. Choose whichever works best for you.</span>
+            <span>Book it now and I'll arrive prepared: shortlist done, finance worked through, part exchange figure in hand. Phone call or face to face, whichever suits you.</span>
             <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;">
               <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:12px 18px;">
-                📞 Telephone call
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l1.6 4-2.2 1.6a13 13 0 0 0 6 6L16 13.4l4 1.6v4a2 2 0 0 1-2.2 2A17 17 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg> Telephone call
               </a>
               <a class="btn" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:12px 18px;background:rgba(21,89,207,.18);border:1px solid rgba(21,89,207,.35);">
-                🤝 Face to face at Ruxley
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c.6-3.4 3-5.2 6-5.2s5.4 1.8 6 5.2"/><path d="M15.5 5.2a3.2 3.2 0 0 1 0 5.6M17.7 15.1c2 .7 3.4 2.3 3.8 4.9"/></svg> Face to face at Ruxley
               </a>
             </div>
           </div>
@@ -75,13 +99,24 @@
           <div class="check-icon">2</div>
           <div class="check-body">
             <strong>Send your part exchange photos</strong>
-            <span>Takes about a minute to take them. Photos let me sharpen the part exchange figure before the call. Without them I am working from an estimate only.</span>
+            <span>Takes about a minute. Front, rear, both sides, the interior, the dash showing mileage, and any marks. Photos let me sharpen the part exchange figure before the call.</span>
+            <div id="pxUpload" style="display:none;">
+              <label class="px-drop" for="pxFiles">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8z"/><circle cx="12" cy="12.5" r="3.4"/></svg>
+                Add photos here (up to 8)
+              </label>
+              <input id="pxFiles" type="file" accept="image/*" multiple style="display:none;">
+              <div class="px-thumbs" id="pxThumbs"></div>
+              <button class="btn" id="pxSendBtn" style="display:none;margin-top:12px;">Send photos to Dan</button>
+              <div class="px-upmsg" id="pxUpMsg"></div>
+              <span style="color:#5f6b7c;font-size:.75rem;margin-top:10px;display:block;">Prefer to send them another way?</span>
+            </div>
             <div class="photo-options">
               <a class="btn-green" id="waBtn" href="#" target="_blank" rel="noopener">
-                📲 WhatsApp
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp
               </a>
               <a class="btn-email" id="emailBtn" href="#" target="_blank" rel="noopener">
-                ✉️ Email instead
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg> Email instead
               </a>
             </div>
             <span style="color:#5f6b7c;font-size:.75rem;margin-top:6px;display:block;">Whichever is easier for you. Both land with me directly.</span>
@@ -100,25 +135,25 @@
       <p class="hint">If you cannot book right now, no problem. I will be in touch. Your details are already with me.</p>
 
       <div id="storyBox" style="display:none;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:22px 24px;margin:20px 0 0;">
-        <div class="step-kicker" style="margin-bottom:10px;">✨ Your BMW story</div>
+        <div class="step-kicker" style="margin-bottom:10px;">Your BMW story</div>
         <p id="storyText" style="font-size:.87rem;line-height:1.75;color:#2d3748;white-space:pre-line;margin:0 0 18px;"></p>
         <div style="border-top:1px solid rgba(21,89,207,.15);padding-top:14px;">
-          <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 4px;font-weight:600;">Share your story 📲</p>
-          <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends and manifest your BMW — in a few weeks you could be sharing your own handover photo. ✨</p>
+          <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 4px;font-weight:600;">Share your story</p>
+          <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends. In a few weeks you could be sharing your own handover photo.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <a id="shareX" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#000;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">𝕏 Post</a>
-            <a id="shareWa" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">💬 Share</a>
-            <button id="copyBtn" onclick="copyStory()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,21,29,.08);color:var(--text);padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📋 Copy</button>
-            <button onclick="shareInstagram()" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📸 Instagram</button>
+            <a id="shareWa" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Share</a>
+            <button id="copyBtn" onclick="copyStory()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,21,29,.08);color:var(--text);padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg> Copy</button>
+            <button onclick="shareInstagram()" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.2 6.8v.01"/></svg> Instagram</button>
           </div>
-          <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry — your surname and exact figures are removed before sharing.</p>
+          <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry, your surname and exact figures are removed before sharing.</p>
         </div>
       </div>
 
       <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
-        <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing 👋</p>
+        <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing</p>
         <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Thank you for sending your details through. Why not pop Dan a quick message to say hi?</p>
-        <a id="hiWaBtn" href="#" class="btn-green" target="_blank" rel="noopener">💬 Say hi on WhatsApp</a>
+        <a id="hiWaBtn" href="#" class="btn-green" target="_blank" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Say hi on WhatsApp</a>
       </div>
       <div style="text-align:center;margin-top:24px;padding-bottom:8px;">
         <a href="index.html" style="color:#5f6b7c;font-size:.85rem;text-decoration:none;">← Back to homepage</a>
@@ -129,6 +164,44 @@
 <script>
   const bookingUrl=sessionStorage.getItem("bookingUrl");
   if(bookingUrl) document.getElementById("bookBtn").href=bookingUrl;
+
+  // Personalised "what happens next" plan, built from their answers.
+  (function(){
+    const gv=k=>sessionStorage.getItem(k)||"";
+    const name=gv("fullName"); if(!name) return;
+    const first=name.split(" ")[0];
+    const money=v=>{const n=Number(String(v).replace(/,/g,""));return isNaN(n)?"":"£"+n.toLocaleString("en-GB");};
+    let bodyNames=[];
+    try{
+      const map={hatchback:"hatchbacks",saloon:"saloons",touring:"Tourings",suv:"SUVs",coupe:"coupés",convertible:"convertibles",gran_coupe:"Gran Coupés"};
+      bodyNames=JSON.parse(gv("bodyStyles")||"[]").map(b=>map[b]||b);
+    }catch(e){}
+    const mpref=gv("modelPref");
+    let carPhrase = mpref ? "built around the "+mpref
+      : bodyNames.length ? "of "+(bodyNames.length>2?bodyNames.slice(0,2).join(", ")+" and more":bodyNames.join(" and "))
+      : "of options";
+    let budgetPhrase="";
+    if(gv("purchaseType")==="Outright"&&gv("cashBudget")) budgetPhrase=" inside your "+money(gv("cashBudget"))+" budget";
+    else if(gv("monthlyBudget")){
+      budgetPhrase=" around "+money(gv("monthlyBudget"))+" a month";
+      const d=Number(gv("deposit").replace(/,/g,""));
+      if(d>0) budgetPhrase+=" with "+money(gv("deposit"))+" down";
+    }
+    const hasPx=["Yes","Maybe"].includes(gv("partExchange"));
+    const pxCar=gv("currentCar")||gv("pxModel")||"your current car";
+
+    const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const items=[];
+    items.push("Your brief is with me now. I read every one personally.");
+    items.push("Within <strong>two working days</strong> you'll have a shortlist "+esc(carPhrase)+esc(budgetPhrase)+", with my honest take on each one.");
+    if(hasPx) items.push("I'll prepare a part exchange figure for <strong>"+esc(pxCar)+"</strong>. Photos help me sharpen it before we speak, more on that below.");
+    items.push("Fastest route: <strong>book a call or a visit now</strong> and I'll come prepared with options, so the conversation starts at the good part.");
+
+    document.getElementById("planTitle").textContent=first+", here's the plan";
+    const ol=document.getElementById("planList");
+    items.forEach(t=>{const li=document.createElement("li");li.innerHTML="<span>"+t+"</span>";ol.appendChild(li);});
+    document.getElementById("nextPlan").style.display="block";
+  })();
 
   // WhatsApp hi nudge
   (function(){
@@ -171,6 +244,121 @@ Name: ${name}
 Photos attached.`;
 
     document.getElementById("emailBtn").href=`mailto:daniel.cane@hedinautomotive.co.uk?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+
+    // ── In-page photo upload via Cloudinary (unsigned preset) ──
+    // The preset "dansells-px" must exist with Signing mode: Unsigned
+    // (Cloudinary console → Settings → Upload → Upload presets → Add).
+    // Until it does, uploads fail gracefully and the WhatsApp/email
+    // buttons below remain the photo route.
+    const CLD = window.FV2_CLOUDINARY || { cloud: "zcigf45n", preset: "dansells-px" };
+    if (CLD.cloud && CLD.preset) (function(){
+      const MAX = 8;
+      const items = [];
+      const wrap = document.getElementById("pxUpload");
+      const thumbs = document.getElementById("pxThumbs");
+      const sendBtn = document.getElementById("pxSendBtn");
+      const msg = document.getElementById("pxUpMsg");
+      wrap.style.display = "block";
+
+      function shrink(file){
+        return new Promise(function(res){
+          const img = new Image();
+          img.onload = function(){
+            const sc = Math.min(1, 1600 / Math.max(img.width, img.height));
+            const c = document.createElement("canvas");
+            c.width = Math.max(1, Math.round(img.width * sc));
+            c.height = Math.max(1, Math.round(img.height * sc));
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(img.src);
+            c.toBlob(function(b){ res(b || file); }, "image/jpeg", .82);
+          };
+          img.onerror = function(){ res(file); };
+          img.src = URL.createObjectURL(file);
+        });
+      }
+
+      async function upload(item){
+        item.state = "up"; paint();
+        try {
+          if (!item.blob) item.blob = await shrink(item.file);
+          const fd = new FormData();
+          fd.append("file", item.blob);
+          fd.append("upload_preset", CLD.preset);
+          const r = await fetch("https://api.cloudinary.com/v1_1/" + CLD.cloud + "/image/upload", { method: "POST", body: fd });
+          const d = await r.json();
+          if (d.error && /preset/i.test(d.error.message || "")) {
+            // Preset not configured yet: hide the uploader, leave the
+            // WhatsApp/email buttons as the photo route.
+            wrap.style.display = "none";
+            return;
+          }
+          if (!d.secure_url) throw new Error("no url");
+          item.url = d.secure_url;
+          item.state = "done";
+        } catch(e) {
+          item.state = "fail";
+        }
+        paint();
+      }
+
+      function paint(){
+        thumbs.innerHTML = "";
+        items.forEach(function(item){
+          const t = document.createElement("div");
+          t.className = "px-thumb " + item.state;
+          const im = document.createElement("img");
+          im.src = item.preview;
+          t.appendChild(im);
+          const st = document.createElement("div");
+          st.className = "st";
+          st.textContent = item.state === "up" ? "Uploading…" : item.state === "done" ? "Uploaded" : "Failed. Tap to retry";
+          t.appendChild(st);
+          if (item.state === "fail") t.onclick = function(){ upload(item); };
+          thumbs.appendChild(t);
+        });
+        const done = items.filter(function(i){ return i.state === "done"; });
+        sendBtn.style.display = done.length && !sent ? "inline-block" : "none";
+        sendBtn.textContent = "Send " + done.length + (done.length === 1 ? " photo" : " photos") + " to Dan";
+      }
+
+      let sent = false;
+      document.getElementById("pxFiles").addEventListener("change", function(e){
+        Array.from(e.target.files).slice(0, MAX - items.length).forEach(function(f){
+          const item = { file: f, preview: URL.createObjectURL(f), state: "up", url: "" };
+          items.push(item);
+          upload(item);
+        });
+        e.target.value = "";
+      });
+
+      sendBtn.addEventListener("click", function(){
+        const urls = items.filter(function(i){ return i.state === "done"; }).map(function(i){ return i.url; });
+        if (!urls.length || sent) return;
+        sent = true;
+        sendBtn.disabled = true;
+        sendBtn.textContent = "Sending…";
+        const p = {
+          subject: "PX photos: " + (reg || "part exchange") + ", " + name,
+          name: name,
+          email: sessionStorage.getItem("email") || "",
+          phone: sessionStorage.getItem("phone") || "",
+          car: reg,
+          registration: sessionStorage.getItem("reg") || "",
+          mileage: mileage,
+          photo_count: String(urls.length)
+        };
+        urls.forEach(function(u, i){ p["photo_" + (i + 1)] = u; });
+        fetch("https://formspree.io/f/xqewleog", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(p)
+        }).catch(function(){}).finally(function(){
+          sendBtn.style.display = "none";
+          msg.style.display = "block";
+          msg.textContent = "Photos are with me. They will be in front of me before we speak.";
+        });
+      });
+    })();
   }
 
   // Story + social sharing
@@ -188,7 +376,7 @@ Photos attached.`;
       });
       s=s.replace(/[\d,]+\s+miles(?: a year)?/gi,"plenty of miles a year");
       s=s.replace(/ {2,}/g," ").trim();
-      return "Here's my BMW Story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk — Dan helps find the right BMW for your budget and lifestyle 🚗✨";
+      return "Here's my BMW Story with Dan:\n\n"+s+"\n\nCreate your own at dan-sells.co.uk. Dan helps find the right BMW for your budget and lifestyle.";
     }
     var social=socialify(story);
     document.getElementById("shareX").href="https://twitter.com/intent/tweet?text="+encodeURIComponent(social);
@@ -199,8 +387,8 @@ Photos attached.`;
     if(!window._socialStory) return;
     navigator.clipboard.writeText(window._socialStory).then(function(){
       var b=document.getElementById("copyBtn");
-      b.textContent="✓ Copied!";
-      setTimeout(function(){b.textContent="📋 Copy";},2000);
+      b.textContent="Copied";
+      setTimeout(function(){b.textContent="Copy";},2000);
     });
   }
   function generateInstagramImage(text, onDone){
@@ -280,26 +468,26 @@ Photos attached.`;
     });
   }
 </script><script src="scroll-hint.js"></script>
-<!-- Appointment type modal — auto-shown after submission -->
+<!-- Appointment type modal, auto-shown after submission -->
 <div id="appt-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(10,18,30,.65);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;">
   <div style="background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:560px;padding:28px 22px 40px;box-shadow:0 -16px 48px rgba(10,18,30,.2);animation:apptSlide .32s ease-out;">
     <div style="width:38px;height:4px;background:#e2e8ef;border-radius:2px;margin:0 auto 22px;"></div>
     <p style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5f6b7c;margin:0 0 6px;text-align:center;">One quick thing</p>
     <h2 style="font-size:1.2rem;font-weight:700;color:#11161d;margin:0 0 6px;text-align:center;font-family:var(--display);">How would you like to connect with Dan?</h2>
-    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your summary before we speak — no need to start from scratch.</p>
+    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan reads your brief before you speak and comes prepared with options. No starting from scratch.</p>
     <div style="display:grid;gap:10px;margin-bottom:14px;">
       <a id="modal-phone" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#eef4ff;border:1.5px solid rgba(21,89,207,.22);border-radius:16px;text-decoration:none;color:#11161d;">
-        <span style="font-size:26px;flex-shrink:0;">📞</span>
+        <span style="flex-shrink:0;color:#1559cf;display:flex;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l1.6 4-2.2 1.6a13 13 0 0 0 6 6L16 13.4l4 1.6v4a2 2 0 0 1-2.2 2A17 17 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg></span>
         <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Telephone call</strong><span style="font-size:.8rem;color:#5f6b7c;">Pick a time that suits you this week</span></div>
         <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
       </a>
       <a id="modal-visit" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8f9fb;border:1.5px solid rgba(16,21,29,.1);border-radius:16px;text-decoration:none;color:#11161d;">
-        <span style="font-size:26px;flex-shrink:0;">🤝</span>
-        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in, see the cars, talk numbers — no rush</span></div>
+        <span style="flex-shrink:0;color:#1559cf;display:flex;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c.6-3.4 3-5.2 6-5.2s5.4 1.8 6 5.2"/><path d="M15.5 5.2a3.2 3.2 0 0 1 0 5.6M17.7 15.1c2 .7 3.4 2.3 3.8 4.9"/></svg></span>
+        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in, see the cars, talk numbers. No rush</span></div>
         <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
       </a>
     </div>
-    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:#5f6b7c;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now — I'll do this later</button>
+    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:#5f6b7c;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now, I'll do this later</button>
   </div>
 </div>
 <style>@keyframes apptSlide{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}</style>

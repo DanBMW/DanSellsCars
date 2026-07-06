@@ -1,129 +1,441 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DanSells Electric, Step 6</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BMW EV Finder | Review &amp; send | DanSells</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="funnel.css"/>
+<script src="ev-funnel-ui.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-XZL1RF6SV6');
-</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 </head>
-<body>
-<div class="app"><div class="shell">
+<body class="fv2 fv2-noticket"><div class="app"><div class="shell">
   <div class="topbar">
     <a href="index.html" style="text-decoration:none;"><span class="brand-name">DanSells</span></a>
-    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20EV%20finder" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20EV%20finder" target="_blank" rel="noopener" aria-label="Message Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
   </div>
-
-  <div class="progress-wrap">
-    <div class="progress-row"><span>Step 6 of 7</span><span>Almost done</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:85%"></div></div>
+  <div class="fv2-progress">
+    <div class="fv2-progress-row"><span class="fv2-progress-step">Step 6 <span>of 6</span></span><span class="fv2-progress-label">Review &amp; send</span></div>
+    <div class="fv2-track"><div class="fv2-fill" style="width:100%"></div></div>
   </div>
-
   <div class="step-wrap">
-    <div class="step-kicker">Almost done</div>
-    <h2>Where should Dan reach you?</h2>
-    <p class="step-desc">Dan will work out your exact weekly saving and come back to you personally. Your details go straight to him — he is your main point of contact, with a handover team and great people around him throughout.</p>
+    <div class="step-kicker">Review &amp; send</div>
+    <h2>Your EV brief, ready to go.</h2>
+    <p class="step-desc">This is exactly what lands with me. Give it a once-over, change anything that needs it, then send it through — I'll confirm the exact saving personally.</p>
 
-    <div class="input-card" style="margin-bottom:16px">
-      <div class="two-col">
-        <div class="field-group">
-          <label for="fn">Full name</label>
-          <input id="fn" type="text" placeholder="Your name" autocomplete="name" required>
-        </div>
-        <div class="field-group">
-          <label for="em">Email</label>
-          <input id="em" type="email" placeholder="you@example.com" autocomplete="email" required>
-        </div>
+    <!-- Saving recap -->
+    <div id="saveCard" class="ev-save" style="display:none;margin:0 0 14px;">
+      <div class="ev-save-head"><span class="ev-save-kick">Your electric saving</span><span class="ev-save-badge">Rough estimate</span></div>
+      <div class="ev-save-hero"><span id="saveHero">£0</span><small>a year</small></div>
+      <p class="ev-save-sub" id="saveSub"></p>
+      <div class="ev-save-4yr" id="save4yrBox" style="display:none">
+        <span class="ev-save-4yr-label"><strong>Over 4 years, roughly</strong>The typical time people keep a car</span>
+        <span class="ev-save-4yr-val" id="save4yr">£0</span>
       </div>
-
-      <div class="two-col">
-        <div class="field-group">
-          <label for="ph">Mobile</label>
-          <input id="ph" type="tel" placeholder="07..." autocomplete="tel" required>
-        </div>
-        <div class="field-group">
-          <label for="pc">Postcode (optional)</label>
-          <input id="pc" type="text" placeholder="e.g. TN13 1AA" autocomplete="postal-code">
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label for="bt">Best time to call (optional)</label>
-        <input id="bt" type="text" placeholder="e.g. Weekdays after 5pm">
-      </div>
+      <div class="ev-save-rows" id="saveRows"></div>
+      <p class="ev-save-note" id="saveNote"></p>
     </div>
 
-    <div class="tick-box" style="margin-bottom:14px">&#10004; By continuing you agree that Dan may use these details to contact you about your EV enquiry.</div>
-
-    <div class="input-card" style="margin-bottom:18px;">
-      <p style="font-size:.88rem;font-weight:600;color:#141a22;margin:0 0 6px;">Stay in the loop? <span style="font-weight:400;color:#5f6b7c;">(optional)</span></p>
-      <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 14px;line-height:1.55;">Occasional EV and BMW news, new model alerts, and exclusive offers — directly from Dan. No bulk emails, no third parties. Unsubscribe any time.</p>
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:14px;">
-        <input type="checkbox" id="mktOptIn" style="width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#1559cf;" onchange="document.getElementById('mktChannels').style.display=this.checked?'block':'none'">
-        <span style="font-size:.85rem;color:#2d3748;line-height:1.45;">Yes, I'd like to receive occasional BMW and EV updates from Dan</span>
-      </label>
-      <div id="mktChannels" style="display:none;">
-        <p style="font-size:.78rem;color:#5f6b7c;margin:0 0 10px;font-weight:600;">How would you prefer to hear from Dan?</p>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Email" class="mktCh" style="accent-color:#1559cf;"> Email</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="WhatsApp" class="mktCh" style="accent-color:#1559cf;"> WhatsApp</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="SMS" class="mktCh" style="accent-color:#1559cf;"> SMS</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Phone call" class="mktCh" style="accent-color:#1559cf;"> Phone call</label>
-        </div>
-      </div>
+    <div class="fv2-review" id="rv"></div>
+    <div class="fv2-nav">
+      <a class="fv2-back" href="ev-step5.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
+      <button class="fv2-next" id="sb" onclick="sendForm()">Send to Dan<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></button>
     </div>
-
-    <div class="nav">
-      <a class="btn-ghost" href="ev-step5.html">&larr; Back</a>
-      <button class="btn" onclick="go()">Review my answers &rarr;</button>
+    <div class="fv2-trust">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      <span>Sending also opens your booking page with these details pre-filled, so you can pick a time that suits you.</span>
     </div>
   </div>
 </div></div>
 
+<!-- Ignition send moment -->
+<div id="ign" class="fv2-ign" role="status" aria-live="polite">
+  <div class="fv2-ign-inner">
+    <div class="fv2-ign-ring"><div class="fv2-ign-btn"><span class="l1">START</span><span class="l2" style="color:#3a7be0;">READY</span></div></div>
+    <div class="fv2-ign-status" id="ignStatus">Sending your EV brief to Dan…</div>
+  </div>
+</div>
+
 <script>
-  function isValidEmail(e) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
-  }
+function readVal(key){ return sessionStorage.getItem(key) || ""; }
+function readList(key){
+  try { var a = JSON.parse(readVal(key) || "[]"); return Array.isArray(a) ? a.join(", ") : readVal(key); }
+  catch(e){ return readVal(key); }
+}
+function money(key){
+  var v = readVal(key);
+  if(!v) return "";
+  var n = Number(String(v).replace(/,/g,""));
+  return isNaN(n) ? v : "£" + n.toLocaleString("en-GB");
+}
+function toTC(s){ return (s||'').replace(/\w\S*/g,function(t){return t.charAt(0).toUpperCase()+t.slice(1).toLowerCase();}).replace(/\bBmw\b/g,'BMW').replace(/\bVw\b/g,'VW').replace(/\bMg\b/g,'MG'); }
 
-  [['fn','evName'],['em','evEmail'],['ph','evPhone'],['pc','evPostcode'],['bt','evBestTime']].forEach(([id,key]) => {
-    const v = sessionStorage.getItem(key);
-    if (v) document.getElementById(id).value = v;
+var STYLE_NAMES = {"Gran Coupe":"Gran Coupé / saloon","Small SAV":"Compact SAV / SUV","Large SAV":"Medium / large SAV","Open to ideas":"Open to ideas"};
+var PLAN_NAMES  = {"Yes":"Part exchange","Maybe":"Maybe, depends on the figure","Keeping it":"Keeping it, wants the saving numbers","No":"No car to change"};
+
+/* ── Saving recap card (same engine as step 4) ── */
+var savings = window.evSavings();
+(function renderSavings(){
+  if(!savings || savings.alreadyEV) return;
+  var g=function(k){return sessionStorage.getItem(k)||"";};
+  var street=(g("evDriveway")||"").indexOf("Street")===0;
+  var m10=window.evMoney10;
+  var carName=[g("evDvlaYear"),toTC(g("evDvlaMake")),toTC(g("evDvlaModel"))].filter(Boolean).join(" ")||"your current car";
+  var R=window.EV_RATES, pct=Math.round(R.homeShare*100);
+  var hero, sub, rows;
+  if(street){
+    hero=Math.max(0,savings.savePub);
+    sub=hero>100
+      ? "back in your pocket every year on a realistic public mix — smart charging moves it toward "+m10(savings.saveOff)+"."
+      : "Public charging prices vary hugely — with home or workplace charging you'd be looking at up to "+m10(savings.saveOff)+" a year. I'll map the options with you.";
+    rows=[
+      ["Your "+carName+" — "+savings.fuelLabel+", ~"+savings.mpg+" mpg", m10(savings.fuelCost)+"/yr", false],
+      ["BMW EV on public charging ("+pct+"% fast, "+(100-pct)+"% rapid)", m10(savings.evPub)+"/yr", hero>100],
+      ["BMW EV if you can charge at home or work", m10(savings.evOff)+"/yr", false]
+    ];
+  } else {
+    hero=savings.saveHome;
+    sub="back in your pocket every year, assuming "+pct+"% overnight home charging and "+(100-pct)+"% public rapids — about "+m10(hero/52)+" a week.";
+    rows=[
+      ["Your "+carName+" — "+savings.fuelLabel+", ~"+savings.mpg+" mpg", m10(savings.fuelCost)+"/yr", false],
+      ["BMW EV — "+pct+"% overnight tariff ("+Math.round(R.homeOffpeak*100)+"p/kWh), "+(100-pct)+"% public rapid", m10(savings.evHome)+"/yr", true],
+      ["BMW EV all at the standard home rate ("+Math.round(R.homeStandard*100)+"p/kWh)", m10(savings.evStd)+"/yr", false]
+    ];
+  }
+  document.getElementById("saveHero").textContent=m10(hero);
+  if(hero>0){
+    document.getElementById("save4yr").textContent=m10(Math.round(hero/10)*10*4);
+    document.getElementById("save4yrBox").style.display="flex";
+  }
+  document.getElementById("saveSub").textContent=sub;
+  var rowsEl=document.getElementById("saveRows");
+  rows.forEach(function(r){
+    var d=document.createElement("div");
+    d.className="ev-save-row"+(r[2]?" win":"");
+    var sp=document.createElement("span"); sp.textContent=r[0];
+    var st=document.createElement("strong"); st.textContent=r[1];
+    d.appendChild(sp); d.appendChild(st);
+    rowsEl.appendChild(d);
   });
-  // Restore marketing prefs
-  if (sessionStorage.getItem('evMarketingOptIn') === 'Yes') {
-    document.getElementById('mktOptIn').checked = true;
-    document.getElementById('mktChannels').style.display = 'block';
-    const mc = sessionStorage.getItem('evMarketingChannels') || '';
-    document.querySelectorAll('.mktCh').forEach(cb => { if (mc.includes(cb.value)) cb.checked = true; });
+  document.getElementById("saveNote").textContent="Fuel versus electricity only, from your "+Number(savings.miles).toLocaleString("en-GB")+" miles a year and DVLA data on your reg. Dan confirms the exact numbers with you.";
+  document.getElementById("saveCard").style.display="block";
+})();
+
+/* ── Build the grouped review ── */
+var hasCar = ["Yes","Maybe","Keeping it"].indexOf(readVal("evPX")) !== -1;
+var isPX   = ["Yes","Maybe"].indexOf(readVal("evPX")) !== -1;
+
+// "Owned outright" when they toggled it; else "£X/mo"; else blank (not asked/outright)
+function currentPaymentText(){
+  if(readVal("evOwnsOutright") === "Yes") return "Owned outright — nothing to pay";
+  var v = readVal("evCurrentPayment");
+  if(!v || Number(v) === 0) return "";
+  return money("evCurrentPayment") + "/mo";
+}
+
+var groups = [
+  { title:"Your details", edit:"ev-step5.html", rows:[
+    ["Name", readVal("evName")],
+    ["Email", readVal("evEmail")],
+    ["Mobile", readVal("evPhone")],
+    ["Postcode", readVal("evPostcode")],
+    ["Best time to call", readVal("evBestTime")]
+  ]},
+  { title:"The EV", edit:"ev-step1.html", rows:[
+    ["How you'll use it", readList("evLifestyle")],
+    ["Shape", STYLE_NAMES[readVal("evStyle")] || readVal("evStyle")]
+  ]},
+  { title:"Budget & timing", edit:"ev-step2.html", rows:[
+    ["Timeline", readVal("evTimeline")],
+    ["Funding route", readVal("evFunding")],
+    ["Current monthly payment", currentPaymentText()],
+    ["Deposit", money("evDeposit")],
+    ["Monthly budget", money("evMonthlyBudget")],
+    ["Total budget", money("evCashBudget")]
+  ]},
+  { title:"Miles & charging", edit:"ev-step3.html", rows:[
+    ["Annual mileage", readVal("evMileage") ? Number(readVal("evMileage")).toLocaleString("en-GB") + " miles" : ""],
+    ["Days over 200 miles", readVal("evLongTripsLabel")],
+    ["Where the car sleeps", readVal("evDriveway")],
+    ["Home charger", readVal("evCharger")]
+  ]},
+  { title:"Your current car", edit:"ev-step4.html", rows:
+    hasCar ? [
+      ["Plan", PLAN_NAMES[readVal("evPX")] || readVal("evPX")],
+      ["Registration", readVal("evReg")],
+      ["Car", readVal("evCurrentCar")],
+      ["Model", readVal("evPXModel")],
+      ["Mileage", readVal("evPXMileage")],
+      ["Online quote", readVal("evWBAC")],
+      ["MOT", readVal("evMotStatus")],
+      ["Service history", isPX ? readVal("evPXService") : ""],
+      ["Outstanding finance", isPX ? readVal("evPXFinance") : ""],
+      ["Settlement figure", isPX ? readVal("evSettlement") : ""],
+      ["Condition", isPX ? readVal("evPXCond") : ""],
+      ["Photos", (function(){
+        try { var n = JSON.parse(readVal("evPXPhotos")||"[]").length; if(n) return n + " uploaded"; } catch(e){}
+        return readVal("evPXPhotoBypass")==="true" ? "Sending via WhatsApp after" : "";
+      })()]
+    ] : [["Plan", PLAN_NAMES[readVal("evPX")] || readVal("evPX") || "No car to change"]]
+  },
+  { title:"Notes for Dan", edit:"ev-step5.html", rows:[
+    ["In your words", readVal("evNotes")],
+    ["Stay in touch", readVal("evMarketingOptIn")==="Yes" ? "Yes: " + (readVal("evMarketingChannels")||"any channel") : "Enquiry only"]
+  ]}
+];
+
+var rv = document.getElementById("rv");
+groups.forEach(function(g){
+  var rows = g.rows.filter(function(r){ return r[1]; });
+  if(!rows.length) return;
+  var card = document.createElement("div");
+  card.className = "fv2-rev-card";
+  var head = document.createElement("div");
+  head.className = "fv2-rev-head";
+  head.innerHTML = "<h3></h3><a class='fv2-rev-edit'>Edit</a>";
+  head.querySelector("h3").textContent = g.title;
+  head.querySelector("a").href = g.edit;
+  card.appendChild(head);
+  var body = document.createElement("div");
+  body.className = "fv2-rev-body";
+  rows.forEach(function(r){
+    var it = document.createElement("div");
+    it.className = "fv2-rev-item";
+    var b = document.createElement("b"); b.textContent = r[0];
+    var d = document.createElement("div"); d.textContent = r[1];
+    it.appendChild(b); it.appendChild(d);
+    body.appendChild(it);
+  });
+  card.appendChild(body);
+  rv.appendChild(card);
+});
+
+/* ── Plain-text summary for Dan's email + booking notes ── */
+var fields = [
+  ["Name","evName"],["Email","evEmail"],["Mobile","evPhone"],["Postcode","evPostcode"],
+  ["Best time","evBestTime"],["Lifestyle","evLifestyle",false,true],["EV shape","evStyle"],
+  ["Timeline","evTimeline"],["Funding","evFunding"],["Current monthly payment","evCurrentPayment",true],
+  ["Deposit","evDeposit",true],["Monthly budget","evMonthlyBudget",true],["Cash budget","evCashBudget",true],
+  ["Annual mileage","evMileage"],["200+ mile days","evLongTripsLabel"],
+  ["Charging at home","evDriveway"],["Home charger","evCharger"],
+  ["Current car plan","evPX"],["Registration","evReg"],["Current car","evCurrentCar"],
+  ["PX model","evPXModel"],["PX mileage","evPXMileage"],["Online buyer quote","evWBAC",true],
+  ["Service history","evPXService"],["PX finance","evPXFinance"],["PX settlement","evSettlement",true],
+  ["PX condition","evPXCond"],["MOT","evMotStatus"],["MOT history","evMotHistory"],
+  ["DVSA annual mileage estimate","evDvsaAnnualMiles"],["Extra notes","evNotes"]
+];
+function buildText(){
+  return fields.map(function(f){
+    var val;
+    if(f[1] === "evCurrentPayment"){
+      val = currentPaymentText() || "Not given";
+    } else {
+      val = f[3] ? readList(f[1]) : readVal(f[1]);
+      if(!val) val = "Not given";
+      else if(f[2]){
+        var n = Number(val.replace(/,/g,""));
+        if(!isNaN(n)) val = "£" + n.toLocaleString("en-GB");
+      }
+    }
+    return f[0] + ": " + val;
+  }).join("\n");
+}
+
+// Pre-built AutoTrader comparables search for Dan's email: deterministic,
+// no scraping. Built from the DVLA lookup plus the customer's PX mileage.
+function autotraderLink(){
+  var make = readVal("evDvlaMake");
+  var year = parseInt(readVal("evDvlaYear") || "", 10);
+  var fuel = (readVal("evDvlaFuel") || "").toLowerCase();
+  if(!make || !year) return "";
+  var p = new URLSearchParams();
+  p.set("make", make.toUpperCase());
+  p.set("year-from", String(year - 1));
+  p.set("year-to", String(year + 1));
+  var fuelMap = {petrol:"petrol", "heavy oil":"diesel", diesel:"diesel", electricity:"electric", electric:"electric",
+    hybrid:"hybrid-electric", "hybrid electric":"hybrid-electric", "mild hybrid":"mild-hybrid", "plug-in hybrid":"plug-in-hybrid-electric"};
+  if(fuelMap[fuel]) p.set("fuel-type", fuelMap[fuel]);
+  var m = parseInt((readVal("evPXMileage") || "").replace(/[^\d]/g,""), 10);
+  if(m) p.set("maximum-mileage", String(Math.ceil(m / 10000) * 10000));
+  p.set("postcode", "SS2 5AZ");
+  p.set("radius", "1500");
+  p.set("sort", "relevance");
+  return "https://www.autotrader.co.uk/car-search?" + p.toString();
+}
+
+// Dan-only rough-valuation links for the lead email — never shown to the
+// customer. Deep-link the instant online buyers, pre-filled with the reg
+// and PX mileage, so Dan can pull a live floor/market figure in one tap.
+function pxReg(){ return (readVal("evReg") || "").replace(/\s/g,"").toUpperCase(); }
+function pxMiles(){ return (readVal("evPXMileage") || "").replace(/[^\d]/g,""); }
+function webuyanycarLink(){
+  var r = pxReg(); if(!r) return "";
+  var m = pxMiles();
+  return "https://www.webuyanycar.com/car-valuation/?vrm=" + encodeURIComponent(r) +
+    (m ? "&mileage=" + encodeURIComponent(m) : "");
+}
+function motorwayLink(){
+  var r = pxReg(); if(!r) return "";
+  return "https://motorway.co.uk/sell-my-car?vrm=" + encodeURIComponent(r);
+}
+
+/* ── The EV story ── */
+function generateEVStory(){
+  var fn=readVal("evName")||"someone special";
+  var first=fn.split(" ")[0];
+  var tl={"Ready now":"ready to move now","1-3 months":"looking at the next few months","3-6 months":"planning for later this year","Just exploring":"quietly exploring"}[readVal("evTimeline")]||"thinking it over";
+  var mil=readVal("evMileage");
+  var fund=readVal("evFunding");
+  var mo=readVal("evMonthlyBudget"), ca=readVal("evCashBudget"), dep=readVal("evDeposit");
+  var dw=readVal("evDriveway");
+  var cc=readVal("evCurrentCar")||"their current car";
+  var epm=readVal("evPXModel");
+  var plan=readVal("evPX");
+  var nt=readVal("evNotes");
+  var es=STYLE_NAMES[readVal("evStyle")]||"BMW EV";
+  if(es==="Open to ideas") es="BMW EV";
+  var fmt=function(v){return v?Number(String(v).replace(/,/g,"")).toLocaleString("en-GB"):"";};
+  var mStr=mil?fmt(mil)+" miles a year":"";
+  var bStr=fund==="Outright"?(ca?"£"+fmt(ca)+" to spend outright":""):(mo?"£"+fmt(mo)+" a month":"");
+  var dStr=dep&&Number(String(dep).replace(/,/g,""))>0?"£"+fmt(dep)+" deposit":"";
+  var bLine=(bStr&&dStr)?"Budget: "+bStr+", with "+dStr+" ready to go.":bStr?"Budget: "+bStr+".":"";
+  var dwNote=dw&&dw.indexOf("Yes")===0?"They have a driveway, which opens up the best overnight charging tariffs.":dw&&dw.indexOf("Street")===0?"No driveway yet, so Dan will factor in the smartest charging alternatives.":"";
+  var pxLine=plan==="Yes"||plan==="Maybe"?"Their "+[cc,epm].filter(Boolean).join(" ")+" was noted as a part exchange.":plan==="Keeping it"?"They're keeping their "+cc+" for now — this was about seeing the numbers in black and white.":"";
+  var saveLine="";
+  if(savings&&!savings.alreadyEV&&savings.saveHome>100){
+    saveLine="The rough maths came back at around "+window.evMoney10(savings.saveHome)+" a year in fuel alone. ";
+  }
+  var ntLine=nt?"In their own words: “"+nt+"”":"";
+  return "There once was someone called "+fn+" who had been watching the electric revolution from a thoughtful distance — until the range, the technology, and the savings all started making serious sense.\n\n"+(mStr?"With "+mStr+" ahead of them":"Ready for a change")+", "+first+" was "+tl+" and reached out to Dan — someone who made this switch himself and knows what the questions sound like from both sides. A "+es+" had the appeal: the performance you expect from a BMW, the running costs you didn't expect to be quite so good. "+(bLine?bLine+" ":"")+saveLine+dwNote+" "+pxLine+"\n\n"+(ntLine?ntLine+"\n\n":"")+"Dan will check the exact weekly saving versus the "+cc+", crunch the real numbers, and come back with a proper personalised answer — not a brochure, a conversation built around "+first+"'s actual life.";
+}
+
+// The ignition moment runs while the POST is in flight; the redirect waits
+// for both. Reduced motion gets a plain short pause instead.
+function showIgnition(){
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return new Promise(function(r){ setTimeout(r, 300); });
+  }
+  var o = document.getElementById("ign");
+  o.style.display = "flex";
+  requestAnimationFrame(function(){ o.classList.add("show"); });
+  setTimeout(function(){ o.classList.add("pressed"); }, 380);
+  setTimeout(function(){ o.classList.add("running"); }, 650);
+  return new Promise(function(r){ setTimeout(r, 1900); });
+}
+
+async function sendForm(){
+  var btn = document.getElementById("sb");
+  btn.textContent = "Sending…";
+  btn.disabled = true;
+
+  var name  = readVal("evName");
+  var email = readVal("evEmail");
+
+  var pxPhotos = [];
+  try { pxPhotos = JSON.parse(readVal("evPXPhotos") || "[]"); } catch(e) {}
+  var pxPhotosVia = pxPhotos.length ? "Uploaded in funnel"
+    : readVal("evPXPhotoBypass") === "true" ? "Will WhatsApp after submitting" : "";
+
+  var summary = buildText();
+  if (isPX) {
+    summary += "\nPX photos: " + (pxPhotos.length ? pxPhotos.length + " uploaded" : (pxPhotosVia || "None"));
   }
 
-  function go() {
-    const n = document.getElementById('fn').value.trim();
-    const e = document.getElementById('em').value.trim();
-    const p = document.getElementById('ph').value.trim();
-    const pc = document.getElementById('pc').value.trim();
-    const bt = document.getElementById('bt').value.trim();
+  var calUrl = "https://cal.eu/danbmwruxley/telephone-appointment?" +
+    new URLSearchParams({name: name, email: email, notes: summary}).toString();
+  sessionStorage.setItem("evBookingUrl", calUrl);
 
-    if (!n || !e || !p) { alert('Name, email and mobile are needed so Dan can get back to you.'); return; }
-    if (!isValidEmail(e)) { alert('Please enter a valid email address (e.g. you@example.com).'); document.getElementById('em').focus(); return; }
+  var story = generateEVStory();
+  sessionStorage.setItem("evCustomerStory", story);
 
-    sessionStorage.setItem('evName', n);
-    sessionStorage.setItem('evEmail', e);
-    sessionStorage.setItem('evPhone', p);
-    sessionStorage.setItem('evPostcode', pc);
-    sessionStorage.setItem('evBestTime', bt);
-    const optIn = document.getElementById('mktOptIn').checked ? 'Yes' : 'No';
-    const channels = Array.from(document.querySelectorAll('.mktCh:checked')).map(c => c.value).join(', ');
-    sessionStorage.setItem('evMarketingOptIn', optIn);
-    sessionStorage.setItem('evMarketingChannels', channels);
-
-    window.location.href = 'ev-step7.html';
+  var m10=window.evMoney10;
+  var s=savings;
+  var heroVal=0;
+  if(s&&!s.alreadyEV){
+    heroVal=(readVal("evDriveway")||"").indexOf("Street")===0?Math.max(0,s.savePub):s.saveHome;
+    sessionStorage.setItem("evSavingHero", m10(heroVal));
+    sessionStorage.setItem("evSaving4yr", heroVal>0 ? m10(Math.round(heroVal/10)*10*4) : "");
   }
+
+  var payload = {
+    subject:           "EV Lead — " + name,
+    replyto:           email,
+    leadtype:          "Electric Vehicle Enquiry",
+    name: name, email: email,
+    phone:             readVal("evPhone"),
+    postcode:          readVal("evPostcode"),
+    besttime:          readVal("evBestTime"),
+    lifestyle:         readList("evLifestyle"),
+    evstyle:           readVal("evStyle"),
+    timeline:          readVal("evTimeline"),
+    funding:           readVal("evFunding"),
+    currentpayment:    currentPaymentText(),
+    deposit:           money("evDeposit"),
+    monthlybudget:     money("evMonthlyBudget") ? money("evMonthlyBudget") + "/mo" : "",
+    cashbudget:        money("evCashBudget"),
+    annualmileage:     readVal("evMileage") ? Number(readVal("evMileage")).toLocaleString("en-GB") : "",
+    longtrips200miles: readVal("evLongTripsLabel"),
+    driveway:          readVal("evDriveway"),
+    homecharger:       readVal("evCharger"),
+    currentcarplan:    PLAN_NAMES[readVal("evPX")] || readVal("evPX"),
+    partexchange:      readVal("evPX"),
+    pxreg:             readVal("evReg"),
+    currentcar:        readVal("evCurrentCar"),
+    pxmodel:           readVal("evPXModel"),
+    pxmileage:         readVal("evPXMileage"),
+    onlinebuyerquote:  money("evWBAC"),
+    pxservicehistory:  readVal("evPXService"),
+    pxfinance:         readVal("evPXFinance"),
+    pxsettlement:      money("evSettlement"),
+    pxcondition:       readVal("evPXCond"),
+    px_mot_status:     readVal("evMotStatus"),
+    px_mot_expiry:     readVal("evMotExpiry"),
+    px_mot_history:    readVal("evMotHistory"),
+    dvla_fuel:         readVal("evDvlaFuel"),
+    dvla_colour:       readVal("evDvlaColour"),
+    dvla_co2:          readVal("evDvlaCo2"),
+    dvla_engine_cc:    readVal("evDvlaCc"),
+    dvsa_annual_mileage_estimate: readVal("evDvsaAnnualMiles") ? Number(readVal("evDvsaAnnualMiles")).toLocaleString("en-GB") : "",
+    est_mpg_used:                s && !s.alreadyEV ? String(s.mpg) + " (" + s.mpgSrc + ")" : "",
+    est_fuel_cost_year:          s && !s.alreadyEV ? m10(s.fuelCost) : "",
+    est_ev_cost_home_mix:        s && !s.alreadyEV ? m10(s.evHome) : "",
+    est_ev_cost_home_offpeak:    s && !s.alreadyEV ? m10(s.evOff) : "",
+    est_ev_cost_home_standard:   s && !s.alreadyEV ? m10(s.evStd) : "",
+    est_ev_cost_public_mix:      s && !s.alreadyEV ? m10(s.evPub) : "",
+    est_saving_home_mix_year:    s && !s.alreadyEV ? m10(s.saveHome) : "",
+    est_saving_4yr_total:        heroVal>0 ? m10(Math.round(heroVal/10)*10*4) : "",
+    est_saving_home_offpeak_year:s && !s.alreadyEV ? m10(s.saveOff) : "",
+    est_saving_home_standard_year:s && !s.alreadyEV ? m10(s.saveStd) : "",
+    est_saving_public_mix_year:  s && !s.alreadyEV ? m10(s.savePub) : "",
+    savings_basis:               s && !s.alreadyEV ? (function(){var R=window.EV_RATES,p=Math.round(R.homeShare*100),q=100-p;return "Petrol £"+R.petrolPerLitre.toFixed(2)+"/L, diesel £"+R.dieselPerLitre.toFixed(2)+"/L (RAC Jun 2026), EV "+R.evMilesPerKwh+" mi/kWh; home mix = "+p+"% overnight 7p + "+q+"% public rapid 79p; standard rate 26p (Ofgem Jul 2026); public mix = "+p+"% fast 54p + "+q+"% rapid 79p (Zapmap May 2026)";})() : (s && s.alreadyEV ? "Current car already electric" : ""),
+    notes:             readVal("evNotes"),
+    marketing_opt_in:  readVal("evMarketingOptIn") || "No",
+    marketing_channels:readVal("evMarketingChannels"),
+    customer_story:    story,
+    leadsummary:       summary,
+    px_autotrader_comparables: autotraderLink(),
+    px_valuation_webuyanycar:  webuyanycarLink(),
+    px_valuation_motorway:     motorwayLink(),
+    px_photo_count:    pxPhotos.length ? String(pxPhotos.length) : "",
+    px_photos_via:     pxPhotosVia
+  };
+  pxPhotos.forEach(function(u, i){ payload["px_photo_" + (i + 1)] = u; });
+
+  var moment = showIgnition();
+  var post = fetch("https://formspree.io/f/xqewleog", {
+    method: "POST",
+    headers: {"Content-Type":"application/json","Accept":"application/json"},
+    body: JSON.stringify(payload)
+  }).catch(function(){});
+
+  Promise.all([post, moment]).then(function(){
+    var st = document.getElementById("ignStatus");
+    if (st) st.textContent = "Brief sent.";
+    if (window.evClearBackup) window.evClearBackup();
+    setTimeout(function(){ window.location.href = "ev-thankyou.html"; }, 380);
+  });
+}
 </script>
-<script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
-</body></html>
+<script src="scroll-hint.js"></script></body>
+</html>

@@ -1,75 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DanSells Electric, Step 1</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BMW EV Finder | Step 1 of 6 | DanSells</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<meta name="description" content="Two minutes of questions, then Dan works out what switching to a BMW EV would actually save you — using real DVLA data on your current car."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://dan-sells.co.uk/ev-step1.html"/>
+<meta property="og:title" content="BMW EV Finder | DanSells"/>
+<meta property="og:description" content="Two minutes of questions, then Dan works out what switching to electric would actually save you. One real person, no call centres."/>
+<meta property="og:image" content="https://dan-sells.co.uk/dan.jpg"/>
+<meta property="og:site_name" content="DanSells"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="BMW EV Finder | DanSells"/>
+<meta name="twitter:description" content="Two minutes of questions, then Dan works out what switching to electric would actually save you."/>
+<meta name="twitter:image" content="https://dan-sells.co.uk/dan.jpg"/>
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="funnel.css"/>
+<script src="ev-funnel-ui.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XZL1RF6SV6');
+</script>
 </head>
-<body>
-<div class="app"><div class="shell">
+<body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
     <a href="index.html" style="text-decoration:none;"><span class="brand-name">DanSells</span></a>
-    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20EV%20finder" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+    <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20have%20a%20question%20about%20the%20EV%20finder" target="_blank" rel="noopener" aria-label="Message Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-row"><span>Step 1 of 7</span><span>Under 2 minutes</span></div>
-    <div class="progress-track"><div class="progress-fill" style="width:14%"></div></div>
+  <div class="fv2-progress">
+    <div class="fv2-progress-row"><span class="fv2-progress-step">Step 1 <span>of 6</span></span><span class="fv2-progress-label">About you</span></div>
+    <div class="fv2-track"><div class="fv2-fill" style="width:16.7%"></div></div>
   </div>
-  <div class="step-wrap">
-    <div class="step-kicker">Your lifestyle</div>
-    <h2>Tell Dan a little about how you use your car.</h2>
-    <p class="step-desc">Pick all that apply &mdash; this shapes everything Dan recommends.</p>
-    <div class="grid two" style="margin-bottom:22px">
-      <button class="choice" data-val="Daily commuter" onclick="toggleLife(this)"><span class="choice-emoji">&#128664;</span><span class="choice-title">Daily commuter</span><span class="choice-desc">Regular A-to-B, familiar routes.</span></button>
-      <button class="choice" data-val="Family car" onclick="toggleLife(this)"><span class="choice-emoji">&#128106;</span><span class="choice-title">Family car</span><span class="choice-desc">School runs, weekends, space matters.</span></button>
-      <button class="choice" data-val="Long motorway miles" onclick="toggleLife(this)"><span class="choice-emoji">&#128739;</span><span class="choice-title">Long motorway miles</span><span class="choice-desc">Regular long-distance journeys.</span></button>
-      <button class="choice" data-val="Weekend / leisure" onclick="toggleLife(this)"><span class="choice-emoji">&#9968;</span><span class="choice-title">Weekend / leisure</span><span class="choice-desc">Low mileage, enjoyment focused.</span></button>
-      <button class="choice" data-val="Business use" onclick="toggleLife(this)"><span class="choice-emoji">&#128188;</span><span class="choice-title">Business use</span><span class="choice-desc">Company car or business mileage.</span></button>
-      <button class="choice" data-val="Mostly city" onclick="toggleLife(this)"><span class="choice-emoji">&#127961;</span><span class="choice-title">Mostly city</span><span class="choice-desc">Short trips, stop-start, urban.</span></button>
-    </div>
-    <div class="step-kicker" style="margin-bottom:12px">EV style preference</div>
-    <p class="step-desc" style="margin-bottom:16px">Pick the shape that appeals most.</p>
-    <div class="grid three" style="margin-bottom:24px">
-      <button class="choice" data-val="Gran Coupe" onclick="pickStyle(this)">
-        <span class="choice-emoji">&#128663;</span><span class="choice-title">Gran Coup&eacute;</span>
-        <span class="choice-desc">i4 &bull; i5 &bull; i7<br>Sleek, driver-focused.</span>
-      </button>
-      <button class="choice" data-val="Small SAV" onclick="pickStyle(this)">
-        <span class="choice-emoji">&#128665;</span><span class="choice-title">Small SAV/SUV</span>
-        <span class="choice-desc">iX1 &bull; iX2<br>Compact and practical.</span>
-      </button>
-      <button class="choice" data-val="Large SAV" onclick="pickStyle(this)">
-        <span class="choice-emoji">&#129500;</span><span class="choice-title">Med / Large SAV</span>
-        <span class="choice-desc">iX3 &bull; iX &bull; iX5<br>Space and presence.</span>
-      </button>
-    </div>
-    <div class="nav">
-      <a class="btn-ghost" href="EV.html">&larr; Back</a>
-      <button class="btn" onclick="go()">Continue &rarr;</button>
-    </div>
+<div class="step-wrap">
+  <div class="step-kicker">About you</div>
+  <h2>How do you use your car?</h2>
+  <p class="step-desc">Tick everything that applies. This shapes which electric BMW I put in front of you, and the whole thing takes about two minutes.</p>
+
+  <div class="fv2-options" id="lifeGrid">
+    <button class="fv2-opt" data-val="Daily commuter" onclick="toggleLife(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"/><path d="M6 17V9.5A2.5 2.5 0 0 1 8.5 7h7A2.5 2.5 0 0 1 18 9.5V17"/><path d="M9.5 7V4.5h5V7"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Daily commuter</span><span class="fv2-opt-desc">Regular A-to-B on familiar routes. EV heaven.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Family car" onclick="toggleLife(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.2V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.2"/><path d="M10 21v-6h4v6"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Family car</span><span class="fv2-opt-desc">School runs, weekends, space for real life.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Long motorway miles" onclick="toggleLife(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 9 4M20 20 15 4"/><path d="M12 6v2M12 11v2M12 16v2"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Long motorway miles</span><span class="fv2-opt-desc">Regular long-distance runs. Range matters.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Weekend / leisure" onclick="toggleLife(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 4 15H2L8 3z"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Weekend / leisure</span><span class="fv2-opt-desc">Lower mileage, enjoyment first.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Business use" onclick="toggleLife(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7.5" width="18" height="12.5" rx="2"/><path d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5"/><path d="M3 12.5h18"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Business use</span><span class="fv2-opt-desc">Company car or business miles. Big BIK wins.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Mostly city" onclick="toggleLife(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6l6-2.5V21M10 21h10V9l-6-2v14"/><path d="M6.8 8.5v.01M6.8 12v.01M6.8 15.5v.01M16 11.5v.01M16 15v.01"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Mostly city</span><span class="fv2-opt-desc">Short trips, stop-start. Where EVs shine.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
   </div>
+
+  <div class="fv2-sec">The shape that appeals most</div>
+  <p class="fv2-sec-sub">One tap. If you genuinely don't mind, say so and I'll shortlist across the range.</p>
+  <div class="fv2-options" id="styleGrid">
+    <button class="fv2-opt" data-val="Gran Coupe" onclick="pickStyle(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15.5 4 12.6A2.4 2.4 0 0 1 6.3 11h11.4a2.4 2.4 0 0 1 2.3 1.6l1 2.9"/><path d="M7 11l3-3.4c.5-.6 1.2-.9 2-.9h1.6c.9 0 1.7.4 2.2 1.1L18 11"/><path d="M2.5 15.5h19v2.3h-19z"/><circle cx="7.3" cy="18" r="1.6"/><circle cx="16.7" cy="18" r="1.6"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Gran Coupé / saloon</span><span class="fv2-opt-desc">i4 · i5 · i7 — sleek and driver-focused.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Small SAV" onclick="pickStyle(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.5 5 10a2 2 0 0 1 2-1.5h10A2 2 0 0 1 19 10l1 4.5"/><path d="M3.5 14.5h17V18h-17z"/><circle cx="7.5" cy="18.6" r="1.7"/><circle cx="16.5" cy="18.6" r="1.7"/><path d="M8 8.5V6.8A1.3 1.3 0 0 1 9.3 5.5h5.4A1.3 1.3 0 0 1 16 6.8v1.7"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Compact SAV / SUV</span><span class="fv2-opt-desc">iX1 · iX2 — compact, high seat, practical.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Large SAV" onclick="pickStyle(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14 4.2 8.8A2.2 2.2 0 0 1 6.4 7h11.2a2.2 2.2 0 0 1 2.2 1.8L21 14"/><path d="M2.5 14h19v4h-19z"/><circle cx="7.5" cy="19" r="1.9"/><circle cx="16.5" cy="19" r="1.9"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Medium / large SAV</span><span class="fv2-opt-desc">iX3 · iX — space, presence, long range.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+    <button class="fv2-opt" data-val="Open to ideas" onclick="pickStyle(this)">
+      <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.6 8.4-2 5.2-5.2 2 2-5.2 5.2-2z"/></svg></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Open to ideas</span><span class="fv2-opt-desc">Show me what fits my life and budget best.</span></span>
+      <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+  </div>
+
+  <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span id="errText"></span></div>
+  <div class="fv2-nav">
+    <a class="fv2-back" href="EV.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
+    <button class="fv2-next" onclick="go()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+</div>
 </div></div>
 <script>
-  let lifeChoices = JSON.parse(sessionStorage.getItem('evLifestyle') || '[]');
-  let styleChosen = sessionStorage.getItem('evStyle');
-  document.querySelectorAll('[onclick="toggleLife(this)"]').forEach(b => { if (lifeChoices.includes(b.dataset.val)) b.classList.add('selected'); });
-  document.querySelectorAll('[onclick="pickStyle(this)"]').forEach(b => { if (b.dataset.val === styleChosen) b.classList.add('selected'); });
-  function toggleLife(btn) {
-    btn.classList.toggle('selected');
-    lifeChoices = [...document.querySelectorAll('[onclick="toggleLife(this)"].selected')].map(b => b.dataset.val);
+  let lifeChoices = [];
+  try { lifeChoices = JSON.parse(sessionStorage.getItem("evLifestyle") || "[]"); } catch(e) {}
+  let styleChosen = sessionStorage.getItem("evStyle") || "";
+
+  document.querySelectorAll("#lifeGrid .fv2-opt").forEach(b => { if (lifeChoices.includes(b.dataset.val)) b.classList.add("selected"); });
+  document.querySelectorAll("#styleGrid .fv2-opt").forEach(b => { if (b.dataset.val === styleChosen) b.classList.add("selected"); });
+
+  function hideErr(){ document.getElementById("err").classList.remove("show"); }
+  function showErr(msg){
+    document.getElementById("errText").textContent = msg;
+    document.getElementById("err").classList.add("show");
   }
-  function pickStyle(btn) {
-    document.querySelectorAll('[onclick="pickStyle(this)"]').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); styleChosen = btn.dataset.val;
+  function toggleLife(btn){
+    btn.classList.toggle("selected");
+    lifeChoices = [...document.querySelectorAll("#lifeGrid .fv2-opt.selected")].map(b => b.dataset.val);
+    sessionStorage.setItem("evLifestyle", JSON.stringify(lifeChoices));
+    hideErr();
   }
-  function go() {
-    if (!lifeChoices.length) { alert('Please choose at least one lifestyle option.'); return; }
-    if (!styleChosen) { alert('Please pick a body style.'); return; }
-    sessionStorage.setItem('evLifestyle', JSON.stringify(lifeChoices));
-    sessionStorage.setItem('evStyle', styleChosen);
-    window.location.href = 'ev-step2.html';
+  function pickStyle(btn){
+    document.querySelectorAll("#styleGrid .fv2-opt").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    styleChosen = btn.dataset.val;
+    sessionStorage.setItem("evStyle", styleChosen);
+    hideErr();
+  }
+  function go(){
+    if (!lifeChoices.length) { showErr("Tick at least one way you use the car. It shapes everything I recommend."); return; }
+    if (!styleChosen) { showErr("Pick a shape, or tap “Open to ideas” if you genuinely don't mind."); return; }
+    sessionStorage.setItem("evLifestyle", JSON.stringify(lifeChoices));
+    sessionStorage.setItem("evStyle", styleChosen);
+    window.location.href = "ev-step2.html";
   }
 </script>
 <script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
