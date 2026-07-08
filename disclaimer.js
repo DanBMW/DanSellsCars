@@ -38,7 +38,7 @@
         '</div>' +
         '<h2 id="dscTitle">Please read &amp; confirm understanding</h2>' +
         '<p>This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan’s personal website and is not the official website of BMW or Hedin Automotive. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>. Please confirm you understand.</p>' +
-        '<button type="button" class="dsc-btn" id="dscOk">I understand</button>' +
+        '<button type="button" class="dsc-btn" id="dscOk">Continue to page</button>' +
       '</div>';
     document.body.appendChild(overlay);
     document.documentElement.style.overflow = 'hidden';
