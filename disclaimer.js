@@ -37,7 +37,7 @@
           '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>' +
         '</div>' +
         '<h2 id="dscTitle">Please read &amp; confirm understanding</h2>' +
-        '<p>This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan’s personal website and is not the official website of BMW or Hedin Automotive. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>. Please confirm you understand.</p>' +
+        '<p>This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan’s personal website and is not the official website of BMW or Hedin Automotive. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>. Press continue to confirm your understanding.</p>' +
         '<button type="button" class="dsc-btn" id="dscOk">Continue to page</button>' +
       '</div>';
     document.body.appendChild(overlay);
