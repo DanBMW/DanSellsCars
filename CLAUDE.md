@@ -67,6 +67,23 @@ customer-facing, `Value.html` trade tool), dealership pages
   and more. Search for `formspree.io` before changing anything about the
   payload shape.
 
+## GA4 events — analytics.js
+
+`analytics.js` (included with `<script src="analytics.js" defer>` on every
+GA-tagged page) fires the conversion events; keep its slug→step map in sync
+when adding/renaming funnel pages. Events:
+
+- `<funnel>_step_<n>` — funnel step view. Funnels: `fmb` (Find my BMW,
+  steps 1–8), `ev` (EV Finder, 1–6), `sq` (Service Qualifier, 1–7, `sq6b`
+  reports step 6), `ap` (Appraisal, 1–5). Redirect pages fire nothing.
+- `<funnel>_complete` — confirmation page view (`thankyou`/`wait`,
+  `ev-thankyou`, `sq_done`, `ap6`), deduped per session.
+- `generate_lead` `{form_page}` — any Formspree submission (a `fetch`
+  wrapper detects formspree.io calls, so new forms are tracked for free).
+- `whatsapp_click` `{link_location: float|header|drawer|inline}` — any
+  `wa.me` link click (delegated listener).
+- `share` `{method: native}` — the "Share my BMW story" native share.
+
 ## Shared header/drawer/footer — edit partials, then run build.js
 
 The site header, nav drawer, and footer live in `partials/header.html`,
