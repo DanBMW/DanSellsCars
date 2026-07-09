@@ -67,13 +67,34 @@ customer-facing, `Value.html` trade tool), dealership pages
   and more. Search for `formspree.io` before changing anything about the
   payload shape.
 
-## Duplicated header/nav/footer — keep in sync manually
+## Shared header/drawer/footer — edit partials, then run build.js
 
-There is **no templating or includes**. The header, nav, and footer HTML is
-copy-pasted into every page. Any change to navigation links, footer text, the
-GA4 snippet, or shared meta tags must be applied to **every page** by hand —
-grep for a distinctive string from the block you're changing and update all
-matches. Expect small drift between pages; match the page you're editing.
+The site header, nav drawer, and footer live in `partials/header.html`,
+`partials/drawer.html`, `partials/footer.html`. Each page that carries them
+contains the stamped markup between marker comments:
+
+```html
+<!-- chrome:header {"wa":"...optional per-page vars..."} -->
+...stamped content — never edit this by hand...
+<!-- /chrome:header -->
+```
+
+To change the chrome: edit the partial, run **`node build.js`** (no
+dependencies), and commit both the partial and the restamped pages. CI
+(`.github/workflows/chrome-check.yml`) runs `node build.js --check` and fails
+if they're out of sync.
+
+Per-page variation goes through `{{name|default}}` tokens in the partials,
+overridden by the JSON on a page's opening marker. Current tokens: `wa`
+(URL-encoded WhatsApp pre-fill message, header), `blurb1`/`blurb2` (footer
+description lines), `legalTail` (extra sentence(s) at the end of the footer
+legal paragraph — used by `bmw-pcp-explained.html` and
+`bmw-finance-compared.html` for their finance disclaimers).
+
+Pages without the chrome markers (all funnel pages, plus
+`business-proposal.html`/`finance-proposal.html` which have their own minimal
+header) are untouched by the build. The GA4 snippet and other `<head>` content
+are still duplicated per page — only the header/drawer/footer are templated.
 
 ## Staff-only pages — must stay noindex
 
