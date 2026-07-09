@@ -136,8 +136,14 @@ are still duplicated per page — only the header/drawer/footer are templated.
   Firebase-backed).
 - `links.html` — Dan's internal links/dashboard page (includes the Formspree
   record-ID → PDF download widgets).
+- **The games are internal-only, never customer-facing** (Dan's ruling):
+  `forecourt-frenzy.html`, `forecourt-frenzy-classic.html`,
+  `world-cup-tracker-live-leaderboard.html`, `sweepstake-2026.html`.
 
 These must never be linked from public pages, must stay **out of
 `sitemap.xml`**, and must carry
 `<meta name="robots" content="noindex, nofollow">`. Do not remove that meta
 tag, and do not add these pages to any nav.
+
+Also retired: `ev.html` is a redirect stub to `EV.html` (the live EV landing
+page) kept only so old lowercase links still work — don't resurrect it.
