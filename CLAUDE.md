@@ -82,7 +82,24 @@ when adding/renaming funnel pages. Events:
   wrapper detects formspree.io calls, so new forms are tracked for free).
 - `whatsapp_click` `{link_location: float|header|drawer|inline}` — any
   `wa.me` link click (delegated listener).
-- `share` `{method: native}` — the "Share my BMW story" native share.
+- `share` `{method: native, ref_code}` — the "Share my BMW story" native share.
+- `referral_visit` `{ref_code}` — landing with `?ref=CODE` from a shared
+  story link. The code persists 90 days (localStorage `dsRefBy`) and is
+  stamped onto later `generate_lead` events and injected into Formspree
+  payloads as `referral_code`, so referred leads are visible in Dan's email.
+
+## Story sharing / referral loop — story-share.js
+
+`thankyou.html`, `ev-thankyou.html` and `sq_done.html` share one module,
+`story-share.js` (loaded blocking in `<head>`, before the inline scripts that
+call it). Each page keeps its own `socialify()` copy scrubbing (surname,
+exact £ figures) and calls `dsStoryShare.init({social, firstName, tagline,
+fileName, shareTitle})`. The module mints the visitor's referral code
+(e.g. `KATE-7X2M`, localStorage `dsMyRef`), rewrites the `dan-sells.co.uk`
+mention in the share text to `dan-sells.co.uk/?ref=CODE`, draws the 1080×1080
+share card (story + code + URL), provides the global `copyStory()` /
+`shareInstagram()` button handlers, and fills each page's `#refNudge` with
+the £250-credit/£125-cash nudge that points at `refer.html`.
 
 ## Shared header/drawer/footer — edit partials, then run build.js
 

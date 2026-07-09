@@ -9,6 +9,7 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="analytics.js" defer></script>
+<script src="story-share.js"></script>
 </head>
 <body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
@@ -54,6 +55,7 @@
             <button onclick="shareInstagram()" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.2 6.8v.01"/></svg> Instagram</button>
           </div>
           <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry — your surname and exact figures are removed before sharing.</p>
+          <div id="refNudge"></div>
         </div>
       </div>
 
@@ -118,75 +120,14 @@
       s=s.replace(/ {2,}/g,' ').trim();
       return "Here's my BMW EV story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk — Dan works out what switching to electric would actually save you 🚗⚡";
     }
-    var social=socialify(story);
-    document.getElementById('shareX').href='https://twitter.com/intent/tweet?text='+encodeURIComponent(social);
-    document.getElementById('shareWa').href='https://wa.me/?text='+encodeURIComponent(social);
-    window._socialStory=social;
+    dsStoryShare.init({
+      social: socialify(story),
+      firstName: firstName,
+      tagline: 'What would electric save you? Two minutes to find out.',
+      fileName: 'my-bmw-ev-story.png',
+      shareTitle: 'My BMW EV story'
+    });
   })();
-  function copyStory(){
-    if(!window._socialStory) return;
-    navigator.clipboard.writeText(window._socialStory).then(function(){
-      var b=document.getElementById('copyBtn');
-      b.textContent='✓ Copied!';
-      setTimeout(function(){b.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg> Copy';},2000);
-    });
-  }
-  function generateInstagramImage(text,onDone){
-    var W=1080,H=1080,cvs=document.createElement('canvas');
-    cvs.width=W; cvs.height=H;
-    var ctx=cvs.getContext('2d');
-    function render(bg){
-      if(bg){var sc=Math.max(W/bg.width,H/bg.height);ctx.drawImage(bg,(W-bg.width*sc)/2,(H-bg.height*sc)/2,bg.width*sc,bg.height*sc);}
-      else{ctx.fillStyle='#0d1f3c';ctx.fillRect(0,0,W,H);}
-      var gr=ctx.createLinearGradient(0,0,0,H);
-      gr.addColorStop(0,'rgba(6,14,34,0.84)');gr.addColorStop(1,'rgba(3,8,20,0.92)');
-      ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
-      ctx.textAlign='center';ctx.fillStyle='#ffffff';
-      ctx.font='bold 60px Georgia,serif';ctx.fillText('DanSells',W/2,92);
-      ctx.fillStyle='rgba(255,255,255,0.48)';ctx.font='25px Arial,sans-serif';
-      ctx.fillText('Powered by BMW Ruxley',W/2,130);
-      ctx.strokeStyle='rgba(40,110,255,0.55)';ctx.lineWidth=1.5;
-      ctx.fillStyle='rgba(255,255,255,0.75)';ctx.font='italic 30px Georgia,serif';ctx.textAlign='center';
-      ctx.fillText("Here's my BMW EV story with Dan",W/2,172);
-      ctx.beginPath();ctx.moveTo(90,195);ctx.lineTo(W-90,195);ctx.stroke();
-      ctx.fillStyle='rgba(255,255,255,0.86)';ctx.font='28px Arial,sans-serif';ctx.textAlign='left';
-      var paras=text.split('\n\n').slice(0,2),y=220,maxY=H-170,pad=84,lh=42,maxW=W-pad*2;
-      for(var pi=0;pi<paras.length;pi++){
-        var words=paras[pi].replace(/\n/g,' ').split(' '),line='';
-        for(var i=0;i<words.length;i++){
-          var test=line+(line?' ':'')+words[i];
-          if(ctx.measureText(test).width>maxW&&line){if(y+lh>maxY)break;ctx.fillText(line,pad,y);y+=lh;line=words[i];}
-          else{line=test;}
-        }
-        if(line&&y+lh<=maxY){ctx.fillText(line,pad,y);y+=lh;}y+=20;
-      }
-      ctx.strokeStyle='rgba(40,110,255,0.55)';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.moveTo(90,H-155);ctx.lineTo(W-90,H-155);ctx.stroke();
-      ctx.textAlign='center';ctx.fillStyle='#5591ff';ctx.font='bold 38px Arial,sans-serif';
-      ctx.fillText('dan-sells.co.uk',W/2,H-100);
-      ctx.fillStyle='rgba(255,255,255,0.40)';ctx.font='22px Arial,sans-serif';
-      ctx.fillText('What would electric save you? Two minutes to find out.',W/2,H-58);
-      onDone(cvs);
-    }
-    var img=new Image();
-    img.onload=function(){render(img);};img.onerror=function(){render(null);};
-    img.src='photo07.jpg';
-  }
-  function shareInstagram(){
-    if(!window._socialStory)return;
-    generateInstagramImage(window._socialStory,function(cvs){
-      cvs.toBlob(function(blob){
-        var file=new File([blob],'my-bmw-ev-story.png',{type:'image/png'});
-        if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-          navigator.share({files:[file],title:'My BMW EV story'}).catch(function(){});
-        } else {
-          var url=URL.createObjectURL(blob),a=document.createElement('a');
-          a.href=url;a.download='my-bmw-ev-story.png';a.click();
-          setTimeout(function(){URL.revokeObjectURL(url);},3000);
-        }
-      },'image/png');
-    });
-  }
 </script>
 <script src="scroll-hint.js"></script>
 <!-- Appointment type modal — auto-shown after submission -->
