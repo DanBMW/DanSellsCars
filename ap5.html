@@ -11,6 +11,13 @@
     gtag('config', 'G-XZL1RF6SV6');
   </script>
 <script src="analytics.js" defer></script>
+<style>
+  .send-err{margin-top:16px;padding:16px;border-radius:12px;background:#fdecec;border:1px solid #f3c2c2;color:#8a1c1c;}
+  .send-err p{margin:0 0 12px;font-size:.95rem;line-height:1.45;}
+  .send-err-actions{display:flex;flex-wrap:wrap;gap:10px;}
+  .btn-wa{display:inline-block;padding:11px 18px;border-radius:10px;background:#25d366;color:#0a1f12;font-weight:700;text-decoration:none;}
+  @media (prefers-color-scheme:dark){.send-err{background:#3a1414;border-color:#6b2626;color:#ffd7d7;}}
+</style>
 </head>
 <body><div class="app"><div class="shell">
   <div class="topbar">
@@ -29,6 +36,13 @@
   <div class="nav">
     <a class="btn-ghost" href="ap4.html">&larr; Back</a>
     <button class="btn" id="sb" onclick="submitAppraisal()">Send to Dan &rarr;</button>
+  </div>
+  <div id="sendErr" class="send-err" hidden>
+    <p>That didn't send — nothing's lost. Try again, or send it straight to Dan on WhatsApp.</p>
+    <div class="send-err-actions">
+      <button type="button" class="btn" onclick="submitAppraisal()">Try again</button>
+      <a class="btn-wa" id="errWa" href="#" target="_blank" rel="noopener">WhatsApp Dan</a>
+    </div>
   </div>
 </div></div></div>
 <script>
@@ -58,6 +72,7 @@
   }
   async function submitAppraisal(){
     const btn=document.getElementById("sb"); btn.textContent="Sending..."; btn.disabled=true;
+    const errBox=document.getElementById("sendErr"); if(errBox) errBox.hidden=true;
     const name=sessionStorage.getItem("apName")||"";
     const email=sessionStorage.getItem("apEmail")||"";
     const reg=sessionStorage.getItem("apReg")||"";
@@ -77,9 +92,20 @@
     };
     sessionStorage.setItem("apSummary",summary);
     try{
-      await fetch("https://formspree.io/f/xqewleog",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
-    }catch(e){}
-    window.location.href="ap6.html";
+      const res=await fetch("https://formspree.io/f/xqewleog",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
+      if(res.ok){ window.location.href="ap6.html"; return; }
+      showSendFailure(summary);
+    }catch(e){
+      showSendFailure(summary);
+    }
+  }
+  // Keep the customer on-page if the submit fails; offer a retry and a WhatsApp
+  // fallback pre-filled with their appraisal so the lead still reaches Dan.
+  function showSendFailure(summary){
+    const btn=document.getElementById("sb"); if(btn){ btn.disabled=false; btn.textContent="Send to Dan →"; }
+    const wa=document.getElementById("errWa");
+    if(wa){ const waMsg="Hi Dan, I filled in the vehicle appraisal online but it wouldn't send. Here are my details:\n\n"+summary; wa.href="https://wa.me/447827138197?text="+encodeURIComponent(waMsg); }
+    const errBox=document.getElementById("sendErr"); if(errBox){ errBox.hidden=false; errBox.scrollIntoView({behavior:"smooth",block:"center"}); }
   }
 </script><script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
 <script src="contact.js"></script>
