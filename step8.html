@@ -41,6 +41,10 @@
   <div class="fv2-ign-inner">
     <div class="fv2-ign-ring"><div class="fv2-ign-btn"><span class="l1">START</span><span class="l2">ENGINE</span></div></div>
     <div class="fv2-ign-status" id="ignStatus">Sending your brief to Dan…</div>
+    <div class="fv2-ign-fallback" id="ignFallback">
+      <a class="fv2-ign-retry" id="ignRetry" href="#" onclick="retrySend();return false;">Try again</a>
+      <a class="fv2-ign-wa" id="ignWa" href="#" target="_blank" rel="noopener">Send to Dan on WhatsApp</a>
+    </div>
   </div>
 </div>
 
@@ -373,14 +377,49 @@ async function sendForm(){
     method: "POST",
     headers: {"Content-Type":"application/json","Accept":"application/json"},
     body: JSON.stringify(payload)
-  }).catch(function(){});
+  }).then(function(res){ return res.ok; }).catch(function(){ return false; });
 
-  Promise.all([post, moment]).then(function(){
+  Promise.all([post, moment]).then(function(results){
+    var ok = results[0];
     var st = document.getElementById("ignStatus");
-    if (st) st.textContent = "Brief sent.";
-    if (window.fv2ClearBackup) window.fv2ClearBackup();
-    setTimeout(function(){ window.location.href = "thankyou.html"; }, 380);
+    if (ok) {
+      if (st) st.textContent = "Brief sent.";
+      if (window.fv2ClearBackup) window.fv2ClearBackup();
+      setTimeout(function(){ window.location.href = "thankyou.html"; }, 380);
+    } else {
+      showSendFailure(summary);
+    }
   });
+}
+
+// Surface a send failure inside the ignition overlay: keep the customer here,
+// offer a retry and a WhatsApp fallback pre-filled with their brief, and leave
+// the resume backup intact so nothing is lost.
+function showSendFailure(summary){
+  var o  = document.getElementById("ign");
+  var st = document.getElementById("ignStatus");
+  var fb = document.getElementById("ignFallback");
+  var wa = document.getElementById("ignWa");
+  if (o) o.classList.remove("running");
+  if (o) o.classList.add("failed");
+  if (st) st.textContent = "That didn’t send — you’re still here, nothing’s lost. Try again, or send it straight to Dan on WhatsApp.";
+  if (wa) {
+    var waMsg = "Hi Dan, I filled in the Find My BMW brief online but it wouldn’t send. Here are my details:\n\n" + summary;
+    wa.href = "https://wa.me/447827138197?text=" + encodeURIComponent(waMsg);
+  }
+  if (fb) fb.classList.add("show");
+  var btn = document.getElementById("sb");
+  if (btn) { btn.disabled = false; btn.textContent = "Send to Dan"; }
+}
+
+function retrySend(){
+  var o  = document.getElementById("ign");
+  var st = document.getElementById("ignStatus");
+  var fb = document.getElementById("ignFallback");
+  if (o) o.classList.remove("show","pressed","running","failed");
+  if (fb) fb.classList.remove("show");
+  if (st) st.textContent = "Sending your brief to Dan…";
+  sendForm();
 }
 </script>
 <script src="scroll-hint.js"></script><script src="disclaimer.js"></script>

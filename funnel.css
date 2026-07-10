@@ -83,6 +83,12 @@ body.fv2 .step-wrap{animation:fv2In .34s cubic-bezier(.22,.61,.36,1) both;}
 .fv2-ign-btn .l1{font-size:.82rem;font-weight:800;letter-spacing:.24em;}
 .fv2-ign-btn .l2{font-size:.66rem;font-weight:800;letter-spacing:.3em;color:#d43a3a;}
 .fv2-ign-status{color:rgba(255,255,255,.72);font-size:.9rem;font-family:var(--font);letter-spacing:.02em;}
+.fv2-ign.failed .fv2-ign-status{color:#ffd7d7;max-width:320px;margin:0 auto;line-height:1.45;}
+.fv2-ign-fallback{display:none;flex-direction:column;gap:10px;max-width:300px;margin:20px auto 0;}
+.fv2-ign-fallback.show{display:flex;}
+.fv2-ign-retry,.fv2-ign-wa{display:block;padding:13px 18px;border-radius:12px;font-family:var(--font);font-weight:700;font-size:.95rem;text-decoration:none;text-align:center;}
+.fv2-ign-retry{background:#1559cf;color:#fff;}
+.fv2-ign-wa{background:#25d366;color:#0a1f12;}
 
 /* ── Option cards (single + multi select) ─────────────────── */
 .fv2-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:8px;}
