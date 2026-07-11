@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow"/>
-<title>Forecourt Frenzy — BMW Hedin Ruxley</title>
+<title>Forecourt Frenzy - BMW Hedin Ruxley</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -58,7 +58,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 .howto-box p{font-size:.82rem;line-height:1.55;color:#c8d0dd}
 .key{display:inline-block;background:#242b3a;border:1px solid #445;border-radius:4px;padding:1px 7px;font-family:'Courier New',monospace;font-weight:700;font-size:.78rem}
 
-/* Meeting — GTA cutscene style */
+/* Meeting - GTA cutscene style */
 #meet-screen{background:linear-gradient(rgba(6,8,14,.9),rgba(6,8,14,.96)),repeating-linear-gradient(135deg,#0e1522 0 24px,#0a0f19 24px 48px)}
 #meet-screen::before,#meet-screen::after{content:'';position:fixed;left:0;right:0;height:36px;background:#000;z-index:2;pointer-events:none}
 #meet-screen::before{top:0;border-bottom:2px solid rgba(255,210,74,.25)}
@@ -107,7 +107,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 #act-btn.glow{background:rgba(201,138,27,.95);animation:actGlow .6s infinite alternate}
 @keyframes actGlow{to{box-shadow:0 0 24px #ffd24a}}
 
-/* Joystick (visual only — input is handled on the canvas) */
+/* Joystick (visual only - input is handled on the canvas) */
 #joy{position:fixed;inset:0;z-index:65;pointer-events:none}
 #joy.hidden{display:none}
 #joy-base{position:absolute;width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.10);border:2px solid rgba(255,255,255,.28);display:none}
@@ -189,7 +189,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 <div id="title-screen" class="screen">
   <h1 class="logo">Forecourt<br>Frenzy</h1>
   <div class="sub">BMW Hedin Ruxley · Career Mode</div>
-  <div class="prize">🏆 <b>£10 CASH PRIZE</b> — first place on the career leaderboard wins a tenner, paid by Dan. Beat all three days to max your total!</div>
+  <div class="prize">🏆 <b>£10 CASH PRIZE</b> - first place on the career leaderboard wins a tenner, paid by Dan. Beat all three days to max your total!</div>
   <input type="text" id="nm" maxlength="14" placeholder="YOUR NAME" autocomplete="off">
   <div id="levels"></div>
   <div class="link-row">
@@ -204,15 +204,15 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
   <h1 class="logo" style="font-size:1.4rem">How to play</h1>
   <div class="howto-box">
     <h3>🕹️ Move</h3>
-    <p>Phone: drag the <b>right side</b> of the screen — a joystick appears under your thumb. Desktop: <span class="key">WASD</span> or arrow keys.</p>
+    <p>Phone: drag the <b>right side</b> of the screen - a joystick appears under your thumb. Desktop: <span class="key">WASD</span> or arrow keys.</p>
     <h3>👋 Interact</h3>
-    <p>Walk up to anything and hit the <b>blue action button</b> (bottom-left) — or tap the left side of the screen, or press <span class="key">E</span> / <span class="key">Space</span>. Talk to customers, use the coffee machine, shoo pigeons…</p>
+    <p>Walk up to anything and hit the <b>blue action button</b> (bottom-left) - or tap the left side of the screen, or press <span class="key">E</span> / <span class="key">Space</span>. Talk to customers, use the coffee machine, shoo pigeons…</p>
     <h3>🚗 Drive</h3>
-    <p>You can get in any forecourt car! <b>Push the direction you want to go</b> — the car turns and follows. Managers will ask you to <b>move cars between bays</b>, and hot customers may want a <b>test drive</b> round the block — hit every checkpoint and don't prang it.</p>
+    <p>You can get in any forecourt car! <b>Push the direction you want to go</b> - the car turns and follows. Managers will ask you to <b>move cars between bays</b>, and hot customers may want a <b>test drive</b> round the block - hit every checkpoint and don't prang it.</p>
     <h3>📊 Survive the day</h3>
-    <p>⚡ Energy drains — refill at the <b>coffee machine</b>. 🚻 Bladder fills — use the <b>toilet</b>. 😤 Composure takes hits — recover on the <b>sofa</b>. Max one out = you crash and lose points.</p>
+    <p>⚡ Energy drains - refill at the <b>coffee machine</b>. 🚻 Bladder fills - use the <b>toilet</b>. 😤 Composure takes hits - recover on the <b>sofa</b>. Max one out = you crash and lose points.</p>
     <h3>🎯 Win</h3>
-    <p>Hit the <b>deal target</b> to pass the day and unlock the next one. Your best score on each day adds up to your <b>career total</b> — top career total wins the £10.</p>
+    <p>Hit the <b>deal target</b> to pass the day and unlock the next one. Your best score on each day adds up to your <b>career total</b> - top career total wins the £10.</p>
   </div>
   <button class="btn" id="howto-back">Back</button>
 </div>
@@ -249,7 +249,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 <!-- ═══ LEADERBOARD OVERLAY ═══ -->
 <div id="lb-ov" class="hidden">
   <h1 class="logo" style="font-size:1.3rem">Career Leaderboard</h1>
-  <div class="prize" style="margin-top:10px">🏆 <b>#1 wins £10</b> — best score per day, added up.</div>
+  <div class="prize" style="margin-top:10px">🏆 <b>#1 wins £10</b> - best score per day, added up.</div>
   <table id="lb-table"></table>
   <button class="btn" id="lb-close">Close</button>
 </div>
@@ -331,7 +331,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 'use strict';
 
 // ═══════════════════════════════════════════════════════════════
-//  FORECOURT FRENZY 2 — top-down career mode
+//  FORECOURT FRENZY 2 - top-down career mode
 // ═══════════════════════════════════════════════════════════════
 
 const FB_CONFIG = {apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
@@ -372,111 +372,111 @@ const CAR_COLS=['#e8e8e8','#1c69d4','#1a1a1a','#c0392b','#27ae60','#f39c12','#8e
 const ARCHETYPES = [
   { id:'tyre_kicker', label:'🔍', intro:"has been round three dealers already and wants blood", questions:[
     { q:"What's your best price on this one? I've been to three dealers already today.",
-      opts:[{t:"That depends — have you actually found the right car yet, or just the right price?",p:3},{t:"I can knock a few hundred off if you buy today.",p:0},{t:"Our prices are fixed, I'm afraid.",p:1}]},
+      opts:[{t:"That depends - have you actually found the right car yet, or just the right price?",p:3},{t:"I can knock a few hundred off if you buy today.",p:0},{t:"Our prices are fixed, I'm afraid.",p:1}]},
     { q:"Honestly I just want the cheapest option you've got.",
-      opts:[{t:"Let's make sure it's cheap AND right — what will you actually use it for?",p:3},{t:"Cheapest we've got is over there in the corner.",p:0},{t:"Understood — what's the budget we're working to?",p:2}]},
+      opts:[{t:"Let's make sure it's cheap AND right - what will you actually use it for?",p:3},{t:"Cheapest we've got is over there in the corner.",p:0},{t:"Understood - what's the budget we're working to?",p:2}]},
     { q:"Can you match the quote I got from that dealer in Croydon?",
-      opts:[{t:"Show me exactly what they quoted and on which spec, and I'll tell you straight.",p:3},{t:"Probably — I'll just need manager approval.",p:1},{t:"We don't price-match competitors.",p:0}]},
-    { q:"Come on then — are you going to make this worth my while or not?",
+      opts:[{t:"Show me exactly what they quoted and on which spec, and I'll tell you straight.",p:3},{t:"Probably - I'll just need manager approval.",p:1},{t:"We don't price-match competitors.",p:0}]},
+    { q:"Come on then - are you going to make this worth my while or not?",
       opts:[{t:"If this is the right car, I'll make the deal make sense. Let's find that out first.",p:3},{t:"I can throw in a tank of fuel.",p:1},{t:"I think the price speaks for itself.",p:0}]}
   ]},
   { id:'cash_buyer', label:'💵', intro:"wants to pay cash and hates faff", hot:true, questions:[
     { q:"I want to pay cash. Nice and simple. What can you do for me?",
       opts:[{t:"Cash is lovely and simple. Which model caught your eye?",p:3},{t:"Have you considered finance? You might actually do better.",p:0},{t:"Cash is fine. Let me show you what's in stock.",p:2}]},
     { q:"I don't want any extras. No mats, no paint protection. Just the car.",
-      opts:[{t:"Completely fine — let's nail the spec and get you sorted.",p:3},{t:"You'll definitely want gap insurance at least.",p:0},{t:"No problem, though I'll briefly mention what exists.",p:1}]},
+      opts:[{t:"Completely fine - let's nail the spec and get you sorted.",p:3},{t:"You'll definitely want gap insurance at least.",p:0},{t:"No problem, though I'll briefly mention what exists.",p:1}]},
     { q:"How fast can you get the paperwork done? I hate sitting around.",
-      opts:[{t:"Same day if everything checks out — I'll grab the order form now.",p:3},{t:"Usually takes a week or two.",p:0},{t:"A few days — there's a process.",p:1}]},
+      opts:[{t:"Same day if everything checks out - I'll grab the order form now.",p:3},{t:"Usually takes a week or two.",p:0},{t:"A few days - there's a process.",p:1}]},
     { q:"I've bought three BMWs from this place. Where's my loyalty discount?",
-      opts:[{t:"Three cars deserves recognition — let me see what I can genuinely do.",p:3},{t:"Our prices are the same for everyone, I'm afraid.",p:0},{t:"I'll ask my manager what we can offer you.",p:2}]}
+      opts:[{t:"Three cars deserves recognition - let me see what I can genuinely do.",p:3},{t:"Our prices are the same for everyone, I'm afraid.",p:0},{t:"I'll ask my manager what we can offer you.",p:2}]}
   ]},
   { id:'finance_curious', label:'🤔', intro:"read one scary article about PCP", questions:[
     { q:"I've heard PCP is basically a rip-off. Why would I bother?",
-      opts:[{t:"Fair concern. Let me explain how it actually works — honestly, warts and all.",p:3},{t:"It's not a rip-off at all! Everyone does it.",p:0},{t:"It has pros and cons — depends how you use a car.",p:2}]},
+      opts:[{t:"Fair concern. Let me explain how it actually works - honestly, warts and all.",p:3},{t:"It's not a rip-off at all! Everyone does it.",p:0},{t:"It has pros and cons - depends how you use a car.",p:2}]},
     { q:"So what actually happens at the end of a PCP?",
       opts:[{t:"Three choices: hand it back, part-exchange it, or pay the balloon and own it.",p:3},{t:"You just hand it back.",p:1},{t:"You buy it outright.",p:0}]},
     { q:"And this balloon payment everyone goes on about?",
-      opts:[{t:"It's the guaranteed future value — fixed on day one, so you always know where you stand.",p:3},{t:"It's just a lump sum you might have to pay.",p:1},{t:"It's honestly not something to worry about.",p:0}]},
+      opts:[{t:"It's the guaranteed future value - fixed on day one, so you always know where you stand.",p:3},{t:"It's just a lump sum you might have to pay.",p:1},{t:"It's honestly not something to worry about.",p:0}]},
     { q:"What if I go over the mileage we agree?",
-      opts:[{t:"There's a pence-per-mile excess — which is exactly why we set a realistic mileage today.",p:3},{t:"It usually works out fine.",p:0},{t:"There's a small charge — we can work it out later.",p:1}]}
+      opts:[{t:"There's a pence-per-mile excess - which is exactly why we set a realistic mileage today.",p:3},{t:"It usually works out fine.",p:0},{t:"There's a small charge - we can work it out later.",p:1}]}
   ]},
   { id:'part_ex', label:'🔄', intro:"has an X1 to trade and trust issues", questions:[
     { q:"I've got a 2021 X1 to trade in. What'll you give me for it?",
-      opts:[{t:"Let's appraise it properly — tell me about the service history and mileage.",p:3},{t:"Probably around £12k, we'll see.",p:0},{t:"I'll need to run it through our system.",p:2}]},
+      opts:[{t:"Let's appraise it properly - tell me about the service history and mileage.",p:3},{t:"Probably around £12k, we'll see.",p:0},{t:"I'll need to run it through our system.",p:2}]},
     { q:"webuyanycar offered me more. Can you beat it?",
-      opts:[{t:"Let me value it properly first — and remember their number often drops at handover.",p:3},{t:"We'll match it, whatever it is.",p:0},{t:"Their prices aren't always what they seem.",p:1}]},
+      opts:[{t:"Let me value it properly first - and remember their number often drops at handover.",p:3},{t:"We'll match it, whatever it is.",p:0},{t:"Their prices aren't always what they seem.",p:1}]},
     { q:"What's the real difference between part-ex and selling privately?",
-      opts:[{t:"Private usually gets more but takes weeks. Part-ex is instant. I'll be straight about our number.",p:3},{t:"Part-ex is always better — less hassle.",p:0},{t:"Depends how much time you want to spend.",p:1}]},
+      opts:[{t:"Private usually gets more but takes weeks. Part-ex is instant. I'll be straight about our number.",p:3},{t:"Part-ex is always better - less hassle.",p:0},{t:"Depends how much time you want to spend.",p:1}]},
     { q:"There's a small dent on the door. That going to hurt me?",
-      opts:[{t:"It'll factor in, yes — I'd rather be transparent now than surprise you later.",p:3},{t:"Barely — we'll knock almost nothing off.",p:0},{t:"We'll get a proper assessment done.",p:2}]}
+      opts:[{t:"It'll factor in, yes - I'd rather be transparent now than surprise you later.",p:3},{t:"Barely - we'll knock almost nothing off.",p:0},{t:"We'll get a proper assessment done.",p:2}]}
   ]},
   { id:'browser', label:'👀', intro:"is 'just looking' (they always say that)", questions:[
     { q:"I'm just looking, thanks.",
-      opts:[{t:"No problem at all — take your time. I'm about if anything catches your eye.",p:3},{t:"Can I show you our latest deals?",p:0},{t:"We've got some great offers on at the moment!",p:1}]},
+      opts:[{t:"No problem at all - take your time. I'm about if anything catches your eye.",p:3},{t:"Can I show you our latest deals?",p:0},{t:"We've got some great offers on at the moment!",p:1}]},
     { q:"(They drift back to the same car for the second time.) …This one's quite nice, actually.",
       opts:[{t:"Good eye. Want to sit in it? Best way to know if it's the one.",p:3},{t:"That's our top seller. Ready to do a deal?",p:0},{t:"It's popular. Prices start from £28k.",p:1}]},
     { q:"I'm not really ready to buy yet, to be honest.",
-      opts:[{t:"Completely fine — what would help you get ready? More info? A test drive?",p:3},{t:"Well, we have offers ending this weekend.",p:0},{t:"No pressure — shall I get you a brochure?",p:2}]},
+      opts:[{t:"Completely fine - what would help you get ready? More info? A test drive?",p:3},{t:"Well, we have offers ending this weekend.",p:0},{t:"No pressure - shall I get you a brochure?",p:2}]},
     { q:"What's actually the difference between Sport and M Sport?",
       opts:[{t:"M Sport adds the bodykit, bigger alloys and firmer suspension. What matters most to you?",p:3},{t:"M Sport is better, worth the extra.",p:1},{t:"M Sport is more expensive.",p:0}]}
   ]},
   { id:'family', label:'👨‍👩‍👧', intro:"has two kids and a spreadsheet", questions:[
     { q:"We've got two kids. Is there actually enough room in the back?",
-      opts:[{t:"How old are they? Booster seats change the answer completely.",p:3},{t:"The X1 is very popular with families.",p:1},{t:"Plenty of room — it's a BMW!",p:0}]},
+      opts:[{t:"How old are they? Booster seats change the answer completely.",p:3},{t:"The X1 is very popular with families.",p:1},{t:"Plenty of room - it's a BMW!",p:0}]},
     { q:"Safety is the number one thing for us. Non-negotiable.",
-      opts:[{t:"Quite right — five-star NCAP, emergency braking and lane assist come as standard.",p:3},{t:"BMWs are very safe cars.",p:1},{t:"I'll show you the safety pack options.",p:0}]},
-    { q:"We're on a tight budget — £350 a month, tops.",
-      opts:[{t:"Workable. Let me show you what genuinely fits — I won't stretch you.",p:3},{t:"You might need £400 for the right car.",p:0},{t:"Let me run some finance figures for you.",p:2}]},
+      opts:[{t:"Quite right - five-star NCAP, emergency braking and lane assist come as standard.",p:3},{t:"BMWs are very safe cars.",p:1},{t:"I'll show you the safety pack options.",p:0}]},
+    { q:"We're on a tight budget - £350 a month, tops.",
+      opts:[{t:"Workable. Let me show you what genuinely fits - I won't stretch you.",p:3},{t:"You might need £400 for the right car.",p:0},{t:"Let me run some finance figures for you.",p:2}]},
     { q:"Do we have to decide today? My husband isn't here.",
-      opts:[{t:"Not at all — I'll save the configuration and hold any offer while you both think.",p:3},{t:"The offer is only good today, I'm afraid.",p:0},{t:"I can put a soft hold on it if you'd like.",p:2}]}
+      opts:[{t:"Not at all - I'll save the configuration and hold any offer while you both think.",p:3},{t:"The offer is only good today, I'm afraid.",p:0},{t:"I can put a soft hold on it if you'd like.",p:2}]}
   ]},
   { id:'ev_curious', label:'⚡', intro:"has been reading about EVs at 2am", hot:true, questions:[
     { q:"Is now actually a good time to go electric, or is it all hype?",
-      opts:[{t:"Depends entirely how you use a car — let me ask a few questions and give you a straight answer.",p:3},{t:"Yes, definitely — the future is electric!",p:0},{t:"What's your biggest worry? Range, charging, or cost?",p:2}]},
+      opts:[{t:"Depends entirely how you use a car - let me ask a few questions and give you a straight answer.",p:3},{t:"Yes, definitely - the future is electric!",p:0},{t:"What's your biggest worry? Range, charging, or cost?",p:2}]},
     { q:"What's the REAL range on the i4? Not the brochure number.",
-      opts:[{t:"WLTP says 365 but real-world it's 270–310 depending on speed, weather and heating.",p:3},{t:"About 400 miles easily.",p:0},{t:"It varies a lot — driving style matters.",p:1}]},
+      opts:[{t:"WLTP says 365 but real-world it's 270–310 depending on speed, weather and heating.",p:3},{t:"About 400 miles easily.",p:0},{t:"It varies a lot - driving style matters.",p:1}]},
     { q:"How long does home charging actually take?",
-      opts:[{t:"On a 7kW wallbox, 8–10 hours overnight — you just plug in when you get home.",p:3},{t:"About 30 minutes with a fast charger.",p:0},{t:"Depends on the charger — a wallbox is the way at home.",p:2}]},
+      opts:[{t:"On a 7kW wallbox, 8–10 hours overnight - you just plug in when you get home.",p:3},{t:"About 30 minutes with a fast charger.",p:0},{t:"Depends on the charger - a wallbox is the way at home.",p:2}]},
     { q:"And if I run out of charge in the middle of nowhere?",
-      opts:[{t:"The car warns you early and routes you to rapid chargers. If that still worries you, the 330e hybrid might suit better.",p:3},{t:"You'd need to call BMW Assist.",p:1},{t:"Doesn't happen — the battery management is very smart.",p:0}]}
+      opts:[{t:"The car warns you early and routes you to rapid chargers. If that still worries you, the 330e hybrid might suit better.",p:3},{t:"You'd need to call BMW Assist.",p:1},{t:"Doesn't happen - the battery management is very smart.",p:0}]}
   ]},
   { id:'motability', label:'♿', intro:"is asking about the Motability scheme", questions:[
-    { q:"Hi — I'm on Motability. Can I get a BMW through the scheme here?",
+    { q:"Hi - I'm on Motability. Can I get a BMW through the scheme here?",
       opts:[
-        {t:"I'm sorry — BMW left the Motability scheme a while back. I can point you to dealers who do it, and I'm happy to talk other finance options if useful.",p:3,resolveEarly:{pts:35,msg:"Well handled — BMW left Motability years ago. +35"}},
-        {t:"Absolutely — I deal with Motability all the time! Let me grab the price list.",p:0,resolveEarly:{pts:-25,msg:"BMW hasn't done Motability for years! −25"}},
+        {t:"I'm sorry - BMW left the Motability scheme a while back. I can point you to dealers who do it, and I'm happy to talk other finance options if useful.",p:3,resolveEarly:{pts:35,msg:"Well handled - BMW left Motability years ago. +35"}},
+        {t:"Absolutely - I deal with Motability all the time! Let me grab the price list.",p:0,resolveEarly:{pts:-25,msg:"BMW hasn't done Motability for years! −25"}},
         {t:"Let me just go and check on that for you…",p:0,resolveEarly:{pts:-15,msg:"You should know this cold! −15"}}
       ]}
   ]},
   { id:'company_car', label:'💼', intro:"needs BIK numbers before lunch", hot:true, questions:[
     { q:"I need the BIK percentages on the 320i and the 320e before I decide anything.",
-      opts:[{t:"Smart question. The 320e is 8% BIK versus 27% on the 320i — huge difference at your tax rate.",p:3},{t:"I'll need to look that up for you.",p:1},{t:"Happy to run the numbers — what's your tax bracket?",p:2}]},
+      opts:[{t:"Smart question. The 320e is 8% BIK versus 27% on the 320i - huge difference at your tax rate.",p:3},{t:"I'll need to look that up for you.",p:1},{t:"Happy to run the numbers - what's your tax bracket?",p:2}]},
     { q:"My company needs the P11D value on the order form. Today.",
-      opts:[{t:"Done — I'll print the full P11D breakdown for whichever spec you pick before you leave.",p:3},{t:"That usually comes later in the process.",p:0},{t:"Absolutely — which trim are we looking at?",p:2}]},
-    { q:"Fleet maintenance — included, or does my company sort that?",
-      opts:[{t:"BMW Business Partnership has maintenance options I can show you — or your fleet team may have their own deal.",p:3},{t:"That's really up to your company.",p:0},{t:"There are fleet options — let me walk you through them.",p:2}]},
+      opts:[{t:"Done - I'll print the full P11D breakdown for whichever spec you pick before you leave.",p:3},{t:"That usually comes later in the process.",p:0},{t:"Absolutely - which trim are we looking at?",p:2}]},
+    { q:"Fleet maintenance - included, or does my company sort that?",
+      opts:[{t:"BMW Business Partnership has maintenance options I can show you - or your fleet team may have their own deal.",p:3},{t:"That's really up to your company.",p:0},{t:"There are fleet options - let me walk you through them.",p:2}]},
     { q:"My lease ends in five weeks. Can you honestly deliver in time?",
-      opts:[{t:"Let me check stock right now — if the right car's in, we can turn it round in 10–14 days.",p:3},{t:"Probably not, if I'm honest — that's very tight.",p:0},{t:"Tight but not impossible — what spec do you need?",p:2}]}
+      opts:[{t:"Let me check stock right now - if the right car's in, we can turn it round in 10–14 days.",p:3},{t:"Probably not, if I'm honest - that's very tight.",p:0},{t:"Tight but not impossible - what spec do you need?",p:2}]}
   ]},
   { id:'young_driver', label:'🎓', intro:"is 24 and nervous about the badge", questions:[
-    { q:"This would be my first ever BMW. I'm 24 — is that a bit much?",
-      opts:[{t:"Not at all — PCP gets you into a newer car for less monthly than you'd think. What's the budget?",p:3},{t:"You're a bit young for this market, really.",p:0},{t:"Not at all! What matters most — looks, tech, performance?",p:2}]},
+    { q:"This would be my first ever BMW. I'm 24 - is that a bit much?",
+      opts:[{t:"Not at all - PCP gets you into a newer car for less monthly than you'd think. What's the budget?",p:3},{t:"You're a bit young for this market, really.",p:0},{t:"Not at all! What matters most - looks, tech, performance?",p:2}]},
     { q:"My mate says PCP is basically renting. Is he right?",
-      opts:[{t:"Partly — you don't own it unless you pay the balloon, but the guaranteed value protects you. Worth understanding properly.",p:3},{t:"It's not renting, it's finance — totally different.",p:0},{t:"Let me walk you through exactly how it works.",p:2}]},
+      opts:[{t:"Partly - you don't own it unless you pay the balloon, but the guaranteed value protects you. Worth understanding properly.",p:3},{t:"It's not renting, it's finance - totally different.",p:0},{t:"Let me walk you through exactly how it works.",p:2}]},
     { q:"I want it in Portimao Blue but there isn't one on the forecourt.",
-      opts:[{t:"Popular factory colour — I'll check incoming orders. Usually 8–12 weeks if we order fresh.",p:3},{t:"You might need to be flexible on colour.",p:0},{t:"Let me check what's on order — one may already be coming.",p:2}]},
+      opts:[{t:"Popular factory colour - I'll check incoming orders. Usually 8–12 weeks if we order fresh.",p:3},{t:"You might need to be flexible on colour.",p:0},{t:"Let me check what's on order - one may already be coming.",p:2}]},
     { q:"My mum thinks I should just buy a cheap old hatchback. What would you say?",
-      opts:[{t:"Fair point, honestly. Let me show you real monthly figures so you can compare properly — no pressure.",p:3},{t:"Mums don't always know best about cars!",p:0},{t:"A newer car on PCP can cost less monthly than an old one on HP — worth a look.",p:2}]}
+      opts:[{t:"Fair point, honestly. Let me show you real monthly figures so you can compare properly - no pressure.",p:3},{t:"Mums don't always know best about cars!",p:0},{t:"A newer car on PCP can cost less monthly than an old one on HP - worth a look.",p:2}]}
   ]},
   { id:'loyal_bmw', label:'🏅', intro:"has bought BMWs here for fifteen years", hot:true, questions:[
     { q:"Fifteen years I've bought BMWs here. What's actually new that I'd care about?",
       opts:[{t:"The iDrive 8 curved display is a genuine leap, and the 30e hybrid torque will surprise you. Come see.",p:3},{t:"Not a huge amount has changed, to be honest.",p:0},{t:"What was your last model? I'll point out what's genuinely different.",p:2}]},
-    { q:"Straight up — is the new 5 Series better, or just more expensive?",
-      opts:[{t:"Genuinely better — rear-wheel steering and the hybrid options are a real step. But I'd rather show you than sell you.",p:3},{t:"Of course it's better — it's newer!",p:0},{t:"What do you love about your current one? Let's compare from there.",p:2}]},
+    { q:"Straight up - is the new 5 Series better, or just more expensive?",
+      opts:[{t:"Genuinely better - rear-wheel steering and the hybrid options are a real step. But I'd rather show you than sell you.",p:3},{t:"Of course it's better - it's newer!",p:0},{t:"What do you love about your current one? Let's compare from there.",p:2}]},
     { q:"I want M Sport but not the standard pack contents. Can we go bespoke?",
-      opts:[{t:"Factory order lets us mix and match — I'll pull up the configurator now.",p:3},{t:"You pretty much have to take the pack as it comes.",p:0},{t:"Yes — exact spec, takes longer, worth it.",p:2}]},
+      opts:[{t:"Factory order lets us mix and match - I'll pull up the configurator now.",p:3},{t:"You pretty much have to take the pack as it comes.",p:0},{t:"Yes - exact spec, takes longer, worth it.",p:2}]},
     { q:"I've got 14 months left on my finance. Worth coming out early?",
-      opts:[{t:"Let me get the settlement figure — if equity's built, it can genuinely make sense. I'll be honest either way.",p:3},{t:"It'll cost you to come out early, so probably not.",p:0},{t:"Depends on settlement versus equity — let's run the numbers.",p:2}]}
+      opts:[{t:"Let me get the settlement figure - if equity's built, it can genuinely make sense. I'll be honest either way.",p:3},{t:"It'll cost you to come out early, so probably not.",p:0},{t:"Depends on settlement versus equity - let's run the numbers.",p:2}]}
   ]}
 ];
 
@@ -486,23 +486,23 @@ const PHONE_CALLS = [
     q:"Caller: 'This is about your BMW's extended warranty…'",
     opts:[{t:"Thanks, not interested.",p:5},{t:"Tell me more…",p:-10}]},
   { caller:'James Reed', type:'hot', preview:'Wants to put a deposit on the X1 today',
-    q:"James: 'Hi, I came in last week — I'd like to go ahead with the X1. Can someone call me back?'",
+    q:"James: 'Hi, I came in last week - I'd like to go ahead with the X1. Can someone call me back?'",
     opts:[{t:"Call him back immediately and take the deposit.",p:80},{t:"I'll pass it to the manager.",p:40}]},
   { caller:'PPI Helpline', type:'junk', preview:'Automated PPI call',
     q:"Automated voice: 'You may be entitled to compensation…'",
     opts:[{t:"Hang up.",p:5},{t:"Stay on the line.",p:-5}]},
-  { caller:'Sophie Marchetti', type:'hot', preview:'Ready to buy — needs callback',
-    q:"Sophie: 'Hi, I've been looking at the 1 Series online. I'm ready to come in — is there someone I can speak to?'",
+  { caller:'Sophie Marchetti', type:'hot', preview:'Ready to buy - needs callback',
+    q:"Sophie: 'Hi, I've been looking at the 1 Series online. I'm ready to come in - is there someone I can speak to?'",
     opts:[{t:"Arrange a callback and note her details.",p:80},{t:"Tell her to come in whenever.",p:30}]},
   { caller:'Kevin Marsh', type:'complaint', preview:'Data breach complaint', oneshot:true,
-    q:"Kevin: 'Someone I've never heard of just rang me with my full name, address and the car I enquired about. I believe one of your staff — Sergio — has sent my personal details to a third party. I'm absolutely furious.'",
-    opts:[{t:"I'm so sorry — I'm transferring you to my manager right now. This will be dealt with today.",p:50},{t:"I'm sure it was a misunderstanding — I'll personally look into it.",p:-30},{t:"Sucks to be you, love. These things happen.",p:-60}]},
-  { caller:'Priya Kapoor — Fleet', type:'hot', preview:'Company car test drive request',
-    q:"Priya: 'Hi, I manage company cars for a local firm — one of our directors wants to test drive the 3 Series this week. Who do I speak to?'",
-    opts:[{t:"I'll book that test drive in right now — what day suits the director?",p:70},{t:"We're fully booked this week, I'm afraid.",p:-30}]},
+    q:"Kevin: 'Someone I've never heard of just rang me with my full name, address and the car I enquired about. I believe one of your staff - Sergio - has sent my personal details to a third party. I'm absolutely furious.'",
+    opts:[{t:"I'm so sorry - I'm transferring you to my manager right now. This will be dealt with today.",p:50},{t:"I'm sure it was a misunderstanding - I'll personally look into it.",p:-30},{t:"Sucks to be you, love. These things happen.",p:-60}]},
+  { caller:'Priya Kapoor - Fleet', type:'hot', preview:'Company car test drive request',
+    q:"Priya: 'Hi, I manage company cars for a local firm - one of our directors wants to test drive the 3 Series this week. Who do I speak to?'",
+    opts:[{t:"I'll book that test drive in right now - what day suits the director?",p:70},{t:"We're fully booked this week, I'm afraid.",p:-30}]},
   { caller:'Ruxley Kebab House', type:'junk', preview:'…a large doner and chips?',
     q:"Caller: 'Hello mate, that the kebab shop? I ordered forty minutes ago.'",
-    opts:[{t:"Wrong number, pal — this is a BMW dealership.",p:5},{t:"Yeah it's coming, five minutes.",p:-10}]}
+    opts:[{t:"Wrong number, pal - this is a BMW dealership.",p:5},{t:"Yeah it's coming, five minutes.",p:-10}]}
 ];
 
 // ─── EMAILS ───────────────────────────────────────────────────
@@ -517,7 +517,7 @@ const EMAILS = [
     opts:[{t:"You receive 1 key with Comfort Access.",p:50,csi:false},
           {t:"You'll receive 2 keys.",p:-15,csi:true},
           {t:"You'll receive 3 keys.",p:-15,csi:true}]},
-  { subject:'Deposit enquiry — Dan Hughes',
+  { subject:'Deposit enquiry - Dan Hughes',
     body:"I spoke to someone last week about a 3 Series. I'd like to place a deposit to hold it. Can someone call me today please?",
     opts:[{t:"Call him back today and take the deposit properly.",p:50,csi:false},
           {t:"Reply saying we'll be in touch when available.",p:-15,csi:true},
@@ -526,30 +526,30 @@ const EMAILS = [
 
 // ─── SERVICE WALK-INS ─────────────────────────────────────────
 const SERVICE_SCENARIOS = [
-  { opening:"Hi, I've got a warning light on my dash — not sure what it means. Is this the right place?",
+  { opening:"Hi, I've got a warning light on my dash - not sure what it means. Is this the right place?",
     steps:[{ q:"How do you handle this?",
-      opts:[{t:"Let me grab Matt from Service — he'll sort you right away.",p:40},
-            {t:"Tell me more — when did it come on?",p:-20}]}]},
-  { opening:"My car's in for a service and my lease is nearly up — I'm actually thinking about what's next.",
+      opts:[{t:"Let me grab Matt from Service - he'll sort you right away.",p:40},
+            {t:"Tell me more - when did it come on?",p:-20}]}]},
+  { opening:"My car's in for a service and my lease is nearly up - I'm actually thinking about what's next.",
     steps:[{ q:"Their lease is nearly up. What's the move?",
-      opts:[{t:"Perfect timing — let me show you what might suit you next while you wait.",p:40},
+      opts:[{t:"Perfect timing - let me show you what might suit you next while you wait.",p:40},
             {t:"I'll just get Matt to update you on your car.",p:-20}]}]},
   { opening:"I need to book my car in for an MOT. Who do I speak to?",
     steps:[{ q:"Who do you point them at?",
-      opts:[{t:"Matt in Service handles all that — I'll walk you over.",p:40},
-            {t:"Actually, while you're here — thought about upgrading?",p:-20}]}]},
-  { opening:"My brakes are squeaking a bit. Also — don't laugh — I've been thinking about going electric.",
+      opts:[{t:"Matt in Service handles all that - I'll walk you over.",p:40},
+            {t:"Actually, while you're here - thought about upgrading?",p:-20}]}]},
+  { opening:"My brakes are squeaking a bit. Also - don't laugh - I've been thinking about going electric.",
     steps:[{ q:"They mentioned going electric. What do you do?",
       opts:[{t:"Let's talk EVs first! Then Matt can sort the brakes.",p:40},
-            {t:"Matt in Service can handle the brakes — I'll get him.",p:-20}]}]},
-  { opening:"Hi, just having a browse if that's alright — not looking to buy today, just curious.",
+            {t:"Matt in Service can handle the brakes - I'll get him.",p:-20}]}]},
+  { opening:"Hi, just having a browse if that's alright - not looking to buy today, just curious.",
     steps:[{ q:"A browser with zero pressure. How do you engage?",
-      opts:[{t:"Of course — take your time. I'm here if anything catches your eye. Any model in mind?",p:40},
+      opts:[{t:"Of course - take your time. I'm here if anything catches your eye. Any model in mind?",p:40},
             {t:"Well, we have offers ending this weekend if you want to talk numbers.",p:-20}]}]},
-  { opening:"I'm expecting an insurance payout in about three months after my write-off — not ready yet, but thought I'd start looking.",
+  { opening:"I'm expecting an insurance payout in about three months after my write-off - not ready yet, but thought I'd start looking.",
     steps:[{ q:"Three months from buying. The right route?",
       opts:[{t:"Perfect time to start. Let's find the right car now and I'll book you back in for when the payout lands.",p:40},
-            {t:"Three months is a while — pop back when you're ready.",p:-20}]}]}
+            {t:"Three months is a while - pop back when you're ready.",p:-20}]}]}
 ];
 
 // ─── MANAGERS & MEETINGS ──────────────────────────────────────
@@ -563,27 +563,27 @@ const MGRS = {
 
 const MEETINGS = {
   1:[
-    { sp:'Nathan (Sales Manager)', ph:MGRS.nathan, tx:"Morning. Monday. Quiet one usually — which means NO excuses for letting anyone walk. I want two on the glass today. Every enquiry logged on Drive, every customer gets a LaunchPad. Ease yourself in, but don't get comfy." },
-    { sp:'Will (Sales Manager)', ph:MGRS.will, tx:"Forecourt's tidy for once, keep it that way. Have a wander, learn where everything is. Coffee machine's by the back wall — you'll need it. Good lad." },
-    { sp:'Nathan', ph:MGRS.nathan, tx:"Remember the basics: coffee's your mate, the toilet's your enemy, and customers walk if you're slow. Off you go — sell some Beemers." }
+    { sp:'Nathan (Sales Manager)', ph:MGRS.nathan, tx:"Morning. Monday. Quiet one usually - which means NO excuses for letting anyone walk. I want two on the glass today. Every enquiry logged on Drive, every customer gets a LaunchPad. Ease yourself in, but don't get comfy." },
+    { sp:'Will (Sales Manager)', ph:MGRS.will, tx:"Forecourt's tidy for once, keep it that way. Have a wander, learn where everything is. Coffee machine's by the back wall - you'll need it. Good lad." },
+    { sp:'Nathan', ph:MGRS.nathan, tx:"Remember the basics: coffee's your mate, the toilet's your enemy, and customers walk if you're slow. Off you go - sell some Beemers." }
   ],
   2:[
     { sp:'Nathan (Sales Manager)', ph:MGRS.nathan, tx:"SATURDAY. Busiest day of the week and we're two units behind the group. I want THREE on the glass today, finance on every one you can, and if I see a single unlogged enquiry on Drive there'll be words." },
-    { sp:'Will (Sales Manager)', ph:MGRS.will, tx:"I've got cars that need shuffling between bays today — when I shout, you drive. And listen — hot customers get test drives. Round the block, hit the route, bring it back in one piece. CitNow everything you pitch." },
+    { sp:'Will (Sales Manager)', ph:MGRS.will, tx:"I've got cars that need shuffling between bays today - when I shout, you drive. And listen - hot customers get test drives. Round the block, hit the route, bring it back in one piece. CitNow everything you pitch." },
     { sp:'Serge (Sales Manager)', ph:MGRS.serge, tx:"Busy days are when compliance slips. Not today. Treat them fair, explain the finance properly, LaunchPad after every interaction. I'm watching the showroom like a hawk." },
-    { sp:'Nathan', ph:MGRS.nathan, tx:"Drive. LaunchPad. CitNow. Every enquiry, every customer, every time. It's Saturday — go earn your money." }
+    { sp:'Nathan', ph:MGRS.nathan, tx:"Drive. LaunchPad. CitNow. Every enquiry, every customer, every time. It's Saturday - go earn your money." }
   ],
   3:[
-    { sp:'Nathan (Sales Manager)', ph:MGRS.nathan, tx:"Sit down. End of quarter, board's a disgrace, and Munich has been on the phone twice this morning. FOUR units minimum today or we're bottom of the region. I don't care how. Well — I do. Compliantly. But FOUR." },
-    { sp:'Will (Sales Manager)', ph:MGRS.will, tx:"PPU is on the floor so don't you dare give the metal away. Cars need moving all day, test drives back to back — and whoever kerbed the M340i last week, I know it was one of you." },
-    { sp:'Matt (Aftersales)', ph:MGRS.matt, tx:"Service is chaos and I haven't got time for nonsense. Two rules: don't be a Clive and drive through the showroom. And do NOT let car thieves like Millie anywhere near the keys — if you see one on the lot, get over there sharpish." },
+    { sp:'Nathan (Sales Manager)', ph:MGRS.nathan, tx:"Sit down. End of quarter, board's a disgrace, and Munich has been on the phone twice this morning. FOUR units minimum today or we're bottom of the region. I don't care how. Well - I do. Compliantly. But FOUR." },
+    { sp:'Will (Sales Manager)', ph:MGRS.will, tx:"PPU is on the floor so don't you dare give the metal away. Cars need moving all day, test drives back to back - and whoever kerbed the M340i last week, I know it was one of you." },
+    { sp:'Matt (Aftersales)', ph:MGRS.matt, tx:"Service is chaos and I haven't got time for nonsense. Two rules: don't be a Clive and drive through the showroom. And do NOT let car thieves like Millie anywhere near the keys - if you see one on the lot, get over there sharpish." },
     { sp:'Dan Coleman (Parts)', ph:MGRS.dan, tx:"Parts are back-ordered, half of Germany's on holiday, and there's pigeons all over the stock again. Someone shoo them before they redecorate an M4. Don't ASK me about the bonnet badge." },
     { sp:'Nathan', ph:MGRS.nathan, tx:"Four units. Clean CSI. No stolen cars. No pigeon-based incidents. Or tomorrow's meeting happens in MY office. GO." }
   ]
 };
 
 // ═══════════════════════════════════════════════════════════════
-//  ENGINE — canvas, world, sprites, input, physics
+//  ENGINE - canvas, world, sprites, input, physics
 // ═══════════════════════════════════════════════════════════════
 
 const WORLD_W=960, WORLD_H=704;
@@ -639,7 +639,7 @@ function buildSolids(){
   addSolid(96,fy,GATE.x-96,4,'fence');
   addSolid(GATE.x+GATE.w,fy,DRIVE.x-(GATE.x+GATE.w),4,'fence');
   addSolid(DRIVE.x+DRIVE.w,fy,864-(DRIVE.x+DRIVE.w),4,'fence');
-  // showroom walls (6px) — south wall is glass, with door gap
+  // showroom walls (6px) - south wall is glass, with door gap
   const B=SHOW;
   addSolid(B.x,B.y,B.w,6,'wall');                       // north
   addSolid(B.x,B.y,6,B.h,'wall');                       // west
@@ -880,7 +880,7 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
 
-// Touch device detection — static checks plus a dynamic fallback on the
+// Touch device detection - static checks plus a dynamic fallback on the
 // first real touch, so controls appear even if detection lied at load.
 let mobileUI=('ontouchstart' in window)||navigator.maxTouchPoints>0||
   (window.matchMedia&&matchMedia('(pointer:coarse)').matches);
@@ -998,7 +998,7 @@ function updatePlayer(dt){
 
 function updateDrive(dt,iv){
   const c=P.driving;
-  // Screen-relative driving: push the direction you want to go —
+  // Screen-relative driving: push the direction you want to go -
   // the car turns toward it and drives. Up = up, left = left, etc.
   if(R.popup){ c.v*=(1-2*dt); }
   else if(iv.m>0.12){
@@ -1313,11 +1313,11 @@ function resolveConvo(){
     if(R.L.testDrive&&c.arch.hot&&!R.td&&!P.driving) startTestDrive(c);
   } else if(CV.pts>=Math.ceil(max*0.45)){
     addScore(20); R.csiGood++;
-    toast('👍 Warm lead — '+c.name+' will be back. +20');
+    toast('👍 Warm lead - '+c.name+' will be back. +20');
     endConvo(true);
   } else {
     addScore(-25); R.comp=Math.max(0,R.comp-15); R.csiBad++;
-    toast('💨 Blown it — '+c.name+' walked. −25');
+    toast('💨 Blown it - '+c.name+' walked. −25');
     endConvo(true);
   }
 }
@@ -1333,7 +1333,7 @@ function openSvc(c){
   CV={c};
   const s=c.svcData.steps[0];
   document.getElementById('svc-name').textContent='🔧 '+c.name;
-  document.getElementById('svc-q').textContent='“'+c.svcData.opening+'”  —  '+s.q;
+  document.getElementById('svc-q').textContent='“'+c.svcData.opening+'”  -  '+s.q;
   const box=document.getElementById('svc-opts'); box.innerHTML='';
   const opts=s.opts.slice();
   for(let i=opts.length-1;i>0;i--){const j=0|Math.random()*(i+1);[opts[i],opts[j]]=[opts[j],opts[i]];}
@@ -1469,7 +1469,7 @@ function onCarParked(c){
       endTestDrive();
     } else if(c.bay){
       addScore(10);
-      toast('🏁 Test drive cut short — '+R.td.cust+' shrugs. +10');
+      toast('🏁 Test drive cut short - '+R.td.cust+' shrugs. +10');
       endTestDrive();
     }
   }
@@ -1491,7 +1491,7 @@ function updateTd(dt){
   if(!R.job){
     b.classList.remove('hidden');
     const msg=R.td.phase==='toCar'?'get in the glowing car':
-      (R.td.idx<R.td.cps.length?'checkpoint '+(R.td.idx+1)+'/4 — follow the arrow':'back to a bay & park!');
+      (R.td.idx<R.td.cps.length?'checkpoint '+(R.td.idx+1)+'/4 - follow the arrow':'back to a bay & park!');
     b.textContent='🏁 Test drive: '+msg+' ⏱️ '+Math.ceil(R.td.timeLeft)+'s';
   }
   if(R.td.phase==='toCar'&&P.driving===R.td.car){ R.td.phase='drive'; R.td.car.glow=false; }
@@ -1503,7 +1503,7 @@ function updateTd(dt){
   }
   if(R.td.timeLeft<=0){
     addScore(-20); R.comp=Math.max(0,R.comp-8);
-    toast('⌛ Test drive overran — '+R.td.cust+' is unimpressed. −20');
+    toast('⌛ Test drive overran - '+R.td.cust+' is unimpressed. −20');
     endTestDrive();
   }
 }
@@ -1534,7 +1534,7 @@ function updateThieves(dt){
       else{ th.f=Math.atan2(dy,dx); moveActor(th,dx/d*55*dt,dy/d*55*dt,5,SOLIDS); }
     } else if(th.state==='crack'){
       th.timer-=dt;
-      if(th.car===P.driving||th.car.gone){ th.state='flee'; toast('🥷 The thief scarpers — car\'s not there!'); continue; }
+      if(th.car===P.driving||th.car.gone){ th.state='flee'; toast('🥷 The thief scarpers - car\'s not there!'); continue; }
       if(th.timer<=0){
         th.state='gone';
         th.car.gone=true;
@@ -1843,7 +1843,7 @@ function endDay(){
   const t=document.getElementById('end-title');
   t.textContent=passed?'DAY COMPLETE':'TARGET MISSED';
   t.className=passed?'pass':'fail';
-  document.getElementById('end-stars').textContent=passed?'⭐'.repeat(stars)+'☆'.repeat(3-stars):'—';
+  document.getElementById('end-stars').textContent=passed?'⭐'.repeat(stars)+'☆'.repeat(3-stars):'–';
   document.getElementById('end-verdict').textContent=
     passed?(stars===3?'"Munich called. They\'re naming a corridor after you."':
       stars===2?'"Solid day\'s graft. Nathan almost smiled."':
@@ -1858,7 +1858,7 @@ function endDay(){
   document.getElementById('end-lines').innerHTML=
     lines.map(l=>'<div>'+l[0]+'<span class="val">'+l[1]+'</span></div>').join('')+
     '<div id="end-total">SCORE<span class="val">'+R.score+'</span></div>';
-  document.getElementById('end-career').textContent='Career total: '+career+' — best per day: '+(SAVE.best[1]||0)+' / '+(SAVE.best[2]||0)+' / '+(SAVE.best[3]||0);
+  document.getElementById('end-career').textContent='Career total: '+career+' - best per day: '+(SAVE.best[1]||0)+' / '+(SAVE.best[2]||0)+' / '+(SAVE.best[3]||0);
 
   const nextBtn=document.getElementById('next-btn');
   nextBtn.style.display=(passed&&R.lv<3)?'':'none';
@@ -1899,10 +1899,10 @@ function loadEndLb(){
   fetchCareer(rows=>{
     if(!rows){ el.innerHTML='Leaderboard unavailable (offline?)'; return; }
     const me=lbKey();
-    let html='<b class="gold-row">🏆 CAREER TOP 5 — #1 wins £10</b><br>';
+    let html='<b class="gold-row">🏆 CAREER TOP 5 - #1 wins £10</b><br>';
     rows.slice(0,5).forEach((r,i)=>{
       const isMe=(r.name||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)===me;
-      html+='<span'+(isMe?' class="gold-row"':'')+'>'+(i+1)+'. '+escHtml(r.name)+' — '+r.total+'</span><br>';
+      html+='<span'+(isMe?' class="gold-row"':'')+'>'+(i+1)+'. '+escHtml(r.name)+' - '+r.total+'</span><br>';
     });
     const rank=rows.findIndex(r=>(r.name||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)===me);
     if(rank>=0)html+='<b>Your rank: #'+(rank+1)+'</b>';
@@ -1918,7 +1918,7 @@ function openLb(){
   document.getElementById('lb-ov').classList.remove('hidden');
   fetchCareer(rows=>{
     if(!rows){ tb.innerHTML='<tr><td colspan="6">Leaderboard unavailable.</td></tr>'; return; }
-    if(!rows.length){ tb.innerHTML='<tr><td colspan="6">No scores yet — be the first!</td></tr>'; return; }
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="6">No scores yet - be the first!</td></tr>'; return; }
     const me=lbKey();
     let html='<tr><th>#</th><th>Name</th><th>D1</th><th>D2</th><th>D3</th><th>Total</th></tr>';
     rows.slice(0,10).forEach((r,i)=>{
@@ -1968,7 +1968,7 @@ function startMeeting(lv){
   ST='meet';
   document.getElementById('title-screen').classList.add('hidden');
   document.getElementById('end-screen').classList.add('hidden');
-  document.getElementById('meet-lvname').textContent='DAY '+lv+' — '+LEVELS[lv].name;
+  document.getElementById('meet-lvname').textContent='DAY '+lv+' - '+LEVELS[lv].name;
   document.getElementById('meet-screen').classList.remove('hidden');
   showMeet();
 }

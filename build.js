@@ -68,7 +68,7 @@ if (failed) process.exit(1);
 if (stale.length === 0) {
   console.log('chrome up to date in all pages');
 } else if (CHECK) {
-  console.error(`chrome out of date in ${stale.length} page(s) — run "node build.js" and commit:`);
+  console.error(`chrome out of date in ${stale.length} page(s) - run "node build.js" and commit:`);
   for (const f of stale) console.error('  ' + f);
   process.exit(1);
 } else {

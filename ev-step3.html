@@ -48,11 +48,11 @@
       <button class="fv2-chip" data-v="15000">15k</button>
       <button class="fv2-chip" data-v="20000">20k</button>
     </div>
-    <p class="fv2-amount-note">The more you drive, the more electric saves you. Be as accurate as you can — the saving estimate is built on this.</p>
+    <p class="fv2-amount-note">The more you drive, the more electric saves you. Be as accurate as you can - the saving estimate is built on this.</p>
   </div>
 
   <div class="fv2-sec">Days over 200 miles</div>
-  <p class="fv2-sec-sub">The range question I get asked most. Be honest — it directly shapes which electric BMW is right for you.</p>
+  <p class="fv2-sec-sub">The range question I get asked most. Be honest - it directly shapes which electric BMW is right for you.</p>
   <div class="fv2-amount">
     <div class="fv2-amount-row"><span class="fv2-amount-label">How often?</span><span class="fv2-amount-value" id="tripV" style="font-size:1.4rem;">Never</span></div>
     <input type="range" id="tripR" min="0" max="5" step="1" value="0"/>
@@ -62,7 +62,7 @@
   <div class="fv2-sec">Where the car sleeps</div>
   <div class="fv2-rows" id="driveTrack">
     <button type="button" class="fv2-row" data-val="Yes, driveway or garage" onclick="pickDrive(this)">
-      <span class="fv2-row-body"><span class="fv2-row-title">Driveway or garage</span><span class="fv2-row-desc">Perfect for a home charger — the cheapest and easiest way to run an EV.</span><span class="fv2-tag good">Best for savings</span></span>
+      <span class="fv2-row-body"><span class="fv2-row-title">Driveway or garage</span><span class="fv2-row-desc">Perfect for a home charger - the cheapest and easiest way to run an EV.</span><span class="fv2-tag good">Best for savings</span></span>
       <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
     <button type="button" class="fv2-row" data-val="Street parking only" onclick="pickDrive(this)">
@@ -74,7 +74,7 @@
       <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
     <button type="button" class="fv2-row" data-val="Not sure" onclick="pickDrive(this)">
-      <span class="fv2-row-body"><span class="fv2-row-title">Not sure yet</span><span class="fv2-row-desc">No problem — we'll go through it on the call.</span></span>
+      <span class="fv2-row-body"><span class="fv2-row-title">Not sure yet</span><span class="fv2-row-desc">No problem - we'll go through it on the call.</span></span>
       <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
   </div>
@@ -87,7 +87,7 @@
   <div class="fv2-options" id="chargerGrid">
     <button class="fv2-opt" data-val="Yes - want charger info" onclick="pickCharger(this)">
       <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v5M15 3v5"/><path d="M7 8h10v4a5 5 0 0 1-5 5 5 5 0 0 1-5-5V8z"/><path d="M12 17v4"/></svg></span>
-      <span class="fv2-opt-body"><span class="fv2-opt-title">Yes, interested</span><span class="fv2-opt-desc">Refer me — with the savings available.</span></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Yes, interested</span><span class="fv2-opt-desc">Refer me - with the savings available.</span></span>
       <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
     <button class="fv2-opt" data-val="No charger needed" onclick="pickCharger(this)">
@@ -159,7 +159,7 @@
     hideErr(); refresh();
   }
   function go(){
-    if(!driveChosen){ showErr("Let me know where the car sleeps — it decides how you'd charge."); return; }
+    if(!driveChosen){ showErr("Let me know where the car sleeps - it decides how you'd charge."); return; }
     if(!chargerChosen){ showErr("Let me know whether you'd like home charger info."); return; }
     sessionStorage.setItem("evMileage", mil.r.value);
     sessionStorage.setItem("evLongTrips", trip.r.value);

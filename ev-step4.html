@@ -28,7 +28,7 @@
 <div class="step-wrap">
   <div class="step-kicker">Your current car</div>
   <h2>What's the plan for your current car?</h2>
-  <p class="step-desc">Part exchange it, or keep it and just see the numbers. Either way, your registration does the work — I'll pull the car's details and show what switching to electric saves you.</p>
+  <p class="step-desc">Part exchange it, or keep it and just see the numbers. Either way, your registration does the work - I'll pull the car's details and show what switching to electric saves you.</p>
 
   <div class="fv2-options" id="planGrid">
     <button class="fv2-opt" data-val="Yes" onclick="pickPlan(this)">
@@ -43,7 +43,7 @@
     </button>
     <button class="fv2-opt" data-val="Keeping it" onclick="pickPlan(this)">
       <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a7 7 0 0 1 7 7c0 4.2-4.1 8.5-6.3 10.5a1 1 0 0 1-1.4 0C9.1 18.5 5 14.2 5 10a7 7 0 0 1 7-7z"/><path d="M12 6.5 10 10.4h4L12 14.3"/></svg></span>
-      <span class="fv2-opt-body"><span class="fv2-opt-title">Keeping it &mdash; just curious</span><span class="fv2-opt-desc">Show me what electric would save me.</span></span>
+      <span class="fv2-opt-body"><span class="fv2-opt-title">Keeping it - just curious</span><span class="fv2-opt-desc">Show me what electric would save me.</span></span>
       <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
     <button class="fv2-opt" data-val="No" onclick="pickPlan(this)">
@@ -56,7 +56,7 @@
   <!-- Registration + saving: everyone with a car sees this -->
   <div id="regSection" class="fv2-reveal" style="display:none">
     <div class="fv2-sec">Your registration <small>(required)</small></div>
-    <p class="fv2-sec-sub">I'll pull the make, model, fuel type and official CO&#8322; figure &mdash; that's what powers the saving estimate below.</p>
+    <p class="fv2-sec-sub">I'll pull the make, model, fuel type and official CO&#8322; figure - that's what powers the saving estimate below.</p>
     <div class="fv2-plate-wrap">
       <input id="reg" type="text" class="fv2-plate" placeholder="AB12 CDE" required maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()"/>
       <button type="button" class="fv2-plate-btn" id="dvlaBtn" onclick="dvlaLookup()">Look up</button>
@@ -159,11 +159,11 @@
       </button>
     </div>
     <div id="settleHelp" class="fv2-help-body" style="display:none;margin:10px 0 0;">
-      <p>Your <strong>settlement figure</strong> is the amount left to clear the finance and end the agreement today &mdash; it's not the same as your remaining balance. Here's how to get it:</p>
+      <p>Your <strong>settlement figure</strong> is the amount left to clear the finance and end the agreement today - it's not the same as your remaining balance. Here's how to get it:</p>
       <ul>
-        <li><strong>In your finance provider's app</strong> &mdash; most show a live <em>settlement</em> or <em>early settlement</em> figure instantly.</li>
-        <li><strong>By phone</strong> &mdash; call your lender and ask for a &ldquo;settlement figure.&rdquo; They'll give you one that's valid for a set number of days.</li>
-        <li><strong>BMW or MINI Financial Services?</strong> Open the <strong>My BMW</strong> (or MINI) app, or call BMW Financial Services &mdash; the settlement figure is shown right there.</li>
+        <li><strong>In your finance provider's app</strong> - most show a live <em>settlement</em> or <em>early settlement</em> figure instantly.</li>
+        <li><strong>By phone</strong> - call your lender and ask for a &ldquo;settlement figure.&rdquo; They'll give you one that's valid for a set number of days.</li>
+        <li><strong>BMW or MINI Financial Services?</strong> Open the <strong>My BMW</strong> (or MINI) app, or call BMW Financial Services - the settlement figure is shown right there.</li>
       </ul>
       <p>Can't get it right now? Pick <strong>&ldquo;settlement figure unknown&rdquo;</strong> above and I'll help you work it out before we speak.</p>
     </div>
@@ -309,7 +309,7 @@
     const stated=parseInt(sessionStorage.getItem("evMileage")||"",10)||0;
     if(!est||!stated) return;
     if(Math.abs(est-stated)/stated<=0.2) return;
-    document.getElementById("dvsaText").textContent="DVSA MOT records suggest this car actually covers about "+est.toLocaleString("en-GB")+" miles a year — you said "+stated.toLocaleString("en-GB")+". Want the saving worked out on the real figure?";
+    document.getElementById("dvsaText").textContent="DVSA MOT records suggest this car actually covers about "+est.toLocaleString("en-GB")+" miles a year - you said "+stated.toLocaleString("en-GB")+". Want the saving worked out on the real figure?";
     document.getElementById("dvsaBtn").textContent="Use "+Math.round(est/1000)+"k";
     box.style.display="flex";
   }
@@ -343,7 +343,7 @@
     const s=window.evSavings();
     if(!s) return;
     if(s.alreadyEV){
-      alt.textContent="This one's already electric — you know the good news firsthand. If you're thinking of changing it, I'll line up the right next EV and the cost to change.";
+      alt.textContent="This one's already electric - you know the good news firsthand. If you're thinking of changing it, I'll line up the right next EV and the cost to change.";
       alt.style.display="block";
       return;
     }
@@ -357,19 +357,19 @@
     if(street){
       hero=Math.max(0,s.savePub);
       sub=hero>100
-        ? "back in your pocket every year on a realistic public mix — mostly fast chargers ("+Math.round(R.publicFast*100)+"p/kWh) with rapid top-ups. Find the cheap networks on your routes — I'll help — and it heads toward "+m10(s.saveOff)+"."
-        : "Public charging can cost nearly as much as "+s.fuelLabel+" — this is exactly where I earn my keep. On the call I'll map the cheap networks around you, and with home or workplace charging you'd be looking at up to "+m10(s.saveOff)+" a year.";
+        ? "back in your pocket every year on a realistic public mix - mostly fast chargers ("+Math.round(R.publicFast*100)+"p/kWh) with rapid top-ups. Find the cheap networks on your routes - I'll help - and it heads toward "+m10(s.saveOff)+"."
+        : "Public charging can cost nearly as much as "+s.fuelLabel+" - this is exactly where I earn my keep. On the call I'll map the cheap networks around you, and with home or workplace charging you'd be looking at up to "+m10(s.saveOff)+" a year.";
       rows=[
-        ["Your "+carName+" — "+s.fuelLabel+", ~"+s.mpg+" mpg", m10(s.fuelCost)+"/yr", false],
+        ["Your "+carName+" - "+s.fuelLabel+", ~"+s.mpg+" mpg", m10(s.fuelCost)+"/yr", false],
         ["BMW EV on public charging ("+pct+"% fast, "+(100-pct)+"% rapid)", m10(s.evPub)+"/yr", hero>100],
         ["BMW EV if you can charge at home or work", m10(s.evOff)+"/yr", false]
       ];
     } else {
       hero=s.saveHome;
-      sub="back in your pocket every year. That assumes "+pct+"% of your charging at home overnight and "+(100-pct)+"% on public rapids for the longer days — about "+m10(hero/52)+" a week"+(s.hybrid?", and you're already part-electric, so you know the drill":"")+".";
+      sub="back in your pocket every year. That assumes "+pct+"% of your charging at home overnight and "+(100-pct)+"% on public rapids for the longer days - about "+m10(hero/52)+" a week"+(s.hybrid?", and you're already part-electric, so you know the drill":"")+".";
       rows=[
-        ["Your "+carName+" — "+s.fuelLabel+", ~"+s.mpg+" mpg", m10(s.fuelCost)+"/yr", false],
-        ["BMW EV — "+pct+"% overnight tariff ("+Math.round(R.homeOffpeak*100)+"p/kWh), "+(100-pct)+"% public rapid", m10(s.evHome)+"/yr", true],
+        ["Your "+carName+" - "+s.fuelLabel+", ~"+s.mpg+" mpg", m10(s.fuelCost)+"/yr", false],
+        ["BMW EV - "+pct+"% overnight tariff ("+Math.round(R.homeOffpeak*100)+"p/kWh), "+(100-pct)+"% public rapid", m10(s.evHome)+"/yr", true],
         ["BMW EV all at the standard home rate ("+Math.round(R.homeStandard*100)+"p/kWh)", m10(s.evStd)+"/yr", false]
       ];
     }
@@ -388,7 +388,7 @@
     document.getElementById("saveNote").innerHTML=
       "Based on your "+Number(s.miles).toLocaleString("en-GB")+" miles a year (<a href='ev-step3.html'>edit</a>), "+
       s.fuelLabel+" at £"+s.litrePrice.toFixed(2)+"/litre (UK average) and ~"+s.mpg+" mpg from the "+s.mpgSrc+", EV at "+R.evMilesPerKwh+" mi/kWh. "+
-      "Fuel only — servicing savings come on top. Dan does the exact maths with you.";
+      "Fuel only - servicing savings come on top. Dan does the exact maths with you.";
     card.style.display="block";
     countUp(document.getElementById("saveHero"),hero);
     const box4=document.getElementById("save4yrBox");
@@ -452,7 +452,7 @@
         showErr("I couldn't find that registration. Double-check it, or just fill the car details in by hand.");
       }
     }catch(e){
-      showErr("The lookup didn't respond. No problem — fill the car details in by hand and I'll do the rest.");
+      showErr("The lookup didn't respond. No problem - fill the car details in by hand and I'll do the rest.");
     }
     btn.disabled=false; btn.textContent="Look up";
   }
@@ -595,7 +595,7 @@
   }
 
   function go(){
-    if(!chosen){ showErr("Let me know the plan for your current car — or that there isn't one."); return; }
+    if(!chosen){ showErr("Let me know the plan for your current car - or that there isn't one."); return; }
     const regVal=document.getElementById("reg").value.trim();
     if(HAS_CAR(chosen) && !regVal){ showErr("Add your registration. It powers the saving estimate and does most of the work for you."); return; }
     if(IS_PX(chosen) && !serviceChosen){ showErr("Choose the closest match for your service history."); return; }

@@ -142,7 +142,7 @@ window.copyIssuesSnapshot=function(){
   var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var dateStr=days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
-  var lines=['Forecourt Check — '+dateStr,'Hedin Ruxley',''];
+  var lines=['Forecourt Check - '+dateStr,'Hedin Ruxley',''];
   if(issueVehicles.length){
     lines.push('⚠️ '+issueVehicles.length+' car'+(issueVehicles.length!==1?'s':'')+' with issues:');
     lines.push('');

@@ -1,4 +1,4 @@
-/* DanSells "Share my BMW story" — shared share/referral module.
+/* DanSells "Share my BMW story" - shared share/referral module.
    Used by thankyou.html, ev-thankyou.html and sq_done.html:
 
      dsStoryShare.init({
@@ -57,11 +57,11 @@
         '<div style="font-size:1.35rem;line-height:1;">&#127942;</div>' +
         '<div style="font-size:.78rem;color:#5c5233;line-height:1.55;">' +
         '<strong style="color:#3f3818;">Sharing is referring.</strong> Your personal link is baked into every share above ' +
-        '&mdash; if a friend finds Dan through it and buys, you get <strong style="color:#3f3818;">&pound;250 BMW credit</strong> ' +
+        '- if a friend finds Dan through it and buys, you get <strong style="color:#3f3818;">&pound;250 BMW credit</strong> ' +
         'or &pound;125 cash. <a href="refer.html" style="color:#8a6d1a;font-weight:700;">How the reward works &rarr;</a>' +
         '<div style="margin-top:8px;"><span style="display:inline-block;background:#fff;border:1.5px dashed #cbb666;border-radius:8px;' +
         'padding:4px 10px;font-weight:800;letter-spacing:.06em;color:#3f3818;font-size:.8rem;">' + S.code + '</span>' +
-        '<span style="margin-left:8px;color:#8a7a45;font-size:.72rem;">your code &mdash; friends can also quote it to Dan</span></div>' +
+        '<span style="margin-left:8px;color:#8a7a45;font-size:.72rem;">your code - friends can also quote it to Dan</span></div>' +
         '</div></div>';
     }
   }
@@ -202,7 +202,7 @@
           navigator.share({
             files: [file],
             title: S.shareTitle || 'My BMW story',
-            text: (S.shareTitle || 'My BMW story') + ' — create yours at ' + S.link
+            text: (S.shareTitle || 'My BMW story') + ' - create yours at ' + S.link
           }).catch(function () {});
         } else {
           var url = URL.createObjectURL(blob);

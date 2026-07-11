@@ -180,7 +180,7 @@
       <div class="calc-card">
         <div class="reg-lookup">
           <p class="rl-title">Start with your number plate</p>
-          <p class="rl-sub">Enter your reg and I&rsquo;ll pull your car&rsquo;s fuel type, engine size, real-world MPG and mileage straight from DVLA and DVSA records &mdash; no typing needed.</p>
+          <p class="rl-sub">Enter your reg and I&rsquo;ll pull your car&rsquo;s fuel type, engine size, real-world MPG and mileage straight from DVLA and DVSA records - no typing needed.</p>
           <div class="reg-row">
             <input id="regInput" class="reg-plate" placeholder="AB12 CDE" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
             <button type="button" class="reg-btn" id="regBtn" onclick="regLookup()">Look up</button>
@@ -214,7 +214,7 @@
           </div>
           <div>
             <label class="f-label" for="mpgSlider">
-              Your MPG &mdash; <span id="mpgLabel">45</span> mpg
+              Your MPG - <span id="mpgLabel">45</span> mpg
               <span class="mpg-hint" id="mpgHint">Typical for a 1.5L petrol</span>
             </label>
             <input class="f-input" id="mpgSlider" type="range" min="20" max="80" step="1" value="45">
@@ -224,10 +224,10 @@
             </div>
           </div>
           <div style="grid-column:1 / -1" id="mileageField">
-            <label class="f-label">Annual mileage &mdash; <span id="mileageLabel">10,000</span> miles<span class="mileage-req" id="mileageReq"> &middot; please set this</span></label>
+            <label class="f-label">Annual mileage - <span id="mileageLabel">10,000</span> miles<span class="mileage-req" id="mileageReq"> &middot; please set this</span></label>
             <input class="f-input" id="annualMileage" type="range" min="4000" max="30000" step="500" value="10000">
             <div class="range-bounds"><span>4,000</span><span>30,000</span></div>
-            <p class="mileage-note" id="mileageNote">I couldn&rsquo;t find MOT mileage records for this car, so I&rsquo;ve set a typical <strong>10,000 miles</strong> &mdash; slide it to your real annual mileage for an accurate saving.</p>
+            <p class="mileage-note" id="mileageNote">I couldn&rsquo;t find MOT mileage records for this car, so I&rsquo;ve set a typical <strong>10,000 miles</strong> - slide it to your real annual mileage for an accurate saving.</p>
           </div>
           <div>
             <label class="f-label">EV efficiency (miles/kWh)</label>
@@ -415,7 +415,7 @@
     <div>
       <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
       <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
-      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup &mdash; serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
     </div>
     <nav aria-label="Footer">
       <a href="step1.html">Find my BMW</a>
@@ -621,7 +621,7 @@
       var mapped = mapFuel(d.fuelType);
 
       if (mapped === 'ev') {
-        showRegBanner('Found: <strong>'+[yr,make,model].filter(Boolean).join(' ')+'</strong> — that&rsquo;s already electric! You&rsquo;re living the saving. If you&rsquo;re thinking of your next EV, Dan can line one up.', false);
+        showRegBanner('Found: <strong>'+[yr,make,model].filter(Boolean).join(' ')+'</strong> - that&rsquo;s already electric! You&rsquo;re living the saving. If you&rsquo;re thinking of your next EV, Dan can line one up.', false);
         return;
       }
 
@@ -667,7 +667,7 @@
       calc();
       var desc = [yr,make,model,toTC(d.colour||'')].filter(Boolean).join(' ');
       var tail = est
-        ? '. Fields filled in below &mdash; tweak anything that isn&rsquo;t quite right.'
+        ? '. Fields filled in below - tweak anything that isn&rsquo;t quite right.'
         : '. No MOT mileage history for this one, so please set your annual mileage below (started at 10,000).';
       showRegBanner('Found: <strong>'+desc+'</strong>'+mpgNote+mileNote+tail, false);
     } catch(e) {

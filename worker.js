@@ -1,13 +1,13 @@
 /**
- * Cloudflare Worker — vehicleproxy
+ * Cloudflare Worker - vehicleproxy
  * Deploy at: https://vehicleproxy.danielcane1992.workers.dev
  *
  * Required environment variables (Cloudflare dashboard → Worker → Settings → Variables):
- *   DVLA_API_KEY      — DVLA VES API key (same name as before — do NOT rename)
- *   APIFY_TOKEN       — Apify API token (apify.com → Settings → Integrations)
- *   MOT_CLIENT_ID     — DVSA MOT History API client id
- *   MOT_CLIENT_SECRET — DVSA MOT History API client secret
- *   MOT_API_KEY       — DVSA MOT History API key
+ *   DVLA_API_KEY      - DVLA VES API key (same name as before - do NOT rename)
+ *   APIFY_TOKEN       - Apify API token (apify.com → Settings → Integrations)
+ *   MOT_CLIENT_ID     - DVSA MOT History API client id
+ *   MOT_CLIENT_SECRET - DVSA MOT History API client secret
+ *   MOT_API_KEY       - DVSA MOT History API key
  *
  * Actor ID: Ca7tBqNduWgy2A2pq (AutoTrader scraper)
  */

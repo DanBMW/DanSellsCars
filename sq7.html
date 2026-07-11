@@ -18,7 +18,7 @@
     <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
     <div class="step-kicker">Last step</div>
     <h2>Just your name and best contact.</h2>
-    <p class="step-desc">This comes straight to me. I am your main point of contact throughout — with a handover team and a brilliant team around us to make sure you are looked after every step of the way.</p>
+    <p class="step-desc">This comes straight to me. I am your main point of contact throughout - with a handover team and a brilliant team around us to make sure you are looked after every step of the way.</p>
     <div style="display:grid;gap:14px;margin-bottom:20px;">
       <div class="two-col">
         <div class="field-group"><label>First name *</label><input id="sqFirst" type="text" placeholder="First name"/></div>
@@ -93,7 +93,7 @@
     const pxLine=hpx?("They mentioned "+([pxReg,pxMod].filter(Boolean).join(" ")||"a car")+" as a part exchange."):"";
     const opLine=op?first+" described themselves as: "+op.toLowerCase()+".":"";
     const payLine=pay?", thinking "+pay.toLowerCase():"";
-    return "There once was someone called "+fn+" whose car came in for a service — and who took two minutes to fill in Dan's short questionnaire while they waited.\n\n"+opLine+" Interested in "+mo+" and thinking about it within "+ti+", "+first+" gave Dan exactly the context he needed. "+bLine+payLine+(bLine||payLine?". ":"")+pxLine+" The kind of brief that turns a follow-up into a proper conversation rather than a cold call.\n\nDan will read it through before getting in touch. Whether it's a quick chat while the car is still in, a proper call this week, or a sit-down at Ruxley — "+first+" will know they're speaking to someone who already has the full picture.";
+    return "There once was someone called "+fn+" whose car came in for a service - and who took two minutes to fill in Dan's short questionnaire while they waited.\n\n"+opLine+" Interested in "+mo+" and thinking about it within "+ti+", "+first+" gave Dan exactly the context he needed. "+bLine+payLine+(bLine||payLine?". ":"")+pxLine+" The kind of brief that turns a follow-up into a proper conversation rather than a cold call.\n\nDan will read it through before getting in touch. Whether it's a quick chat while the car is still in, a proper call this week, or a sit-down at Ruxley - "+first+" will know they're speaking to someone who already has the full picture.";
   }
 
   async function submit(){
@@ -114,7 +114,7 @@
 
     const market = await pollMarket(sessionStorage.getItem("sqMarketRunId"));
     const payload = {
-      _subject: "Service Qualifier — " + first + " " + last,
+      _subject: "Service Qualifier - " + first + " " + last,
       _replyto: document.getElementById("sqEmail").value.trim()||"noreply@dan-sells.co.uk",
       lead_type: "Service Customer Qualifier",
       name: first + " " + last,

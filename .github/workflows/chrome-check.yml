@@ -1,7 +1,7 @@
 name: chrome-check
 
 # Fails if any page's stamped header/drawer/footer is out of sync with
-# partials/ — i.e. someone edited a partial (or a stamped block by hand)
+# partials/ - i.e. someone edited a partial (or a stamped block by hand)
 # and forgot to run "node build.js" and commit the result.
 
 on:

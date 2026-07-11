@@ -23,7 +23,7 @@
   <div class="step-wrap">
     <div class="step-kicker">Review &amp; send</div>
     <h2>Your EV brief, ready to go.</h2>
-    <p class="step-desc">This is exactly what lands with me. Give it a once-over, change anything that needs it, then send it through — I'll confirm the exact saving personally.</p>
+    <p class="step-desc">This is exactly what lands with me. Give it a once-over, change anything that needs it, then send it through - I'll confirm the exact saving personally.</p>
 
     <!-- Saving recap -->
     <div id="saveCard" class="ev-save" style="display:none;margin:0 0 14px;">
@@ -88,19 +88,19 @@ var savings = window.evSavings();
   if(street){
     hero=Math.max(0,savings.savePub);
     sub=hero>100
-      ? "back in your pocket every year on a realistic public mix — smart charging moves it toward "+m10(savings.saveOff)+"."
-      : "Public charging prices vary hugely — with home or workplace charging you'd be looking at up to "+m10(savings.saveOff)+" a year. I'll map the options with you.";
+      ? "back in your pocket every year on a realistic public mix - smart charging moves it toward "+m10(savings.saveOff)+"."
+      : "Public charging prices vary hugely - with home or workplace charging you'd be looking at up to "+m10(savings.saveOff)+" a year. I'll map the options with you.";
     rows=[
-      ["Your "+carName+" — "+savings.fuelLabel+", ~"+savings.mpg+" mpg", m10(savings.fuelCost)+"/yr", false],
+      ["Your "+carName+" - "+savings.fuelLabel+", ~"+savings.mpg+" mpg", m10(savings.fuelCost)+"/yr", false],
       ["BMW EV on public charging ("+pct+"% fast, "+(100-pct)+"% rapid)", m10(savings.evPub)+"/yr", hero>100],
       ["BMW EV if you can charge at home or work", m10(savings.evOff)+"/yr", false]
     ];
   } else {
     hero=savings.saveHome;
-    sub="back in your pocket every year, assuming "+pct+"% overnight home charging and "+(100-pct)+"% public rapids — about "+m10(hero/52)+" a week.";
+    sub="back in your pocket every year, assuming "+pct+"% overnight home charging and "+(100-pct)+"% public rapids - about "+m10(hero/52)+" a week.";
     rows=[
-      ["Your "+carName+" — "+savings.fuelLabel+", ~"+savings.mpg+" mpg", m10(savings.fuelCost)+"/yr", false],
-      ["BMW EV — "+pct+"% overnight tariff ("+Math.round(R.homeOffpeak*100)+"p/kWh), "+(100-pct)+"% public rapid", m10(savings.evHome)+"/yr", true],
+      ["Your "+carName+" - "+savings.fuelLabel+", ~"+savings.mpg+" mpg", m10(savings.fuelCost)+"/yr", false],
+      ["BMW EV - "+pct+"% overnight tariff ("+Math.round(R.homeOffpeak*100)+"p/kWh), "+(100-pct)+"% public rapid", m10(savings.evHome)+"/yr", true],
       ["BMW EV all at the standard home rate ("+Math.round(R.homeStandard*100)+"p/kWh)", m10(savings.evStd)+"/yr", false]
     ];
   }
@@ -129,7 +129,7 @@ var isPX   = ["Yes","Maybe"].indexOf(readVal("evPX")) !== -1;
 
 // "Owned outright" when they toggled it; else "£X/mo"; else blank (not asked/outright)
 function currentPaymentText(){
-  if(readVal("evOwnsOutright") === "Yes") return "Owned outright — nothing to pay";
+  if(readVal("evOwnsOutright") === "Yes") return "Owned outright - nothing to pay";
   var v = readVal("evCurrentPayment");
   if(!v || Number(v) === 0) return "";
   return money("evCurrentPayment") + "/mo";
@@ -265,7 +265,7 @@ function autotraderLink(){
   return "https://www.autotrader.co.uk/car-search?" + p.toString();
 }
 
-// Dan-only rough-valuation links for the lead email — never shown to the
+// Dan-only rough-valuation links for the lead email - never shown to the
 // customer. Deep-link the instant online buyers, pre-filled with the reg
 // and PX mileage, so Dan can pull a live floor/market figure in one tap.
 function pxReg(){ return (readVal("evReg") || "").replace(/\s/g,"").toUpperCase(); }
@@ -302,13 +302,13 @@ function generateEVStory(){
   var dStr=dep&&Number(String(dep).replace(/,/g,""))>0?"£"+fmt(dep)+" deposit":"";
   var bLine=(bStr&&dStr)?"Budget: "+bStr+", with "+dStr+" ready to go.":bStr?"Budget: "+bStr+".":"";
   var dwNote=dw&&dw.indexOf("Yes")===0?"They have a driveway, which opens up the best overnight charging tariffs.":dw&&dw.indexOf("Street")===0?"No driveway yet, so Dan will factor in the smartest charging alternatives.":"";
-  var pxLine=plan==="Yes"||plan==="Maybe"?"Their "+[cc,epm].filter(Boolean).join(" ")+" was noted as a part exchange.":plan==="Keeping it"?"They're keeping their "+cc+" for now — this was about seeing the numbers in black and white.":"";
+  var pxLine=plan==="Yes"||plan==="Maybe"?"Their "+[cc,epm].filter(Boolean).join(" ")+" was noted as a part exchange.":plan==="Keeping it"?"They're keeping their "+cc+" for now - this was about seeing the numbers in black and white.":"";
   var saveLine="";
   if(savings&&!savings.alreadyEV&&savings.saveHome>100){
     saveLine="The rough maths came back at around "+window.evMoney10(savings.saveHome)+" a year in fuel alone. ";
   }
   var ntLine=nt?"In their own words: “"+nt+"”":"";
-  return "There once was someone called "+fn+" who had been watching the electric revolution from a thoughtful distance — until the range, the technology, and the savings all started making serious sense.\n\n"+(mStr?"With "+mStr+" ahead of them":"Ready for a change")+", "+first+" was "+tl+" and reached out to Dan — someone who made this switch himself and knows what the questions sound like from both sides. A "+es+" had the appeal: the performance you expect from a BMW, the running costs you didn't expect to be quite so good. "+(bLine?bLine+" ":"")+saveLine+dwNote+" "+pxLine+"\n\n"+(ntLine?ntLine+"\n\n":"")+"Dan will check the exact weekly saving versus the "+cc+", crunch the real numbers, and come back with a proper personalised answer — not a brochure, a conversation built around "+first+"'s actual life.";
+  return "There once was someone called "+fn+" who had been watching the electric revolution from a thoughtful distance - until the range, the technology, and the savings all started making serious sense.\n\n"+(mStr?"With "+mStr+" ahead of them":"Ready for a change")+", "+first+" was "+tl+" and reached out to Dan - someone who made this switch himself and knows what the questions sound like from both sides. A "+es+" had the appeal: the performance you expect from a BMW, the running costs you didn't expect to be quite so good. "+(bLine?bLine+" ":"")+saveLine+dwNote+" "+pxLine+"\n\n"+(ntLine?ntLine+"\n\n":"")+"Dan will check the exact weekly saving versus the "+cc+", crunch the real numbers, and come back with a proper personalised answer - not a brochure, a conversation built around "+first+"'s actual life.";
 }
 
 // The ignition moment runs while the POST is in flight; the redirect waits
@@ -360,7 +360,7 @@ async function sendForm(){
   }
 
   var payload = {
-    subject:           "EV Lead — " + name,
+    subject:           "EV Lead - " + name,
     replyto:           email,
     leadtype:          "Electric Vehicle Enquiry",
     name: name, email: email,

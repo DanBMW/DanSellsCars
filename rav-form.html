@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAV Special Instructions — Hedin Automotive Ltd</title>
+<title>RAV Special Instructions - Hedin Automotive Ltd</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -98,7 +98,7 @@ input.field-done,textarea.field-done{border-color:#2f8f57!important;background:#
 <div class="topbar">
   <div>
     <div class="topbar-title">RAV Special Instructions</div>
-    <div class="topbar-sub">New Car Registration &mdash; Hedin Automotive Ltd</div>
+    <div class="topbar-sub">New Car Registration - Hedin Automotive Ltd</div>
   </div>
   <div style="font-size:20px">&#x1F512;</div>
 </div>
@@ -227,8 +227,8 @@ input.field-done,textarea.field-done{border-color:#2f8f57!important;background:#
     </div>
 
     <p class="footer-note">
-      Hedin Automotive Ltd &mdash; Ruxley BMW<br>
-      New Car Registration &mdash; V5 Registration Document
+      Hedin Automotive Ltd - Ruxley BMW<br>
+      New Car Registration - V5 Registration Document
     </p>
   </div>
 
@@ -337,7 +337,7 @@ window.submitForm = async function() {
   const record = {
     id: recordId,
     formVersion: "RAV V1.0",
-    retailer: "Hedin Automotive Ltd — Ruxley BMW",
+    retailer: "Hedin Automotive Ltd - Ruxley BMW",
     ivsChassisReg,
     dealerName,
     customerName: name,
@@ -357,7 +357,7 @@ window.submitForm = async function() {
     signedRecord = record;
   } catch(e) {
     btn.disabled = false; btn.textContent = "I Confirm & Submit ✓";
-    alert("Could not save — please check your connection and try again.");
+    alert("Could not save - please check your connection and try again.");
     return;
   }
 
@@ -368,8 +368,8 @@ window.submitForm = async function() {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
-        _subject: "RAV Registration Form Signed — " + name,
-        form_type: "RAV Special Instructions — New Car Registration",
+        _subject: "RAV Registration Form Signed - " + name,
+        form_type: "RAV Special Instructions - New Car Registration",
         customer_name: name,
         customer_email: email,
         ivs_chassis_reg: ivsChassisReg,
@@ -549,7 +549,7 @@ function buildPDF(r) {
 }
 
 window.downloadPDF = function() {
-  if (!signedRecord) { alert("No record found — please complete the form first."); return; }
+  if (!signedRecord) { alert("No record found - please complete the form first."); return; }
   const r = signedRecord;
   const doc = buildPDF(r);
   const safeName = r.customerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -611,7 +611,7 @@ function showScreen(id) {
   window.scrollTo(0, 0);
 }
 
-// URL param pre-fill — auto-skip to customer screen when mode=customer
+// URL param pre-fill - auto-skip to customer screen when mode=customer
 const p = new URLSearchParams(location.search);
 if (p.get("mode") === "customer" && p.get("ivs") && p.get("dealer")) {
   ivsChassisReg = p.get("ivs");

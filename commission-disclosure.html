@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Commission Disclosure — BMW Financial Services</title>
+<title>Commission Disclosure - BMW Financial Services</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -123,7 +123,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
 <div class="topbar">
   <div>
     <div class="topbar-title">Commission Disclosure</div>
-    <div class="topbar-sub">BMW Financial Services &mdash; Ruxley BMW</div>
+    <div class="topbar-sub">BMW Financial Services - Ruxley BMW</div>
   </div>
   <div class="lock-icon">&#x1F512;</div>
 </div>
@@ -141,11 +141,11 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
       <div class="radio-group">
         <label class="radio-opt" id="opt1">
           <input type="radio" name="calc" value="1" onchange="onCalcChange()">
-          Calc 1 &mdash; Fixed Amount
+          Calc 1 - Fixed Amount
         </label>
         <label class="radio-opt on" id="opt2">
           <input type="radio" name="calc" value="2" onchange="onCalcChange()" checked>
-          Calc 2 &mdash; Percentage
+          Calc 2 - Percentage
         </label>
       </div>
 
@@ -188,7 +188,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
         <div>
           <span class="pill">BMW Financial Services</span>
           <h2 style="margin-top:6px">Commission Disclosure Form</h2>
-          <span style="display:inline-block;background:#e2ecf7;color:#2a527a;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:4px">V3.0 &mdash; 26.11.2024</span>
+          <span style="display:inline-block;background:#e2ecf7;color:#2a527a;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:4px">V3.0 - 26.11.2024</span>
         </div>
         <div style="text-align:right;font-size:13px;color:var(--muted)">
           <div style="font-weight:800;color:var(--ink)">Ruxley BMW</div>
@@ -212,7 +212,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
         <div class="comm-table" id="calc1-table">
           <div class="comm-row">
             <div class="comm-cell-lbl">Commission Amount</div>
-            <div class="comm-cell-val" id="d-amount-1">&mdash;</div>
+            <div class="comm-cell-val" id="d-amount-1">&ndash;</div>
             <div class="tick-col"><div class="tick-box" id="tick1"></div></div>
           </div>
         </div>
@@ -221,12 +221,12 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
         <div class="comm-table" id="calc2-table">
           <div class="comm-row">
             <div class="comm-cell-lbl">Commission Amount</div>
-            <div class="comm-cell-val" id="d-amount-2">&mdash;</div>
+            <div class="comm-cell-val" id="d-amount-2">&ndash;</div>
             <div class="tick-col"><div class="tick-box" id="tick2"></div></div>
           </div>
           <div class="comm-row" id="d-pct-row">
             <div class="comm-cell-lbl">Percentage used to calculate the commission</div>
-            <div class="comm-cell-val" id="d-pct">&mdash;</div>
+            <div class="comm-cell-val" id="d-pct">&ndash;</div>
             <div class="tick-col"></div>
           </div>
         </div>
@@ -290,7 +290,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
     </div>
 
     <p class="bmw-footer">
-      BMW Financial Services (GB) Limited &mdash; Registered in England and Wales 01288537<br>
+      BMW Financial Services (GB) Limited - Registered in England and Wales 01288537<br>
       Summit ONE, Summit Avenue, Farnborough, Hampshire GU14 0FB<br>
       Authorised and regulated by the Financial Conduct Authority
     </p>
@@ -325,9 +325,9 @@ window.goToSign = function() {
   const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
   // Fill disclosure values
-  document.getElementById("d-amount-1").textContent = calcType === 1 ? fmt(commAmount) : "—";
-  document.getElementById("d-amount-2").textContent = calcType === 2 ? fmt(commAmount) : "—";
-  document.getElementById("d-pct").textContent       = calcType === 2 ? commPct + "%" : "—";
+  document.getElementById("d-amount-1").textContent = calcType === 1 ? fmt(commAmount) : "–";
+  document.getElementById("d-amount-2").textContent = calcType === 2 ? fmt(commAmount) : "–";
+  document.getElementById("d-pct").textContent       = calcType === 2 ? commPct + "%" : "–";
   document.getElementById("tick1").textContent = calcType === 1 ? "✓" : "";
   document.getElementById("tick2").textContent = calcType === 2 ? "✓" : "";
   document.getElementById("d-pct-row").style.display = calcType === 2 ? "flex" : "none";
@@ -381,7 +381,7 @@ window.submitForm = async function() {
   const now      = new Date();
   const recordId = "disc_" + Date.now() + "_" + Math.random().toString(36).substr(2,6);
 
-  // Best-effort IP for audit trail (GDPR: legitimate interest — contract execution)
+  // Best-effort IP for audit trail (GDPR: legitimate interest - contract execution)
   let ip = "unavailable";
   try { const r = await fetch("https://api.ipify.org?format=json"); ip = (await r.json()).ip; } catch(_) {}
 
@@ -406,21 +406,21 @@ window.submitForm = async function() {
   } catch(e) {
     btn.disabled = false;
     btn.textContent = "I Agree & Submit ✓";
-    alert("Could not save — please check your connection and try again.");
+    alert("Could not save - please check your connection and try again.");
     return;
   }
 
-  // Build a secure download link — the record ID acts as a secret key
+  // Build a secure download link - the record ID acts as a secret key
   const downloadLink = 'commission-download.html?id=' + recordId;
 
-  // Email Dan via Formspree — includes the one-click PDF download link
+  // Email Dan via Formspree - includes the one-click PDF download link
   const fmt = n => "£" + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   try {
     await fetch("https://formspree.io/f/xqewleog", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
-        _subject: "Commission Disclosure Signed — " + name,
+        _subject: "Commission Disclosure Signed - " + name,
         customer_name: name,
         customer_email: email,
         commission_type: "Calculation " + calcType + (calcType === 2 ? " (percentage)" : " (fixed)"),
@@ -443,7 +443,7 @@ window.submitForm = async function() {
     <div class="record-row"><span class="record-lbl">Email</span><span class="record-val">${email}</span></div>
     <div class="record-row"><span class="record-lbl">Commission</span><span class="record-val">${fmt(commAmount)}${calcType === 2 ? " @ " + commPct + "%" : " (fixed)"}</span></div>
     <div class="record-row"><span class="record-lbl">Signed at</span><span class="record-val">${fmtDate}</span></div>
-    <div class="record-row"><span class="record-lbl">Disclosure version</span><span class="record-val">V3.0 — 26.11.2024</span></div>
+    <div class="record-row"><span class="record-lbl">Disclosure version</span><span class="record-val">V3.0 - 26.11.2024</span></div>
   `;
 
   showScreen("screen-done");
@@ -497,7 +497,7 @@ function buildPDF(r) {
   const isC1 = r.commissionCalcType === 1;
 
   // Title
-  // Header — mirrors BMW Financial Services form layout
+  // Header - mirrors BMW Financial Services form layout
   doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
   doc.text('BMW', mg, y);
   doc.setFontSize(10); doc.setFont('helvetica','normal');
@@ -530,12 +530,12 @@ function buildPDF(r) {
   tx('If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways, depending on the vehicle being financed. The one that applies in your case is ticked and completed below.', mg, 9, false, null, cw, 'left', 3);
 
   tx('Commission calculation 1: This is a fixed amount that we pay to the Retailer for introducing you.', mg, 9, isC1, null, cw, 'left', 1);
-  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '—', isC1);
+  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '–', isC1);
   y += 3;
 
   tx('Commission calculation 2: The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.', mg, 9, !isC1, null, cw, 'left', 1);
-  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '—', !isC1);
-  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '—', false);
+  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '–', !isC1);
+  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '–', false);
   y += 3;
 
   tx('The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.', mg, 9, false, null, cw, 'left', 2);
@@ -588,7 +588,7 @@ function buildPDF(r) {
 }
 
 window.downloadPDF = function() {
-  if (!signedRecord) { alert("No signed record — please complete the form first."); return; }
+  if (!signedRecord) { alert("No signed record - please complete the form first."); return; }
   const r   = signedRecord;
   const doc = buildPDF(r);
   const safeName = r.customerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -654,7 +654,7 @@ function showScreen(id) {
   window.scrollTo(0, 0);
 }
 
-// URL param pre-fill — when mode=customer, skip dealer screen automatically
+// URL param pre-fill - when mode=customer, skip dealer screen automatically
 const p = new URLSearchParams(location.search);
 if (p.get("calc"))   { const v = p.get("calc"); document.querySelector(`input[name="calc"][value="${v}"]`).checked = true; }
 if (p.get("amount")) document.getElementById("inp-amount").value = p.get("amount");

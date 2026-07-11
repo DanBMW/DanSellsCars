@@ -88,14 +88,14 @@
       <p id="storyText" style="font-size:.87rem;line-height:1.75;color:#2d3748;white-space:pre-line;margin:0 0 18px;"></p>
       <div style="border-top:1px solid rgba(21,89,207,.15);padding-top:14px;">
         <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 4px;font-weight:600;">Share your story 📲</p>
-        <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends and manifest your BMW — in a few weeks you could be sharing your own handover photo. ✨</p>
+        <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends and manifest your BMW - in a few weeks you could be sharing your own handover photo. ✨</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <a id="shareX" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#000;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">𝕏 Post</a>
           <a id="shareWa" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">💬 Share</a>
           <button id="copyBtn" onclick="copyStory()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,21,29,.08);color:var(--text);padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📋 Copy</button>
           <button onclick="shareInstagram()" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📸 Instagram</button>
         </div>
-        <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry — your surname and exact figures are removed before sharing.</p>
+        <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry - your surname and exact figures are removed before sharing.</p>
         <div id="refNudge"></div>
       </div>
     </div>
@@ -131,7 +131,7 @@
       });
       s=s.replace(/[\d,]+\s+miles(?: a year)?/gi,"plenty of miles a year");
       s=s.replace(/ {2,}/g," ").trim();
-      return "Here's my BMW Story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk — Dan helps find the right BMW for your budget and lifestyle 🚗✨";
+      return "Here's my BMW Story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk - Dan helps find the right BMW for your budget and lifestyle 🚗✨";
     }
     dsStoryShare.init({
       social: socialify(story),
@@ -160,13 +160,13 @@ function closeLightbox(){
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLightbox(); });
 </script>
 <script src="scroll-hint.js"></script>
-<!-- Appointment type modal — auto-shown after submission -->
+<!-- Appointment type modal - auto-shown after submission -->
 <div id="appt-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(10,18,30,.65);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;">
   <div style="background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:560px;padding:28px 22px 40px;box-shadow:0 -16px 48px rgba(10,18,30,.2);animation:apptSlide .32s ease-out;">
     <div style="width:38px;height:4px;background:#e2e8ef;border-radius:2px;margin:0 auto 22px;"></div>
     <p style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5f6b7c;margin:0 0 6px;text-align:center;">One quick thing</p>
     <h2 style="font-size:1.2rem;font-weight:700;color:#11161d;margin:0 0 6px;text-align:center;font-family:var(--display);">How would you like to connect with Dan?</h2>
-    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your answers before we speak — no need to start from scratch.</p>
+    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your answers before we speak - no need to start from scratch.</p>
     <div style="display:grid;gap:10px;margin-bottom:14px;">
       <a id="modal-chat" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#eef4ff;border:1.5px solid rgba(21,89,207,.22);border-radius:16px;text-decoration:none;color:#11161d;">
         <span style="font-size:26px;flex-shrink:0;">☕</span>
@@ -180,11 +180,11 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLight
       </a>
       <a id="modal-visit" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8f9fb;border:1.5px solid rgba(16,21,29,.1);border-radius:16px;text-decoration:none;color:#11161d;">
         <span style="font-size:26px;flex-shrink:0;">🤝</span>
-        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in for a proper sit-down — no rush</span></div>
+        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in for a proper sit-down - no rush</span></div>
         <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
       </a>
     </div>
-    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:#5f6b7c;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now — I'll do this later</button>
+    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:#5f6b7c;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now - I'll do this later</button>
   </div>
 </div>
 <style>@keyframes apptSlide{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}</style>

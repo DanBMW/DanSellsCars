@@ -58,7 +58,7 @@
      a litre of petrol makes ~2,392g of CO2, diesel ~2,640g), with
      engine-size fallbacks when a reg predates CO2 records.
      Prices are real UK figures, spelled out to the customer.
-     Last checked 3 Jul 2026 — sources noted per line; refresh these
+     Last checked 3 Jul 2026 - sources noted per line; refresh these
      every couple of months:
        petrol/diesel  RAC Fuel Watch UK average
        homeStandard   Ofgem price cap unit rate (Jul–Sep 2026: 26.11p)

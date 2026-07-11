@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Download Signed Disclosure — Ruxley BMW</title>
+<title>Download Signed Disclosure - Ruxley BMW</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -37,7 +37,7 @@ h2{font-size:18px;font-weight:800;margin-bottom:4px}
 <div class="topbar">
   <div>
     <div class="topbar-title">Signed Disclosure Download</div>
-    <div class="topbar-sub">BMW Financial Services &mdash; Ruxley BMW</div>
+    <div class="topbar-sub">BMW Financial Services - Ruxley BMW</div>
   </div>
   <div style="font-size:20px">&#x1F512;</div>
 </div>
@@ -78,7 +78,7 @@ h2{font-size:18px;font-weight:800;margin-bottom:4px}
   </div>
 
   <p class="bmw-footer">
-    BMW Financial Services (GB) Limited &mdash; Registered in England and Wales 01288537<br>
+    BMW Financial Services (GB) Limited - Registered in England and Wales 01288537<br>
     Summit ONE, Summit Avenue, Farnborough, Hampshire GU14 0FB<br>
     Authorised and regulated by the Financial Conduct Authority
   </p>
@@ -206,7 +206,7 @@ function buildPDF(r) {
   const fmtL = n => '£' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   const isC1 = r.commissionCalcType === 1;
 
-  // Header — mirrors BMW Financial Services form layout
+  // Header - mirrors BMW Financial Services form layout
   doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
   doc.text('BMW', mg, y);
   doc.setFontSize(10); doc.setFont('helvetica','normal');
@@ -235,12 +235,12 @@ function buildPDF(r) {
   tx('If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways, depending on the vehicle being financed. The one that applies in your case is ticked and completed below.', mg, 9, false, null, cw, 'left', 3);
 
   tx('Commission calculation 1: This is a fixed amount that we pay to the Retailer for introducing you.', mg, 9, isC1, null, cw, 'left', 1);
-  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '—', isC1);
+  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '–', isC1);
   y += 3;
 
   tx('Commission calculation 2: The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.', mg, 9, !isC1, null, cw, 'left', 1);
-  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '—', !isC1);
-  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '—', false);
+  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '–', !isC1);
+  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '–', false);
   y += 3;
 
   tx('The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.', mg, 9, false, null, cw, 'left', 2);

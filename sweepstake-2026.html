@@ -178,16 +178,16 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
         </div>
       </div>
       <div class="hdr-prizes">
-        <div class="hdr-pill gold">🥇 1st — £150</div>
-        <div class="hdr-pill silver">🥈 2nd — £60</div>
-        <div class="hdr-pill bronze">🥉 3rd — £30</div>
+        <div class="hdr-pill gold">🥇 1st - £150</div>
+        <div class="hdr-pill silver">🥈 2nd - £60</div>
+        <div class="hdr-pill bronze">🥉 3rd - £30</div>
       </div>
     </div>
     <div class="hdr-stats">
       <div class="stat-pill">👥 <em id="hPlayers">16</em> players</div>
       <div class="stat-pill">🏳️ <em id="hTeams">48</em> teams</div>
-      <div class="stat-pill">📅 <em id="hMatches">—</em> matches played</div>
-      <div class="stat-pill">⚽ <em id="hGoals">—</em> goals scored</div>
+      <div class="stat-pill">📅 <em id="hMatches">–</em> matches played</div>
+      <div class="stat-pill">⚽ <em id="hGoals">–</em> goals scored</div>
       <div class="stat-pill">🟢 <em id="hAlive">48</em> teams alive</div>
     </div>
   </div>
@@ -211,27 +211,27 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
       <span class="pz-amount">£150</span>
       <span class="pz-label">Current leader (wins if their team lifts the trophy)</span>
       <span class="pz-owner" id="pz1owner">TBD</span>
-      <span class="pz-detail" id="pz1detail">—</span>
+      <span class="pz-detail" id="pz1detail">–</span>
     </div>
     <div class="prize-card p2">
       <span class="pz-medal">🥈</span>
       <span class="pz-amount">£60</span>
       <span class="pz-label">2nd place (wins if their team reaches the final)</span>
       <span class="pz-owner" id="pz2owner">TBD</span>
-      <span class="pz-detail" id="pz2detail">—</span>
+      <span class="pz-detail" id="pz2detail">–</span>
     </div>
     <div class="prize-card p3">
       <span class="pz-medal">🥉</span>
       <span class="pz-amount">£30</span>
       <span class="pz-label">3rd place (wins if their team finishes 3rd)</span>
       <span class="pz-owner" id="pz3owner">TBD</span>
-      <span class="pz-detail" id="pz3detail">—</span>
+      <span class="pz-detail" id="pz3detail">–</span>
     </div>
   </div>
 
   <!-- DISCLAIMER -->
   <div class="disclaimer">
-    🏆 <strong>Prize note:</strong> The £150, £60 and £30 prizes are awarded to the owners of the teams that <strong>actually finish 1st, 2nd and 3rd in the World Cup</strong> — not necessarily the leaderboard leaders. The leaderboard is a live tracker of tournament progress. Final prizes are confirmed after the World Cup Final and the 3rd place play-off. In the event of a tie, the ranking order is: teams still alive → win/loss points → goal difference → goals scored.
+    🏆 <strong>Prize note:</strong> The £150, £60 and £30 prizes are awarded to the owners of the teams that <strong>actually finish 1st, 2nd and 3rd in the World Cup</strong> - not necessarily the leaderboard leaders. The leaderboard is a live tracker of tournament progress. Final prizes are confirmed after the World Cup Final and the 3rd place play-off. In the event of a tie, the ranking order is: teams still alive → win/loss points → goal difference → goals scored.
   </div>
 
   <!-- SEARCH -->
@@ -389,7 +389,7 @@ function applyMatches(matches,src){
     } else {
       if(ht){ht.d++;ht.gf+=hs;ht.ga+=as;}
       if(at){at.d++;at.gf+=as;at.ga+=hs;}
-      // Penalty shootout in KO round — draw stands but one side is eliminated
+      // Penalty shootout in KO round - draw stands but one side is eliminated
       if(ko&&m.penaltyHome!==null&&m.penaltyAway!==null){
         if(m.penaltyHome<m.penaltyAway&&ht){ht.status="out";ht.w=0;ht.d=0;ht.l=0;ht.gf=0;ht.ga=0;}
         if(m.penaltyAway<m.penaltyHome&&at){at.status="out";at.w=0;at.d=0;at.l=0;at.gf=0;at.ga=0;}
@@ -398,7 +398,7 @@ function applyMatches(matches,src){
   });
   // Auto-detect group exits: any sweepstake team absent from ALL KO-round
   // fixtures (scheduled or finished) is out. Guard with inKO.size>=16 so
-  // this only fires once the R32 bracket is drawn — not during group stage.
+  // this only fires once the R32 bracket is drawn - not during group stage.
   const inKO=new Set();
   matches.forEach(raw=>{
     const m=normalizeMatch(raw,src);
@@ -414,7 +414,7 @@ function applyMatches(matches,src){
       }
     });
   }
-  applyGroupExits(); // manual overrides — covers gap before R32 fixtures appear in the API
+  applyGroupExits(); // manual overrides - covers gap before R32 fixtures appear in the API
 }
 
 // ── API ───────────────────────────────────────────────────────────────────
@@ -483,9 +483,9 @@ function render(){
   if(all[0]) el("pz1owner").textContent=`${all[0].name} leads (${all[0].aliveCount} alive, ${fmtPts(all[0].wlPts)} pts)`;
   if(all.length>1) el("pz2owner").textContent=`${all[1].name} (${all[1].aliveCount} alive, ${fmtPts(all[1].wlPts)} pts)`;
   if(all.length>2) el("pz3owner").textContent=`${all[2].name} (${all[2].aliveCount} alive, ${fmtPts(all[2].wlPts)} pts)`;
-  el("pz1detail").textContent=all[0]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"—";
-  el("pz2detail").textContent=all[1]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"—";
-  el("pz3detail").textContent=all[2]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"—";
+  el("pz1detail").textContent=all[0]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"–";
+  el("pz2detail").textContent=all[1]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"–";
+  el("pz3detail").textContent=all[2]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"–";
 
   const rows=q ? all.filter(p=>p.name.toLowerCase().includes(q)||p.teams.some(t=>t.name.toLowerCase().includes(q))) : all;
 
@@ -526,7 +526,7 @@ function render(){
         const gdStr=gd>0?"+"+gd:String(gd);
         const statsLine=t.status==="alive"
           ?`P:${played} W:${t.w} D:${t.d} L:${t.l} | ${t.gf}:${t.ga} (${gdStr})`
-          :"eliminated — zeroed";
+          :"eliminated - zeroed";
         return`<div class="team ${t.status}">
           <span class="tflag">${flag}</span>
           <span class="tname">${t.name}</span>
@@ -586,12 +586,12 @@ function buildShareText(){
     const aliveNames=r.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"none left";
     const pts=r.wlPts>=0?"+"+r.wlPts:String(r.wlPts);
     const gd=r.gd>=0?"+"+r.gd:String(r.gd);
-    return `${pos} ${r.name} — ${r.aliveCount} alive (${aliveNames}) · ${pts} pts · GD ${gd}`;
+    return `${pos} ${r.name} - ${r.aliveCount} alive (${aliveNames}) · ${pts} pts · GD ${gd}`;
   });
   const totalMatches=el("hMatches").textContent;
   const totalGoals=el("hGoals").textContent;
   const summary=`${totalAlive} teams still in · ${totalMatches} matches played · ${totalGoals} goals`;
-  return `⚽ Hedin Ruxley World Cup Sweepstake 2026\nhttps://dan-sells.co.uk/sweepstake-2026.html\n\nSnapshot as at ${now} — ${summary}\n\n${lines.join("\n")}`;
+  return `⚽ Hedin Ruxley World Cup Sweepstake 2026\nhttps://dan-sells.co.uk/sweepstake-2026.html\n\nSnapshot as at ${now} - ${summary}\n\n${lines.join("\n")}`;
 }
 
 function shareSnapshot(){

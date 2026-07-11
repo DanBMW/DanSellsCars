@@ -52,7 +52,7 @@
           '<p class="cf-legal">By submitting you agree Dan may contact you about your enquiry. See our <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>' +
         '</div>' +
         '<div class="cf-ok" id="cfOk">' +
-          '<p>Thanks — your message is on its way. ✓</p>' +
+          '<p>Thanks - your message is on its way. ✓</p>' +
           '<span>Dan will be in touch personally, as soon as he can.</span>' +
         '</div>' +
       '</div>';
@@ -88,7 +88,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        _subject: 'Website enquiry — ' + n,
+        _subject: 'Website enquiry - ' + n,
         name: n, email: e, phone: p || 'not given', message: msg,
         source: (location && location.pathname) || 'website',
         replyto: e

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Documents for Signing — Ruxley BMW</title>
+<title>Documents for Signing - Ruxley BMW</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -127,7 +127,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
 <div class="topbar">
   <div>
     <div class="topbar-title">Documents for Signing</div>
-    <div class="topbar-sub">Ruxley BMW &mdash; Hedin Automotive Ltd</div>
+    <div class="topbar-sub">Ruxley BMW - Hedin Automotive Ltd</div>
   </div>
   <div style="font-size:20px">&#x1F512;</div>
 </div>
@@ -146,7 +146,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
       <div class="toggle-icon">&#x1F4CB;</div>
       <div class="toggle-info">
         <div class="toggle-name">Commission Disclosure</div>
-        <div class="toggle-desc">BMW Financial Services &mdash; required for all financed vehicles</div>
+        <div class="toggle-desc">BMW Financial Services - required for all financed vehicles</div>
       </div>
       <div class="toggle-sw on" id="sw-comm"></div>
     </div>
@@ -156,11 +156,11 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
         <div class="radio-group">
           <label class="radio-opt" id="opt1">
             <input type="radio" name="calc" value="1" onchange="onCalcChange()">
-            Calc 1 &mdash; Fixed Amount
+            Calc 1 - Fixed Amount
           </label>
           <label class="radio-opt on" id="opt2">
             <input type="radio" name="calc" value="2" onchange="onCalcChange()" checked>
-            Calc 2 &mdash; Percentage
+            Calc 2 - Percentage
           </label>
         </div>
         <label class="lbl">Commission Amount (&pound;)</label>
@@ -177,7 +177,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
       <div class="toggle-icon">&#x1F697;</div>
       <div class="toggle-info">
         <div class="toggle-name">RAV Special Instructions</div>
-        <div class="toggle-desc">New car registration form &mdash; DVLA V5 details</div>
+        <div class="toggle-desc">New car registration form - DVLA V5 details</div>
       </div>
       <div class="toggle-sw on" id="sw-rav"></div>
     </div>
@@ -225,7 +225,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
         <div>
           <span class="pill">BMW Financial Services</span>
           <h2 style="margin-top:6px">Commission Disclosure Form</h2>
-          <span style="display:inline-block;background:#e2ecf7;color:#2a527a;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:4px">V3.0 &mdash; 26.11.2024</span>
+          <span style="display:inline-block;background:#e2ecf7;color:#2a527a;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:4px">V3.0 - 26.11.2024</span>
         </div>
         <div style="text-align:right;font-size:13px;color:var(--muted)">
           <div style="font-weight:800;color:var(--ink)">Ruxley BMW</div>
@@ -244,7 +244,7 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
         <div class="comm-table">
           <div class="comm-row">
             <div class="comm-cell-lbl">Commission Amount</div>
-            <div class="comm-cell-val" id="d-amount-1">&mdash;</div>
+            <div class="comm-cell-val" id="d-amount-1">&ndash;</div>
             <div class="tick-col"><div class="tick-box" id="tick1"></div></div>
           </div>
         </div>
@@ -252,12 +252,12 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
         <div class="comm-table">
           <div class="comm-row">
             <div class="comm-cell-lbl">Commission Amount</div>
-            <div class="comm-cell-val" id="d-amount-2">&mdash;</div>
+            <div class="comm-cell-val" id="d-amount-2">&ndash;</div>
             <div class="tick-col"><div class="tick-box" id="tick2"></div></div>
           </div>
           <div class="comm-row" id="d-pct-row">
             <div class="comm-cell-lbl">Percentage used to calculate the commission</div>
-            <div class="comm-cell-val" id="d-pct">&mdash;</div>
+            <div class="comm-cell-val" id="d-pct">&ndash;</div>
             <div class="tick-col"></div>
           </div>
         </div>
@@ -346,13 +346,13 @@ input[readonly]{background:#f0f4f8;color:#5a6b7f;cursor:default}
   </div>
   <div class="card" id="dl-buttons"></div>
   <p class="footer-note">
-    Hedin Automotive Ltd &mdash; Ruxley BMW &mdash; BMW Group Authorised Retailer
+    Hedin Automotive Ltd - Ruxley BMW - BMW Group Authorised Retailer
   </p>
 </div>
 
 </div><!-- /main -->
 
-<!-- Floating scroll hint — customer signing screen only -->
+<!-- Floating scroll hint - customer signing screen only -->
 <div class="sfab" id="sfab">
   <div class="sfab-lbl" id="sfab-lbl">fields to complete</div>
   <button class="sfab-btn" aria-label="Scroll down" onclick="window.scrollBy({top:Math.min(Math.round(window.innerHeight*.72),420),behavior:'smooth'})">
@@ -432,9 +432,9 @@ function prepareCustomerScreen() {
   document.getElementById("comm-doc-section").style.display = includeComm ? "block" : "none";
   if (includeComm) {
     const isC1 = calcType === 1;
-    document.getElementById("d-amount-1").textContent = isC1 ? fmt(commAmount) : "—";
-    document.getElementById("d-amount-2").textContent = !isC1 ? fmt(commAmount) : "—";
-    document.getElementById("d-pct").textContent = !isC1 ? commPct + "%" : "—";
+    document.getElementById("d-amount-1").textContent = isC1 ? fmt(commAmount) : "–";
+    document.getElementById("d-amount-2").textContent = !isC1 ? fmt(commAmount) : "–";
+    document.getElementById("d-pct").textContent = !isC1 ? commPct + "%" : "–";
     document.getElementById("tick1").textContent = isC1 ? "✓" : "";
     document.getElementById("tick2").textContent = !isC1 ? "✓" : "";
     document.getElementById("d-pct-row").style.display = !isC1 ? "flex" : "none";
@@ -524,7 +524,7 @@ window.submitForm = async function() {
   const record = {
     id: recordId,
     forms,
-    retailer: "Hedin Automotive Ltd — Ruxley BMW",
+    retailer: "Hedin Automotive Ltd - Ruxley BMW",
     dealerName,
     customerName: name,
     customerEmail: email,
@@ -546,7 +546,7 @@ window.submitForm = async function() {
     signedRecord = record;
   } catch(e) {
     btn.disabled = false; btn.textContent = "I Agree & Submit ✓";
-    alert("Could not save — please check your connection and try again.");
+    alert("Could not save - please check your connection and try again.");
     return;
   }
 
@@ -560,7 +560,7 @@ window.submitForm = async function() {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
-        _subject: formLabel + " Signed — " + name,
+        _subject: formLabel + " Signed - " + name,
         form_type: formLabel,
         customer_name: name,
         customer_email: email,
@@ -596,14 +596,14 @@ window.submitForm = async function() {
 
   const dlDiv = document.getElementById("dl-buttons");
   dlDiv.innerHTML = '';
-  if (!formspreeOk) dlDiv.innerHTML += `<div style="background:#fff5f5;border:1.5px solid #fcc;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:#c54242;margin-bottom:14px">&#x26A0;&#xFE0F; Email notification may not have sent — please download the PDFs below and keep for your records. Record ID: ${recordId}</div>`;
+  if (!formspreeOk) dlDiv.innerHTML += `<div style="background:#fff5f5;border:1.5px solid #fcc;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:#c54242;margin-bottom:14px">&#x26A0;&#xFE0F; Email notification may not have sent - please download the PDFs below and keep for your records. Record ID: ${recordId}</div>`;
   if (includeComm) dlDiv.innerHTML += `<button class="btn btn-primary" onclick="window.dlComm()" style="margin-bottom:10px">&#x2B07; Download Commission Disclosure PDF</button>`;
   if (includeRAV)  dlDiv.innerHTML += `<button class="btn btn-primary" onclick="window.dlRAV()">&#x2B07; Download RAV Registration PDF</button>`;
 
   showScreen("screen-done");
 };
 
-// ---- PDF: Commission (compact — 1 page) ----
+// ---- PDF: Commission (compact - 1 page) ----
 function buildCommissionPDF(r) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -674,12 +674,12 @@ function buildCommissionPDF(r) {
   tx('If you enter into the proposed finance agreement with us, we will pay the Retailer commission. We calculate commission in two different ways. The one that applies in your case is ticked and completed below.', mg, 6.5, false, null, cw, 'left', 2);
 
   tx('Commission calculation 1: This is a fixed amount that we pay to the Retailer for introducing you.', mg, 6.5, isC1, null, cw, 'left', 1);
-  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '—', isC1);
+  tableRow('Commission Amount', isC1 ? fmtL(r.commissionAmount) : '–', isC1);
   y += 2;
 
   tx('Commission calculation 2: The commission amount is calculated as a percentage of the Amount of Credit under the proposed agreement. The more you borrow from us, the more commission we will pay.', mg, 6.5, !isC1, null, cw, 'left', 1);
-  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '—', !isC1);
-  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '—', false);
+  tableRow('Commission Amount', !isC1 ? fmtL(r.commissionAmount) : '–', !isC1);
+  tableRow('Percentage used to calculate the commission', !isC1 ? r.commissionPct + '%' : '–', false);
   y += 2;
 
   tx('The fixed amount or percentage may vary by model or age of the vehicle being financed. The amount shown above is the commission we will pay for your agreement.', mg, 6.5, false, null, cw, 'left', 1.5);
@@ -755,7 +755,7 @@ function buildRAVPDF(r) {
     y += h;
   }
 
-  // Header — BMW only (no MINI)
+  // Header - BMW only (no MINI)
   doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(18,38,58);
   doc.text('Hedin', mg, y);
   doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(60,80,105);
@@ -894,7 +894,7 @@ window.copyLink = function() {
 };
 function buildShareMessage(link) {
   let docLines = [];
-  if (includeRAV)  docLines.push('Included within this link are the details in which your vehicle will be registered with the DVLA. These will appear on your V5C Registration Document — please read them carefully and ensure all information is correct before signing.');
+  if (includeRAV)  docLines.push('Included within this link are the details in which your vehicle will be registered with the DVLA. These will appear on your V5C Registration Document - please read them carefully and ensure all information is correct before signing.');
   if (includeComm) docLines.push('Also included is a BMW Financial Services Commission Disclosure Form, which provides important information regarding the commission paid to your retailer in connection with your finance arrangement. Please read this carefully before signing.');
   return (
     'Dear Customer,\n\n' +

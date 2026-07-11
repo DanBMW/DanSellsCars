@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="robots" content="noindex,nofollow"/>
-<title>DanSells — While You Wait</title>
+<title>DanSells - While You Wait</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <link rel="stylesheet" href="style.css"/>
 <style>
@@ -260,7 +260,7 @@ canvas{display:block;touch-action:none;border-radius:10px;}
         <button class="btn" onclick="initMemory()">Play again</button>
       </div>
     </div>
-    <p style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:6px;">Tap to flip — match all 8 BMW pairs</p>
+    <p style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:6px;">Tap to flip - match all 8 BMW pairs</p>
   </div>
 
   <!-- ══════════════ BRICK ══════════════ -->
@@ -423,7 +423,7 @@ function submitFunnel(){
   const first=nm.split(' ')[0]||'there';
   fetch('https://formspree.io/f/xqewleog',{
     method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({_subject:'Waiting Room — '+nm,source:'waiting-room',customer_name:nm,customer_email:qAns.email,customer_phone:qAns.phone,purpose:qAns.purpose,purchase_type:qAns.purchase_type,payment_method:qAns.payment,model_interest:Array.isArray(qAns.model)?qAns.model.join(', '):qAns.model,timing:qAns.timing})
+    body:JSON.stringify({_subject:'Waiting Room - '+nm,source:'waiting-room',customer_name:nm,customer_email:qAns.email,customer_phone:qAns.phone,purpose:qAns.purpose,purchase_type:qAns.purchase_type,payment_method:qAns.payment,model_interest:Array.isArray(qAns.model)?qAns.model.join(', '):qAns.model,timing:qAns.timing})
   }).catch(()=>{});
   const inn=document.getElementById('quiz-inner');
   inn.innerHTML='<div class="success-banner"><strong>Thanks '+first+'! Dan has your answers 🎮</strong><span>He\'ll have read this before he comes over. Now pick your game while you wait.</span></div>';
@@ -540,7 +540,7 @@ function snakeOver(){
   const b=snakeBoard;
   const prev=Number(localStorage.getItem('hs-snake')||0);
   let msg='Score: '+b.score;
-  if(b.score>prev){localStorage.setItem('hs-snake',b.score);msg+=' — New best! 🏆';}
+  if(b.score>prev){localStorage.setItem('hs-snake',b.score);msg+=' - New best! 🏆';}
   document.getElementById('snake-ov-title').textContent='Game Over';
   document.getElementById('snake-ov-msg').textContent=msg;
   document.getElementById('snake-overlay').style.display='flex';
@@ -725,7 +725,7 @@ function flipCard(i){
         const t=(Date.now()-memStart)/1000;
         const prev=Number(localStorage.getItem('hs-memory')||Infinity);
         let msg='Time: '+fmtMemTime(t);
-        if(t<prev){localStorage.setItem('hs-memory',t);msg+=' — Best time! 🏆';}
+        if(t<prev){localStorage.setItem('hs-memory',t);msg+=' - Best time! 🏆';}
         document.getElementById('mem-ov-msg').textContent=msg;
         document.getElementById('mem-overlay').style.display='flex';
       }
@@ -831,7 +831,7 @@ function brickEnd(win){
   const s=brickState;
   const prev=Number(localStorage.getItem('hs-brick')||0);
   let msg='Score: '+s.score;
-  if(s.score>prev){localStorage.setItem('hs-brick',s.score);msg+=' — New best! 🏆';}
+  if(s.score>prev){localStorage.setItem('hs-brick',s.score);msg+=' - New best! 🏆';}
   document.getElementById('brick-ov-title').textContent=win?'🎉 You cleared it!':'Game Over';
   document.getElementById('brick-ov-msg').textContent=msg;
   document.getElementById('brick-overlay').style.display='flex';
