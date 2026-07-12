@@ -312,7 +312,8 @@ function canon(s){
 // Manual fallback for any team the auto-detection misses (e.g. before the
 // R32 fixture list appears in the API). Add canonical team names as needed.
 const GROUP_EXITS=new Set([
-  // example: "germany"
+  // QF: Spain 2-1 Belgium — API still showing live, force Belgium out
+  "belgium",
 ]);
 
 const T=(name,c)=>({name,c,status:"alive",w:0,d:0,l:0,gf:0,ga:0});
