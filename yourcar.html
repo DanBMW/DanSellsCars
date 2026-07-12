@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <!-- Personal share page: Dan sends yourcar.html?reg=AB12CDE&n=Kate to a
-       customer. Their plate arrives pre-filled; they confirm mileage and book.
-       Passing screen 1 fires an interest notification to Dan via Formspree.
+  <!-- Personal share page for service prospects due in within the week:
+       Dan sends yourcar.html?reg=AB12CDE&n=Kate ahead of their service
+       booking. Their plate arrives pre-filled; they confirm mileage
+       (screen 1) then book an appointment with Dan (cal.eu / WhatsApp).
+       Passing screen 1 fires an interest notification to Dan via
+       Formspree; booking taps fire a second. Copy must never say the car
+       is on site NOW - these customers are due in, not in the building.
        Personalised link - keep noindex and out of sitemap.xml. -->
   <meta name="robots" content="noindex, nofollow"/>
   <title>DanSells | Your car</title>
@@ -51,8 +55,8 @@
 
   <div class="step-wrap" id="stage1">
     <div class="step-kicker">A note from Dan</div>
-    <h2 id="s1Heading">I've set this up just for you.</h2>
-    <p class="step-desc">Your reg should already be filled in below. Check it's right, add your rough mileage, and I'll get your car's value ready for when we speak. Takes about 20 seconds.</p>
+    <h2 id="s1Heading">Your BMW is booked in with us soon. Perfect timing.</h2>
+    <p class="step-desc">While our service team look after your car, I can have its value and your options ready - so if you've ever wondered "what's it actually worth?", this is the week to find out. Check your reg below, add your rough mileage, and I'll do the rest. Takes about 20 seconds.</p>
 
     <div class="dan-audio">
       <img src="photo01.jpg" alt="Dan"/>
@@ -86,17 +90,17 @@
 
   <div class="step-wrap" id="stage2" style="display:none;">
     <div class="step-kicker">That's everything</div>
-    <h2 id="s2Heading">Lovely. Now grab ten minutes with me.</h2>
-    <p class="step-desc">I'll have your car's value and your options ready before we speak. Pick whatever suits you best.</p>
+    <h2 id="s2Heading">Lovely. Now book ten minutes with me.</h2>
+    <p class="step-desc">Your car is coming in soon anyway - so booking a chat around your service visit is the easiest ten minutes you'll ever find. Pick what suits you best.</p>
 
-    <div class="value-note"><span style="font-size:1.3rem;">🔒</span><span>Your figure is being prepared now - I'll bring it to the conversation, whichever one you pick.</span></div>
+    <div class="value-note"><span style="font-size:1.3rem;">🔒</span><span>Your figure is being prepared now - I'll bring it to the conversation, whichever option you pick.</span></div>
 
-    <div class="appt-cards">
-      <a id="card-visit" class="appt-card primary" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener" onclick="bookTap('Face to face at Ruxley')">
+    <div class="appt-cards" id="apptCards">
+      <a id="card-visit" class="appt-card primary" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener" onclick="bookTap('Appointment at Ruxley')">
         <div class="appt-icon">🤝</div>
         <div class="appt-body">
-          <strong>Face to face at Ruxley</strong>
-          <span>Come in for a proper sit-down. See the cars, talk numbers, no rush.</span>
+          <strong>Book an appointment with me</strong>
+          <span>Time it with your service visit if that's easiest - I'll work around your slot. Figure ready, no rush.</span>
         </div>
         <div class="appt-arrow">›</div>
       </a>
@@ -104,7 +108,7 @@
         <div class="appt-icon">📞</div>
         <div class="appt-body">
           <strong>Telephone appointment</strong>
-          <span>Book a proper call at a time that suits you.</span>
+          <span>Book a call before your visit and we'll talk it through first.</span>
         </div>
         <div class="appt-arrow">›</div>
       </a>
@@ -118,7 +122,7 @@
       </a>
     </div>
 
-    <p class="hint">Can't decide? Leave it with me - I have your details and I'll be in touch either way.</p>
+    <p class="hint" style="margin-top:14px;">Can't decide? Leave it with me - I have your details and I'll be in touch either way.</p>
   </div>
 </div></div>
 <script>
@@ -147,8 +151,8 @@
 
   // Personalise + pre-fill from the link Dan sent
   if(linkName){
-    document.getElementById("s1Heading").textContent = linkName + ", I've set this up just for you.";
-    document.getElementById("s2Heading").textContent = "Lovely, " + linkName + ". Now grab ten minutes with me.";
+    document.getElementById("s1Heading").textContent = linkName + ", your BMW is booked in with us soon. Perfect timing.";
+    document.getElementById("s2Heading").textContent = "Lovely, " + linkName + ". You're already coming in - so let me come to you.";
   }
   const linkReg = (params.get('reg')||params.get('r')||'').toUpperCase().replace(/[^A-Z0-9 ]/g,'').slice(0,10);
   if(linkReg){
@@ -201,7 +205,7 @@
     if(!sessionStorage.getItem("ycPinged")){
       sessionStorage.setItem("ycPinged","1");
       notify("🔥 " + (linkName||reg) + " opened your link and confirmed their car", {
-        note: "Interest signal - customer passed screen 1 (confirmed car + mileage). They have NOT booked yet; booking options are on their screen now."
+        note: "Interest signal - service prospect (due in within the week) passed screen 1: confirmed car + mileage. They have NOT picked an option yet; the choices are on their screen now."
       });
     }
     document.getElementById("stage1").style.display = "none";
@@ -219,13 +223,14 @@
     });
   }
 
-  // Prefill cal.eu with their name if Dan included it in the link
+
+  // Prefill cal.eu and WhatsApp with their name if Dan included it in the link
   if(linkName){
     ["card-visit","card-phone"].forEach(id=>{
       const a=document.getElementById(id);
       a.href += "?name=" + encodeURIComponent(linkName);
     });
-    document.getElementById("card-wa").href = "https://wa.me/447827138197?text=" + encodeURIComponent("Hi Dan, it's " + linkName + " - I've just confirmed my car through your link. When's good for a chat?");
+    document.getElementById("card-wa").href = "https://wa.me/447827138197?text=" + encodeURIComponent("Hi Dan, it's " + linkName + " - my car's booked in for service soon and I've just confirmed my details through your link. When's good for a chat?");
   }
 </script>
 <script src="scroll-hint.js"></script><script src="disclaimer.js"></script>

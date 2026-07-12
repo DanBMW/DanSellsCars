@@ -40,8 +40,8 @@
   <div class="step-wrap">
     <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
     <div class="step-kicker">45 seconds, start the clock</div>
-    <h2>Your car's on our ramp.<br>Want to know what it's worth?</h2>
-    <p class="step-desc">Pop your reg in and I'll pull up your car. While the service team look after it, I'll get your value ready.</p>
+    <h2>Your car's booked in with us.<br>Want to know what it's worth?</h2>
+    <p class="step-desc">Pop your reg in and I'll pull up your car. By the time it's in with our service team, I'll have your value ready.</p>
 
     <div class="dan-audio">
       <img src="photo01.jpg" alt="Dan"/>
@@ -54,7 +54,7 @@
       <audio id="daAudio" preload="none" src="dan-service-intro.mp3"></audio>
     </div>
 
-    <div class="ramp-hook">💡 <strong>Why now?</strong> Your BMW will never be worth more than it is today - and it's rarely easier to value than when it's already with us.</div>
+    <div class="ramp-hook">💡 <strong>Why now?</strong> Your BMW will never be worth more than it is today - and it's rarely easier to value than when it's coming in to us anyway.</div>
 
     <div class="plate-wrap">
       <div class="plate-band"><span>🇬🇧</span>UK</div>
@@ -62,11 +62,11 @@
     </div>
 
     <button class="btn" id="findBtn" style="width:100%;" onclick="findCar()">Find my car →</button>
-    <p class="hint" style="margin-top:12px;">No photos, no paperwork - your car is already here, so I can see everything I need in person.</p>
+    <p class="hint" style="margin-top:12px;">No photos, no paperwork - I can see everything I need in person when your car is with us.</p>
 
     <div class="wa-hatch">
       <span style="color:var(--muted);">Prefer to skip the form?</span>
-      <a id="waHatch" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20my%20car%27s%20in%20for%20service%20today%20-%20what%27s%20my%20BMW%20worth%3F" target="_blank" rel="noopener">💬 WhatsApp Dan instead</a>
+      <a id="waHatch" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20my%20car%27s%20booked%20in%20for%20service%20-%20what%27s%20my%20BMW%20worth%3F" target="_blank" rel="noopener">💬 WhatsApp Dan instead</a>
     </div>
   </div>
 </div></div>
@@ -97,8 +97,8 @@
     el.value = el.value.toUpperCase();
     const reg = el.value.trim();
     const msg = reg
-      ? "Hi Dan, my car's in for service today. My reg is " + reg + " - what's it worth?"
-      : "Hi Dan, my car's in for service today - what's my BMW worth?";
+      ? "Hi Dan, my car's booked in for service. My reg is " + reg + " - what's it worth?"
+      : "Hi Dan, my car's booked in for service - what's my BMW worth?";
     document.getElementById("waHatch").href = "https://wa.me/447827138197?text=" + encodeURIComponent(msg);
   }
 
