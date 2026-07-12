@@ -143,6 +143,24 @@ a{color:inherit;text-decoration:none}
 .btn-row{display:flex;gap:7px}
 .btn-row .btn-open,.btn-row .btn-copy,.btn-row .btn-wa{flex:1;justify-content:center}
 
+/* ── EMAIL TEMPLATES ── */
+.tmpl-intro{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:14px;font-size:12.5px;color:var(--muted);line-height:1.55}
+.tmpl-intro strong{color:var(--text)}
+.tmpl-group-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px;padding-left:2px}
+.tmpl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;transition:border-color .15s}
+.tmpl-card.open{border-color:rgba(255,255,255,.14)}
+.tmpl-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;transition:background .15s}
+.tmpl-head:hover{background:var(--surface2)}
+.tmpl-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.tmpl-subject{font-size:12px;color:var(--muted);word-break:break-word}
+.tmpl-subject b{color:#5b8ac7;font-weight:700}
+.tmpl-caret{color:var(--muted);font-size:11px;flex-shrink:0;transition:transform .2s}
+.tmpl-card.open .tmpl-caret{transform:rotate(180deg)}
+.tmpl-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
+.tmpl-card.open .tmpl-body{display:block}
+.tmpl-note{font-size:11.5px;color:var(--warn);background:var(--warn-dim);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:8px 10px;margin:12px 0}
+.tmpl-text{font-family:var(--font);font-size:13px;color:var(--text);line-height:1.55;white-space:pre-wrap;word-wrap:break-word;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:12px 0;max-height:300px;overflow-y:auto}
+
 /* Vehicle type chips - exclusive (radio-style), blue accent */
 .chip.on-type{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.38);color:#93c5fd}
 .chip.on-type .chip-dot{opacity:1}
@@ -265,6 +283,14 @@ a{color:inherit;text-decoration:none}
       <input class="widget-input" id="ty-name" type="text" placeholder="Customer first name&hellip;" autocomplete="off">
       <button class="btn-wa-full" onclick="sharePurchaseWA()">&#x1F4F2; Share Purchase Page via WhatsApp</button>
     </div>
+
+    <!-- ── EMAIL TEMPLATES ── -->
+    <div class="section-title">Email Templates</div>
+    <div class="tmpl-intro">
+      Tap a template to expand it. <strong>&#x2709; Outlook</strong> opens a new draft with the subject and body already filled in &mdash; just personalise the <strong>[bracketed]</strong> bits and send. <strong>Copy</strong> puts the body on your clipboard to paste into Copilot or an existing reply.<br><br>
+      Before sending, always add the 3: <strong>customer name</strong>, <strong>exact model</strong>, and <strong>1 specific detail</strong> from your conversation.
+    </div>
+    <div id="tmpl-list"></div>
 
     <!-- Customer Qualifiers -->
     <div class="section-title">Customer Qualifiers</div>
@@ -705,6 +731,107 @@ function openRecord() {
   else { alert("Unknown record ID format \u2014 should start with multi_, rav_, or disc_."); return; }
   window.open("https://dan-sells.co.uk/" + page + "?id=" + encodeURIComponent(id), "_blank");
 }
+
+// ── Email Templates ──
+const TEMPLATES = [
+  { section:'A · Enquiry to Sale', name:'1. Enquiry First Response (New Car)',
+    subject:'Your BMW enquiry, Dan at BMW Ruxley',
+    body:'Hi [Name],\n\nThanks for your enquiry about the [Model], great choice. I am Dan and I will be your single point of contact here at BMW Ruxley from start to finish.\n\n[1 line answering their specific question or confirming availability and spec]\n\nThe best next step is to get you behind the wheel. I have availability on [Day] at [Time] or [Day] at [Time], which suits you better?\n\nIf it is easier, WhatsApp me on +44 7827 138197 and we can sort everything there.\n\nDan' },
+  { section:'A · Enquiry to Sale', name:'2. Enquiry First Response (Used Car)',
+    subject:'The [Model] you asked about, Dan at BMW Ruxley',
+    body:'Hi [Name],\n\nThanks for your enquiry about the [Model]. Good news, it is available and here on site at BMW Ruxley.\n\n[1 line on condition, spec highlight or history, e.g. 1 owner, full BMW service history]\n\nIt is a popular spec, so if you are keen I would recommend getting a viewing in the diary. I have [Day] at [Time] or [Day] at [Time] free, or tell me what works for you.\n\nAny questions in the meantime, reply here or WhatsApp me on +44 7827 138197.\n\nDan' },
+  { section:'A · Enquiry to Sale', name:'3. Post Test Drive Follow Up (same day)',
+    subject:'Great to meet you at BMW Ruxley',
+    body:'Hi [Name],\n\nReally good to meet you today, I hope you enjoyed driving the [Model]. [1 specific detail from the visit, e.g. that colour really suited you, or hope the drive back to Sevenoaks was smooth]\n\nIf any questions came to mind on the way home, fire away. And whenever you are ready to look at numbers, I can put together a personalised quote with no obligation at all.\n\nI will give you a quick call on [Day] if I have not heard from you, but before then I am on email or WhatsApp on +44 7827 138197.\n\nDan' },
+  { section:'A · Enquiry to Sale', name:'4. Finance Quote Cover Email',
+    subject:'Your quote from BMW Ruxley',
+    body:'Hi [Name],\n\nAs promised, your personalised quotation for the [Model] is attached.\n\nQuick summary:\n\nDeposit: £[X]\nMonthly payment: £[X] over [X] months\nOptional final payment: £[X]\nAnnual mileage: [X] miles\n\nA couple of important notes: finance is subject to status and available to those aged 18 and over, terms and conditions apply, and we may receive a commission from the lender for arranging your finance, which I am happy to explain in full.\n\nHave a read through, and if you want to adjust the deposit, term or mileage, it takes me 2 minutes to rework the numbers.\n\nAny questions at all, reply here or WhatsApp me on +44 7827 138197.\n\nDan' },
+  { section:'A · Enquiry to Sale', name:'5. Polite Chase, Soft (around day 3)',
+    subject:'Still thinking it over? Dan at BMW Ruxley',
+    body:'Hi [Name],\n\nJust a quick note to see how you are getting on since we spoke about the [Model]. No rush at all, I just did not want you to feel forgotten.\n\nIf any questions have come up, or you would like me to rework the numbers or look at a different spec, it is no trouble whatsoever.\n\nDan' },
+  { section:'A · Enquiry to Sale', name:'6. Polite Chase, Last Touch (around day 10)',
+    subject:'I will leave you in peace! Dan at BMW Ruxley',
+    body:'Hi [Name],\n\nI do not want to clutter your inbox, so this will be my last note about the [Model] unless I hear from you.\n\nIf the timing is not right or you have gone another way, no hard feelings at all, just let me know and I will close the file. And if you are still interested, I am here whenever suits, even if that is months from now.\n\nEither way, thank you for considering us at BMW Ruxley.\n\nDan' },
+  { section:'B · Deal Stage', name:'7. Order Confirmation / Thank You',
+    subject:'Your order is confirmed at BMW Ruxley!',
+    body:'Hi [Name],\n\nFantastic news, your order for the [Model] is confirmed. Thank you for your business, you are going to love it.\n\nWhat happens next:\n\n1. I will keep you updated on build and delivery progress, you will hear from me at each milestone.\n2. Expected arrival is currently [Month], I will confirm a firm date as soon as I have one.\n3. Closer to the time we will book your handover, and I will send you everything you need to bring on the day.\n\nAny questions in the meantime, reply here or WhatsApp me on +44 7827 138197.\n\nDan' },
+  { section:'B · Deal Stage', name:'8. Part Exchange Info Request',
+    subject:'Your part exchange, Dan at BMW Ruxley',
+    body:'Hi [Name],\n\nTo get you an accurate valuation on your [Current car], could you send me the following:\n\n• Registration number\n• Current mileage\n• Service history (main dealer, independent or partial)\n• Outstanding finance settlement figure, if there is one\n• 6 photos: front, rear, both sides, interior, and the dashboard showing the mileage\n\nWhatsApp is easiest for the photos, +44 7827 138197.\n\nOnce I have everything I will come back to you with a valuation within 24 hours.\n\nDan' },
+  { section:'B · Deal Stage', name:'9. Handover Email',
+    note:'Remove the part exchange section at the bottom if there is no part exchange.',
+    subject:'Your handover is booked at BMW Ruxley!',
+    body:'Hi [Name],\n\nGreat news, your [Model] is ready and your handover is booked for [Day] [Date] at [Time] here at BMW Ruxley, Maidstone Road, Sidcup DA14 5BG.\n\nPlease remember to bring your driving licence on the day.\n\nInsurance\n\nPlease ensure your insurance is in place from the point of collection. Unfortunately, we cannot release the vehicle until insurance cover has been arranged.\n\nIf you have not yet organised insurance, BMW offers complimentary 5 Day DriveAway Insurance for eligible customers, which can be activated using the link below. You will need our retailer code, which is 22181.\n\nhttps://www.bmw.co.uk/en/topics/owners/financial-services/insurance/5-day-driveaway.html\n\nPayment\n\nIf you are paying by bank transfer, our details are:\n\nAccount name: [Account name]\nSort code: [00 00 00]\nAccount number: [00000000]\nReference: [Order number or registration]\n\nIf you would rather pay by card on the day, that is no problem at all, just let me know.\n\nOne important note: we will never change our bank details by email. If you ever receive a message suggesting our details have changed, do not pay, call me first on +44 7827 138197 to check.\n\nYour part exchange\n\nPlease remember to bring:\n\n• V5 log book\n• Both keys\n• Full service history\n\nAny questions before the day, reply here or message me on WhatsApp on +44 7827 138197, whichever is easier for you.\n\nLooking forward to seeing you!\n\nDan' },
+  { section:'C · Ownership & Brand Building', name:'10. Initial Follow Up (few days after collection)',
+    note:'Template 10 only: the survey ask with full marks and the showroom competition line.',
+    subject:"How's the new BMW? Dan at BMW Ruxley",
+    body:'Hi [Name],\n\nThank you again for choosing me for your [Model], it was a genuine pleasure to sort it for you. I hope you are enjoying the car!\n\nJust checking in to make sure everything is going well. If any questions have popped up now you have had a few days with it, I am here.\n\nYou will shortly receive a survey from BMW. On paper it looks like you are rating the BMW brand, but in reality you are rating me personally. There is some friendly competition in the showroom over the scores, so if you feel I have earned it, full marks and 5 stars would mean a huge amount. And if anything means you feel I have not earned that, please contact me first so I can put it right for you.\n\nOne last thing. If you know anyone thinking about a BMW, my referral programme thanks you with £250 of parts credit or £125 cash. Take a look at https://dan-sells.co.uk/refer.html for the details.\n\nIf you are ever passing, pop in for a coffee, I am in Tuesday to Saturday.\n\nDan' },
+  { section:'C · Ownership & Brand Building', name:'10B. Initial Follow Up (safer survey version)',
+    note:'Audit-friendly wording: no explicit ask for full marks, but still makes clear the survey reflects on Dan and any issue should come to him first.',
+    subject:"How's the new BMW? Dan at BMW Ruxley",
+    body:'Hi [Name],\n\nThank you again for choosing me for your [Model], it was a genuine pleasure to sort it for you. I hope you are enjoying the car!\n\nJust checking in to make sure everything is going well. If any questions have popped up now you have had a few days with it, I am here.\n\nYou will shortly receive a short survey from BMW about your experience. Although it comes from BMW, it reflects directly on me and how I looked after you, so your honest feedback really matters to me. If anything at all fell short of what you expected, I would love the chance to put it right before you fill it in, just reply here or WhatsApp me and I will sort it personally.\n\nOne last thing. If you know anyone thinking about a BMW, my referral programme thanks you with £250 of parts credit or £125 cash. Take a look at https://dan-sells.co.uk/refer.html for the details.\n\nIf you are ever passing, pop in for a coffee, I am in Tuesday to Saturday.\n\nDan' },
+  { section:'C · Ownership & Brand Building', name:'11. Referral Ask (around 2 weeks after delivery)',
+    subject:'A coffee and a thank you from BMW Ruxley',
+    body:'Hi [Name],\n\nI hope the [Model] is still putting a smile on your face 2 weeks in!\n\nQuick one from me. Most of my business comes from recommendations, so if a friend or family member is thinking about a BMW, I would love to look after them the way I looked after you. As a thank you, you would receive £250 of parts credit or £125 cash for anyone who goes ahead.\n\nAll the details are at https://dan-sells.co.uk/refer.html\n\nAnd the coffee offer stands, I am in Tuesday to Saturday.\n\nDan' },
+  { section:'C · Ownership & Brand Building', name:'12. Later Follow Up (12 months or more)',
+    note:'No survey mention. No valuation or part exchange talk in the first 24 months.',
+    subject:'Checking in from BMW Ruxley',
+    body:'Hi [Name],\n\nHard to believe it has been [12 months / 18 months] since you collected your [Model]! Thank you again for your business, I hope ownership has been everything you hoped for.\n\nIf anything ever needs sorting, big or small, you know where I am. Reply here or WhatsApp me on +44 7827 138197.\n\nThe referral programme is still going strong too. Send a friend or family member my way and you will get £250 of parts credit or £125 cash as a thank you. All the details are at https://dan-sells.co.uk/refer.html.\n\nDan' },
+  { section:'C · Ownership & Brand Building', name:'13. Later Follow Up with Valuation (24 months or more)',
+    note:'Valuation can be introduced from 24 months onward.',
+    subject:'2 years already! Dan at BMW Ruxley',
+    body:'Hi [Name],\n\nIt has been 2 years since you collected your [Model], time flies! Thank you again for your business, I hope the car is still making you smile.\n\nIf it is useful, I would be happy to give you a no obligation idea of what your car is worth at the moment. The used market has been strong and some owners are pleasantly surprised by the equity in their car. No pressure at all, just say the word if you are curious.\n\nAnd the referral programme is still running. Send someone my way and you will get £250 of parts credit or £125 cash. Details at https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time.\n\nDan' }
+];
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderTemplates() {
+  const groups = {}, order = [];
+  TEMPLATES.forEach(function(t, i){
+    if (!groups[t.section]) { groups[t.section] = []; order.push(t.section); }
+    groups[t.section].push(i);
+  });
+  let html = '';
+  order.forEach(function(sec){
+    html += '<div class="tmpl-group-title">' + esc(sec) + '</div>';
+    groups[sec].forEach(function(i){
+      const t = TEMPLATES[i];
+      html += '<div class="tmpl-card">'
+        + '<div class="tmpl-head" onclick="toggleTmpl(this)">'
+        +   '<div class="tmpl-meta">'
+        +     '<div class="tmpl-name">' + esc(t.name) + '</div>'
+        +     '<div class="tmpl-subject"><b>Subject:</b> ' + esc(t.subject) + '</div>'
+        +   '</div>'
+        +   '<span class="tmpl-caret">&#x25BE;</span>'
+        + '</div>'
+        + '<div class="tmpl-body">'
+        +   (t.note ? '<div class="tmpl-note">' + esc(t.note) + '</div>' : '')
+        +   '<pre class="tmpl-text">' + esc(t.body) + '</pre>'
+        +   '<div class="btn-row">'
+        +     '<button class="btn-open" onclick="openOutlook(' + i + ')">&#x2709; Outlook</button>'
+        +     '<button class="btn-copy" onclick="copyTmpl(' + i + ',this)">Copy</button>'
+        +   '</div>'
+        + '</div>'
+        + '</div>';
+    });
+  });
+  document.getElementById('tmpl-list').innerHTML = html;
+}
+
+function toggleTmpl(head) {
+  head.parentElement.classList.toggle('open');
+}
+
+function openOutlook(i) {
+  const t = TEMPLATES[i];
+  window.location.href = 'mailto:?subject=' + encodeURIComponent(t.subject) + '&body=' + encodeURIComponent(t.body);
+}
+
+function copyTmpl(i, btn) {
+  copyText(TEMPLATES[i].body, btn);
+}
+
+renderTemplates();
 </script>
 <script src="disclaimer.js"></script>
 <script src="contact.js"></script>
