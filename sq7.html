@@ -1,161 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Service Qualifier</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <link rel="stylesheet" href="style.css"/>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
-<script src="analytics.js" defer></script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <!-- Retired step of the old 7-step Service Qualifier - the funnel is now
+       3 steps (sq1-sq3, the "Ramp Report"). This stub only preserves old
+       links and mid-funnel sessions from before the change. -->
+  <meta name="robots" content="noindex"/>
+  <link rel="canonical" href="https://dan-sells.co.uk/sq1.html"/>
+  <meta http-equiv="refresh" content="0;url=sq1.html"/>
+  <title>DanSells | While your car's in</title>
+  <script>location.replace('sq1.html' + location.search + location.hash);</script>
 </head>
-<body><div class="app"><div class="shell">
-  <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
-    <div class="meta"><span>Step 7 of 7</span></div>
-  </div>
-  <div class="step-wrap">
-    <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
-    <div class="step-kicker">Last step</div>
-    <h2>Just your name and best contact.</h2>
-    <p class="step-desc">This comes straight to me. I am your main point of contact throughout - with a handover team and a brilliant team around us to make sure you are looked after every step of the way.</p>
-    <div style="display:grid;gap:14px;margin-bottom:20px;">
-      <div class="two-col">
-        <div class="field-group"><label>First name *</label><input id="sqFirst" type="text" placeholder="First name"/></div>
-        <div class="field-group"><label>Last name *</label><input id="sqLast" type="text" placeholder="Last name"/></div>
-      </div>
-      <div class="field-group"><label>Mobile *</label><input id="sqPhone" type="tel" placeholder="07..."/></div>
-      <div class="field-group"><label>Email (optional)</label><input id="sqEmail" type="email" placeholder="you@example.com"/></div>
-      <div class="tick-box">✔ Your details are shared only with Dan and used only to follow up on your enquiry.</div>
-
-      <div style="border:1px solid rgba(21,89,207,.18);border-radius:14px;padding:16px 18px;background:rgba(21,89,207,.04);">
-        <p style="font-size:.88rem;font-weight:600;color:#141a22;margin:0 0 6px;">Stay in the loop? <span style="font-weight:400;color:#5f6b7c;">(optional)</span></p>
-        <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 12px;line-height:1.55;">Occasional BMW news, model alerts, and exclusive offers from Dan. No bulk emails. Unsubscribe any time.</p>
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:12px;">
-          <input type="checkbox" id="mktOptIn" style="width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#1559cf;" onchange="document.getElementById('mktChannels').style.display=this.checked?'block':'none'">
-          <span style="font-size:.85rem;color:#2d3748;line-height:1.45;">Yes, I'd like to receive occasional BMW updates from Dan</span>
-        </label>
-        <div id="mktChannels" style="display:none;">
-          <p style="font-size:.78rem;color:#5f6b7c;margin:0 0 8px;font-weight:600;">How would you prefer to hear from Dan?</p>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Email" class="mktCh" style="accent-color:#1559cf;"> Email</label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="WhatsApp" class="mktCh" style="accent-color:#1559cf;"> WhatsApp</label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="SMS" class="mktCh" style="accent-color:#1559cf;"> SMS</label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Phone call" class="mktCh" style="accent-color:#1559cf;"> Phone call</label>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn" style="width:100%;" onclick="submit()">Send to Dan</button>
-    </div>
-  </div>
-</div></div>
-<script>
-  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
-
-  async function pollMarket(runId){
-    if(!runId) return null;
-    for(let i=0;i<5;i++){
-      await new Promise(r=>setTimeout(r,2000));
-      try{
-        const r=await fetch(WORKER+'?target=market-poll&runId='+encodeURIComponent(runId));
-        const d=await r.json();
-        if(d.status==='SUCCEEDED'){
-          const prices=(d.items||[]).map(l=>l.pricing&&l.pricing.mainPrice?l.pricing.mainPrice:0).filter(p=>p>500).sort((a,b)=>a-b);
-          if(prices.length){
-            const avg=prices.reduce((a,b)=>a+b,0)/prices.length;
-            return{low:'£'+Math.round(prices[0]).toLocaleString('en-GB'),avg:'£'+Math.round(avg).toLocaleString('en-GB'),high:'£'+Math.round(prices[prices.length-1]).toLocaleString('en-GB'),trade:'£'+Math.round(avg*0.80).toLocaleString('en-GB')};
-          }
-          break;
-        }
-        if(d.status==='FAILED') break;
-      }catch(e){break;}
-    }
-    return null;
-  }
-
-  function generateSQStory(first, last){
-    const fn=first+' '+last;
-    const op=sessionStorage.getItem("sqOpenness")||"";
-    const mo=sessionStorage.getItem("sqModel")||"a new BMW";
-    const ti=sessionStorage.getItem("sqTiming")||"the near future";
-    const pay=sessionStorage.getItem("sqPayment")||"";
-    const monthly=sessionStorage.getItem("sqMonthly")||"";
-    const total=sessionStorage.getItem("sqTotal")||"";
-    const dep=sessionStorage.getItem("sqDeposit")||"";
-    const hpx=(sessionStorage.getItem("sqPX")||"No")!=="No";
-    const pxReg=sessionStorage.getItem("sqPXReg")||"";
-    const pxMod=sessionStorage.getItem("sqPXModel")||"";
-    const fmt=v=>v?Number(v.replace(/,/g,"")).toLocaleString("en-GB"):"";
-    const bStr=monthly?"£"+fmt(monthly)+" a month":total?"£"+fmt(total)+" total":"";
-    const dStr=dep?"£"+fmt(dep)+" deposit":"";
-    const bLine=(bStr&&dStr)?"Working to "+bStr+" with "+dStr+" ready to go":bStr?"Working to "+bStr:dStr?dStr+" ready to go":"";
-    const pxLine=hpx?("They mentioned "+([pxReg,pxMod].filter(Boolean).join(" ")||"a car")+" as a part exchange."):"";
-    const opLine=op?first+" described themselves as: "+op.toLowerCase()+".":"";
-    const payLine=pay?", thinking "+pay.toLowerCase():"";
-    return "There once was someone called "+fn+" whose car came in for a service - and who took two minutes to fill in Dan's short questionnaire while they waited.\n\n"+opLine+" Interested in "+mo+" and thinking about it within "+ti+", "+first+" gave Dan exactly the context he needed. "+bLine+payLine+(bLine||payLine?". ":"")+pxLine+" The kind of brief that turns a follow-up into a proper conversation rather than a cold call.\n\nDan will read it through before getting in touch. Whether it's a quick chat while the car is still in, a proper call this week, or a sit-down at Ruxley - "+first+" will know they're speaking to someone who already has the full picture.";
-  }
-
-  async function submit(){
-    const first = document.getElementById("sqFirst").value.trim();
-    const last = document.getElementById("sqLast").value.trim();
-    const phone = document.getElementById("sqPhone").value.trim();
-    if(!first||!last||!phone){ alert("Please add your name and mobile to continue."); return; }
-
-    sessionStorage.setItem("sqFirst", first);
-    sessionStorage.setItem("sqLast", last);
-    sessionStorage.setItem("sqPhone", phone);
-    sessionStorage.setItem("sqEmail", document.getElementById("sqEmail").value.trim());
-
-    const sqStory = generateSQStory(first, last);
-    sessionStorage.setItem("sqCustomerStory", sqStory);
-    const sqMktOptIn = document.getElementById("mktOptIn").checked ? "Yes" : "No";
-    const sqMktChannels = Array.from(document.querySelectorAll(".mktCh:checked")).map(c=>c.value).join(", ");
-
-    const market = await pollMarket(sessionStorage.getItem("sqMarketRunId"));
-    const payload = {
-      _subject: "Service Qualifier - " + first + " " + last,
-      _replyto: document.getElementById("sqEmail").value.trim()||"noreply@dan-sells.co.uk",
-      lead_type: "Service Customer Qualifier",
-      name: first + " " + last,
-      phone: phone,
-      email: document.getElementById("sqEmail").value.trim(),
-      openness: sessionStorage.getItem("sqOpenness")||"",
-      model_interest: sessionStorage.getItem("sqModel")||"",
-      timing: sessionStorage.getItem("sqTiming")||"",
-      payment_method: sessionStorage.getItem("sqPayment")||"",
-      monthly_budget: sessionStorage.getItem("sqMonthly")||"",
-      annualmileage: "",
-      total_budget: sessionStorage.getItem("sqTotal")||"",
-      deposit: sessionStorage.getItem("sqDeposit")||"",
-      part_exchange: sessionStorage.getItem("sqPX")||"No",
-      px_reg: sessionStorage.getItem("sqPXReg")||"",
-      px_model: sessionStorage.getItem("sqPXModel")||"",
-      px_mileage: sessionStorage.getItem("sqPXMileage")||"",
-      px_finance: sessionStorage.getItem("sqPXFinance")||"",
-      px_condition: sessionStorage.getItem("sqPXCondition")||"",
-      px_service_history: sessionStorage.getItem("sqPXService")||"",
-      px_wbac_quote: sessionStorage.getItem("sqPXWBAC")||"",
-      px_market_low:           market ? market.low   : "",
-      px_market_avg:           market ? market.avg   : "",
-      px_market_high:          market ? market.high  : "",
-      px_market_trade_estimate: market ? market.trade : "",
-      customer_story:          sqStory,
-      marketing_opt_in:        sqMktOptIn,
-      marketing_channels:      sqMktChannels
-    };
-
-    try{
-      await fetch("https://formspree.io/f/xqewleog",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body:JSON.stringify(payload)
-      });
-    }catch(e){}
-
-    location.href="sq_done.html";
-  }
-</script>
-<script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
-<script src="contact.js"></script>
-</body></html>
+<body>
+  <p style="font-family:sans-serif;padding:24px;">Taking you to the start… <a href="sq1.html">Continue</a></p>
+</body>
+</html>

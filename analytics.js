@@ -46,7 +46,7 @@
 
   /* ── funnel step views ─────────────────────────────────────────────
      Slug → funnel + on-screen step number. Redirect-only pages
-     (step4*, step6, ev-step7) are deliberately absent. */
+     (step4*, step6, ev-step7, retired sq4-sq7/sq6b) are deliberately absent. */
   var STEPS = {
     'step1.html':   ['fmb', 1], 'step1b.html':  ['fmb', 2],
     'step2.html':   ['fmb', 3], 'step3.html':   ['fmb', 4],
@@ -56,8 +56,6 @@
     'ev-step3.html': ['ev', 3], 'ev-step4.html': ['ev', 4],
     'ev-step5.html': ['ev', 5], 'ev-step6.html': ['ev', 6],
     'sq1.html': ['sq', 1], 'sq2.html':  ['sq', 2], 'sq3.html': ['sq', 3],
-    'sq4.html': ['sq', 4], 'sq5.html':  ['sq', 5], 'sq6.html': ['sq', 6],
-    'sq6b.html': ['sq', 6], 'sq7.html': ['sq', 7],
     'ap1.html': ['ap', 1], 'ap2.html': ['ap', 2], 'ap3.html': ['ap', 3],
     'ap4.html': ['ap', 4], 'ap5.html': ['ap', 5]
   };

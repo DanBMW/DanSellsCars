@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <!-- Personal share page for service prospects due in within the week:
+       Dan sends yourcar.html?reg=AB12CDE&n=Kate ahead of their service
+       booking. Their plate arrives pre-filled; they confirm mileage
+       (screen 1) then book an appointment with Dan (cal.eu / WhatsApp).
+       Passing screen 1 fires an interest notification to Dan via
+       Formspree; booking taps fire a second. Copy must never say the car
+       is on site NOW - these customers are due in, not in the building.
+       Personalised link - keep noindex and out of sitemap.xml. -->
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>DanSells | Your car</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <style>
+    .plate-wrap{display:flex;align-items:stretch;border-radius:12px;overflow:hidden;border:2px solid #14181e;box-shadow:0 12px 30px rgba(16,21,29,.16);margin:8px 0 14px;}
+    .plate-band{background:#003399;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 12px;font-size:.72rem;font-weight:800;letter-spacing:.03em;flex-shrink:0;}
+    .plate-band span{font-size:1rem;line-height:1;}
+    .plate-wrap input{flex:1;min-width:0;background:#ffd60a;border:none;outline:none;font-family:var(--display);font-size:clamp(1.5rem,7vw,2.1rem);font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:center;color:#14181e;padding:16px 10px;}
+    .plate-wrap input::placeholder{color:rgba(20,24,30,.32);letter-spacing:.12em;}
+    .plate-wrap input:focus{box-shadow:none;}
+    .car-reveal{background:linear-gradient(135deg,rgba(21,89,207,.08),rgba(21,89,207,.03));border:1px solid rgba(21,89,207,.22);border-radius:18px;padding:16px 20px;margin:0 0 18px;display:none;}
+    .car-reveal .cr-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1559cf;margin-bottom:6px;}
+    .car-reveal .cr-desc{font-family:var(--display);font-size:1.15rem;font-weight:600;color:#11161d;line-height:1.3;}
+    .appt-cards{display:grid;gap:12px;margin:18px 0 8px;}
+    .appt-card{display:flex;align-items:center;gap:16px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.1);border-radius:18px;padding:18px;text-decoration:none;transition:background .18s,transform .18s;}
+    .appt-card:hover{background:rgba(16,21,29,.08);transform:translateY(-1px);}
+    .appt-card.primary{background:rgba(21,89,207,.13);border-color:rgba(21,89,207,.32);}
+    .appt-icon{font-size:1.8rem;flex-shrink:0;width:44px;text-align:center;}
+    .appt-body strong{display:block;font-size:.95rem;font-weight:700;color:#141a22;margin-bottom:3px;}
+    .appt-body span{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
+    .appt-arrow{margin-left:auto;color:#5f6b7c;font-size:1rem;}
+    .value-note{display:flex;align-items:center;gap:10px;background:rgba(201,168,76,.09);border:1px dashed rgba(138,106,30,.4);border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:.85rem;color:#7a6020;line-height:1.5;}
+    .dan-audio{display:flex;align-items:center;gap:14px;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:14px 16px;margin:0 0 18px;}
+    .dan-audio img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;flex-shrink:0;border:2px solid rgba(21,89,207,.25);}
+    .da-body{flex:1;min-width:0;}
+    .da-body strong{display:block;font-size:.9rem;font-weight:700;color:#141a22;}
+    .da-body span{font-size:.78rem;color:#5f6b7c;}
+    .da-bar{height:4px;background:rgba(16,21,29,.08);border-radius:999px;margin-top:8px;overflow:hidden;}
+    .da-fill{height:100%;width:0;background:linear-gradient(90deg,#1559cf,#3a7be0);border-radius:999px;}
+    .da-btn{width:46px;height:46px;border-radius:50%;border:none;background:#1559cf;color:#fff;font-size:1.05rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px rgba(21,89,207,.5);transition:background .18s,transform .18s;}
+    .da-btn:hover{background:#0e3f96;transform:scale(1.05);}
+  </style>
+<script src="analytics.js" defer></script>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Just for you</span></div>
+    <div class="meta"><span class="dot"></span><span>From Dan</span></div>
+  </div>
+
+  <div class="step-wrap" id="stage1">
+    <div class="step-kicker">A note from Dan</div>
+    <h2 id="s1Heading">Your BMW is booked in with us soon. Perfect timing.</h2>
+    <p class="step-desc">While our service team look after your car, I can have its value and your options ready - so if you've ever wondered "what's it actually worth?", this is the week to find out. Check your reg below, add your rough mileage, and I'll do the rest. Takes about 20 seconds.</p>
+
+    <div class="dan-audio">
+      <img src="photo01.jpg" alt="Dan"/>
+      <div class="da-body">
+        <strong>A quick message from Dan</strong>
+        <span>30 seconds - press play</span>
+        <div class="da-bar"><div class="da-fill" id="daFill"></div></div>
+      </div>
+      <button type="button" class="da-btn" id="daBtn" onclick="daToggle()" aria-label="Play Dan's message">▶</button>
+      <audio id="daAudio" preload="none" src="dan-service-intro.mp3"></audio>
+    </div>
+
+    <div class="plate-wrap">
+      <div class="plate-band"><span>🇬🇧</span>UK</div>
+      <input id="ycReg" type="text" placeholder="AB12 CDE" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10" oninput="this.value=this.value.toUpperCase()"/>
+    </div>
+
+    <div class="car-reveal" id="carReveal">
+      <div class="cr-kicker">✨ Found it</div>
+      <div class="cr-desc" id="crDesc"></div>
+    </div>
+
+    <div class="field-group" style="margin-bottom:18px;">
+      <label>Approximate mileage *</label>
+      <input id="ycMileage" type="text" inputmode="numeric" placeholder="e.g. 32,000" onkeydown="if(event.key==='Enter')passStage1()"/>
+    </div>
+
+    <button class="btn" id="s1Btn" style="width:100%;" onclick="passStage1()">That's my car →</button>
+    <p class="hint" style="margin-top:12px;">No forms, no photos. Dan already has what he needs on file - this just confirms the car and where it's at.</p>
+  </div>
+
+  <div class="step-wrap" id="stage2" style="display:none;">
+    <div class="step-kicker">That's everything</div>
+    <h2 id="s2Heading">Lovely. Now book ten minutes with me.</h2>
+    <p class="step-desc">Your car is coming in soon anyway - so booking a chat around your service visit is the easiest ten minutes you'll ever find. Pick what suits you best.</p>
+
+    <div class="value-note"><span style="font-size:1.3rem;">🔒</span><span>Your figure is being prepared now - I'll bring it to the conversation, whichever option you pick.</span></div>
+
+    <div class="appt-cards" id="apptCards">
+      <a id="card-visit" class="appt-card primary" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener" onclick="bookTap('Appointment at Ruxley')">
+        <div class="appt-icon">🤝</div>
+        <div class="appt-body">
+          <strong>Book an appointment with me</strong>
+          <span>Time it with your service visit if that's easiest - I'll work around your slot. Figure ready, no rush.</span>
+        </div>
+        <div class="appt-arrow">›</div>
+      </a>
+      <a id="card-phone" class="appt-card" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" onclick="bookTap('Telephone appointment')">
+        <div class="appt-icon">📞</div>
+        <div class="appt-body">
+          <strong>Telephone appointment</strong>
+          <span>Book a call before your visit and we'll talk it through first.</span>
+        </div>
+        <div class="appt-arrow">›</div>
+      </a>
+      <a id="card-wa" class="appt-card" href="https://wa.me/447827138197" target="_blank" rel="noopener" onclick="bookTap('WhatsApp')">
+        <div class="appt-icon">💬</div>
+        <div class="appt-body">
+          <strong>WhatsApp me</strong>
+          <span>Drop me a message and we'll sort a time between us.</span>
+        </div>
+        <div class="appt-arrow">›</div>
+      </a>
+    </div>
+
+    <p class="hint" style="margin-top:14px;">Can't decide? Leave it with me - I have your details and I'll be in touch either way.</p>
+  </div>
+</div></div>
+<script>
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+  const params = new URLSearchParams(location.search);
+  const linkName = (params.get('n')||params.get('name')||'').trim().replace(/[^A-Za-z' -]/g,'').slice(0,30);
+  let dvlaDesc = '';
+
+  function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
+
+  let daPlayed = false;
+  function daToggle(){
+    const a = document.getElementById("daAudio");
+    const b = document.getElementById("daBtn");
+    if(a.paused){
+      a.play();
+      b.textContent = "❚❚";
+      if(!daPlayed){ daPlayed = true; if(typeof gtag==="function") gtag("event","dan_audio_play",{page:"yourcar"}); }
+    } else { a.pause(); b.textContent = "▶"; }
+  }
+  (function(){
+    const a = document.getElementById("daAudio");
+    a.addEventListener("timeupdate",()=>{ if(a.duration) document.getElementById("daFill").style.width=(a.currentTime/a.duration*100)+"%"; });
+    a.addEventListener("ended",()=>{ document.getElementById("daBtn").textContent="▶"; document.getElementById("daFill").style.width="0"; });
+  })();
+
+  // Personalise + pre-fill from the link Dan sent
+  if(linkName){
+    document.getElementById("s1Heading").textContent = linkName + ", your BMW is booked in with us soon. Perfect timing.";
+    document.getElementById("s2Heading").textContent = "Lovely, " + linkName + ". You're already coming in - so let me come to you.";
+  }
+  const linkReg = (params.get('reg')||params.get('r')||'').toUpperCase().replace(/[^A-Z0-9 ]/g,'').slice(0,10);
+  if(linkReg){
+    document.getElementById("ycReg").value = linkReg;
+    lookup(linkReg);
+  }
+
+  async function lookup(reg){
+    try{
+      const res = await fetch(WORKER + "?target=dvla-lookup&reg=" + encodeURIComponent(reg.replace(/\s/g,"")));
+      const d = await res.json();
+      if(d.make){
+        const parts=[String(d.yearOfManufacture||d.year||""), (d.make||"").toUpperCase()==="BMW"?"BMW":toTC(d.make||""), toTC(d.model||""), toTC(d.colour||""), toTC(d.fuelType||"")].filter(Boolean);
+        dvlaDesc = parts.join(" · ");
+        document.getElementById("crDesc").textContent = dvlaDesc;
+        document.getElementById("carReveal").style.display = "block";
+        // Kick off the market scrape so Dan's figure is ready - never shown here
+        const p=new URLSearchParams({target:"market-start",make:d.make||"",model:d.model||"",year:String(d.yearOfManufacture||d.year||""),fuel:(d.fuelType||"").toLowerCase()});
+        fetch(WORKER+"?"+p).catch(()=>{});
+      }
+    }catch(e){}
+  }
+
+  function notify(subject, extra){
+    const payload = Object.assign({
+      _subject: subject,
+      _replyto: "noreply@dan-sells.co.uk",
+      lead_type: "Ramp Report share link",
+      name: linkName,
+      reg: document.getElementById("ycReg").value.trim(),
+      car: dvlaDesc,
+      mileage: document.getElementById("ycMileage").value.trim(),
+      link: location.href
+    }, extra||{});
+    try{
+      fetch("https://formspree.io/f/xqewleog",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify(payload)
+      }).catch(()=>{});
+    }catch(e){}
+  }
+
+  function passStage1(){
+    const reg = document.getElementById("ycReg").value.trim();
+    const mil = document.getElementById("ycMileage").value.trim();
+    if(reg.replace(/\s/g,"").length < 4){ alert("Please check your registration."); return; }
+    if(!mil){ alert("Please add your rough mileage - a ballpark is fine."); return; }
+    // The interest signal: they confirmed the car and gave mileage
+    if(!sessionStorage.getItem("ycPinged")){
+      sessionStorage.setItem("ycPinged","1");
+      notify("🔥 " + (linkName||reg) + " opened your link and confirmed their car", {
+        note: "Interest signal - service prospect (due in within the week) passed screen 1: confirmed car + mileage. They have NOT picked an option yet; the choices are on their screen now."
+      });
+    }
+    document.getElementById("stage1").style.display = "none";
+    document.getElementById("stage2").style.display = "block";
+    window.scrollTo({top:0});
+  }
+
+  function bookTap(which){
+    const key = "ycBooked_" + which;
+    if(sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key,"1");
+    notify("📅 " + (linkName||document.getElementById("ycReg").value.trim()||"Customer") + " tapped: " + which, {
+      booking_choice: which,
+      note: "They tapped this option from your share link - watch for the booking confirmation."
+    });
+  }
+
+
+  // Prefill cal.eu and WhatsApp with their name if Dan included it in the link
+  if(linkName){
+    ["card-visit","card-phone"].forEach(id=>{
+      const a=document.getElementById(id);
+      a.href += "?name=" + encodeURIComponent(linkName);
+    });
+    document.getElementById("card-wa").href = "https://wa.me/447827138197?text=" + encodeURIComponent("Hi Dan, it's " + linkName + " - my car's booked in for service soon and I've just confirmed my details through your link. When's good for a chat?");
+  }
+</script>
+<script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
+<script src="contact.js"></script>
+</body></html>
