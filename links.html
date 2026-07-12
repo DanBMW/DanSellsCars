@@ -249,6 +249,19 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
 
+    <!-- Ramp Report personal link builder -->
+    <div class="widget-card">
+      <div class="widget-name">&#x1F697; Ramp Report Personal Link <span class="tag tag-new">New</span></div>
+      <div class="widget-desc">Send a customer a link with their reg already filled in. They confirm the car, add mileage and book - you get an email the moment they pass the first screen.</div>
+      <input class="widget-input" id="rr-reg" type="text" placeholder="Registration e.g. AB12 CDE" autocomplete="off" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+      <input class="widget-input" id="rr-name" type="text" placeholder="Customer first name (optional)" autocomplete="off">
+      <div class="btn-row" style="margin-bottom:8px">
+        <button class="btn-open" onclick="openRampLink()">Open</button>
+        <button class="btn-copy" onclick="copyRampLink(this)">Copy</button>
+        <button class="btn-wa" onclick="shareRampWA()">&#x1F4F2; WA</button>
+      </div>
+    </div>
+
     <!-- Combined Signing Form -->
     <div class="widget-card">
       <div class="widget-name">&#x1F4CB; Combined Signing Form <span class="tag tag-dealer">Dealer Only</span></div>
@@ -688,6 +701,31 @@ const CAL = {
 function shareCalWA(type) {
   const c = CAL[type];
   const msg = 'Hi! Here’s a link to ' + c.label + ':\n\n' + c.url;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ── Ramp Report personal link ──
+function buildRampLink() {
+  const reg = document.getElementById('rr-reg').value.trim();
+  if (!reg) { alert('Please enter the registration.'); return null; }
+  const name = document.getElementById('rr-name').value.trim();
+  const params = new URLSearchParams({ reg: reg });
+  if (name) params.set('n', name);
+  return 'https://dan-sells.co.uk/yourcar.html?' + params.toString();
+}
+function openRampLink() {
+  const link = buildRampLink();
+  if (link) window.open(link, '_blank');
+}
+function copyRampLink(btn) {
+  const link = buildRampLink();
+  if (link) copyText(link, btn);
+}
+function shareRampWA() {
+  const link = buildRampLink();
+  if (!link) return;
+  const name = document.getElementById('rr-name').value.trim();
+  const msg = 'Hi' + (name ? ' ' + name : '') + ", it's Dan from BMW Ruxley. I've set this up for you - your reg is already filled in. Takes about 20 seconds and I'll have your car's value ready for when we speak:\n\n" + link;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 

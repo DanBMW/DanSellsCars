@@ -28,7 +28,7 @@
 
     <div class="value-tease">
       <div class="vt-kicker">📊 Your car's value</div>
-      <p class="vt-range" id="vtRange">I'm pulling live market prices for cars like yours right now…</p>
+      <p class="vt-range">I'm pricing your car against the live market right now.</p>
       <div class="vt-locked">
         <span style="font-size:1.3rem;">🔒</span>
         <div>
@@ -77,8 +77,6 @@
   // No reg? Back to the start.
   if(!sessionStorage.getItem("sqPXReg")) location.replace("sq1.html");
 
-  let marketResult = null;
-
   function fmtRange(prices){
     const avg = prices.reduce((a,b)=>a+b,0)/prices.length;
     return {
@@ -89,38 +87,11 @@
     };
   }
 
-  // Poll the market scrape in the background while they type - if a range
-  // arrives in time, show the teaser; the exact figure stays locked either way.
-  (async function backgroundPoll(){
-    const runId = sessionStorage.getItem("sqMarketRunId");
-    const el = document.getElementById("vtRange");
-    if(!runId){ el.textContent = "I'll price your car against the live market before we speak."; return; }
-    for(let i=0;i<8;i++){
-      await new Promise(r=>setTimeout(r,2500));
-      try{
-        const r = await fetch(WORKER+'?target=market-poll&runId='+encodeURIComponent(runId));
-        const d = await r.json();
-        if(d.status==='SUCCEEDED'){
-          const prices=(d.items||[]).map(l=>l.pricing&&l.pricing.mainPrice?l.pricing.mainPrice:0).filter(p=>p>500).sort((a,b)=>a-b);
-          if(prices.length){
-            marketResult = fmtRange(prices);
-            el.innerHTML = 'Cars like yours are listed at <strong>'+marketResult.low+' – '+marketResult.high+'</strong> right now.';
-          } else {
-            el.textContent = "I'll price your car against the live market before we speak.";
-          }
-          return;
-        }
-        if(d.status==='FAILED'){ el.textContent = "I'll price your car against the live market before we speak."; return; }
-      }catch(e){ break; }
-    }
-    el.textContent = "I'll price your car against the live market before we speak.";
-  })();
-
+  // Market figures are for Dan's email only - never shown to the customer.
   async function finalPoll(){
-    if(marketResult) return marketResult;
     const runId = sessionStorage.getItem("sqMarketRunId");
     if(!runId) return null;
-    for(let i=0;i<3;i++){
+    for(let i=0;i<5;i++){
       await new Promise(r=>setTimeout(r,2000));
       try{
         const r = await fetch(WORKER+'?target=market-poll&runId='+encodeURIComponent(runId));

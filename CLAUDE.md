@@ -44,7 +44,8 @@ the final step.
 | Pages | Funnel |
 |---|---|
 | `step1.html`–`step8.html` (+ `step1b`, `step4b/c/m`) | **"Find my BMW"** — 8-step new/used car matching brief. Entry: `start.html`. `step1b` is step 2; `step4b/c/m` are branch/redirect pages within the part-exchange flow. Shared behaviour (silent resume, progress bar, brief ticket) lives in `funnel-ui.js` + `funnel.css`. Submits on `step8.html` → `thankyou.html` / `wait.html`. |
-| `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked market-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.eu links). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
+| `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.eu links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses plain hyphens, no en/em dashes (Dan's rule). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
+| `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate` (built via the widget on `links.html`); the plate arrives pre-filled, the customer confirms car + mileage (screen 1) then books (cal.eu / WhatsApp). Passing screen 1 fires an interest-signal Formspree email to Dan; booking taps fire a second. Personalised page: keep `noindex` and out of `sitemap.xml`. |
 | `ev-step1.html`–`ev-step7.html` (+ `ev-thankyou`) | **BMW EV Finder** — EV-specific matching funnel (entry: `EV.html` / `ev.html`). Shared behaviour in `ev-funnel-ui.js`. Submits on `ev-step6.html`. |
 | `ap1.html`–`ap6.html` | **Vehicle Appraisal** — customer self-appraisal of their current car (entry: `appraisal.html`). Submits on `ap5.html`, confirmation on `ap6.html`. |
 
@@ -61,7 +62,8 @@ customer-facing, `Value.html` trade tool), dealership pages
   added; a property change means editing every page.
 - **Formspree endpoint `https://formspree.io/f/xqewleog`** — the single form
   backend for all lead submissions: funnel final steps (`step8.html`,
-  `ev-step6.html`, `ap5.html`, `sq3.html`), `contact.js`, `tradevalue.html`,
+  `ev-step6.html`, `ap5.html`, `sq3.html`), `yourcar.html` interest pings,
+  `contact.js`, `tradevalue.html`,
   `index.html`, offer pages, `combined-form.html`, `rav-form.html`,
   `commission-disclosure.html`, `refer.html`, `thankyou.html`, `wait.html`,
   and more. Search for `formspree.io` before changing anything about the
