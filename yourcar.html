@@ -31,6 +31,15 @@
     .appt-body span{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
     .appt-arrow{margin-left:auto;color:#5f6b7c;font-size:1rem;}
     .value-note{display:flex;align-items:center;gap:10px;background:rgba(201,168,76,.09);border:1px dashed rgba(138,106,30,.4);border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:.85rem;color:#7a6020;line-height:1.5;}
+    .dan-audio{display:flex;align-items:center;gap:14px;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:14px 16px;margin:0 0 18px;}
+    .dan-audio img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;flex-shrink:0;border:2px solid rgba(21,89,207,.25);}
+    .da-body{flex:1;min-width:0;}
+    .da-body strong{display:block;font-size:.9rem;font-weight:700;color:#141a22;}
+    .da-body span{font-size:.78rem;color:#5f6b7c;}
+    .da-bar{height:4px;background:rgba(16,21,29,.08);border-radius:999px;margin-top:8px;overflow:hidden;}
+    .da-fill{height:100%;width:0;background:linear-gradient(90deg,#1559cf,#3a7be0);border-radius:999px;}
+    .da-btn{width:46px;height:46px;border-radius:50%;border:none;background:#1559cf;color:#fff;font-size:1.05rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px rgba(21,89,207,.5);transition:background .18s,transform .18s;}
+    .da-btn:hover{background:#0e3f96;transform:scale(1.05);}
   </style>
 <script src="analytics.js" defer></script>
 </head>
@@ -44,6 +53,17 @@
     <div class="step-kicker">A note from Dan</div>
     <h2 id="s1Heading">I've set this up just for you.</h2>
     <p class="step-desc">Your reg should already be filled in below. Check it's right, add your rough mileage, and I'll get your car's value ready for when we speak. Takes about 20 seconds.</p>
+
+    <div class="dan-audio">
+      <img src="photo01.jpg" alt="Dan"/>
+      <div class="da-body">
+        <strong>A quick message from Dan</strong>
+        <span>30 seconds - press play</span>
+        <div class="da-bar"><div class="da-fill" id="daFill"></div></div>
+      </div>
+      <button type="button" class="da-btn" id="daBtn" onclick="daToggle()" aria-label="Play Dan's message">▶</button>
+      <audio id="daAudio" preload="none" src="dan-service-intro.mp3"></audio>
+    </div>
 
     <div class="plate-wrap">
       <div class="plate-band"><span>🇬🇧</span>UK</div>
@@ -108,6 +128,22 @@
   let dvlaDesc = '';
 
   function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
+
+  let daPlayed = false;
+  function daToggle(){
+    const a = document.getElementById("daAudio");
+    const b = document.getElementById("daBtn");
+    if(a.paused){
+      a.play();
+      b.textContent = "❚❚";
+      if(!daPlayed){ daPlayed = true; if(typeof gtag==="function") gtag("event","dan_audio_play",{page:"yourcar"}); }
+    } else { a.pause(); b.textContent = "▶"; }
+  }
+  (function(){
+    const a = document.getElementById("daAudio");
+    a.addEventListener("timeupdate",()=>{ if(a.duration) document.getElementById("daFill").style.width=(a.currentTime/a.duration*100)+"%"; });
+    a.addEventListener("ended",()=>{ document.getElementById("daBtn").textContent="▶"; document.getElementById("daFill").style.width="0"; });
+  })();
 
   // Personalise + pre-fill from the link Dan sent
   if(linkName){

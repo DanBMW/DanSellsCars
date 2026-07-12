@@ -20,7 +20,15 @@
     .wa-hatch{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:.85rem;}
     .wa-hatch a{color:#1a7a3c;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
     .wa-hatch a:hover{text-decoration:underline;}
-    .sq-video-slot{margin:0 0 18px;}
+    .dan-audio{display:flex;align-items:center;gap:14px;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:14px 16px;margin:0 0 18px;}
+    .dan-audio img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;flex-shrink:0;border:2px solid rgba(21,89,207,.25);}
+    .da-body{flex:1;min-width:0;}
+    .da-body strong{display:block;font-size:.9rem;font-weight:700;color:#141a22;}
+    .da-body span{font-size:.78rem;color:#5f6b7c;}
+    .da-bar{height:4px;background:rgba(16,21,29,.08);border-radius:999px;margin-top:8px;overflow:hidden;}
+    .da-fill{height:100%;width:0;background:linear-gradient(90deg,#1559cf,#3a7be0);border-radius:999px;}
+    .da-btn{width:46px;height:46px;border-radius:50%;border:none;background:#1559cf;color:#fff;font-size:1.05rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px rgba(21,89,207,.5);transition:background .18s,transform .18s;}
+    .da-btn:hover{background:#0e3f96;transform:scale(1.05);}
   </style>
 <script src="analytics.js" defer></script>
 </head>
@@ -35,10 +43,16 @@
     <h2>Your car's on our ramp.<br>Want to know what it's worth?</h2>
     <p class="step-desc">Pop your reg in and I'll pull up your car. While the service team look after it, I'll get your value ready.</p>
 
-    <!-- video:dan-intro - drop a tap-to-play video of Dan here when recorded.
-         Suggested markup: <video controls preload="metadata" poster="photo01.jpg"
-         style="width:100%;border-radius:16px;" src="dan-service-intro.mp4"></video> -->
-    <div class="sq-video-slot"></div>
+    <div class="dan-audio">
+      <img src="photo01.jpg" alt="Dan"/>
+      <div class="da-body">
+        <strong>A quick message from Dan</strong>
+        <span>30 seconds - press play</span>
+        <div class="da-bar"><div class="da-fill" id="daFill"></div></div>
+      </div>
+      <button type="button" class="da-btn" id="daBtn" onclick="daToggle()" aria-label="Play Dan's message">▶</button>
+      <audio id="daAudio" preload="none" src="dan-service-intro.mp3"></audio>
+    </div>
 
     <div class="ramp-hook">💡 <strong>Why now?</strong> Your BMW will never be worth more than it is today - and it's rarely easier to value than when it's already with us.</div>
 
@@ -62,6 +76,22 @@
   // Prefill if they've been here before this session
   const savedReg = sessionStorage.getItem("sqPXReg");
   if(savedReg) document.getElementById("sqReg").value = savedReg;
+
+  let daPlayed = false;
+  function daToggle(){
+    const a = document.getElementById("daAudio");
+    const b = document.getElementById("daBtn");
+    if(a.paused){
+      a.play();
+      b.textContent = "❚❚";
+      if(!daPlayed){ daPlayed = true; if(typeof gtag==="function") gtag("event","dan_audio_play",{page:"sq1"}); }
+    } else { a.pause(); b.textContent = "▶"; }
+  }
+  (function(){
+    const a = document.getElementById("daAudio");
+    a.addEventListener("timeupdate",()=>{ if(a.duration) document.getElementById("daFill").style.width=(a.currentTime/a.duration*100)+"%"; });
+    a.addEventListener("ended",()=>{ document.getElementById("daBtn").textContent="▶"; document.getElementById("daFill").style.width="0"; });
+  })();
 
   function regTyped(el){
     el.value = el.value.toUpperCase();
