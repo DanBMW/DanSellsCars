@@ -45,7 +45,14 @@ the final step.
 |---|---|
 | `step1.html`–`step8.html` (+ `step1b`, `step4b/c/m`) | **"Find my BMW"** — 8-step new/used car matching brief. Entry: `start.html`. `step1b` is step 2; `step4b/c/m` are branch/redirect pages within the part-exchange flow. Shared behaviour (silent resume, progress bar, brief ticket) lives in `funnel-ui.js` + `funnel.css`. Submits on `step8.html` → `thankyou.html` / `wait.html`. |
 | `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.eu links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses plain hyphens, no en/em dashes (Dan's rule). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
-| `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate` (built via the widget on `links.html`); the plate arrives pre-filled, the customer confirms car + mileage (screen 1) then books (cal.eu / WhatsApp). Passing screen 1 fires an interest-signal Formspree email to Dan; booking taps fire a second. Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
+| `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate` (built via the widget on `links.html`); the plate arrives pre-filled, the customer confirms car + mileage then taps **"I'm interested"** (screen 1) and books (cal.eu / WhatsApp). Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
+| `yourbrief.html` | **Optional deep-dive brief** — nudged from `yourcar.html` stage 2 and `sq_done.html` after the initial interest/booking stages. Single page, five skippable stages (direction, timing, payment + budget, PX intent, recap ticket + notes), reuses identity from `sessionStorage` (never re-asks for what Dan has), **one** Formspree submission on send. |
+
+**Formspree is rationed** (submission volume costs money): `yourcar.html`
+sends exactly one interest email per customer ("I'm interested" tap);
+booking taps are GA `booking_tap` events only — cal.eu confirms real
+bookings itself; `yourbrief.html` sends one email per completed brief.
+Don't add per-step or per-tap Formspree calls to these flows.
 | `ev-step1.html`–`ev-step7.html` (+ `ev-thankyou`) | **BMW EV Finder** — EV-specific matching funnel (entry: `EV.html` / `ev.html`). Shared behaviour in `ev-funnel-ui.js`. Submits on `ev-step6.html`. |
 | `ap1.html`–`ap6.html` | **Vehicle Appraisal** — customer self-appraisal of their current car (entry: `appraisal.html`). Submits on `ap5.html`, confirmation on `ap6.html`. |
 
@@ -63,7 +70,7 @@ customer-facing, `Value.html` trade tool), dealership pages
 - **Formspree endpoint `https://formspree.io/f/xqewleog`** — the single form
   backend for all lead submissions: funnel final steps (`step8.html`,
   `ev-step6.html`, `ap5.html`, `sq3.html`), `yourcar.html` interest pings,
-  `contact.js`, `tradevalue.html`,
+  `yourbrief.html`, `contact.js`, `tradevalue.html`,
   `index.html`, offer pages, `combined-form.html`, `rav-form.html`,
   `commission-disclosure.html`, `refer.html`, `thankyou.html`, `wait.html`,
   and more. Search for `formspree.io` before changing anything about the

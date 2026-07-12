@@ -6,9 +6,11 @@
        Dan sends yourcar.html?reg=AB12CDE&n=Kate ahead of their service
        booking. Their plate arrives pre-filled; they confirm mileage
        (screen 1) then book an appointment with Dan (cal.eu / WhatsApp).
-       Passing screen 1 fires an interest notification to Dan via
-       Formspree; booking taps fire a second. Copy must never say the car
-       is on site NOW - these customers are due in, not in the building.
+       Formspree is rationed: tapping "I'm interested" fires ONE interest
+       email; booking taps are GA events only (cal.eu confirms real
+       bookings itself). The optional yourbrief.html deep-dive is its own
+       single submission. Copy must never say the car is on site NOW -
+       these customers are due in, not in the building.
        Personalised link - keep noindex and out of sitemap.xml. -->
   <meta name="robots" content="noindex, nofollow"/>
   <title>DanSells | Your car</title>
@@ -84,7 +86,7 @@
       <input id="ycMileage" type="text" inputmode="numeric" placeholder="e.g. 32,000" onkeydown="if(event.key==='Enter')passStage1()"/>
     </div>
 
-    <button class="btn" id="s1Btn" style="width:100%;" onclick="passStage1()">That's my car →</button>
+    <button class="btn" id="s1Btn" style="width:100%;" onclick="passStage1()">I'm interested →</button>
     <p class="hint" style="margin-top:12px;">No forms, no photos. Dan already has what he needs on file - this just confirms the car and where it's at.</p>
   </div>
 
@@ -123,6 +125,15 @@
     </div>
 
     <p class="hint" style="margin-top:14px;">Can't decide? Leave it with me - I have your details and I'll be in touch either way.</p>
+
+    <a href="yourbrief.html" id="briefNudge" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:16px 18px;margin-top:18px;text-decoration:none;">
+      <span style="font-size:1.7rem;flex-shrink:0;">🧠</span>
+      <span style="flex:1;">
+        <strong style="display:block;font-size:.92rem;font-weight:700;color:#5c470f;margin-bottom:3px;">Got one more minute? Paint me a picture.</strong>
+        <span style="font-size:.8rem;color:#7a6020;line-height:1.5;">Tell me what you'd actually go for - a few taps, no typing. I'll walk into our chat already knowing your taste.</span>
+      </span>
+      <span style="color:#8a6a1e;font-size:1rem;">›</span>
+    </a>
   </div>
 </div></div>
 <script>
@@ -201,11 +212,17 @@
     const mil = document.getElementById("ycMileage").value.trim();
     if(reg.replace(/\s/g,"").length < 4){ alert("Please check your registration."); return; }
     if(!mil){ alert("Please add your rough mileage - a ballpark is fine."); return; }
-    // The interest signal: they confirmed the car and gave mileage
+    // Remember them for the optional brief page
+    sessionStorage.setItem("ycName", linkName);
+    sessionStorage.setItem("ycReg", reg);
+    sessionStorage.setItem("ycMileage", mil);
+    // The interest signal: they tapped "I'm interested" with car + mileage confirmed.
+    // This is the ONLY Formspree email this page sends - booking taps are GA
+    // events, and real bookings arrive via cal.eu's own confirmation.
     if(!sessionStorage.getItem("ycPinged")){
       sessionStorage.setItem("ycPinged","1");
-      notify("🔥 " + (linkName||reg) + " opened your link and confirmed their car", {
-        note: "Interest signal - service prospect (due in within the week) passed screen 1: confirmed car + mileage. They have NOT picked an option yet; the choices are on their screen now."
+      notify("🔥 " + (linkName||reg) + " tapped I'm interested", {
+        note: "Interest signal - service prospect (due in within the week) confirmed car + mileage and tapped I'm interested. Booking options are on their screen now; if they book, cal.eu will confirm separately."
       });
     }
     document.getElementById("stage1").style.display = "none";
@@ -213,14 +230,13 @@
     window.scrollTo({top:0});
   }
 
+  // Booking taps are tracked in GA only (no Formspree - cal.eu confirms real
+  // bookings itself, and Formspree submissions are rationed).
   function bookTap(which){
     const key = "ycBooked_" + which;
     if(sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key,"1");
-    notify("📅 " + (linkName||document.getElementById("ycReg").value.trim()||"Customer") + " tapped: " + which, {
-      booking_choice: which,
-      note: "They tapped this option from your share link - watch for the booking confirmation."
-    });
+    if(typeof gtag === "function") gtag("event","booking_tap",{choice:which,page:"yourcar"});
   }
 
 
