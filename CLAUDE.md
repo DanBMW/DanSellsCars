@@ -32,7 +32,7 @@ the HTML/CSS/JS directly and push.
 
   Editing `worker.js` in this repo does **not** deploy it — it must be
   re-deployed to Cloudflare manually. Pages that call the worker include
-  `tradevalue.html`, `step5.html`, `sq6b.html`, `sq7.html`, `ap1.html`,
+  `tradevalue.html`, `step5.html`, `sq1.html`, `sq3.html`, `ap1.html`,
   `ev-step4.html`, `EV.html`.
 
 ## Site structure: the funnels
@@ -44,7 +44,7 @@ the final step.
 | Pages | Funnel |
 |---|---|
 | `step1.html`–`step8.html` (+ `step1b`, `step4b/c/m`) | **"Find my BMW"** — 8-step new/used car matching brief. Entry: `start.html`. `step1b` is step 2; `step4b/c/m` are branch/redirect pages within the part-exchange flow. Shared behaviour (silent resume, progress bar, brief ticket) lives in `funnel-ui.js` + `funnel.css`. Submits on `step8.html` → `thankyou.html` / `wait.html`. |
-| `sq1.html`–`sq7.html` (+ `sq6b`, `sq_done`) | **Service Qualifier** — qualifies service/service-plan leads. `sq6b` is a branch of step 6. Ends at `sq_done.html`. |
+| `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked market-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.eu links). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
 | `ev-step1.html`–`ev-step7.html` (+ `ev-thankyou`) | **BMW EV Finder** — EV-specific matching funnel (entry: `EV.html` / `ev.html`). Shared behaviour in `ev-funnel-ui.js`. Submits on `ev-step6.html`. |
 | `ap1.html`–`ap6.html` | **Vehicle Appraisal** — customer self-appraisal of their current car (entry: `appraisal.html`). Submits on `ap5.html`, confirmation on `ap6.html`. |
 
@@ -61,7 +61,7 @@ customer-facing, `Value.html` trade tool), dealership pages
   added; a property change means editing every page.
 - **Formspree endpoint `https://formspree.io/f/xqewleog`** — the single form
   backend for all lead submissions: funnel final steps (`step8.html`,
-  `ev-step6.html`, `ap5.html`, `sq7.html`), `contact.js`, `tradevalue.html`,
+  `ev-step6.html`, `ap5.html`, `sq3.html`), `contact.js`, `tradevalue.html`,
   `index.html`, offer pages, `combined-form.html`, `rav-form.html`,
   `commission-disclosure.html`, `refer.html`, `thankyou.html`, `wait.html`,
   and more. Search for `formspree.io` before changing anything about the
@@ -74,8 +74,8 @@ GA-tagged page) fires the conversion events; keep its slug→step map in sync
 when adding/renaming funnel pages. Events:
 
 - `<funnel>_step_<n>` — funnel step view. Funnels: `fmb` (Find my BMW,
-  steps 1–8), `ev` (EV Finder, 1–6), `sq` (Service Qualifier, 1–7, `sq6b`
-  reports step 6), `ap` (Appraisal, 1–5). Redirect pages fire nothing.
+  steps 1–8), `ev` (EV Finder, 1–6), `sq` (Service Qualifier, 1–3),
+  `ap` (Appraisal, 1–5). Redirect pages fire nothing.
 - `<funnel>_complete` — confirmation page view (`thankyou`/`wait`,
   `ev-thankyou`, `sq_done`, `ap6`), deduped per session.
 - `generate_lead` `{form_page}` — any Formspree submission (a `fetch`
@@ -90,9 +90,10 @@ when adding/renaming funnel pages. Events:
 
 ## Story sharing / referral loop — story-share.js
 
-`thankyou.html`, `ev-thankyou.html` and `sq_done.html` share one module,
-`story-share.js` (loaded blocking in `<head>`, before the inline scripts that
-call it). Each page keeps its own `socialify()` copy scrubbing (surname,
+`thankyou.html` and `ev-thankyou.html` share one module, `story-share.js`
+(loaded blocking in `<head>`, before the inline scripts that call it).
+(`sq_done.html` used it too until the Service Qualifier became the reg-first
+"Ramp Report" — that page is now booking-only.) Each page keeps its own `socialify()` copy scrubbing (surname,
 exact £ figures) and calls `dsStoryShare.init({social, firstName, tagline,
 fileName, shareTitle})`. The module mints the visitor's referral code
 (e.g. `KATE-7X2M`, localStorage `dsMyRef`), rewrites the `dan-sells.co.uk`

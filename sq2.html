@@ -2,62 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Service Qualifier</title>
+  <title>DanSells | While your car's in</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <link rel="stylesheet" href="style.css"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <style>
+    .car-reveal{background:linear-gradient(135deg,rgba(21,89,207,.08),rgba(21,89,207,.03));border:1px solid rgba(21,89,207,.22);border-radius:18px;padding:20px 22px;margin:0 0 22px;animation:revealIn .5s ease-out;}
+    @keyframes revealIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+    .car-reveal .cr-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1559cf;margin-bottom:6px;}
+    .car-reveal .cr-desc{font-family:var(--display);font-size:1.25rem;font-weight:600;color:#11161d;line-height:1.3;}
+    .car-reveal .cr-plate{display:inline-block;background:#ffd60a;border:1.5px solid #14181e;border-radius:6px;padding:3px 10px;font-family:var(--display);font-weight:700;letter-spacing:.1em;font-size:.9rem;color:#14181e;margin-top:10px;}
+    @media(prefers-reduced-motion:reduce){.car-reveal{animation:none;}}
+  </style>
 <script src="analytics.js" defer></script>
 </head>
 <body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
-    <div class="meta"><span>Step 2 of 7</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">While your car's in</span></div>
+    <div class="meta"><span>Step 2 of 3</span></div>
   </div>
   <div class="step-wrap">
-    <div class="progress-bar"><div class="progress-fill" style="width:28%"></div></div>
-    <div class="step-kicker">The dream</div>
-    <h2>If you could change today, what would you go for?</h2>
-    <p class="step-desc">No commitment, this is just so I know where to focus. Pick the closest match.</p>
+    <div class="progress-bar"><div class="progress-fill" style="width:66%"></div></div>
+
+    <div class="car-reveal">
+      <div class="cr-kicker" id="crKicker">✨ Found it</div>
+      <div class="cr-desc" id="crDesc">Your BMW</div>
+      <div class="cr-plate" id="crPlate"></div>
+    </div>
+
+    <div class="step-kicker">One honest question</div>
+    <h2>How open are you to changing it?</h2>
+    <p class="step-desc">Completely honest is best - it just means I pitch the conversation at the right level. There's no wrong answer.</p>
     <div class="choices" id="choices">
-      <button class="choice" data-val="Something similar to what I have" onclick="pick(this)">
-        <span class="choice-emoji">🔄</span>
-        <span class="choice-title">Something similar</span>
-        <span class="choice-sub">Newer version of what I have</span>
+      <button class="choice" data-val="Very open, I've been thinking about it" onclick="pick(this)">
+        <span class="choice-emoji">🔥</span>
+        <span class="choice-title">Very open</span>
+        <span class="choice-sub">I have been thinking about it</span>
       </button>
-      <button class="choice" data-val="A larger BMW, more space" onclick="pick(this)">
-        <span class="choice-emoji">⬆️</span>
-        <span class="choice-title">Step up in size</span>
-        <span class="choice-sub">More space, bigger model</span>
+      <button class="choice" data-val="Open but no urgency" onclick="pick(this)">
+        <span class="choice-emoji">👍</span>
+        <span class="choice-title">Open but no rush</span>
+        <span class="choice-sub">Would consider the right deal</span>
       </button>
-      <button class="choice" data-val="An electric or plug-in hybrid BMW" onclick="pick(this)">
-        <span class="choice-emoji">⚡</span>
-        <span class="choice-title">Electric or plug-in hybrid</span>
-        <span class="choice-sub">Ready to go cleaner</span>
+      <button class="choice" data-val="Curious, just want to know what it's worth" onclick="pick(this)">
+        <span class="choice-emoji">🤔</span>
+        <span class="choice-title">Just curious</span>
+        <span class="choice-sub">Mainly want the value</span>
       </button>
-      <button class="choice" data-val="Something more performance-focused" onclick="pick(this)">
-        <span class="choice-emoji">🏎️</span>
-        <span class="choice-title">More performance</span>
-        <span class="choice-sub">M Sport or M model</span>
-      </button>
-      <button class="choice" data-val="An SUV or crossover" onclick="pick(this)">
-        <span class="choice-emoji">🏔️</span>
-        <span class="choice-title">SUV or crossover</span>
-        <span class="choice-sub">X3, X5, X7 territory</span>
-      </button>
-      <button class="choice" data-val="Not sure, open to suggestions" onclick="pick(this)">
-        <span class="choice-emoji">🤷</span>
-        <span class="choice-title">Open to suggestions</span>
-        <span class="choice-sub">Tell me what works for me</span>
+      <button class="choice" data-val="Not really, happy with my current car" onclick="pick(this)">
+        <span class="choice-emoji">😌</span>
+        <span class="choice-title">Happy as I am</span>
+        <span class="choice-sub">Not actively looking</span>
       </button>
     </div>
   </div>
 </div></div>
 <script>
+  // No reg? Back to the start.
+  const reg = sessionStorage.getItem("sqPXReg");
+  if(!reg){ location.replace("sq1.html"); }
+  else {
+    document.getElementById("crPlate").textContent = reg.toUpperCase();
+    function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
+    const parts = [
+      sessionStorage.getItem("sqDvlaYear")||"",
+      (sessionStorage.getItem("sqDvlaMake")||"").toUpperCase()==="BMW" ? "BMW" : toTC(sessionStorage.getItem("sqDvlaMake")||""),
+      toTC(sessionStorage.getItem("sqDvlaModel")||""),
+      toTC(sessionStorage.getItem("sqDvlaColour")||""),
+      toTC(sessionStorage.getItem("sqDvlaFuel")||"")
+    ].filter(Boolean);
+    if(parts.length){ document.getElementById("crDesc").textContent = parts.join(" · "); }
+    else { document.getElementById("crKicker").textContent = "✅ Got it"; document.getElementById("crDesc").textContent = "I'll look this one up myself"; }
+  }
+
   function pick(btn){
     document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected");
-    sessionStorage.setItem("sqModel", btn.dataset.val);
+    sessionStorage.setItem("sqOpenness", btn.dataset.val);
     setTimeout(()=>location.href="sq3.html",320);
   }
 </script>

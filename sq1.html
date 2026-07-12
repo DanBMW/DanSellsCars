@@ -2,54 +2,99 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Service Qualifier</title>
+  <title>DanSells | While your car's in</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <link rel="stylesheet" href="style.css"/>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <style>
+    .plate-wrap{display:flex;align-items:stretch;border-radius:12px;overflow:hidden;border:2px solid #14181e;box-shadow:0 12px 30px rgba(16,21,29,.16);margin:8px 0 14px;}
+    .plate-band{background:#003399;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 12px;font-size:.72rem;font-weight:800;letter-spacing:.03em;flex-shrink:0;}
+    .plate-band span{font-size:1rem;line-height:1;}
+    .plate-wrap input{flex:1;min-width:0;background:#ffd60a;border:none;outline:none;font-family:var(--display);font-size:clamp(1.5rem,7vw,2.1rem);font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:center;color:#14181e;padding:16px 10px;}
+    .plate-wrap input::placeholder{color:rgba(20,24,30,.32);letter-spacing:.12em;}
+    .plate-wrap input:focus{box-shadow:none;}
+    .ramp-hook{background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.26);border-radius:14px;padding:14px 16px;font-size:.86rem;color:#7a6020;line-height:1.55;margin-bottom:18px;}
+    .ramp-hook strong{color:#8a6a1e;}
+    .wa-hatch{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:.85rem;}
+    .wa-hatch a{color:#1a7a3c;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+    .wa-hatch a:hover{text-decoration:underline;}
+    .sq-video-slot{margin:0 0 18px;}
+  </style>
 <script src="analytics.js" defer></script>
 </head>
 <body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
-    <div class="meta"><span>Step 1 of 7</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">While your car's in</span></div>
+    <div class="meta"><span>Step 1 of 3</span></div>
   </div>
   <div class="step-wrap">
-    <div class="progress-bar"><div class="progress-fill" style="width:14%"></div></div>
-    <div class="step-kicker">Let's start simple</div>
-    <h2>How open are you to the idea of changing your BMW?</h2>
-    <p class="step-desc">Completely honest is best, this just means when we do speak, I am already pointing you in the right direction rather than starting from scratch.</p>
-    <div class="choices" id="choices">
-      <button class="choice" data-val="Very open, I've been thinking about it" onclick="pick(this)">
-        <span class="choice-emoji">🔥</span>
-        <span class="choice-title">Very open</span>
-        <span class="choice-sub">I have been thinking about it</span>
-      </button>
-      <button class="choice" data-val="Open but no urgency" onclick="pick(this)">
-        <span class="choice-emoji">👍</span>
-        <span class="choice-title">Open but no rush</span>
-        <span class="choice-sub">Would consider the right deal</span>
-      </button>
-      <button class="choice" data-val="Curious, just want to know what's possible" onclick="pick(this)">
-        <span class="choice-emoji">🤔</span>
-        <span class="choice-title">Just curious</span>
-        <span class="choice-sub">Want to know what is possible</span>
-      </button>
-      <button class="choice" data-val="Not really, happy with my current car" onclick="pick(this)">
-        <span class="choice-emoji">😌</span>
-        <span class="choice-title">Happy as I am</span>
-        <span class="choice-sub">Not actively looking</span>
-      </button>
+    <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+    <div class="step-kicker">45 seconds, start the clock</div>
+    <h2>Your car's on our ramp.<br>Want to know what it's worth?</h2>
+    <p class="step-desc">Pop your reg in and I'll pull up your car. While the service team look after it, I'll get your value ready.</p>
+
+    <!-- video:dan-intro — drop a tap-to-play video of Dan here when recorded.
+         Suggested markup: <video controls preload="metadata" poster="photo01.jpg"
+         style="width:100%;border-radius:16px;" src="dan-service-intro.mp4"></video> -->
+    <div class="sq-video-slot"></div>
+
+    <div class="ramp-hook">💡 <strong>Why now?</strong> Your BMW will never be worth more than it is today — and it's rarely easier to value than when it's already with us.</div>
+
+    <div class="plate-wrap">
+      <div class="plate-band"><span>🇬🇧</span>UK</div>
+      <input id="sqReg" type="text" placeholder="AB12 CDE" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10" oninput="regTyped(this)" onkeydown="if(event.key==='Enter')findCar()"/>
+    </div>
+
+    <button class="btn" id="findBtn" style="width:100%;" onclick="findCar()">Find my car →</button>
+    <p class="hint" style="margin-top:12px;">No photos, no paperwork - your car is already here, so I can see everything I need in person.</p>
+
+    <div class="wa-hatch">
+      <span style="color:var(--muted);">Prefer to skip the form?</span>
+      <a id="waHatch" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20my%20car%27s%20in%20for%20service%20today%20-%20what%27s%20my%20BMW%20worth%3F" target="_blank" rel="noopener">💬 WhatsApp Dan instead</a>
     </div>
   </div>
 </div></div>
 <script>
-  function pick(btn){
-    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
-    btn.classList.add("selected");
-    sessionStorage.setItem("sqOpenness", btn.dataset.val);
-    setTimeout(()=>location.href="sq2.html",320);
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+
+  // Prefill if they've been here before this session
+  const savedReg = sessionStorage.getItem("sqPXReg");
+  if(savedReg) document.getElementById("sqReg").value = savedReg;
+
+  function regTyped(el){
+    el.value = el.value.toUpperCase();
+    const reg = el.value.trim();
+    const msg = reg
+      ? "Hi Dan, my car's in for service today. My reg is " + reg + " - what's it worth?"
+      : "Hi Dan, my car's in for service today - what's my BMW worth?";
+    document.getElementById("waHatch").href = "https://wa.me/447827138197?text=" + encodeURIComponent(msg);
+  }
+
+  async function findCar(){
+    const reg = document.getElementById("sqReg").value.trim();
+    if(reg.replace(/\s/g,"").length < 4){ alert("Please enter your registration to continue."); return; }
+    const btn = document.getElementById("findBtn");
+    btn.disabled = true; btn.textContent = "Checking with DVLA…";
+    sessionStorage.setItem("sqPXReg", reg);
+    try{
+      const res = await fetch(WORKER + "?target=dvla-lookup&reg=" + encodeURIComponent(reg.replace(/\s/g,"").toUpperCase()));
+      const d = await res.json();
+      if(d.make){
+        sessionStorage.setItem("sqDvlaMake",  d.make||"");
+        sessionStorage.setItem("sqDvlaModel", d.model||"");
+        sessionStorage.setItem("sqDvlaYear",  String(d.yearOfManufacture||d.year||""));
+        sessionStorage.setItem("sqDvlaFuel",  d.fuelType||"");
+        sessionStorage.setItem("sqDvlaColour",d.colour||"");
+        // Kick off the market-price scrape now so a range is ready by step 3
+        const p = new URLSearchParams({target:"market-start",make:d.make||"",model:d.model||"",year:String(d.yearOfManufacture||d.year||""),fuel:(d.fuelType||"").toLowerCase()});
+        fetch(WORKER + "?" + p).then(r=>r.json()).then(x=>{
+          if(x.runId) sessionStorage.setItem("sqMarketRunId", x.runId);
+        }).catch(()=>{});
+      }
+    }catch(e){ /* DVLA down? No problem - Dan looks it up himself */ }
+    location.href = "sq2.html";
   }
 </script>
 <script src="scroll-hint.js"></script><script src="disclaimer.js"></script>

@@ -1,138 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Service Qualifier</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <link rel="stylesheet" href="style.css"/>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
-  <style>
-    .px-note{background:rgba(28,107,186,.10);border:1px solid rgba(28,107,186,.22);border-radius:14px;padding:14px 16px;font-size:.84rem;color:#2d5b94;line-height:1.55;margin-bottom:20px;}
-  </style>
-<script src="analytics.js" defer></script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <!-- Retired step of the old 7-step Service Qualifier - the funnel is now
+       3 steps (sq1-sq3, the "Ramp Report"). This stub only preserves old
+       links and mid-funnel sessions from before the change. -->
+  <meta name="robots" content="noindex"/>
+  <link rel="canonical" href="https://dan-sells.co.uk/sq1.html"/>
+  <meta http-equiv="refresh" content="0;url=sq1.html"/>
+  <title>DanSells | While your car's in</title>
+  <script>location.replace('sq1.html' + location.search + location.hash);</script>
 </head>
-<body><div class="app"><div class="shell">
-  <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
-    <div class="meta"><span>Step 6b of 7</span></div>
-  </div>
-  <div class="step-wrap">
-    <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
-    <div class="step-kicker">Your current car</div>
-    <h2>A few details about the car you are trading in.</h2>
-    <div class="px-note">🔍 When your car comes in, I will take a look at it in person. No need to send photos - I will assess it myself on the day.</div>
-    <div style="display:grid;gap:14px;">
-      <div class="field-group">
-        <label>Registration *</label>
-        <div style="display:flex;gap:8px;align-items:flex-end">
-          <input id="sqReg" type="text" placeholder="e.g. AB12 CDE" style="text-transform:uppercase;flex:1" oninput="this.value=this.value.toUpperCase()"/>
-          <button type="button" class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="padding:12px 14px;white-space:nowrap;font-size:.88rem">Look Up</button>
-        </div>
-        <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:10px 14px;font-size:.85rem;color:#0e3f96;margin-top:8px">Found: <strong id="dvlaDesc"></strong></div>
-      </div>
-      <div class="field-group">
-        <label>Model</label>
-        <input id="sqPXModel" type="text" placeholder="e.g. 3 Series, 320i"/>
-      </div>
-      <div class="two-col">
-        <div class="field-group">
-          <label>Approximate mileage *</label>
-          <input id="sqMileage" type="text" placeholder="e.g. 32,000"/>
-        </div>
-        <div class="field-group">
-          <label>Any finance outstanding?</label>
-          <select id="sqFinance">
-            <option value="">Select...</option>
-            <option>Yes - unsure of amount</option>
-            <option>Yes - I know the settlement figure</option>
-            <option>No - I own it outright</option>
-          </select>
-        </div>
-      </div>
-      <div class="field-group">
-        <label>Overall condition</label>
-        <select id="sqCondition">
-          <option value="">Select...</option>
-          <option>Excellent - no marks or issues</option>
-          <option>Good - minor marks only</option>
-          <option>Average - a few things to note</option>
-          <option>Poor - needs work</option>
-        </select>
-      </div>
-      <div class="field-group">
-        <label>Service history</label>
-        <select id="sqService">
-          <option value="">Select...</option>
-          <option>Full BMW dealer history</option>
-          <option>Full independent history</option>
-          <option>Partial history</option>
-          <option>No history</option>
-          <option>Not sure</option>
-        </select>
-      </div>
-      <div class="field-group">
-        <label>Have you checked an online buyer quote? (optional)</label>
-        <input id="sqWBAC" type="text" placeholder="e.g. We Buy Any Car quoted £14,500"/>
-      </div>
-      <button class="btn" style="width:100%;margin-top:6px;" onclick="goNext()">Continue</button>
-    </div>
-  </div>
-</div></div>
-<script>
-  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
-  function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
-  const sqpm=sessionStorage.getItem("sqPXModel"); if(sqpm) document.getElementById("sqPXModel").value=sqpm;
-  const sqreg=sessionStorage.getItem("sqPXReg"); if(sqreg) document.getElementById("sqReg").value=sqreg;
-
-  async function dvlaLookup(){
-    const reg=document.getElementById("sqReg").value.trim().replace(/\s/g,"").toUpperCase();
-    if(!reg) return;
-    const btn=document.getElementById("dvlaBtn");
-    btn.disabled=true; btn.textContent="…";
-    document.getElementById("dvlaBanner").style.display="none";
-    try{
-      const res=await fetch(WORKER+"?target=dvla-lookup&reg="+encodeURIComponent(reg));
-      const d=await res.json();
-      if(d.make){
-        const make=toTC(d.make), model=toTC(d.model||""), yr=String(d.yearOfManufacture||d.year||""), fuel=(d.fuelType||"").toLowerCase();
-        sessionStorage.setItem("sqDvlaMake",d.make||"");
-        sessionStorage.setItem("sqDvlaModel",d.model||"");
-        sessionStorage.setItem("sqDvlaYear",yr);
-        sessionStorage.setItem("sqDvlaFuel",d.fuelType||"");
-        const parts=[yr,make,model,toTC(d.colour||""),toTC(d.fuelType||"")].filter(Boolean);
-        document.getElementById("dvlaDesc").textContent=parts.join(" · ");
-        document.getElementById("dvlaBanner").style.display="block";
-        const modelField=document.getElementById("sqPXModel");
-        if(modelField && !modelField.value && model) modelField.value=model;
-        startMarket(d.make||"",d.model||"",yr,fuel);
-      }
-    }catch(e){}
-    btn.disabled=false; btn.textContent="Look Up";
-  }
-
-  function startMarket(make,model,year,fuel){
-    if(!make||!year) return;
-    const p=new URLSearchParams({target:"market-start",make,model,year,fuel});
-    fetch(WORKER+"?"+p).then(r=>r.json()).then(d=>{
-      if(d.runId) sessionStorage.setItem("sqMarketRunId",d.runId);
-    }).catch(()=>{});
-  }
-
-  function goNext(){
-    const reg = document.getElementById("sqReg").value.trim();
-    const mil = document.getElementById("sqMileage").value.trim();
-    if(!reg||!mil){ alert("Please add your registration and mileage to continue."); return; }
-    sessionStorage.setItem("sqPXReg", reg);
-    sessionStorage.setItem("sqPXModel", document.getElementById("sqPXModel").value.trim());
-    sessionStorage.setItem("sqPXMileage", mil);
-    sessionStorage.setItem("sqPXFinance", document.getElementById("sqFinance").value);
-    sessionStorage.setItem("sqPXCondition", document.getElementById("sqCondition").value);
-    sessionStorage.setItem("sqPXService", document.getElementById("sqService").value);
-    sessionStorage.setItem("sqPXWBAC", document.getElementById("sqWBAC").value.trim());
-    location.href="sq7.html";
-  }
-</script>
-<script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
-<script src="contact.js"></script>
-</body></html>
+<body>
+  <p style="font-family:sans-serif;padding:24px;">Taking you to the start… <a href="sq1.html">Continue</a></p>
+</body>
+</html>

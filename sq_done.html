@@ -23,7 +23,6 @@
     .appt-arrow{margin-left:auto;color:#5f6b7c;font-size:1rem;}
   </style>
 <script src="analytics.js" defer></script>
-<script src="story-share.js"></script>
 </head>
 <body><div class="app"><div class="shell">
   <div class="topbar">
@@ -33,8 +32,7 @@
   <div class="step-wrap">
     <div class="step-kicker">All done</div>
     <h2 id="doneHeading">Thank you.</h2>
-    <p>Your answers have come through to me directly. I have everything I need to have a genuinely useful conversation rather than a generic one.</p>
-    <p style="margin-top:12px;">Whether you want to chat briefly today while the car is in, book a proper call this week, or come in for a sit-down at a time that suits you, all three options are below. Or just leave it with me and I will be in touch.</p>
+    <p>Your reg is with me and I'm getting your figure ready. One thing left to do: <strong>pick how we speak</strong> - and since your car is already here, a quick chat today is the easiest ten minutes you'll ever book.</p>
 
     
 <div class="showroom-divider">
@@ -83,23 +81,6 @@
       <a href="index.html" style="color:#5f6b7c;font-size:.85rem;text-decoration:none;">← Back to homepage</a>
     </div>
 
-    <div id="storyBox" style="display:none;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:22px 24px;margin:20px 0 0;">
-      <div class="step-kicker" style="margin-bottom:10px;">✨ Your BMW story</div>
-      <p id="storyText" style="font-size:.87rem;line-height:1.75;color:#2d3748;white-space:pre-line;margin:0 0 18px;"></p>
-      <div style="border-top:1px solid rgba(21,89,207,.15);padding-top:14px;">
-        <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 4px;font-weight:600;">Share your story 📲</p>
-        <p style="font-size:.78rem;color:#8a94a0;margin:0 0 12px;line-height:1.5;">Share it with your friends and manifest your BMW - in a few weeks you could be sharing your own handover photo. ✨</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <a id="shareX" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#000;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">𝕏 Post</a>
-          <a id="shareWa" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;">💬 Share</a>
-          <button id="copyBtn" onclick="copyStory()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,21,29,.08);color:var(--text);padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📋 Copy</button>
-          <button onclick="shareInstagram()" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;padding:9px 15px;border-radius:9px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font);">📸 Instagram</button>
-        </div>
-        <p style="font-size:.72rem;color:#8a94a0;margin:10px 0 0;">* Don't worry - your surname and exact figures are removed before sharing.</p>
-        <div id="refNudge"></div>
-      </div>
-    </div>
-
     <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
       <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing 👋</p>
       <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Thank you for taking a moment to fill that in. Why not pop Dan a quick message to say hi?</p>
@@ -117,30 +98,6 @@
     document.getElementById("hiWaBtn").href="https://wa.me/447827138197?text="+encodeURIComponent(msg);
   })();
 
-  (function(){
-    var story=sessionStorage.getItem("sqCustomerStory");
-    if(!story) return;
-    document.getElementById("storyText").textContent=story;
-    document.getElementById("storyBox").style.display="block";
-    var firstName=sessionStorage.getItem("sqFirst")||"";
-    var fullName=firstName+" "+(sessionStorage.getItem("sqLast")||"");
-    function socialify(s){
-      if(fullName.trim()&&firstName&&fullName.trim()!==firstName) s=s.split(fullName.trim()).join(firstName);
-      s=s.replace(/£[\d,]+(?:\s*(?:a month|total|[^,.)]{0,20}))?/gi,function(m){
-        return /month/i.test(m)?"a monthly budget":/total/i.test(m)?"a clear budget":"a great budget";
-      });
-      s=s.replace(/[\d,]+\s+miles(?: a year)?/gi,"plenty of miles a year");
-      s=s.replace(/ {2,}/g," ").trim();
-      return "Here's my BMW Story with Dan 👇\n\n"+s+"\n\nCreate your own at dan-sells.co.uk - Dan helps find the right BMW for your budget and lifestyle 🚗✨";
-    }
-    dsStoryShare.init({
-      social: socialify(story),
-      firstName: firstName,
-      tagline: "Your perfect BMW. Two minutes to find it.",
-      fileName: "my-bmw-story.png",
-      shareTitle: "My BMW story"
-    });
-  })();
 </script>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -191,7 +148,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLight
 <script>
 function closeApptModal(){document.getElementById('appt-modal').style.display='none';}
 (function(){
-  var name=((sessionStorage.getItem('sqFirst')||'')+' '+(sessionStorage.getItem('sqLast')||'')).trim();
+  var name=(sessionStorage.getItem('sqFirst')||'').trim();
   var email=sessionStorage.getItem('sqEmail')||'';
   function calUrl(base){var p=new URLSearchParams();if(name)p.set('name',name);if(email)p.set('email',email);var qs=p.toString();return qs?base+'?'+qs:base;}
   var chatUrl=calUrl('https://cal.eu/danbmwruxley/chat-with-a-sales-executive');

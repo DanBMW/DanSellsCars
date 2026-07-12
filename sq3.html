@@ -2,58 +2,191 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | Service Qualifier</title>
+  <title>DanSells | While your car's in</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <link rel="stylesheet" href="style.css"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <style>
+    .value-tease{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.3);border-radius:18px;padding:18px 20px;margin:0 0 22px;}
+    .value-tease .vt-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8a6a1e;margin-bottom:8px;}
+    .value-tease .vt-range{font-size:.9rem;color:#7a6020;line-height:1.55;margin:0 0 10px;}
+    .value-tease .vt-range strong{color:#5c470f;font-size:1.02rem;}
+    .value-tease .vt-locked{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.6);border:1px dashed rgba(138,106,30,.4);border-radius:12px;padding:11px 14px;}
+    .value-tease .vt-locked .vt-fig{font-family:var(--display);font-size:1.2rem;font-weight:700;color:#8a6a1e;letter-spacing:.14em;filter:blur(0px);}
+    .value-tease .vt-locked span.vt-note{font-size:.8rem;color:#7a6020;line-height:1.4;}
+  </style>
 <script src="analytics.js" defer></script>
 </head>
 <body><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
-    <div class="meta"><span>Step 3 of 7</span></div>
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">While your car's in</span></div>
+    <div class="meta"><span>Step 3 of 3</span></div>
   </div>
   <div class="step-wrap">
-    <div class="progress-bar"><div class="progress-fill" style="width:42%"></div></div>
-    <div class="step-kicker">Timing</div>
-    <h2>When would a change realistically suit you?</h2>
-    <p class="step-desc">This helps me pitch the conversation at the right level, not too pushy, not too far away.</p>
-    <div class="choices" id="choices">
-      <button class="choice" data-val="Now, if the deal is right" onclick="pick(this)">
-        <span class="choice-emoji">🔥</span>
-        <span class="choice-title">Now, if the deal is right</span>
-        <span class="choice-sub">Ready to move quickly</span>
-      </button>
-      <button class="choice" data-val="Within 3 months" onclick="pick(this)">
-        <span class="choice-emoji">📅</span>
-        <span class="choice-title">Within 3 months</span>
-        <span class="choice-sub">Planning ahead</span>
-      </button>
-      <button class="choice" data-val="3 to 6 months" onclick="pick(this)">
-        <span class="choice-emoji">🗓️</span>
-        <span class="choice-title">3 to 6 months</span>
-        <span class="choice-sub">Getting closer</span>
-      </button>
-      <button class="choice" data-val="Later this year" onclick="pick(this)">
-        <span class="choice-emoji">🌅</span>
-        <span class="choice-title">Later this year</span>
-        <span class="choice-sub">Thinking ahead</span>
-      </button>
-      <button class="choice" data-val="No specific timeframe, just exploring" onclick="pick(this)">
-        <span class="choice-emoji">🧭</span>
-        <span class="choice-title">Just exploring</span>
-        <span class="choice-sub">No fixed timeframe</span>
-      </button>
+    <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+
+    <div class="value-tease">
+      <div class="vt-kicker">📊 Your car's value</div>
+      <p class="vt-range" id="vtRange">I'm pulling live market prices for cars like yours right now…</p>
+      <div class="vt-locked">
+        <span style="font-size:1.3rem;">🔒</span>
+        <div>
+          <div class="vt-fig">£ ●●,●●●</div>
+          <span class="vt-note">Your exact figure - ready and waiting when we speak. It depends on spec, history and condition, and your car's already here for me to see.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-kicker">Last step</div>
+    <h2>Who do I ask for?</h2>
+    <p class="step-desc">This comes straight to me, not a call centre. I'll have your figure ready before we speak.</p>
+    <div style="display:grid;gap:14px;margin-bottom:20px;">
+      <div class="two-col">
+        <div class="field-group"><label>First name *</label><input id="sqFirst" type="text" placeholder="First name" autocomplete="given-name"/></div>
+        <div class="field-group"><label>Mobile *</label><input id="sqPhone" type="tel" placeholder="07..." autocomplete="tel"/></div>
+      </div>
+      <div class="field-group"><label>Email (optional)</label><input id="sqEmail" type="email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="tick-box">✔ Your details are shared only with Dan and used only to follow up on your enquiry.</div>
+
+      <div style="border:1px solid rgba(21,89,207,.18);border-radius:14px;padding:16px 18px;background:rgba(21,89,207,.04);">
+        <p style="font-size:.88rem;font-weight:600;color:#141a22;margin:0 0 6px;">Stay in the loop? <span style="font-weight:400;color:#5f6b7c;">(optional)</span></p>
+        <p style="font-size:.8rem;color:#5f6b7c;margin:0 0 12px;line-height:1.55;">Occasional BMW news, model alerts, and exclusive offers from Dan. No bulk emails. Unsubscribe any time.</p>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:12px;">
+          <input type="checkbox" id="mktOptIn" style="width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#1559cf;" onchange="document.getElementById('mktChannels').style.display=this.checked?'block':'none'">
+          <span style="font-size:.85rem;color:#2d3748;line-height:1.45;">Yes, I'd like to receive occasional BMW updates from Dan</span>
+        </label>
+        <div id="mktChannels" style="display:none;">
+          <p style="font-size:.78rem;color:#5f6b7c;margin:0 0 8px;font-weight:600;">How would you prefer to hear from Dan?</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Email" class="mktCh" style="accent-color:#1559cf;"> Email</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="WhatsApp" class="mktCh" style="accent-color:#1559cf;"> WhatsApp</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="SMS" class="mktCh" style="accent-color:#1559cf;"> SMS</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#2d3748;background:rgba(21,89,207,.07);border:1px solid rgba(21,89,207,.22);border-radius:8px;padding:7px 13px;"><input type="checkbox" value="Phone call" class="mktCh" style="accent-color:#1559cf;"> Phone call</label>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" id="sendBtn" style="width:100%;" onclick="submit()">Get my figure ready →</button>
     </div>
   </div>
 </div></div>
 <script>
-  function pick(btn){
-    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
-    btn.classList.add("selected");
-    sessionStorage.setItem("sqTiming", btn.dataset.val);
-    setTimeout(()=>location.href="sq4.html",320);
+  const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+
+  // No reg? Back to the start.
+  if(!sessionStorage.getItem("sqPXReg")) location.replace("sq1.html");
+
+  let marketResult = null;
+
+  function fmtRange(prices){
+    const avg = prices.reduce((a,b)=>a+b,0)/prices.length;
+    return {
+      low:  '£'+Math.round(prices[0]).toLocaleString('en-GB'),
+      avg:  '£'+Math.round(avg).toLocaleString('en-GB'),
+      high: '£'+Math.round(prices[prices.length-1]).toLocaleString('en-GB'),
+      trade:'£'+Math.round(avg*0.80).toLocaleString('en-GB')
+    };
+  }
+
+  // Poll the market scrape in the background while they type - if a range
+  // arrives in time, show the teaser; the exact figure stays locked either way.
+  (async function backgroundPoll(){
+    const runId = sessionStorage.getItem("sqMarketRunId");
+    const el = document.getElementById("vtRange");
+    if(!runId){ el.textContent = "I'll price your car against the live market before we speak."; return; }
+    for(let i=0;i<8;i++){
+      await new Promise(r=>setTimeout(r,2500));
+      try{
+        const r = await fetch(WORKER+'?target=market-poll&runId='+encodeURIComponent(runId));
+        const d = await r.json();
+        if(d.status==='SUCCEEDED'){
+          const prices=(d.items||[]).map(l=>l.pricing&&l.pricing.mainPrice?l.pricing.mainPrice:0).filter(p=>p>500).sort((a,b)=>a-b);
+          if(prices.length){
+            marketResult = fmtRange(prices);
+            el.innerHTML = 'Cars like yours are listed at <strong>'+marketResult.low+' – '+marketResult.high+'</strong> right now.';
+          } else {
+            el.textContent = "I'll price your car against the live market before we speak.";
+          }
+          return;
+        }
+        if(d.status==='FAILED'){ el.textContent = "I'll price your car against the live market before we speak."; return; }
+      }catch(e){ break; }
+    }
+    el.textContent = "I'll price your car against the live market before we speak.";
+  })();
+
+  async function finalPoll(){
+    if(marketResult) return marketResult;
+    const runId = sessionStorage.getItem("sqMarketRunId");
+    if(!runId) return null;
+    for(let i=0;i<3;i++){
+      await new Promise(r=>setTimeout(r,2000));
+      try{
+        const r = await fetch(WORKER+'?target=market-poll&runId='+encodeURIComponent(runId));
+        const d = await r.json();
+        if(d.status==='SUCCEEDED'){
+          const prices=(d.items||[]).map(l=>l.pricing&&l.pricing.mainPrice?l.pricing.mainPrice:0).filter(p=>p>500).sort((a,b)=>a-b);
+          if(prices.length) return fmtRange(prices);
+          break;
+        }
+        if(d.status==='FAILED') break;
+      }catch(e){ break; }
+    }
+    return null;
+  }
+
+  async function submit(){
+    const first = document.getElementById("sqFirst").value.trim();
+    const phone = document.getElementById("sqPhone").value.trim();
+    if(!first||!phone){ alert("Please add your first name and mobile so Dan knows who to ask for."); return; }
+
+    const btn = document.getElementById("sendBtn");
+    btn.disabled = true; btn.textContent = "Sending to Dan…";
+
+    sessionStorage.setItem("sqFirst", first);
+    sessionStorage.setItem("sqPhone", phone);
+    sessionStorage.setItem("sqEmail", document.getElementById("sqEmail").value.trim());
+
+    const sqMktOptIn = document.getElementById("mktOptIn").checked ? "Yes" : "No";
+    const sqMktChannels = Array.from(document.querySelectorAll(".mktCh:checked")).map(c=>c.value).join(", ");
+    const market = await finalPoll();
+    const dvlaDesc = [
+      sessionStorage.getItem("sqDvlaYear")||"",
+      sessionStorage.getItem("sqDvlaMake")||"",
+      sessionStorage.getItem("sqDvlaModel")||"",
+      sessionStorage.getItem("sqDvlaColour")||"",
+      sessionStorage.getItem("sqDvlaFuel")||""
+    ].filter(Boolean).join(" ");
+
+    const payload = {
+      _subject: "Service Qualifier (Ramp Report) - " + first,
+      _replyto: document.getElementById("sqEmail").value.trim()||"noreply@dan-sells.co.uk",
+      lead_type: "Service Customer Qualifier",
+      name: first,
+      phone: phone,
+      email: document.getElementById("sqEmail").value.trim(),
+      openness: sessionStorage.getItem("sqOpenness")||"",
+      px_reg: sessionStorage.getItem("sqPXReg")||"",
+      px_dvla_desc: dvlaDesc,
+      px_market_low:            market ? market.low   : "",
+      px_market_avg:            market ? market.avg   : "",
+      px_market_high:           market ? market.high  : "",
+      px_market_trade_estimate: market ? market.trade : "",
+      note: "Car is on site for service today - customer completed the Ramp Report. Mileage/history on the job card.",
+      marketing_opt_in:   sqMktOptIn,
+      marketing_channels: sqMktChannels
+    };
+
+    try{
+      await fetch("https://formspree.io/f/xqewleog",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify(payload)
+      });
+    }catch(e){}
+
+    location.href="sq_done.html";
   }
 </script>
 <script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
