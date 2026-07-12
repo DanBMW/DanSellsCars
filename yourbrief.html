@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <!-- Optional deep-dive brief, offered AFTER the initial interest + booking
+       stages (nudged from yourcar.html stage 2 and sq_done.html). Reuses
+       identity already in sessionStorage (sq flow or yourcar flow) so it
+       never re-asks for what Dan has. ONE Formspree submission, fired only
+       when the customer sends the finished brief - every step is skippable.
+       No en/em dashes, no prices shown that aren't the customer's own picks. -->
+  <meta name="robots" content="noindex"/>
+  <title>DanSells | My brief</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <style>
+    .stage{display:none;animation:stageIn .35s ease-out;}
+    .stage.on{display:block;}
+    @keyframes stageIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+    @media(prefers-reduced-motion:reduce){.stage{animation:none;}}
+    .stage-nav{display:flex;justify-content:space-between;align-items:center;margin-top:18px;}
+    .nav-back{background:none;border:none;color:#5f6b7c;font-size:.84rem;font-weight:600;cursor:pointer;font-family:var(--font);padding:6px 2px;}
+    .nav-back:hover{color:#11161d;}
+    .nav-skip{background:none;border:none;color:#1559cf;font-size:.84rem;font-weight:700;cursor:pointer;font-family:var(--font);padding:6px 2px;}
+    .nav-skip:hover{text-decoration:underline;}
+    .reg-chip{display:inline-flex;align-items:center;gap:8px;background:#ffd60a;border:1.5px solid #14181e;border-radius:8px;padding:4px 12px;font-family:var(--display);font-weight:700;letter-spacing:.1em;font-size:.9rem;color:#14181e;}
+    .brief-ticket{background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));border:1px solid rgba(201,168,76,.3);border-radius:18px;padding:20px 22px;margin:0 0 20px;}
+    .brief-ticket .bt-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8a6a1e;margin-bottom:12px;}
+    .bt-row{display:flex;gap:12px;padding:9px 0;border-bottom:1px dashed rgba(138,106,30,.22);font-size:.88rem;}
+    .bt-row:last-child{border-bottom:none;}
+    .bt-row .bt-label{flex-shrink:0;width:92px;font-weight:700;color:#8a6a1e;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;padding-top:2px;}
+    .bt-row .bt-val{color:#3c4a5e;line-height:1.45;}
+    .deposit-wrap{margin-top:16px;}
+    .notes-box textarea{width:100%;}
+  </style>
+<script src="analytics.js" defer></script>
+</head>
+<body><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Your brief</span></div>
+    <div class="meta"><span id="stepMeta">1 of 5</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:20%"></div></div>
+
+    <!-- STAGE 1 · direction -->
+    <div class="stage on" id="st1">
+      <div class="step-kicker">The fun bit</div>
+      <h2 id="s1H">Dream first, sensible later. What would you go for?</h2>
+      <p class="step-desc">This is the part most people never get asked. Pick the closest - I'll do the matchmaking.</p>
+      <div class="choices">
+        <button class="choice" data-val="Something similar to what I have" onclick="pick(1,this)">
+          <span class="choice-emoji">🔄</span>
+          <span class="choice-title">Something similar</span>
+          <span class="choice-sub">A newer version of what I have</span>
+        </button>
+        <button class="choice" data-val="A larger BMW, more space" onclick="pick(1,this)">
+          <span class="choice-emoji">⬆️</span>
+          <span class="choice-title">Step up in size</span>
+          <span class="choice-sub">More space, bigger model</span>
+        </button>
+        <button class="choice" data-val="An electric or plug-in hybrid BMW" onclick="pick(1,this)">
+          <span class="choice-emoji">⚡</span>
+          <span class="choice-title">Electric or plug-in hybrid</span>
+          <span class="choice-sub">Ready to go cleaner</span>
+        </button>
+        <button class="choice" data-val="Something more performance-focused" onclick="pick(1,this)">
+          <span class="choice-emoji">🏎️</span>
+          <span class="choice-title">More performance</span>
+          <span class="choice-sub">M Sport or M model</span>
+        </button>
+        <button class="choice" data-val="An SUV or crossover" onclick="pick(1,this)">
+          <span class="choice-emoji">🏔️</span>
+          <span class="choice-title">SUV or crossover</span>
+          <span class="choice-sub">X1, X3, X5 territory</span>
+        </button>
+        <button class="choice" data-val="Not sure, open to suggestions" onclick="pick(1,this)">
+          <span class="choice-emoji">🤷</span>
+          <span class="choice-title">Surprise me</span>
+          <span class="choice-sub">Open to Dan's suggestions</span>
+        </button>
+      </div>
+      <div class="stage-nav"><span></span><button class="nav-skip" onclick="go(2)">Skip this one ›</button></div>
+    </div>
+
+    <!-- STAGE 2 · timing -->
+    <div class="stage" id="st2">
+      <div class="step-kicker">Timing</div>
+      <h2>Honestly - when would it suit?</h2>
+      <p class="step-desc">No wrong answer. This just sets how hard I should be working for you this month.</p>
+      <div class="choices">
+        <button class="choice" data-val="Now, if the deal is right" onclick="pick(2,this)">
+          <span class="choice-emoji">🔥</span>
+          <span class="choice-title">Now, if the deal is right</span>
+          <span class="choice-sub">Ready to move quickly</span>
+        </button>
+        <button class="choice" data-val="Within 3 months" onclick="pick(2,this)">
+          <span class="choice-emoji">📅</span>
+          <span class="choice-title">Within 3 months</span>
+          <span class="choice-sub">Planning ahead</span>
+        </button>
+        <button class="choice" data-val="3 to 6 months" onclick="pick(2,this)">
+          <span class="choice-emoji">🗓️</span>
+          <span class="choice-title">3 to 6 months</span>
+          <span class="choice-sub">Getting closer</span>
+        </button>
+        <button class="choice" data-val="Later this year" onclick="pick(2,this)">
+          <span class="choice-emoji">🌅</span>
+          <span class="choice-title">Later this year</span>
+          <span class="choice-sub">Thinking ahead</span>
+        </button>
+        <button class="choice" data-val="No timeframe, just exploring" onclick="pick(2,this)">
+          <span class="choice-emoji">🧭</span>
+          <span class="choice-title">Just exploring</span>
+          <span class="choice-sub">No fixed timeframe</span>
+        </button>
+      </div>
+      <div class="stage-nav"><button class="nav-back" onclick="go(1)">‹ Back</button><button class="nav-skip" onclick="go(3)">Skip this one ›</button></div>
+    </div>
+
+    <!-- STAGE 3 · money -->
+    <div class="stage" id="st3">
+      <div class="step-kicker">The money bit</div>
+      <h2>How would you want to do it?</h2>
+      <p class="step-desc">Most people go monthly, some buy outright - there's no wrong door. I'll bring the numbers either way.</p>
+      <div class="choices" id="payChoices">
+        <button class="choice" data-val="Monthly finance (PCP)" onclick="pickPay(this,'finance')">
+          <span class="choice-emoji">📆</span>
+          <span class="choice-title">Monthly payments</span>
+          <span class="choice-sub">PCP, the most popular route</span>
+        </button>
+        <button class="choice" data-val="Outright cash purchase" onclick="pickPay(this,'cash')">
+          <span class="choice-emoji">💷</span>
+          <span class="choice-title">Outright purchase</span>
+          <span class="choice-sub">Pay in full</span>
+        </button>
+        <button class="choice" data-val="Not sure, want to see both" onclick="pickPay(this,'both')">
+          <span class="choice-emoji">🤷</span>
+          <span class="choice-title">Show me both</span>
+          <span class="choice-sub">Happy to compare</span>
+        </button>
+      </div>
+
+      <div id="budgetBlock" style="display:none;margin-top:20px;">
+        <p style="font-size:.9rem;font-weight:700;color:#141a22;margin:0 0 10px;" id="budgetTitle">And roughly where should I aim?</p>
+        <div class="choices" id="monthlyBands">
+          <button class="choice" data-val="Under £300/month" onclick="pickBand(this)"><span class="choice-emoji">💰</span><span class="choice-title">Under £300 a month</span></button>
+          <button class="choice" data-val="£300-£450/month" onclick="pickBand(this)"><span class="choice-emoji">💰</span><span class="choice-title">£300 to £450 a month</span></button>
+          <button class="choice" data-val="£450-£600/month" onclick="pickBand(this)"><span class="choice-emoji">💰</span><span class="choice-title">£450 to £600 a month</span></button>
+          <button class="choice" data-val="£600-£800/month" onclick="pickBand(this)"><span class="choice-emoji">💰</span><span class="choice-title">£600 to £800 a month</span></button>
+          <button class="choice" data-val="Over £800/month" onclick="pickBand(this)"><span class="choice-emoji">💰</span><span class="choice-title">Over £800 a month</span></button>
+          <button class="choice" data-val="Not sure yet" onclick="pickBand(this)"><span class="choice-emoji">🤷</span><span class="choice-title">Not sure yet</span></button>
+        </div>
+        <div class="choices" id="cashBands" style="display:none;">
+          <button class="choice" data-val="Under £25,000" onclick="pickBand(this)"><span class="choice-emoji">💷</span><span class="choice-title">Under £25,000</span></button>
+          <button class="choice" data-val="£25,000-£35,000" onclick="pickBand(this)"><span class="choice-emoji">💷</span><span class="choice-title">£25,000 to £35,000</span></button>
+          <button class="choice" data-val="£35,000-£50,000" onclick="pickBand(this)"><span class="choice-emoji">💷</span><span class="choice-title">£35,000 to £50,000</span></button>
+          <button class="choice" data-val="£50,000-£70,000" onclick="pickBand(this)"><span class="choice-emoji">💷</span><span class="choice-title">£50,000 to £70,000</span></button>
+          <button class="choice" data-val="Over £70,000" onclick="pickBand(this)"><span class="choice-emoji">💷</span><span class="choice-title">Over £70,000</span></button>
+          <button class="choice" data-val="Not sure yet" onclick="pickBand(this)"><span class="choice-emoji">🤷</span><span class="choice-title">Not sure yet</span></button>
+        </div>
+        <div class="deposit-wrap" id="depositWrap">
+          <div class="field-group">
+            <label>Deposit in mind? (optional)</label>
+            <input id="dbDeposit" type="text" placeholder="e.g. £2,000 or none"/>
+          </div>
+        </div>
+        <button class="btn" style="width:100%;margin-top:16px;" onclick="go(4)">Continue →</button>
+      </div>
+      <div class="stage-nav"><button class="nav-back" onclick="go(2)">‹ Back</button><button class="nav-skip" onclick="go(4)">Skip this one ›</button></div>
+    </div>
+
+    <!-- STAGE 4 · part exchange -->
+    <div class="stage" id="st4">
+      <div class="step-kicker">Your current BMW</div>
+      <h2>Would you trade yours in?</h2>
+      <p class="step-desc" id="pxDesc">I'll look at your car in person when it's with us - no photos, no forms. This just tells me whether to run the numbers with it in or out.</p>
+      <p id="pxRegRow" style="display:none;margin:0 0 16px;"><span class="reg-chip" id="pxRegChip"></span></p>
+      <div class="choices">
+        <button class="choice" data-val="Yes" onclick="pick(4,this)">
+          <span class="choice-emoji">✅</span>
+          <span class="choice-title">Yes</span>
+          <span class="choice-sub">I'd want to trade it in</span>
+        </button>
+        <button class="choice" data-val="Maybe" onclick="pick(4,this)">
+          <span class="choice-emoji">🤔</span>
+          <span class="choice-title">Maybe</span>
+          <span class="choice-sub">Depends on the figure</span>
+        </button>
+        <button class="choice" data-val="No" onclick="pick(4,this)">
+          <span class="choice-emoji">❌</span>
+          <span class="choice-title">No</span>
+          <span class="choice-sub">Keeping it or selling privately</span>
+        </button>
+      </div>
+      <div class="stage-nav"><button class="nav-back" onclick="go(3)">‹ Back</button><button class="nav-skip" onclick="go(5)">Skip this one ›</button></div>
+    </div>
+
+    <!-- STAGE 5 · recap + send -->
+    <div class="stage" id="st5">
+      <div class="step-kicker">Last look</div>
+      <h2 id="s5H">Here's what I'll walk in knowing.</h2>
+      <p class="step-desc">One send, one email, straight to me. I read every word before we speak - so our chat starts at the good bit.</p>
+
+      <div class="brief-ticket">
+        <div class="bt-kicker">📋 Your brief</div>
+        <div id="ticketRows"></div>
+      </div>
+
+      <div style="display:grid;gap:14px;margin-bottom:20px;">
+        <div class="field-group notes-box">
+          <label>Anything else I should know? (optional)</label>
+          <textarea id="dbNotes" rows="3" placeholder="The one-liners are gold. 'Must be red.' 'Dog needs the boot.' 'Hate beige interiors.'"></textarea>
+        </div>
+        <div class="two-col" id="contactRow">
+          <div class="field-group"><label>First name *</label><input id="dbFirst" type="text" placeholder="First name" autocomplete="given-name"/></div>
+          <div class="field-group"><label>Mobile</label><input id="dbPhone" type="tel" placeholder="Optional - I may have it on file" autocomplete="tel"/></div>
+        </div>
+        <button class="btn" id="sendBtn" style="width:100%;" onclick="sendBrief()">Send my brief to Dan →</button>
+        <p class="hint" style="text-align:center;">Anything you skipped, we'll simply cover in person. No chasing, no drama.</p>
+      </div>
+      <div class="stage-nav" style="margin-top:0;"><button class="nav-back" onclick="go(4)">‹ Back</button><span></span></div>
+    </div>
+
+    <!-- DONE -->
+    <div class="stage" id="stDone">
+      <div class="step-kicker">Filed</div>
+      <h2 id="doneH">That's gold. Thank you.</h2>
+      <p class="step-desc">Your brief has landed with me - and only me. I'll read it before we speak, so when we sit down it'll feel less like an enquiry and more like a second conversation.</p>
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
+        <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">While you're here 👋</p>
+        <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Fancy saying hi so my number's in your phone?</p>
+        <a id="doneWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1a7a3c;color:#fff;font-weight:700;padding:12px 20px;border-radius:13px;text-decoration:none;font-size:.92rem;">💬 Say hi on WhatsApp</a>
+      </div>
+      <div style="text-align:center;margin-top:22px;">
+        <a href="index.html" style="color:#5f6b7c;font-size:.85rem;text-decoration:none;">← Back to homepage</a>
+      </div>
+    </div>
+
+  </div>
+</div></div>
+<script>
+  // Identity carried over from the sq funnel or the yourcar share link -
+  // never re-ask for what Dan already has.
+  const knownFirst = sessionStorage.getItem("sqFirst") || sessionStorage.getItem("ycName") || "";
+  const knownPhone = sessionStorage.getItem("sqPhone") || "";
+  const knownReg   = sessionStorage.getItem("sqPXReg") || sessionStorage.getItem("ycReg") || "";
+  const knownMiles = sessionStorage.getItem("sqPXMileage") || sessionStorage.getItem("ycMileage") || "";
+
+  const answers = {direction:"", timing:"", pay:"", payType:"", band:"", bandLabel:"", px:""};
+
+  if(knownFirst){
+    document.getElementById("s1H").textContent = knownFirst + " - dream first, sensible later. What would you go for?";
+    document.getElementById("dbFirst").value = knownFirst;
+    document.getElementById("doneH").textContent = "That's gold, " + knownFirst + ". Thank you.";
+    document.getElementById("doneWa").href = "https://wa.me/447827138197?text=" + encodeURIComponent("Hi Dan, it's " + knownFirst + " - just sent you my brief. Looking forward to it!");
+  }
+  if(knownPhone) document.getElementById("dbPhone").value = knownPhone;
+  if(knownReg){
+    document.getElementById("pxRegChip").textContent = knownReg;
+    document.getElementById("pxRegRow").style.display = "block";
+  } else {
+    document.getElementById("pxDesc").textContent = "If you'd trade your current car in, I'll look at it in person - no photos, no forms. This just tells me whether to run the numbers with it in or out.";
+  }
+
+  let current = 1;
+  function go(n){
+    document.querySelectorAll(".stage").forEach(s=>s.classList.remove("on"));
+    const id = n === "done" ? "stDone" : "st" + n;
+    document.getElementById(id).classList.add("on");
+    if(n === "done"){
+      document.getElementById("stepMeta").textContent = "Done";
+      document.getElementById("pFill").style.width = "100%";
+    } else {
+      current = n;
+      document.getElementById("stepMeta").textContent = n + " of 5";
+      document.getElementById("pFill").style.width = (n*20) + "%";
+      if(typeof gtag === "function") gtag("event","brief_step_" + n,{page:"yourbrief"});
+      if(n === 5) buildTicket();
+    }
+    window.scrollTo({top:0});
+  }
+
+  function pick(stage, btn){
+    btn.parentElement.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    if(stage === 1) answers.direction = btn.dataset.val;
+    if(stage === 2) answers.timing = btn.dataset.val;
+    if(stage === 4) answers.px = btn.dataset.val;
+    setTimeout(()=>go(stage + 1), 320);
+  }
+
+  function pickPay(btn, type){
+    document.querySelectorAll("#payChoices .choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    answers.pay = btn.dataset.val;
+    answers.payType = type;
+    answers.band = "";
+    document.querySelectorAll("#monthlyBands .choice,#cashBands .choice").forEach(b=>b.classList.remove("selected"));
+    const cash = type === "cash";
+    document.getElementById("monthlyBands").style.display = cash ? "none" : "grid";
+    document.getElementById("cashBands").style.display = cash ? "grid" : "none";
+    document.getElementById("depositWrap").style.display = cash ? "none" : "block";
+    document.getElementById("budgetTitle").textContent = cash ? "And roughly what total?" : "And roughly where should I aim?";
+    document.getElementById("budgetBlock").style.display = "block";
+  }
+
+  function pickBand(btn){
+    btn.parentElement.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    answers.band = btn.dataset.val;
+    answers.bandLabel = btn.querySelector(".choice-title").textContent;
+  }
+
+  function buildTicket(){
+    const dep = document.getElementById("dbDeposit").value.trim();
+    const rows = [];
+    if(knownReg)          rows.push(["Your car", knownReg + (knownMiles ? " · about " + knownMiles + " miles" : "")]);
+    if(answers.direction) rows.push(["Direction", answers.direction]);
+    if(answers.timing)    rows.push(["Timing", answers.timing]);
+    if(answers.pay)       rows.push(["Paying", answers.pay + (answers.bandLabel ? " · " + answers.bandLabel : "") + (dep ? " · " + dep + " deposit" : "")]);
+    if(answers.px)        rows.push(["Trade in", answers.px]);
+    if(!rows.length)      rows.push(["Your brief", "A person of mystery - all the more to talk about when we meet."]);
+    document.getElementById("ticketRows").innerHTML = rows.map(r =>
+      '<div class="bt-row"><span class="bt-label">' + r[0] + '</span><span class="bt-val">' + r[1] + '</span></div>'
+    ).join("");
+  }
+
+  async function sendBrief(){
+    const first = document.getElementById("dbFirst").value.trim();
+    if(!first){ alert("Just your first name, so I know whose brief this is."); return; }
+    if(sessionStorage.getItem("dbSent")){ go("done"); return; }
+
+    const btn = document.getElementById("sendBtn");
+    btn.disabled = true; btn.textContent = "Sending to Dan…";
+
+    const isMonthly = answers.payType && answers.payType !== "cash";
+    const payload = {
+      _subject: "Brief - " + first + (knownReg ? " (" + knownReg + ")" : ""),
+      _replyto: "noreply@dan-sells.co.uk",
+      lead_type: "Service Customer Brief",
+      name: first,
+      phone: document.getElementById("dbPhone").value.trim(),
+      reg: knownReg,
+      mileage: knownMiles,
+      openness: sessionStorage.getItem("sqOpenness") || "",
+      model_interest: answers.direction,
+      timing: answers.timing,
+      payment_method: answers.pay,
+      monthly_budget: isMonthly ? answers.band : "",
+      total_budget: answers.payType === "cash" ? answers.band : "",
+      deposit: document.getElementById("dbDeposit").value.trim(),
+      part_exchange: answers.px,
+      extra_notes: document.getElementById("dbNotes").value.trim(),
+      note: "Optional deep-dive brief, sent after the initial interest + booking stage. One submission covers the lot."
+    };
+
+    try{
+      await fetch("https://formspree.io/f/xqewleog",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify(payload)
+      });
+    }catch(e){}
+
+    sessionStorage.setItem("dbSent","1");
+    go("done");
+  }
+
+  if(sessionStorage.getItem("dbSent")) go("done");
+  else if(typeof gtag === "function") gtag("event","brief_step_1",{page:"yourbrief"});
+</script>
+<script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
+<script src="contact.js"></script>
+</body></html>
