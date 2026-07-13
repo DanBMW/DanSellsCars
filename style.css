@@ -294,7 +294,7 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .hero-video.vid-paused .pause-icon{display:none !important;}
 .hero-video.vid-paused .play-icon{display:block !important;}
 @media(max-width:600px){.hero-vid-content{padding-bottom:52px;}.hero-pause-btn{right:20px;bottom:56px;}}
-@media(prefers-reduced-motion:reduce){.hero-vid{display:none;}.hero-video{background:#0e1420;min-height:440px;}}
+@media(prefers-reduced-motion:reduce){.hero-video{background:#0e1420;min-height:440px;}}
 .dan-profile{display:flex;align-items:center;gap:20px;padding:36px 0 4px;}
 .dan-avatar{width:162px;height:162px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.2);flex-shrink:0;}
 .dan-profile-info{display:flex;flex-direction:column;gap:5px;}
@@ -466,7 +466,7 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .cine-kicker{font-size:.78rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:14px;}
 .cine-headline{font-family:var(--display);font-size:clamp(2rem,5vw,3.8rem);font-weight:600;color:#fff;line-height:1.08;letter-spacing:-.02em;text-shadow:0 4px 32px rgba(0,0,0,.5);}
 @media(max-width:600px){.cine-divider{height:50vh;min-height:260px;}}
-@media(prefers-reduced-motion:reduce){.cine-video{display:none}.cine-divider{background:#0e1420;}}
+@media(prefers-reduced-motion:reduce){.cine-divider{background:#0e1420;}}
 
 /* ── Model spotlight cards ── */
 .spotlight-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
@@ -494,7 +494,6 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .ty-hero .section-kicker{color:#7fb2ff;margin-bottom:12px;}
 .ty-hero h1{color:#fff;font-family:var(--display);font-size:clamp(2.2rem,5.5vw,3.8rem);font-weight:600;letter-spacing:-.025em;line-height:1.06;margin-bottom:16px;}
 .ty-hero-sub{color:rgba(255,255,255,.78);font-size:1.06rem;line-height:1.72;max-width:58ch;margin-bottom:32px;}
-@media(prefers-reduced-motion:reduce){.ty-hero-vid{display:none;}}
 
 .ty-steps-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:36px;}
 .ty-step-pill{display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:9px 18px;color:rgba(255,255,255,.88);font-size:.86rem;font-weight:600;font-family:var(--font);}
