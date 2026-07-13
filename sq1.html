@@ -17,9 +17,11 @@
     .plate-wrap input:focus{box-shadow:none;}
     .ramp-hook{background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.26);border-radius:14px;padding:14px 16px;font-size:.86rem;color:#7a6020;line-height:1.55;margin-bottom:18px;}
     .ramp-hook strong{color:#8a6a1e;}
-    .wa-hatch{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:.85rem;}
+    .wa-hatch{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 14px;margin-top:16px;font-size:.85rem;}
     .wa-hatch a{color:#1a7a3c;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
     .wa-hatch a:hover{text-decoration:underline;}
+    .wa-hatch button{background:none;border:none;padding:0;color:#1559cf;font-weight:700;cursor:pointer;font-family:var(--font);font-size:.85rem;display:inline-flex;align-items:center;gap:6px;}
+    .wa-hatch button:hover{text-decoration:underline;}
     .dan-audio{display:flex;align-items:center;gap:14px;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:14px 16px;margin:0 0 18px;}
     .dan-audio img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;flex-shrink:0;border:2px solid rgba(21,89,207,.25);}
     .da-body{flex:1;min-width:0;}
@@ -66,7 +68,8 @@
 
     <div class="wa-hatch">
       <span style="color:var(--muted);">Prefer to skip the form?</span>
-      <a id="waHatch" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20my%20car%27s%20booked%20in%20for%20service%20-%20what%27s%20my%20BMW%20worth%3F" target="_blank" rel="noopener">💬 WhatsApp Dan instead</a>
+      <a id="waHatch" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20my%20car%27s%20booked%20in%20for%20service%20-%20what%27s%20my%20BMW%20worth%3F" target="_blank" rel="noopener" onclick="skipPing('WhatsApp')">💬 WhatsApp Dan</a>
+      <button type="button" id="emailHatch" onclick="skipPing('Email');openContactModal()">✉️ Email Dan</button>
     </div>
   </div>
 </div></div>
@@ -76,6 +79,30 @@
   // Prefill if they've been here before this session
   const savedReg = sessionStorage.getItem("sqPXReg");
   if(savedReg) document.getElementById("sqReg").value = savedReg;
+
+  // "Skip the form" signal: one Formspree email per session so Dan knows
+  // someone chose the direct route (includes the reg if they typed one).
+  // Deliberate exception to the rationing rule - Dan asked for this ping.
+  function skipPing(channel){
+    if(sessionStorage.getItem("sqSkipPinged")) return;
+    sessionStorage.setItem("sqSkipPinged","1");
+    const reg = document.getElementById("sqReg").value.trim();
+    try{
+      fetch("https://formspree.io/f/xqewleog",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({
+          _subject: "👀 Skipped the form on sq1" + (reg ? " - " + reg : ""),
+          _replyto: "noreply@dan-sells.co.uk",
+          lead_type: "Service Qualifier skip",
+          reg: reg,
+          channel: channel,
+          note: "Someone on the service page chose '" + channel + "' instead of the form. " + (reg ? "They had typed a reg first - worth a look in the service diary." : "No reg typed - watch your " + channel + " for the message.")
+        })
+      }).catch(()=>{});
+    }catch(e){}
+    if(typeof gtag === "function") gtag("event","form_skip",{channel:channel,page:"sq1"});
+  }
 
   let daPlayed = false;
   function daToggle(){

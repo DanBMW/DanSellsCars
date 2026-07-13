@@ -52,7 +52,10 @@ the final step.
 sends exactly one interest email per customer ("I'm interested" tap);
 booking taps are GA `booking_tap` events only — cal.eu confirms real
 bookings itself; `yourbrief.html` sends one email per completed brief.
-Don't add per-step or per-tap Formspree calls to these flows.
+One deliberate exception (Dan's request): the "skip the form" hatch on
+`sq1.html` (WhatsApp/Email) fires one skip-signal email per session with
+the typed reg, so Dan knows a prospect chose the direct route. Don't add
+other per-step or per-tap Formspree calls to these flows.
 | `ev-step1.html`–`ev-step7.html` (+ `ev-thankyou`) | **BMW EV Finder** — EV-specific matching funnel (entry: `EV.html` / `ev.html`). Shared behaviour in `ev-funnel-ui.js`. Submits on `ev-step6.html`. |
 | `ap1.html`–`ap6.html` | **Vehicle Appraisal** — customer self-appraisal of their current car (entry: `appraisal.html`). Submits on `ap5.html`, confirmation on `ap6.html`. |
 
