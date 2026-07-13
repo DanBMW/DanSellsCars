@@ -199,10 +199,12 @@
       link: location.href
     }, extra||{});
     try{
+      // keepalive: the email still sends even if they close the tab right away
       fetch("https://formspree.io/f/xqewleog",{
         method:"POST",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body:JSON.stringify(payload)
+        body:JSON.stringify(payload),
+        keepalive:true
       }).catch(()=>{});
     }catch(e){}
   }
@@ -219,8 +221,11 @@
     // The interest signal: they tapped "I'm interested" with car + mileage confirmed.
     // This is the ONLY Formspree email this page sends - booking taps are GA
     // events, and real bookings arrive via cal.eu's own confirmation.
-    if(!sessionStorage.getItem("ycPinged")){
-      sessionStorage.setItem("ycPinged","1");
+    // Deduped per reg (not per session) so a different plate always re-fires -
+    // which also means Dan can test with any reg and get the email every time.
+    const pingKey = "ycPinged_" + reg.replace(/\s/g,"").toUpperCase();
+    if(!sessionStorage.getItem(pingKey)){
+      sessionStorage.setItem(pingKey,"1");
       notify("🔥 " + (linkName||reg) + " tapped I'm interested", {
         note: "Interest signal - service prospect (due in within the week) confirmed car + mileage and tapped I'm interested. Booking options are on their screen now; if they book, cal.eu will confirm separately."
       });
