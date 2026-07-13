@@ -98,7 +98,8 @@
           reg: reg,
           channel: channel,
           note: "Someone on the service page chose '" + channel + "' instead of the form. " + (reg ? "They had typed a reg first - worth a look in the service diary." : "No reg typed - watch your " + channel + " for the message.")
-        })
+        }),
+        keepalive:true
       }).catch(()=>{});
     }catch(e){}
     if(typeof gtag === "function") gtag("event","form_skip",{channel:channel,page:"sq1"});
