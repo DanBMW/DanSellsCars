@@ -312,8 +312,6 @@ function canon(s){
 // Manual fallback for any team the auto-detection misses (e.g. before the
 // R32 fixture list appears in the API). Add canonical team names as needed.
 const GROUP_EXITS=new Set([
-  // QF: Argentina 3-1 Switzerland (AET) — API score stuck at 0-0
-  "switzerland",
   // SF: Spain 2-0 France — API still showing live
   "france",
 ]);
@@ -349,7 +347,7 @@ function applyGroupExits(){
 }
 applyGroupExits(); // apply before initial render so Germany is shown as out immediately
 
-const KO=/round.of.32|round.of.16|r32|r16|quarter|semi|third|final/i;
+const KO=/round.of.32|round.of.16|r32|r16|qf|sf|quarter|semi|third|final/i;
 
 function normalizeMatch(m,src){
   if(src==="football-data") return{
