@@ -252,13 +252,14 @@ a{color:inherit;text-decoration:none}
     <!-- Ramp Report personal link builder -->
     <div class="widget-card">
       <div class="widget-name">&#x1F697; Ramp Report Personal Link <span class="tag tag-new">New</span></div>
-      <div class="widget-desc">Send a customer a link with their reg already filled in. They confirm the car, add mileage and book - you get an email the moment they pass the first screen.</div>
+      <div class="widget-desc">Send a customer a link with their reg already filled in. They confirm the car, add mileage and book - you get an email the moment they tap "I'm interested". WA and Email open a ready-to-send message with the link inside.</div>
       <input class="widget-input" id="rr-reg" type="text" placeholder="Registration e.g. AB12 CDE" autocomplete="off" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
       <input class="widget-input" id="rr-name" type="text" placeholder="Customer first name (optional)" autocomplete="off">
       <div class="btn-row" style="margin-bottom:8px">
         <button class="btn-open" onclick="openRampLink()">Open</button>
         <button class="btn-copy" onclick="copyRampLink(this)">Copy</button>
         <button class="btn-wa" onclick="shareRampWA()">&#x1F4F2; WA</button>
+        <button class="btn-open" onclick="emailRampLink()">&#x2709; Email</button>
       </div>
     </div>
 
@@ -727,6 +728,25 @@ function shareRampWA() {
   const name = document.getElementById('rr-name').value.trim();
   const msg = 'Hi' + (name ? ' ' + name : '') + ", it's Dan from BMW Ruxley. I've set this up for you - your reg is already filled in. Takes about 20 seconds and I'll have your car's value ready for when we speak:\n\n" + link;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function emailRampLink() {
+  const link = buildRampLink();
+  if (!link) return;
+  const name = document.getElementById('rr-name').value.trim() || '[Name]';
+  const subject = 'Your BMW is booked in with us - worth 20 seconds before you arrive';
+  const body =
+    'Hi ' + name + ',\n\n' +
+    'Dan here, from the sales team at BMW Ruxley. I can see your BMW is booked in with our service team soon - which happens to be the perfect week to find out what it is actually worth.\n\n' +
+    'I have set up a personal page for you. Your reg is already filled in, it takes about 20 seconds, and there is a short voice note from me on there too:\n\n' +
+    link + '\n\n' +
+    'If the timing is not right, no problem at all - it costs nothing to know where you stand.\n\n' +
+    'See you soon,\n\n' +
+    'Dan\n' +
+    'BMW Sales Executive, Hedin Ruxley\n' +
+    '07827 138197\n' +
+    'dan-sells.co.uk';
+  window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
 }
 
 // ── Purchase Thank You ──
