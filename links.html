@@ -296,7 +296,10 @@ a{color:inherit;text-decoration:none}
         <div class="chip" id="chip-order" onclick="toggleChip('order')"><span class="chip-dot"></span>Signed Order Form</div>
       </div>
       <input class="widget-input" id="ty-name" type="text" placeholder="Customer first name&hellip;" autocomplete="off">
-      <button class="btn-wa-full" onclick="sharePurchaseWA()">&#x1F4F2; Share Purchase Page via WhatsApp</button>
+      <div class="btn-row">
+        <button class="btn-copy" onclick="copyPurchaseMessage(this)">Copy</button>
+        <button class="btn-wa" onclick="sharePurchaseWA()">&#x1F4F2; WhatsApp</button>
+      </div>
     </div>
 
     <!-- ── EMAIL TEMPLATES ── -->
@@ -780,7 +783,7 @@ function selectType(t) {
   });
 }
 
-function sharePurchaseWA() {
+function buildPurchaseMessage() {
   const name  = document.getElementById('ty-name').value.trim();
   const financeCode = chipState.finance === 'yes' ? '1' : (chipState.finance === 'na' ? '2' : '0');
   const code  = (chipState.deposit ? '1' : '0') + financeCode + (chipState.order ? '1' : '0');
@@ -790,7 +793,17 @@ function sharePurchaseWA() {
   const link = 'https://dan-sells.co.uk/purchase-thankyou.html?' + params.toString();
   const greeting = name ? 'Congratulations ' + name + ' on your' : 'Congratulations on your';
   const msg = greeting + " purchase with BMW Ruxley, please find some useful information and FAQ's within the link below.\n\n" + link;
+  return { link: link, msg: msg };
+}
+
+function sharePurchaseWA() {
+  const msg = buildPurchaseMessage().msg;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function copyPurchaseMessage(btn) {
+  const msg = buildPurchaseMessage().msg;
+  copyText(msg, btn);
 }
 
 function openRecord() {
