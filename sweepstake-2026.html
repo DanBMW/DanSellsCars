@@ -347,6 +347,8 @@ function applyGroupExits(){
 applyGroupExits(); // apply before initial render so Germany is shown as out immediately
 
 const KO=/round.of.32|round.of.16|r32|r16|qf|sf|quarter|semi|third|final/i;
+let _thirdPlaceContest=null;
+function ownerOf(c){for(const p of entrants){if(p.teams.some(t=>t.c===c))return p.name;}return null;}
 
 function normalizeMatch(m,src){
   if(src==="football-data") return{
@@ -415,6 +417,16 @@ function applyMatches(matches,src){
     });
   }
   applyGroupExits(); // manual overrides - covers gap before R32 fixtures appear in the API
+  // Detect pending third-place play-off so the prize card shows both contestants
+  _thirdPlaceContest=null;
+  matches.forEach(raw=>{
+    const m=normalizeMatch(raw,src);
+    if(/third/i.test(String(m.stage))&&m.status!=="finished"){
+      const h=canon(m.homeTeam),a=canon(m.awayTeam);
+      const ho=ownerOf(h),ao=ownerOf(a);
+      if(ho&&ao)_thirdPlaceContest={home:ho,away:ao,homeTeam:m.homeTeam,awayTeam:m.awayTeam};
+    }
+  });
 }
 
 // ── API ───────────────────────────────────────────────────────────────────
@@ -482,10 +494,15 @@ function render(){
   // Leader / bottom (always unfiltered)
   if(all[0]) el("pz1owner").textContent=`${all[0].name} leads (${all[0].aliveCount} alive, ${fmtPts(all[0].wlPts)} pts)`;
   if(all.length>1) el("pz2owner").textContent=`${all[1].name} (${all[1].aliveCount} alive, ${fmtPts(all[1].wlPts)} pts)`;
-  if(all.length>2) el("pz3owner").textContent=`${all[2].name} (${all[2].aliveCount} alive, ${fmtPts(all[2].wlPts)} pts)`;
+  if(_thirdPlaceContest){
+    el("pz3owner").textContent=`${_thirdPlaceContest.home} or ${_thirdPlaceContest.away}`;
+    el("pz3detail").textContent=`${_thirdPlaceContest.homeTeam} vs ${_thirdPlaceContest.awayTeam} — play-off TBD`;
+  } else {
+    if(all.length>2) el("pz3owner").textContent=`${all[2].name} (${all[2].aliveCount} alive, ${fmtPts(all[2].wlPts)} pts)`;
+    el("pz3detail").textContent=all[2]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"–";
+  }
   el("pz1detail").textContent=all[0]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"–";
   el("pz2detail").textContent=all[1]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"–";
-  el("pz3detail").textContent=all[2]?.teams.filter(t=>t.status==="alive").map(t=>t.name).join(", ")||"–";
 
   const rows=q ? all.filter(p=>p.name.toLowerCase().includes(q)||p.teams.some(t=>t.name.toLowerCase().includes(q))) : all;
 
