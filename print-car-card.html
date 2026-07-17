@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<!-- Staff print material (linked from links.html): A4 in-car card left for
+     service customers. Light design. QR codes are inline SVG pointing at
+     sq1.html and refer.html (utm_source=car-qr). Keep noindex and out of
+     sitemap.xml. -->
+<meta name="robots" content="noindex, nofollow"/>
+<title>Print - In-Car Card (Light)</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<style>
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,600,700,800,900&display=swap');
+:root{
+  --text:#11161d; --body:#3c4a5e; --muted:#5f6b7c;
+  --blue:#1559cf; --blue-deep:#0e3f96; --gold:#a8853b;
+  --font:'Satoshi',ui-sans-serif,system-ui,sans-serif;
+  --display:'Clash Display','Satoshi',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#e8eaee;font-family:var(--font);color:var(--text);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.toolbar{display:flex;align-items:center;justify-content:center;gap:14px;padding:14px;background:#11161d;color:#fff;font-size:.85rem;}
+.toolbar button{background:#1559cf;color:#fff;border:none;border-radius:9px;padding:10px 22px;font-weight:700;font-family:var(--font);font-size:.9rem;cursor:pointer;}
+.sheet{width:210mm;min-height:297mm;margin:18px auto;background:#fff;box-shadow:0 18px 50px rgba(16,21,29,.18);padding:16mm 15mm 12mm;display:flex;flex-direction:column;}
+.brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9mm;}
+.wordmark{font-family:var(--display);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:15pt;display:flex;align-items:center;gap:7px;}
+.wordmark::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--blue);}
+.brand-tag{font-size:8.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+h1{font-family:var(--display);font-weight:600;font-size:27pt;line-height:1.08;letter-spacing:-.01em;margin-bottom:7mm;}
+h1 em{font-style:normal;color:var(--blue);}
+.intro-row{display:flex;gap:8mm;align-items:flex-start;margin-bottom:9mm;}
+.intro-row img{width:34mm;height:44mm;object-fit:cover;object-position:center top;border-radius:5mm;flex-shrink:0;}
+.intro-copy{flex:1;}
+.intro-copy p{font-size:11.5pt;line-height:1.65;color:var(--body);margin-bottom:4mm;}
+.intro-sign{font-size:10.5pt;color:var(--muted);}
+.intro-sign strong{display:block;color:var(--text);font-size:11.5pt;}
+.qr-panel{display:flex;align-items:center;gap:9mm;background:#f2f5fa;border:1px solid rgba(21,89,207,.18);border-radius:6mm;padding:9mm;margin-bottom:7mm;}
+.qr-panel svg{width:41mm;height:41mm;flex-shrink:0;}
+.qr-steps{flex:1;}
+.qr-steps .qs-kicker{font-size:9pt;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:3mm;}
+.qr-steps ol{list-style:none;counter-reset:s;}
+.qr-steps li{counter-increment:s;display:flex;gap:4mm;align-items:baseline;font-size:12.5pt;font-weight:600;margin-bottom:2.5mm;}
+.qr-steps li::before{content:counter(s);width:6.5mm;height:6.5mm;border-radius:50%;background:var(--blue);color:#fff;font-size:9.5pt;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transform:translateY(1pt);}
+.qr-steps .qs-url{font-size:9pt;color:var(--muted);margin-top:2mm;}
+.doors{display:flex;gap:5mm;margin-bottom:7mm;}
+.door{flex:1;border:1px solid rgba(16,21,29,.14);border-radius:5mm;padding:6mm;}
+.door .d-title{font-size:10.5pt;font-weight:800;margin-bottom:1.5mm;display:flex;align-items:center;gap:2.5mm;}
+.door .d-val{font-size:11pt;color:var(--blue-deep);font-weight:700;word-break:break-all;}
+.door .d-sub{font-size:8.5pt;color:var(--muted);margin-top:1.5mm;line-height:1.5;}
+.refer{display:flex;align-items:center;gap:7mm;background:linear-gradient(135deg,rgba(201,168,76,.14),rgba(201,168,76,.05));border:1px solid rgba(168,133,59,.35);border-radius:6mm;padding:7mm;margin-bottom:6mm;}
+.refer svg{width:26mm;height:26mm;flex-shrink:0;}
+.refer .r-body{flex:1;}
+.refer .r-title{font-family:var(--display);font-size:14pt;font-weight:600;color:#5c470f;margin-bottom:2mm;}
+.refer p{font-size:10pt;color:#7a6020;line-height:1.55;}
+.refer .r-url{font-size:8.5pt;color:#8a6a1e;margin-top:1.5mm;font-weight:700;}
+.legal{font-size:7pt;color:#9aa3af;line-height:1.5;margin-top:auto;}
+@media print{
+  .toolbar{display:none;}
+  body{background:#fff;}
+  .sheet{margin:0;box-shadow:none;width:auto;min-height:auto;}
+  @page{size:A4;margin:0;}
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <span>A4 in-car card - light design</span>
+  <button onclick="window.print()">🖨 Print</button>
+</div>
+
+<div class="sheet">
+  <div class="brand-row">
+    <div class="wordmark">DanSells</div>
+    <div class="brand-tag">BMW Ruxley · Sales</div>
+  </div>
+
+  <h1>Thank you for visiting<br>our service team. <em>One more thing...</em></h1>
+
+  <div class="intro-row">
+    <img src="photo01.jpg" alt="Dan, BMW Sales Executive"/>
+    <div class="intro-copy">
+      <p>I'm Dan, from the sales team here at Ruxley. While your car was with us, I couldn't help wondering about its next chapter - what it's worth today, and what the future may hold for you vehicle-wise.</p>
+      <p>If you're even a little curious, I'd genuinely love a conversation. No pressure, no scripts - some people walk away wanting a change, plenty don't, and both are completely fine.</p>
+      <div class="intro-sign"><strong>Dan</strong>BMW Sales Executive, Hedin Ruxley</div>
+    </div>
+  </div>
+
+  <div class="qr-panel">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" shape-rendering="crispEdges"><path stroke="#11161d" d="M0 0.5h7m2 0h3m1 0h2m1 0h2m1 0h3m1 0h1m2 0h7M0 1.5h1m5 0h1m3 0h1m1 0h4m1 0h1m8 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m1 0h2m3 0h1m1 0h1m1 0h8m1 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m1 0h4m2 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m1 0h2m1 0h2m2 0h1m2 0h1m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m1 0h2m2 0h1m1 0h3m3 0h3m3 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M8 7.5h1m6 0h1m5 0h2M0 8.5h1m1 0h5m3 0h1m2 0h3m1 0h1m4 0h2m2 0h5M0 9.5h2m1 0h1m3 0h1m1 0h4m3 0h1m1 0h2m1 0h1m1 0h1m2 0h2m1 0h4M1 10.5h2m2 0h3m1 0h1m2 0h1m2 0h1m2 0h1m1 0h2m3 0h2m1 0h1m1 0h2M0 11.5h1m4 0h1m5 0h1m2 0h1m1 0h1m2 0h4m2 0h2m1 0h5M0 12.5h2m1 0h2m1 0h5m1 0h1m5 0h2m2 0h2m1 0h1m1 0h3m1 0h2M0 13.5h3m1 0h2m1 0h1m3 0h1m2 0h4m2 0h1m1 0h5m2 0h4M0 14.5h1m2 0h4m1 0h7m2 0h3m1 0h2m2 0h2m1 0h4M1 15.5h2m2 0h1m2 0h2m2 0h1m1 0h1m1 0h1m2 0h3m3 0h3m1 0h2M2 16.5h2m2 0h1m1 0h3m1 0h2m3 0h3m2 0h1m1 0h2m1 0h3m2 0h1M0 17.5h4m3 0h2m2 0h1m1 0h2m2 0h5m1 0h2m1 0h2m1 0h4M0 18.5h2m1 0h2m1 0h2m2 0h8m2 0h1m3 0h2m1 0h2m1 0h1M0 19.5h3m9 0h4m1 0h3m1 0h1m1 0h1m1 0h1m1 0h4M0 20.5h2m1 0h1m2 0h6m1 0h1m1 0h2m6 0h3m2 0h2m1 0h2M0 21.5h1m3 0h2m2 0h6m1 0h1m1 0h2m4 0h1m1 0h2m2 0h2m1 0h1M0 22.5h1m1 0h1m2 0h2m2 0h1m1 0h1m3 0h3m3 0h2m2 0h1m2 0h1m1 0h2M0 23.5h1m3 0h1m5 0h2m1 0h1m1 0h1m3 0h1m1 0h1m1 0h2m3 0h3m1 0h1M0 24.5h1m2 0h1m1 0h3m3 0h3m1 0h3m4 0h1m1 0h5M8 25.5h2m1 0h3m5 0h2m1 0h1m1 0h1m3 0h1m1 0h1m1 0h1M0 26.5h7m4 0h1m3 0h2m1 0h1m2 0h4m1 0h1m1 0h1m1 0h2M0 27.5h1m5 0h1m1 0h1m1 0h1m1 0h1m1 0h2m3 0h6m3 0h4M0 28.5h1m1 0h3m1 0h1m1 0h2m3 0h1m1 0h1m2 0h3m1 0h1m1 0h6m1 0h2M0 29.5h1m1 0h3m1 0h1m1 0h1m6 0h2m2 0h7m2 0h2m1 0h2M0 30.5h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h2m2 0h2m1 0h1m3 0h1m1 0h2m1 0h2M0 31.5h1m5 0h1m4 0h1m1 0h1m2 0h1m4 0h2m5 0h3M0 32.5h7m1 0h2m2 0h1m3 0h2m5 0h2m1 0h2m1 0h3"/></svg>
+    <div class="qr-steps">
+      <div class="qs-kicker">Curious what your car is worth?</div>
+      <ol>
+        <li>Scan the code</li>
+        <li>Enter your reg</li>
+        <li>Tap "Tell me more"</li>
+      </ol>
+      <div class="qs-url">45 seconds, and I'll have your car's value ready when we speak · dan-sells.co.uk</div>
+    </div>
+  </div>
+
+  <div class="doors">
+    <div class="door">
+      <div class="d-title">💬 WhatsApp me</div>
+      <div class="d-val">07827 138197</div>
+      <div class="d-sub">A message is all it takes - I'll take it from there.</div>
+    </div>
+    <div class="door">
+      <div class="d-title">✉️ Email me</div>
+      <div class="d-val">daniel.cane@hedinautomotive.co.uk</div>
+      <div class="d-sub">Prefer email? Drop me a line any time.</div>
+    </div>
+  </div>
+
+  <div class="refer">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" shape-rendering="crispEdges"><path stroke="#11161d" d="M0 0.5h7m1 0h2m2 0h1m1 0h2m1 0h1m5 0h1m2 0h7M0 1.5h1m5 0h1m3 0h3m4 0h1m1 0h2m1 0h1m3 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m3 0h2m1 0h1m2 0h1m2 0h3m4 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m1 0h2m4 0h2m1 0h3m2 0h2m2 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m3 0h3m1 0h2m2 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m1 0h2m1 0h2m3 0h1m2 0h2m1 0h1m3 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M8 7.5h1m1 0h1m1 0h1m2 0h5m1 0h1M0 8.5h1m3 0h1m1 0h3m2 0h1m4 0h2m1 0h4m2 0h5m2 0h1M0 9.5h2m2 0h2m1 0h2m2 0h1m1 0h4m1 0h1m1 0h2m1 0h1m1 0h1m3 0h3M2 10.5h3m1 0h1m1 0h3m4 0h1m1 0h1m2 0h2m1 0h4m2 0h1m1 0h1M1 11.5h1m5 0h1m2 0h2m2 0h2m1 0h5m1 0h4m4 0h1M0 12.5h2m1 0h1m1 0h2m1 0h1m2 0h1m1 0h2m3 0h1m2 0h4m1 0h2m1 0h1M1 13.5h1m2 0h2m2 0h1m1 0h3m3 0h2m3 0h1m1 0h1m3 0h1m1 0h1M0 14.5h5m1 0h2m1 0h1m2 0h1m1 0h1m1 0h1m3 0h2m1 0h1m1 0h2m1 0h2m1 0h1M2 15.5h1m1 0h2m1 0h2m3 0h1m1 0h1m2 0h2m2 0h2m2 0h2m2 0h1M1 16.5h1m2 0h1m1 0h1m3 0h1m2 0h3m1 0h6m1 0h1m1 0h1m1 0h2m1 0h1M1 17.5h1m1 0h1m3 0h2m3 0h1m2 0h4m4 0h3m3 0h3M0 18.5h1m3 0h5m6 0h2m1 0h1m1 0h1m1 0h2m3 0h1m1 0h1m1 0h1M5 19.5h1m7 0h2m4 0h1m1 0h1m2 0h4M2 20.5h2m2 0h1m2 0h2m1 0h2m2 0h1m2 0h1m1 0h3m2 0h1m1 0h2m2 0h1M0 21.5h1m2 0h2m2 0h2m1 0h1m2 0h2m2 0h2m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1M3 22.5h1m2 0h1m2 0h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h3m1 0h2m1 0h2M3 23.5h3m2 0h1m1 0h1m4 0h4m1 0h5m3 0h1M0 24.5h3m1 0h3m2 0h3m5 0h1m2 0h3m1 0h6m2 0h1M8 25.5h1m2 0h3m1 0h2m5 0h1m1 0h1m3 0h1m1 0h1M0 26.5h7m1 0h1m1 0h1m1 0h1m2 0h1m1 0h1m3 0h2m1 0h1m1 0h1m1 0h2m1 0h1M0 27.5h1m5 0h1m2 0h2m1 0h4m1 0h5m2 0h1m3 0h1M0 28.5h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h2m3 0h1m1 0h3m1 0h6m1 0h1M0 29.5h1m1 0h3m1 0h1m2 0h1m6 0h1m3 0h1m1 0h3m1 0h5M0 30.5h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m5 0h2m2 0h3M0 31.5h1m5 0h1m2 0h3m1 0h2m2 0h1m1 0h1m1 0h1m2 0h3M0 32.5h7m1 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h2m4 0h1m2 0h1"/></svg>
+    <div class="r-body">
+      <div class="r-title">Know someone hunting for a BMW? That's worth money.</div>
+      <p>Introduce a friend and when they take delivery of their BMW, you choose the thank-you: <strong>£250 BMW credit or £125 cash</strong>. Scan for the details.</p>
+      <div class="r-url">dan-sells.co.uk/refer.html</div>
+    </div>
+  </div>
+
+  <p class="legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Referral reward paid on completed delivery - see dan-sells.co.uk/refer.html for terms.</p>
+</div>
+</body>
+</html>

@@ -140,6 +140,7 @@
   const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
   const params = new URLSearchParams(location.search);
   const linkName = (params.get('n')||params.get('name')||'').trim().replace(/[^A-Za-z' -]/g,'').slice(0,30);
+  const linkDay = (params.get('d')||'').trim().replace(/[^A-Za-z0-9 ]/g,'').slice(0,24);
   let dvlaDesc = '';
 
   function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
@@ -161,9 +162,13 @@
   })();
 
   // Personalise + pre-fill from the link Dan sent
+  if(linkName || linkDay){
+    const who = linkName ? linkName + ", your" : "Your";
+    const when = linkDay ? "on " + linkDay : "soon";
+    document.getElementById("s1Heading").textContent = who + " BMW is booked in with us " + when + ". Perfect timing.";
+  }
   if(linkName){
-    document.getElementById("s1Heading").textContent = linkName + ", your BMW is booked in with us soon. Perfect timing.";
-    document.getElementById("s2Heading").textContent = "Lovely, " + linkName + ". You're already coming in - so let me come to you.";
+    document.getElementById("s2Heading").textContent = "Lovely, " + linkName + ". Now book ten minutes with me.";
   }
   const linkReg = (params.get('reg')||params.get('r')||'').toUpperCase().replace(/[^A-Z0-9 ]/g,'').slice(0,10);
   if(linkReg){
