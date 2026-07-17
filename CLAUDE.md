@@ -45,7 +45,7 @@ the final step.
 |---|---|
 | `step1.html`–`step8.html` (+ `step1b`, `step4b/c/m`) | **"Find my BMW"** — 8-step new/used car matching brief. Entry: `start.html`. `step1b` is step 2; `step4b/c/m` are branch/redirect pages within the part-exchange flow. Shared behaviour (silent resume, progress bar, brief ticket) lives in `funnel-ui.js` + `funnel.css`. Submits on `step8.html` → `thankyou.html` / `wait.html`. |
 | `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.eu links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses plain hyphens, no en/em dashes (Dan's rule). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
-| `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate` (built via the widget on `links.html`); the plate arrives pre-filled, the customer confirms car + mileage then taps **"I'm interested"** (screen 1) and books (cal.eu / WhatsApp). Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
+| `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate&d=Friday` (built via the widget on `links.html`; `d` is the optional service day, echoed in the greeting); the plate arrives pre-filled, the customer confirms car + mileage then taps **"I'm interested"** (screen 1) and books (cal.eu / WhatsApp). Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
 | `yourbrief.html` | **Optional deep-dive brief** — nudged from `yourcar.html` stage 2 and `sq_done.html` after the initial interest/booking stages. Single page, five skippable stages (direction, timing, payment + budget, PX intent, recap ticket + notes), reuses identity from `sessionStorage` (never re-asks for what Dan has), **one** Formspree submission on send. |
 
 **Formspree is rationed** (submission volume costs money): `yourcar.html`
@@ -148,7 +148,12 @@ are still duplicated per page — only the header/drawer/footer are templated.
 - `Forecourt.html` — internal forecourt stock check tool (PIN-gated,
   Firebase-backed).
 - `links.html` — Dan's internal links/dashboard page (includes the Formspree
-  record-ID → PDF download widgets).
+  record-ID → PDF download widgets, the Ramp Report link builder with its
+  localStorage sent-log, and the print-materials links).
+- `print-car-card.html` / `print-car-card-dark.html` — A4 in-car cards for
+  service customers (QR → `sq1.html?utm_source=car-qr`, referral QR →
+  `refer.html?utm_source=car-qr`). QRs are inline SVG; regenerate if the
+  target URLs ever change.
 - **The games are internal-only, never customer-facing** (Dan's ruling):
   `forecourt-frenzy.html`, `forecourt-frenzy-classic.html`,
   `world-cup-tracker-live-leaderboard.html`, `sweepstake-2026.html`.
