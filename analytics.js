@@ -6,6 +6,9 @@
    - <funnel>_step_<n>  view of a funnel step (funnels: fmb, ev, sq, ap)
    - <funnel>_complete  first view of that funnel's confirmation page
    - generate_lead      any Formspree submission ({form_page, ref_code})
+   - lead_addendum_sent extra material for an already-counted lead, e.g.
+                        thankyou.html's deferred PX-photo upload
+                        ({form_page}) - not counted as generate_lead
    - whatsapp_click     any wa.me link ({link_location: float|header|drawer|inline})
    - share              native "Share my BMW story" ({method:native, ref_code})
    - referral_visit     landing with ?ref=CODE ({ref_code}); the code is kept
@@ -78,13 +81,24 @@
   /* ── Formspree submissions → generate_lead ─────────────────────────
      If the visitor arrived via a referral link, stamp the code onto the
      GA event and into the submission itself (referral_code) so it shows
-     up in Dan's lead email. */
+     up in Dan's lead email. A submission carrying lead_addendum:"true"
+     (e.g. thankyou.html's deferred PX-photo upload) is extra material for
+     a lead already counted elsewhere, not a fresh one - fire a distinct
+     event instead of generate_lead so it isn't double-counted. */
   if (window.fetch) {
     var origFetch = window.fetch;
     window.fetch = function (input, init) {
       try {
         var url = (typeof input === 'string') ? input : ((input && input.url) || '');
         if (url.indexOf('formspree.io') !== -1) {
+          var isAddendum = false;
+          if (init && typeof init.body === 'string') {
+            try { isAddendum = JSON.parse(init.body).lead_addendum === 'true'; } catch (e3) {}
+          }
+          if (isAddendum) {
+            track('lead_addendum_sent', { form_page: page, transport_type: 'beacon' });
+            return origFetch.apply(this, arguments);
+          }
           var ref = refBy();
           var params = { form_page: page, transport_type: 'beacon' };
           if (ref) params.ref_code = ref;

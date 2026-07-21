@@ -46,6 +46,7 @@
     .da-fill{height:100%;width:0;background:linear-gradient(90deg,#1559cf,#3a7be0);border-radius:999px;}
     .da-btn{width:46px;height:46px;border-radius:50%;border:none;background:#1559cf;color:#fff;font-size:1.05rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px rgba(21,89,207,.5);transition:background .18s,transform .18s;}
     .da-btn:hover{background:#0e3f96;transform:scale(1.05);}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   </style>
 <script src="analytics.js" defer></script>
 </head>
@@ -71,6 +72,7 @@
       <audio id="daAudio" preload="none" src="dan-service-intro.mp3?v=2"></audio>
     </div>
 
+    <label class="sr-only" for="ycReg">Registration</label>
     <div class="plate-wrap">
       <div class="plate-band"><span>🇬🇧</span>UK</div>
       <input id="ycReg" type="text" placeholder="AB12 CDE" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10" oninput="this.value=this.value.toUpperCase()"/>
@@ -82,7 +84,7 @@
     </div>
 
     <div class="field-group" style="margin-bottom:18px;">
-      <label>Approximate mileage *</label>
+      <label for="ycMileage">Approximate mileage *</label>
       <input id="ycMileage" type="text" inputmode="numeric" placeholder="e.g. 32,000" onkeydown="if(event.key==='Enter')passStage1()"/>
     </div>
 
@@ -130,7 +132,7 @@
       <span style="font-size:1.7rem;flex-shrink:0;">🧠</span>
       <span style="flex:1;">
         <strong style="display:block;font-size:.92rem;font-weight:700;color:#5c470f;margin-bottom:3px;">Got one more minute? Paint me a picture.</strong>
-        <span style="font-size:.8rem;color:#7a6020;line-height:1.5;">Tell me what you'd actually go for - a few taps, no typing. I'll walk into our chat already knowing your taste.</span>
+        <span style="font-size:.8rem;color:#7a6020;line-height:1.5;">Tell me what you'd actually go for - a few taps, no typing. I'll walk into our chat already knowing your taste, and if it turns out to be a good time to change, I'll mention what's currently available too.</span>
       </span>
       <span style="color:#8a6a1e;font-size:1rem;">›</span>
     </a>
@@ -152,13 +154,14 @@
     if(a.paused){
       a.play();
       b.textContent = "❚❚";
+      b.setAttribute("aria-label","Pause Dan's message");
       if(!daPlayed){ daPlayed = true; if(typeof gtag==="function") gtag("event","dan_audio_play",{page:"yourcar"}); }
-    } else { a.pause(); b.textContent = "▶"; }
+    } else { a.pause(); b.textContent = "▶"; b.setAttribute("aria-label","Play Dan's message"); }
   }
   (function(){
     const a = document.getElementById("daAudio");
     a.addEventListener("timeupdate",()=>{ if(a.duration) document.getElementById("daFill").style.width=(a.currentTime/a.duration*100)+"%"; });
-    a.addEventListener("ended",()=>{ document.getElementById("daBtn").textContent="▶"; document.getElementById("daFill").style.width="0"; });
+    a.addEventListener("ended",()=>{ const b=document.getElementById("daBtn"); b.textContent="▶"; b.setAttribute("aria-label","Play Dan's message"); document.getElementById("daFill").style.width="0"; });
   })();
 
   // Personalise + pre-fill from the link Dan sent

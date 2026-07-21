@@ -341,6 +341,7 @@ Photos attached.`;
         sendBtn.disabled = true;
         sendBtn.textContent = "Sending…";
         const p = {
+          _subject: "📎 PX photos added - " + (reg || "part exchange") + ", " + name,
           subject: "PX photos: " + (reg || "part exchange") + ", " + name,
           name: name,
           email: sessionStorage.getItem("email") || "",
@@ -348,7 +349,11 @@ Photos attached.`;
           car: reg,
           registration: sessionStorage.getItem("reg") || "",
           mileage: mileage,
-          photo_count: String(urls.length)
+          photo_count: String(urls.length),
+          // Not a new lead - photos for the enquiry this same visitor already
+          // submitted on step8. Flags analytics.js to skip the generate_lead
+          // event so it doesn't get double-counted as a fresh lead.
+          lead_addendum: "true"
         };
         urls.forEach(function(u, i){ p["photo_" + (i + 1)] = u; });
         fetch("https://formspree.io/f/xqewleog", {

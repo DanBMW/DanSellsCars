@@ -31,17 +31,17 @@
   <p class="step-desc">Rough figures are all I need. Nothing here commits you to anything, and I'll talk you through the alternatives when we speak.</p>
 
   <div class="fv2-options three" id="routeGrid">
-    <button class="fv2-opt" data-val="Finance" onclick="pickRoute(this)">
+    <button class="fv2-opt" data-val="Finance" aria-pressed="false" onclick="pickRoute(this)">
       <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13.5" rx="2.5"/><path d="M3 10h18"/><path d="M7 15h4.5"/></svg></span>
       <span class="fv2-opt-body"><span class="fv2-opt-title">Finance</span><span class="fv2-opt-desc">The monthly figure matters most.</span></span>
       <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
-    <button class="fv2-opt" data-val="Outright" onclick="pickRoute(this)">
+    <button class="fv2-opt" data-val="Outright" aria-pressed="false" onclick="pickRoute(this)">
       <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6.5" width="18" height="11.5" rx="2"/><circle cx="12" cy="12.2" r="2.7"/><path d="M6.6 9.7v.01M17.4 14.7v.01"/></svg></span>
       <span class="fv2-opt-body"><span class="fv2-opt-title">Outright</span><span class="fv2-opt-desc">The total figure matters most.</span></span>
       <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
-    <button class="fv2-opt" data-val="Not sure yet" onclick="pickRoute(this)">
+    <button class="fv2-opt" data-val="Not sure yet" aria-pressed="false" onclick="pickRoute(this)">
       <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 3.4c-.8.5-1.1 1-1.1 1.9"/><path d="M12 17.4v.01"/></svg></span>
       <span class="fv2-opt-body"><span class="fv2-opt-title">Not sure yet</span><span class="fv2-opt-desc">Show me the smartest route.</span></span>
       <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
@@ -173,7 +173,11 @@
     show("mileBlock", !!chosen);
     document.getElementById("altToggle").classList.toggle("on", altOn);
     show("altBlock", altOn);
-    document.querySelectorAll("#routeGrid .fv2-opt").forEach(b=>b.classList.toggle("selected", b.dataset.val===chosen));
+    document.querySelectorAll("#routeGrid .fv2-opt").forEach(b=>{
+      const sel=b.dataset.val===chosen;
+      b.classList.toggle("selected", sel);
+      b.setAttribute("aria-pressed", sel?"true":"false");
+    });
   }
   refresh();
 

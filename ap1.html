@@ -28,24 +28,24 @@
   <div class="input-card">
     <div class="two-col">
       <div class="field-group">
-        <label>Registration *</label>
+        <label for="reg">Registration *</label>
         <div style="display:flex;gap:8px;align-items:flex-end">
           <input id="reg" type="text" placeholder="e.g. AB21 XYZ" style="text-transform:uppercase;flex:1" oninput="this.value=this.value.toUpperCase()"/>
           <button class="btn" id="dvlaBtn" onclick="dvlaLookup()" style="padding:12px 14px;white-space:nowrap;font-size:.88rem">Look Up</button>
         </div>
       </div>
-      <div class="field-group"><label>Mileage *</label><input id="ml" type="number" placeholder="e.g. 32000"/></div>
+      <div class="field-group"><label for="ml">Mileage *</label><input id="ml" type="number" placeholder="e.g. 32000"/></div>
     </div>
-    <div id="dvlaBanner" style="display:none;background:rgba(21,89,207,.08);border:1px solid rgba(21,89,207,.22);border-radius:12px;padding:11px 15px;font-size:.88rem;color:#0e3f96;margin-bottom:0">
-      Found: <strong id="dvlaDesc"></strong>
-    </div>
-    <div class="two-col">
-      <div class="field-group"><label>Make & Model</label><input id="makemodel" type="text" placeholder="e.g. BMW 3 Series 320i M Sport"/></div>
-      <div class="field-group"><label>Year</label><input id="yr" type="text" placeholder="e.g. 2021"/></div>
+    <div id="dvlaBanner" style="display:none;border-radius:12px;padding:11px 15px;font-size:.88rem;margin-bottom:0">
+      <span id="dvlaLabel">Found: </span><strong id="dvlaDesc"></strong>
     </div>
     <div class="two-col">
-      <div class="field-group"><label>Colour</label><input id="col" type="text" placeholder="e.g. Alpine White"/></div>
-      <div class="field-group"><label>Fuel type</label>
+      <div class="field-group"><label for="makemodel">Make &amp; Model</label><input id="makemodel" type="text" placeholder="e.g. BMW 3 Series 320i M Sport"/></div>
+      <div class="field-group"><label for="yr">Year</label><input id="yr" type="text" placeholder="e.g. 2021"/></div>
+    </div>
+    <div class="two-col">
+      <div class="field-group"><label for="col">Colour</label><input id="col" type="text" placeholder="e.g. Alpine White"/></div>
+      <div class="field-group"><label for="fuel">Fuel type</label>
         <select id="fuel">
           <option value="">Select...</option>
           <option value="Petrol">Petrol</option>
@@ -56,7 +56,7 @@
         </select>
       </div>
     </div>
-    <div class="field-group"><label>Any notable extras / spec</label><input id="spec" type="text" placeholder="e.g. Pro Pack, heated seats, panoramic roof, M Sport Pro"/></div>
+    <div class="field-group"><label for="spec">Any notable extras / spec</label><input id="spec" type="text" placeholder="e.g. Pro Pack, heated seats, panoramic roof, M Sport Pro"/></div>
   </div>
   <div class="nav">
     <a class="btn-ghost" href="appraisal.html">&larr; Back</a>
@@ -71,6 +71,16 @@
   [["reg","apReg"],["ml","apMileage"],["makemodel","apMakeModel"],["yr","apYear"],["col","apColour"],["fuel","apFuel"],["spec","apSpec"]].forEach(([id,key])=>{
     const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
   });
+
+  function showDvlaBanner(ok, text){
+    const banner=document.getElementById("dvlaBanner");
+    banner.style.background=ok?"rgba(21,89,207,.08)":"rgba(198,58,58,.08)";
+    banner.style.border="1px solid "+(ok?"rgba(21,89,207,.22)":"rgba(198,58,58,.28)");
+    banner.style.color=ok?"#0e3f96":"#8a2b2b";
+    document.getElementById("dvlaLabel").style.display=ok?"":"none";
+    document.getElementById("dvlaDesc").textContent=text;
+    banner.style.display="block";
+  }
 
   async function dvlaLookup(){
     const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
@@ -90,10 +100,13 @@
         const fuelMap={petrol:"Petrol",diesel:"Diesel",hybrid:"Hybrid","mild hybrid":"Mild Hybrid",electricity:"Electric",electric:"Electric"};
         if(fuelMap[fuel]) fuelSel.value=fuelMap[fuel];
         const parts=[yr,make,model,col,toTC(d.fuelType||"")].filter(Boolean);
-        document.getElementById("dvlaDesc").textContent=parts.join(" · ");
-        document.getElementById("dvlaBanner").style.display="block";
+        showDvlaBanner(true, parts.join(" · "));
+      } else {
+        showDvlaBanner(false, "Couldn't find that reg - double check it, or just fill in the make and model below.");
       }
-    }catch(e){}
+    }catch(e){
+      showDvlaBanner(false, "Couldn't look that up right now - just fill in the make and model below.");
+    }
     btn.disabled=false; btn.textContent="Look Up";
   }
 

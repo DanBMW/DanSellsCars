@@ -41,7 +41,7 @@ body.fv2 .step-wrap{animation:fv2In .34s cubic-bezier(.22,.61,.36,1) both;}
 .fv2-ticket::-webkit-scrollbar{display:none;}
 .fv2-ticket-label{
   font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--gold);flex-shrink:0;
+  color:#7a6020;flex-shrink:0;
 }
 .fv2-ticket-chip{
   flex-shrink:0;font-size:.72rem;font-weight:600;color:var(--body);
@@ -208,6 +208,8 @@ body.fv2 input[type="range"]::-moz-range-thumb{width:20px;height:20px;border-rad
   border-radius:12px;padding:11px 14px;font-size:.86rem;color:#14582c;margin-top:10px;line-height:1.45;
 }
 .fv2-banner svg{width:16px;height:16px;flex-shrink:0;color:var(--green);}
+.fv2-banner--err{background:rgba(198,58,58,.08);border-color:rgba(198,58,58,.28);color:#8a2b2b;}
+.fv2-banner--err svg{color:#c63a3a;}
 
 /* ── MOT status note (step 5) ─────────────────────────────── */
 .fv2-mot{display:none;border-radius:12px;padding:11px 14px;font-size:.85rem;line-height:1.55;margin-top:10px;}
@@ -223,8 +225,10 @@ body.fv2 input[type="range"]::-moz-range-thumb{width:20px;height:20px;border-rad
   background:var(--paper);border:1px solid var(--line);cursor:pointer;font-family:var(--font);
   font-size:.74rem;font-weight:600;color:var(--muted);text-align:center;
   transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent;user-select:none;
+  appearance:none;-webkit-appearance:none;width:100%;margin:0;
 }
 .fv2-swatch:hover{border-color:rgba(21,89,207,.4);}
+.fv2-swatch:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
 .fv2-swatch.on{border-color:var(--blue);background:var(--blue-tint);color:var(--text);box-shadow:inset 0 0 0 1px var(--blue);}
 .fv2-swatch .dot{width:26px;height:26px;border-radius:50%;border:1px solid rgba(16,21,29,.18);flex-shrink:0;}
 .fv2-swatch.any{grid-column:span 2;flex-direction:row;justify-content:center;gap:9px;padding:10px 12px;}
@@ -336,10 +340,12 @@ body.fv2 .field-group input.fv2-invalid,body.fv2 .field-group textarea.fv2-inval
 .fv2-rev-edit{font-size:.8rem;font-weight:700;color:var(--blue);text-decoration:none;padding:4px 2px;}
 .fv2-rev-edit:hover{color:var(--blue-deep);text-decoration:underline;}
 .fv2-rev-body{padding:6px 18px 12px;}
-.fv2-rev-item{display:flex;justify-content:space-between;gap:18px;padding:9px 0;border-bottom:1px solid var(--line-soft);}
+.fv2-rev-item{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:9px 0;border-bottom:1px solid var(--line-soft);}
 .fv2-rev-item:last-child{border-bottom:none;}
 .fv2-rev-item b{font-size:.8rem;font-weight:600;color:var(--muted);flex-shrink:0;}
 .fv2-rev-item div{font-size:.88rem;font-weight:600;color:var(--text);text-align:right;line-height:1.45;overflow-wrap:anywhere;}
+.fv2-rev-item-edit{font-size:.74rem;font-weight:700;color:var(--blue);text-decoration:none;flex-shrink:0;padding:2px;}
+.fv2-rev-item-edit:hover{text-decoration:underline;}
 @media(max-width:520px){.fv2-rev-item{flex-direction:column;gap:2px;}.fv2-rev-item div{text-align:left;}}
 
 /* ── EV saving card (EV funnel only) ──────────────────────── */

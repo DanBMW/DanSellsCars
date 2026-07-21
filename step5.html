@@ -31,17 +31,17 @@
   <p class="step-desc">If there is, your registration does most of the work. The lookup fills in the car's details for you.</p>
 
   <div class="fv2-options three" style="margin-bottom:6px;">
-    <button class="fv2-opt" data-val="Yes" onclick="pick(this,'yes')">
+    <button class="fv2-opt" data-val="Yes" aria-pressed="false" onclick="pick(this,'yes')">
       <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l1.4-3.8A2 2 0 0 1 8.3 6.9h7.4a2 2 0 0 1 1.9 1.3L19 12"/><path d="M4 17v-3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M4 17v2M20 17v2"/><path d="M7.2 14.5h.01M16.8 14.5h.01"/></svg></span>
       <span class="fv2-opt-body"><span class="fv2-opt-title">Yes</span><span class="fv2-opt-desc">I have a car to trade in.</span></span>
       <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
-    <button class="fv2-opt" data-val="No" onclick="pick(this,'no')">
+    <button class="fv2-opt" data-val="No" aria-pressed="false" onclick="pick(this,'no')">
       <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/></svg></span>
       <span class="fv2-opt-body"><span class="fv2-opt-title">No</span><span class="fv2-opt-desc">No part exchange this time.</span></span>
       <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
-    <button class="fv2-opt" data-val="Maybe" onclick="pick(this,'yes')">
+    <button class="fv2-opt" data-val="Maybe" aria-pressed="false" onclick="pick(this,'yes')">
       <span class="fv2-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 3.4c-.8.5-1.1 1-1.1 1.9"/><path d="M12 17.4v.01"/></svg></span>
       <span class="fv2-opt-body"><span class="fv2-opt-title">Maybe</span><span class="fv2-opt-desc">Depends on the figure.</span></span>
       <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
@@ -55,17 +55,17 @@
       <input id="reg" type="text" class="fv2-plate" placeholder="AB12 CDE" required maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()"/>
       <button type="button" class="fv2-plate-btn" id="dvlaBtn" onclick="dvlaLookup()">Look up</button>
     </div>
-    <div id="dvlaBanner" class="fv2-banner" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Found: <strong id="dvlaDesc"></strong></span></div>
+    <div id="dvlaBanner" class="fv2-banner" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path id="dvlaIcon" d="M20 6 9 17l-5-5"/></svg><span><span id="dvlaLabel">Found: </span><strong id="dvlaDesc"></strong></span></div>
     <div id="motNote" class="fv2-mot"></div>
 
     <div class="input-card" style="margin:16px 0 0;">
       <div class="two-col">
-        <div class="field-group"><label>Car <span style="font-weight:400;color:var(--muted);">(year, make)</span></label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
-        <div class="field-group"><label>Model</label><input id="pxModel" type="text" placeholder="e.g. 3 Series, 320i"/></div>
+        <div class="field-group"><label for="cc">Car <span style="font-weight:400;color:var(--muted);">(year, make)</span></label><input id="cc" type="text" placeholder="e.g. 2021 BMW 118i M Sport"/></div>
+        <div class="field-group"><label for="pxModel">Model</label><input id="pxModel" type="text" placeholder="e.g. 3 Series, 320i"/></div>
       </div>
       <div class="two-col">
-        <div class="field-group"><label>Mileage</label><input id="ml" type="text" inputmode="numeric" placeholder="e.g. 28,000"/></div>
-        <div class="field-group"><label>Online quote, if you have one <span style="font-weight:400;color:var(--muted);">(optional)</span></label><input id="wv" type="text" placeholder="e.g. £11,400"/></div>
+        <div class="field-group"><label for="ml">Mileage</label><input id="ml" type="text" inputmode="numeric" placeholder="e.g. 28,000"/></div>
+        <div class="field-group"><label for="wv">Online quote, if you have one <span style="font-weight:400;color:var(--muted);">(optional)</span></label><input id="wv" type="text" placeholder="e.g. £11,400"/></div>
       </div>
       <p class="hint" style="margin-top:-6px;">If an online buyer has already given you a figure, drop it in. I can usually tell you quickly whether I can beat it.</p>
     </div>
@@ -89,23 +89,23 @@
 
     <div class="fv2-sec">Service history</div>
     <div class="fv2-rows" id="serviceTrack">
-      <button type="button" class="fv2-row" data-val="Full dealer history" onclick="pickService(this)">
+      <button type="button" class="fv2-row" data-val="Full dealer history" aria-pressed="false" onclick="pickService(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Full dealer history</span><span class="fv2-row-desc">Every service at a main dealer. The strongest history a BMW can have.</span><span class="fv2-tag good">Best for value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Full independent history" onclick="pickService(this)">
+      <button type="button" class="fv2-row" data-val="Full independent history" aria-pressed="false" onclick="pickService(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Full independent history</span><span class="fv2-row-desc">Serviced on time, every time, at independent garages.</span><span class="fv2-tag good">Good for value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Partial history" onclick="pickService(this)">
+      <button type="button" class="fv2-row" data-val="Partial history" aria-pressed="false" onclick="pickService(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Partial history</span><span class="fv2-row-desc">Some stamps or receipts, with gaps in the record.</span><span class="fv2-tag ok">Some impact on value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="No history" onclick="pickService(this)">
+      <button type="button" class="fv2-row" data-val="No history" aria-pressed="false" onclick="pickService(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">No history</span><span class="fv2-row-desc">Nothing to hand. Still fine to appraise, just worth being upfront.</span><span class="fv2-tag low">Will affect value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Not sure" onclick="pickService(this)">
+      <button type="button" class="fv2-row" data-val="Not sure" aria-pressed="false" onclick="pickService(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Not sure</span><span class="fv2-row-desc">I'll need to check the paperwork or the previous owner.</span><span class="fv2-tag na">To be confirmed</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
@@ -113,49 +113,49 @@
 
     <div class="fv2-sec">Outstanding finance</div>
     <div class="fv2-rows" id="financeTrack">
-      <button type="button" class="fv2-row" data-val="No finance" onclick="pickFinance(this)">
+      <button type="button" class="fv2-row" data-val="No finance" aria-pressed="false" onclick="pickFinance(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">None, I own it outright</span><span class="fv2-row-desc">The car is yours to trade in freely.</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Finance, settlement unknown" onclick="pickFinance(this)">
+      <button type="button" class="fv2-row" data-val="Finance, settlement unknown" aria-pressed="false" onclick="pickFinance(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Yes, settlement figure unknown</span><span class="fv2-row-desc">No problem, I can help work it out before we speak.</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Finance, settlement known" onclick="pickFinance(this)">
+      <button type="button" class="fv2-row" data-val="Finance, settlement known" aria-pressed="false" onclick="pickFinance(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Yes, I know the settlement figure</span><span class="fv2-row-desc">Enter it below and I'll factor it into the deal.</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
     </div>
     <div id="settlementWrap" class="fv2-reveal" style="display:none;margin:-8px 0 22px;">
       <div class="input-card" style="margin:0;">
-        <div class="field-group"><label>Settlement figure</label><input id="settlementFig" type="text" inputmode="numeric" placeholder="e.g. 7,500"></div>
+        <div class="field-group"><label for="settlementFig">Settlement figure</label><input id="settlementFig" type="text" inputmode="numeric" placeholder="e.g. 7,500"></div>
       </div>
     </div>
 
     <div class="fv2-sec">Overall condition</div>
     <p class="fv2-sec-sub">Honest is best. It means the figure I give you actually holds.</p>
     <div class="fv2-rows" id="condTrack">
-      <button type="button" class="fv2-row" data-val="Showroom" onclick="pickCond(this)">
+      <button type="button" class="fv2-row" data-val="Showroom" aria-pressed="false" onclick="pickCond(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Showroom</span><span class="fv2-row-desc">No marks, chips or scuffs anywhere. Could go straight on a forecourt.</span><span class="fv2-tag good">Top end value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Excellent" onclick="pickCond(this)">
+      <button type="button" class="fv2-row" data-val="Excellent" aria-pressed="false" onclick="pickCond(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Excellent</span><span class="fv2-row-desc">One scuffed alloy or a very minor stone chip at most.</span><span class="fv2-tag good">Strong value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Good" onclick="pickCond(this)">
+      <button type="button" class="fv2-row" data-val="Good" aria-pressed="false" onclick="pickCond(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Good</span><span class="fv2-row-desc">A few scuffed alloys and some stone chips. Honest wear for the age and miles.</span><span class="fv2-tag ok">Good value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Fair" onclick="pickCond(this)">
+      <button type="button" class="fv2-row" data-val="Fair" aria-pressed="false" onclick="pickCond(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Fair</span><span class="fv2-row-desc">Some visible scratches or small dents a buyer would spot on a walk-round.</span><span class="fv2-tag mid">Average value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Poor" onclick="pickCond(this)">
+      <button type="button" class="fv2-row" data-val="Poor" aria-pressed="false" onclick="pickCond(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Poor</span><span class="fv2-row-desc">Significant bodywork, deep scratches, heavily kerbed alloys or interior damage.</span><span class="fv2-tag low">Lower value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Not sure" onclick="pickCond(this)">
+      <button type="button" class="fv2-row" data-val="Not sure" aria-pressed="false" onclick="pickCond(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Not sure</span><span class="fv2-row-desc">Send me a few photos afterwards and I'll assess it properly.</span><span class="fv2-tag na">Assessed from photos</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
@@ -174,19 +174,19 @@
   let serviceChosen = sessionStorage.getItem("pxService")||"";
   let financeChosen = sessionStorage.getItem('pxFinance');
 
-  document.querySelectorAll(".fv2-opt").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
+  document.querySelectorAll(".fv2-opt").forEach(b=>{ if(b.dataset.val===chosen){ b.classList.add("selected"); b.setAttribute("aria-pressed","true"); } });
   if(chosen==="Yes"||chosen==="Maybe") document.getElementById("pxDetails").style.display="block";
 
-  document.querySelectorAll("#condTrack .fv2-row").forEach(b=>{ if(b.dataset.val===condChosen) b.classList.add("selected"); });
+  document.querySelectorAll("#condTrack .fv2-row").forEach(b=>{ if(b.dataset.val===condChosen){ b.classList.add("selected"); b.setAttribute("aria-pressed","true"); } });
   document.querySelectorAll('#financeTrack .fv2-row').forEach(b => {
-    if (b.dataset.val === financeChosen) b.classList.add('selected');
+    if (b.dataset.val === financeChosen){ b.classList.add('selected'); b.setAttribute('aria-pressed','true'); }
   });
   const savedSettlement = sessionStorage.getItem('pxSettlement');
   if (savedSettlement) document.getElementById('settlementFig').value = savedSettlement;
   if (financeChosen === 'Finance, settlement known') {
     document.getElementById('settlementWrap').style.display = 'block';
   }
-  document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>{ if(b.dataset.val===serviceChosen) b.classList.add("selected"); });
+  document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>{ if(b.dataset.val===serviceChosen){ b.classList.add("selected"); b.setAttribute("aria-pressed","true"); } });
 
   const WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
   function toTC(s){ return (s||'').replace(/\w\S*/g,t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()); }
@@ -239,6 +239,15 @@
     box.style.display="block";
   }
 
+  function showDvlaBanner(ok, text){
+    const banner=document.getElementById("dvlaBanner");
+    banner.classList.toggle("fv2-banner--err", !ok);
+    document.getElementById("dvlaLabel").style.display=ok?"":"none";
+    document.getElementById("dvlaIcon").setAttribute("d", ok?"M20 6 9 17l-5-5":"M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z");
+    document.getElementById("dvlaDesc").textContent=text;
+    banner.style.display="flex";
+  }
+
   async function dvlaLookup(){
     const reg=document.getElementById("reg").value.trim().replace(/\s/g,"").toUpperCase();
     if(!reg) return;
@@ -263,11 +272,14 @@
         sessionStorage.setItem("pxDvlaYear",yr);
         sessionStorage.setItem("pxDvlaFuel",d.fuelType||"");
         const parts=[yr,make,model,toTC(d.colour||""),toTC(d.fuelType||"")].filter(Boolean);
-        document.getElementById("dvlaDesc").textContent=parts.join(" · ");
-        document.getElementById("dvlaBanner").style.display="flex";
+        showDvlaBanner(true, parts.join(" · "));
         applyMot(d);
+      } else {
+        showDvlaBanner(false, "Couldn't find that reg - double check it, or just type the make and model in below.");
       }
-    }catch(e){}
+    }catch(e){
+      showDvlaBanner(false, "Couldn't look that up right now - just type the make and model in below.");
+    }
     btn.disabled=false; btn.textContent="Look up";
   }
 
@@ -378,8 +390,9 @@
   }
 
   function pick(btn, show){
-    document.querySelectorAll(".fv2-opt").forEach(b=>b.classList.remove("selected"));
+    document.querySelectorAll(".fv2-opt").forEach(b=>{b.classList.remove("selected");b.setAttribute("aria-pressed","false");});
     btn.classList.add("selected");
+    btn.setAttribute("aria-pressed","true");
     chosen = btn.dataset.val;
     sessionStorage.setItem("partExchange", chosen);
     document.getElementById("pxDetails").style.display = show==="yes" ? "block" : "none";
@@ -388,8 +401,9 @@
   }
 
   function pickFinance(btn) {
-    document.querySelectorAll('#financeTrack .fv2-row').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('#financeTrack .fv2-row').forEach(b => {b.classList.remove('selected');b.setAttribute('aria-pressed','false');});
     btn.classList.add('selected');
+    btn.setAttribute('aria-pressed','true');
     financeChosen = btn.dataset.val;
     sessionStorage.setItem('pxFinance', financeChosen);
     document.getElementById('settlementWrap').style.display =
@@ -397,15 +411,17 @@
     hideErr();
   }
   function pickCond(btn){
-    document.querySelectorAll("#condTrack .fv2-row").forEach(b=>b.classList.remove("selected"));
+    document.querySelectorAll("#condTrack .fv2-row").forEach(b=>{b.classList.remove("selected");b.setAttribute("aria-pressed","false");});
     btn.classList.add("selected");
+    btn.setAttribute("aria-pressed","true");
     condChosen = btn.dataset.val;
     sessionStorage.setItem("pxCondition", condChosen);
     hideErr();
   }
   function pickService(btn){
-    document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>b.classList.remove("selected"));
+    document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>{b.classList.remove("selected");b.setAttribute("aria-pressed","false");});
     btn.classList.add("selected");
+    btn.setAttribute("aria-pressed","true");
     serviceChosen = btn.dataset.val;
     sessionStorage.setItem("pxService", serviceChosen);
     hideErr();

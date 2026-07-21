@@ -26,32 +26,32 @@
   <h2>What's the service history like?</h2>
   <p class="step-desc">This has a big impact on value, be honest and Dan will always work with what you've got.</p>
   <div class="grid two" style="margin-bottom:20px">
-    <button class="choice" data-val="Full Dealership History" onclick="pick(this)">
+    <button class="choice" data-val="Full Dealership History" aria-pressed="false" onclick="pick(this)">
       <span class="choice-emoji">⭐</span>
       <span class="choice-title">Full Dealership History</span>
       <span class="choice-desc">All services carried out at a BMW or approved dealer, stamps in book or digital record.</span>
     </button>
-    <button class="choice" data-val="Full History (Independent)" onclick="pick(this)">
+    <button class="choice" data-val="Full History (Independent)" aria-pressed="false" onclick="pick(this)">
       <span class="choice-emoji">✅</span>
       <span class="choice-title">Full History (Independent)</span>
       <span class="choice-desc">All services done, but at an independent garage rather than a dealer.</span>
     </button>
-    <button class="choice" data-val="Partial History" onclick="pick(this)">
+    <button class="choice" data-val="Partial History" aria-pressed="false" onclick="pick(this)">
       <span class="choice-emoji">📋</span>
       <span class="choice-title">Partial History</span>
       <span class="choice-desc">Some stamps or records, but not all services are documented.</span>
     </button>
-    <button class="choice" data-val="No History" onclick="pick(this)">
+    <button class="choice" data-val="No History" aria-pressed="false" onclick="pick(this)">
       <span class="choice-emoji">❓</span>
       <span class="choice-title">No History</span>
       <span class="choice-desc">No service records available.</span>
     </button>
-    <button class="choice" data-val="Due a Service" onclick="pick(this)">
+    <button class="choice" data-val="Due a Service" aria-pressed="false" onclick="pick(this)">
       <span class="choice-emoji">🔧</span>
       <span class="choice-title">Due a Service</span>
       <span class="choice-desc">Service is overdue or light is showing on the dash.</span>
     </button>
-    <button class="choice" data-val="Not Sure" onclick="pick(this)">
+    <button class="choice" data-val="Not Sure" aria-pressed="false" onclick="pick(this)">
       <span class="choice-emoji">🤔</span>
       <span class="choice-title">Not Sure</span>
       <span class="choice-desc">I am not certain of the full history.</span>
@@ -64,8 +64,8 @@
 </div></div></div>
 <script>
   let chosen=sessionStorage.getItem("apServiceHistory")||"";
-  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen) b.classList.add("selected"); });
-  function pick(btn){ document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected")); btn.classList.add("selected"); chosen=btn.dataset.val; sessionStorage.setItem("apServiceHistory",chosen); setTimeout(()=>window.location.href="ap3.html",200); }
+  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===chosen){ b.classList.add("selected"); b.setAttribute("aria-pressed","true"); } });
+  function pick(btn){ document.querySelectorAll(".choice").forEach(b=>{b.classList.remove("selected");b.setAttribute("aria-pressed","false");}); btn.classList.add("selected"); btn.setAttribute("aria-pressed","true"); chosen=btn.dataset.val; sessionStorage.setItem("apServiceHistory",chosen); setTimeout(()=>window.location.href="ap3.html",200); }
   function go(){ if(!chosen){ alert("Please select a service history option."); return; } window.location.href="ap3.html"; }
 </script><script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
 <script src="contact.js"></script>

@@ -29,23 +29,23 @@
   <div class="input-card" style="margin-bottom:18px">
     <div class="step-kicker" style="margin-bottom:10px">Outstanding finance?</div>
     <div class="grid three" style="margin-bottom:0">
-      <button class="choice" data-val="No finance" onclick="pickFin(this)"><span class="choice-emoji">✅</span><span class="choice-title">No</span><span class="choice-desc">Owned outright.</span></button>
-      <button class="choice" data-val="Yes, I know the settlement figure" onclick="pickFin(this)"><span class="choice-emoji">💳</span><span class="choice-title">Yes, I know the figure</span><span class="choice-desc">I have a settlement amount.</span></button>
-      <button class="choice" data-val="Yes, I need to check" onclick="pickFin(this)"><span class="choice-emoji">🔍</span><span class="choice-title">Yes, need to check</span><span class="choice-desc">I will find out the settlement.</span></button>
+      <button class="choice" data-val="No finance" aria-pressed="false" onclick="pickFin(this)"><span class="choice-emoji">✅</span><span class="choice-title">No</span><span class="choice-desc">Owned outright.</span></button>
+      <button class="choice" data-val="Yes, I know the settlement figure" aria-pressed="false" onclick="pickFin(this)"><span class="choice-emoji">💳</span><span class="choice-title">Yes, I know the figure</span><span class="choice-desc">I have a settlement amount.</span></button>
+      <button class="choice" data-val="Yes, I need to check" aria-pressed="false" onclick="pickFin(this)"><span class="choice-emoji">🔍</span><span class="choice-title">Yes, need to check</span><span class="choice-desc">I will find out the settlement.</span></button>
     </div>
     <div class="field-group" id="settlementField" style="display:none;margin-top:14px">
-      <label>Settlement figure</label>
+      <label for="settlement">Settlement figure</label>
       <input id="settlement" type="text" placeholder="e.g. £8,400"/>
     </div>
   </div>
 
   <div class="input-card">
     <div class="two-col">
-      <div class="field-group"><label>Your name *</label><input id="apName" type="text" placeholder="Full name"/></div>
-      <div class="field-group"><label>Mobile *</label><input id="apPhone" type="tel" placeholder="07..."/></div>
+      <div class="field-group"><label for="apName">Your name *</label><input id="apName" type="text" placeholder="Full name"/></div>
+      <div class="field-group"><label for="apPhone">Mobile *</label><input id="apPhone" type="tel" placeholder="07..."/></div>
     </div>
-    <div class="field-group"><label>Email</label><input id="apEmail" type="email" placeholder="you@example.com"/></div>
-    <div class="field-group"><label>Any additional notes</label><input id="apNotes" type="text" placeholder="e.g. one previous owner, private plate included, private plate not included..."/></div>
+    <div class="field-group"><label for="apEmail">Email</label><input id="apEmail" type="email" placeholder="you@example.com"/></div>
+    <div class="field-group"><label for="apNotes">Any additional notes</label><input id="apNotes" type="text" placeholder="e.g. one previous owner, private plate included, private plate not included..."/></div>
     <div class="tick-box">✔ Dan will use these details to contact you about your part exchange appraisal only.</div>
   </div>
 
@@ -56,14 +56,14 @@
 </div></div></div>
 <script>
   let finChosen=sessionStorage.getItem("apFinance")||"";
-  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===finChosen) b.classList.add("selected"); });
+  document.querySelectorAll(".choice").forEach(b=>{ if(b.dataset.val===finChosen){ b.classList.add("selected"); b.setAttribute("aria-pressed","true"); } });
   if(finChosen==="Yes, I know the settlement figure") document.getElementById("settlementField").style.display="block";
   [["apName","apName"],["apPhone","apPhone"],["apEmail","apEmail"],["apNotes","apNotes"],["settlement","apSettlement"]].forEach(([id,key])=>{
     const v=sessionStorage.getItem(key); if(v) document.getElementById(id).value=v;
   });
   function pickFin(btn){
-    document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
-    btn.classList.add("selected"); finChosen=btn.dataset.val; sessionStorage.setItem("apFinance",finChosen);
+    document.querySelectorAll(".choice").forEach(b=>{b.classList.remove("selected");b.setAttribute("aria-pressed","false");});
+    btn.classList.add("selected"); btn.setAttribute("aria-pressed","true"); finChosen=btn.dataset.val; sessionStorage.setItem("apFinance",finChosen);
     document.getElementById("settlementField").style.display=finChosen==="Yes, I know the settlement figure"?"block":"none";
   }
   function go(){

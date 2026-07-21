@@ -23,8 +23,9 @@
 .rating-row:last-child{border-bottom:none}
 .rating-label{font-size:.93rem;font-weight:600;color:#141a22;flex:1;}
 .stars{display:flex;gap:5px;}
-.star{font-size:1.25rem;cursor:pointer;opacity:.22;transition:.12s ease;line-height:1;}
+.star{font-size:1.25rem;cursor:pointer;opacity:.22;transition:.12s ease;line-height:1;background:none;border:none;padding:0;margin:0;color:inherit;font-family:inherit;}
 .star.on{opacity:1;}
+.star:focus-visible{outline:2px solid #1559cf;outline-offset:2px;border-radius:3px;}
 </style>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
@@ -51,23 +52,23 @@
   <p class="step-desc">Be straight with me here. Honest information means a better offer. I would rather know about a scuff now than find it on the forecourt.</p>
 
   <div style="display:grid;gap:10px;margin-bottom:26px" id="condTrack">
-    <button class="condition-option" data-val="Showroom" onclick="pickCond(this)">
+    <button class="condition-option" data-val="Showroom" aria-pressed="false" onclick="pickCond(this)">
       <div class="condition-badge">💎</div>
       <div class="condition-body">
         <span class="condition-title">Showroom</span>
         <span class="condition-desc">No marks, no chips, no scuffs anywhere. Tyres like new. You could put it straight on a forecourt today.</span>
-        <span class="condition-tag" style="background:rgba(58,170,106,.15);color:#7adba4;">Top end value</span>
+        <span class="condition-tag" style="background:rgba(58,170,106,.15);color:#1d6b40;">Top end value</span>
       </div>
     </button>
-    <button class="condition-option" data-val="Excellent" onclick="pickCond(this)">
+    <button class="condition-option" data-val="Excellent" aria-pressed="false" onclick="pickCond(this)">
       <div class="condition-badge">⭐</div>
       <div class="condition-body">
         <span class="condition-title">Excellent</span>
         <span class="condition-desc">Just one scuffed alloy or a very minor stone chip. Nothing anyone would really notice at a glance.</span>
-        <span class="condition-tag" style="background:rgba(58,170,106,.12);color:#7adba4;">Strong value</span>
+        <span class="condition-tag" style="background:rgba(58,170,106,.12);color:#1d6b40;">Strong value</span>
       </div>
     </button>
-    <button class="condition-option" data-val="Good" onclick="pickCond(this)">
+    <button class="condition-option" data-val="Good" aria-pressed="false" onclick="pickCond(this)">
       <div class="condition-badge">👍</div>
       <div class="condition-body">
         <span class="condition-title">Good</span>
@@ -75,23 +76,23 @@
         <span class="condition-tag" style="background:rgba(21,89,207,.15);color:#1559cf;">Good value</span>
       </div>
     </button>
-    <button class="condition-option" data-val="Fair" onclick="pickCond(this)">
+    <button class="condition-option" data-val="Fair" aria-pressed="false" onclick="pickCond(this)">
       <div class="condition-badge">😐</div>
       <div class="condition-body">
         <span class="condition-title">Fair</span>
         <span class="condition-desc">Some visible scratches or small dents. A buyer would spot them on a walk-round but there is nothing major.</span>
-        <span class="condition-tag" style="background:rgba(201,168,76,.12);color:#e0c97a;">Average value</span>
+        <span class="condition-tag" style="background:rgba(201,168,76,.12);color:#7a6020;">Average value</span>
       </div>
     </button>
-    <button class="condition-option" data-val="Poor" onclick="pickCond(this)">
+    <button class="condition-option" data-val="Poor" aria-pressed="false" onclick="pickCond(this)">
       <div class="condition-badge">⚠️</div>
       <div class="condition-body">
         <span class="condition-title">Poor</span>
         <span class="condition-desc">Significant bodywork damage, deep scratches, heavily kerbed alloys or interior damage. Would need repair work before retail.</span>
-        <span class="condition-tag" style="background:rgba(186,80,28,.15);color:#f0a07a;">Lower value</span>
+        <span class="condition-tag" style="background:rgba(186,80,28,.15);color:#8a3f16;">Lower value</span>
       </div>
     </button>
-    <button class="condition-option" data-val="Not sure" onclick="pickCond(this)">
+    <button class="condition-option" data-val="Not sure" aria-pressed="false" onclick="pickCond(this)">
       <div class="condition-badge">🤷</div>
       <div class="condition-body">
         <span class="condition-title">Not sure</span>
@@ -119,12 +120,13 @@
 <script>
   let condChosen = sessionStorage.getItem("apOverall")||"";
   document.querySelectorAll(".condition-option").forEach(b=>{
-    if(b.dataset.val===condChosen) b.classList.add("selected");
+    if(b.dataset.val===condChosen){ b.classList.add("selected"); b.setAttribute("aria-pressed","true"); }
   });
 
   function pickCond(btn){
-    document.querySelectorAll(".condition-option").forEach(b=>b.classList.remove("selected"));
+    document.querySelectorAll(".condition-option").forEach(b=>{b.classList.remove("selected");b.setAttribute("aria-pressed","false");});
     btn.classList.add("selected");
+    btn.setAttribute("aria-pressed","true");
     condChosen = btn.dataset.val;
     sessionStorage.setItem("apOverall", condChosen);
   }
@@ -133,15 +135,22 @@
   const starSections=document.querySelectorAll(".stars");
   starSections.forEach(section=>{
     const key=section.dataset.key;
+    const rowLabel=section.previousElementSibling?section.previousElementSibling.textContent.trim():"rating";
+    section.setAttribute("role","radiogroup");
+    section.setAttribute("aria-label",rowLabel);
     const saved=parseInt(sessionStorage.getItem(key))||0;
     for(let i=1;i<=5;i++){
-      const s=document.createElement("span");
+      const s=document.createElement("button");
+      s.type="button";
       s.className="star"+(i<=saved?" on":"");
       s.textContent="★";
       s.title=labels[i-1];
+      s.setAttribute("role","radio");
+      s.setAttribute("aria-label",labels[i-1]);
+      s.setAttribute("aria-checked",i===saved?"true":"false");
       s.onclick=(function(idx,sec){
         return function(){
-          sec.querySelectorAll(".star").forEach((st,j)=>st.classList.toggle("on",j<idx));
+          sec.querySelectorAll(".star").forEach((st,j)=>{st.classList.toggle("on",j<idx);st.setAttribute("aria-checked",j+1===idx?"true":"false");});
           sessionStorage.setItem(sec.dataset.key, idx);
         };
       })(i,section);
@@ -150,6 +159,7 @@
   });
 
   function go(){
+    if(!condChosen){ alert("Please choose the option that best describes your car's condition."); return; }
     window.location.href="ap4.html";
   }
 </script>

@@ -118,9 +118,9 @@ var groups = [
   ]},
   { title:"The car", edit:"step1.html", rows:[
     ["Mostly for", readVal("lifestyle")],
-    ["Body styles", (function(){try{return JSON.parse(sessionStorage.getItem("bodyStyles")||"[]").map(function(s){return BODY_NAMES[s]||s;}).join(", ");}catch(e){return readVal("bodyStyles");}})() || "Open to suggestions"],
-    ["Timing", readVal("timeline")],
-    ["Specific model", readVal("modelPref")]
+    ["Body styles", (function(){try{return JSON.parse(sessionStorage.getItem("bodyStyles")||"[]").map(function(s){return BODY_NAMES[s]||s;}).join(", ");}catch(e){return readVal("bodyStyles");}})() || "Open to suggestions", "step1b.html"],
+    ["Timing", readVal("timeline"), "step2.html"],
+    ["Specific model", readVal("modelPref"), "step7.html"]
   ]},
   { title:"Budget", edit:"step3.html", rows:[
     ["Funding route", readVal("purchaseType")],
@@ -181,6 +181,11 @@ groups.forEach(function(g){
     var b = document.createElement("b"); b.textContent = r[0];
     var d = document.createElement("div"); d.textContent = r[1];
     it.appendChild(b); it.appendChild(d);
+    if(r[2] && r[2] !== g.edit){
+      var e = document.createElement("a");
+      e.className = "fv2-rev-item-edit"; e.href = r[2]; e.textContent = "Edit";
+      it.appendChild(e);
+    }
     body.appendChild(it);
   });
   card.appendChild(body);
@@ -357,7 +362,6 @@ async function sendForm(){
     spec_wants:       readVal("specWants"),
     spec_bypass:      sessionStorage.getItem("specBypass")    || "",
     leadsummary:      summary,
-    customer_story:   story,
     marketing_opt_in:      sessionStorage.getItem("marketingOptIn")    || "No",
     marketing_channels:    sessionStorage.getItem("marketingChannels") || "",
     subject:          "DanSells lead: " + name,

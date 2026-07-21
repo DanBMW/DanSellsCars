@@ -27,23 +27,23 @@
 
     <div class="fv2-sec">Colours you'd accept <small>(tick all that apply)</small></div>
     <div class="fv2-swatches" id="colourGrid">
-      <div class="fv2-swatch" data-val="White"  onclick="toggleColour(this)"><div class="dot" style="background:#f0f0f0;"></div>White</div>
-      <div class="fv2-swatch" data-val="Black"  onclick="toggleColour(this)"><div class="dot" style="background:#111;"></div>Black</div>
-      <div class="fv2-swatch" data-val="Silver" onclick="toggleColour(this)"><div class="dot" style="background:linear-gradient(135deg,#b8b8b8,#e2e2e2);"></div>Silver</div>
-      <div class="fv2-swatch" data-val="Grey"   onclick="toggleColour(this)"><div class="dot" style="background:#666;"></div>Grey</div>
-      <div class="fv2-swatch" data-val="Blue"   onclick="toggleColour(this)"><div class="dot" style="background:#1c4f9c;"></div>Blue</div>
-      <div class="fv2-swatch" data-val="Red"    onclick="toggleColour(this)"><div class="dot" style="background:#b71c1c;"></div>Red</div>
-      <div class="fv2-swatch" data-val="Green"  onclick="toggleColour(this)"><div class="dot" style="background:#1b5e20;"></div>Green</div>
-      <div class="fv2-swatch" data-val="Brown"  onclick="toggleColour(this)"><div class="dot" style="background:#795548;"></div>Brown</div>
-      <div class="fv2-swatch" data-val="Orange" onclick="toggleColour(this)"><div class="dot" style="background:#d84315;"></div>Orange</div>
-      <div class="fv2-swatch" data-val="Yellow" onclick="toggleColour(this)"><div class="dot" style="background:#c8b400;"></div>Yellow</div>
-      <div class="fv2-swatch any" data-val="Open to any" onclick="toggleColour(this)">
+      <button type="button" class="fv2-swatch" data-val="White" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#f0f0f0;"></div>White</button>
+      <button type="button" class="fv2-swatch" data-val="Black" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#111;"></div>Black</button>
+      <button type="button" class="fv2-swatch" data-val="Silver" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:linear-gradient(135deg,#b8b8b8,#e2e2e2);"></div>Silver</button>
+      <button type="button" class="fv2-swatch" data-val="Grey" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#666;"></div>Grey</button>
+      <button type="button" class="fv2-swatch" data-val="Blue" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#1c4f9c;"></div>Blue</button>
+      <button type="button" class="fv2-swatch" data-val="Red" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#b71c1c;"></div>Red</button>
+      <button type="button" class="fv2-swatch" data-val="Green" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#1b5e20;"></div>Green</button>
+      <button type="button" class="fv2-swatch" data-val="Brown" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#795548;"></div>Brown</button>
+      <button type="button" class="fv2-swatch" data-val="Orange" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#d84315;"></div>Orange</button>
+      <button type="button" class="fv2-swatch" data-val="Yellow" aria-pressed="false" onclick="toggleColour(this)"><div class="dot" style="background:#c8b400;"></div>Yellow</button>
+      <button type="button" class="fv2-swatch any" data-val="Open to any" aria-pressed="false" onclick="toggleColour(this)">
         <div class="dot" style="background:conic-gradient(#8a94a0,#c3ccd6,#5f6b7c,#8a94a0);"></div>
         <span>Open to any colour</span>
-      </div>
+      </button>
     </div>
 
-    <button type="button" class="fv2-toggle" id="bypassCard" onclick="toggleBypass()" style="margin:22px 0 0;">
+    <button type="button" class="fv2-toggle" id="bypassCard" aria-pressed="false" onclick="toggleBypass()" style="margin:22px 0 0;">
       <span class="fv2-toggle-sw"></span>
       <span class="fv2-toggle-body"><strong>Happy with standard trim &amp; spec</strong><span>Skip the detail below. Colour is all I need from you.</span></span>
     </button>
@@ -51,23 +51,23 @@
     <div id="specDetail">
       <div class="fv2-sec">Trim level</div>
       <div class="fv2-options" id="trimGrid">
-        <button class="fv2-opt" data-val="Standard / SE" onclick="pickTrim(this)">
+        <button class="fv2-opt" data-val="Standard / SE" aria-pressed="false" onclick="pickTrim(this)">
           <span class="fv2-opt-body"><span class="fv2-opt-title">Standard / SE</span><span class="fv2-opt-desc">Well equipped as standard, the best value per pound.</span></span>
           <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
         </button>
-        <button class="fv2-opt" data-val="Sport" onclick="pickTrim(this)">
+        <button class="fv2-opt" data-val="Sport" aria-pressed="false" onclick="pickTrim(this)">
           <span class="fv2-opt-body"><span class="fv2-opt-title">Sport</span><span class="fv2-opt-desc">Sharper styling, alloys, enhanced interior trim.</span></span>
           <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
         </button>
-        <button class="fv2-opt" data-val="M Sport / Performance" onclick="pickTrim(this)">
+        <button class="fv2-opt" data-val="M Sport / Performance" aria-pressed="false" onclick="pickTrim(this)">
           <span class="fv2-opt-body"><span class="fv2-opt-title">M Sport / Performance</span><span class="fv2-opt-desc">Body kit, sport suspension, the full sporting look.</span></span>
           <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
         </button>
-        <button class="fv2-opt" data-val="Luxury / High spec" onclick="pickTrim(this)">
+        <button class="fv2-opt" data-val="Luxury / High spec" aria-pressed="false" onclick="pickTrim(this)">
           <span class="fv2-opt-body"><span class="fv2-opt-title">Luxury / High spec</span><span class="fv2-opt-desc">Premium materials, comfort focus, full tech.</span></span>
           <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
         </button>
-        <button class="fv2-opt" data-val="No preference" onclick="pickTrim(this)" style="grid-column:1/-1;">
+        <button class="fv2-opt" data-val="No preference" aria-pressed="false" onclick="pickTrim(this)" style="grid-column:1/-1;">
           <span class="fv2-opt-body"><span class="fv2-opt-title">No strong preference</span><span class="fv2-opt-desc">Show me the best value at my budget, regardless of trim.</span></span>
           <span class="fv2-opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
         </button>
@@ -98,14 +98,15 @@ let colours=[],trim="",bypass=false;
   trim=sessionStorage.getItem("specTrim")||"";
   try{JSON.parse(sessionStorage.getItem("specNeeds")||"[]").forEach(f=>{if(f in chipState)chipState[f]='need';});}catch(e){}
   try{JSON.parse(sessionStorage.getItem("specWants")||"[]").forEach(f=>{if(f in chipState)chipState[f]='want';});}catch(e){}
-  document.querySelectorAll(".fv2-swatch").forEach(s=>{if(colours.includes(s.dataset.val))s.classList.add("on");});
-  if(bypass){document.getElementById("bypassCard").classList.add("on");document.getElementById("specDetail").style.display="none";}
-  document.querySelectorAll("#trimGrid .fv2-opt").forEach(c=>{if(c.dataset.val===trim)c.classList.add("selected");});
+  document.querySelectorAll(".fv2-swatch").forEach(s=>{if(colours.includes(s.dataset.val)){s.classList.add("on");s.setAttribute("aria-pressed","true");}});
+  if(bypass){document.getElementById("bypassCard").classList.add("on");document.getElementById("bypassCard").setAttribute("aria-pressed","true");document.getElementById("specDetail").style.display="none";}
+  document.querySelectorAll("#trimGrid .fv2-opt").forEach(c=>{if(c.dataset.val===trim){c.classList.add("selected");c.setAttribute("aria-pressed","true");}});
 })();
 
 function toggleBypass(){
   bypass=!bypass;
   document.getElementById("bypassCard").classList.toggle("on",bypass);
+  document.getElementById("bypassCard").setAttribute("aria-pressed",bypass?"true":"false");
   document.getElementById("specDetail").style.display=bypass?"none":"block";
 }
 
@@ -114,20 +115,21 @@ function toggleColour(el){
   const v=el.dataset.val;
   if(v==="Open to any"){
     const on=el.classList.contains("on");
-    document.querySelectorAll(".fv2-swatch").forEach(s=>s.classList.remove("on"));
-    if(!on){el.classList.add("on");colours=["Open to any"];}else colours=[];
+    document.querySelectorAll(".fv2-swatch").forEach(s=>{s.classList.remove("on");s.setAttribute("aria-pressed","false");});
+    if(!on){el.classList.add("on");el.setAttribute("aria-pressed","true");colours=["Open to any"];}else colours=[];
     return;
   }
-  document.querySelectorAll(".fv2-swatch[data-val='Open to any']").forEach(s=>s.classList.remove("on"));
+  document.querySelectorAll(".fv2-swatch[data-val='Open to any']").forEach(s=>{s.classList.remove("on");s.setAttribute("aria-pressed","false");});
   colours=colours.filter(c=>c!=="Open to any");
   el.classList.toggle("on");
+  el.setAttribute("aria-pressed",el.classList.contains("on")?"true":"false");
   if(el.classList.contains("on")){if(!colours.includes(v))colours.push(v);}
   else colours=colours.filter(c=>c!==v);
 }
 
 function pickTrim(el){
-  document.querySelectorAll("#trimGrid .fv2-opt").forEach(c=>c.classList.remove("selected"));
-  el.classList.add("selected");trim=el.dataset.val;
+  document.querySelectorAll("#trimGrid .fv2-opt").forEach(c=>{c.classList.remove("selected");c.setAttribute("aria-pressed","false");});
+  el.classList.add("selected");el.setAttribute("aria-pressed","true");trim=el.dataset.val;
 }
 
 function cycleChip(f){
@@ -144,6 +146,8 @@ function renderChips(){
     const chip=document.createElement("button");
     chip.type="button";
     chip.className="fv2-feat"+(st==='need'?" need":st==='want'?" want":"");
+    chip.setAttribute("aria-pressed",st?"true":"false");
+    chip.setAttribute("aria-label",f+(st==='need'?", must-have":st==='want'?", nice-to-have":", not selected"));
     chip.onclick=()=>cycleChip(f);
     const tag=document.createElement("span");
     tag.className="st";
