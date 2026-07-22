@@ -3,643 +3,417 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>What's Hot Now | Approved Used BMWs | DanSells</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <meta name="description" content="Seven hand-picked approved used BMWs at Hedin Ruxley, Sidcup. X7, X5 xDrive50e, M4 Competition Convertible, iX and more. Message Dan directly."/>
-  <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
-  <link rel="preconnect" href="https://www.googletagmanager.com"/>
   <link rel="canonical" href="https://dan-sells.co.uk/offers.html"/>
-  <meta property="og:type" content="website"/>
-  <meta property="og:url" content="https://dan-sells.co.uk/offers.html"/>
-  <meta property="og:title" content="What's Hot Now | Approved Used BMWs | DanSells"/>
-  <meta property="og:description" content="Seven hand-picked approved used BMWs at Hedin Ruxley, Sidcup. Message Dan directly."/>
-  <meta property="og:image" content="https://dan-sells.co.uk/dan.jpg"/>
-  <meta property="og:site_name" content="DanSells"/>
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="What's Hot Now | DanSells"/>
-  <meta name="twitter:description" content="Seven hand-picked approved used BMWs at Hedin Ruxley, Sidcup."/>
-  <meta name="twitter:image" content="https://dan-sells.co.uk/dan.jpg"/>
-  <link rel="stylesheet" href="style.css"/>
+  <title>Available Now | Approved used BMWs at Hedin Ruxley - Dan Cane</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <meta name="description" content="A hand-picked selection from the approved used BMWs on the Hedin Ruxley forecourt this week. Real prices, full listings, and Dan to talk to directly."/>
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+  <link rel="stylesheet" href="premium.css"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XZL1RF6SV6');
-  </script>
-  <style>
-    /* ── Page tokens ── */
-    :root{--red:#d0021b;--red-light:#e8284a;}
-
-    /* ── Hero ── */
-    .offers-hero{
-      background:url('assets/hero-forecourt.jpg') center 40%/cover no-repeat;
-      padding:140px 24px 100px;text-align:center;position:relative;overflow:hidden;
-    }
-    /* cinematic dark overlay - deep blue-black gradient so text pops */
-    .offers-hero::after{
-      content:'';position:absolute;inset:0;
-      background:linear-gradient(160deg,rgba(4,8,18,.88) 0%,rgba(7,17,38,.82) 50%,rgba(10,22,52,.75) 100%);
-      pointer-events:none;
-    }
-    /* M stripe stays on top of overlay */
-    .offers-hero::before{
-      content:'';position:absolute;top:0;left:0;right:0;height:4px;z-index:2;
-      background:linear-gradient(90deg,#1c69d4 33.33%,#6f00e8 33.33% 66.66%,var(--red) 66.66%);
-    }
-    /* all hero children need z-index above overlay */
-    .offers-hero>*{position:relative;z-index:1;}
-    .oh-kicker{
-      display:inline-flex;align-items:center;gap:12px;
-      font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
-      color:rgba(255,255,255,.5);margin-bottom:20px;
-    }
-    .oh-kicker::before,.oh-kicker::after{content:'';display:block;width:30px;height:1px;background:rgba(255,255,255,.2);}
-    .offers-hero h1{
-      font-family:var(--display);
-      font-size:clamp(2.4rem,6vw,4.2rem);
-      font-weight:600;color:#fff;line-height:1.08;letter-spacing:-.03em;margin-bottom:16px;
-    }
-    .offers-hero h1 em{font-style:normal;color:var(--red-light);}
-    .oh-sub{
-      font-size:clamp(.9rem,2.5vw,1.05rem);
-      color:rgba(255,255,255,.58);max-width:52ch;margin:0 auto 36px;line-height:1.65;
-    }
-    .m-stripe{display:inline-flex;width:52px;height:6px;border-radius:3px;overflow:hidden;margin:0 auto 28px;opacity:.8;}
-    .m-stripe span{flex:1;}
-    .ms1{background:#1c69d4;}.ms2{background:#6f00e8;}.ms3{background:var(--red);}
-
-    .oh-stats{
-      display:inline-flex;gap:40px;flex-wrap:wrap;justify-content:center;
-      border-top:1px solid rgba(255,255,255,.1);padding-top:32px;
-    }
-    .oh-stat{text-align:center;}
-    .oh-stat-val{font-family:var(--display);font-size:1.9rem;font-weight:600;color:#fff;letter-spacing:-.02em;display:block;}
-    .oh-stat-lbl{font-size:.68rem;color:rgba(255,255,255,.42);letter-spacing:.1em;text-transform:uppercase;margin-top:4px;display:block;}
-
-    /* ── Body ── */
-    .offers-body{max-width:1160px;margin:0 auto;padding:56px 20px 72px;}
-
-    .available-pill{
-      display:inline-flex;align-items:center;gap:7px;
-      background:rgba(208,2,27,.08);border:1px solid rgba(208,2,27,.28);
-      color:var(--red);font-size:.74rem;font-weight:700;letter-spacing:.07em;
-      padding:5px 13px;border-radius:999px;margin-top:12px;
-    }
-    .available-pill::before{
-      content:'';width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;
-      animation:avail-blink 1.6s ease-in-out infinite;
-    }
-    @keyframes avail-blink{0%,100%{opacity:1;}50%{opacity:.25;}}
-
-    /* ── Car grid ── */
-    .cars-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
-      gap:24px;margin-top:32px;
-    }
-    @media(max-width:740px){.cars-grid{grid-template-columns:1fr;}}
-
-    /* ── Car card ── */
-    .car-card{
-      background:var(--paper);border:1px solid var(--line);
-      border-radius:22px;overflow:hidden;
-      box-shadow:var(--shadow-card);
-      display:flex;flex-direction:column;
-      transition:transform .25s ease,box-shadow .25s ease;
-    }
-    .car-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-pop);}
-
-    /* M tri-colour accent */
-    .card-stripe{
-      height:4px;flex-shrink:0;
-      background:linear-gradient(90deg,#1c69d4 33.33%,#6f00e8 33.33% 66.66%,var(--red) 66.66%);
-    }
-
-    /* Gallery */
-    .card-gallery{position:relative;}
-    .card-main{
-      width:100%;aspect-ratio:16/10;object-fit:cover;display:block;
-      background:#dce3ee;transition:opacity .15s ease;
-    }
-    .hot-badge{
-      position:absolute;top:12px;left:12px;
-      background:var(--red);color:#fff;
-      font-size:.62rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
-      padding:4px 10px;border-radius:999px;
-      animation:pulse-hot 2.2s infinite;
-    }
-    @keyframes pulse-hot{
-      0%{box-shadow:0 0 0 0 rgba(208,2,27,.55);}
-      60%{box-shadow:0 0 0 9px rgba(208,2,27,0);}
-      100%{box-shadow:0 0 0 0 rgba(208,2,27,0);}
-    }
-    @media(prefers-reduced-motion:reduce){.hot-badge{animation:none;}}
-
-    .card-thumbs{
-      display:flex;gap:6px;padding:9px 12px;
-      background:#f7f8fa;border-bottom:1px solid var(--line-soft);
-    }
-    .card-thumb{
-      flex:1;aspect-ratio:4/3;border-radius:8px;overflow:hidden;
-      cursor:pointer;border:2px solid transparent;
-      transition:border-color .15s;background:none;padding:0;
-    }
-    .card-thumb.active{border-color:var(--blue);}
-    .card-thumb img{
-      width:100%;height:100%;object-fit:cover;display:block;
-      background:#c8d0de;pointer-events:none;
-    }
-
-    /* Card body */
-    .card-body{padding:20px;flex:1;display:flex;flex-direction:column;gap:14px;}
-
-    .card-tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-    .reg-plate{
-      font-family:monospace;font-size:.78rem;font-weight:700;
-      background:#fffde0;border:1.5px solid #c8bf00;
-      padding:3px 10px;border-radius:5px;color:#2a2400;letter-spacing:.06em;
-    }
-    .year-chip{
-      font-size:.71rem;font-weight:700;color:var(--muted);
-      background:var(--surface);border:1px solid var(--line);
-      padding:3px 9px;border-radius:999px;
-    }
-
-    .card-model{
-      font-family:var(--display);font-size:1.25rem;font-weight:600;
-      color:var(--text);line-height:1.2;letter-spacing:-.015em;
-    }
-    .card-price-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-    .price-label{
-      font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--red);
-    }
-    .card-price{
-      font-family:var(--display);font-size:1.75rem;font-weight:600;
-      color:var(--text);letter-spacing:-.025em;
-    }
-
-    /* Spec grid */
-    .spec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
-    @media(max-width:480px){.spec-grid{grid-template-columns:repeat(2,1fr);}}
-    .spec-item{
-      background:var(--blue-tint);border:1px solid rgba(21,89,207,.15);
-      border-radius:10px;padding:10px 6px;text-align:center;
-    }
-    .spec-val{display:block;font-size:.88rem;font-weight:800;color:var(--text);line-height:1;}
-    .spec-lbl{display:block;font-size:.6rem;color:var(--muted);margin-top:3px;letter-spacing:.04em;text-transform:uppercase;}
-
-    .card-features{
-      font-size:.81rem;color:var(--body);line-height:1.6;
-      border-top:1px solid var(--line-soft);padding-top:12px;
-    }
-
-    /* CTAs */
-    .card-ctas{display:flex;gap:8px;margin-top:auto;padding-top:4px;}
-    .cta-wa{
-      flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-      background:#25d366;color:#fff;font-weight:700;font-size:.88rem;
-      padding:12px 10px;border-radius:11px;text-decoration:none;
-      transition:background .18s,transform .18s;
-    }
-    .cta-wa:hover{background:#1da852;transform:translateY(-1px);}
-    .cta-wa svg{width:17px;height:17px;flex-shrink:0;}
-    .cta-email{
-      flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-      background:var(--paper);color:var(--text);font-weight:700;font-size:.88rem;
-      padding:12px 10px;border-radius:11px;text-decoration:none;
-      border:1.5px solid var(--line);
-      transition:background .18s,border-color .18s;
-    }
-    .cta-email:hover{background:var(--bg);border-color:rgba(16,21,29,.25);}
-    .cta-email svg{width:17px;height:17px;flex-shrink:0;}
-    .card-listing-link{
-      display:block;text-align:center;font-size:.76rem;color:var(--muted);
-      text-decoration:none;margin-top:8px;transition:color .15s;
-    }
-    .card-listing-link:hover{color:var(--blue);}
-  </style>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="analytics.js" defer></script>
 </head>
 <body>
 
-<!-- chrome:header {"wa":"Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20used%20BMW"} -->
-<header class="site-header" id="siteHeader">
-  <div class="site-header-inner">
-    <a class="site-logo" href="index.html">DanSells</a>
-    <div class="nav-actions">
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="Dan on Instagram" class="nav-icon-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-      </a>
-      <button type="button" class="nav-icon-btn" aria-label="Email Dan" onclick="openContactModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></button>
-      <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20used%20BMW" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" class="nav-icon-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      </a>
-      <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false" id="navToggle" onclick="openDrawer()">
-        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <line x1="0" y1="1" x2="22" y2="1"/>
-          <line x1="0" y1="8" x2="22" y2="8"/>
-          <line x1="0" y1="15" x2="22" y2="15"/>
-        </svg>
+<!-- chrome:header2 {"wa":"Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20used%20BMW"} -->
+<header class="ph-header" id="phHeader">
+  <div class="ph-header-inner">
+    <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+    <div class="ph-actions">
+      <a class="ph-contact-link" href="#contact">Talk to Dan</a>
+      <button class="ph-menu-btn" id="phMenuBtn" aria-label="Open menu" aria-expanded="false" onclick="phOpenDrawer()">
+        <span></span><span></span>
       </button>
     </div>
   </div>
 </header>
-<!-- /chrome:header -->
+<!-- /chrome:header2 -->
 
-<!-- NAV DRAWER -->
-<!-- chrome:drawer -->
-<div class="nav-drawer" id="navDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
-  <div class="nav-drawer-inner">
-    <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Close menu">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <line x1="18" y1="6" x2="6" y2="18"/>
-        <line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
-    <p class="drawer-brand">DanSells</p>
-    <nav class="drawer-nav" aria-label="Main navigation">
-      <a href="step1.html">Find my BMW</a>
-      <a href="EV.html">Electric BMWs</a>
-      <a href="index.html#offers" onclick="closeDrawer()">New Car Offers</a>
-      <a href="sorted-for-a-year.html">1 &amp; 2 Series Offer</a>
-      <a href="offers.html">Hot Used Cars</a>
-      <a href="appraisal.html">Value my car</a>
-      <a href="service.html">Car in for service?</a>
-      <a href="accessories.html">BMW Accessories</a>
-      <a href="index.html#protect" onclick="closeDrawer()">Protect my BMW</a>
-      <a href="refer.html">Refer a friend</a>
-      <a href="guides.html">Guides</a>
-      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment &#x2197;</a>
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram &#x2197;</a>
+<!-- chrome:drawer2 -->
+<div class="ph-drawer" id="phDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <button class="ph-drawer-close" onclick="phCloseDrawer()" aria-label="Close menu">Close</button>
+  <div class="ph-drawer-inner">
+    <p class="ph-drawer-label">Start here</p>
+    <nav aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="how-i-work.html">How I work</a>
     </nav>
-    <a class="drawer-cta" href="step1.html">Find a BMW &rarr;</a>
+    <p class="ph-drawer-label">Four ways in</p>
+    <nav aria-label="Doorways">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric Daily</a>
+      <a href="appraisal.html">Value your car</a>
+      <a href="service.html">In for service</a>
+    </nav>
+    <p class="ph-drawer-label">Practical</p>
+    <nav aria-label="Practical pages">
+      <a href="current-opportunities.html">Current Opportunities</a>
+      <a href="offers.html">Available Now</a>
+      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment <small>opens cal.eu</small></a>
+    </nav>
   </div>
 </div>
-<div class="nav-drawer-overlay" id="navOverlay" onclick="closeDrawer()"></div>
-<!-- /chrome:drawer -->
+<!-- /chrome:drawer2 -->
 
 <main>
 
-  <!-- HERO -->
-  <section class="offers-hero">
-    <div class="m-stripe"><span class="ms1"></span><span class="ms2"></span><span class="ms3"></span></div>
-    <p class="oh-kicker">Hedin BMW Ruxley &middot; Sidcup</p>
-    <h1>What's <em>Hot</em> Now</h1>
-    <p class="oh-sub">Dan's hand-picked selection from over 200 approved used BMWs on the Ruxley forecourt. Real prices, no scripts, message him direct.</p>
-    <div class="oh-stats">
-      <div class="oh-stat">
-        <span class="oh-stat-val">200+</span>
-        <span class="oh-stat-lbl">Cars in stock</span>
-      </div>
-      <div class="oh-stat">
-        <span class="oh-stat-val">1</span>
-        <span class="oh-stat-lbl">Contact</span>
-      </div>
-      <div class="oh-stat">
-        <span class="oh-stat-val">0</span>
-        <span class="oh-stat-lbl">Scripts</span>
+  <!-- OPENING -->
+  <section class="band" style="padding-top:clamp(140px,20vh,200px);padding-bottom:clamp(40px,6vw,64px)" aria-label="Introduction">
+    <div class="wrap wrap-narrow">
+      <span class="plabel accent">Available Now</span>
+      <h1 style="font-size:clamp(2.2rem,5.5vw,3.6rem)">This week, from the<br/>Ruxley forecourt.</h1>
+      <hr class="rule"/>
+      <div class="prose">
+        <p class="lede">From the approved used BMWs in stock at Hedin Ruxley, these are the cars I would personally point you towards this week. All fully inspected, all priced as written.</p>
+        <p>Message me about any of them and you will get me, not a call centre. If nothing here is quite right, the full stock list is a scroll away at the bottom of the page - or tell me what you are after and I will keep an eye out.</p>
       </div>
     </div>
   </section>
 
-  <!-- CARDS -->
-  <div class="offers-body">
+  <!-- STOCK -->
+  <section class="band-tight hairline-top" aria-label="Cars available now">
+    <div class="wrap">
+      <div class="stock-grid">
 
-    <div class="section-head">
-      <div class="section-kicker">Dan's hand-picked selection</div>
-      <h2>This week's hot list</h2>
-      <p class="step-desc">From over 200 approved used BMWs at Hedin Ruxley, Sidcup - these are the seven Dan would personally point you towards this week. All fully inspected. Message him directly and he'll get back to you himself.</p>
-      <span class="available-pill">7 picks from 200+ in stock</span>
+        <!-- X7 xDRIVE40d M SPORT -->
+        <article class="stock-card reveal">
+          <div class="stock-gallery">
+            <img class="stock-main" id="x7-main" src="assets/x7-1.jpg" alt="2026 BMW X7 xDrive40d M Sport LX26FXD" loading="eager"/>
+          </div>
+          <div class="stock-thumbs">
+            <button class="stock-thumb active" onclick="switchImg(this,'assets/x7-1.jpg','x7-main')" aria-label="Photo 1"><img src="assets/x7-1.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x7-2.jpg','x7-main')" aria-label="Photo 2"><img src="assets/x7-2.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x7-3.jpg','x7-main')" aria-label="Photo 3"><img src="assets/x7-3.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x7-4.jpg','x7-main')" aria-label="Photo 4"><img src="assets/x7-4.jpg" alt="" aria-hidden="true"/></button>
+          </div>
+          <div class="stock-body">
+            <div class="stock-meta">2026 &middot; LX26FXD</div>
+            <h3>BMW X7 xDrive40d M Sport</h3>
+            <div class="stock-price"><small>Price</small>&pound;79,770</div>
+            <div class="stock-spec">
+              <span><strong>3,452</strong> miles</span>
+              <span><strong>351</strong> hp</span>
+              <span><strong>7</strong> seats</span>
+              <span><strong>AWD</strong></span>
+            </div>
+            <p class="stock-features">23&rdquo; V-spoke BMW Individual wheels, Active Guard, anthracite Alcantara headlining, BMW Emergency Call, BMW Online Services, ambient lighting</p>
+            <div class="stock-ctas">
+              <a class="btn-quiet" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20X7%20xDrive40d%20M%20Sport%20%28LX26FXD%29%20on%20your%20Available%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener">WhatsApp Dan</a>
+              <a class="btn-quiet" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20X7%20xDrive40d%20M%20Sport%20LX26FXD&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20X7%20xDrive40d%20M%20Sport%20%28LX26FXD%2C%20%C2%A379%2C770%29.%0A%0AThanks">Email Dan</a>
+              <a class="btn-quiet" href="https://hedinautomotive.co.uk/buy-car/used-cars/237425/pb-bmw-x7-2026" target="_blank" rel="noopener">Full listing</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- X5 xDRIVE50e M SPORT -->
+        <article class="stock-card reveal">
+          <div class="stock-gallery">
+            <img class="stock-main" id="x550e-main" src="assets/x550e-1.jpg" alt="2026 BMW X5 xDrive50e M Sport LX26FWP" loading="lazy"/>
+          </div>
+          <div class="stock-thumbs">
+            <button class="stock-thumb active" onclick="switchImg(this,'assets/x550e-1.jpg','x550e-main')" aria-label="Photo 1"><img src="assets/x550e-1.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x550e-2.jpg','x550e-main')" aria-label="Photo 2"><img src="assets/x550e-2.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x550e-3.jpg','x550e-main')" aria-label="Photo 3"><img src="assets/x550e-3.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x550e-4.jpg','x550e-main')" aria-label="Photo 4"><img src="assets/x550e-4.jpg" alt="" aria-hidden="true"/></button>
+          </div>
+          <div class="stock-body">
+            <div class="stock-meta">2026 &middot; LX26FWP</div>
+            <h3>BMW X5 xDrive50e M Sport</h3>
+            <div class="stock-price"><small>Price</small>&pound;74,995</div>
+            <div class="stock-spec">
+              <span><strong>5,561</strong> miles</span>
+              <span><strong>488</strong> hp</span>
+              <span><strong>Hybrid</strong></span>
+              <span><strong>AWD</strong></span>
+            </div>
+            <p class="stock-features">22&rdquo; M Jet Black alloys, AC fast-charge prep, Active Guard, Active Pedestrian Safety, adaptive LED headlights, ambient lighting</p>
+            <div class="stock-ctas">
+              <a class="btn-quiet" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20X5%20xDrive50e%20M%20Sport%20%28LX26FWP%29%20on%20your%20Available%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener">WhatsApp Dan</a>
+              <a class="btn-quiet" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20X5%20xDrive50e%20M%20Sport%20LX26FWP&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20X5%20xDrive50e%20M%20Sport%20%28LX26FWP%2C%20%C2%A374%2C995%29.%0A%0AThanks">Email Dan</a>
+              <a class="btn-quiet" href="https://hedinautomotive.co.uk/buy-car/used-cars/241291/pb-bmw-x5-2026" target="_blank" rel="noopener">Full listing</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- M4 COMPETITION M xDRIVE CONVERTIBLE -->
+        <article class="stock-card reveal">
+          <div class="stock-gallery">
+            <img class="stock-main" id="m4c-main" src="assets/m4c-1.jpg" alt="2026 BMW M4 Competition M xDrive Convertible LY75TSV" loading="lazy"/>
+          </div>
+          <div class="stock-thumbs">
+            <button class="stock-thumb active" onclick="switchImg(this,'assets/m4c-1.jpg','m4c-main')" aria-label="Photo 1"><img src="assets/m4c-1.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/m4c-2.jpg','m4c-main')" aria-label="Photo 2"><img src="assets/m4c-2.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/m4c-3.jpg','m4c-main')" aria-label="Photo 3"><img src="assets/m4c-3.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/m4c-4.jpg','m4c-main')" aria-label="Photo 4"><img src="assets/m4c-4.jpg" alt="" aria-hidden="true"/></button>
+          </div>
+          <div class="stock-body">
+            <div class="stock-meta">2026 &middot; LY75TSV</div>
+            <h3>BMW M4 Competition M xDrive Convertible</h3>
+            <div class="stock-price"><small>Price</small>&pound;73,495</div>
+            <div class="stock-spec">
+              <span><strong>5,584</strong> miles</span>
+              <span><strong>530</strong> hp</span>
+              <span><strong>Petrol</strong></span>
+              <span><strong>AWD</strong></span>
+            </div>
+            <p class="stock-features">19&rdquo;/20&rdquo; M double-spoke Jet Black alloys, Active Guard, Active Pedestrian Safety, adaptive LED headlights, aluminium interior trim, anthracite headlining</p>
+            <div class="stock-ctas">
+              <a class="btn-quiet" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20M4%20Competition%20M%20xDrive%20Convertible%20%28LY75TSV%29%20on%20your%20Available%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener">WhatsApp Dan</a>
+              <a class="btn-quiet" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20M4%20Competition%20M%20xDrive%20Convertible%20LY75TSV&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20M4%20Competition%20M%20xDrive%20Convertible%20%28LY75TSV%2C%20%C2%A373%2C495%29.%0A%0AThanks">Email Dan</a>
+              <a class="btn-quiet" href="https://hedinautomotive.co.uk/buy-car/used-cars/241288/pb-bmw-m4-2026" target="_blank" rel="noopener">Full listing</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- iX xDRIVE45 M SPORT (2026) -->
+        <article class="stock-card reveal">
+          <div class="stock-gallery">
+            <img class="stock-main" id="ix62-main" src="assets/ix62-1.jpg" alt="2026 BMW iX xDrive45 M Sport LV26NXM" loading="lazy"/>
+          </div>
+          <div class="stock-thumbs">
+            <button class="stock-thumb active" onclick="switchImg(this,'assets/ix62-1.jpg','ix62-main')" aria-label="Photo 1"><img src="assets/ix62-1.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/ix62-2.jpg','ix62-main')" aria-label="Photo 2"><img src="assets/ix62-2.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/ix62-3.jpg','ix62-main')" aria-label="Photo 3"><img src="assets/ix62-3.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/ix62-4.jpg','ix62-main')" aria-label="Photo 4"><img src="assets/ix62-4.jpg" alt="" aria-hidden="true"/></button>
+          </div>
+          <div class="stock-body">
+            <div class="stock-meta">2026 &middot; LV26NXM</div>
+            <h3>BMW iX xDrive45 M Sport</h3>
+            <div class="stock-price"><small>Price</small>&pound;61,995</div>
+            <div class="stock-spec">
+              <span><strong>3,857</strong> miles</span>
+              <span><strong>407</strong> hp</span>
+              <span><strong>Electric</strong></span>
+              <span><strong>AWD</strong></span>
+            </div>
+            <p class="stock-features">22&rdquo; Bicolour Titanium Bronze alloys, illuminated Iconic Glow kidney grille, adaptive LED headlights, BMW Curved Display OS9, M Sport suspension, Sun Protection glass</p>
+            <div class="stock-ctas">
+              <a class="btn-quiet" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20iX%20xDrive45%20M%20Sport%20%28LV26NXM%29%20on%20your%20Available%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener">WhatsApp Dan</a>
+              <a class="btn-quiet" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20iX%20xDrive45%20M%20Sport%20LV26NXM&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20iX%20xDrive45%20M%20Sport%20%28LV26NXM%2C%20%C2%A361%2C995%29.%0A%0AThanks">Email Dan</a>
+              <a class="btn-quiet" href="https://hedinautomotive.co.uk/buy-car/used-cars/242784/pb-bmw-ix-2026" target="_blank" rel="noopener">Full listing</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- X4 xDRIVE20d M SPORT -->
+        <article class="stock-card reveal">
+          <div class="stock-gallery">
+            <img class="stock-main" id="x4-main" src="assets/x4-1.jpg" alt="2026 BMW X4 xDrive20d M Sport LV26HBH" loading="lazy"/>
+          </div>
+          <div class="stock-thumbs">
+            <button class="stock-thumb active" onclick="switchImg(this,'assets/x4-1.jpg','x4-main')" aria-label="Photo 1"><img src="assets/x4-1.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x4-2.jpg','x4-main')" aria-label="Photo 2"><img src="assets/x4-2.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x4-3.jpg','x4-main')" aria-label="Photo 3"><img src="assets/x4-3.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/x4-4.jpg','x4-main')" aria-label="Photo 4"><img src="assets/x4-4.jpg" alt="" aria-hidden="true"/></button>
+          </div>
+          <div class="stock-body">
+            <div class="stock-meta">2026 &middot; LV26HBH</div>
+            <h3>BMW X4 xDrive20d M Sport</h3>
+            <div class="stock-price"><small>Price</small>&pound;48,995</div>
+            <div class="stock-spec">
+              <span><strong>6,984</strong> miles</span>
+              <span><strong>189</strong> hp</span>
+              <span><strong>Diesel</strong></span>
+              <span><strong>AWD</strong></span>
+            </div>
+            <p class="stock-features">21&rdquo; 726 Individual V-spoke bicolour wheels, panoramic glass sunroof, Driving Assistant with blind spot detection, Parking Assistant with reversing camera, adaptive suspension</p>
+            <div class="stock-ctas">
+              <a class="btn-quiet" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20X4%20xDrive20d%20M%20Sport%20%28LV26HBH%29%20on%20your%20Available%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener">WhatsApp Dan</a>
+              <a class="btn-quiet" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20X4%20xDrive20d%20M%20Sport%20LV26HBH&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20X4%20xDrive20d%20M%20Sport%20%28LV26HBH%2C%20%C2%A348%2C995%29.%0A%0AThanks">Email Dan</a>
+              <a class="btn-quiet" href="https://hedinautomotive.co.uk/buy-car/used-cars/237377/pb-bmw-x4-2026" target="_blank" rel="noopener">Full listing</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 420i M SPORT CONVERTIBLE -->
+        <article class="stock-card reveal">
+          <div class="stock-gallery">
+            <img class="stock-main" id="420c-main" src="assets/420c-1.jpg" alt="2026 BMW 420i M Sport Convertible LX26FTA" loading="lazy"/>
+          </div>
+          <div class="stock-thumbs">
+            <button class="stock-thumb active" onclick="switchImg(this,'assets/420c-1.jpg','420c-main')" aria-label="Photo 1"><img src="assets/420c-1.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/420c-2.jpg','420c-main')" aria-label="Photo 2"><img src="assets/420c-2.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/420c-3.jpg','420c-main')" aria-label="Photo 3"><img src="assets/420c-3.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/420c-4.jpg','420c-main')" aria-label="Photo 4"><img src="assets/420c-4.jpg" alt="" aria-hidden="true"/></button>
+          </div>
+          <div class="stock-body">
+            <div class="stock-meta">2026 &middot; LX26FTA</div>
+            <h3>BMW 420i M Sport Convertible</h3>
+            <div class="stock-price"><small>Price</small>&pound;48,995</div>
+            <div class="stock-spec">
+              <span><strong>4,473</strong> miles</span>
+              <span><strong>182</strong> hp</span>
+              <span><strong>Petrol</strong></span>
+              <span><strong>RWD</strong></span>
+            </div>
+            <p class="stock-features">19&rdquo; M double-spoke alloys, Active Guard Plus, Active Pedestrian Safety, adaptive LED headlights &amp; laser tail lights, aluminium interior trim, ambient lighting</p>
+            <div class="stock-ctas">
+              <a class="btn-quiet" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20420i%20M%20Sport%20Convertible%20%28LX26FTA%29%20on%20your%20Available%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener">WhatsApp Dan</a>
+              <a class="btn-quiet" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20420i%20M%20Sport%20Convertible%20LX26FTA&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20420i%20M%20Sport%20Convertible%20%28LX26FTA%2C%20%C2%A348%2C995%29.%0A%0AThanks">Email Dan</a>
+              <a class="btn-quiet" href="https://hedinautomotive.co.uk/buy-car/used-cars/241289/pb-bmw-4-series-2026" target="_blank" rel="noopener">Full listing</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- iX xDRIVE45 M SPORT (2025) -->
+        <article class="stock-card reveal">
+          <div class="stock-gallery">
+            <img class="stock-main" id="ix53-main" src="assets/ix53-1.jpg" alt="2025 BMW iX xDrive45 M Sport LY75HMC" loading="lazy"/>
+          </div>
+          <div class="stock-thumbs">
+            <button class="stock-thumb active" onclick="switchImg(this,'assets/ix53-1.jpg','ix53-main')" aria-label="Photo 1"><img src="assets/ix53-1.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/ix53-2.jpg','ix53-main')" aria-label="Photo 2"><img src="assets/ix53-2.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/ix53-3.jpg','ix53-main')" aria-label="Photo 3"><img src="assets/ix53-3.jpg" alt="" aria-hidden="true"/></button>
+            <button class="stock-thumb" onclick="switchImg(this,'assets/ix53-4.jpg','ix53-main')" aria-label="Photo 4"><img src="assets/ix53-4.jpg" alt="" aria-hidden="true"/></button>
+          </div>
+          <div class="stock-body">
+            <div class="stock-meta">2025 &middot; LY75HMC</div>
+            <h3>BMW iX xDrive45 M Sport</h3>
+            <div class="stock-price"><small>Price</small>&pound;52,995</div>
+            <div class="stock-spec">
+              <span><strong>10,288</strong> miles</span>
+              <span><strong>407</strong> hp</span>
+              <span><strong>Electric</strong></span>
+              <span><strong>AWD</strong></span>
+            </div>
+            <p class="stock-features">22&rdquo; Bicolour Titanium Bronze alloys, illuminated Iconic Glow kidney grille, adaptive LED headlights, BMW Curved Display OS9, M Sport suspension, Sun Protection glass</p>
+            <div class="stock-ctas">
+              <a class="btn-quiet" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202025%20iX%20xDrive45%20M%20Sport%20%28LY75HMC%29%20on%20your%20Available%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener">WhatsApp Dan</a>
+              <a class="btn-quiet" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202025%20BMW%20iX%20xDrive45%20M%20Sport%20LY75HMC&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202025%20BMW%20iX%20xDrive45%20M%20Sport%20%28LY75HMC%2C%20%C2%A352%2C995%29.%0A%0AThanks">Email Dan</a>
+              <a class="btn-quiet" href="https://hedinautomotive.co.uk/buy-car/used-cars/238267/pb-bmw-ix-2025" target="_blank" rel="noopener">Full listing</a>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- ALL STOCK -->
+      <div class="reveal" style="margin-top:clamp(48px,7vw,72px);border-top:1px solid var(--hairline);padding-top:clamp(36px,5vw,52px)">
+        <span class="plabel">More to choose from</span>
+        <h2>Not seeing the right car?</h2>
+        <p class="measure" style="margin-bottom:28px">Browse the full approved used BMW stock at Hedin Ruxley on the Hedin site, then message me and I will take it from there. Or simply tell me what you are after - colour, budget, must-haves - and I will watch the incoming stock for you.</p>
+        <div class="ph-hero-actions" style="margin-top:0">
+          <a class="btn-line" href="https://hedinautomotive.co.uk/buy-car/used-cars/all-used-cars?car_brand=BMW&amp;car_website_city=Ruxley" target="_blank" rel="noopener">All BMW stock at Ruxley</a>
+          <a class="btn-quiet" href="#contact">Tell me what you want</a>
+        </div>
+      </div>
+
     </div>
-
-    <div class="cars-grid">
-
-      <!-- X7 xDRIVE40d M SPORT -->
-      <article class="car-card">
-        <div class="card-stripe"></div>
-        <div class="card-gallery">
-          <img class="card-main" id="x7-main" src="assets/x7-1.jpg" alt="2026 BMW X7 xDrive40d M Sport LX26FXD" loading="eager"/>
-          <span class="hot-badge">HOT</span>
-          <div class="card-thumbs">
-            <button class="card-thumb active" onclick="switchImg(this,'assets/x7-1.jpg','x7-main')" aria-label="Photo 1"><img src="assets/x7-1.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x7-2.jpg','x7-main')" aria-label="Photo 2"><img src="assets/x7-2.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x7-3.jpg','x7-main')" aria-label="Photo 3"><img src="assets/x7-3.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x7-4.jpg','x7-main')" aria-label="Photo 4"><img src="assets/x7-4.jpg" alt="" aria-hidden="true"/></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-tags"><span class="reg-plate">LX26FXD</span><span class="year-chip">2026</span></div>
-          <h2 class="card-model">BMW X7 xDrive40d M Sport</h2>
-          <div class="card-price-row"><span class="price-label">Hot price</span><span class="card-price">&pound;79,770</span></div>
-          <div class="spec-grid">
-            <div class="spec-item"><span class="spec-val">3,452</span><span class="spec-lbl">Miles</span></div>
-            <div class="spec-item"><span class="spec-val">351hp</span><span class="spec-lbl">Power</span></div>
-            <div class="spec-item"><span class="spec-val">7</span><span class="spec-lbl">Seats</span></div>
-            <div class="spec-item"><span class="spec-val">AWD</span><span class="spec-lbl">Drive</span></div>
-          </div>
-          <p class="card-features">23&rdquo; V-spoke BMW Individual wheels, Active Guard, anthracite Alcantara headlining, BMW Emergency Call, BMW Online Services, ambient lighting</p>
-          <div class="card-ctas">
-            <a class="cta-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20X7%20xDrive40d%20M%20Sport%20%28LX26FXD%29%20on%20your%20What%27s%20Hot%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp Dan</a>
-            <a class="cta-email" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20X7%20xDrive40d%20M%20Sport%20LX26FXD&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20X7%20xDrive40d%20M%20Sport%20%28LX26FXD%2C%20%C2%A379%2C770%29.%0A%0AThanks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email Dan</a>
-          </div>
-          <a class="card-listing-link" href="https://hedinautomotive.co.uk/buy-car/used-cars/237425/pb-bmw-x7-2026" target="_blank" rel="noopener">View full listing on Hedin &#x2197;</a>
-        </div>
-      </article>
-
-      <!-- X5 xDRIVE50e M SPORT -->
-      <article class="car-card">
-        <div class="card-stripe"></div>
-        <div class="card-gallery">
-          <img class="card-main" id="x550e-main" src="assets/x550e-1.jpg" alt="2026 BMW X5 xDrive50e M Sport LX26FWP" loading="lazy"/>
-          <span class="hot-badge">HOT</span>
-          <div class="card-thumbs">
-            <button class="card-thumb active" onclick="switchImg(this,'assets/x550e-1.jpg','x550e-main')" aria-label="Photo 1"><img src="assets/x550e-1.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x550e-2.jpg','x550e-main')" aria-label="Photo 2"><img src="assets/x550e-2.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x550e-3.jpg','x550e-main')" aria-label="Photo 3"><img src="assets/x550e-3.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x550e-4.jpg','x550e-main')" aria-label="Photo 4"><img src="assets/x550e-4.jpg" alt="" aria-hidden="true"/></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-tags"><span class="reg-plate">LX26FWP</span><span class="year-chip">2026</span></div>
-          <h2 class="card-model">BMW X5 xDrive50e M Sport</h2>
-          <div class="card-price-row"><span class="price-label">Hot price</span><span class="card-price">&pound;74,995</span></div>
-          <div class="spec-grid">
-            <div class="spec-item"><span class="spec-val">5,561</span><span class="spec-lbl">Miles</span></div>
-            <div class="spec-item"><span class="spec-val">488hp</span><span class="spec-lbl">Power</span></div>
-            <div class="spec-item"><span class="spec-val">Hybrid</span><span class="spec-lbl">Fuel</span></div>
-            <div class="spec-item"><span class="spec-val">AWD</span><span class="spec-lbl">Drive</span></div>
-          </div>
-          <p class="card-features">22&rdquo; M Jet Black alloys, AC fast-charge prep, Active Guard, Active Pedestrian Safety, adaptive LED headlights, ambient lighting</p>
-          <div class="card-ctas">
-            <a class="cta-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20X5%20xDrive50e%20M%20Sport%20%28LX26FWP%29%20on%20your%20What%27s%20Hot%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp Dan</a>
-            <a class="cta-email" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20X5%20xDrive50e%20M%20Sport%20LX26FWP&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20X5%20xDrive50e%20M%20Sport%20%28LX26FWP%2C%20%C2%A374%2C995%29.%0A%0AThanks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email Dan</a>
-          </div>
-          <a class="card-listing-link" href="https://hedinautomotive.co.uk/buy-car/used-cars/241291/pb-bmw-x5-2026" target="_blank" rel="noopener">View full listing on Hedin &#x2197;</a>
-        </div>
-      </article>
-
-      <!-- M4 COMPETITION M xDRIVE CONVERTIBLE -->
-      <article class="car-card">
-        <div class="card-stripe"></div>
-        <div class="card-gallery">
-          <img class="card-main" id="m4c-main" src="assets/m4c-1.jpg" alt="2026 BMW M4 Competition M xDrive Convertible LY75TSV" loading="lazy"/>
-          <span class="hot-badge">HOT</span>
-          <div class="card-thumbs">
-            <button class="card-thumb active" onclick="switchImg(this,'assets/m4c-1.jpg','m4c-main')" aria-label="Photo 1"><img src="assets/m4c-1.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/m4c-2.jpg','m4c-main')" aria-label="Photo 2"><img src="assets/m4c-2.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/m4c-3.jpg','m4c-main')" aria-label="Photo 3"><img src="assets/m4c-3.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/m4c-4.jpg','m4c-main')" aria-label="Photo 4"><img src="assets/m4c-4.jpg" alt="" aria-hidden="true"/></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-tags"><span class="reg-plate">LY75TSV</span><span class="year-chip">2026</span></div>
-          <h2 class="card-model">BMW M4 Competition M xDrive Convertible</h2>
-          <div class="card-price-row"><span class="price-label">Hot price</span><span class="card-price">&pound;73,495</span></div>
-          <div class="spec-grid">
-            <div class="spec-item"><span class="spec-val">5,584</span><span class="spec-lbl">Miles</span></div>
-            <div class="spec-item"><span class="spec-val">530hp</span><span class="spec-lbl">Power</span></div>
-            <div class="spec-item"><span class="spec-val">Petrol</span><span class="spec-lbl">Fuel</span></div>
-            <div class="spec-item"><span class="spec-val">AWD</span><span class="spec-lbl">Drive</span></div>
-          </div>
-          <p class="card-features">19&rdquo;/20&rdquo; M double-spoke Jet Black alloys, Active Guard, Active Pedestrian Safety, adaptive LED headlights, aluminium interior trim, anthracite headlining</p>
-          <div class="card-ctas">
-            <a class="cta-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20M4%20Competition%20M%20xDrive%20Convertible%20%28LY75TSV%29%20on%20your%20What%27s%20Hot%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp Dan</a>
-            <a class="cta-email" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20M4%20Competition%20M%20xDrive%20Convertible%20LY75TSV&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20M4%20Competition%20M%20xDrive%20Convertible%20%28LY75TSV%2C%20%C2%A373%2C495%29.%0A%0AThanks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email Dan</a>
-          </div>
-          <a class="card-listing-link" href="https://hedinautomotive.co.uk/buy-car/used-cars/241288/pb-bmw-m4-2026" target="_blank" rel="noopener">View full listing on Hedin &#x2197;</a>
-        </div>
-      </article>
-
-      <!-- iX xDRIVE45 M SPORT (61,995) -->
-      <article class="car-card">
-        <div class="card-stripe"></div>
-        <div class="card-gallery">
-          <img class="card-main" id="ix62-main" src="assets/ix62-1.jpg" alt="2026 BMW iX xDrive45 M Sport LV26NXM" loading="lazy"/>
-          <span class="hot-badge">HOT</span>
-          <div class="card-thumbs">
-            <button class="card-thumb active" onclick="switchImg(this,'assets/ix62-1.jpg','ix62-main')" aria-label="Photo 1"><img src="assets/ix62-1.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/ix62-2.jpg','ix62-main')" aria-label="Photo 2"><img src="assets/ix62-2.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/ix62-3.jpg','ix62-main')" aria-label="Photo 3"><img src="assets/ix62-3.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/ix62-4.jpg','ix62-main')" aria-label="Photo 4"><img src="assets/ix62-4.jpg" alt="" aria-hidden="true"/></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-tags"><span class="reg-plate">LV26NXM</span><span class="year-chip">2026</span></div>
-          <h2 class="card-model">BMW iX xDrive45 M Sport</h2>
-          <div class="card-price-row"><span class="price-label">Hot price</span><span class="card-price">&pound;61,995</span></div>
-          <div class="spec-grid">
-            <div class="spec-item"><span class="spec-val">3,857</span><span class="spec-lbl">Miles</span></div>
-            <div class="spec-item"><span class="spec-val">407hp</span><span class="spec-lbl">Power</span></div>
-            <div class="spec-item"><span class="spec-val">Electric</span><span class="spec-lbl">Fuel</span></div>
-            <div class="spec-item"><span class="spec-val">AWD</span><span class="spec-lbl">Drive</span></div>
-          </div>
-          <p class="card-features">22&rdquo; Bicolour Titanium Bronze alloys, illuminated Iconic Glow kidney grille, adaptive LED headlights, BMW Curved Display OS9, M Sport suspension, Sun Protection glass</p>
-          <div class="card-ctas">
-            <a class="cta-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20iX%20xDrive45%20M%20Sport%20%28LV26NXM%29%20on%20your%20What%27s%20Hot%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp Dan</a>
-            <a class="cta-email" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20iX%20xDrive45%20M%20Sport%20LV26NXM&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20iX%20xDrive45%20M%20Sport%20%28LV26NXM%2C%20%C2%A361%2C995%29.%0A%0AThanks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email Dan</a>
-          </div>
-          <a class="card-listing-link" href="https://hedinautomotive.co.uk/buy-car/used-cars/242784/pb-bmw-ix-2026" target="_blank" rel="noopener">View full listing on Hedin &#x2197;</a>
-        </div>
-      </article>
-
-      <!-- X4 xDRIVE20d M SPORT -->
-      <article class="car-card">
-        <div class="card-stripe"></div>
-        <div class="card-gallery">
-          <img class="card-main" id="x4-main" src="assets/x4-1.jpg" alt="2026 BMW X4 xDrive20d M Sport LV26HBH" loading="lazy"/>
-          <span class="hot-badge">HOT</span>
-          <div class="card-thumbs">
-            <button class="card-thumb active" onclick="switchImg(this,'assets/x4-1.jpg','x4-main')" aria-label="Photo 1"><img src="assets/x4-1.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x4-2.jpg','x4-main')" aria-label="Photo 2"><img src="assets/x4-2.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x4-3.jpg','x4-main')" aria-label="Photo 3"><img src="assets/x4-3.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/x4-4.jpg','x4-main')" aria-label="Photo 4"><img src="assets/x4-4.jpg" alt="" aria-hidden="true"/></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-tags"><span class="reg-plate">LV26HBH</span><span class="year-chip">2026</span></div>
-          <h2 class="card-model">BMW X4 xDrive20d M Sport</h2>
-          <div class="card-price-row"><span class="price-label">Hot price</span><span class="card-price">&pound;48,995</span></div>
-          <div class="spec-grid">
-            <div class="spec-item"><span class="spec-val">6,984</span><span class="spec-lbl">Miles</span></div>
-            <div class="spec-item"><span class="spec-val">189hp</span><span class="spec-lbl">Power</span></div>
-            <div class="spec-item"><span class="spec-val">Diesel</span><span class="spec-lbl">Fuel</span></div>
-            <div class="spec-item"><span class="spec-val">AWD</span><span class="spec-lbl">Drive</span></div>
-          </div>
-          <p class="card-features">21&rdquo; 726 Individual V-spoke bicolour wheels, panoramic glass sunroof, Driving Assistant with blind spot detection, Parking Assistant with reversing camera, adaptive suspension</p>
-          <div class="card-ctas">
-            <a class="cta-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20X4%20xDrive20d%20M%20Sport%20%28LV26HBH%29%20on%20your%20What%27s%20Hot%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp Dan</a>
-            <a class="cta-email" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20X4%20xDrive20d%20M%20Sport%20LV26HBH&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20X4%20xDrive20d%20M%20Sport%20%28LV26HBH%2C%20%C2%A348%2C995%29.%0A%0AThanks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email Dan</a>
-          </div>
-          <a class="card-listing-link" href="https://hedinautomotive.co.uk/buy-car/used-cars/237377/pb-bmw-x4-2026" target="_blank" rel="noopener">View full listing on Hedin &#x2197;</a>
-        </div>
-      </article>
-
-      <!-- 420i M SPORT CONVERTIBLE -->
-      <article class="car-card">
-        <div class="card-stripe"></div>
-        <div class="card-gallery">
-          <img class="card-main" id="420c-main" src="assets/420c-1.jpg" alt="2026 BMW 420i M Sport Convertible LX26FTA" loading="lazy"/>
-          <span class="hot-badge">HOT</span>
-          <div class="card-thumbs">
-            <button class="card-thumb active" onclick="switchImg(this,'assets/420c-1.jpg','420c-main')" aria-label="Photo 1"><img src="assets/420c-1.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/420c-2.jpg','420c-main')" aria-label="Photo 2"><img src="assets/420c-2.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/420c-3.jpg','420c-main')" aria-label="Photo 3"><img src="assets/420c-3.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/420c-4.jpg','420c-main')" aria-label="Photo 4"><img src="assets/420c-4.jpg" alt="" aria-hidden="true"/></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-tags"><span class="reg-plate">LX26FTA</span><span class="year-chip">2026</span></div>
-          <h2 class="card-model">BMW 420i M Sport Convertible</h2>
-          <div class="card-price-row"><span class="price-label">Hot price</span><span class="card-price">&pound;48,995</span></div>
-          <div class="spec-grid">
-            <div class="spec-item"><span class="spec-val">4,473</span><span class="spec-lbl">Miles</span></div>
-            <div class="spec-item"><span class="spec-val">182hp</span><span class="spec-lbl">Power</span></div>
-            <div class="spec-item"><span class="spec-val">Petrol</span><span class="spec-lbl">Fuel</span></div>
-            <div class="spec-item"><span class="spec-val">RWD</span><span class="spec-lbl">Drive</span></div>
-          </div>
-          <p class="card-features">19&rdquo; M double-spoke alloys, Active Guard Plus, Active Pedestrian Safety, adaptive LED headlights &amp; laser tail lights, aluminium interior trim, ambient lighting</p>
-          <div class="card-ctas">
-            <a class="cta-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202026%20420i%20M%20Sport%20Convertible%20%28LX26FTA%29%20on%20your%20What%27s%20Hot%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp Dan</a>
-            <a class="cta-email" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202026%20BMW%20420i%20M%20Sport%20Convertible%20LX26FTA&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202026%20BMW%20420i%20M%20Sport%20Convertible%20%28LX26FTA%2C%20%C2%A348%2C995%29.%0A%0AThanks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email Dan</a>
-          </div>
-          <a class="card-listing-link" href="https://hedinautomotive.co.uk/buy-car/used-cars/241289/pb-bmw-4-series-2026" target="_blank" rel="noopener">View full listing on Hedin &#x2197;</a>
-        </div>
-      </article>
-
-      <!-- iX xDRIVE45 M SPORT (52,995) -->
-      <article class="car-card">
-        <div class="card-stripe"></div>
-        <div class="card-gallery">
-          <img class="card-main" id="ix53-main" src="assets/ix53-1.jpg" alt="2025 BMW iX xDrive45 M Sport LY75HMC" loading="lazy"/>
-          <span class="hot-badge">HOT</span>
-          <div class="card-thumbs">
-            <button class="card-thumb active" onclick="switchImg(this,'assets/ix53-1.jpg','ix53-main')" aria-label="Photo 1"><img src="assets/ix53-1.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/ix53-2.jpg','ix53-main')" aria-label="Photo 2"><img src="assets/ix53-2.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/ix53-3.jpg','ix53-main')" aria-label="Photo 3"><img src="assets/ix53-3.jpg" alt="" aria-hidden="true"/></button>
-            <button class="card-thumb" onclick="switchImg(this,'assets/ix53-4.jpg','ix53-main')" aria-label="Photo 4"><img src="assets/ix53-4.jpg" alt="" aria-hidden="true"/></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-tags"><span class="reg-plate">LY75HMC</span><span class="year-chip">2025</span></div>
-          <h2 class="card-model">BMW iX xDrive45 M Sport</h2>
-          <div class="card-price-row"><span class="price-label">Hot price</span><span class="card-price">&pound;52,995</span></div>
-          <div class="spec-grid">
-            <div class="spec-item"><span class="spec-val">10,288</span><span class="spec-lbl">Miles</span></div>
-            <div class="spec-item"><span class="spec-val">407hp</span><span class="spec-lbl">Power</span></div>
-            <div class="spec-item"><span class="spec-val">Electric</span><span class="spec-lbl">Fuel</span></div>
-            <div class="spec-item"><span class="spec-val">AWD</span><span class="spec-lbl">Drive</span></div>
-          </div>
-          <p class="card-features">22&rdquo; Bicolour Titanium Bronze alloys, illuminated Iconic Glow kidney grille, adaptive LED headlights, BMW Curved Display OS9, M Sport suspension, Sun Protection glass</p>
-          <div class="card-ctas">
-            <a class="cta-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%202025%20iX%20xDrive45%20M%20Sport%20%28LY75HMC%29%20on%20your%20What%27s%20Hot%20Now%20page.%20Can%20you%20tell%20me%20more%3F" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp Dan</a>
-            <a class="cta-email" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Availability%20check%20-%202025%20BMW%20iX%20xDrive45%20M%20Sport%20LY75HMC&body=Hi%20Dan%2C%0A%0AI%27d%20like%20to%20check%20availability%20on%20the%202025%20BMW%20iX%20xDrive45%20M%20Sport%20%28LY75HMC%2C%20%C2%A352%2C995%29.%0A%0AThanks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email Dan</a>
-          </div>
-          <a class="card-listing-link" href="https://hedinautomotive.co.uk/buy-car/used-cars/238267/pb-bmw-ix-2025" target="_blank" rel="noopener">View full listing on Hedin &#x2197;</a>
-        </div>
-      </article>
-
-    </div><!-- /.cars-grid -->
-
-    <!-- ALL STOCK LINK -->
-    <div style="margin-top:48px;text-align:center;padding:36px 24px;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-card);">
-      <p style="font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">More to choose from</p>
-      <h3 style="font-family:var(--display);font-size:1.4rem;font-weight:600;color:var(--text);margin-bottom:8px;letter-spacing:-.01em;">Not seeing the right car?</h3>
-      <p style="font-size:.95rem;color:var(--muted);line-height:1.65;max-width:48ch;margin:0 auto 24px;">Browse the full approved used BMW stock at Hedin Ruxley on the Hedin site, then message Dan and he'll take it from there.</p>
-      <a href="https://hedinautomotive.co.uk/buy-car/used-cars/all-used-cars?car_brand=BMW&amp;car_website_city=Ruxley" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;background:var(--blue);color:#fff;font-weight:700;font-size:.95rem;padding:14px 28px;border-radius:13px;text-decoration:none;box-shadow:0 8px 20px -6px rgba(21,89,207,.45);transition:background .18s,transform .18s;" onmouseover="this.style.background='#0e3f96';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#1559cf';this.style.transform='translateY(0)'">View all BMW stock at Ruxley &#x2197;</a>
-    </div>
-
-  </div><!-- /.offers-body -->
+  </section>
 
 </main>
 
-<!-- LEGAL SECTION -->
-<section style="background:#f5f6f8;border-top:1px solid rgba(16,21,29,.09);padding:48px 24px 40px;">
-  <div style="max-width:860px;margin:0 auto;">
-    <h3 style="font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5f6b7c;margin:0 0 22px;">Legal &amp; Financial Information</h3>
-    <div style="display:grid;gap:22px;">
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">Website Independence</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">dan-sells.co.uk is the personal website of Dan Cane, a Sales Executive employed at Hedin Automotive Group (BMW Ruxley). This website is operated entirely independently and does not represent, and should not be construed as representing, the views, policies, opinions, or positions of BMW AG, BMW (UK) Limited, Hedin Automotive Group, or any associated or affiliated entity. All content is created and published at the sole discretion of the individual named above. BMW&reg;, the BMW roundel, and all associated marks and intellectual property are registered trademarks of BMW AG and are referenced solely for the purpose of identifying the products and services discussed.</p>
-      </div>
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">Credit Broking - Important Information</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Hedin Automotive Group acts as a credit broker and not a lender. Finance introductions for new BMW vehicles are made primarily through BMW Financial Services, a trading name of BMW Financial Services (GB) Limited, which is authorised and regulated by the Financial Conduct Authority. For used vehicle financing, a panel of FCA-authorised lenders is available to assist customers across a broad range of credit profiles and personal circumstances. Hedin Automotive Group may receive a commission or other remuneration from lenders in connection with the introduction of finance products; the existence of any such arrangement does not affect the interest rate or terms offered to you. All finance products are offered subject to status, individual credit assessment, and affordability. Finance approval is not guaranteed and is subject to the lending criteria of the relevant lender. Rates and products are subject to change without notice.</p>
-      </div>
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">No Financial Advice</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Nothing published on this website, and nothing communicated through any associated questionnaire, form, or correspondence, constitutes regulated financial advice, a personal recommendation, or a commitment to provide any particular finance product or arrangement. Dan Cane is not a financial adviser, and no content on this website should be treated as a substitute for independent financial guidance. Any budget figures, estimated monthly payments, deposit amounts, or indicative finance illustrations discussed or gathered through this website are provided for the sole purpose of facilitating a preliminary and informal sales conversation. They are illustrative in nature, are not binding in any form, and are subject to formal credit assessment, individual circumstances, and lender approval. If you are uncertain whether a particular financial product or commitment is appropriate for your personal circumstances, you should seek guidance from an independent financial adviser who is authorised and regulated by the Financial Conduct Authority.</p>
-      </div>
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">General</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Vehicle specifications, availability, imagery, and pricing information featured on this website are provided in good faith and are correct at the time of publication, but are subject to change without notice. All offers are subject to availability. Errors and omissions excepted. This website is intended for residents of the United Kingdom only.</p>
-      </div>
+<!-- chrome:footer2 {"wa":"Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20used%20BMW","blurb1":"New and approved used BMW buying with Dan Cane and the team at Hedin Ruxley, South East."} -->
+<section class="ph-contact" id="contact">
+  <div class="wrap">
+    <span class="plabel accent">Talk to Dan</span>
+    <h2>One conversation, whenever you are ready.</h2>
+    <p class="measure">No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.</p>
+    <div class="contact-rows">
+      <a class="contact-row" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20used%20BMW" target="_blank" rel="noopener">
+        <span class="cr-label">WhatsApp</span>
+        <span class="cr-value">Message me directly</span>
+      </a>
+      <a class="contact-row" href="mailto:daniel.cane@hedinautomotive.co.uk">
+        <span class="cr-label">Email</span>
+        <span class="cr-value">daniel.cane@hedinautomotive.co.uk</span>
+      </a>
+      <a class="contact-row" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
+        <span class="cr-label">In person</span>
+        <span class="cr-value">Book time with me at Ruxley</span>
+      </a>
+      <a class="contact-row" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">
+        <span class="cr-label">Instagram</span>
+        <span class="cr-value">@dan_sells_bmw</span>
+      </a>
     </div>
   </div>
 </section>
 
-<!-- chrome:footer {"blurb1":"New and approved used BMW buying with Dan and his team at Hedin Ruxley, South East.","blurb2":"Based at Hedin Ruxley on Maidstone Road, Sidcup."} -->
-<footer class="site-footer">
-  <div class="footer-inner">
-    <div>
-      <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
-      <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New and approved used BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
-      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup.</p>
+<footer class="ph-footer">
+  <div class="wrap">
+    <div class="ph-footer-grid">
+      <div>
+        <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+        <p class="ph-footer-blurb">New and approved used BMW buying with Dan Cane and the team at Hedin Ruxley, South East.</p>
+        <p class="ph-footer-blurb">Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+      </div>
+      <div class="ph-footer-col">
+        <h4>Find your way</h4>
+        <a href="how-i-work.html">How I work</a>
+        <a href="step1.html">Find my BMW</a>
+        <a href="EV.html">Electric Daily</a>
+        <a href="appraisal.html">Value your car</a>
+        <a href="service.html">In for service</a>
+        <a href="current-opportunities.html">Current Opportunities</a>
+        <a href="offers.html">Available Now</a>
+      </div>
+      <div class="ph-footer-col">
+        <h4>More</h4>
+        <a href="guides.html">Guides</a>
+        <a href="refer.html">Refer a friend</a>
+        <a href="accessories.html">BMW Accessories</a>
+        <a href="bmw-sidcup.html">BMW Sidcup</a>
+        <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+        <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+        <a href="terms.html">Terms &amp; Conditions</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
     </div>
-    <nav aria-label="Footer">
-      <a href="step1.html">Find my BMW</a>
-      <a href="EV.html">Electric BMWs</a>
-      <a href="index.html#offers">New Car Offers</a>
-      <a href="offers.html">Hot Used Cars</a>
-      <a href="appraisal.html">Value my car</a>
-      <a href="service.html">Car in for service?</a>
-      <a href="accessories.html">BMW Accessories</a>
-      <a href="refer.html">Refer a friend</a>
-      <a href="guides.html">Guides</a>
-      <a href="bmw-sidcup.html">BMW Sidcup</a>
-      <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
-      <a href="privacy.html">Privacy Policy</a>
-    </nav>
+    <p class="ph-footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
   </div>
-  <p class="footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
 </footer>
-<!-- /chrome:footer -->
-
-<a class="wa-float" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20used%20BMW" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp">
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-  <span>Chat with Dan</span>
-</a>
 
 <script>
-// Header scroll
-const hdr=document.getElementById('siteHeader');
-window.addEventListener('scroll',()=>{hdr.classList.toggle('scrolled',window.scrollY>80);},{passive:true});
+(function(){
+  var hdr=document.getElementById('phHeader');
+  if(hdr){window.addEventListener('scroll',function(){hdr.classList.toggle('scrolled',window.scrollY>60);},{passive:true});
+    if(window.scrollY>60)hdr.classList.add('scrolled');}
+  window.phOpenDrawer=function(){
+    document.getElementById('phDrawer').classList.add('open');
+    document.getElementById('phDrawer').removeAttribute('aria-hidden');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','true');
+    document.body.style.overflow='hidden';
+  };
+  window.phCloseDrawer=function(){
+    document.getElementById('phDrawer').classList.remove('open');
+    document.getElementById('phDrawer').setAttribute('aria-hidden','true');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','false');
+    document.body.style.overflow='';
+  };
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')window.phCloseDrawer();});
+  document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+</script>
+<!-- /chrome:footer2 -->
 
-// Nav drawer
-function openDrawer(){
-  document.getElementById('navDrawer').classList.add('open');
-  document.getElementById('navOverlay').classList.add('open');
-  document.getElementById('navToggle').setAttribute('aria-expanded','true');
-  document.getElementById('navDrawer').removeAttribute('aria-hidden');
-}
-function closeDrawer(){
-  document.getElementById('navDrawer').classList.remove('open');
-  document.getElementById('navOverlay').classList.remove('open');
-  document.getElementById('navToggle').setAttribute('aria-expanded','false');
-  document.getElementById('navDrawer').setAttribute('aria-hidden','true');
-}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+<!-- chrome:legal2 -->
+<section class="legal-block">
+  <div class="wrap wrap-narrow">
+    <h3>Legal &amp; Financial Information</h3>
+    <h4>Website Independence</h4>
+    <p>dan-sells.co.uk is the personal website of Dan Cane, a Sales Executive employed at Hedin Automotive Group (BMW Ruxley). This website is operated entirely independently and does not represent, and should not be construed as representing, the views, policies, opinions, or positions of BMW AG, BMW (UK) Limited, Hedin Automotive Group, or any associated or affiliated entity. All content is created and published at the sole discretion of the individual named above. BMW&reg;, the BMW roundel, and all associated marks and intellectual property are registered trademarks of BMW AG and are referenced solely for the purpose of identifying the products and services discussed.</p>
+    <h4>Credit Broking - Important Information</h4>
+    <p>Hedin Automotive Group acts as a credit broker and not a lender. Finance introductions for new BMW vehicles are made primarily through BMW Financial Services, a trading name of BMW Financial Services (GB) Limited, which is authorised and regulated by the Financial Conduct Authority. For used vehicle financing, a panel of FCA-authorised lenders is available to assist customers across a broad range of credit profiles and personal circumstances. Hedin Automotive Group may receive a commission or other remuneration from lenders in connection with the introduction of finance products; the existence of any such arrangement does not affect the interest rate or terms offered to you. All finance products are offered subject to status, individual credit assessment, and affordability. Finance approval is not guaranteed and is subject to the lending criteria of the relevant lender. Rates and products are subject to change without notice.</p>
+    <h4>No Financial Advice</h4>
+    <p>Nothing published on this website, and nothing communicated through any associated questionnaire, form, or correspondence, constitutes regulated financial advice, a personal recommendation, or a commitment to provide any particular finance product or arrangement. Dan Cane is not a financial adviser, and no content on this website should be treated as a substitute for independent financial guidance. Any budget figures, estimated monthly payments, deposit amounts, or indicative finance illustrations discussed or gathered through this website are provided for the sole purpose of facilitating a preliminary and informal sales conversation. They are illustrative in nature, are not binding in any form, and are subject to formal credit assessment, individual circumstances, and lender approval. If you are uncertain whether a particular financial product or commitment is appropriate for your personal circumstances, you should seek guidance from an independent financial adviser who is authorised and regulated by the Financial Conduct Authority.</p>
+    <h4>Information Collection &amp; Use</h4>
+    <p>Personal information submitted through this website is collected solely for the purpose of enabling Dan Cane to prepare a tailored and informed response to your vehicle enquiry. Information is handled in accordance with applicable UK data protection legislation, including the UK GDPR. Your data is not sold, shared with unauthorised third parties, or used for any purpose beyond fulfilling the specific enquiry you have submitted.</p>
+    <h4>General</h4>
+    <p>Vehicle specifications, availability, imagery, and pricing information featured on this website are provided in good faith and are correct at the time of publication, but are subject to change without notice. All offers are subject to availability. Errors and omissions excepted. This website is intended for residents of the United Kingdom only.</p>
+  </div>
+</section>
+<!-- /chrome:legal2 -->
 
-// Gallery thumbnail switching
+<script>
 function switchImg(btn, src, mainId){
   document.getElementById(mainId).src = src;
-  btn.closest('.card-thumbs').querySelectorAll('.card-thumb').forEach(t=>t.classList.remove('active'));
+  btn.closest('.stock-card').querySelectorAll('.stock-thumb').forEach(function(t){t.classList.remove('active');});
   btn.classList.add('active');
 }
 </script>
 <script src="disclaimer.js"></script>
-<script src="contact.js"></script>
 </body>
 </html>

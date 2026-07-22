@@ -1,0 +1,83 @@
+<section class="ph-contact" id="contact">
+  <div class="wrap">
+    <span class="plabel accent">Talk to Dan</span>
+    <h2>{{contactHeading|One conversation, whenever you are ready.}}</h2>
+    <p class="measure">{{contactSub|No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.}}</p>
+    <div class="contact-rows">
+      <a class="contact-row" href="https://wa.me/447827138197?text={{wa|Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW}}" target="_blank" rel="noopener">
+        <span class="cr-label">WhatsApp</span>
+        <span class="cr-value">Message me directly</span>
+      </a>
+      <a class="contact-row" href="mailto:daniel.cane@hedinautomotive.co.uk">
+        <span class="cr-label">Email</span>
+        <span class="cr-value">daniel.cane@hedinautomotive.co.uk</span>
+      </a>
+      <a class="contact-row" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
+        <span class="cr-label">In person</span>
+        <span class="cr-value">Book time with me at Ruxley</span>
+      </a>
+      <a class="contact-row" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">
+        <span class="cr-label">Instagram</span>
+        <span class="cr-value">@dan_sells_bmw</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="ph-footer">
+  <div class="wrap">
+    <div class="ph-footer-grid">
+      <div>
+        <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+        <p class="ph-footer-blurb">{{blurb1|BMW buying with Dan Cane and the team at Hedin Ruxley, South East.}}</p>
+        <p class="ph-footer-blurb">{{blurb2|Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.}}</p>
+      </div>
+      <div class="ph-footer-col">
+        <h4>Find your way</h4>
+        <a href="how-i-work.html">How I work</a>
+        <a href="step1.html">Find my BMW</a>
+        <a href="EV.html">Electric Daily</a>
+        <a href="appraisal.html">Value your car</a>
+        <a href="service.html">In for service</a>
+        <a href="current-opportunities.html">Current Opportunities</a>
+        <a href="offers.html">Available Now</a>
+      </div>
+      <div class="ph-footer-col">
+        <h4>More</h4>
+        <a href="guides.html">Guides</a>
+        <a href="refer.html">Refer a friend</a>
+        <a href="accessories.html">BMW Accessories</a>
+        <a href="bmw-sidcup.html">BMW Sidcup</a>
+        <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+        <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+        <a href="terms.html">Terms &amp; Conditions</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+    </div>
+    <p class="ph-footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. {{legalTail|All offers subject to availability.}}</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var hdr=document.getElementById('phHeader');
+  if(hdr){window.addEventListener('scroll',function(){hdr.classList.toggle('scrolled',window.scrollY>60);},{passive:true});
+    if(window.scrollY>60)hdr.classList.add('scrolled');}
+  window.phOpenDrawer=function(){
+    document.getElementById('phDrawer').classList.add('open');
+    document.getElementById('phDrawer').removeAttribute('aria-hidden');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','true');
+    document.body.style.overflow='hidden';
+  };
+  window.phCloseDrawer=function(){
+    document.getElementById('phDrawer').classList.remove('open');
+    document.getElementById('phDrawer').setAttribute('aria-hidden','true');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','false');
+    document.body.style.overflow='';
+  };
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')window.phCloseDrawer();});
+  document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+</script>

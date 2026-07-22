@@ -3,27 +3,23 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>DanSells | New BMW done properly. Dan, BMW Sales Executive, Hedin Ruxley</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <meta name="description" content="Buy your next BMW with Dan and his team at Hedin Ruxley, South East. Dan is your dedicated main contact from first enquiry to handover."/>
-  <!-- Performance hints -->
+  <title>Dan Sells | Your next BMW, done properly. Dan Cane, Hedin Ruxley</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <meta name="description" content="Buy your next BMW with Dan Cane at Hedin Ruxley, South East. One consistent point of contact from first conversation to handover, backed by a proper team."/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
   <link rel="preconnect" href="https://www.googletagmanager.com"/>
-  <!-- Canonical -->
   <link rel="canonical" href="https://dan-sells.co.uk/"/>
-  <!-- Open Graph -->
   <meta property="og:type" content="website"/>
   <meta property="og:url" content="https://dan-sells.co.uk/"/>
-  <meta property="og:title" content="DanSells | New BMW done properly. Dan, BMW Sales Executive, Hedin Ruxley"/>
-  <meta property="og:description" content="Buy your next BMW with Dan and his team at Hedin Ruxley, South East. Dan is your dedicated main contact from first enquiry to handover."/>
-  <meta property="og:image" content="https://dan-sells.co.uk/dan.jpg"/>
-  <meta property="og:site_name" content="DanSells"/>
-  <!-- Twitter card -->
+  <meta property="og:title" content="Dan Sells | Your next BMW, done properly"/>
+  <meta property="og:description" content="Buy your next BMW with Dan Cane at Hedin Ruxley, South East. One consistent point of contact from first conversation to handover, backed by a proper team."/>
+  <meta property="og:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
+  <meta property="og:site_name" content="Dan Sells"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="DanSells | New BMW done properly"/>
-  <meta name="twitter:description" content="Buy your next BMW with Dan and his team at Hedin Ruxley, South East."/>
-  <meta name="twitter:image" content="https://dan-sells.co.uk/dan.jpg"/>
-  <link rel="stylesheet" href="style.css"/>
+  <meta name="twitter:title" content="Dan Sells | Your next BMW, done properly"/>
+  <meta name="twitter:description" content="Buy your next BMW with Dan Cane at Hedin Ruxley, South East."/>
+  <meta name="twitter:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
+  <link rel="stylesheet" href="premium.css"/>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>
@@ -38,7 +34,7 @@
     "@graph": [
       {
         "@type": "Person",
-        "name": "Dan",
+        "name": "Dan Cane",
         "jobTitle": "BMW Sales Executive",
         "worksFor": {"@type": "AutoDealer", "name": "Hedin Ruxley"},
         "url": "https://dan-sells.co.uk/",
@@ -49,650 +45,328 @@
         "name": "Hedin Ruxley",
         "brand": {"@type": "Brand", "name": "BMW"},
         "address": {"@type": "PostalAddress", "addressRegion": "South East", "addressCountry": "GB"},
-        "url": "https://dan-sells.co.uk/",
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "5",
-          "reviewCount": "4",
-          "bestRating": "5"
-        }
+        "url": "https://dan-sells.co.uk/"
       }
     ]
   }
   </script>
-  <style>
-    /* ── CURRENT OFFERS SECTION ── */
-    .offers-section{background:linear-gradient(160deg,#0a1628 0%,#0d2145 100%);border-radius:24px;padding:32px 24px 28px;margin:0 0 40px;}
-    .offers-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5591ff;margin-bottom:8px;}
-    .offers-headline{font-size:1.35rem;font-weight:800;color:#fff;line-height:1.3;margin:0 0 6px;}
-    .offers-sub{font-size:.82rem;color:rgba(255,255,255,.55);margin:0 0 24px;}
-    .offer-cards{display:grid;gap:14px;}
-    @media(min-width:580px){.offer-cards{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}}
-    .offer-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:0;transition:background .18s,transform .18s;position:relative;overflow:hidden;}
-    .sold-ribbon{position:absolute;top:22px;right:-32px;width:130px;background:#c0392b;color:#fff;text-align:center;padding:6px 0;font-size:.65rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;transform:rotate(45deg);pointer-events:none;opacity:1;}
-    .offer-card:hover{background:rgba(255,255,255,.10);transform:translateY(-2px);}
-    .offer-badge{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5591ff;margin-bottom:8px;}
-    .offer-model{font-size:1rem;font-weight:800;color:#fff;line-height:1.3;margin:0 0 4px;}
-    .offer-spec{font-size:.78rem;color:rgba(255,255,255,.5);margin:0 0 16px;line-height:1.5;}
-    .offer-figures{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
-    .offer-fig{background:rgba(21,89,207,.22);border:1px solid rgba(85,145,255,.25);border-radius:10px;padding:10px 12px;text-align:center;}
-    .offer-fig-val{font-size:1.1rem;font-weight:800;color:#fff;line-height:1;}
-    .offer-fig-lbl{font-size:.68rem;color:rgba(255,255,255,.5);margin-top:3px;}
-    .offer-apr{font-size:.78rem;color:rgba(255,255,255,.55);margin:0 0 16px;text-align:center;}
-    .offer-cta{display:block;background:#1559cf;color:#fff;font-weight:700;font-size:.85rem;text-align:center;padding:11px 16px;border-radius:11px;border:none;cursor:pointer;font-family:var(--font);text-decoration:none;transition:background .18s;}
-    .offer-cta:hover{background:#1048a8;}
-    .offer-card.wide-only .offer-fig-solo{background:rgba(21,89,207,.22);border:1px solid rgba(85,145,255,.25);border-radius:10px;padding:10px 12px;text-align:center;margin-bottom:16px;}
-    .offers-legal{font-size:.68rem;color:rgba(255,255,255,.32);line-height:1.6;margin-top:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;}
-
-    /* ── OFFER MODAL ── */
-    .offer-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px;}
-    .offer-modal-bg.open{display:flex;}
-    .offer-modal{background:#fff;border-radius:22px;padding:28px 24px;width:100%;max-width:420px;position:relative;}
-    .offer-modal h3{font-size:1.05rem;font-weight:800;color:#141a22;margin:0 0 4px;}
-    .offer-modal .om-sub{font-size:.82rem;color:#5f6b7c;margin:0 0 20px;line-height:1.5;}
-    .offer-modal .om-field{margin-bottom:14px;}
-    .offer-modal .om-field label{display:block;font-size:.78rem;font-weight:600;color:#44536a;margin-bottom:5px;}
-    .offer-modal .om-field input{width:100%;box-sizing:border-box;padding:11px 14px;border:1px solid rgba(16,21,29,.18);border-radius:10px;font-size:.9rem;font-family:var(--font);color:#141a22;background:#fafbfc;}
-    .offer-modal .om-field input:focus{outline:none;border-color:#1559cf;background:#fff;}
-    .offer-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.2rem;color:#5f6b7c;cursor:pointer;line-height:1;}
-    .offer-modal .om-legal{font-size:.68rem;color:#8a94a0;line-height:1.55;margin:14px 0 0;}
-    .offer-modal .btn{width:100%;margin-top:4px;}
-    .om-success{display:none;text-align:center;padding:16px 0 8px;}
-    .om-success p{font-size:.95rem;font-weight:700;color:#1d6b40;margin:0 0 6px;}
-    .om-success span{font-size:.82rem;color:#5f6b7c;}
-  </style>
-<script src="video-lite.js" defer></script>
 <script src="analytics.js" defer></script>
 </head>
-<body class="has-video-hero">
+<body>
 
-<!-- chrome:header -->
-<header class="site-header" id="siteHeader">
-  <div class="site-header-inner">
-    <a class="site-logo" href="index.html">DanSells</a>
-    <div class="nav-actions">
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="Dan on Instagram" class="nav-icon-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-      </a>
-      <button type="button" class="nav-icon-btn" aria-label="Email Dan" onclick="openContactModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></button>
-      <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20new%20BMW" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" class="nav-icon-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      </a>
-      <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false" id="navToggle" onclick="openDrawer()">
-        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <line x1="0" y1="1" x2="22" y2="1"/>
-          <line x1="0" y1="8" x2="22" y2="8"/>
-          <line x1="0" y1="15" x2="22" y2="15"/>
-        </svg>
+<!-- chrome:header2 -->
+<header class="ph-header" id="phHeader">
+  <div class="ph-header-inner">
+    <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+    <div class="ph-actions">
+      <a class="ph-contact-link" href="#contact">Talk to Dan</a>
+      <button class="ph-menu-btn" id="phMenuBtn" aria-label="Open menu" aria-expanded="false" onclick="phOpenDrawer()">
+        <span></span><span></span>
       </button>
     </div>
   </div>
 </header>
-<!-- /chrome:header -->
+<!-- /chrome:header2 -->
 
-<!-- NAV DRAWER -->
-<!-- chrome:drawer -->
-<div class="nav-drawer" id="navDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
-  <div class="nav-drawer-inner">
-    <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Close menu">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <line x1="18" y1="6" x2="6" y2="18"/>
-        <line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
-    <p class="drawer-brand">DanSells</p>
-    <nav class="drawer-nav" aria-label="Main navigation">
-      <a href="step1.html">Find my BMW</a>
-      <a href="EV.html">Electric BMWs</a>
-      <a href="index.html#offers" onclick="closeDrawer()">New Car Offers</a>
-      <a href="sorted-for-a-year.html">1 &amp; 2 Series Offer</a>
-      <a href="offers.html">Hot Used Cars</a>
-      <a href="appraisal.html">Value my car</a>
-      <a href="service.html">Car in for service?</a>
-      <a href="accessories.html">BMW Accessories</a>
-      <a href="index.html#protect" onclick="closeDrawer()">Protect my BMW</a>
-      <a href="refer.html">Refer a friend</a>
-      <a href="guides.html">Guides</a>
-      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment &#x2197;</a>
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram &#x2197;</a>
+<!-- chrome:drawer2 -->
+<div class="ph-drawer" id="phDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <button class="ph-drawer-close" onclick="phCloseDrawer()" aria-label="Close menu">Close</button>
+  <div class="ph-drawer-inner">
+    <p class="ph-drawer-label">Start here</p>
+    <nav aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="how-i-work.html">How I work</a>
     </nav>
-    <a class="drawer-cta" href="step1.html">Find a BMW &rarr;</a>
+    <p class="ph-drawer-label">Four ways in</p>
+    <nav aria-label="Doorways">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric Daily</a>
+      <a href="appraisal.html">Value your car</a>
+      <a href="service.html">In for service</a>
+    </nav>
+    <p class="ph-drawer-label">Practical</p>
+    <nav aria-label="Practical pages">
+      <a href="current-opportunities.html">Current Opportunities</a>
+      <a href="offers.html">Available Now</a>
+      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment <small>opens cal.eu</small></a>
+    </nav>
   </div>
 </div>
-<div class="nav-drawer-overlay" id="navOverlay" onclick="closeDrawer()"></div>
-<!-- /chrome:drawer -->
+<!-- /chrome:drawer2 -->
 
 <main>
 
-  <!-- VIDEO HERO -->
-  <section class="hero-video" id="heroSection" aria-label="Hero">
-    <video autoplay muted loop playsinline poster="vid-dan-poster.jpg" class="hero-vid" id="heroVid">
-      <source src="vid-dan.mp4" type="video/mp4"/>
-    </video>
-    <div class="hero-vid-overlay"></div>
-    <div class="hero-vid-content">
-      <div class="page">
-        <p class="hero-eyebrow">Hedin Ruxley &middot; South East</p>
-        <h1>Your next BMW,<br>done <em>properly</em>.</h1>
-        <p class="hero-tagline">Dan's your main contact. Brilliant team around him. No scripts.</p>
-        <div class="hero-vid-ctas">
-          <a class="btn-hero" href="step1.html">Find my BMW &rarr;</a>
-          <a class="btn-ghost hero-ghost" href="#routes">How it works</a>
+  <!-- HERO -->
+  <section class="ph-hero" id="top" aria-label="Introduction">
+    <div class="ph-hero-media">
+      <video autoplay muted loop playsinline poster="vid-dan-poster.jpg" id="heroVid">
+        <source src="vid-dan.mp4" type="video/mp4"/>
+      </video>
+    </div>
+    <div class="ph-hero-scrim"></div>
+    <div class="ph-hero-content">
+      <div class="wrap">
+        <span class="plabel">Dan Cane &middot; BMW Sales Executive &middot; Hedin Ruxley</span>
+        <h1>Your next BMW,<br/>done <em>properly</em>.</h1>
+        <hr class="rule"/>
+        <p class="ph-hero-sub">One person to talk to, from the first conversation to the day you drive away. A proper team behind him. A process that moves at your pace, not a sales process's pace.</p>
+        <div class="ph-hero-actions">
+          <a class="btn-line" href="#contact">Start a conversation</a>
+          <a class="btn-quiet" href="#doorways">Or skip to what you need</a>
         </div>
       </div>
     </div>
-    <button class="hero-pause-btn" id="heroPauseBtn" onclick="toggleHeroVid()" aria-label="Pause video">
-      <svg class="pause-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-      <svg class="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M8 5v14l11-7z"/></svg>
-    </button>
+    <div class="ph-scrollcue" aria-hidden="true"></div>
+    <button class="ph-vid-toggle" id="heroVidToggle" aria-label="Pause background video">Pause</button>
   </section>
 
-  <!-- ── CONSTRAINED BLOCK 1: Offers → Testimonials ── -->
-  <div class="page">
-
-    <!-- DAN PROFILE STRIP -->
-    <div class="dan-profile reveal">
-      <img src="dan.jpg" alt="Dan, BMW Sales Executive at Hedin Ruxley" class="dan-avatar"/>
-      <div class="dan-profile-info">
-        <strong>Dan</strong>
-        <span>BMW Sales Executive &middot; Hedin Ruxley</span>
-      </div>
-    </div>
-
-    <!-- ROUTES -->
-    <section class="section" id="routes">
-      <div class="section-head reveal">
-        <div class="section-kicker">Where would you like to start?</div>
-        <h2>Four ways in. All of them end with a real conversation.</h2>
-        <p class="step-desc" style="margin-bottom:0">Each one takes a couple of minutes and comes straight to me - not a call centre, not a shared inbox.</p>
-      </div>
-      <div class="routes">
-        <a class="route-card reveal" href="step1.html">
-          <img src="photo03.jpg" alt="New BMW models in the Ruxley showroom" loading="lazy"/>
-          <div class="route-body">
-            <span class="route-num">ROUTE 01</span>
-            <h3>Find my BMW</h3>
-            <p>Lifestyle, budget, timing. A short guided experience that tells me exactly what to prepare before we speak.</p>
-            <span class="route-go">Start the 2-minute build</span>
-          </div>
-        </a>
-        <a class="route-card reveal" href="EV.html">
-          <img src="photo04.jpg" alt="BMW electric display at Hedin Ruxley" loading="lazy"/>
-          <div class="route-body">
-            <span class="route-num">ROUTE 02</span>
-            <h3>Go electric</h3>
-            <p>I drive electric myself. Run the savings calculator, get the honest answers on charging and range, then talk it through.</p>
-            <span class="route-go">See what switching saves you</span>
-          </div>
-        </a>
-        <a class="route-card reveal" href="appraisal.html">
-          <img src="photo05.jpg" alt="Cars in the showroom ready for handover" loading="lazy"/>
-          <div class="route-body">
-            <span class="route-num">ROUTE 03</span>
-            <h3>Value my car</h3>
-            <p>Free appraisal, no obligation. Pop your reg in, rate the condition honestly and I'll come back with a realistic figure.</p>
-            <span class="route-go">Get my free appraisal</span>
-          </div>
-        </a>
-        <a class="route-card reveal" href="service.html">
-          <img src="photo06.jpg" alt="Hedin Ruxley showroom interior" loading="lazy"/>
-          <div class="route-body">
-            <span class="route-num">ROUTE 04</span>
-            <h3>Got a service booked?</h3>
-            <p>While your car's in, why not take two minutes to speak with Dan? No pressure - just a quick chat about what comes next.</p>
-            <span class="route-go">Book a word with Dan →</span>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <!-- CURRENT OFFERS -->
-    <section class="section" id="offers">
-      <div class="offers-section reveal">
-        <div class="offers-kicker">⚡ Current offers - updated June 2026</div>
-        <h2 class="offers-headline">Brand new BMW. From £389/month.</h2>
-        <p class="offers-sub">Three models. Available now. Click any card for full details and Dan will be in touch.</p>
-        <div class="offer-cards">
-
-          <div class="offer-card">
-            <div class="offer-badge">Brand new · PCH · In stock now</div>
-            <div class="offer-model">BMW 1 Series M Sport</div>
-            <div class="offer-spec">First year's insurance on us · 3 years' servicing · 6,000 miles p.a. · 48 months</div>
-            <div class="offer-figures">
-              <div class="offer-fig"><div class="offer-fig-val">£389</div><div class="offer-fig-lbl">Per month</div></div>
-              <div class="offer-fig"><div class="offer-fig-val">£389</div><div class="offer-fig-lbl">Initial rental</div></div>
-            </div>
-            <div class="offer-apr">Personal Contract Hire · Just one month's rental up front · Total payable £18,672</div>
-            <a class="offer-cta" href="sorted-for-a-year.html">View 1 &amp; 2 Series offer &rarr;</a>
-          </div>
-
-          <div class="offer-card">
-            <div class="offer-badge">Brand new · PCH</div>
-            <div class="offer-model">BMW 2 Series Gran Coupé</div>
-            <div class="offer-spec">48 months · 6,000 miles p.a. · Full details from Dan</div>
-            <div class="offer-figures">
-              <div class="offer-fig"><div class="offer-fig-val">£399</div><div class="offer-fig-lbl">Initial rental</div></div>
-              <div class="offer-fig"><div class="offer-fig-val">£399</div><div class="offer-fig-lbl">Per month</div></div>
-            </div>
-            <div class="offer-apr">Personal Contract Hire · 48 months · Total payable £19,152</div>
-            <button class="offer-cta" onclick="openOfferModal('BMW 2 Series Gran Coupé','£399 initial rental, £399/month PCH, 48 months, 6,000 miles p.a., total payable £19,152')">Register interest &rarr;</button>
-          </div>
-
-          <div class="offer-card" style="border-color:rgba(16,21,29,.15);background:rgba(16,21,29,.03);opacity:.7;">
-            <div class="sold-ribbon">SOLD</div>
-            <div class="offer-badge" style="color:#8a94a0;">No longer available</div>
-            <div class="offer-model" style="text-decoration:line-through;color:#8a94a0;">BMW X1 xDrive25e M Sport</div>
-            <div class="offer-spec">Williams F1 Ceramic included · Sapphire Black or Portimao Blue · 6,000 miles p.a.</div>
-            <div class="offer-figures">
-              <div class="offer-fig"><div class="offer-fig-val" style="color:#8a94a0;">£479</div><div class="offer-fig-lbl">Per month</div></div>
-              <div class="offer-fig"><div class="offer-fig-val" style="color:#8a94a0;">£1,499</div><div class="offer-fig-lbl">Initial rental</div></div>
-            </div>
-            <div class="offer-apr">This car has been sold. Ask Dan about the next X1.</div>
-            <a class="offer-cta" href="x1-offer.html" style="background:#5f6b7c;">Notify me when the next one arrives</a>
-          </div>
-
-          <div class="offer-card" style="border-color:rgba(16,21,29,.15);background:rgba(16,21,29,.03);grid-column:1/-1;opacity:.7;">
-            <div class="sold-ribbon">SOLD</div>
-            <div class="offer-badge" style="color:#8a94a0;">No longer available</div>
-            <div class="offer-model" style="text-decoration:line-through;color:#8a94a0;">BMW iX3 50 xDrive M Sport Pro</div>
-            <div class="offer-spec">Black Sapphire · Adelaide Grey Individual Leather · 22&rdquo; M alloys · 452mi range · AWD · 469hp · Technology Plus Pack</div>
-            <div class="offer-figures">
-              <div class="offer-fig"><div class="offer-fig-val" style="color:#8a94a0;">£1,066.81</div><div class="offer-fig-lbl">Per month PCP</div></div>
-              <div class="offer-fig"><div class="offer-fig-val" style="color:#8a94a0;">£72,855</div><div class="offer-fig-lbl">OTR price</div></div>
-            </div>
-            <div class="offer-apr">This car has been sold. Ask Dan about the next iX3.</div>
-            <a class="offer-cta" href="ix3-offer.html" style="background:#5f6b7c;">Notify me when the next one arrives</a>
-          </div>
-
-        </div>
-        <p style="font-size:.78rem;color:rgba(255,255,255,.65);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:11px 14px;margin-top:18px;line-height:1.55;">ℹ️ Prices shown exclude our BMW Protection Package. Ask Dan about adding this to your quotation - he can provide a combined figure.</p>
-        <p class="offers-legal">Finance subject to status. Available to UK residents aged 18 and over. Stephen James (Automotive) Ltd, trading as Hedin Automotive (BMW Ruxley), is an Appointed Representative of ITC Compliance Limited, which is authorised and regulated by the Financial Conduct Authority (Firm Reference No. 313486). Hedin Automotive (FRN 738497) is a credit broker, not a lender. BMW Financial Services (GB) Limited (FCA No. 312705) is the lender. All three offers shown are Personal Contract Hire (PCH), not consumer credit; no APR applies to PCH agreements. You do not own the vehicle and there is no option to purchase at the end of a PCH agreement. BMW 1 Series representative example: BMW 120 M Sport. Initial rental £389, 47 monthly rentals of £389, total amount payable £18,672, 48 month term, 6,000 miles per annum. Road fund licence included. BMW 2 Series Gran Coupé representative example: initial rental £399, 47 monthly rentals of £399, total amount payable £19,152, 48 month term, 6,000 miles per annum. BMW X1 xDrive25e M Sport representative example: initial rental £1,499, 47 monthly rentals of £479, total amount payable £24,012, 48 month term, 6,000 miles per annum. Excess mileage charges apply on all agreements. Prices and availability correct at date of publication and may be withdrawn or changed without notice. Written quotations available on request.</p>
-      </div>
-    </section>
-
-    <!-- WHY DAN -->
-    <section class="section">
-      <div class="section-head reveal">
-        <div class="section-kicker">Why do this with Dan and the team?</div>
-        <h2>Forget Car Pow. Forget Auto Fader.<br>This is buying with people who care.</h2>
-      </div>
-      <div class="why-grid">
-        <div class="why-card reveal">
-          <h3>Prepared, not pitched</h3>
-          <p>Everything you share shapes the first call. No scripts, no "let me check with my manager" theatre. Just options that fit what you told me.</p>
-        </div>
-        <div class="why-card reveal">
-          <h3>Numbers that survive daylight</h3>
-          <p>Deposit, monthlies, part exchange. I'd rather give you a realistic figure you can plan around than a headline that falls apart later.</p>
-        </div>
-        <div class="why-card reveal">
-          <h3>One name, one number</h3>
-          <p>From first message to handover and beyond, you deal with me. If something's not right after you collect, you call me, not a helpline.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- TESTIMONIALS -->
-    <section class="section">
-      <div class="section-head reveal">
-        <div class="section-kicker">What customers say</div>
-        <h2>Straight from the people<br>who've done it.</h2>
-      </div>
-      <div class="testimonial-grid">
-        <div class="testimonial-card reveal">
-          <div class="testimonial-stars">★★★★★</div>
-          <p class="testimonial-quote">"The whole process from test drive through to purchase and handover was amazingly smooth and well executed. Dan and the team were extremely supportive, answered every question, and made the entire experience very satisfying."</p>
-          <div class="testimonial-attr">Verified customer</div>
-        </div>
-        <div class="testimonial-card reveal">
-          <div class="testimonial-stars">★★★★★</div>
-          <p class="testimonial-quote">"An excellent experience purchasing my BMW at Hedin Ruxley. Dan was very professional, knowledgeable and helpful when placing my order, explaining everything clearly and thoroughly."</p>
-          <div class="testimonial-attr">Verified customer</div>
-        </div>
-        <div class="testimonial-card reveal">
-          <div class="testimonial-stars">★★★★★</div>
-          <p class="testimonial-quote">"A first class buying experience from start to finish. Communication was excellent and Dan made the whole process straightforward and enjoyable."</p>
-          <div class="testimonial-attr">Verified customer</div>
-        </div>
-        <div class="testimonial-card reveal">
-          <div class="testimonial-stars">★★★★★</div>
-          <p class="testimonial-quote">"Everything is going great and the car is driving brilliantly. I am still loving it and have had many compliments on it. Thank you again to Dan for all the help."</p>
-          <div class="testimonial-attr">Verified customer</div>
-        </div>
-      </div>
-    </section>
-
-  </div><!-- end .page block 1 -->
-
-
-  <!-- ── CINEMATIC DIVIDER 1 ── full bleed -->
-  <section class="cine-divider" aria-hidden="true">
-    <video autoplay muted loop playsinline poster="vid-hero-poster.jpg" class="cine-video">
-      <source src="vid-hero.mp4" type="video/mp4"/>
-    </video>
-    <div class="cine-overlay"></div>
-    <div class="cine-content">
-      <div class="page">
-        <p class="cine-kicker">Hedin Ruxley · South East</p>
-        <h2 class="cine-headline">See it. Feel it.<br>Drive it.</h2>
+  <!-- THE PROMISE -->
+  <section class="band" aria-label="What working with Dan looks like">
+    <div class="wrap wrap-narrow">
+      <div class="prose reveal">
+        <span class="plabel accent">The promise</span>
+        <h2>One name you know.<br/>A proper team behind it.</h2>
+        <hr class="rule"/>
+        <p class="lede">When you buy a BMW through me, I am your point of contact. Not a rotating cast, not a shared inbox - me.</p>
+        <p>I will not pretend I do everything singlehandedly, because that would not be true and it would not be better. Behind me at Ruxley there is a handover team who prepare your car properly, a service department who look after it for years afterwards, and managers who back me when I need an answer quickly. That is what a well-resourced dealership is for.</p>
+        <p>What I promise is simpler, and I think more valuable: the thread never gets dropped. You always know who to speak to, your questions come to someone who knows your whole story, and nothing gets passed around until it goes quiet. From first message to long after handover, that person is me.</p>
+        <p>No scripts. No pressure. Plain information, handed over clearly, so you can make your own call.</p>
       </div>
     </div>
   </section>
 
-
-  <!-- ── CONSTRAINED BLOCK 2: Model Spotlight + Electric ── -->
-  <div class="page">
-
-    <!-- ELECTRIC FEATURE -->
-    <section class="section" id="electric" style="padding-top:8px">
-      <div class="ev-band reveal">
-        <div class="ev-band-media"><img src="photo04.jpg" alt="BMW electric display, Where to next" loading="lazy"/></div>
-        <div class="ev-band-body">
-          <div class="section-kicker" style="color:#7fb2ff">Electric, without the lecture</div>
-          <h2 style="color:#fff">I made the switch myself.<br>I know the questions.</h2>
-          <p>Range on a cold motorway. Charging without a driveway. What it really does to your monthly costs. I drive electric every day, so you get answers from experience, not a brochure. Run the savings calculator and see if the numbers work for you.</p>
-          <ul class="ev-points">
-            <li>⚡ Real-world running cost calculator</li>
-            <li>🔌 Honest answers on home &amp; public charging</li>
-            <li>🚗 Fully electric and plug-in hybrid options</li>
-          </ul>
-          <div class="btn-row">
-            <a class="btn-hero" href="EV.html">Explore electric with Dan &rarr;</a>
-            <a class="btn-ghost" href="ev-step1.html" style="background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.2);">Skip to the EV questionnaire</a>
-          </div>
+  <!-- PERSONAL CREDIBILITY -->
+  <section class="band band-raised" aria-label="About Dan">
+    <div class="wrap">
+      <div class="split wide-text">
+        <div class="prose reveal">
+          <span class="plabel accent">A little about me</span>
+          <h2>Cars are not just the day job.</h2>
+          <hr class="rule"/>
+          <p>I have been around cars my whole life. Weekends have meant motorsport and autotesting - the kind of driving that teaches you what a car is actually doing underneath you, and what separates a good one from a great one. You cannot fake that interest for forty hours a week; customers can always tell.</p>
+          <p>And I drive electric every day. Not as a company statement - as my own car, on my own drive, through my own winters. So when you ask about real-world range, or charging without a driveway, or what happens to the sums after four years, you get an answer from experience rather than a brochure.</p>
+          <p>None of that makes me a financial adviser, and I will never dress guidance up as advice. It just means that when I offer a view, it is an informed one - and it is offered, never imposed.</p>
+          <a class="btn-quiet mt-24" href="how-i-work.html" style="display:inline-block">How I work, in full</a>
         </div>
-      </div>
-    </section>
-
-  </div><!-- end .page block 2 -->
-
-
-  <!-- ── CINEMATIC DIVIDER 2 ── full bleed -->
-  <section class="cine-divider" aria-hidden="true">
-    <video autoplay muted loop playsinline poster="vid-hero-poster.jpg" class="cine-video">
-      <source src="vid-hero.mp4" type="video/mp4"/>
-    </video>
-    <div class="cine-overlay"></div>
-    <div class="cine-content">
-      <div class="page">
-        <p class="cine-kicker">Dan's your main contact. Brilliant team around him. No queue.</p>
-        <h2 class="cine-headline">Your BMW is out there.<br>Let's go find it.</h2>
-        <a class="btn-hero" href="step1.html" style="margin-top:8px;display:inline-block">Start in 2 minutes &rarr;</a>
+        <figure class="split-media reveal">
+          <img src="dan.jpg" alt="Dan Cane at the Hedin Ruxley showroom" class="portrait-treat" style="object-position:center 20%"/>
+          <figcaption>Dan Cane, Hedin Ruxley</figcaption>
+        </figure>
       </div>
     </div>
   </section>
 
+  <!-- DOORWAYS -->
+  <section class="band" id="doorways" aria-label="Where to start">
+    <div class="wrap">
+      <div class="reveal">
+        <span class="plabel accent">Where would you like to start?</span>
+        <h2>Four doorways. No wrong one.</h2>
+        <p class="measure" style="margin-bottom:clamp(36px,6vw,56px)">Each of these takes a few unhurried minutes, and everything you share comes straight to me. Nothing is submitted until you choose to send it.</p>
+      </div>
+      <div class="doorways reveal">
+        <a class="doorway" href="step1.html">
+          <div class="doorway-row">
+            <span class="doorway-num">01</span>
+            <div class="doorway-body">
+              <h3>Find my BMW</h3>
+              <p>Tell me how you live and what you need from a car, and I will do the looking. A short brief, set to your pace.</p>
+            </div>
+            <span class="doorway-go">Begin</span>
+          </div>
+        </a>
+        <a class="doorway" href="EV.html">
+          <div class="doorway-row">
+            <span class="doorway-num">02</span>
+            <div class="doorway-body">
+              <h3>Electric Daily</h3>
+              <p>I made the switch myself. The honest picture on running costs, charging and everyday life with an electric BMW.</p>
+            </div>
+            <span class="doorway-go">Read</span>
+          </div>
+        </a>
+        <a class="doorway" href="appraisal.html">
+          <div class="doorway-row">
+            <span class="doorway-num">03</span>
+            <div class="doorway-body">
+              <h3>Value your car</h3>
+              <p>Begin a conversation about the car you have now. A realistic view from someone who will stand behind the figure.</p>
+            </div>
+            <span class="doorway-go">Start</span>
+          </div>
+        </a>
+        <a class="doorway" href="service.html">
+          <div class="doorway-row">
+            <span class="doorway-num">04</span>
+            <div class="doorway-body">
+              <h3>In for service?</h3>
+              <p>While your car is with us, it is a natural moment for a quiet word about what comes next. Only if you would like one.</p>
+            </div>
+            <span class="doorway-go">More</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
 
-  <!-- ── CONSTRAINED BLOCK 3: Protection → Instagram ── -->
-  <div class="page">
-
-    <!-- PROTECTION PRODUCTS -->
-    <section class="section" id="protect">
-      <div class="section-head reveal">
-        <div class="section-kicker">After you buy</div>
-        <h2>Protect it like you mean it.</h2>
-        <p class="step-desc" style="margin-bottom:0">These are the official Hedin Automotive protection products available on your BMW. I'll explain what each one actually covers, and just as honestly when you don't need it. Links go to Hedin's own product pages.</p>
-      </div>
-      <div class="product-grid">
-        <a class="product-card reveal" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/asset-protection" target="_blank" rel="noopener">
-          <span class="product-ic">🛡️</span>
-          <h3>GAP / Asset Protection</h3>
-          <p>If your BMW is written off or stolen, your insurer pays market value, which is often far less than you paid or owe. This covers the shortfall.</p>
-          <span class="product-go">Hedin product page ↗</span>
-        </a>
-        <a class="product-card reveal" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/tyre-and-alloy-wheel-cover" target="_blank" rel="noopener">
-          <span class="product-ic">🛞</span>
-          <h3>Tyre &amp; Alloy Wheel Cover</h3>
-          <p>Potholes, kerbs and punctures happen. Covers repair or replacement of damaged tyres and alloys so one bad pothole doesn't cost you hundreds.</p>
-          <span class="product-go">Hedin product page ↗</span>
-        </a>
-        <a class="product-card reveal" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/club-hedincare-cosmetic-repair" target="_blank" rel="noopener">
-          <span class="product-ic">✨</span>
-          <h3>Cosmetic (SMART) Repair</h3>
-          <p>Club HedinCare covers the minor scuffs, scrapes and car-park dings of everyday life, so your BMW keeps looking the way it did on day one.</p>
-          <span class="product-go">Hedin product page ↗</span>
-        </a>
-        <a class="product-card reveal" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/williams-racing" target="_blank" rel="noopener">
-          <span class="product-ic">💎</span>
-          <h3>Williams Racing Paint Protection</h3>
-          <p>Ceramic-grade interior and exterior protection against the elements and road grime, applied before handover. Easier cleaning, better resale.</p>
-          <span class="product-go">Hedin product page ↗</span>
-        </a>
-        <a class="product-card reveal" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/hedin-automotive-extended-warranty" target="_blank" rel="noopener">
-          <span class="product-ic">🔧</span>
-          <h3>Extended Warranty</h3>
-          <p>Worry-free driving beyond the manufacturer warranty: covered repairs paid by the policy, with roadside assistance included.</p>
-          <span class="product-go">Hedin product page ↗</span>
-        </a>
-        <a class="product-card product-card-cta reveal" href="step1.html">
-          <span class="product-ic">💬</span>
-          <h3>Not sure what's worth it?</h3>
-          <p>Tell me how you use the car and I'll tell you which of these genuinely earn their keep for you, and which to skip.</p>
-          <span class="product-go">Ask Dan →</span>
-        </a>
-      </div>
-    </section>
-
-    <!-- QUOTE BAND -->
-    <section class="section">
-      <div class="quote-band reveal">
-        <img src="dan.jpg" alt="Dan"/>
-        <blockquote>
-          "My goal is simple: everyone who fills this in walks away with a genuine BMW offer that actually works for them. If the numbers don't make sense for you, I'll say so."
-          <cite>Dan, BMW Sales Executive at Hedin Ruxley</cite>
-        </blockquote>
-      </div>
-    </section>
-
-    <!-- SHOWROOM STRIP -->
-    <section class="section reveal" style="padding-top:0">
-      <div class="section-head">
-        <div class="section-kicker">The showroom</div>
-        <h2>Come and see it in the metal.</h2>
-      </div>
-      <div class="gallery-row">
-        <div class="gallery-thumb"><img src="photo05.jpg" alt="Showroom view" loading="lazy"/></div>
-        <div class="gallery-thumb"><img src="photo03.jpg" alt="New models on display" loading="lazy"/></div>
-        <div class="gallery-thumb"><img src="photo07.jpg" alt="Customer lounge" loading="lazy"/></div>
-      </div>
-      <div class="btn-row">
-        <a class="btn" href="step1.html">Find my BMW &rarr;</a>
-        <a class="btn-ghost" href="refer.html">Know someone who'd love one? Refer them</a>
-      </div>
-    </section>
-
-    <!-- INSTAGRAM -->
-    <section class="section" style="padding-bottom:72px">
-      <div class="ig-band reveal">
-        <div class="ig-band-body">
-          <svg class="ig-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-          <div class="ig-handle">@dan_sells_bmw</div>
-          <p class="ig-desc">New arrivals, handovers and behind-the-scenes at Hedin Ruxley. Follow the journey.</p>
-          <a class="ig-cta" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Follow on Instagram →</a>
+  <!-- TESTIMONIALS -->
+  <section class="band band-raised" aria-label="What customers say">
+    <div class="wrap wrap-narrow">
+      <span class="plabel accent reveal">In their words</span>
+      <div class="quote-list mt-40">
+        <div class="quote-block reveal">
+          <blockquote>&ldquo;The whole process from test drive through to purchase and handover was amazingly smooth and well executed. Dan and the team were extremely supportive, answered every question, and made the entire experience very satisfying.&rdquo;</blockquote>
+          <cite>Verified customer</cite>
         </div>
-        <div class="ig-feed">
-          <a class="ig-thumb" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="View on Instagram"><img src="photo07.jpg" alt="Hedin Ruxley showroom" loading="lazy"/></a>
-          <a class="ig-thumb" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="View on Instagram"><img src="photo03.jpg" alt="New BMWs at Hedin Ruxley" loading="lazy"/></a>
-          <a class="ig-thumb" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="View on Instagram"><img src="photo06.jpg" alt="BMW showroom interior" loading="lazy"/></a>
+        <div class="quote-block reveal">
+          <blockquote>&ldquo;An excellent experience purchasing my BMW at Hedin Ruxley. Dan was very professional, knowledgeable and helpful when placing my order, explaining everything clearly and thoroughly.&rdquo;</blockquote>
+          <cite>Verified customer</cite>
+        </div>
+        <div class="quote-block reveal">
+          <blockquote>&ldquo;Everything is going great and the car is driving brilliantly. I am still loving it and have had many compliments on it. Thank you again to Dan for all the help.&rdquo;</blockquote>
+          <cite>Verified customer</cite>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-  </div><!-- end .page block 3 -->
+  <!-- PRACTICAL MATTERS -->
+  <section class="band" aria-label="Practical pages">
+    <div class="wrap">
+      <div class="reveal">
+        <span class="plabel accent">When you want the numbers</span>
+        <h2>The practical shelf.</h2>
+        <p class="measure" style="margin-bottom:clamp(32px,5vw,48px)">Offers and stock live on their own pages, with the full figures and the full terms - there when you want them, never shouted at you.</p>
+      </div>
+      <div class="practical reveal">
+        <a href="current-opportunities.html">
+          <h3>Current Opportunities</h3>
+          <p>The new-car offers I currently have access to, laid out plainly with every figure and condition in view.</p>
+        </a>
+        <a href="offers.html">
+          <h3>Available Now</h3>
+          <p>A hand-picked selection from the approved used BMWs on the Ruxley forecourt this week.</p>
+        </a>
+      </div>
+      <p class="prose-note mt-40 reveal">Also here when you need them: <a href="guides.html" style="color:var(--body-c)">plain-English finance guides</a>, <a href="refer.html" style="color:var(--body-c)">the referral thank-you</a>, and <a href="how-i-work.html" style="color:var(--body-c)">the long version of how I work</a>.</p>
+    </div>
+  </section>
 
 </main>
 
-<section style="background:#f5f6f8;border-top:1px solid rgba(16,21,29,.09);padding:48px 24px 40px;">
-  <div style="max-width:860px;margin:0 auto;">
-    <h3 style="font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5f6b7c;margin:0 0 22px;">Legal &amp; Financial Information</h3>
-
-    <div style="display:grid;gap:22px;">
-
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">Website Independence</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">dan-sells.co.uk is the personal website of Dan Cane, a Sales Executive employed at Hedin Automotive Group (BMW Ruxley). This website is operated entirely independently and does not represent, and should not be construed as representing, the views, policies, opinions, or positions of BMW AG, BMW (UK) Limited, Hedin Automotive Group, or any associated or affiliated entity. All content is created and published at the sole discretion of the individual named above. BMW&reg;, the BMW roundel, and all associated marks and intellectual property are registered trademarks of BMW AG and are referenced solely for the purpose of identifying the products and services discussed.</p>
-      </div>
-
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">Credit Broking - Important Information</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Hedin Automotive Group acts as a credit broker and not a lender. Finance introductions for new BMW vehicles are made primarily through BMW Financial Services, a trading name of BMW Financial Services (GB) Limited, which is authorised and regulated by the Financial Conduct Authority. For used vehicle financing, a panel of FCA-authorised lenders is available to assist customers across a broad range of credit profiles and personal circumstances. Hedin Automotive Group may receive a commission or other remuneration from lenders in connection with the introduction of finance products; the existence of any such arrangement does not affect the interest rate or terms offered to you. All finance products are offered subject to status, individual credit assessment, and affordability. Finance approval is not guaranteed and is subject to the lending criteria of the relevant lender. Rates and products are subject to change without notice.</p>
-      </div>
-
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">No Financial Advice</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Nothing published on this website, and nothing communicated through any associated questionnaire, form, or correspondence, constitutes regulated financial advice, a personal recommendation, or a commitment to provide any particular finance product or arrangement. Dan Cane is not a financial adviser, and no content on this website should be treated as a substitute for independent financial guidance. Any budget figures, estimated monthly payments, deposit amounts, or indicative finance illustrations discussed or gathered through this website are provided for the sole purpose of facilitating a preliminary and informal sales conversation. They are illustrative in nature, are not binding in any form, and are subject to formal credit assessment, individual circumstances, and lender approval. If you are uncertain whether a particular financial product or commitment is appropriate for your personal circumstances, you should seek guidance from an independent financial adviser who is authorised and regulated by the Financial Conduct Authority.</p>
-      </div>
-
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">Information Collection &amp; Use</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Personal information submitted through this website is collected solely for the purpose of enabling Dan Cane to prepare a tailored and informed response to your vehicle enquiry. Information is handled in accordance with applicable UK data protection legislation, including the UK GDPR. Your data is not sold, shared with unauthorised third parties, or used for any purpose beyond fulfilling the specific enquiry you have submitted.</p>
-      </div>
-
-      <div>
-        <p style="font-size:.78rem;font-weight:700;color:#2d3748;margin:0 0 5px;">General</p>
-        <p style="font-size:.76rem;color:#5f6b7c;line-height:1.7;margin:0;">Vehicle specifications, availability, imagery, and pricing information featured on this website are provided in good faith and are correct at the time of publication, but are subject to change without notice. All offers are subject to availability. Errors and omissions excepted. This website is intended for residents of the United Kingdom only.</p>
-      </div>
-
+<!-- chrome:footer2 -->
+<section class="ph-contact" id="contact">
+  <div class="wrap">
+    <span class="plabel accent">Talk to Dan</span>
+    <h2>One conversation, whenever you are ready.</h2>
+    <p class="measure">No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.</p>
+    <div class="contact-rows">
+      <a class="contact-row" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">
+        <span class="cr-label">WhatsApp</span>
+        <span class="cr-value">Message me directly</span>
+      </a>
+      <a class="contact-row" href="mailto:daniel.cane@hedinautomotive.co.uk">
+        <span class="cr-label">Email</span>
+        <span class="cr-value">daniel.cane@hedinautomotive.co.uk</span>
+      </a>
+      <a class="contact-row" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
+        <span class="cr-label">In person</span>
+        <span class="cr-value">Book time with me at Ruxley</span>
+      </a>
+      <a class="contact-row" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">
+        <span class="cr-label">Instagram</span>
+        <span class="cr-value">@dan_sells_bmw</span>
+      </a>
     </div>
   </div>
 </section>
 
-<!-- chrome:footer -->
-<footer class="site-footer">
-  <div class="footer-inner">
-    <div>
-      <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
-      <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
-      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+<footer class="ph-footer">
+  <div class="wrap">
+    <div class="ph-footer-grid">
+      <div>
+        <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+        <p class="ph-footer-blurb">BMW buying with Dan Cane and the team at Hedin Ruxley, South East.</p>
+        <p class="ph-footer-blurb">Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+      </div>
+      <div class="ph-footer-col">
+        <h4>Find your way</h4>
+        <a href="how-i-work.html">How I work</a>
+        <a href="step1.html">Find my BMW</a>
+        <a href="EV.html">Electric Daily</a>
+        <a href="appraisal.html">Value your car</a>
+        <a href="service.html">In for service</a>
+        <a href="current-opportunities.html">Current Opportunities</a>
+        <a href="offers.html">Available Now</a>
+      </div>
+      <div class="ph-footer-col">
+        <h4>More</h4>
+        <a href="guides.html">Guides</a>
+        <a href="refer.html">Refer a friend</a>
+        <a href="accessories.html">BMW Accessories</a>
+        <a href="bmw-sidcup.html">BMW Sidcup</a>
+        <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+        <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+        <a href="terms.html">Terms &amp; Conditions</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
     </div>
-    <nav aria-label="Footer">
-      <a href="step1.html">Find my BMW</a>
-      <a href="EV.html">Electric BMWs</a>
-      <a href="index.html#offers">New Car Offers</a>
-      <a href="offers.html">Hot Used Cars</a>
-      <a href="appraisal.html">Value my car</a>
-      <a href="service.html">Car in for service?</a>
-      <a href="accessories.html">BMW Accessories</a>
-      <a href="refer.html">Refer a friend</a>
-      <a href="guides.html">Guides</a>
-      <a href="bmw-sidcup.html">BMW Sidcup</a>
-      <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
-      <a href="privacy.html">Privacy Policy</a>
-    </nav>
+    <p class="ph-footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
   </div>
-  <p class="footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
 </footer>
-<!-- /chrome:footer -->
-
-<a class="wa-float" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20out%20more%20about%20a%20new%20BMW" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp">
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-  <span>Chat with Dan</span>
-</a>
 
 <script>
-// Header scroll transparency
-const hdr=document.getElementById('siteHeader');
-window.addEventListener('scroll',()=>{hdr.classList.toggle('scrolled',window.scrollY>80);},{passive:true});
-
-// Nav drawer
-function openDrawer(){
-  document.getElementById('navDrawer').classList.add('open');
-  document.getElementById('navOverlay').classList.add('open');
-  document.getElementById('navToggle').setAttribute('aria-expanded','true');
-  document.getElementById('navDrawer').removeAttribute('aria-hidden');
-  document.body.style.overflow='hidden';
-  var sh=document.querySelector('[aria-label="Scroll down"]');
-  if(sh){sh.style.opacity='0';sh.style.pointerEvents='none';}
-}
-function closeDrawer(){
-  document.getElementById('navDrawer').classList.remove('open');
-  document.getElementById('navOverlay').classList.remove('open');
-  document.getElementById('navToggle').setAttribute('aria-expanded','false');
-  document.getElementById('navDrawer').setAttribute('aria-hidden','true');
-  document.body.style.overflow='';
-  var sh=document.querySelector('[aria-label="Scroll down"]');
-  if(sh){sh.style.opacity='';sh.style.pointerEvents='';}
-}
-function scrollToSection(id){
-  closeDrawer();
-  setTimeout(function(){
-    var el=document.getElementById(id);
-    if(el) el.scrollIntoView({behavior:'smooth'});
-  },50);
-}
-
-// Hero video pause/play
-function toggleHeroVid(){
-  const vid=document.getElementById('heroVid');
-  const section=document.getElementById('heroSection');
-  if(vid.paused){vid.play();section.classList.remove('vid-paused');document.getElementById('heroPauseBtn').setAttribute('aria-label','Pause video');}
-  else{vid.pause();section.classList.add('vid-paused');document.getElementById('heroPauseBtn').setAttribute('aria-label','Play video');}
-}
-
-// Scroll reveal
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-</script>
-<!-- OFFER INTEREST MODAL -->
-<div class="offer-modal-bg" id="offerModal" onclick="if(event.target===this)closeOfferModal()">
-  <div class="offer-modal">
-    <button class="offer-modal-close" onclick="closeOfferModal()" aria-label="Close">&#x2715;</button>
-    <div id="omForm">
-      <h3 id="omTitle">Register your interest</h3>
-      <p class="om-sub" id="omSub">Dan will be in touch to confirm availability and arrange a test drive or quote.</p>
-      <div class="om-field"><label>Full name *</label><input id="omName" type="text" placeholder="Your name"/></div>
-      <div class="om-field"><label>Mobile *</label><input id="omPhone" type="tel" placeholder="07..."/></div>
-      <div class="om-field"><label>Email *</label><input id="omEmail" type="email" placeholder="you@example.com"/></div>
-      <button class="btn" onclick="submitOfferInterest()" style="width:100%;margin-top:4px;">Send to Dan &rarr;</button>
-      <p class="om-legal">By submitting you agree Dan may contact you about this offer. Hedin Automotive Ltd is a credit broker, not a lender. Finance subject to status. 18s and over only.</p>
-    </div>
-    <div class="om-success" id="omSuccess">
-      <p>Done - Dan has your details. ✓</p>
-      <span>He will be in touch shortly to confirm availability and next steps.</span>
-    </div>
-  </div>
-</div>
-<script>
-var _offerName='', _offerDetails='';
-function openOfferModal(name, details){
-  _offerName=name; _offerDetails=details;
-  document.getElementById('omTitle').textContent='Register interest - '+name;
-  document.getElementById('omForm').style.display='block';
-  document.getElementById('omSuccess').style.display='none';
-  document.getElementById('offerModal').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function closeOfferModal(){
-  document.getElementById('offerModal').classList.remove('open');
-  document.body.style.overflow='';
-}
-function submitOfferInterest(){
-  var n=document.getElementById('omName').value.trim();
-  var p=document.getElementById('omPhone').value.trim();
-  var e=document.getElementById('omEmail').value.trim();
-  if(!n||!p||!e){alert('Please fill in all three fields so Dan can get back to you.');return;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
-  var payload={
-    _subject:'Offer interest: '+_offerName+' - '+n,
-    name:n, phone:p, email:e,
-    offer:_offerName,
-    offer_details:_offerDetails,
-    replyto:e
+(function(){
+  var hdr=document.getElementById('phHeader');
+  if(hdr){window.addEventListener('scroll',function(){hdr.classList.toggle('scrolled',window.scrollY>60);},{passive:true});
+    if(window.scrollY>60)hdr.classList.add('scrolled');}
+  window.phOpenDrawer=function(){
+    document.getElementById('phDrawer').classList.add('open');
+    document.getElementById('phDrawer').removeAttribute('aria-hidden');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','true');
+    document.body.style.overflow='hidden';
   };
-  fetch('https://formspree.io/f/xqewleog',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify(payload)
-  }).catch(function(){}).finally(function(){
-    document.getElementById('omForm').style.display='none';
-    document.getElementById('omSuccess').style.display='block';
-  });
-}
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeOfferModal();closeDrawer();}});
+  window.phCloseDrawer=function(){
+    document.getElementById('phDrawer').classList.remove('open');
+    document.getElementById('phDrawer').setAttribute('aria-hidden','true');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','false');
+    document.body.style.overflow='';
+  };
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')window.phCloseDrawer();});
+  document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
 </script>
-<script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
-<script src="contact.js"></script>
+<!-- /chrome:footer2 -->
+
+<!-- chrome:legal2 -->
+<section class="legal-block">
+  <div class="wrap wrap-narrow">
+    <h3>Legal &amp; Financial Information</h3>
+    <h4>Website Independence</h4>
+    <p>dan-sells.co.uk is the personal website of Dan Cane, a Sales Executive employed at Hedin Automotive Group (BMW Ruxley). This website is operated entirely independently and does not represent, and should not be construed as representing, the views, policies, opinions, or positions of BMW AG, BMW (UK) Limited, Hedin Automotive Group, or any associated or affiliated entity. All content is created and published at the sole discretion of the individual named above. BMW&reg;, the BMW roundel, and all associated marks and intellectual property are registered trademarks of BMW AG and are referenced solely for the purpose of identifying the products and services discussed.</p>
+    <h4>Credit Broking - Important Information</h4>
+    <p>Hedin Automotive Group acts as a credit broker and not a lender. Finance introductions for new BMW vehicles are made primarily through BMW Financial Services, a trading name of BMW Financial Services (GB) Limited, which is authorised and regulated by the Financial Conduct Authority. For used vehicle financing, a panel of FCA-authorised lenders is available to assist customers across a broad range of credit profiles and personal circumstances. Hedin Automotive Group may receive a commission or other remuneration from lenders in connection with the introduction of finance products; the existence of any such arrangement does not affect the interest rate or terms offered to you. All finance products are offered subject to status, individual credit assessment, and affordability. Finance approval is not guaranteed and is subject to the lending criteria of the relevant lender. Rates and products are subject to change without notice.</p>
+    <h4>No Financial Advice</h4>
+    <p>Nothing published on this website, and nothing communicated through any associated questionnaire, form, or correspondence, constitutes regulated financial advice, a personal recommendation, or a commitment to provide any particular finance product or arrangement. Dan Cane is not a financial adviser, and no content on this website should be treated as a substitute for independent financial guidance. Any budget figures, estimated monthly payments, deposit amounts, or indicative finance illustrations discussed or gathered through this website are provided for the sole purpose of facilitating a preliminary and informal sales conversation. They are illustrative in nature, are not binding in any form, and are subject to formal credit assessment, individual circumstances, and lender approval. If you are uncertain whether a particular financial product or commitment is appropriate for your personal circumstances, you should seek guidance from an independent financial adviser who is authorised and regulated by the Financial Conduct Authority.</p>
+    <h4>Information Collection &amp; Use</h4>
+    <p>Personal information submitted through this website is collected solely for the purpose of enabling Dan Cane to prepare a tailored and informed response to your vehicle enquiry. Information is handled in accordance with applicable UK data protection legislation, including the UK GDPR. Your data is not sold, shared with unauthorised third parties, or used for any purpose beyond fulfilling the specific enquiry you have submitted.</p>
+    <h4>General</h4>
+    <p>Vehicle specifications, availability, imagery, and pricing information featured on this website are provided in good faith and are correct at the time of publication, but are subject to change without notice. All offers are subject to availability. Errors and omissions excepted. This website is intended for residents of the United Kingdom only.</p>
+  </div>
+</section>
+<!-- /chrome:legal2 -->
+
+<script>
+(function(){
+  var v=document.getElementById('heroVid'),b=document.getElementById('heroVidToggle');
+  if(v&&b){b.addEventListener('click',function(){
+    if(v.paused){v.play();b.textContent='Pause';b.setAttribute('aria-label','Pause background video');}
+    else{v.pause();b.textContent='Play';b.setAttribute('aria-label','Play background video');}
+  });}
+})();
+</script>
+<script src="disclaimer.js"></script>
 </body>
 </html>
