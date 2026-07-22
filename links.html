@@ -782,13 +782,14 @@ function emailRampLink() {
   if (!link) return;
   const f = rrFields();
   const when = f.day ? ' on ' + f.day : ' soon';
-  const subject = 'Your BMW is booked in with us - worth 20 seconds before you arrive';
+  const subject = 'Your BMW is booked in with us, worth 20 seconds before you arrive';
   const body =
     'Hi ' + (f.name || '[Name]') + ',\n\n' +
-    'Dan here, from the sales team at BMW Ruxley. I can see your BMW is booked in with our service team' + when + ' - which happens to be the perfect week to find out what it is actually worth.\n\n' +
-    'I have set up a personal page for you. Your reg is already filled in, it takes about 20 seconds, and there is a short voice note from me on there too:\n\n' +
+    'Dan here, from the sales team at BMW Ruxley. I can see your BMW is booked in with our service team' + when + ', which happens to be the perfect week to find out what it is actually worth.\n\n' +
+    'I have set up a personal page for you. Your reg is already filled in, it takes about 20 seconds, and there is a short voice note from me on there too.\n\n' +
+    'Your personalised link here:\n\n' +
     link + '\n\n' +
-    'If the timing is not right, no problem at all - it costs nothing to know where you stand.\n\n' +
+    'If the timing is not right, no problem at all. It costs nothing to know where you stand.\n\n' +
     'See you soon,\n\n' +
     'Dan\n' +
     'BMW Sales Executive, Hedin Ruxley\n' +
