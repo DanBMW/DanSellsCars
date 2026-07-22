@@ -272,6 +272,27 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
 
+    <!-- Customer Follow Up Email builder -->
+    <div class="widget-card">
+      <div class="widget-name">&#x1F4E7; Customer Follow Up Email <span class="tag tag-new">New</span></div>
+      <div class="widget-desc">Fill in the customer's details, pick how long it's been since collection, then Email opens a ready-to-send message with their name, model and a link to refer a friend all filled in.</div>
+      <input class="widget-input" id="fu-name" type="text" placeholder="Customer first name" autocomplete="off">
+      <input class="widget-input" id="fu-email" type="email" placeholder="Customer email address" autocomplete="off">
+      <input class="widget-input" id="fu-model" type="text" placeholder="Model e.g. 320i M Sport Touring" autocomplete="off">
+      <div class="widget-title" style="margin-bottom:8px;">Follow up duration</div>
+      <div class="chip-row" id="fu-chip-row">
+        <div class="chip" id="fu-chip-initial" onclick="selectFollowUp('initial')"><span class="chip-dot"></span>Initial (after collection)</div>
+        <div class="chip" id="fu-chip-2weeks" onclick="selectFollowUp('2weeks')"><span class="chip-dot"></span>2 Weeks</div>
+        <div class="chip" id="fu-chip-6months" onclick="selectFollowUp('6months')"><span class="chip-dot"></span>6 Months</div>
+        <div class="chip" id="fu-chip-12months" onclick="selectFollowUp('12months')"><span class="chip-dot"></span>12 Months</div>
+        <div class="chip" id="fu-chip-18months" onclick="selectFollowUp('18months')"><span class="chip-dot"></span>18 Months</div>
+        <div class="chip" id="fu-chip-24months" onclick="selectFollowUp('24months')"><span class="chip-dot"></span>24 Months+</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-open" onclick="emailFollowUp()">&#x2709; Email</button>
+      </div>
+    </div>
+
     <!-- Combined Signing Form -->
     <div class="widget-card">
       <div class="widget-name">&#x1F4CB; Combined Signing Form <span class="tag tag-dealer">Dealer Only</span></div>
@@ -974,27 +995,58 @@ const TEMPLATES = [
   { section:'C · Ownership & Brand Building', name:'10. Initial Follow Up (after collection)',
     note:'Combines the early check in: safer survey wording (reflects on Dan, raise any issue first) plus an open offer of a second handover to go over the car again. Deliberately does not name a day count, in case you send it a couple of days late.',
     subject:"How's the new BMW? Dan at BMW Ruxley",
-    body:'Hi [Name],\n\nThank you again for choosing me for your [Model], it was a genuine pleasure to sort it for you. I hope you are enjoying the car so far!\n\nJust checking in now you have had a little time with it. If any questions have popped up, I am here. And if you would like to come back in so I can walk you through anything again, the tech, the controls, anything at all, you can book a second handover at a time that suits you here: https://cal.eu/danbmwruxley/controls-refresh. No rush and no charge.\n\nYou will shortly receive a short survey from BMW about your experience. Although it comes from BMW, it reflects directly on me and how I looked after you, so your honest feedback really matters to me. If anything at all fell short of what you expected, I would love the chance to put it right before you fill it in, just reply here or WhatsApp me and I will sort it personally.\n\nOne last thing. If you know anyone thinking about a BMW, my referral programme thanks you with £250 of parts credit or £125 cash. All the details are at https://dan-sells.co.uk/refer.html.\n\nIf you are ever passing, pop in for a coffee, I am in Tuesday to Saturday.\n\nDan' },
+    body:'Hi [Name],\n\nThank you again for choosing me for your [Model], it was a genuine pleasure to sort it for you. I hope you are enjoying the car so far!\n\nJust checking in now you have had a little time with it. If any questions have popped up, I am here. And if you would like to come back in so I can walk you through anything again, the tech, the controls, anything at all, you can book a second handover at a time that suits you here: https://cal.eu/danbmwruxley/controls-refresh. No rush and no charge.\n\nYou will shortly receive a short survey from BMW about your experience. Although it comes from BMW, it reflects directly on me and how I looked after you, so your honest feedback really matters to me. If anything at all fell short of what you expected, I would love the chance to put it right before you fill it in, just reply here or WhatsApp me and I will sort it personally.\n\nOne last thing. If you know anyone thinking about a BMW, my referral programme thanks you with £250 of parts credit or £125 cash. Click here to refer a friend: https://dan-sells.co.uk/refer.html.\n\nIf you are ever passing, pop in for a coffee, I am in Tuesday to Saturday.\n\nDan' },
   { section:'C · Ownership & Brand Building', name:'11. Referral Ask (around 2 weeks after delivery)',
     subject:'A coffee and a thank you from BMW Ruxley',
-    body:'Hi [Name],\n\nI hope the [Model] is still putting a smile on your face 2 weeks in!\n\nQuick one from me. Most of my business comes from recommendations, so if a friend or family member is thinking about a BMW, I would love to look after them the way I looked after you. As a thank you, you would receive £250 of parts credit or £125 cash for anyone who goes ahead.\n\nAll the details are at https://dan-sells.co.uk/refer.html\n\nAnd the coffee offer stands, I am in Tuesday to Saturday.\n\nDan' },
+    body:'Hi [Name],\n\nI hope the [Model] is still putting a smile on your face 2 weeks in!\n\nQuick one from me. Most of my business comes from recommendations, so if a friend or family member is thinking about a BMW, I would love to look after them the way I looked after you. As a thank you, you would receive £250 of parts credit or £125 cash for anyone who goes ahead.\n\nClick here to refer a friend: https://dan-sells.co.uk/refer.html\n\nAnd the coffee offer stands, I am in Tuesday to Saturday.\n\nDan' },
   { section:'C · Ownership & Brand Building', name:'12. 6 Month Follow Up (controls & tech refresher)',
     note:'Friendly check in at 6 months. Invites them back for a no charge controls and tech refresher and mentions the referral programme. No survey, no valuation.',
     subject:'6 months in, how is the [Model]? Dan at BMW Ruxley',
-    body:'Hi [Name],\n\nHard to believe you have had the [Model] 6 months already! Just a friendly check in to see how you are getting on with it. I hope it is still putting a smile on your face.\n\nIf there is anything on the car you would like to get to know better, the tech, the driver assistance, or any features you have not quite got to grips with yet, you are very welcome to come back in for a relaxed controls and tech refresher. No charge and no rush, just grab a slot that suits you here: https://cal.eu/danbmwruxley/controls-refresh.\n\nAnd the referral programme is still going strong. If a friend or family member is thinking about a BMW, send them my way and you will receive £250 of parts credit or £125 cash as a thank you. Details at https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time, and the door is always open for a coffee.\n\nDan' },
+    body:'Hi [Name],\n\nHard to believe you have had the [Model] 6 months already! Just a friendly check in to see how you are getting on with it. I hope it is still putting a smile on your face.\n\nIf there is anything on the car you would like to get to know better, the tech, the driver assistance, or any features you have not quite got to grips with yet, you are very welcome to come back in for a relaxed controls and tech refresher. No charge and no rush, just grab a slot that suits you here: https://cal.eu/danbmwruxley/controls-refresh.\n\nAnd the referral programme is still going strong. If a friend or family member is thinking about a BMW, send them my way and you will receive £250 of parts credit or £125 cash as a thank you. Click here to refer a friend: https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time, and the door is always open for a coffee.\n\nDan' },
   { section:'C · Ownership & Brand Building', name:'13. 12 Month Follow Up',
     note:'Friendly 1 year check in with a referral reminder and an open door. No survey, no valuation before 24 months.',
     subject:'1 year with your [Model]! Dan at BMW Ruxley',
-    body:'Hi [Name],\n\nHard to believe it has been a whole year since you collected your [Model]! Thank you again for your business, I hope ownership has been everything you hoped for.\n\nNo agenda here, just checking in. If anything ever needs sorting, big or small, you know where I am. And if you fancy popping in to go over anything on the car again, I am always happy to help.\n\nThe referral programme is still going strong too. Send a friend or family member my way and you will receive £250 of parts credit or £125 cash as a thank you. All the details are at https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time.\n\nDan' },
+    body:'Hi [Name],\n\nHard to believe it has been a whole year since you collected your [Model]! Thank you again for your business, I hope ownership has been everything you hoped for.\n\nNo agenda here, just checking in. If anything ever needs sorting, big or small, you know where I am. And if you fancy popping in to go over anything on the car again, I am always happy to help.\n\nThe referral programme is still going strong too. Send a friend or family member my way and you will receive £250 of parts credit or £125 cash as a thank you. Click here to refer a friend: https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time.\n\nDan' },
   { section:'C · Ownership & Brand Building', name:'14. 18 Month Follow Up',
     note:'Gentle 18 month check in with a referral reminder and an open door. No survey, no valuation before 24 months.',
     subject:'Checking in from BMW Ruxley',
-    body:'Hi [Name],\n\nIt has been around 18 months since you collected your [Model], time really does fly! Just a quick note to see how you and the car are getting on. I hope it is still going strong for you.\n\nThere is nothing you need to do here, I just like to keep in touch with the people I have looked after. If anything ever comes up, or you would simply like to pop in for a coffee and a catch up, you are always welcome.\n\nAnd a gentle reminder that the referral programme is still running. Send someone my way and you will receive £250 of parts credit or £125 cash. Details at https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time.\n\nDan' },
+    body:'Hi [Name],\n\nIt has been around 18 months since you collected your [Model], time really does fly! Just a quick note to see how you and the car are getting on. I hope it is still going strong for you.\n\nThere is nothing you need to do here, I just like to keep in touch with the people I have looked after. If anything ever comes up, or you would simply like to pop in for a coffee and a catch up, you are always welcome.\n\nAnd a gentle reminder that the referral programme is still running. Send someone my way and you will receive £250 of parts credit or £125 cash. Click here to refer a friend: https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time.\n\nDan' },
   { section:'C · Ownership & Brand Building', name:'15. Later Follow Up with Valuation (24 months or more)',
     note:'Valuation can be introduced from 24 months onward.',
     subject:'2 years already! Dan at BMW Ruxley',
-    body:'Hi [Name],\n\nIt has been 2 years since you collected your [Model], time flies! Thank you again for your business, I hope the car is still making you smile.\n\nIf it is useful, I would be happy to give you a no obligation idea of what your car is worth at the moment. The used market has been strong and some owners are pleasantly surprised by the equity in their car. No pressure at all, just say the word if you are curious.\n\nAnd the referral programme is still running. Send someone my way and you will get £250 of parts credit or £125 cash. Details at https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time.\n\nDan' }
+    body:'Hi [Name],\n\nIt has been 2 years since you collected your [Model], time flies! Thank you again for your business, I hope the car is still making you smile.\n\nIf it is useful, I would be happy to give you a no obligation idea of what your car is worth at the moment. The used market has been strong and some owners are pleasantly surprised by the equity in their car. No pressure at all, just say the word if you are curious.\n\nAnd the referral programme is still running. Send someone my way and you will get £250 of parts credit or £125 cash. Click here to refer a friend: https://dan-sells.co.uk/refer.html.\n\nReply here or WhatsApp me on +44 7827 138197 any time.\n\nDan' }
 ];
+
+// ── Customer Follow Up Email ──
+const FOLLOWUP_DURATIONS = {
+  initial:   'Initial Follow Up',
+  '2weeks':  'Referral Ask',
+  '6months': '6 Month Follow Up',
+  '12months':'12 Month Follow Up',
+  '18months':'18 Month Follow Up',
+  '24months':'Later Follow Up with Valuation'
+};
+let fuChosen = null;
+
+function selectFollowUp(key) {
+  fuChosen = (fuChosen === key) ? null : key;
+  Object.keys(FOLLOWUP_DURATIONS).forEach(function(k) {
+    document.getElementById('fu-chip-' + k).classList.toggle('on-type', fuChosen === k);
+  });
+}
+
+function emailFollowUp() {
+  if (!fuChosen) { alert('Please choose a follow up duration.'); return; }
+  const t = TEMPLATES.find(function(tpl){ return tpl.name.indexOf(FOLLOWUP_DURATIONS[fuChosen]) !== -1; });
+  if (!t) { alert('Template not found.'); return; }
+  const name  = document.getElementById('fu-name').value.trim();
+  const email = document.getElementById('fu-email').value.trim();
+  const model = document.getElementById('fu-model').value.trim();
+  let subject = t.subject, body = t.body;
+  if (name)  { subject = subject.split('[Name]').join(name); body = body.split('[Name]').join(name); }
+  if (model) { subject = subject.split('[Model]').join(model); body = body.split('[Model]').join(model); }
+  window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+}
 
 function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
