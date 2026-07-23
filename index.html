@@ -265,10 +265,10 @@
         <span class="cr-label">WhatsApp</span>
         <span class="cr-value">Message me directly</span>
       </a>
-      <a class="contact-row" href="mailto:daniel.cane@hedinautomotive.co.uk">
+      <button type="button" class="contact-row" onclick="phOpenContact()">
         <span class="cr-label">Email</span>
-        <span class="cr-value">daniel.cane@hedinautomotive.co.uk</span>
-      </a>
+        <span class="cr-value">Send me a message</span>
+      </button>
       <a class="contact-row" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
         <span class="cr-label">In person</span>
         <span class="cr-value">Book time with me at Ruxley</span>
@@ -315,6 +315,26 @@
   </div>
 </footer>
 
+<div class="pmodal-bg" id="phContactModal" onclick="if(event.target===this)phCloseContact()">
+  <div class="pmodal">
+    <button class="pmodal-close" onclick="phCloseContact()" aria-label="Close">Close</button>
+    <div id="phcForm">
+      <h3>Send me a message</h3>
+      <p class="pm-sub">It comes straight to me and I will reply personally, usually the same day.</p>
+      <div class="pfield"><label>Your name</label><input id="phcName" type="text" autocomplete="name"/></div>
+      <div class="pfield"><label>Your email</label><input id="phcEmail" type="email" autocomplete="email"/></div>
+      <div class="pfield"><label>Phone (optional)</label><input id="phcPhone" type="tel" autocomplete="tel"/></div>
+      <div class="pfield"><label>Your message</label><textarea id="phcMsg" rows="4"></textarea></div>
+      <button class="btn-line" onclick="phSubmitContact()" style="width:100%;margin-top:6px">Send to Dan</button>
+      <p class="pm-legal">Your details are used only to reply to this enquiry. See the <a href="privacy.html" style="color:inherit">privacy policy</a>.</p>
+    </div>
+    <div class="pm-success" id="phcOk">
+      <p>Sent - thank you.</p>
+      <span>Your message is with me and I will come back to you personally.</span>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   var hdr=document.getElementById('phHeader');
@@ -332,7 +352,40 @@
     document.getElementById('phMenuBtn').setAttribute('aria-expanded','false');
     document.body.style.overflow='';
   };
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')window.phCloseDrawer();});
+  window.phOpenContact=function(preset){
+    document.getElementById('phcForm').style.display='block';
+    document.getElementById('phcOk').style.display='none';
+    if(preset)document.getElementById('phcMsg').value=preset;
+    document.getElementById('phContactModal').classList.add('open');
+    document.body.style.overflow='hidden';
+    document.getElementById('phcName').focus();
+  };
+  window.phCloseContact=function(){
+    document.getElementById('phContactModal').classList.remove('open');
+    document.body.style.overflow='';
+  };
+  window.phSubmitContact=function(){
+    var n=document.getElementById('phcName').value.trim();
+    var e=document.getElementById('phcEmail').value.trim();
+    var p=document.getElementById('phcPhone').value.trim();
+    var msg=document.getElementById('phcMsg').value.trim();
+    if(!n||!e||!msg){alert('Please add your name, email and a short message.');return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
+    fetch('https://formspree.io/f/xqewleog',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        _subject:'Website enquiry - '+n,
+        name:n, email:e, phone:p||'not given', message:msg,
+        source:(location&&location.pathname)||'website',
+        replyto:e
+      })
+    }).catch(function(){}).finally(function(){
+      document.getElementById('phcForm').style.display='none';
+      document.getElementById('phcOk').style.display='block';
+    });
+  };
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.phCloseDrawer();window.phCloseContact();}});
   document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
   document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});

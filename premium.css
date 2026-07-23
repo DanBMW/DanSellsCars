@@ -248,6 +248,7 @@ strong{color:var(--paper);font-weight:500}
 .contact-row .cr-label{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);flex-shrink:0;width:9em}
 .contact-row .cr-value{font-family:var(--serif);font-size:clamp(1rem,2.2vw,1.25rem);color:var(--paper);text-align:right;overflow-wrap:anywhere}
 .contact-row:hover .cr-value{color:#fff}
+button.contact-row{width:100%;background:none;border:none;border-bottom:1px solid var(--hairline);font:inherit;cursor:pointer;text-align:left}
 
 /* ---------- footer ---------- */
 .ph-footer{border-top:1px solid var(--hairline-soft);background:var(--ink-2);padding:clamp(48px,7vw,72px) 0 40px}
