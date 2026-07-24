@@ -343,7 +343,7 @@ var Scene = window.Scene = {};
     var seg = FE.MODELS[car.model].seg;
     var dull = d >= 60 && car.status === 'stock';
     var sp = carSprite(car.colour, seg, dull, !!car.isNew);
-    var w = TILE * 2.35, h = w * sp.dh / sp.dw;
+    var w = TILE * 2.02, h = w * sp.dh / sp.dw;
     // baseline sits a whisker below bay centre so the car fills the bay
     var bx = cx - w / 2, by = cy + TILE * 0.34 - h * (sp.base / sp.dh);
     ctx.drawImage(sp.cv, bx, by, w, h);
@@ -471,11 +471,18 @@ var Scene = window.Scene = {};
       return;
     }
     poly(ctx, b.poly);
+    // a faint filled pad under occupied bays so every car reads as one pitch
+    if (occupied) {
+      ctx.fillStyle = b.internal ? 'rgba(150,200,255,0.16)' : 'rgba(255,255,255,0.06)';
+      ctx.fill();
+    } else if (b.internal) {
+      ctx.fillStyle = 'rgba(140,190,255,0.10)'; ctx.fill();
+    }
     if (b.internal) {
-      ctx.strokeStyle = occupied ? 'rgba(200,225,255,0.25)' : 'rgba(200,225,255,0.7)';
+      ctx.strokeStyle = occupied ? 'rgba(200,225,255,0.4)' : 'rgba(200,225,255,0.7)';
       ctx.lineWidth = 1.6;
     } else {
-      ctx.strokeStyle = occupied ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.45)';
+      ctx.strokeStyle = occupied ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.45)';
       ctx.lineWidth = 1.8;
     }
     ctx.stroke();

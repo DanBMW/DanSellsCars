@@ -164,12 +164,14 @@ function endTutorial() {
 }
 
 /* ---------- main shell ---------- */
+var skipTickerStarted = false;
 function enterMain() {
   $('main').classList.remove('hidden');
   shownCash = G().cash;
   $('cash').textContent = M(Math.round(shownCash));
   renderAll();
   requestAnimationFrame(cashTick);
+  if (!skipTickerStarted) { skipTickerStarted = true; setInterval(skipTick, 1000); }
   if (G().dead) showGameOver();
 }
 
@@ -211,7 +213,11 @@ function cashTick() {
 
 function renderBanner() {
   var g = G(), h = '';
-  var skipBtn = '<button class="sec" onclick="UI.skipWeek()">Skip week ⏭</button>';
+  var remain = FE.skipRemainMs();
+  var onCd = remain > 0;
+  var skipBtn = onCd
+    ? '<button class="sec" disabled>Skip in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
+    : '<button class="sec" onclick="UI.skipWeek()">Skip week ⏭</button>';
   if (g.phase === 'auction') {
     h = '<div class="ph"><b>Block 1 — Auction</b><div>' + g.lots.length + ' lots in the lanes. They’re gone tomorrow.</div></div>' +
       '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button onclick="UI.openAuction()">Lanes</button>' +
@@ -224,13 +230,30 @@ function renderBanner() {
       skipBtn + '</div>';
   } else if (g.phase === 'office') {
     var ack = FE.needsAck().length;
-    h = '<div class="ph"><b>Block 3 — Office</b><div>Post, paperwork and decisions.' + (ack ? ' <span class="danger">' + ack + ' car(s) at 90+ days need acknowledging.</span>' : '') + '</div></div>' +
-      '<div style="display:flex;gap:6px"><button class="sec" onclick="UI.openOffice()">Desk</button>' +
-      '<button class="grn" onclick="UI.skipWeek()">Skip week ⏭</button></div>';
+    var officeSkip = onCd
+      ? '<button class="grn" disabled>Close in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
+      : '<button class="grn" onclick="UI.skipWeek()">Skip week ⏭</button>';
+    h = '<div class="ph"><b>Block 3 — Office</b><div>Post, paperwork and decisions.' + (ack ? ' <span class="danger">' + ack + ' car(s) at 90+ days need acknowledging.</span>' : '') + (onCd ? ' <span class="muted">Week closes when the timer’s up.</span>' : '') + '</div></div>' +
+      '<div style="display:flex;gap:6px"><button class="sec" onclick="UI.openOffice()">Desk</button>' + officeSkip + '</div>';
   } else if (g.phase === 'report') {
     h = '<div class="ph"><b>Week closed</b><div>Report filed.</div></div><button onclick="UI.startNext()">Start week ' + g.week + '</button>';
   }
   $('banner').innerHTML = h;
+}
+function fmtMs(ms) {
+  var s = Math.ceil(ms / 1000), m = Math.floor(s / 60);
+  s = s % 60;
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+// tick the skip countdown once a second; re-render the banner the moment it frees up
+function skipTick() {
+  if (!G() || $('overlay') === null) return;
+  var el = $('skipCountdown');
+  if (el) {
+    var remain = FE.skipRemainMs();
+    if (remain <= 0) renderBanner();
+    else el.textContent = fmtMs(remain);
+  }
 }
 
 /* ---------- tabs ---------- */
@@ -681,11 +704,79 @@ UI.nextEvent = function () {
   if (ev.kind === 'prep') return prepPopup(ev);
   if (ev.kind === 'prequal') return prequalPopup(ev);
   if (ev.kind === 'tradebuyer') return tradeBuyerPopup(ev);
+  if (ev.kind === 'privateseller') return privateSellerPopup(ev);
   if (ev.kind === 'offer') {
     if (ev.px && !ev.pxResolved) return pxPopup(ev);
     return offerPopup(ev);
   }
   FE.advanceEvent(); UI.nextEvent();
+};
+function privateSellerPopup(ev) {
+  var v = ev.pcar;
+  var estPrep = Math.round(FE.BRANDS[G().brand].prepPct * ev.asking * FE.COND[v.cond].prep);
+  var forecastGross = v.retail - ev.asking - estPrep;
+  var rl = ev.risk.light;
+  var riskLbl = rl === 'green' ? '🟢 Low risk' : rl === 'amber' ? '🟠 Some risk' : (ev.risk.flavour === 'gamble' ? '🔴 High risk / high reward' : '🔴 High risk — bad car');
+  var h = '<h3>Private seller on the phone</h3>' +
+    '<p class="kv">' + esc(ev.seller) + ' rang up — wants to sell you their car directly, no auction. <span class="warn">Uninspected, mind: five minutes on the drive, not a full check.</span></p>' +
+    '<div class="card"><b>' + esc(FE.carName(v)) + '</b><div class="kv">' + esc(FE.carDesc(v)) + ' · plate ' + v.plate + '</div>' +
+    '<div class="row" style="margin:6px 0"><span class="risk-chip ' + rl + '" onclick="UI.privateRiskInfo()">● ' + riskLbl + '</span></div>' +
+    '<div class="row kv"><span>Asking price</span><b style="font-size:1.1rem">' + M(ev.asking) + '</b></div>' +
+    '<div class="row kv"><span>Est retail</span><b>' + M(v.retail) + '</b></div>' +
+    '<div class="row kv"><span>Est. gross (before prep &amp; hold)</span><b class="' + (ev.estGross > 1200 ? 'good' : '') + '">' + M(ev.estGross) + '</b></div>' +
+    '<div class="row kv"><span>Est prep</span><b>' + M(estPrep) + '</b></div>' +
+    '<div class="row kv"><span>Forecast gross after prep</span><b class="' + (forecastGross < 0 ? 'danger' : forecastGross > 1000 ? 'good' : '') + '">' + M(forecastGross) + '</b></div>' +
+    '<div class="row kv"><span>Est days to sell</span><b>' + ev.estDays[0] + '–' + ev.estDays[1] + '</b></div>' +
+    '</div>' +
+    '<div class="btnrow">' +
+    '<button class="grn" onclick="UI.privateBuy()">Buy — ' + M(ev.asking) + '</button>' +
+    '<button onclick="UI.privateCounterUI()">Haggle</button>' +
+    '<button class="sec" onclick="UI.privateDecline()">Decline</button></div>';
+  UI.modal(h);
+}
+UI.privateRiskInfo = function () {
+  var ev = FE.currentEvent(); if (!ev || ev.kind !== 'privateseller') return;
+  var r = ev.risk;
+  var head = r.light === 'green' ? '🟢 Low risk' : r.light === 'amber' ? '🟠 Some risk' : r.flavour === 'gamble' ? '🔴 High risk, high reward' : '🔴 High risk — a bad car';
+  var h = '<h3>' + head + '</h3><p class="kv">What the light reads on this car:</p><ul class="risk-list">';
+  r.drivers.forEach(function (d) { h += '<li>' + esc(d) + '</li>'; });
+  h += '</ul><p class="kv muted small">Private cars carry a bit more hidden fault risk than auction stock — nobody’s been under it on a ramp.</p>' +
+    '<button class="ghost" onclick="UI.backToPrivate()">Back</button>';
+  UI.modal(h);
+};
+UI.backToPrivate = function () { privateSellerPopup(FE.currentEvent()); };
+UI.privateBuy = function () {
+  var ev = FE.currentEvent();
+  var r = FE.privateBuy(ev);
+  if (!r.ok) { toast(r.msg); return; }
+  UI.modal('<h3>Bought it</h3><p class="kv">The ' + esc(FE.carName(ev.pcar)) + ' is yours for ' + M(r.price) + '. It’s on the pitch — prep bill to follow.</p>' +
+    '<button onclick="UI.closeModal();FE.advanceEvent();UI.renderAll();UI.nextEvent()">Next</button>');
+};
+UI.privateCounterUI = function () {
+  var ev = FE.currentEvent();
+  var suggest = Math.round(ev.asking * 0.9 / 25) * 25;
+  UI.modal('<h3>Haggle</h3><p class="kv">They’re asking ' + M(ev.asking) + '.' + (ev.firm ? ' They sounded pretty firm.' : ' Worth a try.') + ' Lowball too hard and they’ll hang up.</p>' +
+    '<input type="number" id="privateOffer" value="' + suggest + '" step="25">' +
+    '<div class="btnrow"><button onclick="UI.privateCounterGo()">Make the offer</button><button class="ghost" onclick="UI.backToPrivate()">Back</button></div>');
+};
+UI.privateCounterGo = function () {
+  var ev = FE.currentEvent();
+  var v = parseInt($('privateOffer').value, 10) || ev.asking;
+  var r = FE.privateCounter(ev, v);
+  if (r.ok) {
+    UI.modal('<h3>' + (r.countered ? 'Haggled and bought' : 'Bought it') + '</h3><p class="kv">Got the ' + esc(FE.carName(ev.pcar)) + ' for ' + M(r.price) + '. On the pitch — prep to follow.</p>' +
+      '<button onclick="UI.closeModal();FE.advanceEvent();UI.renderAll();UI.nextEvent()">Next</button>');
+  } else if (r.walked) {
+    UI.modal('<h3>No deal</h3><p class="kv">' + esc(r.msg) + '</p>' +
+      '<button onclick="UI.closeModal();FE.advanceEvent();UI.renderAll();UI.nextEvent()">Next</button>');
+  } else {
+    toast(r.msg);
+  }
+};
+UI.privateDecline = function () {
+  var ev = FE.currentEvent();
+  FE.privateDecline(ev);
+  UI.closeModal(); FE.advanceEvent(); renderAll(); UI.nextEvent();
 };
 
 function prepPopup(ev) {
@@ -1172,6 +1263,11 @@ UI.startNext = function () {
 // One "skip / finish the week" path used by the banner and the burger menu.
 UI.skipWeek = function () {
   var g = G();
+  var remain = FE.skipRemainMs();
+  if (remain > 0) {
+    toast('You can end the week in ' + fmtMs(remain) + '. Play it out in the meantime, or come back shortly.');
+    return;
+  }
   var full = g.phase === 'auction';   // skipping before you've opened up = whole week
   var msg = full
     ? 'Let the staff run the whole week? They take the fair and cheeky offers, decline the silly ones, and handle the post conservatively — about 75% of a managed week.'

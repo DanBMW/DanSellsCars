@@ -102,6 +102,7 @@ FE.newGame = function (brandKey, siteIdx, salaryIdx) {
     flags: { firstSaleDone: false, prepTip: false, holdTip: false, tradeBuyerUsed: false, monReviewDone: false, allocDeclines: 0 },
     totals: { units: 0, unitsYr: 0, bestWk: 0, bestWkAt: 0, worstWk: 999, worstWkAt: 0, fines: [], afk: 0, financed: 0, financeComm: 0 },
     holidayPlan: {},                        // staffId -> requestWk
+    lastCloseAt: 0,                         // ms timestamp of last week completion (skip cooldown)
     idc: 1, dead: false
   };
   // the aunt's contact book: three buyers with known wants, so week 1 teaches
@@ -756,6 +757,12 @@ FE.enterShowroom = function () {
   var aged = stk.filter(function (c) { return daysIn(c) >= 60; });
   if (aged.length && rnd() < 0.5) events.push({ kind: 'offer', crazy: true });
 
+  // occasional private seller offering a car straight to the GSM (from wk 3),
+  // only if there's a pitch free to put it on
+  if (G.week >= 3 && usedSlots() < totalSlots() && rnd() < FE.PRIVATE_SELLER_P) {
+    events.push({ kind: 'privateseller' });
+  }
+
   // shuffle the non-prep events for texture
   var head = events.filter(function (e) { return e.kind === 'prep'; });
   var tail = events.filter(function (e) { return e.kind !== 'prep'; });
@@ -900,6 +907,25 @@ function buildEvent(ev) {
     var price = r25(c5.retail * (1 - U(0.005, 0.02)));
     var res2 = closeSale(c5, price, exec2, null);
     ev.result = res2; ev.silent = true;
+    return;
+  }
+  if (ev.kind === 'privateseller') {
+    if (usedSlots() >= totalSlots()) { ev.dead = true; return; }
+    // private sellers often offload older, higher-mileage cars, occasionally a gem
+    var opts = rnd() < 0.55 ? { age: RI(4, 8), milesHigh: rnd() < 0.6 } : {};
+    var v = genVehicle(G.brand, opts);
+    v.isPX = true;                                   // uninspected, like a PX — bites more often
+    v.faultP = clamp(v.faultP + 0.09, 0.02, 0.5);
+    // asking: below auction guide (no fees, wants a quick private sale)
+    var asking = r25(v.retail * U(0.66, 0.78));
+    ev.pcar = v;
+    ev.asking = asking;
+    ev.estGross = v.retail - asking;
+    var baseDays = FE.MODELS[v.model].days * FE.AGE[v.age][1] * FE.COLOURS[v.colour].d * FE.HISTORY[v.hist].d;
+    ev.estDays = [Math.round(baseDays * 0.8), Math.round(baseDays * 1.25)];
+    ev.risk = scoreLot(v);
+    ev.seller = pick(FE.FIRST_NAMES) + ' ' + pick(FE.SURNAMES);
+    ev.firm = rnd() < 0.4;                            // some sellers won't budge
     return;
   }
 }
@@ -1141,6 +1167,43 @@ FE.tradeBuyerSell = function (ev, carId) {
   return { value: v };
 };
 FE.tradeBuyerDecline = function (ev) { ev.dead = true; FE.save(); };
+
+/* ---------- private seller (buy a car straight off the street) ---------- */
+function takePrivateCar(v, price) {
+  v.cost.hammer = price; v.cost.premium = 0; v.cost.transport = 0;
+  v.boughtWk = G.week; v.arrivedWk = G.week; v.status = 'stock';
+  var tp = truePrepFor(v, price);
+  v.truePrep = tp.amount; v.blowout = tp.blowout;
+  autoPlace(v);
+  G.stock.push(v);
+  pay(price, 'auction', 'Private purchase — ' + carName(v));
+  G.events.push({ kind: 'prep', carId: v.id });
+}
+FE.privateBuy = function (ev) {
+  if (usedSlots() >= totalSlots()) return { ok: false, msg: 'No free pitch to put it on.' };
+  if (FE.spendPower() < ev.asking) return { ok: false, msg: 'Not enough to cover it.' };
+  takePrivateCar(ev.pcar, ev.asking);
+  ev.dead = true; ev.bought = true;
+  FE.save();
+  return { ok: true, price: ev.asking };
+};
+FE.privateCounter = function (ev, offer) {
+  offer = r25(Math.max(100, offer));
+  if (offer >= ev.asking) return FE.privateBuy(ev);
+  var gap = (ev.asking - offer) / ev.asking;       // how far below asking
+  var accept = ev.firm ? (gap < 0.03) : (rnd() < clamp(1 - gap * 4.5, 0.05, 0.95));
+  if (accept) {
+    if (usedSlots() >= totalSlots()) return { ok: false, msg: 'No free pitch to put it on.' };
+    if (FE.spendPower() < offer) return { ok: false, msg: 'Not enough to cover it.' };
+    takePrivateCar(ev.pcar, offer);
+    ev.dead = true; ev.bought = true;
+    FE.save();
+    return { ok: true, price: offer, countered: true };
+  }
+  FE.save();
+  return { ok: false, walked: true, msg: ev.firm ? 'They won’t budge on the price.' : 'They weren’t having it and hung up.' };
+};
+FE.privateDecline = function (ev) { ev.dead = true; FE.save(); };
 
 FE.prequalClose = function (ev, fniChoice) {
   var s = closeSale(ev.car, ev.offer, ev.exec, fniChoice);
@@ -1614,12 +1677,19 @@ FE.closeWeek = function () {
 
   G.week++;
   G.phase = 'report';
+  G.lastCloseAt = Date.now();   // start the anti-spam cooldown for the next week
   // the bank calls it in only past your facility limit (plus a little headroom)
   var deadLine = FE.financeEnabled() ? -(FE.financeLimit() + FE.STOCK_FINANCE.buffer) : -25000;
   if (G.cash < deadLine) { G.dead = true; FE.save(); return { ok: true, report: report, dead: true }; }
   FE.save();
   return { ok: true, report: report };
 };
+
+// anti-spam cooldown between week completions
+FE.skipRemainMs = function () {
+  return Math.max(0, (FE.SKIP_COOLDOWN_MS || 0) - (Date.now() - (G.lastCloseAt || 0)));
+};
+FE.skipReady = function () { return FE.skipRemainMs() <= 0; };
 
 FE.nextWeek = function () {
   startWeek();
@@ -1652,6 +1722,13 @@ FE.skipWeek = function () {
         return;
       }
       if (ev.kind === 'tradebuyer') { ev.dead = true; return; }
+      if (ev.kind === 'privateseller') {
+        // staff take an obvious bargain (green light, healthy margin), else pass
+        if (ev.risk && ev.risk.light === 'green' && ev.estGross > 1400 && FE.spendPower() >= ev.asking) {
+          FE.privateBuy(ev); afkNote.push('Picked up a ' + FE.MODELS[ev.pcar.model].m + ' privately.');
+        } else ev.dead = true;
+        return;
+      }
     });
     G.eventIdx = G.events.length;
   }
