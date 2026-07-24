@@ -155,6 +155,7 @@ function renderBanner() {
 
 /* ---------- tabs ---------- */
 UI.tab = function (t) {
+  if (curTab === 'site' && t !== 'site' && window.Scene) Scene.unmount();
   curTab = t; moveModeCar = null;
   ['site', 'email', 'stock', 'staff', 'reports'].forEach(function (k) {
     $('tab-' + k).classList.toggle('on', k === t);
@@ -185,46 +186,33 @@ function carSVG(c) {
 }
 function renderSite() {
   var g = G(), s = FE.SITES[g.site];
-  var total = s.ext + s.int + g.extraSlots;
-  var bySlot = {};
-  g.stock.forEach(function (c) { if (c.slot != null && (c.status === 'stock' || c.status === 'sold')) bySlot[c.slot] = c; });
-
-  function slotCell(i) {
-    var c = bySlot[i];
-    var cls = 'slot' + (i < s.int ? ' internal' : '') + (c ? ' filled' : '') + (moveModeCar && !c ? ' movetarget' : '');
-    var inner = '';
-    if (c) {
-      var d = FE.daysIn(c);
-      inner = carSVG(c);
-      if (c.status === 'sold') inner += '<span class="sold-sign">SOLD</span>';
-      else {
-        if (d >= 60) inner += '<span class="dust"></span>';
-        if (d >= 90) inner += '<span class="disc-sticker">£</span>';
-        if (d > 0) inner += '<span class="days-chip">' + d + 'd</span>';
-        if (c.isNew) inner += '<span class="disc-sticker" style="background:#4cc36a;color:#08300f">NEW</span>';
-      }
-    }
-    return '<div class="' + cls + '" onclick="UI.slotTap(' + i + ')">' + inner + '</div>';
-  }
-  var h = '';
-  if (moveModeCar) h += '<div class="card warn small">Moving the ' + esc(FE.carName(moveModeCar)) + ' — tap a pitch. <button class="ghost small" onclick="UI.cancelMove()">Cancel</button></div>';
-  h += '<div id="siteWrap"><div id="siteBoard" class="' + (g.site === 0 ? 'gravel' : '') + '">';
-  if (s.int) {
-    h += '<div class="slot-section"><div class="slot-label">Showroom — under lights</div><div class="slots">';
-    for (var i = 0; i < s.int; i++) h += slotCell(i);
-    h += '</div></div>';
-  }
-  h += '<div class="slot-section"><div class="slot-label">' + (g.site === 0 ? 'Gravel yard' : 'Forecourt') + ' — roadside first</div><div class="slots">';
-  for (var j = s.int; j < total; j++) h += slotCell(j);
-  h += '</div></div></div></div>';
-
-  h += '<div class="building-card" onclick="UI.openOffice()"><div><b>' + esc(s.name) + '</b><div class="kv">Tap for office, expansion & departments</div></div><div style="font-size:1.4rem">🏢</div></div>';
-
   var nw = FE.netWorth();
-  h += '<div id="site2card"><b>Site 2 — locked</b> · unlocks at £2M net worth' +
-    '<div class="bar"><i style="width:' + Math.min(100, nw / FE.SITE2_TARGET * 100).toFixed(1) + '%"></i></div>' +
-    '<div class="small">' + M(nw) + ' / ' + M(FE.SITE2_TARGET) + '</div></div>';
-  $('content').innerHTML = h;
+  var pct = Math.min(100, nw / FE.SITE2_TARGET * 100).toFixed(1);
+  var moveHTML = moveModeCar
+    ? '<div class="card warn small">Moving the ' + esc(FE.carName(moveModeCar)) + ' — tap a pitch. <button class="ghost small" onclick="UI.cancelMove()">Cancel</button></div>'
+    : '';
+  var usedN = g.stock.filter(function (c) { return c.status === 'stock'; }).length;
+
+  // Build the shell once; on same-tab refreshes just update the dynamic bits and
+  // let the canvas keep running (rebuilding innerHTML would restart the scene).
+  if (!$('sceneHost')) {
+    var h = '<div id="moveBanner">' + moveHTML + '</div>' +
+      '<div class="scene-frame"><div id="sceneHost"></div>' +
+      '<div class="scene-caption"><span>' + esc(s.name) + '</span><span id="sceneCount">' + usedN + '/' + (s.ext + s.int + g.extraSlots) + ' pitches</span></div></div>' +
+      '<div class="building-card" onclick="UI.openOffice()"><div><b>' + esc(s.name) + '</b><div class="kv">Tap for office, expansion &amp; departments</div></div><div style="font-size:1.4rem">🏢</div></div>' +
+      '<div id="site2card"><b>Site 2 — locked</b> · unlocks at £2M net worth' +
+      '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="small" id="site2fig">' + M(nw) + ' / ' + M(FE.SITE2_TARGET) + '</div></div>';
+    $('content').innerHTML = h;
+    Scene.mount($('sceneHost'), { moveMode: !!moveModeCar });
+  } else {
+    $('moveBanner').innerHTML = moveHTML;
+    Scene.setMoveMode(!!moveModeCar);
+    var sc = $('sceneCount'); if (sc) sc.textContent = usedN + '/' + (s.ext + s.int + g.extraSlots) + ' pitches';
+    var sf = $('site2fig'); if (sf) sf.textContent = M(nw) + ' / ' + M(FE.SITE2_TARGET);
+    var bar = document.querySelector('#site2card .bar i'); if (bar) bar.style.width = pct + '%';
+    Scene.refresh();
+  }
 }
 UI.slotTap = function (i) {
   var g = G();
