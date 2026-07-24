@@ -219,9 +219,9 @@ function renderBanner() {
     ? '<button class="sec" disabled>Skip in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
     : '<button class="sec" onclick="UI.skipWeek()">Skip week ⏭</button>';
   if (g.phase === 'auction') {
-    h = '<div class="ph"><b>Block 1 — Auction</b><div>' + g.lots.length + ' lots in the lanes. They’re gone tomorrow.</div></div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button onclick="UI.openAuction()">Lanes</button>' +
-      '<button class="sec" onclick="UI.toShowroom()">Open up →</button>' + skipBtn + '</div>';
+    h = '<div class="ph"><b>Block 1 — Auction</b><div>Buy your stock, then open the showroom to trade for the week.</div></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="sec" onclick="UI.openAuction()">🔨 Auction (' + g.lots.length + ')</button>' +
+      '<button class="grn" onclick="UI.toShowroom()">Open showroom for trading →</button>' + skipBtn + '</div>';
   } else if (g.phase === 'showroom') {
     var left = FE.eventsLeft();
     h = '<div class="ph"><b>Block 2 — Showroom</b><div>' + (left ? left + ' thing' + (left === 1 ? '' : 's') + ' need' + (left === 1 ? 's' : '') + ' your attention.' : 'Floor’s quiet.') + '</div></div>' +
@@ -296,15 +296,20 @@ function renderSite() {
     ? '<div class="card warn small">Moving the ' + esc(FE.carName(moveModeCar)) + ' — tap a pitch. <button class="ghost small" onclick="UI.cancelMove()">Cancel</button></div>'
     : '';
   // occupied pitches = cars physically on the forecourt (in stock + sold-but-
-  // not-yet-collected), matching exactly what the scene draws
-  var usedN = g.stock.filter(function (c) { return c.status === 'stock' || c.status === 'sold'; }).length;
+  // not-yet-collected), matching exactly what the scene draws. Cars still in
+  // transit from the auction (arrived === false) sit off-site, so they don't
+  // take a pitch yet — they're shown separately as "arriving".
+  var usedN = g.stock.filter(function (c) { return (c.status === 'stock' && c.arrived !== false) || c.status === 'sold'; }).length;
+  var arrivingN = g.stock.filter(function (c) { return c.status === 'stock' && c.arrived === false; }).length;
+  var capN = s.ext + s.int + g.extraSlots;
+  var countTxt = usedN + '/' + capN + ' pitches' + (arrivingN ? ' · +' + arrivingN + ' arriving' : '');
 
   // Build the shell once; on same-tab refreshes just update the dynamic bits and
   // let the canvas keep running (rebuilding innerHTML would restart the scene).
   if (!$('sceneHost')) {
     var h = '<div id="moveBanner">' + moveHTML + '</div>' +
       '<div class="scene-frame"><div id="sceneHost"></div>' +
-      '<div class="scene-caption"><span>' + esc(s.name) + '</span><span id="sceneCount">' + usedN + '/' + (s.ext + s.int + g.extraSlots) + ' pitches</span></div></div>' +
+      '<div class="scene-caption"><span>' + esc(s.name) + '</span><span id="sceneCount">' + countTxt + '</span></div></div>' +
       '<div class="building-card" onclick="UI.openOffice()"><div><b>' + esc(s.name) + '</b><div class="kv">Tap for office, expansion &amp; departments</div></div><div style="font-size:1.4rem">🏢</div></div>' +
       '<div id="site2card"><b>Site 2 — locked</b> · unlocks at £2M net worth' +
       '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
@@ -314,7 +319,7 @@ function renderSite() {
   } else {
     $('moveBanner').innerHTML = moveHTML;
     Scene.setMoveMode(!!moveModeCar);
-    var sc = $('sceneCount'); if (sc) sc.textContent = usedN + '/' + (s.ext + s.int + g.extraSlots) + ' pitches';
+    var sc = $('sceneCount'); if (sc) sc.textContent = countTxt;
     var sf = $('site2fig'); if (sf) sf.textContent = M(nw) + ' / ' + M(FE.SITE2_TARGET);
     var bar = document.querySelector('#site2card .bar i'); if (bar) bar.style.width = pct + '%';
     Scene.refresh();
@@ -701,7 +706,7 @@ UI.nextEvent = function () {
     setTimeout(UI.nextEvent, 650);
     return;
   }
-  if (ev.kind === 'prep') return prepPopup(ev);
+  if (ev.kind === 'prep' || ev.kind === 'arrival') return prepPopup(ev);
   if (ev.kind === 'prequal') return prequalPopup(ev);
   if (ev.kind === 'tradebuyer') return tradeBuyerPopup(ev);
   if (ev.kind === 'privateseller') return privateSellerPopup(ev);
@@ -781,9 +786,13 @@ UI.privateDecline = function () {
 
 function prepPopup(ev) {
   var c = ev.car;
+  var isArrival = (ev.kind === 'arrival');
   var r = FE.payPrep(ev);
-  var h = '<h3>Prep bill — ' + esc(FE.carName(c)) + '</h3>' +
-    '<p class="kv">The workshop’s been through it. Bill: <b class="' + (r.blowout ? 'danger' : '') + '">' + M(r.amount) + '</b>' +
+  var lead = isArrival
+    ? 'The transporter’s just dropped it on the forecourt and the workshop’s been straight through it. Bill: '
+    : 'The workshop’s been through it. Bill: ';
+  var h = '<h3>' + (isArrival ? '🚚 Delivered — ' : 'Prep bill — ') + esc(FE.carName(c)) + '</h3>' +
+    '<p class="kv">' + lead + '<b class="' + (r.blowout ? 'danger' : '') + '">' + M(r.amount) + '</b>' +
     (r.blowout ? ' — <span class="danger">including a horror they found underneath.</span>' : '.') + '</p>';
   if (r.tip) h += '<p class="kv warn">Career tip (you’ll only get this once): the auction’s "est. gross" uses an average prep guess. Condition grades 1–2 are where blowouts hide, and the colour column tells you how long you’ll pay to hold it.</p>';
   h += '<button onclick="UI.closeModal();FE.advanceEvent();UI.renderAll();UI.nextEvent()">Pay it</button>';

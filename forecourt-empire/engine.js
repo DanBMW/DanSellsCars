@@ -228,7 +228,7 @@ function genVehicle(brandKey, opts) {
     retail: retail, screen: retail, daysTrue: daysTrue, faultP: faultP,
     cost: { hammer: 0, premium: 0, transport: 0, prep: 0 },
     truePrep: 0, prepPaid: false, boughtWk: 0, arrivedWk: 0, slot: null,
-    status: 'lot', holdCost: 0, discounted: false, ack90: false,
+    status: 'lot', holdCost: 0, discounted: false, ack90: false, arrived: true,
     isPX: false, isNew: false, isPreReg: false
   };
 }
@@ -336,7 +336,10 @@ FE.buyLot = function (lotId) {
   v.boughtWk = G.week; v.arrivedWk = G.week; v.status = 'stock';
   var tp = truePrepFor(v, v.hammer);
   v.truePrep = tp.amount; v.blowout = tp.blowout;
-  autoPlace(v);
+  // auction cars are transported + prepped, so they land on the forecourt
+  // during the week rather than instantly. Weeks 1-2 arrive at once (hope curve).
+  v.arrived = (G.week <= 2);
+  if (v.arrived) autoPlace(v); else v.slot = null;
   G.stock.push(v);
   pay(v.hammer + premium, 'auction', 'Hammer + premium — ' + carName(v));
   pay(FE.TRANSPORT, 'auction', 'Transport');
@@ -672,11 +675,12 @@ FE.enterShowroom = function () {
   G.phase = 'showroom';
   var events = [];
 
-  // prep bills for cars bought this week
+  // cars still in transit arrive (and get prepped) staggered through the week;
+  // already-placed cars that still need prep get a plain prep bill
   G.stock.forEach(function (c) {
-    if (!c.prepPaid && (c.status === 'stock')) {
-      events.push({ kind: 'prep', carId: c.id });
-    }
+    if (c.status !== 'stock') return;
+    if (!c.arrived) events.push({ kind: 'arrival', carId: c.id });
+    else if (!c.prepPaid) events.push({ kind: 'prep', carId: c.id });
   });
 
   var s = season();
@@ -763,16 +767,25 @@ FE.enterShowroom = function () {
     events.push({ kind: 'privateseller' });
   }
 
-  // shuffle the non-prep events for texture
-  var head = events.filter(function (e) { return e.kind === 'prep'; });
-  var tail = events.filter(function (e) { return e.kind !== 'prep'; });
+  // prep/arrival events are staggered THROUGH the week rather than dumped up
+  // front, so stock trickles onto the forecourt as the week trades
+  var special = events.filter(function (e) { return e.kind === 'prep' || e.kind === 'arrival'; });
+  var tail = events.filter(function (e) { return e.kind !== 'prep' && e.kind !== 'arrival'; });
   tail.sort(function () { return rnd() - 0.5; });
   // guaranteed first sale: make sure a prequal (if any) leads
   tail.sort(function (a, b) {
     var pa = a.kind === 'prequal' ? 0 : 1, pb = b.kind === 'prequal' ? 0 : 1;
     return G.flags.firstSaleDone ? 0 : pa - pb;
   });
-  G.events = head.concat(tail);
+  special.sort(function () { return rnd() - 0.5; });
+  // weave the special events into the front ~70% so cars arrive early enough to sell
+  var woven = tail.slice();
+  special.forEach(function (sp, i) {
+    var span = Math.max(1, woven.length);
+    var pos = Math.min(woven.length, Math.floor((i + 0.5) / Math.max(1, special.length) * span * 0.7));
+    woven.splice(pos, 0, sp);
+  });
+  G.events = woven;
   G.eventIdx = 0;
   G.weekly.caps = caps;
   G.weekly.capTotal = capTotal;
@@ -795,6 +808,7 @@ function adCost() {
 function pickSaleCar(opts) {
   opts = opts || {};
   var cands = inStock().filter(function (c) {
+    if (!c.arrived) return false;
     if (opts.isNew != null && c.isNew !== opts.isNew) return false;
     if (opts.seg && FE.MODELS[c.model].seg !== opts.seg) return false;
     if (opts.aged && daysIn(c) < 60) return false;
@@ -850,6 +864,13 @@ function buildEvent(ev) {
     G.stock.forEach(function (c) { if (c.id === ev.carId) car = c; });
     if (!car || car.prepPaid || car.status !== 'stock') { ev.dead = true; return; }
     ev.car = car;
+    return;
+  }
+  if (ev.kind === 'arrival') {
+    var carA = null;
+    G.stock.forEach(function (c) { if (c.id === ev.carId) carA = c; });
+    if (!carA || carA.status !== 'stock') { ev.dead = true; return; }
+    ev.car = carA;
     return;
   }
   if (ev.kind === 'prequal') {
@@ -954,6 +975,8 @@ function autoPrice(c, exec) {
 
 FE.payPrep = function (ev) {
   var car = ev.car;
+  // a transit car lands on the forecourt now (arrival + prep in one)
+  if (!car.arrived) { car.arrived = true; if (car.slot == null) autoPlace(car); }
   pay(car.truePrep, 'prep', 'Prep — ' + carName(car));
   car.cost.prep = car.truePrep;
   car.prepPaid = true;
@@ -1709,7 +1732,7 @@ FE.skipWeek = function () {
     G.events.forEach(function (ev) {
       if (!ev.built) buildEvent(ev);
       if (ev.dead || ev.silent) return;
-      if (ev.kind === 'prep') { FE.payPrep(ev); ev.dead = true; return; }
+      if (ev.kind === 'prep' || ev.kind === 'arrival') { FE.payPrep(ev); ev.dead = true; return; }
       if (ev.kind === 'prequal' && ev.car) { FE.prequalClose(ev, null); kept++; return; }
       if (ev.kind === 'offer') {
         if (ev.type === 'crazy') { ev.dead = true; afkNote.push('Declined a silly offer on the ' + FE.MODELS[ev.car.model].m + '.'); return; }
