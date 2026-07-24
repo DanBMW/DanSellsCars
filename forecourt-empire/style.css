@@ -182,6 +182,38 @@ button.big { width: 100%; padding: 14px; font-size: 1.05rem; }
 .risk-list { margin: 2px 0 12px 18px; font-size: .84rem; color: #c2c9d1; }
 .risk-list li { margin: 3px 0; }
 .build-tag { font-weight: 700; color: #e0a943; }
+
+/* ---------- phone-style email ---------- */
+.mail-tabs { display: flex; gap: 6px; margin: 8px 0 4px; overflow-x: auto; }
+.mail-tabs button {
+  flex: 0 0 auto; padding: 7px 12px; font-size: .8rem; background: #21272f; color: #aeb6bf;
+  border: 1px solid #2b3440; border-radius: 18px; position: relative;
+}
+.mail-tabs button.on { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+.mt-badge { display: inline-block; margin-left: 5px; background: #d93a2b; color: #fff; font-size: .66rem; font-weight: 800; border-radius: 9px; padding: 0 5px; }
+.mail-group { font-size: .68rem; letter-spacing: 1.5px; text-transform: uppercase; color: #75808c; margin: 12px 4px 4px; }
+.mail-item {
+  display: flex; gap: 11px; align-items: flex-start; padding: 10px 12px; border-radius: 12px;
+  background: #141a22; border: 1px solid #202832; margin-bottom: 7px; cursor: pointer;
+}
+.mail-item.unread { background: #172232; border-color: #24405f; }
+.mail-av {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; color: #fff; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; font-size: 1.05rem; position: relative;
+}
+.mail-av.lg { width: 46px; height: 46px; font-size: 1.2rem; }
+.mail-av .dot { position: absolute; top: -1px; right: -1px; width: 12px; height: 12px; border-radius: 50%; background: #1f6feb; border: 2px solid #172232; }
+.mail-body { flex: 1; min-width: 0; }
+.mail-row1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mail-from { font-weight: 700; font-size: .92rem; color: #e6e8eb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mail-item.unread .mail-from { color: #fff; }
+.mail-wk { font-size: .72rem; color: #75808c; flex: 0 0 auto; }
+.mail-subj { font-size: .86rem; color: #c6cdd5; margin: 1px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail-item.unread .mail-subj { color: #fff; font-weight: 600; }
+.mail-prev { font-size: .78rem; color: #8b949e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail-pill { display: inline-block; font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; background: #d93a2b; color: #fff; border-radius: 4px; padding: 1px 5px; vertical-align: middle; }
+.mail-pill.sold { background: #238636; }
+.mail-reader-head { display: flex; align-items: center; gap: 11px; margin-bottom: 6px; }
 .btnrow { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .btnrow button { flex: 1; min-width: 90px; padding: 9px 8px; font-size: .85rem; }
 .email { border-left: 3px solid transparent; }

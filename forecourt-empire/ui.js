@@ -326,13 +326,63 @@ UI.tradeOutGo = function (id) {
 UI.ackUI = function (id) { FE.ack90(id); UI.closeModal(); renderAll(); };
 
 /* ---------- email tab ---------- */
+var mailFilter = 'all';
+var ACTION_TYPES = ['comeback', 'holiday', 'payreview', 'poach', 'alloc', 'prereg'];
+function mailCat(e) {
+  if (ACTION_TYPES.indexOf(e.type) >= 0 && !e.done) return 'action';
+  if (e.type === 'sold') return 'sold';
+  if (e.type === 'shock') return 'press';
+  return 'general';
+}
+function avatarColour(name) {
+  var known = { Priya: '#c14fb0', Mon: '#3a8fe0', Glen: '#4cae6a', Deano: '#d97b3a', Sarah: '#7a63d0',
+    Terry: '#8a8f98', Kelly: '#e0663a', Marcus: '#3b5168', Bev: '#5a8a6a', Ryan: '#d9a93a',
+    Dan: '#1f6feb', Danny: '#6aa0d0', Karis: '#c14fb0', Clive: '#8a8f98', Vas: '#4cae6a', Tomi: '#e0663a' };
+  if (known[name]) return known[name];
+  var h = 0, i; for (i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  var hues = ['#3a8fe0', '#4cae6a', '#d97b3a', '#8a6ad0', '#c14fb0', '#5a8a6a', '#c0603a'];
+  return hues[h % hues.length];
+}
+function mailPreview(body) {
+  var t = body.replace(/\n+/g, ' ').trim();
+  return t.length > 64 ? t.slice(0, 64) + '…' : t;
+}
+UI.setMailFilter = function (f) { mailFilter = f; renderEmail(); };
 function renderEmail() {
   var g = G(), h = '';
-  if (!g.emails.length) h = '<div class="card kv">Inbox zero. Enjoy it while it lasts.</div>';
-  g.emails.slice(0, 60).forEach(function (e) {
-    h += '<div class="card email' + (e.unread ? ' unread' : '') + '" onclick="UI.openEmail(' + e.id + ')">' +
-      '<div class="row"><span class="from">' + esc(e.from) + '</span><span class="kv">wk ' + e.wk + '</span></div>' +
-      '<div class="subj">' + esc(e.subj) + '</div></div>';
+  var counts = { all: 0, action: 0, sold: 0, press: 0 };
+  g.emails.forEach(function (e) {
+    counts.all++;
+    var c = mailCat(e);
+    if (c === 'action') counts.action++;
+    else if (c === 'sold') counts.sold++;
+    else if (c === 'press') counts.press++;
+  });
+  var unreadAction = g.emails.filter(function (e) { return mailCat(e) === 'action'; }).length;
+  var tabs = [['all', 'All'], ['action', 'Needs action'], ['sold', 'Sold notes'], ['press', 'Trade press']];
+  h += '<div class="mail-tabs">' + tabs.map(function (t) {
+    var badge = t[0] === 'action' && counts.action ? '<span class="mt-badge">' + counts.action + '</span>' : '';
+    return '<button class="' + (mailFilter === t[0] ? 'on' : '') + '" onclick="UI.setMailFilter(\'' + t[0] + '\')">' + t[1] + badge + '</button>';
+  }).join('') + '</div>';
+
+  var list = g.emails.filter(function (e) { return mailFilter === 'all' || mailCat(e) === mailFilter; });
+  if (!list.length) h += '<div class="card kv muted" style="margin-top:10px">' + (mailFilter === 'all' ? 'Inbox zero. Enjoy it while it lasts.' : 'Nothing here right now.') + '</div>';
+
+  var group = null;
+  list.slice(0, 80).forEach(function (e) {
+    var gLabel = e.wk >= g.week ? 'This week' : e.wk >= g.week - 1 ? 'Last week' : 'Earlier';
+    if (gLabel !== group) { group = gLabel; h += '<div class="mail-group">' + group + '</div>'; }
+    var cat = mailCat(e);
+    var initial = esc(e.from.charAt(0).toUpperCase());
+    var pill = cat === 'action' ? '<span class="mail-pill">Needs action</span>' :
+      cat === 'sold' ? '<span class="mail-pill sold">Sold</span>' : '';
+    h += '<div class="mail-item' + (e.unread ? ' unread' : '') + '" onclick="UI.openEmail(' + e.id + ')">' +
+      '<div class="mail-av" style="background:' + avatarColour(e.from) + '">' + initial + (e.unread ? '<i class="dot"></i>' : '') + '</div>' +
+      '<div class="mail-body">' +
+      '<div class="mail-row1"><span class="mail-from">' + esc(e.from) + '</span><span class="mail-wk">wk ' + e.wk + '</span></div>' +
+      '<div class="mail-subj">' + esc(e.subj) + ' ' + pill + '</div>' +
+      '<div class="mail-prev">' + esc(mailPreview(e.body)) + '</div>' +
+      '</div></div>';
   });
   $('content').innerHTML = h;
 }
@@ -341,7 +391,11 @@ UI.openEmail = function (id) {
   g.emails.forEach(function (x) { if (x.id === id) e = x; });
   if (!e) return;
   FE.markRead(id);
-  var h = '<div class="from kv">' + esc(e.from) + ' · week ' + e.wk + '</div><h3>' + esc(e.subj) + '</h3>' +
+  renderHUD();
+  var h = '<div class="mail-reader-head">' +
+    '<div class="mail-av lg" style="background:' + avatarColour(e.from) + '">' + esc(e.from.charAt(0).toUpperCase()) + '</div>' +
+    '<div><div class="mail-from" style="font-size:1rem">' + esc(e.from) + '</div><div class="mail-wk">Week ' + e.wk + '</div></div></div>' +
+    '<h3 style="margin:4px 0 10px">' + esc(e.subj) + '</h3>' +
     '<pre>' + esc(e.body) + '</pre>';
   if (e.type === 'auction' && e.wk === g.week && g.phase === 'auction') {
     h += '<div class="btnrow"><button onclick="UI.closeModal();UI.openAuction()">Open the list</button></div>';
@@ -378,7 +432,7 @@ UI.openEmail = function (id) {
     h += '<div class="btnrow"><button class="amber" onclick="UI.prereg(' + e.id + ',true)">Pre-register the shortfall</button>' +
       '<button class="sec" onclick="UI.prereg(' + e.id + ',false)">Take the lower bonus</button></div>';
   }
-  h += '<button class="ghost" style="margin-top:12px" onclick="UI.closeModal();UI.renderAll()">Close</button>';
+  h += '<button class="ghost" style="margin-top:12px" onclick="UI.closeModal();UI.renderAll()">← Back to inbox</button>';
   UI.modal(h);
 };
 UI.comeback = function (id, choice) {
