@@ -649,8 +649,10 @@ FE.enterShowroom = function () {
   }
   var demand = foot * s.d * starM * adM * conv * (1 - FE.FRANCHISE.cannibal * newShare);
   var stk = inStock().filter(function (c) { return !c.isNew; });
-  // a thin forecourt converts badly — walk-ins want a choice
-  demand *= clamp(stk.length / (brand().stockNeeded * 0.6), 0.1, 1);
+  // a thin forecourt converts badly — walk-ins want a choice. During the weeks
+  // 1-2 hope curve the starter forecourt gets a gentler penalty so it feels alive.
+  var thinDenom = brand().stockNeeded * (G.week <= 2 ? 0.32 : 0.6);
+  demand *= clamp(stk.length / thinDenom, 0.1, 1);
   var stockCap = Math.ceil(stk.length * 0.4);
 
   var unitsF = Math.min(demand, capTotal, stockCap);
