@@ -1,7 +1,34 @@
 # Forecourt Empire — beta feedback log & roadmap
 
-Dan's playtest feedback, captured for the next build pass. **None of this is
-implemented yet** — the live beta is unchanged while testing continues.
+Dan's playtest feedback, captured for the build pass.
+
+## Status — implemented in the build pass of 2026-07-24
+
+- **Item 1 (Clash-of-Clans art):** DONE (first pass). New `scene.js` renders an
+  isometric canvas diorama — chunky procedural cars with volume, tier-scaled
+  buildings with brand signage (portacabin flag / showroom glass), gravel vs
+  tarmac, seasonal tint. Further polish (richer sprites, particles/juice,
+  ambient props) still open.
+- **Item 2 (hire from day 1):** DONE. Recruitment opens week 1 (6 names day 1,
+  rest week 2). Week 1-2 thin-forecourt penalty softened so it isn't punishing.
+- **Item 3 (traffic-light risk):** DONE. Green/amber/red chips on every lot,
+  red split into high-risk/high-reward vs bad-car, tap-through drivers, filter.
+- **Item 4 (visible sales execs):** DONE (first pass). Walking name-tagged exec
+  figures + ambient customers on the site view. Deeper behaviour (standing at
+  the car during a deal, morale in the step) still open.
+- **Item 5 (phone-style email):** DONE. Mail-app inbox with avatars, unread
+  dots, filter tabs, needs-action pills, reader header.
+- **Item 6 (construction time):** DONE. Land expansion + franchise fit-out now
+  build over weeks with office/map progress; orders gated until the corner's up.
+- **Item 7 (skippable tutorial):** DONE. Spotlight coach marks over week 1,
+  skippable + replayable from the menu.
+- **Item 8 (six new candidates):** DONE. Dan, Danny, Karis, Clive, Vas, Tomi
+  added with the drafted traits (complete / discounts / defuser / anchor /
+  trader / magnet).
+- **Item 9 (£1m capital):** unchanged for beta, per the review below.
+
+Everything below is the original captured detail; treat "not implemented yet"
+notes as superseded by the status list above.
 
 ---
 
