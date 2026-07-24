@@ -495,6 +495,76 @@ var Scene = window.Scene = {};
     return { tA: tA, tB: tB, tC: tC, tD: tD, bB: bB, bC: bC, bD: bD, pt: pt };
   }
 
+  // the service department — a workshop that appears on the grass once built,
+  // shown as scaffolding while under construction
+  function drawServiceDept(cx, cy, building) {
+    var hw = 0.6, hl = 0.42, hgt = 0.66;
+    ctx.fillStyle = 'rgba(8,12,22,0.22)';
+    ctx.beginPath(); ctx.ellipse(cx + TILE * 0.28, cy + TILE * 0.26, hw * TILE * 1.25, TILE * 0.4, 0, 0, 6.283); ctx.fill();
+
+    if (building) {
+      // scaffold shell + a little crane while the builders are in
+      var b0 = isoBoxAt(cx, cy, hw, hl, hgt, 'rgba(150,160,175,0.28)', 'rgba(120,130,145,0.28)', 'rgba(90,100,115,0.3)');
+      ctx.strokeStyle = 'rgba(230,200,120,0.75)'; ctx.lineWidth = 1.4;
+      var k;
+      for (k = 0; k <= 3; k++) {
+        var t = k / 3;
+        ctx.beginPath();
+        ctx.moveTo(b0.bD.x + (b0.tD.x - b0.bD.x) * t, b0.bD.y + (b0.tD.y - b0.bD.y) * t);
+        ctx.lineTo(b0.bC.x + (b0.tC.x - b0.bC.x) * t, b0.bC.y + (b0.tC.y - b0.bC.y) * t);
+        ctx.stroke();
+      }
+      // crane
+      var cxr = b0.tB.x + TILE * 0.2, cyr = b0.tB.y;
+      ctx.strokeStyle = '#e0b84a'; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(cxr, cyr + TILE * 0.2); ctx.lineTo(cxr, cyr - TILE * 1.3); ctx.lineTo(cxr - TILE * 0.9, cyr - TILE * 1.05); ctx.stroke();
+      ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cxr - TILE * 0.6, cyr - TILE * 1.13); ctx.lineTo(cxr - TILE * 0.6, cyr - TILE * 0.7); ctx.stroke();
+      return;
+    }
+
+    var wall = '#9aa6b3';
+    var box = isoBoxAt(cx, cy, hw, hl, hgt, sh(wall, 20), sh(wall, -6), sh(wall, -30));
+    // corrugated roof with a ridge highlight
+    ctx.fillStyle = '#5a6572'; poly(ctx, [box.tA, box.tB, box.tC, box.tD]); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    poly(ctx, [box.tA, box.tB, box.pt(hw * 0.85, -hl, hgt), box.pt(-hw * 0.85, -hl, hgt)]); ctx.fill();
+
+    // front face = tD..tC..bC..bD
+    var fTL = box.tD, fTR = box.tC, fBL = box.bD;
+    var fw = fTR.x - fTL.x, skew = (fTR.y - fTL.y) / fw;
+    function fy(x, b) { return b + (x - fTL.x) * skew; }
+    // big roller door
+    var dx0 = fTL.x + fw * 0.12, dx1 = fTL.x + fw * 0.62;
+    var dy0 = fTL.y + (fBL.y - fTL.y) * 0.26, dy1 = fBL.y - 1.5;
+    ctx.fillStyle = '#39424e';
+    poly(ctx, [{ x: dx0, y: fy(dx0, dy0) }, { x: dx1, y: fy(dx1, dy0) }, { x: dx1, y: fy(dx1, dy1) }, { x: dx0, y: fy(dx0, dy1) }]); ctx.fill();
+    ctx.strokeStyle = 'rgba(18,22,30,0.55)'; ctx.lineWidth = 1;
+    for (var sl = 1; sl < 5; sl++) { var ly = dy0 + (dy1 - dy0) * sl / 5; ctx.beginPath(); ctx.moveTo(dx0, fy(dx0, ly)); ctx.lineTo(dx1, fy(dx1, ly)); ctx.stroke(); }
+    // a car up on the ramp, glimpsed inside the bay
+    ctx.fillStyle = 'rgba(70,90,120,0.7)';
+    var rcx = (dx0 + dx1) / 2, rcy = fy(rcx, dy1) - TILE * 0.28;
+    rr(ctx, rcx - TILE * 0.34, rcy, TILE * 0.68, TILE * 0.14, TILE * 0.06); ctx.fill();
+    ctx.fillStyle = 'rgba(40,55,78,0.7)';
+    rr(ctx, rcx - TILE * 0.18, rcy - TILE * 0.1, TILE * 0.34, TILE * 0.11, TILE * 0.05); ctx.fill();
+    ctx.strokeStyle = 'rgba(30,36,44,0.6)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(rcx - TILE * 0.2, rcy + TILE * 0.14); ctx.lineTo(rcx - TILE * 0.2, fy(rcx, dy1)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(rcx + TILE * 0.2, rcy + TILE * 0.14); ctx.lineTo(rcx + TILE * 0.2, fy(rcx, dy1)); ctx.stroke();
+    // side window
+    ctx.fillStyle = 'rgba(255,220,150,0.8)';
+    var wx0 = fTL.x + fw * 0.72, wx1 = fTL.x + fw * 0.92, wy0 = fTL.y + (fBL.y - fTL.y) * 0.34, wy1 = fTL.y + (fBL.y - fTL.y) * 0.56;
+    poly(ctx, [{ x: wx0, y: fy(wx0, wy0) }, { x: wx1, y: fy(wx1, wy0) }, { x: wx1, y: fy(wx1, wy1) }, { x: wx0, y: fy(wx0, wy1) }]); ctx.fill();
+
+    // SERVICE fascia
+    var sw = hw * TILE * 1.5, sh2 = TILE * 0.42;
+    var sx = cx - sw / 2, sy = box.tA.y + (box.tC.y - box.tA.y) * 0.16 - sh2 / 2;
+    ctx.fillStyle = 'rgba(8,12,22,0.35)'; rr(ctx, sx + 1.5, sy + 2, sw, sh2, 4); ctx.fill();
+    ctx.fillStyle = '#16233d'; rr(ctx, sx, sy, sw, sh2, 4); ctx.fill();
+    ctx.strokeStyle = 'rgba(47,214,192,0.7)'; ctx.lineWidth = 1.2; rr(ctx, sx, sy, sw, sh2, 4); ctx.stroke();
+    ctx.fillStyle = '#2fd6c0'; ctx.font = '900 ' + Math.round(sh2 * 0.56) + 'px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('SERVICE', cx, sy + sh2 / 2 + 0.5);
+  }
+
   function drawBuilding() {
     var g = G(); var s = FE.SITES[g.site];
     var d = gridDims();
@@ -739,11 +809,19 @@ var Scene = window.Scene = {};
     });
     figures.forEach(function (f) { drawables.push({ depth: f.wx + f.wy + 0.18, kind: 'fig', f: f }); });
     props.forEach(function (p) { drawables.push({ depth: p.wx + p.wy, kind: 'prop', p: p }); });
+    // service department, once built or building, sits on the front-left grass
+    if (g.dept && g.dept.service) {
+      var d = gridDims();
+      var swx = -1.38, swy = (d.rows - 1) * d.gapY * 0.66;
+      var sp = iso(swx, swy);
+      drawables.push({ depth: swx + swy, kind: 'servicedept', cx: sp.x, cy: sp.y, building: g.week < g.dept.service });
+    }
     drawables.sort(function (x, y) { return x.depth - y.depth; });
 
     drawables.forEach(function (dz) {
       if (dz.kind === 'car') drawCarAt(dz.b.cx, dz.b.cy, dz.car);
       else if (dz.kind === 'fig') drawFigure(dz.f);
+      else if (dz.kind === 'servicedept') drawServiceDept(dz.cx, dz.cy, dz.building);
       else drawProp(dz.p);
     });
 

@@ -211,19 +211,22 @@ function cashTick() {
 
 function renderBanner() {
   var g = G(), h = '';
+  var skipBtn = '<button class="sec" onclick="UI.skipWeek()">Skip week ⏭</button>';
   if (g.phase === 'auction') {
     h = '<div class="ph"><b>Block 1 — Auction</b><div>' + g.lots.length + ' lots in the lanes. They’re gone tomorrow.</div></div>' +
-      '<div style="display:flex;gap:6px"><button onclick="UI.openAuction()">Lanes</button>' +
-      '<button class="sec" onclick="UI.toShowroom()">Open up →</button></div>';
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button onclick="UI.openAuction()">Lanes</button>' +
+      '<button class="sec" onclick="UI.toShowroom()">Open up →</button>' + skipBtn + '</div>';
   } else if (g.phase === 'showroom') {
     var left = FE.eventsLeft();
     h = '<div class="ph"><b>Block 2 — Showroom</b><div>' + (left ? left + ' thing' + (left === 1 ? '' : 's') + ' need' + (left === 1 ? 's' : '') + ' your attention.' : 'Floor’s quiet.') + '</div></div>' +
-      (left ? '<button onclick="UI.nextEvent()">Next up</button>' : '<button class="sec" onclick="UI.toOffice()">Office →</button>');
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">' +
+      (left ? '<button onclick="UI.nextEvent()">Next up</button>' : '<button class="sec" onclick="UI.toOffice()">Office →</button>') +
+      skipBtn + '</div>';
   } else if (g.phase === 'office') {
     var ack = FE.needsAck().length;
     h = '<div class="ph"><b>Block 3 — Office</b><div>Post, paperwork and decisions.' + (ack ? ' <span class="danger">' + ack + ' car(s) at 90+ days need acknowledging.</span>' : '') + '</div></div>' +
       '<div style="display:flex;gap:6px"><button class="sec" onclick="UI.openOffice()">Desk</button>' +
-      '<button class="grn" onclick="UI.doCloseWeek()">Close week</button></div>';
+      '<button class="grn" onclick="UI.skipWeek()">Skip week ⏭</button></div>';
   } else if (g.phase === 'report') {
     h = '<div class="ph"><b>Week closed</b><div>Report filed.</div></div><button onclick="UI.startNext()">Start week ' + g.week + '</button>';
   }
@@ -268,7 +271,9 @@ function renderSite() {
   var moveHTML = moveModeCar
     ? '<div class="card warn small">Moving the ' + esc(FE.carName(moveModeCar)) + ' — tap a pitch. <button class="ghost small" onclick="UI.cancelMove()">Cancel</button></div>'
     : '';
-  var usedN = g.stock.filter(function (c) { return c.status === 'stock'; }).length;
+  // occupied pitches = cars physically on the forecourt (in stock + sold-but-
+  // not-yet-collected), matching exactly what the scene draws
+  var usedN = g.stock.filter(function (c) { return c.status === 'stock' || c.status === 'sold'; }).length;
 
   // Build the shell once; on same-tab refreshes just update the dynamic bits and
   // let the canvas keep running (rebuilding innerHTML would restart the scene).
@@ -550,7 +555,7 @@ UI.openAuction = function () {
       var name = f === 'all' ? 'All' : f === 'green' ? '🟢' : f === 'amber' ? '🟠' : '🔴';
       return '<button class="' + (auctionFilter === f ? 'on ' : '') + f + '" onclick="UI.setAuctionFilter(\'' + f + '\')">' + name + ' ' + counts[f] + '</button>';
     }).join('') + '</div>';
-  if (!g.lots.length) h += '<div class="card kv">All 20 lots gone or bought. Fresh list with the new week.</div>';
+  if (!g.lots.length) h += '<div class="card kv">All lots gone or bought. Fresh list with the new week.</div>';
   var shown = 0;
   g.lots.forEach(function (l) {
     if (auctionFilter !== 'all' && l.risk.light !== auctionFilter) return;
@@ -906,8 +911,10 @@ UI.salaryUI = function (i) {
 UI.orderWindow = function () {
   var g = G();
   if (!g.franchise) return;
+  var free = FE.freePitches();
   var h = '<h3>' + g.brand + ' — manufacturer order window</h3>' +
-    '<p class="kv muted small">Your cost is 92% of list. Factory stock lands next week; a factory order takes 8–14 weeks. New cars fly in March and September and sit like stones the rest of the year — time your orders.</p>';
+    '<p class="kv muted small">Your cost is 92% of list. Factory stock lands next week; a factory order takes 8–14 weeks. New cars fly in March and September and sit like stones the rest of the year — time your orders.</p>' +
+    '<div class="card kv" style="margin:6px 0"><b>' + free + '</b> free pitch' + (free === 1 ? '' : 'es') + ' (cars already on order are reserved).</div>';
   var models = [];
   FE.MODELS.forEach(function (m, i) { if (m.b === g.brand) models.push(i); });
   h += '<select id="ordModel">';
@@ -918,6 +925,11 @@ UI.orderWindow = function () {
   FE.TRIMS.forEach(function (t, i) { h += '<option value="' + i + '"' + (i === 1 ? ' selected' : '') + '>' + t.t + ' trim</option>'; });
   h += '</select><div style="height:8px"></div><select id="ordColour">';
   FE.COLOURS.forEach(function (c, i) { h += '<option value="' + i + '">' + c.c + '</option>'; });
+  h += '</select><div style="height:8px"></div>' +
+    '<label class="kv" style="display:block;margin-bottom:4px">How many?</label><select id="ordQty">';
+  [1, 2, 3, 5, 8, 12, 20, 30].forEach(function (q) {
+    if (q <= Math.max(1, free)) h += '<option value="' + q + '"' + (q === 3 ? ' selected' : '') + '>' + q + ' car' + (q === 1 ? '' : 's') + '</option>';
+  });
   h += '</select>';
   h += '<div class="btnrow"><button onclick="UI.orderGo(true)">Factory stock — next week</button>' +
     '<button class="sec" onclick="UI.orderGo(false)">Factory order — 8–14 wks</button></div>';
@@ -928,8 +940,10 @@ UI.orderWindow = function () {
   UI.modal(h);
 };
 UI.orderGo = function (express) {
-  var r = FE.orderNewCar(parseInt($('ordModel').value, 10), parseInt($('ordColour').value, 10), parseInt($('ordTrim').value, 10), express);
-  toast(r.ok ? 'Ordered — arrives week ' + r.dueWk + '. ' + M(r.cost) + ' due on delivery.' : r.msg);
+  var qty = parseInt(($('ordQty') || {}).value, 10) || 1;
+  var r = FE.orderNewCars(parseInt($('ordModel').value, 10), parseInt($('ordColour').value, 10), parseInt($('ordTrim').value, 10), express, qty);
+  if (r.ok) toast(r.placed + ' car' + (r.placed === 1 ? '' : 's') + ' ordered — arriving week ' + r.dueWk + '.' + (r.short ? ' (' + r.short + ')' : ''));
+  else toast(r.msg);
   if (r.ok) UI.orderWindow();
 };
 
@@ -944,7 +958,8 @@ function renderStaff() {
     h += '<div class="card"><div class="row"><b>' + esc(st.name) + '</b><span class="kv">' + (st.offUntil > g.week ? '<span class="warn">on a course</span>' : st.onHoliday === g.week ? '<span class="warn">on holiday</span>' : st.leaving ? '<span class="danger">leaving wk ' + st.leaving + '</span>' : 'on the floor') + '</span></div>' +
       '<div class="row kv"><span>This week: <b>' + st.lastUnits + '</b> units · ' + M(Math.round(st.lastGross)) + ' gross</span><span>F&amp;I ' + fni + '%</span></div>' +
       '<div class="row kv"><span>Career: ' + st.totUnits + ' units</span><span>Morale: ' + moraleTxt + '</span></div>' +
-      '<div class="btnrow"><button class="sec" onclick="UI.trainUI(\'' + st.id + '\')">Send on a course</button></div></div>';
+      '<div class="btnrow"><button class="sec" onclick="UI.trainUI(\'' + st.id + '\')">Send on a course</button>' +
+      '<button class="red" onclick="UI.sackUI(\'' + st.id + '\')">Let go</button></div></div>';
   });
   if (g.staff.length < maxS && g.candidates.length) {
     h += '<h3 style="margin-top:16px">The agency’s books</h3>';
@@ -960,6 +975,24 @@ function renderStaff() {
   }
   $('content').innerHTML = h;
 }
+UI.sackUI = function (id) {
+  var st = null;
+  G().staff.forEach(function (s) { if (s.id === id) st = s; });
+  if (!st) return;
+  var cost = FE.sackCost(id);
+  var below = G().staff.length <= 2;
+  UI.modal('<h3>Let ' + esc(st.name) + ' go?</h3>' +
+    '<p class="kv">Redundancy: <b>' + M(cost) + '</b> (notice pay). The rest of the team’s morale will dip a little.' +
+    (below ? ' <span class="warn">This drops you below two on the floor — capacity will suffer until you rehire.</span>' : '') + '</p>' +
+    '<div class="btnrow"><button class="red" onclick="UI.sackGo(\'' + id + '\')">Let them go</button>' +
+    '<button class="ghost" onclick="UI.closeModal()">Keep them</button></div>');
+};
+UI.sackGo = function (id) {
+  var r = FE.sackStaff(id);
+  UI.closeModal();
+  toast(r.ok ? 'Done. Paid ' + M(r.redundancy) + ' redundancy.' : r.msg);
+  renderTab(); renderHUD();
+};
 UI.hireUI = function (id) {
   var r = FE.hire(id);
   toast(r.ok ? 'On the floor Monday.' : r.msg);
@@ -1048,30 +1081,29 @@ function reportText(r) {
 }
 
 /* ---------- week close ---------- */
-UI.doCloseWeek = function () {
-  var r = FE.closeWeek();
-  if (!r.ok) { toast(r.msg); UI.tab('stock'); return; }
-  renderAll();
-  UI.modal('<h3>End of week report</h3><pre class="report">' + reportText(r.report) + '</pre>' +
-    '<div class="btnrow"><button onclick="UI.closeModal();UI.startNext()">Start week ' + G().week + '</button>' +
-    '<button class="sec" onclick="UI.closeModal();UI.renderAll()">Sit with it</button></div>');
-  if (r.dead) setTimeout(showGameOver, 400);
-};
 UI.startNext = function () {
   FE.nextWeek();
   renderAll();
   UI.tab('site');
   toast('New week. Fresh auction list in your inbox.');
 };
-UI.skipWeekUI = function () {
-  if (!confirm('Let the staff run this week without you? They’ll do about 75% of what you would — fair and cheeky offers taken, nothing clever.')) return;
+// One "skip / finish the week" path used by the banner and the burger menu.
+UI.skipWeek = function () {
+  var g = G();
+  var full = g.phase === 'auction';   // skipping before you've opened up = whole week
+  var msg = full
+    ? 'Let the staff run the whole week? They take the fair and cheeky offers, decline the silly ones, and handle the post conservatively — about 75% of a managed week.'
+    : 'Skip the rest of the week and go to the report? Staff finish off anything you haven’t handled.';
+  if (!confirm(msg)) return;
   UI.closeModal();
   var r = FE.skipWeek();
   renderAll();
-  if (r && r.report) UI.modal('<h3>While you were away…</h3><pre class="report">' + reportText(r.report) + '</pre>' +
-    '<button onclick="UI.closeModal();UI.startNext()">Start week ' + G().week + '</button>');
+  if (r && r.report) UI.modal('<h3>' + (full ? 'While you were away…' : 'End of week report') + '</h3><pre class="report">' + reportText(r.report) + '</pre>' +
+    '<div class="btnrow"><button onclick="UI.closeModal();UI.startNext()">Start week ' + G().week + '</button>' +
+    '<button class="sec" onclick="UI.closeModal();UI.renderAll()">Sit with it</button></div>');
   if (r && r.dead) setTimeout(showGameOver, 400);
 };
+UI.skipWeekUI = function () { UI.closeModal(); UI.skipWeek(); };
 
 /* ---------- share ---------- */
 UI.share = function () {

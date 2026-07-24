@@ -180,6 +180,8 @@ function genVehicle(brandKey, opts) {
   var ageRow = FE.AGE[age];
   var expMiles = age * FE.MILES_PER_YEAR;
   var miles = Math.max(1500, Math.round(norm(expMiles, expMiles * FE.MILE_SD) / 100) * 100);
+  // higher-mileage bargain: push the odometer well over the age-expected figure
+  if (opts.milesHigh) miles = Math.max(miles, Math.round(expMiles * U(1.25, 1.75) / 100) * 100);
   var dev = (miles - expMiles) / 10000;
   var mileVal = clamp(1 - FE.MILE_VALUE_PEN_PER_10K * dev, FE.MILE_VALUE_FLOOR, 1.22);
 
@@ -253,8 +255,13 @@ FE.scoreLot = scoreLot;
 
 function genLots() {
   var lots = [], i;
-  for (i = 0; i < 20; i++) {
-    var v = genVehicle(G.brand);
+  var N = FE.LOTS_PER_WEEK;
+  for (i = 0; i < N; i++) {
+    // roughly a third of the list are older, higher-mileage bargains — cheap
+    // in, but slower to shift and more likely to bite
+    var opts = {};
+    if (rnd() < 0.34) { opts.age = RI(5, 8); opts.milesHigh = true; }
+    var v = genVehicle(G.brand, opts);
     var des = 0;
     if (v.age <= 2) des += FE.DESIRE_AGE;
     if (FE.TRIMS[v.trim].t === 'Top') des += FE.DESIRE_TOP;
@@ -463,7 +470,7 @@ function startWeek() {
   // fresh auction list
   G.lots = genLots();
   G.lotsWk = G.week;
-  mail('Central Auctions', 'Today’s list — 20 lots', 'Fresh lots in the lanes. They expire when the next list lands: miss a day and the good ones are gone.', 'auction');
+  mail('Central Auctions', 'Today’s list — ' + FE.LOTS_PER_WEEK + ' lots', 'Fresh lots in the lanes, including a run of older, higher-mileage bargains. They expire when the next list lands: miss a day and the good ones are gone.', 'auction');
 
   // week-1 flavour
   if (G.week === 1) {
@@ -538,6 +545,27 @@ FE.hire = function (candId) {
   mail(R.name, 'First day', R.name + ' starts on the floor this week. ' + R.rep + '.', 'info');
   FE.save();
   return { ok: true };
+};
+
+FE.sackCost = function (id) {
+  var st = staffById(id);
+  if (!st) return 0;
+  var weeksServed = Math.max(0, G.week - st.hiredWk);
+  var basicWk = salary().basic / 52 + (st.extraBasic || 0);
+  return Math.round(basicWk * (weeksServed >= 26 ? 4 : 2));   // ~statutory notice pay
+};
+FE.sackStaff = function (id) {
+  var st = staffById(id);
+  if (!st) return { ok: false, msg: 'Not found.' };
+  var redundancy = FE.sackCost(id);
+  if (G.cash < redundancy) return { ok: false, msg: 'Can’t cover the ' + money(redundancy) + ' redundancy.' };
+  G.staff = G.staff.filter(function (s) { return s.id !== id; });
+  if (redundancy > 0) pay(redundancy, 'misc', 'Redundancy — ' + st.name);
+  // the rest of the team notices — a small morale dip
+  G.staff.forEach(function (s) { s.morale = Math.max(0.55, s.morale - 0.07); });
+  mail('Accounts', 'Let ' + st.name + ' go', st.name + ' has been let go' + (redundancy > 0 ? ' with ' + money(redundancy) + ' redundancy' : '') + '. The rest of the floor has noticed — expect a small dip in mood.', 'info');
+  FE.save();
+  return { ok: true, redundancy: redundancy };
 };
 
 FE.train = function (staffId, courseId) {
@@ -1288,14 +1316,28 @@ function makeOrder(model, colour, trim, dueWk) {
 FE.orderNewCar = function (model, colour, trim, express) {
   if (!G.franchise) return { ok: false, msg: 'No franchise.' };
   if (G.franchise.live === false) return { ok: false, msg: 'The brand corner is still being fitted out — orders open week ' + G.franchise.liveWk + '.' };
-  if (usedSlots() >= totalSlots()) return { ok: false, msg: 'No free pitches.' };
+  // reserve a pitch for every car already on order, so a batch can't overflow the site
+  if (usedSlots() + G.orders.length >= totalSlots()) return { ok: false, msg: 'No free pitches (cars already on order fill the rest).' };
   var due = express ? G.week + 1 : G.week + RI(8, 14);
   var o = makeOrder(model, colour, trim, due);
   var cost = Math.round(o.list * FE.FRANCHISE.costPct);
-  if (G.cash < cost) return { ok: false, msg: 'Cannot fund it — ' + money(cost) + ' on delivery.' };
+  if (G.cash < cost) return { ok: false, msg: 'Cannot fund it — ' + money(cost) + ' due on delivery.' };
   G.orders.push(o);
   FE.save();
   return { ok: true, dueWk: due, cost: cost };
+};
+FE.freePitches = function () { return Math.max(0, totalSlots() - usedSlots() - (G.orders ? G.orders.length : 0)); };
+// order a batch of the same spec in one go, capped by free pitches and cash
+FE.orderNewCars = function (model, colour, trim, express, qty) {
+  qty = Math.max(1, qty || 1);
+  var placed = 0, dueWk = 0, lastMsg = '';
+  for (var i = 0; i < qty; i++) {
+    var r = FE.orderNewCar(model, colour, trim, express);
+    if (!r.ok) { lastMsg = r.msg; break; }
+    placed++; dueWk = r.dueWk;
+  }
+  if (placed === 0) return { ok: false, msg: lastMsg || 'Could not order.' };
+  return { ok: true, placed: placed, dueWk: dueWk, short: placed < qty ? lastMsg : null };
 };
 function deliverNewCar(o) {
   var v = genVehicle(G.brand, { model: o.model, age: 1 });
@@ -1533,41 +1575,50 @@ FE.nextWeek = function () {
 
 /* ---------- AFK / skip week ---------- */
 FE.skipWeek = function () {
-  // staff run the week: auto-resolve everything at 75% effectiveness
-  FE.enterShowroom();
+  // "Skip the rest of the week": staff handle whatever the player hasn't, then
+  // the week closes. Works from any phase — from the auction it's a full AFK
+  // week; from the showroom/office it just finishes off what's left.
+  var startedFromAuction = (G.phase === 'auction');
   var afkNote = [];
   var kept = 0;
-  G.events.forEach(function (ev) {
-    if (!ev.built) buildEvent(ev);
-    if (ev.dead || ev.silent) return;
-    if (ev.kind === 'prep') { FE.payPrep(ev); ev.dead = true; return; }
-    if (ev.kind === 'prequal' && ev.car) { FE.prequalClose(ev, null); kept++; return; }
-    if (ev.kind === 'offer') {
-      if (ev.type === 'crazy') { ev.dead = true; afkNote.push('Declined a silly offer on the ' + FE.MODELS[ev.car.model].m + '.'); return; }
-      if (ev.px && !ev.pxResolved) {
-        var pr = FE.resolvePX(ev, 'fair');
-        if (!pr.dealOn) { ev.dead = true; return; }
+  if (G.phase === 'auction') FE.enterShowroom();   // generate the week's events
+  if (G.phase === 'showroom') {
+    G.events.forEach(function (ev) {
+      if (!ev.built) buildEvent(ev);
+      if (ev.dead || ev.silent) return;
+      if (ev.kind === 'prep') { FE.payPrep(ev); ev.dead = true; return; }
+      if (ev.kind === 'prequal' && ev.car) { FE.prequalClose(ev, null); kept++; return; }
+      if (ev.kind === 'offer') {
+        if (ev.type === 'crazy') { ev.dead = true; afkNote.push('Declined a silly offer on the ' + FE.MODELS[ev.car.model].m + '.'); return; }
+        if (ev.px && !ev.pxResolved) {
+          var pr = FE.resolvePX(ev, 'fair');
+          if (!pr.dealOn) { ev.dead = true; return; }
+        }
+        if (rnd() < 0.75) { FE.acceptOffer(ev, null); kept++; }
+        else ev.dead = true;
+        return;
       }
-      if (rnd() < 0.75) { FE.acceptOffer(ev, null); kept++; }
-      else ev.dead = true;
-      return;
-    }
-    if (ev.kind === 'tradebuyer') { ev.dead = true; return; }
-  });
-  G.eventIdx = G.events.length;
-  FE.enterOffice();
-  // auto-answer office post conservatively
+      if (ev.kind === 'tradebuyer') { ev.dead = true; return; }
+    });
+    G.eventIdx = G.events.length;
+  }
+  if (G.phase !== 'office') FE.enterOffice();
+  // auto-answer any still-open office post conservatively
   G.emails.forEach(function (e) {
     if (e.done) return;
     if (e.type === 'comeback') { FE.resolveComeback(e.id, 'goodwill'); }
     if (e.type === 'holiday') FE.resolveHoliday(e.id, true);
+    if (e.type === 'payreview') FE.resolvePayReview(e.id, true);
+    if (e.type === 'poach') FE.resolvePoach(e.id, true);
     if (e.type === 'prereg') FE.resolvePreReg(e.id, false);
     if (e.type === 'alloc') FE.resolveAlloc(e.id, false);
   });
   FE.needsAck().forEach(function (c) { FE.ack90(c.id); });
-  G.totals.afk++;
+  if (startedFromAuction) G.totals.afk++;
   var res = FE.closeWeek();
-  mail('The team', 'While you were away…', 'The floor ran itself this week. ' + kept + ' deals done at the prices offered — no counters, nothing clever. ' + (afkNote.length ? afkNote.join(' ') : '') + ' Full numbers in the weekly report.', 'away');
+  if (startedFromAuction) {
+    mail('The team', 'While you were away…', 'The floor ran itself this week. ' + kept + ' deals done at the prices offered — no counters, nothing clever. ' + (afkNote.length ? afkNote.join(' ') : '') + ' Full numbers in the weekly report.', 'away');
+  }
   return res;
 };
 
