@@ -71,7 +71,18 @@ colour-coded chip on every lot card:
 - Scoring is from **visible** attributes only — the hidden rolls (true prep,
   latent faults, true days-to-sell) stay hidden, so the light is an honest
   summary of what a buyer could see in the lane, not a leak of the answer.
-  A red car can still be the smart buy at the right money — that's the game.
+- **Red means "high risk", not "don't buy" (Dan, day 2).** Two flavours of
+  red, and the chip's tap-through should say which:
+  - *High risk, potentially high reward* — rough grade / big mileage on an
+    otherwise desirable car, priced down because the room won't touch it.
+    The gamble: prep and faults could eat you, or you clear double gross.
+    Tap-through copy along the lines of "priced for the risk — the upside is
+    real if the workshop is kind."
+  - *High risk because it's simply a bad car* — graveyard colour, wrong spec,
+    no story where it wins big. Tap-through: "cheap for a reason; the exit is
+    trade, not retail."
+  - Practically: show the risk driver(s) on the chip tap (grade, colour,
+    mileage, history) so the player learns to tell a gamble from a grave.
 - Sort/filter by light in the auction sheet.
 
 ## 4. Sales execs visible on the map
@@ -88,7 +99,96 @@ colour-coded chip on every lot card:
   the step vs trudging).
 - Builds on the same sprite/animation layer as item 1 — do together.
 
+## 5. Email tab should feel like a real phone mail client (Dan, day 2)
+
+> "Need to sort the emails out so they look like reading an email on your phone."
+
+Current inbox is a stack of generic cards. Rebuild as a proper mail app:
+
+- **Inbox list**: avatar circle with sender initial (colour-coded per sender —
+  execs get their palette from the map figures), sender name bold + week/time
+  right-aligned, subject line, one-line greyed preview, blue unread dot,
+  "needs action" pill on comebacks/requests. Grouped by day ("This week",
+  "Earlier").
+- **Full-screen reader** (slide-in, not a bottom sheet): mail-app header
+  (From / Subject / week), body in a proper reading layout, action buttons
+  pinned at the bottom like smart replies. Back arrow top-left.
+- **Threading**: comeback follow-ups, warranty responses and quarter-end
+  franchise mail thread under the original message rather than arriving as
+  strangers.
+- **Filter tabs** across the top: All · Needs action · Sold notes · Trade
+  press. Unread badge per filter.
+- Rich content where it earns it: the daily auction email embeds the 20-lot
+  list (with the traffic lights from item 3); sold notes keep the exec's
+  sign-off style.
+- Swipe-to-archive; archive is where the 120-mail cap trims from.
+
+## 6. Construction time on everything that's built (Dan, day 2)
+
+> "Have a construction building time on anything that's built."
+
+Currently the service department takes a week but land expansion is instant.
+Change: **nothing appears by magic.** Every purchase that changes the site
+gets a visible build:
+
+| Build | Time (game weeks) | While building |
+|---|---|---|
+| Service department | 1 wk (as now) | capacity −20%, scaffolding on map |
+| Land expansion +15 | 1 wk | diggers on the new ground, slots unusable |
+| Land expansion +40 | 2 wks | same, longer |
+| Smart repair / valeting (post-beta) | 1 wk / half-week | scaffold props |
+| Franchise signing | 1 wk brand-corner install before first order lands |
+| Premises upgrade (when added) | 2 wks, site partially disrupted |
+
+- Map shows the build: scaffold sprite, crane, hi-vis figures (same sprite
+  layer as items 1 and 4), progress bar over the plot, completion fanfare.
+- Ties into the app-version real-time clock naturally (spec §15 gave build
+  times in real hours: 24h / 12h / 6h).
+
+## 7. Starting capital — honest review of the £1,000,000 (Dan asked, day 2)
+
+Verdict from full-year simulations: **£1m is right for the story, ~30% too
+generous for the tension — but don't change it mid-beta.**
+
+The numbers (52-week runs, sensible play, minimum cash ever touched):
+
+| Route | Peak capital deployed | Lowest cash all year |
+|---|---|---|
+| Dacio / portacabin | ~£250k | **£746k** |
+| Fjord / converted | ~£640k | £364k |
+| BMV / converted | ~£680k | £331k |
+| BMV / showroom | ~£800k | £249k |
+| Dacio / showroom | ~£700k | £318k |
+
+Meaning: on every sane route, £250k–£750k of the aunt's money never enters
+play. Nobody gets within sight of the overdraft in year 1 unless they
+over-commit to the franchise. The death spiral the spec wants reachable
+(thin cash → can't restock → forecourt ages → stars fall) is currently
+almost unreachable because the buffer absorbs a full year of mistakes.
+
+Options considered:
+
+- **Keep £1m** — it's the opening line of the game and a great round number.
+  Cost: capital pressure only exists on BMV+franchise routes.
+- **Cut to ~£600k** — makes BMV/showroom (£290k site + ~£400k stock)
+  genuinely tight and franchise commitment scary. Cost: beginners on
+  expensive routes could die in month 2, which is exactly the retention risk
+  the hope curve exists to avoid.
+- **£750k ("after probate and the taxman")** — narratively free, keeps Dacio
+  and Fjord comfortable, puts real sweat into premium routes. The single
+  number I'd pick if forced to pick one.
+
+**Recommendation:** leave £1m alone for the beta — forgiveness is what you
+want while colleagues learn the game. At the app build, keep the £1m *pitch*
+and take the difference back in-fiction: probate fees, or a second-career
+prestige reset that restarts you on £600k. If only one lever ever gets
+pulled, make it £750k, not a deeper cut — the game's difficulty lives in the
+P&L (January, floorplan, prep), not in the opening balance, and starving the
+player of stock money just makes the forecourt emptier, not the decisions
+harder.
+
 ---
 
-*Beta shipped 2026-07-24. Feedback items above logged same day; to be
-implemented as the post-beta art & feel pass unless Dan reprioritises.*
+*Beta shipped 2026-07-24. Items 1–4 logged day 1, items 5–7 day 2; to be
+implemented as the post-beta pass unless Dan reprioritises. No gameplay or
+visual changes have been made while the beta is under test.*
