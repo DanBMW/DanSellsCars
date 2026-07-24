@@ -22,6 +22,21 @@ FE.FNI_BASE = 0.34;
 FE.FNI_BACKEND = 1150;
 FE.SERVICE_PREP_SAVING = 0.40;
 
+/* Stocking finance — an optional credit facility to fund stock beyond your
+   cash. Limit scales with net worth (capped £1M); the rate starts high for a
+   new dealer and eases as you establish a track record and grow net worth. */
+FE.STOCK_FINANCE = {
+  limitPct: 0.5,          // borrow up to 50% of net worth...
+  maxLimit: 1000000,      // ...capped at £1M
+  aprStart: 0.145,        // ~14.5% APR for a brand-new dealer
+  aprFloor: 0.065,        // best rate once established and wealthy
+  buffer: 25000           // headroom below the limit before the bank calls it in
+};
+/* Customer finance — how the back-end splits into finance commission vs
+   products, for visibility. Balance-neutral: the total back-end is unchanged. */
+FE.FINANCE_TAKEUP = 0.82;         // share of F&I deals that ride on finance
+FE.FINANCE_COMM_SHARE = [0.42, 0.60];  // finance commission as a slice of back-end
+
 FE.BRANDS = {
   Dacio: {
     name: 'Dacio', tier: 1, footfall: 115, prepPct: 0.055,

@@ -550,6 +550,9 @@ UI.openAuction = function () {
   g.lots.forEach(function (l) { counts[l.risk.light]++; });
   var h = '<h3>Central Auctions — today’s list</h3>' +
     '<p class="kv muted small">Est. gross is <b>before fees, prep &amp; hold cost</b> — the mean prep assumption, and it is optimistic. Buyer premium 5.5% + £180 transport on every lot. Tap a risk light for why.</p>';
+  if (FE.financeEnabled()) {
+    h += '<div class="card kv" style="margin:4px 0"><b>' + M(FE.spendPower()) + '</b> to spend (' + M(g.cash) + ' cash + ' + M(FE.financeHeadroom()) + ' stocking finance).</div>';
+  }
   h += '<div class="risk-filter">' +
     ['all', 'green', 'amber', 'red'].map(function (f) {
       var name = f === 'all' ? 'All' : f === 'green' ? '🟢' : f === 'amber' ? '🟠' : '🔴';
@@ -826,6 +829,24 @@ function buildProgress(startWk, dueWk, nowWk, label) {
 UI.openOffice = function () {
   var g = G();
   var h = '<h3>The office</h3>';
+  // stocking finance facility
+  var drawn = FE.financeDrawn(), lim = FE.financeLimit();
+  if (FE.financeEnabled()) {
+    var head = FE.financeHeadroom();
+    var pct = lim ? Math.min(100, Math.round(drawn / lim * 100)) : 0;
+    h += '<div class="card"><b>Stocking finance</b>' +
+      '<div class="row kv"><span>Credit limit</span><b>' + M(lim) + '</b></div>' +
+      '<div class="row kv"><span>Drawn now</span><b class="' + (drawn > 0 ? 'warn' : '') + '">' + M(drawn) + '</b></div>' +
+      '<div class="row kv"><span>Headroom to spend</span><b>' + M(head) + '</b></div>' +
+      '<div class="row kv"><span>Interest rate</span><b>' + (Math.round(FE.financeApr() * 1000) / 10) + '% APR</b></div>' +
+      '<div class="progressbar"><i class="' + (pct > 80 ? 'warn' : '') + '" style="width:' + pct + '%"></i></div>' +
+      '<div class="kv muted small">Limit scales with net worth (max ' + M(FE.STOCK_FINANCE.maxLimit) + '); the rate eases as you establish. Interest on the drawn balance only, weekly, on top of floorplan.</div>' +
+      (drawn <= 0 ? '<div class="btnrow"><button class="sec" onclick="UI.financeToggle(false)">Close facility</button></div>' : '') +
+      '</div>';
+  } else {
+    h += '<div class="card"><b>Stocking finance</b><div class="kv">A credit facility to buy stock beyond your cash — up to ' + M(FE.STOCK_FINANCE.maxLimit) + ', scaled to your net worth. Rate is higher for a new dealer (~' + (Math.round(FE.STOCK_FINANCE.aprStart * 1000) / 10) + '% APR) and eases as you grow. <span class="warn">Leverage cuts both ways: turn stock fast and it pays; sit on it and interest bites.</span></div>' +
+      '<div class="btnrow"><button onclick="UI.financeToggle(true)">Open a facility</button></div></div>';
+  }
   // ads
   if (g.week >= 5) {
     h += '<div class="card"><b>Advertising</b><div class="btnrow">';
@@ -885,6 +906,11 @@ UI.openOffice = function () {
   h += '</div></div>';
   h += '<button class="ghost" onclick="UI.closeModal()">Back to it</button>';
   UI.modal(h);
+};
+UI.financeToggle = function (on) {
+  var r = FE.enableFinance(on);
+  toast(r.ok ? (on ? 'Stocking finance live — you can now buy on credit.' : 'Facility closed.') : r.msg);
+  UI.openOffice(); renderHUD();
 };
 UI.signFranchiseUI = function () {
   var r = FE.signFranchise(FE.FRANCHISE.minSlots);
@@ -1042,7 +1068,9 @@ function reportText(r) {
   t += line('Units sold', r.units);
   t += line('Front-end gross', M(r.front));
   t += line('Back-end gross', M(r.back));
+  if (r.financeComm) t += line('  of which finance', M(r.financeComm));
   t += line('Total gross', M(r.gross));
+  if (r.units) t += line('Finance penetration', Math.round((r.financed || 0) / r.units * 100) + '%');
   t += '\n';
   var c = r.costs;
   if (c.salaries) t += line('Staff salaries', '-' + M(c.salaries));
@@ -1051,6 +1079,7 @@ function reportText(r) {
   if (c.prep) t += line('Prep', '-' + M(c.prep));
   if (c.advertising) t += line('Advertising', '-' + M(c.advertising));
   if (c.floorplan) t += line('Floorplan interest', '-' + M(c.floorplan));
+  if (c.stockfinance) t += line('Stocking finance int.', '-' + M(c.stockfinance));
   t += line('Insurance / misc', '-' + M(c.insurance + (c.misc || 0)));
   if (c.training) t += line('Training', '-' + M(c.training));
   if (c.comebacks) t += line('Comebacks', '-' + M(c.comebacks));
@@ -1077,6 +1106,7 @@ function reportText(r) {
   t += line('Headcount', r.headcount);
   t += line('Star rating', r.stars + ' ★');
   t += line('Cash', M(r.cash));
+  if (r.financeDrawn) t += line('Finance drawn', M(r.financeDrawn) + ' @ ' + r.financeApr + '%');
   return t;
 }
 

@@ -92,6 +92,7 @@ FE.newGame = function (brandKey, siteIdx, salaryIdx) {
     extraSlots: 0, extraUtil: 0, expansionsDone: [], pendingBuilds: [],
     dept: { service: 0, building: 0 },      // service: week it went live (0 = none)
     franchise: null,                        // {slots, signedWk, qUnits, qMargin, yUnits, preRegPending}
+    finance: { enabled: false },            // stocking finance facility
     orders: [],                             // pending factory orders
     shocks: [],                             // {id, until, data}
     randShocksThisYear: 0,
@@ -99,7 +100,7 @@ FE.newGame = function (brandKey, siteIdx, salaryIdx) {
     events: [], eventIdx: 0,                // showroom queue
     pendingComebacks: [],                   // {carId, dueWk, cost, fault}
     flags: { firstSaleDone: false, prepTip: false, holdTip: false, tradeBuyerUsed: false, monReviewDone: false, allocDeclines: 0 },
-    totals: { units: 0, unitsYr: 0, bestWk: 0, bestWkAt: 0, worstWk: 999, worstWkAt: 0, fines: [], afk: 0 },
+    totals: { units: 0, unitsYr: 0, bestWk: 0, bestWkAt: 0, worstWk: 999, worstWkAt: 0, fines: [], afk: 0, financed: 0, financeComm: 0 },
     holidayPlan: {},                        // staffId -> requestWk
     idc: 1, dead: false
   };
@@ -301,7 +302,11 @@ FE.buyLot = function (lotId) {
   if (usedSlots() >= totalSlots()) return { ok: false, msg: 'No free pitches. Sell something or buy land.' };
   var premium = Math.round(v.hammer * FE.BUYER_PREMIUM);
   var total = v.hammer + premium + FE.TRANSPORT;
-  if (G.cash < total) return { ok: false, msg: 'Not enough cash for the hammer price plus fees.' };
+  if (FE.spendPower() < total) {
+    return { ok: false, msg: FE.financeEnabled()
+      ? 'Beyond your cash and stocking-finance limit.'
+      : 'Not enough cash — turn on stocking finance in the Office to buy on credit.' };
+  }
   G.lots.splice(idx, 1);
   v.cost.hammer = v.hammer; v.cost.premium = premium; v.cost.transport = FE.TRANSPORT;
   v.boughtWk = G.week; v.arrivedWk = G.week; v.status = 'stock';
@@ -424,6 +429,7 @@ function startWeek() {
   G.weekly = {
     wk: G.week, sales: [], trades: [], losses: [], feed: [],
     costs: {}, front: 0, back: 0, units: 0, attached: 0, pushes: 0, gradeLowSold: 0,
+    financed: 0, financeComm: 0,
     staffUnits: {}, staffGross: {}
   };
   // collections: sold cars leave, freeing pitches
@@ -944,17 +950,29 @@ function closeSale(car, price, exec, fniChoice) {
     back = Math.round(FE.FNI_BACKEND * U(0.75, 1.35));
   }
 
+  // split the back-end into finance commission vs products, for visibility
+  // (balance-neutral: financeComm + products === back). Terry never sells finance.
+  var financed = false, financeComm = 0;
+  var noFinance = exec && exec.id === 'terry';
+  if (attached && !noFinance && rnd() < FE.FINANCE_TAKEUP) {
+    financed = true;
+    financeComm = Math.round(back * U(FE.FINANCE_COMM_SHARE[0], FE.FINANCE_COMM_SHARE[1]));
+  }
+
   earn(price, 'Sold — ' + carName(car) + (execName !== 'you' ? ' (' + execName + ')' : ''));
-  if (back) earn(back, 'F&I products — ' + carName(car));
+  if (financeComm) earn(financeComm, 'Finance commission — ' + carName(car));
+  if (back - financeComm > 0) earn(back - financeComm, 'F&I products — ' + carName(car));
 
   car.soldPrice = price; car.soldFront = Math.round(front); car.soldBack = back;
   car.soldBy = exec ? exec.id : 'you';
   car.soldAttached = attached;
+  car.soldFinanced = financed; car.soldFinanceComm = financeComm; car.soldProducts = back - financeComm;
 
   G.weekly.units++;
   G.weekly.front += front;
   G.weekly.back += back;
   if (attached) G.weekly.attached++;
+  if (financed) { G.weekly.financed++; G.weekly.financeComm += financeComm; G.totals.financed++; G.totals.financeComm += financeComm; }
   if (car.cond <= 2 && !car.isNew) G.weekly.gradeLowSold++;
   if (exec) {
     G.weekly.staffUnits[exec.id] = (G.weekly.staffUnits[exec.id] || 0) + 1;
@@ -1117,11 +1135,13 @@ function soldEmail(car, sale) {
   else name = sale.exec;
   lines.push((isLoss ? 'Finally shifted' : 'Sold') + ' the ' + FE.COLOURS[car.colour].c.toLowerCase() + ' ' + FE.MODELS[car.model].m + (isLoss ? '. Had to come down to ' + money(sale.price) + ' to get it away.' : ' this afternoon. ' + buyer + '.'));
   if (!isLoss) lines.push('Screen price ' + money(car.screen) + ', did the deal at ' + money(sale.price) + '.');
-  if (execId === 'terry') lines.push('No finance. He paid a fair price for an honest car, and that’s the whole story.');
-  else if (car.soldAttached) lines.push('Products: ' + pick(['GAP insurance', 'GAP + paint protection', 'warranty upgrade', 'finance + GAP', 'PCP through the usual house + paint'])+ '.');
-  else lines.push('No products — ' + pick(['paid cash and wasn’t interested', 'flat no on finance', 'already had cover sorted']) + '.');
+  if (execId === 'terry') lines.push('No finance, paid cash. A fair price for an honest car, and that’s the whole story.');
+  else if (car.soldFinanced) lines.push('Finance: ' + pick(['PCP through the usual house', 'HP over 48 months', 'PCP, low deposit', 'finance through the house']) + (car.soldProducts > 0 ? ', plus ' + pick(['GAP insurance', 'GAP + paint protection', 'a warranty upgrade', 'paint protection']) + '.' : '.'));
+  else if (car.soldAttached) lines.push('Cash buyer, but took ' + pick(['GAP insurance', 'a warranty upgrade', 'paint protection']) + '.');
+  else lines.push('No finance, no products — ' + pick(['paid cash and wasn’t interested', 'flat no on the lot', 'already had cover sorted']) + '.');
   lines.push('Front-end ' + money(sale.front));
-  lines.push('Back-end ' + money(sale.back));
+  if (car.soldFinanced && car.soldFinanceComm) lines.push('Finance commission ' + money(car.soldFinanceComm));
+  lines.push('Back-end ' + money(sale.back) + (car.soldFinanceComm ? ' (inc. finance)' : ''));
   lines.push(isLoss ? 'Total LOSS ' + money(sale.front + sale.back) : 'Total profit ' + money(sale.front + sale.back));
   lines.push('(Prep spent ' + money(sale.prep) + ' · hold cost ' + money(sale.hold) + ' — true net ' + money(sale.net) + ')');
   lines.push(daysIn(car) + ' days in stock.' + (isLoss ? (execId === 'deano' ? ' Sorry boss.' : '') : ' ' + pick(['Nice one to see gone.', 'Good deal all round.', 'Clean sale.'])));
@@ -1506,6 +1526,11 @@ FE.closeWeek = function () {
   var fp = 0;
   G.stock.forEach(function (c) { if (c.status === 'stock' || c.status === 'sold') fp += carCost(c) * FE.FLOORPLAN_APR / 52; });
   pay(Math.round(fp), 'floorplan');
+  // stocking finance interest on the drawn balance (only when you've borrowed)
+  if (FE.financeEnabled()) {
+    var drawn = FE.financeDrawn();
+    if (drawn > 0) pay(Math.round(drawn * FE.financeApr() / 52), 'stockfinance');
+  }
   if (G.franchise) pay(Math.round(FE.FRANCHISE.fee / 52), 'franchise');
   if (G.dept.service && G.week >= G.dept.service) earn(FE.DEPARTMENTS[0].weekly, 'Service department income');
 
@@ -1525,7 +1550,7 @@ FE.closeWeek = function () {
     - (costs.salaries || 0) - (costs.commission || 0) - (costs.utilities || 0)
     - (costs.prep || 0) - (costs.advertising || 0) - (costs.floorplan || 0)
     - (costs.insurance || 0) - (costs.misc || 0) - (costs.fines || 0)
-    - (costs.training || 0) - (costs.comebacks || 0) - (costs.franchise || 0);
+    - (costs.training || 0) - (costs.comebacks || 0) - (costs.franchise || 0) - (costs.stockfinance || 0);
   // auction spend is capital, not P&L — stock swaps cash for metal
 
   // floorplan offenders
@@ -1540,8 +1565,11 @@ FE.closeWeek = function () {
       utilities: costs.utilities || 0, prep: Math.round(costs.prep || 0), advertising: costs.advertising || 0,
       auction: Math.round(costs.auction || 0), floorplan: Math.round(costs.floorplan || 0),
       insurance: costs.insurance || 0, fines: Math.round(costs.fines || 0), training: Math.round(costs.training || 0),
-      comebacks: Math.round(costs.comebacks || 0), franchise: Math.round(costs.franchise || 0), misc: Math.round(costs.misc || 0)
+      comebacks: Math.round(costs.comebacks || 0), franchise: Math.round(costs.franchise || 0), misc: Math.round(costs.misc || 0),
+      stockfinance: Math.round(costs.stockfinance || 0)
     },
+    financeDrawn: FE.financeDrawn(), financeApr: Math.round(FE.financeApr() * 1000) / 10,
+    financed: W.financed || 0, financeComm: Math.round(W.financeComm || 0),
     deptIncome: deptIncome, tradeNet: Math.round(tradeNet),
     net: Math.round(net), losses: W.losses,
     stock: stkList.length, slots: totalSlots(),
@@ -1563,7 +1591,9 @@ FE.closeWeek = function () {
 
   G.week++;
   G.phase = 'report';
-  if (G.cash < -25000) { G.dead = true; FE.save(); return { ok: true, report: report, dead: true }; }
+  // the bank calls it in only past your facility limit (plus a little headroom)
+  var deadLine = FE.financeEnabled() ? -(FE.financeLimit() + FE.STOCK_FINANCE.buffer) : -25000;
+  if (G.cash < deadLine) { G.dead = true; FE.save(); return { ok: true, report: report, dead: true }; }
   FE.save();
   return { ok: true, report: report };
 };
@@ -1660,6 +1690,8 @@ FE.shareText = function () {
   lines.push('Departments: ' + (G.dept.service ? 'Service dept' : 'none yet'));
   lines.push('Fines taken: ' + G.totals.fines.length + (G.totals.fines.length ? ' (' + G.totals.fines[G.totals.fines.length - 1].name + ', ' + money(G.totals.fines[G.totals.fines.length - 1].amount) + ')' : ''));
   lines.push('Salary structure: ' + salary().name);
+  if (G.totals.units) lines.push('Finance penetration: ' + Math.round(G.totals.financed / G.totals.units * 100) + '%');
+  if (FE.financeEnabled()) lines.push('Stocking finance: ' + (FE.financeDrawn() > 0 ? money(FE.financeDrawn()) + ' drawn @ ' + (Math.round(FE.financeApr() * 1000) / 10) + '%' : 'facility open, undrawn'));
   if (G.totals.afk > 0) lines.push('AFK weeks: ' + G.totals.afk);
   lines.push('');
   lines.push('Can you beat it?');
@@ -1670,6 +1702,39 @@ FE.netWorth = function () {
   var stockV = 0;
   inStock().forEach(function (c) { stockV += carCost(c); });
   return Math.round(G.cash + stockV + site().cost + (G.dept.service ? 180000 : 0));
+};
+
+/* ---------- stocking finance facility ---------- */
+FE.financeEnabled = function () { return !!(G.finance && G.finance.enabled); };
+FE.financeLimit = function () {
+  if (!FE.financeEnabled()) return 0;
+  // limit scales with net worth. Use GROSS assets (net worth + what's drawn) so
+  // drawing on the facility doesn't shrink the very limit backing it.
+  var drawn = Math.max(0, -G.cash);
+  var basis = FE.netWorth() + drawn;
+  var lim = Math.round(basis * FE.STOCK_FINANCE.limitPct / 10000) * 10000;
+  return Math.max(0, Math.min(FE.STOCK_FINANCE.maxLimit, lim));
+};
+FE.financeDrawn = function () { return Math.max(0, -Math.round(G.cash)); };
+FE.financeHeadroom = function () { return Math.max(0, FE.financeLimit() - FE.financeDrawn()); };
+FE.financeApr = function () {
+  var sf = FE.STOCK_FINANCE;
+  var nw = FE.netWorth();
+  var nwFactor = clamp((nw - 900000) / 2100000, 0, 1);   // £900k → £3M eases the rate
+  var timeFactor = clamp(G.week / 104, 0, 1);            // matures over ~2 game years
+  var t = Math.min(1, timeFactor * 0.5 + nwFactor * 0.6);
+  return sf.aprStart - (sf.aprStart - sf.aprFloor) * t;
+};
+FE.spendPower = function () { return G.cash + FE.financeLimit(); };
+FE.enableFinance = function (on) {
+  if (!G.finance) G.finance = { enabled: false };
+  if (!on && FE.financeDrawn() > 0) return { ok: false, msg: 'Clear the drawn balance before closing the facility.' };
+  G.finance.enabled = !!on;
+  mail('Kingsway Stocking Finance', on ? 'Facility approved' : 'Facility closed',
+    on ? 'Your stocking finance facility is live. You can now buy stock beyond your cash, up to ' + money(FE.financeLimit()) + ' (it scales with your net worth). Interest is ' + Math.round(FE.financeApr() * 1000) / 10 + '% APR to start and eases as you establish yourself — charged weekly on whatever you’ve drawn, on top of the usual floorplan. Turn your stock fast and it pays for itself; sit on it and the interest bites.'
+       : 'Facility closed at your request.', 'info');
+  FE.save();
+  return { ok: true };
 };
 
 FE.startWeekExternal = startWeek;
