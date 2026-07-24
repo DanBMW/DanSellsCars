@@ -236,6 +236,7 @@ function renderBanner() {
 /* ---------- tabs ---------- */
 UI.tab = function (t) {
   if (curTab === 'site' && t !== 'site' && window.Scene) Scene.unmount();
+  if (curTab === 'email' && t !== 'email') { mailSelectMode = false; mailSelected = {}; }
   curTab = t; moveModeCar = null;
   ['site', 'email', 'stock', 'staff', 'reports'].forEach(function (k) {
     $('tab-' + k).classList.toggle('on', k === t);
@@ -430,6 +431,40 @@ function mailPreview(body) {
   return t.length > 64 ? t.slice(0, 64) + '…' : t;
 }
 UI.setMailFilter = function (f) { mailFilter = f; renderEmail(); };
+var mailSelectMode = false;
+var mailSelected = {};
+UI.mailSelectToggle = function () {
+  mailSelectMode = !mailSelectMode; mailSelected = {};
+  renderEmail();
+};
+UI.mailTick = function (id) {
+  if (mailSelected[id]) delete mailSelected[id]; else mailSelected[id] = 1;
+  renderEmail();
+};
+UI.mailSelectAll = function () {
+  var g = G();
+  var list = g.emails.filter(function (e) { return (mailFilter === 'all' || mailCat(e) === mailFilter) && FE.emailDeletable(e); });
+  var allOn = list.length && list.every(function (e) { return mailSelected[e.id]; });
+  mailSelected = {};
+  if (!allOn) list.forEach(function (e) { mailSelected[e.id] = 1; });
+  renderEmail();
+};
+UI.mailMarkAllRead = function () {
+  var g = G();
+  // mark read within the current filter (so "Sold notes" clears just those)
+  var ids = g.emails.filter(function (e) { return mailFilter === 'all' || mailCat(e) === mailFilter; }).map(function (e) { return e.id; });
+  FE.markAllRead(mailFilter === 'all' ? null : ids);
+  renderHUD(); renderEmail();
+  toast(mailFilter === 'all' ? 'All marked read.' : 'Marked read.');
+};
+UI.mailDeleteSelected = function () {
+  var ids = Object.keys(mailSelected).map(Number);
+  if (!ids.length) { toast('Tick some emails first.'); return; }
+  var n = FE.deleteEmails(ids);
+  mailSelectMode = false; mailSelected = {};
+  renderHUD(); renderEmail();
+  toast(n ? n + ' email' + (n === 1 ? '' : 's') + ' deleted.' : 'Nothing deleted (action items are kept).');
+};
 function renderEmail() {
   var g = G(), h = '';
   var counts = { all: 0, action: 0, sold: 0, press: 0 };
@@ -440,12 +475,24 @@ function renderEmail() {
     else if (c === 'sold') counts.sold++;
     else if (c === 'press') counts.press++;
   });
-  var unreadAction = g.emails.filter(function (e) { return mailCat(e) === 'action'; }).length;
   var tabs = [['all', 'All'], ['action', 'Needs action'], ['sold', 'Sold notes'], ['press', 'Trade press']];
   h += '<div class="mail-tabs">' + tabs.map(function (t) {
     var badge = t[0] === 'action' && counts.action ? '<span class="mt-badge">' + counts.action + '</span>' : '';
     return '<button class="' + (mailFilter === t[0] ? 'on' : '') + '" onclick="UI.setMailFilter(\'' + t[0] + '\')">' + t[1] + badge + '</button>';
   }).join('') + '</div>';
+
+  // action bar: mark-all-read + select/delete
+  var selCount = Object.keys(mailSelected).length;
+  if (!mailSelectMode) {
+    h += '<div class="mail-actions">' +
+      '<button class="sec small" onclick="UI.mailMarkAllRead()">✓ Mark all read</button>' +
+      '<button class="sec small" onclick="UI.mailSelectToggle()">Select</button></div>';
+  } else {
+    h += '<div class="mail-actions">' +
+      '<button class="sec small" onclick="UI.mailSelectAll()">Select all</button>' +
+      '<button class="red small" onclick="UI.mailDeleteSelected()">Delete' + (selCount ? ' (' + selCount + ')' : '') + '</button>' +
+      '<button class="ghost small" onclick="UI.mailSelectToggle()">Cancel</button></div>';
+  }
 
   var list = g.emails.filter(function (e) { return mailFilter === 'all' || mailCat(e) === mailFilter; });
   if (!list.length) h += '<div class="card kv muted" style="margin-top:10px">' + (mailFilter === 'all' ? 'Inbox zero. Enjoy it while it lasts.' : 'Nothing here right now.') + '</div>';
@@ -458,7 +505,12 @@ function renderEmail() {
     var initial = esc(e.from.charAt(0).toUpperCase());
     var pill = cat === 'action' ? '<span class="mail-pill">Needs action</span>' :
       cat === 'sold' ? '<span class="mail-pill sold">Sold</span>' : '';
-    h += '<div class="mail-item' + (e.unread ? ' unread' : '') + '" onclick="UI.openEmail(' + e.id + ')">' +
+    var selectable = FE.emailDeletable(e);
+    var ticked = !!mailSelected[e.id];
+    var tap = mailSelectMode ? (selectable ? 'UI.mailTick(' + e.id + ')' : '') : 'UI.openEmail(' + e.id + ')';
+    var check = mailSelectMode ? '<div class="mail-check' + (ticked ? ' on' : '') + (selectable ? '' : ' lock') + '">' + (selectable ? (ticked ? '✓' : '') : '🔒') + '</div>' : '';
+    h += '<div class="mail-item' + (e.unread ? ' unread' : '') + (ticked ? ' sel' : '') + '"' + (tap ? ' onclick="' + tap + '"' : '') + '>' +
+      check +
       '<div class="mail-av" style="background:' + avatarColour(e.from) + '">' + initial + (e.unread ? '<i class="dot"></i>' : '') + '</div>' +
       '<div class="mail-body">' +
       '<div class="mail-row1"><span class="mail-from">' + esc(e.from) + '</span><span class="mail-wk">wk ' + e.wk + '</span></div>' +

@@ -261,6 +261,17 @@ button.big { width: 100%; padding: 15px; font-size: 1.05rem; border-radius: 14px
 .mail-pill { display: inline-block; font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; background: #ff5d6c; color: #fff; border-radius: 5px; padding: 1px 6px; vertical-align: middle; }
 .mail-pill.sold { background: linear-gradient(180deg, #40db8a, #23b06a); }
 .mail-reader-head { display: flex; align-items: center; gap: 11px; margin-bottom: 6px; }
+.mail-actions { display: flex; gap: 6px; margin: 8px 0 2px; justify-content: flex-end; }
+.mail-actions button { flex: 0 0 auto; box-shadow: none; }
+.mail-actions button.red { color: #fff; }
+.mail-item.sel { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+.mail-check {
+  flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; align-self: center;
+  border: 2px solid var(--line); display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 900; color: #fff; background: rgba(255,255,255,.04);
+}
+.mail-check.on { background: var(--blue); border-color: var(--blue); }
+.mail-check.lock { border-style: dashed; opacity: .55; font-size: .7rem; }
 
 /* ---------- tutorial coach marks ---------- */
 #tutOverlay { position: fixed; inset: 0; z-index: 300; }

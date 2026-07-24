@@ -158,6 +158,29 @@ FE.markRead = function (id) {
   G.emails.forEach(function (e) { if (e.id === id) e.unread = false; });
   FE.save();
 };
+FE.markAllRead = function (ids) {
+  var only = ids && ids.length ? {} : null;
+  if (only) ids.forEach(function (id) { only[id] = 1; });
+  G.emails.forEach(function (e) { if (!only || only[e.id]) e.unread = false; });
+  FE.save();
+};
+// delete emails by id, but never bin one that still needs a decision
+FE.deleteEmails = function (ids) {
+  var kill = {}; (ids || []).forEach(function (id) { kill[id] = 1; });
+  var pending = ['comeback', 'holiday', 'payreview', 'poach', 'alloc', 'prereg'];
+  var removed = 0;
+  G.emails = G.emails.filter(function (e) {
+    if (!kill[e.id]) return true;
+    if (pending.indexOf(e.type) >= 0 && !e.done) return true;   // keep un-actioned decisions
+    removed++; return false;
+  });
+  FE.save();
+  return removed;
+};
+FE.emailDeletable = function (e) {
+  var pending = ['comeback', 'holiday', 'payreview', 'poach', 'alloc', 'prereg'];
+  return !(pending.indexOf(e.type) >= 0 && !e.done);
+};
 FE.unreadCount = function () { return G ? G.emails.filter(function (e) { return e.unread; }).length : 0; };
 
 /* ---------- vehicle generation (section 8a) ---------- */
