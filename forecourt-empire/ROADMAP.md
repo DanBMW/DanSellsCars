@@ -179,7 +179,34 @@ available at every step:
   buyer) already provides the win moments — the tutorial narrates around
   them, it doesn't add new help.
 
-## 8. Starting capital — honest review of the £1,000,000 (Dan asked, day 2)
+## 8. Six new names for the recruitment list (Dan, day 2)
+
+> "Have the following names also on the recruitment list: Dan, Danny, Karis,
+> Clive, Vas and Tomi."
+
+Roster grows from 10 to 16 candidates. Placeholder characters drafted below —
+**stats and one-liners are proposals for Dan to tweak** before they go in
+(units/wk range, gross mult, F&I mult, complaint risk, all hidden until
+observed, same as the original ten):
+
+| Name | Shown reputation | Fee | Draft hidden character |
+|---|---|---|---|
+| **Dan** | "Knows everyone in Kent" | £4,800 | The complete package: 2.8–3.6 units, 1.18 gross, 1.25 F&I, 2% complaints. Priciest safe pair of hands on the list. |
+| **Danny** | "Dan's cousin. Probably fine" | £700 | Looks like a budget Dan, isn't: 2.2–4.0 units but 0.78 gross — gives it away to close. The name is the trap. |
+| **Karis** | "Service advisor gone to the dark side" | £2,200 | Aftersales DNA: 1.8–2.6 units, huge complaint-defusing effect (comebacks she handled cost half), 1.3 F&I. |
+| **Clive** | "Semi-retired. Does Tuesdays properly" | £1,900 | Old-school: 1.6–2.0 units, 1.35 gross, 0.2 F&I, morale anchor — the team around him dips slower in bad months. |
+| **Vas** | "Ran his own pitch until the divorce" | £2,600 | Trade brain: his sales find an extra 2% on PX margins and he spots blowout-risk lots (flags one red lot a week), 2.6–3.2 units. |
+| **Tomi** | "TikTok famous, apparently" | £1,100 | Footfall magnet: +4% site enquiries while employed, 2.0–3.4 units, 0.85 gross, 8% complaint risk — brings the crowd and the drama. |
+
+- Design intent: each new hire adds a *mechanic*, not just a stat line —
+  Karis touches comebacks, Clive touches team morale, Vas touches the
+  auction/PX layer, Tomi touches footfall. Keeps the bigger roster
+  interesting rather than six more bars on the same sliders.
+- Six more names also softens the sting of losing someone to poaching late
+  in a career, and makes the day-1 hiring change (item 2) feel like a real
+  labour market.
+
+## 9. Starting capital — honest review of the £1,000,000 (Dan asked, day 2)
 
 Verdict from full-year simulations: **£1m is right for the story, ~30% too
 generous for the tension — but don't change it mid-beta.**
@@ -223,6 +250,6 @@ harder.
 
 ---
 
-*Beta shipped 2026-07-24. Items 1–4 logged day 1, items 5–8 day 2; to be
+*Beta shipped 2026-07-24. Items 1–4 logged day 1, items 5–9 day 2; to be
 implemented as the post-beta pass unless Dan reprioritises. No gameplay or
 visual changes have been made while the beta is under test.*
