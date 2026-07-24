@@ -191,7 +191,13 @@ FE.ROSTER = [
   { id: 'kelly',  name: 'Kelly',  rep: 'Retail background, no motor trade',  fee: 600,  lo: 2.4, hi: 3.6, gross: 0.74, fni: 1.10, cRisk: 0.06, trait: 'discounts' },
   { id: 'marcus', name: 'Marcus', rep: 'Prestige specialist, BMV Mayfair',   fee: 6200, lo: 1.6, hi: 3.8, gross: 1.32, fni: 1.15, cRisk: 0.05, trait: 'prestige' },
   { id: 'bev',    name: 'Bev',    rep: 'Fleet sales, Fjord',                 fee: 3900, lo: 2.8, hi: 3.4, gross: 0.92, fni: 0.90, cRisk: 0.02, trait: 'steady' },
-  { id: 'ryan',   name: 'Ryan',   rep: 'Car supermarket, 2 years',           fee: 1500, lo: 3.0, hi: 4.2, gross: 0.80, fni: 1.35, cRisk: 0.11, trait: 'pusher' }
+  { id: 'ryan',   name: 'Ryan',   rep: 'Car supermarket, 2 years',           fee: 1500, lo: 3.0, hi: 4.2, gross: 0.80, fni: 1.35, cRisk: 0.11, trait: 'pusher' },
+  { id: 'dan',    name: 'Dan',    rep: 'Knows everyone in Kent',             fee: 4800, lo: 2.8, hi: 3.6, gross: 1.18, fni: 1.25, cRisk: 0.02, trait: 'complete' },
+  { id: 'danny',  name: 'Danny',  rep: 'Dan’s cousin. Probably fine',        fee: 700,  lo: 2.2, hi: 4.0, gross: 0.78, fni: 1.05, cRisk: 0.09, trait: 'discounts' },
+  { id: 'karis',  name: 'Karis',  rep: 'Service advisor gone to the dark side', fee: 2200, lo: 1.8, hi: 2.6, gross: 0.96, fni: 1.30, cRisk: 0.02, trait: 'defuser' },
+  { id: 'clive',  name: 'Clive',  rep: 'Semi-retired. Does Tuesdays properly', fee: 1900, lo: 1.6, hi: 2.0, gross: 1.35, fni: 0.20, cRisk: 0.01, trait: 'anchor' },
+  { id: 'vas',    name: 'Vas',    rep: 'Ran his own pitch until the divorce', fee: 2600, lo: 2.6, hi: 3.2, gross: 1.02, fni: 1.00, cRisk: 0.03, trait: 'trader' },
+  { id: 'tomi',   name: 'Tomi',   rep: 'TikTok famous, apparently',          fee: 1100, lo: 2.0, hi: 3.4, gross: 0.85, fni: 0.95, cRisk: 0.08, trait: 'magnet' }
 ];
 
 FE.TRAINING = [
@@ -234,9 +240,10 @@ FE.DEPARTMENTS = [
     blurb: 'Workshop income ~£3,200/wk. Word is it does something for prep bills too.' }
 ];
 FE.EXPANSIONS = [
-  { id: 'land15', name: 'Extra land — 15 pitches', cost: 40000, slots: 15, util: 90 },
-  { id: 'land40', name: 'Extra land — 40 pitches', cost: 95000, slots: 40, util: 210 }
+  { id: 'land15', name: 'Extra land — 15 pitches', cost: 40000, slots: 15, util: 90, buildWks: 1 },
+  { id: 'land40', name: 'Extra land — 40 pitches', cost: 95000, slots: 40, util: 210, buildWks: 2 }
 ];
+FE.FRANCHISE_INSTALL_WKS = 1;   // brand corner fit-out before the first order lands
 
 FE.SITE2_TARGET = 2000000;
 

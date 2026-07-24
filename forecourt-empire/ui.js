@@ -410,24 +410,64 @@ UI.prereg = function (id, a) {
 };
 
 /* ---------- auction ---------- */
+var auctionFilter = 'all';
+UI.setAuctionFilter = function (f) { auctionFilter = f; UI.openAuction(); };
+var RISK_LABEL = { green: 'Low risk', amber: 'Some risk', red: 'High risk' };
+function riskChip(l) {
+  var r = l.risk;
+  var lbl = RISK_LABEL[r.light];
+  if (r.light === 'red') lbl = r.flavour === 'gamble' ? 'High risk / high reward' : 'High risk — bad car';
+  return '<span class="risk-chip ' + r.light + '" onclick="event.stopPropagation();UI.riskInfo(' + l.id + ')">● ' + lbl + '</span>';
+}
 UI.openAuction = function () {
   var g = G();
   if (g.phase !== 'auction') { toast('The lanes are done for today. Tomorrow’s list comes with the new week.'); return; }
+  var counts = { all: g.lots.length, green: 0, amber: 0, red: 0 };
+  g.lots.forEach(function (l) { counts[l.risk.light]++; });
   var h = '<h3>Central Auctions — today’s list</h3>' +
-    '<p class="kv muted small">Est. gross is <b>before fees, prep &amp; hold cost</b> — the mean prep assumption, and it is optimistic. Buyer premium 5.5% + £180 transport on every lot.</p>';
+    '<p class="kv muted small">Est. gross is <b>before fees, prep &amp; hold cost</b> — the mean prep assumption, and it is optimistic. Buyer premium 5.5% + £180 transport on every lot. Tap a risk light for why.</p>';
+  h += '<div class="risk-filter">' +
+    ['all', 'green', 'amber', 'red'].map(function (f) {
+      var name = f === 'all' ? 'All' : f === 'green' ? '🟢' : f === 'amber' ? '🟠' : '🔴';
+      return '<button class="' + (auctionFilter === f ? 'on ' : '') + f + '" onclick="UI.setAuctionFilter(\'' + f + '\')">' + name + ' ' + counts[f] + '</button>';
+    }).join('') + '</div>';
   if (!g.lots.length) h += '<div class="card kv">All 20 lots gone or bought. Fresh list with the new week.</div>';
+  var shown = 0;
   g.lots.forEach(function (l) {
-    var cn = FE.COLOURS[l.colour];
-    h += '<div class="card">' +
+    if (auctionFilter !== 'all' && l.risk.light !== auctionFilter) return;
+    shown++;
+    h += '<div class="card lot ' + l.risk.light + '">' +
       '<div class="row"><b>' + esc(l.brand + ' ' + FE.MODELS[l.model].m) + '</b><b>' + M(l.hammer) + '</b></div>' +
       '<div class="kv">' + esc(FE.carDesc(l)) + '</div>' +
+      '<div class="row" style="margin:5px 0">' + riskChip(l) + (l.vasFlag ? '<span class="vas-flag">Vas rates this one</span>' : '') + '</div>' +
       '<div class="row kv"><span>Est retail <b>' + M(l.retail) + '</b></span><span>Est days <b>' + l.estDays[0] + '–' + l.estDays[1] + '</b></span></div>' +
-      '<div class="row kv"><span>Est. gross (before prep &amp; hold) <b class="' + (l.estGross > 1200 ? 'good' : '') + '">' + M(l.estGross) + '</b></span>' +
-      (l.wide ? '<span class="lot-flag">Wide variance — inspect risk</span>' : '') + '</div>' +
+      '<div class="row kv"><span>Est. gross (before prep &amp; hold) <b class="' + (l.estGross > 1200 ? 'good' : '') + '">' + M(l.estGross) + '</b></span></div>' +
       '<div class="btnrow"><button onclick="UI.buyLot(' + l.id + ')">Buy — ' + M(Math.round(l.hammer * 1.055) + 180) + ' all-in</button></div>' +
       '</div>';
   });
+  if (g.lots.length && !shown) h += '<div class="card kv muted">No ' + RISK_LABEL[auctionFilter] + ' lots in today’s list.</div>';
   h += '<button class="ghost" onclick="UI.closeModal()">Leave the lanes</button>';
+  UI.modal(h);
+};
+UI.riskInfo = function (id) {
+  var g = G(), l = null;
+  g.lots.forEach(function (x) { if (x.id === id) l = x; });
+  if (!l) return;
+  var r = l.risk;
+  var head = r.light === 'green' ? '🟢 Low risk' : r.light === 'amber' ? '🟠 Some risk' :
+    r.flavour === 'gamble' ? '🔴 High risk, high reward' : '🔴 High risk — a bad car';
+  var intro = r.light === 'green' ? 'Nothing visible to scare the room. Priced accordingly — the margin is honest, not generous.' :
+    r.light === 'amber' ? 'One thing to watch. Manageable if the money’s right.' :
+    r.flavour === 'gamble' ? 'Rough on paper and priced for it — but there’s a desirable car underneath. Get the prep and the faults kind and this is where the big gross hides. Get them wrong and it eats you.' :
+    'Cheap for a reason, and no hidden upside. The colour or the spec means you’ll be discounting it to shift it. Your exit here is the trade, not the retail line.';
+  var h = '<h3>' + head + '</h3><p class="kv">' + intro + '</p>' +
+    '<div class="card"><b>' + esc(l.brand + ' ' + FE.MODELS[l.model].m) + '</b><div class="kv">' + esc(FE.carDesc(l)) + '</div></div>' +
+    '<p class="kv" style="margin-bottom:4px"><b>What the light is reading:</b></p><ul class="risk-list">';
+  r.drivers.forEach(function (d) { h += '<li>' + esc(d) + '</li>'; });
+  h += '</ul>';
+  if (l.vasFlag) h += '<p class="kv good">Vas reckons this one’s worth the gamble — he’s usually right about the ones the room walks past.</p>';
+  h += '<div class="btnrow"><button onclick="UI.buyLot(' + l.id + ');">Buy — ' + M(Math.round(l.hammer * 1.055) + 180) + '</button>' +
+    '<button class="ghost" onclick="UI.openAuction()">Back to the lanes</button></div>';
   UI.modal(h);
 };
 UI.buyLot = function (id) {
@@ -651,6 +691,14 @@ function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
 /* ---------- office ---------- */
 UI.toOffice = function () { FE.enterOffice(); renderAll(); UI.tab('email'); toast('Post’s in. Deal with the desk, then close the week.'); };
 
+function buildProgress(startWk, dueWk, nowWk, label) {
+  var total = Math.max(1, dueWk - startWk);
+  var done = Math.min(total, nowWk - startWk);
+  var pct = Math.round(done / total * 100);
+  var left = Math.max(0, dueWk - nowWk);
+  return '<div class="kv"><span class="build-tag">🏗 ' + label + '</span> — ' + (left <= 0 ? 'finishing this week' : left + ' wk' + (left === 1 ? '' : 's') + ' left') + '</div>' +
+    '<div class="progressbar"><i class="warn" style="width:' + pct + '%"></i></div>';
+}
 UI.openOffice = function () {
   var g = G();
   var h = '<h3>The office</h3>';
@@ -669,6 +717,8 @@ UI.openOffice = function () {
     if (!g.franchise) {
       h += '<div class="card"><b>' + g.brand + ' franchise</b><div class="kv">New cars on your forecourt. ' + M(FE.FRANCHISE.fee) + '/yr, minimum ' + FE.FRANCHISE.minSlots + ' pitches, target ' + FE.FRANCHISE.targetPerSlot + ' units per pitch per year. <span class="warn">Commit properly or not at all — a token effort underperforms staying used-only.</span></div>' +
         '<div class="btnrow"><button onclick="UI.signFranchiseUI()">Sign up</button></div></div>';
+    } else if (g.franchise.live === false) {
+      h += '<div class="card"><b>' + g.brand + ' franchise</b>' + buildProgress(g.franchise.signedWk, g.franchise.liveWk, g.week, 'Brand corner fit-out') + '<div class="kv muted">Order window opens week ' + g.franchise.liveWk + '.</div></div>';
     } else {
       var F = g.franchise;
       var weeksIn = g.week - F.qStartWk;
@@ -683,17 +733,23 @@ UI.openOffice = function () {
   // departments
   FE.DEPARTMENTS.forEach(function (d) {
     if (g.dept[d.id]) {
-      h += '<div class="card kv"><b>' + d.name + '</b> — ' + (g.week >= g.dept[d.id] ? 'live. ' + M(d.weekly) + '/wk coming in.' : 'under construction.') + '</div>';
+      if (g.week >= g.dept[d.id]) h += '<div class="card kv"><b>' + d.name + '</b> — live. ' + M(d.weekly) + '/wk coming in.</div>';
+      else h += '<div class="card"><b>' + d.name + '</b>' + buildProgress(g.dept[d.id] - d.buildWks, g.dept[d.id], g.week, 'Construction') + '<div class="kv muted">Capacity down while the builders are in.</div></div>';
     } else {
-      h += '<div class="card"><b>' + d.name + '</b> <span class="tag">' + M(d.cost) + '</span><div class="kv">' + d.blurb + '</div>' +
+      h += '<div class="card"><b>' + d.name + '</b> <span class="tag">' + M(d.cost) + '</span><div class="kv">' + d.blurb + ' <span class="muted">Build: ' + d.buildWks + ' wk.</span></div>' +
         '<div class="btnrow"><button class="sec" onclick="UI.buildDeptUI(\'' + d.id + '\')">Build</button></div></div>';
     }
   });
   h += '<div class="card kv"><b>Smart repair · Valeting bay</b> — the builders say "after the beta".</div>';
   // expansion
   FE.EXPANSIONS.forEach(function (x) {
-    if (g.expansionsDone.indexOf(x.id) < 0) {
-      h += '<div class="card"><b>' + x.name + '</b> <span class="tag">' + M(x.cost) + '</span><div class="kv">+' + x.slots + ' pitches, utilities +' + M(x.util) + '/wk</div>' +
+    if (g.expansionsDone.indexOf(x.id) >= 0) return;
+    var pend = null;
+    g.pendingBuilds.forEach(function (b) { if (b.id === x.id) pend = b; });
+    if (pend) {
+      h += '<div class="card"><b>' + x.name + '</b>' + buildProgress(pend.startedWk, pend.dueWk, g.week, 'Groundworks') + '<div class="kv muted">+' + x.slots + ' pitches open week ' + pend.dueWk + '.</div></div>';
+    } else {
+      h += '<div class="card"><b>' + x.name + '</b> <span class="tag">' + M(x.cost) + '</span><div class="kv">+' + x.slots + ' pitches, utilities +' + M(x.util) + '/wk <span class="muted">Build: ' + x.buildWks + ' wk.</span></div>' +
         '<div class="btnrow"><button class="sec" onclick="UI.expandUI(\'' + x.id + '\')">Buy the land</button></div></div>';
     }
   });
@@ -708,7 +764,7 @@ UI.openOffice = function () {
 };
 UI.signFranchiseUI = function () {
   var r = FE.signFranchise(FE.FRANCHISE.minSlots);
-  toast(r.ok ? 'Franchise signed. The order window is open.' : r.msg);
+  toast(r.ok ? 'Franchise signed — brand corner being fitted out.' : r.msg);
   UI.openOffice();
 };
 UI.buildDeptUI = function (id) {
@@ -718,7 +774,7 @@ UI.buildDeptUI = function (id) {
 };
 UI.expandUI = function (id) {
   var r = FE.buyExpansion(id);
-  toast(r.ok ? 'More tarmac. Fill it wisely.' : (r.msg || 'No.'));
+  toast(r.ok ? 'Groundworks started — pitches open week ' + r.dueWk + '.' : (r.msg || 'No.'));
   UI.openOffice(); renderHUD();
 };
 UI.salaryUI = function (i) {
@@ -762,7 +818,7 @@ UI.orderGo = function (express) {
 function renderStaff() {
   var g = G(), h = '';
   var maxS = FE.SITES[g.site].maxStaff;
-  h += '<div class="card kv"><b>Headcount ' + g.staff.length + '/' + maxS + '</b> — minimum 2 to run a floor properly. The GSM (you) manages; you don’t sell.' + (g.week < 2 ? ' <span class="warn">Recruitment opens week 2.</span>' : '') + '</div>';
+  h += '<div class="card kv"><b>Headcount ' + g.staff.length + '/' + maxS + '</b> — minimum 2 to run a floor properly. The GSM (you) manages; you don’t sell.' + (g.week === 1 && g.candidatePool && g.candidatePool.length ? ' <span class="muted">More candidates arrive next week.</span>' : '') + '</div>';
   g.staff.forEach(function (st) {
     var fni = st.totUnits ? Math.round(100 * st.fniDeals / st.totUnits) : 0;
     var moraleTxt = st.morale > 1.05 ? 'buzzing' : st.morale > 0.9 ? 'fine' : st.morale > 0.75 ? 'flat' : 'mutinous';
@@ -771,7 +827,7 @@ function renderStaff() {
       '<div class="row kv"><span>Career: ' + st.totUnits + ' units</span><span>Morale: ' + moraleTxt + '</span></div>' +
       '<div class="btnrow"><button class="sec" onclick="UI.trainUI(\'' + st.id + '\')">Send on a course</button></div></div>';
   });
-  if (g.week >= 2 && g.staff.length < maxS && g.candidates.length) {
+  if (g.staff.length < maxS && g.candidates.length) {
     h += '<h3 style="margin-top:16px">The agency’s books</h3>';
     g.candidates.forEach(function (cid) {
       var R = null;
@@ -780,6 +836,8 @@ function renderStaff() {
         '<div class="kv">' + esc(R.rep) + '</div>' +
         '<div class="btnrow"><button onclick="UI.hireUI(\'' + R.id + '\')">Hire</button></div></div>';
     });
+  } else if (g.staff.length >= maxS) {
+    h += '<div class="card kv muted">Floor’s full for this site. A bigger premises unlocks more desks.</div>';
   }
   $('content').innerHTML = h;
 }

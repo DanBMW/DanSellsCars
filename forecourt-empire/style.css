@@ -146,6 +146,26 @@ button.big { width: 100%; padding: 14px; font-size: 1.05rem; }
 .kv { font-size: .82rem; color: #aab2bb; }
 .kv b { color: #e6e8eb; }
 .lot-flag { font-size: .68rem; font-weight: 700; color: #e0a943; }
+
+/* ---------- auction risk lights ---------- */
+.risk-filter { display: flex; gap: 6px; margin: 4px 0 10px; position: sticky; top: 0; z-index: 2; }
+.risk-filter button { flex: 1; padding: 7px 4px; font-size: .8rem; background: #21272f; color: #aeb6bf; border: 1px solid #2b3440; }
+.risk-filter button.on { background: #2d333b; color: #fff; border-color: #4a545f; }
+.risk-chip {
+  display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px; cursor: pointer; border: 1px solid transparent;
+}
+.risk-chip.green { color: #6ee08a; background: rgba(60,180,90,.14); border-color: rgba(60,180,90,.4); }
+.risk-chip.amber { color: #f0c052; background: rgba(224,169,67,.14); border-color: rgba(224,169,67,.4); }
+.risk-chip.red   { color: #ff7a6b; background: rgba(224,82,82,.16); border-color: rgba(224,82,82,.45); }
+.card.lot { border-left: 4px solid #2b3440; }
+.card.lot.green { border-left-color: #3cb45a; }
+.card.lot.amber { border-left-color: #e0a943; }
+.card.lot.red   { border-left-color: #e05252; }
+.vas-flag { font-size: .68rem; font-weight: 700; color: #7fb2d9; align-self: center; margin-left: auto; }
+.risk-list { margin: 2px 0 12px 18px; font-size: .84rem; color: #c2c9d1; }
+.risk-list li { margin: 3px 0; }
+.build-tag { font-weight: 700; color: #e0a943; }
 .btnrow { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .btnrow button { flex: 1; min-width: 90px; padding: 9px 8px; font-size: .85rem; }
 .email { border-left: 3px solid transparent; }

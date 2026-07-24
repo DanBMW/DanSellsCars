@@ -83,10 +83,13 @@ FE.newGame = function (brandKey, siteIdx, salaryIdx) {
     week: 1, phase: 'auction',
     stars: 4.0,
     stock: [], lots: [], lotsWk: 0,
-    staff: [], candidates: FE.ROSTER.map(function (r) { return r.id; }),
+    staff: [],
+    // day-1 recruitment: the agency has a first batch on the books now, the
+    // rest land in week 2 (keeps a reason to check the books back without a dead week)
+    candidates: [], candidatePool: [],
     emails: [], reviews: [], reports: [],
     adTier: 2,
-    extraSlots: 0, extraUtil: 0, expansionsDone: [],
+    extraSlots: 0, extraUtil: 0, expansionsDone: [], pendingBuilds: [],
     dept: { service: 0, building: 0 },      // service: week it went live (0 = none)
     franchise: null,                        // {slots, signedWk, qUnits, qMargin, yUnits, preRegPending}
     orders: [],                             // pending factory orders
@@ -106,6 +109,11 @@ FE.newGame = function (brandKey, siteIdx, salaryIdx) {
   FE.MODELS.forEach(function (m) { if (m.b === brandKey && segs.indexOf(m.seg) < 0) segs.push(m.seg); });
   segs.sort(function () { return Math.random() - 0.5; });
   G.wantedSegs = segs.slice(0, 3);
+  // shuffle the roster, put the first 6 on the books now, the rest arrive week 2
+  var pool = FE.ROSTER.map(function (r) { return r.id; });
+  for (var pi = pool.length - 1; pi > 0; pi--) { var pj = Math.floor(Math.random() * (pi + 1)); var tmp = pool[pi]; pool[pi] = pool[pj]; pool[pj] = tmp; }
+  G.candidates = pool.slice(0, 6);
+  G.candidatePool = pool.slice(6);
   startWeek();
   FE.save();
   return G;
@@ -209,6 +217,40 @@ function truePrepFor(c, baseCost) {
 }
 
 /* ---------- auction ---------- */
+/* Traffic-light risk from VISIBLE attributes only (grade, colour, mileage vs
+   expected, history, age). Returns light + flavour of red + the driver list.
+   'gamble' red = rough but a real upside; 'grave' red = cheap for a reason. */
+function scoreLot(v) {
+  var drivers = [], factors = 0;
+  var colDays = FE.COLOURS[v.colour].d;
+  var grave = colDays >= 1.30;          // brown / yellow / gold
+  var slow = colDays >= 1.06 && !grave; // red / green
+  var dev = (v.miles - v.age * FE.MILES_PER_YEAR) / 10000;
+
+  if (v.cond <= 2) { factors++; drivers.push('Condition grade ' + v.cond + ' — prep and hidden faults likely'); }
+  if (grave) drivers.push(FE.COLOURS[v.colour].c + ' — a colour that sits, then has to be discounted out');
+  else if (slow) { factors++; drivers.push(FE.COLOURS[v.colour].c + ' — a slower-selling colour'); }
+  if (dev > 0.7) { factors++; drivers.push('High mileage — ' + Math.round(dev * 10000).toLocaleString() + ' over the age-expected figure'); }
+  if (FE.HISTORY[v.hist].h === 'None') { factors++; drivers.push('No service history'); }
+  if (v.age >= 7) { factors++; drivers.push('Older car — slower to shift, more to go wrong'); }
+
+  var light, flavour = null;
+  if (grave || factors >= 2) {
+    light = 'red';
+    // graveyard colour with no other saving grace = genuinely bad; otherwise a gamble
+    var desirableBase = (v.age <= 3) || FE.TRIMS[v.trim].t === 'Top' ||
+      ['White', 'Black', 'Grey'].indexOf(FE.COLOURS[v.colour].c) >= 0;
+    flavour = (grave && !desirableBase) ? 'grave' : 'gamble';
+  } else if (factors === 1) {
+    light = 'amber';
+  } else {
+    light = 'green';
+  }
+  if (!drivers.length) drivers.push('Clean on paper — grade ' + v.cond + ', ' + FE.HISTORY[v.hist].h.toLowerCase() + ' history, sensible mileage');
+  return { light: light, flavour: flavour, drivers: drivers };
+}
+FE.scoreLot = scoreLot;
+
 function genLots() {
   var lots = [], i;
   for (i = 0; i < 20; i++) {
@@ -233,7 +275,13 @@ function genLots() {
     v.estDays = [Math.round(baseDays * 0.8), Math.round(baseDays * 1.25)];
     v.estGross = v.retail - v.hammer;
     v.wide = (v.cond <= 2 || FE.COLOURS[v.colour].d >= 1.05);
+    v.risk = scoreLot(v);
     lots.push(v);
+  }
+  // Vas (trader) casts an eye over the lanes and rates one gamble as worth it
+  if (staffHasTrait('trader')) {
+    var gambles = lots.filter(function (l) { return l.risk.flavour === 'gamble'; });
+    if (gambles.length) gambles[Math.floor(rnd() * gambles.length)].vasFlag = true;
   }
   return lots;
 }
@@ -303,6 +351,7 @@ function tradeValue(c) {
   var base = Math.min(carCost(c) * U(0.9, 0.97), c.retail * 0.84);
   if (daysIn(c) > 60) base -= c.retail * 0.02;
   if (daysIn(c) > 90) base -= c.retail * 0.02;
+  if (G.staff && staffHasTrait('trader')) base += c.retail * 0.02;  // Vas knows the trade
   return r25(base);
 }
 FE.tradeValue = tradeValue;
@@ -397,6 +446,20 @@ function startWeek() {
     return true;
   });
 
+  // pending construction completing (land expansion, franchise fit-out)
+  G.pendingBuilds = G.pendingBuilds.filter(function (bd) {
+    if (bd.dueWk > G.week) return true;
+    if (bd.kind === 'expansion') {
+      G.extraSlots += bd.slots; G.extraUtil += bd.util;
+      G.expansionsDone.push(bd.id);
+      mail('Site works', bd.name + ' — ready', 'The new ground is surfaced and lined. ' + bd.slots + ' extra pitches are open for stock.', 'info');
+    } else if (bd.kind === 'franchise') {
+      G.franchise.live = true;
+      mail(G.brand + ' UK', 'Brand corner ready', 'The showroom fit-out is done and the signage is up. The order window is open — place your first factory order whenever you like.', 'info');
+    }
+    return false;
+  });
+
   // fresh auction list
   G.lots = genLots();
   G.lotsWk = G.week;
@@ -405,9 +468,13 @@ function startWeek() {
   // week-1 flavour
   if (G.week === 1) {
     mail('Hartley & Crumb, solicitors', 'Your late aunt’s estate', 'The funds have cleared: ' + money(FE.START_CASH) + ', less the premises. Her note reads: "Don’t let them see you coming, love."\n\nHer old contact book is in the bottom drawer. Three of her people are still waiting on a car: one wants a ' + G.wantedSegs[0] + ', one a ' + G.wantedSegs[1] + ', one a ' + G.wantedSegs[2] + '. If you’ve got what they’re after when they call in, they’ll hardly need selling to.', 'info');
+    mail('Recruitment desk', 'Sales executives — ' + G.candidates.length + ' available now', 'You can start hiring today — you need at least two on the floor, the GSM does not sell. The agency has ' + G.candidates.length + ' names on the books right now and more coming next week. Fees are payable up front. See the Staff tab.', 'info');
   }
-  if (G.week === 2) {
-    mail('Recruitment desk', 'Sales executives available', 'The agency has ten names on its books. You need at least two on the floor — the GSM does not sell. Fees are payable up front. See the Staff tab.', 'info');
+  if (G.week === 2 && G.candidatePool && G.candidatePool.length) {
+    G.candidates = G.candidates.concat(G.candidatePool);
+    var newCount = G.candidatePool.length;
+    G.candidatePool = [];
+    mail('Recruitment desk', newCount + ' more candidates on the books', 'The agency has sent through the rest of its list — ' + newCount + ' more names in the Staff tab. Full roster now available.', 'info');
   }
   if (G.week === FE.FRANCHISE.unlockWk && !G.franchise) {
     mail(G.brand + ' UK', 'Franchise opportunity', 'The manufacturer is offering a franchise agreement: new ' + G.brand + ' stock on your forecourt. ' + money(FE.FRANCHISE.fee) + ' a year, minimum ' + FE.FRANCHISE.minSlots + ' pitches committed, and a volume target of ' + FE.FRANCHISE.targetPerSlot + ' units per pitch per year. A word of advice from the trade: commit properly or not at all. Half-hearted franchises underperform used-only sites. Open the Franchise panel in the Office to decide.', 'info');
@@ -455,7 +522,6 @@ function staffById(id) {
 
 /* ---------- staff ---------- */
 FE.hire = function (candId) {
-  if (G.week < 2) return { ok: false, msg: 'Recruitment opens in week 2.' };
   if (G.staff.length >= site().maxStaff) return { ok: false, msg: 'This site supports a maximum of ' + site().maxStaff + ' sales executives.' };
   var idx = G.candidates.indexOf(candId);
   if (idx < 0) return { ok: false, msg: 'No longer available.' };
@@ -529,6 +595,20 @@ function crowdEff(n) {
   return sum / n;
 }
 
+/* is any currently-active exec carrying this trait? (site-wide effects) */
+function staffHasTrait(trait) {
+  var found = false;
+  G.staff.forEach(function (st) {
+    if (st.leaving && st.leaving <= G.week) return;
+    if (st.onHoliday === G.week || st.offUntil > G.week) return;
+    var R = null;
+    FE.ROSTER.forEach(function (r) { if (r.id === st.id) R = r; });
+    if (R && R.trait === trait) found = true;
+  });
+  return found;
+}
+FE.staffHasTrait = staffHasTrait;
+
 /* ---------- showroom simulation ---------- */
 FE.enterShowroom = function () {
   G.phase = 'showroom';
@@ -561,6 +641,7 @@ FE.enterShowroom = function () {
   var conv = FE.BASE_CONV * presConvFactor();
   if (activeShock('rateRise')) conv *= 0.85;
   var foot = brand().footfall * (activeShock('scrappage') ? 1.3 : 1);
+  if (staffHasTrait('magnet')) foot *= 1.04;   // Tomi brings the crowd in
   var newShare = 0;
   if (G.franchise) {
     var newCount = inStock().filter(function (c) { return c.isNew; }).length;
@@ -946,6 +1027,7 @@ FE.resolvePX = function (ev, choice) {
     if (res.dealOn) {
       res.traded = true;
       res.margin = RI(150, 320);
+      if (staffHasTrait('trader')) res.margin += RI(60, 140);   // Vas finds the extra
       earn(res.margin, 'PX traded straight out');
     }
   }
@@ -1103,6 +1185,13 @@ FE.resolveComeback = function (emailId, choice) {
       G.reviews.unshift({ wk: G.week, stars: 1, text: pick(FE.REVIEW_BAD) });
     }
   }
+  // Karis (defuser) takes the heat out of a comeback — softer star hit, and
+  // negative outcomes cost a little less to settle
+  if (staffHasTrait('defuser')) {
+    if (out.star < 0) out.star *= 0.55;
+    if (out.cost && choice !== 'refuse' && choice !== 'pay') out.cost = Math.round(out.cost * 0.85);
+    out.note += ' Karis handled it beautifully.';
+  }
   if (out.cost) pay(out.cost, 'comebacks', 'Comeback — ' + choice);
   starNudge(out.star);
   // retro P&L on the sale
@@ -1177,8 +1266,10 @@ FE.signFranchise = function (slots) {
   if (G.week < FE.FRANCHISE.unlockWk) return { ok: false, msg: 'Not yet offered.' };
   if (G.franchise) return { ok: false, msg: 'Already signed.' };
   slots = Math.max(FE.FRANCHISE.minSlots, slots || FE.FRANCHISE.minSlots);
-  G.franchise = { slots: slots, signedWk: G.week, qUnits: 0, qMargin: 0, yUnits: 0, qStartWk: G.week };
-  mail(G.brand + ' UK', 'Welcome to the network', 'Franchise active: ' + slots + ' pitches committed, target ' + (slots * FE.FRANCHISE.targetPerSlot) + ' units a year (' + (slots * 2) + ' a quarter). The fee drips weekly. The order window is open — and remember the plate months. Good luck.', 'info');
+  var liveWk = G.week + FE.FRANCHISE_INSTALL_WKS;
+  G.franchise = { slots: slots, signedWk: G.week, qUnits: 0, qMargin: 0, yUnits: 0, qStartWk: G.week, live: false, liveWk: liveWk };
+  G.pendingBuilds.push({ kind: 'franchise', name: G.brand + ' brand corner', dueWk: liveWk, startedWk: G.week });
+  mail(G.brand + ' UK', 'Welcome to the network', 'Franchise signed: ' + slots + ' pitches committed, target ' + (slots * FE.FRANCHISE.targetPerSlot) + ' units a year (' + (slots * 2) + ' a quarter). The fee drips from now. The brand corner is being fitted out this week — the order window opens in week ' + liveWk + '. Remember the plate months. Good luck.', 'info');
   FE.save();
   return { ok: true };
 };
@@ -1194,6 +1285,7 @@ function makeOrder(model, colour, trim, dueWk) {
 }
 FE.orderNewCar = function (model, colour, trim, express) {
   if (!G.franchise) return { ok: false, msg: 'No franchise.' };
+  if (G.franchise.live === false) return { ok: false, msg: 'The brand corner is still being fitted out — orders open week ' + G.franchise.liveWk + '.' };
   if (usedSlots() >= totalSlots()) return { ok: false, msg: 'No free pitches.' };
   var due = express ? G.week + 1 : G.week + RI(8, 14);
   var o = makeOrder(model, colour, trim, due);
@@ -1290,12 +1382,14 @@ FE.buyExpansion = function (id) {
   var E = null;
   FE.EXPANSIONS.forEach(function (x) { if (x.id === id) E = x; });
   if (!E || G.expansionsDone.indexOf(id) >= 0) return { ok: false, msg: 'Not available.' };
+  if (G.pendingBuilds.some(function (b) { return b.id === id; })) return { ok: false, msg: 'Already under construction.' };
   if (G.cash < E.cost) return { ok: false, msg: 'Not enough cash.' };
   pay(E.cost, 'misc', E.name);
-  G.extraSlots += E.slots; G.extraUtil += E.util;
-  G.expansionsDone.push(id);
+  var due = G.week + (E.buildWks || 1);
+  G.pendingBuilds.push({ kind: 'expansion', id: id, name: E.name, slots: E.slots, util: E.util, dueWk: due, startedWk: G.week });
+  mail('Site works', E.name + ' — groundworks started', 'Diggers are in on the new plot. The ' + E.slots + ' pitches will be surfaced and open in week ' + due + '.', 'info');
   FE.save();
-  return { ok: true };
+  return { ok: true, dueWk: due };
 };
 FE.setAds = function (tier) { if (G.week >= 5) { G.adTier = tier; FE.save(); } };
 FE.ack90 = function (carId) { G.stock.forEach(function (c) { if (c.id === carId) c.ack90 = true; }); FE.save(); };
@@ -1345,6 +1439,7 @@ FE.closeWeek = function () {
   // fixed costs
   var sal = 0, comm = 0;
   G.staff = G.staff.filter(function (st) { return !(st.leaving && st.leaving <= G.week); });
+  var anchorPresent = staffHasTrait('anchor');
   G.staff.forEach(function (st) {
     sal += salary().basic / 52 + (st.extraBasic || 0);
     var g = W.staffGross[st.id] || 0;
@@ -1353,8 +1448,9 @@ FE.closeWeek = function () {
     st.lastGross = g;
     st.weeks++;
     if (st.id === 'sarah') st.growth = Math.min(2.2, st.growth * 1.04);
-    // morale drift
+    // morale drift — Clive (anchor) steadies the room, so bad-month dips are softer
     var target = s.d >= 0.95 ? salary().moraleGood : salary().moraleBad;
+    if (target < st.morale && anchorPresent) target = st.morale - (st.morale - target) * 0.55;
     st.morale = clamp(st.morale + (target - st.morale) * 0.25, 0.55, 1.25);
     if (st.onHoliday && st.onHoliday < G.week) st.onHoliday = 0;
   });
