@@ -145,7 +145,41 @@ gets a visible build:
 - Ties into the app-version real-time clock naturally (spec §15 gave build
   times in real hours: 24h / 12h / 6h).
 
-## 7. Starting capital — honest review of the £1,000,000 (Dan asked, day 2)
+## 7. Opening tutorial — skippable button walkthrough (Dan, day 2)
+
+> "There should be an opening tutorial, that is skippable if needed, that
+> walks them through all the buttons."
+
+A guided first-contact layer on top of week 1, with **Skip tutorial**
+available at every step:
+
+- **Format**: spotlight coach marks — dim the screen, cut a hole around the
+  control being introduced, one short line of copy, tap-to-advance. No walls
+  of text; each step points at a real button at the moment it first matters.
+- **Sequence** (rides the existing week-1 flow rather than a separate mode):
+  1. HUD — the live cash number ("this is the only score that matters") and
+     the star rating.
+  2. Banner — the three-block week: Auction → Showroom → Office.
+  3. Email tab + badge — the auction list lands here every week.
+  4. Auction sheet — what a lot card shows; est. gross is *before* fees,
+     prep and hold; (once built) the traffic light.
+  5. Site view — tap a car for its stock card; reprice / move / trade out.
+  6. First showroom pop-up — accept / counter / decline, the customer read.
+  7. Prep bill moment — "this is why the auction number was optimistic."
+  8. Office — close the week, read the report; days-in-stock under 45 is
+     the health line.
+  9. Week 2 — Staff tab, hiring and the agency fee (or day 1, once item 2
+     moves hiring forward).
+- **Skippable and re-summonable**: "Skip tutorial" on every mark; "Replay
+  tutorial" in the ☰ menu. Store per-device done/skipped flag.
+- Keep it to the buttons. The *economics* stay undiscovered — the spec's
+  deliberate opacity (hidden brand traits, prep traps, colour maths) is the
+  game; the tutorial only teaches the controls, never the strategy.
+- The existing scaffolding (aunt's contacts, guaranteed first sale, trade
+  buyer) already provides the win moments — the tutorial narrates around
+  them, it doesn't add new help.
+
+## 8. Starting capital — honest review of the £1,000,000 (Dan asked, day 2)
 
 Verdict from full-year simulations: **£1m is right for the story, ~30% too
 generous for the tension — but don't change it mid-beta.**
@@ -189,6 +223,6 @@ harder.
 
 ---
 
-*Beta shipped 2026-07-24. Items 1–4 logged day 1, items 5–7 day 2; to be
+*Beta shipped 2026-07-24. Items 1–4 logged day 1, items 5–8 day 2; to be
 implemented as the post-beta pass unless Dan reprioritises. No gameplay or
 visual changes have been made while the beta is under test.*
