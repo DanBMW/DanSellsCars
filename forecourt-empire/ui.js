@@ -78,13 +78,90 @@ UI.setupDone = function () {
   $('screen-setup').classList.add('hidden');
   shownCash = G().cash;
   enterMain();
+  var seen = false;
+  try { seen = localStorage.getItem('feTutorialDone') === '1'; } catch (e) {}
+  if (seen) UI.week1Intro();
+  else setTimeout(function () { UI.startTutorial(true); }, 400);
+};
+UI.week1Intro = function () {
   var ws = G().wantedSegs;
   UI.modal('<h3>Week 1 — January</h3>' +
     '<p class="kv">It’s the deadest month of the year and you own a car dealership with no cars and no staff.</p>' +
     '<p class="kv">The auction list is in your inbox. And your aunt’s contact book has three people still waiting on a car: <b>a ' + ws[0] + ', a ' + ws[1] + ' and a ' + ws[2] + '</b>. Buy what people actually want and week one might not be a disaster.</p>' +
-    '<p class="kv muted small">Recruitment opens next week. This week, you’re on your own.</p>' +
+    '<p class="kv muted small">You can hire from today — the agency has names on the books. Or open up first and see how it feels solo.</p>' +
     '<div class="btnrow"><button onclick="UI.closeModal();UI.openAuction()">To the auction</button></div>');
 };
+
+/* ---------- tutorial: spotlight coach marks ---------- */
+var tutStep = 0, tutSteps = [];
+function buildTutSteps() {
+  return [
+    { sel: '#cash', text: 'This is your <b>live cash position</b> — the only score that matters. It moves the instant a car sells or a bill lands.', pos: 'below' },
+    { sel: '#hudStars', text: 'Your <b>star rating</b>. Reviews and footfall follow it — protect it.', pos: 'below' },
+    { sel: '#banner', text: 'Each week runs in three blocks: <b>Auction → Showroom → Office</b>. This banner always tells you what’s next.', pos: 'below' },
+    { sel: '#tab-site', text: 'Your <b>forecourt</b>. Tap a car for its details, or an empty pitch to place stock.', pos: 'above' },
+    { sel: '#tab-email', text: '<b>Email</b> — the daily auction list, complaints and requests all land here.', pos: 'above' },
+    { sel: '#tab-stock', text: '<b>Stock</b> — every car you own, sortable by days in stock or hold cost.', pos: 'above' },
+    { sel: '#tab-staff', text: '<b>Staff</b> — hire and train your sales execs. You can hire from day one.', pos: 'above' },
+    { sel: '#tab-reports', text: '<b>Reports</b> — weekly P&amp;L, reviews and the share card.', pos: 'above' },
+    { sel: '.gear', text: 'The <b>manager’s drawer</b>: skip a week, share progress, or replay this tour.', pos: 'above' },
+    { sel: null, text: 'That’s the tour. The one number that kills dealerships is <b>days in stock</b> — keep the average under 45. Now go buy some cars.', pos: 'center', last: true }
+  ];
+}
+UI.startTutorial = function (firstRun) {
+  if (curTab !== 'site') UI.tab('site');
+  tutSteps = buildTutSteps();
+  tutStep = 0;
+  tutSteps._firstRun = firstRun;
+  var ov = document.createElement('div');
+  ov.id = 'tutOverlay';
+  ov.innerHTML = '<div id="tutSpot"></div><div id="tutCard"></div>';
+  document.body.appendChild(ov);
+  showTutStep();
+};
+function showTutStep() {
+  var step = tutSteps[tutStep];
+  var spot = $('tutSpot'), card = $('tutCard');
+  if (!spot || !card) return;
+  var total = tutSteps.length;
+  var btns = '<div class="tut-btns">' +
+    (step.last ? '' : '<button class="ghost small" onclick="UI.tutSkip()">Skip tour</button>') +
+    '<button class="small" onclick="UI.tutNext()">' + (step.last ? 'Start' : 'Next (' + (tutStep + 1) + '/' + total + ')') + '</button></div>';
+  card.innerHTML = '<div class="tut-text">' + step.text + '</div>' + btns;
+
+  if (step.sel && document.querySelector(step.sel)) {
+    var el = document.querySelector(step.sel);
+    var r = el.getBoundingClientRect();
+    var pad = 6;
+    spot.style.display = 'block';
+    spot.style.left = (r.left - pad) + 'px';
+    spot.style.top = (r.top - pad) + 'px';
+    spot.style.width = (r.width + pad * 2) + 'px';
+    spot.style.height = (r.height + pad * 2) + 'px';
+    card.style.display = 'block';
+    // position card above or below the spot
+    card.style.left = '50%';
+    card.style.transform = 'translateX(-50%)';
+    if (step.pos === 'above') { card.style.top = 'auto'; card.style.bottom = (window.innerHeight - r.top + 14) + 'px'; }
+    else { card.style.bottom = 'auto'; card.style.top = (r.bottom + 14) + 'px'; }
+  } else {
+    spot.style.display = 'none';
+    card.style.left = '50%'; card.style.transform = 'translateX(-50%)';
+    card.style.top = '50%'; card.style.bottom = 'auto';
+    card.style.marginTop = '-60px';
+  }
+}
+UI.tutNext = function () {
+  tutStep++;
+  if (tutStep >= tutSteps.length) { endTutorial(); return; }
+  showTutStep();
+};
+UI.tutSkip = function () { endTutorial(); };
+function endTutorial() {
+  var ov = $('tutOverlay'); if (ov) ov.remove();
+  try { localStorage.setItem('feTutorialDone', '1'); } catch (e) {}
+  if (tutSteps._firstRun) UI.week1Intro();
+}
 
 /* ---------- main shell ---------- */
 function enterMain() {
@@ -1028,6 +1105,7 @@ UI.gearMenu = function () {
     '<button class="sec" onclick="UI.closeModal();UI.share()">Share my progress</button>' +
     '<button class="sec" onclick="UI.skipWeekUI()">Skip this week (staff run it)</button>' +
     '<button class="sec" onclick="UI.helpUI()">How this works</button>' +
+    '<button class="sec" onclick="UI.closeModal();UI.startTutorial(false)">Replay tutorial</button>' +
     '<button class="red" onclick="UI.confirmRestart()">Abandon career</button></div>' +
     '<p class="kv muted small" style="margin-top:10px">Beta build. Saves locally on this device, automatically. One game week per sitting is the intended pace — the app version will run a real day per week.</p>' +
     '<button class="ghost" onclick="UI.closeModal()">Close</button>');

@@ -214,6 +214,22 @@ button.big { width: 100%; padding: 14px; font-size: 1.05rem; }
 .mail-pill { display: inline-block; font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; background: #d93a2b; color: #fff; border-radius: 4px; padding: 1px 5px; vertical-align: middle; }
 .mail-pill.sold { background: #238636; }
 .mail-reader-head { display: flex; align-items: center; gap: 11px; margin-bottom: 6px; }
+
+/* ---------- tutorial coach marks ---------- */
+#tutOverlay { position: fixed; inset: 0; z-index: 300; }
+#tutSpot {
+  position: fixed; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(6,9,13,.78);
+  border: 2px solid #ffd24a; transition: all .2s ease; pointer-events: none;
+}
+#tutCard {
+  position: fixed; max-width: 300px; width: calc(100% - 40px);
+  background: #1b2531; border: 1px solid #35618f; border-radius: 14px; padding: 14px 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.6);
+}
+#tutCard .tut-text { font-size: .9rem; color: #e6e8eb; line-height: 1.5; }
+#tutCard .tut-text b { color: #ffd24a; }
+#tutCard .tut-btns { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+#tutCard .tut-btns button { padding: 8px 14px; }
 .btnrow { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .btnrow button { flex: 1; min-width: 90px; padding: 9px 8px; font-size: .85rem; }
 .email { border-left: 3px solid transparent; }
