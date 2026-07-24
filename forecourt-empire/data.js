@@ -180,8 +180,8 @@ FE.SEASON = [
   { w: 13, mo: 'Apr', d: 1.14 }, { w: 14, mo: 'Apr', d: 1.16 }, { w: 15, mo: 'Apr', d: 1.12 }, { w: 16, mo: 'Apr', d: 1.10 },
   { w: 17, mo: 'May', d: 1.15 }, { w: 18, mo: 'May', d: 1.18 }, { w: 19, mo: 'May', d: 1.14 }, { w: 20, mo: 'May', d: 1.12 },
   { w: 21, mo: 'Jun', d: 1.08 }, { w: 22, mo: 'Jun', d: 1.06 }, { w: 23, mo: 'Jun', d: 1.02, shock: 'launch' }, { w: 24, mo: 'Jun', d: 0.98, dev: 0.04 },
-  { w: 25, mo: 'Jul', d: 0.88 }, { w: 26, mo: 'Jul', d: 0.82 }, { w: 27, mo: 'Jul', d: 0.78 }, { w: 28, mo: 'Jul', d: 0.76 },
-  { w: 29, mo: 'Aug', d: 0.72 }, { w: 30, mo: 'Aug', d: 0.74 }, { w: 31, mo: 'Aug', d: 0.80, dev: 0.02 }, { w: 32, mo: 'Aug', d: 0.86, dev: 0.03 },
+  { w: 25, mo: 'Jul', d: 0.88 }, { w: 26, mo: 'Jul', d: 0.82 }, { w: 27, mo: 'Jul', d: 0.78, shock: 'summerSale', sale: 1 }, { w: 28, mo: 'Jul', d: 0.76, sale: 1 },
+  { w: 29, mo: 'Aug', d: 0.72, sale: 1 }, { w: 30, mo: 'Aug', d: 0.74, sale: 1 }, { w: 31, mo: 'Aug', d: 0.80, dev: 0.02, sale: 1 }, { w: 32, mo: 'Aug', d: 0.86, dev: 0.03, sale: 1 },
   { w: 33, mo: 'Sep', d: 1.28, plate: 1, dev: 0.05 }, { w: 34, mo: 'Sep', d: 1.40, plate: 1 }, { w: 35, mo: 'Sep', d: 1.36, plate: 1 }, { w: 36, mo: 'Sep', d: 1.24, plate: 1 },
   { w: 37, mo: 'Oct', d: 1.08 }, { w: 38, mo: 'Oct', d: 1.10 }, { w: 39, mo: 'Oct', d: 1.06 }, { w: 40, mo: 'Oct', d: 1.04 },
   { w: 41, mo: 'Nov', d: 1.00 }, { w: 42, mo: 'Nov', d: 0.98, shock: 'fuelSentiment' }, { w: 43, mo: 'Nov', d: 0.94, dev: 0.03 }, { w: 44, mo: 'Nov', d: 0.90 },
@@ -299,5 +299,9 @@ FE.SHOCK_DEFS = {
   priceCut:      { name: 'Manufacturer price cut',  blurb: 'List prices cut on new cars. Used values follow them down.' },
   rateRise:      { name: 'Finance rate rise',       blurb: 'Money just got dearer. Watch conversion and finance take-up.' },
   fuelSpike:     { name: 'Fuel price spike',        blurb: 'Petrol through the roof. Nobody wants the big engines this month.' },
-  scrappage:     { name: 'Scrappage scheme',        blurb: 'A new incentive scheme has people out shopping — and expecting silly money for their old ones.' }
+  scrappage:     { name: 'Scrappage scheme',        blurb: 'A new incentive scheme has people out shopping — and expecting silly money for their old ones.' },
+  summerSale:    { name: 'Summer Sales Event',       blurb: 'The trade’s gone big on a nationwide summer sale — banners, balloons, "event pricing". It pulls the crowds in through the quiet months, but everyone walking in expects a deal and margins get squeezed to the bone.' }
 };
+/* weeks the summer sale runs (late Jul → Aug lull). Fires as a shock on the
+   first of these; the SEASON.sale flag drives the calendar + on-site flair. */
+FE.SUMMER_SALE_WKS = [27, 28, 29, 30, 31, 32];

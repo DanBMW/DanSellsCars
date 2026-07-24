@@ -184,7 +184,10 @@ UI.renderAll = renderAll;
 function renderHUD() {
   var g = G(), s = FE.SEASON[(g.week - 1) % 52];
   var yr = Math.ceil(g.week / 52);
-  $('hudWeek').innerHTML = '<b>Week ' + g.week + '</b> · ' + s.mo + ' · Year ' + yr;
+  var sale = FE.saleActive();
+  $('hudWeek').innerHTML = '<b>Week ' + g.week + '</b> · ' + s.mo + ' · Year ' + yr +
+    ' <span class="cal-cue">📅</span>' +
+    (sale ? ' <span class="sale-chip">☀️ SUMMER SALE</span>' : '');
   var st = Math.round(g.stars * 10) / 10;
   var full = Math.round(g.stars);
   $('hudStars').textContent = '★★★★★'.slice(0, full) + '☆☆☆☆☆'.slice(0, 5 - full) + ' ' + st.toFixed(1);
@@ -303,12 +306,14 @@ function renderSite() {
   var arrivingN = g.stock.filter(function (c) { return c.status === 'stock' && c.arrived === false; }).length;
   var capN = s.ext + s.int + g.extraSlots;
   var countTxt = usedN + '/' + capN + ' pitches' + (arrivingN ? ' · +' + arrivingN + ' arriving' : '');
+  var saleRibbon = FE.saleActive() ? '<div class="scene-sale">☀️ SUMMER SALE ☀️</div>' : '';
 
   // Build the shell once; on same-tab refreshes just update the dynamic bits and
   // let the canvas keep running (rebuilding innerHTML would restart the scene).
   if (!$('sceneHost')) {
     var h = '<div id="moveBanner">' + moveHTML + '</div>' +
       '<div class="scene-frame"><div id="sceneHost"></div>' +
+      '<div id="sceneSale">' + saleRibbon + '</div>' +
       '<div class="scene-caption"><span>' + esc(s.name) + '</span><span id="sceneCount">' + countTxt + '</span></div></div>' +
       '<div class="building-card" onclick="UI.openOffice()"><div><b>' + esc(s.name) + '</b><div class="kv">Tap for office, expansion &amp; departments</div></div><div style="font-size:1.4rem">🏢</div></div>' +
       '<div id="site2card"><b>Site 2 — locked</b> · unlocks at £2M net worth' +
@@ -320,6 +325,7 @@ function renderSite() {
     $('moveBanner').innerHTML = moveHTML;
     Scene.setMoveMode(!!moveModeCar);
     var sc = $('sceneCount'); if (sc) sc.textContent = countTxt;
+    var ss = $('sceneSale'); if (ss) ss.innerHTML = saleRibbon;
     var sf = $('site2fig'); if (sf) sf.textContent = M(nw) + ' / ' + M(FE.SITE2_TARGET);
     var bar = document.querySelector('#site2card .bar i'); if (bar) bar.style.width = pct + '%';
     Scene.refresh();
@@ -1318,6 +1324,80 @@ UI.restart = function () {
 };
 
 /* ---------- gear menu ---------- */
+UI.calendar = function () {
+  var g = G(); if (!g) return;
+  var yw = ((g.week - 1) % 52) + 1;
+  var yr = Math.ceil(g.week / 52);
+  var S = FE.SEASON;
+  // demand range for bar scaling
+  var lo = 99, hi = 0;
+  S.forEach(function (w) { if (w.d < lo) lo = w.d; if (w.d > hi) hi = w.d; });
+
+  // group weeks into month blocks, in calendar order
+  var blocks = [], cur = null;
+  S.forEach(function (w) {
+    if (!cur || cur.mo !== w.mo) { cur = { mo: w.mo, wks: [] }; blocks.push(cur); }
+    cur.wks.push(w);
+  });
+
+  function vibe(avg) {
+    if (avg >= 1.3) return { t: 'Plate rush', c: 'busy' };
+    if (avg >= 1.05) return { t: 'Busy', c: 'good' };
+    if (avg >= 0.85) return { t: 'Steady', c: 'ok' };
+    if (avg >= 0.65) return { t: 'Quiet', c: 'slow' };
+    return { t: 'Dead', c: 'dead' };
+  }
+
+  var rows = '';
+  blocks.forEach(function (b) {
+    var avg = b.wks.reduce(function (a, w) { return a + w.d; }, 0) / b.wks.length;
+    var v = vibe(avg);
+    var isNow = b.wks.some(function (w) { return w.w === yw; });
+    var hasPlate = b.wks.some(function (w) { return w.plate; });
+    var hasSale = b.wks.some(function (w) { return w.sale; });
+    var cells = b.wks.map(function (w) {
+      var hpct = Math.round(20 + (w.d - lo) / Math.max(0.01, hi - lo) * 80);
+      var cls = 'cal-wk';
+      if (w.w === yw) cls += ' now';
+      if (w.plate) cls += ' plate';
+      if (w.sale) cls += ' sale';
+      var mk = w.w === yw ? '📍' : w.plate ? '🔵' : w.sale ? '☀️' : '';
+      return '<div class="' + cls + '" title="Week ' + w.w + '">' +
+        '<span class="cal-bar" style="height:' + hpct + '%"></span>' +
+        '<span class="cal-mk">' + mk + '</span></div>';
+    }).join('');
+    rows += '<div class="cal-row' + (isNow ? ' now' : '') + '">' +
+      '<div class="cal-mo"><b>' + b.mo + '</b>' +
+        '<span class="cal-vibe ' + v.c + '">' + v.t + '</span>' +
+        (hasPlate ? '<span class="cal-tag plate">Plate change</span>' : '') +
+        (hasSale ? '<span class="cal-tag sale">Summer sale</span>' : '') +
+      '</div>' +
+      '<div class="cal-bars">' + cells + '</div></div>';
+  });
+
+  // next big date lookahead
+  var nextTxt = '';
+  for (var i = 1; i <= 52; i++) {
+    var w = S[(yw - 1 + i) % 52];
+    if (w.plate) { nextTxt = 'Next plate change: ' + w.mo + ' (in ' + i + ' wk' + (i === 1 ? '' : 's') + ') — footfall spikes, outgoing-plate stock softens.'; break; }
+  }
+  var saleTxt = '';
+  if (FE.saleActive()) saleTxt = '<p class="kv sale-note">☀️ <b>Summer Sale on now</b> — crowds are up, margins are down. Shift stock on volume.</p>';
+  else {
+    for (var j = 1; j <= 52; j++) {
+      var w2 = S[(yw - 1 + j) % 52];
+      if (w2.sale) { saleTxt = '<p class="kv muted small">Summer Sale starts in ' + j + ' week' + (j === 1 ? '' : 's') + ' (' + w2.mo + ').</p>'; break; }
+    }
+  }
+
+  UI.modal('<h3>The trading year</h3>' +
+    '<p class="kv muted small">Week ' + g.week + ' · ' + FE.SEASON[yw - 1].mo + ' · Year ' + yr + '. Bars show how busy each week runs.</p>' +
+    saleTxt +
+    '<div class="cal-grid">' + rows + '</div>' +
+    (nextTxt ? '<p class="kv small" style="margin-top:8px">📅 ' + nextTxt + '</p>' : '') +
+    '<div class="cal-legend"><span>📍 Now</span><span>🔵 Plate change</span><span>☀️ Summer sale</span></div>' +
+    '<button class="ghost" style="margin-top:10px" onclick="UI.closeModal()">Close</button>');
+};
 UI.gearMenu = function () {
   UI.modal('<h3>Manager’s drawer</h3>' +
     '<div class="btnrow" style="flex-direction:column">' +

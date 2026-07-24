@@ -417,6 +417,7 @@ function activeShock(id) {
   G.shocks.forEach(function (s) { if (s.id === id && s.until >= G.week) f = s; });
   return f;
 }
+FE.saleActive = function () { return !!activeShock('summerSale'); };
 function fireShock(id) {
   var def = FE.SHOCK_DEFS[id], txt = def.blurb, until = G.week, hit = 0;
   if (id === 'launch') {
@@ -444,6 +445,9 @@ function fireShock(id) {
   } else if (id === 'scrappage') {
     until = G.week + 3;
     txt += ' Footfall up, margins down, for a few weeks.';
+  } else if (id === 'summerSale') {
+    until = G.week + 5;   // late Jul through the end of August
+    txt += ' It runs to the end of August. Expect a busy but thin-margined few weeks — move metal on volume, not on gross.';
   }
   G.shocks.push({ id: id, until: until });
   mail('Trade press', def.name, txt, 'shock');
@@ -703,6 +707,7 @@ FE.enterShowroom = function () {
   var conv = FE.BASE_CONV * presConvFactor();
   if (activeShock('rateRise')) conv *= 0.85;
   var foot = brand().footfall * (activeShock('scrappage') ? 1.3 : 1);
+  if (activeShock('summerSale')) foot *= 1.5;   // the sale pulls crowds through the summer lull
   if (staffHasTrait('magnet')) foot *= 1.04;   // Tomi brings the crowd in
   var newShare = 0;
   if (G.franchise) {
@@ -901,6 +906,7 @@ function buildEvent(ev) {
     var type = ev.crazy ? 'crazy' : roll < (d > 75 ? 0.3 : 0.45) ? 'fair' : roll < 0.85 ? 'cheeky' : 'crazy';
     ev.type = type;
     var f = type === 'fair' ? U(0.97, 0.99) : type === 'cheeky' ? U(0.90, 0.925) : U(0.60, 0.76);
+    if (activeShock('summerSale') && type !== 'crazy') f *= U(0.955, 0.975);   // sale shoppers push harder
     ev.offer = r25(c3.screen * f);
     ev.serious = type === 'fair' ? U(0.7, 0.95) : type === 'cheeky' ? U(0.5, 0.85) : U(0.1, 0.6);
     ev.read = pick(FE.READS[type]);
@@ -961,6 +967,7 @@ function autoPrice(c, exec) {
     c.discounted = true;
   }
   if (activeShock('scrappage')) price *= 0.97;
+  if (activeShock('summerSale')) price *= 0.955;   // event pricing eats the gross
   if (exec) {
     var R = null;
     FE.ROSTER.forEach(function (r) { if (r.id === exec.id) R = r; });
