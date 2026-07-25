@@ -236,10 +236,12 @@ function renderBanner() {
     var officeSkip = onCd
       ? '<button class="grn" disabled>Close in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
       : '<button class="grn" onclick="UI.skipWeek()">Skip week ⏭</button>';
-    h = '<div class="ph"><b>Block 3 — Office</b><div>Post, paperwork and decisions.' + (ack ? ' <span class="danger">' + ack + ' car(s) at 90+ days need acknowledging.</span>' : '') + (onCd ? ' <span class="muted">Week closes when the timer’s up.</span>' : '') + '</div></div>' +
+    h = '<div class="ph"><b>Block 3 — Office</b><div>Post, paperwork and decisions.' + (ack ? ' <span class="danger">' + ack + ' car(s) at 90+ days need acknowledging.</span>' : '') + (onCd ? ' <span class="muted">Week closes when the timer’s up — <a class="pz-link" onclick="Puzzle.hub()">fancy a puzzle?</a></span>' : '') + '</div></div>' +
       '<div style="display:flex;gap:6px"><button class="sec" onclick="UI.openOffice()">Desk</button>' + officeSkip + '</div>';
   } else if (g.phase === 'report') {
-    h = '<div class="ph"><b>Week closed</b><div>Report filed.</div></div><button onclick="UI.startNext()">Start week ' + g.week + '</button>';
+    h = '<div class="ph"><b>Week closed</b><div>Report filed.</div></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="sec" onclick="Puzzle.hub()">🎮 Portacabin</button>' +
+      '<button onclick="UI.startNext()">Start week ' + g.week + '</button></div>';
   }
   $('banner').innerHTML = h;
 }
@@ -1402,6 +1404,7 @@ UI.gearMenu = function () {
   UI.modal('<h3>Manager’s drawer</h3>' +
     '<div class="btnrow" style="flex-direction:column">' +
     '<button class="sec" onclick="UI.closeModal();UI.share()">Share my progress</button>' +
+    '<button class="sec" onclick="Puzzle.hub()">🎮 Portacabin games</button>' +
     '<button class="sec" onclick="UI.skipWeekUI()">Skip this week (staff run it)</button>' +
     '<button class="sec" onclick="UI.helpUI()">How this works</button>' +
     '<button class="sec" onclick="UI.closeModal();UI.startTutorial(false)">Replay tutorial</button>' +
