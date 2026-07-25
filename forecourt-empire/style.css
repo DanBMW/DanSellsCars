@@ -517,3 +517,40 @@ input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow
   box-shadow: 0 5px 14px -5px rgba(53,208,127,.7), inset 0 2px 0 rgba(255,255,255,.3); touch-action: none; user-select: none;
 }
 .pk-ped.on { transform: scale(.94); filter: brightness(1.12); }
+
+/* ---------- auction wallet bar ---------- */
+.auc-wallet {
+  display: flex; gap: 8px; margin: 6px 0 4px; padding: 10px 12px; border-radius: 13px;
+  background: linear-gradient(135deg, rgba(255,206,74,.14), rgba(255,182,61,.06)), var(--card);
+  border: 1px solid rgba(255,206,74,.32);
+}
+.auc-wallet > div { flex: 1; min-width: 0; }
+.auc-wallet span {
+  display: block; font-size: .58rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted);
+}
+.auc-wallet b {
+  display: block; font-family: 'SF Mono', 'Courier New', monospace; font-size: 1.02rem; color: var(--gold);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.auc-wallet b.pw { color: var(--teal); }
+.auc-wallet b.danger { color: var(--red); }
+
+/* ---------- locked / upcoming features ---------- */
+.card.locked { opacity: .72; border-style: dashed; }
+.card.locked b { color: var(--muted); }
+.lock-wk {
+  font-size: .6rem; font-weight: 800; letter-spacing: .6px; padding: 2px 8px; border-radius: 999px;
+  color: #bcd7ff; background: rgba(61,139,255,.18); white-space: nowrap;
+}
+.lock-eta { color: var(--blue); }
+.unlock-soon { border-color: rgba(61,139,255,.3); }
+.unlock-soon b { color: var(--teal); }
+
+/* ---------- text inputs (save codes, manager name) ---------- */
+.txt {
+  width: 100%; margin: 8px 0 4px; padding: 11px 13px; border-radius: 12px;
+  background: #131c33; border: 1px solid var(--line); color: var(--ink);
+  font: inherit; -webkit-user-select: text; user-select: text;
+}
+.txt:focus { outline: none; border-color: var(--gold); }
+.txt.code { font-family: 'SF Mono', 'Courier New', monospace; font-size: .7rem; line-height: 1.35; word-break: break-all; resize: vertical; }

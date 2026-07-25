@@ -633,14 +633,22 @@ function riskChip(l) {
 }
 UI.openAuction = function () {
   var g = G();
-  if (g.phase !== 'auction') { toast('The lanes are done for today. Tomorrow’s list comes with the new week.'); return; }
+  if (g.phase !== 'auction') { toast('The auction house is done for today. Tomorrow’s list comes with the new week.'); return; }
   var counts = { all: g.lots.length, green: 0, amber: 0, red: 0 };
   g.lots.forEach(function (l) { counts[l.risk.light]++; });
-  var h = '<h3>Central Auctions — today’s list</h3>' +
+  var h = '<h3>The auction house — today’s list</h3>';
+  // What you can actually spend, always on screen — cash is the number that
+  // decides every bid, and free pitches is the other hard limit.
+  var freeP = FE.freePitches();
+  h += '<div class="auc-wallet">' +
+    '<div><span>Cash in the bank</span><b id="aucCash">' + M(g.cash) + '</b></div>' +
+    (FE.financeEnabled()
+      ? '<div><span>Total to spend</span><b class="pw">' + M(FE.spendPower()) + '</b></div>'
+      : '') +
+    '<div><span>Free pitches</span><b class="' + (freeP ? '' : 'danger') + '">' + freeP + '</b></div>' +
+    '</div>' +
+    (FE.financeEnabled() ? '<p class="kv muted small" style="margin:2px 0 6px">Includes ' + M(FE.financeHeadroom()) + ' of stocking finance headroom.</p>' : '') +
     '<p class="kv muted small">Est. gross is <b>before fees, prep &amp; hold cost</b> — the mean prep assumption, and it is optimistic. Buyer premium 5.5% + £180 transport on every lot. Tap a risk light for why.</p>';
-  if (FE.financeEnabled()) {
-    h += '<div class="card kv" style="margin:4px 0"><b>' + M(FE.spendPower()) + '</b> to spend (' + M(g.cash) + ' cash + ' + M(FE.financeHeadroom()) + ' stocking finance).</div>';
-  }
   h += '<div class="risk-filter">' +
     ['all', 'green', 'amber', 'red'].map(function (f) {
       var name = f === 'all' ? 'All' : f === 'green' ? '🟢' : f === 'amber' ? '🟠' : '🔴';
@@ -661,7 +669,7 @@ UI.openAuction = function () {
       '</div>';
   });
   if (g.lots.length && !shown) h += '<div class="card kv muted">No ' + RISK_LABEL[auctionFilter] + ' lots in today’s list.</div>';
-  h += '<button class="ghost" onclick="UI.closeModal()">Leave the lanes</button>';
+  h += '<button class="ghost" onclick="UI.closeModal()">Leave the auction house</button>';
   UI.modal(h);
 };
 UI.riskInfo = function (id) {
@@ -682,7 +690,7 @@ UI.riskInfo = function (id) {
   h += '</ul>';
   if (l.vasFlag) h += '<p class="kv good">Vas reckons this one’s worth the gamble — he’s usually right about the ones the room walks past.</p>';
   h += '<div class="btnrow"><button onclick="UI.buyLot(' + l.id + ');">Buy — ' + M(Math.round(l.hammer * 1.055) + 180) + '</button>' +
-    '<button class="ghost" onclick="UI.openAuction()">Back to the lanes</button></div>';
+    '<button class="ghost" onclick="UI.openAuction()">Back to the auction house</button></div>';
   UI.modal(h);
 };
 UI.buyLot = function (id) {
@@ -986,12 +994,23 @@ function buildProgress(startWk, dueWk, nowWk, label) {
   return '<div class="kv"><span class="build-tag">🏗 ' + label + '</span> — ' + (left <= 0 ? 'finishing this week' : left + ' wk' + (left === 1 ? '' : 's') + ' left') + '</div>' +
     '<div class="progressbar"><i class="warn" style="width:' + pct + '%"></i></div>';
 }
+// a greyed-out card for something that hasn't unlocked yet — visible so the
+// player knows it exists and is coming, not hidden so the office feels empty
+function lockedCard(name, blurb, wk) {
+  var left = wk - G().week;
+  return '<div class="card locked"><div class="row"><b>🔒 ' + esc(name) + '</b>' +
+    '<span class="lock-wk">Week ' + wk + '</span></div>' +
+    '<div class="kv muted">' + blurb + '</div>' +
+    '<div class="kv small lock-eta">' + (left <= 1 ? 'Opens next week.' : 'Opens in ' + left + ' weeks.') + '</div></div>';
+}
 UI.openOffice = function () {
   var g = G();
   var h = '<h3>The office</h3>';
   // stocking finance facility
   var drawn = FE.financeDrawn(), lim = FE.financeLimit();
-  if (FE.financeEnabled()) {
+  if (!FE.unlocked('finance')) {
+    h += lockedCard('Stocking finance', 'A credit facility to buy stock beyond your cash. The bank wants to see you trade a few weeks first.', FE.unlockWeek('finance'));
+  } else if (FE.financeEnabled()) {
     var head = FE.financeHeadroom();
     var pct = lim ? Math.min(100, Math.round(drawn / lim * 100)) : 0;
     h += '<div class="card"><b>Stocking finance</b>' +
@@ -1008,17 +1027,19 @@ UI.openOffice = function () {
       '<div class="btnrow"><button onclick="UI.financeToggle(true)">Open a facility</button></div></div>';
   }
   // ads
-  if (g.week >= 5) {
+  if (FE.unlocked('ads')) {
     h += '<div class="card"><b>Advertising</b><div class="btnrow">';
     FE.AD_TIERS.forEach(function (t, i) {
       h += '<button class="' + (g.adTier === i ? '' : 'sec') + '" onclick="FE.setAds(' + i + ');UI.openOffice()">' + t.name + '<br><span class="small">' + M(t.cost) + '/wk</span></button>';
     });
     h += '</div></div>';
   } else {
-    h += '<div class="card kv"><b>Advertising</b> — fixed while you find your feet (tiers unlock week 5).</div>';
+    h += lockedCard('Advertising', 'Spend is fixed while you find your feet. Then you choose the tier.', FE.unlockWeek('ads'));
   }
   // franchise
-  if (g.week >= FE.FRANCHISE.unlockWk) {
+  if (!FE.unlocked('franchise')) {
+    h += lockedCard('Franchise', 'Sign with ' + g.brand + ' for new cars and factory orders. They want to see a going concern first.', FE.unlockWeek('franchise'));
+  } else if (g.week >= FE.FRANCHISE.unlockWk) {
     if (!g.franchise) {
       h += '<div class="card"><b>' + g.brand + ' franchise</b><div class="kv">New cars on your forecourt. ' + M(FE.FRANCHISE.fee) + '/yr, minimum ' + FE.FRANCHISE.minSlots + ' pitches, target ' + FE.FRANCHISE.targetPerSlot + ' units per pitch per year. <span class="warn">Commit properly or not at all — a token effort underperforms staying used-only.</span></div>' +
         '<div class="btnrow"><button onclick="UI.signFranchiseUI()">Sign up</button></div></div>';
@@ -1036,7 +1057,9 @@ UI.openOffice = function () {
     }
   }
   // departments
-  FE.DEPARTMENTS.forEach(function (d) {
+  if (!FE.unlocked('depts')) {
+    h += lockedCard('Departments', 'A service department brings weekly income and takes the sting out of prep bills.', FE.unlockWeek('depts'));
+  } else FE.DEPARTMENTS.forEach(function (d) {
     if (g.dept[d.id]) {
       if (g.week >= g.dept[d.id]) h += '<div class="card kv"><b>' + d.name + '</b> — live. ' + M(d.weekly) + '/wk coming in.</div>';
       else h += '<div class="card"><b>' + d.name + '</b>' + buildProgress(g.dept[d.id] - d.buildWks, g.dept[d.id], g.week, 'Construction') + '<div class="kv muted">Capacity down while the builders are in.</div></div>';
@@ -1045,9 +1068,11 @@ UI.openOffice = function () {
         '<div class="btnrow"><button class="sec" onclick="UI.buildDeptUI(\'' + d.id + '\')">Build</button></div></div>';
     }
   });
-  h += '<div class="card kv"><b>Smart repair · Valeting bay</b> — the builders say "after the beta".</div>';
+  if (FE.unlocked('depts')) h += '<div class="card kv"><b>Smart repair · Valeting bay</b> — the builders say "after the beta".</div>';
   // expansion
-  FE.EXPANSIONS.forEach(function (x) {
+  if (!FE.unlocked('expansion')) {
+    h += lockedCard('Land expansion', 'Buy the ground next door and line out more pitches.', FE.unlockWeek('expansion'));
+  } else FE.EXPANSIONS.forEach(function (x) {
     if (g.expansionsDone.indexOf(x.id) >= 0) return;
     var pend = null;
     g.pendingBuilds.forEach(function (b) { if (b.id === x.id) pend = b; });
@@ -1059,11 +1084,24 @@ UI.openOffice = function () {
     }
   });
   // salary restructure
-  h += '<div class="card"><b>Pay structure</b><div class="kv">Currently: ' + FE.SALARIES[g.salary].name + '. Once a year you can change it — the team never thanks you.</div><div class="btnrow">';
-  FE.SALARIES.forEach(function (s, i) {
-    if (i !== g.salary) h += '<button class="sec small" onclick="UI.salaryUI(' + i + ')">' + s.name + '</button>';
-  });
-  h += '</div></div>';
+  if (!FE.unlocked('salary')) {
+    h += lockedCard('Pay structure', 'Change the basic/commission split. Not while the ink’s still wet on their contracts.', FE.unlockWeek('salary'));
+  } else {
+    h += '<div class="card"><b>Pay structure</b><div class="kv">Currently: ' + FE.SALARIES[g.salary].name + '. Once a year you can change it — the team never thanks you.</div><div class="btnrow">';
+    FE.SALARIES.forEach(function (s, i) {
+      if (i !== g.salary) h += '<button class="sec small" onclick="UI.salaryUI(' + i + ')">' + s.name + '</button>';
+    });
+    h += '</div></div>';
+  }
+  // what's still to come — progression the player can see
+  var soon = FE.upcomingUnlocks();
+  if (soon.length) {
+    h += '<div class="card unlock-soon"><b>Coming up</b>';
+    soon.forEach(function (u) {
+      h += '<div class="row kv"><span>' + esc(u.name) + '</span><b>Week ' + u.wk + '</b></div>';
+    });
+    h += '<div class="kv muted small">The business opens up as you trade. Nothing here is missable.</div></div>';
+  }
   h += '<button class="ghost" onclick="UI.closeModal()">Back to it</button>';
   UI.modal(h);
 };
@@ -1405,6 +1443,7 @@ UI.gearMenu = function () {
     '<div class="btnrow" style="flex-direction:column">' +
     '<button class="sec" onclick="UI.closeModal();UI.share()">Share my progress</button>' +
     '<button class="sec" onclick="Puzzle.hub()">🎮 Portacabin games</button>' +
+    '<button class="sec" onclick="UI.saveMenu()">💾 Save &amp; profile</button>' +
     '<button class="sec" onclick="UI.skipWeekUI()">Skip this week (staff run it)</button>' +
     '<button class="sec" onclick="UI.helpUI()">How this works</button>' +
     '<button class="sec" onclick="UI.closeModal();UI.startTutorial(false)">Replay tutorial</button>' +
@@ -1414,6 +1453,88 @@ UI.gearMenu = function () {
 };
 UI.confirmRestart = function () {
   if (confirm('Abandon this career and wipe the save?')) UI.restart();
+};
+
+/* ---------- save & profile ---------- */
+UI.saveMenu = function () {
+  var p = FE.profile(), info = FE.saveInfo(), g = G();
+  var when = info && info.savedAt ? new Date(info.savedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  UI.modal('<h3>💾 Save &amp; profile</h3>' +
+    '<div class="card"><b>Manager</b>' +
+    '<div class="row kv"><span>Name</span><b>' + (p.name ? esc(p.name) : '<span class="muted">not set</span>') + '</b></div>' +
+    '<div class="row kv"><span>Player ID</span><span class="mono small muted">' + esc(p.id.slice(0, 8)) + '…</span></div>' +
+    '<div class="btnrow"><button class="sec" onclick="UI.nameUI()">' + (p.name ? 'Change name' : 'Set a name') + '</button></div>' +
+    '<div class="kv muted small">Your ID travels with your save. When online play arrives, this is the account it attaches to.</div></div>' +
+    '<div class="card"><b>This career</b>' +
+    '<div class="row kv"><span>Progress</span><b>Week ' + (g ? g.week : '—') + (g ? ' · ' + esc(g.brand) : '') + '</b></div>' +
+    '<div class="row kv"><span>Last saved</span><b>' + when + '</b></div>' +
+    '<div class="kv muted small">The game saves itself after every action — there is no way to lose a week.</div>' +
+    '<div class="btnrow"><button onclick="UI.saveNow()">Save now</button></div></div>' +
+    '<div class="card"><b>Move to another device</b>' +
+    '<div class="kv">Copy a save code out, paste it in on the other phone. Same code a future online account would sync.</div>' +
+    '<div class="btnrow"><button class="sec" onclick="UI.exportUI()">Copy save code</button>' +
+    '<button class="sec" onclick="UI.importUI()">Paste a save code</button></div></div>' +
+    '<button class="ghost" onclick="UI.closeModal()">Close</button>');
+};
+UI.nameUI = function () {
+  var p = FE.profile();
+  UI.modal('<h3>Manager name</h3><p class="kv muted small">Shown on your progress card, and reserved for you when online play lands.</p>' +
+    '<input id="nameIn" class="txt" maxlength="24" placeholder="e.g. Dan" value="' + esc(p.name || '') + '">' +
+    '<div id="nameErr" class="kv danger small"></div>' +
+    '<div class="btnrow"><button onclick="UI.nameGo()">Save name</button>' +
+    '<button class="ghost" onclick="UI.saveMenu()">Back</button></div>');
+  var el = $('nameIn'); if (el) el.focus();
+};
+UI.nameGo = function () {
+  var el = $('nameIn'); if (!el) return;
+  var r = FE.setUsername(el.value);
+  if (!r.ok) { var e = $('nameErr'); if (e) e.textContent = r.msg; return; }
+  toast('Name set — ' + esc(r.profile.name));
+  UI.saveMenu();
+};
+UI.saveNow = function () {
+  toast(FE.save() ? 'Saved.' : 'Could not save — device storage is full.');
+};
+UI.exportUI = function () {
+  if (!G()) { toast('Nothing to export yet.'); return; }
+  UI.modal('<h3>Your save code</h3><p class="kv muted small">Packing it up…</p>');
+  FE.exportSave(function (code) {
+    if (!code) { toast('Nothing to export yet.'); UI.saveMenu(); return; }
+    var kb = (code.length / 1024).toFixed(0);
+    UI.modal('<h3>Your save code</h3>' +
+      '<p class="kv muted small">Copy all of it. Paste it into "Paste a save code" on the other device — it replaces whatever career is on there. <span class="muted">(' + kb + ' KB)</span></p>' +
+      '<textarea id="expBox" class="txt code" rows="6" readonly>' + esc(code) + '</textarea>' +
+      '<div class="btnrow"><button onclick="UI.copyCode()">Copy to clipboard</button>' +
+      '<button class="ghost" onclick="UI.saveMenu()">Back</button></div>');
+    var t = $('expBox'); if (t) { t.focus(); t.select(); }
+  });
+};
+UI.copyCode = function () {
+  var t = $('expBox'); if (!t) return;
+  t.select();
+  var done = false;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t.value).then(function () { toast('Save code copied.'); }, function () { toast('Select the text and copy it manually.'); });
+    done = true;
+  }
+  if (!done) { try { done = document.execCommand('copy'); } catch (e) {} toast(done ? 'Save code copied.' : 'Select the text and copy it manually.'); }
+};
+UI.importUI = function () {
+  UI.modal('<h3>Paste a save code</h3>' +
+    '<p class="kv warn small">This replaces the career on this device. Copy your own code out first if you want to keep it.</p>' +
+    '<textarea id="impBox" class="txt code" rows="6" placeholder="Paste the code here"></textarea>' +
+    '<div id="impErr" class="kv danger small"></div>' +
+    '<div class="btnrow"><button onclick="UI.importGo()">Load this save</button>' +
+    '<button class="ghost" onclick="UI.saveMenu()">Back</button></div>');
+};
+UI.importGo = function () {
+  var t = $('impBox'); if (!t) return;
+  FE.importSave(t.value, function (r) {
+    if (!r.ok) { var e = $('impErr'); if (e) e.textContent = r.msg; return; }
+    UI.closeModal();
+    renderAll();
+    toast('Save loaded — week ' + r.week + '.');
+  });
 };
 UI.helpUI = function () {
   UI.modal('<h3>How this works</h3>' +

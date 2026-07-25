@@ -24,6 +24,27 @@ FE.FNI_BASE = 0.34;
 FE.FNI_BACKEND = 1150;
 FE.SERVICE_PREP_SAVING = 0.40;
 
+/* The aunt's forecourt isn't empty when you inherit it. You start with this
+   many cars already on the pitch, prepped and ready to retail — no cash outlay,
+   but they carry a book cost so the gross on them reads honestly. Makes week 1
+   playable from the first minute instead of "spend £300k, then wait". */
+FE.STARTER_STOCK = 10;
+FE.STARTER_BOOK = 0.74;        // book cost as a fraction of retail (favourable trade money)
+
+/* Progressive unlocks — the office opens up as the weeks pass so a new player
+   isn't handed every lever at once. Keys map to the week they become available.
+   FE.unlocked(key) is the single source of truth; the office shows a
+   "coming up" list built from FE.UNLOCK_INFO so progression is visible. */
+FE.UNLOCKS = { finance: 3, ads: 5, depts: 6, expansion: 6, franchise: 7, salary: 9 };
+FE.UNLOCK_INFO = [
+  { key: 'finance',   name: 'Stocking finance',   blurb: 'Buy stock on credit beyond your cash.' },
+  { key: 'ads',       name: 'Advertising tiers',  blurb: 'Turn the marketing spend up or down.' },
+  { key: 'depts',     name: 'Departments',        blurb: 'Service department — income and cheaper prep.' },
+  { key: 'expansion', name: 'Land expansion',     blurb: 'Buy the ground next door for more pitches.' },
+  { key: 'franchise', name: 'Franchise',          blurb: 'Sign for new cars and factory orders.' },
+  { key: 'salary',    name: 'Pay restructure',    blurb: 'Change the basic/commission split.' }
+];
+
 /* Stocking finance — an optional credit facility to fund stock beyond your
    cash. Limit scales with net worth (capped £1M); the rate starts high for a
    new dealer and eases as you establish a track record and grow net worth. */

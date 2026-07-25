@@ -1,5 +1,35 @@
 # Forecourt Empire — beta feedback log & roadmap
 
+## Status — build pass of 2026-07-25 (onboarding & persistence)
+
+- **Inherited starter stock:** you now begin with `FE.STARTER_STOCK` (10) cars
+  already on the pitch — free of cash outlay, carried at `FE.STARTER_BOOK` (74%
+  of retail) so gross reads honestly. Seven sound, three with a visible flaw.
+  Week 1 is playable from the first minute instead of "spend £300k, then wait".
+- **Progressive unlocks:** the office opens up over time via `FE.UNLOCKS`
+  (finance wk3, ads wk5, departments + land wk6, franchise wk7, pay wk9).
+  Gated in the engine (`FE.unlocked`), shown as locked cards plus a "coming up"
+  list so nothing feels hidden or missable.
+- **"Lanes" → "auction house"** throughout the player-facing copy.
+- **Cash always visible in the auction** — a wallet bar with cash, total spend
+  power (when finance is on) and free pitches.
+- **Persistence rebuilt for a backend:** saves are wrapped in an envelope
+  `{schema, profile:{id,name,created}, savedAt, game}` with `FE.migrate` for
+  schema bumps, `FE.storage` as the only localStorage toucher (swap for a
+  remote driver), a client-minted profile UUID + display name, and gzipped
+  portable save codes (`FEz1:`/`FE1:`, ~8x smaller) for device transfer.
+  Reports are capped at 60 weeks so a long career can't bloat the save.
+
+### Balance note
+
+Starter stock is a one-off ~£150k lift: break-even moves from ~week 6 to weeks
+3–5 and the year-1 cash floor rises £150–300k. Year-end net rose ~£50–90k
+across brands. If the tension needs restoring later, the lever is
+`FE.START_CASH` (see item 9 below — £750k was the recommended single change),
+not removing the starter stock, which is doing the onboarding work.
+
+---
+
 Dan's playtest feedback, captured for the build pass.
 
 ## Status — implemented in the build pass of 2026-07-24

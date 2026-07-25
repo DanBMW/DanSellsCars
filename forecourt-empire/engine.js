@@ -67,6 +67,22 @@ function starFootfall(s) {
   return t[t.length - 1][1];
 }
 
+/* Progressive unlocks. Everything the office can do is gated through here so
+   the ladder lives in one place (data.js) and the UI can show what's coming. */
+FE.unlocked = function (key) {
+  var wk = FE.UNLOCKS[key];
+  if (wk == null) return true;
+  return !!G && G.week >= wk;
+};
+FE.unlockWeek = function (key) { return FE.UNLOCKS[key] == null ? 1 : FE.UNLOCKS[key]; };
+// what unlocks after the current week, soonest first — drives the "coming up" card
+FE.upcomingUnlocks = function () {
+  if (!G) return [];
+  return FE.UNLOCK_INFO.filter(function (u) { return G.week < FE.unlockWeek(u.key); })
+    .map(function (u) { return { key: u.key, name: u.name, blurb: u.blurb, wk: FE.unlockWeek(u.key) }; })
+    .sort(function (a, b) { return a.wk - b.wk; });
+};
+
 function presConvFactor() {
   var diff = site().tier - brand().tier;
   if (diff >= 0) return Math.min(1 + 0.06 * diff, 1.12);
@@ -116,23 +132,203 @@ FE.newGame = function (brandKey, siteIdx, salaryIdx) {
   for (var pi = pool.length - 1; pi > 0; pi--) { var pj = Math.floor(Math.random() * (pi + 1)); var tmp = pool[pi]; pool[pi] = pool[pj]; pool[pj] = tmp; }
   G.candidates = pool.slice(0, 6);
   G.candidatePool = pool.slice(6);
+  grantStarterStock();
   startWeek();
   FE.save();
   return G;
 };
 
-/* ---------- persistence ---------- */
+/* The stock your aunt left on the pitch. Free (no cash outlay) but carried at a
+   book cost, so the gross reads like a real deal rather than 100% profit. Seven
+   are sound, three carry a visible flaw — the forecourt teaches you to read a
+   car before the auction ever charges you for the lesson. */
+function grantStarterStock() {
+  var n = Math.min(FE.STARTER_STOCK, totalSlots());
+  for (var i = 0; i < n; i++) {
+    var dud = i >= 7;                                  // last three are the teachers
+    var v = genVehicle(G.brand, dud ? { age: RI(5, 8), milesHigh: true } : {});
+    var book = r25(v.retail * FE.STARTER_BOOK * (dud ? 1.06 : 1));  // duds were over-valued into the estate
+    v.cost.hammer = book; v.cost.premium = 0; v.cost.transport = 0;
+    v.boughtWk = 1; v.arrivedWk = 1; v.status = 'stock';
+    v.inherited = true;
+    // the aunt's lad had already prepped them — no bill, nothing owing
+    v.truePrep = 0; v.blowout = false; v.cost.prep = 0; v.prepPaid = true;
+    v.arrived = true;
+    autoPlace(v);
+    G.stock.push(v);
+  }
+}
+
+/* ---------- persistence ----------
+   Saves are wrapped in an envelope so this survives contact with a backend:
+
+     { schema, profile:{id,name,created}, savedAt, game }
+
+   * `schema` lets old saves be migrated instead of binned (FE.migrate).
+   * `profile.id` is a client-minted UUID — a server can later claim it as the
+     row key and treat `name` as the display username (uniqueness has to be
+     enforced server-side; the client can only propose a name).
+   * FE.storage is the only thing that touches localStorage, so swapping in an
+     async/remote driver later means changing one object, not the whole engine.
+   * FE.exportSave / FE.importSave give the player a portable code today, which
+     is the same payload a sync endpoint would POST tomorrow. */
 var SAVE_KEY = 'forecourtEmpireSave_v1';
-FE.save = function () { try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); } catch (e) {} };
+var PROFILE_KEY = 'forecourtEmpireProfile';
+FE.SCHEMA = 2;
+
+FE.storage = {
+  get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set: function (k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+  remove: function (k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+function uuid() {
+  if (window.crypto && crypto.randomUUID) { try { return crypto.randomUUID(); } catch (e) {} }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+FE.profile = function () {
+  var raw = FE.storage.get(PROFILE_KEY), p = null;
+  try { p = raw ? JSON.parse(raw) : null; } catch (e) { p = null; }
+  if (!p || !p.id) {
+    p = { id: uuid(), name: '', created: Date.now() };
+    FE.storage.set(PROFILE_KEY, JSON.stringify(p));
+  }
+  return p;
+};
+// Propose a display name. Local-only for now; a backend would validate
+// uniqueness and may hand back a different name, so callers should re-read.
+FE.setUsername = function (name) {
+  name = String(name || '').trim().slice(0, 24);
+  if (!name) return { ok: false, msg: 'Give it a name.' };
+  if (!/^[\w .'-]+$/.test(name)) return { ok: false, msg: 'Letters, numbers, spaces, . \' - only.' };
+  var p = FE.profile();
+  p.name = name;
+  FE.storage.set(PROFILE_KEY, JSON.stringify(p));
+  return { ok: true, profile: p };
+};
+
+// Bring an older save up to the current schema. Add a case per bump; never
+// throw — a partial migration beats a lost career.
+FE.migrate = function (game, from) {
+  if (!game) return game;
+  if (from < 2) {
+    // v2: inherited starter stock, unlock ladder, prospecting cap
+    if (game.prospectWk == null) game.prospectWk = 0;
+    (game.stock || []).forEach(function (c) {
+      if (c.arrived == null) c.arrived = true;
+      if (c.inherited == null) c.inherited = false;
+    });
+  }
+  return game;
+};
+
+function envelope() {
+  var p = FE.profile();
+  return { schema: FE.SCHEMA, profile: p, savedAt: Date.now(), game: G };
+}
+FE.save = function () {
+  if (!G) return false;
+  return FE.storage.set(SAVE_KEY, JSON.stringify(envelope()));
+};
 FE.load = function () {
+  var raw = FE.storage.get(SAVE_KEY);
+  if (!raw) return null;
   try {
-    var raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return null;
-    G = JSON.parse(raw);
+    var o = JSON.parse(raw);
+    // legacy: pre-envelope saves stored the bare game object
+    if (o && o.game === undefined && o.week != null) { G = FE.migrate(o, 1); return G; }
+    if (!o || !o.game) return null;
+    G = FE.migrate(o.game, o.schema || 1);
     return G;
   } catch (e) { return null; }
 };
-FE.wipe = function () { localStorage.removeItem(SAVE_KEY); G = null; };
+FE.wipe = function () { FE.storage.remove(SAVE_KEY); G = null; };
+FE.hasSave = function () { return !!FE.storage.get(SAVE_KEY); };
+FE.saveInfo = function () {
+  var raw = FE.storage.get(SAVE_KEY);
+  if (!raw) return null;
+  try {
+    var o = JSON.parse(raw);
+    var g = o.game || o;
+    return { week: g.week, brand: g.brand, cash: g.cash, savedAt: o.savedAt || g.created || 0, schema: o.schema || 1 };
+  } catch (e) { return null; }
+};
+
+/* Portable save code — the same envelope a sync endpoint would carry.
+   Tagged so the reader knows what it's holding:
+     FE1:<base64>   plain JSON
+     FEz1:<base64>  gzipped JSON (CompressionStream, ~10x smaller)
+   Export is callback-based because compression is async; it always calls back
+   with something — a plain code if the browser has no CompressionStream. */
+function b64FromBytes(bytes) {
+  var s = '', CH = 0x8000;
+  for (var i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  return btoa(s);
+}
+function bytesFromB64(b64) {
+  var bin = atob(b64), out = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+FE.exportSave = function (cb) {
+  var plain = null;
+  try { plain = 'FE1:' + btoa(unescape(encodeURIComponent(JSON.stringify(envelope())))); } catch (e) {}
+  if (!G) { if (cb) cb(null); return null; }
+  if (!cb) return plain;                       // sync callers still get a working code
+  if (typeof CompressionStream === 'undefined' || !window.Response) { cb(plain); return plain; }
+  try {
+    var json = JSON.stringify(envelope());
+    var cs = new CompressionStream('gzip');
+    var w = cs.writable.getWriter();
+    w.write(new TextEncoder().encode(json));
+    w.close();
+    new Response(cs.readable).arrayBuffer().then(function (buf) {
+      try { cb('FEz1:' + b64FromBytes(new Uint8Array(buf))); }
+      catch (e) { cb(plain); }
+    }, function () { cb(plain); });
+  } catch (e) { cb(plain); }
+  return plain;
+};
+function finishImport(json) {
+  var o;
+  try { o = JSON.parse(json); }
+  catch (e) { return { ok: false, msg: 'That code isn’t readable — check it copied in full.' }; }
+  var game = o && o.game ? o.game : (o && o.week != null ? o : null);
+  if (!game || game.week == null || !game.stock) return { ok: false, msg: 'That’s not a Forecourt Empire save.' };
+  G = FE.migrate(game, o.schema || 1);
+  FE.save();
+  return { ok: true, week: G.week };
+}
+FE.importSave = function (code, cb) {
+  cb = cb || function () {};
+  var done = function (r) { cb(r); return r; };
+  if (!code) return done({ ok: false, msg: 'Nothing to import.' });
+  var s = String(code).trim().replace(/\s+/g, '');
+  var gz = s.indexOf('FEz1:') === 0;
+  if (gz) s = s.slice(5); else if (s.indexOf('FE1:') === 0) s = s.slice(4);
+  if (gz) {
+    if (typeof DecompressionStream === 'undefined' || !window.Response) {
+      return done({ ok: false, msg: 'This browser can’t read compressed codes — export a plain one instead.' });
+    }
+    try {
+      var ds = new DecompressionStream('gzip');
+      var w = ds.writable.getWriter();
+      w.write(bytesFromB64(s)); w.close();
+      new Response(ds.readable).arrayBuffer().then(function (buf) {
+        cb(finishImport(new TextDecoder().decode(buf)));
+      }, function () { cb({ ok: false, msg: 'That code isn’t readable — check it copied in full.' }); });
+    } catch (e) { return done({ ok: false, msg: 'That code isn’t readable — check it copied in full.' }); }
+    return { ok: true, pending: true };
+  }
+  var json;
+  try { json = decodeURIComponent(escape(atob(s))); }
+  catch (e) { return done({ ok: false, msg: 'That code isn’t readable — check it copied in full.' }); }
+  return done(finishImport(json));
+};
 
 /* ---------- cash ---------- */
 function pay(amt, cat, label) {
@@ -310,7 +506,7 @@ function genLots() {
     v.risk = scoreLot(v);
     lots.push(v);
   }
-  // Vas (trader) casts an eye over the lanes and rates one gamble as worth it
+  // Vas (trader) casts an eye over the auction house and rates one gamble as worth it
   if (staffHasTrait('trader')) {
     var gambles = lots.filter(function (l) { return l.risk.flavour === 'gamble'; });
     if (gambles.length) gambles[Math.floor(rnd() * gambles.length)].vasFlag = true;
@@ -507,11 +703,12 @@ function startWeek() {
   // fresh auction list
   G.lots = genLots();
   G.lotsWk = G.week;
-  mail('Central Auctions', 'Today’s list — ' + FE.LOTS_PER_WEEK + ' lots', 'Fresh lots in the lanes, including a run of older, higher-mileage bargains. They expire when the next list lands: miss a day and the good ones are gone.', 'auction');
+  mail('Central Auctions', 'Today’s list — ' + FE.LOTS_PER_WEEK + ' lots', 'Fresh lots in the auction house, including a run of older, higher-mileage bargains. They expire when the next list lands: miss a day and the good ones are gone.', 'auction');
 
   // week-1 flavour
   if (G.week === 1) {
-    mail('Hartley & Crumb, solicitors', 'Your late aunt’s estate', 'The funds have cleared: ' + money(FE.START_CASH) + ', less the premises. Her note reads: "Don’t let them see you coming, love."\n\nHer old contact book is in the bottom drawer. Three of her people are still waiting on a car: one wants a ' + G.wantedSegs[0] + ', one a ' + G.wantedSegs[1] + ', one a ' + G.wantedSegs[2] + '. If you’ve got what they’re after when they call in, they’ll hardly need selling to.', 'info');
+    var inherited = G.stock.filter(function (c) { return c.inherited; }).length;
+    mail('Hartley & Crumb, solicitors', 'Your late aunt’s estate', 'The funds have cleared: ' + money(FE.START_CASH) + ', less the premises. Her note reads: "Don’t let them see you coming, love."\n\nThe forecourt comes as it stands — ' + inherited + ' cars are already on the pitch, prepped and priced, and they’re yours outright. Nothing to pay on them. Sell them as they are or re-price them; a couple were bought on a bad day, so read them before you trust them.\n\nHer old contact book is in the bottom drawer. Three of her people are still waiting on a car: one wants a ' + G.wantedSegs[0] + ', one a ' + G.wantedSegs[1] + ', one a ' + G.wantedSegs[2] + '. If you’ve got what they’re after when they call in, they’ll hardly need selling to.', 'info');
     mail('Recruitment desk', 'Sales executives — ' + G.candidates.length + ' available now', 'You can start hiring today — you need at least two on the floor, the GSM does not sell. The agency has ' + G.candidates.length + ' names on the books right now and more coming next week. Fees are payable up front. See the Staff tab.', 'info');
   }
   if (G.week === 2 && G.candidatePool && G.candidatePool.length) {
@@ -627,6 +824,7 @@ FE.train = function (staffId, courseId) {
 };
 
 FE.changeSalary = function (idx) {
+  if (!FE.unlocked('salary')) return { ok: false, msg: 'Not while the ink’s wet on their contracts (week ' + FE.unlockWeek('salary') + ').' };
   var yr = Math.ceil(G.week / 52);
   if (G.salaryChangedYr === yr) return { ok: false, msg: 'You can only restructure pay once per year.' };
   G.salary = idx; G.salaryChangedYr = yr;
@@ -1566,6 +1764,7 @@ FE.resolvePreReg = function (emailId, doIt) {
 
 /* ---------- departments & expansion ---------- */
 FE.buildDept = function (id) {
+  if (!FE.unlocked('depts')) return { ok: false, msg: 'Not offered until week ' + FE.unlockWeek('depts') + '.' };
   var D = null;
   FE.DEPARTMENTS.forEach(function (d) { if (d.id === id) D = d; });
   if (!D) return { ok: false };
@@ -1579,6 +1778,7 @@ FE.buildDept = function (id) {
   return { ok: true };
 };
 FE.buyExpansion = function (id) {
+  if (!FE.unlocked('expansion')) return { ok: false, msg: 'The agent won’t take you seriously until week ' + FE.unlockWeek('expansion') + '.' };
   var E = null;
   FE.EXPANSIONS.forEach(function (x) { if (x.id === id) E = x; });
   if (!E || G.expansionsDone.indexOf(id) >= 0) return { ok: false, msg: 'Not available.' };
@@ -1591,7 +1791,7 @@ FE.buyExpansion = function (id) {
   FE.save();
   return { ok: true, dueWk: due };
 };
-FE.setAds = function (tier) { if (G.week >= 5) { G.adTier = tier; FE.save(); } };
+FE.setAds = function (tier) { if (FE.unlocked('ads')) { G.adTier = tier; FE.save(); } };
 FE.ack90 = function (carId) { G.stock.forEach(function (c) { if (c.id === carId) c.ack90 = true; }); FE.save(); };
 FE.needsAck = function () {
   return inStock().filter(function (c) { return daysIn(c) >= 90 && !c.ack90 && !c.isNew; });
@@ -1718,6 +1918,8 @@ FE.closeWeek = function () {
     demand: Math.round((W.demand || 0) * 10) / 10, capacity: Math.round((W.capTotal || 0) * 10) / 10
   };
   G.reports.unshift(report);
+  // keep the save bounded on a long career — the tab only ever shows the last 10
+  if (G.reports.length > 60) G.reports.length = 60;
   if (W.units > G.totals.bestWk) { G.totals.bestWk = W.units; G.totals.bestWkAt = G.week; }
   if (W.units < G.totals.worstWk) { G.totals.worstWk = W.units; G.totals.worstWkAt = G.week; }
 
@@ -1877,6 +2079,7 @@ FE.financeApr = function () {
 };
 FE.spendPower = function () { return G.cash + FE.financeLimit(); };
 FE.enableFinance = function (on) {
+  if (on && !FE.unlocked('finance')) return { ok: false, msg: 'The bank wants a few weeks of trading first (week ' + FE.unlockWeek('finance') + ').' };
   if (!G.finance) G.finance = { enabled: false };
   if (!on && FE.financeDrawn() > 0) return { ok: false, msg: 'Clear the drawn balance before closing the facility.' };
   G.finance.enabled = !!on;
