@@ -1306,11 +1306,19 @@ function autoPrice(c, exec) {
 
 FE.payPrep = function (ev) {
   var car = ev.car;
+  // Idempotent: this is reachable more than once for the same car (a reload
+  // while the bill is on screen, or Skip Week sweeping an event the player has
+  // already settled). Charging twice would quietly double the week's prep.
+  if (car.prepPaid) {
+    ev.dead = true;
+    return { amount: car.cost.prep || 0, blowout: !!car.blowout, tip: false, already: true };
+  }
   // a transit car lands on the forecourt now (arrival + prep in one)
   if (!car.arrived) { car.arrived = true; if (car.slot == null) autoPlace(car); }
   pay(car.truePrep, 'prep', 'Prep — ' + carName(car));
   car.cost.prep = car.truePrep;
   car.prepPaid = true;
+  ev.dead = true;                       // spent — never resolve this one again
   var firstBlowout = car.blowout && !G.flags.prepTip;
   if (car.blowout && G.flags.prepTip === false) G.flags.prepTip = true;
   FE.save();
@@ -2170,7 +2178,9 @@ FE.skipWeek = function (quiet) {
   var kept = 0;
   if (G.phase === 'auction') FE.enterShowroom();   // generate the week's events
   if (G.phase === 'showroom') {
-    G.events.forEach(function (ev) {
+    // only what the player hasn't already dealt with — sweeping from the start
+    // of the queue would re-resolve everything they'd worked through by hand
+    G.events.slice(G.eventIdx).forEach(function (ev) {
       if (!ev.built) buildEvent(ev);
       if (ev.dead || ev.silent) return;
       if (ev.kind === 'prep' || ev.kind === 'arrival') { FE.payPrep(ev); ev.dead = true; return; }
