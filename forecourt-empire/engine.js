@@ -45,11 +45,14 @@ function carCost(c) { return c.cost.hammer + c.cost.premium + c.cost.transport +
 FE.carCost = carCost;
 function acq(c) { return c.cost.hammer + c.cost.premium + c.cost.transport; }
 FE.acq = acq;
-function carName(c) { return c.brand + ' ' + FE.MODELS[c.model].m; }
+function carName(c) {
+  return c.brand + ' ' + FE.MODELS[c.model].m + (c.perf ? ' ' + c.perf.badge : '');
+}
 FE.carName = carName;
 function carDesc(c) {
   return FE.TRIMS[c.trim].t + ' · ' + FE.COLOURS[c.colour].c + ' · ' + c.year + ' · ' +
-    c.miles.toLocaleString() + ' mi · grade ' + c.cond + ' · ' + FE.HISTORY[c.hist].h + ' history · ' + c.fuel;
+    c.miles.toLocaleString() + ' mi · grade ' + c.cond + ' · ' + FE.HISTORY[c.hist].h + ' history · ' + c.fuel +
+    (c.modified ? ' · modified' : '');
 }
 FE.carDesc = carDesc;
 function daysIn(c) { return Math.max(0, (G.week - c.arrivedWk) * 7); }
@@ -148,7 +151,7 @@ function grantStarterStock() {
   var n = Math.min(FE.STARTER_STOCK, totalSlots());
   for (var i = 0; i < n; i++) {
     var dud = i >= 7;                                  // last three are the teachers
-    var v = genVehicle(G.brand, dud ? { age: RI(5, 8), milesHigh: true } : {});
+    var v = genVehicle(G.brand, dud ? { age: RI(5, 8), milesHigh: true, perf: false } : { perf: false });
     var book = r25(v.retail * FE.STARTER_BOOK * (dud ? 1.06 : 1));  // duds were over-valued into the estate
     v.cost.hammer = book; v.cost.premium = 0; v.cost.transport = 0;
     v.boughtWk = 1; v.arrivedWk = 1; v.status = 'stock';
@@ -239,6 +242,7 @@ function envelope() {
 }
 FE.save = function () {
   if (!G) return false;
+  G.lastSeen = Date.now();          // real-time clock anchor (see FE.offlineProgress)
   return FE.storage.set(SAVE_KEY, JSON.stringify(envelope()));
 };
 FE.load = function () {
@@ -398,6 +402,27 @@ function genPlate(age) {
     pick(L.split('')) + pick(L.split('')) + pick(L.split(''));
 }
 
+/* pick a performance variant for a newly generated car, or null. Gated on the
+   week so the forecourt only starts seeing them once the player has found their
+   feet; opts.perf === true forces one (used by the week-10 announcement). */
+function rollPerf(brandKey, opts) {
+  var pool = FE.PERF[brandKey];
+  if (!pool || !pool.length) return null;
+  var forced = opts && opts.perf === true;
+  if (!forced) {
+    if (!G || G.week < FE.PERF_UNLOCK_WK) return null;
+    if (rnd() >= FE.PERF_P) return null;
+  }
+  var r = rnd(), acc = 0, chosen = pool[pool.length - 1];
+  for (var i = 0; i < pool.length; i++) { acc += pool[i].p; if (r < acc) { chosen = pool[i]; break; } }
+  return {
+    id: chosen.id, badge: chosen.badge, tier: chosen.tier, note: chosen.note,
+    retail: chosen.retail, prep: chosen.prep, fault: chosen.fault,
+    days: chosen.days, fni: chosen.fni, modP: chosen.modP
+  };
+}
+FE.perfTiers = function (brandKey) { return FE.PERF[brandKey] || []; };
+
 function genVehicle(brandKey, opts) {
   opts = opts || {};
   var models = [];
@@ -424,10 +449,30 @@ function genVehicle(brandKey, opts) {
     FE.COLOURS[colour].d * FE.HISTORY[hist].d * U(0.85, 1.2);
   var faultP = clamp(FE.COND[cond].fault + FE.MILE_FAULT_PER_10K * Math.max(0, dev), 0.02, 0.45);
 
+  // performance variant — worth real money, but a narrower buyer pool, dearer
+  // prep (tyres and brakes) and a car that has usually been driven hard
+  var perf = null, modified = false, prepMult = 1;
+  if (opts.perf !== false) {
+    perf = rollPerf(brandKey, opts);
+    if (perf) {
+      retail = r25(retail * perf.retail);
+      daysTrue *= perf.days;
+      faultP = clamp(faultP * perf.fault, 0.02, 0.6);
+      prepMult = perf.prep;
+      if (perf.modP && rnd() < perf.modP) {
+        modified = true;
+        retail = r25(retail * FE.PERF_MOD.retail);
+        daysTrue *= FE.PERF_MOD.days;
+        faultP = clamp(faultP * FE.PERF_MOD.fault, 0.02, 0.65);
+      }
+    }
+  }
+
   return {
     id: G ? G.idc++ : Math.floor(rnd() * 1e9),
     model: mi, brand: brandKey, age: age, year: 2026 - age, plate: genPlate(age),
     miles: miles, trim: trim, colour: colour, cond: cond, hist: hist, fuel: fuel, big: M.big,
+    perf: perf, modified: modified, prepMult: prepMult,
     retail: retail, screen: retail, daysTrue: daysTrue, faultP: faultP,
     cost: { hammer: 0, premium: 0, transport: 0, prep: 0 },
     truePrep: 0, prepPaid: false, boughtWk: 0, arrivedWk: 0, slot: null,
@@ -463,6 +508,7 @@ function truePrepFor(c, baseCost) {
   var blowoutP = FE.BLOWOUT_P * (deptLive('smart') ? (1 - FE.SMART_BLOWOUT_CUT) : 1);
   var blowout = rnd() < blowoutP;
   if (blowout) p += U(FE.BLOWOUT_RANGE[0], FE.BLOWOUT_RANGE[1]);
+  if (c.prepMult && c.prepMult !== 1) p *= c.prepMult;   // performance brakes/tyres cost more
   if (deptLive('service')) p *= (1 - FE.SERVICE_PREP_SAVING);
   if (deptLive('smart')) p *= (1 - FE.SMART_PREP_SAVING);
   return { amount: Math.round(p), blowout: blowout };
@@ -485,6 +531,9 @@ function scoreLot(v) {
   if (dev > 0.7) { factors++; drivers.push('High mileage — ' + Math.round(dev * 10000).toLocaleString() + ' over the age-expected figure'); }
   if (FE.HISTORY[v.hist].h === 'None') { factors++; drivers.push('No service history'); }
   if (v.age >= 7) { factors++; drivers.push('Older car — slower to shift, more to go wrong'); }
+  if (v.modified) { factors++; drivers.push('Modified — worth less than a standard one and harder to sell on'); }
+  if (v.perf && v.perf.tier === 'hot') { factors++; drivers.push(v.perf.badge + ' — narrow buyer pool, dear to prep, usually driven hard'); }
+  else if (v.perf && v.perf.tier === 'warm' && dev > 0.3) { factors++; drivers.push(v.perf.badge + ' with the miles on it — these get used'); }
 
   var light, flavour = null;
   if (grave || factors >= 2) {
@@ -745,6 +794,17 @@ function startWeek() {
     var newCount = G.candidatePool.length;
     G.candidatePool = [];
     mail('Recruitment desk', newCount + ' more candidates on the books', 'The agency has sent through the rest of its list — ' + newCount + ' more names in the Staff tab. Full roster now available.', 'info');
+  }
+  // performance stock starts appearing in the lists
+  if (G.week === FE.PERF_UNLOCK_WK) {
+    var tiers = FE.perfTiers(G.brand);
+    var badges = tiers.map(function (t) { return t.badge; }).join(' and ');
+    var body = 'Word from the block: the ' + G.brand + ' performance cars are coming through the lists now — ' + badges + '.\n\n';
+    tiers.forEach(function (t) { body += t.badge + ': ' + t.note + '\n\n'; });
+    body += tiers.length && tiers[0].tier === 'look'
+      ? 'Price them as what they are and they turn over nicely. Pay performance money for a body kit and you will own it for a while.'
+      : 'They carry more retail than the standard car and the finance goes on easier, but the prep is dearer — brakes and tyres mostly — the buyer pool is narrower, and a modified one is a much harder sell. Read the risk light before you get excited.';
+    mail('Central Auctions', 'Performance stock in the lists', body, 'auction');
   }
   if (G.week === FE.FRANCHISE.unlockWk && !G.franchise) {
     mail(G.brand + ' UK', 'Franchise opportunity', 'The manufacturer is offering a franchise agreement: new ' + G.brand + ' stock on your forecourt. ' + money(FE.FRANCHISE.fee) + ' a year, minimum ' + FE.FRANCHISE.minSlots + ' pitches committed, and a volume target of ' + FE.FRANCHISE.targetPerSlot + ' units per pitch per year. A word of advice from the trade: commit properly or not at all. Half-hearted franchises underperform used-only sites. Open the Franchise panel in the Office to decide.', 'info');
@@ -1062,6 +1122,12 @@ function pickSaleCar(opts) {
     var yw = ((G.week - 1) % 52) + 1;
     var seg = FE.MODELS[c.model].seg;
     if ((seg === 'SUV' || seg === 'Crossover') && yw >= 37 && yw <= 44) w *= 1.15;
+    // enthusiasts shop in the dry; a modified one is a harder conversation
+    if (c.perf && c.perf.tier !== 'look') {
+      var P = FE.PERF_SEASON;
+      if (yw >= P.fromWk && yw <= P.toWk) w *= P.mult;
+      if (c.modified) w *= 0.72;
+    }
     return w;
   });
 }
@@ -1248,6 +1314,7 @@ function closeSale(car, price, exec, fniChoice) {
     execFni = 0.9;
   }
   var attach = FE.FNI_BASE * execFni * brand().attachMult;
+  if (car.perf && car.perf.fni) attach *= car.perf.fni;   // enthusiasts finance them
   if (activeShock('rateRise')) attach *= 0.8;
   if (fniChoice === 'push') { attach *= 1.3; G.weekly.pushes++; }
   if (fniChoice === 'soft') attach *= 0.7;
@@ -2064,7 +2131,7 @@ FE.nextWeek = function () {
 };
 
 /* ---------- AFK / skip week ---------- */
-FE.skipWeek = function () {
+FE.skipWeek = function (quiet) {
   // "Skip the rest of the week": staff handle whatever the player hasn't, then
   // the week closes. Works from any phase — from the auction it's a full AFK
   // week; from the showroom/office it just finishes off what's left.
@@ -2113,10 +2180,76 @@ FE.skipWeek = function () {
   FE.needsAck().forEach(function (c) { FE.ack90(c.id); });
   if (startedFromAuction) G.totals.afk++;
   var res = FE.closeWeek();
-  if (startedFromAuction) {
+  if (startedFromAuction && !quiet) {
     mail('The team', 'While you were away…', 'The floor ran itself this week. ' + kept + ' deals done at the prices offered — no counters, nothing clever. ' + (afkNote.length ? afkNote.join(' ') : '') + ' Full numbers in the weekly report.', 'away');
   }
+  if (res) { res.kept = kept; res.afkNote = afkNote; }
   return res;
+};
+
+/* ---------- real-time progression ----------
+   The forecourt doesn't stop because you closed the tab. One real day is one
+   game week: the team run the floor on the same conservative AFK rules as the
+   Skip Week button, and you come back to the post and a digest of what
+   happened. Capped at FE.REALTIME.maxWeeks so a long absence can't burn a
+   whole quarter on autopilot — anything beyond the cap is simply forgiven. */
+FE.realtimeOn = function () { return !!G && !G.realtimeOff; };
+FE.setRealtime = function (on) {
+  if (!G) return;
+  G.realtimeOff = !on;
+  G.lastSeen = Date.now();
+  FE.save();
+};
+// how long until the next unattended week ticks over (ms), or null
+FE.nextTickIn = function () {
+  if (!G || G.dead || !FE.realtimeOn()) return null;
+  var per = FE.REALTIME.msPerWeek;
+  var since = Date.now() - (G.lastSeen || Date.now());
+  return Math.max(0, per - (since % per));
+};
+FE.offlineWeeksDue = function () {
+  if (!G || G.dead || !FE.realtimeOn()) return 0;
+  if (!G.lastSeen) return 0;
+  return Math.floor((Date.now() - G.lastSeen) / FE.REALTIME.msPerWeek);
+};
+/* Run the weeks the clock says are owed. Returns a digest, or null if none. */
+FE.offlineProgress = function () {
+  var due = FE.offlineWeeksDue();
+  if (due < 1) return null;
+  var capped = Math.min(due, FE.REALTIME.maxWeeks);
+  var startWk = G.week, startCash = G.cash, startStars = G.stars;
+  var d = { weeksDue: due, weeksRun: 0, skipped: due - capped, units: 0, net: 0,
+            fines: [], notes: [], dead: false, fromWk: startWk };
+  for (var i = 0; i < capped; i++) {
+    var res = FE.skipWeek(true);          // quiet: one digest, not one mail a week
+    if (res && res.report) {
+      d.units += res.report.units || 0;
+      d.net += res.report.net || 0;
+      if (res.report.fine) d.fines.push(res.report.fine);
+      if (res.afkNote && res.afkNote.length) d.notes = d.notes.concat(res.afkNote);
+    }
+    d.weeksRun++;
+    if (res && res.dead) { d.dead = true; break; }
+    FE.nextWeek();
+  }
+  d.toWk = G.week;
+  d.cashDelta = Math.round(G.cash - startCash);
+  d.starDelta = Math.round((G.stars - startStars) * 10) / 10;
+  d.noStaff = G.staff.filter(function (st) { return !st.leaving || st.leaving > G.week; }).length === 0;
+  d.noStock = inStock().filter(function (c) { return !c.isNew; }).length === 0;
+  if (!d.dead) {
+    var body = d.noStaff
+      ? 'You were away ' + d.weeksRun + ' week' + (d.weeksRun === 1 ? '' : 's') + ' and there was nobody on the floor to sell anything. The bills came in all the same — ' + money(Math.abs(d.net)) + ' out. Get someone hired.\n\n'
+      : 'You were away ' + d.weeksRun + ' week' + (d.weeksRun === 1 ? '' : 's') + ' and the place kept trading.\n\n' +
+      d.units + ' cars out the door, ' + (d.net >= 0 ? 'a profit of ' : 'a loss of ') + money(Math.abs(d.net)) + ' across the period.\n\n' +
+      (d.notes.length ? d.notes.join(' ') + '\n\n' : '') +
+      (d.fines.length ? 'Not everything went smoothly: ' + d.fines.join(', ') + '.\n\n' : '') +
+      'Nobody countered anything or chased a deal — that is what you are for. Full numbers are in the weekly reports.';
+    mail('The team', 'While you were away — ' + d.weeksRun + ' week' + (d.weeksRun === 1 ? '' : 's') + ' of trading', body, 'away');
+  }
+  G.lastSeen = Date.now();
+  FE.save();
+  return d;
 };
 
 /* ---------- share card (section 13/16) ---------- */

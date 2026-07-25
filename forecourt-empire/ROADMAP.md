@@ -1,5 +1,47 @@
 # Forecourt Empire — beta feedback log & roadmap
 
+## Status — build pass of 2026-07-25c (performance variants & the real-time clock)
+
+### Performance variants (from week 10)
+
+Modelled on how the real sub-brands are structured: makers run a "warm" mid tier
+(Ford ST, BMW M Performance) below a fully re-engineered "hot" tier (Ford RS,
+full BMW M) — and budget makers have no performance arm at all, their sporty
+trims being a body kit and a badge. So:
+
+| Brand | Warm | Hot | Notes |
+|---|---|---|---|
+| Fjord | ST | RS | RS is the top tier, as with Ford's Rallye Sport |
+| BMV | M Sport | M Power | mirrors M Performance vs full M Division |
+| Dacio | — | — | cosmetic `GT-Line` only: no upside, no downside |
+
+Trade behaviour is grounded in how these actually move on a forecourt: real
+retail money (+16-45%) and easier finance, but a narrower buyer pool (longer
+days), dearer prep (brakes and tyres: x1.30-x1.90) and higher fault odds because
+they get driven hard. Modified examples are worth less and harder to shift
+again, so the hot tiers carry a 28-30% mod chance that the risk light reads.
+Enthusiast demand lifts through spring/summer (`FE.PERF_SEASON`).
+
+Tuning lives in `FE.PERF` / `FE.PERF_UNLOCK_WK` / `FE.PERF_P`. Measured: 0% of
+lots before week 10, ~13-14% after, tier split tracking the configured weights.
+
+### Real-time clock
+
+The forecourt keeps trading while the tab is shut: **one real day = one game
+week** (`FE.REALTIME.msPerWeek`). On resume, `FE.offlineProgress()` runs the
+owed weeks on the same conservative AFK rules as Skip Week, writes one digest
+email (not one per week) and shows a "While you were away" summary.
+
+- Capped at `FE.REALTIME.maxWeeks` (4) so a long absence can't burn a quarter on
+  autopilot; the excess is forgiven and reported.
+- `G.lastSeen` is stamped by `FE.save()`, so the clock anchors to the last thing
+  the player actually did.
+- Player can pause the clock from Save & profile.
+- Digest calls out the two ways an absence goes wrong: nobody on the floor, or
+  the pitch running dry.
+
+---
+
 ## Status — build pass of 2026-07-25b (bays & the late-night prospect)
 
 - **Wash & valet bay (£28k) and smart repair bay (£46k)** are now real

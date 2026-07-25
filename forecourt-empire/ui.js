@@ -19,16 +19,56 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 /* ---------- boot ---------- */
 UI.boot = function () {
   var g = FE.load();
-  if (g && !g.dead) { enterMain(); }
+  if (g && !g.dead) { resumeGame(); }
   else { $('screen-boot').classList.remove('hidden'); $('bootContinue').classList.toggle('hidden', !g || !!g.dead); }
 };
+// Every path back into a running career goes through here, so the real-time
+// catch-up runs whether the player auto-resumed or tapped Continue.
+function resumeGame() {
+  enterMain();
+  var d = FE.offlineProgress();
+  if (d) { renderAll(); welcomeBack(d); }
+}
 UI.newGameFlow = function () {
   if (G() && !confirm('Start a fresh career? Your current save will be wiped.')) return;
   setup = { brand: null, site: null, salary: null, step: 1 };
   $('screen-boot').classList.add('hidden');
   renderSetup();
 };
-UI.continueGame = function () { $('screen-boot').classList.add('hidden'); enterMain(); };
+UI.continueGame = function () {
+  $('screen-boot').classList.add('hidden');
+  resumeGame();
+};
+// digest of the weeks that ran themselves while the tab was shut
+function welcomeBack(d) {
+  var g = G();
+  if (d.dead) {
+    UI.modal('<h3>💀 It went under while you were away</h3>' +
+      '<p class="kv">The bank pulled the plug in week ' + g.week + '. ' + d.units + ' cars went out but it wasn’t enough.</p>' +
+      '<button onclick="UI.closeModal();UI.renderAll()">Face it</button>', true);
+    return;
+  }
+  var pos = d.net >= 0;
+  UI.modal('<div class="wb"><div class="wb-badge">☕</div>' +
+    '<h3>While you were away</h3>' +
+    '<p class="kv muted small">' + d.weeksRun + ' week' + (d.weeksRun === 1 ? '' : 's') + ' traded without you — week ' + d.fromWk + ' to ' + (d.toWk - 1) + '.' +
+    (d.skipped ? ' <span class="muted">(' + d.skipped + ' more week' + (d.skipped === 1 ? '' : 's') + ' of real time went by, but the most that can run unattended is ' + FE.REALTIME.maxWeeks + '.)</span>' : '') + '</p>' +
+    '<div class="card">' +
+    '<div class="row kv"><span>Cars sold</span><b>' + d.units + '</b></div>' +
+    '<div class="row kv"><span>Profit / loss</span><b class="' + (pos ? 'good' : 'danger') + '">' + (pos ? '' : '−') + M(Math.abs(d.net)) + '</b></div>' +
+    '<div class="row kv"><span>Cash movement</span><b class="' + (d.cashDelta >= 0 ? 'good' : 'danger') + '">' + (d.cashDelta >= 0 ? '+' : '−') + M(Math.abs(d.cashDelta)) + '</b></div>' +
+    '<div class="row kv"><span>Star rating</span><b class="' + (d.starDelta >= 0 ? 'good' : 'danger') + '">' + (d.starDelta > 0 ? '+' : '') + d.starDelta.toFixed(1) + '</b></div>' +
+    '</div>' +
+    (d.notes.length ? '<p class="kv small">' + esc(d.notes.join(' ')) + '</p>' : '') +
+    (d.fines.length ? '<p class="kv danger small">Fines while you were out: ' + esc(d.fines.join(', ')) + '</p>' : '') +
+    (d.noStaff
+      ? '<p class="kv danger small">There was nobody on the floor. The bills came in anyway — hire someone before you go again.</p>'
+      : (d.noStock
+        ? '<p class="kv warn small">The pitch ran dry — there was nothing left to sell. Get to the auction house.</p>'
+        : '<p class="kv muted small">They took the deals as offered — nobody countered, nobody chased. The post is waiting in your inbox.</p>')) +
+    '<div class="btnrow"><button onclick="UI.closeModal();UI.tab(\'email\')">Read the post</button>' +
+    '<button class="sec" onclick="UI.closeModal();UI.renderAll()">Get back to it</button></div></div>', true);
+}
 
 /* ---------- setup wizard ---------- */
 function renderSetup() {
@@ -392,6 +432,7 @@ UI.stockCard = function (id) {
   if (!c) return;
   var d = FE.daysIn(c);
   var h = '<h3>' + esc(FE.carName(c)) + '</h3><div class="kv">' + esc(FE.carDesc(c)) + ' · plate ' + c.plate + '</div>';
+  if (c.perf) h += '<div class="kv muted small">' + esc(c.perf.note) + (c.modified ? ' <span class="warn">This one has been modified — worth less and harder to move on.</span>' : '') + '</div>';
   if (c.status === 'sold') {
     h += '<p class="kv good" style="margin-top:8px">Sold — customer collects shortly.</p>';
     UI.modal(h + '<button class="ghost" onclick="UI.closeModal()">Close</button>');
@@ -625,6 +666,12 @@ UI.prereg = function (id, a) {
 var auctionFilter = 'all';
 UI.setAuctionFilter = function (f) { auctionFilter = f; UI.openAuction(); };
 var RISK_LABEL = { green: 'Low risk', amber: 'Some risk', red: 'High risk' };
+// performance-variant badge for lot / stock cards
+function perfChip(c) {
+  if (!c.perf) return '';
+  return '<span class="perf-chip ' + c.perf.tier + '">' + esc(c.perf.badge) + '</span>' +
+    (c.modified ? '<span class="perf-mod">modified</span>' : '');
+}
 function riskChip(l) {
   var r = l.risk;
   var lbl = RISK_LABEL[r.light];
@@ -660,7 +707,7 @@ UI.openAuction = function () {
     if (auctionFilter !== 'all' && l.risk.light !== auctionFilter) return;
     shown++;
     h += '<div class="card lot ' + l.risk.light + '">' +
-      '<div class="row"><b>' + esc(l.brand + ' ' + FE.MODELS[l.model].m) + '</b><b>' + M(l.hammer) + '</b></div>' +
+      '<div class="row"><b>' + esc(l.brand + ' ' + FE.MODELS[l.model].m) + perfChip(l) + '</b><b>' + M(l.hammer) + '</b></div>' +
       '<div class="kv">' + esc(FE.carDesc(l)) + '</div>' +
       '<div class="row" style="margin:5px 0">' + riskChip(l) + (l.vasFlag ? '<span class="vas-flag">Vas rates this one</span>' : '') + '</div>' +
       '<div class="row kv"><span>Est retail <b>' + M(l.retail) + '</b></span><span>Est days <b>' + l.estDays[0] + '–' + l.estDays[1] + '</b></span></div>' +
@@ -1469,6 +1516,13 @@ UI.saveMenu = function () {
     '<div class="row kv"><span>Last saved</span><b>' + when + '</b></div>' +
     '<div class="kv muted small">The game saves itself after every action — there is no way to lose a week.</div>' +
     '<div class="btnrow"><button onclick="UI.saveNow()">Save now</button></div></div>' +
+    '<div class="card"><b>Real-time trading</b>' +
+    '<div class="kv">One real day is one game week. Leave the game and the team keep the floor running — you come back to the post and a summary. Up to ' + FE.REALTIME.maxWeeks + ' weeks can run unattended.</div>' +
+    '<div class="row kv"><span>Status</span><b class="' + (FE.realtimeOn() ? 'good' : 'muted') + '">' + (FE.realtimeOn() ? 'On' : 'Paused') + '</b></div>' +
+    (FE.realtimeOn() ? '<div class="row kv"><span>Next week runs in</span><b>' + fmtDur(FE.nextTickIn()) + '</b></div>' : '') +
+    '<div class="btnrow"><button class="sec" onclick="UI.realtimeToggle(' + (FE.realtimeOn() ? 'false' : 'true') + ')">' +
+    (FE.realtimeOn() ? 'Pause the clock' : 'Start the clock') + '</button></div>' +
+    '<div class="kv muted small">Paused, nothing moves unless you play. The clock never runs your career past the cap.</div></div>' +
     '<div class="card"><b>Move to another device</b>' +
     '<div class="kv">Copy a save code out, paste it in on the other phone. Same code a future online account would sync.</div>' +
     '<div class="btnrow"><button class="sec" onclick="UI.exportUI()">Copy save code</button>' +
@@ -1489,6 +1543,17 @@ UI.nameGo = function () {
   var r = FE.setUsername(el.value);
   if (!r.ok) { var e = $('nameErr'); if (e) e.textContent = r.msg; return; }
   toast('Name set — ' + esc(r.profile.name));
+  UI.saveMenu();
+};
+function fmtDur(ms) {
+  if (ms == null) return '—';
+  var m = Math.round(ms / 60000), h = Math.floor(m / 60);
+  m = m % 60;
+  return h ? h + 'h ' + m + 'm' : m + 'm';
+}
+UI.realtimeToggle = function (on) {
+  FE.setRealtime(on);
+  toast(on ? 'Real-time trading on — the floor runs while you’re away.' : 'Clock paused.');
   UI.saveMenu();
 };
 UI.saveNow = function () {

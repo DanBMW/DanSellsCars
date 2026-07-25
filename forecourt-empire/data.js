@@ -14,6 +14,16 @@ FE.BUYER_PREMIUM = 0.055;
 FE.TRANSPORT = 180;
 FE.LOTS_PER_WEEK = 50;         // fresh auction lots each day; a third are older bargains
 FE.SKIP_COOLDOWN_MS = 5 * 60 * 1000;   // real-time gap between week completions (anti-spam)
+
+/* Real-time progression — the business keeps trading while you're away.
+   One real day is one game week: come back tomorrow and a week has run itself,
+   with the post waiting for you. Capped so a fortnight off doesn't burn a
+   quarter of your career on autopilot — the rest of the time is simply banked
+   as "nothing happened". */
+FE.REALTIME = {
+  msPerWeek: 24 * 60 * 60 * 1000,   // 1 real day = 1 game week
+  maxWeeks: 4                       // most weeks that can run unattended
+};
 FE.PRIVATE_SELLER_P = 0.34;    // weekly chance of a private seller ringing up (from wk 3)
 FE.INSURANCE_WK = 340;
 FE.FLOORPLAN_APR = 0.095;
@@ -111,6 +121,48 @@ FE.MODELS = [
   { m: 'X1',             b: 'BMV',   np: 41000, days: 46, seg: 'SUV',       dsl: 0.35, big: false },
   { m: 'X3',             b: 'BMV',   np: 51000, days: 52, seg: 'SUV',       dsl: 0.45, big: true  }
 ];
+
+/* ---------- performance variants ----------
+   Modelled on how the real sub-brands are structured: manufacturers run a
+   "warm" mid tier (Ford ST, BMW M Performance) below a fully re-engineered
+   "hot" tier (Ford RS, full BMW M). Budget makers have no performance arm at
+   all — Dacia's sporty-looking trims are a body kit and a badge — so Dacio
+   gets a cosmetic variant with none of the upside or the downside.
+
+   The trade characteristics come from how these actually behave on a forecourt:
+   they command real money, but they're a niche buyer pool so they sit longer,
+   prep costs more (tyres and brakes are the big ones), and they've usually been
+   driven hard so faults are likelier. Modified examples are worth less and are
+   harder to shift again — hence the mod risk on the hot tier. */
+FE.PERF_UNLOCK_WK = 10;         // performance stock starts appearing at auction
+FE.PERF_P = 0.13;               // share of generated cars that are a variant
+FE.PERF = {
+  Dacio: [
+    { id: 'gtline', badge: 'GT-Line', tier: 'look', p: 1.0,
+      retail: 1.08, prep: 1.00, fault: 1.00, days: 1.00, fni: 1.00, modP: 0,
+      note: 'Body kit, badges and a set of alloys. Drives exactly like the standard car — and the room knows it.' }
+  ],
+  Fjord: [
+    { id: 'st', badge: 'ST', tier: 'warm', p: 0.7,
+      retail: 1.18, prep: 1.35, fault: 1.25, days: 1.10, fni: 1.15, modP: 0.14,
+      note: 'The warm one. Proper hot-hatch following, but they get driven and the tyres and brakes tell you so.' },
+    { id: 'rs', badge: 'RS', tier: 'hot', p: 0.3,
+      retail: 1.42, prep: 1.85, fault: 1.60, days: 1.25, fni: 1.25, modP: 0.30,
+      note: 'Rallye Sport. Big money when it is right, but a narrow buyer pool and half of them have been tracked.' }
+  ],
+  BMV: [
+    { id: 'msport', badge: 'M Sport', tier: 'warm', p: 0.72,
+      retail: 1.16, prep: 1.30, fault: 1.20, days: 1.08, fni: 1.15, modP: 0.10,
+      note: 'M Performance money without the M Division engine. Sells well, costs more to put right.' },
+    { id: 'mpower', badge: 'M Power', tier: 'hot', p: 0.28,
+      retail: 1.45, prep: 1.90, fault: 1.65, days: 1.28, fni: 1.28, modP: 0.28,
+      note: 'The full Motorsport car — bespoke engine, bespoke cooling, bespoke bills. Buyers are few and they know every one of these.' }
+  ]
+};
+/* a modified example: cheaper to buy, much harder to retail */
+FE.PERF_MOD = { retail: 0.86, days: 1.35, fault: 1.2 };
+/* enthusiasts shop in the dry — a lift through spring and summer */
+FE.PERF_SEASON = { fromWk: 13, toWk: 36, mult: 1.18 };
 
 /* age -> [valueMult, daysMult]; expected mileage = age * 9000 */
 FE.AGE = {
