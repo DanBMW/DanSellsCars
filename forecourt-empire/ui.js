@@ -616,7 +616,23 @@ UI.openEmail = function (id) {
     var cra = wks <= 4 ? 'Within ~30 days of sale: they hold a short-term right to reject. Tread carefully.' :
       wks <= 26 ? 'Within 6 months: the law presumes the fault existed at sale. Burden’s on you.' :
       'Past 6 months: burden of proof shifts to the customer. Wear and tear is arguable.';
-    h += '<p class="kv warn">' + cra + '</p><div class="btnrow">' +
+    // what the warranty position actually is, so referring it is a judgement
+    // rather than a guess: a covered failure with cover in force will pay out
+    var d = e.data || {};
+    var wLine = '';
+    if (d.faultKind != null) {
+      var covered = (d.faultKind === 'mech' || d.faultKind === 'elec');
+      var inForce = !!d.warrantySold || !!d.mfrCover;
+      var cls = (covered && inForce) ? 'good' : 'warn';
+      wLine = '<p class="kv ' + cls + ' small">Warranty position: ' +
+        (inForce
+          ? (d.warrantySold ? 'policy sold with the deal' : 'still inside factory cover')
+          : '<b>nothing to claim on</b>') +
+        ' · this fault is ' +
+        (covered ? '<b>a sudden ' + (d.faultKind === 'elec' ? 'electrical' : 'mechanical') + ' failure</b>' : '<b>a wear item</b> (excluded)') +
+        '.</p>';
+    }
+    h += '<p class="kv warn">' + cra + '</p>' + wLine + '<div class="btnrow">' +
       '<button class="grn" onclick="UI.comeback(' + e.id + ',\'pay\')">Pay in full (' + M(e.data.cost) + ')</button>' +
       '<button class="sec" onclick="UI.comeback(' + e.id + ',\'warranty\')">Refer to warranty</button>' +
       '<button class="sec" onclick="UI.comeback(' + e.id + ',\'goodwill\')">Goodwill 50% (' + M(Math.round(e.data.cost / 2)) + ')</button>' +

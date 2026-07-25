@@ -301,6 +301,35 @@ FE.TRAINING = [
   { id: 'comp',  name: 'Compliance',                cost: 4000,  weeks: 0.5, fx: 'Materially cuts fine probability' }
 ];
 
+/* Comeback faults, tagged by what they actually are. A warranty administrator
+   pays for sudden mechanical and electrical failure; wear items (clutch, brakes,
+   tyres, discs) are excluded on every policy ever written. Referring a genuine
+   covered failure should work — referring a worn clutch should not. */
+FE.COMEBACK_FAULTS = [
+  { t: 'a knocking from the front end',               kind: 'mech' },
+  { t: 'the gearbox slipping between 2nd and 3rd',    kind: 'mech' },
+  { t: 'a misfire under load',                        kind: 'mech' },
+  { t: 'an oil leak on the drive',                    kind: 'mech' },
+  { t: 'a whining wheel bearing',                     kind: 'mech' },
+  { t: 'a water pump that’s let go',                  kind: 'mech' },
+  { t: 'an engine management light that won’t clear', kind: 'elec' },
+  { t: 'the air-con giving up',                       kind: 'elec' },
+  { t: 'the infotainment screen dying',               kind: 'elec' },
+  { t: 'a starter motor that only sometimes bothers', kind: 'elec' },
+  { t: 'a clutch that’s started slipping',            kind: 'wear' },
+  { t: 'brake discs and pads down to the metal',      kind: 'wear' },
+  { t: 'two tyres below the legal limit',             kind: 'wear' },
+  { t: 'a worn-out dual-mass flywheel',               kind: 'wear' }
+];
+FE.WARRANTY = {
+  mfrYears: 3,            // a car this young at sale is still under factory cover
+  claimP: 0.90,           // covered failure + cover in force = the claim pays
+  excess: [0.12, 0.28],   // you still stand the excess
+  partPay: 0.5,           // when the administrator argues the toss
+  wearP: 0.10,            // wear items are excluded — referring rarely works
+  noCoverP: 0.05          // nothing sold, out of factory cover: it's bluster
+};
+
 FE.FINES = [
   { id: 'gap',    name: 'GAP insurance mis-selling',   amount: 10000, star: 0.10 },
   { id: 'adv',    name: 'Advertising compliance',      amount: 4000,  star: 0.02 },

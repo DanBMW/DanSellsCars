@@ -1738,11 +1738,19 @@ FE.enterOffice = function () {
     G.stock.forEach(function (c) { if (c.id === cb.carId) car = c; });
     if (!car) return false;
     var wks = G.week - car.soldWk;
-    var fault = pick(['a knocking from the front end', 'the gearbox slipping between 2nd and 3rd', 'an engine management light that won’t clear', 'a clutch that’s started slipping', 'a misfire under load', 'an oil leak on the drive', 'the air-con giving up', 'a whining wheel bearing']);
+    var f = pick(FE.COMEBACK_FAULTS);
     var tone = wks <= 3 ? 'furious — and quoting the Consumer Rights Act' : wks <= 12 ? 'firm but reasonable' : 'chancing it, politely';
+    // whether there is any warranty to refer to: one sold with the deal, or the
+    // car still inside factory cover on age
+    var mfr = car.age != null && car.age <= FE.WARRANTY.mfrYears;
+    var sold = !!car.soldAttached;
+    var coverLine = sold
+      ? 'A warranty went on with this deal.'
+      : (mfr ? 'Nothing sold on the deal, but the car was ' + car.age + ' year' + (car.age === 1 ? '' : 's') + ' old at sale — still inside the manufacturer’s cover.' : 'No warranty was sold with this car, and it is out of factory cover.');
     mail('Customer services', 'Comeback — ' + carName(car) + ' sold week ' + car.soldWk,
-      'The ' + FE.COLOURS[car.colour].c.toLowerCase() + ' ' + FE.MODELS[car.model].m + ' sold ' + wks + ' week' + (wks === 1 ? '' : 's') + ' ago for ' + money(car.soldPrice) + ' is back. The customer reports ' + fault + '. Mileage at sale ' + car.miles.toLocaleString() + ', now ' + (car.miles + wks * 180).toLocaleString() + '. Repair estimate: ' + money(cb.cost) + '. Customer is ' + tone + '.',
-      'comeback', { carId: car.id, cost: cb.cost, soldWk: car.soldWk });
+      'The ' + FE.COLOURS[car.colour].c.toLowerCase() + ' ' + FE.MODELS[car.model].m + ' sold ' + wks + ' week' + (wks === 1 ? '' : 's') + ' ago for ' + money(car.soldPrice) + ' is back. The customer reports ' + f.t + '. Mileage at sale ' + car.miles.toLocaleString() + ', now ' + (car.miles + wks * 180).toLocaleString() + '. Repair estimate: ' + money(cb.cost) + '. Customer is ' + tone + '.\n\n' + coverLine,
+      'comeback', { carId: car.id, cost: cb.cost, soldWk: car.soldWk,
+                    fault: f.t, faultKind: f.kind, warrantySold: sold, mfrCover: mfr });
     return false;
   });
   FE.save();
@@ -1762,8 +1770,43 @@ FE.resolveComeback = function (emailId, choice) {
     out.cost = cost; out.star = withinReject ? 0.08 : 0.05;
     out.note = 'Fixed without a quibble. Word gets around.';
   } else if (choice === 'warranty') {
-    if (rnd() < 0.6) { out.cost = Math.round(cost * 0.25); out.star = -0.01; out.note = 'Warranty picked it up, excess only.'; }
-    else { out.cost = 0; out.star = -0.12; out.note = 'Warranty declined the claim. You look evasive.'; }
+    var d = e.data || {};
+    if (d.faultKind == null) {
+      // pre-fix save: no fault recorded, fall back to the old coin flip
+      if (rnd() < 0.6) { out.cost = Math.round(cost * 0.25); out.star = -0.01; out.note = 'Warranty picked it up, excess only.'; }
+      else { out.cost = 0; out.star = -0.12; out.note = 'Warranty declined the claim. You look evasive.'; }
+    } else {
+      var covered = (d.faultKind === 'mech' || d.faultKind === 'elec');
+      var inForce = !!d.warrantySold || !!d.mfrCover;
+      var W = FE.WARRANTY;
+      if (!inForce) {
+        // there is no policy — referring to one just wastes the customer's week
+        if (rnd() < W.noCoverP) {
+          out.cost = Math.round(cost * 0.5); out.star = 0;
+          out.note = 'No policy on this deal, but the administrator took it on as goodwill and split the bill. Lucky.';
+        } else {
+          out.cost = 0; out.star = -0.14;
+          out.note = 'There was no warranty on this car to refer to — and the customer worked that out. You look like you were stalling.';
+        }
+      } else if (!covered) {
+        // wear item: excluded on every policy
+        if (rnd() < W.wearP) {
+          out.cost = Math.round(cost * 0.5); out.star = -0.01;
+          out.note = 'Argued it as a premature failure and got half out of them. Better than nothing.';
+        } else {
+          out.cost = 0; out.star = -0.10;
+          out.note = 'Declined — ' + (d.fault || 'that') + ' is a wear item, excluded on every policy written. You have lost a week and still owe them a repair.';
+        }
+      } else if (rnd() < W.claimP) {
+        // genuine sudden failure with cover in force: this is what warranty is for
+        out.cost = Math.round(cost * U(W.excess[0], W.excess[1]));
+        out.star = 0.03;
+        out.note = 'Genuine mechanical failure with cover in force — the warranty paid it. You stood the ' + money(out.cost) + ' excess and the customer got their car back sorted. That is what the policy is for.';
+      } else {
+        out.cost = Math.round(cost * W.partPay); out.star = -0.02;
+        out.note = 'Covered in principle, but the administrator argued the toss over betterment and only part-paid. You made up the difference.';
+      }
+    }
   } else if (choice === 'wear') {
     if (!withinSixMo && rnd() < 0.75) { out.star = -0.04; out.note = 'Outside six months — defensible, just about.'; }
     else { out.star = -0.25; out.note = 'Within six months the burden is on you. It escalated.'; if (rnd() < 0.3) { out.cost = 2000; out.note += ' Trading standards involved: £2,000.'; } }
