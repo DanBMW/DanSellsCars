@@ -52,9 +52,9 @@ email (not one per week) and shows a "While you were away" summary.
   closes better. Both pay a small weekly income and appear on the site view as
   lock-ups stepping down the left edge. Dept plumbing is generalised — income,
   net-worth capital and the progress card all iterate `FE.DEPARTMENTS`.
-- **Two new mini-games:** *Walk-Around* (spot every fault on a canvas-drawn
-  top-down car before the clock; misses are revealed at the end) and *Hit the
-  Gross* (stop the needle in the green, three deals, window tightening).
+- **New mini-game:** *Hit the Gross* (stop the needle in the green, three deals,
+  window tightening). A *Walk-Around* fault-spotting game shipped alongside it
+  but was cut on 25 Jul — it didn't play well enough to keep.
 - **The reward is now a deal you manage, not an auto-sale.** Clearing any level
   brings a late-night prospect through the door with a *retailable* part-
   exchange: you see its retail, book money, gross at book and est. days, then
