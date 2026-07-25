@@ -1264,8 +1264,32 @@ UI.sackUI = function (id) {
   UI.modal('<h3>Let ' + esc(st.name) + ' go?</h3>' +
     '<p class="kv">Redundancy: <b>' + M(cost) + '</b> (notice pay). The rest of the team’s morale will dip a little.' +
     (below ? ' <span class="warn">This drops you below two on the floor — capacity will suffer until you rehire.</span>' : '') + '</p>' +
-    '<div class="btnrow"><button class="red" onclick="UI.sackGo(\'' + id + '\')">Let them go</button>' +
+    '<div class="btnrow"><button class="red" onclick="UI.sackConfirm(\'' + id + '\')">Let them go…</button>' +
     '<button class="ghost" onclick="UI.closeModal()">Keep them</button></div>');
+};
+/* Fail-safe. Sacking can't be undone, so it takes a second, deliberate tap on a
+   centred dialog where "keep them" is the primary button — a stray tap where
+   the last screen's confirm button sat lands on the safe option, not the sack. */
+UI.sackConfirm = function (id) {
+  var st = null;
+  G().staff.forEach(function (s) { if (s.id === id) st = s; });
+  if (!st) return;
+  var cost = FE.sackCost(id);
+  var courses = [];
+  FE.TRAINING.forEach(function (c) { if (st.trained && st.trained[c.id]) courses.push(c.name); });
+  UI.modal('<div class="danger-ask"><div class="danger-ask-badge">⚠️</div>' +
+    '<h3>Are you sure you want to let ' + esc(st.name) + ' go?</h3>' +
+    '<p class="kv">This can’t be undone. You’d have to re-hire from the agency, pay the fee again, and start them from scratch.</p>' +
+    '<div class="card">' +
+    '<div class="row kv"><span>Sold for you</span><b>' + (st.totUnits || 0) + ' car' + ((st.totUnits || 0) === 1 ? '' : 's') + '</b></div>' +
+    '<div class="row kv"><span>Gross written</span><b>' + M(Math.round(st.totGross || 0)) + '</b></div>' +
+    (courses.length ? '<div class="row kv"><span>Training you’ve paid for</span><b>' + esc(courses.join(', ')) + '</b></div>' : '') +
+    '<div class="row kv"><span>Redundancy due</span><b class="danger">' + M(cost) + '</b></div>' +
+    '</div>' +
+    '<div class="btnrow" style="flex-direction:column">' +
+    '<button class="grn" onclick="UI.closeModal()">No — keep ' + esc(st.name) + '</button>' +
+    '<button class="red" onclick="UI.sackGo(\'' + id + '\')">Yes, let them go</button>' +
+    '</div></div>', { centre: true, sticky: true });
 };
 UI.sackGo = function (id) {
   var r = FE.sackStaff(id);

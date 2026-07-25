@@ -686,3 +686,11 @@ input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow
   display: flex; align-items: center; gap: 10px;
 }
 .desk-sep::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+/* ---------- destructive confirmation ---------- */
+.danger-ask { text-align: center; }
+.danger-ask-badge { font-size: 2.4rem; line-height: 1; }
+.danger-ask h3 { padding-right: 0 !important; font-size: 1.05rem; margin-top: 4px; }
+.danger-ask .card { text-align: left; margin-top: 10px; }
+.danger-ask .btnrow { margin-top: 14px; gap: 8px; }
+.danger-ask .btnrow button { width: 100%; }
