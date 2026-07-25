@@ -627,8 +627,8 @@
   Puzzle.hub = function () {
     var shuffleDone = Puzzle.LEVELS.filter(function (_, i) { return localStorage.getItem(rhBestKey(i)); }).length;
     UI.modal(
-      '<div class="pz-hub"><h3>🏗️ The portacabin</h3>' +
-      '<p class="kv">Play a game while your team prospect. It’s only fair, right?</p>' +
+      '<div class="pz-hub"><h3>🗄️ Your desk</h3>' +
+      '<p class="kv">Feet up in the portacabin. Play a game while your team prospect — it’s only fair, right?</p>' +
       '<div class="pz-reward-note">🚪 Clear any level and one of them walks a buyer in after hours — <b>with a part-exchange worth retailing</b>. You manage the deal. Once a week.</div>' +
       '<button class="pz-game" onclick="Puzzle.openShuffle()"><span class="pz-game-ico">🚗</span><span><b>Forecourt Shuffle</b><small>Get the red car out. ' + Puzzle.LEVELS.length + ' boards' + (shuffleDone ? ' · ' + shuffleDone + '/' + Puzzle.LEVELS.length + ' cleared' : '') + '</small></span></button>' +
       '<button class="pz-game" onclick="Puzzle.openPark()"><span class="pz-game-ico">🅿️</span><span><b>Forecourt Parking</b><small>Joystick + accelerator. Park it in the bay, no scrapes. ' + PK_LEVELS.length + ' bays.</small></span></button>' +

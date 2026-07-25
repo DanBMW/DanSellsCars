@@ -1078,6 +1078,19 @@ FE.enterShowroom = function () {
     var pos = Math.min(woven.length, Math.floor((i + 0.5) / Math.max(1, special.length) * span * 0.7));
     woven.splice(pos, 0, sp);
   });
+  // Prep bills land on the clock, not in a clump: each is given a due time
+  // spread across the skip-cooldown window so the workshop interrupts you
+  // through the week rather than all at once. If nothing else is left to do
+  // they're released early — the player is never made to wait on them.
+  var now = Date.now();
+  var window = FE.SKIP_COOLDOWN_MS || 0;
+  var billIdx = 0, billTotal = woven.filter(function (e) { return e.kind === 'prep' || e.kind === 'arrival'; }).length;
+  woven.forEach(function (e) {
+    if (e.kind !== 'prep' && e.kind !== 'arrival') return;
+    billIdx++;
+    e.dueAt = now + Math.round(window * (billIdx / (billTotal + 1)));
+  });
+  G.showroomAt = now;
   G.events = woven;
   G.eventIdx = 0;
   G.weekly.caps = caps;
@@ -1139,12 +1152,29 @@ function pickExec() {
   return staffById(id);
 }
 
+function evReady(ev) { return !ev.dueAt || Date.now() >= ev.dueAt; }
 FE.currentEvent = function () {
   if (G.phase !== 'showroom') return null;
-  while (G.eventIdx < G.events.length) {
+  var guard = 0;
+  while (G.eventIdx < G.events.length && guard++ < 400) {
     var ev = G.events[G.eventIdx];
     if (!ev.built) buildEvent(ev);
     if (ev.dead) { G.eventIdx++; continue; }
+    // a prep bill that hasn't come due yet steps aside for anything that has
+    if (!evReady(ev)) {
+      var j = -1;
+      for (var i = G.eventIdx + 1; i < G.events.length; i++) {
+        var nx = G.events[i];
+        if (!nx.built) buildEvent(nx);
+        if (nx.dead || !evReady(nx)) continue;
+        j = i; break;
+      }
+      if (j > G.eventIdx) {                       // swap the ready one forward
+        var t = G.events[G.eventIdx]; G.events[G.eventIdx] = G.events[j]; G.events[j] = t;
+        continue;
+      }
+      // nothing else is ready — release the bill rather than stall the player
+    }
     return ev;
   }
   return null;

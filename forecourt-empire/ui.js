@@ -854,13 +854,23 @@ function prepPopup(ev) {
   var lead = isArrival
     ? 'The transporter’s just dropped it on the forecourt and the workshop’s been straight through it. Bill: '
     : 'The workshop’s been through it. Bill: ';
-  var h = '<h3>' + (isArrival ? '🚚 Delivered — ' : 'Prep bill — ') + esc(FE.carName(c)) + '</h3>' +
-    '<p class="kv">' + lead + '<b class="' + (r.blowout ? 'danger' : '') + '">' + M(r.amount) + '</b>' +
-    (r.blowout ? ' — <span class="danger">including a horror they found underneath.</span>' : '.') + '</p>';
-  if (r.tip) h += '<p class="kv warn">Career tip (you’ll only get this once): the auction’s "est. gross" uses an average prep guess. Condition grades 1–2 are where blowouts hide, and the colour column tells you how long you’ll pay to hold it.</p>';
-  h += '<button onclick="UI.closeModal();FE.advanceEvent();UI.renderAll();UI.nextEvent()">Pay it</button>';
-  UI.modal(h);
+  // Deliberately a centred panel, not a bottom sheet: the workshop's bills must
+  // never sit where the offer pop-ups put their Accept button, or you end up
+  // paying for a car you meant to haggle over.
+  var h = '<div class="bill"><div class="bill-tag">' + (isArrival ? '🚚 Delivered' : '🔧 Workshop') + '</div>' +
+    '<h3>' + esc(FE.carName(c)) + '</h3>' +
+    '<div class="bill-amt ' + (r.blowout ? 'bad' : '') + '">' + M(r.amount) + '</div>' +
+    '<p class="kv">' + lead.replace(' Bill: ', '') + '</p>' +
+    (r.blowout ? '<p class="kv danger">Includes a horror they found underneath.</p>' : '');
+  if (r.tip) h += '<p class="kv warn small">Career tip (you’ll only get this once): the auction’s "est. gross" uses an average prep guess. Condition grades 1–2 are where blowouts hide, and the colour column tells you how long you’ll pay to hold it.</p>';
+  h += '<p class="kv muted small">Already paid — the workshop doesn’t ask first.</p>' +
+    '<button class="sec big" onclick="UI.prepAck()">Noted</button></div>';
+  // the bill is already paid, so the X must still advance the queue
+  UI.modal(h, { centre: true, sticky: true, onClose: 'UI.prepAck()' });
 }
+UI.prepAck = function () {
+  UI.closeModal(); FE.advanceEvent(); renderAll(); UI.nextEvent();
+};
 
 function prequalPopup(ev) {
   if (ev.noStock) {
@@ -1488,7 +1498,6 @@ UI.gearMenu = function () {
   UI.modal('<h3>Manager’s drawer</h3>' +
     '<div class="btnrow" style="flex-direction:column">' +
     '<button class="sec" onclick="UI.closeModal();UI.share()">Share my progress</button>' +
-    '<button class="sec" onclick="Puzzle.hub()">🎮 Portacabin games</button>' +
     '<button class="sec" onclick="UI.saveMenu()">💾 Save &amp; profile</button>' +
     '<button class="sec" onclick="UI.skipWeekUI()">Skip this week (staff run it)</button>' +
     '<button class="sec" onclick="UI.helpUI()">How this works</button>' +
@@ -1610,14 +1619,39 @@ UI.helpUI = function () {
 };
 
 /* ---------- modal & toast plumbing ---------- */
-UI.modal = function (html, sticky) {
+/* Every window gets a close X. `opts` is either the legacy `sticky` boolean or
+   { sticky, centre, onClose } —
+     sticky  : tapping the backdrop won't dismiss (the X still will)
+     centre  : float the panel in the middle of the screen instead of a bottom
+               sheet, for anything that must not share button positions with
+               the offer pop-ups (prep bills)
+     onClose : JS run by the X instead of a plain close, so a window that owes
+               the engine a call (advance the event queue) still makes it. */
+var modalOnClose = null;
+UI.modal = function (html, opts) {
+  var o = (opts === true) ? { sticky: true } : (opts || {});
   var ov = $('overlay');
   ov.classList.remove('hidden');
-  ov.dataset.sticky = sticky ? '1' : '';
-  ov.querySelector('.sheet').innerHTML = html;
+  ov.classList.toggle('centre', !!o.centre);
+  ov.dataset.sticky = o.sticky ? '1' : '';
+  modalOnClose = o.onClose || null;
+  var sheet = ov.querySelector('.sheet');
+  sheet.innerHTML =
+    '<div class="sheet-xwrap"><button class="sheet-x" onclick="UI.dismissModal()" aria-label="Close">✕</button></div>' + html;
+  sheet.scrollTop = 0;
+};
+// what the X (and backdrop tap) does — honours the window's own exit action
+UI.dismissModal = function () {
+  var fn = modalOnClose;
+  modalOnClose = null;
+  if (fn) { try { (new Function(fn))(); return; } catch (e) { /* fall through */ } }
+  UI.closeModal();
 };
 UI.closeModal = function () {
-  $('overlay').classList.add('hidden');
+  modalOnClose = null;
+  var ov = $('overlay');
+  ov.classList.add('hidden');
+  ov.classList.remove('centre');
   // whatever the modal changed (purchases, prices, moves), reflect it behind
   if (G() && !$('main').classList.contains('hidden')) { renderHUD(); renderTab(); }
 };
@@ -1636,7 +1670,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // don't allow dismissing mid-event popups by tapping outside — decisions must be made
       var g = G();
       if (g && g.phase === 'showroom' && FE.eventsLeft() > 0) return;
-      UI.closeModal();
+      UI.dismissModal();
     }
   });
   UI.boot();

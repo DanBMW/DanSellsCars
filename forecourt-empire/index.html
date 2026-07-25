@@ -41,6 +41,26 @@
       </div>
     </div>
     <button class="gear ghost" onclick="UI.gearMenu()" aria-label="Menu">☰</button>
+    <button class="desk-btn" onclick="Puzzle.hub()" aria-label="Your desk — games">
+      <svg viewBox="0 0 64 56" aria-hidden="true">
+        <!-- isometric desk, lit from the upper left. Painted back-to-front:
+             the desk first, then everything standing on it. -->
+        <polygon class="d-leg"    points="7,37 11,39 11,52 7,50"/>
+        <polygon class="d-leg"    points="53,39 57,37 57,50 53,52"/>
+        <polygon class="d-top"    points="32,17 58,30 32,43 6,30"/>
+        <polygon class="d-left"   points="6,30 32,43 32,50 6,37"/>
+        <polygon class="d-right"  points="32,43 58,30 58,37 32,50"/>
+        <polygon class="d-draw"   points="37,41 54,32.5 54,36 37,44.5"/>
+        <!-- monitor, sat on the back of the desk -->
+        <polygon class="d-base"   points="28,25 33,27.5 38,25 33,22.5"/>
+        <polygon class="d-stand"  points="31.5,19 34.5,20.5 34.5,25 31.5,23.5"/>
+        <polygon class="d-screen" points="26,16 40,23 40,9 26,2"/>
+        <polygon class="d-glass"  points="28,16 38,21 38,11 28,6"/>
+        <!-- mug -->
+        <polygon class="d-mug"    points="16,28 21,30.5 21,34 16,31.5"/>
+        <polygon class="d-mugtop" points="16,28 18.5,29.25 21,28 18.5,26.75"/>
+      </svg>
+    </button>
     <div id="banner"></div>
     <div id="content"></div>
     <div id="tabs">
