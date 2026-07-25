@@ -504,6 +504,64 @@ var Scene = window.Scene = {};
 
   // the service department — a workshop that appears on the grass once built,
   // shown as scaffolding while under construction
+  // smart repair / wash-and-valet lock-ups — smaller units beside the workshop,
+  // each with its own door colour and a prop so you can tell them apart
+  function drawSmallBay(cx, cy, id, building) {
+    var hw = 0.38, hl = 0.3, hgt = 0.44;
+    ctx.fillStyle = 'rgba(8,12,22,0.2)';
+    ctx.beginPath(); ctx.ellipse(cx + TILE * 0.16, cy + TILE * 0.16, hw * TILE * 1.3, TILE * 0.26, 0, 0, 6.283); ctx.fill();
+
+    if (building) {
+      var b0 = isoBoxAt(cx, cy, hw, hl, hgt, 'rgba(150,160,175,0.26)', 'rgba(120,130,145,0.26)', 'rgba(90,100,115,0.28)');
+      ctx.strokeStyle = 'rgba(230,200,120,0.7)'; ctx.lineWidth = 1.2;
+      for (var k = 0; k <= 2; k++) {
+        var t = k / 2;
+        ctx.beginPath();
+        ctx.moveTo(b0.bD.x + (b0.tD.x - b0.bD.x) * t, b0.bD.y + (b0.tD.y - b0.bD.y) * t);
+        ctx.lineTo(b0.bC.x + (b0.tC.x - b0.bC.x) * t, b0.bC.y + (b0.tC.y - b0.bC.y) * t);
+        ctx.stroke();
+      }
+      return;
+    }
+
+    var wall = id === 'valet' ? '#8fb6c4' : '#a9a0b6';
+    var box = isoBoxAt(cx, cy, hw, hl, hgt, sh(wall, 18), sh(wall, -6), sh(wall, -28));
+    ctx.fillStyle = id === 'valet' ? '#4d707e' : '#5f5870';
+    poly(ctx, [box.tA, box.tB, box.tC, box.tD]); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    poly(ctx, [box.tA, box.tB, box.pt(hw * 0.85, -hl, hgt), box.pt(-hw * 0.85, -hl, hgt)]); ctx.fill();
+
+    // door on the front face
+    var fTL = box.tD, fTR = box.tC, fBL = box.bD;
+    var fw = fTR.x - fTL.x, skew = (fTR.y - fTL.y) / fw;
+    var dx0 = fTL.x + fw * 0.18, dx1 = fTL.x + fw * 0.82;
+    var dy0 = fTL.y + (fBL.y - fTL.y) * 0.22, dy1 = fBL.y - 1;
+    ctx.fillStyle = id === 'valet' ? '#2f9fb8' : '#7d5fc4';
+    poly(ctx, [
+      { x: dx0, y: dy0 + (dx0 - fTL.x) * skew },
+      { x: dx1, y: dy0 + (dx1 - fTL.x) * skew },
+      { x: dx1, y: dy1 + (dx1 - fTL.x) * skew },
+      { x: dx0, y: dy1 + (dx0 - fTL.x) * skew }
+    ]); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1;
+    for (var r = 1; r < 3; r++) {
+      var ry = dy0 + (dy1 - dy0) * (r / 3);
+      ctx.beginPath();
+      ctx.moveTo(dx0, ry + (dx0 - fTL.x) * skew);
+      ctx.lineTo(dx1, ry + (dx1 - fTL.x) * skew);
+      ctx.stroke();
+    }
+    // a prop out front: suds bucket for the valet, paint tin for smart repair
+    var px = box.bB.x + TILE * 0.16, py = box.bB.y - TILE * 0.04;
+    ctx.fillStyle = id === 'valet' ? '#3fc9e0' : '#c46b4a';
+    ctx.beginPath(); ctx.ellipse(px, py, TILE * 0.1, TILE * 0.06, 0, 0, 6.283); ctx.fill();
+    if (id === 'valet') {
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath(); ctx.arc(px - TILE * 0.04, py - TILE * 0.1, TILE * 0.045, 0, 6.283); ctx.fill();
+      ctx.beginPath(); ctx.arc(px + TILE * 0.06, py - TILE * 0.16, TILE * 0.032, 0, 6.283); ctx.fill();
+    }
+  }
+
   function drawServiceDept(cx, cy, building) {
     var hw = 0.6, hl = 0.42, hgt = 0.66;
     ctx.fillStyle = 'rgba(8,12,22,0.22)';
@@ -816,12 +874,25 @@ var Scene = window.Scene = {};
     });
     figures.forEach(function (f) { drawables.push({ depth: f.wx + f.wy + 0.18, kind: 'fig', f: f }); });
     props.forEach(function (p) { drawables.push({ depth: p.wx + p.wy, kind: 'prop', p: p }); });
-    // service department, once built or building, sits on the front-left grass
-    if (g.dept && g.dept.service) {
+    // departments sit on the front-left grass, stacked down the edge as they're
+    // built (service is the big workshop; smart repair and valet are lock-ups)
+    if (g.dept) {
       var d = gridDims();
-      var swx = -1.38, swy = (d.rows - 1) * d.gapY * 0.66;
-      var sp = iso(swx, swy);
-      drawables.push({ depth: swx + swy, kind: 'servicedept', cx: sp.x, cy: sp.y, building: g.week < g.dept.service });
+      var baseY = (d.rows - 1) * d.gapY * 0.66;
+      if (g.dept.service) {
+        var swx = -1.38, swy = baseY;
+        var sp = iso(swx, swy);
+        drawables.push({ depth: swx + swy, kind: 'servicedept', cx: sp.x, cy: sp.y, building: g.week < g.dept.service });
+      }
+      [{ id: 'smart' }, { id: 'valet' }].forEach(function (bay, i) {
+        if (!g.dept[bay.id]) return;
+        // stepped toward the viewer from the workshop: raising wx and wy by the
+        // same amount keeps the screen column and just moves it down the frame
+        var d = 1.15 + i * 1.15;
+        var bwx = -1.38 + d, bwy = baseY + d;
+        var bp = iso(bwx, bwy);
+        drawables.push({ depth: bwx + bwy, kind: 'smallbay', cx: bp.x, cy: bp.y, id: bay.id, building: g.week < g.dept[bay.id] });
+      });
     }
     drawables.sort(function (x, y) { return x.depth - y.depth; });
 
@@ -829,6 +900,7 @@ var Scene = window.Scene = {};
       if (dz.kind === 'car') drawCarAt(dz.b.cx, dz.b.cy, dz.car);
       else if (dz.kind === 'fig') drawFigure(dz.f);
       else if (dz.kind === 'servicedept') drawServiceDept(dz.cx, dz.cy, dz.building);
+      else if (dz.kind === 'smallbay') drawSmallBay(dz.cx, dz.cy, dz.id, dz.building);
       else drawProp(dz.p);
     });
 

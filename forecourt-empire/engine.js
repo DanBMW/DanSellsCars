@@ -119,6 +119,8 @@ FE.newGame = function (brandKey, siteIdx, salaryIdx) {
     totals: { units: 0, unitsYr: 0, bestWk: 0, bestWkAt: 0, worstWk: 999, worstWkAt: 0, fines: [], afk: 0, financed: 0, financeComm: 0 },
     holidayPlan: {},                        // staffId -> requestWk
     lastCloseAt: 0,                         // ms timestamp of last week completion (skip cooldown)
+    prospectWk: 0,                          // week the mini-game prospect was claimed
+    lateNight: null,                        // live late-night deal, survives a reload
     idc: 1, dead: false
   };
   // the aunt's contact book: three buyers with known wants, so week 1 teaches
@@ -174,7 +176,7 @@ function grantStarterStock() {
      is the same payload a sync endpoint would POST tomorrow. */
 var SAVE_KEY = 'forecourtEmpireSave_v1';
 var PROFILE_KEY = 'forecourtEmpireProfile';
-FE.SCHEMA = 2;
+FE.SCHEMA = 3;
 
 FE.storage = {
   get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -222,6 +224,11 @@ FE.migrate = function (game, from) {
       if (c.arrived == null) c.arrived = true;
       if (c.inherited == null) c.inherited = false;
     });
+  }
+  if (from < 3) {
+    // v3: wash/smart-repair bays, interactive late-night prospect
+    if (game.lateNight === undefined) game.lateNight = null;
+    if (!game.dept) game.dept = { service: 0, building: 0 };
   }
   return game;
 };
@@ -429,13 +436,35 @@ function genVehicle(brandKey, opts) {
   };
 }
 
+/* a department is live once its build week has passed */
+function deptLive(id) { return !!(G.dept && G.dept[id] && G.week >= G.dept[id]); }
+FE.deptLive = deptLive;
+function deptDef(id) { var d = null; FE.DEPARTMENTS.forEach(function (x) { if (x.id === id) d = x; }); return d; }
+// total weekly income from every live department
+function deptIncomeTotal() {
+  var t = 0;
+  FE.DEPARTMENTS.forEach(function (d) { if (deptLive(d.id)) t += d.weekly; });
+  return t;
+}
+FE.deptIncome = deptIncomeTotal;
+// capital tied up in departments you've paid for (counts toward net worth)
+function deptCapital() {
+  var t = 0;
+  FE.DEPARTMENTS.forEach(function (d) { if (G.dept && G.dept[d.id]) t += d.cost; });
+  return t;
+}
+
 function truePrepFor(c, baseCost) {
   var mean = brand().prepPct * baseCost * FE.COND[c.cond].prep;
   var p = Math.max(120, norm(mean, FE.PREP_SD));
   if (FE.COLOURS[c.colour].c === 'Black') p *= 1.1;
-  var blowout = rnd() < FE.BLOWOUT_P;
+  // the smart repair bay does the cosmetic horrors in-house, so fewer of them
+  // land as blowouts and the ones that do cost less
+  var blowoutP = FE.BLOWOUT_P * (deptLive('smart') ? (1 - FE.SMART_BLOWOUT_CUT) : 1);
+  var blowout = rnd() < blowoutP;
   if (blowout) p += U(FE.BLOWOUT_RANGE[0], FE.BLOWOUT_RANGE[1]);
-  if (G.dept.service && G.week >= G.dept.service) p *= (1 - FE.SERVICE_PREP_SAVING);
+  if (deptLive('service')) p *= (1 - FE.SERVICE_PREP_SAVING);
+  if (deptLive('smart')) p *= (1 - FE.SMART_PREP_SAVING);
   return { amount: Math.round(p), blowout: blowout };
 }
 
@@ -903,6 +932,7 @@ FE.enterShowroom = function () {
   var starM = starFootfall(G.stars);
   var adM = adFactor();
   var conv = FE.BASE_CONV * presConvFactor();
+  if (deptLive('valet')) conv *= (1 + FE.VALET_CONV_BOOST);   // a gleaming forecourt closes better
   if (activeShock('rateRise')) conv *= 0.85;
   var foot = brand().footfall * (activeShock('scrappage') ? 1.3 : 1);
   if (activeShock('summerSale')) foot *= 1.5;   // the sale pulls crowds through the summer lull
@@ -1301,20 +1331,105 @@ function closeSale(car, price, exec, fniChoice) {
 // ONE extra used-car deal for the current trading week, capped at once a week so
 // it can't be farmed. Only fires during a live week (a car must be on the
 // forecourt and ready), never once the week's report is filed.
-FE.prospectDeal = function () {
-  if (!G || !G.weekly) return null;
-  if (G.phase !== 'auction' && G.phase !== 'showroom' && G.phase !== 'office') return null;
-  if (G.prospectWk === G.week) return { already: true };
+/* ---------- late-night prospect (the mini-game reward) ----------
+   While you were playing, the team were out prospecting. Clearing a level
+   brings one through the door after hours: a buyer for something on your pitch,
+   with a part-exchange worth retailing rather than trading out. You manage the
+   whole deal — appraise the PX, set the allowance, work the F&I.
+   Capped at one a week so it can't be farmed. The live deal lives on
+   G.lateNight so it survives a reload mid-negotiation. */
+FE.prospectReady = function () {
+  if (!G || !G.weekly) return { ok: false };
+  if (G.phase === 'report') return { ok: false, msg: 'The week’s already filed — they’ll come back next week.' };
+  if (G.lateNight) return { ok: true, resume: true };
+  if (G.prospectWk === G.week) return { ok: false, already: true };
+  if (!pickSaleCar({ isNew: false })) return { ok: false, msg: 'Nothing on the pitch to sell them.' };
+  return { ok: true };
+};
+FE.spawnLateNightProspect = function () {
+  var pre = FE.prospectReady();
+  if (!pre.ok) return pre.already ? { already: true } : null;
+  if (G.lateNight) return G.lateNight;                    // resume an interrupted deal
   var car = pickSaleCar({ isNew: false });
   if (!car) return null;
-  // an available head handles it, else you take it yourself
   var floor = G.staff.filter(function (st) { return (!st.leaving || st.leaving > G.week) && st.offUntil <= G.week; });
   var exec = floor.length ? pick(floor) : null;
-  var price = autoPrice(car, exec);
-  var sale = closeSale(car, price, exec, null);
+  // a genuine retail proposition, not a banger: newish, sane miles, decent grade
+  var px = genVehicle(G.brand, { age: RI(2, 6) });
+  px.isPX = true;
+  px.cond = Math.max(px.cond, 4);
+  px.hist = Math.min(px.hist, 1);
+  px.faultP = clamp(px.faultP * 0.8, 0.02, 0.35);
+  var guide = r25(px.retail * U(0.74, 0.80));             // what the book says it's worth to you
+  var pxDays = FE.MODELS[px.model].days * FE.AGE[px.age][1] * FE.COLOURS[px.colour].d * FE.HISTORY[px.hist].d;
+  G.lateNight = {
+    carId: car.id,
+    execId: exec ? exec.id : null,
+    buyer: pick(FE.FIRST_NAMES) + ' ' + pick(FE.SURNAMES),
+    offer: r25(car.screen * U(0.955, 0.995)),
+    px: px,
+    pxGuide: guide,
+    pxRetail: px.retail,
+    pxDays: [Math.round(pxDays * 0.8), Math.round(pxDays * 1.25)],
+    pxRisk: scoreLot(px),
+    stage: 'px',
+    pxResult: null
+  };
   G.prospectWk = G.week;
   FE.save();
-  return { car: car, price: sale.price, front: sale.front, back: sale.back, gross: sale.front + sale.back, exec: sale.exec };
+  return G.lateNight;
+};
+FE.lateNightState = function () {
+  if (!G || !G.lateNight) return null;
+  var L = G.lateNight, car = null;
+  G.stock.forEach(function (c) { if (c.id === L.carId) car = c; });
+  if (!car || car.status !== 'stock') { G.lateNight = null; FE.save(); return null; }
+  var exec = L.execId ? staffById(L.execId) : null;
+  return { deal: L, car: car, exec: exec, execName: exec ? exec.name : 'You' };
+};
+// allowance on the part-exchange: 'high' | 'fair' | 'low'  (or 'none' — no PX)
+FE.lateNightPX = function (choice) {
+  var st = FE.lateNightState(); if (!st) return null;
+  var L = st.deal, guide = L.pxGuide, res = { dealOn: false, pxTaken: false, choice: choice };
+  if (choice === 'high')      { res.dealOn = true;             res.paid = r25(guide * 1.10); }
+  else if (choice === 'fair') { res.dealOn = rnd() < 0.86;     res.paid = guide; }
+  else if (choice === 'low')  { res.dealOn = rnd() < 0.42;     res.paid = r25(guide * 0.88); }
+  if (res.dealOn && choice !== 'none') {
+    res.pxTaken = true;
+    var car = L.px;
+    car.cost.hammer = res.paid; car.cost.premium = 0; car.cost.transport = 0;
+    car.boughtWk = G.week; car.arrivedWk = G.week; car.status = 'stock';
+    var tp = truePrepFor(car, res.paid);
+    car.truePrep = tp.amount; car.blowout = tp.blowout;
+    car.arrived = true;
+    if (usedSlots() < totalSlots()) autoPlace(car); else car.slot = null;
+    G.stock.push(car);
+    pay(res.paid, 'auction', 'PX taken in — ' + carName(car));
+    res.prepDue = true;
+  }
+  if (!res.dealOn) { starNudge(-0.01); G.lateNight = null; }
+  else { L.stage = 'close'; L.pxResult = res; L.pxPaid = res.paid; }
+  FE.save();
+  return res;
+};
+FE.lateNightClose = function (fniChoice) {
+  var st = FE.lateNightState(); if (!st) return null;
+  var L = st.deal;
+  var sale = closeSale(st.car, L.offer, st.exec, fniChoice);
+  var pxCar = L.pxResult && L.pxResult.pxTaken ? L.px : null;
+  G.lateNight = null;
+  FE.save();
+  return {
+    sale: sale, car: st.car, exec: sale.exec,
+    price: sale.price, front: sale.front, back: sale.back, gross: sale.front + sale.back,
+    pxCar: pxCar, pxPaid: L.pxPaid || 0
+  };
+};
+FE.lateNightWalk = function () {
+  if (!G || !G.lateNight) return;
+  G.lateNight = null;
+  starNudge(-0.01);
+  FE.save();
 };
 
 FE.acceptOffer = function (ev, fniChoice) {
@@ -1868,7 +1983,7 @@ FE.closeWeek = function () {
     if (drawn > 0) pay(Math.round(drawn * FE.financeApr() / 52), 'stockfinance');
   }
   if (G.franchise) pay(Math.round(FE.FRANCHISE.fee / 52), 'franchise');
-  if (G.dept.service && G.week >= G.dept.service) earn(FE.DEPARTMENTS[0].weekly, 'Service department income');
+  FE.DEPARTMENTS.forEach(function (d) { if (deptLive(d.id)) earn(d.weekly, d.name + ' income'); });
 
   var fine = fineCheck();
   quarterEnd();
@@ -1879,7 +1994,7 @@ FE.closeWeek = function () {
   stkList.forEach(function (c) { totDays += daysIn(c); });
   var costs = W.costs;
   var grossTot = W.front + W.back;
-  var deptIncome = (G.dept.service && G.week >= G.dept.service) ? FE.DEPARTMENTS[0].weekly : 0;
+  var deptIncome = deptIncomeTotal();
   var tradeNet = 0;
   W.trades.forEach(function (t) { tradeNet += t.net; });
   var net = grossTot + deptIncome + tradeNet
@@ -2010,7 +2125,7 @@ FE.shareText = function () {
   var yw = ((G.week - 2) % 52) + 1;
   var stockV = 0;
   inStock().forEach(function (c) { stockV += carCost(c); });
-  var nw = Math.round(G.cash + stockV + site().cost + (G.dept.service ? 180000 : 0));
+  var nw = Math.round(G.cash + stockV + site().cost + deptCapital());
   var lines = [];
   lines.push('FORECOURT EMPIRE — Week ' + (G.week - 1) + ', ' + s.mo + ', Year ' + yr);
   lines.push('Brand: ' + G.brand + '   Site: ' + site().name);
@@ -2039,7 +2154,8 @@ FE.shareText = function () {
   var worst = null;
   stkList.forEach(function (c) { if (!worst || c.holdCost > worst.holdCost) worst = c; });
   if (worst) lines.push('Worst hold: ' + FE.MODELS[worst.model].m + ' ' + money(Math.round(worst.holdCost)));
-  lines.push('Departments: ' + (G.dept.service ? 'Service dept' : 'none yet'));
+  var deptNames = FE.DEPARTMENTS.filter(function (d) { return deptLive(d.id); }).map(function (d) { return d.name; });
+  lines.push('Departments: ' + (deptNames.length ? deptNames.join(', ') : 'none yet'));
   lines.push('Fines taken: ' + G.totals.fines.length + (G.totals.fines.length ? ' (' + G.totals.fines[G.totals.fines.length - 1].name + ', ' + money(G.totals.fines[G.totals.fines.length - 1].amount) + ')' : ''));
   lines.push('Salary structure: ' + salary().name);
   if (G.totals.units) lines.push('Finance penetration: ' + Math.round(G.totals.financed / G.totals.units * 100) + '%');
@@ -2053,7 +2169,7 @@ FE.shareText = function () {
 FE.netWorth = function () {
   var stockV = 0;
   inStock().forEach(function (c) { stockV += carCost(c); });
-  return Math.round(G.cash + stockV + site().cost + (G.dept.service ? 180000 : 0));
+  return Math.round(G.cash + stockV + site().cost + deptCapital());
 };
 
 /* ---------- stocking finance facility ---------- */

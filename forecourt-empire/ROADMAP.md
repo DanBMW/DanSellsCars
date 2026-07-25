@@ -1,5 +1,28 @@
 # Forecourt Empire — beta feedback log & roadmap
 
+## Status — build pass of 2026-07-25b (bays & the late-night prospect)
+
+- **Wash & valet bay (£28k) and smart repair bay (£46k)** are now real
+  departments alongside the service department, each with its own mechanic:
+  smart repair cuts every prep bill a further 22% *and* drops blowout odds 45%
+  (measured: avg prep £777 → £454 with service → £338 with both; blowouts
+  8.6% → 5.6%); the valet bay lifts conversion 4% because a clean forecourt
+  closes better. Both pay a small weekly income and appear on the site view as
+  lock-ups stepping down the left edge. Dept plumbing is generalised — income,
+  net-worth capital and the progress card all iterate `FE.DEPARTMENTS`.
+- **Two new mini-games:** *Walk-Around* (spot every fault on a canvas-drawn
+  top-down car before the clock; misses are revealed at the end) and *Hit the
+  Gross* (stop the needle in the green, three deals, window tightening).
+- **The reward is now a deal you manage, not an auto-sale.** Clearing any level
+  brings a late-night prospect through the door with a *retailable* part-
+  exchange: you see its retail, book money, gross at book and est. days, then
+  choose the allowance (under / book / over — under risks them walking), then
+  work the F&I. The PX lands on your pitch with a prep bill to follow. Still
+  capped at one a week; the live deal persists on `G.lateNight` so it survives
+  a reload mid-negotiation.
+
+---
+
 ## Status — build pass of 2026-07-25 (onboarding & persistence)
 
 - **Inherited starter stock:** you now begin with `FE.STARTER_STOCK` (10) cars

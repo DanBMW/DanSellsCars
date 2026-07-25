@@ -276,8 +276,16 @@ FE.FRANCHISE = {
 
 FE.DEPARTMENTS = [
   { id: 'service', name: 'Service department', cost: 180000, buildWks: 1, weekly: 3200,
-    blurb: 'Workshop income ~£3,200/wk. Word is it does something for prep bills too.' }
+    blurb: 'Workshop income ~£3,200/wk. Word is it does something for prep bills too.' },
+  { id: 'smart', name: 'Smart repair bay', cost: 46000, buildWks: 1, weekly: 1400,
+    blurb: 'Scuffs, kerbed alloys and dents done in-house instead of going out to the bodyshop. Trims what prep costs you — and takes the sting out of the nasty ones.' },
+  { id: 'valet', name: 'Wash & valet bay', cost: 28000, buildWks: 1, weekly: 900,
+    blurb: 'Every car goes out gleaming. A clean forecourt converts better, and retail valets bring a bit in on the side.' }
 ];
+/* department effects (all stack on top of the service department) */
+FE.SMART_PREP_SAVING = 0.22;    // further cut to every prep bill
+FE.SMART_BLOWOUT_CUT = 0.45;    // fewer horror jobs — you can do them yourself
+FE.VALET_CONV_BOOST = 0.04;     // a gleaming forecourt converts better
 FE.EXPANSIONS = [
   { id: 'land15', name: 'Extra land — 15 pitches', cost: 40000, slots: 15, util: 90, buildWks: 1 },
   { id: 'land40', name: 'Extra land — 40 pitches', cost: 95000, slots: 40, util: 210, buildWks: 2 }

@@ -1,9 +1,13 @@
 /* Forecourt Empire — Portacabin mini-games.
-   Optional, self-contained puzzles for downtime between weeks. No economy
-   effect; best scores persist in localStorage. Two games:
-     - Forecourt Shuffle : "get the red car out" (Rush Hour style slide puzzle)
-     - Plate Scramble    : a sliding-tile (8-puzzle) number plate to unscramble
-   All levels below were BFS-verified solvable (min-move counts in comments). */
+   Optional puzzles for the downtime between weeks. Games:
+     - Forecourt Shuffle  : "get the red car out" (Rush Hour style slide puzzle)
+     - Forecourt Parking  : top-down driving, joystick + accelerator
+     - Plate Scramble     : a sliding-tile (8-puzzle) number plate
+     - Walk-Around        : spot every fault on a car before the clock beats you
+     - Hit the Gross      : stop the needle on the number
+   Clearing any level brings a late-night prospect through the door with a
+   retailable part-exchange — a full deal for the player to manage (engine side:
+   FE.spawnLateNightProspect / lateNightPX / lateNightClose). One a week. */
 (function () {
   'use strict';
   var Puzzle = {};
@@ -11,17 +15,108 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
   function money(n) { return '£' + Math.round(n).toLocaleString('en-GB'); }
 
-  // Solving any puzzle earns one "last-minute prospecting" deal for the week.
-  // Returns an HTML fragment to fold into the win screen (or '' if none).
+  /* ---------------- the reward: a late-night prospect ---------------- */
+  // Called from every win screen. Returns the HTML for the "someone's at the
+  // door" prompt, or a note explaining why nobody came.
   function prospectLine() {
-    if (!(window.FE && FE.prospectDeal)) return '';
-    var d = FE.prospectDeal();
-    if (!d) return '';
-    if (d.already) return '<p class="kv pz-prospect done">🤝 You’ve already done your last-minute prospecting this week — one deal’s the limit.</p>';
-    return '<div class="pz-prospect"><b>🤝 Consider this last-minute prospecting.</b> ' +
-      esc(d.exec === 'you' ? 'You' : d.exec) + ' collared a buyer on the way out and shifted the ' +
-      esc(FE.carName(d.car)) + ' for <b>' + money(d.price) + '</b> (' + money(d.gross) + ' gross). It’s on this week’s numbers.</div>';
+    if (!(window.FE && FE.prospectReady)) return '';
+    var r = FE.prospectReady();
+    if (r.already) return '<p class="kv pz-prospect done">🤝 The team already turned one up for you this week — one’s the limit.</p>';
+    if (!r.ok) return r.msg ? '<p class="kv pz-prospect done">🤝 ' + esc(r.msg) + '</p>' : '';
+    return '<div class="pz-prospect knock"><b>🚪 Someone’s at the door.</b> ' +
+      'While you were playing, the team were out prospecting — and one of them has just walked a buyer in. ' +
+      'They’ve got a car to part-exchange.' +
+      '<button class="grn" style="margin-top:9px;width:100%" onclick="Puzzle.lateNight()">Go and meet them →</button></div>';
   }
+
+  Puzzle.lateNight = function () {
+    var d = FE.spawnLateNightProspect();
+    if (!d) { UI.closeModal(); return; }
+    if (d.already) { UI.closeModal(); return; }
+    lnRender();
+  };
+
+  function riskChipHTML(r) {
+    var lbl = r.light === 'green' ? 'Looks clean' : r.light === 'amber' ? 'Something to watch' :
+      (r.flavour === 'gamble' ? 'High risk / high reward' : 'High risk — bad car');
+    return '<span class="risk-chip ' + r.light + '">● ' + lbl + '</span>';
+  }
+
+  function lnRender() {
+    var st = FE.lateNightState();
+    if (!st) { UI.closeModal(); return; }
+    var L = st.deal, c = st.car, px = L.px;
+    if (L.stage === 'px') {
+      var pxGross = L.pxRetail - L.pxGuide;
+      UI.modal(
+        '<div class="ln-head"><span class="ln-time">🌙 After hours</span>' +
+        '<h3>' + esc(L.buyer) + ' — brought in by ' + esc(st.execName) + '</h3></div>' +
+        '<p class="kv">They want the <b>' + esc(FE.carName(c)) + '</b> and they’ll pay <b>' + money(L.offer) + '</b> ' +
+        '<span class="muted">(screen ' + money(c.screen) + ')</span>. There’s a car to take in.</p>' +
+        '<div class="card ln-px"><div class="row"><b>Their part-exchange</b>' + riskChipHTML(L.pxRisk) + '</div>' +
+        '<div class="kv"><b>' + esc(FE.carName(px)) + '</b></div>' +
+        '<div class="kv muted small">' + esc(FE.carDesc(px)) + '</div>' +
+        '<div class="row kv"><span>You could retail it at</span><b>' + money(L.pxRetail) + '</b></div>' +
+        '<div class="row kv"><span>Book says it’s worth</span><b>' + money(L.pxGuide) + '</b></div>' +
+        '<div class="row kv"><span>Gross in it at book</span><b class="' + (pxGross > 1200 ? 'good' : '') + '">' + money(pxGross) + '</b></div>' +
+        '<div class="row kv"><span>Est. days to sell</span><b>' + L.pxDays[0] + '–' + L.pxDays[1] + '</b></div>' +
+        '<div class="kv muted small">Prep hasn’t been costed yet — that bill lands once it’s yours.</div></div>' +
+        '<p class="kv muted small">What are you allowing them for it?</p>' +
+        '<div class="btnrow" style="flex-direction:column">' +
+        '<button class="sec" onclick="Puzzle.lnPX(\'low\')">Under it — ' + money(Math.round(L.pxGuide * 0.88 / 25) * 25) + ' <span class="small">(best gross, they may walk)</span></button>' +
+        '<button onclick="Puzzle.lnPX(\'fair\')">Book money — ' + money(L.pxGuide) + ' <span class="small">(fair, usually sticks)</span></button>' +
+        '<button class="sec" onclick="Puzzle.lnPX(\'high\')">Over it — ' + money(Math.round(L.pxGuide * 1.10 / 25) * 25) + ' <span class="small">(deal’s certain, gross bleeds)</span></button>' +
+        '</div>' +
+        '<button class="ghost" style="margin-top:8px" onclick="Puzzle.lnWalk()">Not tonight — send them away</button>', true);
+      return;
+    }
+    // stage: close — PX agreed, now the paperwork
+    var r = L.pxResult;
+    UI.modal(
+      '<div class="ln-head"><span class="ln-time">🌙 After hours</span><h3>Deal on the table</h3></div>' +
+      '<p class="kv">' + esc(L.buyer) + ' takes the <b>' + esc(FE.carName(c)) + '</b> at <b>' + money(L.offer) + '</b>' +
+      (r.pxTaken ? ', and you’ve allowed <b>' + money(r.paid) + '</b> for the ' + esc(FE.carName(px)) + '. It’s on the pitch — prep bill to follow.' : '.') + '</p>' +
+      '<p class="kv muted small">' + esc(st.execName) + ' will do the paperwork. How hard on the add-ons?</p>' +
+      '<div class="btnrow" style="flex-direction:column">' +
+      '<button class="sec" onclick="Puzzle.lnClose(\'soft\')">Soft — just get it signed</button>' +
+      '<button onclick="Puzzle.lnClose(null)">Normal</button>' +
+      '<button class="sec" onclick="Puzzle.lnClose(\'push\')">Push it <span class="small">(more back-end, more comeback risk)</span></button>' +
+      '</div>', true);
+  }
+
+  Puzzle.lnPX = function (choice) {
+    var r = FE.lateNightPX(choice);
+    if (!r) { UI.closeModal(); return; }
+    if (!r.dealOn) {
+      UI.modal('<div class="pz-win"><div class="pz-win-badge">🚶</div><h3>They walked</h3>' +
+        '<p class="kv">Wouldn’t wear it for their car, and off they went into the night. That’s the risk of going in under book.</p>' +
+        '<div class="pz-btns"><button class="ghost" onclick="Puzzle.hub()">← Games</button>' +
+        '<button class="sec" onclick="UI.closeModal();UI.renderAll()">Back to the forecourt</button></div></div>', true);
+      UI.renderAll();
+      return;
+    }
+    lnRender();
+  };
+  Puzzle.lnClose = function (fni) {
+    var res = FE.lateNightClose(fni);
+    if (!res) { UI.closeModal(); return; }
+    UI.modal('<div class="pz-win"><div class="pz-win-badge">🤝</div><h3>Signed, after hours</h3>' +
+      '<p class="kv">' + esc(res.exec === 'you' ? 'You' : res.exec) + ' sold the <b>' + esc(FE.carName(res.car)) + '</b> for <b>' + money(res.price) + '</b>.</p>' +
+      '<div class="card"><div class="row kv"><span>Front gross</span><b class="' + (res.front >= 0 ? 'good' : 'danger') + '">' + money(res.front) + '</b></div>' +
+      '<div class="row kv"><span>Back end</span><b>' + money(res.back) + '</b></div>' +
+      '<div class="row kv"><span>Total gross</span><b class="good">' + money(res.gross) + '</b></div>' +
+      (res.pxCar ? '<div class="row kv"><span>Taken in</span><b>' + esc(FE.carName(res.pxCar)) + ' @ ' + money(res.pxPaid) + '</b></div>' : '') +
+      '</div>' +
+      (res.pxCar ? '<p class="kv muted small">The part-exchange is on your pitch and needs prepping before it retails.</p>' : '') +
+      '<p class="kv pz-prospect done">Consider that last-minute prospecting. It’s on this week’s numbers.</p>' +
+      '<div class="pz-btns"><button class="sec" onclick="Puzzle.hub()">← Games</button>' +
+      '<button onclick="UI.closeModal();UI.renderAll()">Back to the forecourt</button></div></div>', true);
+    UI.renderAll();
+  };
+  Puzzle.lnWalk = function () {
+    FE.lateNightWalk();
+    UI.closeModal(); UI.renderAll();
+  };
 
   /* ---------------- Forecourt Shuffle (Rush Hour) ---------------- */
   // grid 6x6, exit on row y=2 (right edge). car: {id,x,y,len,dir:'h'|'v',red?}
@@ -455,20 +550,263 @@
   }
   function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
+  /* ---------------- Walk-Around (spot every fault) ---------------- */
+  // A car on the ramp with hidden damage. Tap each fault before the clock runs
+  // out — the appraisal skill the rest of the game charges you for.
+  var FAULTS = [
+    'Kerbed alloy', 'Door ding', 'Scuffed bumper', 'Stone chip', 'Wing mirror scrape',
+    'Tyre down to the wear bar', 'Cracked lens', 'Panel resprayed', 'Wheel arch rust', 'Windscreen chip'
+  ];
+  var WA_LEVELS = [
+    { name: 'Quick look', faults: 3, secs: 26 },
+    { name: 'Proper walk-around', faults: 5, secs: 32 },
+    { name: 'Trade-in inspection', faults: 7, secs: 38 }
+  ];
+  var WA = null;
+  function waBestKey(l) { return 'feWalkBest_' + l; }
+
+  Puzzle.openWalk = function (lvl) {
+    var l = lvl == null ? (WA ? WA.lvl : 0) : lvl;
+    var L = WA_LEVELS[l];
+    // scatter faults over the car silhouette, keeping them apart
+    var spots = [], tries = 0;
+    while (spots.length < L.faults && tries < 500) {
+      tries++;
+      var p = { x: 12 + Math.random() * 76, y: 16 + Math.random() * 68 };
+      if (spots.some(function (s) { return Math.hypot(s.x - p.x, s.y - p.y) < 19; })) continue;
+      p.label = FAULTS[(spots.length + Math.floor(Math.random() * FAULTS.length)) % FAULTS.length];
+      p.found = false;
+      spots.push(p);
+    }
+    WA = { lvl: l, spots: spots, found: 0, left: L.secs, misses: 0, over: false, timer: null };
+    var chips = WA_LEVELS.map(function (lv, i) {
+      var done = localStorage.getItem(waBestKey(i));
+      return '<button class="pz-chip' + (i === l ? ' on' : '') + (done ? ' done' : '') + '" onclick="Puzzle.openWalk(' + i + ')">' + (i + 1) + (done ? '✓' : '') + '</button>';
+    }).join('');
+    UI.modal('<div class="pz-wrap">' +
+      '<div class="pz-title"><b>🔦 Walk-Around</b><span>Tap every fault before the clock beats you. <b>' + L.faults + '</b> to find.</span></div>' +
+      '<div class="pz-chips">' + chips + '</div>' +
+      '<div class="wa-bar"><span id="waFound">0/' + L.faults + ' found</span><span id="waClock">' + L.secs + 's</span></div>' +
+      '<div class="wa-stage" id="waStage"><canvas id="waCanvas"></canvas></div>' +
+      '<div class="pz-btns"><button class="sec" onclick="Puzzle.openWalk(' + l + ')">↺ Retry</button>' +
+      '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+    var stage = $('waStage');
+    stage.addEventListener('pointerdown', waTap);
+    waDrawCar();
+    WA.timer = setInterval(waTick, 1000);
+  };
+  // top-down car on the ramp, drawn to the stage canvas
+  function waDrawCar() {
+    var cv = $('waCanvas'); if (!cv) return;
+    var box = cv.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(box.width * dpr); cv.height = Math.round(box.height * dpr);
+    var g = cv.getContext('2d'), W = cv.width, H = cv.height;
+    g.clearRect(0, 0, W, H);
+    var cx = W / 2, cy = H / 2, L = W * 0.78, B = H * 0.46;   // length across, width down
+    function rr(x, y, w, h, r) {
+      g.beginPath(); g.moveTo(x + r, y);
+      g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+      g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
+    }
+    // shadow
+    g.fillStyle = 'rgba(0,0,0,.32)';
+    g.beginPath(); g.ellipse(cx, cy + B * 0.56, L * 0.5, B * 0.42, 0, 0, 6.283); g.fill();
+    // wheels
+    g.fillStyle = '#15181f';
+    [[-0.30, -0.54], [0.30, -0.54], [-0.30, 0.54], [0.30, 0.54]].forEach(function (w) {
+      rr(cx + L * w[0] - L * 0.075, cy + B * w[1] - B * 0.1, L * 0.15, B * 0.2, 3 * dpr); g.fill();
+    });
+    // body
+    var grd = g.createLinearGradient(0, cy - B / 2, 0, cy + B / 2);
+    grd.addColorStop(0, '#b9c8e2'); grd.addColorStop(0.5, '#8ea1c2'); grd.addColorStop(1, '#5f7096');
+    g.fillStyle = grd;
+    rr(cx - L / 2, cy - B / 2, L, B, B * 0.34); g.fill();
+    g.strokeStyle = 'rgba(20,28,45,.5)'; g.lineWidth = 2 * dpr; g.stroke();
+    // roof / glass
+    g.fillStyle = 'rgba(24,34,56,.72)';
+    rr(cx - L * 0.19, cy - B * 0.33, L * 0.42, B * 0.66, B * 0.16); g.fill();
+    g.fillStyle = 'rgba(178,215,255,.55)';
+    rr(cx - L * 0.30, cy - B * 0.28, L * 0.10, B * 0.56, B * 0.12); g.fill();   // windscreen
+    rr(cx + L * 0.25, cy - B * 0.28, L * 0.09, B * 0.56, B * 0.12); g.fill();   // rear screen
+    // bonnet + boot shut lines
+    g.strokeStyle = 'rgba(30,40,62,.35)'; g.lineWidth = 1.5 * dpr;
+    [-0.34, 0.36].forEach(function (t) {
+      g.beginPath(); g.moveTo(cx + L * t, cy - B * 0.42); g.lineTo(cx + L * t, cy + B * 0.42); g.stroke();
+    });
+    // lights
+    g.fillStyle = '#fff6cf';
+    rr(cx - L * 0.495, cy - B * 0.34, L * 0.03, B * 0.2, 2 * dpr); g.fill();
+    rr(cx - L * 0.495, cy + B * 0.14, L * 0.03, B * 0.2, 2 * dpr); g.fill();
+    g.fillStyle = '#e05a63';
+    rr(cx + L * 0.465, cy - B * 0.34, L * 0.03, B * 0.2, 2 * dpr); g.fill();
+    rr(cx + L * 0.465, cy + B * 0.14, L * 0.03, B * 0.2, 2 * dpr); g.fill();
+    // mirrors
+    g.fillStyle = '#7f90b0';
+    rr(cx - L * 0.18, cy - B * 0.56, L * 0.05, B * 0.08, 2 * dpr); g.fill();
+    rr(cx - L * 0.18, cy + B * 0.48, L * 0.05, B * 0.08, 2 * dpr); g.fill();
+  }
+
+  function waTick() {
+    if (!WA || WA.over) return;
+    var c = $('waClock');
+    if (!c) { clearInterval(WA.timer); WA = null; return; }   // modal closed
+    WA.left--;
+    c.textContent = WA.left + 's';
+    c.className = WA.left <= 8 ? 'danger' : '';
+    if (WA.left <= 0) waEnd(false);
+  }
+  function waTap(e) {
+    if (!WA || WA.over) return;
+    var stage = $('waStage'), r = stage.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width * 100, y = (e.clientY - r.top) / r.height * 100;
+    var hit = null;
+    WA.spots.forEach(function (s) { if (!s.found && Math.hypot(s.x - x, s.y - y) < 9) hit = s; });
+    if (!hit) {
+      WA.misses++;
+      var m = document.createElement('div');
+      m.className = 'wa-miss'; m.style.left = x + '%'; m.style.top = y + '%';
+      stage.appendChild(m);
+      setTimeout(function () { m.remove(); }, 420);
+      return;
+    }
+    hit.found = true; WA.found++;
+    var d = document.createElement('div');
+    d.className = 'wa-hit'; d.style.left = hit.x + '%'; d.style.top = hit.y + '%';
+    d.innerHTML = '<i></i><span>' + esc(hit.label) + '</span>';
+    stage.appendChild(d);
+    $('waFound').textContent = WA.found + '/' + WA.spots.length + ' found';
+    if (WA.found >= WA.spots.length) waEnd(true);
+  }
+  function waEnd(won) {
+    WA.over = true; clearInterval(WA.timer);
+    if (!won) {
+      // reveal what they missed — the lesson is in what you walked past
+      var stage = $('waStage');
+      WA.spots.forEach(function (s) {
+        if (s.found || !stage) return;
+        var d = document.createElement('div');
+        d.className = 'wa-hit missed'; d.style.left = s.x + '%'; d.style.top = s.y + '%';
+        d.innerHTML = '<i></i><span>' + esc(s.label) + '</span>';
+        stage.appendChild(d);
+      });
+      setTimeout(function () {
+        UI.modal('<div class="pz-win"><div class="pz-win-badge">⏰</div><h3>Time’s up</h3>' +
+          '<p class="kv">You found <b>' + WA.found + ' of ' + WA.spots.length + '</b>. The rest are the ones that turn into a prep blowout.</p>' +
+          '<div class="pz-btns"><button onclick="Puzzle.openWalk(' + WA.lvl + ')">Try again</button>' +
+          '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+      }, 900);
+      return;
+    }
+    var secsUsed = WA_LEVELS[WA.lvl].secs - WA.left;
+    var best = localStorage.getItem(waBestKey(WA.lvl));
+    var isBest = !best || secsUsed < +best;
+    if (isBest) localStorage.setItem(waBestKey(WA.lvl), secsUsed);
+    var last = WA.lvl >= WA_LEVELS.length - 1;
+    setTimeout(function () {
+      UI.modal('<div class="pz-win"><div class="pz-win-badge">🔦</div><h3>Nothing got past you</h3>' +
+        '<p class="kv">All ' + WA.spots.length + ' faults in <b>' + secsUsed + 's</b>' + (WA.misses ? ' (' + WA.misses + ' wild stab' + (WA.misses === 1 ? '' : 's') + ')' : '') + '.' +
+        (isBest ? ' <span class="pz-pb">New best!</span>' : ' <span class="muted small">Best: ' + best + 's</span>') + '</p>' +
+        prospectLine() +
+        '<div class="pz-btns">' + (last ? '' : '<button onclick="Puzzle.openWalk(' + (WA.lvl + 1) + ')">Next inspection →</button>') +
+        '<button class="sec" onclick="Puzzle.openWalk(' + WA.lvl + ')">Replay</button>' +
+        '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+    }, 500);
+  }
+
+  /* ---------------- Hit the Gross (timing) ---------------- */
+  // A needle sweeping a bar; stop it in the green. Three deals in a row, the
+  // target narrowing each time — the nerve of holding out for the number.
+  var HG = null;
+  function hgBestKey() { return 'feGrossBest'; }
+  Puzzle.openGross = function () {
+    HG = { round: 1, rounds: 3, pos: 0, dir: 1, speed: 0.85, band: 26, banked: 0, running: true, raf: null };
+    UI.modal('<div class="pz-wrap">' +
+      '<div class="pz-title"><b>🎯 Hit the Gross</b><span>Stop the needle in the green. Three deals — the window tightens each time.</span></div>' +
+      '<div class="wa-bar"><span id="hgRound">Deal 1 of 3</span><span id="hgBank">£0 banked</span></div>' +
+      '<div class="hg-track" id="hgTrack"><div class="hg-band" id="hgBand"></div><div class="hg-needle" id="hgNeedle"></div></div>' +
+      '<button class="grn big" id="hgStop" onclick="Puzzle.hgStop()">STOP</button>' +
+      '<div class="pz-btns"><button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+    hgSetup();
+  };
+  function hgSetup() {
+    HG.band = [26, 18, 12][HG.round - 1];
+    HG.speed = [0.85, 1.05, 1.3][HG.round - 1];
+    HG.bandStart = 12 + Math.random() * (76 - HG.band);
+    HG.pos = 0; HG.dir = 1; HG.running = true;
+    var b = $('hgBand');
+    if (b) { b.style.left = HG.bandStart + '%'; b.style.width = HG.band + '%'; }
+    var r = $('hgRound'); if (r) r.textContent = 'Deal ' + HG.round + ' of ' + HG.rounds;
+    cancelAnimationFrame(HG.raf);
+    HG.raf = requestAnimationFrame(hgFrame);
+  }
+  function hgFrame() {
+    if (!HG || !HG.running) return;
+    var n = $('hgNeedle');
+    if (!n) { HG = null; return; }                 // modal closed
+    HG.pos += HG.dir * HG.speed;
+    if (HG.pos >= 100) { HG.pos = 100; HG.dir = -1; }
+    if (HG.pos <= 0) { HG.pos = 0; HG.dir = 1; }
+    n.style.left = HG.pos + '%';
+    HG.raf = requestAnimationFrame(hgFrame);
+  }
+  Puzzle.hgStop = function () {
+    if (!HG || !HG.running) return;
+    HG.running = false;
+    cancelAnimationFrame(HG.raf);
+    var inBand = HG.pos >= HG.bandStart && HG.pos <= HG.bandStart + HG.band;
+    var mid = HG.bandStart + HG.band / 2;
+    var acc = 1 - Math.min(1, Math.abs(HG.pos - mid) / (HG.band / 2));
+    var n = $('hgNeedle'); if (n) n.className = 'hg-needle ' + (inBand ? 'hit' : 'miss');
+    if (!inBand) {
+      setTimeout(function () {
+        UI.modal('<div class="pz-win"><div class="pz-win-badge">📉</div><h3>Missed it</h3>' +
+          '<p class="kv">Held out too long and they walked. Banked <b>' + money(HG.banked) + '</b> before it went wrong.</p>' +
+          '<div class="pz-btns"><button onclick="Puzzle.openGross()">Go again</button>' +
+          '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+      }, 450);
+      return;
+    }
+    HG.banked += Math.round((400 + acc * 1400) * HG.round);
+    var bk = $('hgBank'); if (bk) bk.textContent = money(HG.banked) + ' banked';
+    if (HG.round >= HG.rounds) { hgWin(); return; }
+    HG.round++;
+    setTimeout(function () { if (n) n.className = 'hg-needle'; hgSetup(); }, 420);
+  };
+  function hgWin() {
+    var best = localStorage.getItem(hgBestKey());
+    var isBest = !best || HG.banked > +best;
+    if (isBest) localStorage.setItem(hgBestKey(), HG.banked);
+    setTimeout(function () {
+      UI.modal('<div class="pz-win"><div class="pz-win-badge">🎯</div><h3>Three from three</h3>' +
+        '<p class="kv">You held your nerve for <b>' + money(HG.banked) + '</b> of notional gross.' +
+        (isBest ? ' <span class="pz-pb">New best!</span>' : ' <span class="muted small">Best: ' + money(+best) + '</span>') + '</p>' +
+        '<p class="kv muted small">Practice money — it doesn’t hit the books. What comes next does.</p>' +
+        prospectLine() +
+        '<div class="pz-btns"><button class="sec" onclick="Puzzle.openGross()">Again</button>' +
+        '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+    }, 480);
+  }
+
   /* ---------------- hub ---------------- */
   Puzzle.hub = function () {
     var shuffleDone = Puzzle.LEVELS.filter(function (_, i) { return localStorage.getItem(rhBestKey(i)); }).length;
     UI.modal(
       '<div class="pz-hub"><h3>🏗️ The portacabin</h3>' +
-      '<p class="kv muted small">Kettle’s on. A couple of puzzles for while the kettle boils / the timer runs down. Nothing here touches the business — just for the head.</p>' +
+      '<p class="kv">Play a game while your team prospect. It’s only fair, right?</p>' +
+      '<div class="pz-reward-note">🚪 Clear any level and one of them walks a buyer in after hours — <b>with a part-exchange worth retailing</b>. You manage the deal. Once a week.</div>' +
       '<button class="pz-game" onclick="Puzzle.openShuffle()"><span class="pz-game-ico">🚗</span><span><b>Forecourt Shuffle</b><small>Get the red car out. ' + Puzzle.LEVELS.length + ' boards' + (shuffleDone ? ' · ' + shuffleDone + '/' + Puzzle.LEVELS.length + ' cleared' : '') + '</small></span></button>' +
-      '<button class="pz-game" onclick="Puzzle.openPark()"><span class="pz-game-ico">🅿️</span><span><b>Forecourt Parking</b><small>Joystick + accelerator. Park the car in the bay, no scrapes. ' + PK_LEVELS.length + ' bays.</small></span></button>' +
+      '<button class="pz-game" onclick="Puzzle.openPark()"><span class="pz-game-ico">🅿️</span><span><b>Forecourt Parking</b><small>Joystick + accelerator. Park it in the bay, no scrapes. ' + PK_LEVELS.length + ' bays.</small></span></button>' +
+      '<button class="pz-game" onclick="Puzzle.openWalk()"><span class="pz-game-ico">🔦</span><span><b>Walk-Around</b><small>Spot every fault before the clock beats you. ' + WA_LEVELS.length + ' inspections.</small></span></button>' +
+      '<button class="pz-game" onclick="Puzzle.openGross()"><span class="pz-game-ico">🎯</span><span><b>Hit the Gross</b><small>Stop the needle on the number. Three deals, tightening.</small></span></button>' +
       '<button class="pz-game" onclick="Puzzle.openPlate()"><span class="pz-game-ico">🔡</span><span><b>Plate Scramble</b><small>Slide the tiles to fix the number plate.</small></span></button>' +
-      '<p class="kv muted small" style="margin-top:10px">🤝 Solve any puzzle to bank one <b>last-minute prospecting</b> deal for the week (once a week).</p>' +
-      '<button class="ghost" style="margin-top:8px" onclick="UI.closeModal()">Close</button></div>', true);
+      '<button class="ghost" style="margin-top:10px" onclick="UI.closeModal()">Close</button></div>', true);
   };
 
+  /* read-only hooks used by the automated tests to drive the games */
   Puzzle.pkInfo = function () { return PK ? { x: PK.x, y: PK.y, spd: PK.spd, state: PK.state, elapsed: PK.elapsed } : null; };
+  Puzzle.waSpots = function () { return WA ? WA.spots.map(function (s) { return { x: s.x, y: s.y, found: s.found }; }) : []; };
+  Puzzle.hgInfo = function () { return HG ? { round: HG.round, pos: HG.pos, bandStart: HG.bandStart, band: HG.band, banked: HG.banked } : null; };
 
   window.Puzzle = Puzzle;
 })();

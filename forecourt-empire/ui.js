@@ -1068,7 +1068,6 @@ UI.openOffice = function () {
         '<div class="btnrow"><button class="sec" onclick="UI.buildDeptUI(\'' + d.id + '\')">Build</button></div></div>';
     }
   });
-  if (FE.unlocked('depts')) h += '<div class="card kv"><b>Smart repair · Valeting bay</b> — the builders say "after the beta".</div>';
   // expansion
   if (!FE.unlocked('expansion')) {
     h += lockedCard('Land expansion', 'Buy the ground next door and line out more pitches.', FE.unlockWeek('expansion'));
