@@ -144,7 +144,7 @@ function buildTutSteps() {
     { sel: '#tab-stock', text: '<b>Stock</b> — every car you own, sortable by days in stock or hold cost.', pos: 'above' },
     { sel: '#tab-staff', text: '<b>Staff</b> — hire and train your sales execs. You can hire from day one.', pos: 'above' },
     { sel: '#tab-reports', text: '<b>Reports</b> — weekly P&amp;L, reviews and the share card.', pos: 'above' },
-    { sel: '.gear', text: 'The <b>manager’s drawer</b>: skip a week, share progress, or replay this tour.', pos: 'above' },
+    { sel: '.desk-btn', text: 'Your <b>desk</b>: a game while the team prospect, your save, skip a week, or replay this tour.', pos: 'above' },
     { sel: null, text: 'That’s the tour. The one number that kills dealerships is <b>days in stock</b> — keep the average under 45. Now go buy some cars.', pos: 'center', last: true }
   ];
 }
@@ -1419,7 +1419,7 @@ UI.restart = function () {
   location.reload();
 };
 
-/* ---------- gear menu ---------- */
+/* ---------- desk menu ---------- */
 UI.calendar = function () {
   var g = G(); if (!g) return;
   var yw = ((g.week - 1) % 52) + 1;
@@ -1494,18 +1494,25 @@ UI.calendar = function () {
     '<div class="cal-legend"><span>📍 Now</span><span>🔵 Plate change</span><span>☀️ Summer sale</span></div>' +
     '<button class="ghost" style="margin-top:10px" onclick="UI.closeModal()">Close</button>');
 };
-UI.gearMenu = function () {
-  UI.modal('<h3>Manager’s drawer</h3>' +
+/* Everything the manager can do away from the forecourt lives here, behind the
+   one desk button: the games and the old manager's-drawer items together. */
+UI.deskMenu = function () {
+  var games = (window.Puzzle && Puzzle.gamesHTML) ? Puzzle.gamesHTML() : '';
+  UI.modal('<div class="pz-hub"><h3>🗄️ Your desk</h3>' +
+    games +
+    '<div class="desk-sep">Paperwork</div>' +
     '<div class="btnrow" style="flex-direction:column">' +
-    '<button class="sec" onclick="UI.closeModal();UI.share()">Share my progress</button>' +
     '<button class="sec" onclick="UI.saveMenu()">💾 Save &amp; profile</button>' +
-    '<button class="sec" onclick="UI.skipWeekUI()">Skip this week (staff run it)</button>' +
-    '<button class="sec" onclick="UI.helpUI()">How this works</button>' +
-    '<button class="sec" onclick="UI.closeModal();UI.startTutorial(false)">Replay tutorial</button>' +
+    '<button class="sec" onclick="UI.closeModal();UI.share()">📤 Share my progress</button>' +
+    '<button class="sec" onclick="UI.skipWeekUI()">⏭ Skip this week (staff run it)</button>' +
+    '<button class="sec" onclick="UI.helpUI()">❓ How this works</button>' +
+    '<button class="sec" onclick="UI.closeModal();UI.startTutorial(false)">🎓 Replay tutorial</button>' +
     '<button class="red" onclick="UI.confirmRestart()">Abandon career</button></div>' +
-    '<p class="kv muted small" style="margin-top:10px">Beta build. Saves locally on this device, automatically. One game week per sitting is the intended pace — the app version will run a real day per week.</p>' +
-    '<button class="ghost" onclick="UI.closeModal()">Close</button>');
+    '<p class="kv muted small" style="margin-top:10px">Beta build. Saves locally on this device, automatically. The clock runs a game week every 12 real hours.</p>' +
+    '</div>');
 };
+// kept so any older call site still lands somewhere sensible
+UI.gearMenu = function () { UI.deskMenu(); };
 UI.confirmRestart = function () {
   if (confirm('Abandon this career and wipe the save?')) UI.restart();
 };

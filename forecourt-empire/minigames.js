@@ -89,7 +89,7 @@
     if (!r.dealOn) {
       UI.modal('<div class="pz-win"><div class="pz-win-badge">🚶</div><h3>They walked</h3>' +
         '<p class="kv">Wouldn’t wear it for their car, and off they went into the night. That’s the risk of going in under book.</p>' +
-        '<div class="pz-btns"><button class="ghost" onclick="Puzzle.hub()">← Games</button>' +
+        '<div class="pz-btns"><button class="ghost" onclick="Puzzle.hub()">← Desk</button>' +
         '<button class="sec" onclick="UI.closeModal();UI.renderAll()">Back to the forecourt</button></div></div>', true);
       UI.renderAll();
       return;
@@ -108,7 +108,7 @@
       '</div>' +
       (res.pxCar ? '<p class="kv muted small">The part-exchange is on your pitch and needs prepping before it retails.</p>' : '') +
       '<p class="kv pz-prospect done">Consider that last-minute prospecting. It’s on this week’s numbers.</p>' +
-      '<div class="pz-btns"><button class="sec" onclick="Puzzle.hub()">← Games</button>' +
+      '<div class="pz-btns"><button class="sec" onclick="Puzzle.hub()">← Desk</button>' +
       '<button onclick="UI.closeModal();UI.renderAll()">Back to the forecourt</button></div></div>', true);
     UI.renderAll();
   };
@@ -175,7 +175,7 @@
       '<div class="pz-foot"><span id="pzMoves">Moves: 0</span><span id="pzBest"></span></div>' +
       '<div class="pz-btns">' +
       '<button class="sec" onclick="Puzzle.rhReset()">↺ Reset</button>' +
-      '<button class="ghost" onclick="Puzzle.hub()">← Games</button>' +
+      '<button class="ghost" onclick="Puzzle.hub()">← Desk</button>' +
       '</div></div>';
     UI.modal(html, true);
     rhLoad(l);
@@ -263,7 +263,7 @@
         '<div class="pz-btns">' +
         (last ? '' : '<button onclick="Puzzle.openShuffle(' + (RH.lvl + 1) + ')">Next puzzle →</button>') +
         '<button class="sec" onclick="Puzzle.openShuffle(' + RH.lvl + ')">Replay</button>' +
-        '<button class="ghost" onclick="Puzzle.hub()">← Games</button>' +
+        '<button class="ghost" onclick="Puzzle.hub()">← Desk</button>' +
         '</div>' + (last ? '<p class="kv muted small" style="margin-top:8px">That’s the lot — you’ve cleared every board. Show-off.</p>' : '') + '</div>', true);
     }, 560);
   }
@@ -298,7 +298,7 @@
       '<div class="pz-foot"><span id="psMoves">Moves: 0</span><span id="psBest"></span></div>' +
       '<div class="pz-btns">' +
       '<button class="sec" onclick="Puzzle.openPlate()">↺ New scramble</button>' +
-      '<button class="ghost" onclick="Puzzle.hub()">← Games</button>' +
+      '<button class="ghost" onclick="Puzzle.hub()">← Desk</button>' +
       '</div></div>';
     UI.modal(html, true);
     psRender();
@@ -330,7 +330,7 @@
           '<p class="kv">Unscrambled <b>' + PS.plate.slice(0, 4) + ' ' + PS.plate.slice(4) + '</b> in <b>' + PS.moves + '</b> moves.' +
           (isBest ? ' <span class="pz-pb">New best!</span>' : ' <span class="muted small">Best: ' + best + '</span>') + '</p>' +
           prospectLine() +
-          '<div class="pz-btns"><button onclick="Puzzle.openPlate()">Again</button><button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+          '<div class="pz-btns"><button onclick="Puzzle.openPlate()">Again</button><button class="ghost" onclick="Puzzle.hub()">← Desk</button></div></div>', true);
       }, 260);
     }
   };
@@ -400,7 +400,7 @@
       '<div class="pk-ped" id="pkPed"><span>GO</span></div>' +
       '</div>' +
       '<div class="pz-btns"><button class="sec" onclick="Puzzle.openPark(' + l + ')">↺ Retry</button>' +
-      '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>';
+      '<button class="ghost" onclick="Puzzle.hub()">← Desk</button></div></div>';
     UI.modal(html, true);
     pkBindControls();
     requestAnimationFrame(pkFrame);
@@ -501,7 +501,7 @@
         '<div class="pz-btns">' +
         (last ? '' : '<button onclick="Puzzle.openPark(' + (PK.lvl + 1) + ')">Next bay →</button>') +
         '<button class="sec" onclick="Puzzle.openPark(' + PK.lvl + ')">Replay</button>' +
-        '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div>' +
+        '<button class="ghost" onclick="Puzzle.hub()">← Desk</button></div>' +
         (last ? '<p class="kv muted small" style="margin-top:8px">Every bay nailed. Licence renewed.</p>' : '') + '</div>', true);
     }, 500);
   }
@@ -561,7 +561,7 @@
       '<div class="pz-bar"><span id="hgRound">Deal 1 of 3</span><span id="hgBank">£0 banked</span></div>' +
       '<div class="hg-track" id="hgTrack"><div class="hg-band" id="hgBand"></div><div class="hg-needle" id="hgNeedle"></div></div>' +
       '<button class="grn big" id="hgStop" onclick="Puzzle.hgStop()">STOP</button>' +
-      '<div class="pz-btns"><button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+      '<div class="pz-btns"><button class="ghost" onclick="Puzzle.hub()">← Desk</button></div></div>', true);
     hgSetup();
   };
   function hgSetup() {
@@ -598,7 +598,7 @@
         UI.modal('<div class="pz-win"><div class="pz-win-badge">📉</div><h3>Missed it</h3>' +
           '<p class="kv">Held out too long and they walked. Banked <b>' + money(HG.banked) + '</b> before it went wrong.</p>' +
           '<div class="pz-btns"><button onclick="Puzzle.openGross()">Go again</button>' +
-          '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+          '<button class="ghost" onclick="Puzzle.hub()">← Desk</button></div></div>', true);
       }, 450);
       return;
     }
@@ -619,23 +619,25 @@
         '<p class="kv muted small">Practice money — it doesn’t hit the books. What comes next does.</p>' +
         prospectLine() +
         '<div class="pz-btns"><button class="sec" onclick="Puzzle.openGross()">Again</button>' +
-        '<button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>', true);
+        '<button class="ghost" onclick="Puzzle.hub()">← Desk</button></div></div>', true);
     }, 480);
   }
 
   /* ---------------- hub ---------------- */
-  Puzzle.hub = function () {
+  /* The games list, rendered into the desk menu (UI.deskMenu). Everything the
+     player can reach from their desk lives in one place, so there is only one
+     button on the screen. */
+  Puzzle.gamesHTML = function () {
     var shuffleDone = Puzzle.LEVELS.filter(function (_, i) { return localStorage.getItem(rhBestKey(i)); }).length;
-    UI.modal(
-      '<div class="pz-hub"><h3>🗄️ Your desk</h3>' +
-      '<p class="kv">Feet up in the portacabin. Play a game while your team prospect — it’s only fair, right?</p>' +
-      '<div class="pz-reward-note">🚪 Clear any level and one of them walks a buyer in after hours — <b>with a part-exchange worth retailing</b>. You manage the deal. Once a week.</div>' +
-      '<button class="pz-game" onclick="Puzzle.openShuffle()"><span class="pz-game-ico">🚗</span><span><b>Forecourt Shuffle</b><small>Get the red car out. ' + Puzzle.LEVELS.length + ' boards' + (shuffleDone ? ' · ' + shuffleDone + '/' + Puzzle.LEVELS.length + ' cleared' : '') + '</small></span></button>' +
-      '<button class="pz-game" onclick="Puzzle.openPark()"><span class="pz-game-ico">🅿️</span><span><b>Forecourt Parking</b><small>Joystick + accelerator. Park it in the bay, no scrapes. ' + PK_LEVELS.length + ' bays.</small></span></button>' +
-      '<button class="pz-game" onclick="Puzzle.openGross()"><span class="pz-game-ico">🎯</span><span><b>Hit the Gross</b><small>Stop the needle on the number. Three deals, tightening.</small></span></button>' +
-      '<button class="pz-game" onclick="Puzzle.openPlate()"><span class="pz-game-ico">🔡</span><span><b>Plate Scramble</b><small>Slide the tiles to fix the number plate.</small></span></button>' +
-      '<button class="ghost" style="margin-top:10px" onclick="UI.closeModal()">Close</button></div>', true);
+    return '<p class="kv">Play a game while your team prospect. It\u2019s only fair, right?</p>' +
+      '<div class="pz-reward-note">\uD83D\uDEAA Clear any level and one of them walks a buyer in after hours \u2014 <b>with a part-exchange worth retailing</b>. You manage the deal. Once a week.</div>' +
+      '<button class="pz-game" onclick="Puzzle.openShuffle()"><span class="pz-game-ico">\uD83D\uDE97</span><span><b>Forecourt Shuffle</b><small>Get the red car out. ' + Puzzle.LEVELS.length + ' boards' + (shuffleDone ? ' \u00b7 ' + shuffleDone + '/' + Puzzle.LEVELS.length + ' cleared' : '') + '</small></span></button>' +
+      '<button class="pz-game" onclick="Puzzle.openPark()"><span class="pz-game-ico">\uD83C\uDD7F\uFE0F</span><span><b>Forecourt Parking</b><small>Joystick + accelerator. Park it in the bay, no scrapes. ' + PK_LEVELS.length + ' bays.</small></span></button>' +
+      '<button class="pz-game" onclick="Puzzle.openGross()"><span class="pz-game-ico">\uD83C\uDFAF</span><span><b>Hit the Gross</b><small>Stop the needle on the number. Three deals, tightening.</small></span></button>' +
+      '<button class="pz-game" onclick="Puzzle.openPlate()"><span class="pz-game-ico">\uD83D\uDD21</span><span><b>Plate Scramble</b><small>Slide the tiles to fix the number plate.</small></span></button>';
   };
+  // every "back to games" link in the games lands on the desk
+  Puzzle.hub = function () { UI.deskMenu(); };
 
   /* read-only hooks used by the automated tests to drive the games */
   Puzzle.pkInfo = function () { return PK ? { x: PK.x, y: PK.y, spd: PK.spd, state: PK.state, elapsed: PK.elapsed } : null; };

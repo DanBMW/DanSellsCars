@@ -355,14 +355,6 @@ input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow
 .progressbar i.warn { background: linear-gradient(90deg, #ffc355, #eb9a1e); box-shadow: 0 0 10px rgba(255,182,61,.5); }
 .progressbar i.good { background: linear-gradient(90deg, #40db8a, #23b06a); box-shadow: 0 0 10px rgba(53,208,127,.5); }
 
-.gear {
-  position: fixed; bottom: 66px; right: calc(50% - 268px); z-index: 90;
-  border-radius: 50%; width: 44px; height: 44px; padding: 0;
-  background: linear-gradient(180deg, #2c3a5e, #202c4c); border: 1px solid rgba(95,120,255,.3); color: #dbe3f5; font-size: 1.15rem;
-  box-shadow: 0 6px 18px -6px rgba(0,0,0,.6);
-}
-@media (max-width: 580px) { .gear { right: 12px; } }
-
 /* ---------- calendar cue + summer-sale flair ---------- */
 #hudWeek { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #hudWeek .cal-cue { opacity: .7; font-size: .82rem; margin-left: 2px; }
@@ -663,8 +655,8 @@ input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow
 
 /* ---------- desk button (3D isometric desk) ---------- */
 .desk-btn {
-  position: fixed; top: 66px; right: 18px; z-index: 90;
-  width: 46px; height: 46px; padding: 0; border-radius: 14px;
+  position: fixed; bottom: 66px; right: calc(50% - 268px); z-index: 90;
+  width: 48px; height: 48px; padding: 0; border-radius: 15px;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(180deg, #2c3a5e, #1d2745);
   border: 1px solid rgba(95,120,255,.32);
@@ -686,3 +678,11 @@ input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow
 .desk-btn .d-mugtop { fill: #f4939a; }
 .desk-btn .d-base   { fill: #3a4363; }
 @media (max-width: 580px) { .desk-btn { right: 12px; } }
+
+/* section divider inside the desk menu */
+.desk-sep {
+  margin: 16px 0 8px; font-size: .58rem; font-weight: 800; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.desk-sep::after { content: ''; flex: 1; height: 1px; background: var(--line); }
