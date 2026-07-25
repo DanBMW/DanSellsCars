@@ -1099,6 +1099,26 @@ function closeSale(car, price, exec, fniChoice) {
   return sale;
 }
 
+// "Last-minute prospecting" — a reward for solving a portacabin puzzle. Secures
+// ONE extra used-car deal for the current trading week, capped at once a week so
+// it can't be farmed. Only fires during a live week (a car must be on the
+// forecourt and ready), never once the week's report is filed.
+FE.prospectDeal = function () {
+  if (!G || !G.weekly) return null;
+  if (G.phase !== 'auction' && G.phase !== 'showroom' && G.phase !== 'office') return null;
+  if (G.prospectWk === G.week) return { already: true };
+  var car = pickSaleCar({ isNew: false });
+  if (!car) return null;
+  // an available head handles it, else you take it yourself
+  var floor = G.staff.filter(function (st) { return (!st.leaving || st.leaving > G.week) && st.offUntil <= G.week; });
+  var exec = floor.length ? pick(floor) : null;
+  var price = autoPrice(car, exec);
+  var sale = closeSale(car, price, exec, null);
+  G.prospectWk = G.week;
+  FE.save();
+  return { car: car, price: sale.price, front: sale.front, back: sale.back, gross: sale.front + sale.back, exec: sale.exec };
+};
+
 FE.acceptOffer = function (ev, fniChoice) {
   var s = closeSale(ev.car, ev.offer, ev.exec, fniChoice);
   ev.dead = true;

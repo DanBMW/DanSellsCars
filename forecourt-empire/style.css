@@ -480,3 +480,40 @@ input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow
 .ps-tile.gap { background: transparent; box-shadow: none; }
 .ps-tile.movable { cursor: pointer; outline: 2px solid rgba(255,206,74,.35); }
 .ps-tile.home { color: #145a2a; }
+
+/* ---------- prospecting line + parking game ---------- */
+.pz-green { color: var(--green); }
+.pz-prospect {
+  margin-top: 8px; padding: 9px 11px; border-radius: 11px; font-size: .82rem; line-height: 1.4;
+  color: #d7f5e4; background: rgba(53,208,127,.12); border: 1px solid rgba(53,208,127,.35);
+}
+.pz-prospect.done { color: var(--muted); background: rgba(255,255,255,.03); border-color: var(--line); }
+
+.pk-stage { position: relative; width: 100%; max-width: 380px; margin: 2px auto; }
+#pkCanvas {
+  display: block; width: 100%; border-radius: 12px; border: 2px solid #2f3d63;
+  background: #2b3140; touch-action: none;
+}
+.pk-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.pk-flash {
+  pointer-events: auto; text-align: center; background: rgba(12,16,30,.82); backdrop-filter: blur(2px);
+  padding: 14px 18px; border-radius: 14px; font-weight: 700; color: var(--red); border: 1px solid rgba(255,93,108,.4);
+}
+.pk-flash button { display: block; margin: 10px auto 0; }
+.pk-joy {
+  position: absolute; left: 10px; bottom: 10px; width: 92px; height: 92px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.10), rgba(0,0,0,.25));
+  border: 2px solid rgba(255,255,255,.18); touch-action: none;
+}
+.pk-knob {
+  position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 50%;
+  background: linear-gradient(180deg, #5f6dff, #3d4bd0); box-shadow: 0 4px 10px -3px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.35);
+  transition: transform .04s linear;
+}
+.pk-ped {
+  position: absolute; right: 10px; bottom: 10px; width: 76px; height: 76px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 900; letter-spacing: 1px; color: #0e2a17;
+  background: radial-gradient(circle at 50% 35%, #57e39a, #23b06a); border: 2px solid rgba(255,255,255,.25);
+  box-shadow: 0 5px 14px -5px rgba(53,208,127,.7), inset 0 2px 0 rgba(255,255,255,.3); touch-action: none; user-select: none;
+}
+.pk-ped.on { transform: scale(.94); filter: brightness(1.12); }
