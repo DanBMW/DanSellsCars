@@ -27,8 +27,8 @@ lots before week 10, ~13-14% after, tier split tracking the configured weights.
 
 ### Real-time clock
 
-The forecourt keeps trading while the tab is shut: **one real day = one game
-week** (`FE.REALTIME.msPerWeek`). On resume, `FE.offlineProgress()` runs the
+The forecourt keeps trading while the tab is shut: **12 real hours = one game
+week** — about two ticks a day (`FE.REALTIME.msPerWeek`). On resume, `FE.offlineProgress()` runs the
 owed weeks on the same conservative AFK rules as Skip Week, writes one digest
 email (not one per week) and shows a "While you were away" summary.
 

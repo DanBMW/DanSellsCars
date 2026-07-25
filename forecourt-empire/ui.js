@@ -1517,7 +1517,7 @@ UI.saveMenu = function () {
     '<div class="kv muted small">The game saves itself after every action — there is no way to lose a week.</div>' +
     '<div class="btnrow"><button onclick="UI.saveNow()">Save now</button></div></div>' +
     '<div class="card"><b>Real-time trading</b>' +
-    '<div class="kv">One real day is one game week. Leave the game and the team keep the floor running — you come back to the post and a summary. Up to ' + FE.REALTIME.maxWeeks + ' weeks can run unattended.</div>' +
+    '<div class="kv">Every 12 real hours is a game week — roughly two a day. Leave the game and the team keep the floor running; you come back to the post and a summary. Up to ' + FE.REALTIME.maxWeeks + ' weeks can run unattended.</div>' +
     '<div class="row kv"><span>Status</span><b class="' + (FE.realtimeOn() ? 'good' : 'muted') + '">' + (FE.realtimeOn() ? 'On' : 'Paused') + '</b></div>' +
     (FE.realtimeOn() ? '<div class="row kv"><span>Next week runs in</span><b>' + fmtDur(FE.nextTickIn()) + '</b></div>' : '') +
     '<div class="btnrow"><button class="sec" onclick="UI.realtimeToggle(' + (FE.realtimeOn() ? 'false' : 'true') + ')">' +

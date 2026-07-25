@@ -16,12 +16,13 @@ FE.LOTS_PER_WEEK = 50;         // fresh auction lots each day; a third are older
 FE.SKIP_COOLDOWN_MS = 5 * 60 * 1000;   // real-time gap between week completions (anti-spam)
 
 /* Real-time progression — the business keeps trading while you're away.
-   One real day is one game week: come back tomorrow and a week has run itself,
-   with the post waiting for you. Capped so a fortnight off doesn't burn a
-   quarter of your career on autopilot — the rest of the time is simply banked
-   as "nothing happened". */
+   Twelve real hours is one game week — roughly two ticks a day, so a night's
+   sleep or a day at work each moves the business on a week, with the post
+   waiting when you get back. Capped at maxWeeks so a long absence can't burn a
+   chunk of the career on autopilot; the excess is simply banked as "nothing
+   happened". At 12h/week the cap means at most ~2 days run unattended. */
 FE.REALTIME = {
-  msPerWeek: 24 * 60 * 60 * 1000,   // 1 real day = 1 game week
+  msPerWeek: 12 * 60 * 60 * 1000,   // 12 real hours = 1 game week
   maxWeeks: 4                       // most weeks that can run unattended
 };
 FE.PRIVATE_SELLER_P = 0.34;    // weekly chance of a private seller ringing up (from wk 3)

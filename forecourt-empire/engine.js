@@ -2188,7 +2188,7 @@ FE.skipWeek = function (quiet) {
 };
 
 /* ---------- real-time progression ----------
-   The forecourt doesn't stop because you closed the tab. One real day is one
+   The forecourt doesn't stop because you closed the tab. Twelve real hours is one
    game week: the team run the floor on the same conservative AFK rules as the
    Skip Week button, and you come back to the post and a digest of what
    happened. Capped at FE.REALTIME.maxWeeks so a long absence can't burn a
