@@ -1,0 +1,234 @@
+/* ============================================================
+   DANSELLS content pages - premium dark skin
+   Loaded AFTER style.css, the page's own inline styles, and
+   premium.css, on the secondary content pages only (guides,
+   referral, accessories, dealership, offer and legal pages).
+
+   premium.css above this supplies the shared header, drawer,
+   footer and contact block. This file retokens the style.css
+   components those pages are built from, and tempers a few
+   premium.css base rules that were written for the purpose-built
+   front-of-house layouts rather than these older pages.
+   ============================================================ */
+
+/* ── 1. Retoken style.css ──────────────────────────────────── */
+:root{
+  --bg:#0a0c0f;
+  /* premium.css uses --paper as its ivory TEXT colour (header, footer,
+     contact rows), while style.css used it as a white CARD surface.
+     Keep the premium meaning so the shared chrome stays legible; the
+     style.css card components are given dark surfaces explicitly below. */
+  --paper:#ece9e1;
+  --card:rgba(236,233,225,.02);
+  --surface:rgba(236,233,225,.03);
+  --text:#ece9e1;
+  --body:#b9b5ab;
+  --muted:#847f75;
+  --line:rgba(236,233,225,.14);
+  --line-soft:rgba(236,233,225,.08);
+  --blue:#5b8ac9;
+  --blue-deep:#2f5f9e;
+  --blue-light:#7ba3d8;
+  --blue-tint:rgba(91,138,201,.12);
+  --gold:#a8853b;
+  --green:#4a9d6a;
+  --radius:0;
+  --font:'Satoshi',ui-sans-serif,system-ui,sans-serif;
+  --display:'Sentient',Georgia,'Times New Roman',serif;
+  --shadow-card:none;
+  --shadow-pop:none;
+}
+
+/* ── 2. Temper premium.css base rules for these layouts ────── */
+/* premium.css constrains every paragraph to a reading measure, which
+   is right for the editorial pages but wrong inside these cards. */
+p{max-width:none;}
+body::before{background:linear-gradient(180deg,rgba(91,138,201,.05),transparent 340px) !important;}
+html,body{background:var(--bg);color:var(--body);}
+
+/* ── 3. Page shell ─────────────────────────────────────────── */
+.page{max-width:1080px;margin:0 auto;padding:0 clamp(20px,5vw,48px);}
+.section{padding:clamp(48px,7vw,88px) 0;}
+.section-head{margin-bottom:clamp(28px,4vw,44px);}
+.section-kicker,.step-kicker{
+  font-family:var(--font);font-weight:500;font-size:.7rem;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:14px;display:flex;align-items:center;gap:12px;
+}
+.section-kicker::before,.step-kicker::before{
+  content:'';display:inline-block;width:34px;height:1px;
+  background:var(--blue);border-radius:0;margin:0;transform:none;flex-shrink:0;
+}
+.step-desc,.lead{color:var(--body);line-height:1.85;}
+.lead{font-family:var(--display);font-size:clamp(1.1rem,2.2vw,1.35rem);color:var(--paper-c,var(--text));line-height:1.6;}
+.asterisk,.hint{color:var(--muted);font-size:.8rem;line-height:1.7;}
+
+/* ── 4. Headings ───────────────────────────────────────────── */
+h1,h2,h3,.guide-h1{
+  font-family:var(--display) !important;font-weight:400 !important;
+  color:var(--text);letter-spacing:.005em;
+}
+h1 em,h2 em{font-style:italic;color:var(--text);}
+h1 em::after,h2 em::after{display:none !important;}
+
+/* ── 5. Buttons ────────────────────────────────────────────── */
+.btn,.btn-hero,.ty-wa-btn,.ty-check-btn{
+  background:transparent !important;border:1px solid var(--blue) !important;
+  border-radius:0 !important;color:var(--text) !important;
+  font-family:var(--font);font-weight:500 !important;font-size:.78rem !important;
+  letter-spacing:.2em;text-transform:uppercase;padding:16px 30px !important;
+  box-shadow:none !important;transition:background .25s,color .25s;
+}
+.btn:hover,.btn-hero:hover,.ty-wa-btn:hover,.ty-check-btn:hover{
+  background:var(--blue) !important;color:#0a0c0f !important;transform:none !important;
+}
+.btn-ghost{
+  background:transparent;border:1px solid var(--line);border-radius:0;color:var(--body);
+  font-weight:500;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;padding:16px 30px;
+}
+.btn-ghost:hover{background:rgba(236,233,225,.06);border-color:var(--line);color:var(--text);}
+.chip{
+  background:rgba(236,233,225,.04);border:1px solid var(--line);border-radius:0;
+  color:var(--body);font-weight:500;font-size:.76rem;letter-spacing:.06em;
+}
+
+/* ── 6. Cards and surfaces ─────────────────────────────────── */
+.card,.input-card,.why-card,.product-card,.guide-card,.keybox,.pc .col,
+.testimonial-card,.ty-prot-card,.ty-faq,.faq details,.numbers{
+  background:rgba(236,233,225,.02) !important;
+  border:1px solid var(--line) !important;
+  border-radius:0 !important;box-shadow:none !important;
+}
+.testimonial-stars{color:var(--gold);}
+.testimonial-quote{color:var(--body);font-family:var(--display);line-height:1.7;}
+.testimonial-attr{color:var(--muted);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;}
+
+/* Route cards (image tiles) */
+.route-card{border-radius:0 !important;border:1px solid var(--line) !important;box-shadow:none !important;}
+.route-card img{filter:saturate(.82) contrast(1.04) brightness(.8);}
+.route-num{color:var(--blue);font-weight:500;letter-spacing:.24em;font-size:.7rem;}
+.route-body h3{font-family:var(--display) !important;font-weight:400 !important;color:#fff;}
+.route-go{color:var(--text);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;}
+
+/* Tables (finance comparison guides) */
+.numbers th{background:rgba(236,233,225,.04) !important;color:var(--text) !important;font-weight:500;}
+.numbers td{color:var(--body);border-bottom-color:var(--line-soft) !important;}
+.numbers td:first-child{color:var(--muted);}
+
+/* FAQ accordions */
+.faq summary{color:var(--text) !important;font-weight:500;}
+.faq summary::after{color:var(--blue) !important;}
+.faq details p,.faq-item p{color:var(--body);}
+
+/* ── 7. Forms ──────────────────────────────────────────────── */
+.field-group label{color:var(--muted);font-weight:500;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;}
+.field-group input,.field-group textarea,.field-group select{
+  background:var(--bg) !important;border:1px solid var(--line) !important;
+  border-radius:0 !important;color:var(--text) !important;
+}
+.field-group input:focus,.field-group textarea:focus,.field-group select:focus{
+  border-color:var(--blue) !important;box-shadow:none !important;background:var(--bg) !important;
+}
+.field-group ::placeholder{color:var(--muted);}
+
+/* ── 8. Misc surfaces carried over from style.css ──────────── */
+.dot{background:var(--green);box-shadow:none;}
+.divider,hr{border-color:var(--line-soft);}
+.showroom-divider .div-overlay{background:rgba(10,12,15,.62);}
+.gallery-thumb img,.strip-img{filter:saturate(.82) contrast(1.04) brightness(.85);}
+
+/* Scroll reveal is handled by each page; make sure nothing stays hidden
+   if a page's observer never fires on this stylesheet's watch. */
+.reveal{opacity:1;transform:none;}
+
+/* ── 9. style.css components that are still light-first ───── */
+/* Portrait caption plate on the dealership pages */
+.hero-portrait figcaption{
+  background:rgba(10,12,15,.82) !important;
+  border:1px solid var(--line);border-radius:0 !important;
+}
+.hero-portrait figcaption strong{color:var(--text) !important;}
+.hero-portrait figcaption span{color:var(--muted) !important;}
+
+/* Purchase confirmation checklist band */
+.ty-checklist-wrap{
+  background:rgba(168,133,59,.06) !important;
+  border-top:1px solid rgba(168,133,59,.22) !important;
+  border-bottom:1px solid rgba(168,133,59,.22) !important;
+}
+.ty-checklist{
+  background:rgba(236,233,225,.02) !important;
+  border:1px solid rgba(168,133,59,.3) !important;
+  border-top:1px solid rgba(168,133,59,.55) !important;
+  border-radius:0 !important;box-shadow:none !important;
+}
+.ty-checklist-kicker{
+  background:rgba(168,133,59,.16) !important;border:1px solid rgba(168,133,59,.4) !important;
+  color:#e0c185 !important;
+}
+.ty-checklist-kicker::before{background:var(--gold) !important;color:#0a0c0f !important;}
+.ty-checklist-head h2{color:var(--text) !important;}
+.ty-checklist-item,.ty-check-label{color:var(--body) !important;}
+
+/* Floating FAQ nudge */
+.ty-faq-overlay-inner{
+  background:rgba(14,17,20,.94) !important;border:1px solid var(--blue) !important;
+  border-radius:0 !important;color:var(--text) !important;
+}
+
+/* ── 10. style.css components that used --paper as a card surface ──
+   --paper now carries the premium ivory text meaning, so every
+   component that painted it as a surface gets an explicit dark one.
+   List generated from style.css so nothing is missed. */
+.chip,
+.choice,
+.input-card,
+.summary-item,
+.model-card,
+.checklist-item,
+.photo-card,
+.testimonial-card,
+.why-card,
+.product-card,
+.spotlight-card,
+.ty-tab,
+.ty-panel-intro,
+.ty-faq details,
+.ty-quote-band,
+.ty-prot-card{
+  background:var(--card) !important;
+}
+.shell,.topbar{background:#14181d !important;}
+.site-footer{background:#0e1114 !important;}
+.btn-ghost{background:transparent !important;}
+
+/* ── 11. Full-bleed accent bands ──────────────────────────────
+   These were solid brand-blue panels. On the dark ground a quiet
+   bordered band reads better and keeps the accent for the action. */
+.cta-band,.ty-finance-band,.refer-band,.offers-section{
+  background:rgba(91,138,201,.08) !important;
+  border:1px solid rgba(91,138,201,.28) !important;
+  border-radius:0 !important;box-shadow:none !important;
+}
+.cta-band h2,.cta-band h3,.ty-finance-band h2{color:var(--text) !important;}
+.cta-band p,.ty-finance-band p{color:var(--body) !important;}
+.cta-band .btn,.ty-finance-band .btn{
+  background:transparent !important;border:1px solid var(--blue) !important;color:var(--text) !important;
+}
+.cta-band .btn:hover,.ty-finance-band .btn:hover{background:var(--blue) !important;color:#0a0c0f !important;}
+
+/* Page-level components that also painted --paper as a surface */
+.dc-why-card,
+.dc-price-card,
+.dc-compare,
+details.dc-faq-item,
+.mats-set-card,
+.mats-price-card,
+details.mats-faq-item,
+.acc-card,
+.keybox,
+.pc .col,
+.faq details,
+.guide-card{
+  background:var(--card) !important;
+}
