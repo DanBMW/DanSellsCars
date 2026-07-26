@@ -16,17 +16,18 @@
       transition:background .18s,transform .18s;
     }
     .appt-card:hover{background:rgba(16,21,29,.10);transform:translateY(-1px);}
-    .appt-card.primary{background:rgba(21,89,207,.13);border-color:rgba(21,89,207,.32);}
+    .appt-card.primary{background:rgba(91,138,201,.13);border-color:rgba(91,138,201,.32);}
     .appt-icon{font-size:1.8rem;flex-shrink:0;width:44px;text-align:center;}
-    .appt-body strong{display:block;font-size:.95rem;font-weight:700;color:#141a22;margin-bottom:3px;}
-    .appt-body span{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
-    .appt-arrow{margin-left:auto;color:#5f6b7c;font-size:1rem;}
+    .appt-body strong{display:block;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:3px;}
+    .appt-body span{font-size:.82rem;color:var(--muted);line-height:1.45;}
+    .appt-arrow{margin-left:auto;color:var(--muted);font-size:1rem;}
   </style>
 <script src="analytics.js" defer></script>
+<link rel="stylesheet" href="funnel-premium.css"/>
 </head>
-<body><div class="app"><div class="shell">
+<body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Service Qualifier</span></div>
+    <div class="brand"><span class="brand-name">Dan Sells</span><span class="brand-sub">Service Qualifier</span></div>
     <div class="meta"><span class="dot"></span><span>Done</span></div>
   </div>
   <div class="step-wrap">
@@ -87,13 +88,13 @@
       <span style="color:#8a6a1e;font-size:1rem;">›</span>
     </a>
     <div style="text-align:center;margin-top:24px;padding-bottom:8px;">
-      <a href="index.html" style="color:#5f6b7c;font-size:.85rem;text-decoration:none;">← Back to homepage</a>
+      <a href="index.html" style="color:var(--muted);font-size:.85rem;text-decoration:none;">← Back to homepage</a>
     </div>
 
-    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
+    <div style="background:rgba(74,157,106,.08);border:1px solid rgba(74,157,106,.32);border-radius:0;padding:20px 22px;margin:20px 0 0;text-align:center;">
       <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">One last thing 👋</p>
       <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Thank you for taking a moment to fill that in. Why not pop Dan a quick message to say hi?</p>
-      <a id="hiWaBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1a7a3c;color:#fff;font-weight:700;padding:12px 20px;border-radius:13px;text-decoration:none;font-family:var(--font);font-size:.92rem;">💬 Say hi on WhatsApp</a>
+      <a id="hiWaBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid rgba(74,157,106,.7);color:#a9dcbe;font-weight:500;padding:12px 20px;border-radius:0;text-decoration:none;font-family:var(--font);font-size:.92rem;">💬 Say hi on WhatsApp</a>
     </div>
   </div>
 </div></div>
@@ -128,29 +129,29 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLight
 <script src="scroll-hint.js"></script>
 <!-- Appointment type modal - auto-shown after submission -->
 <div id="appt-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(10,18,30,.65);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;">
-  <div style="background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:560px;padding:28px 22px 40px;box-shadow:0 -16px 48px rgba(10,18,30,.2);animation:apptSlide .32s ease-out;">
-    <div style="width:38px;height:4px;background:#e2e8ef;border-radius:2px;margin:0 auto 22px;"></div>
-    <p style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5f6b7c;margin:0 0 6px;text-align:center;">One quick thing</p>
-    <h2 style="font-size:1.2rem;font-weight:700;color:#11161d;margin:0 0 6px;text-align:center;font-family:var(--display);">How would you like to connect with Dan?</h2>
-    <p style="font-size:.82rem;color:#5f6b7c;margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your answers before we speak - no need to start from scratch.</p>
+  <div style="background:#0e1114;border:1px solid var(--line);border-top:none;border-radius:0;width:100%;max-width:560px;padding:28px 22px 40px;box-shadow:0 -16px 48px rgba(0,0,0,.6);animation:apptSlide .32s ease-out;">
+    <div style="width:38px;height:1px;background:rgba(236,233,225,.3);border-radius:0;margin:0 auto 22px;"></div>
+    <p style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;text-align:center;">One quick thing</p>
+    <h2 style="font-size:1.2rem;font-weight:700;color:var(--text);margin:0 0 6px;text-align:center;font-family:var(--display);">How would you like to connect with Dan?</h2>
+    <p style="font-size:.82rem;color:var(--muted);margin:0 0 20px;text-align:center;line-height:1.5;">Dan will have read your answers before we speak - no need to start from scratch.</p>
     <div style="display:grid;gap:10px;margin-bottom:14px;">
-      <a id="modal-chat" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#eef4ff;border:1.5px solid rgba(21,89,207,.22);border-radius:16px;text-decoration:none;color:#11161d;">
+      <a id="modal-chat" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:rgba(91,138,201,.10);border:1px solid rgba(91,138,201,.32);border-radius:0;text-decoration:none;color:var(--text);">
         <span style="font-size:26px;flex-shrink:0;">☕</span>
-        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Quick chat during your service visit</strong><span style="font-size:.8rem;color:#5f6b7c;">A brief word while your car is in with the service team</span></div>
-        <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
+        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Quick chat during your service visit</strong><span style="font-size:.8rem;color:var(--muted);">A brief word while your car is in with the service team</span></div>
+        <span style="color:var(--blue);font-size:1.2rem;font-weight:700;">›</span>
       </a>
-      <a id="modal-phone" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8f9fb;border:1.5px solid rgba(16,21,29,.1);border-radius:16px;text-decoration:none;color:#11161d;">
+      <a id="modal-phone" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:rgba(236,233,225,.03);border:1px solid var(--line);border-radius:0;text-decoration:none;color:var(--text);">
         <span style="font-size:26px;flex-shrink:0;">📞</span>
-        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Telephone appointment</strong><span style="font-size:.8rem;color:#5f6b7c;">Book a call at a time that suits you</span></div>
-        <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
+        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Telephone appointment</strong><span style="font-size:.8rem;color:var(--muted);">Book a call at a time that suits you</span></div>
+        <span style="color:var(--blue);font-size:1.2rem;font-weight:700;">›</span>
       </a>
-      <a id="modal-visit" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8f9fb;border:1.5px solid rgba(16,21,29,.1);border-radius:16px;text-decoration:none;color:#11161d;">
+      <a id="modal-visit" href="#" target="_blank" rel="noopener" onclick="closeApptModal()" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:rgba(236,233,225,.03);border:1px solid var(--line);border-radius:0;text-decoration:none;color:var(--text);">
         <span style="font-size:26px;flex-shrink:0;">🤝</span>
-        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:#5f6b7c;">Come in for a proper sit-down - no rush</span></div>
-        <span style="color:#1559cf;font-size:1.2rem;font-weight:700;">›</span>
+        <div style="flex:1;"><strong style="display:block;font-size:.95rem;font-weight:700;">Face to face at Ruxley</strong><span style="font-size:.8rem;color:var(--muted);">Come in for a proper sit-down - no rush</span></div>
+        <span style="color:var(--blue);font-size:1.2rem;font-weight:700;">›</span>
       </a>
     </div>
-    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:#5f6b7c;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now - I'll do this later</button>
+    <button onclick="closeApptModal()" style="width:100%;padding:12px;border:none;background:none;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);">Not right now - I'll do this later</button>
   </div>
 </div>
 <style>@keyframes apptSlide{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}</style>
