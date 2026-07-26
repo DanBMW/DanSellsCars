@@ -11,10 +11,11 @@
     gtag('config', 'G-XZL1RF6SV6');
   </script>
 <script src="analytics.js" defer></script>
+<link rel="stylesheet" href="funnel-premium.css"/>
 </head>
-<body><div class="app"><div class="shell">
+<body class="fv2"><div class="app"><div class="shell">
   <div class="topbar">
-    <div class="brand"><span class="brand-name">DanSells</span><span class="brand-sub">Vehicle Appraisal</span></div>
+    <div class="brand"><span class="brand-name">Dan Sells</span><span class="brand-sub">Vehicle Appraisal</span></div>
     <div class="meta"><span class="dot"></span><span>Step 1 of 6</span></div>
   </div>
   <div class="progress-wrap">
@@ -74,9 +75,9 @@
 
   function showDvlaBanner(ok, text){
     const banner=document.getElementById("dvlaBanner");
-    banner.style.background=ok?"rgba(21,89,207,.08)":"rgba(198,58,58,.08)";
-    banner.style.border="1px solid "+(ok?"rgba(21,89,207,.22)":"rgba(198,58,58,.28)");
-    banner.style.color=ok?"#0e3f96":"#8a2b2b";
+    banner.style.background=ok?"rgba(91,138,201,.10)":"rgba(186,110,70,.12)";
+    banner.style.border="1px solid "+(ok?"rgba(91,138,201,.32)":"rgba(186,110,70,.38)");
+    banner.style.color=ok?"#9dc0e8":"#e3b295";
     document.getElementById("dvlaLabel").style.display=ok?"":"none";
     document.getElementById("dvlaDesc").textContent=text;
     banner.style.display="block";

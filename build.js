@@ -19,7 +19,7 @@ const path = require('path');
 
 const ROOT = __dirname;
 const CHECK = process.argv.includes('--check');
-const MARKER = /([ \t]*)<!-- chrome:([a-z]+)( \{.*?\})? -->[\s\S]*?<!-- \/chrome:\2 -->/g;
+const MARKER = /([ \t]*)<!-- chrome:([a-z][a-z0-9]*)( \{.*?\})? -->[\s\S]*?<!-- \/chrome:\2 -->/g;
 
 const partials = {};
 for (const f of fs.readdirSync(path.join(ROOT, 'partials'))) {

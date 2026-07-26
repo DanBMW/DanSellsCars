@@ -1,87 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <link rel="canonical" href="https://dan-sells.co.uk/appraisal.html"/>
-  <meta name="description" content="Begin a conversation about your car with Dan Cane at Hedin Ruxley. An honest, no-obligation appraisal based on real market knowledge - not a computer algorithm."/>
-  <title>Value your car | Begin a conversation with Dan Cane, Hedin Ruxley</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
-  <link rel="stylesheet" href="premium.css"/>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
-<script src="analytics.js" defer></script>
-</head>
-<body>
-
-<!-- chrome:header2 {"wa":"Hi%20Dan%2C%20I%27d%20like%20a%20free%20appraisal%20of%20my%20car"} -->
-<header class="ph-header" id="phHeader">
-  <div class="ph-header-inner">
-    <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
-    <div class="ph-actions">
-      <a class="ph-contact-link" href="#contact">Talk to Dan</a>
-      <button class="ph-menu-btn" id="phMenuBtn" aria-label="Open menu" aria-expanded="false" onclick="phOpenDrawer()">
-        <span></span><span></span>
-      </button>
-    </div>
-  </div>
-</header>
-<!-- /chrome:header2 -->
-
-<!-- chrome:drawer2 -->
-<div class="ph-drawer" id="phDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
-  <button class="ph-drawer-close" onclick="phCloseDrawer()" aria-label="Close menu">Close</button>
-  <div class="ph-drawer-inner">
-    <nav aria-label="Main navigation">
-      <a href="index.html">Home</a>
-    </nav>
-    <p class="ph-drawer-label">Four ways in</p>
-    <nav aria-label="Doorways">
-      <a href="step1.html">Find my BMW</a>
-      <a href="EV.html">Electric Daily</a>
-      <a href="appraisal.html">Value your car</a>
-      <a href="service.html">In for service</a>
-    </nav>
-    <p class="ph-drawer-label">Practical</p>
-    <nav aria-label="Practical pages">
-      <a href="current-opportunities.html">Current Opportunities</a>
-      <a href="offers.html">Available Now</a>
-      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment <small>opens cal.eu</small></a>
-    </nav>
-  </div>
-</div>
-<!-- /chrome:drawer2 -->
-
-<main>
-
-  <section class="band" style="padding-top:clamp(140px,20vh,200px)" aria-label="Introduction">
-    <div class="wrap wrap-narrow">
-      <span class="plabel accent">Value your car</span>
-      <h1 style="font-size:clamp(2.2rem,5.5vw,3.6rem)">Let's begin with the car<br/>you have now.</h1>
-      <hr class="rule"/>
-      <div class="prose">
-        <p class="lede">This is not a widget that flashes a number at you. It is the start of a conversation about your car, and it ends with a figure I will stand behind.</p>
-        <p>Tell me about the car honestly - any make, any model - and I will come back with a realistic part exchange figure based on real market knowledge, not a computer algorithm. Send a few photos on WhatsApp afterwards and I can sharpen the number further.</p>
-        <p class="prose-note">All figures are subject to a physical inspection. The appraisal gives me what I need to come to the table with a strong starting offer. It takes about two minutes, and there is no obligation at any point.</p>
-      </div>
-      <div class="ph-hero-actions" style="margin-top:36px">
-        <a class="btn-line" href="ap1.html">Start the conversation</a>
-        <a class="btn-quiet" href="index.html#doorways">Back to the doorways</a>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<!-- chrome:footer2 {"wa":"Hi%20Dan%2C%20I%27d%20like%20a%20free%20appraisal%20of%20my%20car"} -->
 <section class="ph-contact" id="contact">
   <div class="wrap">
     <span class="plabel accent">Talk to Dan</span>
-    <h2>One conversation, whenever you are ready.</h2>
-    <p class="measure">No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.</p>
+    <h2>{{contactHeading|One conversation, whenever you are ready.}}</h2>
+    <p class="measure">{{contactSub|No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.}}</p>
     <div class="contact-rows">
-      <a class="contact-row" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20a%20free%20appraisal%20of%20my%20car" target="_blank" rel="noopener">
+      <a class="contact-row" href="https://wa.me/447827138197?text={{wa|Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW}}" target="_blank" rel="noopener">
         <span class="cr-label">WhatsApp</span>
         <span class="cr-value">Message me directly</span>
       </a>
@@ -106,8 +29,8 @@
     <div class="ph-footer-grid">
       <div>
         <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
-        <p class="ph-footer-blurb">BMW buying with Dan Cane and the team at Hedin Ruxley, South East.</p>
-        <p class="ph-footer-blurb">Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+        <p class="ph-footer-blurb">{{blurb1|BMW buying with Dan Cane and the team at Hedin Ruxley, South East.}}</p>
+        <p class="ph-footer-blurb">{{blurb2|Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.}}</p>
       </div>
       <div class="ph-footer-col">
         <h4>Find your way</h4>
@@ -130,7 +53,7 @@
         <a href="privacy.html">Privacy Policy</a>
       </div>
     </div>
-    <p class="ph-footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
+    <p class="ph-footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. {{legalTail|All offers subject to availability.}}</p>
   </div>
 </footer>
 
@@ -210,8 +133,3 @@
   document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
 })();
 </script>
-<!-- /chrome:footer2 -->
-
-<script src="disclaimer.js"></script>
-</body>
-</html>
