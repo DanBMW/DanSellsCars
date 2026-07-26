@@ -232,3 +232,15 @@ details.mats-faq-item,
 .guide-card{
   background:var(--card) !important;
 }
+
+/* Proposal form surfaces */
+.fp-step,
+.fp-email-band,
+.fp-download-card{
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  border-radius:0 !important;box-shadow:none !important;
+}
+.fp-hero{background:transparent !important;}
+.fp-email-addr{color:var(--blue) !important;}
+.fp-gdpr{color:var(--muted) !important;}
