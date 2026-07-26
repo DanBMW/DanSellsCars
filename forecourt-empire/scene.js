@@ -372,21 +372,28 @@ var Scene = window.Scene = {};
     ctx.restore();
   }
 
+  // price-cut tag on a discounted car. Deliberately small and flat: a busy
+  // forecourt can carry a dozen of these and they must read as labels.
   function starburst(x, y, r) {
+    var w = r * 1.9, h = r * 1.25;
     ctx.save();
-    ctx.translate(x, y); ctx.rotate(0.15);
-    ctx.fillStyle = '#ffd24a';
-    ctx.beginPath();
-    for (var i = 0; i < 16; i++) {
-      var rr2 = i % 2 ? r : r * 0.62;
-      var a = i * Math.PI / 8;
-      ctx.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2);
-    }
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#5a3800';
-    ctx.font = '900 ' + Math.round(r * 0.95) + 'px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('%', 0, 1);
+    ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(6,10,20,0.5)';
+    rrect(-w / 2 + 0.5, -h / 2 + 1.2, w, h, h * 0.42); ctx.fill();
+    ctx.fillStyle = '#ffc93f';
+    rrect(-w / 2, -h / 2, w, h, h * 0.42); ctx.fill();
+    ctx.fillStyle = '#4a2f00';
+    ctx.font = '900 ' + Math.round(h * 0.78) + 'px system-ui';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('%', 0, h * 0.06);
     ctx.restore();
+  }
+  function rrect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
   }
 
   /* ---------- ground ---------- */
@@ -910,13 +917,32 @@ var Scene = window.Scene = {};
     // atmosphere: seasonal tint, warm sun from upper-left, vignette
     var s = FE.SEASON[(g.week - 1) % 52];
     var winter = s.mo === 'Dec' || s.mo === 'Jan' || s.mo === 'Feb';
-    ctx.fillStyle = winter ? 'rgba(140,165,205,0.06)' : 'rgba(255,238,190,0.05)';
+    ctx.fillStyle = winter ? 'rgba(140,165,205,0.07)' : 'rgba(255,238,190,0.05)';
     ctx.fillRect(0, 0, W, H);
-    var sun = ctx.createRadialGradient(W * 0.18, 0, 0, W * 0.18, 0, W * 0.9);
-    sun.addColorStop(0, 'rgba(255,236,180,0.10)'); sun.addColorStop(1, 'rgba(255,236,180,0)');
+    // warm key from the upper left, then a cool fill from the opposite corner so
+    // the diorama has a light direction instead of sitting flat
+    var sun = ctx.createRadialGradient(W * 0.16, -H * 0.05, 0, W * 0.16, -H * 0.05, W * 1.0);
+    sun.addColorStop(0, winter ? 'rgba(255,244,214,0.13)' : 'rgba(255,232,166,0.17)');
+    sun.addColorStop(0.55, 'rgba(255,236,180,0.05)');
+    sun.addColorStop(1, 'rgba(255,236,180,0)');
     ctx.fillStyle = sun; ctx.fillRect(0, 0, W, H);
-    var vig = ctx.createRadialGradient(W / 2, H * 0.45, W * 0.32, W / 2, H * 0.45, W * 0.85);
-    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(5,8,18,0.30)');
+    var fill = ctx.createRadialGradient(W * 0.92, H * 1.02, 0, W * 0.92, H * 1.02, W * 0.85);
+    fill.addColorStop(0, 'rgba(78,116,190,0.16)');
+    fill.addColorStop(1, 'rgba(78,116,190,0)');
+    ctx.fillStyle = fill; ctx.fillRect(0, 0, W, H);
+    // gentle bloom lifts the lit faces without washing the darks
+    ctx.save();
+    ctx.globalCompositeOperation = 'overlay';
+    var bloom = ctx.createLinearGradient(0, 0, 0, H);
+    bloom.addColorStop(0, 'rgba(255,246,214,0.16)');
+    bloom.addColorStop(0.6, 'rgba(255,246,214,0.02)');
+    bloom.addColorStop(1, 'rgba(0,0,0,0.08)');
+    ctx.fillStyle = bloom; ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+    var vig = ctx.createRadialGradient(W / 2, H * 0.45, W * 0.28, W / 2, H * 0.45, W * 0.88);
+    vig.addColorStop(0, 'rgba(0,0,0,0)');
+    vig.addColorStop(0.7, 'rgba(5,8,18,0.14)');
+    vig.addColorStop(1, 'rgba(4,6,14,0.44)');
     ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
   }
 

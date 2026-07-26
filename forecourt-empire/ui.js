@@ -225,12 +225,35 @@ function renderHUD() {
   var g = G(), s = FE.SEASON[(g.week - 1) % 52];
   var yr = Math.ceil(g.week / 52);
   var sale = FE.saleActive();
-  $('hudWeek').innerHTML = '<b>Week ' + g.week + '</b> · ' + s.mo + ' · Year ' + yr +
-    ' <span class="cal-cue">📅</span>' +
-    (sale ? ' <span class="sale-chip">☀️ SUMMER SALE</span>' : '');
+  var plate = !!s.plate;
+  $('hudWeek').innerHTML =
+    '<span class="hw-wk">Wk ' + g.week + '</span>' +
+    '<span class="hw-mo' + (plate ? ' plate' : '') + '">' + s.mo + '</span>' +
+    '<span class="hw-yr">Y' + yr + '</span>' +
+    (sale ? '<span class="sale-chip">SUMMER SALE</span>' : (plate ? '<span class="hw-flag">PLATE</span>' : '')) +
+    '<span class="cal-cue" aria-hidden="true">▾</span>';
+
   var st = Math.round(g.stars * 10) / 10;
-  var full = Math.round(g.stars);
-  $('hudStars').textContent = '★★★★★'.slice(0, full) + '☆☆☆☆☆'.slice(0, 5 - full) + ' ' + st.toFixed(1);
+  var full = Math.floor(g.stars), half = (g.stars - full) >= 0.5;
+  var starStr = '';
+  for (var i = 0; i < 5; i++) starStr += (i < full ? '★' : (i === full && half ? '⯨' : '☆'));
+  var sEl = $('hudStars');
+  sEl.textContent = starStr + ' ' + st.toFixed(1);
+  sEl.className = 'stars ' + (g.stars >= 4.2 ? 'good' : g.stars >= 3.5 ? '' : 'low');
+
+  // stock at a glance — the number that decides whether you should be buying
+  var onPitch = g.stock.filter(function (c) { return c.status === 'stock' && c.arrived !== false; }).length;
+  var transit = g.stock.filter(function (c) { return c.status === 'stock' && c.arrived === false; }).length;
+  var aged = g.stock.filter(function (c) { return c.status === 'stock' && FE.daysIn(c) >= 60; }).length;
+  var sp = $('hudStock');
+  sp.innerHTML = '<b>' + onPitch + '</b> in stock' + (transit ? ' <span class="muted">+' + transit + '</span>' : '') +
+    (aged ? ' <span class="hud-aged" title="60+ days">' + aged + ' aged</span>' : '');
+
+  var nw = FE.netWorth();
+  $('hudNet').innerHTML = 'Net worth <b>' + M(nw) + '</b>';
+  $('cash').classList.toggle('neg', g.cash < 0);
+  $('cashLabel').textContent = g.cash < 0 ? 'Overdrawn' : 'Cash';
+
   var badge = FE.unreadCount();
   $('emailBadge').textContent = badge;
   $('emailBadge').style.display = badge ? '' : 'none';
@@ -240,8 +263,11 @@ function cashTick() {
   var g = G();
   if (g) {
     var diff = g.cash - shownCash;
+    // snap on a big jump (buying a batch of stock), otherwise ease — the old
+    // rate crawled and left the figure sitting in its flash colour for seconds
+    if (Math.abs(diff) > 120000) shownCash = g.cash - Math.sign(diff) * 60000;
     if (Math.abs(diff) > 1) {
-      shownCash += diff * 0.12 + (diff > 0 ? 1 : -1);
+      shownCash += diff * 0.26 + (diff > 0 ? 1 : -1);
       var el = $('cash');
       el.textContent = M(Math.round(shownCash));
       el.className = diff > 0 ? 'flash-up' : 'flash-down';
@@ -258,30 +284,45 @@ function renderBanner() {
   var g = G(), h = '';
   var remain = FE.skipRemainMs();
   var onCd = remain > 0;
+  var PH = ['auction', 'showroom', 'office'];
+  var at = PH.indexOf(g.phase);
+  // the week as three steps, so you can always see where you are in it
+  var stepper = '<div class="steps">' + ['Auction', 'Showroom', 'Office'].map(function (n, i) {
+    var cls = i < at ? 'done' : (i === at ? 'now' : '');
+    return '<span class="step ' + cls + '"><i>' + (i < at ? '✓' : (i + 1)) + '</i>' + n + '</span>';
+  }).join('') + '</div>';
+
   var skipBtn = onCd
-    ? '<button class="sec" disabled>Skip in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
-    : '<button class="sec" onclick="UI.skipWeek()">Skip week ⏭</button>';
+    ? '<button class="sec sm" disabled>Skip in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
+    : '<button class="sec sm" onclick="UI.skipWeek()">Skip week</button>';
+
   if (g.phase === 'auction') {
-    h = '<div class="ph"><b>Block 1 — Auction</b><div>Buy your stock, then open the showroom to trade for the week.</div></div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="sec" onclick="UI.openAuction()">🔨 Auction (' + g.lots.length + ')</button>' +
-      '<button class="grn" onclick="UI.toShowroom()">Open showroom for trading →</button>' + skipBtn + '</div>';
+    h = stepper + '<div class="ph-row">' +
+      '<button class="grn ph-go" onclick="UI.toShowroom()">Open the showroom →</button>' +
+      '<div class="ph-side"><button class="sec sm" onclick="UI.openAuction()">🔨 Auction · ' + g.lots.length + '</button>' + skipBtn + '</div></div>' +
+      '<div class="ph-hint">Buy what you can sell, then open up for the week.</div>';
   } else if (g.phase === 'showroom') {
     var left = FE.eventsLeft();
-    h = '<div class="ph"><b>Block 2 — Showroom</b><div>' + (left ? left + ' thing' + (left === 1 ? '' : 's') + ' need' + (left === 1 ? 's' : '') + ' your attention.' : 'Floor’s quiet.') + '</div></div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">' +
-      (left ? '<button onclick="UI.nextEvent()">Next up</button>' : '<button class="sec" onclick="UI.toOffice()">Office →</button>') +
-      skipBtn + '</div>';
+    h = stepper + '<div class="ph-row">' +
+      (left
+        ? '<button class="ph-go" onclick="UI.nextEvent()">Next up <span class="ph-count">' + left + '</span></button>'
+        : '<button class="grn ph-go" onclick="UI.toOffice()">To the office →</button>') +
+      '<div class="ph-side">' + skipBtn + '</div></div>' +
+      '<div class="ph-hint">' + (left ? left + ' thing' + (left === 1 ? '' : 's') + ' on the floor.' : 'Floor’s quiet — nothing left this week.') + '</div>';
   } else if (g.phase === 'office') {
     var ack = FE.needsAck().length;
-    var officeSkip = onCd
-      ? '<button class="grn" disabled>Close in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
-      : '<button class="grn" onclick="UI.skipWeek()">Skip week ⏭</button>';
-    h = '<div class="ph"><b>Block 3 — Office</b><div>Post, paperwork and decisions.' + (ack ? ' <span class="danger">' + ack + ' car(s) at 90+ days need acknowledging.</span>' : '') + (onCd ? ' <span class="muted">Week closes when the timer’s up — <a class="pz-link" onclick="Puzzle.hub()">fancy a puzzle?</a></span>' : '') + '</div></div>' +
-      '<div style="display:flex;gap:6px"><button class="sec" onclick="UI.openOffice()">Desk</button>' + officeSkip + '</div>';
+    var closeBtn = onCd
+      ? '<button class="grn ph-go" disabled>Closes in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
+      : '<button class="grn ph-go" onclick="UI.skipWeek()">Close the week →</button>';
+    h = stepper + '<div class="ph-row">' + closeBtn +
+      '<div class="ph-side"><button class="sec sm" onclick="UI.openOffice()">Desk</button></div></div>' +
+      '<div class="ph-hint">' + (ack ? '<span class="danger">' + ack + ' car' + (ack === 1 ? '' : 's') + ' at 90+ days need acknowledging.</span>' :
+        (onCd ? 'Post and paperwork. <a class="pz-link" onclick="UI.deskMenu()">Game while you wait?</a>' : 'Post, paperwork, then close.')) + '</div>';
   } else if (g.phase === 'report') {
-    h = '<div class="ph"><b>Week closed</b><div>Report filed.</div></div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="sec" onclick="Puzzle.hub()">🎮 Portacabin</button>' +
-      '<button onclick="UI.startNext()">Start week ' + g.week + '</button></div>';
+    h = '<div class="steps"><span class="step done"><i>✓</i>Week closed</span></div>' +
+      '<div class="ph-row"><button class="ph-go" onclick="UI.startNext()">Start week ' + g.week + ' →</button>' +
+      '<div class="ph-side"><button class="sec sm" onclick="UI.deskMenu()">Desk</button></div></div>' +
+      '<div class="ph-hint">Report filed. Have a look before you push on.</div>';
   }
   $('banner').innerHTML = h;
 }

@@ -1,5 +1,34 @@
 # Forecourt Empire — beta feedback log & roadmap
 
+## Status — Beta V2 (2026-07-25d): HUD, navigation and presentation
+
+A pass over the shell rather than the systems, after a review of the live build.
+The HUD and banner were eating roughly 40% of the screen before you saw the
+forecourt, and the week gave you no sense of where you were in it.
+
+**HUD** — rebuilt to two tight rows carrying more, not less:
+`Wk 18 · MAY · Y1` with the month as a chip (gold on a plate-change month),
+stars, and a live stock read (`24 in stock · 10 aged`) on the left; cash plus
+net worth on the right. Cash turns red and the label reads "Overdrawn" below
+zero — the old build showed a £600k overdraft in the same gold as a healthy
+balance. The cash counter also settles quickly now instead of crawling and
+sitting in its flash colour for seconds after a batch buy.
+
+**Navigation** — the phase banner is now a three-step stepper (Auction →
+Showroom → Office) with ticks behind you and the current block lit, one
+dominant primary action, and secondary buttons demoted to a side stack. About
+40% shorter than the block it replaced, and the week finally reads as a
+sequence. Tab icons are stroked SVG rather than emoji, so they render
+identically everywhere and carry the active-tab glow.
+
+**Scene** — a proper light direction: warm key from the upper left, cool fill
+from the opposite corner, a gentle overlay bloom and a deeper vignette, so the
+diorama has form instead of sitting flat. Discount markers were starbursts that
+turned a forecourt of aged stock into a firework display; they are now small
+flat price tags that read as labels.
+
+---
+
 ## Status — build pass of 2026-07-25c (performance variants & the real-time clock)
 
 ### Performance variants (from week 10)
