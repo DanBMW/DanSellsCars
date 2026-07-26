@@ -795,3 +795,31 @@ input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow
   background: rgba(255,182,61,.1); border: 1px solid rgba(255,182,61,.3); color: #ffe0a8;
 }
 b.teal { color: var(--teal); }
+
+/* ---------- stock screen: pricing at a glance ---------- */
+.stock-row { cursor: pointer; }
+.sr-screen { font-family: 'SF Mono','Courier New',monospace; font-weight: 800; color: var(--gold); }
+.sr-figs {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 9px 0 7px;
+}
+.sr-figs span { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sr-figs i {
+  font-style: normal; font-size: .52rem; letter-spacing: .6px; text-transform: uppercase;
+  color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sr-figs b { font-size: .78rem; font-family: 'SF Mono','Courier New',monospace; }
+/* how far the screen price sits from market */
+.sr-bar {
+  position: relative; height: 4px; border-radius: 3px; background: rgba(255,255,255,.07);
+  overflow: hidden; margin-bottom: 7px;
+}
+.sr-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+.sr-bar i.under { background: linear-gradient(90deg, var(--green), #23b06a); }
+.sr-bar i.at    { background: linear-gradient(90deg, var(--teal), #1fb5a3); }
+.sr-bar i.over  { background: linear-gradient(90deg, var(--amber), #e2802a); }
+.sr-tag { font-size: .62rem; font-weight: 800; letter-spacing: .3px; }
+.sr-tag.under { color: var(--green); }
+.sr-tag.at { color: var(--teal); }
+.sr-tag.over { color: var(--amber); }
+.sr-price { display: flex; gap: 5px; margin-top: 9px; }
+.sr-price button { flex: 1; padding: 7px 4px; font-size: .68rem; border-radius: 9px; }

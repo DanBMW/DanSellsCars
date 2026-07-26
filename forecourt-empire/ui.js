@@ -140,15 +140,17 @@ function buildTutSteps() {
     { sel: '#hudStars', text: 'Your <b>star rating</b>. Reviews and footfall follow it — protect it.', pos: 'below' },
     { sel: '#banner', text: 'Each week runs in three blocks: <b>Auction → Showroom → Office</b>. This banner always tells you what’s next.', pos: 'below' },
     { sel: '#tab-site', text: 'Your <b>forecourt</b>. Tap a car for its details, or an empty pitch to place stock.', pos: 'above' },
-    { sel: '#tab-email', text: '<b>Email</b> — the daily auction list, complaints and requests all land here.', pos: 'above' },
+    { sel: '#tab-computer', text: 'Your <b>computer</b> — every app you run the business from: email, banking, property, recruitment, the auction house, factory orders and a game for quiet moments.', pos: 'above' },
     { sel: '#tab-stock', text: '<b>Stock</b> — every car you own, sortable by days in stock or hold cost.', pos: 'above' },
     { sel: '#tab-staff', text: '<b>Staff</b> — hire and train your sales execs. You can hire from day one.', pos: 'above' },
     { sel: '#tab-reports', text: '<b>Reports</b> — weekly P&amp;L, reviews and the share card.', pos: 'above' },
-    { sel: '.desk-btn', text: 'Your <b>desk</b>: a game while the team prospect, your save, skip a week, or replay this tour.', pos: 'above' },
     { sel: null, text: 'That’s the tour. The one number that kills dealerships is <b>days in stock</b> — keep the average under 45. Now go buy some cars.', pos: 'center', last: true }
   ];
 }
 UI.startTutorial = function (firstRun) {
+  // replaying from Settings while the tour is already up would stack overlays
+  var open = document.getElementById('tutOverlay');
+  if (open) open.remove();
   if (curTab !== 'site') UI.tab('site');
   tutSteps = buildTutSteps();
   tutStep = 0;
@@ -476,26 +478,99 @@ function renderStock() {
   list.sort(function (a, b) {
     if (stockSort === 'days') return FE.daysIn(b) - FE.daysIn(a);
     if (stockSort === 'hold') return b.holdCost - a.holdCost;
+    if (stockSort === 'margin') return priceGap(a) - priceGap(b);   // worst-priced first
     return FE.carCost(b) - FE.carCost(a);
   });
   var h = '<div class="btnrow" style="margin-top:10px">' +
-    '<button class="' + (stockSort === 'days' ? '' : 'sec') + '" onclick="UI.setStockSort(\'days\')">By days</button>' +
-    '<button class="' + (stockSort === 'hold' ? '' : 'sec') + '" onclick="UI.setStockSort(\'hold\')">By hold cost</button>' +
-    '<button class="' + (stockSort === 'cost' ? '' : 'sec') + '" onclick="UI.setStockSort(\'cost\')">By cost</button></div>';
+    '<button class="' + (stockSort === 'days' ? '' : 'sec') + '" onclick="UI.setStockSort(\'days\')">Days</button>' +
+    '<button class="' + (stockSort === 'margin' ? '' : 'sec') + '" onclick="UI.setStockSort(\'margin\')">Pricing</button>' +
+    '<button class="' + (stockSort === 'hold' ? '' : 'sec') + '" onclick="UI.setStockSort(\'hold\')">Hold cost</button>' +
+    '<button class="' + (stockSort === 'cost' ? '' : 'sec') + '" onclick="UI.setStockSort(\'cost\')">Cost</button></div>';
   if (!list.length) h += '<div class="card kv">Nothing on the pitch. The auction email is waiting.</div>';
   list.forEach(function (c) {
     var d = FE.daysIn(c);
-    var flag = c.status === 'sold' ? '<span class="good">SOLD — awaiting collection</span>' :
+    var cost = FE.carCost(c);
+    var gross = c.screen - cost;                 // what the screen price would make
+    var gap = priceGap(c);                       // screen vs market, as a %
+    var sold = c.status === 'sold';
+    var flag = sold ? '<span class="good">SOLD — awaiting collection</span>' :
       d >= 90 ? '<span class="danger">' + d + ' days' + (c.ack90 ? '' : ' — needs decision') + '</span>' :
       d >= 60 ? '<span class="warn">' + d + ' days — getting dusty</span>' : d + ' days';
-    h += '<div class="card" onclick="UI.stockCard(' + c.id + ')">' +
-      '<div class="row"><b>' + esc(FE.carName(c)) + '</b><b>' + M(c.screen) + '</b></div>' +
-      '<div class="kv">' + esc(FE.carDesc(c)) + '</div>' +
-      '<div class="row kv"><span>' + flag + '</span><span>Hold cost so far <b>' + M(Math.round(c.holdCost)) + '</b></span></div>' +
+    var pcls = gap > 4 ? 'over' : gap < -4 ? 'under' : 'at';
+    var plabel = gap > 4 ? '+' + gap.toFixed(0) + '% over market' :
+                 gap < -4 ? gap.toFixed(0) + '% under market' : 'at market';
+    h += '<div class="card stock-row">' +
+      '<div class="row" onclick="UI.stockCard(' + c.id + ')"><b>' + esc(FE.carName(c)) + '</b>' +
+        '<span class="sr-screen">' + M(c.screen) + '</span></div>' +
+      '<div class="kv" onclick="UI.stockCard(' + c.id + ')">' + esc(FE.carDesc(c)) + '</div>' +
+      '<div class="sr-figs" onclick="UI.stockCard(' + c.id + ')">' +
+        '<span><i>Cost in</i><b>' + M(cost) + '</b></span>' +
+        '<span><i>Market</i><b>' + M(c.retail) + '</b></span>' +
+        '<span><i>Screen</i><b>' + M(c.screen) + '</b></span>' +
+        '<span><i>Gross at screen</i><b class="' + (gross > 800 ? 'good' : gross > 0 ? '' : 'danger') + '">' + M(gross) + '</b></span>' +
+      '</div>' +
+      '<div class="sr-bar" onclick="UI.stockCard(' + c.id + ')" title="screen against market">' +
+        '<i class="' + pcls + '" style="width:' + Math.min(100, Math.abs(gap) * 4) + '%"></i></div>' +
+      '<div class="row kv"><span class="sr-tag ' + pcls + '">' + plabel + '</span>' +
+        '<span>' + flag + ' · hold <b>' + M(Math.round(c.holdCost)) + '</b></span></div>' +
+      (sold ? '' :
+        '<div class="sr-price">' +
+          '<button class="sec sm" onclick="UI.quickPrice(' + c.id + ',-5)">−5%</button>' +
+          '<button class="sec sm" onclick="UI.quickPrice(' + c.id + ',0)">Match market</button>' +
+          '<button class="sec sm" onclick="UI.quickPrice(' + c.id + ',5)">+5%</button>' +
+          '<button class="sm" onclick="UI.repriceUI(' + c.id + ')">Set…</button>' +
+        '</div>') +
       '</div>';
   });
   $('content').innerHTML = h;
 }
+// screen price against market, as a percentage — the number that decides how fast it moves
+function priceGap(c) {
+  if (!c.retail) return 0;
+  return (c.screen / c.retail - 1) * 100;
+}
+/* One tap to reprice, but never silently: every route lands on the same
+   confirmation showing the old price, the new one and what it does to the
+   gross, because a stray tap on a stock list should not reprice a car. */
+UI.quickPrice = function (id, pctVsMarket) {
+  var c = null;
+  G().stock.forEach(function (x) { if (x.id === id) c = x; });
+  if (!c) return;
+  var target = Math.round(c.retail * (1 + pctVsMarket / 100) / 25) * 25;
+  UI.confirmPrice(id, target);
+};
+UI.confirmPrice = function (id, target) {
+  var c = null;
+  G().stock.forEach(function (x) { if (x.id === id) c = x; });
+  if (!c) return;
+  target = Math.max(0, Math.round(target));
+  if (target === c.screen) { toast('That is already the screen price.'); return; }
+  var cost = FE.carCost(c);
+  var gross = target - cost, wasGross = c.screen - cost;
+  var gap = c.retail ? (target / c.retail - 1) * 100 : 0;
+  var dir = target > c.screen ? 'up' : 'down';
+  UI.modal('<div class="danger-ask"><div class="danger-ask-badge">🏷️</div>' +
+    '<h3>Price the ' + esc(FE.carName(c)) + ' at ' + M(target) + '?</h3>' +
+    '<div class="card">' +
+    '<div class="row kv"><span>Screen now</span><b>' + M(c.screen) + '</b></div>' +
+    '<div class="row kv"><span>New screen</span><b class="' + (dir === 'up' ? 'good' : 'warn') + '">' + M(target) + '</b></div>' +
+    '<div class="row kv"><span>Against market</span><b>' + (gap >= 0 ? '+' : '') + gap.toFixed(1) + '%</b></div>' +
+    '<div class="row kv"><span>Gross at that price</span><b class="' + (gross > 0 ? 'good' : 'danger') + '">' + M(gross) +
+      ' <span class="muted small">(was ' + M(wasGross) + ')</span></b></div>' +
+    '</div>' +
+    (gross < 0 ? '<p class="kv danger small">That is below what the car cost you — you would be selling at a loss.</p>' : '') +
+    (gap > 12 ? '<p class="kv warn small">Well over market. Expect it to sit.</p>' : '') +
+    '<div class="btnrow" style="flex-direction:column">' +
+    '<button class="grn" onclick="UI.closeModal()">No — leave it at ' + M(c.screen) + '</button>' +
+    '<button class="amber" onclick="UI.priceGo(' + id + ',' + target + ')">Yes, price it at ' + M(target) + '</button>' +
+    '</div></div>', { centre: true, sticky: true });
+};
+UI.priceGo = function (id, target) {
+  FE.reprice(id, target);
+  UI.closeModal(); renderAll();
+  Juice.sound('tap');
+  toast('Repriced to ' + M(target) + '.');
+};
 UI.stockCard = function (id) {
   var g = G(), c = null;
   g.stock.forEach(function (x) { if (x.id === id) c = x; });
@@ -527,14 +602,21 @@ UI.stockCard = function (id) {
 UI.repriceUI = function (id) {
   var c = null;
   G().stock.forEach(function (x) { if (x.id === id) c = x; });
+  var cost = FE.carCost(c);
   UI.modal('<h3>Reprice — ' + esc(FE.carName(c)) + '</h3>' +
-    '<p class="kv">Screen ' + M(c.screen) + ' · market ' + M(c.retail) + '. Price under market and it moves faster; over and it sits.</p>' +
-    '<input type="number" id="repriceVal" value="' + c.screen + '" step="25">' +
-    '<div class="btnrow"><button onclick="UI.repriceGo(' + id + ')">Set price</button><button class="ghost" onclick="UI.stockCard(' + id + ')">Back</button></div>');
+    '<div class="card"><div class="row kv"><span>Cost in</span><b>' + M(cost) + '</b></div>' +
+    '<div class="row kv"><span>Market value</span><b>' + M(c.retail) + '</b></div>' +
+    '<div class="row kv"><span>Screen now</span><b>' + M(c.screen) + '</b></div>' +
+    '<div class="row kv"><span>Days in stock</span><b>' + FE.daysIn(c) + '</b></div></div>' +
+    '<p class="kv muted small">Under market it moves faster; over and it sits. Nothing changes until you confirm.</p>' +
+    '<input type="number" id="repriceVal" class="txt" value="' + c.screen + '" step="25">' +
+    '<div class="btnrow"><button onclick="UI.repriceGo(' + id + ')">Review price…</button>' +
+    '<button class="ghost" onclick="UI.stockCard(' + id + ')">Back</button></div>');
 };
 UI.repriceGo = function (id) {
-  FE.reprice(id, parseInt($('repriceVal').value, 10) || 0);
-  UI.closeModal(); renderAll();
+  var v = parseInt($('repriceVal').value, 10);
+  if (!v || v < 0) { toast('Put a price in first.'); return; }
+  UI.confirmPrice(id, v);
 };
 UI.startMove = function (id) {
   G().stock.forEach(function (x) { if (x.id === id) moveModeCar = x; });
