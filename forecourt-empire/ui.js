@@ -347,8 +347,11 @@ UI.tab = function (t) {
   if (curTab === 'site' && t !== 'site' && window.Scene) Scene.unmount();
   if (curTab === 'email' && t !== 'email') { mailSelectMode = false; mailSelected = {}; }
   curTab = t; moveModeCar = null;
-  ['site', 'email', 'stock', 'staff', 'reports'].forEach(function (k) {
-    $('tab-' + k).classList.toggle('on', k === t);
+  // email is reached through the computer, so it lights that button
+  var TABBTN = { site: 'tab-site', email: 'tab-computer', stock: 'tab-stock', staff: 'tab-staff', reports: 'tab-reports' };
+  Object.keys(TABBTN).forEach(function (k) {
+    var b = $(TABBTN[k]);
+    if (b) b.classList.toggle('on', k === t);
   });
   renderTab();
 };
@@ -1671,6 +1674,153 @@ UI.confirmRestart = function () {
 };
 
 /* ---------- save & profile ---------- */
+
+/* ---------- the computer: a desktop of apps ----------
+   Everything that isn't the forecourt itself lives behind one icon, laid out
+   like a phone home screen. Each app is a thin wrapper over machinery that
+   already exists, so there is one place to add to rather than a growing pile
+   of floating buttons. */
+UI.computer = function () {
+  var g = G(); if (!g) return;
+  var unread = FE.unreadCount();
+  var needs = g.emails.filter(function (e) {
+    return !e.done && ['comeback','holiday','payreview','poach','alloc','prereg'].indexOf(e.type) >= 0;
+  }).length;
+  var lots = g.phase === 'auction' ? g.lots.length : 0;
+  var hires = (g.candidates || []).length;
+  var canOrder = !!(g.franchise && g.franchise.live !== false);
+  var drawn = FE.financeEnabled() ? FE.financeDrawn() : 0;
+
+  function app(id, label, sub, badge, colour, svg, on, locked) {
+    return '<button class="capp' + (locked ? ' locked' : '') + '"' +
+      (locked ? '' : ' onclick="' + on + '"') + '>' +
+      '<span class="capp-ic" style="--ac:' + colour + '">' + svg +
+      (badge ? '<i class="capp-badge">' + badge + '</i>' : '') + '</span>' +
+      '<b>' + label + '</b><small>' + sub + '</small></button>';
+  }
+  var I = UI.appIcons;
+  var h = '<div class="desktop"><div class="desk-top"><h3>💻 Office computer</h3>' +
+    '<span class="desk-clock">Wk ' + g.week + ' · ' + FE.SEASON[(g.week - 1) % 52].mo + '</span></div>' +
+    '<div class="capps">' +
+    app('mail','Email','Inbox' + (needs ? ' · action needed' : ''), unread || '', '#3d8bff', I.mail,
+        "UI.closeModal();UI.tab('email')") +
+    app('auction','Auction House', g.phase === 'auction' ? "Today's list" : 'Closed today', lots || '', '#ffb63d', I.gavel,
+        "UI.closeModal();UI.openAuction()", g.phase !== 'auction') +
+    app('bank','Banking','Cash, facility, floorplan','', '#2fd6c0', I.bank, "UI.bankApp()") +
+    app('property','Property','Site, land &amp; departments','', '#9b6cff', I.house, "UI.propertyApp()") +
+    app('hire','Recruitment', hires ? hires + ' on the books' : 'Agency', '', '#35d07f', I.badge,
+        "UI.closeModal();UI.tab('staff')") +
+    app('factory','Factory Orders', canOrder ? 'Order new stock' : 'Franchise required', '', '#ff5d6c', I.factory,
+        canOrder ? "UI.closeModal();UI.orderWindow()" : "UI.closeModal();UI.openOffice()") +
+    app('games','Games','A play while they prospect','', '#5f6dff', I.game, "Puzzle.hub()") +
+    app('settings','Settings','Sound, save, help','', '#97a3c4', I.cog, "UI.settingsApp()") +
+    '</div>' +
+    (drawn > 0 ? '<div class="desk-note warn">Stocking finance drawn: ' + M(drawn) + ' at ' + (Math.round(FE.financeApr()*1000)/10) + '% APR.</div>' : '') +
+    '</div>';
+  UI.modal(h);
+};
+
+// what the cars on the pitch cost you — the other half of net worth
+function stockValue() {
+  var t = 0;
+  G().stock.forEach(function (c) { if (c.status === 'stock') t += FE.carCost(c); });
+  return Math.round(t);
+}
+/* Banking — the money view, pulled out of the old office screen */
+UI.bankApp = function () {
+  var g = G();
+  var h = '<h3>🏦 Banking</h3>' +
+    '<div class="card"><div class="row kv"><span>Cash</span><b class="' + (g.cash < 0 ? 'danger' : 'good') + '">' + M(g.cash) + '</b></div>' +
+    '<div class="row kv"><span>Stock at cost</span><b>' + M(stockValue()) + '</b></div>' +
+    '<div class="row kv"><span>Net worth</span><b class="teal">' + M(FE.netWorth()) + '</b></div>' +
+    '<div class="row kv"><span>Spend power</span><b>' + M(FE.spendPower()) + '</b></div></div>';
+  if (!FE.unlocked('finance')) {
+    h += lockedCard('Stocking finance', 'A credit facility to buy stock beyond your cash. The bank wants to see you trade a few weeks first.', FE.unlockWeek('finance'));
+  } else if (FE.financeEnabled()) {
+    var lim = FE.financeLimit(), dr = FE.financeDrawn(), head = FE.financeHeadroom();
+    var pct = lim ? Math.min(100, Math.round(dr / lim * 100)) : 0;
+    h += '<div class="card"><b>Stocking finance</b>' +
+      '<div class="row kv"><span>Credit limit</span><b>' + M(lim) + '</b></div>' +
+      '<div class="row kv"><span>Drawn now</span><b class="' + (dr > 0 ? 'warn' : '') + '">' + M(dr) + '</b></div>' +
+      '<div class="row kv"><span>Headroom</span><b>' + M(head) + '</b></div>' +
+      '<div class="row kv"><span>Rate</span><b>' + (Math.round(FE.financeApr() * 1000) / 10) + '% APR</b></div>' +
+      '<div class="progressbar"><i class="' + (pct > 80 ? 'warn' : '') + '" style="width:' + pct + '%"></i></div>' +
+      '<div class="kv muted small">Interest on the drawn balance only, weekly, on top of floorplan.</div>' +
+      (dr <= 0 ? '<div class="btnrow"><button class="sec" onclick="UI.financeToggle(false)">Close facility</button></div>' : '') +
+      '</div>';
+  } else {
+    h += '<div class="card"><b>Stocking finance</b><div class="kv">Buy stock beyond your cash — up to ' + M(FE.STOCK_FINANCE.maxLimit) + ', scaled to net worth. <span class="warn">Leverage cuts both ways.</span></div>' +
+      '<div class="btnrow"><button onclick="UI.financeToggle(true)">Open a facility</button></div></div>';
+  }
+  h += '<button class="ghost" onclick="UI.computer()">← Desktop</button>';
+  UI.modal(h);
+};
+
+/* Property — the site, the land and what's built on it */
+UI.propertyApp = function () {
+  var g = G(), s = FE.SITES[g.site];
+  var nw = FE.netWorth(), pct = Math.min(100, nw / FE.SITE2_TARGET * 100).toFixed(1);
+  var h = '<h3>🏢 Property</h3>' +
+    '<div class="card"><b>' + esc(s.name) + '</b>' +
+    '<div class="row kv"><span>Pitches</span><b>' + (s.ext + s.int + g.extraSlots) + '</b></div>' +
+    '<div class="row kv"><span>Free now</span><b>' + FE.freePitches() + '</b></div>' +
+    '<div class="row kv"><span>Utilities</span><b>' + M(s.util + g.extraUtil) + '/wk</b></div></div>';
+  if (!FE.unlocked('depts')) h += lockedCard('Departments', 'Service, smart repair and valeting.', FE.unlockWeek('depts'));
+  else FE.DEPARTMENTS.forEach(function (d) {
+    if (g.dept[d.id]) {
+      h += g.week >= g.dept[d.id]
+        ? '<div class="card kv"><b>' + d.name + '</b> — live. ' + M(d.weekly) + '/wk coming in.</div>'
+        : '<div class="card"><b>' + d.name + '</b>' + buildProgress(g.dept[d.id] - d.buildWks, g.dept[d.id], g.week, 'Construction') + '</div>';
+    } else {
+      h += '<div class="card"><b>' + d.name + '</b> <span class="tag">' + M(d.cost) + '</span><div class="kv">' + d.blurb + '</div>' +
+        '<div class="btnrow"><button class="sec" onclick="UI.buildDeptUI(\'' + d.id + '\')">Build</button></div></div>';
+    }
+  });
+  if (!FE.unlocked('expansion')) h += lockedCard('Land expansion', 'Buy the ground next door.', FE.unlockWeek('expansion'));
+  else FE.EXPANSIONS.forEach(function (x) {
+    if (g.expansionsDone.indexOf(x.id) >= 0) return;
+    var pend = null; g.pendingBuilds.forEach(function (b) { if (b.id === x.id) pend = b; });
+    h += pend
+      ? '<div class="card"><b>' + x.name + '</b>' + buildProgress(pend.startedWk, pend.dueWk, g.week, 'Groundworks') + '</div>'
+      : '<div class="card"><b>' + x.name + '</b> <span class="tag">' + M(x.cost) + '</span><div class="kv">+' + x.slots + ' pitches, utilities +' + M(x.util) + '/wk</div>' +
+        '<div class="btnrow"><button class="sec" onclick="UI.expandUI(\'' + x.id + '\')">Buy the land</button></div></div>';
+  });
+  h += '<div class="card"><b>Site 2 — locked</b> · unlocks at ' + M(FE.SITE2_TARGET) + ' net worth' +
+    '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+    '<div class="small">' + M(nw) + ' / ' + M(FE.SITE2_TARGET) + '</div>' +
+    '<div class="small muted">' + site2Hint() + '</div></div>' +
+    '<button class="ghost" onclick="UI.computer()">← Desktop</button>';
+  UI.modal(h);
+};
+
+/* Settings — the old manager's drawer */
+UI.settingsApp = function () {
+  UI.modal('<h3>⚙️ Settings</h3>' +
+    '<div class="btnrow" style="flex-direction:column">' +
+    (window.__installPrompt ? '<button class="grn" onclick="UI.installApp()">📲 Install to home screen</button>' : '') +
+    '<button class="sec" onclick="UI.soundToggle()">' + (Juice.muted() ? '🔇 Sound off' : '🔊 Sound on') + '</button>' +
+    '<button class="sec" onclick="UI.saveMenu()">💾 Save &amp; profile</button>' +
+    '<button class="sec" onclick="UI.closeModal();UI.share()">📤 Share my progress</button>' +
+    '<button class="sec" onclick="UI.skipWeekUI()">⏭ Skip this week (staff run it)</button>' +
+    '<button class="sec" onclick="UI.helpUI()">❓ How this works</button>' +
+    '<button class="sec" onclick="UI.closeModal();UI.startTutorial(false)">🎓 Replay tutorial</button>' +
+    '<button class="red" onclick="UI.confirmRestart()">Abandon career</button></div>' +
+    '<p class="kv muted small" style="margin-top:10px">Beta build. Saves locally, automatically. The clock runs a game week every 12 real hours.</p>' +
+    '<button class="ghost" onclick="UI.computer()">← Desktop</button>');
+};
+UI.deskMenu = function () { UI.computer(); };   // older call sites land on the desktop
+
+UI.appIcons = {
+  mail:   '<svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.6"/><path d="M3.4 6.6 12 13l8.6-6.4"/></svg>',
+  gavel:  '<svg viewBox="0 0 24 24"><path d="M3 21h9M6.5 12.5l5-5M4.5 10.5 9 6M13 3l8 8M15.5 5.5 11 10M17 11l-5 5"/></svg>',
+  bank:   '<svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5M4.5 10v8M9.5 10v8M14.5 10v8M19.5 10v8M2.5 20.5h19"/></svg>',
+  house:  '<svg viewBox="0 0 24 24"><path d="M3.5 20.5h17M5 20.5V10l7-5.5 7 5.5v10.5M10 20.5v-5h4v5"/></svg>',
+  badge:  '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20.5a7 7 0 0 1 14 0"/><rect x="3" y="2.5" width="18" height="19" rx="3"/></svg>',
+  factory:'<svg viewBox="0 0 24 24"><path d="M2.5 20.5h19V9l-6 4V9l-6 4V4.5h-7z"/><path d="M6 16.5h2M11 16.5h2M16 16.5h2"/></svg>',
+  game:   '<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10.5" rx="4.5"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="16" cy="11.5" r="1.1"/><circle cx="18.5" cy="14" r="1.1"/></svg>',
+  cog:    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+};
+
 UI.saveMenu = function () {
   var p = FE.profile(), info = FE.saveInfo(), g = G();
   var when = info && info.savedAt ? new Date(info.savedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '—';

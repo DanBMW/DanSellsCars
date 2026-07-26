@@ -48,31 +48,11 @@
         <div id="hudNet"></div>
       </div>
     </div>
-    <button class="desk-btn" onclick="UI.deskMenu()" aria-label="Your desk — games, saves and settings">
-      <svg viewBox="0 0 64 56" aria-hidden="true">
-        <!-- isometric desk, lit from the upper left. Painted back-to-front:
-             the desk first, then everything standing on it. -->
-        <polygon class="d-leg"    points="7,37 11,39 11,52 7,50"/>
-        <polygon class="d-leg"    points="53,39 57,37 57,50 53,52"/>
-        <polygon class="d-top"    points="32,17 58,30 32,43 6,30"/>
-        <polygon class="d-left"   points="6,30 32,43 32,50 6,37"/>
-        <polygon class="d-right"  points="32,43 58,30 58,37 32,50"/>
-        <polygon class="d-draw"   points="37,41 54,32.5 54,36 37,44.5"/>
-        <!-- monitor, sat on the back of the desk -->
-        <polygon class="d-base"   points="28,25 33,27.5 38,25 33,22.5"/>
-        <polygon class="d-stand"  points="31.5,19 34.5,20.5 34.5,25 31.5,23.5"/>
-        <polygon class="d-screen" points="26,16 40,23 40,9 26,2"/>
-        <polygon class="d-glass"  points="28,16 38,21 38,11 28,6"/>
-        <!-- mug -->
-        <polygon class="d-mug"    points="16,28 21,30.5 21,34 16,31.5"/>
-        <polygon class="d-mugtop" points="16,28 18.5,29.25 21,28 18.5,26.75"/>
-      </svg>
-    </button>
     <div id="banner"></div>
     <div id="content"></div>
     <div id="tabs">
       <button id="tab-site" class="on" onclick="UI.tab('site')"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 19h18M5 19V9l7-5 7 5v10M9.5 19v-4.5h5V19"/><circle cx="12" cy="10.5" r="1.6"/></svg></span>Site</button>
-      <button id="tab-email" onclick="UI.tab('email')" style="position:relative"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.8 7.2 12 13l8.2-5.8"/></svg></span>Email<span class="badge" id="emailBadge" style="display:none">0</span></button>
+      <button id="tab-computer" onclick="UI.computer()" style="position:relative"><span class="ico"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M9.5 20.5h5M12 17v3.5M7 20.5h10"/></svg></span>Computer<span class="badge" id="emailBadge" style="display:none">0</span></button>
       <button id="tab-stock" onclick="UI.tab('stock')"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4.5 16.5v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-2M22 16.5v2a1 1 0 0 1-1 1h-.5a1 1 0 0 1-1-1v-2"/><path d="M2.5 16.5h19v-4l-1.6-.6-2-4.4a2 2 0 0 0-1.8-1.2H7.9a2 2 0 0 0-1.8 1.2l-2 4.4-1.6.6z"/><circle cx="7" cy="14" r="1.1"/><circle cx="17" cy="14" r="1.1"/></svg></span>Stock</button>
       <button id="tab-staff" onclick="UI.tab('staff')"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg></span>Staff</button>
       <button id="tab-reports" onclick="UI.tab('reports')"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 20.5h18"/><rect x="4.5" y="12" width="3.6" height="7" rx="1"/><rect x="10.2" y="7.5" width="3.6" height="11.5" rx="1"/><rect x="15.9" y="4" width="3.6" height="15" rx="1"/></svg></span>Reports</button>
