@@ -140,47 +140,47 @@
     .ix3-stat-lbl{font-size:.72rem;color:rgba(255,255,255,.45);margin-top:4px;letter-spacing:.04em;text-transform:uppercase;}
 
     /* ── MAIN CONTENT ── */
-    .ix3-content{background:#fff;padding:64px 0 0;}
+    .ix3-content{background:rgba(236,233,225,.02);padding:64px 0 0;}
     .ix3-inner{max-width:860px;margin:0 auto;padding:0 24px;}
 
-    .ix3-headline{font-family:var(--display);font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;color:#141a22;letter-spacing:-.01em;line-height:1.1;margin:0 0 10px;}
-    .ix3-sub{font-size:.92rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#5f6b7c;margin:0 0 24px;}
-    .ix3-intro{font-size:1rem;color:#3c4a5e;line-height:1.8;margin:0 0 28px;max-width:68ch;}
+    .ix3-headline{font-family:var(--display);font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;color:var(--text);letter-spacing:-.01em;line-height:1.1;margin:0 0 10px;}
+    .ix3-sub{font-size:.92rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 24px;}
+    .ix3-intro{font-size:1rem;color:var(--body);line-height:1.8;margin:0 0 28px;max-width:68ch;}
 
     /* ── STOCK ALERT ── */
-    .ix3-stock-alert{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(21,89,207,.07),rgba(85,145,255,.05));border:1px solid rgba(21,89,207,.2);border-radius:14px;padding:16px 20px;margin:0 0 36px;}
-    .ix3-stock-alert svg{flex-shrink:0;color:#1559cf;}
-    .ix3-stock-alert-text{font-size:.88rem;font-weight:600;color:#141a22;line-height:1.5;}
-    .ix3-stock-alert-text span{color:#1559cf;}
+    .ix3-stock-alert{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(91,138,201,.07),rgba(85,145,255,.05));border:1px solid rgba(91,138,201,.2);border-radius:14px;padding:16px 20px;margin:0 0 36px;}
+    .ix3-stock-alert svg{flex-shrink:0;color:var(--blue);}
+    .ix3-stock-alert-text{font-size:.88rem;font-weight:600;color:var(--text);line-height:1.5;}
+    .ix3-stock-alert-text span{color:var(--blue);}
 
     /* ── SPEC GRID ── */
     .ix3-spec-section{margin-bottom:56px;}
-    .ix3-section-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1559cf;margin-bottom:8px;}
-    .ix3-section-title{font-size:1.35rem;font-weight:800;color:#141a22;margin:0 0 24px;}
-    .ix3-spec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(16,21,29,.08);border-radius:16px;overflow:hidden;}
+    .ix3-section-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;}
+    .ix3-section-title{font-size:1.35rem;font-weight:800;color:var(--text);margin:0 0 24px;}
+    .ix3-spec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(236,233,225,.08);border-radius:16px;overflow:hidden;}
     @media(min-width:560px){.ix3-spec-grid{grid-template-columns:repeat(3,1fr);}}
-    .ix3-spec-cell{background:#fff;padding:18px 20px;}
-    .ix3-spec-cell-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8a94a0;margin-bottom:5px;}
-    .ix3-spec-cell-value{font-size:1rem;font-weight:700;color:#141a22;line-height:1.2;}
+    .ix3-spec-cell{background:rgba(236,233,225,.02);padding:18px 20px;}
+    .ix3-spec-cell-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+    .ix3-spec-cell-value{font-size:1rem;font-weight:700;color:var(--text);line-height:1.2;}
 
     /* ── BUSINESS CONTRACT HIRE ── */
     .ix3-bch-section{margin-bottom:56px;}
-    .ix3-bch-intro{font-size:.95rem;color:#3c4a5e;line-height:1.75;margin:0 0 8px;max-width:68ch;}
-    .ix3-bch-note{display:inline-flex;align-items:center;gap:8px;background:rgba(26,122,60,.07);border:1px solid rgba(26,122,60,.2);border-radius:10px;padding:9px 14px;font-size:.82rem;color:#1a7a3c;font-weight:600;margin:0 0 24px;}
+    .ix3-bch-intro{font-size:.95rem;color:var(--body);line-height:1.75;margin:0 0 8px;max-width:68ch;}
+    .ix3-bch-note{display:inline-flex;align-items:center;gap:8px;background:rgba(26,122,60,.07);border:1px solid rgba(26,122,60,.2);border-radius:10px;padding:9px 14px;font-size:.82rem;color:#8fd3a8;font-weight:600;margin:0 0 24px;}
     .ix3-bch-grid{display:grid;grid-template-columns:1fr;gap:14px;}
     @media(min-width:560px){.ix3-bch-grid{grid-template-columns:1fr 1fr;}}
-    .ix3-bch-card{border:1px solid rgba(16,21,29,.12);border-radius:18px;overflow:hidden;}
+    .ix3-bch-card{border:1px solid rgba(236,233,225,.12);border-radius:18px;overflow:hidden;}
     .ix3-bch-card-head{background:#141a22;padding:18px 20px;}
     .ix3-bch-card-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5591ff;margin-bottom:4px;}
     .ix3-bch-card-price{font-family:var(--display);font-size:2rem;font-weight:700;color:#fff;line-height:1;}
     .ix3-bch-card-unit{font-size:.78rem;color:rgba(255,255,255,.5);margin-top:4px;}
-    .ix3-bch-card-body{padding:18px 20px;background:#fff;display:flex;flex-direction:column;gap:9px;}
-    .ix3-bch-row{display:flex;justify-content:space-between;align-items:baseline;font-size:.84rem;padding-bottom:9px;border-bottom:1px solid rgba(16,21,29,.07);}
+    .ix3-bch-card-body{padding:18px 20px;background:rgba(236,233,225,.02);display:flex;flex-direction:column;gap:9px;}
+    .ix3-bch-row{display:flex;justify-content:space-between;align-items:baseline;font-size:.84rem;padding-bottom:9px;border-bottom:1px solid rgba(236,233,225,.07);}
     .ix3-bch-row:last-child{border-bottom:none;padding-bottom:0;}
-    .ix3-bch-row-label{color:#5f6b7c;}
-    .ix3-bch-row-val{font-weight:700;color:#141a22;}
-    .ix3-bch-maintained{display:flex;align-items:center;gap:8px;background:rgba(21,89,207,.05);border:1px solid rgba(21,89,207,.12);border-radius:10px;padding:10px 14px;margin-top:4px;font-size:.8rem;color:#1559cf;font-weight:600;}
-    .ix3-bch-legal{font-size:.72rem;color:#8a94a0;line-height:1.6;margin-top:20px;}
+    .ix3-bch-row-label{color:var(--muted);}
+    .ix3-bch-row-val{font-weight:700;color:var(--text);}
+    .ix3-bch-maintained{display:flex;align-items:center;gap:8px;background:rgba(91,138,201,.05);border:1px solid rgba(91,138,201,.12);border-radius:10px;padding:10px 14px;margin-top:4px;font-size:.8rem;color:var(--blue);font-weight:600;}
+    .ix3-bch-legal{font-size:.72rem;color:var(--muted);line-height:1.6;margin-top:20px;}
 
     /* ── FINANCE SECTION ── */
     .ix3-finance-section{margin-bottom:56px;}
@@ -192,7 +192,7 @@
     .ix3-finance-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
     @media(min-width:560px){.ix3-finance-grid{grid-template-columns:repeat(3,1fr);}}
     .ix3-fig{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;text-align:center;}
-    .ix3-fig.highlight{background:rgba(21,89,207,.35);border-color:rgba(85,145,255,.4);}
+    .ix3-fig.highlight{background:rgba(91,138,201,.35);border-color:rgba(85,145,255,.4);}
     .ix3-fig-val{font-family:var(--display);font-size:1.4rem;font-weight:700;color:#fff;line-height:1;}
     .ix3-fig-lbl{font-size:.68rem;color:rgba(255,255,255,.5);margin-top:4px;letter-spacing:.04em;text-transform:uppercase;}
     .ix3-finance-rows{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
@@ -206,11 +206,11 @@
     .ix3-equipment-section{margin-bottom:56px;}
     .ix3-eq-grid{display:grid;grid-template-columns:1fr;gap:0;}
     @media(min-width:520px){.ix3-eq-grid{grid-template-columns:1fr 1fr;}}
-    .ix3-eq-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid rgba(16,21,29,.07);}
+    .ix3-eq-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid rgba(236,233,225,.07);}
     .ix3-eq-item:last-child{border-bottom:none;}
-    .ix3-eq-tick{width:18px;height:18px;border-radius:50%;background:rgba(21,89,207,.1);border:1px solid rgba(21,89,207,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-    .ix3-eq-tick svg{width:10px;height:10px;color:#1559cf;}
-    .ix3-eq-name{font-size:.88rem;color:#2d3748;line-height:1.45;font-weight:500;}
+    .ix3-eq-tick{width:18px;height:18px;border-radius:50%;background:rgba(91,138,201,.1);border:1px solid rgba(91,138,201,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+    .ix3-eq-tick svg{width:10px;height:10px;color:var(--blue);}
+    .ix3-eq-name{font-size:.88rem;color:var(--text);line-height:1.45;font-weight:500;}
 
     /* ── WHY EV STRIP ── */
     .ix3-ev-band{background:linear-gradient(160deg,#0a1628 0%,#091525 100%);border-radius:20px;padding:40px 32px;margin-bottom:56px;}
@@ -221,10 +221,10 @@
     .ix3-ev-point strong{color:#fff;}
 
     /* ── DAN STRIP ── */
-    .ix3-dan-strip{display:flex;align-items:flex-start;gap:20px;background:var(--bg);border:1px solid rgba(16,21,29,.1);border-radius:18px;padding:24px;margin-bottom:56px;}
+    .ix3-dan-strip{display:flex;align-items:flex-start;gap:20px;background:var(--bg);border:1px solid rgba(236,233,225,.1);border-radius:18px;padding:24px;margin-bottom:56px;}
     .ix3-dan-avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0;}
-    .ix3-dan-body h3{font-size:1rem;font-weight:800;color:#141a22;margin:0 0 4px;}
-    .ix3-dan-body p{font-size:.88rem;color:#5f6b7c;line-height:1.6;margin:0 0 16px;}
+    .ix3-dan-body h3{font-size:1rem;font-weight:800;color:var(--text);margin:0 0 4px;}
+    .ix3-dan-body p{font-size:.88rem;color:var(--muted);line-height:1.6;margin:0 0 16px;}
     .ix3-dan-ctas{display:flex;flex-wrap:wrap;gap:10px;}
 
     /* ── SHOWROOM GALLERY ── */
@@ -240,89 +240,74 @@
     /* ── PHOTOS (spec sheets) ── */
     .ix3-photos{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:56px;}
     @media(min-width:560px){.ix3-photos{grid-template-columns:repeat(3,1fr);}}
-    .ix3-photo{border-radius:12px;overflow:hidden;aspect-ratio:3/4;background:#f0f1f3;}
+    .ix3-photo{border-radius:12px;overflow:hidden;aspect-ratio:3/4;background:rgba(236,233,225,.03);}
     .ix3-photo img{width:100%;height:100%;object-fit:cover;}
 
     /* ── LEGAL ── */
-    .ix3-legal{font-size:.72rem;color:#8a94a0;line-height:1.65;padding:28px 24px 40px;border-top:1px solid rgba(16,21,29,.07);max-width:860px;margin:0 auto;}
+    .ix3-legal{font-size:.72rem;color:var(--muted);line-height:1.65;padding:28px 24px 40px;border-top:1px solid rgba(236,233,225,.07);max-width:860px;margin:0 auto;}
 
     /* ── MODAL ── */
     .offer-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px;}
     .offer-modal-bg.open{display:flex;}
-    .offer-modal{background:#fff;border-radius:22px;padding:28px 24px;width:100%;max-width:420px;position:relative;max-height:90svh;overflow-y:auto;}
-    .offer-modal h3{font-size:1.05rem;font-weight:800;color:#141a22;margin:0 0 4px;}
-    .offer-modal .om-sub{font-size:.82rem;color:#5f6b7c;margin:0 0 20px;line-height:1.5;}
+    .offer-modal{background:rgba(236,233,225,.02);border-radius:22px;padding:28px 24px;width:100%;max-width:420px;position:relative;max-height:90svh;overflow-y:auto;}
+    .offer-modal h3{font-size:1.05rem;font-weight:800;color:var(--text);margin:0 0 4px;}
+    .offer-modal .om-sub{font-size:.82rem;color:var(--muted);margin:0 0 20px;line-height:1.5;}
     .offer-modal .om-field{margin-bottom:14px;}
-    .offer-modal .om-field label{display:block;font-size:.78rem;font-weight:600;color:#44536a;margin-bottom:5px;}
-    .offer-modal .om-field input,.offer-modal .om-field textarea{width:100%;box-sizing:border-box;padding:11px 14px;border:1px solid rgba(16,21,29,.18);border-radius:10px;font-size:.9rem;font-family:var(--font);color:#141a22;background:#fafbfc;}
-    .offer-modal .om-field input:focus,.offer-modal .om-field textarea:focus{outline:none;border-color:#1559cf;background:#fff;}
+    .offer-modal .om-field label{display:block;font-size:.78rem;font-weight:600;color:var(--body);margin-bottom:5px;}
+    .offer-modal .om-field input,.offer-modal .om-field textarea{width:100%;box-sizing:border-box;padding:11px 14px;border:1px solid rgba(236,233,225,.18);border-radius:10px;font-size:.9rem;font-family:var(--font);color:var(--text);background:rgba(236,233,225,.02);}
+    .offer-modal .om-field input:focus,.offer-modal .om-field textarea:focus{outline:none;border-color:var(--blue);background:rgba(236,233,225,.02);}
     .offer-modal .om-field textarea{resize:vertical;min-height:72px;}
-    .offer-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.2rem;color:#5f6b7c;cursor:pointer;line-height:1;}
-    .offer-modal .om-legal{font-size:.68rem;color:#8a94a0;line-height:1.55;margin:14px 0 0;}
+    .offer-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.2rem;color:var(--muted);cursor:pointer;line-height:1;}
+    .offer-modal .om-legal{font-size:.68rem;color:var(--muted);line-height:1.55;margin:14px 0 0;}
     .om-success{display:none;text-align:center;padding:16px 0 8px;}
-    .om-success p{font-size:.95rem;font-weight:700;color:#1d6b40;margin:0 0 6px;}
-    .om-success span{font-size:.82rem;color:#5f6b7c;}
+    .om-success p{font-size:.95rem;font-weight:700;color:#8fd3a8;margin:0 0 6px;}
+    .om-success span{font-size:.82rem;color:var(--muted);}
   </style>
 <script src="video-lite.js" defer></script>
 <script src="analytics.js" defer></script>
+<link rel="stylesheet" href="premium.css"/>
+<link rel="stylesheet" href="content-premium.css"/>
 </head>
 <body class="has-video-hero">
 
-<!-- chrome:header {"wa":"Hi%20Dan%2C%20I%20saw%20the%20iX3%20page%20-%20I%20know%20it%27s%20sold%20but%20I%27d%20love%20to%20know%20when%20the%20next%20one%20comes%20in"} -->
-<header class="site-header" id="siteHeader">
-  <div class="site-header-inner">
-    <a class="site-logo" href="index.html">DanSells</a>
-    <div class="nav-actions">
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener" aria-label="Dan on Instagram" class="nav-icon-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-      </a>
-      <button type="button" class="nav-icon-btn" aria-label="Email Dan" onclick="openContactModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></button>
-      <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%20iX3%20page%20-%20I%20know%20it%27s%20sold%20but%20I%27d%20love%20to%20know%20when%20the%20next%20one%20comes%20in" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp" class="nav-icon-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      </a>
-      <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false" id="navToggle" onclick="openDrawer()">
-        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <line x1="0" y1="1" x2="22" y2="1"/>
-          <line x1="0" y1="8" x2="22" y2="8"/>
-          <line x1="0" y1="15" x2="22" y2="15"/>
-        </svg>
+<!-- chrome:header2 {"wa":"Hi%20Dan%2C%20I%20saw%20the%20iX3%20page%20-%20I%20know%20it%27s%20sold%20but%20I%27d%20love%20to%20know%20when%20the%20next%20one%20comes%20in"} -->
+<header class="ph-header" id="phHeader">
+  <div class="ph-header-inner">
+    <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+    <div class="ph-actions">
+      <a class="ph-contact-link" href="#contact">Talk to Dan</a>
+      <button class="ph-menu-btn" id="phMenuBtn" aria-label="Open menu" aria-expanded="false" onclick="phOpenDrawer()">
+        <span></span><span></span>
       </button>
     </div>
   </div>
 </header>
-<!-- /chrome:header -->
+<!-- /chrome:header2 -->
 
 <!-- NAV DRAWER -->
-<!-- chrome:drawer -->
-<div class="nav-drawer" id="navDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
-  <div class="nav-drawer-inner">
-    <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Close menu">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <line x1="18" y1="6" x2="6" y2="18"/>
-        <line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
-    <p class="drawer-brand">DanSells</p>
-    <nav class="drawer-nav" aria-label="Main navigation">
-      <a href="step1.html">Find my BMW</a>
-      <a href="EV.html">Electric BMWs</a>
-      <a href="current-opportunities.html">Current Opportunities</a>
-      <a href="sorted-for-a-year.html">1 &amp; 2 Series Offer</a>
-      <a href="offers.html">Available Now</a>
-      <a href="appraisal.html">Value my car</a>
-      <a href="service.html">Car in for service?</a>
-      <a href="accessories.html">BMW Accessories</a>
-      <a href="current-opportunities.html#protection">Protect my BMW</a>
-      <a href="refer.html">Refer a friend</a>
-      <a href="guides.html">Guides</a>
-      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment &#x2197;</a>
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram &#x2197;</a>
+<!-- chrome:drawer2 -->
+<div class="ph-drawer" id="phDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <button class="ph-drawer-close" onclick="phCloseDrawer()" aria-label="Close menu">Close</button>
+  <div class="ph-drawer-inner">
+    <nav aria-label="Main navigation">
+      <a href="index.html">Home</a>
     </nav>
-    <a class="drawer-cta" href="step1.html">Find a BMW &rarr;</a>
+    <p class="ph-drawer-label">Four ways in</p>
+    <nav aria-label="Doorways">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric Daily</a>
+      <a href="appraisal.html">Value your car</a>
+      <a href="service.html">In for service</a>
+    </nav>
+    <p class="ph-drawer-label">Practical</p>
+    <nav aria-label="Practical pages">
+      <a href="current-opportunities.html">Current Opportunities</a>
+      <a href="offers.html">Available Now</a>
+      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment <small>opens cal.eu</small></a>
+    </nav>
   </div>
 </div>
-<div class="nav-drawer-overlay" id="navOverlay" onclick="closeDrawer()"></div>
-<!-- /chrome:drawer -->
+<!-- /chrome:drawer2 -->
 
 <main>
 
@@ -753,40 +738,143 @@
 
 </main>
 
-<!-- chrome:footer -->
-<footer class="site-footer">
-  <div class="footer-inner">
-    <div>
-      <a class="site-logo" href="index.html" style="margin-bottom:8px;">DanSells</a>
-      <p style="color:var(--muted);font-size:.85rem;max-width:36ch;margin-top:10px;line-height:1.6;">New BMW buying with Dan and his team at Hedin Ruxley, South East.</p>
-      <p style="color:var(--muted);font-size:.78rem;max-width:36ch;margin-top:6px;line-height:1.6;">Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+<!-- chrome:footer2 -->
+<section class="ph-contact" id="contact">
+  <div class="wrap">
+    <span class="plabel accent">Talk to Dan</span>
+    <h2>One conversation, whenever you are ready.</h2>
+    <p class="measure">No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.</p>
+    <div class="contact-rows">
+      <a class="contact-row" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">
+        <span class="cr-label">WhatsApp</span>
+        <span class="cr-value">Message me directly</span>
+      </a>
+      <button type="button" class="contact-row" onclick="phOpenContact()">
+        <span class="cr-label">Email</span>
+        <span class="cr-value">Send me a message</span>
+      </button>
+      <a class="contact-row" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
+        <span class="cr-label">In person</span>
+        <span class="cr-value">Book time with me at Ruxley</span>
+      </a>
+      <a class="contact-row" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">
+        <span class="cr-label">Instagram</span>
+        <span class="cr-value">@dan_sells_bmw</span>
+      </a>
     </div>
-    <nav aria-label="Footer">
-      <a href="step1.html">Find my BMW</a>
-      <a href="EV.html">Electric BMWs</a>
-      <a href="current-opportunities.html">Current Opportunities</a>
-      <a href="offers.html">Available Now</a>
-      <a href="appraisal.html">Value my car</a>
-      <a href="service.html">Car in for service?</a>
-      <a href="accessories.html">BMW Accessories</a>
-      <a href="refer.html">Refer a friend</a>
-      <a href="guides.html">Guides</a>
-      <a href="bmw-sidcup.html">BMW Sidcup</a>
-      <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
-      <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
-      <a href="privacy.html">Privacy Policy</a>
-    </nav>
   </div>
-  <p class="footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
+</section>
+
+<footer class="ph-footer">
+  <div class="wrap">
+    <div class="ph-footer-grid">
+      <div>
+        <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+        <p class="ph-footer-blurb">BMW buying with Dan Cane and the team at Hedin Ruxley, South East.</p>
+        <p class="ph-footer-blurb">Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+      </div>
+      <div class="ph-footer-col">
+        <h4>Find your way</h4>
+        <a href="step1.html">Find my BMW</a>
+        <a href="EV.html">Electric Daily</a>
+        <a href="appraisal.html">Value your car</a>
+        <a href="service.html">In for service</a>
+        <a href="current-opportunities.html">Current Opportunities</a>
+        <a href="offers.html">Available Now</a>
+      </div>
+      <div class="ph-footer-col">
+        <h4>More</h4>
+        <a href="guides.html">Guides</a>
+        <a href="refer.html">Refer a friend</a>
+        <a href="accessories.html">BMW Accessories</a>
+        <a href="bmw-sidcup.html">BMW Sidcup</a>
+        <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+        <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+        <a href="terms.html">Terms &amp; Conditions</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+    </div>
+    <p class="ph-footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
+  </div>
 </footer>
-<!-- /chrome:footer -->
 
-<a class="wa-float" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20saw%20the%20iX3%20page%20-%20I%20know%20it%27s%20sold%20but%20I%27d%20love%20to%20know%20when%20the%20next%20one%20comes%20in" target="_blank" rel="noopener" aria-label="Chat with Dan on WhatsApp about the iX3">
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-  <span>Chat with Dan</span>
-</a>
+<div class="pmodal-bg" id="phContactModal" onclick="if(event.target===this)phCloseContact()">
+  <div class="pmodal">
+    <button class="pmodal-close" onclick="phCloseContact()" aria-label="Close">Close</button>
+    <div id="phcForm">
+      <h3>Send me a message</h3>
+      <p class="pm-sub">It comes straight to me and I will reply personally, usually the same day.</p>
+      <div class="pfield"><label>Your name</label><input id="phcName" type="text" autocomplete="name"/></div>
+      <div class="pfield"><label>Your email</label><input id="phcEmail" type="email" autocomplete="email"/></div>
+      <div class="pfield"><label>Phone (optional)</label><input id="phcPhone" type="tel" autocomplete="tel"/></div>
+      <div class="pfield"><label>Your message</label><textarea id="phcMsg" rows="4"></textarea></div>
+      <button class="btn-line" onclick="phSubmitContact()" style="width:100%;margin-top:6px">Send to Dan</button>
+      <p class="pm-legal">Your details are used only to reply to this enquiry. See the <a href="privacy.html" style="color:inherit">privacy policy</a>.</p>
+    </div>
+    <div class="pm-success" id="phcOk">
+      <p>Sent - thank you.</p>
+      <span>Your message is with me and I will come back to you personally.</span>
+    </div>
+  </div>
+</div>
 
+<script>
+(function(){
+  var hdr=document.getElementById('phHeader');
+  if(hdr){window.addEventListener('scroll',function(){hdr.classList.toggle('scrolled',window.scrollY>60);},{passive:true});
+    if(window.scrollY>60)hdr.classList.add('scrolled');}
+  window.phOpenDrawer=function(){
+    document.getElementById('phDrawer').classList.add('open');
+    document.getElementById('phDrawer').removeAttribute('aria-hidden');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','true');
+    document.body.style.overflow='hidden';
+  };
+  window.phCloseDrawer=function(){
+    document.getElementById('phDrawer').classList.remove('open');
+    document.getElementById('phDrawer').setAttribute('aria-hidden','true');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','false');
+    document.body.style.overflow='';
+  };
+  window.phOpenContact=function(preset){
+    document.getElementById('phcForm').style.display='block';
+    document.getElementById('phcOk').style.display='none';
+    if(preset)document.getElementById('phcMsg').value=preset;
+    document.getElementById('phContactModal').classList.add('open');
+    document.body.style.overflow='hidden';
+    document.getElementById('phcName').focus();
+  };
+  window.phCloseContact=function(){
+    document.getElementById('phContactModal').classList.remove('open');
+    document.body.style.overflow='';
+  };
+  window.phSubmitContact=function(){
+    var n=document.getElementById('phcName').value.trim();
+    var e=document.getElementById('phcEmail').value.trim();
+    var p=document.getElementById('phcPhone').value.trim();
+    var msg=document.getElementById('phcMsg').value.trim();
+    if(!n||!e||!msg){alert('Please add your name, email and a short message.');return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
+    fetch('https://formspree.io/f/xqewleog',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        _subject:'Website enquiry - '+n,
+        name:n, email:e, phone:p||'not given', message:msg,
+        source:(location&&location.pathname)||'website',
+        replyto:e
+      })
+    }).catch(function(){}).finally(function(){
+      document.getElementById('phcForm').style.display='none';
+      document.getElementById('phcOk').style.display='block';
+    });
+  };
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.phCloseDrawer();window.phCloseContact();}});
+  document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+</script>
+<!-- /chrome:footer2 -->
 <!-- INTEREST MODAL -->
 <div class="offer-modal-bg" id="offerModal" onclick="if(event.target===this)closeOfferModal()">
   <div class="offer-modal">
