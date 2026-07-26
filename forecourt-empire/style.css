@@ -759,3 +759,17 @@ input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow
 .danger-ask .card { text-align: left; margin-top: 10px; }
 .danger-ask .btnrow { margin-top: 14px; gap: 8px; }
 .danger-ask .btnrow button { width: 100%; }
+
+/* ---------- juice: particle layer + screen shake ---------- */
+#juiceLayer {
+  position: fixed; inset: 0; z-index: 300; pointer-events: none;
+}
+@keyframes shakeit {
+  0%,100% { transform: translate(0,0); }
+  15% { transform: translate(calc(var(--shake) * -1), 2px); }
+  30% { transform: translate(var(--shake), -2px); }
+  45% { transform: translate(calc(var(--shake) * -0.7), 1px); }
+  60% { transform: translate(calc(var(--shake) * 0.6), -1px); }
+  80% { transform: translate(calc(var(--shake) * -0.3), 0); }
+}
+.shaking { animation: shakeit .5s cubic-bezier(.36,.07,.19,.97); }

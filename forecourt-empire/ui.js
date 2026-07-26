@@ -820,7 +820,11 @@ UI.nextEvent = function () {
   if (!ev) { renderAll(); toast('That’s the floor cleared for this week.'); return; }
   if (ev.silent) {
     // auto sale already resolved at build time
-    if (ev.result) toast(esc(ev.result.exec === 'you' ? 'You' : ev.result.exec) + ' sold the ' + FE.MODELS[ev.result.car.model].m + ' — ' + M(ev.result.front + ev.result.back) + ' gross');
+    if (ev.result) {
+      Juice.sound('coin');
+      Juice.float('+' + M(ev.result.front + ev.result.back), '#35d07f', '#cash');
+      toast(esc(ev.result.exec === 'you' ? 'You' : ev.result.exec) + ' sold the ' + FE.MODELS[ev.result.car.model].m + ' — ' + M(ev.result.front + ev.result.back) + ' gross');
+    }
     FE.advanceEvent();
     renderAll();
     setTimeout(UI.nextEvent, 650);
@@ -908,6 +912,7 @@ function prepPopup(ev) {
   var c = ev.car;
   var isArrival = (ev.kind === 'arrival');
   var r = FE.payPrep(ev);
+  if (!r.already) Juice.bill(r.amount);
   var lead = isArrival
     ? 'The transporter’s just dropped it on the forecourt and the workshop’s been straight through it. Bill: '
     : 'The workshop’s been through it. Bill: ';
@@ -959,6 +964,7 @@ UI.prequalGo = function (fni) {
   saleResult(s);
 };
 function saleResult(s) {
+  Juice.sale(s.front + s.back);
   var h = '<h3>' + (s.front + s.back >= 0 ? 'Deal done' : 'Deal done — it hurt') + '</h3>' +
     '<div class="card"><div class="row kv"><span>Sold at</span><b>' + M(s.price) + '</b></div>' +
     '<div class="row kv"><span>Front-end</span><b class="' + (s.front < 0 ? 'danger' : '') + '">' + M(s.front) + '</b></div>' +
@@ -1466,13 +1472,24 @@ UI.skipWeek = function () {
     : 'Skip the rest of the week and go to the report? Staff finish off anything you haven’t handled.';
   if (!confirm(msg)) return;
   UI.closeModal();
+  var bestBefore = g.totals.bestWk;
   var r = FE.skipWeek();
   renderAll();
+  if (r && r.report) weekJuice(r.report, bestBefore);
   if (r && r.report) UI.modal('<h3>' + (full ? 'While you were away…' : 'End of week report') + '</h3><pre class="report">' + reportText(r.report) + '</pre>' +
     '<div class="btnrow"><button onclick="UI.closeModal();UI.startNext()">Start week ' + G().week + '</button>' +
     '<button class="sec" onclick="UI.closeModal();UI.renderAll()">Sit with it</button></div>');
   if (r && r.dead) setTimeout(showGameOver, 400);
 };
+/* What the week earns you in feedback: a fanfare and confetti on a record,
+   a shake and a buzz on a fine, a quiet win chime on a profitable week. */
+function weekJuice(rep, bestBefore) {
+  if (!rep) return;
+  var record = rep.units > 0 && rep.units > (bestBefore || 0);
+  if (rep.fine) { Juice.fine(); return; }
+  if (record) { setTimeout(function () { Juice.record(); }, 220); return; }
+  if (rep.net > 0) Juice.sound('win');
+}
 UI.skipWeekUI = function () { UI.closeModal(); UI.skipWeek(); };
 
 /* ---------- share ---------- */
@@ -1583,6 +1600,7 @@ UI.deskMenu = function () {
     games +
     '<div class="desk-sep">Paperwork</div>' +
     '<div class="btnrow" style="flex-direction:column">' +
+    '<button class="sec" onclick="UI.soundToggle()">' + (Juice.muted() ? '🔇 Sound off' : '🔊 Sound on') + '</button>' +
     '<button class="sec" onclick="UI.saveMenu()">💾 Save &amp; profile</button>' +
     '<button class="sec" onclick="UI.closeModal();UI.share()">📤 Share my progress</button>' +
     '<button class="sec" onclick="UI.skipWeekUI()">⏭ Skip this week (staff run it)</button>' +
@@ -1591,6 +1609,13 @@ UI.deskMenu = function () {
     '<button class="red" onclick="UI.confirmRestart()">Abandon career</button></div>' +
     '<p class="kv muted small" style="margin-top:10px">Beta build. Saves locally on this device, automatically. The clock runs a game week every 12 real hours.</p>' +
     '</div>');
+};
+UI.soundToggle = function () {
+  var off = !Juice.muted();
+  Juice.setMuted(off);
+  if (!off) Juice.sound('tap');
+  toast(off ? 'Sound off.' : 'Sound on.');
+  UI.deskMenu();
 };
 // kept so any older call site still lands somewhere sensible
 UI.gearMenu = function () { UI.deskMenu(); };

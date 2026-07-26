@@ -99,6 +99,7 @@
   Puzzle.lnClose = function (fni) {
     var res = FE.lateNightClose(fni);
     if (!res) { UI.closeModal(); return; }
+    Juice.sale(res.gross);
     UI.modal('<div class="pz-win"><div class="pz-win-badge">🤝</div><h3>Signed, after hours</h3>' +
       '<p class="kv">' + esc(res.exec === 'you' ? 'You' : res.exec) + ' sold the <b>' + esc(FE.carName(res.car)) + '</b> for <b>' + money(res.price) + '</b>.</p>' +
       '<div class="card"><div class="row kv"><span>Front gross</span><b class="' + (res.front >= 0 ? 'good' : 'danger') + '">' + money(res.front) + '</b></div>' +
@@ -246,6 +247,7 @@
   }
 
   function rhWin(redEl) {
+    Juice.sound('win');
     // drive the red car off the right, then celebrate
     redEl.style.transition = 'transform .5s cubic-bezier(.5,0,.6,1)';
     redEl.style.transform = 'translateX(140%)';
@@ -491,6 +493,7 @@
   }
 
   function pkWin(isBest) {
+    Juice.sound('win');
     var last = PK.lvl >= PK_LEVELS.length - 1;
     var secs = PK.elapsed.toFixed(1);
     setTimeout(function () {
@@ -609,6 +612,7 @@
     setTimeout(function () { if (n) n.className = 'hg-needle'; hgSetup(); }, 420);
   };
   function hgWin() {
+    Juice.sound('win');
     var best = localStorage.getItem(hgBestKey());
     var isBest = !best || HG.banked > +best;
     if (isBest) localStorage.setItem(hgBestKey(), HG.banked);

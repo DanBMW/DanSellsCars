@@ -1,5 +1,26 @@
 # Forecourt Empire — beta feedback log & roadmap
 
+## Status — Juice pass (2026-07-25e)
+
+The last unbuilt phase of the original art brief (item 1, phase 3). New
+`juice.js`: one self-contained module, no assets.
+
+- **Sound is synthesised with WebAudio** — a till chime on a sale, coin blips,
+  a descending thunk when a prep bill lands, a buzz on a fine, a four-note
+  fanfare on a record week. Nothing to download. Audio only starts after the
+  first tap (browsers block it before that) and mutes from the desk menu.
+- **Particles** draw to one full-screen canvas that ignores pointer events:
+  spinning coins on a sale, confetti on a record week, floating +/- money
+  numbers that rise off the cash figure.
+- **Screen shake** when a fine lands.
+- The loop stops itself the moment nothing is alive, so an idle game costs
+  nothing.
+
+Hooked into: interactive sales, the silent auto-sales, prep bills, the
+late-night deal, mini-game wins, and week close (record / fine / profit).
+
+---
+
 ## Status — Beta V2 (2026-07-25d): HUD, navigation and presentation
 
 A pass over the shell rather than the systems, after a review of the live build.
