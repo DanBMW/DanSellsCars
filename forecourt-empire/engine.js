@@ -179,7 +179,7 @@ function grantStarterStock() {
      is the same payload a sync endpoint would POST tomorrow. */
 var SAVE_KEY = 'forecourtEmpireSave_v1';
 var PROFILE_KEY = 'forecourtEmpireProfile';
-FE.SCHEMA = 3;
+FE.SCHEMA = 4;
 
 FE.storage = {
   get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -226,6 +226,20 @@ FE.migrate = function (game, from) {
     (game.stock || []).forEach(function (c) {
       if (c.arrived == null) c.arrived = true;
       if (c.inherited == null) c.inherited = false;
+    });
+  }
+  if (from < 4) {
+    // v4: performance badges renamed off real-world trademarks. The badge text
+    // is copied onto each car at generation, so rewrite what's already saved.
+    var reb = {};
+    Object.keys(FE.PERF || {}).forEach(function (b) {
+      FE.PERF[b].forEach(function (t) { reb[t.id] = t; });
+    });
+    (game.stock || []).forEach(function (c) {
+      if (c.perf && reb[c.perf.id]) { c.perf.badge = reb[c.perf.id].badge; c.perf.note = reb[c.perf.id].note; }
+    });
+    (game.lots || []).forEach(function (l) {
+      if (l.perf && reb[l.perf.id]) { l.perf.badge = reb[l.perf.id].badge; l.perf.note = reb[l.perf.id].note; }
     });
   }
   if (from < 3) {

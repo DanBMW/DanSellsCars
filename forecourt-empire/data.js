@@ -110,9 +110,9 @@ FE.BRANDS = {
 /* model, newPrice, baseDays, segment, dieselShare, bigEngine */
 FE.MODELS = [
   { m: 'Sandera',        b: 'Dacio', np: 15400, days: 30, seg: 'Supermini', dsl: 0.05, big: false },
-  { m: 'Sandera Stepway',b: 'Dacio', np: 17800, days: 31, seg: 'Crossover', dsl: 0.05, big: false },
+  { m: 'Sandera Trail',  b: 'Dacio', np: 17800, days: 31, seg: 'Crossover', dsl: 0.05, big: false },
   { m: 'Dustar',         b: 'Dacio', np: 21900, days: 34, seg: 'SUV',       dsl: 0.30, big: false },
-  { m: 'Logann MCV',     b: 'Dacio', np: 16200, days: 36, seg: 'Estate',    dsl: 0.20, big: false },
+  { m: 'Logann Wagon',   b: 'Dacio', np: 16200, days: 36, seg: 'Estate',    dsl: 0.20, big: false },
   { m: 'Jogga',          b: 'Dacio', np: 19500, days: 33, seg: 'MPV',       dsl: 0.10, big: false },
   { m: 'Fizzta',         b: 'Fjord', np: 21500, days: 30, seg: 'Supermini', dsl: 0.05, big: false },
   { m: 'Fokus',          b: 'Fjord', np: 26000, days: 38, seg: 'Hatchback', dsl: 0.20, big: false },
@@ -123,18 +123,19 @@ FE.MODELS = [
   { m: '1-Line',         b: 'BMV',   np: 32500, days: 44, seg: 'Hatchback', dsl: 0.35, big: false },
   { m: '2-Line Coupe',   b: 'BMV',   np: 36000, days: 56, seg: 'Coupe',     dsl: 0.25, big: true  },
   { m: '3-Line',         b: 'BMV',   np: 42000, days: 50, seg: 'Saloon',    dsl: 0.45, big: true  },
-  { m: '3-Line Touring', b: 'BMV',   np: 44500, days: 48, seg: 'Estate',    dsl: 0.45, big: true  },
+  { m: '3-Line Estate',  b: 'BMV',   np: 44500, days: 48, seg: 'Estate',    dsl: 0.45, big: true  },
   { m: '5-Line',         b: 'BMV',   np: 52000, days: 60, seg: 'Saloon',    dsl: 0.50, big: true  },
-  { m: 'X1',             b: 'BMV',   np: 41000, days: 46, seg: 'SUV',       dsl: 0.35, big: false },
-  { m: 'X3',             b: 'BMV',   np: 51000, days: 52, seg: 'SUV',       dsl: 0.45, big: true  }
+  { m: 'X-Line 1',       b: 'BMV',   np: 41000, days: 46, seg: 'SUV',       dsl: 0.35, big: false },
+  { m: 'X-Line 3',       b: 'BMV',   np: 51000, days: 52, seg: 'SUV',       dsl: 0.45, big: true  }
 ];
 
 /* ---------- performance variants ----------
    Modelled on how the real sub-brands are structured: manufacturers run a
-   "warm" mid tier (Ford ST, BMW M Performance) below a fully re-engineered
-   "hot" tier (Ford RS, full BMW M). Budget makers have no performance arm at
-   all — Dacia's sporty-looking trims are a body kit and a badge — so Dacio
-   gets a cosmetic variant with none of the upside or the downside.
+   "warm" mid tier below a fully re-engineered "hot" tier, while budget makers
+   have no performance arm at all and their sporty-looking trims are a body kit
+   and a badge — so Dacio gets a cosmetic variant with none of the upside or the
+   downside. Badges here are invented rather than borrowed: the real ones are
+   live trademarks.
 
    The trade characteristics come from how these actually behave on a forecourt:
    they command real money, but they're a niche buyer pool so they sit longer,
@@ -145,25 +146,25 @@ FE.PERF_UNLOCK_WK = 10;         // performance stock starts appearing at auction
 FE.PERF_P = 0.13;               // share of generated cars that are a variant
 FE.PERF = {
   Dacio: [
-    { id: 'gtline', badge: 'GT-Line', tier: 'look', p: 1.0,
+    { id: 'gtline', badge: 'Style Pack', tier: 'look', p: 1.0,
       retail: 1.08, prep: 1.00, fault: 1.00, days: 1.00, fni: 1.00, modP: 0,
       note: 'Body kit, badges and a set of alloys. Drives exactly like the standard car — and the room knows it.' }
   ],
   Fjord: [
-    { id: 'st', badge: 'ST', tier: 'warm', p: 0.7,
+    { id: 'st', badge: 'Sport', tier: 'warm', p: 0.7,
       retail: 1.18, prep: 1.35, fault: 1.25, days: 1.10, fni: 1.15, modP: 0.14,
       note: 'The warm one. Proper hot-hatch following, but they get driven and the tyres and brakes tell you so.' },
-    { id: 'rs', badge: 'RS', tier: 'hot', p: 0.3,
+    { id: 'rs', badge: 'Rallye', tier: 'hot', p: 0.3,
       retail: 1.42, prep: 1.85, fault: 1.60, days: 1.25, fni: 1.25, modP: 0.30,
-      note: 'Rallye Sport. Big money when it is right, but a narrow buyer pool and half of them have been tracked.' }
+      note: 'The full rally-bred car. Big money when it is right, but a narrow buyer pool and half of them have been tracked.' }
   ],
   BMV: [
-    { id: 'msport', badge: 'M Sport', tier: 'warm', p: 0.72,
+    { id: 'msport', badge: 'Dynamic', tier: 'warm', p: 0.72,
       retail: 1.16, prep: 1.30, fault: 1.20, days: 1.08, fni: 1.15, modP: 0.10,
-      note: 'M Performance money without the M Division engine. Sells well, costs more to put right.' },
-    { id: 'mpower', badge: 'M Power', tier: 'hot', p: 0.28,
+      note: 'Warm-tier money without the full motorsport engine underneath. Sells well, costs more to put right.' },
+    { id: 'mpower', badge: 'Motorsport', tier: 'hot', p: 0.28,
       retail: 1.45, prep: 1.90, fault: 1.65, days: 1.28, fni: 1.28, modP: 0.28,
-      note: 'The full Motorsport car — bespoke engine, bespoke cooling, bespoke bills. Buyers are few and they know every one of these.' }
+      note: 'The properly re-engineered car — bespoke engine, bespoke cooling, bespoke bills. Buyers are few and they know every one of these.' }
   ]
 };
 /* a modified example: cheaper to buy, much harder to retail */

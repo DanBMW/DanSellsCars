@@ -7,6 +7,13 @@
 <title>Forecourt Empire — beta</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg"/>
 <link rel="apple-touch-icon" href="../apple-touch-icon.png"/>
+<meta name="theme-color" content="#0a0e1c"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Forecourt"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -82,5 +89,61 @@
 <script src="juice.js"></script>
 <script src="minigames.js"></script>
 <script src="ui.js"></script>
+<script>
+/* PWA registration.
+
+   Updates are automatic: the worker is network-first and calls skipWaiting, so
+   a new build activates as soon as it is fetched. When it takes control we
+   reload once (guarded against loops) — the game saves after every action, so a
+   reload never costs the player anything. We also re-check for a new worker
+   whenever the tab comes back to the foreground, which for this game is the
+   normal way people return to it. */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var reloading = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (reloading) return;
+    reloading = true;
+    location.reload();
+  });
+
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').then(function (reg) {
+      // check on return to the foreground, and hourly while open
+      function check() { if (navigator.onLine) reg.update().catch(function () {}); }
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') check();
+      });
+      setInterval(check, 60 * 60 * 1000);
+      // a worker already waiting (installed before this load) should take over now
+      if (reg.waiting) reg.waiting.postMessage('skipWaiting');
+      reg.addEventListener('updatefound', function () {
+        var nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', function () {
+          if (nw.state === 'installed' && reg.waiting) reg.waiting.postMessage('skipWaiting');
+        });
+      });
+    }).catch(function () { /* offline or unsupported — the game still runs */ });
+  });
+
+  /* Saves live in localStorage, which browsers evict: Safari clears
+     script-writable storage after ~7 days without a visit, and Chrome evicts
+     under pressure. Asking for persistent storage (granted readily to an
+     installed app) is what stops a career quietly disappearing. */
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persisted().then(function (already) {
+      if (!already) navigator.storage.persist();
+    }).catch(function () {});
+  }
+
+  // remember the install offer so the desk can present it
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    window.__installPrompt = e;
+  });
+})();
+</script>
 </body>
 </html>

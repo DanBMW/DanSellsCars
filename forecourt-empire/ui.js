@@ -1633,6 +1633,7 @@ UI.deskMenu = function () {
     games +
     '<div class="desk-sep">Paperwork</div>' +
     '<div class="btnrow" style="flex-direction:column">' +
+    (window.__installPrompt ? '<button class="grn" onclick="UI.installApp()">📲 Install to home screen</button>' : '') +
     '<button class="sec" onclick="UI.soundToggle()">' + (Juice.muted() ? '🔇 Sound off' : '🔊 Sound on') + '</button>' +
     '<button class="sec" onclick="UI.saveMenu()">💾 Save &amp; profile</button>' +
     '<button class="sec" onclick="UI.closeModal();UI.share()">📤 Share my progress</button>' +
@@ -1642,6 +1643,19 @@ UI.deskMenu = function () {
     '<button class="red" onclick="UI.confirmRestart()">Abandon career</button></div>' +
     '<p class="kv muted small" style="margin-top:10px">Beta build. Saves locally on this device, automatically. The clock runs a game week every 12 real hours.</p>' +
     '</div>');
+};
+/* Installing matters beyond convenience: an installed app is exempt from the
+   browser storage eviction that would otherwise bin a career after a week
+   away, so this is offered as save protection, not decoration. */
+UI.installApp = function () {
+  var p = window.__installPrompt;
+  if (!p) { toast('Use your browser menu — "Add to Home Screen".'); return; }
+  UI.closeModal();
+  p.prompt();
+  p.userChoice.then(function (r) {
+    window.__installPrompt = null;
+    toast(r && r.outcome === 'accepted' ? 'Installed — your save is safer there.' : 'No problem, it stays in the browser.');
+  }).catch(function () {});
 };
 UI.soundToggle = function () {
   var off = !Juice.muted();
