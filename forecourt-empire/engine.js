@@ -871,7 +871,7 @@ FE.hire = function (candId) {
   if (idx < 0) return { ok: false, msg: 'No longer available.' };
   var R = null;
   FE.ROSTER.forEach(function (r) { if (r.id === candId) R = r; });
-  if (G.cash < R.fee) return { ok: false, msg: 'Cannot cover the agency fee.' };
+  if (G.cash < R.fee) return needCash(R.fee, 'an agency fee');
   G.candidates.splice(idx, 1);
   if (R.fee > 0) pay(R.fee, 'misc', 'Agency fee — ' + R.name);
   G.staff.push({
@@ -895,7 +895,7 @@ FE.sackStaff = function (id) {
   var st = staffById(id);
   if (!st) return { ok: false, msg: 'Not found.' };
   var redundancy = FE.sackCost(id);
-  if (G.cash < redundancy) return { ok: false, msg: 'Can’t cover the ' + money(redundancy) + ' redundancy.' };
+  if (G.cash < redundancy) return needCash(redundancy, 'a redundancy payment');
   G.staff = G.staff.filter(function (s) { return s.id !== id; });
   if (redundancy > 0) pay(redundancy, 'misc', 'Redundancy — ' + st.name);
   // the rest of the team notices — a small morale dip
@@ -905,6 +905,41 @@ FE.sackStaff = function (id) {
   return { ok: true, redundancy: redundancy };
 };
 
+
+/* Stocking finance is secured against the vehicles, so it funds stock and
+   nothing else — a course, a redundancy cheque or a set of groundworks has to
+   come out of actual cash. That is realistic, but the old refusals just said
+   "Not enough cash" while the HUD advertised a seven-figure spend power, which
+   reads like a bug. These say what is wrong and what to do about it. */
+FE.weeklyCosts = function () {
+  if (!G) return 0;
+  var t = 0;
+  G.staff.forEach(function (st) {
+    if (st.leaving && st.leaving <= G.week) return;
+    t += FE.SALARIES[G.salary].basic / 52;
+  });
+  t += site().util + G.extraUtil;
+  t += adCost();
+  t += FE.INSURANCE_WK;
+  var stockV = 0;
+  inStock().forEach(function (c) { stockV += carCost(c); });
+  t += stockV * FE.FLOORPLAN_APR / 52;
+  if (FE.financeEnabled()) t += FE.financeDrawn() * FE.financeApr() / 52;
+  if (G.franchise) t += FE.FRANCHISE.fee / 52;
+  return Math.round(t);
+};
+// how many weeks of running costs the cash in the bank would cover
+FE.weeksOfFloat = function () {
+  var wc = FE.weeklyCosts();
+  if (wc <= 0) return 99;
+  return Math.max(0, G.cash) / wc;
+};
+function needCash(cost, what) {
+  var short = Math.round(cost - Math.max(0, G.cash));
+  return { ok: false, msg: 'Needs ' + money(cost) + ' in cash and you have ' + money(Math.max(0, G.cash)) +
+    ' — ' + money(short) + ' short. Stocking finance is secured on the cars, so it cannot pay for ' + what +
+    '. Sell or trade out a car to free the money up.' };
+}
 FE.train = function (staffId, courseId) {
   var st = staffById(staffId);
   var C = null;
@@ -912,7 +947,7 @@ FE.train = function (staffId, courseId) {
   if (!st || !C) return { ok: false, msg: 'Not found.' };
   if (st.trained[courseId]) return { ok: false, msg: 'Already completed.' };
   if (C.needs && !st.trained[C.needs]) return { ok: false, msg: 'Needs ' + C.needs.toUpperCase() + ' first.' };
-  if (G.cash < C.cost) return { ok: false, msg: 'Not enough cash.' };
+  if (G.cash < C.cost) return needCash(C.cost, 'a training course');
   if (st.offUntil > G.week) return { ok: false, msg: st.name + ' is already off the floor.' };
   if (st.id === 'terry' && (courseId === 'fni' || courseId === 'fni2')) {
     mail('Terry', 'Re: the finance course', 'I’ve been at this thirty-eight years and I have never once sold a man an insurance product he didn’t ask for. I’m not starting now. Send Priya.', 'info');
@@ -2057,7 +2092,7 @@ FE.buildDept = function (id) {
   FE.DEPARTMENTS.forEach(function (d) { if (d.id === id) D = d; });
   if (!D) return { ok: false };
   if (G.dept[id]) return { ok: false, msg: 'Already built.' };
-  if (G.cash < D.cost) return { ok: false, msg: 'Not enough cash.' };
+  if (G.cash < D.cost) return needCash(D.cost, 'building work');
   pay(D.cost, 'misc', D.name + ' — construction');
   G.dept[id] = G.week + D.buildWks;
   G.dept.building = G.week + D.buildWks;
@@ -2071,7 +2106,7 @@ FE.buyExpansion = function (id) {
   FE.EXPANSIONS.forEach(function (x) { if (x.id === id) E = x; });
   if (!E || G.expansionsDone.indexOf(id) >= 0) return { ok: false, msg: 'Not available.' };
   if (G.pendingBuilds.some(function (b) { return b.id === id; })) return { ok: false, msg: 'Already under construction.' };
-  if (G.cash < E.cost) return { ok: false, msg: 'Not enough cash.' };
+  if (G.cash < E.cost) return needCash(E.cost, 'buying land');
   pay(E.cost, 'misc', E.name);
   var due = G.week + (E.buildWks || 1);
   G.pendingBuilds.push({ kind: 'expansion', id: id, name: E.name, slots: E.slots, util: E.util, dueWk: due, startedWk: G.week });

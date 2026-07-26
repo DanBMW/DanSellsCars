@@ -780,6 +780,10 @@ UI.openAuction = function () {
       : '') +
     '<div><span>Free pitches</span><b class="' + (freeP ? '' : 'danger') + '">' + freeP + '</b></div>' +
     '</div>' +
+    (FE.weeksOfFloat() < 4
+      ? '<p class="kv danger small" style="margin:4px 0 0">Careful — your cash only covers ' + FE.weeksOfFloat().toFixed(1) +
+        ' weeks of running costs. Buy to the last pound here and you will not be able to pay wages, training or building work.</p>'
+      : '') +
     (FE.financeEnabled() ? '<p class="kv muted small" style="margin:2px 0 6px">Includes ' + M(FE.financeHeadroom()) + ' of stocking finance headroom.</p>' : '') +
     '<p class="kv muted small">Est. gross is <b>before fees, prep &amp; hold cost</b> — the mean prep assumption, and it is optimistic. Buyer premium 5.5% + £180 transport on every lot. Tap a risk light for why.</p>';
   h += '<div class="risk-filter">' +
@@ -1733,7 +1737,19 @@ UI.bankApp = function () {
     '<div class="card"><div class="row kv"><span>Cash</span><b class="' + (g.cash < 0 ? 'danger' : 'good') + '">' + M(g.cash) + '</b></div>' +
     '<div class="row kv"><span>Stock at cost</span><b>' + M(stockValue()) + '</b></div>' +
     '<div class="row kv"><span>Net worth</span><b class="teal">' + M(FE.netWorth()) + '</b></div>' +
-    '<div class="row kv"><span>Spend power</span><b>' + M(FE.spendPower()) + '</b></div></div>';
+    '<div class="row kv"><span>Spend power <span class="muted small">(stock only)</span></span><b>' + M(FE.spendPower()) + '</b></div></div>' +
+    (function () {
+      var wc = FE.weeklyCosts(), wks = FE.weeksOfFloat();
+      var cls = wks < 3 ? 'danger' : wks < 6 ? 'warn' : 'good';
+      return '<div class="card"><b>Working capital</b>' +
+        '<div class="row kv"><span>Running costs</span><b>' + M(wc) + '/wk</b></div>' +
+        '<div class="row kv"><span>Cash covers</span><b class="' + cls + '">' +
+        (wks >= 99 ? 'plenty' : wks.toFixed(1) + ' weeks') + '</b></div>' +
+        '<div class="kv muted small">Cash pays wages, training, agency fees and building work. ' +
+        'Stocking finance is secured on the cars, so it only ever buys cars — keep a float back or you will be rich in metal and unable to pay for a course.</div>' +
+        (wks < 3 ? '<div class="kv danger small">You are running thin. Trade a car out or sell before you commit to anything else.</div>' : '') +
+        '</div>';
+    })();
   if (!FE.unlocked('finance')) {
     h += lockedCard('Stocking finance', 'A credit facility to buy stock beyond your cash. The bank wants to see you trade a few weeks first.', FE.unlockWeek('finance'));
   } else if (FE.financeEnabled()) {
