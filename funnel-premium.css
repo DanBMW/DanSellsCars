@@ -1,0 +1,331 @@
+@import url('https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&display=swap');
+
+/* ============================================================
+   DANSELLS Find my BMW funnel - premium dark skin
+   Loaded AFTER style.css and funnel.css, only on the Find my BMW
+   step pages, so every rule here is automatically scoped to that
+   funnel. The EV funnel keeps the original light treatment.
+
+   Most of the work is done by retokening the variables that
+   style.css and funnel.css already colour through, so layout and
+   behaviour are untouched. Below that, the hard-coded light
+   colours are overridden one by one.
+
+   Deliberately preserved: the yellow number plate (a real-world
+   artefact), the paint swatch colours on step 5b, and the red
+   START lettering on the ignition send screen.
+   ============================================================ */
+
+/* ── 1. Retoken ────────────────────────────────────────────── */
+:root{
+  --bg:#0a0c0f;
+  --paper:#14181d;
+  --surface:rgba(236,233,225,.03);
+  --text:#ece9e1;
+  --body:#b9b5ab;
+  --muted:#847f75;
+  --line:rgba(236,233,225,.14);
+  --line-soft:rgba(236,233,225,.08);
+  --blue:#5b8ac9;
+  --blue-deep:#2f5f9e;
+  --blue-light:#7ba3d8;
+  --blue-tint:rgba(91,138,201,.12);
+  --gold:#a8853b;
+  --green:#4a9d6a;
+  --radius:0;
+  --font:'Satoshi',ui-sans-serif,system-ui,sans-serif;
+  --display:'Sentient',Georgia,'Times New Roman',serif;
+  --shadow-card:none;
+  --shadow-pop:none;
+}
+
+body.fv2{background:var(--bg);color:var(--body);}
+/* style.css paints a faint light grid over the page; quieten it */
+body::before{background:linear-gradient(180deg,rgba(91,138,201,.05),transparent 340px) !important;}
+
+/* ── 2. Shell and top bar ──────────────────────────────────── */
+body.fv2 .shell{
+  background:var(--paper);border:1px solid var(--line-soft);
+  border-radius:0;box-shadow:none;max-width:760px;
+}
+body.fv2 .topbar{
+  background:rgba(14,17,20,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line-soft);
+}
+body.fv2 .brand-name{
+  font-family:var(--display);font-weight:400;font-size:1.05rem;
+  letter-spacing:.28em;color:var(--text);
+}
+body.fv2 .brand-name::after{display:none;}
+
+/* ── 3. Typography ─────────────────────────────────────────── */
+body.fv2 h1,body.fv2 h2{
+  font-family:var(--display);font-weight:400;letter-spacing:.005em;color:var(--text);
+}
+body.fv2 h2{font-size:clamp(1.6rem,3.4vw,2.15rem);line-height:1.18;margin-bottom:12px;}
+body.fv2 .step-desc{color:var(--body);font-size:.95rem;line-height:1.8;}
+body.fv2 .hint{color:var(--muted);}
+
+/* Step kicker becomes a premium spaced label with a thin accent rule */
+body.fv2 .step-kicker{
+  font-family:var(--font);font-weight:500;font-size:.7rem;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:14px;display:flex;align-items:center;gap:12px;
+}
+body.fv2 .step-kicker::before{
+  width:34px;height:1px;background:var(--blue);border-radius:0;margin:0;transform:none;
+}
+
+body.fv2 .step-wrap{padding:34px 38px 44px;}
+@media(max-width:700px){body.fv2 .step-wrap{padding:22px 18px 30px;}}
+
+/* ── 4. Progress ───────────────────────────────────────────── */
+.fv2-progress-step{
+  font-family:var(--font);font-weight:500;font-size:.7rem;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--text);
+}
+.fv2-progress-step span{color:var(--muted);font-weight:500;}
+.fv2-progress-label{
+  font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+}
+.fv2-track{background:rgba(236,233,225,.12);border-radius:0;height:2px;}
+.fv2-fill{background:var(--blue);border-radius:0;}
+/* funnel-ui.js parks a small car on the track; give it clearance from the
+   label row above now the track is a hairline */
+.fv2-progress-row{margin-bottom:22px;}
+.fv2-prog-car{color:var(--blue);filter:none;}
+
+/* ── 5. Brief ticket ───────────────────────────────────────── */
+.fv2-ticket-label{
+  font-family:var(--font);font-weight:500;font-size:.6rem;
+  letter-spacing:.22em;color:var(--blue);
+}
+.fv2-ticket-chip{
+  background:rgba(236,233,225,.04);border:1px solid var(--line-soft);
+  border-radius:0;color:var(--body);font-weight:500;
+}
+
+/* ── 6. Option cards ───────────────────────────────────────── */
+.fv2-opt,.fv2-row,.fv2-model{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);border-radius:0;
+}
+.fv2-opt:hover,.fv2-row:hover,.fv2-model:hover{
+  border-color:rgba(91,138,201,.55);background:rgba(236,233,225,.045);
+  box-shadow:none;transform:none;
+}
+.fv2-opt.selected,.fv2-row.selected,.fv2-model.selected{
+  border-color:var(--blue);background:var(--blue-tint);
+  box-shadow:inset 0 0 0 1px var(--blue);
+}
+.fv2-opt-title,.fv2-row-title,.fv2-model-name{color:var(--text);font-weight:500;}
+.fv2-opt-desc,.fv2-row-desc,.fv2-model-ex{color:var(--muted);}
+.fv2-opt-icon{
+  background:rgba(236,233,225,.05);border:1px solid var(--line-soft);
+  border-radius:0;color:var(--body);
+}
+.fv2-opt.selected .fv2-opt-icon{background:var(--blue);border-color:var(--blue);color:#0a0c0f;}
+/* car silhouettes on step 1b sit on a dark ground now */
+.fv2-model-svg{color:var(--body);}
+.fv2-model.selected .fv2-model-svg{color:var(--blue-light);}
+
+/* Selection indicators stay circular */
+.fv2-opt-check,.fv2-row-dot{
+  background:transparent;border:1px solid var(--line);color:transparent;
+}
+.fv2-opt.selected .fv2-opt-check,.fv2-row.selected .fv2-row-dot{
+  background:var(--blue);border-color:var(--blue);color:#0a0c0f;
+}
+
+/* ── 7. Value tags ─────────────────────────────────────────── */
+.fv2-tag{border-radius:0;font-weight:500;letter-spacing:.14em;}
+.fv2-tag.good{background:rgba(74,157,106,.16);color:#8fd3a8;}
+.fv2-tag.ok{background:rgba(91,138,201,.16);color:#9dc0e8;}
+.fv2-tag.mid{background:rgba(168,133,59,.18);color:#d8b571;}
+.fv2-tag.low{background:rgba(186,110,70,.18);color:#dda07c;}
+.fv2-tag.na{background:rgba(236,233,225,.06);color:var(--muted);}
+
+/* ── 8. Section labels ─────────────────────────────────────── */
+.fv2-sec{
+  font-family:var(--font);font-weight:500;font-size:.68rem;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin:30px 0 6px;
+}
+.fv2-sec small{color:var(--muted);letter-spacing:.02em;}
+.fv2-sec-sub{color:var(--body);}
+
+/* ── 9. Amount / slider ────────────────────────────────────── */
+.fv2-amount{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);
+  border-radius:0;box-shadow:none;
+}
+.fv2-amount-label{color:var(--muted);font-weight:500;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;}
+.fv2-amount-value{font-family:var(--display);font-weight:400;color:var(--text);letter-spacing:0;}
+.fv2-amount-note{color:var(--muted);}
+body.fv2 input[type="range"]::-webkit-slider-runnable-track{
+  background:linear-gradient(90deg,var(--blue) var(--fv2-pct,50%),rgba(236,233,225,.14) var(--fv2-pct,50%));
+}
+body.fv2 input[type="range"]::-webkit-slider-thumb{
+  background:var(--text);border:2px solid var(--blue);box-shadow:none;
+}
+body.fv2 input[type="range"]::-moz-range-track{background:rgba(236,233,225,.14);}
+body.fv2 input[type="range"]::-moz-range-progress{background:var(--blue);}
+body.fv2 input[type="range"]::-moz-range-thumb{background:var(--text);border:2px solid var(--blue);box-shadow:none;}
+
+.fv2-chip{
+  background:rgba(236,233,225,.04);border:1px solid var(--line);border-radius:0;
+  color:var(--body);font-weight:500;font-size:.78rem;letter-spacing:.06em;
+}
+.fv2-chip:hover{border-color:rgba(91,138,201,.55);color:var(--text);}
+.fv2-chip.on{background:var(--blue);border-color:var(--blue);color:#0a0c0f;}
+
+/* ── 10. Number plate (yellow plate kept deliberately) ─────── */
+.fv2-plate:focus{box-shadow:0 0 0 2px var(--blue);}
+.fv2-plate-btn{
+  background:transparent;border:1px solid var(--blue);border-radius:0;color:var(--text);
+  font-weight:500;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  transition:background .2s,color .2s;
+}
+.fv2-plate-btn:hover{background:var(--blue);color:#0a0c0f;}
+
+/* ── 11. Banners, MOT notes, validation ────────────────────── */
+.fv2-banner{
+  background:rgba(74,157,106,.1);border:1px solid rgba(74,157,106,.32);
+  border-radius:0;color:#a9dcbe;
+}
+.fv2-banner svg{color:#7fc79c;}
+.fv2-banner--err{background:rgba(186,110,70,.12);border-color:rgba(186,110,70,.38);color:#e3b295;}
+.fv2-banner--err svg{color:#d99a72;}
+
+.fv2-mot{border-radius:0;}
+.fv2-mot--ok{background:rgba(74,157,106,.1);border:1px solid rgba(74,157,106,.32);color:#a9dcbe;}
+.fv2-mot--warn{background:rgba(168,133,59,.14);border:1px solid rgba(168,133,59,.42);color:#e0c185;}
+.fv2-mot--bad{background:rgba(186,110,70,.14);border:1px solid rgba(186,110,70,.42);color:#e3b295;}
+
+.fv2-note{
+  background:rgba(186,110,70,.12);border:1px solid rgba(186,110,70,.38);
+  border-radius:0;color:#e3b295;
+}
+.fv2-note svg{color:#d99a72;}
+body.fv2 .field-group input.fv2-invalid,
+body.fv2 .field-group textarea.fv2-invalid{
+  border-color:rgba(186,110,70,.65);box-shadow:0 0 0 2px rgba(186,110,70,.18);
+}
+
+/* ── 12. Swatches, features, toggles ───────────────────────── */
+.fv2-swatch{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);border-radius:0;color:var(--muted);
+}
+.fv2-swatch:hover{border-color:rgba(91,138,201,.5);}
+.fv2-swatch:focus-visible{outline:2px solid var(--blue);}
+.fv2-swatch.on{border-color:var(--blue);background:var(--blue-tint);color:var(--text);}
+.fv2-swatch .dot{border:1px solid rgba(236,233,225,.28);box-shadow:none;}
+
+.fv2-feat{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);border-radius:0;
+  color:var(--body);font-weight:500;
+}
+.fv2-feat .st{border-radius:0;font-weight:500;letter-spacing:.14em;}
+.fv2-feat.need{border-color:var(--blue);background:var(--blue-tint);color:var(--text);}
+.fv2-feat.need .st{background:var(--blue);color:#0a0c0f;}
+.fv2-feat.want{border-color:rgba(168,133,59,.6);background:rgba(168,133,59,.12);color:var(--text);}
+.fv2-feat.want .st{background:var(--gold);color:#0a0c0f;}
+.fv2-legend{color:var(--muted);}
+.fv2-legend b{color:var(--text);font-weight:500;}
+
+.fv2-toggle{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);border-radius:0;
+}
+.fv2-toggle:hover{border-color:rgba(91,138,201,.5);}
+.fv2-toggle.on{border-color:var(--blue);background:var(--blue-tint);}
+.fv2-toggle-sw{background:rgba(236,233,225,.16);}
+.fv2-toggle-sw::after{background:var(--text);box-shadow:none;}
+.fv2-toggle.on .fv2-toggle-sw{background:var(--blue);}
+.fv2-toggle-body strong{color:var(--text);font-weight:500;}
+.fv2-toggle-body span{color:var(--muted);}
+
+/* ── 13. Part-exchange photo upload ────────────────────────── */
+.px-drop{
+  border:1px dashed rgba(91,138,201,.5);border-radius:0;
+  background:rgba(91,138,201,.07);color:var(--text);font-weight:500;
+  font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;
+}
+.px-drop:hover{background:rgba(91,138,201,.14);border-color:var(--blue);}
+.px-thumb{border-radius:0;border:1px solid var(--line);background:#10141a;}
+.px-thumb .st{font-weight:500;letter-spacing:.12em;}
+.px-thumb.up .st{background:rgba(10,12,15,.75);}
+.px-thumb.done .st{background:rgba(74,157,106,.85);color:#0a0c0f;}
+.px-thumb.fail .st{background:rgba(186,110,70,.9);}
+
+/* ── 14. Navigation ────────────────────────────────────────── */
+.fv2-back{color:var(--muted);font-weight:500;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;border-radius:0;}
+.fv2-back:hover{color:var(--text);}
+.fv2-next{
+  background:transparent;border:1px solid var(--blue);border-radius:0;color:var(--text);
+  font-weight:500;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;
+  padding:17px 34px;box-shadow:none;
+  transition:background .25s,color .25s;
+}
+.fv2-next:hover{background:var(--blue);color:#0a0c0f;transform:none;box-shadow:none;}
+.fv2-next:disabled{opacity:.45;}
+.fv2-next svg{width:13px;height:13px;}
+
+/* ── 15. Trust line ────────────────────────────────────────── */
+.fv2-trust{border-top:1px solid var(--line-soft);color:var(--muted);}
+.fv2-trust svg{color:var(--blue);}
+
+/* ── 16. Review page (step 7) ──────────────────────────────── */
+.fv2-review{gap:1px;}
+.fv2-rev-card{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);
+  border-radius:0;box-shadow:none;
+}
+.fv2-rev-head{
+  background:rgba(236,233,225,.02);border-bottom:1px solid var(--line-soft);
+}
+.fv2-rev-head h3{font-family:var(--display);font-weight:400;color:var(--text);font-size:1.05rem;}
+.fv2-rev-edit,.fv2-rev-item-edit{
+  color:var(--blue);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:.68rem;
+}
+.fv2-rev-edit:hover,.fv2-rev-item-edit:hover{color:var(--blue-light);}
+.fv2-rev-item{border-bottom:1px solid var(--line-soft);}
+.fv2-rev-item b{color:var(--muted);font-weight:500;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;}
+.fv2-rev-item div{color:var(--text);font-weight:400;}
+
+/* ── 17. Consent block (step 8) ────────────────────────────── */
+.fv2-consent{
+  background:rgba(236,233,225,.03);border:1px solid var(--line-soft);border-radius:0;
+}
+.fv2-consent p{color:var(--muted);}
+.fv2-consent label{color:var(--body);}
+.fv2-consent input[type="checkbox"]{accent-color:var(--blue);}
+.fv2-mkt-ch label{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);border-radius:0;
+  color:var(--body);font-weight:500;
+}
+
+/* ── 18. Form fields ───────────────────────────────────────── */
+body.fv2 .input-card{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);
+  border-radius:0;box-shadow:none;
+}
+body.fv2 .field-group label{
+  color:var(--muted);font-weight:500;font-size:.68rem;
+  letter-spacing:.2em;text-transform:uppercase;
+}
+body.fv2 .field-group input,
+body.fv2 .field-group textarea,
+body.fv2 .field-group select{
+  background:var(--bg);border:1px solid var(--line);border-radius:0;color:var(--text);
+}
+body.fv2 .field-group input:focus,
+body.fv2 .field-group textarea:focus,
+body.fv2 .field-group select:focus{
+  border-color:var(--blue);box-shadow:none;background:var(--bg);
+}
+body.fv2 .field-group ::placeholder{color:var(--muted);}
+
+/* ── 19. Ignition send screen ──────────────────────────────── */
+.fv2-ign{background:radial-gradient(120% 120% at 50% 30%,#12161c,#07090c);}
+.fv2-ign.pressed .fv2-ign-ring{box-shadow:0 6px 30px rgba(0,0,0,.6),0 0 70px rgba(91,138,201,.4);}
+.fv2-ign.running .fv2-ign-ring::after{border-top-color:var(--blue);border-right-color:rgba(91,138,201,.35);}
+.fv2-ign-btn{color:var(--text);}
+.fv2-ign-status{color:var(--body);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;}
