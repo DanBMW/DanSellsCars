@@ -9,6 +9,12 @@ FE.START_CASH = 1000000;
 FE.WEEKS_PER_YEAR = 52;
 FE.BASE_CONV = 0.105;          // footfall -> units, calibrated so demand binds ~35% of weeks
 FE.CROWDING = 0.88;            // productivity of each extra head
+/* Each exec on the floor also *makes* business, not just handles it: they
+   prospect, follow up and chase the ones who would otherwise drift off. Without
+   this, headcount only ever raised the ceiling, so once demand was the binding
+   constraint an extra salesperson sold literally nothing. Applied with the same
+   crowding falloff, so the fifth head still adds less than the second. */
+FE.STAFF_DEMAND = 0.075;       // demand added per effective head
 FE.CAPACITY_EXP = 0.20;        // 3.1 * (11200/avgCost)^0.20
 FE.BUYER_PREMIUM = 0.055;
 FE.TRANSPORT = 180;

@@ -1002,7 +1002,10 @@ FE.enterShowroom = function () {
     var newCount = inStock().filter(function (c) { return c.isNew; }).length;
     newShare = Math.min(1, newCount / Math.max(totalSlots(), 1));
   }
-  var demand = foot * s.d * starM * adM * conv * (1 - FE.FRANCHISE.cannibal * newShare);
+  // the floor generates its own business as well as serving what walks in
+  var headEff = crowdEff(n);
+  var demand = foot * s.d * starM * adM * conv * (1 - FE.FRANCHISE.cannibal * newShare)
+    * (1 + FE.STAFF_DEMAND * headEff);
   var stk = inStock().filter(function (c) { return !c.isNew; });
   // a thin forecourt converts badly — walk-ins want a choice. During the weeks
   // 1-2 hope curve the starter forecourt gets a gentler penalty so it feels alive.
@@ -1011,6 +1014,9 @@ FE.enterShowroom = function () {
   var stockCap = Math.ceil(stk.length * 0.4);
 
   var unitsF = Math.min(demand, capTotal, stockCap);
+  // what held the week back — surfaced in the report so the player can see
+  // whether another salesperson would actually have sold anything
+  G.weekly.boundBy = (unitsF === capTotal) ? 'capacity' : (unitsF === stockCap ? 'stock' : 'demand');
   var units = Math.floor(unitsF) + (rnd() < (unitsF % 1) ? 1 : 0);
 
   // scaffolding — weeks 1-4 (hope curve)
@@ -1938,7 +1944,12 @@ FE.orderNewCar = function (model, colour, trim, express) {
   var due = express ? G.week + 1 : G.week + RI(8, 14);
   var o = makeOrder(model, colour, trim, due);
   var cost = Math.round(o.list * FE.FRANCHISE.costPct);
-  if (G.cash < cost) return { ok: false, msg: 'Cannot fund it — ' + money(cost) + ' due on delivery.' };
+  // funded like any other stock purchase: cash first, then the facility
+  if (FE.spendPower() < cost) {
+    return { ok: false, msg: FE.financeEnabled()
+      ? 'Beyond your cash and stocking-finance limit — ' + money(cost) + ' due on delivery.'
+      : 'Cannot fund it — ' + money(cost) + ' due on delivery. Open a stocking finance facility to order on credit.' };
+  }
   G.orders.push(o);
   FE.save();
   return { ok: true, dueWk: due, cost: cost };
@@ -2178,7 +2189,8 @@ FE.closeWeek = function () {
     stockBought: Math.round(costs.auction || 0),
     headcount: G.staff.length + '/' + site().maxStaff,
     floorplanTop: off, fine: fine ? fine.name : null,
-    demand: Math.round((W.demand || 0) * 10) / 10, capacity: Math.round((W.capTotal || 0) * 10) / 10
+    demand: Math.round((W.demand || 0) * 10) / 10, capacity: Math.round((W.capTotal || 0) * 10) / 10,
+    boundBy: W.boundBy || null
   };
   G.reports.unshift(report);
   // keep the save bounded on a long career — the tab only ever shows the last 10

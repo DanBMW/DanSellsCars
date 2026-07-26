@@ -374,6 +374,30 @@ function carSVG(c) {
     '<rect x="8" y="46" width="24" height="7" rx="3" fill="rgba(15,22,30,.7)"/>' +
     '</svg>';
 }
+/* Net worth only really climbs if you grow the business — trading well on a
+   full-but-fixed forecourt creeps along at a fraction of the rate. Tell the
+   player which lever is missing rather than leaving the bar to crawl. */
+function site2Hint() {
+  var g = G();
+  var reps = g.reports || [];
+  if (reps.length < 4) return 'Trade a few weeks and this will start to move.';
+  // average weekly net over the last 8 closed weeks
+  var n = Math.min(8, reps.length), sum = 0;
+  for (var i = 0; i < n; i++) sum += (reps[i].net || 0);
+  var perWk = sum / n;
+  var gap = FE.SITE2_TARGET - FE.netWorth();
+  if (gap <= 0) return 'Target reached.';
+  var free = FE.freePitches();
+  var expLeft = FE.EXPANSIONS.filter(function (x) { return g.expansionsDone.indexOf(x.id) < 0; }).length;
+  if (perWk <= 50) {
+    return 'Not growing at the moment. Net worth climbs on profit — and profit scales with pitches, so buying land is the lever.';
+  }
+  var wks = Math.ceil(gap / perWk);
+  var msg = 'About ' + wks + ' week' + (wks === 1 ? '' : 's') + ' at your recent rate (' + M(Math.round(perWk)) + '/wk).';
+  if (expLeft && free < 6) msg += ' More pitches would speed it up — you are running out of room.';
+  else if (expLeft) msg += ' Land expansion is the fastest way to move it.';
+  return msg;
+}
 function renderSite() {
   var g = G(), s = FE.SITES[g.site];
   var nw = FE.netWorth();
@@ -401,7 +425,8 @@ function renderSite() {
       '<div class="building-card" onclick="UI.openOffice()"><div><b>' + esc(s.name) + '</b><div class="kv">Tap for office, expansion &amp; departments</div></div><div style="font-size:1.4rem">🏢</div></div>' +
       '<div id="site2card"><b>Site 2 — locked</b> · unlocks at £2M net worth' +
       '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
-      '<div class="small" id="site2fig">' + M(nw) + ' / ' + M(FE.SITE2_TARGET) + '</div></div>';
+      '<div class="small" id="site2fig">' + M(nw) + ' / ' + M(FE.SITE2_TARGET) + '</div>' +
+      '<div class="small muted" id="site2hint">' + site2Hint() + '</div></div>';
     $('content').innerHTML = h;
     Scene.mount($('sceneHost'), { moveMode: !!moveModeCar });
   } else {
@@ -410,6 +435,7 @@ function renderSite() {
     var sc = $('sceneCount'); if (sc) sc.textContent = countTxt;
     var ss = $('sceneSale'); if (ss) ss.innerHTML = saleRibbon;
     var sf = $('site2fig'); if (sf) sf.textContent = M(nw) + ' / ' + M(FE.SITE2_TARGET);
+    var sh = $('site2hint'); if (sh) sh.innerHTML = site2Hint();
     var bar = document.querySelector('#site2card .bar i'); if (bar) bar.style.width = pct + '%';
     Scene.refresh();
   }
@@ -1442,6 +1468,13 @@ function reportText(r) {
   }
   t += '\n';
   t += line('Stock', r.stock + ' units (' + r.slots + ' pitches)');
+  if (r.boundBy) {
+    // the honest answer to "would another salesperson have helped?"
+    var bb = r.boundBy === 'capacity' ? 'your people — the floor was the limit, another head would sell more'
+      : r.boundBy === 'stock' ? 'stock — you ran short of cars to sell'
+      : 'demand — enough staff and stock, not enough customers';
+    t += line('Held back by', bb);
+  }
   t += line('Avg days in stock', r.avgDays + (r.avgDays > 45 ? '  ⚠' : ''));
   if (r.ageing) t += line('Ageing stock (60+)', r.ageing + ' units ⚠');
   t += line('Headcount', r.headcount);
