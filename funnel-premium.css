@@ -323,7 +323,77 @@ body.fv2 .field-group select:focus{
 }
 body.fv2 .field-group ::placeholder{color:var(--muted);}
 
-/* ── 19. Ignition send screen ──────────────────────────────── */
+/* ── 19. Confirmation page (thankyou.html) ─────────────────── */
+.success-wrap{
+  background:rgba(74,157,106,.07);border:1px solid rgba(74,157,106,.28);
+  border-radius:0;padding:34px;
+}
+body.fv2 .success-wrap h2{font-family:var(--display);font-weight:400;color:var(--text);}
+.success-wrap p{color:var(--body);}
+
+.checklist-item{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);border-radius:0;
+}
+.check-icon{
+  background:transparent;border:1px solid var(--blue);color:var(--blue);
+  font-weight:500;font-size:.8rem;
+}
+.check-body strong{color:var(--text);font-weight:500;}
+.check-body span{color:var(--muted);}
+
+.testimonials-kicker{
+  font-family:var(--font);font-weight:500;font-size:.68rem;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--muted);
+}
+.testimonial-card{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);
+  border-radius:0;box-shadow:none;
+}
+.testimonial-stars{color:var(--gold);}
+.testimonial-quote{color:var(--body);font-family:var(--display);font-size:1.02rem;line-height:1.7;}
+
+/* Primary / secondary actions on the confirmation page */
+body.fv2 .btn{
+  background:transparent;border:1px solid var(--blue);border-radius:0;color:var(--text);
+  font-weight:500;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;
+  padding:16px 30px;box-shadow:none;
+}
+body.fv2 .btn:hover{background:var(--blue);color:#0a0c0f;transform:none;}
+.btn-green{
+  background:transparent;border:1px solid rgba(74,157,106,.7);border-radius:0;color:#a9dcbe;
+  font-weight:500;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;
+  padding:15px 24px;box-shadow:none;
+}
+.btn-green:hover{background:rgba(74,157,106,.9);color:#0a0c0f;transform:none;}
+.btn-email{
+  background:transparent;border:1px solid var(--line);border-radius:0;color:var(--body);
+  font-weight:500;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;
+  padding:15px 24px;
+}
+.btn-email:hover{background:rgba(236,233,225,.06);color:var(--text);transform:none;}
+
+/* "What happens next" plan card */
+.ty-plan{
+  background:rgba(236,233,225,.02);border:1px solid var(--line);
+  border-radius:0;box-shadow:none;padding:24px 26px 20px;
+}
+.ty-plan-kicker{
+  font-family:var(--font);font-weight:500;font-size:.68rem;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--blue);
+}
+.ty-plan h3{font-family:var(--display);font-weight:400;font-size:1.25rem;color:var(--text);}
+.ty-plan li{border-top:1px solid var(--line-soft);color:var(--body);}
+.ty-plan li::before{
+  background:transparent;border:1px solid var(--blue);color:var(--blue);font-weight:500;
+}
+.ty-plan li strong{color:var(--text);font-weight:500;}
+.px-upmsg{color:#a9dcbe;font-weight:500;}
+.meta{color:var(--muted);}
+body.fv2 .brand{display:flex;flex-direction:column;gap:3px;}
+body.fv2 .brand .brand-name{font-family:var(--display);font-weight:400;letter-spacing:.28em;color:var(--text);}
+body.fv2 .brand .brand-sub{font-family:var(--font);font-weight:500;font-size:.56rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);}
+
+/* ── 20. Ignition send screen ──────────────────────────────── */
 .fv2-ign{background:radial-gradient(120% 120% at 50% 30%,#12161c,#07090c);}
 .fv2-ign.pressed .fv2-ign-ring{box-shadow:0 6px 30px rgba(0,0,0,.6),0 0 70px rgba(91,138,201,.4);}
 .fv2-ign.running .fv2-ign-ring::after{border-top-color:var(--blue);border-right-color:rgba(91,138,201,.35);}
