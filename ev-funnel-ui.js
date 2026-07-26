@@ -61,11 +61,11 @@
      Last checked 3 Jul 2026 - sources noted per line; refresh these
      every couple of months:
        petrol/diesel  RAC Fuel Watch UK average
-       homeStandard   Ofgem price cap unit rate (Jul–Sep 2026: 26.11p)
+       homeStandard   Ofgem price cap unit rate (Jul-Sep 2026: 26.11p)
        homeOffpeak    overnight EV tariffs (Intelligent Octopus Go is
                       5.49p from Apr 2026; 7p is a safe cross-supplier
                       figure so the card never over-promises)
-       publicFast     Zapmap price index, 3–49kW (May 2026: 54p)
+       publicFast     Zapmap price index, 3-49kW (May 2026: 54p)
        publicRapid    Zapmap price index, 50kW+ (May 2026: 79p)
      Charging behaviour: drivers with home charging are assumed to do
      90% of their miles on the overnight rate and 10% on public rapids
@@ -77,7 +77,7 @@
     evMilesPerKwh:  3.3,    // real-world BMW EV average
     homeOffpeak:    0.07,   // overnight EV tariff, £/kWh
     homeStandard:   0.26,   // Ofgem cap unit rate, £/kWh
-    publicFast:     0.54,   // public 3–49kW, £/kWh
+    publicFast:     0.54,   // public 3-49kW, £/kWh
     publicRapid:    0.79,   // public 50kW+, £/kWh
     homeShare:      0.9     // share of charging done at home overnight
   };
