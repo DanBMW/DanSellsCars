@@ -14,6 +14,22 @@
       }
     },
 
+    "empire": {
+      "saves": {
+        "$uid": {
+          ".read":  "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['game'])"
+        }
+      },
+      "profiles": {
+        ".read": "auth != null",
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+
     "disclosures": {
       ".read": "auth != null",
       "$disclosureId": {

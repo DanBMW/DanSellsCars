@@ -425,3 +425,44 @@ harder.
 *Beta shipped 2026-07-24. Items 1–4 logged day 1, items 5–9 day 2; to be
 implemented as the post-beta pass unless Dan reprioritises. No gameplay or
 visual changes have been made while the beta is under test.*
+
+---
+
+## Cloud saves — shipped 2026-07-27
+
+`cloud.js` mirrors the save envelope into Firebase (project `forecourt-1b6bc`,
+RTDB `empire/saves/$uid`). Design rules it is built on, and which any future
+change must keep:
+
+1. **localStorage stays the source of truth.** `FE.save()` still writes
+   locally and synchronously; `FE.afterSave` is the only hook the cloud gets,
+   it fires *after* the local write, and it is wrapped in a try. A broken
+   mirror can never cost a week.
+2. **Anonymous by default.** No login wall. A UID exists from first run and
+   the backup starts immediately. Linking Google (Settings → Account) keeps
+   the same UID and makes the career reachable from another device.
+3. **A remote save never silently replaces a local one.** `FEcloud.decide()`
+   is pure and unit-tested; anything other than "this device is level or
+   ahead" puts the choice in front of the player.
+4. **An unanswered conflict freezes uploads** (`FEcloud.held()`). Without
+   this, closing the dialog and playing on would let the next autosave
+   overwrite the very career the player was asked about.
+
+### Console setup this depends on
+
+Deployed code is inert until these are done in the Firebase console, and
+fails silently (Settings → Account reads "Local only") until they are:
+
+1. Authentication → Sign-in method → enable **Anonymous**
+2. Authentication → Sign-in method → enable **Google**
+3. Authentication → Settings → Authorized domains → add **dan-sells.co.uk**
+4. Deploy `database.rules.json` (the new `empire` block)
+
+### Not done
+
+- **Leaderboard.** Deliberately deferred. The week clock is anchored on a
+  client timestamp and the save is editable in devtools, so any table would
+  be honour-system. Making it real means running the economy server-side.
+- **`forecourt` RTDB path is still `".read": true, ".write": true`** — world
+  readable and writable, and it backs `Forecourt.html`, whose PIN is
+  client-side only. Unrelated to the game, but it should be locked down.

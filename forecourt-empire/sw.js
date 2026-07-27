@@ -11,11 +11,12 @@
    PWAs end up serving month-old code.
 
    Bump VERSION on any deploy that must invalidate the offline copy. */
-var VERSION = 'fe-2026-07-26-d';
+var VERSION = 'fe-2026-07-27-a';
 var CACHE = 'forecourt-empire-' + VERSION;
 var ASSETS = [
   './', './index.html', './style.css',
-  './data.js', './engine.js', './scene.js', './juice.js', './minigames.js', './ui.js',
+  './data.js', './engine.js', './scene.js', './juice.js', './minigames.js',
+  './cloud.js', './ui.js',
   './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png'
 ];
 

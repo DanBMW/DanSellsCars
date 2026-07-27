@@ -21,7 +21,18 @@ UI.boot = function () {
   var g = FE.load();
   if (g && !g.dead) { resumeGame(); }
   else { $('screen-boot').classList.remove('hidden'); $('bootContinue').classList.toggle('hidden', !g || !!g.dead); }
+  startCloud();
 };
+/* The cloud connects in the background — boot never waits on the network, so a
+   flat signal costs nothing but the mirror. When it does connect and finds a
+   save that disagrees with this device, the player is asked; we never pick. */
+function startCloud() {
+  var c = window.FEcloud;
+  if (!c) return;
+  c.onsync = function (d) { UI.cloudChoose(d, false); };
+  c.on(function () { try { if (G()) renderHUD(); } catch (e) {} });
+  try { c.init(); } catch (e) {}
+}
 // Every path back into a running career goes through here, so the real-time
 // catch-up runs whether the player auto-resumed or tapped Continue.
 function resumeGame() {
@@ -1898,6 +1909,7 @@ UI.settingsApp = function () {
     (window.__installPrompt ? '<button class="grn" onclick="UI.installApp()">📲 Install to home screen</button>' : '') +
     '<button class="sec" onclick="UI.soundToggle()">' + (Juice.muted() ? '🔇 Sound off' : '🔊 Sound on') + '</button>' +
     '<button class="sec" onclick="UI.saveMenu()">💾 Save &amp; profile</button>' +
+    '<button class="sec" onclick="UI.accountApp()">☁️ Account &amp; cloud save' + cloudDot() + '</button>' +
     '<button class="sec" onclick="UI.closeModal();UI.share()">📤 Share my progress</button>' +
     '<button class="sec" onclick="UI.skipWeekUI()">⏭ Skip this week (staff run it)</button>' +
     '<button class="sec" onclick="UI.helpUI()">❓ How this works</button>' +
@@ -1905,6 +1917,191 @@ UI.settingsApp = function () {
     '<button class="red" onclick="UI.confirmRestart()">Abandon career</button></div>' +
     '<p class="kv muted small" style="margin-top:10px">Beta build. Saves locally, automatically. The clock runs a game week every 12 real hours.</p>' +
     '<button class="ghost" onclick="UI.computer()">← Desktop</button>');
+};
+
+/* ---------- account & cloud save ----------
+   Everything here degrades to "local only" language when the cloud isn't
+   reachable, because for most of this game's life that will be the truth and
+   it is not a fault worth alarming anyone about. */
+function cloud() { return window.FEcloud || null; }
+function cloudDot() {
+  var c = cloud(); if (!c) return '';
+  var s = c.status().state;
+  if (s === 'on') return ' <span class="cl-dot on" title="Backed up"></span>';
+  if (s === 'connecting') return ' <span class="cl-dot wait"></span>';
+  if (s === 'error') return ' <span class="cl-dot err"></span>';
+  return '';
+}
+function ago(ts) {
+  if (!ts) return 'not yet';
+  var s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.round(s / 60) + ' min ago';
+  return new Date(ts).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+}
+UI.accountApp = function () {
+  var c = cloud();
+  if (!c) { UI.modal('<h3>☁️ Cloud save</h3><p class="kv">Not available in this build.</p>' +
+    '<button class="ghost" onclick="UI.settingsApp()">← Settings</button>'); return; }
+  var s = c.status(), on = c.enabled();
+  var held = !!(c.held && c.held());
+  var line, cls;
+  if (!on) { line = 'Off — this device only'; cls = 'muted'; }
+  else if (held) { line = 'Paused — waiting on you'; cls = 'warn'; }
+  else if (s.state === 'on') { line = 'Backing up'; cls = 'good'; }
+  else if (s.state === 'connecting') { line = 'Connecting…'; cls = 'muted'; }
+  else if (s.state === 'error') { line = 'Local only'; cls = 'warn'; }
+  else { line = 'Not connected'; cls = 'muted'; }
+
+  var h = '<h3>☁️ Account &amp; cloud save</h3>' +
+    '<div class="card"><b>Status</b>' +
+    '<div class="row kv"><span>Cloud backup</span><b class="' + cls + '">' + line + '</b></div>' +
+    (on && s.state === 'on' ? '<div class="row kv"><span>Last backed up</span><b>' + ago(s.lastPush) + '</b></div>' : '') +
+    (s.err ? '<div class="kv warn small">' + esc(s.err) + '</div>' : '') +
+    (held ? '<div class="kv warn small">There are two careers on this account and you haven’t said which continues. Nothing is being uploaded until you do, so neither can overwrite the other.</div>' : '') +
+    '<div class="kv muted small">Your career always saves to this device first. The cloud copy is a mirror — if it can’t be reached, nothing is lost and nothing stops.</div>' +
+    (on ? '<div class="btnrow">' +
+        (held ? '<button class="amber" onclick="UI.cloudResolve()">Choose which career continues</button>'
+          : s.state === 'on' ? '<button class="sec" onclick="UI.cloudBackupNow()">Back up now</button>'
+          : '<button class="sec" onclick="UI.cloudRetry()">Try again</button>') +
+        '<button class="sec" onclick="UI.cloudToggle(false)">Turn off</button></div>'
+      : '<div class="btnrow"><button onclick="UI.cloudToggle(true)">Turn cloud save on</button></div>') +
+    '</div>';
+
+  if (on && s.state === 'on') {
+    h += '<div class="card"><b>This device</b>' +
+      (s.linked
+        ? '<div class="row kv"><span>Signed in</span><b class="good">' + esc(s.email || 'Google account') + '</b></div>' +
+          '<div class="kv muted small">Sign in with the same Google account on another phone or laptop and your career comes with you.</div>' +
+          '<div class="btnrow"><button class="sec" onclick="UI.cloudSignOut()">Sign out on this device</button></div>'
+        : '<div class="row kv"><span>Account</span><b>Guest</b></div>' +
+          '<div class="kv">Your save is backed up against an anonymous ID held only in this browser. That protects you from clearing your data or losing the phone — but it can’t follow you to a second device, and it goes if this browser profile does.</div>' +
+          '<div class="kv muted small">Linking a Google account keeps this exact career and makes it reachable anywhere you sign in. Nothing is shared with anyone.</div>' +
+          '<div class="btnrow"><button class="grn" onclick="UI.cloudLink()">Link a Google account</button></div>') +
+      '</div>';
+  }
+
+  h += '<div class="card"><b>Always works</b>' +
+    '<div class="kv">Whatever the cloud is doing, a save code moves a career between devices by hand.</div>' +
+    '<div class="btnrow"><button class="sec" onclick="UI.exportUI()">Copy save code</button>' +
+    '<button class="sec" onclick="UI.importUI()">Paste a save code</button></div></div>' +
+    '<button class="ghost" onclick="UI.settingsApp()">← Settings</button>';
+  UI.modal(h);
+};
+UI.cloudToggle = function (on) {
+  var c = cloud(); if (!c) return;
+  c.setEnabled(on);
+  toast(on ? 'Cloud save on.' : 'Cloud save off — this device only.');
+  setTimeout(UI.accountApp, 250);
+};
+UI.cloudRetry = function () {
+  var c = cloud(); if (!c) return;
+  c.init();
+  toast('Reconnecting…');
+  setTimeout(UI.accountApp, 800);
+};
+UI.cloudBackupNow = function () {
+  var c = cloud(); if (!c) return;
+  c.pushNow();
+  toast('Backing up…');
+  setTimeout(UI.accountApp, 700);
+};
+UI.cloudLink = function () {
+  var c = cloud(); if (!c) return;
+  UI.modal('<h3>Linking…</h3><p class="kv">A Google sign-in window should have opened. Finish there and come back.</p>' +
+    '<p class="kv muted small">If nothing appeared, your browser may have blocked the popup — allow popups for this site and try again.</p>');
+  c.linkGoogle(function (err, res) {
+    if (err) {
+      UI.modal('<h3>Not linked</h3><p class="kv warn">' + esc(err.message || 'Sign-in did not complete.') + '</p>' +
+        '<p class="kv muted small">Nothing changed — your career is exactly where it was.</p>' +
+        '<button class="ghost" onclick="UI.accountApp()">← Back</button>');
+      return;
+    }
+    if (res && res.switched) {
+      /* That Google account already had a career. Two histories can't be
+         merged, so the player picks which one continues. */
+      var d = { action: 'ask', local: FE.describeEnvelope(res.local), remote: FE.describeEnvelope(res.remote), remoteEnvelope: res.remote };
+      if (!d.remote) { c.pushNow(); toast('Signed in — this career is now on that account.'); setTimeout(UI.accountApp, 300); return; }
+      UI.cloudChoose(d, true);
+      return;
+    }
+    toast('Linked. This career now follows your account.');
+    UI.accountApp();
+  });
+};
+UI.cloudSignOut = function () {
+  UI.modal('<div class="danger-ask"><div class="danger-ask-badge">☁️</div>' +
+    '<h3>Sign out on this device?</h3>' +
+    '<p class="kv">Your career stays on this device and keeps saving. It just stops backing up until you sign in again.</p>' +
+    '<div class="btnrow" style="flex-direction:column">' +
+    '<button class="grn" onclick="UI.accountApp()">No — stay signed in</button>' +
+    '<button class="amber" onclick="UI.cloudSignOutGo()">Yes, sign out</button></div></div>', { centre: true });
+};
+UI.cloudSignOutGo = function () {
+  var c = cloud(); if (!c) return;
+  c.signOut(function () { toast('Signed out.'); UI.accountApp(); });
+};
+
+/* The one screen that must never get this wrong: two saves, one career.
+   Nothing is overwritten until the player says which. */
+function envLine(d) {
+  if (!d) return '<div class="kv muted">nothing saved</div>';
+  return '<div class="row kv"><span>Progress</span><b>Week ' + d.week + (d.brand ? ' · ' + esc(d.brand) : '') + '</b></div>' +
+    '<div class="row kv"><span>Cars sold</span><b>' + d.units + '</b></div>' +
+    '<div class="row kv"><span>Cash</span><b>' + M(d.cash || 0) + '</b></div>' +
+    '<div class="row kv"><span>Last played</span><b>' + ago(d.savedAt) + '</b></div>';
+}
+UI.cloudChoose = function (d, fromLink) {
+  pendingSync = d;
+  if (d.action === 'restore') {
+    UI.modal('<div class="danger-ask"><div class="danger-ask-badge">☁️</div>' +
+      '<h3>There’s a career on your account</h3>' +
+      '<p class="kv">This device has no save, but your account does.</p>' +
+      '<div class="card">' + envLine(d.remote) + '</div>' +
+      '<div class="btnrow" style="flex-direction:column">' +
+      '<button class="grn" onclick="UI.cloudTakeRemote()">Pick it up where I left off</button>' +
+      '<button class="sec" onclick="UI.cloudKeepLocal()">Start fresh on this device</button></div>' +
+      '<p class="kv muted small">Starting fresh replaces the saved career on your account. There is no way back from that.</p></div>',
+      { centre: true, sticky: true });
+    return;
+  }
+  UI.modal('<div class="danger-ask"><div class="danger-ask-badge">⚠️</div>' +
+    '<h3>Two careers, one account</h3>' +
+    '<p class="kv">' + (fromLink ? 'That Google account already has a career of its own.' : 'The copy on your account is further along than this device.') +
+    ' They can’t be merged — pick the one that continues.</p>' +
+    '<div class="card"><b>On your account</b>' + envLine(d.remote) + '</div>' +
+    '<div class="card"><b>On this device</b>' + envLine(d.local) + '</div>' +
+    '<div class="btnrow" style="flex-direction:column">' +
+    '<button class="grn" onclick="UI.cloudTakeRemote()">Continue the one on my account</button>' +
+    '<button class="amber" onclick="UI.cloudKeepLocal()">Continue the one on this device</button></div>' +
+    '<p class="kv muted small">Whichever you leave behind is overwritten. Copy a save code out first if you want to keep both.</p></div>',
+    { centre: true, sticky: true });
+};
+var pendingSync = null;
+UI.cloudTakeRemote = function () {
+  var d = pendingSync; pendingSync = null;
+  if (!d || !d.remoteEnvelope) { UI.closeModal(); return; }
+  var c = cloud(); if (c) c.release();
+  var r = FE.adoptEnvelope(d.remoteEnvelope);
+  UI.closeModal();
+  if (!r.ok) { toast(r.msg || 'That save could not be opened.'); return; }
+  $('screen-boot').classList.add('hidden');
+  enterMain();
+  renderAll();
+  toast('Career restored — week ' + r.week + '.');
+  Juice.sound('win');
+};
+UI.cloudKeepLocal = function () {
+  pendingSync = null;
+  UI.closeModal();
+  var c = cloud(); if (c) { c.release(); c.pushNow(); }
+  toast('Keeping this career.');
+};
+// re-open a conflict the player closed without answering
+UI.cloudResolve = function () {
+  if (pendingSync) { UI.cloudChoose(pendingSync, false); return; }
+  var c = cloud(); if (c) { c.release(); c.resync(); }
+  toast('Checking…');
 };
 UI.deskMenu = function () { UI.computer(); };   // older call sites land on the desktop
 

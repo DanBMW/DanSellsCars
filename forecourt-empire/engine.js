@@ -254,10 +254,18 @@ function envelope() {
   var p = FE.profile();
   return { schema: FE.SCHEMA, profile: p, savedAt: Date.now(), game: G };
 }
+FE.envelope = envelope;
+/* cloud.js hangs a debounced upload off this. Deliberately called *after* the
+   local write and wrapped in a try: the local save is the source of truth and
+   a broken mirror must never be able to cost anyone a week. */
+FE.afterSave = null;
 FE.save = function () {
   if (!G) return false;
   G.lastSeen = Date.now();          // real-time clock anchor (see FE.offlineProgress)
-  return FE.storage.set(SAVE_KEY, JSON.stringify(envelope()));
+  var env = envelope();
+  var ok = FE.storage.set(SAVE_KEY, JSON.stringify(env));
+  if (FE.afterSave) { try { FE.afterSave(env); } catch (e) {} }
+  return ok;
 };
 FE.load = function () {
   var raw = FE.storage.get(SAVE_KEY);
@@ -272,6 +280,43 @@ FE.load = function () {
   } catch (e) { return null; }
 };
 FE.wipe = function () { FE.storage.remove(SAVE_KEY); G = null; };
+/* The local envelope, unparsed into play — used to compare against a cloud
+   copy at boot without disturbing whatever is already loaded. */
+FE.rawEnvelope = function () {
+  var raw = FE.storage.get(SAVE_KEY);
+  if (!raw) return null;
+  try {
+    var o = JSON.parse(raw);
+    if (o && o.game === undefined && o.week != null) return { schema: 1, profile: FE.profile(), savedAt: 0, game: o };
+    return o && o.game ? o : null;
+  } catch (e) { return null; }
+};
+/* Summarise any envelope — local or remote — for the "which one do you keep?"
+   dialog. Returns null for anything that isn't a real save. */
+FE.describeEnvelope = function (o) {
+  if (!o) return null;
+  var g = o.game || (o.week != null ? o : null);
+  if (!g || g.week == null || !g.stock) return null;
+  return {
+    week: g.week, brand: g.brand, cash: g.cash,
+    stock: (g.stock || []).filter(function (c) { return c.status === 'stock'; }).length,
+    units: (g.totals && g.totals.units) || 0,
+    savedAt: o.savedAt || 0,
+    name: (o.profile && o.profile.name) || '',
+    dead: !!g.dead
+  };
+};
+/* Install an envelope from elsewhere (a cloud pull, or a pasted code) as the
+   live career. The profile travels with it, so a name set on one device
+   follows the save to the next. */
+FE.adoptEnvelope = function (o) {
+  var d = FE.describeEnvelope(o);
+  if (!d) return { ok: false, msg: 'That save isn’t readable.' };
+  G = FE.migrate(o.game, o.schema || 1);
+  if (o.profile && o.profile.id) FE.storage.set(PROFILE_KEY, JSON.stringify(o.profile));
+  FE.save();
+  return { ok: true, week: G.week };
+};
 FE.hasSave = function () { return !!FE.storage.get(SAVE_KEY); };
 FE.saveInfo = function () {
   var raw = FE.storage.get(SAVE_KEY);
