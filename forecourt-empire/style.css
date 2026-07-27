@@ -918,3 +918,13 @@ b.teal { color: var(--teal); }
 .lot-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 3px 0 7px; }
 .lot-line .lot-spec { margin: 0; flex: 1 1 100%; }
 .card.lot { margin: 8px 0; }
+.lot-figs .fig-profit b { font-size: .92rem; }
+.lot-figs .fig-profit em { display: block; font-style: normal; font-size: .6rem; font-weight: 700; }
+.lot-figs b.muted { color: var(--muted); font-weight: 700; }
+.days-chip {
+  font-size: .64rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid var(--line);
+}
+.days-chip.good { color: #7fe6ac; border-color: rgba(53,208,127,.4); }
+.days-chip.warn { color: #ffcf6b; border-color: rgba(255,182,61,.4); }
+.lot-buy .lb-sub { display: block; font-size: .66rem; font-weight: 600; opacity: .82; margin-top: 1px; }

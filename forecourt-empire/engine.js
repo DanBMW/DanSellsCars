@@ -572,6 +572,21 @@ function deptCapital() {
   return t;
 }
 
+/* The prep bill a lot is *expected* to carry — the same model as truePrepFor
+   with the randomness taken out and the blowout risk priced in at its
+   expected value. This is what makes an auction profit figure honest: prep is
+   the single biggest thing between the hammer price and the money. */
+FE.expectedPrep = function (c, baseCost) {
+  if (!G || !c) return 0;
+  var p = brand().prepPct * baseCost * FE.COND[c.cond].prep;
+  if (FE.COLOURS[c.colour].c === 'Black') p *= 1.1;
+  var blowoutP = FE.BLOWOUT_P * (deptLive('smart') ? (1 - FE.SMART_BLOWOUT_CUT) : 1);
+  p += blowoutP * ((FE.BLOWOUT_RANGE[0] + FE.BLOWOUT_RANGE[1]) / 2);
+  if (c.prepMult && c.prepMult !== 1) p *= c.prepMult;
+  if (deptLive('service')) p *= (1 - FE.SERVICE_PREP_SAVING);
+  if (deptLive('smart')) p *= (1 - FE.SMART_PREP_SAVING);
+  return Math.round(Math.max(120, p));
+};
 function truePrepFor(c, baseCost) {
   var mean = brand().prepPct * baseCost * FE.COND[c.cond].prep;
   var p = Math.max(120, norm(mean, FE.PREP_SD));

@@ -562,3 +562,14 @@ one without doing arithmetic in your head.
 
 Buying stays one tap, deliberately: an auction runs at pace and a confirm on
 every lot would wreck the rhythm. The all-in price is on the button instead.
+
+**Profit in pounds.** A percentage is the right comparator but the wrong thing
+to lead with, so every lot now shows **Est profit in money**, with the % as a
+sub-line. Making that figure honest needed `FE.expectedPrep()` — the same
+model as `truePrepFor` with the randomness removed and the blowout risk priced
+in at expected value — because prep is the single biggest thing between the
+hammer price and the money. Each lot shows All-in / Est retail / Est prep /
+Est profit, the buy button reads "Buy £14,185 — to make about £1,818", and the
+header carries the best lot on the list plus the combined profit of the best
+lots you can both afford and find a pitch for. Default sort is Most profit;
+Best margin % is still there for return on capital.

@@ -880,7 +880,7 @@ function riskChip(l) {
 }
 /* Sorting and shortlisting live for the life of the list — a new week brings a
    new list, so there is nothing worth persisting. */
-var auctionSort = 'margin';
+var auctionSort = 'profit';
 var aucStar = {};
 UI.setAuctionSort = function (k) { auctionSort = k; UI.openAuction(); };
 UI.aucStar = function (id, ev) {
@@ -893,12 +893,18 @@ UI.aucStar = function (id, ev) {
    The engine's estGross is hammer-to-retail and so flatters every lot by the
    fees; this is the number a buyer should actually compare on. */
 function lotAllIn(l) { return Math.round(l.hammer * 1.055) + 180; }
+/* What the lot is expected to make: retail, less everything it costs to buy,
+   less the prep it is expected to need. Hold cost is still to come and is not
+   knowable at the hammer, which is what the caveat under the filters says. */
 function lotMargin(l) {
   var allIn = lotAllIn(l);
-  var gross = l.retail - allIn;
-  return { allIn: allIn, gross: gross, pct: allIn ? (gross / allIn) * 100 : 0 };
+  var prep = FE.expectedPrep(l, l.hammer);
+  var profit = l.retail - allIn - prep;
+  return { allIn: allIn, prep: prep, profit: profit, gross: l.retail - allIn,
+           pct: allIn ? (profit / allIn) * 100 : 0 };
 }
-function marginCls(pct) { return pct >= 14 ? 'good' : pct >= 8 ? '' : pct > 0 ? 'warn' : 'danger'; }
+function profitCls(p) { return p >= 1500 ? 'good' : p >= 700 ? '' : p > 0 ? 'warn' : 'danger'; }
+function marginCls(pct) { return pct >= 12 ? 'good' : pct >= 6 ? '' : pct > 0 ? 'warn' : 'danger'; }
 
 UI.openAuction = function () {
   var g = G();
@@ -923,21 +929,31 @@ UI.openAuction = function () {
   // filter, then sort — so the counts on the chips stay honest
   var list = g.lots.filter(function (l) { return auctionFilter === 'all' || l.risk.light === auctionFilter; });
   var SORTS = {
-    margin: { name: 'Best margin', fn: function (a, b) { return lotMargin(b).pct - lotMargin(a).pct; } },
+    profit: { name: 'Most profit', fn: function (a, b) { return lotMargin(b).profit - lotMargin(a).profit; } },
+    margin: { name: 'Best margin %', fn: function (a, b) { return lotMargin(b).pct - lotMargin(a).pct; } },
     cheap:  { name: 'Cheapest',    fn: function (a, b) { return lotAllIn(a) - lotAllIn(b); } },
     quick:  { name: 'Quickest',    fn: function (a, b) { return (a.estDays[0] + a.estDays[1]) - (b.estDays[0] + b.estDays[1]); } },
     fresh:  { name: 'Newest',      fn: function (a, b) { return b.year - a.year || a.miles - b.miles; } }
   };
-  list = list.slice().sort(SORTS[auctionSort] ? SORTS[auctionSort].fn : SORTS.margin.fn);
+  list = list.slice().sort(SORTS[auctionSort] ? SORTS[auctionSort].fn : SORTS.profit.fn);
   // anything starred floats to the top, whatever the sort
   list.sort(function (a, b) { return (aucStar[b.id] ? 1 : 0) - (aucStar[a.id] ? 1 : 0); });
 
   var affordable = g.lots.filter(function (l) { return lotAllIn(l) <= power; }).length;
-  var best = g.lots.reduce(function (m, l) { var p = lotMargin(l).pct; return p > m ? p : m; }, -999);
+  var best = g.lots.reduce(function (m, l) { var p = lotMargin(l).profit; return p > m ? p : m; }, -1e9);
+  /* What today's list is worth to you: the best lots you can both afford and
+     find a pitch for, added up. Tells you at a glance whether it is a list
+     worth working or one to sit out. */
+  var picks = g.lots.filter(function (l) { return lotAllIn(l) <= power; })
+    .map(function (l) { return lotMargin(l).profit; })
+    .filter(function (v) { return v > 0; })
+    .sort(function (a, b) { return b - a; })
+    .slice(0, Math.max(0, freeP));
+  var pot = picks.reduce(function (a, v) { return a + v; }, 0);
   h += '<div class="auc-read">' +
-    '<span><i>On the list</i><b>' + g.lots.length + '</b></span>' +
-    '<span><i>You can afford</i><b class="' + (affordable ? '' : 'danger') + '">' + affordable + '</b></span>' +
-    '<span><i>Best margin today</i><b class="' + marginCls(best) + '">' + (best > -999 ? (best >= 0 ? '+' : '') + best.toFixed(0) + '%' : '—') + '</b></span>' +
+    '<span><i>You can afford</i><b class="' + (affordable ? '' : 'danger') + '">' + affordable + ' of ' + g.lots.length + '</b></span>' +
+    '<span><i>Best lot today</i><b class="' + profitCls(best) + '">' + (best > -1e9 ? M(best) : '—') + '</b></span>' +
+    '<span><i>Best ' + picks.length + ' you can buy</i><b class="' + profitCls(pot) + '">' + M(pot) + '</b></span>' +
     '</div>';
 
   h += '<div class="risk-filter">' +
@@ -948,7 +964,7 @@ UI.openAuction = function () {
   h += '<div class="sortrow">' + Object.keys(SORTS).map(function (k) {
       return '<button class="' + (auctionSort === k ? '' : 'sec') + ' sm" onclick="UI.setAuctionSort(\'' + k + '\')">' + SORTS[k].name + '</button>';
     }).join('') + '</div>';
-  h += '<p class="kv muted small">Margin is against the <b>all-in</b> price — hammer plus 5.5% premium plus £180 transport. Prep and hold cost still come out of it. Tap a risk light for why.</p>';
+  h += '<p class="kv muted small"><b>Est profit</b> is retail less the all-in price (hammer + 5.5% premium + £180 transport) <b>and less the prep it is expected to need</b>. It is an average — grade 1 and 2 cars vary most, and hold cost comes off it for every week the car sits. Tap a risk light for why.</p>';
 
   if (!g.lots.length) h += '<div class="card kv">All lots gone or bought. Fresh list with the new week.</div>';
 
@@ -960,16 +976,21 @@ UI.openAuction = function () {
         '<b>' + esc(l.brand + ' ' + FE.MODELS[l.model].m) + perfChip(l) + '</b>' +
         '<button class="lot-star' + (aucStar[l.id] ? ' on' : '') + '" onclick="UI.aucStar(' + l.id + ',event)" aria-label="Shortlist">' + (aucStar[l.id] ? '★' : '☆') + '</button>' +
       '</div>' +
-      '<div class="lot-line">' + riskChip(l) + (l.vasFlag ? '<span class="vas-flag">Vas rates this one</span>' : '') +
+      '<div class="lot-line">' + riskChip(l) +
+        '<span class="days-chip ' + (l.estDays[1] <= 45 ? 'good' : l.estDays[0] > 60 ? 'warn' : '') + '">' + l.estDays[0] + '–' + l.estDays[1] + ' days to sell</span>' +
+        (l.vasFlag ? '<span class="vas-flag">Vas rates this one</span>' : '') +
         '<span class="lot-spec">' + esc(FE.carDesc(l)) + '</span></div>' +
       '<div class="lot-figs">' +
         '<span><i>All-in</i><b>' + M(m.allIn) + '</b></span>' +
         '<span><i>Est retail</i><b>' + M(l.retail) + '</b></span>' +
-        '<span><i>Margin</i><b class="' + marginCls(m.pct) + '">' + (m.pct >= 0 ? '+' : '') + m.pct.toFixed(1) + '%</b></span>' +
-        '<span><i>Est days</i><b class="' + (l.estDays[1] <= 45 ? 'good' : l.estDays[0] > 60 ? 'warn' : '') + '">' + l.estDays[0] + '–' + l.estDays[1] + '</b></span>' +
+        '<span><i>Est prep</i><b class="muted">−' + M(m.prep) + '</b></span>' +
+        '<span class="fig-profit"><i>Est profit</i><b class="' + profitCls(m.profit) + '">' +
+          (m.profit < 0 ? '−' + M(Math.abs(m.profit)) : M(m.profit)) + '</b>' +
+          '<em class="' + marginCls(m.pct) + '">' + (m.pct >= 0 ? '+' : '') + m.pct.toFixed(1) + '%</em></span>' +
       '</div>' +
       (afford
-        ? '<button class="lot-buy" onclick="UI.buyLot(' + l.id + ')">Buy — ' + M(m.allIn) + '</button>'
+        ? '<button class="lot-buy" onclick="UI.buyLot(' + l.id + ')">Buy ' + M(m.allIn) +
+            '<span class="lb-sub">' + (m.profit > 0 ? 'to make about ' + M(m.profit) : 'loses about ' + M(Math.abs(m.profit))) + '</span></button>'
         : '<button class="lot-buy sec" disabled>Beyond your budget</button>') +
       '</div>';
   });
