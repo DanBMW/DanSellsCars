@@ -108,7 +108,8 @@ FE.newGame = function (brandKey, siteIdx, salaryIdx) {
     candidates: [], candidatePool: [],
     emails: [], reviews: [], reports: [],
     adTier: 2,
-    extraSlots: 0, extraUtil: 0, expansionsDone: [], pendingBuilds: [],
+    extraSlots: 0, extraUtil: 0, expansionsDone: [], pendingBuilds: [], landCapital: 0,
+    mortgage: null, coach: {},
     dept: { service: 0, building: 0 },      // service: week it went live (0 = none)
     franchise: null,                        // {slots, signedWk, qUnits, qMargin, yUnits, preRegPending}
     finance: { enabled: false },            // stocking finance facility
@@ -179,7 +180,7 @@ function grantStarterStock() {
      is the same payload a sync endpoint would POST tomorrow. */
 var SAVE_KEY = 'forecourtEmpireSave_v1';
 var PROFILE_KEY = 'forecourtEmpireProfile';
-FE.SCHEMA = 4;
+FE.SCHEMA = 5;
 
 FE.storage = {
   get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -241,6 +242,19 @@ FE.migrate = function (game, from) {
     (game.lots || []).forEach(function (l) {
       if (l.perf && reb[l.perf.id]) { l.perf.badge = reb[l.perf.id].badge; l.perf.note = reb[l.perf.id].note; }
     });
+  }
+  if (from < 5) {
+    // v5: land became a balance-sheet asset and the mortgage arrived. Credit
+    // back what was already spent on land so old saves aren't penalised.
+    if (game.mortgage === undefined) game.mortgage = null;
+    if (!game.coach) game.coach = {};
+    if (game.landCapital == null) {
+      var land = 0;
+      (game.expansionsDone || []).forEach(function (id) {
+        FE.EXPANSIONS.forEach(function (x) { if (x.id === id) land += x.cost; });
+      });
+      game.landCapital = land;
+    }
   }
   if (from < 3) {
     // v3: wash/smart-repair bays, interactive late-night prospect
@@ -971,6 +985,7 @@ FE.weeklyCosts = function () {
   t += stockV * FE.FLOORPLAN_APR / 52;
   if (FE.financeEnabled()) t += FE.financeDrawn() * FE.financeApr() / 52;
   if (G.franchise) t += FE.FRANCHISE.fee / 52;
+  t += FE.mortgageWeekly();
   return Math.round(t);
 };
 // how many weeks of running costs the cash in the bank would cover
@@ -981,9 +996,17 @@ FE.weeksOfFloat = function () {
 };
 function needCash(cost, what) {
   var short = Math.round(cost - Math.max(0, G.cash));
-  return { ok: false, msg: 'Needs ' + money(cost) + ' in cash and you have ' + money(Math.max(0, G.cash)) +
-    ' — ' + money(short) + ' short. Stocking finance is secured on the cars, so it cannot pay for ' + what +
-    '. Sell or trade out a car to free the money up.' };
+  var out = 'Needs ' + money(cost) + ' in cash and you have ' + money(Math.max(0, G.cash)) +
+    ' — ' + money(short) + ' short. Stocking finance is secured on the cars, so it cannot pay for ' + what + '.';
+  /* Point at the way out instead of just refusing: this exact message is what
+     a cash-trapped player sees, and the mortgage is the answer to it. */
+  if (FE.unlocked('mortgage') && FE.mortgageLimit() >= FE.MORTGAGE.minDraw) {
+    out += ' Your property would carry another ' + money(FE.mortgageLimit()) +
+      ' on a mortgage — Banking has the paperwork. Otherwise, sell or trade a car out.';
+  } else {
+    out += ' Sell or trade out a car to free the money up.';
+  }
+  return { ok: false, msg: out };
 }
 FE.train = function (staffId, courseId) {
   var st = staffById(staffId);
@@ -1409,6 +1432,7 @@ FE.payPrep = function (ev) {
   // Idempotent: this is reachable more than once for the same car (a reload
   // while the bill is on screen, or Skip Week sweeping an event the player has
   // already settled). Charging twice would quietly double the week's prep.
+  coachFire('prep');
   if (car.prepPaid) {
     ev.dead = true;
     return { amount: car.cost.prep || 0, blowout: !!car.blowout, tip: false, already: true };
@@ -2153,6 +2177,7 @@ FE.buyExpansion = function (id) {
   if (G.pendingBuilds.some(function (b) { return b.id === id; })) return { ok: false, msg: 'Already under construction.' };
   if (G.cash < E.cost) return needCash(E.cost, 'buying land');
   pay(E.cost, 'misc', E.name);
+  G.landCapital = (G.landCapital || 0) + E.cost;   // an asset, not a bonfire
   var due = G.week + (E.buildWks || 1);
   G.pendingBuilds.push({ kind: 'expansion', id: id, name: E.name, slots: E.slots, util: E.util, dueWk: due, startedWk: G.week });
   mail('Site works', E.name + ' — groundworks started', 'Diggers are in on the new plot. The ' + E.slots + ' pitches will be surfaced and open in week ' + due + '.', 'info');
@@ -2236,6 +2261,7 @@ FE.closeWeek = function () {
     if (drawn > 0) pay(Math.round(drawn * FE.financeApr() / 52), 'stockfinance');
   }
   if (G.franchise) pay(Math.round(FE.FRANCHISE.fee / 52), 'franchise');
+  chargeMortgage();
   FE.DEPARTMENTS.forEach(function (d) { if (deptLive(d.id)) earn(d.weekly, d.name + ' income'); });
 
   var fine = fineCheck();
@@ -2254,7 +2280,8 @@ FE.closeWeek = function () {
     - (costs.salaries || 0) - (costs.commission || 0) - (costs.utilities || 0)
     - (costs.prep || 0) - (costs.advertising || 0) - (costs.floorplan || 0)
     - (costs.insurance || 0) - (costs.misc || 0) - (costs.fines || 0)
-    - (costs.training || 0) - (costs.comebacks || 0) - (costs.franchise || 0) - (costs.stockfinance || 0);
+    - (costs.training || 0) - (costs.comebacks || 0) - (costs.franchise || 0) - (costs.stockfinance || 0)
+    - (costs.mortgage || 0);
   // auction spend is capital, not P&L — stock swaps cash for metal
 
   // floorplan offenders
@@ -2270,7 +2297,8 @@ FE.closeWeek = function () {
       auction: Math.round(costs.auction || 0), floorplan: Math.round(costs.floorplan || 0),
       insurance: costs.insurance || 0, fines: Math.round(costs.fines || 0), training: Math.round(costs.training || 0),
       comebacks: Math.round(costs.comebacks || 0), franchise: Math.round(costs.franchise || 0), misc: Math.round(costs.misc || 0),
-      stockfinance: Math.round(costs.stockfinance || 0)
+      stockfinance: Math.round(costs.stockfinance || 0),
+      mortgage: Math.round(costs.mortgage || 0)
     },
     financeDrawn: FE.financeDrawn(), financeApr: Math.round(FE.financeApr() * 1000) / 10,
     financed: W.financed || 0, financeComm: Math.round(W.financeComm || 0),
@@ -2314,6 +2342,7 @@ FE.skipReady = function () { return FE.skipRemainMs() <= 0; };
 
 FE.nextWeek = function () {
   startWeek();
+  FE.coachCheck();
   FE.save();
 };
 
@@ -2488,11 +2517,132 @@ FE.shareText = function () {
   return lines.join('\n');
 };
 
+/* What the bricks are worth: the site, the departments built on it and the
+   land bought beside it. This is the mortgage's security. */
+FE.propertyValue = function () {
+  return Math.round(site().cost + deptCapital() + (G.landCapital || 0));
+};
 FE.netWorth = function () {
   var stockV = 0;
   inStock().forEach(function (c) { stockV += carCost(c); });
-  return Math.round(G.cash + stockV + site().cost + deptCapital());
+  /* Borrowing must not make you richer. Land bought is land owned, so it
+     stays on the balance sheet; the mortgage secured against it comes off. */
+  return Math.round(G.cash + stockV + FE.propertyValue() - FE.mortgageBalance());
 };
+
+/* ---------- commercial mortgage ----------
+   Secured on FE.propertyValue(). Straight-line capital repayment plus interest
+   on the outstanding balance, so the weekly payment eases as you pay it down
+   and the maths is something a player can actually follow.
+
+   Drawing does not change net worth: cash goes up, the debt goes up with it.
+   That is the whole point — it buys time, not wealth. */
+FE.mortgageBalance = function () {
+  return (G && G.mortgage) ? Math.max(0, Math.round(G.mortgage.balance)) : 0;
+};
+FE.mortgageApr = function () {
+  if (G && G.mortgage && G.mortgage.apr) return G.mortgage.apr;
+  var M = FE.MORTGAGE;
+  // established, well-capitalised dealers get the better rate
+  var yrs = Math.min(1, (G.week - 1) / 104);
+  var wealth = Math.min(1, FE.propertyValue() / 400000);
+  var stars = Math.min(1, Math.max(0, (G.stars - 3) / 2));
+  var q = (yrs * 0.45 + wealth * 0.35 + stars * 0.20);
+  return Math.round((M.aprStart - (M.aprStart - M.aprFloor) * q) * 10000) / 10000;
+};
+FE.mortgageLimit = function () {
+  var cap = Math.round(FE.propertyValue() * FE.MORTGAGE.ltv);
+  return Math.max(0, cap - FE.mortgageBalance());
+};
+FE.mortgageWeekly = function () {
+  var m = G && G.mortgage;
+  if (!m || m.balance <= 0) return 0;
+  var capital = m.principal / m.termWks;
+  var interest = m.balance * m.apr / 52;
+  return Math.round(capital + interest);
+};
+FE.mortgageWeeksLeft = function () {
+  var m = G && G.mortgage;
+  if (!m || m.balance <= 0) return 0;
+  return Math.ceil(m.balance / (m.principal / m.termWks));
+};
+/* What a given draw would actually cost, so the UI can show it before the
+   player commits rather than after. */
+FE.mortgageQuote = function (amount, termWks) {
+  var M = FE.MORTGAGE;
+  amount = Math.round(amount || 0);
+  var cur = G.mortgage;
+  var principal = FE.mortgageBalance() + amount;
+  var apr = cur && cur.apr ? cur.apr : FE.mortgageApr();
+  var capital = principal / termWks;
+  var fee = Math.round(amount * M.arrangeFee);
+  var totalInterest = 0, bal = principal;
+  for (var i = 0; i < termWks && bal > 0; i++) {
+    totalInterest += bal * apr / 52;
+    bal -= capital;
+  }
+  return {
+    amount: amount, fee: fee, net: amount - fee, apr: apr, termWks: termWks,
+    principal: Math.round(principal),
+    weekly: Math.round(capital + principal * apr / 52),
+    firstWeekly: Math.round(capital + principal * apr / 52),
+    totalInterest: Math.round(totalInterest),
+    totalCost: Math.round(totalInterest + fee)
+  };
+};
+FE.mortgageDraw = function (amount, termWks) {
+  var M = FE.MORTGAGE;
+  if (!FE.unlocked('mortgage')) return { ok: false, msg: 'The bank wants to see you trade a while first — week ' + FE.unlockWeek('mortgage') + '.' };
+  amount = Math.round(amount || 0);
+  if (M.terms.indexOf(termWks) < 0) termWks = M.terms[1];
+  if (amount < M.minDraw) return { ok: false, msg: 'The bank will not write a facility under ' + money(M.minDraw) + '.' };
+  if (amount > FE.mortgageLimit()) {
+    return { ok: false, msg: 'That is beyond what the property will carry. They will lend ' +
+      Math.round(M.ltv * 100) + '% of ' + money(FE.propertyValue()) + ' — ' + money(FE.mortgageLimit()) + ' still available.' };
+  }
+  var q = FE.mortgageQuote(amount, termWks);
+  G.mortgage = {
+    principal: q.principal, balance: q.principal, apr: q.apr,
+    termWks: termWks, startWk: G.week, drawnTotal: ((G.mortgage && G.mortgage.drawnTotal) || 0) + amount
+  };
+  earn(q.amount, 'Mortgage advance');
+  pay(q.fee, 'mortgage', 'Arrangement fee');   // taken off the drawdown
+  mail('Bank', 'Facility agreed — ' + money(amount),
+    'The valuation came back at ' + money(FE.propertyValue()) + ' and they have advanced ' + money(amount) +
+    ' against it over ' + termWks + ' weeks at ' + (Math.round(q.apr * 1000) / 10) + '% APR. ' +
+    money(q.fee) + ' arrangement fee deducted, so ' + money(q.net) + ' has landed. Repayments of about ' +
+    money(q.weekly) + ' a week start immediately and come out whether you have sold anything or not.', 'info');
+  FE.save();
+  return { ok: true, quote: q };
+};
+FE.mortgageOverpay = function (amount) {
+  var m = G.mortgage;
+  if (!m || m.balance <= 0) return { ok: false, msg: 'Nothing outstanding.' };
+  amount = Math.min(Math.round(amount || 0), Math.round(m.balance));
+  if (amount <= 0) return { ok: false, msg: 'Nothing to pay.' };
+  if (G.cash < amount) return needCash(amount, 'an overpayment');
+  pay(amount, 'mortgage', 'Mortgage overpayment');
+  m.balance -= amount;
+  if (m.balance <= 1) { G.mortgage = null; mail('Bank', 'Facility cleared', 'The mortgage is paid off. The property is yours outright again.', 'good'); }
+  FE.save();
+  return { ok: true, cleared: !G.mortgage };
+};
+/* Called from closeWeek. Payment comes out whatever the week did — that is
+   what makes it a real commitment rather than a free cash button. */
+function chargeMortgage() {
+  var m = G.mortgage;
+  if (!m || m.balance <= 0) return 0;
+  var capital = Math.min(m.balance, m.principal / m.termWks);
+  var interest = m.balance * m.apr / 52;
+  var due = Math.round(capital + interest);
+  pay(due, 'mortgage');
+  m.balance = Math.max(0, m.balance - capital);
+  if (m.balance <= 1) {
+    G.mortgage = null;
+    mail('Bank', 'Mortgage cleared', 'Final payment taken. The property is unencumbered again.', 'good');
+  }
+  return due;
+}
 
 /* ---------- stocking finance facility ---------- */
 FE.financeEnabled = function () { return !!(G.finance && G.finance.enabled); };
@@ -2529,5 +2679,67 @@ FE.enableFinance = function (on) {
 };
 
 FE.startWeekExternal = startWeek;
+
+
+/* ---------- contextual coaching ----------
+   The opening tour can only say so much before it becomes a manual nobody
+   reads. These fire once each, at the moment the thing they explain actually
+   happens to the player, and are remembered in the save so they never repeat.
+   FE.coachDue() is called by the UI on every render; it returns at most one. */
+FE.COACH = [
+  { id: 'firstCar', title: 'That car is now costing you money',
+    body: 'From today it pays interest and quietly loses value every week it sits there. Prep it, price it, move it. The profit is in the turn, not in the buying.' },
+  { id: 'prep', title: 'Prep is where margin goes to die',
+    body: 'Every car needs work before it can be sold, and the bill lands whether you expected it or not. The auction’s "est. gross" is a guess at it — condition grades 1 and 2 are where the nasty ones hide.' },
+  { id: 'day60', title: 'You have a car at 60 days',
+    body: 'This is the point to do something rather than hope. Drop the screen price to market or below, or trade it out and take the small loss. A car at 90 days has already eaten the profit you were protecting.' },
+  { id: 'thinCash', title: 'You are running thin',
+    body: 'Cash covers under three weeks of costs. Wages, prep and training all come out of cash — stocking finance cannot pay them, it only buys cars. Sell something, or stop buying for a week.' },
+  { id: 'lossWeek', title: 'That week lost money',
+    body: 'One bad week is weather, not a crisis — January and August always look like this. Check the report: if the loss is prep and floorplan on stock that is not moving, the problem is the stock, not the week.' },
+  { id: 'mortgage', title: 'You can borrow against the property now',
+    body: 'The bank will lend against the site, departments and land you own. It does not make you richer — the debt cancels the cash — but it funds the things stocking finance will not: a service department, training, wages through a bad month.' },
+  { id: 'aged90', title: 'A car has hit 90 days',
+    body: 'It is now losing you money every week you hold it, and the trade knows it. Take the offer in front of you or trade it out. Holding on for the price you wanted is the most expensive habit in the business.' }
+];
+function coachFire(id) {
+  if (!G) return;
+  G.coach = G.coach || {};
+  if (G.coach[id]) return;
+  G.coach[id] = 0;              // 0 = queued, 1 = shown
+}
+FE.coachSeen = function (id) { return !!(G && G.coach && G.coach[id] === 1); };
+/* The next queued tip, or null. The UI marks it shown when it displays it. */
+FE.coachDue = function () {
+  if (!G || !G.coach) return null;
+  for (var i = 0; i < FE.COACH.length; i++) {
+    var c = FE.COACH[i];
+    if (G.coach[c.id] === 0) return c;
+  }
+  return null;
+};
+FE.coachShown = function (id) {
+  if (!G) return;
+  G.coach = G.coach || {};
+  G.coach[id] = 1;
+  FE.save();
+};
+/* Evaluated once a week (and after a purchase) rather than continuously, so a
+   tip lands on a state the player can actually still see. */
+FE.coachCheck = function () {
+  if (!G || G.dead) return;
+  G.coach = G.coach || {};
+  var stock = G.stock.filter(function (c) { return c.status === 'stock'; });
+  if (stock.length) coachFire('firstCar');
+  var oldest = 0;
+  stock.forEach(function (c) { var d = FE.daysIn(c); if (d > oldest) oldest = d; });
+  if (oldest >= 60) coachFire('day60');
+  if (oldest >= 90) coachFire('aged90');
+  if (G.week >= 3 && FE.weeksOfFloat() < 3) coachFire('thinCash');
+  if (FE.unlocked('mortgage') && FE.mortgageLimit() >= FE.MORTGAGE.minDraw && FE.weeksOfFloat() < 8) coachFire('mortgage');
+  var last = G.reports && G.reports[0];
+  if (last && last.net < 0 && G.week > 4) coachFire('lossWeek');
+};
+FE.coachPrep = function () { coachFire('prep'); };
 
 })();

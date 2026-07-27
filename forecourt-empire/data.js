@@ -52,13 +52,14 @@ FE.STARTER_BOOK = 0.74;        // book cost as a fraction of retail (favourable 
    isn't handed every lever at once. Keys map to the week they become available.
    FE.unlocked(key) is the single source of truth; the office shows a
    "coming up" list built from FE.UNLOCK_INFO so progression is visible. */
-FE.UNLOCKS = { finance: 3, ads: 5, depts: 6, expansion: 6, franchise: 7, salary: 9 };
+FE.UNLOCKS = { finance: 3, ads: 5, depts: 6, expansion: 6, franchise: 7, mortgage: 8, salary: 9 };
 FE.UNLOCK_INFO = [
   { key: 'finance',   name: 'Stocking finance',   blurb: 'Buy stock on credit beyond your cash.' },
   { key: 'ads',       name: 'Advertising tiers',  blurb: 'Turn the marketing spend up or down.' },
   { key: 'depts',     name: 'Departments',        blurb: 'Service department — income and cheaper prep.' },
   { key: 'expansion', name: 'Land expansion',     blurb: 'Buy the ground next door for more pitches.' },
   { key: 'franchise', name: 'Franchise',          blurb: 'Sign for new cars and factory orders.' },
+  { key: 'mortgage',  name: 'Commercial mortgage', blurb: 'Release cash from the property you own.' },
   { key: 'salary',    name: 'Pay restructure',    blurb: 'Change the basic/commission split.' }
 ];
 
@@ -423,3 +424,30 @@ FE.SHOCK_DEFS = {
 /* weeks the summer sale runs (late Jul → Aug lull). Fires as a shock on the
    first of these; the SEASON.sale flag drives the calendar + on-site flair. */
 FE.SUMMER_SALE_WKS = [27, 28, 29, 30, 31, 32];
+
+/* ---------- commercial mortgage ----------
+   The third rung of the borrowing ladder, and the one that was missing.
+
+     overdraft / stocking finance — dear (14.5% falling to 6.5%), instant, and
+       it only ever buys cars: it is secured on the metal.
+     mortgage — cheap, slow, secured on the bricks you already own. It funds
+       the things stocking finance cannot: a service department, a training
+       budget, groundworks, wages through a bad January.
+
+   It exists because of a measurable trap. A player who fills every pitch ends
+   up asset-rich and cash-poor — 55 cars, £1.2M net worth — and locked out of
+   the £180k service department that would fix the problem, for 99 weeks in
+   simulation. Releasing capital from property they already paid for is the
+   honest way out, and it is what real dealers do.
+
+   Deliberately NOT an unsecured loan: that would rescue a player who owns
+   nothing, which is the one player who ought to be allowed to fail. */
+FE.MORTGAGE = {
+  ltv: 0.60,             // borrow against 60% of what the property is worth
+  minDraw: 20000,
+  aprStart: 0.072,       // secured on bricks, so roughly half the overdraft rate
+  aprFloor: 0.045,
+  terms: [52, 104, 156], // weeks — 1, 2 or 3 game years
+  arrangeFee: 0.015,     // 1.5% of the drawdown, taken up front
+  unlockWk: 8
+};

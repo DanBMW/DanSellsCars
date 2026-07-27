@@ -840,3 +840,42 @@ b.teal { color: var(--teal); }
 .desk-close { margin-top: 12px; text-align: center; }
 .desk-close button { width: 100%; }
 .desk-close .kv { margin-top: 6px; }
+
+/* ---------- contextual coaching ---------- */
+#coach { margin: 0 14px 12px; }
+.coach-card {
+  position: relative; padding: 12px 34px 12px 13px; border-radius: 14px;
+  background: linear-gradient(150deg, rgba(255,206,74,.14), rgba(255,182,61,.06)), var(--card);
+  border: 1px solid rgba(255,206,74,.34);
+  box-shadow: 0 10px 26px -18px rgba(255,206,74,.6), inset 0 1px 0 rgba(255,255,255,.06);
+  animation: coachIn .32s cubic-bezier(.2,.9,.3,1.2);
+}
+.coach-card > b { display: block; color: #ffdd85; font-size: .92rem; margin-bottom: 4px; }
+.coach-card .kv { color: #d7dfef; font-size: .84rem; }
+.coach-card button.sm { margin-top: 9px; padding: 6px 14px; font-size: .78rem; }
+.coach-x {
+  position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; padding: 0;
+  border-radius: 50%; background: rgba(255,255,255,.08); color: var(--muted);
+  font-size: .75rem; box-shadow: none;
+}
+@keyframes coachIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- reports: at-a-glance ---------- */
+.rep-head .row { justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.spark { width: 100%; height: 42px; display: block; margin: 2px 0 12px; overflow: visible; }
+.spark .sp-zero { stroke: rgba(151,163,196,.35); stroke-width: .6; stroke-dasharray: 2 2; vector-effect: non-scaling-stroke; }
+.spark .sp-line { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+.spark .sp-line.up { stroke: var(--green); filter: drop-shadow(0 0 5px rgba(53,208,127,.5)); }
+.spark .sp-line.down { stroke: var(--red); filter: drop-shadow(0 0 5px rgba(255,93,108,.45)); }
+.spark .sp-dot.up { fill: var(--green); }
+.spark .sp-dot.down { fill: var(--red); }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.kpi {
+  background: rgba(255,255,255,.035); border: 1px solid var(--line);
+  border-radius: 12px; padding: 8px 10px; min-width: 0;
+}
+.kpi i { display: block; font-style: normal; font-size: .62rem; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.kpi b { display: block; font-size: 1.02rem; font-weight: 800; line-height: 1.15; }
+.kpi em { display: block; font-style: normal; font-size: .66rem; color: var(--muted); margin-top: 1px; }
+.sec-head { margin: 18px 0 6px; font-size: .95rem; }

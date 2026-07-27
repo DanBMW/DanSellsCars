@@ -147,17 +147,18 @@ UI.week1Intro = function () {
 var tutStep = 0, tutSteps = [];
 function buildTutSteps() {
   return [
-    { sel: '#cash', text: 'This is your <b>live cash position</b> — the only score that matters. It moves the instant a car sells or a bill lands.', pos: 'below' },
-    { sel: '#hudStars', text: 'Your <b>star rating</b>. Reviews and footfall follow it — protect it.', pos: 'below' },
-    { sel: '#banner', text: 'Each week runs in three blocks: <b>Auction → Showroom → Office</b>. This banner always tells you what’s next.', pos: 'below' },
-    { sel: '#tab-site', text: 'Your <b>forecourt</b>. Tap a car for its details, or an empty pitch to place stock.', pos: 'above' },
-    { sel: '#tab-computer', text: 'Your <b>computer</b> — every app you run the business from: email, banking, property, recruitment, the auction house, factory orders and a game for quiet moments.', pos: 'above' },
-    { sel: '#tab-stock', text: '<b>Stock</b> — every car you own, sortable by days in stock or hold cost.', pos: 'above' },
-    { sel: '#tab-staff', text: '<b>Staff</b> — hire and train your sales execs. You can hire from day one.', pos: 'above' },
-    { sel: '#tab-reports', text: '<b>Reports</b> — weekly P&amp;L, reviews and the share card.', pos: 'above' },
-    { sel: null, text: 'That’s the tour. The one number that kills dealerships is <b>days in stock</b> — keep the average under 45. Now go buy some cars.', pos: 'center', last: true }
+    { sel: null, pos: 'center', text: '<b>The job, in one line:</b> buy a car for less than you can sell it for, and sell it before it eats the difference.<br><br>Everything else in here is detail on those two halves.' },
+    { sel: '#cash', text: 'Your <b>live cash position</b>. It moves the instant a car sells or a bill lands. Cars are bought with it, but so are wages, prep and training — run out and it stops mattering how much stock you own.', pos: 'below' },
+    { sel: '#banner', text: 'The week runs in three blocks: <b>Auction</b> (buy) → <b>Showroom</b> (sell) → <b>Office</b> (pay for it all). This banner always tells you what is next, so you can never be lost.', pos: 'below' },
+    { sel: '#tab-stock', text: '<b>Stock</b>, and the number that kills dealerships: <b>days in stock</b>. Every day a car sits you pay interest on it and it quietly loses value. Past about 45 days the profit is gone; past 90 you are selling at a loss and do not know it yet.', pos: 'above' },
+    { sel: '#tab-site', text: 'Your <b>forecourt</b>. Tap a car to see what it owes you, or an empty pitch to place stock. An empty pitch earns nothing — a full one you cannot shift costs you.', pos: 'above' },
+    { sel: '#tab-staff', text: '<b>Staff</b>. More sellers means more sold — genuinely, it is wired that way — but they are paid whether they sell or not. Hire from day one.', pos: 'above' },
+    { sel: '#tab-computer', text: 'The <b>office computer</b>: email, the auction house, banking, property, recruitment, factory orders. If you are looking for something and it is not a tab, it is in here.', pos: 'above' },
+    { sel: '#tab-reports', text: '<b>Reports</b> — the weekly P&amp;L. Worth reading even when the week felt fine; the bills that sink you are the quiet ones.', pos: 'above' },
+    { sel: null, pos: 'center', last: true, text: 'That is everything. You will get a nudge from me the first time something important happens, so you can stop reading and start buying.<br><br>Go and fill that forecourt.' }
   ];
 }
+
 UI.startTutorial = function (firstRun) {
   // replaying from Settings while the tour is already up would stack overlays
   var open = document.getElementById('tutOverlay');
@@ -228,9 +229,29 @@ function enterMain() {
   if (G().dead) showGameOver();
 }
 
+/* One tip at a time, under the banner, dismissible. Deliberately not a modal:
+   these fire mid-flow and a dialog would be an interruption rather than help. */
+function renderCoach() {
+  var el = $('coach');
+  if (!el) return;
+  var c = FE.coachDue && FE.coachDue();
+  if (!c) { el.innerHTML = ''; el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  el.innerHTML = '<div class="coach-card">' +
+    '<button class="coach-x" onclick="UI.coachDismiss(\'' + c.id + '\')" aria-label="Got it">✕</button>' +
+    '<b>💡 ' + esc(c.title) + '</b>' +
+    '<div class="kv">' + c.body + '</div>' +
+    '<button class="sec sm" onclick="UI.coachDismiss(\'' + c.id + '\')">Got it</button></div>';
+}
+UI.coachDismiss = function (id) {
+  FE.coachShown(id);
+  renderCoach();
+  Juice.sound('tap');
+};
 function renderAll() {
   if (!G()) return;
   renderHUD(); renderBanner(); renderTab();
+  renderCoach();
 }
 UI.renderAll = renderAll;
 
@@ -1477,20 +1498,93 @@ UI.trainGo = function (staffId, courseId) {
 };
 
 /* ---------- reports tab ---------- */
+/* A tiny inline sparkline of weekly net. No library, no canvas — a polyline
+   scaled to the range, with zero drawn so a losing week reads as one. */
+function sparkline(vals, w, hgt) {
+  if (vals.length < 2) return '';
+  var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+  if (min === max) { min -= 1; max += 1; }
+  var lo = Math.min(min, 0), hi = Math.max(max, 0);
+  var x = function (i) { return (i / (vals.length - 1)) * w; };
+  var y = function (v) { return hgt - ((v - lo) / (hi - lo)) * hgt; };
+  var pts = vals.map(function (v, i) { return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ');
+  var zero = y(0).toFixed(1);
+  var last = vals[vals.length - 1];
+  return '<svg class="spark" viewBox="0 0 ' + w + ' ' + hgt + '" preserveAspectRatio="none">' +
+    '<line class="sp-zero" x1="0" y1="' + zero + '" x2="' + w + '" y2="' + zero + '"/>' +
+    '<polyline class="sp-line ' + (last >= 0 ? 'up' : 'down') + '" points="' + pts + '"/>' +
+    '<circle class="sp-dot ' + (last >= 0 ? 'up' : 'down') + '" cx="' + x(vals.length - 1).toFixed(1) + '" cy="' + y(last).toFixed(1) + '" r="2.6"/>' +
+    '</svg>';
+}
+function tile(label, value, cls, sub) {
+  return '<div class="kpi"><i>' + label + '</i><b class="' + (cls || '') + '">' + value + '</b>' +
+    (sub ? '<em>' + sub + '</em>' : '') + '</div>';
+}
+/* Reports used to open on a share button with the numbers buried under the
+   reviews. It is the P&L screen — so it now leads with how the business is
+   actually doing, and the vanity stuff goes to the bottom. */
 function renderReports() {
   var g = G(), h = '';
-  h += '<div class="btnrow" style="margin-top:10px"><button onclick="UI.share()">Share my progress</button></div>';
+  var reps = g.reports || [];
+  if (!reps.length) {
+    h += '<div class="card kv">No weeks closed yet. Close your first week and the numbers land here.</div>';
+    $('content').innerHTML = h;
+    return;
+  }
+  var recent = reps.slice(0, 12).slice().reverse();          // oldest → newest
+  var nets = recent.map(function (r) { return r.net; });
+  var last = reps[0];
+  var last4 = reps.slice(0, 4);
+  var avgUnits = last4.reduce(function (a, r) { return a + r.units; }, 0) / last4.length;
+  var avgNet = last4.reduce(function (a, r) { return a + r.net; }, 0) / last4.length;
+  var gpu = last.units ? Math.round(last.gross / last.units) : 0;
+  var trend = reps.length > 4 ? last.net - avgNet : 0;
+
+  h += '<div class="card rep-head"><div class="row"><b>How it is going</b>' +
+    '<span class="muted small">last ' + recent.length + ' weeks</span></div>' +
+    sparkline(nets, 100, 30) +
+    '<div class="kpis">' +
+    tile('Net this week', (last.net < 0 ? '−' : '') + M(Math.abs(last.net)), last.net >= 0 ? 'good' : 'danger',
+         reps.length > 4 && Math.abs(trend) >= 250 ? (trend >= 0 ? '▲ ' : '▼ ') + M(Math.abs(Math.round(trend))) + ' vs avg' : '') +
+    tile('Units', last.units, last.units >= avgUnits ? 'good' : 'warn', '4-wk avg ' + avgUnits.toFixed(1)) +
+    tile('Gross / unit', gpu ? M(gpu) : '—', gpu >= 1400 ? 'good' : gpu ? 'warn' : '') +
+    tile('Avg days in stock', last.avgDays, last.avgDays <= 45 ? 'good' : last.avgDays <= 70 ? 'warn' : 'danger',
+         last.avgDays <= 45 ? 'healthy' : 'over 45') +
+    '</div>' + repVerdict(last, avgNet, gpu) + '</div>';
+
+  h += '<h3 class="sec-head">Week by week</h3>';
+  reps.slice(0, 10).forEach(function (r) {
+    h += '<div class="card"><pre class="report">' + reportText(r) + '</pre></div>';
+  });
   if (g.reviews.length) {
-    h += '<h3 style="margin:14px 0 4px">Reviews</h3>';
+    h += '<h3 class="sec-head">Reviews</h3>';
     g.reviews.slice(0, 8).forEach(function (r) {
       h += '<div class="card review"><div class="rstars">' + '★'.repeat(r.stars) + '</div><div class="kv">' + esc(r.text) + '</div></div>';
     });
   }
-  if (!g.reports.length) h += '<div class="card kv">No weeks closed yet.</div>';
-  g.reports.slice(0, 10).forEach(function (r) {
-    h += '<div class="card"><pre class="report">' + reportText(r) + '</pre></div>';
-  });
+  h += '<div class="btnrow" style="margin-top:14px"><button class="sec" onclick="UI.share()">Share my progress</button></div>';
   $('content').innerHTML = h;
+}
+/* One line of plain English on the week, pointing at the biggest single lever
+   rather than making the player read the whole P&L to find it. */
+function repVerdict(r, avgNet, gpu) {
+  var c = r.costs || {};
+  /* Nothing sold is its own diagnosis — naming the biggest cost line would
+     point at the wrong thing entirely. */
+  if (!r.units) {
+    return '<div class="kv danger small">Nothing went out this week, so every bill came straight off the bottom line. Check you have stock on the pitch and someone on the floor to sell it.</div>';
+  }
+  if (r.net < 0) {
+    var worst = '', wv = 0;
+    [['prep', 'prep bills'], ['floorplan', 'floorplan interest'], ['salaries', 'wages'],
+     ['stockfinance', 'stocking finance interest'], ['mortgage', 'the mortgage'], ['advertising', 'advertising']]
+      .forEach(function (p) { if ((c[p[0]] || 0) > wv) { wv = c[p[0]]; worst = p[1]; } });
+    return '<div class="kv warn small">Down ' + M(Math.abs(r.net)) + ' this week — the biggest line against you was ' + worst + ' at ' + M(wv) + '.' +
+      (r.avgDays > 60 ? ' Stock is sitting at ' + r.avgDays + ' days, which is where the money is going.' : '') + '</div>';
+  }
+  if (r.avgDays > 60) return '<div class="kv warn small">A profitable week, but stock is averaging ' + r.avgDays + ' days. That bill arrives later.</div>';
+  if (gpu && gpu < 1200) return '<div class="kv warn small">Profitable, but ' + M(gpu) + ' a unit is thin — you are buying too dear or pricing too soft.</div>';
+  return '<div class="kv good small">A clean week: ' + r.units + ' out at ' + M(gpu) + ' a unit, stock turning at ' + r.avgDays + ' days.</div>';
 }
 function pad(s, n) { s = String(s); while (s.length < n) s = ' ' + s; return s; }
 function line(label, val) { return label + pad(val, 29 - label.length) + '\n'; }
@@ -1512,6 +1606,7 @@ function reportText(r) {
   if (c.advertising) t += line('Advertising', '-' + M(c.advertising));
   if (c.floorplan) t += line('Floorplan interest', '-' + M(c.floorplan));
   if (c.stockfinance) t += line('Stocking finance int.', '-' + M(c.stockfinance));
+  if (c.mortgage) t += line('Mortgage', '-' + M(c.mortgage));
   t += line('Insurance / misc', '-' + M(c.insurance + (c.misc || 0)));
   if (c.training) t += line('Training', '-' + M(c.training));
   if (c.comebacks) t += line('Comebacks', '-' + M(c.comebacks));
@@ -1823,8 +1918,129 @@ UI.bankApp = function () {
     h += '<div class="card"><b>Stocking finance</b><div class="kv">Buy stock beyond your cash — up to ' + M(FE.STOCK_FINANCE.maxLimit) + ', scaled to net worth. <span class="warn">Leverage cuts both ways.</span></div>' +
       '<div class="btnrow"><button onclick="UI.financeToggle(true)">Open a facility</button></div></div>';
   }
+  h += mortgageCard();
   h += '<button class="ghost" onclick="UI.computer()">← Desktop</button>';
   UI.modal(h);
+};
+
+/* ---------- commercial mortgage ----------
+   The borrowing ladder is three rungs and players only ever met two of them,
+   so this leads with what the money is FOR rather than with a rate. */
+function mortgageCard() {
+  var g = G();
+  if (!FE.unlocked('mortgage')) {
+    return lockedCard('Commercial mortgage', 'Release cash from the property you own — the money stocking finance cannot lend you.', FE.unlockWeek('mortgage'));
+  }
+  var bal = FE.mortgageBalance(), lim = FE.mortgageLimit(), pv = FE.propertyValue();
+  var h = '<div class="card"><b>Property &amp; mortgage</b>' +
+    '<div class="row kv"><span>Property owned</span><b>' + M(pv) + '</b></div>';
+  if (bal > 0) {
+    var m = g.mortgage;
+    var paidPct = Math.max(0, Math.min(100, Math.round((1 - bal / m.principal) * 100)));
+    h += '<div class="row kv"><span>Outstanding</span><b class="warn">' + M(bal) + '</b></div>' +
+      '<div class="row kv"><span>Weekly payment</span><b>' + M(FE.mortgageWeekly()) + '</b></div>' +
+      '<div class="row kv"><span>Rate</span><b>' + (Math.round(m.apr * 1000) / 10) + '% APR</b></div>' +
+      '<div class="row kv"><span>Clear in</span><b>' + FE.mortgageWeeksLeft() + ' wks</b></div>' +
+      '<div class="progressbar"><i class="good" style="width:' + paidPct + '%"></i></div>' +
+      '<div class="kv muted small">' + paidPct + '% repaid. The payment comes out whatever the week did — that is the deal.</div>';
+  } else {
+    h += '<div class="row kv"><span>Owed</span><b class="good">Nothing</b></div>';
+  }
+  h += '<div class="row kv"><span>Still available</span><b>' + M(lim) + '</b></div>' +
+    '<div class="kv muted small">The bank lends ' + Math.round(FE.MORTGAGE.ltv * 100) + '% of the site, departments and land you own. ' +
+    '<b>Borrowing does not make you richer</b> — the cash comes in and the debt goes on, so net worth does not move. What it buys is time.</div>';
+  if (lim >= FE.MORTGAGE.minDraw) {
+    h += '<div class="btnrow"><button class="grn" onclick="UI.mortgageUI()">' + (bal > 0 ? 'Borrow more' : 'Borrow against the property') + '</button>' +
+      (bal > 0 ? '<button class="sec" onclick="UI.mortgageOverpayUI()">Pay some off</button>' : '') + '</div>';
+  } else if (bal > 0) {
+    h += '<div class="btnrow"><button class="sec" onclick="UI.mortgageOverpayUI()">Pay some off</button></div>';
+  } else {
+    h += '<div class="kv muted small">Nothing to borrow against yet — build or buy property and the facility grows with it.</div>';
+  }
+  return h + '</div>';
+}
+var mortDraw = { amount: 0, term: 104 };
+UI.mortgageUI = function () {
+  var lim = FE.mortgageLimit();
+  if (lim < FE.MORTGAGE.minDraw) { toast('Nothing left to borrow against.'); return; }
+  if (!mortDraw.amount || mortDraw.amount > lim) mortDraw.amount = Math.min(lim, 100000);
+  var q = FE.mortgageQuote(mortDraw.amount, mortDraw.term);
+  var steps = [25000, 50000, 100000, 200000].filter(function (v) { return v <= lim; });
+  if (steps.indexOf(lim) < 0) steps.push(lim);
+  var h = '<h3>🏦 Borrow against the property</h3>' +
+    '<p class="kv muted small">Secured on ' + M(FE.propertyValue()) + ' of property. Up to ' + M(lim) + ' available.</p>' +
+    '<div class="card"><b>How much?</b><div class="btnrow">' +
+    steps.map(function (v) {
+      return '<button class="' + (mortDraw.amount === v ? '' : 'sec') + ' sm" onclick="UI.mortSet(' + v + ',' + mortDraw.term + ')">' +
+        (v === lim ? 'Max ' : '') + M(v) + '</button>';
+    }).join('') + '</div></div>' +
+    '<div class="card"><b>Over how long?</b><div class="btnrow">' +
+    FE.MORTGAGE.terms.map(function (t) {
+      return '<button class="' + (mortDraw.term === t ? '' : 'sec') + ' sm" onclick="UI.mortSet(' + mortDraw.amount + ',' + t + ')">' +
+        (t / 52) + ' year' + (t === 52 ? '' : 's') + '</button>';
+    }).join('') + '</div></div>' +
+    '<div class="card"><b>What it costs</b>' +
+    '<div class="row kv"><span>You receive</span><b class="good">' + M(q.net) + '</b></div>' +
+    '<div class="row kv"><span>Arrangement fee</span><b>' + M(q.fee) + '</b></div>' +
+    '<div class="row kv"><span>Rate</span><b>' + (Math.round(q.apr * 1000) / 10) + '% APR</b></div>' +
+    '<div class="row kv"><span>Weekly payment</span><b class="warn">' + M(q.weekly) + '</b></div>' +
+    '<div class="row kv"><span>Interest over the term</span><b>' + M(q.totalInterest) + '</b></div>' +
+    '<div class="row kv"><span>Total cost of the money</span><b>' + M(q.totalCost) + '</b></div></div>' +
+    weeklyBiteWarning(q.weekly) +
+    '<div class="btnrow"><button class="grn" onclick="UI.mortgageConfirm()">Take ' + M(q.net) + '</button>' +
+    '<button class="sec" onclick="UI.bankApp()">Not now</button></div>';
+  UI.modal(h);
+};
+UI.mortSet = function (amount, term) { mortDraw.amount = amount; mortDraw.term = term; UI.mortgageUI(); };
+/* Borrowing is only sensible if the weekly payment is small against what the
+   business already carries — say so before they sign, not after. */
+function weeklyBiteWarning(weekly) {
+  var wc = FE.weeklyCosts();
+  if (!wc) return '';
+  var pct = Math.round(weekly / wc * 100);
+  if (pct >= 25) return '<div class="card"><div class="kv danger">That payment is ' + pct + '% on top of your ' + M(wc) + ' weekly running costs, and it comes out in January too, when nothing sells. Consider a longer term or a smaller draw.</div></div>';
+  if (pct >= 12) return '<div class="card"><div class="kv warn">Adds ' + pct + '% to your ' + M(wc) + ' weekly running costs — noticeable, but carryable.</div></div>';
+  return '<div class="card"><div class="kv muted small">Adds ' + pct + '% to your ' + M(wc) + ' weekly running costs.</div></div>';
+}
+UI.mortgageConfirm = function () {
+  var q = FE.mortgageQuote(mortDraw.amount, mortDraw.term);
+  UI.modal('<div class="danger-ask"><div class="danger-ask-badge">🏦</div>' +
+    '<h3>Borrow ' + M(q.amount) + ' against the property?</h3>' +
+    '<p class="kv">' + M(q.net) + ' lands now. ' + M(q.weekly) + ' a week comes out for ' + (q.termWks / 52) + ' year' + (q.termWks === 52 ? '' : 's') + ', trading or not.</p>' +
+    '<p class="kv muted small">Your net worth will not move — the cash and the debt cancel out.</p>' +
+    '<div class="btnrow" style="flex-direction:column">' +
+    '<button class="grn" onclick="UI.bankApp()">No — leave it</button>' +
+    '<button class="amber" onclick="UI.mortgageGo()">Yes, draw ' + M(q.net) + '</button></div></div>', { centre: true });
+};
+UI.mortgageGo = function () {
+  var r = FE.mortgageDraw(mortDraw.amount, mortDraw.term);
+  if (!r.ok) { toast(r.msg); return; }
+  UI.closeModal(); renderAll();
+  Juice.sound('coin');
+  toast('Drawn ' + M(r.quote.net) + '. Repayments start this week.');
+  setTimeout(UI.bankApp, 400);
+};
+UI.mortgageOverpayUI = function () {
+  var bal = FE.mortgageBalance(), g = G();
+  var can = Math.max(0, Math.min(bal, Math.floor(g.cash)));
+  var opts = [25000, 50000, 100000].filter(function (v) { return v <= can; });
+  if (can > 0 && opts.indexOf(can) < 0) opts.push(can);
+  UI.modal('<h3>Pay some of the mortgage off</h3>' +
+    '<div class="card"><div class="row kv"><span>Outstanding</span><b>' + M(bal) + '</b></div>' +
+    '<div class="row kv"><span>Cash you have</span><b>' + M(Math.max(0, g.cash)) + '</b></div>' +
+    '<div class="kv muted small">Overpaying saves interest but does not cut the weekly payment — it just finishes sooner. Cash working in the business is usually worth more than saving 6% on the debt; only do this when you are flush.</div></div>' +
+    (opts.length
+      ? '<div class="btnrow">' + opts.map(function (v) {
+          return '<button class="sec" onclick="UI.mortgageOverpayGo(' + v + ')">' + (v === bal ? 'Clear it — ' : '') + M(v) + '</button>';
+        }).join('') + '</div>'
+      : '<div class="kv warn">No spare cash to overpay with.</div>') +
+    '<button class="ghost" onclick="UI.bankApp()">← Banking</button>');
+};
+UI.mortgageOverpayGo = function (amount) {
+  var r = FE.mortgageOverpay(amount);
+  toast(r.ok ? (r.cleared ? 'Mortgage cleared. The property is yours outright.' : 'Paid ' + M(amount) + ' off.') : r.msg);
+  if (r.ok) { renderAll(); Juice.sound('tap'); }
+  UI.bankApp();
 };
 
 /* Property — the site, the land and what's built on it */
@@ -1835,7 +2051,10 @@ UI.propertyApp = function () {
     '<div class="card"><b>' + esc(s.name) + '</b>' +
     '<div class="row kv"><span>Pitches</span><b>' + (s.ext + s.int + g.extraSlots) + '</b></div>' +
     '<div class="row kv"><span>Free now</span><b>' + FE.freePitches() + '</b></div>' +
-    '<div class="row kv"><span>Utilities</span><b>' + M(s.util + g.extraUtil) + '/wk</b></div></div>';
+    '<div class="row kv"><span>Utilities</span><b>' + M(s.util + g.extraUtil) + '/wk</b></div>' +
+    '<div class="row kv"><span>Property owned</span><b class="teal">' + M(FE.propertyValue()) + '</b></div>' +
+    (FE.mortgageBalance() ? '<div class="row kv"><span>Mortgaged</span><b class="warn">' + M(FE.mortgageBalance()) + '</b></div>' : '') +
+    '</div>';
   if (!FE.unlocked('depts')) h += lockedCard('Departments', 'Service, smart repair and valeting.', FE.unlockWeek('depts'));
   else FE.DEPARTMENTS.forEach(function (d) {
     if (g.dept[d.id]) {

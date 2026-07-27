@@ -466,3 +466,74 @@ fails silently (Settings → Account reads "Local only") until they are:
 - **`forecourt` RTDB path is still `".read": true, ".write": true`** — world
   readable and writable, and it backs `Forecourt.html`, whose PIN is
   client-side only. Unrelated to the game, but it should be locked down.
+
+---
+
+## Overhaul pass — 2026-07-27
+
+### The borrowing question, and why it was answered with a mortgage
+
+Measured first. A conservative player (£60k reserve, sane stock target) is
+never once blocked by cash across 104 weeks. An aggressive one — filling
+every pitch, which is the natural instinct — sits on £50-110k against a
+£1.2M business and **cannot build the £180k service department for 99
+weeks**. That is the trap: profitable, asset-rich, and locked out of the one
+investment that would fix it.
+
+Rejected: an **unsecured loan**. It would rescue a player who owns nothing,
+which is precisely the player who should be allowed to fail, and it removes
+the tension rather than resolving it.
+
+Built: a **commercial mortgage** secured on `FE.propertyValue()` (site +
+departments + land). It only helps someone who has already sunk cash into
+bricks, which is exactly the trapped player, and it scales with what they
+built. Measured effect, aggressive policy over 104 weeks:
+
+| | no mortgage | mortgage |
+|---|---|---|
+| service dept built | wk 63 | wk 8 |
+| weeks blocked | 57 | 2 |
+| net worth at wk 104 | £1.49M | £1.83M |
+
+The conservative player never touches it (£2.14M either way), so it is not a
+free win — it is a way out of one specific hole. Over-trading is still
+punished, just no longer unrecoverably.
+
+Rules it must keep:
+- **Borrowing never increases net worth.** Cash in, debt on, they cancel.
+- **The weekly payment comes out regardless of trading** — that is what makes
+  it a commitment rather than a cash button.
+- 60% LTV, so the facility grows only as the player genuinely invests.
+
+### Two accounting bugs found on the way
+
+- **Land expansion destroyed net worth.** £95k of land cost £95k of cash and
+  was never booked as an asset — so expanding actively pushed Site 2 (gated
+  on net worth) *further away*. Land is now capital. Migration credits it
+  back to existing saves.
+- Departments were already correct (asset swap, no net change).
+
+### Tutorial
+
+Was a furniture tour: nine steps naming the five tabs, ending on "keep days
+in stock under 45" without ever saying what days in stock is. Rewritten to
+lead with the job — *buy for less than you can sell it for, and sell it
+before it eats the difference* — and to teach days-in-stock where it lives,
+on the Stock tab.
+
+### Contextual coaching (`FE.COACH`)
+
+The tour cannot carry everything without becoming a manual. Seven one-off
+tips now fire at the moment the thing they explain happens: first car bought,
+first prep bill, a car at 60 and at 90 days, cash under three weeks of float,
+first losing week, mortgage becoming available while cash is tight. Rendered
+as a dismissible strip under the banner — never a modal, because these fire
+mid-flow. Remembered in the save.
+
+### Reports screen
+
+Opened on a share button with the P&L buried under the reviews. Now leads
+with a net-P&L sparkline, four KPI tiles (net, units vs 4-week average, gross
+per unit, average days in stock) and one line of plain English naming the
+biggest line against you that week — or, if nothing sold, saying so instead
+of blaming the largest cost.
