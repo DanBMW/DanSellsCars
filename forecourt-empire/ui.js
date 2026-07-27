@@ -878,48 +878,102 @@ function riskChip(l) {
   if (r.light === 'red') lbl = r.flavour === 'gamble' ? 'High risk / high reward' : 'High risk — bad car';
   return '<span class="risk-chip ' + r.light + '" onclick="event.stopPropagation();UI.riskInfo(' + l.id + ')">● ' + lbl + '</span>';
 }
+/* Sorting and shortlisting live for the life of the list — a new week brings a
+   new list, so there is nothing worth persisting. */
+var auctionSort = 'margin';
+var aucStar = {};
+UI.setAuctionSort = function (k) { auctionSort = k; UI.openAuction(); };
+UI.aucStar = function (id, ev) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  aucStar[id] = !aucStar[id];
+  Juice.sound('tap');
+  UI.openAuction();
+};
+/* The all-in is what leaves your account: hammer + 5.5% premium + transport.
+   The engine's estGross is hammer-to-retail and so flatters every lot by the
+   fees; this is the number a buyer should actually compare on. */
+function lotAllIn(l) { return Math.round(l.hammer * 1.055) + 180; }
+function lotMargin(l) {
+  var allIn = lotAllIn(l);
+  var gross = l.retail - allIn;
+  return { allIn: allIn, gross: gross, pct: allIn ? (gross / allIn) * 100 : 0 };
+}
+function marginCls(pct) { return pct >= 14 ? 'good' : pct >= 8 ? '' : pct > 0 ? 'warn' : 'danger'; }
+
 UI.openAuction = function () {
   var g = G();
   if (g.phase !== 'auction') { toast('The auction house is done for today. Tomorrow’s list comes with the new week.'); return; }
   var counts = { all: g.lots.length, green: 0, amber: 0, red: 0 };
   g.lots.forEach(function (l) { counts[l.risk.light]++; });
-  var h = '<h3>The auction house — today’s list</h3>';
-  // What you can actually spend, always on screen — cash is the number that
-  // decides every bid, and free pitches is the other hard limit.
   var freeP = FE.freePitches();
+  var power = FE.spendPower();
+
+  var h = '<h3>The auction house — today’s list</h3>';
   h += '<div class="auc-wallet">' +
     '<div><span>Cash in the bank</span><b id="aucCash">' + M(g.cash) + '</b></div>' +
-    (FE.financeEnabled()
-      ? '<div><span>Total to spend</span><b class="pw">' + M(FE.spendPower()) + '</b></div>'
-      : '') +
+    (FE.financeEnabled() ? '<div><span>Total to spend</span><b class="pw">' + M(power) + '</b></div>' : '') +
     '<div><span>Free pitches</span><b class="' + (freeP ? '' : 'danger') + '">' + freeP + '</b></div>' +
-    '</div>' +
-    (FE.weeksOfFloat() < 4
-      ? '<p class="kv danger small" style="margin:4px 0 0">Careful — your cash only covers ' + FE.weeksOfFloat().toFixed(1) +
-        ' weeks of running costs. Buy to the last pound here and you will not be able to pay wages, training or building work.</p>'
-      : '') +
-    (FE.financeEnabled() ? '<p class="kv muted small" style="margin:2px 0 6px">Includes ' + M(FE.financeHeadroom()) + ' of stocking finance headroom.</p>' : '') +
-    '<p class="kv muted small">Est. gross is <b>before fees, prep &amp; hold cost</b> — the mean prep assumption, and it is optimistic. Buyer premium 5.5% + £180 transport on every lot. Tap a risk light for why.</p>';
+    '</div>';
+  if (!freeP) h += '<p class="kv danger small" style="margin:4px 0 0">Every pitch is full. Anything you buy now has nowhere to go — sell something first.</p>';
+  else if (FE.weeksOfFloat() < 4) {
+    h += '<p class="kv danger small" style="margin:4px 0 0">Careful — your cash only covers ' + FE.weeksOfFloat().toFixed(1) +
+      ' weeks of running costs. Buy to the last pound here and you will not be able to pay wages, training or building work.</p>';
+  }
+
+  // filter, then sort — so the counts on the chips stay honest
+  var list = g.lots.filter(function (l) { return auctionFilter === 'all' || l.risk.light === auctionFilter; });
+  var SORTS = {
+    margin: { name: 'Best margin', fn: function (a, b) { return lotMargin(b).pct - lotMargin(a).pct; } },
+    cheap:  { name: 'Cheapest',    fn: function (a, b) { return lotAllIn(a) - lotAllIn(b); } },
+    quick:  { name: 'Quickest',    fn: function (a, b) { return (a.estDays[0] + a.estDays[1]) - (b.estDays[0] + b.estDays[1]); } },
+    fresh:  { name: 'Newest',      fn: function (a, b) { return b.year - a.year || a.miles - b.miles; } }
+  };
+  list = list.slice().sort(SORTS[auctionSort] ? SORTS[auctionSort].fn : SORTS.margin.fn);
+  // anything starred floats to the top, whatever the sort
+  list.sort(function (a, b) { return (aucStar[b.id] ? 1 : 0) - (aucStar[a.id] ? 1 : 0); });
+
+  var affordable = g.lots.filter(function (l) { return lotAllIn(l) <= power; }).length;
+  var best = g.lots.reduce(function (m, l) { var p = lotMargin(l).pct; return p > m ? p : m; }, -999);
+  h += '<div class="auc-read">' +
+    '<span><i>On the list</i><b>' + g.lots.length + '</b></span>' +
+    '<span><i>You can afford</i><b class="' + (affordable ? '' : 'danger') + '">' + affordable + '</b></span>' +
+    '<span><i>Best margin today</i><b class="' + marginCls(best) + '">' + (best > -999 ? (best >= 0 ? '+' : '') + best.toFixed(0) + '%' : '—') + '</b></span>' +
+    '</div>';
+
   h += '<div class="risk-filter">' +
     ['all', 'green', 'amber', 'red'].map(function (f) {
       var name = f === 'all' ? 'All' : f === 'green' ? '🟢' : f === 'amber' ? '🟠' : '🔴';
       return '<button class="' + (auctionFilter === f ? 'on ' : '') + f + '" onclick="UI.setAuctionFilter(\'' + f + '\')">' + name + ' ' + counts[f] + '</button>';
     }).join('') + '</div>';
+  h += '<div class="sortrow">' + Object.keys(SORTS).map(function (k) {
+      return '<button class="' + (auctionSort === k ? '' : 'sec') + ' sm" onclick="UI.setAuctionSort(\'' + k + '\')">' + SORTS[k].name + '</button>';
+    }).join('') + '</div>';
+  h += '<p class="kv muted small">Margin is against the <b>all-in</b> price — hammer plus 5.5% premium plus £180 transport. Prep and hold cost still come out of it. Tap a risk light for why.</p>';
+
   if (!g.lots.length) h += '<div class="card kv">All lots gone or bought. Fresh list with the new week.</div>';
-  var shown = 0;
-  g.lots.forEach(function (l) {
-    if (auctionFilter !== 'all' && l.risk.light !== auctionFilter) return;
-    shown++;
-    h += '<div class="card lot ' + l.risk.light + '">' +
-      '<div class="row"><b>' + esc(l.brand + ' ' + FE.MODELS[l.model].m) + perfChip(l) + '</b><b>' + M(l.hammer) + '</b></div>' +
-      '<div class="kv">' + esc(FE.carDesc(l)) + '</div>' +
-      '<div class="row" style="margin:5px 0">' + riskChip(l) + (l.vasFlag ? '<span class="vas-flag">Vas rates this one</span>' : '') + '</div>' +
-      '<div class="row kv"><span>Est retail <b>' + M(l.retail) + '</b></span><span>Est days <b>' + l.estDays[0] + '–' + l.estDays[1] + '</b></span></div>' +
-      '<div class="row kv"><span>Est. gross (before prep &amp; hold) <b class="' + (l.estGross > 1200 ? 'good' : '') + '">' + M(l.estGross) + '</b></span></div>' +
-      '<div class="btnrow"><button onclick="UI.buyLot(' + l.id + ')">Buy — ' + M(Math.round(l.hammer * 1.055) + 180) + ' all-in</button></div>' +
+
+  list.forEach(function (l) {
+    var m = lotMargin(l);
+    var afford = m.allIn <= power;
+    h += '<div class="card lot ' + l.risk.light + (afford ? '' : ' unaffordable') + (aucStar[l.id] ? ' starred' : '') + '">' +
+      '<div class="row lot-top">' +
+        '<b>' + esc(l.brand + ' ' + FE.MODELS[l.model].m) + perfChip(l) + '</b>' +
+        '<button class="lot-star' + (aucStar[l.id] ? ' on' : '') + '" onclick="UI.aucStar(' + l.id + ',event)" aria-label="Shortlist">' + (aucStar[l.id] ? '★' : '☆') + '</button>' +
+      '</div>' +
+      '<div class="lot-line">' + riskChip(l) + (l.vasFlag ? '<span class="vas-flag">Vas rates this one</span>' : '') +
+        '<span class="lot-spec">' + esc(FE.carDesc(l)) + '</span></div>' +
+      '<div class="lot-figs">' +
+        '<span><i>All-in</i><b>' + M(m.allIn) + '</b></span>' +
+        '<span><i>Est retail</i><b>' + M(l.retail) + '</b></span>' +
+        '<span><i>Margin</i><b class="' + marginCls(m.pct) + '">' + (m.pct >= 0 ? '+' : '') + m.pct.toFixed(1) + '%</b></span>' +
+        '<span><i>Est days</i><b class="' + (l.estDays[1] <= 45 ? 'good' : l.estDays[0] > 60 ? 'warn' : '') + '">' + l.estDays[0] + '–' + l.estDays[1] + '</b></span>' +
+      '</div>' +
+      (afford
+        ? '<button class="lot-buy" onclick="UI.buyLot(' + l.id + ')">Buy — ' + M(m.allIn) + '</button>'
+        : '<button class="lot-buy sec" disabled>Beyond your budget</button>') +
       '</div>';
   });
-  if (g.lots.length && !shown) h += '<div class="card kv muted">No ' + RISK_LABEL[auctionFilter] + ' lots in today’s list.</div>';
+  if (g.lots.length && !list.length) h += '<div class="card kv muted">No ' + RISK_LABEL[auctionFilter] + ' lots in today’s list.</div>';
   h += '<button class="ghost" onclick="UI.closeModal()">Leave the auction house</button>';
   UI.modal(h);
 };

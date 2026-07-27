@@ -537,3 +537,28 @@ with a net-P&L sparkline, four KPI tiles (net, units vs 4-week average, gross
 per unit, average days in stock) and one line of plain English naming the
 biggest line against you that week — or, if nothing sold, saying so instead
 of blaming the largest cost.
+
+### Auction screen — 2026-07-27
+
+The screen you spend most of your buying time on was a wall: 50 lots, no
+sort, **15 screens of scrolling**, and no way to tell a good buy from a bad
+one without doing arithmetic in your head.
+
+- **Sorted, best first.** Best margin (default) / Cheapest / Quickest /
+  Newest. This is the actual fix for the scrolling — the lots worth buying
+  are now at the top, so the other 45 do not need reading.
+- **Honest margin.** `estGross` in the engine is `retail − hammer`, which
+  ignores the 5.5% premium and £180 transport and so flatters every lot. The
+  screen now shows margin against the **all-in** price. Left the engine value
+  alone — the AFK buyer policy keys off it.
+- **Compact rows** — risk light and spec share a line, four figures in a
+  strip, smaller buy button.
+- **Shortlist** — star a lot and it floats to the top whatever the sort,
+  which is what you need when comparing across fifty.
+- **Affordability** — lots beyond your spend power are dimmed with the buy
+  button disabled, and the header counts how many you can actually buy.
+- Warns when every pitch is full, since anything bought then has nowhere to
+  go.
+
+Buying stays one tap, deliberately: an auction runs at pace and a confirm on
+every lot would wreck the rhythm. The all-in price is on the button instead.

@@ -879,3 +879,42 @@ b.teal { color: var(--teal); }
 .kpi b { display: block; font-size: 1.02rem; font-weight: 800; line-height: 1.15; }
 .kpi em { display: block; font-style: normal; font-size: .66rem; color: var(--muted); margin-top: 1px; }
 .sec-head { margin: 18px 0 6px; font-size: .95rem; }
+
+/* ---------- auction: compact lots, sorting, shortlist ---------- */
+.auc-read {
+  display: flex; gap: 6px; margin: 8px 0 4px;
+}
+.auc-read span {
+  flex: 1; min-width: 0; text-align: center; padding: 6px 4px;
+  background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 10px;
+}
+.auc-read i { display: block; font-style: normal; font-size: .58rem; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--muted); }
+.auc-read b { display: block; font-size: .92rem; font-weight: 800; }
+.sortrow { display: flex; gap: 6px; margin: 6px 0 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sortrow button { flex: 0 0 auto; padding: 6px 11px; font-size: .74rem; border-radius: 999px; }
+
+.card.lot { padding: 11px 12px; }
+.card.lot.starred { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(255,206,74,.4), 0 8px 20px -14px rgba(255,206,74,.6); }
+.card.lot.unaffordable { opacity: .5; }
+.lot-top { justify-content: space-between; align-items: center; gap: 8px; }
+.lot-top > b { font-size: .95rem; min-width: 0; }
+.lot-star {
+  flex: 0 0 auto; width: 30px; height: 30px; padding: 0; border-radius: 50%;
+  background: rgba(255,255,255,.06); color: var(--muted); font-size: .95rem; box-shadow: none;
+}
+.lot-star.on { color: var(--gold); background: rgba(255,206,74,.16); }
+.lot-spec { font-size: .74rem; color: var(--muted); margin: 2px 0 5px; }
+.lot-chips { gap: 6px; margin-bottom: 7px; }
+.lot-figs {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px;
+}
+.lot-figs span { min-width: 0; }
+.lot-figs i { display: block; font-style: normal; font-size: .56rem; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--muted); }
+.lot-figs b { display: block; font-size: .82rem; font-weight: 800; white-space: nowrap; }
+.lot-buy { width: 100%; padding: 8px; font-size: .84rem; border-radius: 10px; }
+/* risk light and spec share a line — the spec wraps under it on narrow screens */
+.lot-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 3px 0 7px; }
+.lot-line .lot-spec { margin: 0; flex: 1 1 100%; }
+.card.lot { margin: 8px 0; }
