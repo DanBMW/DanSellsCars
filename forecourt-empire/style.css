@@ -835,3 +835,8 @@ b.teal { color: var(--teal); }
 .cl-dot.wait { background: #7d89ab; animation: clpulse 1.2s ease-in-out infinite; }
 .cl-dot.err  { background: var(--amber, #ffb63d); box-shadow: 0 0 8px rgba(255,182,61,.6); }
 @keyframes clpulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+
+/* close the week straight from the desktop (office phase) */
+.desk-close { margin-top: 12px; text-align: center; }
+.desk-close button { width: 100%; }
+.desk-close .kv { margin-top: 6px; }

@@ -328,13 +328,13 @@ function renderBanner() {
       ? '<button class="grn ph-go" disabled>Closes in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
       : '<button class="grn ph-go" onclick="UI.skipWeek()">Close the week →</button>';
     h = stepper + '<div class="ph-row">' + closeBtn +
-      '<div class="ph-side"><button class="sec sm" onclick="UI.openOffice()">Desk</button></div></div>' +
+      '<div class="ph-side"><button class="sec sm" onclick="UI.computer()">💻 Computer</button></div></div>' +
       '<div class="ph-hint">' + (ack ? '<span class="danger">' + ack + ' car' + (ack === 1 ? '' : 's') + ' at 90+ days need acknowledging.</span>' :
-        (onCd ? 'Post and paperwork. <a class="pz-link" onclick="UI.deskMenu()">Game while you wait?</a>' : 'Post, paperwork, then close.')) + '</div>';
+        (onCd ? 'Post and paperwork. <a class="pz-link" onclick="Puzzle.hub()">Game while you wait?</a>' : 'Post, paperwork, then close.')) + '</div>';
   } else if (g.phase === 'report') {
     h = '<div class="steps"><span class="step done"><i>✓</i>Week closed</span></div>' +
       '<div class="ph-row"><button class="ph-go" onclick="UI.startNext()">Start week ' + g.week + ' →</button>' +
-      '<div class="ph-side"><button class="sec sm" onclick="UI.deskMenu()">Desk</button></div></div>' +
+      '<div class="ph-side"><button class="sec sm" onclick="UI.computer()">💻 Computer</button></div></div>' +
       '<div class="ph-hint">Report filed. Have a look before you push on.</div>';
   }
   $('banner').innerHTML = h;
@@ -438,7 +438,7 @@ function renderSite() {
       '<div class="scene-frame"><div id="sceneHost"></div>' +
       '<div id="sceneSale">' + saleRibbon + '</div>' +
       '<div class="scene-caption"><span>' + esc(s.name) + '</span><span id="sceneCount">' + countTxt + '</span></div></div>' +
-      '<div class="building-card" onclick="UI.openOffice()"><div><b>' + esc(s.name) + '</b><div class="kv">Tap for office, expansion &amp; departments</div></div><div style="font-size:1.4rem">🏢</div></div>' +
+      '<div class="building-card" onclick="UI.computer()"><div><b>' + esc(s.name) + '</b><div class="kv">Tap for the office computer</div></div><div style="font-size:1.4rem">🏢</div></div>' +
       '<div id="site2card"><b>Site 2 — locked</b> · unlocks at £2M net worth' +
       '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
       '<div class="small" id="site2fig">' + M(nw) + ' / ' + M(FE.SITE2_TARGET) + '</div>' +
@@ -1230,7 +1230,7 @@ UI.offerAlt = function () {
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
 
 /* ---------- office ---------- */
-UI.toOffice = function () { FE.enterOffice(); renderAll(); UI.tab('email'); toast('Post’s in. Deal with the desk, then close the week.'); };
+UI.toOffice = function () { FE.enterOffice(); renderAll(); UI.computer(); toast('Post’s in. Deal with the desk, then close the week.'); };
 
 function buildProgress(startWk, dueWk, nowWk, label) {
   var total = Math.max(1, dueWk - startWk);
@@ -1249,39 +1249,27 @@ function lockedCard(name, blurb, wk) {
     '<div class="kv muted">' + blurb + '</div>' +
     '<div class="kv small lock-eta">' + (left <= 1 ? 'Opens next week.' : 'Opens in ' + left + ' weeks.') + '</div></div>';
 }
-UI.openOffice = function () {
-  var g = G();
-  var h = '<h3>The office</h3>';
-  // stocking finance facility
-  var drawn = FE.financeDrawn(), lim = FE.financeLimit();
-  if (!FE.unlocked('finance')) {
-    h += lockedCard('Stocking finance', 'A credit facility to buy stock beyond your cash. The bank wants to see you trade a few weeks first.', FE.unlockWeek('finance'));
-  } else if (FE.financeEnabled()) {
-    var head = FE.financeHeadroom();
-    var pct = lim ? Math.min(100, Math.round(drawn / lim * 100)) : 0;
-    h += '<div class="card"><b>Stocking finance</b>' +
-      '<div class="row kv"><span>Credit limit</span><b>' + M(lim) + '</b></div>' +
-      '<div class="row kv"><span>Drawn now</span><b class="' + (drawn > 0 ? 'warn' : '') + '">' + M(drawn) + '</b></div>' +
-      '<div class="row kv"><span>Headroom to spend</span><b>' + M(head) + '</b></div>' +
-      '<div class="row kv"><span>Interest rate</span><b>' + (Math.round(FE.financeApr() * 1000) / 10) + '% APR</b></div>' +
-      '<div class="progressbar"><i class="' + (pct > 80 ? 'warn' : '') + '" style="width:' + pct + '%"></i></div>' +
-      '<div class="kv muted small">Limit scales with net worth (max ' + M(FE.STOCK_FINANCE.maxLimit) + '); the rate eases as you establish. Interest on the drawn balance only, weekly, on top of floorplan.</div>' +
-      (drawn <= 0 ? '<div class="btnrow"><button class="sec" onclick="UI.financeToggle(false)">Close facility</button></div>' : '') +
-      '</div>';
-  } else {
-    h += '<div class="card"><b>Stocking finance</b><div class="kv">A credit facility to buy stock beyond your cash — up to ' + M(FE.STOCK_FINANCE.maxLimit) + ', scaled to your net worth. Rate is higher for a new dealer (~' + (Math.round(FE.STOCK_FINANCE.aprStart * 1000) / 10) + '% APR) and eases as you grow. <span class="warn">Leverage cuts both ways: turn stock fast and it pays; sit on it and interest bites.</span></div>' +
-      '<div class="btnrow"><button onclick="UI.financeToggle(true)">Open a facility</button></div></div>';
-  }
-  // ads
+/* The old "office" screen predated the computer and had grown to hold a copy
+   of everything. Stocking finance now lives in Banking, and departments and
+   land in Property, so this keeps only what has no other home: what you spend
+   on advertising, the franchise relationship, the pay structure, and what
+   unlocks next. Reached as the Admin app, or from Factory Orders before a
+   franchise exists. */
+UI.adminApp = function () {
+  var g = G(); if (!g) return;
+  var h = '<h3>📋 Dealership admin</h3>';
+
+  // advertising
   if (FE.unlocked('ads')) {
-    h += '<div class="card"><b>Advertising</b><div class="btnrow">';
+    h += '<div class="card"><b>Advertising</b><div class="kv muted small">Drives footfall. It comes out of cash every week whether it works or not.</div><div class="btnrow">';
     FE.AD_TIERS.forEach(function (t, i) {
-      h += '<button class="' + (g.adTier === i ? '' : 'sec') + '" onclick="FE.setAds(' + i + ');UI.openOffice()">' + t.name + '<br><span class="small">' + M(t.cost) + '/wk</span></button>';
+      h += '<button class="' + (g.adTier === i ? '' : 'sec') + '" onclick="FE.setAds(' + i + ');UI.adminApp()">' + t.name + '<br><span class="small">' + M(t.cost) + '/wk</span></button>';
     });
     h += '</div></div>';
   } else {
     h += lockedCard('Advertising', 'Spend is fixed while you find your feet. Then you choose the tier.', FE.unlockWeek('ads'));
   }
+
   // franchise
   if (!FE.unlocked('franchise')) {
     h += lockedCard('Franchise', 'Sign with ' + g.brand + ' for new cars and factory orders. They want to see a going concern first.', FE.unlockWeek('franchise'));
@@ -1294,51 +1282,26 @@ UI.openOffice = function () {
     } else {
       var F = g.franchise;
       var weeksIn = g.week - F.qStartWk;
-      var target = Math.round(F.slots * FE.FRANCHISE.targetPerSlot / 4 * Math.min(Math.max(weeksIn, 1) / 13, 1));
-      var pct = target ? Math.min(100, Math.round(F.qUnits / Math.max(F.slots * 2, 1) * 100)) : 0;
+      var pct = Math.min(100, Math.round(F.qUnits / Math.max(F.slots * 2, 1) * 100));
       h += '<div class="card"><b>Franchise — quarter progress</b>' +
         '<div class="kv">' + F.qUnits + ' of ' + (F.slots * 2) + ' this quarter · ' + (13 - weeksIn) + ' wk' + (13 - weeksIn === 1 ? '' : 's') + ' left</div>' +
         '<div class="progressbar"><i class="' + (pct >= 97 ? 'good' : pct >= 60 ? '' : 'warn') + '" style="width:' + pct + '%"></i></div>' +
         '<div class="btnrow"><button onclick="UI.orderWindow()">Order window</button></div></div>';
     }
   }
-  // departments
-  if (!FE.unlocked('depts')) {
-    h += lockedCard('Departments', 'A service department brings weekly income and takes the sting out of prep bills.', FE.unlockWeek('depts'));
-  } else FE.DEPARTMENTS.forEach(function (d) {
-    if (g.dept[d.id]) {
-      if (g.week >= g.dept[d.id]) h += '<div class="card kv"><b>' + d.name + '</b> — live. ' + M(d.weekly) + '/wk coming in.</div>';
-      else h += '<div class="card"><b>' + d.name + '</b>' + buildProgress(g.dept[d.id] - d.buildWks, g.dept[d.id], g.week, 'Construction') + '<div class="kv muted">Capacity down while the builders are in.</div></div>';
-    } else {
-      h += '<div class="card"><b>' + d.name + '</b> <span class="tag">' + M(d.cost) + '</span><div class="kv">' + d.blurb + ' <span class="muted">Build: ' + d.buildWks + ' wk.</span></div>' +
-        '<div class="btnrow"><button class="sec" onclick="UI.buildDeptUI(\'' + d.id + '\')">Build</button></div></div>';
-    }
-  });
-  // expansion
-  if (!FE.unlocked('expansion')) {
-    h += lockedCard('Land expansion', 'Buy the ground next door and line out more pitches.', FE.unlockWeek('expansion'));
-  } else FE.EXPANSIONS.forEach(function (x) {
-    if (g.expansionsDone.indexOf(x.id) >= 0) return;
-    var pend = null;
-    g.pendingBuilds.forEach(function (b) { if (b.id === x.id) pend = b; });
-    if (pend) {
-      h += '<div class="card"><b>' + x.name + '</b>' + buildProgress(pend.startedWk, pend.dueWk, g.week, 'Groundworks') + '<div class="kv muted">+' + x.slots + ' pitches open week ' + pend.dueWk + '.</div></div>';
-    } else {
-      h += '<div class="card"><b>' + x.name + '</b> <span class="tag">' + M(x.cost) + '</span><div class="kv">+' + x.slots + ' pitches, utilities +' + M(x.util) + '/wk <span class="muted">Build: ' + x.buildWks + ' wk.</span></div>' +
-        '<div class="btnrow"><button class="sec" onclick="UI.expandUI(\'' + x.id + '\')">Buy the land</button></div></div>';
-    }
-  });
-  // salary restructure
+
+  // pay structure
   if (!FE.unlocked('salary')) {
     h += lockedCard('Pay structure', 'Change the basic/commission split. Not while the ink’s still wet on their contracts.', FE.unlockWeek('salary'));
   } else {
     h += '<div class="card"><b>Pay structure</b><div class="kv">Currently: ' + FE.SALARIES[g.salary].name + '. Once a year you can change it — the team never thanks you.</div><div class="btnrow">';
-    FE.SALARIES.forEach(function (s, i) {
-      if (i !== g.salary) h += '<button class="sec small" onclick="UI.salaryUI(' + i + ')">' + s.name + '</button>';
+    FE.SALARIES.forEach(function (s2, i) {
+      if (i !== g.salary) h += '<button class="sec small" onclick="UI.salaryUI(' + i + ')">' + s2.name + '</button>';
     });
     h += '</div></div>';
   }
-  // what's still to come — progression the player can see
+
+  // what opens up next
   var soon = FE.upcomingUnlocks();
   if (soon.length) {
     h += '<div class="card unlock-soon"><b>Coming up</b>';
@@ -1347,34 +1310,36 @@ UI.openOffice = function () {
     });
     h += '<div class="kv muted small">The business opens up as you trade. Nothing here is missable.</div></div>';
   }
-  h += '<button class="ghost" onclick="UI.closeModal()">Back to it</button>';
+
+  h += '<button class="ghost" onclick="UI.computer()">← Desktop</button>';
   UI.modal(h);
 };
+UI.openOffice = function () { UI.adminApp(); };   // older call sites
 UI.financeToggle = function (on) {
   var r = FE.enableFinance(on);
   toast(r.ok ? (on ? 'Stocking finance live — you can now buy on credit.' : 'Facility closed.') : r.msg);
-  UI.openOffice(); renderHUD();
+  UI.bankApp(); renderHUD();
 };
 UI.signFranchiseUI = function () {
   var r = FE.signFranchise(FE.FRANCHISE.minSlots);
   toast(r.ok ? 'Franchise signed — brand corner being fitted out.' : r.msg);
-  UI.openOffice();
+  UI.adminApp();
 };
 UI.buildDeptUI = function (id) {
   var r = FE.buildDept(id);
   toast(r.ok ? 'Diggers in. Site disrupted this week.' : (r.msg || 'No.'));
-  UI.openOffice(); renderHUD();
+  UI.propertyApp(); renderHUD();
 };
 UI.expandUI = function (id) {
   var r = FE.buyExpansion(id);
   toast(r.ok ? 'Groundworks started — pitches open week ' + r.dueWk + '.' : (r.msg || 'No.'));
-  UI.openOffice(); renderHUD();
+  UI.propertyApp(); renderHUD();
 };
 UI.salaryUI = function (i) {
   if (!confirm('Restructure everyone onto "' + FE.SALARIES[i].name + '"? Morale will take a knock, and that’s your change for the year.')) return;
   var r = FE.changeSalary(i);
   toast(r.ok ? 'Done. The kitchen’s gone quiet.' : r.msg);
-  UI.openOffice();
+  UI.adminApp();
 };
 
 UI.orderWindow = function () {
@@ -1405,7 +1370,7 @@ UI.orderWindow = function () {
   if (g.orders.length) {
     h += '<div class="card kv"><b>' + g.orders.length + ' on order</b> — ' + g.orders.map(function (o) { return FE.MODELS[o.model].m + ' (wk ' + o.dueWk + ')'; }).join(', ') + '</div>';
   }
-  h += '<button class="ghost" onclick="UI.openOffice()">Back</button>';
+  h += '<button class="ghost" onclick="UI.computer()">← Desktop</button>';
   UI.modal(h);
 };
 UI.orderGo = function (express) {
@@ -1727,23 +1692,6 @@ UI.calendar = function () {
 };
 /* Everything the manager can do away from the forecourt lives here, behind the
    one desk button: the games and the old manager's-drawer items together. */
-UI.deskMenu = function () {
-  var games = (window.Puzzle && Puzzle.gamesHTML) ? Puzzle.gamesHTML() : '';
-  UI.modal('<div class="pz-hub"><h3>🗄️ Your desk</h3>' +
-    games +
-    '<div class="desk-sep">Paperwork</div>' +
-    '<div class="btnrow" style="flex-direction:column">' +
-    (window.__installPrompt ? '<button class="grn" onclick="UI.installApp()">📲 Install to home screen</button>' : '') +
-    '<button class="sec" onclick="UI.soundToggle()">' + (Juice.muted() ? '🔇 Sound off' : '🔊 Sound on') + '</button>' +
-    '<button class="sec" onclick="UI.saveMenu()">💾 Save &amp; profile</button>' +
-    '<button class="sec" onclick="UI.closeModal();UI.share()">📤 Share my progress</button>' +
-    '<button class="sec" onclick="UI.skipWeekUI()">⏭ Skip this week (staff run it)</button>' +
-    '<button class="sec" onclick="UI.helpUI()">❓ How this works</button>' +
-    '<button class="sec" onclick="UI.closeModal();UI.startTutorial(false)">🎓 Replay tutorial</button>' +
-    '<button class="red" onclick="UI.confirmRestart()">Abandon career</button></div>' +
-    '<p class="kv muted small" style="margin-top:10px">Beta build. Saves locally on this device, automatically. The clock runs a game week every 12 real hours.</p>' +
-    '</div>');
-};
 /* Installing matters beyond convenience: an installed app is exempt from the
    browser storage eviction that would otherwise bin a career after a week
    away, so this is offered as save protection, not decoration. */
@@ -1762,7 +1710,7 @@ UI.soundToggle = function () {
   Juice.setMuted(off);
   if (!off) Juice.sound('tap');
   toast(off ? 'Sound off.' : 'Sound on.');
-  UI.deskMenu();
+  UI.settingsApp();
 };
 // kept so any older call site still lands somewhere sensible
 UI.gearMenu = function () { UI.deskMenu(); };
@@ -1777,6 +1725,13 @@ UI.confirmRestart = function () {
    like a phone home screen. Each app is a thin wrapper over machinery that
    already exists, so there is one place to add to rather than a growing pile
    of floating buttons. */
+/* A dot on the Admin app only when there is genuinely something to decide —
+   a franchise you can now sign, or a pay structure you have just unlocked. */
+function adminFlag(g) {
+  if (FE.unlocked('franchise') && g.week >= FE.FRANCHISE.unlockWk && !g.franchise) return '!';
+  if (FE.unlocked('salary') && !g.salaryChanged) return '';
+  return '';
+}
 UI.computer = function () {
   var g = G(); if (!g) return;
   var unread = FE.unreadCount();
@@ -1808,11 +1763,18 @@ UI.computer = function () {
     app('hire','Recruitment', hires ? hires + ' on the books' : 'Agency', '', '#35d07f', I.badge,
         "UI.closeModal();UI.tab('staff')") +
     app('factory','Factory Orders', canOrder ? 'Order new stock' : 'Franchise required', '', '#ff5d6c', I.factory,
-        canOrder ? "UI.closeModal();UI.orderWindow()" : "UI.closeModal();UI.openOffice()") +
+        canOrder ? "UI.closeModal();UI.orderWindow()" : "UI.adminApp()") +
+    app('admin','Admin','Ads, franchise &amp; pay', adminFlag(g), '#ffa04d', I.clip, "UI.adminApp()") +
     app('games','Games','A play while they prospect','', '#5f6dff', I.game, "Puzzle.hub()") +
     app('settings','Settings','Sound, save, help','', '#97a3c4', I.cog, "UI.settingsApp()") +
     '</div>' +
     (drawn > 0 ? '<div class="desk-note warn">Stocking finance drawn: ' + M(drawn) + ' at ' + (Math.round(FE.financeApr()*1000)/10) + '% APR.</div>' : '') +
+    /* "To the office" lands here, so the week has to be closeable from here —
+       otherwise the desktop is a modal you must dismiss before you can finish. */
+    (g.phase === 'office'
+      ? '<div class="desk-close"><button class="grn" onclick="UI.closeModal();UI.skipWeek()">Close the week →</button>' +
+        '<div class="kv muted small">Post and paperwork done? Close up and see the numbers.</div></div>'
+      : '') +
     '</div>';
   UI.modal(h);
 };
@@ -2113,6 +2075,7 @@ UI.appIcons = {
   badge:  '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20.5a7 7 0 0 1 14 0"/><rect x="3" y="2.5" width="18" height="19" rx="3"/></svg>',
   factory:'<svg viewBox="0 0 24 24"><path d="M2.5 20.5h19V9l-6 4V9l-6 4V4.5h-7z"/><path d="M6 16.5h2M11 16.5h2M16 16.5h2"/></svg>',
   game:   '<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10.5" rx="4.5"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="16" cy="11.5" r="1.1"/><circle cx="18.5" cy="14" r="1.1"/></svg>',
+  clip:   '<svg viewBox="0 0 24 24"><rect x="4.5" y="4" width="15" height="17" rx="2.4"/><rect x="8.75" y="2" width="6.5" height="3.6" rx="1.4"/><path d="M8.5 11.5h7M8.5 15.5h4.5"/></svg>',
   cog:    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
 };
 
