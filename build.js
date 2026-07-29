@@ -29,6 +29,29 @@ for (const f of fs.readdirSync(path.join(ROOT, 'partials'))) {
   }
 }
 
+/* Shared stylesheets get a ?v= stamp derived from their own contents, so a
+   returning visitor holding an old copy in cache picks up new CSS as soon as
+   it changes instead of waiting for max-age to lapse. Edit a stylesheet, run
+   this, and every page that links it re-stamps. --check catches drift in CI. */
+const ASSETS = ['style.css', 'premium.css', 'content-premium.css', 'funnel.css'];
+const assetVersion = (() => {
+  const h = require('crypto').createHash('sha1');
+  for (const a of ASSETS) {
+    const p = path.join(ROOT, a);
+    if (fs.existsSync(p)) h.update(fs.readFileSync(p));
+  }
+  return h.digest('hex').slice(0, 8);
+})();
+
+function stampAssets(html) {
+  let out = html;
+  for (const a of ASSETS) {
+    const re = new RegExp('(href=")' + a.replace('.', '\\.') + '(?:\\?v=[^"]*)?(")', 'g');
+    out = out.replace(re, `$1${a}?v=${assetVersion}$2`);
+  }
+  return out;
+}
+
 let failed = false;
 const stale = [];
 
@@ -37,7 +60,7 @@ for (const f of fs.readdirSync(ROOT).sort()) {
   const file = path.join(ROOT, f);
   const src = fs.readFileSync(file, 'utf8');
 
-  const out = src.replace(MARKER, (match, indent, name, json) => {
+  const out = stampAssets(src).replace(MARKER, (match, indent, name, json) => {
     const tpl = partials[name];
     if (!tpl) {
       console.error(`${f}: unknown partial "chrome:${name}"`);
@@ -66,9 +89,9 @@ for (const f of fs.readdirSync(ROOT).sort()) {
 
 if (failed) process.exit(1);
 if (stale.length === 0) {
-  console.log('chrome up to date in all pages');
+  console.log(`chrome up to date in all pages (asset version ${assetVersion})`);
 } else if (CHECK) {
-  console.error(`chrome out of date in ${stale.length} page(s) - run "node build.js" and commit:`);
+  console.error(`chrome or asset version out of date in ${stale.length} page(s) - run "node build.js" and commit:`);
   for (const f of stale) console.error('  ' + f);
   process.exit(1);
 } else {
