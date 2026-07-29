@@ -170,6 +170,39 @@ h1 em::after,h2 em::after{display:none !important;}
 .ty-checklist-head h2{color:var(--text) !important;}
 .ty-checklist-item,.ty-check-label{color:var(--body) !important;}
 
+/* Purchase checklist: the chosen answer must stay visibly chosen. The
+   generic .ty-check-btn rule above resets every button, so the selected
+   states need to out-specify it or the customer cannot see their answer. */
+.ty-check-btns .ty-check-btn.ty-check-btn-yes{
+  background:#16a34a !important;border-color:#16a34a !important;color:#fff !important;
+}
+.ty-check-btns .ty-check-btn.ty-check-btn-no{
+  background:#d97706 !important;border-color:#d97706 !important;color:#fff !important;
+}
+.ty-check-btns .ty-check-btn.ty-check-btn-yes:hover{background:#15803d !important;color:#fff !important;}
+.ty-check-btns .ty-check-btn.ty-check-btn-no:hover{background:#b45309 !important;color:#fff !important;}
+
+/* Purchase checklist: tracker, summary modal, sticky bar */
+.ty-tracker{background:rgba(168,133,59,.07) !important;border-color:rgba(168,133,59,.28) !important;}
+.ty-tracker.is-complete{background:rgba(22,163,74,.10) !important;border-color:rgba(22,163,74,.4) !important;}
+.ty-tracker-count{color:var(--text) !important;}
+.ty-tracker-meter{background:rgba(236,233,225,.12) !important;}
+.ty-tk{background:var(--card) !important;border-color:var(--line) !important;}
+.ty-tk-name{color:var(--text) !important;}
+.ty-tk-state{color:var(--muted) !important;}
+.ty-tk.is-yes{background:rgba(22,163,74,.12) !important;border-color:rgba(22,163,74,.42) !important;}
+.ty-tk.is-yes .ty-tk-state{color:#6ee7a0 !important;}
+.ty-tk.is-no{background:rgba(217,119,6,.14) !important;border-color:rgba(217,119,6,.45) !important;}
+.ty-tk.is-no .ty-tk-state{color:#f0b46b !important;}
+.ty-sum{background:#14181d !important;border:1px solid var(--line) !important;border-radius:0 !important;}
+.ty-sum h3{color:var(--text) !important;}
+.ty-sum-sub{color:var(--body) !important;}
+.ty-sum-row{color:var(--text) !important;}
+.ty-sum-row small{color:var(--muted) !important;}
+.ty-sum-close{background:transparent !important;border:1px solid var(--blue) !important;color:var(--text) !important;border-radius:0 !important;}
+.ty-sum-close:hover{background:var(--blue) !important;color:#0a0c0f !important;}
+.ty-gate-btn{border-radius:0 !important;}
+
 /* Floating FAQ nudge */
 .ty-faq-overlay-inner{
   background:rgba(14,17,20,.94) !important;border:1px solid var(--blue) !important;

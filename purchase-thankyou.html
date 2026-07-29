@@ -131,7 +131,21 @@
           <h2>3 steps required to firm up your order and secure the car fully*</h2>
           <p>Until these are in place, your order isn't fully secured. The sooner they're done, the sooner everything moves. Don't leave them sitting.</p>
         </div>
-        <div class="ty-check-item">
+
+        <!-- Live progress tracker -->
+        <div class="ty-tracker" id="tyTracker" aria-live="polite">
+          <div class="ty-tracker-head">
+            <span class="ty-tracker-count" id="tyTrackerCount">Nothing confirmed yet</span>
+            <span class="ty-tracker-meter" aria-hidden="true"><i id="tyTrackerFill"></i></span>
+          </div>
+          <ul class="ty-tracker-list">
+            <li class="ty-tk" id="tk-deposit"><span class="ty-tk-mark"></span><span class="ty-tk-name">Deposit</span><span class="ty-tk-state">To confirm</span></li>
+            <li class="ty-tk" id="tk-finance"><span class="ty-tk-mark"></span><span class="ty-tk-name">Finance proposal</span><span class="ty-tk-state">To confirm</span></li>
+            <li class="ty-tk" id="tk-order"><span class="ty-tk-mark"></span><span class="ty-tk-name">Order form</span><span class="ty-tk-state">To confirm</span></li>
+          </ul>
+        </div>
+
+        <div class="ty-check-item" data-item="deposit">
           <div class="ty-check-label">
             <span class="ty-check-num">1</span>
             <div>
@@ -143,7 +157,9 @@
             <button class="ty-check-btn" data-q="deposit" data-v="no" onclick="checkAnswer(this)">Not yet</button>
           </div>
         </div>
-        <div class="ty-check-item">
+        <div class="ty-slot" id="slot-deposit" aria-live="polite"></div>
+
+        <div class="ty-check-item" data-item="finance">
           <div class="ty-check-label">
             <span class="ty-check-num">2</span>
             <div>
@@ -157,7 +173,9 @@
             <button class="ty-check-btn ty-check-btn-na" data-q="finance" data-v="na" onclick="checkAnswer(this)">Not applicable</button>
           </div>
         </div>
-        <div class="ty-check-item" style="border-bottom:none;padding-bottom:0;">
+        <div class="ty-slot" id="slot-finance" aria-live="polite"></div>
+
+        <div class="ty-check-item" data-item="order" style="border-bottom:none;">
           <div class="ty-check-label">
             <span class="ty-check-num">3</span>
             <div>
@@ -170,10 +188,10 @@
             <button class="ty-check-btn" data-q="order" data-v="no" onclick="checkAnswer(this)">Not yet</button>
           </div>
         </div>
+        <div class="ty-slot" id="slot-order" aria-live="polite"></div>
 
-        <!-- Action prompts - shown below all questions -->
-        <div class="ty-action-prompts" id="actionPrompts" aria-live="polite"></div>
         <div class="ty-checklist-status" id="checklistStatus" aria-live="polite"></div>
+        <div id="guideGate"></div>
       </div>
     </div>
   </div>
@@ -770,15 +788,31 @@ Just purchased my new BMW with Dan at Ruxley BMW and I cannot wait to show you. 
     </div>
   </section>
 
-  <!-- ── ACTION REQUIRED FAB ── -->
-  <div class="ty-action-fab" id="actionFab">
-    <button class="ty-action-fab-btn" onclick="document.getElementById('checklistCard').scrollIntoView({behavior:'smooth',block:'start'})" aria-label="Scroll to action required checklist">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-      Action required below
-    </button>
+  <!-- ── OUTSTANDING STEPS: STICKY BAR ──
+       Replaces the old generic "Action required below" FAB: this one names
+       the actual outstanding step and takes you straight to it. -->
+
+  <div class="ty-stick" id="tyStick" role="status">
+    <div class="ty-stick-in">
+      <span class="ty-stick-dot" aria-hidden="true"></span>
+      <span class="ty-stick-txt"></span>
+      <button type="button" class="ty-stick-go" onclick="tyStickGo()">Take me there</button>
+      <button type="button" class="ty-stick-x" onclick="tyStickHide()" aria-label="Dismiss reminder">&#x2715;</button>
+    </div>
   </div>
 
 </main>
+
+<!-- ── STATUS SUMMARY MODAL ── -->
+<div class="ty-sum-bg" id="tySummary" onclick="if(event.target===this)tyCloseSummary()" role="dialog" aria-modal="true" aria-labelledby="tySumTitle">
+  <div class="ty-sum">
+    <button type="button" class="ty-sum-x" onclick="tyCloseSummary()" aria-label="Close">&#x2715;</button>
+    <h3 id="tySumTitle">Where your order stands</h3>
+    <p class="ty-sum-sub" id="tySumSub"></p>
+    <ul class="ty-sum-list" id="tySumList"></ul>
+    <button type="button" class="ty-sum-close" onclick="tyCloseSummary()">Got it</button>
+  </div>
+</div>
 
 <!-- chrome:footer2 {"blurb2":"Based at Hedin Ruxley on Maidstone Road, Sidcup, serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks."} -->
 <section class="ph-contact" id="contact">
@@ -999,17 +1033,6 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   if(def)activate(def);
 })();
 
-// Action FAB: hide when checklist is on screen, kill when complete
-(function(){
-  var fab=document.getElementById('actionFab');
-  var done=false;
-  if(!fab)return;
-  new IntersectionObserver(function(es){
-    if(done)return;
-    fab.classList.toggle('ty-fab-hidden',es[0].isIntersecting);
-  },{threshold:0.15}).observe(document.getElementById('checklistCard'));
-  window._hideFab=function(){done=true;fab.classList.add('ty-fab-hidden');};
-})();
 
 // Checklist unlock
 (function(){
@@ -1023,27 +1046,27 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     btn.classList.add(v==='no'?'ty-check-btn-no':'ty-check-btn-yes');
     answers[q]=v;
 
-    // Rebuild the action prompts panel below all questions
-    var prompts=document.getElementById('actionPrompts');
-    if(prompts){
-      var html='';
-      if(answers.deposit==='no'){
-        html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Deposit</p><div class="ty-order-wa-inner"><p>No problem. Let Dan know you\'re ready and he\'ll take it from there.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20I\'m%20available%20now%20to%20place%20my%20deposit" target="_blank" rel="noopener">'+WA_ICON+' Message Dan to place your deposit</a></div></div>';
-      }
-      if(answers.finance==='no'){
-        html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Finance proposal</p><div class="ty-finance-prompt-inner"><p>Complete the relevant form below, fill it in, and email it back to Dan. It takes around five minutes.</p><a class="ty-fp-link" href="finance-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Personal proposal form</a><a class="ty-fp-link" href="business-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Business / company form</a></div></div>';
-      }
-      if(answers.order==='no'){
-        html+='<div class="ty-action-prompt-block"><p class="ty-action-prompt-label">Order form</p><div class="ty-order-wa-inner"><p>No problem. Message Dan now and he\'ll send it straight over.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%20could%20you%20send%20me%20the%20order%20form%20across%20for%20signing%20please" target="_blank" rel="noopener">'+WA_ICON+' Message Dan for your order form</a></div></div>';
-      }
-      prompts.innerHTML=html;
-      prompts.style.marginTop=html?'20px':'0';
-    }
+    // Render the help for this question directly beneath it
+    var SLOTS={
+      deposit:'<div class="ty-action-prompt-block"><div class="ty-order-wa-inner"><p>No problem. Let Dan know you\'re ready and he\'ll take it from there.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20I\'m%20available%20now%20to%20place%20my%20deposit" target="_blank" rel="noopener">'+WA_ICON+' Message Dan to place your deposit</a></div></div>',
+      finance:'<div class="ty-action-prompt-block"><div class="ty-finance-prompt-inner"><p>Complete the relevant form below, fill it in, and email it back to Dan. It takes around five minutes.</p><a class="ty-fp-link" href="finance-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Personal proposal form</a><a class="ty-fp-link" href="business-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Business / company form</a></div></div>',
+      order:'<div class="ty-action-prompt-block"><div class="ty-order-wa-inner"><p>No problem. Message Dan now and he\'ll send it straight over.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%20could%20you%20send%20me%20the%20order%20form%20across%20for%20signing%20please" target="_blank" rel="noopener">'+WA_ICON+' Message Dan for your order form</a></div></div>'
+    };
+    ['deposit','finance','order'].forEach(function(k){
+      var slot=document.getElementById('slot-'+k);
+      if(slot)slot.innerHTML=(answers[k]==='no')?SLOTS[k]:'';
+    });
 
     var deposit=answers.deposit, finance=answers.finance, order=answers.order;
     var allAnswered=deposit&&finance&&order;
     var status=document.getElementById('checklistStatus');
+    var gate=document.getElementById('guideGate');
     var faq=document.getElementById('faqSection');
+
+    if(window._tyPersist)window._tyPersist(answers);
+    if(window._tyTracker)window._tyTracker(answers);
+    if(window._tyStick)window._tyStick(answers);
+
     if(!allAnswered){
       var missing=[];
       if(!deposit)missing.push('deposit');
@@ -1051,26 +1074,186 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
       if(!order)missing.push('order form');
       var label=missing.length===1?'Just answer the <strong>'+missing[0]+'</strong> question above to unlock your guide.':'Just answer the <strong>'+missing.join('</strong> and <strong>')+'</strong> questions above to unlock your guide.';
       status.innerHTML='<span class="ty-status-hint">'+label+'</span>';
+      if(gate)gate.innerHTML='';
       return;
     }
     var depositOk=deposit!=='no';
     var financeOk=finance!=='no';
     if(!depositOk||!financeOk){
-      status.innerHTML='<span class="ty-status-warn">Complete the outstanding steps above first, then your guide will unlock.</span>';
-      faq.classList.remove('unlocked');
+      var left=[deposit,finance,order].filter(function(v){return v==='no';}).length;
+      status.innerHTML='<span class="ty-status-warn">'+(left===1?'One thing':left+' things')+' still to sort above. Your guide is ready whenever you are.</span>';
+    } else if(order==='no'){
+      status.innerHTML='<span class="ty-status-ok">Good - everything essential is in place. Your order form will follow via ShareDocs.</span>';
     } else {
-      faq.classList.add('unlocked');
-      if(window._hideFab)window._hideFab();
-      var overlay=document.getElementById('faqOverlay');
-      if(overlay)overlay.classList.add('hidden');
-      if(order==='no'){
-        status.innerHTML='<span class="ty-status-ok">Great. Read the guide below whilst you wait for your order form to arrive via ShareDocs.</span>';
-      } else {
-        status.innerHTML='<span class="ty-status-ok">All done. Your full guide is now available below.</span>';
-      }
-      setTimeout(function(){faq.scrollIntoView({behavior:'smooth',block:'start'});},300);
+      status.innerHTML='<span class="ty-status-ok">All three confirmed. Everything is in place.</span>';
+    }
+    // Guide always unlocks once answered; the customer chooses when to move.
+    faq.classList.add('unlocked');
+    if(window._hideFab)window._hideFab();
+    var overlay=document.getElementById('faqOverlay');
+    if(overlay)overlay.classList.add('hidden');
+    if(gate&&!gate.querySelector('button')){
+      gate.innerHTML='<button type="button" class="ty-gate-btn" onclick="tyOpenGuide()">Open your guide <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></button>';
     }
   };
+
+  window.tyOpenGuide=function(){
+    var faq=document.getElementById('faqSection');
+    if(faq)faq.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+})();
+
+// Tracker, persistence, summary modal and sticky bar
+(function(){
+  var STORE='dsPurchaseChecklist';
+  var LABELS={deposit:'Deposit',finance:'Finance proposal',order:'Order form'};
+  var ACTION={deposit:'Pay your deposit',finance:'Complete your finance proposal',order:'Sign your order form'};
+  var stickDismissed=false;
+
+  window._tyPersist=function(a){
+    try{localStorage.setItem(STORE,JSON.stringify(a));}catch(e){}
+  };
+
+  window._tyTracker=function(a){
+    var done=0,total=0;
+    ['deposit','finance','order'].forEach(function(k){
+      var el=document.getElementById('tk-'+k);
+      if(!el)return;
+      var v=a[k];
+      el.classList.remove('is-yes','is-no','is-na');
+      var state=el.querySelector('.ty-tk-state');
+      if(v==='yes'){el.classList.add('is-yes');state.textContent='Done';done++;total++;}
+      else if(v==='no'){el.classList.add('is-no');state.textContent='Outstanding';total++;}
+      else if(v==='na'){el.classList.add('is-na');state.textContent='Not applicable';}
+      else{state.textContent='To confirm';}
+    });
+    var answered=['deposit','finance','order'].filter(function(k){return a[k];}).length;
+    var pct=answered?Math.round((done/Math.max(total,1))*100):0;
+    var fill=document.getElementById('tyTrackerFill');
+    if(fill)fill.style.width=(answered?Math.max(pct,4):0)+'%';
+    var count=document.getElementById('tyTrackerCount');
+    var wrap=document.getElementById('tyTracker');
+    var outstanding=['deposit','finance','order'].filter(function(k){return a[k]==='no';});
+    if(count){
+      if(!answered)count.textContent='Nothing confirmed yet';
+      else if(outstanding.length===0&&answered===3)count.textContent='Everything in place';
+      else if(outstanding.length)count.textContent=outstanding.length+' still to do';
+      else count.textContent=done+' of '+total+' done';
+    }
+    if(wrap)wrap.classList.toggle('is-complete',answered===3&&outstanding.length===0);
+  };
+
+  window._tyStick=function(a){
+    var bar=document.getElementById('tyStick');
+    if(!bar)return;
+    var outstanding=['deposit','finance','order'].filter(function(k){return a[k]==='no';});
+    bar.dataset.first=outstanding[0]||'';
+    if(!outstanding.length||stickDismissed){bar.classList.remove('show');return;}
+    var txt=bar.querySelector('.ty-stick-txt');
+    txt.innerHTML='<strong>'+outstanding.length+' still to do</strong>'+ACTION[outstanding[0]]+(outstanding.length>1?', and '+(outstanding.length-1)+' more':'');
+    if(bar.dataset.inview!=='1')bar.classList.add('show');
+  };
+
+  window.tyStickGo=function(){
+    var bar=document.getElementById('tyStick');
+    var k=bar&&bar.dataset.first;
+    var target=k?document.querySelector('.ty-check-item[data-item="'+k+'"]'):null;
+    (target||document.getElementById('checklistCard')).scrollIntoView({behavior:'smooth',block:'center'});
+  };
+  window.tyStickHide=function(){
+    stickDismissed=true;
+    var bar=document.getElementById('tyStick');
+    if(bar)bar.classList.remove('show');
+  };
+
+  window.tyCloseSummary=function(){
+    var m=document.getElementById('tySummary');
+    if(m)m.classList.remove('open');
+    document.body.style.overflow='';
+  };
+
+  function summarise(a){
+    var answered=['deposit','finance','order'].filter(function(k){return a[k];}).length;
+    if(!answered)return;
+    var outstanding=['deposit','finance','order'].filter(function(k){return a[k]==='no';});
+    var m=document.getElementById('tySummary');
+    if(!m)return;
+    var rows='';
+    ['deposit','finance','order'].forEach(function(k){
+      var v=a[k];
+      if(!v)return;
+      var cls=v==='yes'?'ok':(v==='no'?'todo':'na');
+      var mark=v==='yes'?'✓':(v==='no'?'!':'–');
+      var note=v==='yes'?'Confirmed':(v==='no'?ACTION[k]:'Not applicable');
+      rows+='<li class="ty-sum-row"><span class="ty-sum-ic '+cls+'">'+mark+'</span><span>'+LABELS[k]+'<small>'+note+'</small></span></li>';
+    });
+    document.getElementById('tySumList').innerHTML=rows;
+    document.getElementById('tySumTitle').textContent=outstanding.length?'Where your order stands':'Your order is all in place';
+    document.getElementById('tySumSub').textContent=outstanding.length
+      ? 'Here is what Dan has recorded so far. Anything outstanding is below, and you can change any answer on the page.'
+      : 'Everything Dan needs is recorded. Your full guide is on the page below.';
+    m.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var bar=document.getElementById('tyStick');
+    var card=document.getElementById('checklistCard');
+    if(bar&&card){
+      new IntersectionObserver(function(es){
+        bar.dataset.inview=es[0].isIntersecting?'1':'0';
+        if(es[0].isIntersecting)bar.classList.remove('show');
+        else if(bar.querySelector('.ty-stick-txt').textContent&&!stickDismissed&&bar.dataset.first)bar.classList.add('show');
+      },{threshold:0.2}).observe(card);
+    }
+    // Restore a returning visitor's own answers, unless Dan's link states otherwise
+    var hasCode=new URLSearchParams(window.location.search).get('c');
+    var saved=null;
+    if(!hasCode){
+      try{saved=JSON.parse(localStorage.getItem(STORE)||'null');}catch(e){}
+      if(saved){
+        ['deposit','finance','order'].forEach(function(k){
+          if(!saved[k])return;
+          var b=document.querySelector('.ty-check-btn[data-q="'+k+'"][data-v="'+saved[k]+'"]');
+          if(b)b.click();
+        });
+      }
+    }
+
+    // Snapshot the state known on arrival. The summary reports only this -
+    // never answers the customer gives after landing, which would mean a
+    // modal appearing in their face mid-tap.
+    var arrival=null;
+    if(hasCode){
+      var map={deposit:{'1':'yes','0':'no'},finance:{'1':'yes','0':'no','2':'na'},order:{'1':'yes','0':'no'}};
+      var keys=['deposit','finance','order'],snap={},any=false;
+      keys.forEach(function(k,i){
+        var v=map[k][hasCode[i]];
+        if(v){snap[k]=v;any=true;}
+      });
+      if(any)arrival=snap;
+    } else if(saved){ arrival=saved; }
+    if(!arrival)return;
+
+    // Only a real tap counts as interaction - the ?c= pre-fill clicks these
+    // buttons programmatically, and that must not suppress the summary.
+    var touched=false;
+    document.querySelectorAll('.ty-check-btn').forEach(function(b){
+      b.addEventListener('click',function(e){ if(e.isTrusted)touched=true; });
+    });
+
+    // Wait for the site disclaimer (z-index 2000) to clear before showing
+    // the summary, so the two never stack or fight over the scroll lock.
+    function whenClear(fn){
+      if(!document.querySelector('.dsc-overlay')){fn();return;}
+      var t=setInterval(function(){
+        if(!document.querySelector('.dsc-overlay')){clearInterval(t);setTimeout(fn,350);}
+      },300);
+    }
+    setTimeout(function(){
+      whenClear(function(){ if(!touched)summarise(arrival); });
+    },700);
+  });
 })();
 
 // URL checklist pre-population - ?c=101 (deposit/finance/order: 1=yes 0=no 2=n/a)

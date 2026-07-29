@@ -434,15 +434,9 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 @media(max-width:500px){.ig-feed{height:140px}}
 
 /* WhatsApp floating button */
-/* Action required FAB */
-.ty-action-fab{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:199;transition:opacity .35s ease,transform .35s ease;}
-.ty-action-fab.ty-fab-hidden{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(14px);}
-.ty-action-fab-btn{display:inline-flex;align-items:center;gap:8px;background:#d97706;color:#fff;font-family:var(--font);font-weight:700;font-size:.88rem;padding:12px 22px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 8px 28px -6px rgba(217,119,6,.55);transition:background .18s,transform .18s;animation:fabPulse 2.4s ease-in-out infinite;white-space:nowrap;}
-.ty-action-fab-btn:hover{background:#b45309;transform:translateY(-2px);}
-.ty-action-fab-btn svg{animation:fabArrow 1.6s ease-in-out infinite;}
+/* fabPulse drives the sticky outstanding-steps dot (.ty-stick-dot). The old
+   "Action required below" FAB it was written for has been replaced by that bar. */
 @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px -6px rgba(217,119,6,.55);}50%{box-shadow:0 10px 32px -4px rgba(217,119,6,.75),0 0 0 7px rgba(217,119,6,.1);}}
-@keyframes fabArrow{0%,100%{transform:translateY(0);}50%{transform:translateY(4px);}}
-@media(max-width:500px){.ty-action-fab{bottom:22px;}.ty-action-fab-btn{font-size:.82rem;padding:11px 18px;}}
 
 .wa-float{
   position:fixed;bottom:24px;right:24px;z-index:200;
@@ -625,6 +619,68 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .ty-status-warn::before{content:'!';font-size:1rem;}
 .ty-status-hint{display:inline-block;color:var(--muted);font-size:.9rem;}
 @media(max-width:640px){.ty-checklist{padding:22px 18px;}.ty-check-item{gap:14px;}.ty-check-label p{font-size:.92rem;}}
+
+/* Live progress tracker */
+.ty-tracker{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:22px;background:rgba(168,133,59,.04);}
+.ty-tracker.is-complete{background:rgba(22,163,74,.07);border-color:rgba(22,163,74,.35);}
+.ty-tracker-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.ty-tracker-count{font-size:.82rem;font-weight:800;letter-spacing:.04em;color:var(--text);white-space:nowrap;}
+.ty-tracker-meter{flex:1;height:5px;border-radius:999px;background:var(--line);overflow:hidden;min-width:60px;}
+.ty-tracker-meter i{display:block;height:100%;width:0;border-radius:999px;background:#d97706;transition:width .45s cubic-bezier(.4,0,.2,1);}
+.ty-tracker.is-complete .ty-tracker-meter i{background:#16a34a;}
+.ty-tracker-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;}
+.ty-tk{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 10px;background:var(--paper);font-size:.82rem;}
+.ty-tk-mark{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--line);flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;line-height:1;}
+.ty-tk-name{font-weight:700;color:var(--text);}
+.ty-tk-state{color:var(--muted);font-size:.76rem;}
+.ty-tk.is-yes{border-color:rgba(22,163,74,.4);background:rgba(22,163,74,.07);}
+.ty-tk.is-yes .ty-tk-mark{background:#16a34a;border-color:#16a34a;}
+.ty-tk.is-yes .ty-tk-mark::after{content:'✓';}
+.ty-tk.is-yes .ty-tk-state{color:#15803d;font-weight:700;}
+.ty-tk.is-no{border-color:rgba(217,119,6,.45);background:rgba(217,119,6,.08);}
+.ty-tk.is-no .ty-tk-mark{background:#d97706;border-color:#d97706;}
+.ty-tk.is-no .ty-tk-mark::after{content:'!';}
+.ty-tk.is-no .ty-tk-state{color:#b45309;font-weight:700;}
+.ty-tk.is-na{opacity:.72;}
+.ty-tk.is-na .ty-tk-mark{background:var(--muted);border-color:var(--muted);}
+.ty-tk.is-na .ty-tk-mark::after{content:'–';}
+
+/* Inline action slots under each question */
+.ty-slot:not(:empty){padding:0 0 18px;}
+.ty-slot .ty-action-prompt-block{margin-top:2px;}
+
+/* Unlock button */
+.ty-gate-btn{display:inline-flex;align-items:center;gap:9px;margin-top:16px;background:#16a34a;color:#fff;font-family:var(--font);font-weight:700;font-size:.9rem;padding:12px 22px;border-radius:10px;border:none;cursor:pointer;transition:background .18s,transform .18s;}
+.ty-gate-btn:hover{background:#15803d;transform:translateY(-1px);}
+
+/* Status modal */
+.ty-sum-bg{position:fixed;inset:0;background:rgba(10,12,15,.72);z-index:400;display:none;align-items:center;justify-content:center;padding:18px;}
+.ty-sum-bg.open{display:flex;}
+.ty-sum{background:var(--paper);border-radius:16px;max-width:440px;width:100%;padding:28px 26px 24px;position:relative;box-shadow:0 30px 80px -20px rgba(0,0,0,.5);}
+.ty-sum h3{font-family:var(--display);font-size:1.3rem;font-weight:600;color:var(--text);margin:0 0 6px;letter-spacing:-.015em;}
+.ty-sum-sub{font-size:.9rem;color:var(--body);line-height:1.6;margin:0 0 18px;}
+.ty-sum-list{list-style:none;margin:0 0 20px;padding:0;display:flex;flex-direction:column;gap:9px;}
+.ty-sum-row{display:flex;align-items:center;gap:11px;font-size:.92rem;color:var(--text);}
+.ty-sum-ic{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900;color:#fff;}
+.ty-sum-ic.ok{background:#16a34a;}
+.ty-sum-ic.todo{background:#d97706;}
+.ty-sum-ic.na{background:var(--muted);}
+.ty-sum-row small{display:block;color:var(--muted);font-size:.78rem;font-weight:400;}
+.ty-sum-close{width:100%;background:var(--text);color:#fff;font-family:var(--font);font-weight:700;font-size:.9rem;padding:12px;border-radius:10px;border:none;cursor:pointer;}
+.ty-sum-close:hover{opacity:.88;}
+.ty-sum-x{position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.15rem;color:var(--muted);cursor:pointer;line-height:1;}
+
+/* Sticky outstanding-steps bar */
+.ty-stick{position:fixed;left:0;right:0;bottom:0;z-index:198;background:#1c1207;border-top:1px solid rgba(217,119,6,.5);transform:translateY(110%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
+.ty-stick.show{transform:translateY(0);}
+.ty-stick-in{max-width:720px;margin:0 auto;padding:11px 16px;display:flex;align-items:center;gap:12px;}
+.ty-stick-dot{width:8px;height:8px;border-radius:50%;background:#d97706;flex-shrink:0;animation:fabPulse 2.4s ease-in-out infinite;}
+.ty-stick-txt{flex:1;min-width:0;color:#f7e8d0;font-size:.85rem;line-height:1.35;}
+.ty-stick-txt strong{display:block;color:#fff;font-weight:700;font-size:.88rem;}
+.ty-stick-go{background:#d97706;color:#fff;font-family:var(--font);font-weight:700;font-size:.82rem;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;}
+.ty-stick-go:hover{background:#b45309;}
+.ty-stick-x{background:none;border:none;color:#8a7660;font-size:1.05rem;cursor:pointer;padding:0 2px;line-height:1;}
+@media(max-width:520px){.ty-stick-txt{font-size:.78rem;}.ty-stick-go{padding:8px 12px;font-size:.78rem;}}
 
 /* £60k in-person signing notice */
 .ty-doc-notice{display:flex;align-items:flex-start;gap:12px;background:rgba(168,133,59,.08);border:1px solid rgba(168,133,59,.3);border-radius:12px;padding:14px 18px;margin:0 22px 18px;font-size:.9rem;}
