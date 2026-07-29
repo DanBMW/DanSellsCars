@@ -268,11 +268,15 @@
     <section class="section" style="padding-top:48px;">
       <div class="section-head reveal">
         <div class="section-kicker">Your next steps</div>
-        <h2>Which describes your purchase?</h2>
-        <p class="step-desc" style="margin-bottom:0">Select the option that matches what you've bought. Everything relevant to you will appear below.</p>
+        <h2 id="tyTypeHeading">Your next steps</h2>
+        <p class="step-desc" style="margin-bottom:0" id="tyTypeLine">Everything relevant to your purchase is below.</p>
       </div>
 
-      <div class="ty-tabs reveal" role="tablist" aria-label="Purchase type">
+      <!-- Dan sets the purchase type on the link (?type=stock|order|used), so
+           the customer is shown their own section rather than picking from a
+           chooser. The tabs stay in the markup as a fallback and are hidden
+           whenever a type is supplied. -->
+      <div class="ty-tabs reveal" role="tablist" aria-label="Purchase type" id="tyTabs">
         <button class="ty-tab active" data-panel="stock" role="tab" id="tab-stock" aria-selected="true" aria-controls="panel-stock">
           <span class="ty-tab-icon">🚗</span>
           <strong>Stock New Car</strong>
@@ -1048,6 +1052,19 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   var saved=sessionStorage.getItem('ty_panel');
   var def=document.querySelector('.ty-tab[data-panel="'+(urlType||saved)+'"]')||document.querySelector('.ty-tab');
   if(def)activate(def);
+
+  // When Dan has stated the purchase type, name it and drop the chooser.
+  var WORDING={
+    stock:'new car order',
+    order:'new car factory order',
+    used:'used vehicle purchase'
+  };
+  if(urlType&&WORDING[urlType]){
+    var tabsEl=document.getElementById('tyTabs');
+    if(tabsEl)tabsEl.style.display='none';
+    var line=document.getElementById('tyTypeLine');
+    if(line)line.textContent="FAQs about your "+WORDING[urlType]+" can be found below.";
+  }
 })();
 
 

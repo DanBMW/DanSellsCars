@@ -170,6 +170,26 @@ h1 em::after,h2 em::after{display:none !important;}
 .ty-checklist-head h2{color:var(--text) !important;}
 .ty-checklist-item,.ty-check-label{color:var(--body) !important;}
 
+/* Purchase checklist prompts: .ty-order-wa-inner carries a hardcoded near-white
+   green (#f0fdf4) from style.css, so on this dark skin its ivory text and the
+   reset .ty-wa-btn both sat light-on-light and were unreadable. Give the panel
+   a dark surface and put the WhatsApp button back to its own green fill. */
+.ty-order-wa-inner{
+  background:rgba(37,211,102,.08) !important;
+  border:1px solid rgba(37,211,102,.32) !important;
+  border-radius:0 !important;
+}
+.ty-order-wa-inner p{color:var(--body) !important;}
+.ty-finance-prompt-inner{border-radius:0 !important;}
+.ty-order-wa-inner .ty-wa-btn,
+.ty-finance-prompt-inner .ty-wa-btn,
+a.ty-wa-btn{
+  background:#25D366 !important;border:1px solid #25D366 !important;color:#08130c !important;
+  font-weight:700 !important;letter-spacing:.04em !important;text-transform:none !important;
+  font-size:.84rem !important;padding:10px 18px !important;border-radius:0 !important;
+}
+a.ty-wa-btn:hover{background:#1ea355 !important;border-color:#1ea355 !important;color:#08130c !important;}
+
 /* Purchase checklist: the chosen answer must stay visibly chosen. The
    generic .ty-check-btn rule above resets every button, so the selected
    states need to out-specify it or the customer cannot see their answer. */
