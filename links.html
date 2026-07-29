@@ -318,6 +318,11 @@ a{color:inherit;text-decoration:none}
         <div class="chip" id="vchip-order" onclick="selectType('order')"><span class="chip-dot"></span>Factory Order</div>
         <div class="chip" id="vchip-used" onclick="selectType('used')"><span class="chip-dot"></span>BMW Used</div>
       </div>
+      <div class="widget-title" style="margin-bottom:8px;">Has the customer seen the car in person?</div>
+      <div class="chip-row" style="margin-bottom:16px;">
+        <div class="chip" id="schip-yes" onclick="selectSeen('yes')"><span class="chip-dot"></span>Seen in person</div>
+        <div class="chip" id="schip-no" onclick="selectSeen('no')"><span class="chip-dot"></span>Not seen &ndash; add extra info</div>
+      </div>
       <div class="widget-title" style="margin-bottom:8px;">Documents</div>
       <div class="chip-row">
         <div class="chip" id="chip-deposit" onclick="toggleChip('deposit')"><span class="chip-dot"></span>Deposit Paid</div>
@@ -928,6 +933,19 @@ function selectType(t) {
   });
 }
 
+// Whether the customer has seen the car in person. 'no' adds the extra
+// information block to the thank-you page.
+let seenInPerson = null;
+
+function selectSeen(v) {
+  seenInPerson = (seenInPerson === v) ? null : v;
+  ['yes','no'].forEach(function(k) {
+    const el = document.getElementById('schip-' + k);
+    el.classList.toggle('on-type', seenInPerson === k);
+    el.classList.remove('on');
+  });
+}
+
 function buildPurchaseMessage() {
   const name  = document.getElementById('ty-name').value.trim();
   const financeCode = chipState.finance === 'yes' ? '1' : (chipState.finance === 'na' ? '2' : '0');
@@ -935,6 +953,7 @@ function buildPurchaseMessage() {
   const params = new URLSearchParams({ c: code });
   if (name) params.set('name', name);
   if (vehicleType) params.set('type', vehicleType);
+  if (seenInPerson === 'no') params.set('seen', '0');
   const link = 'https://dan-sells.co.uk/purchase-thankyou.html?' + params.toString();
   const greeting = name ? 'Congratulations ' + name + ' on your' : 'Congratulations on your';
   const msg = greeting + " purchase with BMW Ruxley, please find some useful information and FAQ's within the link below.\n\n" + link;

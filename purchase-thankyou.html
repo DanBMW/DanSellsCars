@@ -208,6 +208,39 @@
           <p>Shortly after your purchase, you will receive an email from <strong>ITC Compliance</strong>, an FCA-authorised firm that manages regulated disclosures on behalf of BMW Financial Services. This email contains your pre-contract credit information, full commission disclosure, and a summary of your rights under the Consumer Credit Act 1974. It has been issued to satisfy obligations under the FCA Consumer Duty regulations. Please read it carefully and keep it for your records.</p>
         </div>
       </div>
+      <!-- Applies to every customer. Wording taken from the ITC Compliance
+           customer-registration disclosures; keep in step with that source. -->
+      <div class="ty-itc-notice">
+        <div class="ty-itc-notice-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="ty-itc-notice-body">
+          <strong>Looking after you properly</strong>
+          <p>As an organisation we are committed to our customers receiving good consumer outcomes under the FCA's Consumer Duty. The Consumer Duty means you should receive communications you can understand, products and services that meet your needs and offer fair value, and you get the customer support you need, when you need it.</p>
+          <p style="margin-top:10px;">Should you require any additional support during your purchase, please visit the useful links provided within your welcome pack of organisations who can offer additional guidance and support.</p>
+          <p style="margin-top:10px;">If at any time you feel you have not received the information or support you expect from us, please do let us know.</p>
+          <p style="margin-top:10px;"><strong>Additional support.</strong> We want to provide the best service we can. If there is anything about your circumstances that means you would like extra support from us, just tell Dan - it will be handled discreetly and without fuss.</p>
+          <p style="margin-top:10px;"><strong>Your welcome pack.</strong> You will receive this by email where you have given us an email address. If not, a printed welcome pack will be sent to you.</p>
+          <p style="margin-top:10px;"><strong>Your data.</strong> We will only use your data in line with our data privacy policy. Ask Dan at any point if you would like a copy or want to know how to obtain the relevant policies.</p>
+        </div>
+      </div>
+
+      <!-- Shown only when Dan flags the customer has not seen the car in
+           person (?seen=0). Wording taken from the ITC Compliance
+           disclosure script; presented here as a written record only. -->
+      <div class="ty-itc-notice" id="seenInfo" style="display:none;">
+        <div class="ty-itc-notice-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+        </div>
+        <div class="ty-itc-notice-body">
+          <strong>Information for you</strong>
+          <p>Stephen James (Automotive) Limited t/a Hedin Automotive BMW Ruxley are an appointed representative of ITC Compliance Ltd for the sale of General Insurance and Consumer Credit, who are fully authorised by the Financial Conduct Authority. We will ask you specific questions to establish your personal circumstances and objectives as might be relevant in order to enable us to identify your requirements. Using the answers you provide, and during the course of advising you, we may make recommendations. These recommendations will be suitable for your demands and needs at the time the recommendation is made.</p>
+          <p style="margin-top:10px;">We can introduce you to a limited number of finance providers. We do not charge fees for our Consumer Credit services. We may receive a payment(s) or other benefits from finance providers should you decide to enter into an agreement with them, typically either a fixed fee or a fixed percentage of the amount you borrow. The payment we receive may vary between finance providers and product types. The payment received does not impact the finance rate offered.</p>
+          <p style="margin-top:10px;">All finance applications are subject to status, terms and conditions apply, UK residents only, 18's or over. Guarantees may be required.</p>
+          <p style="margin-top:10px;">Information passed to partners will only be used for the specified purpose. Information sent to ITC will only be used for the monitoring of compliance related to the provision of finance, and ITC will retain this data in line with its privacy policy, which can be found at <a href="https://www.itccompliance.co.uk/?page=legal#privacy" target="_blank" rel="noopener">itccompliance.co.uk</a>. For details of our full privacy policy, please visit our website or ask a member of staff.</p>
+        </div>
+      </div>
+
       <div class="ty-finance-cta">
         <span class="ty-finance-cta-icon">📄</span>
         <div class="ty-finance-cta-body">
@@ -971,26 +1004,10 @@ Just purchased my new BMW with Dan at Ruxley BMW and I cannot wait to show you. 
   }
 })();
 
-// Header scroll
-const hdr=document.getElementById('siteHeader');
-window.addEventListener('scroll',()=>{hdr.classList.toggle('scrolled',window.scrollY>80);},{passive:true});
-
-// Nav drawer
-function openDrawer(){
-  document.getElementById('navDrawer').classList.add('open');
-  document.getElementById('navOverlay').classList.add('open');
-  document.getElementById('navToggle').setAttribute('aria-expanded','true');
-  document.getElementById('navDrawer').removeAttribute('aria-hidden');
-  document.body.style.overflow='hidden';
-}
-function closeDrawer(){
-  document.getElementById('navDrawer').classList.remove('open');
-  document.getElementById('navOverlay').classList.remove('open');
-  document.getElementById('navToggle').setAttribute('aria-expanded','false');
-  document.getElementById('navDrawer').setAttribute('aria-hidden','true');
-  document.body.style.overflow='';
-}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
+// Header scroll and nav drawer are handled above for the current chrome
+// (#phHeader / #phDrawer). The old #siteHeader / #navDrawer handlers that
+// used to sit here referenced elements this page no longer has, and threw
+// on every scroll event.
 
 // Scroll reveal
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.1});
@@ -1255,6 +1272,16 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     },700);
   });
 })();
+
+// ?seen=0 reveals the extra information block for a customer who has not
+// seen the car in person. Presented as a written record only - the record
+// of the disclosure itself lives in the ITC Compliance system.
+document.addEventListener('DOMContentLoaded',function(){
+  if(new URLSearchParams(window.location.search).get('seen')==='0'){
+    var el=document.getElementById('seenInfo');
+    if(el)el.style.display='flex';
+  }
+});
 
 // URL checklist pre-population - ?c=101 (deposit/finance/order: 1=yes 0=no 2=n/a)
 document.addEventListener('DOMContentLoaded',function(){
