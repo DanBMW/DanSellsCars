@@ -2283,6 +2283,11 @@ UI.accountApp = function () {
       '</div>';
   }
 
+  h += '<div class="card"><b>Is it actually working?</b>' +
+    '<div class="kv muted small">Cloud saves depend on settings in the Firebase console that this screen cannot see. Run the check and it will name whichever step is failing.</div>' +
+    '<div id="cloudDiag"></div>' +
+    '<div class="btnrow"><button class="sec" onclick="UI.cloudDiagnose()">Check the connection</button></div></div>';
+
   h += '<div class="card"><b>Always works</b>' +
     '<div class="kv">Whatever the cloud is doing, a save code moves a career between devices by hand.</div>' +
     '<div class="btnrow"><button class="sec" onclick="UI.exportUI()">Copy save code</button>' +
@@ -2342,6 +2347,28 @@ UI.cloudSignOut = function () {
 UI.cloudSignOutGo = function () {
   var c = cloud(); if (!c) return;
   c.signOut(function () { toast('Signed out.'); UI.accountApp(); });
+};
+
+UI.cloudDiagnose = function () {
+  var c = cloud(); if (!c || !c.diagnose) return;
+  var el = $('cloudDiag');
+  if (el) el.innerHTML = '<div class="kv muted small diag-run">Checking…</div>';
+  c.diagnose(function (steps) {
+    var box = $('cloudDiag');
+    if (!box) return;
+    var allOk = steps.length && steps.every(function (s) { return s.ok; });
+    box.innerHTML = '<div class="diag">' + steps.map(function (s) {
+      return '<div class="diag-row ' + (s.ok ? 'ok' : 'bad') + '">' +
+        '<i>' + (s.ok ? '✓' : '✕') + '</i>' +
+        '<div><b>' + esc(s.name) + '</b>' +
+        (s.detail ? '<div class="kv small">' + esc(s.detail) + '</div>' : '') +
+        (s.fix ? '<div class="kv warn small"><b>Fix:</b> ' + esc(s.fix) + '</div>' : '') +
+        '</div></div>';
+    }).join('') +
+    (allOk ? '<div class="kv good small" style="margin-top:8px">All good — this career is backed up.</div>' : '') +
+    '</div>';
+    if (allOk) Juice.sound('win');
+  });
 };
 
 /* The one screen that must never get this wrong: two saves, one career.

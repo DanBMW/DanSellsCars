@@ -330,6 +330,77 @@
     });
   };
 
+  /* ---------- setup check ----------
+     Cloud saves depend on console steps nobody can see from inside the game,
+     so this walks them in order and names the one that is failing. A read of
+     the player's own save path is the honest test of the rules: it needs the
+     exact permission a real sync needs, and it cannot damage anything.
+
+     Reports back through cb(steps) where each step is
+     { name, ok, detail, fix }. */
+  C.diagnose = function (cb) {
+    cb = cb || function () {};
+    var steps = [];
+    function done() { cb(steps); }
+    function step(name, ok, detail, fix) { steps.push({ name: name, ok: ok, detail: detail || '', fix: fix || '' }); }
+
+    if (!C.enabled()) {
+      step('Cloud save switched on', false, 'You have turned it off on this device.', 'Turn it back on above.');
+      return done();
+    }
+    var d = driver || firebaseDriver();
+    driver = d;
+    d.signInAnon(function (err, user) {
+      if (err || !user) {
+        var code = (err && err.code) || '';
+        if (/operation-not-allowed|configuration-not-found|admin-restricted/.test(code)) {
+          step('Reach Google’s servers', true);
+          step('Sign in anonymously', false, 'The project is refusing anonymous sign-in.',
+               'Firebase console → Authentication → Sign-in method → enable Anonymous.');
+        } else {
+          step('Reach Google’s servers', false, friendly(err),
+               navigator.onLine ? 'Something is blocking the connection — a VPN, ad blocker or corporate network.' : 'You are offline.');
+        }
+        return done();
+      }
+      step('Reach Google’s servers', true);
+      step('Sign in anonymously', true, 'Signed in as ' + (user.linked ? (user.email || 'a Google account') : 'a guest') + '.');
+      st.uid = user.uid; st.linked = user.linked; st.email = user.email || '';
+
+      d.get(user.uid, function (e2, remote) {
+        if (e2) {
+          var msg = ((e2 && (e2.code || e2.message)) || '') + '';
+          if (/permission|PERMISSION_DENIED/i.test(msg)) {
+            step('Database is letting you in', false, 'The database refused the read.',
+                 'The security rules have not been deployed. In the Firebase console → Realtime Database → Rules, paste the contents of database.rules.json (it needs the "empire" block) and publish.');
+          } else {
+            step('Database is letting you in', false, friendly(e2), 'Check the database URL and that the database exists.');
+          }
+          return done();
+        }
+        step('Database is letting you in', true, remote ? 'Found a career backed up here.' : 'Connected — nothing backed up yet.');
+        if (!FE.getState || !FE.getState()) {
+          step('Back up this career', false, 'No career loaded to back up.', 'Start or continue a career, then check again.');
+          return done();
+        }
+        set('on');
+        FE.afterSave = schedulePush;
+        held = false;
+        var env = FE.envelope();
+        d.set(user.uid, env, function (e3) {
+          if (e3) {
+            step('Back up this career', false, friendly(e3), 'The rules allow reading but not writing — re-check the "empire/saves" block.');
+            return done();
+          }
+          st.lastPush = Date.now();
+          step('Back up this career', true, 'Week ' + env.game.week + ' is now saved to your account.');
+          emit();
+          done();
+        });
+      });
+    });
+  };
+
   function friendly(err) {
     var code = (err && err.code) || '';
     if (/popup-closed|cancelled-popup|popup-blocked/.test(code)) return 'Sign-in window was closed.';

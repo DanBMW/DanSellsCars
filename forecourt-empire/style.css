@@ -943,3 +943,14 @@ b.teal { color: var(--teal); }
 .save-alert button.sm { padding: 7px 13px; font-size: .78rem; }
 .boot-diag { border-color: rgba(255,182,61,.45); }
 .boot-diag > b { color: #ffdd85; display: block; margin-bottom: 5px; }
+
+/* ---------- cloud setup check ---------- */
+.diag { margin-top: 8px; }
+.diag-row { display: flex; gap: 9px; align-items: flex-start; padding: 7px 0; border-top: 1px solid var(--line); }
+.diag-row:first-child { border-top: none; }
+.diag-row > i { flex: 0 0 20px; font-style: normal; font-weight: 900; text-align: center; line-height: 1.35; }
+.diag-row.ok > i { color: var(--green); }
+.diag-row.bad > i { color: var(--red); }
+.diag-row > div { min-width: 0; }
+.diag-row b { font-size: .85rem; }
+.diag-run { padding: 8px 0; }

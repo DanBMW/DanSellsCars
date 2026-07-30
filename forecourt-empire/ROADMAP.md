@@ -458,6 +458,17 @@ fails silently (Settings → Account reads "Local only") until they are:
 3. Authentication → Settings → Authorized domains → add **dan-sells.co.uk**
 4. Deploy `database.rules.json` (the new `empire` block)
 
+**Status probed 2026-07-30** against the live project: step 1 is **done**
+(anonymous sign-up returns a valid token). Step 4 is **not** — a read of
+`empire/saves/<own uid>` with a valid anonymous token returns
+`Permission denied`, meaning the live rules still lack the `empire` block.
+Steps 2 and 3 only matter for Google linking, not for backup.
+
+Settings → Account → **Check the connection** (`FEcloud.diagnose`) walks these
+in order and names the failing one. It tests the rules with a *read* of the
+player's own save path — the exact permission a real sync needs, and one that
+cannot damage anything.
+
 ### Not done
 
 - **Leaderboard.** Deliberately deferred. The week clock is anchored on a
