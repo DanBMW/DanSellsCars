@@ -20,9 +20,34 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 UI.boot = function () {
   var g = FE.load();
   if (g && !g.dead) { resumeGame(); }
-  else { $('screen-boot').classList.remove('hidden'); $('bootContinue').classList.toggle('hidden', !g || !!g.dead); }
+  else {
+    $('screen-boot').classList.remove('hidden');
+    $('bootContinue').classList.toggle('hidden', !g || !!g.dead);
+    if (!g) bootDiagnostic();
+  }
   startCloud();
 };
+/* If a profile was minted on this device but there is no career behind it,
+   the player has been here before and the save is not where it should be.
+   Saying so — and naming the likely reasons — beats a blank New career
+   button, which reads as "the game ate it". */
+function bootDiagnostic() {
+  var el = $('bootDiag');
+  if (!el) return;
+  var p = FE.playedHereBefore && FE.playedHereBefore();
+  if (!p) return;
+  var when = p.created ? new Date(p.created).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+  el.classList.remove('hidden');
+  el.innerHTML = '<div class="card boot-diag"><b>⚠️ You have played on this device before</b>' +
+    '<div class="kv">' + (p.name ? esc(p.name) + '’s profile is still here' : 'A profile is still here') +
+    (when ? ', created ' + when : '') + ', but there is no career saved against it.</div>' +
+    '<div class="kv muted small">Saves live in this browser, on this device. The usual reasons a career is not here:' +
+    '<br>• <b>You are in a different browser</b> — an installed app and a Safari tab have separate storage on iPhone. Try the other one.' +
+    '<br>• <b>Browser data was cleared</b>, or Safari evicted it after a week away.' +
+    '<br>• <b>A private window</b> — nothing survives closing it.' +
+    '<br>Site updates and cache changes do <b>not</b> touch saves.</div>' +
+    '<div class="btnrow"><button class="sec" onclick="UI.importUI()">Paste a save code</button></div></div>';
+}
 /* The cloud connects in the background — boot never waits on the network, so a
    flat signal costs nothing but the mirror. When it does connect and finds a
    save that disagrees with this device, the player is asked; we never pick. */
@@ -231,6 +256,26 @@ function enterMain() {
 
 /* One tip at a time, under the banner, dismissible. Deliberately not a modal:
    these fire mid-flow and a dialog would be an interruption rather than help. */
+/* Silent save failure is how a career actually disappears, so this is a bar
+   that stays put until it is fixed — not a toast that slides away unseen. */
+function renderSaveAlert() {
+  var el = $('saveAlert');
+  if (!el) return;
+  var hz = FE.saveHealth ? FE.saveHealth() : { ok: true };
+  if (hz.ok) { el.innerHTML = ''; el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  el.innerHTML = '<div class="save-alert">' +
+    '<b>⚠️ This career is not being saved</b>' +
+    '<div class="kv">' + esc(hz.reason) + ' Everything since week ' + hz.failedAt +
+    ' only exists in this tab — close it and that progress is gone.</div>' +
+    '<div class="btnrow"><button class="grn sm" onclick="UI.exportUI()">Copy save code out</button>' +
+    '<button class="sec sm" onclick="UI.saveRetry()">Try again</button></div></div>';
+}
+UI.saveRetry = function () {
+  var ok = FE.save();
+  renderSaveAlert();
+  toast(ok ? 'Saved — you are safe again.' : 'Still refusing. Copy the save code out before you close this tab.');
+};
 function renderCoach() {
   var el = $('coach');
   if (!el) return;
@@ -251,6 +296,7 @@ UI.coachDismiss = function (id) {
 function renderAll() {
   if (!G()) return;
   renderHUD(); renderBanner(); renderTab();
+  renderSaveAlert();
   renderCoach();
 }
 UI.renderAll = renderAll;
