@@ -573,3 +573,52 @@ Est profit, the buy button reads "Buy £14,185 — to make about £1,818", and t
 header carries the best lot on the list plus the combined profit of the best
 lots you can both afford and find a pitch for. Default sort is Most profit;
 Best margin % is still there for return on capital.
+
+---
+
+## Save-loss investigation — 2026-07-30
+
+Dan reported a lost career and asked whether a code change caused it.
+
+### What was ruled out, by test not by argument
+
+- **Schema migration.** Saves built by every recent build (`90960a9`,
+  `e052aef`, `e219b73`, `e38a4bb` — schemas 4 and 5) were loaded with the
+  current build. All four survived intact and played on. Not the cause.
+- **Save size.** ~148KB at week 79, growing ~42KB per game year against a
+  ~5MB localStorage quota. Reports capped at 60, emails at 120. Not the
+  cause. (`G.reviews` is uncapped but contributed 0KB in testing — worth
+  watching, not urgent.)
+- **Cache / service-worker changes.** Deleted *every* cache and unregistered
+  *every* worker, then reloaded: the career resumed untouched. localStorage
+  is keyed by origin, not by cache. A site deploy cannot lose a save. There is
+  also no root-scope service worker and no `localStorage.clear()` anywhere in
+  the repo outside the game's own tests.
+- **Domain.** `CNAME` unchanged, so the origin — and therefore the storage
+  bucket — is stable.
+
+### The real defect found
+
+`localStorage.setItem` throws when the browser refuses a write (quota, iOS
+private mode, storage pressure). `FE.storage.set` swallows it and returns
+false, and **nothing looked at the return value.** Measured: the game played
+on for six further weeks with nothing persisted and no indication whatsoever,
+then lost all six on reload.
+
+Fixed three ways:
+1. `FE.saveHealth()` records every failed write, with a reason distinguishing
+   "storage refuses everything" from "this career is too big".
+2. Every 20th save reads itself back and compares length — catching the worse
+   case where a write appears to succeed but nothing lands.
+3. A **persistent** alert bar (not a toast, which slides away unseen) naming
+   the week from which nothing has been saved, with a one-tap save-code
+   export so the career can be rescued before the tab closes.
+
+### And a boot diagnostic
+
+A profile with no career behind it means the player has been here before and
+the save is not where it should be. Rather than a bare New career button —
+which reads as "the game ate it" — the boot screen now names the likely
+causes: different browser (installed app and Safari tab have separate storage
+on iPhone), cleared data, Safari's 7-day eviction, private window. It states
+explicitly that site updates and cache changes do not touch saves.

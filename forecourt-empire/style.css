@@ -928,3 +928,18 @@ b.teal { color: var(--teal); }
 .days-chip.good { color: #7fe6ac; border-color: rgba(53,208,127,.4); }
 .days-chip.warn { color: #ffcf6b; border-color: rgba(255,182,61,.4); }
 .lot-buy .lb-sub { display: block; font-size: .66rem; font-weight: 600; opacity: .82; margin-top: 1px; }
+
+/* ---------- save failure: an alert that stays put ---------- */
+#saveAlert { margin: 0 14px 12px; }
+.save-alert {
+  padding: 12px 13px; border-radius: 14px;
+  background: linear-gradient(150deg, rgba(255,93,108,.18), rgba(255,93,108,.07)), var(--card);
+  border: 1px solid rgba(255,93,108,.5);
+  box-shadow: 0 10px 26px -16px rgba(255,93,108,.7);
+}
+.save-alert > b { display: block; color: #ff9aa4; margin-bottom: 4px; font-size: .92rem; }
+.save-alert .kv { font-size: .82rem; color: #e6d3d6; }
+.save-alert .btnrow { margin-top: 9px; }
+.save-alert button.sm { padding: 7px 13px; font-size: .78rem; }
+.boot-diag { border-color: rgba(255,182,61,.45); }
+.boot-diag > b { color: #ffdd85; display: block; margin-bottom: 5px; }

@@ -269,15 +269,59 @@ function envelope() {
   return { schema: FE.SCHEMA, profile: p, savedAt: Date.now(), game: G };
 }
 FE.envelope = envelope;
+/* Save health.
+
+   localStorage.setItem can refuse a write — quota exhausted, iOS private
+   mode, storage pressure — and it does so by throwing, which FE.storage
+   swallows. Before this, the game carried on happily with nothing being
+   written and told the player nothing: measured, six further weeks played and
+   then lost on reload, with no warning at any point. That is precisely how a
+   career disappears.
+
+   So: every failed write is recorded, and the UI has something to shout
+   about. A periodic read-back catches the nastier case where the write
+   appears to succeed but nothing lands. */
+var health = { ok: true, failedAt: 0, fails: 0, lastGood: 0, reason: '' };
+FE.saveHealth = function () {
+  return { ok: health.ok, failedAt: health.failedAt, fails: health.fails,
+           lastGood: health.lastGood, reason: health.reason };
+};
+FE.storageProbe = function () {
+  try {
+    var k = '__feProbe';
+    localStorage.setItem(k, '1');
+    localStorage.removeItem(k);
+    return true;
+  } catch (e) { return false; }
+};
 /* cloud.js hangs a debounced upload off this. Deliberately called *after* the
    local write and wrapped in a try: the local save is the source of truth and
    a broken mirror must never be able to cost anyone a week. */
 FE.afterSave = null;
+var saveTick = 0;
 FE.save = function () {
   if (!G) return false;
   G.lastSeen = Date.now();          // real-time clock anchor (see FE.offlineProgress)
   var env = envelope();
-  var ok = FE.storage.set(SAVE_KEY, JSON.stringify(env));
+  var json = JSON.stringify(env);
+  var ok = FE.storage.set(SAVE_KEY, json);
+  /* Every 20th save, read it back. A write that silently does not land is
+     rarer than an outright throw but far more dangerous, because nothing
+     anywhere reports it. */
+  if (ok && (++saveTick % 20 === 0)) {
+    var back = FE.storage.get(SAVE_KEY);
+    if (!back || back.length !== json.length) ok = false;
+  }
+  if (ok) {
+    health.ok = true; health.fails = 0; health.reason = '';
+    health.lastGood = Date.now();
+  } else {
+    health.fails++;
+    if (health.ok) { health.ok = false; health.failedAt = G.week; }
+    health.reason = FE.storageProbe()
+      ? 'This career has got too big for the space the browser will give it.'
+      : 'The browser is refusing to save — storage is full, or this is a private window.';
+  }
   if (FE.afterSave) { try { FE.afterSave(env); } catch (e) {} }
   return ok;
 };
@@ -332,6 +376,17 @@ FE.adoptEnvelope = function (o) {
   return { ok: true, week: G.week };
 };
 FE.hasSave = function () { return !!FE.storage.get(SAVE_KEY); };
+/* Has a profile been minted on this device before? FE.profile() creates one on
+   first call, so this reads the raw key instead — the difference between "new
+   player" and "played here before, and the career is not here now". */
+FE.playedHereBefore = function () {
+  var raw = FE.storage.get(PROFILE_KEY);
+  if (!raw) return null;
+  try {
+    var p = JSON.parse(raw);
+    return (p && p.created) ? p : null;
+  } catch (e) { return null; }
+};
 FE.saveInfo = function () {
   var raw = FE.storage.get(SAVE_KEY);
   if (!raw) return null;
