@@ -673,7 +673,8 @@ function renderStock() {
       '<div class="sr-bar" onclick="UI.stockCard(' + c.id + ')" title="screen against market">' +
         '<i class="' + pcls + '" style="width:' + Math.min(100, Math.abs(gap) * 4) + '%"></i></div>' +
       '<div class="row kv"><span class="sr-tag ' + pcls + '">' + plabel + '</span>' +
-        '<span>' + flag + ' · hold <b>' + M(Math.round(c.holdCost)) + '</b></span></div>' +
+        '<span>' + flag + ' · hold <b>' + M(Math.round(c.holdCost)) + '</b>' +
+        (sold ? '' : ' <span class="sr-rate">' + M(Math.round(FE.holdPerDay(c))) + '/day</span>') + '</span></div>' +
       (sold ? '' :
         '<div class="sr-price">' +
           '<button class="sec sm" onclick="UI.quickPrice(' + c.id + ',-5)">−5%</button>' +
@@ -750,7 +751,10 @@ UI.stockCard = function (id) {
     '<div class="row kv"><span>Market retail (trade view)</span><b>' + M(c.retail) + '</b></div>' +
     '<div class="row kv"><span>Days in stock</span><b>' + d + '</b></div>' +
     '<div class="row kv"><span>Hold cost so far</span><b class="' + (c.holdCost > 300 ? 'warn' : '') + '">' + M(Math.round(c.holdCost)) + '</b></div>' +
-    '<div class="row kv"><span>Trade-out value today</span><b>' + M(FE.tradeValue(c)) + '</b></div></div>';
+    '<div class="row kv"><span>Costing you</span><b class="warn">' + M(Math.round(FE.holdPerDay(c))) + ' a day</b></div>' +
+    '<div class="row kv"><span>Trade-out value today</span><b>' + M(FE.tradeValue(c)) + '</b></div></div>' +
+    '<div class="kv muted small">Another 30 days on the pitch is ' + M(Math.round(FE.holdPerDay(c) * 30)) +
+    ' of interest before anyone has knocked a penny off the price.</div>';
   if (d >= 90 && !c.ack90) h += '<p class="kv danger">This car has been here 90+ days. Decide something — reprice it, trade it, or look it in the eye and acknowledge it. It cannot be ignored.</p>';
   h += '<div class="btnrow">' +
     '<button onclick="UI.repriceUI(' + c.id + ')">Reprice</button>' +
@@ -857,6 +861,9 @@ UI.mailDeleteSelected = function () {
 };
 function renderEmail() {
   var g = G(), h = '';
+  // the inbox is now a destination in its own right (the Computer tab opens
+  // straight here when there is post), so it needs its own way back up
+  h += '<button class="ghost" style="margin:10px 0 2px" onclick="UI.computer()">← Office computer</button>';
   var counts = { all: 0, action: 0, sold: 0, press: 0 };
   g.emails.forEach(function (e) {
     counts.all++;
@@ -2044,6 +2051,17 @@ function adminFlag(g) {
   if (FE.unlocked('salary') && !g.salaryChanged) return '';
   return '';
 }
+/* What the Computer tab button does, as opposed to what "← Desktop" does.
+   The tab carries an unread-post badge, so a tap on a badged tab should give
+   the player the post — going via the desktop to reach the thing the badge is
+   telling them about is a tap that earns nothing. With no unread post it opens
+   the desktop as before. Kept separate from UI.computer() because every "←
+   Desktop" button in the other apps calls that, and those must not bounce into
+   the inbox. */
+UI.computerTap = function () {
+  if (FE.unreadCount && FE.unreadCount() > 0) { UI.tab('email'); return; }
+  UI.computer();
+};
 UI.computer = function () {
   var g = G(); if (!g) return;
   var unread = FE.unreadCount();

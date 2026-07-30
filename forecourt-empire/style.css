@@ -819,6 +819,8 @@ b.teal { color: var(--teal); }
 .sr-bar i.under { background: linear-gradient(90deg, var(--green), #23b06a); }
 .sr-bar i.at    { background: linear-gradient(90deg, var(--teal), #1fb5a3); }
 .sr-bar i.over  { background: linear-gradient(90deg, var(--amber), #e2802a); }
+/* the daily hold rate — quiet, but it is the number that should nag */
+.sr-rate { color: var(--amber, #ffb63d); font-variant-numeric: tabular-nums; opacity: .85; }
 .sr-tag { font-size: .62rem; font-weight: 800; letter-spacing: .3px; }
 .sr-tag.under { color: var(--green); }
 .sr-tag.at { color: var(--teal); }

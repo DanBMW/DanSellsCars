@@ -58,6 +58,14 @@ FE.carDesc = carDesc;
 function daysIn(c) { return Math.max(0, (G.week - c.arrivedWk) * 7); }
 FE.daysIn = daysIn;
 
+/* What a car costs you to stand still, per day. The floorplan charge already
+   accrues weekly into c.holdCost, but only ever as a total after the fact —
+   which teaches nothing while the decision is still in front of you. As a daily
+   rate it is the clearest number in the game: it turns "it'll sell eventually"
+   into a figure. (The trade's own overage curve runs £5.95/day at 45 days to
+   £7.82 at 90; this is the interest alone, so it reads a little lighter.) */
+FE.holdPerDay = function (c) { return carCost(c) * FE.FLOORPLAN_APR / 365; };
+
 function starFootfall(s) {
   var t = FE.STAR_FOOTFALL, i;
   if (s <= t[0][0]) return t[0][1];
