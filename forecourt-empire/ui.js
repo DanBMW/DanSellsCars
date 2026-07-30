@@ -303,7 +303,83 @@ function renderAll() {
   renderHUD(); renderBanner(); renderTab();
   renderSaveAlert();
   renderCoach();
+  renderBoard();
 }
+
+/* ---------- the board ----------
+   Three items for the week, always on screen, directly under the banner. This
+   is the surface the whole target system hangs off, so it sits above the fold
+   rather than behind a tab: a board you have to go and look for is not a board.
+   Tapping it opens the month figures and the deal ladder. */
+function renderBoard() {
+  var el = $('board');
+  if (!el) return;
+  var b = FE.boardState && FE.boardState();
+  if (!b || !b.items.length) { el.innerHTML = ''; el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  var done = b.items.filter(function (i) { return i.done; }).length;
+  var chips = b.items.map(function (it) {
+    var pct = Math.round(it.pct * 100);
+    return '<span class="bd-item' + (it.done ? ' done' : '') + '">' +
+      '<i class="bd-tick">' + (it.done ? '✓' : '') + '</i>' +
+      '<span class="bd-lab">' + esc(it.label) + '</span>' +
+      '<span class="bd-bar"><span style="width:' + pct + '%"></span></span></span>';
+  }).join('');
+  el.innerHTML = '<div class="bd-card" onclick="UI.boardSheet()" role="button" tabindex="0">' +
+    '<div class="bd-head"><b>This week’s board</b>' +
+    '<span class="bd-count">' + done + '/' + b.items.length +
+    (b.streak > 1 ? ' · <span class="bd-streak">' + b.streak + ' week run</span>' : '') + '</span></div>' +
+    '<div class="bd-items">' + chips + '</div></div>';
+}
+
+/* The full board: the month's two dials, the deal ladder in pounds for this
+   brand, and what the last week actually paid. */
+UI.boardSheet = function () {
+  var b = FE.boardState();
+  if (!b) return;
+  var h = '<h3>The board</h3>';
+
+  if (b.month) {
+    var m = b.month;
+    h += '<div class="card"><div class="row"><b>' + esc(m.mo) + '</b>' +
+      '<span class="muted small">month to date</span></div>' +
+      '<div class="bd-dial"><div class="row kv"><span>Units</span><b>' + m.units + ' / ' + m.unitTarget + '</b></div>' +
+      '<span class="bd-bar lg"><span class="' + (m.unitPct >= 1 ? 'ok' : '') + '" style="width:' + Math.round(m.unitPct * 100) + '%"></span></span></div>' +
+      '<div class="bd-dial"><div class="row kv"><span>Gross</span><b>' + M(m.gross) + ' / ' + M(m.grossTarget) + '</b></div>' +
+      '<span class="bd-bar lg"><span class="' + (m.grossPct >= 1 ? 'ok' : '') + '" style="width:' + Math.round(m.grossPct * 100) + '%"></span></span></div>' +
+      '<div class="kv muted small">Two more are read at month end: average days in stock under ' +
+      FE.BOARD.month.daysMax + ', and ' + FE.BOARD.month.starsMin + '★ or better.</div></div>';
+  }
+
+  h += '<h3 class="sec-head">Deal ladder</h3>' +
+    '<div class="card"><div class="kv muted small">Total gross on a single car — front plus back. Scaled to what an average ' +
+    esc(G().brand) + ' is worth, so it means the same thing whatever you sell.</div>';
+  b.ladder.forEach(function (t) {
+    h += '<div class="row kv bd-rung"><span><b>' + esc(t.name) + '</b> · ' + M(t.at) + '+</span>' +
+      '<b class="' + (t.cash ? 'good' : 'muted') + '">' + (t.cash ? M(t.cash) : '—') + '</b></div>';
+  });
+  h += '<div class="row kv"><span class="muted small">Landed so far</span><span class="muted small">' +
+    b.deals.bronze + ' tidy · ' + b.deals.silver + ' proper · ' + b.deals.gold + ' of the week</span></div></div>';
+
+  if (b.lastAward && b.lastAward.awards.length) {
+    h += '<h3 class="sec-head">Last week</h3><div class="card">';
+    b.lastAward.awards.forEach(function (a) {
+      h += '<div class="row kv"><span>' + esc(a.what) + '</span><b class="' + (a.amt ? 'good' : 'muted') + '">' +
+        (a.amt ? M(a.amt) : '—') + '</b></div>';
+    });
+    h += '<div class="row kv" style="margin-top:6px"><span><b>Paid</b></span><b class="good">' + M(b.lastAward.paid) + '</b></div>';
+    if (b.lastAward.capped) {
+      h += '<div class="kv muted small">Capped at ' + M(b.lastAward.budget) +
+        ' — bonuses are held to a share of what the business is earning, so they sharpen the trading rather than becoming it.</div>';
+    }
+    h += '</div>';
+  }
+
+  h += '<div class="kv muted small">Streaks count game weeks, not real days — the board never punishes you for being away. ' +
+    'You have ' + b.tokens + ' missed week' + (b.tokens === 1 ? '' : 's') + ' banked this month.</div>' +
+    '<button class="sec" onclick="UI.closeModal()">Right</button>';
+  UI.modal(h);
+};
 UI.renderAll = renderAll;
 
 function renderHUD() {
@@ -1752,6 +1828,7 @@ function reportText(r) {
   if (c.comebacks) t += line('Comebacks', '-' + M(c.comebacks));
   if (c.franchise) t += line('Franchise fee', '-' + M(c.franchise));
   if (c.fines) t += line('FINES', '-' + M(c.fines));
+  if (r.boardBonus) t += line('Board bonuses', '+' + M(r.boardBonus));
   if (r.deptIncome) t += line('Service dept', '+' + M(r.deptIncome));
   if (r.tradeNet) t += line('Trade-outs (net)', (r.tradeNet >= 0 ? '+' : '-') + M(Math.abs(r.tradeNet)));
   t += '─────────────────────────────\n';

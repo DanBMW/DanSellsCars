@@ -406,6 +406,77 @@ FE.FRANCHISE_INSTALL_WKS = 1;   // brand corner fit-out before the first order l
 
 FE.SITE2_TARGET = 2000000;
 
+/* ---------- The Board ----------
+   A real dealership runs on a board: a figure for this week, a figure for the
+   month, and everyone in the building knows both. The game simulated the
+   business in detail and simulated none of that — outside the £2M net-worth
+   gate on Site 2 and the optional franchise quarter, nothing ever asked the
+   player to hit a number. The franchise quarter is the most motivating moment
+   in the current design and it is opt-in, costs £45k a year and does not exist
+   before week 7, which rather makes the case for generalising it.
+
+   Three rules this is built on, and which any change to it has to keep:
+
+   1. The board scores GAME WEEKS, not real days. The business already trades
+      while the player is away; a streak that breaks because someone had a busy
+      Tuesday would be punishing them for the clock, not for their trading.
+   2. Bonuses pay in cash. There is no premium currency in this game and
+      inventing one to pay bonuses with would be the first step toward exactly
+      the monetisation this design should not have.
+   3. Bonus cash is capped as a share of what the business is actually earning
+      (see budgetPct) so the board sharpens trading rather than replacing it as
+      the source of profit. */
+FE.BOARD = {
+  /* Per-deal ladder. Thresholds are multiples of the brand's EXPECTED gross,
+     not flat pounds: £4,000 on one car is a stretch target on BMV and not
+     reachable at all on Dacio, whose average retail is £8,900. Expressed as a
+     multiple it means the same thing on every route, and the UI shows it in
+     pounds so the player never has to think in multiples. */
+  dealTiers: [
+    { id: 'bronze', name: 'Tidy deal',        mult: 1.50, cash: 0 },
+    { id: 'silver', name: 'Proper deal',      mult: 2.25, cash: 250 },
+    { id: 'gold',   name: 'Deal of the week', mult: 3.00, cash: 500 }
+  ],
+
+  /* The week: three items, drawn from a pool, scaled off the player's own
+     trailing form so they stretch without ever becoming impossible. */
+  weeklyItems: 3,
+  /* "Beat your own recent form, slightly." Measured across three routes: at
+     1.10 half the weeks cleared, at 1.05 and 1.00 it made almost no difference
+     — the ratchet was never what made the board hard. Kept just above 1.0 so
+     the target still leans forward. */
+  weeklyLift: 1.05,
+  weeklyItemCash: 100,       // per item cleared
+  weeklyAllCash: 250,        // for clearing all three
+
+  /* The month, aligned to the calendar the season table already keeps. Two
+     dials accumulate (units, gross) and two are health checks read at month
+     end (days in stock, stars) — which is how a real monthly review runs. */
+  month: {
+    unitsLift: 1.05,
+    grossLift: 1.05,
+    daysMax: 45,             // the trade's eight-turns-a-year line
+    starsMin: 3.8,
+    dialCash: 400,           // per dial met
+    allCash: 600             // on top, for all four
+  },
+
+  /* Streaks forgive. Two banked misses a month, spent automatically, so a
+     player who has a bad January keeps their run. A streak that can be lost to
+     circumstance is a stick, and this design does not use sticks. */
+  forgivenessPerMonth: 2,
+
+  /* Total bonus paid in a week is capped at this share of the trailing 4-week
+     average net, with a floor so a young career can still earn something. */
+  budgetPct: 0.15,
+  /* The floor exists so a first month, before there is any trading history to
+     take a percentage of, can still pay something. Kept deliberately low: at
+     £400 it dominated on a thin-margin career and pushed bonuses to ~19% of
+     trading profit in simulation, which is the board paying the wages rather
+     than sharpening them. */
+  budgetFloor: 200
+};
+
 /* ---------- flavour pools ---------- */
 
 FE.FIRST_NAMES = ['Dave','Karen','Mo','Steve','Tracy','Ali','Jamal','Chloe','Gary','Denise','Pawel','Ruth','Craig','Fatima','Lee','Sandra','Tomasz','Nicola','Barry','Jade','Owen','Margaret','Kev','Sophie','Derek','Amara','Ian','Lisa','Frank','Priti','Colin','Wendy','Marek','Donna','Reg','Hayley','Stu','Carol','Nige','Becky'];

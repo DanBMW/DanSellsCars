@@ -180,7 +180,7 @@ function grantStarterStock() {
      is the same payload a sync endpoint would POST tomorrow. */
 var SAVE_KEY = 'forecourtEmpireSave_v1';
 var PROFILE_KEY = 'forecourtEmpireProfile';
-FE.SCHEMA = 5;
+FE.SCHEMA = 6;
 
 FE.storage = {
   get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -260,6 +260,18 @@ FE.migrate = function (game, from) {
     // v3: wash/smart-repair bays, interactive late-night prospect
     if (game.lateNight === undefined) game.lateNight = null;
     if (!game.dept) game.dept = { service: 0, building: 0 };
+  }
+  if (from < 6) {
+    /* v6: the board. An in-flight career gets an empty one — the first items
+       are drawn at the next startWeek, and the month board opens on the next
+       calendar month rather than being back-dated to a month already traded. */
+    if (!game.board) {
+      game.board = {
+        wk: 0, items: [], streak: 0, tokens: FE.BOARD.forgivenessPerMonth,
+        deals: { bronze: 0, silver: 0, gold: 0 },
+        paidThisWeek: 0, lastAward: null, month: null
+      };
+    }
   }
   return game;
 };
@@ -760,6 +772,7 @@ FE.buyLot = function (lotId) {
   G.stock.push(v);
   pay(v.hammer + premium, 'auction', 'Hammer + premium — ' + carName(v));
   pay(FE.TRANSPORT, 'auction', 'Transport');
+  if (v.risk && v.risk.light === 'green') FE.boardNote('buy');
   FE.save();
   return { ok: true, car: v };
 };
@@ -816,9 +829,12 @@ FE.tradeOut = function (carId) {
   G.stock.forEach(function (c) { if (c.id === carId && c.status === 'stock') car = c; });
   if (!car) return null;
   var v = tradeValue(car);
+  var wasAged = daysIn(car) >= 60;
   car.status = 'traded';
   car.soldWk = G.week;
   earn(v, 'Traded out — ' + carName(car));
+  // punting an old one to the trade is the lever the aged-stock item is for
+  if (wasAged) FE.boardNote('aged');
   var net = v - acq(car) - car.holdCost;
   if (G.weekly) {
     G.weekly.trades.push({ car: car, value: v, net: net });
@@ -920,6 +936,10 @@ function startWeek() {
     }
     return false;
   });
+
+  // this week's board, drawn before the auction list so the targets are on
+  // screen while the player is deciding what to buy
+  boardNewWeek();
 
   // fresh auction list
   G.lots = genLots();
@@ -1494,6 +1514,7 @@ FE.payPrep = function (ev) {
   pay(car.truePrep, 'prep', 'Prep — ' + carName(car));
   car.cost.prep = car.truePrep;
   car.prepPaid = true;
+  FE.boardNote('prep');
   ev.dead = true;                       // spent — never resolve this one again
   var firstBlowout = car.blowout && !G.flags.prepTip;
   if (car.blowout && G.flags.prepTip === false) G.flags.prepTip = true;
@@ -1601,6 +1622,7 @@ function closeSale(car, price, exec, fniChoice) {
     G.pendingComebacks.push({ carId: car.id, dueWk: G.week + RI(2, 8), cost: costC });
   }
 
+  boardNoteSale(sale);
   soldEmail(car, sale);
   reviewMaybe(car, sale, fniChoice);
   if (!G.flags.firstSaleDone) G.flags.firstSaleDone = true;
@@ -2318,6 +2340,8 @@ FE.closeWeek = function () {
 
   var fine = fineCheck();
   quarterEnd();
+  // scored before the report is built so the bonus lands in the same week's net
+  boardScoreWeek();
 
   // report
   var stkList = inStock();
@@ -2328,7 +2352,7 @@ FE.closeWeek = function () {
   var deptIncome = deptIncomeTotal();
   var tradeNet = 0;
   W.trades.forEach(function (t) { tradeNet += t.net; });
-  var net = grossTot + deptIncome + tradeNet
+  var net = grossTot + deptIncome + tradeNet + (W.boardBonus || 0)
     - (costs.salaries || 0) - (costs.commission || 0) - (costs.utilities || 0)
     - (costs.prep || 0) - (costs.advertising || 0) - (costs.floorplan || 0)
     - (costs.insurance || 0) - (costs.misc || 0) - (costs.fines || 0)
@@ -2355,6 +2379,7 @@ FE.closeWeek = function () {
     financeDrawn: FE.financeDrawn(), financeApr: Math.round(FE.financeApr() * 1000) / 10,
     financed: W.financed || 0, financeComm: Math.round(W.financeComm || 0),
     deptIncome: deptIncome, tradeNet: Math.round(tradeNet),
+    boardBonus: Math.round(W.boardBonus || 0),
     net: Math.round(net), losses: W.losses,
     stock: stkList.length, slots: totalSlots(),
     avgDays: stkList.length ? Math.round(totDays / stkList.length) : 0,
@@ -2751,6 +2776,290 @@ FE.enableFinance = function (on) {
 };
 
 FE.startWeekExternal = startWeek;
+
+/* ---------- the board ----------
+   Weekly items, a month board, and the per-deal ladder. Tuning lives in
+   FE.BOARD; this is only the machinery. See data.js for why it exists and the
+   three rules it must keep (game weeks not real days, cash not currency,
+   budget capped as a share of trading profit). */
+
+/* The expected total gross on an average car for this brand, derived from the
+   brand's own constants rather than hardcoded, so the deal ladder re-scales by
+   itself if the economy is ever retuned. Buy-in at the model's average cost
+   plus the buyer's premium and transport, plus the expected back-end. */
+function brandExpectedGross() {
+  var b = brand();
+  var front = b.avgRetail - (b.avgCost * (1 + FE.BUYER_PREMIUM) + FE.TRANSPORT);
+  var back = FE.FNI_BASE * b.attachMult * FE.FNI_BACKEND;
+  return Math.max(400, front + back);
+}
+FE.brandExpectedGross = brandExpectedGross;
+
+// the pounds figure behind each rung, for display and for scoring
+FE.dealLadder = function () {
+  var eg = brandExpectedGross();
+  return FE.BOARD.dealTiers.map(function (t) {
+    return { id: t.id, name: t.name, cash: t.cash, at: r25(eg * t.mult) };
+  });
+};
+// highest rung this deal clears, or null
+FE.dealTierFor = function (gross) {
+  var L = FE.dealLadder(), best = null, i;
+  for (i = 0; i < L.length; i++) if (gross >= L[i].at) best = L[i];
+  return best;
+};
+
+// mean of a numeric field over the last n reports, or null if there is no history
+function trailing(field, n) {
+  var reps = (G.reports || []).slice(0, n);
+  if (!reps.length) return null;
+  var t = 0;
+  reps.forEach(function (r) { t += (r[field] || 0); });
+  return t / reps.length;
+}
+
+/* How many weeks the calendar month starting at `wk` runs for, and how strong
+   trade is across them. The month board has to be season-aware or it is
+   nonsense: January runs at 0.52 demand and March at 1.48, so a flat "beat your
+   average by 5%" hands a new player a January target they cannot reach and a
+   March one they cannot miss. Targets are set on the player's own rate per
+   week, then scaled by how this month trades against the weeks behind them. */
+function monthSpan(wk) {
+  var idx = (wk - 1) % 52, mo = FE.SEASON[idx].mo, n = 0, sum = 0;
+  while (n < 8 && FE.SEASON[(idx + n) % 52].mo === mo) { sum += FE.SEASON[(idx + n) % 52].d; n++; }
+  return { weeks: n, meanD: n ? sum / n : 1 };
+}
+// mean seasonal demand across the last n weeks actually traded
+function trailingMeanD(n) {
+  var reps = (G.reports || []).slice(0, n);
+  if (!reps.length) return null;
+  var t = 0;
+  reps.forEach(function (r) { t += FE.SEASON[(r.wk - 1) % 52].d; });
+  return t / reps.length;
+}
+
+function emptyBoard() {
+  return {
+    wk: 0, items: [], streak: 0, tokens: FE.BOARD.forgivenessPerMonth,
+    deals: { bronze: 0, silver: 0, gold: 0 },
+    paidThisWeek: 0, lastAward: null,
+    month: null
+  };
+}
+
+/* The pool the week's three items are drawn from. Each returns null when it
+   does not apply this week (no aged stock to clear, nothing bought yet), so a
+   young or quiet forecourt is never handed a target it cannot physically hit. */
+function weeklyItemPool() {
+  var lift = FE.BOARD.weeklyLift;
+  // same season correction as the month board: "beat your average" has to mean
+  // beat it for the time of year, or March is free and January is impossible
+  var wasD = trailingMeanD(4);
+  var adj = wasD ? season().d / wasD : 1;
+  var avgUnits = trailing('units', 4);
+  var avgGross = trailing('gross', 4);
+  if (avgUnits != null) avgUnits *= adj;
+  if (avgGross != null) avgGross *= adj;
+  var stk = inStock().filter(function (c) { return !c.isNew; });
+  var aged = stk.filter(function (c) { return daysIn(c) >= 60; }).length;
+  var unprepped = stk.filter(function (c) { return !c.prepPaid; }).length;
+  var pool = [];
+
+  var unitTarget = avgUnits == null ? 3 : Math.max(2, Math.round(avgUnits * lift));
+  pool.push({ id: 'units', kind: 'units', target: unitTarget,
+    label: 'Sell ' + unitTarget + ' car' + (unitTarget === 1 ? '' : 's') });
+
+  if (avgGross != null && avgGross > 500) {
+    var gt = r25(avgGross * lift);
+    pool.push({ id: 'gross', kind: 'gross', target: gt, label: 'Take ' + money(gt) + ' of gross' });
+  }
+  if (aged > 0) {
+    // One car, not two. Shifting a 60-day car in a nominated week is genuinely
+    // hard — it cleared 3% of the time at a target of two — and the point of
+    // the item is to make the player reach for the trade-out lever, which
+    // counts toward it, not to be a lottery on who walks through the door.
+    pool.push({ id: 'aged', kind: 'aged', target: 1,
+      label: 'Move a car that is over 60 days — retail or trade' });
+  }
+  if (unprepped > 0) {
+    var pt = Math.min(unprepped, 3);
+    pool.push({ id: 'prep', kind: 'prep', target: pt, label: 'Get ' + pt + ' through the workshop' });
+  }
+  pool.push({ id: 'buy', kind: 'buy', target: 1, label: 'Buy a green-light lot at the auction' });
+  /* The first rung, not the second. At 2.25x expected gross this cleared 13% of
+     weeks, which is a lottery ticket rather than a target; 1.5x is a good deal
+     you can actually go and find. */
+  pool.push({ id: 'deal', kind: 'deal', target: 1,
+    label: 'Land one deal at ' + money(FE.dealLadder()[0].at) + ' gross or better' });
+  return pool;
+}
+
+function boardNewWeek() {
+  if (!G.board) G.board = emptyBoard();
+  var B = G.board;
+  var pool = weeklyItemPool();
+  // shuffle, keep the first N — units is pushed first and is the spine of the
+  // board, so it is kept deliberately rather than left to the shuffle
+  var head = pool.shift();
+  for (var i = pool.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)); var t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+  B.items = [head].concat(pool.slice(0, Math.max(0, FE.BOARD.weeklyItems - 1)))
+    .map(function (it) { return { id: it.id, kind: it.kind, target: it.target, label: it.label, n: 0, done: false }; });
+  B.wk = G.week;
+  B.paidThisWeek = 0;
+
+  // roll the month board over when the calendar month changes
+  var mo = season().mo;
+  if (!B.month || B.month.mo !== mo) {
+    var span = monthSpan(G.week);
+    var wasD = trailingMeanD(4);
+    // how this month trades against the weeks behind them (1.0 with no history)
+    var seasonAdj = wasD ? span.meanD / wasD : span.meanD;
+    var perWkUnits = trailing('units', 4);
+    var perWkGross = trailing('gross', 4);
+    if (perWkUnits == null) perWkUnits = 3;
+    if (perWkGross == null) perWkGross = 4000;
+    B.month = {
+      mo: mo, fromWk: G.week, weeks: 0,
+      units: 0, gross: 0,
+      unitTarget: Math.max(3, Math.round(perWkUnits * FE.BOARD.month.unitsLift * span.weeks * seasonAdj)),
+      grossTarget: Math.max(2000, r25(perWkGross * FE.BOARD.month.grossLift * span.weeks * seasonAdj)),
+      paid: false
+    };
+    B.tokens = FE.BOARD.forgivenessPerMonth;   // forgiveness re-banks monthly
+  }
+}
+
+/* Called from closeSale for every unit that goes out, however it was sold. */
+function boardNoteSale(sale) {
+  if (!G.board) G.board = emptyBoard();
+  var B = G.board;
+  var gross = (sale.front || 0) + (sale.back || 0);
+  var tier = FE.dealTierFor(gross);
+  if (tier) {
+    B.deals[tier.id] = (B.deals[tier.id] || 0) + 1;
+    G.weekly.dealTiers = G.weekly.dealTiers || [];
+    G.weekly.dealTiers.push({ tier: tier.id, name: tier.name, cash: tier.cash, gross: Math.round(gross), car: carName(sale.car) });
+  }
+  var wasAged = FE.daysIn(sale.car) >= 60;
+  B.items.forEach(function (it) {
+    if (it.done) return;
+    if (it.kind === 'units') it.n++;
+    else if (it.kind === 'gross') it.n += gross;
+    else if (it.kind === 'aged' && wasAged) it.n++;
+    else if (it.kind === 'deal' && tier) it.n++;
+    if (it.n >= it.target) it.done = true;
+  });
+}
+
+/* Progress that does not come from a sale — a prep bill settled, a lot bought. */
+FE.boardNote = function (kind, n) {
+  if (!G || !G.board) return;
+  G.board.items.forEach(function (it) {
+    if (it.done || it.kind !== kind) return;
+    it.n += (n == null ? 1 : n);
+    if (it.n >= it.target) it.done = true;
+  });
+};
+
+/* Scored at week close, before the report is built, so the money lands in the
+   same week's P&L the player is about to read. */
+function boardScoreWeek() {
+  if (!G.board) G.board = emptyBoard();
+  var B = G.board, awards = [], total = 0;
+
+  // per-deal spiffs banked through the week
+  (G.weekly.dealTiers || []).forEach(function (d) {
+    if (d.cash > 0) { total += d.cash; awards.push({ what: d.name + ' — ' + d.car, amt: d.cash }); }
+  });
+
+  var cleared = B.items.filter(function (it) { return it.done; }).length;
+  if (cleared > 0) {
+    var itemCash = cleared * FE.BOARD.weeklyItemCash;
+    total += itemCash;
+    awards.push({ what: cleared + ' of ' + B.items.length + ' on the week’s board', amt: itemCash });
+  }
+  var allDone = B.items.length > 0 && cleared === B.items.length;
+  if (allDone) {
+    total += FE.BOARD.weeklyAllCash;
+    awards.push({ what: 'Full board', amt: FE.BOARD.weeklyAllCash });
+    B.streak++;
+  } else if (B.tokens > 0 && B.streak > 0) {
+    B.tokens--;                       // forgiven: the run survives
+    awards.push({ what: 'Streak held (' + B.tokens + ' left this month)', amt: 0 });
+  } else {
+    B.streak = 0;
+  }
+
+  // month board, scored on the last week of the calendar month
+  var M = B.month;
+  if (M) {
+    M.units += G.weekly.units;
+    M.gross += (G.weekly.front + G.weekly.back);
+    M.weeks++;
+    var nextMo = FE.SEASON[(G.week % 52)] ? FE.SEASON[G.week % 52].mo : null;
+    var monthEnds = nextMo !== M.mo;
+    if (monthEnds && !M.paid) {
+      var stk = inStock();
+      var totDays = 0;
+      stk.forEach(function (c) { totDays += daysIn(c); });
+      var avgDays = stk.length ? totDays / stk.length : 0;
+      var dials = [
+        { name: M.mo + ' units', hit: M.units >= M.unitTarget },
+        { name: M.mo + ' gross', hit: M.gross >= M.grossTarget },
+        { name: 'Stock under ' + FE.BOARD.month.daysMax + ' days', hit: stk.length > 0 && avgDays <= FE.BOARD.month.daysMax },
+        { name: FE.BOARD.month.starsMin + '★ or better', hit: G.stars >= FE.BOARD.month.starsMin }
+      ];
+      var hits = dials.filter(function (d) { return d.hit; }).length;
+      if (hits > 0) {
+        var mc = hits * FE.BOARD.month.dialCash + (hits === 4 ? FE.BOARD.month.allCash : 0);
+        total += mc;
+        awards.push({ what: M.mo + ' board — ' + hits + ' of 4', amt: mc });
+      }
+      M.paid = true;
+      M.result = { hits: hits, dials: dials, units: M.units, gross: Math.round(M.gross) };
+      mail('The board', M.mo + ' — ' + hits + ' of 4',
+        'Month closed. ' + M.units + ' units against a target of ' + M.unitTarget + ', ' +
+        money(Math.round(M.gross)) + ' of gross against ' + money(M.grossTarget) + '.\n\n' +
+        dials.map(function (d) { return (d.hit ? '✓ ' : '✗ ') + d.name; }).join('\n') +
+        (hits > 0 ? '\n\nPaid: ' + money(hits * FE.BOARD.month.dialCash + (hits === 4 ? FE.BOARD.month.allCash : 0)) + '.' : '\n\nNothing paid this month.'),
+        'board');
+    }
+  }
+
+  /* The cap. Bonuses sharpen trading; they must never become the trade. Held to
+     a share of what the business has actually been earning, with a floor so a
+     first month can still pay something. */
+  var avgNet = trailing('net', 4);
+  var budget = Math.max(FE.BOARD.budgetFloor, Math.round((avgNet == null ? 0 : avgNet) * FE.BOARD.budgetPct));
+  var capped = Math.min(total, budget);
+  if (capped > 0) earn(capped, 'Board bonuses');
+  B.paidThisWeek = capped;
+  B.lastAward = { awards: awards, paid: capped, capped: capped < total, budget: budget };
+  G.weekly.boardBonus = capped;
+  return capped;
+}
+
+/* What the UI draws. Pure read — never mutates. */
+FE.boardState = function () {
+  if (!G || !G.board) return null;
+  var B = G.board;
+  return {
+    items: B.items.map(function (it) {
+      return { label: it.label, n: it.kind === 'gross' ? Math.round(it.n) : it.n, target: it.target,
+               done: it.done, kind: it.kind,
+               pct: Math.max(0, Math.min(1, it.target ? it.n / it.target : 0)) };
+    }),
+    streak: B.streak, tokens: B.tokens, deals: B.deals,
+    ladder: FE.dealLadder(),
+    month: B.month ? {
+      mo: B.month.mo, units: B.month.units, unitTarget: B.month.unitTarget,
+      gross: Math.round(B.month.gross), grossTarget: B.month.grossTarget,
+      unitPct: Math.max(0, Math.min(1, B.month.units / Math.max(1, B.month.unitTarget))),
+      grossPct: Math.max(0, Math.min(1, B.month.gross / Math.max(1, B.month.grossTarget)))
+    } : null,
+    lastAward: B.lastAward
+  };
+};
 
 
 /* ---------- contextual coaching ----------
