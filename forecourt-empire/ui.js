@@ -18,6 +18,10 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 /* ---------- boot ---------- */
 UI.boot = function () {
+  // the pitch line carries the opening balance, so it can never drift from
+  // FE.START_CASH the way a hardcoded figure in the HTML would
+  var pitch = $('bootPitch');
+  if (pitch) pitch.textContent = M(FE.START_CASH) + '. One forecourt. No excuses.';
   var g = FE.load();
   if (g && !g.dead) { resumeGame(); }
   else {
@@ -113,7 +117,8 @@ function renderSetup() {
   var h = '';
   if (setup.step === 1) {
     h += '<div class="logo">Forecourt<br>Empire<small>DEALERSHIP MANAGEMENT</small></div>';
-    h += '<p class="prose" style="margin-top:22px">Your aunt left you <em>£1,000,000</em>.</p>';
+    h += '<p class="prose" style="margin-top:22px">Your aunt left you <em>' + M(FE.ESTATE_VALUE) + '</em>.</p>';
+    h += '<p class="prose muted small">After probate and the taxman, <b>' + M(FE.START_CASH) + '</b> of it reached your account. Welcome to the trade.</p>';
     h += '<p class="prose">Against everyone’s advice, you’re opening a car dealership.</p>';
     h += '<p class="prose muted small">You are the General Sales Manager. You don’t drive them and you don’t fix them — you buy stock, hire people, set prices and carry the consequences.</p>';
     h += '<button class="big" onclick="UI.setupNext()">Right then</button>';
@@ -362,7 +367,7 @@ function cashTick() {
 
 function renderBanner() {
   var g = G(), h = '';
-  var remain = FE.skipRemainMs();
+  var remain = FE.endWeekBlockedMs();
   var onCd = remain > 0;
   var PH = ['auction', 'showroom', 'office'];
   var at = PH.indexOf(g.phase);
@@ -372,8 +377,10 @@ function renderBanner() {
     return '<span class="step ' + cls + '"><i>' + (i < at ? '✓' : (i + 1)) + '</i>' + n + '</span>';
   }).join('') + '</div>';
 
+  /* Skipping hands the week to the staff on conservative rules, so it is the
+     one path that is rate-limited. Playing the week out is never gated. */
   var skipBtn = onCd
-    ? '<button class="sec sm" disabled>Skip in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
+    ? '<button class="sec sm" disabled title="Play the week out to close it now">Skip in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
     : '<button class="sec sm" onclick="UI.skipWeek()">Skip week</button>';
 
   if (g.phase === 'auction') {
@@ -390,14 +397,14 @@ function renderBanner() {
       '<div class="ph-side">' + skipBtn + '</div></div>' +
       '<div class="ph-hint">' + (left ? left + ' thing' + (left === 1 ? '' : 's') + ' on the floor.' : 'Floor’s quiet — nothing left this week.') + '</div>';
   } else if (g.phase === 'office') {
+    /* Reaching the office means the floor is clear and every event was played
+       by hand, so the close is always live — no countdown here any more. */
     var ack = FE.needsAck().length;
-    var closeBtn = onCd
-      ? '<button class="grn ph-go" disabled>Closes in <span id="skipCountdown">' + fmtMs(remain) + '</span></button>'
-      : '<button class="grn ph-go" onclick="UI.skipWeek()">Close the week →</button>';
-    h = stepper + '<div class="ph-row">' + closeBtn +
+    h = stepper + '<div class="ph-row">' +
+      '<button class="grn ph-go" onclick="UI.skipWeek()">Close the week →</button>' +
       '<div class="ph-side"><button class="sec sm" onclick="UI.computer()">💻 Computer</button></div></div>' +
       '<div class="ph-hint">' + (ack ? '<span class="danger">' + ack + ' car' + (ack === 1 ? '' : 's') + ' at 90+ days need acknowledging.</span>' :
-        (onCd ? 'Post and paperwork. <a class="pz-link" onclick="Puzzle.hub()">Game while you wait?</a>' : 'Post, paperwork, then close.')) + '</div>';
+        'Post, paperwork, then close. <a class="pz-link" onclick="Puzzle.hub()">Fancy a game?</a>') + '</div>';
   } else if (g.phase === 'report') {
     h = '<div class="steps"><span class="step done"><i>✓</i>Week closed</span></div>' +
       '<div class="ph-row"><button class="ph-go" onclick="UI.startNext()">Start week ' + g.week + ' →</button>' +
@@ -416,7 +423,7 @@ function skipTick() {
   if (!G() || $('overlay') === null) return;
   var el = $('skipCountdown');
   if (el) {
-    var remain = FE.skipRemainMs();
+    var remain = FE.endWeekBlockedMs();
     if (remain <= 0) renderBanner();
     else el.textContent = fmtMs(remain);
   }
@@ -1218,13 +1225,25 @@ function prequalPopup(ev) {
     fniButtons('UI.prequalGo', ev.exec) +
     '<button class="ghost" style="margin-top:8px" onclick="UI.closeModal();FE.prequalMiss(FE.currentEvent());UI.renderAll();UI.nextEvent()">Turn the deal away</button>');
 }
+/* The F&I moment. The three choices are unchanged mechanically — the middle one
+   still lifts attachment and still carries the extra complaint and fine risk —
+   but they are framed as how much of the product range the customer is taken
+   through, which is what the choice actually is, rather than as how hard they
+   are leaned on. The old middle button read "push products", which taught the
+   caricature rather than the job and is not a thing that should exist on a page
+   with a public URL. Amber stays on the full presentation: it genuinely is the
+   riskier route, and saying so is the honest version of the same warning.
+
+   Internal keys ('push' / 'soft') are left alone — the engine and the weekly
+   ledger key off them, and they never reach the player. */
 function fniButtons(fnName, exec) {
   var who = exec ? exec.name : 'You';
-  return '<p class="kv muted small" style="margin-top:6px">' + esc(who) + ' will handle the paperwork. How hard on the add-ons?</p>' +
+  return '<p class="kv muted small" style="margin-top:6px">' + esc(who) + ' will handle the paperwork. How much of the product range do they see?</p>' +
     '<div class="btnrow">' +
-    '<button onclick="' + fnName + '(null)">Deal — usual patter</button>' +
-    '<button class="amber" onclick="' + fnName + '(\'push\')">Deal — push products</button>' +
-    '<button class="sec" onclick="' + fnName + '(\'soft\')">Deal — keep it light</button></div>';
+    '<button onclick="' + fnName + '(null)">Deal — standard</button>' +
+    '<button class="amber" onclick="' + fnName + '(\'push\')">Deal — full presentation</button>' +
+    '<button class="sec" onclick="' + fnName + '(\'soft\')">Deal — keep it brief</button></div>' +
+    '<p class="kv muted small">A full presentation sells more product. Do it on every deal and the attachment rate is what the regulator notices.</p>';
 }
 UI.prequalGo = function (fni) {
   var ev = FE.currentEvent();
@@ -1775,9 +1794,9 @@ UI.startNext = function () {
 // One "skip / finish the week" path used by the banner and the burger menu.
 UI.skipWeek = function () {
   var g = G();
-  var remain = FE.skipRemainMs();
+  var remain = FE.endWeekBlockedMs();
   if (remain > 0) {
-    toast('You can end the week in ' + fmtMs(remain) + '. Play it out in the meantime, or come back shortly.');
+    toast('You can skip again in ' + fmtMs(remain) + '. Play this one out and it closes as soon as you finish.');
     return;
   }
   var full = g.phase === 'auction';   // skipping before you've opened up = whole week

@@ -5,7 +5,21 @@
 
 var FE = window.FE = {};
 
-FE.START_CASH = 1000000;
+/* The aunt's estate was £1,000,000; what lands in the account is what survives
+   probate and inheritance tax. The £1m stays the story — it is the opening line
+   of the game — and the difference is taken back in fiction rather than by
+   quietly shrinking the pitch.
+
+   Why the cut: at £1m, full-year simulation showed £250k-£750k of the money
+   never entering play on any sane route, and the lowest cash balance all year
+   never came within sight of the overdraft. The death spiral the design wants
+   reachable — thin cash, can't restock, forecourt ages, stars fall — was
+   effectively unreachable because the buffer absorbed a whole year of mistakes.
+   £750k leaves Dacio and Fjord comfortable and puts real sweat into the premium
+   routes, which is where the tension belongs. Copy reads this constant, so
+   changing it here changes the story too. */
+FE.ESTATE_VALUE = 1000000;     // what the aunt left, before the taxman
+FE.START_CASH = 750000;        // what actually clears into the account
 FE.WEEKS_PER_YEAR = 52;
 FE.BASE_CONV = 0.105;          // footfall -> units, calibrated so demand binds ~35% of weeks
 FE.CROWDING = 0.88;            // productivity of each extra head
@@ -19,7 +33,15 @@ FE.CAPACITY_EXP = 0.20;        // 3.1 * (11200/avgCost)^0.20
 FE.BUYER_PREMIUM = 0.055;
 FE.TRANSPORT = 180;
 FE.LOTS_PER_WEEK = 50;         // fresh auction lots each day; a third are older bargains
-FE.SKIP_COOLDOWN_MS = 5 * 60 * 1000;   // real-time gap between week completions (anti-spam)
+/* Cooldown on SKIPPING a week — not on finishing one.
+   The old rule gated every week completion on a five-minute wall clock, which
+   taxed exactly the wrong player: someone working through every offer, bill and
+   part-exchange by hand was made to wait at the end of it, while the throttle
+   did nothing to a player who was engaged anyway. Now the pacing comes from the
+   content — a played-out week is a queue of real decisions and closes the
+   instant you finish it — and the timer applies only to the AFK path, where
+   there is nothing to pace and something to farm. */
+FE.SKIP_COOLDOWN_MS = 5 * 60 * 1000;   // gap between AFK/skipped weeks
 
 /* Real-time progression — the business keeps trading while you're away.
    Twelve real hours is one game week — roughly two ticks a day, so a night's
@@ -339,7 +361,7 @@ FE.WARRANTY = {
 };
 
 FE.FINES = [
-  { id: 'gap',    name: 'GAP insurance mis-selling',   amount: 10000, star: 0.10 },
+  { id: 'gap',    name: 'GAP insurance — fair value',  amount: 10000, star: 0.10 },
   { id: 'adv',    name: 'Advertising compliance',      amount: 4000,  star: 0.02 },
   { id: 'miles',  name: 'Trading standards — mileage', amount: 6500,  star: 0.22 },
   { id: 'data',   name: 'Data protection',             amount: 8000,  star: 0.05 },

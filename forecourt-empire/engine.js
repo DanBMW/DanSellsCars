@@ -929,7 +929,7 @@ function startWeek() {
   // week-1 flavour
   if (G.week === 1) {
     var inherited = G.stock.filter(function (c) { return c.inherited; }).length;
-    mail('Hartley & Crumb, solicitors', 'Your late aunt’s estate', 'The funds have cleared: ' + money(FE.START_CASH) + ', less the premises. Her note reads: "Don’t let them see you coming, love."\n\nThe forecourt comes as it stands — ' + inherited + ' cars are already on the pitch, prepped and priced, and they’re yours outright. Nothing to pay on them. Sell them as they are or re-price them; a couple were bought on a bad day, so read them before you trust them.\n\nHer old contact book is in the bottom drawer. Three of her people are still waiting on a car: one wants a ' + G.wantedSegs[0] + ', one a ' + G.wantedSegs[1] + ', one a ' + G.wantedSegs[2] + '. If you’ve got what they’re after when they call in, they’ll hardly need selling to.', 'info');
+    mail('Hartley & Crumb, solicitors', 'Your late aunt’s estate', 'The estate was valued at ' + money(FE.ESTATE_VALUE) + '. After inheritance tax and our own fees, ' + money(FE.START_CASH) + ' has cleared into your account, less the premises. We appreciate this is less than you were expecting; it is, we are afraid, the usual arithmetic.\n\nHer note reads: "Don’t let them see you coming, love."\n\nThe forecourt comes as it stands — ' + inherited + ' cars are already on the pitch, prepped and priced, and they’re yours outright. Nothing to pay on them. Sell them as they are or re-price them; a couple were bought on a bad day, so read them before you trust them.\n\nHer old contact book is in the bottom drawer. Three of her people are still waiting on a car: one wants a ' + G.wantedSegs[0] + ', one a ' + G.wantedSegs[1] + ', one a ' + G.wantedSegs[2] + '. If you’ve got what they’re after when they call in, they’ll hardly need selling to.', 'info');
     mail('Recruitment desk', 'Sales executives — ' + G.candidates.length + ' available now', 'You can start hiring today — you need at least two on the floor, the GSM does not sell. The agency has ' + G.candidates.length + ' names on the books right now and more coming next week. Fees are payable up front. See the Staff tab.', 'info');
   }
   if (G.week === 2 && G.candidatePool && G.candidatePool.length) {
@@ -1271,19 +1271,10 @@ FE.enterShowroom = function () {
     var pos = Math.min(woven.length, Math.floor((i + 0.5) / Math.max(1, special.length) * span * 0.7));
     woven.splice(pos, 0, sp);
   });
-  // Prep bills land on the clock, not in a clump: each is given a due time
-  // spread across the skip-cooldown window so the workshop interrupts you
-  // through the week rather than all at once. If nothing else is left to do
-  // they're released early — the player is never made to wait on them.
-  var now = Date.now();
-  var window = FE.SKIP_COOLDOWN_MS || 0;
-  var billIdx = 0, billTotal = woven.filter(function (e) { return e.kind === 'prep' || e.kind === 'arrival'; }).length;
-  woven.forEach(function (e) {
-    if (e.kind !== 'prep' && e.kind !== 'arrival') return;
-    billIdx++;
-    e.dueAt = now + Math.round(window * (billIdx / (billTotal + 1)));
-  });
-  G.showroomAt = now;
+  // Bills are spread through the week by their position in the queue above, not
+  // by a clock — so the workshop still interrupts you between deals whether you
+  // play the week in two minutes or twenty.
+  G.showroomAt = Date.now();
   G.events = woven;
   G.eventIdx = 0;
   G.weekly.caps = caps;
@@ -1345,7 +1336,13 @@ function pickExec() {
   return staffById(id);
 }
 
-function evReady(ev) { return !ev.dueAt || Date.now() >= ev.dueAt; }
+/* Prep and arrival bills used to carry a wall-clock `dueAt`, and this walked the
+   queue swapping a not-yet-due bill behind anything that was ready, so the
+   workshop interrupted you through the five-minute week rather than all at once.
+   The bills are already woven into the front ~70% of the queue by position (see
+   enterShowroom), which does the same job at any play speed — so with the week
+   no longer timed, the clock layer and its reordering are gone. An in-flight
+   queue from an older save may still carry a dueAt; it is simply ignored. */
 FE.currentEvent = function () {
   if (G.phase !== 'showroom') return null;
   var guard = 0;
@@ -1353,21 +1350,6 @@ FE.currentEvent = function () {
     var ev = G.events[G.eventIdx];
     if (!ev.built) buildEvent(ev);
     if (ev.dead) { G.eventIdx++; continue; }
-    // a prep bill that hasn't come due yet steps aside for anything that has
-    if (!evReady(ev)) {
-      var j = -1;
-      for (var i = G.eventIdx + 1; i < G.events.length; i++) {
-        var nx = G.events[i];
-        if (!nx.built) buildEvent(nx);
-        if (nx.dead || !evReady(nx)) continue;
-        j = i; break;
-      }
-      if (j > G.eventIdx) {                       // swap the ready one forward
-        var t = G.events[G.eventIdx]; G.events[G.eventIdx] = G.events[j]; G.events[j] = t;
-        continue;
-      }
-      // nothing else is ready — release the bill rather than stall the player
-    }
     return ev;
   }
   return null;
@@ -2283,7 +2265,7 @@ function fineCheck() {
   starNudge(-F.star);
   G.totals.fines.push({ wk: G.week, name: F.name, amount: F.amount });
   var why = {
-    gap: 'The FCA has taken a view on your GAP insurance sales practices. The attachment rate did not go unnoticed.',
+    gap: 'The regulator has reviewed the GAP insurance sold through this dealership and does not accept it represents fair value to the customer. The point at issue is not that you sold it — it is the share of the premium that came back to you, set against how little of it was ever likely to be claimed. Your attachment rate is what drew the file.',
     adv: 'Your finance example in last week’s advertising did not meet the representative-example rules.',
     miles: 'Trading standards found a mileage discrepancy in an advert. This one stings the rating too.',
     data: 'Customer records were mishandled. The ICO does not do warnings twice.',
@@ -2396,7 +2378,9 @@ FE.closeWeek = function () {
 
   G.week++;
   G.phase = 'report';
-  G.lastCloseAt = Date.now();   // start the anti-spam cooldown for the next week
+  // NB: the skip cooldown is NOT stamped here. Closing a week you have played
+  // out must never make the next one wait — the timer belongs to the AFK path
+  // and is stamped in FE.skipWeek.
   // the bank calls it in only past your facility limit (plus a little headroom)
   var deadLine = FE.financeEnabled() ? -(FE.financeLimit() + FE.STOCK_FINANCE.buffer) : -25000;
   if (G.cash < deadLine) { G.dead = true; FE.save(); return { ok: true, report: report, dead: true }; }
@@ -2404,11 +2388,24 @@ FE.closeWeek = function () {
   return { ok: true, report: report };
 };
 
-// anti-spam cooldown between week completions
+// raw cooldown remaining on the AFK/skip path
 FE.skipRemainMs = function () {
   return Math.max(0, (FE.SKIP_COOLDOWN_MS || 0) - (Date.now() - (G.lastCloseAt || 0)));
 };
 FE.skipReady = function () { return FE.skipRemainMs() <= 0; };
+
+/* What the UI should actually ask: how long the player is blocked from ending
+   the week right now. Reaching the office with the floor clear means every
+   event was dealt with by hand — there is nothing left to farm and nothing to
+   throttle, so that close is always instant. Only skipping past content waits. */
+FE.endWeekBlockedMs = function () {
+  if (!G) return 0;
+  if (G.phase === 'office' && FE.eventsLeft() === 0) return 0;
+  return FE.skipRemainMs();
+};
+FE.weekPlayedOut = function () {
+  return !!G && G.phase === 'office' && FE.eventsLeft() === 0;
+};
 
 FE.nextWeek = function () {
   startWeek();
@@ -2422,6 +2419,10 @@ FE.skipWeek = function (quiet) {
   // the week closes. Works from any phase — from the auction it's a full AFK
   // week; from the showroom/office it just finishes off what's left.
   var startedFromAuction = (G.phase === 'auction');
+  // Did this actually bypass anything? Closing from the office with the floor
+  // already clear is the normal end of a played-out week, not a skip, and must
+  // not arm the cooldown. Anything else hands unplayed content to the staff.
+  var bypassedContent = startedFromAuction || (G.phase === 'showroom' && FE.eventsLeft() > 0);
   var afkNote = [];
   var kept = 0;
   if (G.phase === 'auction') FE.enterShowroom();   // generate the week's events
@@ -2467,6 +2468,7 @@ FE.skipWeek = function (quiet) {
   });
   FE.needsAck().forEach(function (c) { FE.ack90(c.id); });
   if (startedFromAuction) G.totals.afk++;
+  if (bypassedContent) G.lastCloseAt = Date.now();   // arm the cooldown on the AFK path only
   var res = FE.closeWeek();
   if (startedFromAuction && !quiet) {
     mail('The team', 'While you were away…', 'The floor ran itself this week. ' + kept + ' deals done at the prices offered — no counters, nothing clever. ' + (afkNote.length ? afkNote.join(' ') : '') + ' Full numbers in the weekly report.', 'away');
