@@ -469,12 +469,15 @@ FE.BOARD = {
   /* Total bonus paid in a week is capped at this share of the trailing 4-week
      average net, with a floor so a young career can still earn something. */
   budgetPct: 0.15,
-  /* The floor exists so a first month, before there is any trading history to
-     take a percentage of, can still pay something. Kept deliberately low: at
-     £400 it dominated on a thin-margin career and pushed bonuses to ~19% of
-     trading profit in simulation, which is the board paying the wages rather
-     than sharpening them. */
-  budgetFloor: 200
+  /* The floor exists so the opening weeks — before there is any trading history
+     to take a percentage of — can still pay something. It is deliberately low
+     and, importantly, it EXPIRES: applied for the whole career it meant a
+     business losing money all year still drew ~£9k of bonuses, which is the
+     board paying the wages rather than sharpening them. After floorWeeks the
+     budget is purely a share of what the business actually earned, so a losing
+     week pays nothing. A board that rewards you for a bad year is not a board. */
+  budgetFloor: 200,
+  floorWeeks: 8
 };
 
 /* ---------- flavour pools ---------- */

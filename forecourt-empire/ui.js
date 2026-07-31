@@ -70,7 +70,19 @@ function resumeGame() {
   if (d) { renderAll(); welcomeBack(d); }
 }
 UI.newGameFlow = function () {
-  if (G() && !confirm('Start a fresh career? Your current save will be wiped.')) return;
+  if (G()) {
+    UI.ask({
+      icon: '⚠️', danger: true,
+      title: 'Start a fresh career?',
+      body: 'Your current career on this device will be wiped.',
+      yes: 'Start fresh', no: 'Keep my career',
+      onYes: function () { UI.newGameGo(); }
+    });
+    return;
+  }
+  UI.newGameGo();
+};
+UI.newGameGo = function () {
   setup = { brand: null, site: null, salary: null, step: 1 };
   $('screen-boot').classList.add('hidden');
   renderSetup();
@@ -1219,7 +1231,14 @@ UI.buyLot = function (id) {
 UI.toShowroom = function () {
   var g = G();
   if (g.week === 1 && !g.stock.some(function (c) { return c.status === 'stock'; })) {
-    if (!confirm('Open up with an empty forecourt? Your aunt’s contacts are coming today.')) return;
+    UI.ask({
+      icon: '🏷️',
+      title: 'Open up with an empty forecourt?',
+      body: 'Your aunt’s contacts are coming in today and there is nothing to show them. You can still buy from the auction first.',
+      yes: 'Open anyway', no: 'Back to the auction',
+      onYes: function () { UI.closeModal(); FE.enterShowroom(); renderAll(); UI.nextEvent(); }
+    });
+    return;
   }
   FE.enterShowroom();
   renderAll();
@@ -1632,10 +1651,17 @@ UI.expandUI = function (id) {
   UI.propertyApp(); renderHUD();
 };
 UI.salaryUI = function (i) {
-  if (!confirm('Restructure everyone onto "' + FE.SALARIES[i].name + '"? Morale will take a knock, and that’s your change for the year.')) return;
-  var r = FE.changeSalary(i);
-  toast(r.ok ? 'Done. The kitchen’s gone quiet.' : r.msg);
-  UI.adminApp();
+  UI.ask({
+    icon: '📋',
+    title: 'Restructure onto "' + esc(FE.SALARIES[i].name) + '"?',
+    body: 'Morale will take a knock, and that is your one change for the year.',
+    yes: 'Restructure', no: 'Leave it',
+    onYes: function () {
+      var r = FE.changeSalary(i);
+      toast(r.ok ? 'Done. The kitchen’s gone quiet.' : r.msg);
+      UI.adminApp();
+    }
+  });
 };
 
 UI.orderWindow = function () {
@@ -1936,10 +1962,25 @@ UI.skipWeek = function () {
     return;
   }
   var full = g.phase === 'auction';   // skipping before you've opened up = whole week
-  var msg = full
-    ? 'Let the staff run the whole week? They take the fair and cheeky offers, decline the silly ones, and handle the post conservatively — about 75% of a managed week.'
-    : 'Skip the rest of the week and go to the report? Staff finish off anything you haven’t handled.';
-  if (!confirm(msg)) return;
+  /* A played-out week reaching the office has nothing left to hand over, so
+     asking is just a tap in the way of finishing. Only a genuine skip asks. */
+  if (!FE.weekPlayedOut()) {
+    UI.ask({
+      icon: full ? '🛎️' : '⏭️',
+      title: full ? 'Let the staff run the week?' : 'Skip the rest of the week?',
+      body: full
+        ? 'They take the fair and cheeky offers, decline the silly ones, and handle the post conservatively — about 75% of a managed week.'
+        : 'Staff finish off anything you haven’t handled, then the week closes.',
+      yes: full ? 'Let them run it' : 'Skip the rest',
+      no: 'Keep playing',
+      onYes: function () { doSkipWeek(full); }
+    });
+    return;
+  }
+  doSkipWeek(full);
+};
+function doSkipWeek(full) {
+  var g = G();
   UI.closeModal();
   var bestBefore = g.totals.bestWk;
   var r = FE.skipWeek();
@@ -2086,7 +2127,13 @@ UI.soundToggle = function () {
 // kept so any older call site still lands somewhere sensible
 UI.gearMenu = function () { UI.deskMenu(); };
 UI.confirmRestart = function () {
-  if (confirm('Abandon this career and wipe the save?')) UI.restart();
+  UI.ask({
+    icon: '⚠️', danger: true,
+    title: 'Abandon this career?',
+    body: 'The save on this device is wiped and cannot be recovered. Export a save code first if you might want it back.',
+    yes: 'Wipe it', no: 'Keep my career',
+    onYes: function () { UI.restart(); }
+  });
 };
 
 /* ---------- save & profile ---------- */
@@ -2729,6 +2776,47 @@ UI.helpUI = function () {
      onClose : JS run by the X instead of a plain close, so a window that owes
                the engine a call (advance the event queue) still makes it. */
 var modalOnClose = null;
+/* A mid-event popup is a decision, not a window. Tapping the backdrop has always
+   refused to close one — but the X was wired straight to dismissModal with no
+   such check, so it closed the popup while leaving the event unresolved at the
+   head of the queue. The week then could not be finished: "Next up" re-opened
+   the same customer, closing it stranded them again, and round it went. The
+   only way out was Skip Week, which hands the rest of the week to the staff.
+   Every one of these popups already offers a way to walk away — decline the
+   offer, send the trader packing, turn the deal down — so the X simply should
+   not be there. */
+function eventDecisionOpen(o) {
+  var g = G();
+  return !!(g && g.phase === 'showroom' && FE.eventsLeft() > 0 && !(o && o.onClose));
+}
+/* In-app confirmation, replacing window.confirm().
+
+   Native dialogs are not safe in this app. After a few of them Chrome offers
+   "prevent this page from creating additional dialogs", and once that is ticked
+   every later confirm() returns false immediately and silently — which turns
+   every button behind one into a button that does nothing, with no error and no
+   way for the player to know why. "Close the week" is behind one of them, so
+   the whole game stops. They are also inconsistent with every other decision in
+   here, which is asked in the game's own voice. */
+var askCb = null;
+UI.ask = function (o) {
+  askCb = o.onYes || null;
+  UI.modal('<div class="danger-ask">' +
+    (o.icon ? '<div class="danger-ask-badge">' + o.icon + '</div>' : '') +
+    '<h3>' + o.title + '</h3>' +
+    '<p class="kv">' + o.body + '</p>' +
+    '<div class="btnrow">' +
+    '<button class="' + (o.danger ? 'red' : 'grn') + '" onclick="UI.askYes()">' + o.yes + '</button>' +
+    '<button class="ghost" onclick="UI.askNo()">' + (o.no || 'Cancel') + '</button>' +
+    '</div></div>', { centre: true });
+};
+UI.askYes = function () {
+  var f = askCb; askCb = null;
+  UI.closeModal();
+  if (f) f();
+};
+UI.askNo = function () { askCb = null; UI.closeModal(); };
+
 UI.modal = function (html, opts) {
   var o = (opts === true) ? { sticky: true } : (opts || {});
   var ov = $('overlay');
@@ -2737,13 +2825,20 @@ UI.modal = function (html, opts) {
   ov.dataset.sticky = o.sticky ? '1' : '';
   modalOnClose = o.onClose || null;
   var sheet = ov.querySelector('.sheet');
-  sheet.innerHTML =
-    '<div class="sheet-xwrap"><button class="sheet-x" onclick="UI.dismissModal()" aria-label="Close">✕</button></div>' + html;
+  var x = eventDecisionOpen(o) ? '' :
+    '<div class="sheet-xwrap"><button class="sheet-x" onclick="UI.dismissModal()" aria-label="Close">✕</button></div>';
+  sheet.innerHTML = x + html;
   sheet.scrollTop = 0;
 };
 // what the X (and backdrop tap) does — honours the window's own exit action
 UI.dismissModal = function () {
   var fn = modalOnClose;
+  // backstop for any path that still reaches here mid-decision: refuse, and say
+  // why, rather than silently stranding the event
+  if (!fn && eventDecisionOpen(null)) {
+    toast('This one needs an answer — take the deal or turn it away.');
+    return;
+  }
   modalOnClose = null;
   if (fn) { try { (new Function(fn))(); return; } catch (e) { /* fall through */ } }
   UI.closeModal();

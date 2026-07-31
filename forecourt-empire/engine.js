@@ -3113,7 +3113,12 @@ function boardScoreWeek() {
      a share of what the business has actually been earning, with a floor so a
      first month can still pay something. */
   var avgNet = trailing('net', 4);
-  var budget = Math.max(FE.BOARD.budgetFloor, Math.round((avgNet == null ? 0 : avgNet) * FE.BOARD.budgetPct));
+  var share = Math.round((avgNet == null ? 0 : avgNet) * FE.BOARD.budgetPct);
+  // the floor only carries the opening weeks; after that the board is paid out
+  // of profit, and a business that is losing money pays no bonuses
+  var budget = (G.week <= FE.BOARD.floorWeeks)
+    ? Math.max(FE.BOARD.budgetFloor, share)
+    : Math.max(0, share);
   var capped = Math.min(total, budget);
   if (capped > 0) earn(capped, 'Board bonuses');
   B.paidThisWeek = capped;
