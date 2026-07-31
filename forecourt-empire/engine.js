@@ -287,6 +287,29 @@ function normaliseGame(g) {
       if (typeof g.franchise[k] !== 'number') g.franchise[k] = 0;
     });
   }
+  /* Items INSIDE the collections need the same treatment, and this is the one
+     that actually bit: every hired exec carries `trained: {}`, which is empty
+     until they are sent on a course, so the cloud drops it. execWeekCap then
+     reads st.trained.sales on the way into the showroom and throws — which
+     leaves the phase set to showroom with the previous week's dead queue still
+     in place (no deals appear at all), and takes the week close down with it. */
+  g.staff.forEach(function (st) {
+    if (!st || typeof st !== 'object') return;
+    if (!st.trained || typeof st.trained !== 'object') st.trained = {};
+    ['morale', 'growth', 'offUntil', 'extraBasic', 'leaving', 'totUnits', 'totGross',
+     'fniDeals', 'weeks', 'lastUnits', 'lastGross', 'hiredWk'].forEach(function (k) {
+      if (typeof st[k] !== 'number') st[k] = (k === 'morale' || k === 'growth') ? 1 : 0;
+    });
+  });
+  g.stock.forEach(function (c) {
+    if (!c || typeof c !== 'object') return;
+    if (!c.cost || typeof c.cost !== 'object') c.cost = { hammer: 0, premium: 0, transport: 0, prep: 0 };
+    ['hammer', 'premium', 'transport', 'prep'].forEach(function (k) {
+      if (typeof c.cost[k] !== 'number') c.cost[k] = 0;
+    });
+    if (typeof c.holdCost !== 'number') c.holdCost = 0;
+  });
+
   if (typeof g.extraSlots !== 'number') g.extraSlots = 0;
   if (typeof g.extraUtil !== 'number') g.extraUtil = 0;
   if (typeof g.landCapital !== 'number') g.landCapital = 0;
@@ -2381,8 +2404,36 @@ function fineCheck() {
   return F;
 }
 
-/* ---------- close week ---------- */
+/* ---------- close week ----------
+   Closing a week is all or nothing.
+
+   The costs — wages, utilities, floorplan, prep, the mortgage — are charged
+   near the top, and the week only actually advances at the very bottom. So
+   anything that threw in between spent the player's money and left them
+   standing in the same office, on the same week, with a button that appeared to
+   do nothing. That is precisely what a missing collection on a cloud-restored
+   save did.
+
+   The state is a plain JSON object, so it can simply be snapshotted and put
+   back. One stringify of a few hundred KB once a week is nothing against
+   silently charging someone for a week they never got. The error is re-thrown
+   once the money is back, so the UI can say what happened rather than guess. */
 FE.closeWeek = function () {
+  var snapshot;
+  try { snapshot = JSON.stringify(G); } catch (e) { snapshot = null; }
+  try {
+    return closeWeekInner();
+  } catch (err) {
+    if (snapshot) {
+      try {
+        G = JSON.parse(snapshot);
+        FE.save();
+      } catch (e2) { /* if even this fails, the throw below is the honest answer */ }
+    }
+    throw err;
+  }
+};
+function closeWeekInner() {
   if (FE.needsAck().length) return { ok: false, msg: 'Stock over 90 days needs acknowledging first (Stock tab).' };
   var W = G.weekly, s = season();
 
@@ -3049,6 +3100,12 @@ FE.boardNote = function (kind, n) {
 function boardScoreWeek() {
   if (!G.board) G.board = emptyBoard();
   var B = G.board, awards = [], total = 0;
+  // this runs inside the week close, so it defends its own inputs rather than
+  // relying on the load-time normalise having seen this particular save
+  if (!Array.isArray(B.items)) B.items = [];
+  if (!B.deals || typeof B.deals !== 'object') B.deals = { bronze: 0, silver: 0, gold: 0 };
+  if (typeof B.streak !== 'number') B.streak = 0;
+  if (typeof B.tokens !== 'number') B.tokens = FE.BOARD.forgivenessPerMonth;
 
   // per-deal spiffs banked through the week
   (G.weekly.dealTiers || []).forEach(function (d) {

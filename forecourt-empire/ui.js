@@ -1983,7 +1983,26 @@ function doSkipWeek(full) {
   var g = G();
   UI.closeModal();
   var bestBefore = g.totals.bestWk;
-  var r = FE.skipWeek();
+  var r;
+  /* If closing the week fails, say so. The engine rolls the week back so
+     nothing is charged, but without this the exception escapes the click
+     handler and the button simply appears to do nothing — which is how this
+     surfaced in the first place. */
+  try {
+    r = FE.skipWeek();
+  } catch (e) {
+    renderAll();
+    UI.modal('<div class="danger-ask"><div class="danger-ask-badge">⚠️</div>' +
+      '<h3>The week would not close</h3>' +
+      '<p class="kv">Nothing has been charged and nothing has been lost — the week has been put back exactly as it was, and you are still on week ' +
+      G().week + ' with ' + M(Math.round(G().cash)) + ' in the bank.</p>' +
+      '<p class="kv muted small">Try again; if it keeps happening, copy your save code and send it over.</p>' +
+      '<div class="btnrow"><button onclick="UI.closeModal();UI.skipWeek()">Try again</button>' +
+      '<button class="sec" onclick="UI.exportUI()">Copy my save code</button></div>' +
+      '<div class="kv muted small" style="margin-top:8px">' + esc(String(e && e.message ? e.message : e)) + '</div></div>',
+      { centre: true });
+    return;
+  }
   renderAll();
   if (r && r.report) weekJuice(r.report, bestBefore);
   if (r && r.report) UI.modal('<h3>' + (full ? 'While you were away…' : 'End of week report') + '</h3><pre class="report">' + reportText(r.report) + '</pre>' +
