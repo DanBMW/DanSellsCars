@@ -2161,6 +2161,10 @@ UI.computerTap = function () {
   if (FE.unreadCount && FE.unreadCount() > 0) { UI.tab('email'); return; }
   UI.computer();
 };
+// a locked app says why rather than swallowing the tap
+UI.appLocked = function (el) {
+  toast(el && el.getAttribute ? (el.getAttribute('data-why') || 'Not available yet.') : 'Not available yet.');
+};
 UI.computer = function () {
   var g = G(); if (!g) return;
   var unread = FE.unreadCount();
@@ -2172,9 +2176,18 @@ UI.computer = function () {
   var canOrder = !!(g.franchise && g.franchise.live !== false);
   var drawn = FE.financeEnabled() ? FE.financeDrawn() : 0;
 
-  function app(id, label, sub, badge, colour, svg, on, locked) {
+  /* A locked app used to carry no onclick at all, so tapping it did nothing and
+     said nothing — the player is left wondering whether the app is broken or
+     they missed. Locked apps now answer when tapped. The reason travels in a
+     data attribute rather than inside the onclick string, so an apostrophe in
+     the copy cannot break the handler. */
+  function app(id, label, sub, badge, colour, svg, on, locked, why) {
     return '<button class="capp' + (locked ? ' locked' : '') + '"' +
-      (locked ? '' : ' onclick="' + on + '"') + '>' +
+      /* Deliberately NOT aria-disabled: the control is interactive, it just
+         answers rather than opening. Marking it disabled would tell assistive
+         tech it does nothing, which is the very thing being fixed. */
+      (locked ? ' data-why="' + esc(why || 'Not available yet.') + '" title="' + esc(why || '') + '" onclick="UI.appLocked(this)"'
+              : ' onclick="' + on + '"') + '>' +
       '<span class="capp-ic" style="--ac:' + colour + '">' + svg +
       (badge ? '<i class="capp-badge">' + badge + '</i>' : '') + '</span>' +
       '<b>' + label + '</b><small>' + sub + '</small></button>';
@@ -2186,7 +2199,8 @@ UI.computer = function () {
     app('mail','Email','Inbox' + (needs ? ' · action needed' : ''), unread || '', '#3d8bff', I.mail,
         "UI.closeModal();UI.tab('email')") +
     app('auction','Auction House', g.phase === 'auction' ? "Today's list" : 'Closed today', lots || '', '#ffb63d', I.gavel,
-        "UI.closeModal();UI.openAuction()", g.phase !== 'auction') +
+        "UI.closeModal();UI.openAuction()", g.phase !== 'auction',
+        'The auction house is done for today. Tomorrow’s list comes with the new week.') +
     app('bank','Banking','Cash, facility, floorplan','', '#2fd6c0', I.bank, "UI.bankApp()") +
     app('property','Property','Site, land &amp; departments','', '#9b6cff', I.house, "UI.propertyApp()") +
     app('hire','Recruitment', hires ? hires + ' on the books' : 'Agency', '', '#35d07f', I.badge,
