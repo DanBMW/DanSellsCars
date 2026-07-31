@@ -227,8 +227,78 @@ FE.setUsername = function (name) {
 
 // Bring an older save up to the current schema. Add a case per bump; never
 // throw — a partial migration beats a lost career.
+/* Guarantee the collections the engine assumes exist.
+
+   A save does not always come back the way it went out. Firebase RTDB does not
+   store empty arrays or empty objects — it drops the key entirely — so a career
+   that round-trips through the cloud comes home missing every collection that
+   happened to be empty when it was written. On a young career that is most of
+   them, and `shocks` is the one renderHUD touches first, via saleActive():
+   G.shocks.forEach on undefined, thrown before the week is even drawn, taking
+   the whole screen with it while the save itself is perfectly intact.
+
+   Save codes pasted between devices and any future backend land in the same
+   place, so this runs on every load rather than only on the cloud path. Only
+   ever fills in what is missing — it never overwrites real data. */
+function normaliseGame(g) {
+  if (!g || typeof g !== 'object') return g;
+  var ARRAYS = ['stock', 'lots', 'staff', 'candidates', 'candidatePool', 'emails',
+    'reviews', 'reports', 'expansionsDone', 'pendingBuilds', 'orders', 'shocks',
+    'events', 'pendingComebacks'];
+  ARRAYS.forEach(function (k) { if (!Array.isArray(g[k])) g[k] = []; });
+
+  if (!g.flags || typeof g.flags !== 'object') g.flags = {};
+  if (!g.coach || typeof g.coach !== 'object') g.coach = {};
+  if (!g.holidayPlan || typeof g.holidayPlan !== 'object') g.holidayPlan = {};
+  if (!g.dept || typeof g.dept !== 'object') g.dept = { service: 0, building: 0 };
+  if (!g.finance || typeof g.finance !== 'object') g.finance = { enabled: false };
+
+  if (!g.totals || typeof g.totals !== 'object') g.totals = {};
+  var T = g.totals;
+  if (!Array.isArray(T.fines)) T.fines = [];
+  ['units', 'unitsYr', 'bestWk', 'bestWkAt', 'worstWkAt', 'afk', 'financed', 'financeComm']
+    .forEach(function (k) { if (typeof T[k] !== 'number') T[k] = 0; });
+  if (typeof T.worstWk !== 'number') T.worstWk = 999;
+
+  /* The live week ledger is the worst case of all: at the start of a week every
+     one of its collections is empty, so a save taken then comes back with the
+     lot missing and the first sale of the new week throws on feed.push.
+     `weekly: null` is legitimate — it means no week is open — so only a ledger
+     that already exists gets filled in. */
+  if (g.weekly && typeof g.weekly === 'object') {
+    ['sales', 'trades', 'losses', 'feed', 'dealTiers'].forEach(function (k) {
+      if (!Array.isArray(g.weekly[k])) g.weekly[k] = [];
+    });
+    ['costs', 'staffUnits', 'staffGross'].forEach(function (k) {
+      if (!g.weekly[k] || typeof g.weekly[k] !== 'object') g.weekly[k] = {};
+    });
+    ['front', 'back', 'units', 'attached', 'pushes', 'gradeLowSold', 'financed', 'financeComm']
+      .forEach(function (k) { if (typeof g.weekly[k] !== 'number') g.weekly[k] = 0; });
+  }
+
+  if (g.board && typeof g.board === 'object') {
+    if (!Array.isArray(g.board.items)) g.board.items = [];
+    if (!g.board.deals || typeof g.board.deals !== 'object') g.board.deals = { bronze: 0, silver: 0, gold: 0 };
+    if (typeof g.board.streak !== 'number') g.board.streak = 0;
+    if (typeof g.board.tokens !== 'number') g.board.tokens = FE.BOARD.forgivenessPerMonth;
+  }
+  if (g.franchise && typeof g.franchise === 'object') {
+    ['qUnits', 'qMargin', 'yUnits'].forEach(function (k) {
+      if (typeof g.franchise[k] !== 'number') g.franchise[k] = 0;
+    });
+  }
+  if (typeof g.extraSlots !== 'number') g.extraSlots = 0;
+  if (typeof g.extraUtil !== 'number') g.extraUtil = 0;
+  if (typeof g.landCapital !== 'number') g.landCapital = 0;
+  if (typeof g.eventIdx !== 'number') g.eventIdx = 0;
+  if (typeof g.randShocksThisYear !== 'number') g.randShocksThisYear = 0;
+  return g;
+}
+FE.normaliseGame = normaliseGame;
+
 FE.migrate = function (game, from) {
   if (!game) return game;
+  normaliseGame(game);
   if (from < 2) {
     // v2: inherited starter stock, unlock ladder, prospecting cap
     if (game.prospectWk == null) game.prospectWk = 0;
@@ -281,7 +351,9 @@ FE.migrate = function (game, from) {
       };
     }
   }
-  return game;
+  /* again on the way out: a migration step can introduce a collection that the
+     save did not have, and this is the last point every load path shares */
+  return normaliseGame(game);
 };
 
 function envelope() {
@@ -855,7 +927,10 @@ FE.tradeOut = function (carId) {
 /* ---------- shocks ---------- */
 function activeShock(id) {
   var f = null;
-  G.shocks.forEach(function (s) { if (s.id === id && s.until >= G.week) f = s; });
+  // normaliseGame guarantees this array on load; the guard is here because this
+  // is read from renderHUD on every frame, and a missing collection must never
+  // be the thing that takes the whole screen down again
+  (G.shocks || []).forEach(function (s) { if (s.id === id && s.until >= G.week) f = s; });
   return f;
 }
 FE.saleActive = function () { return !!activeShock('summerSale'); };
