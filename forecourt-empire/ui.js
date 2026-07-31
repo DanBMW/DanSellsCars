@@ -300,11 +300,63 @@ UI.coachDismiss = function (id) {
 };
 function renderAll() {
   if (!G()) return;
-  renderHUD(); renderBanner(); renderTab();
-  renderSaveAlert();
-  renderCoach();
-  renderBoard();
+  /* A throw in here used to leave the content area empty with the save sitting
+     perfectly intact behind it — which reads to the player as a lost career and
+     is the single most alarming thing this app can do. The usual cause is a
+     half-applied update pairing one build's ui.js with another's engine.js, so
+     say that, say the career is safe, and offer the two things that fix it. */
+  try {
+    renderHUD(); renderBanner(); renderTab();
+    renderSaveAlert();
+    renderCoach();
+    renderBoard();
+  } catch (e) {
+    showRenderFailure(e);
+  }
 }
+
+var renderFailed = false;
+function showRenderFailure(e) {
+  if (renderFailed) return;          // never loop on our own error screen
+  renderFailed = true;
+  try { if (window.console) console.error('Forecourt Empire render failed:', e); } catch (x) {}
+  var el = $('content');
+  if (!el) return;
+  var g = G();
+  el.innerHTML = '<div class="card boot-diag" style="margin-top:14px">' +
+    '<b>⚠️ This screen could not be drawn</b>' +
+    '<div class="kv">Your career is safe. It is saved on this device' +
+    (g ? ' at week <b>' + g.week + '</b>, ' + M(Math.round(g.cash)) + ' in the bank' : '') +
+    ' — nothing has been lost, and nothing here will overwrite it.</div>' +
+    '<div class="kv muted small">This almost always means an update only half-arrived, leaving two versions of the app running against each other. Reloading with a clean copy fixes it.</div>' +
+    '<div class="btnrow" style="margin-top:10px">' +
+    '<button onclick="UI.hardReload()">Reload a clean copy</button>' +
+    '<button class="sec" onclick="UI.exportUI()">Copy my save code first</button></div>' +
+    '<div class="kv muted small" style="margin-top:8px">' + esc(String(e && e.message ? e.message : e)) + '</div></div>';
+}
+
+/* Purge every cached asset and the worker holding them, then reload. This is
+   the "it half-updated" escape hatch — it touches caches only, never storage,
+   so a career cannot be lost by pressing it. */
+UI.hardReload = function () {
+  var done = function () { location.reload(); };
+  var jobs = [];
+  try {
+    if (window.caches && caches.keys) {
+      jobs.push(caches.keys().then(function (ks) {
+        return Promise.all(ks.map(function (k) { return caches.delete(k); }));
+      }));
+    }
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+      jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) {
+        return Promise.all(rs.map(function (r) { return r.unregister(); }));
+      }));
+    }
+  } catch (e) { /* fall through to a plain reload */ }
+  if (!jobs.length) return done();
+  Promise.all(jobs).then(done, done);
+  setTimeout(done, 2500);            // never leave them staring at a dead button
+};
 
 /* ---------- the board ----------
    Three items for the week, always on screen, directly under the banner. This

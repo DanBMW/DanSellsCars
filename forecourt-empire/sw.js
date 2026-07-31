@@ -10,13 +10,29 @@
    than sitting in "waiting" until every tab is closed — which is the usual way
    PWAs end up serving month-old code.
 
-   Bump VERSION on any deploy that must invalidate the offline copy. */
-var VERSION = 'fe-2026-07-30-b';
+   Bump VERSION on any deploy that must invalidate the offline copy.
+
+   It is not optional, and forgetting it is not a cosmetic mistake: the activate
+   handler below only deletes caches whose key differs from CACHE, so leaving
+   VERSION alone means the previous build's entries are never purged. Each asset
+   is cached independently as it is fetched, so one failed request — a phone
+   changing cell, a backgrounded tab — is enough to pair a stale engine.js with
+   a fresh ui.js. The result is a game that boots, keeps the save intact, and
+   renders an empty screen, which reads to the player as a lost career.
+   The ?v= query on the script tags in index.html is the belt to this braces:
+   a stale index.html asks for the old URLs and gets a coherent old build, and
+   a fresh one asks for URLs the old cache has never seen. */
+/* ONE place to bump. ASSET_V must match the ?v= on the script and stylesheet
+   tags in index.html, or the offline copy will be of URLs the page never asks
+   for. */
+var ASSET_V = '2026-07-31-board';
+var VERSION = 'fe-' + ASSET_V;
 var CACHE = 'forecourt-empire-' + VERSION;
+var V = '?v=' + ASSET_V;
 var ASSETS = [
-  './', './index.html', './style.css',
-  './data.js', './engine.js', './scene.js', './juice.js', './minigames.js',
-  './cloud.js', './ui.js',
+  './', './index.html', './style.css' + V,
+  './data.js' + V, './engine.js' + V, './scene.js' + V, './juice.js' + V,
+  './minigames.js' + V, './cloud.js' + V, './ui.js' + V,
   './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png'
 ];
 
