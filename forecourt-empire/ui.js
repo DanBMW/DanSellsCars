@@ -542,8 +542,8 @@ function renderBanner() {
   if (g.phase === 'auction') {
     h = stepper + '<div class="ph-row">' +
       '<button class="grn ph-go" onclick="UI.toShowroom()">Open the showroom →</button>' +
-      '<div class="ph-side"><button class="sec sm" onclick="UI.openAuction()">🔨 Auction · ' + g.lots.length + '</button>' + skipBtn + '</div></div>' +
-      '<div class="ph-hint">Buy what you can sell, then open up for the week.</div>';
+      '<div class="ph-side"><button class="sec sm" onclick="UI.buyStock()">🛒 Buy stock</button>' + skipBtn + '</div></div>' +
+      '<div class="ph-hint">Used from the auction, or new from the factory. Buy what you can sell, then open up.</div>';
   } else if (g.phase === 'showroom') {
     var left = FE.eventsLeft();
     h = stepper + '<div class="ph-row">' +
@@ -727,7 +727,8 @@ function renderStock() {
     '<button class="' + (stockSort === 'margin' ? '' : 'sec') + '" onclick="UI.setStockSort(\'margin\')">Pricing</button>' +
     '<button class="' + (stockSort === 'hold' ? '' : 'sec') + '" onclick="UI.setStockSort(\'hold\')">Hold cost</button>' +
     '<button class="' + (stockSort === 'cost' ? '' : 'sec') + '" onclick="UI.setStockSort(\'cost\')">Cost</button></div>';
-  if (!list.length) h += '<div class="card kv">Nothing on the pitch. The auction email is waiting.</div>';
+  if (!list.length) h += '<div class="card"><div class="kv">Nothing on the pitch — and an empty pitch earns nothing.</div>' +
+    '<div class="btnrow"><button class="grn" onclick="UI.buyStock()">🛒 Buy some stock</button></div></div>';
   list.forEach(function (c) {
     var d = FE.daysIn(c);
     var cost = FE.carCost(c);
@@ -1076,6 +1077,56 @@ UI.prereg = function (id, a) {
   UI.closeModal();
   if (r && r.done) toast(r.n + ' car(s) pre-registered. They’re used stock now.');
   renderAll();
+};
+
+/* ---------- where are you buying from? ----------
+   Factory ordering lived only behind an app icon on the computer, so players
+   who had signed a franchise never found it. Both routes into stock are now
+   named side by side at the point of buying, with the new-car route explaining
+   itself — and explaining why it is shut, when it is. */
+UI.buyStock = function () {
+  var g = G(); if (!g) return;
+  var free = FE.freePitches();
+  var canOrder = !!(g.franchise && g.franchise.live !== false);
+  var lots = g.phase === 'auction' ? g.lots.length : 0;
+
+  var h = '<h3>🛒 Where are you buying from?</h3>';
+  if (!free) h += '<p class="kv danger small">Every pitch is full. Anything you buy now has nowhere to go — sell something first.</p>';
+  else h += '<p class="kv muted small">' + free + ' free pitch' + (free === 1 ? '' : 'es') + ' to fill.</p>';
+
+  // used — the auction
+  h += '<button class="buy-route' + (g.phase === 'auction' ? '' : ' shut') + '" onclick="' +
+    (g.phase === 'auction' ? 'UI.closeModal();UI.openAuction()' : 'UI.buyShut(\'auction\')') + '">' +
+    '<span class="br-ic">🔨</span><span class="br-txt"><b>The auction — used cars</b><small>' +
+    (g.phase === 'auction'
+      ? lots + ' lots on today’s list. Cheap, immediate, and the profit is in what you spot that others do not.'
+      : 'Closed for today. The new week brings a fresh list.') +
+    '</small></span>' + (g.phase === 'auction' ? '<span class="br-count">' + lots + '</span>' : '') + '</button>';
+
+  // new — the factory
+  var why = '';
+  if (!FE.unlocked('franchise')) why = 'Signing a franchise unlocks in week ' + FE.unlockWeek('franchise') + '.';
+  else if (!g.franchise) why = 'You have not signed a franchise yet. Admin → ' + esc(g.brand) + ' franchise.';
+  else if (g.franchise.live === false) why = 'The brand corner is still being fitted out — orders open week ' + g.franchise.liveWk + '.';
+  h += '<button class="buy-route' + (canOrder ? '' : ' shut') + '" onclick="' +
+    (canOrder ? 'UI.closeModal();UI.orderWindow()' : 'UI.buyShut(\'factory\')') + '">' +
+    '<span class="br-ic">🏭</span><span class="br-txt"><b>The factory — brand new cars</b><small>' +
+    (canOrder
+      ? 'Order from ' + esc(g.brand) + ' at 92% of list. Factory stock lands next week; a full order takes 8–14 weeks.'
+      : why) +
+    '</small></span>' + (canOrder ? '' : '<span class="br-lock">🔒</span>') + '</button>';
+
+  // private sellers, for completeness — they come to you
+  h += '<div class="kv muted small" style="margin-top:10px">Cars also come to you: private sellers ring up during the week, and part-exchanges walk in with buyers. Neither costs you a trip.</div>';
+  h += '<button class="ghost" onclick="UI.closeModal()">Not buying today</button>';
+  UI.modal(h);
+};
+UI.buyShut = function (which) {
+  var g = G();
+  if (which === 'auction') { toast('The auction house is done for today. Fresh list with the new week.'); return; }
+  if (!FE.unlocked('franchise')) { toast('Franchise unlocks in week ' + FE.unlockWeek('franchise') + '.'); return; }
+  if (!g.franchise) { UI.adminApp(); return; }
+  toast('Brand corner still being fitted — orders open week ' + g.franchise.liveWk + '.');
 };
 
 /* ---------- auction ---------- */
@@ -2209,10 +2260,13 @@ function adminFlag(g) {
    the desktop as before. Kept separate from UI.computer() because every "←
    Desktop" button in the other apps calls that, and those must not bounce into
    the inbox. */
-UI.computerTap = function () {
-  if (FE.unreadCount && FE.unreadCount() > 0) { UI.tab('email'); return; }
-  UI.computer();
-};
+/* The Computer button opens the computer. It used to divert straight to the
+   inbox whenever there was unread post, which meant that with post waiting
+   there was no way to reach the desktop from this button at all — you tapped
+   Computer and got email, tapped it again and got email. The unread count is
+   already a badge on the Email app, so nothing is lost by going where the
+   button says. */
+UI.computerTap = function () { UI.computer(); };
 // a locked app says why rather than swallowing the tap
 UI.appLocked = function (el) {
   toast(el && el.getAttribute ? (el.getAttribute('data-why') || 'Not available yet.') : 'Not available yet.');
@@ -2257,7 +2311,7 @@ UI.computer = function () {
     app('property','Property','Site, land &amp; departments','', '#9b6cff', I.house, "UI.propertyApp()") +
     app('hire','Recruitment', hires ? hires + ' on the books' : 'Agency', '', '#35d07f', I.badge,
         "UI.closeModal();UI.tab('staff')") +
-    app('factory','Factory Orders', canOrder ? 'Order new stock' : 'Franchise required', '', '#ff5d6c', I.factory,
+    app('factory','Factory Orders', canOrder ? 'New cars from ' + esc(g.brand) : 'Franchise required', '', '#ff5d6c', I.factory,
         canOrder ? "UI.closeModal();UI.orderWindow()" : "UI.adminApp()") +
     app('admin','Admin','Ads, franchise &amp; pay', adminFlag(g), '#ffa04d', I.clip, "UI.adminApp()") +
     app('games','Games', gamesSub(), gamesBadge(), '#5f6dff', I.game, "Puzzle.hub()") +

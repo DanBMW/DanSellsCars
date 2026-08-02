@@ -663,3 +663,27 @@ late-night prospect. Bounded rolls, design intact.
 Both legs go through the books under `misc` (`FE.coinStake` / `FE.coinPayout`)
 so a big win shows up in the week's feed rather than appearing from nowhere,
 and walking away mid-run banks the pot rather than losing it.
+
+### Buying, and the Computer button — 2026-07-31
+
+**The Computer button now opens the computer.** `UI.computerTap` diverted
+straight to the inbox whenever there was unread post, which meant that with
+post waiting there was *no way to reach the desktop from that button at all*
+— tap Computer, get email; tap it again, get email. The unread count is
+already a badge on the Email app, so going where the button says costs
+nothing.
+
+**Ordering new cars was invisible.** It lived only behind an app icon on the
+computer, so a player who had signed a franchise could easily never find it.
+The auction-phase banner button is now **🛒 Buy stock**, opening a chooser
+that names both routes side by side:
+
+- **The auction — used cars.** Lot count, and why you would.
+- **The factory — brand new cars.** What it costs and how long it takes —
+  or, when it is shut, exactly why and when it opens (franchise not unlocked
+  yet / not signed / brand corner still being fitted).
+
+Reachable from the banner, and from the Stock tab when the pitch is empty —
+which used to say "the auction email is waiting" and now offers the button.
+The chooser also notes that private sellers and part-exchanges come to you,
+since neither is a place you can go.

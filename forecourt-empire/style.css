@@ -1071,3 +1071,23 @@ b.teal { color: var(--teal); }
   background: var(--gold); box-shadow: 0 0 9px rgba(255,206,74,.9);
 }
 .pz-game { position: relative; }
+
+/* ---------- buy stock: the two routes, side by side ---------- */
+.buy-route {
+  width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
+  padding: 14px 13px; margin: 9px 0; border-radius: 15px;
+  background: linear-gradient(180deg, var(--card2), var(--card));
+  border: 1px solid var(--line); color: var(--ink);
+  box-shadow: 0 8px 22px -14px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.buy-route .br-ic { font-size: 1.75rem; line-height: 1; flex: 0 0 auto; }
+.buy-route .br-txt { flex: 1; min-width: 0; }
+.buy-route b { display: block; font-size: .95rem; margin-bottom: 2px; }
+.buy-route small { display: block; font-size: .76rem; color: var(--muted); font-weight: 500; line-height: 1.35; }
+.buy-route .br-count {
+  flex: 0 0 auto; font-weight: 900; font-size: 1.05rem; color: var(--gold);
+  background: rgba(255,206,74,.14); border: 1px solid rgba(255,206,74,.35);
+  padding: 4px 11px; border-radius: 999px;
+}
+.buy-route .br-lock { flex: 0 0 auto; opacity: .55; font-size: 1.1rem; }
+.buy-route.shut { opacity: .58; }
