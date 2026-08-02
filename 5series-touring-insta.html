@@ -146,6 +146,23 @@ Personal Contract Hire. Figures include VAT. Finance subject to status, UK resid
 #BMW #BMW5Series #530e #BMWTouring #PlugInHybrid #BMWRuxley #HedinAutomotive #Sidcup #Sevenoaks #Kent #NewCarOffers #CompanyCar</textarea>
     <button class="copy-btn" onclick="copyCaption(this)">Copy caption</button>
 
+    <div class="alt-hooks" style="border-bottom:1px solid var(--hairline-soft);padding-bottom:26px">
+      <h3>Reel caption <span style="font-family:var(--sans);font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">&middot; trial post</span></h3>
+      <p class="hint" style="margin-bottom:18px">Shorter than the feed caption - a reel is watched, not read. Five hashtags, no more.</p>
+      <textarea id="capReel" rows="12" style="min-height:340px">We will pay your deposit. All £4,500 of it.
+
+Seven BMW 530e M Sport Tourings at Hedin Ruxley, and on every one the £4,500 initial rental is covered by us. From £743.44 a month over 48 months, 10,000 miles a year, road fund licence included.
+
+Seven cars. When they are gone, so is the offer.
+
+Every figure is written out in full on my site - link in bio - or message me and I will tell you which colours are left.
+
+Personal Contract Hire. Figures include VAT. Finance subject to status, UK residents 18+. Hedin Automotive is a credit broker, not a lender.
+
+#BMW #BMW5Series #530e #BMWTouring #Sidcup</textarea>
+      <button class="copy-btn" onclick="copyCaption(this,'capReel')">Copy reel caption</button>
+    </div>
+
     <div class="alt-hooks">
       <h3>Other hooks, if you want to test one</h3>
       <ul>
@@ -159,8 +176,8 @@ Personal Contract Hire. Figures include VAT. Finance subject to status, UK resid
 </div>
 
 <script>
-function copyCaption(btn){
-  var t=document.getElementById('cap');
+function copyCaption(btn,id){
+  var t=document.getElementById(id||'cap');
   t.select(); t.setSelectionRange(0,99999);
   var done=function(){var o=btn.textContent;btn.textContent='Copied';setTimeout(function(){btn.textContent=o;},1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText){
