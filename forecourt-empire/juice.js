@@ -77,6 +77,16 @@
       case 'tap':
         note(660, t, 0.045, 'sine', 0.05);
         break;
+      case 'flip':      // coin off the thumb: a rising tumble
+        noise(t, 0.06, 0.05);
+        [640, 780, 950, 1150].forEach(function (f, i) { note(f, t + i * 0.075, 0.07, 'triangle', 0.09); });
+        break;
+      case 'land':      // metal settling on the counter
+        note(2100, t, 0.05, 'square', 0.10);
+        note(2960, t + 0.03, 0.09, 'sine', 0.09);
+        note(1480, t + 0.10, 0.16, 'sine', 0.055);
+        noise(t + 0.02, 0.05, 0.04);
+        break;
       case 'win':
         [659, 880].forEach(function (f, i) { note(f, t + i * 0.08, 0.18, 'triangle', 0.15); });
         break;

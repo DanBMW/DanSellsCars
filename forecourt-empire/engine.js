@@ -3207,6 +3207,32 @@ FE.boardState = function () {
 };
 
 
+/* ---------- the office coin toss ----------
+   Money in and out of a game of chance still has to appear in the books, so
+   both legs go through pay/earn under 'misc' and show up in the week's feed.
+   The stake leaves immediately; the winnings only land when they walk away. */
+FE.coinStake = function (amount) {
+  if (!G) return { ok: false };
+  amount = Math.round(amount || 0);
+  if (amount <= 0 || G.cash < amount) return { ok: false, msg: 'Not enough cash.' };
+  pay(amount, 'misc', 'Coin toss — stake');
+  FE.save();
+  return { ok: true };
+};
+FE.coinPayout = function (amount, stake, flips) {
+  if (!G) return { ok: false };
+  amount = Math.round(amount || 0);
+  if (amount <= 0) return { ok: false };
+  earn(amount, 'Coin toss — winnings');
+  if (amount >= 20000) {
+    mail('The lads', 'That coin toss',
+      'Word got round the pitch. ' + flips + ' straight calls off a ' + money(stake) +
+      ' stake and you walked away with ' + money(amount) + '. Nobody is letting you forget it.', 'good');
+  }
+  FE.save();
+  return { ok: true };
+};
+
 /* ---------- contextual coaching ----------
    The opening tour can only say so much before it becomes a manual nobody
    reads. These fire once each, at the moment the thing they explain actually

@@ -633,3 +633,33 @@ which reads as "the game ate it" — the boot screen now names the likely
 causes: different browser (installed app and Safari tab have separate storage
 on iPhone), cleared data, Safari's 7-day eviction, private window. It states
 explicitly that site updates and cache changes do not touch saves.
+
+---
+
+## Games pass — 2026-07-30
+
+**Broken star glyph.** The half star was `U+2BE8` LEFT HALF BLACK STAR, which
+almost no font ships — iOS drew a tofu box (`★★★⯨☆` rendered as `★★★□☆`).
+Rebuilt from `★` and `☆`, which are universal, with the half made by clipping
+a filled star over an empty one in CSS.
+
+**Games made obvious.** Hit the Gross moved to the top of the list. The Games
+app on the desktop now carries a badge counting what is actually winnable this
+week — the coin run and the late-night prospect — and reads "2 rewards
+waiting" instead of "a play while they prospect". The Computer tab badge
+counted unread email only, so a waiting reward was invisible from the main
+screen; it now counts both.
+
+**Double or Drop.** Stake up to £1,000, call heads or tails, let it ride up to
+ten flips, pot doubles on every win. Digital coin with a 3D flip, a rising
+tumble sound and a metallic landing, and the face it lands on is unmissable.
+
+The coin is a genuinely fair 50/50 — a rigged coin dressed up as a fair one is
+a worse thing to put in a game than an honest gamble. That does mean ten
+straight calls turns £1,000 into **£1,024,000**, which would trivialise a
+career, so it is limited to **one run per game week** — the same rhythm as the
+late-night prospect. Bounded rolls, design intact.
+
+Both legs go through the books under `misc` (`FE.coinStake` / `FE.coinPayout`)
+so a big win shows up in the week's feed rather than appearing from nowhere,
+and walking away mid-run banks the pot rather than losing it.
