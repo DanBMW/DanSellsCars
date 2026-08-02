@@ -301,6 +301,25 @@ function renderAll() {
 }
 UI.renderAll = renderAll;
 
+/* Half stars used to be U+2BE8 (LEFT HALF BLACK STAR), which almost no font
+   ships — iOS drew a tofu box. Built from ★ and ☆ instead, which are
+   universal, with the half made by clipping a filled star over an empty one. */
+function starHTML(v) {
+  var full = Math.floor(v), half = (v - full) >= 0.5, out = '';
+  for (var i = 0; i < 5; i++) {
+    if (i < full) out += '<i class="st on">★</i>';
+    else if (i === full && half) out += '<i class="st half">☆<b>★</b></i>';
+    else out += '<i class="st">☆</i>';
+  }
+  return out;
+}
+/* The Computer tab badge counted unread email only, so a waiting game reward
+   was invisible from the main screen. It now counts anything worth opening
+   the computer for. */
+function computerBadge() {
+  var n = FE.unreadCount();
+  return n + gamesAvailable();
+}
 function renderHUD() {
   var g = G(), s = FE.SEASON[(g.week - 1) % 52];
   var yr = Math.ceil(g.week / 52);
@@ -314,11 +333,8 @@ function renderHUD() {
     '<span class="cal-cue" aria-hidden="true">▾</span>';
 
   var st = Math.round(g.stars * 10) / 10;
-  var full = Math.floor(g.stars), half = (g.stars - full) >= 0.5;
-  var starStr = '';
-  for (var i = 0; i < 5; i++) starStr += (i < full ? '★' : (i === full && half ? '⯨' : '☆'));
   var sEl = $('hudStars');
-  sEl.textContent = starStr + ' ' + st.toFixed(1);
+  sEl.innerHTML = starHTML(g.stars) + ' ' + st.toFixed(1);
   sEl.className = 'stars ' + (g.stars >= 4.2 ? 'good' : g.stars >= 3.5 ? '' : 'low');
 
   // stock at a glance — the number that decides whether you should be buying
@@ -334,7 +350,7 @@ function renderHUD() {
   $('cash').classList.toggle('neg', g.cash < 0);
   $('cashLabel').textContent = g.cash < 0 ? 'Overdrawn' : 'Cash';
 
-  var badge = FE.unreadCount();
+  var badge = computerBadge();
   $('emailBadge').textContent = badge;
   $('emailBadge').style.display = badge ? '' : 'none';
 }
@@ -1941,6 +1957,23 @@ UI.confirmRestart = function () {
    like a phone home screen. Each app is a thin wrapper over machinery that
    already exists, so there is one place to add to rather than a growing pile
    of floating buttons. */
+/* The Games app carries a count of what is actually available to win this
+   week — the coin toss run and the late-night prospect — so it reads as
+   something with a reward behind it rather than a distraction. */
+function gamesAvailable() {
+  var n = 0;
+  if (window.Puzzle && Puzzle.coinPlayedThisWeek && !Puzzle.coinPlayedThisWeek()) n++;
+  var pr = FE.prospectReady && FE.prospectReady();
+  if (pr && pr.ok && !pr.resume) n++;
+  return n;
+}
+function gamesBadge() { var n = gamesAvailable(); return n ? n : ''; }
+function gamesSub() {
+  var n = gamesAvailable();
+  if (!n) return 'A play while they prospect';
+  return n === 1 ? '1 reward waiting' : n + ' rewards waiting';
+}
+
 /* A dot on the Admin app only when there is genuinely something to decide —
    a franchise you can now sign, or a pay structure you have just unlocked. */
 function adminFlag(g) {
@@ -1981,7 +2014,7 @@ UI.computer = function () {
     app('factory','Factory Orders', canOrder ? 'Order new stock' : 'Franchise required', '', '#ff5d6c', I.factory,
         canOrder ? "UI.closeModal();UI.orderWindow()" : "UI.adminApp()") +
     app('admin','Admin','Ads, franchise &amp; pay', adminFlag(g), '#ffa04d', I.clip, "UI.adminApp()") +
-    app('games','Games','A play while they prospect','', '#5f6dff', I.game, "Puzzle.hub()") +
+    app('games','Games', gamesSub(), gamesBadge(), '#5f6dff', I.game, "Puzzle.hub()") +
     app('settings','Settings','Sound, save, help','', '#97a3c4', I.cog, "UI.settingsApp()") +
     '</div>' +
     (drawn > 0 ? '<div class="desk-note warn">Stocking finance drawn: ' + M(drawn) + ' at ' + (Math.round(FE.financeApr()*1000)/10) + '% APR.</div>' : '') +

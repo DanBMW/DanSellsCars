@@ -631,13 +631,164 @@
   /* The games list, rendered into the desk menu (UI.deskMenu). Everything the
      player can reach from their desk lives in one place, so there is only one
      button on the screen. */
+  /* ---------- Double or Drop: the lads' coin toss ----------
+     Stake up to £1,000, call it, and let it ride up to ten times. The coin is
+     a genuinely fair 50/50 — no house edge, because a rigged coin dressed up
+     as a fair one is a nastier thing to put in a game than an honest gamble.
+
+     Which means ten straight wins turns £1,000 into £1,024,000. That is a
+     lottery big enough to trivialise a career, so it is limited to one run per
+     game week — the same weekly rhythm as the late-night prospect. Bounded
+     rolls, design intact. */
+  var CF = null;
+  var CF_STAKES = [100, 250, 500, 1000];
+  function cfWeekKey() { return 'feCoinWk'; }
+  Puzzle.coinPlayedThisWeek = function () {
+    var g = FE.getState();
+    if (!g) return true;
+    try { return +localStorage.getItem(cfWeekKey()) === g.week; } catch (e) { return false; }
+  };
+  function cfMarkPlayed() {
+    var g = FE.getState();
+    try { localStorage.setItem(cfWeekKey(), String(g.week)); } catch (e) {}
+  }
+
+  Puzzle.openCoin = function () {
+    var g = FE.getState(); if (!g) return;
+    CF = { stake: 250, call: null, pot: 0, flips: 0, busy: false, staked: false, last: null };
+    cfRender();
+  };
+
+  function cfRender(msg, cls) {
+    var g = FE.getState();
+    var played = Puzzle.coinPlayedThisWeek() && !CF.staked;
+    var cash = Math.max(0, Math.floor(g.cash));
+    var h = '<div class="pz-wrap cf"><div class="pz-title">🪙 Double or Drop</div>';
+
+    h += '<div class="cf-stage">' +
+      '<div class="cf-coin' + (CF.busy ? ' spin' : '') + (CF.last && !CF.busy ? ' show-' + CF.last : '') + '" id="cfCoin">' +
+        '<div class="cf-face cf-heads"><span>HEADS</span></div>' +
+        '<div class="cf-face cf-tails"><span>TAILS</span></div>' +
+      '</div></div>';
+
+    if (CF.last && !CF.busy) {
+      h += '<div class="cf-result ' + (cls || '') + '">' + (msg || '') + '</div>';
+    } else if (msg) {
+      h += '<div class="cf-result ' + (cls || '') + '">' + msg + '</div>';
+    }
+
+    if (!CF.staked) {
+      if (played) {
+        h += '<div class="cf-note">You have had your flip this week. The lads will run it again next week.</div>' +
+          '<div class="pz-btns"><button class="ghost" onclick="Puzzle.hub()">← Games</button></div></div>';
+        UI.modal(h, true);
+        return;
+      }
+      h += '<div class="cf-note">Pick a stake, call it, and let it ride. Every win doubles the pot. Ten flips is the most anyone has managed.</div>' +
+        '<div class="cf-stakes">' + CF_STAKES.map(function (v) {
+          var can = v <= cash;
+          return '<button class="' + (CF.stake === v ? '' : 'sec') + ' sm"' + (can ? '' : ' disabled') +
+            ' onclick="Puzzle.cfStake(' + v + ')">£' + v.toLocaleString() + '</button>';
+        }).join('') + '</div>' +
+        '<div class="cf-cash">You have <b>£' + cash.toLocaleString() + '</b> in the bank</div>';
+    } else {
+      h += '<div class="cf-pot"><i>Pot riding on it</i><b>£' + CF.pot.toLocaleString() + '</b>' +
+        '<em>flip ' + CF.flips + ' of 10 · staked £' + CF.stake.toLocaleString() + '</em></div>';
+    }
+
+    var locked = CF.busy || (played && !CF.staked);
+    if (!locked && CF.flips < 10) {
+      h += '<div class="cf-calls">' +
+        '<button class="cf-call heads" onclick="Puzzle.cfFlip(\'heads\')"><span class="cf-call-ic">🪙</span>Heads</button>' +
+        '<button class="cf-call tails" onclick="Puzzle.cfFlip(\'tails\')"><span class="cf-call-ic">🪙</span>Tails</button>' +
+        '</div>';
+    }
+    if (CF.staked && CF.pot > 0 && !CF.busy) {
+      h += '<div class="pz-btns"><button class="grn" onclick="Puzzle.cfCashOut()">Take the £' + CF.pot.toLocaleString() + '</button></div>';
+    }
+    h += '<div class="pz-btns"><button class="ghost" onclick="Puzzle.cfLeave()">← Games</button></div></div>';
+    UI.modal(h, true);
+  }
+
+  Puzzle.cfStake = function (v) { if (!CF || CF.staked) return; CF.stake = v; Juice.sound('tap'); cfRender(); };
+
+  Puzzle.cfFlip = function (call) {
+    var g = FE.getState(); if (!CF || CF.busy || !g) return;
+    if (!CF.staked) {
+      if (g.cash < CF.stake) { UI.toast && UI.toast('Not enough cash.'); return; }
+      if (Puzzle.coinPlayedThisWeek()) return;
+      FE.coinStake(CF.stake);
+      cfMarkPlayed();
+      CF.staked = true;
+      CF.pot = CF.stake;
+    }
+    CF.call = call;
+    CF.busy = true;
+    CF.flips++;
+    cfRender('Flipping…');
+    Juice.sound('flip');
+
+    var landed = Math.random() < 0.5 ? 'heads' : 'tails';
+    setTimeout(function () {
+      if (!CF) return;
+      CF.busy = false;
+      CF.last = landed;
+      Juice.sound('land');
+      var won = landed === call;
+      if (won) {
+        CF.pot *= 2;
+        Juice.sound('coin');
+        if (CF.flips >= 10) {
+          cfRender('<b>' + landed.toUpperCase() + '</b> — ten from ten. That is the lot, and it is a fortune. Take it.', 'good');
+        } else {
+          cfRender('<b>' + landed.toUpperCase() + '</b> — you called it. Pot is £' + CF.pot.toLocaleString() + '. Again, or take it?', 'good');
+        }
+      } else {
+        CF.pot = 0;
+        Juice.sound('fine');
+        Juice.shake && Juice.shake();
+        cfRender('<b>' + landed.toUpperCase() + '</b> — wrong call. The £' + CF.stake.toLocaleString() + ' is gone.', 'bad');
+      }
+      UI.renderAll();
+    }, 1500);
+  };
+
+  Puzzle.cfCashOut = function () {
+    if (!CF || !CF.pot) return;
+    var won = CF.pot;
+    FE.coinPayout(won, CF.stake, CF.flips);
+    CF.pot = 0; CF.staked = false;
+    Juice.sound('record');
+    Juice.coins && Juice.coins();
+    UI.renderAll();
+    UI.modal('<div class="pz-wrap cf"><div class="pz-title">🪙 Banked</div>' +
+      '<div class="cf-bank">£' + won.toLocaleString() + '</div>' +
+      '<div class="cf-note">' + CF.flips + ' flip' + (CF.flips === 1 ? '' : 's') + ' off a £' + CF.stake.toLocaleString() +
+      ' stake. Straight in the tin.</div>' +
+      '<div class="pz-btns"><button class="ghost" onclick="Puzzle.hub()">← Games</button>' +
+      '<button class="sec" onclick="UI.closeModal();UI.renderAll()">Back to the forecourt</button></div></div>', true);
+    CF = null;
+  };
+
+  Puzzle.cfLeave = function () {
+    /* Walking away mid-run must not quietly pocket the pot for them — but it
+       must not steal it either. Bank whatever is riding, then leave. */
+    if (CF && CF.pot > 0) { Puzzle.cfCashOut(); return; }
+    CF = null;
+    Puzzle.hub();
+  };
+
   Puzzle.gamesHTML = function () {
     var shuffleDone = Puzzle.LEVELS.filter(function (_, i) { return localStorage.getItem(rhBestKey(i)); }).length;
+    var coinOn = !Puzzle.coinPlayedThisWeek();
     return '<p class="kv">Play a game while your team prospect. It\u2019s only fair, right?</p>' +
       '<div class="pz-reward-note">\uD83D\uDEAA Clear any level and one of them walks a buyer in after hours \u2014 <b>with a part-exchange worth retailing</b>. You manage the deal. Once a week.</div>' +
+      '<button class="pz-game" onclick="Puzzle.openGross()"><span class="pz-game-ico">\uD83C\uDFAF</span><span><b>Hit the Gross</b><small>Stop the needle on the number. Three deals, tightening.</small></span></button>' +
+      '<button class="pz-game' + (coinOn ? ' hot' : '') + '" onclick="Puzzle.openCoin()"><span class="pz-game-ico">\uD83E\uDE99</span><span><b>Double or Drop</b><small>' +
+        (coinOn ? 'Call it, stake up to \u00a31,000, let it ride. One run a week \u2014 <b>yours is waiting</b>.' : 'Had your flip this week. Back next week.') +
+        '</small></span>' + (coinOn ? '<span class="pz-game-dot"></span>' : '') + '</button>' +
       '<button class="pz-game" onclick="Puzzle.openShuffle()"><span class="pz-game-ico">\uD83D\uDE97</span><span><b>Forecourt Shuffle</b><small>Get the red car out. ' + Puzzle.LEVELS.length + ' boards' + (shuffleDone ? ' \u00b7 ' + shuffleDone + '/' + Puzzle.LEVELS.length + ' cleared' : '') + '</small></span></button>' +
       '<button class="pz-game" onclick="Puzzle.openPark()"><span class="pz-game-ico">\uD83C\uDD7F\uFE0F</span><span><b>Forecourt Parking</b><small>Joystick + accelerator. Park it in the bay, no scrapes. ' + PK_LEVELS.length + ' bays.</small></span></button>' +
-      '<button class="pz-game" onclick="Puzzle.openGross()"><span class="pz-game-ico">\uD83C\uDFAF</span><span><b>Hit the Gross</b><small>Stop the needle on the number. Three deals, tightening.</small></span></button>' +
       '<button class="pz-game" onclick="Puzzle.openPlate()"><span class="pz-game-ico">\uD83D\uDD21</span><span><b>Plate Scramble</b><small>Slide the tiles to fix the number plate.</small></span></button>';
   };
   // the Games app on the office computer

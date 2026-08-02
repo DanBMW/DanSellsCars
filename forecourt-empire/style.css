@@ -954,3 +954,72 @@ b.teal { color: var(--teal); }
 .diag-row > div { min-width: 0; }
 .diag-row b { font-size: .85rem; }
 .diag-run { padding: 8px 0; }
+
+/* ---------- star rating: font-safe half star ---------- */
+.stars .st { font-style: normal; position: relative; display: inline-block; }
+.stars .st.half > b {
+  position: absolute; left: 0; top: 0; width: 50%; overflow: hidden;
+  font-weight: inherit; display: block;
+}
+
+/* ---------- Double or Drop ---------- */
+.cf-stage { display: flex; justify-content: center; align-items: center; height: 150px; perspective: 700px; margin: 6px 0 10px; }
+.cf-coin {
+  position: relative; width: 116px; height: 116px; transform-style: preserve-3d;
+  transition: transform .5s cubic-bezier(.2,.9,.3,1.1);
+}
+.cf-coin .cf-face {
+  position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; letter-spacing: 1.5px; font-size: .82rem;
+  border: 3px solid rgba(255,255,255,.28);
+}
+.cf-heads {
+  background: radial-gradient(circle at 34% 28%, #ffe9a4, #e8b53c 52%, #a97a15);
+  color: #4a3405; box-shadow: 0 10px 26px -8px rgba(232,181,60,.7), inset 0 -5px 12px rgba(120,84,10,.45);
+}
+.cf-tails {
+  background: radial-gradient(circle at 34% 28%, #e8eef8, #a9b6cc 52%, #6d7a90);
+  color: #262f40; box-shadow: 0 10px 26px -8px rgba(169,182,204,.6), inset 0 -5px 12px rgba(60,70,90,.45);
+  transform: rotateY(180deg);
+}
+.cf-coin.show-heads { transform: rotateY(0deg); }
+.cf-coin.show-tails { transform: rotateY(180deg); }
+.cf-coin.spin { animation: cfspin 1.5s cubic-bezier(.25,.6,.3,1) forwards; }
+@keyframes cfspin {
+  0%   { transform: rotateY(0) translateY(0) scale(1); }
+  35%  { transform: rotateY(1080deg) translateY(-58px) scale(1.1); }
+  70%  { transform: rotateY(2160deg) translateY(-20px) scale(1.05); }
+  100% { transform: rotateY(2880deg) translateY(0) scale(1); }
+}
+.cf-result { text-align: center; font-size: .95rem; margin: 2px 0 10px; min-height: 22px; }
+.cf-result.good { color: var(--green); }
+.cf-result.bad { color: var(--red); }
+.cf-note { text-align: center; color: var(--muted); font-size: .82rem; margin-bottom: 10px; }
+.cf-stakes { display: flex; gap: 6px; justify-content: center; margin-bottom: 8px; }
+.cf-stakes button { flex: 1; padding: 9px 4px; }
+.cf-cash { text-align: center; font-size: .78rem; color: var(--muted); margin-bottom: 10px; }
+.cf-cash b { color: var(--gold); }
+.cf-pot {
+  text-align: center; padding: 10px; border-radius: 14px; margin-bottom: 10px;
+  background: rgba(255,206,74,.09); border: 1px solid rgba(255,206,74,.32);
+}
+.cf-pot i { display: block; font-style: normal; font-size: .6rem; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--muted); }
+.cf-pot b { display: block; font-size: 1.7rem; color: var(--gold); line-height: 1.15; }
+.cf-pot em { display: block; font-style: normal; font-size: .7rem; color: var(--muted); }
+.cf-calls { display: flex; gap: 9px; margin-bottom: 8px; }
+.cf-call {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 12px 6px; font-size: .95rem; font-weight: 800;
+}
+.cf-call .cf-call-ic { font-size: 1.35rem; line-height: 1; }
+.cf-call.heads { background: linear-gradient(180deg, #f0c352, #cf9a22); color: #43300a; }
+.cf-call.tails { background: linear-gradient(180deg, #c3ceE0, #94a3ba); color: #232b3a; }
+.cf-bank { text-align: center; font-size: 2.1rem; font-weight: 900; color: var(--gold); margin: 14px 0 4px; }
+.pz-game.hot { border-color: rgba(255,206,74,.55); box-shadow: 0 0 0 1px rgba(255,206,74,.3), 0 10px 24px -14px rgba(255,206,74,.7); }
+.pz-game-dot {
+  position: absolute; top: 10px; right: 10px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 9px rgba(255,206,74,.9);
+}
+.pz-game { position: relative; }
