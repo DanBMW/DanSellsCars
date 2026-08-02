@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  Internal asset page - not linked from the public site, not in sitemap.xml.
+  Renders the Instagram graphics for the 530e Touring offer at true pixel size
+  (1080x1080 feed square and 1080x1350 portrait) plus the caption to copy.
+  Screenshot each .card at 100% zoom, or open on desktop and use the browser's
+  own capture. Same convention as x1-insta.html.
+-->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>530e Touring - Instagram assets</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&f[]=satoshi@400,500,700&display=swap"/>
+  <style>
+    :root{
+      --ink:#0a0c0f;--ink-2:#0e1114;--paper:#ece9e1;--body-c:#b9b5ab;--dim:#847f75;
+      --hairline:rgba(236,233,225,.14);--hairline-soft:rgba(236,233,225,.08);--accent:#5b8ac9;
+      --serif:'Sentient',Georgia,'Times New Roman',serif;
+      --sans:'Satoshi',ui-sans-serif,system-ui,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#15181c;color:var(--body-c);font-family:var(--sans);padding:40px 20px 80px;-webkit-font-smoothing:antialiased}
+    .page{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+    .sheet-label{font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;color:var(--dim)}
+
+    /* ---------- the graphics ---------- */
+    .card{position:relative;overflow:hidden;background:var(--ink);flex-shrink:0;transform-origin:top left}
+    .card.square{width:1080px;height:1080px}
+    .card.portrait{width:1080px;height:1350px}
+    /* preview-only downscale; renders at true size on a wide viewport */
+    @media(max-width:1140px){
+      .card.square{transform:scale(calc((100vw - 40px)/1080));margin-bottom:calc((100vw - 40px) - 1080px)}
+      .card.portrait{transform:scale(calc((100vw - 40px)/1080));margin-bottom:calc(((100vw - 40px)/1080)*1350 - 1350px)}
+    }
+
+    .card-bg{position:absolute;inset:0}
+    .card-bg img{width:100%;height:100%;object-fit:cover;object-position:44% 62%;display:block}
+    .card-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,15,.78) 0%,rgba(10,12,15,.22) 26%,rgba(10,12,15,.34) 44%,rgba(10,12,15,.88) 72%,rgba(10,12,15,.99) 100%)}
+    .card-body{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:64px 66px}
+
+    .card-flag{display:inline-flex;align-items:center;gap:12px;width:fit-content;font-size:19px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--paper);border:1px solid var(--hairline);padding:12px 20px;margin-bottom:30px}
+    .card-flag i{width:8px;height:8px;border-radius:50%;background:var(--accent);display:block}
+
+    .card-head{font-family:var(--serif);font-weight:400;color:var(--paper);font-size:78px;line-height:1.06;letter-spacing:.005em}
+    .card-head em{font-style:italic}
+    .card.portrait .card-head{font-size:92px}
+    .card-rule{width:80px;height:1px;background:var(--accent);border:none;margin:32px 0}
+    .card-sub{font-size:26px;line-height:1.6;color:var(--body-c);max-width:26ch}
+
+    .card-rail{display:flex;gap:1px;background:var(--hairline-soft);border:1px solid var(--hairline-soft);margin-top:38px}
+    .card-rail div{flex:1;background:var(--ink-2);padding:22px 22px}
+    .card-rail .rv{font-family:var(--serif);font-size:46px;color:var(--paper);line-height:1}
+    .card-rail .rl{font-size:16px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-top:10px;line-height:1.4}
+
+    .card-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-top:40px;padding-top:28px;border-top:1px solid var(--hairline-soft)}
+    .card-mark{font-family:var(--serif);font-size:32px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper);line-height:1}
+    .card-mark small{display:block;font-family:var(--sans);font-size:15px;letter-spacing:.22em;color:var(--dim);margin-top:9px}
+    .card-url{font-size:21px;letter-spacing:.06em;color:var(--paper);text-align:right;line-height:1.5}
+    .card-url small{display:block;font-size:15px;color:var(--dim);letter-spacing:.02em;margin-top:7px;max-width:34ch}
+
+    /* ---------- caption ---------- */
+    .caption-box{background:var(--ink-2);border:1px solid var(--hairline-soft);padding:32px}
+    .caption-box h2{font-family:var(--serif);font-weight:400;color:var(--paper);font-size:1.5rem;margin-bottom:6px}
+    .caption-box p.hint{font-size:.84rem;color:var(--dim);margin-bottom:22px;line-height:1.7}
+    .caption-box textarea{width:100%;min-height:520px;background:var(--ink);color:var(--body-c);border:1px solid var(--hairline-soft);padding:22px;font-family:var(--sans);font-size:.92rem;line-height:1.8;resize:vertical}
+    .copy-btn{margin-top:18px;font-family:var(--sans);font-size:.78rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--paper);background:none;border:1px solid var(--accent);padding:15px 34px;cursor:pointer;transition:background .2s,color .2s}
+    .copy-btn:hover{background:var(--accent);color:#0a0c0f}
+    .alt-hooks{margin-top:26px;border-top:1px solid var(--hairline-soft);padding-top:22px}
+    .alt-hooks h3{font-family:var(--serif);font-weight:400;color:var(--paper);font-size:1.05rem;margin-bottom:12px}
+    .alt-hooks li{list-style:none;font-size:.9rem;line-height:1.9;color:var(--body-c);padding-left:26px;position:relative}
+    .alt-hooks li::before{content:'';position:absolute;left:0;top:16px;width:14px;height:1px;background:var(--accent)}
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <span class="sheet-label">Feed square &middot; 1080 &times; 1080</span>
+
+  <!-- ── 1:1 FEED POST ── -->
+  <div class="card square">
+    <div class="card-bg"><img src="assets/5t-black.jpg" alt="BMW 530e M Sport Touring"/></div>
+    <div class="card-scrim"></div>
+    <div class="card-body">
+      <span class="card-flag"><i></i>Retailer offer &middot; Seven cars</span>
+      <div class="card-head">The Touring is yours.<br/>The <em>deposit</em> is ours.</div>
+      <hr class="card-rule"/>
+      <div class="card-sub">BMW 530e M Sport Touring. Hedin puts in the whole &pound;4,500 initial rental.</div>
+      <div class="card-rail">
+        <div><div class="rv">&pound;743</div><div class="rl">Per month, from</div></div>
+        <div><div class="rv">&pound;4,500</div><div class="rl">Deposit, paid by us</div></div>
+        <div><div class="rv">48</div><div class="rl">Months</div></div>
+      </div>
+      <div class="card-foot">
+        <div class="card-mark">Dan Sells<small>BMW &middot; Hedin Ruxley</small></div>
+        <div class="card-url">dan-sells.co.uk<small>Personal Contract Hire. Figures include VAT. Subject to status. 18+.</small></div>
+      </div>
+    </div>
+  </div>
+
+  <span class="sheet-label">Feed portrait &middot; 1080 &times; 1350</span>
+
+  <!-- ── 4:5 FEED POST ── -->
+  <div class="card portrait">
+    <div class="card-bg"><img src="assets/5t-black.jpg" alt="BMW 530e M Sport Touring"/></div>
+    <div class="card-scrim"></div>
+    <div class="card-body">
+      <span class="card-flag"><i></i>Retailer offer &middot; Seven cars</span>
+      <div class="card-head">The Touring is yours.<br/>The <em>deposit</em> is ours.</div>
+      <hr class="card-rule"/>
+      <div class="card-sub">BMW 530e M Sport Touring. Hedin puts in the whole &pound;4,500 initial rental, so the only number you plan around is the monthly one.</div>
+      <div class="card-rail">
+        <div><div class="rv">&pound;743</div><div class="rl">Per month, from</div></div>
+        <div><div class="rv">&pound;4,500</div><div class="rl">Deposit, paid by us</div></div>
+        <div><div class="rv">48</div><div class="rl">Months</div></div>
+      </div>
+      <div class="card-foot">
+        <div class="card-mark">Dan Sells<small>BMW &middot; Hedin Ruxley</small></div>
+        <div class="card-url">dan-sells.co.uk<small>Personal Contract Hire. Figures include VAT. Subject to status. 18+.</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CAPTION ── -->
+  <div class="caption-box">
+    <h2>The caption</h2>
+    <p class="hint">Hook is the first line - it is the only part Instagram shows before "more", so it carries the post. Edit freely, but keep the last paragraph: it is the bit that keeps the offer compliant.</p>
+    <textarea id="cap" rows="24">We will pay your deposit. All £4,500 of it.
+
+Seven BMW 530e M Sport Tourings are sitting at Hedin Ruxley, and on every one of them the £4,500 initial rental is covered by us. Not deferred, not buried in the monthly. Covered.
+
+From £743.44 a month
+48 months, 10,000 miles a year
+Road fund licence included
+Plug-in hybrid, 570 litres of boot
+
+Electric for the school run and the commute, petrol the moment you point it at a motorway, and an estate that has stopped apologising for being one.
+
+Seven cars, and when they are gone the offer goes with them. Every figure is written out in full on my site - link in bio - or send me a message and I will tell you which colours are still on the ground.
+
+Personal Contract Hire. Figures include VAT. Finance subject to status, UK residents 18+. You do not own the vehicle and there is no option to purchase at the end. Hedin Automotive is a credit broker, not a lender.
+
+#BMW #BMW5Series #530e #BMWTouring #PlugInHybrid #BMWRuxley #HedinAutomotive #Sidcup #Sevenoaks #Kent #NewCarOffers #CompanyCar</textarea>
+    <button class="copy-btn" onclick="copyCaption(this)">Copy caption</button>
+
+    <div class="alt-hooks">
+      <h3>Other hooks, if you want to test one</h3>
+      <ul>
+        <li>Nobody pays a £4,500 deposit on a Touring this month. Not at Ruxley, anyway.</li>
+        <li>Seven cars. One number to think about. Here is the offer in full.</li>
+        <li>The estate that stopped apologising - and the deposit that is not yours to pay.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function copyCaption(btn){
+  var t=document.getElementById('cap');
+  t.select(); t.setSelectionRange(0,99999);
+  var done=function(){var o=btn.textContent;btn.textContent='Copied';setTimeout(function(){btn.textContent=o;},1600);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t.value).then(done,function(){document.execCommand('copy');done();});
+  } else { document.execCommand('copy'); done(); }
+}
+</script>
+</body>
+</html>

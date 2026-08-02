@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  Internal asset page - not linked from the public site, not in sitemap.xml.
+  The 530e Touring reel: a 1080x1920 stage running a fixed 18 second timeline
+  of CSS animations, built in the site's own design language - photo band on
+  top, ink panel and serif type below, one restrained blue rule.
+
+  Recorded to MP4 by pointing a headless browser at it at true size; the
+  timeline is deterministic, so every recording comes out identical.
+  Open it in a browser to preview (it scales to fit the window), and add
+  ?t=6 to freeze the timeline at a given second while tweaking a scene.
+-->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>530e Touring - reel</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&f[]=satoshi@400,500,700&display=swap"/>
+  <style>
+    :root{
+      --ink:#0a0c0f;--ink-2:#0e1114;--paper:#ece9e1;--body-c:#b9b5ab;--dim:#847f75;
+      --hairline:rgba(236,233,225,.14);--hairline-soft:rgba(236,233,225,.08);--accent:#5b8ac9;
+      --serif:'Sentient',Georgia,'Times New Roman',serif;
+      --sans:'Satoshi',ui-sans-serif,system-ui,sans-serif;
+      --film:18s;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{background:#000;height:100%}
+    body{display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+    .stage{width:1080px;height:1920px;position:relative;overflow:hidden;background:var(--ink);color:var(--body-c);font-family:var(--sans);flex-shrink:0;transform-origin:center}
+    /* preview-only: shrink to fit the window. Recording runs at true 1080x1920. */
+    @media(max-height:1960px){.stage{transform:scale(calc((100vh - 24px)/1920))}}
+
+    /* ---------- photo band ---------- */
+    .band{position:absolute;top:0;left:0;right:0;height:880px;overflow:hidden;background:var(--ink-2)}
+    .band img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:46% 52%;opacity:0;animation:var(--film) linear forwards}
+    .band img:nth-child(1){animation-name:shotA}
+    .band img:nth-child(2){animation-name:shotB}
+    .band img:nth-child(3){animation-name:shotC}
+    .band img:nth-child(4){animation-name:shotD}
+    @keyframes shotA{0%{opacity:1;transform:scale(1.0)}24%{opacity:1}30%{opacity:0}100%{opacity:0;transform:scale(1.07)}}
+    @keyframes shotB{0%,24%{opacity:0;transform:scale(1.0)}30%{opacity:1}48%{opacity:1}54%{opacity:0}100%{opacity:0;transform:scale(1.07)}}
+    @keyframes shotC{0%,48%{opacity:0;transform:scale(1.0)}54%{opacity:1}72%{opacity:1}78%{opacity:0}100%{opacity:0;transform:scale(1.07)}}
+    @keyframes shotD{0%,72%{opacity:0;transform:scale(1.0)}78%{opacity:1}100%{opacity:1;transform:scale(1.07)}}
+    .band-fade{position:absolute;left:0;right:0;bottom:0;height:300px;background:linear-gradient(180deg,rgba(10,12,15,0),var(--ink) 82%)}
+    .band-top{position:absolute;top:0;left:0;right:0;height:260px;background:linear-gradient(180deg,rgba(10,12,15,.72),rgba(10,12,15,0))}
+
+    /* the plate over the photo, holds still all film */
+    .plate{position:absolute;top:92px;left:88px;display:inline-flex;align-items:center;gap:14px;font-size:22px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--paper);border:1px solid var(--hairline);padding:14px 22px;opacity:0;animation:plateIn var(--film) linear forwards}
+    .plate i{width:9px;height:9px;border-radius:50%;background:var(--accent);display:block}
+    @keyframes plateIn{0%{opacity:0}5%{opacity:1}94%{opacity:1}100%{opacity:0}}
+
+    /* ---------- type panel ---------- */
+    .panel{position:absolute;left:0;right:0;bottom:0;height:1040px;padding:0 88px 470px;display:flex;align-items:flex-end}
+    .scene{position:absolute;left:88px;right:88px;bottom:470px;opacity:0}
+    .line{opacity:0;transform:translateY(24px)}
+
+    #s1{animation:sc1 var(--film) linear forwards}
+    #s1 .line:nth-child(1){animation:ln1 var(--film) linear forwards}
+    #s1 .line:nth-child(2){animation:ln1 var(--film) linear forwards;animation-delay:.45s}
+    #s2{animation:sc2 var(--film) linear forwards}
+    #s2 .line:nth-child(1){animation:ln2 var(--film) linear forwards}
+    #s2 .line:nth-child(2){animation:ln2 var(--film) linear forwards;animation-delay:.45s}
+    #s3{animation:sc3 var(--film) linear forwards}
+    #s3 .line:nth-child(1){animation:ln3 var(--film) linear forwards}
+    #s3 .line:nth-child(2){animation:ln3 var(--film) linear forwards;animation-delay:.4s}
+    #s4{animation:sc4 var(--film) linear forwards}
+    #s4 .line:nth-child(1){animation:ln4 var(--film) linear forwards}
+    #s4 .line:nth-child(2){animation:ln4 var(--film) linear forwards;animation-delay:.4s}
+    #s4 .line:nth-child(3){animation:ln4 var(--film) linear forwards;animation-delay:.8s}
+
+    @keyframes sc1{0%,1%{opacity:0}4%{opacity:1}23%{opacity:1}26%{opacity:0}100%{opacity:0}}
+    @keyframes ln1{0%,1%{opacity:0;transform:translateY(24px)}6%{opacity:1;transform:none}23%{opacity:1;transform:none}26%{opacity:0;transform:translateY(-12px)}100%{opacity:0}}
+    @keyframes sc2{0%,26%{opacity:0}29%{opacity:1}47%{opacity:1}50%{opacity:0}100%{opacity:0}}
+    @keyframes ln2{0%,26%{opacity:0;transform:translateY(24px)}31%{opacity:1;transform:none}47%{opacity:1;transform:none}50%{opacity:0;transform:translateY(-12px)}100%{opacity:0}}
+    @keyframes sc3{0%,50%{opacity:0}53%{opacity:1}71%{opacity:1}74%{opacity:0}100%{opacity:0}}
+    @keyframes ln3{0%,50%{opacity:0;transform:translateY(24px)}55%{opacity:1;transform:none}71%{opacity:1;transform:none}74%{opacity:0;transform:translateY(-12px)}100%{opacity:0}}
+    @keyframes sc4{0%,74%{opacity:0}77%{opacity:1}100%{opacity:1}}
+    @keyframes ln4{0%,74%{opacity:0;transform:translateY(24px)}80%{opacity:1;transform:none}100%{opacity:1;transform:none}}
+
+    .big{font-family:var(--serif);font-weight:400;color:var(--paper);font-size:96px;line-height:1.05;letter-spacing:.005em}
+    .big em{font-style:italic}
+    .mid{font-family:var(--serif);font-weight:400;color:var(--paper);font-size:72px;line-height:1.12}
+    .say{font-size:32px;line-height:1.62;color:var(--body-c);max-width:24ch}
+    .rule{width:96px;height:1px;background:var(--accent);border:none;margin:34px 0}
+
+    .rail{display:flex;gap:1px;background:var(--hairline-soft);border:1px solid var(--hairline-soft)}
+    .rail div{flex:1;background:var(--ink-2);padding:30px 26px}
+    .rail b{display:block;font-family:var(--serif);font-weight:400;color:var(--paper);font-size:62px;line-height:1}
+    .rail span{display:block;font-size:19px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-top:14px;line-height:1.4}
+
+    .mark{font-family:var(--serif);font-size:46px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper);line-height:1}
+    .mark small{display:block;font-family:var(--sans);font-size:20px;letter-spacing:.22em;color:var(--dim);margin-top:14px}
+    .url{font-size:34px;letter-spacing:.04em;color:var(--paper);margin-top:30px}
+
+    .smallprint{position:absolute;left:88px;right:88px;bottom:380px;font-size:19px;line-height:1.6;color:var(--dim);text-align:center;opacity:0;animation:printIn var(--film) linear forwards}
+    @keyframes printIn{0%,4%{opacity:0}8%{opacity:.85}96%{opacity:.85}100%{opacity:0}}
+
+    /* opening and closing beat of black, so the loop does not jar */
+    .filmfade{position:absolute;inset:0;background:var(--ink);pointer-events:none;animation:filmFade var(--film) linear forwards}
+    @keyframes filmFade{0%{opacity:1}3%{opacity:0}97%{opacity:0}100%{opacity:1}}
+  </style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <div class="band">
+    <img src="assets/5t-black.jpg" alt=""/>
+    <img src="assets/5t-grey.jpg" alt=""/>
+    <img src="assets/5t-blue.jpg" alt=""/>
+    <img src="assets/5t-white.jpg" alt=""/>
+    <div class="band-top"></div>
+    <div class="band-fade"></div>
+  </div>
+
+  <div class="plate"><i></i>BMW 530e Touring &middot; Hedin Ruxley</div>
+
+  <div class="panel"></div>
+
+  <!-- 1 - the hook -->
+  <section class="scene" id="s1">
+    <div class="line big">We will pay<br/>your <em>deposit</em>.</div>
+    <div class="line"><hr class="rule"/><div class="say">Every penny of it. On seven cars, and seven only.</div></div>
+  </section>
+
+  <!-- 2 - the number -->
+  <section class="scene" id="s2">
+    <div class="line big">All &pound;4,500<br/>of it.</div>
+    <div class="line"><hr class="rule"/><div class="say">Not deferred. Not buried in the monthly. Covered by us, before you drive away.</div></div>
+  </section>
+
+  <!-- 3 - the figures -->
+  <section class="scene" id="s3">
+    <div class="line mid" style="margin-bottom:40px">So this is all<br/>you plan around.</div>
+    <div class="line rail">
+      <div><b>&pound;743</b><span>Per month, from</span></div>
+      <div><b>48</b><span>Months</span></div>
+      <div><b>10,000</b><span>Miles a year</span></div>
+    </div>
+  </section>
+
+  <!-- 4 - the close -->
+  <section class="scene" id="s4">
+    <div class="line mid">Seven cars.<br/>Then it is gone.</div>
+    <div class="line"><hr class="rule"/></div>
+    <div class="line">
+      <div class="mark">Dan Sells<small>BMW &middot; Hedin Ruxley</small></div>
+      <div class="url">dan-sells.co.uk</div>
+    </div>
+  </section>
+
+  <p class="smallprint">Personal Contract Hire. Figures include VAT. Finance subject to status, UK residents 18+. Hedin Automotive is a credit broker, not a lender.</p>
+  <div class="filmfade"></div>
+
+</div>
+
+<script>
+/* ?t=<seconds> freezes every animation at that point so a scene can be
+   inspected or re-shot without waiting for the timeline to reach it. */
+(function(){
+  var t=new URLSearchParams(location.search).get('t');
+  if(t===null)return;
+  var s=parseFloat(t)||0;
+  requestAnimationFrame(function(){
+    document.getAnimations().forEach(function(a){a.currentTime=s*1000;a.pause();});
+  });
+})();
+</script>
+</body>
+</html>
