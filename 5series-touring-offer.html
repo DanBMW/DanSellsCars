@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  LIVE offer page - BMW 530e M Sport Touring, retailer-paid initial rental.
+  Figures, wording and photography taken from the Hedin Automotive offer page:
+  https://hedinautomotive.co.uk/buy-car/latest-offers/bmw/bmw-5-series-touring-offers
+  Seven eligible cars in stock: six at £743 per month, one at £770.
+  Photography is BMW configurator imagery from that page (assets/5t-*.jpg) -
+  swap in real forecourt shots when Dan photographs the actual cars.
+-->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <link rel="canonical" href="https://dan-sells.co.uk/5series-touring-offer.html"/>
+  <title>BMW 530e M Sport Touring - the deposit is covered | Dan at Hedin Ruxley</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <meta name="description" content="BMW 530e M Sport Touring from £743 a month on Personal Contract Hire, with the £4,500 initial rental paid by Hedin. Seven cars only. Talk to Dan at Hedin Ruxley."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://dan-sells.co.uk/5series-touring-offer.html"/>
+  <meta property="og:title" content="BMW 530e M Sport Touring - the deposit is covered"/>
+  <meta property="og:description" content="From £743 a month, 48 months, 10,000 miles a year, and Hedin pays the £4,500 initial rental. Seven cars only."/>
+  <meta property="og:image" content="https://dan-sells.co.uk/assets/5t-black.jpg"/>
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+  <link rel="preload" as="image" href="assets/5t-black.jpg"/>
+  <link rel="stylesheet" href="premium.css?v=7ea8698c"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <script src="analytics.js" defer></script>
+  <style>
+    /* ---------- hero ---------- */
+    .t5-hero{position:relative;min-height:92svh;display:flex;align-items:flex-end;overflow:hidden}
+    .t5-hero-media{position:absolute;inset:0}
+    .t5-hero-media img{width:100%;height:100%;object-fit:cover;object-position:center 58%}
+    .t5-hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,15,.82) 0%,rgba(10,12,15,.28) 38%,rgba(10,12,15,.72) 74%,rgba(10,12,15,.97) 100%)}
+    .t5-hero-content{position:relative;z-index:2;width:100%;padding-bottom:clamp(48px,8vh,96px)}
+    .t5-hero h1{max-width:22ch;margin-bottom:18px}
+    .t5-hero-sub{max-width:50ch;color:var(--body-c);font-size:1.02rem}
+    .t5-flag{display:inline-flex;align-items:center;gap:9px;font-family:var(--sans);font-size:.68rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--paper);border:1px solid var(--hairline);padding:8px 14px;margin-bottom:26px}
+    .t5-flag span{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+    /* ---------- headline numbers ---------- */
+    .t5-rail{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hairline-soft);border:1px solid var(--hairline-soft);margin-top:38px}
+    @media(min-width:720px){.t5-rail{grid-template-columns:repeat(4,1fr)}}
+    .t5-rail-cell{background:var(--ink-2);padding:22px 20px}
+    .t5-rail-val{font-family:var(--serif);font-size:clamp(1.5rem,3vw,2rem);color:var(--paper);line-height:1}
+    .t5-rail-lbl{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-top:9px}
+
+    /* ---------- gallery ---------- */
+    .t5-shot{position:relative;border:1px solid var(--hairline-soft);background:var(--ink-2);overflow:hidden}
+    .t5-shot img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+    .t5-shot-note{position:absolute;left:0;bottom:0;font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);background:rgba(10,12,15,.82);padding:8px 14px}
+    .t5-swatches{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
+    .t5-swatch{width:34px;height:34px;border-radius:50%;border:1px solid var(--hairline);cursor:pointer;padding:0;transition:transform .18s,box-shadow .18s;box-shadow:inset -3px -4px 8px rgba(0,0,0,.45)}
+    .t5-swatch:hover{transform:scale(1.08)}
+    .t5-swatch[aria-pressed="true"]{box-shadow:inset -3px -4px 8px rgba(0,0,0,.45),0 0 0 2px var(--accent)}
+    .t5-swatch-name{font-size:.78rem;color:var(--dim);margin-left:6px}
+    .t5-swatch-name b{color:var(--paper);font-weight:500}
+
+    /* ---------- included list ---------- */
+    .t5-list{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:1px;background:var(--hairline-soft);border-top:1px solid var(--hairline-soft);border-bottom:1px solid var(--hairline-soft)}
+    .t5-list li{background:var(--ink);padding:18px 0;display:flex;gap:16px;align-items:flex-start;font-size:.9rem;color:var(--body-c);line-height:1.7}
+    .t5-list li::before{content:'';flex:0 0 auto;width:18px;height:1px;background:var(--accent);margin-top:14px}
+    .t5-list li span{flex:1 1 auto;max-width:var(--measure)}
+    .t5-list li strong{color:var(--paper);font-weight:500}
+
+    /* ---------- figures table ---------- */
+    .t5-figs{margin-top:26px;border-top:1px solid var(--hairline-soft)}
+    .t5-fig{display:flex;justify-content:space-between;gap:24px;align-items:baseline;padding:15px 0;border-bottom:1px solid var(--hairline-soft)}
+    .t5-fig dt{font-size:.86rem;color:var(--dim)}
+    .t5-fig dd{font-size:.92rem;color:var(--paper);text-align:right;margin:0}
+
+    /* ---------- closing band ---------- */
+    .t5-close{background:var(--ink-2);border:1px solid var(--hairline-soft);padding:clamp(28px,5vw,48px)}
+  </style>
+</head>
+<body>
+
+<!-- chrome:header2 {"wa":"Hi%20Dan%2C%20I%27d%20like%20to%20ask%20about%20the%20BMW%20530e%20Touring%20offer"} -->
+<header class="ph-header" id="phHeader">
+  <div class="ph-header-inner">
+    <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+    <div class="ph-actions">
+      <a class="ph-contact-link" href="#contact">Talk to Dan</a>
+      <button class="ph-menu-btn" id="phMenuBtn" aria-label="Open menu" aria-expanded="false" onclick="phOpenDrawer()">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+<!-- /chrome:header2 -->
+
+<!-- chrome:drawer2 -->
+<div class="ph-drawer" id="phDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <button class="ph-drawer-close" onclick="phCloseDrawer()" aria-label="Close menu">Close</button>
+  <div class="ph-drawer-inner">
+    <nav aria-label="Main navigation">
+      <a href="index.html">Home</a>
+    </nav>
+    <p class="ph-drawer-label">Four ways in</p>
+    <nav aria-label="Doorways">
+      <a href="step1.html">Find my BMW</a>
+      <a href="EV.html">Electric Daily</a>
+      <a href="appraisal.html">Value your car</a>
+      <a href="service.html">In for service</a>
+    </nav>
+    <p class="ph-drawer-label">Practical</p>
+    <nav aria-label="Practical pages">
+      <a href="current-opportunities.html">Current Opportunities</a>
+      <a href="offers.html">Available Now</a>
+      <a href="current-opportunities.html#protection">Protect my BMW</a>
+      <a href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment <small>opens cal.eu</small></a>
+    </nav>
+  </div>
+</div>
+<!-- /chrome:drawer2 -->
+
+<main>
+
+  <!-- HERO -->
+  <section class="t5-hero" aria-label="BMW 530e M Sport Touring offer">
+    <div class="t5-hero-media">
+      <img src="assets/5t-black.jpg" alt="BMW 530e M Sport Touring in black, front three-quarter view" fetchpriority="high"/>
+    </div>
+    <div class="t5-hero-scrim"></div>
+    <div class="t5-hero-content">
+      <div class="wrap">
+        <span class="t5-flag"><span></span>Retailer offer &middot; Seven cars</span>
+        <h1>The Touring is yours.<br/>The <em>deposit</em> is ours.</h1>
+        <p class="t5-hero-sub">BMW 530e M Sport Touring on Personal Contract Hire from &pound;743 a month, and Hedin puts in the whole &pound;4,500 initial rental. Seven cars in stock qualify, and that is the lot.</p>
+        <div class="ph-hero-actions">
+          <button class="btn-line" onclick="openOfferModal('BMW 530e M Sport Touring','From £743.44/month PCH, 48 months, 10,000 miles p.a., £4,500 initial rental paid by Hedin')">Register your interest</button>
+          <a class="btn-quiet" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20ask%20about%20the%20BMW%20530e%20Touring%20offer" target="_blank" rel="noopener">WhatsApp me instead</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE DEAL -->
+  <section class="band-tight" aria-label="The figures">
+    <div class="wrap wrap-narrow">
+      <span class="plabel accent">The offer</span>
+      <h2>Every figure, up front.</h2>
+      <hr class="rule"/>
+      <div class="prose">
+        <p class="lede">A 530e Touring normally asks for a four-figure deposit before you have driven a mile. On these seven cars, Hedin covers that &pound;4,500 outright, so the only number you plan around is the monthly one.</p>
+        <p>It is Personal Contract Hire, so there is no APR and no balloon payment to think about at the end - you hand the car back, or we talk about the next one. Road fund licence is included for the whole agreement.</p>
+      </div>
+
+      <div class="t5-rail reveal">
+        <div class="t5-rail-cell">
+          <div class="t5-rail-val">&pound;743</div>
+          <div class="t5-rail-lbl">Per month, from</div>
+        </div>
+        <div class="t5-rail-cell">
+          <div class="t5-rail-val">&pound;4,500</div>
+          <div class="t5-rail-lbl">Initial rental, paid by Hedin</div>
+        </div>
+        <div class="t5-rail-cell">
+          <div class="t5-rail-val">48</div>
+          <div class="t5-rail-lbl">Months</div>
+        </div>
+        <div class="t5-rail-cell">
+          <div class="t5-rail-val">10,000</div>
+          <div class="t5-rail-lbl">Miles a year</div>
+        </div>
+      </div>
+
+      <ul class="t5-list reveal">
+        <li><span><strong>The &pound;4,500 initial rental is covered.</strong> Not deferred, not rolled into the monthly - Hedin contributes it, and it does not come out of your account.</span></li>
+        <li><span><strong>Six of the seven cars are &pound;743.44 a month.</strong> The seventh is &pound;770.45. Tell me which spec you want and I will tell you which car it is.</span></li>
+        <li><span><strong>10,000 miles a year, 14.1p a mile after that.</strong> Sensible for most people. If you do more, say so early and I will price it properly rather than let it bite at the end.</span></li>
+        <li><span><strong>Road fund licence included</strong> for the duration of the lease, and all figures include VAT.</span></li>
+        <li><span><strong>No APR, no final payment.</strong> PCH is a hire agreement, not credit. You do not own the car and there is no option to buy it at the end.</span></li>
+        <li><span><strong>These are in stock now.</strong> Seven cars, first come first served, and when they are gone the offer goes with them.</span></li>
+      </ul>
+
+      <p class="prose-note mt-24">Want the written quotation with the exact payment schedule for a specific car? Ask me and I will send it over the same day - no obligation, and no salesperson attached to it.</p>
+    </div>
+  </section>
+
+  <!-- COLOURS -->
+  <section class="band-tight hairline-top" aria-label="Colours">
+    <div class="wrap wrap-narrow">
+      <span class="plabel">The car</span>
+      <h2>Four ways to have it.</h2>
+      <hr class="rule"/>
+      <p class="measure" style="margin-bottom:28px">The seven cars cover the colours below. Availability moves quickly, so check with me before you set your heart on one - I will tell you honestly what is still on the ground.</p>
+
+      <div class="t5-shot reveal">
+        <img id="t5Shot" src="assets/5t-black.jpg" alt="BMW 530e M Sport Touring in black"/>
+        <div class="t5-shot-note">BMW imagery &middot; specification varies by car</div>
+      </div>
+      <div class="t5-swatches">
+        <button class="t5-swatch" style="background:#0d0d0f" aria-pressed="true" aria-label="Black" onclick="t5Pick(this,'assets/5t-black.jpg','Black')"></button>
+        <button class="t5-swatch" style="background:#dcdcda" aria-pressed="false" aria-label="White" onclick="t5Pick(this,'assets/5t-white.jpg','White')"></button>
+        <button class="t5-swatch" style="background:#3b4247" aria-pressed="false" aria-label="Grey" onclick="t5Pick(this,'assets/5t-grey.jpg','Grey')"></button>
+        <button class="t5-swatch" style="background:#101c33" aria-pressed="false" aria-label="Blue" onclick="t5Pick(this,'assets/5t-blue.jpg','Blue')"></button>
+        <span class="t5-swatch-name">Showing <b id="t5Name">Black</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY THE TOURING -->
+  <section class="band-tight hairline-top" aria-label="About the 530e Touring">
+    <div class="wrap wrap-narrow">
+      <span class="plabel">Why this one</span>
+      <h2>The estate that stopped apologising.</h2>
+      <hr class="rule"/>
+      <div class="prose">
+        <p>The 530e Touring is the sensible answer that does not feel like one. There are 570 litres behind the back seats before you fold anything, which swallows the pushchair, the dog crate or the golf clubs without a conversation about it.</p>
+        <p>It is a plug-in hybrid, so the school run, the commute and the supermarket happen on electricity, and the moment you point it at a motorway the petrol engine takes over without you thinking about charge stops. For a lot of people that is the whole argument for a PHEV in one sentence.</p>
+        <p>Inside, the BMW Curved Display runs the car through voice, touch or gesture, and the M Sport specification brings the styling, the seats and the wheels to match. Come and sit in one at Ruxley before you decide - it takes ten minutes and it settles the question.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FULL FIGURES -->
+  <section class="band-tight hairline-top" aria-label="Representative figures">
+    <div class="wrap wrap-narrow">
+      <span class="plabel">In full</span>
+      <h2>The figures as written.</h2>
+      <hr class="rule"/>
+      <p class="measure">Personal Contract Hire, taken straight from the retailer offer. These are the figures for the &pound;743.44 cars.</p>
+      <dl class="t5-figs reveal">
+        <div class="t5-fig"><dt>Vehicle</dt><dd>BMW 530e M Sport Touring</dd></div>
+        <div class="t5-fig"><dt>Agreement type</dt><dd>Personal Contract Hire</dd></div>
+        <div class="t5-fig"><dt>Monthly rental</dt><dd>&pound;743.44 (one car at &pound;770.45)</dd></div>
+        <div class="t5-fig"><dt>Initial rental</dt><dd>&pound;4,500.00, paid by Hedin</dd></div>
+        <div class="t5-fig"><dt>Term of agreement</dt><dd>48 months</dd></div>
+        <div class="t5-fig"><dt>Annual mileage</dt><dd>10,000 miles</dd></div>
+        <div class="t5-fig"><dt>Excess mileage charge</dt><dd>14.1p per mile</dd></div>
+        <div class="t5-fig"><dt>Road fund licence</dt><dd>Included for the duration of the lease</dd></div>
+        <div class="t5-fig"><dt>APR</dt><dd>None - PCH is a hire agreement, not credit</dd></div>
+        <div class="t5-fig"><dt>Hire provided by</dt><dd>BMW Group Corporate Finance</dd></div>
+      </dl>
+      <p class="prose-note mt-24">The offer as published by the retailer is on the <a href="https://hedinautomotive.co.uk/buy-car/latest-offers/bmw/bmw-5-series-touring-offers" target="_blank" rel="noopener" style="color:var(--body-c)">Hedin Automotive 5 Series Touring page</a>. I have written the same figures out here so you can see them without a form in the way.</p>
+    </div>
+  </section>
+
+  <!-- CLOSE -->
+  <section class="band-tight hairline-top" aria-label="Next step">
+    <div class="wrap wrap-narrow">
+      <div class="t5-close reveal">
+        <span class="plabel accent">Next step</span>
+        <h2>Seven cars. One conversation.</h2>
+        <p class="measure" style="margin-bottom:26px">Leave your details and I will confirm what is still in stock, which colours are left and what the exact figures look like on the car you want. If it is not right for you I will say so - I would rather tell you that than sell you the wrong estate.</p>
+        <div class="opp-actions">
+          <button class="btn-line" onclick="openOfferModal('BMW 530e M Sport Touring','From £743.44/month PCH, 48 months, 10,000 miles p.a., £4,500 initial rental paid by Hedin')">Register your interest</button>
+          <a class="btn-quiet" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book time with me at Ruxley</a>
+        </div>
+      </div>
+
+      <p class="prose-note mt-24" style="border-top:1px solid var(--hairline-soft);padding-top:20px;margin-top:32px">Personal Contract Hire. Finance subject to status. Available to UK residents (excluding the Channel Islands) aged 18 and over; a guarantee may be required. Representative example: BMW 530e M Sport Touring, 48 month term, initial rental &pound;4,500.00 (contributed by the retailer), monthly rental &pound;743.44, 10,000 miles per annum, excess mileage charge 14.1p per mile. One eligible car is priced at &pound;770.45 per month. Figures include VAT and rentals may change if the rate of VAT changes during the agreement. Road fund licence included for the duration of the lease. Vehicle condition and excess mileage charges may apply at the end of your agreement. You do not own the vehicle and there is no option to purchase at the end of a PCH agreement; no APR applies. Hire provided by BMW Group Corporate Finance, a trading style of Alphabet (GB) Limited, Alphabet House, Summit Avenue, Farnborough, Hampshire, GU14 0FB. Stephen James (Automotive) Ltd, trading as Hedin Automotive (BMW Ruxley), is an Appointed Representative of ITC Compliance Limited, which is authorised and regulated by the Financial Conduct Authority (Firm Reference No. 313486), and is a credit broker, not a lender. Offer limited to seven eligible vehicles, subject to availability, correct at the date of publication and may be withdrawn or changed without notice. Written quotations available on request. Imagery is BMW library photography and specification varies by car.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- REGISTER INTEREST MODAL -->
+<div class="pmodal-bg" id="offerModal" onclick="if(event.target===this)closeOfferModal()">
+  <div class="pmodal">
+    <button class="pmodal-close" onclick="closeOfferModal()" aria-label="Close">Close</button>
+    <div id="omForm">
+      <h3 id="omTitle">Register your interest</h3>
+      <p class="pm-sub" id="omSub">I will come back to you personally to confirm what is left in stock and send the written figures.</p>
+      <div class="pfield"><label>Full name</label><input id="omName" type="text" placeholder="Your name"/></div>
+      <div class="pfield"><label>Mobile</label><input id="omPhone" type="tel" placeholder="07..."/></div>
+      <div class="pfield"><label>Email</label><input id="omEmail" type="email" placeholder="you@example.com"/></div>
+      <button class="btn-line" onclick="submitOfferInterest()" style="width:100%;margin-top:6px">Send to Dan</button>
+      <p class="pm-legal">By submitting you agree Dan may contact you about this offer. Hedin Automotive Ltd is a credit broker, not a lender. Finance subject to status. 18s and over only.</p>
+    </div>
+    <div class="pm-success" id="omSuccess">
+      <p>Done - I have your details.</p>
+      <span>I will be in touch shortly to confirm availability and next steps.</span>
+    </div>
+  </div>
+</div>
+
+<!-- chrome:footer2 {"wa":"Hi%20Dan%2C%20I%27d%20like%20to%20ask%20about%20the%20BMW%20530e%20Touring%20offer","blurb1":"New BMW buying with Dan Cane and the team at Hedin Ruxley, South East."} -->
+<section class="ph-contact" id="contact">
+  <div class="wrap">
+    <span class="plabel accent">Talk to Dan</span>
+    <h2>One conversation, whenever you are ready.</h2>
+    <p class="measure">No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.</p>
+    <div class="contact-rows">
+      <a class="contact-row" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20ask%20about%20the%20BMW%20530e%20Touring%20offer" target="_blank" rel="noopener">
+        <span class="cr-label">WhatsApp</span>
+        <span class="cr-value">Message me directly</span>
+      </a>
+      <button type="button" class="contact-row" onclick="phOpenContact()">
+        <span class="cr-label">Email</span>
+        <span class="cr-value">Send me a message</span>
+      </button>
+      <a class="contact-row" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
+        <span class="cr-label">In person</span>
+        <span class="cr-value">Book time with me at Ruxley</span>
+      </a>
+      <a class="contact-row" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">
+        <span class="cr-label">Instagram</span>
+        <span class="cr-value">@dan_sells_bmw</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="ph-footer">
+  <div class="wrap">
+    <div class="ph-footer-grid">
+      <div>
+        <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
+        <p class="ph-footer-blurb">New BMW buying with Dan Cane and the team at Hedin Ruxley, South East.</p>
+        <p class="ph-footer-blurb">Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.</p>
+      </div>
+      <div class="ph-footer-col">
+        <h4>Find your way</h4>
+        <a href="step1.html">Find my BMW</a>
+        <a href="EV.html">Electric Daily</a>
+        <a href="appraisal.html">Value your car</a>
+        <a href="service.html">In for service</a>
+        <a href="current-opportunities.html">Current Opportunities</a>
+        <a href="offers.html">Available Now</a>
+      </div>
+      <div class="ph-footer-col">
+        <h4>More</h4>
+        <a href="guides.html">Guides</a>
+        <a href="refer.html">Refer a friend</a>
+        <a href="accessories.html">BMW Accessories</a>
+        <a href="bmw-sidcup.html">BMW Sidcup</a>
+        <a href="bmw-sevenoaks.html">BMW Sevenoaks</a>
+        <a href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
+        <a href="terms.html">Terms &amp; Conditions</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+    </div>
+    <p class="ph-footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
+  </div>
+</footer>
+
+<div class="pmodal-bg" id="phContactModal" onclick="if(event.target===this)phCloseContact()">
+  <div class="pmodal">
+    <button class="pmodal-close" onclick="phCloseContact()" aria-label="Close">Close</button>
+    <div id="phcForm">
+      <h3>Send me a message</h3>
+      <p class="pm-sub">It comes straight to me and I will reply personally, usually the same day.</p>
+      <div class="pfield"><label>Your name</label><input id="phcName" type="text" autocomplete="name"/></div>
+      <div class="pfield"><label>Your email</label><input id="phcEmail" type="email" autocomplete="email"/></div>
+      <div class="pfield"><label>Phone (optional)</label><input id="phcPhone" type="tel" autocomplete="tel"/></div>
+      <div class="pfield"><label>Your message</label><textarea id="phcMsg" rows="4"></textarea></div>
+      <button class="btn-line" onclick="phSubmitContact()" style="width:100%;margin-top:6px">Send to Dan</button>
+      <p class="pm-legal">Your details are used only to reply to this enquiry. See the <a href="privacy.html" style="color:inherit">privacy policy</a>.</p>
+    </div>
+    <div class="pm-success" id="phcOk">
+      <p>Sent - thank you.</p>
+      <span>Your message is with me and I will come back to you personally.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var hdr=document.getElementById('phHeader');
+  if(hdr){window.addEventListener('scroll',function(){hdr.classList.toggle('scrolled',window.scrollY>60);},{passive:true});
+    if(window.scrollY>60)hdr.classList.add('scrolled');}
+  window.phOpenDrawer=function(){
+    document.getElementById('phDrawer').classList.add('open');
+    document.getElementById('phDrawer').removeAttribute('aria-hidden');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','true');
+    document.body.style.overflow='hidden';
+  };
+  window.phCloseDrawer=function(){
+    document.getElementById('phDrawer').classList.remove('open');
+    document.getElementById('phDrawer').setAttribute('aria-hidden','true');
+    document.getElementById('phMenuBtn').setAttribute('aria-expanded','false');
+    document.body.style.overflow='';
+  };
+  window.phOpenContact=function(preset){
+    document.getElementById('phcForm').style.display='block';
+    document.getElementById('phcOk').style.display='none';
+    if(preset)document.getElementById('phcMsg').value=preset;
+    document.getElementById('phContactModal').classList.add('open');
+    document.body.style.overflow='hidden';
+    document.getElementById('phcName').focus();
+  };
+  window.phCloseContact=function(){
+    document.getElementById('phContactModal').classList.remove('open');
+    document.body.style.overflow='';
+  };
+  window.phSubmitContact=function(){
+    var n=document.getElementById('phcName').value.trim();
+    var e=document.getElementById('phcEmail').value.trim();
+    var p=document.getElementById('phcPhone').value.trim();
+    var msg=document.getElementById('phcMsg').value.trim();
+    if(!n||!e||!msg){alert('Please add your name, email and a short message.');return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
+    fetch('https://formspree.io/f/xqewleog',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        _subject:'Website enquiry - '+n,
+        name:n, email:e, phone:p||'not given', message:msg,
+        source:(location&&location.pathname)||'website',
+        replyto:e
+      })
+    }).catch(function(){}).finally(function(){
+      document.getElementById('phcForm').style.display='none';
+      document.getElementById('phcOk').style.display='block';
+    });
+  };
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.phCloseDrawer();window.phCloseContact();}});
+  document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+</script>
+<!-- /chrome:footer2 -->
+
+<!-- chrome:legal2 -->
+<section class="legal-block">
+  <div class="wrap wrap-narrow">
+    <h3>Legal &amp; Financial Information</h3>
+    <h4>Website Independence</h4>
+    <p>dan-sells.co.uk is the personal website of Dan Cane, a Sales Executive employed at Hedin Automotive Group (BMW Ruxley). This website is operated entirely independently and does not represent, and should not be construed as representing, the views, policies, opinions, or positions of BMW AG, BMW (UK) Limited, Hedin Automotive Group, or any associated or affiliated entity. All content is created and published at the sole discretion of the individual named above. BMW&reg;, the BMW roundel, and all associated marks and intellectual property are registered trademarks of BMW AG and are referenced solely for the purpose of identifying the products and services discussed.</p>
+    <h4>Credit Broking - Important Information</h4>
+    <p>Hedin Automotive Group acts as a credit broker and not a lender. Finance introductions for new BMW vehicles are made primarily through BMW Financial Services, a trading name of BMW Financial Services (GB) Limited, which is authorised and regulated by the Financial Conduct Authority. For used vehicle financing, a panel of FCA-authorised lenders is available to assist customers across a broad range of credit profiles and personal circumstances. Hedin Automotive Group may receive a commission or other remuneration from lenders in connection with the introduction of finance products; the existence of any such arrangement does not affect the interest rate or terms offered to you. All finance products are offered subject to status, individual credit assessment, and affordability. Finance approval is not guaranteed and is subject to the lending criteria of the relevant lender. Rates and products are subject to change without notice.</p>
+    <h4>No Financial Advice</h4>
+    <p>Nothing published on this website, and nothing communicated through any associated questionnaire, form, or correspondence, constitutes regulated financial advice, a personal recommendation, or a commitment to provide any particular finance product or arrangement. Dan Cane is not a financial adviser, and no content on this website should be treated as a substitute for independent financial guidance. Any budget figures, estimated monthly payments, deposit amounts, or indicative finance illustrations discussed or gathered through this website are provided for the sole purpose of facilitating a preliminary and informal sales conversation. They are illustrative in nature, are not binding in any form, and are subject to formal credit assessment, individual circumstances, and lender approval. If you are uncertain whether a particular financial product or commitment is appropriate for your personal circumstances, you should seek guidance from an independent financial adviser who is authorised and regulated by the Financial Conduct Authority.</p>
+    <h4>Information Collection &amp; Use</h4>
+    <p>Personal information submitted through this website is collected solely for the purpose of enabling Dan Cane to prepare a tailored and informed response to your vehicle enquiry. Information is handled in accordance with applicable UK data protection legislation, including the UK GDPR. Your data is not sold, shared with unauthorised third parties, or used for any purpose beyond fulfilling the specific enquiry you have submitted.</p>
+    <h4>General</h4>
+    <p>Vehicle specifications, availability, imagery, and pricing information featured on this website are provided in good faith and are correct at the time of publication, but are subject to change without notice. All offers are subject to availability. Errors and omissions excepted. This website is intended for residents of the United Kingdom only.</p>
+  </div>
+</section>
+<!-- /chrome:legal2 -->
+
+<script>
+var _offerName='', _offerDetails='';
+function openOfferModal(name, details){
+  _offerName=name; _offerDetails=details;
+  document.getElementById('omTitle').textContent='Register interest - '+name;
+  document.getElementById('omForm').style.display='block';
+  document.getElementById('omSuccess').style.display='none';
+  document.getElementById('offerModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeOfferModal(){
+  document.getElementById('offerModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function submitOfferInterest(){
+  var n=document.getElementById('omName').value.trim();
+  var p=document.getElementById('omPhone').value.trim();
+  var e=document.getElementById('omEmail').value.trim();
+  if(!n||!p||!e){alert('Please fill in all three fields so Dan can get back to you.');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
+  var payload={
+    _subject:'Offer interest: '+_offerName+' - '+n,
+    name:n, phone:p, email:e,
+    offer:_offerName,
+    offer_details:_offerDetails,
+    replyto:e
+  };
+  fetch('https://formspree.io/f/xqewleog',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify(payload)
+  }).catch(function(){}).finally(function(){
+    document.getElementById('omForm').style.display='none';
+    document.getElementById('omSuccess').style.display='block';
+  });
+}
+function t5Pick(btn, src, name){
+  document.getElementById('t5Shot').src=src;
+  document.getElementById('t5Shot').alt='BMW 530e M Sport Touring in '+name.toLowerCase();
+  document.getElementById('t5Name').textContent=name;
+  document.querySelectorAll('.t5-swatch').forEach(function(s){s.setAttribute('aria-pressed','false');});
+  btn.setAttribute('aria-pressed','true');
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeOfferModal();});
+</script>
+<script src="disclaimer.js"></script>
+</body>
+</html>
