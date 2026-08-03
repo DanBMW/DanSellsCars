@@ -748,3 +748,45 @@ One thing left deliberately alone: an exec away on a training course still
 counts toward footfall. Arguably they should not — they are not on the floor
 prospecting — but that is a balance decision rather than part of a refactor,
 so it stays as it was.
+
+---
+
+## Graphics, pass 1 — art direction (2026-08-03)
+
+Dan picked art direction first, then normal-mapped lighting. This is the
+first half.
+
+The scene was competent and flat: cars floated with no contact shadow, the
+light was a single warm blob, the palette had no point of view, and the whole
+diorama sat in the app's dark background with no sky — so it read as a UI
+widget rather than a place.
+
+**`MOOD`, one palette per month.** Sky (two stops), sun colour and strength,
+ambient fill, grass, haze and a wet-weather probability. Everything downstream
+reads from it, so January is grey, low-sun and slick; July is bleached and
+hazy; September is golden. The game's whole rhythm is seasonal and the scene
+never showed it.
+
+**Contact shadows.** The single biggest missing thing. Every car now has a
+soft ellipse offset away from the key light. It is what makes them sit on the
+tarmac rather than hover above it.
+
+**Weather**, rolled from the week number so it is stable within a week and a
+wet week stays wet. Rain is drawn as seeded streaks — no particle state, no
+allocation — and the tarmac darkens under it.
+
+**Sky and depth haze.** A gradient backdrop with soft cloud banding, a low sun
+disc on clear days, and a haze that washes the far rows toward the sky colour.
+
+**Rim light** on the sun-facing side of each car, above a light threshold.
+
+Two things worth recording:
+
+- The rim light started as one wide band at 42% alpha, which blew the paint
+  out in high summer and left a visible seam down the middle of every car.
+  It is now three narrowing bands at a sixth of that, which fakes a falloff.
+- The sky is **cached** and re-baked only when the month, the weather or the
+  canvas size changes. Five radial gradients per frame measured fine at 60fps
+  on a laptop and would not have been fine on a mid-range phone.
+
+Still to come (pass 2): normal-mapped per-pixel lighting.

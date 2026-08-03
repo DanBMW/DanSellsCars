@@ -346,7 +346,31 @@ var Scene = window.Scene = {};
     var w = TILE * 2.02, h = w * sp.dh / sp.dw;
     // baseline sits a whisker below bay centre so the car fills the bay
     var bx = cx - w / 2, by = cy + TILE * 0.34 - h * (sp.base / sp.dh);
+    // ground it before drawing it — offset away from the key light, upper-left
+    contactShadow(cx + TILE * 0.10, cy + TILE * 0.40, w * 0.40, TILE * 0.20, 0.38);
     ctx.drawImage(sp.cv, bx, by, w, h);
+    /* Rim the sun-facing edge. Cheap: redraw the sprite clipped to a sliver on
+       the light side and screen a warm tint over it, so the car reads as lit
+       from somewhere rather than evenly coloured. */
+    var mm = mood();
+    if (mm.str > 0.35) {
+      /* Three narrowing bands fake a gradient falloff. One wide band at high
+         alpha blew the paint out in high summer and left a visible seam down
+         the middle of every car. */
+      var lit = (mm.str - 0.35) * 0.16;
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      for (var bI = 0; bI < 3; bI++) {
+        ctx.globalAlpha = lit;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(bx, by, w * (0.30 - bI * 0.09), h);
+        ctx.clip();
+        ctx.drawImage(sp.cv, bx, by, w, h);
+        ctx.restore();
+      }
+      ctx.restore();
+    }
 
     if (car.status === 'sold') pill(cx, cy - TILE * 0.95, '#ff4d5e', '#fff', 'SOLD', -0.06);
     else {
@@ -397,6 +421,119 @@ var Scene = window.Scene = {};
   }
 
   /* ---------- ground ---------- */
+  /* ---------- art direction ----------
+     One palette per month drives everything: the sky behind the diorama, the
+     grass, the tarmac, the colour and strength of the sun, and the weather.
+     The forecourt should look like the month it is — grey and wet through
+     January, bleached in high summer, golden in September — because the
+     game's whole rhythm is seasonal and the scene never showed it.
+
+     Each entry:
+       sky   [top, bottom]  the backdrop the diorama sits in
+       sun   colour of the key light, and str its strength 0-1
+       amb   ambient fill from the sky, tints the shadow side
+       grass [top, bottom]
+       haze  how much distance washes toward the sky colour
+       wet   0-1, how likely the ground is to be wet this month */
+  var MOOD = {
+    Jan: { sky: ['#2c3a55', '#55647f'], sun: '#cfe0f5', str: 0.22, amb: '#8fa8cc', grass: ['#4a6a4c', '#3b563e'], haze: 0.34, wet: 0.75 },
+    Feb: { sky: ['#31405c', '#5f7396'], sun: '#dbe7f7', str: 0.28, amb: '#93accf', grass: ['#4e7150', '#3d5b41'], haze: 0.30, wet: 0.65 },
+    Mar: { sky: ['#3a5378', '#7d9ac0'], sun: '#f4ecd6', str: 0.42, amb: '#9dbadd', grass: ['#568a4a', '#42663f'], haze: 0.24, wet: 0.45 },
+    Apr: { sky: ['#41628f', '#93b4d8'], sun: '#fff2d2', str: 0.55, amb: '#a8c7e6', grass: ['#5c9450', '#457043'], haze: 0.20, wet: 0.38 },
+    May: { sky: ['#4472a5', '#a6c8e6'], sun: '#fff4cf', str: 0.66, amb: '#b2d0ec', grass: ['#63a054', '#4a7a46'], haze: 0.16, wet: 0.28 },
+    Jun: { sky: ['#4a7cb4', '#b4d4ef'], sun: '#fff6c8', str: 0.76, amb: '#bcd8f2', grass: ['#68a856', '#4e8048'], haze: 0.14, wet: 0.22 },
+    Jul: { sky: ['#4e83bd', '#c0dcf3'], sun: '#fff8c2', str: 0.84, amb: '#c4def5', grass: ['#6fae57', '#54864a'], haze: 0.12, wet: 0.18 },
+    Aug: { sky: ['#5386bd', '#c6dff4'], sun: '#fff5bd', str: 0.80, amb: '#c6e0f5', grass: ['#74ad5c', '#59854e'], haze: 0.13, wet: 0.20 },
+    Sep: { sky: ['#4a6f9e', '#b6cbe2'], sun: '#ffe6a8', str: 0.68, amb: '#b4cbe4', grass: ['#6d9c52', '#547a45'], haze: 0.18, wet: 0.32 },
+    Oct: { sky: ['#3f5c85', '#8fa6c4'], sun: '#ffd894', str: 0.50, amb: '#a2b8d4', grass: ['#67894a', '#4e6a3f'], haze: 0.24, wet: 0.52 },
+    Nov: { sky: ['#344a6c', '#6d81a0'], sun: '#e8d7b4', str: 0.32, amb: '#93a7c4', grass: ['#5a7444', '#455c3a'], haze: 0.30, wet: 0.70 },
+    Dec: { sky: ['#2a3854', '#51607c'], sun: '#cddcf0', str: 0.20, amb: '#8ca5c8', grass: ['#4a6647', '#3a5039'], haze: 0.36, wet: 0.78 }
+  };
+  function mood() {
+    var g = G();
+    var s = FE.SEASON[(g.week - 1) % 52];
+    return MOOD[s.mo] || MOOD.Jun;
+  }
+  /* Weather is stable within a game week — rolled from the week number so it
+     does not flicker frame to frame, and so a wet week stays wet. */
+  function weather() {
+    var g = G(), m = mood();
+    var r = lcg(g.week * 977 + 13);
+    r();
+    var roll = r();
+    var wet = roll < m.wet;
+    var heavy = wet && r() < 0.35;
+    return { wet: wet, heavy: heavy, sun: !wet && r() < 0.55 };
+  }
+
+  /* The sky the whole diorama sits in. Without it the scene floated in the
+     app background and read as a UI element rather than a place. */
+  /* The sky only changes when the month, the weather or the canvas size does,
+     so it is baked once and blitted. Five radial gradients per frame is fine on
+     a laptop and not fine on a mid-range phone. */
+  var skyCache = null, skyKey = '';
+  function drawSky() {
+    var g = G(), m = mood(), wx = weather();
+    var key = FE.SEASON[(g.week - 1) % 52].mo + '|' + (wx.sun ? 1 : 0) + '|' + W + 'x' + H + '|' + dpr;
+    if (!skyCache || skyKey !== key) {
+      skyCache = document.createElement('canvas');
+      skyCache.width = Math.max(1, Math.round(W * dpr));
+      skyCache.height = Math.max(1, Math.round(H * dpr));
+      var sc = skyCache.getContext('2d');
+      sc.scale(dpr, dpr);
+      paintSky(sc, m, wx);
+      skyKey = key;
+    }
+    ctx.drawImage(skyCache, 0, 0, W, H);
+  }
+  function paintSky(ctx, m, wx) {
+    var sk = ctx.createLinearGradient(0, 0, 0, H);
+    sk.addColorStop(0, m.sky[0]);
+    sk.addColorStop(1, m.sky[1]);
+    ctx.fillStyle = sk;
+    ctx.fillRect(0, 0, W, H);
+    // soft cloud banding — a flat gradient read as empty
+    var cr = lcg(7);
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    for (var ci = 0; ci < 5; ci++) {
+      var cy0 = H * (0.04 + cr() * 0.34);
+      var cw = W * (0.5 + cr() * 0.7), chh = H * (0.03 + cr() * 0.05);
+      var cg = ctx.createRadialGradient(W * cr(), cy0, 0, W * cr(), cy0, cw);
+      cg.addColorStop(0, shA('#ffffff', 0, 0.10));
+      cg.addColorStop(1, shA('#ffffff', 0, 0));
+      ctx.fillStyle = cg;
+      ctx.beginPath(); ctx.ellipse(W * (0.15 + cr() * 0.7), cy0, cw * 0.5, chh, 0, 0, 6.283); ctx.fill();
+    }
+    ctx.restore();
+    // a low sun disc on a clear day, sitting behind the diorama
+    if (wx.sun) {
+      var sunG = ctx.createRadialGradient(W * 0.19, H * 0.13, 0, W * 0.19, H * 0.13, W * 0.34);
+      sunG.addColorStop(0, shA(m.sun, 40, 0.55));
+      sunG.addColorStop(0.4, shA(m.sun, 0, 0.16));
+      sunG.addColorStop(1, shA(m.sun, 0, 0));
+      ctx.fillStyle = sunG; ctx.fillRect(0, 0, W, H);
+    }
+  }
+
+  /* A soft contact shadow. The single biggest thing missing: every car, tree
+     and person floated a few pixels above the tarmac with nothing tying it
+     down. Drawn as a squashed ellipse offset away from the sun. */
+  function contactShadow(cx, cy, rx, ry, alpha) {
+    var m = mood();
+    var a = (alpha == null ? 0.34 : alpha) * (0.45 + m.str * 0.75);
+    ctx.save();
+    var gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(rx, ry));
+    gr.addColorStop(0, 'rgba(8,14,26,' + a.toFixed(3) + ')');
+    gr.addColorStop(0.6, 'rgba(8,14,26,' + (a * 0.5).toFixed(3) + ')');
+    gr.addColorStop(1, 'rgba(8,14,26,0)');
+    ctx.fillStyle = gr;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, 6.283);
+    ctx.fill();
+    ctx.restore();
+  }
+
   function drawGround() {
     var g = G(); var d = gridDims();
     var maxWX = (d.cols - 1) * d.gapX, maxWY = (d.rows - 1) * d.gapY;
@@ -405,8 +542,9 @@ var Scene = window.Scene = {};
     // grass world
     var gA = iso(-pad - 1.3, -1.9), gB = iso(maxWX + pad + 1.3, -1.9),
         gC = iso(maxWX + pad + 1.3, maxWY + pad + 1.15), gD = iso(-pad - 1.3, maxWY + pad + 1.15);
+    var m = mood();
     var grassGrad = ctx.createLinearGradient(0, gA.y, 0, gC.y);
-    grassGrad.addColorStop(0, '#57904e'); grassGrad.addColorStop(1, '#3f6f3f');
+    grassGrad.addColorStop(0, m.grass[0]); grassGrad.addColorStop(1, m.grass[1]);
     ctx.fillStyle = grassGrad;
     poly(ctx, [gA, gB, gC, gD]); ctx.fill();
     // grass mottling — clipped to the grass diamond so it never spills out
@@ -428,9 +566,11 @@ var Scene = window.Scene = {};
 
     var a = iso(-pad, -0.7), b = iso(maxWX + pad, -0.7),
         c2 = iso(maxWX + pad, maxWY + pad + 0.28), d2 = iso(-pad, maxWY + pad + 0.28);
+    var wx = weather();
     var tGrad = ctx.createLinearGradient(0, a.y, 0, c2.y);
-    if (g.site === 0) { tGrad.addColorStop(0, '#6e6553'); tGrad.addColorStop(1, '#57503f'); }
-    else { tGrad.addColorStop(0, '#4b5568'); tGrad.addColorStop(1, '#3a4254'); }
+    var wetAmt = wx.wet ? (wx.heavy ? -26 : -16) : 0;   // rain darkens the surface
+    if (g.site === 0) { tGrad.addColorStop(0, sh('#6e6553', wetAmt)); tGrad.addColorStop(1, sh('#57503f', wetAmt)); }
+    else { tGrad.addColorStop(0, sh('#4b5568', wetAmt)); tGrad.addColorStop(1, sh('#3a4254', wetAmt)); }
     ctx.fillStyle = tGrad;
     poly(ctx, [a, b, c2, d2]); ctx.fill();
 
@@ -866,6 +1006,7 @@ var Scene = window.Scene = {};
     var g = G(); if (!g || !ctx) return;
     ctx.clearRect(0, 0, W, H);
 
+    drawSky();
     drawGround();
     drawBuilding();
 
@@ -914,36 +1055,71 @@ var Scene = window.Scene = {};
     // the fascia sign sits above everything (trees never cover the brand)
     drawSign();
 
-    // atmosphere: seasonal tint, warm sun from upper-left, vignette
-    var s = FE.SEASON[(g.week - 1) % 52];
-    var winter = s.mo === 'Dec' || s.mo === 'Jan' || s.mo === 'Feb';
-    ctx.fillStyle = winter ? 'rgba(140,165,205,0.07)' : 'rgba(255,238,190,0.05)';
-    ctx.fillRect(0, 0, W, H);
-    // warm key from the upper left, then a cool fill from the opposite corner so
-    // the diorama has a light direction instead of sitting flat
+    /* ---------- atmosphere ----------
+       Driven by the month's mood rather than a winter/not-winter flag, so the
+       light, the haze and the weather all move together through the year. */
+    var m = mood(), wx = weather();
+
+    // distance haze: the far rows wash toward the sky, which reads as depth
+    var haze = ctx.createLinearGradient(0, 0, 0, H * 0.72);
+    haze.addColorStop(0, shA(m.sky[1], 0, m.haze));
+    haze.addColorStop(1, shA(m.sky[1], 0, 0));
+    ctx.fillStyle = haze; ctx.fillRect(0, 0, W, H * 0.72);
+
+    // key light from the upper left, coloured by the season
     var sun = ctx.createRadialGradient(W * 0.16, -H * 0.05, 0, W * 0.16, -H * 0.05, W * 1.0);
-    sun.addColorStop(0, winter ? 'rgba(255,244,214,0.13)' : 'rgba(255,232,166,0.17)');
-    sun.addColorStop(0.55, 'rgba(255,236,180,0.05)');
-    sun.addColorStop(1, 'rgba(255,236,180,0)');
+    sun.addColorStop(0, shA(m.sun, 0, 0.06 + m.str * 0.20));
+    sun.addColorStop(0.55, shA(m.sun, 0, 0.02 + m.str * 0.05));
+    sun.addColorStop(1, shA(m.sun, 0, 0));
     ctx.fillStyle = sun; ctx.fillRect(0, 0, W, H);
+
+    // ambient fill from the opposite corner, tinted by the sky
     var fill = ctx.createRadialGradient(W * 0.92, H * 1.02, 0, W * 0.92, H * 1.02, W * 0.85);
-    fill.addColorStop(0, 'rgba(78,116,190,0.16)');
-    fill.addColorStop(1, 'rgba(78,116,190,0)');
+    fill.addColorStop(0, shA(m.amb, 0, 0.18));
+    fill.addColorStop(1, shA(m.amb, 0, 0));
     ctx.fillStyle = fill; ctx.fillRect(0, 0, W, H);
-    // gentle bloom lifts the lit faces without washing the darks
+
+    // rain
+    if (wx.wet) drawRain(wx.heavy);
+
+    // bloom, weaker on a dull day
     ctx.save();
     ctx.globalCompositeOperation = 'overlay';
     var bloom = ctx.createLinearGradient(0, 0, 0, H);
-    bloom.addColorStop(0, 'rgba(255,246,214,0.16)');
-    bloom.addColorStop(0.6, 'rgba(255,246,214,0.02)');
+    bloom.addColorStop(0, shA(m.sun, 0, 0.05 + m.str * 0.07));
+    bloom.addColorStop(0.6, shA(m.sun, 0, 0.02));
     bloom.addColorStop(1, 'rgba(0,0,0,0.08)');
     ctx.fillStyle = bloom; ctx.fillRect(0, 0, W, H);
     ctx.restore();
+
     var vig = ctx.createRadialGradient(W / 2, H * 0.45, W * 0.28, W / 2, H * 0.45, W * 0.88);
     vig.addColorStop(0, 'rgba(0,0,0,0)');
     vig.addColorStop(0.7, 'rgba(5,8,18,0.14)');
     vig.addColorStop(1, 'rgba(4,6,14,0.44)');
     ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
+  }
+
+  /* Rain, drawn as short slanted streaks seeded per-frame. Cheap enough for a
+     phone: no particle state, no allocation, just a seeded scatter. */
+  var rainT = 0;
+  function drawRain(heavy) {
+    rainT = (rainT + 1) % 100000;
+    var n = heavy ? 150 : 78;
+    var r = lcg(1);
+    ctx.save();
+    ctx.strokeStyle = heavy ? 'rgba(198,222,246,0.42)' : 'rgba(198,222,246,0.28)';
+    ctx.lineWidth = heavy ? 1.4 : 1;
+    ctx.beginPath();
+    for (var i = 0; i < n; i++) {
+      var sx = r() * (W + 120) - 60;
+      var speed = 9 + r() * 7;
+      var sy = (r() * H + rainT * speed) % (H + 60) - 30;
+      var len = heavy ? 16 + r() * 12 : 10 + r() * 8;
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(sx - len * 0.34, sy + len);
+    }
+    ctx.stroke();
+    ctx.restore();
   }
 
   function loop() {
