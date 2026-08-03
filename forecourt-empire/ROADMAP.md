@@ -790,3 +790,31 @@ Two things worth recording:
   on a laptop and would not have been fine on a mid-range phone.
 
 Still to come (pass 2): normal-mapped per-pixel lighting.
+
+### Buildings — placement and detail (2026-08-03)
+
+The departments were standing on the parking bays with cars drawn through
+them. Cause: the placement stepped `wx` and `wy` up together, which holds the
+screen column but walks the building **diagonally into the grid** — the valet
+bay ended up at `wx 0.92`, inside a lot that starts at 0.
+
+They now line the **rear edges**, on the grass, behind the parking. Two
+attempts before that landed:
+
+1. A left verge fixed the overlap but needed three tiles of extra width, which
+   shrank the whole diorama and left a band of dead sky.
+2. All three along the back-right edge put the third off-canvas — the lot's
+   right corner already reaches the frame edge.
+
+Final: two on the back-right, one on the back-left flank, with a clamp that
+accounts for each building's own half-width (clamping the centre alone still
+sliced the sign off the valet bay on the smallest site).
+
+**Grid columns now scale with the site.** At a flat 6, a 70-pitch showroom
+came out 6 × 12 — a long thin corridor that wasted the frame and crowded the
+back edge. Now 5 / 6 / 8 / 9 by size.
+
+**Detail:** the lock-ups gained a parapet lip, a fascia sign board naming them,
+and a downpipe, and both they and the workshop are bigger and grounded with
+the shared contact shadow. A flat-topped box with a coloured door read as a
+shed; a lipped roof and a named board reads as a unit.

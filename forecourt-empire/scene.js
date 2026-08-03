@@ -68,7 +68,11 @@ var Scene = window.Scene = {};
   function gridDims() {
     var g = G(); var s = FE.SITES[g.site];
     var total = s.ext + s.int + g.extraSlots;
-    var cols = total <= 24 ? 5 : 6;
+    /* Column count scales with the site. At a flat 6 a 70-pitch showroom came
+       out 6 x 12 — a long thin corridor that wasted the frame and crowded the
+       back edge where the departments stand. Squarer lots read better and give
+       the buildings somewhere to go. */
+    var cols = total <= 24 ? 5 : total <= 45 ? 6 : total <= 72 ? 8 : 9;
     return { total: total, cols: cols, rows: Math.ceil(total / cols), gapX: 1.12, gapY: 1.5, internal: s.int };
   }
 
@@ -540,8 +544,9 @@ var Scene = window.Scene = {};
     var pad = 0.85;
 
     // grass world
-    var gA = iso(-pad - 1.3, -1.9), gB = iso(maxWX + pad + 1.3, -1.9),
-        gC = iso(maxWX + pad + 1.3, maxWY + pad + 1.15), gD = iso(-pad - 1.3, maxWY + pad + 1.15);
+    // deeper at the back than the front: the departments stand on it
+    var gA = iso(-pad - 1.3, -2.6), gB = iso(maxWX + pad + 1.9, -2.6),
+        gC = iso(maxWX + pad + 1.9, maxWY + pad + 1.15), gD = iso(-pad - 1.3, maxWY + pad + 1.15);
     var m = mood();
     var grassGrad = ctx.createLinearGradient(0, gA.y, 0, gC.y);
     grassGrad.addColorStop(0, m.grass[0]); grassGrad.addColorStop(1, m.grass[1]);
@@ -654,9 +659,8 @@ var Scene = window.Scene = {};
   // smart repair / wash-and-valet lock-ups — smaller units beside the workshop,
   // each with its own door colour and a prop so you can tell them apart
   function drawSmallBay(cx, cy, id, building) {
-    var hw = 0.38, hl = 0.3, hgt = 0.44;
-    ctx.fillStyle = 'rgba(8,12,22,0.2)';
-    ctx.beginPath(); ctx.ellipse(cx + TILE * 0.16, cy + TILE * 0.16, hw * TILE * 1.3, TILE * 0.26, 0, 0, 6.283); ctx.fill();
+    var hw = 0.46, hl = 0.36, hgt = 0.52;
+    contactShadow(cx + TILE * 0.18, cy + TILE * 0.20, hw * TILE * 1.5, TILE * 0.30, 0.30);
 
     if (building) {
       var b0 = isoBoxAt(cx, cy, hw, hl, hgt, 'rgba(150,160,175,0.26)', 'rgba(120,130,145,0.26)', 'rgba(90,100,115,0.28)');
@@ -698,6 +702,42 @@ var Scene = window.Scene = {};
       ctx.lineTo(dx1, ry + (dx1 - fTL.x) * skew);
       ctx.stroke();
     }
+    /* Parapet, fascia sign and a downpipe. A flat-topped box with a coloured
+       door read as a shed; a lipped roof and a named board reads as a unit. */
+    var lip = TILE * 0.075;
+    ctx.fillStyle = sh(wall, 34);
+    poly(ctx, [
+      { x: box.tD.x, y: box.tD.y - lip }, { x: box.tC.x, y: box.tC.y - lip },
+      { x: box.tC.x, y: box.tC.y }, { x: box.tD.x, y: box.tD.y }
+    ]); ctx.fill();
+    ctx.fillStyle = sh(wall, 10);
+    poly(ctx, [
+      { x: box.tB.x, y: box.tB.y - lip }, { x: box.tC.x, y: box.tC.y - lip },
+      { x: box.tC.x, y: box.tC.y }, { x: box.tB.x, y: box.tB.y }
+    ]); ctx.fill();
+
+    // fascia board over the door
+    var sgW = (fTR.x - fTL.x) * 0.66, sgH = TILE * 0.17;
+    var sgX = fTL.x + (fTR.x - fTL.x) * 0.17;
+    var sgY = fTL.y + (fTR.y - fTL.y) * 0.17 + TILE * 0.03;
+    ctx.save();
+    ctx.translate(sgX, sgY);
+    ctx.transform(1, skew, 0, 1, 0, 0);
+    ctx.fillStyle = id === 'valet' ? '#12525f' : '#3a2a5c';
+    rr(ctx, 0, 0, sgW, sgH, sgH * 0.32); ctx.fill();
+    ctx.fillStyle = id === 'valet' ? '#7fe3f2' : '#c9b0ff';
+    ctx.font = '700 ' + Math.max(5, Math.round(TILE * 0.20)) + 'px -apple-system, Segoe UI, Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(id === 'valet' ? 'VALET' : 'SMART', sgW / 2, sgH / 2 + 0.5);
+    ctx.restore();
+
+    // downpipe on the right return
+    ctx.strokeStyle = shA(wall, -46, 0.8); ctx.lineWidth = Math.max(1, TILE * 0.05);
+    ctx.beginPath();
+    ctx.moveTo(box.tC.x - TILE * 0.05, box.tC.y);
+    ctx.lineTo(box.bC.x - TILE * 0.05, box.bC.y);
+    ctx.stroke();
+
     // a prop out front: suds bucket for the valet, paint tin for smart repair
     var px = box.bB.x + TILE * 0.16, py = box.bB.y - TILE * 0.04;
     ctx.fillStyle = id === 'valet' ? '#3fc9e0' : '#c46b4a';
@@ -710,9 +750,8 @@ var Scene = window.Scene = {};
   }
 
   function drawServiceDept(cx, cy, building) {
-    var hw = 0.6, hl = 0.42, hgt = 0.66;
-    ctx.fillStyle = 'rgba(8,12,22,0.22)';
-    ctx.beginPath(); ctx.ellipse(cx + TILE * 0.28, cy + TILE * 0.26, hw * TILE * 1.25, TILE * 0.4, 0, 0, 6.283); ctx.fill();
+    var hw = 0.74, hl = 0.5, hgt = 0.8;
+    contactShadow(cx + TILE * 0.20, cy + TILE * 0.24, TILE * 1.05, TILE * 0.34, 0.32);
 
     if (building) {
       // scaffold shell + a little crane while the builders are in
@@ -1022,24 +1061,47 @@ var Scene = window.Scene = {};
     });
     figures.forEach(function (f) { drawables.push({ depth: f.wx + f.wy + 0.18, kind: 'fig', f: f }); });
     props.forEach(function (p) { drawables.push({ depth: p.wx + p.wy, kind: 'prop', p: p }); });
-    // departments sit on the front-left grass, stacked down the edge as they're
-    // built (service is the big workshop; smart repair and valet are lock-ups)
+    /* Departments line the back-left edge of the site, on the grass, never over
+       the tarmac. The old placement stepped wx and wy up together — which holds
+       the screen column but walks the building diagonally INTO the grid, so the
+       valet bay ended up at wx 0.92, standing on the parking bays with cars
+       drawn through it. Holding wx outside the lot and stepping only wy keeps
+       them on the verge and lets them recede naturally down the flank. */
+    /* Departments line the BACK-RIGHT edge of the site, on the grass behind the
+       parking, running up-right from the main building into what was otherwise
+       empty sky. Two earlier attempts are worth remembering: the original
+       stepped wx and wy up together, which holds the screen column but walks
+       the building diagonally INTO the grid — the valet bay ended up at wx 0.92
+       standing on the parking bays with cars drawn through it. Moving them to a
+       left verge fixed the overlap but needed three tiles of extra width, which
+       shrank the whole diorama. The back edge costs nothing: the room was
+       already there, unused. */
     if (g.dept) {
-      var d = gridDims();
-      var baseY = (d.rows - 1) * d.gapY * 0.66;
-      if (g.dept.service) {
-        var swx = -1.38, swy = baseY;
-        var sp = iso(swx, swy);
-        drawables.push({ depth: swx + swy, kind: 'servicedept', cx: sp.x, cy: sp.y, building: g.week < g.dept.service });
-      }
-      [{ id: 'smart' }, { id: 'valet' }].forEach(function (bay, i) {
-        if (!g.dept[bay.id]) return;
-        // stepped toward the viewer from the workshop: raising wx and wy by the
-        // same amount keeps the screen column and just moves it down the frame
-        var d = 1.15 + i * 1.15;
-        var bwx = -1.38 + d, bwy = baseY + d;
-        var bp = iso(bwx, bwy);
-        drawables.push({ depth: bwx + bwy, kind: 'smallbay', cx: bp.x, cy: bp.y, id: bay.id, building: g.week < g.dept[bay.id] });
+      var EDGE_Y = -1.72;                 // behind the lot, which starts at -0.7
+      var built = [];
+      if (g.dept.service) built.push({ kind: 'servicedept', id: 'service', wk: g.dept.service });
+      if (g.dept.smart) built.push({ kind: 'smallbay', id: 'smart', wk: g.dept.smart });
+      if (g.dept.valet) built.push({ kind: 'smallbay', id: 'valet', wk: g.dept.valet });
+      /* Both rear edges, not one. The lot's right corner already reaches the
+         frame edge, so the back-right verge only has room for two units before
+         the third walks off canvas; the third goes on the back-left flank
+         instead, which balances the composition anyway. */
+      var SPOTS = [
+        { wx: 0.75, wy: EDGE_Y },        // back-right, just clear of the building
+        { wx: 1.95, wy: EDGE_Y },        // back-right, further along
+        { wx: -1.72, wy: 1.35 }          // back-left flank
+      ];
+      built.forEach(function (bd, i) {
+        var sp = SPOTS[i] || SPOTS[SPOTS.length - 1];
+        var pt = iso(sp.wx, sp.wy);
+        /* Never let a unit leave the frame, whatever the lot shape works out to.
+           The margin has to cover the building's own half-width, not just its
+           centre point — clamping the centre alone still sliced the sign off
+           the valet bay on the smallest site. */
+        var margin = TILE * (bd.kind === 'servicedept' ? 2.0 : 1.6);
+        pt.x = Math.max(margin, Math.min(W - margin, pt.x));
+        drawables.push({ depth: sp.wx + sp.wy, kind: bd.kind, cx: pt.x, cy: pt.y,
+                         id: bd.id, building: g.week < bd.wk });
       });
     }
     drawables.sort(function (x, y) { return x.depth - y.depth; });

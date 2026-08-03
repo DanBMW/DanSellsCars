@@ -25,7 +25,7 @@
 /* ONE place to bump. ASSET_V must match the ?v= on the script and stylesheet
    tags in index.html, or the offline copy will be of URLs the page never asks
    for. */
-var ASSET_V = '2026-08-03-art1';
+var ASSET_V = '2026-08-03-bld1';
 var VERSION = 'fe-' + ASSET_V;
 var CACHE = 'forecourt-empire-' + VERSION;
 var V = '?v=' + ASSET_V;
