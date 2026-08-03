@@ -1268,6 +1268,45 @@ function execWeekCap(st) {
   return draw;
 }
 
+/* Who walks onto the forecourt this week, and why. Every term here was already
+   in the demand calculation — this names them so the player can see that a
+   bigger site, a bigger team and a bigger advertising spend all pull in the
+   same direction, and by how much. */
+FE.footfall = function () {
+  if (!G) return { total: 0, parts: [] };
+  var base = brand().footfall;
+  var parts = [];
+  var m = 1;
+
+  var ad = adFactor();
+  if (ad !== 1) { parts.push({ k: 'ads', name: 'Advertising', mult: ad }); m *= ad; }
+
+  /* Counts anyone on the books who has not left — deliberately the same set the
+     capacity maths uses, so this regrouping changes no numbers. Note that
+     someone away on a course still counts toward footfall; arguably they should
+     not, but that is a balance decision, not a refactor. */
+  var active = G.staff.filter(function (st) { return !(st.leaving && st.leaving <= G.week); }).length;
+  var staffM = 1 + FE.STAFF_DEMAND * crowdEff(active);
+  if (active) { parts.push({ k: 'staff', name: active + ' on the floor prospecting', mult: staffM }); m *= staffM; }
+
+  var baseSlots = Math.max(1, site().ext + site().int);
+  var extra = Math.max(0, totalSlots() - baseSlots);
+  var landM = 1;
+  if (extra > 0 && G.week > 4) {
+    var stk = inStock().filter(function (c) { return !c.isNew; }).length;
+    var fill = clamp(stk / Math.max(1, totalSlots() * 0.6), 0, 1);
+    landM = 1 + FE.LAND_DRAW * (extra / baseSlots) * fill;
+    parts.push({ k: 'land', name: 'Forecourt size', mult: landM,
+                 note: fill < 0.95 ? 'more if you fill it' : null });
+    m *= landM;
+  }
+
+  if (staffHasTrait('magnet')) { parts.push({ k: 'magnet', name: 'A name that draws a crowd', mult: 1.04 }); m *= 1.04; }
+  if (activeShock('scrappage')) { parts.push({ k: 'shock', name: 'Scrappage scheme', mult: 1.3 }); m *= 1.3; }
+  if (activeShock('summerSale')) { parts.push({ k: 'shock', name: 'Summer sale', mult: 1.5 }); m *= 1.5; }
+
+  return { base: base, total: base * m, mult: m, parts: parts };
+};
 function crowdEff(n) {
   if (n <= 0) return 0;
   var sum = 0, i;
@@ -1322,33 +1361,23 @@ FE.enterShowroom = function () {
   var conv = FE.BASE_CONV * presConvFactor();
   if (deptLive('valet')) conv *= (1 + FE.VALET_CONV_BOOST);   // a gleaming forecourt closes better
   if (activeShock('rateRise')) conv *= 0.85;
-  var foot = brand().footfall * (activeShock('scrappage') ? 1.3 : 1);
-  if (activeShock('summerSale')) foot *= 1.5;   // the sale pulls crowds through the summer lull
-  if (staffHasTrait('magnet')) foot *= 1.04;   // Tomi brings the crowd in
   var newShare = 0;
   if (G.franchise) {
     var newCount = inStock().filter(function (c) { return c.isNew; }).length;
     newShare = Math.min(1, newCount / Math.max(totalSlots(), 1));
   }
-  // the floor generates its own business as well as serving what walks in
-  var headEff = crowdEff(n);
-  var demand = foot * s.d * starM * adM * conv * (1 - FE.FRANCHISE.cannibal * newShare)
-    * (1 + FE.STAFF_DEMAND * headEff);
+  /* Everything that brings people onto the forecourt, in one place. This used
+     to be scattered through the demand line — advertising and the team's
+     prospecting were already in there, just invisible and impossible to point
+     at. Regrouped, not rebalanced: the product is identical. */
+  var fb = FE.footfall();
+  var foot = fb.total;
+  var demand = foot * s.d * starM * conv * (1 - FE.FRANCHISE.cannibal * newShare);
   var stk = inStock().filter(function (c) { return !c.isNew; });
   // a thin forecourt converts badly — walk-ins want a choice. During the weeks
   // 1-2 hope curve the starter forecourt gets a gentler penalty so it feels alive.
   var thinDenom = brand().stockNeeded * (G.week <= 2 ? 0.32 : 0.6);
   demand *= clamp(stk.length / thinDenom, 0.1, 1);
-  /* A bigger forecourt is seen by more people and offers more choice — but only
-     the ground you have actually bought counts, and only once there are cars
-     standing on it. A player who never expands gets landM === 1 and the
-     original numbers exactly. */
-  var baseSlots = Math.max(1, site().ext + site().int);
-  var extraSlots = Math.max(0, totalSlots() - baseSlots);
-  if (extraSlots > 0 && G.week > 4) {
-    var fill = clamp(stk.length / Math.max(1, totalSlots() * 0.6), 0, 1);
-    demand *= 1 + FE.LAND_DRAW * (extraSlots / baseSlots) * fill;
-  }
   var stockCap = Math.ceil(stk.length * 0.4);
 
   var unitsF = Math.min(demand, capTotal, stockCap);

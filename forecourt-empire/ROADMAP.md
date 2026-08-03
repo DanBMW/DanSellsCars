@@ -723,3 +723,28 @@ five black Fokus Estates and it still says five black Fokus Estates
 afterwards. It also prices itself before you commit: list, your cost at 92%,
 PDI, margin at list, and the total, with the buttons disabled when the total
 is beyond your spending power.
+
+### Footfall, made visible — 2026-07-31
+
+Dan asked for land, staff and marketing to increase footfall. Two of the three
+already did — advertising (`adFactor`) and the team's prospecting
+(`STAFF_DEMAND × crowdEff`) were both in the demand line already. They were
+just scattered through one long expression and **invisible**, so a player
+could hire the floor and turn the marketing up without ever seeing that any of
+it worked.
+
+`FE.footfall()` now gathers every term that brings people onto the forecourt —
+brand pull, advertising, staff prospecting, forecourt size, the magnet trait,
+and seasonal shocks — and returns them named, with the multiplier each
+contributes. The Site tab carries a card showing the total and the breakdown;
+tapping it explains the three levers the player actually controls.
+
+**Regrouped, not rebalanced**, and proven so: `neutral-test.js` rebuilds the
+old expression from its parts across 40 states and compares — 0.000000%
+difference. (It flagged a 4% gap on the first run, which turned out to be the
+reference implementation forgetting the magnet trait, not the code.)
+
+One thing left deliberately alone: an exec away on a training course still
+counts toward footfall. Arguably they should not — they are not on the floor
+prospecting — but that is a balance decision rather than part of a refactor,
+so it stays as it was.

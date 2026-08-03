@@ -669,6 +669,7 @@ function renderSite() {
       '<div id="sceneSale">' + saleRibbon + '</div>' +
       '<div class="scene-caption"><span>' + esc(s.name) + '</span><span id="sceneCount">' + countTxt + '</span></div></div>' +
       '<div class="building-card" onclick="UI.computer()"><div><b>' + esc(s.name) + '</b><div class="kv">Tap for the office computer</div></div><div style="font-size:1.4rem">🏢</div></div>' +
+      '<div id="ffHost">' + footfallCard() + '</div>' +
       '<div id="site2card"><b>Site 2 — locked</b> · unlocks at £2M net worth' +
       '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
       '<div class="small" id="site2fig">' + M(nw) + ' / ' + M(FE.SITE2_TARGET) + '</div>' +
@@ -682,6 +683,7 @@ function renderSite() {
     var ss = $('sceneSale'); if (ss) ss.innerHTML = saleRibbon;
     var sf = $('site2fig'); if (sf) sf.textContent = M(nw) + ' / ' + M(FE.SITE2_TARGET);
     var sh = $('site2hint'); if (sh) sh.innerHTML = site2Hint();
+    var ff = $('ffHost'); if (ff) ff.innerHTML = footfallCard();   // live, not baked in once
     var bar = document.querySelector('#site2card .bar i'); if (bar) bar.style.width = pct + '%';
     Scene.refresh();
   }
@@ -1077,6 +1079,52 @@ UI.prereg = function (id, a) {
   UI.closeModal();
   if (r && r.done) toast(r.n + ' car(s) pre-registered. They’re used stock now.');
   renderAll();
+};
+
+/* Land, staff and advertising all pull the same lever, and until now none of
+   it was visible — a player could buy the ground, hire the floor and turn the
+   marketing up without ever seeing that any of it worked. */
+function footfallCard() {
+  var f = FE.footfall ? FE.footfall() : null;
+  if (!f) return '';
+  var g = G();
+  var pct = Math.round((f.mult - 1) * 100);
+  var h = '<div class="card ff-card" onclick="UI.footfallInfo()">' +
+    '<div class="row"><b>👣 Footfall</b>' +
+    '<span class="ff-tot ' + (pct > 0 ? 'good' : pct < 0 ? 'warn' : 'muted') + '">' +
+      (pct > 0 ? '+' + pct + '%' : pct < 0 ? pct + '%' : 'baseline') + '</span></div>';
+  if (!f.parts.length) {
+    h += '<div class="kv muted small">Nothing lifting it yet. Staff on the floor, advertising and a bigger forecourt all bring people in.</div>';
+  } else {
+    h += '<div class="ff-bars">' + f.parts.map(function (p) {
+      var d = Math.round((p.mult - 1) * 100);
+      return '<div class="ff-row"><span>' + esc(p.name) + '</span>' +
+        '<b class="' + (d >= 0 ? 'good' : 'warn') + '">' + (d >= 0 ? '+' : '') + d + '%</b></div>';
+    }).join('') + '</div>';
+  }
+  return h + '<div class="kv muted small ff-tap">Tap for what moves it</div></div>';
+}
+UI.footfallInfo = function () {
+  var f = FE.footfall(), g = G();
+  var ad = FE.AD_TIERS[g.adTier];
+  var maxS = FE.maxStaff(), have = g.staff.length;
+  var baseSlots = FE.SITES[g.site].ext + FE.SITES[g.site].int;
+  var extra = Math.max(0, (baseSlots + g.extraSlots) - baseSlots);
+  UI.modal('<h3>👣 Footfall — who walks on</h3>' +
+    '<p class="kv muted small">How many people come onto the forecourt each week. Everything below multiplies it. What they then buy depends on your stock, your prices and your stars.</p>' +
+    '<div class="card"><div class="row kv"><span>Brand pull (' + esc(g.brand) + ')</span><b>' + Math.round(f.base) + '</b></div>' +
+    f.parts.map(function (p) {
+      return '<div class="row kv"><span>' + esc(p.name) + '</span><b class="' + (p.mult >= 1 ? 'good' : 'warn') + '">×' + p.mult.toFixed(2) + '</b></div>';
+    }).join('') +
+    '<div class="row kv ff-total"><span>This week</span><b class="teal">' + Math.round(f.total) + '</b></div></div>' +
+    '<div class="card"><b>The three levers</b>' +
+    '<div class="row kv"><span>👥 Staff on the floor</span><b>' + have + ' of ' + maxS + '</b></div>' +
+    '<div class="kv muted small">They prospect as well as serve — every extra head brings its own business, with diminishing returns as the floor gets crowded. More land raises the ceiling.</div>' +
+    '<div class="row kv" style="margin-top:8px"><span>📣 Advertising</span><b>' + esc(ad.name) + ' · ' + M(ad.cost) + '/wk</b></div>' +
+    '<div class="kv muted small">Off costs you 14% of your footfall; Push buys 7% above normal. Admin → Advertising.</div>' +
+    '<div class="row kv" style="margin-top:8px"><span>🏢 Forecourt size</span><b>' + (extra ? '+' + extra + ' pitches' : 'base site') + '</b></div>' +
+    '<div class="kv muted small">A bigger site is seen by more people and offers more choice — but only once there are cars standing on it. Property → land.</div></div>' +
+    '<button class="ghost" onclick="UI.closeModal()">Close</button>');
 };
 
 /* ---------- where are you buying from? ----------

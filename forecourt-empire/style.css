@@ -1116,3 +1116,14 @@ b.teal { color: var(--teal); }
 .ord-sw .sw-slow { font-size: .54rem; color: var(--amber); letter-spacing: .4px; text-transform: uppercase; }
 .ord-quote .ord-total { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 7px; }
 .ord-quote .ord-total b { font-size: 1.05rem; }
+
+/* ---------- footfall card ---------- */
+.ff-card { cursor: pointer; }
+.ff-card .row { justify-content: space-between; align-items: baseline; }
+.ff-tot { font-weight: 800; font-size: 1.05rem; }
+.ff-bars { margin-top: 6px; }
+.ff-row { display: flex; justify-content: space-between; gap: 10px; font-size: .8rem; padding: 2px 0; }
+.ff-row span { color: var(--muted); min-width: 0; }
+.ff-row b { flex: 0 0 auto; }
+.ff-tap { margin-top: 6px; opacity: .7; }
+.ff-total { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 7px; }
