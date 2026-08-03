@@ -687,3 +687,39 @@ Reachable from the banner, and from the Stock tab when the pitch is empty —
 which used to say "the auction email is waiting" and now offers the button.
 The chooser also notes that private sellers and part-exchanges come to you,
 since neither is a place you can go.
+
+### Land, staff and demand — 2026-07-31
+
+Land bought pitches and nothing else. Measured over 104 weeks: demand was the
+binding constraint in **97 of them**, not capacity — so the extra cars just
+stood there paying floorplan, and expansion could never pay for itself.
+
+Two changes, both needed:
+
+1. **Land raises the staff ceiling.** `FE.maxStaff()` = site + finished
+   expansions (`land15` +1, `land40` +3). Pending groundworks do not count.
+   A showroom with both goes 5 → 9 execs. Staff drives demand *and* capacity,
+   so this is what turns pitches into sales.
+2. **A bigger forecourt draws more trade** — `FE.LAND_DRAW`, up to +27.5% on
+   a showroom with both parcels, scaled by how full the ground actually is.
+
+The second was nearly a mistake worth recording. The first attempt keyed the
+uplift to stock levels alone, which handed *every* player a 30% demand rise
+whether they had expanded or not and inflated Fjord's year from £141k to
+£231k. It is now keyed to ground you have bought: a player who never expands
+takes the `extraSlots > 0` guard and gets the original numbers exactly, and
+the gain is earned twice — buy the ground, then fill it. Empty land still
+draws nothing.
+
+### Factory order window — 2026-07-31
+
+Rebuilt. It was four bare `<select>`s rebuilt from defaults on every render,
+so placing an order threw you back to the first model in white and you
+re-picked the whole spec to order a second batch.
+
+Now: chips for model, trim and quantity, real colour swatches with the
+slow-selling ones flagged, and the spec **sticky for the session** — order
+five black Fokus Estates and it still says five black Fokus Estates
+afterwards. It also prices itself before you commit: list, your cost at 92%,
+PDI, margin at list, and the total, with the buttons disabled when the total
+is beyond your spending power.

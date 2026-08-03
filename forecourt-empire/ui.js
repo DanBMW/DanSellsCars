@@ -1731,40 +1731,116 @@ UI.salaryUI = function (i) {
   });
 };
 
+/* The order window used to rebuild four bare <select>s from defaults on every
+   render, so placing an order threw you back to the first model in white and
+   you re-picked the lot to order a second batch. The spec is now sticky for
+   the session, and it prices itself before you commit rather than after. */
+var ordSel = null;
+function ordModels() {
+  var g = G(), out = [];
+  FE.MODELS.forEach(function (m, i) { if (m.b === g.brand) out.push(i); });
+  return out;
+}
+function ordInit() {
+  var models = ordModels();
+  if (!ordSel || models.indexOf(ordSel.model) < 0) {
+    ordSel = { model: models[0], trim: 1, colour: 0, qty: 3, express: true };
+  }
+  return ordSel;
+}
+UI.ordSet = function (k, v) {
+  ordInit();
+  ordSel[k] = (k === 'express') ? !!v : +v;
+  Juice.sound('tap');
+  UI.orderWindow();
+};
+/* What one car of the current spec actually costs and is worth, using the same
+   maths the engine uses when the order lands. */
+function ordQuote() {
+  var sel = ordInit();
+  var list = Math.round(FE.MODELS[sel.model].np * FE.TRIMS[sel.trim].cost / 25) * 25;
+  var cost = Math.round(list * FE.FRANCHISE.costPct);
+  var pdi = FE.FRANCHISE.pdi;
+  return {
+    list: list, cost: cost, pdi: pdi,
+    allIn: cost + pdi,
+    margin: list - cost - pdi,
+    total: (cost + pdi) * sel.qty
+  };
+}
 UI.orderWindow = function () {
   var g = G();
-  if (!g.franchise) return;
+  if (!g.franchise) { UI.buyStock(); return; }
+  var sel = ordInit();
   var free = FE.freePitches();
-  var h = '<h3>' + g.brand + ' — manufacturer order window</h3>' +
-    '<p class="kv muted small">Your cost is 92% of list. Factory stock lands next week; a factory order takes 8–14 weeks. New cars fly in March and September and sit like stones the rest of the year — time your orders.</p>' +
-    '<div class="card kv" style="margin:6px 0"><b>' + free + '</b> free pitch' + (free === 1 ? '' : 'es') + ' (cars already on order are reserved).</div>';
-  var models = [];
-  FE.MODELS.forEach(function (m, i) { if (m.b === g.brand) models.push(i); });
-  h += '<select id="ordModel">';
-  models.forEach(function (mi) {
-    h += '<option value="' + mi + '">' + FE.MODELS[mi].m + ' — list ' + M(FE.MODELS[mi].np) + '</option>';
-  });
-  h += '</select><div style="height:8px"></div><select id="ordTrim">';
-  FE.TRIMS.forEach(function (t, i) { h += '<option value="' + i + '"' + (i === 1 ? ' selected' : '') + '>' + t.t + ' trim</option>'; });
-  h += '</select><div style="height:8px"></div><select id="ordColour">';
-  FE.COLOURS.forEach(function (c, i) { h += '<option value="' + i + '">' + c.c + '</option>'; });
-  h += '</select><div style="height:8px"></div>' +
-    '<label class="kv" style="display:block;margin-bottom:4px">How many?</label><select id="ordQty">';
-  [1, 2, 3, 5, 8, 12, 20, 30].forEach(function (q) {
-    if (q <= Math.max(1, free)) h += '<option value="' + q + '"' + (q === 3 ? ' selected' : '') + '>' + q + ' car' + (q === 1 ? '' : 's') + '</option>';
-  });
-  h += '</select>';
-  h += '<div class="btnrow"><button onclick="UI.orderGo(true)">Factory stock — next week</button>' +
-    '<button class="sec" onclick="UI.orderGo(false)">Factory order — 8–14 wks</button></div>';
+  var models = ordModels();
+  var q = ordQuote();
+  var power = FE.spendPower();
+  var afford = Math.max(0, Math.floor(power / Math.max(1, q.allIn)));
+
+  var h = '<h3>🏭 ' + esc(g.brand) + ' — factory order</h3>' +
+    '<div class="ord-read">' +
+      '<span><i>Free pitches</i><b class="' + (free ? '' : 'danger') + '">' + free + '</b></span>' +
+      '<span><i>You can fund</i><b>' + afford + '</b></span>' +
+      '<span><i>On order</i><b>' + g.orders.length + '</b></span>' +
+    '</div>';
+
+  // model
+  h += '<div class="ord-sec"><b>Model</b><div class="ord-chips">' +
+    models.map(function (mi) {
+      return '<button class="' + (sel.model === mi ? '' : 'sec') + ' sm" onclick="UI.ordSet(\'model\',' + mi + ')">' +
+        esc(FE.MODELS[mi].m) + '</button>';
+    }).join('') + '</div></div>';
+
+  // trim
+  h += '<div class="ord-sec"><b>Trim</b><div class="ord-chips">' +
+    FE.TRIMS.map(function (t, i) {
+      return '<button class="' + (sel.trim === i ? '' : 'sec') + ' sm" onclick="UI.ordSet(\'trim\',' + i + ')">' + t.t + '</button>';
+    }).join('') + '</div></div>';
+
+  // colour — shown as swatches, with how quickly each shifts
+  h += '<div class="ord-sec"><b>Colour</b><div class="ord-swatches">' +
+    FE.COLOURS.map(function (c, i) {
+      var slow = c.d >= 1.06;
+      return '<button class="ord-sw' + (sel.colour === i ? ' on' : '') + '" onclick="UI.ordSet(\'colour\',' + i + ')" title="' + esc(c.c) + '">' +
+        '<span class="sw-dot" style="background:' + c.hex + '"></span>' +
+        '<span class="sw-name">' + esc(c.c) + '</span>' +
+        (slow ? '<span class="sw-slow">slow</span>' : '') + '</button>';
+    }).join('') + '</div></div>';
+
+  // quantity
+  var qtys = [1, 2, 3, 5, 8, 12, 20, 30].filter(function (n) { return n <= Math.max(1, free); });
+  h += '<div class="ord-sec"><b>How many</b><div class="ord-chips">' +
+    qtys.map(function (n) {
+      return '<button class="' + (sel.qty === n ? '' : 'sec') + ' sm" onclick="UI.ordSet(\'qty\',' + n + ')">' + n + '</button>';
+    }).join('') + '</div></div>';
+
+  // the money, before you commit
+  var overspend = q.total > power;
+  h += '<div class="card ord-quote"><b>' + sel.qty + ' × ' + esc(FE.MODELS[sel.model].m) + ' ' + FE.TRIMS[sel.trim].t + ', ' + esc(FE.COLOURS[sel.colour].c) + '</b>' +
+    '<div class="row kv"><span>List price each</span><b>' + M(q.list) + '</b></div>' +
+    '<div class="row kv"><span>Your cost each <span class="muted small">(' + Math.round(FE.FRANCHISE.costPct * 100) + '% of list)</span></span><b>' + M(q.cost) + '</b></div>' +
+    '<div class="row kv"><span>PDI each</span><b>' + M(q.pdi) + '</b></div>' +
+    '<div class="row kv"><span>Margin each at list</span><b class="' + (q.margin > 0 ? 'good' : 'danger') + '">' + M(q.margin) + '</b></div>' +
+    '<div class="row kv ord-total"><span>Total to pay</span><b class="' + (overspend ? 'danger' : 'teal') + '">' + M(q.total) + '</b></div>' +
+    (overspend ? '<div class="kv danger small">Beyond your ' + M(power) + ' spending power — drop the quantity.</div>' : '') +
+    '</div>';
+
+  h += '<div class="btnrow"><button' + (overspend || !free ? ' disabled' : '') + ' onclick="UI.orderGo(true)">Factory stock — next week</button>' +
+    '<button class="sec"' + (overspend || !free ? ' disabled' : '') + ' onclick="UI.orderGo(false)">Build to order — 8–14 wks</button></div>' +
+    '<p class="kv muted small">Factory stock is whatever is already built and sitting at the port. Build to order takes months but you get exactly this spec. New cars fly in March and September and sit like stones the rest of the year.</p>';
+
   if (g.orders.length) {
-    h += '<div class="card kv"><b>' + g.orders.length + ' on order</b> — ' + g.orders.map(function (o) { return FE.MODELS[o.model].m + ' (wk ' + o.dueWk + ')'; }).join(', ') + '</div>';
+    h += '<div class="card"><b>On order</b>' + g.orders.map(function (o) {
+      return '<div class="row kv"><span>' + esc(FE.MODELS[o.model].m) + ' ' + FE.TRIMS[o.trim].t + ', ' + esc(FE.COLOURS[o.colour].c) + '</span><b>wk ' + o.dueWk + '</b></div>';
+    }).join('') + '</div>';
   }
   h += '<button class="ghost" onclick="UI.computer()">← Desktop</button>';
   UI.modal(h);
 };
 UI.orderGo = function (express) {
-  var qty = parseInt(($('ordQty') || {}).value, 10) || 1;
-  var r = FE.orderNewCars(parseInt($('ordModel').value, 10), parseInt($('ordColour').value, 10), parseInt($('ordTrim').value, 10), express, qty);
+  var sel = ordInit();
+  var r = FE.orderNewCars(sel.model, sel.colour, sel.trim, express, sel.qty);
   if (r.ok) toast(r.placed + ' car' + (r.placed === 1 ? '' : 's') + ' ordered — arriving week ' + r.dueWk + '.' + (r.short ? ' (' + r.short + ')' : ''));
   else toast(r.msg);
   if (r.ok) UI.orderWindow();
@@ -1773,7 +1849,7 @@ UI.orderGo = function (express) {
 /* ---------- staff tab ---------- */
 function renderStaff() {
   var g = G(), h = '';
-  var maxS = FE.SITES[g.site].maxStaff;
+  var maxS = FE.maxStaff();
   h += '<div class="card kv"><b>Headcount ' + g.staff.length + '/' + maxS + '</b> — minimum 2 to run a floor properly. The GSM (you) manages; you don’t sell.' + (g.week === 1 && g.candidatePool && g.candidatePool.length ? ' <span class="muted">More candidates arrive next week.</span>' : '') + '</div>';
   g.staff.forEach(function (st) {
     var fni = st.totUnits ? Math.round(100 * st.fniDeals / st.totUnits) : 0;
@@ -2526,7 +2602,10 @@ UI.propertyApp = function () {
     var pend = null; g.pendingBuilds.forEach(function (b) { if (b.id === x.id) pend = b; });
     h += pend
       ? '<div class="card"><b>' + x.name + '</b>' + buildProgress(pend.startedWk, pend.dueWk, g.week, 'Groundworks') + '</div>'
-      : '<div class="card"><b>' + x.name + '</b> <span class="tag">' + M(x.cost) + '</span><div class="kv">+' + x.slots + ' pitches, utilities +' + M(x.util) + '/wk</div>' +
+      : '<div class="card"><b>' + x.name + '</b> <span class="tag">' + M(x.cost) + '</span><div class="kv">+' + x.slots + ' pitches' +
+          (x.staff ? ', room for <b>' + x.staff + ' more exec' + (x.staff === 1 ? '' : 's') + '</b>' : '') +
+          ', utilities +' + M(x.util) + '/wk</div>' +
+          '<div class="kv muted small">A bigger forecourt full of cars draws more trade — but only once it is full. Empty ground sells nothing and still costs you.</div>' +
         '<div class="btnrow"><button class="sec" onclick="UI.expandUI(\'' + x.id + '\')">Buy the land</button></div></div>';
   });
   h += '<div class="card"><b>Site 2 — locked</b> · unlocks at ' + M(FE.SITE2_TARGET) + ' net worth' +

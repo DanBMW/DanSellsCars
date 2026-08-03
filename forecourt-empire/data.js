@@ -398,9 +398,27 @@ FE.DEPARTMENTS = [
 FE.SMART_PREP_SAVING = 0.22;    // further cut to every prep bill
 FE.SMART_BLOWOUT_CUT = 0.45;    // fewer horror jobs — you can do them yourself
 FE.VALET_CONV_BOOST = 0.04;     // a gleaming forecourt converts better
+/* Land buys pitches AND the headroom to staff them. Without the `staff` figure
+   an expansion was a trap: more cars you could hold, no more hands to sell
+   them, so weekly units hit the same capacity ceiling and the extra floorplan
+   interest was pure cost. Roughly one more exec per 13-15 pitches, which is
+   about what the base sites run at. */
+/* How much extra trade a bigger forecourt draws. Land used to buy pitches and
+   nothing else: measured over 104 weeks, demand was the binding constraint in
+   97 of them, so the extra cars just sat there paying floorplan and land could
+   never pay for itself.
+
+   Deliberately scaled to the land you have bought rather than to stock alone —
+   an early attempt keyed it to stock levels and handed every player a 30%
+   demand rise whether they expanded or not, which inflated Fjord's year from
+   £141k to £231k. This way a player who never expands sees exactly the old
+   numbers, and the gain is earned twice over: you buy the ground, then you
+   fill it. */
+FE.LAND_DRAW = 0.35;
+
 FE.EXPANSIONS = [
-  { id: 'land15', name: 'Extra land — 15 pitches', cost: 40000, slots: 15, util: 90, buildWks: 1 },
-  { id: 'land40', name: 'Extra land — 40 pitches', cost: 95000, slots: 40, util: 210, buildWks: 2 }
+  { id: 'land15', name: 'Extra land — 15 pitches', cost: 40000, slots: 15, util: 90,  buildWks: 1, staff: 1 },
+  { id: 'land40', name: 'Extra land — 40 pitches', cost: 95000, slots: 40, util: 210, buildWks: 2, staff: 3 }
 ];
 FE.FRANCHISE_INSTALL_WKS = 1;   // brand corner fit-out before the first order lands
 

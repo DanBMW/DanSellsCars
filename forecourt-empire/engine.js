@@ -736,6 +736,17 @@ function deptIncomeTotal() {
 }
 FE.deptIncome = deptIncomeTotal;
 // capital tied up in departments you've paid for (counts toward net worth)
+/* How many execs the site can carry: the building, plus whatever the land you
+   have actually finished adds. Pending groundworks do not count — you cannot
+   put a desk on a building site. */
+FE.maxStaff = function () {
+  if (!G) return 0;
+  var n = site().maxStaff;
+  (G.expansionsDone || []).forEach(function (id) {
+    FE.EXPANSIONS.forEach(function (x) { if (x.id === id) n += (x.staff || 0); });
+  });
+  return n;
+};
 function deptCapital() {
   var t = 0;
   FE.DEPARTMENTS.forEach(function (d) { if (G.dept && G.dept[d.id]) t += d.cost; });
@@ -1121,7 +1132,11 @@ function staffById(id) {
 
 /* ---------- staff ---------- */
 FE.hire = function (candId) {
-  if (G.staff.length >= site().maxStaff) return { ok: false, msg: 'This site supports a maximum of ' + site().maxStaff + ' sales executives.' };
+  if (G.staff.length >= FE.maxStaff()) {
+    var room = FE.EXPANSIONS.some(function (x) { return (G.expansionsDone || []).indexOf(x.id) < 0 && x.staff; });
+    return { ok: false, msg: 'The site supports ' + FE.maxStaff() + ' sales executives and you have ' + G.staff.length + '.' +
+      (room ? ' Buying more land makes room for more — Property.' : '') };
+  }
   var idx = G.candidates.indexOf(candId);
   if (idx < 0) return { ok: false, msg: 'No longer available.' };
   var R = null;
@@ -1324,6 +1339,16 @@ FE.enterShowroom = function () {
   // 1-2 hope curve the starter forecourt gets a gentler penalty so it feels alive.
   var thinDenom = brand().stockNeeded * (G.week <= 2 ? 0.32 : 0.6);
   demand *= clamp(stk.length / thinDenom, 0.1, 1);
+  /* A bigger forecourt is seen by more people and offers more choice — but only
+     the ground you have actually bought counts, and only once there are cars
+     standing on it. A player who never expands gets landM === 1 and the
+     original numbers exactly. */
+  var baseSlots = Math.max(1, site().ext + site().int);
+  var extraSlots = Math.max(0, totalSlots() - baseSlots);
+  if (extraSlots > 0 && G.week > 4) {
+    var fill = clamp(stk.length / Math.max(1, totalSlots() * 0.6), 0, 1);
+    demand *= 1 + FE.LAND_DRAW * (extraSlots / baseSlots) * fill;
+  }
   var stockCap = Math.ceil(stk.length * 0.4);
 
   var unitsF = Math.min(demand, capTotal, stockCap);
@@ -2520,7 +2545,7 @@ function closeWeekInner() {
     ageing: stkList.filter(function (c) { return daysIn(c) >= 60; }).length,
     stars: Math.round(G.stars * 10) / 10, cash: Math.round(G.cash),
     stockBought: Math.round(costs.auction || 0),
-    headcount: G.staff.length + '/' + site().maxStaff,
+    headcount: G.staff.length + '/' + FE.maxStaff(),
     floorplanTop: off, fine: fine ? fine.name : null,
     demand: Math.round((W.demand || 0) * 10) / 10, capacity: Math.round((W.capTotal || 0) * 10) / 10,
     boundBy: W.boundBy || null
@@ -2725,7 +2750,7 @@ FE.shareText = function () {
   lines.push('Stock on site:     ' + usedSlots() + ' / ' + totalSlots() + ' pitches');
   lines.push('');
   if (G.staff.length) {
-    lines.push('STAFF (' + G.staff.length + '/' + site().maxStaff + ')');
+    lines.push('STAFF (' + G.staff.length + '/' + FE.maxStaff() + ')');
     G.staff.forEach(function (st) {
       var fni = st.totUnits ? Math.round(100 * st.fniDeals / st.totUnits) : 0;
       lines.push('  ' + st.name + '  -  ' + st.lastUnits + ' units/wk  -  ' + money(st.totUnits ? Math.round(st.totGross / st.totUnits) : 0) + ' avg gross  -  F&I ' + fni + '%');

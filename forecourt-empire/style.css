@@ -1091,3 +1091,28 @@ b.teal { color: var(--teal); }
 }
 .buy-route .br-lock { flex: 0 0 auto; opacity: .55; font-size: 1.1rem; }
 .buy-route.shut { opacity: .58; }
+
+/* ---------- factory order window ---------- */
+.ord-read { display: flex; gap: 6px; margin: 8px 0 12px; }
+.ord-read span { flex: 1; text-align: center; padding: 7px 4px;
+  background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 10px; }
+.ord-read i { display: block; font-style: normal; font-size: .56rem; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--muted); }
+.ord-read b { display: block; font-size: .95rem; font-weight: 800; }
+.ord-sec { margin-bottom: 11px; }
+.ord-sec > b { display: block; font-size: .7rem; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 5px; }
+.ord-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.ord-chips button { padding: 7px 13px; font-size: .8rem; border-radius: 999px; }
+.ord-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.ord-sw {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 7px 9px; border-radius: 12px; background: linear-gradient(180deg, #2c3a5e, #232f4d);
+  color: #dbe3f5; box-shadow: none; border: 1px solid transparent;
+}
+.ord-sw.on { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(255,206,74,.45); }
+.ord-sw .sw-dot { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); }
+.ord-sw .sw-name { font-size: .66rem; font-weight: 700; }
+.ord-sw .sw-slow { font-size: .54rem; color: var(--amber); letter-spacing: .4px; text-transform: uppercase; }
+.ord-quote .ord-total { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 7px; }
+.ord-quote .ord-total b { font-size: 1.05rem; }
