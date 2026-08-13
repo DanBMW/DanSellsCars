@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Dan Sells - Current Opportunities template</title>
+<style>
+  @font-face{font-family:'Sentient';src:local('Georgia');font-weight:400 600;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:#0a0c0f;}
+  .frame{position:relative;width:1080px;height:1920px;font-family:'Satoshi',ui-sans-serif,system-ui,-apple-system,sans-serif;color:#ece9e1;}
+  .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 22%;}
+  .scrim{position:absolute;inset:0;background:
+    linear-gradient(180deg,rgba(10,12,15,.72) 0%,rgba(10,12,15,.12) 22%,rgba(10,12,15,.06) 46%,rgba(10,12,15,.55) 68%,rgba(10,12,15,.96) 100%);}
+  .top{position:absolute;top:64px;left:64px;right:64px;display:flex;align-items:center;justify-content:space-between;}
+  .wordmark{font-family:Georgia,'Sentient',serif;font-size:34px;font-weight:600;letter-spacing:.01em;color:#ece9e1;}
+  .wordmark small{display:block;font-family:'Satoshi',sans-serif;font-size:13px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:#b9b5ab;margin-top:4px;}
+  .badge{border:1px solid rgba(236,233,225,.35);border-radius:999px;padding:9px 20px;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:#ece9e1;}
+  .content{position:absolute;left:64px;right:64px;bottom:108px;}
+  .kicker{display:inline-block;font-size:16px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#8fb4e0;margin-bottom:22px;}
+  .model{font-family:Georgia,'Sentient',serif;font-size:74px;line-height:1.04;font-weight:600;letter-spacing:-.01em;color:#ece9e1;margin-bottom:36px;max-width:900px;}
+  .price-row{display:flex;align-items:baseline;gap:18px;margin-bottom:14px;}
+  .price{font-family:Georgia,'Sentient',serif;font-size:104px;font-weight:600;letter-spacing:-.02em;color:#ece9e1;line-height:1;}
+  .price-unit{font-size:28px;color:#b9b5ab;font-weight:500;}
+  .terms{font-size:24px;color:#b9b5ab;margin-bottom:44px;letter-spacing:.01em;}
+  .terms strong{color:#ece9e1;font-weight:600;}
+  .rule{width:100%;height:1px;background:rgba(236,233,225,.18);margin-bottom:36px;}
+  .cta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+  .cta{font-size:26px;font-weight:600;color:#ece9e1;}
+  .handle{font-size:22px;color:#8fb4e0;font-weight:500;}
+  .legal{font-size:15px;line-height:1.5;color:#7c8290;max-width:920px;}
+</style>
+</head>
+<body>
+  <div class="frame">
+    <img class="photo" id="photo" src="../1series-showroom.jpg" alt=""/>
+    <div class="scrim"></div>
+    <div class="top">
+      <div class="wordmark">Dan Sells<small>BMW &middot; Hedin Ruxley</small></div>
+      <div class="badge" id="badge">PCH</div>
+    </div>
+    <div class="content">
+      <span class="kicker">Current Opportunities</span>
+      <div class="model" id="model">BMW 1 Series M Sport</div>
+      <div class="price-row">
+        <div class="price" id="price">&pound;320</div>
+        <div class="price-unit">per month</div>
+      </div>
+      <div class="terms" id="terms"><strong>&pound;500</strong> initial rental &middot; <strong>48</strong> months &middot; <strong>6,000</strong> miles p.a.</div>
+      <div class="rule"></div>
+      <div class="cta-row">
+        <span class="cta">Message me &rarr;</span>
+        <span class="handle">@dan_sells_bmw</span>
+      </div>
+      <p class="legal" id="legal">PCH example shown. Subject to status. 18+, UK residents only. Full representative example and T&amp;Cs at the link in bio.</p>
+    </div>
+  </div>
+<script>
+  (function(){
+    var p = new URLSearchParams(location.search);
+    function set(id, val){ if(val!==null){ var el=document.getElementById(id); if(el) el.textContent = val; } }
+    if(p.get('photo')) document.getElementById('photo').src = p.get('photo');
+    if(p.get('badge')) document.getElementById('badge').textContent = p.get('badge');
+    set('model', p.get('model'));
+    if(p.get('price')) document.getElementById('price').innerHTML = '&pound;' + p.get('price');
+    if(p.get('termsHtml')) document.getElementById('terms').innerHTML = p.get('termsHtml');
+    if(p.get('legal')) document.getElementById('legal').textContent = p.get('legal');
+  })();
+</script>
+</body>
+</html>
