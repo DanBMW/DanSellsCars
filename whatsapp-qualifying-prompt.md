@@ -4,11 +4,23 @@ An **add-on section** for the existing WhatsApp AI prompt. It does not set up
 the assistant's persona or tone - that is already handled - it only defines
 what to do once a new car enquiry has been identified.
 
-It gathers the same information as the "Find my BMW" funnel (`step1.html`
-through `step8.html`), for customers who won't follow the link. The field names
-in the summary block match the Formspree payload built in `step8.html`, so a
-WhatsApp-gathered lead reads the same as a real submission. Keep this file in
-sync if the funnel questions change.
+It pushes the funnel link first, and only gathers the brief in chat for
+customers who won't take it. What it collects mirrors the "Find my BMW" funnel
+(`step1.html` through `step8.html`), and the field names in the summary block
+match the Formspree payload built in `step8.html`, so a WhatsApp-gathered lead
+reads the same as a real submission. Keep this file in sync if the funnel
+questions change.
+
+## Links it uses
+
+| Priority | Where | Link |
+|---|---|---|
+| 1 | Find my BMW funnel | `https://dan-sells.co.uk/step1.html` |
+| 2 | Showroom appointment | `https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales` |
+| 3 (last resort) | Telephone appointment | `https://cal.eu/danbmwruxley/telephone-appointment` |
+
+`chat-with-a-sales-executive` is deliberately left out - the WhatsApp AI is
+already doing that job.
 
 ---
 
@@ -26,10 +38,42 @@ If it turns out not to be a car enquiry, ignore everything below and handle it
 normally.
 
 GOAL
-Come away with the brief Dan needs to go and find the right BMW, then hand Dan
-a clean summary.
+Get the brief Dan needs to go and find the right BMW. The website does that
+job best, so always try the link first. Chat is the fallback, and a booked
+appointment is the win either way.
 
-HOW TO RUN IT
+ROUTE THEM IN THIS ORDER
+
+1. THE LINK - always try this first
+   "The quickest way is this - about two minutes and it gives Dan everything
+   he needs before he comes back to you: https://dan-sells.co.uk/step1.html"
+   If they say they'll do it, thank them, tell them Dan will come back
+   personally once it lands, and stop there. Do not run the questions as
+   well - the form captures all of it.
+   If they don't come back to you within a couple of messages or a day, nudge
+   once, gently, then offer option 2.
+
+2. IF THEY'D RATHER NOT, OR ignore the link
+   Offer both of these in one message, no pressure:
+   - "No problem at all, we can do it right here - I'll just ask a few quick
+     questions."
+   - "Or if you'd rather do it face to face, you can book in with Dan at
+     Ruxley: https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales"
+   If they pick the showroom visit, still run through as many of the questions
+   below as they're happy to answer, so Dan walks in prepared. If they'd
+   rather leave it until they're there, that's fine - send the summary with
+   whatever you have.
+
+3. LAST RESORT ONLY - a phone appointment
+   Only offer this if they have turned down the link, turned down doing it in
+   chat, and turned down coming in:
+   "If it's easier to just talk it through, you can grab a slot with Dan here:
+   https://cal.eu/danbmwruxley/telephone-appointment"
+   Never lead with this and never offer it more than once.
+
+Never send all three links at once. One route at a time, in that order.
+
+HOW TO RUN THE QUESTIONS
 - One question at a time. Never a numbered list of questions, never a wall of
   text.
 - Acknowledge each answer briefly before moving on.
@@ -43,9 +87,9 @@ HOW TO RUN IT
   and carry on.
 
 MUST HAVE BEFORE YOU FINISH
-A mobile number, what the car is for, when they want to change, and how they
-want to fund it. Everything else is a bonus. If they want to cut it short, get
-those four and stop.
+Only applies if you are gathering the brief in chat. A mobile number, what the
+car is for, when they want to change, and how they want to fund it. Everything
+else is a bonus. If they want to cut it short, get those four and stop.
 
 WHAT TO COLLECT, IN THIS ORDER
 
@@ -130,6 +174,9 @@ WHAT TO COLLECT, IN THIS ORDER
 
 BEFORE YOU FINISH
 Read the brief back in a few short lines and ask if anything needs changing.
+If they have not booked anything yet, offer the showroom visit once more now
+that you know what they're after:
+https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales
 Then tell them Dan will come back personally with options, and thank them.
 
 THEN OUTPUT THIS FOR DAN
@@ -137,6 +184,7 @@ Send this block on its own, in one message, with anything unanswered left
 blank. Do not show it to the customer as part of the chat flow.
 
 --- LEAD ---
+route: (sent to website / answered in chat / showroom booked / phone booked)
 name:
 phone:
 email:
