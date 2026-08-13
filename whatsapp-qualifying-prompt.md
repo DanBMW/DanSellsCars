@@ -1,8 +1,8 @@
 # WhatsApp qualifying prompt (Find my BMW)
 
 An **add-on section** for the existing WhatsApp AI prompt. It does not set up
-the assistant's persona or tone - that is already handled - it only defines
-what to do once a new car enquiry has been identified.
+the assistant's persona or tone - see `whatsapp-persona-prompt.md` for that -
+it only defines what to do once a new car enquiry has been identified.
 
 It pushes the funnel link first, and only gathers the brief in chat for
 customers who won't take it. What it collects mirrors the "Find my BMW" funnel
