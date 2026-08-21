@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Focus Check-in</title>
+<meta name="description" content="A short, standardised questionnaire about attention, organisation and restlessness over the last six months. Five minutes, private to your browser."/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="stylesheet" href="style.css?v=7ea8698c"/>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<style>
+  /* ============================================================
+     Focus Check-in - self-contained screening questionnaire.
+     Uses style.css only for the design tokens and base shell.
+     Everything below is scoped under body.fc so nothing else
+     on the site is affected.
+     ============================================================ */
+  body.fc{background:var(--bg);}
+  body.fc .shell{max-width:720px;}
+  .fc-topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 26px;border-bottom:1px solid var(--line-soft);}
+  .fc-mark{font-family:var(--display);font-size:.98rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--text);}
+  .fc-mark::after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--blue);margin-left:7px;transform:translateY(-1px);}
+  .fc-count{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;}
+
+  .fc-track{height:3px;background:rgba(16,21,29,.09);}
+  .fc-fill{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--blue-light));transition:width .45s cubic-bezier(.22,.61,.36,1);}
+  @media (prefers-reduced-motion:reduce){.fc-fill{transition:none;}}
+
+  .fc-pad{padding:30px 26px 34px;}
+  @media(max-width:640px){.fc-pad{padding:24px 18px 28px;} .fc-topbar{padding:14px 18px;}}
+
+  .fc-screen{animation:fcIn .3s cubic-bezier(.22,.61,.36,1) both;}
+  @keyframes fcIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.fc-screen{animation:none;}}
+
+  .fc-kicker{text-transform:uppercase;letter-spacing:.14em;font-size:.71rem;color:var(--blue);margin-bottom:12px;font-weight:700;}
+  .fc-kicker::before{content:'';display:inline-block;width:22px;height:4px;background:var(--gold);border-radius:2px;margin-right:9px;transform:translateY(-2px);}
+  .fc-h1{font-family:var(--display);font-size:clamp(1.75rem,4.4vw,2.5rem);font-weight:600;letter-spacing:-.018em;line-height:1.12;color:var(--text);margin-bottom:14px;}
+  .fc-h2{font-family:var(--display);font-size:clamp(1.24rem,3vw,1.6rem);font-weight:600;letter-spacing:-.012em;line-height:1.24;color:var(--text);margin:0 0 6px;}
+  .fc-h3{font-family:var(--display);font-size:1.02rem;font-weight:600;color:var(--text);margin:0 0 8px;letter-spacing:-.005em;}
+  .fc-p{color:var(--body);font-size:.99rem;line-height:1.68;margin-bottom:15px;}
+  .fc-p:last-child{margin-bottom:0;}
+  .fc-small{color:var(--muted);font-size:.84rem;line-height:1.62;}
+
+  .fc-note{border-radius:14px;padding:15px 17px;margin:0 0 17px;font-size:.9rem;line-height:1.62;}
+  .fc-note strong{font-weight:700;}
+  .fc-note-blue{background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.2);color:#2c4b7c;}
+  .fc-note-blue strong{color:#123f8f;}
+  .fc-note-gold{background:rgba(168,133,59,.09);border:1px solid rgba(168,133,59,.28);color:#6d5522;}
+  .fc-note-gold strong{color:#57431a;}
+  .fc-note-grey{background:rgba(16,21,29,.035);border:1px solid var(--line);color:var(--body);}
+  .fc-note-grey strong{color:var(--text);}
+
+  .fc-btn{display:inline-block;background:var(--blue);color:#fff;font-weight:700;font-size:1rem;font-family:var(--font);
+    padding:15px 30px;border:none;border-radius:999px;cursor:pointer;text-decoration:none;
+    box-shadow:0 12px 26px -10px rgba(21,89,207,.55);transition:background .18s,transform .18s,box-shadow .18s;}
+  .fc-btn:hover{background:var(--blue-deep);transform:translateY(-2px);box-shadow:0 16px 32px -10px rgba(21,89,207,.6);}
+  .fc-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+  .fc-btn-ghost{background:none;border:1px solid var(--line);color:var(--body);box-shadow:none;font-weight:600;padding:13px 24px;}
+  .fc-btn-ghost:hover{background:rgba(16,21,29,.04);color:var(--text);border-color:rgba(16,21,29,.2);transform:none;box-shadow:none;}
+  @media (prefers-reduced-motion:reduce){.fc-btn:hover{transform:none;}}
+
+  /* ---- question ---- */
+  .fc-qmeta{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:11px;}
+  .fc-qmeta b{color:var(--blue);font-weight:700;}
+  .fc-fieldset{border:none;padding:0;margin:0;}
+  .fc-legend{font-family:var(--display);font-size:clamp(1.2rem,3vw,1.55rem);font-weight:600;line-height:1.28;letter-spacing:-.01em;color:var(--text);padding:0;margin-bottom:5px;}
+  .fc-legend:focus{outline:none;}
+  [data-autofocus]:focus{outline:none;}
+  .fc-window{font-size:.85rem;color:var(--muted);margin-bottom:18px;}
+
+  .fc-opts{display:flex;flex-direction:column;gap:9px;}
+  .fc-opt{position:relative;display:flex;align-items:center;gap:13px;
+    padding:15px 17px;border:1px solid var(--line);border-radius:14px;background:var(--paper);
+    cursor:pointer;transition:border-color .15s,background .15s,transform .12s;}
+  .fc-opt:hover{border-color:rgba(21,89,207,.45);background:rgba(21,89,207,.03);}
+  .fc-opt input{position:absolute;opacity:0;width:1px;height:1px;}
+  .fc-dot{width:20px;height:20px;border-radius:50%;border:2px solid rgba(16,21,29,.24);flex-shrink:0;transition:border-color .15s,box-shadow .15s;}
+  .fc-opt-label{font-size:1rem;font-weight:600;color:var(--text);flex:1;}
+  .fc-ladder{display:flex;gap:3px;flex-shrink:0;}
+  .fc-ladder i{width:5px;height:5px;border-radius:50%;background:rgba(16,21,29,.13);}
+  .fc-ladder i.on{background:var(--blue);}
+  .fc-opt input:checked ~ .fc-dot{border-color:var(--blue);box-shadow:inset 0 0 0 4px var(--blue);}
+  .fc-opt:has(input:checked){border-color:var(--blue);background:rgba(21,89,207,.06);}
+  .fc-opt:has(input:focus-visible){outline:2px solid var(--blue);outline-offset:2px;}
+  .fc-key{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;flex-shrink:0;display:none;}
+  @media(min-width:780px){.fc-key{display:block;}}
+
+  .fc-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;}
+  .fc-back{background:none;border:none;padding:8px 2px;font-family:var(--font);font-size:.88rem;font-weight:600;color:var(--muted);cursor:pointer;}
+  .fc-back:hover{color:var(--text);text-decoration:underline;}
+  .fc-back[hidden]{display:none;}
+
+  /* ---- results ---- */
+  .fc-reveal{background:linear-gradient(160deg,#101722,#1b2942);color:#eef3fa;border-radius:18px;padding:24px 22px;margin-bottom:20px;}
+  .fc-reveal .fc-eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.7rem;font-weight:700;color:#8fb4f0;margin-bottom:10px;}
+  .fc-reveal h2{font-family:var(--display);font-size:clamp(1.35rem,3.4vw,1.85rem);font-weight:600;line-height:1.22;letter-spacing:-.015em;margin-bottom:11px;color:#fff;}
+  .fc-reveal p{font-size:.94rem;line-height:1.66;color:#c9d7ea;margin-bottom:11px;}
+  .fc-reveal p:last-child{margin-bottom:0;}
+  .fc-reveal strong{color:#fff;}
+
+  .fc-scorecard{border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:18px;background:var(--paper);}
+  .fc-score-top{display:flex;align-items:center;gap:18px;margin-bottom:15px;}
+  .fc-score-num{font-family:var(--display);font-size:3.1rem;font-weight:600;line-height:1;letter-spacing:-.03em;flex-shrink:0;}
+  .fc-score-num span{font-size:1.15rem;color:var(--muted);font-weight:500;}
+  .fc-flag-pos .fc-score-num{color:#a8853b;}
+  .fc-flag-neg .fc-score-num{color:var(--blue);}
+  .fc-score-head{font-family:var(--display);font-size:1.12rem;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px;}
+  .fc-pips{display:flex;gap:6px;margin-bottom:15px;flex-wrap:wrap;}
+  .fc-pip{width:100%;max-width:52px;height:7px;border-radius:999px;background:rgba(16,21,29,.1);flex:1;}
+  .fc-pip.on{background:#a8853b;}
+  .fc-flag-neg .fc-pip.on{background:var(--blue);}
+
+  .fc-bars{display:flex;flex-direction:column;gap:14px;}
+  .fc-bar-row .fc-bar-top{display:flex;justify-content:space-between;align-items:baseline;font-size:.88rem;margin-bottom:6px;}
+  .fc-bar-name{font-weight:600;color:var(--text);}
+  .fc-bar-val{color:var(--muted);font-variant-numeric:tabular-nums;}
+  .fc-bar{height:9px;border-radius:999px;background:rgba(16,21,29,.08);overflow:hidden;}
+  .fc-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--blue-light));}
+
+  .fc-block{border-top:1px solid var(--line-soft);padding-top:20px;margin-top:20px;}
+  .fc-list{margin:0;padding-left:20px;color:var(--body);font-size:.94rem;line-height:1.66;}
+  .fc-list li{margin-bottom:7px;}
+  .fc-list li:last-child{margin-bottom:0;}
+  .fc-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;}
+  .fc-refs{font-size:.78rem;color:var(--muted);line-height:1.6;}
+  .fc-refs a{color:var(--blue-deep);}
+  .fc-refs li{margin-bottom:5px;}
+
+  .fc-sheet{display:none;}
+  .fc-sheet table{width:100%;border-collapse:collapse;font-size:11pt;}
+  .fc-sheet th,.fc-sheet td{border-bottom:1px solid #ccc;padding:5px 6px;text-align:left;vertical-align:top;}
+  .fc-sheet th:last-child,.fc-sheet td:last-child{text-align:right;white-space:nowrap;}
+
+  @media print{
+    body.fc{background:#fff;}
+    .fc-topbar,.fc-track,.fc-actions,.fc-noprint{display:none !important;}
+    body.fc .shell{max-width:none;border:none;box-shadow:none;border-radius:0;}
+    .app{padding:0 !important;}
+    .fc-pad{padding:0;}
+    .fc-reveal{background:none;color:#000;border:1px solid #000;padding:12px;}
+    .fc-reveal h2,.fc-reveal p,.fc-reveal strong,.fc-reveal .fc-eyebrow{color:#000;}
+    .fc-sheet{display:block;margin-top:18px;page-break-before:always;}
+    .fc-screen{animation:none;}
+  }
+</style>
+</head>
+<body class="fc">
+<div class="app"><div class="shell">
+
+  <div class="fc-topbar">
+    <span class="fc-mark">Focus Check-in</span>
+    <span class="fc-count" id="fcCount"></span>
+  </div>
+  <div class="fc-track"><div class="fc-fill" id="fcFill"></div></div>
+
+  <div class="fc-pad" id="fcStage" aria-live="polite"></div>
+
+</div></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ------------------------------------------------------------------
+     The instrument: Adult ADHD Self-Report Scale (ASRS-v1.1) Symptom
+     Checklist, 18 items, developed with the World Health Organization
+     (Adler, Kessler, Spencer) against the DSM-IV-TR criteria.
+
+     Item wording is reproduced verbatim. Do not paraphrase it: the
+     validation only holds for the published wording.
+
+     `t` is the response index at which the item's box is darkly shaded
+     on the official form (2 = Sometimes, 3 = Often). These thresholds
+     were read cell by cell off the source PDF's shading grid, and they
+     are NOT uniform, so do not "tidy" them into a pattern.
+       Part A shaded from Sometimes: items 1, 2, 4
+       Part B shaded from Sometimes: items 9, 12, 16, 18
+       every other item is shaded from Often.
+
+     `d` is the DSM-IV symptom domain: "in" = inattention (9 items),
+     "hi" = hyperactivity/impulsivity (9 items).
+  ------------------------------------------------------------------ */
+  var ITEMS = [
+    {p:'A',t:2,d:'in',q:'How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?'},
+    {p:'A',t:2,d:'in',q:'How often do you have difficulty getting things in order when you have to do a task that requires organization?'},
+    {p:'A',t:3,d:'in',q:'How often do you have problems remembering appointments or obligations?'},
+    {p:'A',t:2,d:'in',q:'When you have a task that requires a lot of thought, how often do you avoid or delay getting started?'},
+    {p:'A',t:3,d:'hi',q:'How often do you fidget or squirm with your hands or feet when you have to sit down for a long time?'},
+    {p:'A',t:3,d:'hi',q:'How often do you feel overly active and compelled to do things, like you were driven by a motor?'},
+    {p:'B',t:3,d:'in',q:'How often do you make careless mistakes when you have to work on a boring or difficult project?'},
+    {p:'B',t:3,d:'in',q:'How often do you have difficulty keeping your attention when you are doing boring or repetitive work?'},
+    {p:'B',t:2,d:'in',q:'How often do you have difficulty concentrating on what people say to you, even when they are speaking to you directly?'},
+    {p:'B',t:3,d:'in',q:'How often do you misplace or have difficulty finding things at home or at work?'},
+    {p:'B',t:3,d:'in',q:'How often are you distracted by activity or noise around you?'},
+    {p:'B',t:2,d:'hi',q:'How often do you leave your seat in meetings or other situations in which you are expected to remain seated?'},
+    {p:'B',t:3,d:'hi',q:'How often do you feel restless or fidgety?'},
+    {p:'B',t:3,d:'hi',q:'How often do you have difficulty unwinding and relaxing when you have time to yourself?'},
+    {p:'B',t:3,d:'hi',q:'How often do you find yourself talking too much when you are in social situations?'},
+    {p:'B',t:2,d:'hi',q:'When you’re in a conversation, how often do you find yourself finishing the sentences of the people you are talking to, before they can finish them themselves?'},
+    {p:'B',t:3,d:'hi',q:'How often do you have difficulty waiting your turn in situations when turn taking is required?'},
+    {p:'B',t:2,d:'hi',q:'How often do you interrupt others when they are busy?'}
+  ];
+
+  var SCALE = ['Never','Rarely','Sometimes','Often','Very Often'];
+
+  /* Context items. These are NOT part of the ASRS and are never folded
+     into its score. They mirror what the checklist's own instruction
+     page tells a clinician to establish alongside the symptoms
+     (impairment across settings, and a childhood history), which DSM-5
+     also requires: symptoms in two or more settings, several present
+     before age 12. */
+  var SETTINGS = [
+    'Work or studying',
+    'Running a home, admin, money, appointments',
+    'Close relationships, family life',
+    'Friendships and social life',
+    'Health, sleep or self-care',
+    'None of these, really'
+  ];
+  var CHILDHOOD = [
+    'Yes, clearly. It was noticed at the time',
+    'Some of it, looking back',
+    'Not really, this is more recent',
+    'I honestly cannot remember'
+  ];
+
+  var TOTAL = ITEMS.length + 2;
+
+  function section(i){
+    if(i < 6) return 'Section 1';
+    if(i < ITEMS.length) return 'Section 2';
+    return 'A little context';
+  }
+  var KEY = 'fcState_v1';
+
+  var state = {i:-1, a:new Array(ITEMS.length).fill(null), settings:[], childhood:null, done:false};
+  try{ var saved = sessionStorage.getItem(KEY); if(saved){ state = JSON.parse(saved); } }catch(e){}
+
+  var stage = document.getElementById('fcStage');
+  var fill  = document.getElementById('fcFill');
+  var count = document.getElementById('fcCount');
+
+  function save(){ try{ sessionStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  /* ---------- scoring ---------- */
+  function score(){
+    var partA = 0, partB = 0, inatt = 0, hyper = 0, total = 0, flags = [];
+    for(var i=0;i<ITEMS.length;i++){
+      var v = state.a[i];
+      if(v === null) continue;
+      total += v;
+      if(ITEMS[i].d === 'in') inatt += v; else hyper += v;
+      var hit = v >= ITEMS[i].t;
+      if(hit){ if(ITEMS[i].p === 'A') partA++; else partB++; flags.push(i); }
+    }
+    return {partA:partA, partB:partB, inatt:inatt, hyper:hyper, total:total, flags:flags, positive:partA >= 4};
+  }
+
+  /* ---------- chrome ---------- */
+  function chrome(){
+    var step = state.done ? TOTAL : Math.max(0, state.i);
+    fill.style.width = (state.i < 0 ? 0 : (state.done ? 100 : (step/TOTAL)*100)) + '%';
+    if(state.i < 0){ count.textContent = '5 minutes'; }
+    else if(state.done){ count.textContent = 'Complete'; }
+    else if(state.i < ITEMS.length){ count.textContent = (state.i+1) + ' of ' + TOTAL; }
+    else { count.textContent = (state.i+1) + ' of ' + TOTAL; }
+  }
+
+  function focusHead(){
+    var h = stage.querySelector('[data-autofocus]');
+    if(h){ h.setAttribute('tabindex','-1'); h.focus({preventScroll:true}); }
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- screens ---------- */
+  function intro(){
+    stage.innerHTML =
+      '<div class="fc-screen">' +
+        '<div class="fc-kicker">18 questions, about 5 minutes</div>' +
+        '<h1 class="fc-h1" data-autofocus>How have the last six months actually gone?</h1>' +
+        '<p class="fc-p">This is a standardised questionnaire, developed with the World Health Organization, about attention, organisation and restlessness in ordinary daily life. The questions are plain and there are no trick ones. You rate how often each thing has been true for you.</p>' +
+        '<div class="fc-note fc-note-blue"><strong>One thing up front.</strong> We are not going to tell you what this questionnaire screens for until the end. That is deliberate. When people know what a set of questions is looking for, they answer differently without meaning to. You get the full explanation, the name of the instrument and your result on the final screen.</div>' +
+        '<div class="fc-note fc-note-grey"><strong>Your answers stay on this device.</strong> Nothing is sent anywhere, nothing is stored on a server, and no one else sees them. They are held in this browser tab only, so you can refresh without losing your place, and they are gone when you close it.</div>' +
+        '<p class="fc-p fc-small">Answer for the <strong>last 6 months</strong>, not for how you were at your best or your worst. Go with your first instinct rather than hunting for the perfect answer.</p>' +
+        '<div class="fc-actions"><button class="fc-btn" id="fcStart">Start</button>' +
+        (hasProgress() ? '<button class="fc-btn fc-btn-ghost" id="fcResume">Pick up where I left off</button>' : '') +
+        '</div>' +
+        '<p class="fc-p fc-small" style="margin-top:18px">This is a screening questionnaire, not a diagnosis, and it is not a substitute for talking to a doctor.</p>' +
+      '</div>';
+    document.getElementById('fcStart').addEventListener('click', function(){
+      state.a = new Array(ITEMS.length).fill(null); state.settings = []; state.childhood = null; state.done = false;
+      go(0);
+    });
+    var r = document.getElementById('fcResume');
+    if(r) r.addEventListener('click', function(){ go(firstUnanswered()); });
+    focusHead();
+  }
+
+  function hasProgress(){ return state.a.some(function(v){ return v !== null; }); }
+  function firstUnanswered(){
+    for(var i=0;i<ITEMS.length;i++){ if(state.a[i] === null) return i; }
+    if(!state.settings.length) return ITEMS.length;
+    return ITEMS.length + 1;
+  }
+
+  function question(i){
+    var it = ITEMS[i];
+    var opts = SCALE.map(function(label, v){
+      var ladder = '';
+      for(var k=0;k<5;k++){ ladder += '<i class="' + (k <= v ? 'on' : '') + '"></i>'; }
+      return '<label class="fc-opt">' +
+               '<input type="radio" name="fcq" value="' + v + '"' + (state.a[i] === v ? ' checked' : '') + '/>' +
+               '<span class="fc-dot"></span>' +
+               '<span class="fc-opt-label">' + label + '</span>' +
+               '<span class="fc-ladder">' + ladder + '</span>' +
+               '<span class="fc-key">' + (v+1) + '</span>' +
+             '</label>';
+    }).join('');
+
+    stage.innerHTML =
+      '<div class="fc-screen">' +
+        '<div class="fc-qmeta">' + section(i) + '</div>' +
+        '<fieldset class="fc-fieldset">' +
+          '<legend class="fc-legend" data-autofocus>' + esc(it.q) + '</legend>' +
+          '<p class="fc-window">Thinking about the last 6 months.</p>' +
+          '<div class="fc-opts">' + opts + '</div>' +
+        '</fieldset>' +
+        '<div class="fc-nav">' +
+          '<button class="fc-back" id="fcBack"' + (i === 0 ? '' : '') + '>Back</button>' +
+        '</div>' +
+      '</div>';
+
+    stage.querySelectorAll('input[name="fcq"]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        state.a[i] = parseInt(inp.value, 10);
+        save();
+        setTimeout(function(){ go(i+1); }, 170);
+      });
+    });
+    document.getElementById('fcBack').addEventListener('click', function(){ go(i-1); });
+    focusHead();
+  }
+
+  function settingsScreen(){
+    var i = ITEMS.length;
+    var opts = SETTINGS.map(function(label, v){
+      var on = state.settings.indexOf(v) > -1;
+      return '<label class="fc-opt">' +
+               '<input type="checkbox" name="fcs" value="' + v + '"' + (on ? ' checked' : '') + '/>' +
+               '<span class="fc-dot" style="border-radius:6px"></span>' +
+               '<span class="fc-opt-label">' + esc(label) + '</span>' +
+             '</label>';
+    }).join('');
+    stage.innerHTML =
+      '<div class="fc-screen">' +
+        '<div class="fc-qmeta">' + section(i) + '</div>' +
+        '<fieldset class="fc-fieldset">' +
+          '<legend class="fc-legend" data-autofocus>Where, if anywhere, has this actually cost you something?</legend>' +
+          '<p class="fc-window">Pick as many as apply. Everyone forgets things sometimes, so this is about real difficulty rather than the odd bad week.</p>' +
+          '<div class="fc-opts">' + opts + '</div>' +
+        '</fieldset>' +
+        '<div class="fc-nav">' +
+          '<button class="fc-back" id="fcBack">Back</button>' +
+          '<button class="fc-btn" id="fcNext">Continue</button>' +
+        '</div>' +
+      '</div>';
+    stage.querySelectorAll('input[name="fcs"]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        var v = parseInt(inp.value, 10);
+        var none = SETTINGS.length - 1;
+        if(inp.checked){
+          if(v === none){ state.settings = [none]; }
+          else { state.settings = state.settings.filter(function(x){ return x !== none; }); state.settings.push(v); }
+        } else {
+          state.settings = state.settings.filter(function(x){ return x !== v; });
+        }
+        save();
+        stage.querySelectorAll('input[name="fcs"]').forEach(function(b){ b.checked = state.settings.indexOf(parseInt(b.value,10)) > -1; });
+      });
+    });
+    document.getElementById('fcBack').addEventListener('click', function(){ go(i-1); });
+    document.getElementById('fcNext').addEventListener('click', function(){ go(i+1); });
+    focusHead();
+  }
+
+  function childhoodScreen(){
+    var i = ITEMS.length + 1;
+    var opts = CHILDHOOD.map(function(label, v){
+      return '<label class="fc-opt">' +
+               '<input type="radio" name="fcc" value="' + v + '"' + (state.childhood === v ? ' checked' : '') + '/>' +
+               '<span class="fc-dot"></span>' +
+               '<span class="fc-opt-label">' + esc(label) + '</span>' +
+             '</label>';
+    }).join('');
+    stage.innerHTML =
+      '<div class="fc-screen">' +
+        '<div class="fc-qmeta">' + section(i) + '</div>' +
+        '<fieldset class="fc-fieldset">' +
+          '<legend class="fc-legend" data-autofocus>Thinking back to school, was any of this true of you then?</legend>' +
+          '<p class="fc-window">School reports, parents, teachers, or just your own memory of it. A formal diagnosis in childhood is not expected.</p>' +
+          '<div class="fc-opts">' + opts + '</div>' +
+        '</fieldset>' +
+        '<div class="fc-nav">' +
+          '<button class="fc-back" id="fcBack">Back</button>' +
+        '</div>' +
+      '</div>';
+    stage.querySelectorAll('input[name="fcc"]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        state.childhood = parseInt(inp.value, 10); save();
+        setTimeout(function(){ go(i+1); }, 170);
+      });
+    });
+    document.getElementById('fcBack').addEventListener('click', function(){ go(i-1); });
+    focusHead();
+  }
+
+  /* ---------- results ---------- */
+  function results(){
+    var s = score();
+    var pips = '';
+    for(var k=0;k<6;k++){ pips += '<span class="fc-pip' + (k < s.partA ? ' on' : '') + '"></span>'; }
+
+    var verdict = s.positive
+      ? 'Your answers put you above the screening threshold'
+      : 'Your answers are below the screening threshold';
+    var verdictBody = s.positive
+      ? 'On this instrument, four or more markers in Part A is described by its authors as <strong>symptoms highly consistent with ADHD in adults, where further investigation is warranted</strong>. That is the whole claim it makes. It says a proper assessment is worth having. It does not say you have ADHD, and it cannot.'
+      : 'Fewer than four markers in Part A means this particular screener has not flagged the pattern it looks for. That is genuinely useful information, but it is not an all-clear. The screener misses roughly three in ten adults who do have ADHD, so if things are hard for you day to day, that is worth taking to a doctor regardless of what this says.';
+
+    var settingsCount = state.settings.filter(function(v){ return v !== SETTINGS.length - 1; }).length;
+    var settingsLine;
+    if(settingsCount === 0){
+      settingsLine = 'You did not flag a setting where this has cost you much. Impairment matters as much as symptoms in a real assessment, so a high symptom count with no impact on your life usually points away from a diagnosis.';
+    } else if(settingsCount === 1){
+      settingsLine = 'You flagged one setting where this has cost you something. Clinicians look for difficulty in <strong>two or more</strong> areas of life, so it is worth thinking about whether it genuinely stops at one.';
+    } else {
+      settingsLine = 'You flagged <strong>' + settingsCount + ' settings</strong> where this has cost you something. Difficulty across two or more areas of life is one of the criteria a clinician has to satisfy, so this is the kind of detail worth bringing to an appointment.';
+    }
+
+    var childLine;
+    if(state.childhood === 0) childLine = 'You said this was clearly noticeable at school. A clinician needs evidence that several symptoms were present before about age 12, so anything concrete helps: old school reports, or a parent or sibling who remembers.';
+    else if(state.childhood === 1) childLine = 'You said some of it fits, looking back. That is the usual answer, and it counts. Old school reports or a parent’s memory can firm it up before an appointment.';
+    else if(state.childhood === 2) childLine = 'You said this feels more recent. That matters, because these symptoms are expected to go back to childhood. Attention and restlessness that genuinely started in adulthood usually point somewhere else, and that is worth investigating too.';
+    else childLine = 'You were not sure about childhood. That is very common. School reports, or a conversation with a parent or older sibling, are the usual way to fill that gap before an appointment.';
+
+    var sheetRows = ITEMS.map(function(it, i){
+      var v = state.a[i];
+      var hit = (v !== null && v >= it.t) ? ' *' : '';
+      return '<tr><td>' + (i+1) + '. ' + esc(it.q) + '</td><td>' + (v === null ? '-' : SCALE[v]) + hit + '</td></tr>';
+    }).join('');
+
+    stage.innerHTML =
+      '<div class="fc-screen">' +
+
+        '<div class="fc-reveal">' +
+          '<div class="fc-eyebrow">What you just filled in</div>' +
+          '<h2>The Adult ADHD Self-Report Scale (ASRS-v1.1)</h2>' +
+          '<p>It is the 18 item symptom checklist built by the World Health Organization with Lenard Adler, Ronald Kessler and Thomas Spencer, mapped onto the DSM-IV-TR criteria for attention-deficit/hyperactivity disorder. It is the questionnaire a GP or psychiatrist is most likely to hand you.</p>' +
+          '<p>We held the name back on purpose. Screening questionnaires are measurably harder to answer honestly once you can see what they are driving at, in either direction: some people talk themselves up, others talk themselves down. You answered it blind, which is the closest you can get at home to how it is meant to be used.</p>' +
+        '</div>' +
+
+        '<div class="fc-scorecard ' + (s.positive ? 'fc-flag-pos' : 'fc-flag-neg') + '">' +
+          '<div class="fc-score-top">' +
+            '<div class="fc-score-num">' + s.partA + '<span>/6</span></div>' +
+            '<div><div class="fc-score-head">' + verdict + '</div>' +
+            '<div class="fc-small">Part A markers. Four or more is the cut-off.</div></div>' +
+          '</div>' +
+          '<div class="fc-pips">' + pips + '</div>' +
+          '<p class="fc-p" style="margin-bottom:0">' + verdictBody + '</p>' +
+        '</div>' +
+
+        '<div class="fc-scorecard">' +
+          '<h3 class="fc-h3">The rest of your answers</h3>' +
+          '<p class="fc-p fc-small" style="margin-bottom:16px">Only the six Part A questions carry the screening decision. The other twelve are not scored diagnostically by the instrument’s own instructions. They are shown here because they describe the shape of what you reported, which is what an appointment is actually about.</p>' +
+          '<div class="fc-bars">' +
+            bar('Inattention items', s.inatt, 36) +
+            bar('Hyperactivity and impulsivity items', s.hyper, 36) +
+            bar('All 18 items', s.total, 72) +
+          '</div>' +
+          '<p class="fc-p fc-small" style="margin-top:15px;margin-bottom:0">You reached the shaded frequency on <strong>' + s.flags.length + ' of the 18</strong> items overall (' + s.partA + ' in Part A, ' + s.partB + ' in Part B).</p>' +
+        '</div>' +
+
+        '<div class="fc-scorecard">' +
+          '<h3 class="fc-h3">The two things a questionnaire cannot score</h3>' +
+          '<p class="fc-p">' + settingsLine + '</p>' +
+          '<p class="fc-p" style="margin-bottom:0">' + childLine + '</p>' +
+        '</div>' +
+
+        '<div class="fc-note fc-note-gold">' +
+          '<strong>Read this bit even if you read nothing else.</strong> This is a screening tool, not a diagnosis, and nothing on this page is medical advice. ' +
+          'A great many things produce exactly this pattern of answers: long-running sleep debt, anxiety, depression, chronic stress or burnout, thyroid problems, iron deficiency, perimenopause, pain, grief, medication side effects, or simply a life with too much in it. ' +
+          'Screeners are also built to catch rather than to rule out, so in a general population, where ADHD is much less common than in a clinic, a positive result is wrong more often than people assume. Only a qualified clinician can sort out which of these it is.' +
+        '</div>' +
+
+        '<div class="fc-scorecard fc-noprint">' +
+          '<h3 class="fc-h3">If you want to take this further</h3>' +
+          '<ul class="fc-list">' +
+            '<li><strong>Book a GP appointment</strong> and say plainly that you want to be assessed for ADHD. Take a printout of this page. Concrete examples of where it costs you, at work and at home, carry far more weight than the score does.</li>' +
+            '<li><strong>Ask about the wait, and about Right to Choose.</strong> In England you can generally choose an NHS-funded provider for an ADHD assessment rather than waiting for the local service. Your GP can explain how that works for you.</li>' +
+            '<li><strong>Fill the childhood gap.</strong> Old school reports, or a parent or older sibling who remembers what you were like, are what assessments lean on most.</li>' +
+            '<li><strong>If the answer turns out to be no,</strong> the difficulties are still real and still worth solving. Ask what else could be causing them.</li>' +
+          '</ul>' +
+          '<p class="fc-p fc-small" style="margin-top:14px;margin-bottom:0">Background reading: ' +
+            '<a href="https://www.nhs.uk/conditions/attention-deficit-hyperactivity-disorder-adhd/" target="_blank" rel="noopener">NHS on ADHD</a>, ' +
+            '<a href="https://adhduk.co.uk/" target="_blank" rel="noopener">ADHD UK</a>, ' +
+            '<a href="https://aadduk.org/" target="_blank" rel="noopener">AADD-UK</a>.' +
+          '</p>' +
+        '</div>' +
+
+        '<div class="fc-actions fc-noprint">' +
+          '<button class="fc-btn" id="fcPrint">Print or save as PDF</button>' +
+          '<button class="fc-btn fc-btn-ghost" id="fcAgain">Start again</button>' +
+        '</div>' +
+
+        '<div class="fc-block fc-noprint">' +
+          '<h3 class="fc-h3">Where this comes from</h3>' +
+          '<ol class="fc-refs">' +
+            '<li>Adult ADHD Self-Report Scale (ASRS-v1.1) Symptom Checklist. Developed by the World Health Organization with Lenard Adler MD (NYU), Ronald C. Kessler PhD (Harvard) and Thomas Spencer MD (Harvard). Item wording reproduced unaltered; Part A scoring follows the shaded response boxes on the published form.</li>' +
+            '<li>Kessler RC, et al. The World Health Organization Adult ADHD Self-Report Scale (ASRS): a short screening scale for use in the general population. Psychol Med. 2005;35(2):245-256.</li>' +
+            '<li>American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 4th ed, Text Revision. Washington DC, 2000: 85-93. The two-settings and childhood-onset points reflect the current DSM-5 criteria.</li>' +
+            '<li>Barkley RA. Attention Deficit Hyperactivity Disorder: A Handbook for Diagnosis and Treatment. 2nd ed. 1998.</li>' +
+          '</ol>' +
+        '</div>' +
+
+        '<div class="fc-sheet">' +
+          '<h3 class="fc-h3">ASRS-v1.1 responses</h3>' +
+          '<p class="fc-small">Completed ' + esc(new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'})) + '. Part A markers: ' + s.partA + ' of 6. Items marked * reached the shaded frequency on the published form.</p>' +
+          '<table><tbody>' + sheetRows + '</tbody></table>' +
+        '</div>' +
+
+      '</div>';
+
+    document.getElementById('fcPrint').addEventListener('click', function(){ window.print(); });
+    document.getElementById('fcAgain').addEventListener('click', function(){
+      state = {i:-1, a:new Array(ITEMS.length).fill(null), settings:[], childhood:null, done:false};
+      save(); go(-1);
+    });
+    focusHead();
+  }
+
+  function bar(name, val, max){
+    return '<div class="fc-bar-row">' +
+             '<div class="fc-bar-top"><span class="fc-bar-name">' + name + '</span><span class="fc-bar-val">' + val + ' / ' + max + '</span></div>' +
+             '<div class="fc-bar"><i style="width:' + Math.round((val/max)*100) + '%"></i></div>' +
+           '</div>';
+  }
+
+  /* ---------- router ---------- */
+  function go(i){
+    if(i < 0){ state.i = -1; state.done = false; save(); chrome(); intro(); return; }
+    if(i >= TOTAL){ state.i = TOTAL; state.done = true; save(); chrome(); results(); return; }
+    state.i = i; state.done = false; save(); chrome();
+    if(i < ITEMS.length) question(i);
+    else if(i === ITEMS.length) settingsScreen();
+    else childhoodScreen();
+  }
+
+  /* number keys 1-5 on the rating screens */
+  document.addEventListener('keydown', function(e){
+    if(state.done || state.i < 0 || state.i >= ITEMS.length) return;
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    var n = parseInt(e.key, 10);
+    if(n >= 1 && n <= 5){
+      var inp = stage.querySelectorAll('input[name="fcq"]')[n-1];
+      if(inp){ inp.checked = true; inp.dispatchEvent(new Event('change')); }
+    }
+  });
+
+  chrome();
+  if(state.done) { go(TOTAL); } else { go(-1); }
+})();
+</script>
+</body>
+</html>
