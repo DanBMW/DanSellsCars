@@ -23,29 +23,33 @@
     .plate-band{background:#003399;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 12px;font-size:.72rem;font-weight:800;letter-spacing:.03em;flex-shrink:0;}
     .plate-band span{font-size:1rem;line-height:1;}
     .plate-wrap input{flex:1;min-width:0;background:#ffd60a;border:none;outline:none;font-family:var(--display);font-size:clamp(1.5rem,7vw,2.1rem);font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:center;color:#14181e;padding:16px 10px;}
-    .plate-wrap input::placeholder{color:rgba(20,24,30,.32);letter-spacing:.12em;}
+    .plate-wrap input::placeholder{color:rgba(20,24,30,.68);letter-spacing:.12em;}
     .plate-wrap input:focus{box-shadow:none;}
     .car-reveal{background:linear-gradient(135deg,rgba(21,89,207,.08),rgba(21,89,207,.03));border:1px solid rgba(21,89,207,.22);border-radius:18px;padding:16px 20px;margin:0 0 18px;display:none;}
-    .car-reveal .cr-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1559cf;margin-bottom:6px;}
-    .car-reveal .cr-desc{font-family:var(--display);font-size:1.15rem;font-weight:600;color:#11161d;line-height:1.3;}
+    .car-reveal .cr-kicker{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-light);margin-bottom:6px;}
+    .car-reveal .cr-desc{font-family:var(--display);font-size:1.15rem;font-weight:600;color:var(--text);line-height:1.3;}
     .appt-cards{display:grid;gap:12px;margin:18px 0 8px;}
-    .appt-card{display:flex;align-items:center;gap:16px;background:rgba(16,21,29,.03);border:1px solid rgba(16,21,29,.1);border-radius:18px;padding:18px;text-decoration:none;transition:background .18s,transform .18s;}
-    .appt-card:hover{background:rgba(16,21,29,.08);transform:translateY(-1px);}
+    .appt-card{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;text-decoration:none;color:var(--body);transition:background .18s,transform .18s;}
+    .appt-card:hover{background:rgba(236,233,225,.07);transform:translateY(-1px);}
     .appt-card.primary{background:rgba(21,89,207,.13);border-color:rgba(21,89,207,.32);}
     .appt-icon{font-size:1.8rem;flex-shrink:0;width:44px;text-align:center;}
-    .appt-body strong{display:block;font-size:.95rem;font-weight:700;color:#141a22;margin-bottom:3px;}
-    .appt-body span{font-size:.82rem;color:#5f6b7c;line-height:1.45;}
-    .appt-arrow{margin-left:auto;color:#5f6b7c;font-size:1rem;}
-    .value-note{display:flex;align-items:center;gap:10px;background:rgba(201,168,76,.09);border:1px dashed rgba(138,106,30,.4);border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:.85rem;color:#7a6020;line-height:1.5;}
+    .appt-body strong{display:block;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:3px;}
+    .appt-body span{font-size:.82rem;color:var(--body);line-height:1.45;}
+    .appt-arrow{margin-left:auto;color:var(--body);font-size:1rem;}
+    .value-note{display:flex;align-items:center;gap:10px;background:rgba(201,168,76,.09);border:1px dashed rgba(138,106,30,.4);border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:.85rem;color:#c9a84c;line-height:1.5;}
     .dan-audio{display:flex;align-items:center;gap:14px;background:rgba(21,89,207,.06);border:1px solid rgba(21,89,207,.18);border-radius:16px;padding:14px 16px;margin:0 0 18px;}
     .dan-audio img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;flex-shrink:0;border:2px solid rgba(21,89,207,.25);}
     .da-body{flex:1;min-width:0;}
-    .da-body strong{display:block;font-size:.9rem;font-weight:700;color:#141a22;}
-    .da-body span{font-size:.78rem;color:#5f6b7c;}
-    .da-bar{height:4px;background:rgba(16,21,29,.08);border-radius:999px;margin-top:8px;overflow:hidden;}
+    .da-body strong{display:block;font-size:.9rem;font-weight:700;color:var(--text);}
+    .da-body span{font-size:.78rem;color:var(--muted);}
+    .da-bar{height:4px;background:rgba(236,233,225,.1);border-radius:999px;margin-top:8px;overflow:hidden;}
     .da-fill{height:100%;width:0;background:linear-gradient(90deg,#1559cf,#3a7be0);border-radius:999px;}
     .da-btn{width:46px;height:46px;border-radius:50%;border:none;background:#1559cf;color:#fff;font-size:1.05rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px rgba(21,89,207,.5);transition:background .18s,transform .18s;}
     .da-btn:hover{background:#0e3f96;transform:scale(1.05);}
+    /* The dark skin's --muted (#847f75) reads 4.48:1 against this page's
+       panel - a hair under WCAG AA. Nudge it up for the small print
+       (step kicker, field labels, hints, the audio caption). */
+    body.fv2{--muted:#8d887d;}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   </style>
 <script src="analytics.js" defer></script>
@@ -129,13 +133,13 @@
 
     <p class="hint" style="margin-top:14px;">Can't decide? Leave it with me - I have your details and I'll be in touch either way.</p>
 
-    <a href="yourbrief.html" id="briefNudge" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:16px 18px;margin-top:18px;text-decoration:none;">
+    <a href="yourbrief.html" id="briefNudge" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:16px 18px;margin-top:18px;text-decoration:none;color:#bfa971;">
       <span style="font-size:1.7rem;flex-shrink:0;">🧠</span>
       <span style="flex:1;">
-        <strong style="display:block;font-size:.92rem;font-weight:700;color:#5c470f;margin-bottom:3px;">Got one more minute? Paint me a picture.</strong>
-        <span style="font-size:.8rem;color:#7a6020;line-height:1.5;">Tell me what you'd actually go for - a few taps, no typing. I'll walk into our chat already knowing your taste, and if it turns out to be a good time to change, I'll mention what's currently available too.</span>
+        <strong style="display:block;font-size:.92rem;font-weight:700;color:#d7b869;margin-bottom:3px;">Got one more minute? Paint me a picture.</strong>
+        <span style="font-size:.8rem;color:#bfa971;line-height:1.5;">Tell me what you'd actually go for - a few taps, no typing. I'll walk into our chat already knowing your taste, and if it turns out to be a good time to change, I'll mention what's currently available too.</span>
       </span>
-      <span style="color:#8a6a1e;font-size:1rem;">›</span>
+      <span style="color:#bfa971;font-size:1rem;">›</span>
     </a>
   </div>
 </div></div>
