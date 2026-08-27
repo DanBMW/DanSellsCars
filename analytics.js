@@ -3,7 +3,7 @@
    after the gtag snippet. Safe no-op on pages where gtag is absent.
 
    Events fired (see CLAUDE.md "GA4 events"):
-   - <funnel>_step_<n>  view of a funnel step (funnels: fmb, ev, sq, ap)
+   - <funnel>_step_<n>  view of a funnel step (funnels: fmb, ev, sq, ap, vip)
    - <funnel>_complete  first view of that funnel's confirmation page
    - generate_lead      any Formspree submission ({form_page, ref_code})
    - lead_addendum_sent extra material for an already-counted lead, e.g.
@@ -49,7 +49,9 @@
 
   /* ── funnel step views ─────────────────────────────────────────────
      Slug → funnel + on-screen step number. Redirect-only pages
-     (step4*, step6, ev-step7, retired sq4-sq7/sq6b) are deliberately absent. */
+     (step4*, step6, ev-step7, retired sq4-sq7/sq6b) are deliberately absent.
+     vip.html is the VIP Buyers Event invitation landing page rather than a
+     step, so it fires its own vip_invite_view / vip_start events instead. */
   var STEPS = {
     'step1.html':   ['fmb', 1], 'step1b.html':  ['fmb', 2],
     'step2.html':   ['fmb', 3], 'step3.html':   ['fmb', 4],
@@ -60,11 +62,15 @@
     'ev-step5.html': ['ev', 5], 'ev-step6.html': ['ev', 6],
     'sq1.html': ['sq', 1], 'sq2.html':  ['sq', 2], 'sq3.html': ['sq', 3],
     'ap1.html': ['ap', 1], 'ap2.html': ['ap', 2], 'ap3.html': ['ap', 3],
-    'ap4.html': ['ap', 4], 'ap5.html': ['ap', 5]
+    'ap4.html': ['ap', 4], 'ap5.html': ['ap', 5],
+    'vip1.html': ['vip', 1], 'vip2.html': ['vip', 2], 'vip3.html': ['vip', 3],
+    'vip4.html': ['vip', 4], 'vip5.html': ['vip', 5], 'vip6.html': ['vip', 6],
+    'vip7.html': ['vip', 7]
   };
   var COMPLETE = {
     'thankyou.html': 'fmb', 'wait.html': 'fmb',
-    'ev-thankyou.html': 'ev', 'sq_done.html': 'sq', 'ap6.html': 'ap'
+    'ev-thankyou.html': 'ev', 'sq_done.html': 'sq', 'ap6.html': 'ap',
+    'vip-done.html': 'vip'
   };
 
   if (STEPS[page]) {

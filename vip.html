@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<!-- VIP Buyers Event - personalised invitation landing page.
+     Dan sends vip.html?n=Kate&d=Saturday%2012%20September&t=10:30am
+     (built by the widget on links.html; v= overrides the venue and
+     reg= pre-fills the part exchange step). The link params are read
+     by vip-ui.js and mirrored into sessionStorage, so every step of
+     the pre-qualification stays personalised.
+
+     The event is a one hour appointment instead of the usual two and
+     a half, so the pre-qualification document is what buys that time
+     back. Everything here is aimed at getting it completed BEFORE the
+     day. Personalised page: keep noindex and out of sitemap.xml, and
+     never link it from a public page.
+
+     Hero artwork: vip-carpet.jpg. If it is ever missing, the layered
+     gradients behind it in vip.css still render a spotlit red carpet. -->
+<meta name="robots" content="noindex, nofollow"/>
+<title>Your VIP invitation | DanSells</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="stylesheet" href="style.css?v=7ea8698c"/>
+<link rel="stylesheet" href="funnel.css?v=7ea8698c"/>
+<link rel="stylesheet" href="funnel-premium.css"/>
+<link rel="stylesheet" href="vip.css"/>
+<script src="vip-ui.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<script src="analytics.js" defer></script>
+</head>
+<body class="fv2 vip-noticket"><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="vip-mark"><span class="vip-mark-name">Dan Sells</span><span class="vip-mark-sub">VIP Buyers Event</span></div>
+    <a id="waTop" href="https://wa.me/447827138197" target="_blank" rel="noopener" aria-label="Message Dan on WhatsApp" style="display:flex;align-items:center;color:currentColor;opacity:.8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+  </div>
+
+  <div class="vip-hero">
+    <div class="vip-hero-photo" role="img" aria-label="Red carpet rolled out at the dealership entrance, lined with rope barriers and life-size cardboard cutouts of guests"></div>
+    <div class="vip-hero-inner">
+      <div class="vip-badge"><span></span>By invitation only</div>
+      <h1 id="heroH">The VIP Buyers Event.<br/><em>Your seat is reserved.</em></h1>
+      <p id="heroP">One evening, the best deals we do all year, and a room we open to invited customers only. Before you arrive there is one thing to complete.</p>
+    </div>
+  </div>
+
+  <div class="step-wrap">
+
+    <div class="vip-invite">
+      <div class="vip-invite-kicker">Your invitation</div>
+      <div class="vip-facts">
+        <div class="vip-fact"><b>Guest</b><span id="fGuest">Reserved in your name</span></div>
+        <div class="vip-fact"><b>Event</b><span id="fDate">Date confirmed with you</span></div>
+        <div class="vip-fact"><b>Your slot</b><span id="fTime">Time confirmed with you</span></div>
+      </div>
+    </div>
+
+    <div class="vip-rule">Why this appointment is different</div>
+
+    <div class="vip-clock">
+      <div class="vip-clock-card">
+        <b>A normal appointment</b>
+        <span class="vip-clock-fig">2.5 hrs</span>
+        <p>Time to talk it all through on the day. Your car looked at, figures built from scratch, options explored while you wait.</p>
+      </div>
+      <div class="vip-clock-card now">
+        <b>Your VIP slot</b>
+        <span class="vip-clock-fig">1 hr</span>
+        <p>The same deal, in less than half the time. That only works if the groundwork is already done before you walk in.</p>
+      </div>
+    </div>
+
+    <p class="step-desc" id="whyP">The event is built around the best numbers we put on the table all year, and to protect that we run tight, back-to-back slots. Your hour is yours alone, so I would rather spend it showing you cars and agreeing a deal than filling in the basics. The pre-qualification below is how we get there.</p>
+
+    <div class="vip-rule">What it does for you</div>
+
+    <ul class="vip-list">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Your cars are picked out before you arrive.</strong> I will have the shortlist ready on the day rather than starting the search with you sat there.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Your figures are prepared in advance.</strong> Deposit, monthly, mileage and the routes worth comparing, all worked out ready for you to look at.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Your part exchange is valued early.</strong> The single biggest time sink on the day, handled before it can eat into your hour.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Nothing gets rushed.</strong> The hour goes on the parts that matter to you, not the admin.</span></li>
+    </ul>
+
+    <button class="fv2-next" style="width:100%;justify-content:center;" onclick="startDoc()">Complete my pre-qualification<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+    <p class="hint" style="margin-top:12px;text-align:center;">Around three minutes, mostly taps. You can stop and pick it back up on the same device.</p>
+
+    <div class="vip-seal">
+      <div class="vip-seal-mark">VIP</div>
+      <span>This document comes to me and nobody else. It is preparation for your appointment, it is not an application and it commits you to nothing.</span>
+    </div>
+
+    <p class="hint" style="margin-top:18px;text-align:center;">
+      Need to move your slot or bring someone with you? <a id="waInline" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:var(--blue);">Message me on WhatsApp</a>.
+    </p>
+  </div>
+</div></div>
+<script>
+  var who   = sessionStorage.getItem("vipName")      || "";
+  var date  = sessionStorage.getItem("vipEventDate") || "";
+  var time  = sessionStorage.getItem("vipApptTime")  || "";
+  var venue = sessionStorage.getItem("vipVenue")     || "BMW Ruxley";
+  // Store the default too, so the venue is never blank in Dan's email.
+  sessionStorage.setItem("vipVenue", venue);
+
+  if (who) {
+    document.getElementById("heroH").innerHTML =
+      esc(who) + ", your seat is reserved.<br/><em>Welcome to the VIP Buyers Event.</em>";
+    document.getElementById("fGuest").textContent = who;
+  }
+  if (date) document.getElementById("fDate").textContent = date;
+  if (time) document.getElementById("fTime").textContent = time + ", 1 hour";
+  document.getElementById("heroP").textContent =
+    "One evening at " + venue + ", the best deals we do all year, and a room we open to invited customers only. Before you arrive there is one thing to complete.";
+
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+  var waMsg = "Hi Dan, it's " + (who || "[name]") + " about the VIP Buyers Event" +
+    (date ? " on " + date : "") + ".";
+  document.getElementById("waTop").href = "https://wa.me/447827138197?text=" + encodeURIComponent(waMsg);
+  document.getElementById("waInline").href = "https://wa.me/447827138197?text=" + encodeURIComponent(waMsg);
+
+  if (typeof gtag === "function") gtag("event", "vip_invite_view", { funnel: "vip", named: who ? "yes" : "no" });
+
+  function startDoc(){
+    if (typeof gtag === "function") gtag("event", "vip_start", { funnel: "vip" });
+    window.location.href = "vip1.html";
+  }
+</script>
+<script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
+<script src="contact.js"></script>
+</body></html>

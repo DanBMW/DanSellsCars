@@ -13,8 +13,8 @@ the HTML/CSS/JS directly and push.
 
 - **Static HTML + CSS + vanilla JS**, hosted on **GitHub Pages** from the repo
   root. Most styling and scripting is inline per page; shared assets are
-  `style.css`, `funnel.css`, `funnel-ui.js`, `ev-funnel-ui.js`, `contact.js`,
-  `disclaimer.js`, `scroll-hint.js`.
+  `style.css`, `funnel.css`, `funnel-ui.js`, `ev-funnel-ui.js`, `vip-ui.js`,
+  `vip.css`, `contact.js`, `disclaimer.js`, `scroll-hint.js`.
 - **Firebase Realtime Database + Storage** (project `forecourt-1b6bc`,
   `europe-west1`) is the backend for the forms that persist data:
   `Forecourt.html`, `combined-form.html` / `combined-download.html`,
@@ -33,7 +33,7 @@ the HTML/CSS/JS directly and push.
   Editing `worker.js` in this repo does **not** deploy it — it must be
   re-deployed to Cloudflare manually. Pages that call the worker include
   `tradevalue.html`, `step5.html`, `sq1.html`, `sq3.html`, `ap1.html`,
-  `ev-step4.html`, `EV.html`.
+  `ev-step4.html`, `EV.html`, `vip4.html`.
 
 ## Site structure: the funnels
 
@@ -47,6 +47,7 @@ the final step.
 | `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.eu links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses plain hyphens, no en/em dashes (Dan's rule). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
 | `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate&d=Friday` (built via the widget on `links.html`; `d` is the optional service day, echoed in the greeting); the plate arrives pre-filled, the customer confirms car + mileage then taps **"I'm interested"** (screen 1) and books (cal.eu / WhatsApp). Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
 | `yourbrief.html` | **Optional deep-dive brief** — nudged from `yourcar.html` stage 2 and `sq_done.html` after the initial interest/booking stages. Single page, five skippable stages (direction, timing, payment + budget, PX intent, recap ticket + notes), reuses identity from `sessionStorage` (never re-asks for what Dan has), **one** Formspree submission on send. |
+| `vip.html`, `vip1.html`–`vip7.html` (+ `vip-done`) | **VIP Buyers Event pre-qualification** — off-site, invitation-only flow for the yearly buyers event, where slots are **1 hour** instead of the usual 2.5, so the groundwork has to be done before the day. `vip.html` is the personalised red-carpet landing page (`?n=`name `&d=`event date `&t=`slot `&v=`venue `&reg=`plate, built by the widget on `links.html`); the 7 steps mirror the Find my BMW funnel (shortlist, body style + new/used, budget, part exchange with DVLA/MOT lookup, on-the-night readiness, details, review) and submit **once** on `vip7.html` → `vip-done.html`. Shared behaviour in `vip-ui.js` + `vip.css`; hero artwork is `vip-carpet.jpg`. Personalised and internal: keep every page `noindex`, out of `sitemap.xml`, and never linked from a public page. |
 
 **Formspree is rationed** (submission volume costs money): `yourcar.html`
 sends exactly one interest email per customer ("I'm interested" tap);
@@ -56,6 +57,10 @@ One deliberate exception (Dan's request): the "skip the form" hatch on
 `sq1.html` (WhatsApp/Email) fires one skip-signal email per session with
 the typed reg, so Dan knows a prospect chose the direct route. Don't add
 other per-step or per-tap Formspree calls to these flows.
+The VIP flow follows the same rule: `vip7.html` sends exactly one email per
+completed pre-qualification (guarded by the `vipSent` session key so a
+refresh or a back-tap cannot re-fire it), and `vip.html`/`vip-done.html`
+send nothing at all.
 | `ev-step1.html`–`ev-step7.html` (+ `ev-thankyou`) | **BMW EV Finder** — EV-specific matching funnel (entry: `EV.html` / `ev.html`). Shared behaviour in `ev-funnel-ui.js`. Submits on `ev-step6.html`. |
 | `ap1.html`–`ap6.html` | **Vehicle Appraisal** — customer self-appraisal of their current car (entry: `appraisal.html`). Submits on `ap5.html`, confirmation on `ap6.html`. |
 
@@ -72,7 +77,7 @@ customer-facing, `Value.html` trade tool), dealership pages
   added; a property change means editing every page.
 - **Formspree endpoint `https://formspree.io/f/xqewleog`** — the single form
   backend for all lead submissions: funnel final steps (`step8.html`,
-  `ev-step6.html`, `ap5.html`, `sq3.html`), `yourcar.html` interest pings,
+  `ev-step6.html`, `ap5.html`, `sq3.html`, `vip7.html`), `yourcar.html` interest pings,
   `yourbrief.html`, `contact.js`, `tradevalue.html`,
   `index.html`, offer pages, `combined-form.html`, `rav-form.html`,
   `commission-disclosure.html`, `refer.html`, `thankyou.html`, `wait.html`,
@@ -87,9 +92,11 @@ when adding/renaming funnel pages. Events:
 
 - `<funnel>_step_<n>` — funnel step view. Funnels: `fmb` (Find my BMW,
   steps 1–8), `ev` (EV Finder, 1–6), `sq` (Service Qualifier, 1–3),
-  `ap` (Appraisal, 1–5). Redirect pages fire nothing.
+  `ap` (Appraisal, 1–5), `vip` (VIP Buyers Event, 1–7). Redirect pages fire
+  nothing. `vip.html` is the invitation landing page, not a step: it fires
+  its own `vip_invite_view` and `vip_start`.
 - `<funnel>_complete` — confirmation page view (`thankyou`/`wait`,
-  `ev-thankyou`, `sq_done`, `ap6`), deduped per session.
+  `ev-thankyou`, `sq_done`, `ap6`, `vip-done`), deduped per session.
 - `generate_lead` `{form_page}` — any Formspree submission (a `fetch`
   wrapper detects formspree.io calls, so new forms are tracked for free).
 - `whatsapp_click` `{link_location: float|header|drawer|inline}` — any
@@ -149,7 +156,10 @@ are still duplicated per page — only the header/drawer/footer are templated.
   Firebase-backed).
 - `links.html` — Dan's internal links/dashboard page (includes the Formspree
   record-ID → PDF download widgets, the Ramp Report link builder with its
-  localStorage sent-log, and the print-materials links).
+  localStorage sent-log, the VIP Buyers Event invitation builder with its own
+  `dsVipLog` sent-log, and the print-materials links).
+- `vip.html` and `vip1.html`–`vip7.html` / `vip-done.html` — the VIP Buyers
+  Event pre-qualification. Sent by personal link only, never linked publicly.
 - `print-car-card.html` / `print-car-card-dark.html` — A4 in-car cards for
   service customers (QR → `sq1.html?utm_source=car-qr`, referral QR →
   `refer.html?utm_source=car-qr`). QRs are inline SVG; regenerate if the

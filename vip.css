@@ -1,0 +1,197 @@
+/* ============================================================
+   DANSELLS - VIP Buyers Event skin
+   Loaded AFTER style.css, funnel.css and funnel-premium.css on the
+   VIP pre-qualification pages only (vip.html, vip1-vip7, vip-done),
+   so every rule here is automatically scoped to that funnel.
+
+   The premium dark funnel skin does the heavy lifting; this file
+   re-tokens its blue accent to champagne gold, warms the paper, and
+   adds the handful of components the VIP pages need on top: the red
+   carpet hero, the invitation card, the one-hour contrast panel and
+   the gold section rules.
+
+   Deliberately kept: the yellow number plate on the part exchange
+   step (a real-world artefact).
+   ============================================================ */
+
+/* ── 1. Re-token: blue becomes gold, black warms up ─────────── */
+:root{
+  --bg:#08070a;
+  --paper:#14100f;
+  --surface:rgba(240,231,214,.03);
+  --text:#f3ece0;
+  --body:#c0b6a6;
+  --muted:#8d8375;
+  --line:rgba(212,175,90,.20);
+  --line-soft:rgba(240,231,214,.09);
+  --blue:#c9a227;          /* champagne gold - the funnel's accent */
+  --blue-deep:#8a6d15;
+  --blue-light:#e2c565;
+  --blue-tint:rgba(201,162,39,.13);
+  --gold:#d4af37;
+  --carpet:#8f1524;
+  --carpet-light:#c4162c;
+}
+
+body.fv2{background:var(--bg);color:var(--body);}
+body::before{
+  background:radial-gradient(120% 70% at 50% 0%,rgba(143,21,36,.22),transparent 520px) !important;
+}
+body.fv2 .shell{background:var(--paper);border:1px solid var(--line-soft);}
+body.fv2 .topbar{background:rgba(20,16,15,.93);border-bottom:1px solid var(--line-soft);}
+
+/* Premium skin hard-codes a few blue rgba() values - warm them up. */
+.fv2-opt:hover,.fv2-row:hover,.fv2-model:hover,.fv2-toggle:hover,.px-drop:hover{
+  border-color:rgba(201,162,39,.55);
+}
+.fv2-chip:hover{border-color:rgba(201,162,39,.55);color:var(--text);}
+.fv2-plate:focus{box-shadow:0 0 0 2px var(--blue);}
+.fv2-next:hover,body.fv2 .btn:hover{background:var(--blue);color:#14100f;}
+.fv2-opt.selected .fv2-opt-icon,.fv2-opt.selected .fv2-opt-check,
+.fv2-row.selected .fv2-row-dot,.fv2-chip.on{color:#14100f;}
+
+/* ── 2. Top bar wordmark ───────────────────────────────────── */
+.vip-mark{display:flex;flex-direction:column;gap:3px;}
+.vip-mark .vip-mark-name{
+  font-family:var(--display);font-weight:400;font-size:1.05rem;
+  letter-spacing:.28em;color:var(--text);
+}
+.vip-mark .vip-mark-sub{
+  font-family:var(--font);font-weight:500;font-size:.56rem;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--blue);
+}
+
+/* ── 3. Red carpet hero (vip.html) ─────────────────────────
+   A photo band at its own aspect ratio, so nothing important is cropped
+   away on a phone, fading into the headline block underneath it. If
+   vip-carpet.jpg is ever missing the layered gradients behind it still
+   render a spotlit red carpet on their own. */
+.vip-hero{position:relative;overflow:hidden;}
+.vip-hero-photo{
+  position:relative;width:100%;aspect-ratio:1408/768;min-height:190px;
+  background-image:
+    url('vip-carpet.jpg'),
+    radial-gradient(70% 60% at 50% 6%,rgba(226,197,101,.34),transparent 72%),
+    linear-gradient(180deg,#1a0d10 0%,#3a0d16 44%,#8f1524 100%);
+  background-size:cover,cover,cover;
+  background-position:center 42%,center,center;
+}
+.vip-hero-photo::after{
+  /* feathers the photograph into the page instead of ending on a hard edge */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,7,10,.25) 0%,rgba(8,7,10,0) 34%,rgba(8,7,10,.55) 78%,var(--paper) 100%);
+}
+.vip-hero-inner{
+  position:relative;z-index:2;padding:26px 38px 34px;width:100%;background:var(--paper);
+}
+.vip-hero-inner::before{
+  /* the carpet glow, carried down behind the headline */
+  content:"";position:absolute;left:50%;top:-70px;transform:translateX(-50%);
+  width:78%;height:150px;pointer-events:none;
+  background:radial-gradient(60% 100% at 50% 0%,rgba(196,22,44,.30),transparent 70%);
+}
+.vip-badge{
+  position:relative;z-index:1;
+  display:inline-flex;align-items:center;gap:9px;
+  border:1px solid var(--gold);color:var(--gold);
+  font-size:.62rem;font-weight:600;letter-spacing:.3em;text-transform:uppercase;
+  padding:8px 16px;margin-bottom:18px;background:rgba(8,7,10,.5);
+}
+.vip-badge span{width:5px;height:5px;background:var(--gold);border-radius:50%;}
+.vip-hero h1{
+  position:relative;z-index:1;
+  font-family:var(--display);font-weight:400;color:#fff;
+  font-size:clamp(2rem,6vw,3.1rem);line-height:1.1;letter-spacing:-.01em;margin:0 0 10px;
+}
+.vip-hero h1 em{font-style:normal;color:var(--blue-light);}
+.vip-hero p{
+  position:relative;z-index:1;
+  color:rgba(243,236,224,.86);font-size:.95rem;line-height:1.7;margin:0;max-width:46ch;
+}
+@media(max-width:600px){
+  .vip-hero-inner{padding:22px 22px 28px;}
+}
+
+/* ── 4. Invitation card: who, when, how long ───────────────── */
+.vip-invite{
+  border:1px solid var(--line);background:rgba(212,175,90,.045);
+  padding:22px 24px;margin:0 0 26px;
+}
+.vip-invite-kicker{
+  font-size:.62rem;font-weight:600;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--blue);margin-bottom:12px;
+}
+.vip-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line-soft);}
+.vip-fact{background:var(--paper);padding:14px 16px;}
+.vip-fact b{
+  display:block;font-size:.6rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px;
+}
+.vip-fact span{font-family:var(--display);font-size:1.05rem;color:var(--text);line-height:1.3;}
+@media(max-width:560px){.vip-facts{grid-template-columns:1fr;}}
+
+/* ── 5. 2.5 hours vs 1 hour ────────────────────────────────── */
+.vip-clock{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 24px;}
+.vip-clock-card{border:1px solid var(--line-soft);padding:18px 20px;background:rgba(240,231,214,.02);}
+.vip-clock-card.now{border-color:rgba(201,162,39,.5);background:rgba(201,162,39,.07);}
+.vip-clock-card b{
+  display:block;font-size:.6rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;
+}
+.vip-clock-card .vip-clock-fig{
+  font-family:var(--display);font-size:1.9rem;color:var(--text);line-height:1;display:block;margin-bottom:8px;
+}
+.vip-clock-card.now .vip-clock-fig{color:var(--blue-light);}
+.vip-clock-card p{font-size:.82rem;color:var(--body);line-height:1.55;margin:0;}
+@media(max-width:560px){.vip-clock{grid-template-columns:1fr;}}
+
+/* ── 6. Gold checklist ─────────────────────────────────────── */
+.vip-list{list-style:none;margin:0 0 26px;padding:0;}
+.vip-list li{
+  display:flex;gap:13px;padding:13px 0;border-top:1px solid var(--line-soft);
+  font-size:.9rem;color:var(--body);line-height:1.6;
+}
+.vip-list li:last-child{border-bottom:1px solid var(--line-soft);}
+.vip-list li svg{width:15px;height:15px;flex-shrink:0;margin-top:4px;color:var(--blue);}
+.vip-list li strong{color:var(--text);font-weight:500;}
+
+/* ── 7. Section rule ───────────────────────────────────────── */
+.vip-rule{
+  display:flex;align-items:center;gap:14px;margin:0 0 20px;
+  font-size:.62rem;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--blue);
+}
+.vip-rule::after{content:"";flex:1;height:1px;background:var(--line);}
+
+/* ── 8. Small print / seal ─────────────────────────────────── */
+.vip-seal{
+  display:flex;align-items:center;gap:14px;border:1px solid var(--line-soft);
+  padding:14px 16px;margin-top:22px;font-size:.8rem;color:var(--muted);line-height:1.6;
+}
+.vip-seal .vip-seal-mark{
+  width:38px;height:38px;flex-shrink:0;border:1px solid var(--gold);color:var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:.7rem;letter-spacing:.06em;
+}
+
+/* ── 9. Time-saved meter on the confirmation page ──────────── */
+.vip-meter{border:1px solid var(--line);background:rgba(201,162,39,.06);padding:20px 22px;margin:0 0 24px;}
+.vip-meter b{
+  display:block;font-size:.6rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--blue);margin-bottom:10px;
+}
+.vip-meter-track{height:3px;background:rgba(240,231,214,.12);overflow:hidden;margin-bottom:10px;}
+.vip-meter-fill{height:100%;background:var(--blue);width:0;transition:width 1.1s cubic-bezier(.22,.61,.36,1);}
+.vip-meter p{margin:0;font-size:.85rem;color:var(--body);line-height:1.6;}
+
+/* ── 10. Visually hidden labels ────────────────────────────── */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+
+/* ── 11. Scroll hint ───────────────────────────────────────── */
+/* scroll-hint.js inline-styles its chevron with the blue funnel ring; these
+   pages are gold, so retint it. Inline styles, hence !important. */
+body.fv2 > button[aria-label="Scroll down"]{
+  border-color:rgba(201,162,39,.55) !important;
+}

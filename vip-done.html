@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<!-- VIP Buyers Event pre-qualification, confirmation page. Nothing is sent
+     from here - the single Formspree submission happens on vip7.html. This
+     page recaps the slot, says what Dan does with the document before the
+     night, and gives one WhatsApp route for changes.
+     Keep noindex and out of sitemap.xml. -->
+<meta name="robots" content="noindex, nofollow"/>
+<title>VIP pre-qualification | Sent | DanSells</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="stylesheet" href="style.css?v=7ea8698c"/>
+<link rel="stylesheet" href="funnel.css?v=7ea8698c"/>
+<link rel="stylesheet" href="funnel-premium.css"/>
+<link rel="stylesheet" href="vip.css"/>
+<script src="vip-ui.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<script src="analytics.js" defer></script>
+<style>
+  .ty-plan{background:rgba(240,231,214,.02);border:1px solid var(--line);padding:24px 26px 20px;margin:0 0 24px;}
+  .ty-plan-kicker{font-size:.68rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--blue);margin:0 0 8px;}
+  .ty-plan h3{font-family:var(--display);font-size:1.25rem;font-weight:400;color:var(--text);margin:0 0 12px;}
+  .ty-plan ol{list-style:none;margin:0;padding:0;counter-reset:plan;}
+  .ty-plan li{counter-increment:plan;display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line-soft);font-size:.9rem;line-height:1.7;color:var(--body);}
+  .ty-plan li::before{content:counter(plan);flex-shrink:0;width:24px;height:24px;border-radius:50%;border:1px solid var(--blue);color:var(--blue);font-size:.72rem;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .ty-plan li strong{color:var(--text);font-weight:500;}
+</style>
+</head>
+<body class="fv2 vip-noticket"><div class="app"><div class="shell">
+  <div class="topbar">
+    <div class="vip-mark"><span class="vip-mark-name">Dan Sells</span><span class="vip-mark-sub">VIP Buyers Event</span></div>
+    <div class="meta"><span class="dot"></span><span>Sealed</span></div>
+  </div>
+  <div class="step-wrap">
+    <div class="vip-badge"><span></span>Pre-qualification received</div>
+    <h2 id="doneH">That is your hour protected.</h2>
+    <p class="step-desc" id="doneP">Your document has landed with me and nobody else. I will have worked through it before you arrive, so your slot starts with cars and figures in front of you rather than a blank page.</p>
+
+    <div class="vip-invite" id="slotCard" style="display:none;">
+      <div class="vip-invite-kicker">Your appointment</div>
+      <div class="vip-facts">
+        <div class="vip-fact"><b>Guest</b><span id="sGuest">-</span></div>
+        <div class="vip-fact"><b>Event</b><span id="sDate">-</span></div>
+        <div class="vip-fact"><b>Your slot</b><span id="sTime">-</span></div>
+      </div>
+    </div>
+
+    <div class="vip-meter">
+      <b>Groundwork done in advance</b>
+      <div class="vip-meter-track"><div class="vip-meter-fill" id="meterFill"></div></div>
+      <p id="meterText">That is the paperwork, the numbers and the appraisal off your hour, and back into looking at cars.</p>
+    </div>
+
+    <div class="ty-plan">
+      <div class="ty-plan-kicker">Before the night</div>
+      <h3>What I do with this now</h3>
+      <ol>
+        <li><span><strong>Pull your shortlist.</strong> The cars that actually fit what you have told me, reserved for your slot rather than found on the night.</span></li>
+        <li id="planFigures"><span><strong>Build your figures.</strong> Deposit, monthly and total costs worked up in advance, plus the routes worth comparing.</span></li>
+        <li id="planPx"><span><strong>Value your part exchange.</strong> Appraised from your details and the plate before you arrive, so the figure is ready to talk about.</span></li>
+        <li><span><strong>Confirm your slot.</strong> A short message from me nearer the time with anything you need to bring.</span></li>
+      </ol>
+    </div>
+
+    <div class="vip-rule">If anything changes</div>
+    <p class="step-desc">Running late, need a different time, or bringing someone extra? Tell me and I will work around it. One message is all it takes.</p>
+    <a id="waBtn" class="btn" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;">Message Dan on WhatsApp</a>
+
+    <div class="vip-seal">
+      <div class="vip-seal-mark">VIP</div>
+      <span>Your document is preparation for the appointment only. It is not a credit application and it is not an order. Nothing is shared or sold. See the <a href="privacy.html" style="color:var(--body);">privacy policy</a>.</span>
+    </div>
+  </div>
+</div></div>
+<script>
+  function g(k){ return sessionStorage.getItem(k) || ""; }
+  var who   = g("vipName") || (g("vipFullName").split(" ")[0] || "");
+  var date  = g("vipEventDate");
+  var slot  = g("vipApptConfirm") || g("vipApptTime");
+  var px    = g("vipPX");
+
+  if (who) document.getElementById("doneH").textContent = "That is your hour protected, " + who + ".";
+  if (who || date || slot) {
+    document.getElementById("sGuest").textContent = who || "-";
+    document.getElementById("sDate").textContent = date || "To be confirmed";
+    document.getElementById("sTime").textContent = slot || "To be confirmed";
+    document.getElementById("slotCard").style.display = "block";
+  }
+
+  // The meter reflects how much of the hour the document actually buys back:
+  // the numbers and the part exchange are the two big ones.
+  var done = 2;                                   // shortlist and details, always
+  if (g("vipPurchaseType")) done++;
+  if (["Yes","Maybe"].indexOf(px) !== -1 && g("vipReg")) done++;
+  else if (px === "No") done++;
+  if (g("vipDecision")) done++;
+  var pct = Math.min(100, Math.round(done / 5 * 100));
+  requestAnimationFrame(function(){
+    document.getElementById("meterFill").style.width = pct + "%";
+  });
+
+  if (["Yes","Maybe"].indexOf(px) === -1) {
+    var pxLi = document.getElementById("planPx");
+    if (pxLi) pxLi.remove();
+  }
+  if (g("vipFinancePrep") !== "Yes" && !g("vipPurchaseType")) {
+    var fLi = document.getElementById("planFigures");
+    if (fLi) fLi.remove();
+  }
+
+  document.getElementById("waBtn").href = "https://wa.me/447827138197?text=" + encodeURIComponent(
+    "Hi Dan, it's " + (who || "[name]") + ". I've sent my VIP pre-qualification over" +
+    (date ? " for " + date : "") + "."
+  );
+
+  if (typeof gtag === "function" && !sessionStorage.getItem("vipDoneTracked")) {
+    sessionStorage.setItem("vipDoneTracked", "1");
+    gtag("event", "vip_complete", { funnel: "vip" });
+  }
+</script>
+<script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
+<script src="contact.js"></script>
+</body></html>
