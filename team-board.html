@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>The £15,000 Profit Challenge</title>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<!-- non-blocking: the board must paint instantly even if the font CDN is slow or unreachable -->
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700,900&display=swap"
+      media="print" onload="this.media='all';this.onload=null">
+<style>
+:root{
+  --ink:#0b0f16;
+  --panel:#141b26;
+  --panel-2:#1b2432;
+  --line:rgba(255,255,255,.10);
+  --line-soft:rgba(255,255,255,.06);
+  --text:#f2f5f9;
+  --muted:#93a1b5;
+  --blue:#2f7bf0;
+  --blue-deep:#1559cf;
+  --gold:#e0b352;
+  --green:#2fbf6b;
+  --red:#e2564d;
+  --font:'Satoshi',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --display:'Clash Display','Satoshi',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  background:
+    radial-gradient(1200px 600px at 50% -10%,rgba(47,123,240,.16),transparent 70%),
+    var(--ink);
+  color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;
+  padding:18px 14px 40px;
+}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* ---------- header ---------- */
+.hero{position:relative;text-align:center;padding:6px 0 14px}
+.hero h1{
+  font-family:var(--display);font-weight:700;line-height:.95;
+  font-size:clamp(2rem,7.5vw,4.4rem);letter-spacing:-.02em;
+}
+.hero h1 .amt{
+  display:block;
+  background:linear-gradient(180deg,#ffd98a,var(--gold) 55%,#b8862c);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  font-size:clamp(2.9rem,12vw,6.6rem);
+}
+.hero .sub{
+  margin-top:8px;font-family:var(--display);font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--green);
+  font-size:clamp(.72rem,2.6vw,1.05rem);
+}
+.hero .month{
+  margin-top:10px;display:inline-flex;align-items:center;gap:9px;
+  border:1px solid var(--line);background:rgba(255,255,255,.04);
+  border-radius:999px;padding:6px 14px;font-size:.82rem;color:var(--muted);
+  font-weight:600;letter-spacing:.04em;
+}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
+.live-dot.on{background:var(--green);box-shadow:0 0 0 0 rgba(47,191,107,.6);animation:pulse 2s infinite}
+.live-dot.err{background:var(--red)}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(47,191,107,0)}100%{box-shadow:0 0 0 0 rgba(47,191,107,0)}}
+
+/* mascots */
+.mascots{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:-6px}
+.mascot{display:flex;flex-direction:column;align-items:center;gap:6px;width:clamp(74px,17vw,124px);flex:none}
+.mascot img{
+  width:clamp(52px,13vw,84px);height:clamp(52px,13vw,84px);border-radius:14px;
+  object-fit:cover;object-position:58% 22%;border:2px solid var(--line);
+}
+.mascot .nm{font-weight:900;font-size:clamp(.66rem,2.2vw,.86rem);letter-spacing:.02em}
+.mascot .rl{font-size:clamp(.55rem,1.8vw,.68rem);color:var(--muted);text-align:center;line-height:1.25}
+.bubble{
+  position:relative;background:#fff;color:#11161d;border-radius:12px;
+  padding:6px 9px;font-size:clamp(.56rem,1.9vw,.74rem);font-weight:700;
+  text-align:center;line-height:1.2;max-width:100%;
+}
+.bubble::after{
+  content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
+  border:6px solid transparent;border-top-color:#fff;border-bottom:0;
+}
+.mascot.left .nm{color:#f06fd0}
+.mascot.right .nm{color:#b58ce8}
+
+/* ---------- track ---------- */
+.board{
+  margin-top:18px;background:var(--panel);border:1px solid var(--line-soft);
+  border-radius:20px;padding:14px 12px 10px;
+}
+.track{
+  position:relative;display:grid;
+  grid-template-columns:var(--axis) 1fr;gap:0;
+  --axis:clamp(48px,9vw,74px);
+  height:clamp(400px,58vh,620px);
+}
+.axis{position:relative}
+.axis .tick{
+  position:absolute;right:8px;transform:translateY(50%);
+  font-size:clamp(.56rem,1.7vw,.76rem);font-weight:700;color:var(--muted);
+  white-space:nowrap;
+}
+.axis .tick.major{color:var(--text)}
+.axis .tick.goal{color:var(--gold)}
+.axis .tick.top{color:var(--green);font-family:var(--display);font-size:clamp(.8rem,2.6vw,1.15rem)}
+.axis .rail{
+  position:absolute;right:2px;top:0;bottom:0;width:4px;border-radius:2px;
+  background:linear-gradient(180deg,var(--green),var(--gold) 45%,var(--red));
+}
+.lanes{position:relative;border-left:1px solid var(--line)}
+.grid{position:absolute;inset:0;pointer-events:none}
+.grid .gl{position:absolute;left:0;right:0;height:1px;background:var(--line-soft)}
+.grid .gl.major{background:rgba(255,255,255,.12)}
+.grid .gl.goal{background:linear-gradient(90deg,var(--gold),rgba(224,179,82,.15));height:2px}
+.grid .goal-tag{
+  position:absolute;right:6px;transform:translateY(-115%);
+  font-size:.6rem;font-weight:900;letter-spacing:.12em;color:var(--gold);
+  text-transform:uppercase;
+}
+.lanerow{position:absolute;inset:0;display:flex}
+.lane{position:relative;flex:1 1 0;min-width:0;border-right:1px solid var(--line-soft)}
+.lane:last-child{border-right:0}
+.puck{
+  position:absolute;left:50%;bottom:0;
+  transform:translate(-50%,50%);
+  transition:bottom .9s cubic-bezier(.22,1,.36,1);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.puck img,.puck .ph{
+  width:clamp(30px,5.4vw,52px);height:clamp(30px,5.4vw,52px);
+  border-radius:50%;object-fit:cover;object-position:58% 26%;
+  border:2px solid rgba(255,255,255,.72);
+  box-shadow:0 6px 18px rgba(0,0,0,.5);background:var(--panel-2);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:.7rem;color:var(--muted);letter-spacing:.02em;
+}
+.puck .val{
+  font-size:clamp(.54rem,1.7vw,.72rem);font-weight:900;
+  background:rgba(11,15,22,.85);border:1px solid var(--line);
+  padding:1px 5px;border-radius:999px;white-space:nowrap;
+}
+.puck.lead img,.puck.lead .ph{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,179,82,.28),0 6px 18px rgba(0,0,0,.5)}
+.puck.lead .val{color:var(--gold);border-color:rgba(224,179,82,.5)}
+.puck .crown{position:absolute;top:-13px;font-size:.8rem;line-height:1}
+.puck.champ img,.puck.champ .ph{border-color:var(--green);box-shadow:0 0 0 3px rgba(47,191,107,.3),0 6px 18px rgba(0,0,0,.5)}
+
+.headers{display:flex;margin-left:var(--axis,60px);margin-top:6px}
+.headers .hd{
+  flex:1 1 0;min-width:0;text-align:center;font-family:var(--display);
+  font-weight:700;font-size:clamp(.72rem,2.4vw,1.05rem);letter-spacing:.02em;
+}
+.headers .hd small{display:block;font-family:var(--font);font-weight:600;color:var(--muted);font-size:.56rem;letter-spacing:.02em}
+
+/* ---------- standings ---------- */
+.standings{margin-top:18px;display:grid;gap:8px}
+.row{
+  display:flex;align-items:center;gap:11px;background:var(--panel);
+  border:1px solid var(--line-soft);border-radius:14px;padding:9px 13px;
+}
+.row .pos{font-family:var(--display);font-weight:700;font-size:1rem;width:26px;color:var(--muted);flex:none}
+.row.p1 .pos{color:var(--gold)}
+.row img,.row .ph{
+  width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:58% 26%;
+  border:1px solid var(--line);flex:none;background:var(--panel-2);
+  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.72rem;color:var(--muted);
+}
+.row .who{flex:1;min-width:0}
+.row .who b{display:block;font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .who span{font-size:.7rem;color:var(--muted)}
+.row .fig{text-align:right;flex:none}
+.row .fig b{display:block;font-family:var(--display);font-weight:700;font-size:1.06rem}
+.row .fig span{font-size:.64rem;color:var(--muted)}
+.row.p1{border-color:rgba(224,179,82,.35);background:linear-gradient(90deg,rgba(224,179,82,.09),var(--panel) 60%)}
+.bar{height:3px;border-radius:2px;background:rgba(255,255,255,.08);margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .8s cubic-bezier(.22,1,.36,1)}
+.row.p1 .bar i{background:linear-gradient(90deg,var(--gold),#ffd98a)}
+
+/* ---------- totals strip ---------- */
+.totals{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.stat{flex:1 1 120px;background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:10px 13px}
+.stat b{display:block;font-family:var(--display);font-weight:700;font-size:1.3rem}
+.stat span{font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+
+/* ---------- buttons / manager ---------- */
+.actions{display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.btn{
+  appearance:none;border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-family:var(--font);font-weight:700;font-size:.84rem;padding:10px 18px;
+  border-radius:999px;cursor:pointer;transition:.15s;
+}
+.btn:hover{background:#25303f}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-deep)}
+.btn.danger{background:transparent;border-color:rgba(226,86,77,.5);color:var(--red)}
+.btn.sm{font-size:.72rem;padding:6px 12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.modal-bg{
+  position:fixed;inset:0;background:rgba(5,8,13,.78);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:16px;z-index:100;
+}
+.modal-bg.open{display:flex}
+.modal{
+  width:100%;max-width:520px;max-height:88vh;overflow:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;
+}
+.modal h2{font-family:var(--display);font-weight:700;font-size:1.2rem;margin-bottom:4px}
+.modal .hint{font-size:.78rem;color:var(--muted);margin-bottom:16px;line-height:1.45}
+label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 6px}
+input,select{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+  color:var(--text);font-family:var(--font);font-size:1rem;padding:11px 13px;margin-bottom:14px;
+}
+input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
+#pin-input{text-align:center;font-size:1.8rem;letter-spacing:.5em;font-weight:700}
+.picker{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.pick{
+  background:var(--panel-2);border:2px solid transparent;border-radius:13px;
+  padding:7px 4px;cursor:pointer;text-align:center;transition:.15s;
+}
+.pick img,.pick .ph{
+  width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:58% 26%;
+  display:block;margin:0 auto 4px;background:var(--ink);
+  align-items:center;justify-content:center;font-weight:900;font-size:.7rem;color:var(--muted);
+}
+.pick .ph{display:flex}
+.pick b{font-size:.66rem;font-weight:800;display:block}
+.pick.on{border-color:var(--blue);background:rgba(47,123,240,.14)}
+
+.deals{display:grid;gap:6px;margin-top:6px}
+.deal{
+  display:flex;align-items:center;gap:9px;background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:11px;padding:8px 11px;font-size:.8rem;
+}
+.deal .in{flex:1;min-width:0}
+.deal .in b{display:block;font-weight:800;font-size:.84rem}
+.deal .in span{color:var(--muted);font-size:.68rem}
+.deal .amt{font-family:var(--display);font-weight:700;font-size:.98rem;flex:none}
+.deal .amt.neg{color:var(--red)}
+.icon{
+  background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 6px;
+  font-size:.9rem;line-height:1;border-radius:7px;flex:none;
+}
+.icon:hover{color:var(--text);background:rgba(255,255,255,.07)}
+.icon.del:hover{color:var(--red)}
+.empty{text-align:center;color:var(--muted);font-size:.8rem;padding:22px 0}
+
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:200;display:grid;gap:7px;width:max-content;max-width:92vw}
+.toast{
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;
+  padding:10px 16px;font-size:.82rem;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.5);
+  animation:rise .25s ease;
+}
+.toast.ok{border-color:rgba(47,191,107,.5)}
+.toast.err{border-color:rgba(226,86,77,.55)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.foot{text-align:center;color:var(--muted);font-size:.68rem;margin-top:26px;line-height:1.7}
+@media(max-width:560px){
+  .mascot .rl{display:none}
+  .totals .stat{flex:1 1 calc(50% - 4px)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="mascots">
+    <div class="mascot left">
+      <div class="bubble">I believe in you all!</div>
+      <img src="team/will.jpg" alt="Will Potter">
+      <div class="nm">WILL</div>
+      <div class="rl">Used Car Manager</div>
+    </div>
+    <div class="mascot right">
+      <div class="bubble">I don't...</div>
+      <img src="team/serge.jpg" alt="Sergio Garaguso">
+      <div class="nm">SERGE</div>
+      <div class="rl">Handover Specialist</div>
+    </div>
+  </div>
+
+  <header class="hero">
+    <h1>THE <span class="amt">£15,000</span> Profit Challenge</h1>
+    <p class="sub">Who will be champion</p>
+    <div class="month"><span class="live-dot" id="dot"></span><span id="month-label">Loading…</span></div>
+  </header>
+
+  <div class="board">
+    <div class="track" id="track">
+      <div class="axis" id="axis"><div class="rail"></div></div>
+      <div class="lanes">
+        <div class="grid" id="grid"></div>
+        <div class="lanerow" id="lanes"></div>
+      </div>
+    </div>
+    <div class="headers" id="headers"></div>
+  </div>
+
+  <div class="totals" id="totals"></div>
+  <div class="standings" id="standings"></div>
+
+  <div class="actions">
+    <button class="btn" id="btn-archive">Past months</button>
+    <button class="btn primary" id="btn-manager">Manager access</button>
+  </div>
+
+  <p class="foot">
+    Internal board for the used car team &middot; not linked publicly<br>
+    Photos from the Hedin Automotive Ruxley BMW team page
+  </p>
+</div>
+
+<!-- PIN -->
+<div class="modal-bg" id="m-pin">
+  <div class="modal" style="max-width:340px">
+    <h2>Manager access</h2>
+    <p class="hint">Enter the PIN to add and edit deals.</p>
+    <input type="password" id="pin-input" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off">
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1" data-close="m-pin">Cancel</button>
+      <button class="btn primary" style="flex:1" id="pin-go">Enter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manager panel -->
+<div class="modal-bg" id="m-mgr">
+  <div class="modal">
+    <h2 id="mgr-title">Add a deal</h2>
+    <p class="hint" id="mgr-hint">Pick who did the deal, then enter the profit and the registration.</p>
+
+    <label>Sales executive</label>
+    <div class="picker" id="picker"></div>
+
+    <label for="f-profit">Profit (£)</label>
+    <input type="number" id="f-profit" inputmode="decimal" step="1" placeholder="e.g. 1250">
+
+    <label for="f-reg">Registration</label>
+    <input type="text" id="f-reg" maxlength="10" placeholder="e.g. AB12 CDE" autocapitalize="characters" autocomplete="off">
+
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <button class="btn" style="flex:1" id="mgr-cancel">Close</button>
+      <button class="btn primary" style="flex:1" id="mgr-save">Add deal</button>
+    </div>
+
+    <h2 style="margin-top:20px;font-size:1rem" id="deals-heading">This month's deals</h2>
+    <p class="hint" style="margin-bottom:8px">Tap the pencil to correct a figure, or the bin to remove it.</p>
+    <div class="deals" id="deal-list"></div>
+  </div>
+</div>
+
+<!-- Archive -->
+<div class="modal-bg" id="m-arch">
+  <div class="modal" style="max-width:420px">
+    <h2>Past months</h2>
+    <p class="hint">Every finished month is kept. Pick one to view its final board.</p>
+    <div class="deals" id="arch-list"></div>
+    <button class="btn" style="width:100%;margin-top:12px" data-close="m-arch">Close</button>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ============================================================
+   Board UI. Deliberately plain (non-module) and backend-free so
+   the board still draws if the Firebase CDN is slow or blocked -
+   a showroom screen should never sit blank.
+   ============================================================ */
+
+/* ---- team: order matches the paper board ---- */
+var TEAM=[
+  {id:'dw',ini:'DW',name:'Danny Willis',   photo:'team/dw.jpg'},
+  {id:'ca',ini:'CA',name:'Clive Ankomah',  photo:'team/ca.jpg'},
+  {id:'ms',ini:'MS',name:'Mon Singh',      photo:'team/ms.jpg'},
+  {id:'kj',ini:'KJ',name:'Karis Johnson',  photo:'team/kj.jpg'},
+  {id:'ch',ini:'CH',name:'Carl Hadwin',    photo:'team/ch.jpg'},
+  {id:'ta',ini:'TA',name:'Tomi Adelaja',   photo:'team/ta.jpg'},
+  {id:'dc',ini:'DC',name:'Dan Cane',       photo:'team/dc.jpg'},
+  {id:'md',ini:'MD',name:'Millie Demachen',photo:'team/md.jpg'}
+];
+var BY_ID={};TEAM.forEach(function(t){BY_ID[t.id]=t});
+var TARGET=15000, PIN='1992';
+
+var deals={}, viewMonth=null, isManager=false, editingId=null, pickExec=null, backend=null;
+
+/* ---- helpers ---- */
+function $(id){return document.getElementById(id)}
+function monthKey(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function monthName(k){var p=k.split('-');return new Date(p[0],p[1]-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}
+function money(n){return '£'+Math.round(n).toLocaleString('en-GB')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+function toast(msg,kind){
+  var t=document.createElement('div');
+  t.className='toast'+(kind?' '+kind:'');
+  t.textContent=msg;
+  $('toasts').appendChild(t);
+  setTimeout(function(){t.remove()},2800);
+}
+function setDot(state){
+  $('dot').className='live-dot'+(state==='live'?' on':state==='err'?' err':'');
+}
+function setMonthLabel(mk,note){
+  $('month-label').textContent=monthName(mk)+' · '+note;
+}
+function openModal(id){$(id).classList.add('open')}
+function closeModal(id){$(id).classList.remove('open')}
+
+/* avatar markup, falls back to initials if a photo is missing */
+function avatar(t,cls){
+  if(!t)return '<span class="ph '+(cls||'')+'">?</span>';
+  return '<img class="'+(cls||'')+'" src="'+t.photo+'" alt="'+esc(t.name)+'" loading="lazy" '+
+         'onerror="this.outerHTML=\'<span class=&quot;ph '+(cls||'')+'&quot;>'+t.ini+'</span>\'">';
+}
+
+function totals(){
+  var out={};TEAM.forEach(function(t){out[t.id]=0});
+  Object.keys(deals).forEach(function(k){
+    var d=deals[k];
+    if(out[d.exec]===undefined)return;
+    out[d.exec]+=Number(d.profit)||0;
+  });
+  return out;
+}
+function counts(){
+  var out={};TEAM.forEach(function(t){out[t.id]=0});
+  Object.keys(deals).forEach(function(k){
+    var d=deals[k];if(out[d.exec]!==undefined)out[d.exec]++;
+  });
+  return out;
+}
+/* ceiling unlocks past the target, mirroring the taped-on strip */
+function ceiling(max){
+  if(max<=TARGET)return TARGET;
+  return Math.ceil(max/5000)*5000;
+}
+
+/* ---- render ---- */
+function render(){
+  var tot=totals(), cnt=counts();
+  var vals=TEAM.map(function(t){return tot[t.id]});
+  var max=Math.max.apply(null,[0].concat(vals));
+  var cap=ceiling(max);
+  var best=max;
+
+  var step=cap<=15000?1000:2000;
+  var axisHTML='<div class="rail"></div>', gridHTML='';
+  for(var v=0;v<=cap;v+=step){
+    var pct=(v/cap)*100;
+    var isTop=(v===cap), isGoal=(v===TARGET&&cap>TARGET);
+    var label=isTop?(cap/1000)+'k':(v===0?'£0':'£'+v.toLocaleString('en-GB'));
+    axisHTML+='<div class="tick'+(isTop?' top':'')+(isGoal?' goal':'')+(v%5000===0?' major':'')+
+              '" style="bottom:'+pct+'%">'+label+'</div>';
+    gridHTML+='<div class="gl'+(isGoal?' goal':'')+(v%5000===0?' major':'')+'" style="bottom:'+pct+'%"></div>';
+  }
+  if(cap>TARGET)gridHTML+='<div class="goal-tag" style="bottom:'+((TARGET/cap)*100)+'%">Target</div>';
+  $('axis').innerHTML=axisHTML;
+  $('grid').innerHTML=gridHTML;
+
+  $('lanes').innerHTML=TEAM.map(function(t){
+    var v=tot[t.id];
+    var pct=Math.max(0,Math.min(100,(v/cap)*100));
+    var lead=best>0&&v===best, champ=v>=TARGET;
+    return '<div class="lane"><div class="puck'+(lead?' lead':'')+(champ?' champ':'')+'" style="bottom:'+pct+'%">'+
+      (lead?'<span class="crown">👑</span>':'')+
+      avatar(t)+
+      '<span class="val">'+money(v)+'</span>'+
+    '</div></div>';
+  }).join('');
+
+  $('headers').innerHTML=TEAM.map(function(t){
+    return '<div class="hd">'+t.ini+'<small>'+esc(t.name.split(' ')[0])+'</small></div>';
+  }).join('');
+
+  var ranked=TEAM.slice().sort(function(a,b){return tot[b.id]-tot[a.id]});
+  $('standings').innerHTML=ranked.map(function(t,i){
+    var v=tot[t.id];
+    var pct=Math.max(0,Math.min(100,(v/TARGET)*100));
+    var toGo=TARGET-v;
+    var note=v>=TARGET?' · target smashed':(v>0?' · '+money(toGo)+' to go':'');
+    return '<div class="row'+(i===0&&v>0?' p1':'')+'">'+
+      '<span class="pos">'+(i+1)+'</span>'+
+      avatar(t)+
+      '<span class="who"><b>'+esc(t.name)+'</b>'+
+        '<span>'+cnt[t.id]+' deal'+(cnt[t.id]===1?'':'s')+note+'</span>'+
+        '<span class="bar"><i style="width:'+pct+'%"></i></span>'+
+      '</span>'+
+      '<span class="fig"><b>'+money(v)+'</b><span>profit</span></span>'+
+    '</div>';
+  }).join('');
+
+  var grand=vals.reduce(function(a,b){return a+b},0);
+  var dealCount=Object.keys(deals).length;
+  var avg=dealCount?grand/dealCount:0;
+  var hit=vals.filter(function(v){return v>=TARGET}).length;
+  $('totals').innerHTML=
+    '<div class="stat"><b>'+money(grand)+'</b><span>Team profit</span></div>'+
+    '<div class="stat"><b>'+dealCount+'</b><span>Deals</span></div>'+
+    '<div class="stat"><b>'+money(avg)+'</b><span>Average</span></div>'+
+    '<div class="stat"><b>'+hit+' / '+TEAM.length+'</b><span>At target</span></div>';
+
+  if(isManager)renderDeals();
+}
+
+/* ---- manager: deal list ---- */
+function renderDeals(){
+  $('deals-heading').textContent=(viewMonth===monthKey()?"This month's deals":monthName(viewMonth)+' deals');
+  var ids=Object.keys(deals).sort(function(a,b){return (deals[b].ts||0)-(deals[a].ts||0)});
+  if(!ids.length){$('deal-list').innerHTML='<p class="empty">No deals logged this month yet.</p>';return}
+  $('deal-list').innerHTML=ids.map(function(id){
+    var d=deals[id], t=BY_ID[d.exec];
+    var when=d.ts?new Date(d.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}):'';
+    var p=Number(d.profit)||0;
+    return '<div class="deal">'+
+      '<span class="in"><b>'+esc(t?t.name:d.exec)+'</b>'+
+        '<span>'+(d.reg?esc(d.reg)+' · ':'')+when+'</span></span>'+
+      '<span class="amt'+(p<0?' neg':'')+'">'+money(p)+'</span>'+
+      '<button class="icon" data-edit="'+id+'" title="Edit">&#9998;</button>'+
+      '<button class="icon del" data-del="'+id+'" title="Delete">&#128465;</button>'+
+    '</div>';
+  }).join('');
+  Array.prototype.forEach.call($('deal-list').querySelectorAll('[data-edit]'),function(b){
+    b.onclick=function(){startEdit(b.getAttribute('data-edit'))};
+  });
+  Array.prototype.forEach.call($('deal-list').querySelectorAll('[data-del]'),function(b){
+    b.onclick=function(){delDeal(b.getAttribute('data-del'))};
+  });
+}
+
+/* ---- data ops (delegate to the Firebase module once it has loaded) ---- */
+function requireBackend(){
+  if(backend)return true;
+  toast('Not connected - check the internet connection','err');
+  return false;
+}
+
+function saveDeal(){
+  if(!requireBackend())return;
+  var profit=parseFloat($('f-profit').value);
+  var reg=$('f-reg').value.trim().toUpperCase();
+  if(!pickExec){toast('Pick who did the deal','err');return}
+  if(!isFinite(profit)){toast('Enter the profit','err');return}
+  var payload={exec:pickExec,profit:Math.round(profit),reg:reg};
+  var btn=$('mgr-save');btn.disabled=true;
+  var done=function(){btn.disabled=false};
+  if(editingId){
+    backend.edit(viewMonth,editingId,payload).then(function(){
+      toast('Deal updated','ok');resetForm();
+    })['catch'](function(e){console.error(e);toast('Could not save the change','err')}).then(done,done);
+  }else{
+    payload.ts=Date.now();
+    backend.add(viewMonth,payload).then(function(){
+      toast(money(profit)+' added for '+BY_ID[pickExec].name.split(' ')[0],'ok');resetForm();
+    })['catch'](function(e){console.error(e);toast('Could not save - check connection','err')}).then(done,done);
+  }
+}
+
+function delDeal(id){
+  if(!requireBackend())return;
+  var d=deals[id];if(!d)return;
+  var who=BY_ID[d.exec]?BY_ID[d.exec].name:d.exec;
+  if(!confirm('Delete this '+money(Number(d.profit)||0)+' deal for '+who+'?'))return;
+  backend.del(viewMonth,id).then(function(){
+    toast('Deal removed','ok');
+    if(editingId===id)resetForm();
+  })['catch'](function(e){console.error(e);toast('Could not delete','err')});
+}
+
+/* always say which month is being written to - a past month is easy to miss */
+function monthNote(){
+  if(viewMonth===monthKey())return '';
+  return '<b style="color:var(--gold)">Viewing '+monthName(viewMonth)+
+         ' - a finished month.</b><br>';
+}
+function startEdit(id){
+  var d=deals[id];if(!d)return;
+  editingId=id;
+  setPick(d.exec);
+  $('f-profit').value=d.profit;
+  $('f-reg').value=d.reg||'';
+  $('mgr-title').textContent='Edit deal';
+  $('mgr-hint').innerHTML=monthNote()+'Correct the figure or the registration, then save.';
+  $('mgr-save').textContent='Save changes';
+  $('m-mgr').scrollTop=0;
+  $('f-profit').focus();
+}
+function resetForm(){
+  editingId=null;pickExec=null;
+  $('f-profit').value='';$('f-reg').value='';
+  $('mgr-title').textContent='Add a deal';
+  $('mgr-hint').innerHTML=monthNote()+
+    'Pick who did the deal, then enter the profit and the registration.';
+  $('mgr-save').textContent='Add deal';
+  Array.prototype.forEach.call(document.querySelectorAll('.pick'),function(p){p.classList.remove('on')});
+}
+function setPick(id){
+  pickExec=id;
+  Array.prototype.forEach.call(document.querySelectorAll('.pick'),function(p){
+    p.classList.toggle('on',p.getAttribute('data-id')===id);
+  });
+}
+
+/* ---- month switching ---- */
+function showMonth(mk){
+  viewMonth=mk;
+  var live=(mk===monthKey());
+  setMonthLabel(mk, live?'live':'finished');
+  deals={};render();
+  if(backend){setDot('');backend.listen(mk)}
+}
+
+function openArchive(){
+  if(!requireBackend())return;
+  $('arch-list').innerHTML='<p class="empty">Loading…</p>';
+  openModal('m-arch');
+  backend.months().then(function(months){
+    var cur=monthKey();
+    if(months.indexOf(cur)===-1)months.push(cur);
+    months=months.filter(function(m,i){return months.indexOf(m)===i}).sort().reverse();
+    $('arch-list').innerHTML=months.map(function(m){
+      return '<div class="deal"><span class="in"><b>'+monthName(m)+'</b>'+
+        '<span>'+(m===cur?'Running now':'Finished')+'</span></span>'+
+        '<button class="btn sm" data-month="'+m+'">View</button></div>';
+    }).join('');
+    Array.prototype.forEach.call($('arch-list').querySelectorAll('[data-month]'),function(b){
+      b.onclick=function(){showMonth(b.getAttribute('data-month'));closeModal('m-arch')};
+    });
+  })['catch'](function(e){
+    console.error(e);
+    $('arch-list').innerHTML='<p class="empty">Could not load past months.</p>';
+  });
+}
+
+/* ---- wiring ---- */
+Array.prototype.forEach.call(document.querySelectorAll('[data-close]'),function(b){
+  b.onclick=function(){closeModal(b.getAttribute('data-close'))};
+});
+Array.prototype.forEach.call(document.querySelectorAll('.modal-bg'),function(bg){
+  bg.addEventListener('click',function(e){if(e.target===bg)bg.classList.remove('open')});
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')Array.prototype.forEach.call(document.querySelectorAll('.modal-bg.open'),
+    function(m){m.classList.remove('open')});
+});
+
+$('picker').innerHTML=TEAM.map(function(t){
+  return '<div class="pick" data-id="'+t.id+'">'+avatar(t)+'<b>'+t.ini+'</b></div>';
+}).join('');
+Array.prototype.forEach.call($('picker').querySelectorAll('.pick'),function(p){
+  p.onclick=function(){setPick(p.getAttribute('data-id'))};
+});
+
+function checkPin(){
+  if($('pin-input').value===PIN){
+    isManager=true;
+    closeModal('m-pin');
+    if(viewMonth!==monthKey())showMonth(monthKey());
+    resetForm();openModal('m-mgr');renderDeals();
+  }else{
+    toast('Incorrect PIN','err');$('pin-input').value='';$('pin-input').focus();
+  }
+}
+$('btn-manager').onclick=function(){
+  if(isManager){resetForm();openModal('m-mgr');renderDeals();return}
+  $('pin-input').value='';
+  openModal('m-pin');
+  setTimeout(function(){$('pin-input').focus()},80);
+};
+$('pin-go').onclick=checkPin;
+$('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPin()});
+$('mgr-save').onclick=saveDeal;
+$('mgr-cancel').onclick=function(){resetForm();closeModal('m-mgr')};
+$('f-reg').addEventListener('keydown',function(e){if(e.key==='Enter')saveDeal()});
+$('btn-archive').onclick=openArchive;
+
+/* auto-roll: if midnight rolls into a new month while the board is up, follow it */
+setInterval(function(){
+  var now=monthKey();
+  if(!isManager&&viewMonth&&viewMonth<now)showMonth(now);
+},60000);
+
+/* draw straight away at zero, so the board is never blank */
+viewMonth=monthKey();
+setMonthLabel(viewMonth,'connecting…');
+render();
+
+/* the Firebase module calls this once it is ready */
+window.dsBindBackend=function(api){
+  backend=api;
+  setDot('');
+  backend.listen(viewMonth);
+};
+window.dsOnDeals=function(obj){
+  deals=obj||{};
+  setDot('live');
+  setMonthLabel(viewMonth,viewMonth===monthKey()?'live':'finished');
+  render();
+};
+window.dsOnError=function(){
+  setDot('err');
+  setMonthLabel(viewMonth,'offline');
+};
+
+/* if the SDK never arrives, say so rather than showing a silent zero board */
+setTimeout(function(){
+  if(!backend){setDot('err');setMonthLabel(viewMonth,'offline')}
+},9000);
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, update, remove, get }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const db=getDatabase(initializeApp(firebaseConfig));
+const path=m=>'profitchallenge/months/'+m+'/deals';
+
+let stop=null;
+
+window.dsBindBackend({
+  listen(m){
+    if(stop)stop();
+    stop=onValue(ref(db,path(m)),
+      s=>window.dsOnDeals(s.val()||{}),
+      e=>{console.error(e);window.dsOnError()}
+    );
+  },
+  add:(m,payload)=>push(ref(db,path(m)),payload),
+  edit:(m,id,payload)=>update(ref(db,path(m)+'/'+id),payload),
+  del:(m,id)=>remove(ref(db,path(m)+'/'+id)),
+  months:()=>get(ref(db,'profitchallenge/months')).then(s=>Object.keys(s.val()||{}))
+});
+</script>
+</body>
+</html>

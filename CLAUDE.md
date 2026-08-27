@@ -19,7 +19,8 @@ the HTML/CSS/JS directly and push.
   `europe-west1`) is the backend for the forms that persist data:
   `Forecourt.html`, `combined-form.html` / `combined-download.html`,
   `rav-form.html` / `rav-download.html`, `commission-disclosure.html` /
-  `commission-download.html`, and the `forecourt-frenzy*.html` games. Rules
+  `commission-download.html`, the `forecourt-frenzy*.html` games, and
+  `team-board.html`. Rules
   live in `database.rules.json` and `storage.rules` (deployed via
   `firebase.json`) — keep them in sync with any new DB paths.
 - **Cloudflare Worker** — `worker.js` is the source of the worker deployed at
@@ -154,6 +155,10 @@ are still duplicated per page — only the header/drawer/footer are templated.
 
 - `Forecourt.html` — internal forecourt stock check tool (PIN-gated,
   Firebase-backed).
+- `team-board.html` — the **£15,000 Profit Challenge** board: a live race-to-the-
+  top scoreboard for the used car team (the digital replacement for the paper
+  board on the showroom wall). Public to view by URL, but adding/editing deals
+  is behind the manager PIN. Team photos live in `team/` (see below).
 - `links.html` — Dan's internal links/dashboard page (includes the Formspree
   record-ID → PDF download widgets, the Ramp Report link builder with its
   localStorage sent-log, the VIP Buyers Event invitation builder with its own
@@ -172,6 +177,42 @@ These must never be linked from public pages, must stay **out of
 `sitemap.xml`**, and must carry
 `<meta name="robots" content="noindex, nofollow">`. Do not remove that meta
 tag, and do not add these pages to any nav.
+
+## The Profit Challenge board — team-board.html
+
+A single self-contained page; no build step, no shared assets. It replaces the
+hand-drawn £15,000 challenge board that lived on the showroom wall.
+
+- **Team roster** is the `TEAM` array at the top of the page script — id,
+  initials, display name and photo path, in the same left-to-right order as the
+  old paper board (DW, CA, MS, KJ, CH, TA, DC, MD). Changing the team means
+  editing that array **and** the `exec` regex in `database.rules.json`, which
+  whitelists the same eight ids.
+- **Photos** are in `team/` (`dw|ca|ms|kj|ch|ta|dc|md.jpg`, plus `will.jpg` and
+  `serge.jpg` for the two mascots at the top). All are 360×240 and framed the
+  same way, so the CSS crops them with one shared `object-position`. They came
+  from the Hedin Automotive Ruxley BMW team page, except `ms.jpg` (Mon Singh),
+  who is not on that page — his was cropped from a photo Dan supplied. A missing
+  photo degrades to an initials tile rather than a broken image.
+- **Data** lives at `profitchallenge/months/<YYYY-MM>/deals/<pushId>` as
+  `{exec, profit, reg, ts}`. The month key is derived from the clock, so the
+  board **auto-rolls on the 1st** and every finished month stays readable via
+  "Past months". Nothing needs resetting by hand.
+- **Manager access** is the same shared PIN pattern as `Forecourt.html`
+  (`PIN` constant in the page). Note this is a client-side gate: the DB rules
+  allow anyone to write to `profitchallenge`, so the PIN stops accidents, not a
+  determined visitor. The rules do validate shape — known `exec` id, numeric
+  `profit` within ±100000, short `reg` — and are scoped so a bad write cannot
+  touch any other path. Move to Firebase Auth if the figures ever need to be
+  genuinely private.
+- **The £15k target** is the `TARGET` constant. Past it the track extends itself
+  in 5k steps (20k, 25k, 30k…), mirroring the strip Dan taped to the bottom of
+  the paper board, and the £15,000 line stays marked as "Target".
+- The board renders from a **plain non-module script** and only then lets the
+  Firebase module feed it, so a slow or blocked CDN shows an honest "offline"
+  board rather than a blank screen. The webfont is loaded non-render-blocking
+  for the same reason. Keep both properties if you refactor — this page is
+  meant to sit on a wall display unattended.
 
 Also retired: `ev.html` is a redirect stub to `EV.html` (the live EV landing
 page) kept only so old lowercase links still work — don't resurrect it.
