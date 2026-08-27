@@ -56,17 +56,21 @@
     try { localStorage.removeItem(BACKUP_KEY); } catch(e) {}
   };
 
-  /* ── the invitation link: name, event date, appointment time, venue,
-        and optionally the plate of the car they may part exchange.
+  /* ── the invitation link: name, the dates the event runs across, the
+        customer's own day and time within them, the venue, and optionally
+        the plate of the car they may part exchange.
         Read on every page so a customer who opens a mid-funnel link
         still gets personalised copy. ── */
   function clean(v, re, max){ return (v || "").trim().replace(re, "").slice(0, max); }
   try {
     var p = new URLSearchParams(location.search);
+    // The event runs across four days, so the date is a range ("Thursday 18
+    // to Sunday 21 September") and the slot names a day as well as a time
+    // ("Saturday 20th, 10:30am"). Both sanitisers allow for that.
     var map = [
       ["vipName",      clean(p.get("n")  || p.get("name"), /[^A-Za-z' -]/g, 30)],
-      ["vipEventDate", clean(p.get("d")  || p.get("date"), /[^A-Za-z0-9 ,]/g, 34)],
-      ["vipApptTime",  clean(p.get("t")  || p.get("time"), /[^A-Za-z0-9:. ]/g, 16)],
+      ["vipEventDate", clean(p.get("d")  || p.get("date"), /[^A-Za-z0-9 ,&-]/g, 48)],
+      ["vipApptTime",  clean(p.get("t")  || p.get("time"), /[^A-Za-z0-9:., -]/g, 32)],
       ["vipVenue",     clean(p.get("v")  || p.get("venue"), /[^A-Za-z0-9 &'-]/g, 34)]
     ];
     map.forEach(function(pair){ if (pair[1]) sessionStorage.setItem(pair[0], pair[1]); });
@@ -148,7 +152,7 @@
     } else if (pt) {
       items.push(pt);
     }
-    if (g("vipBudgetStatus") === "To discuss on the night") items.push("Budget to discuss");
+    if (g("vipBudgetStatus") === "To discuss on the day") items.push("Budget to discuss");
     if (g("vipAnnualMileage")) items.push(Math.round(Number(g("vipAnnualMileage")) / 1000) + "k miles/yr");
     var px = g("vipPX");
     if (px === "No") items.push("No part exchange");

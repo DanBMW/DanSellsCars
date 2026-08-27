@@ -275,10 +275,10 @@ a{color:inherit;text-decoration:none}
     <!-- VIP Buyers Event personal invitation builder -->
     <div class="widget-card">
       <div class="widget-name">&#x1F3AC; VIP Event Invitation <span class="tag tag-new">New</span></div>
-      <div class="widget-desc">Builds the customer's personalised VIP landing page: their name on the red carpet, their event date and their slot. From there they complete the pre-qualification document, which lands in your inbox as one email before the night. WA and Email open a ready-to-send message with the link inside.</div>
+      <div class="widget-desc">Builds the customer's personalised VIP landing page: their name on the red carpet, the dates the event runs across, and their own one hour slot within them. From there they complete the pre-qualification document, which lands in your inbox as one email before they arrive. WA and Email open a ready-to-send message with the link inside.</div>
       <input class="widget-input" id="vip-name" type="text" placeholder="Customer first name" autocomplete="off">
-      <input class="widget-input" id="vip-date" type="text" placeholder="Event date e.g. Thursday 18 September" autocomplete="off">
-      <input class="widget-input" id="vip-time" type="text" placeholder="Their slot e.g. 6:30pm" autocomplete="off">
+      <input class="widget-input" id="vip-date" type="text" placeholder="Event runs e.g. Thursday 18 to Sunday 21 September" autocomplete="off">
+      <input class="widget-input" id="vip-time" type="text" placeholder="Their slot e.g. Saturday 20th, 10:30am" autocomplete="off">
       <input class="widget-input" id="vip-venue" type="text" placeholder="Venue (optional, defaults to BMW Ruxley)" autocomplete="off">
       <input class="widget-input" id="vip-reg" type="text" placeholder="Their reg (optional, pre-fills the part exchange)" autocomplete="off" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
       <div class="btn-row" style="margin-bottom:8px">
@@ -930,7 +930,9 @@ rrLogRender();
 
 // ── VIP Buyers Event personal invitation ──
 // Builds vip.html?n=&d=&t=&v=&reg= - the landing page reads the params and
-// carries them through the whole pre-qualification (see vip-ui.js).
+// carries them through the whole pre-qualification (see vip-ui.js). The event
+// runs across four days, so d= is the range and t= is this customer's own day
+// and time inside it.
 function vipFields() {
   return {
     name:  document.getElementById('vip-name').value.trim(),
@@ -943,7 +945,7 @@ function vipFields() {
 function buildVipLink() {
   const f = vipFields();
   if (!f.name) { alert('Please enter the customer first name - the page is built around it.'); return null; }
-  if (!f.date) { alert('Please enter the event date.'); return null; }
+  if (!f.date) { alert('Please enter the dates the event runs across.'); return null; }
   const params = new URLSearchParams({ n: f.name, d: f.date });
   if (f.time)  params.set('t', f.time);
   if (f.venue) params.set('v', f.venue);
@@ -962,9 +964,10 @@ function shareVipWA() {
   const link = buildVipLink();
   if (!link) return;
   const f = vipFields();
-  const when = f.time ? f.date + ' at ' + f.time : f.date;
-  const msg = 'Hi ' + f.name + ", it's Dan from BMW Ruxley. You're on the invite list for our VIP Buyers Event on " + when +
-    " - the best deals we do all year, invitation only.\n\nOne thing before the night: VIP slots are one hour instead of the usual two and a half, so I need your pre-qualification completed beforehand. It takes about three minutes and it means your cars, your figures and your part exchange are all ready when you walk in.\n\nYour personal page here:\n\n" + link;
+  const msg = 'Hi ' + f.name + ", it's Dan from BMW Ruxley. You're on the invite list for our VIP Buyers Event, " + f.date +
+    " - the best deals we do all year, invitation only." +
+    (f.time ? "\n\nYour slot is " + f.time + "." : "") +
+    "\n\nOne thing before you come in: VIP slots are one hour instead of the usual two and a half, so I need your pre-qualification completed beforehand. It takes about three minutes and it means your cars, your figures and your part exchange are all ready when you walk in.\n\nYour personal page here:\n\n" + link;
   vipLogAdd('WA');
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
@@ -972,11 +975,11 @@ function emailVipLink() {
   const link = buildVipLink();
   if (!link) return;
   const f = vipFields();
-  const when = f.time ? f.date + ' at ' + f.time : f.date;
-  const subject = 'Your VIP Buyers Event invitation - ' + when;
+  const subject = 'Your VIP Buyers Event invitation - ' + f.date;
   const body =
     'Hi ' + f.name + ',\n\n' +
-    'Dan here from BMW Ruxley. You are invited to our VIP Buyers Event on ' + when + '. It is invitation only, and it is where we do the best deals of the year.\n\n' +
+    'Dan here from BMW Ruxley. You are invited to our VIP Buyers Event, running ' + f.date + '. It is invitation only, and it is where we do the best deals of the year.\n\n' +
+    (f.time ? 'Your slot is ' + f.time + '.\n\n' : '') +
     'There is one difference worth knowing about. A normal appointment with me runs about two and a half hours, which is plenty of time to work everything out on the day. VIP slots are one hour, so the groundwork has to be done beforehand.\n\n' +
     'That is what your pre-qualification document is for. It takes about three minutes, it is mostly taps, and it means I arrive with your shortlist picked out, your figures already worked up and your part exchange valued.\n\n' +
     'Your personal page is here:\n\n' +

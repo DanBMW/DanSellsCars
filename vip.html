@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <!-- VIP Buyers Event - personalised invitation landing page.
-     Dan sends vip.html?n=Kate&d=Saturday%2012%20September&t=10:30am
-     (built by the widget on links.html; v= overrides the venue and
-     reg= pre-fills the part exchange step). The link params are read
-     by vip-ui.js and mirrored into sessionStorage, so every step of
-     the pre-qualification stays personalised.
+     Dan sends vip.html?n=Kate&d=Thursday%2018%20to%20Sunday%2021%20September
+     &t=Saturday%2020th,%2010:30am (built by the widget on links.html;
+     v= overrides the venue and reg= pre-fills the part exchange step).
+     The link params are read by vip-ui.js and mirrored into
+     sessionStorage, so every step of the pre-qualification stays
+     personalised.
 
-     The event is a one hour appointment instead of the usual two and
-     a half, so the pre-qualification document is what buys that time
+     The event runs across four days, and each customer gets a one hour
+     appointment on their chosen day instead of the usual two and a half
+     hours, so the pre-qualification document is what buys that time
      back. Everything here is aimed at getting it completed BEFORE the
      day. Personalised page: keep noindex and out of sitemap.xml, and
      never link it from a public page.
@@ -40,7 +42,7 @@
     <div class="vip-hero-inner">
       <div class="vip-badge"><span></span>By invitation only</div>
       <h1 id="heroH">The VIP Buyers Event.<br/><em>Your seat is reserved.</em></h1>
-      <p id="heroP">One evening, the best deals we do all year, and a room we open to invited customers only. Before you arrive there is one thing to complete.</p>
+      <p id="heroP">Four days of the best deals we do all year, in a showroom we open to invited customers only. Before you arrive there is one thing to complete.</p>
     </div>
   </div>
 
@@ -50,8 +52,8 @@
       <div class="vip-invite-kicker">Your invitation</div>
       <div class="vip-facts">
         <div class="vip-fact"><b>Guest</b><span id="fGuest">Reserved in your name</span></div>
-        <div class="vip-fact"><b>Event</b><span id="fDate">Date confirmed with you</span></div>
-        <div class="vip-fact"><b>Your slot</b><span id="fTime">Time confirmed with you</span></div>
+        <div class="vip-fact"><b>Event runs</b><span id="fDate">Dates confirmed with you</span></div>
+        <div class="vip-fact"><b>Your slot</b><span id="fTime">Day and time confirmed with you</span></div>
       </div>
     </div>
 
@@ -70,7 +72,7 @@
       </div>
     </div>
 
-    <p class="step-desc" id="whyP">The event is built around the best numbers we put on the table all year, and to protect that we run tight, back-to-back slots. Your hour is yours alone, so I would rather spend it showing you cars and agreeing a deal than filling in the basics. The pre-qualification below is how we get there.</p>
+    <p class="step-desc" id="whyP">The event is built around the best numbers we put on the table all year, and to protect that we run tight, back-to-back slots from open to close across all four days. Your hour is yours alone, so I would rather spend it showing you cars and agreeing a deal than filling in the basics. The pre-qualification below is how we get there.</p>
 
     <div class="vip-rule">What it does for you</div>
 
@@ -110,7 +112,7 @@
   if (date) document.getElementById("fDate").textContent = date;
   if (time) document.getElementById("fTime").textContent = time + ", 1 hour";
   document.getElementById("heroP").textContent =
-    "One evening at " + venue + ", the best deals we do all year, and a room we open to invited customers only. Before you arrive there is one thing to complete.";
+    "Four days at " + venue + " of the best deals we do all year, in a showroom we open to invited customers only. Before you arrive there is one thing to complete.";
 
   function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }

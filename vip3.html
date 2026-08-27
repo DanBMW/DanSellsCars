@@ -34,7 +34,7 @@
 <div class="step-wrap">
   <div class="step-kicker">Budget</div>
   <h2>How would you like to fund it, and what is the budget?</h2>
-  <p class="step-desc">This is the part that saves the most time on the night. Rough figures are all I need, and they are what let me build your numbers in advance, so we look at finished figures instead of working them out from a blank page. Nothing here is an application and nothing is binding.</p>
+  <p class="step-desc">This is the part that saves the most time on the day. Rough figures are all I need, and they are what let me build your numbers in advance, so we look at finished figures instead of working them out from a blank page. Nothing here is an application and nothing is binding.</p>
 
   <div class="fv2-options three" id="routeGrid">
     <button class="fv2-opt" data-val="Finance" aria-pressed="false" onclick="pickRoute(this)">
@@ -130,7 +130,7 @@
   <div id="unsureWrap" class="fv2-reveal" style="display:none;">
     <button type="button" class="fv2-toggle" id="unsureToggle" onclick="toggleUnsure()" style="margin:14px 0 0;">
       <span class="fv2-toggle-sw"></span>
-      <span class="fv2-toggle-body"><strong>I would rather work the figures out with you on the night</strong><span>Then I will not guess. I will bring a range across your shortlist instead of one number, and we set the budget together.</span></span>
+      <span class="fv2-toggle-body"><strong>I would rather work the figures out with you on the day</strong><span>Then I will not guess. I will bring a range across your shortlist instead of one number, and we set the budget together.</span></span>
     </button>
   </div>
 
@@ -177,7 +177,7 @@
   // count a budget the customer actually moved (or a quick-pick chip they
   // tapped), and give them an explicit way to say they would rather not guess.
   let budgetTouched = !!(sessionStorage.getItem("vipMonthly") || sessionStorage.getItem("vipCash"));
-  let unsureOn = sessionStorage.getItem("vipBudgetStatus") === "To discuss on the night";
+  let unsureOn = sessionStorage.getItem("vipBudgetStatus") === "To discuss on the day";
   ["monR","cashR"].forEach(function(id){
     document.getElementById(id).addEventListener("input", function(){
       budgetTouched = true;
@@ -234,15 +234,15 @@
     if(!chosen){ showErr("Choose the route that feels most likely. You can explore the others with me later."); return; }
     if(!unsureOn && !budgetTouched){
       showErr(chosen === "Outright"
-        ? "Set your total budget, or tell me below that you would rather work it out together on the night."
-        : "Set the monthly figure that is actually comfortable, or tell me below that you would rather work it out together on the night.");
+        ? "Set your total budget, or tell me below that you would rather work it out together on the day."
+        : "Set the monthly figure that is actually comfortable, or tell me below that you would rather work it out together on the day.");
       document.getElementById(chosen === "Outright" ? "cashBlock" : "financeBlock")
         .scrollIntoView({behavior:"smooth", block:"center"});
       return;
     }
     sessionStorage.setItem("vipPurchaseType", chosen);
     sessionStorage.setItem("vipAnnualMileage", mil.r.value);
-    sessionStorage.setItem("vipBudgetStatus", unsureOn ? "To discuss on the night" : "Given by the customer");
+    sessionStorage.setItem("vipBudgetStatus", unsureOn ? "To discuss on the day" : "Given by the customer");
     if(unsureOn){
       // Send no figure at all rather than a slider default Dan would plan around.
       ["vipDeposit","vipMonthly","vipCash","vipAltMonthly"].forEach(function(k){ sessionStorage.removeItem(k); });

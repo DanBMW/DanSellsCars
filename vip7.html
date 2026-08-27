@@ -37,7 +37,7 @@
       <div class="vip-invite-kicker">Your appointment</div>
       <div class="vip-facts">
         <div class="vip-fact"><b>Guest</b><span id="sGuest">-</span></div>
-        <div class="vip-fact"><b>Event</b><span id="sDate">-</span></div>
+        <div class="vip-fact"><b>Event runs</b><span id="sDate">-</span></div>
         <div class="vip-fact"><b>Your slot</b><span id="sTime">-</span></div>
       </div>
     </div>
@@ -122,7 +122,7 @@ var groups = [
   ]},
   { title:"The numbers", edit:"vip3.html", rows:[
     ["Funding route", readVal("vipPurchaseType")],
-    ["Budget", readVal("vipBudgetStatus") === "To discuss on the night" ? "To work out together on the night" : ""],
+    ["Budget", readVal("vipBudgetStatus") === "To discuss on the day" ? "To work out together on the day" : ""],
     ["Deposit", money("vipDeposit")],
     ["Monthly budget", money("vipMonthly")],
     ["Total budget", money("vipCash")],
@@ -142,10 +142,10 @@ var groups = [
       ["Outstanding finance", readVal("vipPXFinance")],
       ["Settlement figure", readVal("vipPXSettlement")],
       ["Condition", readVal("vipPXCondition")],
-      ["On the night", readVal("vipPXBringing")]
+      ["On the day", readVal("vipPXBringing")]
     ] : [["Part exchange", readVal("vipPX") || "No"]]
   },
-  { title:"On the night", edit:"vip5.html", rows:[
+  { title:"On the day", edit:"vip5.html", rows:[
     ["Coming with you", readVal("vipAttending")],
     ["If the numbers work", readVal("vipDecision")],
     ["Securing a car", readVal("vipReserveMethod")],
@@ -220,7 +220,7 @@ var FIELDS = [
   ["PX finance",            "vipPXFinance"],
   ["PX settlement",         "vipPXSettlement"],
   ["PX condition",          "vipPXCondition"],
-  ["PX on the night",       "vipPXBringing"],
+  ["PX on the day",         "vipPXBringing"],
   ["Coming with them",      "vipAttending"],
   ["Decision readiness",    "vipDecision"],
   ["Securing a car",        "vipReserveMethod"],
@@ -325,7 +325,7 @@ function sendDoc(){
     px_finance:         readVal("vipPXFinance"),
     px_settlement:      readVal("vipPXSettlement"),
     px_condition:       readVal("vipPXCondition"),
-    px_on_the_night:    readVal("vipPXBringing"),
+    px_on_the_day:      readVal("vipPXBringing"),
     px_mot_status:      readVal("vipMotStatus"),
     px_mot_expiry:      readVal("vipMotExpiry"),
     px_mot_history:     readVal("vipMotHistory"),
@@ -339,7 +339,7 @@ function sendDoc(){
     marketing_opt_in:   readVal("vipMktOptIn") || "No",
     marketing_channels: readVal("vipMktChannels"),
     leadsummary:        summary,
-    note: "Pre-qualification completed ahead of a 1 hour VIP Buyers Event appointment. Work the numbers and the part exchange before the day."
+    note: "Pre-qualification completed ahead of a 1 hour VIP Buyers Event appointment. The event runs across four days - check the slot above for which one. Work the numbers and the part exchange before they arrive."
   };
 
   sessionStorage.setItem("vipSent", "1");
