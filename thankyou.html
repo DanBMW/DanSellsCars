@@ -343,7 +343,7 @@ Photos attached.`;
         sendBtn.textContent = "Sending…";
         const p = {
           _subject: "📎 PX photos added - " + (reg || "part exchange") + ", " + name,
-          subject: "PX photos: " + (reg || "part exchange") + ", " + name,
+          _replyto: (sessionStorage.getItem("email") || "").trim() || "noreply@dan-sells.co.uk",
           name: name,
           email: sessionStorage.getItem("email") || "",
           phone: sessionStorage.getItem("phone") || "",

@@ -423,7 +423,7 @@ function submitFunnel(){
   const first=nm.split(' ')[0]||'there';
   fetch('https://formspree.io/f/xqewleog',{
     method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({_subject:'Waiting Room - '+nm,source:'waiting-room',customer_name:nm,customer_email:qAns.email,customer_phone:qAns.phone,purpose:qAns.purpose,purchase_type:qAns.purchase_type,payment_method:qAns.payment,model_interest:Array.isArray(qAns.model)?qAns.model.join(', '):qAns.model,timing:qAns.timing})
+    body:JSON.stringify({_subject:'Waiting Room - '+nm,_replyto:(qAns.email||'').trim()||'noreply@dan-sells.co.uk',source:'waiting-room',customer_name:nm,customer_email:qAns.email,customer_phone:qAns.phone,purpose:qAns.purpose,purchase_type:qAns.purchase_type,payment_method:qAns.payment,model_interest:Array.isArray(qAns.model)?qAns.model.join(', '):qAns.model,timing:qAns.timing})
   }).catch(()=>{});
   const inn=document.getElementById('quiz-inner');
   inn.innerHTML='<div class="success-banner"><strong>Thanks '+first+'! Dan has your answers 🎮</strong><span>He\'ll have read this before he comes over. Now pick your game while you wait.</span></div>';

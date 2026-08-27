@@ -315,7 +315,7 @@
         _subject:'Website enquiry - '+n,
         name:n, email:e, phone:p||'not given', message:msg,
         source:(location&&location.pathname)||'website',
-        replyto:e
+        _replyto:e
       })
     }).catch(function(){}).finally(function(){
       document.getElementById('phcForm').style.display='none';
@@ -373,7 +373,7 @@ function submitOfferInterest(){
     name:n, phone:p, email:e,
     offer:_offerName,
     offer_details:_offerDetails,
-    replyto:e
+    _replyto:e
   };
   fetch('https://formspree.io/f/xqewleog',{
     method:'POST',

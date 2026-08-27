@@ -561,6 +561,7 @@ window.submitForm = async function() {
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
         _subject: formLabel + " Signed - " + name,
+        _replyto: (email || "").trim() || "noreply@dan-sells.co.uk",
         form_type: formLabel,
         customer_name: name,
         customer_email: email,
