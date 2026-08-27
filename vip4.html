@@ -60,7 +60,8 @@
     <div class="fv2-sec">Your registration <small>(required)</small></div>
     <p class="fv2-sec-sub">I will pull the make, model and year for you, then value it properly before the event.</p>
     <div class="fv2-plate-wrap">
-      <input id="reg" type="text" class="fv2-plate" placeholder="AB12 CDE" required maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()"/>
+      <label class="sr-only" for="reg">Vehicle registration</label>
+      <input id="reg" type="text" class="fv2-plate" placeholder="AB12 CDE" maxlength="8" aria-required="true" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter'){event.preventDefault();dvlaLookup();}"/>
       <button type="button" class="fv2-plate-btn" id="dvlaBtn" onclick="dvlaLookup()">Look up</button>
     </div>
     <div id="dvlaBanner" class="fv2-banner" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path id="dvlaIcon" d="M20 6 9 17l-5-5"/></svg><span><span id="dvlaLabel">Found: </span><strong id="dvlaDesc"></strong></span></div>
@@ -73,7 +74,7 @@
       </div>
       <div class="two-col">
         <div class="field-group"><label for="ml">Mileage</label><input id="ml" type="text" inputmode="numeric" placeholder="e.g. 28,000"/></div>
-        <div class="field-group"><label for="wv">Online quote, if you have one <span style="font-weight:400;color:var(--muted);">(optional)</span></label><input id="wv" type="text" placeholder="e.g. £11,400"/></div>
+        <div class="field-group"><label for="wv">Online quote, if you have one <span style="font-weight:400;color:var(--muted);">(optional)</span></label><input id="wv" type="text" inputmode="numeric" placeholder="e.g. £11,400"/></div>
       </div>
       <p class="hint" style="margin-top:-6px;">If an online buyer has already given you a figure, drop it in. I can usually tell you quickly whether I can beat it.</p>
     </div>
@@ -173,7 +174,7 @@
   <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span id="errText"></span></div>
   <div class="fv2-nav">
     <a class="fv2-back" href="vip3.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
-    <button class="fv2-next" onclick="go()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+    <button type="button" class="fv2-next" onclick="go()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
 </div></div></div>
 <script>

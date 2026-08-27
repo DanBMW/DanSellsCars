@@ -45,7 +45,11 @@
     <div class="fv2-review" id="rv"></div>
     <div class="fv2-nav">
       <a class="fv2-back" href="vip6.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
-      <button class="fv2-next" id="sb" onclick="sendDoc()">Send to Dan<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></button>
+      <button type="button" class="fv2-next" id="sb" onclick="sendDoc()">Send to Dan<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></button>
+    </div>
+    <div id="sendErr" style="display:none;align-items:flex-start;gap:12px;border:1px solid rgba(186,110,70,.5);background:rgba(186,110,70,.1);padding:14px 16px;margin-top:16px;font-size:.86rem;line-height:1.6;color:var(--text);">
+      <span style="font-size:1.1rem;line-height:1.3;">!</span>
+      <span>That did not send, and nothing has been lost. Tap <strong>Try sending again</strong>, or <a href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:var(--blue);">send it to me on WhatsApp</a> and I will take the details from there.</span>
     </div>
     <div class="fv2-trust">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
@@ -148,7 +152,6 @@ var groups = [
   { title:"On the day", edit:"vip5.html", rows:[
     ["Coming with you", readVal("vipAttending")],
     ["If the numbers work", readVal("vipDecision")],
-    ["Securing a car", readVal("vipReserveMethod")],
     ["Bringing with you", readVal("vipDocs")],
     ["Figures prepared in advance", readVal("vipFinancePrep") === "Yes" ? "Yes please" : ""]
   ]},
@@ -223,7 +226,6 @@ var FIELDS = [
   ["PX on the day",         "vipPXBringing"],
   ["Coming with them",      "vipAttending"],
   ["Decision readiness",    "vipDecision"],
-  ["Securing a car",        "vipReserveMethod"],
   ["Bringing with them",    "vipDocs"],
   ["Figures prepped",       "vipFinancePrep"],
   ["Notes",                 "vipNotes"],
@@ -280,11 +282,23 @@ function showSendMoment(){
   return new Promise(function(r){ setTimeout(r, 1900); });
 }
 
+var sending = false;
+
 function sendDoc(){
   // One submission per completed document. Formspree is rationed across the
   // site, and a refresh or a back-tap must not fire a second email.
   if (sessionStorage.getItem("vipSent")) { window.location.href = "vip-done.html"; return; }
+  if (sending) return;
 
+  // Someone landing here cold (a bookmark, or the back button from the
+  // confirmation) has no details to send. Send them to the step that collects
+  // them rather than emailing Dan an empty document.
+  if (!readVal("vipEmail") || !readVal("vipFullName")) {
+    window.location.href = "vip6.html";
+    return;
+  }
+
+  sending = true;
   var btn = document.getElementById("sb");
   btn.disabled = true;
   btn.textContent = "Sending…";
@@ -293,8 +307,10 @@ function sendDoc(){
   var summary = buildText();
 
   var payload = {
-    subject:            "VIP EVENT: " + (name || "pre-qualification") + (readVal("vipEventDate") ? " - " + readVal("vipEventDate") : ""),
-    replyto:            readVal("vipEmail"),
+    // Formspree only honours the underscore-prefixed fields: _subject sets the
+    // email subject line, _replyto makes Reply go straight to the customer.
+    _subject:           "VIP EVENT: " + (name || "pre-qualification") + (readVal("vipEventDate") ? " - " + readVal("vipEventDate") : ""),
+    _replyto:           readVal("vipEmail") || "noreply@dan-sells.co.uk",
     lead_type:          "VIP Buyers Event pre-qualification",
     guest_name:         readVal("vipName"),
     event_date:         readVal("vipEventDate"),
@@ -316,23 +332,8 @@ function sendDoc(){
     alt_finance:        readVal("vipAltMonthly") ? Number(readVal("vipAltMonthly").replace(/,/g,"")).toLocaleString("en-GB") : "",
     annual_mileage:     readVal("vipAnnualMileage") ? Number(readVal("vipAnnualMileage")).toLocaleString("en-GB") + " miles" : "",
     part_exchange:      readVal("vipPX"),
-    registration:       readVal("vipReg"),
-    px_car:             readVal("vipPXCar"),
-    px_model:           readVal("vipPXModel"),
-    px_mileage:         readVal("vipPXMileage"),
-    px_online_quote:    readVal("vipPXQuote"),
-    px_service:         readVal("vipPXService"),
-    px_finance:         readVal("vipPXFinance"),
-    px_settlement:      readVal("vipPXSettlement"),
-    px_condition:       readVal("vipPXCondition"),
-    px_on_the_day:      readVal("vipPXBringing"),
-    px_mot_status:      readVal("vipMotStatus"),
-    px_mot_expiry:      readVal("vipMotExpiry"),
-    px_mot_history:     readVal("vipMotHistory"),
-    px_autotrader_comparables: autotraderLink(),
     attending_with:     readVal("vipAttending"),
     decision_readiness: readVal("vipDecision"),
-    reserve_method:     readVal("vipReserveMethod"),
     bringing_documents: readVal("vipDocs"),
     figures_prepared:   readVal("vipFinancePrep"),
     notes:              readVal("vipNotes"),
@@ -342,21 +343,60 @@ function sendDoc(){
     note: "Pre-qualification completed ahead of a 1 hour VIP Buyers Event appointment. The event runs across four days - check the slot above for which one. Work the numbers and the part exchange before they arrive."
   };
 
-  sessionStorage.setItem("vipSent", "1");
+  // Part exchange details only ride along when there actually is one - the reg
+  // can arrive pre-filled from Dan's link even for a customer who says No.
+  if (["Yes","Maybe"].indexOf(readVal("vipPX")) !== -1) {
+    payload.registration    = readVal("vipReg");
+    payload.px_car          = readVal("vipPXCar");
+    payload.px_model        = readVal("vipPXModel");
+    payload.px_mileage      = readVal("vipPXMileage");
+    payload.px_online_quote = readVal("vipPXQuote");
+    payload.px_service      = readVal("vipPXService");
+    payload.px_finance      = readVal("vipPXFinance");
+    payload.px_settlement   = readVal("vipPXSettlement");
+    payload.px_condition    = readVal("vipPXCondition");
+    payload.px_on_the_day   = readVal("vipPXBringing");
+    payload.px_mot_status   = readVal("vipMotStatus");
+    payload.px_mot_expiry   = readVal("vipMotExpiry");
+    payload.px_mot_history  = readVal("vipMotHistory");
+    payload.px_autotrader_comparables = autotraderLink();
+  }
 
+  // Only count it as sent once Formspree has actually taken it. Marking it
+  // sent up front would lose the whole document if the request failed, with
+  // the customer looking at a confirmation screen and Dan getting nothing.
   var moment = showSendMoment();
   var post = fetch("https://formspree.io/f/xqewleog", {
     method: "POST",
     headers: {"Content-Type":"application/json","Accept":"application/json"},
     body: JSON.stringify(payload)
-  }).catch(function(){});
+  }).then(function(res){ return res && res.ok; }).catch(function(){ return false; });
 
-  Promise.all([post, moment]).then(function(){
+  Promise.all([post, moment]).then(function(results){
+    if (!results[0]) { sending = false; sendFailed(); return; }
+    sessionStorage.setItem("vipSent", "1");
     var st = document.getElementById("ignStatus");
     if (st) st.textContent = "Document sealed.";
     if (window.vipClearBackup) window.vipClearBackup();
     setTimeout(function(){ window.location.href = "vip-done.html"; }, 380);
   });
+}
+
+// If the send fails there is no silent loss: the customer is told, the button
+// comes back so they can try again, and there is a WhatsApp route out.
+function sendFailed(){
+  var ign = document.getElementById("ign");
+  ign.classList.remove("show", "pressed", "running");
+  ign.style.display = "none";
+  var btn = document.getElementById("sb");
+  btn.disabled = false;
+  btn.textContent = "Try sending again";
+  var box = document.getElementById("sendErr");
+  var who = readVal("vipFullName") || readVal("vipName");
+  box.querySelector("a").href = "https://wa.me/447827138197?text=" + encodeURIComponent(
+    "Hi Dan, it\u0027s " + (who || "[name]") + ". My VIP pre-qualification would not send from the website.");
+  box.style.display = "flex";
+  box.scrollIntoView({behavior:"smooth", block:"center"});
 }
 </script>
 <script src="scroll-hint.js"></script><script src="disclaimer.js"></script>

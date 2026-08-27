@@ -195,3 +195,25 @@ body.fv2 .topbar{background:rgba(20,16,15,.93);border-bottom:1px solid var(--lin
 body.fv2 > button[aria-label="Scroll down"]{
   border-color:rgba(201,162,39,.55) !important;
 }
+
+/* ── 12. Tap targets ───────────────────────────────────────── */
+/* The document chips on step 5 inherit the funnel's compact quick-pick chip,
+   which lands around 31px tall - under a comfortable thumb target. These are
+   a primary control here, so give them a proper hit area. */
+.fv2-chips .fv2-chip{min-height:44px;padding:11px 16px;}
+/* The WhatsApp glyph in the top bar and the Edit links on the review step are
+   both around 20px. Grow the hit area without moving anything: the padding is
+   cancelled by an equal negative margin. */
+.topbar a[aria-label*="WhatsApp"]{padding:12px;margin:-12px;}
+.fv2-rev-edit,.fv2-rev-item-edit{display:inline-block;padding:14px 6px;margin:-14px -6px;}
+
+/* ── 13. Information panel ─────────────────────────────────── */
+/* Plain statements of how something works (the holding deposit, for one),
+   not a question. Reads as reassurance rather than a form field. */
+.vip-note{
+  border:1px solid var(--line);background:rgba(212,175,90,.05);
+  padding:16px 18px;margin:0 0 22px;
+}
+.vip-note p{margin:0 0 10px;font-size:.88rem;line-height:1.65;color:var(--body);}
+.vip-note p:last-child{margin-bottom:0;}
+.vip-note strong{color:var(--text);font-weight:600;}

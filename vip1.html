@@ -66,14 +66,14 @@
   <div class="fv2-sec">Models you have in mind <small>(optional)</small></div>
   <div class="field-group" style="margin-bottom:6px;">
     <label class="sr-only" for="modelPref">Models you have in mind</label>
-    <input id="modelPref" type="text" placeholder="e.g. X3 20d M Sport, or 330e Touring"/>
+    <input id="modelPref" type="text" placeholder="e.g. X3 20d M Sport, or 330e Touring" onkeydown="if(event.key==='Enter'){event.preventDefault();goNext();}"/>
   </div>
   <p class="hint">Names, specs, a stock number off the website, anything. The more precise you are, the more precise the shortlist waiting for you.</p>
 
   <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span>Pick the one closest to where you are. Nothing here is binding.</span></div>
   <div class="fv2-nav">
     <a class="fv2-back" href="vip.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
-    <button class="fv2-next" onclick="goNext()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+    <button type="button" class="fv2-next" onclick="goNext()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
 </div>
 </div></div>
