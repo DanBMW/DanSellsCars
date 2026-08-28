@@ -142,6 +142,7 @@ body{
   background:rgba(11,15,22,.85);border:1px solid var(--line);
   padding:1px 5px;border-radius:999px;white-space:nowrap;
 }
+.puck.low{flex-direction:column-reverse}
 .puck.lead img,.puck.lead .ph{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,179,82,.28),0 6px 18px rgba(0,0,0,.5)}
 .puck.lead .val{color:var(--gold);border-color:rgba(224,179,82,.5)}
 .puck .crown{position:absolute;top:-13px;font-size:.8rem;line-height:1}
@@ -318,6 +319,68 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 
 @media(prefers-reduced-motion:reduce){
   .torso,.arm,.pom,.leg-l,.leg-r,.figure{animation:none!important}
+}
+
+/* ============================================================
+   Wall display. On a wide screen the mascots become side rails
+   so they are always in shot, and the track absorbs whatever
+   height is left over, so the board fits any TV without scrolling.
+   ============================================================ */
+@media(min-width:1200px){
+  body{padding:10px 18px 8px}
+  .wrap{
+    max-width:min(96vw,2400px);
+    min-height:calc(100vh - 18px);
+    display:grid;
+    grid-template-columns:minmax(150px,13vw) minmax(0,1fr) minmax(150px,13vw);
+    grid-template-rows:auto minmax(0,1fr) auto auto auto auto;
+    column-gap:clamp(14px,1.8vw,38px);
+    align-items:start;
+  }
+  .mascots{display:contents}
+  .mascot{width:100%}
+  .mascot.left {grid-column:1;grid-row:1/span 3;align-self:center}
+  .mascot.right{grid-column:3;grid-row:1/span 3;align-self:center}
+  .hero  {grid-column:2;grid-row:1;padding:0 0 4px}
+  .board {grid-column:2;grid-row:2;min-height:0;display:flex;flex-direction:column;margin-bottom:0;align-self:stretch}
+  .totals{grid-column:2;grid-row:3;margin-top:8px}
+  .standings{grid-column:1/-1;grid-row:4;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:10px}
+  .actions{grid-column:1/-1;grid-row:5;margin-top:10px}
+  .foot{grid-column:1/-1;grid-row:6;margin-top:6px;font-size:.62rem}
+
+  /* the track takes whatever is left after everything else is placed */
+  .track{height:auto;flex:1 1 auto;min-height:200px}
+
+  .figure{--hd:clamp(52px,5.2vw,88px)}
+  .hero h1{font-size:clamp(1.4rem,2.2vw,2.4rem)}
+  .hero h1 .amt{font-size:clamp(1.9rem,3.4vw,3.6rem)}
+  .hero .sub{font-size:clamp(.6rem,.8vw,.9rem);margin-top:3px}
+  .hero .month{margin-top:5px;padding:3px 12px;font-size:.76rem}
+  .puck img,.puck .ph{width:clamp(38px,2.9vw,58px);height:clamp(38px,2.9vw,58px)}
+  .puck .val{font-size:clamp(.64rem,.78vw,.9rem)}
+  .axis .tick{font-size:clamp(.6rem,.72vw,.84rem)}
+  .headers .hd{font-size:clamp(.82rem,1.1vw,1.25rem)}
+  .headers .hd small{font-size:clamp(.54rem,.66vw,.76rem)}
+  .row{padding:6px 12px}
+  .row img,.row .ph{width:32px;height:32px}
+  .row .who b{font-size:.86rem}
+  .row .who span{font-size:.66rem}
+  .row .fig b{font-size:.98rem}
+  .stat{padding:7px 13px}
+  .stat b{font-size:1.1rem}
+  .stat span{font-size:.6rem}
+  .bubble{font-size:clamp(.6rem,.8vw,.9rem);min-height:2.6em}
+  .btn{padding:8px 16px;font-size:.8rem}
+}
+
+/* short wall displays (720p and similar) - give the track the room back */
+@media(min-width:1200px) and (max-height:820px){
+  .foot{display:none}
+  .hero h1{font-size:clamp(1.2rem,1.9vw,2rem)}
+  .hero h1 .amt{font-size:clamp(1.6rem,2.9vw,3rem)}
+  .row{padding:5px 11px}
+  .row img,.row .ph{width:28px;height:28px}
+  .stat{padding:6px 12px}
 }
 
 @media(max-width:560px){
@@ -773,7 +836,7 @@ function render(){
     var v=tot[t.id];
     var pct=Math.max(0,Math.min(100,(v/cap)*100));
     var lead=best>0&&v===best, champ=v>=TARGET;
-    return '<div class="lane"><div class="puck'+(lead?' lead':'')+(champ?' champ':'')+'" style="bottom:'+pct+'%">'+
+    return '<div class="lane"><div class="puck'+(lead?' lead':'')+(champ?' champ':'')+(pct<18?' low':'')+'" style="bottom:'+pct+'%">'+
       (lead?'<span class="crown">👑</span>':'')+
       avatar(t)+
       '<span class="val">'+money(v)+'</span>'+
