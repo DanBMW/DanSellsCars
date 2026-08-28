@@ -225,6 +225,11 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   Note the intruder animates `right`, not `transform` - and if you ever need to
   screenshot the overlay in headless Chromium, `page.screenshot` will not
   capture it; use CDP `Page.captureScreenshot` with `fromSurface:false`.
+- **Leader cut scene.** Every 4.5-6.5 minutes `leaderDance()` dims the board and
+  the current leader breakdances centre stage - toprock, a headspin, then a
+  freeze - over their name, total and a rotating tagline. It is skipped on an
+  empty board (nothing to celebrate) and, like the other stunts, whenever a
+  modal is open, so it never interrupts a manager mid-entry (`stuntsBlocked()`).
 - **The £15k target** is the `TARGET` constant. Past it the track extends itself
   in 5k steps (20k, 25k, 30k…), mirroring the strip Dan taped to the bottom of
   the paper board, and the £15,000 line stays marked as "Target".
