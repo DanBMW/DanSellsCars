@@ -68,7 +68,7 @@
 
 <script>
 var BODY_NAMES = {hatchback:"Hatchback",saloon:"Saloon",touring:"Touring / Estate",suv:"SUV / SAV",coupe:"Coupé",convertible:"Convertible",gran_coupe:"Gran Coupé"};
-var ARRAY_KEYS = ["vipBodyStyles","vipDocs"];
+var ARRAY_KEYS = ["vipBodyStyles"];
 
 function readVal(key){
   var raw = sessionStorage.getItem(key);
@@ -150,10 +150,7 @@ var groups = [
     ] : [["Part exchange", readVal("vipPX") || "No"]]
   },
   { title:"On the day", edit:"vip5.html", rows:[
-    ["Coming with you", readVal("vipAttending")],
-    ["If the numbers work", readVal("vipDecision")],
-    ["Bringing with you", readVal("vipDocs")],
-    ["Figures prepared in advance", readVal("vipFinancePrep") === "Yes" ? "Yes please" : ""]
+    ["Coming with you", readVal("vipAttending")]
   ]},
   { title:"Notes for Dan", edit:"vip6.html", rows:[
     ["In your words", readVal("vipNotes")],
@@ -225,9 +222,6 @@ var FIELDS = [
   ["PX condition",          "vipPXCondition"],
   ["PX on the day",         "vipPXBringing"],
   ["Coming with them",      "vipAttending"],
-  ["Decision readiness",    "vipDecision"],
-  ["Bringing with them",    "vipDocs"],
-  ["Figures prepped",       "vipFinancePrep"],
   ["Notes",                 "vipNotes"],
   ["Marketing opt-in",      "vipMktOptIn"],
   ["Marketing channels",    "vipMktChannels"]
@@ -333,9 +327,6 @@ function sendDoc(){
     annual_mileage:     readVal("vipAnnualMileage") ? Number(readVal("vipAnnualMileage")).toLocaleString("en-GB") + " miles" : "",
     part_exchange:      readVal("vipPX"),
     attending_with:     readVal("vipAttending"),
-    decision_readiness: readVal("vipDecision"),
-    bringing_documents: readVal("vipDocs"),
-    figures_prepared:   readVal("vipFinancePrep"),
     notes:              readVal("vipNotes"),
     marketing_opt_in:   readVal("vipMktOptIn") || "No",
     marketing_channels: readVal("vipMktChannels"),

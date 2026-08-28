@@ -95,8 +95,7 @@
   if (g("vipPurchaseType")) done++;
   if (["Yes","Maybe"].indexOf(px) !== -1 && g("vipReg")) done++;
   else if (px === "No") done++;
-  if (g("vipDecision")) done++;
-  var pct = Math.min(100, Math.round(done / 5 * 100));
+  var pct = Math.min(100, Math.round(done / 4 * 100));
   requestAnimationFrame(function(){
     document.getElementById("meterFill").style.width = pct + "%";
   });
@@ -105,7 +104,7 @@
     var pxLi = document.getElementById("planPx");
     if (pxLi) pxLi.remove();
   }
-  if (g("vipFinancePrep") !== "Yes" && !g("vipPurchaseType")) {
+  if (!g("vipPurchaseType")) {
     var fLi = document.getElementById("planFigures");
     if (fLi) fLi.remove();
   }

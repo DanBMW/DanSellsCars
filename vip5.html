@@ -30,7 +30,7 @@
 <div class="step-wrap">
   <div class="step-kicker">On the day</div>
   <h2>How should I plan your hour?</h2>
-  <p class="step-desc">A few quick ones about the appointment itself. Answering them now means nobody spends your hour finding out, and none of it holds you to anything.</p>
+  <p class="step-desc">One quick question about the appointment itself, and two things worth knowing before you arrive.</p>
 
   <div class="fv2-sec">Who is coming with you?</div>
   <p class="fv2-sec-sub">So the right number of seats, coffees and copies of the figures are ready.</p>
@@ -53,27 +53,6 @@
     </button>
   </div>
 
-  <div class="fv2-sec">If the numbers are right on the day</div>
-  <p class="fv2-sec-sub">Nothing here commits you. It only tells me how far to take things while you are with me.</p>
-  <div class="fv2-rows" id="decideTrack">
-    <button type="button" class="fv2-row" data-val="Ready to do a deal on the day" aria-pressed="false" onclick="pickDecide(this)">
-      <span class="fv2-row-body"><span class="fv2-row-title">I would do the deal there and then</span><span class="fv2-row-desc">Right car, right figure, I am ready.</span><span class="fv2-tag good">Everything prepared</span></span>
-      <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-    </button>
-    <button type="button" class="fv2-row" data-val="Ready, subject to a conversation at home" aria-pressed="false" onclick="pickDecide(this)">
-      <span class="fv2-row-body"><span class="fv2-row-title">Very likely, after a conversation at home</span><span class="fv2-row-desc">I will want to talk it over first.</span><span class="fv2-tag ok">Figures to take away</span></span>
-      <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-    </button>
-    <button type="button" class="fv2-row" data-val="Someone else needs to approve it" aria-pressed="false" onclick="pickDecide(this)">
-      <span class="fv2-row-body"><span class="fv2-row-title">Someone else has to sign it off</span><span class="fv2-row-desc">A partner, an accountant or a company director.</span><span class="fv2-tag ok">Written quote prepared</span></span>
-      <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-    </button>
-    <button type="button" class="fv2-row" data-val="Gathering figures for later in the year" aria-pressed="false" onclick="pickDecide(this)">
-      <span class="fv2-row-body"><span class="fv2-row-title">Gathering figures for later</span><span class="fv2-row-desc">Not this month, but I want to know where I stand.</span><span class="fv2-tag na">No pressure applied</span></span>
-      <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-    </button>
-  </div>
-
   <div class="fv2-sec">Securing a car</div>
   <p class="fv2-sec-sub">So you know exactly what to expect, with nothing sprung on you when you are here.</p>
   <div class="vip-note">
@@ -81,21 +60,11 @@
     <p>If the deal does not have a deposit within it, that holding deposit is refunded to you on the day of collection.</p>
   </div>
 
-  <div class="fv2-sec">What you will have with you <small>(optional)</small></div>
-  <p class="fv2-sec-sub">Only matters if you decide to go ahead on the day. Tap anything you can bring and I will not chase you for the rest.</p>
-  <div class="fv2-chips" id="docChips">
-    <button type="button" class="fv2-chip" data-v="Driving licence">Driving licence</button>
-    <button type="button" class="fv2-chip" data-v="Proof of address">Proof of address</button>
-    <button type="button" class="fv2-chip" data-v="Bank details">Bank details</button>
-    <button type="button" class="fv2-chip" data-v="V5C for the part exchange">V5C log book</button>
-    <button type="button" class="fv2-chip" data-v="Part exchange service book and both keys">Service book and both keys</button>
-    <button type="button" class="fv2-chip" data-v="None of these yet">None of these yet</button>
+  <div class="fv2-sec">One thing to bring</div>
+  <p class="fv2-sec-sub">The only thing I will ask you for.</p>
+  <div class="vip-note">
+    <p>Please bring your <strong>driving licence</strong>. It is needed for a test drive on the day, and again if you decide to go ahead with a car.</p>
   </div>
-
-  <button type="button" class="fv2-toggle" id="prepToggle" onclick="togglePrep()" style="margin:20px 0 0;">
-    <span class="fv2-toggle-sw"></span>
-    <span class="fv2-toggle-body"><strong>Have indicative figures ready for me before I arrive</strong><span>I will work up the monthly and total costs on your shortlist in advance, so the hour starts with numbers in front of you. Indicative only, and not a credit application.</span></span>
-  </button>
 
   <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span id="errText"></span></div>
   <div class="fv2-nav">
@@ -106,10 +75,6 @@
 </div></div>
 <script>
   var attendChosen  = sessionStorage.getItem("vipAttending")      || "";
-  var decideChosen  = sessionStorage.getItem("vipDecision")       || "";
-  var prepOn        = sessionStorage.getItem("vipFinancePrep") === "Yes";
-  var docs = [];
-  try { docs = JSON.parse(sessionStorage.getItem("vipDocs") || "[]"); } catch(e) { docs = []; }
 
   function paintTrack(trackId, value){
     document.querySelectorAll("#" + trackId + " .fv2-row").forEach(function(b){
@@ -119,23 +84,6 @@
     });
   }
   paintTrack("attendTrack", attendChosen);
-  paintTrack("decideTrack", decideChosen);
-
-  document.querySelectorAll("#docChips .fv2-chip").forEach(function(c){
-    if (docs.indexOf(c.dataset.v) !== -1) c.classList.add("on");
-    c.addEventListener("click", function(){
-      var none = c.dataset.v === "None of these yet";
-      if (none) {
-        document.querySelectorAll("#docChips .fv2-chip").forEach(function(o){ if(o !== c) o.classList.remove("on"); });
-      } else {
-        var noneChip = document.querySelector('#docChips .fv2-chip[data-v="None of these yet"]');
-        if (noneChip) noneChip.classList.remove("on");
-      }
-      c.classList.toggle("on");
-      docs = Array.from(document.querySelectorAll("#docChips .fv2-chip.on")).map(function(o){ return o.dataset.v; });
-      sessionStorage.setItem("vipDocs", JSON.stringify(docs));
-    });
-  });
 
   function hideErr(){ document.getElementById("err").classList.remove("show"); }
   function showErr(msg){
@@ -150,27 +98,11 @@
     sessionStorage.setItem("vipAttending", attendChosen);
     paintTrack("attendTrack", attendChosen); hideErr();
   }
-  function pickDecide(btn){
-    decideChosen = btn.dataset.val;
-    sessionStorage.setItem("vipDecision", decideChosen);
-    paintTrack("decideTrack", decideChosen); hideErr();
-  }
 
-  function paintPrep(){ document.getElementById("prepToggle").classList.toggle("on", prepOn); }
-  paintPrep();
-  function togglePrep(){
-    prepOn = !prepOn;
-    sessionStorage.setItem("vipFinancePrep", prepOn ? "Yes" : "No");
-    paintPrep();
-  }
 
   function goNext(){
     if (!attendChosen) { showErr("Let me know who is coming with you."); return; }
-    if (!decideChosen) { showErr("Pick the line that matches where you are. There is no wrong answer here."); return; }
     sessionStorage.setItem("vipAttending", attendChosen);
-    sessionStorage.setItem("vipDecision", decideChosen);
-    sessionStorage.setItem("vipDocs", JSON.stringify(docs));
-    sessionStorage.setItem("vipFinancePrep", prepOn ? "Yes" : "No");
     window.location.href = "vip6.html";
   }
 </script>

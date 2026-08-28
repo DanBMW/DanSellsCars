@@ -19,7 +19,7 @@
     "vipPXService","vipPXFinance","vipPXSettlement","vipPXCondition","vipPXBringing",
     "vipMotStatus","vipMotExpiry","vipMotHistory",
     "vipDvlaMake","vipDvlaModel","vipDvlaYear","vipDvlaFuel",
-    "vipDecision","vipAttending","vipDocs","vipFinancePrep",
+    "vipAttending",
     "vipApptConfirm","vipFullName","vipEmail","vipPhone","vipPostcode","vipNotes",
     "vipMktOptIn","vipMktChannels","vipPct"];
   var BACKUP_KEY = "vipBackup";
@@ -157,7 +157,6 @@
     var px = g("vipPX");
     if (px === "No") items.push("No part exchange");
     else if (px) items.push("PX: " + (g("vipPXModel") || g("vipPXCar") || g("vipReg") || "yes"));
-    if (g("vipDecision")) items.push(g("vipDecision"));
 
     if (!items.length) return;
     var prog = document.querySelector(".fv2-progress");
