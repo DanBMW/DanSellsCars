@@ -1205,11 +1205,11 @@ var FIRE={
 
 /* Nathan has a go at torching the board, roughly every quarter of an hour */
 function nathanFire(){
-  if(stuntsBlocked())return;
+  if(stuntsBlocked())return false;
   var board=document.querySelector('.board');
-  if(!board)return;
+  if(!board)return false;
   var r=board.getBoundingClientRect();
-  if(!r.width)return;
+  if(!r.width)return false;
   busy=true;
   var fs=$('firescene');
   /* pin it to the board's own bottom-left corner, whatever the layout */
@@ -1229,6 +1229,7 @@ function nathanFire(){
   setTimeout(function(){
     fs.classList.remove('show');fs.classList.remove('out');busy=false;
   },11200);
+  return true;
 }
 
 function leaderNow(){
@@ -1240,9 +1241,9 @@ function leaderNow(){
 
 /* every few minutes whoever is top takes the floor */
 function leaderDance(){
-  if(stuntsBlocked())return;
+  if(stuntsBlocked())return false;
   var L=leaderNow();
-  if(!L)return;                       /* nothing to celebrate on an empty board */
+  if(!L)return false;                 /* nothing to celebrate on an empty board */
   busy=true;
   var cs=$('cutscene');
   var img=$('cut-head');
@@ -1258,6 +1259,7 @@ function leaderDance(){
   setBubble('bub-will',  fill(bagPick('cut|will', CUT.will), {name:first(L.t)}));
   setBubble('bub-serge', fill(bagPick('cut|serge',CUT.serge),{name:first(L.t)}));
   setTimeout(function(){cs.classList.remove('show');busy=false},8400);
+  return true;
 }
 
 /* never interrupt a manager who is mid-entry */
@@ -1270,14 +1272,14 @@ function reduced(){
 }
 
 function throwPaper(){
-  if(stuntsBlocked())return;
+  if(stuntsBlocked())return false;
   var a=$('m-will'), b=$('m-serge');
-  if(!a||!b)return;
+  if(!a||!b)return false;
   var fromWill=Math.random()<0.5;
   var ha=(fromWill?a:b).querySelector('.head'), hb=(fromWill?b:a).querySelector('.head');
-  if(!ha||!hb)return;
+  if(!ha||!hb)return false;
   var ra=ha.getBoundingClientRect(), rb=hb.getBoundingClientRect();
-  if(!ra.width||!rb.width)return;
+  if(!ra.width||!rb.width)return false;
   var ball=$('pball');
   var x0=ra.left+ra.width/2-13, y0=ra.top+ra.height/2-13;
   var x1=rb.left+rb.width/2-13, y1=rb.top+rb.height/2-13;
@@ -1294,7 +1296,7 @@ function throwPaper(){
     busy=false;
   };
   busy=true;
-  if(reduced()||!ball.animate){land();return}
+  if(reduced()||!ball.animate){land();return true}
   /* arc it: x travels straight, y follows a curve up and over */
   var peak=Math.min(y0,y1)-Math.max(70,Math.abs(x1-x0)*0.16);
   var frames=[];
@@ -1309,10 +1311,11 @@ function throwPaper(){
   anim.onfinish=land;
   /* never leave the ball stranded if the tab was backgrounded mid-flight */
   setTimeout(function(){if(busy)land()},1600);
+  return true;
 }
 
 function nathanVisit(){
-  if(stuntsBlocked())return;
+  if(stuntsBlocked())return false;
   busy=true;
   var el=$('nathan');
   setBubble('bub-nathan', bagPick('nathan|says', NATHAN.says));
@@ -1321,23 +1324,29 @@ function nathanVisit(){
   setBubble('bub-will',  bagPick('nathan|will',  NATHAN.will));
   setBubble('bub-serge', bagPick('nathan|serge', NATHAN.serge));
   setTimeout(function(){el.classList.remove('in');busy=false},9500);
+  return true;
 }
 
-/* keep them irregular so it never feels scheduled */
+/* Each stunt runs its first outing soon after load, then settles into its
+   real rhythm. A wall display gets switched on or refreshed and then watched:
+   waiting five minutes to see anything happen makes it look broken. The first
+   four are staggered so they cannot collide with each other. */
+function every(fn,firstMin,firstSpan,min,span){
+  var arm=function(delay){
+    setTimeout(function(){
+      /* if another stunt held the floor, try again shortly rather than
+         losing a whole cycle - a blocked fire would otherwise wait 30 min */
+      var ran=fn();
+      arm(ran===false ? 20000+Math.random()*25000 : min+Math.random()*span);
+    },delay);
+  };
+  arm(firstMin+Math.random()*firstSpan);
+}
 function scheduleStunts(){
-  var nextThrow=function(){
-    setTimeout(function(){throwPaper();nextThrow()}, 45000+Math.random()*50000);
-  };
-  var nextNathan=function(){
-    setTimeout(function(){nathanVisit();nextNathan()}, 150000+Math.random()*150000);
-  };
-  var nextDance=function(){
-    setTimeout(function(){leaderDance();nextDance()}, 270000+Math.random()*120000);
-  };
-  var nextFire=function(){
-    setTimeout(function(){nathanFire();nextFire()}, 840000+Math.random()*300000);
-  };
-  nextThrow();nextNathan();nextDance();nextFire();
+  every(throwPaper,   25000, 20000,  45000,  50000);   /* then every 45-95s   */
+  every(leaderDance,  60000, 25000, 270000, 120000);   /* then every 4.5-6.5m */
+  every(nathanVisit, 110000, 30000, 150000, 150000);   /* then every 2.5-5m   */
+  every(nathanFire,  170000, 60000, 840000, 300000);   /* then every 14-19m   */
 }
 
 /* ---- render ---- */

@@ -218,6 +218,13 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   leader or new champion sets both of them cheering for four seconds. Note the
   pom pom `translate` sits on a wrapper `<g>` — a CSS `transform` animation on
   the same element would replace the attribute and fling it across the page.
+- **Stunt timing.** `every()` runs each stunt's first outing soon after load
+  (ball 25-45s, dance 60-85s, Nathan 110-140s, fire 170-230s, staggered so they
+  cannot collide) and only then settles into the real interval. A wall display
+  gets switched on and watched: waiting five minutes for the first thing to
+  happen makes it look broken, and every refresh restarts the clock. A stunt
+  that returns `false` because another one held the floor is retried in 20-45s
+  rather than losing a whole cycle.
 - **Stunts.** Every 45-95s Will and Serge lob a paper ball across the board
   (`throwPaper()` - Web Animations API, coordinates read from the two heads at
   runtime so it works at any layout, target flinches on impact). Every 2.5-5
