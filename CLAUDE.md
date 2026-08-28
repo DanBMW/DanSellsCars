@@ -215,6 +215,16 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   leader or new champion sets both of them cheering for four seconds. Note the
   pom pom `translate` sits on a wrapper `<g>` — a CSS `transform` animation on
   the same element would replace the attribute and fling it across the page.
+- **Stunts.** Every 45-95s Will and Serge lob a paper ball across the board
+  (`throwPaper()` - Web Animations API, coordinates read from the two heads at
+  runtime so it works at any layout, target flinches on impact). Every 2.5-5
+  minutes Nathan Jobson, the new car manager, slides in from the right to
+  insist new cars are better (`nathanVisit()`, photo `team/nj.jpg`); Will tells
+  him to leave and Serge takes his side. A `busy` flag stops the two stunts
+  overlapping and `holdUntil` pauses the normal 7.5s rotation while one plays.
+  Note the intruder animates `right`, not `transform` - and if you ever need to
+  screenshot the overlay in headless Chromium, `page.screenshot` will not
+  capture it; use CDP `Page.captureScreenshot` with `fromSurface:false`.
 - **The £15k target** is the `TARGET` constant. Past it the track extends itself
   in 5k steps (20k, 25k, 30k…), mirroring the strip Dan taped to the bottom of
   the paper board, and the £15,000 line stays marked as "Target".

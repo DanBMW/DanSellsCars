@@ -321,6 +321,46 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   .torso,.arm,.pom,.leg-l,.leg-r,.figure{animation:none!important}
 }
 
+/* ---------- paper ball + the intruder from new cars ---------- */
+.paperball{
+  position:fixed;left:0;top:0;width:26px;height:26px;z-index:80;
+  pointer-events:none;opacity:0;
+  filter:drop-shadow(0 3px 7px rgba(0,0,0,.55));
+}
+.paperball svg{width:100%;height:100%;display:block}
+.mascot.flinch .figure{animation:flinch .5s ease}
+@keyframes flinch{
+  0%,100%{transform:translateX(0) rotate(0)}
+  25%{transform:translateX(7px) rotate(6deg)}
+  55%{transform:translateX(-5px) rotate(-4deg)}
+  80%{transform:translateX(2px) rotate(1deg)}
+}
+
+.intruder{
+  position:fixed;bottom:clamp(110px,25vh,310px);z-index:90;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  right:-420px;transition:right .85s cubic-bezier(.22,1,.36,1);
+  pointer-events:none;max-width:min(86vw,340px);
+}
+.intruder.in{right:clamp(10px,3vw,54px)}
+.intruder .bubble{min-height:0;font-size:clamp(.66rem,1.7vw,.86rem)}
+.intruder-who{
+  display:flex;align-items:center;gap:11px;
+  background:var(--panel);border:1px solid var(--line);border-bottom:0;
+  border-radius:16px 16px 0 0;padding:9px 18px 13px;
+  box-shadow:0 -12px 44px rgba(0,0,0,.55);
+}
+.intruder-who img{
+  width:clamp(42px,4.6vw,60px);height:clamp(42px,4.6vw,60px);border-radius:50%;
+  object-fit:cover;object-position:58% 20%;border:2px solid var(--blue);flex:none;
+}
+.intruder-who b{display:block;font-weight:900;font-size:.82rem;color:var(--blue-light);letter-spacing:.02em}
+.intruder-who span{font-size:.66rem;color:var(--muted)}
+
+@media(prefers-reduced-motion:reduce){
+  .intruder{transition:none}
+}
+
 /* ============================================================
    Wall display. On a wide screen the mascots become side rails
    so they are always in shot, and the track absorbs whatever
@@ -371,6 +411,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   .stat span{font-size:.6rem}
   .bubble{font-size:clamp(.6rem,.8vw,.9rem);min-height:2.6em}
   .btn{padding:8px 16px;font-size:.8rem}
+  .paperball{width:44px;height:44px}
 }
 
 /* short wall displays (720p and similar) - give the track the room back */
@@ -524,6 +565,25 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <p class="hint">Every finished month is kept. Pick one to view its final board.</p>
     <div class="deals" id="arch-list"></div>
     <button class="btn" style="width:100%;margin-top:12px" data-close="m-arch">Close</button>
+  </div>
+</div>
+
+<!-- Will and Serge occasionally lob one at each other -->
+<div class="paperball" id="pball" aria-hidden="true">
+  <svg viewBox="0 0 26 26" width="26" height="26">
+    <path d="M13 1.5 L20.5 4 L24.5 10.5 L22 18.5 L15 24.5 L7 23 L2 17 L2.5 8.5 L7.5 3 Z"
+          fill="#f2efe4" stroke="#c9c3b2" stroke-width="1"/>
+    <path d="M13 1.5 L11 9 L2.5 8.5 M11 9 L15 24.5 M11 9 L22 18.5"
+          stroke="#cfc9b8" stroke-width="1" fill="none"/>
+  </svg>
+</div>
+
+<!-- Nathan from new cars, sneaking on -->
+<div class="intruder" id="nathan" aria-hidden="true">
+  <div class="bubble" id="bub-nathan">Forget used cars. New cars are the best.</div>
+  <div class="intruder-who">
+    <img src="team/nj.jpg" alt="Nathan Jobson">
+    <div><b>NATHAN</b><span>New Car Sales Manager</span></div>
   </div>
 </div>
 
@@ -723,6 +783,18 @@ var LINES={
 };
 
 var bags={}, bubbleTimer=null, prevChamps=-1, prevLeader=null, prevGrand=-1;
+var busy=false, holdUntil=0;
+
+function bagPick(key,pool){
+  if(!bags[key]||!bags[key].length){
+    bags[key]=pool.slice();
+    for(var i=bags[key].length-1;i>0;i--){
+      var j=Math.random()*(i+1)|0, t=bags[key][i];
+      bags[key][i]=bags[key][j];bags[key][j]=t;
+    }
+  }
+  return bags[key].pop();
+}
 
 function drawLine(who,mood){
   var key=who+'|'+mood, pool=LINES[who][mood];
@@ -777,6 +849,7 @@ function setBubble(id,text){
 }
 
 function updateBubbles(){
+  if(Date.now()<holdUntil)return;
   var opts=moods();
   var a=opts[Math.random()*opts.length|0];
   var b=opts[Math.random()*opts.length|0];
@@ -808,6 +881,110 @@ function reactToBoard(){
     updateBubbles();cheer();
   }
   prevGrand=grand;prevChamps=champs;prevLeader=leader;
+}
+
+/* ============================================================
+   Stunts. Every so often the two of them lob a paper ball across
+   the board, and now and then Nathan from new cars sneaks on to
+   remind everyone he exists. Serge, naturally, takes his side.
+   ============================================================ */
+var THROW={
+  willSays:["Catch, Serge!","Have that, Serge.","Wake up, Serge!",
+            "That's for the negativity, Serge.","Incoming, misery guts!"],
+  sergeHit:["Ow. Very mature.","Right. That's coming back.","Assault, that is.",
+            "I felt nothing.","Grow up, Will."],
+  sergeSays:["Catch, Will.","Have that, optimist.","Sit down, Will.",
+             "That's for the pep talk.","Heads up, cheerleader."],
+  willHit:["Oi! Right in the ear!","Missed me. Mostly.","Charming, Serge.",
+           "Worth it. Still believe in them.","Is that all you've got?"]
+};
+var NATHAN={
+  says:["Forget used cars. New cars are the best.",
+        "Every one of those was new once. You're welcome.",
+        "Used cars? Bold choice.",
+        "No mileage, no history, no problems. Just saying.",
+        "Lovely little board. Ours is bigger.",
+        "New plate month coming. Just saying.",
+        "Anyone fancy a transfer to the new car team?",
+        "That's a lot of effort for second-hand.",
+        "I'll leave you to it. New cars sell themselves.",
+        "Nice graph. We just call it a good month.",
+        "Zero owners. Think about it.",
+        "Still time to switch to new, you know."],
+  will:["Nathan! Out!","Not now, Nathan.","Nobody asked, Nathan.",
+        "Back to the new car showroom, Nathan.","This is a used car board, Nathan.",
+        "Ignore him. He does this."],
+  serge:["He's got a point.","Finally, someone sensible.","I've always liked Nathan.",
+         "Nathan's right, you know.","Can I transfer?","Best thing said all month."]
+};
+
+function reduced(){
+  return window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+}
+
+function throwPaper(){
+  if(busy)return;
+  var a=$('m-will'), b=$('m-serge');
+  if(!a||!b)return;
+  var fromWill=Math.random()<0.5;
+  var ha=(fromWill?a:b).querySelector('.head'), hb=(fromWill?b:a).querySelector('.head');
+  if(!ha||!hb)return;
+  var ra=ha.getBoundingClientRect(), rb=hb.getBoundingClientRect();
+  if(!ra.width||!rb.width)return;
+  var ball=$('pball');
+  var x0=ra.left+ra.width/2-13, y0=ra.top+ra.height/2-13;
+  var x1=rb.left+rb.width/2-13, y1=rb.top+rb.height/2-13;
+  var land=function(){
+    ball.style.opacity='0';
+    var hit=$(fromWill?'m-serge':'m-will');
+    hit.classList.add('flinch');
+    setTimeout(function(){hit.classList.remove('flinch')},520);
+    holdUntil=Date.now()+5200;
+    setBubble(fromWill?'bub-will':'bub-serge',
+      bagPick('throw|say|'+fromWill, fromWill?THROW.willSays:THROW.sergeSays));
+    setBubble(fromWill?'bub-serge':'bub-will',
+      bagPick('throw|hit|'+fromWill, fromWill?THROW.sergeHit:THROW.willHit));
+    busy=false;
+  };
+  busy=true;
+  if(reduced()||!ball.animate){land();return}
+  /* arc it: x travels straight, y follows a curve up and over */
+  var peak=Math.min(y0,y1)-Math.max(70,Math.abs(x1-x0)*0.16);
+  var frames=[];
+  for(var i=0;i<=16;i++){
+    var t=i/16, u=1-t;
+    var x=x0+(x1-x0)*t;
+    var y=u*u*y0 + 2*u*t*peak + t*t*y1;
+    frames.push({transform:'translate('+x+'px,'+y+'px) rotate('+(t*720*(fromWill?1:-1))+'deg)'});
+  }
+  ball.style.opacity='1';
+  var anim=ball.animate(frames,{duration:950,easing:'linear'});
+  anim.onfinish=land;
+  /* never leave the ball stranded if the tab was backgrounded mid-flight */
+  setTimeout(function(){if(busy)land()},1600);
+}
+
+function nathanVisit(){
+  if(busy)return;
+  busy=true;
+  var el=$('nathan');
+  setBubble('bub-nathan', bagPick('nathan|says', NATHAN.says));
+  el.classList.add('in');
+  holdUntil=Date.now()+11500;
+  setBubble('bub-will',  bagPick('nathan|will',  NATHAN.will));
+  setBubble('bub-serge', bagPick('nathan|serge', NATHAN.serge));
+  setTimeout(function(){el.classList.remove('in');busy=false},9500);
+}
+
+/* keep them irregular so it never feels scheduled */
+function scheduleStunts(){
+  var nextThrow=function(){
+    setTimeout(function(){throwPaper();nextThrow()}, 45000+Math.random()*50000);
+  };
+  var nextNathan=function(){
+    setTimeout(function(){nathanVisit();nextNathan()}, 150000+Math.random()*150000);
+  };
+  nextThrow();nextNathan();
 }
 
 /* ---- render ---- */
@@ -1061,6 +1238,7 @@ setMonthLabel(viewMonth,'connecting…');
 render();
 updateBubbles();
 bubbleTimer=setInterval(updateBubbles,7500);
+scheduleStunts();
 
 /* the Firebase module calls this once it is ready */
 window.dsBindBackend=function(api){
