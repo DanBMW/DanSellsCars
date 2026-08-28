@@ -208,7 +208,10 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
 - **Will and Serge are animated cheerleaders** (inline SVG bodies + pom poms,
   their team photos as heads) and their speech bubbles rotate every 7.5s from
   the `LINES` pools in the page — one pool per character per mood (`empty`,
-  `trailing`, `leader`, `close`, `champion`, `general`). Will encourages, Serge
+  `trailing`, `middle`, `chasing`, `leader`, `close`, `champion`, `general`).
+  `middle` and `chasing` carry most of the weight and name someone from the
+  middle of the pack - picking on whoever is last every time gets old, and
+  unfair - with `chasing` reading the live gap to the person above them. Will encourages, Serge
   stays unconvinced: that contrast is the joke from the paper board, so keep it
   if you add lines. `{name}` and `{amount}` are filled from the live board, a
   shuffle bag stops repeats until a pool is exhausted, and a new deal, new
@@ -225,6 +228,11 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   Note the intruder animates `right`, not `transform` - and if you ever need to
   screenshot the overlay in headless Chromium, `page.screenshot` will not
   capture it; use CDP `Page.captureScreenshot` with `fromSurface:false`.
+- **Nathan's arson attempt.** Every 14-19 minutes `nathanFire()` pins a flickering
+  fire to the board's own bottom-left corner (read from the `.board` rect at
+  runtime, clamped to the viewport so a scrolled phone still shows it) and
+  Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
+  burns for ten seconds and goes out.
 - **Leader cut scene.** Every 4.5-6.5 minutes `leaderDance()` dims the board and
   the current leader breakdances centre stage - toprock, a headspin, then a
   freeze - over their name, total and a rotating tagline. It is skipped on an

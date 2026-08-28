@@ -321,6 +321,61 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   .torso,.arm,.pom,.leg-l,.leg-r,.figure{animation:none!important}
 }
 
+/* ---------- Nathan's arson attempt ---------- */
+.firescene{
+  position:fixed;left:0;bottom:0;z-index:92;pointer-events:none;
+  display:flex;align-items:flex-end;gap:clamp(6px,1vw,16px);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+}
+.firescene.show{opacity:1;visibility:visible}
+.fire{
+  position:relative;flex:none;
+  width:clamp(44px,4.6vw,84px);height:clamp(58px,6.4vw,116px);
+  transform-origin:50% 100%;transition:transform .6s ease,opacity .6s ease;
+}
+.firescene.out .fire{transform:scaleY(.12);opacity:0}
+.fire::before{  /* the glow it throws onto the board corner */
+  content:'';position:absolute;left:50%;bottom:-14%;transform:translateX(-50%);
+  width:280%;height:170%;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,146,45,.42),rgba(226,68,58,.16) 45%,transparent 72%);
+  animation:glowPulse 1.4s ease-in-out infinite;
+}
+.flame{
+  position:absolute;bottom:0;left:50%;
+  border-radius:50% 50% 42% 42% / 62% 62% 38% 38%;
+  filter:blur(.6px);transform-origin:50% 100%;
+}
+.flame.fa{width:100%;height:100%;background:linear-gradient(180deg,#ff9d2e,#e2443a 68%,#8c1d16);
+  animation:flick 1.05s ease-in-out infinite}
+.flame.fb{width:64%;height:74%;background:linear-gradient(180deg,#ffd45e,#ff8a2a 78%);
+  animation:flick .78s ease-in-out infinite reverse}
+.flame.fc{width:32%;height:44%;background:linear-gradient(180deg,#fff6cd,#ffc94d);
+  animation:flick .52s ease-in-out infinite}
+.ember{
+  position:absolute;left:50%;bottom:40%;width:5px;height:5px;border-radius:50%;
+  background:#ffb347;opacity:0;
+  animation:ember 2.4s ease-out infinite;
+}
+@keyframes flick{
+  0%,100%{transform:translateX(-50%) scaleY(1)   skewX(0deg)}
+  25%    {transform:translateX(-54%) scaleY(1.14) skewX(-6deg)}
+  50%    {transform:translateX(-50%) scaleY(.92) skewX(4deg)}
+  75%    {transform:translateX(-46%) scaleY(1.09) skewX(6deg)}
+}
+@keyframes glowPulse{0%,100%{opacity:.75;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.12)}}
+@keyframes ember{
+  0%{opacity:0;transform:translate(-50%,0) scale(1)}
+  15%{opacity:.95}
+  100%{opacity:0;transform:translate(-160%,-90px) scale(.3)}
+}
+.arson{display:flex;flex-direction:column;align-items:center;gap:6px;max-width:min(78vw,330px);margin-bottom:-24px}
+.arson .bubble{min-height:0;font-size:clamp(.64rem,1.6vw,.86rem)}
+.arson .intruder-who{border-radius:16px;border-bottom:1px solid var(--line);padding:8px 15px 10px}
+
+@media(prefers-reduced-motion:reduce){
+  .flame,.ember,.fire::before{animation:none}
+}
+
 /* ---------- leader cut scene ---------- */
 .cutscene{
   position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;
@@ -663,6 +718,25 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   </div>
 </div>
 
+<!-- Nathan has a go at burning the board down -->
+<div class="firescene" id="firescene" aria-hidden="true">
+  <div class="fire">
+    <span class="flame fa"></span>
+    <span class="flame fb"></span>
+    <span class="flame fc"></span>
+    <span class="ember" style="animation-delay:0s"></span>
+    <span class="ember" style="animation-delay:.8s;left:62%"></span>
+    <span class="ember" style="animation-delay:1.6s;left:38%"></span>
+  </div>
+  <div class="arson">
+    <div class="bubble" id="bub-fire"></div>
+    <div class="intruder-who">
+      <img src="team/nj.jpg" alt="Nathan Jobson">
+      <div><b>NATHAN</b><span>New Car Sales Manager</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- the leader takes the floor every few minutes -->
 <div class="cutscene" id="cutscene" aria-hidden="true">
   <div class="cut-inner">
@@ -844,6 +918,25 @@ var LINES={
     "That's the target gone {name}. Unbelievable!",
     "Somebody get {name} a trophy!"
   ],
+  middle:[
+    "{name} is right in the mix.",
+    "{name} is quietly climbing.",
+    "Two good deals and {name} is top three.",
+    "Don't sleep on {name}.",
+    "{name} is closer than they think.",
+    "Keep that going, {name}.",
+    "Solid month so far, {name}.",
+    "{name} is one big deal from the top.",
+    "Middle of the pack is where comebacks start, {name}.",
+    "{name} is due a big one."
+  ],
+  chasing:[
+    "{name} is only {amount} behind {other}!",
+    "{amount} between {name} and {other}. Go on {name}!",
+    "{name} can catch {other} this week.",
+    "{other} had better look behind them - {name} is coming.",
+    "That's {amount} to reel in {other}. Easy, {name}."
+  ],
   general:[
     "Look at this board go!",
     "Everyone's moving. Love to see it.",
@@ -895,6 +988,23 @@ var LINES={
     "£15k {name}. I'll allow it.",
     "Congratulations {name}. Don't expect a card.",
     "One of you managed it. Only took a month."
+  ],
+  middle:[
+    "{name} is comfortably mid-table.",
+    "{name} is neither winning nor losing. Impressive.",
+    "Steady, {name}. Very steady.",
+    "{name} is playing it safe.",
+    "Nobody writes songs about mid-table, {name}.",
+    "{name} is doing... fine.",
+    "{name} could move up. Could.",
+    "Mid-table. The safest place to hide, {name}."
+  ],
+  chasing:[
+    "{name} is {amount} behind {other}. Miles.",
+    "{amount} off {other}. Bit of a gap that, {name}.",
+    "{name} catching {other}? Optimistic.",
+    "{other} is not worried about {name}.",
+    "{amount}. Could go either way. Probably won't."
   ],
   general:[
     "It's fine. It's all fine.",
@@ -952,12 +1062,19 @@ function moods(){
   if(champs.length)out.push({mood:'champion',name:first(champs[0]),amount:''});
   if(close.length)out.push({mood:'close',name:first(close[0]),amount:money(TARGET-tot[close[0].id])});
   out.push({mood:'leader',name:first(ranked[0])});
-  /* only nudge someone who is genuinely behind while others are away */
-  if(moving.length>=2){
-    var back=ranked[ranked.length-1];
-    out.push({mood:'trailing',name:first(back)});
-    out.push({mood:'trailing',name:first(back)});
+  /* the middle of the pack gets most of the attention - picking on whoever
+     is last every time gets old fast, and unfair */
+  if(moving.length>=3){
+    var mids=moving.slice(1,-1);
+    var m=mids[Math.random()*mids.length|0];
+    var above=moving[moving.indexOf(m)-1];
+    out.push({mood:'middle',name:first(m)});
+    out.push({mood:'middle',name:first(m)});
+    if(above)out.push({mood:'chasing',name:first(m),other:first(above),
+                       amount:money(tot[above.id]-tot[m.id])});
   }
+  /* one nudge for whoever is behind, not a pile-on */
+  if(moving.length>=2)out.push({mood:'trailing',name:first(ranked[ranked.length-1])});
   out.push({mood:'general'});
   out.push({mood:'general'});
   return out;
@@ -965,7 +1082,9 @@ function moods(){
 function first(t){return t.name.split(' ')[0]}
 
 function fill(line,ctx){
-  return line.replace(/\{name\}/g,ctx.name||'team').replace(/\{amount\}/g,ctx.amount||'');
+  return line.replace(/\{name\}/g,ctx.name||'team')
+             .replace(/\{other\}/g,ctx.other||'the leader')
+             .replace(/\{amount\}/g,ctx.amount||'');
 }
 
 function setBubble(id,text){
@@ -1058,6 +1177,59 @@ var CUT={
   serge:["...fine, that's quite good.","I'm not clapping.","Don't encourage them.",
          "Showing off now.","Very nice. Sell another one."]
 };
+
+var FIRE={
+  nathan:["Nobody will miss it.",
+          "Just a small one. For warmth.",
+          "This board has served its purpose.",
+          "Health and safety said it was fine.",
+          "New cars don't need a board.",
+          "I'm doing you all a favour, really.",
+          "It was like this when I got here.",
+          "Anyone got a marshmallow?",
+          "Shame. All that lovely used car profit.",
+          "Don't worry, I've got a new one. It says NEW CARS."],
+  will:["NATHAN! THE BOARD!",
+        "PUT THAT OUT!",
+        "That's four weeks of work, Nathan!",
+        "SOMEBODY GET THE EXTINGUISHER!",
+        "NATHAN. NO.",
+        "GET AWAY FROM THE BOARD!"],
+  serge:["Let him cook.",
+         "I'm not stopping him.",
+         "Honestly? Fair enough.",
+         "I've been saying this for months.",
+         "Do the £15k line first.",
+         "Finally, some progress."]
+};
+
+/* Nathan has a go at torching the board, roughly every quarter of an hour */
+function nathanFire(){
+  if(stuntsBlocked())return;
+  var board=document.querySelector('.board');
+  if(!board)return;
+  var r=board.getBoundingClientRect();
+  if(!r.width)return;
+  busy=true;
+  var fs=$('firescene');
+  /* pin it to the board's own bottom-left corner, whatever the layout */
+  fs.classList.remove('out');
+  /* clamped to the viewport: on a phone the board can be scrolled out of
+     sight, and the fire should not disappear off-screen with it */
+  fs.style.left=Math.max(8,Math.min(r.left+4,window.innerWidth-130))+'px';
+  fs.style.bottom=Math.max(8,Math.min(window.innerHeight-r.bottom+4,
+                                      window.innerHeight-170))+'px';
+  setBubble('bub-fire', bagPick('fire|nathan',FIRE.nathan));
+  holdUntil=Date.now()+15000;
+  setBubble('bub-will',  bagPick('fire|will', FIRE.will));
+  setBubble('bub-serge', bagPick('fire|serge',FIRE.serge));
+  fs.classList.add('show');
+  /* it gets put out before it does any real damage */
+  setTimeout(function(){fs.classList.add('out')},10000);
+  setTimeout(function(){
+    fs.classList.remove('show');fs.classList.remove('out');busy=false;
+  },11200);
+}
 
 function leaderNow(){
   var tot=totals();
@@ -1162,7 +1334,10 @@ function scheduleStunts(){
   var nextDance=function(){
     setTimeout(function(){leaderDance();nextDance()}, 270000+Math.random()*120000);
   };
-  nextThrow();nextNathan();nextDance();
+  var nextFire=function(){
+    setTimeout(function(){nathanFire();nextFire()}, 840000+Math.random()*300000);
+  };
+  nextThrow();nextNathan();nextDance();nextFire();
 }
 
 /* ---- render ---- */
