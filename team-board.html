@@ -67,12 +67,12 @@ body{
 
 /* mascots */
 .mascots{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:-6px}
-.mascot{display:flex;flex-direction:column;align-items:center;gap:6px;width:clamp(74px,17vw,124px);flex:none}
+.mascot{display:flex;flex-direction:column;align-items:center;gap:6px;width:clamp(104px,22vw,168px);flex:none}
 .mascot img{
   width:clamp(52px,13vw,84px);height:clamp(52px,13vw,84px);border-radius:14px;
   object-fit:cover;object-position:58% 22%;border:2px solid var(--line);
 }
-.mascot .nm{font-weight:900;font-size:clamp(.66rem,2.2vw,.86rem);letter-spacing:.02em}
+.mascot .nm{font-weight:900;font-size:clamp(.66rem,2.2vw,.86rem);letter-spacing:.02em;margin-top:12px}
 .mascot .rl{font-size:clamp(.55rem,1.8vw,.68rem);color:var(--muted);text-align:center;line-height:1.25}
 .bubble{
   position:relative;background:#fff;color:#11161d;border-radius:12px;
@@ -258,6 +258,68 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 .toast.err{border-color:rgba(226,86,77,.55)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
 .foot{text-align:center;color:var(--muted);font-size:.68rem;margin-top:26px;line-height:1.7}
+/* ---------- cheerleaders ---------- */
+.figure{position:relative;display:flex;flex-direction:column;align-items:center;--hd:clamp(46px,11vw,74px)}
+.figure .head{
+  width:var(--hd);height:var(--hd);border-radius:50%;object-fit:cover;object-position:58% 20%;
+  border:2px solid rgba(255,255,255,.55);position:relative;z-index:3;
+  box-shadow:0 4px 14px rgba(0,0,0,.45);
+}
+.figure .ph{
+  width:var(--hd);height:var(--hd);border-radius:50%;background:var(--panel-2);
+  display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--muted);z-index:3;
+}
+.figure .body{
+  width:calc(var(--hd)*2.15);height:auto;margin-top:calc(var(--hd)*-0.14);
+  overflow:visible;z-index:1;
+}
+.figure .torso{animation:bob 1.6s ease-in-out infinite}
+.arm{transform-box:view-box}
+.arm-l{transform-origin:48px 22px;animation:waveL 1.6s ease-in-out infinite}
+.arm-r{transform-origin:72px 22px;animation:waveR 1.6s ease-in-out infinite}
+.pom{transform-box:fill-box;transform-origin:center;animation:shake .4s linear infinite}
+.leg-l{transform-box:view-box;transform-origin:54px 58px;animation:legL 1.6s ease-in-out infinite}
+.leg-r{transform-box:view-box;transform-origin:66px 58px;animation:legR 1.6s ease-in-out infinite}
+
+/* Will is all in. Serge is not. */
+.m-will .torso{animation-duration:.85s}
+.m-will .arm-l,.m-will .arm-r{animation-duration:.85s}
+.m-will .leg-l,.m-will .leg-r{animation-duration:.85s}
+.m-serge .torso{animation-duration:3.4s}
+.m-serge .arm-l{animation:sergeL 3.4s ease-in-out infinite}
+.m-serge .arm-r{animation:sergeR 3.4s ease-in-out infinite}
+.m-serge .leg-l,.m-serge .leg-r{animation:none}
+.m-serge .pom{animation-duration:1.4s}
+
+/* a result on the board gets everyone going for a moment */
+.mascot.cheer .torso{animation-duration:.32s!important}
+.mascot.cheer .arm-l,.mascot.cheer .arm-r{animation:waveL .32s ease-in-out infinite!important}
+.mascot.cheer .arm-r{animation-name:waveR!important}
+.mascot.cheer .leg-l,.mascot.cheer .leg-r{animation-duration:.32s!important}
+.mascot.cheer .pom{animation-duration:.16s!important}
+.mascot.cheer .figure{animation:hop .32s ease-in-out infinite}
+
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes waveL{0%,100%{transform:rotate(-22deg)}50%{transform:rotate(16deg)}}
+@keyframes waveR{0%,100%{transform:rotate(22deg)}50%{transform:rotate(-16deg)}}
+@keyframes sergeL{0%,88%,100%{transform:rotate(4deg)}94%{transform:rotate(-6deg)}}
+@keyframes sergeR{0%,88%,100%{transform:rotate(-4deg)}94%{transform:rotate(6deg)}}
+@keyframes shake{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
+@keyframes legL{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(7deg)}}
+@keyframes legR{0%,100%{transform:rotate(5deg)}50%{transform:rotate(-7deg)}}
+
+/* the bubbles hold a fixed box so rotating lines never shift the layout */
+.bubble{
+  min-height:2.9em;display:flex;align-items:center;justify-content:center;
+  transition:opacity .3s ease;
+}
+.bubble.fade{opacity:0}
+
+@media(prefers-reduced-motion:reduce){
+  .torso,.arm,.pom,.leg-l,.leg-r,.figure{animation:none!important}
+}
+
 @media(max-width:560px){
   .mascot .rl{display:none}
   .totals .stat{flex:1 1 calc(50% - 4px)}
@@ -268,15 +330,55 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 <div class="wrap">
 
   <div class="mascots">
-    <div class="mascot left">
-      <div class="bubble">I believe in you all!</div>
-      <img src="team/will.jpg" alt="Will Potter">
+    <div class="mascot left m-will" id="m-will">
+      <div class="bubble" id="bub-will">I believe in you all!</div>
+      <div class="figure">
+        <img class="head" src="team/will.jpg" alt="Will Potter">
+        <svg class="body" viewBox="0 0 120 100" aria-hidden="true">
+          <g class="arm arm-l">
+            <path d="M48,22 L29,11" stroke="#2b3546" stroke-width="9" stroke-linecap="round" fill="none"/>
+            <g transform="translate(27,9)"><g class="pom"><circle cx="0" cy="-7.5" r="6.2" fill="#2f7bf0"/><circle cx="7" cy="-2.4" r="6.2" fill="#8fbaff"/><circle cx="4.4" cy="6.1" r="6.2" fill="#2f7bf0"/><circle cx="-4.4" cy="6.1" r="6.2" fill="#8fbaff"/><circle cx="-7" cy="-2.4" r="6.2" fill="#2f7bf0"/><circle cx="0" cy="0" r="7" fill="#8fbaff"/></g></g>
+          </g>
+          <g class="arm arm-r">
+            <path d="M72,22 L91,11" stroke="#2b3546" stroke-width="9" stroke-linecap="round" fill="none"/>
+            <g transform="translate(93,9)"><g class="pom"><circle cx="0" cy="-7.5" r="6.2" fill="#8fbaff"/><circle cx="7" cy="-2.4" r="6.2" fill="#2f7bf0"/><circle cx="4.4" cy="6.1" r="6.2" fill="#8fbaff"/><circle cx="-4.4" cy="6.1" r="6.2" fill="#2f7bf0"/><circle cx="-7" cy="-2.4" r="6.2" fill="#8fbaff"/><circle cx="0" cy="0" r="7" fill="#2f7bf0"/></g></g>
+          </g>
+          <rect class="leg-l" x="50" y="56" width="9.5" height="32" rx="4.75" fill="#1c2431"/>
+          <rect class="leg-r" x="60.5" y="56" width="9.5" height="32" rx="4.75" fill="#1c2431"/>
+          <ellipse cx="54.7" cy="90" rx="7" ry="3.8" fill="#0b0f16"/>
+          <ellipse cx="65.3" cy="90" rx="7" ry="3.8" fill="#0b0f16"/>
+          <g class="torso">
+            <rect x="54" y="0" width="12" height="14" rx="5" fill="#2b3546"/>
+            <rect x="43" y="10" width="34" height="50" rx="13" fill="#2b3546"/>
+          </g>
+        </svg>
+      </div>
       <div class="nm">WILL</div>
       <div class="rl">Used Car Manager</div>
     </div>
-    <div class="mascot right">
-      <div class="bubble">I don't...</div>
-      <img src="team/serge.jpg" alt="Sergio Garaguso">
+    <div class="mascot right m-serge" id="m-serge">
+      <div class="bubble" id="bub-serge">I don't...</div>
+      <div class="figure">
+        <img class="head" src="team/serge.jpg" alt="Sergio Garaguso">
+        <svg class="body" viewBox="0 0 120 100" aria-hidden="true">
+          <g class="arm arm-l">
+            <path d="M48,22 L29,11" stroke="#1b2430" stroke-width="9" stroke-linecap="round" fill="none"/>
+            <g transform="translate(27,9)"><g class="pom"><circle cx="0" cy="-7.5" r="6.2" fill="#e0b352"/><circle cx="7" cy="-2.4" r="6.2" fill="#f3d99a"/><circle cx="4.4" cy="6.1" r="6.2" fill="#e0b352"/><circle cx="-4.4" cy="6.1" r="6.2" fill="#f3d99a"/><circle cx="-7" cy="-2.4" r="6.2" fill="#e0b352"/><circle cx="0" cy="0" r="7" fill="#f3d99a"/></g></g>
+          </g>
+          <g class="arm arm-r">
+            <path d="M72,22 L91,11" stroke="#1b2430" stroke-width="9" stroke-linecap="round" fill="none"/>
+            <g transform="translate(93,9)"><g class="pom"><circle cx="0" cy="-7.5" r="6.2" fill="#f3d99a"/><circle cx="7" cy="-2.4" r="6.2" fill="#e0b352"/><circle cx="4.4" cy="6.1" r="6.2" fill="#f3d99a"/><circle cx="-4.4" cy="6.1" r="6.2" fill="#e0b352"/><circle cx="-7" cy="-2.4" r="6.2" fill="#f3d99a"/><circle cx="0" cy="0" r="7" fill="#e0b352"/></g></g>
+          </g>
+          <rect class="leg-l" x="50" y="56" width="9.5" height="32" rx="4.75" fill="#141a24"/>
+          <rect class="leg-r" x="60.5" y="56" width="9.5" height="32" rx="4.75" fill="#141a24"/>
+          <ellipse cx="54.7" cy="90" rx="7" ry="3.8" fill="#0b0f16"/>
+          <ellipse cx="65.3" cy="90" rx="7" ry="3.8" fill="#0b0f16"/>
+          <g class="torso">
+            <rect x="54" y="0" width="12" height="14" rx="5" fill="#1b2430"/>
+            <rect x="43" y="10" width="34" height="50" rx="13" fill="#1b2430"/>
+          </g>
+        </svg>
+      </div>
       <div class="nm">SERGE</div>
       <div class="rl">Retail Manager</div>
     </div>
@@ -440,6 +542,211 @@ function ceiling(max){
   return Math.ceil(max/5000)*5000;
 }
 
+/* ============================================================
+   Banter. Will believes in them, Serge does not - that is the
+   joke from the paper board, so the two pools stay in character.
+   Lines are drawn from a shuffle bag per character per mood, so
+   nothing repeats until that pool is used up.
+   ============================================================ */
+var LINES={
+ will:{
+  empty:[
+    "Fresh month, blank board. Let's fill it!",
+    "Nobody on the board yet. Someone break the ice!",
+    "New month, new legends. Off we go!",
+    "Empty board. Beautiful. All that room to climb.",
+    "Right then - who's opening the account?",
+    "Clean slate everyone. I love this bit.",
+    "First deal of the month is worth double in my head.",
+    "I've got a good feeling about this one."
+  ],
+  trailing:[
+    "Come on {name}, let's get going!",
+    "{name}, one deal and you're moving. Go get it.",
+    "Plenty of month left {name}. Chin up.",
+    "{name}, the board's waiting for you mate.",
+    "Believe in yourself {name}. I already do.",
+    "{name}, next one's yours. I can feel it.",
+    "Slow start {name}? Comebacks are the best stories.",
+    "{name}, get on that phone. Magic happens.",
+    "Nobody remembers the start {name}, only the finish.",
+    "{name} is one good week from the top. Watch."
+  ],
+  leader:[
+    "{name} is flying! Look at that.",
+    "Somebody catch {name}. Anybody?",
+    "{name} out in front and pulling away.",
+    "That is how it's done, {name}!",
+    "{name}'s on a roll. Who's chasing?",
+    "Top of the board, {name}. Enjoy it.",
+    "{name} setting the pace for everyone."
+  ],
+  close:[
+    "{name} is nearly there - {amount} to go!",
+    "{amount} left {name}. Do not stop now!",
+    "So close {name}. One more deal!",
+    "{name} can smell it. {amount} away!"
+  ],
+  champion:[
+    "{name} has smashed £15k! Get in!!",
+    "£15,000 {name}! Absolute scenes!",
+    "{name} is a champion. Told you I believed!",
+    "That's the target gone {name}. Unbelievable!",
+    "Somebody get {name} a trophy!"
+  ],
+  general:[
+    "Look at this board go!",
+    "Everyone's moving. Love to see it.",
+    "Best used car team in Kent, this.",
+    "Keep it rolling gang!",
+    "Every deal counts. Every single one.",
+    "Proud of this lot, honestly.",
+    "Ignore Serge. He's always like this.",
+    "Big month brewing, I can feel it.",
+    "Momentum is a beautiful thing."
+  ]
+ },
+ serge:{
+  empty:[
+    "Still £0. Riveting.",
+    "Bold strategy, selling nothing.",
+    "The board is empty. As predicted.",
+    "I've seen car parks with more movement.",
+    "I'll be at the coffee machine.",
+    "Nobody has sold anything. Shocking.",
+    "Give it time. Loads of time. Ages."
+  ],
+  trailing:[
+    "{name} is pacing themselves. Very slowly.",
+    "{name}, the phone works both ways you know.",
+    "I'm not worried about {name}. I'm just not.",
+    "{name} is playing the long game. Very long.",
+    "{name} is saving it all for the last day. Classic.",
+    "Someone tell {name} the month has started.",
+    "{name} will be fine. Probably. Maybe."
+  ],
+  leader:[
+    "{name} is doing well. Suspiciously well.",
+    "Fine. {name} can have this one.",
+    "{name} is winning. I remain unconvinced.",
+    "Don't let it go to your head, {name}.",
+    "{name} peaked early, I reckon.",
+    "Beginner's luck, {name}. Four weeks of it."
+  ],
+  close:[
+    "{name} is nearly there. Nearly.",
+    "{amount} off. Don't fumble it, {name}.",
+    "{name} is close. I've seen closer collapse.",
+    "{amount} to go. Anything could happen."
+  ],
+  champion:[
+    "{name} hit £15k. I'm as surprised as you.",
+    "Fine. {name} proved me wrong. Once.",
+    "£15k {name}. I'll allow it.",
+    "Congratulations {name}. Don't expect a card.",
+    "One of you managed it. Only took a month."
+  ],
+  general:[
+    "It's fine. It's all fine.",
+    "Numbers going up. Weird.",
+    "I'll believe it when it's all delivered.",
+    "Will's excited again. Ignore him.",
+    "This board is very colourful.",
+    "Still not convinced, but carry on.",
+    "Don't count it until it's signed.",
+    "Nice board. Shame about the totals."
+  ]
+ }
+};
+
+var bags={}, bubbleTimer=null, prevChamps=-1, prevLeader=null, prevGrand=-1;
+
+function drawLine(who,mood){
+  var key=who+'|'+mood, pool=LINES[who][mood];
+  if(!bags[key]||!bags[key].length){
+    bags[key]=pool.slice();
+    for(var i=bags[key].length-1;i>0;i--){
+      var j=Math.random()*(i+1)|0, t=bags[key][i];
+      bags[key][i]=bags[key][j];bags[key][j]=t;
+    }
+    /* avoid repeating the line that was just on screen */
+    if(bags[key].length>1&&bags[key][bags[key].length-1]===(bags[key].lastShown||null))bags[key].unshift(bags[key].pop());
+  }
+  var line=bags[key].pop();
+  bags[key].lastShown=line;
+  return line;
+}
+
+/* which moods currently make sense, given the board */
+function moods(){
+  var tot=totals();
+  var ranked=TEAM.slice().sort(function(a,b){return tot[b.id]-tot[a.id]});
+  var grand=TEAM.reduce(function(s,t){return s+tot[t.id]},0);
+  var champs=ranked.filter(function(t){return tot[t.id]>=TARGET});
+  var close=ranked.filter(function(t){return tot[t.id]<TARGET&&TARGET-tot[t.id]<=2000&&tot[t.id]>0});
+  var moving=ranked.filter(function(t){return tot[t.id]>0});
+  var out=[];
+  if(!grand){out.push({mood:'empty'});return out}
+  if(champs.length)out.push({mood:'champion',name:first(champs[0]),amount:''});
+  if(close.length)out.push({mood:'close',name:first(close[0]),amount:money(TARGET-tot[close[0].id])});
+  out.push({mood:'leader',name:first(ranked[0])});
+  /* only nudge someone who is genuinely behind while others are away */
+  if(moving.length>=2){
+    var back=ranked[ranked.length-1];
+    out.push({mood:'trailing',name:first(back)});
+    out.push({mood:'trailing',name:first(back)});
+  }
+  out.push({mood:'general'});
+  out.push({mood:'general'});
+  return out;
+}
+function first(t){return t.name.split(' ')[0]}
+
+function fill(line,ctx){
+  return line.replace(/\{name\}/g,ctx.name||'team').replace(/\{amount\}/g,ctx.amount||'');
+}
+
+function setBubble(id,text){
+  var el=$(id);
+  if(el.textContent===text)return;
+  el.classList.add('fade');
+  setTimeout(function(){el.textContent=text;el.classList.remove('fade')},300);
+}
+
+function updateBubbles(){
+  var opts=moods();
+  var a=opts[Math.random()*opts.length|0];
+  var b=opts[Math.random()*opts.length|0];
+  setBubble('bub-will', fill(drawLine('will',a.mood),a));
+  setBubble('bub-serge',fill(drawLine('serge',b.mood),b));
+}
+
+var cheerTimers={};
+function cheer(){
+  ['m-will','m-serge'].forEach(function(id){
+    var el=$(id);
+    el.classList.add('cheer');
+    /* cancel any running timer first - back-to-back deals would otherwise
+       let the earlier one stop the celebration the later one just started */
+    clearTimeout(cheerTimers[id]);
+    cheerTimers[id]=setTimeout(function(){el.classList.remove('cheer')},4000);
+  });
+}
+
+/* a new deal, a new leader or a new champion sets them off */
+function reactToBoard(){
+  var tot=totals();
+  var ranked=TEAM.slice().sort(function(a,b){return tot[b.id]-tot[a.id]});
+  var grand=TEAM.reduce(function(s,t){return s+tot[t.id]},0);
+  var champs=TEAM.filter(function(t){return tot[t.id]>=TARGET}).length;
+  var leader=grand>0?ranked[0].id:null;
+  var firstRun=(prevGrand===-1);
+  if(!firstRun&&(grand>prevGrand||champs>prevChamps||(leader&&leader!==prevLeader))){
+    updateBubbles();cheer();
+  }
+  prevGrand=grand;prevChamps=champs;prevLeader=leader;
+}
+
 /* ---- render ---- */
 function render(){
   var tot=totals(), cnt=counts();
@@ -504,6 +811,7 @@ function render(){
     '<div class="stat"><b>'+money(avg)+'</b><span>Average</span></div>'+
     '<div class="stat"><b>'+hit+' / '+TEAM.length+'</b><span>At target</span></div>';
 
+  reactToBoard();
   if(isManager)renderDeals();
 }
 
@@ -688,6 +996,8 @@ setInterval(function(){
 viewMonth=monthKey();
 setMonthLabel(viewMonth,'connecting…');
 render();
+updateBubbles();
+bubbleTimer=setInterval(updateBubbles,7500);
 
 /* the Firebase module calls this once it is ready */
 window.dsBindBackend=function(api){

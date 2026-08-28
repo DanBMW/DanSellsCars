@@ -205,6 +205,16 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   `profit` within ±100000, short `reg` — and are scoped so a bad write cannot
   touch any other path. Move to Firebase Auth if the figures ever need to be
   genuinely private.
+- **Will and Serge are animated cheerleaders** (inline SVG bodies + pom poms,
+  their team photos as heads) and their speech bubbles rotate every 7.5s from
+  the `LINES` pools in the page — one pool per character per mood (`empty`,
+  `trailing`, `leader`, `close`, `champion`, `general`). Will encourages, Serge
+  stays unconvinced: that contrast is the joke from the paper board, so keep it
+  if you add lines. `{name}` and `{amount}` are filled from the live board, a
+  shuffle bag stops repeats until a pool is exhausted, and a new deal, new
+  leader or new champion sets both of them cheering for four seconds. Note the
+  pom pom `translate` sits on a wrapper `<g>` — a CSS `transform` animation on
+  the same element would replace the attribute and fling it across the page.
 - **The £15k target** is the `TARGET` constant. Past it the track extends itself
   in 5k steps (20k, 25k, 30k…), mirroring the strip Dan taped to the bottom of
   the paper board, and the £15,000 line stays marked as "Target".
