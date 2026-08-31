@@ -217,6 +217,16 @@ input,select{
 }
 input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 #pin-input{text-align:center;font-size:1.8rem;letter-spacing:.5em;font-weight:700}
+.segbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.seg{
+  background:var(--panel-2);border:2px solid transparent;border-radius:12px;
+  padding:9px 8px;cursor:pointer;text-align:center;transition:.15s;
+  color:var(--text);font-family:var(--font);
+}
+.seg b{display:block;font-size:.84rem;font-weight:800}
+.seg span{display:block;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:2px}
+.seg.on{border-color:var(--blue);background:rgba(47,123,240,.14)}
+.seg.on.ahead{border-color:var(--gold);background:rgba(224,179,82,.14)}
 .picker{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
 .pick{
   background:var(--panel-2);border:2px solid transparent;border-radius:13px;
@@ -688,6 +698,12 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <h2 id="mgr-title">Add a deal</h2>
     <p class="hint" id="mgr-hint">Pick who did the deal, then enter the profit and the registration.</p>
 
+    <label>Which month</label>
+    <div class="segbar" id="month-seg">
+      <button type="button" class="seg on" id="seg-cur"><b></b><span>Live now</span></button>
+      <button type="button" class="seg ahead" id="seg-next"><b></b><span>Sold, not collected</span></button>
+    </div>
+
     <label>Sales executive</label>
     <div class="picker" id="picker"></div>
 
@@ -816,6 +832,8 @@ var deals={}, viewMonth=null, isManager=false, editingId=null, pickExec=null, ba
 /* ---- helpers ---- */
 function $(id){return document.getElementById(id)}
 function monthKey(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+/* set the day first: going straight from the 31st would skip a short month */
+function nextMonthKey(){var d=new Date();d.setDate(1);d.setMonth(d.getMonth()+1);return monthKey(d)}
 function monthName(k){var p=k.split('-');return new Date(p[0],p[1]-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}
 function money(n){return '£'+Math.round(n).toLocaleString('en-GB')}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
@@ -1420,6 +1438,7 @@ function render(){
 /* ---- manager: deal list ---- */
 function renderDeals(){
   $('deals-heading').textContent=(viewMonth===monthKey()?"This month's deals":monthName(viewMonth)+' deals');
+  syncMonthSeg();
   var ids=Object.keys(deals).sort(function(a,b){return (deals[b].ts||0)-(deals[a].ts||0)});
   if(!ids.length){$('deal-list').innerHTML='<p class="empty">No deals logged this month yet.</p>';return}
   $('deal-list').innerHTML=ids.map(function(id){
@@ -1484,6 +1503,11 @@ function delDeal(id){
 /* always say which month is being written to - a past month is easy to miss */
 function monthNote(){
   if(viewMonth===monthKey())return '';
+  if(viewMonth===nextMonthKey())
+    return '<b style="color:var(--gold)">Adding to '+monthName(viewMonth)+
+           '. These count next month, not this one.</b><br>';
+  if(viewMonth>monthKey())
+    return '<b style="color:var(--gold)">Adding to '+monthName(viewMonth)+' - a future month.</b><br>';
   return '<b style="color:var(--gold)">Viewing '+monthName(viewMonth)+
          ' - a finished month.</b><br>';
 }
@@ -1516,12 +1540,28 @@ function setPick(id){
 }
 
 /* ---- month switching ---- */
+function monthState(mk){
+  return mk===monthKey() ? 'live'
+       : mk>monthKey()   ? 'next month - not started yet'
+                         : 'finished';
+}
 function showMonth(mk){
   viewMonth=mk;
-  var live=(mk===monthKey());
-  setMonthLabel(mk, live?'live':'finished');
+  setMonthLabel(mk, monthState(mk));
   deals={};render();
+  syncMonthSeg();
   if(backend){setDot('');backend.listen(mk)}
+}
+
+/* the manager panel can work on this month or the next one, for cars sold at
+   the end of a month that will not be collected until the following one */
+function syncMonthSeg(){
+  var cur=$('seg-cur'), nxt=$('seg-next');
+  if(!cur||!nxt)return;
+  cur.querySelector('b').textContent=monthName(monthKey()).replace(' '+new Date().getFullYear(),'');
+  nxt.querySelector('b').textContent=monthName(nextMonthKey()).replace(/ \d{4}$/,'');
+  cur.classList.toggle('on',viewMonth===monthKey());
+  nxt.classList.toggle('on',viewMonth===nextMonthKey());
 }
 
 function openArchive(){
@@ -1534,7 +1574,7 @@ function openArchive(){
     months=months.filter(function(m,i){return months.indexOf(m)===i}).sort().reverse();
     $('arch-list').innerHTML=months.map(function(m){
       return '<div class="deal"><span class="in"><b>'+monthName(m)+'</b>'+
-        '<span>'+(m===cur?'Running now':'Finished')+'</span></span>'+
+        '<span>'+(m===cur?'Running now':m>cur?'Not started yet':'Finished')+'</span></span>'+
         '<button class="btn sm" data-month="'+m+'">View</button></div>';
     }).join('');
     Array.prototype.forEach.call($('arch-list').querySelectorAll('[data-month]'),function(b){
@@ -1554,8 +1594,11 @@ Array.prototype.forEach.call(document.querySelectorAll('.modal-bg'),function(bg)
   bg.addEventListener('click',function(e){if(e.target===bg)bg.classList.remove('open')});
 });
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape')Array.prototype.forEach.call(document.querySelectorAll('.modal-bg.open'),
+  if(e.key!=='Escape')return;
+  var mgrOpen=$('m-mgr').classList.contains('open');
+  Array.prototype.forEach.call(document.querySelectorAll('.modal-bg.open'),
     function(m){m.classList.remove('open')});
+  if(mgrOpen&&viewMonth!==monthKey()){resetForm();showMonth(monthKey())}
 });
 
 $('picker').innerHTML=TEAM.map(function(t){
@@ -1584,7 +1627,18 @@ $('btn-manager').onclick=function(){
 $('pin-go').onclick=checkPin;
 $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPin()});
 $('mgr-save').onclick=saveDeal;
-$('mgr-cancel').onclick=function(){resetForm();closeModal('m-mgr')};
+$('seg-cur').onclick=function(){if(viewMonth!==monthKey()){showMonth(monthKey());resetForm()}};
+$('seg-next').onclick=function(){if(viewMonth!==nextMonthKey()){showMonth(nextMonthKey());resetForm()}};
+
+/* leaving the panel always puts the wall display back on the live month, so a
+   manager cannot wander off and leave next month up on the screen */
+function leaveManager(){
+  resetForm();
+  closeModal('m-mgr');
+  if(viewMonth!==monthKey())showMonth(monthKey());
+}
+$('mgr-cancel').onclick=leaveManager;
+$('m-mgr').addEventListener('click',function(e){if(e.target===this)leaveManager()});
 $('f-reg').addEventListener('keydown',function(e){if(e.key==='Enter')saveDeal()});
 $('btn-archive').onclick=openArchive;
 
@@ -1598,6 +1652,7 @@ setInterval(function(){
 viewMonth=monthKey();
 setMonthLabel(viewMonth,'connecting…');
 render();
+syncMonthSeg();
 updateBubbles();
 bubbleTimer=setInterval(updateBubbles,7500);
 scheduleStunts();
@@ -1611,7 +1666,7 @@ window.dsBindBackend=function(api){
 window.dsOnDeals=function(obj){
   deals=obj||{};
   setDot('live');
-  setMonthLabel(viewMonth,viewMonth===monthKey()?'live':'finished');
+  setMonthLabel(viewMonth,monthState(viewMonth));
   render();
 };
 window.dsOnError=function(){

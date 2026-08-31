@@ -198,6 +198,15 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   `{exec, profit, reg, ts}`. The month key is derived from the clock, so the
   board **auto-rolls on the 1st** and every finished month stays readable via
   "Past months". Nothing needs resetting by hand.
+- **Next month ahead of time.** The manager panel has a two-way month selector:
+  the live month, or the next one, for cars sold at the end of a month that will
+  not be collected until the following one. Those deals are written straight to
+  `profitchallenge/months/<next>/deals`, stay off the live board, and appear by
+  themselves when the clock rolls over. Leaving the panel always returns the
+  wall display to the live month, so nobody can walk off and leave next month on
+  the screen. `monthState()` is the single source of truth for how a month is
+  labelled (live / next month / finished) - `showMonth()` and `dsOnDeals()` both
+  use it.
 - **Manager access** is the same shared PIN pattern as `Forecourt.html`
   (`PIN` constant in the page). Note this is a client-side gate: the DB rules
   allow anyone to write to `profitchallenge`, so the PIN stops accidents, not a
