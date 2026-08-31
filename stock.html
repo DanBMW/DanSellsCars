@@ -15,12 +15,12 @@
 <style>
   .sl-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   .sl-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:clamp(20px,3vw,28px)}
-  .sl-search{flex:1 1 220px;min-width:0;background:var(--ink-3);border:1px solid var(--hairline);color:var(--paper);
+  .sl-search{flex:1 1 100%;min-width:0;background:var(--ink-3);border:1px solid var(--hairline);color:var(--paper);
     font-family:var(--sans);font-size:.95rem;padding:12px 14px;border-radius:2px;-webkit-appearance:none}
   .sl-search::placeholder{color:var(--dim)}
   .sl-search:focus{outline:none;border-color:var(--accent)}
-  .sl-sort{background:var(--ink-3);border:1px solid var(--hairline);color:var(--paper);font-family:var(--sans);
-    font-size:.95rem;padding:12px 14px;border-radius:2px}
+  .sl-sort{flex:1 1 150px;min-width:0;background:var(--ink-3);border:1px solid var(--hairline);
+    color:var(--paper);font-family:var(--sans);font-size:.95rem;padding:12px 14px;border-radius:2px}
   .sl-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:clamp(20px,3vw,28px)}
   .sl-chip{background:none;border:1px solid var(--hairline);color:var(--body-c);font-family:var(--sans);
     font-size:.82rem;letter-spacing:.02em;padding:8px 14px;border-radius:999px;cursor:pointer}
@@ -123,7 +123,9 @@
 
       <div class="sl-controls">
         <label class="sl-sr" for="slSearch">Search the stock list</label>
-        <input class="sl-search" id="slSearch" type="search" placeholder="Search - try iX3, Touring, xDrive, a reg" autocomplete="off"/>
+        <input class="sl-search" id="slSearch" type="search" placeholder="Search - try Touring, xDrive, M Sport, a reg" autocomplete="off"/>
+        <label class="sl-sr" for="slSeries">Series</label>
+        <select class="sl-sort" id="slSeries"><option value="">Any series</option></select>
         <label class="sl-sr" for="slColour">Colour</label>
         <select class="sl-sort" id="slColour"><option value="">Any colour</option></select>
         <label class="sl-sr" for="slFuel">Fuel</label>
@@ -331,6 +333,7 @@
   var elNote  = document.getElementById('slNote');
   var elSearch= document.getElementById('slSearch');
   var elSort  = document.getElementById('slSort');
+  var elSeries= document.getElementById('slSeries');
   var elColour= document.getElementById('slColour');
   var elFuel  = document.getElementById('slFuel');
   var elBody  = document.getElementById('slBody');
@@ -345,9 +348,10 @@
   function render(){
     var q = elSearch.value.trim().toLowerCase();
     var rows = ALL.filter(function(c){
-      var hay = [c.year, c.model, colourOf(c), c.fuel, c.fuelGroup, c.fuelRaw,
-                 c.body, c.trim, c.reg].join(' ').toLowerCase();
+      var hay = [c.year, c.model, c.series, colourOf(c), c.fuel, c.fuelGroup,
+                 c.fuelRaw, c.body, c.trim, c.reg].join(' ').toLowerCase();
       if (q && hay.indexOf(q) === -1) return false;
+      if (elSeries.value && c.series !== elSeries.value) return false;
       if (elColour.value && colourOf(c) !== elColour.value) return false;
       if (elFuel.value   && c.fuelGroup !== elFuel.value) return false;
       if (elBody.value   && c.body !== elBody.value) return false;
@@ -433,6 +437,18 @@
         return c;
       });
       var FUEL_ORDER = ['Petrol', 'Diesel', 'Plug-in hybrid', 'Electric'];
+      // number series, then X, XM, Z, i, iX - so a new series sorts itself
+      function seriesRank(v){
+        var m;
+        if ((m = /^(\d) Series$/.exec(v)))  return [0, +m[1]];
+        if ((m = /^X(\d)$/.exec(v)))        return [1, +m[1]];
+        if (v === 'XM')                     return [2, 0];
+        if ((m = /^Z(\d)$/.exec(v)))        return [3, +m[1]];
+        if ((m = /^i(\d)$/.exec(v)))        return [4, +m[1]];
+        if (v === 'iX')                     return [5, 0];
+        if ((m = /^iX(\d)$/.exec(v)))       return [5, +m[1]];
+        return [9, 0];
+      }
       function fill(sel, vals, order){
         var uniq = vals.filter(Boolean).filter(function(v,i,a){ return a.indexOf(v) === i; });
         uniq.sort(order
@@ -440,6 +456,13 @@
           : undefined);
         Array.prototype.push.apply(sel, uniq.map(function(v){ return new Option(v, v); }));
       }
+      var seriesVals = ALL.map(function(c){ return c.series; }).filter(Boolean)
+        .filter(function(v,i,a){ return a.indexOf(v) === i; })
+        .sort(function(a,b){
+          var ra = seriesRank(a), rb = seriesRank(b);
+          return ra[0] - rb[0] || ra[1] - rb[1];
+        });
+      Array.prototype.push.apply(elSeries, seriesVals.map(function(v){ return new Option(v, v); }));
       fill(elColour, ALL.map(colourOf));
       fill(elFuel,   ALL.map(function(c){ return c.fuelGroup; }), FUEL_ORDER);
       fill(elBody,   ALL.map(function(c){ return c.body; }));
@@ -449,6 +472,7 @@
 
   elSearch.addEventListener('input', render);
   elSort.addEventListener('change', render);
+  elSeries.addEventListener('change', render);
   elColour.addEventListener('change', render);
   elFuel.addEventListener('change', render);
   elBody.addEventListener('change', render);
