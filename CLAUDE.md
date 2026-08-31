@@ -198,6 +198,13 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   `{exec, profit, reg, ts}`. The month key is derived from the clock, so the
   board **auto-rolls on the 1st** and every finished month stays readable via
   "Past months". Nothing needs resetting by hand.
+- **Month tabs** sit under the title on the board itself: every month that has
+  deals, plus the current one, plus anything banked ahead (dashed, gold when
+  selected). It always opens on the current month. `renderMonthTabs()` builds
+  them from `backend.months()`, capped to the last eleven past months. A board
+  left on a finished month reverts to the live one after three minutes of no
+  interaction - a wall display stuck on July is a broken board. The tabs
+  replaced the old "Past months" modal, which did the same job less directly.
 - **Next month ahead of time.** The manager panel has a two-way month selector:
   the live month, or the next one, for cars sold at the end of a month that will
   not be collected until the following one. Those deals are written straight to

@@ -60,6 +60,22 @@ body{
   border-radius:999px;padding:6px 14px;font-size:.82rem;color:var(--muted);
   font-weight:600;letter-spacing:.04em;
 }
+.mtabs{
+  display:flex;gap:6px;justify-content:center;flex-wrap:nowrap;
+  margin-top:9px;overflow-x:auto;scrollbar-width:none;
+  padding:2px 2px 4px;max-width:100%;
+}
+.mtabs::-webkit-scrollbar{display:none}
+.mtab{
+  flex:none;appearance:none;cursor:pointer;white-space:nowrap;
+  background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);
+  font-family:var(--font);font-weight:700;font-size:clamp(.64rem,1.5vw,.8rem);
+  letter-spacing:.03em;padding:5px 13px;border-radius:999px;transition:.15s;
+}
+.mtab:hover{color:var(--text);background:rgba(255,255,255,.08)}
+.mtab.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.mtab.ahead{border-style:dashed}
+.mtab.ahead.on{background:var(--gold);border-color:var(--gold);color:#1a1305}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
 .live-dot.on{background:var(--green);box-shadow:0 0 0 0 rgba(47,191,107,.6);animation:pulse 2s infinite}
 .live-dot.err{background:var(--red)}
@@ -652,6 +668,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <h1>THE <span class="amt">£15,000</span> Profit Challenge</h1>
     <p class="sub">Who will be champion</p>
     <div class="month"><span class="live-dot" id="dot"></span><span id="month-label">Loading…</span></div>
+    <div class="mtabs" id="month-tabs"></div>
   </header>
 
   <div class="board">
@@ -669,7 +686,6 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   <div class="standings" id="standings"></div>
 
   <div class="actions">
-    <button class="btn" id="btn-archive">Past months</button>
     <button class="btn primary" id="btn-manager">Manager access</button>
   </div>
 
@@ -724,15 +740,6 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   </div>
 </div>
 
-<!-- Archive -->
-<div class="modal-bg" id="m-arch">
-  <div class="modal" style="max-width:420px">
-    <h2>Past months</h2>
-    <p class="hint">Every finished month is kept. Pick one to view its final board.</p>
-    <div class="deals" id="arch-list"></div>
-    <button class="btn" style="width:100%;margin-top:12px" data-close="m-arch">Close</button>
-  </div>
-</div>
 
 <!-- Nathan has a go at burning the board down -->
 <div class="firescene" id="firescene" aria-hidden="true">
@@ -1484,7 +1491,8 @@ function saveDeal(){
   }else{
     payload.ts=Date.now();
     backend.add(viewMonth,payload).then(function(){
-      toast(money(profit)+' added for '+BY_ID[pickExec].name.split(' ')[0],'ok');resetForm();
+      toast(money(profit)+' added for '+BY_ID[pickExec].name.split(' ')[0],'ok');
+      resetForm();refreshMonthTabs();
     })['catch'](function(e){console.error(e);toast('Could not save - check connection','err')}).then(done,done);
   }
 }
@@ -1540,6 +1548,60 @@ function setPick(id){
 }
 
 /* ---- month switching ---- */
+var monthList=[], idleTimer=null;
+
+/* short label: "Aug", plus the year when it is not the current one */
+function tabLabel(mk){
+  var p=mk.split('-'), d=new Date(p[0],p[1]-1,1);
+  var s=d.toLocaleDateString('en-GB',{month:'short'});
+  return d.getFullYear()===new Date().getFullYear() ? s : s+" '"+String(p[0]).slice(2);
+}
+
+function renderMonthTabs(){
+  var cur=monthKey(), nxt=nextMonthKey();
+  var set={}; set[cur]=true;
+  monthList.forEach(function(m){set[m]=true});
+  var all=Object.keys(set).sort();
+  /* keep it to the last year or so, plus whatever is ahead */
+  var past=all.filter(function(m){return m<cur}).slice(-11);
+  var ahead=all.filter(function(m){return m>cur});
+  all=past.concat([cur],ahead);
+  $('month-tabs').innerHTML=all.map(function(m){
+    return '<button class="mtab'+(m===viewMonth?' on':'')+(m>cur?' ahead':'')+
+           '" data-mk="'+m+'" title="'+monthName(m)+'">'+tabLabel(m)+
+           (m===nxt?' &rsaquo;':'')+'</button>';
+  }).join('');
+  Array.prototype.forEach.call($('month-tabs').querySelectorAll('.mtab'),function(bt){
+    bt.onclick=function(){pickMonth(bt.getAttribute('data-mk'))};
+  });
+  var on=$('month-tabs').querySelector('.mtab.on');
+  if(on&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'center'});
+}
+
+function pickMonth(mk){
+  if(mk===viewMonth)return;
+  showMonth(mk);
+  armIdleReturn();
+}
+
+/* a wall display left on a finished month is a broken board: come back to the
+   live one if nobody has touched it for a few minutes */
+function armIdleReturn(){
+  clearTimeout(idleTimer);
+  if(viewMonth===monthKey())return;
+  idleTimer=setTimeout(function(){
+    if(viewMonth!==monthKey()&&!document.querySelector('.modal-bg.open'))showMonth(monthKey());
+  },180000);
+}
+
+function refreshMonthTabs(){
+  if(!backend||!backend.months)return renderMonthTabs();
+  backend.months().then(function(ms){
+    monthList=ms||[];
+    renderMonthTabs();
+  })['catch'](function(){renderMonthTabs()});
+}
+
 function monthState(mk){
   return mk===monthKey() ? 'live'
        : mk>monthKey()   ? 'next month - not started yet'
@@ -1550,6 +1612,8 @@ function showMonth(mk){
   setMonthLabel(mk, monthState(mk));
   deals={};render();
   syncMonthSeg();
+  renderMonthTabs();
+  armIdleReturn();
   if(backend){setDot('');backend.listen(mk)}
 }
 
@@ -1564,27 +1628,6 @@ function syncMonthSeg(){
   nxt.classList.toggle('on',viewMonth===nextMonthKey());
 }
 
-function openArchive(){
-  if(!requireBackend())return;
-  $('arch-list').innerHTML='<p class="empty">Loading…</p>';
-  openModal('m-arch');
-  backend.months().then(function(months){
-    var cur=monthKey();
-    if(months.indexOf(cur)===-1)months.push(cur);
-    months=months.filter(function(m,i){return months.indexOf(m)===i}).sort().reverse();
-    $('arch-list').innerHTML=months.map(function(m){
-      return '<div class="deal"><span class="in"><b>'+monthName(m)+'</b>'+
-        '<span>'+(m===cur?'Running now':m>cur?'Not started yet':'Finished')+'</span></span>'+
-        '<button class="btn sm" data-month="'+m+'">View</button></div>';
-    }).join('');
-    Array.prototype.forEach.call($('arch-list').querySelectorAll('[data-month]'),function(b){
-      b.onclick=function(){showMonth(b.getAttribute('data-month'));closeModal('m-arch')};
-    });
-  })['catch'](function(e){
-    console.error(e);
-    $('arch-list').innerHTML='<p class="empty">Could not load past months.</p>';
-  });
-}
 
 /* ---- wiring ---- */
 Array.prototype.forEach.call(document.querySelectorAll('[data-close]'),function(b){
@@ -1640,7 +1683,6 @@ function leaveManager(){
 $('mgr-cancel').onclick=leaveManager;
 $('m-mgr').addEventListener('click',function(e){if(e.target===this)leaveManager()});
 $('f-reg').addEventListener('keydown',function(e){if(e.key==='Enter')saveDeal()});
-$('btn-archive').onclick=openArchive;
 
 /* auto-roll: if midnight rolls into a new month while the board is up, follow it */
 setInterval(function(){
@@ -1653,6 +1695,7 @@ viewMonth=monthKey();
 setMonthLabel(viewMonth,'connecting…');
 render();
 syncMonthSeg();
+renderMonthTabs();
 updateBubbles();
 bubbleTimer=setInterval(updateBubbles,7500);
 scheduleStunts();
@@ -1662,6 +1705,7 @@ window.dsBindBackend=function(api){
   backend=api;
   setDot('');
   backend.listen(viewMonth);
+  refreshMonthTabs();
 };
 window.dsOnDeals=function(obj){
   deals=obj||{};
