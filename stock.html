@@ -3,16 +3,10 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <link rel="canonical" href="https://dan-sells.co.uk/stock.html"/>
+  <meta name="robots" content="noindex, nofollow"/>
   <title>Full BMW stock list | Hedin Ruxley - Dan Cane</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <meta name="description" content="Every approved used BMW in stock at Hedin Ruxley right now - price, mileage and year on each one, updated daily. Message Dan about any car on the list."/>
-  <meta property="og:type" content="website"/>
-  <meta property="og:url" content="https://dan-sells.co.uk/stock.html"/>
-  <meta property="og:title" content="Full BMW stock list - Hedin Ruxley"/>
-  <meta property="og:description" content="Every approved used BMW in stock at Ruxley right now, with price and mileage. Updated daily. Message me about any of them."/>
-  <meta property="og:image" content="https://dan-sells.co.uk/dan.jpg"/>
-  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="description" content="Every approved used BMW in stock at Hedin Ruxley right now - photo, price, mileage, colour and spec on each one, updated daily. Message Dan about any car on the list."/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
   <link rel="stylesheet" href="premium.css?v=7ea8698c"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
@@ -33,28 +27,37 @@
   .sl-chip:hover{color:var(--paper);border-color:var(--hairline)}
   .sl-chip[aria-pressed="true"]{background:var(--paper);border-color:var(--paper);color:var(--ink)}
   .sl-count{font-family:var(--sans);font-size:.85rem;color:var(--dim);margin-bottom:18px}
-  .sl-list{display:grid;gap:1px;background:var(--hairline-soft);border-top:1px solid var(--hairline);
-    border-bottom:1px solid var(--hairline)}
-  .sl-row{background:var(--ink);display:grid;grid-template-columns:1fr auto;gap:6px 20px;
-    padding:clamp(16px,2.4vw,22px) 0;align-items:start}
-  .sl-row h3{font-family:var(--serif);font-size:clamp(1.02rem,2.1vw,1.2rem);font-weight:400;
-    color:var(--paper);margin:0 0 6px;line-height:1.25}
-  .sl-facts{font-family:var(--sans);font-size:.85rem;color:var(--dim);letter-spacing:.01em}
-  .sl-facts span+span::before{content:"\00b7";margin:0 8px;color:var(--hairline)}
-  .sl-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;
+  .sl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:clamp(18px,2.4vw,26px)}
+  .sl-card{background:var(--ink-3);border:1px solid var(--hairline);border-radius:3px;overflow:hidden;
+    display:flex;flex-direction:column}
+  .sl-photo{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;
+    flex:0 0 auto;background:var(--ink-2);border-bottom:1px solid var(--hairline)}
+  .sl-body{padding:clamp(14px,2vw,18px);display:flex;flex-direction:column;flex:1}
+  .sl-meta{font-family:var(--sans);font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--dim);margin-bottom:7px}
+  .sl-card h3{font-family:var(--serif);font-size:clamp(1.02rem,2vw,1.16rem);font-weight:400;
+    color:var(--paper);margin:0 0 10px;line-height:1.25}
+  .sl-price{font-family:var(--sans);font-size:clamp(1.08rem,2.1vw,1.24rem);color:var(--paper);
+    margin-bottom:12px}
+  .sl-spec{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;font-family:var(--sans);
+    font-size:.82rem;color:var(--body-c);margin-bottom:14px;padding-bottom:14px;
+    border-bottom:1px solid var(--hairline-soft)}
+  .sl-spec span{color:var(--dim)}
+  .sl-spec strong{color:var(--body-c);font-weight:500}
+  .sl-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;
     vertical-align:baseline;border:1px solid rgba(236,233,225,.25)}
-  .sl-price{font-family:var(--sans);font-size:clamp(1.02rem,2.1vw,1.18rem);color:var(--paper);
-    white-space:nowrap;text-align:right}
-  .sl-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .sl-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
   .sl-actions a{font-family:var(--sans);font-size:.82rem;letter-spacing:.02em;text-decoration:none;
-    border:1px solid var(--hairline);color:var(--body-c);padding:8px 14px;border-radius:2px}
-  .sl-actions a:hover{color:var(--paper)}
+    border:1px solid var(--hairline);color:var(--body-c);padding:9px 14px;border-radius:2px;
+    flex:1 1 auto;text-align:center}
+  .sl-actions a:hover{color:var(--paper);border-color:var(--body-c)}
   .sl-actions a.sl-wa{border-color:var(--accent);color:var(--accent)}
+  .sl-actions a.sl-wa:hover{background:var(--accent);color:var(--ink);border-color:var(--accent)}
   .sl-empty{font-family:var(--sans);color:var(--dim);padding:40px 0;text-align:center}
   .sl-note{font-family:var(--sans);font-size:.82rem;color:var(--dim);margin-top:18px}
   @media(max-width:560px){
-    .sl-row{grid-template-columns:1fr}
-    .sl-price{text-align:left;margin-top:4px}
+    .sl-list{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -108,7 +111,7 @@
       <h1 style="font-size:clamp(2.2rem,5.5vw,3.6rem)">Every BMW on the<br/>Ruxley forecourt.</h1>
       <hr class="rule"/>
       <div class="prose">
-        <p class="lede">The complete approved used BMW stock at Hedin Ruxley, with the price and mileage on each one. Updated every morning.</p>
+        <p class="lede">The complete approved used BMW stock at Hedin Ruxley, with a photo, price and full spec on each one. Updated every morning.</p>
         <p>Tap WhatsApp on any car and it comes straight to me with the details already filled in - no forms, no call centre. If the one you want has just gone, tell me what you were after and I will watch what comes in.</p>
       </div>
     </div>
@@ -120,9 +123,13 @@
 
       <div class="sl-controls">
         <label class="sl-sr" for="slSearch">Search the stock list</label>
-        <input class="sl-search" id="slSearch" type="search" placeholder="Search - try iX3, Touring, M Sport" autocomplete="off"/>
+        <input class="sl-search" id="slSearch" type="search" placeholder="Search - try iX3, Touring, xDrive, a reg" autocomplete="off"/>
         <label class="sl-sr" for="slColour">Colour</label>
         <select class="sl-sort" id="slColour"><option value="">Any colour</option></select>
+        <label class="sl-sr" for="slFuel">Fuel</label>
+        <select class="sl-sort" id="slFuel"><option value="">Any fuel</option></select>
+        <label class="sl-sr" for="slBody">Body style</label>
+        <select class="sl-sort" id="slBody"><option value="">Any body style</option></select>
         <label class="sl-sr" for="slSort">Sort by</label>
         <select class="sl-sort" id="slSort">
           <option value="price-asc">Price - low to high</option>
@@ -132,9 +139,8 @@
         </select>
       </div>
 
-      <div class="sl-chips" id="slChips" role="group" aria-label="Filter by type and price">
+      <div class="sl-chips" id="slChips" role="group" aria-label="Filter by price">
         <button class="sl-chip" type="button" data-filter="all" aria-pressed="true">All</button>
-        <button class="sl-chip" type="button" data-filter="electric" aria-pressed="false">Electric</button>
         <button class="sl-chip" type="button" data-filter="u30" aria-pressed="false">Under &pound;30k</button>
         <button class="sl-chip" type="button" data-filter="30to50" aria-pressed="false">&pound;30k - &pound;50k</button>
         <button class="sl-chip" type="button" data-filter="o50" aria-pressed="false">&pound;50k+</button>
@@ -326,6 +332,8 @@
   var elSearch= document.getElementById('slSearch');
   var elSort  = document.getElementById('slSort');
   var elColour= document.getElementById('slColour');
+  var elFuel  = document.getElementById('slFuel');
+  var elBody  = document.getElementById('slBody');
 
   function num(s){ var m = String(s).replace(/[^0-9]/g,''); return m ? parseInt(m,10) : 0; }
   function colourOf(c){ return c.colour || c.color || ''; }
@@ -337,9 +345,11 @@
   function render(){
     var q = elSearch.value.trim().toLowerCase();
     var rows = ALL.filter(function(c){
-      if (q && (c.year + ' ' + c.model + ' ' + colourOf(c)).toLowerCase().indexOf(q) === -1) return false;
+      var hay = [c.year, c.model, colourOf(c), c.fuel, c.body, c.trim, c.reg].join(' ').toLowerCase();
+      if (q && hay.indexOf(q) === -1) return false;
       if (elColour.value && colourOf(c) !== elColour.value) return false;
-      if (filter === 'electric') return /^BMW i(\d|X)/.test(c.model);
+      if (elFuel.value   && c.fuel !== elFuel.value) return false;
+      if (elBody.value   && c.body !== elBody.value) return false;
       if (filter === 'u30')      return c._price <  30000;
       if (filter === '30to50')   return c._price >= 30000 && c._price < 50000;
       if (filter === 'o50')      return c._price >= 50000;
@@ -368,18 +378,29 @@
       var label = c.year + ' ' + c.model + (col ? ' in ' + col : '') + ' (' + c.price + ')';
       var wa = WA + '?text=' + encodeURIComponent(
         'Hi Dan, I saw the ' + label + ' on your stock list. Can you tell me more?');
-      return '<article class="sl-row">'
-        + '<div><h3>' + esc(c.model) + '</h3>'
-        + '<div class="sl-facts"><span>' + esc(c.year) + '</span><span>'
-        + esc(c.mileage) + '</span>' + (col
-            ? '<span><i class="sl-dot" style="background:'
-              + (SWATCH[col.toLowerCase()] || 'transparent') + '"></i>' + esc(col) + '</span>'
-            : '') + '</div></div>'
+      var drive = {FourWheel:'xDrive', RearWheel:'Rear wheel drive', FrontWheel:'Front wheel drive'}[c.drive] || c.drive || '';
+      var spec = [];
+      if (c.fuel)  spec.push(['Fuel', esc(c.fuel)]);
+      if (c.power) spec.push(['Power', esc(c.power)]);
+      if (drive)   spec.push(['Drive', esc(drive)]);
+      if (c.seats) spec.push(['Seats', esc(c.seats)]);
+      return '<article class="sl-card">'
+        + (c.image ? '<img class="sl-photo" src="' + esc(c.image) + '" alt="' + esc(c.year + ' ' + c.model)
+             + '" loading="lazy" width="700" height="393"/>' : '')
+        + '<div class="sl-body">'
+        + '<div class="sl-meta">' + esc(c.year) + (c.reg ? ' &middot; ' + esc(c.reg) : '') + '</div>'
+        + '<h3>' + esc(c.model) + '</h3>'
         + '<div class="sl-price">' + esc(c.price) + '</div>'
+        + '<div class="sl-spec">'
+        + '<span>Mileage</span><strong>' + esc(String(c.mileage).replace(/ miles$/,'')) + '</strong>'
+        + (col ? '<span>Colour</span><strong><i class="sl-dot" style="background:'
+                 + (SWATCH[col.toLowerCase()] || 'transparent') + '"></i>' + esc(col) + '</strong>' : '')
+        + spec.map(function(kv){ return '<span>' + kv[0] + '</span><strong>' + kv[1] + '</strong>'; }).join('')
+        + '</div>'
         + '<div class="sl-actions">'
         + '<a class="sl-wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp Dan</a>'
         + '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">Full listing</a>'
-        + '</div></article>';
+        + '</div></div></article>';
     }).join('');
   }
 
@@ -410,9 +431,12 @@
         c._price = num(c.price); c._miles = num(c.mileage); c._year = num(c.year);
         return c;
       });
-      var seen = ALL.map(colourOf).filter(Boolean);
-      Array.prototype.push.apply(elColour, seen.filter(function(v,i){ return seen.indexOf(v) === i; })
-        .sort().map(function(v){ return new Option(v, v); }));
+      [[elColour, ALL.map(colourOf)], [elFuel, ALL.map(function(c){return c.fuel;})],
+       [elBody, ALL.map(function(c){return c.body;})]].forEach(function(pair){
+        var vals = pair[1].filter(Boolean);
+        Array.prototype.push.apply(pair[0], vals.filter(function(v,i){ return vals.indexOf(v) === i; })
+          .sort().map(function(v){ return new Option(v, v); }));
+      });
       render();
     })
     .catch(failed);
@@ -420,6 +444,8 @@
   elSearch.addEventListener('input', render);
   elSort.addEventListener('change', render);
   elColour.addEventListener('change', render);
+  elFuel.addEventListener('change', render);
+  elBody.addEventListener('change', render);
   document.getElementById('slChips').addEventListener('click', function(e){
     var btn = e.target.closest('.sl-chip');
     if (!btn) return;
