@@ -256,6 +256,19 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   runtime, clamped to the viewport so a scrolled phone still shows it) and
   Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
   burns for ten seconds and goes out.
+- **Month-on-month cut scene.** Every 29-34 minutes `statsScene()` reads this
+  month and last month in one go (`backend.read()`, a one-off `get`) and shows
+  three stat tiles plus a cumulative-profit line chart. The comparison is
+  deliberately **like for like** - this month to date against last month to the
+  *same day*, not against a whole finished month, which would flatter or damn
+  the current month for no reason. Deal timestamps place each deal on a day;
+  one banked before its month began counts on day one.
+  Chart colours were validated with the dataviz skill's checker against the
+  panel surface (`node scripts/validate_palette.js "#2f7bf0,#b8862c" --mode dark
+  --surface "#141b26"` - all checks pass). Do not swap them for the brighter
+  `--gold`: it sits outside the dark lightness band and fails. The stat figures
+  use the body sans with proportional figures, not Clash Display - a display
+  face on a stat value reads as decoration.
 - **Leader cut scene.** Every 4.5-6.5 minutes `leaderDance()` dims the board and
   the current leader breakdances centre stage - toprock, a headspin, then a
   freeze - over their name, total and a rotating tagline. It is skipped on an
