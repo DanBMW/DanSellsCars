@@ -41,6 +41,8 @@
     color:var(--paper);margin:0 0 6px;line-height:1.25}
   .sl-facts{font-family:var(--sans);font-size:.85rem;color:var(--dim);letter-spacing:.01em}
   .sl-facts span+span::before{content:"\00b7";margin:0 8px;color:var(--hairline)}
+  .sl-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;
+    vertical-align:baseline;border:1px solid rgba(236,233,225,.25)}
   .sl-price{font-family:var(--sans);font-size:clamp(1.02rem,2.1vw,1.18rem);color:var(--paper);
     white-space:nowrap;text-align:right}
   .sl-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
@@ -119,6 +121,8 @@
       <div class="sl-controls">
         <label class="sl-sr" for="slSearch">Search the stock list</label>
         <input class="sl-search" id="slSearch" type="search" placeholder="Search - try iX3, Touring, M Sport" autocomplete="off"/>
+        <label class="sl-sr" for="slColour">Colour</label>
+        <select class="sl-sort" id="slColour"><option value="">Any colour</option></select>
         <label class="sl-sr" for="slSort">Sort by</label>
         <select class="sl-sort" id="slSort">
           <option value="price-asc">Price - low to high</option>
@@ -321,15 +325,20 @@
   var elNote  = document.getElementById('slNote');
   var elSearch= document.getElementById('slSearch');
   var elSort  = document.getElementById('slSort');
+  var elColour= document.getElementById('slColour');
 
   function num(s){ var m = String(s).replace(/[^0-9]/g,''); return m ? parseInt(m,10) : 0; }
+  function colourOf(c){ return c.colour || c.color || ''; }
+  var SWATCH = {grey:'#8a8d91', black:'#1b1d20', white:'#e8e6e1', blue:'#2f5f9e',
+                green:'#3d6b4a', red:'#8c2f2f', silver:'#b9bcc0'};
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
   function render(){
     var q = elSearch.value.trim().toLowerCase();
     var rows = ALL.filter(function(c){
-      if (q && (c.year + ' ' + c.model).toLowerCase().indexOf(q) === -1) return false;
+      if (q && (c.year + ' ' + c.model + ' ' + colourOf(c)).toLowerCase().indexOf(q) === -1) return false;
+      if (elColour.value && colourOf(c) !== elColour.value) return false;
       if (filter === 'electric') return /^BMW i(\d|X)/.test(c.model);
       if (filter === 'u30')      return c._price <  30000;
       if (filter === '30to50')   return c._price >= 30000 && c._price < 50000;
@@ -355,13 +364,17 @@
     }
 
     elList.innerHTML = rows.map(function(c){
-      var label = c.year + ' ' + c.model + ' (' + c.price + ')';
+      var col = colourOf(c);
+      var label = c.year + ' ' + c.model + (col ? ' in ' + col : '') + ' (' + c.price + ')';
       var wa = WA + '?text=' + encodeURIComponent(
         'Hi Dan, I saw the ' + label + ' on your stock list. Can you tell me more?');
       return '<article class="sl-row">'
         + '<div><h3>' + esc(c.model) + '</h3>'
         + '<div class="sl-facts"><span>' + esc(c.year) + '</span><span>'
-        + esc(c.mileage) + '</span></div></div>'
+        + esc(c.mileage) + '</span>' + (col
+            ? '<span><i class="sl-dot" style="background:'
+              + (SWATCH[col.toLowerCase()] || 'transparent') + '"></i>' + esc(col) + '</span>'
+            : '') + '</div></div>'
         + '<div class="sl-price">' + esc(c.price) + '</div>'
         + '<div class="sl-actions">'
         + '<a class="sl-wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp Dan</a>'
@@ -397,12 +410,16 @@
         c._price = num(c.price); c._miles = num(c.mileage); c._year = num(c.year);
         return c;
       });
+      var seen = ALL.map(colourOf).filter(Boolean);
+      Array.prototype.push.apply(elColour, seen.filter(function(v,i){ return seen.indexOf(v) === i; })
+        .sort().map(function(v){ return new Option(v, v); }));
       render();
     })
     .catch(failed);
 
   elSearch.addEventListener('input', render);
   elSort.addEventListener('change', render);
+  elColour.addEventListener('change', render);
   document.getElementById('slChips').addEventListener('click', function(e){
     var btn = e.target.closest('.sl-chip');
     if (!btn) return;
