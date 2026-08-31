@@ -198,6 +198,22 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   `{exec, profit, reg, ts}`. The month key is derived from the clock, so the
   board **auto-rolls on the 1st** and every finished month stays readable via
   "Past months". Nothing needs resetting by hand.
+- **Month tabs** sit under the title on the board itself: every month that has
+  deals, plus the current one, plus anything banked ahead (dashed, gold when
+  selected). It always opens on the current month. `renderMonthTabs()` builds
+  them from `backend.months()`, capped to the last eleven past months. A board
+  left on a finished month reverts to the live one after three minutes of no
+  interaction - a wall display stuck on July is a broken board. The tabs
+  replaced the old "Past months" modal, which did the same job less directly.
+- **Next month ahead of time.** The manager panel has a two-way month selector:
+  the live month, or the next one, for cars sold at the end of a month that will
+  not be collected until the following one. Those deals are written straight to
+  `profitchallenge/months/<next>/deals`, stay off the live board, and appear by
+  themselves when the clock rolls over. Leaving the panel always returns the
+  wall display to the live month, so nobody can walk off and leave next month on
+  the screen. `monthState()` is the single source of truth for how a month is
+  labelled (live / next month / finished) - `showMonth()` and `dsOnDeals()` both
+  use it.
 - **Manager access** is the same shared PIN pattern as `Forecourt.html`
   (`PIN` constant in the page). Note this is a client-side gate: the DB rules
   allow anyone to write to `profitchallenge`, so the PIN stops accidents, not a
@@ -240,6 +256,19 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   runtime, clamped to the viewport so a scrolled phone still shows it) and
   Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
   burns for ten seconds and goes out.
+- **Month-on-month cut scene.** Every 29-34 minutes `statsScene()` reads this
+  month and last month in one go (`backend.read()`, a one-off `get`) and shows
+  three stat tiles plus a cumulative-profit line chart. The comparison is
+  deliberately **like for like** - this month to date against last month to the
+  *same day*, not against a whole finished month, which would flatter or damn
+  the current month for no reason. Deal timestamps place each deal on a day;
+  one banked before its month began counts on day one.
+  Chart colours were validated with the dataviz skill's checker against the
+  panel surface (`node scripts/validate_palette.js "#2f7bf0,#b8862c" --mode dark
+  --surface "#141b26"` - all checks pass). Do not swap them for the brighter
+  `--gold`: it sits outside the dark lightness band and fails. The stat figures
+  use the body sans with proportional figures, not Clash Display - a display
+  face on a stat value reads as decoration.
 - **Leader cut scene.** Every 4.5-6.5 minutes `leaderDance()` dims the board and
   the current leader breakdances centre stage - toprock, a headspin, then a
   freeze - over their name, total and a rotating tagline. It is skipped on an
