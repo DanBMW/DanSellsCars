@@ -345,10 +345,11 @@
   function render(){
     var q = elSearch.value.trim().toLowerCase();
     var rows = ALL.filter(function(c){
-      var hay = [c.year, c.model, colourOf(c), c.fuel, c.body, c.trim, c.reg].join(' ').toLowerCase();
+      var hay = [c.year, c.model, colourOf(c), c.fuel, c.fuelGroup, c.fuelRaw,
+                 c.body, c.trim, c.reg].join(' ').toLowerCase();
       if (q && hay.indexOf(q) === -1) return false;
       if (elColour.value && colourOf(c) !== elColour.value) return false;
-      if (elFuel.value   && c.fuel !== elFuel.value) return false;
+      if (elFuel.value   && c.fuelGroup !== elFuel.value) return false;
       if (elBody.value   && c.body !== elBody.value) return false;
       if (filter === 'u30')      return c._price <  30000;
       if (filter === '30to50')   return c._price >= 30000 && c._price < 50000;
@@ -431,12 +432,17 @@
         c._price = num(c.price); c._miles = num(c.mileage); c._year = num(c.year);
         return c;
       });
-      [[elColour, ALL.map(colourOf)], [elFuel, ALL.map(function(c){return c.fuel;})],
-       [elBody, ALL.map(function(c){return c.body;})]].forEach(function(pair){
-        var vals = pair[1].filter(Boolean);
-        Array.prototype.push.apply(pair[0], vals.filter(function(v,i){ return vals.indexOf(v) === i; })
-          .sort().map(function(v){ return new Option(v, v); }));
-      });
+      var FUEL_ORDER = ['Petrol', 'Diesel', 'Plug-in hybrid', 'Electric'];
+      function fill(sel, vals, order){
+        var uniq = vals.filter(Boolean).filter(function(v,i,a){ return a.indexOf(v) === i; });
+        uniq.sort(order
+          ? function(a,b){ return order.indexOf(a) - order.indexOf(b); }
+          : undefined);
+        Array.prototype.push.apply(sel, uniq.map(function(v){ return new Option(v, v); }));
+      }
+      fill(elColour, ALL.map(colourOf));
+      fill(elFuel,   ALL.map(function(c){ return c.fuelGroup; }), FUEL_ORDER);
+      fill(elBody,   ALL.map(function(c){ return c.body; }));
       render();
     })
     .catch(failed);
