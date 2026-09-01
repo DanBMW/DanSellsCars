@@ -95,7 +95,7 @@
     <div class="fv2-sec">Service history</div>
     <div class="fv2-rows" id="serviceTrack">
       <button type="button" class="fv2-row" data-val="Full dealer history" aria-pressed="false" onclick="pickService(this)">
-        <span class="fv2-row-body"><span class="fv2-row-title">Full dealer history</span><span class="fv2-row-desc">Every service at a main dealer. The strongest history a BMW can have.</span><span class="fv2-tag good">Best for value</span></span>
+        <span class="fv2-row-body"><span class="fv2-row-title">Full dealer history</span><span class="fv2-row-desc">Every service at a main dealer. The strongest history a vehicle can have.</span><span class="fv2-tag good">Best for value</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
       <button type="button" class="fv2-row" data-val="Full independent history" aria-pressed="false" onclick="pickService(this)">
@@ -123,13 +123,17 @@
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
       <button type="button" class="fv2-row" data-val="Finance, settlement unknown" aria-pressed="false" onclick="pickFinance(this)">
-        <span class="fv2-row-body"><span class="fv2-row-title">Yes, settlement figure unknown</span><span class="fv2-row-desc">No problem, I can help work it out before we speak.</span></span>
+        <span class="fv2-row-body"><span class="fv2-row-title">Yes, settlement figure unknown</span><span class="fv2-row-desc">No problem. There is one quick job for you below.</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
       <button type="button" class="fv2-row" data-val="Finance, settlement known" aria-pressed="false" onclick="pickFinance(this)">
         <span class="fv2-row-body"><span class="fv2-row-title">Yes, I know the settlement figure</span><span class="fv2-row-desc">Enter it below and I'll factor it into the deal.</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
+    </div>
+    <div id="settlementUnknownNote" class="fv2-reveal vip-note" style="display:none;margin:-8px 0 22px;">
+      <p>If your finance is with <strong>BMW Financial Services</strong>, leave it with me. I can get the settlement figure for you on the day.</p>
+      <p>If it is with anyone else, please <strong>call them before you come and bring the settlement figure with you</strong>. It is the one number I cannot get hold of on your behalf, and without it we cannot finish the deal on the day.</p>
     </div>
     <div id="settlementWrap" class="fv2-reveal" style="display:none;margin:-8px 0 22px;">
       <div class="input-card" style="margin:0;">
@@ -191,6 +195,9 @@
   if (savedSettlement) document.getElementById('settlementFig').value = savedSettlement;
   if (financeChosen === 'Finance, settlement known') {
     document.getElementById('settlementWrap').style.display = 'block';
+  }
+  if (financeChosen === 'Finance, settlement unknown') {
+    document.getElementById('settlementUnknownNote').style.display = 'block';
   }
   document.querySelectorAll("#serviceTrack .fv2-row").forEach(b=>{ if(b.dataset.val===serviceChosen){ b.classList.add("selected"); b.setAttribute("aria-pressed","true"); } });
   document.querySelectorAll("#bringTrack .fv2-row").forEach(b=>{ if(b.dataset.val===bringChosen){ b.classList.add("selected"); b.setAttribute("aria-pressed","true"); } });
@@ -317,6 +324,8 @@
     sessionStorage.setItem('vipPXFinance', financeChosen);
     document.getElementById('settlementWrap').style.display =
       financeChosen === 'Finance, settlement known' ? 'block' : 'none';
+    document.getElementById('settlementUnknownNote').style.display =
+      financeChosen === 'Finance, settlement unknown' ? 'block' : 'none';
     hideErr();
   }
   function pickCond(btn){
