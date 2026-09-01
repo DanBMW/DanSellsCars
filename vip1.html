@@ -64,11 +64,25 @@
   </div>
 
   <div class="fv2-sec">Models you have in mind <small>(optional)</small></div>
-  <div class="field-group" style="margin-bottom:6px;">
-    <label class="sr-only" for="modelPref">Models you have in mind</label>
-    <input id="modelPref" type="text" placeholder="e.g. X3 20d M Sport, or 330e Touring" onkeydown="if(event.key==='Enter'){event.preventDefault();goNext();}"/>
+  <p class="fv2-sec-sub">Tap anything that interests you, as many as you like. Start typing to jump straight to one, or skip this entirely and I will bring suggestions.</p>
+
+  <div class="model-picker">
+    <label class="sr-only" for="modelFilter">Search models</label>
+    <input id="modelFilter" type="search" placeholder="Search, e.g. X3, Touring, electric" autocomplete="off" spellcheck="false"/>
+    <div class="model-chosen" id="modelChosen" style="display:none;">
+      <span class="model-chosen-label">Chosen</span>
+      <span id="modelChosenList"></span>
+      <button type="button" id="modelClear" onclick="clearModels()">Clear</button>
+    </div>
+    <div id="modelList"></div>
+    <p class="hint" id="modelNoMatch" style="display:none;">Nothing matches that. Clear the search to see the full range, or just type it in the box below.</p>
   </div>
-  <p class="hint">Names, specs, a stock number off the website, anything. The more precise you are, the more precise the shortlist waiting for you.</p>
+
+  <div class="field-group" style="margin:18px 0 6px;">
+    <label for="modelPref">Anything not on the list <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+    <input id="modelPref" type="text" placeholder="A stock number, a spec, or a used model" onkeydown="if(event.key==='Enter'){event.preventDefault();goNext();}"/>
+  </div>
+  <p class="hint">The list covers the current range. For an Approved Used car, a stock number off the website, or a particular spec, put it here.</p>
 
   <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span>Pick the one closest to where you are. Nothing here is binding.</span></div>
   <div class="fv2-nav">
@@ -83,6 +97,134 @@
 
   var mp = sessionStorage.getItem("vipModelPref");
   if (mp) document.getElementById("modelPref").value = mp;
+
+  // The current BMW range, grouped the way a customer thinks about it rather
+  // than the way the price list is ordered.
+  var MODELS = [
+    ["1 Series", ["1 Series", "M135 xDrive"]],
+    ["2 Series", ["2 Series Coupé", "M2 Coupé", "2 Series Gran Coupé",
+                  "2 Series Active Tourer", "2 Series Active Tourer Plug-in Hybrid"]],
+    ["3 Series", ["3 Series Saloon", "3 Series Saloon Plug-in Hybrid", "3 Series Touring",
+                  "3 Series Touring Plug-in Hybrid", "M3 Competition", "M3 Competition Touring"]],
+    ["4 Series", ["4 Series Coupé", "4 Series Convertible", "4 Series Gran Coupé",
+                  "M440i xDrive Gran Coupé", "M4 Competition", "M4 Competition Convertible", "M4 CS"]],
+    ["5 Series", ["5 Series Saloon", "5 Series Saloon Plug-in Hybrid", "5 Series Touring",
+                  "5 Series Touring Plug-in Hybrid", "M5 Saloon", "M5 Touring"]],
+    ["7 Series", ["7 Series Saloon", "7 Series Saloon Plug-in Hybrid", "M760e xDrive"]],
+    ["8 Series", ["8 Series Coupé", "8 Series Convertible", "8 Series Gran Coupé",
+                  "8 Series Coupé M", "8 Series Convertible M", "8 Series Gran Coupé M"]],
+    ["X models", ["X1", "X1 Plug-in Hybrid", "X1 M35i xDrive", "X2", "X2 M35i xDrive",
+                  "X3", "X3 Plug-in Hybrid", "X3 M50 xDrive", "X4", "X4 M",
+                  "X5", "X5 Plug-in Hybrid", "X5 M Competition", "X6", "X6 M Competition",
+                  "X7", "X7 M60i", "XM"]],
+    ["Fully electric", ["i4 Gran Coupé", "i4 M50 Gran Coupé", "i5 Saloon", "i5 Touring",
+                        "i5 M60 xDrive", "i5 M60 xDrive Touring", "i7", "i7 M70 xDrive",
+                        "iX1", "iX2", "iX3", "iX", "iX M60"]],
+    ["Roadster", ["Z4"]]
+  ];
+
+  var chosenModels = [];
+  try { chosenModels = JSON.parse(sessionStorage.getItem("vipModels") || "[]"); } catch(e) { chosenModels = []; }
+
+  // Seventy chips at once is a wall on a phone, so each family collapses.
+  // A group holding something already chosen opens itself, and searching
+  // opens whatever matches.
+  (function buildModelList(){
+    var wrap = document.getElementById("modelList");
+    MODELS.forEach(function(group){
+      var open = group[1].some(function(n){ return chosenModels.indexOf(n) !== -1; });
+
+      var head = document.createElement("button");
+      head.type = "button";
+      head.className = "model-group" + (open ? " open" : "");
+      head.setAttribute("aria-expanded", open ? "true" : "false");
+      head.innerHTML = "<span></span><em></em>" +
+        "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' " +
+        "stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>";
+      head.querySelector("span").textContent = group[0];
+      head.querySelector("em").textContent = group[1].length;
+      wrap.appendChild(head);
+
+      var row = document.createElement("div");
+      row.className = "fv2-chips model-row";
+      if (!open) row.style.display = "none";
+      group[1].forEach(function(name){
+        var c = document.createElement("button");
+        c.type = "button";
+        c.className = "fv2-chip";
+        c.dataset.v = name;
+        c.textContent = name;
+        if (chosenModels.indexOf(name) !== -1) c.classList.add("on");
+        c.addEventListener("click", function(){ toggleModel(name, c); });
+        row.appendChild(c);
+      });
+      wrap.appendChild(row);
+
+      head.addEventListener("click", function(){
+        var showing = row.style.display !== "none";
+        row.style.display = showing ? "none" : "";
+        head.classList.toggle("open", !showing);
+        head.setAttribute("aria-expanded", showing ? "false" : "true");
+      });
+    });
+  })();
+
+  function paintChosen(){
+    var box = document.getElementById("modelChosen");
+    document.getElementById("modelChosenList").textContent = chosenModels.join(", ");
+    box.style.display = chosenModels.length ? "flex" : "none";
+  }
+  paintChosen();
+
+  function toggleModel(name, chip){
+    var i = chosenModels.indexOf(name);
+    if (i === -1) chosenModels.push(name); else chosenModels.splice(i, 1);
+    chip.classList.toggle("on");
+    sessionStorage.setItem("vipModels", JSON.stringify(chosenModels));
+    paintChosen();
+  }
+
+  function clearModels(){
+    chosenModels = [];
+    sessionStorage.setItem("vipModels", "[]");
+    document.querySelectorAll("#modelList .fv2-chip.on").forEach(function(c){ c.classList.remove("on"); });
+    paintChosen();
+  }
+
+  // Type to narrow the list. Whole groups disappear when nothing in them
+  // matches, so the page does not fill with empty headings.
+  document.getElementById("modelFilter").addEventListener("input", function(e){
+    var q = e.target.value.trim().toLowerCase();
+    var anyShown = false;
+    document.querySelectorAll("#modelList .model-row").forEach(function(row){
+      var head = row.previousElementSibling;
+      var shown = 0;
+      row.querySelectorAll(".fv2-chip").forEach(function(c){
+        var hit = !q || c.dataset.v.toLowerCase().indexOf(q) !== -1;
+        c.style.display = hit ? "" : "none";
+        if (hit) shown++;
+      });
+      if (!q) {
+        // back to the browsing state: headings visible, groups closed again
+        // unless they hold something already chosen
+        head.style.display = "";
+        var keepOpen = [].some.call(row.querySelectorAll(".fv2-chip"), function(c){
+          return c.classList.contains("on");
+        });
+        row.style.display = keepOpen ? "" : "none";
+        head.classList.toggle("open", keepOpen);
+        head.setAttribute("aria-expanded", keepOpen ? "true" : "false");
+        anyShown = true;
+      } else {
+        head.style.display = shown ? "" : "none";
+        row.style.display = shown ? "" : "none";
+        head.classList.toggle("open", !!shown);
+        head.setAttribute("aria-expanded", shown ? "true" : "false");
+        if (shown) anyShown = true;
+      }
+    });
+    document.getElementById("modelNoMatch").style.display = anyShown ? "none" : "block";
+  });
 
   var chosen = sessionStorage.getItem("vipShortlist") || "";
   document.querySelectorAll(".fv2-opt").forEach(function(b){
@@ -102,6 +244,7 @@
   function goNext(){
     if (!chosen) { document.getElementById("err").classList.add("show"); return; }
     sessionStorage.setItem("vipShortlist", chosen);
+    sessionStorage.setItem("vipModels", JSON.stringify(chosenModels));
     sessionStorage.setItem("vipModelPref", document.getElementById("modelPref").value.trim());
     window.location.href = "vip2.html";
   }

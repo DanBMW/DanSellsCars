@@ -68,7 +68,7 @@
 
 <script>
 var BODY_NAMES = {hatchback:"Hatchback",saloon:"Saloon",touring:"Touring / Estate",suv:"SUV / SAV",coupe:"Coupé",convertible:"Convertible",gran_coupe:"Gran Coupé"};
-var ARRAY_KEYS = ["vipBodyStyles"];
+var ARRAY_KEYS = ["vipBodyStyles","vipModels"];
 
 function readVal(key){
   var raw = sessionStorage.getItem(key);
@@ -120,7 +120,8 @@ var groups = [
   ]},
   { title:"The car", edit:"vip1.html", rows:[
     ["Where you are", readVal("vipShortlist")],
-    ["Models in mind", readVal("vipModelPref")],
+    ["Models picked", readVal("vipModels")],
+    ["Also mentioned", readVal("vipModelPref")],
     ["Body styles", bodyStyleList() || "Open to suggestions", "vip2.html"],
     ["New or used", readVal("vipStockType"), "vip2.html"]
   ]},
@@ -198,7 +199,8 @@ var FIELDS = [
   ["Mobile",                "vipPhone"],
   ["Postcode",              "vipPostcode"],
   ["Where they are",        "vipShortlist"],
-  ["Models in mind",        "vipModelPref"],
+  ["Models picked",         "vipModels"],
+  ["Also mentioned",        "vipModelPref"],
   ["New or used",           "vipStockType"],
   ["Funding route",         "vipPurchaseType"],
   ["Deposit",               "vipDeposit",   true],
@@ -313,6 +315,7 @@ function sendDoc(){
     phone:              readVal("vipPhone"),
     postcode:           readVal("vipPostcode"),
     shortlist_stage:    readVal("vipShortlist"),
+    models_picked:      readVal("vipModels"),
     model_interest:     readVal("vipModelPref"),
     body_styles:        bodyStyleList(),
     stock_type:         readVal("vipStockType"),

@@ -13,7 +13,7 @@
       the pre-qualification as it builds. Hidden on body.vip-noticket. */
 (function(){
   var KEYS = ["vipName","vipEventDate","vipApptTime","vipVenue",
-    "vipShortlist","vipModelPref","vipBodyStyles","vipStockType",
+    "vipShortlist","vipModels","vipModelPref","vipBodyStyles","vipStockType",
     "vipPurchaseType","vipDeposit","vipMonthly","vipCash","vipAltMonthly","vipAnnualMileage",
     "vipPX","vipReg","vipPXCar","vipPXModel","vipPXMileage","vipPXQuote",
     "vipPXService","vipPXFinance","vipPXSettlement","vipPXCondition","vipPXBringing",
@@ -132,6 +132,10 @@
     var BODY = {hatchback:"Hatch",saloon:"Saloon",touring:"Touring",suv:"SUV",coupe:"Coupé",convertible:"Convertible",gran_coupe:"Gran Coupé"};
 
     if (g("vipShortlist")) items.push(g("vipShortlist"));
+    try {
+      var ms = JSON.parse(g("vipModels") || "[]");
+      if (ms.length) items.push(ms.slice(0,2).join(" / ") + (ms.length > 2 ? " +" + (ms.length - 2) : ""));
+    } catch(e) {}
     if (g("vipModelPref")) items.push(g("vipModelPref"));
     try {
       var bs = JSON.parse(g("vipBodyStyles") || "[]");
