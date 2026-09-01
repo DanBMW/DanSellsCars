@@ -79,19 +79,15 @@
       <p class="hint" style="margin-top:-6px;">If an online buyer has already given you a figure, drop it in. I can usually tell you quickly whether I can beat it.</p>
     </div>
 
-    <div class="fv2-sec">Are you bringing it with you?</div>
-    <p class="fv2-sec-sub">If the car is on site I can put eyes on it during your hour and firm the figure up there and then. If not, we work from the appraisal and confirm afterwards.</p>
+    <div class="fv2-sec">Will you bring your part exchange with you?</div>
+    <p class="fv2-sec-sub">Bringing it gives you the most accurate valuation. I can look over the car during your hour and confirm the figure there and then, rather than working from the details alone.</p>
     <div class="fv2-rows" id="bringTrack">
-      <button type="button" class="fv2-row" data-val="Bringing it on the day" aria-pressed="false" onclick="pickBring(this)">
-        <span class="fv2-row-body"><span class="fv2-row-title">Yes, I will drive it in</span><span class="fv2-row-desc">Best case. Figure confirmed while you are with me.</span><span class="fv2-tag good">Fastest route</span></span>
+      <button type="button" class="fv2-row" data-val="Yes, bringing it" aria-pressed="false" onclick="pickBring(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">Yes</span><span class="fv2-row-desc">I will bring it with me on the day.</span><span class="fv2-tag good">Most accurate valuation</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button type="button" class="fv2-row" data-val="Not bringing it" aria-pressed="false" onclick="pickBring(this)">
-        <span class="fv2-row-body"><span class="fv2-row-title">No, it is staying at home</span><span class="fv2-row-desc">Fine. I will value it from the details and we finalise after.</span></span>
-        <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-      </button>
-      <button type="button" class="fv2-row" data-val="Not decided yet" aria-pressed="false" onclick="pickBring(this)">
-        <span class="fv2-row-body"><span class="fv2-row-title">Not decided yet</span><span class="fv2-row-desc">No problem, just let me know on the day.</span></span>
+      <button type="button" class="fv2-row" data-val="No, not bringing it" aria-pressed="false" onclick="pickBring(this)">
+        <span class="fv2-row-body"><span class="fv2-row-title">No</span><span class="fv2-row-desc">I will value it from the details you have given and we confirm it after.</span></span>
         <span class="fv2-row-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
     </div>
@@ -355,7 +351,7 @@
     if(chosen!=="No" && !serviceChosen){ showErr("Choose the closest match for your service history."); return; }
     if(chosen!=="No" && !financeChosen){ showErr("Let me know about any outstanding finance on the car."); return; }
     if(chosen!=="No" && !condChosen){ showErr("Choose the closest match for the car's overall condition."); return; }
-    if(chosen!=="No" && !bringChosen){ showErr("Let me know whether the car is coming with you on the day."); return; }
+    if(chosen!=="No" && !bringChosen){ showErr("Let me know whether you will bring the car with you."); return; }
     sessionStorage.setItem("vipReg", reg.toUpperCase());
     sessionStorage.setItem("vipPXCar", document.getElementById("cc")?document.getElementById("cc").value.trim():"");
     sessionStorage.setItem("vipPXMileage", document.getElementById("ml")?document.getElementById("ml").value.trim():"");
