@@ -127,13 +127,6 @@
     </div>
   </div>
 
-  <div id="unsureWrap" class="fv2-reveal" style="display:none;">
-    <button type="button" class="fv2-toggle" id="unsureToggle" onclick="toggleUnsure()" style="margin:14px 0 0;">
-      <span class="fv2-toggle-sw"></span>
-      <span class="fv2-toggle-body"><strong>I would rather work the figures out with you on the day</strong><span>Then I will not guess. I will bring a range across your shortlist instead of one number, and we set the budget together.</span></span>
-    </button>
-  </div>
-
   <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span id="errText">Choose the route that feels most likely. You can explore the others with me later.</span></div>
   <div class="fv2-nav">
     <a class="fv2-back" href="vip2.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
@@ -174,14 +167,12 @@
   // ── budget engagement ──
   // A slider left at its default would reach Dan looking like a real figure,
   // which is worse than no figure at all before a one hour appointment. Only
-  // count a budget the customer actually moved (or a quick-pick chip they
-  // tapped), and give them an explicit way to say they would rather not guess.
+  // count a budget the customer actually moved, or a quick-pick chip they
+  // tapped; Continue asks for one before it will move on.
   let budgetTouched = !!(sessionStorage.getItem("vipMonthly") || sessionStorage.getItem("vipCash"));
-  let unsureOn = sessionStorage.getItem("vipBudgetStatus") === "To discuss on the day";
   ["monR","cashR"].forEach(function(id){
     document.getElementById(id).addEventListener("input", function(){
       budgetTouched = true;
-      if(unsureOn){ unsureOn = false; refresh(); }
       hideErr();
     });
   });
@@ -201,8 +192,6 @@
     show("mileBlock", !!chosen);
     document.getElementById("altToggle").classList.toggle("on", altOn);
     show("altBlock", altOn);
-    show("unsureWrap", !!chosen);
-    document.getElementById("unsureToggle").classList.toggle("on", unsureOn);
     document.querySelectorAll("#routeGrid .fv2-opt").forEach(b=>{
       const sel=b.dataset.val===chosen;
       b.classList.toggle("selected", sel);
@@ -224,29 +213,20 @@
     refresh();
   }
   function toggleAlt(){ altOn = !altOn; refresh(); }
-  function toggleUnsure(){
-    unsureOn = !unsureOn;
-    if(unsureOn) hideErr();
-    refresh();
-  }
 
   function goNext(){
     if(!chosen){ showErr("Choose the route that feels most likely. You can explore the others with me later."); return; }
-    if(!unsureOn && !budgetTouched){
+    if(!budgetTouched){
       showErr(chosen === "Outright"
-        ? "Set your total budget, or tell me below that you would rather work it out together on the day."
-        : "Set the monthly figure that is actually comfortable, or tell me below that you would rather work it out together on the day.");
+        ? "Set your total budget. The slider starts on a guess, and I would rather work from your number."
+        : "Set the monthly figure that is actually comfortable. The slider starts on a guess, and I would rather work from your number.");
       document.getElementById(chosen === "Outright" ? "cashBlock" : "financeBlock")
         .scrollIntoView({behavior:"smooth", block:"center"});
       return;
     }
     sessionStorage.setItem("vipPurchaseType", chosen);
     sessionStorage.setItem("vipAnnualMileage", mil.r.value);
-    sessionStorage.setItem("vipBudgetStatus", unsureOn ? "To discuss on the day" : "Given by the customer");
-    if(unsureOn){
-      // Send no figure at all rather than a slider default Dan would plan around.
-      ["vipDeposit","vipMonthly","vipCash","vipAltMonthly"].forEach(function(k){ sessionStorage.removeItem(k); });
-    } else if(chosen === "Outright"){
+    if(chosen === "Outright"){
       sessionStorage.setItem("vipCash", cash.r.value);
       if(altOn) sessionStorage.setItem("vipAltMonthly", alt.r.value); else sessionStorage.removeItem("vipAltMonthly");
       sessionStorage.removeItem("vipDeposit"); sessionStorage.removeItem("vipMonthly");

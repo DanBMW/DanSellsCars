@@ -126,7 +126,6 @@ var groups = [
   ]},
   { title:"The numbers", edit:"vip3.html", rows:[
     ["Funding route", readVal("vipPurchaseType")],
-    ["Budget", readVal("vipBudgetStatus") === "To discuss on the day" ? "To work out together on the day" : ""],
     ["Deposit", money("vipDeposit")],
     ["Monthly budget", money("vipMonthly")],
     ["Total budget", money("vipCash")],
@@ -202,7 +201,6 @@ var FIELDS = [
   ["Models in mind",        "vipModelPref"],
   ["New or used",           "vipStockType"],
   ["Funding route",         "vipPurchaseType"],
-  ["Budget status",         "vipBudgetStatus"],
   ["Deposit",               "vipDeposit",   true],
   ["Monthly budget",        "vipMonthly",   true],
   ["Total budget",          "vipCash",      true],
@@ -319,7 +317,6 @@ function sendDoc(){
     body_styles:        bodyStyleList(),
     stock_type:         readVal("vipStockType"),
     funding_route:      readVal("vipPurchaseType"),
-    budget_status:      readVal("vipBudgetStatus"),
     deposit:            readVal("vipDeposit")    ? Number(readVal("vipDeposit").replace(/,/g,"")).toLocaleString("en-GB") : "",
     monthly_budget:     readVal("vipMonthly")    ? Number(readVal("vipMonthly").replace(/,/g,"")).toLocaleString("en-GB") : "",
     total_budget:       readVal("vipCash")       ? Number(readVal("vipCash").replace(/,/g,"")).toLocaleString("en-GB") : "",

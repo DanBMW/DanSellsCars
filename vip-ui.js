@@ -14,7 +14,7 @@
 (function(){
   var KEYS = ["vipName","vipEventDate","vipApptTime","vipVenue",
     "vipShortlist","vipModelPref","vipBodyStyles","vipStockType",
-    "vipPurchaseType","vipDeposit","vipMonthly","vipCash","vipAltMonthly","vipAnnualMileage","vipBudgetStatus",
+    "vipPurchaseType","vipDeposit","vipMonthly","vipCash","vipAltMonthly","vipAnnualMileage",
     "vipPX","vipReg","vipPXCar","vipPXModel","vipPXMileage","vipPXQuote",
     "vipPXService","vipPXFinance","vipPXSettlement","vipPXCondition","vipPXBringing",
     "vipMotStatus","vipMotExpiry","vipMotHistory",
@@ -152,7 +152,6 @@
     } else if (pt) {
       items.push(pt);
     }
-    if (g("vipBudgetStatus") === "To discuss on the day") items.push("Budget to discuss");
     if (g("vipAnnualMileage")) items.push(Math.round(Number(g("vipAnnualMileage")) / 1000) + "k miles/yr");
     var px = g("vipPX");
     if (px === "No") items.push("No part exchange");

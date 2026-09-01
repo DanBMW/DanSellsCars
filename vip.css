@@ -49,6 +49,12 @@ body.fv2 .topbar{background:rgba(20,16,15,.93);border-bottom:1px solid var(--lin
 .fv2-next:hover,body.fv2 .btn:hover{background:var(--blue);color:#14100f;}
 .fv2-opt.selected .fv2-opt-icon,.fv2-opt.selected .fv2-opt-check,
 .fv2-row.selected .fv2-row-dot,.fv2-chip.on{color:#14100f;}
+/* The body style cards on step 2 are .fv2-model, not .fv2-opt, so the shared
+   rule that fills the tick on selection never reached them: a chosen card kept
+   an empty circle in its corner, with the tick left at color:transparent. */
+.fv2-model.selected .fv2-opt-check{
+  background:var(--blue);border-color:var(--blue);color:#14100f;
+}
 
 /* ── 2. Top bar wordmark ───────────────────────────────────── */
 .vip-mark{display:flex;flex-direction:column;gap:3px;}
