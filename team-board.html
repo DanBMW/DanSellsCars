@@ -356,14 +356,14 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 .vidscene.show{opacity:1;visibility:visible}
 .vs-frame{
-  /* sized from the viewport, not from content: the frame must not depend on
-     the video reporting its intrinsic size before it has loaded */
-  position:relative;width:min(92vw,calc((100vh - 130px) * 16 / 9));
+  /* sized from the viewport and the clip's own aspect ratio - the sketches are
+     a mix of 16:9 and portrait, so this must not be hard-coded */
+  position:relative;width:min(92vw,calc((100vh - 130px) * var(--ar,1.778)));
   border-radius:18px;overflow:hidden;
   box-shadow:0 30px 90px rgba(0,0,0,.7),0 0 0 1px var(--line);
   background:#000;
 }
-.vs-frame video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#000}
+.vs-frame video{display:block;width:100%;height:auto;aspect-ratio:var(--ar,1.778);background:#000}
 .vs-cap{
   text-align:center;margin-top:clamp(8px,1.6vh,16px);
   font-family:var(--display);font-weight:700;letter-spacing:.26em;text-transform:uppercase;
@@ -1427,9 +1427,14 @@ var VID={
          "We are professionals, apparently.","Delete it."]
 };
 
+/* ar = width/height, so the frame is right before metadata arrives; it is
+   corrected from the file itself on loadedmetadata */
 var CLIPS=[
-  {src:'video/sketch-team.mp4',        cap:'The used car team'},
-  {src:'video/sketch-serge-clive.mp4', cap:'Serge &amp; Clive'}
+  {src:'video/sketch-team.mp4',        cap:'The used car team', ar:16/9},
+  {src:'video/sketch-serge-clive.mp4', cap:'Serge &amp; Clive',     ar:16/9},
+  {src:'video/sketch-3.mp4',           cap:'The used car team', ar:480/640},
+  {src:'video/sketch-4.mp4',           cap:'The used car team', ar:480/640},
+  {src:'video/sketch-5.mp4',           cap:'The used car team', ar:480/640}
 ];
 /* a shuffle bag can still deal the same clip twice across a refill, which is
    obvious with only two - so simply never repeat the one just shown */
@@ -1451,7 +1456,12 @@ function videoScene(){
   if(!vs||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
   var clip=pickClip();
   busy=true;
+  var frame=vs.querySelector('.vs-frame');
   $('vs-cap').innerHTML=clip.cap;
+  frame.style.setProperty('--ar',clip.ar||16/9);
+  v.onloadedmetadata=function(){
+    if(v.videoWidth&&v.videoHeight)frame.style.setProperty('--ar',v.videoWidth/v.videoHeight);
+  };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
   vs.classList.remove('is-muted');
   v.muted=false; v.volume=1;
@@ -1491,7 +1501,9 @@ function videoScene(){
 function warmVideo(){
   if(window.innerWidth<1200||!window.fetch)return;
   setTimeout(function(){
-    CLIPS.forEach(function(c){fetch(c.src,{cache:'force-cache'})['catch'](function(){})});
+    CLIPS.forEach(function(c,i){
+      setTimeout(function(){fetch(c.src,{cache:'force-cache'})['catch'](function(){})},i*3000);
+    });
   },20000);
 }
 
@@ -1732,7 +1744,7 @@ function scheduleStunts(){
   every(nathanVisit, 110000, 30000, 150000, 150000);   /* then every 2.5-5m   */
   every(nathanFire,  170000, 60000, 840000, 300000);   /* then every 14-19m   */
   every(statsScene,  260000, 60000,1740000, 300000);   /* then every 29-34m   */
-  every(videoScene,  320000, 70000, 660000, 240000);   /* then every 11-15m   */
+  every(videoScene,  100000, 50000, 270000,  60000);   /* then every 4.5-5.5m */
   warmVideo();
 }
 

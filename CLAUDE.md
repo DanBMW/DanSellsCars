@@ -256,9 +256,11 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   runtime, clamped to the viewport so a scrolled phone still shows it) and
   Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
   burns for ten seconds and goes out.
-- **Team sketch cut scene.** Every 11-15 minutes `videoScene()` plays one of the
-  AI-generated team sketches in `video/` full screen (`CLIPS` array; add a clip
-  by adding a row). It never plays the same one twice running. Browsers block
+- **Team sketch cut scene.** Every 4.5-5.5 minutes `videoScene()` plays one of
+  the AI-generated team sketches in `video/` full screen (`CLIPS` array; add a
+  clip by adding a row with its `ar` = width/height - the clips are a mix of
+  16:9 and portrait and the frame sizes itself from that, corrected from the
+  file on `loadedmetadata`). It never plays the same one twice running. Browsers block
   sound on autoplay until someone has interacted with the page, so it tries
   unmuted, falls back to muted with a "sound off" badge, and a 16s guard closes
   the scene if the file stalls - the board must never be left covered. The
