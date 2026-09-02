@@ -347,6 +347,27 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   .torso,.arm,.pom,.leg-l,.leg-r,.figure{animation:none!important}
 }
 
+/* ---------- new car leaderboard cut scene ---------- */
+.ncscene{
+  position:fixed;inset:0;z-index:93;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(60% 60% at 50% 40%,rgba(21,89,207,.14),rgba(5,8,13,.96) 70%),rgba(5,8,13,.95);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+  pointer-events:none;padding:clamp(10px,2vh,26px);
+}
+.ncscene.show{opacity:1;visibility:visible}
+.nc-inner{display:flex;flex-direction:column;align-items:center;max-width:100%;max-height:100%}
+.nc-kicker{
+  font-family:var(--display);font-weight:700;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--gold);font-size:clamp(.6rem,1.4vw,.95rem);margin-bottom:8px;text-align:center;
+}
+.nc-shot{
+  border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0b0f16;
+  box-shadow:0 28px 80px rgba(0,0,0,.7);min-height:0;
+}
+.nc-shot img{display:block;max-width:min(96vw,1700px);max-height:calc(100vh - 130px);width:auto;height:auto}
+.nc-when{margin-top:9px;color:var(--muted);font-size:clamp(.62rem,1.2vw,.82rem);font-weight:600;text-align:center}
+@media(prefers-reduced-motion:reduce){.ncscene{transition:none}}
+
 /* ---------- team video cut scene ---------- */
 .vidscene{
   position:fixed;inset:0;z-index:96;display:flex;align-items:center;justify-content:center;
@@ -832,6 +853,15 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   </div>
 </div>
 
+
+<!-- the new car leaderboard, uploaded from newcar.html -->
+<div class="ncscene" id="ncscene" aria-hidden="true">
+  <div class="nc-inner">
+    <div class="nc-kicker" id="nc-kicker">New car &mdash; 76 plate leaderboard</div>
+    <div class="nc-shot"><img id="nc-img" alt="New car leaderboard"></div>
+    <div class="nc-when" id="nc-when"></div>
+  </div>
+</div>
 
 <!-- the team sketch -->
 <div class="vidscene" id="vidscene" aria-hidden="true">
@@ -1429,6 +1459,50 @@ var VID={
 
 /* ar = width/height, so the frame is right before metadata arrives; it is
    corrected from the file itself on loadedmetadata */
+/* ============================================================
+   New car leaderboard. Nathan uploads a screenshot from
+   newcar.html; it lands in the database and the board shows it.
+   Until the first upload there is a sample in newcar/seed.jpg so
+   the scene is never empty.
+   ============================================================ */
+var NEWCAR={img:'newcar/seed.jpg', ts:0, note:'', seed:true};
+var NC={
+  will:["The new car lot are doing alright.","Fair play to them.","Not bad, Nathan.",
+        "Credit where it's due.","Look at Nathan's lot go."],
+  serge:["Anyone can sell a new one.","No part exchanges though, is there.",
+         "Try it without a delivery date.","Lovely. Now do it with used.",
+         "Nathan will be unbearable."]
+};
+
+function watchNewCar(){
+  if(!backend||!backend.watchNewCar)return;
+  backend.watchNewCar(function(v){
+    if(v&&v.img){NEWCAR={img:v.img, ts:v.ts||0, note:v.note||'', seed:false}}
+  });
+}
+
+/* the long one - two minutes, so it is a proper read, not a glimpse */
+function newCarScene(){
+  if(stuntsBlocked())return false;
+  if(!NEWCAR.img)return false;
+  busy=true;
+  var sc=$('ncscene');
+  $('nc-img').src=NEWCAR.img;
+  $('nc-kicker').innerHTML=NEWCAR.note
+    ? esc(NEWCAR.note)
+    : 'New car &mdash; 76 plate leaderboard';
+  $('nc-when').textContent=NEWCAR.seed
+    ? 'Sample - waiting on the first upload'
+    : 'Updated '+new Date(NEWCAR.ts).toLocaleString('en-GB',
+        {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  sc.classList.add('show');
+  holdUntil=Date.now()+126000;
+  setBubble('bub-will',  bagPick('nc|will', NC.will));
+  setBubble('bub-serge', bagPick('nc|serge',NC.serge));
+  setTimeout(function(){sc.classList.remove('show');busy=false},120000);
+  return true;
+}
+
 var CLIPS=[
   {src:'video/sketch-team.mp4',        cap:'The used car team', ar:16/9},
   {src:'video/sketch-serge-clive.mp4', cap:'Serge &amp; Clive',     ar:16/9},
@@ -1745,6 +1819,7 @@ function scheduleStunts(){
   every(nathanFire,  170000, 60000, 840000, 300000);   /* then every 14-19m   */
   every(statsScene,  260000, 60000,1740000, 300000);   /* then every 29-34m   */
   every(videoScene,  100000, 50000, 270000,  60000);   /* then every 4.5-5.5m */
+  every(newCarScene, 200000, 60000, 600000,  60000);   /* 2 min, every ~10m   */
   warmVideo();
 }
 
@@ -2080,6 +2155,7 @@ window.dsBindBackend=function(api){
   setDot('');
   backend.listen(viewMonth);
   refreshMonthTabs();
+  watchNewCar();
 };
 window.dsOnDeals=function(obj){
   deals=obj||{};
@@ -2121,7 +2197,8 @@ window.dsBindBackend({
   edit:(m,id,payload)=>update(ref(db,path(m)+'/'+id),payload),
   del:(m,id)=>remove(ref(db,path(m)+'/'+id)),
   months:()=>get(ref(db,'profitchallenge/months')).then(s=>Object.keys(s.val()||{})),
-  read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{})
+  read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{}),
+  watchNewCar(cb){ onValue(ref(db,'newcar/current'), s=>cb(s.val()), ()=>{}) }
 });
 </script>
 </body>

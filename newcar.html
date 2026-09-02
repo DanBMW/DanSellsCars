@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>New Car Leaderboard - upload</title>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700,900&display=swap"
+      media="print" onload="this.media='all';this.onload=null">
+<style>
+:root{
+  --ink:#0b0f16;--panel:#141b26;--panel-2:#1b2432;--line:rgba(255,255,255,.10);
+  --line-soft:rgba(255,255,255,.06);--text:#f2f5f9;--muted:#93a1b5;
+  --blue:#2f7bf0;--blue-deep:#1559cf;--gold:#e0b352;--green:#2fbf6b;--red:#e2564d;
+  --font:'Satoshi',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --display:'Clash Display','Satoshi',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(1000px 500px at 50% -10%,rgba(47,123,240,.16),transparent 70%),var(--ink);
+  color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;
+  min-height:100vh;padding:22px 16px 60px;
+}
+.wrap{max-width:680px;margin:0 auto}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,5vw,2.2rem);line-height:1.1}
+h1 .amt{
+  background:linear-gradient(180deg,#ffd98a,var(--gold) 55%,#b8862c);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.sub{color:var(--muted);font-size:.9rem;margin-top:6px;line-height:1.5}
+.card{background:var(--panel);border:1px solid var(--line-soft);border-radius:18px;padding:18px;margin-top:18px}
+label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 8px}
+input[type=password],input[type=text]{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+  color:var(--text);font-family:var(--font);font-size:1rem;padding:12px 14px;
+}
+input:focus{outline:2px solid var(--blue);outline-offset:1px}
+#pin{text-align:center;font-size:1.8rem;letter-spacing:.5em;font-weight:700}
+.btn{
+  appearance:none;border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-family:var(--font);font-weight:700;font-size:.92rem;padding:13px 20px;
+  border-radius:999px;cursor:pointer;transition:.15s;width:100%;
+}
+.btn:hover{background:#25303f}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-deep)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.drop{
+  border:2px dashed var(--line);border-radius:16px;padding:30px 18px;text-align:center;
+  cursor:pointer;transition:.15s;background:rgba(255,255,255,.02);
+}
+.drop:hover,.drop.over{border-color:var(--blue);background:rgba(47,123,240,.08)}
+.drop b{display:block;font-size:1rem;margin-bottom:4px}
+.drop span{font-size:.8rem;color:var(--muted)}
+#file{display:none}
+.shot{margin-top:14px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
+.shot img{display:block;width:100%;height:auto}
+.meta{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6}
+.meta b{color:var(--text)}
+.row{display:flex;gap:10px;margin-top:14px}
+.row .btn{flex:1}
+.msg{margin-top:12px;font-size:.85rem;font-weight:600;display:none}
+.msg.ok{color:var(--green);display:block}
+.msg.err{color:var(--red);display:block}
+.msg.busy{color:var(--muted);display:block}
+.hidden{display:none}
+.foot{text-align:center;color:var(--muted);font-size:.72rem;margin-top:26px;line-height:1.7}
+.foot a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>New Car <span class="amt">Leaderboard</span></h1>
+  <p class="sub">Upload today's screenshot and it goes straight onto the showroom board.</p>
+
+  <!-- gate -->
+  <div class="card" id="gate">
+    <label for="pin">Enter PIN</label>
+    <input type="password" id="pin" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off">
+    <div class="row"><button class="btn primary" id="go">Unlock</button></div>
+    <div class="msg" id="gate-msg"></div>
+  </div>
+
+  <!-- uploader -->
+  <div id="app" class="hidden">
+    <div class="card">
+      <label>Today's screenshot</label>
+      <div class="drop" id="drop">
+        <b>Tap to choose a picture</b>
+        <span>or drag one here &middot; JPG or PNG</span>
+      </div>
+      <input type="file" id="file" accept="image/*">
+
+      <div id="preview" class="hidden">
+        <div class="shot"><img id="prev-img" alt="Preview of the screenshot to upload"></div>
+        <div class="meta" id="prev-meta"></div>
+        <label style="margin-top:16px">Caption (optional)</label>
+        <input type="text" id="note" maxlength="80" placeholder="e.g. 76 Plate Leaderboard">
+        <div class="row">
+          <button class="btn" id="cancel">Choose another</button>
+          <button class="btn primary" id="send">Put it on the board</button>
+        </div>
+      </div>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="card">
+      <label>Showing on the board now</label>
+      <div id="current"><p class="meta">Checking…</p></div>
+    </div>
+  </div>
+
+  <p class="foot">
+    Internal page &middot; not linked publicly<br>
+    The board is at <a href="team-board.html">dan-sells.co.uk/team-board.html</a>
+  </p>
+</div>
+
+<script>
+/* ============================================================
+   UI first, in a plain script. If the Firebase CDN is slow or
+   blocked the page must still unlock, take a file and show a
+   preview - only the send button waits on the backend.
+   ============================================================ */
+var PIN='1992';
+var MAX_STORED=1300000;          /* keep clear of the 1.4MB the rules allow */
+var pending=null, backend=null;
+
+function $(id){return document.getElementById(id)}
+function say(el,text,kind){el.className='msg '+(kind||'');el.textContent=text}
+
+/* ---- gate ---- */
+function unlock(){
+  if($('pin').value!==PIN){say($('gate-msg'),'Wrong PIN','err');$('pin').value='';$('pin').focus();return}
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
+}
+$('go').onclick=unlock;
+$('pin').addEventListener('keydown',function(e){if(e.key==='Enter')unlock()});
+setTimeout(function(){$('pin').focus()},150);
+
+/* ---- pick a file ---- */
+$('drop').onclick=function(){$('file').click()};
+['dragenter','dragover'].forEach(function(t){
+  $('drop').addEventListener(t,function(e){e.preventDefault();$('drop').classList.add('over')});
+});
+['dragleave','drop'].forEach(function(t){
+  $('drop').addEventListener(t,function(e){e.preventDefault();$('drop').classList.remove('over')});
+});
+$('drop').addEventListener('drop',function(e){
+  if(e.dataTransfer&&e.dataTransfer.files[0])handle(e.dataTransfer.files[0]);
+});
+$('file').onchange=function(e){if(e.target.files[0])handle(e.target.files[0])};
+$('cancel').onclick=function(){
+  pending=null;$('preview').classList.add('hidden');$('file').value='';say($('msg'),'','');
+};
+
+/* shrink in the browser: a phone photo or a full screenshot is far bigger
+   than a wall display needs, and it has to fit in one database write */
+function handle(file){
+  if(!/^image\//.test(file.type)){say($('msg'),'That is not a picture','err');return}
+  say($('msg'),'Preparing…','busy');
+  var fr=new FileReader();
+  fr.onload=function(){
+    var im=new Image();
+    im.onload=function(){
+      var q=0.85, data=null;
+      for(var pass=0; pass<6; pass++){
+        var maxW = pass<2 ? 1800 : pass<4 ? 1500 : 1200;
+        var s=Math.min(1,maxW/im.width);
+        var c=document.createElement('canvas');
+        c.width=Math.round(im.width*s); c.height=Math.round(im.height*s);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        data=c.toDataURL('image/jpeg',q);
+        if(data.length<=MAX_STORED)break;
+        q-=0.1;
+      }
+      if(!data||data.length>MAX_STORED){
+        say($('msg'),'That picture is too big even after shrinking - try a screenshot rather than a photo','err');
+        return;
+      }
+      pending=data;
+      $('prev-img').src=data;
+      $('prev-meta').innerHTML='<b>'+im.width+'&times;'+im.height+'</b> original &middot; stored at about <b>'+
+        Math.round(data.length/1024)+'KB</b>';
+      $('preview').classList.remove('hidden');
+      say($('msg'),backend?'':'Connecting to the board…',backend?'':'busy');
+      $('send').disabled=!backend;
+    };
+    im.onerror=function(){say($('msg'),'Could not read that picture','err')};
+    im.src=fr.result;
+  };
+  fr.onerror=function(){say($('msg'),'Could not read that file','err')};
+  fr.readAsDataURL(file);
+}
+
+/* ---- send ---- */
+$('send').onclick=function(){
+  if(!pending)return;
+  if(!backend){say($('msg'),'Not connected to the board yet - give it a moment','err');return}
+  $('send').disabled=true;
+  say($('msg'),'Uploading…','busy');
+  var payload={img:pending, ts:Date.now()};
+  var note=$('note').value.trim();
+  if(note)payload.note=note;
+  backend.save(payload).then(function(){
+    say($('msg'),'Done - it is on the board','ok');
+    pending=null;$('preview').classList.add('hidden');$('file').value='';$('note').value='';
+  })['catch'](function(e){
+    console.error(e);
+    say($('msg'),'Upload failed - check the connection and try again','err');
+  }).then(function(){$('send').disabled=false},function(){$('send').disabled=false});
+};
+
+/* ---- the Firebase module calls these once it is ready ---- */
+window.ncBindBackend=function(api){
+  backend=api;
+  if(pending){$('send').disabled=false;say($('msg'),'','')}
+  api.watch(function(v){
+    if(!v||!v.img){
+      $('current').innerHTML='<p class="meta">Nothing uploaded yet - the board is showing the sample.</p>';
+      return;
+    }
+    var when=new Date(v.ts).toLocaleString('en-GB',
+      {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    var note=v.note?' &middot; '+String(v.note).replace(/[<>&]/g,''):'';
+    $('current').innerHTML='<div class="shot"><img src="'+v.img+'" alt="Currently on the board"></div>'+
+      '<p class="meta">Uploaded <b>'+when+'</b>'+note+'</p>';
+  },function(){
+    $('current').innerHTML='<p class="meta">Could not reach the board.</p>';
+  });
+};
+
+/* if the SDK never turns up, say so rather than leaving a dead button */
+setTimeout(function(){
+  if(!backend){
+    $('current').innerHTML='<p class="meta">Could not reach the board - check the internet connection.</p>';
+    if(pending)say($('msg'),'Not connected to the board - check the internet connection','err');
+  }
+},9000);
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const db=getDatabase(initializeApp(firebaseConfig));
+
+window.ncBindBackend({
+  save:(payload)=>set(ref(db,'newcar/current'),payload),
+  watch:(cb,err)=>onValue(ref(db,'newcar/current'), s=>cb(s.val()), err)
+});
+</script>
+</body>
+</html>

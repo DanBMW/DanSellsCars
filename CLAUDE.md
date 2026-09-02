@@ -155,6 +155,10 @@ are still duplicated per page — only the header/drawer/footer are templated.
 
 - `Forecourt.html` — internal forecourt stock check tool (PIN-gated,
   Firebase-backed).
+- `newcar.html` — upload page for the new car manager's daily 76 Plate
+  leaderboard screenshot. PIN-gated, writes to `newcar/current`. Like the
+  board, its UI runs from a plain script so a blocked Firebase CDN cannot
+  leave a dead page.
 - `team-board.html` — the **£15,000 Profit Challenge** board: a live race-to-the-
   top scoreboard for the used car team (the digital replacement for the paper
   board on the showroom wall). Public to view by URL, but adding/editing deals
@@ -256,6 +260,16 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   runtime, clamped to the viewport so a scrolled phone still shows it) and
   Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
   burns for ten seconds and goes out.
+- **New car leaderboard cut scene.** Nathan uploads the daily 76 Plate
+  screenshot from `newcar.html` (PIN-gated, listed on `links.html`). The image
+  is downscaled and JPEG-compressed **in the browser** and stored as a data URL
+  at `newcar/current` in the database - Storage was avoided because its rules
+  are not managed by `firebase.json` and would have been extra setup. The rules
+  cap the string at 1.4MB and the page keeps to 1.3MB, shrinking in passes
+  until it fits. `newCarScene()` shows it for **two minutes every ten**, falling
+  back to `newcar/seed.jpg` until the first upload so the scene is never empty.
+  Note that two minutes is a long takeover - roughly 20% of the time - and was
+  asked for explicitly.
 - **Team sketch cut scene.** Every 4.5-5.5 minutes `videoScene()` plays one of
   the AI-generated team sketches in `video/` full screen (`CLIPS` array; add a
   clip by adding a row with its `ar` = width/height - the clips are a mix of

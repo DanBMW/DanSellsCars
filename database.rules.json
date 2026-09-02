@@ -47,6 +47,20 @@
       }
     },
 
+    "newcar": {
+      ".read": true,
+      "current": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['img','ts'])",
+        "img": {
+          ".validate": "newData.isString() && newData.val().length <= 1400000 && newData.val().matches(/^data:image\\/(jpeg|png|webp);base64,/)"
+        },
+        "ts":   { ".validate": "newData.isNumber()" },
+        "note": { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "$other": { ".validate": false }
+      }
+    },
+
     "empire": {
       "saves": {
         "$uid": {
