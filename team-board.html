@@ -349,7 +349,8 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 
 /* ---------- new car leaderboard cut scene ---------- */
 .ncscene{
-  position:fixed;inset:0;z-index:93;display:flex;align-items:center;justify-content:center;
+  /* a view, not a cut scene: every scene overlay sits above it */
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(60% 60% at 50% 40%,rgba(21,89,207,.14),rgba(5,8,13,.96) 70%),rgba(5,8,13,.95);
   opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
   pointer-events:none;padding:clamp(10px,2vh,26px);
@@ -1481,26 +1482,46 @@ function watchNewCar(){
   });
 }
 
-/* the long one - two minutes, so it is a proper read, not a glimpse */
-function newCarScene(){
-  if(stuntsBlocked())return false;
-  if(!NEWCAR.img)return false;
-  busy=true;
-  var sc=$('ncscene');
+/* The wall display alternates between the two boards every two minutes.
+   This is a view, not a stunt: it never takes the busy lock, so a cut scene
+   can play over whichever board happens to be up. */
+var VIEW_MS=120000, showingNewCar=false, rotTimer=null;
+
+function paintNewCar(){
   $('nc-img').src=NEWCAR.img;
-  $('nc-kicker').innerHTML=NEWCAR.note
-    ? esc(NEWCAR.note)
-    : 'New car &mdash; 76 plate leaderboard';
+  $('nc-kicker').innerHTML=NEWCAR.note ? esc(NEWCAR.note)
+                                       : 'New car &mdash; 76 plate leaderboard';
   $('nc-when').textContent=NEWCAR.seed
     ? 'Sample - waiting on the first upload'
     : 'Updated '+new Date(NEWCAR.ts).toLocaleString('en-GB',
         {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-  sc.classList.add('show');
-  holdUntil=Date.now()+126000;
-  setBubble('bub-will',  bagPick('nc|will', NC.will));
-  setBubble('bub-serge', bagPick('nc|serge',NC.serge));
-  setTimeout(function(){sc.classList.remove('show');busy=false},120000);
-  return true;
+}
+
+function setView(newCar){
+  var was=showingNewCar;
+  showingNewCar=!!newCar && !!NEWCAR.img;
+  if(showingNewCar)paintNewCar();
+  $('ncscene').classList.toggle('show',showingNewCar);
+  /* the two of them are hidden while the new car board is up, so let them have
+     their say as it comes back to ours */
+  if(was&&!showingNewCar){
+    holdUntil=Date.now()+9000;
+    setBubble('bub-will',  bagPick('nc|will', NC.will));
+    setBubble('bub-serge', bagPick('nc|serge',NC.serge));
+  }
+}
+
+function rotateView(){
+  /* hold the used board while a manager is working, and never flip the screen
+     out from under a cut scene */
+  if(document.querySelector('.modal-bg.open')){setView(false);return}
+  if(busy)return;
+  setView(!showingNewCar);
+}
+
+function startRotation(){
+  clearInterval(rotTimer);
+  rotTimer=setInterval(rotateView,VIEW_MS);
 }
 
 var CLIPS=[
@@ -1812,15 +1833,29 @@ function every(fn,firstMin,firstSpan,min,span){
   };
   arm(firstMin+Math.random()*firstSpan);
 }
+/* One cut scene roughly every ten minutes, taken in turn rather than each
+   scene keeping its own clock - otherwise six schedules overlap and the board
+   is interrupted constantly. The video comes round most often because there
+   are several sketches to get through. */
+var SCENES=[videoScene, leaderDance, videoScene, nathanVisit,
+            videoScene, statsScene, videoScene, nathanFire];
+var sceneAt=0;
+function nextCutScene(){
+  /* try each in turn; if one declines (empty board, nothing uploaded) move
+     straight on rather than wasting the slot */
+  for(var i=0;i<SCENES.length;i++){
+    var fn=SCENES[sceneAt%SCENES.length];
+    sceneAt++;
+    if(fn()!==false)return true;
+  }
+  return false;
+}
+
 function scheduleStunts(){
-  every(throwPaper,   25000, 20000,  45000,  50000);   /* then every 45-95s   */
-  every(leaderDance,  60000, 25000, 270000, 120000);   /* then every 4.5-6.5m */
-  every(nathanVisit, 110000, 30000, 150000, 150000);   /* then every 2.5-5m   */
-  every(nathanFire,  170000, 60000, 840000, 300000);   /* then every 14-19m   */
-  every(statsScene,  260000, 60000,1740000, 300000);   /* then every 29-34m   */
-  every(videoScene,  100000, 50000, 270000,  60000);   /* then every 4.5-5.5m */
-  every(newCarScene, 200000, 60000, 600000,  60000);   /* 2 min, every ~10m   */
+  every(throwPaper,    25000, 20000,  45000,  50000);  /* ambient, covers nothing */
+  every(nextCutScene, 120000, 60000, 570000,  60000);  /* one scene, ~9.5-10.5m   */
   warmVideo();
+  startRotation();
 }
 
 /* ---- render ---- */
