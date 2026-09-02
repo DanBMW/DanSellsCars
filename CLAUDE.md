@@ -238,13 +238,18 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   leader or new champion sets both of them cheering for four seconds. Note the
   pom pom `translate` sits on a wrapper `<g>` — a CSS `transform` animation on
   the same element would replace the attribute and fling it across the page.
-- **Stunt timing.** `every()` runs each stunt's first outing soon after load
-  (ball 25-45s, dance 60-85s, Nathan 110-140s, fire 170-230s, staggered so they
-  cannot collide) and only then settles into the real interval. A wall display
-  gets switched on and watched: waiting five minutes for the first thing to
-  happen makes it look broken, and every refresh restarts the clock. A stunt
-  that returns `false` because another one held the floor is retried in 20-45s
-  rather than losing a whole cycle.
+- **One cut scene at a time.** `SCENES` is a running order (video, breakdance,
+  video, Nathan, video, stats, video, fire) and `nextCutScene()` takes the next
+  one roughly every ten minutes. Six independent schedules meant the board was
+  interrupted every couple of minutes; one queue fixes that, and the sketches
+  come round most often because there are five of them. A scene that returns
+  `false` - an empty board, nothing uploaded, another scene holding the floor -
+  passes straight to the next rather than wasting the slot. The paper ball
+  keeps its own frequent timer because it covers nothing.
+- **Stunt timing.** `every()` runs its first outing soon after load rather than
+  waiting a full interval. A wall display gets switched on and watched: waiting
+  ten minutes for the first thing to happen makes it look broken, and every
+  refresh restarts the clock.
 - **Stunts.** Every 45-95s Will and Serge lob a paper ball across the board
   (`throwPaper()` - Web Animations API, coordinates read from the two heads at
   runtime so it works at any layout, target flinches on impact). Every 2.5-5
@@ -262,7 +267,12 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   burns for ten seconds and goes out.
 - **New car leaderboard cut scene.** Nathan uploads the daily 76 Plate
   screenshot from `newcar.html` (listed on `links.html`; its own PIN, separate
-  from the board's manager PIN). The image
+  from the board's manager PIN). It is a **view, not a cut scene**: the wall
+  display alternates between the used car board and the new car board every
+  two minutes (`VIEW_MS`, `rotateView()`), and the new car view sits at
+  z-index 50 so every cut scene paints over whichever board is up. The
+  rotation pauses on the used board while a manager has the panel open, and
+  Will and Serge have their say as it comes back to the used board. The image
   is downscaled and JPEG-compressed **in the browser** and stored as a data URL
   at `newcar/current` in the database - Storage was avoided because its rules
   are not managed by `firebase.json` and would have been extra setup. The rules
