@@ -63,8 +63,8 @@
     </button>
   </div>
 
-  <div class="fv2-sec">Models you have in mind <small>(optional)</small></div>
-  <p class="fv2-sec-sub" id="modelSub">Tap up to three. Start typing to jump straight to one, or skip this entirely and I will bring suggestions.</p>
+  <div class="fv2-sec">Models you have in mind <small>(required)</small></div>
+  <p class="fv2-sec-sub" id="modelSub">Tap up to three. Start typing to jump straight to one.</p>
 
   <div class="model-picker">
     <label class="sr-only" for="modelFilter">Search models</label>
@@ -80,12 +80,12 @@
   </div>
 
   <div class="field-group" style="margin:18px 0 6px;">
-    <label for="modelPref">Anything not on the list <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+    <label for="modelPref">Anything not on the list</label>
     <input id="modelPref" type="text" placeholder="A stock number, a spec, or a used model" onkeydown="if(event.key==='Enter'){event.preventDefault();goNext();}"/>
   </div>
-  <p class="hint">The list covers the current range. For an Approved Used car, a stock number off the website, or a particular spec, put it here.</p>
+  <p class="hint">The list covers the current range. For an Approved Used car, a stock number off the website, or a particular spec, put it here instead.</p>
 
-  <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span>Pick the one closest to where you are. Nothing here is binding.</span></div>
+  <div class="fv2-note" id="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></svg><span id="errText">Pick the one closest to where you are. Nothing here is binding.</span></div>
   <div class="fv2-nav">
     <a class="fv2-back" href="vip.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
     <button type="button" class="fv2-next" onclick="goNext()">Continue<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
@@ -205,6 +205,7 @@
       else chosenModels.push(name);
     }
     sessionStorage.setItem("vipModels", JSON.stringify(chosenModels));
+    document.getElementById("err").classList.remove("show");
     paintModels();
   }
 
@@ -219,8 +220,8 @@
       c.disabled = full && !on;
     });
     document.getElementById("modelSub").textContent = modelLimit() === 1
-      ? "Pick the one you have settled on. Start typing to jump straight to it, or skip this and I will bring suggestions."
-      : "Tap up to three. Start typing to jump straight to one, or skip this entirely and I will bring suggestions.";
+      ? "Pick the one you have settled on. Start typing to jump straight to it."
+      : "Tap up to three. Start typing to jump straight to one.";
     var note = document.getElementById("modelFull");
     note.style.display = full ? "block" : "none";
     note.textContent = modelLimit() === 1
@@ -292,8 +293,27 @@
     document.getElementById("err").classList.remove("show");
   }
 
+  function showErr(msg, scrollTo){
+    document.getElementById("errText").textContent = msg;
+    document.getElementById("err").classList.add("show");
+    if (scrollTo) document.getElementById(scrollTo).scrollIntoView({behavior:"smooth", block:"center"});
+  }
+
   function goNext(){
-    if (!chosen) { document.getElementById("err").classList.add("show"); return; }
+    if (!chosen) {
+      showErr("Pick the one closest to where you are. Nothing here is binding.");
+      return;
+    }
+    // The whole point of the step is knowing what to have ready, so something
+    // has to come out of it. The text box covers anything the current range
+    // does not: an Approved Used car, a stock number, a particular spec.
+    if (!chosenModels.length && !document.getElementById("modelPref").value.trim()) {
+      showErr(modelLimit() === 1
+        ? "Choose the model you have settled on, or type it in the box below if it is not on the list."
+        : "Choose at least one model, or type what you are after in the box below if it is not on the list.",
+        "modelList");
+      return;
+    }
     sessionStorage.setItem("vipShortlist", chosen);
     sessionStorage.setItem("vipModels", JSON.stringify(chosenModels));
     sessionStorage.setItem("vipModelPref", document.getElementById("modelPref").value.trim());
