@@ -347,6 +347,37 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   .torso,.arm,.pom,.leg-l,.leg-r,.figure{animation:none!important}
 }
 
+/* ---------- team video cut scene ---------- */
+.vidscene{
+  position:fixed;inset:0;z-index:96;display:flex;align-items:center;justify-content:center;
+  background:rgba(3,5,9,.96);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+  pointer-events:none;padding:clamp(10px,2vh,30px);
+}
+.vidscene.show{opacity:1;visibility:visible}
+.vs-frame{
+  /* sized from the viewport, not from content: the frame must not depend on
+     the video reporting its intrinsic size before it has loaded */
+  position:relative;width:min(92vw,calc((100vh - 130px) * 16 / 9));
+  border-radius:18px;overflow:hidden;
+  box-shadow:0 30px 90px rgba(0,0,0,.7),0 0 0 1px var(--line);
+  background:#000;
+}
+.vs-frame video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#000}
+.vs-cap{
+  text-align:center;margin-top:clamp(8px,1.6vh,16px);
+  font-family:var(--display);font-weight:700;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--gold);font-size:clamp(.6rem,1.3vw,.92rem);
+}
+.vs-muted{
+  position:absolute;right:12px;bottom:12px;
+  background:rgba(11,15,22,.78);border:1px solid var(--line);color:var(--muted);
+  border-radius:999px;padding:4px 11px;font-size:.66rem;font-weight:700;
+  display:none;
+}
+.vidscene.is-muted .vs-muted{display:block}
+@media(prefers-reduced-motion:reduce){.vidscene{transition:none}}
+
 /* ---------- month-on-month cut scene ----------
    Palette validated with the dataviz skill's checker against this surface:
    #2f7bf0 (this month) / #b8862c (last month) on #141b26 - CVD dE 29.5 protan,
@@ -801,6 +832,17 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   </div>
 </div>
 
+
+<!-- the team sketch -->
+<div class="vidscene" id="vidscene" aria-hidden="true">
+  <div>
+    <div class="vs-frame">
+      <video id="vs-video" playsinline preload="none" disablepictureinpicture></video>
+      <span class="vs-muted">sound off</span>
+    </div>
+    <div class="vs-cap" id="vs-cap">The used car team</div>
+  </div>
+</div>
 
 <!-- how this month compares with last -->
 <div class="statscene" id="statscene" aria-hidden="true">
@@ -1378,6 +1420,81 @@ function renderStatsScene(cur,prev,curDeals,prevDeals){
     '</svg>';
 }
 
+var VID={
+  will:["Look at this lot!","Absolute superstars.","This is my team, this is!",
+        "I could watch this all day.","Award-winning, that."],
+  serge:["Who approved this?","I want no part of it.","Fourteen takes, that was.",
+         "We are professionals, apparently.","Delete it."]
+};
+
+var CLIPS=[
+  {src:'video/sketch-team.mp4',        cap:'The used car team'},
+  {src:'video/sketch-serge-clive.mp4', cap:'Serge &amp; Clive'}
+];
+/* a shuffle bag can still deal the same clip twice across a refill, which is
+   obvious with only two - so simply never repeat the one just shown */
+var lastClip=-1;
+function pickClip(){
+  if(CLIPS.length<2)return CLIPS[0];
+  var i;
+  do{i=Math.random()*CLIPS.length|0}while(i===lastClip);
+  lastClip=i;
+  return CLIPS[i];
+}
+
+/* the team sketches. Browsers block sound on autoplay until someone has
+   interacted with the page, so try with sound and fall back to muted -
+   never let the fallback stop it playing. */
+function videoScene(){
+  if(stuntsBlocked())return false;
+  var vs=$('vidscene'), v=$('vs-video');
+  if(!vs||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
+  var clip=pickClip();
+  busy=true;
+  $('vs-cap').innerHTML=clip.cap;
+  if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
+  vs.classList.remove('is-muted');
+  v.muted=false; v.volume=1;
+  try{v.currentTime=0}catch(e){}
+  vs.classList.add('show');
+  holdUntil=Date.now()+16000;
+  setBubble('bub-will', bagPick('vid|will', VID.will));
+  setBubble('bub-serge',bagPick('vid|serge',VID.serge));
+
+  var done=false;
+  var finish=function(){
+    if(done)return; done=true;
+    vs.classList.remove('show');
+    try{v.pause();v.currentTime=0}catch(e){}
+    busy=false;
+  };
+  v.onended=finish;
+  /* backstop in case the file stalls: never leave the board covered */
+  var guard=setTimeout(finish,16000);
+  v.onended=function(){clearTimeout(guard);finish()};
+
+  var go=v.play();
+  if(go&&go['catch']){
+    go['catch'](function(){
+      v.muted=true;
+      vs.classList.add('is-muted');
+      var again=v.play();
+      if(again&&again['catch'])again['catch'](function(){clearTimeout(guard);finish()});
+    });
+  }
+  return true;
+}
+
+/* warm the clips into the browser cache a little after load, so the first
+   showing does not stutter. Only on a wall display - no reason to pull nine
+   megabytes down onto somebody's phone. */
+function warmVideo(){
+  if(window.innerWidth<1200||!window.fetch)return;
+  setTimeout(function(){
+    CLIPS.forEach(function(c){fetch(c.src,{cache:'force-cache'})['catch'](function(){})});
+  },20000);
+}
+
 function statsScene(){
   if(stuntsBlocked())return false;
   if(!backend||!backend.read)return false;
@@ -1615,6 +1732,8 @@ function scheduleStunts(){
   every(nathanVisit, 110000, 30000, 150000, 150000);   /* then every 2.5-5m   */
   every(nathanFire,  170000, 60000, 840000, 300000);   /* then every 14-19m   */
   every(statsScene,  260000, 60000,1740000, 300000);   /* then every 29-34m   */
+  every(videoScene,  320000, 70000, 660000, 240000);   /* then every 11-15m   */
+  warmVideo();
 }
 
 /* ---- render ---- */
