@@ -261,7 +261,8 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
   burns for ten seconds and goes out.
 - **New car leaderboard cut scene.** Nathan uploads the daily 76 Plate
-  screenshot from `newcar.html` (PIN-gated, listed on `links.html`). The image
+  screenshot from `newcar.html` (listed on `links.html`; its own PIN, separate
+  from the board's manager PIN). The image
   is downscaled and JPEG-compressed **in the browser** and stored as a data URL
   at `newcar/current` in the database - Storage was avoided because its rules
   are not managed by `firebase.json` and would have been extra setup. The rules
