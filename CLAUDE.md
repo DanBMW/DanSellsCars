@@ -240,7 +240,9 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   the same element would replace the attribute and fling it across the page.
 - **One cut scene at a time.** `SCENES` is a running order (video, breakdance,
   video, Nathan, video, stats, video, fire) and `nextCutScene()` takes the next
-  one roughly every ten minutes. Six independent schedules meant the board was
+  one roughly every five minutes. Because the video sits in every other slot
+  that gives a sketch about every ten minutes - which is the figure Dan asks
+  for - and each of the other four about every forty. Six independent schedules meant the board was
   interrupted every couple of minutes; one queue fixes that, and the sketches
   come round most often because there are five of them. A scene that returns
   `false` - an empty board, nothing uploaded, another scene holding the floor -
@@ -285,7 +287,7 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   columns sum to its stated total, and the blue and green team totals (70 and
   123) sum to 193, the sum of all eight execs.
 - **Team sketch cut scene.** `videoScene()` takes four of the eight slots in
-  `SCENES`, so a sketch plays roughly every 20 minutes. It shows one of
+  `SCENES`, so a sketch plays roughly every 10 minutes. It shows one of
   the AI-generated team sketches in `video/` full screen (`CLIPS` array; add a
   clip by adding a row with its `ar` = width/height - the clips are a mix of
   16:9 and portrait and the frame sizes itself from that, corrected from the
@@ -295,7 +297,7 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   the scene if the file stalls - the board must never be left covered. The
   clips are warmed into the browser cache 20s after load on wide screens only,
   so a phone does not pull down nine megabytes it will probably never play.
-- **Month-on-month cut scene.** One slot in `SCENES`, so roughly every 80
+- **Month-on-month cut scene.** One slot in `SCENES`, so roughly every 40
   minutes. `statsScene()` reads this
   month and last month in one go (`backend.read()`, a one-off `get`) and shows
   three stat tiles plus a cumulative-profit line chart. The comparison is

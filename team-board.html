@@ -1833,10 +1833,10 @@ function every(fn,firstMin,firstSpan,min,span){
   };
   arm(firstMin+Math.random()*firstSpan);
 }
-/* One cut scene roughly every ten minutes, taken in turn rather than each
+/* One cut scene roughly every five minutes, taken in turn rather than each
    scene keeping its own clock - otherwise six schedules overlap and the board
-   is interrupted constantly. The video comes round most often because there
-   are several sketches to get through. */
+   is interrupted constantly. The video sits in every other slot, so a sketch
+   comes round about every ten minutes and each of the others every forty. */
 var SCENES=[videoScene, leaderDance, videoScene, nathanVisit,
             videoScene, statsScene, videoScene, nathanFire];
 var sceneAt=0;
@@ -1853,7 +1853,7 @@ function nextCutScene(){
 
 function scheduleStunts(){
   every(throwPaper,    25000, 20000,  45000,  50000);  /* ambient, covers nothing */
-  every(nextCutScene, 120000, 60000, 570000,  60000);  /* one scene, ~9.5-10.5m   */
+  every(nextCutScene, 100000, 40000, 285000,  30000);  /* one scene, ~4.75-5.25m  */
   warmVideo();
   startRotation();
 }
