@@ -277,11 +277,15 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   at `newcar/current` in the database - Storage was avoided because its rules
   are not managed by `firebase.json` and would have been extra setup. The rules
   cap the string at 1.4MB and the page keeps to 1.3MB, shrinking in passes
-  until it fits. `newCarScene()` shows it for **two minutes every ten**, falling
-  back to `newcar/seed.jpg` until the first upload so the scene is never empty.
-  Note that two minutes is a long takeover - roughly 20% of the time - and was
-  asked for explicitly.
-- **Team sketch cut scene.** Every 4.5-5.5 minutes `videoScene()` plays one of
+  until it fits. Until the first upload it falls back to `newcar/seed.jpg`, a
+  **clean rebuild** of Nathan's spreadsheet rather than a photo of his screen -
+  source in `newcar/source/76-plate-leaderboard.html`, rendered at 1600x1000
+  through headless Chromium, so the figures can be edited and re-rendered. The
+  transcription off the photo was checked, not trusted: every row's five
+  columns sum to its stated total, and the blue and green team totals (70 and
+  123) sum to 193, the sum of all eight execs.
+- **Team sketch cut scene.** `videoScene()` takes four of the eight slots in
+  `SCENES`, so a sketch plays roughly every 20 minutes. It shows one of
   the AI-generated team sketches in `video/` full screen (`CLIPS` array; add a
   clip by adding a row with its `ar` = width/height - the clips are a mix of
   16:9 and portrait and the frame sizes itself from that, corrected from the
@@ -291,7 +295,8 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   the scene if the file stalls - the board must never be left covered. The
   clips are warmed into the browser cache 20s after load on wide screens only,
   so a phone does not pull down nine megabytes it will probably never play.
-- **Month-on-month cut scene.** Every 29-34 minutes `statsScene()` reads this
+- **Month-on-month cut scene.** One slot in `SCENES`, so roughly every 80
+  minutes. `statsScene()` reads this
   month and last month in one go (`backend.read()`, a one-off `get`) and shows
   three stat tiles plus a cumulative-profit line chart. The comparison is
   deliberately **like for like** - this month to date against last month to the
