@@ -264,6 +264,14 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#fff;
 }
 .clipbtn small{display:block;font-weight:600;font-size:.66rem;color:var(--muted);margin-top:1px}
+.shotbox{border-radius:11px;overflow:hidden;border:1px solid var(--line-soft);background:#0b0f16;margin-bottom:6px}
+.shotbox img{display:block;width:100%;height:auto;max-height:210px;object-fit:contain}
+.shotcap{font-size:.7rem;color:var(--muted);font-weight:600;margin:0 0 10px}
+.shotcap b{color:var(--text)}
+.msgline{font-size:.76rem;font-weight:700;margin:8px 0 0;display:none}
+.msgline.ok{color:var(--green);display:block}
+.msgline.err{color:var(--red);display:block}
+.msgline.busy{color:var(--muted);display:block}
 .segbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
 .seg{
   background:var(--panel-2);border:2px solid transparent;border-radius:12px;
@@ -882,6 +890,24 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <p class="hint" id="clip-note" style="display:none;margin:0">Board control is not switched on in the database yet, so these
       play on this screen only. Publish the <b>boardcontrol</b> rules in Firebase to reach every screen.</p>
 
+    <h2 style="margin-top:22px;font-size:1rem">Screenshot on the board</h2>
+    <p class="hint" style="margin-bottom:10px">Anything you want the team to see - a stock list, a target sheet, a message.
+      It joins the board rotation for thirty seconds at a time, with your caption above it.</p>
+    <div id="shot-now"></div>
+    <input type="file" id="shot-file" accept="image/*" style="display:none">
+    <div id="shot-prev" style="display:none">
+      <div class="shotbox"><img id="shot-img" alt="Picture to put on the board"></div>
+      <p class="shotcap" id="shot-meta"></p>
+      <label for="shot-cap">Caption (shown above it)</label>
+      <input type="text" id="shot-cap" maxlength="80" placeholder="e.g. This week's stock push">
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <button type="button" class="btn" style="flex:1" id="shot-pick">Choose a picture</button>
+      <button type="button" class="btn primary" style="flex:1;display:none" id="shot-send">Put it on the board</button>
+    </div>
+    <button type="button" class="btn danger" style="width:100%;display:none" id="shot-remove">Take it off the board</button>
+    <p class="msgline" id="shot-msg"></p>
+
     <h2 style="margin-top:22px;font-size:1rem" id="deals-heading">This month's deals</h2>
     <p class="hint" style="margin-bottom:8px">Tap the pencil to correct a figure, or the bin to remove it.</p>
     <div class="deals" id="deal-list"></div>
@@ -889,11 +915,12 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 </div>
 
 
-<!-- the new car leaderboard, uploaded from newcar.html -->
+<!-- every uploaded picture shares this view: the new car leaderboard from
+     newcar.html, and either manager's extra screenshot -->
 <div class="ncscene" id="ncscene" aria-hidden="true">
   <div class="nc-inner">
     <div class="nc-kicker" id="nc-kicker">New car &mdash; 76 plate leaderboard</div>
-    <div class="nc-shot"><img id="nc-img" alt="New car leaderboard"></div>
+    <div class="nc-shot"><img id="nc-img" alt="Screenshot on the board"></div>
     <div class="nc-when" id="nc-when"></div>
   </div>
 </div>
@@ -1508,36 +1535,75 @@ var NC={
          "Nathan will be unbearable."]
 };
 
+/* Either manager can put an extra screenshot up - Will from the board's own
+   manager panel, Nathan from a second slot on newcar.html. Each one joins the
+   rotation only while there is something in it. */
+var EXTRA={used:null, newcar:null};
+
 function watchNewCar(){
-  if(!backend||!backend.watchNewCar)return;
-  backend.watchNewCar(function(v){
+  if(!backend)return;
+  if(backend.watchNewCar)backend.watchNewCar(function(v){
     if(v&&v.img){NEWCAR={img:v.img, ts:v.ts||0, note:v.note||'', seed:false}}
+    if(viewIdx>0)showView(viewIdx);
   });
+  if(backend.watchExtra){
+    backend.watchExtra('used',function(v){
+      EXTRA.used=(v&&v.img)?v:null;
+      paintShotPanel();
+      showView(viewIdx);
+    });
+    backend.watchExtra('newcar',function(v){
+      EXTRA.newcar=(v&&v.img)?v:null;
+      showView(viewIdx);
+    });
+  }
 }
 
-/* The wall display alternates between the two boards every two minutes.
-   This is a view, not a stunt: it never takes the busy lock, so a cut scene
-   can play over whichever board happens to be up. */
-var VIEW_MS=30000, showingNewCar=false, rotTimer=null;
+/* The wall display cycles through whatever there is to show, thirty seconds
+   each: our board, the new car leaderboard, then either manager's extra
+   screenshot if they have put one up. This is a view, not a stunt - it never
+   takes the busy lock, so a cut scene can play over whichever one is up. */
+var VIEW_MS=30000, viewIdx=0, rotTimer=null;
 
-function paintNewCar(){
-  $('nc-img').src=NEWCAR.img;
-  $('nc-kicker').innerHTML=NEWCAR.note ? esc(NEWCAR.note)
-                                       : 'New car &mdash; 76 plate leaderboard';
-  $('nc-when').textContent=NEWCAR.seed
-    ? 'Waiting on the first upload'
-    : 'Updated '+new Date(NEWCAR.ts).toLocaleString('en-GB',
-        {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+function views(){
+  var out=[null];   /* index 0 is always our own board */
+  if(NEWCAR.img)out.push({
+    img:NEWCAR.img,
+    cap:NEWCAR.note?esc(NEWCAR.note):'New car &mdash; 76 plate leaderboard',
+    when:NEWCAR.seed?'Waiting on the first upload':stamp('Updated',NEWCAR.ts)
+  });
+  if(EXTRA.used)out.push({
+    img:EXTRA.used.img,
+    cap:EXTRA.used.note?esc(EXTRA.used.note):'From the used car desk',
+    when:stamp('Put up',EXTRA.used.ts)
+  });
+  if(EXTRA.newcar)out.push({
+    img:EXTRA.newcar.img,
+    cap:EXTRA.newcar.note?esc(EXTRA.newcar.note):'From the new car desk',
+    when:stamp('Put up',EXTRA.newcar.ts)
+  });
+  return out;
+}
+function stamp(word,ts){
+  if(!ts)return '';
+  return word+' '+new Date(ts).toLocaleString('en-GB',
+    {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 }
 
-function setView(newCar){
-  var was=showingNewCar;
-  showingNewCar=!!newCar && !!NEWCAR.img;
-  if(showingNewCar)paintNewCar();
-  $('ncscene').classList.toggle('show',showingNewCar);
-  /* the two of them are hidden while the new car board is up, so let them have
-     their say as it comes back to ours */
-  if(was&&!showingNewCar){
+function showView(i){
+  var list=views(), was=viewIdx;
+  if(!(i>=0&&i<list.length))i=0;
+  viewIdx=i;
+  var v=list[i];
+  if(v){
+    $('nc-img').src=v.img;
+    $('nc-kicker').innerHTML=v.cap;
+    $('nc-when').textContent=v.when;
+  }
+  $('ncscene').classList.toggle('show',!!v);
+  /* the two of them are hidden while a picture is up, so let them have their
+     say as it comes back to ours */
+  if(was!==0&&i===0){
     holdUntil=Date.now()+9000;
     setBubble('bub-will',  bagPick('nc|will', NC.will));
     setBubble('bub-serge', bagPick('nc|serge',NC.serge));
@@ -1545,16 +1611,77 @@ function setView(newCar){
 }
 
 function rotateView(){
-  /* hold the used board while a manager is working, and never flip the screen
-     out from under a cut scene */
-  if(document.querySelector('.modal-bg.open')){setView(false);return}
+  /* hold our board while a manager is working, and never flip the screen out
+     from under a cut scene */
+  if(document.querySelector('.modal-bg.open')){showView(0);return}
   if(busy)return;
-  setView(!showingNewCar);
+  showView((viewIdx+1)%views().length);
 }
 
 function startRotation(){
   clearInterval(rotTimer);
   rotTimer=setInterval(rotateView,VIEW_MS);
+}
+
+/* ---- the manager's own screenshot ----
+   Shrunk in the browser and stored as a data URL, the same way newcar.html
+   does it - the two are twins, so change both together. */
+var MAX_STORED=1300000, shotPending=null;
+
+function shotSay(t,kind){
+  var m=$('shot-msg');
+  m.className='msgline'+(kind?' '+kind:'');
+  m.textContent=t||'';
+}
+function shrinkShot(file,ok,fail){
+  if(!/^image\//.test(file.type)){fail('That is not a picture');return}
+  var fr=new FileReader();
+  fr.onload=function(){
+    var im=new Image();
+    im.onload=function(){
+      var q=0.85,data=null;
+      for(var pass=0;pass<6;pass++){
+        var maxW=pass<2?1800:pass<4?1500:1200;
+        var sc=Math.min(1,maxW/im.width);
+        var c=document.createElement('canvas');
+        c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        data=c.toDataURL('image/jpeg',q);
+        if(data.length<=MAX_STORED)break;
+        q-=0.1;
+      }
+      if(!data||data.length>MAX_STORED){
+        fail('That picture is too big even after shrinking - try a screenshot rather than a photo');return;
+      }
+      ok(data,im.width,im.height);
+    };
+    im.onerror=function(){fail('Could not read that picture')};
+    im.src=fr.result;
+  };
+  fr.onerror=function(){fail('Could not read that file')};
+  fr.readAsDataURL(file);
+}
+
+function paintShotPanel(){
+  var now=$('shot-now');
+  if(!now)return;
+  if(EXTRA.used){
+    now.innerHTML='<div class="shotbox"><img src="'+EXTRA.used.img+'" alt="On the board now"></div>'+
+      '<p class="shotcap"><b>On the board now</b>'+
+      (EXTRA.used.note?' &middot; '+esc(EXTRA.used.note):'')+' &middot; '+esc(stamp('put up',EXTRA.used.ts))+'</p>';
+  }else{
+    now.innerHTML='<p class="shotcap">Nothing up at the moment.</p>';
+  }
+  $('shot-remove').style.display=EXTRA.used?'block':'none';
+  $('shot-pick').textContent=EXTRA.used?'Replace it':'Choose a picture';
+}
+
+function shotClear(){
+  shotPending=null;
+  $('shot-prev').style.display='none';
+  $('shot-send').style.display='none';
+  $('shot-file').value='';
+  $('shot-cap').value='';
 }
 
 var CLIPS=[
@@ -2271,6 +2398,48 @@ $('pin-go').onclick=checkPin;
 $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPin()});
 $('mgr-save').onclick=saveDeal;
 $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
+
+$('shot-pick').onclick=function(){$('shot-file').click()};
+$('shot-file').onchange=function(e){
+  var f=e.target.files&&e.target.files[0];
+  if(!f)return;
+  shotSay('Preparing…','busy');
+  shrinkShot(f,function(data,w,h){
+    shotPending=data;
+    $('shot-img').src=data;
+    $('shot-meta').innerHTML='<b>'+w+'&times;'+h+'</b> original &middot; stored at about <b>'+
+      Math.round(data.length/1024)+'KB</b>';
+    $('shot-prev').style.display='block';
+    $('shot-send').style.display='block';
+    if(EXTRA.used&&EXTRA.used.note&&!$('shot-cap').value)$('shot-cap').value=EXTRA.used.note;
+    shotSay('','');
+  },function(err){shotSay(err,'err')});
+};
+$('shot-send').onclick=function(){
+  if(!shotPending)return;
+  if(!backend||!backend.saveExtra){shotSay('Not connected to the board yet','err');return}
+  $('shot-send').disabled=true;
+  shotSay('Putting it up…','busy');
+  var payload={img:shotPending, ts:Date.now()};
+  var cap=$('shot-cap').value.trim();
+  if(cap)payload.note=cap;
+  backend.saveExtra('used',payload).then(function(){
+    shotClear();
+    shotSay('Done - it is in the rotation','ok');
+  })['catch'](function(e){
+    console.error(e);
+    shotSay('Could not put that up - is the extra rules block published?','err');
+  }).then(function(){$('shot-send').disabled=false},function(){$('shot-send').disabled=false});
+};
+$('shot-remove').onclick=function(){
+  if(!backend||!backend.clearExtra){shotSay('Not connected to the board yet','err');return}
+  shotSay('Taking it down…','busy');
+  backend.clearExtra('used').then(function(){
+    shotClear();
+    shotSay('Taken off the board','ok');
+  })['catch'](function(e){console.error(e);shotSay('Could not take that down','err')});
+};
+paintShotPanel();
 $('seg-cur').onclick=function(){if(viewMonth!==monthKey()){showMonth(monthKey());resetForm()}};
 $('seg-next').onclick=function(){if(viewMonth!==nextMonthKey()){showMonth(nextMonthKey());resetForm()}};
 
@@ -2354,6 +2523,9 @@ window.dsBindBackend({
   months:()=>get(ref(db,'profitchallenge/months')).then(s=>Object.keys(s.val()||{})),
   read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{}),
   watchNewCar(cb){ onValue(ref(db,'newcar/current'), s=>cb(s.val()), ()=>{}) },
+  watchExtra(who,cb){ onValue(ref(db,'extra/'+who), s=>cb(s.val()), ()=>{}) },
+  saveExtra:(who,payload)=>set(ref(db,'extra/'+who),payload),
+  clearExtra:(who)=>remove(ref(db,'extra/'+who)),
   watchControl(cb,onErr){ onValue(ref(db,'boardcontrol'), s=>cb(s.val()), e=>{console.error(e);onErr&&onErr()}) },
   setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
   play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()})

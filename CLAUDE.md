@@ -267,14 +267,29 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   runtime, clamped to the viewport so a scrolled phone still shows it) and
   Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
   burns for ten seconds and goes out.
-- **New car leaderboard cut scene.** Nathan uploads the daily 76 Plate
+- **The view rotation.** The wall display cycles through whatever there is to
+  show, 30 seconds each (`VIEW_MS`, `views()`, `showView()`, `rotateView()`):
+  the used car board, the new car leaderboard, then either manager's extra
+  screenshot if they have put one up. These are **views, not cut scenes** -
+  they never take the `busy` lock, and the image view sits at z-index 50 so
+  every cut scene paints over whichever one is up. `views()` is rebuilt on
+  every call, so an upload joins the cycle and a removal drops out of it with
+  no restart; `showView()` clamps an index that has gone out of range. A
+  manager opening the panel parks it back on the used car board, and Will and
+  Serge have their say as it comes back to theirs.
+- **The extra screenshots.** Either manager can put an arbitrary picture on the
+  board with a caption above it - Will from the "Screenshot on the board"
+  section of the board's own manager panel (`extra/used`), Nathan from a second
+  optional slot beneath his leaderboard upload on `newcar.html`
+  (`extra/newcar`). Both have a remove button, and a slot that is empty is
+  simply skipped, so neither is ever a blank frame in the rotation. Both reuse
+  the same in-browser shrink-to-a-data-URL step as the leaderboard upload
+  (`shrinkShot()` on the board, `shrink()` on `newcar.html` - twins by
+  necessity, since the board is deliberately self-contained; change both
+  together).
+- **New car leaderboard.** Nathan uploads the daily 76 Plate
   screenshot from `newcar.html` (listed on `links.html`; its own PIN, separate
-  from the board's manager PIN). It is a **view, not a cut scene**: the wall
-  display alternates between the used car board and the new car board every
-  30 seconds (`VIEW_MS`, `rotateView()`), and the new car view sits at
-  z-index 50 so every cut scene paints over whichever board is up. The
-  rotation pauses on the used board while a manager has the panel open, and
-  Will and Serge have their say as it comes back to the used board. The image
+  from the board's manager PIN). The image
   is downscaled and JPEG-compressed **in the browser** and stored as a data URL
   at `newcar/current` in the database - Storage was avoided because its rules
   are not managed by `firebase.json` and would have been extra setup. The rules

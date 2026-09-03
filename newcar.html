@@ -53,7 +53,7 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
 .drop:hover,.drop.over{border-color:var(--blue);background:rgba(47,123,240,.08)}
 .drop b{display:block;font-size:1rem;margin-bottom:4px}
 .drop span{font-size:.8rem;color:var(--muted)}
-#file{display:none}
+#file,#x-file{display:none}
 .shot{margin-top:14px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
 .shot img{display:block;width:100%;height:auto}
 .meta{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6}
@@ -110,6 +110,31 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
       <label>Showing on the board now</label>
       <div id="current"><p class="meta">Checking…</p></div>
     </div>
+
+    <!-- optional second slot: anything Nathan fancies, on top of the daily
+         leaderboard. It only joins the board rotation while it has something. -->
+    <div class="card">
+      <label>Anything else? (optional)</label>
+      <p class="meta" style="margin:0 0 12px">A second screenshot of your own - whatever you want the showroom to see.
+        It joins the board rotation for thirty seconds at a time, with your caption above it. Leave it empty and the
+        board never shows it.</p>
+      <div id="x-now"><p class="meta">Checking…</p></div>
+      <input type="file" id="x-file" accept="image/*">
+      <div id="x-preview" class="hidden">
+        <div class="shot"><img id="x-prev-img" alt="Preview of the second screenshot"></div>
+        <div class="meta" id="x-prev-meta"></div>
+        <label style="margin-top:16px">Caption (shown above it)</label>
+        <input type="text" id="x-note" maxlength="80" placeholder="e.g. Order bank this month">
+      </div>
+      <div class="row">
+        <button class="btn" id="x-pick">Choose a picture</button>
+        <button class="btn primary hidden" id="x-send">Put it on the board</button>
+      </div>
+      <div class="row hidden" id="x-remove-row">
+        <button class="btn" id="x-remove" style="border-color:rgba(226,86,77,.5);color:var(--red)">Take it off the board</button>
+      </div>
+      <div class="msg" id="x-msg"></div>
+    </div>
   </div>
 
   <p class="foot">
@@ -159,9 +184,8 @@ $('cancel').onclick=function(){
 
 /* shrink in the browser: a phone photo or a full screenshot is far bigger
    than a wall display needs, and it has to fit in one database write */
-function handle(file){
-  if(!/^image\//.test(file.type)){say($('msg'),'That is not a picture','err');return}
-  say($('msg'),'Preparing…','busy');
+function shrink(file,ok,fail){
+  if(!/^image\//.test(file.type)){fail('That is not a picture');return}
   var fr=new FileReader();
   fr.onload=function(){
     var im=new Image();
@@ -178,22 +202,88 @@ function handle(file){
         q-=0.1;
       }
       if(!data||data.length>MAX_STORED){
-        say($('msg'),'That picture is too big even after shrinking - try a screenshot rather than a photo','err');
-        return;
+        fail('That picture is too big even after shrinking - try a screenshot rather than a photo');return;
       }
-      pending=data;
-      $('prev-img').src=data;
-      $('prev-meta').innerHTML='<b>'+im.width+'&times;'+im.height+'</b> original &middot; stored at about <b>'+
-        Math.round(data.length/1024)+'KB</b>';
-      $('preview').classList.remove('hidden');
-      say($('msg'),backend?'':'Connecting to the board…',backend?'':'busy');
-      $('send').disabled=!backend;
+      ok(data,im.width,im.height);
     };
-    im.onerror=function(){say($('msg'),'Could not read that picture','err')};
+    im.onerror=function(){fail('Could not read that picture')};
     im.src=fr.result;
   };
-  fr.onerror=function(){say($('msg'),'Could not read that file','err')};
+  fr.onerror=function(){fail('Could not read that file')};
   fr.readAsDataURL(file);
+}
+
+function handle(file){
+  say($('msg'),'Preparing…','busy');
+  shrink(file,function(data,w,h){
+    pending=data;
+    $('prev-img').src=data;
+    $('prev-meta').innerHTML='<b>'+w+'&times;'+h+'</b> original &middot; stored at about <b>'+
+      Math.round(data.length/1024)+'KB</b>';
+    $('preview').classList.remove('hidden');
+    say($('msg'),backend?'':'Connecting to the board…',backend?'':'busy');
+    $('send').disabled=!backend;
+  },function(err){say($('msg'),err,'err')});
+}
+
+/* ---- the optional second slot ---- */
+var xPending=null, xCurrent=null;
+$('x-pick').onclick=function(){$('x-file').click()};
+$('x-file').onchange=function(e){
+  var f=e.target.files&&e.target.files[0];
+  if(!f)return;
+  say($('x-msg'),'Preparing…','busy');
+  shrink(f,function(data,w,h){
+    xPending=data;
+    $('x-prev-img').src=data;
+    $('x-prev-meta').innerHTML='<b>'+w+'&times;'+h+'</b> original &middot; stored at about <b>'+
+      Math.round(data.length/1024)+'KB</b>';
+    $('x-preview').classList.remove('hidden');
+    $('x-send').classList.remove('hidden');
+    if(xCurrent&&xCurrent.note&&!$('x-note').value)$('x-note').value=xCurrent.note;
+    say($('x-msg'),'','');
+  },function(err){say($('x-msg'),err,'err')});
+};
+function xReset(){
+  xPending=null;
+  $('x-preview').classList.add('hidden');
+  $('x-send').classList.add('hidden');
+  $('x-file').value=''; $('x-note').value='';
+}
+$('x-send').onclick=function(){
+  if(!xPending)return;
+  if(!backend||!backend.saveExtra){say($('x-msg'),'Not connected to the board yet','err');return}
+  $('x-send').disabled=true;
+  say($('x-msg'),'Putting it up…','busy');
+  var payload={img:xPending, ts:Date.now()};
+  var note=$('x-note').value.trim();
+  if(note)payload.note=note;
+  backend.saveExtra(payload).then(function(){
+    xReset(); say($('x-msg'),'Done - it is in the board rotation','ok');
+  })['catch'](function(e){
+    console.error(e); say($('x-msg'),'Could not put that up - try again','err');
+  }).then(function(){$('x-send').disabled=false},function(){$('x-send').disabled=false});
+};
+$('x-remove').onclick=function(){
+  if(!backend||!backend.clearExtra){say($('x-msg'),'Not connected to the board yet','err');return}
+  say($('x-msg'),'Taking it down…','busy');
+  backend.clearExtra().then(function(){
+    xReset(); say($('x-msg'),'Taken off the board','ok');
+  })['catch'](function(e){console.error(e);say($('x-msg'),'Could not take that down','err')});
+};
+function paintExtra(v){
+  xCurrent=(v&&v.img)?v:null;
+  if(xCurrent){
+    var when=new Date(xCurrent.ts).toLocaleString('en-GB',
+      {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    var note=xCurrent.note?' &middot; '+String(xCurrent.note).replace(/[<>&]/g,''):'';
+    $('x-now').innerHTML='<div class="shot"><img src="'+xCurrent.img+'" alt="In the rotation now"></div>'+
+      '<p class="meta">In the rotation &middot; put up <b>'+when+'</b>'+note+'</p>';
+  }else{
+    $('x-now').innerHTML='<p class="meta">Nothing up at the moment - the board skips this one.</p>';
+  }
+  $('x-remove-row').classList.toggle('hidden',!xCurrent);
+  $('x-pick').textContent=xCurrent?'Replace it':'Choose a picture';
 }
 
 /* ---- send ---- */
@@ -218,6 +308,9 @@ $('send').onclick=function(){
 window.ncBindBackend=function(api){
   backend=api;
   if(pending){$('send').disabled=false;say($('msg'),'','')}
+  if(api.watchExtra)api.watchExtra(paintExtra,function(){
+    $('x-now').innerHTML='<p class="meta">Could not reach the board.</p>';
+  });
   api.watch(function(v){
     if(!v||!v.img){
       $('current').innerHTML='<p class="meta">Nothing uploaded yet - the board is showing the sample.</p>';
@@ -237,6 +330,7 @@ window.ncBindBackend=function(api){
 setTimeout(function(){
   if(!backend){
     $('current').innerHTML='<p class="meta">Could not reach the board - check the internet connection.</p>';
+    $('x-now').innerHTML='<p class="meta">Could not reach the board.</p>';
     if(pending)say($('msg'),'Not connected to the board - check the internet connection','err');
   }
 },9000);
@@ -244,14 +338,17 @@ setTimeout(function(){
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 const db=getDatabase(initializeApp(firebaseConfig));
 
 window.ncBindBackend({
   save:(payload)=>set(ref(db,'newcar/current'),payload),
-  watch:(cb,err)=>onValue(ref(db,'newcar/current'), s=>cb(s.val()), err)
+  watch:(cb,err)=>onValue(ref(db,'newcar/current'), s=>cb(s.val()), err),
+  saveExtra:(payload)=>set(ref(db,'extra/newcar'),payload),
+  clearExtra:()=>remove(ref(db,'extra/newcar')),
+  watchExtra:(cb,err)=>onValue(ref(db,'extra/newcar'), s=>cb(s.val()), err)
 });
 </script>
 </body>
