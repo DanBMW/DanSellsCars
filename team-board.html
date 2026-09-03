@@ -324,6 +324,14 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 .toast.err{border-color:rgba(226,86,77,.55)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
 .foot{text-align:center;color:var(--muted);font-size:.68rem;margin-top:26px;line-height:1.7}
+/* Dan's line. Above every scene and every board, so it is there whatever the
+   display happens to be showing. */
+.credit{
+  position:fixed;right:12px;bottom:9px;z-index:300;pointer-events:none;
+  font-size:clamp(.48rem,1vw,.64rem);font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:rgba(255,255,255,.32);
+  text-shadow:0 1px 7px rgba(0,0,0,.9);
+}
 /* ---------- cheerleaders ---------- */
 .figure{position:relative;display:flex;flex-direction:column;align-items:center;--hd:clamp(46px,11vw,74px)}
 .figure .head{
@@ -406,6 +414,28 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 .nc-shot img{display:block;max-width:min(96vw,1700px);max-height:calc(100vh - 130px);width:auto;height:auto}
 .nc-when{margin-top:9px;color:var(--muted);font-size:clamp(.62rem,1.2vw,.82rem);font-weight:600;text-align:center}
+/* Nathan gets the run of his own board, so Will comes over to argue. Only on
+   the leaderboard view - an uploaded screenshot keeps the full width. */
+.nc-chat{
+  position:absolute;left:0;right:0;bottom:clamp(24px,3.2vh,38px);
+  display:none;justify-content:space-between;align-items:flex-end;
+  padding:0 clamp(8px,1.6vw,26px);pointer-events:none;
+}
+.ncscene.chatty .nc-chat{display:flex}
+.ncscene.chatty .nc-shot img{max-width:min(68vw,1380px)}
+.nc-mascot{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  width:clamp(112px,15vw,210px);flex:none;
+}
+.nc-mascot img{
+  width:clamp(46px,5.4vw,78px);height:clamp(46px,5.4vw,78px);border-radius:50%;
+  object-fit:cover;object-position:58% 20%;border:2px solid rgba(255,255,255,.55);
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.nc-mascot .nm{font-weight:900;font-size:clamp(.6rem,1.1vw,.8rem);letter-spacing:.02em}
+.nc-mascot .rl{font-size:clamp(.5rem,.9vw,.66rem);color:var(--muted);text-align:center;line-height:1.25}
+.nc-mascot.us .nm{color:var(--blue)}
+.nc-mascot.them .nm{color:var(--gold)}
 @media(prefers-reduced-motion:reduce){.ncscene{transition:none}}
 
 /* ---------- team video cut scene ---------- */
@@ -841,6 +871,8 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   </p>
 </div>
 
+<div class="credit">This display was created by Dan</div>
+
 <!-- PIN -->
 <div class="modal-bg" id="m-pin">
   <div class="modal" style="max-width:340px">
@@ -922,6 +954,20 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <div class="nc-kicker" id="nc-kicker">New car &mdash; 76 plate leaderboard</div>
     <div class="nc-shot"><img id="nc-img" alt="Screenshot on the board"></div>
     <div class="nc-when" id="nc-when"></div>
+  </div>
+  <div class="nc-chat" id="nc-chat" aria-hidden="true">
+    <div class="nc-mascot us">
+      <div class="bubble" id="bub-nc-will">Morning, Nathan.</div>
+      <img src="team/will.jpg" alt="Will Potter">
+      <div class="nm">WILL</div>
+      <div class="rl">Used Car Manager</div>
+    </div>
+    <div class="nc-mascot them">
+      <div class="bubble" id="bub-nc-nathan">Look at that board.</div>
+      <img src="team/nj.jpg" alt="Nathan Jobson">
+      <div class="nm">NATHAN</div>
+      <div class="rl">New Car Manager</div>
+    </div>
   </div>
 </div>
 
@@ -1540,6 +1586,56 @@ var NC={
    rotation only while there is something in it. */
 var EXTRA={used:null, newcar:null};
 
+/* Nathan runs the new car board, so while it is up he gets to gloat and Will
+   comes over to defend the used car pitch. Same shuffle bag as the main pair,
+   so nothing repeats until a pool is exhausted. */
+var NCCHAT={
+  nathan:[
+    "Used cars is like buying from a charity shop.",
+    "Every one of mine still has the plastic on.",
+    "You lot sell other people's mistakes.",
+    "Nobody ever framed a photo of a three year old 1 Series.",
+    "Mine come off a lorry. Yours come off a driveway.",
+    "I've never once had to explain a service history.",
+    "No stone chips. No dog hair. No arguments.",
+    "New car customers don't ask about the tyres.",
+    "You can smell the difference from the door.",
+    "Give it three years and they're your problem.",
+    "Even your best car was one of mine first.",
+    "My board has a proper spreadsheet behind it.",
+    "Charity shop with a coffee machine, that pitch.",
+    "Look at those numbers, Will. Look at them."
+  ],
+  will:[
+    "Ours are already depreciated, Nathan. That's called value.",
+    "Anyone can sell one nobody has driven yet.",
+    "You've got a price list. We've got a skill.",
+    "Every one of yours ends up on my pitch eventually.",
+    "We sell what's here. You sell what might turn up in March.",
+    "Charity shop? We're the ones making the profit.",
+    "You need a factory. I need a phone.",
+    "Your customers wait nine months. Mine drive home today.",
+    "One careful owner beats one long wait.",
+    "Half your job is apologising for the lead time.",
+    "Nice board. Ours has a leader on it.",
+    "Come back when you've done one without a discount.",
+    "You're welcome, by the way. For the part exchanges.",
+    "Go on then, sell one without the manufacturer's help."
+  ]
+};
+var ncChatTimer=null;
+function ncChatLine(){
+  setBubble('bub-nc-nathan',bagPick('ncc|nathan',NCCHAT.nathan));
+  setBubble('bub-nc-will',  bagPick('ncc|will',  NCCHAT.will));
+}
+function ncChat(on){
+  clearInterval(ncChatTimer);ncChatTimer=null;
+  $('ncscene').classList.toggle('chatty',!!on);
+  if(!on)return;
+  ncChatLine();
+  ncChatTimer=setInterval(ncChatLine,7500);
+}
+
 function watchNewCar(){
   if(!backend)return;
   if(backend.watchNewCar)backend.watchNewCar(function(v){
@@ -1568,6 +1664,7 @@ var VIEW_MS=30000, viewIdx=0, rotTimer=null;
 function views(){
   var out=[null];   /* index 0 is always our own board */
   if(NEWCAR.img)out.push({
+    kind:'newcar',
     img:NEWCAR.img,
     cap:NEWCAR.note?esc(NEWCAR.note):'New car &mdash; 76 plate leaderboard',
     when:NEWCAR.seed?'Waiting on the first upload':stamp('Updated',NEWCAR.ts)
@@ -1601,6 +1698,7 @@ function showView(i){
     $('nc-when').textContent=v.when;
   }
   $('ncscene').classList.toggle('show',!!v);
+  ncChat(!!v&&v.kind==='newcar');
   /* the two of them are hidden while a picture is up, so let them have their
      say as it comes back to ours */
   if(was!==0&&i===0){

@@ -287,6 +287,17 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   (`shrinkShot()` on the board, `shrink()` on `newcar.html` - twins by
   necessity, since the board is deliberately self-contained; change both
   together).
+- **Nathan and Will on the new car board.** The leaderboard view - and only
+  that view, not an uploaded screenshot - carries its own pair of heads in the
+  bottom corners with the same speech bubbles as Will and Serge, rotating every
+  7.5s from the `NCCHAT` pools through the same shuffle bag (`ncChat()`,
+  `ncChatLine()`). Nathan gloats about new cars, Will defends the used pitch;
+  that opposition is the joke, so keep it if you add lines. The `chatty` class
+  narrows the leaderboard image so the two of them never sit on top of it.
+- **Dan's credit line.** A fixed `.credit` in the bottom-right corner at
+  z-index 300, above every board, view and cut scene, so it reads on the wall
+  whatever the display is showing. It is deliberately clear of the centred
+  `.foot` and of both mascots at every screen size.
 - **New car leaderboard.** Nathan uploads the daily 76 Plate
   screenshot from `newcar.html` (listed on `links.html`; its own PIN, separate
   from the board's manager PIN). The image
