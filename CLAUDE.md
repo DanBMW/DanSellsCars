@@ -244,7 +244,7 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   that gives a sketch about every ten minutes - which is the figure Dan asks
   for - and each of the other four about every forty. Six independent schedules meant the board was
   interrupted every couple of minutes; one queue fixes that, and the sketches
-  come round most often because there are five of them. A scene that returns
+  come round most often because there are six of them. A scene that returns
   `false` - an empty board, nothing uploaded, another scene holding the floor -
   passes straight to the next rather than wasting the slot. The paper ball
   keeps its own frequent timer because it covers nothing.
@@ -296,7 +296,7 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   customer conversation), which also means autoplay is never blocked, and a
   16s guard closes the scene if the file stalls - the board must never be left
   covered. The clips are warmed into the browser cache 20s after load on wide
-  screens only, so a phone does not pull down nine megabytes it will probably
+  screens only, so a phone does not pull down twenty megabytes it will probably
   never play.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
   section: a toggle for the automatic slot and a play button per clip. Both go
