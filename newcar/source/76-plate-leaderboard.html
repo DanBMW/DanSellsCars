@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700,800,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0b0f16;--panel:#141b26;--panel-2:#1b2432;--line:rgba(255,255,255,.10);
+  --line-soft:rgba(255,255,255,.06);--text:#f2f5f9;--muted:#93a1b5;
+  --blue:#2f7bf0;--blue-light:#8fbaff;--gold:#e0b352;--green:#2fbf6b;
+  --font:'Satoshi',ui-sans-serif,system-ui,sans-serif;
+  --display:'Clash Display','Satoshi',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  width:1600px;height:1000px;background:
+    radial-gradient(900px 480px at 50% -8%,rgba(47,123,240,.18),transparent 70%),var(--ink);
+  color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;
+  padding:34px 40px;display:flex;flex-direction:column;
+}
+.head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+h1{font-family:var(--display);font-weight:700;font-size:60px;line-height:.98;letter-spacing:-.01em}
+h1 .p{
+  background:linear-gradient(180deg,#ffd98a,var(--gold) 55%,#b8862c);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.kick{font-family:var(--display);font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+      color:var(--blue-light);font-size:15px;margin-bottom:8px}
+.qtr{text-align:right}
+.qtr b{display:block;font-family:var(--display);font-weight:700;font-size:26px;color:var(--gold)}
+.qtr span{font-size:14px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+
+table{width:100%;border-collapse:separate;border-spacing:0 6px}
+thead th{
+  font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;
+  padding:0 14px 10px;text-align:center;vertical-align:bottom;line-height:1.35;
+}
+thead th small{display:block;font-size:11px;font-weight:700;color:#6f7f93;letter-spacing:.04em;
+               text-transform:none;margin-top:3px}
+thead th.name{text-align:left}
+tbody td{background:var(--panel);padding:0 14px;height:78px;font-size:27px;text-align:center;
+         font-variant-numeric:tabular-nums;font-weight:700;color:var(--text)}
+tbody td.name{
+  text-align:left;font-size:30px;font-weight:800;border-left:1px solid var(--line-soft);
+  border-top-left-radius:14px;border-bottom-left-radius:14px;padding-left:20px;
+}
+tbody td.total{
+  font-family:var(--display);font-weight:700;font-size:36px;color:var(--gold);
+  border-top-right-radius:14px;border-bottom-right-radius:14px;
+  background:linear-gradient(90deg,var(--panel),rgba(224,179,82,.10));
+}
+tbody td.zero{color:#5f6d80}
+tbody tr.lead td{background:linear-gradient(90deg,rgba(224,179,82,.16),var(--panel) 62%)}
+tbody tr.lead td.name{border-left:3px solid var(--gold)}
+tbody tr.lead td.total{background:linear-gradient(90deg,rgba(224,179,82,.10),rgba(224,179,82,.24))}
+.pos{display:inline-block;width:34px;color:var(--muted);font-family:var(--display);font-weight:700;font-size:23px}
+tr.lead .pos{color:var(--gold)}
+
+.foot{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:auto;padding-top:20px}
+.tile{background:var(--panel);border:1px solid var(--line-soft);border-radius:16px;padding:16px 20px}
+.tile .l{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.tile .v{font-family:var(--font);font-weight:800;font-size:38px;line-height:1.15;margin-top:2px;
+         font-variant-numeric:proportional-nums}
+.tile.blue .v{color:var(--blue-light)}
+.tile.green .v{color:var(--green)}
+.tile.gold .v{color:var(--gold)}
+.tile .s{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+</style></head>
+<body>
+  <div class="head">
+    <div>
+      <div class="kick">New car team &middot; Hedin Ruxley BMW</div>
+      <h1><span class="p">76 Plate</span> Leaderboard</h1>
+    </div>
+    <div class="qtr"><b>Points make prizes</b><span>Sell to win</span></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="name">Sales exec</th>
+        <th>New cars into qtr<small>2 points per car</small></th>
+        <th>Product sales<small>1 point per product</small></th>
+        <th>Finance cases<small>1 point per case</small></th>
+        <th>Profit bonus<small>5 points if disc &lt; 8%</small></th>
+        <th>BEV / GKL / M<small>5 points per car</small></th>
+        <th>Total points</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <div class="foot">
+    <div class="tile blue"><div class="l">Blue team total</div><div class="v">70</div><div class="s">points</div></div>
+    <div class="tile green"><div class="l">Green team total</div><div class="v">123</div><div class="s">points</div></div>
+    <div class="tile gold"><div class="l">Deals needed to unlock prize</div><div class="v">13</div><div class="s">across the team</div></div>
+  </div>
+
+<script>
+/* read straight off Nathan's sheet - each row's columns sum to its total */
+var ROWS=[
+  ['Tomi',   10,16,5,10, 0,41],
+  ['Daniel',  8,15,3, 5, 5,36],
+  ['Carl',   10,11,4, 5, 5,35],
+  ['Danny',  12, 4,6, 5, 5,32],
+  ['Mon',     8, 4,4, 5, 5,26],
+  ['Clive',   4, 6,2, 0, 0,12],
+  ['Millie',  4, 5,2, 0, 0,11],
+  ['Karis',   0, 0,0, 0, 0, 0]
+];
+document.getElementById('rows').innerHTML=ROWS.map(function(r,i){
+  var cells=r.slice(1,6).map(function(v){
+    return '<td'+(v===0?' class="zero"':'')+'>'+v+'</td>';
+  }).join('');
+  return '<tr'+(i===0?' class="lead"':'')+'>'+
+    '<td class="name"><span class="pos">'+(i+1)+'</span>'+r[0]+'</td>'+
+    cells+'<td class="total">'+r[6]+'</td></tr>';
+}).join('');
+</script>
+</body></html>

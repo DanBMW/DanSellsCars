@@ -1492,7 +1492,7 @@ function paintNewCar(){
   $('nc-kicker').innerHTML=NEWCAR.note ? esc(NEWCAR.note)
                                        : 'New car &mdash; 76 plate leaderboard';
   $('nc-when').textContent=NEWCAR.seed
-    ? 'Sample - waiting on the first upload'
+    ? 'Waiting on the first upload'
     : 'Updated '+new Date(NEWCAR.ts).toLocaleString('en-GB',
         {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 }
