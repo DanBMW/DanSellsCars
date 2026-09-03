@@ -879,6 +879,8 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
       <div class="sw"></div>
     </div>
     <div class="clips" id="clip-list"></div>
+    <p class="hint" id="clip-note" style="display:none;margin:0">Board control is not switched on in the database yet, so these
+      play on this screen only. Publish the <b>boardcontrol</b> rules in Firebase to reach every screen.</p>
 
     <h2 style="margin-top:22px;font-size:1rem" id="deals-heading">This month's deals</h2>
     <p class="hint" style="margin-bottom:8px">Tap the pencil to correct a figure, or the bin to remove it.</p>
@@ -1566,7 +1568,7 @@ var CLIPS=[
 /* ---- shared board controls, driven from the manager panel ----
    The manager may be on a phone while the board is on the wall, so the toggle
    and the play buttons go through the database rather than staying local. */
-var videosOn=true, pendingClip=null, lastPlayTs=0, controlPrimed=false;
+var videosOn=true, pendingClip=null, lastPlayTs=0, controlPrimed=false, controlLive=false;
 
 function clipBySrc(src){
   for(var i=0;i<CLIPS.length;i++)if(CLIPS[i].src===src)return CLIPS[i];
@@ -1574,6 +1576,8 @@ function clipBySrc(src){
 }
 
 window.dsOnControl=function(v){
+  controlLive=true;
+  paintControlNote();
   v=v||{};
   if(typeof v.videos==='boolean'){videosOn=v.videos;paintClipControls()}
   var pl=v.play;
@@ -1586,6 +1590,15 @@ window.dsOnControl=function(v){
   }
   controlPrimed=true;
 };
+/* boardcontrol unreadable - almost always the database rules not published.
+   Say so in the panel and let the buttons fall back to this screen, rather
+   than leaving the manager tapping something that does nothing. */
+window.dsOnControlError=function(){ controlLive=false; paintControlNote(); };
+function paintControlNote(){
+  var n=$('clip-note');
+  if(!n)return;
+  n.style.display=controlLive?'none':'block';
+}
 
 /* play as soon as the floor is free - if a manager taps while their own panel
    is open it plays on the wall now and here when they close it */
@@ -1612,18 +1625,27 @@ function paintClipControls(){
 }
 
 function playOnAllScreens(src){
-  if(!backend||!backend.play){toast('Not connected','err');return}
-  var c=clipBySrc(src);
+  var c=clipBySrc(src), name=c?c.name:'sketch';
+  /* no shared channel - still play it here, so the button is never dead */
+  if(!backend||!backend.play||!controlLive){playHere(src,name);return}
   backend.play(src).then(function(){
-    toast('Playing '+(c?c.name:'sketch')+' on the board','ok');
-  })['catch'](function(e){console.error(e);toast('Could not send that','err')});
+    toast('Playing '+name+' on the board','ok');
+  })['catch'](function(e){console.error(e);playHere(src,name)});
+}
+function playHere(src,name){
+  closeModal('m-mgr');
+  toast('Playing '+name+' on this screen only','ok');
+  pendingClip=src;
 }
 
 function setVideosOn(on){
-  if(!backend||!backend.setVideos){toast('Not connected','err');return}
   videosOn=on;paintClipControls();
+  if(!backend||!backend.setVideos||!controlLive){
+    toast(on?'Sketches on, this screen only':'Sketches off, this screen only','ok');
+    return;
+  }
   backend.setVideos(on)['catch'](function(e){
-    console.error(e);toast('Could not save that','err');
+    console.error(e);toast('Saved on this screen only','ok');
   });
 }
 
@@ -2286,7 +2308,8 @@ window.dsBindBackend=function(api){
   backend.listen(viewMonth);
   refreshMonthTabs();
   watchNewCar();
-  if(backend.watchControl)backend.watchControl(window.dsOnControl);
+  if(backend.watchControl)backend.watchControl(window.dsOnControl,window.dsOnControlError);
+  paintControlNote();
   paintClipControls();
 };
 window.dsOnDeals=function(obj){
@@ -2331,7 +2354,7 @@ window.dsBindBackend({
   months:()=>get(ref(db,'profitchallenge/months')).then(s=>Object.keys(s.val()||{})),
   read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{}),
   watchNewCar(cb){ onValue(ref(db,'newcar/current'), s=>cb(s.val()), ()=>{}) },
-  watchControl(cb){ onValue(ref(db,'boardcontrol'), s=>cb(s.val()), ()=>{}) },
+  watchControl(cb,onErr){ onValue(ref(db,'boardcontrol'), s=>cb(s.val()), e=>{console.error(e);onErr&&onErr()}) },
   setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
   play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()})
 });

@@ -307,7 +307,10 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   switched on later must not replay it) and anything older than two minutes,
   and a command that arrives while a cut scene or a modal is up is held until
   the floor is free. The toggle stops the automatic slot only: a manager
-  pressing play still works with sketches switched off.
+  pressing play still works with sketches switched off. If `boardcontrol` is
+  unreadable - the usual cause is the rules not being published - the panel
+  says so and the buttons fall back to playing on that screen alone, rather
+  than leaving the manager tapping something that silently does nothing.
 - **Month-on-month cut scene.** One slot in `SCENES`, so roughly every 40
   minutes. `statsScene()` reads this
   month and last month in one go (`backend.read()`, a one-off `get`) and shows
