@@ -271,7 +271,7 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   screenshot from `newcar.html` (listed on `links.html`; its own PIN, separate
   from the board's manager PIN). It is a **view, not a cut scene**: the wall
   display alternates between the used car board and the new car board every
-  two minutes (`VIEW_MS`, `rotateView()`), and the new car view sits at
+  30 seconds (`VIEW_MS`, `rotateView()`), and the new car view sits at
   z-index 50 so every cut scene paints over whichever board is up. The
   rotation pauses on the used board while a manager has the panel open, and
   Will and Serge have their say as it comes back to the used board. The image
@@ -291,12 +291,23 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   the AI-generated team sketches in `video/` full screen (`CLIPS` array; add a
   clip by adding a row with its `ar` = width/height - the clips are a mix of
   16:9 and portrait and the frame sizes itself from that, corrected from the
-  file on `loadedmetadata`). It never plays the same one twice running. Browsers block
-  sound on autoplay until someone has interacted with the page, so it tries
-  unmuted, falls back to muted with a "sound off" badge, and a 16s guard closes
-  the scene if the file stalls - the board must never be left covered. The
-  clips are warmed into the browser cache 20s after load on wide screens only,
-  so a phone does not pull down nine megabytes it will probably never play.
+  file on `loadedmetadata`). It never plays the same one twice running. The
+  clips play **muted** (Dan's call - a wall display should not talk over a
+  customer conversation), which also means autoplay is never blocked, and a
+  16s guard closes the scene if the file stalls - the board must never be left
+  covered. The clips are warmed into the browser cache 20s after load on wide
+  screens only, so a phone does not pull down nine megabytes it will probably
+  never play.
+- **Manager control of the sketches.** The manager panel has a "Sketches"
+  section: a toggle for the automatic slot and a play button per clip. Both go
+  through `boardcontrol` in the database rather than staying local, because the
+  manager is usually on their phone while the board is on the wall - a tap
+  plays on every screen showing the board. `dsOnControl()` ignores the play
+  command in the **first** snapshot it receives (that one is history - a screen
+  switched on later must not replay it) and anything older than two minutes,
+  and a command that arrives while a cut scene or a modal is up is held until
+  the floor is free. The toggle stops the automatic slot only: a manager
+  pressing play still works with sketches switched off.
 - **Month-on-month cut scene.** One slot in `SCENES`, so roughly every 40
   minutes. `statsScene()` reads this
   month and last month in one go (`backend.read()`, a one-off `get`) and shows
@@ -319,6 +330,10 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
 - **The £15k target** is the `TARGET` constant. Past it the track extends itself
   in 5k steps (20k, 25k, 30k…), mirroring the strip Dan taped to the bottom of
   the paper board, and the £15,000 line stays marked as "Target".
+- **The 8-unit target** is `UNIT_TARGET`. Each standings row reads "3 / 8
+  deals" and turns gold on 8, and the team's Deals tile reads against
+  `UNIT_TARGET * TEAM.length`. Profit and units are separate targets - somebody
+  can be past £15,000 on six deals, or on eight and short of it.
 - The board renders from a **plain non-module script** and only then lets the
   Firebase module feed it, so a slow or blocked CDN shows an honest "offline"
   board rather than a blank screen. The webfont is loaded non-render-blocking

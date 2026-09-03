@@ -187,6 +187,7 @@ body{
 .row .who{flex:1;min-width:0}
 .row .who b{display:block;font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .who span{font-size:.7rem;color:var(--muted)}
+.row .who span.ok{color:var(--gold);font-weight:700}
 .row .fig{text-align:right;flex:none}
 .row .fig b{display:block;font-family:var(--display);font-weight:700;font-size:1.06rem}
 .row .fig span{font-size:.64rem;color:var(--muted)}
@@ -233,6 +234,36 @@ input,select{
 }
 input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 #pin-input{text-align:center;font-size:1.8rem;letter-spacing:.5em;font-weight:700}
+.tog{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+  padding:11px 14px;margin-bottom:12px;cursor:pointer;
+}
+.tog b{font-size:.9rem;font-weight:800}
+.tog span{display:block;font-size:.68rem;color:var(--muted);font-weight:600;margin-top:1px}
+.sw{
+  flex:none;width:46px;height:26px;border-radius:999px;background:#2a3444;
+  border:1px solid var(--line);position:relative;transition:.18s;
+}
+.sw::after{
+  content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+  background:var(--muted);transition:.18s;
+}
+.tog.on .sw{background:var(--blue);border-color:var(--blue)}
+.tog.on .sw::after{left:22px;background:#fff}
+.clips{display:grid;gap:6px;margin-bottom:6px}
+.clipbtn{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:11px;
+  padding:9px 12px;color:var(--text);font-family:var(--font);font-weight:700;font-size:.84rem;
+  transition:.15s;
+}
+.clipbtn:hover{background:#25303f;border-color:var(--line)}
+.clipbtn .ply{
+  flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);
+  display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#fff;
+}
+.clipbtn small{display:block;font-weight:600;font-size:.66rem;color:var(--muted);margin-top:1px}
 .segbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
 .seg{
   background:var(--panel-2);border:2px solid transparent;border-radius:12px;
@@ -391,13 +422,6 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   font-family:var(--display);font-weight:700;letter-spacing:.26em;text-transform:uppercase;
   color:var(--gold);font-size:clamp(.6rem,1.3vw,.92rem);
 }
-.vs-muted{
-  position:absolute;right:12px;bottom:12px;
-  background:rgba(11,15,22,.78);border:1px solid var(--line);color:var(--muted);
-  border-radius:999px;padding:4px 11px;font-size:.66rem;font-weight:700;
-  display:none;
-}
-.vidscene.is-muted .vs-muted{display:block}
 @media(prefers-reduced-motion:reduce){.vidscene{transition:none}}
 
 /* ---------- month-on-month cut scene ----------
@@ -848,7 +872,15 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
       <button class="btn primary" style="flex:1" id="mgr-save">Add deal</button>
     </div>
 
-    <h2 style="margin-top:20px;font-size:1rem" id="deals-heading">This month's deals</h2>
+    <h2 style="margin-top:22px;font-size:1rem">Sketches</h2>
+    <p class="hint" style="margin-bottom:10px">Plays on every screen showing the board, not just this one. Sketches run with the sound off.</p>
+    <div class="tog" id="vid-toggle">
+      <div><b>Play sketches automatically</b><span>One roughly every ten minutes</span></div>
+      <div class="sw"></div>
+    </div>
+    <div class="clips" id="clip-list"></div>
+
+    <h2 style="margin-top:22px;font-size:1rem" id="deals-heading">This month's deals</h2>
     <p class="hint" style="margin-bottom:8px">Tap the pencil to correct a figure, or the bin to remove it.</p>
     <div class="deals" id="deal-list"></div>
   </div>
@@ -868,8 +900,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 <div class="vidscene" id="vidscene" aria-hidden="true">
   <div>
     <div class="vs-frame">
-      <video id="vs-video" playsinline preload="none" disablepictureinpicture></video>
-      <span class="vs-muted">sound off</span>
+      <video id="vs-video" playsinline preload="none" disablepictureinpicture muted></video>
     </div>
     <div class="vs-cap" id="vs-cap">The used car team</div>
   </div>
@@ -980,7 +1011,7 @@ var TEAM=[
   {id:'md',ini:'MD',name:'Millie Demachen',photo:'team/md.jpg'}
 ];
 var BY_ID={};TEAM.forEach(function(t){BY_ID[t.id]=t});
-var TARGET=15000, PIN='1992';
+var TARGET=15000, UNIT_TARGET=8, PIN='1992';
 
 var deals={}, viewMonth=null, isManager=false, editingId=null, pickExec=null, backend=null;
 
@@ -1485,7 +1516,7 @@ function watchNewCar(){
 /* The wall display alternates between the two boards every two minutes.
    This is a view, not a stunt: it never takes the busy lock, so a cut scene
    can play over whichever board happens to be up. */
-var VIEW_MS=120000, showingNewCar=false, rotTimer=null;
+var VIEW_MS=30000, showingNewCar=false, rotTimer=null;
 
 function paintNewCar(){
   $('nc-img').src=NEWCAR.img;
@@ -1525,12 +1556,76 @@ function startRotation(){
 }
 
 var CLIPS=[
-  {src:'video/sketch-team.mp4',        cap:'The used car team', ar:16/9},
-  {src:'video/sketch-serge-clive.mp4', cap:'Serge &amp; Clive',     ar:16/9},
-  {src:'video/sketch-3.mp4',           cap:'The used car team', ar:480/640},
-  {src:'video/sketch-4.mp4',           cap:'The used car team', ar:480/640},
-  {src:'video/sketch-5.mp4',           cap:'The used car team', ar:480/640}
+  {src:'video/sketch-team.mp4',        cap:'The used car team', name:'Team dance',    ar:16/9},
+  {src:'video/sketch-serge-clive.mp4', cap:'Serge &amp; Clive',     name:'Serge & Clive', ar:16/9},
+  {src:'video/sketch-3.mp4',           cap:'The used car team', name:'Sketch 3',      ar:480/640},
+  {src:'video/sketch-4.mp4',           cap:'The used car team', name:'Sketch 4',      ar:480/640},
+  {src:'video/sketch-5.mp4',           cap:'The used car team', name:'Sketch 5',      ar:480/640}
 ];
+/* ---- shared board controls, driven from the manager panel ----
+   The manager may be on a phone while the board is on the wall, so the toggle
+   and the play buttons go through the database rather than staying local. */
+var videosOn=true, pendingClip=null, lastPlayTs=0, controlPrimed=false;
+
+function clipBySrc(src){
+  for(var i=0;i<CLIPS.length;i++)if(CLIPS[i].src===src)return CLIPS[i];
+  return null;
+}
+
+window.dsOnControl=function(v){
+  v=v||{};
+  if(typeof v.videos==='boolean'){videosOn=v.videos;paintClipControls()}
+  var pl=v.play;
+  if(pl&&typeof pl.ts==='number'&&pl.ts>lastPlayTs){
+    var first=!controlPrimed;
+    lastPlayTs=pl.ts;
+    /* the first snapshot is history: never replay a command issued before this
+       screen was even switched on, and ignore anything stale */
+    if(!first&&Date.now()-pl.ts<120000)pendingClip=pl.clip;
+  }
+  controlPrimed=true;
+};
+
+/* play as soon as the floor is free - if a manager taps while their own panel
+   is open it plays on the wall now and here when they close it */
+setInterval(function(){
+  if(!pendingClip)return;
+  if(stuntsBlocked())return;
+  var c=pendingClip;pendingClip=null;
+  videoScene(c);
+},1000);
+
+function paintClipControls(){
+  var t=$('vid-toggle');
+  if(t)t.classList.toggle('on',videosOn);
+  var list=$('clip-list');
+  if(!list||list.childNodes.length)return;
+  list.innerHTML=CLIPS.map(function(c){
+    return '<button type="button" class="clipbtn" data-src="'+c.src+'">'+
+      '<span class="ply">&#9654;</span>'+
+      '<span>'+esc(c.name)+'<small>'+c.src.split('/')[1]+'</small></span></button>';
+  }).join('');
+  Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(btn){
+    btn.onclick=function(){playOnAllScreens(btn.getAttribute('data-src'))};
+  });
+}
+
+function playOnAllScreens(src){
+  if(!backend||!backend.play){toast('Not connected','err');return}
+  var c=clipBySrc(src);
+  backend.play(src).then(function(){
+    toast('Playing '+(c?c.name:'sketch')+' on the board','ok');
+  })['catch'](function(e){console.error(e);toast('Could not send that','err')});
+}
+
+function setVideosOn(on){
+  if(!backend||!backend.setVideos){toast('Not connected','err');return}
+  videosOn=on;paintClipControls();
+  backend.setVideos(on)['catch'](function(e){
+    console.error(e);toast('Could not save that','err');
+  });
+}
+
 /* a shuffle bag can still deal the same clip twice across a refill, which is
    obvious with only two - so simply never repeat the one just shown */
 var lastClip=-1;
@@ -1542,14 +1637,18 @@ function pickClip(){
   return CLIPS[i];
 }
 
-/* the team sketches. Browsers block sound on autoplay until someone has
-   interacted with the page, so try with sound and fall back to muted -
-   never let the fallback stop it playing. */
-function videoScene(){
+/* the team sketches. They play silently (Dan's call): the board sits on the
+   showroom wall, and a sketch talking over a customer conversation is worse
+   than no sketch. Muted also means autoplay is never blocked. */
+function videoScene(forcedSrc){
   if(stuntsBlocked())return false;
   var vs=$('vidscene'), v=$('vs-video');
   if(!vs||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
-  var clip=pickClip();
+  /* the toggle stops the automatic slot only - a manager pressing play still
+     works when sketches are switched off */
+  if(!forcedSrc&&!videosOn)return false;
+  var clip=forcedSrc?clipBySrc(forcedSrc):pickClip();
+  if(!clip)return false;
   busy=true;
   var frame=vs.querySelector('.vs-frame');
   $('vs-cap').innerHTML=clip.cap;
@@ -1558,8 +1657,7 @@ function videoScene(){
     if(v.videoWidth&&v.videoHeight)frame.style.setProperty('--ar',v.videoWidth/v.videoHeight);
   };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
-  vs.classList.remove('is-muted');
-  v.muted=false; v.volume=1;
+  v.muted=true; v.volume=0;
   try{v.currentTime=0}catch(e){}
   vs.classList.add('show');
   holdUntil=Date.now()+16000;
@@ -1579,14 +1677,7 @@ function videoScene(){
   v.onended=function(){clearTimeout(guard);finish()};
 
   var go=v.play();
-  if(go&&go['catch']){
-    go['catch'](function(){
-      v.muted=true;
-      vs.classList.add('is-muted');
-      var again=v.play();
-      if(again&&again['catch'])again['catch'](function(){clearTimeout(guard);finish()});
-    });
-  }
+  if(go&&go['catch'])go['catch'](function(){clearTimeout(guard);finish()});
   return true;
 }
 
@@ -1901,11 +1992,12 @@ function render(){
     var pct=Math.max(0,Math.min(100,(v/TARGET)*100));
     var toGo=TARGET-v;
     var note=v>=TARGET?' · target smashed':(v>0?' · '+money(toGo)+' to go':'');
+    var units=cnt[t.id]+' / '+UNIT_TARGET+' deal'+(UNIT_TARGET===1?'':'s');
     return '<div class="row'+(i===0&&v>0?' p1':'')+'">'+
       '<span class="pos">'+(i+1)+'</span>'+
       avatar(t)+
       '<span class="who"><b>'+esc(t.name)+'</b>'+
-        '<span>'+cnt[t.id]+' deal'+(cnt[t.id]===1?'':'s')+note+'</span>'+
+        '<span'+(cnt[t.id]>=UNIT_TARGET?' class="ok"':'')+'>'+units+note+'</span>'+
         '<span class="bar"><i style="width:'+pct+'%"></i></span>'+
       '</span>'+
       '<span class="fig"><b>'+money(v)+'</b><span>profit</span></span>'+
@@ -1918,7 +2010,7 @@ function render(){
   var hit=vals.filter(function(v){return v>=TARGET}).length;
   $('totals').innerHTML=
     '<div class="stat"><b>'+money(grand)+'</b><span>Team profit</span></div>'+
-    '<div class="stat"><b>'+dealCount+'</b><span>Deals</span></div>'+
+    '<div class="stat"><b>'+dealCount+' / '+(UNIT_TARGET*TEAM.length)+'</b><span>Deals</span></div>'+
     '<div class="stat"><b>'+money(avg)+'</b><span>Average</span></div>'+
     '<div class="stat"><b>'+hit+' / '+TEAM.length+'</b><span>At target</span></div>';
 
@@ -1928,6 +2020,7 @@ function render(){
 
 /* ---- manager: deal list ---- */
 function renderDeals(){
+  paintClipControls();
   $('deals-heading').textContent=(viewMonth===monthKey()?"This month's deals":monthName(viewMonth)+' deals');
   syncMonthSeg();
   var ids=Object.keys(deals).sort(function(a,b){return (deals[b].ts||0)-(deals[a].ts||0)});
@@ -2154,6 +2247,7 @@ $('btn-manager').onclick=function(){
 $('pin-go').onclick=checkPin;
 $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPin()});
 $('mgr-save').onclick=saveDeal;
+$('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
 $('seg-cur').onclick=function(){if(viewMonth!==monthKey()){showMonth(monthKey());resetForm()}};
 $('seg-next').onclick=function(){if(viewMonth!==nextMonthKey()){showMonth(nextMonthKey());resetForm()}};
 
@@ -2191,6 +2285,8 @@ window.dsBindBackend=function(api){
   backend.listen(viewMonth);
   refreshMonthTabs();
   watchNewCar();
+  if(backend.watchControl)backend.watchControl(window.dsOnControl);
+  paintClipControls();
 };
 window.dsOnDeals=function(obj){
   deals=obj||{};
@@ -2211,7 +2307,7 @@ setTimeout(function(){
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, update, remove, get }
+import { getDatabase, ref, onValue, push, update, remove, get, set }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
@@ -2233,7 +2329,10 @@ window.dsBindBackend({
   del:(m,id)=>remove(ref(db,path(m)+'/'+id)),
   months:()=>get(ref(db,'profitchallenge/months')).then(s=>Object.keys(s.val()||{})),
   read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{}),
-  watchNewCar(cb){ onValue(ref(db,'newcar/current'), s=>cb(s.val()), ()=>{}) }
+  watchNewCar(cb){ onValue(ref(db,'newcar/current'), s=>cb(s.val()), ()=>{}) },
+  watchControl(cb){ onValue(ref(db,'boardcontrol'), s=>cb(s.val()), ()=>{}) },
+  setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
+  play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()})
 });
 </script>
 </body>

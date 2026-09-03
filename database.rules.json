@@ -61,6 +61,19 @@
       }
     },
 
+    "boardcontrol": {
+      ".read": true,
+      ".write": true,
+      "videos": { ".validate": "newData.isBoolean()" },
+      "play": {
+        ".validate": "newData.hasChildren(['clip','ts'])",
+        "clip": { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "ts":   { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      },
+      "$other": { ".validate": false }
+    },
+
     "empire": {
       "saves": {
         "$uid": {
