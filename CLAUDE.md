@@ -309,8 +309,13 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   bottom corners with the same speech bubbles as Will and Serge, rotating every
   7.5s from the `NCCHAT` pools through the same shuffle bag (`ncChat()`,
   `ncChatLine()`). Nathan gloats about new cars, Will defends the used pitch;
-  that opposition is the joke, so keep it if you add lines. The `chatty` class
-  narrows the leaderboard image so the two of them never sit on top of it.
+  that opposition is the joke, so keep it if you add lines. They are **side
+  rails level with the middle of the picture**, the same shape as Will and
+  Serge on our own board. The `chatty` class narrows the image to leave room
+  for them - by `calc(100vw - 540px)` as well as a percentage, because the
+  rails are a fixed-ish width and a percentage alone lets them sit on the
+  picture at laptop sizes. Below 1000px there is no room at all and the rails
+  are hidden.
 - **Dan's credit line.** A fixed `.credit` in the bottom-right corner at
   z-index 300, above every board, view and cut scene, so it reads on the wall
   whatever the display is showing. It is deliberately clear of the centred
@@ -399,11 +404,13 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   because three days is noise, nor on a finished or future month where a
   projection means nothing; both fall back to the distance. The team's own
   projection replaces the Average tile while it applies.
-- **Deal of the month.** The single biggest deal banked (`bestDeal()`) shows as
-  a fifth, gold tile in the totals row, and again under the leader in the
-  breakdance cut scene. It is a tile rather than a strip of its own because the
-  wall layout places its grid rows explicitly - an unplaced element lands in an
-  implicit row at the bottom, 250px wide, and pushes the board off one screen.
+- **Deal of the month.** The single biggest deal banked (`bestDeal()`) appears
+  under the leader in the breakdance cut scene and nowhere else - Dan's call:
+  it turns up with the dance and goes with it, rather than sitting on the board
+  permanently. (It was briefly a fifth tile in the totals row; if it ever comes
+  back it must be a tile, not a strip - the wall layout places its grid rows
+  explicitly, and an unplaced element lands in an implicit row at the bottom,
+  250px wide, and pushes the board off one screen.)
 - **Crossing £15,000** gets its own scene (`champScene()`): the face, the name,
   HAS DONE IT, the figure and confetti, for ten seconds. It fires on the
   crossing only, once per person per month (`champSeen`), never off the first
