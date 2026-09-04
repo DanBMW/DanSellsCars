@@ -277,6 +277,17 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   no restart; `showView()` clamps an index that has gone out of range. A
   manager opening the panel parks it back on the used car board, and Will and
   Serge have their say as it comes back to theirs.
+- **Pinning a board.** The manager panel's "What's on the board" section holds
+  the display on one board instead of cycling: the used car board, the new car
+  leaderboard, either secondary screenshot, or back to Rotate
+  (`VIEWPINS`, `pinnedView`, `applyPin()`, `setPinnedView()`). Like the sketch
+  controls it goes through `boardcontrol`, but unlike the one-shot play command
+  it is **state** - `boardcontrol/view` - so a screen switched on later comes up
+  on the pinned board rather than starting to rotate. A pin holds the display
+  through a manager opening the panel, since holding a board is the point.
+  Pinning a slot nobody has uploaded to yet is allowed: the button is disabled
+  while it is empty, and `applyPin()` keeps the used car board up and snaps onto
+  the picture the moment it arrives (and back off it when it is removed).
 - **The extra screenshots.** Either manager can put an arbitrary picture on the
   board with a caption above it - Will from the "Screenshot on the board"
   section of the board's own manager panel (`extra/used`), Nathan from a second

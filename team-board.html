@@ -258,7 +258,10 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   padding:9px 12px;color:var(--text);font-family:var(--font);font-weight:700;font-size:.84rem;
   transition:.15s;
 }
-.clipbtn:hover{background:#25303f;border-color:var(--line)}
+.clipbtn:hover:not(:disabled){background:#25303f;border-color:var(--line)}
+.clipbtn:disabled{opacity:.45;cursor:not-allowed}
+.clipbtn.on{border-color:var(--blue);background:rgba(47,123,240,.14)}
+.clipbtn.on .ply{background:var(--green)}
 .clipbtn .ply{
   flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);
   display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#fff;
@@ -911,6 +914,11 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
       <button class="btn" style="flex:1" id="mgr-cancel">Close</button>
       <button class="btn primary" style="flex:1" id="mgr-save">Add deal</button>
     </div>
+
+    <h2 style="margin-top:22px;font-size:1rem">What's on the board</h2>
+    <p class="hint" style="margin-bottom:10px">Hold the wall display on one board, or leave it cycling.
+      Applies to every screen showing the board.</p>
+    <div class="clips" id="view-list"></div>
 
     <h2 style="margin-top:22px;font-size:1rem">Sketches</h2>
     <p class="hint" style="margin-bottom:10px">Plays on every screen showing the board, not just this one. Sketches run with the sound off.</p>
@@ -1661,17 +1669,17 @@ function watchNewCar(){
   if(!backend)return;
   if(backend.watchNewCar)backend.watchNewCar(function(v){
     if(v&&v.img){NEWCAR={img:v.img, ts:v.ts||0, note:v.note||'', seed:false}}
-    if(viewIdx>0)showView(viewIdx);
+    if(viewIdx>0||pinnedView!=='auto')applyPin();
   });
   if(backend.watchExtra){
     backend.watchExtra('used',function(v){
       EXTRA.used=(v&&v.img)?v:null;
       paintShotPanel();
-      showView(viewIdx);
+      applyPin();
     });
     backend.watchExtra('newcar',function(v){
       EXTRA.newcar=(v&&v.img)?v:null;
-      showView(viewIdx);
+      applyPin();
     });
   }
 }
@@ -1683,19 +1691,21 @@ function watchNewCar(){
 var VIEW_MS=30000, viewIdx=0, rotTimer=null;
 
 function views(){
-  var out=[null];   /* index 0 is always our own board */
+  var out=[{id:'board'}];   /* index 0 is always our own board */
   if(NEWCAR.img)out.push({
-    kind:'newcar',
+    id:'newcar', kind:'newcar',
     img:NEWCAR.img,
     cap:NEWCAR.note?esc(NEWCAR.note):'New car &mdash; 76 plate leaderboard',
     when:NEWCAR.seed?'Waiting on the first upload':stamp('Updated',NEWCAR.ts)
   });
   if(EXTRA.used)out.push({
+    id:'extra-used',
     img:EXTRA.used.img,
     cap:EXTRA.used.note?esc(EXTRA.used.note):'From the used car desk',
     when:stamp('Put up',EXTRA.used.ts)
   });
   if(EXTRA.newcar)out.push({
+    id:'extra-newcar',
     img:EXTRA.newcar.img,
     cap:EXTRA.newcar.note?esc(EXTRA.newcar.note):'From the new car desk',
     when:stamp('Put up',EXTRA.newcar.ts)
@@ -1713,13 +1723,14 @@ function showView(i){
   if(!(i>=0&&i<list.length))i=0;
   viewIdx=i;
   var v=list[i];
-  if(v){
+  if(v.img){
     $('nc-img').src=v.img;
     $('nc-kicker').innerHTML=v.cap;
     $('nc-when').textContent=v.when;
   }
-  $('ncscene').classList.toggle('show',!!v);
-  ncChat(!!v&&v.kind==='newcar');
+  $('ncscene').classList.toggle('show',!!v.img);
+  ncChat(v.kind==='newcar');
+  paintViewControls();
   /* the two of them are hidden while a picture is up, so let them have their
      say as it comes back to ours */
   if(was!==0&&i===0){
@@ -1739,7 +1750,77 @@ function rotateView(){
 
 function startRotation(){
   clearInterval(rotTimer);
-  rotTimer=setInterval(rotateView,VIEW_MS);
+  rotTimer=pinnedView&&pinnedView!=='auto' ? null : setInterval(rotateView,VIEW_MS);
+}
+
+/* ---- pinning the wall display to one board ----
+   A manager can stop the cycle and hold one board up. Like the sketch
+   controls this goes through the database, so the wall follows a tap made on
+   a phone, and unlike a play command it is *state*: a screen switched on
+   later comes up on the pinned board rather than starting to rotate. */
+var VIEWPINS=[
+  {id:'auto',         name:'Rotate through them all', sub:'Thirty seconds each'},
+  {id:'board',        name:'Used car board',          sub:'The Profit Challenge'},
+  {id:'newcar',       name:'New car board',           sub:'76 Plate leaderboard'},
+  {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
+  {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"}
+];
+var pinnedView='auto';
+
+function viewAvailable(id){
+  if(id==='auto'||id==='board')return true;
+  if(id==='newcar')return !!NEWCAR.img;
+  if(id==='extra-used')return !!EXTRA.used;
+  if(id==='extra-newcar')return !!EXTRA.newcar;
+  return false;
+}
+
+function applyPin(){
+  startRotation();
+  if(!pinnedView||pinnedView==='auto'){paintViewControls();return}
+  var list=views();
+  for(var i=0;i<list.length;i++){
+    if(list[i].id===pinnedView){showView(i);return}
+  }
+  /* pinned to a board nobody has put anything on yet - hold ours until they
+     do, and snap to it the moment it arrives */
+  showView(0);
+}
+
+function setPinnedView(id){
+  pinnedView=id;
+  applyPin();
+  if(!backend||!backend.setView||!controlLive){
+    toast(id==='auto'?'Back to the rotation, this screen only'
+                     :'Held on this screen only','ok');
+    return;
+  }
+  backend.setView(id)['catch'](function(e){console.error(e);toast('Could not save that','err')});
+}
+
+function paintViewControls(){
+  var list=$('view-list');
+  if(!list)return;
+  if(!list.childNodes.length){
+    list.innerHTML=VIEWPINS.map(function(v){
+      return '<button type="button" class="clipbtn" data-view="'+v.id+'">'+
+        '<span class="ply">&#9632;</span>'+
+        '<span>'+esc(v.name)+'<small>'+esc(v.sub)+'</small></span></button>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(btn){
+      btn.onclick=function(){setPinnedView(btn.getAttribute('data-view'))};
+    });
+  }
+  Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(btn){
+    var id=btn.getAttribute('data-view'), have=viewAvailable(id);
+    btn.classList.toggle('on',pinnedView===id);
+    btn.disabled=!have;
+    var sm=btn.querySelector('small');
+    if(!have)sm.textContent='Nothing uploaded yet';
+    else{
+      for(var i=0;i<VIEWPINS.length;i++)if(VIEWPINS[i].id===id)sm.textContent=VIEWPINS[i].sub;
+    }
+  });
 }
 
 /* ---- the manager's own screenshot ----
@@ -1826,6 +1907,8 @@ window.dsOnControl=function(v){
   paintControlNote();
   v=v||{};
   if(typeof v.videos==='boolean'){videosOn=v.videos;paintClipControls()}
+  var want=(typeof v.view==='string'&&v.view)?v.view:'auto';
+  if(want!==pinnedView){pinnedView=want;applyPin()}
   var pl=v.play;
   if(pl&&typeof pl.ts==='number'&&pl.ts>lastPlayTs){
     var first=!controlPrimed;
@@ -2585,6 +2668,7 @@ $('shot-remove').onclick=function(){
   })['catch'](function(e){console.error(e);shotSay('Could not take that down','err')});
 };
 paintShotPanel();
+paintViewControls();
 $('seg-cur').onclick=function(){if(viewMonth!==monthKey()){showMonth(monthKey());resetForm()}};
 $('seg-next').onclick=function(){if(viewMonth!==nextMonthKey()){showMonth(nextMonthKey());resetForm()}};
 
@@ -2673,6 +2757,7 @@ window.dsBindBackend({
   clearExtra:(who)=>remove(ref(db,'extra/'+who)),
   watchControl(cb,onErr){ onValue(ref(db,'boardcontrol'), s=>cb(s.val()), e=>{console.error(e);onErr&&onErr()}) },
   setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
+  setView:(id)=>set(ref(db,'boardcontrol/view'),String(id)),
   play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()})
 });
 </script>
