@@ -458,6 +458,13 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   background:#000;
 }
 .vs-frame video{display:block;width:100%;height:auto;aspect-ratio:var(--ar,1.778);background:#000}
+.vs-muted{
+  position:absolute;right:12px;bottom:12px;
+  background:rgba(11,15,22,.78);border:1px solid var(--line);color:var(--muted);
+  border-radius:999px;padding:4px 11px;font-size:.66rem;font-weight:700;
+  display:none;
+}
+.vidscene.is-muted .vs-muted{display:block}
 .vs-cap{
   text-align:center;margin-top:clamp(8px,1.6vh,16px);
   font-family:var(--display);font-weight:700;letter-spacing:.26em;text-transform:uppercase;
@@ -983,7 +990,8 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 <div class="vidscene" id="vidscene" aria-hidden="true">
   <div>
     <div class="vs-frame">
-      <video id="vs-video" playsinline preload="none" disablepictureinpicture muted></video>
+      <video id="vs-video" playsinline preload="none" disablepictureinpicture></video>
+      <span class="vs-muted">sound off</span>
     </div>
     <div class="vs-cap" id="vs-cap">The used car team</div>
   </div>
@@ -1910,11 +1918,14 @@ function shotClear(){
   $('shot-cap').value='';
 }
 
+/* `sound:false` keeps a clip silent whatever else the board is playing.
+   Sketch 4 is the shredding sketch and has swearing in it, so it never gets
+   sound on a showroom wall - do not drop the flag. */
 var CLIPS=[
   {src:'video/sketch-team.mp4',        cap:'The used car team', name:'Team dance',    ar:16/9},
   {src:'video/sketch-serge-clive.mp4', cap:'Serge &amp; Clive',     name:'Serge & Clive', ar:16/9},
   {src:'video/sketch-3.mp4',           cap:'The used car team', name:'Sketch 3',      ar:480/640},
-  {src:'video/sketch-4.mp4',           cap:'The used car team', name:'Sketch 4',      ar:480/640},
+  {src:'video/sketch-4.mp4',           cap:'The used car team', name:'Sketch 4',      ar:480/640, sound:false},
   {src:'video/sketch-5.mp4',           cap:'The used car team', name:'Sketch 5',      ar:480/640},
   {src:'video/sketch-6.mp4',           cap:'The used car team', name:'Sketch 6',      ar:16/9},
   {src:'video/sketch-7.mp4',           cap:'The used car team', name:'Sketch 7',      ar:16/9},
@@ -2034,9 +2045,16 @@ function pickClip(){
   return CLIPS[i];
 }
 
-/* the team sketches. They play silently (Dan's call): the board sits on the
-   showroom wall, and a sketch talking over a customer conversation is worse
-   than no sketch. Muted also means autoplay is never blocked. */
+/* Browsers refuse to autoplay with sound until somebody has touched the page.
+   A wall display never gets touched, so the first tap or key press on it is
+   what turns the sound on - until then, and for a clip marked `sound:false`,
+   it plays silently with the badge rather than not at all. */
+var audioOk=false;
+['pointerdown','keydown','touchstart'].forEach(function(t){
+  window.addEventListener(t,function(){audioOk=true},{once:true,passive:true});
+});
+
+/* the team sketches */
 function videoScene(forcedSrc){
   if(stuntsBlocked())return false;
   var vs=$('vidscene'), v=$('vs-video');
@@ -2054,7 +2072,9 @@ function videoScene(forcedSrc){
     if(v.videoWidth&&v.videoHeight)frame.style.setProperty('--ar',v.videoWidth/v.videoHeight);
   };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
-  v.muted=true; v.volume=0;
+  var sound=clip.sound!==false&&audioOk;
+  v.muted=!sound; v.volume=sound?1:0;
+  vs.classList.toggle('is-muted',!sound);
   try{v.currentTime=0}catch(e){}
   vs.classList.add('show');
   holdUntil=Date.now()+16000;
@@ -2074,7 +2094,13 @@ function videoScene(forcedSrc){
   v.onended=function(){clearTimeout(guard);finish()};
 
   var go=v.play();
-  if(go&&go['catch'])go['catch'](function(){clearTimeout(guard);finish()});
+  if(go&&go['catch'])go['catch'](function(){
+    /* sound refused after all - fall back to silent rather than dropping the
+       clip and leaving the slot empty */
+    v.muted=true; v.volume=0; vs.classList.add('is-muted');
+    var again=v.play();
+    if(again&&again['catch'])again['catch'](function(){clearTimeout(guard);finish()});
+  });
   return true;
 }
 

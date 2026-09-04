@@ -334,11 +334,18 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   the AI-generated team sketches in `video/` full screen (`CLIPS` array; add a
   clip by adding a row with its `ar` = width/height - the clips are a mix of
   16:9 and portrait and the frame sizes itself from that, corrected from the
-  file on `loadedmetadata`). It never plays the same one twice running. The
-  clips play **muted** (Dan's call - a wall display should not talk over a
-  customer conversation), which also means autoplay is never blocked, and a
-  16s guard closes the scene if the file stalls - the board must never be left
-  covered. The clips are warmed into the browser cache 20s after load on wide
+  file on `loadedmetadata`). It never plays the same one twice running. A 16s
+  guard closes the scene if the file stalls - the board must never be left
+  covered.
+  **Sound.** Clips play with sound, except any carrying `sound:false` -
+  sketch 4, the shredding sketch, which swears. That flag is not a preference:
+  the board is on a showroom wall with customers in front of it.
+  Browsers refuse to autoplay with sound until somebody has touched the page,
+  and a wall display never gets touched, so `audioOk` only becomes true on the
+  first tap or key press on that screen - before that, and if `play()` is
+  refused anyway, the clip falls back to silent with the "sound off" badge
+  rather than being dropped. Never let the fallback skip the clip: an empty
+  slot on the wall is worse than a quiet one. The clips are warmed into the browser cache 20s after load on wide
   screens only, so a phone does not pull down thirty megabytes it will probably
   never play.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
