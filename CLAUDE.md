@@ -330,10 +330,18 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   manager is usually on their phone while the board is on the wall - a tap
   plays on every screen showing the board. `dsOnControl()` ignores the play
   command in the **first** snapshot it receives (that one is history - a screen
-  switched on later must not replay it) and anything older than two minutes,
-  and a command that arrives while a cut scene or a modal is up is held until
-  the floor is free. The toggle stops the automatic slot only: a manager
-  pressing play still works with sketches switched off. If `boardcontrol` is
+  switched on later must not replay it) and anything older than two minutes;
+  anything else goes straight to `playNow()`, which **takes the floor**: it
+  cuts short whatever scene is up and closes an open panel rather than queueing
+  the clip behind them, because a manager pressing play expects it on the wall
+  there and then. The toggle stops the automatic slot only: a manager pressing
+  play still works with sketches switched off.
+- **Cutting a scene short.** Every cut scene clears `busy` from its own timer,
+  so a scene that is interrupted must not have that timer free the flag out
+  from under whatever took the floor next. Scenes take a token from
+  `sceneStart()` and hand it back to `sceneEnd(g)`; `stopScenes()` bumps the
+  generation and hides every overlay, so a stale timer's `sceneEnd` is a no-op.
+  Never write `busy = false` directly in a new scene - use the pair. If `boardcontrol` is
   unreadable - the usual cause is the rules not being published - the panel
   says so and the buttons fall back to playing on that screen alone, rather
   than leaving the manager tapping something that silently does nothing.

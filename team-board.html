@@ -1301,7 +1301,28 @@ var LINES={
 };
 
 var bags={}, bubbleTimer=null, prevChamps=-1, prevLeader=null, prevGrand=-1;
-var busy=false, holdUntil=0;
+var busy=false, holdUntil=0, sceneGen=0;
+
+/* Scenes each clear `busy` from their own timer, so a scene that is cut short
+   must not have its old timer clear the flag out from under whatever took the
+   floor next. Every scene takes a generation on the way in and hands it back
+   on the way out; `stopScenes()` bumps the generation, so a stale timer's
+   `sceneEnd` is a no-op. */
+function sceneStart(){ busy=true; return ++sceneGen; }
+function sceneEnd(g){ if(g===sceneGen) busy=false; }
+function stopScenes(){
+  sceneGen++;
+  busy=false;
+  var v=$('vs-video');
+  if(v){try{v.pause();v.currentTime=0}catch(e){}}
+  ['vidscene','statscene','cutscene'].forEach(function(id){
+    var el=$(id); if(el)el.classList.remove('show');
+  });
+  var fs=$('firescene');
+  if(fs){fs.classList.remove('show');fs.classList.remove('out')}
+  var na=$('nathan'); if(na)na.classList.remove('in');
+  var ball=$('pball'); if(ball)ball.style.opacity='0';
+}
 
 function bagPick(key,pool){
   if(!bags[key]||!bags[key].length){
@@ -1811,10 +1832,24 @@ window.dsOnControl=function(v){
     lastPlayTs=pl.ts;
     /* the first snapshot is history: never replay a command issued before this
        screen was even switched on, and ignore anything stale */
-    if(!first&&Date.now()-pl.ts<120000)pendingClip=pl.clip;
+    if(!first&&Date.now()-pl.ts<120000){controlPrimed=true;playNow(pl.clip);return}
   }
   controlPrimed=true;
 };
+
+/* A manager pressing play expects it on the wall there and then, so the clip
+   takes the floor: whatever scene is up is cut short, and an open panel closes
+   rather than holding the clip back. */
+function playNow(src){
+  if(!src)return;
+  pendingClip=null;
+  stopScenes();
+  closeModal('m-mgr'); closeModal('m-pin');
+  if(!videoScene(src)){
+    /* only reason left is a browser with no MP4 - do not sit on it */
+    toast('This screen cannot play that clip','err');
+  }
+}
 /* boardcontrol unreadable - almost always the database rules not published.
    Say so in the panel and let the buttons fall back to this screen, rather
    than leaving the manager tapping something that does nothing. */
@@ -1827,6 +1862,8 @@ function paintControlNote(){
 
 /* play as soon as the floor is free - if a manager taps while their own panel
    is open it plays on the wall now and here when they close it */
+/* backstop: playNow takes the floor itself, so this only ever picks up a clip
+   parked by something that could not play it at the time */
 setInterval(function(){
   if(!pendingClip)return;
   if(stuntsBlocked())return;
@@ -1858,9 +1895,8 @@ function playOnAllScreens(src){
   })['catch'](function(e){console.error(e);playHere(src,name)});
 }
 function playHere(src,name){
-  closeModal('m-mgr');
   toast('Playing '+name+' on this screen only','ok');
-  pendingClip=src;
+  playNow(src);
 }
 
 function setVideosOn(on){
@@ -1897,7 +1933,7 @@ function videoScene(forcedSrc){
   if(!forcedSrc&&!videosOn)return false;
   var clip=forcedSrc?clipBySrc(forcedSrc):pickClip();
   if(!clip)return false;
-  busy=true;
+  var g=sceneStart();
   var frame=vs.querySelector('.vs-frame');
   $('vs-cap').innerHTML=clip.cap;
   frame.style.setProperty('--ar',clip.ar||16/9);
@@ -1917,7 +1953,7 @@ function videoScene(forcedSrc){
     if(done)return; done=true;
     vs.classList.remove('show');
     try{v.pause();v.currentTime=0}catch(e){}
-    busy=false;
+    sceneEnd(g);
   };
   v.onended=finish;
   /* backstop in case the file stalls: never leave the board covered */
@@ -1945,17 +1981,21 @@ function statsScene(){
   if(stuntsBlocked())return false;
   if(!backend||!backend.read)return false;
   var cur=monthKey(), prev=prevMonthKey();
-  busy=true;
+  var g=sceneStart();
   Promise.all([backend.read(cur),backend.read(prev)]).then(function(r){
     var A=r[0]||{}, B=r[1]||{};
-    if(!Object.keys(A).length&&!Object.keys(B).length){busy=false;return}
+    if(!Object.keys(A).length&&!Object.keys(B).length){sceneEnd(g);return}
+    if(g!==sceneGen)return;      /* cut short while the read was in flight */
     renderStatsScene(cur,prev,A,B);
     $('statscene').classList.add('show');
     holdUntil=Date.now()+21000;
     setBubble('bub-will', bagPick('ss|will', SS.will));
     setBubble('bub-serge',bagPick('ss|serge',SS.serge));
-    setTimeout(function(){$('statscene').classList.remove('show');busy=false},15000);
-  })['catch'](function(e){console.error(e);busy=false});
+    setTimeout(function(){
+      if(g!==sceneGen)return;
+      $('statscene').classList.remove('show');sceneEnd(g);
+    },15000);
+  })['catch'](function(e){console.error(e);sceneEnd(g)});
   return true;
 }
 
@@ -2040,7 +2080,7 @@ function nathanFire(){
   if(!board)return false;
   var r=board.getBoundingClientRect();
   if(!r.width)return false;
-  busy=true;
+  var g=sceneStart();
   var fs=$('firescene');
   /* pin it to the board's own bottom-left corner, whatever the layout */
   fs.classList.remove('out');
@@ -2055,9 +2095,10 @@ function nathanFire(){
   setBubble('bub-serge', bagPick('fire|serge',FIRE.serge));
   fs.classList.add('show');
   /* it gets put out before it does any real damage */
-  setTimeout(function(){fs.classList.add('out')},10000);
+  setTimeout(function(){if(g===sceneGen)fs.classList.add('out')},10000);
   setTimeout(function(){
-    fs.classList.remove('show');fs.classList.remove('out');busy=false;
+    if(g!==sceneGen)return;
+    fs.classList.remove('show');fs.classList.remove('out');sceneEnd(g);
   },11200);
   return true;
 }
@@ -2074,7 +2115,7 @@ function leaderDance(){
   if(stuntsBlocked())return false;
   var L=leaderNow();
   if(!L)return false;                 /* nothing to celebrate on an empty board */
-  busy=true;
+  var g=sceneStart();
   var cs=$('cutscene');
   var img=$('cut-head');
   img.onerror=function(){this.style.visibility='hidden'};
@@ -2088,7 +2129,10 @@ function leaderDance(){
   holdUntil=Date.now()+13000;
   setBubble('bub-will',  fill(bagPick('cut|will', CUT.will), {name:first(L.t)}));
   setBubble('bub-serge', fill(bagPick('cut|serge',CUT.serge),{name:first(L.t)}));
-  setTimeout(function(){cs.classList.remove('show');busy=false},8400);
+  setTimeout(function(){
+    if(g!==sceneGen)return;
+    cs.classList.remove('show');sceneEnd(g);
+  },8400);
   return true;
 }
 
@@ -2123,9 +2167,9 @@ function throwPaper(){
       bagPick('throw|say|'+fromWill, fromWill?THROW.willSays:THROW.sergeSays));
     setBubble(fromWill?'bub-serge':'bub-will',
       bagPick('throw|hit|'+fromWill, fromWill?THROW.sergeHit:THROW.willHit));
-    busy=false;
+    sceneEnd(g);
   };
-  busy=true;
+  var g=sceneStart();
   if(reduced()||!ball.animate){land();return true}
   /* arc it: x travels straight, y follows a curve up and over */
   var peak=Math.min(y0,y1)-Math.max(70,Math.abs(x1-x0)*0.16);
@@ -2146,14 +2190,17 @@ function throwPaper(){
 
 function nathanVisit(){
   if(stuntsBlocked())return false;
-  busy=true;
+  var g=sceneStart();
   var el=$('nathan');
   setBubble('bub-nathan', bagPick('nathan|says', NATHAN.says));
   el.classList.add('in');
   holdUntil=Date.now()+11500;
   setBubble('bub-will',  bagPick('nathan|will',  NATHAN.will));
   setBubble('bub-serge', bagPick('nathan|serge', NATHAN.serge));
-  setTimeout(function(){el.classList.remove('in');busy=false},9500);
+  setTimeout(function(){
+    if(g!==sceneGen)return;
+    el.classList.remove('in');sceneEnd(g);
+  },9500);
   return true;
 }
 
