@@ -95,9 +95,11 @@
     .yesno-cell label{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;cursor:pointer;}
     .yesno-cell input[type="radio"]{width:14px;height:14px;cursor:pointer;accent-color:#1c69d4;}
 
-    .inline-pair{display:flex;gap:16px;align-items:center;}
+    .inline-pair{display:flex;gap:10px;align-items:center;}
     .inline-pair span{font-size:10px;white-space:nowrap;color:#2a3650;font-weight:600;}
-    .inline-pair input{border:none;border-bottom:1px solid #aaa;width:36px;font-size:11px;text-align:center;outline:none;background:transparent;padding:1px;}
+    /* flex-shrink:0 - these sit in the narrow left column too, where the flex
+       row would otherwise squeeze them until the typed figure is clipped. */
+    .inline-pair input{border:none;border-bottom:1px solid #aaa;width:34px;flex:0 0 34px;font-size:11px;text-align:center;outline:none;background:transparent;padding:1px;}
 
     /* ─── Footer ─── */
     .doc-footer{margin-top:16px;border-top:1px solid #ccc;padding-top:10px;font-size:9.5px;color:#666;line-height:1.5;}
@@ -111,8 +113,10 @@
       .two-col{grid-template-columns:1fr !important;gap:0;}
       .label-cell{white-space:normal;}
       .inline-pair{gap:8px;}
-      .inline-pair input{width:28px;}
+      .inline-pair input{width:28px;flex-basis:28px;}
     }
+
+    .print-val,.print-val-radio{display:none;}
 
     /* ─── Print styles ─── */
     @media print{
@@ -122,8 +126,10 @@
       @page{size:A4;margin:12mm 12mm 16mm;}
       .print-val{display:block;font-size:11px;color:#1a2540;word-break:break-all;white-space:pre-wrap;padding:1px 2px;min-height:1em;}
       .print-val-radio{display:block;font-size:11px;color:#1a2540;font-weight:600;padding:2px;}
+      /* The Years / Months pairs must stay on one line, so those values sit
+         inline on their own rule instead of the block rule above. */
+      .inline-pair .print-val{display:inline-block;min-width:26px;border-bottom:1px solid #aaa;text-align:center;word-break:normal;}
     }
-    .print-val,.print-val-radio{display:none;}
   </style>
 </head>
 <body>
