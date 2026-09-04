@@ -90,7 +90,12 @@
       ".read": true,
       ".write": true,
       "videos": { ".validate": "newData.isBoolean()" },
-      "view":   { ".validate": "newData.isString() && newData.val().length <= 24" },
+      "view": {
+        ".validate": "newData.hasChildren(['id','ts'])",
+        "id": { ".validate": "newData.isString() && newData.val().length <= 24" },
+        "ts": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      },
       "play": {
         ".validate": "newData.hasChildren(['clip','ts'])",
         "clip": { ".validate": "newData.isString() && newData.val().length <= 120" },

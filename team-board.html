@@ -917,7 +917,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 
     <h2 style="margin-top:22px;font-size:1rem">What's on the board</h2>
     <p class="hint" style="margin-bottom:10px">Hold the wall display on one board, or leave it cycling.
-      Applies to every screen showing the board.</p>
+      Applies to every screen showing the board, and lapses back to the rotation after fifteen minutes.</p>
     <div class="clips" id="view-list"></div>
 
     <h2 style="margin-top:22px;font-size:1rem">Sketches</h2>
@@ -1765,7 +1765,28 @@ var VIEWPINS=[
   {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
   {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"}
 ];
-var pinnedView='auto';
+/* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
+   the team and then walks off; a wall display stuck on one screen all
+   afternoon is a broken board. Every screen expires it off the same stored
+   timestamp rather than one of them writing the reset, so there is no race
+   and a screen switched on after it lapsed comes up rotating. */
+var PIN_MS=900000;
+var pinnedView='auto', pinTs=0, pinTimer=null, pinTick=null;
+
+function pinLive(){ return pinnedView!=='auto' && pinTs && Date.now()-pinTs<PIN_MS }
+function pinLeft(){ return Math.max(0,PIN_MS-(Date.now()-pinTs)) }
+
+function armPin(){
+  clearTimeout(pinTimer); pinTimer=null;
+  clearInterval(pinTick);  pinTick=null;
+  if(pinnedView==='auto')return;
+  if(!pinLive()){pinnedView='auto';pinTs=0;applyPin();return}
+  pinTimer=setTimeout(function(){
+    pinnedView='auto'; pinTs=0; applyPin();
+  },pinLeft()+250);
+  /* keep the panel's countdown honest while it is open */
+  pinTick=setInterval(paintViewControls,20000);
+}
 
 function viewAvailable(id){
   if(id==='auto'||id==='board')return true;
@@ -1776,6 +1797,7 @@ function viewAvailable(id){
 }
 
 function applyPin(){
+  armPin();
   startRotation();
   if(!pinnedView||pinnedView==='auto'){paintViewControls();return}
   var list=views();
@@ -1789,13 +1811,14 @@ function applyPin(){
 
 function setPinnedView(id){
   pinnedView=id;
+  pinTs=id==='auto'?0:Date.now();
   applyPin();
   if(!backend||!backend.setView||!controlLive){
     toast(id==='auto'?'Back to the rotation, this screen only'
                      :'Held on this screen only','ok');
     return;
   }
-  backend.setView(id)['catch'](function(e){console.error(e);toast('Could not save that','err')});
+  backend.setView(id,pinTs)['catch'](function(e){console.error(e);toast('Could not save that','err')});
 }
 
 function paintViewControls(){
@@ -1817,7 +1840,10 @@ function paintViewControls(){
     btn.disabled=!have;
     var sm=btn.querySelector('small');
     if(!have)sm.textContent='Nothing uploaded yet';
-    else{
+    else if(pinnedView===id&&pinLive()){
+      var mins=Math.ceil(pinLeft()/60000);
+      sm.textContent='Rotating again in '+mins+' min'+(mins===1?'':'s');
+    }else{
       for(var i=0;i<VIEWPINS.length;i++)if(VIEWPINS[i].id===id)sm.textContent=VIEWPINS[i].sub;
     }
   });
@@ -1907,8 +1933,10 @@ window.dsOnControl=function(v){
   paintControlNote();
   v=v||{};
   if(typeof v.videos==='boolean'){videosOn=v.videos;paintClipControls()}
-  var want=(typeof v.view==='string'&&v.view)?v.view:'auto';
-  if(want!==pinnedView){pinnedView=want;applyPin()}
+  var pv=v.view, wantId='auto', wantTs=0;
+  if(pv&&typeof pv==='object'&&typeof pv.id==='string'){wantId=pv.id;wantTs=pv.ts||0}
+  if(wantId!=='auto'&&(!wantTs||Date.now()-wantTs>=PIN_MS)){wantId='auto';wantTs=0}
+  if(wantId!==pinnedView||wantTs!==pinTs){pinnedView=wantId;pinTs=wantTs;applyPin()}
   var pl=v.play;
   if(pl&&typeof pl.ts==='number'&&pl.ts>lastPlayTs){
     var first=!controlPrimed;
@@ -2736,28 +2764,55 @@ const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomai
 const db=getDatabase(initializeApp(firebaseConfig));
 const path=m=>'profitchallenge/months/'+m+'/deals';
 
-let stop=null;
+/* A listener that errors is CANCELLED by Firebase - it never comes back on
+   its own. That is how publishing a rule left every open board unable to see
+   the new path until somebody refreshed it. This page is meant to sit on a
+   wall unattended, so every watch re-subscribes with a backoff instead. */
+function watch(p, cb, onErr){
+  let tries=0;
+  const go=()=>{
+    onValue(ref(db,p),
+      s=>{tries=0;cb(s.val())},
+      e=>{
+        console.error(p,e);
+        if(onErr)onErr(e);
+        setTimeout(go, Math.min(30000, 2000*Math.pow(2,tries++)));
+      });
+  };
+  go();
+}
+
+let stop=null, dealsGen=0;
 
 window.dsBindBackend({
   listen(m){
-    if(stop)stop();
-    stop=onValue(ref(db,path(m)),
-      s=>window.dsOnDeals(s.val()||{}),
-      e=>{console.error(e);window.dsOnError()}
-    );
+    const gen=++dealsGen;
+    if(stop){stop();stop=null}
+    let tries=0;
+    const go=()=>{
+      if(gen!==dealsGen)return;         /* the month changed under us */
+      stop=onValue(ref(db,path(m)),
+        s=>{tries=0;window.dsOnDeals(s.val()||{})},
+        e=>{
+          console.error(e);window.dsOnError();
+          setTimeout(go, Math.min(30000, 2000*Math.pow(2,tries++)));
+        }
+      );
+    };
+    go();
   },
   add:(m,payload)=>push(ref(db,path(m)),payload),
   edit:(m,id,payload)=>update(ref(db,path(m)+'/'+id),payload),
   del:(m,id)=>remove(ref(db,path(m)+'/'+id)),
   months:()=>get(ref(db,'profitchallenge/months')).then(s=>Object.keys(s.val()||{})),
   read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{}),
-  watchNewCar(cb){ onValue(ref(db,'newcar/current'), s=>cb(s.val()), ()=>{}) },
-  watchExtra(who,cb){ onValue(ref(db,'extra/'+who), s=>cb(s.val()), ()=>{}) },
+  watchNewCar(cb){ watch('newcar/current', cb) },
+  watchExtra(who,cb){ watch('extra/'+who, cb) },
   saveExtra:(who,payload)=>set(ref(db,'extra/'+who),payload),
   clearExtra:(who)=>remove(ref(db,'extra/'+who)),
-  watchControl(cb,onErr){ onValue(ref(db,'boardcontrol'), s=>cb(s.val()), e=>{console.error(e);onErr&&onErr()}) },
+  watchControl(cb,onErr){ watch('boardcontrol', cb, ()=>{onErr&&onErr()}) },
   setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
-  setView:(id)=>set(ref(db,'boardcontrol/view'),String(id)),
+  setView:(id,ts)=>set(ref(db,'boardcontrol/view'),{id:String(id),ts:ts||Date.now()}),
   play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()})
 });
 </script>

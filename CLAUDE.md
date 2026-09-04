@@ -282,9 +282,15 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   leaderboard, either secondary screenshot, or back to Rotate
   (`VIEWPINS`, `pinnedView`, `applyPin()`, `setPinnedView()`). Like the sketch
   controls it goes through `boardcontrol`, but unlike the one-shot play command
-  it is **state** - `boardcontrol/view` - so a screen switched on later comes up
-  on the pinned board rather than starting to rotate. A pin holds the display
-  through a manager opening the panel, since holding a board is the point.
+  it is **state** - `boardcontrol/view`, an `{id, ts}` pair - so a screen
+  switched on later comes up on the pinned board rather than starting to
+  rotate. A pin holds the display through a manager opening the panel, since
+  holding a board is the point, and **lapses after fifteen minutes**
+  (`PIN_MS`): somebody holds a board up to talk to the team and walks off, and
+  a wall display stuck on one screen all afternoon is a broken board. Every
+  screen expires it off the same stored timestamp rather than one of them
+  writing the reset, so there is no race, a screen switched on mid-pin adopts
+  the right remainder, and one switched on after it lapsed comes up rotating.
   Pinning a slot nobody has uploaded to yet is allowed: the button is disabled
   while it is empty, and `applyPin()` keeps the used car board up and snaps onto
   the picture the moment it arrives (and back off it when it is removed).
@@ -382,6 +388,14 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   deals" and turns gold on 8, and the team's Deals tile reads against
   `UNIT_TARGET * TEAM.length`. Profit and units are separate targets - somebody
   can be past £15,000 on six deals, or on eight and short of it.
+- **Watches re-subscribe.** Firebase *cancels* a listener that errors - it
+  never comes back on its own, which is why publishing a rule used to leave
+  every open board blind to the new path until somebody refreshed it. The
+  module wraps every watch (deals, `newcar/current`, both `extra` slots,
+  `boardcontrol`) in a retry with a 2s-to-30s backoff that resets on the first
+  good value; `newcar.html` carries the same helper. Keep it: this page is
+  meant to sit on a wall unattended, and a rules change should not need a lap
+  of the showroom with a keyboard.
 - The board renders from a **plain non-module script** and only then lets the
   Firebase module feed it, so a slow or blocked CDN shows an honest "offline"
   board rather than a blank screen. The webfont is loaded non-render-blocking

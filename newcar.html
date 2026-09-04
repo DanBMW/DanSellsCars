@@ -343,12 +343,29 @@ import { getDatabase, ref, set, remove, onValue } from "https://www.gstatic.com/
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 const db=getDatabase(initializeApp(firebaseConfig));
 
+/* Firebase cancels a listener that errors, so a rules publish would otherwise
+   leave this page showing nothing until it was reloaded. Same retry as the
+   board uses. */
+function watch(p, cb, onErr){
+  let tries=0;
+  const go=()=>{
+    onValue(ref(db,p),
+      s=>{tries=0;cb(s.val())},
+      e=>{
+        console.error(p,e);
+        if(onErr)onErr(e);
+        setTimeout(go, Math.min(30000, 2000*Math.pow(2,tries++)));
+      });
+  };
+  go();
+}
+
 window.ncBindBackend({
   save:(payload)=>set(ref(db,'newcar/current'),payload),
-  watch:(cb,err)=>onValue(ref(db,'newcar/current'), s=>cb(s.val()), err),
+  watch:(cb,err)=>watch('newcar/current',cb,err),
   saveExtra:(payload)=>set(ref(db,'extra/newcar'),payload),
   clearExtra:()=>remove(ref(db,'extra/newcar')),
-  watchExtra:(cb,err)=>onValue(ref(db,'extra/newcar'), s=>cb(s.val()), err)
+  watchExtra:(cb,err)=>watch('extra/newcar',cb,err)
 });
 </script>
 </body>
