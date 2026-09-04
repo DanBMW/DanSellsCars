@@ -391,10 +391,46 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
 - **The £15k target** is the `TARGET` constant. Past it the track extends itself
   in 5k steps (20k, 25k, 30k…), mirroring the strip Dan taped to the bottom of
   the paper board, and the £15,000 line stays marked as "Target".
+- **Pace, not distance.** "£13,800 to go" says nothing on the 5th and frightens
+  everyone on the 25th, so on the **live** month each standings row projects
+  instead (`paceOf()`, `paceNote()`): "on pace for £18,400" in gold when the
+  rate clears £15,000, otherwise "£620 a day to hit it". One clause, never two -
+  this is small type on a wall. Nothing is projected before day `PACE_FROM` (5)
+  because three days is noise, nor on a finished or future month where a
+  projection means nothing; both fall back to the distance. The team's own
+  projection replaces the Average tile while it applies.
+- **Deal of the month.** The single biggest deal banked (`bestDeal()`) shows as
+  a fifth, gold tile in the totals row, and again under the leader in the
+  breakdance cut scene. It is a tile rather than a strip of its own because the
+  wall layout places its grid rows explicitly - an unplaced element lands in an
+  implicit row at the bottom, 250px wide, and pushes the board off one screen.
+- **Crossing £15,000** gets its own scene (`champScene()`): the face, the name,
+  HAS DONE IT, the figure and confetti, for ten seconds. It fires on the
+  crossing only, once per person per month (`champSeen`), never off the first
+  snapshot - that is history, not a moment - and it waits while a manager has
+  the panel open, since they are usually the one entering the deal that caused
+  it. Otherwise it takes the floor from whatever is up, because nothing else on
+  this board matters more.
 - **The 8-unit target** is `UNIT_TARGET`. Each standings row reads "3 / 8
   deals" and turns gold on 8, and the team's Deals tile reads against
   `UNIT_TARGET * TEAM.length`. Profit and units are separate targets - somebody
   can be past £15,000 on six deals, or on eight and short of it.
+- **Reloading every screen.** Shipping a change to a board on a wall used to
+  mean walking over to refresh it. "Reload every screen" in the manager panel
+  writes `boardcontrol/reload`, and each screen reloads on a timestamp newer
+  than its own load (never off the first snapshot, never one older than two
+  minutes). Every screen also reloads itself at 4am if it has been up two hours
+  and no panel is open, so a change made during the day is live by morning.
+- **The team list is checked in CI.** `scripts/check-board-team.js` compares the
+  `TEAM` array against the `exec` pattern in `database.rules.json` and fails the
+  build if they disagree (`.github/workflows/board-check.yml`). Out of step
+  there is no visible error: the board renders the new person fine and Firebase
+  silently rejects every deal entered for them.
+- **The manager panel** leads with the day-to-day half - add a deal, then this
+  month's deals - and folds everything about what the wall is showing (board
+  picker, sketches, screenshot, reload) into a closed `<details>` underneath.
+  The deal list is what gets used every day, on a phone, and it was four
+  sections down.
 - **Watches re-subscribe.** Firebase *cancels* a listener that errors - it
   never comes back on its own, which is why publishing a rule used to leave
   every open board blind to the new path until somebody refreshed it. The

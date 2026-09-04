@@ -90,6 +90,7 @@
       ".read": true,
       ".write": true,
       "videos": { ".validate": "newData.isBoolean()" },
+      "reload": { ".validate": "newData.isNumber()" },
       "view": {
         ".validate": "newData.hasChildren(['id','ts'])",
         "id": { ".validate": "newData.isString() && newData.val().length <= 24" },

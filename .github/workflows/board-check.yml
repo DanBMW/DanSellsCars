@@ -1,0 +1,20 @@
+name: board-check
+
+# Fails if the used car team on team-board.html and the exec ids the Firebase
+# rules will accept have drifted apart. Out of step, the board renders the new
+# person fine and Firebase silently rejects every deal entered for them.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/check-board-team.js

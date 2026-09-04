@@ -201,6 +201,16 @@ body{
 .stat{flex:1 1 120px;background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:10px 13px}
 .stat b{display:block;font-family:var(--display);font-weight:700;font-size:1.3rem}
 .stat span{font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+/* the single biggest deal banked this month, as a fifth tile - the wall layout
+   places its grid rows explicitly, so a strip of its own would go unplaced */
+.stat.best{
+  flex:1 1 200px;
+  background:linear-gradient(90deg,rgba(224,179,82,.12),var(--panel) 70%);
+  border-color:rgba(224,179,82,.32);
+}
+.stat.best b{color:var(--gold)}
+.stat.best span{text-transform:none;letter-spacing:0;font-size:.66rem;color:var(--text);font-weight:700}
+.stat.best span i{font-style:normal;color:var(--muted);font-weight:600}
 
 /* ---------- buttons / manager ---------- */
 .actions{display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
@@ -271,6 +281,18 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 .shotbox img{display:block;width:100%;height:auto;max-height:210px;object-fit:contain}
 .shotcap{font-size:.7rem;color:var(--muted);font-weight:600;margin:0 0 10px}
 .shotcap b{color:var(--text)}
+/* the day-to-day half of the panel stays at the top; everything about what the
+   wall is showing folds away underneath it */
+.fold{margin-top:22px;border-top:1px solid var(--line-soft);padding-top:14px}
+.fold summary{
+  cursor:pointer;list-style:none;font-family:var(--display);font-weight:700;
+  font-size:1rem;display:flex;align-items:baseline;gap:9px;
+}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary::before{content:'\25B8';font-size:.8rem;color:var(--muted);transition:.15s}
+.fold[open] summary::before{transform:rotate(90deg)}
+.fold summary span{font-family:var(--font);font-weight:600;font-size:.7rem;color:var(--muted)}
+.fold[open] summary{margin-bottom:2px}
 .msgline{font-size:.76rem;font-weight:700;margin:8px 0 0;display:none}
 .msgline.ok{color:var(--green);display:block}
 .msgline.err{color:var(--red);display:block}
@@ -472,6 +494,54 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 @media(prefers-reduced-motion:reduce){.vidscene{transition:none}}
 
+/* ---------- champion cut scene ---------- */
+.champscene{
+  position:fixed;inset:0;z-index:97;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(60% 60% at 50% 42%,rgba(224,179,82,.20),rgba(4,7,12,.97) 70%),rgba(4,7,12,.96);
+  opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s;
+  pointer-events:none;padding:20px;overflow:hidden;
+}
+.champscene.show{opacity:1;visibility:visible}
+.ch-inner{text-align:center;position:relative;z-index:2}
+.ch-kicker{
+  font-family:var(--display);font-weight:700;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--gold);font-size:clamp(.62rem,1.5vw,1rem);margin-bottom:clamp(10px,2vh,20px);
+}
+.ch-head{
+  width:clamp(96px,15vw,190px);height:clamp(96px,15vw,190px);border-radius:50%;
+  object-fit:cover;object-position:58% 20%;border:4px solid var(--gold);
+  box-shadow:0 0 0 10px rgba(224,179,82,.16),0 26px 70px rgba(0,0,0,.65);
+  animation:chpop .7s cubic-bezier(.2,1.5,.4,1) both;
+}
+.ch-name{
+  font-family:var(--display);font-weight:700;font-size:clamp(1.8rem,6vw,4.4rem);
+  line-height:1.02;margin-top:clamp(12px,2.2vh,22px);
+}
+.ch-done{
+  font-family:var(--display);font-weight:700;letter-spacing:.2em;
+  font-size:clamp(.8rem,2.4vw,1.6rem);color:var(--gold);margin-top:4px;
+}
+.ch-amt{
+  font-family:var(--display);font-weight:700;font-size:clamp(1.4rem,4.4vw,3rem);
+  color:var(--green);margin-top:clamp(8px,1.6vh,16px);
+}
+.ch-tag{color:var(--muted);font-size:clamp(.72rem,1.6vw,1.05rem);font-weight:600;margin-top:6px}
+.ch-confetti{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.ch-confetti i{
+  position:absolute;top:-6vh;width:9px;height:15px;border-radius:2px;display:block;
+  animation:chfall linear forwards;
+}
+@keyframes chpop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes chfall{
+  from{transform:translateY(0) rotate(0)}
+  to{transform:translateY(112vh) rotate(760deg)}
+}
+@media(prefers-reduced-motion:reduce){
+  .champscene{transition:none}
+  .ch-head{animation:none}
+  .ch-confetti{display:none}
+}
+
 /* ---------- month-on-month cut scene ----------
    Palette validated with the dataviz skill's checker against this surface:
    #2f7bf0 (this month) / #b8862c (last month) on #141b26 - CVD dE 29.5 protan,
@@ -627,6 +697,12 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   -webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.05;
 }
 .cut-tag{color:var(--muted);font-size:clamp(.72rem,1.6vw,1.05rem);font-weight:600;margin-top:6px}
+.cut-best{
+  margin-top:clamp(10px,1.8vh,18px);display:none;align-items:center;justify-content:center;gap:9px;
+  font-size:clamp(.64rem,1.3vw,.86rem);font-weight:700;color:var(--muted);
+}
+.cut-best b{color:var(--gold);font-family:var(--display);font-weight:700;font-size:clamp(.86rem,1.8vw,1.2rem)}
+.cut-best .reg{border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.9em;letter-spacing:.06em}
 .cut-note{position:absolute;font-size:clamp(1rem,2vw,1.6rem);opacity:0;pointer-events:none}
 
 /* the routine: toprock, headspin, freeze */
@@ -922,42 +998,50 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
       <button class="btn primary" style="flex:1" id="mgr-save">Add deal</button>
     </div>
 
-    <h2 style="margin-top:22px;font-size:1rem">What's on the board</h2>
-    <p class="hint" style="margin-bottom:10px">Hold the wall display on one board, or leave it cycling.
-      Applies to every screen showing the board, and lapses back to the rotation after fifteen minutes.</p>
-    <div class="clips" id="view-list"></div>
-
-    <h2 style="margin-top:22px;font-size:1rem">Sketches</h2>
-    <p class="hint" style="margin-bottom:10px">Plays on every screen showing the board, not just this one. Sketches run with the sound off.</p>
-    <div class="tog" id="vid-toggle">
-      <div><b>Play sketches automatically</b><span>One roughly every ten minutes</span></div>
-      <div class="sw"></div>
-    </div>
-    <div class="clips" id="clip-list"></div>
-    <p class="hint" id="clip-note" style="display:none;margin:0">Board control is not switched on in the database yet, so these
-      play on this screen only. Publish the <b>boardcontrol</b> rules in Firebase to reach every screen.</p>
-
-    <h2 style="margin-top:22px;font-size:1rem">Screenshot on the board</h2>
-    <p class="hint" style="margin-bottom:10px">Anything you want the team to see - a stock list, a target sheet, a message.
-      It joins the board rotation for thirty seconds at a time, with your caption above it.</p>
-    <div id="shot-now"></div>
-    <input type="file" id="shot-file" accept="image/*" style="display:none">
-    <div id="shot-prev" style="display:none">
-      <div class="shotbox"><img id="shot-img" alt="Picture to put on the board"></div>
-      <p class="shotcap" id="shot-meta"></p>
-      <label for="shot-cap">Caption (shown above it)</label>
-      <input type="text" id="shot-cap" maxlength="80" placeholder="e.g. This week's stock push">
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:6px">
-      <button type="button" class="btn" style="flex:1" id="shot-pick">Choose a picture</button>
-      <button type="button" class="btn primary" style="flex:1;display:none" id="shot-send">Put it on the board</button>
-    </div>
-    <button type="button" class="btn danger" style="width:100%;display:none" id="shot-remove">Take it off the board</button>
-    <p class="msgline" id="shot-msg"></p>
-
     <h2 style="margin-top:22px;font-size:1rem" id="deals-heading">This month's deals</h2>
     <p class="hint" style="margin-bottom:8px">Tap the pencil to correct a figure, or the bin to remove it.</p>
     <div class="deals" id="deal-list"></div>
+
+    <details class="fold" id="display-fold">
+      <summary>Display controls<span>What's up, sketches, screenshots</span></summary>
+      <h2 style="margin-top:22px;font-size:1rem">What's on the board</h2>
+      <p class="hint" style="margin-bottom:10px">Hold the wall display on one board, or leave it cycling.
+        Applies to every screen showing the board, and lapses back to the rotation after fifteen minutes.</p>
+      <div class="clips" id="view-list"></div>
+  
+      <h2 style="margin-top:22px;font-size:1rem">Sketches</h2>
+      <p class="hint" style="margin-bottom:10px">Plays on every screen showing the board, not just this one. Sketches run with the sound off.</p>
+      <div class="tog" id="vid-toggle">
+        <div><b>Play sketches automatically</b><span>One roughly every ten minutes</span></div>
+        <div class="sw"></div>
+      </div>
+      <div class="clips" id="clip-list"></div>
+      <p class="hint" id="clip-note" style="display:none;margin:0">Board control is not switched on in the database yet, so these
+        play on this screen only. Publish the <b>boardcontrol</b> rules in Firebase to reach every screen.</p>
+  
+      <h2 style="margin-top:22px;font-size:1rem">Screenshot on the board</h2>
+      <p class="hint" style="margin-bottom:10px">Anything you want the team to see - a stock list, a target sheet, a message.
+        It joins the board rotation for thirty seconds at a time, with your caption above it.</p>
+      <div id="shot-now"></div>
+      <input type="file" id="shot-file" accept="image/*" style="display:none">
+      <div id="shot-prev" style="display:none">
+        <div class="shotbox"><img id="shot-img" alt="Picture to put on the board"></div>
+        <p class="shotcap" id="shot-meta"></p>
+        <label for="shot-cap">Caption (shown above it)</label>
+        <input type="text" id="shot-cap" maxlength="80" placeholder="e.g. This week's stock push">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:6px">
+        <button type="button" class="btn" style="flex:1" id="shot-pick">Choose a picture</button>
+        <button type="button" class="btn primary" style="flex:1;display:none" id="shot-send">Put it on the board</button>
+      </div>
+      <button type="button" class="btn danger" style="width:100%;display:none" id="shot-remove">Take it off the board</button>
+      <p class="msgline" id="shot-msg"></p>
+
+      <h2 style="margin-top:22px;font-size:1rem">Every screen</h2>
+      <p class="hint" style="margin-bottom:10px">Pushes a refresh to every screen showing the board, so a change
+        does not need somebody walking over to the TV. They also reload themselves at 4am.</p>
+      <button type="button" class="btn" style="width:100%" id="reload-all">Reload every screen</button>
+    </details>
   </div>
 </div>
 
@@ -1031,6 +1115,19 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 </div>
 
 <!-- the leader takes the floor every few minutes -->
+<!-- somebody crossing £15,000 - the biggest moment the board has -->
+<div class="champscene" id="champscene" aria-hidden="true">
+  <div class="ch-confetti" id="ch-confetti" aria-hidden="true"></div>
+  <div class="ch-inner">
+    <div class="ch-kicker">Fifteen grand</div>
+    <img class="ch-head" id="ch-head" alt="">
+    <div class="ch-name" id="ch-name"></div>
+    <div class="ch-done">HAS DONE IT</div>
+    <div class="ch-amt" id="ch-amt"></div>
+    <div class="ch-tag" id="ch-tag"></div>
+  </div>
+</div>
+
 <div class="cutscene" id="cutscene" aria-hidden="true">
   <div class="cut-inner">
     <div class="cut-kicker">Leading the board</div>
@@ -1059,6 +1156,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <div class="cut-name" id="cut-name"></div>
     <div class="cut-amt" id="cut-amt"></div>
     <div class="cut-tag" id="cut-tag"></div>
+    <div class="cut-best" id="cut-best"></div>
   </div>
 </div>
 
@@ -1331,7 +1429,7 @@ function stopScenes(){
   busy=false;
   var v=$('vs-video');
   if(v){try{v.pause();v.currentTime=0}catch(e){}}
-  ['vidscene','statscene','cutscene'].forEach(function(id){
+  ['vidscene','statscene','cutscene','champscene'].forEach(function(id){
     var el=$(id); if(el)el.classList.remove('show');
   });
   var fs=$('firescene');
@@ -1433,6 +1531,64 @@ function cheer(){
   });
 }
 
+/* ---- somebody crosses £15,000 ----
+   The biggest thing that happens on this board, and it used to be a cheer and
+   a gold row. It waits for a manager to close the panel - they are usually the
+   one entering the deal that caused it - but otherwise takes the floor from
+   whatever else is up, because nothing else on the board matters more. */
+var CHAMP_TAGS=[
+  'Fifteen grand. On the board. Done.',
+  'That is the challenge beaten.',
+  'Get the strip out, we are extending the track.',
+  'Somebody tell the new car lot.',
+  'Champion. Say it out loud.',
+  'Off the top of the board.'
+];
+var champSeen={}, pendingChamp=null;
+
+function champScene(c){
+  if(document.querySelector('.modal-bg.open'))return false;
+  var el=$('champscene');
+  if(!el)return false;
+  stopScenes();
+  var g=sceneStart();
+  var img=$('ch-head');
+  img.onerror=function(){this.style.visibility='hidden'};
+  img.style.visibility='';
+  img.src=c.photo; img.alt=c.name;
+  $('ch-name').textContent=c.name;
+  $('ch-amt').textContent=money(c.total);
+  $('ch-tag').textContent=bagPick('champ|tag',CHAMP_TAGS);
+  confetti();
+  el.classList.add('show');
+  holdUntil=Date.now()+15000;
+  setBubble('bub-will',  bagPick('champ|will', LINES.will.champion));
+  setBubble('bub-serge', bagPick('champ|serge',LINES.serge.champion));
+  cheer();
+  setTimeout(function(){
+    if(g!==sceneGen)return;
+    el.classList.remove('show');
+    $('ch-confetti').innerHTML='';
+    sceneEnd(g);
+  },10000);
+  return true;
+}
+
+function confetti(){
+  var box=$('ch-confetti');
+  if(!box)return;
+  box.innerHTML='';
+  if(reduced())return;
+  var cols=['#e0b352','#f3d99a','#2f7bf0','#8fbaff','#2fbf6b','#ffffff'];
+  var html='';
+  for(var i=0;i<70;i++){
+    html+='<i style="left:'+(Math.random()*100).toFixed(2)+'%;background:'+
+      cols[i%cols.length]+';animation-duration:'+(2.6+Math.random()*2.6).toFixed(2)+
+      's;animation-delay:'+(Math.random()*2.2).toFixed(2)+'s"></i>';
+  }
+  box.innerHTML=html;
+}
+
 /* a new deal, a new leader or a new champion sets them off */
 function reactToBoard(){
   var tot=totals();
@@ -1444,6 +1600,16 @@ function reactToBoard(){
   if(!firstRun&&(grand>prevGrand||champs>prevChamps||(leader&&leader!==prevLeader))){
     updateBubbles();cheer();
   }
+  /* only ever celebrate the crossing itself, once each, and never off the
+     first snapshot - that is history, not a moment */
+  TEAM.forEach(function(t){
+    var key=viewMonth+'|'+t.id;
+    var over=tot[t.id]>=TARGET;
+    if(over&&!champSeen[key]&&!firstRun&&viewMonth===monthKey()){
+      pendingChamp={name:t.name,photo:t.photo,total:tot[t.id]};
+    }
+    if(over)champSeen[key]=true;
+  });
   prevGrand=grand;prevChamps=champs;prevLeader=leader;
 }
 
@@ -1950,6 +2116,17 @@ window.dsOnControl=function(v){
   if(pv&&typeof pv==='object'&&typeof pv.id==='string'){wantId=pv.id;wantTs=pv.ts||0}
   if(wantId!=='auto'&&(!wantTs||Date.now()-wantTs>=PIN_MS)){wantId='auto';wantTs=0}
   if(wantId!==pinnedView||wantTs!==pinTs){pinnedView=wantId;pinTs=wantTs;applyPin()}
+  var rl=v.reload;
+  if(typeof rl==='number'&&rl>lastReloadTs){
+    var firstR=!controlPrimed;
+    lastReloadTs=rl;
+    /* the stored value is history to a screen that has just come up */
+    if(!firstR&&Date.now()-rl<120000&&rl>loadedAt){
+      controlPrimed=true;
+      setTimeout(function(){location.reload()},300);
+      return;
+    }
+  }
   var pl=v.play;
   if(pl&&typeof pl.ts==='number'&&pl.ts>lastPlayTs){
     var first=!controlPrimed;
@@ -1974,6 +2151,35 @@ function playNow(src){
     toast('This screen cannot play that clip','err');
   }
 }
+/* ---- reloading every screen ----
+   Shipping a change to a board on a wall used to mean walking over and
+   refreshing it. A manager can now push a reload to every screen, and each
+   screen reloads itself once in the small hours so a change made during the
+   day is picked up by morning without anyone doing anything. */
+var lastReloadTs=0, loadedAt=Date.now();
+
+function reloadAllScreens(){
+  if(!backend||!backend.setReload||!controlLive){
+    toast('Reloading this screen only','ok');
+    setTimeout(function(){location.reload()},400);
+    return;
+  }
+  toast('Reloading every screen','ok');
+  backend.setReload(Date.now())['catch'](function(e){
+    console.error(e);toast('Could not reach the other screens','err');
+  });
+}
+
+/* 4am, and only on a page that has been up a while - never yank the board out
+   from under someone watching it, and never loop on a screen opened at 4am */
+setInterval(function(){
+  var h=new Date().getHours();
+  if(h!==4)return;
+  if(Date.now()-loadedAt<7200000)return;
+  if(document.querySelector('.modal-bg.open'))return;
+  location.reload();
+},600000);
+
 /* boardcontrol unreadable - almost always the database rules not published.
    Say so in the panel and let the buttons fall back to this screen, rather
    than leaving the manager tapping something that does nothing. */
@@ -1989,10 +2195,15 @@ function paintControlNote(){
 /* backstop: playNow takes the floor itself, so this only ever picks up a clip
    parked by something that could not play it at the time */
 setInterval(function(){
+  if(pendingChamp){
+    var c=pendingChamp;
+    if(champScene(c))pendingChamp=null;   /* held only while a panel is open */
+    return;
+  }
   if(!pendingClip)return;
   if(stuntsBlocked())return;
-  var c=pendingClip;pendingClip=null;
-  videoScene(c);
+  var cl=pendingClip;pendingClip=null;
+  videoScene(cl);
 },1000);
 
 function paintClipControls(){
@@ -2264,6 +2475,13 @@ function leaderDance(){
   $('cut-name').textContent=L.t.name;
   $('cut-amt').textContent=money(L.v);
   $('cut-tag').textContent=fill(bagPick('cut|tag',CUT.tag),{name:first(L.t)});
+  var bd=bestDeal(deals), cb=$('cut-best');
+  if(bd&&BY_ID[bd.exec]){
+    cb.innerHTML='Deal of the month &middot; '+esc(BY_ID[bd.exec].name)+
+      (bd.reg?' <span class="reg">'+esc(bd.reg.toUpperCase())+'</span>':'')+
+      ' <b>'+money(bd.profit)+'</b>';
+    cb.style.display='flex';
+  }else cb.style.display='none';
   cs.classList.add('show');
   holdUntil=Date.now()+13000;
   setBubble('bub-will',  fill(bagPick('cut|will', CUT.will), {name:first(L.t)}));
@@ -2425,13 +2643,17 @@ function render(){
     var v=tot[t.id];
     var pct=Math.max(0,Math.min(100,(v/TARGET)*100));
     var toGo=TARGET-v;
-    var note=v>=TARGET?' · target smashed':(v>0?' · '+money(toGo)+' to go':'');
+    var pn=paceNote(v,viewMonth);
+    var note=v>=TARGET ? ' &middot; target smashed'
+           : pn        ? ' &middot; '+pn.txt
+           : (v>0?' &middot; '+money(toGo)+' to go':'');
+    var noteCls=v>=TARGET?'ok':(pn&&pn.ok?'ok':'');
     var units=cnt[t.id]+' / '+UNIT_TARGET+' deal'+(UNIT_TARGET===1?'':'s');
     return '<div class="row'+(i===0&&v>0?' p1':'')+'">'+
       '<span class="pos">'+(i+1)+'</span>'+
       avatar(t)+
       '<span class="who"><b>'+esc(t.name)+'</b>'+
-        '<span'+(cnt[t.id]>=UNIT_TARGET?' class="ok"':'')+'>'+units+note+'</span>'+
+        '<span'+(noteCls?' class="'+noteCls+'"':'')+'>'+units+note+'</span>'+
         '<span class="bar"><i style="width:'+pct+'%"></i></span>'+
       '</span>'+
       '<span class="fig"><b>'+money(v)+'</b><span>profit</span></span>'+
@@ -2442,11 +2664,22 @@ function render(){
   var dealCount=Object.keys(deals).length;
   var avg=dealCount?grand/dealCount:0;
   var hit=vals.filter(function(v){return v>=TARGET}).length;
+  var teamPace=paceOf(grand,viewMonth);
+  var bd=bestDeal(deals);
+  var bdTile=(bd&&BY_ID[bd.exec])
+    ? '<div class="stat best"><b>'+money(bd.profit)+'</b><span>'+esc(BY_ID[bd.exec].name)+
+      (bd.reg?' <i>'+esc(bd.reg.toUpperCase())+'</i>':'')+
+      '<i> &middot; deal of the month</i></span></div>'
+    : '';
   $('totals').innerHTML=
     '<div class="stat"><b>'+money(grand)+'</b><span>Team profit</span></div>'+
     '<div class="stat"><b>'+dealCount+' / '+(UNIT_TARGET*TEAM.length)+'</b><span>Deals</span></div>'+
-    '<div class="stat"><b>'+money(avg)+'</b><span>Average</span></div>'+
-    '<div class="stat"><b>'+hit+' / '+TEAM.length+'</b><span>At target</span></div>';
+    (teamPace&&grand>0
+      ? '<div class="stat"><b>'+money(teamPace.end)+'</b><span>Team on pace for</span></div>'
+      : '<div class="stat"><b>'+money(avg)+'</b><span>Average</span></div>')+
+    '<div class="stat"><b>'+hit+' / '+TEAM.length+'</b><span>At target</span></div>'+
+    bdTile;
+
 
   reactToBoard();
   if(isManager)renderDeals();
@@ -2613,6 +2846,37 @@ function refreshMonthTabs(){
   })['catch'](function(){renderMonthTabs()});
 }
 
+/* ---- pace ----
+   "£13,800 to go" says nothing useful on the 5th and frightens everybody on
+   the 25th. On the live month the board projects instead: where this rate
+   lands by the end of it. On a finished or a future month a projection is
+   meaningless, so it falls back to the distance. */
+var PACE_FROM=5;   /* projecting off three days is noise, not information */
+function paceOf(v,mk){
+  if(mk!==monthKey())return null;
+  var days=daysInMonth(mk), today=Math.min(new Date().getDate(),days);
+  if(today<PACE_FROM)return null;
+  return {end:(v/today)*days, days:days, today:today, left:Math.max(0,days-today)};
+}
+/* one clause, not two - this sits in a small line on a wall display */
+function paceNote(v,mk){
+  var p=paceOf(v,mk);
+  if(!p||v<=0)return null;
+  if(p.end>=TARGET)return {txt:'on pace for '+money(p.end),ok:true};
+  if(!p.left)return {txt:'finished on '+money(v),ok:false};
+  return {txt:money((TARGET-v)/p.left)+' a day to hit it',ok:false};
+}
+
+/* the single biggest deal banked this month - the board's bragging right */
+function bestDeal(obj){
+  var best=null;
+  Object.keys(obj||{}).forEach(function(k){
+    var d=obj[k], v=Number(d.profit)||0;
+    if(!best||v>best.profit)best={profit:v,exec:d.exec,reg:d.reg||'',id:k};
+  });
+  return best&&best.profit>0?best:null;
+}
+
 function monthState(mk){
   return mk===monthKey() ? 'live'
        : mk>monthKey()   ? 'next month - not started yet'
@@ -2682,6 +2946,7 @@ $('pin-go').onclick=checkPin;
 $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPin()});
 $('mgr-save').onclick=saveDeal;
 $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
+$('reload-all').onclick=reloadAllScreens;
 
 $('shot-pick').onclick=function(){$('shot-file').click()};
 $('shot-file').onchange=function(e){
@@ -2841,6 +3106,7 @@ window.dsBindBackend({
   watchControl(cb,onErr){ watch('boardcontrol', cb, ()=>{onErr&&onErr()}) },
   setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
   setView:(id,ts)=>set(ref(db,'boardcontrol/view'),{id:String(id),ts:ts||Date.now()}),
+  setReload:(ts)=>set(ref(db,'boardcontrol/reload'),ts),
   play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()})
 });
 </script>
