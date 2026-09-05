@@ -397,13 +397,19 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   in 5k steps (20k, 25k, 30k…), mirroring the strip Dan taped to the bottom of
   the paper board, and the £15,000 line stays marked as "Target".
 - **Pace, not distance.** "£13,800 to go" says nothing on the 5th and frightens
-  everyone on the 25th, so on the **live** month each standings row projects
-  instead (`paceOf()`, `paceNote()`): "on pace for £18,400" in gold when the
-  rate clears £15,000, otherwise "£620 a day to hit it". One clause, never two -
-  this is small type on a wall. Nothing is projected before day `PACE_FROM` (5)
-  because three days is noise, nor on a finished or future month where a
-  projection means nothing; both fall back to the distance. The team's own
-  projection replaces the Average tile while it applies.
+  everyone on the 25th, so on the **live** month each standings row is measured
+  against a straight line to the target instead (`paceOf()`, `paceNote()`):
+  "£3,600 ahead of pace" in gold, or "£620 a day to hit it" when short. One
+  clause, never two - this is small type on a wall. Nothing is shown before day
+  `PACE_FROM` (5), nor on a finished or future month; both fall back to the
+  distance. The team's own figure, against `TARGET * TEAM.length`, replaces the
+  Average tile while it applies.
+  **Do not go back to extrapolating the run rate.** That is what this did first
+  (`total / days elapsed * days in month`) and profit does not arrive evenly:
+  one big-profit car in the first week read "on pace for £85,000" on a board
+  whose target is £15,000, and Dan rightly called it nonsense. Comparing
+  against the line is a statement about today, not a forecast, and cannot run
+  away with itself.
 - **Deal of the month.** The single biggest deal banked (`bestDeal()`) appears
   under the leader in the breakdance cut scene and nowhere else - Dan's call:
   it turns up with the dance and goes with it, rather than sitting on the board
