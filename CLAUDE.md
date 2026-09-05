@@ -244,7 +244,7 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   that gives a sketch about every ten minutes - which is the figure Dan asks
   for - and each of the other four about every forty. Six independent schedules meant the board was
   interrupted every couple of minutes; one queue fixes that, and the sketches
-  come round most often because there are eight of them. A scene that returns
+  come round most often because there are nine of them. A scene that returns
   `false` - an empty board, nothing uploaded, another scene holding the floor -
   passes straight to the next rather than wasting the slot. The paper ball
   keeps its own frequent timer because it covers nothing.
