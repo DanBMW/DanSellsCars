@@ -262,6 +262,20 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   Note the intruder animates `right`, not `transform` - and if you ever need to
   screenshot the overlay in headless Chromium, `page.screenshot` will not
   capture it; use CDP `Page.captureScreenshot` with `fromSurface:false`.
+- **Our stunts belong to our board.** The paper ball, Nathan's visit and the
+  fire are all pinned to the used car board and to Will and Serge standing
+  either side of it, but they draw at z-index 90+ while a picture view sits at
+  50 - so with the new car board up they painted over the top of it while the
+  two of them were hidden behind it, and Nathan appeared to be setting fire to
+  his own leaderboard. All three now check `ourBoardUp()` and decline
+  otherwise; the cut-scene queue simply moves to the next slot.
+- **Will's answer.** `willRelief()` runs only while the new car leaderboard is
+  up and only when Will is on the rail beside it, roughly every fifth time that
+  board comes round. An arc of drops from his rail to the board's bottom-left
+  corner and a puddle that spreads, coordinates read from the two live rects so
+  it lands right at any size; Nathan objects on his own bubble. It sits at
+  z-index 60 - above the picture, below every cut scene, so a sketch still
+  paints over it - and is skipped entirely under reduced motion.
 - **Nathan's arson attempt.** Every 14-19 minutes `nathanFire()` pins a flickering
   fire to the board's own bottom-left corner (read from the `.board` rect at
   runtime, clamped to the viewport so a scrolled phone still shows it) and

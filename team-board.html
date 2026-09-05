@@ -489,6 +489,24 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 @media(prefers-reduced-motion:reduce){.vidscene{transition:none}}
 
+/* ---------- Will's answer to the fire ----------
+   Sits above the picture view (50) and below every cut scene (94+), so a
+   sketch still paints over it. */
+.relief{position:fixed;inset:0;z-index:60;pointer-events:none;display:none}
+.relief.show{display:block}
+.drip{
+  position:fixed;width:7px;height:11px;border-radius:50% 50% 55% 55%;
+  background:linear-gradient(180deg,#ffe066,#e8b923);
+  box-shadow:0 0 5px rgba(255,214,64,.6);
+}
+.puddle{
+  position:fixed;width:0;height:0;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 50%,rgba(255,214,64,.55),rgba(232,185,35,.18) 70%,transparent);
+  transition:width 2.6s ease-out,height 2.6s ease-out,opacity .8s ease;
+  opacity:0;
+}
+@media(prefers-reduced-motion:reduce){.relief{display:none!important}}
+
 /* ---------- birthday ---------- */
 .bdayview{
   position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
@@ -1143,6 +1161,11 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 </div>
 
 <!-- the leader takes the floor every few minutes -->
+<!-- Will returning the favour on the new car board -->
+<div class="relief" id="relief" aria-hidden="true">
+  <div class="puddle" id="puddle"></div>
+</div>
+
 <!-- the quiet birthday card that rides the rotation for a week. A view, not
      a scene: z-index 50, no tune, so every cut scene paints over it -->
 <div class="bdayview" id="bdayview" aria-hidden="true">
@@ -1487,6 +1510,12 @@ function stopScenes(){
   if(fs){fs.classList.remove('show');fs.classList.remove('out')}
   var na=$('nathan'); if(na)na.classList.remove('in');
   var ball=$('pball'); if(ball)ball.style.opacity='0';
+  var rl=$('relief');
+  if(rl){
+    rl.classList.remove('show');
+    rl.querySelectorAll('.drip').forEach(function(d){d.remove()});
+    var pd=$('puddle'); if(pd){pd.style.opacity='0';pd.style.width='0';pd.style.height='0'}
+  }
 }
 
 function bagPick(key,pool){
@@ -2071,7 +2100,7 @@ function watchNewCar(){
 /* A birthday card is one line of text - it does not need thirty seconds, and
    with two or three up at once a full slot each pushes the boards themselves
    too far apart. So the rotation is per-view rather than one fixed interval. */
-var VIEW_MS=30000, BDAY_VIEW_MS=15000, viewIdx=0, rotTimer=null;
+var VIEW_MS=30000, BDAY_VIEW_MS=15000, viewIdx=0, rotTimer=null, reliefTimer=null;
 function viewMs(v){ return (v&&v.kind==='birthday') ? BDAY_VIEW_MS : VIEW_MS }
 
 function views(){
@@ -2128,6 +2157,11 @@ function showView(i){
   ncChat(v.kind==='newcar');
   paintViewControls();
   armRotation();
+  /* roughly every fifth time his board comes round */
+  clearTimeout(reliefTimer); reliefTimer=null;
+  if(v.kind==='newcar'&&Math.random()<0.2){
+    reliefTimer=setTimeout(willRelief,4200);
+  }
   /* the two of them are hidden while a picture is up, so let them have their
      say as it comes back to ours */
   if(was!==0&&i===0){
@@ -2680,7 +2714,7 @@ var FIRE={
 
 /* Nathan has a go at torching the board, roughly every quarter of an hour */
 function nathanFire(){
-  if(stuntsBlocked())return false;
+  if(stuntsBlocked()||!ourBoardUp())return false;
   var board=document.querySelector('.board');
   if(!board)return false;
   var r=board.getBoundingClientRect();
@@ -2753,12 +2787,95 @@ function stuntsBlocked(){
   return busy || !!document.querySelector('.modal-bg.open');
 }
 
+/* The paper ball, Nathan's visit and the fire are all pinned to our own board
+   and to Will and Serge standing either side of it. With a picture up they
+   draw over the top of it at z-index 90+ while the two of them are hidden
+   behind it - which is how Nathan ended up setting fire to his own
+   leaderboard. They only run when our board is the one on screen. */
+function ourBoardUp(){ return viewIdx===0 }
+
+/* ---- Will's answer to Nathan's arson ----
+   Only ever on the new car leaderboard, and only while Will is actually
+   standing there on the rail, so it reads as him rather than as nothing in
+   particular. Coordinates come from the two live rects, so it lands right at
+   any size. */
+var RELIEF={
+  will:["That's for the fire, Nathan.","Now it's a proper new car board.",
+        "Consider that a valuation.","Marking my territory.",
+        "Same to you, mate."],
+  nathan:["WILL! Not on the board!","That is a brand new board!",
+          "Somebody get a cloth!","You are unbelievable.",
+          "I am telling Serge."]
+};
+function willRelief(){
+  if(stuntsBlocked())return false;
+  var list=views(), v=list[viewIdx];
+  if(!v||v.kind!=='newcar')return false;              /* his board, not ours */
+  var rail=document.querySelector('.nc-mascot.us img');
+  var pic=document.querySelector('.nc-shot img');
+  var wrap=$('relief'), pud=$('puddle');
+  if(!rail||!pic||!wrap||!pud||reduced())return false;
+  var a=rail.getBoundingClientRect(), b=pic.getBoundingClientRect();
+  if(!a.width||!b.width)return false;
+
+  var g=sceneStart();
+  var x0=a.right-4, y0=a.bottom+6;
+  var x1=b.left+Math.min(90,b.width*0.12), y1=b.bottom-8;
+  wrap.classList.add('show');
+  holdUntil=Date.now()+11000;
+  setBubble('bub-nc-will',  bagPick('relief|will', RELIEF.will));
+  setBubble('bub-nc-nathan',bagPick('relief|nathan',RELIEF.nathan));
+
+  var drips=[], n=18;
+  for(var i=0;i<n;i++){
+    (function(i){
+      setTimeout(function(){
+        if(g!==sceneGen)return;
+        var d=document.createElement('i');
+        d.className='drip';
+        d.style.left=x0+'px'; d.style.top=y0+'px';
+        wrap.appendChild(d); drips.push(d);
+        var jx=(Math.random()-0.5)*26, jy=(Math.random()-0.5)*10;
+        var midX=(x0+x1)/2, arc=Math.min(150,(y1-y0)*0.5+90);
+        if(d.animate){
+          d.animate([
+            {transform:'translate(0,0)',opacity:1},
+            {transform:'translate('+((midX-x0)+jx/2)+'px,'+(-arc)+'px)',opacity:1,offset:.45},
+            {transform:'translate('+((x1-x0)+jx)+'px,'+((y1-y0)+jy)+'px)',opacity:.15}
+          ],{duration:900,easing:'cubic-bezier(.35,0,.7,1)',fill:'forwards'});
+        }
+        setTimeout(function(){d.remove()},950);
+      },i*110);
+    })(i);
+  }
+
+  /* the puddle spreads once the first few have landed */
+  setTimeout(function(){
+    if(g!==sceneGen)return;
+    pud.style.left=(x1-70)+'px'; pud.style.top=(y1-14)+'px';
+    pud.style.opacity='1'; pud.style.width='150px'; pud.style.height='26px';
+  },900);
+
+  setTimeout(function(){
+    if(g!==sceneGen)return;
+    pud.style.opacity='0';
+  },7200);
+  setTimeout(function(){
+    if(g!==sceneGen)return;
+    wrap.classList.remove('show');
+    wrap.querySelectorAll('.drip').forEach(function(d){d.remove()});
+    pud.style.width='0'; pud.style.height='0';
+    sceneEnd(g);
+  },8200);
+  return true;
+}
+
 function reduced(){
   return window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 }
 
 function throwPaper(){
-  if(stuntsBlocked())return false;
+  if(stuntsBlocked()||!ourBoardUp())return false;
   var a=$('m-will'), b=$('m-serge');
   if(!a||!b)return false;
   var fromWill=Math.random()<0.5;
@@ -2801,7 +2918,7 @@ function throwPaper(){
 }
 
 function nathanVisit(){
-  if(stuntsBlocked())return false;
+  if(stuntsBlocked()||!ourBoardUp())return false;
   var g=sceneStart();
   var el=$('nathan');
   setBubble('bub-nathan', bagPick('nathan|says', NATHAN.says));
