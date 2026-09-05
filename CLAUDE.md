@@ -277,7 +277,7 @@ said so.
   his own leaderboard. All three now check `ourBoardUp()` and decline
   otherwise; the cut-scene queue simply moves to the next slot.
 - **Will's answer.** `willRelief()` runs only while the new car leaderboard is
-  up and only when Will is on the rail beside it, roughly every fifth time that
+  up and only when Will is on the rail beside it, about every second time that
   board comes round. Both rails carry a cartoon body for this (the same SVG
   shape as Will and Serge, without the pom poms), and the stream leaves him at
   hip height - a droplet every 45ms for five seconds, which reads as a stream

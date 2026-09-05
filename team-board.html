@@ -2176,9 +2176,9 @@ function showView(i){
   ncChat(v.kind==='newcar');
   paintViewControls();
   armRotation();
-  /* roughly every fifth time his board comes round */
+  /* every second time his board comes round, near enough */
   clearTimeout(reliefTimer); reliefTimer=null;
-  if(v.kind==='newcar'&&Math.random()<0.2){
+  if(v.kind==='newcar'&&Math.random()<0.5){
     reliefTimer=setTimeout(willRelief,4200);
   }
   /* the two of them are hidden while a picture is up, so let them have their
