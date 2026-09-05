@@ -377,12 +377,17 @@ said so.
   sketch 4, the shredding sketch, which swears. Dan asked for that one to stay
   silent; the board is staff-only, so it is his call rather than a customer
   one, but leave the flag alone unless he says otherwise.
-  Browsers refuse to autoplay with sound until somebody has touched the page,
-  and a wall display never gets touched, so `audioOk` only becomes true on the
-  first tap or key press on that screen - before that, and if `play()` is
-  refused anyway, the clip falls back to silent with the "sound off" badge
-  rather than being dropped. Never let the fallback skip the clip: an empty
-  slot on the wall is worse than a quiet one. The clips are warmed into the browser cache 20s after load on wide
+  **Always ask for sound and let the browser refuse** - never pre-mute on the
+  assumption it will. A display whose browser is configured to allow autoplay
+  with sound (Chrome launched `--autoplay-policy=no-user-gesture-required`,
+  Edge's per-site Media autoplay set to Allow, or a site Chrome has built up
+  enough media engagement for) then plays with sound and never needs touching.
+  Gating the attempt behind a gesture, which is what this did at first, left
+  those displays silent for no reason. When `play()` is refused the clip drops
+  to muted and plays anyway with a "tap for sound" badge - never let the
+  fallback skip the clip, an empty slot on the wall is worse than a quiet one -
+  and the first tap on that screen unmutes the clip that is already running
+  (`liveVideo`) rather than only helping the next one. The clips are warmed into the browser cache 20s after load on wide
   screens only, so a phone does not pull down thirty megabytes it will probably
   never play.
 - **Manager control of the sketches.** The manager panel has a "Sketches"

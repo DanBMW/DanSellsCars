@@ -1514,6 +1514,7 @@ function stopScenes(){
   busy=false;
   var v=$('vs-video');
   if(v){try{v.pause();v.currentTime=0}catch(e){}}
+  liveVideo=null;
   stopBirthdayTune();
   ['vidscene','statscene','cutscene','champscene','bdayscene'].forEach(function(id){
     var el=$(id); if(el)el.classList.remove('show');
@@ -2566,9 +2567,26 @@ function pickClip(){
    A wall display never gets touched, so the first tap or key press on it is
    what turns the sound on - until then, and for a clip marked `sound:false`,
    it plays silently with the badge rather than not at all. */
-var audioOk=false;
-['pointerdown','keydown','touchstart'].forEach(function(t){
-  window.addEventListener(t,function(){audioOk=true},{once:true,passive:true});
+/* We ASK for sound every time and let the browser refuse, rather than
+   assuming it will. That matters: a display whose browser is set to allow
+   autoplay with sound (Chrome launched with --autoplay-policy=
+   no-user-gesture-required, Edge's per-site Media autoplay = Allow, or a site
+   Chrome has built up enough media engagement for) then just plays with sound
+   and never needs touching. Asking only after a gesture - which is what this
+   did - left those displays silent for no reason.
+   The fallback stays: refused means muted, never dropped. */
+var audioOk=false, liveVideo=null;
+['pointerdown','keydown','touchstart','click'].forEach(function(t){
+  window.addEventListener(t,function(){
+    audioOk=true;
+    /* a clip already running silently gets its sound now, rather than the
+       next one getting it */
+    if(liveVideo&&liveVideo.wants&&liveVideo.el&&liveVideo.el.muted){
+      try{liveVideo.el.muted=false;liveVideo.el.volume=1}catch(e){}
+      var vsc=$('vidscene'); if(vsc)vsc.classList.remove('is-muted');
+    }
+    if(bdCtx&&bdCtx.state==='suspended'&&bdCtx.resume)bdCtx.resume();
+  },{passive:true});
 });
 
 /* the team sketches */
@@ -2591,9 +2609,11 @@ function videoScene(forced){
     if(v.videoWidth&&v.videoHeight)frame.style.setProperty('--ar',v.videoWidth/v.videoHeight);
   };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
-  var sound=clip.sound!==false&&audioOk;
-  v.muted=!sound; v.volume=sound?1:0;
-  vs.classList.toggle('is-muted',!sound);
+  var wants=clip.sound!==false;
+  liveVideo={el:v, wants:wants};
+  v.muted=!wants; v.volume=wants?1:0;
+  vs.classList.toggle('is-muted',!wants);
+  vs.querySelector('.vs-muted').textContent=wants?'tap for sound':'sound off';
   try{v.currentTime=0}catch(e){}
   vs.classList.add('show');
   holdUntil=Date.now()+16000;
@@ -2603,6 +2623,7 @@ function videoScene(forced){
   var done=false;
   var finish=function(){
     if(done)return; done=true;
+    liveVideo=null;
     vs.classList.remove('show');
     try{v.pause();v.currentTime=0}catch(e){}
     sceneEnd(g);
@@ -2614,8 +2635,8 @@ function videoScene(forced){
 
   var go=v.play();
   if(go&&go['catch'])go['catch'](function(){
-    /* sound refused after all - fall back to silent rather than dropping the
-       clip and leaving the slot empty */
+    /* refused - almost always the autoplay policy. Drop to silent and try
+       again; an empty slot on the wall is worse than a quiet one. */
     v.muted=true; v.volume=0; vs.classList.add('is-muted');
     var again=v.play();
     if(again&&again['catch'])again['catch'](function(){clearTimeout(guard);finish()});
