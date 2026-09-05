@@ -187,6 +187,13 @@ tag, and do not add these pages to any nav.
 A single self-contained page; no build step, no shared assets. It replaces the
 hand-drawn £15,000 challenge board that lived on the showroom wall.
 
+**It is internal facing only** (Dan's ruling) - a staff display, not something
+customers stand in front of. That is why the banter, Nathan's arson and Will's
+reply to it are pitched where they are. Do not soften that content on the
+assumption a customer might see it, and do not use "customers can see it" as a
+reason for a decision here; if something needs holding back, it is because Dan
+said so.
+
 - **Team roster** is the `TEAM` array at the top of the page script — id,
   initials, display name and photo path, in the same left-to-right order as the
   old paper board (DW, CA, MS, KJ, CH, TA, DC, MD). Changing the team means
@@ -367,8 +374,9 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   guard closes the scene if the file stalls - the board must never be left
   covered.
   **Sound.** Clips play with sound, except any carrying `sound:false` -
-  sketch 4, the shredding sketch, which swears. That flag is not a preference:
-  the board is on a showroom wall with customers in front of it.
+  sketch 4, the shredding sketch, which swears. Dan asked for that one to stay
+  silent; the board is staff-only, so it is his call rather than a customer
+  one, but leave the flag alone unless he says otherwise.
   Browsers refuse to autoplay with sound until somebody has touched the page,
   and a wall display never gets touched, so `audioOk` only becomes true on the
   first tap or key press on that screen - before that, and if `play()` is
