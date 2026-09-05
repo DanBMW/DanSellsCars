@@ -447,11 +447,12 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   display:flex;flex-direction:column;align-items:center;gap:6px;
   width:clamp(112px,15vw,210px);flex:none;
 }
-.nc-mascot img{
-  width:clamp(46px,5.4vw,78px);height:clamp(46px,5.4vw,78px);border-radius:50%;
-  object-fit:cover;object-position:58% 20%;border:2px solid rgba(255,255,255,.55);
-  box-shadow:0 4px 14px rgba(0,0,0,.5);
-}
+.nc-mascot .figure{--hd:clamp(46px,5.4vw,78px)}
+.nc-mascot .body{width:calc(var(--hd)*1.9)}
+.nc-mascot .torso{animation:bob 2.4s ease-in-out infinite}
+/* he turns to face the board he is about to ruin */
+.nc-mascot.relieving .figure{transform:rotate(6deg);transition:transform .5s ease}
+.nc-mascot.relieving .a-r{opacity:.35}
 .nc-mascot .nm{font-weight:900;font-size:clamp(.6rem,1.1vw,.8rem);letter-spacing:.02em}
 .nc-mascot .rl{font-size:clamp(.5rem,.9vw,.66rem);color:var(--muted);text-align:center;line-height:1.25}
 .nc-mascot.us .nm{color:var(--blue)}
@@ -495,14 +496,18 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 .relief{position:fixed;inset:0;z-index:60;pointer-events:none;display:none}
 .relief.show{display:block}
 .drip{
-  position:fixed;width:7px;height:11px;border-radius:50% 50% 55% 55%;
-  background:linear-gradient(180deg,#ffe066,#e8b923);
-  box-shadow:0 0 5px rgba(255,214,64,.6);
+  position:fixed;width:9px;height:14px;border-radius:50% 50% 58% 58%;
+  background:linear-gradient(180deg,#fff3a8,#e8b923);
+  box-shadow:0 0 7px rgba(255,214,64,.75);
+}
+.splash{
+  position:fixed;width:6px;height:6px;border-radius:50%;
+  background:rgba(255,224,102,.9);box-shadow:0 0 6px rgba(255,214,64,.7);
 }
 .puddle{
   position:fixed;width:0;height:0;border-radius:50%;
-  background:radial-gradient(ellipse at 50% 50%,rgba(255,214,64,.55),rgba(232,185,35,.18) 70%,transparent);
-  transition:width 2.6s ease-out,height 2.6s ease-out,opacity .8s ease;
+  background:radial-gradient(ellipse at 50% 50%,rgba(255,224,102,.7),rgba(232,185,35,.32) 62%,rgba(232,185,35,.05) 88%,transparent);
+  transition:width 5s ease-out,height 5s ease-out,opacity 1s ease;
   opacity:0;
 }
 @media(prefers-reduced-motion:reduce){.relief{display:none!important}}
@@ -1080,6 +1085,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
         joins the rotation for a week. More than one at a time is fine - they each get their own slot. If they have
         their own clip it comes round with the card, about once an hour.</p>
       <input type="text" id="bday-name" maxlength="40" placeholder="Whose birthday? (optional)" autocomplete="off">
+      <p class="shotcap" id="bday-clipnote" style="margin:-8px 0 12px"></p>
       <button type="button" class="btn" style="width:100%" id="bday-go">&#127874; Put it on the board</button>
       <div class="deals" id="bday-list" style="margin-top:10px"></div>
 
@@ -1101,15 +1107,21 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <div class="nc-when" id="nc-when"></div>
   </div>
   <div class="nc-chat" id="nc-chat" aria-hidden="true">
-    <div class="nc-mascot us">
+    <div class="nc-mascot us" id="nc-will">
       <div class="bubble" id="bub-nc-will">Morning, Nathan.</div>
-      <img src="team/will.jpg" alt="Will Potter">
+      <div class="figure">
+        <img class="head" src="team/will.jpg" alt="Will Potter">
+        <svg class="body" viewBox="0 0 120 100" aria-hidden="true"><path class="a-l" d="M48,24 L32,44" stroke="#2b3546" stroke-width="9" stroke-linecap="round" fill="none"/><path class="a-r" d="M72,24 L88,44" stroke="#2b3546" stroke-width="9" stroke-linecap="round" fill="none"/><rect x="50" y="56" width="9.5" height="32" rx="4.75" fill="#1c2431"/><rect x="60.5" y="56" width="9.5" height="32" rx="4.75" fill="#1c2431"/><ellipse cx="54.7" cy="90" rx="7" ry="3.8" fill="#0b0f16"/><ellipse cx="65.3" cy="90" rx="7" ry="3.8" fill="#0b0f16"/><g class="torso"><rect x="54" y="0" width="12" height="14" rx="5" fill="#2b3546"/><rect x="43" y="10" width="34" height="50" rx="13" fill="#2b3546"/></g></svg>
+      </div>
       <div class="nm">WILL</div>
       <div class="rl">Used Car Manager</div>
     </div>
-    <div class="nc-mascot them">
+    <div class="nc-mascot them" id="nc-nathan">
       <div class="bubble" id="bub-nc-nathan">Look at that board.</div>
-      <img src="team/nj.jpg" alt="Nathan Jobson">
+      <div class="figure">
+        <img class="head" src="team/nj.jpg" alt="Nathan Jobson">
+        <svg class="body" viewBox="0 0 120 100" aria-hidden="true"><path class="a-l" d="M48,24 L32,44" stroke="#1b2430" stroke-width="9" stroke-linecap="round" fill="none"/><path class="a-r" d="M72,24 L88,44" stroke="#1b2430" stroke-width="9" stroke-linecap="round" fill="none"/><rect x="50" y="56" width="9.5" height="32" rx="4.75" fill="#1c2431"/><rect x="60.5" y="56" width="9.5" height="32" rx="4.75" fill="#1c2431"/><ellipse cx="54.7" cy="90" rx="7" ry="3.8" fill="#0b0f16"/><ellipse cx="65.3" cy="90" rx="7" ry="3.8" fill="#0b0f16"/><g class="torso"><rect x="54" y="0" width="12" height="14" rx="5" fill="#1b2430"/><rect x="43" y="10" width="34" height="50" rx="13" fill="#1b2430"/></g></svg>
+      </div>
       <div class="nm">NATHAN</div>
       <div class="rl">New Car Manager</div>
     </div>
@@ -1513,9 +1525,10 @@ function stopScenes(){
   var rl=$('relief');
   if(rl){
     rl.classList.remove('show');
-    rl.querySelectorAll('.drip').forEach(function(d){d.remove()});
+    Array.prototype.forEach.call(rl.querySelectorAll('.drip,.splash'),function(d){d.remove()});
     var pd=$('puddle'); if(pd){pd.style.opacity='0';pd.style.width='0';pd.style.height='0'}
   }
+  var nw=$('nc-will'); if(nw)nw.classList.remove('relieving');
 }
 
 function bagPick(key,pool){
@@ -1686,13 +1699,19 @@ function stopBirthdayTune(){
 /* Somebody's own birthday clip. Matched on the name the manager types, so
    Dan adds a file here and it attaches itself from then on. */
 var BDAY_CLIPS=[
-  {match:'mon', src:'video/bday-mon.mp4', ar:16/9}
+  {match:['mon','mon singh'], src:'video/bday-mon.mp4', ar:16/9}
 ];
+/* the FIRST NAME has to match, not just start with it - a prefix match gave
+   Monica the video made for Mon */
 function bdayClipFor(name){
-  var n=String(name||'').toLowerCase();
+  var n=String(name||'').trim().toLowerCase().replace(/\s+/g,' ');
   if(!n)return '';
+  var first=n.split(' ')[0];
   for(var i=0;i<BDAY_CLIPS.length;i++){
-    if(n.indexOf(BDAY_CLIPS[i].match)===0)return BDAY_CLIPS[i].src;
+    var keys=[].concat(BDAY_CLIPS[i].match);
+    for(var k=0;k<keys.length;k++){
+      if(n===keys[k]||first===keys[k])return BDAY_CLIPS[i].src;
+    }
   }
   return '';
 }
@@ -2811,62 +2830,84 @@ function willRelief(){
   if(stuntsBlocked())return false;
   var list=views(), v=list[viewIdx];
   if(!v||v.kind!=='newcar')return false;              /* his board, not ours */
-  var rail=document.querySelector('.nc-mascot.us img');
+  var him=$('nc-will');
+  var body=him&&him.querySelector('.body');
   var pic=document.querySelector('.nc-shot img');
   var wrap=$('relief'), pud=$('puddle');
-  if(!rail||!pic||!wrap||!pud||reduced())return false;
-  var a=rail.getBoundingClientRect(), b=pic.getBoundingClientRect();
+  if(!him||!body||!pic||!wrap||!pud||reduced())return false;
+  var a=body.getBoundingClientRect(), b=pic.getBoundingClientRect();
   if(!a.width||!b.width)return false;
 
   var g=sceneStart();
-  var x0=a.right-4, y0=a.bottom+6;
-  var x1=b.left+Math.min(90,b.width*0.12), y1=b.bottom-8;
+  /* out of the middle of him, hip height */
+  var x0=a.left+a.width*0.57, y0=a.top+a.height*0.55;
+  var x1=b.left+Math.min(110,b.width*0.14), y1=b.bottom-6;
+  him.classList.add('relieving');
   wrap.classList.add('show');
-  holdUntil=Date.now()+11000;
+  holdUntil=Date.now()+15000;
   setBubble('bub-nc-will',  bagPick('relief|will', RELIEF.will));
   setBubble('bub-nc-nathan',bagPick('relief|nathan',RELIEF.nathan));
 
-  var drips=[], n=18;
-  for(var i=0;i<n;i++){
-    (function(i){
-      setTimeout(function(){
-        if(g!==sceneGen)return;
-        var d=document.createElement('i');
-        d.className='drip';
-        d.style.left=x0+'px'; d.style.top=y0+'px';
-        wrap.appendChild(d); drips.push(d);
-        var jx=(Math.random()-0.5)*26, jy=(Math.random()-0.5)*10;
-        var midX=(x0+x1)/2, arc=Math.min(150,(y1-y0)*0.5+90);
-        if(d.animate){
-          d.animate([
-            {transform:'translate(0,0)',opacity:1},
-            {transform:'translate('+((midX-x0)+jx/2)+'px,'+(-arc)+'px)',opacity:1,offset:.45},
-            {transform:'translate('+((x1-x0)+jx)+'px,'+((y1-y0)+jy)+'px)',opacity:.15}
-          ],{duration:900,easing:'cubic-bezier(.35,0,.7,1)',fill:'forwards'});
+  /* a droplet every 45ms for five seconds reads as a stream rather than a
+     dribble - Dan was specific about the volume */
+  var GAP=45, LAST=5000, arc=Math.min(170,(y1-y0)*0.45+110);
+  var emit=setInterval(function(){
+    if(g!==sceneGen){clearInterval(emit);return}
+    var d=document.createElement('i');
+    d.className='drip';
+    d.style.left=x0+'px'; d.style.top=y0+'px';
+    wrap.appendChild(d);
+    var jx=(Math.random()-0.5)*34, jy=(Math.random()-0.5)*12;
+    var midX=(x0+x1)/2;
+    if(d.animate){
+      d.animate([
+        {transform:'translate(0,0) scale(1)',opacity:1},
+        {transform:'translate('+((midX-x0)+jx/2)+'px,'+(-arc)+'px) scale(1.05)',opacity:1,offset:.45},
+        {transform:'translate('+((x1-x0)+jx)+'px,'+((y1-y0)+jy)+'px) scale(.8)',opacity:.2}
+      ],{duration:950,easing:'cubic-bezier(.35,0,.72,1)',fill:'forwards'});
+    }
+    /* it splashes when it lands */
+    setTimeout(function(){
+      if(g!==sceneGen)return;
+      for(var k=0;k<2;k++){
+        var sp=document.createElement('i');
+        sp.className='splash';
+        sp.style.left=(x1+jx)+'px'; sp.style.top=(y1+jy)+'px';
+        wrap.appendChild(sp);
+        if(sp.animate){
+          sp.animate([
+            {transform:'translate(0,0) scale(1)',opacity:.9},
+            {transform:'translate('+((Math.random()-0.5)*46)+'px,'+(-14-Math.random()*16)+'px) scale(.5)',opacity:0}
+          ],{duration:420,easing:'ease-out',fill:'forwards'});
         }
-        setTimeout(function(){d.remove()},950);
-      },i*110);
-    })(i);
-  }
+        setTimeout(function(){sp.remove()},440);
+      }
+    },950);
+    setTimeout(function(){d.remove()},1000);
+  },GAP);
+  setTimeout(function(){clearInterval(emit)},LAST);
 
-  /* the puddle spreads once the first few have landed */
+  /* and it keeps spreading the whole time he is at it */
   setTimeout(function(){
     if(g!==sceneGen)return;
-    pud.style.left=(x1-70)+'px'; pud.style.top=(y1-14)+'px';
-    pud.style.opacity='1'; pud.style.width='150px'; pud.style.height='26px';
-  },900);
+    pud.style.left=(x1-180)+'px'; pud.style.top=(y1-22)+'px';
+    pud.style.opacity='1'; pud.style.width='380px'; pud.style.height='54px';
+  },800);
 
   setTimeout(function(){
     if(g!==sceneGen)return;
+    him.classList.remove('relieving');
     pud.style.opacity='0';
-  },7200);
+  },LAST+2600);
   setTimeout(function(){
     if(g!==sceneGen)return;
+    clearInterval(emit);
+    him.classList.remove('relieving');
     wrap.classList.remove('show');
-    wrap.querySelectorAll('.drip').forEach(function(d){d.remove()});
+    Array.prototype.forEach.call(wrap.querySelectorAll('.drip,.splash'),function(d){d.remove()});
     pud.style.width='0'; pud.style.height='0';
     sceneEnd(g);
-  },8200);
+  },LAST+3800);
   return true;
 }
 
@@ -3320,6 +3361,18 @@ $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPi
 $('mgr-save').onclick=saveDeal;
 $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
 $('reload-all').onclick=reloadAllScreens;
+function paintBdayClipNote(){
+  var el=$('bday-clipnote');
+  if(!el)return;
+  var n=$('bday-name').value.trim();
+  var c=bdayClipFor(n);
+  el.innerHTML = c ? '<b>' + esc(n) + '&rsquo;s video</b> will play with it'
+               : (n ? 'No video for that name &mdash; send it to Dan and it gets added'
+                    : 'Type a name to see whether they have a video');
+}
+$('bday-name').addEventListener('input',paintBdayClipNote);
+paintBdayClipNote();
+
 $('bday-go').onclick=function(){
   var name=$('bday-name').value.trim().slice(0,40);
   var clip=bdayClipFor(name);
@@ -3341,6 +3394,7 @@ $('bday-go').onclick=function(){
   backend.play(cmd).then(function(){
     toast(name?'Happy birthday '+name+' - up for a week':'Happy birthday - up for a week','ok');
   })['catch'](function(e){console.error(e);toast('Playing on this screen only','ok');playNow(cmd)});
+  paintBdayClipNote();
 };
 
 function paintBirthdayList(){

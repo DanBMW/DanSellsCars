@@ -271,9 +271,13 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   otherwise; the cut-scene queue simply moves to the next slot.
 - **Will's answer.** `willRelief()` runs only while the new car leaderboard is
   up and only when Will is on the rail beside it, roughly every fifth time that
-  board comes round. An arc of drops from his rail to the board's bottom-left
-  corner and a puddle that spreads, coordinates read from the two live rects so
-  it lands right at any size; Nathan objects on his own bubble. It sits at
+  board comes round. Both rails carry a cartoon body for this (the same SVG
+  shape as Will and Serge, without the pom poms), and the stream leaves him at
+  hip height - a droplet every 45ms for five seconds, which reads as a stream
+  rather than a dribble - arcs to the board's bottom-left corner, splashes, and
+  leaves a puddle that spreads the whole time. Coordinates come from the body
+  and picture rects so it lands right at any size; Nathan objects on his own
+  bubble. It sits at
   z-index 60 - above the picture, below every cut scene, so a sketch still
   paints over it - and is skipped entirely under reduced motion.
 - **Nathan's arson attempt.** Every 14-19 minutes `nathanFire()` pins a flickering
@@ -456,7 +460,10 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   timestamp with nothing to reset, and the manager panel lists them with a bin
   to take one down early. The rotating card is **silent** - the tune belongs to
   the moment it goes up, not to every thirty seconds for seven days.
-  Somebody's own clip (`BDAY_CLIPS`, matched on the name typed) follows the
+  Somebody's own clip lives in `BDAY_CLIPS` - a file in `video/` plus the
+  first name(s) it answers to. Matching is on the **whole first name**, not a
+  prefix: `indexOf(match)===0` handed Monica the video made for Mon. The panel
+  says as you type whether that name has one. It follows the
   card when it is first put up, and after that rides the rotation at most once
   an hour (`BDAY_CLIP_GAP`) - the same ten seconds every two minutes for a week
   would be a punishment, not a present. `videoScene()` therefore takes an
