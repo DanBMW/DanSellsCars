@@ -280,18 +280,23 @@ said so.
   up and only when Will is on the rail beside it, about every second time that
   board comes round. Both rails carry a cartoon body for this (the same SVG
   shape as Will and Serge, without the pom poms), and the stream leaves him at
-  hip height - a droplet every 45ms for five seconds, which reads as a stream
-  rather than a dribble - arcs to the board's bottom-left corner, splashes, and
-  leaves a puddle that spreads the whole time. Coordinates come from the body
-  and picture rects so it lands right at any size; Nathan objects on his own
-  bubble. It sits at
+  hip height and **the board fills up from the bottom**: a translucent layer
+  rises to 92% of the picture over nine seconds with a rolling surface and
+  bubbles in it, the stream lands on the rising surface rather than the floor,
+  a puddle spreads underneath, then it drains away. Nathan's lines are read in
+  order rather than shuffled, so he escalates as it climbs. Coordinates come
+  from the body and picture rects so it lands right at any size. It sits at
   z-index 60 - above the picture, below every cut scene, so a sketch still
   paints over it - and is skipped entirely under reduced motion.
-- **Nathan's arson attempt.** Every 14-19 minutes `nathanFire()` pins a flickering
-  fire to the board's own bottom-left corner (read from the `.board` rect at
-  runtime, clamped to the viewport so a scrolled phone still shows it) and
-  Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
-  burns for ten seconds and goes out.
+- **Nathan's arson attempt.** `nathanFire()` sets fire to the **whole board**,
+  not a corner of it: the `.board` rect is read at runtime and a row of flames
+  is built across its full width (one every ~28px, three layers - body, bright
+  core, and a taller lick every fourth), plus a char band and a flame layer
+  that both climb the board over seven seconds, embers rising off the top edge,
+  drifting smoke and an orange wash over the whole room. It burns for eleven
+  seconds, then goes out and the char fades. Flame heights are a **percentage
+  of their container**, which is what makes them grow as the fire climbs -
+  fixed pixel heights just sat there while the char rose past them.
 - **The view rotation.** The wall display cycles through whatever there is to
   show (`views()`, `showView()`, `rotateView()`) - 30 seconds each (`VIEW_MS`),
   except a birthday card, which gets 15 (`BDAY_VIEW_MS`): it is one line of
@@ -339,7 +344,9 @@ said so.
   that view, not an uploaded screenshot - carries its own pair of heads in the
   bottom corners with the same speech bubbles as Will and Serge, rotating every
   7.5s from the `NCCHAT` pools through the same shuffle bag (`ncChat()`,
-  `ncChatLine()`). Nathan gloats about new cars, Will defends the used pitch;
+  `ncChatLine()`), and that rotation respects `holdUntil` - without it the 7.5s
+  timer talked straight over both of them mid-set-piece.
+  Nathan gloats about new cars, Will defends the used pitch;
   that opposition is the joke, so keep it if you add lines. They are **side
   rails level with the middle of the picture**, the same shape as Will and
   Serge on our own board. The `chatty` class narrows the image to leave room
