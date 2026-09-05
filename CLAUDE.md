@@ -429,14 +429,25 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   `UNIT_TARGET * TEAM.length`. Profit and units are separate targets - somebody
   can be past £15,000 on six deals, or on eight and short of it.
 - **Happy birthday.** A button in the manager panel (optional name) puts a
-  birthday scene and the tune on every screen. The tune is **synthesised with
+  birthday scene and the tune on every screen, and the card then **stays in the
+  view rotation for a week** (`birthdays/<pushId>` = `{name, ts, clip?}`,
+  `BDAY_DAYS`, `liveBirthdays()`). Each live birthday is its own view, so two
+  or three at once is simply two or three slots; they age out on their
+  timestamp with nothing to reset, and the manager panel lists them with a bin
+  to take one down early. The rotating card is **silent** - the tune belongs to
+  the moment it goes up, not to every thirty seconds for seven days.
+  Somebody's own clip (`BDAY_CLIPS`, matched on the name typed) follows the
+  card when it is first put up, and after that rides the rotation at most once
+  an hour (`BDAY_CLIP_GAP`) - the same ten seconds every two minutes for a week
+  would be a punishment, not a present. `videoScene()` therefore takes an
+  ad-hoc `{src, ar, cap}` object as well as a `CLIPS` src. The tune is **synthesised with
   the Web Audio API** (`BDAY`, `playBirthdayTune()`), not played from a file:
   the melody is out of copyright (the Hill sisters' tune - the US claim was
   struck down in 2016 and UK protection expired at the end of that year) and
   generating it avoids any separate recording copyright, and any megabyte of
-  audio. It rides the existing `boardcontrol/play` command as
-  `tune:birthday:<name>` rather than taking a new database key, so it needed no
-  rules change. Same audio rule as the sketches: a wall display that nobody has
+  audio. The one-off "play it now" rides the existing `boardcontrol/play`
+  command as `tune:birthday:<name>`; the week-long card is separate state under
+  `birthdays`. Same audio rule as the sketches: a wall display that nobody has
   touched cannot make sound, so the scene says "tap this screen once to hear
   it" and still plays silently rather than not at all.
 - **Reloading every screen.** Shipping a change to a board on a wall used to

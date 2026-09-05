@@ -490,6 +490,15 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 @media(prefers-reduced-motion:reduce){.vidscene{transition:none}}
 
 /* ---------- birthday ---------- */
+.bdayview{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(60% 60% at 50% 42%,rgba(240,111,208,.16),rgba(5,8,13,.96) 70%),rgba(5,8,13,.95);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+  pointer-events:none;padding:20px;text-align:center;
+}
+.bdayview.show{opacity:1;visibility:visible}
+@media(prefers-reduced-motion:reduce){.bdayview{transition:none}}
+
 .bdayscene{
   position:fixed;inset:0;z-index:98;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(60% 60% at 50% 42%,rgba(240,111,208,.20),rgba(4,7,12,.97) 70%),rgba(4,7,12,.96);
@@ -1049,10 +1058,12 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
       <p class="msgline" id="shot-msg"></p>
 
       <h2 style="margin-top:22px;font-size:1rem">Birthday</h2>
-      <p class="hint" style="margin-bottom:10px">Puts Happy Birthday on every screen, with the tune. Leave the name
-        blank if you would rather not put it up.</p>
+      <p class="hint" style="margin-bottom:10px">Plays on every screen straight away with the tune, then the card
+        joins the rotation for a week. More than one at a time is fine - they each get their own slot. If they have
+        their own clip it comes round with the card, about once an hour.</p>
       <input type="text" id="bday-name" maxlength="40" placeholder="Whose birthday? (optional)" autocomplete="off">
-      <button type="button" class="btn" style="width:100%" id="bday-go">&#127874; Play Happy Birthday</button>
+      <button type="button" class="btn" style="width:100%" id="bday-go">&#127874; Put it on the board</button>
+      <div class="deals" id="bday-list" style="margin-top:10px"></div>
 
       <h2 style="margin-top:22px;font-size:1rem">Every screen</h2>
       <p class="hint" style="margin-bottom:10px">Pushes a refresh to every screen showing the board, so a change
@@ -1132,6 +1143,17 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 </div>
 
 <!-- the leader takes the floor every few minutes -->
+<!-- the quiet birthday card that rides the rotation for a week. A view, not
+     a scene: z-index 50, no tune, so every cut scene paints over it -->
+<div class="bdayview" id="bdayview" aria-hidden="true">
+  <div class="ch-inner">
+    <div class="bd-cake">&#127874;</div>
+    <div class="bd-title">Happy Birthday</div>
+    <div class="ch-name" id="bv-name"></div>
+    <div class="bd-note" id="bv-note"></div>
+  </div>
+</div>
+
 <!-- somebody's birthday -->
 <div class="bdayscene" id="bdayscene" aria-hidden="true">
   <div class="ch-confetti" id="bd-confetti" aria-hidden="true"></div>
@@ -1632,13 +1654,32 @@ function stopBirthdayTune(){
   bdGain=null;
 }
 
-function birthdayScene(name){
+/* Somebody's own birthday clip. Matched on the name the manager types, so
+   Dan adds a file here and it attaches itself from then on. */
+var BDAY_CLIPS=[
+  {match:'mon', src:'video/bday-mon.mp4', ar:16/9}
+];
+function bdayClipFor(name){
+  var n=String(name||'').toLowerCase();
+  if(!n)return '';
+  for(var i=0;i<BDAY_CLIPS.length;i++){
+    if(n.indexOf(BDAY_CLIPS[i].match)===0)return BDAY_CLIPS[i].src;
+  }
+  return '';
+}
+function bdayClipMeta(src){
+  for(var i=0;i<BDAY_CLIPS.length;i++)if(BDAY_CLIPS[i].src===src)return BDAY_CLIPS[i];
+  return {src:src, ar:16/9};
+}
+
+/* The card, the tune, and then their own clip if they have one. */
+function birthdayScene(name,clip,withTune){
   var el=$('bdayscene');
   if(!el)return false;
   stopScenes();
   var g=sceneStart();
   $('bd-name').textContent=name||'';
-  var heard=playBirthdayTune();
+  var heard=withTune===false ? true : playBirthdayTune();
   $('bd-note').textContent=heard?'' :'Tap this screen once to hear it';
   confetti('bd-confetti');
   el.classList.add('show');
@@ -1652,8 +1693,41 @@ function birthdayScene(name){
     $('bd-confetti').innerHTML='';
     stopBirthdayTune();
     sceneEnd(g);
+    /* their clip follows the card rather than talking over it */
+    if(clip){
+      var m=bdayClipMeta(clip);
+      videoScene({src:m.src, ar:m.ar, cap:(name?esc(name)+' &mdash; ':'')+'happy birthday',
+                  name:'Birthday', sound:m.sound!==false});
+    }
   },12000);
   return true;
+}
+
+/* ---- birthdays stay on the board for a week ----
+   Pushing one writes it to `birthdays`, and every board turns each live one
+   into its own slot in the view rotation, so more than one at a time is just
+   more slots. The card rotates silently - the tune belongs to the moment it
+   is put up, not to every thirty seconds for seven days - and their clip
+   comes round with it at most once an hour. */
+var BDAY_DAYS=7, BDAY_CLIP_GAP=3600000;
+var BIRTHDAYS={}, bdayClipLast={};
+
+function liveBirthdays(){
+  var out=[], cut=Date.now()-BDAY_DAYS*86400000;
+  Object.keys(BIRTHDAYS||{}).forEach(function(k){
+    var b=BIRTHDAYS[k];
+    if(b&&typeof b.ts==='number'&&b.ts>cut)out.push({id:k,name:b.name||'',ts:b.ts,clip:b.clip||''});
+  });
+  out.sort(function(a,b){return a.ts-b.ts});
+  return out;
+}
+function watchBirthdays(){
+  if(!backend||!backend.watchBirthdays)return;
+  backend.watchBirthdays(function(v){
+    BIRTHDAYS=v||{};
+    paintBirthdayList();
+    applyPin();
+  });
 }
 var BDAY_LINES={
   will:['Many happy returns!','Cake in the office, everyone.','Happy birthday from all of us!',
@@ -2010,6 +2084,9 @@ function views(){
     cap:EXTRA.used.note?esc(EXTRA.used.note):'From the used car desk',
     when:stamp('Put up',EXTRA.used.ts)
   });
+  liveBirthdays().forEach(function(b){
+    out.push({id:'bday-'+b.id, kind:'birthday', bday:b});
+  });
   if(EXTRA.newcar)out.push({
     id:'extra-newcar',
     img:EXTRA.newcar.img,
@@ -2017,6 +2094,10 @@ function views(){
     when:stamp('Put up',EXTRA.newcar.ts)
   });
   return out;
+}
+function bdayDayNote(ts){
+  var d=Math.floor((Date.now()-ts)/86400000);
+  return d<=0?'Today':(d===1?'Yesterday':d+' days ago');
 }
 function stamp(word,ts){
   if(!ts)return '';
@@ -2034,7 +2115,12 @@ function showView(i){
     $('nc-kicker').innerHTML=v.cap;
     $('nc-when').textContent=v.when;
   }
+  if(v.kind==='birthday'){
+    $('bv-name').textContent=v.bday.name||'';
+    $('bv-note').textContent=bdayDayNote(v.bday.ts);
+  }
   $('ncscene').classList.toggle('show',!!v.img);
+  $('bdayview').classList.toggle('show',v.kind==='birthday');
   ncChat(v.kind==='newcar');
   paintViewControls();
   /* the two of them are hidden while a picture is up, so let them have their
@@ -2051,7 +2137,21 @@ function rotateView(){
      from under a cut scene */
   if(document.querySelector('.modal-bg.open')){showView(0);return}
   if(busy)return;
-  showView((viewIdx+1)%views().length);
+  var list=views(), next=(viewIdx+1)%list.length, v=list[next];
+  /* their own clip rides along with the card, but not every time it comes
+     round - the same ten seconds every couple of minutes for a week is not a
+     present, it is a punishment */
+  if(v&&v.kind==='birthday'&&v.bday.clip){
+    var last=bdayClipLast[v.bday.id]||0;
+    if(Date.now()-last>BDAY_CLIP_GAP){
+      bdayClipLast[v.bday.id]=Date.now();
+      var m=bdayClipMeta(v.bday.clip);
+      if(videoScene({src:m.src, ar:m.ar, name:'Birthday',
+                     cap:(v.bday.name?esc(v.bday.name)+' &mdash; ':'')+'happy birthday',
+                     sound:m.sound!==false}))return;
+    }
+  }
+  showView(next);
 }
 
 function startRotation(){
@@ -2284,7 +2384,8 @@ function playNow(src){
   /* the play command carries tunes as well as clips, so the birthday button
      rides the channel that already exists rather than needing a new one */
   if(src.indexOf('tune:birthday')===0){
-    birthdayScene(src.slice(14));
+    var nm=src.slice(14);
+    birthdayScene(nm, bdayClipFor(nm));
     return;
   }
   if(!videoScene(src)){
@@ -2410,14 +2511,16 @@ var audioOk=false;
 });
 
 /* the team sketches */
-function videoScene(forcedSrc){
+function videoScene(forced){
   if(stuntsBlocked())return false;
   var vs=$('vidscene'), v=$('vs-video');
   if(!vs||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
   /* the toggle stops the automatic slot only - a manager pressing play still
      works when sketches are switched off */
-  if(!forcedSrc&&!videosOn)return false;
-  var clip=forcedSrc?clipBySrc(forcedSrc):pickClip();
+  if(!forced&&!videosOn)return false;
+  /* a birthday clip is not in CLIPS, so an object may be passed straight in */
+  var clip=!forced ? pickClip()
+         : (typeof forced==='string' ? clipBySrc(forced) : forced);
   if(!clip)return false;
   var g=sceneStart();
   var frame=vs.querySelector('.vs-frame');
@@ -3094,16 +3197,48 @@ $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
 $('reload-all').onclick=reloadAllScreens;
 $('bday-go').onclick=function(){
   var name=$('bday-name').value.trim().slice(0,40);
+  var clip=bdayClipFor(name);
   var cmd='tune:birthday:'+name;
+  $('bday-name').value='';
+  /* it goes up now, and it stays up for a week */
+  if(backend&&backend.addBirthday){
+    var payload={name:name, ts:Date.now()};
+    if(clip)payload.clip=clip;
+    backend.addBirthday(payload)['catch'](function(e){
+      console.error(e);toast('Could not keep it on the board for the week','err');
+    });
+  }
   if(!backend||!backend.play||!controlLive){
     toast('Playing on this screen only','ok');
     playNow(cmd);
     return;
   }
   backend.play(cmd).then(function(){
-    toast(name?'Happy birthday '+name+' - on the board':'Happy birthday - on the board','ok');
+    toast(name?'Happy birthday '+name+' - up for a week':'Happy birthday - up for a week','ok');
   })['catch'](function(e){console.error(e);toast('Playing on this screen only','ok');playNow(cmd)});
 };
+
+function paintBirthdayList(){
+  var el=$('bday-list');
+  if(!el)return;
+  var live=liveBirthdays();
+  if(!live.length){el.innerHTML='<p class="shotcap" style="margin:0">Nobody on the board this week.</p>';return}
+  el.innerHTML=live.map(function(b){
+    var left=Math.max(0,BDAY_DAYS-Math.floor((Date.now()-b.ts)/86400000));
+    return '<div class="deal"><div class="in"><b>'+(b.name?esc(b.name):'No name')+'</b>'+
+      '<span>'+bdayDayNote(b.ts)+' &middot; '+left+' day'+(left===1?'':'s')+' left'+
+      (b.clip?' &middot; has a clip':'')+'</span></div>'+
+      '<button type="button" class="icon del" data-bday="'+b.id+'" title="Take it off the board">&#128465;</button></div>';
+  }).join('');
+  Array.prototype.forEach.call(el.querySelectorAll('[data-bday]'),function(btn){
+    btn.onclick=function(){
+      if(!backend||!backend.delBirthday)return;
+      backend.delBirthday(btn.getAttribute('data-bday')).then(function(){
+        toast('Taken off the board','ok');
+      })['catch'](function(e){console.error(e);toast('Could not remove that','err')});
+    };
+  });
+}
 
 $('shot-pick').onclick=function(){$('shot-file').click()};
 $('shot-file').onchange=function(e){
@@ -3147,6 +3282,7 @@ $('shot-remove').onclick=function(){
 };
 paintShotPanel();
 paintViewControls();
+paintBirthdayList();
 $('seg-cur').onclick=function(){if(viewMonth!==monthKey()){showMonth(monthKey());resetForm()}};
 $('seg-next').onclick=function(){if(viewMonth!==nextMonthKey()){showMonth(nextMonthKey());resetForm()}};
 
@@ -3184,6 +3320,7 @@ window.dsBindBackend=function(api){
   backend.listen(viewMonth);
   refreshMonthTabs();
   watchNewCar();
+  watchBirthdays();
   if(backend.watchControl)backend.watchControl(window.dsOnControl,window.dsOnControlError);
   paintControlNote();
   paintClipControls();
@@ -3258,6 +3395,9 @@ window.dsBindBackend({
   read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{}),
   watchNewCar(cb){ watch('newcar/current', cb) },
   watchExtra(who,cb){ watch('extra/'+who, cb) },
+  watchBirthdays(cb){ watch('birthdays', cb) },
+  addBirthday:(payload)=>push(ref(db,'birthdays'),payload),
+  delBirthday:(id)=>remove(ref(db,'birthdays/'+id)),
   saveExtra:(who,payload)=>set(ref(db,'extra/'+who),payload),
   clearExtra:(who)=>remove(ref(db,'extra/'+who)),
   watchControl(cb,onErr){ watch('boardcontrol', cb, ()=>{onErr&&onErr()}) },
