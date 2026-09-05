@@ -489,6 +489,22 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 @media(prefers-reduced-motion:reduce){.vidscene{transition:none}}
 
+/* ---------- birthday ---------- */
+.bdayscene{
+  position:fixed;inset:0;z-index:98;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(60% 60% at 50% 42%,rgba(240,111,208,.20),rgba(4,7,12,.97) 70%),rgba(4,7,12,.96);
+  opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s;
+  pointer-events:none;padding:20px;overflow:hidden;
+}
+.bdayscene.show{opacity:1;visibility:visible}
+.bd-cake{font-size:clamp(3rem,9vw,7rem);line-height:1;animation:chpop .7s cubic-bezier(.2,1.5,.4,1) both}
+.bd-title{
+  font-family:var(--display);font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gold);font-size:clamp(1rem,3vw,2.1rem);margin-top:clamp(10px,2vh,20px);
+}
+.bd-note{color:var(--muted);font-size:clamp(.72rem,1.6vw,1.05rem);font-weight:600;margin-top:10px}
+@media(prefers-reduced-motion:reduce){.bdayscene{transition:none}.bd-cake{animation:none}}
+
 /* ---------- champion cut scene ---------- */
 .champscene{
   position:fixed;inset:0;z-index:97;display:flex;align-items:center;justify-content:center;
@@ -1032,6 +1048,12 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
       <button type="button" class="btn danger" style="width:100%;display:none" id="shot-remove">Take it off the board</button>
       <p class="msgline" id="shot-msg"></p>
 
+      <h2 style="margin-top:22px;font-size:1rem">Birthday</h2>
+      <p class="hint" style="margin-bottom:10px">Puts Happy Birthday on every screen, with the tune. Leave the name
+        blank if you would rather not put it up.</p>
+      <input type="text" id="bday-name" maxlength="40" placeholder="Whose birthday? (optional)" autocomplete="off">
+      <button type="button" class="btn" style="width:100%" id="bday-go">&#127874; Play Happy Birthday</button>
+
       <h2 style="margin-top:22px;font-size:1rem">Every screen</h2>
       <p class="hint" style="margin-bottom:10px">Pushes a refresh to every screen showing the board, so a change
         does not need somebody walking over to the TV. They also reload themselves at 4am.</p>
@@ -1110,6 +1132,17 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 </div>
 
 <!-- the leader takes the floor every few minutes -->
+<!-- somebody's birthday -->
+<div class="bdayscene" id="bdayscene" aria-hidden="true">
+  <div class="ch-confetti" id="bd-confetti" aria-hidden="true"></div>
+  <div class="ch-inner">
+    <div class="bd-cake">&#127874;</div>
+    <div class="bd-title">Happy Birthday</div>
+    <div class="ch-name" id="bd-name"></div>
+    <div class="bd-note" id="bd-note"></div>
+  </div>
+</div>
+
 <!-- somebody crossing £15,000 - the biggest moment the board has -->
 <div class="champscene" id="champscene" aria-hidden="true">
   <div class="ch-confetti" id="ch-confetti" aria-hidden="true"></div>
@@ -1424,7 +1457,8 @@ function stopScenes(){
   busy=false;
   var v=$('vs-video');
   if(v){try{v.pause();v.currentTime=0}catch(e){}}
-  ['vidscene','statscene','cutscene','champscene'].forEach(function(id){
+  stopBirthdayTune();
+  ['vidscene','statscene','cutscene','champscene','bdayscene'].forEach(function(id){
     var el=$(id); if(el)el.classList.remove('show');
   });
   var fs=$('firescene');
@@ -1526,6 +1560,89 @@ function cheer(){
   });
 }
 
+/* ---- happy birthday ----
+   The tune is synthesised here rather than played from a file. The melody is
+   out of copyright (the Hill sisters' tune; the US claim was struck down in
+   2016 and UK protection ran out at the end of that year), and generating it
+   means there is no separate recording copyright to worry about either - and
+   no megabyte of audio to ship. Key of C, 3/4, roughly ten seconds. */
+var BDAY=[[392,.5],[392,.5],[440,1],[392,1],[523.25,1],[493.88,2],
+          [392,.5],[392,.5],[440,1],[392,1],[587.33,1],[523.25,2],
+          [392,.5],[392,.5],[783.99,1],[659.26,1],[523.25,1],[493.88,1],[440,1],
+          [698.46,.5],[698.46,.5],[659.26,1],[523.25,1],[587.33,1],[523.25,2]];
+var bdCtx=null, bdGain=null;
+
+/* a music box rather than a beep: fundamental, a quiet octave above and a
+   little triangle for body, each note struck and left to ring */
+function playBirthdayTune(){
+  var AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return false;
+  try{ if(!bdCtx)bdCtx=new AC(); }catch(e){ return false }
+  if(bdCtx.state==='suspended'&&bdCtx.resume)bdCtx.resume();
+  stopBirthdayTune();
+  bdGain=bdCtx.createGain();
+  bdGain.gain.value=0.9;
+  bdGain.connect(bdCtx.destination);
+  var t=bdCtx.currentTime+0.08, beat=0.42;
+  BDAY.forEach(function(n){
+    var f=n[0], dur=n[1]*beat, ring=dur+0.5;
+    var g=bdCtx.createGain();
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.30,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+ring);
+    g.connect(bdGain);
+    [[f,'sine',1],[f*2,'sine',0.22],[f,'triangle',0.13]].forEach(function(v){
+      var o=bdCtx.createOscillator(), og=bdCtx.createGain();
+      o.type=v[1]; o.frequency.value=v[0]; og.gain.value=v[2];
+      o.connect(og); og.connect(g);
+      o.start(t); o.stop(t+ring+0.05);
+    });
+    t+=dur;
+  });
+  return true;
+}
+function stopBirthdayTune(){
+  if(!bdGain||!bdCtx)return;
+  try{
+    bdGain.gain.cancelScheduledValues(bdCtx.currentTime);
+    bdGain.gain.setValueAtTime(bdGain.gain.value,bdCtx.currentTime);
+    bdGain.gain.linearRampToValueAtTime(0.0001,bdCtx.currentTime+0.12);
+    bdGain.disconnect(bdCtx.destination);
+  }catch(e){}
+  bdGain=null;
+}
+
+function birthdayScene(name){
+  var el=$('bdayscene');
+  if(!el)return false;
+  stopScenes();
+  var g=sceneStart();
+  $('bd-name').textContent=name||'';
+  var heard=playBirthdayTune();
+  $('bd-note').textContent=heard?'' :'Tap this screen once to hear it';
+  confetti('bd-confetti');
+  el.classList.add('show');
+  holdUntil=Date.now()+16000;
+  setBubble('bub-will',  bagPick('bday|will', BDAY_LINES.will));
+  setBubble('bub-serge', bagPick('bday|serge',BDAY_LINES.serge));
+  cheer();
+  setTimeout(function(){
+    if(g!==sceneGen)return;
+    el.classList.remove('show');
+    $('bd-confetti').innerHTML='';
+    stopBirthdayTune();
+    sceneEnd(g);
+  },12000);
+  return true;
+}
+var BDAY_LINES={
+  will:['Many happy returns!','Cake in the office, everyone.','Happy birthday from all of us!',
+        'Get that cake cut.','Have a good one!'],
+  serge:['Another year on the pitch.','No cake until the board moves.',
+         'Do we get the afternoon off as well?','Happy birthday. Now sell something.',
+         'I did not sign the card.']
+};
+
 /* ---- somebody crosses £15,000 ----
    The biggest thing that happens on this board, and it used to be a cheer and
    a gold row. It waits for a manager to close the panel - they are usually the
@@ -1569,8 +1686,8 @@ function champScene(c){
   return true;
 }
 
-function confetti(){
-  var box=$('ch-confetti');
+function confetti(id){
+  var box=$(id||'ch-confetti');
   if(!box)return;
   box.innerHTML='';
   if(reduced())return;
@@ -2144,6 +2261,12 @@ function playNow(src){
   pendingClip=null;
   stopScenes();
   closeModal('m-mgr'); closeModal('m-pin');
+  /* the play command carries tunes as well as clips, so the birthday button
+     rides the channel that already exists rather than needing a new one */
+  if(src.indexOf('tune:birthday')===0){
+    birthdayScene(src.slice(14));
+    return;
+  }
   if(!videoScene(src)){
     /* only reason left is a browser with no MP4 - do not sit on it */
     toast('This screen cannot play that clip','err');
@@ -2193,6 +2316,9 @@ function paintControlNote(){
 /* backstop: playNow takes the floor itself, so this only ever picks up a clip
    parked by something that could not play it at the time */
 setInterval(function(){
+  if(pendingClip&&pendingClip.indexOf('tune:')===0&&!stuntsBlocked()){
+    var tn=pendingClip;pendingClip=null;playNow(tn);return;
+  }
   if(pendingChamp){
     var c=pendingChamp;
     if(champScene(c))pendingChamp=null;   /* held only while a panel is open */
@@ -2946,6 +3072,18 @@ $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPi
 $('mgr-save').onclick=saveDeal;
 $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
 $('reload-all').onclick=reloadAllScreens;
+$('bday-go').onclick=function(){
+  var name=$('bday-name').value.trim().slice(0,40);
+  var cmd='tune:birthday:'+name;
+  if(!backend||!backend.play||!controlLive){
+    toast('Playing on this screen only','ok');
+    playNow(cmd);
+    return;
+  }
+  backend.play(cmd).then(function(){
+    toast(name?'Happy birthday '+name+' - on the board':'Happy birthday - on the board','ok');
+  })['catch'](function(e){console.error(e);toast('Playing on this screen only','ok');playNow(cmd)});
+};
 
 $('shot-pick').onclick=function(){$('shot-file').click()};
 $('shot-file').onchange=function(e){

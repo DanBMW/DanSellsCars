@@ -428,6 +428,17 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   deals" and turns gold on 8, and the team's Deals tile reads against
   `UNIT_TARGET * TEAM.length`. Profit and units are separate targets - somebody
   can be past £15,000 on six deals, or on eight and short of it.
+- **Happy birthday.** A button in the manager panel (optional name) puts a
+  birthday scene and the tune on every screen. The tune is **synthesised with
+  the Web Audio API** (`BDAY`, `playBirthdayTune()`), not played from a file:
+  the melody is out of copyright (the Hill sisters' tune - the US claim was
+  struck down in 2016 and UK protection expired at the end of that year) and
+  generating it avoids any separate recording copyright, and any megabyte of
+  audio. It rides the existing `boardcontrol/play` command as
+  `tune:birthday:<name>` rather than taking a new database key, so it needed no
+  rules change. Same audio rule as the sketches: a wall display that nobody has
+  touched cannot make sound, so the scene says "tap this screen once to hear
+  it" and still plays silently rather than not at all.
 - **Reloading every screen.** Shipping a change to a board on a wall used to
   mean walking over to refresh it. "Reload every screen" in the manager panel
   writes `boardcontrol/reload`, and each screen reloads on a timestamp newer
