@@ -2068,7 +2068,11 @@ function watchNewCar(){
    each: our board, the new car leaderboard, then either manager's extra
    screenshot if they have put one up. This is a view, not a stunt - it never
    takes the busy lock, so a cut scene can play over whichever one is up. */
-var VIEW_MS=30000, viewIdx=0, rotTimer=null;
+/* A birthday card is one line of text - it does not need thirty seconds, and
+   with two or three up at once a full slot each pushes the boards themselves
+   too far apart. So the rotation is per-view rather than one fixed interval. */
+var VIEW_MS=30000, BDAY_VIEW_MS=15000, viewIdx=0, rotTimer=null;
+function viewMs(v){ return (v&&v.kind==='birthday') ? BDAY_VIEW_MS : VIEW_MS }
 
 function views(){
   var out=[{id:'board'}];   /* index 0 is always our own board */
@@ -2123,6 +2127,7 @@ function showView(i){
   $('bdayview').classList.toggle('show',v.kind==='birthday');
   ncChat(v.kind==='newcar');
   paintViewControls();
+  armRotation();
   /* the two of them are hidden while a picture is up, so let them have their
      say as it comes back to ours */
   if(was!==0&&i===0){
@@ -2136,7 +2141,7 @@ function rotateView(){
   /* hold our board while a manager is working, and never flip the screen out
      from under a cut scene */
   if(document.querySelector('.modal-bg.open')){showView(0);return}
-  if(busy)return;
+  if(busy){armRotation();return}
   var list=views(), next=(viewIdx+1)%list.length, v=list[next];
   /* their own clip rides along with the card, but not every time it comes
      round - the same ten seconds every couple of minutes for a week is not a
@@ -2148,16 +2153,19 @@ function rotateView(){
       var m=bdayClipMeta(v.bday.clip);
       if(videoScene({src:m.src, ar:m.ar, name:'Birthday',
                      cap:(v.bday.name?esc(v.bday.name)+' &mdash; ':'')+'happy birthday',
-                     sound:m.sound!==false}))return;
+                     sound:m.sound!==false})){armRotation();return}
     }
   }
   showView(next);
 }
 
-function startRotation(){
-  clearInterval(rotTimer);
-  rotTimer=pinnedView&&pinnedView!=='auto' ? null : setInterval(rotateView,VIEW_MS);
+function armRotation(){
+  clearTimeout(rotTimer); rotTimer=null;
+  if(pinnedView&&pinnedView!=='auto')return;
+  var list=views();
+  rotTimer=setTimeout(rotateView, viewMs(list[viewIdx]||list[0]));
 }
+function startRotation(){ armRotation() }
 
 /* ---- pinning the wall display to one board ----
    A manager can stop the cycle and hold one board up. Like the sketch

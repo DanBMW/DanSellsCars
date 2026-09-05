@@ -268,7 +268,13 @@ hand-drawn £15,000 challenge board that lived on the showroom wall.
   Nathan turns up to claim credit. Will panics, Serge says "Let him cook." It
   burns for ten seconds and goes out.
 - **The view rotation.** The wall display cycles through whatever there is to
-  show, 30 seconds each (`VIEW_MS`, `views()`, `showView()`, `rotateView()`):
+  show (`views()`, `showView()`, `rotateView()`) - 30 seconds each (`VIEW_MS`),
+  except a birthday card, which gets 15 (`BDAY_VIEW_MS`): it is one line of
+  text, and with two or three up at once a full slot each pushes the boards
+  themselves too far apart. The timing is therefore a self-rescheduling
+  timeout keyed off the current view (`armRotation()`, `viewMs()`), not one
+  fixed interval - every path that changes or holds a view has to re-arm it.
+  The cycle is:
   the used car board, the new car leaderboard, then either manager's extra
   screenshot if they have put one up. These are **views, not cut scenes** -
   they never take the `busy` lock, and the image view sits at z-index 50 so
