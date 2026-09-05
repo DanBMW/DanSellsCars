@@ -1570,10 +1570,16 @@ var BDAY=[[392,.5],[392,.5],[440,1],[392,1],[523.25,1],[493.88,2],
           [392,.5],[392,.5],[440,1],[392,1],[587.33,1],[523.25,2],
           [392,.5],[392,.5],[783.99,1],[659.26,1],[523.25,1],[493.88,1],[440,1],
           [698.46,.5],[698.46,.5],[659.26,1],[523.25,1],[587.33,1],[523.25,2]];
+/* a bass root under each bar - the melody starts on a one-beat pickup, so the
+   bars land on beats 1, 4, 7 ... C G G C C F G C */
+var BDAY_BASS=[[130.81,1],[98,4],[98,7],[130.81,10],
+               [130.81,13],[87.31,16],[98,19],[130.81,22]];
+/* and a little run up the top at the end */
+var BDAY_SPARKLE=[1046.5,1318.51,1567.98,2093];
 var bdCtx=null, bdGain=null;
 
-/* a music box rather than a beep: fundamental, a quiet octave above and a
-   little triangle for body, each note struck and left to ring */
+/* a music box, not a beep: struck notes left to ring, a sparkle two octaves
+   up, a soft root under each bar and a run up the top to finish */
 function playBirthdayTune(){
   var AC=window.AudioContext||window.webkitAudioContext;
   if(!AC)return false;
@@ -1583,21 +1589,35 @@ function playBirthdayTune(){
   bdGain=bdCtx.createGain();
   bdGain.gain.value=0.9;
   bdGain.connect(bdCtx.destination);
-  var t=bdCtx.currentTime+0.08, beat=0.42;
-  BDAY.forEach(function(n){
-    var f=n[0], dur=n[1]*beat, ring=dur+0.5;
+  var t0=bdCtx.currentTime+0.08, beat=0.45;
+
+  function strike(f,at,ring,level,voices){
     var g=bdCtx.createGain();
-    g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(0.30,t+0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+ring);
+    g.gain.setValueAtTime(0.0001,at);
+    g.gain.exponentialRampToValueAtTime(level,at+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,at+ring);
     g.connect(bdGain);
-    [[f,'sine',1],[f*2,'sine',0.22],[f,'triangle',0.13]].forEach(function(v){
+    voices.forEach(function(v){
       var o=bdCtx.createOscillator(), og=bdCtx.createGain();
-      o.type=v[1]; o.frequency.value=v[0]; og.gain.value=v[2];
+      o.type=v[1]; o.frequency.value=f*v[0]; og.gain.value=v[2];
       o.connect(og); og.connect(g);
-      o.start(t); o.stop(t+ring+0.05);
+      o.start(at); o.stop(at+ring+0.05);
     });
-    t+=dur;
+  }
+  var BELL=[[1,'sine',1],[2,'sine',0.24],[4,'sine',0.07],[1,'triangle',0.12]];
+  var ROOT=[[1,'sine',1],[2,'sine',0.10]];
+
+  var t=t0, last=t0;
+  BDAY.forEach(function(n){
+    var dur=n[1]*beat;
+    strike(n[0],t,dur+0.7,0.30,BELL);
+    t+=dur; last=t;
+  });
+  BDAY_BASS.forEach(function(b){
+    strike(b[0],t0+(b[1]-1)*beat,2.4,0.11,ROOT);
+  });
+  BDAY_SPARKLE.forEach(function(f,i){
+    strike(f,last+0.25+i*0.085,1.1,0.10,[[1,'sine',1],[2,'sine',0.15]]);
   });
   return true;
 }
