@@ -2327,13 +2327,19 @@ var EXTRA={used:null, newcar:null};
    in the rotation for the week. The board only ever reads the single decided
    winner, never the entries or the votes - it sits on a wall all day and does
    not need to pull everybody's photos down. */
-var MUG=null;
+var MUG=null, MUGBLOCK={};
 function mugWeekKey(){
   var x=new Date(); x=new Date(x.getFullYear(),x.getMonth(),x.getDate());
   x.setDate(x.getDate()-((x.getDay()+6)%7));
   return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
 }
-function liveMug(){ return (MUG&&MUG.img&&MUG.week===mugWeekKey())?MUG:null }
+function liveMug(){
+  if(!MUG||!MUG.img||MUG.week!==mugWeekKey())return null;
+  /* Dan can pull one from the admin console; the roll on mugshot.html replaces
+     it, but that page may not be open, and the wall must not wait for it */
+  if(MUG.entry&&MUGBLOCK[MUG.entry])return null;
+  return MUG;
+}
 
 /* Nathan runs the new car board, so while it is up he gets to gloat and Will
    comes over to defend the used car pitch. Same shuffle bag as the main pair,
@@ -2398,6 +2404,11 @@ function watchNewCar(){
   });
   if(backend.watchMug)backend.watchMug(function(v){
     MUG=v||null;
+    paintViewControls();
+    applyPin();
+  });
+  if(backend.watchMugBlocked)backend.watchMugBlocked(function(v){
+    MUGBLOCK=v||{};
     paintViewControls();
     applyPin();
   });
@@ -3105,7 +3116,6 @@ var audioOk=false, liveVideo=null;
 /* the team sketches */
 function videoScene(forced){
   if(stuntsBlocked())return false;
-  if(!sOn('sketches'))return false;
   var vs=$('vidscene'), v=$('vs-video');
   if(!vs||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
   /* the toggle stops the automatic slot only - a manager pressing play still
@@ -4200,7 +4210,7 @@ function paintSettingsNote(){
   var n=$('set-note');
   if(!n)return;
   var off=[];
-  ['sketches','dance','stats','nathan','fire','relief','paper','champ','bubbles',
+  ['dance','stats','nathan','fire','relief','paper','champ','bubbles',
    'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','ticker',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
   n.style.display=off.length?'block':'none';
@@ -4303,6 +4313,7 @@ window.dsBindBackend({
   watchNewCar(cb){ watch('newcar/current', cb) },
   watchExtra(who,cb){ watch('extra/'+who, cb) },
   watchMug(cb){ watch('mugshot/current', cb) },
+  watchMugBlocked(cb){ watch('mugshot/blocked', cb) },
   watchBirthdays(cb){ watch('birthdays', cb) },
   addBirthday:(payload)=>push(ref(db,'birthdays'),payload),
   delBirthday:(id)=>remove(ref(db,'birthdays/'+id)),

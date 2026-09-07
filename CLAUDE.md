@@ -175,26 +175,42 @@ are still duplicated per page — only the header/drawer/footer are templated.
   the week, so a second client writes the same answer. It takes the newest
   *finished* week that had entries rather than strictly last week, so a quiet
   week or nobody opening the page for a fortnight does not lose the winner.
-  Voting is a **rating deck**: each person sees each picture once and scores it
-  out of five, and the deck is derived from the data rather than from what this
-  browser remembers - the score stores as a number 1-5 under the voter, so
-  "have I seen this" is the presence of the key. Ranking is **not** the plain
-  average: `score()` gives every entry two notional 3s to start with, so one
-  lonely 5 cannot beat a picture the whole team rated 4. With everyone seeing
-  everything once the two barely differ; it only bites on an entry one or two
-  people have got to. Scores stay hidden until they have rated the lot, then
-  the standings appear. `rate()` sets `dragging` before storing, because the
-  votes watcher fires straight back and a re-render would swap the card out
-  before its score is even seen on it.
-  The voter id is per device (localStorage `dsMug`). Two things the
-  deck needs: the card images carry `draggable="false"` and
+  **There is no limit on entries per person** - put up as many as you like.
+  Voting is **two stages**: swipe left (or the cross) to pass, swipe right (or
+  the tick) for yes, and only a yes then asks for a score out of five. One
+  number is stored per voter per picture: **0 is a pass**, 1-5 is a yes and how
+  good. Do not go back to storing only the yeses - a picture eight people
+  passed on and one person rated 5 would top the board. `score()` therefore
+  counts every judgement (a pass as a nought) and gives every entry two
+  notional 3s to start with, so one lonely 5 cannot beat a picture the whole
+  team liked. What is *displayed* is the average of the yeses with the yes
+  count beside it, which is the readable version; the score is only the sort.
+  Scores stay hidden until they have judged the lot, then the standings appear.
+  `finish()` sets `dragging` before storing, because the votes watcher fires
+  straight back and a re-render would swap the card out before its stamp is
+  even seen on it.
+  **Once a device has judged a picture it never sees it again.** The stored
+  vote is the record of that (the voter id is per device, localStorage
+  `dsMug`), but a vote that was refused - rules not published - or later pruned
+  would bring the picture back, so the device keeps its own list in
+  `dsMugSeen` and `judged()` counts either one. `tidySeen()` drops ids that no
+  longer exist so the list stays bounded.
+  Two things the deck needs: the card images carry `draggable="false"` and
   `-webkit-user-drag:none`, because the browser's own image-drag stops the
   mousemove stream and killed swiping on a laptop; and the window listeners are
-  bound **once**, not per render, which was leaking a set per card. Entries
-  over 21 days old are pruned after a roll - everything here carries a photo.
-  The rules allow a write per **voter**, not on the whole `votes/<entry>` node,
-  so pruning deletes each voter key individually; removing the parent is
-  refused.
+  bound **once**, not per render, which was leaking a set per card. The
+  "nothing new to draw" check in `renderDeck()` requires a **non-empty** id
+  list: a card swiped off is still in the box, so an empty deck matching an
+  empty `deckIds` used to bail out and leave the last card's counter on screen.
+  Entries over 21 days old are pruned after a roll - everything here carries a
+  photo. The rules allow a write per **voter**, not on the whole
+  `votes/<entry>` node, so pruning deletes each voter key individually;
+  removing the parent is refused.
+  Dan can take an entry down from the admin console (`mugshot/blocked/<id>`):
+  it disappears from the deck and the standings, cannot win a later week, and
+  if it had already won, the roll runs again to replace it - and the board
+  itself watches `mugshot/blocked` too, so a pulled winner comes off the wall
+  even with nobody on `mugshot.html` to re-run the roll.
   The board asks for entries itself: with no winner up it shows a **15-second
   QR slot** ("Want a picture here?"), and once one has won, the winner's own
   30-second slot carries a smaller QR in the corner for next week. Both point
@@ -204,6 +220,16 @@ are still duplicated per page — only the header/drawer/footer are templated.
   zone) and **check it still decodes at the size it renders at**: the first
   small one was 84px and OpenCV could not read it out of a screenshot, which is
   a fair proxy for a phone across the office.
+- `admin.html` — **Dan's admin console for the board** (password `DANC`, a
+  client-side gate like the board's PIN - it stops the wrong person prodding
+  it, not somebody determined). One page for everything the wall does: a switch
+  per slot in the rotation and per cut scene/stunt, the seconds on each screen
+  and the minutes between scenes, both targets, holding a board up on every
+  screen, reloading every screen, playing a sketch, the banner, taking a
+  manager's screenshot or a birthday card down, and overruling the mug shot of
+  the week. Switches write a single boolean to `boardsettings/<key>`; the
+  sketches switch writes `boardcontrol/videos` instead, because that already
+  owns it and two switches for one thing is worse than one in the wrong place.
 - `links.html` — Dan's internal links/dashboard page (includes the Formspree
   record-ID → PDF download widgets, the Ramp Report link builder with its
   localStorage sent-log, the VIP Buyers Event invitation builder with its own
@@ -338,6 +364,46 @@ said so.
   seconds, then goes out and the char fades. Flame heights are a **percentage
   of their container**, which is what makes them grow as the fire climbs -
   fixed pixel heights just sat there while the char rose past them.
+- **Everything answers to a switch.** `boardsettings` is a flat map of
+  booleans and numbers written by `admin.html`; the board reads it through
+  `sOn(k)` / `sNum(k,default)` and **never** touches `SET[...]` directly.
+  **Absent means on**, so a database with nothing under `boardsettings`
+  behaves exactly as the board did before the console existed, and clearing a
+  setting is how you put a thing back to normal - there is no second "default"
+  value to keep in step. Every cut scene and stunt tests its own key first
+  (`dance`, `stats`, `nathan`, `fire`, `relief`, `paper`, `champ`, `bubbles`,
+  `ncchat`, `sound`), and `views()` tests one per slot (`newcar`, `extras`,
+  `mugshot`, `mugask`, `forecourt`, `birthdays`, `ticker`). Numbers:
+  `viewsecs`, `scenemins`, `target`, `units` - `TARGET` and `UNIT_TARGET` are
+  therefore variables, not constants, and `applySettings()` re-renders. A slot
+  switched off comes off the wall immediately (`resyncView()`), rather than
+  staying up until the rotation happens to move on.
+- **The banner along the bottom.** `ticker/items/<pushId>` = `{text, by, ts,
+  until?}`, added from the manager panel or the admin console, with an optional
+  expiry. It draws at **z-index 320, above every scene** - a 44px strip should
+  not vanish for ten seconds because a sketch is playing - and `body.hasticker`
+  lifts Dan's credit line clear of it. Each copy of the message carries its own
+  trailing separator, so the track is that block twice and a `-50%` slide loops
+  seamlessly; the unit repeats until it is wider than the screen or a short
+  message trails a gap. `paintTicker()` compares a signature first and leaves a
+  running banner alone - repainting would jump it back to the start every time
+  anything else on the board changed.
+- **What's new on the forecourt.** A fifteen-second view built from
+  `automation/hedin-stock-snapshot.json` - the same file `stock.html` reads, a
+  plain file next to the page, so the slot works with no backend at all. The
+  snapshot cannot say what is *new* (there is no arrival date on a car), so the
+  board keeps a ledger of ids it has seen at `stockwatch/seen` and works out
+  the difference once a day, writing the answer to `stockwatch/day` so every
+  screen shows the same cars. **The day rolls at 9am**, not midnight: the
+  overnight snapshot refresh has landed by then and the list does not change
+  under the team mid-morning. The first run **seeds** the ledger and claims
+  nothing is new - otherwise the board would announce all sixty-nine cars as
+  fresh in - and a car that sells drops out of the ledger, so one that comes
+  back counts again. With nothing new it shows a different six of the stock
+  each morning instead, picked from the day key so every screen agrees; the
+  slot is worth having either way. Three cards across, deliberately: an
+  auto-fit grid put all six in a line on a wall display and cut every model
+  name in half.
 - **The view rotation.** The wall display cycles through whatever there is to
   show (`views()`, `showView()`, `rotateView()`) - 30 seconds each (`VIEW_MS`),
   except a birthday card, which gets 15 (`BDAY_VIEW_MS`): it is one line of

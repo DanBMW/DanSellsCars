@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Board admin</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700,900&display=swap" media="print" onload="this.media='all'">
+<style>
+:root{
+  --ink:#070a0f; --panel:#131a25; --panel-2:#1b2330;
+  --line:rgba(255,255,255,.12); --line-soft:rgba(255,255,255,.06);
+  --text:#eef2f7; --muted:#93a1b5;
+  --blue:#2f7bf0; --blue-deep:#1f5fc4; --gold:#e0b352; --green:#2fbf6b; --red:#e2564d;
+  --font:'Satoshi',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --display:'Clash Display','Satoshi',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--font);padding:22px 16px 70px;
+  background-image:radial-gradient(70% 50% at 50% 0,rgba(47,123,240,.10),transparent 60%)}
+.wrap{max-width:680px;margin:0 auto}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(1.7rem,6vw,2.5rem);margin:0;line-height:1.05}
+h1 .amt{color:var(--gold)}
+.sub{color:var(--muted);font-size:.9rem;margin-top:6px;line-height:1.5}
+h2{font-family:var(--display);font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.card{background:var(--panel);border:1px solid var(--line-soft);border-radius:18px;padding:18px;margin-top:18px}
+.hint{color:var(--muted);font-size:.8rem;line-height:1.55;margin:0 0 12px}
+label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--muted);margin:14px 0 8px}
+input[type=text],input[type=password],input[type=number]{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+  color:var(--text);font-family:var(--font);font-size:1rem;padding:12px 14px}
+input:focus{outline:2px solid var(--blue);outline-offset:1px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-family:var(--font);font-weight:700;font-size:.9rem;padding:12px 18px;border-radius:999px;
+  cursor:pointer;transition:.15s;width:100%}
+.btn:hover{background:#25303f}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-deep)}
+.btn.danger{border-color:rgba(226,86,77,.5);color:var(--red)}
+.btn.danger:hover{background:rgba(226,86,77,.14)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;margin-top:12px}
+.hidden{display:none!important}
+
+/* a switch row */
+.tog{display:flex;align-items:center;gap:12px;justify-content:space-between;cursor:pointer;
+  padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.tog:last-of-type{border-bottom:0}
+.tog .t b{display:block;font-size:.92rem;font-weight:700}
+.tog .t span{display:block;font-size:.74rem;color:var(--muted);margin-top:2px;line-height:1.4}
+.sw{flex:none;width:46px;height:27px;border-radius:999px;background:#2a3444;border:1px solid var(--line);
+  position:relative;transition:.15s}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;
+  background:#7d8ba0;transition:.15s}
+.tog.on .sw{background:rgba(47,191,107,.28);border-color:rgba(47,191,107,.6)}
+.tog.on .sw::after{left:22px;background:var(--green)}
+.tog.off b{color:var(--muted)}
+
+.numrow{display:flex;gap:10px;align-items:flex-end}
+.numrow > div{flex:1}
+.numrow .btn{width:auto;flex:none}
+
+.msg{margin-top:12px;font-size:.85rem;font-weight:600;display:none}
+.msg.ok{color:var(--green);display:block}
+.msg.err{color:var(--red);display:block}
+.msg.busy{color:var(--muted);display:block}
+
+.list{display:grid;gap:8px;margin-top:10px}
+.item{display:flex;align-items:center;gap:10px;background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:12px;padding:10px 12px}
+.item .in{flex:1;min-width:0}
+.item .in b{display:block;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .in span{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.icon{flex:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel);color:var(--muted);font-size:1rem;cursor:pointer;line-height:1}
+.icon:hover{color:var(--text)}
+.icon.del:hover{color:var(--red);border-color:rgba(226,86,77,.5)}
+.none{color:var(--muted);font-size:.8rem;margin:8px 0 0}
+
+/* mug shots */
+.mugs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
+.mug{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:12px;overflow:hidden}
+.mug.win{border-color:rgba(224,179,82,.6);box-shadow:0 0 0 1px rgba(224,179,82,.25)}
+.mug.blocked{opacity:.45}
+.mug img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#000}
+.mug .m{padding:8px 9px}
+.mug .m b{display:block;font-size:.76rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mug .m span{display:block;font-size:.66rem;color:var(--muted);margin-top:2px}
+.mug .acts{display:flex;gap:6px;padding:0 9px 9px}
+.mug .acts button{flex:1;font-family:var(--font);font-size:.68rem;font-weight:700;padding:7px 4px;
+  border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}
+.mug .acts button:hover{color:var(--text)}
+.mug .acts .put:hover{color:var(--gold);border-color:rgba(224,179,82,.5)}
+.mug .acts .blk:hover{color:var(--red);border-color:rgba(226,86,77,.5)}
+.winbox{border-radius:12px;overflow:hidden;border:1px solid rgba(224,179,82,.4);background:#000;margin-top:10px}
+.winbox img{display:block;width:100%;height:auto;max-height:280px;object-fit:contain}
+
+.clips{display:grid;gap:8px;margin-top:10px}
+.clipbtn{display:flex;align-items:center;gap:10px;text-align:left;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--text);
+  font-family:var(--font);font-size:.88rem;font-weight:700;cursor:pointer}
+.clipbtn:hover{background:#25303f}
+.clipbtn.on{border-color:var(--gold);color:var(--gold)}
+.clipbtn .ply{flex:none;width:26px;height:26px;border-radius:50%;background:var(--panel);
+  border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:.7rem}
+.clipbtn small{display:block;font-weight:500;font-size:.7rem;color:var(--muted);margin-top:2px}
+.clipbtn:disabled{opacity:.4;cursor:not-allowed}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+  background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:11px 20px;
+  font-size:.86rem;font-weight:700;opacity:0;transition:.2s;pointer-events:none;z-index:50;max-width:92vw}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast.ok{border-color:rgba(47,191,107,.5);color:var(--green)}
+.toast.err{border-color:rgba(226,86,77,.5);color:var(--red)}
+
+.foot{text-align:center;color:var(--muted);font-size:.72rem;margin-top:26px;line-height:1.7}
+.foot a{color:var(--blue);text-decoration:none}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4a5666;margin-right:7px}
+.dot.live{background:var(--green)}
+.dot.err{background:var(--red)}
+.state{font-size:.74rem;color:var(--muted);font-weight:700;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Board <span class="amt">admin</span></h1>
+  <p class="sub">Everything on the office board, in one place. Changes land on every screen
+    showing it within a second - nobody has to walk over to the TV.</p>
+
+  <!-- the gate. Client-side, like the board's own PIN: it stops the wrong
+       person prodding it, not somebody determined with a browser console. -->
+  <div class="card" id="gate">
+    <h2>Password</h2>
+    <p class="hint">Dan's console. The managers have their own controls in the board's manager panel.</p>
+    <input type="password" id="pw" maxlength="16" placeholder="Password" autocomplete="off" autocapitalize="characters">
+    <div class="row"><button class="btn primary" id="pw-go">Enter</button></div>
+    <p class="msg" id="pw-msg"></p>
+  </div>
+
+  <div id="console" class="hidden">
+
+    <p class="state"><span class="dot" id="dot"></span><span id="state">Connecting to the board…</span></p>
+
+    <!-- ---------- what is on the wall ---------- -->
+    <div class="card">
+      <h2>What&rsquo;s on the wall</h2>
+      <p class="hint">Hold every screen on one board, or leave it cycling. A hold lapses back to the
+        rotation after fifteen minutes, so nobody can leave the wall stuck on one screen all afternoon.</p>
+      <div class="clips" id="view-list"></div>
+      <div class="row"><button class="btn" id="reload-all">Reload every screen</button></div>
+    </div>
+
+    <!-- ---------- the rotation ---------- -->
+    <div class="card">
+      <h2>The rotation</h2>
+      <p class="hint">Which screens the wall cycles through. Switching one off takes it off the wall
+        straight away, and a slot with nothing in it is skipped anyway.</p>
+      <div id="rot-togs"></div>
+      <label for="n-viewsecs">Seconds on each screen</label>
+      <div class="numrow">
+        <div><input type="number" id="n-viewsecs" min="8" max="180" step="1" placeholder="30"></div>
+        <button class="btn" data-num="viewsecs" data-def="30">Save</button>
+      </div>
+      <p class="hint" style="margin:8px 0 0">A birthday card, the mug shot ask and the forecourt list
+        take half of this, up to fifteen seconds - they are a glance, not a read.</p>
+    </div>
+
+    <!-- ---------- scenes and stunts ---------- -->
+    <div class="card">
+      <h2>Scenes and stunts</h2>
+      <p class="hint">The things that interrupt the board. One plays at a time, in turn, so switching
+        some off makes the rest come round more often rather than leaving gaps.</p>
+      <div id="scene-togs"></div>
+      <label for="n-scenemins">Minutes between scenes</label>
+      <div class="numrow">
+        <div><input type="number" id="n-scenemins" min="1" max="60" step="1" placeholder="5"></div>
+        <button class="btn" data-num="scenemins" data-def="5">Save</button>
+      </div>
+      <h2 style="margin-top:20px">Play a sketch now</h2>
+      <p class="hint">Takes the floor on every screen showing the board, whatever is up.</p>
+      <div class="clips" id="clip-list"></div>
+    </div>
+
+    <!-- ---------- targets ---------- -->
+    <div class="card">
+      <h2>Targets</h2>
+      <p class="hint">The figures the board is measured against. Changing the profit target changes the
+        title, the track, the pace line and the champion scene together.</p>
+      <label for="n-target">Profit target each (£)</label>
+      <div class="numrow">
+        <div><input type="number" id="n-target" min="1000" max="200000" step="500" placeholder="15000"></div>
+        <button class="btn" data-num="target" data-def="15000">Save</button>
+      </div>
+      <label for="n-units">Unit target each</label>
+      <div class="numrow">
+        <div><input type="number" id="n-units" min="1" max="60" step="1" placeholder="8"></div>
+        <button class="btn" data-num="units" data-def="8">Save</button>
+      </div>
+    </div>
+
+    <!-- ---------- mug shot of the week ---------- -->
+    <div class="card">
+      <h2>Mug shot of the week</h2>
+      <p class="hint">The team vote, and the winner takes a slot in the rotation for the week. This is
+        where you overrule that - put a different one up, or take one down if it should not be on a wall.
+        A blocked picture disappears from the voting page too and cannot win a later week.</p>
+      <div id="mug-win"></div>
+      <h2 style="margin-top:18px;font-size:.95rem">Every entry</h2>
+      <div class="mugs" id="mug-list"></div>
+      <p class="none" id="mug-none">Nothing uploaded.</p>
+    </div>
+
+    <!-- ---------- the banner ---------- -->
+    <div class="card">
+      <h2>Banner along the bottom</h2>
+      <p class="hint">Scrolls along the bottom of every screen, over whatever else is up. Keep each line
+        short - it goes past about once a minute, and three at once means nobody reads any of them.</p>
+      <input type="text" id="tick-text" maxlength="140" placeholder="e.g. Two units off the record - last day is Sunday" autocomplete="off">
+      <label for="tick-by">Who from (optional)</label>
+      <input type="text" id="tick-by" maxlength="40" placeholder="Dan" autocomplete="off">
+      <label for="tick-days">Take it down after</label>
+      <select id="tick-days" style="width:100%;background:var(--panel-2);border:1px solid var(--line);
+        border-radius:12px;color:var(--text);font-family:var(--font);font-size:1rem;padding:12px 14px">
+        <option value="0">Leave it up until I remove it</option>
+        <option value="1">A day</option>
+        <option value="7">A week</option>
+        <option value="30">A month</option>
+      </select>
+      <div class="row"><button class="btn primary" id="tick-go">Put it on the banner</button></div>
+      <div class="list" id="tick-list"></div>
+    </div>
+
+    <!-- ---------- screenshots and birthdays ---------- -->
+    <div class="card">
+      <h2>Screenshots on the board</h2>
+      <p class="hint">The managers put these up themselves. This is here so you can take one down
+        without going and finding whoever did it.</p>
+      <div class="list" id="extra-list"></div>
+    </div>
+
+    <div class="card">
+      <h2>Birthdays</h2>
+      <p class="hint">A card stays in the rotation for a week from the day it goes up, then drops out
+        on its own. Take one down early here.</p>
+      <div class="list" id="bday-list"></div>
+    </div>
+
+  </div>
+
+  <p class="foot">
+    Internal page &middot; not linked publicly<br>
+    The board is at <a href="team-board.html">team-board.html</a> &middot;
+    voting at <a href="mugshot.html">mugshot.html</a>
+  </p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Same shape as the board and newcar.html: the UI is a plain
+   classic script and the Firebase module layers on top through
+   window.adBindBackend, so a blocked CDN gives an honest
+   "not connected" console rather than a dead page.
+   ============================================================ */
+var PW='DANC';
+var backend=null, SET={}, TICKER={}, MUGS={}, MUGVOTES={}, MUGCUR=null, MUGBLOCK={},
+    BDAYS={}, EXTRA={used:null,newcar:null}, CTL={}, live=false;
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function sOn(k){ return SET[k]!==false }
+function sNum(k,d){ var v=SET[k]; return (typeof v==='number'&&v>0)?v:d }
+
+var toastTimer=null;
+function toast(msg,kind){
+  var t=$('toast');
+  t.textContent=msg; t.className='toast show'+(kind?' '+kind:'');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.className='toast'+(kind?' '+kind:'')},2600);
+}
+function fail(e){ console.error(e); toast('That did not save - check the connection','err') }
+function stamp(word,ts){
+  if(!ts)return '';
+  return word+' '+new Date(ts).toLocaleString('en-GB',
+    {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+/* ---- the gate ---- */
+function unlock(){
+  if($('pw').value.trim().toUpperCase()!==PW){
+    $('pw-msg').className='msg err';
+    $('pw-msg').textContent='Not that one.';
+    $('pw').value='';
+    return;
+  }
+  $('gate').classList.add('hidden');
+  $('console').classList.remove('hidden');
+  paintAll();
+}
+$('pw-go').onclick=unlock;
+$('pw').addEventListener('keydown',function(e){ if(e.key==='Enter')unlock() });
+
+/* ============================================================
+   The switches. Everything here writes a single boolean to
+   `boardsettings/<key>`. Absent means ON everywhere that reads
+   it, so a fresh database behaves as the board always did.
+   ============================================================ */
+var ROT=[
+  ['newcar',   'New car leaderboard',   "Nathan's 76 plate screenshot"],
+  ['extras',   'Manager screenshots',   'Either desk’s extra picture'],
+  ['mugshot',  'Mug shot of the week',  'The winning picture'],
+  ['mugask',   'Ask for mug shots',     'The QR code, while nothing has won'],
+  ['forecourt',"What's new on the forecourt", 'Fresh stock, off the stock list'],
+  ['birthdays','Birthday cards',        'For a week from the day they go up'],
+  ['ticker',   'Banner along the bottom','The scrolling line']
+];
+var SCENE=[
+  ['videos',  'Sketches',                'One of the team clips, about every ten minutes'],
+  ['sound',   'Sound on the sketches',   'Off means every clip plays silent'],
+  ['dance',   'The leader breakdancing', 'With the deal of the month under it'],
+  ['stats',   'This month against last', 'The chart and the three tiles'],
+  ['champ',   'Crossing the target',     'The confetti moment, once per person a month'],
+  ['nathan',  "Nathan's visit",          'He slides in to say new cars are better'],
+  ['fire',    "Nathan's arson attempt",  'He sets fire to the whole board'],
+  ['relief',  "Will's answer",           'On the new car board, about every second time'],
+  ['paper',   'The paper ball',          'Will and Serge lobbing one across'],
+  ['bubbles', 'Will and Serge talking',  'The speech bubbles either side of our board'],
+  ['ncchat',  'Nathan and Will arguing', 'The bubbles on the new car board']
+];
+
+function togHTML(list){
+  return list.map(function(r){
+    var isOn=r[0]==='videos' ? CTL.videos!==false : sOn(r[0]);
+    return '<div class="tog '+(isOn?'on':'off')+'" data-key="'+r[0]+'">'+
+      '<div class="t"><b>'+esc(r[1])+'</b><span>'+esc(r[2])+'</span></div>'+
+      '<div class="sw"></div></div>';
+  }).join('');
+}
+function wireTogs(el){
+  Array.prototype.forEach.call(el.querySelectorAll('.tog'),function(t){
+    t.onclick=function(){
+      var k=t.getAttribute('data-key');
+      var want=!t.classList.contains('on');
+      if(!backend){toast('Not connected to the board','err');return}
+      /* the sketches toggle already had a home - boardcontrol/videos, which
+         the managers' own panel drives. Two switches for one thing is worse
+         than one in the wrong place, so this writes there. */
+      var p=(k==='videos') ? backend.setVideos(want) : backend.setSetting(k,want);
+      p.then(function(){ toast(want?'Switched on':'Switched off','ok') })['catch'](fail);
+    };
+  });
+}
+function paintTogs(){
+  $('rot-togs').innerHTML=togHTML(ROT);   wireTogs($('rot-togs'));
+  $('scene-togs').innerHTML=togHTML(SCENE); wireTogs($('scene-togs'));
+}
+
+/* ---- the numbers ---- */
+var NUMS=[['viewsecs',30],['scenemins',5],['target',15000],['units',8]];
+function paintNums(){
+  NUMS.forEach(function(n){
+    var el=$('n-'+n[0]);
+    if(el&&document.activeElement!==el)el.value=sNum(n[0],n[1]);
+  });
+}
+Array.prototype.forEach.call(document.querySelectorAll('[data-num]'),function(btn){
+  btn.onclick=function(){
+    var k=btn.getAttribute('data-num'), el=$('n-'+k);
+    var v=Number(el.value);
+    if(!(v>0)){toast('That needs to be a number','err');return}
+    if(!backend){toast('Not connected to the board','err');return}
+    backend.setSetting(k,v).then(function(){toast('Saved','ok')})['catch'](fail);
+  };
+});
+
+/* ============================================================
+   What is on the wall - the same shared pin the manager panel
+   writes, so a tap here moves every screen.
+   ============================================================ */
+var VIEWPINS=[
+  {id:'auto',         name:'Rotate through them all', sub:'Back to the cycle'},
+  {id:'board',        name:'Used car board',          sub:'The Profit Challenge'},
+  {id:'newcar',       name:'New car board',           sub:'76 plate leaderboard'},
+  {id:'extra-used',   name:'Used car screenshot',     sub:"Will's picture"},
+  {id:'extra-newcar', name:'New car screenshot',      sub:"Nathan's picture"},
+  {id:'mugshot',      name:'Mug shot of the week',    sub:'The winning picture'},
+  {id:'mugask',       name:'Ask for mug shots',       sub:'The QR code'},
+  {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock'}
+];
+var PIN_MS=900000;
+function pinnedNow(){
+  var v=CTL.view;
+  if(!v||typeof v!=='object'||typeof v.id!=='string')return 'auto';
+  if(v.id!=='auto'&&(!v.ts||Date.now()-v.ts>=PIN_MS))return 'auto';
+  return v.id;
+}
+function paintViews(){
+  var list=$('view-list'), now=pinnedNow();
+  if(!list.childNodes.length){
+    list.innerHTML=VIEWPINS.map(function(v){
+      return '<button type="button" class="clipbtn" data-view="'+v.id+'">'+
+        '<span class="ply">&#9632;</span><span>'+esc(v.name)+
+        '<small>'+esc(v.sub)+'</small></span></button>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(b){
+      b.onclick=function(){
+        if(!backend){toast('Not connected to the board','err');return}
+        var id=b.getAttribute('data-view');
+        backend.setView(id,id==='auto'?0:Date.now()).then(function(){
+          toast(id==='auto'?'Back to the rotation':'Held on every screen','ok');
+        })['catch'](fail);
+      };
+    });
+  }
+  Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(b){
+    var id=b.getAttribute('data-view');
+    b.classList.toggle('on',now===id);
+    var sm=b.querySelector('small');
+    for(var i=0;i<VIEWPINS.length;i++)if(VIEWPINS[i].id===id)sm.textContent=VIEWPINS[i].sub;
+    if(now===id&&id!=='auto'){
+      var mins=Math.ceil((PIN_MS-(Date.now()-(CTL.view.ts||0)))/60000);
+      sm.textContent='Rotating again in '+mins+' min'+(mins===1?'':'s');
+    }
+  });
+}
+setInterval(function(){ if(!$('console').classList.contains('hidden'))paintViews() },20000);
+
+$('reload-all').onclick=function(){
+  if(!backend){toast('Not connected to the board','err');return}
+  backend.setReload(Date.now()).then(function(){toast('Reloading every screen','ok')})['catch'](fail);
+};
+
+/* ---- the sketches ---- */
+var CLIPS=[
+  {src:'video/sketch-team.mp4',        name:'Team dance'},
+  {src:'video/sketch-serge-clive.mp4', name:'Serge & Clive'},
+  {src:'video/sketch-3.mp4',           name:'Sketch 3'},
+  {src:'video/sketch-4.mp4',           name:'Sketch 4 (always silent)'},
+  {src:'video/sketch-5.mp4',           name:'Sketch 5'},
+  {src:'video/sketch-6.mp4',           name:'Sketch 6'},
+  {src:'video/sketch-7.mp4',           name:'Nathan'},
+  {src:'video/sketch-8.mp4',           name:'Sketch 8'},
+  {src:'video/sketch-9.mp4',           name:'Serge raging (silent)'}
+];
+function paintClips(){
+  var list=$('clip-list');
+  if(list.childNodes.length)return;
+  list.innerHTML=CLIPS.map(function(c){
+    return '<button type="button" class="clipbtn" data-src="'+c.src+'">'+
+      '<span class="ply">&#9654;</span><span>'+esc(c.name)+
+      '<small>'+c.src.split('/')[1]+'</small></span></button>';
+  }).join('');
+  Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(b){
+    b.onclick=function(){
+      if(!backend){toast('Not connected to the board','err');return}
+      backend.play(b.getAttribute('data-src')).then(function(){
+        toast('Playing on the board','ok');
+      })['catch'](fail);
+    };
+  });
+}
+
+/* ============================================================
+   Mug shot of the week. The ranking here is the same one the
+   voting page uses, so the console agrees with what the team
+   see: a pass counts as a nought, and two notional 3s stop a
+   single lonely 5 from topping the list.
+   ============================================================ */
+var PRIOR_N=2, PRIOR_M=3;
+function ratings(id){
+  var v=MUGVOTES[id]||{}, sum=0,n=0,yes=0,ysum=0;
+  for(var k in v){
+    var r=Number(v[k]);
+    if(!(r>=0&&r<=5))continue;
+    n++; sum+=r;
+    if(r>=1){yes++; ysum+=r}
+  }
+  return {n:n, yes:yes, avg:yes?ysum/yes:0, sc:(sum+PRIOR_M*PRIOR_N)/(n+PRIOR_N)};
+}
+function mugWeekKey(d){
+  var x=d?new Date(d):new Date();
+  x=new Date(x.getFullYear(),x.getMonth(),x.getDate());
+  x.setDate(x.getDate()-((x.getDay()+6)%7));
+  return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+}
+function mugEntries(){
+  var out=[];
+  Object.keys(MUGS||{}).forEach(function(k){
+    var e=MUGS[k];
+    if(!e||!e.img)return;
+    var r=ratings(k);
+    out.push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts||0,
+              n:r.n,yes:r.yes,avg:r.avg,sc:r.sc,
+              week:mugWeekKey(e.ts),blocked:!!MUGBLOCK[k]});
+  });
+  out.sort(function(a,b){ return b.ts-a.ts });
+  return out;
+}
+function paintMugs(){
+  var wk=mugWeekKey(), box=$('mug-win');
+  var up=MUGCUR&&MUGCUR.img&&MUGCUR.week===wk&&!(MUGCUR.entry&&MUGBLOCK[MUGCUR.entry]);
+  box.innerHTML=up
+    ? '<p class="hint" style="margin:0">On the wall this week.</p>'+
+      '<div class="winbox"><img src="'+MUGCUR.img+'" alt="On the board"></div>'+
+      '<p class="none">'+(MUGCUR.cap?'<b>'+esc(MUGCUR.cap)+'</b> &middot; ':'')+
+        (MUGCUR.by?esc(MUGCUR.by):'Anonymous')+'</p>'+
+      '<div class="row"><button class="btn danger" id="mug-pull">Take it off the wall</button></div>'
+    : '<p class="hint" style="margin:0">Nothing on the wall this week - the board is asking for entries instead.</p>';
+  if(up)$('mug-pull').onclick=function(){
+    if(!backend)return;
+    /* Blocking it AND clearing the winner: the roll on the voting page would
+       replace it, but that page may not be open and the wall must not wait. */
+    backend.blockMug(MUGCUR.entry,true).then(function(){
+      return backend.clearMugCurrent();
+    }).then(function(){ toast('Off the wall','ok') })['catch'](fail);
+  };
+
+  var all=mugEntries();
+  $('mug-none').style.display=all.length?'none':'block';
+  $('mug-list').innerHTML=all.map(function(e){
+    var isWin=up&&MUGCUR.entry===e.id;
+    return '<div class="mug'+(isWin?' win':'')+(e.blocked?' blocked':'')+'">'+
+      '<img src="'+e.img+'" alt="Entry'+(e.by?' by '+esc(e.by):'')+'">'+
+      '<div class="m"><b>'+(e.cap?esc(e.cap):'No caption')+'</b>'+
+      '<span>'+(e.by?esc(e.by):'Anonymous')+' &middot; '+
+        (e.yes?e.avg.toFixed(1)+'/5 from '+e.yes:'no yeses')+
+        (e.week===mugWeekKey()?' &middot; this week':'')+'</span></div>'+
+      '<div class="acts">'+
+        '<button class="put" data-put="'+e.id+'">'+(isWin?'On the wall':'Put it up')+'</button>'+
+        '<button class="blk" data-blk="'+e.id+'">'+(e.blocked?'Allow':'Block')+'</button>'+
+      '</div></div>';
+  }).join('');
+  Array.prototype.forEach.call($('mug-list').querySelectorAll('[data-put]'),function(b){
+    b.onclick=function(){
+      var e=byId(b.getAttribute('data-put'));
+      if(!e||!backend)return;
+      var r=ratings(e.id);
+      /* stamped with THIS week, so the weekly roll leaves it alone */
+      backend.setMugCurrent({week:mugWeekKey(), ts:Date.now(), entry:e.id,
+        by:e.by, cap:e.cap, votes:Math.round(r.avg*10)/10, rated:r.yes, img:e.img})
+        .then(function(){
+          if(MUGBLOCK[e.id])return backend.blockMug(e.id,false);
+        })
+        .then(function(){ toast('On the wall','ok') })['catch'](fail);
+    };
+  });
+  Array.prototype.forEach.call($('mug-list').querySelectorAll('[data-blk]'),function(b){
+    b.onclick=function(){
+      var id=b.getAttribute('data-blk');
+      if(!backend)return;
+      var want=!MUGBLOCK[id];
+      backend.blockMug(id,want).then(function(){
+        if(want&&MUGCUR&&MUGCUR.entry===id)return backend.clearMugCurrent();
+      }).then(function(){ toast(want?'Blocked':'Allowed again','ok') })['catch'](fail);
+    };
+  });
+}
+function byId(id){
+  var all=mugEntries();
+  for(var i=0;i<all.length;i++)if(all[i].id===id)return all[i];
+  return null;
+}
+
+/* ---- the banner ---- */
+function tickerItems(){
+  var now=Date.now(), out=[];
+  Object.keys(TICKER||{}).forEach(function(k){
+    var it=TICKER[k];
+    if(!it||!it.text)return;
+    out.push({id:k,text:String(it.text),by:it.by||'',ts:it.ts||0,until:it.until||0,
+              gone:!!(it.until&&now>it.until)});
+  });
+  out.sort(function(a,b){return a.ts-b.ts});
+  return out;
+}
+function paintTicker(){
+  var el=$('tick-list'), items=tickerItems();
+  if(!items.length){el.innerHTML='<p class="none">Nothing on the banner.</p>';return}
+  el.innerHTML=items.map(function(i){
+    var note=(i.by?esc(i.by)+' · ':'')+stamp('put up',i.ts)+
+      (i.until?(i.gone?' · expired':' · until '+new Date(i.until).toLocaleDateString('en-GB',
+        {day:'numeric',month:'short'})):'');
+    return '<div class="item"'+(i.gone?' style="opacity:.5"':'')+'><div class="in"><b>'+esc(i.text)+'</b>'+
+      '<span>'+note+'</span></div>'+
+      '<button class="icon del" data-tick="'+i.id+'" title="Take it off">&#128465;</button></div>';
+  }).join('');
+  Array.prototype.forEach.call(el.querySelectorAll('[data-tick]'),function(b){
+    b.onclick=function(){
+      if(!backend)return;
+      backend.delTicker(b.getAttribute('data-tick'))
+        .then(function(){toast('Off the banner','ok')})['catch'](fail);
+    };
+  });
+}
+$('tick-go').onclick=function(){
+  var t=$('tick-text').value.trim();
+  if(!t){toast('Type something first','err');return}
+  if(!backend){toast('Not connected to the board','err');return}
+  var payload={text:t, ts:Date.now()};
+  var by=$('tick-by').value.trim();
+  if(by)payload.by=by;
+  var days=Number($('tick-days').value);
+  if(days>0)payload.until=Date.now()+days*86400000;
+  backend.addTicker(payload).then(function(){
+    $('tick-text').value='';
+    toast('On the banner','ok');
+  })['catch'](fail);
+};
+
+/* ---- screenshots and birthdays ---- */
+function paintExtras(){
+  var el=$('extra-list'), rows=[];
+  [['used','Used car desk'],['newcar','New car desk']].forEach(function(w){
+    var v=EXTRA[w[0]];
+    if(!v)return;
+    rows.push('<div class="item"><div class="in"><b>'+(v.note?esc(v.note):'No caption')+'</b>'+
+      '<span>'+w[1]+' &middot; '+stamp('put up',v.ts)+'</span></div>'+
+      '<button class="icon del" data-extra="'+w[0]+'" title="Take it off the board">&#128465;</button></div>');
+  });
+  el.innerHTML=rows.length?rows.join(''):'<p class="none">Neither desk has a picture up.</p>';
+  Array.prototype.forEach.call(el.querySelectorAll('[data-extra]'),function(b){
+    b.onclick=function(){
+      if(!backend)return;
+      backend.clearExtra(b.getAttribute('data-extra'))
+        .then(function(){toast('Taken off the board','ok')})['catch'](fail);
+    };
+  });
+}
+var BDAY_DAYS=7;
+function paintBdays(){
+  var el=$('bday-list'), now=Date.now(), rows=[];
+  Object.keys(BDAYS||{}).forEach(function(k){
+    var b=BDAYS[k];
+    if(!b||!b.ts)return;
+    var left=Math.ceil((b.ts+BDAY_DAYS*86400000-now)/86400000);
+    if(left<=0)return;
+    rows.push({id:k,name:b.name||'',ts:b.ts,left:left});
+  });
+  rows.sort(function(a,b){return b.ts-a.ts});
+  el.innerHTML=rows.length?rows.map(function(b){
+    return '<div class="item"><div class="in"><b>'+(b.name?esc(b.name):'No name')+'</b>'+
+      '<span>'+stamp('up since',b.ts)+' &middot; '+b.left+' day'+(b.left===1?'':'s')+' left</span></div>'+
+      '<button class="icon del" data-bday="'+b.id+'" title="Take it off the board">&#128465;</button></div>';
+  }).join(''):'<p class="none">Nobody on the board this week.</p>';
+  Array.prototype.forEach.call(el.querySelectorAll('[data-bday]'),function(b){
+    b.onclick=function(){
+      if(!backend)return;
+      backend.delBirthday(b.getAttribute('data-bday'))
+        .then(function(){toast('Taken off the board','ok')})['catch'](fail);
+    };
+  });
+}
+
+function paintAll(){
+  if($('console').classList.contains('hidden'))return;
+  paintTogs(); paintNums(); paintViews(); paintClips();
+  paintMugs(); paintTicker(); paintExtras(); paintBdays();
+}
+function setState(kind,txt){
+  $('dot').className='dot'+(kind?' '+kind:'');
+  $('state').textContent=txt;
+}
+
+/* ---- the Firebase module calls this once it is ready ---- */
+window.adBindBackend=function(api){
+  backend=api; live=true;
+  setState('live','Connected. Changes reach every screen straight away.');
+  api.watchSettings(function(v){ SET=v||{}; paintAll() });
+  api.watchControl(function(v){ CTL=v||{}; paintAll() }, function(){
+    setState('err','Board control is unreadable - publish the rules in Firebase.');
+  });
+  api.watchTicker(function(v){ TICKER=v||{}; paintTicker() });
+  api.watchMugs(function(v){ MUGS=v||{}; paintMugs() });
+  api.watchMugVotes(function(v){ MUGVOTES=v||{}; paintMugs() });
+  api.watchMugCurrent(function(v){ MUGCUR=v||null; paintMugs() });
+  api.watchMugBlocked(function(v){ MUGBLOCK=v||{}; paintMugs() });
+  api.watchBirthdays(function(v){ BDAYS=v||{}; paintBdays() });
+  api.watchExtra('used',   function(v){ EXTRA.used=(v&&v.img)?v:null; paintExtras() });
+  api.watchExtra('newcar', function(v){ EXTRA.newcar=(v&&v.img)?v:null; paintExtras() });
+};
+
+setTimeout(function(){
+  if(!backend)setState('err','No connection to the board - nothing here will save.');
+},9000);
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, remove }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const db=getDatabase(initializeApp(firebaseConfig));
+
+/* Firebase cancels a listener that errors and never brings it back on its
+   own, so every watch re-subscribes with a backoff - the same helper the
+   board and newcar.html use. */
+function watch(p, cb, onErr){
+  let tries=0;
+  const go=()=>{
+    onValue(ref(db,p), s=>{tries=0;cb(s.val())}, e=>{
+      console.error(p,e);
+      if(onErr)onErr(e);
+      setTimeout(go, Math.min(30000, 2000*Math.pow(2,tries++)));
+    });
+  };
+  go();
+}
+
+window.adBindBackend({
+  setSetting:(k,v)=>set(ref(db,'boardsettings/'+k),v),
+  clearSetting:(k)=>remove(ref(db,'boardsettings/'+k)),
+  setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
+  setView:(id,ts)=>set(ref(db,'boardcontrol/view'),{id:String(id),ts:ts||Date.now()}),
+  setReload:(ts)=>set(ref(db,'boardcontrol/reload'),ts),
+  play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()}),
+  addTicker:(payload)=>push(ref(db,'ticker/items'),payload),
+  delTicker:(id)=>remove(ref(db,'ticker/items/'+id)),
+  blockMug:(id,on)=>on?set(ref(db,'mugshot/blocked/'+id),true)
+                     :remove(ref(db,'mugshot/blocked/'+id)),
+  setMugCurrent:(v)=>set(ref(db,'mugshot/current'),v),
+  clearMugCurrent:()=>remove(ref(db,'mugshot/current')),
+  delBirthday:(id)=>remove(ref(db,'birthdays/'+id)),
+  clearExtra:(who)=>remove(ref(db,'extra/'+who)),
+  watchSettings:(cb)=>watch('boardsettings',cb),
+  watchControl:(cb,onErr)=>watch('boardcontrol',cb,onErr),
+  watchTicker:(cb)=>watch('ticker/items',cb),
+  watchMugs:(cb)=>watch('mugshot/entries',cb),
+  watchMugVotes:(cb)=>watch('mugshot/votes',cb),
+  watchMugCurrent:(cb)=>watch('mugshot/current',cb),
+  watchMugBlocked:(cb)=>watch('mugshot/blocked',cb),
+  watchBirthdays:(cb)=>watch('birthdays',cb),
+  watchExtra:(who,cb)=>watch('extra/'+who,cb)
+});
+</script>
+</body>
+</html>
