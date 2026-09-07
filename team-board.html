@@ -540,6 +540,51 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 @media(prefers-reduced-motion:reduce){.relief{display:none!important}}
 
+/* ---------- mug shot: the ask, and the winner's little QR ---------- */
+.qr{display:block;width:100%;height:auto;color:#0d1219;shape-rendering:crispEdges}
+.mugask{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(60% 60% at 50% 42%,rgba(47,123,240,.16),rgba(5,8,13,.96) 70%),rgba(5,8,13,.95);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+  pointer-events:none;padding:20px;text-align:center;
+}
+.mugask.show{opacity:1;visibility:visible}
+.ma-inner{display:flex;flex-direction:column;align-items:center;max-width:min(92vw,860px)}
+.ma-kick{
+  font-family:var(--display);font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--gold);font-size:clamp(.6rem,1.4vw,.95rem);
+}
+.ma-head{
+  font-family:var(--display);font-weight:700;line-height:1.02;margin-top:clamp(8px,1.6vh,16px);
+  font-size:clamp(1.6rem,5vw,3.6rem);
+}
+.ma-code{
+  background:#fff;border-radius:16px;padding:clamp(10px,1.6vh,18px);
+  width:clamp(150px,20vh,250px);margin-top:clamp(14px,2.4vh,26px);
+  box-shadow:0 20px 60px rgba(0,0,0,.55);
+}
+.ma-sub{
+  color:var(--muted);font-weight:600;margin-top:clamp(12px,2vh,20px);
+  font-size:clamp(.72rem,1.5vw,1.05rem);max-width:26em;line-height:1.5;
+}
+.ma-warn{
+  margin-top:clamp(10px,1.8vh,18px);font-weight:800;letter-spacing:.06em;
+  font-size:clamp(.7rem,1.4vw,.95rem);color:var(--gold);
+  border:1px solid rgba(224,179,82,.4);border-radius:999px;padding:6px 16px;
+  background:rgba(224,179,82,.10);
+}
+/* on the winner's slot it shrinks into the corner */
+.nc-qr{
+  display:none;position:absolute;right:clamp(8px,1.4vw,20px);bottom:clamp(8px,1.4vh,18px);
+  align-items:center;gap:10px;background:rgba(11,15,22,.82);border:1px solid var(--line);
+  border-radius:14px;padding:8px 13px 8px 8px;text-align:left;
+}
+.ncscene.asking .nc-qr{display:flex}
+.nc-qr .qr{width:clamp(92px,9vw,150px);background:#fff;border-radius:8px;padding:5px}
+.nc-qr b{display:block;font-size:clamp(.66rem,1.1vw,.82rem);font-weight:800}
+.nc-qr span{display:block;font-size:clamp(.56rem,.92vw,.7rem);color:var(--muted);font-weight:600;margin-top:1px}
+@media(prefers-reduced-motion:reduce){.mugask{transition:none}}
+
 /* ---------- birthday ---------- */
 .bdayview{
   position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
@@ -1185,6 +1230,10 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <div class="nc-kicker" id="nc-kicker">New car &mdash; 76 plate leaderboard</div>
     <div class="nc-shot"><img id="nc-img" alt="Screenshot on the board"></div>
     <div class="nc-when" id="nc-when"></div>
+    <div class="nc-qr" id="nc-qr">
+      <svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg>
+      <div><b>Fancy next week?</b><span>Scan and put one up &middot; keep it appropriate</span></div>
+    </div>
   </div>
   <div class="nc-chat" id="nc-chat" aria-hidden="true">
     <div class="nc-mascot us" id="nc-will">
@@ -1261,6 +1310,18 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     </div>
   </div>
   <div class="puddle" id="puddle"></div>
+</div>
+
+<!-- nobody has won the mug shot yet: ask the team for one -->
+<div class="mugask" id="mugask" aria-hidden="true">
+  <div class="ma-inner">
+    <div class="ma-kick">Mug shot of the week</div>
+    <div class="ma-head">Want a picture here?</div>
+    <div class="ma-code"><svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg></div>
+    <div class="ma-sub">Scan it, put one up, and if it gets the most votes it is
+      on the board all next week.</div>
+    <div class="ma-warn">&#128064; Keep it appropriate</div>
+  </div>
 </div>
 
 <!-- the quiet birthday card that rides the rotation for a week. A view, not
@@ -2241,7 +2302,11 @@ function watchNewCar(){
    with two or three up at once a full slot each pushes the boards themselves
    too far apart. So the rotation is per-view rather than one fixed interval. */
 var VIEW_MS=30000, BDAY_VIEW_MS=15000, viewIdx=0, rotTimer=null, reliefTimer=null;
-function viewMs(v){ return (v&&v.kind==='birthday') ? BDAY_VIEW_MS : VIEW_MS }
+function viewMs(v){
+  if(!v)return VIEW_MS;
+  /* a birthday card and the mug shot ask are both one line of text */
+  return (v.kind==='birthday'||v.kind==='mugask') ? BDAY_VIEW_MS : VIEW_MS;
+}
 
 function views(){
   var out=[{id:'board'}];   /* index 0 is always our own board */
@@ -2264,8 +2329,10 @@ function views(){
     when:stamp('Put up',EXTRA.newcar.ts)
   });
   var mug=liveMug();
+  /* nobody has won one yet - ask for entries instead */
+  if(!mug)out.push({id:'mugask', kind:'mugask'});
   if(mug)out.push({
-    id:'mugshot',
+    id:'mugshot', kind:'mugshot',
     img:mug.img,
     cap:mug.cap?esc(mug.cap):'Mug shot of the week',
     when:(mug.by?esc(mug.by)+' \u00b7 ':'')+'voted on by the team'+
@@ -2302,7 +2369,10 @@ function showView(i){
     $('bv-note').textContent=bdayDayNote(v.bday.ts);
   }
   $('ncscene').classList.toggle('show',!!v.img);
+  /* the winner's slot carries a small QR so next week's entries keep coming */
+  $('ncscene').classList.toggle('asking',v.kind==='mugshot');
   $('bdayview').classList.toggle('show',v.kind==='birthday');
+  $('mugask').classList.toggle('show',v.kind==='mugask');
   ncChat(v.kind==='newcar');
   paintViewControls();
   armRotation();
@@ -2361,7 +2431,8 @@ var VIEWPINS=[
   {id:'newcar',       name:'New car board',           sub:'76 Plate leaderboard'},
   {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
   {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"},
-  {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'}
+  {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'},
+  {id:'mugask',       name:'Ask for mug shots',       sub:'The QR code for the team'}
 ];
 /* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
    the team and then walks off; a wall display stuck on one screen all
@@ -2392,6 +2463,7 @@ function viewAvailable(id){
   if(id==='extra-used')return !!EXTRA.used;
   if(id==='extra-newcar')return !!EXTRA.newcar;
   if(id==='mugshot')return !!liveMug();
+  if(id==='mugask')return !liveMug();
   return false;
 }
 

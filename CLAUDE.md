@@ -178,6 +178,15 @@ are still duplicated per page — only the header/drawer/footer are templated.
   One vote each per device (localStorage `dsMug`); voting again moves your
   vote. Entries over 21 days old are pruned after a roll - everything here
   carries a photo.
+  The board asks for entries itself: with no winner up it shows a **15-second
+  QR slot** ("Want a picture here?"), and once one has won, the winner's own
+  30-second slot carries a smaller QR in the corner for next week. Both point
+  at `mugshot.html`, both carry a "keep it appropriate" line, and the QR is a
+  **pre-generated inline SVG** - the URL never changes, so there is no library
+  and nothing to fetch. Regenerate it with segno (`border=2` bakes in the quiet
+  zone) and **check it still decodes at the size it renders at**: the first
+  small one was 84px and OpenCV could not read it out of a screenshot, which is
+  a fair proxy for a phone across the showroom.
 - `links.html` — Dan's internal links/dashboard page (includes the Formspree
   record-ID → PDF download widgets, the Ramp Report link builder with its
   localStorage sent-log, the VIP Buyers Event invitation builder with its own
