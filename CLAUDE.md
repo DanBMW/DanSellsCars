@@ -175,13 +175,19 @@ are still duplicated per page — only the header/drawer/footer are templated.
   the week, so a second client writes the same answer. It takes the newest
   *finished* week that had entries rather than strictly last week, so a quiet
   week or nobody opening the page for a fortnight does not lose the winner.
-  Voting is a **swipe deck**: each person sees each picture once and swipes
-  right for yes or left to pass, and the deck is derived from the data rather
-  than from what this browser remembers - a yes stores `true` and a pass stores
-  `false` under the voter, so "have I seen this" is the presence of the key.
-  The counts stay hidden until they have judged the lot, then the standings
-  appear. The voter id is per device (localStorage `dsMug`). Two things the
-  swipe needs: the card images carry `draggable="false"` and
+  Voting is a **rating deck**: each person sees each picture once and scores it
+  out of five, and the deck is derived from the data rather than from what this
+  browser remembers - the score stores as a number 1-5 under the voter, so
+  "have I seen this" is the presence of the key. Ranking is **not** the plain
+  average: `score()` gives every entry two notional 3s to start with, so one
+  lonely 5 cannot beat a picture the whole team rated 4. With everyone seeing
+  everything once the two barely differ; it only bites on an entry one or two
+  people have got to. Scores stay hidden until they have rated the lot, then
+  the standings appear. `rate()` sets `dragging` before storing, because the
+  votes watcher fires straight back and a re-render would swap the card out
+  before its score is even seen on it.
+  The voter id is per device (localStorage `dsMug`). Two things the
+  deck needs: the card images carry `draggable="false"` and
   `-webkit-user-drag:none`, because the browser's own image-drag stops the
   mousemove stream and killed swiping on a laptop; and the window listeners are
   bound **once**, not per render, which was leaking a set per card. Entries
@@ -388,7 +394,10 @@ said so.
   for them - by `calc(100vw - 540px)` as well as a percentage, because the
   rails are a fixed-ish width and a percentage alone lets them sit on the
   picture at laptop sizes. Below 1000px there is no room at all and the rails
-  are hidden.
+  are hidden - and **that narrowing rule must stay inside the same media
+  query**. Left outside it, `calc(100vw - 540px)` goes negative below 540px
+  wide, `max-width` resolves to 0, and the new car board is invisible on a
+  phone: caption and timestamp render, picture does not.
 - **Dan's credit line.** A fixed `.credit` in the bottom-right corner at
   z-index 300, above every board, view and cut scene, so it reads on the wall
   whatever the display is showing. It is deliberately clear of the centred
