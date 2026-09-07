@@ -163,6 +163,21 @@ are still duplicated per page — only the header/drawer/footer are templated.
   top scoreboard for the used car team (the digital replacement for the paper
   board on the showroom wall). Public to view by URL, but adding/editing deals
   is behind the manager PIN. Team photos live in `team/` (see below).
+- `mugshot.html` — **Mug Shot of the Week**: the team upload a picture and vote;
+  the winner takes a slot in the board rotation for the week. No PIN (a PIN
+  would stop the team voting, which is the point). Data is `mugshot/entries`,
+  `mugshot/votes/<entry>/<voter>` and a single decided `mugshot/current`.
+  **The board only ever reads `mugshot/current`** - never the entries or the
+  votes - because it sits on a wall all day and should not pull everybody's
+  photos down. Weeks run Monday to Sunday and every client derives the key from
+  its own clock, so the roll needs nobody to press anything: whoever has the
+  page open when the week turns computes the winner and writes it, stamped with
+  the week, so a second client writes the same answer. It takes the newest
+  *finished* week that had entries rather than strictly last week, so a quiet
+  week or nobody opening the page for a fortnight does not lose the winner.
+  One vote each per device (localStorage `dsMug`); voting again moves your
+  vote. Entries over 21 days old are pruned after a roll - everything here
+  carries a photo.
 - `links.html` — Dan's internal links/dashboard page (includes the Formspree
   record-ID → PDF download widgets, the Ramp Report link builder with its
   localStorage sent-log, the VIP Buyers Event invitation builder with its own

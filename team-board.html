@@ -2143,6 +2143,19 @@ var NC={
    rotation only while there is something in it. */
 var EXTRA={used:null, newcar:null};
 
+/* ---- mug shot of the week ----
+   The team put pictures up and vote on mugshot.html; the winner takes a slot
+   in the rotation for the week. The board only ever reads the single decided
+   winner, never the entries or the votes - it sits on a wall all day and does
+   not need to pull everybody's photos down. */
+var MUG=null;
+function mugWeekKey(){
+  var x=new Date(); x=new Date(x.getFullYear(),x.getMonth(),x.getDate());
+  x.setDate(x.getDate()-((x.getDay()+6)%7));
+  return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+}
+function liveMug(){ return (MUG&&MUG.img&&MUG.week===mugWeekKey())?MUG:null }
+
 /* Nathan runs the new car board, so while it is up he gets to gloat and Will
    comes over to defend the used car pitch. Same shuffle bag as the main pair,
    so nothing repeats until a pool is exhausted. */
@@ -2202,6 +2215,11 @@ function watchNewCar(){
     if(v&&v.img){NEWCAR={img:v.img, ts:v.ts||0, note:v.note||'', seed:false}}
     if(viewIdx>0||pinnedView!=='auto')applyPin();
   });
+  if(backend.watchMug)backend.watchMug(function(v){
+    MUG=v||null;
+    paintViewControls();
+    applyPin();
+  });
   if(backend.watchExtra){
     backend.watchExtra('used',function(v){
       EXTRA.used=(v&&v.img)?v:null;
@@ -2244,6 +2262,14 @@ function views(){
     img:EXTRA.newcar.img,
     cap:EXTRA.newcar.note?esc(EXTRA.newcar.note):'From the new car desk',
     when:stamp('Put up',EXTRA.newcar.ts)
+  });
+  var mug=liveMug();
+  if(mug)out.push({
+    id:'mugshot',
+    img:mug.img,
+    cap:mug.cap?esc(mug.cap):'Mug shot of the week',
+    when:(mug.by?esc(mug.by)+' \u00b7 ':'')+'voted on by the team'+
+         (mug.votes?' \u00b7 '+mug.votes+' vote'+(mug.votes===1?'':'s'):'')
   });
   /* birthdays come after the boards and screenshots, not in between them */
   liveBirthdays().forEach(function(bd){
@@ -2334,7 +2360,8 @@ var VIEWPINS=[
   {id:'board',        name:'Used car board',          sub:'The Profit Challenge'},
   {id:'newcar',       name:'New car board',           sub:'76 Plate leaderboard'},
   {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
-  {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"}
+  {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"},
+  {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'}
 ];
 /* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
    the team and then walks off; a wall display stuck on one screen all
@@ -2364,6 +2391,7 @@ function viewAvailable(id){
   if(id==='newcar')return !!NEWCAR.img;
   if(id==='extra-used')return !!EXTRA.used;
   if(id==='extra-newcar')return !!EXTRA.newcar;
+  if(id==='mugshot')return !!liveMug();
   return false;
 }
 
@@ -3804,6 +3832,7 @@ window.dsBindBackend({
   read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{}),
   watchNewCar(cb){ watch('newcar/current', cb) },
   watchExtra(who,cb){ watch('extra/'+who, cb) },
+  watchMug(cb){ watch('mugshot/current', cb) },
   watchBirthdays(cb){ watch('birthdays', cb) },
   addBirthday:(payload)=>push(ref(db,'birthdays'),payload),
   delBirthday:(id)=>remove(ref(db,'birthdays/'+id)),

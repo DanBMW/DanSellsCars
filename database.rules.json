@@ -86,6 +86,42 @@
       "$other": { ".validate": false }
     },
 
+    "mugshot": {
+      ".read": true,
+      "current": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['week','ts'])",
+        "week":  { ".validate": "newData.isString() && newData.val().length <= 12" },
+        "ts":    { ".validate": "newData.isNumber()" },
+        "entry": { ".validate": "newData.isString() && newData.val().length <= 60" },
+        "by":    { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "cap":   { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "votes": { ".validate": "newData.isNumber()" },
+        "img":   { ".validate": "newData.isString() && newData.val().length <= 1400000 && newData.val().matches(/^data:image\\/(jpeg|png|webp);base64,/)" },
+        "$other": { ".validate": false }
+      },
+      "entries": {
+        "$entryId": {
+          ".write": true,
+          ".validate": "newData.hasChildren(['img','ts'])",
+          "img": { ".validate": "newData.isString() && newData.val().length <= 1400000 && newData.val().matches(/^data:image\\/(jpeg|png|webp);base64,/)" },
+          "ts":  { ".validate": "newData.isNumber()" },
+          "by":  { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "cap": { ".validate": "newData.isString() && newData.val().length <= 80" },
+          "$other": { ".validate": false }
+        }
+      },
+      "votes": {
+        "$entryId": {
+          "$voter": {
+            ".write": true,
+            ".validate": "newData.isBoolean()"
+          }
+        }
+      },
+      "$other": { ".validate": false }
+    },
+
     "birthdays": {
       ".read": true,
       "$id": {

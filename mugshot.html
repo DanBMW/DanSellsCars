@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Mug Shot of the Week</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700,900&display=swap" media="print" onload="this.media='all'">
+<style>
+:root{
+  --ink:#070a0f; --panel:#131a25; --panel-2:#1b2330;
+  --line:rgba(255,255,255,.12); --line-soft:rgba(255,255,255,.06);
+  --text:#eef2f7; --muted:#93a1b5;
+  --blue:#2f7bf0; --blue-deep:#1f5fc4; --gold:#e0b352; --green:#2fbf6b; --red:#e2564d;
+  --font:'Satoshi',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --display:'Clash Display','Satoshi',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--font);padding:22px 16px 60px;
+  background-image:radial-gradient(70% 50% at 50% 0,rgba(47,123,240,.10),transparent 60%)}
+.wrap{max-width:660px;margin:0 auto}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(1.7rem,6vw,2.6rem);margin:0;line-height:1.05}
+h1 .amt{color:var(--gold)}
+.sub{color:var(--muted);font-size:.9rem;margin-top:6px;line-height:1.5}
+.card{background:var(--panel);border:1px solid var(--line-soft);border-radius:18px;padding:18px;margin-top:18px}
+label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 8px}
+input[type=text]{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+  color:var(--text);font-family:var(--font);font-size:1rem;padding:12px 14px}
+input:focus{outline:2px solid var(--blue);outline-offset:1px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-family:var(--font);font-weight:700;font-size:.92rem;padding:13px 20px;border-radius:999px;
+  cursor:pointer;transition:.15s;width:100%}
+.btn:hover{background:#25303f}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-deep)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;margin-top:14px}
+#file,#x{display:none}
+.drop{border:2px dashed var(--line);border-radius:16px;padding:28px 18px;text-align:center;cursor:pointer;
+  transition:.15s;background:rgba(255,255,255,.02)}
+.drop:hover,.drop.over{border-color:var(--blue);background:rgba(47,123,240,.08)}
+.drop b{display:block;font-size:1rem;margin-bottom:4px}
+.drop span{font-size:.8rem;color:var(--muted)}
+.shot{margin-top:14px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
+.shot img{display:block;width:100%;height:auto}
+.meta{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6}
+.meta b{color:var(--text)}
+.msg{margin-top:12px;font-size:.85rem;font-weight:600;display:none}
+.msg.ok{color:var(--green);display:block}
+.msg.err{color:var(--red);display:block}
+.msg.busy{color:var(--muted);display:block}
+.hidden{display:none}
+
+.winner{background:linear-gradient(160deg,rgba(224,179,82,.14),var(--panel) 62%);border-color:rgba(224,179,82,.35)}
+.winner .kick{font-family:var(--display);font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);font-size:.7rem;margin-bottom:10px}
+
+.grid{display:grid;gap:12px;margin-top:6px}
+.entry{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:14px;overflow:hidden}
+.entry.lead{border-color:rgba(224,179,82,.45);box-shadow:0 0 0 1px rgba(224,179,82,.2)}
+.entry img{display:block;width:100%;height:auto;max-height:320px;object-fit:contain;background:#000}
+.entry .bar{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.entry .who{flex:1;min-width:0}
+.entry .who b{display:block;font-size:.88rem}
+.entry .who span{font-size:.72rem;color:var(--muted)}
+.vote{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--text);
+  border-radius:999px;padding:9px 15px;font-weight:800;font-size:.82rem;cursor:pointer;font-family:var(--font);
+  display:flex;align-items:center;gap:7px;transition:.15s}
+.vote:hover{background:#25303f}
+.vote.on{background:rgba(224,179,82,.18);border-color:rgba(224,179,82,.6);color:var(--gold)}
+.vote .n{font-family:var(--display);font-weight:700;font-size:1rem}
+.crown{position:absolute;margin:-6px 0 0 -6px;font-size:1.1rem}
+.empty{text-align:center;color:var(--muted);font-size:.85rem;padding:26px 0;line-height:1.6}
+.foot{text-align:center;color:var(--muted);font-size:.72rem;margin-top:26px;line-height:1.7}
+.foot a{color:var(--blue);text-decoration:none}
+.pill{display:inline-block;background:rgba(255,255,255,.06);border:1px solid var(--line);
+  border-radius:999px;padding:4px 12px;font-size:.72rem;color:var(--muted);font-weight:700;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Mug Shot <span class="amt">of the Week</span></h1>
+  <p class="sub">Put a picture up, vote for the one you want on the showroom board. The winner goes on
+    the board for a week and a fresh round starts every Monday.</p>
+  <div class="pill" id="weekpill">&nbsp;</div>
+
+  <!-- what is on the board right now -->
+  <div class="card winner hidden" id="win-card">
+    <div class="kick">On the board this week</div>
+    <div id="win-body"></div>
+  </div>
+
+  <!-- upload -->
+  <div class="card">
+    <label>Your entry</label>
+    <div class="drop" id="drop">
+      <b>Tap to choose a picture</b>
+      <span>or drag one here &middot; JPG or PNG</span>
+    </div>
+    <input type="file" id="file" accept="image/*">
+    <div id="preview" class="hidden">
+      <div class="shot"><img id="prev-img" alt="Your entry"></div>
+      <div class="meta" id="prev-meta"></div>
+      <label style="margin-top:16px">Who is it by?</label>
+      <input type="text" id="by" maxlength="40" placeholder="Your name" autocomplete="off">
+      <label style="margin-top:14px">Caption (optional)</label>
+      <input type="text" id="cap" maxlength="80" placeholder="e.g. Clive at the Christmas do">
+      <div class="row">
+        <button class="btn" id="cancel">Choose another</button>
+        <button class="btn primary" id="send">Put it in</button>
+      </div>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <!-- voting -->
+  <div class="card">
+    <label>This week&rsquo;s entries &mdash; one vote each</label>
+    <div class="grid" id="list"><p class="empty">Loading&hellip;</p></div>
+  </div>
+
+  <p class="foot">
+    Internal page &middot; not linked publicly<br>
+    The board is at <a href="team-board.html">dan-sells.co.uk/team-board.html</a>
+  </p>
+</div>
+
+<script>
+/* ============================================================
+   UI first in a plain script, same as the board and newcar.html:
+   if the Firebase CDN is slow or blocked the page still takes a
+   file and shows a preview - only sending waits on the backend.
+   ============================================================ */
+var MAX_STORED=1300000;
+var pending=null, backend=null, ENTRIES={}, VOTES={}, CURRENT=null;
+
+function $(id){return document.getElementById(id)}
+function say(el,t,k){el.className='msg '+(k||'');el.textContent=t||''}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+/* one vote each, per device. This is a staff page on an internal URL - it
+   stops somebody voting twice by accident, not somebody determined. */
+var me=null;
+try{
+  me=localStorage.getItem('dsMug');
+  if(!me){me='v'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem('dsMug',me)}
+}catch(e){ me='v'+Math.random().toString(36).slice(2,10) }
+
+/* Weeks run Monday to Sunday. Every client works the week out from the clock
+   the same way, so the roll needs nobody to press anything. */
+function weekKey(d){
+  var x=d?new Date(d):new Date();
+  x=new Date(x.getFullYear(),x.getMonth(),x.getDate());
+  x.setDate(x.getDate()-((x.getDay()+6)%7));
+  return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+}
+function weekOf(ts){ return weekKey(ts) }
+function nextMonday(){
+  var x=new Date(); x=new Date(x.getFullYear(),x.getMonth(),x.getDate());
+  x.setDate(x.getDate()+((8-((x.getDay()+6)%7+1))%7||7));
+  return x;
+}
+function daysLeft(){
+  return Math.max(0,Math.ceil((nextMonday()-new Date())/86400000));
+}
+
+/* ---- pick a file ---- */
+$('drop').onclick=function(){$('file').click()};
+['dragenter','dragover'].forEach(function(t){
+  $('drop').addEventListener(t,function(e){e.preventDefault();$('drop').classList.add('over')});
+});
+['dragleave','drop'].forEach(function(t){
+  $('drop').addEventListener(t,function(e){e.preventDefault();$('drop').classList.remove('over')});
+});
+$('drop').addEventListener('drop',function(e){
+  if(e.dataTransfer&&e.dataTransfer.files[0])handle(e.dataTransfer.files[0]);
+});
+$('file').onchange=function(e){if(e.target.files[0])handle(e.target.files[0])};
+$('cancel').onclick=function(){
+  pending=null;$('preview').classList.add('hidden');$('file').value='';say($('msg'),'');
+};
+
+/* shrink in the browser - it has to fit in one database write. Twin of the
+   same step on newcar.html and the board; change them together. */
+function shrink(file,ok,fail){
+  if(!/^image\//.test(file.type)){fail('That is not a picture');return}
+  var fr=new FileReader();
+  fr.onload=function(){
+    var im=new Image();
+    im.onload=function(){
+      var q=0.85,data=null;
+      for(var pass=0;pass<6;pass++){
+        var maxW=pass<2?1600:pass<4?1300:1000;
+        var sc=Math.min(1,maxW/im.width);
+        var c=document.createElement('canvas');
+        c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        data=c.toDataURL('image/jpeg',q);
+        if(data.length<=MAX_STORED)break;
+        q-=0.1;
+      }
+      if(!data||data.length>MAX_STORED){
+        fail('That picture is too big even after shrinking - try a smaller one');return;
+      }
+      ok(data,im.width,im.height);
+    };
+    im.onerror=function(){fail('Could not read that picture')};
+    im.src=fr.result;
+  };
+  fr.onerror=function(){fail('Could not read that file')};
+  fr.readAsDataURL(file);
+}
+
+function handle(f){
+  say($('msg'),'Preparing…','busy');
+  shrink(f,function(data,w,h){
+    pending=data;
+    $('prev-img').src=data;
+    $('prev-meta').innerHTML='<b>'+w+'&times;'+h+'</b> original &middot; stored at about <b>'+
+      Math.round(data.length/1024)+'KB</b>';
+    $('preview').classList.remove('hidden');
+    say($('msg'),backend?'':'Connecting…',backend?'':'busy');
+    $('send').disabled=!backend;
+    try{ if(!$('by').value)$('by').value=localStorage.getItem('dsMugBy')||'' }catch(e){}
+  },function(err){say($('msg'),err,'err')});
+}
+
+$('send').onclick=function(){
+  if(!pending)return;
+  if(!backend){say($('msg'),'Not connected yet - give it a moment','err');return}
+  $('send').disabled=true;
+  say($('msg'),'Sending…','busy');
+  var payload={img:pending, ts:Date.now()};
+  var by=$('by').value.trim(), cap=$('cap').value.trim();
+  if(by){payload.by=by; try{localStorage.setItem('dsMugBy',by)}catch(e){}}
+  if(cap)payload.cap=cap;
+  backend.add(payload).then(function(){
+    pending=null;$('preview').classList.add('hidden');$('file').value='';$('cap').value='';
+    say($('msg'),'In. Now go and get some votes.','ok');
+  })['catch'](function(e){
+    console.error(e);say($('msg'),'Could not send that - try again','err');
+  }).then(function(){$('send').disabled=false},function(){$('send').disabled=false});
+};
+
+/* ---- this week's entries ---- */
+function countVotes(id){
+  var v=VOTES[id]||{}, n=0;
+  for(var k in v)if(v[k])n++;
+  return n;
+}
+function thisWeeksEntries(){
+  var wk=weekKey(), out=[];
+  Object.keys(ENTRIES||{}).forEach(function(k){
+    var e=ENTRIES[k];
+    if(e&&e.img&&weekOf(e.ts)===wk)out.push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts,n:countVotes(k)});
+  });
+  out.sort(function(a,b){return b.n-a.n||a.ts-b.ts});
+  return out;
+}
+
+function render(){
+  var d=daysLeft();
+  $('weekpill').textContent='Voting closes Monday · '+(d===1?'1 day':d+' days')+' left';
+
+  var list=$('list'), rows=thisWeeksEntries();
+  if(!rows.length){
+    list.innerHTML='<p class="empty">Nothing in yet this week.<br>Be the one who starts it.</p>';
+  }else{
+    var top=rows[0].n;
+    list.innerHTML=rows.map(function(r){
+      var mine=(VOTES[r.id]||{})[me]?' on':'';
+      return '<div class="entry'+(r.n&&r.n===top?' lead':'')+'">'+
+        '<img src="'+r.img+'" alt="Entry'+(r.by?' by '+esc(r.by):'')+'">'+
+        '<div class="bar"><div class="who"><b>'+(r.cap?esc(r.cap):'No caption')+'</b>'+
+        '<span>'+(r.by?esc(r.by):'Anonymous')+'</span></div>'+
+        '<button type="button" class="vote'+mine+'" data-id="'+r.id+'">'+
+        (mine?'&#9733;':'&#9734;')+'<span class="n">'+r.n+'</span></button></div></div>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('[data-id]'),function(btn){
+      btn.onclick=function(){vote(btn.getAttribute('data-id'))};
+    });
+  }
+
+  if(CURRENT&&CURRENT.img&&CURRENT.week===weekKey()){
+    $('win-card').classList.remove('hidden');
+    $('win-body').innerHTML='<div class="shot"><img src="'+CURRENT.img+'" alt="On the board"></div>'+
+      '<p class="meta">'+(CURRENT.cap?'<b>'+esc(CURRENT.cap)+'</b> &middot; ':'')+
+      (CURRENT.by?esc(CURRENT.by):'Anonymous')+' &middot; won with '+(CURRENT.votes||0)+
+      ' vote'+((CURRENT.votes||0)===1?'':'s')+'</p>';
+  }else{
+    $('win-card').classList.add('hidden');
+  }
+}
+
+/* one each: voting again moves your vote rather than adding another */
+function vote(id){
+  if(!backend)return;
+  var had=(VOTES[id]||{})[me];
+  var ops=[];
+  Object.keys(VOTES).forEach(function(k){
+    if(VOTES[k]&&VOTES[k][me])ops.push(backend.unvote(k,me));
+  });
+  Promise.all(ops).then(function(){
+    if(!had)return backend.vote(id,me);
+  })['catch'](function(e){console.error(e)});
+}
+
+/* ---- the weekly roll, done by whoever happens to have the page open ----
+   The winner node is written with the week stamped on it, so a second client
+   doing the same thing writes the same answer. Nothing to schedule. */
+function rollIfDue(){
+  if(!backend)return;
+  var wk=weekKey();
+  if(CURRENT&&CURRENT.week===wk)return;          /* already done for this week */
+
+  /* The newest FINISHED week that actually had entries wins the slot - not
+     strictly last week. A quiet week, or nobody opening this page for a
+     fortnight, would otherwise lose the winner entirely. */
+  var byWeek={};
+  Object.keys(ENTRIES||{}).forEach(function(k){
+    var e=ENTRIES[k];
+    if(!e||!e.img)return;
+    var w=weekOf(e.ts);
+    if(w>=wk)return;                              /* still being voted on */
+    (byWeek[w]=byWeek[w]||[]).push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts,n:countVotes(k)});
+  });
+  var weeks=Object.keys(byWeek).sort();
+  if(!weeks.length)return;                        /* nothing has ever run */
+  var pool=byWeek[weeks[weeks.length-1]], best=null;
+  pool.forEach(function(e){
+    /* most votes; a tie goes to whoever put theirs up first */
+    if(!best||e.n>best.n||(e.n===best.n&&e.ts<best.ts))best=e;
+  });
+  backend.setCurrent({week:wk, ts:Date.now(), entry:best.id, by:best.by, cap:best.cap,
+                      votes:best.n, img:best.img})
+    .then(function(){ pruneOld() })['catch'](function(e){console.error(e)});
+}
+
+/* entries and their votes are dead weight once the week they belong to has
+   been decided, and everything here carries a photo */
+function pruneOld(){
+  if(!backend||!backend.dropEntry)return;
+  var cut=Date.now()-21*86400000;
+  Object.keys(ENTRIES||{}).forEach(function(k){
+    var e=ENTRIES[k];
+    if(e&&typeof e.ts==='number'&&e.ts<cut&&(!CURRENT||CURRENT.entry!==k)){
+      backend.dropEntry(k)['catch'](function(){});
+    }
+  });
+}
+
+/* ---- the Firebase module calls this once it is ready ---- */
+window.msBindBackend=function(api){
+  backend=api;
+  if(pending){$('send').disabled=false;say($('msg'),'')}
+  api.watchEntries(function(v){ENTRIES=v||{};render();rollIfDue()});
+  api.watchVotes(function(v){VOTES=v||{};render()});
+  api.watchCurrent(function(v){CURRENT=v||null;render();rollIfDue()});
+};
+
+render();
+setTimeout(function(){
+  if(!backend)$('list').innerHTML='<p class="empty">Could not reach the board.<br>Check the internet connection.</p>';
+},9000);
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, remove }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const db=getDatabase(initializeApp(firebaseConfig));
+
+/* Firebase cancels a listener that errors and never brings it back, so every
+   watch re-subscribes with a backoff - same helper the board uses. */
+function watch(p, cb){
+  let tries=0;
+  const go=()=>{
+    onValue(ref(db,p), s=>{tries=0;cb(s.val())}, e=>{
+      console.error(p,e);
+      setTimeout(go, Math.min(30000, 2000*Math.pow(2,tries++)));
+    });
+  };
+  go();
+}
+
+window.msBindBackend({
+  add:(payload)=>push(ref(db,'mugshot/entries'),payload),
+  vote:(id,who)=>set(ref(db,'mugshot/votes/'+id+'/'+who),true),
+  unvote:(id,who)=>remove(ref(db,'mugshot/votes/'+id+'/'+who)),
+  dropEntry:(id)=>Promise.all([remove(ref(db,'mugshot/entries/'+id)),
+                               remove(ref(db,'mugshot/votes/'+id))]),
+  setCurrent:(v)=>set(ref(db,'mugshot/current'),v),
+  watchEntries:(cb)=>watch('mugshot/entries',cb),
+  watchVotes:(cb)=>watch('mugshot/votes',cb),
+  watchCurrent:(cb)=>watch('mugshot/current',cb)
+});
+</script>
+</body>
+</html>
