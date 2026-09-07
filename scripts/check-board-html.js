@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
-const PAGES = ['team-board.html', 'newcar.html'];
+const PAGES = ['team-board.html', 'newcar.html', 'mugshot.html', 'admin.html'];
 let failed = 0;
 
 function problem(page, msg) {
