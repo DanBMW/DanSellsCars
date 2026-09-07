@@ -175,9 +175,17 @@ are still duplicated per page — only the header/drawer/footer are templated.
   the week, so a second client writes the same answer. It takes the newest
   *finished* week that had entries rather than strictly last week, so a quiet
   week or nobody opening the page for a fortnight does not lose the winner.
-  One vote each per device (localStorage `dsMug`); voting again moves your
-  vote. Entries over 21 days old are pruned after a roll - everything here
-  carries a photo.
+  Voting is a **swipe deck**: each person sees each picture once and swipes
+  right for yes or left to pass, and the deck is derived from the data rather
+  than from what this browser remembers - a yes stores `true` and a pass stores
+  `false` under the voter, so "have I seen this" is the presence of the key.
+  The counts stay hidden until they have judged the lot, then the standings
+  appear. The voter id is per device (localStorage `dsMug`). Two things the
+  swipe needs: the card images carry `draggable="false"` and
+  `-webkit-user-drag:none`, because the browser's own image-drag stops the
+  mousemove stream and killed swiping on a laptop; and the window listeners are
+  bound **once**, not per render, which was leaking a set per card. Entries
+  over 21 days old are pruned after a roll - everything here carries a photo.
   The board asks for entries itself: with no winner up it shows a **15-second
   QR slot** ("Want a picture here?"), and once one has won, the winner's own
   30-second slot carries a smaller QR in the corner for next week. Both point
