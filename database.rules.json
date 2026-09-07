@@ -116,9 +116,56 @@
         "$entryId": {
           "$voter": {
             ".write": true,
-            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5"
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
           }
         }
+      },
+      "blocked": {
+        "$entryId": {
+          ".write": true,
+          ".validate": "newData.isBoolean()"
+        }
+      },
+      "$other": { ".validate": false }
+    },
+
+    "ticker": {
+      ".read": true,
+      "items": {
+        "$itemId": {
+          ".write": true,
+          ".validate": "newData.hasChildren(['text','ts'])",
+          "text": { ".validate": "newData.isString() && newData.val().length <= 240" },
+          "by":   { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "ts":   { ".validate": "newData.isNumber()" },
+          "until":{ ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        }
+      },
+      "$other": { ".validate": false }
+    },
+
+    "boardsettings": {
+      ".read": true,
+      "$key": {
+        ".write": true,
+        ".validate": "newData.isBoolean() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000)"
+      }
+    },
+
+    "stockwatch": {
+      ".read": true,
+      "seen": {
+        ".write": true,
+        "$id": { ".validate": "newData.isNumber()" }
+      },
+      "day": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['day','ts'])",
+        "day": { ".validate": "newData.isString() && newData.val().length <= 12" },
+        "ts":  { ".validate": "newData.isNumber()" },
+        "ids": { ".validate": "newData.isString() && newData.val().length <= 2000" },
+        "$other": { ".validate": false }
       },
       "$other": { ".validate": false }
     },

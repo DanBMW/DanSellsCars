@@ -87,8 +87,20 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
   padding:6px 18px;border-radius:12px;border:3px solid var(--gold);color:var(--gold);
   background:rgba(11,15,22,.8);opacity:0;pointer-events:none;white-space:nowrap;
 }
+.mcard .stamp.yes{border-color:var(--green);color:var(--green)}
+.mcard .stamp.no{border-color:var(--red);color:var(--red)}
 
 .acts{display:flex;justify-content:center;gap:clamp(4px,2vw,12px);margin-top:18px}
+/* stage one: the tinder yes or no - two buttons want more air between them
+   than five stars do, so the pair sets its own gap */
+#acts-yn{gap:clamp(24px,10vw,52px)}
+.jb{width:clamp(60px,19vw,78px);height:clamp(60px,19vw,78px);border-radius:50%;
+  border:1px solid var(--line);background:var(--panel-2);cursor:pointer;transition:.12s;
+  font-size:clamp(1.5rem,6vw,2rem);display:flex;align-items:center;justify-content:center;
+  line-height:1;padding:0}
+.jb:hover{transform:scale(1.08)}
+.jb.no{color:var(--red);border-color:rgba(226,86,77,.45)}
+.jb.yes{color:var(--green);border-color:rgba(47,191,107,.45)}
 .star{
   width:clamp(48px,15vw,62px);height:clamp(48px,15vw,62px);border-radius:50%;
   border:1px solid var(--line);background:var(--panel-2);color:#3d4a5c;
@@ -114,6 +126,7 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
 .vote.on{background:rgba(224,179,82,.18);border-color:rgba(224,179,82,.6);color:var(--gold)}
 .vote .n{font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1}
 .vote .of{font-size:.6rem;color:var(--muted);font-weight:700}
+.vote.pass{background:rgba(226,86,77,.12);border-color:rgba(226,86,77,.4);color:var(--red)}
 .crown{position:absolute;margin:-6px 0 0 -6px;font-size:1.1rem}
 .empty{text-align:center;color:var(--muted);font-size:.85rem;padding:26px 0;line-height:1.6}
 .foot{text-align:center;color:var(--muted);font-size:.72rem;margin-top:26px;line-height:1.7}
@@ -139,7 +152,8 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
   <h1>Mug Shot <span class="amt">of the Week</span></h1>
   <p class="sub">Put a picture up, vote for the one you want on the board in the managers&rsquo; office. The
     winner goes on the board for a week and a fresh round starts every Monday.</p>
-  <p class="brief">Upload a picture and let the team vote on it. <b>The most creative one usually wins</b> &mdash;
+  <p class="brief">Upload a picture and let the team vote on it &mdash; put up as many as you like, they are
+    all judged separately. <b>The most creative one usually wins</b> &mdash;
     a plain snap off your camera roll rarely beats one somebody has put some work into. Run it through an AI,
     stick a speech bubble on it, give it a proper caption. Make it special. It is going on the managers&rsquo;
     wall for a week with your name under it.</p>
@@ -155,7 +169,7 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
 
   <!-- upload -->
   <div class="card">
-    <label>Your entry</label>
+    <label>Your entries &middot; as many as you like</label>
     <div class="drop" id="drop">
       <b>Tap to choose a picture</b>
       <span>or drag one here &middot; JPG or PNG</span>
@@ -183,14 +197,18 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
       <span class="left" id="left"></span>
     </div>
     <div class="deck" id="deck"><p class="empty">Loading&hellip;</p></div>
-    <div class="acts" id="acts">
+    <div class="acts" id="acts-yn">
+      <button class="jb no" id="btn-no" aria-label="Pass">&#10005;</button>
+      <button class="jb yes" id="btn-yes" aria-label="Yes">&#10003;</button>
+    </div>
+    <div class="acts hide" id="acts-stars">
       <button class="star" data-n="1" aria-label="1 star">&#9733;</button>
       <button class="star" data-n="2" aria-label="2 stars">&#9733;</button>
       <button class="star" data-n="3" aria-label="3 stars">&#9733;</button>
       <button class="star" data-n="4" aria-label="4 stars">&#9733;</button>
       <button class="star" data-n="5" aria-label="5 stars">&#9733;</button>
     </div>
-    <p class="swipehint" id="swipehint">Give it a score out of five &middot; you only see each one once</p>
+    <p class="swipehint" id="swipehint">Swipe right for yes, left to pass &middot; you only see each one once</p>
     <div class="grid" id="results"></div>
   </div>
 
@@ -207,7 +225,7 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
    file and shows a preview - only sending waits on the backend.
    ============================================================ */
 var MAX_STORED=1300000;
-var pending=null, backend=null, ENTRIES={}, VOTES={}, CURRENT=null;
+var pending=null, backend=null, ENTRIES={}, VOTES={}, CURRENT=null, BLOCKED={};
 
 function $(id){return document.getElementById(id)}
 function say(el,t,k){el.className='msg '+(k||'');el.textContent=t||''}
@@ -226,16 +244,30 @@ function why(e){
   return 'Could not send that - try again';
 }
 
-/* Each person judges each picture once: a yes is stored as true, a pass as
-   false, so "have I seen this" is the presence of the key rather than
-   something only this browser knows. The voter id is per device - this is a
-   staff page on an internal URL, so it stops somebody voting twice by
-   accident, not somebody determined. */
+/* Each device judges each picture once and then never sees it again. The
+   voter id is per device, so the stored vote is itself the record of having
+   seen it - but a vote that was refused (rules not published) or later pruned
+   would bring the picture back, so the device keeps its own list as well.
+   Either one counts as seen. */
 var me=null;
 try{
   me=localStorage.getItem('dsMug');
   if(!me){me='v'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem('dsMug',me)}
 }catch(e){ me='v'+Math.random().toString(36).slice(2,10) }
+
+var SEEN={};
+try{ SEEN=JSON.parse(localStorage.getItem('dsMugSeen')||'{}')||{} }catch(e){ SEEN={} }
+function saveSeen(){ try{localStorage.setItem('dsMugSeen',JSON.stringify(SEEN))}catch(e){} }
+function markSeen(id){ SEEN[id]=Date.now(); saveSeen() }
+/* an entry that has been pruned away cannot come back, so drop it from the
+   list rather than letting it grow for ever */
+function tidySeen(){
+  var changed=false;
+  Object.keys(SEEN).forEach(function(k){
+    if(!ENTRIES[k]){ delete SEEN[k]; changed=true }
+  });
+  if(changed)saveSeen();
+}
 
 /* Weeks run Monday to Sunday. Every client works the week out from the clock
    the same way, so the roll needs nobody to press anything. */
@@ -327,42 +359,55 @@ $('send').onclick=function(){
   if(cap)payload.cap=cap;
   backend.add(payload).then(function(){
     pending=null;$('preview').classList.add('hidden');$('file').value='';$('cap').value='';
-    say($('msg'),'In. Now go and get some votes.','ok');
+    say($('msg'),'In. Put another one up if you like - there is no limit.','ok');
   })['catch'](function(e){
     console.error(e);say($('msg'),why(e),'err');
   }).then(function(){$('send').disabled=false},function(){$('send').disabled=false});
 };
 
 /* ---- this week's entries ---- */
-/* Ratings out of five. `score()` is what actually ranks them: a plain average
-   lets one lonely 5 beat a picture the whole team liked, so each entry starts
-   with two notional 3s that real ratings quickly outweigh. With everyone
-   seeing everything once the two barely differ - it only bites on an entry
-   that has been rated once or twice. */
+/* One vote per person per picture, stored as a single number: 0 is a pass,
+   1-5 is a yes and how good. `score()` is what actually ranks them - a plain
+   average of the yeses lets one lonely 5 beat a picture the whole team liked,
+   and ignores everyone who passed on it, so the ranking counts every judgement
+   (a pass as a nought) and starts each entry with two notional 3s that real
+   votes quickly outweigh. What is *displayed* is the average of the yeses,
+   with the yes count beside it - that is the readable version. */
 var PRIOR_N=2, PRIOR_M=3;
 function ratings(id){
-  var v=VOTES[id]||{}, sum=0, n=0;
-  for(var k in v){ var r=Number(v[k]); if(r>=1&&r<=5){sum+=r;n++} }
-  return {sum:sum, n:n, avg:n?sum/n:0};
+  var v=VOTES[id]||{}, sum=0, n=0, yes=0, ysum=0;
+  for(var k in v){
+    var r=Number(v[k]);
+    if(!(r>=0&&r<=5))continue;
+    n++; sum+=r;
+    if(r>=1){yes++; ysum+=r}
+  }
+  return {sum:sum, n:n, yes:yes, ysum:ysum, avg:yes?ysum/yes:0};
 }
 function score(id){
   var r=ratings(id);
   return (r.sum+PRIOR_M*PRIOR_N)/(r.n+PRIOR_N);
 }
-function judged(id){ return (VOTES[id]||{})[me]!==undefined }
+/* Seen means judged on this device, either way. The vote is the record; the
+   local list covers a vote that never stuck. */
+function judged(id){ return (VOTES[id]||{})[me]!==undefined || SEEN[id]!==undefined }
+/* Dan can take an entry down from the admin console - it stops being shown
+   here and it cannot win the week */
+function blockedEntry(id){ return !!(BLOCKED&&BLOCKED[id]) }
 function thisWeeksEntries(){
   var wk=weekKey(), out=[];
   Object.keys(ENTRIES||{}).forEach(function(k){
     var e=ENTRIES[k];
     if(!e||!e.img||weekOf(e.ts)!==wk)return;
+    if(blockedEntry(k))return;
     var r=ratings(k);
     out.push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts,
-              avg:r.avg,n:r.n,sc:score(k)});
+              avg:r.avg,n:r.n,yes:r.yes,sc:score(k)});
   });
   out.sort(function(a,b){return b.sc-a.sc||a.ts-b.ts});
   return out;
 }
-/* the deck: this week's, oldest first, minus anything already judged */
+/* the deck: this week's, oldest first, minus anything this device has judged */
 function deck(){
   return thisWeeksEntries().filter(function(e){return !judged(e.id)})
                            .sort(function(a,b){return a.ts-b.ts});
@@ -375,7 +420,7 @@ function render(){
   $('weekpill').textContent='Voting closes Monday · '+(d===1?'1 day':d+' days')+' left';
   if(!dragging)renderDeck();
 
-  if(CURRENT&&CURRENT.img&&CURRENT.week===weekKey()){
+  if(CURRENT&&CURRENT.img&&CURRENT.week===weekKey()&&!blockedEntry(CURRENT.entry)){
     $('win-card').classList.remove('hidden');
     $('win-body').innerHTML='<div class="shot"><img src="'+CURRENT.img+'" alt="On the board"></div>'+
       '<p class="meta">'+(CURRENT.cap?'<b>'+esc(CURRENT.cap)+'</b> &middot; ':'')+
@@ -389,13 +434,16 @@ function render(){
 function renderDeck(){
   var box=$('deck'), cards=deck(), all=thisWeeksEntries();
   var ids=cards.map(function(c){return c.id}).join(',');
-  if(ids===deckIds&&box.querySelector('.mcard'))return;   /* nothing new to draw */
+  /* `ids` has to be non-empty for this to be a skip: a card that has just been
+     swiped off is still in the box, so an empty deck matching an empty
+     deckIds used to bail out and leave the last card's counter on screen */
+  if(ids&&ids===deckIds&&box.querySelector('.mcard'))return;   /* nothing new to draw */
   deckIds=ids;
 
   if(!all.length){
     box.className='deck done';
     box.innerHTML='<p class="empty">Nothing in yet this week.<br>Be the one who starts it.</p>';
-    $('acts').classList.add('hide'); $('swipehint').classList.add('hide');
+    hideActs(true);
     $('left').textContent=''; $('results').innerHTML='';
     return;
   }
@@ -403,22 +451,24 @@ function renderDeck(){
     /* they have judged the lot - now they can see how it is going */
     box.className='deck done';
     box.innerHTML='<p class="empty">That is all of them.<br>Here is how it stands.</p>';
-    $('acts').classList.add('hide'); $('swipehint').classList.add('hide');
+    hideActs(true);
     $('left').textContent='All seen';
     $('results').innerHTML=all.map(function(r,i){
-      return '<div class="entry'+(i===0&&r.n?' lead':'')+'">'+
+      var lead=i===0&&r.n;
+      return '<div class="entry'+(lead?' lead':'')+'">'+
         '<img src="'+r.img+'" alt="Entry'+(r.by?' by '+esc(r.by):'')+'">'+
         '<div class="bar"><div class="who"><b>'+(r.cap?esc(r.cap):'No caption')+'</b>'+
-        '<span>'+(r.by?esc(r.by):'Anonymous')+' &middot; '+r.n+' rating'+(r.n===1?'':'s')+'</span></div>'+
-        '<span class="vote'+(i===0&&r.n?' on':'')+'">&#9733;<span class="n">'+
-        (r.n?r.avg.toFixed(1):'&ndash;')+'</span><span class="of">out of 5</span></span>'+
+        '<span>'+(r.by?esc(r.by):'Anonymous')+' &middot; '+r.yes+' of '+r.n+
+        ' said yes</span></div>'+
+        '<span class="vote'+(lead?' on':(r.n&&!r.yes?' pass':''))+'">&#9733;<span class="n">'+
+        (r.yes?r.avg.toFixed(1):'&ndash;')+'</span><span class="of">out of 5</span></span>'+
         '</div></div>';
     }).join('');
     return;
   }
 
   box.className='deck';
-  $('acts').classList.remove('hide'); $('swipehint').classList.remove('hide');
+  hideActs(false);
   $('results').innerHTML='';
   $('left').textContent=cards.length+' to go';
   /* only the top three are drawn - the rest are not on screen anyway */
@@ -433,19 +483,47 @@ function renderDeck(){
   wireTop();
 }
 
-/* Drag the top card; past a threshold it flies off and counts.
+/* Two stages to judging a picture: yes or no, and then - only if it was a yes
+   - a score out of five. Swipe left to pass, swipe right for yes and the
+   stars appear. Either way the picture is gone for good on this device.
    The window listeners are bound ONCE - binding them per render leaked a set
    per card and left stale closures pointing at detached cards. */
 var topCard=null, topId=null, dragX=0, dragY=0, down=false, startX=0, startY=0;
+var stage='yn';
+var SWIPE=90;
+
+function hideActs(hide){
+  $('acts-yn').classList.toggle('hide',hide||stage!=='yn');
+  $('acts-stars').classList.toggle('hide',hide||stage!=='stars');
+  $('swipehint').classList.toggle('hide',!!hide);
+}
+function setStage(s){
+  stage=s;
+  $('acts-yn').classList.toggle('hide',s!=='yn');
+  $('acts-stars').classList.toggle('hide',s!=='stars');
+  $('swipehint').innerHTML = s==='stars'
+    ? 'You said yes &mdash; now score it out of five'
+    : 'Swipe right for yes, left to pass &middot; you only see each one once';
+  lightStars(0);
+}
 
 function wireTop(){
   var cards=$('deck').querySelectorAll('.mcard');
   topCard=cards[cards.length-1]||null;
   topId=topCard?topCard.getAttribute('data-id'):null;
   down=false; dragX=dragY=0;
+  setStage('yn');
 }
 
 function pt(e){ return (e.touches&&e.touches[0])||e }
+function setStamp(txt,kind,op){
+  if(!topCard)return;
+  var st=topCard.querySelector('.stamp');
+  if(!st)return;
+  st.className='stamp'+(kind?' '+kind:'');
+  if(txt!=null)st.textContent=txt;
+  st.style.opacity=String(op);
+}
 function onDown(e){
   if(!topCard||!topCard.contains(e.target))return;
   down=true; dragging=true;
@@ -456,15 +534,26 @@ function onDown(e){
 function onMove(e){
   if(!down||!topCard)return;
   var q=pt(e); dragX=q.clientX-startX; dragY=q.clientY-startY;
-  /* it can be nudged about, but only a score moves it on */
-  topCard.style.transform='translate('+(dragX*0.35)+'px,'+(dragY*0.2)+'px) rotate('+(dragX/50)+'deg)';
+  /* once they have said yes the card holds still while they score it */
+  if(stage!=='yn')return;
+  topCard.style.transform='translate('+dragX+'px,'+(dragY*0.3)+'px) rotate('+(dragX/22)+'deg)';
+  if(Math.abs(dragX)>16){
+    var st=topCard.querySelector('.stamp');
+    if(st)st.style.transition='none';
+    setStamp(dragX>0?'YES':'NOPE', dragX>0?'yes':'no', Math.min(1,Math.abs(dragX)/SWIPE));
+  }else setStamp(null,'',0);
   if(e.cancelable&&e.type==='touchmove')e.preventDefault();
 }
 function onUp(){
   if(!down||!topCard)return;
   down=false; dragging=false;
+  if(stage==='yn'&&dragX<=-SWIPE){sayNo();return}
+  if(stage==='yn'&&dragX>=SWIPE){sayYes();return}
   topCard.style.transition='transform .25s ease';
   topCard.style.transform='';
+  var st=topCard.querySelector('.stamp');
+  if(st)st.style.transition='opacity .15s ease';
+  setStamp(null,'',0);
 }
 
 
@@ -477,6 +566,8 @@ window.addEventListener('mousemove',onMove);
 window.addEventListener('touchmove',onMove,{passive:false});
 window.addEventListener('mouseup',onUp);
 window.addEventListener('touchend',onUp);
+$('btn-yes').onclick=function(){sayYes()};
+$('btn-no').onclick=function(){sayNo()};
 Array.prototype.forEach.call(document.querySelectorAll('.star'),function(btn){
   var n=Number(btn.getAttribute('data-n'));
   btn.onmouseenter=function(){lightStars(n)};
@@ -489,41 +580,70 @@ function lightStars(n){
   });
 }
 document.addEventListener('keydown',function(e){
-  if(/^[1-5]$/.test(e.key)&&$('acts').offsetParent)rate(Number(e.key));
+  if(!topCard)return;
+  if(stage==='stars'&&/^[1-5]$/.test(e.key)){rate(Number(e.key));return}
+  if(stage!=='yn')return;
+  if(e.key==='ArrowRight'||e.key==='y'||e.key==='Y')sayYes();
+  else if(e.key==='ArrowLeft'||e.key==='n'||e.key==='N')sayNo();
 });
 
-/* the card takes the score, shows it, and goes */
+/* yes: the card stays put, stamped, and asks for a score */
+function sayYes(){
+  if(!topCard||!topId||stage!=='yn')return;
+  down=false; dragging=false;
+  topCard.style.transition='transform .22s ease';
+  topCard.style.transform='rotate(-1.5deg)';
+  var st=topCard.querySelector('.stamp');
+  if(st)st.style.transition='opacity .12s ease';
+  setStamp('YES','yes',1);
+  setStage('stars');
+}
+/* no: it is gone, and counts as a nought */
+function sayNo(){
+  if(!topCard||!topId||stage!=='yn')return;
+  finish(0,'NOPE','no',-1);
+}
+/* the score they gave it, then it goes the same way */
 function rate(n){
-  if(!topCard||!topId||n<1||n>5)return;
+  if(!topCard||!topId||stage!=='stars'||n<1||n>5)return;
+  finish(n, n+' \u2605', 'yes', 1);
+}
+
+function finish(n,label,kind,dir){
   var card=topCard, id=topId, w=$('deck').offsetWidth||320;
-  topCard=null; topId=null; down=false;
-  /* hold the redraw off: storing the score fires the votes watcher straight
-     back, and a re-render would swap this card out before the score is even
+  down=false;
+  /* hold the redraw off: storing the vote fires the votes watcher straight
+     back, and a re-render would swap this card out before the stamp is even
      seen on it */
   dragging=true;
   var st=card.querySelector('.stamp');
   if(st){
-    st.textContent=n+' \u2605';
+    st.className='stamp '+kind;
+    st.textContent=label;
     st.style.transition='opacity .12s ease';
     st.style.opacity='1';
   }
+  topCard=null; topId=null;
+  setStage('yn');
   judge(id,n);
   setTimeout(function(){
     card.style.transition='transform .34s ease-out, opacity .34s ease-out';
-    card.style.transform='translate('+(w+220)+'px,40px) rotate(22deg)';
+    card.style.transform='translate('+(dir*(w+220))+'px,40px) rotate('+(dir*22)+'deg)';
     card.style.opacity='0';
     setTimeout(function(){dragging=false;deckIds='';renderDeck()},300);
   },380);
 }
 
-/* the score is stored under this voter, so it never comes back either */
+/* The vote is stored under this voter, and the device notes that it has seen
+   this one - so it never comes back even if the write is refused. */
 function judge(id,n){
+  markSeen(id);
   if(!backend)return;
   (VOTES[id]=VOTES[id]||{})[me]=n;          /* locally, straight away */
   backend.vote(id,me,n)['catch'](function(e){
     console.error(e);
-    delete VOTES[id][me];                   /* it did not stick - let them retry */
-    deckIds=''; renderDeck();
+    delete VOTES[id][me];                   /* it did not stick - it just will
+                                               not count towards the ranking */
     say($('msg'),why(e),'err');
   });
 }
@@ -536,7 +656,10 @@ function judge(id,n){
 function rollIfDue(){
   if(!backend)return;
   var wk=weekKey();
-  if(CURRENT&&CURRENT.week===wk)return;          /* already done for this week */
+  /* Dan taking the winner down from the admin console is a reason to run the
+     roll again, even mid-week - the board must not be left showing it */
+  var pulled=CURRENT&&CURRENT.entry&&blockedEntry(CURRENT.entry);
+  if(CURRENT&&CURRENT.week===wk&&!pulled)return;  /* already done for this week */
 
   /* The newest FINISHED week that actually had entries wins the slot - not
      strictly last week. A quiet week, or nobody opening this page for a
@@ -545,21 +668,27 @@ function rollIfDue(){
   Object.keys(ENTRIES||{}).forEach(function(k){
     var e=ENTRIES[k];
     if(!e||!e.img)return;
+    if(blockedEntry(k))return;                    /* taken down by Dan */
     var w=weekOf(e.ts);
     if(w>=wk)return;                              /* still being voted on */
     var r=ratings(k);
     (byWeek[w]=byWeek[w]||[]).push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts,
-                                    avg:r.avg,n:r.n,sc:score(k)});
+                                    avg:r.avg,n:r.n,yes:r.yes,sc:score(k)});
   });
   var weeks=Object.keys(byWeek).sort();
-  if(!weeks.length)return;                        /* nothing has ever run */
+  if(!weeks.length){
+    /* nothing to put up. If we are here because Dan pulled the winner, clear
+       it so the board goes back to asking for entries. */
+    if(pulled&&backend.clearCurrent)backend.clearCurrent()['catch'](function(){});
+    return;
+  }
   var pool=byWeek[weeks[weeks.length-1]], best=null;
   pool.forEach(function(e){
     /* highest score; a tie goes to whoever put theirs up first */
     if(!best||e.sc>best.sc||(e.sc===best.sc&&e.ts<best.ts))best=e;
   });
   backend.setCurrent({week:wk, ts:Date.now(), entry:best.id, by:best.by, cap:best.cap,
-                      votes:Math.round(best.avg*10)/10, rated:best.n, img:best.img})
+                      votes:Math.round(best.avg*10)/10, rated:best.yes, img:best.img})
     .then(function(){ pruneOld() })['catch'](function(e){console.error(e)});
 }
 
@@ -580,9 +709,10 @@ function pruneOld(){
 window.msBindBackend=function(api){
   backend=api;
   if(pending){$('send').disabled=false;say($('msg'),'')}
-  api.watchEntries(function(v){ENTRIES=v||{};deckIds='';render();rollIfDue()});
+  api.watchEntries(function(v){ENTRIES=v||{};tidySeen();deckIds='';render();rollIfDue()});
   api.watchVotes(function(v){VOTES=v||{};render()});
   api.watchCurrent(function(v){CURRENT=v||null;render();rollIfDue()});
+  if(api.watchBlocked)api.watchBlocked(function(v){BLOCKED=v||{};deckIds='';render();rollIfDue()});
 };
 
 render();
@@ -590,7 +720,7 @@ setTimeout(function(){
   if(!backend){
     $('deck').className='deck done';
     $('deck').innerHTML='<p class="empty">Could not reach the board.<br>Check the internet connection.</p>';
-    $('acts').classList.add('hide'); $('swipehint').classList.add('hide');
+    hideActs(true);
   }
 },9000);
 </script>
@@ -619,6 +749,8 @@ function watch(p, cb){
 window.msBindBackend({
   add:(payload)=>push(ref(db,'mugshot/entries'),payload),
   vote:(id,who,n)=>set(ref(db,'mugshot/votes/'+id+'/'+who),Number(n)),
+  watchBlocked:(cb)=>watch('mugshot/blocked',cb),
+  clearCurrent:()=>remove(ref(db,'mugshot/current')),
   unvote:(id,who)=>remove(ref(db,'mugshot/votes/'+id+'/'+who)),
   /* the rules allow a write per VOTER, not on the whole votes node for an
      entry - deleting the parent is refused, so each voter goes individually */
