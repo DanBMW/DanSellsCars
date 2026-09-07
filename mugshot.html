@@ -82,22 +82,21 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
 .mcard.s1{transform:scale(.955) translateY(12px);opacity:.75;pointer-events:none}
 .mcard.s2{transform:scale(.91) translateY(24px);opacity:.45;pointer-events:none}
 .mcard .stamp{
-  position:absolute;top:20px;font-family:var(--display);font-weight:700;font-size:1.5rem;
-  letter-spacing:.12em;padding:6px 14px;border-radius:10px;border:3px solid;opacity:0;
-  text-transform:uppercase;pointer-events:none;
+  position:absolute;top:20px;left:50%;transform:translateX(-50%);
+  font-family:var(--display);font-weight:700;font-size:1.6rem;letter-spacing:.1em;
+  padding:6px 18px;border-radius:12px;border:3px solid var(--gold);color:var(--gold);
+  background:rgba(11,15,22,.8);opacity:0;pointer-events:none;white-space:nowrap;
 }
-.stamp.yep{left:20px;color:var(--green);border-color:var(--green);transform:rotate(-14deg)}
-.stamp.nope{right:20px;color:var(--red);border-color:var(--red);transform:rotate(14deg)}
 
-.acts{display:flex;justify-content:center;gap:22px;margin-top:16px}
-.act{
-  width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:var(--panel-2);
-  font-size:1.5rem;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;
-  color:var(--text);
+.acts{display:flex;justify-content:center;gap:clamp(4px,2vw,12px);margin-top:18px}
+.star{
+  width:clamp(48px,15vw,62px);height:clamp(48px,15vw,62px);border-radius:50%;
+  border:1px solid var(--line);background:var(--panel-2);color:#3d4a5c;
+  font-size:clamp(1.4rem,5.5vw,1.8rem);cursor:pointer;transition:.12s;
+  display:flex;align-items:center;justify-content:center;line-height:1;padding:0;
 }
-.act:hover{transform:scale(1.07)}
-.act.no{color:var(--red);border-color:rgba(226,86,77,.5)}
-.act.yes{color:var(--gold);border-color:rgba(224,179,82,.55)}
+.star:hover{transform:scale(1.08)}
+.star.lit{color:var(--gold);border-color:rgba(224,179,82,.55);background:rgba(224,179,82,.12)}
 .acts.hide,.swipehint.hide{display:none}
 .swipehint{text-align:center;color:var(--muted);font-size:.74rem;margin:12px 0 0}
 
@@ -110,11 +109,11 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
 .entry .who b{display:block;font-size:.88rem}
 .entry .who span{font-size:.72rem;color:var(--muted)}
 .vote{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--text);
-  border-radius:999px;padding:9px 15px;font-weight:800;font-size:.82rem;cursor:pointer;font-family:var(--font);
-  display:flex;align-items:center;gap:7px;transition:.15s}
-.vote:hover{background:#25303f}
+  border-radius:12px;padding:7px 12px;font-weight:800;font-size:.78rem;font-family:var(--font);
+  display:flex;flex-direction:column;align-items:center;gap:1px;min-width:64px}
 .vote.on{background:rgba(224,179,82,.18);border-color:rgba(224,179,82,.6);color:var(--gold)}
-.vote .n{font-family:var(--display);font-weight:700;font-size:1rem}
+.vote .n{font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1}
+.vote .of{font-size:.6rem;color:var(--muted);font-weight:700}
 .crown{position:absolute;margin:-6px 0 0 -6px;font-size:1.1rem}
 .empty{text-align:center;color:var(--muted);font-size:.85rem;padding:26px 0;line-height:1.6}
 .foot{text-align:center;color:var(--muted);font-size:.72rem;margin-top:26px;line-height:1.7}
@@ -185,10 +184,13 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
     </div>
     <div class="deck" id="deck"><p class="empty">Loading&hellip;</p></div>
     <div class="acts" id="acts">
-      <button class="act no"  id="act-no"  aria-label="Pass">&#10005;</button>
-      <button class="act yes" id="act-yes" aria-label="Yes">&#9733;</button>
+      <button class="star" data-n="1" aria-label="1 star">&#9733;</button>
+      <button class="star" data-n="2" aria-label="2 stars">&#9733;</button>
+      <button class="star" data-n="3" aria-label="3 stars">&#9733;</button>
+      <button class="star" data-n="4" aria-label="4 stars">&#9733;</button>
+      <button class="star" data-n="5" aria-label="5 stars">&#9733;</button>
     </div>
-    <p class="swipehint" id="swipehint">Swipe, or use the buttons &middot; you only see each one once</p>
+    <p class="swipehint" id="swipehint">Give it a score out of five &middot; you only see each one once</p>
     <div class="grid" id="results"></div>
   </div>
 
@@ -332,19 +334,32 @@ $('send').onclick=function(){
 };
 
 /* ---- this week's entries ---- */
-function countVotes(id){
-  var v=VOTES[id]||{}, n=0;
-  for(var k in v)if(v[k]===true)n++;
-  return n;
+/* Ratings out of five. `score()` is what actually ranks them: a plain average
+   lets one lonely 5 beat a picture the whole team liked, so each entry starts
+   with two notional 3s that real ratings quickly outweigh. With everyone
+   seeing everything once the two barely differ - it only bites on an entry
+   that has been rated once or twice. */
+var PRIOR_N=2, PRIOR_M=3;
+function ratings(id){
+  var v=VOTES[id]||{}, sum=0, n=0;
+  for(var k in v){ var r=Number(v[k]); if(r>=1&&r<=5){sum+=r;n++} }
+  return {sum:sum, n:n, avg:n?sum/n:0};
+}
+function score(id){
+  var r=ratings(id);
+  return (r.sum+PRIOR_M*PRIOR_N)/(r.n+PRIOR_N);
 }
 function judged(id){ return (VOTES[id]||{})[me]!==undefined }
 function thisWeeksEntries(){
   var wk=weekKey(), out=[];
   Object.keys(ENTRIES||{}).forEach(function(k){
     var e=ENTRIES[k];
-    if(e&&e.img&&weekOf(e.ts)===wk)out.push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts,n:countVotes(k)});
+    if(!e||!e.img||weekOf(e.ts)!==wk)return;
+    var r=ratings(k);
+    out.push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts,
+              avg:r.avg,n:r.n,sc:score(k)});
   });
-  out.sort(function(a,b){return b.n-a.n||a.ts-b.ts});
+  out.sort(function(a,b){return b.sc-a.sc||a.ts-b.ts});
   return out;
 }
 /* the deck: this week's, oldest first, minus anything already judged */
@@ -364,8 +379,8 @@ function render(){
     $('win-card').classList.remove('hidden');
     $('win-body').innerHTML='<div class="shot"><img src="'+CURRENT.img+'" alt="On the board"></div>'+
       '<p class="meta">'+(CURRENT.cap?'<b>'+esc(CURRENT.cap)+'</b> &middot; ':'')+
-      (CURRENT.by?esc(CURRENT.by):'Anonymous')+' &middot; won with '+(CURRENT.votes||0)+
-      ' vote'+((CURRENT.votes||0)===1?'':'s')+'</p>';
+      (CURRENT.by?esc(CURRENT.by):'Anonymous')+' &middot; won with <b>'+(CURRENT.votes||0)+
+      ' out of 5</b>'+(CURRENT.rated?' from '+CURRENT.rated+' rating'+(CURRENT.rated===1?'':'s'):'')+'</p>';
   }else{
     $('win-card').classList.add('hidden');
   }
@@ -390,13 +405,13 @@ function renderDeck(){
     box.innerHTML='<p class="empty">That is all of them.<br>Here is how it stands.</p>';
     $('acts').classList.add('hide'); $('swipehint').classList.add('hide');
     $('left').textContent='All seen';
-    var top=all[0].n;
-    $('results').innerHTML=all.map(function(r){
-      return '<div class="entry'+(r.n&&r.n===top?' lead':'')+'">'+
+    $('results').innerHTML=all.map(function(r,i){
+      return '<div class="entry'+(i===0&&r.n?' lead':'')+'">'+
         '<img src="'+r.img+'" alt="Entry'+(r.by?' by '+esc(r.by):'')+'">'+
         '<div class="bar"><div class="who"><b>'+(r.cap?esc(r.cap):'No caption')+'</b>'+
-        '<span>'+(r.by?esc(r.by):'Anonymous')+'</span></div>'+
-        '<span class="vote'+(r.n&&r.n===top?' on':'')+'">&#9733;<span class="n">'+r.n+'</span></span>'+
+        '<span>'+(r.by?esc(r.by):'Anonymous')+' &middot; '+r.n+' rating'+(r.n===1?'':'s')+'</span></div>'+
+        '<span class="vote'+(i===0&&r.n?' on':'')+'">&#9733;<span class="n">'+
+        (r.n?r.avg.toFixed(1):'&ndash;')+'</span><span class="of">out of 5</span></span>'+
         '</div></div>';
     }).join('');
     return;
@@ -410,7 +425,7 @@ function renderDeck(){
   box.innerHTML=cards.slice(0,3).reverse().map(function(c,i,arr){
     var depth=arr.length-1-i;
     return '<div class="mcard'+(depth?' s'+depth:'')+'" data-id="'+c.id+'">'+
-      '<span class="stamp yep">Yes</span><span class="stamp nope">Nope</span>'+
+      '<span class="stamp"></span>'+
       '<img draggable="false" src="'+c.img+'" alt="Entry'+(c.by?' by '+esc(c.by):'')+'">'+
       '<div class="cap"><b>'+(c.cap?esc(c.cap):'No caption')+'</b>'+
       '<span>'+(c.by?esc(c.by):'Anonymous')+'</span></div></div>';
@@ -429,9 +444,7 @@ function wireTop(){
   topId=topCard?topCard.getAttribute('data-id'):null;
   down=false; dragX=dragY=0;
 }
-function stamps(){
-  return topCard ? {yep:topCard.querySelector('.yep'), nope:topCard.querySelector('.nope')} : null;
-}
+
 function pt(e){ return (e.touches&&e.touches[0])||e }
 function onDown(e){
   if(!topCard||!topCard.contains(e.target))return;
@@ -443,35 +456,17 @@ function onDown(e){
 function onMove(e){
   if(!down||!topCard)return;
   var q=pt(e); dragX=q.clientX-startX; dragY=q.clientY-startY;
-  topCard.style.transform='translate('+dragX+'px,'+dragY+'px) rotate('+(dragX/18)+'deg)';
-  var st=stamps();
-  if(st){
-    st.yep.style.opacity =Math.max(0,Math.min(1,dragX/90));
-    st.nope.style.opacity=Math.max(0,Math.min(1,-dragX/90));
-  }
+  /* it can be nudged about, but only a score moves it on */
+  topCard.style.transform='translate('+(dragX*0.35)+'px,'+(dragY*0.2)+'px) rotate('+(dragX/50)+'deg)';
   if(e.cancelable&&e.type==='touchmove')e.preventDefault();
 }
 function onUp(){
   if(!down||!topCard)return;
-  down=false;
-  var w=$('deck').offsetWidth||320;
-  if(Math.abs(dragX)>Math.max(70,w*0.28))return fly(dragX>0);
-  dragging=false;
+  down=false; dragging=false;
   topCard.style.transition='transform .25s ease';
   topCard.style.transform='';
-  var st=stamps();
-  if(st){st.yep.style.opacity=0;st.nope.style.opacity=0}
 }
-function fly(yes){
-  if(!topCard||!topId)return;
-  var card=topCard, id=topId, w=$('deck').offsetWidth||320;
-  topCard=null; topId=null; down=false;
-  card.style.transition='transform .32s ease-out, opacity .32s ease-out';
-  card.style.transform='translate('+(yes?1:-1)*(w+220)+'px,'+(dragY+40)+'px) rotate('+(yes?26:-26)+'deg)';
-  card.style.opacity='0';
-  judge(id,yes);
-  setTimeout(function(){dragging=false;deckIds='';renderDeck()},260);
-}
+
 
 document.addEventListener('dragstart',function(e){
   if(topCard&&topCard.contains(e.target))e.preventDefault();
@@ -482,14 +477,50 @@ window.addEventListener('mousemove',onMove);
 window.addEventListener('touchmove',onMove,{passive:false});
 window.addEventListener('mouseup',onUp);
 window.addEventListener('touchend',onUp);
-$('act-yes').onclick=function(){dragX=1;dragY=0;fly(true)};
-$('act-no').onclick =function(){dragX=-1;dragY=0;fly(false)};
+Array.prototype.forEach.call(document.querySelectorAll('.star'),function(btn){
+  var n=Number(btn.getAttribute('data-n'));
+  btn.onmouseenter=function(){lightStars(n)};
+  btn.onmouseleave=function(){lightStars(0)};
+  btn.onclick=function(){lightStars(0);rate(n)};
+});
+function lightStars(n){
+  Array.prototype.forEach.call(document.querySelectorAll('.star'),function(b){
+    b.classList.toggle('lit', Number(b.getAttribute('data-n'))<=n);
+  });
+}
+document.addEventListener('keydown',function(e){
+  if(/^[1-5]$/.test(e.key)&&$('acts').offsetParent)rate(Number(e.key));
+});
 
-/* a yes is a vote, a pass is recorded too so it never comes back */
-function judge(id,yes){
+/* the card takes the score, shows it, and goes */
+function rate(n){
+  if(!topCard||!topId||n<1||n>5)return;
+  var card=topCard, id=topId, w=$('deck').offsetWidth||320;
+  topCard=null; topId=null; down=false;
+  /* hold the redraw off: storing the score fires the votes watcher straight
+     back, and a re-render would swap this card out before the score is even
+     seen on it */
+  dragging=true;
+  var st=card.querySelector('.stamp');
+  if(st){
+    st.textContent=n+' \u2605';
+    st.style.transition='opacity .12s ease';
+    st.style.opacity='1';
+  }
+  judge(id,n);
+  setTimeout(function(){
+    card.style.transition='transform .34s ease-out, opacity .34s ease-out';
+    card.style.transform='translate('+(w+220)+'px,40px) rotate(22deg)';
+    card.style.opacity='0';
+    setTimeout(function(){dragging=false;deckIds='';renderDeck()},300);
+  },380);
+}
+
+/* the score is stored under this voter, so it never comes back either */
+function judge(id,n){
   if(!backend)return;
-  (VOTES[id]=VOTES[id]||{})[me]=!!yes;      /* locally, straight away */
-  backend.vote(id,me,!!yes)['catch'](function(e){
+  (VOTES[id]=VOTES[id]||{})[me]=n;          /* locally, straight away */
+  backend.vote(id,me,n)['catch'](function(e){
     console.error(e);
     delete VOTES[id][me];                   /* it did not stick - let them retry */
     deckIds=''; renderDeck();
@@ -497,10 +528,7 @@ function judge(id,yes){
   });
 }
 
-document.addEventListener('keydown',function(e){
-  if(e.key==='ArrowRight'&&$('act-yes').offsetParent)$('act-yes').click();
-  if(e.key==='ArrowLeft' &&$('act-no').offsetParent)$('act-no').click();
-});
+
 
 /* ---- the weekly roll, done by whoever happens to have the page open ----
    The winner node is written with the week stamped on it, so a second client
@@ -519,17 +547,19 @@ function rollIfDue(){
     if(!e||!e.img)return;
     var w=weekOf(e.ts);
     if(w>=wk)return;                              /* still being voted on */
-    (byWeek[w]=byWeek[w]||[]).push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts,n:countVotes(k)});
+    var r=ratings(k);
+    (byWeek[w]=byWeek[w]||[]).push({id:k,img:e.img,by:e.by||'',cap:e.cap||'',ts:e.ts,
+                                    avg:r.avg,n:r.n,sc:score(k)});
   });
   var weeks=Object.keys(byWeek).sort();
   if(!weeks.length)return;                        /* nothing has ever run */
   var pool=byWeek[weeks[weeks.length-1]], best=null;
   pool.forEach(function(e){
-    /* most votes; a tie goes to whoever put theirs up first */
-    if(!best||e.n>best.n||(e.n===best.n&&e.ts<best.ts))best=e;
+    /* highest score; a tie goes to whoever put theirs up first */
+    if(!best||e.sc>best.sc||(e.sc===best.sc&&e.ts<best.ts))best=e;
   });
   backend.setCurrent({week:wk, ts:Date.now(), entry:best.id, by:best.by, cap:best.cap,
-                      votes:best.n, img:best.img})
+                      votes:Math.round(best.avg*10)/10, rated:best.n, img:best.img})
     .then(function(){ pruneOld() })['catch'](function(e){console.error(e)});
 }
 
@@ -588,7 +618,7 @@ function watch(p, cb){
 
 window.msBindBackend({
   add:(payload)=>push(ref(db,'mugshot/entries'),payload),
-  vote:(id,who,yes)=>set(ref(db,'mugshot/votes/'+id+'/'+who),!!yes),
+  vote:(id,who,n)=>set(ref(db,'mugshot/votes/'+id+'/'+who),Number(n)),
   unvote:(id,who)=>remove(ref(db,'mugshot/votes/'+id+'/'+who)),
   /* the rules allow a write per VOTER, not on the whole votes node for an
      entry - deleting the parent is refused, so each voter goes individually */

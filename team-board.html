@@ -440,9 +440,12 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   padding:0 clamp(8px,1.6vw,26px);pointer-events:none;
 }
 @media(min-width:1000px){ .ncscene.chatty .nc-chat{display:flex} }
-/* leave room for the two rails at every width - a percentage alone is not
-   enough, they are a fixed-ish size and the picture is not */
-.ncscene.chatty .nc-shot img{max-width:min(68vw,calc(100vw - 540px),1380px)}
+/* Only narrow the picture where the rails are actually shown. This lived
+   outside the media query and `calc(100vw - 540px)` goes NEGATIVE on a phone,
+   so max-width resolved to 0 and the new car board was invisible on mobile. */
+@media(min-width:1000px){
+  .ncscene.chatty .nc-shot img{max-width:min(68vw,calc(100vw - 540px),1380px)}
+}
 .nc-mascot{
   display:flex;flex-direction:column;align-items:center;gap:6px;
   width:clamp(112px,15vw,210px);flex:none;
@@ -2335,8 +2338,9 @@ function views(){
     id:'mugshot', kind:'mugshot',
     img:mug.img,
     cap:mug.cap?esc(mug.cap):'Mug shot of the week',
-    when:(mug.by?esc(mug.by)+' \u00b7 ':'')+'voted on by the team'+
-         (mug.votes?' \u00b7 '+mug.votes+' vote'+(mug.votes===1?'':'s'):'')
+    when:(mug.by?esc(mug.by)+' \u00b7 ':'')+
+         (mug.votes?'rated '+mug.votes+' out of 5 by the team':'voted on by the team')+
+         (mug.rated?' \u00b7 '+mug.rated+' rating'+(mug.rated===1?'':'s'):'')
   });
   /* birthdays come after the boards and screenshots, not in between them */
   liveBirthdays().forEach(function(bd){

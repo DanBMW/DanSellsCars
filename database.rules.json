@@ -97,6 +97,7 @@
         "by":    { ".validate": "newData.isString() && newData.val().length <= 40" },
         "cap":   { ".validate": "newData.isString() && newData.val().length <= 80" },
         "votes": { ".validate": "newData.isNumber()" },
+        "rated": { ".validate": "newData.isNumber()" },
         "img":   { ".validate": "newData.isString() && newData.val().length <= 1400000 && newData.val().matches(/^data:image\\/(jpeg|png|webp);base64,/)" },
         "$other": { ".validate": false }
       },
@@ -115,7 +116,7 @@
         "$entryId": {
           "$voter": {
             ".write": true,
-            ".validate": "newData.isBoolean()"
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5"
           }
         }
       },
