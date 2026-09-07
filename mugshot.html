@@ -212,6 +212,18 @@ function say(el,t,k){el.className='msg '+(k||'');el.textContent=t||''}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 
+/* "try again" is no use when trying again cannot possibly work. A rejected
+   write is nearly always the database rules not being published yet, and that
+   needs Dan, not another tap. */
+function why(e){
+  var c=(e&&(e.code||e.message)||'')+'';
+  if(/PERMISSION_DENIED|permission_denied/i.test(c))
+    return 'The board is not accepting entries yet - Dan needs to publish the mugshot rules in Firebase. Nothing you did wrong.';
+  if(/network|offline|unavailable/i.test(c))
+    return 'No connection to the board - check the internet and try again.';
+  return 'Could not send that - try again';
+}
+
 /* Each person judges each picture once: a yes is stored as true, a pass as
    false, so "have I seen this" is the presence of the key rather than
    something only this browser knows. The voter id is per device - this is a
@@ -315,7 +327,7 @@ $('send').onclick=function(){
     pending=null;$('preview').classList.add('hidden');$('file').value='';$('cap').value='';
     say($('msg'),'In. Now go and get some votes.','ok');
   })['catch'](function(e){
-    console.error(e);say($('msg'),'Could not send that - try again','err');
+    console.error(e);say($('msg'),why(e),'err');
   }).then(function(){$('send').disabled=false},function(){$('send').disabled=false});
 };
 
@@ -477,7 +489,12 @@ $('act-no').onclick =function(){dragX=-1;dragY=0;fly(false)};
 function judge(id,yes){
   if(!backend)return;
   (VOTES[id]=VOTES[id]||{})[me]=!!yes;      /* locally, straight away */
-  backend.vote(id,me,!!yes)['catch'](function(e){console.error(e)});
+  backend.vote(id,me,!!yes)['catch'](function(e){
+    console.error(e);
+    delete VOTES[id][me];                   /* it did not stick - let them retry */
+    deckIds=''; renderDeck();
+    say($('msg'),why(e),'err');
+  });
 }
 
 document.addEventListener('keydown',function(e){
