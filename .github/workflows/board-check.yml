@@ -18,3 +18,4 @@ jobs:
         with:
           node-version: 20
       - run: node scripts/check-board-team.js
+      - run: node scripts/check-board-html.js

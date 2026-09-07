@@ -1624,6 +1624,11 @@ function stopScenes(){
     var bb=$('flood-bubs'); if(bb)bb.innerHTML='';
   }
   var nw=$('nc-will'); if(nw)nw.classList.remove('relieving');
+  /* a scene cut short never reaches its own cleanup, and 70 confetti pieces
+     a time adds up on a display that stays open for weeks */
+  ['ch-confetti','bd-confetti'].forEach(function(id){
+    var el=$(id); if(el)el.innerHTML='';
+  });
 }
 
 function bagPick(key,pool){
@@ -2234,14 +2239,15 @@ function views(){
     cap:EXTRA.used.note?esc(EXTRA.used.note):'From the used car desk',
     when:stamp('Put up',EXTRA.used.ts)
   });
-  liveBirthdays().forEach(function(b){
-    out.push({id:'bday-'+b.id, kind:'birthday', bday:b});
-  });
   if(EXTRA.newcar)out.push({
     id:'extra-newcar',
     img:EXTRA.newcar.img,
     cap:EXTRA.newcar.note?esc(EXTRA.newcar.note):'From the new car desk',
     when:stamp('Put up',EXTRA.newcar.ts)
+  });
+  /* birthdays come after the boards and screenshots, not in between them */
+  liveBirthdays().forEach(function(bd){
+    out.push({id:'bday-'+bd.id, kind:'birthday', bday:bd});
   });
   return out;
 }
