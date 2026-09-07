@@ -503,6 +503,9 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 .tk-track .who{color:var(--muted);font-weight:600}
 .tk-track .sep{color:var(--blue);margin:0 30px;font-size:.7em;vertical-align:2px}
 @keyframes tkroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* the strip is fixed, so the page has to give it room - otherwise it sits on
+   top of the bottom row of the board on a short screen */
+body.hasticker{padding-bottom:52px}
 body.hasticker .credit{bottom:52px}
 @media(prefers-reduced-motion:reduce){ .tk-track{animation:none!important} }
 /* Nathan gets the run of his own board, so Will comes over to argue. Only on
@@ -1052,6 +1055,8 @@ body.hasticker .credit{bottom:52px}
    ============================================================ */
 @media(min-width:1200px){
   body{padding:10px 18px 8px}
+  body.hasticker{padding-bottom:52px}
+  body.hasticker .wrap{min-height:calc(100vh - 62px)}
   .wrap{
     max-width:min(96vw,2400px);
     min-height:calc(100vh - 18px);
