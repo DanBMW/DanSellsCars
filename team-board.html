@@ -430,6 +430,81 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 .nc-shot img{display:block;max-width:min(96vw,1700px);max-height:calc(100vh - 130px);width:auto;height:auto}
 .nc-when{margin-top:9px;color:var(--muted);font-size:clamp(.62rem,1.2vw,.82rem);font-weight:600;text-align:center}
+
+/* ---- what's new on the forecourt ----
+   Same layer as the other picture views (z-index 50), so every cut scene
+   still paints over it. Fifteen seconds, so it is a glance: six cars, big
+   photo, price and the two figures anyone would ask about. */
+.fcscene{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(60% 60% at 50% 40%,rgba(21,89,207,.14),rgba(5,8,13,.96) 70%),rgba(5,8,13,.95);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+  pointer-events:none;padding:clamp(10px,2vh,26px);
+}
+.fcscene.show{opacity:1;visibility:visible}
+.fc-inner{display:flex;flex-direction:column;align-items:center;width:100%;max-width:1700px;max-height:100%}
+.fc-kicker{
+  font-family:var(--display);font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--gold);font-size:clamp(.62rem,1.5vw,1rem);margin-bottom:4px;text-align:center;
+}
+.fc-sub{color:var(--muted);font-size:clamp(.6rem,1.1vw,.8rem);font-weight:600;margin-bottom:clamp(8px,1.6vh,16px)}
+.fc-grid{
+  display:grid;gap:clamp(8px,1.2vw,16px);width:100%;min-height:0;
+  grid-template-columns:1fr;
+}
+/* Three across, so six cars are two rows rather than one thin strip - an
+   auto-fit grid put all six in a line on a wall display and cut every model
+   name in half. */
+@media(min-width:620px){ .fc-grid{grid-template-columns:repeat(2,1fr)} }
+@media(min-width:1100px){ .fc-grid{grid-template-columns:repeat(3,1fr)} }
+.fc-car{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  display:flex;flex-direction:column;min-width:0;box-shadow:0 16px 40px rgba(0,0,0,.5);
+}
+.fc-car .pic{aspect-ratio:16/9;background:#0b0f16;position:relative;overflow:hidden}
+.fc-car .pic img{width:100%;height:100%;object-fit:cover;display:block}
+.fc-car .pic .noimg{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-weight:700;color:var(--line);font-size:1.6rem;letter-spacing:.1em;
+}
+.fc-car .txt{padding:clamp(7px,1vw,11px) clamp(9px,1.1vw,13px)}
+.fc-car .nm{
+  font-weight:700;font-size:clamp(.72rem,1.05vw,.95rem);line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.fc-car .pr{font-family:var(--display);font-weight:700;color:var(--gold);
+  font-size:clamp(.95rem,1.5vw,1.35rem);line-height:1.1;margin-top:3px}
+.fc-car .sp{color:var(--muted);font-size:clamp(.6rem,.95vw,.76rem);font-weight:600;margin-top:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-when{margin-top:clamp(7px,1.4vh,13px);color:var(--muted);
+  font-size:clamp(.6rem,1.1vw,.8rem);font-weight:600;text-align:center}
+.fc-new{
+  display:inline-block;background:var(--gold);color:#1a1206;border-radius:5px;
+  font-weight:800;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 6px;margin-right:6px;vertical-align:2px;
+}
+
+/* ---- the banner along the bottom ----
+   Above everything, including the cut scenes: it is a strip 44px tall on a
+   wall display, and a message somebody has put up should not disappear for
+   ten seconds because a sketch is playing. */
+.ticker{
+  position:fixed;left:0;right:0;bottom:0;height:44px;z-index:320;
+  display:none;align-items:center;overflow:hidden;white-space:nowrap;
+  background:linear-gradient(90deg,rgba(9,13,20,.97),rgba(21,29,42,.97));
+  border-top:1px solid var(--line);
+}
+.ticker.show{display:flex}
+.tk-track{
+  display:inline-block;white-space:nowrap;will-change:transform;
+  font-weight:700;font-size:clamp(.8rem,1.2vw,1.05rem);color:var(--text);
+}
+.tk-track b{color:var(--gold);font-weight:800}
+.tk-track .who{color:var(--muted);font-weight:600}
+.tk-track .sep{color:var(--blue);margin:0 30px;font-size:.7em;vertical-align:2px}
+@keyframes tkroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+body.hasticker .credit{bottom:52px}
+@media(prefers-reduced-motion:reduce){ .tk-track{animation:none!important} }
 /* Nathan gets the run of his own board, so Will comes over to argue. Only on
    the leaderboard view - an uploaded screenshot keeps the full width. */
 .nc-chat{
@@ -1130,6 +1205,11 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 
 <div class="credit">This display was created by Dan</div>
 
+<!-- anything Dan or a manager wants everyone to read, scrolling along the
+     bottom. Above every scene: a 44px strip should not vanish for ten
+     seconds because a sketch is playing. -->
+<div class="ticker" id="ticker" aria-hidden="true"><div class="tk-track" id="tk-track"></div></div>
+
 <!-- PIN -->
 <div class="modal-bg" id="m-pin">
   <div class="modal" style="max-width:340px">
@@ -1148,6 +1228,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   <div class="modal">
     <h2 id="mgr-title">Add a deal</h2>
     <p class="hint" id="mgr-hint">Pick who did the deal, then enter the profit and the registration.</p>
+    <p class="msgline" id="set-note" style="display:none"></p>
 
     <label>Which month</label>
     <div class="segbar" id="month-seg">
@@ -1216,6 +1297,15 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
       <p class="shotcap" id="bday-clipnote" style="margin:-8px 0 12px"></p>
       <button type="button" class="btn" style="width:100%" id="bday-go">&#127874; Put it on the board</button>
       <div class="deals" id="bday-list" style="margin-top:10px"></div>
+
+      <h2 style="margin-top:22px;font-size:1rem">Banner along the bottom</h2>
+      <p class="hint" style="margin-bottom:10px">A line that scrolls along the bottom of every screen, over
+        whatever else is up. Keep it short - it goes past about once a minute, and more than two or three
+        lines at once means nobody reads any of them.</p>
+      <input type="text" id="tick-text" maxlength="140" placeholder="e.g. Two units off the record - last day is Sunday" autocomplete="off">
+      <input type="text" id="tick-by" maxlength="40" placeholder="Your name (optional)" autocomplete="off">
+      <button type="button" class="btn" style="width:100%" id="tick-go">Put it on the banner</button>
+      <div class="deals" id="tick-list" style="margin-top:10px"></div>
 
       <h2 style="margin-top:22px;font-size:1rem">Every screen</h2>
       <p class="hint" style="margin-bottom:10px">Pushes a refresh to every screen showing the board, so a change
@@ -1327,6 +1417,18 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   </div>
 </div>
 
+<!-- what has landed on the forecourt since yesterday morning. A view, not a
+     scene: z-index 50, fifteen seconds, from the same stock snapshot the
+     public stock list reads -->
+<div class="fcscene" id="fcscene" aria-hidden="true">
+  <div class="fc-inner">
+    <div class="fc-kicker" id="fc-kicker">What&rsquo;s new on the forecourt?</div>
+    <div class="fc-sub" id="fc-sub"></div>
+    <div class="fc-grid" id="fc-grid"></div>
+    <div class="fc-when" id="fc-when"></div>
+  </div>
+</div>
+
 <!-- the quiet birthday card that rides the rotation for a week. A view, not
      a scene: z-index 50, no tune, so every cut scene paints over it -->
 <div class="bdayview" id="bdayview" aria-hidden="true">
@@ -1435,6 +1537,17 @@ var TEAM=[
 ];
 var BY_ID={};TEAM.forEach(function(t){BY_ID[t.id]=t});
 var TARGET=15000, UNIT_TARGET=8, PIN='1992';
+
+/* ---- what is switched on ----
+   Every moving part of this board can be turned off from the admin console
+   (admin.html, Dan's own password). A setting that is not there means ON, so
+   a database with nothing under `boardsettings` behaves exactly as this board
+   did before the console existed - and clearing a setting is how you put a
+   thing back to normal rather than a second "default" value to keep in step.
+   Read it through sOn()/sNum(), never SET[...] directly. */
+var SET={};
+function sOn(k){ return SET[k]!==false }
+function sNum(k,d){ var v=SET[k]; return (typeof v==='number'&&v>0)?v:d }
 
 var deals={}, viewMonth=null, isManager=false, editingId=null, pickExec=null, backend=null;
 
@@ -1768,6 +1881,7 @@ function setBubble(id,text){
 }
 
 function updateBubbles(){
+  if(!sOn('bubbles'))return;
   if(Date.now()<holdUntil)return;
   var opts=moods();
   var a=opts[Math.random()*opts.length|0];
@@ -1965,6 +2079,7 @@ var CHAMP_TAGS=[
 var champSeen={}, pendingChamp=null;
 
 function champScene(c){
+  if(!sOn('champ'))return false;
   if(document.querySelector('.modal-bg.open'))return false;
   var el=$('champscene');
   if(!el)return false;
@@ -2261,12 +2376,14 @@ var ncChatTimer=null;
 function ncChatLine(){
   /* a scene holding the floor owns these two bubbles - without this the 7.5s
      rotation talks straight over Will and Nathan mid-set-piece */
+  if(!sOn('ncchat'))return;
   if(Date.now()<holdUntil)return;
   setBubble('bub-nc-nathan',bagPick('ncc|nathan',NCCHAT.nathan));
   setBubble('bub-nc-will',  bagPick('ncc|will',  NCCHAT.will));
 }
 function ncChat(on){
   clearInterval(ncChatTimer);ncChatTimer=null;
+  on=on&&sOn('ncchat');
   $('ncscene').classList.toggle('chatty',!!on);
   if(!on)return;
   ncChatLine();
@@ -2297,6 +2414,174 @@ function watchNewCar(){
   }
 }
 
+/* ---- what's new on the forecourt ----
+   The stock list is a snapshot committed into the repo (the same file
+   stock.html reads), so it is a same-origin fetch and needs no backend of its
+   own. What it cannot tell us is what is NEW - there is no arrival date on a
+   car - so the board keeps a ledger of the ids it has seen at
+   `stockwatch/seen`, and once a day works out which ids are not in it.
+
+   The day rolls at 9am rather than midnight, which is Dan's ask and also the
+   sensible one: the overnight snapshot refresh has landed by then, and the
+   list does not change under the team halfway through a morning. Whichever
+   screen is awake at the roll does the work and writes the answer, so every
+   screen shows the same cars. The very first run seeds the ledger and claims
+   nothing is new - otherwise the board would announce all sixty-nine cars as
+   fresh in. */
+var STOCK=null, STOCKDAY=null, STOCKSEEN=null, stockTimer=null;
+
+function fcDay(d){
+  var x=d?new Date(d):new Date();
+  if(x.getHours()<9)x=new Date(x.getTime()-86400000);
+  return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+}
+function fcHash(str){
+  var h=0;
+  for(var i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;
+  return h;
+}
+function loadStock(){
+  fetch('automation/hedin-stock-snapshot.json',{cache:'no-cache'})
+    .then(function(r){ if(!r.ok)throw new Error(r.status); return r.json() })
+    .then(function(d){
+      if(!Array.isArray(d)||!d.length)return;
+      STOCK=d;
+      rollStock();
+      if(curViewId==='forecourt')paintForecourt();
+      applyPin();
+    })['catch'](function(){ /* no list, no slot - views() simply skips it */ });
+}
+function rollStock(){
+  if(!STOCK||!backend||!backend.setStockDay||STOCKSEEN===null)return;
+  var day=fcDay();
+  if(STOCKDAY&&STOCKDAY.day===day)return;         /* somebody has done today */
+  var ids=STOCK.map(function(c){return String(c.id||'')}).filter(Boolean);
+  var have=STOCKSEEN||{}, seeded=!!Object.keys(have).length, now=Date.now();
+  var fresh=seeded?ids.filter(function(id){return have[id]===undefined}):[];
+  /* a car that has sold drops out of the ledger, so one that comes back in
+     counts as new again - and the node stays the size of the stock list */
+  var keep={};
+  ids.forEach(function(id){ keep[id]=(typeof have[id]==='number')?have[id]:now });
+  backend.setStockSeen(keep)['catch'](function(){});
+  backend.setStockDay({day:day, ts:now, ids:fresh.slice(0,60).join(',')})['catch'](function(){});
+}
+/* Six cars, and what to call them. New in if there are any, otherwise a
+   different handful of the stock each day - the slot is worth having either
+   way, and "nothing new today" is not worth fifteen seconds of a wall. The
+   fallback is picked from the day itself so every screen shows the same six
+   and they change tomorrow. */
+function fcCars(){
+  if(!STOCK||!STOCK.length)return null;
+  var day=fcDay(), byId={};
+  STOCK.forEach(function(c){ byId[String(c.id||'')]=c });
+  var ids=(STOCKDAY&&STOCKDAY.day===day&&STOCKDAY.ids)?String(STOCKDAY.ids).split(','):[];
+  var fresh=ids.map(function(i){return byId[i]}).filter(Boolean);
+  if(fresh.length)return {kind:'new', cars:fresh.slice(0,6), total:fresh.length, day:day};
+  var n=STOCK.length, start=fcHash(day)%n, pick=[];
+  for(var i=0;i<Math.min(6,n);i++)pick.push(STOCK[(start+i)%n]);
+  return {kind:'today', cars:pick, total:n, day:day};
+}
+function fcSpec(c){
+  var bits=[];
+  if(c.year)bits.push(esc(c.year));
+  /* the scrape leaves a non-breaking space in "30,481 miles" */
+  if(c.mileage)bits.push(esc(String(c.mileage).replace(/\u00a0/g,' ')));
+  if(c.fuelGroup||c.fuel)bits.push(esc(c.fuelGroup||c.fuel));
+  if(c.colour)bits.push(esc(c.colour));
+  return bits.join(' · ');
+}
+function paintForecourt(){
+  var set=fcCars();
+  if(!set)return;
+  $('fc-kicker').innerHTML=set.kind==='new'
+    ? 'What&rsquo;s new on the forecourt?'
+    : 'On the forecourt today';
+  $('fc-sub').textContent=set.kind==='new'
+    ? (set.total===1?'One car in since yesterday':set.total+' cars in since yesterday')
+    : set.total+' approved used BMWs in stock';
+  $('fc-grid').innerHTML=set.cars.map(function(c){
+    var img=c.image?'<img src="'+esc(c.image)+'" alt="" loading="lazy" onerror="this.style.display=&quot;none&quot;">':'';
+    return '<div class="fc-car">'+
+      '<div class="pic"><span class="noimg">BMW</span>'+img+'</div>'+
+      '<div class="txt">'+
+        '<div class="nm">'+(set.kind==='new'?'<span class="fc-new">New in</span>':'')+
+          esc(c.model||'BMW')+'</div>'+
+        '<div class="pr">'+esc(c.price||'')+'</div>'+
+        '<div class="sp">'+fcSpec(c)+'</div>'+
+      '</div></div>';
+  }).join('');
+  $('fc-when').textContent=set.kind==='new'
+    ? 'From the stock list · checked every morning at 9'
+    : 'From the stock list · a different six every morning';
+}
+/* the snapshot is refreshed in the repo overnight and a screen may have been
+   up for days, so look again on the hour - which is also what rolls it at 9 */
+function watchStock(){
+  loadStock();
+  clearInterval(stockTimer);
+  stockTimer=setInterval(loadStock,3600000);
+}
+
+/* ---- the banner along the bottom ----
+   Dan and the managers put lines in from the admin console or the manager
+   panel; the board scrolls whatever is live. An item can carry an `until`
+   timestamp so something that is only true this week takes itself down. */
+var TICKER={}, tickerSig='';
+
+function tickerItems(){
+  var now=Date.now(), out=[];
+  Object.keys(TICKER||{}).forEach(function(k){
+    var it=TICKER[k];
+    if(!it||!it.text)return;
+    if(it.until&&now>it.until)return;
+    out.push({id:k, text:String(it.text), by:it.by||'', ts:it.ts||0});
+  });
+  out.sort(function(a,b){ return a.ts-b.ts });
+  return out;
+}
+function paintTicker(){
+  var bar=$('ticker'), tr=$('tk-track');
+  if(!bar||!tr)return;
+  var items=sOn('ticker')?tickerItems():[];
+  if(!items.length){
+    bar.classList.remove('show');
+    document.body.classList.remove('hasticker');
+    tr.style.animation='none'; tr.innerHTML=''; tickerSig='';
+    return;
+  }
+  var sig=items.map(function(i){return i.id+'~'+i.text+'~'+i.by}).join('|')+
+          '@'+window.innerWidth;
+  /* leave a running banner alone - repainting it would jump it back to the
+     start every time anything else on the board changed */
+  if(sig===tickerSig&&bar.classList.contains('show'))return;
+  tickerSig=sig;
+
+  var SEP='<span class="sep">&#9670;</span>';
+  var one=items.map(function(i){
+    return '<span class="tk-item">'+esc(i.text)+
+           (i.by?' <span class="who">&mdash; <b>'+esc(i.by)+'</b></span>':'')+'</span>';
+  }).join(SEP);
+  bar.classList.add('show');
+  document.body.classList.add('hasticker');
+  tr.style.animation='none';
+  /* Each copy carries its own trailing separator, so two copies side by side
+     and a -50% slide is a seamless loop. Repeat the unit until it is wider
+     than the screen, or a short message leaves a gap trailing behind it. */
+  var unit=one+SEP, guard=0;
+  tr.innerHTML=unit;
+  while(tr.scrollWidth<window.innerWidth&&guard++<20)tr.innerHTML+=unit;
+  var block=tr.innerHTML;
+  tr.innerHTML=block+block;
+  var secs=Math.max(14,(tr.scrollWidth/2)/90);      /* about 90px a second */
+  void tr.offsetWidth;                              /* restart the animation */
+  tr.style.animation='tkroll '+secs.toFixed(1)+'s linear infinite';
+}
+var tickerResize=null;
+window.addEventListener('resize',function(){
+  clearTimeout(tickerResize);
+  tickerResize=setTimeout(function(){ tickerSig=''; paintTicker() },400);
+});
+
 /* The wall display cycles through whatever there is to show, thirty seconds
    each: our board, the new car leaderboard, then either manager's extra
    screenshot if they have put one up. This is a view, not a stunt - it never
@@ -2304,28 +2589,31 @@ function watchNewCar(){
 /* A birthday card is one line of text - it does not need thirty seconds, and
    with two or three up at once a full slot each pushes the boards themselves
    too far apart. So the rotation is per-view rather than one fixed interval. */
-var VIEW_MS=30000, BDAY_VIEW_MS=15000, viewIdx=0, rotTimer=null, reliefTimer=null;
+var VIEW_MS=30000, BDAY_VIEW_MS=15000, viewIdx=0, curViewId='board', rotTimer=null, reliefTimer=null;
 function viewMs(v){
-  if(!v)return VIEW_MS;
-  /* a birthday card and the mug shot ask are both one line of text */
-  return (v.kind==='birthday'||v.kind==='mugask') ? BDAY_VIEW_MS : VIEW_MS;
+  var full=sNum('viewsecs',VIEW_MS/1000)*1000;
+  if(!v)return full;
+  /* a birthday card, the mug shot ask and the forecourt list are all short -
+     half the main slot, and never longer than it */
+  var brief=Math.min(BDAY_VIEW_MS,full);
+  return (v.kind==='birthday'||v.kind==='mugask'||v.kind==='forecourt') ? brief : full;
 }
 
 function views(){
   var out=[{id:'board'}];   /* index 0 is always our own board */
-  if(NEWCAR.img)out.push({
+  if(NEWCAR.img&&sOn('newcar'))out.push({
     id:'newcar', kind:'newcar',
     img:NEWCAR.img,
     cap:NEWCAR.note?esc(NEWCAR.note):'New car &mdash; 76 plate leaderboard',
     when:NEWCAR.seed?'Waiting on the first upload':stamp('Updated',NEWCAR.ts)
   });
-  if(EXTRA.used)out.push({
+  if(EXTRA.used&&sOn('extras'))out.push({
     id:'extra-used',
     img:EXTRA.used.img,
     cap:EXTRA.used.note?esc(EXTRA.used.note):'From the used car desk',
     when:stamp('Put up',EXTRA.used.ts)
   });
-  if(EXTRA.newcar)out.push({
+  if(EXTRA.newcar&&sOn('extras'))out.push({
     id:'extra-newcar',
     img:EXTRA.newcar.img,
     cap:EXTRA.newcar.note?esc(EXTRA.newcar.note):'From the new car desk',
@@ -2333,8 +2621,8 @@ function views(){
   });
   var mug=liveMug();
   /* nobody has won one yet - ask for entries instead */
-  if(!mug)out.push({id:'mugask', kind:'mugask'});
-  if(mug)out.push({
+  if(!mug&&sOn('mugask'))out.push({id:'mugask', kind:'mugask'});
+  if(mug&&sOn('mugshot'))out.push({
     id:'mugshot', kind:'mugshot',
     img:mug.img,
     cap:mug.cap?esc(mug.cap):'Mug shot of the week',
@@ -2342,8 +2630,10 @@ function views(){
          (mug.votes?'rated '+mug.votes+' out of 5 by the team':'voted on by the team')+
          (mug.rated?' \u00b7 '+mug.rated+' rating'+(mug.rated===1?'':'s'):'')
   });
+  /* what has landed on the forecourt since yesterday morning */
+  if(sOn('forecourt')&&fcCars())out.push({id:'forecourt', kind:'forecourt'});
   /* birthdays come after the boards and screenshots, not in between them */
-  liveBirthdays().forEach(function(bd){
+  if(sOn('birthdays'))liveBirthdays().forEach(function(bd){
     out.push({id:'bday-'+bd.id, kind:'birthday', bday:bd});
   });
   return out;
@@ -2363,6 +2653,7 @@ function showView(i){
   if(!(i>=0&&i<list.length))i=0;
   viewIdx=i;
   var v=list[i];
+  curViewId=v.id;
   if(v.img){
     $('nc-img').src=v.img;
     $('nc-kicker').innerHTML=v.cap;
@@ -2372,11 +2663,13 @@ function showView(i){
     $('bv-name').textContent=v.bday.name||'';
     $('bv-note').textContent=bdayDayNote(v.bday.ts);
   }
+  if(v.kind==='forecourt')paintForecourt();
   $('ncscene').classList.toggle('show',!!v.img);
   /* the winner's slot carries a small QR so next week's entries keep coming */
   $('ncscene').classList.toggle('asking',v.kind==='mugshot');
   $('bdayview').classList.toggle('show',v.kind==='birthday');
   $('mugask').classList.toggle('show',v.kind==='mugask');
+  $('fcscene').classList.toggle('show',v.kind==='forecourt');
   ncChat(v.kind==='newcar');
   paintViewControls();
   armRotation();
@@ -2436,7 +2729,8 @@ var VIEWPINS=[
   {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
   {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"},
   {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'},
-  {id:'mugask',       name:'Ask for mug shots',       sub:'The QR code for the team'}
+  {id:'mugask',       name:'Ask for mug shots',       sub:'The QR code for the team'},
+  {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock, from the stock list'}
 ];
 /* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
    the team and then walks off; a wall display stuck on one screen all
@@ -2468,13 +2762,25 @@ function viewAvailable(id){
   if(id==='extra-newcar')return !!EXTRA.newcar;
   if(id==='mugshot')return !!liveMug();
   if(id==='mugask')return !liveMug();
+  if(id==='forecourt')return !!fcCars();
   return false;
+}
+
+/* A slot that has just been switched off, or an upload that has been taken
+   down, must not stay on the wall until the rotation happens to move on. */
+function resyncView(){
+  var list=views(), i;
+  for(i=0;i<list.length;i++)if(list[i].id===curViewId){
+    if(i!==viewIdx)showView(i);
+    return;
+  }
+  showView(0);
 }
 
 function applyPin(){
   armPin();
   startRotation();
-  if(!pinnedView||pinnedView==='auto'){paintViewControls();return}
+  if(!pinnedView||pinnedView==='auto'){resyncView();paintViewControls();return}
   var list=views();
   for(var i=0;i<list.length;i++){
     if(list[i].id===pinnedView){showView(i);return}
@@ -2799,6 +3105,7 @@ var audioOk=false, liveVideo=null;
 /* the team sketches */
 function videoScene(forced){
   if(stuntsBlocked())return false;
+  if(!sOn('sketches'))return false;
   var vs=$('vidscene'), v=$('vs-video');
   if(!vs||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
   /* the toggle stops the automatic slot only - a manager pressing play still
@@ -2816,7 +3123,7 @@ function videoScene(forced){
     if(v.videoWidth&&v.videoHeight)frame.style.setProperty('--ar',v.videoWidth/v.videoHeight);
   };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
-  var wants=clip.sound!==false;
+  var wants=clip.sound!==false&&sOn('sound');
   liveVideo={el:v, wants:wants};
   v.muted=!wants; v.volume=wants?1:0;
   vs.classList.toggle('is-muted',!wants);
@@ -2864,6 +3171,7 @@ function warmVideo(){
 }
 
 function statsScene(){
+  if(!sOn('stats'))return false;
   if(stuntsBlocked())return false;
   if(!backend||!backend.read)return false;
   var cur=monthKey(), prev=prevMonthKey();
@@ -2961,6 +3269,7 @@ var FIRE={
 
 /* Nathan has a go at torching the board, roughly every quarter of an hour */
 function nathanFire(){
+  if(!sOn('fire'))return false;
   if(stuntsBlocked()||!ourBoardUp())return false;
   var board=document.querySelector('.board');
   if(!board)return false;
@@ -3059,6 +3368,7 @@ function leaderNow(){
 
 /* every few minutes whoever is top takes the floor */
 function leaderDance(){
+  if(!sOn('dance'))return false;
   if(stuntsBlocked())return false;
   var L=leaderNow();
   if(!L)return false;                 /* nothing to celebrate on an empty board */
@@ -3119,6 +3429,7 @@ var RELIEF={
           "That is a brand new board!"]
 };
 function willRelief(){
+  if(!sOn('relief'))return false;
   if(stuntsBlocked())return false;
   var list=views(), v=list[viewIdx];
   if(!v||v.kind!=='newcar')return false;              /* his board, not ours */
@@ -3250,6 +3561,7 @@ function reduced(){
 }
 
 function throwPaper(){
+  if(!sOn('paper'))return false;
   if(stuntsBlocked()||!ourBoardUp())return false;
   var a=$('m-will'), b=$('m-serge');
   if(!a||!b)return false;
@@ -3293,6 +3605,7 @@ function throwPaper(){
 }
 
 function nathanVisit(){
+  if(!sOn('nathan'))return false;
   if(stuntsBlocked()||!ourBoardUp())return false;
   var g=sceneStart();
   var el=$('nathan');
@@ -3343,7 +3656,8 @@ function nextCutScene(){
 
 function scheduleStunts(){
   every(throwPaper,    25000, 20000,  45000,  50000);  /* ambient, covers nothing */
-  every(nextCutScene, 100000, 40000, 285000,  30000);  /* one scene, ~4.75-5.25m  */
+  var gap=sNum('scenemins',5)*60000;
+  every(nextCutScene, Math.min(100000,gap/3), 40000, gap-15000, 30000);  /* one scene, ~5m */
   warmVideo();
   startRotation();
 }
@@ -3753,6 +4067,42 @@ function paintBirthdayList(){
   });
 }
 
+/* ---- the banner, from the manager panel ---- */
+function paintTickerPanel(){
+  var el=$('tick-list');
+  if(!el)return;
+  var items=tickerItems();
+  if(!items.length){
+    el.innerHTML='<p class="shotcap" style="margin:0">Nothing on the banner.</p>';
+    return;
+  }
+  el.innerHTML=items.map(function(i){
+    return '<div class="deal"><div class="in"><b>'+esc(i.text)+'</b>'+
+      '<span>'+(i.by?esc(i.by)+' &middot; ':'')+stamp('put up',i.ts)+'</span></div>'+
+      '<button type="button" class="icon del" data-tick="'+i.id+'" title="Take it off the banner">&#128465;</button></div>';
+  }).join('');
+  Array.prototype.forEach.call(el.querySelectorAll('[data-tick]'),function(btn){
+    btn.onclick=function(){
+      if(!backend||!backend.delTicker)return;
+      backend.delTicker(btn.getAttribute('data-tick')).then(function(){
+        toast('Off the banner','ok');
+      })['catch'](function(e){console.error(e);toast('Could not remove that','err')});
+    };
+  });
+}
+$('tick-go').onclick=function(){
+  var t=$('tick-text').value.trim();
+  if(!t){toast('Type something first','err');return}
+  if(!backend||!backend.addTicker){toast('Not connected to the board','err');return}
+  var payload={text:t, ts:Date.now()};
+  var by=$('tick-by').value.trim();
+  if(by)payload.by=by;
+  backend.addTicker(payload).then(function(){
+    $('tick-text').value='';
+    toast('On the banner','ok');
+  })['catch'](function(e){console.error(e);toast('Could not put that up','err')});
+};
+
 $('shot-pick').onclick=function(){$('shot-file').click()};
 $('shot-file').onchange=function(e){
   var f=e.target.files&&e.target.files[0];
@@ -3825,6 +4175,40 @@ renderMonthTabs();
 updateBubbles();
 bubbleTimer=setInterval(updateBubbles,7500);
 scheduleStunts();
+paintTicker();
+paintTickerPanel();
+/* the stock list is a plain file next to this page, so the forecourt slot
+   works with no backend at all - it just cannot tell what is new until the
+   ledger arrives */
+watchStock();
+
+/* ---- settings arriving from the admin console ---- */
+function applySettings(v){
+  SET=v||{};
+  TARGET=sNum('target',15000);
+  UNIT_TARGET=sNum('units',8);
+  var t=document.querySelector('.hero h1 .amt');
+  if(t)t.textContent=money(TARGET);
+  render();
+  paintTicker();
+  paintSettingsNote();
+  /* a slot that has just been switched off comes off the wall now, and the
+     rotation re-arms with the new slot length */
+  applyPin();
+}
+function paintSettingsNote(){
+  var n=$('set-note');
+  if(!n)return;
+  var off=[];
+  ['sketches','dance','stats','nathan','fire','relief','paper','champ','bubbles',
+   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','ticker',
+   'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
+  n.style.display=off.length?'block':'none';
+  n.innerHTML=off.length
+    ? '<b>'+off.length+'</b> thing'+(off.length===1?' is':'s are')+
+      ' switched off in the admin console.'
+    : '';
+}
 
 /* the Firebase module calls this once it is ready */
 window.dsBindBackend=function(api){
@@ -3835,6 +4219,16 @@ window.dsBindBackend=function(api){
   watchNewCar();
   watchBirthdays();
   if(backend.watchControl)backend.watchControl(window.dsOnControl,window.dsOnControlError);
+  if(backend.watchSettings)backend.watchSettings(applySettings);
+  if(backend.watchTicker)backend.watchTicker(function(v){
+    TICKER=v||{}; paintTicker(); paintTickerPanel();
+  });
+  if(backend.watchStock)backend.watchStock(function(seen,day){
+    STOCKSEEN=seen||{}; STOCKDAY=day||null;
+    rollStock();
+    if(curViewId==='forecourt')paintForecourt();
+    applyPin();
+  });
   paintControlNote();
   paintClipControls();
 };
@@ -3915,6 +4309,18 @@ window.dsBindBackend({
   saveExtra:(who,payload)=>set(ref(db,'extra/'+who),payload),
   clearExtra:(who)=>remove(ref(db,'extra/'+who)),
   watchControl(cb,onErr){ watch('boardcontrol', cb, ()=>{onErr&&onErr()}) },
+  watchSettings(cb){ watch('boardsettings', cb) },
+  watchTicker(cb){ watch('ticker/items', cb) },
+  /* two nodes, one callback - the roll needs both before it can decide */
+  watchStock(cb){
+    let seen=null, day=null, got=0;
+    watch('stockwatch/seen', v=>{ seen=v||{}; got|=1; if(got&2)cb(seen,day) });
+    watch('stockwatch/day',  v=>{ day=v||null; got|=2; if(got&1)cb(seen,day) });
+  },
+  setStockSeen:(m)=>set(ref(db,'stockwatch/seen'),m),
+  setStockDay:(v)=>set(ref(db,'stockwatch/day'),v),
+  addTicker:(payload)=>push(ref(db,'ticker/items'),payload),
+  delTicker:(id)=>remove(ref(db,'ticker/items/'+id)),
   setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
   setView:(id,ts)=>set(ref(db,'boardcontrol/view'),{id:String(id),ts:ts||Date.now()}),
   setReload:(ts)=>set(ref(db,'boardcontrol/reload'),ts),
