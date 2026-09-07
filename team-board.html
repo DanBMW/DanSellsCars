@@ -1318,7 +1318,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
     <div class="ma-kick">Mug shot of the week</div>
     <div class="ma-head">Want a picture here?</div>
     <div class="ma-code"><svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg></div>
-    <div class="ma-sub">Scan it and put one up. The most creative one wins the wall
+    <div class="ma-sub">Scan it and put one up. The most creative one wins this wall
       for a week &mdash; speech bubbles, AI, a proper caption. Make it special.</div>
     <div class="ma-warn">&#128064; Keep it appropriate</div>
   </div>
@@ -1416,7 +1416,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 /* ============================================================
    Board UI. Deliberately plain (non-module) and backend-free so
    the board still draws if the Firebase CDN is slow or blocked -
-   a showroom screen should never sit blank.
+   a board on the wall should never sit blank.
    ============================================================ */
 
 /* ---- team: order matches the paper board ---- */
@@ -2583,7 +2583,7 @@ function shotClear(){
 
 /* `sound:false` keeps a clip silent whatever else the board is playing.
    Sketch 4 is the shredding sketch and has swearing in it, so it never gets
-   sound on a showroom wall - do not drop the flag. */
+   sound where the team are working - do not drop the flag. */
 var CLIPS=[
   {src:'video/sketch-team.mp4',        cap:'The used car team', name:'Team dance',    ar:16/9},
   {src:'video/sketch-serge-clive.mp4', cap:'Serge &amp; Clive',     name:'Serge & Clive', ar:16/9},
@@ -2593,7 +2593,7 @@ var CLIPS=[
   {src:'video/sketch-6.mp4',           cap:'The used car team', name:'Sketch 6',      ar:16/9},
   {src:'video/sketch-7.mp4',           cap:'Nathan &mdash; New Car Manager', name:'Nathan', ar:16/9},
   {src:'video/sketch-8.mp4',           cap:'The used car team', name:'Sketch 8',      ar:16/9},
-  /* muted until Dan confirms it is clean - "raging" and a showroom wall is
+  /* muted until Dan confirms it is clean - "raging" and an office wall is
      not a guess worth making */
   {src:'video/sketch-9.mp4',           cap:'Serge, raging',     name:'Serge raging',  ar:16/9, sound:false}
 ];

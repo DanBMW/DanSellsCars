@@ -161,7 +161,7 @@ are still duplicated per page — only the header/drawer/footer are templated.
   leave a dead page.
 - `team-board.html` — the **£15,000 Profit Challenge** board: a live race-to-the-
   top scoreboard for the used car team (the digital replacement for the paper
-  board on the showroom wall). Public to view by URL, but adding/editing deals
+  board that used to hang up). Public to view by URL, but adding/editing deals
   is behind the manager PIN. Team photos live in `team/` (see below).
 - `mugshot.html` — **Mug Shot of the Week**: the team upload a picture and vote;
   the winner takes a slot in the board rotation for the week. No PIN (a PIN
@@ -194,7 +194,7 @@ are still duplicated per page — only the header/drawer/footer are templated.
   and nothing to fetch. Regenerate it with segno (`border=2` bakes in the quiet
   zone) and **check it still decodes at the size it renders at**: the first
   small one was 84px and OpenCV could not read it out of a screenshot, which is
-  a fair proxy for a phone across the showroom.
+  a fair proxy for a phone across the office.
 - `links.html` — Dan's internal links/dashboard page (includes the Formspree
   record-ID → PDF download widgets, the Ramp Report link builder with its
   localStorage sent-log, the VIP Buyers Event invitation builder with its own
@@ -217,10 +217,10 @@ tag, and do not add these pages to any nav.
 ## The Profit Challenge board — team-board.html
 
 A single self-contained page; no build step, no shared assets. It replaces the
-hand-drawn £15,000 challenge board that lived on the showroom wall.
+hand-drawn £15,000 challenge board that used to hang on the wall.
 
-**It is internal facing only** (Dan's ruling) - a staff display, not something
-customers stand in front of. That is why the banter, Nathan's arson and Will's
+**It hangs in the managers' office** (Dan's ruling) - a staff display, not
+something customers stand in front of. That is why the banter, Nathan's arson and Will's
 reply to it are pitched where they are. Do not soften that content on the
 assumption a customer might see it, and do not use "customers can see it" as a
 reason for a decision here; if something needs holding back, it is because Dan
@@ -414,8 +414,8 @@ said so.
   covered.
   **Sound.** Clips play with sound, except any carrying `sound:false` -
   sketch 4, the shredding sketch, which swears. Dan asked for that one to stay
-  silent; the board is staff-only, so it is his call rather than a customer
-  one, but leave the flag alone unless he says otherwise.
+  silent; the board is in the managers' office, so it is his call rather than a
+  customer one, but leave the flag alone unless he says otherwise.
   **Always ask for sound and let the browser refuse** - never pre-mute on the
   assumption it will. A display whose browser is configured to allow autoplay
   with sound (Chrome launched `--autoplay-policy=no-user-gesture-required`,
@@ -552,7 +552,7 @@ said so.
   `boardcontrol`) in a retry with a 2s-to-30s backoff that resets on the first
   good value; `newcar.html` carries the same helper. Keep it: this page is
   meant to sit on a wall unattended, and a rules change should not need a lap
-  of the showroom with a keyboard.
+  of the building with a keyboard.
 - The board renders from a **plain non-module script** and only then lets the
   Firebase module feed it, so a slow or blocked CDN shows an honest "offline"
   board rather than a blank screen. The webfont is loaded non-render-blocking
