@@ -119,6 +119,12 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
 .empty{text-align:center;color:var(--muted);font-size:.85rem;padding:26px 0;line-height:1.6}
 .foot{text-align:center;color:var(--muted);font-size:.72rem;margin-top:26px;line-height:1.7}
 .foot a{color:var(--blue);text-decoration:none}
+.brief{
+  margin:14px 0 0;font-size:.86rem;line-height:1.6;color:var(--text);
+  border-left:3px solid var(--blue);background:rgba(47,123,240,.09);
+  border-radius:0 12px 12px 0;padding:12px 14px;
+}
+.brief b{color:var(--blue)}
 .warn{
   margin:14px 0 0;font-size:.8rem;font-weight:700;line-height:1.5;color:var(--gold);
   border:1px solid rgba(224,179,82,.4);background:rgba(224,179,82,.10);
@@ -134,6 +140,10 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
   <h1>Mug Shot <span class="amt">of the Week</span></h1>
   <p class="sub">Put a picture up, vote for the one you want on the showroom board. The winner goes on
     the board for a week and a fresh round starts every Monday.</p>
+  <p class="brief">Upload a picture and let the team vote on it. <b>The most creative one usually wins</b> &mdash;
+    a plain snap off your camera roll rarely beats one somebody has put some work into. Run it through an AI,
+    stick a speech bubble on it, give it a proper caption. Make it special. It is going on the wall for a week
+    with your name under it.</p>
   <p class="warn">&#128064; Keep it appropriate &mdash; this goes on a screen in the showroom, and everyone
     can see who put it up.</p>
   <div class="pill" id="weekpill">&nbsp;</div>
