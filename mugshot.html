@@ -541,7 +541,7 @@ function pruneOld(){
   Object.keys(ENTRIES||{}).forEach(function(k){
     var e=ENTRIES[k];
     if(e&&typeof e.ts==='number'&&e.ts<cut&&(!CURRENT||CURRENT.entry!==k)){
-      backend.dropEntry(k)['catch'](function(){});
+      backend.dropEntry(k, Object.keys(VOTES[k]||{}))['catch'](function(){});
     }
   });
 }
@@ -590,8 +590,11 @@ window.msBindBackend({
   add:(payload)=>push(ref(db,'mugshot/entries'),payload),
   vote:(id,who,yes)=>set(ref(db,'mugshot/votes/'+id+'/'+who),!!yes),
   unvote:(id,who)=>remove(ref(db,'mugshot/votes/'+id+'/'+who)),
-  dropEntry:(id)=>Promise.all([remove(ref(db,'mugshot/entries/'+id)),
-                               remove(ref(db,'mugshot/votes/'+id))]),
+  /* the rules allow a write per VOTER, not on the whole votes node for an
+     entry - deleting the parent is refused, so each voter goes individually */
+  dropEntry:(id,voters)=>Promise.all(
+    [remove(ref(db,'mugshot/entries/'+id))].concat(
+      (voters||[]).map(function(v){return remove(ref(db,'mugshot/votes/'+id+'/'+v))}))),
   setCurrent:(v)=>set(ref(db,'mugshot/current'),v),
   watchEntries:(cb)=>watch('mugshot/entries',cb),
   watchVotes:(cb)=>watch('mugshot/votes',cb),

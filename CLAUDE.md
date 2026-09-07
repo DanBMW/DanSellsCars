@@ -186,6 +186,9 @@ are still duplicated per page — only the header/drawer/footer are templated.
   mousemove stream and killed swiping on a laptop; and the window listeners are
   bound **once**, not per render, which was leaking a set per card. Entries
   over 21 days old are pruned after a roll - everything here carries a photo.
+  The rules allow a write per **voter**, not on the whole `votes/<entry>` node,
+  so pruning deletes each voter key individually; removing the parent is
+  refused.
   The board asks for entries itself: with no winner up it shows a **15-second
   QR slot** ("Want a picture here?"), and once one has won, the winner's own
   30-second slot carries a smaller QR in the corner for next week. Both point
