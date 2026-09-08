@@ -377,7 +377,12 @@ var PRIOR_N=2, PRIOR_M=3;
 function ratings(id){
   var v=VOTES[id]||{}, sum=0, n=0, yes=0, ysum=0;
   for(var k in v){
-    var r=Number(v[k]);
+    /* Only real numbers count. Votes from before the two-stage flow were
+       stored as booleans, and Number(true) is 1 - so an old "yes, I like it"
+       would have come back as a one-star, which is the opposite of what the
+       person meant. They cannot be translated, so they are ignored. */
+    if(typeof v[k]!=='number')continue;
+    var r=v[k];
     if(!(r>=0&&r<=5))continue;
     n++; sum+=r;
     if(r>=1){yes++; ysum+=r}
