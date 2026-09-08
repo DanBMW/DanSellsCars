@@ -23,6 +23,12 @@
   --gold:#e0b352;
   --green:#2fbf6b;
   --red:#e2564d;
+  /* the mug shot QR in the top corner, and the room the forecourt view
+     leaves for it - one number, so they cannot drift apart */
+  --qrbox:clamp(126px,7.6vw,150px);
+  /* how far down the rails have to start to clear it: the badge is the code
+     plus its own padding and two lines of type */
+  --qrspace:calc(var(--qrbox) + 92px);
   --font:'Satoshi',ui-sans-serif,system-ui,-apple-system,sans-serif;
   --display:'Clash Display','Satoshi',sans-serif;
 }
@@ -404,6 +410,14 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   min-height:2.9em;display:flex;align-items:center;justify-content:center;
   transition:opacity .3s ease;
 }
+/* On the wall it has to be a FIXED height, not a minimum: a long line grew the
+   bubble, which grew the rail, which pushed the whole mascot up into the top
+   corner where the QR badge lives - and made the two of them hop about every
+   7.5 seconds as the lines rotated. Four lines' worth holds every line in the
+   pools with room over. */
+@media(min-width:1200px){
+  .bubble{height:5.4em;min-height:0;overflow:hidden}
+}
 .bubble.fade{opacity:0}
 
 @media(prefers-reduced-motion:reduce){
@@ -443,6 +457,11 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 .fcscene.show{opacity:1;visibility:visible}
 .fc-inner{display:flex;flex-direction:column;align-items:center;width:100%;max-width:1700px;max-height:100%}
+/* Keep the top corners clear of the QR badge. Symmetric, so the grid stays
+   centred - only where the badge is actually shown. */
+@media(min-width:1200px){
+  .fc-inner{max-width:min(1700px,calc(100vw - 2*(var(--qrbox) + 46px)))}
+}
 .fc-kicker{
   font-family:var(--display);font-weight:700;letter-spacing:.22em;text-transform:uppercase;
   color:var(--gold);font-size:clamp(.62rem,1.5vw,1rem);margin-bottom:4px;text-align:center;
@@ -623,48 +642,40 @@ body.hasticker .credit{bottom:52px}
 
 /* ---------- mug shot: the ask, and the winner's little QR ---------- */
 .qr{display:block;width:100%;height:auto;color:#0d1219;shape-rendering:crispEdges}
-.mugask{
-  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(60% 60% at 50% 42%,rgba(47,123,240,.16),rgba(5,8,13,.96) 70%),rgba(5,8,13,.95);
-  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
-  pointer-events:none;padding:20px;text-align:center;
+/* ---- the mug shot QR, top right, always ----
+   It used to be a fifteen-second slot in the rotation plus a small one on the
+   winner's own screen, which meant somebody walking past had to happen to be
+   there at the right moment. Dan's call: keep it up permanently instead, out
+   of the way in a corner. It draws ABOVE the cut scenes (z-index 310, the
+   same layer as his credit line) - "at all times" means during a sketch too.
+
+   Top right is the one corner nothing else wants: the standings fill the
+   bottom left, the credit sits bottom right, and the hero title is centred.
+   It is deliberately not a link - a wall display should not be one stray tap
+   away from a different page. */
+.cornerqr{
+  position:fixed;top:clamp(10px,1.4vh,18px);right:clamp(10px,1.2vw,20px);z-index:310;
+  display:none;flex-direction:column;align-items:center;gap:7px;text-align:center;
+  width:calc(var(--qrbox) + 20px);
+  background:rgba(11,15,22,.88);border:1px solid var(--line);border-radius:14px;
+  padding:10px;pointer-events:none;
+  box-shadow:0 14px 40px rgba(0,0,0,.5);
 }
-.mugask.show{opacity:1;visibility:visible}
-.ma-inner{display:flex;flex-direction:column;align-items:center;max-width:min(92vw,860px)}
-.ma-kick{
-  font-family:var(--display);font-weight:700;letter-spacing:.3em;text-transform:uppercase;
-  color:var(--gold);font-size:clamp(.6rem,1.4vw,.95rem);
-}
-.ma-head{
-  font-family:var(--display);font-weight:700;line-height:1.02;margin-top:clamp(8px,1.6vh,16px);
-  font-size:clamp(1.6rem,5vw,3.6rem);
-}
-.ma-code{
-  background:#fff;border-radius:16px;padding:clamp(10px,1.6vh,18px);
-  width:clamp(150px,20vh,250px);margin-top:clamp(14px,2.4vh,26px);
-  box-shadow:0 20px 60px rgba(0,0,0,.55);
-}
-.ma-sub{
-  color:var(--muted);font-weight:600;margin-top:clamp(12px,2vh,20px);
-  font-size:clamp(.72rem,1.5vw,1.05rem);max-width:26em;line-height:1.5;
-}
-.ma-warn{
-  margin-top:clamp(10px,1.8vh,18px);font-weight:800;letter-spacing:.06em;
-  font-size:clamp(.7rem,1.4vw,.95rem);color:var(--gold);
-  border:1px solid rgba(224,179,82,.4);border-radius:999px;padding:6px 16px;
-  background:rgba(224,179,82,.10);
-}
-/* on the winner's slot it shrinks into the corner */
-.nc-qr{
-  display:none;position:absolute;right:clamp(8px,1.4vw,20px);bottom:clamp(8px,1.4vh,18px);
-  align-items:center;gap:10px;background:rgba(11,15,22,.82);border:1px solid var(--line);
-  border-radius:14px;padding:8px 13px 8px 8px;text-align:left;
-}
-.ncscene.asking .nc-qr{display:flex}
-.nc-qr .qr{width:clamp(92px,9vw,150px);background:#fff;border-radius:8px;padding:5px}
-.nc-qr b{display:block;font-size:clamp(.66rem,1.1vw,.82rem);font-weight:800}
-.nc-qr span{display:block;font-size:clamp(.56rem,.92vw,.7rem);color:var(--muted);font-weight:600;margin-top:1px}
-@media(prefers-reduced-motion:reduce){.mugask{transition:none}}
+.cornerqr.show{display:flex}
+/* Big enough to read across an office. An 84px one could not be decoded out
+   of a screenshot, which is a fair proxy for a phone from a few feet away -
+   do not shrink --qrbox below about 130px without checking it still scans.
+   The whole widget is only as wide as the code, so it stays a badge in the
+   corner rather than a panel. */
+.cornerqr .qr{width:var(--qrbox);background:#fff;border-radius:8px;padding:6px;flex:none}
+.cornerqr b{display:block;font-family:var(--display);font-weight:700;line-height:1.15;
+  color:var(--gold);font-size:clamp(.7rem,1.05vw,.9rem)}
+.cornerqr span{display:block;font-size:clamp(.55rem,.82vw,.68rem);color:var(--muted);
+  font-weight:600;margin-top:2px;line-height:1.25;white-space:nowrap}
+/* The badge lives in the wall layout, which starts at 1200px. Below that the
+   board stacks - the mascots sit across the top and there is no free corner -
+   and it is being read on a phone or a laptop rather than scanned off a wall. */
+@media(max-width:1199px){ .cornerqr{display:none!important} }
 
 /* ---------- birthday ---------- */
 .bdayview{
@@ -1068,8 +1079,12 @@ body.hasticker .credit{bottom:52px}
   }
   .mascots{display:contents}
   .mascot{width:100%}
-  .mascot.left {grid-column:1;grid-row:1/span 3;align-self:center}
-  .mascot.right{grid-column:3;grid-row:1/span 3;align-self:center}
+  /* Both rails start below the QR badge in the top corner. It is a padding
+     rather than a nudge on the right one alone, so the two of them stay level
+     - and it is on both because the board is symmetrical and a lopsided pair
+     reads as a bug. */
+  .mascot.left {grid-column:1;grid-row:1/span 3;align-self:center;padding-top:var(--qrspace)}
+  .mascot.right{grid-column:3;grid-row:1/span 3;align-self:center;padding-top:var(--qrspace)}
   .hero  {grid-column:2;grid-row:1;padding:0 0 4px}
   .board {grid-column:2;grid-row:2;min-height:0;display:flex;flex-direction:column;margin-bottom:0;align-self:stretch}
   .totals{grid-column:2;grid-row:3;margin-top:8px}
@@ -1210,6 +1225,13 @@ body.hasticker .credit{bottom:52px}
 
 <div class="credit">This display was created by Dan</div>
 
+<!-- the mug shot QR, up permanently in the top right corner -->
+<div class="cornerqr" id="cornerqr" aria-hidden="true">
+  <svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg>
+  <b>Want a picture here?</b>
+  <span>Keep it appropriate</span>
+</div>
+
 <!-- anything Dan or a manager wants everyone to read, scrolling along the
      bottom. Above every scene: a 44px strip should not vanish for ten
      seconds because a sketch is playing. -->
@@ -1328,10 +1350,6 @@ body.hasticker .credit{bottom:52px}
     <div class="nc-kicker" id="nc-kicker">New car &mdash; 76 plate leaderboard</div>
     <div class="nc-shot"><img id="nc-img" alt="Screenshot on the board"></div>
     <div class="nc-when" id="nc-when"></div>
-    <div class="nc-qr" id="nc-qr">
-      <svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg>
-      <div><b>Fancy next week?</b><span>Scan and put one up &middot; keep it appropriate</span></div>
-    </div>
   </div>
   <div class="nc-chat" id="nc-chat" aria-hidden="true">
     <div class="nc-mascot us" id="nc-will">
@@ -1411,17 +1429,6 @@ body.hasticker .credit{bottom:52px}
 </div>
 
 <!-- nobody has won the mug shot yet: ask the team for one -->
-<div class="mugask" id="mugask" aria-hidden="true">
-  <div class="ma-inner">
-    <div class="ma-kick">Mug shot of the week</div>
-    <div class="ma-head">Want a picture here?</div>
-    <div class="ma-code"><svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg></div>
-    <div class="ma-sub">Scan it and put one up. The most creative one wins this wall
-      for a week &mdash; speech bubbles, AI, a proper caption. Make it special.</div>
-    <div class="ma-warn">&#128064; Keep it appropriate</div>
-  </div>
-</div>
-
 <!-- what has landed on the forecourt since yesterday morning. A view, not a
      scene: z-index 50, fifteen seconds, from the same stock snapshot the
      public stock list reads -->
@@ -2609,10 +2616,10 @@ var VIEW_MS=30000, BDAY_VIEW_MS=15000, viewIdx=0, curViewId='board', rotTimer=nu
 function viewMs(v){
   var full=sNum('viewsecs',VIEW_MS/1000)*1000;
   if(!v)return full;
-  /* a birthday card, the mug shot ask and the forecourt list are all short -
-     half the main slot, and never longer than it */
+  /* a birthday card and the forecourt list are both a glance rather than a
+     read - half the main slot, and never longer than it */
   var brief=Math.min(BDAY_VIEW_MS,full);
-  return (v.kind==='birthday'||v.kind==='mugask'||v.kind==='forecourt') ? brief : full;
+  return (v.kind==='birthday'||v.kind==='forecourt') ? brief : full;
 }
 
 function views(){
@@ -2636,8 +2643,6 @@ function views(){
     when:stamp('Put up',EXTRA.newcar.ts)
   });
   var mug=liveMug();
-  /* nobody has won one yet - ask for entries instead */
-  if(!mug&&sOn('mugask'))out.push({id:'mugask', kind:'mugask'});
   if(mug&&sOn('mugshot'))out.push({
     id:'mugshot', kind:'mugshot',
     img:mug.img,
@@ -2681,10 +2686,7 @@ function showView(i){
   }
   if(v.kind==='forecourt')paintForecourt();
   $('ncscene').classList.toggle('show',!!v.img);
-  /* the winner's slot carries a small QR so next week's entries keep coming */
-  $('ncscene').classList.toggle('asking',v.kind==='mugshot');
   $('bdayview').classList.toggle('show',v.kind==='birthday');
-  $('mugask').classList.toggle('show',v.kind==='mugask');
   $('fcscene').classList.toggle('show',v.kind==='forecourt');
   ncChat(v.kind==='newcar');
   paintViewControls();
@@ -2745,7 +2747,6 @@ var VIEWPINS=[
   {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
   {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"},
   {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'},
-  {id:'mugask',       name:'Ask for mug shots',       sub:'The QR code for the team'},
   {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock, from the stock list'}
 ];
 /* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
@@ -2777,7 +2778,6 @@ function viewAvailable(id){
   if(id==='extra-used')return !!EXTRA.used;
   if(id==='extra-newcar')return !!EXTRA.newcar;
   if(id==='mugshot')return !!liveMug();
-  if(id==='mugask')return !liveMug();
   if(id==='forecourt')return !!fcCars();
   return false;
 }
@@ -4192,6 +4192,7 @@ bubbleTimer=setInterval(updateBubbles,7500);
 scheduleStunts();
 paintTicker();
 paintTickerPanel();
+paintCornerQR();
 /* the stock list is a plain file next to this page, so the forecourt slot
    works with no backend at all - it just cannot tell what is new until the
    ledger arrives */
@@ -4206,10 +4207,17 @@ function applySettings(v){
   if(t)t.textContent=money(TARGET);
   render();
   paintTicker();
+  paintCornerQR();
   paintSettingsNote();
   /* a slot that has just been switched off comes off the wall now, and the
      rotation re-arms with the new slot length */
   applyPin();
+}
+/* the QR is up on every view and over every scene, so nothing switches it
+   but its own setting */
+function paintCornerQR(){
+  var el=$('cornerqr');
+  if(el)el.classList.toggle('show',sOn('mugask'));
 }
 function paintSettingsNote(){
   var n=$('set-note');

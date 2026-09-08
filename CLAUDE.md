@@ -211,10 +211,26 @@ are still duplicated per page — only the header/drawer/footer are templated.
   if it had already won, the roll runs again to replace it - and the board
   itself watches `mugshot/blocked` too, so a pulled winner comes off the wall
   even with nobody on `mugshot.html` to re-run the roll.
-  The board asks for entries itself: with no winner up it shows a **15-second
-  QR slot** ("Want a picture here?"), and once one has won, the winner's own
-  30-second slot carries a smaller QR in the corner for next week. Both point
-  at `mugshot.html`, both carry a "keep it appropriate" line, and the QR is a
+  The board asks for entries itself, **permanently**: a QR badge sits in the
+  **top right corner at all times** (Dan's call - it used to be a 15-second
+  slot in the rotation plus a small one on the winner's own screen, so
+  somebody walking past had to happen to be there at the right moment). It
+  draws at z-index 310, above every cut scene, because "at all times" means
+  during a sketch too, and it is deliberately **not a link** - a wall display
+  should not be one stray tap from another page. The badge is only as wide as
+  the code itself (`--qrbox`, a single custom property shared with the
+  forecourt view, which narrows so the grid never runs under it); top right is
+  the one corner nothing else wants, with the standings bottom left, Dan's
+  credit bottom right and the title centred. It shows only in the wall
+  layout (1200px up); below that the board stacks, the mascots sit across the
+  top, there is no free corner, and it is being read on a phone rather than
+  scanned off a wall.
+  Two things had to give way for it, both in the wall layout only. The rails
+  start `--qrspace` lower (**both** of them - a lopsided pair reads as a bug),
+  and the speech bubbles take a **fixed** height rather than a minimum: a long
+  line used to grow the bubble, which grew the rail, which pushed the mascot up
+  into the corner, and made the two of them hop about every 7.5 seconds as the
+  lines rotated. The QR is a
   **pre-generated inline SVG** - the URL never changes, so there is no library
   and nothing to fetch. Regenerate it with segno (`border=2` bakes in the quiet
   zone) and **check it still decodes at the size it renders at**: the first
@@ -373,7 +389,8 @@ said so.
   value to keep in step. Every cut scene and stunt tests its own key first
   (`dance`, `stats`, `nathan`, `fire`, `relief`, `paper`, `champ`, `bubbles`,
   `ncchat`, `sound`), and `views()` tests one per slot (`newcar`, `extras`,
-  `mugshot`, `mugask`, `forecourt`, `birthdays`, `ticker`). Numbers:
+  `mugshot`, `mugask` - the corner QR - `forecourt`, `birthdays`, `ticker`).
+  Numbers:
   `viewsecs`, `scenemins`, `target`, `units` - `TARGET` and `UNIT_TARGET` are
   therefore variables, not constants, and `applySettings()` re-renders. A slot
   switched off comes off the wall immediately (`resyncView()`), rather than
