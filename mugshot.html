@@ -266,12 +266,28 @@ var SEEN={};
 try{ SEEN=JSON.parse(localStorage.getItem('dsMugSeen')||'{}')||{} }catch(e){ SEEN={} }
 function saveSeen(){ try{localStorage.setItem('dsMugSeen',JSON.stringify(SEEN))}catch(e){} }
 function markSeen(id){ SEEN[id]=Date.now(); saveSeen() }
-/* an entry that has been pruned away cannot come back, so drop it from the
-   list rather than letting it grow for ever */
-function tidySeen(){
+function unmarkSeen(id){ delete SEEN[id]; saveSeen() }
+
+/* ---- the stored vote is the truth; SEEN is only an optimistic marker ----
+   This list exists so the deck can move on the instant somebody taps, before
+   the write has come back. It must NEVER outlive a write that failed: marking
+   a picture seen and then losing the vote takes it away from that person for
+   good without recording anything, which is exactly what happened while the
+   database rules had not been published yet - every pass was refused, and the
+   picture vanished anyway.
+
+   So on every votes snapshot: if this device has no stored vote for something
+   it thinks it has seen, and nothing is in flight for it, the write never
+   landed and they have not actually voted. Give it back. This also drops ids
+   whose entry has been pruned away, which is what tidySeen() used to do. */
+var inFlight={}, gotVotes=false;
+function reconcileSeen(){
+  if(!gotVotes)return;        /* no snapshot yet - assume nothing */
   var changed=false;
   Object.keys(SEEN).forEach(function(k){
-    if(!ENTRIES[k]){ delete SEEN[k]; changed=true }
+    if(inFlight[k])return;                       /* still being written */
+    if(!ENTRIES[k]){ delete SEEN[k]; changed=true; return }   /* pruned away */
+    if((VOTES[k]||{})[me]===undefined){ delete SEEN[k]; changed=true }
   });
   if(changed)saveSeen();
 }
@@ -705,15 +721,32 @@ function finish(n,label,kind,dir){
 /* The vote is stored under this voter, and the device notes that it has seen
    this one - so it never comes back even if the write is refused. */
 function judge(id,n){
-  markSeen(id);
-  if(!backend)return;
+  if(!backend){
+    /* nothing can be stored, so do not pretend they have voted */
+    say($('vmsg'),'Not connected to the board - that one did not count','err');
+    deckIds=''; renderDeck();
+    return;
+  }
+  markSeen(id);                             /* the deck moves on straight away */
   (VOTES[id]=VOTES[id]||{})[me]=n;          /* locally, straight away */
-  backend.vote(id,me,n)['catch'](function(e){
+  inFlight[id]=true;
+  sendVote(id,n,0);
+}
+/* A dropped connection should not cost somebody their vote, so try a couple
+   more times before giving up. Only when it really will not go does the
+   picture come back to them. */
+function sendVote(id,n,tries){
+  backend.vote(id,me,n).then(function(){
+    delete inFlight[id];
+    say($('vmsg'),'');
+  })['catch'](function(e){
+    if(tries<2){ setTimeout(function(){sendVote(id,n,tries+1)}, 700*(tries+1)); return }
     console.error(e);
-    delete VOTES[id][me];                   /* it did not stick - it just will
-                                               not count towards the ranking */
-    /* next to the deck, not up in the upload card where nobody would see it */
-    say($('vmsg'),why(e),'err');
+    delete inFlight[id];
+    if(VOTES[id])delete VOTES[id][me];
+    unmarkSeen(id);                         /* they have NOT voted - give it back */
+    say($('vmsg'),why(e)+' That one has come back round.','err');
+    deckIds=''; render();
   });
 }
 
@@ -778,8 +811,23 @@ function pruneOld(){
 window.msBindBackend=function(api){
   backend=api;
   if(pending){$('send').disabled=false;say($('msg'),'')}
-  api.watchEntries(function(v){ENTRIES=v||{};tidySeen();deckIds='';render();rollIfDue()});
-  api.watchVotes(function(v){VOTES=v||{};render()});
+  api.watchEntries(function(v){
+    ENTRIES=v||{};
+    reconcileSeen();
+    deckIds=''; render(); rollIfDue();
+  });
+  api.watchVotes(function(v){
+    /* keep anything still in flight - the snapshot will not have it yet */
+    var mine={};
+    Object.keys(inFlight).forEach(function(k){
+      if(VOTES[k]&&VOTES[k][me]!==undefined)mine[k]=VOTES[k][me];
+    });
+    VOTES=v||{};
+    Object.keys(mine).forEach(function(k){ (VOTES[k]=VOTES[k]||{})[me]=mine[k] });
+    gotVotes=true;
+    reconcileSeen();
+    render();
+  });
   api.watchCurrent(function(v){CURRENT=v||null;render();rollIfDue()});
   if(api.watchBlocked)api.watchBlocked(function(v){BLOCKED=v||{};deckIds='';render();rollIfDue()});
 };

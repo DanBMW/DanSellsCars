@@ -201,12 +201,19 @@ are still duplicated per page — only the header/drawer/footer are templated.
   single short `TAP_GUARD` (160ms) swallows the accidental double tap that
   would otherwise pass two pictures with one finger, while leaving deliberate
   quick tapping to count.
-  **Once a device has judged a picture it never sees it again.** The stored
-  vote is the record of that (the voter id is per device, localStorage
-  `dsMug`), but a vote that was refused - rules not published - or later pruned
-  would bring the picture back, so the device keeps its own list in
-  `dsMugSeen` and `judged()` counts either one. `tidySeen()` drops ids that no
-  longer exist so the list stays bounded.
+  **Once a device has judged a picture it never sees it again - but only if
+  the vote actually landed.** The voter id is per device (localStorage
+  `dsMug`) and `dsMugSeen` is an *optimistic* marker so the deck can move on
+  the instant somebody taps, before the write comes back. The **stored vote is
+  the truth**, and `reconcileSeen()` enforces that on every votes snapshot: a
+  locally-seen id with no vote behind it and nothing in flight means the write
+  never landed, so the picture goes back in the deck. Do not go back to marking
+  seen unconditionally - that is what took pictures away from people for good
+  while the database rules were unpublished, refusing every pass (a 0) and
+  losing it silently. A failed write is retried twice before it gives up, and
+  only then does the card come back with a message beside the deck.
+  `reconcileSeen()` also drops ids whose entry has been pruned, which is what
+  `tidySeen()` used to do.
   `onUp()` must branch on the stage: it used to wipe the stamp whatever was
   happening, so resting a thumb on a picture after saying yes looked like the
   yes had not registered. `render()` leaves the deck alone while
