@@ -79,8 +79,14 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 .mcard .cap b{display:block;font-size:.95rem;line-height:1.3}
 .mcard .cap span{display:block;font-size:.74rem;color:var(--muted);margin-top:3px}
+/* the cards keep their places, so promoting the next one to the top eases
+   rather than snaps. A drag turns this off and back on again. */
+.mcard{transition:transform .25s ease, opacity .25s ease}
 .mcard.s1{transform:scale(.955) translateY(12px);opacity:.75;pointer-events:none}
 .mcard.s2{transform:scale(.91) translateY(24px);opacity:.45;pointer-events:none}
+/* the one being flung off is no longer part of the deck - it sits over the
+   top until its animation ends and then takes itself out */
+.mcard.leaving{pointer-events:none}
 .mcard .stamp{
   position:absolute;top:20px;left:50%;transform:translateX(-50%);
   font-family:var(--display);font-weight:700;font-size:1.6rem;letter-spacing:.1em;
@@ -209,6 +215,7 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
       <button class="star" data-n="5" aria-label="5 stars">&#9733;</button>
     </div>
     <p class="swipehint" id="swipehint">Swipe right for yes, left to pass &middot; you only see each one once</p>
+    <p class="msg" id="vmsg"></p>
     <div class="grid" id="results"></div>
   </div>
 
@@ -423,7 +430,9 @@ var dragging=false, deckIds='';
 function render(){
   var d=daysLeft();
   $('weekpill').textContent='Voting closes Monday · '+(d===1?'1 day':d+' days')+' left';
-  if(!dragging)renderDeck();
+  /* never redraw the deck out from under somebody mid-judgement - a drag in
+     progress, or a card parked waiting for its score */
+  if(!dragging&&stage!=='stars')renderDeck();
 
   if(CURRENT&&CURRENT.img&&CURRENT.week===weekKey()&&!blockedEntry(CURRENT.entry)){
     $('win-card').classList.remove('hidden');
@@ -453,22 +462,16 @@ function renderDeck(){
     return;
   }
   if(!cards.length){
-    /* they have judged the lot - now they can see how it is going */
+    /* They have judged the lot. Dan's call: they see NOTHING back - no
+       standings, no running scores, no hint of who is ahead. The winner
+       going up on the board Monday is the whole moment, and a leaderboard
+       here gives it away days early. */
     box.className='deck done';
-    box.innerHTML='<p class="empty">That is all of them.<br>Here is how it stands.</p>';
+    box.innerHTML='<p class="empty">That is everybody &mdash; nice one.<br>'+
+      'Who won is a surprise until it goes up on the board Monday.</p>';
     hideActs(true);
-    $('left').textContent='All seen';
-    $('results').innerHTML=all.map(function(r,i){
-      var lead=i===0&&r.n;
-      return '<div class="entry'+(lead?' lead':'')+'">'+
-        '<img src="'+r.img+'" alt="Entry'+(r.by?' by '+esc(r.by):'')+'">'+
-        '<div class="bar"><div class="who"><b>'+(r.cap?esc(r.cap):'No caption')+'</b>'+
-        '<span>'+(r.by?esc(r.by):'Anonymous')+' &middot; '+r.yes+' of '+r.n+
-        ' said yes</span></div>'+
-        '<span class="vote'+(lead?' on':(r.n&&!r.yes?' pass':''))+'">&#9733;<span class="n">'+
-        (r.yes?r.avg.toFixed(1):'&ndash;')+'</span><span class="of">out of 5</span></span>'+
-        '</div></div>';
-    }).join('');
+    $('left').textContent='All done';
+    $('results').innerHTML='';
     return;
   }
 
@@ -476,16 +479,50 @@ function renderDeck(){
   hideActs(false);
   $('results').innerHTML='';
   $('left').textContent=cards.length+' to go';
-  /* only the top three are drawn - the rest are not on screen anyway */
-  box.innerHTML=cards.slice(0,3).reverse().map(function(c,i,arr){
-    var depth=arr.length-1-i;
-    return '<div class="mcard'+(depth?' s'+depth:'')+'" data-id="'+c.id+'">'+
-      '<span class="stamp"></span>'+
-      '<img draggable="false" src="'+c.img+'" alt="Entry'+(c.by?' by '+esc(c.by):'')+'">'+
-      '<div class="cap"><b>'+(c.cap?esc(c.cap):'No caption')+'</b>'+
-      '<span>'+(c.by?esc(c.by):'Anonymous')+'</span></div></div>';
-  }).join('');
+
+  /* Only the top three are drawn - the rest are not on screen anyway. Cards
+     already on screen are REUSED rather than rebuilt: the pictures are data
+     URLs of up to a megabyte, and tearing all three <img> elements down and
+     making new ones on every single vote was the hitch between one picture
+     and the next. */
+  var keep={};
+  Array.prototype.forEach.call(box.querySelectorAll('.mcard'),function(el){
+    if(el.classList.contains('leaving'))return;   /* mid-flight, not ours */
+    keep[el.getAttribute('data-id')]=el;
+  });
+  var want=cards.slice(0,3), frag=document.createDocumentFragment();
+  /* deepest first, so the top card is the last child */
+  want.slice().reverse().forEach(function(c,i,arr){
+    var depth=arr.length-1-i, el=keep[c.id];
+    if(el){ delete keep[c.id] } else { el=buildCard(c) }
+    el.className='mcard'+(depth?' s'+depth:'');
+    el.style.transition=''; el.style.transform=''; el.style.opacity='';
+    var st=el.querySelector('.stamp');
+    if(st){ st.className='stamp'; st.style.opacity='0' }
+    frag.appendChild(el);
+  });
+  box.appendChild(frag);
+  /* anything still in `keep` has dropped out of the deck */
+  Object.keys(keep).forEach(function(k){
+    if(keep[k].parentNode)keep[k].parentNode.removeChild(keep[k]);
+  });
+  /* a card on its way out stays above the rest until it has gone */
+  Array.prototype.forEach.call(box.querySelectorAll('.mcard.leaving'),function(el){
+    box.appendChild(el);
+  });
   wireTop();
+}
+
+var cardsBuilt=0;
+function buildCard(c){
+  cardsBuilt++;
+  var el=document.createElement('div');
+  el.setAttribute('data-id',c.id);
+  el.innerHTML='<span class="stamp"></span>'+
+    '<img draggable="false" src="'+c.img+'" alt="Entry'+(c.by?' by '+esc(c.by):'')+'">'+
+    '<div class="cap"><b>'+(c.cap?esc(c.cap):'No caption')+'</b>'+
+    '<span>'+(c.by?esc(c.by):'Anonymous')+'</span></div>';
+  return el;
 }
 
 /* Two stages to judging a picture: yes or no, and then - only if it was a yes
@@ -513,8 +550,12 @@ function setStage(s){
 }
 
 function wireTop(){
-  var cards=$('deck').querySelectorAll('.mcard');
-  topCard=cards[cards.length-1]||null;
+  /* the top card is the last one that is NOT on its way out */
+  var all=$('deck').querySelectorAll('.mcard'), el=null;
+  for(var i=all.length-1;i>=0;i--){
+    if(!all[i].classList.contains('leaving')){ el=all[i]; break }
+  }
+  topCard=el;
   topId=topCard?topCard.getAttribute('data-id'):null;
   down=false; dragX=dragY=0;
   setStage('yn');
@@ -552,9 +593,15 @@ function onMove(e){
 function onUp(){
   if(!down||!topCard)return;
   down=false; dragging=false;
-  if(stage==='yn'&&dragX<=-SWIPE){sayNo();return}
-  if(stage==='yn'&&dragX>=SWIPE){sayYes();return}
+  if(stage==='yn'){
+    if(dragX<=-SWIPE){sayNo();return}
+    if(dragX>=SWIPE){sayYes();return}
+  }
   topCard.style.transition='transform .25s ease';
+  /* At the stars stage the card is parked with its YES on it. Wiping the
+     stamp here meant resting a thumb on the picture looked like the yes had
+     not registered - put it back where sayYes left it instead. */
+  if(stage==='stars'){ topCard.style.transform='rotate(-1.5deg)'; return }
   topCard.style.transform='';
   var st=topCard.querySelector('.stamp');
   if(st)st.style.transition='opacity .15s ease';
@@ -605,22 +652,29 @@ function sayYes(){
 }
 /* no: it is gone, and counts as a nought */
 function sayNo(){
-  if(!topCard||!topId||stage!=='yn')return;
+  if(!topCard||!topId||stage!=='yn'||locked())return;
   finish(0,'NOPE','no',-1);
 }
 /* the score they gave it, then it goes the same way */
 function rate(n){
-  if(!topCard||!topId||stage!=='stars'||n<1||n>5)return;
+  if(!topCard||!topId||stage!=='stars'||n<1||n>5||locked())return;
   finish(n, n+' \u2605', 'yes', 1);
 }
 
+/* One short guard, only long enough to swallow the accidental double tap
+   that would otherwise pass two pictures with one finger. Those land 40-120ms
+   apart; deliberate quick tapping is 250ms and up, and must all count. It is
+   NOT there to wait out the animation - the next card is live immediately,
+   which is the whole point. */
+var TAP_GUARD=160, lockUntil=0;
+function locked(){ return Date.now()<lockUntil }
+
 function finish(n,label,kind,dir){
   var card=topCard, id=topId, w=$('deck').offsetWidth||320;
-  down=false;
-  /* hold the redraw off: storing the vote fires the votes watcher straight
-     back, and a re-render would swap this card out before the stamp is even
-     seen on it */
-  dragging=true;
+  if(!card)return;
+  down=false; dragging=false;
+  lockUntil=Date.now()+TAP_GUARD;
+
   var st=card.querySelector('.stamp');
   if(st){
     st.className='stamp '+kind;
@@ -628,15 +682,24 @@ function finish(n,label,kind,dir){
     st.style.transition='opacity .12s ease';
     st.style.opacity='1';
   }
+  /* Take it out of the deck straight away and let it fly off on its own. The
+     old version nulled the top card, waited 680ms and only then redrew - so
+     every tap in that window went nowhere while the buttons sat there looking
+     live. Five quick taps landed one vote. */
+  card.classList.add('leaving');
   topCard=null; topId=null;
-  setStage('yn');
   judge(id,n);
+  setStage('yn');
+  deckIds=''; renderDeck();          /* the next card is judgeable now */
+
   setTimeout(function(){
     card.style.transition='transform .34s ease-out, opacity .34s ease-out';
     card.style.transform='translate('+(dir*(w+220))+'px,40px) rotate('+(dir*22)+'deg)';
     card.style.opacity='0';
-    setTimeout(function(){dragging=false;deckIds='';renderDeck()},300);
-  },380);
+    setTimeout(function(){
+      if(card.parentNode)card.parentNode.removeChild(card);
+    },380);
+  },240);
 }
 
 /* The vote is stored under this voter, and the device notes that it has seen
@@ -649,7 +712,8 @@ function judge(id,n){
     console.error(e);
     delete VOTES[id][me];                   /* it did not stick - it just will
                                                not count towards the ranking */
-    say($('msg'),why(e),'err');
+    /* next to the deck, not up in the upload card where nobody would see it */
+    say($('vmsg'),why(e),'err');
   });
 }
 

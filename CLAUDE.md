@@ -185,16 +185,33 @@ are still duplicated per page — only the header/drawer/footer are templated.
   notional 3s to start with, so one lonely 5 cannot beat a picture the whole
   team liked. What is *displayed* is the average of the yeses with the yes
   count beside it, which is the readable version; the score is only the sort.
-  Scores stay hidden until they have judged the lot, then the standings appear.
-  `finish()` sets `dragging` before storing, because the votes watcher fires
-  straight back and a re-render would swap the card out before its stamp is
-  even seen on it.
+  **Nothing is shown back when they have judged the lot** - no standings, no
+  running scores, no hint of who is ahead (Dan's call: the winner going up on
+  the board Monday is the moment, and a leaderboard here gives it away days
+  early). `thisWeeksEntries()` still ranks them, for the roll; it just is not
+  drawn.
+  The deck must stay responsive, because the whole thing is judged in one
+  sitting on a phone. Three rules, all of which were got wrong first time:
+  a judged card is taken **out of the deck immediately** (`.leaving`) and flies
+  off on its own while the next card is already live - the first version nulled
+  the top card, waited 680ms and only then redrew, so five quick taps landed
+  one vote; cards already on screen are **reused, not rebuilt**, because the
+  pictures are data URLs of up to a megabyte and tearing down three `<img>`
+  elements per vote was the hitch between one picture and the next; and a
+  single short `TAP_GUARD` (160ms) swallows the accidental double tap that
+  would otherwise pass two pictures with one finger, while leaving deliberate
+  quick tapping to count.
   **Once a device has judged a picture it never sees it again.** The stored
   vote is the record of that (the voter id is per device, localStorage
   `dsMug`), but a vote that was refused - rules not published - or later pruned
   would bring the picture back, so the device keeps its own list in
   `dsMugSeen` and `judged()` counts either one. `tidySeen()` drops ids that no
   longer exist so the list stays bounded.
+  `onUp()` must branch on the stage: it used to wipe the stamp whatever was
+  happening, so resting a thumb on a picture after saying yes looked like the
+  yes had not registered. `render()` leaves the deck alone while
+  `dragging` **or** the stage is `stars`, so somebody else's vote arriving
+  cannot swap the card out from under a half-finished judgement.
   Two things the deck needs: the card images carry `draggable="false"` and
   `-webkit-user-drag:none`, because the browser's own image-drag stops the
   mousemove stream and killed swiping on a laptop; and the window listeners are
