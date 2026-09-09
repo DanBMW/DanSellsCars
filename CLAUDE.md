@@ -270,7 +270,13 @@ are still duplicated per page — only the header/drawer/footer are templated.
   the week. Switches write a single boolean to `boardsettings/<key>`; the
   sketches switch writes `boardcontrol/videos` instead, because that already
   owns it and two switches for one thing is worse than one in the wrong place.
-- `links.html` — Dan's internal links/dashboard page (includes the Formspree
+- `links.html` — Dan's internal links/dashboard page, **gated with the same
+  `DANC` password as the admin console** (stored as a SHA-256, matched
+  case-insensitively, remembered per browser session in `dan_links_unlocked`).
+  Like every gate on this site it hides the page rather than protecting it:
+  the markup is all in the HTML and readable with View Source or curl, and
+  the site is served from a public repo. Real protection means Firebase Auth.
+  (Includes the Formspree
   record-ID → PDF download widgets, the Ramp Report link builder with its
   localStorage sent-log, the VIP Buyers Event invitation builder with its own
   `dsVipLog` sent-log, and the print-materials links).
