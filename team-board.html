@@ -2921,7 +2921,11 @@ var CLIPS=[
   {src:'video/sketch-8.mp4',           cap:'The used car team', name:'Sketch 8',      ar:16/9},
   /* muted until Dan confirms it is clean - "raging" and an office wall is
      not a guess worth making */
-  {src:'video/sketch-9.mp4',           cap:'Serge, raging',     name:'Serge raging',  ar:16/9, sound:false}
+  {src:'video/sketch-9.mp4',           cap:'Serge, raging',     name:'Serge raging',  ar:16/9, sound:false},
+  /* Recorded off Clive's Driving School - the pool cutscene is a live three.js
+     scene, not a file, so it was captured frame by frame at a pinned 1/20s
+     timestep and encoded. Re-record it the same way if the scene changes. */
+  {src:'video/sketch-pool.mp4',        cap:'Will at his swimming session', name:'Will swims', ar:16/9}
 ];
 /* ---- shared board controls, driven from the manager panel ----
    The manager may be on a phone while the board is on the wall, so the toggle
@@ -3136,6 +3140,7 @@ function videoScene(forced){
   frame.style.setProperty('--ar',clip.ar||16/9);
   v.onloadedmetadata=function(){
     if(v.videoWidth&&v.videoHeight)frame.style.setProperty('--ar',v.videoWidth/v.videoHeight);
+    armGuard();
   };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
   var wants=clip.sound!==false&&sOn('sound');
@@ -3157,9 +3162,21 @@ function videoScene(forced){
     try{v.pause();v.currentTime=0}catch(e){}
     sceneEnd(g);
   };
-  v.onended=finish;
-  /* backstop in case the file stalls: never leave the board covered */
-  var guard=setTimeout(finish,16000);
+  /* Backstop in case the file stalls: never leave the board covered. It has to
+     follow the clip s own length - a flat 16s was fine while every sketch was
+     ten seconds, and would have cut the 28s pool one off mid-swim and let Will
+     and Serge start talking over the last third of it. Until the duration is
+     known we hold the short guard, which is the stalled-file case anyway. */
+  var GUARD_MIN=16000, GUARD_MAX=120000;
+  var guard=setTimeout(finish,GUARD_MIN);
+  function armGuard(){
+    var d=v.duration;
+    if(!(d>0)||!isFinite(d))return;
+    var ms=Math.min(GUARD_MAX,Math.max(GUARD_MIN,d*1000+4000));
+    clearTimeout(guard); guard=setTimeout(finish,ms);
+    holdUntil=Date.now()+ms;
+  }
+  armGuard();
   v.onended=function(){clearTimeout(guard);finish()};
 
   var go=v.play();

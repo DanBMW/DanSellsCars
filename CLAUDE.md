@@ -528,9 +528,20 @@ said so.
   the AI-generated team sketches in `video/` full screen (`CLIPS` array; add a
   clip by adding a row with its `ar` = width/height - the clips are a mix of
   16:9 and portrait and the frame sizes itself from that, corrected from the
-  file on `loadedmetadata`). It never plays the same one twice running. A 16s
+  file on `loadedmetadata`). It never plays the same one twice running. A
   guard closes the scene if the file stalls - the board must never be left
-  covered.
+  covered - and it **follows the clip's own length** (duration + 4s, floor 16s,
+  ceiling 120s, re-armed from `loadedmetadata`), along with `holdUntil` so Will
+  and Serge stay quiet for the whole thing. It was a flat 16s while every sketch
+  was ten seconds; that would have cut the 28s pool clip off mid-swim.
+  **The pool clip is a recording of a live scene.** `sketch-pool.mp4` is Will
+  swimming, from Dan's own Clive's Driving School app - a real-time three.js
+  scene, not a file, so there was nothing to download. It was captured by
+  mirroring the app locally, pinning its render loop to a fixed 1/20s timestep
+  (it clamps delta to 0.05s, so a hand-stepped loop gives exact 20fps timing
+  however slowly the software renderer draws), stepping and screenshotting every
+  frame, then encoding the 561 frames with the app's own soundtrack. Re-record it
+  the same way if the scene changes: 152s of headless wall clock is 28s of film.
   **Sound.** Clips play with sound, except any carrying `sound:false` -
   sketch 4, the shredding sketch, which swears. Dan asked for that one to stay
   silent; the board is in the managers' office, so it is his call rather than a
