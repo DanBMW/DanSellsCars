@@ -284,6 +284,7 @@ def write_index(made, a, today):
             'term': f['term_months'], 'annual_mileage': f['annual_mileage'],
             'product': f['product'], 'lender': f['lender'],
             'quote_reference': f['quote_reference'], 'quoted_at': f['quoted_at'],
+            'valid_to': f['valid_to'],
         })
 
     cutoff = (datetime.date.today() - datetime.timedelta(days=a.keep_days)).isoformat()

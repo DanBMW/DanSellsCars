@@ -12,6 +12,7 @@
   --text:#e8edf5;--muted:#6b7a94;--accent:#3b82f6;--accent-dim:rgba(59,130,246,.15);
   --success:#22c55e;--success-dim:rgba(34,197,94,.14);
   --warn:#f59e0b;--warn-dim:rgba(245,158,11,.12);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.12);
   --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   --r:14px;
 }
@@ -29,9 +30,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15
 .section-title{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
   color:var(--muted);margin:26px 0 10px}
 .section-title:first-child{margin-top:0}
-.note{background:var(--warn-dim);border:1px solid rgba(245,158,11,.28);border-radius:var(--r);
-  padding:13px 15px;font-size:12.5px;line-height:1.5;color:#f9d89a;margin-bottom:18px}
-.note b{color:var(--warn)}
+.note{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:13px 15px;font-size:12.5px;line-height:1.5;color:var(--muted);margin-bottom:18px}
+.note b{color:var(--text)}
+.chip.expired{background:var(--red-dim);border-color:rgba(239,68,68,.35);color:#fca5a5}
+.chip.expires{background:var(--warn-dim);border-color:rgba(245,158,11,.3);color:#f9d89a}
+.card.stale img{opacity:.55}
 .terms{font-size:12px;color:var(--muted);margin-bottom:16px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
   overflow:hidden;margin-bottom:14px}
@@ -68,10 +72,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15
 </div>
 
 <div class="wrap">
-  <div class="note">
-    <b>Before posting.</b> These quote a monthly payment, which makes them a financial
-    promotion. Each card carries the representative example and Hedin's FCA wording, but
-    the template still needs sign-off from Hedin / ITC Compliance before anything goes up.
+  <div class="note" id="note">
+    <b>Quotes expire.</b> BMW Financial Services rates run to a campaign end date - a card
+    posted after it has passed shows a rate that is no longer on offer. Anything out of
+    date is marked below.
   </div>
   <div class="terms" id="terms"></div>
   <div id="out"><div class="empty">Loading&hellip;</div></div>
@@ -131,8 +135,19 @@ fetch('finance-posts/index.json', {cache:'no-cache'})
     document.getElementById('out').innerHTML = days.map(function(day){
       return '<div class="section-title">' + esc(niceDate(day)) + '</div>'
         + seen[day].map(function(p, i){
-        var id = 'cap-' + day + '-' + i;
-        return '<div class="card">'
+          var id = 'cap-' + day + '-' + i;
+      var expiry = p.valid_to ? new Date(p.valid_to) : null;
+      var stale = expiry && !isNaN(expiry) && expiry < new Date();
+      var soon = expiry && !isNaN(expiry) && !stale
+        && (expiry - new Date()) < 5 * 86400000;
+      var flag = stale
+        ? '<span class="chip expired">Quote expired ' + expiry.toLocaleDateString('en-GB',
+            {day:'numeric', month:'short'}) + '</span>'
+        : soon
+          ? '<span class="chip expires">Rate ends ' + expiry.toLocaleDateString('en-GB',
+              {day:'numeric', month:'short'}) + '</span>'
+          : '';
+        return '<div class="card' + (stale ? ' stale' : '') + '">'
           + '<a href="finance-posts/' + esc(p.image) + '" target="_blank" rel="noopener">'
           + '<img src="finance-posts/' + esc(p.image) + '" alt="' + esc(p.model) + '" loading="lazy"/></a>'
           + '<div class="body">'
@@ -144,6 +159,7 @@ fetch('finance-posts/index.json', {cache:'no-cache'})
           + '<span class="chip">' + p.apr + '% APR</span>'
           + '<span class="chip">' + money(Math.round(p.deposit)) + ' deposit</span>'
           + '<span class="chip">' + p.term + ' months</span>'
+          + flag
           + '</div>'
           + '<div class="cap" id="' + id + '">' + esc(p.caption) + '</div>'
           + '<div class="btn-row">'

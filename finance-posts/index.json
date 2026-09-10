@@ -28,7 +28,8 @@
       "product": "BMW Select (PCP)",
       "lender": "BMW Group Financial Services",
       "quote_reference": "066257c3-6ba8-4a02-a6c7-ab9f88324aac",
-      "quoted_at": "2026-09-10T08:06:04.6590994+01:00"
+      "quoted_at": "2026-09-10T08:06:04.6590994+01:00",
+      "valid_to": "2026-09-30T23:59:59"
     },
     {
       "date": "2026-09-10",
@@ -50,7 +51,8 @@
       "product": "BMW Select (PCP)",
       "lender": "BMW Group Financial Services",
       "quote_reference": "5d17385f-fafa-4fb4-a4b0-e2abd205e12b",
-      "quoted_at": "2026-09-10T08:06:02.0130364+01:00"
+      "quoted_at": "2026-09-10T08:06:02.0130364+01:00",
+      "valid_to": "2026-09-30T23:59:59"
     },
     {
       "date": "2026-09-10",
@@ -72,7 +74,8 @@
       "product": "BMW Select (PCP)",
       "lender": "BMW Group Financial Services",
       "quote_reference": "8b642c97-f132-4972-afa0-7b81f8c4f7b1",
-      "quoted_at": "2026-09-10T08:06:10.0825983+01:00"
+      "quoted_at": "2026-09-10T08:06:10.0825983+01:00",
+      "valid_to": "2026-09-30T23:59:59"
     }
   ]
 }
