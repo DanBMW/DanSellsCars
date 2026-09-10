@@ -72,68 +72,80 @@ def card_html(car, q, photo):
     return """<!DOCTYPE html><html><head><meta charset="utf-8"><style>
   @page{{size:1080px 1350px;margin:0}}
   *{{box-sizing:border-box;margin:0;padding:0}}
-  body{{width:1080px;height:1350px;background:#0a0c0f;color:#ece9e1;
-    font-family:'Helvetica Neue',Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}}
-  .bar{{display:flex;align-items:center;justify-content:space-between;
-    padding:30px 44px;border-bottom:1px solid rgba(236,233,225,.16);flex:0 0 auto}}
-  .brand{{font-size:34px;letter-spacing:.16em;font-weight:600}}
-  .brand small{{display:block;font-size:15px;letter-spacing:.22em;color:#847f75;
-    font-weight:400;margin-top:5px}}
-  .model{{text-align:right;font-size:30px;line-height:1.22;max-width:520px;font-weight:600}}
-  .model small{{display:block;font-size:17px;color:#847f75;letter-spacing:.1em;
-    font-weight:400;margin-top:6px;text-transform:uppercase}}
-  .hero{{width:1080px;height:672px;object-fit:cover;flex:0 0 auto}}
-  .quote{{display:flex;flex:1 1 auto;border-bottom:1px solid rgba(236,233,225,.16)}}
-  .left{{flex:1 1 auto;padding:36px 44px;border-right:1px solid rgba(236,233,225,.16);
-    display:flex;flex-direction:column;justify-content:center}}
-  .label{{font-size:16px;letter-spacing:.2em;color:#5b8ac9;text-transform:uppercase;
-    margin-bottom:14px}}
-  .pm{{font-size:96px;font-weight:700;line-height:.95;letter-spacing:-.02em}}
-  .pm span{{font-size:30px;font-weight:400;letter-spacing:.08em;color:#b9b5ab;margin-left:12px}}
-  .terms{{display:flex;gap:34px;margin-top:26px}}
-  .terms div{{font-size:25px;font-weight:700;line-height:1.2}}
-  .terms div small{{display:block;font-size:14px;font-weight:400;color:#847f75;
-    letter-spacing:.12em;text-transform:uppercase;margin-top:5px}}
-  .right{{flex:0 0 330px;padding:32px 40px;display:flex;flex-direction:column;
-    justify-content:center;gap:24px}}
-  .right div small{{display:block;font-size:14px;letter-spacing:.14em;color:#847f75;
-    text-transform:uppercase;margin-bottom:8px}}
-  .right div b{{font-size:34px;font-weight:700}}
-  .foot{{flex:0 0 auto;padding:20px 44px 24px;background:#0e1114}}
-  .rep{{font-size:14px;line-height:1.5;color:#b9b5ab;margin-bottom:9px}}
-  .fca{{font-size:11.5px;line-height:1.45;color:#6f6a61}}
+  :root{{--ink:#0a0c0f;--ink-2:#0e1114;--paper:#ece9e1;--body-c:#b9b5ab;
+    --dim:#847f75;--hair:rgba(236,233,225,.14);--accent:#5b8ac9;
+    --serif:'Sentient',Georgia,'Times New Roman',serif;
+    --sans:'Satoshi',ui-sans-serif,system-ui,-apple-system,'Helvetica Neue',sans-serif}}
+  body{{width:1080px;height:1350px;background:var(--ink);color:var(--paper);
+    font-family:var(--sans);display:flex;flex-direction:column;overflow:hidden}}
+  .shot{{position:relative;height:812px;flex:0 0 auto}}
+  .shot img{{width:1080px;height:812px;object-fit:cover;display:block}}
+  .scrim{{position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(10,12,15,.55) 0%,rgba(10,12,15,0) 26%,
+      rgba(10,12,15,.10) 52%,rgba(10,12,15,.88) 84%,var(--ink) 100%)}}
+  .mark{{position:absolute;top:40px;left:56px;font-size:23px;letter-spacing:.24em;
+    font-weight:600}}
+  .mark small{{display:block;font-size:12.5px;letter-spacing:.3em;color:var(--body-c);
+    font-weight:400;margin-top:6px}}
+  .over{{position:absolute;left:56px;right:56px;bottom:34px}}
+  .plabel{{font-size:14px;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:14px}}
+  .name{{font-family:var(--serif);font-size:60px;line-height:1.04;font-weight:400;
+    letter-spacing:-.01em}}
+  .sub{{font-size:17px;letter-spacing:.13em;text-transform:uppercase;color:var(--body-c);
+    margin-top:14px}}
+  .figs{{flex:1 1 auto;display:flex;align-items:center;gap:48px;padding:0 56px}}
+  .pay{{flex:0 0 auto}}
+  .pay .amt{{font-size:112px;line-height:.9;font-weight:700;letter-spacing:-.035em}}
+  .pay .per{{font-size:19px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--body-c);margin-top:16px}}
+  .pay .prod{{font-size:15px;letter-spacing:.1em;color:var(--dim);margin-top:9px}}
+  .grid{{flex:1 1 auto;display:grid;grid-template-columns:1fr 1fr;gap:26px 32px;
+    border-left:1px solid var(--hair);padding-left:48px}}
+  .grid div small{{display:block;font-size:12.5px;letter-spacing:.17em;
+    text-transform:uppercase;color:var(--dim);margin-bottom:7px}}
+  .grid div b{{font-size:29px;font-weight:600;letter-spacing:-.01em}}
+  .legal{{flex:0 0 auto;padding:22px 56px 26px;background:var(--ink-2);
+    border-top:1px solid var(--hair)}}
+  .rep{{font-size:13.5px;line-height:1.5;color:var(--body-c);margin-bottom:9px}}
+  .rep b{{color:var(--paper)}}
+  .fca{{font-size:11px;line-height:1.45;color:#6f6a61}}
+  .site{{position:absolute;top:44px;right:56px;font-size:14px;letter-spacing:.16em;
+    color:var(--body-c)}}
 </style></head><body>
-  <div class="bar">
-    <div class="brand">DAN SELLS<small>BMW &middot; HEDIN RUXLEY</small></div>
-    <div class="model">{model}<small>{year} &middot; {reg} &middot; {colour}</small></div>
-  </div>
-  <img class="hero" src="{photo}"/>
-  <div class="quote">
-    <div class="left">
-      <div class="label">Example finance quote</div>
-      <div class="pm">{monthly}<span>PER MONTH</span></div>
-      <div class="terms">
-        <div>{pct:g}%<small>Deposit</small></div>
-        <div>{miles:,}<small>Miles a year</small></div>
-        <div>PCP<small>{term} months</small></div>
-      </div>
+  <div class="shot">
+    <img src="{photo}"/>
+    <div class="scrim"></div>
+    <div class="mark">DAN SELLS<small>BMW &middot; HEDIN RUXLEY</small></div>
+    <div class="site">dan-sells.co.uk</div>
+    <div class="over">
+      <div class="plabel">Approved used &middot; in stock now</div>
+      <div class="name">{model}</div>
+      <div class="sub">{year} &middot; {colour} &middot; {mileage:,} miles</div>
     </div>
-    <div class="right">
-      <div><small>Car price</small><b>{price}</b></div>
-      <div><small>Mileage</small><b>{mileage:,}</b></div>
+  </div>
+  <div class="figs">
+    <div class="pay">
+      <div class="amt">{monthly}</div>
+      <div class="per">A month</div>
+      <div class="prod">{product}</div>
+    </div>
+    <div class="grid">
+      <div><small>Cash price</small><b>{price}</b></div>
+      <div><small>Deposit</small><b>{dep}</b></div>
+      <div><small>Term</small><b>{term} months</b></div>
       <div><small>Optional final payment</small><b>{gfv}</b></div>
     </div>
   </div>
-  <div class="foot">
+  <div class="legal">
     <p class="rep"><b>Representative example.</b> {rep}</p>
     <p class="fca">{fca}</p>
   </div>
 </body></html>""".format(
-        model=car['model'].replace('BMW ', ''), year=car['year'], reg=car['reg'],
-        colour=car['colour'], photo=photo, monthly=money(f['monthly']),
-        pct=f['deposit_pct'], miles=f['annual_mileage'], term=f['term_months'],
-        price=money(car['price_n']), mileage=car['mileage_n'],
-        gfv=money(f['final_payment']), rep=rep, fca=FCA)
+        model=car['model'].replace('BMW ', ''), year=car['year'], colour=car['colour'],
+        mileage=car['mileage_n'], photo=photo, monthly=money(f['monthly']),
+        product=f['product'], price=money(car['price_n']), dep=money(f['deposit']),
+        term=f['term_months'], gfv=money(f['final_payment']), rep=rep, fca=FCA)
 
 
 def caption(car, q):
