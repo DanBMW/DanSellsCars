@@ -1,5 +1,5 @@
 
-# Generated Instagram finance posts (regenerated daily, not source)
+# Scratch output when finance-post.py is pointed somewhere other than finance-posts/
 out/
 
 # Python bytecode from the automation scripts
