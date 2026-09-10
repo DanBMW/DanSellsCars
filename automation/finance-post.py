@@ -31,8 +31,25 @@ FCA = ("Hedin Automotive London Ltd & Stephen James (Automotive) Limited are an 
        "and UK residents.")
 
 
+def deposit_for(price, flat, pct, tier_at):
+    """Flat cash deposit on the cheaper stock, a percentage above the tier.
+
+    A flat £1,000 keeps the monthly figure a true like-for-like across the
+    range, but against a £70k car it leaves so much on finance that the lender
+    often will not quote at all. Above the tier the deposit scales instead.
+    """
+    return round(price * pct / 100.0, 2) if price >= tier_at else float(flat)
+
+
 def money(n, dp=0):
     return '£{:,.{dp}f}'.format(n, dp=dp)
+
+
+def exact(n):
+    """Pence only when there are pence - a tiered deposit is rarely round, and
+    rounding it on the card while the representative example gives the true
+    figure below is a mismatch on a regulated promotion."""
+    return money(n, 0 if float(n) == int(n) else 2)
 
 
 def quote_car(listing_id, deposit, term, mileage):
@@ -144,7 +161,7 @@ def card_html(car, q, photo):
 </body></html>""".format(
         model=car['model'].replace('BMW ', ''), year=car['year'], colour=car['colour'],
         mileage=car['mileage_n'], photo=photo, monthly=money(f['monthly']),
-        product=f['product'], price=money(car['price_n']), dep=money(f['deposit']),
+        product=f['product'], price=money(car['price_n']), dep=exact(f['deposit']),
         term=f['term_months'], gfv=money(f['final_payment']), rep=rep, fca=FCA)
 
 
@@ -167,7 +184,7 @@ def caption(car, q):
         mileage=car['mileage_n'], price=money(car['price_n']),
         monthly=money(f['monthly']), monthly2=money(f['monthly'], 2),
         term=f['term_months'], miles=f['annual_mileage'],
-        payments=f['payments'], dep=money(f['deposit']), dep2=money(f['deposit'], 2),
+        payments=f['payments'], dep=exact(f['deposit']), dep2=money(f['deposit'], 2),
         gfv=money(f['final_payment'], 2), total=money(f['total_payable'], 2),
         apr=f['apr'], lender=f['lender'],
         tag=re.sub(r'[^A-Za-z0-9]', '', car['series']))
@@ -207,7 +224,11 @@ def main():
     ap.add_argument('--count', type=int, default=3)
     ap.add_argument('--out', default=os.path.join(ROOT, 'out'))
     ap.add_argument('--deposit', type=float, default=1000.0,
-                    help='cash deposit in pounds (Dan quotes a flat deposit)')
+                    help='flat cash deposit for cars below --tier-at')
+    ap.add_argument('--deposit-pct', type=float, default=10.0,
+                    help='deposit as %% of cash price for cars at/above --tier-at')
+    ap.add_argument('--tier-at', type=float, default=40000.0,
+                    help='cash price at which the deposit switches to a percentage')
     ap.add_argument('--term', type=int, default=48)
     ap.add_argument('--mileage', type=int, default=8000)
     ap.add_argument('--cooldown-days', type=int, default=21)
@@ -235,7 +256,8 @@ def main():
     for car in chosen:
         if len(made) >= a.count and not a.reg:
             break
-        q, err = quote_car(car['id'], a.deposit, a.term, a.mileage)
+        dep = deposit_for(car['price_n'], a.deposit, a.deposit_pct, a.tier_at)
+        q, err = quote_car(car['id'], dep, a.term, a.mileage)
         if not q:
             skipped.append((car['reg'], car['model'], err[0] if err else 'no quote'))
             continue
