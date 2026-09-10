@@ -580,7 +580,8 @@ said so.
   minutes after load, not an hour, so a screen switched on does not sit there.
   It has its own `trailer` switch in the admin console and its own play button;
   `playNow('trailer')` routes to the card, not straight to the clip.
-- **The premiere.** `video/premiere.mp4` is the team film, and it is not a cut
+- **The premiere.** `video/premiere.mp4` is the team film - 6m30s, 1280x708,
+  90.6MB, the largest asset in the repo by some way - and it is not a cut
   scene, not a sketch and **not on any timer** - it runs only when a manager
   starts it, from the board's own panel or the admin console. It is built
   differently from everything else on this page, for one reason: it runs six
