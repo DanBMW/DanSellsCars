@@ -1,3 +1,7 @@
 
 # Generated Instagram finance posts (regenerated daily, not source)
 out/
+
+# Python bytecode from the automation scripts
+__pycache__/
+*.pyc
