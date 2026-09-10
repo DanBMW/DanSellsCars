@@ -180,7 +180,8 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
         <button class="btn" data-num="scenemins" data-def="5">Save</button>
       </div>
       <h2 style="margin-top:20px">Play a sketch now</h2>
-      <p class="hint">Takes the floor on every screen showing the board, whatever is up.</p>
+      <p class="hint">Takes the floor on every screen showing the board, whatever is up.
+        The trailer plays its title card first, the same as it does on the hour.</p>
       <div class="clips" id="clip-list"></div>
     </div>
 
@@ -320,6 +321,7 @@ var ROT=[
 ];
 var SCENE=[
   ['videos',  'Sketches',                'One of the team clips, about every ten minutes'],
+  ['trailer', 'The Showroom Sheriff trailer','Title card then the trailer, once an hour'],
   ['sound',   'Sound on the sketches',   'Off means every clip plays silent'],
   ['dance',   'The leader breakdancing', 'With the deal of the month under it'],
   ['stats',   'This month against last', 'The chart and the three tiles'],
@@ -444,8 +446,9 @@ var CLIPS=[
   {src:'video/sketch-7.mp4',           name:'Nathan'},
   {src:'video/sketch-8.mp4',           name:'Sketch 8'},
   {src:'video/sketch-9.mp4',           name:'Serge raging'},
-  {src:'video/sketch-10.mp4',          name:'The sheriff'},
+  {src:'video/sketch-10.mp4',          name:'The sheriff (Mon)'},
   {src:'video/sketch-11.mp4',          name:'Clive, mummy and daddy'},
+  {src:'trailer',                      name:'The Showroom Sheriff trailer'},
   {src:'video/sketch-pool.mp4',        name:'Will swims'}
 ];
 function paintClips(){
