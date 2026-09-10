@@ -322,6 +322,7 @@ var ROT=[
 var SCENE=[
   ['videos',  'Sketches',                'One of the team clips, about every ten minutes'],
   ['trailer', 'The Showroom Sheriff trailer','Title card then the trailer, once an hour'],
+  ['premiere','The premiere',              'The film. Never automatic - it only runs when you start it'],
   ['sound',   'Sound on the sketches',   'Off means every clip plays silent'],
   ['dance',   'The leader breakdancing', 'With the deal of the month under it'],
   ['stats',   'This month against last', 'The chart and the three tiles'],
@@ -448,7 +449,9 @@ var CLIPS=[
   {src:'video/sketch-9.mp4',           name:'Serge raging'},
   {src:'video/sketch-10.mp4',          name:'The sheriff (Mon)'},
   {src:'video/sketch-11.mp4',          name:'Clive, mummy and daddy'},
-  {src:'trailer',                      name:'The Showroom Sheriff trailer'},
+  {src:'trailer',                      name:'The Showroom Sheriff trailer', sub:'title card, then the trailer'},
+  {src:'premiere:arm',                 name:'Premiere - get every screen ready', sub:'pulls the film into memory'},
+  {src:'premiere',                     name:'Premiere - start the film', sub:'nothing interrupts it'},
   {src:'video/sketch-pool.mp4',        name:'Will swims'}
 ];
 function paintClips(){
@@ -457,7 +460,7 @@ function paintClips(){
   list.innerHTML=CLIPS.map(function(c){
     return '<button type="button" class="clipbtn" data-src="'+c.src+'">'+
       '<span class="ply">&#9654;</span><span>'+esc(c.name)+
-      '<small>'+c.src.split('/')[1]+'</small></span></button>';
+      '<small>'+esc(c.sub||c.src.split('/')[1]||c.src)+'</small></span></button>';
   }).join('');
   Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(b){
     b.onclick=function(){

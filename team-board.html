@@ -560,6 +560,57 @@ body.hasticker .credit{bottom:52px}
 @media(prefers-reduced-motion:reduce){.ncscene{transition:none}}
 
 /* ---------- team video cut scene ---------- */
+/* ---- the premiere ----
+   Its own card, and while it runs the board stands everything else down.
+   The banner and the mug shot QR normally draw above every scene (320 and
+   310) because a 44px strip should not vanish for a ten-second sketch - but
+   a film is not a sketch, and nothing crawls across a premiere. */
+body.premiere .ticker, body.premiere .cornerqr{display:none!important}
+body.premiere .credit{opacity:0;transition:opacity .6s ease}
+
+.premcard{
+  position:fixed;inset:0;z-index:96;display:flex;align-items:center;justify-content:center;
+  background:#000;opacity:0;visibility:hidden;transition:opacity .6s ease,visibility .6s;
+  pointer-events:none;text-align:center;padding:clamp(16px,4vw,40px);
+}
+.premcard.show{opacity:1;visibility:visible}
+.pc-inner{max-width:min(94vw,1180px)}
+/* the card builds rather than arriving all at once - kicker, title, then the
+   credits - so it plays as an opening title instead of a slide */
+.premcard.show .pc-step{animation:pcIn .9s ease both}
+.pc-step{opacity:0}
+.premcard.show .pc-kick{animation-delay:.4s}
+.premcard.show .pc-title{animation-delay:1.7s}
+.premcard.show .pc-credits{animation-delay:3.6s}
+@keyframes pcIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pc-kick{
+  font-family:var(--display);font-weight:700;text-transform:uppercase;
+  letter-spacing:.5em;color:var(--gold);font-size:clamp(.6rem,1.4vw,1rem);
+}
+.pc-title{
+  font-family:var(--display);font-weight:700;text-transform:uppercase;
+  line-height:1.02;letter-spacing:.04em;color:#fff;
+  font-size:clamp(1.7rem,7vw,5.6rem);
+  margin:clamp(14px,2.6vh,30px) 0;
+}
+.pc-rule{width:clamp(54px,9vw,140px);height:2px;background:var(--gold);opacity:.7;margin:0 auto}
+.pc-credits{margin-top:clamp(18px,3.4vh,40px);color:#cfd6e2}
+.pc-credits div{margin:clamp(14px,2.2vh,26px) 0;font-size:clamp(.68rem,1.5vw,1.05rem);
+  letter-spacing:.12em;text-transform:uppercase}
+.pc-credits b{display:block;font-family:var(--display);font-weight:700;color:#fff;
+  letter-spacing:.05em;font-size:clamp(.95rem,2.3vw,1.7rem);margin-top:.15em}
+/* how much of the film is in memory - only while it is still coming down */
+.pc-load{margin-top:clamp(16px,3vh,34px);color:var(--muted);
+  font-size:clamp(.6rem,1.1vw,.8rem);letter-spacing:.18em;text-transform:uppercase}
+.pc-bar{width:min(42vw,340px);height:3px;background:rgba(255,255,255,.14);border-radius:2px;
+  margin:10px auto 0;overflow:hidden}
+.pc-bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .4s ease}
+@media(prefers-reduced-motion:reduce){
+  .premcard{transition:none}
+  .premcard.show .pc-step{animation:none}
+  .pc-step{opacity:1}
+}
+
 /* ---- the trailer's title card ----
    Sits at the same layer as the clip it introduces (z-index 96), on solid
    black rather than the video scene's near-black, so the cut from card to
@@ -587,6 +638,11 @@ body.hasticker .credit{bottom:52px}
 }
 /* the card holds still, then the trailer cuts in - no motion under it */
 @media(prefers-reduced-motion:reduce){ .trailercard{transition:none} }
+
+/* a film runs bare: no caption, and on solid black rather than the near-black
+   the sketches use, so the cut from the title card does not flicker */
+.vidscene.bare{background:#000}
+.vidscene.bare .vs-cap{display:none}
 
 .vidscene{
   position:fixed;inset:0;z-index:96;display:flex;align-items:center;justify-content:center;
@@ -1253,6 +1309,20 @@ body.hasticker .credit{bottom:52px}
 
 <div class="credit">This display was created by Dan</div>
 
+<!-- the premiere: an opening title, then the film, uninterrupted -->
+<div class="premcard" id="premcard" aria-hidden="true">
+  <div class="pc-inner">
+    <div class="pc-step pc-kick" id="pc-kick">Used Car Team Pictures presents</div>
+    <div class="pc-step pc-title"><span id="pc-title">The Showroom Sheriff</span></div>
+    <div class="pc-rule"></div>
+    <div class="pc-step pc-credits" id="pc-credits"></div>
+    <div class="pc-load" id="pc-load" hidden>
+      <span id="pc-loadtxt">Loading the film</span>
+      <div class="pc-bar"><i id="pc-bar"></i></div>
+    </div>
+  </div>
+</div>
+
 <!-- the card that introduces the trailer, then cuts to it -->
 <div class="trailercard" id="trailercard" aria-hidden="true">
   <div class="tc-inner">
@@ -1320,6 +1390,19 @@ body.hasticker .credit{bottom:52px}
 
     <details class="fold" id="display-fold">
       <summary>Display controls<span>What's up, sketches, screenshots</span></summary>
+      <h2 style="margin-top:22px;font-size:1rem">The premiere</h2>
+      <p class="hint" style="margin-bottom:10px">The film, on every screen at once. Get the screens ready first -
+        each one pulls the whole film into memory, so once it starts it plays straight through
+        with nothing to buffer. Everything else on the board stands down until the credits.</p>
+      <div class="clips">
+        <button type="button" class="clipbtn" id="prem-arm">
+          <span class="ply">&#8595;</span>
+          <span>Get every screen ready<small id="prem-state">Not loaded yet</small></span></button>
+        <button type="button" class="clipbtn" id="prem-roll">
+          <span class="ply">&#9654;</span>
+          <span>Start the premiere<small>Title card, then the film</small></span></button>
+      </div>
+
       <h2 style="margin-top:22px;font-size:1rem">What's on the board</h2>
       <p class="hint" style="margin-bottom:10px">Hold the wall display on one board, or leave it cycling.
         Applies to every screen showing the board, and lapses back to the rotation after fifteen minutes.</p>
@@ -2129,6 +2212,10 @@ var champSeen={}, pendingChamp=null;
 
 function champScene(c){
   if(!sOn('champ'))return false;
+  /* normally nothing on this board matters more, so this scene cuts in over
+     whatever is up. During a premiere something does matter more: it waits in
+     pendingChamp and gets its moment when the film is over. */
+  if(premiereLock)return false;
   if(document.querySelector('.modal-bg.open'))return false;
   var el=$('champscene');
   if(!el)return false;
@@ -2766,6 +2853,7 @@ function rotateView(){
 
 function armRotation(){
   clearTimeout(rotTimer); rotTimer=null;
+  if(premiereLock)return;
   if(pinnedView&&pinnedView!=='auto')return;
   var list=views();
   rotTimer=setTimeout(rotateView, viewMs(list[viewIdx]||list[0]));
@@ -2988,7 +3076,7 @@ window.dsOnControl=function(v){
     var firstR=!controlPrimed;
     lastReloadTs=rl;
     /* the stored value is history to a screen that has just come up */
-    if(!firstR&&Date.now()-rl<120000&&rl>loadedAt){
+    if(!firstR&&Date.now()-rl<120000&&rl>loadedAt&&!premiereLock){
       controlPrimed=true;
       setTimeout(function(){location.reload()},300);
       return;
@@ -3010,6 +3098,10 @@ window.dsOnControl=function(v){
    rather than holding the clip back. */
 function playNow(src){
   if(!src)return;
+  if(src==='premiere:arm'){ armPremiere(); return }
+  if(src==='premiere'){ premiereScene(); return }
+  /* everything else stands down while the film runs */
+  if(premiereLock)return;
   pendingClip=null;
   stopScenes();
   closeModal('m-mgr'); closeModal('m-pin');
@@ -3051,6 +3143,7 @@ setInterval(function(){
   var h=new Date().getHours();
   if(h!==4)return;
   if(Date.now()-loadedAt<7200000)return;
+  if(premiereLock)return;
   if(document.querySelector('.modal-bg.open'))return;
   location.reload();
 },600000);
@@ -3097,6 +3190,39 @@ function paintClipControls(){
   Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(btn){
     btn.onclick=function(){playOnAllScreens(btn.getAttribute('data-src'))};
   });
+}
+
+/* The readiness line is about THIS screen - each one holds its own copy, so
+   "ready" on a phone says nothing about the screen on the wall. Say which. */
+function paintPremiereControls(){
+  var el=$('prem-state');
+  if(el)el.textContent =
+      premiereLock ? 'Playing now'
+    : premState==='ready'   ? 'Ready on this screen'
+    : premState==='loading' ? 'Loading - '+premPct+'%'
+    : premState==='failed'  ? 'Could not load it - tap to try again'
+    : 'Not loaded yet';
+  var r=$('prem-roll');
+  if(r)r.disabled=premiereLock;
+}
+
+function premiereArmAll(){
+  armPremiere();
+  if(!backend||!backend.play||!controlLive){
+    toast('Loading the film on this screen only','ok');return;
+  }
+  backend.play('premiere:arm').then(function(){
+    toast('Every screen is loading the film','ok');
+  })['catch'](function(e){console.error(e);toast('Loading on this screen only','err')});
+}
+
+function premiereRollAll(){
+  if(!backend||!backend.play||!controlLive){
+    toast('Starting on this screen only','ok');premiereScene();return;
+  }
+  backend.play('premiere').then(function(){
+    toast('Premiere starting on every screen','ok');
+  })['catch'](function(e){console.error(e);premiereScene()});
 }
 
 function playOnAllScreens(src){
@@ -3162,7 +3288,13 @@ var audioOk=false, liveVideo=null;
 
 /* the team sketches */
 function videoScene(forced){
-  if(stuntsBlocked())return false;
+  /* The premiere's own film is the one clip the premiere lock must let
+     through - stuntsBlocked() reports that lock, so testing it here would
+     have the premiere turn away the film it exists to protect. It still has
+     to wait for the floor and for a manager to be finished. */
+  var ownFilm=forced&&typeof forced==='object'&&forced.premiere;
+  if(ownFilm ? (busy||!!document.querySelector('.modal-bg.open'))
+             : stuntsBlocked())return false;
   var vs=$('vidscene'), v=$('vs-video');
   if(!vs||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
   /* the toggle stops the automatic slot only - a manager pressing play still
@@ -3187,25 +3319,33 @@ function videoScene(forced){
   vs.classList.toggle('is-muted',!wants);
   vs.querySelector('.vs-muted').textContent=wants?'tap for sound':'sound off';
   try{v.currentTime=0}catch(e){}
+  /* a film runs bare - no caption strip, and the two of them say nothing
+     over it. A sketch is a joke on the board; this is the board standing
+     back. */
+  vs.classList.toggle('bare',!!clip.bare);
   vs.classList.add('show');
   holdUntil=Date.now()+16000;
-  setBubble('bub-will', bagPick('vid|will', VID.will));
-  setBubble('bub-serge',bagPick('vid|serge',VID.serge));
+  if(!clip.bare){
+    setBubble('bub-will', bagPick('vid|will', VID.will));
+    setBubble('bub-serge',bagPick('vid|serge',VID.serge));
+  }
 
   var done=false;
   var finish=function(){
     if(done)return; done=true;
     liveVideo=null;
     vs.classList.remove('show');
+    vs.classList.remove('bare');
     try{v.pause();v.currentTime=0}catch(e){}
     sceneEnd(g);
+    if(clip.onend)try{clip.onend()}catch(e){console.error(e)}
   };
   /* Backstop in case the file stalls: never leave the board covered. It has to
      follow the clip s own length - a flat 16s was fine while every sketch was
      ten seconds, and would have cut the 28s pool one off mid-swim and let Will
      and Serge start talking over the last third of it. Until the duration is
      known we hold the short guard, which is the stalled-file case anyway. */
-  var GUARD_MIN=16000, GUARD_MAX=120000;
+  var GUARD_MIN=16000, GUARD_MAX=clip.guardMax||120000;
   var guard=setTimeout(finish,GUARD_MIN);
   function armGuard(){
     var d=v.duration;
@@ -3470,6 +3610,150 @@ function leaderDance(){
   return true;
 }
 
+/* ============================================================
+   The premiere.
+
+   A film is not a cut scene. It runs six and a half minutes, the whole team
+   is stood in the room, and the one thing that must not happen is a stall or
+   an interruption. So it is built differently from everything else here.
+
+   1. It is pulled into MEMORY first and played from a blob. Once it has
+      commenced, not one further byte is needed from the network - which is
+      the only way to actually promise it will not buffer over office wifi.
+      The card holds until the film is in memory, so the wait happens in
+      front of a title rather than in the middle of a scene.
+   2. While it runs, premiereLock is set and the whole board stands down:
+      cut scenes, stunts, the view rotation, a manager's play button, the
+      reload command, even the champion scene - which takes the floor from
+      everything else, because normally nothing on this board matters more.
+      During a premiere, something does. The champion is not lost, it waits
+      (pendingChamp) and fires when the credits roll.
+   3. The banner and the mug shot QR are hidden. They draw above every scene
+      on purpose, but nothing crawls across a premiere.
+   ============================================================ */
+var PREMIERE={
+  src:'video/premiere.mp4',
+  ar:16/9,
+  title:'The Showroom Sheriff',
+  credits:[['Produced by','Carl Hadwin'],
+           ['Directed and edited by','Dan Cane']]
+};
+/* the card, then the film. The card holds longer if the film is still coming
+   down; PREM_WAIT_MAX is the point at which we stop waiting and stream it
+   anyway - a premiere that risks a stall beats a black screen. */
+var PREM_CARD_MS=11000, PREM_WAIT_MAX=180000, PREM_GUARD_MAX=1800000;
+var premiereLock=false, premState='cold', premPct=0, premUrl=null, premTried=0;
+
+function premiereReady(){ return premState==='ready' }
+
+/* Pull the whole file down before a soul sees it. XHR rather than fetch: it
+   hands back progress for nothing, which is what the card shows. */
+function armPremiere(){
+  if(premState==='loading'||premState==='ready')return;
+  premState='loading'; premPct=0; premTried++;
+  paintPremiere();
+  var x=new XMLHttpRequest();
+  x.open('GET',PREMIERE.src,true);
+  x.responseType='blob';
+  x.onprogress=function(e){
+    if(e.lengthComputable){premPct=Math.round(e.loaded/e.total*100);paintPremiere()}
+  };
+  x.onload=function(){
+    if(x.status>=200&&x.status<300&&x.response&&x.response.size){
+      try{if(premUrl)URL.revokeObjectURL(premUrl)}catch(e){}
+      premUrl=URL.createObjectURL(x.response);
+      premState='ready'; premPct=100;
+    }else{
+      premState='failed';
+    }
+    paintPremiere();
+  };
+  x.onerror=function(){premState='failed';paintPremiere()};
+  x.onabort=function(){premState='failed';paintPremiere()};
+  try{x.send()}catch(e){premState='failed';paintPremiere()}
+}
+
+function paintPremiere(){
+  var box=$('pc-load'), bar=$('pc-bar'), txt=$('pc-loadtxt');
+  if(box){
+    /* only while it is still coming down - a ready film says nothing */
+    box.hidden = premState==='ready';
+    if(bar)bar.style.width=premPct+'%';
+    if(txt)txt.textContent = premState==='failed'
+      ? 'Still fetching the film' : 'Loading the film - '+premPct+'%';
+  }
+  paintPremiereControls();
+  if(premiereLock)premiereMaybeRoll();
+}
+
+var premCardDone=false, premRolled=false, premWaitFrom=0, premGenTok=0;
+
+function premiereMaybeRoll(){
+  if(!premiereLock||premRolled||!premCardDone)return;
+  var waited=Date.now()-premWaitFrom;
+  /* roll when the film is in memory - or when we have waited long enough
+     that a stream is the better bet than an empty room */
+  if(!premiereReady()&&waited<PREM_WAIT_MAX){
+    if(premState==='failed'&&premTried<3)armPremiere();
+    return;
+  }
+  premRolled=true;
+  var card=$('premcard');
+  if(card)card.classList.remove('show');
+  if(premGenTok)sceneEnd(premGenTok);       /* hand the floor to the film */
+  premGenTok=0;
+  var ok=videoScene({src:premUrl||PREMIERE.src, ar:PREMIERE.ar, cap:'',
+                     name:'Premiere', bare:true, premiere:true,
+                     guardMax:PREM_GUARD_MAX, onend:endPremiere});
+  if(!ok){toast('This screen cannot play the film','err');endPremiere()}
+}
+
+function premiereScene(){
+  if(premiereLock)return false;            /* already running - never restart it */
+  if(!sOn('premiere'))return false;
+  var card=$('premcard'), v=$('vs-video');
+  if(!card||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
+
+  premiereLock=true; premCardDone=false; premRolled=false;
+  premWaitFrom=Date.now();
+  document.body.classList.add('premiere');
+  stopScenes();                            /* clear the floor before we take it */
+  closeModal('m-mgr'); closeModal('m-pin');
+  clearTimeout(rotTimer); rotTimer=null;   /* the rotation stops here */
+
+  paintCredits();
+  premGenTok=sceneStart();
+  card.classList.add('show');
+  holdUntil=Date.now()+PREM_CARD_MS+PREM_GUARD_MAX;
+  if(!premiereReady())armPremiere();
+  paintPremiere();
+  setTimeout(function(){premCardDone=true;premiereMaybeRoll()},PREM_CARD_MS);
+  /* the card is waiting on a download, so nudge it rather than relying on a
+     progress event landing at the right moment */
+  var tick=setInterval(function(){
+    if(!premiereLock||premRolled){clearInterval(tick);return}
+    premiereMaybeRoll();
+  },500);
+  return true;
+}
+
+function paintCredits(){
+  var t=$('pc-title'); if(t)t.textContent=PREMIERE.title;
+  var box=$('pc-credits'); if(!box)return;
+  box.innerHTML=PREMIERE.credits.map(function(c){
+    return '<div>'+esc(c[0])+'<b>'+esc(c[1])+'</b></div>';
+  }).join('');
+}
+
+function endPremiere(){
+  if(!premiereLock)return;
+  premiereLock=false; premRolled=false; premCardDone=false;
+  var card=$('premcard'); if(card)card.classList.remove('show');
+  document.body.classList.remove('premiere');
+  paintPremiereControls();
+  armRotation();                           /* the board picks itself back up */
+}
+
 /* ---- the trailer ----
    Not one of the sketches: it is deliberately kept out of CLIPS so the random
    sketch slot can never pick it, and it runs on its own hourly timer with a
@@ -3500,7 +3784,7 @@ function trailerScene(){
 
 /* never interrupt a manager who is mid-entry */
 function stuntsBlocked(){
-  return busy || !!document.querySelector('.modal-bg.open');
+  return busy || premiereLock || !!document.querySelector('.modal-bg.open');
 }
 
 /* The paper ball, Nathan's visit and the fire are all pinned to our own board
@@ -4111,6 +4395,8 @@ $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPi
 $('mgr-save').onclick=saveDeal;
 $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
 $('reload-all').onclick=reloadAllScreens;
+$('prem-arm').onclick=premiereArmAll;
+$('prem-roll').onclick=premiereRollAll;
 function paintBdayClipNote(){
   var el=$('bday-clipnote');
   if(!el)return;
@@ -4311,6 +4597,7 @@ function paintSettingsNote(){
   if(!n)return;
   var off=[];
   ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
+   'premiere',
    'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','ticker',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
   n.style.display=off.length?'block':'none';

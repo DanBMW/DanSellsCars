@@ -580,6 +580,38 @@ said so.
   minutes after load, not an hour, so a screen switched on does not sit there.
   It has its own `trailer` switch in the admin console and its own play button;
   `playNow('trailer')` routes to the card, not straight to the clip.
+- **The premiere.** `video/premiere.mp4` is the team film, and it is not a cut
+  scene, not a sketch and **not on any timer** - it runs only when a manager
+  starts it, from the board's own panel or the admin console. It is built
+  differently from everything else on this page, for one reason: it runs six
+  and a half minutes with the whole team stood in the room, so it must not
+  stall and must not be interrupted.
+  **It is played from memory, not streamed.** `armPremiere()` pulls the whole
+  file down over XHR (for the progress events) and mints a blob URL; the title
+  card holds until that is done, showing a percentage, and only then does the
+  film roll. Once it has commenced not one further byte is needed from the
+  network, which is the only way to actually promise it will not buffer over
+  office wifi. "Get every screen ready" arms every screen ahead of time;
+  starting it cold still works, the card just waits. `PREM_WAIT_MAX` is the
+  point at which it gives up waiting and streams anyway - a premiere that
+  risks a stall beats an empty screen.
+  **While it runs, `premiereLock` stands the whole board down**: cut scenes,
+  stunts, the view rotation, a manager's play button, the reload command, and
+  the champion scene - which normally takes the floor from everything else,
+  because nothing on this board matters more. During a premiere something
+  does. The champion is not lost: `champScene()` returns false, `pendingChamp`
+  holds it, and the 1s backstop gives it its moment when the credits roll.
+  The banner and the mug shot QR are hidden too (`body.premiere`); they draw
+  above every scene on purpose, but nothing crawls across a premiere.
+  **`stuntsBlocked()` reports that lock, so the film has to bypass it** - the
+  clip carries `premiere:true` and `videoScene()` tests `busy` and an open
+  panel instead. Getting that wrong is not subtle and not obvious: the
+  premiere turned away its own film, ended at the card, and every other guard
+  then looked broken because the lock had already cleared.
+  The film runs `bare` - no caption strip, no bubbles over it - and
+  `guardMax` lifts the stall backstop's ceiling, which is 120s for a sketch
+  and would otherwise cut a feature off at two minutes. Title and credits are
+  the `PREMIERE` constant, in one place.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
   section: a toggle for the automatic slot and a play button per clip. Both go
   through `boardcontrol` in the database rather than staying local, because the
