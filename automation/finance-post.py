@@ -158,7 +158,7 @@ def caption(car, q):
         "Want the figures on a different deposit or term? Drop me a message and I will "
         "run it properly for you - no forms, no call centre.\n\n"
         "Representative example: {payments} monthly payments of {monthly2}. Cash price "
-        "{price}. Deposit {dep}. Optional final payment {gfv}. Total amount payable "
+        "{price}. Deposit {dep2}. Optional final payment {gfv}. Total amount payable "
         "{total}. {apr}% APR representative. Finance from {lender}, subject to status, "
         "18+, UK residents.\n\n"
         "#BMW #ApprovedUsed #HedinRuxley #BMWFinance #{tag}"
@@ -167,7 +167,7 @@ def caption(car, q):
         mileage=car['mileage_n'], price=money(car['price_n']),
         monthly=money(f['monthly']), monthly2=money(f['monthly'], 2),
         term=f['term_months'], miles=f['annual_mileage'],
-        payments=f['payments'], dep=money(f['deposit'], 2),
+        payments=f['payments'], dep=money(f['deposit']), dep2=money(f['deposit'], 2),
         gfv=money(f['final_payment'], 2), total=money(f['total_payable'], 2),
         apr=f['apr'], lender=f['lender'],
         tag=re.sub(r'[^A-Za-z0-9]', '', car['series']))
