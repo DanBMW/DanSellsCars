@@ -565,6 +565,21 @@ said so.
   (`liveVideo`) rather than only helping the next one. The clips are warmed into the browser cache 20s after load on wide
   screens only, so a phone does not pull down thirty megabytes it will probably
   never play.
+- **The trailer.** `video/trailer.mp4` is the team film trailer, and it is
+  **not one of the sketches**: it is deliberately kept out of `CLIPS` so the
+  random sketch slot can never pick it, and it runs on its own hourly timer
+  (`TRAILER_EVERY`) outside the `SCENES` queue - it is an event, not one of the
+  rotation's turns. `trailerScene()` puts a plain black title card up first
+  (`.trailercard`, "Used Car Team Pictures presents / Coming soon to this
+  screen") for `TRAILER_CARD_MS`, then hands to `videoScene(TRAILER)`. The card
+  takes the floor and hands it straight back - one tick's gap - so the clip
+  keeps all of `videoScene`'s own handling: sound with the muted fallback, the
+  length-aware guard, the stall backstop. The card draws at the same z-index as
+  the clip (96) on **solid** black rather than the video scene's near-black, so
+  the cut from card to trailer reads as one piece. Its first outing is a few
+  minutes after load, not an hour, so a screen switched on does not sit there.
+  It has its own `trailer` switch in the admin console and its own play button;
+  `playNow('trailer')` routes to the card, not straight to the clip.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
   section: a toggle for the automatic slot and a play button per clip. Both go
   through `boardcontrol` in the database rather than staying local, because the

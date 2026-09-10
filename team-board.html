@@ -560,6 +560,34 @@ body.hasticker .credit{bottom:52px}
 @media(prefers-reduced-motion:reduce){.ncscene{transition:none}}
 
 /* ---------- team video cut scene ---------- */
+/* ---- the trailer's title card ----
+   Sits at the same layer as the clip it introduces (z-index 96), on solid
+   black rather than the video scene's near-black, so the cut from card to
+   trailer reads as one piece rather than two overlays. */
+.trailercard{
+  position:fixed;inset:0;z-index:96;display:flex;align-items:center;justify-content:center;
+  background:#000;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s;
+  pointer-events:none;text-align:center;padding:clamp(16px,4vw,40px);
+}
+.trailercard.show{opacity:1;visibility:visible}
+.tc-inner{max-width:min(94vw,1200px)}
+.tc-kick{
+  font-family:var(--display);font-weight:700;text-transform:uppercase;
+  letter-spacing:.44em;color:var(--gold);
+  font-size:clamp(.62rem,1.5vw,1.1rem);
+}
+.tc-rule{
+  width:clamp(54px,9vw,130px);height:2px;background:var(--gold);opacity:.75;
+  margin:clamp(12px,2.2vh,24px) auto;
+}
+.tc-main{
+  font-family:var(--display);font-weight:700;text-transform:uppercase;
+  line-height:1.02;letter-spacing:.05em;color:#fff;
+  font-size:clamp(1.5rem,6.2vw,5rem);
+}
+/* the card holds still, then the trailer cuts in - no motion under it */
+@media(prefers-reduced-motion:reduce){ .trailercard{transition:none} }
+
 .vidscene{
   position:fixed;inset:0;z-index:96;display:flex;align-items:center;justify-content:center;
   background:rgba(3,5,9,.96);
@@ -1225,6 +1253,15 @@ body.hasticker .credit{bottom:52px}
 
 <div class="credit">This display was created by Dan</div>
 
+<!-- the card that introduces the trailer, then cuts to it -->
+<div class="trailercard" id="trailercard" aria-hidden="true">
+  <div class="tc-inner">
+    <div class="tc-kick">Used Car Team Pictures presents</div>
+    <div class="tc-rule"></div>
+    <div class="tc-main">Coming soon<br>to this screen</div>
+  </div>
+</div>
+
 <!-- the mug shot QR, up permanently in the top right corner -->
 <div class="cornerqr" id="cornerqr" aria-hidden="true">
   <svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg>
@@ -1790,7 +1827,7 @@ function stopScenes(){
   if(v){try{v.pause();v.currentTime=0}catch(e){}}
   liveVideo=null;
   stopBirthdayTune();
-  ['vidscene','statscene','cutscene','champscene','bdayscene'].forEach(function(id){
+  ['vidscene','statscene','cutscene','champscene','bdayscene','trailercard'].forEach(function(id){
     var el=$(id); if(el)el.classList.remove('show');
   });
   var fs=$('firescene');
@@ -2920,7 +2957,7 @@ var CLIPS=[
   {src:'video/sketch-7.mp4',           cap:'Nathan &mdash; New Car Manager', name:'Nathan', ar:16/9},
   {src:'video/sketch-8.mp4',           cap:'The used car team', name:'Sketch 8',      ar:16/9},
   {src:'video/sketch-9.mp4',           cap:'Serge, raging',     name:'Serge raging',  ar:16/9},
-  {src:'video/sketch-10.mp4',          cap:'A new sheriff on the service desk', name:'The sheriff', ar:16/9},
+  {src:'video/sketch-10.mp4',          cap:'Mon &mdash; the Showroom Sheriff', name:'The sheriff (Mon)', ar:16/9},
   {src:'video/sketch-11.mp4',          cap:'Clive wants his mummy and daddy', name:'Clive, mummy and daddy', ar:16/9},
   /* Recorded off Clive's Driving School - the pool cutscene is a live three.js
      scene, not a file, so it was captured frame by frame at a pinned 1/20s
@@ -2978,6 +3015,7 @@ function playNow(src){
   closeModal('m-mgr'); closeModal('m-pin');
   /* the play command carries tunes as well as clips, so the birthday button
      rides the channel that already exists rather than needing a new one */
+  if(src==='trailer'){ trailerScene(); return }
   if(src.indexOf('tune:birthday')===0){
     var nm=src.slice(14);
     birthdayScene(nm, bdayClipFor(nm));
@@ -3432,6 +3470,34 @@ function leaderDance(){
   return true;
 }
 
+/* ---- the trailer ----
+   Not one of the sketches: it is deliberately kept out of CLIPS so the random
+   sketch slot can never pick it, and it runs on its own hourly timer with a
+   title card in front of it. The card takes the floor, holds, releases it and
+   hands straight to videoScene, which takes it back - the gap is one tick, and
+   doing it that way means the clip keeps all of videoScene's own handling
+   (sound, the length-aware guard, the stall backstop). */
+var TRAILER={src:'video/trailer.mp4', ar:1280/708, name:'The Showroom Sheriff',
+             cap:'The Showroom Sheriff &mdash; coming soon'};
+var TRAILER_CARD_MS=3800, TRAILER_EVERY=3600000;
+
+function trailerScene(){
+  if(!sOn('trailer'))return false;
+  if(stuntsBlocked())return false;
+  var card=$('trailercard'), v=$('vs-video');
+  if(!card||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
+  var g=sceneStart();
+  card.classList.add('show');
+  holdUntil=Date.now()+TRAILER_CARD_MS+2000;
+  setTimeout(function(){
+    if(g!==sceneGen)return;            /* something took the floor from us */
+    card.classList.remove('show');
+    sceneEnd(g);                       /* let the clip take it cleanly */
+    if(!videoScene(TRAILER))toast('This screen cannot play the trailer','err');
+  },TRAILER_CARD_MS);
+  return true;
+}
+
 /* never interrupt a manager who is mid-entry */
 function stuntsBlocked(){
   return busy || !!document.querySelector('.modal-bg.open');
@@ -3690,6 +3756,10 @@ function scheduleStunts(){
   every(throwPaper,    25000, 20000,  45000,  50000);  /* ambient, covers nothing */
   var gap=sNum('scenemins',5)*60000;
   every(nextCutScene, Math.min(100000,gap/3), 40000, gap-15000, 30000);  /* one scene, ~5m */
+  /* the trailer keeps its own hour, separate from the cut-scene queue - it is
+     an event, not one of the rotation's turns. First outing a few minutes in
+     so a screen switched on does not wait an hour to show it. */
+  every(trailerScene, 180000, 60000, TRAILER_EVERY, 0);
   warmVideo();
   startRotation();
 }
@@ -4240,7 +4310,7 @@ function paintSettingsNote(){
   var n=$('set-note');
   if(!n)return;
   var off=[];
-  ['dance','stats','nathan','fire','relief','paper','champ','bubbles',
+  ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
    'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','ticker',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
   n.style.display=off.length?'block':'none';
