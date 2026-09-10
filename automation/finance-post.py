@@ -35,10 +35,10 @@ def money(n, dp=0):
     return '£{:,.{dp}f}'.format(n, dp=dp)
 
 
-def quote_car(listing_id, deposit_pct, term, mileage):
+def quote_car(listing_id, deposit, term, mileage):
     r = subprocess.run(
         [sys.executable, os.path.join(HERE, 'finance-quote.py'), str(listing_id),
-         '--deposit-pct', str(deposit_pct), '--term', str(term),
+         '--deposit', str(deposit), '--term', str(term),
          '--mileage', str(mileage)],
         capture_output=True, text=True, timeout=180)
     if r.returncode != 0 or not r.stdout.strip().startswith('{'):
@@ -57,13 +57,13 @@ def card_html(car, q, photo):
     f = q['finance']
     rep = (
         '{payments} monthly payments of {monthly}. Cash price {price}. '
-        'Customer deposit {dep} ({pct:g}%). Total amount of credit {credit}. '
+        'Customer deposit {dep}. Total amount of credit {credit}. '
         'Optional final payment {gfv}. Total amount payable {total}. '
         'Duration {term} months. {mileage:,} miles a year, {excess}p per excess mile. '
         '{apr}% APR representative. Lender {lender}.'
     ).format(
         payments=f['payments'], monthly=money(f['monthly'], 2), price=money(car['price_n']),
-        dep=money(f['deposit'], 2), pct=f['deposit_pct'],
+        dep=money(f['deposit'], 2),
         credit=money(car['price_n'] - f['deposit'], 2), gfv=money(f['final_payment'], 2),
         total=money(f['total_payable'], 2), term=f['term_months'],
         mileage=f['annual_mileage'], excess=f['excess_mileage_pence'],
@@ -153,7 +153,7 @@ def caption(car, q):
     return (
         "{model} - {colour}, {year}\n"
         "{mileage:,} miles | {price}\n\n"
-        "{monthly} a month on BMW Select (PCP), {pct:g}% deposit, {term} months, "
+        "{monthly} a month on BMW Select (PCP) with {dep} down, {term} months, "
         "{miles:,} miles a year.\n\n"
         "Want the figures on a different deposit or term? Drop me a message and I will "
         "run it properly for you - no forms, no call centre.\n\n"
@@ -166,7 +166,7 @@ def caption(car, q):
         model=car['model'], colour=car['colour'], year=car['year'],
         mileage=car['mileage_n'], price=money(car['price_n']),
         monthly=money(f['monthly']), monthly2=money(f['monthly'], 2),
-        pct=f['deposit_pct'], term=f['term_months'], miles=f['annual_mileage'],
+        term=f['term_months'], miles=f['annual_mileage'],
         payments=f['payments'], dep=money(f['deposit'], 2),
         gfv=money(f['final_payment'], 2), total=money(f['total_payable'], 2),
         apr=f['apr'], lender=f['lender'],
@@ -206,9 +206,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--count', type=int, default=3)
     ap.add_argument('--out', default=os.path.join(ROOT, 'out'))
-    ap.add_argument('--deposit-pct', type=float, default=10.0)
+    ap.add_argument('--deposit', type=float, default=1000.0,
+                    help='cash deposit in pounds (Dan quotes a flat deposit)')
     ap.add_argument('--term', type=int, default=48)
-    ap.add_argument('--mileage', type=int, default=10000)
+    ap.add_argument('--mileage', type=int, default=8000)
     ap.add_argument('--cooldown-days', type=int, default=21)
     ap.add_argument('--reg', action='append', help='post these regs instead of picking')
     a = ap.parse_args()
@@ -234,7 +235,7 @@ def main():
     for car in chosen:
         if len(made) >= a.count and not a.reg:
             break
-        q, err = quote_car(car['id'], a.deposit_pct, a.term, a.mileage)
+        q, err = quote_car(car['id'], a.deposit, a.term, a.mileage)
         if not q:
             skipped.append((car['reg'], car['model'], err[0] if err else 'no quote'))
             continue

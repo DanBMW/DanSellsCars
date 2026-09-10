@@ -5,8 +5,8 @@ Hedin's listing pages load their finance panel from a Codeweavers-backed API.
 This asks the same API the same way the page does, so the figures are the
 retailer's own quote, not a calculation of ours.
 
-    python3 automation/finance-quote.py 238261 [--deposit-pct 10] [--term 48]
-                                               [--mileage 10000] [--product PCP]
+    python3 automation/finance-quote.py 238261 [--deposit 1000 | --deposit-pct 10]
+                                               [--term 48] [--mileage 8000] [--product PCP]
 
 Prints one JSON object: the vehicle, the quote, and the lender's own legal
 wording for that quote reference.
@@ -66,13 +66,13 @@ def vehicle_payload(v):
     }
 
 
-def quote(v, deposit_pct, term, mileage, product):
+def quote(v, deposit, term, mileage, product):
     veh = vehicle_payload(v)
     # The dealer identifier has to sit INSIDE Parameters. Anywhere else and the
     # engine falls back to a Mercedes product and refuses the car as ineligible.
     params = {
         'Term': term,
-        'CashDeposit': round(v['retail_price'] * deposit_pct / 100.0, 2),
+        'CashDeposit': round(deposit, 2),
         'AnnualMileage': mileage,
         'FinanceProductFamilyKeys': [product],
         'CalculationType': 'ToRegularPayment',
@@ -104,14 +104,21 @@ def legal(quote_ref):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('listing_id')
-    ap.add_argument('--deposit-pct', type=float, default=10.0)
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument('--deposit', type=float, help='cash deposit in pounds')
+    g.add_argument('--deposit-pct', type=float, help='deposit as %% of cash price')
     ap.add_argument('--term', type=int, default=48)
     ap.add_argument('--mileage', type=int, default=10000)
     ap.add_argument('--product', default='PCP', choices=['PCP', 'HP'])
     a = ap.parse_args()
 
     v = listing(a.listing_id)
-    q = quote(v, a.deposit_pct, a.term, a.mileage, a.product)
+    if a.deposit is not None:
+        dep, dep_pct = a.deposit, None
+    else:
+        pct = a.deposit_pct if a.deposit_pct is not None else 10.0
+        dep, dep_pct = v['retail_price'] * pct / 100.0, pct
+    q = quote(v, dep, a.term, a.mileage, a.product)
     Q = q['Finance']['Quote']
     P = q['Finance']['Product']
     out = {
@@ -130,7 +137,7 @@ def main():
             'payments': Q['TotalNumberOfRegularPayments'],
             'term_months': Q['Term'],
             'deposit': Q['TotalDeposit'],
-            'deposit_pct': a.deposit_pct,
+            'deposit_pct': dep_pct,
             'apr': Q['Apr'],
             'rate_of_interest': Q['RateOfInterest'],
             'final_payment': Q['Residual'],
