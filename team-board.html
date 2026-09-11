@@ -1401,6 +1401,9 @@ body.premiere .credit{opacity:0;transition:opacity .6s ease}
         <button type="button" class="clipbtn" id="prem-roll">
           <span class="ply">&#9654;</span>
           <span>Start the premiere<small>Title card, then the film</small></span></button>
+        <button type="button" class="clipbtn" id="prem-stream">
+          <span class="ply">&#9889;</span>
+          <span>Don't wait - stream it<small>If loading will not move</small></span></button>
       </div>
 
       <h2 style="margin-top:22px;font-size:1rem">What's on the board</h2>
@@ -3099,6 +3102,7 @@ window.dsOnControl=function(v){
 function playNow(src){
   if(!src)return;
   if(src==='premiere:arm'){ armPremiere(); return }
+  if(src==='premiere:stream'){ premStream('asked to'); return }
   if(src==='premiere'){ premiereScene(); return }
   /* everything else stands down while the film runs */
   if(premiereLock)return;
@@ -3196,14 +3200,19 @@ function paintClipControls(){
    "ready" on a phone says nothing about the screen on the wall. Say which. */
 function paintPremiereControls(){
   var el=$('prem-state');
-  if(el)el.textContent =
-      premiereLock ? 'Playing now'
-    : premState==='ready'   ? 'Ready on this screen'
-    : premState==='loading' ? 'Loading - '+premPct+'%'
-    : premState==='failed'  ? 'Could not load it - tap to try again'
-    : 'Not loaded yet';
+  if(el)el.textContent = premiereLock ? 'Playing now' : premStatusText();
   var r=$('prem-roll');
   if(r)r.disabled=premiereLock;
+}
+
+function premiereStreamAll(){
+  premStream('asked to');
+  if(!backend||!backend.play||!controlLive){
+    toast('This screen will stream it','ok');return;
+  }
+  backend.play('premiere:stream').then(function(){
+    toast('Every screen will stream it','ok');
+  })['catch'](function(e){console.error(e)});
 }
 
 function premiereArmAll(){
@@ -3634,6 +3643,7 @@ function leaderDance(){
 var PREMIERE={
   src:'video/premiere.mp4',
   ar:1280/708,
+  bytes:90600195,
   title:'The Showroom Sheriff',
   credits:[['Produced by','Carl Hadwin'],
            ['Directed and edited by','Dan Cane']]
@@ -3642,35 +3652,98 @@ var PREMIERE={
    down; PREM_WAIT_MAX is the point at which we stop waiting and stream it
    anyway - a premiere that risks a stall beats a black screen. */
 var PREM_CARD_MS=11000, PREM_WAIT_MAX=180000, PREM_GUARD_MAX=1800000;
+/* If not one byte has arrived in this long, the fetch is not slow, it is
+   stuck - say so and fall back rather than sitting on 0% for three minutes. */
+var PREM_STALL_MS=15000;
 var premiereLock=false, premState='cold', premPct=0, premUrl=null, premTried=0;
+var premLoaded=0, premTotal=0, premLastAt=0, premXHR=null, premWatch=null;
 
-function premiereReady(){ return premState==='ready' }
+/* 'ready' is the whole film in memory. 'stream' is the fallback: play it
+   straight off the network. Both are playable - only the promise differs. */
+function premiereReady(){ return premState==='ready'||premState==='stream' }
+
+function premMB(n){ return (n/1048576).toFixed(0)+' MB' }
+
+/* What the loader is actually doing, in words rather than a bare percent -
+   a number that never moves cannot tell you whether it is slow or dead. */
+function premStatusText(){
+  if(premState==='ready')  return 'Ready on this screen';
+  if(premState==='stream') return 'Streaming it instead';
+  if(premState==='failed') return 'Could not load it - tap to try again';
+  if(premState!=='loading')return 'Not loaded yet';
+  if(!premLoaded)          return 'Loading the film - starting';
+  return 'Loading the film - '+premMB(premLoaded)+
+         (premTotal?' of '+premMB(premTotal):'')+
+         (premTotal?' ('+premPct+'%)':'');
+}
+
+/* Give up on the blob and play it straight off the network. Not as safe -
+   the wifi is in the loop for the whole six and a half minutes - but a film
+   that plays beats a title card that never moves. */
+function premStream(why){
+  if(premState==='ready'||premState==='stream')return;
+  try{if(premXHR)premXHR.abort()}catch(e){}
+  premXHR=null;
+  premState='stream';
+  console.warn('premiere: streaming instead ('+why+')');
+  paintPremiere();
+}
 
 /* Pull the whole file down before a soul sees it. XHR rather than fetch: it
    hands back progress for nothing, which is what the card shows. */
 function armPremiere(){
-  if(premState==='loading'||premState==='ready')return;
+  if(premState==='loading'||premState==='ready'||premState==='stream')return;
   premState='loading'; premPct=0; premTried++;
+  premLoaded=0; premTotal=0; premLastAt=Date.now();
   paintPremiere();
-  var x=new XMLHttpRequest();
-  x.open('GET',PREMIERE.src,true);
-  x.responseType='blob';
+  var x;
+  try{ x=new XMLHttpRequest() }catch(e){ premStream('no XHR'); return }
+  premXHR=x;
+  try{
+    x.open('GET',PREMIERE.src,true);
+    x.responseType='blob';
+  }catch(e){ premStream('blob not supported'); return }
   x.onprogress=function(e){
-    if(e.lengthComputable){premPct=Math.round(e.loaded/e.total*100);paintPremiere()}
+    /* a total is not guaranteed - fall back to the size we shipped, so the
+       bar still means something rather than sitting at nought */
+    premLoaded=e.loaded||0;
+    premTotal=e.lengthComputable?e.total:(premTotal||PREMIERE.bytes||0);
+    if(premTotal)premPct=Math.min(100,Math.round(premLoaded/premTotal*100));
+    premLastAt=Date.now();
+    paintPremiere();
   };
   x.onload=function(){
+    premXHR=null;
     if(x.status>=200&&x.status<300&&x.response&&x.response.size){
       try{if(premUrl)URL.revokeObjectURL(premUrl)}catch(e){}
-      premUrl=URL.createObjectURL(x.response);
-      premState='ready'; premPct=100;
+      try{
+        premUrl=URL.createObjectURL(x.response);
+        premState='ready'; premPct=100; premLoaded=x.response.size;
+      }catch(e){ premStream('could not hold it in memory'); return }
     }else{
       premState='failed';
     }
     paintPremiere();
   };
-  x.onerror=function(){premState='failed';paintPremiere()};
-  x.onabort=function(){premState='failed';paintPremiere()};
-  try{x.send()}catch(e){premState='failed';paintPremiere()}
+  x.onerror=function(){premXHR=null;premState='failed';paintPremiere()};
+  x.onabort=function(){premXHR=null;paintPremiere()};
+  try{x.send()}catch(e){ premStream('fetch refused'); return }
+
+  /* Watchdog. Nothing at all after PREM_STALL_MS is not a slow network, it
+     is a fetch that is never going to finish - some TV browsers simply will
+     not hand back a 90MB blob. Stop waiting and stream it. */
+  clearInterval(premWatch);
+  premWatch=setInterval(function(){
+    if(premState!=='loading'){clearInterval(premWatch);premWatch=null;return}
+    var quiet=Date.now()-premLastAt;
+    if(!premLoaded&&quiet>PREM_STALL_MS){
+      clearInterval(premWatch);premWatch=null;
+      premStream('nothing after '+Math.round(quiet/1000)+'s');
+    }else if(premLoaded&&quiet>PREM_STALL_MS*4){
+      clearInterval(premWatch);premWatch=null;
+      premStream('stopped at '+premMB(premLoaded));
+    }
+  },1000);
 }
 
 function paintPremiere(){
@@ -3679,8 +3752,7 @@ function paintPremiere(){
     /* only while it is still coming down - a ready film says nothing */
     box.hidden = premState==='ready';
     if(bar)bar.style.width=premPct+'%';
-    if(txt)txt.textContent = premState==='failed'
-      ? 'Still fetching the film' : 'Loading the film - '+premPct+'%';
+    if(txt)txt.textContent = premStatusText();
   }
   paintPremiereControls();
   if(premiereLock)premiereMaybeRoll();
@@ -3702,6 +3774,7 @@ function premiereMaybeRoll(){
   if(card)card.classList.remove('show');
   if(premGenTok)sceneEnd(premGenTok);       /* hand the floor to the film */
   premGenTok=0;
+  /* the blob if we have it, otherwise straight off the network */
   var ok=videoScene({src:premUrl||PREMIERE.src, ar:PREMIERE.ar, cap:'',
                      name:'Premiere', bare:true, premiere:true,
                      guardMax:PREM_GUARD_MAX, onend:endPremiere});
@@ -4396,6 +4469,7 @@ $('mgr-save').onclick=saveDeal;
 $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
 $('reload-all').onclick=reloadAllScreens;
 $('prem-arm').onclick=premiereArmAll;
+$('prem-stream').onclick=premiereStreamAll;
 $('prem-roll').onclick=premiereRollAll;
 function paintBdayClipNote(){
   var el=$('bday-clipnote');

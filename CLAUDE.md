@@ -593,9 +593,19 @@ said so.
   film roll. Once it has commenced not one further byte is needed from the
   network, which is the only way to actually promise it will not buffer over
   office wifi. "Get every screen ready" arms every screen ahead of time;
-  starting it cold still works, the card just waits. `PREM_WAIT_MAX` is the
-  point at which it gives up waiting and streams anyway - a premiere that
-  risks a stall beats an empty screen.
+  starting it cold still works, the card just waits.
+  **It must never sit on a number that does not move.** Some browsers will
+  simply not hand back a 90MB blob, and the first version showed "0%" with no
+  way to tell a slow network from a dead fetch. So the loader reports
+  **bytes**, not just a percent (`premStatusText()`), and a watchdog gives up
+  - nothing at all after `PREM_STALL_MS`, or a download that stops moving -
+  and falls back to `premStream()`, playing it straight off the network. That
+  is the weaker promise (the wifi is in the loop for the whole six and a half
+  minutes) but a film that plays beats a title card that never moves. The
+  same fallback is a button, "Don't wait - stream it", on the panel and in
+  the admin console, and it goes through `boardcontrol` so a tap on a phone
+  unsticks the screen on the wall. `premiereReady()` is true for **both**
+  `ready` and `stream`. `PREM_WAIT_MAX` remains the long backstop.
   **While it runs, `premiereLock` stands the whole board down**: cut scenes,
   stunts, the view rotation, a manager's play button, the reload command, and
   the champion scene - which normally takes the floor from everything else,
