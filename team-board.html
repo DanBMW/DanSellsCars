@@ -26,6 +26,9 @@
   /* the mug shot QR in the top corner, and the room the forecourt view
      leaves for it - one number, so they cannot drift apart */
   --qrbox:clamp(126px,7.6vw,150px);
+  /* the pairing code is temporary and read from a phone at arm's length, so
+     it is smaller than the mug shot one */
+  --pairbox:clamp(104px,6.2vw,124px);
   /* how far down the rails have to start to clear it: the badge is the code
      plus its own padding and two lines of type */
   --qrspace:calc(var(--qrbox) + 92px);
@@ -799,6 +802,27 @@ body.premiere .credit{opacity:0;transition:opacity .6s ease}
    bottom left, the credit sits bottom right, and the hero title is centred.
    It is deliberately not a link - a wall display should not be one stray tap
    away from a different page. */
+/* ---- pair this screen ----
+   Only up while this screen is locked and waiting, so it is not another
+   permanent thing on the wall. Top left: the mug shot QR owns top right, the
+   standings sit bottom left of the board and Dan's credit bottom right. */
+.pairqr{
+  position:fixed;top:clamp(10px,1.4vh,18px);left:clamp(10px,1.2vw,20px);z-index:310;
+  display:none;flex-direction:column;align-items:center;gap:5px;text-align:center;
+  width:calc(var(--pairbox) + 18px);
+  background:rgba(11,15,22,.9);border:1px solid var(--line);border-radius:12px;
+  padding:8px 8px 7px;
+}
+.pairqr.show{display:flex}
+.pairqr .qr{width:var(--pairbox);background:#fff;border-radius:6px;padding:5px;flex:none}
+.pairqr .qr svg{display:block;width:100%;height:auto}
+.pairqr b{display:block;font-family:var(--display);font-weight:700;line-height:1.15;
+  font-size:clamp(.54rem,.8vw,.68rem);color:var(--gold)}
+.pairqr span{display:block;font-size:clamp(.5rem,.74vw,.62rem);color:var(--muted);
+  letter-spacing:.1em}
+body.premiere .pairqr{display:none!important}
+@media(max-width:1199px){ .pairqr{display:none!important} }
+
 .cornerqr{
   position:fixed;top:clamp(10px,1.4vh,18px);right:clamp(10px,1.2vw,20px);z-index:310;
   display:none;flex-direction:column;align-items:center;gap:7px;text-align:center;
@@ -1391,6 +1415,28 @@ body.premiere .credit{opacity:0;transition:opacity .6s ease}
     <div class="tc-kick">Used Car Team Pictures presents</div>
     <div class="tc-rule"></div>
     <div class="tc-main">Coming soon<br>to this screen</div>
+  </div>
+</div>
+
+<!-- only while this screen is locked and waiting to be paired -->
+<div class="pairqr" id="pairqr" aria-hidden="true">
+  <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37" class="segno"><path class="qrline" stroke="#000" d="M2 2.5h7m2 0h2m1 0h1m1 0h4m3 0h2m3 0h7m-33 1h1m5 0h1m2 0h2m3 0h1m7 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m2 0h1m2 0h2m2 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h3m2 0h8m3 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h1m1 0h1m1 0h2m4 0h1m3 0h1m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h2m1 0h1m2 0h2m2 0h2m2 0h1m-22 1h2m3 0h1m2 0h1m2 0h3m1 0h1m2 0h2m5 0h2m1 0h1m-27 1h3m6 0h1m3 0h2m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-32 1h2m1 0h1m1 0h1m1 0h1m3 0h1m2 0h1m3 0h1m1 0h1m1 0h1m5 0h2m1 0h1m-30 1h2m4 0h5m3 0h1m1 0h2m1 0h1m1 0h6m-28 1h5m1 0h2m2 0h1m2 0h1m1 0h1m6 0h1m1 0h2m4 0h1m-33 1h4m1 0h1m1 0h3m1 0h4m2 0h1m1 0h3m1 0h2m1 0h2m1 0h1m1 0h2m-29 1h4m3 0h1m1 0h1m4 0h2m1 0h1m1 0h2m2 0h1m2 0h1m1 0h1m-32 1h1m2 0h1m5 0h6m7 0h4m2 0h1m-25 1h3m1 0h1m3 0h1m3 0h2m1 0h1m3 0h1m1 0h2m1 0h1m1 0h1m-30 1h1m6 0h2m2 0h1m1 0h2m2 0h3m1 0h1m2 0h1m2 0h1m1 0h2m-30 1h2m1 0h1m4 0h1m2 0h1m4 0h1m1 0h1m1 0h5m1 0h2m1 0h1m-30 1h1m1 0h1m1 0h5m1 0h2m1 0h1m2 0h1m3 0h3m2 0h2m1 0h2m-33 1h1m1 0h2m1 0h2m2 0h5m1 0h1m2 0h3m1 0h1m1 0h1m1 0h2m-27 1h2m1 0h1m4 0h3m1 0h3m1 0h1m1 0h3m1 0h1m1 0h3m4 0h1m-33 1h2m1 0h1m2 0h1m2 0h1m2 0h5m2 0h1m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h1m-31 1h1m1 0h1m2 0h1m1 0h5m1 0h1m2 0h1m5 0h1m2 0h3m-30 1h2m1 0h4m1 0h1m1 0h1m2 0h5m1 0h2m2 0h7m-22 1h2m1 0h1m1 0h1m3 0h1m1 0h2m1 0h1m1 0h1m3 0h1m3 0h1m-33 1h7m4 0h1m2 0h3m1 0h3m1 0h1m1 0h1m1 0h1m1 0h5m-33 1h1m5 0h1m6 0h2m2 0h1m1 0h2m1 0h3m3 0h2m1 0h2m-33 1h1m1 0h3m1 0h1m3 0h1m1 0h4m4 0h1m2 0h6m2 0h1m-32 1h1m1 0h3m1 0h1m2 0h1m2 0h1m1 0h7m1 0h2m1 0h1m1 0h4m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m1 0h3m1 0h2m1 0h4m1 0h2m1 0h3m-33 1h1m5 0h1m1 0h4m3 0h1m6 0h1m1 0h1m2 0h2m-29 1h7m2 0h3m2 0h7m1 0h1m1 0h2m1 0h3m2 0h1"/></svg></div>
+  <b>Unlock this screen</b>
+  <span id="pairqr-code"></span>
+</div>
+
+<!-- scanning that badge lands here: passphrase on the phone, tap the screen -->
+<div class="modal-bg" id="m-pair">
+  <div class="modal" style="max-width:380px">
+    <h2>Unlock a screen</h2>
+    <p class="hint">Type the event passphrase here on your phone, then tap the screen you want to
+      unlock. It is sent encrypted to that screen, so nothing is typed on the television.</p>
+    <input type="password" id="pair-pass" placeholder="Event passphrase" autocomplete="off"
+           style="width:100%;margin-bottom:10px">
+    <div id="pair-screens"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" style="flex:1" data-close="m-pair">Close</button>
+    </div>
   </div>
 </div>
 
@@ -2762,7 +2808,7 @@ function evDecrypt(){
     .then(function(buf){
       var obj=JSON.parse(new TextDecoder().decode(buf));
       EVPLAIN=obj; evBusy=false;
-      resyncView(); paintEventDeals(); paintEventPanel();
+      resyncView(); paintEventDeals(); paintEventPanel(); paintPairBadge();
       return true;
     })
     ['catch'](function(e){
@@ -2788,6 +2834,21 @@ function evDecrypt(){
    What sits in the database in between is a public key and a blob only that
    one screen can open. Nothing is typed on the television. */
 var EVPAIR={}, evPairKeys=null, evPairId=null;
+
+/* the QR points at the board with #pair on the end - land straight in the
+   unlock sheet rather than making somebody find it in the manager panel.
+   It never carries the passphrase, only takes you to where you type it. */
+function openPairSheet(){
+  paintPairList();
+  openModal('m-pair');
+  setTimeout(function(){ var f=$('pair-pass'); if(f)f.focus() },120);
+}
+function checkPairHash(){
+  if((location.hash||'').replace('#','').split('=')[0]==='pair'){
+    try{ history.replaceState(null,'',location.pathname+location.search) }catch(e){}
+    openPairSheet();
+  }
+}
 
 function evScreenId(){
   if(evPairId)return evPairId;
@@ -3535,14 +3596,28 @@ function evPairSend(id,pass){
     });
 }
 
+/* the same list in two places: the manager panel, and the modal the QR
+   lands on. Each reads the passphrase from the field beside it. */
 function paintPairList(){
-  var box=$('ev-screens');
+  paintPairInto('ev-screens','ev-pass');
+  paintPairInto('pair-screens','pair-pass');
+  paintPairBadge();
+}
+
+function paintPairInto(boxId, passId){
+  var box=$(boxId);
   if(!box)return;
   var list=evWaiting().filter(function(s){return !s.me});
-  if(!list.length){ box.innerHTML=''; box.style.display='none'; return }
+  if(!list.length){
+    box.innerHTML=boxId==='pair-screens'
+      ? '<p class="hint" style="margin:0">No screen is waiting to be unlocked at the moment.</p>' : '';
+    box.style.display=boxId==='pair-screens'?'':'none';
+    return;
+  }
   box.style.display='';
-  box.innerHTML='<p class="hint" style="margin:10px 0 6px">Screens waiting to be unlocked. '+
-    'Send the passphrase from here and nothing needs typing on the television.</p>'+
+  box.innerHTML=(boxId==='ev-screens'
+      ? '<p class="hint" style="margin:10px 0 6px">Screens waiting to be unlocked. '+
+        'Send the passphrase from here and nothing needs typing on the television.</p>' : '')+
     list.map(function(s){
       return '<button type="button" class="clipbtn" data-screen="'+s.id+'">'+
         '<span class="ply">&#128274;</span><span>Unlock screen '+esc(s.label)+
@@ -3551,14 +3626,25 @@ function paintPairList(){
     }).join('');
   Array.prototype.forEach.call(box.querySelectorAll('.clipbtn'),function(b){
     b.onclick=function(){
-      var pass=($('ev-pass').value||'').trim()||evKey();
-      if(!pass){toast('Enter the passphrase above first','err');return}
+      var pass=(($(passId)&&$(passId).value)||'').trim()||evKey();
+      if(!pass){toast('Enter the passphrase first','err');return}
       evPairSend(b.getAttribute('data-screen'),pass).then(function(){
-        toast('Sent to screen '+b.textContent.replace(/[^A-Z0-9-]/g,'').slice(0,7),'ok');
-        $('ev-pass').value='';
+        toast('Sent to that screen','ok');
+        if($(passId))$(passId).value='';
       })['catch'](function(e){ console.error(e); toast('Could not reach that screen','err') });
     };
   });
+}
+
+/* the badge is up only while THIS screen is locked and has an offer standing */
+function paintPairBadge(){
+  var el=$('pairqr');
+  if(!el)return;
+  var mine=(EVPAIR||{})[evScreenId()];
+  var show=!!(evLocked()&&mine&&mine.pub&&!mine.msg);
+  el.classList.toggle('show',show);
+  var c=$('pairqr-code');
+  if(c)c.textContent=show?evScreenLabel():'';
 }
 
 function paintEventPanel(){
@@ -5095,6 +5181,7 @@ window.dsBindBackend=function(api){
   paintEventPanel();
   if(backend.watchEvPair)backend.watchEvPair(window.dsOnEvPair);
   evPairOffer();
+  checkPairHash();
 };
 window.dsOnDeals=function(obj){
   deals=obj||{};

@@ -473,7 +473,23 @@ said so.
   the waiting screens in the manager panel, does ECDH against that public
   key, and writes the passphrase encrypted under the shared secret. The
   screen decrypts with its private half, stores the passphrase and deletes
-  the pairing record. What sits in the database in between is a public key
+  the pairing record.
+  **There is a QR for it** (`.pairqr`, top left), up **only** while that
+  screen is locked and has an offer standing, and gone the moment it
+  unlocks - so it is not a second permanent badge on the wall. It points at
+  the board with `#pair` on the end, which opens the unlock sheet
+  (`m-pair`) straight away rather than making somebody find it in the
+  manager panel, and it is outside the manager PIN deliberately: the
+  passphrase is the gate here, and the PIN is in public JS anyway. The QR
+  carries **no** screen id and **no** passphrase - it is a fixed URL, so it
+  is pre-generated with segno like the mug shot one rather than needing a
+  library at runtime, and the sheet lists whichever screens are actually
+  waiting. It overlaps Will's rail at 1920 and Dan's call was that this does
+  not matter because it is temporary; do not push the mascots around for it.
+  Checked with OpenCV that **both** QRs decode out of a full-frame
+  screenshot at 1920 and 2560, which is a fair proxy for a phone across the
+  office - `detectAndDecodeMulti`, since the single-QR detector finds only
+  one of the two. What sits in the database in between is a public key
   and a blob only that one screen can open - an eavesdropper holding the
   entire record cannot read it, which is tested rather than assumed. Do not
   replace this with writing the passphrase to the database "just for a
