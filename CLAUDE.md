@@ -451,6 +451,30 @@ said so.
   slot is worth having either way. Three cards across, deliberately: an
   auto-fit grid put all six in a line on a wall display and cut every model
   name in half.
+- **Event deals.** Will's event list on the wall for a few days - highest
+  margin first, the top three picked out in gold, with the ex-demo bonus
+  along the bottom. It is a **view**, not a cut scene, and it takes 40s
+  rather than 30 (`viewMs()`): nine cars cannot be read in the time a photo
+  can.
+  **The figures are never committed to this repo.** The repo is public -
+  `raw.githubusercontent.com` serves every file in it to anyone, and a commit
+  stays in the history even after the file is deleted - so margin data in a
+  page here would be published to the open internet permanently. The numbers
+  live at `eventdeals` in the database and only the rendering ships in
+  `team-board.html`. Do not "simplify" this by inlining the list.
+  Understand what that does and does not buy: the database is world-readable
+  by its rules and the board's own config is in public JS, so this is the
+  same hiding-not-protecting gate as everything else here. It keeps the
+  figures out of a public git history, which is the part that cannot be
+  undone. Real protection means Firebase Auth.
+  `cars` and `demos` are **JSON strings**, not child nodes - it keeps the
+  rules trivial and avoids RTDB's array handling; the board parses and sorts
+  by margin itself, so the order it is written in does not matter. `until` is
+  an expiry: `evLive()` returns nothing past it, so the slot leaves the
+  rotation by itself and nobody has to remember to take it down. Two
+  switches: `eventdeals` for the slot, and `dealmargin`, which hides the
+  pounds while keeping the running order - which cars to push, without the
+  figure itself up on a wall.
 - **The view rotation.** The wall display cycles through whatever there is to
   show (`views()`, `showView()`, `rotateView()`) - 30 seconds each (`VIEW_MS`),
   except a birthday card, which gets 15 (`BDAY_VIEW_MS`): it is one line of

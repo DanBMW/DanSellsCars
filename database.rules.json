@@ -145,6 +145,19 @@
       "$other": { ".validate": false }
     },
 
+    "eventdeals": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['cars','ts'])",
+      "cars":  { ".validate": "newData.isString() && newData.val().length <= 8000" },
+      "demos": { ".validate": "newData.isString() && newData.val().length <= 3000" },
+      "title": { ".validate": "newData.isString() && newData.val().length <= 60" },
+      "note":  { ".validate": "newData.isString() && newData.val().length <= 120" },
+      "ts":    { ".validate": "newData.isNumber()" },
+      "until": { ".validate": "newData.isNumber()" },
+      "$other": { ".validate": false }
+    },
+
     "boardsettings": {
       ".read": true,
       "$key": {

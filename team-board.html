@@ -449,6 +449,68 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
    Same layer as the other picture views (z-index 50), so every cut scene
    still paints over it. Fifteen seconds, so it is a glance: six cars, big
    photo, price and the two figures anyone would ask about. */
+/* ---- event deals ----
+   Internal figures on a wall. The numbers themselves never go in this file -
+   they live in the database, because this repo is public and anything
+   committed here is readable by anyone and stays in the history for good.
+   All that ships is the rendering. */
+.edscene{
+  position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(65% 65% at 50% 38%,rgba(21,89,207,.13),#05080d 70%),#05080d;
+  padding:clamp(12px,2.2vh,26px) clamp(14px,2.4vw,40px);
+}
+.edscene.show{display:flex}
+.ed-inner{width:min(96vw,1700px);max-height:100%;display:flex;flex-direction:column}
+/* stay out from under the mug shot QR, the same way the forecourt view does,
+   and symmetrically so the table stays centred */
+@media(min-width:1200px){
+  .ed-inner{width:min(1700px,calc(100vw - 2*(var(--qrbox) + 46px)))}
+}
+.ed-head{display:flex;align-items:baseline;gap:.7em;flex-wrap:wrap;margin-bottom:.5em}
+.ed-kicker{font-family:var(--display);font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:#fff;font-size:clamp(1.2rem,2.8vw,2.5rem)}
+.ed-flag{font-family:var(--display);font-weight:700;text-transform:uppercase;
+  letter-spacing:.2em;font-size:clamp(.5rem,.9vw,.72rem);
+  color:#ffd9d9;background:#7d1d1d;border:1px solid #a33;
+  padding:.35em .7em;border-radius:4px;white-space:nowrap}
+.ed-sub{color:var(--muted);font-size:clamp(.62rem,1.1vw,.9rem);margin-left:auto;
+  white-space:nowrap}
+.ed-rows{display:flex;flex-direction:column;gap:clamp(4px,.7vh,10px);overflow:hidden}
+.ed-row{
+  display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;
+  gap:clamp(8px,1.4vw,22px);
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:clamp(7px,1.15vh,16px) clamp(11px,1.3vw,22px);
+}
+.ed-row.top{border-color:var(--gold);background:linear-gradient(90deg,rgba(184,134,44,.17),var(--panel) 42%)}
+.ed-rank{font-family:var(--display);font-weight:700;color:var(--muted);
+  font-size:clamp(.9rem,1.8vw,1.7rem);min-width:1.3em;text-align:center}
+.ed-row.top .ed-rank{color:var(--gold)}
+.ed-car{display:flex;flex-direction:column;gap:.12em;min-width:0}
+.ed-reg{font-family:var(--display);font-weight:700;letter-spacing:.04em;color:#fff;
+  font-size:clamp(.95rem,1.95vw,1.85rem);line-height:1.1}
+.ed-model{color:var(--muted);font-size:clamp(.62rem,1.12vw,1rem);line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-miles{color:var(--muted);font-size:clamp(.6rem,1.05vw,.95rem);white-space:nowrap}
+.ed-price{font-family:var(--display);font-weight:700;color:#fff;
+  font-size:clamp(1rem,2.05vw,1.95rem);white-space:nowrap;text-align:right}
+.ed-was{display:block;color:var(--muted);font-weight:400;
+  font-size:clamp(.55rem,.92vw,.82rem);text-decoration:line-through}
+.ed-margin{font-family:var(--display);font-weight:700;color:var(--gold);
+  font-size:clamp(1.1rem,2.4vw,2.3rem);white-space:nowrap;text-align:right;min-width:3.4em}
+.ed-margin small{display:block;font-family:var(--sans);font-weight:400;
+  color:var(--muted);font-size:clamp(.44rem,.72vw,.6rem);
+  text-transform:uppercase;letter-spacing:.14em}
+.ed-demos{margin-top:clamp(9px,1.5vh,20px);padding-top:clamp(8px,1.3vh,17px);
+  border-top:1px solid var(--line);
+  color:var(--muted);font-size:clamp(.64rem,1.15vw,1.05rem);line-height:1.5}
+.ed-demos b{color:var(--gold);font-family:var(--display);letter-spacing:.04em}
+.ed-demos span{color:#fff;font-family:var(--display);letter-spacing:.05em}
+@media(max-width:900px){
+  .ed-row{grid-template-columns:auto 1fr auto;gap:8px}
+  .ed-model,.ed-miles{display:none}
+}
+
 .fcscene{
   position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(60% 60% at 50% 40%,rgba(21,89,207,.14),rgba(5,8,13,.96) 70%),rgba(5,8,13,.95);
@@ -1555,6 +1617,18 @@ body.premiere .credit{opacity:0;transition:opacity .6s ease}
 <!-- what has landed on the forecourt since yesterday morning. A view, not a
      scene: z-index 50, fifteen seconds, from the same stock snapshot the
      public stock list reads -->
+<div class="edscene" id="edscene" aria-hidden="true">
+  <div class="ed-inner">
+    <div class="ed-head">
+      <span class="ed-kicker" id="ed-kicker">Event deals</span>
+      <span class="ed-flag">Internal &mdash; do not show customers</span>
+      <span class="ed-sub" id="ed-sub"></span>
+    </div>
+    <div class="ed-rows" id="ed-rows"></div>
+    <div class="ed-demos" id="ed-demos"></div>
+  </div>
+</div>
+
 <div class="fcscene" id="fcscene" aria-hidden="true">
   <div class="fc-inner">
     <div class="fc-kicker" id="fc-kicker">What&rsquo;s new on the forecourt?</div>
@@ -2620,6 +2694,65 @@ function rollStock(){
    way, and "nothing new today" is not worth fifteen seconds of a wall. The
    fallback is picked from the day itself so every screen shows the same six
    and they change tomorrow. */
+/* ---- event deals ----
+   Will's list for an event weekend, highest margin first, up for a few days
+   and then gone by itself. The figures live in the database and never in
+   this file: the repo is public, so anything committed here is readable by
+   anyone and stays in the history even after it is deleted.
+   `until` is the expiry, so nobody has to remember to take it down. */
+var EVDEALS=null;
+window.dsOnEventDeals=function(v){ EVDEALS=v||null; resyncView(); paintEventDeals() };
+
+function evLive(){
+  var d=EVDEALS;
+  if(!d||!d.cars)return null;
+  if(d.until&&Date.now()>d.until)return null;    /* its few days are up */
+  var cars,demos;
+  try{ cars=JSON.parse(d.cars) }catch(e){ return null }
+  if(!cars||!cars.length)return null;
+  try{ demos=d.demos?JSON.parse(d.demos):[] }catch(e){ demos=[] }
+  /* highest margin first, whatever order they arrived in */
+  cars=cars.slice().sort(function(a,b){ return (b.margin||0)-(a.margin||0) });
+  return {cars:cars, demos:demos||[], title:d.title||'', note:d.note||'', until:d.until||0};
+}
+
+function money0(n){
+  return '\u00a3'+Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');
+}
+
+function paintEventDeals(){
+  var d=evLive();
+  if(!d)return;
+  $('ed-kicker').textContent=d.title||'Event deals';
+  var left=d.until?Math.max(0,Math.ceil((d.until-Date.now())/86400000)):0;
+  $('ed-sub').textContent=(d.note?d.note+' \u00b7 ':'')+
+    (left?(left===1?'last day':left+' days left'):'');
+  /* the margin column can be switched off from the console - the order still
+     says which cars to push, without the figure itself up on a wall */
+  var showM=sOn('dealmargin');
+  $('ed-rows').innerHTML=d.cars.map(function(c,i){
+    return '<div class="ed-row'+(i<3?' top':'')+'">'+
+      '<span class="ed-rank">'+(i+1)+'</span>'+
+      '<span class="ed-car"><span class="ed-reg">'+esc(c.reg||'')+'</span>'+
+        '<span class="ed-model">'+esc(c.model||'')+'</span></span>'+
+      '<span class="ed-miles">'+(c.miles?esc(String(c.miles))+' mi':'')+'</span>'+
+      '<span class="ed-price">'+esc(c.now||'')+
+        (c.was?'<span class="ed-was">'+esc(c.was)+'</span>':'')+'</span>'+
+      (showM&&c.margin
+        ? '<span class="ed-margin">'+money0(c.margin)+'<small>margin</small></span>'
+        : '<span class="ed-margin"></span>')+
+      '</div>';
+  }).join('');
+  var box=$('ed-demos');
+  if(d.demos.length){
+    box.innerHTML='<b>Bonus ex-demos</b> &mdash; minimum &pound;250 chassis commission: '+
+      d.demos.map(function(x){
+        return '<span>'+esc(x.reg||x)+'</span>'+(x.now?' '+esc(x.now):'');
+      }).join(' &nbsp;\u00b7&nbsp; ');
+    box.style.display='';
+  }else{ box.style.display='none' }
+}
+
 function fcCars(){
   if(!STOCK||!STOCK.length)return null;
   var day=fcDay(), byId={};
@@ -2746,6 +2879,8 @@ function viewMs(v){
   /* a birthday card and the forecourt list are both a glance rather than a
      read - half the main slot, and never longer than it */
   var brief=Math.min(BDAY_VIEW_MS,full);
+  /* a table of nine cars cannot be read in the time a photo can */
+  if(v.kind==='eventdeals')return Math.max(full, 40000);
   return (v.kind==='birthday'||v.kind==='forecourt') ? brief : full;
 }
 
@@ -2778,6 +2913,9 @@ function views(){
          (mug.votes?'rated '+mug.votes+' out of 5 by the team':'voted on by the team')+
          (mug.rated?' \u00b7 '+mug.rated+' rating'+(mug.rated===1?'':'s'):'')
   });
+  /* the event list goes in ahead of the forecourt slot - for the few days it
+     is up it is the thing the team most need off the wall */
+  if(sOn('eventdeals')&&evLive())out.push({id:'eventdeals', kind:'eventdeals'});
   /* what has landed on the forecourt since yesterday morning */
   if(sOn('forecourt')&&fcCars())out.push({id:'forecourt', kind:'forecourt'});
   /* birthdays come after the boards and screenshots, not in between them */
@@ -2811,9 +2949,11 @@ function showView(i){
     $('bv-name').textContent=v.bday.name||'';
     $('bv-note').textContent=bdayDayNote(v.bday.ts);
   }
+  if(v.kind==='eventdeals')paintEventDeals();
   if(v.kind==='forecourt')paintForecourt();
   $('ncscene').classList.toggle('show',!!v.img);
   $('bdayview').classList.toggle('show',v.kind==='birthday');
+  $('edscene').classList.toggle('show',v.kind==='eventdeals');
   $('fcscene').classList.toggle('show',v.kind==='forecourt');
   ncChat(v.kind==='newcar');
   paintViewControls();
@@ -4674,6 +4814,7 @@ function paintSettingsNote(){
   ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
    'premiere',
    'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','ticker',
+   'eventdeals','dealmargin',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
   n.style.display=off.length?'block':'none';
   n.innerHTML=off.length
@@ -4695,6 +4836,7 @@ window.dsBindBackend=function(api){
   if(backend.watchTicker)backend.watchTicker(function(v){
     TICKER=v||{}; paintTicker(); paintTickerPanel();
   });
+  if(backend.watchEventDeals)backend.watchEventDeals(window.dsOnEventDeals);
   if(backend.watchStock)backend.watchStock(function(seen,day){
     STOCKSEEN=seen||{}; STOCKDAY=day||null;
     rollStock();
@@ -4784,6 +4926,7 @@ window.dsBindBackend({
   watchControl(cb,onErr){ watch('boardcontrol', cb, ()=>{onErr&&onErr()}) },
   watchSettings(cb){ watch('boardsettings', cb) },
   watchTicker(cb){ watch('ticker/items', cb) },
+  watchEventDeals(cb){ watch('eventdeals', cb) },
   /* two nodes, one callback - the roll needs both before it can decide */
   watchStock(cb){
     let seen=null, day=null, got=0;
