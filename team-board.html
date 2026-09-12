@@ -2786,7 +2786,8 @@ function evLive(){
   if(!cars||!cars.length)return null;
   /* highest margin first, whatever order they arrived in */
   cars=cars.slice().sort(function(a,b){ return (b.margin||0)-(a.margin||0) });
-  return {cars:cars, demos:o.demos||[], title:o.title||'', note:o.note||'', until:d.until||0};
+  return {cars:cars, demos:o.demos||[], title:o.title||'', note:o.note||'',
+          demotitle:o.demotitle||'', demonote:o.demonote||'', until:d.until||0};
 }
 
 function money0(n){
@@ -2818,7 +2819,10 @@ function paintEventDeals(){
   }).join('');
   var box=$('ed-demos');
   if(d.demos.length){
-    box.innerHTML='<b>Bonus ex-demos</b> &mdash; minimum &pound;250 chassis commission: '+
+    /* the wording comes down with the encrypted list - it is a line out of
+       an internal email, so it does not belong in a public page either */
+    box.innerHTML='<b>'+esc(d.demotitle||'Bonus ex-demos')+'</b>'+
+      (d.demonote?' &mdash; '+esc(d.demonote):'')+': '+
       d.demos.map(function(x){
         return '<span>'+esc(x.reg||x)+'</span>'+(x.now?' '+esc(x.now):'');
       }).join(' &nbsp;\u00b7&nbsp; ');
