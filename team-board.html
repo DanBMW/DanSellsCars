@@ -1463,6 +1463,7 @@ body.premiere .credit{opacity:0;transition:opacity .6s ease}
         <button type="button" class="btn" style="flex:1" id="ev-unlock">Unlock on this screen</button>
         <button type="button" class="btn ghost" id="ev-forget">Forget it</button>
       </div>
+      <div id="ev-screens" style="display:none"></div>
 
       <h2 style="margin-top:22px;font-size:1rem">The premiere</h2>
       <p class="hint" style="margin-bottom:10px">The film, on every screen at once. Get the screens ready first -
@@ -2719,7 +2720,7 @@ var evBusy=false;
 window.dsOnEventDeals=function(v){
   EVDEALS=v||null; EVPLAIN=null;
   resyncView();
-  evDecrypt();
+  evDecrypt().then(function(){ evPairOffer() });
 };
 
 /* ---- the key ----
@@ -2771,6 +2772,87 @@ function evDecrypt(){
       return false;
     });
 }
+
+/* ---- pairing a screen from a phone ----
+   A wall display is a television. Clicking with a remote is bearable, typing
+   a passphrase is not, and the key must never travel through the database in
+   a form anyone reading it could use. So:
+
+     the screen makes an ECDH keypair, keeps the private half (non-extractable,
+     never leaves the browser) and publishes only the PUBLIC half;
+     the phone does ECDH against that public key, derives a shared secret
+     nobody else can compute, and writes the passphrase encrypted under it;
+     the screen decrypts with its private half, stores the passphrase locally
+     and deletes the pairing record.
+
+   What sits in the database in between is a public key and a blob only that
+   one screen can open. Nothing is typed on the television. */
+var EVPAIR={}, evPairKeys=null, evPairId=null;
+
+function evScreenId(){
+  if(evPairId)return evPairId;
+  try{
+    evPairId=localStorage.getItem('dsScreenId');
+    if(!evPairId){
+      var a=new Uint8Array(6); crypto.getRandomValues(a);
+      evPairId=Array.prototype.map.call(a,function(b){
+        return 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b%32] }).join('');
+      localStorage.setItem('dsScreenId',evPairId);
+    }
+  }catch(e){ evPairId='SCREEN' }
+  return evPairId;
+}
+function evScreenLabel(){ var i=evScreenId(); return i.slice(0,3)+'-'+i.slice(3,6) }
+
+function b64of(buf){
+  var a=new Uint8Array(buf), s='';
+  for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);
+  return btoa(s);
+}
+
+/* offer to be paired, but only while there is something we cannot read */
+function evPairOffer(){
+  var C=window.crypto&&window.crypto.subtle;
+  if(!C||!backend||!backend.setEvPair)return;
+  if(!evLocked())return;
+  if(evPairKeys)return evPairPublish();
+  C.generateKey({name:'ECDH',namedCurve:'P-256'},false,['deriveKey'])
+    .then(function(kp){ evPairKeys=kp; return evPairPublish() })
+    ['catch'](function(e){ console.warn('pairing unavailable',e) });
+}
+function evPairPublish(){
+  var C=window.crypto.subtle;
+  return C.exportKey('raw',evPairKeys.publicKey).then(function(raw){
+    return backend.setEvPair(evScreenId(),{pub:b64of(raw),ts:Date.now()});
+  })['catch'](function(e){ console.warn('could not offer pairing',e) });
+}
+
+/* the phone has answered: derive the same secret and open it */
+function evPairTake(rec){
+  var C=window.crypto&&window.crypto.subtle;
+  if(!C||!evPairKeys||!rec||!rec.msg||!rec.epub||!rec.iv)return;
+  C.importKey('raw',b64bytes(rec.epub),{name:'ECDH',namedCurve:'P-256'},false,[])
+    .then(function(their){
+      return C.deriveKey({name:'ECDH',public:their},evPairKeys.privateKey,
+                         {name:'AES-GCM',length:256},false,['decrypt']);
+    })
+    .then(function(k){ return C.decrypt({name:'AES-GCM',iv:b64bytes(rec.iv)},k,b64bytes(rec.msg)) })
+    .then(function(buf){
+      var pass=new TextDecoder().decode(buf);
+      if(backend&&backend.clearEvPair)backend.clearEvPair(evScreenId());
+      evPairKeys=null;
+      evSetKey(pass);              /* stored on this screen, and it unlocks */
+      toast('Unlocked from your phone','ok');
+    })
+    ['catch'](function(e){ console.warn('pairing failed',e) });
+}
+
+window.dsOnEvPair=function(v){
+  EVPAIR=v||{};
+  var mine=EVPAIR[evScreenId()];
+  if(mine&&mine.msg)evPairTake(mine);
+  paintPairList();
+};
 
 /* is there something in the database this screen simply cannot read? */
 function evLocked(){
@@ -3416,6 +3498,69 @@ function paintClipControls(){
 
 /* The readiness line is about THIS screen - each one holds its own copy, so
    "ready" on a phone says nothing about the screen on the wall. Say which. */
+/* screens waiting to be unlocked - anything that offered in the last ten
+   minutes and has not already been answered */
+function evWaiting(){
+  var out=[], now=Date.now();
+  Object.keys(EVPAIR||{}).forEach(function(id){
+    var r=EVPAIR[id];
+    if(!r||!r.pub||r.msg)return;
+    if(now-(r.ts||0)>600000)return;
+    out.push({id:id, label:id.slice(0,3)+'-'+id.slice(3,6), ts:r.ts, me:id===evScreenId()});
+  });
+  return out.sort(function(a,b){return b.ts-a.ts});
+}
+
+/* ECDH to that screen's public key, then AES-GCM under the shared secret.
+   Only the screen holding the matching private key can read it. */
+function evPairSend(id,pass){
+  var C=window.crypto&&window.crypto.subtle;
+  var rec=(EVPAIR||{})[id];
+  if(!C)return Promise.reject(new Error('no WebCrypto'));
+  if(!rec||!rec.pub)return Promise.reject(new Error('that screen is no longer waiting'));
+  if(!backend||!backend.setEvPairMsg)return Promise.reject(new Error('not connected'));
+  var iv=crypto.getRandomValues(new Uint8Array(12)), mine;
+  return C.generateKey({name:'ECDH',namedCurve:'P-256'},false,['deriveKey'])
+    .then(function(kp){ mine=kp;
+      return C.importKey('raw',b64bytes(rec.pub),{name:'ECDH',namedCurve:'P-256'},false,[]); })
+    .then(function(their){
+      return C.deriveKey({name:'ECDH',public:their},mine.privateKey,
+                         {name:'AES-GCM',length:256},false,['encrypt']); })
+    .then(function(k){
+      return C.encrypt({name:'AES-GCM',iv:iv},k,new TextEncoder().encode(pass)); })
+    .then(function(ct){
+      return C.exportKey('raw',mine.publicKey).then(function(raw){
+        return backend.setEvPairMsg(id,{epub:b64of(raw),iv:b64of(iv),msg:b64of(ct)});
+      });
+    });
+}
+
+function paintPairList(){
+  var box=$('ev-screens');
+  if(!box)return;
+  var list=evWaiting().filter(function(s){return !s.me});
+  if(!list.length){ box.innerHTML=''; box.style.display='none'; return }
+  box.style.display='';
+  box.innerHTML='<p class="hint" style="margin:10px 0 6px">Screens waiting to be unlocked. '+
+    'Send the passphrase from here and nothing needs typing on the television.</p>'+
+    list.map(function(s){
+      return '<button type="button" class="clipbtn" data-screen="'+s.id+'">'+
+        '<span class="ply">&#128274;</span><span>Unlock screen '+esc(s.label)+
+        '<small>waiting since '+new Date(s.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+
+        '</small></span></button>';
+    }).join('');
+  Array.prototype.forEach.call(box.querySelectorAll('.clipbtn'),function(b){
+    b.onclick=function(){
+      var pass=($('ev-pass').value||'').trim()||evKey();
+      if(!pass){toast('Enter the passphrase above first','err');return}
+      evPairSend(b.getAttribute('data-screen'),pass).then(function(){
+        toast('Sent to screen '+b.textContent.replace(/[^A-Z0-9-]/g,'').slice(0,7),'ok');
+        $('ev-pass').value='';
+      })['catch'](function(e){ console.error(e); toast('Could not reach that screen','err') });
+    };
+  });
+}
+
 function paintEventPanel(){
   var el=$('ev-state');
   if(!el)return;
@@ -4948,6 +5093,8 @@ window.dsBindBackend=function(api){
   paintControlNote();
   paintClipControls();
   paintEventPanel();
+  if(backend.watchEvPair)backend.watchEvPair(window.dsOnEvPair);
+  evPairOffer();
 };
 window.dsOnDeals=function(obj){
   deals=obj||{};
@@ -5030,6 +5177,10 @@ window.dsBindBackend({
   watchSettings(cb){ watch('boardsettings', cb) },
   watchTicker(cb){ watch('ticker/items', cb) },
   watchEventDeals(cb){ watch('eventdeals', cb) },
+  watchEvPair(cb){ watch('evpair', cb) },
+  setEvPair:(id,o)=>set(ref(db,'evpair/'+id),o),
+  setEvPairMsg:(id,o)=>update(ref(db,'evpair/'+id),o),
+  clearEvPair:(id)=>remove(ref(db,'evpair/'+id)),
   /* two nodes, one callback - the roll needs both before it can decide */
   watchStock(cb){
     let seen=null, day=null, got=0;

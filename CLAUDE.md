@@ -466,8 +466,18 @@ said so.
   key stretched from a passphrase by PBKDF2-SHA256 at 250k iterations.
   Reading the repo or the database without the passphrase gets nothing.
   **The passphrase is never in this repo and never in the database.** It is
-  typed once per screen in the manager panel (behind the PIN) and kept in
-  that browser's localStorage as `dsEvKey`. A screen that has not been given
+  kept in each browser's localStorage as `dsEvKey`.
+  **A wall display is a television, so nothing is typed on it.** A locked
+  screen publishes an ECDH P-256 **public** key to `evpair/<screenId>` and
+  keeps the private half non-extractable in that browser. Dan's phone lists
+  the waiting screens in the manager panel, does ECDH against that public
+  key, and writes the passphrase encrypted under the shared secret. The
+  screen decrypts with its private half, stores the passphrase and deletes
+  the pairing record. What sits in the database in between is a public key
+  and a blob only that one screen can open - an eavesdropper holding the
+  entire record cannot read it, which is tested rather than assumed. Do not
+  replace this with writing the passphrase to the database "just for a
+  moment": that puts both halves in one place and undoes the encryption. A screen that has not been given
   it does not carry the slot at all - `evLocked()` is true, `views()` omits
   it, and nothing of the list reaches the DOM. Do not add a fallback that
   renders it unencrypted, and do not commit the passphrase to make life

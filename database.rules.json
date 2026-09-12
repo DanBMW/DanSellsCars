@@ -157,6 +157,20 @@
       "$other": { ".validate": false }
     },
 
+    "evpair": {
+      ".read": true,
+      "$screen": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['pub','ts'])",
+        "pub":  { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "ts":   { ".validate": "newData.isNumber()" },
+        "epub": { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "iv":   { ".validate": "newData.isString() && newData.val().length <= 64" },
+        "msg":  { ".validate": "newData.isString() && newData.val().length <= 2000" },
+        "$other": { ".validate": false }
+      }
+    },
+
     "boardsettings": {
       ".read": true,
       "$key": {
