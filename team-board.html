@@ -2766,7 +2766,11 @@ var evBusy=false;
 window.dsOnEventDeals=function(v){
   EVDEALS=v||null; EVPLAIN=null;
   resyncView();
-  evDecrypt().then(function(){ evPairOffer() });
+  /* repaint whatever the panel is saying: it is painted once when the
+     backend connects, which is BEFORE this data arrives, so without this it
+     reads "Nothing published at the moment" for ever afterwards */
+  paintEventPanel(); paintPairList();
+  evDecrypt().then(function(){ evPairOffer(); paintEventPanel() });
 };
 
 /* ---- the key ----
@@ -2790,7 +2794,7 @@ function b64bytes(b64){
    database or this repo without the passphrase gets you nothing. */
 function evDecrypt(){
   var d=EVDEALS, pass=evKey();
-  if(!d||!d.enc||!d.salt||!d.iv||!pass)return Promise.resolve(false);
+  if(!d||!d.enc||!d.salt||!d.iv||!pass){ paintEventPanel(); return Promise.resolve(false) }
   if(evBusy)return Promise.resolve(false);
   var C=window.crypto&&window.crypto.subtle;
   if(!C){ console.warn('event deals: no WebCrypto on this browser'); return Promise.resolve(false) }
@@ -3235,7 +3239,8 @@ var VIEWPINS=[
   {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
   {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"},
   {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'},
-  {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock, from the stock list'}
+  {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock, from the stock list'},
+  {id:'eventdeals',   name:'Event deals',            sub:'Highest margin first'}
 ];
 /* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
    the team and then walks off; a wall display stuck on one screen all
@@ -4918,6 +4923,7 @@ function checkPin(){
   }
 }
 $('btn-manager').onclick=function(){
+  paintEventPanel(); paintPairList();   /* never open on a stale message */
   if(isManager){resetForm();openModal('m-mgr');renderDeals();return}
   $('pin-input').value='';
   openModal('m-pin');

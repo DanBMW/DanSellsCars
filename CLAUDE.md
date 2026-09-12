@@ -503,6 +503,13 @@ said so.
   is the same API the board decrypts with, so interop is a guarantee rather
   than a hope. `until` is deliberately **plaintext**, so a locked screen
   still expires the slot without being able to read it.
+  **The panel has to be repainted when the list arrives.** `paintEventPanel()`
+  runs once when the backend connects, which is *before* the `eventdeals`
+  watch delivers anything, so without a repaint in `dsOnEventDeals` (and on
+  the early returns in `evDecrypt`, and when the manager panel is opened) it
+  reads "Nothing published at the moment" for ever afterwards - while the
+  board itself is perfectly happy. That is a badly misleading message: it
+  sends you looking for a publishing fault that is not there.
   Decryption is async but `views()` is not, so the plaintext is decrypted
   once into `EVPLAIN` when the data or the key arrives and `evLive()` reads
   that synchronously. `until` is an expiry: the slot leaves the rotation by
