@@ -1452,6 +1452,18 @@ body.premiere .credit{opacity:0;transition:opacity .6s ease}
 
     <details class="fold" id="display-fold">
       <summary>Display controls<span>What's up, sketches, screenshots</span></summary>
+      <h2 style="margin-top:22px;font-size:1rem">Event list</h2>
+      <p class="hint" style="margin-bottom:10px">The event deals are held encrypted, so the figures are not
+        readable by anyone who finds the database or the site. Enter the passphrase once on each screen that
+        should show them - it stays in that browser and is never sent anywhere.</p>
+      <div id="ev-state" class="hint" style="margin:0 0 8px"></div>
+      <input id="ev-pass" type="password" placeholder="Event passphrase" autocomplete="off"
+             style="width:100%;margin-bottom:8px">
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn" style="flex:1" id="ev-unlock">Unlock on this screen</button>
+        <button type="button" class="btn ghost" id="ev-forget">Forget it</button>
+      </div>
+
       <h2 style="margin-top:22px;font-size:1rem">The premiere</h2>
       <p class="hint" style="margin-bottom:10px">The film, on every screen at once. Get the screens ready first -
         each one pulls the whole film into memory, so once it starts it plays straight through
@@ -2700,20 +2712,81 @@ function rollStock(){
    this file: the repo is public, so anything committed here is readable by
    anyone and stays in the history even after it is deleted.
    `until` is the expiry, so nobody has to remember to take it down. */
-var EVDEALS=null;
-window.dsOnEventDeals=function(v){ EVDEALS=v||null; resyncView(); paintEventDeals() };
+var EVDEALS=null;      /* what is in the database: ciphertext and an expiry */
+var EVPLAIN=null;      /* the decrypted list, once this device has the key */
+var evBusy=false;
+
+window.dsOnEventDeals=function(v){
+  EVDEALS=v||null; EVPLAIN=null;
+  resyncView();
+  evDecrypt();
+};
+
+/* ---- the key ----
+   Never in this file and never in the database. It is typed once per screen,
+   behind the manager PIN, and kept in this browser only. A screen that has
+   not been given it simply does not carry the slot - a wall display must not
+   sit there showing a password box. */
+function evKey(){ try{ return localStorage.getItem('dsEvKey')||'' }catch(e){ return '' } }
+function evSetKey(k){
+  try{ k ? localStorage.setItem('dsEvKey',k) : localStorage.removeItem('dsEvKey') }catch(e){}
+  EVPLAIN=null; evDecrypt();
+}
+
+function b64bytes(b64){
+  var raw=atob(b64), a=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)a[i]=raw.charCodeAt(i);
+  return a;
+}
+
+/* AES-GCM, key stretched from the passphrase with PBKDF2. Reading the
+   database or this repo without the passphrase gets you nothing. */
+function evDecrypt(){
+  var d=EVDEALS, pass=evKey();
+  if(!d||!d.enc||!d.salt||!d.iv||!pass)return Promise.resolve(false);
+  if(evBusy)return Promise.resolve(false);
+  var C=window.crypto&&window.crypto.subtle;
+  if(!C){ console.warn('event deals: no WebCrypto on this browser'); return Promise.resolve(false) }
+  evBusy=true;
+  var enc=new TextEncoder();
+  return C.importKey('raw',enc.encode(pass),{name:'PBKDF2'},false,['deriveKey'])
+    .then(function(base){
+      return C.deriveKey(
+        {name:'PBKDF2',salt:b64bytes(d.salt),iterations:250000,hash:'SHA-256'},
+        base,{name:'AES-GCM',length:256},false,['decrypt']);
+    })
+    .then(function(key){
+      return C.decrypt({name:'AES-GCM',iv:b64bytes(d.iv)},key,b64bytes(d.enc));
+    })
+    .then(function(buf){
+      var obj=JSON.parse(new TextDecoder().decode(buf));
+      EVPLAIN=obj; evBusy=false;
+      resyncView(); paintEventDeals(); paintEventPanel();
+      return true;
+    })
+    ['catch'](function(e){
+      /* almost always the wrong passphrase - not worth a console full of it */
+      EVPLAIN=null; evBusy=false;
+      resyncView(); paintEventPanel();
+      return false;
+    });
+}
+
+/* is there something in the database this screen simply cannot read? */
+function evLocked(){
+  var d=EVDEALS;
+  return !!(d&&d.enc&&(!d.until||Date.now()<=d.until)&&!EVPLAIN);
+}
 
 function evLive(){
-  var d=EVDEALS;
-  if(!d||!d.cars)return null;
+  var d=EVDEALS, o=EVPLAIN;
+  if(!d||!o)return null;
   if(d.until&&Date.now()>d.until)return null;    /* its few days are up */
-  var cars,demos;
-  try{ cars=JSON.parse(d.cars) }catch(e){ return null }
+  var cars=o.cars;
   if(!cars||!cars.length)return null;
-  try{ demos=d.demos?JSON.parse(d.demos):[] }catch(e){ demos=[] }
   /* highest margin first, whatever order they arrived in */
   cars=cars.slice().sort(function(a,b){ return (b.margin||0)-(a.margin||0) });
-  return {cars:cars, demos:demos||[], title:d.title||'', note:d.note||'', until:d.until||0};
+  return {cars:cars, demos:o.demos||[], title:o.title||'', note:o.note||'', until:d.until||0};
 }
 
 function money0(n){
@@ -3339,6 +3412,17 @@ function paintClipControls(){
 
 /* The readiness line is about THIS screen - each one holds its own copy, so
    "ready" on a phone says nothing about the screen on the wall. Say which. */
+function paintEventPanel(){
+  var el=$('ev-state');
+  if(!el)return;
+  el.textContent =
+      !EVDEALS            ? 'Nothing published at the moment.'
+    : EVPLAIN             ? 'Unlocked on this screen \u2013 the list is in the rotation.'
+    : evBusy              ? 'Checking\u2026'
+    : evKey()             ? 'That passphrase did not open it. Try again.'
+    :                       'Locked on this screen. Enter the passphrase to show it here.';
+}
+
 function paintPremiereControls(){
   var el=$('prem-state');
   if(el)el.textContent = premiereLock ? 'Playing now' : premStatusText();
@@ -4609,6 +4693,20 @@ $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPi
 $('mgr-save').onclick=saveDeal;
 $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
 $('reload-all').onclick=reloadAllScreens;
+$('ev-unlock').onclick=function(){
+  var v=($('ev-pass').value||'').trim();
+  if(!v){toast('Enter the passphrase','err');return}
+  evSetKey(v); $('ev-pass').value='';
+  /* evDecrypt repaints when it lands, so just say we are trying */
+  paintEventPanel();
+  setTimeout(function(){
+    toast(EVPLAIN?'Event list unlocked on this screen':'That passphrase did not open it',
+          EVPLAIN?'ok':'err');
+  },900);
+};
+$('ev-forget').onclick=function(){
+  evSetKey(''); toast('Forgotten on this screen','ok'); paintEventPanel();
+};
 $('prem-arm').onclick=premiereArmAll;
 $('prem-stream').onclick=premiereStreamAll;
 $('prem-roll').onclick=premiereRollAll;
@@ -4845,6 +4943,7 @@ window.dsBindBackend=function(api){
   });
   paintControlNote();
   paintClipControls();
+  paintEventPanel();
 };
 window.dsOnDeals=function(obj){
   deals=obj||{};

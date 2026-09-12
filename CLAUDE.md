@@ -456,25 +456,34 @@ said so.
   along the bottom. It is a **view**, not a cut scene, and it takes 40s
   rather than 30 (`viewMs()`): nine cars cannot be read in the time a photo
   can.
-  **The figures are never committed to this repo.** The repo is public -
-  `raw.githubusercontent.com` serves every file in it to anyone, and a commit
-  stays in the history even after the file is deleted - so margin data in a
-  page here would be published to the open internet permanently. The numbers
-  live at `eventdeals` in the database and only the rendering ships in
-  `team-board.html`. Do not "simplify" this by inlining the list.
-  Understand what that does and does not buy: the database is world-readable
-  by its rules and the board's own config is in public JS, so this is the
-  same hiding-not-protecting gate as everything else here. It keeps the
-  figures out of a public git history, which is the part that cannot be
-  undone. Real protection means Firebase Auth.
-  `cars` and `demos` are **JSON strings**, not child nodes - it keeps the
-  rules trivial and avoids RTDB's array handling; the board parses and sorts
-  by margin itself, so the order it is written in does not matter. `until` is
-  an expiry: `evLive()` returns nothing past it, so the slot leaves the
-  rotation by itself and nobody has to remember to take it down. Two
-  switches: `eventdeals` for the slot, and `dealmargin`, which hides the
-  pounds while keeping the running order - which cars to push, without the
-  figure itself up on a wall.
+  **The figures are encrypted, and this is the one thing here that is not
+  merely a hidden gate.** Margin data is genuinely confidential, so neither
+  of the usual options was good enough: this repo is public
+  (`raw.githubusercontent.com` serves every file to anyone, and a commit
+  stays in the history even after deletion), and `eventdeals` in the database
+  is world-readable by its rules like every other path. So the database holds
+  **ciphertext only** - `{enc, salt, iv, ts, until}`, AES-GCM 256 with the
+  key stretched from a passphrase by PBKDF2-SHA256 at 250k iterations.
+  Reading the repo or the database without the passphrase gets nothing.
+  **The passphrase is never in this repo and never in the database.** It is
+  typed once per screen in the manager panel (behind the PIN) and kept in
+  that browser's localStorage as `dsEvKey`. A screen that has not been given
+  it does not carry the slot at all - `evLocked()` is true, `views()` omits
+  it, and nothing of the list reaches the DOM. Do not add a fallback that
+  renders it unencrypted, and do not commit the passphrase to make life
+  easier.
+  Encrypt a new list with `node encrypt-deals.js <passphrase> <plain.json>
+  <until-ms>` (kept out of the repo for the same reason) - Node's `webcrypto`
+  is the same API the board decrypts with, so interop is a guarantee rather
+  than a hope. `until` is deliberately **plaintext**, so a locked screen
+  still expires the slot without being able to read it.
+  Decryption is async but `views()` is not, so the plaintext is decrypted
+  once into `EVPLAIN` when the data or the key arrives and `evLive()` reads
+  that synchronously. `until` is an expiry: the slot leaves the rotation by
+  itself and nobody has to remember to take it down. Two switches:
+  `eventdeals` for the slot, and `dealmargin`, which hides the pounds while
+  keeping the running order - which cars to push, without the figure itself
+  up on a wall.
 - **The view rotation.** The wall display cycles through whatever there is to
   show (`views()`, `showView()`, `rotateView()`) - 30 seconds each (`VIEW_MS`),
   except a birthday card, which gets 15 (`BDAY_VIEW_MS`): it is one line of
