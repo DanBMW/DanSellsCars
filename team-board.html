@@ -3745,12 +3745,27 @@ function setVideosOn(on){
 /* a shuffle bag can still deal the same clip twice across a refill, which is
    obvious with only two - so simply never repeat the one just shown */
 var lastClip=-1;
+/* Each clip has its own switch in the admin console, keyed off its filename.
+   Must match clipKey() in admin.html exactly - the two are twins by
+   necessity, since this page is deliberately self-contained; change both
+   together. boardsettings already takes any boolean key, so there is no
+   rules change behind this. */
+function clipKey(src){
+  return 'vid_'+String(src||'').split('/').pop().replace(/\.mp4$/,'').replace(/[^A-Za-z0-9]/g,'');
+}
+function clipOn(c){ return !!c && sOn(clipKey(c.src)) }
+function playableClips(){ return CLIPS.filter(clipOn) }
+
 function pickClip(){
-  if(CLIPS.length<2)return CLIPS[0];
-  var i;
-  do{i=Math.random()*CLIPS.length|0}while(i===lastClip);
-  lastClip=i;
-  return CLIPS[i];
+  /* only from the ones that are switched on - with every one off the slot
+     simply declines and the cut-scene queue moves along */
+  var pool=playableClips();
+  if(!pool.length)return null;
+  if(pool.length<2)return pool[0];
+  var last=CLIPS[lastClip], i;
+  do{i=Math.random()*pool.length|0}while(last&&pool[i]===last);
+  lastClip=CLIPS.indexOf(pool[i]);
+  return pool[i];
 }
 
 /* Browsers refuse to autoplay with sound until somebody has touched the page.
@@ -3867,7 +3882,7 @@ function videoScene(forced){
 function warmVideo(){
   if(window.innerWidth<1200||!window.fetch)return;
   setTimeout(function(){
-    CLIPS.forEach(function(c,i){
+    playableClips().forEach(function(c,i){
       setTimeout(function(){fetch(c.src,{cache:'force-cache'})['catch'](function(){})},i*3000);
     });
   },20000);

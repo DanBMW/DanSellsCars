@@ -179,6 +179,11 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
         <div><input type="number" id="n-scenemins" min="1" max="60" step="1" placeholder="5"></div>
         <button class="btn" data-num="scenemins" data-def="5">Save</button>
       </div>
+      <h2 style="margin-top:20px">Which sketches play</h2>
+      <p class="hint">A switch per clip. Off keeps it out of the automatic slot, but the play buttons
+        below still work - so you can drop one from the rotation and still put it up when you want to.</p>
+      <div id="clip-togs"></div>
+
       <h2 style="margin-top:20px">Play a sketch now</h2>
       <p class="hint">Takes the floor on every screen showing the board, whatever is up.
         The trailer plays its title card first, the same as it does on the hour.</p>
@@ -460,6 +465,20 @@ var CLIPS=[
   {src:'premiere',                     name:'Premiere - start the film', sub:'nothing interrupts it'},
   {src:'video/sketch-pool.mp4',        name:'Will swims'}
 ];
+/* twin of clipKey() in team-board.html - change both together */
+function clipKey(src){
+  return 'vid_'+String(src||'').split('/').pop().replace(/\.mp4$/,'').replace(/[^A-Za-z0-9]/g,'');
+}
+function paintClipTogs(){
+  var el=$('clip-togs');
+  if(!el)return;
+  /* the trailer and the premiere are not in the sketch rotation and have
+     their own switches already - do not give them a second one here */
+  var rows=CLIPS.filter(function(c){return c.src.indexOf('/')>0})
+    .map(function(c){ return [clipKey(c.src), c.name, c.src.split('/')[1]] });
+  el.innerHTML=togHTML(rows); wireTogs(el);
+}
+
 function paintClips(){
   var list=$('clip-list');
   if(list.childNodes.length)return;
@@ -676,7 +695,7 @@ function paintBdays(){
 
 function paintAll(){
   if($('console').classList.contains('hidden'))return;
-  paintTogs(); paintNums(); paintViews(); paintClips();
+  paintTogs(); paintNums(); paintViews(); paintClips(); paintClipTogs();
   paintMugs(); paintTicker(); paintExtras(); paintBdays();
 }
 function setState(kind,txt){

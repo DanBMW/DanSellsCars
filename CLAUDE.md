@@ -689,6 +689,19 @@ said so.
   `guardMax` lifts the stall backstop's ceiling, which is 120s for a sketch
   and would otherwise cut a feature off at two minutes. Title and credits are
   the `PREMIERE` constant, in one place.
+- **A switch per sketch.** Every clip has its own on/off switch in the admin
+  console ("Which sketches play"), keyed `vid_<filename>` via `clipKey()` -
+  which exists in **both** `team-board.html` and `admin.html` and must stay
+  identical; they are twins by necessity, since the board is deliberately
+  self-contained. `boardsettings` already validates any boolean key, so this
+  needed no rules change. **Absent means on**, like every other setting.
+  `pickClip()` draws only from `playableClips()`, `warmVideo()` only warms
+  those, and with every clip switched off the slot simply declines and the
+  cut-scene queue moves along rather than breaking. Switching a clip off
+  keeps it out of the **automatic** slot only - the play buttons still work,
+  so a clip can be dropped from the rotation and still put up on demand.
+  The trailer and the premiere are deliberately **not** listed there: they
+  are not in `CLIPS` and have their own switches already.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
   section: a toggle for the automatic slot and a play button per clip. Both go
   through `boardcontrol` in the database rather than staying local, because the
