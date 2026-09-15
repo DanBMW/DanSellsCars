@@ -1562,7 +1562,7 @@ body.premiere .pairqr{display:none!important}
 
       <h2 style="margin-top:22px;font-size:1rem">Birthday</h2>
       <p class="hint" style="margin-bottom:10px">Plays on every screen straight away with the tune, then the card
-        joins the rotation for a week. More than one at a time is fine - they each get their own slot. If they have
+        joins the rotation until midnight. More than one at a time is fine - they each get their own slot. If they have
         their own clip it comes round with the card, about once an hour.</p>
       <input type="text" id="bday-name" maxlength="40" placeholder="Whose birthday? (optional)" autocomplete="off">
       <p class="shotcap" id="bday-clipnote" style="margin:-8px 0 12px"></p>
@@ -1697,7 +1697,7 @@ body.premiere .pairqr{display:none!important}
   </div>
 </div>
 
-<!-- the quiet birthday card that rides the rotation for a week. A view, not
+<!-- the quiet birthday card that rides the rotation for the day. A view, not
      a scene: z-index 50, no tune, so every cut scene paints over it -->
 <div class="bdayview" id="bdayview" aria-hidden="true">
   <div class="ch-inner">
@@ -2297,20 +2297,35 @@ function birthdayScene(name,clip,withTune){
   return true;
 }
 
-/* ---- birthdays stay on the board for a week ----
+/* ---- a birthday card is up for the day, not the week ----
+   It used to ride the rotation for seven days, which meant the board wished
+   somebody happy birthday most of the following week - Dan's call, and he is
+   right: it stops meaning anything. A card now lives until midnight on the
+   day it was put up and then leaves by itself.
    Pushing one writes it to `birthdays`, and every board turns each live one
    into its own slot in the view rotation, so more than one at a time is just
    more slots. The card rotates silently - the tune belongs to the moment it
-   is put up, not to every thirty seconds for seven days - and their clip
+   is put up, not to every thirty seconds all day - and their clip
    comes round with it at most once an hour. */
-var BDAY_DAYS=7, BDAY_CLIP_GAP=3600000;
+var BDAY_CLIP_GAP=3600000;
+
+/* midnight at the end of the day that timestamp falls on, by this screen's
+   own clock - the same rule every client derives independently, so no two
+   screens disagree about when it should come down */
+function bdayEndsAt(ts){
+  var d=new Date(ts);
+  d.setHours(23,59,59,999);
+  return d.getTime();
+}
 var BIRTHDAYS={}, bdayClipLast={};
 
 function liveBirthdays(){
-  var out=[], cut=Date.now()-BDAY_DAYS*86400000;
+  var now=Date.now(), out=[];
   Object.keys(BIRTHDAYS||{}).forEach(function(k){
     var b=BIRTHDAYS[k];
-    if(b&&typeof b.ts==='number'&&b.ts>cut)out.push({id:k,name:b.name||'',ts:b.ts,clip:b.clip||''});
+    if(!b||typeof b.ts!=='number')return;
+    if(now>bdayEndsAt(b.ts))return;          /* their day is over */
+    out.push({id:k,name:b.name||'',ts:b.ts,clip:b.clip||''});
   });
   out.sort(function(a,b){return a.ts-b.ts});
   return out;
@@ -3203,7 +3218,7 @@ function rotateView(){
   if(busy){armRotation();return}
   var list=views(), next=(viewIdx+1)%list.length, v=list[next];
   /* their own clip rides along with the card, but not every time it comes
-     round - the same ten seconds every couple of minutes for a week is not a
+     round - the same ten seconds every couple of minutes all day is not a
      present, it is a punishment */
   if(v&&v.kind==='birthday'&&v.bday.clip){
     var last=bdayClipLast[v.bday.id]||0;
@@ -4972,7 +4987,7 @@ $('bday-go').onclick=function(){
   var clip=bdayClipFor(name);
   var cmd='tune:birthday:'+name;
   $('bday-name').value='';
-  /* it goes up now, and it stays up for a week */
+  /* it goes up now, and it comes down at midnight */
   if(backend&&backend.addBirthday){
     var payload={name:name, ts:Date.now()};
     if(clip)payload.clip=clip;
@@ -4995,11 +5010,14 @@ function paintBirthdayList(){
   var el=$('bday-list');
   if(!el)return;
   var live=liveBirthdays();
-  if(!live.length){el.innerHTML='<p class="shotcap" style="margin:0">Nobody on the board this week.</p>';return}
+  if(!live.length){el.innerHTML='<p class="shotcap" style="margin:0">Nobody\u2019s birthday on the board today.</p>';return}
   el.innerHTML=live.map(function(b){
-    var left=Math.max(0,BDAY_DAYS-Math.floor((Date.now()-b.ts)/86400000));
+    var mins=Math.max(0,Math.round((bdayEndsAt(b.ts)-Date.now())/60000));
+    var left=mins>=120 ? Math.round(mins/60)+' hours left'
+           : mins>=60  ? 'an hour left'
+           : mins+' min left';
     return '<div class="deal"><div class="in"><b>'+(b.name?esc(b.name):'No name')+'</b>'+
-      '<span>'+bdayDayNote(b.ts)+' &middot; '+left+' day'+(left===1?'':'s')+' left'+
+      '<span>'+bdayDayNote(b.ts)+' &middot; '+left+
       (b.clip?' &middot; has a clip':'')+'</span></div>'+
       '<button type="button" class="icon del" data-bday="'+b.id+'" title="Take it off the board">&#128465;</button></div>';
   }).join('');

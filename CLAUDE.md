@@ -765,12 +765,20 @@ said so.
   `UNIT_TARGET * TEAM.length`. Profit and units are separate targets - somebody
   can be past £15,000 on six deals, or on eight and short of it.
 - **Happy birthday.** A button in the manager panel (optional name) puts a
-  birthday scene and the tune on every screen, and the card then **stays in the
-  view rotation for a week** (`birthdays/<pushId>` = `{name, ts, clip?}`,
-  `BDAY_DAYS`, `liveBirthdays()`). Each live birthday is its own view, so two
-  or three at once is simply two or three slots; they age out on their
-  timestamp with nothing to reset, and the manager panel lists them with a bin
-  to take one down early. The rotating card is **silent** - the tune belongs to
+  birthday scene and the tune on every screen, and the card then stays in the
+  view rotation **until midnight that day** (`birthdays/<pushId>` =
+  `{name, ts, clip?}`, `bdayEndsAt()`, `liveBirthdays()`). It used to run for
+  a week, and Dan rightly called that out: the board was wishing somebody
+  happy birthday most of the following week, which stops it meaning anything.
+  `bdayEndsAt()` is midnight at the end of the day the card was put up, by
+  each screen's own clock - every client derives the same answer
+  independently, so no two screens disagree about when it comes down. Each
+  live birthday is its own view, so two or three at once is simply two or
+  three slots; they age out on their timestamp with nothing to reset, and the
+  manager panel lists them with a bin to take one down early.
+  Note the panel does **not** require a name, so an accidental tap puts a
+  nameless card up; with the week-long window that meant seven days of the
+  board congratulating nobody in particular. The rotating card is **silent** - the tune belongs to
   the moment it goes up, not to every thirty seconds for seven days.
   Somebody's own clip lives in `BDAY_CLIPS` - a file in `video/` plus the
   first name(s) it answers to. Matching is on the **whole first name**, not a
