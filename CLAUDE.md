@@ -65,6 +65,39 @@ send nothing at all.
 | `ev-step1.html`–`ev-step7.html` (+ `ev-thankyou`) | **BMW EV Finder** — EV-specific matching funnel (entry: `EV.html` / `ev.html`). Shared behaviour in `ev-funnel-ui.js`. Submits on `ev-step6.html`. |
 | `ap1.html`–`ap6.html` | **Vehicle Appraisal** — customer self-appraisal of their current car (entry: `appraisal.html`). Submits on `ap5.html`, confirmation on `ap6.html`. |
 
+### stock.html and its finance examples
+
+`stock.html` is the full used stock list Dan sends over WhatsApp (noindex,
+out of `sitemap.xml`). Each car's hero is the photo with a **finance example**
+over it - the monthly payment, product, deposit, term and APR - reading the
+way the daily post cards read, with the spec below it as before.
+
+**Those figures are never calculated here.** `automation/stock-finance.py`
+pulls a real BMW Financial Services quote per car through Hedin's own
+Codeweavers API, the same path `automation/finance-quote.py` uses for the
+daily cards, on the same terms (48 months, 8,000 miles, flat £1,000 deposit
+below £40k and 10% at or above) so the page and the cards can never disagree.
+A monthly payment shown to a customer has to be the lender's, not ours - do
+not replace this with arithmetic in the page, however tempting.
+
+The quotes live in `automation/stock-finance.json`, keyed by listing id,
+**alongside** the stock snapshot rather than inside it: the snapshot is
+refreshed by its own job and read by the board's forecourt view too. About
+2.6s a car, so roughly three minutes for the list; re-run it whenever the
+snapshot changes.
+
+Three things the page has to respect:
+- **A quote expires** (`valid_to`, 30 days). `finLive()` drops a lapsed one
+  and the card falls back to "message me for a quote" - showing a stale
+  monthly payment as current would be worse than showing none.
+- **Not every car can be quoted.** Older stock gets "contact us directly for
+  finance information" from the lender; that is normal, not a fault, and
+  those cars simply show the fallback.
+- **The representative example is on the card**, in full, along with the
+  lender's own wording for that quote reference. This page goes to customers.
+- The term shown is the one the lender returned, which is not always 48
+  months - it comes back shorter on older cars.
+
 Other notable pages: offer landing pages (`ix3-offer.html`, `x1-offer.html`,
 `1series-offer.html`, `offers.html`), valuation tools (`tradevalue.html`
 customer-facing, `Value.html` trade tool), dealership pages
