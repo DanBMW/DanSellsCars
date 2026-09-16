@@ -17,17 +17,6 @@
  *   3. Run refresh once, grant Gmail
  *   4. Trigger: refresh, time-driven, every minute
  *   5. Deploy web app → New version (keep same /exec URL)
- *
- * THE MANIFEST MATTERS - see walkins-appscript.manifest.json.
- * Where a project declares oauthScopes explicitly, Apps Script uses exactly
- * that list and does NOT notice new ones. Adding the voice added a call to
- * UrlFetchApp, and with the scope missing from the manifest the editor never
- * offers a prompt - it simply throws "You do not have permission to call
- * UrlFetchApp.fetch" for ever, which reads like a Google block rather than a
- * line of config. The scope needed is:
- *   https://www.googleapis.com/auth/script.external_request
- * After adding it: save, run testVoice, accept the prompt, then deploy a NEW
- * VERSION - the old version carries the old manifest with it.
  */
 
 /* ===================== tell it about your emails ====================== */
@@ -111,15 +100,14 @@ function doGet(e) {
   if (want && p.token !== want) {
     return out({ error: 'bad token' }, p.callback);
   }
-  /* ?say=... returns the announcement as AUDIO DATA rather than a list.
-     This is what gives every screen the same voice.
-     It has to be fetched here rather than by the board for two reasons:
-     the TTS host sends no CORS headers, so a browser cannot fetch it; and
-     the wall TV refuses a remote media URL outright. Handing the board raw
-     bytes sidesteps both - it decodes them into Web Audio, which is the one
-     audio path that TV has always been willing to use. */
-  if (p.say) return sayAudio(p.say, p.callback);
-
+  /* Wall boards ask for spoken audio (LG blocks client-side Google TTS). */
+  if (p.speak) {
+    try {
+      return out(speakAudio_(String(p.speak)), p.callback);
+    } catch (err) {
+      return out({ error: 'tts: ' + String(err) }, p.callback);
+    }
+  }
   var body = readCache();
   if (!body) {
     try { refresh(); body = readCache(); } catch (err) {
@@ -129,112 +117,37 @@ function doGet(e) {
   return out(body || { appointments: [], events: [] }, p.callback);
 }
 
-/* ===================== the voice ====================================== */
-
-/* en-GB female. Swap VOICE_URL for a paid engine later without the board
-   changing at all - it only ever asks for "the audio for this sentence". */
-var VOICE_LANG = 'en-GB';
-var VOICE_CHUNK = 180;     /* the endpoint truncates long requests */
-
-function voiceUrl(text) {
-  return 'https://translate.google.com/translate_tts'
-       + '?ie=UTF-8&client=tw-ob&tl=' + encodeURIComponent(VOICE_LANG)
-       + '&q=' + encodeURIComponent(text);
-}
-
-/* Split on sentence ends so the joins fall where a speaker would pause,
-   rather than mid-word. */
-function voiceChunks(text) {
-  /* No lookbehind: it needs the V8 runtime, and an Apps Script project set
-     to the legacy one would fail to compile the whole file rather than just
-     this line. Keep the terminator on the sentence it belongs to. */
-  var parts = String(text || '').replace(/([.!?])\s+/g, '$1\u0001').split('\u0001');
-  var out = [], cur = '';
-  parts.forEach(function (bit) {
-    while (bit.length > VOICE_CHUNK) {          /* a single huge sentence */
-      out.push(bit.slice(0, VOICE_CHUNK));
-      bit = bit.slice(VOICE_CHUNK);
+/** Fetch en-GB Google Translate TTS server-side; return base64 MP3 for Web Audio. */
+function speakAudio_(text) {
+  text = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+  if (!text) throw new Error('empty speak text');
+  var cache = CacheService.getScriptCache();
+  var key = 'tts_' + Utilities.base64Encode(
+    Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, text)
+  ).replace(/[^A-Za-z0-9]/g, '').slice(0, 40);
+  var hit = cache.get(key);
+  if (hit) {
+    return { audio: hit, mime: 'audio/mpeg', cached: true, text: text };
+  }
+  var url = 'https://translate.google.com/translate_tts'
+    + '?ie=UTF-8&client=tw-ob&tl=en-GB&q=' + encodeURIComponent(text);
+  var resp = UrlFetchApp.fetch(url, {
+    muteHttpExceptions: true,
+    followRedirects: true,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': '*/*',
+      'Referer': 'https://translate.google.com/'
     }
-    if ((cur + ' ' + bit).trim().length > VOICE_CHUNK) { if (cur) out.push(cur.trim()); cur = bit; }
-    else cur = (cur ? cur + ' ' : '') + bit;
   });
-  if (cur.trim()) out.push(cur.trim());
-  return out.filter(function (x) { return x.length; });
-}
-
-/* Why the last fetch failed, so a caller is told rather than left guessing.
-   "voice unavailable" on its own sent us hunting for a block that was not
-   there; the real answer is almost always in the exception text. */
-var lastVoiceError = '';
-
-function sayAudio(text, callback) {
-  var chunks = voiceChunks(text);
-  if (!chunks.length) return out({ error: 'nothing to say' }, callback);
-
-  lastVoiceError = '';
-  var clips = [];
-  for (var i = 0; i < chunks.length; i++) {
-    var b64 = voiceClip(chunks[i]);
-    if (!b64) {
-      return out({ error: 'voice unavailable', why: lastVoiceError || 'unknown' },
-                 callback);
-    }
-    clips.push(b64);
+  var code = resp.getResponseCode();
+  var blob = resp.getBlob();
+  if (code !== 200 || !blob || blob.getBytes().length < 200) {
+    throw new Error('tts http ' + code + ' bytes ' + (blob ? blob.getBytes().length : 0));
   }
-  return out({ clips: clips, type: 'audio/mpeg', say: text }, callback);
-}
-
-/* One phrase, base64. Cached because the fixed parts repeat all day -
-   "Walk-in", "Arrived", an executive's name - and there is no sense
-   fetching the same audio a hundred times. */
-function voiceClip(phrase) {
-  var ck = 'tts_' + VOICE_LANG + '_' + hash(phrase);
-  try {
-    var hit = CacheService.getScriptCache().get(ck);
-    if (hit) return hit;
-  } catch (e) {}
-
-  var res;
-  try {
-    res = UrlFetchApp.fetch(voiceUrl(phrase), {
-      muteHttpExceptions: true,
-      followRedirects: true,
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-  } catch (e) {
-    /* The usual cause is the script not being authorised for outbound
-       requests - it never needed them before the voice existed, and adding
-       UrlFetchApp requires granting the permission again. */
-    lastVoiceError = 'fetch threw: ' + (e && e.message ? e.message : e);
-    return '';
-  }
-
-  var code = res.getResponseCode();
-  if (code !== 200) {
-    lastVoiceError = 'http ' + code;
-    return '';
-  }
-  var bytes = res.getBlob().getBytes();
-  if (!bytes || bytes.length < 512) {           /* an error page, not audio */
-    lastVoiceError = 'only ' + (bytes ? bytes.length : 0) + ' bytes back';
-    return '';
-  }
-  var b64 = Utilities.base64Encode(bytes);
-
-  /* the cache refuses anything much over 100KB - not worth failing over */
-  try {
-    if (b64.length < 95000) CacheService.getScriptCache().put(ck, b64, 21600);
-  } catch (e) {}
-  return b64;
-}
-
-function hash(s) {
-  var h = 0, str = String(s || '');
-  for (var i = 0; i < str.length; i++) {
-    h = ((h << 5) - h) + str.charCodeAt(i);
-    h |= 0;
-  }
-  return (h >>> 0).toString(36);
+  var b64 = Utilities.base64Encode(blob.getBytes());
+  try { cache.put(key, b64, 21600); } catch (e) {}
+  return { audio: b64, mime: 'audio/mpeg', cached: false, text: text };
 }
 
 function out(obj, callback) {
@@ -397,15 +310,7 @@ function scan() {
       if (when < cutoff) return;
       var subject = m.getSubject() || '';
       var body = messageText(m);
-      /* A "Walk-in taken" subject is NOT already handled above. The pass
-         above is in:inbox-scoped, so an archived pick-up is invisible to it -
-         and an archived pick-up is exactly what this block exists to catch.
-         Skipping it left the customer reading "waiting" for ever, with the
-         timer climbing, which on a wall in the managers' office looks like
-         somebody has been ignored for an hour.
-         Re-applying is harmless: the guard below only touches a visit that
-         is still waiting, and this block raises no event, so nothing is
-         announced twice. */
+      if (classifySubject(subject) === 'walkin-taken') return; /* already in events */
       var name = customerNameFrom(body, subject);
       if (!name) return;
       var staff = sanitizeName(firstOf(PATTERNS.seenBy, body, subject)) || 'a member of staff';
@@ -549,25 +454,4 @@ function preview() {
   packed.events.slice(0, 15).forEach(function (e) {
     Logger.log('  %s | %s | %s', e.kind, e.customerName, e.assignedTo || '-');
   });
-}
-
-
-/* ---------------------------------------------------------------------
-   Run this from the editor if the board is chiming instead of speaking.
-   It does two jobs: it triggers the permission prompt for outbound
-   requests (the script never needed one before the voice existed, and
-   deploying does NOT grant it), and it says plainly what came back.
-   --------------------------------------------------------------------- */
-function testVoice() {
-  lastVoiceError = '';
-  var b64 = voiceClip('Testing one two three.');
-  if (b64) {
-    Logger.log('VOICE OK - %s bytes of audio came back.', b64.length);
-    Logger.log('Nothing more to do. The board will speak on the next walk-in.');
-  } else {
-    Logger.log('VOICE FAILED - %s', lastVoiceError || 'no reason recorded');
-    Logger.log('If that mentions authorisation or permission, run this again '
-             + 'and accept the prompt.');
-  }
-  return b64 ? 'ok' : (lastVoiceError || 'failed');
 }
