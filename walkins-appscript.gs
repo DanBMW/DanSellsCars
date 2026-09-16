@@ -16,10 +16,14 @@
  *     system emails on both. So the whole thing works off email: who is
  *     here, how long they have been waiting, the doorbell, and the card
  *     turning green with "now with <name>" once somebody sits down.
- *   - A pick-up is matched to an arrival BY CUSTOMER NAME, so both emails
- *     have to name the customer. If the pick-up email only says which
- *     executive is busy, there is nothing to match on and the card stays
+ *   - A pick-up is matched to its arrival by the record id off the engage
+ *     link where both emails carry it, and otherwise by customer name plus
+ *     recorded arrival time. If a pick-up email carried neither a name nor
+ *     an id there would be nothing to match on and the card would stay
  *     waiting.
+ *   - It reads BOTH email layouts: the walk-in one (Arrived/Car type/Models
+ *     of interest) and the appointment one (Arrival time/New - Used/Models/
+ *     Owner/Booking type).
  *   - Freshness is capped by the trigger interval, so the bell can be up to
  *     a minute behind the door. The real endpoint is instant.
  *
@@ -57,20 +61,30 @@
    Keep `in:inbox` on the arrival search - that is what makes archiving an
    email clear the card off the screen. Add `from:` once the sender address
    is known, to stop anything else ever matching. */
-var SEARCH = 'in:inbox newer_than:1d ("has just been checked-in" OR "has just been checked in" OR "needs to be seen by a sales exec")';
+var SEARCH = 'in:inbox newer_than:1d ("has just been checked-in" OR "needs to be seen by a sales exec" OR "has checked in for their appointment")';
 
 /* Emails that mean an executive has taken the customer. This one deliberately
    does NOT use `in:inbox`: a pick-up is a fact, and it should still count
-   after somebody has tidied the mailbox. */
+   after somebody has tidied the mailbox.
+   Careful here. The appointment ARRIVAL email contains the sentence "mark
+   that you are now with the customer" - so a search for "now with the
+   customer" would match an arrival and mark it picked up the instant it
+   landed. Match on "has taken", which only appears once somebody actually
+   has. There is a test for exactly this. */
 var SEEN_SEARCH = 'newer_than:1d ("has taken the walk-in customer" OR "has taken the customer")';
 
-/* Read off the real emails, which lay out one labelled field per line:
+/* Read off the real emails. There are TWO layouts, and they use different
+ * labels for the same things:
  *
- *     Customer: Jay
- *     Arrived: 12:36
- *     Car type: New
- *     Models of interest: 1 Series, 2 Series, 3 Series
- *     Sales executive: Clive Ankomah     <- pick-up emails only
+ *   walk-in                      appointment
+ *   -------------------------    --------------------------------
+ *   Customer: Jay                Customer: Ben Griffin
+ *   Arrived: 12:36               Arrival time: 11:28
+ *   Car type: New                New / Used: New
+ *   Models of interest: 1, 2     Models: 1 Series
+ *   Logged by: Lisa Debono       Appointment time: 12:00 (2026-09-05)
+ *                                Owner: Daniel Cane
+ *                                Booking type: Appointment
  *
  * Every pattern is anchored to the start of a line (^ with the m flag).
  * That is not fussiness. An unanchored /arrived\s*[:\-]\s*(.+)/ matches the
@@ -79,26 +93,37 @@ var SEEN_SEARCH = 'newer_than:1d ("has taken the walk-in customer" OR "has taken
  * Run preview() after any change here. */
 var PATTERNS = {
   customer:   [/^[ \t]*Customer(?:\s*name)?[ \t]*[:\-][ \t]*(.+)$/im,
-               /has taken the walk-in customer\s+([^.\n]+)/i],
+               /has taken the (?:walk-in )?customer\s+([^.\n]+)/i,
+               /^(.+?)\s+has checked in for their appointment/im],
   /* who has SAT DOWN with them, out of the pick-up email */
   seenBy:     [/^[ \t]*Sales\s*exec(?:utive)?[ \t]*[:\-][ \t]*(.+)$/im,
-               /^(.+?)\s+has taken the walk-in customer/im,
+               /^(.+?)\s+has taken the (?:walk-in )?customer/im,
                /^[ \t]*Assigned\s*to[ \t]*[:\-][ \t]*(.+)$/im],
-  /* whose appointment it is, on a booked arrival. The walk-in emails carry
-     no such line, which is correct - nobody is expecting them. */
-  bookedWith: [/^[ \t]*Booked\s*with[ \t]*[:\-][ \t]*(.+)$/im,
+  /* whose appointment it is. "Owner" on the appointment emails; the walk-in
+     emails carry no such line, which is right - nobody is expecting them. */
+  bookedWith: [/^[ \t]*Owner[ \t]*[:\-][ \t]*(.+)$/im,
+               /^[ \t]*Booked\s*with[ \t]*[:\-][ \t]*(.+)$/im,
                /^[ \t]*Appointment\s*with[ \t]*[:\-][ \t]*(.+)$/im],
   /* the time reception recorded, which beats the email's own timestamp if
      the mail sat in a queue or a scanner on the way */
-  arrivedAt:  [/^[ \t]*Arrived[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im],
-  apptTime:   [/^[ \t]*Appointment\s*time[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im],
-  /* what they are actually after - the line that makes an executive get up */
-  carType:    [/^[ \t]*Car\s*type[ \t]*[:\-][ \t]*(.+)$/im],
-  models:     [/^[ \t]*Models?\s*of\s*interest[ \t]*[:\-][ \t]*(.+)$/im],
-  /* how we tell a booked customer arriving from somebody off the street.
-     The walk-in emails say so in the first line. */
-  isWalkIn:   [/\bwalk[\s-]?in\b/i],
-  isBooked:   [/^[ \t]*Booked\s*with[ \t]*[:\-]/im, /\bappointment\b/i]
+  arrivedAt:  [/^[ \t]*Arriv(?:ed|al[ \t]*time)[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im],
+  apptTime:   [/^[ \t]*Appointment[ \t]*time[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im],
+  /* what they came in for - the line that makes an executive get up */
+  carType:    [/^[ \t]*Car[ \t]*type[ \t]*[:\-][ \t]*(.+)$/im,
+               /^[ \t]*New[ \t]*\/[ \t]*Used[ \t]*[:\-][ \t]*(.+)$/im],
+  models:     [/^[ \t]*Models?(?:[ \t]*of[ \t]*interest)?[ \t]*[:\-][ \t]*(.+)$/im],
+  /* THE BEST KEY THERE IS. The emails carry a link back to the record:
+       ...dashboard?engage=FjZaSpiEe0cHFgZpELij&type=appointment
+     That id is unique to one visit, so where both the arrival and the
+     pick-up email carry it, a pick-up can be tied to its own arrival
+     exactly - no guessing from a first name and a clock. */
+  ref:        [/[?&]engage=([A-Za-z0-9_-]{6,})/],
+  /* how we tell a booked customer arriving from somebody off the street */
+  isBooked:   [/^[ \t]*Booking[ \t]*type[ \t]*[:\-][ \t]*Appointment/im,
+               /has checked in for their appointment/i,
+               /^[ \t]*Owner[ \t]*[:\-]/im],
+  isWalkIn:   [/^[ \t]*Booking[ \t]*type[ \t]*[:\-][ \t]*Walk/im,
+               /\bwalk[\s-]?in\b/i]
 };
 
 /* A card drops off by itself after this long, in case nobody archives it. */
@@ -187,8 +212,13 @@ function scan() {
       var name = firstOf(PATTERNS.customer, body, subject);
       var booked = firstOf(PATTERNS.bookedWith, body, subject);
       var appt = firstOf(PATTERNS.apptTime, body, subject);
-      var isBooked = !!booked || (!anyMatch(PATTERNS.isWalkIn, text)
-                                  && anyMatch(PATTERNS.isBooked, text));
+      /* "Booking type: Walk-in/Appointment" is definitive where it appears.
+         Otherwise the wording decides, and only then the presence of an
+         owner. Checked in that order because the appointment email says
+         "walk-in" nowhere, and the walk-in email has no owner. */
+      var isBooked = anyMatch(PATTERNS.isWalkIn, text) ? false
+                   : anyMatch(PATTERNS.isBooked, text) ? true
+                   : !!booked;
 
       /* Reception's own "Arrived: 12:36" beats the email's timestamp: the
          mail passes through an external-sender scanner on the way in, and a
@@ -199,11 +229,13 @@ function scan() {
       var arrived = stated ? clockOn(when, stated) : null;
       if (arrived === null) arrived = when;
 
-      /* Match a pick-up to an arrival on name AND recorded arrival time where
-         we have both. These emails carry first names only - "Jay", "Chris" -
-         and two Chrises in a morning is not far-fetched; name alone would
-         clear the wrong card. */
-      var hit = pickUp(seen, name, arrived);
+      /* Match a pick-up to its arrival. The record id off the engage link is
+         exact where both emails carry it; otherwise fall back to name plus
+         recorded arrival time. These emails carry first names only - "Jay",
+         "Chris" - and two Chrises in a morning is not far-fetched, so name
+         alone would clear the wrong card. */
+      var ref = firstOf(PATTERNS.ref, body, subject);
+      var hit = pickUp(seen, ref, name, arrived);
       var withStaff = !!hit, staff = hit ? hit.staff : '';
 
       out.push({
@@ -216,6 +248,7 @@ function scan() {
         /* what they came in for - the line that makes an executive get up */
         carType: clean(firstOf(PATTERNS.carType, body, subject)),
         models: clean(firstOf(PATTERNS.models, body, subject)),
+        ref: ref || '',
         status: withStaff ? 'with-staff' : 'waiting',
         assignedTo: staff,
         /* internal only - tells the dedupe below whether arrivalTime came
@@ -238,7 +271,8 @@ function scan() {
      resend may double up - a spare card is the safer way to be wrong. */
   var byPerson = {}, ordered = [];
   out.forEach(function (r) {
-    var k = key(r.customerName) + '|' +
+    var k = r.ref ? 'ref:' + r.ref
+          : key(r.customerName) + '|' +
             (r.statedTime ? hhmm(r.arrivalTime) : 'unknown');
     delete r.statedTime;
     if (!byPerson[k]) { byPerson[k] = r; ordered.push(r); }
@@ -276,6 +310,10 @@ function seenNames() {
       var at = stated ? clockOn(when, stated) : null;
       var rec = { staff: by, at: when, arrived: at };
 
+      /* The record id is the strongest key when the pick-up email carries
+         the engage link back to the same visit. */
+      var ref = firstOf(PATTERNS.ref, body, subject);
+      if (ref) put(map, 'ref:' + ref, rec);
       put(map, key(who), rec);
       if (at !== null) put(map, key(who) + '@' + hhmm(at), rec);
     });
@@ -319,7 +357,9 @@ function put(map, k, rec) {
    Without the time check a "has taken" email from an earlier visit marks a
    fresh arrival as already being served - somebody walks in, the screen says
    "now with Clive", and they are left standing there. */
-function pickUp(seen, name, arrived) {
+function pickUp(seen, ref, name, arrived) {
+  /* the record id is unique to one visit - if it matches, we are done */
+  if (ref && seen['ref:' + ref]) return seen['ref:' + ref];
   if (!name) return null;
   var exact = seen[key(name)+'@'+hhmm(arrived)];
   var loose = seen[key(name)];

@@ -49,8 +49,30 @@ Arrived: ${at}
 Car type: ${type}
 Models of interest: ${models}`;
 
+/* The appointment layout, verbatim - different labels for the same things,
+   and an engage link carrying the record id. Note it also contains the
+   sentence "mark that you are now with the customer", which is the trap
+   SEEN_SEARCH has to avoid matching. */
+const apptArrival = (name, arrived, appt, owner, type, models, ref) => BANNER +
+`Hi ${owner},
+
+${name} has checked in for their appointment. Please see them as soon as you can and mark that you are now with the customer.
+
+Booking type: Appointment
+Customer: ${name}
+Arrival time: ${arrived}
+Appointment time: ${appt} (2026-09-05)
+Owner: ${owner}
+New / Used: ${type}
+Models: ${models}
+I'm with the customer
+If the button does not work, open: https://appointments-c180e.web.app/dashboard?engage=${ref}&type=appointment`;
+
 const SAMPLES = {
   inbox: [
+    { at: min(-30), subject: 'Ben Griffin has checked in',
+      body: apptArrival('Ben Griffin', '11:28', '12:00', 'Daniel Cane',
+                        'New', '1 Series', 'FjZaSpiEe0cHFgZpELij') },
     { at: min(-52), subject: 'Walk-in checked in',
       body: arrival('Jay', '12:36', 'New', '1 Series, 2 Series, 3 Series') },
     { at: min(-105), subject: 'Walk-in checked in',
@@ -70,6 +92,11 @@ const SAMPLES = {
 };
 
 /* ---- the smallest Google that will run the file ----------------------- */
+/* Gmail ignores case and treats a hyphen as a break, so "checked-in" and
+   "checked in" are the same search. Match that here or the phrases in
+   SEARCH will not line up with the email text. */
+const norm = t => String(t).toLowerCase().replace(/[-\u2013\u2014]/g, ' ')
+                           .replace(/\s+/g, ' ').trim();
 function msg(m) {
   return {
     getId:        () => 'm' + m.at + (m.subject || '').length,
@@ -82,11 +109,22 @@ const store = {};
 function makeSandbox(mailbox) {
   return {
     GmailApp: {
+      /* Actually applies the query rather than assuming which mailbox is
+         meant. That matters: the appointment ARRIVAL email contains the
+         sentence "mark that you are now with the customer", so a careless
+         SEEN_SEARCH would match an arrival and mark it picked up the moment
+         it landed. A stub that just returned `mailbox.seen` would never
+         catch that - so it searches the WHOLE mailbox, like Gmail does. */
       search(query) {
-        /* the stub only has to tell the two searches apart, which `in:inbox`
-           does - that is the real distinction the script relies on */
-        const set = query.includes('in:inbox') ? mailbox.inbox : mailbox.seen;
-        return set.map(m => ({ getMessages: () => [msg(m)] }));
+        const all = mailbox.inbox.concat(mailbox.seen);
+        const phrases = (query.match(/"[^"]+"/g) || [])
+          .map(p => norm(p.slice(1, -1)));
+        return all.filter(m => {
+          if (/\bin:inbox\b/.test(query) && mailbox.seen.indexOf(m) >= 0) return false;
+          if (!phrases.length) return true;
+          const hay = norm((m.subject || '') + ' ' + (m.body || ''));
+          return phrases.some(p => hay.includes(p));
+        }).map(m => ({ getMessages: () => [msg(m)] }));
       }
     },
     CacheService: {
@@ -139,12 +177,13 @@ const chrises = by('Chris');
 ok('the customer name is the NAME, not the "Arrived:" line',
    !!jay && jay.customerName === 'Jay',
    rows.map(r => r.customerName).join(', '));
-ok('three cards - the resent notification is not a fourth', rows.length === 3,
+ok('four cards - the resent notification is not a fifth', rows.length === 4,
    rows.length + ' cards');
 ok('walk-ins are typed as walk-ins, not appointments',
-   rows.every(r => r.type === 'walk-in'));
-ok('nobody is wrongly shown as booked with an executive',
-   rows.every(r => !r.bookedWith));
+   rows.filter(r => r.customerName !== 'Ben Griffin')
+       .every(r => r.type === 'walk-in'));
+ok('a walk-in is not shown as booked with anybody',
+   rows.filter(r => r.type === 'walk-in').every(r => !r.bookedWith));
 ok("reception's recorded time is used, not the email's timestamp",
    !!jay && new Date(jay.arrivalTime).getHours() === 12
          && new Date(jay.arrivalTime).getMinutes() === 36,
@@ -169,6 +208,30 @@ ok('Jay has nobody with him yet', !!jay && jay.status === 'waiting');
 ok('a resent notification keeps the first arrival time',
    !!jay && new Date(jay.arrivalTime).getMinutes() === 36);
 
+/* --- the appointment layout --- */
+const ben = by('Ben Griffin')[0];
+ok('the appointment email is read at all', !!ben);
+ok('...and typed as an appointment, not a walk-in',
+   !!ben && ben.type === 'appointment', ben && ben.type);
+ok('...with "Arrival time:" understood, not just "Arrived:"',
+   !!ben && new Date(ben.arrivalTime).getHours() === 11
+         && new Date(ben.arrivalTime).getMinutes() === 28,
+   ben && new Date(ben.arrivalTime).toTimeString().slice(0, 5));
+ok('...the appointment time itself',
+   !!ben && !!ben.appointmentTime
+         && new Date(ben.appointmentTime).getHours() === 12,
+   ben && ben.appointmentTime && new Date(ben.appointmentTime).toTimeString().slice(0, 5));
+ok('...Owner read as who it is booked with',
+   !!ben && ben.bookedWith === 'Daniel Cane', ben && ben.bookedWith);
+ok('..."New / Used:" and "Models:" understood',
+   !!ben && ben.carType === 'New' && ben.models === '1 Series',
+   ben && (ben.carType + ' / ' + ben.models));
+ok('...the record id is picked up off the engage link',
+   !!ben && ben.ref === 'FjZaSpiEe0cHFgZpELij', ben && ben.ref);
+ok('AN ARRIVAL IS NOT MISTAKEN FOR A PICK-UP (it says "now with the '
+   + 'customer" in its own text)',
+   !!ben && ben.status === 'waiting', ben && ben.status);
+
 /* archiving the arrival email clears the card */
 const archived = { inbox: SAMPLES.inbox.filter(m => !/Customer: Jay/.test(m.body)), seen: SAMPLES.seen };
 ok('archiving the arrival email takes that person off the screen',
@@ -181,7 +244,7 @@ const noTok = JSON.parse(t.doGet({ parameter: {} }).getContent());
 ok('a missing token is refused', noTok.error === 'bad token');
 const good = JSON.parse(t.doGet({ parameter: { token: 'letmein' } }).getContent());
 ok('the right token gets the list', Array.isArray(good.appointments)
-   && good.appointments.length === 3, good.appointments.length + ' rows');
+   && good.appointments.length === 4, good.appointments.length + ' rows');
 const jsonp = t.doGet({ parameter: { token: 'letmein', callback: 'cb1' } }).getContent();
 ok('JSONP is wrapped in the callback', jsonp.startsWith('cb1(') && jsonp.endsWith(');'));
 const nasty = t.doGet({ parameter: { token: 'letmein', callback: 'alert(1)//' } }).getContent();
