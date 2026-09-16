@@ -5575,6 +5575,8 @@ var WALKIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbwUADuhpVbdgDvlumw
 var WALKIN_POLL_MS = 15000;
 var WALKIN_SPEAK = true;  /* read the card aloud instead of a doorbell */
 var WALKIN_WAIT_MS = 10*60*1000; /* speak once when still waiting this long */
+/* the longest the radio may ever be held down for one announcement */
+var WALKIN_SPEAK_MAX_MS = 30*1000;
 
 /* ---- walk-in arrival alerts (JSONP from Apps Script) ------------------- */
 /* Same feed as walkins.html: first snapshot primes seen ids with no toast or
@@ -5990,13 +5992,24 @@ function walkinSpeak(r){
   var line=walkinAnnounceText(r);
   if(!line) return;
   try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
-  var finished=false;
+  var finished=false, guard=null;
   var unduck=function(){
     if(finished) return; finished=true;
+    if(guard){ clearTimeout(guard); guard=null; }
     walkinStopSpeechWatch();
     walkinClearAudio();
     try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
   };
+  /* Ducking the radio is a promise to un-duck it, and this board sits on a
+     wall unattended. Every un-duck above depends on a callback arriving; one
+     that never does leaves the radio off for the REST OF THE DAY, because
+     the keep-alive stands down while ducked and so cannot rescue it. That is
+     not hypothetical - it is what happened.
+     So the promise is kept by a timer, not by trust. Nothing announced here
+     runs longer than a few seconds; the voice fetch alone gives up at eight.
+     A cut scene or the premiere is not affected - they duck and un-duck
+     through sceneStart/sceneEnd, which this does not touch. */
+  guard=setTimeout(unduck, WALKIN_SPEAK_MAX_MS);
   /* ONE voice, the same on every screen, and it is not the device's.
      Device voices were the old design and they cannot meet either half of
      what is wanted here: the wall TV - the screen that matters most - has
@@ -6006,11 +6019,17 @@ function walkinSpeak(r){
      is the only audio path that TV has ever accepted. If it cannot be had,
      the chime rings rather than a second-best voice speaking - a different
      voice on one screen is worse than a screen that only dings. */
-  walkinSpeakVoice(line, function(ok){
-    if(ok){ unduck(); return; }
-    walkinChimeFallback();
+  /* and a throw on the way in must not skip the un-duck either */
+  try{
+    walkinSpeakVoice(line, function(ok){
+      if(ok){ unduck(); return; }
+      try{ walkinChimeFallback(); }catch(e){}
+      setTimeout(unduck, 1800);
+    });
+  }catch(e){
+    try{ walkinChimeFallback(); }catch(e2){}
     setTimeout(unduck, 1800);
-  });
+  }
 }
 
 function walkinVisitKey(r){
