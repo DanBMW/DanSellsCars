@@ -376,6 +376,21 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 .walkin-meta{font-size:.88rem;font-weight:600;color:var(--muted);line-height:1.45;margin:0}
 .walkin-time{font-size:.78rem;font-weight:700;color:rgba(242,245,249,.72);margin:14px 0 0}
+.walkin-flash{
+  position:fixed;inset:0;z-index:250;pointer-events:none;
+  background:#e22626;opacity:0;
+}
+.walkin-flash.go{animation:walkinFlashRed 1.2s ease-out 1}
+@keyframes walkinFlashRed{
+  0%{opacity:0}
+  8%{opacity:1}
+  18%{opacity:.2}
+  30%{opacity:1}
+  42%{opacity:.18}
+  55%{opacity:.95}
+  70%{opacity:.15}
+  100%{opacity:0}
+}
 .foot{text-align:center;color:var(--muted);font-size:.68rem;margin-top:26px;line-height:1.7}
 /* Dan's line. Above every scene and every board, so it is there whatever the
    display happens to be showing. */
@@ -1821,6 +1836,7 @@ body.premiere .pairqr{display:none!important}
 </div>
 
 <div class="toasts" id="toasts"></div>
+<div class="walkin-flash" id="walkin-flash" aria-hidden="true"></div>
 <div class="walkin-pop" id="walkin-pop" aria-live="assertive" hidden>
   <div class="walkin-card wi" id="walkin-card" role="status">
     <p class="walkin-kicker" id="walkin-kicker">Walk-in</p>
@@ -5503,6 +5519,7 @@ var walkinSeen = Object.create(null);
 var walkinPrimed = false;
 var walkinGasSeq = 0;
 var walkinActx = null;
+var walkinMaster = null;
 
 function walkinMapRows(j){
   var arr = Array.isArray(j) ? j
@@ -5562,10 +5579,20 @@ function walkinHideCard(){
   clearTimeout(walkinPopTimer);
   setTimeout(function(){ if(!pop.classList.contains('show')) pop.hidden=true },240);
 }
+function walkinFlashScreen(){
+  var el=$('walkin-flash');
+  if(!el) return;
+  el.classList.remove('go');
+  void el.offsetWidth;
+  el.classList.add('go');
+  clearTimeout(walkinFlashScreen._t);
+  walkinFlashScreen._t=setTimeout(function(){ el.classList.remove('go') }, 1300);
+}
 function walkinShowCard(r){
   r=r||{};
   var pop=$('walkin-pop'), card=$('walkin-card');
   if(!pop||!card){ toast((r.walkIn?'Walk-in: ':'Appointment: ')+(r.customer||''),'ok'); return }
+  walkinFlashScreen();
   card.className='walkin-card '+(r.walkIn?'wi':'ap');
   $('walkin-kicker').textContent=r.walkIn?'Walk-in':'Appointment';
   $('walkin-name').textContent=r.customer||(r.walkIn?'Waiting at reception':'Appointment arrived');
@@ -5583,13 +5610,18 @@ function walkinShowCard(r){
 }
 
 function walkinStrike(f,t,vol){
-  [[1,1,1.9],[2.76,0.34,1.1],[5.4,0.14,0.55],[8.9,0.06,0.3]].forEach(function(p){
+  if(!walkinMaster){
+    walkinMaster=walkinActx.createGain();
+    walkinMaster.gain.value=3.2;   /* at least 3x louder than the old 0.30 ring */
+    walkinMaster.connect(walkinActx.destination);
+  }
+  [[1,1,1.9],[2.76,0.45,1.2],[5.4,0.22,0.7],[8.9,0.12,0.4]].forEach(function(p){
     var o=walkinActx.createOscillator(), g=walkinActx.createGain();
     o.type='sine'; o.frequency.value=f*p[0];
     g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(vol*p[1],t+0.006);
+    g.gain.exponentialRampToValueAtTime(Math.min(1, vol*p[1]),t+0.005);
     g.gain.exponentialRampToValueAtTime(0.0001,t+p[2]);
-    o.connect(g); g.connect(walkinActx.destination);
+    o.connect(g); g.connect(walkinMaster);
     o.start(t); o.stop(t+p[2]+0.05);
   });
 }
@@ -5597,16 +5629,29 @@ function walkinStrike(f,t,vol){
 function walkinDoorbell(){
   if(!WALKIN_CHIME) return;
   try{
-    if(!walkinActx) walkinActx = new (window.AudioContext||window.webkitAudioContext)();
-    /* board already unlocks audio via radio/clips; if still suspended, skip */
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    if(!walkinActx) walkinActx = new AC();
+    var ring=function(){
+      if(!walkinActx || walkinActx.state!=='running') return;
+      try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
+      var t0=walkinActx.currentTime+0.02;
+      walkinStrike(659.25, t0,      1.0);
+      walkinStrike(523.25, t0+0.48, 1.0);
+      setTimeout(function(){
+        try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
+      }, 1700);
+    };
     if(walkinActx.state==='suspended'){
-      try{ walkinActx.resume() }catch(e){}
+      walkinActx.resume().then(ring).catch(function(){
+        try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
+      });
+    }else{
+      ring();
     }
-    if(walkinActx.state!=='running') return;
-    var t=walkinActx.currentTime+0.02;
-    walkinStrike(659.25, t,      0.30);   /* ding - E5 */
-    walkinStrike(523.25, t+0.46, 0.30);   /* dong - C5 */
-  }catch(e){}
+  }catch(e){
+    try{ if(typeof radioDuck==='function') radioDuck(false); }catch(err){}
+  }
 }
 
 function walkinDeliver(list){
@@ -5659,6 +5704,17 @@ function startWalkinAlerts(){
     if(e.target===pop || (e.target && e.target.id==='walkin-card')) walkinHideCard();
   });
 })();
+
+function walkinUnlockAudio(){
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    if(!walkinActx) walkinActx = new AC();
+    if(walkinActx.state==='suspended') walkinActx.resume();
+  }catch(e){}
+}
+document.addEventListener('pointerdown', walkinUnlockAudio, {passive:true});
+document.addEventListener('keydown', walkinUnlockAudio);
 startWalkinAlerts();
 </script>
 
