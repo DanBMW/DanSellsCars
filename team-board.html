@@ -5854,14 +5854,13 @@ function walkinPickVoice(){
   return null;
 }
 
-/* what this screen is actually going to speak with - for the admin console
-   and for answering "why does that one sound different" */
+/* Every screen speaks with the same voice now, so the useful question is
+   not which voice this one picked but whether it can REACH it - which is
+   what somebody actually wants to know when one TV is silent. */
 function walkinVoiceReport(){
-  var v=null;
-  try{ v=walkinPickVoice(); }catch(e){}
-  var n=(v&&v.name)||'none';
-  var eng=walkinEngineRemembered()||'not decided yet';
-  return n+' ('+eng+')';
+  if(!WALKIN_GAS_URL) return 'no voice configured';
+  if(!walkinVoiceCtx) return 'shared voice, not used yet';
+  return 'shared voice ('+walkinVoiceCtx.state+')';
 }
 
 var walkinSpeechWatch=null;
@@ -5942,48 +5941,127 @@ function walkinSpeakPrep(line){
     .replace(/(\d):(\d{2})\b/g, function(_,h,m){ return h + ' ' + m; });
 }
 
-function walkinSpeakSam(line, onDone){
-  if(typeof SamJs !== 'function'){
-    if(onDone) onDone(false); return;
-  }
+/* ===================== the one voice ==================================
+   Every screen speaks with the SAME voice, and it is not the device's.
+   A device voice cannot be the answer here: the wall TV has none that
+   works, and the rest of the building would each pick something
+   different - which is precisely what was wrong before.
+   So the audio is fetched, once, from our own Apps Script, and played
+   through Web Audio. That matters: the TV refuses a remote media URL,
+   but Web Audio is the path the chime and SAM have always used on it, so
+   handing it decoded samples rather than a URL is the way in.
+   The Apps Script does the fetching because the voice host sends no CORS
+   headers - a browser cannot reach it directly - and because a paid
+   engine can be swapped in there later without this file changing at
+   all. It only ever asks for "the audio for this sentence". */
+var walkinVoiceCtx=null, walkinVoiceNodes=[], walkinVoiceSeq=0;
+/* Same generation trick the cut scenes use. Two announcements landing
+   together used to share one list of playing nodes, so whichever finished
+   first silenced the other mid-sentence, and a late callback from an
+   abandoned attempt could cut off the one that replaced it. */
+var walkinVoiceGen=0, walkinVoiceCancel=null;
+
+function walkinVoiceStop(){
+  walkinVoiceNodes.forEach(function(n){ try{ n.onended=null; n.stop() }catch(e){} });
+  walkinVoiceNodes=[];
+}
+
+function walkinVoiceContext(){
+  try{
+    if(!walkinVoiceCtx) walkinVoiceCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(walkinVoiceCtx.state==='suspended') walkinVoiceCtx.resume();
+    return walkinVoiceCtx;
+  }catch(e){ return null }
+}
+
+function walkinB64Bytes(b64){
+  var bin=atob(b64), n=bin.length, a=new Uint8Array(n);
+  for(var i=0;i<n;i++) a[i]=bin.charCodeAt(i);
+  return a;
+}
+
+/* ask the script for the audio; JSONP because that is how this board
+   already talks to it, and it dodges CORS on the way back too */
+function walkinVoiceFetch(line, cb){
+  if(!WALKIN_GAS_URL){ cb(null); return }
+  var name='__say'+(++walkinVoiceSeq);
+  var sc=document.createElement('script'), done=false;
+  var cleanup=function(){
+    try{ delete window[name] }catch(e){ window[name]=undefined }
+    if(sc.parentNode) sc.parentNode.removeChild(sc);
+  };
+  window[name]=function(j){ done=true; cleanup(); cb(j&&j.clips&&j.clips.length?j:null) };
+  sc.onerror=function(){ if(!done){ cleanup(); cb(null) } };
+  /* a script tag that never answers would leak a node and a global on
+     every announcement, and leave the floor waiting in silence */
+  setTimeout(function(){ if(!done){ cleanup(); cb(null) } }, 8000);
+  sc.src = WALKIN_GAS_URL + (WALKIN_GAS_URL.indexOf('?')<0?'?':'&')
+         + 'say=' + encodeURIComponent(line)
+         + '&callback=' + name + '&_=' + Date.now();
+  document.head.appendChild(sc);
+}
+
+function walkinSpeakVoice(line, onDone){
+  var ctx=walkinVoiceContext();
+  if(!ctx){ if(onDone) onDone(false); return }
+
+  /* A new announcement takes the floor - but the one it interrupts has to
+     be SETTLED, not just silenced. Stopping its nodes clears their onended,
+     so without this the overtaken attempt never calls back at all, its
+     caller waits for ever, and the whole speech chain stops: no voice, and
+     not even the chime that is supposed to cover for it. Every attempt
+     settles exactly once, whether it finished or was overtaken. */
+  if(walkinVoiceCancel){ var prev=walkinVoiceCancel; walkinVoiceCancel=null; prev(); }
+  walkinVoiceStop();
+
+  var gen=++walkinVoiceGen;
   var done=false;
   var finish=function(ok){
     if(done) return; done=true;
+    if(walkinVoiceCancel===mine) walkinVoiceCancel=null;
+    if(gen===walkinVoiceGen) walkinVoiceStop();
     if(onDone) onDone(!!ok);
   };
-  try{
-    var AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC){ finish(false); return; }
-    if(!walkinActx) walkinActx=new AC();
-    var play=function(){
+  var mine=function(){ finish(false) };
+  walkinVoiceCancel=mine;
+  var stale=function(){ return gen!==walkinVoiceGen };
+  walkinVoiceFetch(line, function(j){
+    if(stale()){ finish(false); return }
+    if(!j){ finish(false); return }
+    var buffers=[], want=j.clips.length, bad=false;
+    j.clips.forEach(function(b64, idx){
+      var bytes;
+      try{ bytes=walkinB64Bytes(b64) }catch(e){ bad=true; finish(false); return }
+      /* decodeAudioData takes the callback form as well as a promise -
+         the older form is what the TV's browser understands */
       try{
-        if(!walkinMaster){
-          walkinMaster=walkinActx.createGain();
-          walkinMaster.gain.value=3.2;
-          walkinMaster.connect(walkinActx.destination);
-        }
-        var sam=new SamJs({pitch:64, speed:72, mouth:128, throat:128});
-        var spoken=walkinSpeakPrep(line);
-        var samples=sam.buf32(spoken);
-        if(!samples || !samples.length){ finish(false); return; }
-        var buf=walkinActx.createBuffer(1, samples.length, 22050);
-        var ch=buf.getChannelData(0);
-        for(var i=0;i<samples.length;i++) ch[i]=samples[i];
-        var src=walkinActx.createBufferSource();
-        src.buffer=buf;
-        src.connect(walkinMaster);
-        src.onended=function(){ finish(true); };
-        src.start(0);
-        var ms=Math.max(2500, Math.min(25000, (samples.length/22050)*1000 + 400));
-        setTimeout(function(){ if(!done) finish(true); }, ms);
-      }catch(e){ finish(false); }
-    };
-    if(walkinActx.state==='suspended'){
-      walkinActx.resume().then(play).catch(function(){ play(); });
-    }else{
-      play();
+        ctx.decodeAudioData(bytes.buffer, function(buf){
+          if(bad) return;
+          /* Settle, do not just walk away. An attempt that is overtaken
+             AFTER its audio came back but BEFORE it played would otherwise
+             return here and never call onDone - and the caller waits for
+             that, so the speech chain hangs and nothing ever rings. */
+          if(stale()){ finish(false); return }
+          buffers[idx]=buf;
+          if(buffers.filter(Boolean).length===want) playAll();
+        }, function(){ if(!bad){ bad=true; finish(false) } });
+      }catch(e){ if(!bad){ bad=true; finish(false) } }
+    });
+    function playAll(){
+      if(stale()){ finish(false); return }
+      /* one clip after another, so a split sentence reads as one line */
+      var at=ctx.currentTime+0.02;
+      buffers.forEach(function(buf,i){
+        var src=ctx.createBufferSource();
+        src.buffer=buf; src.connect(ctx.destination);
+        src.start(at); at+=buf.duration;
+        walkinVoiceNodes.push(src);
+        if(i===buffers.length-1) src.onended=function(){ finish(true) };
+      });
+      /* backstop: if onended never lands, do not hold the chain open */
+      setTimeout(function(){ if(!stale()) finish(true) }, (at-ctx.currentTime)*1000+2000);
     }
-  }catch(e){ finish(false); }
+  });
 }
 
 /* Remote TTS as MP3 — fallback when same-origin speech is unavailable. */
@@ -6075,73 +6153,20 @@ function walkinSpeak(r){
     walkinClearAudio();
     try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
   };
-  /* Best voice first, and remember what actually worked on THIS screen.
-       synth - the browser's own British female voice. Sounds like a person.
-       audio - Google's en-GB, also a British woman, but it leaves the
-               building and the endpoint is not ours.
-       sam   - a 1982 formant synth. Always works, sounds like a robot, and
-               cannot do a female British voice at any setting.
-     SAM used to be first, to fix the LG wall where speechSynthesis can
-     accept a request and then silently never speak. That fixed one TV by
-     giving every other screen in the building the worst voice. Instead,
-     walkinSpeakSynth already detects a speak() that never starts (1.5s),
-     so it is safe to lead with it and let the LG fall through to SAM on
-     its own - once, and then remember. */
-  walkinSpeakBest(line, unduck);
-}
-
-/* Which engine this screen proved works, so a cold walk down the chain
-   happens once rather than before every announcement - on a screen where
-   the browser voice fails that walk costs several seconds, and an arrival
-   alert that arrives late is half useless.
-   It LAPSES, deliberately. A screen that settled on the robot voice must
-   not be stuck with it for ever: a browser update, a new TV or a different
-   kiosk setting can put a real voice there, and nothing would ever go
-   looking. Twelve hours means every screen re-tests each morning. */
-var WALKIN_TTS_RETEST = 12*60*60*1000;
-
-function walkinEngineRemembered(){
-  try{
-    var raw=localStorage.getItem('dsWalkinTTS')||'';
-    var bits=raw.split('|');
-    if(!bits[0]) return '';
-    var at=+bits[1]||0;
-    if(!at || Date.now()-at > WALKIN_TTS_RETEST) return '';
-    return bits[0];
-  }catch(e){ return '' }
-}
-function walkinEngineRemember(name){
-  try{ localStorage.setItem('dsWalkinTTS', name+'|'+Date.now()) }catch(e){}
-}
-
-function walkinSpeakBest(line, unduck){
-  var ENGINES = {
-    synth: walkinSpeakSynth,
-    audio: walkinSpeakAudio,
-    sam:   walkinSpeakSam
-  };
-  var order = ['synth','audio','sam'];
-  /* whatever worked last time goes first; the rest keep their ranking, so a
-     screen that has settled on SAM still tries the good voice again after a
-     browser update puts one there */
-  var last = walkinEngineRemembered();
-  if(last && ENGINES[last]){
-    order = [last].concat(order.filter(function(n){ return n!==last }));
-  }
-  var i = 0;
-  var next = function(){
-    if(i >= order.length){
-      walkinChimeFallback();          /* never leave the floor silent */
-      setTimeout(unduck, 1800);
-      return;
-    }
-    var name = order[i++];
-    ENGINES[name](line, function(ok){
-      if(ok){ walkinEngineRemember(name); unduck(); return; }
-      next();
-    });
-  };
-  next();
+  /* ONE voice, the same on every screen, and it is not the device's.
+     Device voices were the old design and they cannot meet either half of
+     what is wanted here: the wall TV - the screen that matters most - has
+     no working one at all, and the others would each pick something
+     different, so the building would not sound like itself.
+     So: our own audio, fetched once and played through Web Audio, which
+     is the only audio path that TV has ever accepted. If it cannot be had,
+     the chime rings rather than a second-best voice speaking - a different
+     voice on one screen is worse than a screen that only dings. */
+  walkinSpeakVoice(line, function(ok){
+    if(ok){ unduck(); return; }
+    walkinChimeFallback();
+    setTimeout(unduck, 1800);
+  });
 }
 
 /* kept for older callers */
@@ -6441,7 +6466,6 @@ try{
 startWalkinAlerts();
 </script>
 
-<script src="tts/samjs.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, update, remove, get, set }

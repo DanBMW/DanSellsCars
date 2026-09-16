@@ -100,6 +100,15 @@ function doGet(e) {
   if (want && p.token !== want) {
     return out({ error: 'bad token' }, p.callback);
   }
+  /* ?say=... returns the announcement as AUDIO DATA rather than a list.
+     This is what gives every screen the same voice.
+     It has to be fetched here rather than by the board for two reasons:
+     the TTS host sends no CORS headers, so a browser cannot fetch it; and
+     the wall TV refuses a remote media URL outright. Handing the board raw
+     bytes sidesteps both - it decodes them into Web Audio, which is the one
+     audio path that TV has always been willing to use. */
+  if (p.say) return sayAudio(p.say, p.callback);
+
   var body = readCache();
   if (!body) {
     try { refresh(); body = readCache(); } catch (err) {
@@ -107,6 +116,92 @@ function doGet(e) {
     }
   }
   return out(body || { appointments: [], events: [] }, p.callback);
+}
+
+/* ===================== the voice ====================================== */
+
+/* en-GB female. Swap VOICE_URL for a paid engine later without the board
+   changing at all - it only ever asks for "the audio for this sentence". */
+var VOICE_LANG = 'en-GB';
+var VOICE_CHUNK = 180;     /* the endpoint truncates long requests */
+
+function voiceUrl(text) {
+  return 'https://translate.google.com/translate_tts'
+       + '?ie=UTF-8&client=tw-ob&tl=' + encodeURIComponent(VOICE_LANG)
+       + '&q=' + encodeURIComponent(text);
+}
+
+/* Split on sentence ends so the joins fall where a speaker would pause,
+   rather than mid-word. */
+function voiceChunks(text) {
+  /* No lookbehind: it needs the V8 runtime, and an Apps Script project set
+     to the legacy one would fail to compile the whole file rather than just
+     this line. Keep the terminator on the sentence it belongs to. */
+  var parts = String(text || '').replace(/([.!?])\s+/g, '$1\u0001').split('\u0001');
+  var out = [], cur = '';
+  parts.forEach(function (bit) {
+    while (bit.length > VOICE_CHUNK) {          /* a single huge sentence */
+      out.push(bit.slice(0, VOICE_CHUNK));
+      bit = bit.slice(VOICE_CHUNK);
+    }
+    if ((cur + ' ' + bit).trim().length > VOICE_CHUNK) { if (cur) out.push(cur.trim()); cur = bit; }
+    else cur = (cur ? cur + ' ' : '') + bit;
+  });
+  if (cur.trim()) out.push(cur.trim());
+  return out.filter(function (x) { return x.length; });
+}
+
+function sayAudio(text, callback) {
+  var chunks = voiceChunks(text);
+  if (!chunks.length) return out({ error: 'nothing to say' }, callback);
+
+  var clips = [];
+  for (var i = 0; i < chunks.length; i++) {
+    var b64 = voiceClip(chunks[i]);
+    if (!b64) return out({ error: 'voice unavailable' }, callback);
+    clips.push(b64);
+  }
+  return out({ clips: clips, type: 'audio/mpeg', say: text }, callback);
+}
+
+/* One phrase, base64. Cached because the fixed parts repeat all day -
+   "Walk-in", "Arrived", an executive's name - and there is no sense
+   fetching the same audio a hundred times. */
+function voiceClip(phrase) {
+  var ck = 'tts_' + VOICE_LANG + '_' + hash(phrase);
+  try {
+    var hit = CacheService.getScriptCache().get(ck);
+    if (hit) return hit;
+  } catch (e) {}
+
+  var res;
+  try {
+    res = UrlFetchApp.fetch(voiceUrl(phrase), {
+      muteHttpExceptions: true,
+      followRedirects: true,
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+  } catch (e) { return ''; }
+
+  if (res.getResponseCode() !== 200) return '';
+  var bytes = res.getBlob().getBytes();
+  if (!bytes || bytes.length < 512) return '';    /* an error page, not audio */
+  var b64 = Utilities.base64Encode(bytes);
+
+  /* the cache refuses anything much over 100KB - not worth failing over */
+  try {
+    if (b64.length < 95000) CacheService.getScriptCache().put(ck, b64, 21600);
+  } catch (e) {}
+  return b64;
+}
+
+function hash(s) {
+  var h = 0, str = String(s || '');
+  for (var i = 0; i < str.length; i++) {
+    h = ((h << 5) - h) + str.charCodeAt(i);
+    h |= 0;
+  }
+  return (h >>> 0).toString(36);
 }
 
 function out(obj, callback) {
