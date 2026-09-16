@@ -155,6 +155,7 @@
 
    Until then SOURCE is 'mock' and the widget runs on a rehearsal feed, so
    it can be checked on a real screen before the real data exists.
+   team-board.html can share the same Apps Script /exec URL via WALKIN_GAS_URL.
    ======================================================================= */
 
 /* Which feed to run on:
@@ -172,7 +173,7 @@
      'rest'      - a plain endpoint, polled. The fallback, and it IS polling:
                    every figure on screen is as stale as POLL_MS. Only use it
                    if the API turns out not to stream. */
-var SOURCE = 'mock';
+var SOURCE = 'gas';
 
 /* 1. Firebase Console -> Project Settings -> General -> SDK setup */
 var FIREBASE = {
@@ -648,7 +649,7 @@ function startSse(){
    whether CORS survives that depends on the deployment. A <script> tag has
    no such problem. A wall screen is the wrong place to find out.
    This IS polling, and the strip says so. */
-var GAS_URL = '';      /* the /exec URL, with ?token=… on the end */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwUADuhpVbdgDvlumw_Uul-MimvI2fxVpXfN4r_pyp6ZyLGdaxKWATBtMYjy7dowH12/exec?token=TESTER123';
 var gasSeq = 0;
 function startGas(){
   if(!GAS_URL){ failed('No Apps Script address yet - see GAS_URL'); return }
