@@ -2104,8 +2104,8 @@ var busy=false, holdUntil=0, sceneGen=0;
    `sceneEnd` is a no-op. */
 function sceneStart(duckRadio){
   busy=true;
-  /* Radio stays up for leaderboards, mug shots, and silent cut scenes.
-     Only videos / spoken bits ask for a duck. */
+  /* Mug shots / picture views: radio stays full. Video cut scenes (and
+     anything that passes true) soft-duck underneath, same as speech. */
   if(duckRadio){ try{radioDuck(true)}catch(e){} }
   return ++sceneGen;
 }
@@ -3912,17 +3912,21 @@ function pickClip(){
    what this board is: a browser playing Kisstory. Do not strip it back off.
    The last one needs no key at all and cannot be revoked, so the wall is
    never silent even if Bauer rotates that one. */
-var RADIO_KEY = '?direct=true&aw_0_1st.skey=1602676850';
+/* Fresh Bauer key from the live radio-browser listing (Airable player id).
+   Prefer MP3 for Kisstory R&B: AAC was stammering on the LG wall TVs. */
+var RADIO_KEY = '?direct=true&aw_0_1st.playerid=BMUK_Airable&aw_0_1st.skey=6778249992';
 var RADIO_SOURCES = [
-  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY, /* R&B, 127k */
-  'https://stream-kiss.hellorayo.co.uk/kisstoryrb.aac'+RADIO_KEY,     /* same, other CDN */
-  'https://live-bauerkiss.sharp-stream.com/kisstory.aac'+RADIO_KEY,   /* old skool */
-  'https://live-kiss.sharp-stream.com/kiss100.mp3'                    /* no key needed */
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.mp3'+RADIO_KEY, /* R&B MP3 - stable on LG */
+  'https://stream-kiss.hellorayo.co.uk/kisstoryrb.aac'+RADIO_KEY,     /* R&B AAC CDN 2 */
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY, /* R&B AAC CDN 1 */
+  'https://londonsoulradio.out.airtime.pro:8000/londonsoulradio_a',   /* UK soul/R&B keep-alive */
+  'https://a7.asurahosting.com:8230/radio.mp3',                      /* Soul Rhythms UK */
+  'https://live-kiss.sharp-stream.com/kiss100.mp3'                   /* last resort, no key */
 ];
 var RADIO_NAME='Kisstory R&B';
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 
-var radioLastTime=0, radioStallTicks=0;
+var radioLastTime=0, radioStallTicks=0, radioSwapEl=null;
 
 /* Force audible output when UI says playing but wall is silent (volume stuck
    at 0, muted flag, or suspended AudioContext). */
@@ -3944,11 +3948,11 @@ function radioForceSound(){
   if(!a) return;
   try{ a.muted=false; a.removeAttribute('muted') }catch(e){}
   try{
-    /* Do not cancel an in-progress soft fade - that is what made levels snap. */
+    /* Never touch volume during a fade, and never snap for tiny drift —
+       repeated volume writes on LG AAC/MP3 streams sound like stammering. */
     if(!radioFadeTimer){
-      var target=radioDucked?radioDuckLevel():Math.max(radioVol(), 0.35);
-      if(radioDucked) target=Math.max(target, 0.1);
-      if(a.volume < target - 0.05) a.volume=target;
+      var target=radioDucked?radioDuckLevel():radioVol();
+      if(Math.abs((a.volume||0) - target) > 0.12) a.volume=target;
     }
   }catch(e){}
   try{
@@ -3992,9 +3996,10 @@ function radioAttach(url){
   radioDrop();
   var a=document.createElement('audio');
   a.id='radio';
-  a.preload='none';
+  /* auto + a bigger browser buffer reduces live-stream stammer on LG webOS */
+  a.preload='auto';
   a.muted=false;
-  a.volume=radioVol();
+  a.volume=radioDucked ? radioDuckLevel() : radioVol();
   a.setAttribute('playsinline','');
   a.setAttribute('autoplay','');
   a.src=url;
@@ -4176,8 +4181,11 @@ setInterval(function(){
     if(radioEl){
       try{
         radioEl.muted=false;
-        if(!radioFadeTimer) radioEl.volume=Math.max(radioDuckLevel(), 0.1);
-        if(radioEl.paused) radioEl.play();
+        if(radioEl.paused){
+          var p=radioEl.play();
+          if(p&&p.catch) p.catch(function(){});
+        }
+        /* Do not rewrite volume every tick while ducked — that stammered. */
       }catch(e){}
     }
     return;
@@ -4189,33 +4197,29 @@ setInterval(function(){
       if(a.paused || a.muted){
         radioForceSound();
         radioStallTicks++;
-        /* Only hard-refresh after ~30s of being paused, not every few ticks.
-           Live AAC on LG often freezes currentTime while audio still plays. */
-        if(a.paused && radioStallTicks>=15){
+        /* ~90s truly paused before hard reconnect. LG often reports odd
+           paused/currentTime while audio is still fine. */
+        if(a.paused && radioStallTicks>=18){
           radioStallTicks=0;
           radioRefreshStream();
         }
         return;
       }
       radioStallTicks=0;
-      /* Keep volume honest without restarting the stream. */
-      if(!radioFadeTimer && a.volume < Math.max(radioVol(), 0.35) - 0.08){
-        try{ a.volume=Math.max(radioVol(), 0.35) }catch(e){}
-      }
     }catch(e){}
     return;
   }
   if(radioState==='connecting')return;
   if(radioState==='failed')radioIdx=0;
   radioPlay();
-},4000);
+},5000);
 
-/* Gentle stream refresh every 45 minutes so Bauer CDNs do not go stale overnight. */
+/* Quiet overnight reconnect — prefer MP3 source 0, only if still wanted. */
 setInterval(function(){
   if(!radioWanted() || radioDucked) return;
   if(radioState!=='playing' && radioState!=='connecting') return;
   radioRefreshStream();
-}, 45*60*1000);
+}, 90*60*1000);
 
 /* An announcement that actually made a sound is PROOF this screen may play
    audio - the one thing the radio cannot establish for itself on a wall
@@ -5673,7 +5677,8 @@ paintCornerQR();
    slow or blocked should still come up playing rather than silent. */
 radioRefreshStream();
 paintRadio();
-[400,1000,2500,6000,12000].forEach(function(ms){
+/* One gentle kick after the stream has had time to buffer — not a burst. */
+[1500,8000].forEach(function(ms){
   setTimeout(function(){ try{ radioForceSound() }catch(e){} }, ms);
 });
 /* the stock list is a plain file next to this page, so the forecourt slot
@@ -5695,8 +5700,11 @@ function applySettings(v){
   /* a pause from a phone has to reach the wall, and an unpause has to start
      it again - both arrive here as a settings change */
   if(radioWanted()){
-    if(radioState!=='playing'&&radioState!=='connecting') radioRefreshStream();
-    else { try{ radioForceSound() }catch(e){} }
+    /* Settings watch fires often — never restart a healthy stream from here. */
+    if(radioState!=='playing' && radioState!=='connecting' && radioState!=='waiting')
+      radioRefreshStream();
+    else if(radioEl && radioEl.paused)
+      { try{ radioForceSound() }catch(e){} }
   } else radioStop();
   paintRadio();
   /* a slot that has just been switched off comes off the wall now, and the
