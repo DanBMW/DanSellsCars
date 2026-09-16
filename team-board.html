@@ -348,6 +348,34 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 .toast.ok{border-color:rgba(47,191,107,.5)}
 .toast.err{border-color:rgba(226,86,77,.55)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
+
+/* ---- walk-in / arrival popup card (temporary test + live alerts) ---- */
+.walkin-pop{
+  position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;
+  padding:18px;background:rgba(5,8,14,.55);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity .22s ease;
+}
+.walkin-pop.show{opacity:1;pointer-events:auto}
+.walkin-card{
+  width:min(440px,94vw);background:var(--panel);border:1px solid var(--line);
+  border-radius:18px;padding:22px 24px 20px;box-shadow:0 28px 80px rgba(0,0,0,.65);
+  transform:translateY(12px) scale(.98);transition:transform .22s ease;
+}
+.walkin-pop.show .walkin-card{transform:none}
+.walkin-card.wi{border-color:rgba(47,191,107,.55);box-shadow:0 28px 80px rgba(0,0,0,.65),0 0 0 1px rgba(47,191,107,.18)}
+.walkin-card.ap{border-color:rgba(47,123,240,.55);box-shadow:0 28px 80px rgba(0,0,0,.65),0 0 0 1px rgba(47,123,240,.18)}
+.walkin-kicker{
+  font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+  margin:0 0 8px;
+}
+.walkin-card.wi .walkin-kicker{color:var(--green)}
+.walkin-card.ap .walkin-kicker{color:var(--blue)}
+.walkin-name{
+  font-family:var(--display);font-weight:700;font-size:clamp(1.55rem,4.5vw,2.05rem);
+  line-height:1.1;margin:0 0 10px;color:var(--text);
+}
+.walkin-meta{font-size:.88rem;font-weight:600;color:var(--muted);line-height:1.45;margin:0}
+.walkin-time{font-size:.78rem;font-weight:700;color:rgba(242,245,249,.72);margin:14px 0 0}
 .foot{text-align:center;color:var(--muted);font-size:.68rem;margin-top:26px;line-height:1.7}
 /* Dan's line. Above every scene and every board, so it is there whatever the
    display happens to be showing. */
@@ -1793,6 +1821,14 @@ body.premiere .pairqr{display:none!important}
 </div>
 
 <div class="toasts" id="toasts"></div>
+<div class="walkin-pop" id="walkin-pop" aria-live="assertive" hidden>
+  <div class="walkin-card wi" id="walkin-card" role="status">
+    <p class="walkin-kicker" id="walkin-kicker">Walk-in</p>
+    <p class="walkin-name" id="walkin-name">Customer</p>
+    <p class="walkin-meta" id="walkin-meta"></p>
+    <p class="walkin-time" id="walkin-time"></p>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -3521,7 +3557,7 @@ function playNow(src){
   if(!src)return;
   /* temporary admin test: toast + doorbell, same as a real walk-in alert */
   if(src==='walkin:test'){
-    toast('Test walk-in','ok');
+    walkinShowCard({customer:'Mr Whitfield', walkIn:true, carType:'New', models:'1 Series, X1', arrived:Date.now()});
     if(typeof walkinDoorbell==='function') walkinDoorbell();
     return;
   }
@@ -5481,15 +5517,63 @@ function walkinMapRows(j){
                  .toLowerCase().replace(/[\s_]/g,'-');
     var walkIn = type==='walk-in'||type==='walkin'||type==='true'||type==='y'||type==='yes'
               || d.isWalkIn===true || d.walkIn===true;
-    /* assignedTo on a waiting row is often whose booking it is, not who has
-       them - with-staff comes from status (or an explicit boolean flag) */
     var withStaff = st==='with-staff'||st==='withstaff'||st==='in-progress'
                  || st==='assigned'||st==='being-seen'
                  || d.withStaff===true;
-    var customer = d.customerName||d.name||d.customer||(walkIn?'Walk-in':'Appointment');
-    out.push({id:String(id), customer:String(customer), walkIn:!!walkIn, withStaff:!!withStaff});
+    var customer = String(d.customerName||d.name||d.customer||'').trim();
+    /* Apps Script falls back to the label "Walk-in" when the name line missed -
+       treat that as unknown so the card can say so clearly */
+    if(!customer || /^walk[\s-]?in$/i.test(customer) || /^appointment$/i.test(customer)){
+      customer = walkIn ? 'Waiting at reception' : 'Appointment arrived';
+    }
+    var arrived = d.arrivalTime||d.arrivedAt||d.arrived||null;
+    if(typeof arrived==='string'){ var parsed=Date.parse(arrived); arrived=isNaN(parsed)?null:parsed }
+    if(typeof arrived==='number' && arrived<1e12) arrived=arrived*1000;
+    out.push({
+      id:String(id),
+      customer:customer,
+      walkIn:!!walkIn,
+      withStaff:!!withStaff,
+      carType:String(d.carType||d.newUsed||'').trim(),
+      models:String(d.models||d.modelsOfInterest||'').trim(),
+      bookedWith:String(d.bookedWith||d.owner||'').trim(),
+      arrived: arrived && isFinite(arrived) ? arrived : null
+    });
   });
   return out;
+}
+
+var walkinPopTimer=null;
+function walkinClock(ms){
+  if(!ms) return '';
+  var d=new Date(ms), p=function(n){return n<10?'0'+n:''+n};
+  return p(d.getHours())+':'+p(d.getMinutes());
+}
+function walkinHideCard(){
+  var pop=$('walkin-pop');
+  if(!pop) return;
+  pop.classList.remove('show');
+  clearTimeout(walkinPopTimer);
+  setTimeout(function(){ if(!pop.classList.contains('show')) pop.hidden=true },240);
+}
+function walkinShowCard(r){
+  r=r||{};
+  var pop=$('walkin-pop'), card=$('walkin-card');
+  if(!pop||!card){ toast((r.walkIn?'Walk-in: ':'Appointment: ')+(r.customer||''),'ok'); return }
+  card.className='walkin-card '+(r.walkIn?'wi':'ap');
+  $('walkin-kicker').textContent=r.walkIn?'Walk-in':'Appointment';
+  $('walkin-name').textContent=r.customer||(r.walkIn?'Waiting at reception':'Appointment arrived');
+  var bits=[];
+  if(r.carType) bits.push(r.carType);
+  if(r.models) bits.push(r.models);
+  if(r.bookedWith) bits.push('Booked with '+r.bookedWith);
+  $('walkin-meta').textContent=bits.join(' · ');
+  $('walkin-meta').style.display=bits.length?'block':'none';
+  $('walkin-time').textContent=r.arrived ? ('Arrived '+walkinClock(r.arrived)) : 'Just arrived';
+  pop.hidden=false;
+  requestAnimationFrame(function(){ pop.classList.add('show') });
+  clearTimeout(walkinPopTimer);
+  walkinPopTimer=setTimeout(walkinHideCard, 8000);
 }
 
 function walkinStrike(f,t,vol){
@@ -5524,7 +5608,7 @@ function walkinDeliver(list){
     if(!walkinSeen[r.id]){
       walkinSeen[r.id]=1;
       if(walkinPrimed && !r.withStaff){
-        toast((r.walkIn?'Walk-in: ':'Appointment: ')+r.customer, 'ok');
+        walkinShowCard(r);
         walkinDoorbell();
       }
     }
@@ -5563,6 +5647,12 @@ function startWalkinAlerts(){
   };
   tick(); setInterval(tick, WALKIN_POLL_MS);
 }
+(function(){
+  var pop=$('walkin-pop');
+  if(pop) pop.addEventListener('click', function(e){
+    if(e.target===pop || (e.target && e.target.id==='walkin-card')) walkinHideCard();
+  });
+})();
 startWalkinAlerts();
 </script>
 
