@@ -5668,16 +5668,19 @@ function walkinHideCard(){
 }
 function walkinEnqueue(r){
   if(!r) return;
-  /* with-staff waiting cards are silent; explicit "taken" events still speak */
-  if(r.withStaff && r.kind!=='walkin-taken' && r.kind!=='dealt' && r.kind!=='walkin-left') return;
+  /* with-staff waiting cards are silent; taken / combined / left / dealt still speak */
+  var kind=String(r.kind||'');
+  if(r.withStaff && kind!=='walkin-taken' && kind!=='walkin-arrived-taken'
+     && kind!=='walkin-waiting-taken' && kind!=='dealt' && kind!=='walkin-left') return;
   walkinQueue.push(r);
   if(!walkinShowing) walkinPlayNext();
 }
 function walkinPlayNext(){
   if(walkinShowing) return;
-  if(!walkinQueue.length) return;
+  if(!walkinQueue.length){ walkinQueue._current=null; return; }
   walkinShowing=true;
   var r=walkinQueue.shift();
+  walkinQueue._current=r;
   walkinShowCard(r);
   walkinSpeak(r);
 }
@@ -5717,6 +5720,7 @@ function walkinShowCard(r){
   card.className='walkin-card '+(wi?'wi':'ap');
   var kicker='WALK-IN';
   if(kind==='customer-arrived') kicker=r.handover?'HANDOVER':'APPOINTMENT';
+  else if(kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken') kicker='WALK-IN · TAKEN';
   else if(kind==='walkin-taken') kicker='TAKEN';
   else if(kind==='walkin-left') kicker='LEFT';
   else if(kind==='dealt') kicker='DEALT';
@@ -5732,6 +5736,8 @@ function walkinShowCard(r){
   $('walkin-meta').style.display=bits.length?'block':'none';
   if(kind==='walkin-left') $('walkin-time').textContent='Left without being seen';
   else if(kind==='dealt') $('walkin-time').textContent='Deal done';
+  else if(kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken')
+    $('walkin-time').textContent=r.assignedTo?('Arrived · taken by '+r.assignedTo):'Arrived · taken';
   else if(kind==='walkin-taken') $('walkin-time').textContent=r.assignedTo?('With '+r.assignedTo):'With sales';
   else $('walkin-time').textContent=r.arrived ? ('Arrived '+walkinClock(r.arrived)) : 'Just arrived';
   pop.hidden=false;
@@ -5744,6 +5750,14 @@ function walkinAnnounceText(r){
   r=r||{};
   var kind=String(r.kind||'').toLowerCase();
   var name=r.customer || 'customer';
+  if(kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken'){
+    var who = r.assignedTo || 'a sales executive';
+    var bits = ['Walk-in', name, 'Taken by '+who];
+    var interest=[r.carType, r.models].filter(Boolean).join(', ');
+    if(interest) bits.push(interest);
+    if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived));
+    return bits.join('. ') + '.';
+  }
   if(kind==='walkin-taken'){
     return name+' is now with '+(r.assignedTo || 'a sales executive')+'.';
   }
@@ -5865,6 +5879,105 @@ function walkinRemember(key){
 }
 walkinLoadAnnounced();
 
+
+/* If waiting + taken for the same person both become "new" in one poll (or
+   taken arrives while waiting is still queued), fold into one announcement. */
+function walkinPersonKey(r){
+  if(!r) return '';
+  if(r.ref) return 'ref:'+r.ref;
+  var nm=(r.customer||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  return nm ? ('n:'+nm) : ('id:'+(r.id||''));
+}
+function walkinCoalesceNew(rows){
+  var by = Object.create(null);
+  var order = [];
+  rows.forEach(function(r){
+    if(!r) return;
+    var pk = walkinPersonKey(r);
+    var kind = String(r.kind||'');
+    if(!by[pk]){ by[pk]={ waiting:null, taken:null, other:[] }; order.push(pk); }
+    if(kind==='walkin-waiting') by[pk].waiting = r;
+    else if(kind==='walkin-taken') by[pk].taken = r;
+    else by[pk].other.push(r);
+  });
+  var out = [];
+  order.forEach(function(pk){
+    var g = by[pk];
+    if(g.waiting && g.taken){
+      var w=g.waiting, t=g.taken;
+      out.push({
+        id: 'combo:'+(w.id||'')+':'+(t.id||''),
+        kind: 'walkin-arrived-taken',
+        customer: t.customer || w.customer,
+        walkIn: true,
+        handover: false,
+        withStaff: true,
+        carType: w.carType || t.carType,
+        models: w.models || t.models,
+        ref: w.ref || t.ref,
+        bookedWith: w.bookedWith || t.bookedWith,
+        assignedTo: t.assignedTo || '',
+        arrived: w.arrived || t.arrived
+      });
+    }else{
+      if(g.waiting) out.push(g.waiting);
+      if(g.taken) out.push(g.taken);
+    }
+    g.other.forEach(function(r){ out.push(r); });
+  });
+  return out;
+}
+function walkinMergeQueuedTaken(r){
+  /* If a plain waiting card is still in the queue and taken arrives, upgrade it. */
+  if(!r || r.kind!=='walkin-taken') return false;
+  var pk = walkinPersonKey(r);
+  for(var i=0;i<walkinQueue.length;i++){
+    var q=walkinQueue[i];
+    if(String(q.kind||'')==='walkin-waiting' && walkinPersonKey(q)===pk){
+      walkinQueue[i]={
+        id: 'combo:'+(q.id||'')+':'+(r.id||''),
+        kind: 'walkin-arrived-taken',
+        customer: r.customer || q.customer,
+        walkIn: true,
+        handover: false,
+        withStaff: true,
+        carType: q.carType || r.carType,
+        models: q.models || r.models,
+        ref: q.ref || r.ref,
+        bookedWith: q.bookedWith || r.bookedWith,
+        assignedTo: r.assignedTo || '',
+        arrived: q.arrived || r.arrived
+      };
+      return true;
+    }
+  }
+  /* Also upgrade the card currently on screen if it is the same waiting person */
+  if(walkinShowing && walkinQueue._current &&
+     String(walkinQueue._current.kind||'')==='walkin-waiting' &&
+     walkinPersonKey(walkinQueue._current)===pk){
+    var cur=walkinQueue._current;
+    var merged={
+      id: 'combo:'+(cur.id||'')+':'+(r.id||''),
+      kind: 'walkin-arrived-taken',
+      customer: r.customer || cur.customer,
+      walkIn: true,
+      handover: false,
+      withStaff: true,
+      carType: cur.carType || r.carType,
+      models: cur.models || r.models,
+      ref: cur.ref || r.ref,
+      bookedWith: cur.bookedWith || r.bookedWith,
+      assignedTo: r.assignedTo || '',
+      arrived: cur.arrived || r.arrived
+    };
+    walkinQueue._current=merged;
+    walkinShowCard(merged);
+    walkinSpeak(merged);
+    return true;
+  }
+  return false;
+}
+
 function walkinDeliver(payload){
   /* Prefer events[] from Apps Script (waiting / arrived / taken / left / dealt).
      Fall back to appointments[] for older deployments. Announce each event id
@@ -5895,6 +6008,7 @@ function walkinDeliver(payload){
   }
 
   var list = events.length ? events : appointments.filter(function(r){ return !r.withStaff; });
+  var fresh = [];
   list.forEach(function(r){
     var key = events.length ? ('ev:'+r.id) : walkinVisitKey(r);
     if(walkinSeen[key] || (r.id && walkinSeen['id:'+r.id])){
@@ -5902,12 +6016,16 @@ function walkinDeliver(payload){
       return;
     }
     rememberRow(r);
-    /* taken/left/dealt always announce; waiting/arrived skip if already with staff flag */
     if(r.kind==='walkin-taken' || r.kind==='walkin-left' || r.kind==='dealt'
        || r.kind==='customer-arrived' || r.kind==='walkin-waiting'
        || (!r.kind && !r.withStaff)){
-      walkinEnqueue(r);
+      fresh.push(r);
     }
+  });
+  /* Same-poll waiting+taken → one card. Taken while waiting still queued → upgrade. */
+  walkinCoalesceNew(fresh).forEach(function(r){
+    if(r.kind==='walkin-taken' && walkinMergeQueuedTaken(r)) return;
+    walkinEnqueue(r);
   });
 }
 
