@@ -151,14 +151,23 @@ function voiceChunks(text) {
   return out.filter(function (x) { return x.length; });
 }
 
+/* Why the last fetch failed, so a caller is told rather than left guessing.
+   "voice unavailable" on its own sent us hunting for a block that was not
+   there; the real answer is almost always in the exception text. */
+var lastVoiceError = '';
+
 function sayAudio(text, callback) {
   var chunks = voiceChunks(text);
   if (!chunks.length) return out({ error: 'nothing to say' }, callback);
 
+  lastVoiceError = '';
   var clips = [];
   for (var i = 0; i < chunks.length; i++) {
     var b64 = voiceClip(chunks[i]);
-    if (!b64) return out({ error: 'voice unavailable' }, callback);
+    if (!b64) {
+      return out({ error: 'voice unavailable', why: lastVoiceError || 'unknown' },
+                 callback);
+    }
     clips.push(b64);
   }
   return out({ clips: clips, type: 'audio/mpeg', say: text }, callback);
@@ -181,11 +190,24 @@ function voiceClip(phrase) {
       followRedirects: true,
       headers: { 'User-Agent': 'Mozilla/5.0' }
     });
-  } catch (e) { return ''; }
+  } catch (e) {
+    /* The usual cause is the script not being authorised for outbound
+       requests - it never needed them before the voice existed, and adding
+       UrlFetchApp requires granting the permission again. */
+    lastVoiceError = 'fetch threw: ' + (e && e.message ? e.message : e);
+    return '';
+  }
 
-  if (res.getResponseCode() !== 200) return '';
+  var code = res.getResponseCode();
+  if (code !== 200) {
+    lastVoiceError = 'http ' + code;
+    return '';
+  }
   var bytes = res.getBlob().getBytes();
-  if (!bytes || bytes.length < 512) return '';    /* an error page, not audio */
+  if (!bytes || bytes.length < 512) {           /* an error page, not audio */
+    lastVoiceError = 'only ' + (bytes ? bytes.length : 0) + ' bytes back';
+    return '';
+  }
   var b64 = Utilities.base64Encode(bytes);
 
   /* the cache refuses anything much over 100KB - not worth failing over */
@@ -516,4 +538,25 @@ function preview() {
   packed.events.slice(0, 15).forEach(function (e) {
     Logger.log('  %s | %s | %s', e.kind, e.customerName, e.assignedTo || '-');
   });
+}
+
+
+/* ---------------------------------------------------------------------
+   Run this from the editor if the board is chiming instead of speaking.
+   It does two jobs: it triggers the permission prompt for outbound
+   requests (the script never needed one before the voice existed, and
+   deploying does NOT grant it), and it says plainly what came back.
+   --------------------------------------------------------------------- */
+function testVoice() {
+  lastVoiceError = '';
+  var b64 = voiceClip('Testing one two three.');
+  if (b64) {
+    Logger.log('VOICE OK - %s bytes of audio came back.', b64.length);
+    Logger.log('Nothing more to do. The board will speak on the next walk-in.');
+  } else {
+    Logger.log('VOICE FAILED - %s', lastVoiceError || 'no reason recorded');
+    Logger.log('If that mentions authorisation or permission, run this again '
+             + 'and accept the prompt.');
+  }
+  return b64 ? 'ok' : (lastVoiceError || 'failed');
 }
