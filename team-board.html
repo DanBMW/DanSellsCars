@@ -5587,43 +5587,56 @@ var WALKIN_ANN_MAX_AGE_MS = 12*60*60*1000; /* keep for 12h across deploys/reload
 var walkinActx = null;
 var walkinMaster = null;
 
+function walkinStrip(s){
+  return String(s||'').trim().replace(/^[\s*•·]+/,'').trim();
+}
+function walkinMapOne(d,i,asEvent){
+  if(!d) return null;
+  var id = d.id || d._id || d.ref || ((asEvent?'e':'w')+i);
+  var st = String(d.status||d.state||'').toLowerCase().replace(/[\s_]+/g,'-');
+  var kind = String(d.kind||d.event||'').toLowerCase().replace(/[\s_]+/g,'-');
+  var type = String(d.type!=null?d.type:(d.isWalkIn!=null?d.isWalkIn:d.walkIn||''))
+               .toLowerCase().replace(/[\s_]+/g,'-');
+  var walkIn = type==='walk-in'||type==='walkin'||type==='true'||type==='y'||type==='yes'
+            || d.isWalkIn===true || d.walkIn===true
+            || kind.indexOf('walkin')===0;
+  var handover = type==='handover' || kind==='handover';
+  var withStaff = st==='with-staff'||st==='withstaff'||st==='in-progress'
+               || st==='assigned'||st==='being-seen'
+               || d.withStaff===true
+               || kind==='walkin-taken';
+  var customer = walkinStrip(d.customerName||d.name||d.customer||'');
+  if(!customer || /^walk[\s-]?in$/i.test(customer) || /^appointment$/i.test(customer) || /^handover$/i.test(customer)){
+    customer = '';
+  }
+  var arrived = d.arrivalTime||d.arrivedAt||d.arrived||d.at||null;
+  if(typeof arrived==='string'){ var parsed=Date.parse(arrived); arrived=isNaN(parsed)?null:parsed }
+  if(typeof arrived==='number' && arrived<1e12) arrived=arrived*1000;
+  return {
+    id:String(id),
+    kind:kind,
+    customer:customer,
+    walkIn:!!walkIn,
+    handover:!!handover,
+    withStaff:!!withStaff,
+    carType:walkinStrip(d.carType||d.newUsed||''),
+    models:walkinStrip(d.models||d.modelsOfInterest||''),
+    ref:walkinStrip(d.ref||''),
+    bookedWith:walkinStrip(d.bookedWith||d.owner||''),
+    assignedTo:walkinStrip(d.assignedTo||d.staff||d.seenBy||''),
+    arrived: arrived && isFinite(arrived) ? arrived : null
+  };
+}
 function walkinMapRows(j){
-  var arr = Array.isArray(j) ? j
-          : (j && (j.appointments||j.items||j.walkins||j.data)) || [];
-  var out = [];
-  arr.forEach(function(d,i){
-    if(!d) return;
-    var id = d.id || d._id || d.ref || ('w'+i);
-    var st = String(d.status||d.state||'').toLowerCase().replace(/[\s_]/g,'-');
-    if(['done','complete','completed','closed','left','cancelled','no-show'].indexOf(st)>=0) return;
-    var type = String(d.type!=null?d.type:(d.isWalkIn!=null?d.isWalkIn:d.walkIn||''))
-                 .toLowerCase().replace(/[\s_]/g,'-');
-    var walkIn = type==='walk-in'||type==='walkin'||type==='true'||type==='y'||type==='yes'
-              || d.isWalkIn===true || d.walkIn===true;
-    var withStaff = st==='with-staff'||st==='withstaff'||st==='in-progress'
-                 || st==='assigned'||st==='being-seen'
-                 || d.withStaff===true;
-    var customer = String(d.customerName||d.name||d.customer||'').trim()
-      .replace(/^[\s*•·]+/,'').trim();
-    if(!customer || /^walk[\s-]?in$/i.test(customer) || /^appointment$/i.test(customer)){
-      customer = '';
-    }
-    var arrived = d.arrivalTime||d.arrivedAt||d.arrived||null;
-    if(typeof arrived==='string'){ var parsed=Date.parse(arrived); arrived=isNaN(parsed)?null:parsed }
-    if(typeof arrived==='number' && arrived<1e12) arrived=arrived*1000;
-    out.push({
-      id:String(id),
-      customer:customer,
-      walkIn:!!walkIn,
-      withStaff:!!withStaff,
-      carType:String(d.carType||d.newUsed||'').trim().replace(/^[\s*•·]+/,'').trim(),
-      models:String(d.models||d.modelsOfInterest||'').trim().replace(/^[\s*•·]+/,'').trim(),
-      ref:String(d.ref||'').trim(),
-      bookedWith:String(d.bookedWith||d.owner||'').trim(),
-      arrived: arrived && isFinite(arrived) ? arrived : null
-    });
-  });
-  return out;
+  /* Prefer events[] for announcements; appointments[] still primes waiting ids. */
+  var ev = (j && j.events) || [];
+  var ap = Array.isArray(j) ? j
+         : (j && (j.appointments||j.items||j.walkins||j.data)) || [];
+  return {
+    events: ev.map(function(d,i){ return walkinMapOne(d,i,true) }).filter(Boolean),
+    appointments: ap.map(function(d,i){ return walkinMapOne(d,i,false) }).filter(Boolean)
+      .filter(function(r){ return !r.withStaff; })
+  };
 }
 
 var walkinPopTimer=null;
@@ -5654,7 +5667,9 @@ function walkinHideCard(){
   },240);
 }
 function walkinEnqueue(r){
-  if(!r || r.withStaff) return;
+  if(!r) return;
+  /* with-staff waiting cards are silent; explicit "taken" events still speak */
+  if(r.withStaff && r.kind!=='walkin-taken' && r.kind!=='dealt' && r.kind!=='walkin-left') return;
   walkinQueue.push(r);
   if(!walkinShowing) walkinPlayNext();
 }
@@ -5694,19 +5709,31 @@ function walkinTakeFloor(){
 function walkinShowCard(r){
   r=r||{};
   var pop=$('walkin-pop'), card=$('walkin-card');
-  if(!pop||!card){ toast((r.walkIn?'Walk-in: ':'Appointment: ')+(r.customer||''),'ok'); return }
+  var kind=String(r.kind||'').toLowerCase();
+  if(!pop||!card){ toast(walkinAnnounceText(r),'ok'); return }
   walkinTakeFloor();
   walkinFlashScreen();
-  card.className='walkin-card '+(r.walkIn?'wi':'ap');
-  $('walkin-kicker').textContent=r.walkIn?'WALK-IN':'APPOINTMENT';
+  var wi = r.walkIn && kind!=='customer-arrived';
+  card.className='walkin-card '+(wi?'wi':'ap');
+  var kicker='WALK-IN';
+  if(kind==='customer-arrived') kicker=r.handover?'HANDOVER':'APPOINTMENT';
+  else if(kind==='walkin-taken') kicker='TAKEN';
+  else if(kind==='walkin-left') kicker='LEFT';
+  else if(kind==='dealt') kicker='DEALT';
+  else if(!wi) kicker=r.handover?'HANDOVER':'APPOINTMENT';
+  $('walkin-kicker').textContent=kicker;
   $('walkin-name').textContent=r.customer||'Name not on the email';
   var bits=[];
   if(r.carType) bits.push(r.carType);
   if(r.models) bits.push(r.models);
   if(r.bookedWith) bits.push('Booked with '+r.bookedWith);
+  if(r.assignedTo) bits.push('With '+r.assignedTo);
   $('walkin-meta').textContent=bits.join(' · ');
   $('walkin-meta').style.display=bits.length?'block':'none';
-  $('walkin-time').textContent=r.arrived ? ('Arrived '+walkinClock(r.arrived)) : 'Just arrived';
+  if(kind==='walkin-left') $('walkin-time').textContent='Left without being seen';
+  else if(kind==='dealt') $('walkin-time').textContent='Deal done';
+  else if(kind==='walkin-taken') $('walkin-time').textContent=r.assignedTo?('With '+r.assignedTo):'With sales';
+  else $('walkin-time').textContent=r.arrived ? ('Arrived '+walkinClock(r.arrived)) : 'Just arrived';
   pop.hidden=false;
   requestAnimationFrame(function(){ pop.classList.add('show') });
   clearTimeout(walkinPopTimer);
@@ -5715,14 +5742,29 @@ function walkinShowCard(r){
 
 function walkinAnnounceText(r){
   r=r||{};
+  var kind=String(r.kind||'').toLowerCase();
+  var name=r.customer || 'customer';
+  if(kind==='walkin-taken'){
+    return name+' is now with '+(r.assignedTo || 'a sales executive')+'.';
+  }
+  if(kind==='walkin-left'){
+    return name+' left without being seen. Please re-book.';
+  }
+  if(kind==='dealt'){
+    return 'Dealt. '+name+'.';
+  }
   var bits=[];
-  bits.push(r.walkIn ? 'Walk-in' : 'Appointment');
-  bits.push(r.customer || 'customer');
+  if(kind==='customer-arrived'){
+    bits.push(r.handover ? 'Handover arrived' : 'Appointment arrived');
+  }else{
+    bits.push(r.walkIn ? 'Walk-in' : (r.handover ? 'Handover' : 'Appointment'));
+  }
+  bits.push(name);
   var interest=[r.carType, r.models].filter(Boolean).join(', ');
   if(interest) bits.push(interest);
   if(r.bookedWith) bits.push('Booked with '+r.bookedWith);
   if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived));
-  else bits.push('Just arrived');
+  else if(kind!=='dealt') bits.push('Just arrived');
   return bits.join('. ') + '.';
 }
 
@@ -5823,34 +5865,49 @@ function walkinRemember(key){
 }
 walkinLoadAnnounced();
 
-function walkinDeliver(list){
-  /* Announce each visit at most once for 12 hours (survives deploy/reload).
-     First successful non-empty snapshot of a page load is also silent for
-     anyone currently waiting, so a TV refresh never re-rings the showroom.
-     Never forget announced keys just because one poll flickered - that was
-     re-ringing people about every minute when Gmail ids or the feed hiccuped. */
-  if(!list) list=[];
-  /* Empty/error-shaped first answers must NOT arm primed, or the next poll
-     would treat every waiting person as brand new. */
-  if(!walkinPrimed){
-    if(!list.length) return;
-    list.forEach(function(r){
-      walkinRemember(walkinVisitKey(r));
-      if(r.id) walkinSeen['id:'+r.id]=1;
-    });
-    walkinPrimed=true;
-    return;
+function walkinDeliver(payload){
+  /* Prefer events[] from Apps Script (waiting / arrived / taken / left / dealt).
+     Fall back to appointments[] for older deployments. Announce each event id
+     at most once for 12 hours across reloads. First non-empty snapshot is silent. */
+  var events = [];
+  var appointments = [];
+  if(payload && (payload.events || payload.appointments)){
+    events = payload.events || [];
+    appointments = payload.appointments || [];
+  }else if(Array.isArray(payload)){
+    appointments = payload;
   }
-  list.forEach(function(r){
-    var key=walkinVisitKey(r);
-    if(walkinSeen[key] || (r.id && walkinSeen['id:'+r.id])){
-      walkinRemember(key);
-      if(r.id) walkinSeen['id:'+r.id]=1;
-      return;
-    }
+
+  function rememberRow(r){
+    if(!r) return;
+    var key = r.kind ? ('ev:'+r.id) : walkinVisitKey(r);
     walkinRemember(key);
     if(r.id) walkinSeen['id:'+r.id]=1;
-    if(!r.withStaff) walkinEnqueue(r);
+  }
+
+  if(!walkinPrimed){
+    var seed = events.length ? events : appointments;
+    if(!seed.length) return;
+    seed.forEach(rememberRow);
+    appointments.forEach(rememberRow);
+    walkinPrimed = true;
+    return;
+  }
+
+  var list = events.length ? events : appointments.filter(function(r){ return !r.withStaff; });
+  list.forEach(function(r){
+    var key = events.length ? ('ev:'+r.id) : walkinVisitKey(r);
+    if(walkinSeen[key] || (r.id && walkinSeen['id:'+r.id])){
+      rememberRow(r);
+      return;
+    }
+    rememberRow(r);
+    /* taken/left/dealt always announce; waiting/arrived skip if already with staff flag */
+    if(r.kind==='walkin-taken' || r.kind==='walkin-left' || r.kind==='dealt'
+       || r.kind==='customer-arrived' || r.kind==='walkin-waiting'
+       || (!r.kind && !r.withStaff)){
+      walkinEnqueue(r);
+    }
   });
 }
 
