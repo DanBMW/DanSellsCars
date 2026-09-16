@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Walk-ins - Ruxley Appointments</title>
+<title>In the showroom - Ruxley Appointments</title>
 <style>
   :root{
     --bg:#070a0f; --card:#131a24; --line:#243040; --ink:#eef3f9; --dim:#93a3b8;
@@ -106,7 +106,7 @@
 <body>
 
 <div class="idle" id="idle">
-  <h1>No walk-ins waiting</h1>
+  <h1>Nobody waiting</h1>
   <p id="idle-sub">Watching the appointments system.</p>
 </div>
 
@@ -122,13 +122,22 @@
 
 <script>
 /* =======================================================================
-   Walk-in notification widget - Ruxley Appointments
+   Showroom arrivals - Ruxley Appointments
 
-   Sits in the corner of a screen all day and shows who has walked in, how
-   long they have been waiting, and who picked them up. Built the same way
-   as team-board.html: one self-contained file, no build step, and a plain
-   script that renders on its own so a blocked CDN or a backend that is not
-   wired up yet shows an honest state rather than a blank page.
+   Sits in the corner of a screen in the showroom all day and shows who is
+   stood there waiting to be seen, how long they have been waiting, and who
+   picked them up. That is walk-ins AND booked appointments who have turned
+   up: once somebody is through the door the two are the same problem, and
+   the card says which it was, because a sales executive glancing over wants
+   to know their own appointment has landed.
+
+   Staff-facing. A customer never sees this screen, so it says plainly how
+   long somebody has been stood there.
+
+   Built the same way as team-board.html: one self-contained file, no build
+   step, and a plain script that renders on its own so a blocked CDN or a
+   backend that is not wired up yet shows an honest state rather than a
+   blank page.
 
    ------------------------------------------------------------------
    THE DATA SOURCE IS NOT WIRED UP YET - see SOURCE below.
@@ -168,9 +177,10 @@ var FIREBASE = {
   appId:             ''
 };
 
-/* 2. The collection walk-ins live in - 'appointments', 'walkins', something
-      else. If walk-ins share a collection with booked appointments, FIELDS.isWalkIn
-      below is what separates them. */
+/* 2. The collection these live in - 'appointments', 'walkins', something
+      else. Walk-ins and bookings sharing one collection is fine and expected:
+      FIELDS.isWalkIn only decides what the card is labelled, not whether it
+      is shown. What decides that is whether they have arrived. */
 var COLLECTION = 'appointments';
 
 /* 3. What each field is called on a record. Left-hand side is what this page
@@ -179,9 +189,11 @@ var COLLECTION = 'appointments';
       likely spellings can sit here until we are told which it is. */
 var FIELDS = {
   isWalkIn:  ['isWalkIn','walkIn','walk_in','type'],   /* true, or type==='walk-in' */
-  arrivedAt: ['arrivedAt','arrivalTime','arrived','createdAt','timestamp'],
+  arrivedAt: ['arrivedAt','arrivalTime','arrived','checkedInAt','createdAt'],
   status:    ['status','state'],                       /* waiting / with-staff / done */
-  staff:     ['staffName','assignedTo','withStaff','staff','handledBy'],
+  staff:     ['staffName','assignedTo','withStaff','handledBy'],  /* who is WITH them now */
+  bookedWith:['bookedWith','salesExec','executive','advisor','owner'], /* whose appointment */
+  apptAt:    ['appointmentTime','apptTime','scheduledFor','bookedFor','startTime'],
   customer:  ['customerName','name','customer']
 };
 
@@ -190,7 +202,12 @@ var FIELDS = {
    waiting gets looked at, one wrongly cleared gets forgotten about. */
 var STATUS = {
   withStaff: ['with-staff','with_staff','withstaff','in-progress','assigned','being-seen'],
-  done:      ['done','complete','completed','closed','left','cancelled','no-show']
+  done:      ['done','complete','completed','closed','left','cancelled','no-show'],
+  /* A booked appointment exists in the system all day before the customer
+     turns up. This is the screen for people who are physically in the
+     showroom, so a booked record only earns a card once it has arrived -
+     either it carries an arrival timestamp, or its status says so. */
+  arrived:   ['arrived','waiting','checked-in','checkedin','in-showroom','here','present']
 };
 
 /* 4. If reads are closed, one of these. Anonymous is enough for a wall
@@ -254,20 +271,34 @@ function truthy(v){
 function norm(s){ return String(s||'').toLowerCase().replace(/[\s_]/g,'-') }
 
 /* one raw record -> what this page needs, or null if it is not ours */
+/* This screen is "who is stood in the showroom right now" - walk-ins AND
+   booked appointments who have turned up. The two are treated the same once
+   they are through the door; the card just says which it was, because a sales
+   executive glancing over wants to know their own appointment has landed. */
 function shape(id,d){
   if(!d) return null;
-  if(!truthy(pick(d,FIELDS.isWalkIn))) return null;
 
   var st = norm(pick(d,FIELDS.status));
   if(STATUS.done.indexOf(st)>=0) return null;           /* finished, drop it */
 
-  var staff = pick(d,FIELDS.staff);
+  var walkIn  = truthy(pick(d,FIELDS.isWalkIn));
+  var arrived = toMs(pick(d,FIELDS.arrivedAt));
+  var staff   = pick(d,FIELDS.staff);
   var withStaff = STATUS.withStaff.indexOf(st)>=0 || !!staff;
+
+  /* A walk-in only exists once somebody has walked in, so it is here by
+     definition. A booking has to show it has actually arrived - otherwise
+     the screen fills up at 8am with everybody due in that day. */
+  var here = walkIn || arrived!==null || STATUS.arrived.indexOf(st)>=0 || withStaff;
+  if(!here) return null;
 
   return {
     id: id,
-    customer: pick(d,FIELDS.customer) || 'Walk-in',
-    arrived: toMs(pick(d,FIELDS.arrivedAt)),
+    customer: pick(d,FIELDS.customer) || (walkIn?'Walk-in':'Appointment'),
+    arrived: arrived,
+    walkIn: walkIn,
+    apptAt: toMs(pick(d,FIELDS.apptAt)),
+    bookedWith: String(pick(d,FIELDS.bookedWith)||''),
     withStaff: withStaff,
     staff: staff ? String(staff) : ''
   };
@@ -284,10 +315,12 @@ function waited(ms){
 }
 function mins(ms){ return ms===null ? 0 : (Date.now()-ms)/60000 }
 
-function at(ms){
-  if(ms===null) return 'arrival time not recorded';
+function clock(ms){
   var d=new Date(ms), p=function(n){return n<10?'0'+n:''+n};
-  return 'arrived '+p(d.getHours())+':'+p(d.getMinutes());
+  return p(d.getHours())+':'+p(d.getMinutes());
+}
+function at(ms){
+  return ms===null ? 'arrival time not recorded' : 'arrived '+clock(ms);
 }
 
 function cardFor(r){
@@ -319,14 +352,28 @@ function paintCard(el,r){
   set(who, r.customer);
   set(tag, r.withStaff ? 'Being seen' : 'Waiting');
   set(tim, waited(r.arrived));
-  /* the whole point of the widget: this line changes under them, live */
+
+  /* the whole point of the widget: this line changes under them, live.
+     Note "booked with" and "now with" are different things - one is whose
+     appointment it is, the other is who has actually picked them up - and
+     running them together would have a card claim somebody was being served
+     the moment they walked through the door. */
   if(r.withStaff){
-    not.innerHTML = r.staff ? 'Now with <b></b>' : 'Now with a member of staff';
-    if(r.staff) not.querySelector('b').textContent = r.staff;
+    not.innerHTML = 'Now with <b></b>';
+    not.querySelector('b').textContent = r.staff || 'a member of staff';
+  } else if(r.bookedWith){
+    not.innerHTML = 'Here for <b></b>';
+    not.querySelector('b').textContent = r.bookedWith;
   } else {
     set(not, 'Waiting for someone to pick them up');
   }
-  set(met, at(r.arrived));
+
+  /* what kind of arrival this was, and when - "10:30 appointment, arrived
+     10:28" is the line a sales executive is actually looking for */
+  var bits = [];
+  bits.push(r.walkIn ? 'Walk-in' : (r.apptAt ? clock(r.apptAt)+' appointment' : 'Appointment'));
+  bits.push(at(r.arrived));
+  set(met, bits.join(' · '));
 }
 function set(el,txt){ if(el.textContent!==txt) el.textContent=txt }
 
@@ -369,7 +416,7 @@ function render(){
 
   $('idle').classList.toggle('hide', list.length>0);
   $('count').textContent = list.length
-    ? list.length+(list.length===1?' walk-in':' walk-ins')
+    ? list.length+(list.length===1?' waiting':' in the showroom')
     : '';
 }
 
@@ -394,28 +441,45 @@ setInterval(function(){
 
 /* ---- the chime --------------------------------------------------------- */
 
-var actx=null, soundOk=false;
-function chime(){
+var actx=null;
+
+/* A two-note doorbell, synthesised rather than played from a file - the same
+   reasoning as the board's birthday tune: no megabyte of audio to fetch, and
+   nobody else's recording copyright to worry about.
+   A real chime bar is not a sine wave: it is a struck bar with inharmonic
+   partials that decay at different rates, the high ones first. So each note
+   is four partials, the upper ones quieter and shorter, over a fast attack
+   and a long exponential tail. A plain sine reads as a microwave. */
+function strike(f,t,vol){
+  [[1,1,1.9],[2.76,0.34,1.1],[5.4,0.14,0.55],[8.9,0.06,0.3]].forEach(function(p){
+    var o=actx.createOscillator(), g=actx.createGain();
+    o.type='sine'; o.frequency.value=f*p[0];
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol*p[1],t+0.006);   /* struck, not faded in */
+    g.gain.exponentialRampToValueAtTime(0.0001,t+p[2]);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t+p[2]+0.05);
+  });
+}
+
+function doorbell(){
   if(!CHIME) return;
   try{
     if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
-    if(actx.state==='suspended'){ actx.resume(); }
+    if(actx.state==='suspended') actx.resume();
+    /* a screen nobody has touched is not allowed to make a noise - offer the
+       button rather than failing silently, same rule as the board's clips */
     if(actx.state!=='running'){ $('sound-btn').hidden=false; return }
-    soundOk=true; $('sound-btn').hidden=true;
-    [880,1175].forEach(function(f,i){
-      var o=actx.createOscillator(), g=actx.createGain(), t=actx.currentTime+i*0.14;
-      o.type='sine'; o.frequency.value=f;
-      g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.18,t+0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+0.34);
-      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.36);
-    });
+    $('sound-btn').hidden=true;
+    var t=actx.currentTime+0.02;
+    strike(659.25, t,        0.30);   /* ding - E5 */
+    strike(523.25, t+0.46,   0.30);   /* dong - C5, a major third down */
   }catch(e){ $('sound-btn').hidden=false }
 }
 $('sound-btn').onclick=function(){
   try{
     if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
-    actx.resume().then(function(){ $('sound-btn').hidden=true; chime() });
+    actx.resume().then(function(){ $('sound-btn').hidden=true; doorbell() });
   }catch(e){}
 };
 
@@ -427,7 +491,7 @@ function deliver(list){
   /* the first delivery is the state of the world, not a set of arrivals -
      a widget opened at 3pm must not chime for everybody already waiting */
   list.forEach(function(r){
-    if(!seen[r.id]){ seen[r.id]=1; if(primed && !r.withStaff) chime() }
+    if(!seen[r.id]){ seen[r.id]=1; if(primed && !r.withStaff) doorbell() }
   });
   primed = true;
   /* forget anyone who has gone, so a returning visitor chimes again */
@@ -446,22 +510,29 @@ function failed(msg){
 /* --- rehearsal ---------------------------------------------------------- */
 function startMock(){
   var t0=Date.now();
+  var mk=function(o){
+    return {id:o.id, customer:o.customer, arrived:o.arrived, walkIn:!!o.walkIn,
+            apptAt:o.apptAt||null, bookedWith:o.bookedWith||'',
+            withStaff:!!o.withStaff, staff:o.staff||''};
+  };
   var feed=[
-    {id:'m1', customer:'Mr Patel',   arrived:t0-4*60000,  withStaff:false, staff:''},
-    {id:'m2', customer:'Ms Okafor',  arrived:t0-11*60000, withStaff:false, staff:''}
+    mk({id:'m1', customer:'Mr Patel',  arrived:t0-4*60000,  walkIn:true}),
+    mk({id:'m2', customer:'Ms Okafor', arrived:t0-11*60000, apptAt:t0-13*60000,
+        bookedWith:'Dan'})
   ];
   deliver(feed.slice());
-  /* somebody gets picked up */
+  /* the booked customer is picked up */
   setTimeout(function(){
-    feed[1]={id:'m2', customer:'Ms Okafor', arrived:t0-11*60000, withStaff:true, staff:'Charlie'};
+    feed[1]=mk({id:'m2', customer:'Ms Okafor', arrived:t0-11*60000, apptAt:t0-13*60000,
+                bookedWith:'Dan', withStaff:true, staff:'Dan'});
     deliver(feed.slice());
   }, 9000);
-  /* a new one walks in */
+  /* somebody walks in off the street - this is the one that rings the bell */
   setTimeout(function(){
-    feed.push({id:'m3', customer:'Mr Whitfield', arrived:Date.now(), withStaff:false, staff:''});
+    feed.push(mk({id:'m3', customer:'Mr Whitfield', arrived:Date.now(), walkIn:true}));
     deliver(feed.slice());
   }, 16000);
-  /* and one leaves */
+  /* and one is done */
   setTimeout(function(){
     feed = feed.filter(function(r){ return r.id!=='m2' });
     deliver(feed.slice());
