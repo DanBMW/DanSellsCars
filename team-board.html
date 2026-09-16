@@ -2156,6 +2156,10 @@ function fill(line,ctx){
 
 function setBubble(id,text){
   var el=$(id);
+  /* backstop: a caller that forgets fill() must not put braces on the wall.
+     This is not a substitute for filling properly - it has no context to fill
+     from - it just makes the failure read as a sentence rather than a bug. */
+  if(text&&text.indexOf('{')>=0)text=fill(text,{});
   if(el.textContent===text)return;
   el.classList.add('fade');
   setTimeout(function(){el.textContent=text;el.classList.remove('fade')},300);
@@ -2398,8 +2402,12 @@ function champScene(c){
   confetti();
   el.classList.add('show');
   holdUntil=Date.now()+15000;
-  setBubble('bub-will',  bagPick('champ|will', LINES.will.champion));
-  setBubble('bub-serge', bagPick('champ|serge',LINES.serge.champion));
+  /* the champion pools carry {name}/{amount} like every other mood pool, so
+     they have to go through fill() - setBubble does not substitute. Without
+     this the wall reads "{name} hit £15k" in the braces, which it did. */
+  var cc={name:c.name.split(' ')[0], amount:money(c.total)};
+  setBubble('bub-will',  fill(bagPick('champ|will', LINES.will.champion), cc));
+  setBubble('bub-serge', fill(bagPick('champ|serge',LINES.serge.champion),cc));
   cheer();
   setTimeout(function(){
     if(g!==sceneGen)return;
@@ -3881,6 +3889,16 @@ function radioDuck(on){
   paintRadio();
 }
 
+/* A wall display is unattended, so the radio has to pick itself back up:
+   an autoplay refusal that a later tap clears, a stream that drops, a
+   station having a moment. Cheap enough to just keep trying. */
+setInterval(function(){
+  if(!radioWanted()||radioDucked)return;
+  if(radioState==='playing'||radioState==='connecting')return;
+  if(radioState==='failed')radioIdx=0;      /* start the list again */
+  radioPlay();
+},30000);
+
 function radioStatusText(){
   if(!sOn('radio'))       return 'Paused on every screen.';
   if(window.innerWidth<1200) return RADIO_NAME+' plays on the wall display, not on this device.';
@@ -5294,6 +5312,11 @@ scheduleStunts();
 paintTicker();
 paintTickerPanel();
 paintCornerQR();
+/* Start the radio here rather than waiting for the settings watch. Absent
+   means on, so there is nothing to wait for - and a board whose Firebase is
+   slow or blocked should still come up playing rather than silent. */
+radioPlay();
+paintRadio();
 /* the stock list is a plain file next to this page, so the forecourt slot
    works with no backend at all - it just cannot tell what is new until the
    ledger arrives */
