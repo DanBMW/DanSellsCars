@@ -3961,9 +3961,11 @@ function radioDrop(){
 
 function radioPlay(){
   if(!radioWanted()){ radioStop(); return }
-  if(radioDucked)return;                 /* something else has the sound */
+  /* While ducked, still allow reconnect if the stream died — just stay quiet. */
+  if(radioDucked && radioEl && (radioState==='playing' || radioState==='connecting')) return;
   var url=RADIO_SOURCES[radioIdx];
   var a=radioAttach(url);
+  if(radioDucked){ try{ a.volume=radioDuckLevel() }catch(e){} }
   radioState='connecting'; paintRadio();
   var go=a.play();
   if(go&&go['catch'])go['catch'](function(e){
@@ -3992,8 +3994,10 @@ function radioStop(){
   radioState='off'; paintRadio();
 }
 
-/* a clip, cut scene or tune takes the sound, and hands it back afterwards.
-   Soft-fade volume over ~1s rather than a hard pause/cut. */
+/* Scenes, clips and walk-in speech take the foreground; radio stays connected
+   and only soft-fades down underneath them, then fades back up. Do not pause
+   or drop the live stream on duck — reconnecting after every alert was what
+   made the walls go quiet. */
 var radioFadeTimer=null, radioFadeTok=0, radioFadeInPending=false;
 function radioClearFade(){
   if(radioFadeTimer){ clearInterval(radioFadeTimer); radioFadeTimer=null }
@@ -4019,9 +4023,15 @@ function radioFadeTo(target, ms, then){
     }
   }, 40);
 }
+/* Quiet enough to hear announcements, loud enough that the room still feels
+   like the radio is on. Scales with the admin radio volume. */
+function radioDuckLevel(){
+  var v=radioVol();
+  return Math.max(0.05, Math.min(v*0.22, 0.14));
+}
 function radioDuck(on){
   on=!!on;
-  if(on===radioDucked && !(on && radioEl && radioEl.volume>0.02)){
+  if(on===radioDucked){
     /* already in the requested state */
     /* 'waiting' belongs here too. A screen refused autoplay parks in it
        indefinitely, and leaving it out meant an un-duck on a screen that had
@@ -4029,47 +4039,33 @@ function radioDuck(on){
     if(!on && radioWanted() && (!radioEl || radioState==='off'
        || radioState==='failed' || radioState==='waiting'))
       radioPlay();
+    else if(on && radioEl && radioEl.volume>radioDuckLevel()+0.02)
+      radioFadeTo(radioDuckLevel(), 500);
     paintRadio();
     return;
   }
   radioDucked=on;
   if(on){
     if(radioEl){
-      radioFadeTo(0, 1000, function(){
-        if(!radioDucked || !radioEl) return;
-        /* Drop the connection; do not park it paused.
-           A LIVE STREAM CANNOT BE RESUMED. There is no buffered position to
-           come back to, so play() on the same element after a cut scene either
-           stalls for ever or coughs out a few seconds of stale audio and
-           stops - and radioState stays 'playing' throughout, so the keep-alive
-           skips it and nothing ever reconnects. The radio is then dead until
-           the page reloads.
-           That is exactly what the soft fade introduced: the un-duck used to
-           call radioPlay(), which built a fresh element and a fresh
-           connection, and was changed to radioEl.play() on the old one.
-           Reconnecting is the only way back. */
-        radioDrop();
-        radioState='off';
-        paintRadio();
-      });
+      radioFadeTo(radioDuckLevel(), 700);
     }
   }else if(radioWanted()){
-    /* Always reconnect - see the note above. Resuming the old element is what
-       broke this. The fade is kept: it starts silent and comes up once the
-       stream is genuinely producing sound, rather than fading in over a
-       connection that is not there yet. */
-    radioDucked=false;
-    radioIdx=0;                     /* back to the best stream */
-    radioFadeInPending=true;
-    radioPlay();
-    if(radioEl){ try{ radioEl.volume=0 }catch(e){} }
-    /* if it never reports playing, do not leave it silent for ever */
-    setTimeout(function(){
-      if(radioFadeInPending && radioEl && !radioDucked){
-        radioFadeInPending=false;
-        try{ radioEl.volume=radioVol() }catch(e){}
-      }
-    }, 6000);
+    if(radioEl && (radioState==='playing' || radioState==='connecting')){
+      /* Stream never left — just bring the level back. */
+      radioFadeTo(radioVol(), 1000);
+    }else{
+      /* Only reconnect when there is nothing playing (first start / failure). */
+      radioIdx=0;
+      radioFadeInPending=true;
+      radioPlay();
+      if(radioEl){ try{ radioEl.volume=0 }catch(e){} }
+      setTimeout(function(){
+        if(radioFadeInPending && radioEl && !radioDucked){
+          radioFadeInPending=false;
+          try{ radioEl.volume=radioVol() }catch(e){}
+        }
+      }, 6000);
+    }
   }
   paintRadio();
 }
@@ -4078,7 +4074,7 @@ function radioDuck(on){
    an autoplay refusal that a later tap clears, a stream that drops, a
    station having a moment. Cheap enough to just keep trying. */
 setInterval(function(){
-  if(!radioWanted()||radioDucked)return;
+  if(!radioWanted())return;
   if(radioState==='playing'||radioState==='connecting')return;
   if(radioState==='failed')radioIdx=0;      /* start the list again */
   radioPlay();
@@ -4113,7 +4109,7 @@ function radioKick(){
 function radioStatusText(){
   if(!sOn('radio'))       return 'Paused on every screen.';
   if(window.innerWidth<1200) return RADIO_NAME+' plays on the wall display, not on this device.';
-  if(radioDucked)         return 'Holding while something is playing.';
+  if(radioDucked)         return 'Playing quietly under announcement.';
   if(radioState==='playing')    return RADIO_NAME+' is playing.';
   if(radioState==='connecting') return 'Connecting to '+RADIO_NAME+'\u2026';
   if(radioState==='waiting')    return 'Ready - tap the wall screen once to let it start.';
