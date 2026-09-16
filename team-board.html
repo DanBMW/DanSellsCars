@@ -351,31 +351,35 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 
 /* ---- walk-in / arrival popup card (temporary test + live alerts) ---- */
 .walkin-pop{
-  position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;
-  padding:18px;background:rgba(5,8,14,.55);backdrop-filter:blur(6px);
+  position:fixed;inset:0;z-index:260;display:flex;align-items:stretch;justify-content:stretch;
+  padding:0;background:rgba(5,8,14,.72);backdrop-filter:blur(8px);
   opacity:0;pointer-events:none;transition:opacity .22s ease;
 }
 .walkin-pop.show{opacity:1;pointer-events:auto}
 .walkin-card{
-  width:min(440px,94vw);background:var(--panel);border:1px solid var(--line);
-  border-radius:18px;padding:22px 24px 20px;box-shadow:0 28px 80px rgba(0,0,0,.65);
-  transform:translateY(12px) scale(.98);transition:transform .22s ease;
+  width:100%;height:100%;max-width:none;box-sizing:border-box;
+  background:var(--panel);border:0;border-radius:0;
+  padding:clamp(28px,6vw,72px);box-shadow:none;
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+  transform:scale(.985);transition:transform .22s ease;
 }
 .walkin-pop.show .walkin-card{transform:none}
-.walkin-card.wi{border-color:rgba(47,191,107,.55);box-shadow:0 28px 80px rgba(0,0,0,.65),0 0 0 1px rgba(47,191,107,.18)}
-.walkin-card.ap{border-color:rgba(47,123,240,.55);box-shadow:0 28px 80px rgba(0,0,0,.65),0 0 0 1px rgba(47,123,240,.18)}
+.walkin-card.wi{border:0;box-shadow:inset 0 0 0 10px rgba(47,191,107,.85)}
+.walkin-card.ap{border:0;box-shadow:inset 0 0 0 10px rgba(47,123,240,.85)}
 .walkin-kicker{
-  font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
-  margin:0 0 8px;
+  font-size:clamp(1rem,2.8vw,1.85rem);font-weight:800;letter-spacing:.22em;text-transform:uppercase;
+  margin:0 0 clamp(12px,2vw,28px);
 }
 .walkin-card.wi .walkin-kicker{color:var(--green)}
 .walkin-card.ap .walkin-kicker{color:var(--blue)}
 .walkin-name{
-  font-family:var(--display);font-weight:700;font-size:clamp(1.55rem,4.5vw,2.05rem);
-  line-height:1.1;margin:0 0 10px;color:var(--text);
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(3rem,10vw,7.5rem);
+  line-height:1.02;margin:0 0 clamp(14px,2.5vw,32px);color:var(--text);
+  max-width:100%;word-break:break-word;
 }
-.walkin-meta{font-size:.88rem;font-weight:600;color:var(--muted);line-height:1.45;margin:0}
-.walkin-time{font-size:.78rem;font-weight:700;color:rgba(242,245,249,.72);margin:14px 0 0}
+.walkin-meta{font-size:clamp(1.15rem,3.2vw,2.4rem);font-weight:600;color:var(--muted);line-height:1.35;margin:0;max-width:90%}
+.walkin-time{font-size:clamp(1rem,2.6vw,1.9rem);font-weight:700;color:rgba(242,245,249,.78);margin:clamp(18px,3vw,40px) 0 0}
 .walkin-flash{
   position:fixed;inset:0;z-index:250;pointer-events:none;
   background:#e22626;opacity:0;
@@ -5606,7 +5610,7 @@ function walkinShowCard(r){
   pop.hidden=false;
   requestAnimationFrame(function(){ pop.classList.add('show') });
   clearTimeout(walkinPopTimer);
-  walkinPopTimer=setTimeout(walkinHideCard, 8000);
+  walkinPopTimer=setTimeout(walkinHideCard, 12000);
 }
 
 function walkinStrike(f,t,vol){
