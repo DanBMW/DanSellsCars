@@ -748,12 +748,20 @@ said so.
   `busy` set. Whatever takes the floor next ducks it again itself.
   **A stream URL is not forever.** `RADIO_SOURCES` is an ordered list of
   candidates; an `error` moves to the next, and only when all are exhausted
-  does it give up. **The stream addresses shipped here could not be verified
-  from the build sandbox** (TLS to the stream hosts fails through the agent
-  proxy), so the manager panel reports the real state in words - playing,
-  connecting, or "could not reach Kisstory, the stream address may have
-  changed" - rather than leaving a silent wall display with no explanation.
-  If it says that, replace the list rather than debugging the player.
+  does it give up. **Kisstory R&B is first** - that is the station Dan asked
+  for, and the first version shipped plain Kisstory (old skool) by mistake;
+  the other two are that station and only stand in if the R&B feed is down.
+  Addresses come from the radio-browser directory, which is where real radio
+  players get them, with that directory's player-id tracking parameters
+  stripped - they belong to somebody else's player.
+  **They still cannot be verified from the build sandbox**: the agent proxy
+  will not pass a continuous audio stream, so a fetch there proves nothing
+  either way. That is why the manager panel reports the real state in words -
+  playing, connecting, or "could not reach Kisstory R&B, the stream address
+  may have changed" - rather than leaving a silent wall display with no
+  explanation. If it says that, replace the list rather than debugging the
+  player.
+  Dan has confirmed the dealership holds a music licence covering this.
   Switches: `radio` (absent means on, like everything else) and `radiovol`,
   a 0-100 number, default 45. Pausing from the manager panel writes the
   shared setting, so it pauses every screen rather than just the one in

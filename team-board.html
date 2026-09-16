@@ -3813,13 +3813,17 @@ function pickClip(){
       of candidates tried in order, and the manager panel says plainly
       whether it is playing or could not connect.
    ============================================================ */
+/* Kisstory R&B first - that is the station Dan asked for; the other two are
+   plain Kisstory (old skool) and only stand in if the R&B feed is down.
+   Addresses come from the radio-browser directory, which is where real radio
+   players get them, with that directory's own player-id tracking parameters
+   stripped: they belong to somebody else's player, not ours. */
 var RADIO_SOURCES = [
-  'https://stream-mz.planetradio.co.uk/kisstory.aac',
-  'https://stream-al.planetradio.co.uk/kisstory.mp3',
-  'https://streamssl.planetradio.co.uk/kisstory.mp3',
-  'https://stream-mz.planetradio.co.uk/kisstory.mp3'
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac',
+  'https://live-bauerkiss.sharp-stream.com/kisstory.aac',
+  'http://stream-kiss.planetradio.co.uk/kisstory.mp3'
 ];
-var RADIO_NAME='Kisstory';
+var RADIO_NAME='Kisstory R&B';
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 
 function radioWanted(){ return sOn('radio') && window.innerWidth>=1200 }
