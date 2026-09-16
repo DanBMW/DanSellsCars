@@ -117,18 +117,67 @@ function doGet(e) {
   return out(body || { appointments: [], events: [] }, p.callback);
 }
 
-/** Fetch en-GB Google Translate TTS server-side; return base64 MP3 for Web Audio. */
+/** Fetch British female TTS (Amazon Amy via ttsmp3), then Google en-GB. */
 function speakAudio_(text) {
   text = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 180);
   if (!text) throw new Error('empty speak text');
   var cache = CacheService.getScriptCache();
   var key = 'tts_' + Utilities.base64Encode(
-    Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, text)
+    Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, 'amy|' + text)
   ).replace(/[^A-Za-z0-9]/g, '').slice(0, 40);
   var hit = cache.get(key);
   if (hit) {
-    return { audio: hit, mime: 'audio/mpeg', cached: true, text: text };
+    return { audio: hit, mime: 'audio/mpeg', cached: true, text: text, voice: 'Amy' };
   }
+  var bytes = fetchAmy_(text);
+  var voice = 'Amy';
+  if (!bytes || bytes.length < 200) {
+    bytes = fetchGoogleGb_(text);
+    voice = 'en-GB';
+  }
+  if (!bytes || bytes.length < 200) throw new Error('tts empty');
+  var b64 = Utilities.base64Encode(bytes);
+  try { cache.put(key, b64, 21600); } catch (e) {}
+  return { audio: b64, mime: 'audio/mpeg', cached: false, text: text, voice: voice };
+}
+
+function fetchAmy_(text) {
+  var resp = UrlFetchApp.fetch('https://ttsmp3.com/makemp3_new.php', {
+    method: 'post',
+    muteHttpExceptions: true,
+    followRedirects: true,
+    payload: {
+      msg: text,
+      lang: 'Amy',
+      source: 'ttsmp3'
+    },
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Referer': 'https://ttsmp3.com/'
+    }
+  });
+  if (resp.getResponseCode() !== 200) return null;
+  var body = resp.getContentText();
+  var url = '';
+  try {
+    var j = JSON.parse(body);
+    if (j && (j.URL || j.url)) url = String(j.URL || j.url);
+  } catch (e) { return null; }
+  if (!url || url.indexOf('http') !== 0) return null;
+  var mp3 = UrlFetchApp.fetch(url, {
+    muteHttpExceptions: true,
+    followRedirects: true,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Referer': 'https://ttsmp3.com/'
+    }
+  });
+  if (mp3.getResponseCode() !== 200) return null;
+  var blob = mp3.getBlob();
+  return blob ? blob.getBytes() : null;
+}
+
+function fetchGoogleGb_(text) {
   var url = 'https://translate.google.com/translate_tts'
     + '?ie=UTF-8&client=tw-ob&tl=en-GB&q=' + encodeURIComponent(text);
   var resp = UrlFetchApp.fetch(url, {
@@ -140,15 +189,11 @@ function speakAudio_(text) {
       'Referer': 'https://translate.google.com/'
     }
   });
-  var code = resp.getResponseCode();
+  if (resp.getResponseCode() !== 200) return null;
   var blob = resp.getBlob();
-  if (code !== 200 || !blob || blob.getBytes().length < 200) {
-    throw new Error('tts http ' + code + ' bytes ' + (blob ? blob.getBytes().length : 0));
-  }
-  var b64 = Utilities.base64Encode(blob.getBytes());
-  try { cache.put(key, b64, 21600); } catch (e) {}
-  return { audio: b64, mime: 'audio/mpeg', cached: false, text: text };
+  return blob ? blob.getBytes() : null;
 }
+
 
 function out(obj, callback) {
   var json = JSON.stringify(obj);
