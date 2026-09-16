@@ -3501,6 +3501,15 @@ window.dsOnControl=function(v){
     /* the first snapshot is history: never replay a command issued before this
        screen was even switched on, and ignore anything stale */
     if(!first&&Date.now()-pl.ts<120000){controlPrimed=true;playNow(pl.clip);return}
+  }else if(typeof wt==='number'&&wt>lastWalkinTestTs){
+    var firstWn=!controlPrimed;
+    lastWalkinTestTs=wt;
+    if(!firstWn&&Date.now()-wt<120000){
+      controlPrimed=true;
+      toast('Test walk-in','ok');
+      if(typeof walkinDoorbell==='function') walkinDoorbell();
+      return;
+    }
   }
   controlPrimed=true;
 };
@@ -3510,6 +3519,12 @@ window.dsOnControl=function(v){
    rather than holding the clip back. */
 function playNow(src){
   if(!src)return;
+  /* temporary admin test: toast + doorbell, same as a real walk-in alert */
+  if(src==='walkin:test'){
+    toast('Test walk-in','ok');
+    if(typeof walkinDoorbell==='function') walkinDoorbell();
+    return;
+  }
   if(src==='premiere:arm'){ armPremiere(); return }
   if(src==='premiere:stream'){ premStream('asked to'); return }
   if(src==='premiere'){ premiereScene(); return }
