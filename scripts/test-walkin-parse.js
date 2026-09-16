@@ -18,29 +18,54 @@ const vm = require('vm');
 const GS = path.join(__dirname, '..', 'walkins-appscript.gs');
 
 /* ---- sample mailbox --------------------------------------------------- */
-const T = Date.parse('2026-09-16T10:28:00Z');
-const min = m => T + m * 60000;
+const T = new Date(); T.setHours(13, 28, 0, 0);
+const min = m => T.getTime() + m * 60000;
+
+/* The banner the mail gateway staples on the front of every external
+   message. It is in the real emails, so it is in the test. */
+const BANNER = `This Message Is From an External Sender
+This message came from outside your organization.
+Report Suspicious
+`;
+
+/* Verbatim from the real notifications, names as supplied. */
+const arrival = (name, at, type, models) => BANNER +
+`A walk-in has just been checked-in and needs to be seen by a sales exec.
+
+Customer: ${name}
+Arrived: ${at}
+Car type: ${type}
+Models of interest: ${models}
+Logged by: Lisa Debono
+Thank You.`;
+
+const pickup = (exec, name, at, type, models) => BANNER +
+`${exec} has taken the walk-in customer ${name}.
+
+Customer: ${name}
+Sales executive: ${exec}
+Assigned by: Lisa Debono
+Arrived: ${at}
+Car type: ${type}
+Models of interest: ${models}`;
 
 const SAMPLES = {
   inbox: [
-    { at: min(-18), subject: 'New walk-in logged',
-      body: 'Customer name: Mr Patel\nEnquiry: Used 3 Series\nLogged by: Reception' },
-    { at: min(-11), subject: 'Appointment arrived - Ms Okafor',
-      body: 'Customer name: Ms Okafor\nAppointment time: 10:15\nBooked with: Dan\nStatus: Arrived' },
-    { at: min(-2),  subject: 'New walk-in logged',
-      body: 'Customer name: Mr Whitfield\nEnquiry: Part exchange' },
-    /* a duplicate notification for somebody already here - must not restart
-       their timer, and must not appear twice */
-    { at: min(-1),  subject: 'New walk-in logged (reminder)',
-      body: 'Customer name: Mr Patel\nEnquiry: Used 3 Series' }
+    { at: min(-52), subject: 'Walk-in checked in',
+      body: arrival('Jay', '12:36', 'New', '1 Series, 2 Series, 3 Series') },
+    { at: min(-105), subject: 'Walk-in checked in',
+      body: arrival('Chris', '10:43', 'Used', '4 Series') },
+    /* a second Chris, later the same morning - the pick-up below belongs to
+       the FIRST one, and must not clear this one */
+    { at: min(-8), subject: 'Walk-in checked in',
+      body: arrival('Chris', '13:20', 'Used', 'X3') },
+    /* the same notification arriving twice */
+    { at: min(-50), subject: 'Walk-in checked in (resend)',
+      body: arrival('Jay', '12:36', 'New', '1 Series, 2 Series, 3 Series') }
   ],
   seen: [
-    { at: min(-9), subject: 'Ms Okafor - now with sales executive',
-      body: 'Customer name: Ms Okafor\nNow with: Dan' },
-    /* YESTERDAY somebody with the same name was seen. This must not mark
-       today's arrival as already being served. */
-    { at: min(-1440), subject: 'Mr Whitfield - now with sales executive',
-      body: 'Customer name: Mr Whitfield\nNow with: Charlie' }
+    { at: min(-100), subject: 'Walk-in taken',
+      body: pickup('Clive Ankomah', 'Chris', '10:43', 'Used', '4 Series') }
   ]
 };
 
@@ -108,34 +133,46 @@ rows.forEach(r => {
 
 console.log('\nChecks:\n');
 const by = n => rows.filter(r => r.customerName === n);
+const jay = by('Jay')[0];
+const chrises = by('Chris');
 
-ok('three people, not four (a duplicate is not a second card)', rows.length === 3,
-   rows.length + ' cards');
-ok('names parsed, not falling back to "Walk-in"',
-   rows.every(r => !['Walk-in', 'Appointment'].includes(r.customerName)),
+ok('the customer name is the NAME, not the "Arrived:" line',
+   !!jay && jay.customerName === 'Jay',
    rows.map(r => r.customerName).join(', '));
-ok('the booked customer is typed as an appointment',
-   by('Ms Okafor')[0] && by('Ms Okafor')[0].type === 'appointment');
-ok('...and carries who it was booked with',
-   by('Ms Okafor')[0] && by('Ms Okafor')[0].bookedWith === 'Dan',
-   by('Ms Okafor')[0] && by('Ms Okafor')[0].bookedWith);
-ok('a pick-up after the arrival shows as "now with"',
-   by('Ms Okafor')[0] && by('Ms Okafor')[0].status === 'with-staff'
-     && by('Ms Okafor')[0].assignedTo === 'Dan',
-   by('Ms Okafor')[0] && by('Ms Okafor')[0].assignedTo);
-ok('a walk-in nobody has picked up is still waiting',
-   by('Mr Patel')[0] && by('Mr Patel')[0].status === 'waiting');
-ok("YESTERDAY's pick-up does NOT mark today's arrival as served",
-   by('Mr Whitfield')[0] && by('Mr Whitfield')[0].status === 'waiting',
-   by('Mr Whitfield')[0] && by('Mr Whitfield')[0].status);
-ok('a duplicate email keeps the FIRST arrival time (timer does not restart)',
-   by('Mr Patel')[0] && by('Mr Patel')[0].arrivalTime === min(-18),
-   by('Mr Patel')[0] && new Date(by('Mr Patel')[0].arrivalTime).toISOString().slice(11, 16));
+ok('three cards - the resent notification is not a fourth', rows.length === 3,
+   rows.length + ' cards');
+ok('walk-ins are typed as walk-ins, not appointments',
+   rows.every(r => r.type === 'walk-in'));
+ok('nobody is wrongly shown as booked with an executive',
+   rows.every(r => !r.bookedWith));
+ok("reception's recorded time is used, not the email's timestamp",
+   !!jay && new Date(jay.arrivalTime).getHours() === 12
+         && new Date(jay.arrivalTime).getMinutes() === 36,
+   jay && new Date(jay.arrivalTime).toTimeString().slice(0, 5));
+ok('what they came in for is captured',
+   !!jay && jay.carType === 'New'
+         && jay.models === '1 Series, 2 Series, 3 Series',
+   jay && (jay.carType + ' / ' + jay.models));
+ok('the executive who took them is named in full',
+   chrises.some(c => c.assignedTo === 'Clive Ankomah'),
+   chrises.map(c => c.assignedTo || '-').join(', '));
+ok('BOTH Chrises are on the board', chrises.length === 2);
+ok('the pick-up clears the 10:43 Chris...',
+   chrises.filter(c => new Date(c.arrivalTime).getMinutes() === 43)
+          .every(c => c.status === 'with-staff'));
+ok('...and NOT the 13:20 Chris who is still waiting',
+   chrises.filter(c => new Date(c.arrivalTime).getMinutes() === 20)
+          .every(c => c.status === 'waiting'),
+   chrises.map(c => new Date(c.arrivalTime).toTimeString().slice(0,5)
+                    + '=' + c.status).join(', '));
+ok('Jay has nobody with him yet', !!jay && jay.status === 'waiting');
+ok('a resent notification keeps the first arrival time',
+   !!jay && new Date(jay.arrivalTime).getMinutes() === 36);
 
 /* archiving the arrival email clears the card */
-const archived = { inbox: SAMPLES.inbox.filter(m => !/Patel/.test(m.body)), seen: SAMPLES.seen };
+const archived = { inbox: SAMPLES.inbox.filter(m => !/Customer: Jay/.test(m.body)), seen: SAMPLES.seen };
 ok('archiving the arrival email takes that person off the screen',
-   load(archived).scan().every(r => r.customerName !== 'Mr Patel'));
+   load(archived).scan().every(r => r.customerName !== 'Jay'));
 
 /* the web app itself */
 const t = load(SAMPLES);
@@ -144,7 +181,7 @@ const noTok = JSON.parse(t.doGet({ parameter: {} }).getContent());
 ok('a missing token is refused', noTok.error === 'bad token');
 const good = JSON.parse(t.doGet({ parameter: { token: 'letmein' } }).getContent());
 ok('the right token gets the list', Array.isArray(good.appointments)
-   && good.appointments.length === 3);
+   && good.appointments.length === 3, good.appointments.length + ' rows');
 const jsonp = t.doGet({ parameter: { token: 'letmein', callback: 'cb1' } }).getContent();
 ok('JSONP is wrapped in the callback', jsonp.startsWith('cb1(') && jsonp.endsWith(');'));
 const nasty = t.doGet({ parameter: { token: 'letmein', callback: 'alert(1)//' } }).getContent();

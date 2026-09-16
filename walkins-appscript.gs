@@ -51,38 +51,54 @@
 
 /* ===================== tell it about your emails ====================== */
 
-/* Which emails are an arrival. Keep `in:inbox` - that is what makes
-   archiving an email clear the card. Narrow `from:` to the real sender. */
-var SEARCH = 'in:inbox newer_than:1d subject:(walk-in OR "walk in" OR arrived OR "has arrived")';
+/* Matched against the real notification emails. Both kinds carry the same
+   "Customer:/Arrived:/Car type:" block, so they are told apart by their
+   opening sentence rather than by those fields.
+   Keep `in:inbox` on the arrival search - that is what makes archiving an
+   email clear the card off the screen. Add `from:` once the sender address
+   is known, to stop anything else ever matching. */
+var SEARCH = 'in:inbox newer_than:1d ("has just been checked-in" OR "has just been checked in" OR "needs to be seen by a sales exec")';
 
-/* Emails that mean a sales executive is now sat with the customer. The
-   system does send one, so this is what turns a card green and puts
-   "now with <name>" on it. Tune it to the real subject line.
-   Note this does NOT need `in:inbox`: a pick-up is a fact, and it should
-   still count if somebody has tidied the mailbox. */
-var SEEN_SEARCH = 'newer_than:1d subject:("now with" OR "sat with" OR "in progress" OR "being seen" OR assigned)';
+/* Emails that mean an executive has taken the customer. This one deliberately
+   does NOT use `in:inbox`: a pick-up is a fact, and it should still count
+   after somebody has tidied the mailbox. */
+var SEEN_SEARCH = 'newer_than:1d ("has taken the walk-in customer" OR "has taken the customer")';
 
-/* Pulled out of the subject and body. First group of the first pattern that
-   matches wins; nothing matching is not an error, the card just says less.
-   Run preview() to see what these are actually catching. */
+/* Read off the real emails, which lay out one labelled field per line:
+ *
+ *     Customer: Jay
+ *     Arrived: 12:36
+ *     Car type: New
+ *     Models of interest: 1 Series, 2 Series, 3 Series
+ *     Sales executive: Clive Ankomah     <- pick-up emails only
+ *
+ * Every pattern is anchored to the start of a line (^ with the m flag).
+ * That is not fussiness. An unanchored /arrived\s*[:\-]\s*(.+)/ matches the
+ * "Arrived:" line while looking for the customer, and the first version of
+ * this put "12:36" on the wall as somebody's name.
+ * Run preview() after any change here. */
 var PATTERNS = {
-  customer:   [/customer(?:'s)?\s*name\s*[:\-]\s*(.+)/i,
-               /(?:walk[\s-]?in|arrival|arrived)\s*[:\-]\s*(.+)/i,
-               /^(?:new\s+)?(?:walk[\s-]?in|arrival)\s*[\-–]\s*(.+)$/i,
-               /\bname\s*[:\-]\s*(.+)/i],
-  bookedWith: [/(?:booked|appointment)\s+with\s*[:\-]?\s*(.+)/i,
-               /sales\s*(?:exec|executive|advisor)\s*[:\-]\s*(.+)/i,
-               /\bexecutive\s*[:\-]\s*(.+)/i],
-  apptTime:   [/appointment\s*(?:time)?\s*[:\-]\s*(\d{1,2}[:.]\d{2})/i,
-               /\bat\s+(\d{1,2}[:.]\d{2})\b/i],
-  /* who has SAT DOWN with them, out of the pick-up email - kept apart from
-     bookedWith on purpose, since the two are often different people */
-  seenBy:     [/(?:now|sat|sitting|seated)\s+with\s*[:\-]?\s*(.+)/i,
-               /assigned\s+to\s*[:\-]?\s*(.+)/i,
-               /(?:being\s+)?(?:seen|handled)\s+by\s*[:\-]?\s*(.+)/i,
-               /sales\s*(?:exec|executive|advisor)\s*[:\-]\s*(.+)/i],
-  /* how we tell a booked customer arriving from somebody off the street */
-  isBooked:   [/\bappointment\b/i, /\bbooked\b/i, /\bexpected\b/i]
+  customer:   [/^[ \t]*Customer(?:\s*name)?[ \t]*[:\-][ \t]*(.+)$/im,
+               /has taken the walk-in customer\s+([^.\n]+)/i],
+  /* who has SAT DOWN with them, out of the pick-up email */
+  seenBy:     [/^[ \t]*Sales\s*exec(?:utive)?[ \t]*[:\-][ \t]*(.+)$/im,
+               /^(.+?)\s+has taken the walk-in customer/im,
+               /^[ \t]*Assigned\s*to[ \t]*[:\-][ \t]*(.+)$/im],
+  /* whose appointment it is, on a booked arrival. The walk-in emails carry
+     no such line, which is correct - nobody is expecting them. */
+  bookedWith: [/^[ \t]*Booked\s*with[ \t]*[:\-][ \t]*(.+)$/im,
+               /^[ \t]*Appointment\s*with[ \t]*[:\-][ \t]*(.+)$/im],
+  /* the time reception recorded, which beats the email's own timestamp if
+     the mail sat in a queue or a scanner on the way */
+  arrivedAt:  [/^[ \t]*Arrived[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im],
+  apptTime:   [/^[ \t]*Appointment\s*time[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im],
+  /* what they are actually after - the line that makes an executive get up */
+  carType:    [/^[ \t]*Car\s*type[ \t]*[:\-][ \t]*(.+)$/im],
+  models:     [/^[ \t]*Models?\s*of\s*interest[ \t]*[:\-][ \t]*(.+)$/im],
+  /* how we tell a booked customer arriving from somebody off the street.
+     The walk-in emails say so in the first line. */
+  isWalkIn:   [/\bwalk[\s-]?in\b/i],
+  isBooked:   [/^[ \t]*Booked\s*with[ \t]*[:\-]/im, /\bappointment\b/i]
 };
 
 /* A card drops off by itself after this long, in case nobody archives it. */
@@ -171,39 +187,63 @@ function scan() {
       var name = firstOf(PATTERNS.customer, body, subject);
       var booked = firstOf(PATTERNS.bookedWith, body, subject);
       var appt = firstOf(PATTERNS.apptTime, body, subject);
-      var isBooked = !!booked || anyMatch(PATTERNS.isBooked, text);
+      var isBooked = !!booked || (!anyMatch(PATTERNS.isWalkIn, text)
+                                  && anyMatch(PATTERNS.isBooked, text));
 
-      /* only a pick-up that happened AT OR AFTER this arrival counts - see
-         seenNames(). A minute of slack, because the two emails can leave in
-         either order when reception is quick. */
-      var withStaff = false, staff = '';
-      var hit = name ? seen[key(name)] : null;
-      if (hit && hit.at >= when - 60000) { withStaff = true; staff = hit.staff; }
+      /* Reception's own "Arrived: 12:36" beats the email's timestamp: the
+         mail passes through an external-sender scanner on the way in, and a
+         few minutes in a queue would otherwise show as a few minutes less
+         standing about. Falls back to the timestamp if the line is missing
+         or nonsense. */
+      var stated = firstOf(PATTERNS.arrivedAt, body, subject);
+      var arrived = stated ? clockOn(when, stated) : null;
+      if (arrived === null) arrived = when;
+
+      /* Match a pick-up to an arrival on name AND recorded arrival time where
+         we have both. These emails carry first names only - "Jay", "Chris" -
+         and two Chrises in a morning is not far-fetched; name alone would
+         clear the wrong card. */
+      var hit = pickUp(seen, name, arrived);
+      var withStaff = !!hit, staff = hit ? hit.staff : '';
 
       out.push({
         id: m.getId(),
-        /* The email's own timestamp IS the arrival time - exact, and no
-           parsing to get wrong. Do not swap this for a time scraped out of
-           the body unless the emails turn out to be delayed. */
-        arrivalTime: when,
+        arrivalTime: arrived,
         customerName: clean(name) || (isBooked ? 'Appointment' : 'Walk-in'),
         type: isBooked ? 'appointment' : 'walk-in',
-        appointmentTime: appt ? todayAt(appt) : null,
+        appointmentTime: appt ? clockOn(when, appt) : null,
         bookedWith: clean(booked),
+        /* what they came in for - the line that makes an executive get up */
+        carType: clean(firstOf(PATTERNS.carType, body, subject)),
+        models: clean(firstOf(PATTERNS.models, body, subject)),
         status: withStaff ? 'with-staff' : 'waiting',
-        assignedTo: staff
+        assignedTo: staff,
+        /* internal only - tells the dedupe below whether arrivalTime came
+           from reception or from the email's own clock. Removed there. */
+        statedTime: !!stated
       });
     });
   });
 
-  /* one card per person, keeping their FIRST arrival - a reminder or a
-     duplicate notification must not restart somebody's waiting timer */
+  /* Collapse a resent notification into one card, WITHOUT collapsing two
+     different people who happen to share a first name.
+     Keying on the name alone does the second thing: these emails carry
+     "Chris", not a surname, so a second Chris walking in at 13:20 silently
+     replaced the one who arrived at 10:43 and never appeared on the screen
+     at all. Somebody standing in the showroom invisibly is worse than a
+     duplicate card.
+     The recorded arrival time separates them: a resend repeats "Arrived:
+     10:43", a different person does not. Where that line is missing there is
+     nothing to tell them apart, so fall back to the name and accept that a
+     resend may double up - a spare card is the safer way to be wrong. */
   var byPerson = {}, ordered = [];
   out.forEach(function (r) {
-    var k = key(r.customerName) + '|' + (r.type || '');
+    var k = key(r.customerName) + '|' +
+            (r.statedTime ? hhmm(r.arrivalTime) : 'unknown');
+    delete r.statedTime;
     if (!byPerson[k]) { byPerson[k] = r; ordered.push(r); }
     else if (r.arrivalTime < byPerson[k].arrivalTime) {
-      byPerson[k].arrivalTime = r.arrivalTime;
+      byPerson[k].arrivalTime = r.arrivalTime;   /* keep the first arrival */
     }
   });
   return ordered;
@@ -225,11 +265,19 @@ function seenNames() {
       var who = firstOf(PATTERNS.customer, body, subject);
       if (!who) return;
       var by = clean(firstOf(PATTERNS.seenBy, body, subject)) ||
-               clean(firstOf(PATTERNS.bookedWith, body, subject)) ||
                'a member of staff';
-      var k = key(who), when = m.getDate().getTime();
-      /* the most recent pick-up for that person is the one that counts */
-      if (!map[k] || when > map[k].at) map[k] = { staff: by, at: when };
+      var when = m.getDate().getTime();
+
+      /* The pick-up email repeats the customer's arrival time, so it can be
+         tied to one specific arrival rather than to a first name. Both keys
+         are stored: the precise one, and the loose one as a fallback for
+         when the arrival line is missing. */
+      var stated = firstOf(PATTERNS.arrivedAt, body, subject);
+      var at = stated ? clockOn(when, stated) : null;
+      var rec = { staff: by, at: when, arrived: at };
+
+      put(map, key(who), rec);
+      if (at !== null) put(map, key(who) + '@' + hhmm(at), rec);
     });
   });
   return map;
@@ -262,13 +310,49 @@ function clean(s) {
 }
 function key(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
 
-/* "10:30" -> today at 10:30, as epoch ms */
-function todayAt(hhmm) {
-  var m = String(hhmm).match(/(\d{1,2})[:.](\d{2})/);
+/* the most recent pick-up for a key is the one that counts */
+function put(map, k, rec) {
+  if (!map[k] || rec.at > map[k].at) map[k] = rec;
+}
+
+/* Find the pick-up belonging to THIS arrival, and only if it came after it.
+   Without the time check a "has taken" email from an earlier visit marks a
+   fresh arrival as already being served - somebody walks in, the screen says
+   "now with Clive", and they are left standing there. */
+function pickUp(seen, name, arrived) {
+  if (!name) return null;
+  var exact = seen[key(name)+'@'+hhmm(arrived)];
+  var loose = seen[key(name)];
+  var hit = exact || loose;
+  if (!hit) return null;
+  /* a minute of slack: the two emails can leave in either order */
+  if (hit.at < arrived - 60000) return null;
+  /* a loose match that names a DIFFERENT arrival time is somebody else */
+  if (!exact && hit.arrived !== null && hit.arrived !== undefined
+      && Math.abs(hit.arrived - arrived) > 60000) return null;
+  return hit;
+}
+
+function hhmm(ms) {
+  var d = new Date(ms), p = function (n) { return n < 10 ? '0' + n : '' + n };
+  return p(d.getHours()) + p(d.getMinutes());
+}
+
+/* "12:36" on the same DAY as the given moment, as epoch ms.
+   Anchored to the email rather than to "today" so a screen reading
+   yesterday's mail, or one running over midnight, does not place an
+   arrival on the wrong day. Returns null if the result lands somewhere
+   implausible, so the caller falls back to the timestamp. */
+function clockOn(ref, text) {
+  var m = String(text).match(/(\d{1,2})[:.](\d{2})/);
   if (!m) return null;
-  var d = new Date();
-  d.setHours(+m[1], +m[2], 0, 0);
-  return d.getTime();
+  var h = +m[1], mi = +m[2];
+  if (h > 23 || mi > 59) return null;
+  var d = new Date(ref);
+  d.setHours(h, mi, 0, 0);
+  var t = d.getTime();
+  if (Math.abs(t - ref) > 12 * 3600000) return null;
+  return t;
 }
 
 /* ---------------------------------------------------------------------
