@@ -1148,6 +1148,20 @@ body.premiere .pairqr{display:none!important}
   .flame,.ember,.fire::before{animation:none}
 }
 
+
+/* dismissible fullscreen scenes (LG often ignores pointer-events:none) */
+.scene-close{
+  position:absolute;top:clamp(10px,1.6vh,18px);right:clamp(10px,1.6vw,18px);
+  width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.28);
+  background:rgba(12,16,24,.72);color:#fff;font-size:1.55rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  z-index:5;padding:0;font-family:var(--font);font-weight:700;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+}
+.scene-close:hover,.scene-close:focus{background:rgba(200,16,46,.92);border-color:transparent;outline:none}
+.cutscene.show,.champscene.show,.bdayscene.show,.firescene.show,.vidscene.show,.statscene.show{
+  pointer-events:auto;
+}
 /* ---------- leader cut scene ---------- */
 .cutscene{
   position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;
@@ -1695,6 +1709,7 @@ body.premiere .pairqr{display:none!important}
 
 <!-- the team sketch -->
 <div class="vidscene" id="vidscene" aria-hidden="true">
+  <button type="button" class="scene-close" data-dismiss-scene aria-label="Close">×</button>
   <div>
     <div class="vs-frame">
       <video id="vs-video" playsinline preload="none" disablepictureinpicture></video>
@@ -1706,6 +1721,7 @@ body.premiere .pairqr{display:none!important}
 
 <!-- how this month compares with last -->
 <div class="statscene" id="statscene" aria-hidden="true">
+  <button type="button" class="scene-close" data-dismiss-scene aria-label="Close">×</button>
   <div class="ss-inner">
     <div class="ss-kicker">Month on month</div>
     <div class="ss-title" id="ss-title"></div>
@@ -1720,6 +1736,7 @@ body.premiere .pairqr{display:none!important}
 
 <!-- Nathan has a go at burning the board down -->
 <div class="firescene" id="firescene" aria-hidden="true">
+  <button type="button" class="scene-close" data-dismiss-scene aria-label="Close">×</button>
   <div class="heat" id="fire-heat"></div>
   <div class="blaze" id="blaze">
     <div class="char" id="fire-char"></div>
@@ -1786,6 +1803,7 @@ body.premiere .pairqr{display:none!important}
 
 <!-- somebody's birthday -->
 <div class="bdayscene" id="bdayscene" aria-hidden="true">
+  <button type="button" class="scene-close" data-dismiss-scene aria-label="Close">×</button>
   <div class="ch-confetti" id="bd-confetti" aria-hidden="true"></div>
   <div class="ch-inner">
     <div class="bd-cake">&#127874;</div>
@@ -1797,6 +1815,7 @@ body.premiere .pairqr{display:none!important}
 
 <!-- somebody crossing £15,000 - the biggest moment the board has -->
 <div class="champscene" id="champscene" aria-hidden="true">
+  <button type="button" class="scene-close" data-dismiss-scene aria-label="Close">×</button>
   <div class="ch-confetti" id="ch-confetti" aria-hidden="true"></div>
   <div class="ch-inner">
     <div class="ch-kicker">Fifteen grand</div>
@@ -1809,6 +1828,7 @@ body.premiere .pairqr{display:none!important}
 </div>
 
 <div class="cutscene" id="cutscene" aria-hidden="true">
+  <button type="button" class="scene-close" data-dismiss-scene aria-label="Close">×</button>
   <div class="cut-inner">
     <div class="cut-kicker">Leading the board</div>
     <div class="cut-stage">
@@ -2122,6 +2142,48 @@ var busy=false, holdUntil=0, sceneGen=0;
    floor next. Every scene takes a generation on the way in and hands it back
    on the way out; `stopScenes()` bumps the generation, so a stale timer's
    `sceneEnd` is a no-op. */
+
+function dismissActiveScene(){
+  try{
+    var ids=['cutscene','champscene','bdayscene','firescene','vidscene','statscene','trailercard'];
+    ids.forEach(function(id){
+      var el=$(id); if(!el) return;
+      el.classList.remove('show'); el.classList.remove('out');
+      el.setAttribute('aria-hidden','true');
+    });
+    var vs=$('vidscene');
+    if(vs){
+      var v=vs.querySelector('video');
+      if(v){ try{v.pause()}catch(e){} }
+    }
+  }catch(e){}
+  busy=false;
+  holdUntil=0;
+  sceneGen++; /* invalidate pending scene timers */
+  try{ radioDuck(false) }catch(e){}
+  try{ paintRadio() }catch(e){}
+}
+
+document.addEventListener('click', function(e){
+  var t=e.target;
+  if(!t) return;
+  if(t.closest && t.closest('[data-dismiss-scene]')){
+    e.preventDefault(); e.stopPropagation();
+    dismissActiveScene();
+    return;
+  }
+  /* tap dark backdrop (not the card / dancer) to clear the scene */
+  if(t.classList && (t.classList.contains('cutscene') || t.classList.contains('champscene')
+      || t.classList.contains('bdayscene') || t.classList.contains('firescene')
+      || t.classList.contains('vidscene') || t.classList.contains('statscene'))
+      && t.classList.contains('show')){
+    dismissActiveScene();
+  }
+}, true);
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape' && busy){ dismissActiveScene(); }
+});
+
 function sceneStart(duckRadio){
   busy=true;
   /* Mug shots / picture views: radio stays full. Video cut scenes (and
