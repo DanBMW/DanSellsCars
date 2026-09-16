@@ -5542,10 +5542,8 @@ function walkinMapRows(j){
                  || st==='assigned'||st==='being-seen'
                  || d.withStaff===true;
     var customer = String(d.customerName||d.name||d.customer||'').trim();
-    /* Apps Script falls back to the label "Walk-in" when the name line missed -
-       treat that as unknown so the card can say so clearly */
     if(!customer || /^walk[\s-]?in$/i.test(customer) || /^appointment$/i.test(customer)){
-      customer = walkIn ? 'Waiting at reception' : 'Appointment arrived';
+      customer = '';
     }
     var arrived = d.arrivalTime||d.arrivedAt||d.arrived||null;
     if(typeof arrived==='string'){ var parsed=Date.parse(arrived); arrived=isNaN(parsed)?null:parsed }
@@ -5576,6 +5574,8 @@ function walkinClock(ms){
     return pad(d.getHours())+':'+pad(d.getMinutes());
   }
 }
+var walkinQueue=[];
+var walkinShowing=false;
 function walkinHideCard(){
   var pop=$('walkin-pop');
   if(!pop) return;
@@ -5583,7 +5583,24 @@ function walkinHideCard(){
   clearTimeout(walkinPopTimer);
   busy=false;
   clearTimeout(walkinTakeFloor._busy);
-  setTimeout(function(){ if(!pop.classList.contains('show')) pop.hidden=true },240);
+  setTimeout(function(){
+    if(!pop.classList.contains('show')) pop.hidden=true;
+    walkinShowing=false;
+    walkinPlayNext();
+  },240);
+}
+function walkinEnqueue(r){
+  if(!r || r.withStaff) return;
+  walkinQueue.push(r);
+  if(!walkinShowing) walkinPlayNext();
+}
+function walkinPlayNext(){
+  if(walkinShowing) return;
+  if(!walkinQueue.length) return;
+  walkinShowing=true;
+  var r=walkinQueue.shift();
+  walkinShowCard(r);
+  walkinDoorbell();
 }
 function walkinFlashScreen(){
   var el=$('walkin-flash');
@@ -5617,8 +5634,8 @@ function walkinShowCard(r){
   walkinTakeFloor();
   walkinFlashScreen();
   card.className='walkin-card '+(r.walkIn?'wi':'ap');
-  $('walkin-kicker').textContent=r.walkIn?'Walk-in':'Appointment';
-  $('walkin-name').textContent=r.customer||(r.walkIn?'Waiting at reception':'Appointment arrived');
+  $('walkin-kicker').textContent=r.walkIn?'WALK-IN':'APPOINTMENT';
+  $('walkin-name').textContent=r.customer||'Name not on the email';
   var bits=[];
   if(r.carType) bits.push(r.carType);
   if(r.models) bits.push(r.models);
@@ -5678,18 +5695,19 @@ function walkinDoorbell(){
 }
 
 function walkinDeliver(list){
+  /* Each waiting person is one visit (unique email id). Do not collapse two
+     people into one alert. First snapshot of this page load is silent so a
+     TV refresh does not re-ring everyone already standing there. After that,
+     every new waiting id is queued so two arrivals in the same poll each get
+     their own 30s card, flash and chime. */
   list.forEach(function(r){
     if(!walkinSeen[r.id]){
       walkinSeen[r.id]=1;
-      if(walkinPrimed && !r.withStaff){
-        walkinShowCard(r);
-        walkinDoorbell();
-      }
+      if(walkinPrimed && !r.withStaff) walkinEnqueue(r);
     }
   });
   walkinPrimed = true;
-  var live=Object.create(null);
-  list.forEach(function(r){ live[r.id]=1 });
+  var live=Object.create(null); list.forEach(function(r){ live[r.id]=1 });
   Object.keys(walkinSeen).forEach(function(k){ if(!live[k]) delete walkinSeen[k] });
 }
 
