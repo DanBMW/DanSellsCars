@@ -3826,10 +3826,18 @@ function pickClip(){
    Addresses come from the radio-browser directory, which is where real radio
    players get them, with that directory's own player-id tracking parameters
    stripped: they belong to somebody else's player, not ours. */
+/* Bauer's edge refuses a bare stream URL - every one of these 500s without
+   an aw_0_1st.skey on it, so the first version of this list could never have
+   played a note. 1602676850 is the key Bauer's own web player uses, which is
+   what this board is: a browser playing Kisstory. Do not strip it back off.
+   The last one needs no key at all and cannot be revoked, so the wall is
+   never silent even if Bauer rotates that one. */
+var RADIO_KEY = '?direct=true&aw_0_1st.skey=1602676850';
 var RADIO_SOURCES = [
-  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac',
-  'https://live-bauerkiss.sharp-stream.com/kisstory.aac',
-  'http://stream-kiss.planetradio.co.uk/kisstory.mp3'
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY, /* R&B, 127k */
+  'https://stream-kiss.hellorayo.co.uk/kisstoryrb.aac'+RADIO_KEY,     /* same, other CDN */
+  'https://live-bauerkiss.sharp-stream.com/kisstory.aac'+RADIO_KEY,   /* old skool */
+  'https://live-kiss.sharp-stream.com/kiss100.mp3'                    /* no key needed */
 ];
 var RADIO_NAME='Kisstory R&B';
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
@@ -3837,47 +3845,70 @@ var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 function radioWanted(){ return sOn('radio') && window.innerWidth>=1200 }
 function radioVol(){ return Math.max(0, Math.min(100, sNum('radiovol', 45))) / 100 }
 
-function radioInit(){
-  if(radioEl)return radioEl;
-  radioEl=document.createElement('audio');
-  radioEl.id='radio';
-  radioEl.preload='none';
-  radioEl.volume=radioVol();
+/* One element per attempt, deliberately.
+   A single reused <audio> cannot tell you which source an error event is
+   about: switching src while the old load is failing delivers that old
+   failure afterwards, by which time any stamp on the element has already
+   been overwritten. The board then counted one dead source twice, walked
+   past the good source underneath it, and sat reading 'connecting' for ever
+   while music was actually playing. A fresh element per attempt makes every
+   handler unambiguously about its own URL, and a stale one is simply
+   discarded. Do not put the shared element back. */
+function radioAttach(url){
+  radioDrop();
+  var a=document.createElement('audio');
+  a.id='radio';
+  a.preload='none';
+  a.volume=radioVol();
+  a.src=url;
   /* a live stream has no end; an error means this URL is no good, so move
      to the next candidate rather than sitting silent on a dead one */
-  radioEl.onerror=function(){
-    if(radioState!=='playing'&&radioState!=='connecting')return;
-    radioIdx++;
-    if(radioIdx<RADIO_SOURCES.length){ radioPlay() }
-    else { radioState='failed'; radioIdx=0; paintRadio() }
-  };
-  radioEl.onplaying=function(){ radioState='playing'; paintRadio() };
-  document.body.appendChild(radioEl);
-  return radioEl;
+  a.onerror=function(){ if(a===radioEl)radioNext() };
+  a.onplaying=function(){ if(a===radioEl){radioState='playing';paintRadio()} };
+  radioEl=a;
+  document.body.appendChild(a);
+  return a;
+}
+
+function radioDrop(){
+  if(!radioEl)return;
+  var old=radioEl; radioEl=null;
+  old.onerror=null; old.onplaying=null;
+  try{old.pause()}catch(e){}
+  try{old.removeAttribute('src'); old.load()}catch(e){}
+  if(old.parentNode)old.parentNode.removeChild(old);
 }
 
 function radioPlay(){
   if(!radioWanted()){ radioStop(); return }
   if(radioDucked)return;                 /* something else has the sound */
-  var a=radioInit();
+  var url=RADIO_SOURCES[radioIdx];
+  var a=radioAttach(url);
   radioState='connecting'; paintRadio();
-  if(a.getAttribute('src')!==RADIO_SOURCES[radioIdx]){
-    a.setAttribute('src',RADIO_SOURCES[radioIdx]);
-    try{a.load()}catch(e){}
-  }
-  a.volume=radioVol();
   var go=a.play();
-  if(go&&go['catch'])go['catch'](function(){
-    /* almost always the autoplay policy on a screen nobody has touched -
-       the first tap resumes it, same as the clips */
-    radioState = audioOk ? 'failed' : 'waiting';
-    paintRadio();
+  if(go&&go['catch'])go['catch'](function(e){
+    if(a!==radioEl)return;               /* a later attempt has taken over */
+    if(e&&e.name==='NotAllowedError'){
+      /* Nothing is wrong with the source - nobody has touched the screen. Go
+         back to the top of the list so the first tap starts on the station
+         that was asked for, at the best bitrate, rather than on whichever
+         fallback the walk happened to be standing on. */
+      radioIdx=0; radioState='waiting'; paintRadio(); return;
+    }
+    radioNext();
   });
+}
+
+/* move to the next candidate, or give up and say so */
+function radioNext(){
+  radioIdx++;
+  if(radioIdx<RADIO_SOURCES.length){ radioPlay(); return }
+  radioIdx=0; radioDrop(); radioState='failed'; paintRadio();
 }
 
 function radioStop(){
   if(!radioEl)return;
-  try{radioEl.pause()}catch(e){}
+  radioDrop();
   radioState='off'; paintRadio();
 }
 

@@ -752,20 +752,46 @@ said so.
   without that the radio stays silenced for good: the same trap as leaving
   `busy` set. Whatever takes the floor next ducks it again itself.
   **A stream URL is not forever.** `RADIO_SOURCES` is an ordered list of
-  candidates; an `error` moves to the next, and only when all are exhausted
+  candidates; a failure moves to the next, and only when all are exhausted
   does it give up. **Kisstory R&B is first** - that is the station Dan asked
   for, and the first version shipped plain Kisstory (old skool) by mistake;
-  the other two are that station and only stand in if the R&B feed is down.
-  Addresses come from the radio-browser directory, which is where real radio
-  players get them, with that directory's player-id tracking parameters
-  stripped - they belong to somebody else's player.
-  **They still cannot be verified from the build sandbox**: the agent proxy
-  will not pass a continuous audio stream, so a fetch there proves nothing
-  either way. That is why the manager panel reports the real state in words -
-  playing, connecting, or "could not reach Kisstory R&B, the stream address
-  may have changed" - rather than leaving a silent wall display with no
-  explanation. If it says that, replace the list rather than debugging the
-  player.
+  then the same station on Bauer's other CDN, then old skool, then Kiss
+  national. Addresses come from the radio-browser directory, which is where
+  real radio players get them.
+  **`RADIO_KEY` is not optional and must not be stripped.** Bauer's edge
+  answers a bare stream URL with a 500 - every one of them, deterministically
+  - so the first version of this list could not have played a note, which is
+  exactly what happened. What it wants is an `aw_0_1st.skey`; `direct=true`
+  alone is not enough and an invented key is refused. `1602676850` is the key
+  Bauer's **own web player** uses, which is what this board is: a browser
+  playing Kisstory. (The directory also lists Airable's device key - prefer
+  Bauer's own.) The last entry in the list needs no key at all and so cannot
+  be revoked, which is why it is there.
+  Every entry must be **https**: the site is served over https and a plain
+  `http://` stream is blocked as mixed content before the player ever sees
+  it. The old list had one.
+  **The ladder can only be half-checked from the build sandbox**: the
+  headless Chromium here has no AAC decoder (`canPlayType('audio/aac')` is
+  empty), and the proxy's CA is not in its trust store, so the streams
+  themselves have to be checked with curl - which does show real `audio/aac`
+  with ICY headers on these URLs, and nothing at all on the bare ones. That
+  is why the manager panel reports the real state in words - playing,
+  connecting, or "could not reach Kisstory R&B, the stream address may have
+  changed" - rather than leaving a silent wall display with no explanation.
+  If it says that, replace the list rather than debugging the player.
+  **One `<audio>` element per attempt** (`radioAttach()`/`radioDrop()`), and
+  do not put a shared one back. A reused element cannot tell you which source
+  an error event is about: pointing it at the next URL while the old load is
+  still failing delivers that old failure afterwards, so one dead source was
+  counted twice, the good source underneath it was walked straight past, and
+  the board sat reading "connecting" for ever while music was playing. The
+  handlers compare `a===radioEl` and a stale element is discarded.
+  **A refused `play()` is two different things.** `NotAllowedError` is the
+  autoplay policy on a screen nobody has touched - the source is fine, so it
+  waits for a tap and resets to the top of the list. Anything else means that
+  URL is no good and walks on. Treating every rejection as final stopped the
+  ladder dead on the first source and declared the whole station unreachable
+  with three working fallbacks underneath it.
   Dan has confirmed the dealership holds a music licence covering this.
   Switches: `radio` (absent means on, like everything else) and `radiovol`,
   a 0-100 number, default 45. Pausing from the manager panel writes the
