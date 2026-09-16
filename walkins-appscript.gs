@@ -12,12 +12,14 @@
  * phone.
  *
  * WHAT IT CAN AND CANNOT DO - read this before relying on it
- *   - It sees ARRIVALS, because that is what generates an email. It shows who
- *     is here and how long they have been waiting, and rings the doorbell.
- *   - It does NOT see somebody being picked up, unless the system also emails
- *     when a customer is assigned (see SEEN_SEARCH). Without that, the
- *     "now with <staff>" line - the thing the brief actually asked for -
- *     cannot work off email alone. This is the cost of the stopgap.
+ *   - It sees ARRIVALS (SEARCH) and PICK-UPS (SEEN_SEARCH), because the
+ *     system emails on both. So the whole thing works off email: who is
+ *     here, how long they have been waiting, the doorbell, and the card
+ *     turning green with "now with <name>" once somebody sits down.
+ *   - A pick-up is matched to an arrival BY CUSTOMER NAME, so both emails
+ *     have to name the customer. If the pick-up email only says which
+ *     executive is busy, there is nothing to match on and the card stays
+ *     waiting.
  *   - Freshness is capped by the trigger interval, so the bell can be up to
  *     a minute behind the door. The real endpoint is instant.
  *
@@ -53,9 +55,12 @@
    archiving an email clear the card. Narrow `from:` to the real sender. */
 var SEARCH = 'in:inbox newer_than:1d subject:(walk-in OR "walk in" OR arrived OR "has arrived")';
 
-/* Optional: emails that mean somebody has been picked up. Leave '' if the
-   system does not send one - the cards then simply stay as "waiting". */
-var SEEN_SEARCH = '';
+/* Emails that mean a sales executive is now sat with the customer. The
+   system does send one, so this is what turns a card green and puts
+   "now with <name>" on it. Tune it to the real subject line.
+   Note this does NOT need `in:inbox`: a pick-up is a fact, and it should
+   still count if somebody has tidied the mailbox. */
+var SEEN_SEARCH = 'newer_than:1d subject:("now with" OR "sat with" OR "in progress" OR "being seen" OR assigned)';
 
 /* Pulled out of the subject and body. First group of the first pattern that
    matches wins; nothing matching is not an error, the card just says less.
@@ -70,6 +75,12 @@ var PATTERNS = {
                /\bexecutive\s*[:\-]\s*(.+)/i],
   apptTime:   [/appointment\s*(?:time)?\s*[:\-]\s*(\d{1,2}[:.]\d{2})/i,
                /\bat\s+(\d{1,2}[:.]\d{2})\b/i],
+  /* who has SAT DOWN with them, out of the pick-up email - kept apart from
+     bookedWith on purpose, since the two are often different people */
+  seenBy:     [/(?:now|sat|sitting|seated)\s+with\s*[:\-]?\s*(.+)/i,
+               /assigned\s+to\s*[:\-]?\s*(.+)/i,
+               /(?:being\s+)?(?:seen|handled)\s+by\s*[:\-]?\s*(.+)/i,
+               /sales\s*(?:exec|executive|advisor)\s*[:\-]\s*(.+)/i],
   /* how we tell a booked customer arriving from somebody off the street */
   isBooked:   [/\bappointment\b/i, /\bbooked\b/i, /\bexpected\b/i]
 };
@@ -157,13 +168,17 @@ function scan() {
       try { body = m.getPlainBody() || ''; } catch (e) {}
       var text = subject + '\n' + body;
 
-      var name = first(PATTERNS.customer, text);
-      var booked = first(PATTERNS.bookedWith, text);
-      var appt = first(PATTERNS.apptTime, text);
+      var name = firstOf(PATTERNS.customer, body, subject);
+      var booked = firstOf(PATTERNS.bookedWith, body, subject);
+      var appt = firstOf(PATTERNS.apptTime, body, subject);
       var isBooked = !!booked || anyMatch(PATTERNS.isBooked, text);
 
+      /* only a pick-up that happened AT OR AFTER this arrival counts - see
+         seenNames(). A minute of slack, because the two emails can leave in
+         either order when reception is quick. */
       var withStaff = false, staff = '';
-      if (name && seen[key(name)]) { withStaff = true; staff = seen[key(name)]; }
+      var hit = name ? seen[key(name)] : null;
+      if (hit && hit.at >= when - 60000) { withStaff = true; staff = hit.staff; }
 
       out.push({
         id: m.getId(),
@@ -194,16 +209,27 @@ function scan() {
   return ordered;
 }
 
-/* who has been picked up, if the system emails about that at all */
+/* Who has been picked up. Each entry carries WHEN, because a pick-up only
+   counts for an arrival it came after.
+   Without that time check, a "sat with" email from an earlier visit marks a
+   fresh arrival as already being served - somebody walks in, the screen says
+   "now with Dan", and they get left standing there. That is the worst thing
+   this screen could do, so the check is not optional. */
 function seenNames() {
   var map = {};
   if (!SEEN_SEARCH) return map;
   GmailApp.search(SEEN_SEARCH, 0, MAX_THREADS).forEach(function (t) {
     t.getMessages().forEach(function (m) {
-      var text = (m.getSubject() || '') + '\n' + (m.getPlainBody() || '');
-      var who = first(PATTERNS.customer, text);
-      var by = first(PATTERNS.bookedWith, text);
-      if (who) map[key(who)] = clean(by) || 'a member of staff';
+      var subject = m.getSubject() || '', body = '';
+      try { body = m.getPlainBody() || ''; } catch (e) {}
+      var who = firstOf(PATTERNS.customer, body, subject);
+      if (!who) return;
+      var by = clean(firstOf(PATTERNS.seenBy, body, subject)) ||
+               clean(firstOf(PATTERNS.bookedWith, body, subject)) ||
+               'a member of staff';
+      var k = key(who), when = m.getDate().getTime();
+      /* the most recent pick-up for that person is the one that counts */
+      if (!map[k] || when > map[k].at) map[k] = { staff: by, at: when };
     });
   });
   return map;
@@ -215,6 +241,16 @@ function first(pats, text) {
     if (m && m[1]) return m[1];
   }
   return '';
+}
+
+/* Body first, subject second.
+   A subject is usually a headline ("Ms Okafor - now with sales executive")
+   while the body carries the labelled field ("Now with: Dan"). Searching one
+   joined string takes whichever comes first, which is the subject, so the
+   card ended up saying "now with sales executive". Look in the body, and only
+   fall back to the subject if it has nothing. */
+function firstOf(pats, body, subject) {
+  return first(pats, body || '') || first(pats, subject || '');
 }
 function anyMatch(pats, text) {
   for (var i = 0; i < pats.length; i++) if (pats[i].test(text)) return true;
