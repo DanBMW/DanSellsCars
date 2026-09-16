@@ -376,34 +376,6 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 }
 .walkin-meta{font-size:.88rem;font-weight:600;color:var(--muted);line-height:1.45;margin:0}
 .walkin-time{font-size:.78rem;font-weight:700;color:rgba(242,245,249,.72);margin:14px 0 0}
-.walkin-flash{
-  position:fixed;inset:0;z-index:250;pointer-events:none;
-  background:rgba(47,191,107,0);opacity:0;
-}
-.walkin-flash.go{
-  animation:walkinFlash 1.15s ease-out 1;
-}
-.walkin-flash.go.ap{
-  animation-name:walkinFlashAp;
-}
-@keyframes walkinFlash{
-  0%{opacity:0;background:rgba(47,191,107,0)}
-  12%{opacity:1;background:rgba(47,191,107,.55)}
-  28%{opacity:.15;background:rgba(47,191,107,.12)}
-  42%{opacity:1;background:rgba(47,191,107,.48)}
-  58%{opacity:.12;background:rgba(47,191,107,.10)}
-  72%{opacity:.85;background:rgba(47,191,107,.38)}
-  100%{opacity:0;background:rgba(47,191,107,0)}
-}
-@keyframes walkinFlashAp{
-  0%{opacity:0;background:rgba(47,123,240,0)}
-  12%{opacity:1;background:rgba(47,123,240,.50)}
-  28%{opacity:.15;background:rgba(47,123,240,.12)}
-  42%{opacity:1;background:rgba(47,123,240,.42)}
-  58%{opacity:.12;background:rgba(47,123,240,.10)}
-  72%{opacity:.8;background:rgba(47,123,240,.34)}
-  100%{opacity:0;background:rgba(47,123,240,0)}
-}
 .foot{text-align:center;color:var(--muted);font-size:.68rem;margin-top:26px;line-height:1.7}
 /* Dan's line. Above every scene and every board, so it is there whatever the
    display happens to be showing. */
@@ -1849,7 +1821,6 @@ body.premiere .pairqr{display:none!important}
 </div>
 
 <div class="toasts" id="toasts"></div>
-<div class="walkin-flash" id="walkin-flash" aria-hidden="true"></div>
 <div class="walkin-pop" id="walkin-pop" aria-live="assertive" hidden>
   <div class="walkin-card wi" id="walkin-card" role="status">
     <p class="walkin-kicker" id="walkin-kicker">Walk-in</p>
@@ -5591,22 +5562,10 @@ function walkinHideCard(){
   clearTimeout(walkinPopTimer);
   setTimeout(function(){ if(!pop.classList.contains('show')) pop.hidden=true },240);
 }
-function walkinFlashScreen(walkIn){
-  var el=$('walkin-flash');
-  if(!el) return;
-  el.classList.remove('go','ap');
-  /* reflow so the animation restarts every alert */
-  void el.offsetWidth;
-  if(walkIn===false) el.classList.add('ap');
-  el.classList.add('go');
-  clearTimeout(walkinFlashScreen._t);
-  walkinFlashScreen._t=setTimeout(function(){ el.classList.remove('go','ap') }, 1200);
-}
 function walkinShowCard(r){
   r=r||{};
   var pop=$('walkin-pop'), card=$('walkin-card');
   if(!pop||!card){ toast((r.walkIn?'Walk-in: ':'Appointment: ')+(r.customer||''),'ok'); return }
-  walkinFlashScreen(r.walkIn!==false);
   card.className='walkin-card '+(r.walkIn?'wi':'ap');
   $('walkin-kicker').textContent=r.walkIn?'Walk-in':'Appointment';
   $('walkin-name').textContent=r.customer||(r.walkIn?'Waiting at reception':'Appointment arrived');
