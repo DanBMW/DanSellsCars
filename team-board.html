@@ -2102,7 +2102,13 @@ var busy=false, holdUntil=0, sceneGen=0;
    floor next. Every scene takes a generation on the way in and hands it back
    on the way out; `stopScenes()` bumps the generation, so a stale timer's
    `sceneEnd` is a no-op. */
-function sceneStart(){ busy=true; try{radioDuck(true)}catch(e){} return ++sceneGen; }
+function sceneStart(duckRadio){
+  busy=true;
+  /* Radio stays up for leaderboards, mug shots, and silent cut scenes.
+     Only videos / spoken bits ask for a duck. */
+  if(duckRadio){ try{radioDuck(true)}catch(e){} }
+  return ++sceneGen;
+}
 function sceneEnd(g){ if(g===sceneGen){ busy=false; try{radioDuck(false)}catch(e){} } }
 function stopScenes(){
   sceneGen++;
@@ -3938,22 +3944,36 @@ function radioForceSound(){
   if(!a) return;
   try{ a.muted=false; a.removeAttribute('muted') }catch(e){}
   try{
-    /* Cancel a stuck near-silent fade-in that left the UI saying "playing". */
-    radioClearFade();
-    radioFadeInPending=false;
-    var target=radioDucked?radioDuckLevel():Math.max(radioVol(), 0.4);
-    if(radioDucked) target=Math.max(target, 0.1);
-    a.volume=target;
+    /* Do not cancel an in-progress soft fade - that is what made levels snap. */
+    if(!radioFadeTimer){
+      var target=radioDucked?radioDuckLevel():Math.max(radioVol(), 0.35);
+      if(radioDucked) target=Math.max(target, 0.1);
+      if(a.volume < target - 0.05) a.volume=target;
+    }
   }catch(e){}
   try{
-    /* State can say playing while the element is paused or volume is stuck. */
-    if(radioState==='playing' && (a.paused || a.volume<0.05)){
-      try{ a.load() }catch(e2){}
-      try{ a.src=a.src }catch(e2){}
+    /* Never a.load() / reset src here: live streams on LG restart as a
+       half-second blip every few seconds when the watchdog does that. */
+    if(a.paused){
+      var p=a.play();
+      if(p&&p.catch) p.catch(function(){});
     }
-    var p=a.play();
-    if(p&&p.catch) p.catch(function(){});
   }catch(e){}
+}
+
+/* Hard reconnect from the top of the station list (admin / recovery). */
+function radioRefreshStream(){
+  if(!radioWanted()) return;
+  radioClearFade();
+  radioFadeInPending=false;
+  radioStallTicks=0;
+  radioLastTime=0;
+  radioIdx=0;
+  radioDrop();
+  radioState='connecting';
+  paintRadio();
+  radioPlay();
+  try{ radioForceSound() }catch(e){}
 }
 
 function radioWanted(){ return sOn('radio') && window.innerWidth>=1200 }
@@ -4154,39 +4174,48 @@ setInterval(function(){
   if(!radioWanted())return;
   if(radioDucked){
     if(radioEl){
-      try{ radioEl.muted=false; radioEl.volume=Math.max(radioDuckLevel(), 0.1); radioEl.play() }catch(e){}
+      try{
+        radioEl.muted=false;
+        if(!radioFadeTimer) radioEl.volume=Math.max(radioDuckLevel(), 0.1);
+        if(radioEl.paused) radioEl.play();
+      }catch(e){}
     }
     return;
   }
   if(radioState==='playing'){
     try{
       var a=radioEl;
-      if(!a || a.paused || a.muted || a.volume<0.08){
+      if(!a){ radioPlay(); return; }
+      if(a.paused || a.muted){
         radioForceSound();
-        if(a && a.paused){
-          radioStallTicks++;
-          if(radioStallTicks>=3){ radioStallTicks=0; radioIdx=0; radioDrop(); radioPlay(); }
+        radioStallTicks++;
+        /* Only hard-refresh after ~30s of being paused, not every few ticks.
+           Live AAC on LG often freezes currentTime while audio still plays. */
+        if(a.paused && radioStallTicks>=15){
+          radioStallTicks=0;
+          radioRefreshStream();
         }
         return;
       }
-      var t=a.currentTime || 0;
-      if(Math.abs(t-radioLastTime)<0.05) radioStallTicks++;
-      else radioStallTicks=0;
-      radioLastTime=t;
-      if(radioStallTicks>=6){
-        radioStallTicks=0;
-        radioNext();
-        return;
+      radioStallTicks=0;
+      /* Keep volume honest without restarting the stream. */
+      if(!radioFadeTimer && a.volume < Math.max(radioVol(), 0.35) - 0.08){
+        try{ a.volume=Math.max(radioVol(), 0.35) }catch(e){}
       }
-      radioForceSound();
     }catch(e){}
     return;
   }
   if(radioState==='connecting')return;
   if(radioState==='failed')radioIdx=0;
   radioPlay();
-  try{ radioForceSound() }catch(e){}
-},2000);
+},4000);
+
+/* Gentle stream refresh every 45 minutes so Bauer CDNs do not go stale overnight. */
+setInterval(function(){
+  if(!radioWanted() || radioDucked) return;
+  if(radioState!=='playing' && radioState!=='connecting') return;
+  radioRefreshStream();
+}, 45*60*1000);
 
 /* An announcement that actually made a sound is PROOF this screen may play
    audio - the one thing the radio cannot establish for itself on a wall
@@ -4242,11 +4271,14 @@ function paintRadio(){
 function setRadioOn(on){
   if(!backend||!backend.setSetting){
     /* no shared channel - still do it here so the button is never dead */
-    SET.radio=!!on; on?radioPlay():radioStop(); paintRadio();
+    SET.radio=!!on;
+    if(on){ radioRefreshStream(); } else { radioStop(); }
+    paintRadio();
     toast(on?'Radio on, this screen only':'Radio paused, this screen only','ok');
     return;
   }
   backend.setSetting('radio',!!on).then(function(){
+    if(on){ try{ radioRefreshStream() }catch(e){} }
     toast(on?'Radio on':'Radio paused on every screen','ok');
   })['catch'](function(e){console.error(e);toast('Could not reach the other screens','err')});
 }
@@ -4288,7 +4320,7 @@ function videoScene(forced){
   var clip=!forced ? pickClip()
          : (typeof forced==='string' ? clipBySrc(forced) : forced);
   if(!clip)return false;
-  var g=sceneStart();
+  var g=sceneStart(true);
   var frame=vs.querySelector('.vs-frame');
   $('vs-cap').innerHTML=clip.cap;
   frame.style.setProperty('--ar',clip.ar||16/9);
@@ -5639,9 +5671,9 @@ paintCornerQR();
 /* Start the radio here rather than waiting for the settings watch. Absent
    means on, so there is nothing to wait for - and a board whose Firebase is
    slow or blocked should still come up playing rather than silent. */
-radioPlay();
+radioRefreshStream();
 paintRadio();
-[400,1000,2000,4000,7000,12000,20000].forEach(function(ms){
+[400,1000,2500,6000,12000].forEach(function(ms){
   setTimeout(function(){ try{ radioForceSound() }catch(e){} }, ms);
 });
 /* the stock list is a plain file next to this page, so the forecourt slot
@@ -5662,8 +5694,10 @@ function applySettings(v){
   paintSettingsNote();
   /* a pause from a phone has to reach the wall, and an unpause has to start
      it again - both arrive here as a settings change */
-  if(radioWanted()){ if(radioState!=='playing'&&radioState!=='connecting')radioPlay() }
-  else radioStop();
+  if(radioWanted()){
+    if(radioState!=='playing'&&radioState!=='connecting') radioRefreshStream();
+    else { try{ radioForceSound() }catch(e){} }
+  } else radioStop();
   paintRadio();
   /* a slot that has just been switched off comes off the wall now, and the
      rotation re-arms with the new slot length */
