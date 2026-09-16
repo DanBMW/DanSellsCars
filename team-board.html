@@ -3938,7 +3938,7 @@ function radioAttach(url){
   /* a live stream has no end; an error means this URL is no good, so move
      to the next candidate rather than sitting silent on a dead one */
   a.onerror=function(){ if(a===radioEl)radioNext() };
-  a.onplaying=function(){ if(a===radioEl){radioState='playing';paintRadio()} };
+  a.onplaying=function(){ if(a===radioEl){radioState='playing';paintRadio(); try{walkinUnlockAudio()}catch(e){}} };
   radioEl=a;
   document.body.appendChild(a);
   return a;
@@ -5797,60 +5797,182 @@ function walkinAnnounceText(r){
 function walkinPickVoice(){
   try{
     var list=window.speechSynthesis.getVoices()||[];
-    var prefer=['en-GB','en_GB','en-UK'];
-    for(var i=0;i<prefer.length;i++){
-      for(var j=0;j<list.length;j++){
-        if((list[j].lang||'').indexOf(prefer[i].slice(0,5))===0) return list[j];
-      }
+    var i,j;
+    for(i=0;i<list.length;i++){
+      if(/en-GB|en_GB|English.*UK|British/i.test((list[i].lang||'')+' '+(list[i].name||''))) return list[i];
     }
-    for(var k=0;k<list.length;k++){
-      if(/^en/i.test(list[k].lang||'')) return list[k];
+    for(j=0;j<list.length;j++){
+      if(/^en/i.test(list[j].lang||'')) return list[j];
     }
   }catch(e){}
   return null;
 }
 
-function walkinSpeak(r){
-  if(!WALKIN_SPEAK) return;
-  if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
-    console.warn('Walk-in speak: speechSynthesis not available');
-    return;
+var walkinSpeechWatch=null;
+var walkinAudioEl=null;
+function walkinStopSpeechWatch(){
+  if(walkinSpeechWatch){ clearInterval(walkinSpeechWatch); walkinSpeechWatch=null; }
+}
+function walkinClearAudio(){
+  if(walkinAudioEl){
+    try{ walkinAudioEl.onended=null; walkinAudioEl.onerror=null; walkinAudioEl.pause(); }catch(e){}
+    walkinAudioEl=null;
   }
-  var line=walkinAnnounceText(r);
-  try{ window.speechSynthesis.cancel() }catch(e){}
-  try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
+}
+
+/* Chrome often parks the speech queue; tick resume while we expect audio. */
+function walkinStartSpeechWatch(){
+  walkinStopSpeechWatch();
+  walkinSpeechWatch=setInterval(function(){
+    try{ if(window.speechSynthesis && window.speechSynthesis.paused) window.speechSynthesis.resume(); }catch(e){}
+  }, 250);
+}
+
+function walkinStrike(f,t,vol){
+  if(!walkinActx){
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(AC) walkinActx=new AC();
+    }catch(e){ return }
+  }
+  if(!walkinActx) return;
+  if(!walkinMaster){
+    walkinMaster=walkinActx.createGain();
+    walkinMaster.gain.value=3.2;
+    walkinMaster.connect(walkinActx.destination);
+  }
+  [[1,1,1.9],[2.76,0.45,1.2],[5.4,0.22,0.7],[8.9,0.12,0.4]].forEach(function(p){
+    var o=walkinActx.createOscillator(), g=walkinActx.createGain();
+    o.type='sine'; o.frequency.value=f*p[0];
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(Math.min(1, vol*p[1]),t+0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+p[2]);
+    o.connect(g); g.connect(walkinMaster);
+    o.start(t); o.stop(t+p[2]+0.05);
+  });
+}
+
+function walkinChimeFallback(){
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    if(!walkinActx) walkinActx=new AC();
+    var ring=function(){
+      if(!walkinActx) return;
+      try{ if(walkinActx.state==='suspended') walkinActx.resume(); }catch(e){}
+      try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
+      var t0=walkinActx.currentTime+0.02;
+      walkinStrike(659.25, t0, 1.0);
+      walkinStrike(523.25, t0+0.48, 1.0);
+      setTimeout(function(){
+        try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
+      }, 1700);
+    };
+    if(walkinActx.state==='suspended') walkinActx.resume().then(ring).catch(ring);
+    else ring();
+  }catch(e){}
+}
+
+/* Remote TTS as MP3 — more reliable on wall Chromium than speechSynthesis. */
+function walkinTtsAudioUrl(line){
+  /* Brian = British English on StreamElements free TTS */
+  return 'https://api.streamelements.com/kappa/v2/speech?voice=Brian&text='
+    + encodeURIComponent(String(line||'').slice(0, 280));
+}
+
+function walkinSpeakAudio(line, onDone){
+  walkinClearAudio();
+  var url=walkinTtsAudioUrl(line);
+  var a=new Audio();
+  walkinAudioEl=a;
+  a.preload='auto';
+  a.volume=1;
+  var done=false;
+  var finish=function(ok){
+    if(done) return; done=true;
+    walkinClearAudio();
+    if(onDone) onDone(!!ok);
+  };
+  a.onended=function(){ finish(true); };
+  a.onerror=function(){ finish(false); };
+  a.src=url;
+  var p=a.play();
+  if(p&&p.then) p.then(function(){ /* playing */ }).catch(function(){ finish(false); });
+  /* if play never ends (stall), fail open to next method */
+  setTimeout(function(){ if(!done) finish(false); }, 20000);
+}
+
+function walkinSpeakSynth(line, onDone){
+  if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
+    if(onDone) onDone(false); return;
+  }
+  try{ window.speechSynthesis.cancel(); }catch(e){}
+  try{ window.speechSynthesis.resume(); }catch(e){}
+  walkinStartSpeechWatch();
   var u=new SpeechSynthesisUtterance(line);
   u.lang='en-GB';
-  u.rate=1;
+  u.rate=1.02;
   u.pitch=1;
   u.volume=1;
   var voice=walkinPickVoice();
   if(voice) u.voice=voice;
   var done=false;
-  var finish=function(){
+  var started=false;
+  var finish=function(ok){
     if(done) return; done=true;
-    try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
+    walkinStopSpeechWatch();
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    if(onDone) onDone(!!ok);
   };
-  u.onend=finish;
-  u.onerror=finish;
-  /* safety unduck if the engine never fires end */
-  setTimeout(finish, 20000);
-  try{
-    /* Chrome often has empty voices until this event */
-    if(!(window.speechSynthesis.getVoices()||[]).length){
-      window.speechSynthesis.onvoiceschanged=function(){
-        window.speechSynthesis.onvoiceschanged=null;
-        var v=walkinPickVoice(); if(v) u.voice=v;
-        window.speechSynthesis.speak(u);
-      };
-    }
-    window.speechSynthesis.speak(u);
-  }catch(e){
-    finish();
+  u.onstart=function(){ started=true; };
+  u.onend=function(){ finish(true); };
+  u.onerror=function(){ finish(false); };
+  var speakNow=function(){
+    var v=walkinPickVoice(); if(v) u.voice=v;
+    try{ window.speechSynthesis.speak(u); }catch(e){ finish(false); return; }
+    /* Chrome sometimes accepts speak() then never starts — treat as failure */
+    setTimeout(function(){ if(!done && !started) finish(false); }, 1500);
+  };
+  var voices=window.speechSynthesis.getVoices()||[];
+  if(!voices.length){
+    var once=function(){
+      window.speechSynthesis.onvoiceschanged=null;
+      speakNow();
+    };
+    window.speechSynthesis.onvoiceschanged=once;
+    setTimeout(function(){ if(!done && !started) speakNow(); }, 400);
+  }else{
+    speakNow();
   }
+  setTimeout(function(){ if(!done) finish(started); }, 20000);
 }
 
-/* kept name for any leftover callers — speaks a generic line */
+function walkinSpeak(r){
+  if(!WALKIN_SPEAK) return;
+  var line=walkinAnnounceText(r);
+  if(!line) return;
+  try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
+  var finished=false;
+  var unduck=function(){
+    if(finished) return; finished=true;
+    walkinStopSpeechWatch();
+    walkinClearAudio();
+    try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
+  };
+  /* 1) Audio TTS (works when autoplay already unlocked by radio / a tap)
+     2) speechSynthesis
+     3) chime so the floor is never silent */
+  walkinSpeakAudio(line, function(ok){
+    if(ok){ unduck(); return; }
+    walkinSpeakSynth(line, function(ok2){
+      if(ok2){ unduck(); return; }
+      walkinChimeFallback();
+      setTimeout(unduck, 1800);
+    });
+  });
+}
+
+/* kept for older callers */
 function walkinDoorbell(){
   walkinSpeak({walkIn:true, customer:'Walk-in'});
 }
@@ -6123,14 +6245,27 @@ function walkinUnlockAudio(){
   try{
     if(window.speechSynthesis){
       window.speechSynthesis.getVoices();
-      /* empty utterance unlocks TTS on some locked-down wall browsers */
-      var u=new SpeechSynthesisUtterance('');
-      u.volume=0; window.speechSynthesis.speak(u); window.speechSynthesis.cancel();
+      try{ window.speechSynthesis.resume(); }catch(e){}
+      /* brief near-silent utterance to unlock speech without cancelling mid-flight */
+      var u=new SpeechSynthesisUtterance(' ');
+      u.volume=0.01; u.rate=2; u.lang='en-GB';
+      window.speechSynthesis.speak(u);
     }
+  }catch(e){}
+  try{
+    /* unlock HTMLAudioElement autoplay for TTS fallback */
+    var a=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
+    a.volume=0.01;
+    var p=a.play(); if(p&&p.catch) p.catch(function(){});
   }catch(e){}
 }
 document.addEventListener('pointerdown', walkinUnlockAudio, {passive:true});
 document.addEventListener('keydown', walkinUnlockAudio);
+document.addEventListener('touchstart', walkinUnlockAudio, {passive:true});
+/* Radio already playing counts as an unlock on many wall displays */
+try{
+  if(typeof radioAttach==='function'){ /* exists later - hook below after radio defined */ }
+}catch(e){}
 startWalkinAlerts();
 </script>
 
