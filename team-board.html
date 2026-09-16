@@ -5574,6 +5574,7 @@ setTimeout(function(){
 var WALKIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbwUADuhpVbdgDvlumw_Uul-MimvI2fxVpXfN4r_pyp6ZyLGdaxKWATBtMYjy7dowH12/exec?token=TESTER123';
 var WALKIN_POLL_MS = 15000;
 var WALKIN_SPEAK = true;  /* read the card aloud instead of a doorbell */
+var WALKIN_WAIT_MS = 10*60*1000; /* speak once when still waiting this long */
 
 /* ---- walk-in arrival alerts (JSONP from Apps Script) ------------------- */
 /* Same feed as walkins.html: first snapshot primes seen ids with no toast or
@@ -5671,7 +5672,8 @@ function walkinEnqueue(r){
   /* with-staff waiting cards are silent; taken / combined / left / dealt still speak */
   var kind=String(r.kind||'');
   if(r.withStaff && kind!=='walkin-taken' && kind!=='walkin-arrived-taken'
-     && kind!=='walkin-waiting-taken' && kind!=='dealt' && kind!=='walkin-left') return;
+     && kind!=='walkin-waiting-taken' && kind!=='dealt' && kind!=='walkin-left'
+     && kind!=='walkin-wait-10') return;
   walkinQueue.push(r);
   if(!walkinShowing) walkinPlayNext();
 }
@@ -5723,6 +5725,7 @@ function walkinShowCard(r){
   else if(kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken') kicker='WALK-IN · TAKEN';
   else if(kind==='walkin-taken') kicker='TAKEN';
   else if(kind==='walkin-left') kicker='LEFT';
+  else if(kind==='walkin-wait-10') kicker='STILL WAITING';
   else if(kind==='dealt') kicker='DEALT';
   else if(!wi) kicker=r.handover?'HANDOVER':'APPOINTMENT';
   $('walkin-kicker').textContent=kicker;
@@ -5735,6 +5738,7 @@ function walkinShowCard(r){
   $('walkin-meta').textContent=bits.join(' · ');
   $('walkin-meta').style.display=bits.length?'block':'none';
   if(kind==='walkin-left') $('walkin-time').textContent='Left without being seen';
+  else if(kind==='walkin-wait-10') $('walkin-time').textContent=r.arrived?('Arrived '+walkinClock(r.arrived)+' · over 10 min'):'Over 10 minutes';
   else if(kind==='dealt') $('walkin-time').textContent='Deal done';
   else if(kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken')
     $('walkin-time').textContent=r.assignedTo?('Arrived · taken by '+r.assignedTo):'Arrived · taken';
@@ -5763,6 +5767,14 @@ function walkinAnnounceText(r){
   }
   if(kind==='walkin-left'){
     return name+' left without being seen. Please re-book.';
+  }
+  if(kind==='walkin-wait-10'){
+    var bits=['Walk-in still waiting', name];
+    var interest=[r.carType, r.models].filter(Boolean).join(', ');
+    if(interest) bits.push(interest);
+    if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived)+', over ten minutes');
+    else bits.push('Over ten minutes');
+    return bits.join('. ') + '.';
   }
   if(kind==='dealt'){
     return 'Dealt. '+name+'.';
@@ -5978,6 +5990,35 @@ function walkinMergeQueuedTaken(r){
   return false;
 }
 
+
+function walkinWaitKey(r){
+  return 'wait10:'+walkinPersonKey(r);
+}
+function walkinCheckLongWaits(appointments){
+  var now=Date.now();
+  (appointments||[]).forEach(function(r){
+    if(!r || r.withStaff || !r.walkIn) return;
+    if(!r.arrived || !isFinite(r.arrived)) return;
+    if(now - r.arrived < WALKIN_WAIT_MS) return;
+    var wk=walkinWaitKey(r);
+    if(walkinSeen[wk]) return;
+    walkinRemember(wk);
+    walkinEnqueue({
+      id: 'wait10:'+(r.id||walkinPersonKey(r)),
+      kind: 'walkin-wait-10',
+      customer: r.customer,
+      walkIn: true,
+      handover: false,
+      withStaff: false,
+      carType: r.carType,
+      models: r.models,
+      ref: r.ref,
+      bookedWith: r.bookedWith,
+      assignedTo: '',
+      arrived: r.arrived
+    });
+  });
+}
 function walkinDeliver(payload){
   /* Prefer events[] from Apps Script (waiting / arrived / taken / left / dealt).
      Fall back to appointments[] for older deployments. Announce each event id
@@ -6000,9 +6041,15 @@ function walkinDeliver(payload){
 
   if(!walkinPrimed){
     var seed = events.length ? events : appointments;
-    if(!seed.length) return;
+    if(!seed.length && !(appointments||[]).length) return;
     seed.forEach(rememberRow);
     appointments.forEach(rememberRow);
+    /* Anyone already past 10 minutes on load: remember, do not speak now */
+    var now=Date.now();
+    (appointments||[]).forEach(function(r){
+      if(!r || !r.walkIn || r.withStaff || !r.arrived) return;
+      if(now - r.arrived >= WALKIN_WAIT_MS) walkinRemember(walkinWaitKey(r));
+    });
     walkinPrimed = true;
     return;
   }
@@ -6027,6 +6074,7 @@ function walkinDeliver(payload){
     if(r.kind==='walkin-taken' && walkinMergeQueuedTaken(r)) return;
     walkinEnqueue(r);
   });
+  walkinCheckLongWaits(appointments);
 }
 
 function startWalkinAlerts(){
