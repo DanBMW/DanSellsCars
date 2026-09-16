@@ -349,10 +349,10 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 .toast.err{border-color:rgba(226,86,77,.55)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
 
-/* ---- walk-in / arrival popup card (temporary test + live alerts) ---- */
+/* ---- walk-in / arrival popup: takes the whole TV, above everything ---- */
 .walkin-pop{
-  position:fixed;inset:0;z-index:260;display:flex;align-items:stretch;justify-content:stretch;
-  padding:0;background:rgba(5,8,14,.72);backdrop-filter:blur(8px);
+  position:fixed;inset:0;z-index:500;display:flex;align-items:stretch;justify-content:stretch;
+  padding:0;background:rgba(5,8,14,.78);backdrop-filter:blur(8px);
   opacity:0;pointer-events:none;transition:opacity .22s ease;
 }
 .walkin-pop.show{opacity:1;pointer-events:auto}
@@ -381,7 +381,7 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
 .walkin-meta{font-size:clamp(1.15rem,3.2vw,2.4rem);font-weight:600;color:var(--muted);line-height:1.35;margin:0;max-width:90%}
 .walkin-time{font-size:clamp(1rem,2.6vw,1.9rem);font-weight:700;color:rgba(242,245,249,.78);margin:clamp(18px,3vw,40px) 0 0}
 .walkin-flash{
-  position:fixed;inset:0;z-index:250;pointer-events:none;
+  position:fixed;inset:0;z-index:510;pointer-events:none;
   background:#e22626;opacity:0;
 }
 .walkin-flash.go{animation:walkinFlashRed 1.2s ease-out 1}
@@ -5581,6 +5581,8 @@ function walkinHideCard(){
   if(!pop) return;
   pop.classList.remove('show');
   clearTimeout(walkinPopTimer);
+  busy=false;
+  clearTimeout(walkinTakeFloor._busy);
   setTimeout(function(){ if(!pop.classList.contains('show')) pop.hidden=true },240);
 }
 function walkinFlashScreen(){
@@ -5592,10 +5594,27 @@ function walkinFlashScreen(){
   clearTimeout(walkinFlashScreen._t);
   walkinFlashScreen._t=setTimeout(function(){ el.classList.remove('go') }, 1300);
 }
+function walkinTakeFloor(){
+  /* Walk-in alerts beat clips, premiere, sketches, modals, ticker - clear the floor */
+  try{ if(typeof stopScenes==='function') stopScenes(); }catch(e){}
+  try{ if(typeof endPremiere==='function') endPremiere(); }catch(e){}
+  try{
+    var pc=$('premcard'); if(pc) pc.classList.remove('show');
+    var tc=$('trailercard'); if(tc) tc.classList.remove('show');
+  }catch(e){}
+  try{
+    document.querySelectorAll('.modal-bg.open').forEach(function(m){ m.classList.remove('open'); });
+  }catch(e){}
+  holdUntil=Date.now()+30000;
+  busy=true;
+  clearTimeout(walkinTakeFloor._busy);
+  walkinTakeFloor._busy=setTimeout(function(){ busy=false; }, 30000);
+}
 function walkinShowCard(r){
   r=r||{};
   var pop=$('walkin-pop'), card=$('walkin-card');
   if(!pop||!card){ toast((r.walkIn?'Walk-in: ':'Appointment: ')+(r.customer||''),'ok'); return }
+  walkinTakeFloor();
   walkinFlashScreen();
   card.className='walkin-card '+(r.walkIn?'wi':'ap');
   $('walkin-kicker').textContent=r.walkIn?'Walk-in':'Appointment';
