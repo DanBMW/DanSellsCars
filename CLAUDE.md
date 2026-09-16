@@ -386,7 +386,12 @@ said so.
   middle of the pack - picking on whoever is last every time gets old, and
   unfair - with `chasing` reading the live gap to the person above them. Will encourages, Serge
   stays unconvinced: that contrast is the joke from the paper board, so keep it
-  if you add lines. `{name}` and `{amount}` are filled from the live board, a
+  if you add lines. `{name}` and `{amount}` are filled from the live board by
+  **`fill()`, which the caller has to run** - `setBubble()` does not substitute.
+  Miss it and the braces go up on the wall, which is what `champScene()` did
+  with `LINES.*.champion` for a while. `setBubble()` now has a backstop that
+  degrades an unfilled line to a sentence, but it has no context to fill from,
+  so it is a net rather than the mechanism: call `fill()`. A
   shuffle bag stops repeats until a pool is exhausted, and a new deal, new
   leader or new champion sets both of them cheering for four seconds. Note the
   pom pom `translate` sits on a wrapper `<g>` — a CSS `transform` animation on
@@ -767,6 +772,13 @@ said so.
   shared setting, so it pauses every screen rather than just the one in
   somebody's hand. Autoplay is refused on a screen nobody has touched, same
   as the clips, and the first tap starts it.
+  **It starts at boot, not when the settings arrive.** Absent means on, so
+  there is nothing to wait for, and the first version only called `radioPlay()`
+  from `applySettings()` - which made a board whose Firebase was slow or
+  blocked come up silent for no reason, on a page that is otherwise built to
+  render before the backend. A 30s keep-alive then picks it back up after a
+  dropped stream or a refused autoplay, and stands off while a clip has ducked
+  it.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
   section: a toggle for the automatic slot and a play button per clip. Both go
   through `boardcontrol` in the database rather than staying local, because the
