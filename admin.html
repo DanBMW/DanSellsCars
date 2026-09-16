@@ -151,6 +151,8 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
         rotation after fifteen minutes, so nobody can leave the wall stuck on one screen all afternoon.</p>
       <div class="clips" id="view-list"></div>
       <div class="row"><button class="btn" id="reload-all">Reload every screen</button></div>
+      <div class="row"><button class="btn" id="walkin-test">Test walk-in doorbell</button></div>
+      <p class="hint" style="margin:8px 0 0">Temporary test control. Rings a toast and chime on every team board screen, the same path a real walk-in will use.</p>
     </div>
 
     <!-- ---------- the rotation ---------- -->
@@ -442,6 +444,13 @@ setInterval(function(){ if(!$('console').classList.contains('hidden'))paintViews
 $('reload-all').onclick=function(){
   if(!backend){toast('Not connected to the board','err');return}
   backend.setReload(Date.now()).then(function(){toast('Reloading every screen','ok')})['catch'](fail);
+}
+$('walkin-test').onclick=function(){
+  if(!backend){toast('Not connected to the board','err');return}
+  /* uses boardcontrol/play with a reserved clip id so Firebase rules need no change */
+  backend.play('walkin:test').then(function(){
+    toast('Walk-in test sent to every screen','ok');
+  })['catch'](fail);
 };
 
 /* ---- the sketches ---- */
