@@ -5546,8 +5546,14 @@ function walkinMapRows(j){
 var walkinPopTimer=null;
 function walkinClock(ms){
   if(!ms) return '';
-  var d=new Date(ms), p=function(n){return n<10?'0'+n:''+n};
-  return p(d.getHours())+':'+p(d.getMinutes());
+  try{
+    return new Date(ms).toLocaleTimeString('en-GB',{
+      timeZone:'Europe/London', hour:'2-digit', minute:'2-digit', hour12:false
+    });
+  }catch(e){
+    var d=new Date(ms), pad=function(n){return n<10?'0'+n:''+n};
+    return pad(d.getHours())+':'+pad(d.getMinutes());
+  }
 }
 function walkinHideCard(){
   var pop=$('walkin-pop');
