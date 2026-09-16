@@ -5794,66 +5794,6 @@ function walkinAnnounceText(r){
   return bits.join('. ') + '.';
 }
 
-/* A British female voice, by name, best first.
-   The old picker took the FIRST en-GB voice it found, which on Windows is
-   usually Microsoft George - a man - so even when speech was working the
-   wall got the wrong voice.
-   The named ones at the top are the modern neural voices and sound like a
-   person; Hazel and the macOS set are older but perfectly decent. Anything
-   unrecognised is accepted only after the known male voices have been ruled
-   out, because a name is the only clue a browser gives us - the API exposes
-   no gender field at all. */
-var WALKIN_VOICES = [
-  /* Edge / Windows 11, neural - these are the good ones */
-  /sonia/i, /libby/i, /hollie/i, /maisie/i,
-  /* Chrome */
-  /google uk english female/i,
-  /* Windows SAPI */
-  /hazel/i,
-  /* macOS / iOS en-GB */
-  /serena/i, /kate/i, /stephanie/i, /fiona/i,
-  /* Android / generic */
-  /female/i
-];
-var WALKIN_MALE = /george|ryan|thomas|daniel|oliver|arthur|alfie|elliot|noah|brian|male\b|\bman\b/i;
-
-function walkinIsGB(v){
-  return /en[-_]GB/i.test(v.lang||'') ||
-         /united kingdom|british|\bUK\b/i.test(v.name||'');
-}
-
-function walkinPickVoice(){
-  try{
-    var list=window.speechSynthesis.getVoices()||[];
-    if(!list.length) return null;
-    var gb=list.filter(walkinIsGB);
-    var i,j;
-    /* a named British female, in order of how good it sounds */
-    for(i=0;i<WALKIN_VOICES.length;i++){
-      for(j=0;j<gb.length;j++){
-        if(WALKIN_VOICES[i].test(gb[j].name||'')) return gb[j];
-      }
-    }
-    /* any British voice that is not a known man */
-    for(j=0;j<gb.length;j++){
-      if(!WALKIN_MALE.test(gb[j].name||'')) return gb[j];
-    }
-    if(gb.length) return gb[0];
-    /* no British voice on this device - a named female anywhere in English */
-    var en=list.filter(function(v){ return /^en/i.test(v.lang||'') });
-    for(i=0;i<WALKIN_VOICES.length;i++){
-      for(j=0;j<en.length;j++){
-        if(WALKIN_VOICES[i].test(en[j].name||'')) return en[j];
-      }
-    }
-    for(j=0;j<en.length;j++){
-      if(!WALKIN_MALE.test(en[j].name||'')) return en[j];
-    }
-    return en[0]||null;
-  }catch(e){}
-  return null;
-}
-
 /* Every screen speaks with the same voice now, so the useful question is
    not which voice this one picked but whether it can REACH it - which is
    what somebody actually wants to know when one TV is silent. */
@@ -5876,13 +5816,6 @@ function walkinClearAudio(){
 }
 
 /* Chrome often parks the speech queue; tick resume while we expect audio. */
-function walkinStartSpeechWatch(){
-  walkinStopSpeechWatch();
-  walkinSpeechWatch=setInterval(function(){
-    try{ if(window.speechSynthesis && window.speechSynthesis.paused) window.speechSynthesis.resume(); }catch(e){}
-  }, 250);
-}
-
 function walkinStrike(f,t,vol){
   if(!walkinActx){
     try{
@@ -5926,19 +5859,6 @@ function walkinChimeFallback(){
     if(walkinActx.state==='suspended') walkinActx.resume().then(ring).catch(ring);
     else ring();
   }catch(e){}
-}
-
-/* Same-origin Web Audio TTS (sam-js). LG webOS blocks remote audio + speechSynthesis;
-   Web Audio oscillators already work for the chime, so this path should speak on the walls. */
-function walkinSpeakPrep(line){
-  return String(line||'')
-    .replace(/\bMr\.?\b/gi, 'Mister')
-    .replace(/\bMrs\.?\b/gi, 'Missus')
-    .replace(/\bMs\.?\b/gi, 'Miz')
-    .replace(/\bM(\d)\b/g, 'Em $1')
-    .replace(/\bX(\d)\b/gi, 'Ex $1')
-    .replace(/\bBMW\b/g, 'B M W')
-    .replace(/(\d):(\d{2})\b/g, function(_,h,m){ return h + ' ' + m; });
 }
 
 /* ===================== the one voice ==================================
@@ -6065,82 +5985,6 @@ function walkinSpeakVoice(line, onDone){
 }
 
 /* Remote TTS as MP3 — fallback when same-origin speech is unavailable. */
-function walkinTtsAudioUrl(line){
-  /* Google Translate TTS — returns playable MP3 for en-GB wall announcements */
-  return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-GB&q='
-    + encodeURIComponent(String(line||'').slice(0, 180));
-}
-
-function walkinSpeakAudio(line, onDone){
-  walkinClearAudio();
-  var url=walkinTtsAudioUrl(line);
-  var a=new Audio();
-  walkinAudioEl=a;
-  a.preload='auto';
-  a.volume=1;
-  var done=false;
-  var finish=function(ok){
-    if(done) return; done=true;
-    walkinClearAudio();
-    if(onDone) onDone(!!ok);
-  };
-  a.onended=function(){ finish(true); };
-  a.onerror=function(){ finish(false); };
-  a.src=url;
-  var p=a.play();
-  if(p&&p.then) p.then(function(){ /* playing */ }).catch(function(){ finish(false); });
-  /* If it stalls, move on. Twenty seconds was far too long: this is a
-     doorbell, and on a screen where the remote voice cannot load, every
-     announcement sat silent for twenty seconds before trying anything
-     else. Six is longer than a working fetch ever takes. */
-  setTimeout(function(){ if(!done) finish(false); }, 6000);
-}
-
-function walkinSpeakSynth(line, onDone){
-  if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
-    if(onDone) onDone(false); return;
-  }
-  try{ window.speechSynthesis.cancel(); }catch(e){}
-  try{ window.speechSynthesis.resume(); }catch(e){}
-  walkinStartSpeechWatch();
-  var u=new SpeechSynthesisUtterance(line);
-  u.lang='en-GB';
-  u.rate=1.02;
-  u.pitch=1;
-  u.volume=1;
-  var voice=walkinPickVoice();
-  if(voice) u.voice=voice;
-  var done=false;
-  var started=false;
-  var finish=function(ok){
-    if(done) return; done=true;
-    walkinStopSpeechWatch();
-    try{ window.speechSynthesis.cancel(); }catch(e){}
-    if(onDone) onDone(!!ok);
-  };
-  u.onstart=function(){ started=true; };
-  u.onend=function(){ finish(true); };
-  u.onerror=function(){ finish(false); };
-  var speakNow=function(){
-    var v=walkinPickVoice(); if(v) u.voice=v;
-    try{ window.speechSynthesis.speak(u); }catch(e){ finish(false); return; }
-    /* Chrome sometimes accepts speak() then never starts — treat as failure */
-    setTimeout(function(){ if(!done && !started) finish(false); }, 1500);
-  };
-  var voices=window.speechSynthesis.getVoices()||[];
-  if(!voices.length){
-    var once=function(){
-      window.speechSynthesis.onvoiceschanged=null;
-      speakNow();
-    };
-    window.speechSynthesis.onvoiceschanged=once;
-    setTimeout(function(){ if(!done && !started) speakNow(); }, 400);
-  }else{
-    speakNow();
-  }
-  setTimeout(function(){ if(!done) finish(started); }, 20000);
-}
-
 function walkinSpeak(r){
   if(!WALKIN_SPEAK) return;
   var line=walkinAnnounceText(r);
@@ -6167,11 +6011,6 @@ function walkinSpeak(r){
     walkinChimeFallback();
     setTimeout(unduck, 1800);
   });
-}
-
-/* kept for older callers */
-function walkinDoorbell(){
-  walkinSpeak({walkIn:true, customer:'Walk-in'});
 }
 
 function walkinVisitKey(r){
