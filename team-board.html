@@ -3961,8 +3961,27 @@ function radioDrop(){
 
 function radioPlay(){
   if(!radioWanted()){ radioStop(); return }
-  /* While ducked, still allow reconnect if the stream died — just stay quiet. */
-  if(radioDucked && radioEl && (radioState==='playing' || radioState==='connecting')) return;
+  /* Reuse the live element. radioAttach drops the stream, which is what made
+     the walls go quiet after a scene. Only attach a fresh one when we have
+     nothing to resume. */
+  if(radioEl && (radioState==='playing' || radioState==='connecting' || radioState==='waiting')){
+    if(radioDucked){ try{ radioEl.volume=radioDuckLevel() }catch(e){} }
+    if(radioState==='playing' || radioState==='connecting'){
+      try{ radioEl.play() }catch(e){}
+      return;
+    }
+    radioState='connecting'; paintRadio();
+    var a=radioEl;
+    var go=a.play();
+    if(go&&go['catch'])go['catch'](function(e){
+      if(a!==radioEl)return;
+      if(e&&e.name==='NotAllowedError'){
+        radioIdx=0; radioState='waiting'; paintRadio(); return;
+      }
+      radioNext();
+    });
+    return;
+  }
   var url=RADIO_SOURCES[radioIdx];
   var a=radioAttach(url);
   if(radioDucked){ try{ a.volume=radioDuckLevel() }catch(e){} }
@@ -4048,6 +4067,10 @@ function radioDuck(on){
   if(on){
     if(radioEl){
       radioFadeTo(radioDuckLevel(), 700);
+      try{ radioEl.play() }catch(e){}
+    }else if(radioWanted()){
+      /* Start quietly rather than leaving the stream off for the whole scene. */
+      radioPlay();
     }
   }else if(radioWanted()){
     if(radioEl && (radioState==='playing' || radioState==='connecting')){
@@ -4075,6 +4098,7 @@ function radioDuck(on){
    station having a moment. Cheap enough to just keep trying. */
 setInterval(function(){
   if(!radioWanted())return;
+  if(radioDucked)return;                    /* never drop/reconnect under a scene */
   if(radioState==='playing'||radioState==='connecting')return;
   if(radioState==='failed')radioIdx=0;      /* start the list again */
   radioPlay();
