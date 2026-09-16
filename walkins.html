@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Walk-ins - Ruxley Appointments</title>
+<style>
+  :root{
+    --bg:#070a0f; --card:#131a24; --line:#243040; --ink:#eef3f9; --dim:#93a3b8;
+    --wait:#2f7bf0; --warn:#b8862c; --late:#c2453a; --with:#2e8b57;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:15px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-variant-numeric:proportional-nums;
+    overflow:hidden;
+  }
+
+  /* ---- the corner stack ------------------------------------------------ */
+  /* clear of the strip along the bottom, which is fixed and would otherwise
+     cut the last line off the card nearest the eye - the one being read */
+  .stack{
+    position:fixed; right:16px; bottom:52px; z-index:20;
+    width:340px; max-width:calc(100vw - 32px);
+    max-height:calc(100vh - 76px);
+    display:flex; flex-direction:column-reverse; gap:10px;
+    overflow-y:auto; overflow-x:hidden;
+    scrollbar-width:thin;
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-left:4px solid var(--wait);
+    border-radius:var(--r); padding:12px 14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.45);
+    animation:in .32s cubic-bezier(.2,.8,.3,1) both;
+  }
+  .card.leaving{animation:out .28s ease-in forwards}
+  @keyframes in{from{opacity:0;transform:translateX(26px) scale(.97)}to{opacity:1;transform:none}}
+  @keyframes out{to{opacity:0;transform:translateX(26px) scale(.97);margin-bottom:-64px}}
+  .card.warn{border-left-color:var(--warn)}
+  .card.late{border-left-color:var(--late)}
+  .card.with{border-left-color:var(--with)}
+
+  .row{display:flex; align-items:baseline; gap:8px}
+  .who{font-size:17px; font-weight:650; letter-spacing:-.01em; min-width:0;
+       overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .tag{
+    margin-left:auto; flex:none; font-size:10.5px; font-weight:700;
+    letter-spacing:.09em; text-transform:uppercase;
+    padding:3px 7px; border-radius:999px;
+    background:rgba(47,123,240,.16); color:#8fb9f7;
+  }
+  .card.warn .tag{background:rgba(184,134,44,.18); color:#e0b563}
+  .card.late .tag{background:rgba(194,69,58,.18); color:#f0958c}
+  .card.with .tag{background:rgba(46,139,87,.18); color:#7fd0a4}
+
+  .timer{
+    font-size:30px; font-weight:700; letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums; margin:6px 0 2px;
+  }
+  .card.warn .timer{color:#e0b563}
+  .card.late .timer{color:#f0958c}
+  .note{color:var(--dim); font-size:13px}
+  .note b{color:var(--ink); font-weight:600}
+  .meta{color:var(--dim); font-size:12px; margin-top:5px}
+
+  /* ---- the strip along the bottom -------------------------------------- */
+  .bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    display:flex; align-items:center; gap:10px;
+    padding:8px 14px; font-size:12.5px; color:var(--dim);
+    background:rgba(7,10,15,.92); border-top:1px solid var(--line);
+    backdrop-filter:blur(6px);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex:none}
+  .dot.ok{background:var(--with)} .dot.bad{background:var(--late)}
+  .dot.live{animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .bar .sp{margin-left:auto}
+  .bar button{
+    font:inherit; color:var(--ink); background:transparent;
+    border:1px solid var(--line); border-radius:8px;
+    padding:3px 10px; cursor:pointer;
+  }
+  .bar button:hover{border-color:#3a4a5f}
+
+  /* ---- nothing waiting -------------------------------------------------- */
+  .idle{
+    position:fixed; inset:0; display:grid; place-content:center;
+    text-align:center; color:var(--dim); padding:24px; gap:6px;
+  }
+  .idle h1{font-size:19px; font-weight:600; color:#c3cedd; margin:0}
+  .idle p{margin:0; font-size:13.5px}
+  .idle.hide{display:none}
+
+  @media (prefers-reduced-motion:reduce){
+    .card,.card.leaving{animation:none}
+    .dot.live{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="idle" id="idle">
+  <h1>No walk-ins waiting</h1>
+  <p id="idle-sub">Watching the appointments system.</p>
+</div>
+
+<div class="stack" id="stack" aria-live="polite"></div>
+
+<div class="bar">
+  <span class="dot" id="dot"></span>
+  <span id="state">Starting up</span>
+  <span class="sp"></span>
+  <span id="count"></span>
+  <button type="button" id="sound-btn" hidden>Enable sound</button>
+</div>
+
+<script>
+/* =======================================================================
+   Walk-in notification widget - Ruxley Appointments
+
+   Sits in the corner of a screen all day and shows who has walked in, how
+   long they have been waiting, and who picked them up. Built the same way
+   as team-board.html: one self-contained file, no build step, and a plain
+   script that renders on its own so a blocked CDN or a backend that is not
+   wired up yet shows an honest state rather than a blank page.
+
+   ------------------------------------------------------------------
+   THE DATA SOURCE IS NOT WIRED UP YET - see SOURCE below.
+   ------------------------------------------------------------------
+   Everything above the source is finished and testable. Four facts are
+   still needed from whoever hosts the appointments app, and each one has
+   exactly one place to go in this file:
+
+     1. The Firebase config block        -> FIREBASE
+     2. The collection name              -> COLLECTION
+     3. The field names on a record      -> FIELDS
+     4. Whether reads need auth          -> AUTH
+
+   Until then SOURCE is 'mock' and the widget runs on a rehearsal feed, so
+   it can be checked on a real screen before the real data exists.
+   ======================================================================= */
+
+/* Which feed to run on:
+     'mock'      - the rehearsal feed below. No backend needed.
+     'firestore' - onSnapshot, genuinely pushed. What the brief asks for.
+     'sse'       - their endpoint, streamed (Server-Sent Events). Also pushed,
+                   and it keeps their database private, so this is the one to
+                   ask for now they are building an endpoint rather than
+                   handing over Firebase config.
+     'rest'      - a plain endpoint, polled. The fallback, and it IS polling:
+                   every figure on screen is as stale as POLL_MS. Only use it
+                   if the API turns out not to stream. */
+var SOURCE = 'mock';
+
+/* 1. Firebase Console -> Project Settings -> General -> SDK setup */
+var FIREBASE = {
+  apiKey:            '',
+  authDomain:        'appointments-c180e.firebaseapp.com',
+  projectId:         'appointments-c180e',
+  storageBucket:     '',
+  messagingSenderId: '',
+  appId:             ''
+};
+
+/* 2. The collection walk-ins live in - 'appointments', 'walkins', something
+      else. If walk-ins share a collection with booked appointments, FIELDS.isWalkIn
+      below is what separates them. */
+var COLLECTION = 'appointments';
+
+/* 3. What each field is called on a record. Left-hand side is what this page
+      calls it and must not change; right-hand side is theirs. Where a name is
+      a list, the first one that is present on the record wins - so a couple of
+      likely spellings can sit here until we are told which it is. */
+var FIELDS = {
+  isWalkIn:  ['isWalkIn','walkIn','walk_in','type'],   /* true, or type==='walk-in' */
+  arrivedAt: ['arrivedAt','arrivalTime','arrived','createdAt','timestamp'],
+  status:    ['status','state'],                       /* waiting / with-staff / done */
+  staff:     ['staffName','assignedTo','withStaff','staff','handledBy'],
+  customer:  ['customerName','name','customer']
+};
+
+/* What their status values mean to us. Anything not listed is treated as
+   still waiting, which is the safe way round: a walk-in wrongly shown as
+   waiting gets looked at, one wrongly cleared gets forgotten about. */
+var STATUS = {
+  withStaff: ['with-staff','with_staff','withstaff','in-progress','assigned','being-seen'],
+  done:      ['done','complete','completed','closed','left','cancelled','no-show']
+};
+
+/* 4. If reads are closed, one of these. Anonymous is enough for a wall
+      widget and keeps the collection shut to the open internet. */
+var AUTH = {
+  mode: 'none',        /* 'none' | 'anonymous' | 'password' */
+  email: '', password: ''
+};
+
+var POLL_MS = 15000;   /* only used by SOURCE==='rest' */
+
+/* How long somebody can wait before the card changes colour. */
+var WARN_MINS = 5, LATE_MINS = 10;
+
+/* Chime when a new walk-in appears. A browser will refuse to make a sound
+   until the screen has been touched once, exactly like the board's clips,
+   so the strip offers a button rather than failing silently. */
+var CHIME = true;
+
+/* ===================== nothing below here needs their answers ========== */
+
+var $ = function(id){ return document.getElementById(id) };
+var rows = [];          /* what is on screen now */
+var connected = false, lastErr = '';
+var seen = Object.create(null);   /* ids we have already chimed for */
+var primed = false;               /* the first snapshot is history, not news */
+
+/* ---- reading their record shape --------------------------------------- */
+
+function pick(obj,names){
+  for(var i=0;i<names.length;i++){
+    var v = obj[names[i]];
+    if(v!==undefined && v!==null && v!=='') return v;
+  }
+  return null;
+}
+
+/* Firestore hands back Timestamps, REST hands back strings or numbers.
+   Anything we cannot read becomes null and the card says so rather than
+   counting up from 1970, which is the sort of thing that gets noticed on a
+   wall a week later. */
+function toMs(v){
+  if(v===null||v===undefined) return null;
+  if(typeof v==='number') return v<1e12 ? v*1000 : v;   /* seconds or ms */
+  if(typeof v==='string'){ var t=Date.parse(v); return isNaN(t)?null:t }
+  if(typeof v.toMillis==='function'){ try{ return v.toMillis() }catch(e){} }
+  if(typeof v.seconds==='number') return v.seconds*1000;
+  if(v instanceof Date) return v.getTime();
+  return null;
+}
+
+function truthy(v){
+  if(v===true) return true;
+  if(typeof v==='string'){
+    var s=v.toLowerCase().replace(/[\s_]/g,'-');
+    return s==='true'||s==='walk-in'||s==='walkin'||s==='y'||s==='yes';
+  }
+  return false;
+}
+
+function norm(s){ return String(s||'').toLowerCase().replace(/[\s_]/g,'-') }
+
+/* one raw record -> what this page needs, or null if it is not ours */
+function shape(id,d){
+  if(!d) return null;
+  if(!truthy(pick(d,FIELDS.isWalkIn))) return null;
+
+  var st = norm(pick(d,FIELDS.status));
+  if(STATUS.done.indexOf(st)>=0) return null;           /* finished, drop it */
+
+  var staff = pick(d,FIELDS.staff);
+  var withStaff = STATUS.withStaff.indexOf(st)>=0 || !!staff;
+
+  return {
+    id: id,
+    customer: pick(d,FIELDS.customer) || 'Walk-in',
+    arrived: toMs(pick(d,FIELDS.arrivedAt)),
+    withStaff: withStaff,
+    staff: staff ? String(staff) : ''
+  };
+}
+
+/* ---- drawing ----------------------------------------------------------- */
+
+function waited(ms){
+  if(ms===null) return '--:--';
+  var s = Math.max(0, Math.floor((Date.now()-ms)/1000));
+  var h = Math.floor(s/3600), m = Math.floor(s%3600/60), ss = s%60;
+  var p = function(n){ return n<10?'0'+n:''+n };
+  return h ? h+':'+p(m)+':'+p(ss) : p(m)+':'+p(ss);
+}
+function mins(ms){ return ms===null ? 0 : (Date.now()-ms)/60000 }
+
+function at(ms){
+  if(ms===null) return 'arrival time not recorded';
+  var d=new Date(ms), p=function(n){return n<10?'0'+n:''+n};
+  return 'arrived '+p(d.getHours())+':'+p(d.getMinutes());
+}
+
+function cardFor(r){
+  var el = document.createElement('div');
+  el.className='card'; el.id='w-'+r.id;
+  el.innerHTML =
+    '<div class="row"><span class="who"></span><span class="tag"></span></div>'+
+    '<div class="timer"></div>'+
+    '<div class="note"></div>'+
+    '<div class="meta"></div>';
+  return el;
+}
+
+/* Cards are updated in place, never rebuilt. A rebuild restarts the entry
+   animation, so a card would flinch every time anything else on the page
+   changed - and with a second hand ticking, that is every second. */
+function paintCard(el,r){
+  var late = r.withStaff ? 0 : mins(r.arrived);
+  var cls = 'card' + (r.withStaff ? ' with' : late>=LATE_MINS ? ' late'
+                                 : late>=WARN_MINS ? ' warn' : '');
+  if(el.className!==cls && el.className!==cls+' leaving') el.className=cls;
+
+  var who = el.querySelector('.who'),
+      tag = el.querySelector('.tag'),
+      tim = el.querySelector('.timer'),
+      not = el.querySelector('.note'),
+      met = el.querySelector('.meta');
+
+  set(who, r.customer);
+  set(tag, r.withStaff ? 'Being seen' : 'Waiting');
+  set(tim, waited(r.arrived));
+  /* the whole point of the widget: this line changes under them, live */
+  if(r.withStaff){
+    not.innerHTML = r.staff ? 'Now with <b></b>' : 'Now with a member of staff';
+    if(r.staff) not.querySelector('b').textContent = r.staff;
+  } else {
+    set(not, 'Waiting for someone to pick them up');
+  }
+  set(met, at(r.arrived));
+}
+function set(el,txt){ if(el.textContent!==txt) el.textContent=txt }
+
+function render(){
+  var stack = $('stack');
+
+  /* longest wait nearest the bottom of the screen, where the eye lands */
+  var list = rows.slice().sort(function(a,b){
+    if(a.withStaff!==b.withStaff) return a.withStaff?1:-1;
+    return (a.arrived||0)-(b.arrived||0);
+  });
+
+  var want = Object.create(null);
+  list.forEach(function(r){ want[r.id]=r });
+
+  /* gone: let it fly out on its own rather than vanishing mid-blink */
+  Array.prototype.slice.call(stack.children).forEach(function(el){
+    var id = el.id.slice(2);
+    if(!want[id] && !el.classList.contains('leaving')){
+      el.classList.add('leaving');
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el) },300);
+    }
+  });
+
+  list.forEach(function(r){
+    var el = $('w-'+r.id);
+    if(!el){ el = cardFor(r); stack.appendChild(el) }
+    else el.classList.remove('leaving');
+    paintCard(el,r);
+  });
+
+  /* keep the DOM order matching the sort without touching cards that are
+     already in the right place - moving a node restarts its animation */
+  var order = list.map(function(r){ return 'w-'+r.id });
+  order.forEach(function(id,i){
+    var el=$(id); if(!el) return;
+    var at = stack.children[i];
+    if(at!==el) stack.insertBefore(el, at||null);
+  });
+
+  $('idle').classList.toggle('hide', list.length>0);
+  $('count').textContent = list.length
+    ? list.length+(list.length===1?' walk-in':' walk-ins')
+    : '';
+}
+
+function paintState(){
+  var dot=$('dot'), s=$('state');
+  dot.className='dot'+(connected?' ok live':lastErr?' bad':'');
+  s.textContent = connected
+      ? (SOURCE==='mock' ? 'Rehearsal feed - not connected to the real system'
+        : SOURCE==='rest' ? 'Connected (polled every '+Math.round(POLL_MS/1000)+'s - not live)'
+        : SOURCE==='sse'  ? 'Live (streamed)'
+        : 'Live')
+      : (lastErr || 'Connecting…');
+  $('idle-sub').textContent = connected
+      ? (SOURCE==='mock' ? 'Running on the rehearsal feed.' : 'Watching the appointments system.')
+      : (lastErr || 'Connecting to the appointments system…');
+}
+
+/* one clock for the whole page, not one per card */
+setInterval(function(){
+  rows.forEach(function(r){ var el=$('w-'+r.id); if(el) paintCard(el,r) });
+}, 1000);
+
+/* ---- the chime --------------------------------------------------------- */
+
+var actx=null, soundOk=false;
+function chime(){
+  if(!CHIME) return;
+  try{
+    if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended'){ actx.resume(); }
+    if(actx.state!=='running'){ $('sound-btn').hidden=false; return }
+    soundOk=true; $('sound-btn').hidden=true;
+    [880,1175].forEach(function(f,i){
+      var o=actx.createOscillator(), g=actx.createGain(), t=actx.currentTime+i*0.14;
+      o.type='sine'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.18,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.34);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.36);
+    });
+  }catch(e){ $('sound-btn').hidden=false }
+}
+$('sound-btn').onclick=function(){
+  try{
+    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    actx.resume().then(function(){ $('sound-btn').hidden=true; chime() });
+  }catch(e){}
+};
+
+/* ---- what every source calls ------------------------------------------- */
+
+function deliver(list){
+  rows = list;
+  connected = true; lastErr='';
+  /* the first delivery is the state of the world, not a set of arrivals -
+     a widget opened at 3pm must not chime for everybody already waiting */
+  list.forEach(function(r){
+    if(!seen[r.id]){ seen[r.id]=1; if(primed && !r.withStaff) chime() }
+  });
+  primed = true;
+  /* forget anyone who has gone, so a returning visitor chimes again */
+  var live=Object.create(null); list.forEach(function(r){ live[r.id]=1 });
+  Object.keys(seen).forEach(function(k){ if(!live[k]) delete seen[k] });
+  render(); paintState();
+}
+
+function failed(msg){
+  connected=false; lastErr=msg||'Not connected';
+  render(); paintState();
+}
+
+/* ======================= the sources ==================================== */
+
+/* --- rehearsal ---------------------------------------------------------- */
+function startMock(){
+  var t0=Date.now();
+  var feed=[
+    {id:'m1', customer:'Mr Patel',   arrived:t0-4*60000,  withStaff:false, staff:''},
+    {id:'m2', customer:'Ms Okafor',  arrived:t0-11*60000, withStaff:false, staff:''}
+  ];
+  deliver(feed.slice());
+  /* somebody gets picked up */
+  setTimeout(function(){
+    feed[1]={id:'m2', customer:'Ms Okafor', arrived:t0-11*60000, withStaff:true, staff:'Charlie'};
+    deliver(feed.slice());
+  }, 9000);
+  /* a new one walks in */
+  setTimeout(function(){
+    feed.push({id:'m3', customer:'Mr Whitfield', arrived:Date.now(), withStaff:false, staff:''});
+    deliver(feed.slice());
+  }, 16000);
+  /* and one leaves */
+  setTimeout(function(){
+    feed = feed.filter(function(r){ return r.id!=='m2' });
+    deliver(feed.slice());
+  }, 30000);
+}
+
+/* --- Firestore, onSnapshot - what the brief asks for --------------------- */
+function startFirestore(){
+  if(!FIREBASE.apiKey){
+    failed('Firebase config not filled in yet - see FIREBASE at the top of this file');
+    return;
+  }
+  var s=document.createElement('script');
+  s.type='module';
+  s.textContent = [
+    "import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';",
+    "import {getFirestore,collection,onSnapshot} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';",
+    "import {getAuth,signInAnonymously,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';",
+    "const app=initializeApp(window.FIREBASE);",
+    "const db=getFirestore(app);",
+    "async function go(){",
+    "  const a=window.AUTH||{mode:'none'};",
+    "  if(a.mode==='anonymous') await signInAnonymously(getAuth(app));",
+    "  else if(a.mode==='password') await signInWithEmailAndPassword(getAuth(app),a.email,a.password);",
+    /* Firestore cancels a listener that errors and never brings it back on
+       its own - the same trap the board hit - so this re-subscribes with a
+       backoff instead of going quietly blind. */
+    "  let wait=2000;",
+    "  const sub=()=>onSnapshot(collection(db,window.COLLECTION),",
+    "    s=>{ wait=2000; const out=[];",
+    "         s.forEach(d=>{ const r=window.__shape(d.id,d.data()); if(r) out.push(r) });",
+    "         window.__deliver(out); },",
+    "    e=>{ window.__failed('Lost the connection ('+(e.code||e.message)+') - retrying');",
+    "         setTimeout(sub,wait); wait=Math.min(wait*2,30000); });",
+    "  sub();",
+    "}",
+    "go().catch(e=>window.__failed('Could not connect: '+(e.code||e.message)));"
+  ].join('\n');
+  window.FIREBASE=FIREBASE; window.COLLECTION=COLLECTION; window.AUTH=AUTH;
+  window.__shape=shape; window.__deliver=deliver; window.__failed=failed;
+  s.onerror=function(){ failed('Could not load Firebase - is the CDN blocked?') };
+  document.head.appendChild(s);
+}
+
+/* Whatever the endpoint sends - a bare array, or an object with the list
+   under some key - comes out as the rows this page draws. Shared by the
+   streamed and polled sources so they cannot drift apart. */
+function fromApi(j){
+  var arr = Array.isArray(j) ? j
+          : (j && (j.items||j.appointments||j.walkins||j.data)) || [];
+  var out=[];
+  arr.forEach(function(d,i){
+    var r = shape(d.id||d._id||d.ref||('r'+i), d);
+    if(r) out.push(r);
+  });
+  return out;
+}
+
+/* --- their endpoint, streamed - the one to ask for ---------------------- */
+/* EventSource reconnects by itself after a dropped connection, which is most
+   of why this is the right shape for a screen left open all day. It only
+   gives up on a hard failure, and that is what onerror reports. */
+var SSE_URL = '';      /* e.g. https://…/api/walkins/stream */
+function startSse(){
+  if(!SSE_URL){ failed('No stream address yet - see SSE_URL'); return }
+  var es;
+  try{ es = new EventSource(SSE_URL) }
+  catch(e){ failed('Could not open the stream ('+e.message+')'); return }
+
+  es.onmessage = function(ev){
+    var j;
+    try{ j = JSON.parse(ev.data) }
+    catch(e){ failed('The stream sent something that is not JSON'); return }
+    deliver(fromApi(j));
+  };
+  es.onopen  = function(){ connected=true; lastErr=''; paintState() };
+  es.onerror = function(){
+    /* EventSource retries on its own while readyState is CONNECTING; only
+       CLOSED means it has actually given up. Saying "lost" for a blip it is
+       already recovering from would have the strip crying wolf all day. */
+    if(es.readyState===EventSource.CLOSED) failed('Stream closed - reload the page');
+    else { connected=false; lastErr='Reconnecting…'; paintState() }
+  };
+}
+
+/* --- a plain endpoint, polled - the fallback ---------------------------- */
+var REST_URL = '';     /* fill in when the API exists */
+function startRest(){
+  if(!REST_URL){ failed('No API address yet - see REST_URL'); return }
+  var tick=function(){
+    fetch(REST_URL,{cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json() })
+      .then(function(j){ deliver(fromApi(j)) })
+      .catch(function(e){ failed('Could not reach the API ('+e.message+')') });
+  };
+  tick(); setInterval(tick, POLL_MS);
+}
+
+/* ---- go ---------------------------------------------------------------- */
+paintState();
+if(SOURCE==='firestore') startFirestore();
+else if(SOURCE==='sse') startSse();
+else if(SOURCE==='rest') startRest();
+else startMock();
+</script>
+</body>
+</html>
