@@ -5875,9 +5875,9 @@ function walkinChimeFallback(){
 
 /* Remote TTS as MP3 — more reliable on wall Chromium than speechSynthesis. */
 function walkinTtsAudioUrl(line){
-  /* Brian = British English on StreamElements free TTS */
-  return 'https://api.streamelements.com/kappa/v2/speech?voice=Brian&text='
-    + encodeURIComponent(String(line||'').slice(0, 280));
+  /* Google Translate TTS — returns playable MP3 for en-GB wall announcements */
+  return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-GB&q='
+    + encodeURIComponent(String(line||'').slice(0, 180));
 }
 
 function walkinSpeakAudio(line, onDone){
