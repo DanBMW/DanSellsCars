@@ -5873,7 +5873,64 @@ function walkinChimeFallback(){
   }catch(e){}
 }
 
-/* Remote TTS as MP3 — more reliable on wall Chromium than speechSynthesis. */
+/* Same-origin Web Audio TTS (sam-js). LG webOS blocks remote audio + speechSynthesis;
+   Web Audio oscillators already work for the chime, so this path should speak on the walls. */
+function walkinSpeakPrep(line){
+  return String(line||'')
+    .replace(/\bMr\.?\b/gi, 'Mister')
+    .replace(/\bMrs\.?\b/gi, 'Missus')
+    .replace(/\bMs\.?\b/gi, 'Miz')
+    .replace(/\bM(\d)\b/g, 'Em $1')
+    .replace(/\bX(\d)\b/gi, 'Ex $1')
+    .replace(/\bBMW\b/g, 'B M W')
+    .replace(/(\d):(\d{2})\b/g, function(_,h,m){ return h + ' ' + m; });
+}
+
+function walkinSpeakSam(line, onDone){
+  if(typeof SamJs !== 'function'){
+    if(onDone) onDone(false); return;
+  }
+  var done=false;
+  var finish=function(ok){
+    if(done) return; done=true;
+    if(onDone) onDone(!!ok);
+  };
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC){ finish(false); return; }
+    if(!walkinActx) walkinActx=new AC();
+    var play=function(){
+      try{
+        if(!walkinMaster){
+          walkinMaster=walkinActx.createGain();
+          walkinMaster.gain.value=3.2;
+          walkinMaster.connect(walkinActx.destination);
+        }
+        var sam=new SamJs({pitch:64, speed:72, mouth:128, throat:128});
+        var spoken=walkinSpeakPrep(line);
+        var samples=sam.buf32(spoken);
+        if(!samples || !samples.length){ finish(false); return; }
+        var buf=walkinActx.createBuffer(1, samples.length, 22050);
+        var ch=buf.getChannelData(0);
+        for(var i=0;i<samples.length;i++) ch[i]=samples[i];
+        var src=walkinActx.createBufferSource();
+        src.buffer=buf;
+        src.connect(walkinMaster);
+        src.onended=function(){ finish(true); };
+        src.start(0);
+        var ms=Math.max(2500, Math.min(25000, (samples.length/22050)*1000 + 400));
+        setTimeout(function(){ if(!done) finish(true); }, ms);
+      }catch(e){ finish(false); }
+    };
+    if(walkinActx.state==='suspended'){
+      walkinActx.resume().then(play).catch(function(){ play(); });
+    }else{
+      play();
+    }
+  }catch(e){ finish(false); }
+}
+
+/* Remote TTS as MP3 — fallback when same-origin speech is unavailable. */
 function walkinTtsAudioUrl(line){
   /* Google Translate TTS — returns playable MP3 for en-GB wall announcements */
   return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-GB&q='
@@ -5959,15 +6016,19 @@ function walkinSpeak(r){
     walkinClearAudio();
     try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
   };
-  /* 1) Audio TTS (works when autoplay already unlocked by radio / a tap)
-     2) speechSynthesis
-     3) chime so the floor is never silent */
-  walkinSpeakAudio(line, function(ok){
+  /* 1) Same-origin Web Audio TTS (works on LG where chime already works)
+     2) Remote audio TTS
+     3) speechSynthesis
+     4) chime so the floor is never silent */
+  walkinSpeakSam(line, function(ok){
     if(ok){ unduck(); return; }
-    walkinSpeakSynth(line, function(ok2){
+    walkinSpeakAudio(line, function(ok2){
       if(ok2){ unduck(); return; }
-      walkinChimeFallback();
-      setTimeout(unduck, 1800);
+      walkinSpeakSynth(line, function(ok3){
+        if(ok3){ unduck(); return; }
+        walkinChimeFallback();
+        setTimeout(unduck, 1800);
+      });
     });
   });
 }
@@ -6269,6 +6330,7 @@ try{
 startWalkinAlerts();
 </script>
 
+<script src="tts/samjs.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, update, remove, get, set }
