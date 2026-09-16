@@ -94,7 +94,10 @@ var SEEN_SEARCH = 'newer_than:1d ("has taken the walk-in customer" OR "has taken
 var PATTERNS = {
   customer:   [/^[ \t]*Customer(?:\s*name)?[ \t]*[:\-][ \t]*(.+)$/im,
                /has taken the (?:walk-in )?customer\s+([^.\n]+)/i,
-               /^(.+?)\s+has checked in for their appointment/im],
+               /^(.+?)\s+has checked in for their appointment/im,
+               /^(.+?)\s+has just been checked-?in/im,
+               /^(.+?)\s+needs to be seen by a sales exec/im,
+               /^(.+?)\s+has been checked in/im],
   /* who has SAT DOWN with them, out of the pick-up email */
   seenBy:     [/^[ \t]*Sales\s*exec(?:utive)?[ \t]*[:\-][ \t]*(.+)$/im,
                /^(.+?)\s+has taken the (?:walk-in )?customer/im,
