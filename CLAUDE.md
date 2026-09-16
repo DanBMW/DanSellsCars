@@ -735,6 +735,30 @@ said so.
   so a clip can be dropped from the rotation and still put up on demand.
   The trailer and the premiere are deliberately **not** listed there: they
   are not in `CLIPS` and have their own switches already.
+- **The radio.** Background music on the wall display whenever nothing else
+  is making a noise - Dan's choice of Kisstory. Three properties it has to
+  keep:
+  **It plays on the wall only.** Gated on the same 1200px wall layout the QR
+  badge uses, because a manager opening the board on a phone must not start a
+  radio station in their pocket.
+  **It gets out of the way.** `radioDuck(true)` on any clip and on the
+  birthday tune, `radioDuck(false)` when they finish - and, critically, in
+  `stopScenes()` too. A scene cut short never reaches its own `finish()`, so
+  without that the radio stays silenced for good: the same trap as leaving
+  `busy` set. Whatever takes the floor next ducks it again itself.
+  **A stream URL is not forever.** `RADIO_SOURCES` is an ordered list of
+  candidates; an `error` moves to the next, and only when all are exhausted
+  does it give up. **The stream addresses shipped here could not be verified
+  from the build sandbox** (TLS to the stream hosts fails through the agent
+  proxy), so the manager panel reports the real state in words - playing,
+  connecting, or "could not reach Kisstory, the stream address may have
+  changed" - rather than leaving a silent wall display with no explanation.
+  If it says that, replace the list rather than debugging the player.
+  Switches: `radio` (absent means on, like everything else) and `radiovol`,
+  a 0-100 number, default 45. Pausing from the manager panel writes the
+  shared setting, so it pauses every screen rather than just the one in
+  somebody's hand. Autoplay is refused on a screen nobody has touched, same
+  as the clips, and the first tap starts it.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
   section: a toggle for the automatic slot and a play button per clip. Both go
   through `boardcontrol` in the database rather than staying local, because the

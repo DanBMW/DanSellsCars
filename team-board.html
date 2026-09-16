@@ -1511,6 +1511,15 @@ body.premiere .pairqr{display:none!important}
       </div>
       <div id="ev-screens" style="display:none"></div>
 
+      <h2 style="margin-top:22px;font-size:1rem">Radio</h2>
+      <p class="hint" style="margin-bottom:10px">Background music on the wall display whenever nothing else is
+        playing. It stops on its own for a sketch or the film and comes back afterwards. Pausing here pauses it
+        on every screen.</p>
+      <div class="tog on" id="radio-toggle">
+        <div><b>Play the radio</b><span id="radio-state">Off.</span></div>
+        <div class="sw"></div>
+      </div>
+
       <h2 style="margin-top:22px;font-size:1rem">The premiere</h2>
       <p class="hint" style="margin-bottom:10px">The film, on every screen at once. Get the screens ready first -
         each one pulls the whole film into memory, so once it starts it plays straight through
@@ -2046,6 +2055,10 @@ function stopScenes(){
   if(v){try{v.pause();v.currentTime=0}catch(e){}}
   liveVideo=null;
   stopBirthdayTune();
+  /* A scene cut short never reaches its own finish(), so the radio would
+     stay silenced for good - the same trap as leaving `busy` set. Whatever
+     takes the floor next ducks it again itself. */
+  radioDuck(false);
   ['vidscene','statscene','cutscene','champscene','bdayscene','trailercard'].forEach(function(id){
     var el=$(id); if(el)el.classList.remove('show');
   });
@@ -2191,6 +2204,9 @@ var bdCtx=null, bdGain=null;
 /* a music box, not a beep: struck notes left to ring, a sparkle two octaves
    up, a soft root under each bar and a run up the top to finish */
 function playBirthdayTune(){
+  /* the tune is short, but the radio underneath it would be a mess */
+  radioDuck(true);
+  setTimeout(function(){ radioDuck(false) }, 14000);
   var AC=window.AudioContext||window.webkitAudioContext;
   if(!AC)return false;
   try{ if(!bdCtx)bdCtx=new AC(); }catch(e){ return false }
@@ -3780,6 +3796,118 @@ function pickClip(){
    and never needs touching. Asking only after a gesture - which is what this
    did - left those displays silent for no reason.
    The fallback stays: refused means muted, never dropped. */
+/* ============================================================
+   The radio.
+
+   Background music on the wall display whenever nothing else is making
+   noise. Three things this has to get right:
+
+   1. It plays on the WALL ONLY. A manager opening the board on a phone must
+      not start a radio station in their pocket, so it is gated on the same
+      wall layout the QR badge uses.
+   2. It gets out of the way. Any clip - sketch, trailer, birthday, and above
+      all the premiere - takes the sound, and the radio comes back when the
+      clip is done. Same for the birthday tune.
+   3. A stream URL is not forever. Stations move them, and a wall display
+      going quiet with no explanation is a support call. So there is a list
+      of candidates tried in order, and the manager panel says plainly
+      whether it is playing or could not connect.
+   ============================================================ */
+var RADIO_SOURCES = [
+  'https://stream-mz.planetradio.co.uk/kisstory.aac',
+  'https://stream-al.planetradio.co.uk/kisstory.mp3',
+  'https://streamssl.planetradio.co.uk/kisstory.mp3',
+  'https://stream-mz.planetradio.co.uk/kisstory.mp3'
+];
+var RADIO_NAME='Kisstory';
+var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
+
+function radioWanted(){ return sOn('radio') && window.innerWidth>=1200 }
+function radioVol(){ return Math.max(0, Math.min(100, sNum('radiovol', 45))) / 100 }
+
+function radioInit(){
+  if(radioEl)return radioEl;
+  radioEl=document.createElement('audio');
+  radioEl.id='radio';
+  radioEl.preload='none';
+  radioEl.volume=radioVol();
+  /* a live stream has no end; an error means this URL is no good, so move
+     to the next candidate rather than sitting silent on a dead one */
+  radioEl.onerror=function(){
+    if(radioState!=='playing'&&radioState!=='connecting')return;
+    radioIdx++;
+    if(radioIdx<RADIO_SOURCES.length){ radioPlay() }
+    else { radioState='failed'; radioIdx=0; paintRadio() }
+  };
+  radioEl.onplaying=function(){ radioState='playing'; paintRadio() };
+  document.body.appendChild(radioEl);
+  return radioEl;
+}
+
+function radioPlay(){
+  if(!radioWanted()){ radioStop(); return }
+  if(radioDucked)return;                 /* something else has the sound */
+  var a=radioInit();
+  radioState='connecting'; paintRadio();
+  if(a.getAttribute('src')!==RADIO_SOURCES[radioIdx]){
+    a.setAttribute('src',RADIO_SOURCES[radioIdx]);
+    try{a.load()}catch(e){}
+  }
+  a.volume=radioVol();
+  var go=a.play();
+  if(go&&go['catch'])go['catch'](function(){
+    /* almost always the autoplay policy on a screen nobody has touched -
+       the first tap resumes it, same as the clips */
+    radioState = audioOk ? 'failed' : 'waiting';
+    paintRadio();
+  });
+}
+
+function radioStop(){
+  if(!radioEl)return;
+  try{radioEl.pause()}catch(e){}
+  radioState='off'; paintRadio();
+}
+
+/* a clip or the tune takes the sound, and hands it back afterwards */
+function radioDuck(on){
+  radioDucked=!!on;
+  if(on){ if(radioEl){try{radioEl.pause()}catch(e){}} }
+  else if(radioWanted()){ radioPlay() }
+  paintRadio();
+}
+
+function radioStatusText(){
+  if(!sOn('radio'))       return 'Paused on every screen.';
+  if(window.innerWidth<1200) return RADIO_NAME+' plays on the wall display, not on this device.';
+  if(radioDucked)         return 'Holding while something is playing.';
+  if(radioState==='playing')    return RADIO_NAME+' is playing.';
+  if(radioState==='connecting') return 'Connecting to '+RADIO_NAME+'\u2026';
+  if(radioState==='waiting')    return 'Ready - tap the wall screen once to let it start.';
+  if(radioState==='failed')     return 'Could not reach '+RADIO_NAME+'. The stream address may have changed.';
+  return 'Off.';
+}
+
+function paintRadio(){
+  var el=$('radio-state');
+  if(el)el.textContent=radioStatusText();
+  var b=$('radio-toggle');
+  if(b)b.classList.toggle('on', sOn('radio'));
+  if(radioEl)radioEl.volume=radioVol();
+}
+
+function setRadioOn(on){
+  if(!backend||!backend.setSetting){
+    /* no shared channel - still do it here so the button is never dead */
+    SET.radio=!!on; on?radioPlay():radioStop(); paintRadio();
+    toast(on?'Radio on, this screen only':'Radio paused, this screen only','ok');
+    return;
+  }
+  backend.setSetting('radio',!!on).then(function(){
+    toast(on?'Radio on':'Radio paused on every screen','ok');
+  })['catch'](function(e){console.error(e);toast('Could not reach the other screens','err')});
+}
+
 var audioOk=false, liveVideo=null;
 ['pointerdown','keydown','touchstart','click'].forEach(function(t){
   window.addEventListener(t,function(){
@@ -3791,6 +3919,8 @@ var audioOk=false, liveVideo=null;
       var vsc=$('vidscene'); if(vsc)vsc.classList.remove('is-muted');
     }
     if(bdCtx&&bdCtx.state==='suspended'&&bdCtx.resume)bdCtx.resume();
+    /* the radio is refused on a screen nobody has touched, just like a clip */
+    if(radioWanted()&&!radioDucked&&radioState!=='playing')radioPlay();
   },{passive:true});
 });
 
@@ -3822,6 +3952,7 @@ function videoScene(forced){
   };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
   var wants=clip.sound!==false&&sOn('sound');
+  radioDuck(true);                 /* the clip has the sound now */
   liveVideo={el:v, wants:wants};
   v.muted=!wants; v.volume=wants?1:0;
   vs.classList.toggle('is-muted',!wants);
@@ -3842,6 +3973,7 @@ function videoScene(forced){
   var finish=function(){
     if(done)return; done=true;
     liveVideo=null;
+    radioDuck(false);              /* and the radio comes back */
     vs.classList.remove('show');
     vs.classList.remove('bare');
     try{v.pause();v.currentTime=0}catch(e){}
@@ -4982,6 +5114,7 @@ $('ev-unlock').onclick=function(){
 $('ev-forget').onclick=function(){
   evSetKey(''); toast('Forgotten on this screen','ok'); paintEventPanel();
 };
+$('radio-toggle').onclick=function(){ setRadioOn(!sOn('radio')) };
 $('prem-arm').onclick=premiereArmAll;
 $('prem-stream').onclick=premiereStreamAll;
 $('prem-roll').onclick=premiereRollAll;
@@ -5173,6 +5306,11 @@ function applySettings(v){
   paintTicker();
   paintCornerQR();
   paintSettingsNote();
+  /* a pause from a phone has to reach the wall, and an unpause has to start
+     it again - both arrive here as a settings change */
+  if(radioWanted()){ if(radioState!=='playing'&&radioState!=='connecting')radioPlay() }
+  else radioStop();
+  paintRadio();
   /* a slot that has just been switched off comes off the wall now, and the
      rotation re-arms with the new slot length */
   applyPin();
@@ -5190,7 +5328,7 @@ function paintSettingsNote(){
   ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
    'premiere',
    'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','ticker',
-   'eventdeals','dealmargin',
+   'eventdeals','dealmargin','radio',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
   n.style.display=off.length?'block':'none';
   n.innerHTML=off.length
