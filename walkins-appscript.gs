@@ -92,12 +92,18 @@ var SEEN_SEARCH = 'newer_than:1d ("has taken the walk-in customer" OR "has taken
  * this put "12:36" on the wall as somebody's name.
  * Run preview() after any change here. */
 var PATTERNS = {
-  customer:   [/^[ \t]*Customer(?:\s*name)?[ \t]*[:\-][ \t]*(.+)$/im,
+  /* Subject often has the FULL name ("Walk-in waiting - Hans Upe") while
+     the body Customer: line is first-name only ("Hans"). Prefer subject. */
+  customerSubject: [/^Walk-in waiting\s*[-:]\s*(.+)$/im,
+                    /^Appointment waiting\s*[-:]\s*(.+)$/im,
+                    /^.*?\bwaiting\s*[-:]\s*(.+)$/im],
+  customer:   [/^[^\n]*Customer(?:\s*name)?[ \t]*[:\-][ \t]*([^\n\r<]+)$/im,
+               /Customer(?:\s*name)?[ \t]*[:\-][ \t]*([^\n\r<]+)/i,
                /has taken the (?:walk-in )?customer\s+([^.\n]+)/i,
-               /^(.+?)\s+has checked in for their appointment/im,
-               /^(.+?)\s+has just been checked-?in/im,
-               /^(.+?)\s+needs to be seen by a sales exec/im,
-               /^(.+?)\s+has been checked in/im],
+               /^([A-Z][^\n]{0,60}?)\s+has checked in for their appointment/im,
+               /\b([A-Z][a-zA-Z'\-]+(?:\s+[A-Z][a-zA-Z'\-]+){0,3})\s+has just been checked-?in/i,
+               /\b([A-Z][a-zA-Z'\-]+(?:\s+[A-Z][a-zA-Z'\-]+){0,3})\s+needs to be seen by a sales exec/i,
+               /\b([A-Z][a-zA-Z'\-]+(?:\s+[A-Z][a-zA-Z'\-]+){0,3})\s+has been checked in/i],
   /* who has SAT DOWN with them, out of the pick-up email */
   seenBy:     [/^[ \t]*Sales\s*exec(?:utive)?[ \t]*[:\-][ \t]*(.+)$/im,
                /^(.+?)\s+has taken the (?:walk-in )?customer/im,
@@ -109,12 +115,16 @@ var PATTERNS = {
                /^[ \t]*Appointment\s*with[ \t]*[:\-][ \t]*(.+)$/im],
   /* the time reception recorded, which beats the email's own timestamp if
      the mail sat in a queue or a scanner on the way */
-  arrivedAt:  [/^[ \t]*Arriv(?:ed|al[ \t]*time)[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im],
+  arrivedAt:  [/^[^\n]*Arriv(?:ed|al[ \t]*time)[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im,
+               /Arriv(?:ed|al[ \t]*time)[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/i],
   apptTime:   [/^[ \t]*Appointment[ \t]*time[ \t]*[:\-][ \t]*(\d{1,2}[:.]\d{2})/im],
   /* what they came in for - the line that makes an executive get up */
-  carType:    [/^[ \t]*Car[ \t]*type[ \t]*[:\-][ \t]*(.+)$/im,
-               /^[ \t]*New[ \t]*\/[ \t]*Used[ \t]*[:\-][ \t]*(.+)$/im],
-  models:     [/^[ \t]*Models?(?:[ \t]*of[ \t]*interest)?[ \t]*[:\-][ \t]*(.+)$/im],
+  carType:    [/^[^\n]*Car[ \t]*type[ \t]*[:\-][ \t]*([^\n\r<]+)$/im,
+               /Car[ \t]*type[ \t]*[:\-][ \t]*([^\n\r<]+)/i,
+               /^[ \t]*New[ \t]*\/[ \t]*Used[ \t]*[:\-][ \t]*(.+)$/im,
+               /New[ \t]*\/[ \t]*Used[ \t]*[:\-][ \t]*([^\n\r<]+)/i],
+  models:     [/^[^\n]*Models?(?:[ \t]*of[ \t]*interest)?[ \t]*[:\-][ \t]*([^\n\r<]+)$/im,
+               /Models?(?:[ \t]*of[ \t]*interest)?[ \t]*[:\-][ \t]*([^\n\r<]+)/i],
   /* THE BEST KEY THERE IS. The emails carry a link back to the record:
        ...dashboard?engage=FjZaSpiEe0cHFgZpELij&type=appointment
      That id is unique to one visit, so where both the arrival and the
@@ -208,11 +218,10 @@ function scan() {
       if (when < cutoff) return;
 
       var subject = m.getSubject() || '';
-      var body = '';
-      try { body = m.getPlainBody() || ''; } catch (e) {}
+      var body = messageText(m);
       var text = subject + '\n' + body;
 
-      var name = firstOf(PATTERNS.customer, body, subject);
+      var name = customerNameFrom(body, subject);
       var booked = firstOf(PATTERNS.bookedWith, body, subject);
       var appt = firstOf(PATTERNS.apptTime, body, subject);
       /* "Booking type: Walk-in/Appointment" is definitive where it appears.
@@ -238,13 +247,13 @@ function scan() {
          "Chris" - and two Chrises in a morning is not far-fetched, so name
          alone would clear the wrong card. */
       var ref = firstOf(PATTERNS.ref, body, subject);
-      var hit = pickUp(seen, ref, name, arrived);
+      var hit = findPickup(seen, ref, name, arrived);
       var withStaff = !!hit, staff = hit ? hit.staff : '';
 
       out.push({
         id: m.getId(),
         arrivalTime: arrived,
-        customerName: clean(name) || (isBooked ? 'Appointment' : 'Walk-in'),
+        customerName: sanitizeName(name) || (isBooked ? 'Appointment' : 'Walk-in'),
         type: isBooked ? 'appointment' : 'walk-in',
         appointmentTime: appt ? clockOn(when, appt) : null,
         bookedWith: clean(booked),
@@ -297,9 +306,9 @@ function seenNames() {
   if (!SEEN_SEARCH) return map;
   GmailApp.search(SEEN_SEARCH, 0, MAX_THREADS).forEach(function (t) {
     t.getMessages().forEach(function (m) {
-      var subject = m.getSubject() || '', body = '';
-      try { body = m.getPlainBody() || ''; } catch (e) {}
-      var who = firstOf(PATTERNS.customer, body, subject);
+      var subject = m.getSubject() || '';
+      var body = messageText(m);
+      var who = customerNameFrom(body, subject);
       if (!who) return;
       var by = clean(firstOf(PATTERNS.seenBy, body, subject)) ||
                'a member of staff';
@@ -324,6 +333,40 @@ function seenNames() {
   return map;
 }
 
+
+/* Prefer plain text; if the labelled fields are missing (common with
+   HTML-only arrival mail), strip tags from the HTML body and try that. */
+function messageText(m) {
+  var plain = '';
+  try { plain = m.getPlainBody() || ''; } catch (e) {}
+  if (/Customer(?:\s*name)?\s*[:\-]/i.test(plain)
+      || /has just been checked-?in/i.test(plain)
+      || /needs to be seen by a sales exec/i.test(plain)) {
+    return plain;
+  }
+  var html = '';
+  try { html = m.getBody() || ''; } catch (e) {}
+  if (!html) return plain;
+  var stripped = html
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/tr>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&#39;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+  return stripped || plain;
+}
+
 function first(pats, text) {
   for (var i = 0; i < pats.length; i++) {
     var m = text.match(pats[i]);
@@ -345,9 +388,37 @@ function anyMatch(pats, text) {
   for (var i = 0; i < pats.length; i++) if (pats[i].test(text)) return true;
   return false;
 }
+
+
+/* Body "Customer: Hans" plus subject "Walk-in waiting - Hans Upe" -> prefer
+   the longer subject form when it clearly belongs to the same person. */
+function customerNameFrom(body, subject) {
+  var fromSub = sanitizeName(first(PATTERNS.customerSubject, subject || ''));
+  var fromBody = sanitizeName(firstOf(PATTERNS.customer, body, subject));
+  if (fromSub && fromBody) {
+    var ks = key(fromSub), kb = key(fromBody);
+    if (ks.indexOf(kb) === 0 || ks === kb || fromSub.length >= fromBody.length)
+      return fromSub;
+    return fromBody;
+  }
+  return fromSub || fromBody;
+}
+
+function sanitizeName(s) {
+  s = clean(s);
+  if (!s) return '';
+  var low = s.toLowerCase();
+  if (low === 'walk-in' || low === 'walk in' || low === 'customer'
+      || low === 'a walk-in' || low === 'a walk-in customer'
+      || low === 'the customer' || low === 'appointment'
+      || /^sales\b/.test(low) || /checked-?in/.test(low)
+      || /needs to be seen/.test(low) || /sales exec/.test(low)) return '';
+  return s;
+}
+
 function clean(s) {
-  return String(s || '').replace(/[\r\n].*$/, '').replace(/[<>|].*$/, '')
-                        .replace(/\s+/g, ' ').trim().slice(0, 60);
+  return String(s || '').replace(/[\r\n].*$/, '').replace(/[<>].*$/, '')
+                        .replace(/\|.*$/, '').replace(/\s+/g, ' ').trim().slice(0, 60);
 }
 function key(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
 
@@ -360,7 +431,7 @@ function put(map, k, rec) {
    Without the time check a "has taken" email from an earlier visit marks a
    fresh arrival as already being served - somebody walks in, the screen says
    "now with Clive", and they are left standing there. */
-function pickUp(seen, ref, name, arrived) {
+function findPickup(seen, ref, name, arrived) {
   /* the record id is unique to one visit - if it matches, we are done */
   if (ref && seen['ref:' + ref]) return seen['ref:' + ref];
   if (!name) return null;
@@ -414,7 +485,9 @@ function preview() {
   }
   threads.forEach(function (t) {
     t.getMessages().forEach(function (m) {
+      var body = messageText(m);
       Logger.log('--- %s | %s', m.getDate(), m.getSubject());
+      Logger.log('body head: %s', String(body).slice(0, 500));
     });
   });
   var rows = scan();
