@@ -17,6 +17,17 @@
  *   3. Run refresh once, grant Gmail
  *   4. Trigger: refresh, time-driven, every minute
  *   5. Deploy web app → New version (keep same /exec URL)
+ *
+ * THE MANIFEST MATTERS - see walkins-appscript.manifest.json.
+ * Where a project declares oauthScopes explicitly, Apps Script uses exactly
+ * that list and does NOT notice new ones. Adding the voice added a call to
+ * UrlFetchApp, and with the scope missing from the manifest the editor never
+ * offers a prompt - it simply throws "You do not have permission to call
+ * UrlFetchApp.fetch" for ever, which reads like a Google block rather than a
+ * line of config. The scope needed is:
+ *   https://www.googleapis.com/auth/script.external_request
+ * After adding it: save, run testVoice, accept the prompt, then deploy a NEW
+ * VERSION - the old version carries the old manifest with it.
  */
 
 /* ===================== tell it about your emails ====================== */
