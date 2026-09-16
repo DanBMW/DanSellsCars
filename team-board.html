@@ -2102,8 +2102,8 @@ var busy=false, holdUntil=0, sceneGen=0;
    floor next. Every scene takes a generation on the way in and hands it back
    on the way out; `stopScenes()` bumps the generation, so a stale timer's
    `sceneEnd` is a no-op. */
-function sceneStart(){ busy=true; return ++sceneGen; }
-function sceneEnd(g){ if(g===sceneGen) busy=false; }
+function sceneStart(){ busy=true; try{radioDuck(true)}catch(e){} return ++sceneGen; }
+function sceneEnd(g){ if(g===sceneGen){ busy=false; try{radioDuck(false)}catch(e){} } }
 function stopScenes(){
   sceneGen++;
   busy=false;
@@ -3983,11 +3983,67 @@ function radioStop(){
   radioState='off'; paintRadio();
 }
 
-/* a clip or the tune takes the sound, and hands it back afterwards */
+/* a clip, cut scene or tune takes the sound, and hands it back afterwards.
+   Soft-fade volume over ~1s rather than a hard pause/cut. */
+var radioFadeTimer=null, radioFadeTok=0;
+function radioClearFade(){
+  if(radioFadeTimer){ clearInterval(radioFadeTimer); radioFadeTimer=null }
+}
+function radioFadeTo(target, ms, then){
+  radioClearFade();
+  var a=radioEl;
+  if(!a){ if(then)then(); return }
+  var start=typeof a.volume==='number'?a.volume:0;
+  var tok=++radioFadeTok;
+  var t0=Date.now();
+  var dur=Math.max(80, ms||1000);
+  radioFadeTimer=setInterval(function(){
+    if(tok!==radioFadeTok || a!==radioEl){ radioClearFade(); return }
+    var p=Math.min(1,(Date.now()-t0)/dur);
+    /* ease in-out */
+    var e=p<0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
+    try{ a.volume=start+(target-start)*e }catch(err){}
+    if(p>=1){
+      radioClearFade();
+      try{ a.volume=target }catch(err){}
+      if(then)then();
+    }
+  }, 40);
+}
 function radioDuck(on){
-  radioDucked=!!on;
-  if(on){ if(radioEl){try{radioEl.pause()}catch(e){}} }
-  else if(radioWanted()){ radioPlay() }
+  on=!!on;
+  if(on===radioDucked && !(on && radioEl && radioEl.volume>0.02)){
+    /* already in the requested state */
+    if(!on && radioWanted() && (!radioEl || radioState==='off' || radioState==='failed'))
+      radioPlay();
+    paintRadio();
+    return;
+  }
+  radioDucked=on;
+  if(on){
+    if(radioEl){
+      radioFadeTo(0, 1000, function(){
+        if(!radioDucked || !radioEl) return;
+        try{ radioEl.pause() }catch(e){}
+      });
+    }
+  }else if(radioWanted()){
+    /* bring stream back, then fade volume up */
+    var target=radioVol();
+    if(!radioEl || radioState==='off' || radioState==='failed' || radioState==='waiting'){
+      /* radioPlay respects radioDucked - temporarily clear for attach */
+      radioDucked=false;
+      radioPlay();
+      radioDucked=false;
+      if(radioEl){
+        try{ radioEl.volume=0 }catch(e){}
+        radioFadeTo(target, 1200);
+      }
+    }else{
+      try{ var go=radioEl.play(); if(go&&go.catch)go.catch(function(){}) }catch(e){}
+      radioFadeTo(target, 1200);
+    }
+  }
   paintRadio();
 }
 
@@ -4017,7 +4073,8 @@ function paintRadio(){
   if(el)el.textContent=radioStatusText();
   var b=$('radio-toggle');
   if(b)b.classList.toggle('on', sOn('radio'));
-  if(radioEl)radioEl.volume=radioVol();
+  /* do not fight an in-progress soft fade */
+  if(radioEl && !radioFadeTimer && !radioDucked) radioEl.volume=radioVol();
 }
 
 function setRadioOn(on){
@@ -5519,9 +5576,11 @@ var WALKIN_CHIME = true;
 /* Same feed as walkins.html: first snapshot primes seen ids with no toast or
    chime; later new waiting arrivals toast and ding. Ids that disappear are
    forgotten so a return visit can alert again. Empty WALKIN_GAS_URL = off. */
-var walkinSeen = Object.create(null);
+var walkinSeen = Object.create(null);   /* announced this page session + restored */
 var walkinPrimed = false;
 var walkinGasSeq = 0;
+var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v1';
+var WALKIN_ANN_MAX_AGE_MS = 12*60*60*1000; /* keep for 12h across deploys/reloads */
 var walkinActx = null;
 var walkinMaster = null;
 
@@ -5541,7 +5600,8 @@ function walkinMapRows(j){
     var withStaff = st==='with-staff'||st==='withstaff'||st==='in-progress'
                  || st==='assigned'||st==='being-seen'
                  || d.withStaff===true;
-    var customer = String(d.customerName||d.name||d.customer||'').trim();
+    var customer = String(d.customerName||d.name||d.customer||'').trim()
+      .replace(/^[\s*•·]+/,'').trim();
     if(!customer || /^walk[\s-]?in$/i.test(customer) || /^appointment$/i.test(customer)){
       customer = '';
     }
@@ -5553,8 +5613,9 @@ function walkinMapRows(j){
       customer:customer,
       walkIn:!!walkIn,
       withStaff:!!withStaff,
-      carType:String(d.carType||d.newUsed||'').trim(),
-      models:String(d.models||d.modelsOfInterest||'').trim(),
+      carType:String(d.carType||d.newUsed||'').trim().replace(/^[\s*•·]+/,'').trim(),
+      models:String(d.models||d.modelsOfInterest||'').trim().replace(/^[\s*•·]+/,'').trim(),
+      ref:String(d.ref||'').trim(),
       bookedWith:String(d.bookedWith||d.owner||'').trim(),
       arrived: arrived && isFinite(arrived) ? arrived : null
     });
@@ -5694,21 +5755,71 @@ function walkinDoorbell(){
   }
 }
 
+function walkinVisitKey(r){
+  /* Stable across Gmail message-id churn: prefer engage ref, else name+arrived. */
+  if(r.ref) return 'ref:'+r.ref;
+  var nm=(r.customer||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  var when=r.arrived && isFinite(r.arrived) ? String(Math.round(r.arrived/60000)) : 't';
+  if(nm) return 'n:'+nm+'@'+when;
+  return 'id:'+r.id;
+}
+function walkinLoadAnnounced(){
+  try{
+    var raw=localStorage.getItem(WALKIN_ANN_KEY);
+    if(!raw) return;
+    var obj=JSON.parse(raw)||{};
+    var now=Date.now(), kept={};
+    Object.keys(obj).forEach(function(k){
+      var t=+obj[k]||0;
+      if(now-t < WALKIN_ANN_MAX_AGE_MS){ kept[k]=t; walkinSeen[k]=1 }
+    });
+    localStorage.setItem(WALKIN_ANN_KEY, JSON.stringify(kept));
+  }catch(e){}
+}
+function walkinRemember(key){
+  walkinSeen[key]=1;
+  try{
+    var obj={};
+    try{ obj=JSON.parse(localStorage.getItem(WALKIN_ANN_KEY)||'{}')||{} }catch(e){ obj={} }
+    obj[key]=Date.now();
+    var now=Date.now(), kept={};
+    Object.keys(obj).forEach(function(k){
+      if(now-(+obj[k]||0) < WALKIN_ANN_MAX_AGE_MS) kept[k]=obj[k];
+    });
+    localStorage.setItem(WALKIN_ANN_KEY, JSON.stringify(kept));
+  }catch(e){}
+}
+walkinLoadAnnounced();
+
 function walkinDeliver(list){
-  /* Each waiting person is one visit (unique email id). Do not collapse two
-     people into one alert. First snapshot of this page load is silent so a
-     TV refresh does not re-ring everyone already standing there. After that,
-     every new waiting id is queued so two arrivals in the same poll each get
-     their own 30s card, flash and chime. */
+  /* Announce each visit at most once for 12 hours (survives deploy/reload).
+     First successful non-empty snapshot of a page load is also silent for
+     anyone currently waiting, so a TV refresh never re-rings the showroom.
+     Never forget announced keys just because one poll flickered - that was
+     re-ringing people about every minute when Gmail ids or the feed hiccuped. */
+  if(!list) list=[];
+  /* Empty/error-shaped first answers must NOT arm primed, or the next poll
+     would treat every waiting person as brand new. */
+  if(!walkinPrimed){
+    if(!list.length) return;
+    list.forEach(function(r){
+      walkinRemember(walkinVisitKey(r));
+      if(r.id) walkinSeen['id:'+r.id]=1;
+    });
+    walkinPrimed=true;
+    return;
+  }
   list.forEach(function(r){
-    if(!walkinSeen[r.id]){
-      walkinSeen[r.id]=1;
-      if(walkinPrimed && !r.withStaff) walkinEnqueue(r);
+    var key=walkinVisitKey(r);
+    if(walkinSeen[key] || (r.id && walkinSeen['id:'+r.id])){
+      walkinRemember(key);
+      if(r.id) walkinSeen['id:'+r.id]=1;
+      return;
     }
+    walkinRemember(key);
+    if(r.id) walkinSeen['id:'+r.id]=1;
+    if(!r.withStaff) walkinEnqueue(r);
   });
-  walkinPrimed = true;
-  var live=Object.create(null); list.forEach(function(r){ live[r.id]=1 });
-  Object.keys(walkinSeen).forEach(function(k){ if(!live[k]) delete walkinSeen[k] });
 }
 
 function startWalkinAlerts(){
