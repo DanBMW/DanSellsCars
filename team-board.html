@@ -3562,7 +3562,7 @@ window.dsOnControl=function(v){
     lastWalkinTestTs=wt;
     if(!firstWn&&Date.now()-wt<120000){
       controlPrimed=true;
-      toast('Test walk-in','ok');
+      toast('Test walk-in - '+walkinVoiceReport(),'ok');
       var sample={customer:'Mr Test', walkIn:true, carType:'New', models:'M5', arrived:Date.now()};
       walkinShowCard(sample);
       if(typeof walkinSpeak==='function') walkinSpeak(sample);
@@ -5794,18 +5794,74 @@ function walkinAnnounceText(r){
   return bits.join('. ') + '.';
 }
 
+/* A British female voice, by name, best first.
+   The old picker took the FIRST en-GB voice it found, which on Windows is
+   usually Microsoft George - a man - so even when speech was working the
+   wall got the wrong voice.
+   The named ones at the top are the modern neural voices and sound like a
+   person; Hazel and the macOS set are older but perfectly decent. Anything
+   unrecognised is accepted only after the known male voices have been ruled
+   out, because a name is the only clue a browser gives us - the API exposes
+   no gender field at all. */
+var WALKIN_VOICES = [
+  /* Edge / Windows 11, neural - these are the good ones */
+  /sonia/i, /libby/i, /hollie/i, /maisie/i,
+  /* Chrome */
+  /google uk english female/i,
+  /* Windows SAPI */
+  /hazel/i,
+  /* macOS / iOS en-GB */
+  /serena/i, /kate/i, /stephanie/i, /fiona/i,
+  /* Android / generic */
+  /female/i
+];
+var WALKIN_MALE = /george|ryan|thomas|daniel|oliver|arthur|alfie|elliot|noah|brian|male\b|\bman\b/i;
+
+function walkinIsGB(v){
+  return /en[-_]GB/i.test(v.lang||'') ||
+         /united kingdom|british|\bUK\b/i.test(v.name||'');
+}
+
 function walkinPickVoice(){
   try{
     var list=window.speechSynthesis.getVoices()||[];
+    if(!list.length) return null;
+    var gb=list.filter(walkinIsGB);
     var i,j;
-    for(i=0;i<list.length;i++){
-      if(/en-GB|en_GB|English.*UK|British/i.test((list[i].lang||'')+' '+(list[i].name||''))) return list[i];
+    /* a named British female, in order of how good it sounds */
+    for(i=0;i<WALKIN_VOICES.length;i++){
+      for(j=0;j<gb.length;j++){
+        if(WALKIN_VOICES[i].test(gb[j].name||'')) return gb[j];
+      }
     }
-    for(j=0;j<list.length;j++){
-      if(/^en/i.test(list[j].lang||'')) return list[j];
+    /* any British voice that is not a known man */
+    for(j=0;j<gb.length;j++){
+      if(!WALKIN_MALE.test(gb[j].name||'')) return gb[j];
     }
+    if(gb.length) return gb[0];
+    /* no British voice on this device - a named female anywhere in English */
+    var en=list.filter(function(v){ return /^en/i.test(v.lang||'') });
+    for(i=0;i<WALKIN_VOICES.length;i++){
+      for(j=0;j<en.length;j++){
+        if(WALKIN_VOICES[i].test(en[j].name||'')) return en[j];
+      }
+    }
+    for(j=0;j<en.length;j++){
+      if(!WALKIN_MALE.test(en[j].name||'')) return en[j];
+    }
+    return en[0]||null;
   }catch(e){}
   return null;
+}
+
+/* what this screen is actually going to speak with - for the admin console
+   and for answering "why does that one sound different" */
+function walkinVoiceReport(){
+  var v=null;
+  try{ v=walkinPickVoice(); }catch(e){}
+  var n=(v&&v.name)||'none';
+  var eng=walkinEngineRemembered()||'not decided yet';
+  return n+' ('+eng+')';
 }
 
 var walkinSpeechWatch=null;
@@ -5955,8 +6011,11 @@ function walkinSpeakAudio(line, onDone){
   a.src=url;
   var p=a.play();
   if(p&&p.then) p.then(function(){ /* playing */ }).catch(function(){ finish(false); });
-  /* if play never ends (stall), fail open to next method */
-  setTimeout(function(){ if(!done) finish(false); }, 20000);
+  /* If it stalls, move on. Twenty seconds was far too long: this is a
+     doorbell, and on a screen where the remote voice cannot load, every
+     announcement sat silent for twenty seconds before trying anything
+     else. Six is longer than a working fetch ever takes. */
+  setTimeout(function(){ if(!done) finish(false); }, 6000);
 }
 
 function walkinSpeakSynth(line, onDone){
@@ -6016,21 +6075,73 @@ function walkinSpeak(r){
     walkinClearAudio();
     try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
   };
-  /* 1) Same-origin Web Audio TTS (works on LG where chime already works)
-     2) Remote audio TTS
-     3) speechSynthesis
-     4) chime so the floor is never silent */
-  walkinSpeakSam(line, function(ok){
-    if(ok){ unduck(); return; }
-    walkinSpeakAudio(line, function(ok2){
-      if(ok2){ unduck(); return; }
-      walkinSpeakSynth(line, function(ok3){
-        if(ok3){ unduck(); return; }
-        walkinChimeFallback();
-        setTimeout(unduck, 1800);
-      });
+  /* Best voice first, and remember what actually worked on THIS screen.
+       synth - the browser's own British female voice. Sounds like a person.
+       audio - Google's en-GB, also a British woman, but it leaves the
+               building and the endpoint is not ours.
+       sam   - a 1982 formant synth. Always works, sounds like a robot, and
+               cannot do a female British voice at any setting.
+     SAM used to be first, to fix the LG wall where speechSynthesis can
+     accept a request and then silently never speak. That fixed one TV by
+     giving every other screen in the building the worst voice. Instead,
+     walkinSpeakSynth already detects a speak() that never starts (1.5s),
+     so it is safe to lead with it and let the LG fall through to SAM on
+     its own - once, and then remember. */
+  walkinSpeakBest(line, unduck);
+}
+
+/* Which engine this screen proved works, so a cold walk down the chain
+   happens once rather than before every announcement - on a screen where
+   the browser voice fails that walk costs several seconds, and an arrival
+   alert that arrives late is half useless.
+   It LAPSES, deliberately. A screen that settled on the robot voice must
+   not be stuck with it for ever: a browser update, a new TV or a different
+   kiosk setting can put a real voice there, and nothing would ever go
+   looking. Twelve hours means every screen re-tests each morning. */
+var WALKIN_TTS_RETEST = 12*60*60*1000;
+
+function walkinEngineRemembered(){
+  try{
+    var raw=localStorage.getItem('dsWalkinTTS')||'';
+    var bits=raw.split('|');
+    if(!bits[0]) return '';
+    var at=+bits[1]||0;
+    if(!at || Date.now()-at > WALKIN_TTS_RETEST) return '';
+    return bits[0];
+  }catch(e){ return '' }
+}
+function walkinEngineRemember(name){
+  try{ localStorage.setItem('dsWalkinTTS', name+'|'+Date.now()) }catch(e){}
+}
+
+function walkinSpeakBest(line, unduck){
+  var ENGINES = {
+    synth: walkinSpeakSynth,
+    audio: walkinSpeakAudio,
+    sam:   walkinSpeakSam
+  };
+  var order = ['synth','audio','sam'];
+  /* whatever worked last time goes first; the rest keep their ranking, so a
+     screen that has settled on SAM still tries the good voice again after a
+     browser update puts one there */
+  var last = walkinEngineRemembered();
+  if(last && ENGINES[last]){
+    order = [last].concat(order.filter(function(n){ return n!==last }));
+  }
+  var i = 0;
+  var next = function(){
+    if(i >= order.length){
+      walkinChimeFallback();          /* never leave the floor silent */
+      setTimeout(unduck, 1800);
+      return;
+    }
+    var name = order[i++];
+    ENGINES[name](line, function(ok){
+      if(ok){ walkinEngineRemember(name); unduck(); return; }
+      next();
     });
-  });
+  };
+  next();
 }
 
 /* kept for older callers */
