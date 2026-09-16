@@ -3563,7 +3563,7 @@ window.dsOnControl=function(v){
     if(!firstWn&&Date.now()-wt<120000){
       controlPrimed=true;
       toast('Test walk-in','ok');
-      var sample={customer:'Mr Whitfield', walkIn:true, carType:'New', models:'1 Series, X1', arrived:Date.now()};
+      var sample={customer:'Mr Test', walkIn:true, carType:'New', models:'M5', arrived:Date.now()};
       walkinShowCard(sample);
       if(typeof walkinSpeak==='function') walkinSpeak(sample);
       return;
@@ -3579,7 +3579,7 @@ function playNow(src){
   if(!src)return;
   /* temporary admin test: toast + doorbell, same as a real walk-in alert */
   if(src==='walkin:test'){
-    var sample={customer:'Mr Whitfield', walkIn:true, carType:'New', models:'1 Series, X1', arrived:Date.now()};
+    var sample={customer:'Mr Test', walkIn:true, carType:'New', models:'M5', arrived:Date.now()};
     walkinShowCard(sample);
     if(typeof walkinSpeak==='function') walkinSpeak(sample);
     return;
