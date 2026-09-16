@@ -3916,6 +3916,40 @@ var RADIO_SOURCES = [
 var RADIO_NAME='Kisstory R&B';
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 
+var radioLastTime=0, radioStallTicks=0;
+
+/* Force audible output when UI says playing but wall is silent (volume stuck
+   at 0, muted flag, or suspended AudioContext). */
+function radioForceSound(){
+  try{
+    if(!radioWanted()) return;
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(AC){
+      if(!walkinActx) walkinActx=new AC();
+      if(walkinActx.state==='suspended') walkinActx.resume();
+    }
+  }catch(e){}
+  var a=radioEl;
+  if(!a){
+    radioIdx=0;
+    radioPlay();
+    a=radioEl;
+  }
+  if(!a) return;
+  try{ a.muted=false; a.removeAttribute('muted') }catch(e){}
+  try{
+    var target=radioDucked?radioDuckLevel():radioVol();
+    if(!radioDucked && target<0.12) target=Math.max(radioVol(), 0.35);
+    if(radioDucked && target<0.04) target=0.06;
+    a.volume=target;
+    radioFadeInPending=false;
+  }catch(e){}
+  try{
+    var p=a.play();
+    if(p&&p.catch) p.catch(function(){});
+  }catch(e){}
+}
+
 function radioWanted(){ return sOn('radio') && window.innerWidth>=1200 }
 function radioVol(){ return Math.max(0, Math.min(100, sNum('radiovol', 45))) / 100 }
 
@@ -3933,7 +3967,10 @@ function radioAttach(url){
   var a=document.createElement('audio');
   a.id='radio';
   a.preload='none';
+  a.muted=false;
   a.volume=radioVol();
+  a.setAttribute('playsinline','');
+  a.setAttribute('autoplay','');
   a.src=url;
   /* a live stream has no end; an error means this URL is no good, so move
      to the next candidate rather than sitting silent on a dead one */
@@ -3941,9 +3978,12 @@ function radioAttach(url){
   a.onplaying=function(){
     if(a!==radioEl) return;
     radioState='playing'; paintRadio();
+    radioStallTicks=0;
     try{walkinUnlockAudio()}catch(e){}
     /* fade up now there is really something to fade */
     if(radioFadeInPending){ radioFadeInPending=false; radioFadeTo(radioVol(), 1200) }
+    else if(!radioDucked){ try{ a.volume=radioVol() }catch(e){} }
+    try{ radioForceSound() }catch(e){}
   };
   radioEl=a;
   document.body.appendChild(a);
@@ -4046,7 +4086,8 @@ function radioFadeTo(target, ms, then){
    like the radio is on. Scales with the admin radio volume. */
 function radioDuckLevel(){
   var v=radioVol();
-  return Math.max(0.05, Math.min(v*0.22, 0.14));
+  /* Quiet under scenes/walk-ins, but still clearly audible in the showroom */
+  return Math.max(0.08, Math.min(v*0.28, 0.18));
 }
 function radioDuck(on){
   on=!!on;
@@ -4067,7 +4108,7 @@ function radioDuck(on){
   if(on){
     if(radioEl){
       radioFadeTo(radioDuckLevel(), 700);
-      try{ radioEl.play() }catch(e){}
+      try{ radioEl.muted=false; radioEl.play() }catch(e){}
     }else if(radioWanted()){
       /* Start quietly rather than leaving the stream off for the whole scene. */
       radioPlay();
@@ -4075,19 +4116,22 @@ function radioDuck(on){
   }else if(radioWanted()){
     if(radioEl && (radioState==='playing' || radioState==='connecting')){
       /* Stream never left — just bring the level back. */
+      radioFadeInPending=false;
       radioFadeTo(radioVol(), 1000);
+      try{ radioForceSound() }catch(e){}
     }else{
       /* Only reconnect when there is nothing playing (first start / failure). */
       radioIdx=0;
       radioFadeInPending=true;
       radioPlay();
-      if(radioEl){ try{ radioEl.volume=0 }catch(e){} }
+      if(radioEl){ try{ radioEl.volume=0.001 }catch(e){} }
       setTimeout(function(){
-        if(radioFadeInPending && radioEl && !radioDucked){
+        if(radioEl && !radioDucked){
           radioFadeInPending=false;
           try{ radioEl.volume=radioVol() }catch(e){}
+          try{ radioForceSound() }catch(e){}
         }
-      }, 6000);
+      }, 1500);
     }
   }
   paintRadio();
@@ -4098,11 +4142,30 @@ function radioDuck(on){
    station having a moment. Cheap enough to just keep trying. */
 setInterval(function(){
   if(!radioWanted())return;
-  if(radioDucked)return;                    /* never drop/reconnect under a scene */
-  if(radioState==='playing'||radioState==='connecting')return;
-  if(radioState==='failed')radioIdx=0;      /* start the list again */
+  if(radioDucked){
+    if(radioEl){ try{ radioEl.muted=false; radioEl.play() }catch(e){} }
+    return;
+  }
+  if(radioState==='playing'){
+    try{
+      var t=radioEl && radioEl.currentTime || 0;
+      if(Math.abs(t-radioLastTime)<0.05) radioStallTicks++;
+      else radioStallTicks=0;
+      radioLastTime=t;
+      if(radioStallTicks>=4){
+        radioStallTicks=0;
+        radioNext();
+        return;
+      }
+      radioForceSound();
+    }catch(e){}
+    return;
+  }
+  if(radioState==='connecting')return;
+  if(radioState==='failed')radioIdx=0;
   radioPlay();
-},30000);
+  try{ radioForceSound() }catch(e){}
+},8000);
 
 /* An announcement that actually made a sound is PROOF this screen may play
    audio - the one thing the radio cannot establish for itself on a wall
@@ -4174,7 +4237,10 @@ var audioOk=false, liveVideo=null;
     }
     if(bdCtx&&bdCtx.state==='suspended'&&bdCtx.resume)bdCtx.resume();
     /* the radio is refused on a screen nobody has touched, just like a clip */
-    if(radioWanted()&&!radioDucked&&radioState!=='playing')radioPlay();
+    if(radioWanted()&&!radioDucked){
+      if(radioState!=='playing') radioPlay();
+      try{ radioForceSound() }catch(e){}
+    }
   },{passive:true});
 });
 
@@ -5549,6 +5615,9 @@ paintCornerQR();
    slow or blocked should still come up playing rather than silent. */
 radioPlay();
 paintRadio();
+setTimeout(function(){ try{ radioForceSound() }catch(e){} }, 800);
+setTimeout(function(){ try{ radioForceSound() }catch(e){} }, 2500);
+setTimeout(function(){ try{ radioForceSound() }catch(e){} }, 6000);
 /* the stock list is a plain file next to this page, so the forecourt slot
    works with no backend at all - it just cannot tell what is new until the
    ledger arrives */
