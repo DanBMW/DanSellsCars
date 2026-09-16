@@ -5437,6 +5437,118 @@ window.dsOnError=function(){
 setTimeout(function(){
   if(!backend){setDot('err');setMonthLabel(viewMonth,'offline')}
 },9000);
+
+/* Walk-in / arrival alerts from walkins-appscript.gs.
+   Paste the web-app /exec URL with ?token=… here. Leave empty to disable. */
+var WALKIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbwUADuhpVbdgDvlumw_Uul-MimvI2fxVpXfN4r_pyp6ZyLGdaxKWATBtMYjy7dowH12/exec?token=TESTER123';
+var WALKIN_POLL_MS = 15000;
+var WALKIN_CHIME = true;
+
+/* ---- walk-in arrival alerts (JSONP from Apps Script) ------------------- */
+/* Same feed as walkins.html: first snapshot primes seen ids with no toast or
+   chime; later new waiting arrivals toast and ding. Ids that disappear are
+   forgotten so a return visit can alert again. Empty WALKIN_GAS_URL = off. */
+var walkinSeen = Object.create(null);
+var walkinPrimed = false;
+var walkinGasSeq = 0;
+var walkinActx = null;
+
+function walkinMapRows(j){
+  var arr = Array.isArray(j) ? j
+          : (j && (j.appointments||j.items||j.walkins||j.data)) || [];
+  var out = [];
+  arr.forEach(function(d,i){
+    if(!d) return;
+    var id = d.id || d._id || d.ref || ('w'+i);
+    var st = String(d.status||d.state||'').toLowerCase().replace(/[\s_]/g,'-');
+    if(['done','complete','completed','closed','left','cancelled','no-show'].indexOf(st)>=0) return;
+    var type = String(d.type!=null?d.type:(d.isWalkIn!=null?d.isWalkIn:d.walkIn||''))
+                 .toLowerCase().replace(/[\s_]/g,'-');
+    var walkIn = type==='walk-in'||type==='walkin'||type==='true'||type==='y'||type==='yes'
+              || d.isWalkIn===true || d.walkIn===true;
+    /* assignedTo on a waiting row is often whose booking it is, not who has
+       them - with-staff comes from status (or an explicit boolean flag) */
+    var withStaff = st==='with-staff'||st==='withstaff'||st==='in-progress'
+                 || st==='assigned'||st==='being-seen'
+                 || d.withStaff===true;
+    var customer = d.customerName||d.name||d.customer||(walkIn?'Walk-in':'Appointment');
+    out.push({id:String(id), customer:String(customer), walkIn:!!walkIn, withStaff:!!withStaff});
+  });
+  return out;
+}
+
+function walkinStrike(f,t,vol){
+  [[1,1,1.9],[2.76,0.34,1.1],[5.4,0.14,0.55],[8.9,0.06,0.3]].forEach(function(p){
+    var o=walkinActx.createOscillator(), g=walkinActx.createGain();
+    o.type='sine'; o.frequency.value=f*p[0];
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol*p[1],t+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+p[2]);
+    o.connect(g); g.connect(walkinActx.destination);
+    o.start(t); o.stop(t+p[2]+0.05);
+  });
+}
+
+function walkinDoorbell(){
+  if(!WALKIN_CHIME) return;
+  try{
+    if(!walkinActx) walkinActx = new (window.AudioContext||window.webkitAudioContext)();
+    /* board already unlocks audio via radio/clips; if still suspended, skip */
+    if(walkinActx.state==='suspended'){
+      try{ walkinActx.resume() }catch(e){}
+    }
+    if(walkinActx.state!=='running') return;
+    var t=walkinActx.currentTime+0.02;
+    walkinStrike(659.25, t,      0.30);   /* ding - E5 */
+    walkinStrike(523.25, t+0.46, 0.30);   /* dong - C5 */
+  }catch(e){}
+}
+
+function walkinDeliver(list){
+  list.forEach(function(r){
+    if(!walkinSeen[r.id]){
+      walkinSeen[r.id]=1;
+      if(walkinPrimed && !r.withStaff){
+        toast((r.walkIn?'Walk-in: ':'Appointment: ')+r.customer, 'ok');
+        walkinDoorbell();
+      }
+    }
+  });
+  walkinPrimed = true;
+  var live=Object.create(null);
+  list.forEach(function(r){ live[r.id]=1 });
+  Object.keys(walkinSeen).forEach(function(k){ if(!live[k]) delete walkinSeen[k] });
+}
+
+function startWalkinAlerts(){
+  if(!WALKIN_GAS_URL) return;
+  var tick=function(){
+    var cb='__walkinGas'+(++walkinGasSeq);
+    var s=document.createElement('script');
+    var done=false;
+    window[cb]=function(j){
+      done=true;
+      cleanup();
+      if(j && j.error){ console.warn('Walk-in alerts:', j.error); return }
+      walkinDeliver(walkinMapRows(j));
+    };
+    function cleanup(){
+      try{ delete window[cb] }catch(e){ window[cb]=undefined }
+      if(s.parentNode) s.parentNode.removeChild(s);
+    }
+    /* a script tag that never answers would leak a node and a global every poll */
+    setTimeout(function(){
+      if(done) return;
+      cleanup();
+    }, Math.min(WALKIN_POLL_MS-1000, 10000));
+    s.src = WALKIN_GAS_URL + (WALKIN_GAS_URL.indexOf('?')<0?'?':'&') + 'callback=' + cb
+          + '&_=' + Date.now();
+    s.onerror = function(){ if(!done) cleanup() };
+    document.head.appendChild(s);
+  };
+  tick(); setInterval(tick, WALKIN_POLL_MS);
+}
+startWalkinAlerts();
 </script>
 
 <script type="module">
