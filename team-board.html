@@ -3938,7 +3938,13 @@ function radioAttach(url){
   /* a live stream has no end; an error means this URL is no good, so move
      to the next candidate rather than sitting silent on a dead one */
   a.onerror=function(){ if(a===radioEl)radioNext() };
-  a.onplaying=function(){ if(a===radioEl){radioState='playing';paintRadio(); try{walkinUnlockAudio()}catch(e){}} };
+  a.onplaying=function(){
+    if(a!==radioEl) return;
+    radioState='playing'; paintRadio();
+    try{walkinUnlockAudio()}catch(e){}
+    /* fade up now there is really something to fade */
+    if(radioFadeInPending){ radioFadeInPending=false; radioFadeTo(radioVol(), 1200) }
+  };
   radioEl=a;
   document.body.appendChild(a);
   return a;
@@ -3988,7 +3994,7 @@ function radioStop(){
 
 /* a clip, cut scene or tune takes the sound, and hands it back afterwards.
    Soft-fade volume over ~1s rather than a hard pause/cut. */
-var radioFadeTimer=null, radioFadeTok=0;
+var radioFadeTimer=null, radioFadeTok=0, radioFadeInPending=false;
 function radioClearFade(){
   if(radioFadeTimer){ clearInterval(radioFadeTimer); radioFadeTimer=null }
 }
@@ -4031,25 +4037,39 @@ function radioDuck(on){
     if(radioEl){
       radioFadeTo(0, 1000, function(){
         if(!radioDucked || !radioEl) return;
-        try{ radioEl.pause() }catch(e){}
+        /* Drop the connection; do not park it paused.
+           A LIVE STREAM CANNOT BE RESUMED. There is no buffered position to
+           come back to, so play() on the same element after a cut scene either
+           stalls for ever or coughs out a few seconds of stale audio and
+           stops - and radioState stays 'playing' throughout, so the keep-alive
+           skips it and nothing ever reconnects. The radio is then dead until
+           the page reloads.
+           That is exactly what the soft fade introduced: the un-duck used to
+           call radioPlay(), which built a fresh element and a fresh
+           connection, and was changed to radioEl.play() on the old one.
+           Reconnecting is the only way back. */
+        radioDrop();
+        radioState='off';
+        paintRadio();
       });
     }
   }else if(radioWanted()){
-    /* bring stream back, then fade volume up */
-    var target=radioVol();
-    if(!radioEl || radioState==='off' || radioState==='failed' || radioState==='waiting'){
-      /* radioPlay respects radioDucked - temporarily clear for attach */
-      radioDucked=false;
-      radioPlay();
-      radioDucked=false;
-      if(radioEl){
-        try{ radioEl.volume=0 }catch(e){}
-        radioFadeTo(target, 1200);
+    /* Always reconnect - see the note above. Resuming the old element is what
+       broke this. The fade is kept: it starts silent and comes up once the
+       stream is genuinely producing sound, rather than fading in over a
+       connection that is not there yet. */
+    radioDucked=false;
+    radioIdx=0;                     /* back to the best stream */
+    radioFadeInPending=true;
+    radioPlay();
+    if(radioEl){ try{ radioEl.volume=0 }catch(e){} }
+    /* if it never reports playing, do not leave it silent for ever */
+    setTimeout(function(){
+      if(radioFadeInPending && radioEl && !radioDucked){
+        radioFadeInPending=false;
+        try{ radioEl.volume=radioVol() }catch(e){}
       }
-    }else{
-      try{ var go=radioEl.play(); if(go&&go.catch)go.catch(function(){}) }catch(e){}
-      radioFadeTo(target, 1200);
-    }
+    }, 6000);
   }
   paintRadio();
 }
@@ -4107,7 +4127,7 @@ function paintRadio(){
   var b=$('radio-toggle');
   if(b)b.classList.toggle('on', sOn('radio'));
   /* do not fight an in-progress soft fade */
-  if(radioEl && !radioFadeTimer && !radioDucked) radioEl.volume=radioVol();
+  if(radioEl && !radioFadeTimer && !radioDucked && !radioFadeInPending) radioEl.volume=radioVol();
 }
 
 function setRadioOn(on){

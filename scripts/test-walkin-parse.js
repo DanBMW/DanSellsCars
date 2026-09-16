@@ -18,8 +18,19 @@ const vm = require('vm');
 const GS = path.join(__dirname, '..', 'walkins-appscript.gs');
 
 /* ---- sample mailbox --------------------------------------------------- */
-const T = new Date(); T.setHours(13, 28, 0, 0);
+/* Anchored to NOW, not to a fixed hour of the day.
+   It used to pin the samples to 13:28, so once the real clock passed about
+   17:30 the older ones fell outside the script's four-hour STALE_MINS window
+   and simply disappeared - the suite passed all morning and failed all
+   afternoon. A test that depends on when you run it is worse than no test. */
+const T = new Date();
 const min = m => T.getTime() + m * 60000;
+/* the "Arrived:" line the email would carry for a given offset, so the
+   stated time and the email's own timestamp always agree */
+const hhmm = m => {
+  const d = new Date(min(m)), p = n => (n < 10 ? '0' : '') + n;
+  return p(d.getHours()) + ':' + p(d.getMinutes());
+};
 
 /* The banner the mail gateway staples on the front of every external
    message. It is in the real emails, so it is in the test. */
@@ -71,23 +82,23 @@ If the button does not work, open: https://appointments-c180e.web.app/dashboard?
 const SAMPLES = {
   inbox: [
     { at: min(-30), subject: 'Customer arrived - Ben Griffin',
-      body: apptArrival('Ben Griffin', '11:28', '12:00', 'Daniel Cane',
+      body: apptArrival('Ben Griffin', hhmm(-30), hhmm(-2), 'Daniel Cane',
                         'New', '1 Series', 'FjZaSpiEe0cHFgZpELij') },
     { at: min(-52), subject: 'Walk-in waiting - Jay',
-      body: arrival('Jay', '12:36', 'New', '1 Series, 2 Series, 3 Series') },
+      body: arrival('Jay', hhmm(-52), 'New', '1 Series, 2 Series, 3 Series') },
     { at: min(-105), subject: 'Walk-in waiting - Chris',
-      body: arrival('Chris', '10:43', 'Used', '4 Series') },
+      body: arrival('Chris', hhmm(-105), 'Used', '4 Series') },
     /* a second Chris, later the same morning - the pick-up below belongs to
        the FIRST one, and must not clear this one */
     { at: min(-8), subject: 'Walk-in waiting - Chris',
-      body: arrival('Chris', '13:20', 'Used', 'X3') },
+      body: arrival('Chris', hhmm(-8), 'Used', 'X3') },
     /* the same notification arriving twice */
     { at: min(-50), subject: 'Walk-in waiting - Jay',
-      body: arrival('Jay', '12:36', 'New', '1 Series, 2 Series, 3 Series') },
+      body: arrival('Jay', hhmm(-52), 'New', '1 Series, 2 Series, 3 Series') },
     /* a fresh pick-up is still in the inbox - this is the case that both
        turns the card green AND gets announced on the board */
     { at: min(-100), subject: 'Walk-in taken - Chris',
-      body: pickup('Clive Ankomah', 'Chris', '10:43', 'Used', '4 Series') }
+      body: pickup('Clive Ankomah', 'Chris', hhmm(-105), 'Used', '4 Series') }
   ],
   seen: []
 };
@@ -191,8 +202,7 @@ ok('walk-ins are typed as walk-ins, not appointments',
 ok('a walk-in is not shown as booked with anybody',
    rows.filter(r => r.type === 'walk-in').every(r => !r.bookedWith));
 ok("reception's recorded time is used, not the email's timestamp",
-   !!jay && new Date(jay.arrivalTime).getHours() === 12
-         && new Date(jay.arrivalTime).getMinutes() === 36,
+   !!jay && new Date(jay.arrivalTime).toTimeString().slice(0,5) === hhmm(-52),
    jay && new Date(jay.arrivalTime).toTimeString().slice(0, 5));
 ok('what they came in for is captured',
    !!jay && jay.carType === 'New'
@@ -203,16 +213,16 @@ ok('the executive who took them is named in full',
    chrises.map(c => c.assignedTo || '-').join(', '));
 ok('BOTH Chrises are on the board', chrises.length === 2);
 ok('the pick-up clears the 10:43 Chris...',
-   chrises.filter(c => new Date(c.arrivalTime).getMinutes() === 43)
+   chrises.filter(c => new Date(c.arrivalTime).toTimeString().slice(0,5) === hhmm(-105))
           .every(c => c.status === 'with-staff'));
 ok('...and NOT the 13:20 Chris who is still waiting',
-   chrises.filter(c => new Date(c.arrivalTime).getMinutes() === 20)
+   chrises.filter(c => new Date(c.arrivalTime).toTimeString().slice(0,5) === hhmm(-8))
           .every(c => c.status === 'waiting'),
    chrises.map(c => new Date(c.arrivalTime).toTimeString().slice(0,5)
                     + '=' + c.status).join(', '));
 ok('Jay has nobody with him yet', !!jay && jay.status === 'waiting');
 ok('a resent notification keeps the first arrival time',
-   !!jay && new Date(jay.arrivalTime).getMinutes() === 36);
+   !!jay && new Date(jay.arrivalTime).toTimeString().slice(0,5) === hhmm(-52));
 
 /* --- the appointment layout --- */
 const ben = by('Ben Griffin')[0];
@@ -220,12 +230,11 @@ ok('the appointment email is read at all', !!ben);
 ok('...and typed as an appointment, not a walk-in',
    !!ben && ben.type === 'appointment', ben && ben.type);
 ok('...with "Arrival time:" understood, not just "Arrived:"',
-   !!ben && new Date(ben.arrivalTime).getHours() === 11
-         && new Date(ben.arrivalTime).getMinutes() === 28,
+   !!ben && new Date(ben.arrivalTime).toTimeString().slice(0,5) === hhmm(-30),
    ben && new Date(ben.arrivalTime).toTimeString().slice(0, 5));
 ok('...the appointment time itself',
    !!ben && !!ben.appointmentTime
-         && new Date(ben.appointmentTime).getHours() === 12,
+         && new Date(ben.appointmentTime).toTimeString().slice(0,5) === hhmm(-2),
    ben && ben.appointmentTime && new Date(ben.appointmentTime).toTimeString().slice(0, 5));
 ok('...Owner read as who it is booked with',
    !!ben && ben.bookedWith === 'Daniel Cane', ben && ben.bookedWith);
@@ -280,7 +289,7 @@ const tidied = {
 };
 const tidyRows = load(tidied).scan().appointments;
 const tidyChris = tidyRows.filter(r => r.customerName === 'Chris'
-  && new Date(r.arrivalTime).getMinutes() === 43);
+  && new Date(r.arrivalTime).toTimeString().slice(0,5) === hhmm(-105));
 ok('an ARCHIVED pick-up still clears the card',
    tidyChris.length === 1 && tidyChris[0].status === 'with-staff'
      && tidyChris[0].assignedTo === 'Clive Ankomah',
