@@ -4017,7 +4017,11 @@ function radioDuck(on){
   on=!!on;
   if(on===radioDucked && !(on && radioEl && radioEl.volume>0.02)){
     /* already in the requested state */
-    if(!on && radioWanted() && (!radioEl || radioState==='off' || radioState==='failed'))
+    /* 'waiting' belongs here too. A screen refused autoplay parks in it
+       indefinitely, and leaving it out meant an un-duck on a screen that had
+       never got going did nothing at all. */
+    if(!on && radioWanted() && (!radioEl || radioState==='off'
+       || radioState==='failed' || radioState==='waiting'))
       radioPlay();
     paintRadio();
     return;
@@ -4059,6 +4063,32 @@ setInterval(function(){
   if(radioState==='failed')radioIdx=0;      /* start the list again */
   radioPlay();
 },30000);
+
+/* An announcement that actually made a sound is PROOF this screen may play
+   audio - the one thing the radio cannot establish for itself on a wall
+   television nobody ever touches. Autoplay is refused at boot, the radio
+   parks in 'waiting', and no tap is ever coming to release it. So every time
+   the board speaks, the radio gets another go from the top of the list. */
+/* One line that answers "why is that screen silent?" without anyone
+   having to guess from outside: whether audio is permitted on it, and what
+   the radio is doing. Shown on the admin Test walk-in toast. */
+function walkinVoiceReport(){
+  var v;
+  try{ v = walkinActx ? ('audio '+walkinActx.state) : 'audio not started' }
+  catch(e){ v='audio unknown' }
+  var r;
+  try{ r = 'radio '+radioState+(radioDucked?' (ducked)':'') }
+  catch(e){ r='radio unknown' }
+  return v+', '+r;
+}
+
+function radioKick(){
+  if(!radioWanted() || radioDucked) return;
+  if(radioState==='playing' || radioState==='connecting') return;
+  audioOk=true;              /* we just made a noise, so it is allowed */
+  radioIdx=0;                /* back to the best stream, not the last dud */
+  radioPlay();
+}
 
 function radioStatusText(){
   if(!sOn('radio'))       return 'Paused on every screen.';
@@ -5571,10 +5601,15 @@ setTimeout(function(){
 
 /* Walk-in / arrival alerts from walkins-appscript.gs.
    Paste the web-app /exec URL with ?token=… here. Leave empty to disable. */
-var WALKIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbwUADuhpVbdgDvlumw_Uul-MimvI2fxVpXfN4r_pyp6ZyLGdaxKWATBtMYjy7dowH12/exec?token=TESTER123';
+var WALKIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbz0KDw3SkyjcDzXIgxeaxdQFykPRVf5U8k2Z83bN-swFiAek9noDkvDGIaU6tkzXZhs/exec?token=TESTER123';
 var WALKIN_POLL_MS = 15000;
 var WALKIN_SPEAK = true;  /* read the card aloud instead of a doorbell */
 var WALKIN_WAIT_MS = 10*60*1000; /* speak once when still waiting this long */
+/* The longest the radio may ever be held down for one announcement. The
+   un-duck depends on a callback arriving; this keeps the promise even
+   when one does not, so a fault in the speech chain cannot silence the
+   showroom for the rest of the day. */
+var WALKIN_SPEAK_MAX_MS = 30*1000;
 
 /* ---- walk-in arrival alerts (JSONP from Apps Script) ------------------- */
 /* Same feed as walkins.html: first snapshot primes seen ids with no toast or
@@ -5852,26 +5887,32 @@ function walkinStrike(f,t,vol){
   });
 }
 
-function walkinChimeFallback(){
+/* The two strikes, and how long to hold the voice back for them. */
+var WALKIN_BELL_LEN = 1.15;
+
+/* The bell, and ONLY the bell - it does not touch the radio. It used to duck
+   and un-duck on its own 1.7s timer, which was harmless while it rang only
+   INSTEAD of the voice; ringing it BEFORE the voice, that timer would bring
+   the radio back up in the middle of the announcement. walkinSpeak owns the
+   ducking now.
+   Returns the AudioContext time the voice should start at. Same context as
+   the speech, so the hand-over is scheduled to the sample rather than raced
+   with a setTimeout. 0 means no bell rang and the voice need not wait. */
+function walkinBell(){
   try{
     var AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC) return;
+    if(!AC) return 0;
     if(!walkinActx) walkinActx=new AC();
-    var ring=function(){
-      if(!walkinActx) return;
-      try{ if(walkinActx.state==='suspended') walkinActx.resume(); }catch(e){}
-      try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
-      var t0=walkinActx.currentTime+0.02;
-      walkinStrike(659.25, t0, 1.0);
-      walkinStrike(523.25, t0+0.48, 1.0);
-      setTimeout(function(){
-        try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
-      }, 1700);
-    };
-    if(walkinActx.state==='suspended') walkinActx.resume().then(ring).catch(ring);
-    else ring();
-  }catch(e){}
+    try{ if(walkinActx.state==='suspended') walkinActx.resume(); }catch(e){}
+    var t0=walkinActx.currentTime+0.02;
+    walkinStrike(659.25, t0, 1.0);
+    walkinStrike(523.25, t0+0.48, 1.0);
+    return t0+WALKIN_BELL_LEN;
+  }catch(e){ return 0 }
 }
+
+/* kept for callers that just want the bell */
+function walkinChimeFallback(){ return walkinBell() }
 
 /* Same-origin Web Audio TTS (sam-js). LG webOS blocks remote audio + speechSynthesis;
    Web Audio oscillators already work for the chime, so this path should speak on the walls. */
@@ -5889,7 +5930,7 @@ function walkinSpeakPrep(line){
 
 /* British Google voice via Apps Script (server fetch). LG blocks translate.google.com
    in the TV browser; UrlFetchApp works, then we decode into walkinActx. */
-function walkinSpeakGas(line, onDone){
+function walkinSpeakGas(line, onDone, notBefore){
   if(!WALKIN_GAS_URL){ if(onDone) onDone(false); return; }
   var done=false;
   var finish=function(ok){
@@ -5903,7 +5944,14 @@ function walkinSpeakGas(line, onDone){
   var timer=setTimeout(function(){ finish(false); }, 12000);
   window[cb]=function(payload){
     clearTimeout(timer);
-    if(!payload || !payload.audio){ finish(false); return; }
+    /* Accept either shape. The script has been through two spellings -
+       {audio:"..."} and {clips:["...","..."]} - and the board asking for one
+       while the deployment serves the other is silent failure that looks
+       exactly like a broken voice. It is not the board's business which
+       version happens to be deployed. */
+    var parts = payload && payload.clips && payload.clips.length ? payload.clips
+              : (payload && payload.audio ? [payload.audio] : null);
+    if(!parts){ finish(false); return; }
     try{
       var AC=window.AudioContext||window.webkitAudioContext;
       if(!AC){ finish(false); return; }
@@ -5915,19 +5963,33 @@ function walkinSpeakGas(line, onDone){
             walkinMaster.gain.value=3.2;
             walkinMaster.connect(walkinActx.destination);
           }
-          var bin=atob(payload.audio);
-          var bytes=new Uint8Array(bin.length);
-          for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-          walkinActx.decodeAudioData(bytes.buffer.slice(0), function(buf){
+          var bufs=[], want=parts.length, bad=false;
+          parts.forEach(function(b64, idx){
+            var bin=atob(b64);
+            var bytes=new Uint8Array(bin.length);
+            for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+            walkinActx.decodeAudioData(bytes.buffer.slice(0), function(buf){
+              if(bad) return;
+              bufs[idx]=buf;
+              if(bufs.filter(Boolean).length===want) go();
+            }, function(){ if(!bad){ bad=true; finish(false) } });
+          });
+          function go(){
             try{
-              var src=walkinActx.createBufferSource();
-              src.buffer=buf;
-              src.connect(walkinMaster);
-              src.onended=function(){ finish(true); };
-              src.start(0);
-              setTimeout(function(){ if(!done) finish(true); }, Math.max(2500, (buf.duration||2)*1000+400));
+              /* begin as the bell dies away, not over the top of it */
+              var at=Math.max(walkinActx.currentTime, notBefore||0);
+              var hold=Math.max(0, at-walkinActx.currentTime), total=0;
+              bufs.forEach(function(buf,k){
+                var src=walkinActx.createBufferSource();
+                src.buffer=buf;
+                src.connect(walkinMaster);
+                src.start(at); at+=buf.duration; total+=buf.duration;
+                if(k===bufs.length-1) src.onended=function(){ finish(true); };
+              });
+              setTimeout(function(){ if(!done) finish(true); },
+                         Math.max(2500, total*1000 + hold*1000 + 400));
             }catch(e){ finish(false); }
-          }, function(){ finish(false); });
+          }
         }catch(e){ finish(false); }
       };
       if(walkinActx.state==='suspended'){
@@ -5940,53 +6002,11 @@ function walkinSpeakGas(line, onDone){
   s.onerror=function(){ clearTimeout(timer); finish(false); };
   s.src = WALKIN_GAS_URL
     + (WALKIN_GAS_URL.indexOf('?')<0?'?':'&')
+    /* both spellings, so it works against whichever version is deployed */
     + 'speak=' + encodeURIComponent(String(line||'').slice(0,180))
+    + '&say=' + encodeURIComponent(String(line||'').slice(0,180))
     + '&callback=' + cb;
   document.head.appendChild(s);
-}
-
-function walkinSpeakSam(line, onDone){
-  if(typeof SamJs !== 'function'){
-    if(onDone) onDone(false); return;
-  }
-  var done=false;
-  var finish=function(ok){
-    if(done) return; done=true;
-    if(onDone) onDone(!!ok);
-  };
-  try{
-    var AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC){ finish(false); return; }
-    if(!walkinActx) walkinActx=new AC();
-    var play=function(){
-      try{
-        if(!walkinMaster){
-          walkinMaster=walkinActx.createGain();
-          walkinMaster.gain.value=3.2;
-          walkinMaster.connect(walkinActx.destination);
-        }
-        var sam=new SamJs({pitch:64, speed:72, mouth:128, throat:128});
-        var spoken=walkinSpeakPrep(line);
-        var samples=sam.buf32(spoken);
-        if(!samples || !samples.length){ finish(false); return; }
-        var buf=walkinActx.createBuffer(1, samples.length, 22050);
-        var ch=buf.getChannelData(0);
-        for(var i=0;i<samples.length;i++) ch[i]=samples[i];
-        var src=walkinActx.createBufferSource();
-        src.buffer=buf;
-        src.connect(walkinMaster);
-        src.onended=function(){ finish(true); };
-        src.start(0);
-        var ms=Math.max(2500, Math.min(25000, (samples.length/22050)*1000 + 400));
-        setTimeout(function(){ if(!done) finish(true); }, ms);
-      }catch(e){ finish(false); }
-    };
-    if(walkinActx.state==='suspended'){
-      walkinActx.resume().then(play).catch(function(){ play(); });
-    }else{
-      play();
-    }
-  }catch(e){ finish(false); }
 }
 
 /* Remote TTS as MP3 — fallback when same-origin speech is unavailable. */
@@ -6068,31 +6088,46 @@ function walkinSpeak(r){
   var line=walkinAnnounceText(r);
   if(!line) return;
   try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
-  var finished=false;
+  var finished=false, guard=null;
   var unduck=function(){
     if(finished) return; finished=true;
+    if(guard){ clearTimeout(guard); guard=null; }
     walkinStopSpeechWatch();
     walkinClearAudio();
     try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
+    /* an announcement that made a sound proves this screen is allowed to,
+       which is the one thing the radio cannot find out for itself */
+    try{ if(typeof radioKick==='function') radioKick(); }catch(e){}
   };
-  /* 1) British Google voice via Apps Script → Web Audio (natural, works on LG)
-     2) Same-origin SAM Web Audio
-     3) Direct remote audio / speechSynthesis
-     4) chime so the floor is never silent */
-  walkinSpeakGas(line, function(ok){
-    if(ok){ unduck(); return; }
-    walkinSpeakSam(line, function(ok2){
-      if(ok2){ unduck(); return; }
-      walkinSpeakAudio(line, function(ok3){
-        if(ok3){ unduck(); return; }
-        walkinSpeakSynth(line, function(ok4){
-          if(ok4){ unduck(); return; }
-          walkinChimeFallback();
-          setTimeout(unduck, 1800);
+  /* Ducking the radio is a promise to un-duck it, and this board sits on a
+     wall unattended. Every un-duck below depends on a callback arriving; one
+     that never does leaves the radio off for the REST OF THE DAY, because
+     the keep-alive stands down while ducked and so cannot rescue it. The
+     promise is kept by a timer, not by trust. */
+  guard=setTimeout(unduck, WALKIN_SPEAK_MAX_MS);
+
+  /* The bell rings FIRST, every time. It is what makes somebody look up, and
+     a name read out cold is half missed. The voice is fetched while it rings
+     and scheduled to begin as the second strike dies away, so the bell costs
+     no delay at all - the audio is usually ready before it has finished. */
+  var startAt=0;
+  try{ startAt=walkinBell(); }catch(e){}   /* never let the bell take the rest down */
+
+  try{
+    walkinSpeakGas(line, function(ok){
+      if(ok){ unduck(); return; }
+      /* no voice to be had - the bell has already done the useful half */
+      walkinSpeakAudio(line, function(ok2){
+        if(ok2){ unduck(); return; }
+        walkinSpeakSynth(line, function(ok3){
+          if(ok3){ unduck(); return; }
+          setTimeout(unduck, 600);
         });
       });
-    });
-  });
+    }, startAt);
+  }catch(e){
+    setTimeout(unduck, 600);
+  }
 }
 
 /* kept for older callers */
@@ -6392,7 +6427,6 @@ try{
 startWalkinAlerts();
 </script>
 
-<script src="tts/samjs.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, update, remove, get, set }
