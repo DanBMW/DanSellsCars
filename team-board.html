@@ -3563,7 +3563,9 @@ window.dsOnControl=function(v){
     if(!firstWn&&Date.now()-wt<120000){
       controlPrimed=true;
       toast('Test walk-in','ok');
-      if(typeof walkinDoorbell==='function') walkinDoorbell();
+      var sample={customer:'Mr Whitfield', walkIn:true, carType:'New', models:'1 Series, X1', arrived:Date.now()};
+      walkinShowCard(sample);
+      if(typeof walkinSpeak==='function') walkinSpeak(sample);
       return;
     }
   }
@@ -3577,8 +3579,9 @@ function playNow(src){
   if(!src)return;
   /* temporary admin test: toast + doorbell, same as a real walk-in alert */
   if(src==='walkin:test'){
-    walkinShowCard({customer:'Mr Whitfield', walkIn:true, carType:'New', models:'1 Series, X1', arrived:Date.now()});
-    if(typeof walkinDoorbell==='function') walkinDoorbell();
+    var sample={customer:'Mr Whitfield', walkIn:true, carType:'New', models:'1 Series, X1', arrived:Date.now()};
+    walkinShowCard(sample);
+    if(typeof walkinSpeak==='function') walkinSpeak(sample);
     return;
   }
   if(src==='premiere:arm'){ armPremiere(); return }
@@ -5570,7 +5573,7 @@ setTimeout(function(){
    Paste the web-app /exec URL with ?token=… here. Leave empty to disable. */
 var WALKIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbwUADuhpVbdgDvlumw_Uul-MimvI2fxVpXfN4r_pyp6ZyLGdaxKWATBtMYjy7dowH12/exec?token=TESTER123';
 var WALKIN_POLL_MS = 15000;
-var WALKIN_CHIME = true;
+var WALKIN_SPEAK = true;  /* read the card aloud instead of a doorbell */
 
 /* ---- walk-in arrival alerts (JSONP from Apps Script) ------------------- */
 /* Same feed as walkins.html: first snapshot primes seen ids with no toast or
@@ -5661,7 +5664,7 @@ function walkinPlayNext(){
   walkinShowing=true;
   var r=walkinQueue.shift();
   walkinShowCard(r);
-  walkinDoorbell();
+  walkinSpeak(r);
 }
 function walkinFlashScreen(){
   var el=$('walkin-flash');
@@ -5710,49 +5713,78 @@ function walkinShowCard(r){
   walkinPopTimer=setTimeout(walkinHideCard, 30000);
 }
 
-function walkinStrike(f,t,vol){
-  if(!walkinMaster){
-    walkinMaster=walkinActx.createGain();
-    walkinMaster.gain.value=3.2;   /* at least 3x louder than the old 0.30 ring */
-    walkinMaster.connect(walkinActx.destination);
-  }
-  [[1,1,1.9],[2.76,0.45,1.2],[5.4,0.22,0.7],[8.9,0.12,0.4]].forEach(function(p){
-    var o=walkinActx.createOscillator(), g=walkinActx.createGain();
-    o.type='sine'; o.frequency.value=f*p[0];
-    g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(Math.min(1, vol*p[1]),t+0.005);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+p[2]);
-    o.connect(g); g.connect(walkinMaster);
-    o.start(t); o.stop(t+p[2]+0.05);
-  });
+function walkinAnnounceText(r){
+  r=r||{};
+  var bits=[];
+  bits.push(r.walkIn ? 'Walk-in' : 'Appointment');
+  bits.push(r.customer || 'customer');
+  var interest=[r.carType, r.models].filter(Boolean).join(', ');
+  if(interest) bits.push(interest);
+  if(r.bookedWith) bits.push('Booked with '+r.bookedWith);
+  if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived));
+  else bits.push('Just arrived');
+  return bits.join('. ') + '.';
 }
 
-function walkinDoorbell(){
-  if(!WALKIN_CHIME) return;
+function walkinPickVoice(){
   try{
-    var AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC) return;
-    if(!walkinActx) walkinActx = new AC();
-    var ring=function(){
-      if(!walkinActx || walkinActx.state!=='running') return;
-      try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
-      var t0=walkinActx.currentTime+0.02;
-      walkinStrike(659.25, t0,      1.0);
-      walkinStrike(523.25, t0+0.48, 1.0);
-      setTimeout(function(){
-        try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
-      }, 1700);
-    };
-    if(walkinActx.state==='suspended'){
-      walkinActx.resume().then(ring).catch(function(){
-        try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
-      });
-    }else{
-      ring();
+    var list=window.speechSynthesis.getVoices()||[];
+    var prefer=['en-GB','en_GB','en-UK'];
+    for(var i=0;i<prefer.length;i++){
+      for(var j=0;j<list.length;j++){
+        if((list[j].lang||'').indexOf(prefer[i].slice(0,5))===0) return list[j];
+      }
     }
-  }catch(e){
-    try{ if(typeof radioDuck==='function') radioDuck(false); }catch(err){}
+    for(var k=0;k<list.length;k++){
+      if(/^en/i.test(list[k].lang||'')) return list[k];
+    }
+  }catch(e){}
+  return null;
+}
+
+function walkinSpeak(r){
+  if(!WALKIN_SPEAK) return;
+  if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
+    console.warn('Walk-in speak: speechSynthesis not available');
+    return;
   }
+  var line=walkinAnnounceText(r);
+  try{ window.speechSynthesis.cancel() }catch(e){}
+  try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
+  var u=new SpeechSynthesisUtterance(line);
+  u.lang='en-GB';
+  u.rate=1;
+  u.pitch=1;
+  u.volume=1;
+  var voice=walkinPickVoice();
+  if(voice) u.voice=voice;
+  var done=false;
+  var finish=function(){
+    if(done) return; done=true;
+    try{ if(typeof radioDuck==='function') radioDuck(false); }catch(e){}
+  };
+  u.onend=finish;
+  u.onerror=finish;
+  /* safety unduck if the engine never fires end */
+  setTimeout(finish, 20000);
+  try{
+    /* Chrome often has empty voices until this event */
+    if(!(window.speechSynthesis.getVoices()||[]).length){
+      window.speechSynthesis.onvoiceschanged=function(){
+        window.speechSynthesis.onvoiceschanged=null;
+        var v=walkinPickVoice(); if(v) u.voice=v;
+        window.speechSynthesis.speak(u);
+      };
+    }
+    window.speechSynthesis.speak(u);
+  }catch(e){
+    finish();
+  }
+}
+
+/* kept name for any leftover callers — speaks a generic line */
+function walkinDoorbell(){
+  walkinSpeak({walkIn:true, customer:'Walk-in'});
 }
 
 function walkinVisitKey(r){
@@ -5860,9 +5892,18 @@ function startWalkinAlerts(){
 function walkinUnlockAudio(){
   try{
     var AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC) return;
-    if(!walkinActx) walkinActx = new AC();
-    if(walkinActx.state==='suspended') walkinActx.resume();
+    if(AC){
+      if(!walkinActx) walkinActx = new AC();
+      if(walkinActx.state==='suspended') walkinActx.resume();
+    }
+  }catch(e){}
+  try{
+    if(window.speechSynthesis){
+      window.speechSynthesis.getVoices();
+      /* empty utterance unlocks TTS on some locked-down wall browsers */
+      var u=new SpeechSynthesisUtterance('');
+      u.volume=0; window.speechSynthesis.speak(u); window.speechSynthesis.cancel();
+    }
   }catch(e){}
 }
 document.addEventListener('pointerdown', walkinUnlockAudio, {passive:true});
