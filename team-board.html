@@ -870,6 +870,19 @@ body.premiere .credit{opacity:0;transition:opacity .6s ease}
 body.premiere .pairqr{display:none!important}
 @media(max-width:1199px){ .pairqr{display:none!important} }
 
+.radio-fab{
+  position:fixed;bottom:clamp(12px,2.2vh,28px);left:clamp(12px,1.6vw,24px);z-index:320;
+  width:52px;height:52px;border-radius:50%;border:0;cursor:pointer;
+  background:rgba(12,14,18,.88);color:#fff;font-size:22px;line-height:1;
+  box-shadow:0 6px 22px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.radio-fab:active{transform:scale(.96)}
+.radio-fab.on{background:#c8102e;box-shadow:0 6px 22px rgba(200,16,46,.45)}
+.radio-fab.wait{animation:radioPulse 1.4s ease-in-out infinite}
+.radio-fab[hidden]{display:none!important}
+@keyframes radioPulse{0%,100%{opacity:.75}50%{opacity:1}}
 .cornerqr{
   position:fixed;top:clamp(10px,1.4vh,18px);right:clamp(10px,1.2vw,20px);z-index:310;
   display:none;flex-direction:column;align-items:center;gap:7px;text-align:center;
@@ -1487,6 +1500,8 @@ body.premiere .pairqr{display:none!important}
   </div>
 </div>
 
+<!-- radio play / pause — phones need a tap; walls can use it if autoplay is waiting -->
+<button type="button" class="radio-fab" id="radio-fab" aria-label="Play radio" title="Play radio">♪</button>
 <!-- the mug shot QR, up permanently in the top right corner -->
 <div class="cornerqr" id="cornerqr" aria-hidden="true">
   <svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg>
@@ -1559,7 +1574,7 @@ body.premiere .pairqr{display:none!important}
       <div id="ev-screens" style="display:none"></div>
 
       <h2 style="margin-top:22px;font-size:1rem">Radio</h2>
-      <p class="hint" style="margin-bottom:10px">Kisstory R&amp;B on the wall all day. It keeps playing over mug shots
+      <p class="hint" style="margin-bottom:10px">Kisstory R&amp;B all day. Full volume over mug shots, leader dance, fire and Will swimming; quieter under video sketches / premiere / walk-in speech. Phones use the corner ♪ button. It keeps playing over mug shots
         and picture boards, softens under cut scenes / sketches / walk-in speech, and comes back up after.
         Pausing here pauses every screen.</p>
       <div class="tog on" id="radio-toggle">
@@ -2458,7 +2473,7 @@ function champScene(c){
   var el=$('champscene');
   if(!el)return false;
   stopScenes();
-  var g=sceneStart(true); /* soft-duck radio under cut scene */
+  var g=sceneStart(); /* radio stays up over champion card */
   var img=$('ch-head');
   img.onerror=function(){this.style.visibility='hidden'};
   img.style.visibility='';
@@ -3529,7 +3544,7 @@ var CLIPS=[
   /* Recorded off Clive's Driving School - the pool cutscene is a live three.js
      scene, not a file, so it was captured frame by frame at a pinned 1/20s
      timestep and encoded. Re-record it the same way if the scene changes. */
-  {src:'video/sketch-pool.mp4',        cap:'Will at his swimming session', name:'Will swims', ar:16/9}
+  {src:'video/sketch-pool.mp4',        cap:'Will at his swimming session', name:'Will swims', ar:16/9, sound:false}
 ];
 /* ---- shared board controls, driven from the manager panel ----
    The manager may be on a phone while the board is on the wall, so the toggle
@@ -3920,21 +3935,22 @@ function pickClip(){
 /* Fresh Bauer key from the live radio-browser listing (Airable player id).
    Prefer MP3 for Kisstory R&B: AAC was stammering on the LG wall TVs. */
 var RADIO_KEY = '?direct=true&aw_0_1st.playerid=BMUK_Airable&aw_0_1st.skey=6778249992';
-/* Prefer HTTPS MP3 for LG webOS (AAC stammered). Kisstory R&B first; soul/R&B
-   MP3 keep-alives next; AAC only after MP3s fail. */
+/* HTTPS MP3 first for LG webOS. Kisstory R&B, then solid soul/R&B keep-alives.
+   Skip dead CDNs. AAC only after MP3s fail. */
 var RADIO_SOURCES = [
-  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.mp3'+RADIO_KEY, /* Kisstory R&B MP3 */
-  'https://stream-kiss.hellorayo.co.uk/kisstoryrb.mp3'+RADIO_KEY,     /* R&B MP3 CDN 2 (if served) */
-  'https://londonsoulradio.out.airtime.pro:8000/londonsoulradio_a',   /* London Soul Radio */
-  'https://stream.soulconnexionradio.com/1045',                      /* Soul Connexion 320k */
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.mp3'+RADIO_KEY, /* Kisstory R&B */
+  'https://stream-kiss.planetradio.co.uk/kisstory.mp3'+RADIO_KEY,    /* Kisstory MP3 mirror */
+  'https://stream.soulconnexionradio.com/1045',                      /* Soul Connexion */
+  'https://londonsoulradio.out.airtime.pro:8000/londonsoulradio_a',  /* London Soul */
   'https://a7.asurahosting.com:8230/radio.mp3',                      /* Soul Rhythms UK */
-  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY, /* R&B AAC last */
+  'https://mystation.micast.media/radio/8020/radio.mp3',             /* SD Radio R&B */
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY,/* R&B AAC last */
   'https://live-kiss.sharp-stream.com/kiss100.mp3'                   /* Kiss national last resort */
 ];
 var RADIO_NAME='Kisstory R&B';
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 
-var radioLastTime=0, radioStallTicks=0, radioSwapEl=null;
+var radioLastTime=0, radioStallTicks=0, radioSwapEl=null, radioBuffering=false;
 
 /* Force audible output when UI says playing but wall is silent (volume stuck
    at 0, muted flag, or suspended AudioContext). */
@@ -3988,7 +4004,14 @@ function radioRefreshStream(){
   try{ radioForceSound() }catch(e){}
 }
 
-function radioWanted(){ return sOn('radio') && window.innerWidth>=1200 }
+var radioUserArmed=false; /* phone/tablet: corner play button (or admin) arms audio */
+var radioUserPaused=false; /* corner pause — do not auto-resume until they hit play */
+function radioWanted(){
+  if(!sOn('radio')) return false;
+  /* Walls auto-start; phones need an explicit play tap (browser autoplay rules). */
+  if(window.innerWidth>=1200) return true;
+  return !!radioUserArmed;
+}
 function radioVol(){ return Math.max(0, Math.min(100, sNum('radiovol', 45))) / 100 }
 
 /* One element per attempt, deliberately.
@@ -4018,12 +4041,17 @@ function radioAttach(url){
     if(a!==radioEl) return;
     radioState='playing'; paintRadio();
     radioStallTicks=0;
+    radioBuffering=false;
     try{walkinUnlockAudio()}catch(e){}
     /* fade up now there is really something to fade */
     if(radioFadeInPending){ radioFadeInPending=false; radioFadeTo(radioVol(), 1200) }
     else if(!radioDucked){ try{ a.volume=radioVol() }catch(e){} }
     try{ radioForceSound() }catch(e){}
+    try{ paintRadioFab() }catch(e){}
   };
+  a.onwaiting=function(){ if(a===radioEl) radioBuffering=true; };
+  a.onstalled=function(){ if(a===radioEl) radioBuffering=true; };
+  a.oncanplay=function(){ if(a===radioEl) radioBuffering=false; };
   radioEl=a;
   document.body.appendChild(a);
   return a;
@@ -4124,7 +4152,7 @@ function radioFadeTo(target, ms, then){
       try{ a.volume=target }catch(err){}
       if(then)then();
     }
-  }, 80);
+  }, 200);
 }
 /* Quiet enough to hear announcements, loud enough that the room still feels
    like the radio is on. Scales with the admin radio volume. */
@@ -4187,6 +4215,7 @@ function radioDuck(on){
    playhead is frozen for a long stretch. */
 setInterval(function(){
   if(!radioWanted())return;
+  if(radioUserPaused)return;
   if(radioDucked){
     if(radioEl){
       try{
@@ -4210,24 +4239,25 @@ setInterval(function(){
           if(p2&&p2.catch) p2.catch(function(){});
         }catch(e){}
         radioStallTicks++;
-        if(radioStallTicks>=24){ /* ~2 min paused */
+        if(radioStallTicks>=36){ /* ~3 min paused → hard refresh */
           radioStallTicks=0;
           radioRefreshStream();
         }
         return;
       }
-      /* Live streams: currentTime should advance. Frozen = silent buffer. */
-      var t=a.currentTime||0;
-      if(t>0 && Math.abs(t-radioLastTime)<0.05){
+      /* Live MP3 on LG often freezes currentTime while audio still plays.
+         Only treat as dead when the element reports buffering/stall. */
+      if(radioBuffering){
         radioStallTicks++;
-        if(radioStallTicks>=12){ /* ~60s frozen */
+        if(radioStallTicks>=18){ /* ~90s of waiting/stalled */
           radioStallTicks=0;
+          radioBuffering=false;
           radioLastTime=0;
-          radioNext(); /* try next source without full drop loop */
+          radioNext();
         }
       }else{
-        radioLastTime=t;
         radioStallTicks=0;
+        radioLastTime=a.currentTime||0;
       }
     }catch(e){}
     return;
@@ -4267,7 +4297,7 @@ function walkinVoiceReport(){
 }
 
 function radioKick(){
-  if(!radioWanted() || radioDucked) return;
+  if(!radioWanted() || radioDucked || radioUserPaused) return;
   if(radioState==='playing' || radioState==='connecting') return;
   audioOk=true;              /* we just made a noise, so it is allowed */
   radioIdx=0;                /* back to the best stream, not the last dud */
@@ -4276,7 +4306,8 @@ function radioKick(){
 
 function radioStatusText(){
   if(!sOn('radio'))       return 'Paused on every screen.';
-  if(window.innerWidth<1200) return RADIO_NAME+' plays on the wall display, not on this device.';
+  if(window.innerWidth<1200 && !radioUserArmed) return 'Tap the ♪ button to play '+RADIO_NAME+' on this phone.';
+  if(radioUserPaused)     return 'Paused here — tap ♪ to resume.';
   if(radioDucked)         return 'Playing quietly under announcement.';
   if(radioState==='playing')    return RADIO_NAME+' is playing.';
   if(radioState==='connecting') return 'Connecting to '+RADIO_NAME+'\u2026';
@@ -4298,6 +4329,48 @@ function paintRadio(){
       if(Math.abs((radioEl.volume||0) - want) > 0.18) radioEl.volume=want;
     }catch(e){}
   }
+  try{ paintRadioFab() }catch(e){}
+}
+
+function paintRadioFab(){
+  var fab=$('radio-fab');
+  if(!fab) return;
+  if(!sOn('radio')){ fab.hidden=true; return; }
+  fab.hidden=false;
+  var playing=radioState==='playing' && radioEl && !radioEl.paused && !radioUserPaused;
+  var wait=radioState==='waiting' || radioState==='connecting' || (window.innerWidth<1200 && !radioUserArmed);
+  fab.classList.toggle('on', !!playing);
+  fab.classList.toggle('wait', !!wait && !playing);
+  fab.setAttribute('aria-label', playing ? 'Pause radio' : 'Play radio');
+  fab.title = playing ? 'Pause radio' : 'Play '+RADIO_NAME;
+  fab.textContent = playing ? '❚❚' : '♪';
+}
+
+function radioFabTap(){
+  audioOk=true;
+  radioUserArmed=true;
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(AC){
+      if(!walkinActx) walkinActx=new AC();
+      if(walkinActx.state==='suspended') walkinActx.resume();
+    }
+  }catch(e){}
+  if(!sOn('radio')){
+    try{ setRadioOn(true) }catch(e){ SET.radio=true; }
+  }
+  if(radioState==='playing' && radioEl && !radioEl.paused && !radioUserPaused){
+    radioUserPaused=true;
+    try{ radioEl.pause() }catch(e){}
+    radioState='waiting';
+    paintRadio();
+    return;
+  }
+  radioUserPaused=false;
+  radioIdx=0;
+  radioPlay();
+  try{ radioForceSound() }catch(e){}
+  paintRadioFab();
 }
 
 function setRadioOn(on){
@@ -4316,6 +4389,16 @@ function setRadioOn(on){
 }
 
 var audioOk=false, liveVideo=null;
+(function(){
+  var fab=$('radio-fab');
+  if(fab){
+    fab.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      radioFabTap();
+    });
+  }
+  try{ paintRadioFab() }catch(e){}
+})();
 ['pointerdown','keydown','touchstart','click'].forEach(function(t){
   window.addEventListener(t,function(){
     audioOk=true;
@@ -4352,7 +4435,9 @@ function videoScene(forced){
   var clip=!forced ? pickClip()
          : (typeof forced==='string' ? clipBySrc(forced) : forced);
   if(!clip)return false;
-  var g=sceneStart(true);
+  var wants=clip.sound!==false&&sOn('sound');
+  /* Duck only for clips with their own soundtrack. Silent sketches / pool keep R&B up. */
+  var g=sceneStart(!!wants);
   var frame=vs.querySelector('.vs-frame');
   $('vs-cap').innerHTML=clip.cap;
   frame.style.setProperty('--ar',clip.ar||16/9);
@@ -4361,8 +4446,7 @@ function videoScene(forced){
     armGuard();
   };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
-  var wants=clip.sound!==false&&sOn('sound');
-  radioDuck(true);                 /* the clip has the sound now */
+  if(wants) radioDuck(true);       /* clip soundtrack takes the floor */
   liveVideo={el:v, wants:wants};
   v.muted=!wants; v.volume=wants?1:0;
   vs.classList.toggle('is-muted',!wants);
@@ -4535,7 +4619,7 @@ function nathanFire(){
   if(!board)return false;
   var r=board.getBoundingClientRect();
   if(!r.width)return false;
-  var g=sceneStart(true); /* soft-duck radio under fire cut scene */
+  var g=sceneStart(); /* radio stays up over fire */
   var fs=$('firescene'), blaze=$('blaze');
   var flames=$('fire-flames'), char=$('fire-char'), smoke=$('fire-smoke'), sparks=$('fire-sparks');
   fs.classList.remove('out');
@@ -4632,7 +4716,7 @@ function leaderDance(){
   if(stuntsBlocked())return false;
   var L=leaderNow();
   if(!L)return false;                 /* nothing to celebrate on an empty board */
-  var g=sceneStart(true); /* soft-duck radio under cut scene */
+  var g=sceneStart(); /* radio stays up over leader dance */
   var cs=$('cutscene');
   var img=$('cut-head');
   img.onerror=function(){this.style.visibility='hidden'};
