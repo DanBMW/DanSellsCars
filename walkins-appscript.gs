@@ -355,7 +355,14 @@ function scan() {
       if (when < cutoff) return;
       var subject = m.getSubject() || '';
       var body = messageText(m);
-      if (classifySubject(subject) === 'walkin-taken') return; /* already in events */
+      /* A "Walk-in taken" subject is NOT already handled above. That pass is
+         in:inbox-scoped, so an archived pick-up is invisible to it - and an
+         archived pick-up is exactly what this block exists to catch. Skipping
+         it left the customer reading "waiting" for ever with the timer
+         climbing, which on a wall in the managers' office looks like somebody
+         has been ignored for an hour. Re-applying is harmless: the guard below
+         only touches a visit still waiting, and this block raises no event, so
+         nothing is announced twice. */
       var name = customerNameFrom(body, subject);
       if (!name) return;
       var staff = sanitizeName(firstOf(PATTERNS.seenBy, body, subject)) || 'a member of staff';
