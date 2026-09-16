@@ -70,25 +70,26 @@ If the button does not work, open: https://appointments-c180e.web.app/dashboard?
 
 const SAMPLES = {
   inbox: [
-    { at: min(-30), subject: 'Ben Griffin has checked in',
+    { at: min(-30), subject: 'Customer arrived - Ben Griffin',
       body: apptArrival('Ben Griffin', '11:28', '12:00', 'Daniel Cane',
                         'New', '1 Series', 'FjZaSpiEe0cHFgZpELij') },
-    { at: min(-52), subject: 'Walk-in checked in',
+    { at: min(-52), subject: 'Walk-in waiting - Jay',
       body: arrival('Jay', '12:36', 'New', '1 Series, 2 Series, 3 Series') },
-    { at: min(-105), subject: 'Walk-in checked in',
+    { at: min(-105), subject: 'Walk-in waiting - Chris',
       body: arrival('Chris', '10:43', 'Used', '4 Series') },
     /* a second Chris, later the same morning - the pick-up below belongs to
        the FIRST one, and must not clear this one */
-    { at: min(-8), subject: 'Walk-in checked in',
+    { at: min(-8), subject: 'Walk-in waiting - Chris',
       body: arrival('Chris', '13:20', 'Used', 'X3') },
     /* the same notification arriving twice */
-    { at: min(-50), subject: 'Walk-in checked in (resend)',
-      body: arrival('Jay', '12:36', 'New', '1 Series, 2 Series, 3 Series') }
-  ],
-  seen: [
-    { at: min(-100), subject: 'Walk-in taken',
+    { at: min(-50), subject: 'Walk-in waiting - Jay',
+      body: arrival('Jay', '12:36', 'New', '1 Series, 2 Series, 3 Series') },
+    /* a fresh pick-up is still in the inbox - this is the case that both
+       turns the card green AND gets announced on the board */
+    { at: min(-100), subject: 'Walk-in taken - Chris',
       body: pickup('Clive Ankomah', 'Chris', '10:43', 'Used', '4 Series') }
-  ]
+  ],
+  seen: []
 };
 
 /* ---- the smallest Google that will run the file ----------------------- */
@@ -161,7 +162,12 @@ const ok = (label, cond, detail) => {
 
 console.log('\nWhat the screen would show from these emails:\n');
 const s = load(SAMPLES);
-const rows = s.scan();
+/* scan() returns { appointments, events } - it used to return a bare array,
+   and the rewrite left this file calling .forEach on an object, so the whole
+   suite died on line one and stopped guarding anything. */
+const scanned = s.scan();
+const rows = scanned.appointments;
+const events = scanned.events;
 rows.forEach(r => {
   console.log('   ' + r.customerName.padEnd(14) + r.type.padEnd(13) +
     'arrived ' + new Date(r.arrivalTime).toISOString().slice(11, 16) + '   ' +
@@ -235,7 +241,7 @@ ok('AN ARRIVAL IS NOT MISTAKEN FOR A PICK-UP (it says "now with the '
 /* archiving the arrival email clears the card */
 const archived = { inbox: SAMPLES.inbox.filter(m => !/Customer: Jay/.test(m.body)), seen: SAMPLES.seen };
 ok('archiving the arrival email takes that person off the screen',
-   load(archived).scan().every(r => r.customerName !== 'Jay'));
+   load(archived).scan().appointments.every(r => r.customerName !== 'Jay'));
 
 /* the web app itself */
 const t = load(SAMPLES);
@@ -252,7 +258,38 @@ ok('a junk callback name is not echoed back', !nasty.includes('alert(1)'));
 
 /* nothing in the mailbox at all */
 ok('an empty mailbox is an empty screen, not a crash',
-   load({ inbox: [], seen: [] }).scan().length === 0);
+   load({ inbox: [], seen: [] }).scan().appointments.length === 0);
+
+/* --- the events feed the board's announcements --- */
+ok('every arrival raises an event for the board to announce',
+   events.length >= 4, events.length + ' events');
+ok('events are newest first',
+   events.every((e, i) => i === 0 || events[i - 1].at >= e.at));
+ok('the taken event names the executive, so the board can announce it',
+   events.some(e => e.kind === 'walkin-taken' && e.assignedTo === 'Clive Ankomah'),
+   (events.find(e => e.kind === 'walkin-taken') || {}).assignedTo);
+
+/* An ARCHIVED pick-up still has to clear the card. The in:inbox pass cannot
+   see it, so the SEEN_SEARCH merge is the only thing that will - and it used
+   to skip a "Walk-in taken" subject on the assumption the first pass had
+   already handled it. It had not, and the customer read "waiting" for ever
+   with the timer climbing. */
+const tidied = {
+  inbox: SAMPLES.inbox.filter(m => !/^Walk-in taken/.test(m.subject)),
+  seen:  SAMPLES.inbox.filter(m =>  /^Walk-in taken/.test(m.subject))
+};
+const tidyRows = load(tidied).scan().appointments;
+const tidyChris = tidyRows.filter(r => r.customerName === 'Chris'
+  && new Date(r.arrivalTime).getMinutes() === 43);
+ok('an ARCHIVED pick-up still clears the card',
+   tidyChris.length === 1 && tidyChris[0].status === 'with-staff'
+     && tidyChris[0].assignedTo === 'Clive Ankomah',
+   tidyChris[0] && (tidyChris[0].status + ' / ' + tidyChris[0].assignedTo));
+ok('...but is not re-announced - it is old news',
+   !load(tidied).scan().events.some(e => e.kind === 'walkin-taken'));
+ok('every event carries a name to announce',
+   events.every(e => e.customerName && !/^(Walk-in|Appointment|customer)$/i.test(e.customerName)),
+   events.map(e => e.customerName).join(', '));
 
 console.log(bad ? '\n' + bad + ' FAILED\n' : '\nall checks pass\n');
 process.exit(bad ? 1 : 0);
