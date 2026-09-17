@@ -6021,10 +6021,12 @@ setTimeout(function(){
   if(!backend){setDot('err');setMonthLabel(viewMonth,'offline')}
 },9000);
 
-/* Walk-in / arrival alerts from walkins-appscript.gs.
-   Paste the web-app /exec URL with ?token=… here. Leave empty to disable. */
-var WALKIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbz0KDw3SkyjcDzXIgxeaxdQFykPRVf5U8k2Z83bN-swFiAek9noDkvDGIaU6tkzXZhs/exec?token=TESTER123';
-var WALKIN_POLL_MS = 15000;
+/* Arrival alerts: prefer OFFICE_ALERTS_URL (Cloudflare proxy → Hedin API).
+   Never put OFFICE_DISPLAY_SECRET in this file — the proxy holds it.
+   WALKIN_GAS_URL is the old Gmail Apps Script fallback (leave empty when API is live). */
+var OFFICE_ALERTS_URL = ''; /* e.g. https://dansells-office-alerts.<you>.workers.dev/alerts */
+var WALKIN_GAS_URL = ''; /* Gmail fallback off while moving to API */
+var WALKIN_POLL_MS = 8000;
 var WALKIN_SPEAK = true;  /* read the card aloud instead of a doorbell */
 var WALKIN_WAIT_MS = 10*60*1000; /* speak once when still waiting this long */
 /* The longest the radio may ever be held down for one announcement. The
@@ -6238,15 +6240,16 @@ function walkinAnnounceText(r){
   }
   var bits=[];
   if(kind==='customer-arrived'){
-    bits.push(r.handover ? 'Handover arrived' : 'Appointment arrived');
+    bits.push(r.handover ? 'Handover arrived' : 'Checked in');
   }else{
     bits.push(r.walkIn ? 'Walk-in' : (r.handover ? 'Handover' : 'Appointment'));
   }
   bits.push(name);
+  if(r.appointmentTime) bits.push(String(r.appointmentTime));
   var interest=[r.carType, r.models].filter(Boolean).join(', ');
   if(interest) bits.push(interest);
-  if(r.bookedWith) bits.push('Booked with '+r.bookedWith);
-  if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived));
+  if(r.bookedWith) bits.push('here for '+r.bookedWith);
+  else if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived));
   else if(kind!=='dealt') bits.push('Just arrived');
   return bits.join('. ') + '.';
 }
@@ -6779,6 +6782,74 @@ function walkinDeliver(payload){
   walkinCheckLongWaits(appointments);
 }
 
+
+/* ---- Hedin office-display API (via proxy) ------------------------------- */
+function walkinMapOfficeAlert(a, i){
+  if(!a) return null;
+  var kindIn = String(a.kind||'').toLowerCase().replace(/[\s_]+/g,'-');
+  var id = String(a.id || ('oa'+i));
+  var customer = walkinStrip(a.customerName||a.name||'');
+  var execName = walkinStrip(a.salesExecutiveName||a.bookedWith||'');
+  var carType = walkinStrip(a.newOrUsed||a.carType||'');
+  var arrived = a.arrivedAt||a.arrivalTime||null;
+  if(typeof arrived==='string'){ var p=Date.parse(arrived); arrived=isNaN(p)?null:p }
+  if(typeof arrived==='number' && arrived<1e12) arrived=arrived*1000;
+  var appt = a.appointmentTime||null;
+  var outKind, walkIn, handover;
+  if(kindIn==='walk-in' || kindIn==='walkin'){
+    outKind='walkin-waiting'; walkIn=true; handover=false;
+  }else if(kindIn==='handover'){
+    outKind='customer-arrived'; walkIn=false; handover=true;
+  }else{
+    /* appointment (default) */
+    outKind='customer-arrived'; walkIn=false; handover=false;
+  }
+  return {
+    id:id,
+    kind:outKind,
+    customer:customer,
+    walkIn:walkIn,
+    handover:handover,
+    withStaff:false,
+    carType:carType,
+    models:'',
+    ref:'',
+    bookedWith:execName,
+    assignedTo:'',
+    arrived: arrived && isFinite(arrived) ? arrived : null,
+    appointmentTime:appt
+  };
+}
+function walkinDeliverOfficeAlerts(j){
+  var raw = (j && j.alerts) || [];
+  var rows = raw.map(walkinMapOfficeAlert).filter(Boolean);
+  /* Reuse announce-once path as events[] */
+  walkinDeliver({ events: rows, appointments: [] });
+}
+function startOfficeAlerts(){
+  if(!OFFICE_ALERTS_URL) return false;
+  var tick=function(){
+    var ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+    var t = setTimeout(function(){ try{ if(ctrl) ctrl.abort(); }catch(e){} }, Math.min(WALKIN_POLL_MS-500, 7000));
+    fetch(OFFICE_ALERTS_URL + (OFFICE_ALERTS_URL.indexOf('?')<0?'?':'&') + '_=' + Date.now(), {
+      method:'GET',
+      cache:'no-store',
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }).then(function(j){
+      if(j && j.error){ console.warn('Office alerts:', j.error); return }
+      walkinDeliverOfficeAlerts(j);
+    }).catch(function(e){
+      console.warn('Office alerts poll failed', e && e.message ? e.message : e);
+    }).then(function(){ clearTimeout(t); });
+  };
+  tick();
+  setInterval(tick, WALKIN_POLL_MS);
+  return true;
+}
+
 function startWalkinAlerts(){
   if(!WALKIN_GAS_URL) return;
   var tick=function(){
@@ -6852,7 +6923,7 @@ document.addEventListener('touchstart', walkinUnlockAudio, {passive:true});
 try{
   if(typeof radioAttach==='function'){ /* exists later - hook below after radio defined */ }
 }catch(e){}
-startWalkinAlerts();
+if(!startOfficeAlerts()) startWalkinAlerts();
 </script>
 
 
