@@ -6024,8 +6024,8 @@ setTimeout(function(){
 /* Arrival alerts: prefer OFFICE_ALERTS_URL (Cloudflare proxy → Hedin API).
    Never put OFFICE_DISPLAY_SECRET in this file — the proxy holds it.
    WALKIN_GAS_URL is the old Gmail Apps Script fallback (leave empty when API is live). */
-var OFFICE_ALERTS_URL = ''; /* e.g. https://dansells-office-alerts.<you>.workers.dev/alerts */
-var WALKIN_GAS_URL = ''; /* Gmail fallback off while moving to API */
+var OFFICE_ALERTS_URL = ''; /* optional Cloudflare proxy later */
+var WALKIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbz0KDw3SkyjcDzXIgxeaxdQFykPRVf5U8k2Z83bN-swFiAek9noDkvDGIaU6tkzXZhs/exec?token=TESTER123&alerts=1'; /* Apps Script proxies Hedin API (secret in Script Properties) */
 var WALKIN_POLL_MS = 8000;
 var WALKIN_SPEAK = true;  /* read the card aloud instead of a doorbell */
 var WALKIN_WAIT_MS = 10*60*1000; /* speak once when still waiting this long */
@@ -6725,6 +6725,11 @@ function walkinCheckLongWaits(appointments){
   });
 }
 function walkinDeliver(payload){
+  /* Office API shape from Apps Script / Cloudflare proxy */
+  if(payload && Array.isArray(payload.alerts)){
+    walkinDeliverOfficeAlerts(payload);
+    return;
+  }
   /* Prefer events[] from Apps Script (waiting / arrived / taken / left / dealt).
      Fall back to appointments[] for older deployments. Announce each event id
      at most once for 12 hours across reloads. First non-empty snapshot is silent. */
