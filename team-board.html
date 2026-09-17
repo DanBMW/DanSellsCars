@@ -6027,7 +6027,7 @@ setTimeout(function(){
 var OFFICE_ALERTS_URL = 'https://dansells-office-alerts.danielcane1992.workers.dev/alerts';
 var WALKIN_GAS_URL = ''; /* Gmail/Apps Script off — office API via Cloudflare proxy */
 /* TTS-only Apps Script (speak=). Keep empty until Code.gs with speakAudio_ is redeployed; SAM/Web Audio still speaks. */
-var WALKIN_TTS_URL = '';
+var WALKIN_TTS_URL = 'https://dansells-office-alerts.danielcane1992.workers.dev/tts';
 var WALKIN_POLL_MS = 8000;
 var WALKIN_SPEAK = true;  /* read the card aloud instead of a doorbell */
 var WALKIN_WAIT_MS = 10*60*1000; /* speak once when still waiting this long */
@@ -6044,7 +6044,7 @@ var WALKIN_SPEAK_MAX_MS = 30*1000;
 var walkinSeen = Object.create(null);   /* announced this page session + restored */
 var walkinPrimed = false;
 var walkinGasSeq = 0;
-var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v2'; /* bumped: office API silent-seed wipe */
+var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v3'; /* bumped: LG Web Audio TTS path */
 var WALKIN_ANN_MAX_AGE_MS = 12*60*60*1000; /* keep for 12h across deploys/reloads */
 var walkinActx = null;
 var walkinMaster = null;
@@ -6363,23 +6363,9 @@ function walkinSpeakGas(line, onDone, notBefore){
   var done=false;
   var finish=function(ok){
     if(done) return; done=true;
-    try{ if(s && s.parentNode) s.parentNode.removeChild(s); }catch(e){}
-    try{ delete window[cb]; }catch(e){}
     if(onDone) onDone(!!ok);
   };
-  var cb='walkinTtsCb_'+Math.random().toString(36).slice(2);
-  var s=document.createElement('script');
-  var timer=setTimeout(function(){ finish(false); }, 12000);
-  window[cb]=function(payload){
-    clearTimeout(timer);
-    /* Accept either shape. The script has been through two spellings -
-       {audio:"..."} and {clips:["...","..."]} - and the board asking for one
-       while the deployment serves the other is silent failure that looks
-       exactly like a broken voice. It is not the board's business which
-       version happens to be deployed. */
-    var parts = payload && payload.clips && payload.clips.length ? payload.clips
-              : (payload && payload.audio ? [payload.audio] : null);
-    if(!parts){ finish(false); return; }
+  var playB64Parts=function(parts){
     try{
       var AC=window.AudioContext||window.webkitAudioContext;
       if(!AC){ finish(false); return; }
@@ -6404,7 +6390,6 @@ function walkinSpeakGas(line, onDone, notBefore){
           });
           function go(){
             try{
-              /* begin as the bell dies away, not over the top of it */
               var at=Math.max(walkinActx.currentTime, notBefore||0);
               var hold=Math.max(0, at-walkinActx.currentTime), total=0;
               bufs.forEach(function(buf,k){
@@ -6421,19 +6406,49 @@ function walkinSpeakGas(line, onDone, notBefore){
         }catch(e){ finish(false); }
       };
       if(walkinActx.state==='suspended'){
-        walkinActx.resume().then(play).catch(function(){ play(); });
-      }else{
-        play();
-      }
+        walkinActx.resume().then(play).catch(function(){ finish(false); });
+      }else play();
     }catch(e){ finish(false); }
   };
-  s.onerror=function(){ clearTimeout(timer); finish(false); };
+
+  /* Cloudflare Worker /tts — CORS JSON + Web Audio (works on LG; HTMLAudio does not). */
+  if(/\/tts(\?|$)/.test(ttsUrl) || /workers\.dev\/tts/.test(ttsUrl)){
+    var u = ttsUrl + (ttsUrl.indexOf('?')<0?'?':'&') + 'q=' + encodeURIComponent(String(line||'').slice(0,180))
+          + '&_=' + Date.now();
+    var ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+    var timer=setTimeout(function(){ try{ if(ctrl) ctrl.abort(); }catch(e){} finish(false); }, 12000);
+    fetch(u, { method:'GET', cache:'no-store', signal: ctrl?ctrl.signal:undefined })
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(payload){
+        clearTimeout(timer);
+        var parts = payload && payload.clips && payload.clips.length ? payload.clips
+                  : (payload && payload.audio ? [payload.audio] : null);
+        if(!parts){ finish(false); return; }
+        playB64Parts(parts);
+      })
+      .catch(function(){ clearTimeout(timer); finish(false); });
+    return;
+  }
+
+  /* Apps Script JSONP fallback (older speak= deployments). */
+  var cb='walkinTtsCb_'+Math.random().toString(36).slice(2);
+  var s=document.createElement('script');
+  var timer2=setTimeout(function(){ finish(false); }, 12000);
+  window[cb]=function(payload){
+    clearTimeout(timer2);
+    try{ if(s && s.parentNode) s.parentNode.removeChild(s); }catch(e){}
+    try{ delete window[cb]; }catch(e){}
+    var parts = payload && payload.clips && payload.clips.length ? payload.clips
+              : (payload && payload.audio ? [payload.audio] : null);
+    if(!parts){ finish(false); return; }
+    playB64Parts(parts);
+  };
+  s.onerror=function(){ clearTimeout(timer2); finish(false); };
   s.src = ttsUrl
     + (ttsUrl.indexOf('?')<0?'?':'&')
-    /* both spellings, so it works against whichever version is deployed */
-    + 'speak=' + encodeURIComponent(String(line||'').slice(0,180))
-    + '&say=' + encodeURIComponent(String(line||'').slice(0,180))
-    + '&callback=' + cb;
+    + 'callback=' + cb
+    + '&speak=' + encodeURIComponent(String(line||'').slice(0,180))
+    + '&_=' + Date.now();
   document.head.appendChild(s);
 }
 
@@ -6442,6 +6457,59 @@ function walkinTtsAudioUrl(line){
   /* Google Translate TTS — returns playable MP3 for en-GB wall announcements */
   return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-GB&q='
     + encodeURIComponent(String(line||'').slice(0, 180));
+}
+
+
+/* Same-origin SAM Web Audio — robotic but speaks on LG when remote TTS fails. */
+var walkinSamPromise=null;
+function walkinLoadSam(){
+  if(window.SamJs) return Promise.resolve(window.SamJs);
+  if(walkinSamPromise) return walkinSamPromise;
+  walkinSamPromise=new Promise(function(resolve,reject){
+    var s=document.createElement('script');
+    s.src='/tts/samjs.js';
+    s.async=true;
+    s.onload=function(){ window.SamJs ? resolve(window.SamJs) : reject(new Error('no SamJs')); };
+    s.onerror=function(){ reject(new Error('sam load')); };
+    document.head.appendChild(s);
+  });
+  return walkinSamPromise;
+}
+function walkinSpeakSam(line, onDone, notBefore){
+  var done=false;
+  var finish=function(ok){ if(done) return; done=true; if(onDone) onDone(!!ok); };
+  var text=walkinSpeakPrep(line);
+  if(!text){ finish(false); return; }
+  walkinLoadSam().then(function(SamJs){
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC){ finish(false); return; }
+      if(!walkinActx) walkinActx=new AC();
+      var sam=new SamJs({pitch:64, speed:72, mouth:128, throat:128});
+      var samples=sam.buf32(text);
+      if(!samples || !samples.length){ finish(false); return; }
+      var go=function(){
+        try{
+          if(!walkinMaster){
+            walkinMaster=walkinActx.createGain();
+            walkinMaster.gain.value=3.2;
+            walkinMaster.connect(walkinActx.destination);
+          }
+          var buf=walkinActx.createBuffer(1, samples.length, 22050);
+          buf.copyToChannel(samples, 0);
+          var src=walkinActx.createBufferSource();
+          src.buffer=buf;
+          src.connect(walkinMaster);
+          var at=Math.max(walkinActx.currentTime, notBefore||0);
+          src.onended=function(){ finish(true); };
+          src.start(at);
+          setTimeout(function(){ if(!done) finish(true); }, Math.max(2000, samples.length/22050*1000+800));
+        }catch(e){ finish(false); }
+      };
+      if(walkinActx.state==='suspended') walkinActx.resume().then(go).catch(function(){ finish(false); });
+      else go();
+    }catch(e){ finish(false); }
+  }).catch(function(){ finish(false); });
 }
 
 function walkinSpeakAudio(line, onDone){
@@ -6544,14 +6612,17 @@ function walkinSpeak(r){
   try{
     walkinSpeakGas(line, function(ok){
       if(ok){ unduck(); return; }
-      /* no voice to be had - the bell has already done the useful half */
-      walkinSpeakAudio(line, function(ok2){
-        if(ok2){ unduck(); return; }
-        walkinSpeakSynth(line, function(ok3){
-          if(ok3){ unduck(); return; }
-          setTimeout(unduck, 600);
+      walkinSpeakSam(line, function(okSam){
+        if(okSam){ unduck(); return; }
+        /* desktop browsers: remote mp3 / speechSynthesis; LG usually fails both */
+        walkinSpeakAudio(line, function(ok2){
+          if(ok2){ unduck(); return; }
+          walkinSpeakSynth(line, function(ok3){
+            if(ok3){ unduck(); return; }
+            setTimeout(unduck, 600);
+          });
         });
-      });
+      }, startAt);
     }, startAt);
   }catch(e){
     setTimeout(unduck, 600);
