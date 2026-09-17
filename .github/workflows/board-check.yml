@@ -19,3 +19,7 @@ jobs:
           node-version: 20
       - run: node scripts/check-board-team.js
       - run: node scripts/check-board-html.js
+      # Runs walkins-appscript.gs for real against sample emails. Without it,
+      # a merge can quietly revert the parsing and nothing notices until a
+      # customer sits on the wall reading "waiting" for an hour.
+      - run: node scripts/test-walkin-parse.js
