@@ -1515,7 +1515,7 @@ body.premiere .pairqr{display:none!important}
 </div>
 
 <!-- radio play / pause — phones need a tap; walls can use it if autoplay is waiting -->
-<button type="button" class="radio-fab" id="radio-fab" aria-label="Play radio" title="Play radio">♪</button>
+<button type="button" class="radio-fab" id="radio-fab" aria-label="Play radio" title="Play radio" hidden>♪</button>
 <!-- the mug shot QR, up permanently in the top right corner -->
 <div class="cornerqr" id="cornerqr" aria-hidden="true">
   <svg class="qr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" class="segno"><path class="qrline" stroke="currentColor" d="M2 2.5h7m3 0h2m1 0h4m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h2m7 0h2m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h2m3 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h5m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h5m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h2m1 0h2m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h3m2 0h1m2 0h2m-21 1h1m5 0h1m1 0h3m3 0h1m2 0h1m1 0h1m1 0h2m2 0h3m-27 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h5m1 0h2m1 0h2m-28 1h1m5 0h2m1 0h1m2 0h1m2 0h1m4 0h2m1 0h2m-25 1h1m1 0h2m6 0h1m3 0h1m1 0h1m2 0h5m1 0h1m-26 1h1m2 0h1m2 0h3m1 0h1m1 0h4m4 0h1m1 0h2m4 0h1m-26 1h3m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h3m4 0h1m4 0h2m-26 1h3m6 0h2m1 0h2m1 0h1m2 0h5m2 0h1m1 0h1m-29 1h3m1 0h1m1 0h1m1 0h2m4 0h1m2 0h1m7 0h2m-27 1h2m2 0h2m1 0h2m1 0h2m3 0h2m1 0h3m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h2m2 0h4m2 0h2m3 0h2m2 0h1m-29 1h1m2 0h3m2 0h5m1 0h3m2 0h2m3 0h1m-25 1h1m1 0h1m1 0h3m3 0h1m1 0h1m4 0h1m1 0h6m1 0h3m-21 1h6m1 0h2m3 0h1m3 0h2m-26 1h7m3 0h2m1 0h3m1 0h4m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h1m2 0h1m2 0h1m3 0h1m3 0h1m-25 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m3 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h1m2 0h7m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h7m-28 1h1m5 0h1m2 0h4m2 0h1m2 0h2m1 0h1m2 0h3m1 0h1m-29 1h7m1 0h1m1 0h2m1 0h2m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1"/></svg>
@@ -1588,7 +1588,7 @@ body.premiere .pairqr{display:none!important}
       <div id="ev-screens" style="display:none"></div>
 
       <h2 style="margin-top:22px;font-size:1rem">Radio</h2>
-      <p class="hint" style="margin-bottom:10px">Kisstory R&amp;B all day. Full volume over mug shots, leader dance, fire and Will swimming; quieter under video sketches / premiere / walk-in speech. Phones use the corner ♪ button. It keeps playing over mug shots
+      <p class="hint" style="margin-bottom:10px">Radio is switched off for now. Full volume over mug shots, leader dance, fire and Will swimming; quieter under video sketches / premiere / walk-in speech. Phones use the corner ♪ button. It keeps playing over mug shots
         and picture boards, softens under cut scenes / sketches / walk-in speech, and comes back up after.
         Pausing here pauses every screen.</p>
       <div class="tog on" id="radio-toggle">
@@ -4009,6 +4009,7 @@ var RADIO_SOURCES = [
   'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY,/* R&B AAC last */
   'https://live-kiss.sharp-stream.com/kiss100.mp3'                   /* Kiss national last resort */
 ];
+var RADIO_DISABLED=true; /* off for now — streams were unreliable on walls */
 var RADIO_NAME='Kisstory R&B';
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 
@@ -4069,6 +4070,7 @@ function radioRefreshStream(){
 var radioUserArmed=false; /* phone/tablet: corner play button (or admin) arms audio */
 var radioUserPaused=false; /* corner pause — do not auto-resume until they hit play */
 function radioWanted(){
+  if(typeof RADIO_DISABLED!=='undefined' && RADIO_DISABLED) return false;
   if(!sOn('radio')) return false;
   /* Walls auto-start; phones need an explicit play tap (browser autoplay rules). */
   if(window.innerWidth>=1200) return true;
@@ -4379,6 +4381,14 @@ function radioStatusText(){
 }
 
 function paintRadio(){
+  if(typeof RADIO_DISABLED!=='undefined' && RADIO_DISABLED){
+    radioState='off';
+    var st=$('radio-state'); if(st) st.textContent='Switched off for now.';
+    var tog=$('radio-toggle'); if(tog){ tog.classList.remove('on'); tog.style.opacity='0.55'; }
+    var fab=$('radio-fab'); if(fab) fab.hidden=true;
+    var rr=$('radio-refresh'); if(rr) rr.disabled=true;
+  }
+
   var el=$('radio-state');
   if(el)el.textContent=radioStatusText();
   var b=$('radio-toggle');
@@ -4436,6 +4446,13 @@ function radioFabTap(){
 }
 
 function setRadioOn(on){
+  if(typeof RADIO_DISABLED!=='undefined' && RADIO_DISABLED){
+    try{ radioStop(); }catch(e){}
+    SET.radio=false;
+    paintRadio();
+    toast('Radio is switched off for now','ok');
+    return;
+  }
   if(!backend||!backend.setSetting){
     /* no shared channel - still do it here so the button is never dead */
     SET.radio=!!on;
@@ -6842,6 +6859,10 @@ startWalkinAlerts();
 <script>
 (function(){
   try{
+    if(typeof RADIO_DISABLED!=='undefined' && RADIO_DISABLED){
+      try{ if(typeof radioStop==='function') radioStop(); }catch(e){}
+      try{ var fab=document.getElementById('radio-fab'); if(fab) fab.hidden=true; }catch(e){}
+    }
     if(typeof isLowMemWall==='function' && isLowMemWall()){
       console.warn('DanSells: low-mem wall mode');
       try{ localStorage.setItem('dansells.wallLowMem','1'); }catch(e){}
