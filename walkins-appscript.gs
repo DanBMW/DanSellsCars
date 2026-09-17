@@ -13,10 +13,11 @@
  *
  * SETTING IT UP  (script.google.com)
  *   1. Paste this into Code.gs
- *   2. Script Properties: TOKEN = your secret (not in this file)
- *   3. Run refresh once, grant Gmail
- *   4. Trigger: refresh, time-driven, every minute
- *   5. Deploy web app → New version (keep same /exec URL)
+ *   2. Script Properties:
+ *        TOKEN = board poll secret (already TESTER123)
+ *        OFFICE_DISPLAY_SECRET = Hedin office-display shared secret
+ *   3. Office API is preferred (?alerts=1). Gmail is fallback only.
+ *   4. Deploy web app → New version (keep same /exec URL)
  */
 
 /* ===================== tell it about your emails ====================== */
@@ -91,6 +92,8 @@ var PATTERNS = {
 var STALE_MINS = 240;
 var MAX_THREADS = 50;
 var CACHE_KEY = 'showroom_arrivals_v2';
+var OFFICE_UPSTREAM = 'https://hedin-vehicle-lookup.nathangjj.workers.dev/v1/office-display/alerts';
+var OFFICE_CACHE_KEY = 'office_alerts_v1';
 
 /* ===================== nothing below needs editing ==================== */
 
@@ -106,6 +109,14 @@ function doGet(e) {
       return out(speakAudio_(String(p.speak || p.say)), p.callback);
     } catch (err) {
       return out({ error: 'tts: ' + String(err) }, p.callback);
+    }
+  }
+  /* Hedin office-display API proxy — secret stays in Script Properties. */
+  if (p.alerts === '1' || p.alerts === 'true' || p.source === 'office') {
+    try {
+      return out(fetchOfficeAlerts_(p.since), p.callback);
+    } catch (err) {
+      return out({ error: 'office: ' + String(err) }, p.callback);
     }
   }
   /* Force a Gmail rescan (board or manual). */
@@ -129,6 +140,51 @@ function doGet(e) {
     }
   }
   return out(body || { appointments: [], events: [], scannedAt: Date.now() }, p.callback);
+}
+
+
+/** Proxy Nathan's office-display feed. Secret: Script Properties OFFICE_DISPLAY_SECRET */
+function fetchOfficeAlerts_(since) {
+  var props = PropertiesService.getScriptProperties();
+  var secret = props.getProperty('OFFICE_DISPLAY_SECRET');
+  if (!secret) {
+    throw new Error('Set Script Property OFFICE_DISPLAY_SECRET');
+  }
+  var cache = CacheService.getScriptCache();
+  var cacheKey = OFFICE_CACHE_KEY + (since ? (':' + String(since).slice(0, 40)) : '');
+  var hit = cache.get(cacheKey);
+  if (hit) {
+    try {
+      var cached = JSON.parse(hit);
+      cached.cached = true;
+      return cached;
+    } catch (e) {}
+  }
+  var url = OFFICE_UPSTREAM;
+  if (since) {
+    url += (url.indexOf('?') < 0 ? '?' : '&') + 'since=' + encodeURIComponent(String(since));
+  }
+  var resp = UrlFetchApp.fetch(url, {
+    method: 'get',
+    muteHttpExceptions: true,
+    followRedirects: true,
+    headers: {
+      'X-Office-Display-Secret': secret,
+      'Accept': 'application/json'
+    }
+  });
+  var code = resp.getResponseCode();
+  var raw = resp.getContentText() || '';
+  if (code < 200 || code >= 300) {
+    throw new Error('upstream HTTP ' + code + ' ' + raw.slice(0, 180));
+  }
+  var data = JSON.parse(raw);
+  if (!data || typeof data !== 'object') data = { alerts: [] };
+  if (!data.alerts) data.alerts = [];
+  data.scannedAt = Date.now();
+  data.source = 'office-display';
+  try { cache.put(cacheKey, JSON.stringify(data), 10); } catch (e) {}
+  return data;
 }
 
 /** Fetch British female TTS (Amazon Amy via ttsmp3), then Google en-GB. */
