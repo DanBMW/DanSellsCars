@@ -3999,18 +3999,21 @@ function pickClip(){
 var RADIO_KEY = '?direct=true&aw_0_1st.playerid=BMUK_Airable&aw_0_1st.skey=6778249992';
 /* HTTPS MP3 first for LG webOS. Kisstory R&B, then solid soul/R&B keep-alives.
    Skip dead CDNs. AAC only after MP3s fail. */
+/* Sustainable wall radio: prefer key-free HTTPS MP3s (no Bauer skey rot,
+   no Cloudflare stream proxy — that would burn Worker bandwidth). Kisstory
+   with Airable key stays as a later try. Manager can Refresh stream. */
 var RADIO_SOURCES = [
-  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.mp3'+RADIO_KEY, /* Kisstory R&B */
-  'https://stream-kiss.planetradio.co.uk/kisstory.mp3'+RADIO_KEY,    /* Kisstory MP3 mirror */
-  'https://stream.soulconnexionradio.com/1045',                      /* Soul Connexion */
+  'https://stream.soulconnexionradio.com/1045',                      /* Soul Connexion (no key) */
   'https://londonsoulradio.out.airtime.pro:8000/londonsoulradio_a',  /* London Soul */
   'https://a7.asurahosting.com:8230/radio.mp3',                      /* Soul Rhythms UK */
   'https://mystation.micast.media/radio/8020/radio.mp3',             /* SD Radio R&B */
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.mp3'+RADIO_KEY, /* Kisstory R&B */
+  'https://stream-kiss.planetradio.co.uk/kisstory.mp3'+RADIO_KEY,    /* Kisstory MP3 mirror */
   'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY,/* R&B AAC last */
   'https://live-kiss.sharp-stream.com/kiss100.mp3'                   /* Kiss national last resort */
 ];
-var RADIO_DISABLED=true; /* off for now — streams were unreliable on walls */
-var RADIO_NAME='Kisstory R&B';
+var RADIO_DISABLED=false; /* key-free streams first; TV can play without Bauer */
+var RADIO_NAME='Soul / R&B';
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 
 var radioLastTime=0, radioStallTicks=0, radioSwapEl=null, radioBuffering=false;
@@ -6044,7 +6047,7 @@ var WALKIN_SPEAK_MAX_MS = 30*1000;
 var walkinSeen = Object.create(null);   /* announced this page session + restored */
 var walkinPrimed = false;
 var walkinGasSeq = 0;
-var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v4'; /* bumped: speak office alerts on reload */
+var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v5'; /* bumped: Nathan office kind copy */
 var WALKIN_ANN_MAX_AGE_MS = 12*60*60*1000; /* keep for 12h across deploys/reloads */
 var walkinActx = null;
 var walkinMaster = null;
@@ -6179,31 +6182,34 @@ function walkinShowCard(r){
   if(!pop||!card){ toast(walkinAnnounceText(r),'ok'); return }
   walkinTakeFloor();
   walkinFlashScreen();
-  var wi = r.walkIn && kind!=='customer-arrived';
+  var wi = r.walkIn || kind.indexOf('walk-in')===0 || kind.indexOf('walkin')===0;
   card.className='walkin-card '+(wi?'wi':'ap');
   var kicker='WALK-IN';
-  if(kind==='customer-arrived') kicker=r.handover?'HANDOVER':'APPOINTMENT';
-  else if(kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken') kicker='WALK-IN · TAKEN';
-  else if(kind==='walkin-taken') kicker='TAKEN';
-  else if(kind==='walkin-left') kicker='LEFT';
+  if(kind==='appointment' || (kind==='customer-arrived' && !r.handover)) kicker='APPOINTMENT';
+  else if(kind==='handover' || (kind==='customer-arrived' && r.handover)) kicker='HANDOVER';
+  else if(kind==='walk-in-taken' || kind==='walkin-taken' || kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken') kicker='WALK-IN · TAKEN';
+  else if(kind==='walk-in-walked-out' || kind==='walkin-left') kicker='LEFT';
+  else if(kind==='walk-in' || kind==='walkin-waiting') kicker='WALK-IN';
   else if(kind==='walkin-wait-10') kicker='STILL WAITING';
   else if(kind==='dealt') kicker='DEALT';
   else if(!wi) kicker=r.handover?'HANDOVER':'APPOINTMENT';
   $('walkin-kicker').textContent=kicker;
-  $('walkin-name').textContent=r.customer||'Name not on the email';
+  $('walkin-name').textContent=r.customer||'A customer';
+  /* Full Nathan sentence on the card (textContent only). */
+  var line=walkinAnnounceText(r);
   var bits=[];
   if(r.carType) bits.push(r.carType);
   if(r.models) bits.push(r.models);
-  if(r.bookedWith) bits.push('Booked with '+r.bookedWith);
+  if(r.registration) bits.push(r.registration);
+  if(r.bookedWith && kind!=='walk-in-taken') bits.push('With '+r.bookedWith);
   if(r.assignedTo) bits.push('With '+r.assignedTo);
-  $('walkin-meta').textContent=bits.join(' · ');
-  $('walkin-meta').style.display=bits.length?'block':'none';
-  if(kind==='walkin-left') $('walkin-time').textContent='Left without being seen';
+  $('walkin-meta').textContent=line || bits.join(' · ');
+  $('walkin-meta').style.display=(line||bits.length)?'block':'none';
+  if(kind==='walk-in-walked-out' || kind==='walkin-left') $('walkin-time').textContent='Left without being seen';
   else if(kind==='walkin-wait-10') $('walkin-time').textContent=r.arrived?('Arrived '+walkinClock(r.arrived)+' · over 10 min'):'Over 10 minutes';
   else if(kind==='dealt') $('walkin-time').textContent='Deal done';
-  else if(kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken')
-    $('walkin-time').textContent=r.assignedTo?('Arrived · taken by '+r.assignedTo):'Arrived · taken';
-  else if(kind==='walkin-taken') $('walkin-time').textContent=r.assignedTo?('With '+r.assignedTo):'With sales';
+  else if(kind==='walk-in-taken' || kind==='walkin-taken' || kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken')
+    $('walkin-time').textContent=(r.assignedTo||r.bookedWith)?('With '+(r.assignedTo||r.bookedWith)):'With sales';
   else $('walkin-time').textContent=r.arrived ? ('Arrived '+walkinClock(r.arrived)) : 'Just arrived';
   pop.hidden=false;
   requestAnimationFrame(function(){ pop.classList.add('show') });
@@ -6211,10 +6217,44 @@ function walkinShowCard(r){
   walkinPopTimer=setTimeout(walkinHideCard, 30000);
 }
 
+function walkinVehicleTail(r){
+  var parts=[];
+  if(r.models) parts.push('Interested in '+r.models+'.');
+  if(r.registration) parts.push('Registration '+r.registration+'.');
+  return parts.length ? (' '+parts.join(' ')) : '';
+}
+function walkinNewUsedWord(r){
+  return (r.carType==='New'||r.carType==='Used') ? String(r.carType).toLowerCase() : '';
+}
 function walkinAnnounceText(r){
   r=r||{};
   var kind=String(r.kind||'').toLowerCase();
-  var name=r.customer || 'customer';
+  var name=r.customer || 'A customer';
+  var exec=r.bookedWith || r.assignedTo || 'a sales executive';
+  var nu=walkinNewUsedWord(r);
+  var tail=walkinVehicleTail(r);
+
+  /* Nathan office-display copy (spoken + on-screen sentence). */
+  if(kind==='appointment'){
+    var car=nu ? (' This is a '+nu+' car appointment.') : '';
+    return name+' has arrived for their appointment with '+exec+'.'+car+tail;
+  }
+  if(kind==='handover'){
+    var carH=nu ? (' This is a '+nu+' car handover.') : '';
+    return name+' has arrived for their handover with '+exec+'.'+carH+tail;
+  }
+  if(kind==='walk-in'){
+    var waiting=nu ? (' and is interested in a '+nu+' car') : '';
+    return 'WALK-IN - '+name+' is waiting for a sales executive'+waiting+'.'+tail;
+  }
+  if(kind==='walk-in-taken'){
+    return 'WALK-IN taken - '+name+' is now with '+exec+'.'+tail;
+  }
+  if(kind==='walk-in-walked-out'){
+    return 'WALK-IN left unseen - '+name+' has left without being seen.'+tail;
+  }
+
+  /* Legacy Apps Script / older board kinds */
   if(kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken'){
     var who = r.assignedTo || 'a sales executive';
     var bits = ['Walk-in', name, 'Taken by '+who];
@@ -6223,37 +6263,37 @@ function walkinAnnounceText(r){
     if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived));
     return bits.join('. ') + '.';
   }
-  if(kind==='walkin-taken'){
-    return name+' is now with '+(r.assignedTo || 'a sales executive')+'.';
+  if(kind==='walkin-taken' || kind==='walkin-waiting'){
+    if(kind==='walkin-taken') return name+' is now with '+(r.assignedTo || 'a sales executive')+'.';
   }
   if(kind==='walkin-left'){
     return name+' left without being seen. Please re-book.';
   }
   if(kind==='walkin-wait-10'){
-    var bits=['Walk-in still waiting', name];
-    var interest=[r.carType, r.models].filter(Boolean).join(', ');
-    if(interest) bits.push(interest);
-    if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived)+', over ten minutes');
-    else bits.push('Over ten minutes');
-    return bits.join('. ') + '.';
+    var bits2=['Walk-in still waiting', name];
+    var interest2=[r.carType, r.models].filter(Boolean).join(', ');
+    if(interest2) bits2.push(interest2);
+    if(r.arrived) bits2.push('Arrived '+walkinClock(r.arrived)+', over ten minutes');
+    else bits2.push('Over ten minutes');
+    return bits2.join('. ') + '.';
   }
   if(kind==='dealt'){
     return 'Dealt. '+name+'.';
   }
-  var bits=[];
   if(kind==='customer-arrived'){
-    bits.push(r.handover ? 'Handover arrived' : 'Checked in');
-  }else{
-    bits.push(r.walkIn ? 'Walk-in' : (r.handover ? 'Handover' : 'Appointment'));
+    var bits3=[];
+    bits3.push(r.handover ? 'Handover arrived' : 'Checked in');
+    bits3.push(name);
+    if(r.appointmentTime) bits3.push(String(r.appointmentTime));
+    var interest3=[r.carType, r.models].filter(Boolean).join(', ');
+    if(interest3) bits3.push(interest3);
+    if(r.bookedWith) bits3.push('here for '+r.bookedWith);
+    else if(r.arrived) bits3.push('Arrived '+walkinClock(r.arrived));
+    else bits3.push('Just arrived');
+    return bits3.join('. ') + '.';
   }
-  bits.push(name);
-  if(r.appointmentTime) bits.push(String(r.appointmentTime));
-  var interest=[r.carType, r.models].filter(Boolean).join(', ');
-  if(interest) bits.push(interest);
-  if(r.bookedWith) bits.push('here for '+r.bookedWith);
-  else if(r.arrived) bits.push('Arrived '+walkinClock(r.arrived));
-  else if(kind!=='dealt') bits.push('Just arrived');
-  return bits.join('. ') + '.';
+  /* Unknown kind — do not invent check-in copy */
+  return '';
 }
 
 function walkinPickVoice(){
@@ -6849,6 +6889,8 @@ function walkinDeliver(payload){
     rememberRow(r);
     if(r.kind==='walkin-taken' || r.kind==='walkin-left' || r.kind==='dealt'
        || r.kind==='customer-arrived' || r.kind==='walkin-waiting'
+       || r.kind==='appointment' || r.kind==='handover' || r.kind==='walk-in'
+       || r.kind==='walk-in-taken' || r.kind==='walk-in-walked-out'
        || (!r.kind && !r.withStaff)){
       fresh.push(r);
     }
@@ -6866,37 +6908,53 @@ function walkinDeliver(payload){
 function walkinMapOfficeAlert(a, i){
   if(!a) return null;
   var kindIn = String(a.kind||'').toLowerCase().replace(/[\s_]+/g,'-');
-  var id = String(a.id || ('oa'+i));
+  /* Nathan's office-display kinds only — unknown must NOT become check-in. */
+  var known = {
+    'appointment':1, 'handover':1, 'walk-in':1, 'walkin':1,
+    'walk-in-taken':1, 'walkin-taken':1,
+    'walk-in-walked-out':1, 'walkin-walked-out':1
+  };
+  if(!known[kindIn]) return null;
+  if(kindIn==='walkin') kindIn='walk-in';
+  if(kindIn==='walkin-taken') kindIn='walk-in-taken';
+  if(kindIn==='walkin-walked-out') kindIn='walk-in-walked-out';
+
+  var id = String(a.id || '');
+  if(!id) return null;
   var customer = walkinStrip(a.customerName||a.name||'');
   var execName = walkinStrip(a.salesExecutiveName||a.bookedWith||'');
   var carType = walkinStrip(a.newOrUsed||a.carType||'');
+  if(carType!=='New' && carType!=='Used') carType='';
+  var modelsArr = Array.isArray(a.modelsOfInterest) ? a.modelsOfInterest : [];
+  var models = modelsArr.map(function(m){ return walkinStrip(m) }).filter(Boolean).join(' and ');
+  var registration = walkinStrip(String(a.registration||'').replace(/\s+/g,''));
+  var bookingId = walkinStrip(a.bookingId||'');
   var arrived = a.arrivedAt||a.arrivalTime||null;
   if(typeof arrived==='string'){ var p=Date.parse(arrived); arrived=isNaN(p)?null:p }
   if(typeof arrived==='number' && arrived<1e12) arrived=arrived*1000;
-  var appt = a.appointmentTime||null;
-  var outKind, walkIn, handover;
-  if(kindIn==='walk-in' || kindIn==='walkin'){
-    outKind='walkin-waiting'; walkIn=true; handover=false;
-  }else if(kindIn==='handover'){
-    outKind='customer-arrived'; walkIn=false; handover=true;
-  }else{
-    /* appointment (default) */
-    outKind='customer-arrived'; walkIn=false; handover=false;
-  }
+  var eventAt = a.eventAt||null;
+  if(typeof eventAt==='string'){ var e=Date.parse(eventAt); eventAt=isNaN(e)?null:e }
+  if(typeof eventAt==='number' && eventAt<1e12) eventAt=eventAt*1000;
+  var walkIn = kindIn.indexOf('walk-in')===0;
+  var handover = kindIn==='handover';
   return {
     id:id,
-    kind:outKind,
+    kind:kindIn, /* keep Nathan kind strings */
     customer:customer,
     walkIn:walkIn,
     handover:handover,
     withStaff:false,
     carType:carType,
-    models:'',
-    ref:'',
+    models:models,
+    registration:registration,
+    bookingId:bookingId,
+    ref:bookingId||'',
     bookedWith:execName,
-    assignedTo:'',
+    assignedTo: kindIn==='walk-in-taken' ? execName : '',
     arrived: arrived && isFinite(arrived) ? arrived : null,
-    appointmentTime:appt
+    eventAt: eventAt && isFinite(eventAt) ? eventAt : null,
+    appointmentTime:a.appointmentTime||null,
+    office:true
   };
 }
 function walkinDeliverOfficeAlerts(j){
@@ -6915,7 +6973,7 @@ function startOfficeAlerts(){
   if(!OFFICE_ALERTS_URL) return false;
   var tick=function(){
     var ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
-    var t = setTimeout(function(){ try{ if(ctrl) ctrl.abort(); }catch(e){} }, Math.min(WALKIN_POLL_MS-500, 7000));
+    var t = setTimeout(function(){ try{ if(ctrl) ctrl.abort(); }catch(e){} }, Math.max(3000, Math.min(WALKIN_POLL_MS-500, 15000)));
     fetch(OFFICE_ALERTS_URL + (OFFICE_ALERTS_URL.indexOf('?')<0?'?':'&') + '_=' + Date.now(), {
       method:'GET',
       cache:'no-store',
