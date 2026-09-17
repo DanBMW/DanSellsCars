@@ -6026,6 +6026,8 @@ setTimeout(function(){
    WALKIN_GAS_URL is the old Gmail Apps Script fallback (leave empty when API is live). */
 var OFFICE_ALERTS_URL = 'https://dansells-office-alerts.danielcane1992.workers.dev/alerts';
 var WALKIN_GAS_URL = ''; /* Gmail/Apps Script off — office API via Cloudflare proxy */
+/* TTS-only Apps Script (speak=). Keep empty until Code.gs with speakAudio_ is redeployed; SAM/Web Audio still speaks. */
+var WALKIN_TTS_URL = '';
 var WALKIN_POLL_MS = 8000;
 var WALKIN_SPEAK = true;  /* read the card aloud instead of a doorbell */
 var WALKIN_WAIT_MS = 10*60*1000; /* speak once when still waiting this long */
@@ -6042,7 +6044,7 @@ var WALKIN_SPEAK_MAX_MS = 30*1000;
 var walkinSeen = Object.create(null);   /* announced this page session + restored */
 var walkinPrimed = false;
 var walkinGasSeq = 0;
-var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v1';
+var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v2'; /* bumped: office API silent-seed wipe */
 var WALKIN_ANN_MAX_AGE_MS = 12*60*60*1000; /* keep for 12h across deploys/reloads */
 var walkinActx = null;
 var walkinMaster = null;
@@ -6356,7 +6358,8 @@ function walkinSpeakPrep(line){
 /* British Google voice via Apps Script (server fetch). LG blocks translate.google.com
    in the TV browser; UrlFetchApp works, then we decode into walkinActx. */
 function walkinSpeakGas(line, onDone, notBefore){
-  if(!WALKIN_GAS_URL){ if(onDone) onDone(false); return; }
+  var ttsUrl = (typeof WALKIN_TTS_URL==='string' && WALKIN_TTS_URL) ? WALKIN_TTS_URL : WALKIN_GAS_URL;
+  if(!ttsUrl){ if(onDone) onDone(false); return; }
   var done=false;
   var finish=function(ok){
     if(done) return; done=true;
@@ -6425,8 +6428,8 @@ function walkinSpeakGas(line, onDone, notBefore){
     }catch(e){ finish(false); }
   };
   s.onerror=function(){ clearTimeout(timer); finish(false); };
-  s.src = WALKIN_GAS_URL
-    + (WALKIN_GAS_URL.indexOf('?')<0?'?':'&')
+  s.src = ttsUrl
+    + (ttsUrl.indexOf('?')<0?'?':'&')
     /* both spellings, so it works against whichever version is deployed */
     + 'speak=' + encodeURIComponent(String(line||'').slice(0,180))
     + '&say=' + encodeURIComponent(String(line||'').slice(0,180))
@@ -6828,6 +6831,12 @@ function walkinMapOfficeAlert(a, i){
 function walkinDeliverOfficeAlerts(j){
   var raw = (j && j.alerts) || [];
   var rows = raw.map(walkinMapOfficeAlert).filter(Boolean);
+  /* Empty successful polls must prime: otherwise the first real arrival is
+     treated as a silent seed and never toasted/spoken. */
+  if(!rows.length){
+    walkinPrimed = true;
+    return;
+  }
   /* Reuse announce-once path as events[] */
   walkinDeliver({ events: rows, appointments: [] });
 }
