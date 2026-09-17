@@ -6044,7 +6044,7 @@ var WALKIN_SPEAK_MAX_MS = 30*1000;
 var walkinSeen = Object.create(null);   /* announced this page session + restored */
 var walkinPrimed = false;
 var walkinGasSeq = 0;
-var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v3'; /* bumped: LG Web Audio TTS path */
+var WALKIN_ANN_KEY = 'dansells.walkinAnnounced.v4'; /* bumped: speak office alerts on reload */
 var WALKIN_ANN_MAX_AGE_MS = 12*60*60*1000; /* keep for 12h across deploys/reloads */
 var walkinActx = null;
 var walkinMaster = null;
@@ -6902,13 +6902,13 @@ function walkinMapOfficeAlert(a, i){
 function walkinDeliverOfficeAlerts(j){
   var raw = (j && j.alerts) || [];
   var rows = raw.map(walkinMapOfficeAlert).filter(Boolean);
-  /* Empty successful polls must prime: otherwise the first real arrival is
-     treated as a silent seed and never toasted/spoken. */
+  /* Empty polls mark ready. Non-empty alerts skip the silent first-snapshot
+     seed (that swallowed TV tests on reload) and use announce-once storage. */
   if(!rows.length){
     walkinPrimed = true;
     return;
   }
-  /* Reuse announce-once path as events[] */
+  walkinPrimed = true;
   walkinDeliver({ events: rows, appointments: [] });
 }
 function startOfficeAlerts(){
