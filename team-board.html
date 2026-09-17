@@ -4089,8 +4089,8 @@ function radioAttach(url){
   radioDrop();
   var a=document.createElement('audio');
   a.id='radio';
-  /* auto + a bigger browser buffer reduces live-stream stammer on LG webOS */
-  a.preload='auto';
+  /* Walls: tiny buffer. Desktops/phones can keep auto. */
+  a.preload = isLowMemWall() ? 'none' : 'auto';
   a.muted=false;
   a.volume=radioDucked ? radioDuckLevel() : radioVol();
   a.setAttribute('playsinline','');
@@ -4533,6 +4533,9 @@ function videoScene(forced){
     vs.classList.remove('show');
     vs.classList.remove('bare');
     try{v.pause();v.currentTime=0}catch(e){}
+    /* Drop decoded frames — LG OOMs if we keep every sketch buffered. */
+    try{ freeVideoEl(v); }catch(e){}
+    if(clip && clip.premiere){ try{ freePremiereBlob(); premState='cold'; paintPremiere(); }catch(e){} }
     sceneEnd(g);
     if(clip.onend)try{clip.onend()}catch(e){console.error(e)}
   };
@@ -4827,6 +4830,46 @@ function leaderDance(){
    3. The banner and the mug shot QR are hidden. They draw above every scene
       on purpose, but nothing crawls across a premiere.
    ============================================================ */
+
+/* ---- LG / wall memory guard ----
+   webOS TVs OOM when we hold the ~86MB premiere blob and keep decoded videos.
+   Detect the wall and stay light: stream premiere, free video buffers. */
+function isLowMemWall(){
+  try{
+    var q=(location.search||'')+(location.hash||'');
+    if(/[?&#]wall=1\b/i.test(q) || /[?&#]lowmem=1\b/i.test(q)) return true;
+    if(localStorage.getItem('dansells.wallLowMem')==='1') return true;
+  }catch(e){}
+  var ua=(navigator.userAgent||'')+' '+(navigator.vendor||'');
+  if(/Web0S|webOS|WebOS|LG Browser|NetCast|SmartTV|Smart-TV|Tizen|Viera|BRAVIA|CrKey|AFT|HbbTV/i.test(ua)) return true;
+  try{
+    if(navigator.deviceMemory && navigator.deviceMemory>0 && navigator.deviceMemory<=4) return true;
+  }catch(e){}
+  return false;
+}
+function freePremiereBlob(){
+  try{ if(typeof premXHR!=='undefined' && premXHR){ premXHR.abort(); } }catch(e){}
+  try{ premXHR=null; }catch(e){}
+  try{ if(premUrl) URL.revokeObjectURL(premUrl); }catch(e){}
+  try{ premUrl=null; }catch(e){}
+  try{
+    if(premState==='ready' || premState==='loading'){
+      premState='cold';
+      premPct=0; premLoaded=0; premTotal=0;
+    }
+  }catch(e){}
+}
+function freeVideoEl(v){
+  if(!v) return;
+  try{ v.pause(); }catch(e){}
+  try{
+    v.removeAttribute('src');
+    v.removeAttribute('srcObject');
+    while(v.firstChild) v.removeChild(v.firstChild);
+    v.load();
+  }catch(e){}
+}
+
 var PREMIERE={
   src:'video/premiere.mp4',
   ar:1280/708,
@@ -4880,6 +4923,13 @@ function premStream(why){
    hands back progress for nothing, which is what the card shows. */
 function armPremiere(){
   if(premState==='loading'||premState==='ready'||premState==='stream')return;
+  /* Walls cannot hold ~86MB in RAM — stream only, never blob-cache. */
+  if(isLowMemWall()){
+    console.warn('premiere: low-mem wall — streaming, no blob cache');
+    freePremiereBlob();
+    premStream('low-mem wall');
+    return;
+  }
   premState='loading'; premPct=0; premTried++;
   premLoaded=0; premTotal=0; premLastAt=Date.now();
   paintPremiere();
@@ -4953,7 +5003,7 @@ function premiereMaybeRoll(){
   /* roll when the film is in memory - or when we have waited long enough
      that a stream is the better bet than an empty room */
   if(!premiereReady()&&waited<PREM_WAIT_MAX){
-    if(premState==='failed'&&premTried<3)armPremiere();
+    if(premState==='failed'&&premTried<(isLowMemWall()?1:3))armPremiere();
     return;
   }
   premRolled=true;
@@ -6788,6 +6838,18 @@ try{
 startWalkinAlerts();
 </script>
 
+
+<script>
+(function(){
+  try{
+    if(typeof isLowMemWall==='function' && isLowMemWall()){
+      console.warn('DanSells: low-mem wall mode');
+      try{ localStorage.setItem('dansells.wallLowMem','1'); }catch(e){}
+      try{ freePremiereBlob(); }catch(e){}
+    }
+  }catch(e){}
+})();
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, update, remove, get, set }
