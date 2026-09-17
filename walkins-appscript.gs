@@ -101,20 +101,34 @@ function doGet(e) {
     return out({ error: 'bad token' }, p.callback);
   }
   /* Wall boards ask for spoken audio (LG blocks client-side Google TTS). */
-  if (p.speak) {
+  if (p.speak || p.say) {
     try {
-      return out(speakAudio_(String(p.speak)), p.callback);
+      return out(speakAudio_(String(p.speak || p.say)), p.callback);
     } catch (err) {
       return out({ error: 'tts: ' + String(err) }, p.callback);
     }
   }
-  var body = readCache();
-  if (!body) {
-    try { refresh(); body = readCache(); } catch (err) {
+  /* Force a Gmail rescan (board or manual). */
+  if (p.refresh === '1' || p.refresh === 'true') {
+    try {
+      refresh();
+    } catch (err) {
       return out({ error: String(err) }, p.callback);
     }
   }
-  return out(body || { appointments: [], events: [] }, p.callback);
+  var body = readCache();
+  var age = (body && body.scannedAt) ? (Date.now() - Number(body.scannedAt)) : 1e15;
+  /* If the minute trigger dies, an empty/stale cache used to stick forever and
+     the walls stayed silent. Rescan when missing or older than 3 minutes. */
+  if (!body || age > 3 * 60 * 1000) {
+    try {
+      refresh();
+      body = readCache();
+    } catch (err) {
+      if (!body) return out({ error: String(err) }, p.callback);
+    }
+  }
+  return out(body || { appointments: [], events: [], scannedAt: Date.now() }, p.callback);
 }
 
 /** Fetch British female TTS (Amazon Amy via ttsmp3), then Google en-GB. */
@@ -355,14 +369,7 @@ function scan() {
       if (when < cutoff) return;
       var subject = m.getSubject() || '';
       var body = messageText(m);
-      /* A "Walk-in taken" subject is NOT already handled above. That pass is
-         in:inbox-scoped, so an archived pick-up is invisible to it - and an
-         archived pick-up is exactly what this block exists to catch. Skipping
-         it left the customer reading "waiting" for ever with the timer
-         climbing, which on a wall in the managers' office looks like somebody
-         has been ignored for an hour. Re-applying is harmless: the guard below
-         only touches a visit still waiting, and this block raises no event, so
-         nothing is announced twice. */
+      if (classifySubject(subject) === 'walkin-taken') return; /* already in events */
       var name = customerNameFrom(body, subject);
       if (!name) return;
       var staff = sanitizeName(firstOf(PATTERNS.seenBy, body, subject)) || 'a member of staff';
