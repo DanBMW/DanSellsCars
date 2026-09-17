@@ -1,0 +1,13 @@
+name = "dansells-office-alerts"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+
+# Set with: npx wrangler secret put OFFICE_DISPLAY_SECRET
+# Optional override at deploy time:
+#   npx wrangler secret put / vars below
+
+[vars]
+# Full upstream alerts URL (no trailing slash on path — include /v1/office-display/alerts)
+UPSTREAM_ALERTS_URL = "https://hedin-vehicle-lookup.REPLACE.workers.dev/v1/office-display/alerts"
+# Comma-separated origins allowed to call /alerts from the browser
+ALLOW_ORIGIN = "https://dan-sells.co.uk,https://danbmw.github.io"
