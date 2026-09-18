@@ -1626,6 +1626,16 @@ body.premiere .pairqr{display:none!important}
           <span>Don't wait - stream it<small>If loading will not move</small></span></button>
       </div>
 
+      <h2 style="margin-top:22px;font-size:1rem">The feature</h2>
+      <p class="hint" style="margin-bottom:10px">A one-off video, played when you press the button - never on its own
+        and never in the rotation. Put the file in the repo as <b>video/feature.mp4</b> and it appears here.
+        It plays on every screen, full width, with nothing drawn over it.</p>
+      <div class="clips">
+        <button type="button" class="clipbtn" id="feat-play">
+          <span class="ply">&#9654;</span>
+          <span>Play the feature<small id="feat-state">Checking…</small></span></button>
+      </div>
+
       <h2 style="margin-top:22px;font-size:1rem">What's on the board</h2>
       <p class="hint" style="margin-bottom:10px">Hold the wall display on one board, or leave it cycling.
         Applies to every screen showing the board, and lapses back to the rotation after fifteen minutes.</p>
@@ -3692,6 +3702,7 @@ function playNow(src){
   /* the play command carries tunes as well as clips, so the birthday button
      rides the channel that already exists rather than needing a new one */
   if(src==='trailer'){ trailerScene(); return }
+  if(src==='feature'){ videoScene(FEATURE); return }
   if(src.indexOf('tune:birthday')===0){
     var nm=src.slice(14);
     birthdayScene(nm, bdayClipFor(nm));
@@ -3882,6 +3893,19 @@ function paintPremiereControls(){
   if(el)el.textContent = premiereLock ? 'Playing now' : premStatusText();
   var r=$('prem-roll');
   if(r)r.disabled=premiereLock;
+}
+
+/* Same shape as premiereRollAll: go through boardcontrol so one tap on a
+   phone plays on every screen, and fall back to this screen alone rather than
+   leaving the button silently dead when the channel is unreadable. */
+function featurePlayAll(){
+  if(featState==='missing'){ toast('No video/feature.mp4 uploaded yet','err'); return }
+  if(!backend||!backend.play||!controlLive){
+    toast('Playing on this screen only','ok'); videoScene(FEATURE); return;
+  }
+  backend.play('feature').then(function(){
+    toast('Feature playing on every screen','ok');
+  })['catch'](function(e){ console.error(e); videoScene(FEATURE) });
 }
 
 function premiereStreamAll(){
@@ -5114,6 +5138,43 @@ var TRAILER={src:'video/trailer.mp4', ar:1280/708, name:'The Showroom Sheriff',
              cap:'The Showroom Sheriff &mdash; coming soon'};
 var TRAILER_CARD_MS=3800, TRAILER_EVERY=3600000;
 
+/* ---- the feature ----
+   A one-off film a manager puts up, like the premiere, but with none of the
+   premiere's loading machinery: it **streams**. That is deliberate rather than
+   lazy - the wall TV cannot hold tens of megabytes in memory (see
+   isLowMemWall) and trying was what took the board down, so the weaker
+   no-buffering promise is the only one this set can actually keep.
+   Deliberately NOT in `CLIPS`, so the sketch slot can never pick it, and no
+   timer touches it. `bare` drops the caption strip and the bubbles; `guardMax`
+   lifts the stall backstop off its 120s sketch ceiling, which would otherwise
+   cut a feature off at two minutes.
+   Fixed filename on purpose: whoever has the file can drop it in and press
+   play without anybody editing this page. */
+var FEATURE={src:'video/feature.mp4', ar:16/9, cap:'', bare:true,
+             guardMax:PREM_GUARD_MAX};
+var featState='check';   /* check | ready | missing */
+
+/* Say whether the file is actually there, rather than letting somebody press
+   play in front of the team and watch sixteen seconds of black while the stall
+   guard works it out. */
+function featCheck(){
+  var el=$('feat-state');
+  if(!el) return;
+  el.textContent='Checking…';
+  var done=function(ok,size){
+    featState = ok ? 'ready' : 'missing';
+    el.textContent = ok ? ('Ready'+(size?' - '+(size/1048576).toFixed(1)+' MB':''))
+                        : 'No video/feature.mp4 uploaded yet';
+    var b=$('feat-play'); if(b) b.style.opacity = ok ? '' : '0.55';
+  };
+  try{
+    fetch(FEATURE.src+'?_='+Date.now(), {method:'HEAD'})
+      .then(function(r){ done(!!r.ok, Number(r.headers.get('content-length')||0)) })
+      ['catch'](function(){ done(false,0) });
+  }catch(e){ done(false,0) }
+}
+
+
 function trailerScene(){
   if(!sOn('trailer'))return false;
   if(stuntsBlocked())return false;
@@ -5893,6 +5954,7 @@ function checkPin(){
 $('btn-manager').onclick=function(){
   paintEventPanel(); paintPairList();   /* never open on a stale message */
   paintWake();
+  featCheck();   /* is the file actually there? */
   if(isManager){resetForm();openModal('m-mgr');renderDeals();return}
   $('pin-input').value='';
   openModal('m-pin');
@@ -5918,6 +5980,7 @@ $('ev-forget').onclick=function(){
   evSetKey(''); toast('Forgotten on this screen','ok'); paintEventPanel();
 };
 $('radio-toggle').onclick=function(){ setRadioOn(!sOn('radio')) };
+$('feat-play').onclick=featurePlayAll;
 var _rr=$('radio-refresh');
 if(_rr)_rr.onclick=function(){
   try{ radioRefreshStream(); toast('Refreshing Kisstory R&B…','ok') }catch(e){ toast('Could not refresh radio','err') }
