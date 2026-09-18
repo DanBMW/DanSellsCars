@@ -63,15 +63,8 @@ for (const page of PAGES) {
     if (!fs.existsSync(path.join(root, rel))) problem(page, 'points at "' + rel + '" which is not in the repo');
   }
 
-  // the video list must match what is on disk - except the feature, which is an
-  // upload slot by design: the whole point is that somebody drops a film in as
-  // video/feature.mp4 and presses play, without editing team-board.html. The
-  // page checks for it at runtime (featCheck) and says so in the manager panel
-  // when it is absent, so a missing file is reported to the person who can fix
-  // it rather than failing a build they are not running.
-  const UPLOAD_SLOTS = new Set(['video/feature.mp4']);
+  // the video list must match what is on disk
   for (const m of src.matchAll(/src:'(video\/[^']+)'/g)) {
-    if (UPLOAD_SLOTS.has(m[1])) continue;
     if (!fs.existsSync(path.join(root, m[1]))) problem(page, 'CLIPS references "' + m[1] + '" which is not in the repo');
   }
 }

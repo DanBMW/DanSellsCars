@@ -1486,9 +1486,9 @@ body.premiere .pairqr{display:none!important}
 <!-- the card that introduces the trailer, then cuts to it -->
 <div class="trailercard" id="trailercard" aria-hidden="true">
   <div class="tc-inner">
-    <div class="tc-kick">Used Car Team Pictures presents</div>
+    <div class="tc-kick" id="tc-kick">Used Car Team Pictures presents</div>
     <div class="tc-rule"></div>
-    <div class="tc-main">Coming soon<br>to this screen</div>
+    <div class="tc-main" id="tc-main">Coming soon<br>to this screen</div>
   </div>
 </div>
 
@@ -1626,14 +1626,15 @@ body.premiere .pairqr{display:none!important}
           <span>Don't wait - stream it<small>If loading will not move</small></span></button>
       </div>
 
-      <h2 style="margin-top:22px;font-size:1rem">The feature</h2>
-      <p class="hint" style="margin-bottom:10px">A one-off video, played when you press the button - never on its own
-        and never in the rotation. Put the file in the repo as <b>video/feature.mp4</b> and it appears here.
-        It plays on every screen, full width, with nothing drawn over it.</p>
+      <h2 style="margin-top:22px;font-size:1rem">The Showroom Sheriff &mdash; Episode 2</h2>
+      <p class="hint" style="margin-bottom:10px">Title card, then the episode, on every screen. Played only when you
+        press this - never on a timer and never in the sketch rotation. It carries its own sound even with the
+        board's sound switched off. Five minutes, and it streams rather than loading first, so give it a dry run
+        before you put the team in front of it.</p>
       <div class="clips">
         <button type="button" class="clipbtn" id="feat-play">
           <span class="ply">&#9654;</span>
-          <span>Play the feature<small id="feat-state">Checking…</small></span></button>
+          <span>Play Episode 2<small id="feat-state">Checking…</small></span></button>
       </div>
 
       <h2 style="margin-top:22px;font-size:1rem">What's on the board</h2>
@@ -3702,7 +3703,7 @@ function playNow(src){
   /* the play command carries tunes as well as clips, so the birthday button
      rides the channel that already exists rather than needing a new one */
   if(src==='trailer'){ trailerScene(); return }
-  if(src==='feature'){ videoScene(FEATURE); return }
+  if(src==='episode'||src==='feature'){ episodeScene(); return }   /* 'feature' kept: a screen that has not reloaded still sends the old name */
   if(src.indexOf('tune:birthday')===0){
     var nm=src.slice(14);
     birthdayScene(nm, bdayClipFor(nm));
@@ -3899,13 +3900,13 @@ function paintPremiereControls(){
    phone plays on every screen, and fall back to this screen alone rather than
    leaving the button silently dead when the channel is unreadable. */
 function featurePlayAll(){
-  if(featState==='missing'){ toast('No video/feature.mp4 uploaded yet','err'); return }
+  if(featState==='missing'){ toast('Episode 2 is missing from the repo','err'); return }
   if(!backend||!backend.play||!controlLive){
-    toast('Playing on this screen only','ok'); videoScene(FEATURE); return;
+    toast('Playing on this screen only','ok'); episodeScene(); return;
   }
-  backend.play('feature').then(function(){
-    toast('Feature playing on every screen','ok');
-  })['catch'](function(e){ console.error(e); videoScene(FEATURE) });
+  backend.play('episode').then(function(){
+    toast('Episode 2 playing on every screen','ok');
+  })['catch'](function(e){ console.error(e); episodeScene() });
 }
 
 function premiereStreamAll(){
@@ -5143,20 +5144,50 @@ var TRAILER={src:'video/trailer.mp4', ar:1280/708, name:'The Showroom Sheriff',
              cap:'The Showroom Sheriff &mdash; coming soon'};
 var TRAILER_CARD_MS=3800, TRAILER_EVERY=3600000;
 
-/* ---- the feature ----
-   A one-off film a manager puts up, like the premiere, but with none of the
-   premiere's loading machinery: it **streams**. That is deliberate rather than
-   lazy - the wall TV cannot hold tens of megabytes in memory (see
-   isLowMemWall) and trying was what took the board down, so the weaker
-   no-buffering promise is the only one this set can actually keep.
-   Deliberately NOT in `CLIPS`, so the sketch slot can never pick it, and no
-   timer touches it. `bare` drops the caption strip and the bubbles; `guardMax`
-   lifts the stall backstop off its 120s sketch ceiling, which would otherwise
-   cut a feature off at two minutes.
-   Fixed filename on purpose: whoever has the file can drop it in and press
-   play without anybody editing this page. */
-var FEATURE={src:'video/feature.mp4', ar:832/464, cap:'', bare:true,
-             guardMax:PREM_GUARD_MAX, forceSound:true};
+/* ---- The Showroom Sheriff, Episode 2 ----
+   The sequel to the team film, and it gets the billing: a title card, then the
+   episode, on every screen, when a manager presses play. Never on a timer and
+   deliberately NOT in `CLIPS`, so the sketch slot can never pick it.
+   Modelled on `trailerScene()` rather than `premiereScene()`, on purpose. The
+   premiere pulls its whole file into memory before a frame plays, which is the
+   only way to promise it will not buffer - and which the wall TV cannot do
+   (see isLowMemWall; trying is what took the board down). At 40MB this
+   **streams**, so the office wifi is in the loop for all five minutes. That is
+   the weaker promise, and it is the only one this set can keep. Do not "fix"
+   this by pointing it at armPremiere().
+   `bare` drops the caption strip and the bubbles; `guardMax` lifts the stall
+   backstop off its 120s sketch ceiling, which would cut a five-minute episode
+   off at two. */
+var EPISODE={src:'video/sheriff-ep2.mp4', ar:832/464, cap:'', bare:true,
+             guardMax:PREM_GUARD_MAX, forceSound:true,
+             kick:'Used Car Team Pictures presents',
+             main:'The Showroom Sheriff<br><small>Episode Two</small>'};
+var EPISODE_CARD_MS=5000;
+
+/* Both the trailer and the episode use the one card, so each sets its own
+   words - otherwise whichever played last leaves its title behind. */
+function setTitleCard(kick, main){
+  var k=$('tc-kick'), m=$('tc-main');
+  if(k) k.textContent=kick;
+  if(m) m.innerHTML=main;
+}
+
+function episodeScene(){
+  var card=$('trailercard'), v=$('vs-video');
+  if(!card||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
+  setTitleCard(EPISODE.kick, EPISODE.main);
+  var g=sceneStart(true);
+  card.classList.add('show');
+  holdUntil=Date.now()+EPISODE_CARD_MS+2000;
+  setTimeout(function(){
+    if(g!==sceneGen)return;              /* something took the floor from us */
+    card.classList.remove('show');
+    sceneEnd(g);                         /* hand it over cleanly, one tick */
+    if(!videoScene(EPISODE))toast('This screen cannot play the episode','err');
+  },EPISODE_CARD_MS);
+  return true;
+}
+
 var featState='check';   /* check | ready | missing */
 
 /* Say whether the file is actually there, rather than letting somebody press
@@ -5173,7 +5204,7 @@ function featCheck(){
     var b=$('feat-play'); if(b) b.style.opacity = ok ? '' : '0.55';
   };
   try{
-    fetch(FEATURE.src+'?_='+Date.now(), {method:'HEAD'})
+    fetch(EPISODE.src+'?_='+Date.now(), {method:'HEAD'})
       .then(function(r){ done(!!r.ok, Number(r.headers.get('content-length')||0)) })
       ['catch'](function(){ done(false,0) });
   }catch(e){ done(false,0) }
@@ -5185,6 +5216,7 @@ function trailerScene(){
   if(stuntsBlocked())return false;
   var card=$('trailercard'), v=$('vs-video');
   if(!card||!v||!v.canPlayType||!v.canPlayType('video/mp4'))return false;
+  setTitleCard('Used Car Team Pictures presents','Coming soon<br>to this screen');
   var g=sceneStart(true); /* soft-duck under title card; videoScene ducks again */
   card.classList.add('show');
   holdUntil=Date.now()+TRAILER_CARD_MS+2000;

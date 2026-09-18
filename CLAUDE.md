@@ -691,6 +691,30 @@ said so.
   minutes after load, not an hour, so a screen switched on does not sit there.
   It has its own `trailer` switch in the admin console and its own play button;
   `playNow('trailer')` routes to the card, not straight to the clip.
+- **The Showroom Sheriff, Episode 2.** `video/sheriff-ep2.mp4` - 832x464,
+  5m02s, 40MB, with its own soundtrack. A manager presses play and every
+  screen gets a title card ("Used Car Team Pictures presents / The Showroom
+  Sheriff / Episode Two") and then the episode. Never on a timer, and
+  deliberately **not** in `CLIPS`, so the sketch slot can never pick it.
+  **Modelled on `trailerScene()`, not `premiereScene()`, on purpose.** The
+  premiere pulls its whole file into memory before a frame plays, which is the
+  only way to promise it will not buffer - and which the wall TV cannot do
+  (`isLowMemWall`; trying is what took the board down). At 40MB this
+  **streams**, so the office wifi is in the loop for all five minutes. That is
+  the weaker promise and the only one this set can keep; do not "fix" it by
+  pointing it at `armPremiere()`.
+  It carries `forceSound`, because the global `sound` switch was off and this
+  would otherwise have played silently in front of the team: that switch keeps
+  the board quiet through the day, and somebody deliberately pressing play on
+  an episode means to hear it. It does not bypass the browser - a refused
+  `play()` still falls back to muted with the "tap for sound" badge.
+  `bare` drops the caption strip and the bubbles; `guardMax` lifts the stall
+  backstop off its 120s sketch ceiling, which would cut five minutes off at
+  two. The title card is **shared with the trailer**, so each sets its own
+  words through `setTitleCard()` - otherwise whichever played last leaves its
+  title behind. `playNow` still answers to the old `'feature'` command as well
+  as `'episode'`, so a screen that has not reloaded yet is not left with a
+  dead button.
 - **The premiere.** `video/premiere.mp4` is the team film - 6m30s, 1280x708,
   90.6MB, the largest asset in the repo by some way - and it is not a cut
   scene, not a sketch and **not on any timer** - it runs only when a manager
