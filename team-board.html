@@ -6411,6 +6411,29 @@ function walkinAnnounceText(r){
   return '';
 }
 
+/* What the wall SAYS, as against what it shows.
+   Dan's call on a handover: the name and who they are here to see is the whole
+   of it. The models and the registration stay on the card, where they can be
+   read at leisure and cost nothing; read aloud they only make the announcement
+   longer than the moment it is announcing, and the room stops listening.
+   Only the spoken line is trimmed - `walkinAnnounceText()` still drives the
+   card, so nothing is lost from the screen. Two kinds mean handover: the
+   office feed's own `handover`, and the older `customer-arrived` carrying a
+   `handover` flag; the card's kicker treats both as HANDOVER, so the voice
+   must too, or one of them keeps reading the vehicle out. */
+function walkinSpeakText(r){
+  r=r||{};
+  var kind=String(r.kind||'').toLowerCase();
+  var isHandover = (kind==='handover') || (kind==='customer-arrived' && r.handover);
+  if(!isHandover) return walkinAnnounceText(r);
+  var name=r.customer || 'A customer';
+  var exec=r.bookedWith || r.assignedTo || '';
+  /* no "with a sales executive" fallback here - a handover is always somebody's,
+     and the vague version reads worse than simply not saying it */
+  return exec ? (name+' has arrived for their handover with '+exec+'.')
+              : (name+' has arrived for their handover.');
+}
+
 function walkinPickVoice(){
   try{
     var list=window.speechSynthesis.getVoices()||[];
@@ -6736,7 +6759,7 @@ function walkinSpeakSynth(line, onDone){
 
 function walkinSpeak(r){
   if(!WALKIN_SPEAK) return;
-  var line=walkinAnnounceText(r);
+  var line=walkinSpeakText(r);
   if(!line) return;
   try{ if(typeof radioDuck==='function') radioDuck(true); }catch(e){}
   var finished=false, guard=null;
