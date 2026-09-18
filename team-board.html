@@ -6421,9 +6421,36 @@ function walkinAnnounceText(r){
    office feed's own `handover`, and the older `customer-arrived` carrying a
    `handover` flag; the card's kicker treats both as HANDOVER, so the voice
    must too, or one of them keeps reading the vehicle out. */
+/* One clause for what they are after, never two. The card's own copy builds
+   this from `walkinNewUsedWord()` AND `walkinVehicleTail()`, which both add
+   the interest, so a walk-in with a known car type said it twice out loud:
+   "...is interested in a used car. Interested in X1." No article in front of
+   a bare model - "an X1" is right and "a X1" is not, and that is not a
+   judgement worth encoding for a voice. */
+function walkinInterest(r){
+  var nu=walkinNewUsedWord(r);
+  var model=r.models ? String(r.models).trim() : '';
+  if(nu && model) return 'Interested in a '+nu+' '+model+'.';
+  if(model)       return 'Interested in '+model+'.';
+  if(nu)          return 'Interested in a '+nu+' car.';
+  return '';
+}
+
 function walkinSpeakText(r){
   r=r||{};
   var kind=String(r.kind||'').toLowerCase();
+
+  /* A walk-in has nobody to be "here to see" - that is the whole point, they
+     are waiting. So unlike the handover this keeps what they are after, said
+     once: with nobody assigned it is the line that tells whoever is free
+     whether to take it. The registration is not "what they want" and stays on
+     the card with everything else. */
+  if(kind==='walk-in'){
+    var wname=r.customer || 'A customer';
+    var want=walkinInterest(r);
+    return 'WALK-IN - '+wname+' is waiting.'+(want?' '+want:'');
+  }
+
   var isHandover = (kind==='handover') || (kind==='customer-arrived' && r.handover);
   if(!isHandover) return walkinAnnounceText(r);
   var name=r.customer || 'A customer';
