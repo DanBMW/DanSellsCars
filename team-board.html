@@ -6436,7 +6436,32 @@ function walkinInterest(r){
   return '';
 }
 
+/* Said aloud, not printed. Two things the card's copy does for the eye that a
+   voice gets wrong:
+   - **A short all-caps token is read as an initialism.** "WALK-IN" came out of
+     the TTS as "W. A. L. K. in", which is the right instinct for BMW and the
+     wrong one here. Folding it to "Walk-in" is enough; mixed case reads as a
+     word. The card keeps its uppercase kicker - that is styling for the eye
+     and never reaches the voice.
+   - **A dangling " - " is a dash to the eye and either "minus" or a stumble to
+     a voice**, so it becomes a full stop and the line reads as two sentences.
+   Do this here rather than by editing each string: `walkinAnnounceText()` is
+   shared with the card, so lowercasing at source would take the kicker off the
+   screen too. */
+function walkinSpeakable(s){
+  return String(s||'')
+    .replace(/\bWALK-IN\b/g, 'Walk-in')
+    .replace(/\s+-\s+/g, '. ')
+    .replace(/\.\s*\./g, '.')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function walkinSpeakText(r){
+  return walkinSpeakable(walkinSpeakLine(r));
+}
+
+function walkinSpeakLine(r){
   r=r||{};
   var kind=String(r.kind||'').toLowerCase();
 
