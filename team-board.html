@@ -4550,7 +4550,12 @@ function videoScene(forced){
   var clip=!forced ? pickClip()
          : (typeof forced==='string' ? clipBySrc(forced) : forced);
   if(!clip)return false;
-  var wants=clip.sound!==false&&sOn('sound');
+  /* `forceSound` is for a film a manager deliberately presses play on: the
+     global `sound` switch exists to keep the board quiet through the day, and
+     somebody standing the team in front of a feature plainly means to hear it.
+     It does not bypass the browser - a refused play() still falls back to
+     muted with the "tap for sound" badge, same as every other clip. */
+  var wants=clip.forceSound ? true : (clip.sound!==false&&sOn('sound'));
   /* Duck only for clips with their own soundtrack. Silent sketches / pool keep R&B up. */
   var g=sceneStart(!!wants);
   var frame=vs.querySelector('.vs-frame');
@@ -5150,8 +5155,8 @@ var TRAILER_CARD_MS=3800, TRAILER_EVERY=3600000;
    cut a feature off at two minutes.
    Fixed filename on purpose: whoever has the file can drop it in and press
    play without anybody editing this page. */
-var FEATURE={src:'video/feature.mp4', ar:16/9, cap:'', bare:true,
-             guardMax:PREM_GUARD_MAX};
+var FEATURE={src:'video/feature.mp4', ar:832/464, cap:'', bare:true,
+             guardMax:PREM_GUARD_MAX, forceSound:true};
 var featState='check';   /* check | ready | missing */
 
 /* Say whether the file is actually there, rather than letting somebody press
