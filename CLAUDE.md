@@ -668,7 +668,14 @@ said so.
   and the first tap on that screen unmutes the clip that is already running
   (`liveVideo`) rather than only helping the next one. The clips are warmed into the browser cache 20s after load on wide
   screens only, so a phone does not pull down thirty megabytes it will probably
-  never play.
+  never play - and **never on a wall display**, whatever its width.
+  `warmVideo()` tests `isLowMemWall()`, the same check the premiere uses to
+  refuse its blob. The clip set is about 70MB and a webOS browser has nothing
+  like the headroom: warming it filled the LG's memory over a morning and the
+  next page load was refused outright - "Not enough memory to open this
+  webpage", the board dead on the wall - from a prefetch whose only job was to
+  make a sketch start a second sooner. A television is the widest screen in the
+  building, so the width check is not a substitute for the device check.
 - **The trailer.** `video/trailer.mp4` is the team film trailer, and it is
   **not one of the sketches**: it is deliberately kept out of `CLIPS` so the
   random sketch slot can never pick it, and it runs on its own hourly timer
