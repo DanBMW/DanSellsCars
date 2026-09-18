@@ -1601,6 +1601,15 @@ body.premiere .pairqr{display:none!important}
           <span>Refresh the stream<small>If it stammers or goes quiet</small></span></button>
       </div>
 
+      <h2 style="margin-top:22px;font-size:1rem">Screen</h2>
+      <p class="hint" style="margin-bottom:10px">The board asks the browser to hold this screen awake, which is
+        enough on a newer set. It cannot override the TV&rsquo;s own screen saver - no web page can. If the line
+        below says it can&rsquo;t, switch that off on the set itself:
+        <b>Settings &rarr; General &rarr; System &rarr; Additional Settings &rarr; Screen Saver &rarr; Off</b>.
+        While you are in there, <b>Eco / Energy Saving &rarr; Auto Power Off &rarr; Off</b> as well, or it shuts
+        down after four hours with nobody touching the remote.</p>
+      <p class="hint" style="margin-bottom:0"><b>Now:</b> <span id="wake-state">Not holding the screen.</span></p>
+
       <h2 style="margin-top:22px;font-size:1rem">The premiere</h2>
       <p class="hint" style="margin-bottom:10px">The film, on every screen at once. Get the screens ready first -
         each one pulls the whole film into memory, so once it starts it plays straight through
@@ -5366,6 +5375,100 @@ function nextCutScene(){
   return false;
 }
 
+/* ---- keeping the wall awake ----
+   The LG blanks to its own screen saver after a couple of minutes, and a
+   board that is merely animating does not stop it: webOS keys the screen
+   saver off remote-control input, not off the pixels, so thirty seconds of
+   breakdancing counts for nothing. The TV's own setting is therefore the
+   real fix and a web page cannot override it - there is no API for that
+   outside LG's signage SDK. Do not go looking for one.
+   What a page can do is hold a Screen Wake Lock, which the browser honours
+   where it has one (webOS 23+ / Chromium 94+, and every desktop browser). On
+   a set new enough that is the whole fix and nobody has to touch the TV menu;
+   on an older one it is simply not there, which is why the state is reported
+   in words in the manager panel - a wall that blanks anyway should say which
+   of the two it is rather than leaving somebody to guess.
+   Wall only, on the same 1200px layout the radio and the QR badge use: a
+   manager opening the board on a phone must not have their handset held
+   awake in their pocket.
+   The browser releases the lock whenever the document is hidden and never
+   reacquires it on its own, so every path back to visible has to ask again.
+   That, and a slow retry for the builds that release silently, is most of
+   what this is. */
+var wakeLock=null, wakeState='idle', wakeTimer=null;
+
+function wakeWanted(){
+  return window.innerWidth>=1200 && document.visibilityState==='visible';
+}
+
+function wakeRelease(){
+  var l=wakeLock; wakeLock=null;
+  if(l){ try{ l.release() }catch(e){} }
+  if(wakeState==='held') wakeState='idle';
+  paintWake();
+}
+
+function wakeRequest(){
+  if(!wakeWanted()){ paintWake(); return }
+  if(!navigator.wakeLock){ wakeState='unsupported'; paintWake(); return }
+  if(wakeLock) return;
+  if(wakeState!=='held') wakeState='asking';
+  paintWake();
+  var p;
+  try{ p=navigator.wakeLock.request('screen') }
+  catch(e){ wakeState='failed'; paintWake(); return }
+  p.then(function(l){
+    wakeLock=l; wakeState='held'; paintWake();
+    l.addEventListener('release',function(){
+      /* only the lock we are actually holding counts - a stale one letting go
+         says nothing about the screen */
+      if(wakeLock!==l) return;
+      wakeLock=null; wakeState='lost'; paintWake();
+    });
+  }).catch(function(e){
+    wakeLock=null;
+    /* NotAllowedError here is the document not being visible or active yet,
+       not a permission anybody can grant - worth asking again, not fatal */
+    wakeState=(e&&e.name==='NotAllowedError')?'refused':'failed';
+    paintWake();
+  });
+}
+
+function wakeStatusText(){
+  if(window.innerWidth<1200)    return 'Not needed on a phone.';
+  if(wakeState==='held')        return 'Holding this screen awake.';
+  if(wakeState==='asking')      return 'Asking to hold the screen awake…';
+  if(wakeState==='lost')        return 'The screen lock dropped - asking again.';
+  if(wakeState==='refused')     return 'Not allowed yet - tap this screen once.';
+  if(wakeState==='unsupported') return 'This browser cannot hold the screen awake. Switch the set’s own screen saver off.';
+  if(wakeState==='failed')      return 'Could not hold the screen awake. Switch the set’s own screen saver off instead.';
+  return 'Not holding the screen.';
+}
+
+function paintWake(){
+  var el=$('wake-state');
+  if(el)el.textContent=wakeStatusText();
+}
+
+function keepAwake(){
+  if(wakeTimer) return;
+  wakeRequest();
+  wakeTimer=setInterval(wakeRequest,60000);
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible') wakeRequest();
+    /* the browser has already released it for us - just stop claiming we hold
+       one, or the retry above will never ask again */
+    else { wakeLock=null; if(wakeState==='held') wakeState='idle'; paintWake() }
+  });
+  window.addEventListener('focus',wakeRequest);
+  window.addEventListener('resize',function(){
+    if(wakeWanted()) wakeRequest(); else wakeRelease();
+  });
+  /* a gesture is the one thing that clears a refusal */
+  document.addEventListener('pointerdown',wakeRequest,{passive:true});
+  document.addEventListener('keydown',wakeRequest);
+}
+
 function scheduleStunts(){
   every(throwPaper,    25000, 20000,  45000,  50000);  /* ambient, covers nothing */
   var gap=sNum('scenemins',5)*60000;
@@ -5716,6 +5819,7 @@ function checkPin(){
 }
 $('btn-manager').onclick=function(){
   paintEventPanel(); paintPairList();   /* never open on a stale message */
+  paintWake();
   if(isManager){resetForm();openModal('m-mgr');renderDeals();return}
   $('pin-input').value='';
   openModal('m-pin');
@@ -5920,6 +6024,7 @@ scheduleStunts();
 paintTicker();
 paintTickerPanel();
 paintCornerQR();
+keepAwake();
 /* Start the radio here rather than waiting for the settings watch. Absent
    means on, so there is nothing to wait for - and a board whose Firebase is
    slow or blocked should still come up playing rather than silent. */

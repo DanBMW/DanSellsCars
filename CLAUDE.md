@@ -913,6 +913,21 @@ said so.
   `birthdays`. Same audio rule as the sketches: a wall display that nobody has
   touched cannot make sound, so the scene says "tap this screen once to hear
   it" and still plays silently rather than not at all.
+- **Keeping the wall awake.** The LG blanks to its own screen saver after a
+  couple of minutes, and an animating board does not stop it - webOS keys the
+  screen saver off remote-control input, not off the pixels. **The TV's own
+  setting is the real fix and a web page cannot override it**; there is no API
+  for that outside LG's signage SDK, so do not go looking for one.
+  `keepAwake()` holds a Screen Wake Lock where the browser has one (webOS 23+
+  / Chromium 94+, and every desktop browser), which on a new enough set is the
+  whole fix. Wall only, on the same 1200px layout the radio and the QR badge
+  use - a manager opening the board on a phone must not have their handset
+  held awake in their pocket. The browser releases the lock whenever the
+  document is hidden and never takes it back on its own, so every path back to
+  visible asks again, and a slow retry covers the builds that release
+  silently. The manager panel reports the real state in words - holding,
+  refused, or "this browser cannot" - because a wall that blanks anyway should
+  say which of the two it is rather than leaving somebody to guess.
 - **Reloading every screen.** Shipping a change to a board on a wall used to
   mean walking over to refresh it. "Reload every screen" in the manager panel
   writes `boardcontrol/reload`, and each screen reloads on a timestamp newer
