@@ -5446,6 +5446,9 @@ function wakeRequest(){
 
 function wakeStatusText(){
   if(window.innerWidth<1200)    return 'Not needed on a phone.';
+  /* the loop is the thing actually holding a TV awake, so say when it is not */
+  if(!keepAwakeAudioLive() && wakeState!=='unsupported')
+    return 'Silent keep-alive is not playing - tap this screen once.';
   if(wakeState==='held')        return 'Holding this screen awake.';
   if(wakeState==='asking')      return 'Asking to hold the screen awake…';
   if(wakeState==='lost')        return 'The screen lock dropped - asking again.';
@@ -5460,10 +5463,68 @@ function paintWake(){
   if(el)el.textContent=wakeStatusText();
 }
 
+/* ---- the silent keep-alive ----
+   webOS will not blank the screen while media is playing, and until the radio
+   was switched off the board had media playing all day. That is why the screen
+   saver was never a problem before and became one the same afternoon: the
+   radio was holding the screen awake as a side effect and nobody knew, this
+   file least of all. With `radio` off, `sound` off and `scenemins` at 60 - a
+   sketch every couple of hours rather than every ten minutes - the board plays
+   nothing at all, and the screen saver has nothing standing in its way.
+   So keep one loop playing that nobody can hear. **Audio, not video**, for two
+   reasons: audio is what was actually working (the radio), and a video element
+   would hold one of the TV's few hardware decoders open permanently and could
+   stop the sketches playing.
+   The samples are **not digital silence** - one LSB of a 20Hz wobble, about
+   -90dBFS, which no one can hear and nothing upstream can dismiss as an empty
+   stream. A muted element would be the obvious thing to reach for and is
+   exactly wrong: muted playback is what platforms discount when they decide
+   whether anything is playing.
+   Wall only, like the wake lock and the radio - a manager's phone must not
+   play anything at all, inaudible or otherwise. */
+function keepAwakeWav(){
+  var rate=8000, n=rate, bytes=44+n*2;
+  var b=new ArrayBuffer(bytes), v=new DataView(b), i;
+  function tag(off,str){ for(var j=0;j<str.length;j++) v.setUint8(off+j,str.charCodeAt(j)) }
+  tag(0,'RIFF');  v.setUint32(4,bytes-8,true); tag(8,'WAVE');
+  tag(12,'fmt '); v.setUint32(16,16,true);  v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,rate,true); v.setUint32(28,rate*2,true);
+  v.setUint16(32,2,true); v.setUint16(34,16,true);
+  tag(36,'data'); v.setUint32(40,n*2,true);
+  for(i=0;i<n;i++) v.setInt16(44+i*2, Math.round(Math.sin(i/rate*2*Math.PI*20)), true);
+  var bin='', u=new Uint8Array(b);
+  for(i=0;i<u.length;i++) bin+=String.fromCharCode(u[i]);
+  return 'data:audio/wav;base64,'+btoa(bin);
+}
+
+var keepAudioEl=null;
+function keepAwakeAudio(){
+  if(window.innerWidth<1200) return false;
+  try{
+    if(!keepAudioEl){
+      var a=new Audio(keepAwakeWav());
+      a.loop=true;
+      a.volume=0.05;          /* never 0 and never muted - see above */
+      a.setAttribute('playsinline','');
+      keepAudioEl=a;
+    }
+    if(keepAudioEl.paused){
+      var p=keepAudioEl.play();
+      if(p&&p['catch']) p['catch'](function(){});   /* autoplay refused: the
+         same gesture that unlocks the clips retries this */
+    }
+    return true;
+  }catch(e){ return false }
+}
+function keepAwakeAudioLive(){
+  return !!(keepAudioEl && !keepAudioEl.paused && !keepAudioEl.ended);
+}
+
 function keepAwake(){
   if(wakeTimer) return;
   wakeRequest();
-  wakeTimer=setInterval(wakeRequest,60000);
+  keepAwakeAudio();
+  wakeTimer=setInterval(function(){ wakeRequest(); keepAwakeAudio(); },60000);
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='visible') wakeRequest();
     /* the browser has already released it for us - just stop claiming we hold
@@ -5474,9 +5535,11 @@ function keepAwake(){
   window.addEventListener('resize',function(){
     if(wakeWanted()) wakeRequest(); else wakeRelease();
   });
-  /* a gesture is the one thing that clears a refusal */
-  document.addEventListener('pointerdown',wakeRequest,{passive:true});
-  document.addEventListener('keydown',wakeRequest);
+  /* a gesture is the one thing that clears a refusal - for the lock and for
+     the loop alike, since autoplay is refused on a screen nobody has touched */
+  var onGesture=function(){ wakeRequest(); keepAwakeAudio(); };
+  document.addEventListener('pointerdown',onGesture,{passive:true});
+  document.addEventListener('keydown',onGesture);
 }
 
 function scheduleStunts(){

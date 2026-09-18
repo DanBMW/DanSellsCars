@@ -935,6 +935,20 @@ said so.
   silently. The manager panel reports the real state in words - holding,
   refused, or "this browser cannot" - because a wall that blanks anyway should
   say which of the two it is rather than leaving somebody to guess.
+  **The wake lock is not what actually holds a television awake - media
+  playback is.** webOS will not blank the screen while something is playing,
+  and until the radio was switched off the board had audio playing all day, so
+  the screen saver was never a problem and nobody knew why. It became one the
+  same afternoon the radio went off, with `sound` off and `scenemins` at 60 on
+  top of it: the board played nothing at all. `keepAwakeAudio()` therefore
+  keeps one loop playing that nobody can hear - **audio, not video**, because
+  audio is what was demonstrably working and a video element would hold one of
+  the TV's few hardware decoders open permanently and could stop the sketches
+  playing. The samples are **not digital silence**: one LSB of a 20Hz wobble,
+  about -90dBFS, inaudible but real, and the element is **never muted** -
+  muted playback is exactly what a platform discounts when deciding whether
+  anything is playing. Wall only, and the panel says when the loop is not
+  running, because that is the thing doing the work.
 - **Reloading every screen.** Shipping a change to a board on a wall used to
   mean walking over to refresh it. "Reload every screen" in the manager panel
   writes `boardcontrol/reload`, and each screen reloads on a timestamp newer
