@@ -973,6 +973,32 @@ said so.
   muted playback is exactly what a platform discounts when deciding whether
   anything is playing. Wall only, and the panel says when the loop is not
   running, because that is the thing doing the work.
+- **The boot watchdog - the board heals itself.** A wall display must not sit
+  there dead, and it did: the static markup drew (title, board frame, the two
+  of them on their rails), the main script did not finish, and the board read
+  "Loading..." for hours with nobody in the room able to tell it was broken
+  rather than slow. Nothing noticed and nothing recovered it.
+  The watchdog is deliberately its **own script block, before the main one,
+  sharing nothing with it** - a watchdog inside the thing it is watching is not
+  a watchdog. Plain ES5, one block, no dependencies, so it still runs when the
+  main block fails to parse. Do not fold it into the page script to tidy up.
+  `window.dsBootOK=true` is the **last statement of the boot sequence** on
+  purpose: it means "all of the above ran", not "the script started". If it has
+  not been set within `BOOT_MS` (25s) the screen reloads, at most `BOOT_TRIES`
+  (3) times, counted in `sessionStorage` so the count survives the reload and
+  dies with the tab. After that it stops and puts an honest line where the
+  month label goes - a screen that cannot boot at all must be left alone with
+  a message somebody can act on, because a reload loop looks identical to a
+  broken screen from across the office and hammers the network while it does
+  it.
+  Verified against the real failure modes rather than assumed: a main script
+  that throws partway, and one that will not parse at all. A healthy board is
+  never reloaded.
+  **The rotation itself does not leak** - a soak of 60 full rounds (every view,
+  the bubbles, the paper ball, Nathan, the dance, the fire, the forecourt,
+  a re-render each time) with four megabyte-class images loaded held the JS
+  heap flat at about 3MB. The LG's crash was `warmVideo()`, not accumulation,
+  so do not go hunting for a leak that measurement says is not there.
 - **Reloading every screen.** Shipping a change to a board on a wall used to
   mean walking over to refresh it. "Reload every screen" in the manager panel
   writes `boardcontrol/reload`, and each screen reloads on a timestamp newer

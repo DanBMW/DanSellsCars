@@ -1911,6 +1911,46 @@ body.premiere .pairqr{display:none!important}
 </div>
 
 <script>
+/* ---- boot watchdog ----
+   A wall display must not sit there dead. This is the failure this exists for,
+   seen on the LG: the static markup drew - title, board frame, the two of them
+   on their rails - the big script did not finish, and the board showed
+   "Loading..." for hours with nobody in the room able to tell it was broken
+   rather than merely slow. Nothing noticed and nothing recovered it.
+   This is deliberately its **own** script block, before the main one and
+   sharing nothing with it, because the whole point is to survive the main
+   block failing - a watchdog inside the thing it is watching is not a watchdog.
+   Kept to plain ES5 in one block for the same reason.
+   The main block sets `window.dsBootOK` as its last act. If that has not
+   happened by BOOT_MS, this reloads - **at most BOOT_TRIES times**, counted in
+   sessionStorage so the count survives the reload and dies with the tab. A
+   screen that cannot boot at all must be left alone with an honest message
+   rather than put into a reload loop, which looks identical to a broken screen
+   and hammers the network while it does it. */
+(function(){
+  var BOOT_MS=25000, BOOT_TRIES=3, KEY='dsBootTries';
+  function tries(){ try{ return parseInt(sessionStorage.getItem(KEY)||'0',10)||0 }catch(e){ return 0 } }
+  function setTries(n){ try{ sessionStorage.setItem(KEY,String(n)) }catch(e){} }
+  window.dsBootWatchdogClear=function(){ try{ sessionStorage.removeItem(KEY) }catch(e){} };
+  setTimeout(function(){
+    if(window.dsBootOK===true) return;           /* booted - nothing to do */
+    var n=tries();
+    if(n<BOOT_TRIES){
+      setTries(n+1);
+      location.reload();
+      return;
+    }
+    /* out of tries: say what is actually wrong, where somebody will read it */
+    try{
+      var el=document.getElementById('month-label');
+      if(el) el.textContent='This screen could not start - switch the TV off at the wall and on again';
+      var dot=document.getElementById('dot');
+      if(dot) dot.style.background='#c81';
+    }catch(e){}
+  }, BOOT_MS);
+})();
+</script>
+<script>
 /* ============================================================
    Board UI. Deliberately plain (non-module) and backend-free so
    the board still draws if the Firebase CDN is slow or blocked -
@@ -6211,6 +6251,12 @@ paintRadio();
    works with no backend at all - it just cannot tell what is new until the
    ledger arrives */
 watchStock();
+
+/* Boot finished. The watchdog above reloads the screen if this never runs -
+   it is the last statement of the boot sequence on purpose, so it means "all
+   of the above ran", not "the script started". */
+window.dsBootOK=true;
+if(window.dsBootWatchdogClear)window.dsBootWatchdogClear();
 
 /* ---- settings arriving from the admin console ---- */
 function applySettings(v){
