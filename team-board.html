@@ -4601,6 +4601,16 @@ function videoScene(forced){
    megabytes down onto somebody's phone. */
 function warmVideo(){
   if(window.innerWidth<1200||!window.fetch)return;
+  /* **Never on a wall display.** The clip set is about 70MB and a webOS
+     browser has nothing like the headroom for it. Warming it filled the LG's
+     memory over a morning, and the next page load was then refused outright -
+     "Not enough memory to open this webpage", the board dead on the wall -
+     from a prefetch whose only job was to make a sketch start a second
+     sooner. The clips stream perfectly well on demand, which is what the TV
+     did before this ever ran. `isLowMemWall()` is the same test the premiere
+     uses to refuse its blob; the width check above is not a substitute for
+     it - a television is the widest screen in the building. */
+  if(isLowMemWall())return;
   setTimeout(function(){
     playableClips().forEach(function(c,i){
       setTimeout(function(){fetch(c.src,{cache:'force-cache'})['catch'](function(){})},i*3000);
