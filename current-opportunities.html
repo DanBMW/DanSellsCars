@@ -23,6 +23,21 @@
        Each product opens to what it actually covers, the limits in their own
        words, and where it earns its keep. Figures come from Hedin's own
        product pages and the policy documents they link to - never from us. */
+    /* The five-element opener. The hand is drawn inline rather than loaded as a
+       photograph: it scales to any width, costs no request, takes the page's own
+       ink-and-paper palette, and carries no third-party licence with it. */
+    .prot-open{display:flex;align-items:center;gap:clamp(16px,3vw,28px);
+      margin-top:26px;padding:clamp(18px,2.6vw,24px) clamp(18px,3vw,26px);
+      border:1px solid var(--hairline-soft);background:var(--ink-2)}
+    .prot-hand{flex:0 0 auto;width:clamp(64px,10vw,92px);height:auto;display:block}
+    .prot-open-line{font-family:var(--serif);font-weight:400;
+      font-size:clamp(1.05rem,2.5vw,1.4rem);line-height:1.32;color:var(--paper);
+      margin:0;max-width:none}
+    .prot-open-line span{display:block;font-family:var(--sans);
+      font-size:.78rem;letter-spacing:.02em;line-height:1.6;color:var(--dim);
+      margin-top:8px}
+    @media (max-width:520px){.prot-open{flex-direction:column;align-items:flex-start;gap:14px}}
+
     .prot-list{display:flex;flex-direction:column;gap:1px;background:var(--hairline-soft);
       border:1px solid var(--hairline-soft);margin-top:28px}
     .prot-item{background:var(--ink-2)}
@@ -186,6 +201,23 @@
       <span class="plabel">After you buy</span>
       <h2>Protection, honestly framed.</h2>
       <p style="margin-bottom:28px">These are the official Hedin Automotive protection products available on your BMW. I will explain what each one actually covers - and, just as honestly, when you do not need it. Tell me how you use the car and I will tell you which of these genuinely earn their keep for you, and which to skip. Links go to Hedin's own product pages.</p>
+      <div class="prot-open">
+        <svg class="prot-hand" viewBox="12 28 168 186" role="img"
+             aria-label="An open hand showing five fingers" focusable="false">
+          <g fill="var(--accent)" stroke="var(--accent)" stroke-width="19"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path d="M27 113 L64 152"/>
+            <path d="M68 128 L68 56"/>
+            <path d="M94 128 L94 42"/>
+            <path d="M120 128 L120 52"/>
+            <path d="M144 132 L144 78"/>
+            <path d="M58 128 h96 a12 12 0 0 1 12 12 v30 a30 30 0 0 1 -30 30 h-60 a30 30 0 0 1 -30 -30 v-24 a12 12 0 0 1 12 -12 z"/>
+          </g>
+        </svg>
+        <p class="prot-open-line">Hedin&rsquo;s Fully Protected Package comprises of 5 elements.
+          <span>Tap any one of them to see exactly what it covers, what it will not, and whether I think it earns its keep on your car.</span></p>
+      </div>
+
       <div class="prot-list">
 
         <details class="prot-item">
@@ -229,16 +261,17 @@
         <details class="prot-item">
           <summary>
             <h3>Tyre &amp; alloy wheel cover</h3>
-            <p class="prot-sum">Ten tyre replacements and ten alloy repairs across the term, plus unlimited puncture repairs, for kerbed rims and split sidewalls.</p>
+            <p class="prot-sum">Fifteen tyre replacements and fifteen alloy repairs across a three year term, plus unlimited puncture repairs, for kerbed rims and split sidewalls.</p>
           </summary>
           <div class="prot-body">
             <h4>What it pays</h4>
             <ul>
-              <li><strong>Ten tyre replacements</strong> over the policy term, up to <strong>£150 each</strong> and £1,500 in total</li>
-              <li><strong>Ten alloy wheel repairs</strong>, up to <strong>£150 each</strong> and £1,500 in total</li>
+              <li><strong>Fifteen tyre replacements</strong> over the policy term, up to <strong>£150 each</strong> and £2,250 in total</li>
+              <li><strong>Fifteen alloy wheel repairs</strong>, up to <strong>£150 each</strong> including VAT, and £2,250 in total</li>
               <li><strong>Unlimited puncture repairs</strong>, up to £50 each, including a new valve, rebalancing and disposal</li>
-              <li>A contribution of up to £150 towards a replacement wheel if one is damaged beyond repair - that counts as one of your ten</li>
-              <li>Unlimited repair or replacement of alloy inserts, the fins and blades, up to £250 in total</li>
+              <li>A contribution of up to £150 towards a replacement wheel if one is damaged beyond repair - that counts as one of your fifteen</li>
+              <li>Unlimited repair or replacement of alloy inserts, the fins and blades, up to £250 each</li>
+              <li>The term runs to a maximum of <strong>36 months</strong></li>
             </ul>
             <h4>The conditions that catch people out</h4>
             <ul>
@@ -248,6 +281,11 @@
               <li>Not for accidents, fire, theft or flood - those belong to your motor insurance</li>
               <li>Malicious damage needs a <strong>crime reference number</strong></li>
               <li>The policy has to be bought <strong>within 30 days</strong> of the car</li>
+              <li><strong>Chrome, polished and split-rim wheels are excluded</strong> - the repair process cannot restore those finishes</li>
+              <li>Excluded if the car is used for business or commercial hire, dispatch, hire and reward, driving instruction, chauffeuring, track days or competition</li>
+              <li>Cover runs in the UK, Ireland, the Isle of Man and the Channel Islands, plus up to 60 days per trip in Switzerland and the EEA</li>
+              <li>The policy <strong>cannot be renewed</strong> at the end of the term</li>
+              <li>Cancel within 30 days for a full refund; after that it is pro-rata, less a £35 admin fee</li>
             </ul>
             <div class="prot-take">
               <p><strong>My honest take.</strong> This is about wheel size and where you drive, not about how careful you are. A 20 inch M Sport rim and a low profile run-flat is a serious bill for one bad kerb, and London kerbs win every time.</p>
