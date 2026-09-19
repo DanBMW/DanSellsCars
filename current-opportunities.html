@@ -23,20 +23,22 @@
        Each product opens to what it actually covers, the limits in their own
        words, and where it earns its keep. Figures come from Hedin's own
        product pages and the policy documents they link to - never from us. */
-    /* The five-element opener. The hand is drawn inline rather than loaded as a
-       photograph: it scales to any width, costs no request, takes the page's own
-       ink-and-paper palette, and carries no third-party licence with it. */
-    .prot-open{display:flex;align-items:center;gap:clamp(16px,3vw,28px);
-      margin-top:26px;padding:clamp(18px,2.6vw,24px) clamp(18px,3vw,26px);
+    /* The five-element opener. The photograph is Dan's own, with the five products
+       written on his own hand, which is why it is a photograph rather than a
+       drawing: it is the way he explains this across a desk. */
+    .prot-open{display:flex;align-items:center;gap:clamp(18px,3.5vw,34px);
+      margin-top:28px;padding:clamp(16px,2.6vw,24px);
       border:1px solid var(--hairline-soft);background:var(--ink-2)}
-    .prot-hand{flex:0 0 auto;width:clamp(64px,10vw,92px);height:auto;display:block}
+    .prot-hand{flex:0 0 auto;width:clamp(128px,26vw,232px);height:auto;display:block;
+      border:1px solid var(--hairline-soft)}
     .prot-open-line{font-family:var(--serif);font-weight:400;
-      font-size:clamp(1.05rem,2.5vw,1.4rem);line-height:1.32;color:var(--paper);
+      font-size:clamp(1.1rem,2.7vw,1.5rem);line-height:1.3;color:var(--paper);
       margin:0;max-width:none}
     .prot-open-line span{display:block;font-family:var(--sans);
-      font-size:.78rem;letter-spacing:.02em;line-height:1.6;color:var(--dim);
-      margin-top:8px}
-    @media (max-width:520px){.prot-open{flex-direction:column;align-items:flex-start;gap:14px}}
+      font-size:.8rem;letter-spacing:.02em;line-height:1.65;color:var(--dim);
+      margin-top:10px}
+    @media (max-width:560px){.prot-open{flex-direction:column;align-items:flex-start;gap:16px}
+      .prot-hand{width:min(62vw,240px);align-self:center}}
 
     .prot-list{display:flex;flex-direction:column;gap:1px;background:var(--hairline-soft);
       border:1px solid var(--hairline-soft);margin-top:28px}
@@ -202,20 +204,11 @@
       <h2>Protection, honestly framed.</h2>
       <p style="margin-bottom:28px">These are the official Hedin Automotive protection products available on your BMW. I will explain what each one actually covers - and, just as honestly, when you do not need it. Tell me how you use the car and I will tell you which of these genuinely earn their keep for you, and which to skip. Links go to Hedin's own product pages.</p>
       <div class="prot-open">
-        <svg class="prot-hand" viewBox="12 28 168 186" role="img"
-             aria-label="An open hand showing five fingers" focusable="false">
-          <g fill="var(--accent)" stroke="var(--accent)" stroke-width="19"
-             stroke-linecap="round" stroke-linejoin="round">
-            <path d="M27 113 L64 152"/>
-            <path d="M68 128 L68 56"/>
-            <path d="M94 128 L94 42"/>
-            <path d="M120 128 L120 52"/>
-            <path d="M144 132 L144 78"/>
-            <path d="M58 128 h96 a12 12 0 0 1 12 12 v30 a30 30 0 0 1 -30 30 h-60 a30 30 0 0 1 -30 -30 v-24 a12 12 0 0 1 12 -12 z"/>
-          </g>
-        </svg>
+        <img class="prot-hand" src="protection-hand.jpg" width="860" height="1091"
+             loading="lazy" decoding="async"
+             alt="Dan's hand with the five protection products written on it - Tyre and Alloy on the thumb, then Ceramic, Warranty, Hedin Care and Hedin GAAP across the fingers, and Fully Protected on the palm"/>
         <p class="prot-open-line">Hedin&rsquo;s Fully Protected Package comprises of 5 elements.
-          <span>Tap any one of them to see exactly what it covers, what it will not, and whether I think it earns its keep on your car.</span></p>
+          <span>One per finger, and I will go through them exactly like this in person. Tap any one below to see what it covers, what it will not, and whether I think it earns its keep on your car.</span></p>
       </div>
 
       <div class="prot-list">
@@ -336,12 +329,12 @@
         <details class="prot-item">
           <summary>
             <h3>Extended warranty</h3>
-            <p class="prot-sum">Another 36 months on top of the manufacturer cover, with wear and tear, breakdown assistance and MOT test cover included.</p>
+            <p class="prot-sum">Another 12, 24 or 36 months on top of the manufacturer cover, with wear and tear, breakdown assistance and MOT test cover included.</p>
           </summary>
           <div class="prot-body">
             <h4>What is covered</h4>
             <ul>
-              <li>Adds <strong>36 months</strong>, taking total cover to at least four years</li>
+              <li>Adds <strong>12, 24 or 36 months</strong> - you choose the extension, and the longest takes total cover to at least four years</li>
               <li><strong>Unlimited claims</strong>, up to the value of the car when you bought it in total</li>
               <li>Parts and labour in full, using <strong>new manufacturer-specification parts</strong>, with nothing to pay towards them</li>
               <li><strong>Wear and tear included</strong>, which is the thing most warranties quietly leave out</li>
@@ -367,7 +360,7 @@
             </ul>
             <div class="prot-take">
               <p><strong>My honest take.</strong> The wear and tear cover is what separates this from a cheap third-party warranty, and the MOT cover quietly pays for itself on an older car. If you are keeping the car past the manufacturer warranty, this is the one I would not skip.</p>
-              <p>On a used EV it is worth more than people realise: the traction battery is most of the car's value, and it is covered here. If you are changing the car inside two years, you are paying for time you will not use.</p>
+              <p>On a used EV it is worth more than people realise: the traction battery is most of the car's value, and it is covered here. Match the term to how long you are actually keeping it - there is no sense buying thirty six months on a car that is going in two years, which is exactly why the twelve and twenty four month options exist.</p>
             </div>
             <div class="prot-links">
               <a href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/hedin-automotive-extended-warranty" target="_blank" rel="noopener">Hedin product page</a>
@@ -378,7 +371,7 @@
 
         <details class="prot-item">
           <summary>
-            <h3>Williams Racing paint protection</h3>
+            <h3>Ceramic paint protection - Williams Racing</h3>
             <p class="prot-sum">A ceramic coat on the paint and a protective film through the interior fabric, applied before you take the car, with a lifetime guarantee.</p>
           </summary>
           <div class="prot-body">
