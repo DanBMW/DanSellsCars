@@ -1981,6 +1981,15 @@ var TARGET=15000, UNIT_TARGET=8, PIN='1992';
 var SET={};
 function sOn(k){ return SET[k]!==false }
 function sNum(k,d){ var v=SET[k]; return (typeof v==='number'&&v>0)?v:d }
+/* A volume is the one setting where **0 is a real value**, not "unset".
+   sNum's `v>0` is right for everything else it serves - scenemins 0 or
+   viewsecs 0 would break the rotation outright - so volumes get their own
+   reader rather than loosening that guard for everybody. 0-100, clamped. */
+function sVol(k,d){
+  var v=SET[k];
+  if(typeof v!=='number'||!isFinite(v)) return d;
+  return Math.max(0, Math.min(100, v));
+}
 
 var deals={}, viewMonth=null, isManager=false, editingId=null, pickExec=null, backend=null;
 
@@ -4013,6 +4022,13 @@ var lastClip=-1;
 function clipKey(src){
   return 'vid_'+String(src||'').split('/').pop().replace(/\.mp4$/,'').replace(/[^A-Za-z0-9]/g,'');
 }
+/* How loud a sketch plays. The board sits in an office people are working
+   in, so full volume is wrong even when sound is wanted - `sound` says
+   whether, `clipvol` says how loud. 0-100, default 30. A clip carrying
+   `forceSound` (Episode 2) is a film somebody has deliberately put on, so it
+   ignores this and plays at full. */
+function clipVol(){ return sVol('clipvol', 30) / 100 }
+
 function clipOn(c){ return !!c && sOn(clipKey(c.src)) }
 function playableClips(){ return CLIPS.filter(clipOn) }
 
@@ -4153,7 +4169,7 @@ function radioWanted(){
   if(window.innerWidth>=1200) return true;
   return !!radioUserArmed;
 }
-function radioVol(){ return Math.max(0, Math.min(100, sNum('radiovol', 45))) / 100 }
+function radioVol(){ return sVol('radiovol', 45) / 100 }
 
 /* One element per attempt, deliberately.
    A single reused <audio> cannot tell you which source an error event is
@@ -4561,7 +4577,7 @@ var audioOk=false, liveVideo=null;
     /* a clip already running silently gets its sound now, rather than the
        next one getting it */
     if(liveVideo&&liveVideo.wants&&liveVideo.el&&liveVideo.el.muted){
-      try{liveVideo.el.muted=false;liveVideo.el.volume=1}catch(e){}
+      try{liveVideo.el.muted=false;liveVideo.el.volume=(liveVideo.full?1:clipVol())}catch(e){}
       var vsc=$('vidscene'); if(vsc)vsc.classList.remove('is-muted');
     }
     if(bdCtx&&bdCtx.state==='suspended'&&bdCtx.resume)bdCtx.resume();
@@ -4608,8 +4624,8 @@ function videoScene(forced){
   };
   if(v.getAttribute('src')!==clip.src){v.setAttribute('src',clip.src);try{v.load()}catch(e){}}
   if(wants) radioDuck(true);       /* clip soundtrack takes the floor */
-  liveVideo={el:v, wants:wants};
-  v.muted=!wants; v.volume=wants?1:0;
+  liveVideo={el:v, wants:wants, full:!!clip.forceSound};
+  v.muted=!wants; v.volume = wants ? (clip.forceSound?1:clipVol()) : 0;
   vs.classList.toggle('is-muted',!wants);
   vs.querySelector('.vs-muted').textContent=wants?'tap for sound':'sound off';
   try{v.currentTime=0}catch(e){}
@@ -6271,6 +6287,10 @@ function applySettings(v){
   paintSettingsNote();
   /* a pause from a phone has to reach the wall, and an unpause has to start
      it again - both arrive here as a settings change */
+  /* a volume change made on a phone should reach a sketch already running */
+  if(liveVideo&&liveVideo.el&&liveVideo.wants&&!liveVideo.el.muted){
+    try{ liveVideo.el.volume = liveVideo.full ? 1 : clipVol() }catch(e){}
+  }
   if(radioWanted()){
     /* Settings watch fires often — never restart a healthy stream from here. */
     if(radioState!=='playing' && radioState!=='connecting' && radioState!=='waiting')

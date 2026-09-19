@@ -656,6 +656,17 @@ said so.
   sketch 4, the shredding sketch, which swears. Dan asked for that one to stay
   silent; the board is in the managers' office, so it is his call rather than a
   customer one, but leave the flag alone unless he says otherwise.
+  **`sound` says whether, `clipvol` says how loud.** The board sits in an
+  office people are working in, so a sketch at full volume is wrong even when
+  sound is wanted: `clipVol()` reads `clipvol` (0-100, default 30) and sets it
+  on the element, and a change made on a phone reaches a sketch already
+  playing. A clip carrying `forceSound` (Episode 2) ignores it and plays at
+  full - that is a film somebody has deliberately put on. The tap-to-unmute
+  path uses the same level, or the first tap of the day would blast the office.
+  **A volume is the one setting where 0 is a real value**, so volumes read
+  through `sVol()` rather than `sNum()`, whose `v>0` guard is right for
+  everything else it serves (`scenemins` 0 or `viewsecs` 0 would break the
+  rotation outright) but silently turned `radiovol: 0` into 45.
   **Always ask for sound and let the browser refuse** - never pre-mute on the
   assumption it will. A display whose browser is configured to allow autoplay
   with sound (Chrome launched `--autoplay-policy=no-user-gesture-required`,
