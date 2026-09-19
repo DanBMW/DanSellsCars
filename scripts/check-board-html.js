@@ -65,7 +65,9 @@ for (const page of PAGES) {
 
   // the video list must match what is on disk
   for (const m of src.matchAll(/src:'(video\/[^']+)'/g)) {
-    if (!fs.existsSync(path.join(root, m[1]))) problem(page, 'CLIPS references "' + m[1] + '" which is not in the repo');
+    // a ?v= cache-buster is part of the URL, not the filename on disk
+    const file = m[1].split('?')[0];
+    if (!fs.existsSync(path.join(root, file))) problem(page, 'CLIPS references "' + file + '" which is not in the repo');
   }
 }
 
