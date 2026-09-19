@@ -18,6 +18,48 @@
     .fact-box .big-stat{font-family:var(--serif);font-size:2rem;color:var(--paper);line-height:1;margin-bottom:12px}
     .fact-box p{font-size:.86rem;color:var(--dim);line-height:1.75;max-width:none;margin:0}
     .fact-box p strong{color:var(--body-c)}
+
+    /* ---- expanded protection products ----
+       Each product opens to what it actually covers, the limits in their own
+       words, and where it earns its keep. Figures come from Hedin's own
+       product pages and the policy documents they link to - never from us. */
+    .prot-list{display:flex;flex-direction:column;gap:1px;background:var(--hairline-soft);
+      border:1px solid var(--hairline-soft);margin-top:28px}
+    .prot-item{background:var(--ink-2)}
+    .prot-item summary{display:block;cursor:pointer;list-style:none;
+      padding:clamp(20px,3vw,26px) clamp(20px,3.5vw,32px);position:relative}
+    .prot-item summary::-webkit-details-marker{display:none}
+    .prot-item summary::after{content:'+';position:absolute;right:clamp(20px,3.5vw,32px);
+      top:50%;transform:translateY(-50%);font-family:var(--sans);font-size:1.3rem;
+      color:var(--dim);line-height:1}
+    .prot-item[open] summary::after{content:'\2013'}
+    .prot-item summary:hover{background:rgba(236,233,225,.035)}
+    .prot-item summary h3{font-family:var(--serif);font-weight:400;
+      font-size:clamp(1.12rem,2.3vw,1.34rem);color:var(--paper);margin:0 0 6px;
+      padding-right:30px;line-height:1.25}
+    .prot-item .prot-sum{font-family:var(--sans);font-size:.84rem;color:var(--dim);
+      line-height:1.65;margin:0;padding-right:30px}
+    .prot-body{padding:0 clamp(20px,3.5vw,32px) clamp(24px,3.5vw,32px)}
+    .prot-body h4{font-family:var(--sans);font-size:.7rem;letter-spacing:.16em;
+      text-transform:uppercase;color:var(--accent);margin:22px 0 10px;font-weight:600}
+    .prot-body ul{list-style:none;margin:0;padding:0}
+    .prot-body li{font-family:var(--sans);font-size:.84rem;line-height:1.7;
+      color:var(--body-c);padding-left:16px;position:relative;margin-bottom:7px}
+    .prot-body li::before{content:'';position:absolute;left:0;top:.62em;width:5px;height:1px;
+      background:var(--dim)}
+    .prot-body li strong{color:var(--paper);font-weight:500}
+    .prot-take{margin-top:22px;padding:16px 18px;border-left:2px solid var(--accent);
+      background:rgba(91,138,201,.06)}
+    .prot-take p{font-family:var(--sans);font-size:.85rem;line-height:1.72;
+      color:var(--body-c);margin:0;max-width:none}
+    .prot-take p+p{margin-top:9px}
+    .prot-links{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px}
+    .prot-links a{font-family:var(--sans);font-size:.76rem;letter-spacing:.02em;
+      text-decoration:none;border:1px solid var(--hairline);color:var(--body-c);
+      padding:8px 14px;border-radius:2px}
+    .prot-links a:hover{color:var(--paper);border-color:var(--body-c)}
+    .prot-legal{font-family:var(--sans);font-size:.72rem;line-height:1.65;color:var(--dim);
+      margin-top:26px}
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
@@ -144,28 +186,190 @@
       <span class="plabel">After you buy</span>
       <h2>Protection, honestly framed.</h2>
       <p style="margin-bottom:28px">These are the official Hedin Automotive protection products available on your BMW. I will explain what each one actually covers - and, just as honestly, when you do not need it. Tell me how you use the car and I will tell you which of these genuinely earn their keep for you, and which to skip. Links go to Hedin's own product pages.</p>
-      <div class="protect-facts">
-        <a class="fact-box" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/asset-protection" target="_blank" rel="noopener">
-          <span class="plabel">GAP / Asset Protection</span>
-          <p>Covers the shortfall if your insurer's payout falls short of what you paid, or still owe, after a write-off or theft.</p>
-        </a>
-        <a class="fact-box" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/tyre-and-alloy-wheel-cover" target="_blank" rel="noopener">
-          <span class="plabel">Tyre &amp; Alloy Wheel Cover</span>
-          <div class="big-stat">15 &amp; 15</div>
-          <p>Up to <strong>15 tyre replacements and 15 alloy wheel refurbs</strong> over a 3-year period, with no excess to pay. Unlimited puncture repairs are included too.</p>
-        </a>
-        <a class="fact-box" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/club-hedincare-cosmetic-repair" target="_blank" rel="noopener">
-          <span class="plabel">Cosmetic (SMART) Repair</span>
-          <p>Covers the minor scuffs, scrapes and car-park dings of everyday life, so your BMW keeps looking the way it did on day one.</p>
-        </a>
-        <a class="fact-box" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/williams-racing" target="_blank" rel="noopener">
-          <span class="plabel">Williams Racing Paint Protection</span>
-          <p>Ceramic-grade interior and exterior protection against the elements and road grime, applied before handover. Easier cleaning, better resale.</p>
-        </a>
-        <a class="fact-box" href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/hedin-automotive-extended-warranty" target="_blank" rel="noopener">
-          <span class="plabel">Extended Warranty</span>
-          <p>Worry-free driving beyond the manufacturer warranty: covered repairs paid by the policy, with roadside assistance included.</p>
-        </a>
+      <div class="prot-list">
+
+        <details class="prot-item">
+          <summary>
+            <h3>Cosmetic repair - Club HedinCare</h3>
+            <p class="prot-sum">Chips up to 1.5cm and dents up to 30cm across and 3mm deep, repaired as often as you need, without ever touching your insurance.</p>
+          </summary>
+          <div class="prot-body">
+            <h4>What counts as a SMART repair</h4>
+            <ul>
+              <li>Stone chips up to <strong>1.5cm</strong></li>
+              <li>Minor dents up to <strong>30cm across and 3mm deep</strong></li>
+              <li>Light scratches and scuffs - the car park, the gatepost, the trolley</li>
+              <li><strong>Unlimited repairs</strong> for as long as the membership runs, so the size limit is the only real limit</li>
+            </ul>
+            <h4>How it works</h4>
+            <ul>
+              <li><strong>24 or 36 month</strong> terms</li>
+              <li>Repairs are <strong>never reported to your motor insurer</strong>, so your no claims bonus is untouched and your premium does not move</li>
+              <li>Within 10 miles of a Hedin dealership our own technicians do it; further out, a mobile repair unit comes to you at a time you pick</li>
+              <li>Twice-yearly assessments, plus interim visits at reduced rates</li>
+              <li>Book through the member portal or on 0344 573 8187, Monday to Friday 9am to 5pm and Saturday 9am to midday</li>
+              <li>Administered by Car Care Plan Limited</li>
+            </ul>
+            <h4>Where the size limits bite</h4>
+            <ul>
+              <li>A dent deeper than 3mm, or wider than 30cm, is a bodyshop job and falls outside it. So does anything that has cracked or broken the paint badly enough to need a panel</li>
+              <li>Damage already on the car when the policy starts is not covered - this protects the condition it is in, it does not put right what is already there</li>
+            </ul>
+            <div class="prot-take">
+              <p><strong>My honest take.</strong> This is the one most people actually use. If you park in town, use multi-storeys, or have kids and car seats, the dings arrive whether you are careful or not - and three of them at bodyshop prices costs more than the policy.</p>
+              <p>Skip it if the car lives in a garage, does low miles, and a light scuff genuinely would not bother you. And be realistic about the 30cm and 3mm: it is built for supermarket dings, not for a proper knock.</p>
+            </div>
+            <div class="prot-links">
+              <a href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/club-hedincare-cosmetic-repair" target="_blank" rel="noopener">Hedin product page</a>
+              <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20can%20you%20talk%20me%20through%20the%20cosmetic%20repair%20cover%3F" target="_blank" rel="noopener">Ask me about this</a>
+            </div>
+          </div>
+        </details>
+
+        <details class="prot-item">
+          <summary>
+            <h3>Tyre &amp; alloy wheel cover</h3>
+            <p class="prot-sum">Ten tyre replacements and ten alloy repairs across the term, plus unlimited puncture repairs, for kerbed rims and split sidewalls.</p>
+          </summary>
+          <div class="prot-body">
+            <h4>What it pays</h4>
+            <ul>
+              <li><strong>Ten tyre replacements</strong> over the policy term, up to <strong>£150 each</strong> and £1,500 in total</li>
+              <li><strong>Ten alloy wheel repairs</strong>, up to <strong>£150 each</strong> and £1,500 in total</li>
+              <li><strong>Unlimited puncture repairs</strong>, up to £50 each, including a new valve, rebalancing and disposal</li>
+              <li>A contribution of up to £150 towards a replacement wheel if one is damaged beyond repair - that counts as one of your ten</li>
+              <li>Unlimited repair or replacement of alloy inserts, the fins and blades, up to £250 in total</li>
+            </ul>
+            <h4>The conditions that catch people out</h4>
+            <ul>
+              <li>Damage must be reported <strong>within 30 days</strong> of it happening</li>
+              <li>Tread must have been <strong>legal at the time</strong> - a bald tyre that then gets damaged is not covered</li>
+              <li>Wear and tear is not covered, and neither is a wheel already showing rust or corrosion</li>
+              <li>Not for accidents, fire, theft or flood - those belong to your motor insurance</li>
+              <li>Malicious damage needs a <strong>crime reference number</strong></li>
+              <li>The policy has to be bought <strong>within 30 days</strong> of the car</li>
+            </ul>
+            <div class="prot-take">
+              <p><strong>My honest take.</strong> This is about wheel size and where you drive, not about how careful you are. A 20 inch M Sport rim and a low profile run-flat is a serious bill for one bad kerb, and London kerbs win every time.</p>
+              <p>On 17 or 18 inch wheels with a normal tyre, out of town, it is a much harder case to make. Note the £150 per claim ceiling: on a big diamond-cut wheel that is a contribution, not the whole job.</p>
+            </div>
+            <div class="prot-links">
+              <a href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/tyre-and-alloy-wheel-cover" target="_blank" rel="noopener">Hedin product page</a>
+              <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20is%20the%20tyre%20and%20alloy%20cover%20worth%20it%20on%20my%20wheels%3F" target="_blank" rel="noopener">Ask me about this</a>
+            </div>
+          </div>
+        </details>
+
+        <details class="prot-item">
+          <summary>
+            <h3>Asset protection (GAP)</h3>
+            <p class="prot-sum">Covers the gap between your insurer's payout and what you actually paid, or still owe, if the car is written off or stolen.</p>
+          </summary>
+          <div class="prot-body">
+            <h4>What it pays on a total loss</h4>
+            <ul>
+              <li>The <strong>greater</strong> of: the difference between the insurer's valuation and what you paid, the difference between the valuation and your finance settlement, or the premium you paid for the policy</li>
+              <li>Capped at the purchase price of the car, up to <strong>£50,000</strong></li>
+              <li>Your <strong>motor insurance excess up to £500</strong>, where you cannot recover it from a third party</li>
+              <li>A contribution towards a hire car - up to <strong>30 days at £30 a day</strong></li>
+              <li>Separately, <strong>£500 a year</strong> towards your excess on ordinary claims that are not a write-off</li>
+              <li>Purchase price includes factory options and dealer-fitted accessories up to £1,500, but not any discount you negotiated</li>
+              <li>Available over <strong>36 or 48 months</strong></li>
+            </ul>
+            <h4>What it will not pay</h4>
+            <ul>
+              <li>Negative equity carried over from a previous car, or finance arrears</li>
+              <li>Road fund licence, number plates, admin fees, fuel, or paint and upholstery protection kits</li>
+              <li>VAT, if you are VAT registered and can reclaim it</li>
+              <li>Anything where your insurer offered to repair the car and you pushed for a write-off instead</li>
+              <li>The shortfall, if your insurer provides a replacement vehicle under your own policy</li>
+            </ul>
+            <div class="prot-take">
+              <p><strong>My honest take.</strong> This matters most in the first two or three years of a nearly new car, and most of all on finance - that is exactly when the gap between what a car is worth and what you owe is at its widest.</p>
+              <p>If you paid cash for something four or five years old, depreciation has already happened and the gap is small. Check your own motor policy first, too: some already include new-for-old in year one, which does part of this job.</p>
+            </div>
+            <div class="prot-links">
+              <a href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/asset-protection" target="_blank" rel="noopener">Hedin product page</a>
+              <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20can%20you%20explain%20GAP%20on%20the%20car%20I%27m%20looking%20at%3F" target="_blank" rel="noopener">Ask me about this</a>
+            </div>
+          </div>
+        </details>
+
+        <details class="prot-item">
+          <summary>
+            <h3>Extended warranty</h3>
+            <p class="prot-sum">Another 36 months on top of the manufacturer cover, with wear and tear, breakdown assistance and MOT test cover included.</p>
+          </summary>
+          <div class="prot-body">
+            <h4>What is covered</h4>
+            <ul>
+              <li>Adds <strong>36 months</strong>, taking total cover to at least four years</li>
+              <li><strong>Unlimited claims</strong>, up to the value of the car when you bought it in total</li>
+              <li>Parts and labour in full, using <strong>new manufacturer-specification parts</strong>, with nothing to pay towards them</li>
+              <li><strong>Wear and tear included</strong>, which is the thing most warranties quietly leave out</li>
+              <li>Engine, gearbox, clutch, turbo, ECU, electrics, air conditioning, ABS, airbags, suspension, steering, DPF, catalytic converter, sat nav and infotainment, LED lighting, wheel bearings</li>
+              <li>A mid-sized saloon for up to seven days while yours is in, after the first 24 hours</li>
+              <li>Up to £60 towards a hotel or train fare, and up to 60 days a year of cover in the EU and EFTA</li>
+              <li>Transferable for £25 if you sell the car privately - a genuine selling point at that stage</li>
+            </ul>
+            <h4>MOT test cover</h4>
+            <ul>
+              <li>Up to <strong>£750 per MOT</strong> towards putting right anything on the failure sheet</li>
+              <li>Lamps and reflectors, steering, suspension, brakes including ESC and the electronic parking brake, seat belts and airbags, structural corrosion, TPMS, wipers, and emissions parts like the EGR valve, catalytic converter and DPF sensor</li>
+            </ul>
+            <h4>If it is a hybrid or an EV</h4>
+            <ul>
+              <li>The <strong>traction battery pack</strong>, electric motor, onboard charger, DC to DC converter, power electronics, thermal cooling, charge port, electric transmission and generator are all covered</li>
+              <li>Run out of charge and they will recover you and up to five passengers to the nearest charge point, home, or your destination - <strong>twice per warranty year</strong></li>
+            </ul>
+            <h4>Breakdown assistance</h4>
+            <ul>
+              <li>24 hours a day, covering <strong>the car rather than the driver</strong>, so whoever is behind the wheel is covered</li>
+              <li>Roadside and recovery for the car plus five passengers, home start, accident assistance and puncture cover, across Great Britain, Northern Ireland, the Channel Islands and the Isle of Man</li>
+            </ul>
+            <div class="prot-take">
+              <p><strong>My honest take.</strong> The wear and tear cover is what separates this from a cheap third-party warranty, and the MOT cover quietly pays for itself on an older car. If you are keeping the car past the manufacturer warranty, this is the one I would not skip.</p>
+              <p>On a used EV it is worth more than people realise: the traction battery is most of the car's value, and it is covered here. If you are changing the car inside two years, you are paying for time you will not use.</p>
+            </div>
+            <div class="prot-links">
+              <a href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/hedin-automotive-extended-warranty" target="_blank" rel="noopener">Hedin product page</a>
+              <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20what%20would%20the%20extended%20warranty%20cost%20on%20this%20car%3F" target="_blank" rel="noopener">Ask me about this</a>
+            </div>
+          </div>
+        </details>
+
+        <details class="prot-item">
+          <summary>
+            <h3>Williams Racing paint protection</h3>
+            <p class="prot-sum">A ceramic coat on the paint and a protective film through the interior fabric, applied before you take the car, with a lifetime guarantee.</p>
+          </summary>
+          <div class="prot-body">
+            <h4>Two parts to it</h4>
+            <ul>
+              <li><strong>Ceramic coat</strong> bonds into the pores of the paint rather than sitting on top of it, leaving a high gloss finish and a surface that sheds tree sap, pollutants and everyday weather</li>
+              <li><strong>Interior protection</strong> coats each fibre with a film, so spillages sit on the surface long enough to lift off instead of soaking into the seat</li>
+              <li>Carries a <strong>lifetime guarantee</strong></li>
+              <li>Applied before handover, so the car arrives already done</li>
+            </ul>
+            <h4>What it is not</h4>
+            <ul>
+              <li>It is not a substitute for the cosmetic repair cover above. Ceramic protects the finish; it does not undo a stone chip or a dent</li>
+              <li>It makes the car easier to keep clean rather than impossible to mark</li>
+            </ul>
+            <div class="prot-take">
+              <p><strong>My honest take.</strong> It earns its keep on solid dark colours, black and Carbon Black especially, where swirl marks from washing show up worst, and on light interiors like Oyster or Canberra Beige that mark easily.</p>
+              <p>If you detail the car yourself and enjoy it, you can get most of the way there with your own products and a weekend. This is for people who would rather it was already done and want the guarantee behind it.</p>
+            </div>
+            <div class="prot-links">
+              <a href="https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/williams-racing" target="_blank" rel="noopener">Hedin product page</a>
+              <a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20is%20the%20paint%20protection%20worth%20it%20on%20this%20colour%3F" target="_blank" rel="noopener">Ask me about this</a>
+            </div>
+          </div>
+        </details>
+
+      </div>
+
+      <p class="prot-legal">Cover levels, limits and exclusions summarised here come from Hedin Automotive's own product pages and the policy documents linked from them, and are correct as far as I can tell at the time of writing. They are a summary, not the policy: the terms and conditions and the product information document decide what is covered in any given case, and I will give you those before you buy anything. These are insurance products. Hedin Automotive London Ltd &amp; Stephen James (Automotive) Limited are an appointed representative of ITC Compliance Limited which is authorised and regulated by the Financial Conduct Authority (their registration number is 313486). Permitted activities include advising on and arranging general insurance contracts and acting as a credit broker not a lender.</p>
       </div>
     </div>
   </section>
