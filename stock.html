@@ -26,6 +26,13 @@
     font-size:.82rem;letter-spacing:.02em;padding:8px 14px;border-radius:999px;cursor:pointer}
   .sl-chip:hover{color:var(--paper);border-color:var(--hairline)}
   .sl-chip[aria-pressed="true"]{background:var(--paper);border-color:var(--paper);color:var(--ink)}
+  .sl-share{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .sl-sharebtn{font-family:var(--sans);font-size:.82rem;letter-spacing:.02em;cursor:pointer;
+    background:none;border:1px solid var(--accent);color:var(--accent);padding:8px 16px;
+    border-radius:2px}
+  .sl-sharebtn:hover{background:var(--accent);color:var(--ink)}
+  .sl-sharebtn.done{border-color:var(--paper);color:var(--paper);background:none}
+  .sl-sharenote{font-family:var(--sans);font-size:.78rem;color:var(--dim)}
   .sl-count{font-family:var(--sans);font-size:.85rem;color:var(--dim);margin-bottom:18px}
   .sl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
     gap:clamp(18px,2.4vw,26px)}
@@ -179,6 +186,11 @@
         <button class="sl-chip" type="button" data-filter="u30" aria-pressed="false">Under &pound;30k</button>
         <button class="sl-chip" type="button" data-filter="30to50" aria-pressed="false">&pound;30k - &pound;50k</button>
         <button class="sl-chip" type="button" data-filter="o50" aria-pressed="false">&pound;50k+</button>
+      </div>
+
+      <div class="sl-share">
+        <button class="sl-sharebtn" id="slShare" type="button">Share this list</button>
+        <span class="sl-sharenote" id="slShareNote"></span>
       </div>
 
       <p class="sl-count" id="slCount">Loading the stock list&hellip;</p>
@@ -400,6 +412,46 @@
   var elFuel  = document.getElementById('slFuel');
   var elBody  = document.getElementById('slBody');
 
+  /* Filters live in the query string, so a list Dan has narrowed down is a
+     link he can send. Written with replaceState on every change - pushState
+     would make the back button walk through every keystroke of a search. */
+  var PARAMS = [['q', elSearch], ['series', elSeries], ['colour', elColour],
+                ['fuel', elFuel], ['body', elBody], ['sort', elSort]];
+
+  function syncUrl(){
+    var u = new URLSearchParams();
+    PARAMS.forEach(function(pair){
+      var v = pair[1].value;
+      // the sort has a default; only carry it when it is not the default
+      if (v && !(pair[0] === 'sort' && v === 'price-asc')) u.set(pair[0], v);
+    });
+    if (filter && filter !== 'all') u.set('price', filter);
+    var qs = u.toString();
+    try {
+      history.replaceState(null, '',
+        location.pathname + (qs ? '?' + qs : '') + location.hash);
+    } catch (e) {}
+  }
+
+  function applyUrl(){
+    var u = new URLSearchParams(location.search);
+    PARAMS.forEach(function(pair){
+      var v = u.get(pair[0]);
+      if (v === null) return;
+      var el = pair[1];
+      // a select silently ignores a value it has no option for - a car colour
+      // that has since sold, say - and falls back to showing everything
+      if (el.tagName === 'SELECT' && !Array.prototype.some.call(
+            el.options, function(o){ return o.value === v; })) return;
+      el.value = v;
+    });
+    var band = u.get('price');
+    if (band && ['u30', '30to50', 'o50'].indexOf(band) !== -1) filter = band;
+    document.querySelectorAll('#slChips .sl-chip').forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.dataset.filter === filter));
+    });
+  }
+
   function num(s){ var m = String(s).replace(/[^0-9]/g,''); return m ? parseInt(m,10) : 0; }
   function colourOf(c){ return c.colour || c.color || ''; }
   var SWATCH = {grey:'#8a8d91', black:'#1b1d20', white:'#e8e6e1', blue:'#2f5f9e',
@@ -430,6 +482,8 @@
       if (sort === 'year-desc')  return b._year  - a._year || a._price - b._price;
       return a._price - b._price;
     });
+
+    syncUrl();
 
     elCount.textContent = rows.length === ALL.length
       ? ALL.length + ' cars in stock'
@@ -550,6 +604,7 @@
       fill(elColour, ALL.map(colourOf));
       fill(elFuel,   ALL.map(function(c){ return c.fuelGroup; }), FUEL_ORDER);
       fill(elBody,   ALL.map(function(c){ return c.body; }));
+      applyUrl();   // after the dropdowns exist, or their values will not stick
       render();
     })
     .catch(failed);
@@ -560,6 +615,55 @@
   elColour.addEventListener('change', render);
   elFuel.addEventListener('change', render);
   elBody.addEventListener('change', render);
+  /* Share: on a phone this hands the link straight to WhatsApp through the
+     system sheet, which is how Dan actually sends these. Anywhere else it
+     copies. Either way the URL already carries the filters, because render()
+     has written them. */
+  var elShare = document.getElementById('slShare');
+  var elShareNote = document.getElementById('slShareNote');
+
+  function shareNote(msg){
+    elShareNote.textContent = msg;
+    setTimeout(function(){ elShareNote.textContent = ''; }, 3000);
+  }
+  function copyLink(){
+    var url = location.href;
+    var ok = function(){
+      elShare.classList.add('done');
+      elShare.textContent = 'Link copied';
+      setTimeout(function(){
+        elShare.classList.remove('done');
+        elShare.textContent = 'Share this list';
+      }, 2200);
+    };
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(ok, function(){ prompt('Copy this link', url); });
+    } else {
+      var a = document.createElement('textarea');
+      a.value = url; document.body.appendChild(a); a.select();
+      try { document.execCommand('copy'); ok(); } catch (e) { prompt('Copy this link', url); }
+      document.body.removeChild(a);
+    }
+  }
+
+  elShare.addEventListener('click', function(){
+    var shown = document.querySelectorAll('.sl-card').length;
+    var text = shown === ALL.length
+      ? 'Every BMW in stock at Hedin Ruxley'
+      : shown + ' BMW' + (shown === 1 ? '' : 's') + ' from the Hedin Ruxley stock list';
+    if (navigator.share) {
+      navigator.share({ title: 'BMW stock list', text: text, url: location.href })
+        .catch(function(err){
+          // the user dismissing the sheet is not a failure worth reporting
+          if (err && err.name === 'AbortError') return;
+          copyLink();
+        });
+    } else {
+      copyLink();
+    }
+    if (window.gtag) gtag('event', 'stock_share', { shown: shown, filtered: shown !== ALL.length });
+  });
+
   document.getElementById('slChips').addEventListener('click', function(e){
     var btn = e.target.closest('.sl-chip');
     if (!btn) return;
