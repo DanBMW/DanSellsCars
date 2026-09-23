@@ -1042,3 +1042,31 @@ said so.
 
 Also retired: `ev.html` is a redirect stub to `EV.html` (the live EV landing
 page) kept only so old lowercase links still work — don't resurrect it.
+
+### nurburgring-posts.html and the carousel generator
+
+`automation/nurburgring-post.py` builds the ten-slide Instagram carousel for
+BMW M's **100 Jahre Nürburgring Edition** at 1080x1350 (4:5, the tallest frame
+a feed carousel carries), plus the caption. They land in `nurburgring-posts/`
+and are read by `nurburgring-posts.html` - noindex, out of `sitemap.xml`,
+linked only from the Today section of `links.html`.
+
+Unlike the finance cards this is a **one-off campaign, not a daily job**: it is
+not on the morning routine, and re-running it simply rebuilds the same ten
+slides. Edit the `SLIDES` list and run it again.
+
+Two things it has to keep:
+
+- **Only the bikes carry a published limit.** BMW state 100 units worldwide for
+  each of the three Motorrad models and give no build cap at all for the six
+  cars. Slide 9 is therefore the only place a number appears, and slide 10
+  builds urgency on allocation and the order dates instead. Do not invent a car
+  production figure to make the post land harder - it is the first thing a
+  customer checks.
+- **The window is made taller than the frame on purpose.** Headless chromium
+  reserves window chrome, so `--window-size=1080,1350` lays out in a 1263px
+  viewport; the background still reaches the bottom of the capture but content
+  below the fold is never drawn, which silently lost the footer off every slide
+  on the first run. `viewport_deficit()` measures the shortfall from the browser
+  itself rather than hard-coding it, the window is grown by that much, and the
+  JPEG pass sizes its canvas to the frame so the surplus is cropped back off.
