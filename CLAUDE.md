@@ -1057,11 +1057,12 @@ slides. Edit the `SLIDES` list and run it again.
 
 Three things it has to keep:
 
-- **No bikes, and therefore no build number.** The edition also covers three
-  BMW Motorrad models, and they are out at Dan's request - including the one
-  BMW lineup photograph, which has them on the grid in it. Their 100-units-
-  worldwide cap was the only published limit in the edition, so with them gone
-  there is no figure to quote: BMW give no production cap for the six cars.
+- **No bikes in the copy, and therefore no build number.** The edition also
+  covers three BMW Motorrad models and the slides never mention them. The one
+  exception is the lineup photograph on slide 5, which has them parked down the
+  grid - Dan asked for that shot by name. Their 100-units-worldwide cap was the
+  only published limit in the edition, so with them out of the copy there is no
+  figure to quote: BMW give no production cap for the six cars.
   Slide 10 builds urgency on allocation and the order dates instead. Do not
   invent a production figure to make the post land harder - it is the first
   thing a customer checks.

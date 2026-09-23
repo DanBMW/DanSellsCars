@@ -11,12 +11,13 @@ Every factual line comes from BMW M's own edition page:
 https://www.bmw-m.com/en/all-models/overview-m-and-m-performance/edition-100-jahre-nurburgring.html
 
 This is a car post. The edition also covers three BMW Motorrad models, capped
-at 100 units worldwide each, and they are left out at Dan's request - including
-the one BMW lineup photograph, which has the bikes on the grid in it.
+at 100 units worldwide each, and the copy never mentions them. The lineup
+photograph on slide 5 does have them parked down the grid in it - Dan asked for
+that shot specifically, so it is in.
 
 That cap was the only published limit in the whole edition, so with the bikes
-gone there is no build number to quote: BMW give no production cap for the six
-cars. Urgency here is built on what is true - a finite allocation, an order
+out of the copy there is no build number to quote: BMW give no production cap
+for the six cars. Urgency here is built on what is true - a finite allocation, an order
 window, and the M2 not arriving until January - because a made-up build number
 on a public post is the first thing a customer checks.
 """
@@ -38,8 +39,9 @@ DAM = ('https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/'
 # and the only BMW pixels that ship are the ones baked into a finished card.
 CACHE = os.path.join(HERE, '.image-cache')
 PHOTOS = {
-    # The only BMW lineup shot has the motorcycles on the grid in it, so it is
-    # deliberately not used - this is a car post.
+    # The lineup has the motorcycles parked down the grid in it. Dan asked for
+    # the shot anyway, so it is in - the copy still never mentions them.
+    'lineup': DAM + '/bmw-m-editions-100-jahre-nurburgring-02-16x9.jpg',
     'hero':   DAM + '/bmw-m2-edition-100-jahre-nurburgring-01-9x16.jpg',
     'green':  DAM + '/bmw-m4-edition-100-jahre-nurburgring-06-3x2.jpg',
     'detail': DAM + '/bmw-m4-edition-100-jahre-nurburgring-07-3x2.jpg',
@@ -248,12 +250,12 @@ li b{color:var(--paper);font-weight:700}
 """
 
 
-def page(n, inner, swipe=True, hero=None, band=None, band_cap=''):
+def page(n, inner, swipe=True, hero=None, band=None, band_cap='', band_h=496):
     foot_right = ('<span class="swipe">Swipe &rarr;</span>' if swipe
                   else '<span class="swipe">dan-sells.co.uk</span>')
     shot = '<div class="shot"><img src="%s"/></div>' % hero if hero else ''
-    strip = ('<div class="band"><img src="%s"/>%s</div>'
-             % (band, '<span class="cap">%s</span>' % band_cap if band_cap else '')
+    strip = ('<div class="band" style="height:%dpx"><img src="%s"/>%s</div>'
+             % (band_h, band, '<span class="cap">%s</span>' % band_cap if band_cap else '')
              ) if band else ''
     return """<!DOCTYPE html><html><head><meta charset="utf-8"><style>%s</style></head>
 <body class="%s">
@@ -290,16 +292,15 @@ def slides(px):
   {'hero': px['hero']}),
 
  # 02 why it exists
- ("""<div class="kicker">Why this edition exists</div>
-    <h2>Born on<br/>the racetrack.</h2>
+  ("""<h2 style="font-size:62px;margin-bottom:20px">Born on<br/>the racetrack.</h2>
     <p class="lede">The N&uuml;rburgring opened in <b>1927</b>. The Nordschleife runs
       <b>20.8km</b> with <b>73 corners</b>, and every BMW M production car is signed
       off on it before it reaches you.</p>
-    <div class="sp"></div>
-    <p class="quote">&ldquo;The N&uuml;rburgring is much more than just a racetrack
-      for us &ndash; it is a second home for the BMW M brand.&rdquo;</p>
-    <p class="attrib">Franciscus van Meel, CEO of BMW M GmbH</p>""",
-  {}),
+    <p class="quote" style="margin-top:26px;font-size:34px">&ldquo;The N&uuml;rburgring
+      is much more than just a racetrack for us &ndash; it is a second home for the
+      BMW M brand.&rdquo;</p>
+    <p class="attrib" style="margin-top:16px">Franciscus van Meel, CEO of BMW M GmbH</p>""",
+  {'band': px['black'], 'band_cap': 'Why this edition exists', 'band_h': 392}),
 
  # 03 the colour
  ("""<div class="kicker">The thread running through it</div>
@@ -325,8 +326,7 @@ def slides(px):
   {'band': px['detail'], 'band_cap': 'What you only get on this one'}),
 
  # 05 the six, named
- ("""<div class="kicker">All six edition models</div>
-    <h2 style="font-size:58px;margin-bottom:22px">Six cars.<br/>One colour.</h2>
+ ("""    <h2 style="font-size:58px;margin-bottom:22px">Six cars.<br/>One colour.</h2>
     <div class="models">
       <div><b>M2</b><small>Coup&eacute; &middot; January 2027</small></div>
       <div><b>M3</b><small>Saloon &middot; order now</small></div>
@@ -337,7 +337,7 @@ def slides(px):
     </div>
     <p class="lede" style="margin-top:20px;font-size:24px">Prefer it quieter?
       Every one is also in <b>Sapphire Black metallic</b>, green accents kept.</p>""",
-  {'band': px['black'], 'band_cap': 'Or Sapphire Black metallic'}),
+  {'band': px['lineup'], 'band_cap': 'All of them, on the grid at the Ring'}),
 
  # 06 M2
  ("""<div class="tag warn">Orders open January 2027</div>
