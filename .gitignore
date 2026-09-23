@@ -5,3 +5,4 @@ out/
 # Python bytecode from the automation scripts
 __pycache__/
 *.pyc
+automation/.image-cache/

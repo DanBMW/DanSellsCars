@@ -1055,14 +1055,28 @@ Unlike the finance cards this is a **one-off campaign, not a daily job**: it is
 not on the morning routine, and re-running it simply rebuilds the same ten
 slides. Edit the `SLIDES` list and run it again.
 
-Two things it has to keep:
+Three things it has to keep:
 
-- **Only the bikes carry a published limit.** BMW state 100 units worldwide for
-  each of the three Motorrad models and give no build cap at all for the six
-  cars. Slide 9 is therefore the only place a number appears, and slide 10
-  builds urgency on allocation and the order dates instead. Do not invent a car
-  production figure to make the post land harder - it is the first thing a
-  customer checks.
+- **No bikes, and therefore no build number.** The edition also covers three
+  BMW Motorrad models, and they are out at Dan's request - including the one
+  BMW lineup photograph, which has them on the grid in it. Their 100-units-
+  worldwide cap was the only published limit in the edition, so with them gone
+  there is no figure to quote: BMW give no production cap for the six cars.
+  Slide 10 builds urgency on allocation and the order dates instead. Do not
+  invent a production figure to make the post land harder - it is the first
+  thing a customer checks.
+- **The photography is BMW's, fetched at build time and never committed.**
+  `automation/bmw-image-fetch.py` pulls the edition assets into
+  `automation/.image-cache/` (gitignored) and they are inlined into each slide,
+  so the only BMW pixels in the repo are the ones baked into a finished card.
+  That fetcher exists because curl cannot reach BMW's asset host from here and
+  a local `<img>` taints the canvas under CORS; it loads the image URL *as the
+  page* and screenshots chromium's own viewer. The viewer letterboxes, and
+  where it puts the picture is not predictable - the headless virtual screen
+  caps window height, so a 1920px-tall asset gets silently shrunk and comes
+  back with a black border baked in, which showed up as bars down the side of
+  the hero slide. The crop is therefore measured: the bounding box of
+  everything that is not the viewer's flat backdrop colour.
 - **The window is made taller than the frame on purpose.** Headless chromium
   reserves window chrome, so `--window-size=1080,1350` lays out in a 1263px
   viewport; the background still reaches the bottom of the capture but content

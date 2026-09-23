@@ -10,12 +10,15 @@ index the gallery page reads.
 Every factual line comes from BMW M's own edition page:
 https://www.bmw-m.com/en/all-models/overview-m-and-m-performance/edition-100-jahre-nurburgring.html
 
-One thing that page does NOT say, and this deck therefore does not claim: a
-production cap on the cars. The 100-units-worldwide limit is published for the
-three BMW Motorrad models only. Urgency here is built on what is true - a
-finite allocation, an order window, and the M2 not arriving until January -
-because a made-up build number on a public post is the kind of thing a customer
-checks.
+This is a car post. The edition also covers three BMW Motorrad models, capped
+at 100 units worldwide each, and they are left out at Dan's request - including
+the one BMW lineup photograph, which has the bikes on the grid in it.
+
+That cap was the only published limit in the whole edition, so with the bikes
+gone there is no build number to quote: BMW give no production cap for the six
+cars. Urgency here is built on what is true - a finite allocation, an order
+window, and the M2 not arriving until January - because a made-up build number
+on a public post is the first thing a customer checks.
 """
 import base64, json, os, re, subprocess, sys
 
@@ -28,6 +31,40 @@ JPEG_QUALITY = 0.88
 
 SOURCE = ('https://www.bmw-m.com/en/all-models/overview-m-and-m-performance/'
           'edition-100-jahre-nurburgring.html')
+DAM = ('https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/'
+       'all-models/m-automobile/edition-100-jahre-nurburgring')
+# BMW's own edition photography. Pulled at build time into a cache outside the
+# repository and inlined into each slide, so the originals are never committed
+# and the only BMW pixels that ship are the ones baked into a finished card.
+CACHE = os.path.join(HERE, '.image-cache')
+PHOTOS = {
+    # The only BMW lineup shot has the motorcycles on the grid in it, so it is
+    # deliberately not used - this is a car post.
+    'hero':   DAM + '/bmw-m2-edition-100-jahre-nurburgring-01-9x16.jpg',
+    'green':  DAM + '/bmw-m4-edition-100-jahre-nurburgring-06-3x2.jpg',
+    'detail': DAM + '/bmw-m4-edition-100-jahre-nurburgring-07-3x2.jpg',
+    'black':  DAM + '/bmw-m2-edition-100-jahre-nurburgring-02-16x9.jpg',
+    'm2':     DAM + '/bmw-m2-edition-100-jahre-nurburgring-01-16x9.jpg',
+    'm3':     DAM + '/bmw-m3-edition-100-jahre-nurburgring-03-3x2.jpg',
+    'm4':     DAM + '/bmw-m4-edition-100-jahre-nurburgring-05-3x2.jpg',
+    'm5t':    DAM + '/bmw-m5-touring-edition-100-jahre-nurburgring-01-16x9.jpg',
+}
+
+
+def photos():
+    """Fetch anything missing from the cache and return {key: data-uri}."""
+    os.makedirs(CACHE, exist_ok=True)
+    pairs = ['%s=%s' % (k, u) for k, u in PHOTOS.items()]
+    subprocess.run([sys.executable, os.path.join(HERE, 'bmw-image-fetch.py'),
+                    CACHE] + pairs, check=True)
+    out = {}
+    for k in PHOTOS:
+        f = os.path.join(CACHE, k + '.jpg')
+        if not os.path.exists(f):
+            raise SystemExit('missing image %s - fetch failed' % k)
+        out[k] = 'data:image/jpeg;base64,' + \
+            base64.b64encode(open(f, 'rb').read()).decode()
+    return out
 
 WA = 'https://wa.me/447827138197'
 
@@ -124,6 +161,25 @@ body{width:1080px;height:1350px;background:var(--ink);color:var(--paper);
 .stripes i:nth-child(1){background:#0066b1}
 .stripes i:nth-child(2){background:#16588e}
 .stripes i:nth-child(3){background:#e22718}
+/* Two photo treatments. A hero fills the whole frame behind the furniture;
+   a band sits full-bleed under the top bar with the copy beneath it. Both carry
+   a scrim, because white BMW skies and pale tarmac will otherwise eat the type. */
+.shot{position:absolute;inset:0;z-index:0;overflow:hidden}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot::after{content:'';position:absolute;inset:0;background:
+  linear-gradient(to bottom,rgba(7,8,10,.62) 0%,rgba(7,8,10,.22) 34%,
+  rgba(7,8,10,.55) 62%,rgba(7,8,10,.95) 100%)}
+body.hero>*{position:relative;z-index:2}
+body.hero>.shot{position:absolute;z-index:0}
+.band{flex:0 0 auto;height:496px;position:relative;overflow:hidden}
+.band img{width:100%;height:100%;object-fit:cover;display:block}
+.band::after{content:'';position:absolute;inset:0;background:
+  linear-gradient(to bottom,rgba(7,8,10,.2) 0%,rgba(7,8,10,0) 38%,
+  rgba(7,8,10,.55) 78%,rgba(7,8,10,.97) 100%)}
+.band .cap{position:absolute;left:68px;bottom:20px;z-index:2;font-size:17px;
+  letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--green);
+  background:rgba(7,8,10,.78);border:1px solid rgba(110,197,58,.34);
+  padding:9px 16px}
 .top{flex:0 0 118px;display:flex;align-items:center;justify-content:space-between;
   padding:0 68px;border-bottom:1px solid var(--hair)}
 .ed{font-size:17px;letter-spacing:.28em;font-weight:700;text-transform:uppercase;
@@ -170,9 +226,9 @@ li b{color:var(--paper);font-weight:700}
 .alt b{color:var(--paper);font-weight:700}
 .alt i{flex:0 0 56px;height:56px;border-radius:3px;background:#0b0f16;
   border:2px solid var(--green);display:block}
-.models{display:grid;grid-template-columns:1fr 1fr;gap:16px 22px;margin-top:6px}
-.models div{border:1px solid var(--hair);background:var(--ink2);padding:24px 26px}
-.models b{display:block;font-family:var(--d);font-weight:600;font-size:36px;
+.models{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;margin-top:6px}
+.models div{border:1px solid var(--hair);background:var(--ink2);padding:18px 22px}
+.models b{display:block;font-family:var(--d);font-weight:600;font-size:32px;
   letter-spacing:-.01em;margin-bottom:7px}
 .models small{font-size:19px;color:var(--dim);letter-spacing:.03em}
 .tag{display:inline-block;font-size:19px;letter-spacing:.18em;text-transform:uppercase;
@@ -192,38 +248,49 @@ li b{color:var(--paper);font-weight:700}
 """
 
 
-def page(n, inner, swipe=True):
+def page(n, inner, swipe=True, hero=None, band=None, band_cap=''):
     foot_right = ('<span class="swipe">Swipe &rarr;</span>' if swipe
                   else '<span class="swipe">dan-sells.co.uk</span>')
+    shot = '<div class="shot"><img src="%s"/></div>' % hero if hero else ''
+    strip = ('<div class="band"><img src="%s"/>%s</div>'
+             % (band, '<span class="cap">%s</span>' % band_cap if band_cap else '')
+             ) if band else ''
     return """<!DOCTYPE html><html><head><meta charset="utf-8"><style>%s</style></head>
-<body>
-<div class="stripes"><i></i><i></i><i></i></div>
+<body class="%s">
+%s<div class="stripes"><i></i><i></i><i></i></div>
 <div class="top">
   <span class="ed">100 Jahre <b>N&uuml;rburgring</b> Edition</span>
   <span class="num">%02d / 10</span>
 </div>
-<div class="body">%s</div>
+%s<div class="body">%s</div>
 <div class="foot">
   <span class="who">Dan Cane &middot; <b>BMW Ruxley</b></span>
   %s
 </div>
-</body></html>""" % (CSS, n, inner, foot_right)
+</body></html>""" % (CSS, 'hero' if hero else '', shot, n, strip, inner, foot_right)
 
 
 # --- the ten slides -------------------------------------------------------
 # Wording is mine; every fact is BMW M's. Where the page gives a list of
-# highlights the slide uses that list rather than a rewrite of it.
+# highlights the slide uses that list rather than a rewrite of it. The bikes
+# are deliberately absent - this is a car post.
+#
+# Each entry is (inner html, {page() kwargs}). The photo keys are resolved to
+# inlined data URIs at build time.
 
-SLIDES = [
- # 01 hook
- """<div class="kicker">BMW M &middot; Anniversary edition</div>
+def slides(px):
+    return [
+
+ # 01 hook - full-bleed hero, the headline over it
+ ("""<div class="kicker">BMW M &middot; Anniversary edition</div>
     <h1>The Ring<br/>turns 100.<br/>M built<br/>six cars<br/>for it.</h1>
     <div class="sp"></div>
     <p class="lede">A paint that exists on nothing else, the Nordschleife
       stitched into the seats, and <b>order books open now</b>.</p>""",
+  {'hero': px['hero']}),
 
  # 02 why it exists
- """<div class="kicker">Why this edition exists</div>
+ ("""<div class="kicker">Why this edition exists</div>
     <h2>Born on<br/>the racetrack.</h2>
     <p class="lede">The N&uuml;rburgring opened in <b>1927</b>. The Nordschleife runs
       <b>20.8km</b> with <b>73 corners</b>, and every BMW M production car is signed
@@ -232,103 +299,103 @@ SLIDES = [
     <p class="quote">&ldquo;The N&uuml;rburgring is much more than just a racetrack
       for us &ndash; it is a second home for the BMW M brand.&rdquo;</p>
     <p class="attrib">Franciscus van Meel, CEO of BMW M GmbH</p>""",
+  {}),
 
  # 03 the colour
- """<div class="kicker">The thread running through it</div>
-    <h2>N&uuml;rburgring<br/>Green.</h2>
-    <div class="swatch"><span>Developed for this edition only</span></div>
+ ("""<div class="kicker">The thread running through it</div>
+    <h2>N&uuml;rburgring Green.</h2>
     <p class="lede">A finish created <b>exclusively</b> for the anniversary cars.
       You cannot order it on anything else, and when the edition closes it goes
       with it.</p>
-    <div class="sp"></div>
-    <p class="alt"><i></i><span>Prefer it quieter? Every edition model is also
-      available in <b>Sapphire Black metallic</b> with the green accents.</span></p>""",
+    <p class="lede" style="margin-top:22px">It is the one thing every model in
+      the edition shares, and the reason you will spot one from the other end of
+      a car park.</p>""",
+  {'band': px['green'], 'band_cap': 'Developed for this edition only'}),
 
  # 04 the details
- """<div class="kicker">What you only get on this one</div>
-    <h2>The details.</h2>
+ ("""<h2 style="font-size:60px;margin-bottom:20px">The details.</h2>
     <ul>
-      <li><b>&lsquo;100 Years&rsquo; anniversary logo</b> in the centre console</li>
+      <li><b>&lsquo;100 Years&rsquo; logo</b> in the centre console</li>
       <li>N&uuml;rburgring <b>silhouette embroidered</b> on the front headrests</li>
       <li>Exclusive <b>door sills</b> carrying the &lsquo;100 Years&rsquo; logo</li>
       <li>M Alcantara wheel, green and white stitching, <b>white 12 o&rsquo;clock
         marker</b></li>
-      <li>Black leather with green and white <b>contrast stitching</b></li>
       <li>M carbon roof with <b>edition-exclusive stripes</b> and black M logo</li>
-      <li>&lsquo;<b>Born on the Racetrack. Made for the Streets.</b>&rsquo; lettering</li>
     </ul>""",
+  {'band': px['detail'], 'band_cap': 'What you only get on this one'}),
 
- # 05 M2
- """<div class="tag warn">Orders open January 2027</div>
-    <h2>BMW M2.</h2>
-    <p class="lede">The compact way in. Straight six, rear drive, and the
-      shortest wheelbase of the six.</p>
-    <ul style="margin-top:30px">
+ # 05 the six, named
+ ("""<div class="kicker">All six edition models</div>
+    <h2 style="font-size:58px;margin-bottom:22px">Six cars.<br/>One colour.</h2>
+    <div class="models">
+      <div><b>M2</b><small>Coup&eacute; &middot; January 2027</small></div>
+      <div><b>M3</b><small>Saloon &middot; order now</small></div>
+      <div><b>M3</b><small>Touring &middot; order now</small></div>
+      <div><b>M4</b><small>Coup&eacute; &middot; order now</small></div>
+      <div><b>M5</b><small>Saloon &middot; order now</small></div>
+      <div><b>M5</b><small>Touring &middot; order now</small></div>
+    </div>
+    <p class="lede" style="margin-top:20px;font-size:24px">Prefer it quieter?
+      Every one is also in <b>Sapphire Black metallic</b>, green accents kept.</p>""",
+  {'band': px['black'], 'band_cap': 'Or Sapphire Black metallic'}),
+
+ # 06 M2
+ ("""<div class="tag warn">Orders open January 2027</div>
+    <h2 style="font-size:58px">BMW M2.</h2>
+    <ul style="margin-top:22px">
       <li>Painted <b>door graphics</b> with the N&uuml;rburgring silhouette</li>
       <li>&lsquo;100 Years&rsquo; logo and &lsquo;<b>N&uuml;rburgring since 1927</b>&rsquo; lettering</li>
       <li>M carbon roof with edition-exclusive stripes</li>
-      <li>N&uuml;rburgring silhouette embroidered <b>in green</b> on the headrests</li>
+      <li>Silhouette embroidered <b>in green</b> on the headrests</li>
       <li><b>930 M</b> light-alloy wheels in High-gloss Black</li>
     </ul>""",
+  {'band': px['m2'], 'band_cap': 'The compact way in'}),
 
- # 06 M3
- """<div class="tag">Available to order now</div>
-    <h2>M3 Saloon.<br/>M3 Touring.</h2>
-    <p class="lede">The one that does everything &ndash; and the one that does
-      everything <b>and carries the dog</b>.</p>
-    <ul style="margin-top:30px">
+ # 07 M3 saloon
+ ("""<div class="tag">Available to order now</div>
+    <h2 style="font-size:58px">M3 Saloon.<br/>M3 Touring.</h2>
+    <ul style="margin-top:22px">
       <li>Painted graphics on the <b>C-pillar, rear side section, front doors and
         tailgate</b></li>
-      <li>Roof with edition-exclusive stripes and black M logo</li>
-      <li>N&uuml;rburgring silhouette embroidered in green on the headrests</li>
+      <li>M carbon roof with edition-exclusive stripes and black M logo</li>
+      <li>Silhouette embroidered in green on the headrests</li>
       <li><b>Green kidney grille frame</b> on the Sapphire Black cars</li>
       <li><b>826 M</b> wheels with accents in N&uuml;rburgring Green</li>
     </ul>""",
+  {'band': px['m3'], 'band_cap': 'One does everything. One does it with a boot.'}),
 
- # 07 M4
- """<div class="tag">Available to order now</div>
-    <h2>M4 Coup&eacute;.</h2>
-    <p class="lede">Two doors, M TwinPower Turbo straight six with <b>BMW M Ignite</b>,
-      and the sharpest read on the whole edition.</p>
-    <ul style="margin-top:30px">
+ # 08 M4
+ ("""<div class="tag">Available to order now</div>
+    <h2 style="font-size:58px">M4 Coup&eacute;.</h2>
+    <p class="lede" style="margin-top:18px">Two doors, <b>M TwinPower Turbo
+      straight six with BMW M Ignite</b>, and the sharpest read on the whole
+      edition.</p>
+    <ul style="margin-top:22px">
       <li>Painted graphics on the <b>C-pillar, rear side section, doors and
         tailgate</b></li>
       <li>M carbon roof with edition-exclusive stripes and black M logo</li>
-      <li>N&uuml;rburgring silhouette embroidered in green on the headrests</li>
-      <li>Green kidney grille frame on the Sapphire Black cars</li>
       <li><b>826 M</b> wheels with accents in N&uuml;rburgring Green</li>
     </ul>""",
+  {'band': px['m4'], 'band_cap': 'Born on the Racetrack. Made for the Streets.'}),
 
- # 08 M5
- """<div class="tag">Available to order now</div>
-    <h2>M5 Saloon.<br/>M5 Touring.</h2>
-    <p class="lede">M HYBRID drive, <b>V8</b>, and a plug so the school run is
-      silent and the B-road is not.</p>
-    <ul style="margin-top:30px">
-      <li>Painted graphics on the C-pillar, rear side sections and front doors</li>
-      <li>M carbon roof with edition-exclusive stripes and black M logo</li>
-      <li>N&uuml;rburgring silhouette embroidered <b>in black</b> on the headrests</li>
+ # 09 M5
+ ("""<div class="tag">Available to order now</div>
+    <h2 style="font-size:58px">M5 Saloon.<br/>M5 Touring.</h2>
+    <p class="lede" style="margin-top:18px">M HYBRID drive, <b>V8</b>, and a plug so
+      the school run is silent and the B-road is not.</p>
+    <ul style="margin-top:22px">
+      <li>Silhouette embroidered <b>in black</b> on the headrests</li>
       <li><b>951 M</b> light-alloy wheels with green accents</li>
       <li>M leather steering wheel with the edition&rsquo;s stitching</li>
     </ul>""",
-
- # 09 the bikes - the one genuinely capped number on the whole edition
- """<div class="kicker">And three bikes</div>
-    <div class="big">100</div>
-    <div class="bigsub">units worldwide. Each.</div>
-    <p class="lede" style="margin-top:38px">BMW Motorrad build the
-      <b>M 1000 RR</b>, <b>M 1000 R</b> and <b>M 1000 XR</b> in the same
-      anniversary colours &ndash; and each one is <em>capped at 100 worldwide</em>.</p>
-    <p class="lede" style="margin-top:26px"><b>Orders open 19 October 2026.</b> Worldwide, that is three
-      hundred bikes between every market there is.</p>""",
+  {'band': px['m5t'], 'band_cap': 'M HYBRID V8'}),
 
  # 10 CTA
- """<div class="kicker">So &ndash; who wants one?</div>
-    <h2>Taking orders<br/>now.</h2>
+ ("""<div class="kicker">So &ndash; who wants one?</div>
+    <h2 style="font-size:66px">Taking orders<br/>now.</h2>
     <ul style="margin-top:14px">
       <li><b>Order now:</b> M3 Saloon, M3 Touring, M4 Coup&eacute;, M5 Saloon, M5 Touring</li>
       <li><b>January 2027:</b> M2</li>
-      <li><b>19 October 2026:</b> the three Motorrad models, 100 each</li>
     </ul>
     <div class="cta">
       <p>Allocation on an anniversary edition is finite and it moves fast.
@@ -339,16 +406,17 @@ SLIDES = [
     <p class="note">Dan Cane, Sales Executive, BMW Ruxley (Hedin Automotive).
       Specification shown is BMW M&rsquo;s published edition detail and may vary
       by market. Not a binding offer.</p>""",
+  {}),
 ]
 
-CAPTION = """The Nurburgring turns 100 - and BMW M have built six cars and three bikes for it.
 
-NURBURGRING GREEN. A paint developed exclusively for this edition. When the edition closes, the colour goes with it.
+CAPTION = """The Nurburgring turns 100 - and BMW M have built six cars for it.
 
-Swipe for all of it:
+NURBURGRING GREEN. A paint developed exclusively for this edition. When the edition closes, the colour goes with it. (Or Sapphire Black metallic with the green accents, if you want it quieter.)
+
+Swipe for all six:
 - M3 Saloon, M3 Touring, M4 Coupe, M5 Saloon, M5 Touring - ORDER BOOKS OPEN NOW
 - M2 - January 2027
-- M 1000 RR, M 1000 R, M 1000 XR - 100 units worldwide EACH, orders from 19 October
 
 The details are the bit that gets me. The Nurburgring silhouette embroidered into the headrests. The '100 Years' logo in the centre console. Door sills. Green and white stitching through black leather. White marker at 12 o'clock. Carbon roof with edition-only stripes. "Born on the Racetrack. Made for the Streets." written on the car.
 
@@ -363,17 +431,17 @@ And please SHARE this - tag someone, send it on, stick it on your story. Somebod
 Dan Cane | BMW Ruxley
 dan-sells.co.uk
 
-#BMW #BMWM #Nurburgring #100JahreNurburgring #Nordschleife #GreenHell #BMWM2 #BMWM3 #BMWM4 #BMWM5 #M3Touring #M5Touring #M1000RR #BMWRuxley #HedinAutomotive #LimitedEdition #BornOnTheRacetrack
+#BMW #BMWM #Nurburgring #100JahreNurburgring #Nordschleife #GreenHell #BMWM2 #BMWM3 #BMWM4 #BMWM5 #M3Touring #M5Touring #BMWRuxley #HedinAutomotive #LimitedEdition #BornOnTheRacetrack
 """
-
 
 def main():
     os.makedirs(OUT, exist_ok=True)
+    deck = slides(photos())
     made = []
-    for i, inner in enumerate(SLIDES, 1):
+    for i, (inner, kw) in enumerate(deck, 1):
         html = os.path.join(OUT, 'slide-%02d.html' % i)
         jpg  = os.path.join(OUT, 'slide-%02d.jpg' % i)
-        open(html, 'w').write(page(i, inner, swipe=(i < len(SLIDES))))
+        open(html, 'w').write(page(i, inner, swipe=(i < len(deck)), **kw))
         render(html, jpg)
         os.remove(html)
         made.append({'n': i, 'image': 'slide-%02d.jpg' % i,
