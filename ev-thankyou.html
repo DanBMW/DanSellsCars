@@ -33,7 +33,7 @@
       <p style="margin-bottom:8px">There are no stupid questions. Range, charging, servicing, whether electric is actually right for you - you'll get a straight answer on all of it.</p>
       <p style="margin-bottom:24px;color:var(--muted);font-size:.88rem">Dan is your main point of contact, with a handover team and brilliant people around him from start to finish.</p>
       <div class="btn-row">
-        <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">Book a call with Dan</a>
+        <a class="btn" id="bookBtn" href="https://cal.com/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">Book a call with Dan</a>
         <a class="btn-ghost" href="EV.html">Back to the EV page</a>
       </div>
 
@@ -160,8 +160,8 @@ function closeApptModal(){document.getElementById('appt-modal').style.display='n
   var name=(sessionStorage.getItem('evName')||'').trim();
   var email=sessionStorage.getItem('evEmail')||'';
   function calUrl(base){var p=new URLSearchParams();if(name)p.set('name',name);if(email)p.set('email',email);var qs=p.toString();return qs?base+'?'+qs:base;}
-  document.getElementById('modal-phone').href=calUrl('https://cal.eu/danbmwruxley/telephone-appointment');
-  document.getElementById('modal-visit').href=calUrl('https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales');
+  document.getElementById('modal-phone').href=calUrl('https://cal.com/danbmwruxley/telephone-appointment');
+  document.getElementById('modal-visit').href=calUrl('https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales');
   setTimeout(function(){document.getElementById('appt-modal').style.display='flex';},800);
 })();
 </script><script src="disclaimer.js"></script>

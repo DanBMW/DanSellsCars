@@ -319,7 +319,7 @@ async function sendForm(){
     summary += "\nPX photos: " + (pxPhotos.length ? pxPhotos.length + " uploaded" : (pxPhotosVia || "None"));
   }
 
-  var calUrl = "https://cal.eu/danbmwruxley/telephone-appointment?" +
+  var calUrl = "https://cal.com/danbmwruxley/telephone-appointment?" +
     new URLSearchParams({name: name, email: email, notes: summary}).toString();
 
   sessionStorage.setItem("bookingUrl", calUrl);

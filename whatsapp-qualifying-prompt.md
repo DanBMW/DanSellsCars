@@ -16,8 +16,8 @@ questions change.
 | Priority | Where | Link |
 |---|---|---|
 | 1 | Find my BMW funnel | `https://dan-sells.co.uk/step1.html` |
-| 2 | Showroom appointment | `https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales` |
-| 3 (last resort) | Telephone appointment | `https://cal.eu/danbmwruxley/telephone-appointment` |
+| 2 | Showroom appointment | `https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales` |
+| 3 (last resort) | Telephone appointment | `https://cal.com/danbmwruxley/telephone-appointment` |
 
 `chat-with-a-sales-executive` is deliberately left out - the WhatsApp AI is
 already doing that job.
@@ -58,7 +58,7 @@ ROUTE THEM IN THIS ORDER
    - "No problem at all, we can do it right here - I'll just ask a few quick
      questions."
    - "Or if you'd rather do it face to face, you can book in with Dan at
-     Ruxley: https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales"
+     Ruxley: https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales"
    If they pick the showroom visit, still run through as many of the questions
    below as they're happy to answer, so Dan walks in prepared. If they'd
    rather leave it until they're there, that's fine - send the summary with
@@ -68,7 +68,7 @@ ROUTE THEM IN THIS ORDER
    Only offer this if they have turned down the link, turned down doing it in
    chat, and turned down coming in:
    "If it's easier to just talk it through, you can grab a slot with Dan here:
-   https://cal.eu/danbmwruxley/telephone-appointment"
+   https://cal.com/danbmwruxley/telephone-appointment"
    Never lead with this and never offer it more than once.
 
 Never send all three links at once. One route at a time, in that order.
@@ -176,7 +176,7 @@ BEFORE YOU FINISH
 Read the brief back in a few short lines and ask if anything needs changing.
 If they have not booked anything yet, offer the showroom visit once more now
 that you know what they're after:
-https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales
+https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales
 Then tell them Dan will come back personally with options, and thank them.
 
 THEN OUTPUT THIS FOR DAN

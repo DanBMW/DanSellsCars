@@ -48,7 +48,7 @@
 <div class="step-kicker" style="margin-top:0;margin-bottom:4px;">How would you like to connect?</div>
     <div class="appt-cards">
 
-      <a id="card-chat" class="appt-card primary" href="https://cal.eu/danbmwruxley/chat-with-a-sales-executive" target="_blank" rel="noopener">
+      <a id="card-chat" class="appt-card primary" href="https://cal.com/danbmwruxley/chat-with-a-sales-executive" target="_blank" rel="noopener">
         <div class="appt-icon">☕</div>
         <div class="appt-body">
           <strong>Quick chat during your service visit</strong>
@@ -57,7 +57,7 @@
         <div class="appt-arrow">›</div>
       </a>
 
-      <a id="card-phone" class="appt-card" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">
+      <a id="card-phone" class="appt-card" href="https://cal.com/danbmwruxley/telephone-appointment" target="_blank" rel="noopener">
         <div class="appt-icon">📞</div>
         <div class="appt-body">
           <strong>Telephone appointment</strong>
@@ -66,7 +66,7 @@
         <div class="appt-arrow">›</div>
       </a>
 
-      <a id="card-visit" class="appt-card" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
+      <a id="card-visit" class="appt-card" href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
         <div class="appt-icon">🤝</div>
         <div class="appt-body">
           <strong>Face to face at Ruxley</strong>
@@ -161,9 +161,9 @@ function closeApptModal(){document.getElementById('appt-modal').style.display='n
   var name=(sessionStorage.getItem('sqFirst')||'').trim();
   var email=sessionStorage.getItem('sqEmail')||'';
   function calUrl(base){var p=new URLSearchParams();if(name)p.set('name',name);if(email)p.set('email',email);var qs=p.toString();return qs?base+'?'+qs:base;}
-  var chatUrl=calUrl('https://cal.eu/danbmwruxley/chat-with-a-sales-executive');
-  var phoneUrl=calUrl('https://cal.eu/danbmwruxley/telephone-appointment');
-  var visitUrl=calUrl('https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales');
+  var chatUrl=calUrl('https://cal.com/danbmwruxley/chat-with-a-sales-executive');
+  var phoneUrl=calUrl('https://cal.com/danbmwruxley/telephone-appointment');
+  var visitUrl=calUrl('https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales');
   document.getElementById('modal-chat').href=chatUrl;
   document.getElementById('modal-phone').href=phoneUrl;
   document.getElementById('modal-visit').href=visitUrl;

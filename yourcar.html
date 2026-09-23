@@ -5,9 +5,9 @@
   <!-- Personal share page for service prospects due in within the week:
        Dan sends yourcar.html?reg=AB12CDE&n=Kate ahead of their service
        booking. Their plate arrives pre-filled; they confirm mileage
-       (screen 1) then book an appointment with Dan (cal.eu / WhatsApp).
+       (screen 1) then book an appointment with Dan (cal.com / WhatsApp).
        Formspree is rationed: tapping "I'm interested" fires ONE interest
-       email; booking taps are GA events only (cal.eu confirms real
+       email; booking taps are GA events only (cal.com confirms real
        bookings itself). The optional yourbrief.html deep-dive is its own
        single submission. Copy must never say the car is on site NOW -
        these customers are due in, not in the building.
@@ -105,7 +105,7 @@
     <div class="value-note"><span style="font-size:1.3rem;">🔒</span><span>Your figure is being prepared now - I'll bring it to the conversation, whichever option you pick.</span></div>
 
     <div class="appt-cards" id="apptCards">
-      <a id="card-visit" class="appt-card primary" href="https://cal.eu/danbmwruxley/chat-with-a-sales-executive" target="_blank" rel="noopener" onclick="bookTap('Appointment at Ruxley')">
+      <a id="card-visit" class="appt-card primary" href="https://cal.com/danbmwruxley/chat-with-a-sales-executive" target="_blank" rel="noopener" onclick="bookTap('Appointment at Ruxley')">
         <div class="appt-icon">🤝</div>
         <div class="appt-body">
           <strong>Book an appointment with me</strong>
@@ -113,7 +113,7 @@
         </div>
         <div class="appt-arrow">›</div>
       </a>
-      <a id="card-phone" class="appt-card" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" onclick="bookTap('Telephone appointment')">
+      <a id="card-phone" class="appt-card" href="https://cal.com/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" onclick="bookTap('Telephone appointment')">
         <div class="appt-icon">📞</div>
         <div class="appt-body">
           <strong>Telephone appointment</strong>
@@ -233,14 +233,14 @@
     sessionStorage.setItem("ycMileage", mil);
     // The interest signal: they tapped "I'm interested" with car + mileage confirmed.
     // This is the ONLY Formspree email this page sends - booking taps are GA
-    // events, and real bookings arrive via cal.eu's own confirmation.
+    // events, and real bookings arrive via cal.com's own confirmation.
     // Deduped per reg (not per session) so a different plate always re-fires -
     // which also means Dan can test with any reg and get the email every time.
     const pingKey = "ycPinged_" + reg.replace(/\s/g,"").toUpperCase();
     if(!sessionStorage.getItem(pingKey)){
       sessionStorage.setItem(pingKey,"1");
       notify("🔥 " + (linkName||reg) + " tapped I'm interested", {
-        note: "Interest signal - service prospect (due in within the week) confirmed car + mileage and tapped I'm interested. Booking options are on their screen now; if they book, cal.eu will confirm separately."
+        note: "Interest signal - service prospect (due in within the week) confirmed car + mileage and tapped I'm interested. Booking options are on their screen now; if they book, cal.com will confirm separately."
       });
     }
     document.getElementById("stage1").style.display = "none";
@@ -248,7 +248,7 @@
     window.scrollTo({top:0});
   }
 
-  // Booking taps are tracked in GA only (no Formspree - cal.eu confirms real
+  // Booking taps are tracked in GA only (no Formspree - cal.com confirms real
   // bookings itself, and Formspree submissions are rationed).
   function bookTap(which){
     const key = "ycBooked_" + which;
@@ -258,7 +258,7 @@
   }
 
 
-  // Prefill cal.eu and WhatsApp with their name if Dan included it in the link
+  // Prefill cal.com and WhatsApp with their name if Dan included it in the link
   if(linkName){
     ["card-visit","card-phone"].forEach(id=>{
       const a=document.getElementById(id);

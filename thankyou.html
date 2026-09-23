@@ -88,10 +88,10 @@
             <strong>Book your appointment</strong>
             <span>Book it now and I'll arrive prepared: shortlist done, finance worked through, part exchange figure in hand. Phone call or face to face, whichever suits you.</span>
             <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;">
-              <a class="btn" id="bookBtn" href="https://cal.eu/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:12px 18px;">
+              <a class="btn" id="bookBtn" href="https://cal.com/danbmwruxley/telephone-appointment" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:12px 18px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l1.6 4-2.2 1.6a13 13 0 0 0 6 6L16 13.4l4 1.6v4a2 2 0 0 1-2.2 2A17 17 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg> Telephone call
               </a>
-              <a class="btn" href="https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:12px 18px;background:rgba(91,138,201,.18);border:1px solid rgba(91,138,201,.35);">
+              <a class="btn" href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:12px 18px;background:rgba(91,138,201,.18);border:1px solid rgba(91,138,201,.35);">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c.6-3.4 3-5.2 6-5.2s5.4 1.8 6 5.2"/><path d="M15.5 5.2a3.2 3.2 0 0 1 0 5.6M17.7 15.1c2 .7 3.4 2.3 3.8 4.9"/></svg> Face to face at Ruxley
               </a>
             </div>
@@ -425,8 +425,8 @@ function closeApptModal(){document.getElementById('appt-modal').style.display='n
   var name=sessionStorage.getItem('fullName')||'';
   var email=sessionStorage.getItem('email')||'';
   function calUrl(base){var p=new URLSearchParams();if(name)p.set('name',name);if(email)p.set('email',email);var qs=p.toString();return qs?base+'?'+qs:base;}
-  document.getElementById('modal-phone').href=calUrl('https://cal.eu/danbmwruxley/telephone-appointment');
-  document.getElementById('modal-visit').href=calUrl('https://cal.eu/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales');
+  document.getElementById('modal-phone').href=calUrl('https://cal.com/danbmwruxley/telephone-appointment');
+  document.getElementById('modal-visit').href=calUrl('https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales');
   setTimeout(function(){document.getElementById('appt-modal').style.display='flex';},800);
 })();
 </script><script src="disclaimer.js"></script>
