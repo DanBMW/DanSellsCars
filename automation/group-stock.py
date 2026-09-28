@@ -185,13 +185,25 @@ TAIL = re.compile(
     r'Convertible|SUV|Tourer|Touring|MPV)\b.*|\d\s*dr\b.*)$', re.I)
 
 
-def display_name(brand, model, text):
+def display_name(brand, model, text, clean=False):
+    """`clean` says the text came from the car's own listing page, which
+    already reads like a model name ("218i Sport Gran Coupe") rather than the
+    list page's registration-document string ("2.0 20i MHT M Sport Auto xDrive
+    Euro 6 (s/s) 5dr").
+
+    It matters because TAIL strips trailing body words, and on a clean name
+    those words are part of the model: it turned every Gran Coupe into a
+    "Gran" and every Active Tourer into an "Active". Twenty-four cars read
+    that way on the first run, and it also broke the body-style filter, which
+    reads "Gran Coupe" off the model name.
+    """
     text = (text or '').strip()
     model = (model or '').strip()
     name = text if model and text.lower().startswith(model.lower()) else \
         (model + ' ' + text).strip()
-    name = TAIL.sub('', name).strip(' -,')
-    name = re.sub(r'\s{2,}', ' ', name)
+    if not clean:
+        name = TAIL.sub('', name).strip(' -,')
+    name = re.sub(r'\s{2,}', ' ', name).strip(' -,')
     if not name:
         name = model
     return ('%s %s' % (brand, name)).strip()
@@ -315,7 +327,8 @@ def main():
                 print('  %s: no spec (%s)' % (cid, str(e)[:70]))
 
         name = display_name(brand, c.get('car_model'),
-                            spec.get('model_text') or c.get('car_model_text'))
+                            spec.get('model_text') or c.get('car_model_text'),
+                            clean=bool(spec.get('model_text')))
         group, label = fuel_of(brand, c.get('car_fuel'), name)
         img = (c.get('car_primary_image') or {})
         # Hedin put a non-breaking space in the mileage here but a plain one in

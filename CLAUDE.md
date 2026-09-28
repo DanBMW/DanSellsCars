@@ -170,11 +170,27 @@ other stock"**, which merges in every other used BMW the group has -
   Pruning is skipped under `--only` and `--limit`: there the cars that were not
   asked about are not gone, just outside today's slice, and dropping them would
   empty the file.
-- **The group list is thinner on purpose**: model, year, mileage, price, fuel,
-  gearbox, photo. It comes from one list-page fetch with no per-car visit,
-  because the unfiltered list page does not carry colour, body, power, seats,
-  doors or trim - only the Ruxley feed does. Every card tests each field before
-  drawing its row, so those cars show fewer lines rather than empty ones.
+- **The spec comes from each car's own listing page.** The unfiltered list
+  page carries no colour, body, power, seats, doors or trim - only the Ruxley
+  feed does - and without them the colour, body style and seats filters
+  silently dropped every unlocked car: open the extra stock, choose Estate, and
+  be shown Dan's own cars only, which reads as a broken button. `listing_spec()`
+  reads them off the car's page, one fetch a car, done only for cars new to the
+  file; the rest carry their spec across from yesterday, the way the Ruxley job
+  carries an image across. `colour` is the marker for "this record was
+  enriched".
+- **Do not run TAIL over a listing-page model name.** `display_name(clean=True)`
+  skips it. TAIL strips trailing body words, which is right for the list page's
+  registration-document string ("2.0 20i MHT M Sport Auto xDrive Euro 6 (s/s)
+  5dr") and wrong for the listing page's clean one: it turned every Gran Coupe
+  into a "Gran" and every Active Tourer into an "Active", twenty-four cars on
+  the first run, and broke the body-style filter, which reads "Gran Coupe" off
+  the model name.
+- **A listing page that returns no `car_` fields fails that car.** The wrong
+  URL still came back big enough to pass the size check, so every car recorded
+  a spec of nothing with no error - and because `colour` is the enrichment
+  marker, tomorrow's run would have retried for ever. Better to drop the one
+  car and let it be picked up next time.
 - **The count check is against the site's own total**, read from a deliberately
   short page. The HTML carries several unrelated "x of y" pairs, so the total
   is the one whose first number is the count actually on that page - taking the
