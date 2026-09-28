@@ -115,6 +115,37 @@
   .mbg-inc-card li{position:relative;padding-left:20px;font-size:.92rem;line-height:1.55;color:var(--body-c)}
   .mbg-inc-card li::before{content:'';position:absolute;left:0;top:.62em;width:8px;height:8px;border-radius:50%;background:#25d366}
   .mbg-note a{color:var(--paper)}
+  /* filters: stock.html's set, dark */
+  .mf{margin:0 0 20px;border:1px solid var(--hairline);background:#070707;padding:14px}
+  .mf-bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+  .mf-toggle{display:none;align-items:center;font-family:var(--sans);font-size:.84rem;letter-spacing:.04em;
+    background:#0b0b0c;border:1px solid rgba(255,255,255,.28);color:var(--paper);padding:11px 16px;border-radius:2px;cursor:pointer}
+  .mf-toggle[aria-expanded="true"]{background:var(--paper);color:#000}
+  .mf-sortwrap{flex:1 1 200px;display:flex;flex-direction:column;gap:4px}
+  .mf-f span,.mf-sortwrap span{font-family:var(--sans);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .mf-sel{width:100%;min-width:0;background:#0b0b0c;border:1px solid var(--hairline);color:var(--paper);color-scheme:dark;
+    font-family:var(--sans);font-size:.9rem;padding:10px 12px;border-radius:2px}
+  .mf-sel:focus{outline:none;border-color:var(--paper)}
+  .mf-reset{font-family:var(--sans);font-size:.82rem;letter-spacing:.04em;cursor:pointer;background:none;
+    border:1px solid var(--hairline);color:var(--body-c);padding:11px 16px;border-radius:2px}
+  .mf-reset:hover:not(:disabled){color:var(--paper);border-color:var(--paper)}
+  .mf-reset:disabled{opacity:.45;cursor:default}
+  .mf-panel{margin-top:12px}
+  .mf-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .mf-f{display:flex;flex-direction:column;gap:4px}
+  .mf-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .mf-chip{background:none;border:1px solid var(--hairline);color:var(--body-c);font-family:var(--sans);font-size:.82rem;
+    padding:8px 14px;border-radius:999px;cursor:pointer}
+  .mf-chip:hover{color:var(--paper)}
+  .mf-chip[aria-pressed="true"]{background:var(--paper);border-color:var(--paper);color:#000}
+  .mf-hint{margin-top:10px;font-size:.74rem;color:var(--dim)}
+  @media(max-width:900px){.mf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:700px){
+    .mf-toggle{display:inline-flex}
+    .mf-sortwrap{flex:1 1 140px}
+    .mf-panel{display:none}
+    .mf-panel.open{display:block}
+  }
   .mbg-ig{display:inline-block;line-height:1.45;margin-top:10px;font-family:var(--sans);font-size:.86rem;color:var(--paper);
     text-decoration:none;border-bottom:1px solid var(--hairline);padding-bottom:2px}
   .mbg-ig span{color:var(--dim);white-space:nowrap}
@@ -348,6 +379,44 @@
       <span class="plabel accent">Approved Used</span>
       <h2>Approved Used BMWs, all black.</h2>
       <p class="measure" style="margin-bottom:22px">Every black used BMW on the Ruxley forecourt, straight from the live stock list, so it is never out of date. Monthly figures are the lender&rsquo;s own representative examples.</p>
+      <div class="mf" role="search" aria-label="Filter the black cars">
+        <div class="mf-bar">
+          <button class="mf-toggle" id="mfToggle" type="button" aria-expanded="false" aria-controls="mfPanel">Filters</button>
+          <label class="mf-sortwrap"><span>Sort</span>
+            <select class="mf-sel" id="mfSort">
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="monthly-asc">Monthly: low to high</option>
+              <option value="monthly-desc">Monthly: high to low</option>
+              <option value="miles-asc">Mileage: lowest first</option>
+              <option value="year-desc">Newest first</option>
+            </select>
+          </label>
+          <button class="mf-reset" id="mfReset" type="button">Reset</button>
+        </div>
+        <div class="mf-panel" id="mfPanel">
+          <div class="mf-grid">
+            <label class="mf-f"><span>Model</span><select class="mf-sel" id="mfSeries"><option value="">Any model</option></select></label>
+            <label class="mf-f"><span>Body</span><select class="mf-sel" id="mfBody"><option value="">Any body style</option></select></label>
+            <label class="mf-f"><span>Fuel</span><select class="mf-sel" id="mfFuel"><option value="">Any fuel</option></select></label>
+            <label class="mf-f"><span>Year</span><select class="mf-sel" id="mfYear"><option value="">Any year</option></select></label>
+            <label class="mf-f"><span>Seats</span><select class="mf-sel" id="mfSeats"><option value="">Any seats</option></select></label>
+            <label class="mf-f"><span>Mileage</span><select class="mf-sel" id="mfMiles">
+              <option value="">Any mileage</option><option value="u10">Under 10,000</option><option value="u20">Under 20,000</option>
+              <option value="u40">Under 40,000</option><option value="o40">40,000+</option></select></label>
+            <label class="mf-f"><span>Monthly</span><select class="mf-sel" id="mfMonthly">
+              <option value="">Any monthly</option><option value="u300">Under &pound;300</option><option value="u400">Under &pound;400</option>
+              <option value="u500">Under &pound;500</option><option value="u700">Under &pound;700</option><option value="o700">&pound;700+</option></select></label>
+          </div>
+          <div class="mf-chips" id="mfChips" role="group" aria-label="Price">
+            <button class="mf-chip" type="button" data-filter="all" aria-pressed="true">All prices</button>
+            <button class="mf-chip" type="button" data-filter="u30" aria-pressed="false">Under &pound;30k</button>
+            <button class="mf-chip" type="button" data-filter="30to50" aria-pressed="false">&pound;30k to &pound;50k</button>
+            <button class="mf-chip" type="button" data-filter="o50" aria-pressed="false">&pound;50k+</button>
+          </div>
+          <p class="mf-hint">Every option here is black. Monthly bands only include cars with a live lender quote.</p>
+        </div>
+      </div>
       <p class="mbg-count" id="mbgCount" aria-live="polite">Loading the black cars&hellip;</p>
       <div class="sl-list" id="slList"></div>
       <p class="sl-note" id="slNote"></p>
@@ -564,17 +633,19 @@
 <script>
 (function(){
   /* Built on every load from the same two files stock.html reads, so the
-     list is never hand-maintained. Finance display and the representative
-     example are copied from stock.html so the two pages cannot disagree. */
+     list is never hand-maintained. Finance display is the full representative
+     example, same fields as stock.html's. Filter logic (model family, body,
+     fuel, year, seats, mileage and monthly bands, price chips, sorts) is
+     stock.html's, applied to the black cars only. */
   var WA = 'https://wa.me/447827138197';
   var EMAIL = 'daniel.cane@hedinautomotive.co.uk';
-  var ALL = [], FIN = {}, loaded = false;
+  var ALL = [], BASE = [], FIN = {}, loaded = false, filter = 'all';
 
   /* Black in any form: Black, Black Sapphire, Carbon Black, Jet Black,
      Sapphire Black. Whole word only, so nothing merely containing the letters.
-     LOCKED: this is the only filter on the page. There is deliberately no
-     colour control, no reset and no query string handling, so nothing a
-     visitor does (or puts in the URL) can show a car that is not black. */
+     LOCKED: BASE is the black cars and every filter below only ever narrows
+     BASE. There is no colour control and no colour parameter is read, so no
+     filter, Reset or query string can bring a car that is not black in. */
   var BLACK = /\bblack\b/i;
 
   function money(n){ return '\u00a3' + Math.round(n).toLocaleString('en-GB'); }
@@ -591,26 +662,243 @@
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
+  /* ---- stock.html's classification, unchanged ---- */
+  function bodyLabel(c){
+    var m = (c.model || '').toLowerCase();
+    if (/gran\s*coup[eé]/i.test(m) || /gran\s*coupe/i.test(m)) return 'Gran Coupé';
+    var map = {SUV:'SUV', Saloon:'Saloon', Estate:'Estate', Hatchback:'Hatchback',
+               Coupe:'Coupé', Convertible:'Convertible'};
+    return map[c.body] || c.body || '';
+  }
+  function bodyKey(c){
+    var m = (c.model || '').toLowerCase();
+    if (/gran\s*coup/i.test(m)) return 'gran-coupe';
+    var map = {SUV:'suv', Saloon:'saloon', Estate:'estate', Hatchback:'hatch',
+               Coupe:'coupe', Convertible:'convertible'};
+    return map[c.body] || (c.body || '').toLowerCase();
+  }
+  function fuelKey(c){
+    var f = (c.fuel || '').toLowerCase();
+    if (f.indexOf('plug-in') !== -1 || f.indexOf('plug in') !== -1) return 'phev';
+    if (f.indexOf('electric') !== -1) return 'electric';
+    if (f.indexOf('mild hybrid') !== -1 && f.indexOf('diesel') !== -1) return 'mhev-diesel';
+    if (f.indexOf('mild hybrid') !== -1) return 'mhev-petrol';
+    if (f.indexOf('diesel') !== -1) return 'diesel';
+    if (f.indexOf('petrol') !== -1) return 'petrol';
+    var g = (c.fuelGroup || '').toLowerCase();
+    if (g.indexOf('plug') !== -1) return 'phev';
+    if (g.indexOf('electric') !== -1) return 'electric';
+    if (g.indexOf('diesel') !== -1) return 'diesel';
+    if (g.indexOf('petrol') !== -1) return 'petrol';
+    return '';
+  }
+  function fuelLabel(k){
+    return {petrol:'Petrol', diesel:'Diesel', phev:'Plug-in hybrid', electric:'Electric',
+            'mhev-petrol':'Mild hybrid (petrol)', 'mhev-diesel':'Mild hybrid (diesel)'}[k] || k;
+  }
+  function modelFamily(c){
+    var s = c.series || '';
+    if (s) return s;
+    var m = (c.model || '').replace(/^BMW\s*/i,'');
+    if (/^iX\d/i.test(m)) return m.match(/^iX\d/i)[0];
+    if (/^iX\b/i.test(m)) return 'iX';
+    if (/^i\d/i.test(m)) return m.match(/^i\d/i)[0];
+    if (/^X\d/i.test(m)) return m.match(/^X\d/i)[0];
+    if (/^Z\d/i.test(m)) return m.match(/^Z\d/i)[0];
+    if (/^XM\b/i.test(m)) return 'XM';
+    var ser = m.match(/^(\d)\d{2}/);
+    if (ser) return ser[1] + ' Series';
+    return 'Other';
+  }
+  function seriesRank(v){
+    var m;
+    if ((m = /^(\d) Series$/.exec(v)))  return [0, +m[1]];
+    if ((m = /^X(\d)$/.exec(v)))        return [1, +m[1]];
+    if (v === 'XM')                     return [2, 0];
+    if ((m = /^Z(\d)$/.exec(v)))        return [3, +m[1]];
+    if ((m = /^i(\d)$/.exec(v)))        return [4, +m[1]];
+    if (v === 'iX')                     return [5, 0];
+    if ((m = /^iX(\d)$/.exec(v)))       return [5, +m[1]];
+    return [9, 0];
+  }
+
   var elList  = document.getElementById('slList');
   var elCount = document.getElementById('mbgCount');
   var elNote  = document.getElementById('slNote');
+  var elSort  = document.getElementById('mfSort');
+  var elSeries= document.getElementById('mfSeries');
+  var elBody  = document.getElementById('mfBody');
+  var elFuel  = document.getElementById('mfFuel');
+  var elYear  = document.getElementById('mfYear');
+  var elSeats = document.getElementById('mfSeats');
+  var elMiles = document.getElementById('mfMiles');
+  var elMonthly = document.getElementById('mfMonthly');
+  var elPanel = document.getElementById('mfPanel');
+  var elToggle= document.getElementById('mfToggle');
+  var elReset = document.getElementById('mfReset');
+  var SELECTS = [elSeries, elBody, elFuel, elYear, elSeats, elMiles, elMonthly];
+
+  /* Only these keys are ever read from or written to the query string.
+     Colour is deliberately not one of them. */
+  var PARAMS = [
+    ['series', elSeries], ['body', elBody], ['fuel', elFuel], ['year', elYear],
+    ['seats', elSeats], ['miles', elMiles], ['monthly', elMonthly], ['sort', elSort]
+  ];
 
   function waIcon(){ return '<svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>'; }
 
+  function activeCount(){
+    var n = SELECTS.filter(function(el){ return el.value; }).length;
+    if (filter !== 'all') n++;
+    return n;
+  }
+
+  function syncUrl(){
+    var u = new URLSearchParams();
+    PARAMS.forEach(function(pair){
+      var v = pair[1].value;
+      if (v && !(pair[0] === 'sort' && v === 'price-asc')) u.set(pair[0], v);
+    });
+    if (filter !== 'all') u.set('price', filter);
+    var qs = u.toString();
+    try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash); } catch (e) {}
+  }
+
+  function applyUrl(){
+    var u = new URLSearchParams(location.search);
+    PARAMS.forEach(function(pair){
+      var v = u.get(pair[0]);
+      if (v === null) return;
+      var el = pair[1];
+      if (!Array.prototype.some.call(el.options, function(o){ return o.value === v; })) return;
+      el.value = v;
+    });
+    var band = u.get('price');
+    if (band && ['u30', '30to50', 'o50'].indexOf(band) !== -1) filter = band;
+    syncChips();
+  }
+
+  function syncChips(){
+    document.querySelectorAll('#mfChips .mf-chip').forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.dataset.filter === filter));
+    });
+  }
+
+  /* Options come from the black cars only, so every choice offered has at
+     least one black car behind it. */
+  function fillFilters(){
+    function uniq(vals){ return vals.filter(Boolean).filter(function(v,i,a){ return a.indexOf(v) === i; }); }
+    function fill(sel, vals, sorter, labelFn){
+      var keep = sel.value;
+      while (sel.options.length > 1) sel.remove(1);
+      var list = uniq(vals); list.sort(sorter);
+      list.forEach(function(v){ sel.add(new Option(labelFn ? labelFn(v) : v, v)); });
+      if (list.indexOf(keep) !== -1) sel.value = keep;
+    }
+    function ordered(order){
+      return function(a, b){
+        var ia = order.indexOf(a), ib = order.indexOf(b);
+        if (ia === -1) ia = 999; if (ib === -1) ib = 999;
+        return ia - ib || String(a).localeCompare(String(b));
+      };
+    }
+    fill(elSeries, BASE.map(function(c){ return c._family; }), function(a, b){
+      var ra = seriesRank(a), rb = seriesRank(b);
+      return ra[0] - rb[0] || ra[1] - rb[1] || a.localeCompare(b);
+    });
+    var bodyLabels = {};
+    BASE.forEach(function(c){ if (c._bodyKey) bodyLabels[c._bodyKey] = c._bodyLabel; });
+    fill(elBody, BASE.map(function(c){ return c._bodyKey; }),
+         ordered(['suv','saloon','estate','hatch','coupe','gran-coupe','convertible']),
+         function(k){ return bodyLabels[k] || k; });
+    fill(elFuel, BASE.map(function(c){ return c._fuelKey; }),
+         ordered(['petrol','diesel','mhev-petrol','mhev-diesel','phev','electric']), fuelLabel);
+    fill(elYear, BASE.map(function(c){ return String(c._year || ''); }),
+         function(a, b){ return Number(b) - Number(a); });
+    fill(elSeats, BASE.map(function(c){ return String(c.seats || ''); }),
+         function(a, b){ return Number(a) - Number(b); }, function(v){ return v + ' seats'; });
+  }
+
+  function attachMonthly(){
+    BASE.forEach(function(c){ var f = FIN[c.id]; c._monthly = finLive(f) ? Number(f.monthly) : 0; });
+  }
+
+  function matches(c){
+    if (!BLACK.test(colourOf(c))) return false;   // belt and braces
+    if (elSeries.value && c._family !== elSeries.value) return false;
+    if (elBody.value && c._bodyKey !== elBody.value) return false;
+    if (elFuel.value && c._fuelKey !== elFuel.value) return false;
+    if (elYear.value && String(c._year) !== elYear.value) return false;
+    if (elSeats.value && String(c.seats) !== elSeats.value) return false;
+    if (elMiles.value === 'u10' && !(c._miles < 10000)) return false;
+    if (elMiles.value === 'u20' && !(c._miles < 20000)) return false;
+    if (elMiles.value === 'u40' && !(c._miles < 40000)) return false;
+    if (elMiles.value === 'o40' && !(c._miles >= 40000)) return false;
+    /* Monthly bands only ever match a car with a live lender quote */
+    if (elMonthly.value) {
+      if (!c._monthly) return false;
+      if (elMonthly.value === 'u300' && !(c._monthly < 300)) return false;
+      if (elMonthly.value === 'u400' && !(c._monthly < 400)) return false;
+      if (elMonthly.value === 'u500' && !(c._monthly < 500)) return false;
+      if (elMonthly.value === 'u700' && !(c._monthly < 700)) return false;
+      if (elMonthly.value === 'o700' && !(c._monthly >= 700)) return false;
+    }
+    if (filter === 'u30')    return c._price <  30000;
+    if (filter === '30to50') return c._price >= 30000 && c._price < 50000;
+    if (filter === 'o50')    return c._price >= 50000;
+    return true;
+  }
+
+  function sorter(a, b){
+    var sort = elSort.value;
+    if (sort === 'price-desc') return b._price - a._price;
+    if (sort === 'miles-asc')  return a._miles - b._miles;
+    if (sort === 'year-desc')  return b._year  - a._year || a._price - b._price;
+    if (sort === 'monthly-asc') {
+      if (!a._monthly && !b._monthly) return a._price - b._price;
+      if (!a._monthly) return 1; if (!b._monthly) return -1;
+      return a._monthly - b._monthly;
+    }
+    if (sort === 'monthly-desc') {
+      if (!a._monthly && !b._monthly) return b._price - a._price;
+      if (!a._monthly) return 1; if (!b._monthly) return -1;
+      return b._monthly - a._monthly;
+    }
+    return a._price - b._price;
+  }
+
   function render(){
     if (!loaded) return;
-    var rows = ALL.filter(function(c){ return BLACK.test(colourOf(c)); });
-    rows.sort(function(a,b){ return a._price-b._price; });
+    var n = activeCount();
+    elToggle.textContent = n ? 'Filters (' + n + ')' : 'Filters';
+    elReset.disabled = !n && elSort.value === 'price-asc';
+    syncUrl();
 
-    elCount.textContent = rows.length + ' black BMW' + (rows.length === 1 ? '' : 's') + ' available now';
-
-    if (!rows.length){
+    if (!BASE.length){
+      elCount.textContent = '0 black BMWs available now';
       var emptyWa = WA + '?text=' + encodeURIComponent(
         "Hi Dan, I'm from MBG and I'm after a black BMW. Can you keep an eye out for me?");
       elList.innerHTML = '<div class="sl-empty" style="grid-column:1/-1">'
         + '<p>No black BMWs on the forecourt at this moment.</p>'
         + '<p style="margin-top:12px">New stock arrives all the time. Tell me what you are after and I will watch for it.</p>'
         + '<p style="margin-top:22px"><a class="mbg-wa" href="' + emptyWa + '" target="_blank" rel="noopener">' + waIcon() + '<span>Tell me what you\'re after</span></a></p>'
+        + '</div>';
+      return;
+    }
+
+    var rows = BASE.filter(matches);
+    rows.sort(sorter);
+    elCount.textContent = n
+      ? rows.length + ' black BMW' + (rows.length === 1 ? ' matches' : 's match') + ' (of ' + BASE.length + ')'
+      : BASE.length + ' black BMW' + (BASE.length === 1 ? '' : 's') + ' available now';
+
+    if (!rows.length){
+      var noneWa = WA + '?text=' + encodeURIComponent(
+        "Hi Dan, I'm from MBG. None of your black BMWs match what I'm after. Can I tell you what I want?");
+      elList.innerHTML = '<div class="sl-empty" style="grid-column:1/-1">'
+        + '<p>No black BMWs match those filters.</p>'
+        + '<p style="margin-top:12px">Try Reset, or tell me what you are after and I will watch the incoming stock for it.</p>'
+        + '<p style="margin-top:22px"><a class="mbg-wa" href="' + noneWa + '" target="_blank" rel="noopener">' + waIcon() + '<span>Tell me what you\'re after</span></a></p>'
         + '</div>';
       return;
     }
@@ -691,7 +979,7 @@
 
   fetch('automation/stock-finance.json', {cache:'no-cache'})
     .then(function(r){ return r.ok ? r.json() : {}; })
-    .then(function(j){ FIN = j || {}; render(); })
+    .then(function(j){ FIN = j || {}; attachMonthly(); render(); })
     ['catch'](function(){ FIN = {}; });
 
   fetch('automation/hedin-stock-snapshot.json', {cache:'no-cache'})
@@ -709,11 +997,40 @@
     })
     .then(function(data){
       if (!Array.isArray(data)) throw new Error('bad');
-      ALL = data.map(function(c){ c._price = num(c.price); return c; });
+      ALL = data;
+      BASE = data.filter(function(c){ return BLACK.test(colourOf(c)); }).map(function(c){
+        c._price = num(c.price); c._miles = num(c.mileage); c._year = num(c.year);
+        c._family = modelFamily(c); c._bodyKey = bodyKey(c); c._bodyLabel = bodyLabel(c);
+        c._fuelKey = fuelKey(c); c._monthly = 0;
+        return c;
+      });
+      attachMonthly();
+      fillFilters();
+      applyUrl();
       loaded = true;
       render();
     })
     ['catch'](failed);
+
+  SELECTS.concat([elSort]).forEach(function(el){ el.addEventListener('change', render); });
+  document.getElementById('mfChips').addEventListener('click', function(e){
+    var btn = e.target.closest('.mf-chip');
+    if (!btn) return;
+    filter = btn.dataset.filter;
+    syncChips();
+    render();
+  });
+  elReset.addEventListener('click', function(){
+    SELECTS.forEach(function(el){ el.value = ''; });
+    elSort.value = 'price-asc';
+    filter = 'all';
+    syncChips();
+    render();
+  });
+  elToggle.addEventListener('click', function(){
+    var open = elPanel.classList.toggle('open');
+    elToggle.setAttribute('aria-expanded', String(open));
+  });
 })();
 </script>
 <script>
