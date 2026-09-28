@@ -703,6 +703,13 @@
     unlocked = true;
     ALL = ALL.concat(MORE);
     elUnlock.hidden = true;
+    /* The unlocked cars carry lender quotes too, and `_monthly` is what the
+       monthly filter and the monthly sorts read. It is only stamped on when
+       the quotes arrive and when the snapshot loads, both of which have
+       already happened by now - so without this the newly merged cars all
+       look unquoted: excluded from a monthly filter and sorted to the bottom,
+       while their own cards plainly show a monthly payment. */
+    attachMonthly();
     fillFilters();
   }
 

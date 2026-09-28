@@ -151,12 +151,25 @@ other stock"**, which merges in every other used BMW the group has -
   beside each other with the same shape, so pointing the card job at the wrong
   one is an easy accident, and the result is Dan posting a monthly payment on a
   car that is not his to sell.
-- **No finance figure on the unlocked cars, and do not add one.** Quotes are
-  BMW Financial Services, keyed by listing id in `stock-finance.json`; nothing
-  in the group file is in it, so those cards fall back to "Ask for a quote".
-  That is the honest answer on a car we have no lender quote for. Do not extend
-  the quote job to cover the file: it would treble the daily run for cars Dan
-  is not selling off his own forecourt.
+- **The unlocked cars carry finance examples too** (Dan asked for this on 28
+  September). `automation/stock-finance.py` reads both stock files and writes
+  one `stock-finance.json` keyed by listing id, so a car shows its example the
+  moment the button is pressed - the page needed no change at all, because
+  every card already looks its own quote up by id. The lender quotes other
+  branches' cars through the same Codeweavers path (checked against five cars
+  from £12k to £98k before this was wired up) and declines older ones exactly
+  as it declines older Ruxley stock, which the page already handles.
+  `unlock()` has to call `attachMonthly()` after merging: `_monthly` is what
+  the monthly filter and sorts read, it is stamped on when the quotes arrive
+  and when the snapshot loads, and both have happened by then - so without it
+  the newly merged cars look unquoted to the filter while their own cards
+  plainly show a monthly payment.
+  The run is about 2 seconds a car, so 318 cars is roughly eleven minutes.
+- **The quote file prunes on a full run only.** A sold car's entry is never
+  revisited, because the car has left both lists, so the file only ever grew.
+  Pruning is skipped under `--only` and `--limit`: there the cars that were not
+  asked about are not gone, just outside today's slice, and dropping them would
+  empty the file.
 - **The group list is thinner on purpose**: model, year, mileage, price, fuel,
   gearbox, photo. It comes from one list-page fetch with no per-car visit,
   because the unfiltered list page does not carry colour, body, power, seats,
