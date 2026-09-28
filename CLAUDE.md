@@ -308,7 +308,9 @@ overridden by the JSON on a page's opening marker. Current tokens: `wa`
 (URL-encoded WhatsApp pre-fill message, header), `blurb1`/`blurb2` (footer
 description lines), `legalTail` (extra sentence(s) at the end of the footer
 legal paragraph — used by `bmw-pcp-explained.html` and
-`bmw-finance-compared.html` for their finance disclaimers).
+`bmw-finance-compared.html` for their finance disclaimers). `owner` (the name used in the footer2 and legal2 legal text, default
+"Dan Cane"; `MBG.html` sets it to "Dan" because Dan asked for his surname
+not to appear on that page).
 
 Pages without the chrome markers (all funnel pages, plus
 `business-proposal.html`/`finance-proposal.html` which have their own minimal
