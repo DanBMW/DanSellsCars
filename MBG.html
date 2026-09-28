@@ -69,12 +69,67 @@
   .mbg-other a:hover{color:var(--paper)}
   .mbg-black-note{border-left:2px solid var(--hairline);padding:4px 0 4px 16px;margin:22px 0 6px;max-width:var(--measure);color:var(--body-c)}
   .mbg-wa-sm{font-size:.74rem;padding:11px 16px;letter-spacing:.08em;margin-top:18px}
-  .mbg-hero{display:grid;gap:clamp(32px,6vw,64px);align-items:center}
-  @media(min-width:860px){.mbg-hero{grid-template-columns:7fr 5fr}}
-  .mbg-hero figure img{width:100%;max-height:560px;object-fit:cover;object-position:center 20%}
-  .mbg-hero figcaption{margin-top:12px;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  /* layout and navigation */
+  .mbg-top{padding:clamp(118px,16vh,170px) 0 clamp(28px,4vw,40px)}
+  .mbg-intro{display:flex;align-items:center;gap:clamp(18px,3vw,28px);margin-bottom:22px}
+  .mbg-avatar{width:140px;height:140px;flex:0 0 140px;border-radius:50%;object-fit:cover;object-position:center 22%;
+    border:1px solid var(--hairline);filter:saturate(.75) contrast(1.05)}
+  .mbg-h1{font-size:clamp(2rem,5vw,3.2rem);margin:0;line-height:1.08}
+  @media(max-width:480px){.mbg-avatar{width:112px;height:112px;flex-basis:112px}}
+  .mbg-fastwrap{padding:0 0 clamp(30px,4vw,44px)}
+  .mbg-fast{display:grid;gap:14px}
+  @media(min-width:700px){.mbg-fast{grid-template-columns:1fr 1fr}}
+  .mbg-fastbtn{display:flex;flex-direction:column;gap:6px;text-decoration:none;background:#0b0b0c;
+    border:1px solid rgba(255,255,255,.22);padding:22px 22px 20px;min-height:128px;transition:border-color .2s,background .2s}
+  .mbg-fastbtn:hover,.mbg-fastbtn:focus-visible{border-color:var(--paper);background:#111}
+  .mbg-fk{font-family:var(--sans);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .mbg-fastbtn strong{font-family:var(--serif);font-weight:400;font-size:clamp(1.2rem,2.6vw,1.45rem);color:var(--paper);line-height:1.25}
+  .mbg-fgo{margin-top:auto;font-family:var(--sans);font-size:.8rem;color:var(--body-c)}
+  .mbg-secnav{position:sticky;top:var(--hdr,64px);z-index:120;background:rgba(0,0,0,.95);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--hairline-soft);border-bottom:1px solid var(--hairline)}
+  .mbg-secnav .wrap{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:8px;padding-bottom:8px}
+  .mbg-secnav .wrap::-webkit-scrollbar{display:none}
+  .mbg-secnav a{flex:0 0 auto;font-family:var(--sans);font-size:.8rem;letter-spacing:.03em;color:var(--body-c);text-decoration:none;
+    padding:9px 13px;border:1px solid transparent;border-radius:999px;white-space:nowrap}
+  .mbg-secnav a:hover{color:var(--paper);border-color:var(--hairline)}
+  .mbg-secnav a[aria-current="true"]{color:#000;background:var(--paper);border-color:var(--paper)}
+  .mbg-secnav a.mbg-sn-top{color:var(--dim)}
+  .mbg-sec,.mbg-anchor{scroll-margin-top:calc(var(--hdr,64px) + 64px)}
+  .mbg-anchor{display:block;position:relative;height:0}
+  .mbg-accs{display:grid;gap:12px;margin-top:22px}
+  @media(min-width:760px){.mbg-accs{grid-template-columns:1fr 1fr;align-items:start}}
+  .mbg-acc{border:1px solid var(--hairline);background:#0b0b0c}
+  .mbg-acc summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:18px 20px}
+  .mbg-acc summary::-webkit-details-marker{display:none}
+  .mbg-acc-t{font-family:var(--serif);font-size:1.18rem;color:var(--paper)}
+  .mbg-acc-n{font-family:var(--sans);font-size:.76rem;color:var(--dim);align-self:center}
+  .mbg-acc-n::after{content:'+';display:inline-block;margin-left:8px;color:var(--paper);font-size:1.1rem;line-height:1;transition:transform .2s}
+  .mbg-acc[open] .mbg-acc-n::after{transform:rotate(45deg)}
+  .mbg-acc-s{grid-column:1/-1;font-size:.84rem;color:var(--dim)}
+  .mbg-acc-body{padding:0 20px 20px}
+  .mbg-inc{display:grid;gap:14px;margin-top:10px}
+  @media(min-width:760px){.mbg-inc{grid-template-columns:1fr 1fr}}
+  .mbg-inc-card{border:1px solid var(--hairline);background:#0b0b0c;padding:22px}
+  .mbg-inc-card h3{font-family:var(--serif);font-weight:400;font-size:1.25rem;color:var(--paper);margin:0 0 12px}
+  .mbg-inc-card ul{list-style:none;display:grid;gap:9px}
+  .mbg-inc-card li{position:relative;padding-left:20px;font-size:.92rem;line-height:1.55;color:var(--body-c)}
+  .mbg-inc-card li::before{content:'';position:absolute;left:0;top:.62em;width:8px;height:8px;border-radius:50%;background:#25d366}
+  .mbg-note a{color:var(--paper)}
+  /* card finance: the representative example is shown in full, every key
+     figure in the same size and weight as the monthly payment */
+  .mbg-fin{margin:4px 0 14px;padding:12px 12px 10px;border:1px solid var(--hairline);background:#050505}
+  .mbg-fin-h{font-family:var(--sans);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+  .mbg-fin dl{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-family:var(--sans);font-size:.82rem;line-height:1.35}
+  .mbg-fin dt{color:var(--body-c)}
+  .mbg-fin dd{color:var(--paper);text-align:right;font-weight:500}
+  .mbg-fin-foot{margin-top:8px;font-size:.72rem;line-height:1.5;color:var(--muted)}
+  .mbg-fin details{margin-top:6px;font-size:.7rem;line-height:1.55;color:var(--muted)}
+  .mbg-fin summary{cursor:pointer;font-weight:600;color:var(--body-c)}
+  .mbg-fin details p{margin-top:6px}
+  .mbg-quote{font-family:var(--sans);font-size:.9rem;margin:0 0 12px}
+  .mbg-quote a{color:var(--paper);text-decoration:none;border-bottom:1px solid #25d366}
   .mbg-actions{display:flex;flex-wrap:wrap;align-items:center;gap:18px 28px;margin-top:34px}
-  .mbg-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;list-style:none}
+  .mbg-tags-unused{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;list-style:none}
   .mbg-tags li{font-family:var(--sans);font-size:.78rem;letter-spacing:.04em;color:var(--body-c);
     border:1px solid var(--hairline);border-radius:999px;padding:6px 12px}
   .mbg-count{font-family:var(--serif);font-size:clamp(1.2rem,2.6vw,1.6rem);color:var(--paper);margin:0 0 22px}
@@ -184,118 +239,167 @@
 
 <main>
 
-  <section class="band" style="padding-top:clamp(130px,18vh,190px);padding-bottom:clamp(40px,6vw,64px)" aria-label="About Dan">
-    <div class="wrap">
-      <div class="mbg-hero">
+  <section class="mbg-top" id="top" aria-label="About Dan">
+    <div class="wrap wrap-narrow">
+      <div class="mbg-intro">
+        <img class="mbg-avatar" src="dan.jpg" alt="Dan Cane, BMW Sales Executive in Ruxley, Sidcup" width="140" height="140" fetchpriority="high"/>
         <div>
-          <span class="plabel accent">MBG car club</span>
-          <h1 style="font-size:clamp(2.2rem,5.5vw,3.6rem)">Hi MBG,<br/>I&rsquo;m Dan.</h1>
-          <hr class="rule"/>
-          <div class="prose">
-            <p class="lede">I joined the Murdered BMW Gxng in September 2026, and this page is for everyone in the club.</p>
-            <p>I&rsquo;m a Sales Executive at the BMW dealership in Ruxley, Sidcup, about 15 minutes from the Dartford Crossing. Away from the showroom I&rsquo;m into motorsport: autotesting, autosolos and car trials.</p>
-            <p>Below you&rsquo;ll find every black used BMW on the forecourt right now, the new BMW range I can order for you, and the club offers. Tap WhatsApp on anything and it comes straight to me with the details already filled in.</p>
-          </div>
-          <div class="mbg-actions">
-            <a id="mbgHeroWa" class="mbg-wa mbg-wa-lg" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20I%27d%20like%20a%20chat%20about%20a%20BMW." target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp Dan</span></a>
-            <a class="btn-quiet" href="#black">See the black cars</a>
-          </div>
-          <ul class="mbg-tags" aria-label="Quick facts">
-            <li>MBG member since September 2026</li>
-            <li>Maidstone Road, Sidcup DA14 5BG</li>
-            <li>Autotesting, autosolos, car trials</li>
-          </ul>
+          <span class="plabel accent" style="margin-bottom:10px">MBG car club</span>
+          <h1 class="mbg-h1">Hi MBG, I&rsquo;m Dan.</h1>
         </div>
-        <figure class="reveal">
-          <img src="dan.jpg" alt="Dan Cane, BMW Sales Executive in Ruxley, Sidcup" class="portrait-treat" width="600" height="800" fetchpriority="high"/>
-          <figcaption>Dan Cane, MBG member</figcaption>
-        </figure>
+      </div>
+      <div class="prose">
+        <p class="lede">I joined the Murdered BMW Gxng in September 2026, and this page is for everyone in the club.</p>
+        <p>I&rsquo;m a Sales Executive at the BMW dealership in Ruxley, Sidcup, about 15 minutes from the Dartford Crossing. Away from the showroom I&rsquo;m into motorsport: autotesting, autosolos and car trials.</p>
+      </div>
+      <div class="mbg-actions">
+        <a id="mbgHeroWa" class="mbg-wa mbg-wa-lg" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20I%27d%20like%20a%20chat%20about%20a%20BMW." target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp Dan</span></a>
       </div>
     </div>
   </section>
 
-  <section class="band-tight hairline-top" id="black" aria-label="Black used BMWs in stock">
+  <section class="mbg-fastwrap" aria-label="Fast track">
+    <div class="wrap wrap-narrow">
+      <div class="mbg-fast">
+        <a class="mbg-fastbtn" href="#new"><span class="mbg-fk">New</span><strong>Looking to buy a brand new car?</strong><span class="mbg-fgo">See the new range &darr;</span></a>
+        <a class="mbg-fastbtn" href="#used"><span class="mbg-fk">Approved Used</span><strong>Looking for an Approved Used BMW?</strong><span class="mbg-fgo">See the black cars in stock &darr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <nav class="mbg-secnav" id="mbgSecnav" aria-label="On this page">
     <div class="wrap">
-      <span class="plabel accent">Available now</span>
-      <h2>Black BMWs on the forecourt.</h2>
-      <p class="measure" style="margin-bottom:26px">Every black used BMW in stock at the BMW dealership in Ruxley, pulled from the live stock list each time you open this page, so it is never out of date. Where a car shows a monthly figure, it is a real finance example from the lender, not my own sums.</p>
+      <a href="#top" class="mbg-sn-top" aria-label="Back to top">&uarr; Top</a>
+      <a href="#new">New cars</a>
+      <a href="#used">Approved Used</a>
+      <a href="#included">What&rsquo;s included</a>
+      <a href="#offers">Club offers</a>
+      <a href="#talk">Contact</a>
+    </div>
+  </nav>
+
+  <section class="band-tight mbg-sec band-raised" id="new" aria-label="New BMWs">
+    <div class="wrap">
+      <span class="plabel accent">New cars</span>
+      <h2>Every new BMW, ordered through me.</h2>
+      <p class="measure">I sell the whole new BMW range. Open a group, tap a model and WhatsApp opens with it filled in. New car figures change with allocation, so I quote them live.</p>
+      <p class="mbg-black-note">Any new BMW can be specced in black. Depending on the model that means paint such as Black Sapphire metallic or Carbon Black, with dark details such as M High-gloss Shadowline and Shadowline lights. Tell me the model and I will confirm exactly which blacks it offers.</p>
+      <div class="mbg-accs">
+        <details class="mbg-acc" id="new-compact">
+          <summary><span class="mbg-acc-t">1 and 2 Series</span><span class="mbg-acc-n">4 models</span><span class="mbg-acc-s">Hatch, coupé, Gran Coupé and Active Tourer.</span></summary>
+          <div class="mbg-acc-body">
+            <ul class="mbg-chips" aria-label="1 and 2 Series models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%201%20Series." target="_blank" rel="noopener">1 Series</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%202%20Series%20Coup%C3%A9." target="_blank" rel="noopener">2 Series Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%202%20Series%20Gran%20Coup%C3%A9." target="_blank" rel="noopener">2 Series Gran Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%202%20Series%20Active%20Tourer." target="_blank" rel="noopener">2 Series Active Tourer</a></li></ul>
+            <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20the%201%20or%202%20Series.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about 1 and 2 Series</span></a>
+          </div>
+        </details>
+        <details class="mbg-acc" id="new-saloon">
+          <summary><span class="mbg-acc-t">Saloon, Touring and Coupé</span><span class="mbg-acc-n">8 models</span><span class="mbg-acc-s">From the 3 Series to the 7 Series.</span></summary>
+          <div class="mbg-acc-body">
+            <ul class="mbg-chips" aria-label="Saloon, Touring and Coupé models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%203%20Series%20Saloon." target="_blank" rel="noopener">3 Series Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%203%20Series%20Touring." target="_blank" rel="noopener">3 Series Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%204%20Series%20Coup%C3%A9." target="_blank" rel="noopener">4 Series Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%204%20Series%20Convertible." target="_blank" rel="noopener">4 Series Convertible</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%204%20Series%20Gran%20Coup%C3%A9." target="_blank" rel="noopener">4 Series Gran Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%205%20Series%20Saloon." target="_blank" rel="noopener">5 Series Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%205%20Series%20Touring." target="_blank" rel="noopener">5 Series Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%207%20Series." target="_blank" rel="noopener">7 Series</a></li></ul>
+            <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%203%2C%204%2C%205%20or%207%20Series.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about Saloon, Touring and Coupé</span></a>
+          </div>
+        </details>
+        <details class="mbg-acc" id="new-x">
+          <summary><span class="mbg-acc-t">X models</span><span class="mbg-acc-n">6 models</span><span class="mbg-acc-s">Every size of SUV, petrol, diesel and plug-in hybrid.</span></summary>
+          <div class="mbg-acc-body">
+            <ul class="mbg-chips" aria-label="X models models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X1." target="_blank" rel="noopener">X1</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X2." target="_blank" rel="noopener">X2</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X3." target="_blank" rel="noopener">X3</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X5." target="_blank" rel="noopener">X5</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X6." target="_blank" rel="noopener">X6</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X7." target="_blank" rel="noopener">X7</a></li></ul>
+            <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20an%20X%20model.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about X models</span></a>
+          </div>
+        </details>
+        <details class="mbg-acc" id="new-electric">
+          <summary><span class="mbg-acc-t">Fully electric</span><span class="mbg-acc-n">9 models</span><span class="mbg-acc-s">The i range, including the new Neue Klasse i3 and iX3.</span></summary>
+          <div class="mbg-acc-body">
+            <ul class="mbg-chips" aria-label="Fully electric models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i3." target="_blank" rel="noopener">i3</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i4%20M60." target="_blank" rel="noopener">i4 M60</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i5%20Saloon." target="_blank" rel="noopener">i5 Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i5%20Touring." target="_blank" rel="noopener">i5 Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i7." target="_blank" rel="noopener">i7</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX1." target="_blank" rel="noopener">iX1</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX2." target="_blank" rel="noopener">iX2</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX3." target="_blank" rel="noopener">iX3</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX." target="_blank" rel="noopener">iX</a></li></ul>
+            <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20an%20electric%20BMW.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about Fully electric</span></a>
+          </div>
+        </details>
+        <details class="mbg-acc" id="new-m">
+          <summary><span class="mbg-acc-t">BMW M</span><span class="mbg-acc-n">10 models</span><span class="mbg-acc-s">The full M cars.</span></summary>
+          <div class="mbg-acc-body">
+            <ul class="mbg-chips" aria-label="BMW M models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M2." target="_blank" rel="noopener">M2</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M3%20Saloon." target="_blank" rel="noopener">M3 Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M3%20Touring." target="_blank" rel="noopener">M3 Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M4%20Coup%C3%A9." target="_blank" rel="noopener">M4 Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M4%20Convertible." target="_blank" rel="noopener">M4 Convertible</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M5%20Saloon." target="_blank" rel="noopener">M5 Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M5%20Touring." target="_blank" rel="noopener">M5 Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X5%20M." target="_blank" rel="noopener">X5 M</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X6%20M." target="_blank" rel="noopener">X6 M</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20XM." target="_blank" rel="noopener">XM</a></li></ul>
+            <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20BMW%20M%20car.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about BMW M</span></a>
+          </div>
+        </details>
+        <details class="mbg-acc" id="new-mperf">
+          <summary><span class="mbg-acc-t">M Performance</span><span class="mbg-acc-n">15 models</span><span class="mbg-acc-s">M flavour on the everyday range.</span></summary>
+          <div class="mbg-acc-body">
+            <ul class="mbg-chips" aria-label="M Performance models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M135%20xDrive." target="_blank" rel="noopener">M135 xDrive</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M235%20xDrive%20Gran%20Coup%C3%A9." target="_blank" rel="noopener">M235 xDrive Gran Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M240i%20xDrive%20Coup%C3%A9." target="_blank" rel="noopener">M240i xDrive Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M340i%20xDrive." target="_blank" rel="noopener">M340i xDrive</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M440i%20xDrive." target="_blank" rel="noopener">M440i xDrive</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i5%20M60." target="_blank" rel="noopener">i5 M60</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M760e%20xDrive." target="_blank" rel="noopener">M760e xDrive</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i7%20M70." target="_blank" rel="noopener">i7 M70</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX%20M70." target="_blank" rel="noopener">iX M70</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X1%20M35i." target="_blank" rel="noopener">X1 M35i</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X2%20M35i." target="_blank" rel="noopener">X2 M35i</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X3%20M50." target="_blank" rel="noopener">X3 M50</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X5%20M60e." target="_blank" rel="noopener">X5 M60e</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X6%20M60i." target="_blank" rel="noopener">X6 M60i</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X7%20M60i." target="_blank" rel="noopener">X7 M60i</a></li></ul>
+            <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20an%20M%20Performance%20BMW.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about M Performance</span></a>
+          </div>
+        </details>
+      </div>
+      <div class="mbg-actions" style="margin-top:26px">
+        <a class="mbg-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW." target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about a new BMW</span></a>
+      </div>
+      <p class="mbg-note">Range checked against bmw.co.uk in September 2026. Not seeing the one you want? Message me anyway and I will tell you what is coming.</p>
+    </div>
+  </section>
+
+  <section class="band-tight mbg-sec hairline-top" id="used" aria-label="Approved Used black BMWs in stock">
+    <span id="black" class="mbg-anchor" aria-hidden="true"></span>
+    <div class="wrap">
+      <span class="plabel accent">Approved Used</span>
+      <h2>Approved Used BMWs, all black.</h2>
+      <p class="measure" style="margin-bottom:22px">Every black used BMW on the Ruxley forecourt, straight from the live stock list, so it is never out of date. Monthly figures are the lender&rsquo;s own representative examples.</p>
       <p class="mbg-count" id="mbgCount" aria-live="polite">Loading the black cars&hellip;</p>
       <div class="sl-list" id="slList"></div>
       <p class="sl-note" id="slNote"></p>
-      <div class="mbg-actions" style="margin-top:28px">
+      <div class="mbg-actions" style="margin-top:26px">
         <a class="mbg-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20I%27m%20after%20a%20black%20BMW.%20What%20have%20you%20got%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>Ask me about black BMWs</span></a>
       </div>
     </div>
   </section>
 
-  <section class="band-tight hairline-top band-raised" id="new" aria-label="New BMWs">
+  <section class="band-tight mbg-sec hairline-top" id="included" aria-label="What every BMW comes with">
     <div class="wrap">
-      <span class="plabel accent">New BMWs</span>
-      <h2>Every new BMW, ordered through me.</h2>
-      <p class="measure">I sell the whole new BMW range. Tap any model and WhatsApp opens with it already filled in. New car figures change with allocation, so I quote them live rather than post prices here.</p>
-      <p class="mbg-black-note">Any new BMW can be specced in black. Depending on the model that means paint such as Black Sapphire metallic or Carbon Black, with dark details such as M High-gloss Shadowline and Shadowline lights. Tell me the model and I will confirm exactly which blacks it offers.</p>
-      <div class="mbg-actions" style="margin:24px 0 30px">
-        <a class="mbg-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW." target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about a new BMW</span></a>
+      <span class="plabel accent">What&rsquo;s included</span>
+      <h2>What every BMW comes with.</h2>
+      <div class="mbg-inc">
+        <div class="mbg-inc-card">
+          <h3>Approved Used BMW</h3>
+          <ul>
+            <li>1 year Approved Used BMW warranty, unlimited mileage</li>
+            <li>Option to extend for a further 1, 2 or 3 years</li>
+            <li>BMW Roadside Assistance and MOT Protect cover included</li>
+          </ul>
+        </div>
+        <div class="mbg-inc-card">
+          <h3>New BMW</h3>
+          <ul>
+            <li>3 year manufacturer warranty, unlimited mileage</li>
+            <li>Option to extend for a further 1, 2 or 3 years</li>
+            <li>BMW Roadside Assistance included with the warranty</li>
+            <li>Electric BMWs: high voltage battery cover for up to 8 years or 100,000 miles, whichever comes first</li>
+          </ul>
+        </div>
       </div>
-        <div class="mbg-group" id="new-compact">
-          <h3>1 and 2 Series</h3>
-          <p class="mbg-gsub">Hatch, coupé, Gran Coupé and Active Tourer.</p>
-          <ul class="mbg-chips" aria-label="1 and 2 Series models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%201%20Series." target="_blank" rel="noopener">1 Series</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%202%20Series%20Coup%C3%A9." target="_blank" rel="noopener">2 Series Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%202%20Series%20Gran%20Coup%C3%A9." target="_blank" rel="noopener">2 Series Gran Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%202%20Series%20Active%20Tourer." target="_blank" rel="noopener">2 Series Active Tourer</a></li></ul>
-          <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20the%201%20or%202%20Series.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about 1 and 2 Series</span></a>
-        </div>
-        <div class="mbg-group" id="new-saloon">
-          <h3>Saloon, Touring and Coupé</h3>
-          <p class="mbg-gsub">From the 3 Series to the 7 Series.</p>
-          <ul class="mbg-chips" aria-label="Saloon, Touring and Coupé models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%203%20Series%20Saloon." target="_blank" rel="noopener">3 Series Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%203%20Series%20Touring." target="_blank" rel="noopener">3 Series Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%204%20Series%20Coup%C3%A9." target="_blank" rel="noopener">4 Series Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%204%20Series%20Convertible." target="_blank" rel="noopener">4 Series Convertible</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%204%20Series%20Gran%20Coup%C3%A9." target="_blank" rel="noopener">4 Series Gran Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%205%20Series%20Saloon." target="_blank" rel="noopener">5 Series Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%205%20Series%20Touring." target="_blank" rel="noopener">5 Series Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%207%20Series." target="_blank" rel="noopener">7 Series</a></li></ul>
-          <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%203%2C%204%2C%205%20or%207%20Series.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about Saloon, Touring and Coupé</span></a>
-        </div>
-        <div class="mbg-group" id="new-x">
-          <h3>X models</h3>
-          <p class="mbg-gsub">Every size of SUV, petrol, diesel and plug-in hybrid.</p>
-          <ul class="mbg-chips" aria-label="X models models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X1." target="_blank" rel="noopener">X1</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X2." target="_blank" rel="noopener">X2</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X3." target="_blank" rel="noopener">X3</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X5." target="_blank" rel="noopener">X5</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X6." target="_blank" rel="noopener">X6</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X7." target="_blank" rel="noopener">X7</a></li></ul>
-          <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20an%20X%20model.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about X models</span></a>
-        </div>
-        <div class="mbg-group" id="new-electric">
-          <h3>Fully electric</h3>
-          <p class="mbg-gsub">The i range, including the new Neue Klasse i3 and iX3.</p>
-          <ul class="mbg-chips" aria-label="Fully electric models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i3." target="_blank" rel="noopener">i3</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i4%20M60." target="_blank" rel="noopener">i4 M60</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i5%20Saloon." target="_blank" rel="noopener">i5 Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i5%20Touring." target="_blank" rel="noopener">i5 Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i7." target="_blank" rel="noopener">i7</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX1." target="_blank" rel="noopener">iX1</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX2." target="_blank" rel="noopener">iX2</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX3." target="_blank" rel="noopener">iX3</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX." target="_blank" rel="noopener">iX</a></li></ul>
-          <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20an%20electric%20BMW.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about Fully electric</span></a>
-        </div>
-        <div class="mbg-group" id="new-m">
-          <h3>BMW M</h3>
-          <p class="mbg-gsub">The full M cars.</p>
-          <ul class="mbg-chips" aria-label="BMW M models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M2." target="_blank" rel="noopener">M2</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M3%20Saloon." target="_blank" rel="noopener">M3 Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M3%20Touring." target="_blank" rel="noopener">M3 Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M4%20Coup%C3%A9." target="_blank" rel="noopener">M4 Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M4%20Convertible." target="_blank" rel="noopener">M4 Convertible</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M5%20Saloon." target="_blank" rel="noopener">M5 Saloon</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M5%20Touring." target="_blank" rel="noopener">M5 Touring</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X5%20M." target="_blank" rel="noopener">X5 M</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X6%20M." target="_blank" rel="noopener">X6 M</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20XM." target="_blank" rel="noopener">XM</a></li></ul>
-          <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20BMW%20M%20car.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about BMW M</span></a>
-        </div>
-        <div class="mbg-group" id="new-mperf">
-          <h3>M Performance</h3>
-          <p class="mbg-gsub">M flavour on the everyday range.</p>
-          <ul class="mbg-chips" aria-label="M Performance models"><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M135%20xDrive." target="_blank" rel="noopener">M135 xDrive</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M235%20xDrive%20Gran%20Coup%C3%A9." target="_blank" rel="noopener">M235 xDrive Gran Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M240i%20xDrive%20Coup%C3%A9." target="_blank" rel="noopener">M240i xDrive Coupé</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M340i%20xDrive." target="_blank" rel="noopener">M340i xDrive</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M440i%20xDrive." target="_blank" rel="noopener">M440i xDrive</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i5%20M60." target="_blank" rel="noopener">i5 M60</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20M760e%20xDrive." target="_blank" rel="noopener">M760e xDrive</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20i7%20M70." target="_blank" rel="noopener">i7 M70</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20iX%20M70." target="_blank" rel="noopener">iX M70</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X1%20M35i." target="_blank" rel="noopener">X1 M35i</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X2%20M35i." target="_blank" rel="noopener">X2 M35i</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X3%20M50." target="_blank" rel="noopener">X3 M50</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X5%20M60e." target="_blank" rel="noopener">X5 M60e</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X6%20M60i." target="_blank" rel="noopener">X6 M60i</a></li><li><a class="mbg-chip" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20a%20new%20BMW%20X7%20M60i." target="_blank" rel="noopener">X7 M60i</a></li></ul>
-          <a class="mbg-wa mbg-wa-sm" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20interested%20in%20an%20M%20Performance%20BMW.%20Can%20we%20talk%20options%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp me about M Performance</span></a>
-        </div>
-      <p class="mbg-note">Range checked against bmw.co.uk in September 2026. Not seeing the one you want? Message me anyway and I will tell you what is coming.</p>
+      <p class="mbg-note">Warranty details as published on bmw.co.uk. Full terms are in the warranty handbook you get with the car. Want more cover on top? <a href="current-opportunities.html#protection">See the protection products I offer</a>.</p>
+      <div class="mbg-actions" style="margin-top:22px">
+        <a class="mbg-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG.%20Can%20you%20run%20me%20through%20what%20is%20included%20with%20the%20car%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>Ask me what is included</span></a>
+      </div>
     </div>
   </section>
 
-  <section class="band-tight hairline-top" id="offers" aria-label="MBG member offers">
+  <section class="band-tight mbg-sec hairline-top" id="offers" aria-label="MBG member offers">
     <div class="wrap wrap-narrow">
       <div class="mbg-offer">
         <span class="plabel accent">Club offers</span>
         <h2>MBG members get exclusive offers.</h2>
-        <p class="measure" style="margin-bottom:28px">Being in the club gets you access to exclusive member offers through me. They change, so rather than leave old details up here, message me and I will tell you what is on right now.</p>
+        <p class="measure" style="margin-bottom:28px">Being in the club gets you access to exclusive member offers through me. They change, so message me and I will tell you what is on right now.</p>
         <a class="mbg-wa mbg-wa-lg" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%2C%20what%20are%20the%20current%20member%20offers%3F" target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>Ask about member offers</span></a>
       </div>
     </div>
   </section>
 
-  <section class="band-tight hairline-top mbg-final" aria-label="Talk to Dan">
+  <section class="band-tight mbg-sec hairline-top mbg-final" id="talk" aria-label="Contact Dan">
     <div class="wrap">
-      <span class="plabel accent">Ready when you are</span>
+      <span class="plabel accent">Contact</span>
       <h2>New, used or just a chat about cars.</h2>
-      <p>Whatever you are after, message me and say you are from MBG. It comes straight to my phone and I will reply personally.</p>
+      <p>Message me and say you are from MBG. It comes straight to my phone and I will reply personally.</p>
       <a class="mbg-wa mbg-wa-lg" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20from%20MBG%20and%20I%27d%20like%20to%20talk%20about%20my%20next%20BMW." target="_blank" rel="noopener"><svg class="mbg-ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp Dan now</span></a>
       <p style="margin-top:22px"><a class="btn-quiet" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=MBG%20enquiry">Email Dan</a></p>
       <p class="mbg-other"><a href="stock.html">Looking for a BMW that isn't black?</a></p>
+      <p class="mbg-other" style="margin-top:14px"><a href="#top">Back to top &uarr;</a></p>
     </div>
   </section>
 
@@ -475,18 +579,6 @@
     if(f.valid_to && new Date(f.valid_to) < new Date()) return false;
     return true;
   }
-  function repExample(c, f){
-    return f.payments + ' monthly payments of ' + money2(f.monthly) + '. '
-      + 'Cash price ' + money(f.price) + '. Customer deposit ' + money2(f.deposit) + '. '
-      + 'Total amount of credit ' + money2(f.credit) + '. '
-      + 'Optional final payment ' + money2(f.final_payment) + '. '
-      + 'Total amount payable ' + money2(f.total_payable) + '. '
-      + 'Duration ' + f.term + ' months. '
-      + Number(f.annual_mileage).toLocaleString('en-GB') + ' miles a year, '
-      + f.excess_pence + 'p per excess mile. '
-      + f.apr + '% APR representative. Lender ' + f.lender + '. '
-      + 'Finance subject to status, 18+, UK residents.';
-  }
   function num(s){ var m = String(s).replace(/[^0-9]/g,''); return m ? parseInt(m,10) : 0; }
   function colourOf(c){ return c.colour || c.color || ''; }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){
@@ -528,17 +620,33 @@
         + '&body=' + encodeURIComponent("Hi Dan,\n\nI'm from MBG and interested in the " + label + (c.price ? ' at ' + c.price : '') + '.\n\nThanks');
       var f = FIN[c.id];
       if (!finLive(f)) f = null;
-      var fin = f ? ''
-        + '<div class="sl-fin">'
-        +   '<span class="amt">' + money(f.monthly) + '<i> a month</i></span>'
-        +   '<span class="terms">' + esc(f.product || 'PCP') + ' &middot; '
-        +     money(f.deposit) + ' deposit &middot; ' + f.term + ' months &middot; '
-        +     f.apr + '% APR representative</span>'
-        + '</div>'
-        : '<div class="sl-nofin">Ask for a quote on this one</div>';
+      /* Photo carries no finance figure. With a live quote the full
+         representative example sits under the price, every key figure at the
+         same size and weight as the monthly payment (same fields and wording
+         as stock.html's example). Without one: Ask for a quote. */
+      var fin = f ? '' : '<div class="sl-nofin">Ask for a quote on this one</div>';
+      var quoteWa = WA + '?text=' + encodeURIComponent(
+        "Hi Dan, I'm from MBG. Could you quote me finance on the " + label + (c.price ? ' at ' + c.price : '') + '?');
+      var rows2 = f ? [
+        ['Monthly payment (' + f.payments + ' payments)', money2(f.monthly)],
+        ['Cash price', money(f.price)],
+        ['Customer deposit', money2(f.deposit)],
+        ['Total amount of credit', money2(f.credit)],
+        ['Optional final payment', money2(f.final_payment)],
+        ['Total amount payable', money2(f.total_payable)],
+        ['Duration', f.term + ' months'],
+        ['Annual mileage', Number(f.annual_mileage).toLocaleString('en-GB') + ' miles'],
+        ['Excess mileage', f.excess_pence + 'p per mile'],
+        ['APR representative', f.apr + '%']
+      ] : [];
       var monthlyLine = f
-        ? '<div class="sl-monthly">From ' + money(f.monthly) + ' a month</div>'
-        : '<div class="sl-monthly" style="color:var(--dim)">Ask for a quote</div>';
+        ? '<div class="mbg-fin" aria-label="Representative example">'
+          + '<div class="mbg-fin-h">Representative example &middot; ' + esc(f.product || 'PCP') + '</div>'
+          + '<dl>' + rows2.map(function(r){ return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>'
+          + '<p class="mbg-fin-foot">Lender ' + esc(f.lender) + '. Finance subject to status, 18+, UK residents.</p>'
+          + (f.legal ? '<details><summary>Lender&rsquo;s full wording</summary><p>' + esc(f.legal) + '</p></details>' : '')
+          + '</div>'
+        : '<div class="mbg-quote"><a href="' + quoteWa + '" target="_blank" rel="noopener">Ask for a quote</a></div>';
 
       var spec = [];
       if (c.mileage) spec.push(['Mileage', esc(String(c.mileage).replace(/\u00a0/g,' ').replace(/ miles$/,''))]);
@@ -562,9 +670,6 @@
         + '<a class="sl-sec" href="' + mail + '">Email</a>'
         + (c.url ? '<a class="sl-sec" href="' + esc(c.url) + '" target="_blank" rel="noopener">Full listing</a>' : '')
         + '</div>'
-        + (f ? '<details class="sl-rep"><summary>Representative example</summary><p>'
-             + esc(repExample(c, f)) + '</p>'
-             + (f.legal ? '<p>' + esc(f.legal) + '</p>' : '') + '</details>' : '')
         + '</div></article>';
     }).join('');
   }
@@ -619,6 +724,35 @@
   ['#mbgHeroWa', '.mbg-final', '#contact'].forEach(function(sel){
     var el = document.querySelector(sel); if (el) io.observe(el);
   });
+})();
+
+/* Section nav: sits under the fixed site header (whose height changes when
+   it condenses on scroll), so its offset and every section's scroll margin
+   come from the header's real height. Highlights where you are. */
+(function(){
+  var root = document.documentElement, hdr = document.getElementById('phHeader');
+  var nav = document.getElementById('mbgSecnav');
+  function setHdr(){ if (hdr) root.style.setProperty('--hdr', Math.round(hdr.getBoundingClientRect().height) + 'px'); }
+  var tick = false;
+  function onScroll(){ if (tick) return; tick = true; requestAnimationFrame(function(){ tick = false; setHdr(); }); }
+  setHdr(); window.addEventListener('resize', setHdr); window.addEventListener('scroll', onScroll, {passive:true});
+  if (!nav || !('IntersectionObserver' in window)) return;
+  var links = {};
+  nav.querySelectorAll('a[href^="#"]').forEach(function(a){ links[a.getAttribute('href').slice(1)] = a; });
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (!e.isIntersecting) return;
+      Object.keys(links).forEach(function(k){ links[k].removeAttribute('aria-current'); });
+      var a = links[e.target.id];
+      if (a && e.target.id !== 'top') {
+        a.setAttribute('aria-current', 'true');
+        var w = nav.querySelector('.wrap');
+        if (w && (a.offsetLeft < w.scrollLeft || a.offsetLeft + a.offsetWidth > w.scrollLeft + w.clientWidth))
+          w.scrollTo({left: a.offsetLeft-16, behavior: 'smooth'});
+      }
+    });
+  }, {rootMargin: '-40% 0px -55% 0px'});
+  ['top','new','used','included','offers','talk'].forEach(function(id){ var el = document.getElementById(id); if (el) io.observe(el); });
 })();
 </script>
 <script src="disclaimer.js"></script>
