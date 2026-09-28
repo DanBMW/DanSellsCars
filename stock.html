@@ -95,6 +95,16 @@
   .sl-actions a.sl-wa{border-color:var(--accent);color:var(--accent)}
   .sl-actions a.sl-wa:hover{background:var(--accent);color:var(--ink);border-color:var(--accent)}
   .sl-empty{font-family:var(--sans);color:var(--dim);padding:40px 0;text-align:center}
+  /* the gate under the Ruxley cars */
+  .sl-unlock{margin-top:clamp(30px,4vw,44px);padding:clamp(26px,3.4vw,36px) 20px;
+    border:1px solid var(--hairline);text-align:center}
+  .sl-unlock p{font-family:var(--serif);font-size:clamp(1.1rem,2.4vw,1.4rem);
+    color:var(--paper);margin:0 0 18px}
+  .sl-unlockbtn{font-family:var(--sans);font-size:.86rem;letter-spacing:.06em;
+    background:var(--accent);color:var(--ink);border:1px solid var(--accent);
+    padding:14px 26px;border-radius:2px;cursor:pointer;font-weight:600}
+  .sl-unlockbtn:hover{background:none;color:var(--accent)}
+  .sl-unlockbtn[disabled]{opacity:.55;cursor:default}
   .sl-note{font-family:var(--sans);font-size:.82rem;color:var(--dim);margin-top:18px}
   @media(max-width:560px){
     .sl-list{grid-template-columns:1fr}
@@ -151,8 +161,8 @@
       <h1 style="font-size:clamp(2.2rem,5.5vw,3.6rem)">Every BMW on the<br/>Ruxley forecourt.</h1>
       <hr class="rule"/>
       <div class="prose">
-        <p class="lede">The complete approved used BMW stock at Hedin Ruxley, with a photo, price and full spec on each one. Updated every morning.</p>
-        <p>Tap WhatsApp on any car and it comes straight to me with the details already filled in - no forms, no call centre. If the one you want has just gone, tell me what you were after and I will watch what comes in.</p>
+        <p class="lede">The complete approved used BMW stock on my own forecourt, with a photo, price and full spec on each one. Updated every morning.</p>
+        <p>Tap WhatsApp on any car and it comes straight to me with the details already filled in - no forms, no call centre. Nothing here quite right? There is a button under the list that opens up the rest of our stock as well, and I can get any of it to you.</p>
       </div>
     </div>
   </section>
@@ -195,6 +205,16 @@
 
       <p class="sl-count" id="slCount">Loading the stock list&hellip;</p>
       <div class="sl-list" id="slList"></div>
+
+      <!-- Sits under the Ruxley cars until it is tapped, then the rest of the
+           group's stock joins the list above it. Hidden until the second file
+           has actually loaded, so it never promises something that is not
+           there to show. -->
+      <div class="sl-unlock" id="slUnlock" hidden>
+        <p>Not seeing what you are looking for?</p>
+        <button class="sl-unlockbtn" id="slUnlockBtn" type="button">Click here to unlock our other stock</button>
+      </div>
+
       <p class="sl-note" id="slNote"></p>
 
       <div style="margin-top:clamp(40px,6vw,60px);border-top:1px solid var(--hairline);padding-top:clamp(32px,4vw,44px)">
@@ -373,6 +393,23 @@
   var WA = 'https://wa.me/447827138197';
   var ALL = [], FIN = {}, filter = 'all';
 
+  /* ---- the two lists ----
+     HOME is the stock Dan sells day to day and is the whole page until
+     somebody asks for more: it is the file the morning job writes, it carries
+     the full spec and it is the only one with a lender's finance example on
+     it. MORE is the rest of the group's used stock, held back behind the
+     button and merged into ALL on a tap.
+
+     MORE is deliberately thinner - model, year, mileage, price, fuel, gearbox,
+     photo - because it comes from one list-page fetch with no per-car visit.
+     Every card already tests each field before drawing its row, so those cars
+     simply show fewer lines rather than empty ones, and with no quote against
+     their id they fall back to "message me for a quote", which is the honest
+     answer on a car we have no lender figure for.
+
+     Neither list records which site a car sits at. */
+  var MORE = [], unlocked = false;
+
   /* ---- the finance example ----
      Real BMW Financial Services quotes, pulled by automation/stock-finance.py
      the same way the daily post cards pull theirs, so the page and the cards
@@ -405,6 +442,8 @@
   var elList  = document.getElementById('slList');
   var elCount = document.getElementById('slCount');
   var elNote  = document.getElementById('slNote');
+  var elUnlock    = document.getElementById('slUnlock');
+  var elUnlockBtn = document.getElementById('slUnlockBtn');
   var elSearch= document.getElementById('slSearch');
   var elSort  = document.getElementById('slSort');
   var elSeries= document.getElementById('slSeries');
@@ -426,6 +465,8 @@
       if (v && !(pair[0] === 'sort' && v === 'price-asc')) u.set(pair[0], v);
     });
     if (filter && filter !== 'all') u.set('price', filter);
+    // a list Dan has unlocked and then shared should open unlocked
+    if (unlocked) u.set('all', '1');
     var qs = u.toString();
     try {
       history.replaceState(null, '',
@@ -459,11 +500,73 @@
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
+  var FUEL_ORDER = ['Petrol', 'Diesel', 'Plug-in hybrid', 'Electric'];
+  // number series, then X, XM, Z, i, iX - so a new series sorts itself
+  function seriesRank(v){
+    var m;
+    if ((m = /^(\d) Series$/.exec(v)))  return [0, +m[1]];
+    if ((m = /^X(\d)$/.exec(v)))        return [1, +m[1]];
+    if (v === 'XM')                     return [2, 0];
+    if ((m = /^Z(\d)$/.exec(v)))        return [3, +m[1]];
+    if ((m = /^i(\d)$/.exec(v)))        return [4, +m[1]];
+    if (v === 'iX')                     return [5, 0];
+    if ((m = /^iX(\d)$/.exec(v)))       return [5, +m[1]];
+    return [9, 0];
+  }
+
+  /* Rebuilt from whatever is in ALL, so unlocking brings the extra series,
+     colours and fuels into the dropdowns with it. The selected value is put
+     back afterwards - a rebuild resets a select to its first option, which
+     would silently drop the filter somebody had set. */
+  function fillFilters(){
+    function uniq(vals){
+      return vals.filter(Boolean).filter(function(v,i,a){ return a.indexOf(v) === i; });
+    }
+    function fill(sel, vals, sorter){
+      var keep = sel.value;
+      while (sel.options.length > 1) sel.remove(1);   // leave the "Any ..." row
+      var list = uniq(vals);
+      list.sort(sorter);
+      Array.prototype.push.apply(sel, list.map(function(v){ return new Option(v, v); }));
+      if (list.indexOf(keep) !== -1) sel.value = keep;
+    }
+    fill(elSeries, ALL.map(function(c){ return c.series; }), function(a,b){
+      var ra = seriesRank(a), rb = seriesRank(b);
+      return ra[0] - rb[0] || ra[1] - rb[1];
+    });
+    fill(elColour, ALL.map(colourOf));
+    fill(elFuel,   ALL.map(function(c){ return c.fuelGroup; }), function(a,b){
+      return FUEL_ORDER.indexOf(a) - FUEL_ORDER.indexOf(b);
+    });
+    fill(elBody,   ALL.map(function(c){ return c.body; }));
+  }
+
+  /* Read once, at load, and never again.
+     The two files race and either can land first, so both paths ask whether
+     the link wanted everything. But the first render calls syncUrl(), which
+     rewrites the query string from the current state - and at that point
+     nothing is unlocked, so it drops the flag. Re-reading location afterwards
+     therefore says no, and an ?all=1 link that Dan had shared opened locked. */
+  var WANT_ALL = new URLSearchParams(location.search).get('all') === '1';
+  function wantsAll(){ return WANT_ALL; }
+
+  /* Needs both lists in hand. The two fetches race, and without the ALL guard
+     an ?all=1 link whose second file landed first would merge into an empty
+     ALL, then have the whole lot overwritten when the snapshot arrived - an
+     unlocked page showing only Dan's own cars. */
+  function unlock(){
+    if (unlocked || !MORE.length || !ALL.length) return;
+    unlocked = true;
+    ALL = ALL.concat(MORE);
+    elUnlock.hidden = true;
+    fillFilters();
+  }
+
   function render(){
     var q = elSearch.value.trim().toLowerCase();
     var rows = ALL.filter(function(c){
       var hay = [c.year, c.model, c.series, colourOf(c), c.fuel, c.fuelGroup,
-                 c.fuelRaw, c.body, c.trim, c.reg].join(' ').toLowerCase();
+                 c.fuelRaw, c.body, c.trim, c.reg, c.brand].join(' ').toLowerCase();
       if (q && hay.indexOf(q) === -1) return false;
       if (elSeries.value && c.series !== elSeries.value) return false;
       if (elColour.value && colourOf(c) !== elColour.value) return false;
@@ -475,8 +578,12 @@
       return true;
     });
 
+    /* Dan's own stock always sorts to the top, whatever else is on. The chosen
+       sort then orders within each half, so unlocking adds cars underneath the
+       list rather than shuffling the ones he actually has on site down it. */
     var sort = elSort.value;
     rows.sort(function(a,b){
+      if (a._home !== b._home) return a._home ? -1 : 1;
       if (sort === 'price-desc') return b._price - a._price;
       if (sort === 'miles-asc')  return a._miles - b._miles;
       if (sort === 'year-desc')  return b._year  - a._year || a._price - b._price;
@@ -489,8 +596,17 @@
       ? ALL.length + ' cars in stock'
       : rows.length + ' of ' + ALL.length + ' cars';
 
+    /* The button only offers what is really there: it appears once the second
+       file has loaded and goes once it has been merged. A filter that empties
+       the list is the moment it is most worth offering, so it stays put. */
+    elUnlock.hidden = unlocked || !MORE.length;
+
     if (!rows.length){
-      elList.innerHTML = '<p class="sl-empty">Nothing matches that. Try a different search, or message me and I will look for you.</p>';
+      elList.innerHTML = '<p class="sl-empty">Nothing matches that. '
+        + (unlocked || !MORE.length
+            ? 'Try a different search, or message me and I will look for you.'
+            : 'Try a different search, unlock the rest of our stock below, or message me and I will look for you.')
+        + '</p>';
       return;
     }
 
@@ -501,10 +617,14 @@
         'Hi Dan, I saw the ' + label + ' on your stock list. Can you tell me more?');
       var drive = {FourWheel:'xDrive', RearWheel:'Rear wheel drive', FrontWheel:'Front wheel drive'}[c.drive] || c.drive || '';
       var spec = [];
-      if (c.fuel)  spec.push(['Fuel', esc(c.fuel)]);
-      if (c.power) spec.push(['Power', esc(c.power)]);
-      if (drive)   spec.push(['Drive', esc(drive)]);
-      if (c.seats) spec.push(['Seats', esc(c.seats)]);
+      if (c.fuel)    spec.push(['Fuel', esc(c.fuel)]);
+      if (c.power)   spec.push(['Power', esc(c.power)]);
+      if (drive)     spec.push(['Drive', esc(drive)]);
+      if (c.seats)   spec.push(['Seats', esc(c.seats)]);
+      // the unlocked cars carry far less spec, and gearbox is one of the few
+      // things their list-page record does give - without it those cards are
+      // down to a mileage
+      if (c.gearbox) spec.push(['Gearbox', esc(c.gearbox)]);
       var f = FIN[c.id];
       if (!finLive(f)) f = null;
       var fin = f ? ''
@@ -572,42 +692,44 @@
       if (!Array.isArray(data) || !data.length) throw new Error('empty');
       ALL = data.map(function(c){
         c._price = num(c.price); c._miles = num(c.mileage); c._year = num(c.year);
+        c._home = true;
         return c;
       });
-      var FUEL_ORDER = ['Petrol', 'Diesel', 'Plug-in hybrid', 'Electric'];
-      // number series, then X, XM, Z, i, iX - so a new series sorts itself
-      function seriesRank(v){
-        var m;
-        if ((m = /^(\d) Series$/.exec(v)))  return [0, +m[1]];
-        if ((m = /^X(\d)$/.exec(v)))        return [1, +m[1]];
-        if (v === 'XM')                     return [2, 0];
-        if ((m = /^Z(\d)$/.exec(v)))        return [3, +m[1]];
-        if ((m = /^i(\d)$/.exec(v)))        return [4, +m[1]];
-        if (v === 'iX')                     return [5, 0];
-        if ((m = /^iX(\d)$/.exec(v)))       return [5, +m[1]];
-        return [9, 0];
-      }
-      function fill(sel, vals, order){
-        var uniq = vals.filter(Boolean).filter(function(v,i,a){ return a.indexOf(v) === i; });
-        uniq.sort(order
-          ? function(a,b){ return order.indexOf(a) - order.indexOf(b); }
-          : undefined);
-        Array.prototype.push.apply(sel, uniq.map(function(v){ return new Option(v, v); }));
-      }
-      var seriesVals = ALL.map(function(c){ return c.series; }).filter(Boolean)
-        .filter(function(v,i,a){ return a.indexOf(v) === i; })
-        .sort(function(a,b){
-          var ra = seriesRank(a), rb = seriesRank(b);
-          return ra[0] - rb[0] || ra[1] - rb[1];
-        });
-      Array.prototype.push.apply(elSeries, seriesVals.map(function(v){ return new Option(v, v); }));
-      fill(elColour, ALL.map(colourOf));
-      fill(elFuel,   ALL.map(function(c){ return c.fuelGroup; }), FUEL_ORDER);
-      fill(elBody,   ALL.map(function(c){ return c.body; }));
+      fillFilters();
       applyUrl();   // after the dropdowns exist, or their values will not stick
+      if (wantsAll()) unlock();
       render();
     })
     .catch(failed);
+
+  /* The rest of the group's stock. Loaded quietly alongside, held in MORE and
+     never drawn until somebody asks for it, so the page opens on Dan's own
+     cars at the speed it always did. A failure here is silent on purpose: the
+     button simply never appears and the page is exactly what it was. */
+  fetch('automation/hedin-group-stock.json', {cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(data){
+      if (!Array.isArray(data) || !data.length) return;
+      MORE = data.map(function(c){
+        c._price = num(c.price); c._miles = num(c.mileage); c._year = num(c.year);
+        c._home = false;
+        return c;
+      });
+      if (wantsAll() && ALL.length){
+        unlock();
+        // the extra series and colours only exist as options now, so a filter
+        // carried in on the link gets its second chance to stick
+        applyUrl();
+      }
+      if (ALL.length) render();
+    })
+    ['catch'](function(){ MORE = []; });
+
+  elUnlockBtn.addEventListener('click', function(){
+    unlock();
+    render();
+    elCount.scrollIntoView({behavior:'smooth', block:'start'});
+  });
 
   elSearch.addEventListener('input', render);
   elSort.addEventListener('change', render);

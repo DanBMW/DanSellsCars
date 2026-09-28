@@ -98,6 +98,53 @@ Three things the page has to respect:
 - The term shown is the one the lender returned, which is not always 48
   months - it comes back shorter on older cars.
 
+### The rest of the group's stock - hedin-group-stock.json
+
+`stock.html` opens on Dan's own forecourt and nothing else. Underneath that
+list sits **"Not seeing what you are looking for? Click here to unlock our
+other stock"**, which merges in the rest of the group's used cars -
+`automation/hedin-group-stock.json`, written by `automation/group-stock.py`.
+
+- **Two files, never one.** The Ruxley snapshot keeps its shape, its fields,
+  its daily job and every reader it already has (the board's forecourt view,
+  the finance cards, the quote job). The group list is a second file beside it,
+  so a failure fetching 534 other people's cars can never cost the list Dan
+  actually sends. The page loads it quietly and holds it in `MORE` until the
+  button is tapped; if it does not load, the button never appears and the page
+  is exactly what it was.
+- **Dan's cars always sort first.** `_home` is the primary sort key in
+  `render()`, so unlocking adds cars *underneath* rather than shuffling his own
+  stock down the page - which is the whole point of the ordering.
+- **Neither file records where a car is** (Dan's ruling). Hedin's payload gives
+  `car_site_city`; the fetcher uses it only to exclude the Ruxley cars and
+  never writes it out. This repo is public, so a branch written into the file
+  is a branch published to anyone who fetches it, and the button exists so the
+  enquiry comes to Dan. The Hedin listing each card links to says where the car
+  is, which is Hedin's to publish.
+- **No finance figure on the unlocked cars, and do not add one.** Quotes are
+  BMW Financial Services, keyed by listing id in `stock-finance.json`; nothing
+  in the group file is in it, so those cards fall back to "message me for a
+  quote". That is the honest answer on a car we have no lender quote for, and
+  most of the group list is not even BMW. Do not extend the quote job to cover
+  it.
+- **The group list is thinner on purpose**: model, year, mileage, price, fuel,
+  gearbox, photo. It comes from one list-page fetch with no per-car visit,
+  because the unfiltered list page does not carry colour, body, power, seats,
+  doors or trim - only the Ruxley feed does. Every card tests each field before
+  drawing its row, so those cars show fewer lines rather than empty ones.
+- **The count check is against the site's own total**, read from a deliberately
+  short page. The HTML carries several unrelated "x of y" pairs, so the total
+  is the one whose first number is the count actually on that page - taking the
+  largest made a complete list look short and the job refused to write it. Once
+  every car fits on one page the counter stops being printed, which is why the
+  total is read from a short page and the full list checked against it.
+- **`?all=1` in the URL opens it unlocked**, so a list Dan has unlocked and
+  shared arrives that way. `WANT_ALL` is read **once at load and never again**:
+  the two fetches race, and the first `render()` calls `syncUrl()`, which
+  rewrites the query string from the current state - at which point nothing is
+  unlocked and the flag is dropped. Re-reading `location` afterwards says no,
+  and the shared link opened locked.
+
 Other notable pages: offer landing pages (`ix3-offer.html`, `x1-offer.html`,
 `1series-offer.html`, `offers.html`), valuation tools (`tradevalue.html`
 customer-facing, `Value.html` trade tool), dealership pages
