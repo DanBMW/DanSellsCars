@@ -3,23 +3,13 @@
     <span class="plabel accent">Talk to Dan</span>
     <h2>{{contactHeading|One conversation, whenever you are ready.}}</h2>
     <p class="measure">{{contactSub|No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.}}</p>
-    <div class="contact-rows">
-      <a class="contact-row" href="https://wa.me/447827138197?text={{wa|Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW}}" target="_blank" rel="noopener">
-        <span class="cr-label">WhatsApp</span>
-        <span class="cr-value">Message me directly</span>
-      </a>
-      <button type="button" class="contact-row" onclick="phOpenContact()">
-        <span class="cr-label">Email</span>
-        <span class="cr-value">Send me a message</span>
-      </button>
-      <a class="contact-row" href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">
-        <span class="cr-label">In person</span>
-        <span class="cr-value">Book time with me at Ruxley</span>
-      </a>
-      <a class="contact-row" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">
-        <span class="cr-label">Instagram</span>
-        <span class="cr-value">@dan_sells_bmw</span>
-      </a>
+    <div class="ph-contact-primary">
+      <a class="btn-line" href="https://wa.me/447827138197?text={{wa|Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW}}" target="_blank" rel="noopener">Message me on WhatsApp</a>
+    </div>
+    <div class="ph-contact-secondary">
+      <button type="button" class="btn-quiet" onclick="phOpenContact()">Email Dan</button>
+      <a class="btn-quiet" href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment</a>
+      <a class="btn-quiet" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
     </div>
   </div>
 </section>
@@ -30,7 +20,7 @@
       <div>
         <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
         <p class="ph-footer-blurb">{{blurb1|BMW buying with Dan Cane and the team at Hedin Ruxley, South East.}}</p>
-        <p class="ph-footer-blurb">{{blurb2|Based at Hedin Ruxley on Maidstone Road, Sidcup - serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.}}</p>
+        <p class="ph-footer-blurb">{{blurb2|Based at Hedin Ruxley on Maidstone Road, Sidcup, serving Sidcup, Bexley, Chislehurst, Orpington, Swanley, Otford and Sevenoaks.}}</p>
       </div>
       <div class="ph-footer-col">
         <h4>Find your way</h4>
@@ -39,7 +29,7 @@
         <a href="appraisal.html">Value your car</a>
         <a href="service.html">In for service</a>
         <a href="current-opportunities.html">Current Opportunities</a>
-        <a href="offers.html">Available Now</a>
+        <a href="stock.html">Available Now</a>
       </div>
       <div class="ph-footer-col">
         <h4>More</h4>
@@ -71,7 +61,7 @@
       <p class="pm-legal">Your details are used only to reply to this enquiry. See the <a href="privacy.html" style="color:inherit">privacy policy</a>.</p>
     </div>
     <div class="pm-success" id="phcOk">
-      <p>Sent - thank you.</p>
+      <p>Sent. Thank you.</p>
       <span>Your message is with me and I will come back to you personally.</span>
     </div>
   </div>
@@ -117,7 +107,7 @@
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({
-        _subject:'Website enquiry - '+n,
+        _subject:'Website enquiry: '+n,
         name:n, email:e, phone:p||'not given', message:msg,
         source:(location&&location.pathname)||'website',
         _replyto:e

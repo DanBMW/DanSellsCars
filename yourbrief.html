@@ -11,7 +11,7 @@
   <meta name="robots" content="noindex"/>
   <title>DanSells | My brief</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <link rel="stylesheet" href="style.css?v=7ea8698c"/>
+  <link rel="stylesheet" href="style.css?v=07538357"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
   <style>
@@ -49,7 +49,7 @@
     <div class="stage on" id="st1">
       <div class="step-kicker">The fun bit</div>
       <h2 id="s1H">Dream first, sensible later. What would you go for?</h2>
-      <p class="step-desc">This is the part most people never get asked. Pick the closest - I'll do the matchmaking.</p>
+      <p class="step-desc">This is the part most people never get asked. Pick the closest, I'll do the matchmaking.</p>
       <div class="choices">
         <button class="choice" data-val="Something similar to what I have" onclick="pick(1,this)">
           <span class="choice-emoji">🔄</span>
@@ -88,7 +88,7 @@
     <!-- STAGE 2 · timing -->
     <div class="stage" id="st2">
       <div class="step-kicker">Timing</div>
-      <h2>Honestly - when would it suit?</h2>
+      <h2>Honestly, when would it suit?</h2>
       <p class="step-desc">No wrong answer. This just sets how hard I should be working for you this month.</p>
       <div class="choices">
         <button class="choice" data-val="Now, if the deal is right" onclick="pick(2,this)">
@@ -124,7 +124,7 @@
     <div class="stage" id="st3">
       <div class="step-kicker">The money bit</div>
       <h2>How would you want to do it?</h2>
-      <p class="step-desc">Most people go monthly, some buy outright - there's no wrong door. I'll bring the numbers either way.</p>
+      <p class="step-desc">Most people go monthly, some buy outright, there's no wrong door. I'll bring the numbers either way.</p>
       <div class="choices" id="payChoices">
         <button class="choice" data-val="Monthly finance (PCP)" onclick="pickPay(this,'finance')">
           <span class="choice-emoji">📆</span>
@@ -176,7 +176,7 @@
     <div class="stage" id="st4">
       <div class="step-kicker">Your current BMW</div>
       <h2>Would you trade yours in?</h2>
-      <p class="step-desc" id="pxDesc">I'll look at your car in person when it's with us - no photos, no forms. This just tells me whether to run the numbers with it in or out.</p>
+      <p class="step-desc" id="pxDesc">I'll look at your car in person when it's with us, no photos, no forms. This just tells me whether to run the numbers with it in or out.</p>
       <p id="pxRegRow" style="display:none;margin:0 0 16px;"><span class="reg-chip" id="pxRegChip"></span></p>
       <div class="choices">
         <button class="choice" data-val="Yes" onclick="pick(4,this)">
@@ -202,7 +202,7 @@
     <div class="stage" id="st5">
       <div class="step-kicker">Last look</div>
       <h2 id="s5H">Here's what I'll walk in knowing.</h2>
-      <p class="step-desc">One send, one email, straight to me. I read every word before we speak - so our chat starts at the good bit.</p>
+      <p class="step-desc">One send, one email, straight to me. I read every word before we speak, so our chat starts at the good bit.</p>
 
       <div class="brief-ticket">
         <div class="bt-kicker">📋 Your brief</div>
@@ -216,7 +216,7 @@
         </div>
         <div class="two-col" id="contactRow">
           <div class="field-group"><label>First name *</label><input id="dbFirst" type="text" placeholder="First name" autocomplete="given-name"/></div>
-          <div class="field-group"><label>Mobile</label><input id="dbPhone" type="tel" placeholder="Optional - I may have it on file" autocomplete="tel"/></div>
+          <div class="field-group"><label>Mobile</label><input id="dbPhone" type="tel" placeholder="Optional: I may have it on file" autocomplete="tel"/></div>
         </div>
         <button class="btn" id="sendBtn" style="width:100%;" onclick="sendBrief()">Send my brief to Dan →</button>
         <p class="hint" style="text-align:center;">Anything you skipped, we'll simply cover in person. No chasing, no drama.</p>
@@ -228,7 +228,7 @@
     <div class="stage" id="stDone">
       <div class="step-kicker">Filed</div>
       <h2 id="doneH">That's gold. Thank you.</h2>
-      <p class="step-desc">Your brief has landed with me - and only me. I'll read it before we speak, so when we sit down it'll feel less like an enquiry and more like a second conversation.</p>
+      <p class="step-desc">Your brief has landed with me, and only me. I'll read it before we speak, so when we sit down it'll feel less like an enquiry and more like a second conversation.</p>
       <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:16px;padding:20px 22px;margin:20px 0 0;text-align:center;">
         <p style="margin:0 0 4px;font-weight:700;color:#166534;font-size:.95rem;">While you're here 👋</p>
         <p style="margin:0 0 14px;font-size:.85rem;color:#15803d;">Fancy saying hi so my number's in your phone?</p>
@@ -252,17 +252,17 @@
   const answers = {direction:"", timing:"", pay:"", payType:"", band:"", bandLabel:"", px:""};
 
   if(knownFirst){
-    document.getElementById("s1H").textContent = knownFirst + " - dream first, sensible later. What would you go for?";
+    document.getElementById("s1H").textContent = knownFirst + ", dream first, sensible later. What would you go for?";
     document.getElementById("dbFirst").value = knownFirst;
     document.getElementById("doneH").textContent = "That's gold, " + knownFirst + ". Thank you.";
-    document.getElementById("doneWa").href = "https://wa.me/447827138197?text=" + encodeURIComponent("Hi Dan, it's " + knownFirst + " - just sent you my brief. Looking forward to it!");
+    document.getElementById("doneWa").href = "https://wa.me/447827138197?text=" + encodeURIComponent("Hi Dan, it's " + knownFirst + ", just sent you my brief. Looking forward to it!");
   }
   if(knownPhone) document.getElementById("dbPhone").value = knownPhone;
   if(knownReg){
     document.getElementById("pxRegChip").textContent = knownReg;
     document.getElementById("pxRegRow").style.display = "block";
   } else {
-    document.getElementById("pxDesc").textContent = "If you'd trade your current car in, I'll look at it in person - no photos, no forms. This just tells me whether to run the numbers with it in or out.";
+    document.getElementById("pxDesc").textContent = "If you'd trade your current car in, I'll look at it in person, no photos, no forms. This just tells me whether to run the numbers with it in or out.";
   }
 
   let current = 1;
@@ -322,7 +322,7 @@
     if(answers.timing)    rows.push(["Timing", answers.timing]);
     if(answers.pay)       rows.push(["Paying", answers.pay + (answers.bandLabel ? " · " + answers.bandLabel : "") + (dep ? " · " + dep + " deposit" : "")]);
     if(answers.px)        rows.push(["Trade in", answers.px]);
-    if(!rows.length)      rows.push(["Your brief", "A person of mystery - all the more to talk about when we meet."]);
+    if(!rows.length)      rows.push(["Your brief", "A person of mystery, all the more to talk about when we meet."]);
     document.getElementById("ticketRows").innerHTML = rows.map(r =>
       '<div class="bt-row"><span class="bt-label">' + r[0] + '</span><span class="bt-val">' + r[1] + '</span></div>'
     ).join("");
