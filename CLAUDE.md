@@ -144,6 +144,13 @@ other stock"**, which merges in every other used BMW the group has -
   is a branch published to anyone who fetches it, and the button exists so the
   enquiry comes to Dan. The Hedin listing each card links to says where the car
   is, which is Hedin's to publish.
+- **The daily Instagram finance cards are Ruxley only** (Dan's ruling) and
+  must stay that way. `automation/finance-post.py` picks from
+  `hedin-stock-snapshot.json` and never from `hedin-group-stock.json` - the
+  cards advertise cars Dan sells off his own forecourt. The two files sit
+  beside each other with the same shape, so pointing the card job at the wrong
+  one is an easy accident, and the result is Dan posting a monthly payment on a
+  car that is not his to sell.
 - **No finance figure on the unlocked cars, and do not add one.** Quotes are
   BMW Financial Services, keyed by listing id in `stock-finance.json`; nothing
   in the group file is in it, so those cards fall back to "Ask for a quote".

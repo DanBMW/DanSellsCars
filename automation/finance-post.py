@@ -11,12 +11,21 @@ Every figure on the card comes from the retailer's own quote engine. Nothing
 is calculated here, and a car the lender will not quote is skipped rather
 than guessed at.
 
+**Ruxley stock only, and it must stay that way** (Dan's ruling). The cards
+advertise cars Dan sells off his own forecourt, so they are drawn from the
+Ruxley snapshot and never from `hedin-group-stock.json`, which holds the other
+branches' BMWs behind the button on `stock.html`. Those two files sit next to
+each other with the same shape, so pointing this at the wrong one is an easy
+change to make by accident - and the result would be Dan posting a monthly
+payment on a car that is not his to sell.
+
 Requires playwright (chromium) for rendering.
 """
 import argparse, base64, datetime, json, os, re, subprocess, sys, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+# Ruxley only - never hedin-group-stock.json. See the note at the top.
 SNAP = os.path.join(ROOT, 'automation', 'hedin-stock-snapshot.json')
 LOG  = os.path.join(ROOT, 'automation', 'finance-post-log.json')
 POSTS = os.path.join(ROOT, 'finance-posts')
