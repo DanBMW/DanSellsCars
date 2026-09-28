@@ -15,7 +15,7 @@
   <meta name="robots" content="noindex, nofollow"/>
   <title>DanSells | Your car</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <link rel="stylesheet" href="style.css?v=7ea8698c"/>
+  <link rel="stylesheet" href="style.css?v=07538357"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
   <style>
@@ -64,13 +64,13 @@
   <div class="step-wrap" id="stage1">
     <div class="step-kicker">A note from Dan</div>
     <h2 id="s1Heading">Your BMW is booked in with us soon. Perfect timing.</h2>
-    <p class="step-desc">While our service team look after your car, I can have its value and your options ready - so if you've ever wondered "what's it actually worth?" or "is it the right time to upgrade?", this is the week to find out. Check your reg below, add your rough mileage, and I'll do the rest on the day. Takes about 20 seconds.</p>
+    <p class="step-desc">While our service team look after your car, I can have its value and your options ready, so if you've ever wondered "what's it actually worth?" or "is it the right time to upgrade?", this is the week to find out. Check your reg below, add your rough mileage, and I'll do the rest on the day. Takes about 20 seconds.</p>
 
     <div class="dan-audio">
       <img src="photo01.jpg" alt="Dan"/>
       <div class="da-body">
         <strong>A quick message from Dan</strong>
-        <span>30 seconds - press play</span>
+        <span>30 seconds: press play</span>
         <div class="da-bar"><div class="da-fill" id="daFill"></div></div>
       </div>
       <button type="button" class="da-btn" id="daBtn" onclick="daToggle()" aria-label="Play Dan's message">▶</button>
@@ -100,16 +100,16 @@
   <div class="step-wrap" id="stage2" style="display:none;">
     <div class="step-kicker">That's everything</div>
     <h2 id="s2Heading">Lovely. Now book ten minutes with me.</h2>
-    <p class="step-desc">Your car is coming in soon anyway - so booking a chat around your service visit is the easiest ten minutes you'll ever find. Pick what suits you best.</p>
+    <p class="step-desc">Your car is coming in soon anyway, so booking a chat around your service visit is the easiest ten minutes you'll ever find. Pick what suits you best.</p>
 
-    <div class="value-note"><span style="font-size:1.3rem;">🔒</span><span>Your figure is being prepared now - I'll bring it to the conversation, whichever option you pick.</span></div>
+    <div class="value-note"><span style="font-size:1.3rem;">🔒</span><span>Your figure is being prepared now, I'll bring it to the conversation, whichever option you pick.</span></div>
 
     <div class="appt-cards" id="apptCards">
       <a id="card-visit" class="appt-card primary" href="https://cal.com/danbmwruxley/chat-with-a-sales-executive" target="_blank" rel="noopener" onclick="bookTap('Appointment at Ruxley')">
         <div class="appt-icon">🤝</div>
         <div class="appt-body">
           <strong>Book an appointment with me</strong>
-          <span>Time it with your service visit if that's easiest - I'll work around your slot. Figure ready, no rush.</span>
+          <span>Time it with your service visit if that's easiest, I'll work around your slot. Figure ready, no rush.</span>
         </div>
         <div class="appt-arrow">›</div>
       </a>
@@ -131,13 +131,13 @@
       </a>
     </div>
 
-    <p class="hint" style="margin-top:14px;">Can't decide? Leave it with me - I have your details and I'll be in touch either way.</p>
+    <p class="hint" style="margin-top:14px;">Can't decide? Leave it with me. I have your details and I'll be in touch either way.</p>
 
     <a href="yourbrief.html" id="briefNudge" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:16px 18px;margin-top:18px;text-decoration:none;color:#bfa971;">
       <span style="font-size:1.7rem;flex-shrink:0;">🧠</span>
       <span style="flex:1;">
         <strong style="display:block;font-size:.92rem;font-weight:700;color:#d7b869;margin-bottom:3px;">Got one more minute? Paint me a picture.</strong>
-        <span style="font-size:.8rem;color:#bfa971;line-height:1.5;">Tell me what you'd actually go for - a few taps, no typing. I'll walk into our chat already knowing your taste, and if it turns out to be a good time to change, I'll mention what's currently available too.</span>
+        <span style="font-size:.8rem;color:#bfa971;line-height:1.5;">Tell me what you'd actually go for, a few taps, no typing. I'll walk into our chat already knowing your taste, and if it turns out to be a good time to change, I'll mention what's currently available too.</span>
       </span>
       <span style="color:#bfa971;font-size:1rem;">›</span>
     </a>
@@ -226,7 +226,7 @@
     const reg = document.getElementById("ycReg").value.trim();
     const mil = document.getElementById("ycMileage").value.trim();
     if(reg.replace(/\s/g,"").length < 4){ alert("Please check your registration."); return; }
-    if(!mil){ alert("Please add your rough mileage - a ballpark is fine."); return; }
+    if(!mil){ alert("Please add your rough mileage. A ballpark is fine."); return; }
     // Remember them for the optional brief page
     sessionStorage.setItem("ycName", linkName);
     sessionStorage.setItem("ycReg", reg);
@@ -264,7 +264,7 @@
       const a=document.getElementById(id);
       a.href += "?name=" + encodeURIComponent(linkName);
     });
-    document.getElementById("card-wa").href = "https://wa.me/447827138197?text=" + encodeURIComponent("Hi Dan, it's " + linkName + " - my car's booked in for service soon and I've just confirmed my details through your link. When's good for a chat?");
+    document.getElementById("card-wa").href = "https://wa.me/447827138197?text=" + encodeURIComponent("Hi Dan, it's " + linkName + ", my car's booked in for service soon and I've just confirmed my details through your link. When's good for a chat?");
   }
 </script>
 <script src="scroll-hint.js"></script><script src="disclaimer.js"></script>

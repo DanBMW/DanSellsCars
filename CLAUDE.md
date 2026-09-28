@@ -45,7 +45,7 @@ the final step.
 | Pages | Funnel |
 |---|---|
 | `step1.html`–`step8.html` (+ `step1b`) | **"Find my BMW"** — 8-step new/used car matching brief. Entry: `start.html`, though the homepage's own hero/route-card CTAs link straight to `step1.html` — `start.html` currently has no inbound links from the site itself (only `sitemap.xml`). `step1b` is step 2. `step4.html`, `step4b/c/m.html` and `step6.html` are retired redirect stubs (→ `step3.html` / `step7.html`) kept only so old links still resolve — there is no live part-exchange branching logic behind them any more. Shared behaviour (silent resume, progress bar, brief ticket) lives in `funnel-ui.js` + `funnel.css`. Submits on `step8.html` → `thankyou.html` / `wait.html`. |
-| `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.com links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses plain hyphens, no en/em dashes (Dan's rule). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
+| `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.com links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses no dash separators at all (Dan's rule, see Sitewide copy and CTA conventions). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
 | `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate&d=Friday` (built via the widget on `links.html`; `d` is the optional service day, echoed in the greeting); the plate arrives pre-filled, the customer confirms car + mileage then taps **"I'm interested"** (screen 1) and books (cal.com / WhatsApp). Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
 | `yourbrief.html` | **Optional deep-dive brief** — nudged from `yourcar.html` stage 2 and `sq_done.html` after the initial interest/booking stages. Single page, five skippable stages (direction, timing, payment + budget, PX intent, recap ticket + notes), reuses identity from `sessionStorage` (never re-asks for what Dan has), **one** Formspree submission on send. |
 | `vip.html`, `vip1.html`–`vip7.html` (+ `vip-done`) | **VIP Buyers Event pre-qualification** — off-site, invitation-only flow for the yearly buyers event. The event **runs across four days**, and each customer gets a **1 hour** appointment on their chosen day instead of the usual 2.5, so the groundwork has to be done beforehand. Copy says "on the day", never "on the night". `vip.html` is the personalised red-carpet landing page (`?n=`name `&d=`the dates the event runs across `&t=`the customer's own day and time `&v=`venue `&reg=`plate, built by the widget on `links.html`); the 7 steps mirror the Find my BMW funnel (shortlist, body style + new/used, budget, part exchange with DVLA/MOT lookup, on-the-day readiness, details, review) and submit **once** on `vip7.html` → `vip-done.html`. Shared behaviour in `vip-ui.js` + `vip.css`; hero artwork is `vip-carpet.jpg`. Personalised and internal: keep every page `noindex`, out of `sitemap.xml`, and never linked from a public page. |
@@ -67,10 +67,27 @@ send nothing at all.
 
 ### stock.html and its finance examples
 
-`stock.html` is the full used stock list Dan sends over WhatsApp (noindex,
-out of `sitemap.xml`). Each car's hero is the photo with a **finance example**
-over it - the monthly payment, product, deposit, term and APR - reading the
-way the daily post cards read, with the spec below it as before.
+`stock.html` is **Available Now**: the canonical, indexed used stock search
+(in `sitemap.xml`, daily changefreq) and the page every nav/drawer/footer/
+homepage "Available Now" link points at. `offers.html` is now a soft redirect
+stub to it (meta refresh + `location.replace` keeping the query string,
+canonical to stock.html, noindex) - do not rebuild a hand-picked list there.
+Each car's hero is the photo with a **finance example** over it (monthly
+payment, product, deposit, term and APR), reading the way the daily post cards
+read, with the spec below it.
+
+The page is a client-side search over the two JSON files: free text, model
+family (from `series`, falling back to the model name), body (from `body`;
+"Gran Coupé" when the model name says so), fuel (from `fuel`, so mild hybrids
+are their own options), colour, year, seats (the snapshot's own `seats` field,
+never guessed), mileage band, monthly band and price chips; sorts by price,
+monthly, mileage and newest. Filters live in the query string (shareable), a
+Reset button clears them, the count is live, and the empty state is a
+WhatsApp "Tell me what you're after" CTA. Monthly filters and sorts only use a
+**live** lender quote; a car without one shows "Ask for a quote", is excluded
+from a monthly filter and sorts after the quoted cars. Every card has the
+WhatsApp button (primary, prefilled with year, model, reg and price) plus an
+email link to daniel.cane@hedinautomotive.co.uk and the Hedin listing.
 
 **Those figures are never calculated here.** `automation/stock-finance.py`
 pulls a real BMW Financial Services quote per car through Hedin's own
@@ -145,11 +162,36 @@ other stock"**, which merges in the rest of the group's used cars -
   unlocked and the flag is dropped. Re-reading `location` afterwards says no,
   and the shared link opened locked.
 
-Other notable pages: offer landing pages (`ix3-offer.html`, `x1-offer.html`,
-`1series-offer.html`, `offers.html`), valuation tools (`tradevalue.html`
+Other notable pages: retired offer stubs (`ix3-offer.html`, `x1-offer.html`,
+`1series-offer.html`, `offers.html` which redirects to `stock.html`), valuation tools (`tradevalue.html`
 customer-facing, `Value.html` trade tool), dealership pages
 (`bmw-sevenoaks.html`, `bmw-sidcup.html`), and legal pages (`privacy.html`,
 `terms.html`, `commission-disclosure.html`, `disclaimer.js`).
+
+## Sitewide copy and CTA conventions
+
+- **WhatsApp is the primary action** everywhere: the homepage hero, every stock
+  card, the shared contact block in `partials/footer2.html` (one big
+  `btn-line` WhatsApp button, then email / book / Instagram as `btn-quiet`
+  text links), and the final step of the Find my BMW (`step8.html`) and EV
+  (`ev-step6.html`) funnels, which open WhatsApp with a short summary of the
+  answers. The Formspree submission on those steps stays as the secondary
+  "Or send this brief by form" link, so lead capture is unchanged.
+- **No dash separators in visible copy** (Dan's rule, now sitewide, not just
+  the funnels): no " - ", " – ", " — ", `&ndash;` or `&mdash;` between clauses.
+  Use a comma, colon, full stop or a rewrite; `<title>` separators are " | ".
+  Hyphenated words (part-exchange, all-weather) are fine.
+- **Homepage reviews** are verbatim customer comments from the Hedin Ruxley
+  reviews page (https://www.hedinautomotiveruxleybmw.co.uk/about-us/customer-reviews/),
+  trimmed only with ellipses, attributed "Customer review via Hedin Ruxley BMW,
+  <Month YYYY>" because the source shows no reviewer names. That page only
+  keeps 90 days, so older quotes were checked against Wayback Machine copies.
+  Never reword one or add one that names only another salesperson.
+- **SEO**: every public page carries an absolute canonical, meta description,
+  Open Graph and `twitter:card`; internal tools carry `noindex` and are listed
+  as `Disallow` in `robots.txt`. `sitemap.xml` is hand-maintained: add new
+  public pages, keep redirect stubs, drafts (`how-i-work.html` until it goes
+  live) and internal tools out.
 
 ## Shared IDs and endpoints
 

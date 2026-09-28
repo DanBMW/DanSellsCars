@@ -250,6 +250,50 @@ strong{color:var(--paper);font-weight:500}
 .contact-row:hover .cr-value{color:#fff}
 button.contact-row{width:100%;background:none;border:none;border-bottom:1px solid var(--hairline);font:inherit;cursor:pointer;text-align:left}
 
+/* ---------- contact primary WhatsApp + secondary links ---------- */
+.ph-contact-primary{margin-top:36px}
+.ph-contact-primary .btn-line{display:inline-block}
+.ph-contact-secondary{
+  display:flex;flex-wrap:wrap;align-items:center;gap:clamp(18px,3vw,32px);
+  margin-top:28px;
+}
+.ph-contact-secondary .btn-quiet,
+.ph-contact-secondary button.btn-quiet{
+  background:none;border:none;border-bottom:1px solid var(--hairline);
+  padding:0 0 4px;cursor:pointer;font:inherit;
+}
+
+/* ---------- stock filter panel ---------- */
+.sl-filterbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.sl-filter-toggle{
+  display:none;font-family:var(--sans);font-size:.82rem;letter-spacing:.04em;
+  background:var(--ink-3);border:1px solid var(--hairline);color:var(--paper);
+  padding:10px 16px;border-radius:2px;cursor:pointer;
+}
+.sl-reset{
+  font-family:var(--sans);font-size:.82rem;letter-spacing:.02em;cursor:pointer;
+  background:none;border:1px solid var(--hairline);color:var(--dim);
+  padding:8px 14px;border-radius:2px;
+}
+.sl-reset:hover{color:var(--paper);border-color:var(--body-c)}
+.sl-filters{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:clamp(16px,2.5vw,24px)}
+.sl-filters .sl-sort{flex:1 1 150px;min-width:0}
+.sl-monthly{font-family:var(--sans);font-size:.9rem;color:var(--accent);margin:-4px 0 12px}
+.sl-actions a.sl-wa{
+  flex:1 1 100%;border-color:var(--accent);color:var(--accent);font-weight:500;
+}
+.sl-actions a.sl-wa:hover{background:var(--accent);color:var(--ink);border-color:var(--accent)}
+.sl-actions a.sl-sec{flex:0 1 auto;border:none;border-bottom:1px solid var(--hairline);
+  padding:6px 0;color:var(--dim);border-radius:0}
+.sl-actions a.sl-sec:hover{color:var(--paper);border-bottom-color:var(--accent);background:none}
+.sl-empty a{color:var(--accent)}
+@media(max-width:700px){
+  .sl-filter-toggle{display:inline-block}
+  .sl-filters{display:none}
+  .sl-filters.open{display:flex}
+}
+
+
 /* ---------- footer ---------- */
 .ph-footer{border-top:1px solid var(--hairline-soft);background:var(--ink-2);padding:clamp(48px,7vw,72px) 0 40px}
 .ph-footer-grid{display:grid;gap:40px;margin-bottom:48px}

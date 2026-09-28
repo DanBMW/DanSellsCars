@@ -61,7 +61,7 @@
         'or &pound;125 cash. <a href="refer.html" style="color:#8a6d1a;font-weight:700;">How the reward works &rarr;</a>' +
         '<div style="margin-top:8px;"><span style="display:inline-block;background:#fff;border:1.5px dashed #cbb666;border-radius:8px;' +
         'padding:4px 10px;font-weight:800;letter-spacing:.06em;color:#3f3818;font-size:.8rem;">' + S.code + '</span>' +
-        '<span style="margin-left:8px;color:#8a7a45;font-size:.72rem;">your code - friends can also quote it to Dan</span></div>' +
+        '<span style="margin-left:8px;color:#8a7a45;font-size:.72rem;">your code, friends can also quote it to Dan</span></div>' +
         '</div></div>';
     }
   }
@@ -202,7 +202,7 @@
           navigator.share({
             files: [file],
             title: S.shareTitle || 'My BMW story',
-            text: (S.shareTitle || 'My BMW story') + ' - create yours at ' + S.link
+            text: (S.shareTitle || 'My BMW story') + ', create yours at ' + S.link
           }).catch(function () {});
         } else {
           var url = URL.createObjectURL(blob);

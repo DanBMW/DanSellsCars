@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>DanSells | While your car's in</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <link rel="stylesheet" href="style.css?v=7ea8698c"/>
+  <link rel="stylesheet" href="style.css?v=07538357"/>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
@@ -50,14 +50,14 @@
       <img src="photo01.jpg" alt="Dan"/>
       <div class="da-body">
         <strong>A quick message from Dan</strong>
-        <span>30 seconds - press play</span>
+        <span>30 seconds: press play</span>
         <div class="da-bar"><div class="da-fill" id="daFill"></div></div>
       </div>
       <button type="button" class="da-btn" id="daBtn" onclick="daToggle()" aria-label="Play Dan's message">▶</button>
       <audio id="daAudio" preload="none" src="dan-service-intro.mp3?v=2"></audio>
     </div>
 
-    <div class="ramp-hook">💡 <strong>Why now?</strong> Your BMW will never be worth more than it is today - and it's rarely easier to value than when it's coming in to us anyway.</div>
+    <div class="ramp-hook">💡 <strong>Why now?</strong> Your BMW will never be worth more than it is today, and it's rarely easier to value than when it's coming in to us anyway.</div>
 
     <div class="plate-wrap">
       <div class="plate-band"><span>🇬🇧</span>UK</div>
@@ -65,7 +65,7 @@
     </div>
 
     <button class="btn" id="findBtn" style="width:100%;" onclick="findCar()">Tell me more →</button>
-    <p class="hint" style="margin-top:12px;">No photos, no paperwork - I can see everything I need in person when your car is with us.</p>
+    <p class="hint" style="margin-top:12px;">No photos, no paperwork, I can see everything I need in person when your car is with us.</p>
 
     <div class="wa-hatch">
       <span style="color:var(--muted);">Prefer to skip the form?</span>
@@ -126,8 +126,8 @@
     el.value = el.value.toUpperCase();
     const reg = el.value.trim();
     const msg = reg
-      ? "Hi Dan, my car's booked in for service. My reg is " + reg + " - what's it worth?"
-      : "Hi Dan, my car's booked in for service - what's my BMW worth?";
+      ? "Hi Dan, my car's booked in for service. My reg is " + reg + ", what's it worth?"
+      : "Hi Dan, my car's booked in for service. What's my BMW worth?";
     document.getElementById("waHatch").href = "https://wa.me/447827138197?text=" + encodeURIComponent(msg);
   }
 

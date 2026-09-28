@@ -2,7 +2,7 @@
 <html lang="en">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>DanSells | Vehicle Appraisal</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/><link rel="stylesheet" href="style.css?v=7ea8698c"/>  <!-- Google tag (gtag.js) -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/><link rel="stylesheet" href="style.css?v=07538357"/>  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -103,10 +103,10 @@
         const parts=[yr,make,model,col,toTC(d.fuelType||"")].filter(Boolean);
         showDvlaBanner(true, parts.join(" · "));
       } else {
-        showDvlaBanner(false, "Couldn't find that reg - double check it, or just fill in the make and model below.");
+        showDvlaBanner(false, "Couldn't find that reg. Double check it, or just fill in the make and model below.");
       }
     }catch(e){
-      showDvlaBanner(false, "Couldn't look that up right now - just fill in the make and model below.");
+      showDvlaBanner(false, "Couldn't look that up right now. Just fill in the make and model below.");
     }
     btn.disabled=false; btn.textContent="Look Up";
   }
