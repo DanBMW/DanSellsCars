@@ -213,7 +213,7 @@
       <div class="prose">
         <p class="lede">The complete approved used BMW stock at Hedin Ruxley, with a photo, price and full spec on each one. Updated every morning.</p>
         <p>Filter by price, monthly payment, body style or fuel, then tap WhatsApp on any car and it comes straight to me with the details already filled in. No forms, no call centre.</p>
-        <p>Nothing here quite right? There is a button under the list that opens up the rest of our stock as well, and I can get any of it to you.</p>
+        <p>Nothing here quite right? There is a button under the list that opens up every other BMW we have as well, and I can get any of it to you.</p>
       </div>
     </div>
   </section>
@@ -468,8 +468,9 @@
      ALL starts as the stock on Dan's own forecourt and is the whole page until
      somebody asks for more: it is the file the morning job writes, it carries
      the full spec, and it is the only one with a lender's finance example
-     against it. MORE is the rest of the stock, held back behind the button and
-     merged in on a tap.
+     against it. MORE is every other BMW the group has, held back behind the
+     button and merged in on a tap. BMW only, by Dan's ruling - the same site
+     sells Mercedes-Benz, MINI and smart, and the fetcher drops all three.
 
      MORE is deliberately thinner - model, year, mileage, price, fuel, gearbox,
      photo - because it comes from one list-page fetch with no per-car visit.
@@ -618,9 +619,6 @@
     if (/^XM\b/i.test(m)) return 'XM';
     var ser = m.match(/^(\d)\d{2}/);
     if (ser) return ser[1] + ' Series';
-    // the unlocked list is not all BMW, and one "Other" bucket holding every
-    // Mercedes and MINI is no use as a filter
-    if (c.brand && c.brand !== 'BMW') return c.brand;
     return s || 'Other';
   }
 
@@ -897,7 +895,7 @@
     })
     .catch(failed);
 
-  /* The rest of the stock. Loaded quietly alongside, held in MORE and never
+  /* Every other BMW. Loaded quietly alongside, held in MORE and never
      drawn until somebody asks for it, so the page opens on Dan's own cars at
      the speed it always did. A failure here is silent on purpose: the button
      simply never appears and the page is exactly what it was. */

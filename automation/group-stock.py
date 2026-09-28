@@ -33,6 +33,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SNAP  = os.path.join(HERE, 'hedin-stock-snapshot.json')
 OUT   = os.path.join(HERE, 'hedin-group-stock.json')
 LIST  = 'https://hedinautomotive.co.uk/buy-car/used-cars/all-used-cars'
+BRAND = 'BMW'   # the only marque this list carries - see the filter in main()
 UA    = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
          '(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
 
@@ -218,12 +219,19 @@ def main():
         raise SystemExit('only %d of the site\'s %d cars parsed - refusing to '
                          'write a short list over a good one' % (len(cars), total))
 
-    rows, skipped = [], 0
+    rows, skipped, other_brand = [], 0, 0
     for cid, c in cars.items():
         if cid in known:            # already in the Ruxley list Dan sends
             skipped += 1
             continue
         brand = (c.get('car_brand') or '').strip()
+        # BMW only (Dan's ruling). The group sells Mercedes-Benz, MINI and
+        # smart from the same site, and the page this feeds is Dan's BMW stock
+        # list: a Mercedes turning up behind the button is not what somebody
+        # who came for a BMW is asking to see.
+        if brand != BRAND:
+            other_brand += 1
+            continue
         name = display_name(brand, c.get('car_model'), c.get('car_model_text'))
         group, label = fuel_of(brand, c.get('car_fuel'), name)
         img = (c.get('car_primary_image') or {})
@@ -255,8 +263,12 @@ def main():
         rows.append({k: v for k, v in rec.items() if v not in (None, '')})
 
     if len(rows) < 50:
-        raise SystemExit('only %d cars outside Ruxley - that is too few to be '
-                         'right, leaving the existing file alone' % len(rows))
+        raise SystemExit('only %d %s outside Ruxley - that is too few to be '
+                         'right, leaving the existing file alone'
+                         % (len(rows), BRAND))
+    if any(r.get('brand') != BRAND for r in rows):
+        raise SystemExit('a non-%s slipped through the brand filter - '
+                         'refusing to write it' % BRAND)
 
     rows.sort(key=lambda r: int(re.sub(r'[^0-9]', '', r.get('price', '')) or 0))
     with open(OUT, 'w') as fh:
@@ -264,13 +276,9 @@ def main():
         fh.write(',\n'.join('  ' + json.dumps(r, ensure_ascii=False) for r in rows))
         fh.write('\n]\n')
 
-    brands = {}
-    for r in rows:
-        brands[r.get('brand', '?')] = brands.get(r.get('brand', '?'), 0) + 1
-    print('wrote %d cars to %s (%d Ruxley cars excluded)'
-          % (len(rows), os.path.relpath(OUT), skipped))
-    print('brands:', ', '.join('%s %d' % kv for kv in
-                               sorted(brands.items(), key=lambda kv: -kv[1])))
+    print('wrote %d %s to %s (%d already in the Ruxley list, %d other marques '
+          'left out)' % (len(rows), BRAND, os.path.relpath(OUT), skipped,
+                         other_brand))
     nofuel = sum(1 for r in rows if not r.get('fuelGroup'))
     if nofuel:
         print('%d cars left unclassified for fuel (filter will not catch them)'

@@ -119,13 +119,19 @@ Three things the page has to respect:
 
 `stock.html` opens on Dan's own forecourt and nothing else. Underneath that
 list sits **"Not seeing what you are looking for? Click here to unlock our
-other stock"**, which merges in the rest of the group's used cars -
+other stock"**, which merges in every other used BMW the group has -
 `automation/hedin-group-stock.json`, written by `automation/group-stock.py`.
 
+- **BMW only** (Dan's ruling). The same Hedin site sells Mercedes-Benz, MINI
+  and smart, and the fetcher drops all three: this is Dan's BMW stock list, and
+  a Mercedes appearing behind the button is not what somebody who came for a
+  BMW is asking to see. The filter is enforced twice - once when building each
+  record, then again as a refusal to write the file at all if a non-BMW
+  survived.
 - **Two files, never one.** The Ruxley snapshot keeps its shape, its fields,
   its daily job and every reader it already has (the board's forecourt view,
   the finance cards, the quote job). The group list is a second file beside it,
-  so a failure fetching 534 other people's cars can never cost the list Dan
+  so a failure fetching the other branches' cars can never cost the list Dan
   actually sends. The page loads it quietly and holds it in `MORE` until the
   button is tapped; if it does not load, the button never appears and the page
   is exactly what it was.
@@ -140,10 +146,10 @@ other stock"**, which merges in the rest of the group's used cars -
   is, which is Hedin's to publish.
 - **No finance figure on the unlocked cars, and do not add one.** Quotes are
   BMW Financial Services, keyed by listing id in `stock-finance.json`; nothing
-  in the group file is in it, so those cards fall back to "message me for a
-  quote". That is the honest answer on a car we have no lender quote for, and
-  most of the group list is not even BMW. Do not extend the quote job to cover
-  it.
+  in the group file is in it, so those cards fall back to "Ask for a quote".
+  That is the honest answer on a car we have no lender quote for. Do not extend
+  the quote job to cover the file: it would treble the daily run for cars Dan
+  is not selling off his own forecourt.
 - **The group list is thinner on purpose**: model, year, mileage, price, fuel,
   gearbox, photo. It comes from one list-page fetch with no per-car visit,
   because the unfiltered list page does not carry colour, body, power, seats,
