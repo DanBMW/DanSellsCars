@@ -33,6 +33,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SNAP  = os.path.join(HERE, 'hedin-stock-snapshot.json')
 OUT   = os.path.join(HERE, 'hedin-group-stock.json')
 LIST  = 'https://hedinautomotive.co.uk/buy-car/used-cars/all-used-cars'
+CAR   = LIST.rsplit('/', 1)[0]     # a single car is /buy-car/used-cars/<id>/<slug>
 BRAND = 'BMW'   # the only marque this list carries - see the filter in main()
 UA    = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
          '(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
@@ -43,11 +44,14 @@ UA    = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
 PAGE = 40
 
 
-def fetch(url):
+def fetch(url, minimum=50000):
+    """`minimum` is a floor on the response size: a truncated page parses to
+    nothing in particular rather than failing, so a short body is treated as a
+    failed fetch instead of quietly producing an empty car."""
     r = subprocess.run(['curl', '-sS', '--http1.1', '--max-time', '180',
                         '-A', UA, '-H', 'Accept: text/html', url],
                        capture_output=True, text=True)
-    if r.returncode != 0 or len(r.stdout) < 50000:
+    if r.returncode != 0 or len(r.stdout) < minimum:
         raise SystemExit('fetch failed for %s: rc=%s %db %s'
                          % (url, r.returncode, len(r.stdout), r.stderr[-200:]))
     return r.stdout
@@ -193,6 +197,56 @@ def display_name(brand, model, text):
     return ('%s %s' % (brand, name)).strip()
 
 
+SPEC_FIELDS = ('colour', 'body', 'seats', 'doors', 'power', 'gearbox',
+               'drive', 'trim')
+
+
+def listing_spec(cid):
+    """Colour, body, seats and the rest, off the car's own listing page.
+
+    The unfiltered list page does not carry any of it - only the Ruxley feed
+    does - and without it the colour, body style and seats filters silently
+    dropped every unlocked car. Somebody would open the extra stock, pick
+    "Estate", and be shown Dan's own cars only, which reads as a broken button.
+
+    One fetch a car, so it is only done for cars that are new to the file; the
+    rest carry their spec across from yesterday, the same way the Ruxley job
+    carries an image across. First run is a few minutes, after that a handful.
+    The listing page also gives a far cleaner model name than the list page's
+    registration-document string, so that is taken here too.
+    """
+    html = fetch('%s/%s/x' % (CAR, cid), minimum=20000)
+
+    def field(key):
+        m = re.search(r'"car_%s":\s*("(?:[^"\\]|\\.)*"|[0-9.]+)' % key, html)
+        if not m:
+            return None
+        try:
+            v = json.loads(m.group(1))
+        except ValueError:
+            return None
+        return v.replace(' ', ' ').strip() if isinstance(v, str) else v
+
+    out = {}
+    for key, want in (('color', 'colour'), ('body', 'body'), ('seats', 'seats'),
+                      ('doors', 'doors'), ('power_text', 'power'),
+                      ('gearbox', 'gearbox'), ('drive', 'drive'),
+                      ('trim_package', 'trim')):
+        v = field(key)
+        if v not in (None, ''):
+            out[want] = str(v)
+    mt = field('model_text')
+    if mt:
+        out['model_text'] = mt
+    if not out:
+        # the page came back big enough to look fine but carried none of the
+        # fields - a redirect or an error page rendering as a full site shell.
+        # Better to fail the car than to record it as having no spec, which
+        # would stop tomorrow's run ever retrying it.
+        raise SystemExit('listing %s carried no car_ fields' % cid)
+    return out
+
+
 def main():
     known = set()
     if os.path.exists(SNAP):
@@ -219,7 +273,16 @@ def main():
         raise SystemExit('only %d of the site\'s %d cars parsed - refusing to '
                          'write a short list over a good one' % (len(cars), total))
 
-    rows, skipped, other_brand = [], 0, 0
+    # Yesterday's file, so a car already on it keeps its spec without another
+    # visit to its listing page.
+    seen = {}
+    if os.path.exists(OUT):
+        try:
+            seen = {r['id']: r for r in json.load(open(OUT)) if r.get('id')}
+        except (ValueError, KeyError):
+            seen = {}
+
+    rows, skipped, other_brand, fetched, failed = [], 0, 0, 0, 0
     for cid, c in cars.items():
         if cid in known:            # already in the Ruxley list Dan sends
             skipped += 1
@@ -232,7 +295,27 @@ def main():
         if brand != BRAND:
             other_brand += 1
             continue
-        name = display_name(brand, c.get('car_model'), c.get('car_model_text'))
+        # The spec the filters need lives on the car's own listing page, so it
+        # is carried across for a car we already had and fetched once for a new
+        # one. `colour` is the marker: a record without it never got enriched.
+        old = seen.get(cid)
+        spec = {}
+        if old and old.get('colour'):
+            spec = {k: old[k] for k in SPEC_FIELDS if old.get(k)}
+            if old.get('_modelText'):
+                spec['model_text'] = old['_modelText']
+        else:
+            try:
+                spec = listing_spec(cid)
+                fetched += 1
+            except SystemExit as e:
+                # one unreachable listing must not cost the whole run - the car
+                # still goes in, just without the spec the filters read
+                failed += 1
+                print('  %s: no spec (%s)' % (cid, str(e)[:70]))
+
+        name = display_name(brand, c.get('car_model'),
+                            spec.get('model_text') or c.get('car_model_text'))
         group, label = fuel_of(brand, c.get('car_fuel'), name)
         img = (c.get('car_primary_image') or {})
         # Hedin put a non-breaking space in the mileage here but a plain one in
@@ -251,11 +334,20 @@ def main():
             'fuel': label,
             'fuelGroup': group,
             'fuelRaw': c.get('car_fuel') or '',
-            'gearbox': c.get('car_gearbox') or '',
+            'colour': spec.get('colour', ''),
+            'body': spec.get('body', ''),
+            'power': spec.get('power', ''),
+            'gearbox': spec.get('gearbox') or c.get('car_gearbox') or '',
+            'drive': spec.get('drive', ''),
+            'seats': spec.get('seats', ''),
+            'doors': spec.get('doors', ''),
+            'trim': spec.get('trim', ''),
             'price': c.get('car_price_text') or '',
+            # kept so tomorrow's run can tell an enriched record from a bare
+            # one and reuse the better model name without re-fetching
+            '_modelText': spec.get('model_text', ''),
             'image': img.get('thumbnail_url') or img.get('url') or '',
-            'url': '%s/%s/%s' % (LIST.rsplit('/', 1)[0], cid,
-                                 c.get('slug') or ''),
+            'url': '%s/%s/%s' % (CAR, cid, c.get('slug') or ''),
         }
         # An absent value is left out rather than written empty, the same rule
         # the Ruxley snapshot follows - the page tests each field before it
@@ -279,6 +371,10 @@ def main():
     print('wrote %d %s to %s (%d already in the Ruxley list, %d other marques '
           'left out)' % (len(rows), BRAND, os.path.relpath(OUT), skipped,
                          other_brand))
+    nospec = sum(1 for r in rows if not r.get('colour'))
+    print('spec: %d fetched, %d carried over, %d without one%s'
+          % (fetched, len(rows) - fetched - failed, nospec,
+             ' (%d fetches failed)' % failed if failed else ''))
     nofuel = sum(1 for r in rows if not r.get('fuelGroup'))
     if nofuel:
         print('%d cars left unclassified for fuel (filter will not catch them)'
