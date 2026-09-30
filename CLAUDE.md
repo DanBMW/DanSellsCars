@@ -104,9 +104,15 @@ refreshed by its own job and read by the board's forecourt view too. About
 snapshot changes.
 
 Three things the page has to respect:
-- **A quote expires** (`valid_to`, 30 days). `finLive()` drops a lapsed one
-  and the card falls back to "message me for a quote" - showing a stale
-  monthly payment as current would be worse than showing none.
+- **A quote expires, and they all expire together.** `valid_to` is BMW
+  Financial Services' own campaign end date, not a rolling window from the day
+  of the quote: every entry in the file carries the same one (checked across
+  three consecutive runs, all reading 2026-09-30T23:59:59), so the whole page
+  lapses on one day when a campaign rolls over rather than car by car.
+  `finLive()` drops a lapsed one and the card falls back to "message me for a
+  quote" - showing a stale monthly payment as current would be worse than
+  showing none. That is what puts this on the morning routine: the figures are
+  only ever as current as the last run.
 - **Not every car can be quoted.** Older stock gets "contact us directly for
   finance information" from the lender; that is normal, not a fault, and
   those cars simply show the fallback.
@@ -165,6 +171,15 @@ other stock"**, which merges in every other used BMW the group has -
   the newly merged cars look unquoted to the filter while their own cards
   plainly show a monthly payment.
   The run is about 2 seconds a car, so 318 cars is roughly eleven minutes.
+- **Both stock files are on the morning routine.** The Routine "Daily Stock
+  Refresh + Group Stock + Finance Cards + Stock Quotes" runs at 07:00 and does
+  four parts in order, each its own commit and push: the Ruxley snapshot, then
+  `group-stock.py`, then the Instagram cards, then `stock-finance.py`. The
+  group list sits before the quote run deliberately, because the quote job
+  reads it. A group-list failure is not allowed to stop the rest: the script
+  refuses to write rather than publish a bad list, and the routine is told to
+  leave yesterday's file alone and carry on, since the page and the quote run
+  are both happy with a day-old one.
 - **The quote file prunes on a full run only.** A sold car's entry is never
   revisited, because the car has left both lists, so the file only ever grew.
   Pruning is skipped under `--only` and `--limit`: there the cars that were not
