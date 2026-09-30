@@ -82,17 +82,18 @@
   .sl-hero{position:relative;display:block;background:#0d1117}
   .sl-hero .sl-photo{display:block;width:100%;height:auto}
   .sl-fin{position:absolute;left:0;right:0;bottom:0;
-    padding:clamp(20px,4vw,30px) clamp(12px,2vw,16px) clamp(8px,1.3vw,12px);
-    background:linear-gradient(to top,rgba(6,9,14,.94) 40%,rgba(6,9,14,.66) 74%,rgba(6,9,14,0));
+    padding:clamp(9px,1.5vw,13px) clamp(12px,2vw,16px) clamp(7px,1.1vw,10px);
+    background:linear-gradient(to top,rgba(6,9,14,.93) 0%,rgba(6,9,14,.84) 42%,rgba(6,9,14,.5) 76%,rgba(6,9,14,0) 100%);
     color:#fff;display:block}
   .sl-fin .amt{display:block;font-family:var(--serif);
-    font-size:clamp(1.35rem,3.6vw,1.75rem);line-height:1.05;font-weight:400;
+    font-size:clamp(1.12rem,2.9vw,1.45rem);line-height:1.05;font-weight:400;
     letter-spacing:-.01em;white-space:nowrap}
   .sl-fin .amt i{font-style:normal;font-size:.5em;opacity:.84;letter-spacing:.02em}
   .sl-fin .terms{display:block;margin-top:3px;
     font-size:clamp(.56rem,1.15vw,.66rem);line-height:1.4;opacity:.84;letter-spacing:.01em}
-  .sl-nofin{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 10px;
-    background:linear-gradient(to top,rgba(6,9,14,.9),rgba(6,9,14,0));
+  .sl-nofin{position:absolute;left:0;right:0;bottom:0;
+    padding:clamp(9px,1.5vw,13px) 14px clamp(7px,1.1vw,10px);
+    background:linear-gradient(to top,rgba(6,9,14,.9) 0%,rgba(6,9,14,.6) 60%,rgba(6,9,14,0) 100%);
     color:#cfd6e2;font-size:clamp(.6rem,1.3vw,.72rem)}
   .sl-rep{margin-top:auto;padding-top:10px;border-top:1px solid var(--hairline);
     font-size:.64rem;line-height:1.5;color:var(--muted)}
@@ -109,7 +110,10 @@
     color:var(--paper);margin:0 0 10px;line-height:1.25}
   .sl-price{font-family:var(--sans);font-size:clamp(1.08rem,2.1vw,1.24rem);color:var(--paper);
     margin-bottom:4px}
-  .sl-monthly{font-family:var(--sans);font-size:.9rem;color:var(--accent);margin:0 0 12px}
+  /* now carries the finance terms rather than repeating the payment, so it
+     runs smaller and quieter than the accent line it replaced */
+  .sl-monthly{font-family:var(--sans);font-size:.74rem;line-height:1.5;
+    color:var(--body-c);margin:0 0 12px}
   .sl-spec{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;font-family:var(--sans);
     font-size:.82rem;color:var(--body-c);margin-bottom:14px;padding-bottom:14px;
     border-bottom:1px solid var(--hairline-soft)}
@@ -807,16 +811,22 @@
       var drive = {FourWheel:'xDrive', RearWheel:'Rear wheel drive', FrontWheel:'Front wheel drive'}[c.drive] || c.drive || '';
       var f = FIN[c.id];
       if (!finLive(f)) f = null;
+      /* Only the payment sits on the photograph, and the terms moved down to
+         the line below it. Together they covered 61% of a 16:9 car picture -
+         the terms alone wrap to three lines at a phone's card width - so the
+         car everyone came to look at was mostly scrim. Nothing is lost: the
+         line under the photo used to repeat the payment, and it now carries
+         the product, deposit, term and APR instead, which reads better on a
+         solid background than over a bonnet. */
       var fin = f ? ''
         + '<div class="sl-fin">'
         +   '<span class="amt">' + money(f.monthly) + '<i> a month</i></span>'
-        +   '<span class="terms">' + esc(f.product || 'PCP') + ' &middot; '
-        +     money(f.deposit) + ' deposit &middot; ' + f.term + ' months &middot; '
-        +     f.apr + '% APR representative</span>'
         + '</div>'
         : '<div class="sl-nofin">Ask for a quote on this one</div>';
       var monthlyLine = f
-        ? '<div class="sl-monthly">From ' + money(f.monthly) + ' a month</div>'
+        ? '<div class="sl-monthly">' + esc(f.product || 'PCP') + ' &middot; '
+          + money(f.deposit) + ' deposit &middot; ' + f.term + ' months &middot; '
+          + f.apr + '% APR representative</div>'
         : '<div class="sl-monthly" style="color:var(--dim)">Ask for a quote</div>';
 
       var spec = [];
