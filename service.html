@@ -48,7 +48,7 @@
     </nav>
     <p class="ph-drawer-label">Four ways in</p>
     <nav aria-label="Doorways">
-      <a href="step1.html">Find my BMW</a>
+      <a href="find-my-bmw.html">Find my BMW</a>
       <a href="EV.html">Electric Daily</a>
       <a href="appraisal.html">Value your car</a>
       <a href="service.html">In for service</a>
@@ -137,7 +137,7 @@
       </div>
       <div class="ph-footer-col">
         <h4>Find your way</h4>
-        <a href="step1.html">Find my BMW</a>
+        <a href="find-my-bmw.html">Find my BMW</a>
         <a href="EV.html">Electric Daily</a>
         <a href="appraisal.html">Value your car</a>
         <a href="service.html">In for service</a>
@@ -167,11 +167,13 @@
     <div id="phcForm">
       <h3>Send me a message</h3>
       <p class="pm-sub">It comes straight to me and I will reply personally, usually the same day.</p>
-      <div class="pfield"><label>Your name</label><input id="phcName" type="text" autocomplete="name"/></div>
-      <div class="pfield"><label>Your email</label><input id="phcEmail" type="email" autocomplete="email"/></div>
-      <div class="pfield"><label>Phone (optional)</label><input id="phcPhone" type="tel" autocomplete="tel"/></div>
-      <div class="pfield"><label>Your message</label><textarea id="phcMsg" rows="4"></textarea></div>
-      <button class="btn-line" onclick="phSubmitContact()" style="width:100%;margin-top:6px">Send to Dan</button>
+      <div class="pfield"><label for="phcName">Your name</label><input id="phcName" type="text" autocomplete="name"/></div>
+      <div class="pfield"><label for="phcEmail">Your email</label><input id="phcEmail" type="email" autocomplete="email"/></div>
+      <div class="pfield"><label for="phcPhone">Phone (optional)</label><input id="phcPhone" type="tel" autocomplete="tel"/></div>
+      <div class="pfield"><label for="phcMsg">Your message</label><textarea id="phcMsg" rows="4"></textarea></div>
+      <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><label for="phcGotcha">Leave this empty</label><input id="phcGotcha" type="text" name="_gotcha" tabindex="-1" autocomplete="off"/></div>
+      <button class="btn-line" id="phcBtn" type="button" onclick="phSubmitContact()" style="width:100%;margin-top:6px">Send to Dan</button>
+      <div id="phcErr" role="alert" hidden style="margin-top:14px;padding:12px 14px;border:1px solid #c9785b;font-size:.84rem;line-height:1.6;color:var(--paper)">That did not go through, so nothing has reached me yet. Please try again, or <a id="phcErrWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:var(--accent)">send it to me on WhatsApp</a> instead.</div>
       <p class="pm-legal">Your details are used only to reply to this enquiry. See the <a href="privacy.html" style="color:inherit">privacy policy</a>.</p>
     </div>
     <div class="pm-success" id="phcOk">
@@ -210,13 +212,21 @@
     document.getElementById('phContactModal').classList.remove('open');
     document.body.style.overflow='';
   };
+  /* Only says "Sent" when Formspree says so. A failed request shows the
+     error with a WhatsApp fallback carrying the same message, and a second tap
+     while one is in flight is ignored. */
+  var phcSending=false;
   window.phSubmitContact=function(){
+    if(phcSending)return;
     var n=document.getElementById('phcName').value.trim();
     var e=document.getElementById('phcEmail').value.trim();
     var p=document.getElementById('phcPhone').value.trim();
     var msg=document.getElementById('phcMsg').value.trim();
+    var btn=document.getElementById('phcBtn'),err=document.getElementById('phcErr');
     if(!n||!e||!msg){alert('Please add your name, email and a short message.');return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
+    document.getElementById('phcErrWa').href='https://wa.me/447827138197?text='+encodeURIComponent('Hi Dan, it\'s '+n+'. '+msg);
+    phcSending=true;err.hidden=true;btn.disabled=true;btn.textContent='Sending';
     fetch('https://formspree.io/f/xqewleog',{
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
@@ -224,12 +234,20 @@
         _subject:'Website enquiry: '+n,
         name:n, email:e, phone:p||'not given', message:msg,
         source:(location&&location.pathname)||'website',
-        _replyto:e
+        _replyto:e,
+        _gotcha:document.getElementById('phcGotcha').value
       })
-    }).catch(function(){}).finally(function(){
+    }).then(function(r){
+      return r.json().catch(function(){return {};}).then(function(j){
+        if(!r.ok||(j&&(j.ok===false||j.errors)))throw new Error(String(r.status));
+      });
+    }).then(function(){
       document.getElementById('phcForm').style.display='none';
       document.getElementById('phcOk').style.display='block';
-    });
+      btn.textContent='Send to Dan';
+    },function(){
+      err.hidden=false;btn.textContent='Try again';
+    }).then(function(){phcSending=false;btn.disabled=false;});
   };
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.phCloseDrawer();window.phCloseContact();}});
   document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});

@@ -1,7 +1,38 @@
 /* Site-wide "confirm understanding" acknowledgement.
    Shows once per visitor (stored in localStorage) across the whole site. */
 (function () {
-  try { if (localStorage.getItem('dsc_ack') === '1') return; } catch (e) {}
+  var WORDING = 'This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan\u2019s personal website and is not the official website of BMW or Hedin Automotive. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>. Press continue to confirm your understanding.';
+  function acked() { try { return localStorage.getItem('dsc_ack') === '1'; } catch (e) { return false; } }
+  function ack() { try { localStorage.setItem('dsc_ack', '1'); } catch (e) {} }
+
+  /* Inline mode, for pages where a modal would sit on top of the very thing
+     somebody came to do (find-my-bmw.html: <html data-dsc="inline">). Same
+     wording and the same "Continue to page" button, written into every
+     [data-dsc-slot] on the page instead of over it. Nothing blocks. */
+  if (document.documentElement.getAttribute('data-dsc') === 'inline') {
+    var fill = function () {
+      var slots = document.querySelectorAll('[data-dsc-slot]');
+      for (var i = 0; i < slots.length; i++) {
+        var el = slots[i];
+        el.innerHTML = '<h2 class="dsc-inline-h">Please read &amp; confirm understanding</h2>'
+          + '<p class="dsc-inline-p">' + WORDING + '</p>'
+          + (acked() ? '<p class="dsc-inline-done">Thanks, confirmed.</p>'
+                     : '<button type="button" class="dsc-inline-btn">Continue to page</button>');
+      }
+    };
+    document.addEventListener('click', function (e) {
+      var b = e.target && e.target.closest && e.target.closest('.dsc-inline-btn');
+      if (!b) return;
+      ack();
+      fill();
+    });
+    window.dsDisclaimer = { fill: fill, acked: acked, ack: ack };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+    else fill();
+    return;
+  }
+
+  if (acked()) return;
 
   var css = ''
     + '.dsc-overlay{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;'
@@ -62,7 +93,7 @@
           '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>' +
         '</div>' +
         '<h2 id="dscTitle">Please read &amp; confirm understanding</h2>' +
-        '<p>This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan’s personal website and is not the official website of BMW or Hedin Automotive. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>. Press continue to confirm your understanding.</p>' +
+        '<p>' + WORDING + '</p>' +
         '<button type="button" class="dsc-btn" id="dscOk">Continue to page</button>' +
       '</div>';
     document.body.appendChild(overlay);

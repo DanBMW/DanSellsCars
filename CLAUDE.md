@@ -44,7 +44,7 @@ the final step.
 
 | Pages | Funnel |
 |---|---|
-| `step1.html`–`step8.html` (+ `step1b`) | **"Find my BMW"** — 8-step new/used car matching brief. Entry: `start.html`, though the homepage's own hero/route-card CTAs link straight to `step1.html` — `start.html` currently has no inbound links from the site itself (only `sitemap.xml`). `step1b` is step 2. `step4.html`, `step4b/c/m.html` and `step6.html` are retired redirect stubs (→ `step3.html` / `step7.html`) kept only so old links still resolve — there is no live part-exchange branching logic behind them any more. Shared behaviour (silent resume, progress bar, brief ticket) lives in `funnel-ui.js` + `funnel.css`. Submits on `step8.html` → `thankyou.html` / `wait.html`. |
+| `find-my-bmw.html` (+ `fmb.js`, `fmb.css`, `stock-core.js`) | **"Find my BMW" v2**, rebuilt 1 October 2026. One page: intro, nine tap only questions (new or approved used, life, shape, fuel, budget, extras, colour, part exchange Yes/No/Maybe, timing; one per screen, `#qi`, `#q1`..`#q7`, `#qp` in the URL, Back and browser back work), a short honest matching moment, then the results behind a **hard contact gate**. Matches are computed in JS memory; until a Formspree submission succeeds the page renders only the persona, the match count and three blurred skeleton cards (no regs, prices, models, images or links in the DOM). The gate (`#fmbGate`, a bottom sheet on mobile, a centred modal on desktop; main is `inert`, focus is trapped, Esc collapses it to a peek bar but never unlocks) asks for name, mobile and email, all required. Success unlocks the real cards, unless part exchange is Yes: then the PX steps (reg, mileage, service history, finance, keys required; condition notes optional; photos via a WhatsApp button, never blocking) must be sent in a second submission first. For Maybe the PX steps are offered and skippable. A failed submission keeps the gate and shows Try again plus WhatsApp. "Rather just WhatsApp me" messages Dan with the answers (no cars) and does **not** unlock. Unlock persists in `localStorage.fmbV2` (answers kept 7 days); `sessionStorage.fmbSent`/`fmbPxSent` stop a second submission. New or either buyers see "I'll come back to you with new car options" above a couple of used cars. Live "X cars match" counter and per option counts come from the same files stock.html reads. Results are never zero: a fallback ladder (group stock, budget +10%, neighbouring fuels, neighbouring shapes, drop 7 seats, then anything in budget or the newest) widens one step at a time and says on screen what it widened. Monthly figures only with the lender's full representative example (the MBG.html display); no quote says "Ask for a quote". "See all matches" deep links to stock.html with the hard filters plus `from=fmb`. Pre answers from `?life=&body=&fuel=`. `window.fmbDebug` exposes the state for tests. The page uses disclaimer.js in **inline mode** (`<html data-dsc="inline">`): no modal over question 1, the full wording renders into `[data-dsc-slot]` on the results screen. `step1.html`..`step8.html`, `step1b`, `step4b/c/m`, `step5b` and `start.html` are now redirect stubs to `find-my-bmw.html` (offers.html pattern, query string kept). `thankyou.html`, `wait.html` and `stock-match.js` are left in place for old links; nothing new posts to them. |
 | `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.com links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses no dash separators at all (Dan's rule, see Sitewide copy and CTA conventions). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
 | `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate&d=Friday` (built via the widget on `links.html`; `d` is the optional service day, echoed in the greeting); the plate arrives pre-filled, the customer confirms car + mileage then taps **"I'm interested"** (screen 1) and books (cal.com / WhatsApp). Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
 | `yourbrief.html` | **Optional deep-dive brief** — nudged from `yourcar.html` stage 2 and `sq_done.html` after the initial interest/booking stages. Single page, five skippable stages (direction, timing, payment + budget, PX intent, recap ticket + notes), reuses identity from `sessionStorage` (never re-asks for what Dan has), **one** Formspree submission on send. |
@@ -118,6 +118,20 @@ keep, most of which were got wrong first:
   options live across several facets this is what keeps the list explainable,
   and on a phone the panel is shut, so without it nothing on screen says why
   only four cars are showing. The count on the Filters button does the same job.
+- **Body comes from `stock-core.js`** (`window.dsStock.stockBodyKey`), shared
+  with Find my BMW: i4 is a Gran Coupé, X4/X6 are "SUV Coupé" (`suv-coupe`),
+  Active/Gran Tourer are "MPV and Tourer" (`mpv`). The funnel's SUV maps to
+  `body=suv,suv-coupe`, Coupé to `coupe,suv-coupe`, Hatchback to `hatch,mpv`.
+  Fuel keys come from `dsStock.fuelKey`.
+- **Cards are diffed, not redrawn.** Each card is built once (`CARDS` cache,
+  `buildCard`) and only its finance slots repainted (`paintFin`); `reconcile()`
+  reorders/hides nodes. Search and number inputs are debounced 150ms. The count
+  is announced by the visually hidden `#slLive` after 700ms of quiet.
+- **Phones get a full screen filter sheet** (`#slSheet`, at 700px and below)
+  with a sticky "Show N cars" button (`#slShowBtn`). Chips are 44px or taller.
+- **Shared links are read once** (`INITIAL_QS`) and re-applied after the group
+  file lands, so `?all=1&colour=Green` keeps a group only value.
+- `?from=fmb` shows a "Back to my matches" banner linking `find-my-bmw.html#reveal`.
 - **Free text is AND over words, in any order.** A single substring match meant
   the obvious two-word search ("white touring") came back empty while both words
   were plainly on the card.
@@ -524,6 +538,26 @@ customer-facing, `Value.html` trade tool), dealership pages
   `commission-disclosure.html`, `refer.html`, `thankyou.html`, `wait.html`,
   and more. Search for `formspree.io` before changing anything about the
   payload shape.
+- **Find my BMW v2 payloads** (`fmb.js`). Contact, `form: find-my-bmw-v2`:
+  `lead_id` (`FMB-YYMMDD-XXXXX`, also in `sessionStorage.fmbLead`), `name,
+  email, phone, _subject, _replyto, _gotcha` (honeypot), `interest`
+  (new/used/either), `part_exchange` (Yes/No/Maybe/blank), `marketing_opt_in,
+  marketing_channels`, the answers (`lifestyle, body, fuel, pay_route,
+  monthly_max, deposit, cash_max, extras, colours, timing, persona`), matching
+  context (`match_count_forecourt, match_count_group, fallback_level, relaxed,
+  quote_coverage, top_regs, see_all_url, page_url, leadsummary`) and for the
+  top 5 matches `match_N_{reg, model, price, monthly, match, why, url, source,
+  relaxed}` (source "Ruxley forecourt" or "Group stock"). Part exchange,
+  `form: find-my-bmw-px`, same `lead_id`, `lead_addendum: "true"` (so
+  analytics.js does not count a second lead), `name, phone, email, px_reg,
+  px_answer, px_mileage, px_service_history, px_outstanding_finance,
+  px_settlement, px_condition, px_notes, px_keys, px_photos, interest,
+  page_url, pxsummary`. PX photos go by WhatsApp (prefilled with the reg, the
+  lead ref and a photo checklist) because Formspree file uploads need a paid
+  plan. Success needs `response.ok` and no JSON error (12s timeout); anything
+  else keeps the gate with Try again and WhatsApp. The site wide contact
+  modal (`partials/footer2.html`) checks the response the same way and has
+  the same honeypot and guard.
 
 ## GA4 events — analytics.js
 
@@ -531,8 +565,23 @@ customer-facing, `Value.html` trade tool), dealership pages
 GA-tagged page) fires the conversion events; keep its slug→step map in sync
 when adding/renaming funnel pages. Events:
 
-- `<funnel>_step_<n>` — funnel step view. Funnels: `fmb` (Find my BMW,
-  steps 1–8), `ev` (EV Finder, 1–6), `sq` (Service Qualifier, 1–3),
+- Find my BMW v2 fires its own events from `fmb.js` (all carry
+  `funnel: fmb, fmb_version: 2`): `fmb_intro_view`, `fmb_start {entry}`,
+  `fmb_step_1`..`fmb_step_9 {step, step_name}`, `fmb_answer {step, step_name,
+  answer, open_minded, match_count}`, `fmb_back`, `fmb_zero_match`,
+  `fmb_resume`, `fmb_reveal_locked`, `fmb_gate_view`, `fmb_gate_collapse`,
+  `fmb_gate_reopen`, `fmb_contact_invalid`, `fmb_contact_submit`,
+  `fmb_lead_sent`, `fmb_lead_error {status}`, `fmb_gate_submit_error {which:
+  contact|px}`, `fmb_lead_retry`, `fmb_gate_whatsapp`, `fmb_px_start`,
+  `fmb_px_step_1`..`fmb_px_step_7`, `fmb_px_skip` (Maybe only),
+  `fmb_px_submit`, `fmb_px_sent`, `fmb_px_error`, `fmb_px_photos_whatsapp`,
+  `fmb_unlock`, `fmb_reveal {match_count, group_count, top_pct,
+  fallback_level, persona, quote_coverage}`, `fmb_more_matches`,
+  `fmb_card_whatsapp {reg, rank, pct, source}`, `fmb_whatsapp_send`,
+  `fmb_see_all`, and `fmb_complete` (once per session via `gaDone_fmb`).
+  analytics.js adds `generate_lead` on the contact POST (it fires per attempt,
+  so a retry counts again) and `lead_addendum_sent` on the PX POST.
+- `<funnel>_step_<n>` — funnel step view. Funnels: `ev` (EV Finder, 1–6), `sq` (Service Qualifier, 1–3),
   `ap` (Appraisal, 1–5), `vip` (VIP Buyers Event, 1–7). Redirect pages fire
   nothing. `vip.html` is the invitation landing page, not a step: it fires
   its own `vip_invite_view` and `vip_start`.

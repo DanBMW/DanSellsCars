@@ -49,14 +49,12 @@
 
   /* ── funnel step views ─────────────────────────────────────────────
      Slug → funnel + on-screen step number. Redirect-only pages
-     (step4*, step6, ev-step7, retired sq4-sq7/sq6b) are deliberately absent.
+     (step1-step8, start, ev-step7, retired sq4-sq7/sq6b) are deliberately
+     absent. Find my BMW v2 (find-my-bmw.html) is one page and fires its own
+     fmb_* events from fmb.js, tagged fmb_version 2.
      vip.html is the VIP Buyers Event invitation landing page rather than a
      step, so it fires its own vip_invite_view / vip_start events instead. */
   var STEPS = {
-    'step1.html':   ['fmb', 1], 'step1b.html':  ['fmb', 2],
-    'step2.html':   ['fmb', 3], 'step3.html':   ['fmb', 4],
-    'step5.html':   ['fmb', 5], 'step5b.html':  ['fmb', 6],
-    'step7.html':   ['fmb', 7], 'step8.html':   ['fmb', 8],
     'ev-step1.html': ['ev', 1], 'ev-step2.html': ['ev', 2],
     'ev-step3.html': ['ev', 3], 'ev-step4.html': ['ev', 4],
     'ev-step5.html': ['ev', 5], 'ev-step6.html': ['ev', 6],

@@ -20,6 +20,7 @@
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
   <link rel="stylesheet" href="premium.css?v=07538357"/>
   <script src="dsfinance.js"></script>
+  <script src="stock-core.js"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="analytics.js" defer></script>
@@ -66,6 +67,15 @@
     font-size:.82rem;letter-spacing:.02em;padding:8px 14px;border-radius:999px;cursor:pointer}
   .sl-chip:hover{color:var(--paper);border-color:var(--hairline)}
   .sl-chip[aria-pressed="true"]{background:var(--paper);border-color:var(--paper);color:var(--ink)}
+  /* 44px tall at least: these are the main controls on a phone */
+  .sl-chip,.sl-pill,.sl-reset,.sl-sharebtn,.sl-filter-toggle{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+  .sl-fmb{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;border:1px solid var(--accent);
+    padding:12px 16px;margin-bottom:14px;font-family:var(--sans);font-size:.86rem;color:var(--paper)}
+  .sl-fmb a{color:var(--accent);min-height:44px;display:inline-flex;align-items:center}
+  /* The filter sheet. On a desk it is just the panel; on a phone it opens as a
+     full screen sheet with a sticky "Show N cars" button carrying the live count,
+     so the panel can never open somewhere off screen. */
+  .sl-sheet-head,.sl-sheet-foot{display:none}
   .sl-share{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
   .sl-sharebtn{font-family:var(--sans);font-size:.82rem;letter-spacing:.02em;cursor:pointer;
     background:none;border:1px solid var(--accent);color:var(--accent);padding:8px 16px;
@@ -241,9 +251,20 @@
     color:var(--dim);font-family:var(--sans);font-size:.78rem;cursor:pointer;padding:2px 0}
   .sl-clearall:hover{color:var(--paper);border-bottom-color:var(--accent)}
   @media(max-width:700px){
-    .sl-filter-toggle{display:inline-block}
-    .sl-facets{display:none}
-    .sl-facets.open{display:grid}
+    .sl-filter-toggle{display:inline-flex}
+    .sl-sheet{display:none}
+    .sl-sheet.open{display:flex;flex-direction:column;position:fixed;inset:0;z-index:450;background:var(--ink)}
+    .sl-sheet.open .sl-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:12px 16px;border-bottom:1px solid var(--hairline);flex:0 0 auto}
+    .sl-sheet-head h2{font-size:1.25rem;margin:0}
+    .sl-sheet-close{background:none;border:1px solid var(--hairline);color:var(--paper);font-family:var(--sans);
+      font-size:.85rem;min-height:44px;padding:0 16px;border-radius:2px;cursor:pointer}
+    .sl-sheet.open .sl-facets{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0;border:0;
+      overscroll-behavior:contain}
+    .sl-sheet.open .sl-sheet-foot{display:block;flex:0 0 auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+      border-top:1px solid var(--hairline);background:var(--ink-2)}
+    .sl-showbtn{width:100%;min-height:52px;background:var(--accent-deep);color:var(--paper);border:1px solid var(--accent);
+      font-family:var(--sans);font-size:1rem;font-weight:600;letter-spacing:.02em;border-radius:2px;cursor:pointer}
   }
   @media(max-width:560px){
     .sl-list{grid-template-columns:1fr}
@@ -275,7 +296,7 @@
     </nav>
     <p class="ph-drawer-label">Four ways in</p>
     <nav aria-label="Doorways">
-      <a href="step1.html">Find my BMW</a>
+      <a href="find-my-bmw.html">Find my BMW</a>
       <a href="EV.html">Electric Daily</a>
       <a href="appraisal.html">Value your car</a>
       <a href="service.html">In for service</a>
@@ -315,7 +336,7 @@
       </div>
 
       <div class="sl-filterbar">
-        <button class="sl-filter-toggle" id="slFilterToggle" type="button" aria-expanded="false" aria-controls="slFilters">Filters</button>
+        <button class="sl-filter-toggle" id="slFilterToggle" type="button" aria-expanded="false" aria-controls="slSheet">Filters</button>
         <button class="sl-reset" id="slReset" type="button">Reset</button>
         <label class="sl-sr" for="slSort">Sort by</label>
         <select class="sl-sort" id="slSort" style="flex:1 1 180px">
@@ -328,9 +349,9 @@
         </select>
       </div>
 
-      <!-- Deposit and monthly ceiling. Every payment behind this is a real
-           lender quote at that exact deposit, held in stock-finance-ladder.json
-           - nothing here is worked out in the page. -->
+      <!-- Deposit and monthly ceiling. Every payment behind this is the
+           lender's: an exact rung from stock-finance-ladder.json, or between
+           rungs the line those quotes make (dsfinance.js, see CLAUDE.md). -->
       <div class="sl-budget" id="slBudget">
         <p class="sl-bud-h">What can you put down, and pay a month?</p>
         <div class="sl-bud-row">
@@ -351,7 +372,16 @@
       <!-- Built by buildFacets() from whatever is in ALL, so unlocking the rest
            of the stock brings its models, colours, years and seat counts into
            the panel with it. -->
-      <div class="sl-facets" id="slFilters"></div>
+      <div class="sl-sheet" id="slSheet">
+        <div class="sl-sheet-head">
+          <h2 id="slSheetTitle">Filters</h2>
+          <button class="sl-sheet-close" id="slSheetClose" type="button">Close</button>
+        </div>
+        <div class="sl-facets" id="slFilters" role="region" aria-labelledby="slSheetTitle"></div>
+        <div class="sl-sheet-foot">
+          <button class="sl-showbtn" id="slShowBtn" type="button">Show the cars</button>
+        </div>
+      </div>
 
       <div class="sl-applied" id="slApplied" hidden></div>
 
@@ -360,7 +390,13 @@
         <span class="sl-sharenote" id="slShareNote"></span>
       </div>
 
-      <p class="sl-count" id="slCount" aria-live="polite">Loading the stock list&hellip;</p>
+      <div class="sl-fmb" id="slFmb" hidden>
+        <span>Showing the cars that match your Find my BMW answers.</span>
+        <a href="find-my-bmw.html#reveal">Back to my matches</a>
+      </div>
+      <p class="sl-count" id="slCount">Loading the stock list&hellip;</p>
+      <!-- One quiet announcement once the list settles, not one per keystroke -->
+      <p class="sl-sr" id="slLive" role="status" aria-live="polite"></p>
       <div class="sl-list" id="slList"></div>
 
       <!-- Sits under Dan's own cars until it is tapped, then the rest of the
@@ -415,7 +451,7 @@
       </div>
       <div class="ph-footer-col">
         <h4>Find your way</h4>
-        <a href="step1.html">Find my BMW</a>
+        <a href="find-my-bmw.html">Find my BMW</a>
         <a href="EV.html">Electric Daily</a>
         <a href="appraisal.html">Value your car</a>
         <a href="service.html">In for service</a>
@@ -445,11 +481,13 @@
     <div id="phcForm">
       <h3>Send me a message</h3>
       <p class="pm-sub">It comes straight to me and I will reply personally, usually the same day.</p>
-      <div class="pfield"><label>Your name</label><input id="phcName" type="text" autocomplete="name"/></div>
-      <div class="pfield"><label>Your email</label><input id="phcEmail" type="email" autocomplete="email"/></div>
-      <div class="pfield"><label>Phone (optional)</label><input id="phcPhone" type="tel" autocomplete="tel"/></div>
-      <div class="pfield"><label>Your message</label><textarea id="phcMsg" rows="4"></textarea></div>
-      <button class="btn-line" onclick="phSubmitContact()" style="width:100%;margin-top:6px">Send to Dan</button>
+      <div class="pfield"><label for="phcName">Your name</label><input id="phcName" type="text" autocomplete="name"/></div>
+      <div class="pfield"><label for="phcEmail">Your email</label><input id="phcEmail" type="email" autocomplete="email"/></div>
+      <div class="pfield"><label for="phcPhone">Phone (optional)</label><input id="phcPhone" type="tel" autocomplete="tel"/></div>
+      <div class="pfield"><label for="phcMsg">Your message</label><textarea id="phcMsg" rows="4"></textarea></div>
+      <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><label for="phcGotcha">Leave this empty</label><input id="phcGotcha" type="text" name="_gotcha" tabindex="-1" autocomplete="off"/></div>
+      <button class="btn-line" id="phcBtn" type="button" onclick="phSubmitContact()" style="width:100%;margin-top:6px">Send to Dan</button>
+      <div id="phcErr" role="alert" hidden style="margin-top:14px;padding:12px 14px;border:1px solid #c9785b;font-size:.84rem;line-height:1.6;color:var(--paper)">That did not go through, so nothing has reached me yet. Please try again, or <a id="phcErrWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:var(--accent)">send it to me on WhatsApp</a> instead.</div>
       <p class="pm-legal">Your details are used only to reply to this enquiry. See the <a href="privacy.html" style="color:inherit">privacy policy</a>.</p>
     </div>
     <div class="pm-success" id="phcOk">
@@ -488,13 +526,21 @@
     document.getElementById('phContactModal').classList.remove('open');
     document.body.style.overflow='';
   };
+  /* Only says "Sent" when Formspree says so. A failed request shows the
+     error with a WhatsApp fallback carrying the same message, and a second tap
+     while one is in flight is ignored. */
+  var phcSending=false;
   window.phSubmitContact=function(){
+    if(phcSending)return;
     var n=document.getElementById('phcName').value.trim();
     var e=document.getElementById('phcEmail').value.trim();
     var p=document.getElementById('phcPhone').value.trim();
     var msg=document.getElementById('phcMsg').value.trim();
+    var btn=document.getElementById('phcBtn'),err=document.getElementById('phcErr');
     if(!n||!e||!msg){alert('Please add your name, email and a short message.');return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){alert('Please check the email address.');return;}
+    document.getElementById('phcErrWa').href='https://wa.me/447827138197?text='+encodeURIComponent('Hi Dan, it\'s '+n+'. '+msg);
+    phcSending=true;err.hidden=true;btn.disabled=true;btn.textContent='Sending';
     fetch('https://formspree.io/f/xqewleog',{
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
@@ -502,12 +548,20 @@
         _subject:'Website enquiry: '+n,
         name:n, email:e, phone:p||'not given', message:msg,
         source:(location&&location.pathname)||'website',
-        _replyto:e
+        _replyto:e,
+        _gotcha:document.getElementById('phcGotcha').value
       })
-    }).catch(function(){}).finally(function(){
+    }).then(function(r){
+      return r.json().catch(function(){return {};}).then(function(j){
+        if(!r.ok||(j&&(j.ok===false||j.errors)))throw new Error(String(r.status));
+      });
+    }).then(function(){
       document.getElementById('phcForm').style.display='none';
       document.getElementById('phcOk').style.display='block';
-    });
+      btn.textContent='Send to Dan';
+    },function(){
+      err.hidden=false;btn.textContent='Try again';
+    }).then(function(){phcSending=false;btn.disabled=false;});
   };
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.phCloseDrawer();window.phCloseContact();}});
   document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
@@ -578,6 +632,10 @@
   var elFilterToggle = document.getElementById('slFilterToggle');
   var elUnlock    = document.getElementById('slUnlock');
   var elUnlockBtn = document.getElementById('slUnlockBtn');
+  var elSheet     = document.getElementById('slSheet');
+  var elShowBtn   = document.getElementById('slShowBtn');
+  var elLive      = document.getElementById('slLive');
+  if (/[?&]from=fmb(&|$)/.test(location.search)) document.getElementById('slFmb').hidden = false;
 
   /* ---- Faceted filtering ----------------------------------------------
      One selection object and one definition table; the panel, the counts, the
@@ -629,7 +687,7 @@
       } },
     { key:'body', label:'Body style', of:function(c){ return c._bodyKey; },
       labelOf:function(k){ return BODY_LABELS[k] || k; },
-      order:['suv','saloon','estate','hatch','coupe','gran-coupe','convertible'] },
+      order:['suv','suv-coupe','saloon','estate','hatch','mpv','coupe','gran-coupe','convertible'] },
     { key:'fuel', label:'Fuel', of:function(c){ return c._fuelKey; }, labelOf:fuelLabel,
       order:['petrol','diesel','mhev-petrol','mhev-diesel','phev','electric'] },
     { key:'miles', label:'Mileage', fixed:[
@@ -727,11 +785,11 @@
      what each of that facet's own counts is measured against. Counting a facet
      against its own selection would read 0 on every option but the chosen one
      and make the panel look broken. */
-  function rowsFor(skip){
+  function rowsFor(skip, noBudget){
     var words = elSearch.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
     return ALL.filter(function(c){
       if (!searchHit(c, words)) return false;
-      if (!budgetHit(c)) return false;
+      if (!noBudget && !budgetHit(c)) return false;
       for (var i = 0; i < FACETS.length; i++){
         if (FACETS[i].key === skip) continue;
         if (!hitsFacet(c, FACETS[i])) return false;
@@ -779,9 +837,29 @@
 
   /* Runs after buildFacets, and again after a merge: the unlocked cars bring
      models and colours the first pass had no option for, so a filter carried
-     in on the link gets its second chance to stick. */
-  function applyUrl(){
-    var u = new URLSearchParams(location.search);
+     in on the link gets its second chance to stick.
+     It reads INITIAL_QS, the query string as the page was opened, never
+     `location`: the first render() has already rewritten the address bar by
+     the time the group file lands, which is how ?all=1&colour=Green used to
+     open on every car. Values with no option yet wait in PENDING, and the
+     second pass only adds those, so nothing tapped in between is undone. */
+  var INITIAL_QS = location.search;
+  var PENDING = {};
+  function applyUrl(second){
+    var u = new URLSearchParams(INITIAL_QS);
+    if (second){
+      FACETS.forEach(function(f){
+        var want = PENDING[f.key] || [];
+        if (!want.length) return;
+        var ok = {}, on = chosen(f.key), still = [];
+        (OPTS[f.key] || []).forEach(function(o){ ok[o.v] = 1; });
+        want.forEach(function(v){
+          if (ok[v]) { if (on.indexOf(v) === -1) on.push(v); } else still.push(v);
+        });
+        PENDING[f.key] = still;
+      });
+      return;
+    }
     var q = u.get('q');
     if (q !== null) elSearch.value = q;
     var s = u.get('sort');
@@ -817,6 +895,17 @@
       var ok = {};
       (OPTS[f.key] || []).forEach(function(o){ ok[o.v] = 1; });
       SEL[f.key] = want.filter(function(v){ return ok[v]; });
+      PENDING[f.key] = want.filter(function(v){ return !ok[v]; });
+    });
+  }
+  /* A shared link naming something only the other stock has (?colour=Green)
+     opens unlocked rather than silently dropping the filter. */
+  function pendingInMore(){
+    if (!MORE.length) return false;
+    return FACETS.some(function(f){
+      var want = PENDING[f.key] || [];
+      if (!want.length || !f.of) return false;
+      return MORE.some(function(c){ return want.indexOf(f.of(c)) !== -1; });
     });
   }
 
@@ -827,47 +916,20 @@
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
-  /* Body style: keep data values; Gran Coupé is derived from model name when body is Coupe */
-  function bodyLabel(c){
-    var m = (c.model || '').toLowerCase();
-    if (/gran\s*coup[eé]/i.test(m) || /gran\s*coupe/i.test(m)) return 'Gran Coupé';
-    var map = {SUV:'SUV', Saloon:'Saloon', Estate:'Estate', Hatchback:'Hatchback',
-               Coupe:'Coupé', Convertible:'Convertible'};
-    return map[c.body] || c.body || '';
-  }
-  function bodyKey(c){
-    var m = (c.model || '').toLowerCase();
-    if (/gran\s*coup/i.test(m)) return 'gran-coupe';
-    var map = {SUV:'suv', Saloon:'saloon', Estate:'estate', Hatchback:'hatch',
-               Coupe:'coupe', Convertible:'convertible'};
-    return map[c.body] || (c.body || '').toLowerCase();
-  }
-  /* Fuel filter uses fuel field when it distinguishes mild hybrid; else fuelGroup */
-  function fuelKey(c){
-    var f = (c.fuel || '').toLowerCase();
-    if (f.indexOf('plug-in') !== -1 || f.indexOf('plug in') !== -1) return 'phev';
-    if (f.indexOf('electric') !== -1) return 'electric';
-    if (f.indexOf('mild hybrid') !== -1 && f.indexOf('diesel') !== -1) return 'mhev-diesel';
-    if (f.indexOf('mild hybrid') !== -1) return 'mhev-petrol';
-    if (f.indexOf('diesel') !== -1) return 'diesel';
-    if (f.indexOf('petrol') !== -1) return 'petrol';
-    var g = (c.fuelGroup || '').toLowerCase();
-    if (g.indexOf('plug') !== -1) return 'phev';
-    if (g.indexOf('electric') !== -1) return 'electric';
-    if (g.indexOf('diesel') !== -1) return 'diesel';
-    if (g.indexOf('petrol') !== -1) return 'petrol';
-    return '';
-  }
+  /* Body and fuel come from stock-core.js (window.dsStock), shared with the
+     Find my BMW funnel so its counts and its "See all matches" links land on
+     exactly these cars. The data calls the i4, X4, X6 and Gran Tourer "Coupe";
+     dsStock files them as Gran Coupe, SUV Coupe and MPV and Tourer. */
+  function bodyLabel(c){ return dsStock.stockBodyLabel(c); }
+  function bodyKey(c){ return dsStock.stockBodyKey(c); }
+  function fuelKey(c){ return dsStock.fuelKey(c); }
   function fuelLabel(k){
     return {petrol:'Petrol', diesel:'Diesel', phev:'Plug-in hybrid', electric:'Electric',
             'mhev-petrol':'Mild hybrid (petrol)', 'mhev-diesel':'Mild hybrid (diesel)'}[k] || k;
   }
   function modelFamily(c){
     var s = c.series || '';
-    if (/^M\d|^M\s/i.test(c.model || '') && !/^M\d{2,3}/.test((c.model||'').replace(/^BMW\s*/,''))) {
-      /* keep series for M135 etc which are 1 Series */
-    }
-    if (s) return s;
+    if (s) return s;      /* M135 and friends keep their series (1 Series) */
     var m = (c.model || '').replace(/^BMW\s*/i,'');
     if (/^iX\d/i.test(m)) return m.match(/^iX\d/i)[0];
     if (/^iX\b/i.test(m)) return 'iX';
@@ -910,7 +972,8 @@
         + '<div class="sl-facet-chips" data-facet="' + f.key + '">'
         + OPTS[f.key].map(function(o){
             return '<button class="sl-chip" type="button" data-v="' + esc(o.v) + '"'
-              + ' aria-pressed="false">' + esc(o.label) + '<span class="n"></span></button>';
+              + ' data-label="' + esc(o.label) + '"'
+              + ' aria-pressed="false">' + esc(o.label) + '<span class="n" aria-hidden="true"></span></button>';
           }).join('')
         + '</div></div>';
     }).join('');
@@ -933,7 +996,9 @@
         var n = 0;
         for (var i = 0; i < pool.length; i++) if (o.hit(pool[i])) n++;
         var pressed = on.indexOf(o.v) !== -1;
-        b.querySelector('.n').textContent = n;
+        var nEl = b.querySelector('.n');
+        if (nEl.textContent !== String(n)) nEl.textContent = n;
+        b.setAttribute('aria-label', b.getAttribute('data-label') + ', ' + n + (n === 1 ? ' car' : ' cars'));
         b.setAttribute('aria-pressed', String(pressed));
         /* never disable one that is on, or there is no way to turn it off */
         b.disabled = !n && !pressed;
@@ -948,7 +1013,7 @@
   function paintToggle(){
     var n = activeCount();
     elFilterToggle.innerHTML =
-      (elFacets.classList.contains('open') ? 'Hide filters' : 'Filters')
+      (elSheet.classList.contains('open') ? 'Hide filters' : 'Filters')
       + (n ? '<span class="n">' + n + '</span>' : '');
   }
 
@@ -959,39 +1024,58 @@
   function buildBudget(){
     elDep.innerHTML = DEPOSITS.map(function(d){
       return '<button class="sl-chip" type="button" data-d="' + d + '" aria-pressed="false">'
-        + money(d) + '<span class="n"></span></button>';
+        + money(d) + '<span class="n" aria-hidden="true"></span></button>';
     }).join('');
     elMoChips.innerHTML = BUDGETS.map(function(m){
       return '<button class="sl-chip" type="button" data-m="' + m + '" aria-pressed="false">'
-        + money(m) + '<span class="n"></span></button>';
+        + money(m) + '<span class="n" aria-hidden="true"></span></button>';
     }).join('');
   }
 
-  /* Counting a deposit means re-quoting every car at it, so this stamps the
-     ladder figure on, counts, and puts `_monthly` back the way it was. */
+  /* How many cars the lender quotes at deposit d within the monthly ceiling.
+     Read straight off dsFin rather than re-stamping `_monthly` across the list
+     twice per chip, and cached: it only changes with the ceiling, the list or
+     the quote files, never with a keystroke in the search box. */
+  var FINV = 0, depCountKey = '', depCounts = {};
   function countAtDeposit(d){
-    var was = DEPOSIT, n;
-    DEPOSIT = d;
-    attachMonthly();
-    n = ALL.filter(function(c){ return budgetHit(c) && c._monthly; }).length;
-    DEPOSIT = was;
-    attachMonthly();
+    var n = 0;
+    for (var i = 0; i < ALL.length; i++){
+      var f = dsFin.at(FIN[ALL[i].id], LAD[ALL[i].id], d);
+      if (f && (!BUDGET || Number(f.monthly) <= BUDGET)) n++;
+    }
     return n;
+  }
+  function setN(b, n, label){
+    var el = b.querySelector('.n');
+    if (el.textContent !== String(n)) el.textContent = n;
+    b.setAttribute('aria-label', label + ', ' + n + (n === 1 ? ' car' : ' cars'));
   }
 
   function paintBudget(){
     var i, b;
+    var key = BUDGET + '|' + ALL.length + '|' + FINV;
+    if (key !== depCountKey){
+      depCounts = {};
+      DEPOSITS.forEach(function(d){ depCounts[d] = countAtDeposit(d); });
+      depCountKey = key;
+    }
     for (i = 0; i < elDep.children.length; i++){
       b = elDep.children[i];
       var d = Number(b.getAttribute('data-d'));
       b.setAttribute('aria-pressed', String(d === DEPOSIT));
-      b.querySelector('.n').textContent = countAtDeposit(d);
+      setN(b, depCounts[d], money(d) + ' deposit');
     }
+    /* Each monthly chip: the cars, within every other filter, that the lender
+       quotes at or under that figure at the chosen deposit. */
+    var pool = rowsFor(null, true);
     if (String(DEPOSIT === null ? '' : DEPOSIT) !== elDepIn.value)
       elDepIn.value = DEPOSIT === null ? '' : DEPOSIT;
     for (i = 0; i < elMoChips.children.length; i++){
       b = elMoChips.children[i];
-      b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-m')) === BUDGET));
+      var m = Number(b.getAttribute('data-m')), mn = 0;
+      for (var j = 0; j < pool.length; j++) if (pool[j]._monthly && pool[j]._monthly <= m) mn++;
+      b.setAttribute('aria-pressed', String(m === BUDGET));
+      setN(b, mn, 'Up to ' + money(m) + ' a month');
     }
     if (String(BUDGET || '') !== elMo.value) elMo.value = BUDGET || '';
 
@@ -1059,6 +1143,141 @@
     buildFacets();
   }
 
+  /* ---- the cards: built once a car, then only moved and repainted ----
+     Every tap and keystroke used to rebuild all of them with innerHTML, which
+     reset each photo carousel and shut any open "things on this one" or
+     representative example. Now a card is made the first time it is needed,
+     kept in CARDS, and a render only reorders the nodes already there. The
+     finance parts are repainted when the figure behind them changes (a new
+     deposit, or the quote files landing), and the whole card is rebuilt only
+     when the photographs and equipment arrive (DETV). */
+  var CARDS = {}, DETV = 0;
+
+  function finSig(c){
+    var f = finFor(c);
+    if (f) return {f:f, cap:null, sig:'f' + f.monthly + '|' + f.deposit + '|' + f.apr + '|' + f.term};
+    var cap = depLimit(c);
+    var over = cap && DEPOSIT !== null && DEPOSIT > cap.amount;
+    return {f:null, cap:cap, sig:'n' + (over ? cap.amount + (cap.lender ? 'L' : '') : '')};
+  }
+
+  function paintFin(el, c, fs){
+    var f = fs.f, cap = fs.cap;
+    /* Only the payment sits on the photograph, and the terms sit on the line
+       below it: together they used to cover 61% of a 16:9 car picture. */
+    var slot = el.querySelector('.sl-finslot');
+    if (slot) slot.innerHTML = f
+      ? '<div class="sl-fin"><span class="amt">' + money(f.monthly) + '<i> a month</i></span></div>'
+      : '<div class="sl-nofin">Ask for a quote on this one</div>';
+    el.querySelector('.sl-monthslot').innerHTML = f
+      ? '<div class="sl-monthly">' + esc(f.product || 'PCP') + ' &middot; '
+        + money(f.deposit) + ' deposit &middot; ' + f.term + ' months &middot; '
+        + f.apr + '% APR representative</div>'
+      : '<div class="sl-monthly" style="color:var(--dim)">Ask for a quote'
+        /* Not a refusal: a PCP cannot take a deposit bigger than the car less
+           its final payment, and the lender clamps one quietly. Saying the
+           ceiling beats letting a customer think the car is out of reach. */
+        + (cap && DEPOSIT !== null && DEPOSIT > cap.amount
+            ? '<span class="sl-maxdep">' + (cap.lender
+                ? 'Most this one takes on PCP is about ' + money(cap.amount) + ' down'
+                : 'The most we hold a quote for on this one is ' + money(cap.amount) + ' down')
+              + '</span>'
+            : '') + '</div>';
+    el.querySelector('.sl-repslot').innerHTML = f
+      ? '<details class="sl-rep"><summary>Representative example</summary><p>'
+        + esc(repExample(c, f)) + '</p>'
+        + (f.legal ? '<p>' + esc(f.legal) + '</p>' : '') + '</details>'
+      : '';
+  }
+
+  function buildCard(c){
+    var col = colourOf(c);
+    var yearReg = esc(c.year) + (c.reg ? ' &middot; ' + esc(c.reg) : '');
+    var label = (c.year ? c.year + ' ' : '') + c.model
+      + (c.reg ? ' (' + c.reg + ')' : '')
+      + (c.price ? ', ' + c.price : '');
+    var wa = WA + '?text=' + encodeURIComponent(
+      'Hi Dan, I saw the ' + label + ' on your Available Now page. Can you tell me more?');
+    var mail = 'mailto:' + EMAIL
+      + '?subject=' + encodeURIComponent('Enquiry: ' + label)
+      + '&body=' + encodeURIComponent('Hi Dan,\n\nI am interested in the ' + label + '.\n\nThanks');
+    var pics = photosOf(c);
+    var kit = (DET[c.id] || {}).equipment || [];
+    var spec = [];
+    if (c.mileage) spec.push(['Mileage', esc(String(c.mileage).replace(/\u00a0/g,' ').replace(/ miles$/,''))]);
+    if (c.fuel)  spec.push(['Fuel', esc(c.fuel)]);
+    if (c.gearbox) spec.push(['Transmission', esc(c.gearbox)]);
+    if (col) spec.push(['Colour', '<i class="sl-dot" style="background:'
+               + (SWATCH[col.toLowerCase()] || 'transparent') + '"></i>' + esc(col)]);
+    var el = document.createElement('article');
+    el.className = 'sl-card';
+    el.setAttribute('data-id', c.id);
+    el.innerHTML = (pics.length
+          ? '<div class="sl-hero" data-i="0" data-pics="' + esc(pics.join('|')) + '">'
+            + '<img class="sl-photo" src="' + esc(pics[0]) + '" alt="' + esc((c.year||'') + ' ' + c.model)
+            + '" loading="lazy" width="700" height="393"/>'
+            + (pics.length > 1
+                ? '<span class="sl-dots">1/' + pics.length + '</span>'
+                  + '<button class="sl-nav prev" type="button" aria-label="Previous photo"><span>&#8249;</span></button>'
+                  + '<button class="sl-nav next" type="button" aria-label="Next photo"><span>&#8250;</span></button>'
+                : '')
+            + '<div class="sl-finslot"></div></div>'
+          : '')
+      + '<div class="sl-body">'
+      + '<div class="sl-meta">' + yearReg + '</div>'
+      + '<h3>' + esc(c.model) + '</h3>'
+      + '<div class="sl-price">' + esc(c.price) + '</div>'
+      + '<div class="sl-monthslot"></div>'
+      + '<div class="sl-spec">'
+      + spec.map(function(kv){ return '<span>' + kv[0] + '</span><strong>' + kv[1] + '</strong>'; }).join('')
+      + '</div>'
+      + (kit.length
+          ? '<details class="sl-kit" data-kit="' + esc(c.id) + '"><summary>'
+            + kit.length + ' things on this one</summary></details>'
+          : '')
+      + '<div class="sl-actions">'
+      + '<a class="sl-wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp Dan</a>'
+      + '<a class="sl-sec" href="' + mail + '">Email</a>'
+      + (c.url ? '<a class="sl-sec" href="' + esc(c.url) + '" target="_blank" rel="noopener">Full listing</a>' : '')
+      + '</div>'
+      + '<div class="sl-repslot"></div>'
+      + '</div>';
+    return el;
+  }
+
+  function cardFor(c){
+    var rec = CARDS[c.id];
+    if (!rec || rec.v !== DETV || rec.c !== c){
+      rec = CARDS[c.id] = {el: buildCard(c), v: DETV, c: c, sig: null};
+    }
+    var fs = finSig(c);
+    if (rec.sig !== fs.sig){ paintFin(rec.el, c, fs); rec.sig = fs.sig; }
+    return rec.el;
+  }
+
+  /* Puts exactly these nodes in this order, moving only the ones out of place
+     and leaving every other node (and its open panels) alone. */
+  function reconcile(els){
+    var kids = elList.children, i;
+    for (i = kids.length - 1; i >= 0; i--)
+      if (!kids[i].classList.contains('sl-card')) elList.removeChild(kids[i]);
+    for (i = 0; i < els.length; i++){
+      if (kids[i] !== els[i]) elList.insertBefore(els[i], kids[i] || null);
+    }
+    while (kids.length > els.length) elList.removeChild(elList.lastElementChild);
+  }
+
+  /* Screen readers hear the count once the list settles, not on every keystroke */
+  var liveT = 0, lastLive = '';
+  function announce(text){
+    clearTimeout(liveT);
+    liveT = setTimeout(function(){
+      if (text === lastLive) return;
+      lastLive = text;
+      elLive.textContent = text;
+    }, 700);
+  }
+
   function render(){
     var rows = rowsFor(null);
 
@@ -1091,9 +1310,14 @@
     paintBudget();
     paintApplied();
 
-    elCount.textContent = rows.length === ALL.length
+    var countText = rows.length === ALL.length
       ? ALL.length + ' cars in stock'
       : rows.length + ' of ' + ALL.length + ' cars';
+    if (elCount.textContent !== countText) elCount.textContent = countText;
+    announce(rows.length === ALL.length ? countText
+      : rows.length + (rows.length === 1 ? ' car matches' : ' cars match'));
+    elShowBtn.textContent = !rows.length ? 'No cars match, change a filter'
+      : 'Show ' + rows.length + (rows.length === 1 ? ' car' : ' cars');
 
     /* The button only offers what is really there: it appears once the second
        file has loaded and goes once it has been merged. A filter that empties
@@ -1113,91 +1337,7 @@
       return;
     }
 
-    elList.innerHTML = rows.map(function(c){
-      var col = colourOf(c);
-      var yearReg = esc(c.year) + (c.reg ? ' &middot; ' + esc(c.reg) : '');
-      var label = (c.year ? c.year + ' ' : '') + c.model
-        + (c.reg ? ' (' + c.reg + ')' : '')
-        + (c.price ? ', ' + c.price : '');
-      var wa = WA + '?text=' + encodeURIComponent(
-        'Hi Dan, I saw the ' + label + ' on your Available Now page. Can you tell me more?');
-      var mail = 'mailto:' + EMAIL
-        + '?subject=' + encodeURIComponent('Enquiry: ' + label)
-        + '&body=' + encodeURIComponent('Hi Dan,\n\nI am interested in the ' + label + '.\n\nThanks');
-      var drive = {FourWheel:'xDrive', RearWheel:'Rear wheel drive', FrontWheel:'Front wheel drive'}[c.drive] || c.drive || '';
-      var f = finFor(c);
-      var cap = f ? null : depLimit(c);
-      var pics = photosOf(c);
-      var kit = (DET[c.id] || {}).equipment || [];
-      /* Only the payment sits on the photograph, and the terms moved down to
-         the line below it. Together they covered 61% of a 16:9 car picture -
-         the terms alone wrap to three lines at a phone's card width - so the
-         car everyone came to look at was mostly scrim. Nothing is lost: the
-         line under the photo used to repeat the payment, and it now carries
-         the product, deposit, term and APR instead, which reads better on a
-         solid background than over a bonnet. */
-      var fin = f ? ''
-        + '<div class="sl-fin">'
-        +   '<span class="amt">' + money(f.monthly) + '<i> a month</i></span>'
-        + '</div>'
-        : '<div class="sl-nofin">Ask for a quote on this one</div>';
-      var monthlyLine = f
-        ? '<div class="sl-monthly">' + esc(f.product || 'PCP') + ' &middot; '
-          + money(f.deposit) + ' deposit &middot; ' + f.term + ' months &middot; '
-          + f.apr + '% APR representative</div>'
-        : '<div class="sl-monthly" style="color:var(--dim)">Ask for a quote'
-          /* Not a refusal: a PCP cannot take a deposit bigger than the car
-             less its final payment, and the lender clamps one quietly. Saying
-             the ceiling beats letting a customer with plenty of money think
-             the car is somehow out of reach. */
-          + (cap && DEPOSIT !== null && DEPOSIT > cap.amount
-              ? '<span class="sl-maxdep">' + (cap.lender
-                  ? 'Most this one takes on PCP is about ' + money(cap.amount) + ' down'
-                  : 'The most we hold a quote for on this one is ' + money(cap.amount) + ' down')
-                + '</span>'
-              : '') + '</div>';
-
-      var spec = [];
-      if (c.mileage) spec.push(['Mileage', esc(String(c.mileage).replace(/\u00a0/g,' ').replace(/ miles$/,''))]);
-      if (c.fuel)  spec.push(['Fuel', esc(c.fuel)]);
-      if (c.gearbox) spec.push(['Transmission', esc(c.gearbox)]);
-      if (col) spec.push(['Colour', '<i class="sl-dot" style="background:'
-                 + (SWATCH[col.toLowerCase()] || 'transparent') + '"></i>' + esc(col)]);
-
-      return '<article class="sl-card">'
-        + (pics.length
-            ? '<div class="sl-hero" data-i="0" data-pics="' + esc(pics.join('|')) + '">'
-              + '<img class="sl-photo" src="' + esc(pics[0]) + '" alt="' + esc((c.year||'') + ' ' + c.model)
-              + '" loading="lazy" width="700" height="393"/>'
-              + (pics.length > 1
-                  ? '<span class="sl-dots">1/' + pics.length + '</span>'
-                    + '<button class="sl-nav prev" type="button" aria-label="Previous photo"><span>&#8249;</span></button>'
-                    + '<button class="sl-nav next" type="button" aria-label="Next photo"><span>&#8250;</span></button>'
-                  : '')
-              + fin + '</div>'
-            : '')
-        + '<div class="sl-body">'
-        + '<div class="sl-meta">' + yearReg + '</div>'
-        + '<h3>' + esc(c.model) + '</h3>'
-        + '<div class="sl-price">' + esc(c.price) + '</div>'
-        + monthlyLine
-        + '<div class="sl-spec">'
-        + spec.map(function(kv){ return '<span>' + kv[0] + '</span><strong>' + kv[1] + '</strong>'; }).join('')
-        + '</div>'
-        + (kit.length
-            ? '<details class="sl-kit" data-kit="' + esc(c.id) + '"><summary>'
-              + kit.length + ' things on this one</summary></details>'
-            : '')
-        + '<div class="sl-actions">'
-        + '<a class="sl-wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp Dan</a>'
-        + '<a class="sl-sec" href="' + mail + '">Email</a>'
-        + (c.url ? '<a class="sl-sec" href="' + esc(c.url) + '" target="_blank" rel="noopener">Full listing</a>' : '')
-        + '</div>'
-        + (f ? '<details class="sl-rep"><summary>Representative example</summary><p>'
-             + esc(repExample(c, f)) + '</p>'
-             + (f.legal ? '<p>' + esc(f.legal) + '</p>' : '') + '</details>' : '')
-        + '</div></article>';
-    }).join('');
+    reconcile(rows.map(cardFor));
   }
 
   function failed(){
@@ -1220,7 +1360,7 @@
 
   fetch('automation/stock-finance.json', {cache:'no-cache'})
     .then(function(r){ return r.ok ? r.json() : {}; })
-    .then(function(j){ FIN = j || {}; attachMonthly(); if (ALL.length) render(); })
+    .then(function(j){ FIN = j || {}; FINV++; attachMonthly(); if (ALL.length) render(); })
     ['catch'](function(){ FIN = {}; });
 
   /* Photographs and equipment. Quiet failure again: without it every card has
@@ -1228,7 +1368,7 @@
      less to look through. */
   fetch('automation/car-details.json', {cache:'no-cache'})
     .then(function(r){ return r.ok ? r.json() : {}; })
-    .then(function(j){ DET = j || {}; stampHay(); if (ALL.length) render(); })
+    .then(function(j){ DET = j || {}; DETV++; stampHay(); if (ALL.length) render(); })
     ['catch'](function(){ DET = {}; });
 
   /* The deposit ladder. A failure here is quiet on purpose: the deposit chips
@@ -1236,7 +1376,7 @@
      always been, rather than a broken budget search. */
   fetch('automation/stock-finance-ladder.json', {cache:'no-cache'})
     .then(function(r){ return r.ok ? r.json() : {}; })
-    .then(function(j){ LAD = j || {}; attachMonthly(); if (ALL.length) render(); })
+    .then(function(j){ LAD = j || {}; FINV++; attachMonthly(); if (ALL.length) render(); })
     ['catch'](function(){ LAD = {}; });
 
   fetch('automation/hedin-stock-snapshot.json', {cache:'no-cache'})
@@ -1269,9 +1409,11 @@
 
       buildFacets();
       buildBudget();
-      applyUrl();
+      applyUrl(false);
       attachMonthly();
-      if (wantsAll()) unlock();
+      /* the group file may have landed first: unlock now and give the
+         filters only it can satisfy their second pass */
+      if (MORE.length && (wantsAll() || pendingInMore())){ unlock(); applyUrl(true); }
       render();
     })
     .catch(failed);
@@ -1295,11 +1437,11 @@
         hayFor(c);
         return c;
       });
-      if (wantsAll() && ALL.length){
+      if (ALL.length && !unlocked && (wantsAll() || pendingInMore())){
         unlock();
         // the extra models and colours only exist as options now, so a filter
         // carried in on the link gets its second chance to stick
-        applyUrl();
+        applyUrl(true);
       }
       if (ALL.length) render();
     })
@@ -1340,7 +1482,10 @@
   });
 
   function onChange(){ render(); }
-  elSearch.addEventListener('input', onChange);
+  /* Typing waits for a pause (150ms) rather than redrawing on every letter */
+  var typeT = 0;
+  function soon(fn){ clearTimeout(typeT); typeT = setTimeout(fn, 150); }
+  elSearch.addEventListener('input', function(){ soon(render); });
   elSort.addEventListener('change', onChange);
 
   /* Delegated, so the chips can be rebuilt on every render without leaking a
@@ -1384,8 +1529,7 @@
   elDepIn.addEventListener('input', function(){
     var v = elDepIn.value.trim();
     DEPOSIT = (v === '' || Number(v) < 0 || isNaN(Number(v))) ? null : Number(v);
-    attachMonthly();
-    render();
+    soon(function(){ attachMonthly(); render(); });
   });
 
   elMoChips.addEventListener('click', function(e){
@@ -1399,7 +1543,7 @@
   elMo.addEventListener('input', function(){
     var v = Number(elMo.value);
     BUDGET = v > 0 ? v : 0;
-    render();
+    soon(render);
   });
 
   document.getElementById('slReset').addEventListener('click', function(){
@@ -1410,10 +1554,40 @@
     render();
   });
 
-  elFilterToggle.addEventListener('click', function(){
-    var open = elFacets.classList.toggle('open');
+  /* On a phone the panel opens as a full screen sheet over the page, with the
+     live count on its sticky button; on a desk it is always shown inline. */
+  var mqSheet = window.matchMedia('(max-width:700px)');
+  function setSheet(open){
+    elSheet.classList.toggle('open', open);
     elFilterToggle.setAttribute('aria-expanded', String(open));
+    var modal = open && mqSheet.matches;
+    if (modal){
+      elSheet.setAttribute('role', 'dialog');
+      elSheet.setAttribute('aria-modal', 'true');
+      elSheet.setAttribute('aria-labelledby', 'slSheetTitle');
+    } else {
+      elSheet.removeAttribute('role'); elSheet.removeAttribute('aria-modal');
+    }
+    document.body.style.overflow = modal ? 'hidden' : '';
     paintToggle();
+    if (modal) document.getElementById('slSheetClose').focus();
+  }
+  elFilterToggle.addEventListener('click', function(){
+    setSheet(!elSheet.classList.contains('open'));
+  });
+  function closeSheet(){
+    if (!elSheet.classList.contains('open')) return;
+    setSheet(false);
+    elFilterToggle.focus();
+  }
+  document.getElementById('slSheetClose').addEventListener('click', closeSheet);
+  elShowBtn.addEventListener('click', function(){
+    closeSheet();
+    elCount.scrollIntoView({block:'start'});
+  });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSheet(); });
+  if (mqSheet.addEventListener) mqSheet.addEventListener('change', function(){
+    if (!mqSheet.matches && elSheet.classList.contains('open')) setSheet(false);
   });
 
   var elShare = document.getElementById('slShare');
