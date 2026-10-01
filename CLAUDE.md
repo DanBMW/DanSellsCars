@@ -113,6 +113,28 @@ Three things the page has to respect:
   quote" - showing a stale monthly payment as current would be worse than
   showing none. That is what puts this on the morning routine: the figures are
   only ever as current as the last run.
+- **A rollover blanks the page until something re-quotes, and the lender may
+  not be ready.** The campaign ended 30 Sep 23:59; the Routine does not run
+  until about 08:00, so both pages showed "Ask for a quote" overnight - and on
+  1 October the lender (Hedin's own listing pages too) was still declining
+  almost every used car, quoting only a handful of electrified ones at 6.9% on
+  a campaign to `2026-12-31T23:59:59+00:00` (note the offset - older values
+  carried none). Nothing on our side can fix a lender that will not quote,
+  and the page must not show a lapsed figure, so the answer is to re-quote
+  promptly and retry. `stock-finance.py --when-lapsed` is built for that: a
+  no-op unless under 60% of the cars hold a live quote and the last run was
+  over three hours ago, so it can be scheduled just after midnight UK time and
+  again late morning and mid-afternoon (clear of the Routine's 07:00-08:00 UTC
+  window) and an ordinary day costs Hedin's site nothing. A ready-made
+  `.github/workflows/finance-requote.yml` doing exactly that was drafted on
+  1 October but could not be pushed - the automation token has no Workflows
+  permission - so until Dan adds it, the Routine is the only re-quote.
+- **A network error keeps a still-live quote.** `stock-finance.py` retries a
+  car twice on a network or server error, and if it still cannot reach the
+  lender it keeps the quote it already holds while that quote is inside its own
+  `valid_to` - the lender's figure, not ours - rather than one bad minute on
+  Hedin's site emptying the page. A refusal still drops the car's quote, and a
+  run in which every car errored exits non-zero so a scheduled run shows red.
 - **Not every car can be quoted.** Older stock gets "contact us directly for
   finance information" from the lender; that is normal, not a fault, and
   those cars simply show the fallback.
