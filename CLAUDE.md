@@ -186,6 +186,11 @@ convenient:
   deposit + payments x monthly + final payment and the charges are that less
   the cash price, both of which hold with a residual of 0.00 on all 1,913.
 
+The maths lives in **`dsfinance.js`** (`window.dsFin`), shared by `stock.html`
+and the Find my BMW matcher rather than copied into both. This repo has been
+bitten by twinned code before (`shrinkShot`/`shrink`, `clipKey`), and a finance
+rule that drifts between two copies is worse than a cosmetic one.
+
 Two guards keep it honest, and neither is optional:
 - **An exact rung is handed back verbatim**, never recomputed.
 - **`lineFor()` checks the line against every rung the car has** (`LINE_TOL`,
@@ -394,6 +399,37 @@ other stock"**, which merges in every other used BMW the group has -
   rewrites the query string from the current state - at which point nothing is
   unlocked and the flag is dropped. Re-reading `location` afterwards says no,
   and the shared link opened locked.
+
+### "A few in stock that fit" - the Find my BMW matcher
+
+`stock-match.js` fills a section at the bottom of `thankyou.html` with real cars
+from the **whole group** that match the brief the customer has just sent Dan,
+with the payments worked out at **their own deposit**. Dan asked for this on
+1 October as the point of the funnel: the brief goes to him, and the customer
+gets something back rather than only a thank you.
+
+Two rules from Dan, and neither is decoration:
+- **No link to the Hedin listing, here of all places.** On `stock.html` a
+  customer who came browsing is given the listing. Here they have just handed
+  Dan a brief, and the next move is meant to come to him.
+- **One action a card, and it is WhatsApp**, pre-filled with "Hi Dan, I've seen
+  this and I'm interested", the car, the reg, the price and the payment at
+  their deposit, so he knows which car before reading a word. GA fires
+  `match_interest`.
+
+How it chooses:
+- **Hard**: body style if they picked any (`touring` is BMW for an estate and is
+  the only one that does not translate itself); a finance brief must come in at
+  or under the monthly they said, at the deposit they said; a cash brief at or
+  under the cash figure. Nothing is stretched to fill the grid, and **a brief
+  nothing fits shows nothing at all** rather than six near-misses.
+- **Soft**: a colour they asked for, words from their model preference, Dan's
+  own forecourt over the other branches, newer, fewer miles.
+- A cash brief still shows the standard example, labelled with the deposit it
+  is based on, rather than one worked out on a deposit they never gave.
+- It reads the same five files `stock.html` publishes, so there is no second
+  list to keep in step, and **every one of them failing is silent**: the page
+  has already thanked somebody and must not break over a side feature.
 
 Other notable pages: retired offer stubs (`ix3-offer.html`, `x1-offer.html`,
 `1series-offer.html`, `offers.html` which redirects to `stock.html`), valuation tools (`tradevalue.html`

@@ -19,6 +19,7 @@
   <meta name="twitter:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
   <link rel="stylesheet" href="premium.css?v=07538357"/>
+  <script src="dsfinance.js"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="analytics.js" defer></script>
@@ -558,27 +559,9 @@
      Neither list records where a car is. */
   var MORE = [], unlocked = false;
 
-  function money(n){ return '\u00a3' + Math.round(n).toLocaleString('en-GB'); }
-  function money2(n){
-    return '\u00a3' + Number(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
-  }
-  function finLive(f){
-    if(!f || !f.monthly) return false;
-    if(f.valid_to && new Date(f.valid_to) < new Date()) return false;
-    return true;
-  }
-  function repExample(c, f){
-    return f.payments + ' monthly payments of ' + money2(f.monthly) + '. '
-      + 'Cash price ' + money(f.price) + '. Customer deposit ' + money2(f.deposit) + '. '
-      + 'Total amount of credit ' + money2(f.credit) + '. '
-      + 'Optional final payment ' + money2(f.final_payment) + '. '
-      + 'Total amount payable ' + money2(f.total_payable) + '. '
-      + 'Duration ' + f.term + ' months. '
-      + Number(f.annual_mileage).toLocaleString('en-GB') + ' miles a year, '
-      + f.excess_pence + 'p per excess mile. '
-      + f.apr + '% APR representative. Lender ' + f.lender + '. '
-      + 'Finance subject to status, 18+, UK residents.';
-  }
+  var money = dsFin.money, money2 = dsFin.money2;
+  var finLive = dsFin.live;
+  function repExample(c, f){ return dsFin.repExample(f); }
 
   var elList  = document.getElementById('slList');
   var elCount = document.getElementById('slCount');
@@ -611,11 +594,6 @@
      never quoted shows every car as unquotable. */
   var DEPOSITS = [0, 1000, 2500, 5000, 7500, 10000, 15000];
   var BUDGETS = [250, 300, 400, 500, 750];
-  /* How far a rung may sit off the line through the outer two before this
-     stops trusting the line for that car. Every rung of all 312 cars sat
-     within 0.83p of it, so 2p means "something about this car has genuinely
-     changed", not "rounding". */
-  var LINE_TOL = 0.02;
   var OPTS = {};                /* facet key -> the options it currently offers */
   var BODY_LABELS = {};
   var GBP = '\u00a3';
@@ -762,131 +740,17 @@
     });
   }
 
-  /* The lender's quotes for this car as a straight line, once it is clear they
-     make one.
+  function lineFor(c){ return dsFin.lineFor(LAD[c.id]); }
 
-     The monthly payment is exactly linear in the deposit. A line through two
-     real quotes reproduces the lender's own figure at any other deposit to the
-     penny: checked against it at twelve deposits on four cars from £16k to
-     £89k, and across all 312 cars the line through the outer two rungs sits
-     within 0.83p of every rung between, not one over a penny. So a deposit
-     between the rungs is still the lender's number, not an estimate of ours.
 
-     "Exactly linear" is a measurement, not a promise, so there are two guards.
-     The line is checked against every rung this car has, and one that does not
-     sit on it - a deposit-dependent rate, say - falls back to its rungs alone.
-     And it is never used past the most the lender will take, where it clamps.
-     The outcome is cached on the entry; it cannot change under us, because the
-     whole file is replaced when the quotes are refreshed. */
-  function lineFor(c){
-    var e = LAD[c.id];
-    if (!e || !e.steps || e.steps.length < 2) return null;
-    if (e._line !== undefined) return e._line;
-    var s = e.steps, i, n = s.length;
-    /* Least squares through every rung, not a line through the outer two: the
-       lender publishes to the penny, so anchoring on one rounded figure
-       inherits its rounding. Fitting all of them averages it out and lands on
-       the lender's exact figure at 97% of the rungs rather than 90%. The worst
-       case is a penny either way, which is the floor while the quotes we are
-       given are themselves rounded to one. */
-    var sx = 0, sy = 0, sxx = 0, sxy = 0;
-    for (i = 0; i < n; i++){
-      sx += s[i].d; sy += s[i].m;
-      sxx += s[i].d * s[i].d; sxy += s[i].d * s[i].m;
-    }
-    var den = n * sxx - sx * sx;
-    if (!den){ e._line = null; return null; }
-    var rate = -(n * sxy - sx * sy) / den;        /* fall in £ a month per £1 down */
-    var at0  = (sy + rate * sx) / n;              /* the monthly with nothing down */
-    for (i = 0; i < n; i++)
-      if (Math.abs((at0 - rate * s[i].d) - s[i].m) > LINE_TOL){
-        e._line = null;
-        return null;
-      }
-    var a = {d:0, m:at0}, b = s[n - 1];
-    /* The top rung is as far as we have asked, but where the lender has told
-       us its own ceiling (it clamped a rung) the line holds up to there too -
-       checked at £6,100 on a car whose top rung is £5,000 and whose ceiling is
-       £6,433.05, where it matched the lender to a penny. */
-    var top = e.maxdep ? Math.max(Number(e.maxdep), b.d) : b.d;
-    e._line = {d0:a.d, m0:a.m, rate:rate, top:top,
-               apr:b.apr, term:b.t, payments:b.p, final:b.f};
-    return e._line;
-  }
 
-  function p2(n){ return Math.round(n * 100) / 100; }
+  function photosOf(c){ return dsFin.photos(c, DET[c.id]); }
 
-  /* Every photograph we hold for a car, the snapshot's own one first so the
-     card opens on the picture it always opened on. The detail job stores a
-     gallery id rather than the whole url, because the prefix is the same on
-     every one and this file is pulled down by a phone. */
-  function photosOf(c){
-    var d = DET[c.id] || {}, out = c.image ? [c.image] : [], i, u;
-    for (i = 0; i < (d.images || []).length; i++){
-      u = d.images[i];
-      if (u.indexOf('http') !== 0) u = CDN + u + '-enlarged.jpg';
-      if (out.indexOf(u) === -1) out.push(u);
-    }
-    return out;
-  }
+  function quoteAt(c, d){ return dsFin.quoteAt(LAD[c.id], d); }
 
-  /* One quote, at any deposit. An exact rung is handed back verbatim - the
-     lender's own answer, untouched - and anything between is read off the line.
-     The rest of the example follows arithmetically and exactly: total payable
-     is deposit + payments x monthly + final payment, and the charges are that
-     less the cash price, both of which hold to the penny on all 1,913 rungs. */
-  function quoteAt(c, d){
-    var e = LAD[c.id], i;
-    if (!e || !e.steps) return null;
-    for (i = 0; i < e.steps.length; i++)
-      if (Number(e.steps[i].d) === d) return e.steps[i];
-    var L = lineFor(c);
-    if (!L || d < 0 || d > L.top) return null;
-    var m = p2(L.m0 - L.rate * (d - L.d0));
-    if (m <= 0) return null;
-    var tp = p2(d + L.payments * m + L.final);
-    return {d:d, m:m, apr:L.apr, t:L.term, p:L.payments, f:L.final,
-            c:p2(e.price - d), tp:tp, ch:p2(tp - e.price)};
-  }
+  function finFor(c){ return dsFin.at(FIN[c.id], LAD[c.id], DEPOSIT); }
 
-  /* The lender's own quote for this car at the deposit the customer chose.
-     Every figure comes out of the ladder, which holds a real quote per rung:
-     nothing here works a payment out from another one, however linear the
-     lender's own numbers look. With no deposit chosen this is the standard
-     example, exactly as before.
-     The legal wording is taken off the main entry at any rung. It is written
-     about the vehicle, its mileages, the campaign dates and the FCA
-     disclosures and carries no deposit or monthly figure, so it reads true for
-     all of them - checked against the lender's own text rather than assumed. */
-  function finFor(c){
-    var f = FIN[c.id];
-    if (!finLive(f)) return null;
-    if (DEPOSIT === null) return f;
-    var s = quoteAt(c, DEPOSIT);
-    if (!s) return null;        /* no lender quote at that deposit for this car */
-    return { product:f.product, lender:f.lender, legal:f.legal, price:f.price,
-             reg:f.reg, valid_to:f.valid_to, quoted_at:f.quoted_at,
-             annual_mileage:f.annual_mileage, contract_mileage:f.contract_mileage,
-             excess_pence:f.excess_pence,
-             monthly:s.m, deposit:s.d, apr:s.apr, term:s.t, payments:s.p,
-             final_payment:s.f, credit:s.c, total_payable:s.tp, charges:s.ch };
-  }
-
-  /* Why this car cannot be quoted at the deposit asked for, when we can say.
-     Worth saying out loud: a customer with £10,000 looking at a £16,000 car is
-     not being turned away, the deposit is simply more than a PCP on it carries.
-     Two different facts, and the wording says which:
-       - `maxdep` is the lender's own ceiling, learnt when it clamped a rung;
-       - otherwise the top rung we hold a quote at, which is all we can claim
-         for a car whose higher rungs were never asked about. */
-  function depLimit(c){
-    var e = LAD[c.id];
-    if (!e) return null;
-    if (e.maxdep) return {amount:Number(e.maxdep), lender:true};
-    if (!e.steps || !e.steps.length) return null;
-    var L = lineFor(c);
-    return {amount:(L ? L.top : Number(e.steps[e.steps.length - 1].d)), lender:false};
-  }
+  function depLimit(c){ return dsFin.limit(LAD[c.id]); }
 
   function budgetHit(c){
     if (!BUDGET) return true;
