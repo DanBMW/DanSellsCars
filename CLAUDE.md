@@ -433,6 +433,21 @@ How it chooses:
   other branches, newer, fewer miles.
 - **Every card names the asks it actually satisfies**, so the ordering explains
   itself and a fallback card shows plainly what it is missing.
+- **A percentage match sits on each photograph** (`matchPct`). It is the share
+  of THEIR OWN BRIEF the car delivers, not the ranking score scaled to 100:
+  that number would move on things nobody asked about (age, mileage, which
+  forecourt) and could not be explained to the customer who reads it. Weights
+  are must-have 3, colour 2, model 2, nice-to-have 1, and body style and budget
+  3 each - those two are hard filters, so a car that got this far meets them,
+  but they were asked for and belong in the total. Three rules:
+  - **Only what they stated is counted**, so somebody who skipped a step is
+    never marked down for it.
+  - **A feature Hedin do not itemise is in neither half.** Counting sat-nav
+    against a car would hold every one below 100% for something we cannot see.
+  - **The percentage leads the ordering.** A 90% card above a 95% one reads as
+    broken however good the reason, so the score only breaks ties.
+  With nothing but a budget and a body style stated every car is 100% and the
+  badge says nothing, so it is hidden unless something could separate them.
 
 #### Matching "features that matter" against real equipment
 

@@ -159,20 +159,54 @@ window.dsStockMatch = (function () {
   }
 
   /* M Sport is on 270 of 332 cars, so trim can only ever rank, never rule out.
+     One boolean, used by both the ranking and the percentage, so the number a
+     customer reads and the order they are read in cannot disagree.
      "Luxury / High spec" has almost nothing literal to match - one model name
-     in the whole list - so it is read as how much kit the car carries, which
-     is what somebody choosing it actually means. */
-  function trimScore(c, det) {
+     in the whole list - so it is read as how much kit the car carries, which is
+     what somebody choosing it means. The bar is 48 equipment lines, the 75th
+     percentile of the stock (median 43), so it picks out the best-equipped
+     quarter rather than most of the forecourt. */
+  var HIGH_SPEC = 48;
+
+  function trimMet(c, det, choice) {
     var kit = (det && det.equipment) || [];
     var name = ((c.model || '') + ' ' + (c.trim || '')).toLowerCase();
     var m = /m sport|m performance/.test(name)
          || kit.some(function (k) { return /^m sport/i.test(k) && !DELETED.test(k); });
-    return {
-      'M Sport / Performance': m ? 25 : 0,
-      'Standard / SE':         m ? 0 : 25,
-      'Sport':                 m ? 12 : (/sport/.test(name) ? 25 : 0),
-      'Luxury / High spec':    Math.min(25, kit.length / 2)
-    };
+    if (choice === 'M Sport / Performance') return m;
+    if (choice === 'Standard / SE') return !m;
+    if (choice === 'Sport') return /sport/.test(name);
+    if (choice === 'Luxury / High spec') return kit.length >= HIGH_SPEC;
+    return false;
+  }
+
+  /* How much of what they ACTUALLY ASKED FOR this car gives them.
+     Deliberately not the ranking score scaled to 100: that number would move
+     on things nobody asked about (age, mileage, which forecourt) and could
+     not be explained. This is a share of their own brief, and the line of
+     met asks under it on the card is the working.
+     Only what they stated is counted, so somebody who skipped a step is not
+     marked down for it, and a feature Hedin never itemise is in neither half -
+     it would otherwise hold every car below 100% for something we simply
+     cannot see. Must-haves weigh three, nice-to-haves one. */
+  function matchPct(c, det, b) {
+    var got = 0, max = 0;
+    function add(w, ok) { max += w; if (ok) got += w; }
+    /* The budget and the body style are hard filters, so a car that got this
+       far meets them - but they were asked for, so they belong in the total. */
+    if (b.bodies.length) add(3, true);
+    if (b.cash ? b.cashBudget : b.monthly) add(3, true);
+    if (b.colours.length) add(2, b.colours.indexOf(c.colour) !== -1);
+    if (b.model) add(2, modelHit(c, b) > 0);
+    if (b.trim && b.trim !== 'No preference') add(1, trimMet(c, det, b.trim));
+    firmOnly(b.needs).forEach(function (n) { add(3, hasFeature(det, n)); });
+    firmOnly(b.wants).forEach(function (n) { add(1, hasFeature(det, n)); });
+    /* With nothing but a budget and a body style stated, every car is 100% and
+       the badge says nothing. Shown only when something could separate them. */
+    var picky = b.colours.length || b.model
+      || (b.trim && b.trim !== 'No preference')
+      || firmOnly(b.needs).length || firmOnly(b.wants).length;
+    return (max && picky) ? Math.round(100 * got / max) : null;
   }
 
   /* A car is only shown if it genuinely clears what they said they could pay.
@@ -194,7 +228,7 @@ window.dsStockMatch = (function () {
     /* Nice-to-haves rank; must-haves gate above and are not double counted
        here beyond the ordering the caller already applies. */
     b.wants.forEach(function (n) { if (hasFeature(det, n)) s += 15; });
-    if (b.trim && b.trim !== 'No preference') s += (trimScore(c, det)[b.trim] || 0);
+    if (b.trim && b.trim !== 'No preference' && trimMet(c, det, b.trim)) s += 25;
     if (c._home) s += 12;
     if (fin && b.monthly) s += Math.max(0, 10 - (b.monthly - fin.monthly) / 25);
     s += Math.max(0, (c._year || 0) - 2018);
@@ -212,7 +246,7 @@ window.dsStockMatch = (function () {
     return WA + '?text=' + encodeURIComponent(bits.join('\n'));
   }
 
-  function card(c, fin, det, asks) {
+  function card(c, fin, det, asks, pct) {
     var pics = dsFin.photos(c, det);
     var spec = [c.mileage ? String(c.mileage).replace(/ /g, ' ') : '',
                 c.fuel || '', c.gearbox || '', c.colour || '']
@@ -223,7 +257,10 @@ window.dsStockMatch = (function () {
             + esc((c.year || '') + ' ' + c.model) + '" loading="lazy" width="560" height="315"/>'
           : '')
       + '<div class="sm-body">'
-      +   '<p class="sm-meta">' + esc([c.year, c.reg].filter(Boolean).join(' · ')) + '</p>'
+      +   '<p class="sm-meta">' + esc([c.year, c.reg].filter(Boolean).join(' · '))
+      +     (pct === null || pct === undefined ? ''
+            : '<span class="sm-pct' + (pct >= 80 ? ' hot' : '') + '">' + pct + '% match</span>')
+      +   '</p>'
       +   '<h3 class="sm-title">' + esc(c.model) + '</h3>'
       +   '<p class="sm-price">' + esc(c.price || '') + '</p>'
       +   (fin
@@ -276,7 +313,8 @@ window.dsStockMatch = (function () {
         if (!fits(c, b, fin)) return;
         var det = DET[c.id];
         rows.push({ c: c, fin: fin, det: det, s: score(c, b, fin, det),
-                    met: metNeeds(det, b), asks: matchedAsks(det, b) });
+                    met: metNeeds(det, b), asks: matchedAsks(det, b),
+                    pct: matchPct(c, det, b) });
       });
       if (!rows.length) return;
 
@@ -287,7 +325,13 @@ window.dsStockMatch = (function () {
       var whole = rows.filter(function (r) { return r.met === firm.length; });
       var short = firm.length && !whole.length;
       rows = (whole.length ? whole : rows);
-      rows.sort(function (x, y) { return (y.met - x.met) || (y.s - x.s); });
+      /* The percentage leads the ordering, because a 90% card sitting above a
+         95% one reads as broken however good the reason. The score only breaks
+         ties, on the things nobody asked about: newer, fewer miles, Dan's own
+         forecourt. */
+      rows.sort(function (x, y) {
+        return (y.met - x.met) || ((y.pct || 0) - (x.pct || 0)) || (y.s - x.s);
+      });
       rows = rows.slice(0, SHOW);
 
       box.innerHTML =
@@ -306,7 +350,7 @@ window.dsStockMatch = (function () {
             : '')
         + ' Tap one and it comes straight to me.</p>'
         + '<div class="sm-grid">'
-        + rows.map(function (r2) { return card(r2.c, r2.fin, r2.det, r2.asks); }).join('')
+        + rows.map(function (r2) { return card(r2.c, r2.fin, r2.det, r2.asks, r2.pct); }).join('')
         + '</div>';
       box.hidden = false;
 
