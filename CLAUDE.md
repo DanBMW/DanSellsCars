@@ -120,7 +120,43 @@ keep, most of which were got wrong first:
   only four cars are showing. The count on the Filters button does the same job.
 - **Free text is AND over words, in any order.** A single substring match meant
   the obvious two-word search ("white touring") came back empty while both words
-  were plainly on the card. Monthly filters and sorts only use a
+  were plainly on the card.
+
+#### The budget search: deposit and monthly ceiling
+
+Above the filter panel, outside it and always on screen (the panel is shut by
+default on a phone), sit the two questions a customer actually arrives with:
+what can I put down, and what can I pay a month. Picking a deposit **changes
+every payment on the page** to the lender's quote at that deposit, the terms
+line, the representative example and the monthly sorts with it; the monthly box
+is a ceiling, not a band.
+
+- **Those figures are the lender's at that exact deposit**, read from
+  `automation/stock-finance-ladder.json`. They are never worked out here. The
+  monthly payment is almost perfectly linear in the deposit (about £25.55 per
+  £1,000 on one car checked) so interpolating between two rungs would be easy
+  and would look right. Do not: a payment put in front of a customer has to be
+  one the lender gave.
+- **The rungs are £0, £1,000, £2,500, £5,000, £7,500, £10,000 and £15,000**, in
+  `RUNGS` in `stock-finance.py` and `DEPOSITS` in `stock.html`. **Keep the two
+  lists in step**: a deposit offered on the page that was never quoted shows
+  every car as unquotable.
+- **The deposit chips carry counts**, each one meaning "cars the lender will
+  quote at that deposit, within the monthly ceiling you have set", so the trade
+  is visible before tapping: £5,000 down might show 22 cars at £400 a month and
+  £7,500 down 32. Counting a deposit means re-stamping `_monthly` across the
+  list and putting it back (`countAtDeposit()`), which measured at about 3ms of
+  a 68ms tap over all 332 cars.
+- **The legal wording is taken off the main entry at any rung.** It is written
+  about the vehicle, its mileages, the campaign dates and the FCA disclosures
+  and carries no deposit or monthly figure, so it reads true for every rung.
+  That was checked against the lender's own text, not assumed, and it is why
+  the ladder file holds no legal text and stays about 250KB.
+- **An old `?monthly=` link becomes a ceiling** at the top of whichever band it
+  named, so links Dan shared before this still land somewhere sensible.
+  `monthly` is no longer a facet.
+
+Monthly filters and sorts only use a
 **live** lender quote; a car without one shows "Ask for a quote", is excluded
 from a monthly filter and sorts after the quoted cars. Every card has the
 WhatsApp button (primary, prefilled with year, model, reg and price) plus an
@@ -136,9 +172,32 @@ not replace this with arithmetic in the page, however tempting.
 
 The quotes live in `automation/stock-finance.json`, keyed by listing id,
 **alongside** the stock snapshot rather than inside it: the snapshot is
-refreshed by its own job and read by the board's forecourt view too. About
-2.6s a car, so roughly three minutes for the list; re-run it whenever the
-snapshot changes.
+refreshed by its own job and read by the board's forecourt view too. Re-run it
+whenever the snapshot changes.
+
+The same job also writes **`automation/stock-finance-ladder.json`**: the
+lender's quote for each car at each deposit rung, which is what the budget
+search reads. One line a car, the way the snapshot is written, so the daily
+diff stays readable.
+
+- **The listing page fetch is the expensive part** (1.8s of what used to be
+  2.8s a car); quoting the same car again at another deposit is about half a
+  second, which is why the ladder reuses one page fetch and why seven rungs
+  cost about 6.7s a car rather than seven times the job. The full run is about
+  37 minutes for 330-odd cars, up from 16.
+- **The lender silently clamps a deposit it will not take.** Ask for £7,500 on
+  a £16,495 car and it answers with an ordinary-looking quote that is actually
+  for £6,433.05 and says nothing about it; the only tell is `TotalDeposit`
+  coming back lower than you asked. A rung like that is dropped rather than
+  stored, because keeping it would offer a customer a deposit the lender has
+  already refused and show the same payment under three different deposits.
+  The ceiling is recorded as `maxdep` and the card says it ("most this one
+  takes on PCP is about £6,433 down") instead of a bare "ask for a quote".
+  Every rung above a clamped one is skipped: they all clamp to the same place.
+- **The count of regular payments is stored per rung**, not taken off the
+  default quote. The term came back the same at every deposit on every car
+  checked, but the page prints "47 monthly payments of ..." and a wrong count
+  there is a wrong financial promotion.
 
 Three things the page has to respect:
 - **A quote expires, and they all expire together.** `valid_to` is BMW

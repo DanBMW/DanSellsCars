@@ -181,6 +181,27 @@
      live across several facets this is the thing that keeps the list
      explainable - and on a phone the panel is shut, so without it there is
      nothing on screen saying why only four cars are showing. */
+  /* The budget search. Deposit and a monthly ceiling sit ABOVE the filter
+     panel and outside it, always on screen: on a phone the panel is shut by
+     default, and this is the thing most people came to do. */
+  .sl-budget{border:1px solid var(--hairline);padding:clamp(14px,2vw,18px);
+    margin-bottom:12px;display:grid;gap:11px}
+  .sl-bud-h{font-family:var(--sans);font-size:.71rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent);margin:0;font-weight:600}
+  .sl-bud-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .sl-bud-lab{font-family:var(--sans);font-size:.78rem;color:var(--dim);
+    flex:0 0 72px}
+  .sl-mo{background:var(--ink-3);border:1px solid var(--hairline);color:var(--paper);
+    font-family:var(--sans);font-size:.84rem;padding:8px 10px;border-radius:2px;
+    width:116px;min-width:0}
+  .sl-mo:focus{outline:none;border-color:var(--accent)}
+  .sl-mo::-webkit-outer-spin-button,.sl-mo::-webkit-inner-spin-button{
+    -webkit-appearance:none;margin:0}
+  .sl-bud-note{font-family:var(--sans);font-size:.74rem;line-height:1.5;
+    color:var(--dim);margin:0}
+  .sl-maxdep{font-family:var(--sans);font-size:.72rem;color:var(--dim);
+    margin-top:3px}
+  @media(max-width:560px){ .sl-bud-lab{flex:0 0 100%} }
   .sl-applied{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
   .sl-applied-h{font-family:var(--sans);font-size:.76rem;color:var(--dim);margin:0 2px 0 0}
   .sl-pill{background:var(--paper);border:1px solid var(--paper);color:var(--ink);
@@ -277,6 +298,24 @@
           <option value="miles-asc">Mileage: lowest first</option>
           <option value="year-desc">Newest first</option>
         </select>
+      </div>
+
+      <!-- Deposit and monthly ceiling. Every payment behind this is a real
+           lender quote at that exact deposit, held in stock-finance-ladder.json
+           - nothing here is worked out in the page. -->
+      <div class="sl-budget" id="slBudget">
+        <p class="sl-bud-h">What can you put down, and pay a month?</p>
+        <div class="sl-bud-row">
+          <span class="sl-bud-lab" id="slDepLab">Deposit</span>
+          <div class="sl-facet-chips" id="slDep" role="group" aria-labelledby="slDepLab"></div>
+        </div>
+        <div class="sl-bud-row">
+          <label class="sl-bud-lab" for="slMo">A month</label>
+          <input class="sl-mo" id="slMo" type="number" inputmode="numeric" min="0" step="25"
+                 placeholder="&pound; any" aria-label="Most you want to pay a month"/>
+          <div class="sl-facet-chips" id="slMoChips" role="group" aria-label="Quick monthly budgets"></div>
+        </div>
+        <p class="sl-bud-note" id="slBudNote"></p>
       </div>
 
       <!-- Built by buildFacets() from whatever is in ALL, so unlocking the rest
@@ -519,6 +558,10 @@
   var elSort  = document.getElementById('slSort');
   var elFacets  = document.getElementById('slFilters');
   var elApplied = document.getElementById('slApplied');
+  var elDep     = document.getElementById('slDep');
+  var elMo      = document.getElementById('slMo');
+  var elMoChips = document.getElementById('slMoChips');
+  var elBudNote = document.getElementById('slBudNote');
   var elFilterToggle = document.getElementById('slFilterToggle');
   var elUnlock    = document.getElementById('slUnlock');
   var elUnlockBtn = document.getElementById('slUnlockBtn');
@@ -528,6 +571,14 @@
      applied pills and the query string are all derived from them, so adding a
      facet means adding a row below and nothing else. */
   var SEL = {};                 /* facet key -> array of chosen option values */
+  var LAD = {};                 /* the deposit ladder, keyed by listing id */
+  var DEPOSIT = null;           /* the deposit the customer has chosen, or null */
+  var BUDGET = 0;               /* the most they want to pay a month, 0 for any */
+  /* The deposits the quote job holds a real lender quote at. Keep these in step
+     with RUNGS in automation/stock-finance.py: a figure offered here that was
+     never quoted shows every car as unquotable. */
+  var DEPOSITS = [0, 1000, 2500, 5000, 7500, 10000, 15000];
+  var BUDGETS = [250, 300, 400, 500, 750];
   var OPTS = {};                /* facet key -> the options it currently offers */
   var BODY_LABELS = {};
   var GBP = '\u00a3';
@@ -555,15 +606,6 @@
         band('30to50', GBP + '30k to ' + GBP + '50k',      function(c){ return c._price >= 30000 && c._price < 50000; }),
         band('50to70', GBP + '50k to ' + GBP + '70k',      function(c){ return c._price >= 50000 && c._price < 70000; }),
         band('o70',    GBP + '70k+',                       function(c){ return c._price >= 70000; })
-      ] },
-    /* Only a live lender quote counts here, so a car without one is not in any
-       monthly band - the same rule the cards and the monthly sorts follow. */
-    { key:'monthly', label:'Monthly payment', note:'cars with a live quote', fixed:[
-        band('u300',     'Under ' + GBP + '300',            function(c){ return c._monthly && c._monthly <  300; }),
-        band('300to400', GBP + '300 to ' + GBP + '400',     function(c){ return c._monthly && c._monthly >= 300 && c._monthly < 400; }),
-        band('400to500', GBP + '400 to ' + GBP + '500',     function(c){ return c._monthly && c._monthly >= 400 && c._monthly < 500; }),
-        band('500to700', GBP + '500 to ' + GBP + '700',     function(c){ return c._monthly && c._monthly >= 500 && c._monthly < 700; }),
-        band('o700',     GBP + '700+',                      function(c){ return c._monthly && c._monthly >= 700; })
       ] },
     { key:'series', label:'Model', of:function(c){ return c._family; },
       sort:function(a, b){
@@ -606,11 +648,15 @@
   }
   function chosen(key){ return SEL[key] || (SEL[key] = []); }
   function activeCount(){
-    var n = 0;
+    var n = (DEPOSIT === null ? 0 : 1) + (BUDGET ? 1 : 0);
     FACETS.forEach(function(f){ n += chosen(f.key).length; });
     return n;
   }
-  function clearFacets(){ FACETS.forEach(function(f){ SEL[f.key] = []; }); }
+  function clearFacets(){
+    FACETS.forEach(function(f){ SEL[f.key] = []; });
+    DEPOSIT = null; BUDGET = 0;
+    attachMonthly();
+  }
 
   /* A fixed facet's options are its bands; a derived one's are whatever values
      the cars actually have, which is why unlocking widens them. */
@@ -657,12 +703,59 @@
     var words = elSearch.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
     return ALL.filter(function(c){
       if (!searchHit(c, words)) return false;
+      if (!budgetHit(c)) return false;
       for (var i = 0; i < FACETS.length; i++){
         if (FACETS[i].key === skip) continue;
         if (!hitsFacet(c, FACETS[i])) return false;
       }
       return true;
     });
+  }
+
+  /* The lender's own quote for this car at the deposit the customer chose.
+     Every figure comes out of the ladder, which holds a real quote per rung:
+     nothing here works a payment out from another one, however linear the
+     lender's own numbers look. With no deposit chosen this is the standard
+     example, exactly as before.
+     The legal wording is taken off the main entry at any rung. It is written
+     about the vehicle, its mileages, the campaign dates and the FCA
+     disclosures and carries no deposit or monthly figure, so it reads true for
+     all of them - checked against the lender's own text rather than assumed. */
+  function finFor(c){
+    var f = FIN[c.id];
+    if (!finLive(f)) return null;
+    if (DEPOSIT === null) return f;
+    var e = LAD[c.id], s = null, i;
+    if (e && e.steps)
+      for (i = 0; i < e.steps.length; i++)
+        if (Number(e.steps[i].d) === DEPOSIT) { s = e.steps[i]; break; }
+    if (!s) return null;        /* no lender quote at that deposit for this car */
+    return { product:f.product, lender:f.lender, legal:f.legal, price:f.price,
+             reg:f.reg, valid_to:f.valid_to, quoted_at:f.quoted_at,
+             annual_mileage:f.annual_mileage, contract_mileage:f.contract_mileage,
+             excess_pence:f.excess_pence,
+             monthly:s.m, deposit:s.d, apr:s.apr, term:s.t, payments:s.p,
+             final_payment:s.f, credit:s.c, total_payable:s.tp, charges:s.ch };
+  }
+
+  /* Why this car cannot be quoted at the deposit asked for, when we can say.
+     Worth saying out loud: a customer with £10,000 looking at a £16,000 car is
+     not being turned away, the deposit is simply more than a PCP on it carries.
+     Two different facts, and the wording says which:
+       - `maxdep` is the lender's own ceiling, learnt when it clamped a rung;
+       - otherwise the top rung we hold a quote at, which is all we can claim
+         for a car whose higher rungs were never asked about. */
+  function depLimit(c){
+    var e = LAD[c.id];
+    if (!e) return null;
+    if (e.maxdep) return {amount:Number(e.maxdep), lender:true};
+    if (!e.steps || !e.steps.length) return null;
+    return {amount:Number(e.steps[e.steps.length - 1].d), lender:false};
+  }
+
+  function budgetHit(c){
+    if (!BUDGET) return true;
+    return !!c._monthly && c._monthly <= BUDGET;
   }
 
   function syncUrl(){
@@ -673,6 +766,8 @@
       var on = chosen(f.key);
       if (on.length) u.set(f.key, on.join(','));
     });
+    if (DEPOSIT !== null) u.set('dep', String(DEPOSIT));
+    if (BUDGET) u.set('mo', String(BUDGET));
     if (elSort.value && elSort.value !== 'price-asc') u.set('sort', elSort.value);
     // a list Dan has unlocked and then shared should open unlocked
     if (unlocked) u.set('all', '1');
@@ -693,6 +788,22 @@
     var s = u.get('sort');
     if (s && Array.prototype.some.call(elSort.options, function(o){ return o.value === s; }))
       elSort.value = s;
+    var dep = u.get('dep');
+    if (dep !== null && DEPOSITS.indexOf(Number(dep)) !== -1) DEPOSIT = Number(dep);
+    var mo = u.get('mo');
+    if (mo !== null && Number(mo) > 0) BUDGET = Number(mo);
+    /* The monthly bands became a ceiling, so an old ?monthly= link is read as
+       the top of whichever band it named. `o700` has no top and is dropped. */
+    if (mo === null){
+      var band = u.get('monthly');
+      if (band){
+        var tops = {u300:300, u400:400, u500:500, u700:700,
+                    '300to400':400, '400to500':500, '500to700':700};
+        var best = 0;
+        band.split(',').forEach(function(v){ if (tops[v] > best) best = tops[v]; });
+        if (best) BUDGET = best;
+      }
+    }
     FACETS.forEach(function(f){
       var raw = u.get(f.key);
       if (raw === null) return;
@@ -842,8 +953,68 @@
       + (n ? '<span class="n">' + n + '</span>' : '');
   }
 
+  /* Deposit is one choice, not several: it is how much the customer has, and
+     two answers to that is not a question anybody is asking. Each chip carries
+     how many cars the lender will quote at that deposit within their monthly
+     ceiling, so the trade is visible before they tap. */
+  function buildBudget(){
+    elDep.innerHTML = '<button class="sl-chip" type="button" data-d="any" aria-pressed="true">'
+      + 'Any<span class="n"></span></button>'
+      + DEPOSITS.map(function(d){
+          return '<button class="sl-chip" type="button" data-d="' + d + '" aria-pressed="false">'
+            + money(d) + '<span class="n"></span></button>';
+        }).join('');
+    elMoChips.innerHTML = BUDGETS.map(function(m){
+      return '<button class="sl-chip" type="button" data-m="' + m + '" aria-pressed="false">'
+        + money(m) + '<span class="n"></span></button>';
+    }).join('');
+  }
+
+  /* Counting a deposit means re-quoting every car at it, so this stamps the
+     ladder figure on, counts, and puts `_monthly` back the way it was. */
+  function countAtDeposit(d){
+    var was = DEPOSIT, n;
+    DEPOSIT = d;
+    attachMonthly();
+    n = ALL.filter(function(c){ return budgetHit(c) && c._monthly; }).length;
+    DEPOSIT = was;
+    attachMonthly();
+    return n;
+  }
+
+  function paintBudget(){
+    var i, b;
+    for (i = 0; i < elDep.children.length; i++){
+      b = elDep.children[i];
+      var raw = b.getAttribute('data-d');
+      var d = raw === 'any' ? null : Number(raw);
+      b.setAttribute('aria-pressed', String(d === DEPOSIT));
+      b.querySelector('.n').textContent = countAtDeposit(d);
+    }
+    for (i = 0; i < elMoChips.children.length; i++){
+      b = elMoChips.children[i];
+      b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-m')) === BUDGET));
+    }
+    if (String(BUDGET || '') !== elMo.value) elMo.value = BUDGET || '';
+
+    var quoted = ALL.filter(function(c){ return c._monthly; }).length;
+    elBudNote.textContent = DEPOSIT === null
+      ? 'Payments shown are the standard example: ' + money(1000)
+        + ' down, or 10% on cars over ' + money(40000)
+        + '. Pick a deposit and every payment becomes the lender\'s quote at it.'
+      : 'Showing BMW Financial Services\' own quote with ' + money(DEPOSIT)
+        + ' down, over 48 months at 8,000 miles a year. '
+        + quoted + ' of ' + ALL.length + ' cars can be quoted at that deposit.';
+  }
+
   function paintApplied(){
     var pills = [];
+    if (DEPOSIT !== null)
+      pills.push('<button class="sl-pill" type="button" data-budget="dep"'
+        + ' aria-label="Remove the deposit">' + money(DEPOSIT) + ' deposit</button>');
+    if (BUDGET)
+      pills.push('<button class="sl-pill" type="button" data-budget="mo"'
+        + ' aria-label="Remove the monthly budget">Up to ' + money(BUDGET) + ' a month</button>');
     FACETS.forEach(function(f){
       chosen(f.key).forEach(function(v){
         var hit = null;
@@ -919,6 +1090,7 @@
 
     syncUrl();
     paintFacets();
+    paintBudget();
     paintApplied();
 
     elCount.textContent = rows.length === ALL.length
@@ -955,8 +1127,8 @@
         + '?subject=' + encodeURIComponent('Enquiry: ' + label)
         + '&body=' + encodeURIComponent('Hi Dan,\n\nI am interested in the ' + label + '.\n\nThanks');
       var drive = {FourWheel:'xDrive', RearWheel:'Rear wheel drive', FrontWheel:'Front wheel drive'}[c.drive] || c.drive || '';
-      var f = FIN[c.id];
-      if (!finLive(f)) f = null;
+      var f = finFor(c);
+      var cap = f ? null : depLimit(c);
       /* Only the payment sits on the photograph, and the terms moved down to
          the line below it. Together they covered 61% of a 16:9 car picture -
          the terms alone wrap to three lines at a phone's card width - so the
@@ -973,7 +1145,17 @@
         ? '<div class="sl-monthly">' + esc(f.product || 'PCP') + ' &middot; '
           + money(f.deposit) + ' deposit &middot; ' + f.term + ' months &middot; '
           + f.apr + '% APR representative</div>'
-        : '<div class="sl-monthly" style="color:var(--dim)">Ask for a quote</div>';
+        : '<div class="sl-monthly" style="color:var(--dim)">Ask for a quote'
+          /* Not a refusal: a PCP cannot take a deposit bigger than the car
+             less its final payment, and the lender clamps one quietly. Saying
+             the ceiling beats letting a customer with plenty of money think
+             the car is somehow out of reach. */
+          + (cap && DEPOSIT !== null && DEPOSIT > cap.amount
+              ? '<span class="sl-maxdep">' + (cap.lender
+                  ? 'Most this one takes on PCP is about ' + money(cap.amount) + ' down'
+                  : 'The most we hold a quote for on this one is ' + money(cap.amount) + ' down')
+                + '</span>'
+              : '') + '</div>';
 
       var spec = [];
       if (c.mileage) spec.push(['Mileage', esc(String(c.mileage).replace(/\u00a0/g,' ').replace(/ miles$/,''))]);
@@ -1013,10 +1195,13 @@
       + 'or message me and I will send you what is in.</p>';
   }
 
+  /* `_monthly` is what the budget filter and the monthly sorts read, so it has
+     to follow the chosen deposit: re-run this whenever the deposit changes, not
+     only when the files land. */
   function attachMonthly(){
     ALL.forEach(function(c){
-      var f = FIN[c.id];
-      c._monthly = finLive(f) ? Number(f.monthly) : 0;
+      var f = finFor(c);
+      c._monthly = f ? Number(f.monthly) : 0;
     });
   }
 
@@ -1024,6 +1209,14 @@
     .then(function(r){ return r.ok ? r.json() : {}; })
     .then(function(j){ FIN = j || {}; attachMonthly(); if (ALL.length) render(); })
     ['catch'](function(){ FIN = {}; });
+
+  /* The deposit ladder. A failure here is quiet on purpose: the deposit chips
+     simply find nothing to quote and the page is the standard example it has
+     always been, rather than a broken budget search. */
+  fetch('automation/stock-finance-ladder.json', {cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .then(function(j){ LAD = j || {}; attachMonthly(); if (ALL.length) render(); })
+    ['catch'](function(){ LAD = {}; });
 
   fetch('automation/hedin-stock-snapshot.json', {cache:'no-cache'})
     .then(function(r){
@@ -1053,7 +1246,9 @@
       attachMonthly();
 
       buildFacets();
+      buildBudget();
       applyUrl();
+      attachMonthly();
       if (wantsAll()) unlock();
       render();
     })
@@ -1112,9 +1307,38 @@
     if (e.target.id === 'slClearAll'){ clearFacets(); render(); return; }
     var pill = e.target.closest('.sl-pill');
     if (!pill) return;
+    var bud = pill.getAttribute('data-budget');
+    if (bud){
+      if (bud === 'dep'){ DEPOSIT = null; attachMonthly(); } else { BUDGET = 0; }
+      render();
+      return;
+    }
     var on = chosen(pill.getAttribute('data-facet'));
     var i = on.indexOf(pill.getAttribute('data-v'));
     if (i !== -1) on.splice(i, 1);
+    render();
+  });
+
+  elDep.addEventListener('click', function(e){
+    var btn = e.target.closest('.sl-chip');
+    if (!btn) return;
+    var raw = btn.getAttribute('data-d');
+    DEPOSIT = raw === 'any' ? null : Number(raw);
+    attachMonthly();
+    render();
+  });
+
+  elMoChips.addEventListener('click', function(e){
+    var btn = e.target.closest('.sl-chip');
+    if (!btn) return;
+    var m = Number(btn.getAttribute('data-m'));
+    BUDGET = (BUDGET === m) ? 0 : m;      /* tapping the live one clears it */
+    render();
+  });
+
+  elMo.addEventListener('input', function(){
+    var v = Number(elMo.value);
+    BUDGET = v > 0 ? v : 0;
     render();
   });
 
