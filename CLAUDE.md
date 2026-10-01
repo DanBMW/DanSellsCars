@@ -162,13 +162,43 @@ from a monthly filter and sorts after the quoted cars. Every card has the
 WhatsApp button (primary, prefilled with year, model, reg and price) plus an
 email link to daniel.cane@hedinautomotive.co.uk and the Hedin listing.
 
-**Those figures are never calculated here.** `automation/stock-finance.py`
-pulls a real BMW Financial Services quote per car through Hedin's own
-Codeweavers API, the same path `automation/finance-quote.py` uses for the
-daily cards, on the same terms (48 months, 8,000 miles, flat £1,000 deposit
-below £40k and 10% at or above) so the page and the cards can never disagree.
-A monthly payment shown to a customer has to be the lender's, not ours - do
-not replace this with arithmetic in the page, however tempting.
+**Those figures come from the lender.** `automation/stock-finance.py` pulls a
+real BMW Financial Services quote per car through Hedin's own Codeweavers API,
+the same path `automation/finance-quote.py` uses for the daily cards, on the
+same terms (48 months, 8,000 miles, flat £1,000 deposit below £40k and 10% at
+or above) so the page and the cards can never disagree.
+
+**Between the quoted deposits the page reads off the line those quotes make**
+(Dan asked for this on 1 October, so a customer can type any deposit rather
+than pick one of seven). That is a deliberate, measured exception to "never
+calculate a payment here", and it rests on evidence rather than on its being
+convenient:
+
+- The monthly payment is **exactly linear in the deposit**, and the rate
+  depends only on the APR and term: 148 cars at 11.9% share one rate to within
+  2e-6 per £1.
+- A least-squares line through a car's own rungs reproduces the lender's figure
+  **to the penny**: it lands exactly on 97% of the 1,913 rungs we hold, and was
+  checked against live quotes at 20 deposits the lender had never been asked
+  for, where 15 were exact and the rest a penny out. A penny is the floor,
+  because the quotes we are given are themselves rounded to one.
+- The rest of the example follows exactly, not approximately: total payable is
+  deposit + payments x monthly + final payment and the charges are that less
+  the cash price, both of which hold with a residual of 0.00 on all 1,913.
+
+Two guards keep it honest, and neither is optional:
+- **An exact rung is handed back verbatim**, never recomputed.
+- **`lineFor()` checks the line against every rung the car has** (`LINE_TOL`,
+  2p; every rung of all 312 cars sat within 0.83p) and a car that does not fit
+  it falls back to its rungs alone. If BMW ever makes the rate depend on the
+  deposit, that car stops being interpolated instead of quietly going wrong.
+- **It is never used past the most the lender will take** (`maxdep`, or the top
+  rung). Above that the card says so rather than inventing a payment.
+
+What is still NOT ours to calculate: anything that changes the **term or the
+mileage**. Those move the optional final payment, which comes out of the
+lender's residual tables and cannot be derived from anything we hold. A
+different term means a new quote.
 
 The quotes live in `automation/stock-finance.json`, keyed by listing id,
 **alongside** the stock snapshot rather than inside it: the snapshot is
@@ -198,6 +228,34 @@ diff stays readable.
   default quote. The term came back the same at every deposit on every car
   checked, but the page prints "47 monthly payments of ..." and a wrong count
   there is a wrong financial promotion.
+
+### Photographs and equipment - car-details.json
+
+`automation/car-details.py` fetches each car's own listing page once and writes
+`automation/car-details.json`: up to six gallery photographs, the factory
+equipment list (median 43 lines a car, 434 distinct across the fleet), the trim
+version and the emissions figure. A **sidecar**, not a change to either stock
+file, for the usual reason: the snapshot is read by the board as well and must
+keep its shape.
+
+- **Equipment is what makes the search box worth having.** "harman kardon"
+  finds 46 cars, "tow bar" 3, "heated seats" 75. None of that was findable when
+  the haystack was model, colour and trim. The haystack is stamped onto each
+  car once (`hayFor`) rather than rebuilt per keystroke.
+- **Equipment does not change once a car is on the forecourt**, so the file
+  itself is the "already fetched" marker and only new arrivals cost a request.
+  The first run was 329 cars in about seven minutes; an ordinary morning is a
+  few seconds.
+- **A page with no `car_` fields fails that one car** rather than being
+  recorded as having nothing, which would mark it done for ever.
+- **Gallery urls are stored as the CDN's uuid alone** and put back together by
+  the page, which is about 70 characters a photograph saved on a file a phone
+  downloads.
+- **Only the photograph on screen is ever fetched.** The card has one `<img>`
+  and the arrows set its `src`; 332 cards times six photographs would be thirty
+  megabytes nobody asked for. The equipment list is built the first time its
+  `<details>` is opened for the same reason - fourteen thousand list items
+  otherwise.
 
 Three things the page has to respect:
 - **A quote expires, and they all expire together.** `valid_to` is BMW

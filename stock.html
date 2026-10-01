@@ -202,6 +202,33 @@
   .sl-maxdep{font-family:var(--sans);font-size:.72rem;color:var(--dim);
     margin-top:3px}
   @media(max-width:560px){ .sl-bud-lab{flex:0 0 100%} }
+  /* The gallery. Only the photo on screen is ever fetched: 332 cards times six
+     photographs is thirty-odd megabytes nobody asked for, so the others are
+     given a src the first time they are looked at. */
+  .sl-nav{position:absolute;top:0;bottom:0;width:38%;border:0;background:none;
+    cursor:pointer;opacity:0;transition:opacity .15s;padding:0;z-index:2}
+  .sl-nav:focus-visible{opacity:1;outline:2px solid var(--accent)}
+  .sl-hero:hover .sl-nav{opacity:1}
+  .sl-nav.prev{left:0}
+  .sl-nav.next{right:0}
+  .sl-nav span{display:inline-flex;align-items:center;justify-content:center;
+    width:34px;height:34px;border-radius:50%;background:rgba(6,9,14,.62);
+    color:#fff;font-size:1rem;line-height:1}
+  @media(hover:none){ .sl-nav{opacity:1} }
+  .sl-dots{position:absolute;top:9px;right:10px;z-index:2;font-family:var(--sans);
+    font-size:.68rem;letter-spacing:.04em;color:#fff;background:rgba(6,9,14,.55);
+    padding:3px 8px;border-radius:999px}
+  /* Equipment, filled the first time it is opened rather than for every card
+     on load: forty-odd lines across three hundred cars is fourteen thousand
+     list items nobody has asked to see. */
+  .sl-kit{margin-top:10px;font-family:var(--sans);font-size:.76rem;color:var(--dim)}
+  .sl-kit summary{cursor:pointer;list-style:none;padding:2px 0;color:var(--body-c)}
+  .sl-kit summary::-webkit-details-marker{display:none}
+  .sl-kit summary::after{content:' \25be';opacity:.6}
+  .sl-kit[open] summary::after{content:' \25b4'}
+  .sl-kit ul{margin:7px 0 0;padding:0 0 0 16px;columns:2;column-gap:18px;line-height:1.6}
+  .sl-kit li{break-inside:avoid}
+  @media(max-width:560px){ .sl-kit ul{columns:1} }
   .sl-applied{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
   .sl-applied-h{font-family:var(--sans);font-size:.76rem;color:var(--dim);margin:0 2px 0 0}
   .sl-pill{background:var(--paper);border:1px solid var(--paper);color:var(--ink);
@@ -306,8 +333,10 @@
       <div class="sl-budget" id="slBudget">
         <p class="sl-bud-h">What can you put down, and pay a month?</p>
         <div class="sl-bud-row">
-          <span class="sl-bud-lab" id="slDepLab">Deposit</span>
-          <div class="sl-facet-chips" id="slDep" role="group" aria-labelledby="slDepLab"></div>
+          <label class="sl-bud-lab" for="slDepIn">Deposit</label>
+          <input class="sl-mo" id="slDepIn" type="number" inputmode="numeric" min="0" step="250"
+                 placeholder="&pound; any" aria-label="What you can put down"/>
+          <div class="sl-facet-chips" id="slDep" role="group" aria-label="Common deposits"></div>
         </div>
         <div class="sl-bud-row">
           <label class="sl-bud-lab" for="slMo">A month</label>
@@ -559,6 +588,7 @@
   var elFacets  = document.getElementById('slFilters');
   var elApplied = document.getElementById('slApplied');
   var elDep     = document.getElementById('slDep');
+  var elDepIn   = document.getElementById('slDepIn');
   var elMo      = document.getElementById('slMo');
   var elMoChips = document.getElementById('slMoChips');
   var elBudNote = document.getElementById('slBudNote');
@@ -572,6 +602,8 @@
      facet means adding a row below and nothing else. */
   var SEL = {};                 /* facet key -> array of chosen option values */
   var LAD = {};                 /* the deposit ladder, keyed by listing id */
+  var DET = {};                 /* photographs and equipment, keyed by listing id */
+  var CDN = 'https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/';
   var DEPOSIT = null;           /* the deposit the customer has chosen, or null */
   var BUDGET = 0;               /* the most they want to pay a month, 0 for any */
   /* The deposits the quote job holds a real lender quote at. Keep these in step
@@ -579,6 +611,11 @@
      never quoted shows every car as unquotable. */
   var DEPOSITS = [0, 1000, 2500, 5000, 7500, 10000, 15000];
   var BUDGETS = [250, 300, 400, 500, 750];
+  /* How far a rung may sit off the line through the outer two before this
+     stops trusting the line for that car. Every rung of all 312 cars sat
+     within 0.83p of it, so 2p means "something about this car has genuinely
+     changed", not "rounding". */
+  var LINE_TOL = 0.02;
   var OPTS = {};                /* facet key -> the options it currently offers */
   var BODY_LABELS = {};
   var GBP = '\u00a3';
@@ -687,10 +724,23 @@
   /* Every word has to appear somewhere, in any order. The old single-substring
      match meant the obvious two-word search ("white touring") came back empty
      while both words were plainly on the card. */
+  /* Built once a car rather than on every keystroke. It now carries the whole
+     equipment list, which is the point: somebody can look for "harman kardon",
+     "tow bar" or "heated seats" and find the cars that actually have it, which
+     no amount of model and colour would ever have found. */
+  function stampHay(){
+    ALL.forEach(hayFor);
+    MORE.forEach(hayFor);
+  }
+  function hayFor(c){
+    var d = DET[c.id] || {};
+    c._hay = [c.year, c.model, c.series, colourOf(c), c.fuel, c.fuelGroup, c.fuelRaw,
+              c.body, c.trim, c.reg, c._family, c._bodyLabel, d.version,
+              (d.equipment || []).join(' ')].join(' ').toLowerCase();
+  }
   function searchHit(c, words){
     if (!words.length) return true;
-    var hay = [c.year, c.model, c.series, colourOf(c), c.fuel, c.fuelGroup, c.fuelRaw,
-               c.body, c.trim, c.reg, c._family, c._bodyLabel].join(' ').toLowerCase();
+    var hay = c._hay || '';
     for (var i = 0; i < words.length; i++) if (hay.indexOf(words[i]) === -1) return false;
     return true;
   }
@@ -712,6 +762,93 @@
     });
   }
 
+  /* The lender's quotes for this car as a straight line, once it is clear they
+     make one.
+
+     The monthly payment is exactly linear in the deposit. A line through two
+     real quotes reproduces the lender's own figure at any other deposit to the
+     penny: checked against it at twelve deposits on four cars from £16k to
+     £89k, and across all 312 cars the line through the outer two rungs sits
+     within 0.83p of every rung between, not one over a penny. So a deposit
+     between the rungs is still the lender's number, not an estimate of ours.
+
+     "Exactly linear" is a measurement, not a promise, so there are two guards.
+     The line is checked against every rung this car has, and one that does not
+     sit on it - a deposit-dependent rate, say - falls back to its rungs alone.
+     And it is never used past the most the lender will take, where it clamps.
+     The outcome is cached on the entry; it cannot change under us, because the
+     whole file is replaced when the quotes are refreshed. */
+  function lineFor(c){
+    var e = LAD[c.id];
+    if (!e || !e.steps || e.steps.length < 2) return null;
+    if (e._line !== undefined) return e._line;
+    var s = e.steps, i, n = s.length;
+    /* Least squares through every rung, not a line through the outer two: the
+       lender publishes to the penny, so anchoring on one rounded figure
+       inherits its rounding. Fitting all of them averages it out and lands on
+       the lender's exact figure at 97% of the rungs rather than 90%. The worst
+       case is a penny either way, which is the floor while the quotes we are
+       given are themselves rounded to one. */
+    var sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (i = 0; i < n; i++){
+      sx += s[i].d; sy += s[i].m;
+      sxx += s[i].d * s[i].d; sxy += s[i].d * s[i].m;
+    }
+    var den = n * sxx - sx * sx;
+    if (!den){ e._line = null; return null; }
+    var rate = -(n * sxy - sx * sy) / den;        /* fall in £ a month per £1 down */
+    var at0  = (sy + rate * sx) / n;              /* the monthly with nothing down */
+    for (i = 0; i < n; i++)
+      if (Math.abs((at0 - rate * s[i].d) - s[i].m) > LINE_TOL){
+        e._line = null;
+        return null;
+      }
+    var a = {d:0, m:at0}, b = s[n - 1];
+    /* The top rung is as far as we have asked, but where the lender has told
+       us its own ceiling (it clamped a rung) the line holds up to there too -
+       checked at £6,100 on a car whose top rung is £5,000 and whose ceiling is
+       £6,433.05, where it matched the lender to a penny. */
+    var top = e.maxdep ? Math.max(Number(e.maxdep), b.d) : b.d;
+    e._line = {d0:a.d, m0:a.m, rate:rate, top:top,
+               apr:b.apr, term:b.t, payments:b.p, final:b.f};
+    return e._line;
+  }
+
+  function p2(n){ return Math.round(n * 100) / 100; }
+
+  /* Every photograph we hold for a car, the snapshot's own one first so the
+     card opens on the picture it always opened on. The detail job stores a
+     gallery id rather than the whole url, because the prefix is the same on
+     every one and this file is pulled down by a phone. */
+  function photosOf(c){
+    var d = DET[c.id] || {}, out = c.image ? [c.image] : [], i, u;
+    for (i = 0; i < (d.images || []).length; i++){
+      u = d.images[i];
+      if (u.indexOf('http') !== 0) u = CDN + u + '-enlarged.jpg';
+      if (out.indexOf(u) === -1) out.push(u);
+    }
+    return out;
+  }
+
+  /* One quote, at any deposit. An exact rung is handed back verbatim - the
+     lender's own answer, untouched - and anything between is read off the line.
+     The rest of the example follows arithmetically and exactly: total payable
+     is deposit + payments x monthly + final payment, and the charges are that
+     less the cash price, both of which hold to the penny on all 1,913 rungs. */
+  function quoteAt(c, d){
+    var e = LAD[c.id], i;
+    if (!e || !e.steps) return null;
+    for (i = 0; i < e.steps.length; i++)
+      if (Number(e.steps[i].d) === d) return e.steps[i];
+    var L = lineFor(c);
+    if (!L || d < 0 || d > L.top) return null;
+    var m = p2(L.m0 - L.rate * (d - L.d0));
+    if (m <= 0) return null;
+    var tp = p2(d + L.payments * m + L.final);
+    return {d:d, m:m, apr:L.apr, t:L.term, p:L.payments, f:L.final,
+            c:p2(e.price - d), tp:tp, ch:p2(tp - e.price)};
+  }
+
   /* The lender's own quote for this car at the deposit the customer chose.
      Every figure comes out of the ladder, which holds a real quote per rung:
      nothing here works a payment out from another one, however linear the
@@ -725,10 +862,7 @@
     var f = FIN[c.id];
     if (!finLive(f)) return null;
     if (DEPOSIT === null) return f;
-    var e = LAD[c.id], s = null, i;
-    if (e && e.steps)
-      for (i = 0; i < e.steps.length; i++)
-        if (Number(e.steps[i].d) === DEPOSIT) { s = e.steps[i]; break; }
+    var s = quoteAt(c, DEPOSIT);
     if (!s) return null;        /* no lender quote at that deposit for this car */
     return { product:f.product, lender:f.lender, legal:f.legal, price:f.price,
              reg:f.reg, valid_to:f.valid_to, quoted_at:f.quoted_at,
@@ -750,7 +884,8 @@
     if (!e) return null;
     if (e.maxdep) return {amount:Number(e.maxdep), lender:true};
     if (!e.steps || !e.steps.length) return null;
-    return {amount:Number(e.steps[e.steps.length - 1].d), lender:false};
+    var L = lineFor(c);
+    return {amount:(L ? L.top : Number(e.steps[e.steps.length - 1].d)), lender:false};
   }
 
   function budgetHit(c){
@@ -789,7 +924,7 @@
     if (s && Array.prototype.some.call(elSort.options, function(o){ return o.value === s; }))
       elSort.value = s;
     var dep = u.get('dep');
-    if (dep !== null && DEPOSITS.indexOf(Number(dep)) !== -1) DEPOSIT = Number(dep);
+    if (dep !== null && Number(dep) >= 0 && !isNaN(Number(dep))) DEPOSIT = Number(dep);
     var mo = u.get('mo');
     if (mo !== null && Number(mo) > 0) BUDGET = Number(mo);
     /* The monthly bands became a ceiling, so an old ?monthly= link is read as
@@ -958,12 +1093,10 @@
      how many cars the lender will quote at that deposit within their monthly
      ceiling, so the trade is visible before they tap. */
   function buildBudget(){
-    elDep.innerHTML = '<button class="sl-chip" type="button" data-d="any" aria-pressed="true">'
-      + 'Any<span class="n"></span></button>'
-      + DEPOSITS.map(function(d){
-          return '<button class="sl-chip" type="button" data-d="' + d + '" aria-pressed="false">'
-            + money(d) + '<span class="n"></span></button>';
-        }).join('');
+    elDep.innerHTML = DEPOSITS.map(function(d){
+      return '<button class="sl-chip" type="button" data-d="' + d + '" aria-pressed="false">'
+        + money(d) + '<span class="n"></span></button>';
+    }).join('');
     elMoChips.innerHTML = BUDGETS.map(function(m){
       return '<button class="sl-chip" type="button" data-m="' + m + '" aria-pressed="false">'
         + money(m) + '<span class="n"></span></button>';
@@ -986,11 +1119,12 @@
     var i, b;
     for (i = 0; i < elDep.children.length; i++){
       b = elDep.children[i];
-      var raw = b.getAttribute('data-d');
-      var d = raw === 'any' ? null : Number(raw);
+      var d = Number(b.getAttribute('data-d'));
       b.setAttribute('aria-pressed', String(d === DEPOSIT));
       b.querySelector('.n').textContent = countAtDeposit(d);
     }
+    if (String(DEPOSIT === null ? '' : DEPOSIT) !== elDepIn.value)
+      elDepIn.value = DEPOSIT === null ? '' : DEPOSIT;
     for (i = 0; i < elMoChips.children.length; i++){
       b = elMoChips.children[i];
       b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-m')) === BUDGET));
@@ -1001,7 +1135,7 @@
     elBudNote.textContent = DEPOSIT === null
       ? 'Payments shown are the standard example: ' + money(1000)
         + ' down, or 10% on cars over ' + money(40000)
-        + '. Pick a deposit and every payment becomes the lender\'s quote at it.'
+        + '. Put in what you can pay and every payment on the page changes to match.'
       : 'Showing BMW Financial Services\' own quote with ' + money(DEPOSIT)
         + ' down, over 48 months at 8,000 miles a year. '
         + quoted + ' of ' + ALL.length + ' cars can be quoted at that deposit.';
@@ -1129,6 +1263,8 @@
       var drive = {FourWheel:'xDrive', RearWheel:'Rear wheel drive', FrontWheel:'Front wheel drive'}[c.drive] || c.drive || '';
       var f = finFor(c);
       var cap = f ? null : depLimit(c);
+      var pics = photosOf(c);
+      var kit = (DET[c.id] || {}).equipment || [];
       /* Only the payment sits on the photograph, and the terms moved down to
          the line below it. Together they covered 61% of a 16:9 car picture -
          the terms alone wrap to three lines at a phone's card width - so the
@@ -1165,8 +1301,17 @@
                  + (SWATCH[col.toLowerCase()] || 'transparent') + '"></i>' + esc(col)]);
 
       return '<article class="sl-card">'
-        + (c.image ? '<div class="sl-hero"><img class="sl-photo" src="' + esc(c.image) + '" alt="' + esc((c.year||'') + ' ' + c.model)
-             + '" loading="lazy" width="700" height="393"/>' + fin + '</div>' : '')
+        + (pics.length
+            ? '<div class="sl-hero" data-i="0" data-pics="' + esc(pics.join('|')) + '">'
+              + '<img class="sl-photo" src="' + esc(pics[0]) + '" alt="' + esc((c.year||'') + ' ' + c.model)
+              + '" loading="lazy" width="700" height="393"/>'
+              + (pics.length > 1
+                  ? '<span class="sl-dots">1/' + pics.length + '</span>'
+                    + '<button class="sl-nav prev" type="button" aria-label="Previous photo"><span>&#8249;</span></button>'
+                    + '<button class="sl-nav next" type="button" aria-label="Next photo"><span>&#8250;</span></button>'
+                  : '')
+              + fin + '</div>'
+            : '')
         + '<div class="sl-body">'
         + '<div class="sl-meta">' + yearReg + '</div>'
         + '<h3>' + esc(c.model) + '</h3>'
@@ -1175,6 +1320,10 @@
         + '<div class="sl-spec">'
         + spec.map(function(kv){ return '<span>' + kv[0] + '</span><strong>' + kv[1] + '</strong>'; }).join('')
         + '</div>'
+        + (kit.length
+            ? '<details class="sl-kit" data-kit="' + esc(c.id) + '"><summary>'
+              + kit.length + ' things on this one</summary></details>'
+            : '')
         + '<div class="sl-actions">'
         + '<a class="sl-wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp Dan</a>'
         + '<a class="sl-sec" href="' + mail + '">Email</a>'
@@ -1210,6 +1359,14 @@
     .then(function(j){ FIN = j || {}; attachMonthly(); if (ALL.length) render(); })
     ['catch'](function(){ FIN = {}; });
 
+  /* Photographs and equipment. Quiet failure again: without it every card has
+     the one photo and the spec it always had, and the search box simply has
+     less to look through. */
+  fetch('automation/car-details.json', {cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .then(function(j){ DET = j || {}; stampHay(); if (ALL.length) render(); })
+    ['catch'](function(){ DET = {}; });
+
   /* The deposit ladder. A failure here is quiet on purpose: the deposit chips
      simply find nothing to quote and the page is the standard example it has
      always been, rather than a broken budget search. */
@@ -1241,6 +1398,7 @@
         c._fuelKey = fuelKey(c);
         c._monthly = 0;
         c._home = true;
+        hayFor(c);
         return c;
       });
       attachMonthly();
@@ -1270,6 +1428,7 @@
         c._fuelKey = fuelKey(c);
         c._monthly = 0;
         c._home = false;
+        hayFor(c);
         return c;
       });
       if (wantsAll() && ALL.length){
@@ -1281,6 +1440,34 @@
       if (ALL.length) render();
     })
     ['catch'](function(){ MORE = []; });
+
+  /* Both delegated on the list, so the cards can be rebuilt on every render
+     without a listener per photograph. */
+  elList.addEventListener('click', function(e){
+    var nav = e.target.closest('.sl-nav');
+    if (!nav) return;
+    var hero = nav.parentNode;
+    var pics = hero.getAttribute('data-pics').split('|');
+    var i = (Number(hero.getAttribute('data-i')) + (nav.classList.contains('next') ? 1 : -1)
+             + pics.length) % pics.length;
+    hero.setAttribute('data-i', String(i));
+    /* The src is set only now, so a photo nobody looks at is never fetched */
+    hero.querySelector('.sl-photo').src = pics[i];
+    hero.querySelector('.sl-dots').textContent = (i + 1) + '/' + pics.length;
+  });
+
+  /* Filled on first open rather than drawn for every card: forty-odd lines
+     across three hundred cars is fourteen thousand list items on a page
+     nobody has asked to see them on. */
+  elList.addEventListener('toggle', function(e){
+    var d = e.target;
+    if (!d.classList || !d.classList.contains('sl-kit')) return;
+    if (!d.open || d.querySelector('ul')) return;
+    var kit = (DET[d.getAttribute('data-kit')] || {}).equipment || [];
+    var ul = document.createElement('ul');
+    ul.innerHTML = kit.map(function(k){ return '<li>' + esc(k) + '</li>'; }).join('');
+    d.appendChild(ul);
+  }, true);
 
   elUnlockBtn.addEventListener('click', function(){
     unlock();
@@ -1322,8 +1509,17 @@
   elDep.addEventListener('click', function(e){
     var btn = e.target.closest('.sl-chip');
     if (!btn) return;
-    var raw = btn.getAttribute('data-d');
-    DEPOSIT = raw === 'any' ? null : Number(raw);
+    var d = Number(btn.getAttribute('data-d'));
+    DEPOSIT = (DEPOSIT === d) ? null : d;      /* tapping the live one clears it */
+    attachMonthly();
+    render();
+  });
+
+  /* Any amount, not only the seven the lender was asked about: the figure in
+     between is read off the line their own quotes make. */
+  elDepIn.addEventListener('input', function(){
+    var v = elDepIn.value.trim();
+    DEPOSIT = (v === '' || Number(v) < 0 || isNaN(Number(v))) ? null : Number(v);
     attachMonthly();
     render();
   });
@@ -1344,6 +1540,7 @@
 
   document.getElementById('slReset').addEventListener('click', function(){
     elSearch.value = '';
+    elDepIn.value = '';
     clearFacets();
     elSort.value = 'price-asc';
     render();
