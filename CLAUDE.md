@@ -76,14 +76,51 @@ Each car's hero is the photo with a **finance example** over it (monthly
 payment, product, deposit, term and APR), reading the way the daily post cards
 read, with the spec below it.
 
-The page is a client-side search over the two JSON files: free text, model
-family (from `series`, falling back to the model name), body (from `body`;
-"Gran Coupé" when the model name says so), fuel (from `fuel`, so mild hybrids
-are their own options), colour, year, seats (the snapshot's own `seats` field,
-never guessed), mileage band, monthly band and price chips; sorts by price,
-monthly, mileage and newest. Filters live in the query string (shareable), a
-Reset button clears them, the count is live, and the empty state is a
-WhatsApp "Tell me what you're after" CTA. Monthly filters and sorts only use a
+The page is a client-side **faceted** search over the two JSON files. Nine
+facets: price, monthly payment, model family (from `series`, falling back to
+the model name), body (from `body`; "Gran Coupé" when the model name says so),
+fuel (from `fuel`, so mild hybrids are their own options), mileage, year,
+colour and seats (the snapshot's own `seats` field, never guessed). Sorts by
+price, monthly, mileage and newest. Filters live in the query string
+(shareable), a Reset button clears them, the count is live, and the empty state
+is a WhatsApp "Tell me what you're after" CTA.
+
+Everything about the panel comes off two things, `FACETS` and `SEL`, so adding
+a facet means adding a row to `FACETS` and nothing else. The rules it has to
+keep, most of which were got wrong first:
+
+- **Several options at once, OR within a facet and AND across them** (a Saloon
+  or an Estate, that is also petrol). That is how faceted search reads
+  everywhere else and the only arrangement people guess right without being
+  told. Chips, not a native `<select multiple>`, which is close to unusable on
+  the phone most of this list is read on.
+- **Every option carries a count**, and it is counted against what every
+  *other* facet allows (`rowsFor(key)` skips the facet it is counting). Count a
+  facet against its own selection and every option but the chosen one reads 0,
+  which looks broken. An option that would empty the list is shown and
+  **disabled** rather than removed, so the rows do not jump about as you tap,
+  and an option that is *on* is never disabled or there is no way to turn it off.
+- **The bands are disjoint.** The old ones were nested (one "Under £40,000"
+  containing the "Under £20,000" above it), which is fine for a single-choice
+  dropdown and meaningless once two can be on at once, where the pair just means
+  whichever is wider. `ALIAS` maps every value an already-shared link might
+  carry (`price=u30`, `miles=u40`, `monthly=u500`...) onto the set of new bands
+  covering exactly the same cars. Do not drop it: Dan sends those links to one
+  customer about one budget.
+- **The chips are built once and only repainted.** `buildFacets()` makes the
+  DOM, `paintFacets()` updates counts and pressed/disabled state on every
+  render. Rebuilding their markup each time threw keyboard focus back to the top
+  of the page on every tap and replaced the very node a quick second tap was
+  aimed at.
+- **Selections live in `SEL`, not in the DOM**, so rebuilding the panel after
+  `unlock()` widens the options cannot silently drop a filter somebody set.
+- **The applied filters show as removable pills** above the count. With several
+  options live across several facets this is what keeps the list explainable,
+  and on a phone the panel is shut, so without it nothing on screen says why
+  only four cars are showing. The count on the Filters button does the same job.
+- **Free text is AND over words, in any order.** A single substring match meant
+  the obvious two-word search ("white touring") came back empty while both words
+  were plainly on the card. Monthly filters and sorts only use a
 **live** lender quote; a car without one shows "Ask for a quote", is excluded
 from a monthly filter and sorts after the quoted cars. Every card has the
 WhatsApp button (primary, prefilled with year, model, reg and price) plus an

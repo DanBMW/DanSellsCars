@@ -155,11 +155,46 @@
     padding:8px 14px;border-radius:2px;
   }
   .sl-reset:hover{color:var(--paper);border-color:var(--body-c)}
-  .sl-filters{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:clamp(16px,2.5vw,24px)}
+  /* Faceted filters. Every facet is a row of the same pill the price chips
+     already used, so one interaction covers the whole panel and several
+     options can be on at once - within a facet they are OR (a Saloon or an
+     Estate), across facets AND (a petrol Saloon), which is how faceted search
+     reads everywhere else and the only arrangement people guess right without
+     being told. A native multi-select was the other option and is far worse on
+     a phone, where most of this list is read. */
+  .sl-facets{display:grid;gap:clamp(13px,1.9vw,17px);margin-bottom:clamp(14px,2vw,20px);
+    padding:clamp(15px,2.1vw,21px);border:1px solid var(--hairline)}
+  .sl-facet-h{font-family:var(--sans);font-size:.71rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--dim);margin:0 0 9px;font-weight:600}
+  .sl-facet-h em{font-style:normal;text-transform:none;letter-spacing:.02em;opacity:.7;font-weight:400}
+  .sl-facet-chips{display:flex;flex-wrap:wrap;gap:8px}
+  /* The count is the whole point of a facet panel: it says what each option
+     would give you before you tap it, so nobody filters their way into an
+     empty list. An option that would empty it is shown and disabled rather
+     than removed, which would make the rows jump about as you tap. */
+  .sl-chip .n{opacity:.5;font-variant-numeric:tabular-nums;margin-left:6px}
+  .sl-chip[aria-pressed="true"] .n{opacity:.55}
+  .sl-chip[disabled]{opacity:.3;cursor:not-allowed}
+  .sl-chip[disabled]:hover{color:var(--body-c);border-color:var(--hairline)}
+  .sl-filter-toggle .n{opacity:.65;margin-left:5px}
+  /* What is on right now, one tap to take any of it off. With several options
+     live across several facets this is the thing that keeps the list
+     explainable - and on a phone the panel is shut, so without it there is
+     nothing on screen saying why only four cars are showing. */
+  .sl-applied{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+  .sl-applied-h{font-family:var(--sans);font-size:.76rem;color:var(--dim);margin:0 2px 0 0}
+  .sl-pill{background:var(--paper);border:1px solid var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:.78rem;padding:6px 11px 6px 13px;border-radius:999px;
+    cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  .sl-pill::after{content:'\00d7';font-size:1.08rem;line-height:1;opacity:.55}
+  .sl-pill:hover::after{opacity:1}
+  .sl-clearall{background:none;border:none;border-bottom:1px solid var(--hairline);
+    color:var(--dim);font-family:var(--sans);font-size:.78rem;cursor:pointer;padding:2px 0}
+  .sl-clearall:hover{color:var(--paper);border-bottom-color:var(--accent)}
   @media(max-width:700px){
     .sl-filter-toggle{display:inline-block}
-    .sl-filters{display:none}
-    .sl-filters.open{display:flex}
+    .sl-facets{display:none}
+    .sl-facets.open{display:grid}
   }
   @media(max-width:560px){
     .sl-list{grid-template-columns:1fr}
@@ -216,7 +251,7 @@
       <hr class="rule"/>
       <div class="prose">
         <p class="lede">The complete approved used BMW stock at Hedin Ruxley, with a photo, price and full spec on each one. Updated every morning.</p>
-        <p>Filter by price, monthly payment, body style or fuel, then tap WhatsApp on any car and it comes straight to me with the details already filled in. No forms, no call centre.</p>
+        <p>Filter by price, monthly payment, body style or fuel, and pick as many as you like in each: two body styles, three models, whatever you are weighing up. Every option tells you how many cars it holds before you tap it. Then tap WhatsApp on any car and it comes straight to me with the details already filled in. No forms, no call centre.</p>
         <p>Nothing here quite right? There is a button under the list that opens up every other BMW we have as well, and I can get any of it to you.</p>
       </div>
     </div>
@@ -244,44 +279,12 @@
         </select>
       </div>
 
-      <div class="sl-filters" id="slFilters">
-        <label class="sl-sr" for="slSeries">Model family</label>
-        <select class="sl-sort" id="slSeries"><option value="">Any model</option></select>
-        <label class="sl-sr" for="slBody">Body style</label>
-        <select class="sl-sort" id="slBody"><option value="">Any body style</option></select>
-        <label class="sl-sr" for="slFuel">Fuel</label>
-        <select class="sl-sort" id="slFuel"><option value="">Any fuel</option></select>
-        <label class="sl-sr" for="slColour">Colour</label>
-        <select class="sl-sort" id="slColour"><option value="">Any colour</option></select>
-        <label class="sl-sr" for="slYear">Year</label>
-        <select class="sl-sort" id="slYear"><option value="">Any year</option></select>
-        <label class="sl-sr" for="slSeats">Seats</label>
-        <select class="sl-sort" id="slSeats"><option value="">Any seats</option></select>
-        <label class="sl-sr" for="slMiles">Mileage</label>
-        <select class="sl-sort" id="slMiles">
-          <option value="">Any mileage</option>
-          <option value="u10">Under 10,000</option>
-          <option value="u20">Under 20,000</option>
-          <option value="u40">Under 40,000</option>
-          <option value="o40">40,000+</option>
-        </select>
-        <label class="sl-sr" for="slMonthly">Monthly payment</label>
-        <select class="sl-sort" id="slMonthly">
-          <option value="">Any monthly</option>
-          <option value="u300">Under &pound;300</option>
-          <option value="u400">Under &pound;400</option>
-          <option value="u500">Under &pound;500</option>
-          <option value="u700">Under &pound;700</option>
-          <option value="o700">&pound;700+</option>
-        </select>
-      </div>
+      <!-- Built by buildFacets() from whatever is in ALL, so unlocking the rest
+           of the stock brings its models, colours, years and seat counts into
+           the panel with it. -->
+      <div class="sl-facets" id="slFilters"></div>
 
-      <div class="sl-chips" id="slChips" role="group" aria-label="Filter by price">
-        <button class="sl-chip" type="button" data-filter="all" aria-pressed="true">All prices</button>
-        <button class="sl-chip" type="button" data-filter="u30" aria-pressed="false">Under &pound;30k</button>
-        <button class="sl-chip" type="button" data-filter="30to50" aria-pressed="false">&pound;30k to &pound;50k</button>
-        <button class="sl-chip" type="button" data-filter="o50" aria-pressed="false">&pound;50k+</button>
-      </div>
+      <div class="sl-applied" id="slApplied" hidden></div>
 
       <div class="sl-share">
         <button class="sl-sharebtn" id="slShare" type="button">Share this list</button>
@@ -467,7 +470,7 @@
 (function(){
   var WA = 'https://wa.me/447827138197';
   var EMAIL = 'daniel.cane@hedinautomotive.co.uk';
-  var ALL = [], FIN = {}, filter = 'all';
+  var ALL = [], FIN = {};
 
   /* ---- the two lists ----
      ALL starts as the stock on Dan's own forecourt and is the whole page until
@@ -514,33 +517,163 @@
   var elNote  = document.getElementById('slNote');
   var elSearch= document.getElementById('slSearch');
   var elSort  = document.getElementById('slSort');
-  var elSeries= document.getElementById('slSeries');
-  var elColour= document.getElementById('slColour');
-  var elFuel  = document.getElementById('slFuel');
-  var elBody  = document.getElementById('slBody');
-  var elYear  = document.getElementById('slYear');
-  var elSeats = document.getElementById('slSeats');
-  var elMiles = document.getElementById('slMiles');
-  var elMonthly = document.getElementById('slMonthly');
-  var elFilters = document.getElementById('slFilters');
+  var elFacets  = document.getElementById('slFilters');
+  var elApplied = document.getElementById('slApplied');
   var elFilterToggle = document.getElementById('slFilterToggle');
   var elUnlock    = document.getElementById('slUnlock');
   var elUnlockBtn = document.getElementById('slUnlockBtn');
 
-  var PARAMS = [
-    ['q', elSearch], ['series', elSeries], ['colour', elColour],
-    ['fuel', elFuel], ['body', elBody], ['year', elYear],
-    ['seats', elSeats], ['miles', elMiles], ['monthly', elMonthly],
-    ['sort', elSort]
+  /* ---- Faceted filtering ----------------------------------------------
+     One selection object and one definition table; the panel, the counts, the
+     applied pills and the query string are all derived from them, so adding a
+     facet means adding a row below and nothing else. */
+  var SEL = {};                 /* facet key -> array of chosen option values */
+  var OPTS = {};                /* facet key -> the options it currently offers */
+  var BODY_LABELS = {};
+  var GBP = '\u00a3';
+
+  function band(v, label, hit){ return {v:v, label:label, hit:hit}; }
+  function alpha(a, b){ return String(a).localeCompare(String(b)); }
+  function ordered(order){
+    return function(a, b){
+      var ia = order.indexOf(a), ib = order.indexOf(b);
+      if (ia === -1) ia = 999;
+      if (ib === -1) ib = 999;
+      return ia - ib || String(a).localeCompare(String(b));
+    };
+  }
+
+  /* Bands are DISJOINT on purpose. The old rows were nested - one "Under
+     £40,000" that contained the "Under £20,000" above it - which is fine for a
+     single-choice dropdown and meaningless once two can be on at once, where
+     the pair just means whichever is wider. ALIAS below keeps every link Dan
+     has already shared landing on exactly the same cars. */
+  var FACETS = [
+    { key:'price', label:'Price', fixed:[
+        band('u20',    'Under ' + GBP + '20k',             function(c){ return c._price <  20000; }),
+        band('20to30', GBP + '20k to ' + GBP + '30k',      function(c){ return c._price >= 20000 && c._price < 30000; }),
+        band('30to50', GBP + '30k to ' + GBP + '50k',      function(c){ return c._price >= 30000 && c._price < 50000; }),
+        band('50to70', GBP + '50k to ' + GBP + '70k',      function(c){ return c._price >= 50000 && c._price < 70000; }),
+        band('o70',    GBP + '70k+',                       function(c){ return c._price >= 70000; })
+      ] },
+    /* Only a live lender quote counts here, so a car without one is not in any
+       monthly band - the same rule the cards and the monthly sorts follow. */
+    { key:'monthly', label:'Monthly payment', note:'cars with a live quote', fixed:[
+        band('u300',     'Under ' + GBP + '300',            function(c){ return c._monthly && c._monthly <  300; }),
+        band('300to400', GBP + '300 to ' + GBP + '400',     function(c){ return c._monthly && c._monthly >= 300 && c._monthly < 400; }),
+        band('400to500', GBP + '400 to ' + GBP + '500',     function(c){ return c._monthly && c._monthly >= 400 && c._monthly < 500; }),
+        band('500to700', GBP + '500 to ' + GBP + '700',     function(c){ return c._monthly && c._monthly >= 500 && c._monthly < 700; }),
+        band('o700',     GBP + '700+',                      function(c){ return c._monthly && c._monthly >= 700; })
+      ] },
+    { key:'series', label:'Model', of:function(c){ return c._family; },
+      sort:function(a, b){
+        var ra = seriesRank(a), rb = seriesRank(b);
+        return ra[0] - rb[0] || ra[1] - rb[1] || a.localeCompare(b);
+      } },
+    { key:'body', label:'Body style', of:function(c){ return c._bodyKey; },
+      labelOf:function(k){ return BODY_LABELS[k] || k; },
+      order:['suv','saloon','estate','hatch','coupe','gran-coupe','convertible'] },
+    { key:'fuel', label:'Fuel', of:function(c){ return c._fuelKey; }, labelOf:fuelLabel,
+      order:['petrol','diesel','mhev-petrol','mhev-diesel','phev','electric'] },
+    { key:'miles', label:'Mileage', fixed:[
+        band('u10',     'Under 10,000',    function(c){ return c._miles <  10000; }),
+        band('10to20',  '10 to 20,000',    function(c){ return c._miles >= 10000 && c._miles < 20000; }),
+        band('20to40',  '20 to 40,000',    function(c){ return c._miles >= 20000 && c._miles < 40000; }),
+        band('o40',     '40,000+',         function(c){ return c._miles >= 40000; })
+      ] },
+    { key:'year', label:'Year', of:function(c){ return c._year ? String(c._year) : ''; },
+      sort:function(a, b){ return Number(b) - Number(a); } },
+    { key:'colour', label:'Colour', of:colourOf, sort:alpha },
+    { key:'seats', label:'Seats', of:function(c){ return c.seats ? String(c.seats) : ''; },
+      labelOf:function(v){ return v + ' seats'; },
+      sort:function(a, b){ return Number(a) - Number(b); } }
   ];
+
+  /* Values older shared links may carry, mapped onto the set of new bands
+     covering the same cars. Drop this and those links open unfiltered, which
+     is worse than it sounds: Dan sends them to one customer about one budget. */
+  var ALIAS = {
+    price:   { u30:['u20','20to30'], o50:['50to70','o70'] },
+    miles:   { u20:['u10','10to20'], u40:['u10','10to20','20to40'] },
+    monthly: { u400:['u300','300to400'],
+               u500:['u300','300to400','400to500'],
+               u700:['u300','300to400','400to500','500to700'] }
+  };
+
+  function facetOf(key){
+    for (var i = 0; i < FACETS.length; i++) if (FACETS[i].key === key) return FACETS[i];
+    return null;
+  }
+  function chosen(key){ return SEL[key] || (SEL[key] = []); }
+  function activeCount(){
+    var n = 0;
+    FACETS.forEach(function(f){ n += chosen(f.key).length; });
+    return n;
+  }
+  function clearFacets(){ FACETS.forEach(function(f){ SEL[f.key] = []; }); }
+
+  /* A fixed facet's options are its bands; a derived one's are whatever values
+     the cars actually have, which is why unlocking widens them. */
+  function optionsFor(f){
+    if (f.fixed) return f.fixed;
+    var seen = {}, list = [];
+    ALL.forEach(function(c){
+      var v = f.of(c);
+      if (v && !seen[v]) { seen[v] = 1; list.push(v); }
+    });
+    if (f.order) list.sort(ordered(f.order));
+    else if (f.sort) list.sort(f.sort);
+    return list.map(function(v){
+      return { v:v, label:(f.labelOf ? f.labelOf(v) : v),
+               hit:function(c){ return f.of(c) === v; } };
+    });
+  }
+
+  function hitsFacet(c, f){
+    var on = chosen(f.key);
+    if (!on.length) return true;
+    var opts = OPTS[f.key] || [];
+    for (var i = 0; i < opts.length; i++)
+      if (on.indexOf(opts[i].v) !== -1 && opts[i].hit(c)) return true;
+    return false;
+  }
+
+  /* Every word has to appear somewhere, in any order. The old single-substring
+     match meant the obvious two-word search ("white touring") came back empty
+     while both words were plainly on the card. */
+  function searchHit(c, words){
+    if (!words.length) return true;
+    var hay = [c.year, c.model, c.series, colourOf(c), c.fuel, c.fuelGroup, c.fuelRaw,
+               c.body, c.trim, c.reg, c._family, c._bodyLabel].join(' ').toLowerCase();
+    for (var i = 0; i < words.length; i++) if (hay.indexOf(words[i]) === -1) return false;
+    return true;
+  }
+
+  /* The list, or - with a facet named - what every OTHER facet allows, which is
+     what each of that facet's own counts is measured against. Counting a facet
+     against its own selection would read 0 on every option but the chosen one
+     and make the panel look broken. */
+  function rowsFor(skip){
+    var words = elSearch.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    return ALL.filter(function(c){
+      if (!searchHit(c, words)) return false;
+      for (var i = 0; i < FACETS.length; i++){
+        if (FACETS[i].key === skip) continue;
+        if (!hitsFacet(c, FACETS[i])) return false;
+      }
+      return true;
+    });
+  }
 
   function syncUrl(){
     var u = new URLSearchParams();
-    PARAMS.forEach(function(pair){
-      var v = pair[1].value;
-      if (v && !(pair[0] === 'sort' && v === 'price-asc')) u.set(pair[0], v);
+    var q = elSearch.value.trim();
+    if (q) u.set('q', q);
+    FACETS.forEach(function(f){
+      var on = chosen(f.key);
+      if (on.length) u.set(f.key, on.join(','));
     });
-    if (filter && filter !== 'all') u.set('price', filter);
+    if (elSort.value && elSort.value !== 'price-asc') u.set('sort', elSort.value);
     // a list Dan has unlocked and then shared should open unlocked
     if (unlocked) u.set('all', '1');
     var qs = u.toString();
@@ -550,20 +683,30 @@
     } catch (e) {}
   }
 
+  /* Runs after buildFacets, and again after a merge: the unlocked cars bring
+     models and colours the first pass had no option for, so a filter carried
+     in on the link gets its second chance to stick. */
   function applyUrl(){
     var u = new URLSearchParams(location.search);
-    PARAMS.forEach(function(pair){
-      var v = u.get(pair[0]);
-      if (v === null) return;
-      var el = pair[1];
-      if (el.tagName === 'SELECT' && !Array.prototype.some.call(
-            el.options, function(o){ return o.value === v; })) return;
-      el.value = v;
-    });
-    var band = u.get('price');
-    if (band && ['u30', '30to50', 'o50'].indexOf(band) !== -1) filter = band;
-    document.querySelectorAll('#slChips .sl-chip').forEach(function(b){
-      b.setAttribute('aria-pressed', String(b.dataset.filter === filter));
+    var q = u.get('q');
+    if (q !== null) elSearch.value = q;
+    var s = u.get('sort');
+    if (s && Array.prototype.some.call(elSort.options, function(o){ return o.value === s; }))
+      elSort.value = s;
+    FACETS.forEach(function(f){
+      var raw = u.get(f.key);
+      if (raw === null) return;
+      var want = [];
+      raw.split(',').forEach(function(v){
+        v = v.trim();
+        if (!v) return;
+        ((ALIAS[f.key] || {})[v] || [v]).forEach(function(x){
+          if (want.indexOf(x) === -1) want.push(x);
+        });
+      });
+      var ok = {};
+      (OPTS[f.key] || []).forEach(function(o){ ok[o.v] = 1; });
+      SEL[f.key] = want.filter(function(v){ return ok[v]; });
     });
   }
 
@@ -639,54 +782,83 @@
     return [9, 0];
   }
 
-  /* Rebuilt from whatever is in ALL, so unlocking brings the extra models,
-     colours, years and seat counts into the dropdowns with it. Each selection
-     is put back afterwards: a rebuild resets a select to its first option,
-     which would silently drop a filter somebody had set. */
-  function fillFilters(){
-    function uniq(vals){
-      return vals.filter(Boolean).filter(function(v,i,a){ return a.indexOf(v) === i; });
-    }
-    function fill(sel, vals, sorter, labelFn){
-      var keep = sel.value;
-      while (sel.options.length > 1) sel.remove(1);   // leave the "Any ..." row
-      var list = uniq(vals);
-      list.sort(sorter);
-      Array.prototype.push.apply(sel, list.map(function(v){
-        return new Option(labelFn ? labelFn(v) : v, v);
-      }));
-      if (list.indexOf(keep) !== -1) sel.value = keep;
-    }
-    function ordered(order){
-      return function(a, b){
-        var ia = order.indexOf(a), ib = order.indexOf(b);
-        if (ia === -1) ia = 999;
-        if (ib === -1) ib = 999;
-        return ia - ib || String(a).localeCompare(String(b));
-      };
-    }
-    var alpha = function(a, b){ return String(a).localeCompare(String(b)); };
+  /* The panel's skeleton, rebuilt from whatever is in ALL - so unlocking the
+     rest of the stock brings its models, colours, years and seat counts in with
+     it. Selections live in SEL rather than in the DOM, so a rebuild cannot
+     silently drop a filter somebody had set, which is what the old select-based
+     version had to work around. Counts and pressed state are paintFacets()'s
+     job, on every render. */
+  function buildFacets(){
+    BODY_LABELS = {};
+    ALL.forEach(function(c){ if (c._bodyKey) BODY_LABELS[c._bodyKey] = c._bodyLabel; });
+    elFacets.innerHTML = FACETS.map(function(f){
+      OPTS[f.key] = optionsFor(f);
+      if (OPTS[f.key].length < 2) return '';   /* one option filters nothing */
+      return '<div class="sl-facet" role="group" aria-labelledby="fh-' + f.key + '">'
+        + '<h3 class="sl-facet-h" id="fh-' + f.key + '">' + esc(f.label)
+        + (f.note ? ' <em>' + esc(f.note) + '</em>' : '') + '</h3>'
+        + '<div class="sl-facet-chips" data-facet="' + f.key + '">'
+        + OPTS[f.key].map(function(o){
+            return '<button class="sl-chip" type="button" data-v="' + esc(o.v) + '"'
+              + ' aria-pressed="false">' + esc(o.label) + '<span class="n"></span></button>';
+          }).join('')
+        + '</div></div>';
+    }).join('');
+  }
 
-    fill(elSeries, ALL.map(function(c){ return c._family; }), function(a, b){
-      var ra = seriesRank(a), rb = seriesRank(b);
-      return ra[0] - rb[0] || ra[1] - rb[1] || a.localeCompare(b);
+  /* Only the numbers and the pressed/disabled state change here: the chips
+     themselves are built once, and the options line up with OPTS by position.
+     Rebuilding their markup on every render threw keyboard focus back to the
+     top of the page on each tap, and replaced the very node a quick second tap
+     was aimed at. */
+  function paintFacets(){
+    FACETS.forEach(function(f){
+      var box = elFacets.querySelector('.sl-facet-chips[data-facet="' + f.key + '"]');
+      if (!box) return;
+      var pool = rowsFor(f.key);     /* what every OTHER facet allows */
+      var on = chosen(f.key);
+      var opts = OPTS[f.key];
+      for (var k = 0; k < box.children.length; k++){
+        var b = box.children[k], o = opts[k];
+        var n = 0;
+        for (var i = 0; i < pool.length; i++) if (o.hit(pool[i])) n++;
+        var pressed = on.indexOf(o.v) !== -1;
+        b.querySelector('.n').textContent = n;
+        b.setAttribute('aria-pressed', String(pressed));
+        /* never disable one that is on, or there is no way to turn it off */
+        b.disabled = !n && !pressed;
+      }
     });
+    paintToggle();
+  }
 
-    var bodyLabels = {};
-    ALL.forEach(function(c){ if (c._bodyKey) bodyLabels[c._bodyKey] = c._bodyLabel; });
-    fill(elBody, ALL.map(function(c){ return c._bodyKey; }),
-         ordered(['suv','saloon','estate','hatch','coupe','gran-coupe','convertible']),
-         function(k){ return bodyLabels[k] || k; });
+  /* Open/closed and how many filters are on, in one place: the panel is shut by
+     default on a phone, so the count on the button is the only hint that the
+     list is filtered at all until the pills below it are read. */
+  function paintToggle(){
+    var n = activeCount();
+    elFilterToggle.innerHTML =
+      (elFacets.classList.contains('open') ? 'Hide filters' : 'Filters')
+      + (n ? '<span class="n">' + n + '</span>' : '');
+  }
 
-    fill(elFuel, ALL.map(function(c){ return c._fuelKey; }),
-         ordered(['petrol','diesel','mhev-petrol','mhev-diesel','phev','electric']),
-         fuelLabel);
-    fill(elColour, ALL.map(colourOf), alpha);
-    fill(elYear, ALL.map(function(c){ return String(c._year || ''); }),
-         function(a, b){ return Number(b) - Number(a); });
-    fill(elSeats, ALL.map(function(c){ return String(c.seats || ''); }),
-         function(a, b){ return Number(a) - Number(b); },
-         function(v){ return v + ' seats'; });
+  function paintApplied(){
+    var pills = [];
+    FACETS.forEach(function(f){
+      chosen(f.key).forEach(function(v){
+        var hit = null;
+        (OPTS[f.key] || []).forEach(function(o){ if (o.v === v) hit = o; });
+        if (!hit) return;
+        pills.push('<button class="sl-pill" type="button" data-facet="' + f.key + '"'
+          + ' data-v="' + esc(v) + '" aria-label="Remove filter, ' + esc(f.label) + ', '
+          + esc(hit.label) + '">' + esc(hit.label) + '</button>');
+      });
+    });
+    elApplied.hidden = !pills.length;
+    elApplied.innerHTML = pills.length
+      ? '<p class="sl-applied-h">Showing</p>' + pills.join('')
+        + '<button class="sl-clearall" type="button" id="slClearAll">Clear all</button>'
+      : '';
   }
 
   /* Read once, at load, and never again.
@@ -715,39 +887,11 @@
        look unquoted: excluded from a monthly filter and sorted to the bottom,
        while their own cards plainly show a monthly payment. */
     attachMonthly();
-    fillFilters();
+    buildFacets();
   }
 
   function render(){
-    var q = elSearch.value.trim().toLowerCase();
-    var rows = ALL.filter(function(c){
-      var hay = [c.year, c.model, c.series, colourOf(c), c.fuel, c.fuelGroup,
-                 c.fuelRaw, c.body, c.trim, c.reg, c._family, c._bodyLabel].join(' ').toLowerCase();
-      if (q && hay.indexOf(q) === -1) return false;
-      if (elSeries.value && c._family !== elSeries.value) return false;
-      if (elColour.value && colourOf(c) !== elColour.value) return false;
-      if (elFuel.value && c._fuelKey !== elFuel.value) return false;
-      if (elBody.value && c._bodyKey !== elBody.value) return false;
-      if (elYear.value && String(c._year) !== elYear.value) return false;
-      if (elSeats.value && String(c.seats) !== elSeats.value) return false;
-      if (elMiles.value === 'u10' && !(c._miles < 10000)) return false;
-      if (elMiles.value === 'u20' && !(c._miles < 20000)) return false;
-      if (elMiles.value === 'u40' && !(c._miles < 40000)) return false;
-      if (elMiles.value === 'o40' && !(c._miles >= 40000)) return false;
-      /* Monthly filter: only cars with a live quote; others excluded when filter set */
-      if (elMonthly.value) {
-        if (!c._monthly) return false;
-        if (elMonthly.value === 'u300' && !(c._monthly < 300)) return false;
-        if (elMonthly.value === 'u400' && !(c._monthly < 400)) return false;
-        if (elMonthly.value === 'u500' && !(c._monthly < 500)) return false;
-        if (elMonthly.value === 'u700' && !(c._monthly < 700)) return false;
-        if (elMonthly.value === 'o700' && !(c._monthly >= 700)) return false;
-      }
-      if (filter === 'u30')      return c._price <  30000;
-      if (filter === '30to50')   return c._price >= 30000 && c._price < 50000;
-      if (filter === 'o50')      return c._price >= 50000;
-      return true;
-    });
+    var rows = rowsFor(null);
 
     /* Dan's own cars always sort to the top, whatever else is on. The chosen
        sort then orders within each half, so unlocking adds cars underneath the
@@ -774,6 +918,8 @@
     });
 
     syncUrl();
+    paintFacets();
+    paintApplied();
 
     elCount.textContent = rows.length === ALL.length
       ? ALL.length + ' cars in stock'
@@ -906,7 +1052,7 @@
       });
       attachMonthly();
 
-      fillFilters();
+      buildFacets();
       applyUrl();
       if (wantsAll()) unlock();
       render();
@@ -949,24 +1095,40 @@
 
   function onChange(){ render(); }
   elSearch.addEventListener('input', onChange);
-  [elSort, elSeries, elColour, elFuel, elBody, elYear, elSeats, elMiles, elMonthly]
-    .forEach(function(el){ el.addEventListener('change', onChange); });
+  elSort.addEventListener('change', onChange);
+
+  /* Delegated, so the chips can be rebuilt on every render without leaking a
+     listener per option - which is what binding them per paint would do. */
+  elFacets.addEventListener('click', function(e){
+    var btn = e.target.closest('.sl-chip');
+    if (!btn || btn.disabled) return;
+    var key = btn.parentNode.getAttribute('data-facet');
+    var on = chosen(key), i = on.indexOf(btn.getAttribute('data-v'));
+    if (i === -1) on.push(btn.getAttribute('data-v')); else on.splice(i, 1);
+    render();
+  });
+
+  elApplied.addEventListener('click', function(e){
+    if (e.target.id === 'slClearAll'){ clearFacets(); render(); return; }
+    var pill = e.target.closest('.sl-pill');
+    if (!pill) return;
+    var on = chosen(pill.getAttribute('data-facet'));
+    var i = on.indexOf(pill.getAttribute('data-v'));
+    if (i !== -1) on.splice(i, 1);
+    render();
+  });
 
   document.getElementById('slReset').addEventListener('click', function(){
     elSearch.value = '';
-    [elSeries, elColour, elFuel, elBody, elYear, elSeats, elMiles, elMonthly].forEach(function(el){ el.value = ''; });
+    clearFacets();
     elSort.value = 'price-asc';
-    filter = 'all';
-    document.querySelectorAll('#slChips .sl-chip').forEach(function(b){
-      b.setAttribute('aria-pressed', String(b.dataset.filter === 'all'));
-    });
     render();
   });
 
   elFilterToggle.addEventListener('click', function(){
-    var open = elFilters.classList.toggle('open');
+    var open = elFacets.classList.toggle('open');
     elFilterToggle.setAttribute('aria-expanded', String(open));
-    elFilterToggle.textContent = open ? 'Hide filters' : 'Filters';
+    paintToggle();
   });
 
   var elShare = document.getElementById('slShare');
@@ -1007,15 +1169,6 @@
     if (window.gtag) gtag('event', 'stock_share', { shown: shown, filtered: shown !== ALL.length });
   });
 
-  document.getElementById('slChips').addEventListener('click', function(e){
-    var btn = e.target.closest('.sl-chip');
-    if (!btn) return;
-    filter = btn.dataset.filter;
-    this.querySelectorAll('.sl-chip').forEach(function(b){
-      b.setAttribute('aria-pressed', String(b === btn));
-    });
-    render();
-  });
 })();
 </script>
 <script src="disclaimer.js"></script>
