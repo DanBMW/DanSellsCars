@@ -25,6 +25,68 @@ window.dsStockMatch = (function () {
   var WA = 'https://wa.me/447827138197';
   var SHOW = 6;
 
+  /* Find my BMW's "features that matter" in the words Hedin's listings
+     actually use, worked out by reading all 434 equipment lines across the
+     stock rather than guessed. Two things that bite:
+
+     TRUNCATION. The lines stop at about 40 characters, so the car that has
+     adaptive cruise says "Digital Aftermarket - Active Cruise Cont" with no
+     "rol" on the end. Patterns match the stump, not the full phrase.
+
+     DELETIONS. "Deletion of Harman/Kardon" is a factory delete and means the
+     car does NOT have it. A plain substring match counts those as a match, so
+     every line beginning "Deletion of" is thrown out first. 50 cars carry one.
+
+     `firm:false` means Hedin do not itemise it because it is standard fit on
+     a modern BMW, so a car not listing it tells us nothing: sat-nav shows on
+     8 cars of 325 and Apple CarPlay on 7, when in truth nearly all of them
+     have both. Those are never used to rule a car out and are never claimed
+     as present. Ruling on them would be worse than useless - somebody asking
+     for sat-nav would be shown eight cars.
+     "360 Camera" and "Leather Seats" have NOTHING in the data: upholstery is
+     not in the equipment list at all, and no car names a surround-view camera.
+  */
+  var FEATURES = {
+    'Heated Seats':                 {firm:true,  re:/heated\s+(front\s+|and\s+rear\s+)?seats|heat comfort system/i},
+    'Heated Steering Wheel':        {firm:true,  re:/heated steering wheel/i},
+    'Panoramic Roof':               {firm:true,  re:/panoramic glass (sun)?roof|sky lounge panoramic/i},
+    'Electric Seats':               {firm:true,  re:/electric memory seats|front electric seats/i},
+    'Parking Sensors':              {firm:true,  re:/parking assistant|park distance control|parking sensors/i},
+    'Keyless Entry':                {firm:true,  re:/comfort access/i},
+    'Head-Up Display':              {firm:true,  re:/head.?up display/i},
+    'Wireless Charging':            {firm:true,  re:/wireless charging/i},
+    'Premium Sound System':         {firm:true,  re:/harman\/kardon|bowers & wilkins|hifi loudspeaker/i},
+    'Adaptive Cruise Control':      {firm:true,  re:/active cruise cont/i},
+    'Reversing Camera':             {firm:false, re:/reversing camera/i},
+    'Apple CarPlay / Android Auto': {firm:false, re:/smartphone integration/i},
+    'Navigation':                   {firm:false, re:/navigation/i},
+    '\u00b0Camera':                 {firm:false, re:null},
+    'Leather Seats':                {firm:false, re:null}
+  };
+  var DELETED = /^\s*deletion of/i;
+
+  function feat(name){
+    if (FEATURES[name]) return FEATURES[name];
+    /* "360\u00b0 Camera" carries a degree sign; match on the number so a
+       change of punctuation in the funnel cannot silently stop matching. */
+    if (/^360/.test(name)) return FEATURES['\u00b0Camera'];
+    return null;
+  }
+
+  function hasFeature(det, name){
+    var f = feat(name);
+    if (!f || !f.re) return false;
+    var kit = (det && det.equipment) || [];
+    for (var i = 0; i < kit.length; i++)
+      if (f.re.test(kit[i]) && !DELETED.test(kit[i])) return true;
+    return false;
+  }
+
+  /* Only the ones the listings record reliably can rule a car out. */
+  function firmOnly(list){
+    return list.filter(function (n){ var f = feat(n); return f && f.firm && f.re; });
+  }
+
   /* Find my BMW's words for a body style, in the stock list's words. "Touring"
      is BMW for an estate and is the one that does not translate itself. */
   var BODY = {
@@ -54,6 +116,9 @@ window.dsStockMatch = (function () {
     return {
       bodies: arr('bodyStyles').map(function (b) { return BODY[b]; }).filter(Boolean),
       colours: arr('specColours').filter(function (c) { return c !== 'Open to any'; }),
+      needs: arr('specNeeds'),
+      wants: arr('specWants'),
+      trim: ss('specTrim'),
       cash: /outright/i.test(route),
       deposit: num(ss('deposit')),
       monthly: num(ss('monthlyBudget')),
@@ -70,6 +135,46 @@ window.dsStockMatch = (function () {
     return map[c.body] || (c.body || '').toLowerCase();
   }
 
+  /* How many of their must-haves this car actually has, and which of
+     everything they named it can be shown to have. */
+  function metNeeds(det, b) {
+    var firm = firmOnly(b.needs), n = 0;
+    for (var i = 0; i < firm.length; i++) if (hasFeature(det, firm[i])) n++;
+    return n;
+  }
+  function matchedAsks(det, b) {
+    return b.needs.concat(b.wants).filter(function (name) {
+      return hasFeature(det, name);
+    });
+  }
+
+  /* Their own words for the car, against its model name and family. */
+  function modelHit(c, b) {
+    if (!b.model) return 0;
+    var hay = ((c.model || '') + ' ' + (c.series || '')).toLowerCase(), n = 0;
+    b.model.split(/[^a-z0-9]+/).forEach(function (w) {
+      if (w.length > 1 && hay.indexOf(w) !== -1) n++;
+    });
+    return n;
+  }
+
+  /* M Sport is on 270 of 332 cars, so trim can only ever rank, never rule out.
+     "Luxury / High spec" has almost nothing literal to match - one model name
+     in the whole list - so it is read as how much kit the car carries, which
+     is what somebody choosing it actually means. */
+  function trimScore(c, det) {
+    var kit = (det && det.equipment) || [];
+    var name = ((c.model || '') + ' ' + (c.trim || '')).toLowerCase();
+    var m = /m sport|m performance/.test(name)
+         || kit.some(function (k) { return /^m sport/i.test(k) && !DELETED.test(k); });
+    return {
+      'M Sport / Performance': m ? 25 : 0,
+      'Standard / SE':         m ? 0 : 25,
+      'Sport':                 m ? 12 : (/sport/.test(name) ? 25 : 0),
+      'Luxury / High spec':    Math.min(25, kit.length / 2)
+    };
+  }
+
   /* A car is only shown if it genuinely clears what they said they could pay.
      Nothing is stretched to fill the list: three cars that fit beat six that
      do not, and an empty list is answered honestly below. */
@@ -82,15 +187,14 @@ window.dsStockMatch = (function () {
 
   /* Among the cars that fit, the ones closest to what they described. Dan's
      own forecourt wins ties, the same way it sorts first on the stock page. */
-  function score(c, b, fin) {
+  function score(c, b, fin, det) {
     var s = 0;
     if (b.colours.length && b.colours.indexOf(c.colour) !== -1) s += 30;
-    if (b.model) {
-      var hay = (c.model || '').toLowerCase();
-      b.model.split(/[^a-z0-9]+/).forEach(function (w) {
-        if (w.length > 1 && hay.indexOf(w) !== -1) s += 25;
-      });
-    }
+    s += 25 * modelHit(c, b);
+    /* Nice-to-haves rank; must-haves gate above and are not double counted
+       here beyond the ordering the caller already applies. */
+    b.wants.forEach(function (n) { if (hasFeature(det, n)) s += 15; });
+    if (b.trim && b.trim !== 'No preference') s += (trimScore(c, det)[b.trim] || 0);
     if (c._home) s += 12;
     if (fin && b.monthly) s += Math.max(0, 10 - (b.monthly - fin.monthly) / 25);
     s += Math.max(0, (c._year || 0) - 2018);
@@ -108,7 +212,7 @@ window.dsStockMatch = (function () {
     return WA + '?text=' + encodeURIComponent(bits.join('\n'));
   }
 
-  function card(c, fin, det) {
+  function card(c, fin, det, asks) {
     var pics = dsFin.photos(c, det);
     var spec = [c.mileage ? String(c.mileage).replace(/ /g, ' ') : '',
                 c.fuel || '', c.gearbox || '', c.colour || '']
@@ -130,6 +234,9 @@ window.dsStockMatch = (function () {
               + (fin.legal ? '<p>' + esc(fin.legal) + '</p>' : '') + '</details>'
             : '')
       +   (spec ? '<p class="sm-spec">' + esc(spec) + '</p>' : '')
+      +   ((asks && asks.length)
+            ? '<p class="sm-asks">' + asks.map(esc).join(' \u00b7 ') + '</p>'
+            : '')
       +   '<a class="sm-wa" href="' + waLink(c, fin) + '" target="_blank" rel="noopener"'
       +     ' data-reg="' + esc(c.reg || '') + '">I’m interested in this one</a>'
       + '</div></article>';
@@ -160,17 +267,27 @@ window.dsStockMatch = (function () {
       var all = mine.map(function (c) { c._home = true; return c; })
         .concat(rest.map(function (c) { c._home = false; return c; }));
 
+      var firm = firmOnly(b.needs);
       var rows = [];
       all.forEach(function (c) {
         c._price = num(c.price); c._miles = num(c.mileage); c._year = num(c.year);
         /* their own deposit, so the payment is the one they would actually pay */
         var fin = dsFin.at(FIN[c.id], LAD[c.id], b.cash ? null : b.deposit);
         if (!fits(c, b, fin)) return;
-        rows.push({ c: c, fin: fin, s: score(c, b, fin) });
+        var det = DET[c.id];
+        rows.push({ c: c, fin: fin, det: det, s: score(c, b, fin, det),
+                    met: metNeeds(det, b), asks: matchedAsks(det, b) });
       });
       if (!rows.length) return;
 
-      rows.sort(function (x, y) { return y.s - x.s; });
+      /* A must-have is meant to mean it. Cars that have the lot are shown on
+         their own, and only if nothing has the lot does this fall back to the
+         closest - which it then says out loud, rather than quietly handing
+         somebody a car missing the one thing they insisted on. */
+      var whole = rows.filter(function (r) { return r.met === firm.length; });
+      var short = firm.length && !whole.length;
+      rows = (whole.length ? whole : rows);
+      rows.sort(function (x, y) { return (y.met - x.met) || (y.s - x.s); });
       rows = rows.slice(0, SHOW);
 
       box.innerHTML =
@@ -183,9 +300,13 @@ window.dsStockMatch = (function () {
             : (b.deposit
                 ? ', with the payments worked out on your ' + dsFin.money(b.deposit) + ' deposit.'
                 : '.'))
+        + (short
+            ? ' Nothing in stock has every must-have you listed, so these are the'
+              + ' closest, and each one says what it does have.'
+            : '')
         + ' Tap one and it comes straight to me.</p>'
         + '<div class="sm-grid">'
-        + rows.map(function (r2) { return card(r2.c, r2.fin, DET[r2.c.id]); }).join('')
+        + rows.map(function (r2) { return card(r2.c, r2.fin, r2.det, r2.asks); }).join('')
         + '</div>';
       box.hidden = false;
 

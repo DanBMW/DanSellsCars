@@ -423,8 +423,42 @@ How it chooses:
   or under the monthly they said, at the deposit they said; a cash brief at or
   under the cash figure. Nothing is stretched to fill the grid, and **a brief
   nothing fits shows nothing at all** rather than six near-misses.
-- **Soft**: a colour they asked for, words from their model preference, Dan's
-  own forecourt over the other branches, newer, fewer miles.
+- **Must-haves gate, and say so when they cannot.** `step5b.html` asks for
+  features one tap for must-have, two for nice-to-have. Cars with every
+  must-have are shown on their own; **only if nothing has the lot** does it fall
+  back to the closest, and the sub-line then says that out loud rather than
+  quietly handing somebody a car missing the one thing they insisted on.
+- **Soft**: nice-to-haves, a colour they asked for, their model preference
+  (against the model name and the series), trim, Dan's own forecourt over the
+  other branches, newer, fewer miles.
+- **Every card names the asks it actually satisfies**, so the ordering explains
+  itself and a fallback card shows plainly what it is missing.
+
+#### Matching "features that matter" against real equipment
+
+`FEATURES` in `stock-match.js` maps the funnel's fifteen features onto the
+words Hedin's listings use. It was built by reading all 434 equipment lines
+across the stock, not guessed, and three things bite:
+
+- **Lines are truncated at about 40 characters.** The car with adaptive cruise
+  says "Digital Aftermarket - Active Cruise Cont", no "rol". Patterns match the
+  stump. A pattern written for the full phrase found 1 car instead of 24.
+- **"Deletion of X" means the car does NOT have it.** 50 cars carry one, among
+  them "Deletion of Harman/Kardon" and "Deletion of Head-Up Display". A plain
+  substring match counts those as a match, so anything starting "Deletion of"
+  is thrown out first.
+- **Standard fit is not itemised, and `firm:false` marks it.** Sat-nav appears
+  on 8 cars of 325 and Apple CarPlay on 7, when in truth nearly all of them
+  have both; 360 cameras and leather appear on none at all, because upholstery
+  is not in the list. Those are **never used to rule a car out and never
+  claimed as present** - filtering on them would show somebody asking for
+  sat-nav eight cars. The usable ones are heated seats, heated steering wheel,
+  panoramic roof, electric seats, parking sensors, keyless entry, head-up
+  display, wireless charging, premium sound and adaptive cruise.
+- **Trim can only rank, never filter**: M Sport is on 270 of 332 cars. "Luxury
+  / High spec" has almost nothing literal to match (one model name in the whole
+  list), so it is read as how much kit the car carries, which is what somebody
+  choosing it means.
 - A cash brief still shows the standard example, labelled with the deposit it
   is based on, rather than one worked out on a deposit they never gave.
 - It reads the same five files `stock.html` publishes, so there is no second
