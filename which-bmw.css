@@ -181,3 +181,11 @@
 .wb-foot { max-width: 760px; margin: 0 auto; padding: 0 16px 50px;
   font-family: var(--sans); font-size: .74rem; color: var(--dim); line-height: 1.7; }
 .wb-foot a { color: var(--dim); }
+
+/* ── head against heart ── */
+.wb-read { font-family: var(--serif); font-size: 1.04rem; color: var(--paper);
+  line-height: 1.5; margin: 0 0 14px; font-style: italic; opacity: .92; }
+.wb-card.wb-heart { border-color: rgba(211,155,74,.45); }
+.wb-card.wb-heart .wb-badge { background: #8a6420; }
+.wb-gap { font-family: var(--sans); font-size: .88rem; color: #d39b4a;
+  margin: 0 0 12px; line-height: 1.5; }

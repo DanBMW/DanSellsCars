@@ -31,5 +31,6 @@ Disallow: /vip7.html
 Disallow: /vip-done.html
 Disallow: /yourcar.html
 Disallow: /yourbrief.html
+Disallow: /which-bmw.html
 
 Sitemap: https://dan-sells.co.uk/sitemap.xml

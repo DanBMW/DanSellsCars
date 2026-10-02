@@ -87,6 +87,31 @@
         { v: 'pocket', t: 'Small car, big poke', l: 'Something that punches above its size.' },
         { v: 'fast', t: 'As fast as you can get me', l: '' }
       ] },
+    /* ---- the three personality questions ----
+       Everything above this asks what you need. These ask what you are like,
+       which is what separates two cars that fit equally well: a 3 Series and
+       an X3 do the same job for the same family, and the answer to "would you
+       rather nobody looked" picks between them. They are deliberately quick,
+       slightly fun, and none of them rules a car out. */
+    { id: 'weekend', h: 'A good drive looks like…', hint: 'The one you would choose.',
+      type: 'one', opts: [
+        { v: 'country', t: 'An empty back road', l: 'Bends, no traffic, nowhere particular to be.' },
+        { v: 'motorway', t: 'Three hours to somewhere good', l: 'Cruise set, music on, eating up miles.' },
+        { v: 'city', t: 'Short hops, done quickly', l: 'In, out, parked, home.' },
+        { v: 'nodrive', t: 'Honestly, not driving at all', l: 'The car is there to get it over with.' }
+      ] },
+    { id: 'attention', h: 'You pull up outside somewhere. You would rather…',
+      hint: '', type: 'one', opts: [
+        { v: 'none', t: 'Nobody looked twice', l: 'Understated. You are not here to be seen.' },
+        { v: 'quiet', t: 'The people who know, knew', l: 'A quiet nod from somebody who gets it.' },
+        { v: 'heads', t: 'Heads turned', l: 'You want it to make an entrance.' }
+      ] },
+    { id: 'love', h: 'Be honest about driving', hint: '', type: 'one',
+      opts: [
+        { v: 'best', t: 'Best part of my day', l: 'You go the long way round on purpose.' },
+        { v: 'enjoy', t: 'I enjoy it when it is good', l: '' },
+        { v: 'means', t: 'It is just how I get places', l: 'No shame in it. It changes the answer.' }
+      ] },
     { id: 'mood', h: 'What matters most?', hint: 'Pick up to two, or skip.', type: 'many', max: 2,
       opts: [
         { v: 'comfort', t: 'Comfort', l: 'It should take the edge off a bad road.' },
@@ -113,7 +138,8 @@
   ];
 
   var A = { who: null, load: [], dailyVal: null, dailyUnit: 'mins', longrun: null,
-            charge: null, pace: null, mood: [], park: null, pay: null,
+            charge: null, pace: null, weekend: null, attention: null, love: null,
+            mood: [], park: null, pay: null,
             monthly: null, deposit: null, cash: null, age: null };
 
   var MODELS = null, CARS = [], FIN = {}, LAD = {}, STEP = 0, SENT = false;
@@ -263,7 +289,81 @@
     return out;
   }
 
-  function assess(key, m) {
+  /* What the personality answers say about a car, scored against figures we
+     actually hold rather than against a vibe: how tall it is, how much power it
+     carries per tonne, how long it is, whether it plugs in. `weight` is 1 for
+     the budget answer and 2 for the heart answer, where personality is meant to
+     lead.
+
+     Nothing in here ever rules a car out. These questions separate two cars
+     that both fit; they must not take away a car that works. */
+  function personality(m, weight) {
+    var s = 0, why = [];
+    var low = m.height_mm && m.height_mm < 1500;
+    var tall = m.height_mm && m.height_mm >= 1620;
+    var punchy = (m.hp_per_tonne_max || 0) >= 170;
+    var big = m.size_class === 'large' || m.size_class === 'limousine';
+    var small = m.size_class === 'small' || m.size_class === 'compact';
+
+    if (A.weekend === 'country') {
+      if (low) { s += 8; why.push('low and planted, which is what makes a back road worth driving'); }
+      if (punchy) s += 6;
+      if (tall) s -= 5;
+    } else if (A.weekend === 'motorway') {
+      if (big) { s += 8; why.push('long legs for the three hour runs you described'); }
+      if (m.fuels.indexOf('Diesel') !== -1 || m.ev_miles_max >= 250) s += 5;
+      if (small) s -= 4;
+    } else if (A.weekend === 'city') {
+      if (small) { s += 8; why.push('small enough to make short city hops painless'); }
+      if (m.electric) { s += 6; why.push('electric suits stop start driving better than anything else'); }
+      if (m.length_mm > 4800) s -= 6;
+    } else if (A.weekend === 'nodrive') {
+      if (m.electric) { s += 6; why.push('quiet, smooth and nothing to think about'); }
+      if (big) s += 3;
+      if (punchy) s -= 2;
+    }
+
+    /* Presence follows SIZE, not body style. Testing this against the real
+       table caught the obvious version being wrong: an iX1's body reads "SUV",
+       so rewarding any SUV gave a small crossover the same presence as an X7
+       and "heads turn" barely changed the answer at all. A big car has
+       presence; a small one does not, whatever shape it is. */
+    if (A.attention === 'none') {
+      if (small || /Saloon|Touring|Hatchback/i.test(m.body)) {
+        s += 9; why.push('understated, which is what you said you wanted');
+      }
+      if (m.size_class === 'limousine') s -= 12;
+      else if (m.size_class === 'large') s -= 5;
+    } else if (A.attention === 'quiet') {
+      if (!small && m.size_class !== 'limousine') s += 5;
+      if (punchy) { s += 5; why.push('quick without shouting about it'); }
+    } else if (A.attention === 'heads') {
+      if (m.size_class === 'limousine') {
+        s += 14; why.push('this is the one people look at');
+      } else if (m.size_class === 'large') {
+        s += 10; why.push('it has real presence on a driveway');
+      } else if (small) {
+        s -= 10;
+      }
+      if (tall) s += 3;                     /* sitting up adds to it */
+    }
+
+    if (A.love === 'best') {
+      if (punchy) { s += 8; why.push('enough power per tonne to be worth the long way home'); }
+      if (low) s += 4;
+    } else if (A.love === 'means') {
+      if (m.electric || m.plug) { s += 5; why.push('cheap and quiet to live with day to day'); }
+      if (punchy) s -= 3;
+    }
+    return { score: s * (weight || 1), why: why };
+  }
+
+  /* opts.ignoreBudget drops the money filters, which is how the heart answer is
+     worked out: the car they would have if the figure were not in the way.
+     Everything practical still applies, because a car that cannot carry the
+     children is not a dream, it is a mistake. */
+  function assess(key, m, opts) {
+    opts = opts || {};
     var r = { key: key, m: m, score: 0, reasons: [], caveats: [], out: null };
     var boot = bootNeeded();
     var pace = PACE_RANK[m.pace_best] || 0;
@@ -294,12 +394,11 @@
       r.out = 'not a small car'; return r;
     }
     var lo = priceFrom(key) || m.price_from;
-    if (A.cash && lo && lo > A.cash * 1.05) {
+    if (!opts.ignoreBudget && A.cash && lo && lo > A.cash * 1.05) {
       r.out = 'starts at ' + money(lo) + ', over your budget'; return r;
     }
-    var mo = null;
-    if (A.monthly) {
-      mo = monthlyFor(key);
+    var mo = A.monthly || opts.ignoreBudget ? monthlyFor(key) : null;
+    if (!opts.ignoreBudget && A.monthly) {
       if (mo && mo.monthly > A.monthly * 1.05) {
         r.out = 'the cheapest one comes to ' + money(mo.monthly) + ' a month at '
           + money(A.deposit || 0) + ' down'; return r;
@@ -389,24 +488,115 @@
     if (A.age === 'new' && m.years && m.years[1] >= 2026) r.score += 6;
     if (A.age === 'used') r.score += (m.price_from && m.price_from < 30000) ? 6 : 0;
 
-    /* Dan's own forecourt first, gently: it decides a tie, never the answer. */
-    r.score += Math.min(m.in_stock_dan, 4) * 2;
-    r.score += Math.min(m.in_stock_dan + m.in_stock_group, 20) * 0.2;
+    var p = personality(m, opts.heart ? 2 : 1);
+    r.score += p.score;
+    p.why.forEach(function (t) { if (r.reasons.indexOf(t) === -1) r.reasons.push(t); });
+
+    /* Dan's own forecourt first, gently: it decides a tie, never the answer.
+       Left out of the heart answer entirely, which is about the car and not
+       about what happens to be on the forecourt this morning. */
+    if (!opts.heart) {
+      r.score += Math.min(m.in_stock_dan, 4) * 2;
+      r.score += Math.min(m.in_stock_dan + m.in_stock_group, 20) * 0.2;
+    }
     return r;
   }
 
-  function recommend() {
+  function hasBudget() {
+    return !!(A.cash || A.monthly);
+  }
+
+  /* Is this car actually beyond what they said they would spend? The same 5%
+     latitude the budget filter uses, so a car is never both "within budget"
+     there and "over budget" here. A car we hold no figure for is not claimed
+     to be over: we do not know. */
+  function overBudget(r) {
+    if (A.monthly) return !!(r.monthly && r.monthly.monthly > A.monthly * 1.05);
+    if (A.cash) return !!(r.priceFrom && r.priceFrom > A.cash * 1.05);
+    return false;
+  }
+
+  function rank(opts) {
     var keys = Object.keys(MODELS || {}), all = [], i;
     for (i = 0; i < keys.length; i++) {
       /* The i3 hatchback is out of production and the name now means two other
          cars, so recommending "an i3" would read as an offer of the new one. */
       if (keys[i] === 'i3') continue;
-      all.push(assess(keys[i], MODELS[keys[i]]));
+      all.push(assess(keys[i], MODELS[keys[i]], opts));
     }
     var fit = all.filter(function (r) { return !r.out; });
     fit.sort(function (a, b) { return b.score - a.score; });
-    RESULT = { fit: fit, all: all };
+    return { fit: fit, all: all };
+  }
+
+  function recommend() {
+    var head = rank({});
+    RESULT = { fit: head.fit, all: head.all, heart: null, gap: null };
+
+    /* The heart answer: the same brief with the money taken out, and
+       personality counting double. Only worth showing when they gave a budget
+       AND it lands somewhere different, otherwise it is the same card twice. */
+    if (hasBudget()) {
+      var h = rank({ ignoreBudget: true, heart: true });
+      var top = head.fit[0], hw = h.fit[0];
+      /* Only when the money is genuinely what stands between them. A heart car
+         they can already afford is not a head and heart problem, it is just a
+         second suggestion, and labelling it "what your budget says" against
+         "what your heart says" would be untrue: on a 150,000 budget the quiz
+         offered an X5 and an XM as if the XM were out of reach. */
+      if (hw && (!top || hw.key !== top.key) && overBudget(hw)) {
+        RESULT.heart = hw;
+        RESULT.gap = gapTo(hw);
+      }
+    }
     return RESULT;
+  }
+
+  /* What the heart answer costs over the budget one, in the figures they gave
+     us. Said plainly: somebody who can see it is £80 a month can decide for
+     themselves, and somebody who cannot see it just feels sold to. */
+  function gapTo(h) {
+    var budget = RESULT.fit[0];
+    if (A.monthly && h.monthly) {
+      var over = h.monthly.monthly - A.monthly;
+      return over > 0
+        ? { kind: 'monthly', over: over,
+            text: money(h.monthly.monthly) + ' a month at the same ' + money(A.deposit || 0)
+              + ' down, on the cheapest one in stock. That is ' + money(over)
+              + ' a month more than you set.' }
+        : { kind: 'monthly', over: 0,
+            text: money(h.monthly.monthly) + ' a month, which is inside what you set' };
+    }
+    if (A.cash && h.priceFrom) {
+      var d = h.priceFrom - A.cash;
+      return d > 0
+        ? { kind: 'cash', over: d,
+            text: 'from ' + money(h.priceFrom) + ', about ' + money(d) + ' over your budget' }
+        : { kind: 'cash', over: 0, text: 'from ' + money(h.priceFrom) + ', inside your budget' };
+    }
+    if (budget && h.priceFrom) {
+      return { kind: 'cash', over: 0, text: 'from ' + money(h.priceFrom) };
+    }
+    return null;
+  }
+
+  /* A sentence read back to them from the three personality answers. It is the
+     one part of the page that is about them rather than about a car, and it is
+     what makes the answer feel worked out rather than generated. */
+  function readBack() {
+    var bits = [];
+    if (A.weekend === 'country') bits.push('you would take the long way round for a good road');
+    else if (A.weekend === 'motorway') bits.push('you cover proper distances in one go');
+    else if (A.weekend === 'city') bits.push('most of your driving is short and in town');
+    else if (A.weekend === 'nodrive') bits.push('the car is a tool, not a hobby');
+    if (A.attention === 'none') bits.push('you would rather nobody looked twice');
+    else if (A.attention === 'quiet') bits.push('you want the people who know to notice');
+    else if (A.attention === 'heads') bits.push('you want it to turn a head or two');
+    if (A.love === 'best') bits.push('and driving is the best part of your day');
+    else if (A.love === 'means') bits.push('and you would rather it just got on with it');
+    if (!bits.length) return '';
+    var s = bits.join(', ');
+    return s.charAt(0).toUpperCase() + s.slice(1) + '.';
   }
 
   /* ---------- the page ---------- */
@@ -633,7 +823,7 @@
     return bits;
   }
 
-  function card(r, rank) {
+  function card(r, rank, label, gap) {
     var m = r.m, hero = heroCar(r.key), mo = r.monthly;
     var img = hero && hero.image
       ? '<img class="wb-shot" src="' + esc(hero.image) + '" alt="' + esc(m.name)
@@ -642,9 +832,14 @@
     var price = r.priceFrom ? 'from ' + money(r.priceFrom) : '';
     var fin = '';
     if (mo) {
-      fin = '<p class="wb-mo"><strong>' + money(mo.monthly) + ' a month</strong> on PCP at '
+      /* The gap line already gives the monthly figure and the deposit, so the
+         standard line underneath it would say the same thing twice in a row.
+         The representative example is NOT optional either way: it has to sit
+         under every monthly payment this page shows. */
+      var saidIt = gap && gap.kind === 'monthly';
+      fin = (saidIt ? '' : '<p class="wb-mo"><strong>' + money(mo.monthly) + ' a month</strong> on PCP at '
         + money(A.deposit || 0) + ' down, on the cheapest one in stock'
-        + ' <span class="wb-reg">' + esc(mo.car.reg || '') + '</span></p>'
+        + ' <span class="wb-reg">' + esc(mo.car.reg || '') + '</span></p>')
         + '<details class="wb-rep"><summary>The representative example in full</summary>'
         + '<p>' + esc(window.dsFin.repExample(mo.fin)) + '</p>'
         + (mo.fin.legal ? '<p class="wb-legal">' + esc(mo.fin.legal) + '</p>' : '')
@@ -654,12 +849,15 @@
     }
     var wa = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(
       'Hi Dan, the quiz says a ' + m.name + ' suits me. Can we talk about it?');
-    return '<article class="wb-card' + (rank ? '' : ' wb-top') + '">'
+    var badge = label || (rank ? '' : 'Your best fit');
+    return '<article class="wb-card' + (rank && !label ? '' : ' wb-top')
+      + (label === 'What your heart says' ? ' wb-heart' : '') + '">'
       + '<div class="wb-shotwrap">' + img
-      + (rank ? '' : '<span class="wb-badge">Your best fit</span>') + '</div>'
+      + (badge ? '<span class="wb-badge">' + esc(badge) + '</span>' : '') + '</div>'
       + '<div class="wb-cardbody">'
       + '<h3>BMW ' + esc(m.name) + '</h3>'
       + '<p class="wb-figs">' + esc(figures(r).join(' · ')) + (price ? ' · ' + price : '') + '</p>'
+      + (gap ? '<p class="wb-gap">' + esc(gap.text) + '</p>' : '')
       + fin
       + (r.reasons.length ? '<ul class="wb-why">' + r.reasons.slice(0, 5).map(function (t) {
           return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '')
@@ -694,20 +892,30 @@
         + encodeURIComponent('Hi Dan, the quiz could not find me a match. Can you help?')
         + '" target="_blank" rel="noopener">Tell me what you are after</a>';
       ga('wb_zero_match', {});
+    } else if (RESULT.heart) {
+      /* Two answers to the same brief: the one the budget allows, and the one
+         they would have without it. Shown side by side, named plainly, with the
+         difference in money on the second, so the choice is theirs to make. */
+      var rb = readBack();
+      h = '<h1 class="wb-h">Your head and your heart disagree</h1>'
+        + (rb ? '<p class="wb-read">' + esc(rb) + '</p>' : '')
+        + '<p class="wb-hint">Both of these fit your life. One fits the figure you gave me as well. '
+        + 'I have put the difference in plain money so you can decide rather than guess.</p>'
+        + '<div class="wb-cards">'
+        + card(top[0], 0, 'What your budget says')
+        + card(RESULT.heart, 1, 'What your heart says', RESULT.gap)
+        + '</div>';
+      h += alsoMarkup(fit) + formMarkup();
+      ga('wb_head_heart', { budget: top[0].m.name, heart: RESULT.heart.m.name,
+                            over: RESULT.gap ? RESULT.gap.over : 0 });
     } else {
+      var rb2 = readBack();
       h = '<h1 class="wb-h">' + (top.length > 1 ? 'Two that suit you' : 'This is the one')
-        + '</h1><p class="wb-hint">Worked out from what you told me and the real figures for every '
+        + '</h1>' + (rb2 ? '<p class="wb-read">' + esc(rb2) + '</p>' : '')
+        + '<p class="wb-hint">Worked out from what you told me and the real figures for every '
         + 'BMW I can get hold of. Every line under a car is a reason it fits you, not a sales line.</p>'
         + '<div class="wb-cards">' + top.map(function (r, i) { return card(r, i); }).join('') + '</div>';
-      if (fit.length > 2) {
-        h += '<details class="wb-also"><summary>' + (fit.length - 2)
-          + ' more that would work</summary><ul>'
-          + fit.slice(2, 8).map(function (r) {
-              return '<li><strong>' + esc(r.m.name) + '</strong> '
-                + esc(r.reasons[0] || 'fits what you told me') + '</li>'; }).join('')
-          + '</ul></details>';
-      }
-      h += formMarkup();
+      h += alsoMarkup(fit) + formMarkup();
       ga('wb_result', { top: top[0].m.name, second: top[1] ? top[1].m.name : '',
                         fits: fit.length });
     }
@@ -721,6 +929,20 @@
     all.forEach(function (r) { if (r.out) counts[r.out] = (counts[r.out] || 0) + 1; });
     var best = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; })[0];
     return best ? 'The commonest reason was: ' + best + '.' : '';
+  }
+
+  /* The runners up. Pulled out of the branch it used to live in: the head and
+     heart screen is a second ending for the same quiz and needs everything the
+     first one has, and the contact form going missing from it was exactly the
+     sort of thing that happens when two endings each build their own page. */
+  function alsoMarkup(fit) {
+    if (fit.length <= 2) return '';
+    return '<details class="wb-also"><summary>' + (fit.length - 2)
+      + ' more that would work</summary><ul>'
+      + fit.slice(2, 8).map(function (r) {
+          return '<li><strong>' + esc(r.m.name) + '</strong> '
+            + esc(r.reasons[0] || 'fits what you told me') + '</li>'; }).join('')
+      + '</ul></details>';
   }
 
   function formMarkup() {
@@ -756,6 +978,9 @@
     if (A.longrun) L.push('Long runs: ' + label('longrun', A.longrun));
     if (A.charge) L.push('Home charging: ' + label('charge', A.charge));
     if (A.pace) L.push('Wants it to feel: ' + label('pace', A.pace));
+    if (A.weekend) L.push('A good drive: ' + label('weekend', A.weekend));
+    if (A.attention) L.push('Pulling up outside: ' + label('attention', A.attention));
+    if (A.love) L.push('Driving is: ' + label('love', A.love));
     if (A.mood.length) L.push('Priorities: ' + A.mood.map(function (v) { return label('mood', v); }).join(', '));
     if (A.park) L.push('Tight parking: ' + label('park', A.park));
     if (A.pay === 'monthly') L.push('Budget: up to ' + money(A.monthly || 0) + ' a month at '
@@ -781,9 +1006,22 @@
       annual_miles: annualMiles() == null ? '' : annualMiles(),
       page_url: location.href
     };
-    ['who', 'longrun', 'charge', 'pace', 'park', 'pay', 'age'].forEach(function (k) {
+    ['who', 'longrun', 'charge', 'pace', 'park', 'pay', 'age',
+     'weekend', 'attention', 'love'].forEach(function (k) {
       P[k] = A[k] || '';
     });
+    P.personality = readBack();
+    /* The gap between head and heart is the conversation Dan is about to have,
+       so it goes in the email rather than being left on the page. */
+    if (RESULT.heart) {
+      P.heart_model = RESULT.heart.m.name;
+      P.heart_vs_budget = RESULT.gap ? RESULT.gap.text : '';
+      P.heart_over_budget = RESULT.gap ? RESULT.gap.over : '';
+      P.heart_why = RESULT.heart.reasons.slice(0, 4).join('; ');
+      P._subject = 'Which BMW quiz: ' + (fit[0] ? fit[0].m.name : 'no match')
+        + ' on budget, ' + RESULT.heart.m.name + ' at heart, for '
+        + ($('wbName') ? $('wbName').value.trim() : '');
+    }
     P.carries = A.load.join(', ');
     P.priorities = A.mood.join(', ');
     P.monthly_max = A.monthly || '';
@@ -910,9 +1148,12 @@
   window.wbDebug = { get A() { return A; }, get result() { return RESULT; },
                      get models() { return MODELS; }, recommend: recommend,
                      dailyMiles: dailyMiles, annualMiles: annualMiles,
-                     assess: function (k) { return assess(k, MODELS[k]); },
+                     assess: function (k, o) { return assess(k, MODELS[k], o); },
+                     readBack: readBack, steps: function () { return Q.length; },
                      set: function (o) { var k; for (k in o) A[k] = o[k]; },
-                     go: function (n) { STEP = n; render(); } };
+                     /* Clamped, so a test can say "jump to the end" without
+                        tracking how many questions there happen to be today. */
+                     go: function (n) { STEP = Math.min(n, Q.length); render(); } };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', start);
