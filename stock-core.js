@@ -85,7 +85,16 @@ window.dsStock = (function () {
     hud:     { label: 'Head-up display',         re: /head.?up display/i },
     sound:   { label: 'Harman Kardon or better', re: /harman\/kardon|bowers & wilkins|hifi loudspeaker/i },
     keyless: { label: 'Keyless entry',           re: /comfort access/i },
-    acc:     { label: 'Adaptive cruise',         re: /active cruise cont/i },
+    /* BMW rarely itemises adaptive cruise by name: it comes inside Driving
+       Assistant Plus and Driving Assistant Professional, which is what the
+       listings print. Matching only "Active Cruise Cont" found 24 cars of 332
+       when 97 have it. Two lines must NOT count, and both look like a match:
+       plain "Driving Assistant" (121 cars) is lane departure and collision
+       warning with ordinary cruise, no adaptive anything; and "Driving
+       Assistant Plus preparation" (19 cars) means wired for it and not fitted,
+       the same trap as "Deletion of". */
+    acc:     { label: 'Adaptive cruise',         re: /active cruise cont|driving assistant (plus|pro)/i,
+               not: /prep/i },
     towbar:  { label: 'Tow bar',                 re: /tow ?bar|towbar|trailer tow/i },
     xdrive:  { label: 'xDrive all wheel drive',  test: function (c) { return c.drive === 'FourWheel'; } },
     seven:   { label: '7 seats',                 test: function (c) { return String(c.seats) === '7'; } }
@@ -99,6 +108,7 @@ window.dsStock = (function () {
     var kit = det.equipment || [];
     for (var i = 0; i < kit.length; i++) {
       if (DELETED.test(kit[i])) continue;
+      if (f.not && f.not.test(kit[i])) continue;
       if (f.re.test(kit[i])) return true;
     }
     return false;

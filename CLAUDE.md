@@ -465,10 +465,25 @@ How it chooses:
 
 #### Matching "features that matter" against real equipment
 
-`FEATURES` in `stock-match.js` maps the funnel's fifteen features onto the
-words Hedin's listings use. It was built by reading all 434 equipment lines
-across the stock, not guessed, and three things bite:
+`FEATURES` lives in **`stock-core.js`** (`window.dsStock`), shared by Find my
+BMW v2 and `stock.html`; `stock-match.js` carries the older copy for the
+retired pages. It maps the wish list options onto the words Hedin's listings
+use, and was built by reading all 434 equipment lines across the stock, not
+guessed. Four things bite:
 
+- **A feature is often only named inside the package that carries it.** Dan
+  pointed this out about adaptive cruise, which BMW sells as **Driving
+  Assistant Plus** and **Driving Assistant Professional**: those are the lines
+  the listings print, and "Active Cruise Control" by name appears on one car in
+  the fleet. Matching the name alone found 24 cars of 330 where 97 have it.
+  Two lines must **not** count and both read like a match: plain **"Driving
+  Assistant"** (122 cars) is lane departure and collision warning with ordinary
+  cruise control and no adaptive anything, so the pattern requires Plus or Pro;
+  and **"Driving Assistant Plus preparation"** (20 cars) means wired for it and
+  not fitted, which is the "Deletion of" trap in a second costume. That is what
+  the optional `not` regex on a feature is for. Before widening any other
+  option, print every line matching the obvious word and read them: three of
+  the seven here were wrong.
 - **Lines are truncated at about 40 characters.** The car with adaptive cruise
   says "Digital Aftermarket - Active Cruise Cont", no "rol". Patterns match the
   stump. A pattern written for the full phrase found 1 car instead of 24.
@@ -477,7 +492,7 @@ across the stock, not guessed, and three things bite:
   substring match counts those as a match, so anything starting "Deletion of"
   is thrown out first.
 - **Standard fit is not itemised, and `firm:false` marks it.** Sat-nav appears
-  on 8 cars of 325 and Apple CarPlay on 7, when in truth nearly all of them
+  on 8 cars of 332 and Apple CarPlay on 7, when in truth nearly all of them
   have both; 360 cameras and leather appear on none at all, because upholstery
   is not in the list. Those are **never used to rule a car out and never
   claimed as present** - filtering on them would show somebody asking for
