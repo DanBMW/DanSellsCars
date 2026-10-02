@@ -1,0 +1,183 @@
+/* "Which BMW suits me" quiz. Its own stylesheet rather than fmb.css: that one
+   belongs to the Find my BMW funnel and fmb.js owns its class names, so
+   borrowing them would couple two pages that are meant to be separate. The
+   colour and type tokens come from premium.css, so the two still look related.
+   Phone first: the whole thing is thumbed through on a handset. */
+
+.wb { background: var(--ink); min-height: 100vh; min-height: 100dvh; }
+
+.wb-top { position: sticky; top: 0; z-index: 20; background: rgba(10,12,15,.94);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--hairline-soft); }
+.wb-top-in { max-width: 760px; margin: 0 auto; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wb-logo { font-family: var(--serif); font-size: 1.05rem; color: var(--paper);
+  text-decoration: none; letter-spacing: .01em; }
+.wb-wa-ico { color: #4a9d6a; display: inline-flex; padding: 6px; }
+
+.wb-prog { max-width: 760px; margin: 0 auto; padding: 0 16px 10px; }
+.wb-steptxt { display: block; font-family: var(--sans); font-size: .62rem;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+.wb-bar { height: 2px; background: var(--hairline-soft); border-radius: 2px; overflow: hidden; }
+.wb-fill { height: 100%; width: 0; background: var(--accent);
+  transition: width .45s cubic-bezier(.3,.7,.3,1); }
+
+.wb-wrap { max-width: 760px; margin: 0 auto; padding: 26px 16px 72px; }
+.wb-stage { opacity: 0; transform: translateY(6px); }
+.wb-stage.wb-in { opacity: 1; transform: none;
+  transition: opacity .32s ease, transform .32s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .wb-stage, .wb-stage.wb-in { opacity: 1; transform: none; transition: none; }
+  .wb-fill { transition: none; }
+}
+
+.wb-h { font-family: var(--serif); font-weight: 400; color: var(--paper);
+  font-size: 1.62rem; line-height: 1.22; margin: 0 0 10px; }
+.wb-hint { font-family: var(--sans); color: var(--body-c); font-size: .92rem;
+  line-height: 1.6; margin: 0 0 20px; max-width: 54ch; }
+
+/* ── options ── */
+.wb-opts { display: grid; gap: 10px; }
+.wb-opts.two { grid-template-columns: 1fr; }
+@media (min-width: 600px) { .wb-opts.two { grid-template-columns: 1fr 1fr; } }
+
+.wb-opt { display: block; width: 100%; text-align: left; cursor: pointer;
+  background: var(--ink-3); color: var(--paper);
+  border: 1px solid var(--hairline-soft); border-radius: 12px;
+  padding: 15px 16px; min-height: 56px; font-family: var(--sans);
+  transition: border-color .15s, background .15s, transform .08s;
+  -webkit-tap-highlight-color: transparent; }
+.wb-opt:hover { border-color: var(--hairline); }
+.wb-opt:active { transform: scale(.995); }
+.wb-opt.on { border-color: var(--accent); background: #16202c; }
+.wb-opt-t { display: block; font-size: .98rem; font-weight: 500; }
+.wb-opt-l { display: block; font-size: .8rem; color: var(--dim);
+  margin-top: 3px; line-height: 1.45; }
+.wb-opt.on .wb-opt-l { color: var(--body-c); }
+
+/* ── the daily driving question ── */
+.wb-toggle { display: inline-flex; background: var(--ink-3); border-radius: 999px;
+  padding: 3px; border: 1px solid var(--hairline-soft); margin-bottom: 16px; }
+.wb-tog { border: 0; background: none; color: var(--dim); cursor: pointer;
+  font-family: var(--sans); font-size: .84rem; padding: 9px 20px;
+  border-radius: 999px; min-height: 40px; }
+.wb-tog.on { background: var(--accent-deep); color: #fff; }
+
+.wb-numwrap { display: flex; align-items: center; gap: 10px; background: var(--ink-3);
+  border: 1px solid var(--hairline-soft); border-radius: 12px; padding: 12px 15px;
+  font-family: var(--sans); color: var(--body-c); font-size: .88rem; }
+.wb-numwrap input { background: none; border: 0; color: var(--paper);
+  font-family: var(--sans); font-size: 1.3rem; font-weight: 500; width: 5.2em;
+  min-width: 0; -moz-appearance: textfield; }
+.wb-numwrap input::-webkit-outer-spin-button,
+.wb-numwrap input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.wb-numwrap input:focus { outline: none; }
+.wb-numwrap:focus-within { border-color: var(--accent); }
+.wb-pre { color: var(--dim); font-size: 1.2rem; }
+.wb-conv { font-family: var(--sans); font-size: .82rem; color: var(--dim);
+  margin: 12px 0 0; line-height: 1.55; }
+.wb-pair { display: grid; gap: 10px; margin-top: 14px; }
+@media (min-width: 560px) { .wb-pair { grid-template-columns: 1fr 1fr; } }
+
+/* ── navigation ── */
+.wb-nav { display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; margin-top: 26px; }
+.wb-back { background: none; border: 0; color: var(--dim); cursor: pointer;
+  font-family: var(--sans); font-size: .86rem; padding: 12px 4px; min-height: 44px; }
+.wb-next { background: var(--paper); color: #0a0c0f; border: 0; border-radius: 999px;
+  cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: .95rem;
+  padding: 14px 30px; min-height: 48px; }
+.wb-next:disabled { opacity: .32; cursor: default; }
+
+/* ── the answer ── */
+.wb-cards { display: grid; gap: 22px; margin: 6px 0 30px; }
+.wb-card { background: var(--ink-3); border: 1px solid var(--hairline-soft);
+  border-radius: 16px; overflow: hidden; }
+.wb-card.wb-top { border-color: rgba(91,138,201,.45); }
+.wb-shotwrap { position: relative; background: #0d1116; }
+.wb-shot { display: block; width: 100%; aspect-ratio: 16 / 10;
+  object-fit: cover; background: #0d1116; }
+.wb-noshot { display: flex; align-items: center; justify-content: center;
+  font-family: var(--sans); font-size: .82rem; color: var(--dim); }
+.wb-badge { position: absolute; top: 12px; left: 12px; background: var(--accent-deep);
+  color: #fff; font-family: var(--sans); font-size: .64rem; letter-spacing: .14em;
+  text-transform: uppercase; padding: 6px 11px; border-radius: 999px; }
+.wb-cardbody { padding: 18px 17px 20px; }
+.wb-cardbody h3 { font-family: var(--serif); font-weight: 400; color: var(--paper);
+  font-size: 1.32rem; margin: 0 0 6px; }
+.wb-figs { font-family: var(--sans); font-size: .82rem; color: var(--dim);
+  margin: 0 0 14px; line-height: 1.5; }
+.wb-mo { font-family: var(--sans); font-size: .95rem; color: var(--paper);
+  margin: 0 0 10px; }
+.wb-mo strong { font-weight: 600; }
+.wb-mo.wb-ask { color: var(--body-c); font-size: .88rem; }
+.wb-reg { font-size: .72rem; color: var(--dim); letter-spacing: .08em; }
+.wb-rep { margin: 0 0 14px; }
+.wb-rep summary { font-family: var(--sans); font-size: .76rem; color: var(--dim);
+  cursor: pointer; padding: 5px 0; }
+.wb-rep p { font-family: var(--sans); font-size: .72rem; color: var(--dim);
+  line-height: 1.6; margin: 6px 0 0; }
+.wb-legal { opacity: .8; }
+.wb-why { list-style: none; margin: 0 0 14px; padding: 0; }
+.wb-why li { font-family: var(--sans); font-size: .88rem; color: var(--body-c);
+  line-height: 1.55; padding: 0 0 0 20px; margin-bottom: 7px; position: relative; }
+.wb-why li::before { content: ""; position: absolute; left: 2px; top: .52em;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.wb-cav { font-family: var(--sans); font-size: .84rem; color: #d39b4a;
+  line-height: 1.55; margin: 0 0 14px; }
+.wb-cav strong { color: #e0ad63; }
+.wb-stock { font-family: var(--sans); font-size: .78rem; color: var(--dim);
+  margin: 0 0 16px; }
+.wb-wa { display: block; text-align: center; background: #4a9d6a; color: #fff;
+  text-decoration: none; font-family: var(--sans); font-weight: 600; font-size: .92rem;
+  padding: 14px 18px; border-radius: 999px; min-height: 48px; }
+
+.wb-also { margin: 0 0 30px; }
+.wb-also summary { font-family: var(--sans); font-size: .86rem; color: var(--body-c);
+  cursor: pointer; padding: 10px 0; }
+.wb-also ul { margin: 6px 0 0; padding-left: 20px; }
+.wb-also li { font-family: var(--sans); font-size: .86rem; color: var(--dim);
+  line-height: 1.6; margin-bottom: 6px; }
+.wb-also strong { color: var(--paper); font-weight: 500; }
+
+/* ── the form ── */
+.wb-form { border-top: 1px solid var(--hairline-soft); padding-top: 26px; }
+.wb-form h2 { font-family: var(--serif); font-weight: 400; color: var(--paper);
+  font-size: 1.3rem; margin: 0 0 8px; }
+.wb-form label { display: block; font-family: var(--sans); font-size: .78rem;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--dim);
+  margin-bottom: 14px; }
+.wb-form input[type=text], .wb-form input[type=tel], .wb-form input[type=email],
+.wb-form textarea { display: block; width: 100%; margin-top: 7px;
+  background: var(--ink-3); border: 1px solid var(--hairline-soft); border-radius: 11px;
+  padding: 13px 14px; color: var(--paper); font-family: var(--sans); font-size: 1rem;
+  letter-spacing: normal; text-transform: none; min-height: 48px; }
+.wb-form input:focus, .wb-form textarea:focus { outline: none; border-color: var(--accent); }
+.wb-form textarea { resize: vertical; min-height: 76px; }
+.wb-send { width: 100%; background: var(--paper); color: #0a0c0f; border: 0;
+  border-radius: 999px; cursor: pointer; font-family: var(--sans); font-weight: 600;
+  font-size: 1rem; padding: 15px; min-height: 52px; margin-top: 4px; }
+.wb-send:disabled { opacity: .5; cursor: default; }
+.wb-err { font-family: var(--sans); font-size: .86rem; color: #e06b5a;
+  margin: 0 0 12px; }
+.wb-err a, .wb-small a { color: var(--accent); }
+.wb-small { font-family: var(--sans); font-size: .78rem; color: var(--dim);
+  margin: 14px 0 0; line-height: 1.6; }
+
+/* ── resume ── */
+.wb-resume { background: var(--ink-3); border: 1px solid var(--hairline-soft);
+  border-radius: 14px; padding: 20px; }
+.wb-resume h2 { font-family: var(--serif); font-weight: 400; color: var(--paper);
+  font-size: 1.2rem; margin: 0 0 8px; }
+.wb-resume-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.wb-resume-row button { cursor: pointer; font-family: var(--sans); font-size: .9rem;
+  border-radius: 999px; padding: 12px 24px; min-height: 46px; }
+#wbResumeGo { background: var(--paper); color: #0a0c0f; border: 0; font-weight: 600; }
+#wbResumeNew { background: none; color: var(--dim); border: 1px solid var(--hairline); }
+
+.wb-load { font-family: var(--sans); color: var(--dim); font-size: .9rem;
+  text-align: center; padding: 60px 0; }
+.wb-load a { color: var(--accent); }
+
+.wb-foot { max-width: 760px; margin: 0 auto; padding: 0 16px 50px;
+  font-family: var(--sans); font-size: .74rem; color: var(--dim); line-height: 1.7; }
+.wb-foot a { color: var(--dim); }

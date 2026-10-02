@@ -45,6 +45,7 @@ the final step.
 | Pages | Funnel |
 |---|---|
 | `find-my-bmw.html` (+ `fmb.js`, `fmb.css`, `stock-core.js`) | **"Find my BMW" v2**, rebuilt 1 October 2026. One page: intro, nine tap only questions (new or approved used, life, shape, fuel, budget, extras, colour, part exchange Yes/No/Maybe, timing; one per screen, `#qi`, `#q1`..`#q7`, `#qp` in the URL, Back and browser back work), a short honest matching moment, then the results behind a **hard contact gate**. Matches are computed in JS memory; until a Formspree submission succeeds the page renders only the persona, the match count and three blurred skeleton cards (no regs, prices, models, images or links in the DOM). The gate (`#fmbGate`, a bottom sheet on mobile, a centred modal on desktop; main is `inert`, focus is trapped, Esc collapses it to a peek bar but never unlocks) asks for name, mobile and email, all required. Success unlocks the real cards, unless part exchange is Yes: then the PX steps (reg, mileage, service history, finance, keys required; condition notes optional; photos via a WhatsApp button, never blocking) must be sent in a second submission first. For Maybe the PX steps are offered and skippable. A failed submission keeps the gate and shows Try again plus WhatsApp. "Rather just WhatsApp me" messages Dan with the answers (no cars) and does **not** unlock. Unlock persists in `localStorage.fmbV2` (answers kept 7 days); `sessionStorage.fmbSent`/`fmbPxSent` stop a second submission. New or either buyers see "I'll come back to you with new car options" above a couple of used cars. Live "X cars match" counter and per option counts come from the same files stock.html reads. Results are never zero: a fallback ladder (group stock, budget +10%, neighbouring fuels, neighbouring shapes, drop 7 seats, then anything in budget or the newest) widens one step at a time and says on screen what it widened. Monthly figures only with the lender's full representative example (the MBG.html display); no quote says "Ask for a quote". "See all matches" deep links to stock.html with the hard filters plus `from=fmb`. Pre answers from `?life=&body=&fuel=`. `window.fmbDebug` exposes the state for tests. The page uses disclaimer.js in **inline mode** (`<html data-dsc="inline">`): no modal over question 1, the full wording renders into `[data-dsc-slot]` on the results screen. `step1.html`..`step8.html`, `step1b`, `step4b/c/m`, `step5b` and `start.html` are now redirect stubs to `find-my-bmw.html` (offers.html pattern, query string kept). `thankyou.html`, `wait.html` and `stock-match.js` are left in place for old links; nothing new posts to them. |
+| `which-bmw.html` (+ `which-bmw.js`, `which-bmw.css`) | **"Which BMW suits me" quiz**, added 2 October 2026 at Dan's request and deliberately **separate from Find my BMW**. That funnel asks what car you want and shows the ones in stock that match; this asks about your life and answers with a **model**, for somebody who does not yet know whether they want an X3 or a 3 Series. Ten questions one per screen (who is on board, what you carry, daily driving, long runs, home charging, how it should feel, priorities, tight parking, budget, new or used), then one or two models with a photograph, the figures, the reasons it fits and what it does not, and a Formspree submission carrying every answer plus the top three models. Answers live in `localStorage.wbQuiz` for 7 days and the resume puts you back on the question you left. Fires its own `wb_*` GA events, so it is deliberately absent from the `STEPS` map in `analytics.js`. Its own stylesheet rather than `fmb.css`, which `fmb.js` owns. **The daily driving question takes minutes or miles** and converts at 0.4 miles a minute (24mph, a town and dual carriageway mix), stated on screen: almost everybody knows their commute in minutes and almost nobody knows it in miles, and that one answer is what decides petrol, diesel, hybrid or electric. |
 | `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.com links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses no dash separators at all (Dan's rule, see Sitewide copy and CTA conventions). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
 | `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate&d=Friday` (built via the widget on `links.html`; `d` is the optional service day, echoed in the greeting); the plate arrives pre-filled, the customer confirms car + mileage then taps **"I'm interested"** (screen 1) and books (cal.com / WhatsApp). Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
 | `yourbrief.html` | **Optional deep-dive brief** — nudged from `yourcar.html` stage 2 and `sq_done.html` after the initial interest/booking stages. Single page, five skippable stages (direction, timing, payment + budget, PX intent, recap ticket + notes), reuses identity from `sessionStorage` (never re-asks for what Dan has), **one** Formspree submission on send. |
@@ -413,6 +414,67 @@ other stock"**, which merges in every other used BMW the group has -
   rewrites the query string from the current state - at which point nothing is
   unlocked and the flag is dropped. Re-reading `location` afterwards says no,
   and the shared link opened locked.
+
+### The model reference behind the quiz
+
+`which-bmw.html` reasons about **models**, not individual cars, so it needs
+figures the stock files do not carry. Three scripts build them, in this order,
+and all three are safe to re-run:
+
+1. **`automation/car-details.py`** already fetched each car's listing page for
+   photographs and equipment; it now also keeps the boot in litres, kerb weight,
+   CO2, electric range, power, seats, doors and first registration. No extra
+   requests: the same page, more fields read off it.
+2. **`automation/model-specs.py`** fetches outside dimensions, which Hedin do
+   not publish at all, from Wikipedia infoboxes via `Special:Export` (the
+   `api.php` endpoint is rate limited from here, the export view is not). Every
+   row records the page and generation it came from. 24 of 24 families.
+3. **`automation/model-table.py`** joins the lot into `bmw-models.json` plus a
+   CSV, and **`automation/model-workbook.py`** writes `bmw-model-data.xlsx`
+   for Dan: the models, every car, the daily snapshots from git, and a Notes
+   sheet sourcing every column.
+
+Things that bite, all of them found the hard way:
+
+- **Hedin's unit labels are wrong, and the numbers are right.** Kerb weight is
+  labelled lbs on a figure that is kilograms ("2,495 lbs" on a 2,495kg X5) and
+  CO2 g/mile on a figure that is g/km. Checked against published figures for
+  four cars across four fuel types. They are relabelled once on the way in, as
+  `weight_kg` and `co2_gkm`, and the raw strings are **not** stored beside
+  them: a wrong unit in a public file is a wrong unit waiting to reach a
+  customer.
+- **`car_fuel` is unusable** and is not harvested. It reads "Hybrid" for both a
+  petrol 220i and a diesel X5 40d, which is why the snapshot derives its own
+  `fuelGroup`.
+- **Every harvested figure is bounded** (`SPEC` in `car-details.py`). Hedin
+  publish a 5,271 litre boot for two of the three XMs, a car with a 527 litre
+  boot. An out of range figure is dropped and named in the run, never clamped,
+  because clamping invents a different wrong number. The XM therefore shows no
+  boot figure at all, which is the honest answer and better than an absurd one.
+- **Wikipedia markup has three traps.** Dimensions are `{{cvt}}` on some pages
+  and `{{convert}}` on others; a model page lists every generation in
+  chronological order, so the FIRST block is the oldest car on it (on the X3, a
+  2003 E83); and a field can wrap several figures in a multi-line `{{ubl}}`,
+  where the only thing marking a top-level key from a list item is that the key
+  starts its line with `|`.
+- **"BMW i3" is a disambiguation page.** The name now covers a 2026 Neue
+  Klasse car, a China-only electric 3 Series and the 2013-2022 hatchback. The
+  four in stock are the hatchback, and the quiz **never recommends it**: saying
+  "an i3" would read as an offer of the new one.
+- **There are no 0-62 times** in any source reachable from here, so pace is
+  **horsepower per tonne** from Hedin's own power and kerb weight for that car,
+  never the badge: a 2.5 tonne X5 40d and a 1.5 tonne 120 read alike on
+  horsepower and feel nothing alike.
+- **"Five adults in comfort" is width AND wheelbase**, 1,950mm and 2,970mm,
+  fitted to Dan's ruling that this means "X5 and above" and reproducing it
+  exactly. It deliberately excludes the 5 Series and i5, which are longer than
+  an X5 but 104mm narrower across the back seat. Length alone would wave them
+  through. The rule lives in `model-table.py`; change it there, not in the
+  workbook, which is rebuilt from it.
+- **The history only goes back as far as the file does.** The snapshot's first
+  commit is 21 September 2026, so that is the whole of the stock history, and
+  the Notes sheet says so rather than letting somebody assume otherwise. It
+  grows by a row a day.
 
 ### "A few in stock that fit" - the Find my BMW matcher
 

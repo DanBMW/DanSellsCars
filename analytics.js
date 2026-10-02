@@ -51,7 +51,11 @@
      Slug → funnel + on-screen step number. Redirect-only pages
      (step1-step8, start, ev-step7, retired sq4-sq7/sq6b) are deliberately
      absent. Find my BMW v2 (find-my-bmw.html) is one page and fires its own
-     fmb_* events from fmb.js, tagged fmb_version 2.
+     fmb_* events from fmb.js, tagged fmb_version 2. which-bmw.html does the
+     same with wb_* events from which-bmw.js: it is a model picker rather than
+     a funnel step, so it has no place in a <funnel>_step_<n> series, and its
+     Formspree submission is already counted as a generate_lead by the fetch
+     wrapper above.
      vip.html is the VIP Buyers Event invitation landing page rather than a
      step, so it fires its own vip_invite_view / vip_start events instead. */
   var STEPS = {
