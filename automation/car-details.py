@@ -96,6 +96,64 @@ def shrink(url):
     return m.group(1) if m else url
 
 
+# Hedin's own figures, which the list pages do not carry. They are what makes a
+# "which BMW suits me" recommendation answerable from real data rather than from
+# memory: a boot in litres, the seats, the kerb weight and, on anything with a
+# plug, the electric range.
+#
+# THE UNIT LABELS AT SOURCE ARE WRONG and must not be passed through to a
+# customer. Checked across four cars of different fuels against the published
+# figures for those models:
+#   car_service_weight_text  "2,495 lbs" on an X5 50e, which weighs 2,495 KG;
+#                            an lbs reading would be out by a factor of 2.2.
+#   car_emission_mixed_text  "123 g/mile" on a 220i, whose WLTP CO2 is
+#                            123 g/KM.
+# The numbers themselves are right and metric, so the number is kept and the
+# unit relabelled here, once, rather than in every page that reads the file.
+# car_cargo_volume_text ("500 l") and car_electric_range_text ("288 miles" on
+# an iX3, matching its WLTP figure) are already correct as labelled.
+#
+# Note car_fuel is NOT harvested: it reads "Hybrid" for both a petrol 220i and a
+# diesel X5 40d, which is why the snapshot derives its own fuelGroup.
+SPEC = (
+    ('boot_l',    'car_cargo_volume_text',   'l'),
+    ('weight_kg', 'car_service_weight_text', None),    # labelled lbs, really kg
+    ('co2_gkm',   'car_emission_mixed_text', None),    # labelled g/mile, really g/km
+    ('ev_miles',  'car_electric_range_text', 'miles'),
+    ('power_hp',  'car_power_text',          'hp'),
+)
+
+
+def number(v):
+    """The figure out of one of Hedin's "1,234 unit" strings, or None."""
+    if isinstance(v, (int, float)):
+        return float(v)
+    m = re.search(r'-?[0-9][0-9,.]*', str(v or ''))
+    if not m:
+        return None
+    try:
+        return float(m.group(0).replace(',', ''))
+    except ValueError:
+        return None
+
+
+def spec_of(html):
+    """The numeric spec, in the units named by each key rather than by Hedin."""
+    out = {}
+    for key, field, _unit in SPEC:
+        n = number(value_after(html, field))
+        if n is not None and n > 0:
+            out[key] = int(n) if n == int(n) else n
+    for key, field in (('seats', 'car_seats'), ('doors', 'car_doors')):
+        n = number(value_after(html, field))
+        if n and 1 <= n <= 9:
+            out[key] = int(n)
+    reg = value_after(html, 'car_firstregistration')
+    if isinstance(reg, str) and reg[:4].isdigit():
+        out['first_reg'] = reg[:10]
+    return out
+
+
 def detail(cid):
     html = get('%s/buy-car/used-cars/%s/x' % (BASE, cid))
     # The wrong url still answers with a page big enough to look healthy, so
@@ -123,10 +181,14 @@ def detail(cid):
         rec['images'] = out_imgs
     if eq:
         rec['equipment'] = eq
-    for key, field in (('version', 'car_version'), ('emissions', 'car_emission_mixed_text')):
-        v = value_after(html, field)
-        if isinstance(v, str) and v.strip():
-            rec[key] = v.strip()
+    v = value_after(html, 'car_version')
+    if isinstance(v, str) and v.strip():
+        rec['version'] = v.strip()
+    # The CO2 figure goes in as co2_gkm by spec_of(). The raw
+    # car_emission_mixed_text string is deliberately NOT stored: it reads
+    # "123 g/mile" for a figure that is g/km, and a wrong unit sitting in a
+    # public file is a wrong unit waiting to be put in front of a customer.
+    rec.update(spec_of(html))
     # Nothing useful came back. Recording it would mark the car done for ever,
     # because the file itself is the "already fetched" marker, so it is better
     # to fail this one car and let tomorrow pick it up.
