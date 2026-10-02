@@ -541,7 +541,8 @@ customer-facing, `Value.html` trade tool), dealership pages
 - **Find my BMW v2 payloads** (`fmb.js`). Contact, `form: find-my-bmw-v2`:
   `lead_id` (`FMB-YYMMDD-XXXXX`, also in `sessionStorage.fmbLead`), `name,
   email, phone, _subject, _replyto, _gotcha` (honeypot), `interest`
-  (new/used/either), `part_exchange` (Yes/No/Maybe/blank), `marketing_opt_in,
+  (new/used/either), `interest_detail` (the same words as the lead summary;
+  brand new always means a factory order to spec or a new car in stock), `part_exchange` (Yes/No/Maybe/blank), `marketing_opt_in,
   marketing_channels`, the answers (`lifestyle, body, fuel, pay_route,
   monthly_max, deposit, cash_max, extras, colours, timing, persona`), matching
   context (`match_count_forecourt, match_count_group, fallback_level, relaxed,
@@ -552,6 +553,7 @@ customer-facing, `Value.html` trade tool), dealership pages
   analytics.js does not count a second lead), `name, phone, email, px_reg,
   px_answer, px_mileage, px_service_history, px_outstanding_finance,
   px_settlement, px_condition, px_notes, px_keys, px_photos, interest,
+  interest_detail,
   page_url, pxsummary`. PX photos go by WhatsApp (prefilled with the reg, the
   lead ref and a photo checklist) because Formspree file uploads need a paid
   plan. Success needs `response.ok` and no JSON error (12s timeout); anything

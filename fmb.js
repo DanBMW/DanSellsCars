@@ -119,9 +119,9 @@
     { v: 'maybe', t: 'Maybe', l: 'Not sure yet. You can tell me about it if you like.' }
   ];
   var INTEREST = [
-    { v: 'new', t: 'A brand new BMW', l: 'Ordered to your spec. I\u2019ll come back to you with new car options.' },
+    { v: 'new', t: 'A brand new BMW', l: 'Ordered to your spec, or from brand new stock that may be ready sooner. I\u2019ll come back to you with options.' },
     { v: 'used', t: 'An approved used BMW', l: 'Real cars on my forecourt and across the group.' },
-    { v: 'either', t: 'Open to either', l: 'New car options from me, plus used cars that fit.' }
+    { v: 'either', t: 'Open to either', l: 'Brand new options from me, ordered to your spec or from new stock that may be ready sooner, plus approved used cars that fit.' }
   ];
   function byV(list, v) { for (var i = 0; i < list.length; i++) if (list[i].v === v) return list[i]; return null; }
 
@@ -478,7 +478,7 @@
   function extrasText(a) { return a.extras.map(function (k) { return ST.FEATURES[k].label; }).join(', '); }
   function shapesText(a) { return a.body.length ? list(a.body.map(function (v) { return byV(BODY, v).t; }), 'or') : 'Open minded on shape'; }
   function fuelsText(a) { return a.fuel.length ? list(a.fuel.map(function (v) { return byV(FUEL, v).t; }), 'or') : 'Open minded on fuel'; }
-  function interestText(a) { return { 'new': 'A brand new BMW', used: 'An approved used BMW', either: 'New or approved used' }[a.interest] || ''; }
+  function interestText(a) { return { 'new': 'A brand new BMW, either a factory order to my spec or a new car in stock that may be ready sooner', used: 'An approved used BMW', either: 'Brand new or approved used. Brand new could be a factory order to my spec or a new car in stock that may be ready sooner' }[a.interest] || ''; }
   function lifeText(a) { var o = byV(LIFE, a.life); return o ? o.t : ''; }
   function whenText(a) { var o = byV(WHEN, a.when); return o ? o.t : ''; }
   function carLine(r) {
@@ -1168,6 +1168,7 @@
       _gotcha: $('fGotcha').value,
       name: ci.name, email: ci.email, phone: ci.phone,
       interest: A.interest || 'either',
+      interest_detail: interestText(A),
       part_exchange: { yes: 'Yes', no: 'No', maybe: 'Maybe' }[A.px] || 'Not answered',
       marketing_opt_in: opt ? 'Yes' : 'No',
       marketing_channels: opt ? 'Email, WhatsApp' : '',
@@ -1368,6 +1369,7 @@
       px_keys: PXD.keys,
       px_photos: PXD.photosWa ? 'Opened WhatsApp to send photos' : 'Not sent yet (asked to send on WhatsApp)',
       interest: A.interest || 'either',
+      interest_detail: interestText(A),
       page_url: location.href.split('#')[0],
       pxsummary: pxLine()
     };
@@ -1444,7 +1446,7 @@
     var n = LEAD.first || ss('fmbSentName') || '';
     $('fmbSent').hidden = false;
     $('fmbSentH').textContent = newish
-      ? (n ? 'Thanks, ' + n + '. I\u2019ll come back to you with new car options.' : 'Thanks. I\u2019ll come back to you with new car options.')
+      ? (n ? 'Thanks, ' + n + '. I\u2019ll come back to you with brand new options, both factory orders and new cars in stock.' : 'Thanks. I\u2019ll come back to you with brand new options, both factory orders and new cars in stock.')
       : (n ? 'Got them. Thank you, ' + n + '.' : 'Got them. Thank you.');
     $('fmbSentP').textContent = newish
       ? 'Your answers are with me now. I\u2019ll come back to you personally, usually the same day.'
