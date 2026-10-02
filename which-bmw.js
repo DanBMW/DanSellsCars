@@ -144,6 +144,8 @@
 
   var MODELS = null, CARS = [], FIN = {}, LAD = {}, STEP = 0, SENT = false;
   var RESULT = [];
+  var STARTED = false;          /* past the title card */
+  var SEEN_BREAK = {};          /* interstitials already shown this session */
 
   /* ---------- the figures ---------- */
 
@@ -614,7 +616,8 @@
 
   function save() {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), a: A, s: STEP }));
+      localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), a: A, s: STEP,
+                                                 b: SEEN_BREAK }));
     } catch (e) {}
   }
 
@@ -627,8 +630,12 @@
       var k;
       for (k in b.a) if (A.hasOwnProperty(k)) A[k] = b.a[k];
       /* Put them back on the question they left, clamped: "carry on" that
-         starts again at question one is not carrying on. */
+         starts again at question one is not carrying on. Somebody resuming has
+         plainly started, so the title card is not shown again, and any
+         interstitial they already walked past stays walked past. */
       if (typeof b.s === 'number') STEP = Math.max(0, Math.min(Q.length, b.s));
+      STARTED = STEP > 0 || !!A.who;
+      SEEN_BREAK = (b.b && typeof b.b === 'object') ? b.b : {};
       return true;
     } catch (e) { return false; }
   }
@@ -661,25 +668,56 @@
     }).join('');
   }
 
+  /* The quick picks are the whole point of this screen on a phone: a number
+     field is a keyboard and a decision, three taps of a chip is neither. The
+     field stays, because somebody who knows their exact mileage should be able
+     to type it. */
+  var QUICK = { mins: [15, 30, 45, 60, 90], miles: [5, 15, 30, 50, 80] };
+  var NEEDLE_MAX = { mins: 120, miles: 100 };
+
+  function needleDeg() {
+    var v = A.dailyVal || 0, max = NEEDLE_MAX[A.dailyUnit];
+    return -90 + Math.max(0, Math.min(1, v / max)) * 180;
+  }
+
+  function convLine() {
+    var d = dailyMiles(), yr = annualMiles();
+    if (d == null) return 'However you think about it. Most people know the minutes.';
+    if (A.dailyUnit === 'mins') {
+      return 'About ' + Math.round(d) + ' miles a day, so roughly '
+        + yr.toLocaleString('en-GB') + ' a year. Worked out at 24mph, a town and '
+        + 'dual carriageway mix.';
+    }
+    return 'Roughly ' + yr.toLocaleString('en-GB') + ' miles a year.';
+  }
+
   function dailyMarkup() {
     var v = A.dailyVal == null ? '' : A.dailyVal;
-    var d = dailyMiles(), yr = annualMiles();
+    var unit = A.dailyUnit === 'mins' ? 'minutes' : 'miles';
     return '<div class="wb-daily">'
       + '<div class="wb-toggle" role="group" aria-label="Miles or minutes">'
       + '<button type="button" class="wb-tog' + (A.dailyUnit === 'mins' ? ' on' : '')
       + '" data-unit="mins">Minutes</button>'
       + '<button type="button" class="wb-tog' + (A.dailyUnit === 'miles' ? ' on' : '')
       + '" data-unit="miles">Miles</button></div>'
-      + '<label class="wb-numwrap"><input type="number" id="wbDaily" inputmode="numeric" min="0" max="600"'
-      + ' value="' + v + '" placeholder="' + (A.dailyUnit === 'mins' ? '40' : '16') + '"/>'
-      + '<span>' + (A.dailyUnit === 'mins' ? 'minutes a day' : 'miles a day') + '</span></label>'
-      + '<p class="wb-conv" id="wbConv">'
-      + (d == null ? 'However you think about it. Most people know the minutes.'
-          : (A.dailyUnit === 'mins'
-              ? 'About ' + Math.round(d) + ' miles a day, so roughly '
-                + yr.toLocaleString('en-GB') + ' a year. Worked out at 24mph, a town and dual carriageway mix.'
-              : 'Roughly ' + yr.toLocaleString('en-GB') + ' miles a year.'))
-      + '</p></div>';
+      + '<div class="wb-gauge">'
+      + '<div class="wb-needle" aria-hidden="true"><svg viewBox="0 0 104 104">'
+      + '<path d="M10 52a42 42 0 0 1 84 0" fill="none" stroke="rgba(236,233,225,.13)" stroke-width="2"/>'
+      + '<g class="nd" id="wbNeedle" style="transform:rotate(' + needleDeg() + 'deg)">'
+      + '<line x1="52" y1="52" x2="52" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>'
+      + '</g><circle cx="52" cy="52" r="4" fill="currentColor"/></svg></div>'
+      + '<div class="wb-readout"><b id="wbBig">' + (v === '' ? '–' : v) + '</b>'
+      + '<span id="wbUnit">' + unit + ' a day</span></div></div>'
+      + '<div class="wb-quick">'
+      + QUICK[A.dailyUnit].map(function (n) {
+          return '<button type="button" class="wb-qk' + (A.dailyVal === n ? ' on' : '')
+            + '" data-qk="' + n + '">' + n + '</button>'; }).join('')
+      + '</div>'
+      + '<label class="wb-numwrap"><input type="number" id="wbDaily" inputmode="numeric"'
+      + ' min="0" max="600" value="' + v + '" placeholder="'
+      + (A.dailyUnit === 'mins' ? '40' : '16') + '"/>'
+      + '<span>or type it</span></label>'
+      + '<p class="wb-conv" id="wbConv">' + esc(convLine()) + '</p></div>';
   }
 
   function payMarkup() {
@@ -709,16 +747,89 @@
     return h;
   }
 
+  /* The accent winds from cold blue on the first question to warm amber on the
+     last, so the page is visibly further along before you read anything. It is
+     one custom property; every accent on screen is derived from it in CSS. */
+  /* 212 is a cold blue and 392 wraps to 32, a warm amber; hsl() is happy with
+     a hue past 360, so the whole sweep is one addition. It runs through violet
+     and red on the way, which is the half of the quiz that asks about them. */
+  function setHue(frac) {
+    var h = 212 + Math.max(0, Math.min(1, frac)) * 180;
+    document.body.style.setProperty('--accH', String(Math.round(h)));
+  }
+
+  /* The title card. A quiz that opens on question one reads as a form; one
+     that opens on a cover reads as something you have chosen to do. It also
+     gets the honest numbers out of the way before anybody starts: how many
+     questions, how long, and that the email comes at the end and not before. */
+  function renderIntro() {
+    $('wbProg').hidden = true;
+    setHue(0);
+    $('wbStage').innerHTML = '<div class="wb-intro">'
+      + '<span class="wb-kicker">Thirteen questions</span>'
+      + '<h1 class="wb-giant">Which BMW<br/>is <em>actually</em><br/>yours?</h1>'
+      + '<p class="wb-lede">Not the one you think you want. The one that fits how you '
+      + 'live, what you carry, how far you drive and, honestly, what you are like.</p>'
+      + '<ul class="wb-facts">'
+      + '<li><b>90</b> seconds</li><li><b>330</b> cars behind it</li>'
+      + '<li>No email until the <b>end</b></li></ul>'
+      + '<button type="button" class="wb-go" id="wbGo">Start <span>→</span></button>'
+      + '</div>';
+    $('wbStage').classList.add('wb-in');
+    $('wbGo').addEventListener('click', function () {
+      STEP = 0; STARTED = true; save(); render(); ga('wb_start', {});
+    });
+  }
+
+  /* A beat between the practical half and the personal one. It marks the change
+     of subject, which otherwise arrives as "and now a strange question about
+     car parks", and it is the one screen on here that is purely for the feel of
+     the thing. */
+  var BREAKS = { weekend: {
+    kicker: 'Part two',
+    h: 'Right. Now the interesting half.',
+    p: 'That is everything your life needs. The rest is about you, and it is what '
+       + 'separates two cars that fit exactly the same.' } };
+
+  function renderBreak(q) {
+    var b = BREAKS[q.id];
+    $('wbStage').innerHTML = '<div class="wb-break">'
+      + '<span class="wb-kicker">' + esc(b.kicker) + '</span>'
+      + '<h2>' + esc(b.h) + '</h2><p>' + esc(b.p) + '</p>'
+      + '<button type="button" class="wb-go" id="wbGo">Go on then <span>→</span></button>'
+      + '</div>';
+    $('wbStage').classList.remove('wb-in');
+    void $('wbStage').offsetWidth;
+    $('wbStage').classList.add('wb-in');
+    $('wbGo').addEventListener('click', function () {
+      SEEN_BREAK[q.id] = true; save(); render();
+    });
+    ga('wb_interstitial', { before: q.id });
+  }
+
   function render() {
     var total = Q.length;
+    if (!STARTED && STEP === 0) return renderIntro();
     if (STEP >= total) return renderResult();
     var q = Q[STEP];
+    if (BREAKS[q.id] && !SEEN_BREAK[q.id]) {
+      $('wbProg').hidden = false;
+      $('wbStepTxt').textContent = (STEP + 1) + ' / ' + total;
+      $('wbFill').style.width = (100 * STEP / total) + '%';
+      $('wbDial').style.setProperty('--p', String(Math.round(100 * STEP / total)));
+      setHue(STEP / (total - 1));
+      return renderBreak(q);
+    }
     $('wbProg').hidden = false;
-    $('wbStepTxt').textContent = (STEP + 1) + ' of ' + total;
+    $('wbStepTxt').textContent = (STEP + 1) + ' / ' + total;
     $('wbFill').style.width = (100 * STEP / total) + '%';
+    $('wbDial').style.setProperty('--p', String(Math.round(100 * STEP / total)));
+    setHue(STEP / (total - 1));
 
-    var body = '<h1 class="wb-h">' + esc(q.h) + '</h1>'
-      + (q.hint ? '<p class="wb-hint">' + esc(q.hint) + '</p>' : '');
+    var body = '<div class="wb-qhead"><span class="wb-num" aria-hidden="true">'
+      + (STEP + 1) + '</span>'
+      + '<h1 class="wb-h">' + esc(q.h) + '</h1>'
+      + (q.hint ? '<p class="wb-hint">' + esc(q.hint) + '</p>' : '') + '</div>';
     if (q.type === 'daily') body += dailyMarkup();
     else if (q.type === 'pay') body += payMarkup();
     else body += '<div class="wb-opts' + (q.type === 'many' ? ' two' : '') + '">' + optMarkup(q) + '</div>';
@@ -767,8 +878,35 @@
     });
     stage.querySelectorAll('.wb-tog').forEach(function (b) {
       b.addEventListener('click', function () {
-        A.dailyUnit = b.dataset.unit; save(); render();
-        var el = $('wbDaily'); if (el) el.focus();
+        /* The number means something different in the other unit, so it is
+           cleared rather than silently reinterpreted: 40 minutes is not 40
+           miles, and keeping it would quietly treble somebody's mileage. */
+        A.dailyUnit = b.dataset.unit;
+        A.dailyVal = null;
+        save();
+        render();
+      });
+    });
+    /* One place that repaints everything the daily number drives: the needle,
+       the big readout, the sentence and the button. Typing and tapping a chip
+       both come through here, so the two can never disagree. */
+    function paintDaily() {
+      var c = $('wbConv'), big = $('wbBig'), nd = $('wbNeedle');
+      if (c) c.textContent = convLine();
+      if (big) big.textContent = A.dailyVal == null ? '–' : A.dailyVal;
+      if (nd) nd.style.transform = 'rotate(' + needleDeg() + 'deg)';
+      stage.querySelectorAll('.wb-qk').forEach(function (b) {
+        b.classList.toggle('on', Number(b.dataset.qk) === A.dailyVal);
+      });
+      $('wbNext').disabled = A.dailyVal == null;
+      save();
+    }
+    stage.querySelectorAll('.wb-qk').forEach(function (b) {
+      b.addEventListener('click', function () {
+        A.dailyVal = Number(b.dataset.qk);
+        var f = $('wbDaily');
+        if (f) f.value = A.dailyVal;
+        paintDaily();
       });
     });
     var d = $('wbDaily');
@@ -776,18 +914,10 @@
       d.addEventListener('input', function () {
         var n = parseFloat(d.value);
         A.dailyVal = isNaN(n) || n < 0 ? null : n;
-        save();
-        var c = $('wbConv'), mi = dailyMiles(), yr = annualMiles();
-        if (c) {
-          c.textContent = mi == null ? 'However you think about it. Most people know the minutes.'
-            : (A.dailyUnit === 'mins'
-                ? 'About ' + Math.round(mi) + ' miles a day, so roughly ' + yr.toLocaleString('en-GB')
-                  + ' a year. Worked out at 24mph, a town and dual carriageway mix.'
-                : 'Roughly ' + yr.toLocaleString('en-GB') + ' miles a year.');
-        }
-        $('wbNext').disabled = A.dailyVal == null;
+        paintDaily();
       });
-      d.focus();
+      /* Not focused on arrival any more: that threw the keyboard up over the
+         chips, which are the faster way to answer on a phone. */
     }
     [['wbMonthly', 'monthly'], ['wbDeposit', 'deposit'], ['wbCash', 'cash']].forEach(function (p) {
       var el = $(p[0]);
@@ -804,10 +934,38 @@
     $('wbNext').addEventListener('click', next);
   }
 
+  /* A short beat before the answer. It is honest about what it is doing rather
+     than a fake spinner: these are the four things the page genuinely does, and
+     the answer is already computed before the first line is drawn. Skipped
+     entirely under reduced motion and when the answers were restored, where a
+     delay would just be in the way. */
+  var WORKING = ['Measuring boots…', 'Checking what fits five adults…',
+                 'Asking the lender for payments…', 'Arguing with myself…'];
+
+  function renderWorking(done) {
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return done();
+    $('wbProg').hidden = true;
+    $('wbStage').innerHTML = '<div class="wb-work"><div class="wb-work-ring"></div>'
+      + '<p id="wbWorkTxt">' + esc(WORKING[0]) + '</p></div>';
+    $('wbStage').classList.add('wb-in');
+    var i = 0;
+    var t = setInterval(function () {
+      i += 1;
+      var el = $('wbWorkTxt');
+      if (!el) { clearInterval(t); return; }
+      if (i >= WORKING.length) { clearInterval(t); done(); return; }
+      el.textContent = WORKING[i];
+    }, 420);
+  }
+
   function next() {
     STEP += 1;
     save();
-    if (STEP >= Q.length) { recommend(); }
+    if (STEP >= Q.length) {
+      recommend();
+      return renderWorking(render);
+    }
     render();
   }
 
@@ -850,7 +1008,9 @@
     var wa = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(
       'Hi Dan, the quiz says a ' + m.name + ' suits me. Can we talk about it?');
     var badge = label || (rank ? '' : 'Your best fit');
-    return '<article class="wb-card' + (rank && !label ? '' : ' wb-top')
+    /* wb-pick, not wb-top: the header is .wb-top, and two different things
+       sharing a class name is how a style on one quietly lands on the other. */
+    return '<article class="wb-card' + (rank && !label ? '' : ' wb-pick')
       + (label === 'What your heart says' ? ' wb-heart' : '') + '">'
       + '<div class="wb-shotwrap">' + img
       + (badge ? '<span class="wb-badge">' + esc(badge) + '</span>' : '') + '</div>'
@@ -1136,7 +1296,11 @@
         return;
       }
       render();
-      ga('wb_start', {});
+      /* The title card is a view, not a start. wb_start fires when they press
+         the button on it, so the two can be told apart in GA: everybody who
+         lands sees the card, and the gap between the two numbers is the cost of
+         the cover screen. */
+      ga('wb_intro_view', {});
     }).catch(function () {
       /* The model table is the one file the quiz cannot do without. */
       $('wbLoad').innerHTML = '<p>The quiz will not load just now. '

@@ -1,191 +1,354 @@
-/* "Which BMW suits me" quiz. Its own stylesheet rather than fmb.css: that one
-   belongs to the Find my BMW funnel and fmb.js owns its class names, so
-   borrowing them would couple two pages that are meant to be separate. The
-   colour and type tokens come from premium.css, so the two still look related.
-   Phone first: the whole thing is thumbed through on a handset. */
+/* "Which BMW suits me". Its own stylesheet rather than fmb.css, which fmb.js
+   owns, so the two pages can move apart without breaking each other.
 
-.wb { background: var(--ink); min-height: 100vh; min-height: 100dvh; }
+   This is meant NOT to look like a form on a website. One idea, carried the
+   whole way through: the page is an instrument cluster. The progress is a rev
+   counter that sweeps as you answer, the question number is a giant ghost
+   numeral bleeding off the edge, the accent colour winds from cold blue at the
+   first question to warm amber by the last, and the answer arrives after a beat
+   of the needle working rather than appearing the instant you tap.
 
-.wb-top { position: sticky; top: 0; z-index: 20; background: rgba(10,12,15,.94);
-  backdrop-filter: blur(8px); border-bottom: 1px solid var(--hairline-soft); }
-.wb-top-in { max-width: 760px; margin: 0 auto; padding: 12px 16px;
+   Three rules it keeps while doing that:
+   - Everything still works with motion switched off. Every animation here is
+     decoration over a layout that is already correct, and the reduced-motion
+     block at the bottom turns the lot off without moving anything.
+   - Phone first. 16px gutters, nothing below 44px that gets tapped, no
+     horizontal scroll at 320px.
+   - Colour and type come from premium.css, so it is recognisably the same
+     business even while it behaves differently. */
+
+.wb {
+  --accH: 212;                               /* winds from blue to amber */
+  --acc: hsl(var(--accH) 72% 62%);
+  --acc-deep: hsl(var(--accH) 62% 40%);
+  --acc-ghost: hsl(var(--accH) 70% 60% / .11);
+  --gut: 16px;
+  background: var(--ink);
+  min-height: 100vh; min-height: 100dvh;
+  overflow-x: hidden;
+  transition: none;
+}
+.wb::before {                                /* the room the cluster sits in */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(120% 70% at 85% -10%, hsl(var(--accH) 60% 30% / .30), transparent 60%),
+    radial-gradient(90% 60% at -10% 100%, hsl(var(--accH) 70% 26% / .22), transparent 65%);
+  transition: background 1.1s cubic-bezier(.4,0,.2,1);
+}
+/* A little grain, so the flat areas do not read as a template. */
+.wb::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  opacity: .035; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.wb > * { position: relative; z-index: 2; }
+
+/* An author `display` beats the browser's own `[hidden]` rule whatever the
+   specificity, so setting .wb-prog to flex quietly made hidden stop working and
+   the rev counter sat on the title card reading "1 / 13" before anybody had
+   started. Anything here that hides itself with the attribute needs this. */
+.wb [hidden] { display: none !important; }
+
+/* ── the cluster bar ───────────────────────────────────────────── */
+.wb-top { position: sticky; top: 0; z-index: 30;
+  background: linear-gradient(180deg, rgba(10,12,15,.97), rgba(10,12,15,.72));
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--hairline-soft); }
+.wb-top-in { max-width: 760px; margin: 0 auto; padding: 11px var(--gut);
   display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.wb-logo { font-family: var(--serif); font-size: 1.05rem; color: var(--paper);
-  text-decoration: none; letter-spacing: .01em; }
+.wb-logo { font-family: var(--serif); font-size: 1.02rem; color: var(--paper);
+  text-decoration: none; }
 .wb-wa-ico { color: #4a9d6a; display: inline-flex; padding: 6px; }
 
-.wb-prog { max-width: 760px; margin: 0 auto; padding: 0 16px 10px; }
-.wb-steptxt { display: block; font-family: var(--sans); font-size: .62rem;
-  letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
-.wb-bar { height: 2px; background: var(--hairline-soft); border-radius: 2px; overflow: hidden; }
-.wb-fill { height: 100%; width: 0; background: var(--accent);
-  transition: width .45s cubic-bezier(.3,.7,.3,1); }
+.wb-prog { max-width: 760px; margin: 0 auto; padding: 0 var(--gut) 9px;
+  display: flex; align-items: center; gap: 11px; }
+/* The rev counter. An SVG ring would need markup in every render, so it is
+   drawn with a conic gradient and a mask: one element, one custom property. */
+.wb-dial { --p: 0; flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  background: conic-gradient(var(--acc) calc(var(--p) * 1%), rgba(236,233,225,.1) 0);
+  -webkit-mask: radial-gradient(circle, transparent 54%, #000 56%);
+  mask: radial-gradient(circle, transparent 54%, #000 56%);
+  transition: background .5s cubic-bezier(.3,.7,.3,1); }
+.wb-steptxt { font-family: var(--sans); font-size: .6rem; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--dim); white-space: nowrap; }
+.wb-bar { flex: 1 1 auto; height: 2px; background: rgba(236,233,225,.09);
+  border-radius: 2px; overflow: hidden; }
+.wb-fill { height: 100%; width: 0; background: var(--acc);
+  box-shadow: 0 0 14px var(--acc);
+  transition: width .55s cubic-bezier(.3,.7,.3,1); }
 
-.wb-wrap { max-width: 760px; margin: 0 auto; padding: 26px 16px 72px; }
-.wb-stage { opacity: 0; transform: translateY(6px); }
-.wb-stage.wb-in { opacity: 1; transform: none;
-  transition: opacity .32s ease, transform .32s ease; }
-@media (prefers-reduced-motion: reduce) {
-  .wb-stage, .wb-stage.wb-in { opacity: 1; transform: none; transition: none; }
-  .wb-fill { transition: none; }
-}
+.wb-wrap { max-width: 760px; margin: 0 auto; padding: 22px var(--gut) 80px; }
 
+/* ── the title card ────────────────────────────────────────────── */
+.wb-intro { padding: 26px 0 10px; }
+.wb-kicker { display: inline-block; font-family: var(--sans); font-size: .6rem;
+  letter-spacing: .26em; text-transform: uppercase; color: var(--acc);
+  border: 1px solid hsl(var(--accH) 70% 60% / .4); border-radius: 999px;
+  padding: 7px 13px; margin-bottom: 20px; }
+.wb-giant { font-family: var(--serif); font-weight: 400; color: var(--paper);
+  font-size: clamp(2.6rem, 13vw, 4.4rem); line-height: .96; margin: 0 0 18px;
+  letter-spacing: -.02em; }
+.wb-giant em { font-style: italic; color: var(--acc); }
+.wb-lede { font-family: var(--sans); color: var(--body-c); font-size: 1.02rem;
+  line-height: 1.6; margin: 0 0 26px; max-width: 34ch; }
+.wb-facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0 0 30px;
+  padding: 0; list-style: none; }
+.wb-facts li { font-family: var(--sans); font-size: .74rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--dim); }
+.wb-facts b { color: var(--paper); font-weight: 600; }
+.wb-go { display: inline-flex; align-items: center; gap: 12px; cursor: pointer;
+  background: var(--paper); color: #0a0c0f; border: 0; border-radius: 999px;
+  font-family: var(--sans); font-weight: 600; font-size: 1.02rem;
+  padding: 17px 30px; min-height: 54px; }
+.wb-go:active { transform: scale(.98); }
+.wb-go span { display: inline-block; transition: transform .2s; }
+.wb-go:hover span { transform: translateX(4px); }
+
+/* ── a question ────────────────────────────────────────────────── */
+.wb-stage { opacity: 0; }
+.wb-stage.wb-in { opacity: 1; animation: wbUp .42s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes wbUp { from { opacity: 0; transform: translateY(14px); } }
+
+/* The question number, enormous, bleeding off the right. This more than
+   anything is what stops the page reading as a form. */
+.wb-qhead { position: relative; margin-bottom: 20px; }
+.wb-num { position: absolute; top: -26px; right: -14px; z-index: -1;
+  font-family: var(--serif); font-size: clamp(6rem, 30vw, 11rem); line-height: 1;
+  color: var(--acc-ghost); pointer-events: none; user-select: none;
+  letter-spacing: -.04em; }
 .wb-h { font-family: var(--serif); font-weight: 400; color: var(--paper);
-  font-size: 1.62rem; line-height: 1.22; margin: 0 0 10px; }
-.wb-hint { font-family: var(--sans); color: var(--body-c); font-size: .92rem;
-  line-height: 1.6; margin: 0 0 20px; max-width: 54ch; }
+  font-size: clamp(1.6rem, 6.4vw, 2.25rem); line-height: 1.14; margin: 0 0 10px;
+  letter-spacing: -.01em; max-width: 19ch; }
+.wb-hint { font-family: var(--sans); color: var(--body-c); font-size: .9rem;
+  line-height: 1.6; margin: 0 0 22px; max-width: 46ch; }
 
-/* ── options ── */
-.wb-opts { display: grid; gap: 10px; }
-.wb-opts.two { grid-template-columns: 1fr; }
-@media (min-width: 600px) { .wb-opts.two { grid-template-columns: 1fr 1fr; } }
+/* ── options ───────────────────────────────────────────────────── */
+.wb-opts { display: grid; gap: 9px; }
+@media (min-width: 620px) { .wb-opts.two { grid-template-columns: 1fr 1fr; } }
 
-.wb-opt { display: block; width: 100%; text-align: left; cursor: pointer;
-  background: var(--ink-3); color: var(--paper);
-  border: 1px solid var(--hairline-soft); border-radius: 12px;
-  padding: 15px 16px; min-height: 56px; font-family: var(--sans);
-  transition: border-color .15s, background .15s, transform .08s;
+.wb-opt { position: relative; display: block; width: 100%; text-align: left;
+  cursor: pointer; overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+  color: var(--paper); border: 1px solid var(--hairline-soft);
+  border-radius: 3px 14px 14px 3px;        /* asymmetric: not a rounded box */
+  padding: 15px 46px 15px 20px; min-height: 58px; font-family: var(--sans);
+  transition: border-color .18s, background .18s, transform .12s, padding-left .18s;
   -webkit-tap-highlight-color: transparent; }
-.wb-opt:hover { border-color: var(--hairline); }
-.wb-opt:active { transform: scale(.995); }
-.wb-opt.on { border-color: var(--accent); background: #16202c; }
-.wb-opt-t { display: block; font-size: .98rem; font-weight: 500; }
-.wb-opt-l { display: block; font-size: .8rem; color: var(--dim);
-  margin-top: 3px; line-height: 1.45; }
+.wb-opt::before {                           /* the accent rail down the left */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--acc); transform: scaleY(0); transform-origin: 50% 0;
+  transition: transform .22s cubic-bezier(.3,.7,.3,1); }
+.wb-opt:hover { border-color: hsl(var(--accH) 60% 60% / .35); }
+.wb-opt:active { transform: scale(.993); }
+.wb-opt:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.wb-opt.on { border-color: hsl(var(--accH) 65% 58% / .55); padding-left: 24px;
+  background: linear-gradient(180deg, hsl(var(--accH) 55% 45% / .16), hsl(var(--accH) 55% 40% / .05)); }
+.wb-opt.on::before { transform: scaleY(1); }
+.wb-opt-t { display: block; font-size: 1rem; font-weight: 500; letter-spacing: -.005em; }
+.wb-opt-l { display: block; font-size: .8rem; color: var(--dim); margin-top: 3px;
+  line-height: 1.45; }
 .wb-opt.on .wb-opt-l { color: var(--body-c); }
+/* the tick, which pops rather than fades */
+.wb-opt::after { content: ""; position: absolute; right: 17px; top: 50%;
+  width: 17px; height: 17px; margin-top: -9px; border-radius: 50%;
+  border: 1.5px solid rgba(236,233,225,.2); transition: all .2s; }
+.wb-opt.on::after { background: var(--acc); border-color: var(--acc);
+  animation: wbPop .32s cubic-bezier(.2,1.5,.4,1) both;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a0c0f' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+  background-size: 11px; background-position: center; background-repeat: no-repeat; }
+@keyframes wbPop { from { transform: scale(.2); } 60% { transform: scale(1.18); } }
 
-/* ── the daily driving question ── */
-.wb-toggle { display: inline-flex; background: var(--ink-3); border-radius: 999px;
-  padding: 3px; border: 1px solid var(--hairline-soft); margin-bottom: 16px; }
+/* ── the driving gauge ─────────────────────────────────────────── */
+.wb-gauge { display: flex; align-items: flex-end; gap: 18px; margin-bottom: 18px; }
+.wb-needle { position: relative; flex: 0 0 104px; height: 60px; overflow: hidden; }
+.wb-needle svg { position: absolute; inset: 0; width: 104px; height: 104px; }
+.wb-needle .nd { transform-origin: 52px 52px; transition: transform .5s cubic-bezier(.3,1.4,.5,1); }
+.wb-readout { flex: 1 1 auto; }
+.wb-readout b { display: block; font-family: var(--serif); color: var(--paper);
+  font-size: 2.6rem; line-height: 1; letter-spacing: -.02em; }
+.wb-readout span { font-family: var(--sans); font-size: .74rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--dim); }
+
+.wb-toggle { display: inline-flex; background: rgba(255,255,255,.04);
+  border-radius: 999px; padding: 3px; border: 1px solid var(--hairline-soft);
+  margin-bottom: 16px; }
 .wb-tog { border: 0; background: none; color: var(--dim); cursor: pointer;
-  font-family: var(--sans); font-size: .84rem; padding: 9px 20px;
-  border-radius: 999px; min-height: 40px; }
-.wb-tog.on { background: var(--accent-deep); color: #fff; }
+  font-family: var(--sans); font-size: .83rem; padding: 9px 20px;
+  border-radius: 999px; min-height: 40px; transition: all .2s; }
+.wb-tog.on { background: var(--acc-deep); color: #fff; }
 
-.wb-numwrap { display: flex; align-items: center; gap: 10px; background: var(--ink-3);
-  border: 1px solid var(--hairline-soft); border-radius: 12px; padding: 12px 15px;
-  font-family: var(--sans); color: var(--body-c); font-size: .88rem; }
+.wb-quick { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 16px; }
+.wb-qk { cursor: pointer; background: rgba(255,255,255,.04); color: var(--body-c);
+  border: 1px solid var(--hairline-soft); border-radius: 999px;
+  font-family: var(--sans); font-size: .84rem; padding: 10px 16px; min-height: 44px;
+  transition: all .18s; }
+.wb-qk:hover { border-color: hsl(var(--accH) 60% 60% / .4); color: var(--paper); }
+.wb-qk.on { background: var(--acc); border-color: var(--acc); color: #0a0c0f; font-weight: 600; }
+
+.wb-numwrap { display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.04); border: 1px solid var(--hairline-soft);
+  border-radius: 12px; padding: 12px 15px; font-family: var(--sans);
+  color: var(--body-c); font-size: .86rem; }
 .wb-numwrap input { background: none; border: 0; color: var(--paper);
-  font-family: var(--sans); font-size: 1.3rem; font-weight: 500; width: 5.2em;
-  min-width: 0; -moz-appearance: textfield; }
+  font-family: var(--serif); font-size: 1.5rem; width: 4.4em; min-width: 0;
+  -moz-appearance: textfield; }
 .wb-numwrap input::-webkit-outer-spin-button,
 .wb-numwrap input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .wb-numwrap input:focus { outline: none; }
-.wb-numwrap:focus-within { border-color: var(--accent); }
+.wb-numwrap:focus-within { border-color: var(--acc); }
 .wb-pre { color: var(--dim); font-size: 1.2rem; }
 .wb-conv { font-family: var(--sans); font-size: .82rem; color: var(--dim);
   margin: 12px 0 0; line-height: 1.55; }
 .wb-pair { display: grid; gap: 10px; margin-top: 14px; }
 @media (min-width: 560px) { .wb-pair { grid-template-columns: 1fr 1fr; } }
 
-/* ── navigation ── */
+/* ── the interstitial between the practical half and the personal one ── */
+.wb-break { text-align: left; padding: 30px 0 8px; }
+.wb-break .wb-kicker { color: var(--acc); }
+.wb-break h2 { font-family: var(--serif); font-weight: 400; color: var(--paper);
+  font-size: clamp(1.9rem, 8vw, 2.8rem); line-height: 1.08; margin: 0 0 14px;
+  letter-spacing: -.015em; }
+.wb-break p { font-family: var(--sans); color: var(--body-c); font-size: .98rem;
+  line-height: 1.6; margin: 0 0 26px; max-width: 36ch; }
+
+/* ── navigation ────────────────────────────────────────────────── */
 .wb-nav { display: flex; align-items: center; justify-content: space-between;
   gap: 14px; margin-top: 26px; }
 .wb-back { background: none; border: 0; color: var(--dim); cursor: pointer;
   font-family: var(--sans); font-size: .86rem; padding: 12px 4px; min-height: 44px; }
+.wb-back:hover { color: var(--paper); }
 .wb-next { background: var(--paper); color: #0a0c0f; border: 0; border-radius: 999px;
   cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: .95rem;
-  padding: 14px 30px; min-height: 48px; }
-.wb-next:disabled { opacity: .32; cursor: default; }
+  padding: 14px 30px; min-height: 48px; transition: transform .12s, opacity .2s; }
+.wb-next:active { transform: scale(.98); }
+.wb-next:disabled { opacity: .3; cursor: default; }
 
-/* ── the answer ── */
+/* ── the needle working it out ─────────────────────────────────── */
+.wb-work { padding: 60px 0; text-align: center; }
+.wb-work-ring { width: 76px; height: 76px; margin: 0 auto 26px; border-radius: 50%;
+  border: 2px solid rgba(236,233,225,.09); border-top-color: var(--acc);
+  animation: wbSpin .8s linear infinite; }
+@keyframes wbSpin { to { transform: rotate(360deg); } }
+.wb-work p { font-family: var(--sans); font-size: .9rem; color: var(--body-c);
+  margin: 0; min-height: 1.5em; }
+
+/* ── the answer ────────────────────────────────────────────────── */
+.wb-read { font-family: var(--serif); font-size: clamp(1.05rem, 4.4vw, 1.3rem);
+  color: var(--paper); line-height: 1.45; margin: 0 0 16px; font-style: italic;
+  padding-left: 16px; border-left: 2px solid var(--acc); }
 .wb-cards { display: grid; gap: 22px; margin: 6px 0 30px; }
-.wb-card { background: var(--ink-3); border: 1px solid var(--hairline-soft);
-  border-radius: 16px; overflow: hidden; }
-.wb-card.wb-top { border-color: rgba(91,138,201,.45); }
-.wb-shotwrap { position: relative; background: #0d1116; }
-.wb-shot { display: block; width: 100%; aspect-ratio: 16 / 10;
-  object-fit: cover; background: #0d1116; }
+.wb-card { position: relative; background: var(--ink-3);
+  border: 1px solid var(--hairline-soft); border-radius: 4px 20px 20px 4px;
+  overflow: hidden; animation: wbCard .6s cubic-bezier(.2,.8,.2,1) both; }
+.wb-card:nth-child(2) { animation-delay: .14s; }
+@keyframes wbCard { from { opacity: 0; transform: translateY(20px) scale(.985); } }
+.wb-card.wb-pick { border-color: hsl(var(--accH) 65% 58% / .5);
+  box-shadow: 0 0 0 1px hsl(var(--accH) 65% 58% / .14), 0 22px 60px -30px hsl(var(--accH) 70% 50% / .5); }
+.wb-card.wb-heart { border-color: rgba(211,155,74,.5);
+  box-shadow: 0 0 0 1px rgba(211,155,74,.14), 0 22px 60px -30px rgba(211,155,74,.5); }
+.wb-shotwrap { position: relative; background: #0d1116; overflow: hidden; }
+.wb-shot { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+/* a light sweeping across the bodywork as the card arrives */
+.wb-shotwrap::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.16) 50%, transparent 62%);
+  transform: translateX(-120%); animation: wbShine 1.3s .45s cubic-bezier(.4,0,.2,1) both; }
+@keyframes wbShine { to { transform: translateX(120%); } }
 .wb-noshot { display: flex; align-items: center; justify-content: center;
-  font-family: var(--sans); font-size: .82rem; color: var(--dim); }
-.wb-badge { position: absolute; top: 12px; left: 12px; background: var(--accent-deep);
-  color: #fff; font-family: var(--sans); font-size: .64rem; letter-spacing: .14em;
-  text-transform: uppercase; padding: 6px 11px; border-radius: 999px; }
-.wb-cardbody { padding: 18px 17px 20px; }
+  aspect-ratio: 16/10; font-family: var(--sans); font-size: .82rem; color: var(--dim); }
+.wb-badge { position: absolute; top: 13px; left: 13px; z-index: 2;
+  background: var(--acc-deep); color: #fff; font-family: var(--sans);
+  font-size: .6rem; letter-spacing: .16em; text-transform: uppercase;
+  padding: 7px 12px; border-radius: 999px; backdrop-filter: blur(4px); }
+.wb-heart .wb-badge { background: #8a6420; }
+.wb-cardbody { padding: 19px 18px 21px; }
 .wb-cardbody h3 { font-family: var(--serif); font-weight: 400; color: var(--paper);
-  font-size: 1.32rem; margin: 0 0 6px; }
-.wb-figs { font-family: var(--sans); font-size: .82rem; color: var(--dim);
+  font-size: clamp(1.35rem, 5.6vw, 1.7rem); margin: 0 0 7px; letter-spacing: -.01em; }
+.wb-figs { font-family: var(--sans); font-size: .8rem; color: var(--dim);
   margin: 0 0 14px; line-height: 1.5; }
-.wb-mo { font-family: var(--sans); font-size: .95rem; color: var(--paper);
-  margin: 0 0 10px; }
-.wb-mo strong { font-weight: 600; }
+.wb-mo { font-family: var(--sans); font-size: .95rem; color: var(--paper); margin: 0 0 10px; }
+.wb-mo strong { font-weight: 600; font-size: 1.1rem; }
 .wb-mo.wb-ask { color: var(--body-c); font-size: .88rem; }
-.wb-reg { font-size: .72rem; color: var(--dim); letter-spacing: .08em; }
+.wb-reg { font-size: .7rem; color: var(--dim); letter-spacing: .1em; }
+.wb-gap { font-family: var(--sans); font-size: .9rem; color: #e0ad63;
+  margin: 0 0 12px; line-height: 1.55; }
 .wb-rep { margin: 0 0 14px; }
-.wb-rep summary { font-family: var(--sans); font-size: .76rem; color: var(--dim);
+.wb-rep summary { font-family: var(--sans); font-size: .74rem; color: var(--dim);
   cursor: pointer; padding: 5px 0; }
-.wb-rep p { font-family: var(--sans); font-size: .72rem; color: var(--dim);
+.wb-rep p { font-family: var(--sans); font-size: .71rem; color: var(--dim);
   line-height: 1.6; margin: 6px 0 0; }
 .wb-legal { opacity: .8; }
 .wb-why { list-style: none; margin: 0 0 14px; padding: 0; }
 .wb-why li { font-family: var(--sans); font-size: .88rem; color: var(--body-c);
-  line-height: 1.55; padding: 0 0 0 20px; margin-bottom: 7px; position: relative; }
-.wb-why li::before { content: ""; position: absolute; left: 2px; top: .52em;
-  width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-.wb-cav { font-family: var(--sans); font-size: .84rem; color: #d39b4a;
+  line-height: 1.55; padding: 0 0 0 21px; margin-bottom: 8px; position: relative; }
+.wb-why li::before { content: ""; position: absolute; left: 0; top: .5em;
+  width: 9px; height: 2px; background: var(--acc); }
+.wb-heart .wb-why li::before { background: #d39b4a; }
+.wb-cav { font-family: var(--sans); font-size: .83rem; color: #d39b4a;
   line-height: 1.55; margin: 0 0 14px; }
 .wb-cav strong { color: #e0ad63; }
-.wb-stock { font-family: var(--sans); font-size: .78rem; color: var(--dim);
-  margin: 0 0 16px; }
+.wb-stock { font-family: var(--sans); font-size: .76rem; color: var(--dim); margin: 0 0 16px; }
 .wb-wa { display: block; text-align: center; background: #4a9d6a; color: #fff;
-  text-decoration: none; font-family: var(--sans); font-weight: 600; font-size: .92rem;
-  padding: 14px 18px; border-radius: 999px; min-height: 48px; }
+  text-decoration: none; font-family: var(--sans); font-weight: 600; font-size: .93rem;
+  padding: 15px 18px; border-radius: 999px; min-height: 50px;
+  transition: transform .12s, filter .2s; }
+.wb-wa:active { transform: scale(.985); }
+.wb-wa:hover { filter: brightness(1.08); }
 
-.wb-also { margin: 0 0 30px; }
+.wb-also { margin: 0 0 30px; border-top: 1px solid var(--hairline-soft); padding-top: 8px; }
 .wb-also summary { font-family: var(--sans); font-size: .86rem; color: var(--body-c);
-  cursor: pointer; padding: 10px 0; }
-.wb-also ul { margin: 6px 0 0; padding-left: 20px; }
+  cursor: pointer; padding: 12px 0; }
+.wb-also ul { margin: 2px 0 10px; padding-left: 20px; }
 .wb-also li { font-family: var(--sans); font-size: .86rem; color: var(--dim);
-  line-height: 1.6; margin-bottom: 6px; }
+  line-height: 1.6; margin-bottom: 7px; }
 .wb-also strong { color: var(--paper); font-weight: 500; }
 
-/* ── the form ── */
-.wb-form { border-top: 1px solid var(--hairline-soft); padding-top: 26px; }
+/* ── the form ──────────────────────────────────────────────────── */
+.wb-form { border-top: 1px solid var(--hairline-soft); padding-top: 28px; }
 .wb-form h2 { font-family: var(--serif); font-weight: 400; color: var(--paper);
-  font-size: 1.3rem; margin: 0 0 8px; }
-.wb-form label { display: block; font-family: var(--sans); font-size: .78rem;
-  letter-spacing: .1em; text-transform: uppercase; color: var(--dim);
-  margin-bottom: 14px; }
+  font-size: clamp(1.3rem, 5.4vw, 1.7rem); margin: 0 0 8px; }
+.wb-form label { display: block; font-family: var(--sans); font-size: .64rem;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-bottom: 14px; }
 .wb-form input[type=text], .wb-form input[type=tel], .wb-form input[type=email],
 .wb-form textarea { display: block; width: 100%; margin-top: 7px;
-  background: var(--ink-3); border: 1px solid var(--hairline-soft); border-radius: 11px;
-  padding: 13px 14px; color: var(--paper); font-family: var(--sans); font-size: 1rem;
-  letter-spacing: normal; text-transform: none; min-height: 48px; }
-.wb-form input:focus, .wb-form textarea:focus { outline: none; border-color: var(--accent); }
-.wb-form textarea { resize: vertical; min-height: 76px; }
+  background: rgba(255,255,255,.04); border: 1px solid var(--hairline-soft);
+  border-radius: 11px; padding: 14px; color: var(--paper); font-family: var(--sans);
+  font-size: 1rem; letter-spacing: normal; text-transform: none; min-height: 50px; }
+.wb-form input:focus, .wb-form textarea:focus { outline: none; border-color: var(--acc); }
+.wb-form textarea { resize: vertical; min-height: 78px; }
 .wb-send { width: 100%; background: var(--paper); color: #0a0c0f; border: 0;
   border-radius: 999px; cursor: pointer; font-family: var(--sans); font-weight: 600;
-  font-size: 1rem; padding: 15px; min-height: 52px; margin-top: 4px; }
+  font-size: 1rem; padding: 16px; min-height: 54px; margin-top: 4px; }
 .wb-send:disabled { opacity: .5; cursor: default; }
-.wb-err { font-family: var(--sans); font-size: .86rem; color: #e06b5a;
-  margin: 0 0 12px; }
-.wb-err a, .wb-small a { color: var(--accent); }
-.wb-small { font-family: var(--sans); font-size: .78rem; color: var(--dim);
+.wb-err { font-family: var(--sans); font-size: .86rem; color: #e06b5a; margin: 0 0 12px; }
+.wb-err a, .wb-small a { color: var(--acc); }
+.wb-small { font-family: var(--sans); font-size: .77rem; color: var(--dim);
   margin: 14px 0 0; line-height: 1.6; }
 
-/* ── resume ── */
-.wb-resume { background: var(--ink-3); border: 1px solid var(--hairline-soft);
-  border-radius: 14px; padding: 20px; }
+/* ── resume and loading ────────────────────────────────────────── */
+.wb-resume { background: rgba(255,255,255,.035); border: 1px solid var(--hairline-soft);
+  border-radius: 4px 18px 18px 4px; padding: 22px; }
 .wb-resume h2 { font-family: var(--serif); font-weight: 400; color: var(--paper);
-  font-size: 1.2rem; margin: 0 0 8px; }
+  font-size: 1.3rem; margin: 0 0 8px; }
 .wb-resume-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
 .wb-resume-row button { cursor: pointer; font-family: var(--sans); font-size: .9rem;
-  border-radius: 999px; padding: 12px 24px; min-height: 46px; }
+  border-radius: 999px; padding: 13px 24px; min-height: 48px; }
 #wbResumeGo { background: var(--paper); color: #0a0c0f; border: 0; font-weight: 600; }
 #wbResumeNew { background: none; color: var(--dim); border: 1px solid var(--hairline); }
 
 .wb-load { font-family: var(--sans); color: var(--dim); font-size: .9rem;
-  text-align: center; padding: 60px 0; }
-.wb-load a { color: var(--accent); }
+  text-align: center; padding: 70px 0; }
+.wb-load a { color: var(--acc); }
 
-.wb-foot { max-width: 760px; margin: 0 auto; padding: 0 16px 50px;
-  font-family: var(--sans); font-size: .74rem; color: var(--dim); line-height: 1.7; }
+.wb-foot { max-width: 760px; margin: 0 auto; padding: 0 var(--gut) 50px;
+  font-family: var(--sans); font-size: .73rem; color: var(--dim); line-height: 1.7; }
 .wb-foot a { color: var(--dim); }
 
-/* ── head against heart ── */
-.wb-read { font-family: var(--serif); font-size: 1.04rem; color: var(--paper);
-  line-height: 1.5; margin: 0 0 14px; font-style: italic; opacity: .92; }
-.wb-card.wb-heart { border-color: rgba(211,155,74,.45); }
-.wb-card.wb-heart .wb-badge { background: #8a6420; }
-.wb-gap { font-family: var(--sans); font-size: .88rem; color: #d39b4a;
-  margin: 0 0 12px; line-height: 1.5; }
+/* ── motion off ────────────────────────────────────────────────────
+   Every animation above is decoration over a layout that is already right, so
+   this turns the lot off and moves nothing. */
+@media (prefers-reduced-motion: reduce) {
+  .wb *, .wb *::before, .wb *::after {
+    animation: none !important; transition: none !important; }
+  .wb-stage, .wb-stage.wb-in, .wb-card { opacity: 1 !important; transform: none !important; }
+  .wb-shotwrap::after { display: none; }
+  .wb-opt.on::before { transform: scaleY(1); }
+}
