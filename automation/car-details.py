@@ -115,12 +115,20 @@ def shrink(url):
 #
 # Note car_fuel is NOT harvested: it reads "Hybrid" for both a petrol 220i and a
 # diesel X5 40d, which is why the snapshot derives its own fuelGroup.
+# Each figure carries the range it has to fall inside. Hedin publish "5,271 l"
+# as the cargo volume of an XM, a car with a 527 litre boot, on two of the three
+# XMs in stock: bad data at source rather than a parsing slip, and a quiz
+# promising a five thousand litre boot discredits every other figure on the
+# page. A figure outside its range is dropped and reported, never stored and
+# never quietly clamped - clamping 5,271 to 2,200 would invent a different
+# wrong number. The bounds are wide enough that only nonsense trips them: the
+# widest real boot in the fleet is 750 litres and the heaviest car 2,695 kg.
 SPEC = (
-    ('boot_l',    'car_cargo_volume_text',   'l'),
-    ('weight_kg', 'car_service_weight_text', None),    # labelled lbs, really kg
-    ('co2_gkm',   'car_emission_mixed_text', None),    # labelled g/mile, really g/km
-    ('ev_miles',  'car_electric_range_text', 'miles'),
-    ('power_hp',  'car_power_text',          'hp'),
+    ('boot_l',    'car_cargo_volume_text',   150, 2200),
+    ('weight_kg', 'car_service_weight_text', 800, 3500),   # labelled lbs, really kg
+    ('co2_gkm',   'car_emission_mixed_text',   1,  500),   # labelled g/mile, really g/km
+    ('ev_miles',  'car_electric_range_text',  10,  500),
+    ('power_hp',  'car_power_text',           50, 1000),
 )
 
 
@@ -137,13 +145,24 @@ def number(v):
         return None
 
 
-def spec_of(html):
-    """The numeric spec, in the units named by each key rather than by Hedin."""
+def spec_of(html, cid='', warn=None):
+    """The numeric spec, in the units named by each key rather than by Hedin.
+
+    A figure outside its plausible range is left out and reported through
+    `warn`, so a bad one at source shows up in the run rather than in front of
+    a customer.
+    """
     out = {}
-    for key, field, _unit in SPEC:
+    for key, field, lo, hi in SPEC:
         n = number(value_after(html, field))
-        if n is not None and n > 0:
-            out[key] = int(n) if n == int(n) else n
+        if n is None or n <= 0:
+            continue
+        if not lo <= n <= hi:
+            if warn is not None:
+                warn.append('%s %s=%g outside %g-%g, dropped'
+                            % (cid, key, n, lo, hi))
+            continue
+        out[key] = int(n) if n == int(n) else n
     for key, field in (('seats', 'car_seats'), ('doors', 'car_doors')):
         n = number(value_after(html, field))
         if n and 1 <= n <= 9:
@@ -154,7 +173,7 @@ def spec_of(html):
     return out
 
 
-def detail(cid):
+def detail(cid, warn=None):
     html = get('%s/buy-car/used-cars/%s/x' % (BASE, cid))
     # The wrong url still answers with a page big enough to look healthy, so
     # the check is for the car's own fields rather than for a page at all.
@@ -188,7 +207,7 @@ def detail(cid):
     # car_emission_mixed_text string is deliberately NOT stored: it reads
     # "123 g/mile" for a figure that is g/km, and a wrong unit sitting in a
     # public file is a wrong unit waiting to be put in front of a customer.
-    rec.update(spec_of(html))
+    rec.update(spec_of(html, cid, warn))
     # Nothing useful came back. Recording it would mark the car done for ever,
     # because the file itself is the "already fetched" marker, so it is better
     # to fail this one car and let tomorrow pick it up.
@@ -234,10 +253,11 @@ def main():
           % (len(live), len(out), len(todo)))
 
     ok = failed = 0
+    warn = []
     t0 = time.time()
     for i, c in enumerate(todo, 1):
         try:
-            rec = detail(c['id'])
+            rec = detail(c['id'], warn)
             out[c['id']] = rec
             ok += 1
             print('  %3d/%d  %-9s %d photos, %d equipment lines'
@@ -261,6 +281,11 @@ def main():
             fh.write(' %s: %s%s\n' % (json.dumps(k), json.dumps(out[k], sort_keys=True),
                                       ',' if n < len(keys) - 1 else ''))
         fh.write('}\n')
+
+    # A figure the source got wrong is not a failure of the run, but it must
+    # not pass unseen: these are the ones left out of the file.
+    for w in warn:
+        print('  bad figure at source: %s' % w)
 
     print('\nfetched %d, failed %d%s, %d cars on file, %.0fs'
           % (ok, failed, ', %d sold cars pruned' % dropped if dropped else '',
