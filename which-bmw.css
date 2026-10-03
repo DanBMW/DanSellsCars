@@ -130,8 +130,9 @@
   background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
   color: var(--paper); border: 1px solid var(--hairline-soft);
   border-radius: 3px 14px 14px 3px;        /* asymmetric: not a rounded box */
-  padding: 15px 46px 15px 20px; min-height: 58px; font-family: var(--sans);
-  transition: border-color .18s, background .18s, transform .12s, padding-left .18s;
+  padding: 14px 44px 14px 16px; min-height: 60px; font-family: var(--sans);
+  display: flex; align-items: center; gap: 14px;
+  transition: border-color .18s, background .18s, transform .12s;
   -webkit-tap-highlight-color: transparent; }
 .wb-opt::before {                           /* the accent rail down the left */
   content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
@@ -140,10 +141,17 @@
 .wb-opt:hover { border-color: hsl(var(--accH) 60% 60% / .35); }
 .wb-opt:active { transform: scale(.993); }
 .wb-opt:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
-.wb-opt.on { border-color: hsl(var(--accH) 65% 58% / .55); padding-left: 24px;
+.wb-opt.on { border-color: hsl(var(--accH) 65% 58% / .55);
   background: linear-gradient(180deg, hsl(var(--accH) 55% 45% / .16), hsl(var(--accH) 55% 40% / .05)); }
 .wb-opt.on::before { transform: scaleY(1); }
-.wb-opt-t { display: block; font-size: 1rem; font-weight: 500; letter-spacing: -.005em; }
+/* The drawing. It inherits the accent, so the question warms through as the
+   quiz goes on, and it lets an option be understood before it is read. */
+.wb-ico { flex: 0 0 30px; width: 30px; height: 30px; color: var(--dim);
+  transition: color .2s, transform .2s; }
+.wb-opt:hover .wb-ico { color: var(--body-c); }
+.wb-opt.on .wb-ico { color: var(--acc); transform: scale(1.08); }
+.wb-opt-t { display: block; font-size: 1.02rem; font-weight: 500;
+  letter-spacing: -.005em; line-height: 1.3; }
 .wb-opt-l { display: block; font-size: .8rem; color: var(--dim); margin-top: 3px;
   line-height: 1.45; }
 .wb-opt.on .wb-opt-l { color: var(--body-c); }
@@ -176,7 +184,10 @@
   border-radius: 999px; min-height: 40px; transition: all .2s; }
 .wb-tog.on { background: var(--acc-deep); color: #fff; }
 
-.wb-quick { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 16px; }
+/* A label above each chip row instead of a sentence explaining it. */
+.wb-sub { font-family: var(--sans); font-size: .64rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--dim); margin: 18px 0 8px; }
+.wb-quick { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; }
 .wb-qk { cursor: pointer; background: rgba(255,255,255,.04); color: var(--body-c);
   border: 1px solid var(--hairline-soft); border-radius: 999px;
   font-family: var(--sans); font-size: .84rem; padding: 10px 16px; min-height: 44px;

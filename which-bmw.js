@@ -29,12 +29,6 @@
   var KEY = 'wbQuiz';
   var MAX_AGE = 7 * 24 * 3600 * 1000;
 
-  /* Minutes behind the wheel into miles. 0.4 miles a minute is 24mph, which is
-     a town and dual carriageway mix rather than a motorway figure, and it is
-     said on screen so nobody is converted without being told. The toggle exists
-     because almost everybody knows their commute in minutes and almost nobody
-     knows it in miles. */
-  var MPM = 0.4;
   var DRIVING_DAYS = 320;
 
   /* How much of an electric car's range a daily drive may take before home
@@ -43,104 +37,118 @@
      WLTP figure. */
   var EV_HEADROOM = 0.6;
 
+  /* ICONS: one line drawing an option. Images in the answers are the single
+     biggest lever on completion in the benchmarks (about a third better), and
+     they let a question be understood without reading it, which is what makes
+     the thing fast. Deliberately line art on currentColor rather than
+     photographs: they inherit the accent hue as it winds, weigh nothing, and
+     never look like stock imagery. */
+  var ICON = {
+    one:   'M12 12a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 0114 0',
+    two:   'M9 12a3.5 3.5 0 100-7 3.5 3.5 0 000 7zm-6 8a6 6 0 0112 0M17 7.5a3 3 0 110 6M21 20a5 5 0 00-3-4.6',
+    seat:  'M7 11a3 3 0 100-6 3 3 0 000 6zm-4 9a4 4 0 018 0M15 10h5v6a2 2 0 01-2 2h-1a2 2 0 01-2-2v-6zm0 0a2.5 2.5 0 015 0',
+    three: 'M12 11a3 3 0 100-6 3 3 0 000 6zm-5 8a5 5 0 0110 0M5 9.5a2.5 2.5 0 110-5M19 9.5a2.5 2.5 0 100-5M2 18a4 4 0 013-3.8M22 18a4 4 0 00-3-3.8',
+    five:  'M6 10a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm6 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm6 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM2 19a4 4 0 018 0m-2 0a4 4 0 018 0m-2 0a4 4 0 018 0',
+    seven: 'M7 10a2 2 0 100-4 2 2 0 000 4zm5 0a2 2 0 100-4 2 2 0 000 4zm5 0a2 2 0 100-4 2 2 0 000 4zM7 19a2 2 0 100-4 2 2 0 000 4zm5 0a2 2 0 100-4 2 2 0 000 4zm5 0a2 2 0 100-4 2 2 0 000 4zM12 22h.01',
+    bag:   'M6 8h12l-1 12H7L6 8zm3 0V6a3 3 0 016 0v2',
+    pram:  'M4 16h12a6 6 0 00-12 0zM16 16V5a2 2 0 012-2M6 16v4M16 16v4M6.5 21.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm9 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z',
+    dog:   'M10 5l-3 3v5a5 5 0 0010 0V8l-3-3M9 11h.01M15 11h.01M12 14v2M5 13l-2 6M19 13l2 6',
+    bike:  'M6 18a3.5 3.5 0 100-7 3.5 3.5 0 000 7zm12 0a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM6 14.5l4-7h5l3 7M9 7.5h4',
+    boxes: 'M3 9h8v8H3zM13 5h8v6h-8zM13 13h8v6h-8zM3 9l2-3h4l2 3',
+    plug:  'M9 3v5M15 3v5M7 8h10v3a5 5 0 01-10 0V8zM12 16v5',
+    plugmix: 'M9 3v4M14 3v4M7.5 7h8v2.5a4 4 0 01-8 0V7zM11.5 14v3M17 13l3 3-3 3M20 16h-9',
+    road:  'M4 21L9 3M20 21L15 3M12 6v3M12 12v3M12 18v2',
+    pump:  'M4 20V5a2 2 0 012-2h6a2 2 0 012 2v15M3 20h12M6 8h6M16 9l3 2v6a2 2 0 003.9.6M16 13h3',
+    bend:  'M5 21c0-7 6-6 6-11S7 5 7 3M12 21c0-9 7-7 7-13',
+    cruise:'M3 17h18M6 13l2-4h8l2 4M8 17v2M16 17v2M5 9h2M17 9h2',
+    city:  'M4 21V9l5-4v16M9 21V11l6-3v13M15 21V12l5 2v7M7 13h.01M7 17h.01M12 14h.01M12 18h.01',
+    sofa:  'M4 11V8a2 2 0 012-2h12a2 2 0 012 2v3M3 11h18v6H3zM6 17v2M18 17v2',
+    hide:  'M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6zM4 4l16 16',
+    nod:   'M12 18a6 6 0 100-12 6 6 0 000 12zM9.5 12l1.8 1.8L15 10',
+    star:  'M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.4l6-.8L12 3z',
+    tight: 'M8 20V4M16 20V4M11 12h2M11 9l-1.5 3L11 15M13 9l1.5 3L13 15',
+    open:  'M3 12h18M18 8l4 4-4 4M6 8l-4 4 4 4',
+    pound: 'M8 20h9M9 20V9a4 4 0 017-2.6M7 13h7',
+    notes: 'M2 7h20v10H2zM12 15a3 3 0 100-6 3 3 0 000 6zM5 10v.01M19 14v.01'
+  };
+
+  /* Needle at a given sweep, for the "how quick" question. Five of the same
+     dial reading further round says the thing without a word of copy. */
+  function dialIcon(frac) {
+    var a = (-120 + frac * 240) * Math.PI / 180;
+    return { arc: 'M4.5 17a9 9 0 0115 0',
+             nd: 'M12 17L' + (12 + 7 * Math.sin(a)).toFixed(1)
+                 + ' ' + (17 - 7 * Math.cos(a)).toFixed(1) };
+  }
+
+  /* THIRTEEN QUESTIONS WAS TOO MANY, and the cut was measured rather than
+     argued. Over 300 random briefs, changing one answer at a time:
+
+        who 99%   pace 70%   charge 58%   park 53%   load 53%
+        weekend 52%   attention 47%   mood 34%   love 20%
+        longrun 16%   age 9%   DAILY MILEAGE 1%
+
+     The benchmarks say 5 to 8 questions, completion falling about 15% for
+     every question past 8, so everything under half was cut or merged.
+
+     The daily mileage question is gone, and it is worth being plain about why:
+     it had a needle gauge and was the only question on here that asked anybody
+     to type, and it changed the recommended car in 1 run out of 100. What it
+     actually drove was fuel, and fuel is now one tap in `life` below, which
+     covers charging, mileage and long runs together. Dan asked for the
+     miles/minutes toggle originally; the honest answer is that it cost the most
+     and did the least, and the mileage estimate still reaches his inbox. */
   var Q = [
-    { id: 'who', h: 'Who is usually on board?',
-      hint: 'The honest answer, not the once a year answer.', type: 'one',
-      opts: [
-        { v: 'solo', t: 'Just me, or me and one other', l: 'The back seat is mostly empty.' },
-        { v: 'childseats', t: 'Two child seats and two adults', l: 'Seats in the back, buggy in the boot.' },
-        { v: 'occasional', t: 'Two in the back now and then', l: 'Friends, family, the odd lift.' },
-        { v: 'five', t: 'Five adults, regularly', l: 'Three grown ups across the back, comfortably.' },
-        { v: 'seven', t: 'More than five', l: 'You need the third row.' }
+    { id: 'who', h: 'Who is coming?', type: 'one', opts: [
+        { v: 'solo',       t: 'Just me',             i: 'one' },
+        { v: 'childseats', t: 'Kids and car seats',  i: 'seat' },
+        { v: 'occasional', t: 'Mates in the back',   i: 'three' },
+        { v: 'five',       t: 'Five adults, properly', i: 'five' },
+        { v: 'seven',      t: 'Seven of us',         i: 'seven' }
       ] },
-    { id: 'load', h: 'What goes in the back?', hint: 'Tick anything that happens most weeks.',
+    { id: 'load', h: 'What goes in the boot?', hint: 'Tick any.',
       type: 'many', opts: [
-        { v: 'light', t: 'Not a lot', l: 'A bag, a coat, the shopping.' },
-        { v: 'shop', t: 'The weekly shop', l: '' },
-        { v: 'buggy', t: 'A buggy or pram', l: '' },
-        { v: 'dog', t: 'A dog', l: '' },
-        { v: 'kit', t: 'Bikes, clubs or sports kit', l: '' },
-        { v: 'big', t: 'Big awkward loads', l: 'Tip runs, flat packs, work gear.' }
+        { v: 'light', t: 'Not much',    i: 'bag' },
+        { v: 'buggy', t: 'A buggy',     i: 'pram' },
+        { v: 'dog',   t: 'A dog',       i: 'dog' },
+        { v: 'kit',   t: 'Bikes, kit',  i: 'bike' },
+        { v: 'big',   t: 'Big awkward stuff', i: 'boxes' }
       ] },
-    { id: 'daily', h: 'How much driving on a normal day?',
-      hint: 'Give it in whichever you actually know. This is the question that decides petrol, diesel, hybrid or electric.',
-      type: 'daily' },
-    { id: 'longrun', h: 'And the long runs?', hint: 'Two hours or more in one go.',
-      type: 'one', opts: [
-        { v: 'never', t: 'Hardly ever', l: '' },
-        { v: 'monthly', t: 'Once a month or so', l: '' },
-        { v: 'weekly', t: 'Most weeks', l: '' },
-        { v: 'often', t: 'Several times a week', l: 'Motorway miles are your life.' }
+    { id: 'life', h: 'How will you live with it?', type: 'one', opts: [
+        { v: 'short',    t: 'Short runs, and I can plug in at home', i: 'plug' },
+        { v: 'mixed',    t: 'A bit of everything, and I can plug in', i: 'plugmix' },
+        { v: 'miles',    t: 'Motorway miles most weeks', i: 'road' },
+        { v: 'nocharge', t: 'Nowhere to charge at home', i: 'pump' }
       ] },
-    { id: 'charge', h: 'Could you charge at home?',
-      hint: 'A driveway or garage with a socket. It does not have to be a proper charger yet.',
-      type: 'one', opts: [
-        { v: 'yes', t: 'Yes, off street parking', l: '' },
-        { v: 'maybe', t: 'Possibly, not sure', l: '' },
-        { v: 'no', t: 'No, I park on the street', l: '' }
+    { id: 'pace', h: 'How quick?', type: 'one', opts: [
+        { v: 'calm',   t: 'Easy does it',      d: 0 },
+        { v: 'poke',   t: 'A bit of poke',     d: 0.3 },
+        { v: 'quick',  t: 'Properly quick',    d: 0.6 },
+        { v: 'pocket', t: 'Small but savage',  d: 0.8 },
+        { v: 'fast',   t: 'As fast as it comes', d: 1 }
       ] },
-    { id: 'pace', h: 'How should it feel?', hint: 'No wrong answer. It changes the engine, not the model.',
-      type: 'one', opts: [
-        { v: 'calm', t: 'Easy and relaxed', l: 'Quiet, smooth, nothing to prove.' },
-        { v: 'poke', t: 'Comfortable, with a bit of poke', l: 'Happy daily, and it moves when you ask.' },
-        { v: 'quick', t: 'Properly quick', l: 'You want to feel it.' },
-        { v: 'pocket', t: 'Small car, big poke', l: 'Something that punches above its size.' },
-        { v: 'fast', t: 'As fast as you can get me', l: '' }
+    { id: 'park', h: 'Where does it live?', type: 'one', opts: [
+        { v: 'yes', t: 'Somewhere tight', i: 'tight' },
+        { v: 'no',  t: 'Plenty of room',  i: 'open' }
       ] },
-    /* ---- the three personality questions ----
-       Everything above this asks what you need. These ask what you are like,
-       which is what separates two cars that fit equally well: a 3 Series and
-       an X3 do the same job for the same family, and the answer to "would you
-       rather nobody looked" picks between them. They are deliberately quick,
-       slightly fun, and none of them rules a car out. */
-    { id: 'weekend', h: 'A good drive looks like…', hint: 'The one you would choose.',
-      type: 'one', opts: [
-        { v: 'country', t: 'An empty back road', l: 'Bends, no traffic, nowhere particular to be.' },
-        { v: 'motorway', t: 'Three hours to somewhere good', l: 'Cruise set, music on, eating up miles.' },
-        { v: 'city', t: 'Short hops, done quickly', l: 'In, out, parked, home.' },
-        { v: 'nodrive', t: 'Honestly, not driving at all', l: 'The car is there to get it over with.' }
+    { id: 'weekend', h: 'Best drive you can imagine?', type: 'one', opts: [
+        { v: 'country',  t: 'An empty back road',   i: 'bend' },
+        { v: 'motorway', t: 'Three hours somewhere good', i: 'cruise' },
+        { v: 'city',     t: 'Quick blast, then parked', i: 'city' },
+        { v: 'nodrive',  t: 'Not driving at all',   i: 'sofa' }
       ] },
-    { id: 'attention', h: 'You pull up outside somewhere. You would rather…',
-      hint: '', type: 'one', opts: [
-        { v: 'none', t: 'Nobody looked twice', l: 'Understated. You are not here to be seen.' },
-        { v: 'quiet', t: 'The people who know, knew', l: 'A quiet nod from somebody who gets it.' },
-        { v: 'heads', t: 'Heads turned', l: 'You want it to make an entrance.' }
+    { id: 'attention', h: 'Pulling up outside, you want…', type: 'one', opts: [
+        { v: 'none',  t: 'Nobody to look',        i: 'hide' },
+        { v: 'quiet', t: 'The right people to notice', i: 'nod' },
+        { v: 'heads', t: 'Heads to turn',         i: 'star' }
       ] },
-    { id: 'love', h: 'Be honest about driving', hint: '', type: 'one',
-      opts: [
-        { v: 'best', t: 'Best part of my day', l: 'You go the long way round on purpose.' },
-        { v: 'enjoy', t: 'I enjoy it when it is good', l: '' },
-        { v: 'means', t: 'It is just how I get places', l: 'No shame in it. It changes the answer.' }
-      ] },
-    { id: 'mood', h: 'What matters most?', hint: 'Pick up to two, or skip.', type: 'many', max: 2,
-      opts: [
-        { v: 'comfort', t: 'Comfort', l: 'It should take the edge off a bad road.' },
-        { v: 'fun', t: 'How it drives', l: 'Keen steering, something to enjoy.' },
-        { v: 'costs', t: 'Running costs', l: 'Fuel, tax and the monthly figure.' },
-        { v: 'space', t: 'Space', l: '' },
-        { v: 'looks', t: 'Presence', l: 'You want it to look like something.' },
-        { v: 'tech', t: 'The latest tech', l: '' }
-      ] },
-    { id: 'park', h: 'Anything tight to park in?',
-      hint: 'A narrow garage, a city space, a lane you have to reverse down.', type: 'one',
-      opts: [
-        { v: 'yes', t: 'Yes, size matters', l: 'Keep it manageable.' },
-        { v: 'no', t: 'Not really', l: 'I can park anything.' }
-      ] },
-    { id: 'pay', h: 'How would you pay?', hint: '', type: 'pay' },
-    { id: 'age', h: 'New or used?', hint: '', type: 'one',
-      opts: [
-        { v: 'new', t: 'Brand new', l: 'Factory order, or a new one in stock.' },
-        { v: 'nearly', t: 'Nearly new', l: 'A year or two old, most of the warranty left.' },
-        { v: 'used', t: 'Used, best value', l: '' },
-        { v: 'any', t: 'No preference', l: 'Show me what fits.' }
-      ] }
+    { id: 'pay', h: 'Budget?', hint: 'Roughly is fine.',
+      type: 'pay' }
   ];
 
-  var A = { who: null, load: [], dailyVal: null, dailyUnit: 'mins', longrun: null,
-            charge: null, pace: null, weekend: null, attention: null, love: null,
-            mood: [], park: null, pay: null,
-            monthly: null, deposit: null, cash: null, age: null };
+  var A = { who: null, load: [], life: null, pace: null, park: null,
+            weekend: null, attention: null, pay: null,
+            monthly: null, deposit: null, cash: null };
 
   var MODELS = null, CARS = [], FIN = {}, LAD = {}, STEP = 0, SENT = false;
   var RESULT = [];
@@ -159,16 +167,25 @@
     return isNaN(n) ? null : n;
   }
 
-  /* Daily miles, whichever way they answered. */
+  /* A rough daily mileage from the one question that replaced the three.
+     This is an ESTIMATE and is labelled as one wherever it appears: it goes in
+     Dan's email as lead context and is never shown to the customer as though
+     they had told us. The old question asked for the real figure and changed
+     the recommended car once in a hundred runs, which is why it is gone. */
+  var LIFE_MILES = { short: 12, mixed: 30, miles: 70, nocharge: 25 };
+
   function dailyMiles() {
-    var v = A.dailyVal;
-    if (!v) return null;
-    return A.dailyUnit === 'miles' ? v : v * MPM;
+    return A.life ? LIFE_MILES[A.life] : null;
   }
 
   function annualMiles() {
     var d = dailyMiles();
     return d == null ? null : Math.round(d * DRIVING_DAYS / 100) * 100;
+  }
+
+  /* Can they plug in at home? Three of the four answers say so directly. */
+  function canCharge() {
+    return A.life ? (A.life !== 'nocharge') : null;
   }
 
   /* The family key a car joins the model table on. Must stay identical to
@@ -243,62 +260,55 @@
     return n;
   }
 
-  /* Whether a fuel makes sense for how they actually drive, with the reason in
-     words. This is the heart of the quiz: the same car is a good or a terrible
-     idea depending on the answers to three questions. */
+  /* Whether a fuel suits how they will live with it, with the reason in words.
+     This is the heart of the quiz: the same car is a good idea or a bad one
+     depending entirely on this one answer, which is why three questions were
+     folded into it rather than cut. Keep the sentences SHORT: they are read on
+     a phone by somebody who has just been given an answer. */
   function fuelVerdict(m) {
-    var d = dailyMiles(), yr = annualMiles(), ch = A.charge;
-    var out = { good: [], bad: [] };
+    var L = A.life, out = { good: [], bad: [] };
     var ev = m.fuels.indexOf('Electric') !== -1;
     var ph = m.fuels.indexOf('Plug-in hybrid') !== -1;
     var di = m.fuels.indexOf('Diesel') !== -1;
     var pe = m.fuels.indexOf('Petrol') !== -1;
     var range = m.ev_miles_max || null;
+    if (!L) return out;
 
     if (ev) {
-      if (ch === 'no') {
-        out.bad.push('electric without somewhere to plug in at home');
-      } else if (d != null && range && d <= range * EV_HEADROOM) {
-        out.good.push('your ' + Math.round(d) + ' miles a day is well inside its '
-          + range + ' mile range, so it charges at home overnight and you rarely think about it');
-      } else if (d != null && range && d > range) {
-        out.bad.push('your daily drive is longer than its ' + range + ' mile range');
-      } else if (range) {
-        out.good.push(range + ' miles of range');
-      }
-      if (A.longrun === 'often' && ch !== 'no') {
-        out.bad.push('several long runs a week means public charging stops, which is the one thing an electric car asks of you');
+      if (L === 'nocharge') out.bad.push('electric with nowhere to plug in');
+      else if (L === 'miles') {
+        if (range && range >= 280) out.good.push(range + ' miles a charge, so the long runs are one stop');
+        else out.bad.push('motorway miles most weeks means public charging stops');
+      } else {
+        out.good.push(range ? 'charges overnight at home, ' + range + ' miles a charge'
+                            : 'charges overnight at home');
       }
     }
     if (ph) {
-      if (ch === 'no') {
-        out.bad.push('a plug-in hybrid you cannot charge is just a heavy petrol car');
-      } else if (d != null && range && d <= range) {
-        out.good.push('your ' + Math.round(d) + ' miles a day fits inside its '
-          + range + ' electric miles, so the daily driving is electric and the engine is there for the long trips');
+      if (L === 'nocharge') out.bad.push('a plug-in you cannot charge is a heavy petrol car');
+      else if (L === 'short' && range) {
+        out.good.push('your short runs go electric, the engine is there for the rest');
+      } else if (range) {
+        out.good.push(range + ' electric miles, then petrol when you need it');
       }
     }
-    if (di) {
-      if (yr != null && yr >= 12000) {
-        out.good.push('diesel earns its keep at about ' + yr.toLocaleString('en-GB') + ' miles a year');
-      } else if (yr != null && yr < 7000 && !pe && !ev && !ph) {
-        out.bad.push('diesel is the wrong fit for only about ' + yr.toLocaleString('en-GB') + ' miles a year');
-      }
-    }
-    if (pe && yr != null && yr < 10000 && ch === 'no') {
-      out.good.push('petrol suits your mileage and needs no charging');
-    }
+    if (di && L === 'miles') out.good.push('diesel earns its keep on motorway miles');
+    if (di && L === 'short') out.bad.push('diesel does not like short cold runs');
+    if (pe && L === 'nocharge') out.good.push('petrol, nothing to plug in');
     return out;
   }
 
-  /* What the personality answers say about a car, scored against figures we
-     actually hold rather than against a vibe: how tall it is, how much power it
-     carries per tonne, how long it is, whether it plugs in. `weight` is 1 for
-     the budget answer and 2 for the heart answer, where personality is meant to
-     lead.
+  /* What the two personality answers say about a car, scored against figures we
+     hold rather than a vibe: how tall it is, power per tonne, how long it is.
+     `weight` is 1 for the budget answer and 2 for the heart answer, where
+     personality is meant to lead.
 
      Nothing in here ever rules a car out. These questions separate two cars
-     that both fit; they must not take away a car that works. */
+     that both fit; they must not take away a car that works.
+
+     Presence follows SIZE, not body style. An iX1's body reads "SUV", so
+     rewarding any SUV gave a small crossover the same presence as an X7 and
+     "heads turn" barely moved the answer at all. */
   function personality(m, weight) {
     var s = 0, why = [];
     var low = m.height_mm && m.height_mm < 1500;
@@ -308,31 +318,26 @@
     var small = m.size_class === 'small' || m.size_class === 'compact';
 
     if (A.weekend === 'country') {
-      if (low) { s += 8; why.push('low and planted, which is what makes a back road worth driving'); }
-      if (punchy) s += 6;
+      if (low) { s += 9; why.push('low and planted, made for a road like that'); }
+      if (punchy) s += 7;
       if (tall) s -= 5;
     } else if (A.weekend === 'motorway') {
-      if (big) { s += 8; why.push('long legs for the three hour runs you described'); }
+      if (big) { s += 9; why.push('long legs for the three hour runs'); }
       if (m.fuels.indexOf('Diesel') !== -1 || m.ev_miles_max >= 250) s += 5;
       if (small) s -= 4;
     } else if (A.weekend === 'city') {
-      if (small) { s += 8; why.push('small enough to make short city hops painless'); }
-      if (m.electric) { s += 6; why.push('electric suits stop start driving better than anything else'); }
+      if (small) { s += 9; why.push('small enough to make town easy'); }
+      if (m.electric) { s += 7; why.push('electric suits stop start driving'); }
       if (m.length_mm > 4800) s -= 6;
     } else if (A.weekend === 'nodrive') {
-      if (m.electric) { s += 6; why.push('quiet, smooth and nothing to think about'); }
+      if (m.electric) { s += 7; why.push('quiet, smooth, nothing to think about'); }
       if (big) s += 3;
       if (punchy) s -= 2;
     }
 
-    /* Presence follows SIZE, not body style. Testing this against the real
-       table caught the obvious version being wrong: an iX1's body reads "SUV",
-       so rewarding any SUV gave a small crossover the same presence as an X7
-       and "heads turn" barely changed the answer at all. A big car has
-       presence; a small one does not, whatever shape it is. */
     if (A.attention === 'none') {
       if (small || /Saloon|Touring|Hatchback/i.test(m.body)) {
-        s += 9; why.push('understated, which is what you said you wanted');
+        s += 9; why.push('understated, like you asked');
       }
       if (m.size_class === 'limousine') s -= 12;
       else if (m.size_class === 'large') s -= 5;
@@ -340,22 +345,10 @@
       if (!small && m.size_class !== 'limousine') s += 5;
       if (punchy) { s += 5; why.push('quick without shouting about it'); }
     } else if (A.attention === 'heads') {
-      if (m.size_class === 'limousine') {
-        s += 14; why.push('this is the one people look at');
-      } else if (m.size_class === 'large') {
-        s += 10; why.push('it has real presence on a driveway');
-      } else if (small) {
-        s -= 10;
-      }
-      if (tall) s += 3;                     /* sitting up adds to it */
-    }
-
-    if (A.love === 'best') {
-      if (punchy) { s += 8; why.push('enough power per tonne to be worth the long way home'); }
-      if (low) s += 4;
-    } else if (A.love === 'means') {
-      if (m.electric || m.plug) { s += 5; why.push('cheap and quiet to live with day to day'); }
-      if (punchy) s -= 3;
+      if (m.size_class === 'limousine') { s += 14; why.push('this is the one people look at'); }
+      else if (m.size_class === 'large') { s += 10; why.push('real presence on a driveway'); }
+      else if (small) s -= 10;
+      if (tall) s += 3;
     }
     return { score: s * (weight || 1), why: why };
   }
@@ -389,8 +382,8 @@
       r.out = 'too big for a tight space at ' + (m.length_mm / 1000).toFixed(2) + 'm long';
       return r;
     }
-    if (A.charge === 'no' && m.electric && m.fuels.length === 1) {
-      r.out = 'electric only, and you have nowhere to charge'; return r;
+    if (A.life === 'nocharge' && m.electric && m.fuels.length === 1) {
+      r.out = 'electric only, and nowhere to charge'; return r;
     }
     if (A.pace === 'pocket' && m.size_class !== 'small' && m.size_class !== 'compact') {
       r.out = 'not a small car'; return r;
@@ -416,14 +409,13 @@
     if (A.who === 'seven') { r.score += 30; r.reasons.push('seven seats'); }
     if (A.who === 'five' && m.five_adults) {
       r.score += 25;
-      r.reasons.push('genuinely comfortable for five adults, '
-        + m.width_mm + 'mm across with a ' + m.wheelbase_mm + 'mm wheelbase');
+      r.reasons.push('properly wide across the back, ' + m.width_mm + 'mm');
     }
     var bootSaid = false;
     if (A.who === 'childseats' && m.two_seats_two_adults) {
       r.score += 20;
-      r.reasons.push('room for two child seats with the front seats still back'
-        + (m.boot_l_max ? ', and a ' + m.boot_l_max + ' litre boot for the buggy' : ''));
+      r.reasons.push('two child seats, front seats still back'
+        + (m.boot_l_max ? ', ' + m.boot_l_max + ' litre boot' : ''));
       bootSaid = !!m.boot_l_max;
     }
     if (A.who === 'solo' && (m.size_class === 'small' || m.size_class === 'compact')) {
@@ -435,9 +427,8 @@
     if (boot && m.boot_l_max) {
       r.score += m.boot_l_max >= boot + 100 ? 12 : 6;
       if (!bootSaid) {
-        r.reasons.push(m.boot_l_max >= boot + 100
-          ? m.boot_l_max + ' litre boot, comfortably more than you asked for'
-          : m.boot_l_max + ' litre boot, enough for what you carry');
+        r.reasons.push(m.boot_l_max + ' litre boot'
+          + (m.boot_l_max >= boot + 100 ? ', more than you need' : ''));
       }
     }
 
@@ -451,44 +442,27 @@
       var gap = Math.abs(pace - want);
       r.score += gap === 0 ? 16 : gap === 1 ? 9 : gap === 2 ? 2 : -8;
       if (gap <= 1) {
-        r.reasons.push('the quick ones go ' + m.pace_best + ', about '
-          + m.hp_per_tonne_max + ' horsepower a tonne');
+        r.reasons.push(m.pace_best + ', ' + m.hp_per_tonne_max + 'hp a tonne');
       } else if (want > pace) {
         r.caveats.push('even the quickest is only ' + m.pace_best);
       }
     }
     if (A.pace === 'pocket' && pace >= 3) {
-      r.score += 14; r.reasons.push('a small car that is genuinely quick');
+      r.score += 14; r.reasons.push('small car, serious pace');
     }
 
-    if (A.mood.indexOf('comfort') !== -1 && (m.size_class === 'large' || m.size_class === 'limousine')) {
-      r.score += 10; r.reasons.push('long wheelbase and weight, which is what makes a car ride well');
-    }
-    if (A.mood.indexOf('fun') !== -1 && m.height_mm && m.height_mm < 1500) {
-      r.score += 10; r.reasons.push('sits low, ' + m.height_mm + 'mm, so it changes direction like a car and not a tower');
-    }
-    if (A.mood.indexOf('costs') !== -1) {
-      if (m.electric) { r.score += 12; r.reasons.push('no fuel and no road tax to speak of'); }
-      else if (m.co2_gkm_min) {
-        r.score += m.co2_gkm_min < 50 ? 10 : m.co2_gkm_min < 130 ? 5 : -4;
-        if (m.co2_gkm_min < 130) r.reasons.push('from ' + m.co2_gkm_min + 'g/km CO2');
-      }
-    }
-    if (A.mood.indexOf('space') !== -1 && m.boot_l_max) {
-      r.score += m.boot_l_max >= 550 ? 10 : m.boot_l_max >= 470 ? 5 : 0;
-    }
-    if (A.mood.indexOf('looks') !== -1 && /Coupe|SUV/.test(m.body)) {
-      r.score += 8; r.reasons.push('it looks like something on a driveway');
-    }
-    if (A.mood.indexOf('tech') !== -1 && m.years && m.years[1] >= 2025) {
-      r.score += 8; r.reasons.push('the newest ones carry BMW’s current screens and software');
+    /* "What matters most" and "new or used" are no longer asked: they moved
+       the answer 34% and 9% of the time and said what the other questions
+       already said. A car that is cheap to run still earns a line when it
+       plainly is one. */
+    if (m.electric) { r.score += 6; r.reasons.push('no fuel, barely any tax'); }
+    else if (m.co2_gkm_min && m.co2_gkm_min < 50) {
+      r.score += 5; r.reasons.push('from ' + m.co2_gkm_min + 'g/km');
     }
 
     if (A.park === 'yes' && m.length_mm && m.length_mm <= 4600) {
-      r.score += 10; r.reasons.push('easy to place at ' + (m.length_mm / 1000).toFixed(2) + 'm long');
+      r.score += 10; r.reasons.push('easy to park, ' + (m.length_mm / 1000).toFixed(2) + 'm');
     }
-    if (A.age === 'new' && m.years && m.years[1] >= 2026) r.score += 6;
-    if (A.age === 'used') r.score += (m.price_from && m.price_from < 30000) ? 6 : 0;
 
     var p = personality(m, opts.heart ? 2 : 1);
     r.score += p.score;
@@ -587,15 +561,13 @@
      what makes the answer feel worked out rather than generated. */
   function readBack() {
     var bits = [];
-    if (A.weekend === 'country') bits.push('you would take the long way round for a good road');
-    else if (A.weekend === 'motorway') bits.push('you cover proper distances in one go');
-    else if (A.weekend === 'city') bits.push('most of your driving is short and in town');
+    if (A.weekend === 'country') bits.push('you would take the long way round');
+    else if (A.weekend === 'motorway') bits.push('you cover proper distances');
+    else if (A.weekend === 'city') bits.push('your driving is short and in town');
     else if (A.weekend === 'nodrive') bits.push('the car is a tool, not a hobby');
-    if (A.attention === 'none') bits.push('you would rather nobody looked twice');
-    else if (A.attention === 'quiet') bits.push('you want the people who know to notice');
-    else if (A.attention === 'heads') bits.push('you want it to turn a head or two');
-    if (A.love === 'best') bits.push('and driving is the best part of your day');
-    else if (A.love === 'means') bits.push('and you would rather it just got on with it');
+    if (A.attention === 'none') bits.push('and you would rather nobody looked');
+    else if (A.attention === 'quiet') bits.push('and you want the right people to notice');
+    else if (A.attention === 'heads') bits.push('and you want heads to turn');
     if (!bits.length) return '';
     var s = bits.join(', ');
     return s.charAt(0).toUpperCase() + s.slice(1) + '.';
@@ -643,7 +615,6 @@
   /* May they move on? A multi-select question is skippable, so yes. */
   function answered(q) {
     if (q.type === 'many') return true;
-    if (q.type === 'daily') return A.dailyVal != null;
     if (q.type === 'pay') return !!A.pay;
     return !!A[q.id];
   }
@@ -656,123 +627,114 @@
     return answered(q);
   }
 
+  /* One line drawing per option, inheriting the accent hue through
+     currentColor. An option carrying `d` instead of `i` draws the pace dial at
+     that sweep, so five of the same gauge reading further round says the whole
+     question without a word of copy. */
+  function iconSvg(o) {
+    var body;
+    if (o && o.d !== undefined) {
+      var k = dialIcon(o.d);
+      body = '<path d="' + k.arc + '"/><path d="' + k.nd + '"/>';
+    } else if (o && ICON[o.i]) {
+      body = '<path d="' + ICON[o.i] + '"/>';
+    } else {
+      return '';
+    }
+    return '<svg class="wb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+      + ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"'
+      + ' aria-hidden="true">' + body + '</svg>';
+  }
+
+  function optBtn(qid, v, label, icon, on) {
+    return '<button type="button" class="wb-opt' + (on ? ' on' : '') + '"'
+      + ' data-q="' + qid + '" data-v="' + v + '" aria-pressed="' + !!on + '">'
+      + iconSvg({ i: icon })
+      + '<span class="wb-opt-t">' + esc(label) + '</span></button>';
+  }
+
   function optMarkup(q) {
     var sel = q.type === 'many' ? A[q.id] : [A[q.id]];
     return q.opts.map(function (o) {
       var on = sel.indexOf(o.v) !== -1;
       return '<button type="button" class="wb-opt' + (on ? ' on' : '') + '"'
         + ' data-q="' + q.id + '" data-v="' + o.v + '" aria-pressed="' + on + '">'
+        + iconSvg(o)
         + '<span class="wb-opt-t">' + esc(o.t) + '</span>'
         + (o.l ? '<span class="wb-opt-l">' + esc(o.l) + '</span>' : '')
         + '</button>';
     }).join('');
   }
 
-  /* The quick picks are the whole point of this screen on a phone: a number
-     field is a keyboard and a decision, three taps of a chip is neither. The
-     field stays, because somebody who knows their exact mileage should be able
-     to type it. */
-  var QUICK = { mins: [15, 30, 45, 60, 90], miles: [5, 15, 30, 50, 80] };
-  var NEEDLE_MAX = { mins: 120, miles: 100 };
+  /* BUDGET WITHOUT A KEYBOARD. Every answer on this quiz is now a tap, which
+     the benchmarks are blunt about: multiple choice over free text wherever
+     possible, so people move instead of stopping to think and type.
 
-  function needleDeg() {
-    var v = A.dailyVal || 0, max = NEEDLE_MAX[A.dailyUnit];
-    return -90 + Math.max(0, Math.min(1, v / max)) * 180;
-  }
+     The deposit chips are deliberately the lender's OWN rungs from
+     stock-finance-ladder.json. Typing £4,300 made dsFin read a payment off the
+     line between two quotes, which is defensible but is still our arithmetic;
+     tapping £5,000 gets the figure BMW Financial Services actually gave for
+     that car. Faster to answer and a better number at the end of it. Keep this
+     list and RUNGS in stock-finance.py in step. */
+  var MONTHLY = [250, 350, 450, 600, 800];
+  var DEPOSITS = [0, 1000, 2500, 5000, 10000];
+  var CASH = [15000, 25000, 40000, 60000, 90000];
 
-  function convLine() {
-    var d = dailyMiles(), yr = annualMiles();
-    if (d == null) return 'However you think about it. Most people know the minutes.';
-    if (A.dailyUnit === 'mins') {
-      return 'About ' + Math.round(d) + ' miles a day, so roughly '
-        + yr.toLocaleString('en-GB') + ' a year. Worked out at 24mph, a town and '
-        + 'dual carriageway mix.';
-    }
-    return 'Roughly ' + yr.toLocaleString('en-GB') + ' miles a year.';
-  }
-
-  function dailyMarkup() {
-    var v = A.dailyVal == null ? '' : A.dailyVal;
-    var unit = A.dailyUnit === 'mins' ? 'minutes' : 'miles';
-    return '<div class="wb-daily">'
-      + '<div class="wb-toggle" role="group" aria-label="Miles or minutes">'
-      + '<button type="button" class="wb-tog' + (A.dailyUnit === 'mins' ? ' on' : '')
-      + '" data-unit="mins">Minutes</button>'
-      + '<button type="button" class="wb-tog' + (A.dailyUnit === 'miles' ? ' on' : '')
-      + '" data-unit="miles">Miles</button></div>'
-      + '<div class="wb-gauge">'
-      + '<div class="wb-needle" aria-hidden="true"><svg viewBox="0 0 104 104">'
-      + '<path d="M10 52a42 42 0 0 1 84 0" fill="none" stroke="rgba(236,233,225,.13)" stroke-width="2"/>'
-      + '<g class="nd" id="wbNeedle" style="transform:rotate(' + needleDeg() + 'deg)">'
-      + '<line x1="52" y1="52" x2="52" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>'
-      + '</g><circle cx="52" cy="52" r="4" fill="currentColor"/></svg></div>'
-      + '<div class="wb-readout"><b id="wbBig">' + (v === '' ? '–' : v) + '</b>'
-      + '<span id="wbUnit">' + unit + ' a day</span></div></div>'
-      + '<div class="wb-quick">'
-      + QUICK[A.dailyUnit].map(function (n) {
-          return '<button type="button" class="wb-qk' + (A.dailyVal === n ? ' on' : '')
-            + '" data-qk="' + n + '">' + n + '</button>'; }).join('')
-      + '</div>'
-      + '<label class="wb-numwrap"><input type="number" id="wbDaily" inputmode="numeric"'
-      + ' min="0" max="600" value="' + v + '" placeholder="'
-      + (A.dailyUnit === 'mins' ? '40' : '16') + '"/>'
-      + '<span>or type it</span></label>'
-      + '<p class="wb-conv" id="wbConv">' + esc(convLine()) + '</p></div>';
+  function chipRow(name, values, current, fmt) {
+    return '<div class="wb-quick" role="group">'
+      + values.map(function (n, i) {
+          var last = i === values.length - 1;
+          return '<button type="button" class="wb-qk' + (current === n ? ' on' : '')
+            + '" data-set="' + name + '" data-val="' + n + '">'
+            + fmt(n, last) + '</button>';
+        }).join('') + '</div>';
   }
 
   function payMarkup() {
     var r = A.pay;
-    var h = '<div class="wb-opts">'
-      + ['<button type="button" class="wb-opt' + (r === 'monthly' ? ' on' : '') + '" data-q="pay" data-v="monthly">'
-         + '<span class="wb-opt-t">Monthly</span><span class="wb-opt-l">Finance, with a deposit.</span></button>',
-         '<button type="button" class="wb-opt' + (r === 'cash' ? ' on' : '') + '" data-q="pay" data-v="cash">'
-         + '<span class="wb-opt-t">Outright</span><span class="wb-opt-l">Cash, or part exchange plus cash.</span></button>',
-         '<button type="button" class="wb-opt' + (r === 'unsure' ? ' on' : '') + '" data-q="pay" data-v="unsure">'
-         + '<span class="wb-opt-t">Not sure yet</span><span class="wb-opt-l">Skip the figures.</span></button>'
-        ].join('') + '</div>';
+    var money0 = function (n) { return '£' + n.toLocaleString('en-GB'); };
+    var h = '<div class="wb-opts two">'
+      + optBtn('pay', 'monthly', 'Monthly', 'pound', r === 'monthly')
+      + optBtn('pay', 'cash', 'Cash', 'notes', r === 'cash')
+      + optBtn('pay', 'unsure', 'Not sure yet', 'open', r === 'unsure')
+      + '</div>';
     if (r === 'monthly') {
-      h += '<div class="wb-pair">'
-        + '<label class="wb-numwrap"><span class="wb-pre">£</span>'
-        + '<input type="number" id="wbMonthly" inputmode="numeric" min="100" max="3000" step="10"'
-        + ' value="' + (A.monthly || '') + '" placeholder="450"/><span>a month, at most</span></label>'
-        + '<label class="wb-numwrap"><span class="wb-pre">£</span>'
-        + '<input type="number" id="wbDeposit" inputmode="numeric" min="0" max="50000" step="500"'
-        + ' value="' + (A.deposit == null ? '' : A.deposit) + '" placeholder="5000"/><span>deposit</span></label>'
-        + '</div><p class="wb-conv">Payments come straight from BMW Financial Services at the deposit you type, not from a calculator here.</p>';
+      h += '<p class="wb-sub">A month, at most</p>'
+        + chipRow('monthly', MONTHLY, A.monthly, function (n, last) {
+            return money0(n) + (last ? '+' : ''); })
+        + '<p class="wb-sub">Deposit</p>'
+        + chipRow('deposit', DEPOSITS, A.deposit, function (n) {
+            return n === 0 ? 'None' : money0(n); })
+        + '<p class="wb-conv">Payments come straight from BMW Financial Services at '
+        + 'whichever deposit you tap.</p>';
     } else if (r === 'cash') {
-      h += '<div class="wb-pair"><label class="wb-numwrap"><span class="wb-pre">£</span>'
-        + '<input type="number" id="wbCash" inputmode="numeric" min="2000" max="200000" step="500"'
-        + ' value="' + (A.cash || '') + '" placeholder="25000"/><span>to spend</span></label></div>';
+      h += '<p class="wb-sub">To spend</p>'
+        + chipRow('cash', CASH, A.cash, function (n, last) {
+            return '£' + Math.round(n / 1000) + 'k' + (last ? '+' : ''); });
     }
     return h;
   }
 
-  /* The accent winds from cold blue on the first question to warm amber on the
-     last, so the page is visibly further along before you read anything. It is
-     one custom property; every accent on screen is derived from it in CSS. */
-  /* 212 is a cold blue and 392 wraps to 32, a warm amber; hsl() is happy with
-     a hue past 360, so the whole sweep is one addition. It runs through violet
-     and red on the way, which is the half of the quiz that asks about them. */
+  /* 212 is a cold blue and 392 wraps to 32, a warm amber; hsl() takes a hue
+     past 360, so the whole sweep is one addition. Every accent on screen is
+     derived from this one property in CSS. */
   function setHue(frac) {
     var h = 212 + Math.max(0, Math.min(1, frac)) * 180;
     document.body.style.setProperty('--accH', String(Math.round(h)));
   }
 
   /* The title card. A quiz that opens on question one reads as a form; one
-     that opens on a cover reads as something you have chosen to do. It also
-     gets the honest numbers out of the way before anybody starts: how many
-     questions, how long, and that the email comes at the end and not before. */
+     that opens on a cover reads as something you chose to do. Three lines and
+     a button: the long version of this page tested as the wordiest thing on
+     it, and nothing on a cover needs explaining twice. */
   function renderIntro() {
     $('wbProg').hidden = true;
     setHue(0);
     $('wbStage').innerHTML = '<div class="wb-intro">'
-      + '<span class="wb-kicker">Thirteen questions</span>'
+      + '<span class="wb-kicker">8 taps</span>'
       + '<h1 class="wb-giant">Which BMW<br/>is <em>actually</em><br/>yours?</h1>'
-      + '<p class="wb-lede">Not the one you think you want. The one that fits how you '
-      + 'live, what you carry, how far you drive and, honestly, what you are like.</p>'
-      + '<ul class="wb-facts">'
-      + '<li><b>90</b> seconds</li><li><b>330</b> cars behind it</li>'
-      + '<li>No email until the <b>end</b></li></ul>'
+      + '<p class="wb-lede">No typing. No email until the end. Then I will tell you, '
+      + 'and show you why.</p>'
       + '<button type="button" class="wb-go" id="wbGo">Start <span>→</span></button>'
       + '</div>';
     $('wbStage').classList.add('wb-in');
@@ -781,22 +743,20 @@
     });
   }
 
-  /* A beat between the practical half and the personal one. It marks the change
-     of subject, which otherwise arrives as "and now a strange question about
-     car parks", and it is the one screen on here that is purely for the feel of
-     the thing. */
+  /* One beat between the half about your life and the half about you. It marks
+     the change of subject, which otherwise arrives as a strange question about
+     car parks. Two short lines: it is a signpost, not a chapter. */
   var BREAKS = { weekend: {
-    kicker: 'Part two',
-    h: 'Right. Now the interesting half.',
-    p: 'That is everything your life needs. The rest is about you, and it is what '
-       + 'separates two cars that fit exactly the same.' } };
+    kicker: 'Halfway',
+    h: 'Sensible half done.',
+    p: 'Now the bit that actually decides it.' } };
 
   function renderBreak(q) {
     var b = BREAKS[q.id];
     $('wbStage').innerHTML = '<div class="wb-break">'
       + '<span class="wb-kicker">' + esc(b.kicker) + '</span>'
       + '<h2>' + esc(b.h) + '</h2><p>' + esc(b.p) + '</p>'
-      + '<button type="button" class="wb-go" id="wbGo">Go on then <span>→</span></button>'
+      + '<button type="button" class="wb-go" id="wbGo">Go on <span>→</span></button>'
       + '</div>';
     $('wbStage').classList.remove('wb-in');
     void $('wbStage').offsetWidth;
@@ -830,8 +790,7 @@
       + (STEP + 1) + '</span>'
       + '<h1 class="wb-h">' + esc(q.h) + '</h1>'
       + (q.hint ? '<p class="wb-hint">' + esc(q.hint) + '</p>' : '') + '</div>';
-    if (q.type === 'daily') body += dailyMarkup();
-    else if (q.type === 'pay') body += payMarkup();
+    if (q.type === 'pay') body += payMarkup();
     else body += '<div class="wb-opts' + (q.type === 'many' ? ' two' : '') + '">' + optMarkup(q) + '</div>';
 
     /* Only a question that can genuinely be skipped ever says Skip. The daily
@@ -839,12 +798,20 @@
        answered, so labelling those Skip would promise something the button
        will not do, and the label would still read Skip after typing: it is set
        at render, and typing only re-enables the button. */
+    /* A single-choice question advances on the tap, so a Next button beside it
+       is a second thing to decide about and does nothing the tap did not. It is
+       drawn only where it is the only way on: the tick-any question and the
+       budget screen. Benchmarks are consistent that fewer controls per screen
+       is what makes a quiz feel quick. */
+    var needsNext = q.type !== 'one';
     var label = STEP === total - 1 ? 'See my answer'
       : (q.type === 'many' && !chosen(q) ? 'Skip' : 'Next');
     body += '<div class="wb-nav">'
       + (STEP ? '<button type="button" class="wb-back" id="wbBack">Back</button>' : '<span></span>')
-      + '<button type="button" class="wb-next" id="wbNext"' + (answered(q) ? '' : ' disabled')
-      + '>' + label + '</button>'
+      + (needsNext
+          ? '<button type="button" class="wb-next" id="wbNext"'
+            + (answered(q) ? '' : ' disabled') + '>' + label + '</button>'
+          : '')
       + '</div>';
     $('wbStage').innerHTML = body;
     $('wbStage').classList.remove('wb-in');
@@ -876,62 +843,25 @@
         next();
       });
     });
-    stage.querySelectorAll('.wb-tog').forEach(function (b) {
-      b.addEventListener('click', function () {
-        /* The number means something different in the other unit, so it is
-           cleared rather than silently reinterpreted: 40 minutes is not 40
-           miles, and keeping it would quietly treble somebody's mileage. */
-        A.dailyUnit = b.dataset.unit;
-        A.dailyVal = null;
-        save();
-        render();
-      });
-    });
-    /* One place that repaints everything the daily number drives: the needle,
-       the big readout, the sentence and the button. Typing and tapping a chip
-       both come through here, so the two can never disagree. */
-    function paintDaily() {
-      var c = $('wbConv'), big = $('wbBig'), nd = $('wbNeedle');
-      if (c) c.textContent = convLine();
-      if (big) big.textContent = A.dailyVal == null ? '–' : A.dailyVal;
-      if (nd) nd.style.transform = 'rotate(' + needleDeg() + 'deg)';
-      stage.querySelectorAll('.wb-qk').forEach(function (b) {
-        b.classList.toggle('on', Number(b.dataset.qk) === A.dailyVal);
-      });
-      $('wbNext').disabled = A.dailyVal == null;
-      save();
-    }
+    /* The budget chips. One handler for all three rows, because they differ
+       only in which answer they set. No keyboard anywhere in the quiz now. */
     stage.querySelectorAll('.wb-qk').forEach(function (b) {
       b.addEventListener('click', function () {
-        A.dailyVal = Number(b.dataset.qk);
-        var f = $('wbDaily');
-        if (f) f.value = A.dailyVal;
-        paintDaily();
-      });
-    });
-    var d = $('wbDaily');
-    if (d) {
-      d.addEventListener('input', function () {
-        var n = parseFloat(d.value);
-        A.dailyVal = isNaN(n) || n < 0 ? null : n;
-        paintDaily();
-      });
-      /* Not focused on arrival any more: that threw the keyboard up over the
-         chips, which are the faster way to answer on a phone. */
-    }
-    [['wbMonthly', 'monthly'], ['wbDeposit', 'deposit'], ['wbCash', 'cash']].forEach(function (p) {
-      var el = $(p[0]);
-      if (!el) return;
-      el.addEventListener('input', function () {
-        var n = parseFloat(el.value);
-        A[p[1]] = isNaN(n) ? null : n;
+        var key = b.dataset.set, v = Number(b.dataset.val);
+        A[key] = A[key] === v ? null : v;
         save();
+        stage.querySelectorAll('[data-set="' + key + '"]').forEach(function (x) {
+          x.classList.toggle('on', Number(x.dataset.val) === A[key]);
+        });
+        ga('wb_answer', { step_name: key, answer: String(v) });
       });
     });
     if ($('wbBack')) $('wbBack').addEventListener('click', function () {
       STEP = Math.max(0, STEP - 1); save(); render(); ga('wb_back', {});
     });
-    $('wbNext').addEventListener('click', next);
+    /* Not drawn on a single-choice question any more, so this must not assume
+       it is there. */
+    if ($('wbNext')) $('wbNext').addEventListener('click', next);
   }
 
   /* A short beat before the answer. It is honest about what it is doing rather
@@ -1081,6 +1011,18 @@
     }
     $('wbStage').innerHTML = h;
     $('wbStage').classList.add('wb-in');
+    /* The finance wording belongs where a payment is, and nowhere else. Through
+       the questions the footer is one short line; it grows into the full
+       disclosure the moment a monthly figure is on screen. A page of small
+       print under question one is words nobody reads and everybody sees. */
+    var lg = $('wbLegal');
+    if (lg && /a month/.test(h)) {
+      lg.className = '';
+      lg.innerHTML = 'Payments are BMW Financial Services\u2019 own at the deposit you '
+        + 'picked, with the full representative example on every card. Not a quotation. '
+        + 'Finance subject to status, 18+, UK residents. Nothing shared with anybody but me. '
+        + '<a href="privacy.html">Privacy</a>';
+    }
     wireResult();
   }
 
@@ -1108,8 +1050,7 @@
   function formMarkup() {
     return '<form class="wb-form" id="wbForm" novalidate>'
       + '<h2>Want me to take it from here?</h2>'
-      + '<p class="wb-hint">I will come back with the actual cars, the real payments and what is worth waiting for. '
-      + 'Everything you answered comes with it, so you will not be asked twice.</p>'
+      + '<p class="wb-hint">Real cars, real payments. Your answers come with it.</p>'
       + '<label>Your name<input type="text" id="wbName" autocomplete="name" required/></label>'
       + '<label>Mobile<input type="tel" id="wbPhone" autocomplete="tel" required/></label>'
       + '<label>Email<input type="email" id="wbEmail" autocomplete="email" required/></label>'
@@ -1133,21 +1074,18 @@
     };
     L.push('On board: ' + label('who', A.who));
     if (A.load.length) L.push('Carries: ' + A.load.map(function (v) { return label('load', v); }).join(', '));
-    if (d != null) L.push('Drives: ' + A.dailyVal + ' ' + A.dailyUnit + ' a day, about '
-      + annualMiles().toLocaleString('en-GB') + ' miles a year');
-    if (A.longrun) L.push('Long runs: ' + label('longrun', A.longrun));
-    if (A.charge) L.push('Home charging: ' + label('charge', A.charge));
+    if (A.life) L.push('Lives with it: ' + label('life', A.life)
+      + ' (so roughly ' + annualMiles().toLocaleString('en-GB')
+      + ' miles a year, my estimate, not theirs)');
     if (A.pace) L.push('Wants it to feel: ' + label('pace', A.pace));
-    if (A.weekend) L.push('A good drive: ' + label('weekend', A.weekend));
+    if (A.weekend) L.push('Best drive: ' + label('weekend', A.weekend));
     if (A.attention) L.push('Pulling up outside: ' + label('attention', A.attention));
-    if (A.love) L.push('Driving is: ' + label('love', A.love));
-    if (A.mood.length) L.push('Priorities: ' + A.mood.map(function (v) { return label('mood', v); }).join(', '));
+
     if (A.park) L.push('Tight parking: ' + label('park', A.park));
     if (A.pay === 'monthly') L.push('Budget: up to ' + money(A.monthly || 0) + ' a month at '
       + money(A.deposit || 0) + ' deposit');
     else if (A.pay === 'cash') L.push('Budget: ' + money(A.cash || 0) + ' outright');
     else if (A.pay) L.push('Budget: not decided');
-    if (A.age) L.push('Age: ' + label('age', A.age));
     return L;
   }
 
@@ -1162,12 +1100,11 @@
       _replyto: $('wbEmail').value.trim(),
       notes: $('wbNotes').value.trim(),
       quizsummary: summary().join('\n'),
-      daily_miles: dailyMiles() == null ? '' : Math.round(dailyMiles()),
-      annual_miles: annualMiles() == null ? '' : annualMiles(),
+      daily_miles_estimate: dailyMiles() == null ? '' : Math.round(dailyMiles()),
+      annual_miles_estimate: annualMiles() == null ? '' : annualMiles(),
       page_url: location.href
     };
-    ['who', 'longrun', 'charge', 'pace', 'park', 'pay', 'age',
-     'weekend', 'attention', 'love'].forEach(function (k) {
+    ['who', 'life', 'pace', 'park', 'pay', 'weekend', 'attention'].forEach(function (k) {
       P[k] = A[k] || '';
     });
     P.personality = readBack();
@@ -1183,7 +1120,7 @@
         + ($('wbName') ? $('wbName').value.trim() : '');
     }
     P.carries = A.load.join(', ');
-    P.priorities = A.mood.join(', ');
+    P.can_charge_at_home = canCharge() === null ? '' : (canCharge() ? 'Yes' : 'No');
     P.monthly_max = A.monthly || '';
     P.deposit = A.deposit == null ? '' : A.deposit;
     P.cash_max = A.cash || '';
@@ -1312,6 +1249,7 @@
   window.wbDebug = { get A() { return A; }, get result() { return RESULT; },
                      get models() { return MODELS; }, recommend: recommend,
                      dailyMiles: dailyMiles, annualMiles: annualMiles,
+                     canCharge: canCharge,
                      assess: function (k, o) { return assess(k, MODELS[k], o); },
                      readBack: readBack, steps: function () { return Q.length; },
                      set: function (o) { var k; for (k in o) A[k] = o[k]; },
