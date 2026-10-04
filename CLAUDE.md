@@ -723,6 +723,12 @@ are still duplicated per page — only the header/drawer/footer are templated.
 
 ## Staff-only pages — must stay noindex
 
+**Never put a password, PIN, token or key in this repo** (it is public, and
+git history keeps everything forever). Staff page passwords/PINs live only as
+salted hashes in `staff-gate.js` (`node scripts/gate-hash.mjs <gate>` to
+change one); server-side keys live in Cloudflare worker secrets. See
+`SECURITY-STAFF.md` for what each gate does and does not protect.
+
 - `Forecourt.html` — internal forecourt stock check tool (PIN-gated,
   Firebase-backed).
 - `newcar.html` — upload page for the new car manager's daily 76 Plate
@@ -830,7 +836,9 @@ are still duplicated per page — only the header/drawer/footer are templated.
   zone) and **check it still decodes at the size it renders at**: the first
   small one was 84px and OpenCV could not read it out of a screenshot, which is
   a fair proxy for a phone across the office.
-- `admin.html` — **Dan's admin console for the board** (password `DANC`, a
+- `admin.html` — **Dan's admin console for the board** (password checked
+  by `staff-gate.js`, which holds only a salted PBKDF2 hash - change it with
+  `node scripts/gate-hash.mjs admin`, never write it in the repo. It is a
   client-side gate like the board's PIN - it stops the wrong person prodding
   it, not somebody determined). One page for everything the wall does: a switch
   per slot in the rotation and per cut scene/stunt, the seconds on each screen
@@ -841,7 +849,7 @@ are still duplicated per page — only the header/drawer/footer are templated.
   sketches switch writes `boardcontrol/videos` instead, because that already
   owns it and two switches for one thing is worse than one in the wrong place.
 - `links.html` — Dan's internal links/dashboard page, **gated with the same
-  `DANC` password as the admin console** (stored as a SHA-256, matched
+  password as the admin console** (the `admin` gate in `staff-gate.js`, matched
   case-insensitively, remembered per browser session in `dan_links_unlocked`).
   Like every gate on this site it hides the page rather than protecting it:
   the markup is all in the HTML and readable with View Source or curl, and

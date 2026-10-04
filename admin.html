@@ -135,7 +135,7 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
   <div class="card" id="gate">
     <h2>Password</h2>
     <p class="hint">Dan's console. The managers have their own controls in the board's manager panel.</p>
-    <input type="password" id="pw" maxlength="16" placeholder="Password" autocomplete="off" autocapitalize="characters">
+    <input type="password" id="pw" maxlength="64" placeholder="Password" autocomplete="off" autocapitalize="characters">
     <div class="row"><button class="btn primary" id="pw-go">Enter</button></div>
     <p class="msg" id="pw-msg"></p>
   </div>
@@ -266,6 +266,7 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="staff-gate.js"></script>
 <script>
 /* ============================================================
    Same shape as the board and newcar.html: the UI is a plain
@@ -273,7 +274,8 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
    window.adBindBackend, so a blocked CDN gives an honest
    "not connected" console rather than a dead page.
    ============================================================ */
-var PW='DANC';
+/* The password is checked by staff-gate.js (salted hash only, never the
+   password itself). Change it with: node scripts/gate-hash.mjs admin */
 var backend=null, SET={}, TICKER={}, MUGS={}, MUGVOTES={}, MUGCUR=null, MUGBLOCK={},
     BDAYS={}, EXTRA={used:null,newcar:null}, CTL={}, live=false;
 
@@ -298,13 +300,22 @@ function stamp(word,ts){
 }
 
 /* ---- the gate ---- */
+var unlocking=false;
 function unlock(){
-  if($('pw').value.trim().toUpperCase()!==PW){
-    $('pw-msg').className='msg err';
-    $('pw-msg').textContent='Not that one.';
-    $('pw').value='';
-    return;
-  }
+  if(unlocking)return;
+  unlocking=true;
+  window.dsGate.check('admin',$('pw').value).then(function(ok){
+    unlocking=false;
+    if(!ok){
+      $('pw-msg').className='msg err';
+      $('pw-msg').textContent='Not that one.';
+      $('pw').value='';
+      return;
+    }
+    unlocked();
+  });
+}
+function unlocked(){
   $('gate').classList.add('hidden');
   $('console').classList.remove('hidden');
   paintAll();

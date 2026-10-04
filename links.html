@@ -181,7 +181,7 @@ a{color:inherit;text-decoration:none}
     <div class="lock-title">Dan's Links</div>
     <div class="lock-sub">Enter your password to access</div>
     <div class="pin-row">
-      <input type="password" id="pin-input" placeholder="&#9679;&#9679;&#9679;&#9679;" autocomplete="off" autocapitalize="characters" maxlength="20" onkeydown="if(event.key==='Enter')unlock()">
+      <input type="password" id="pin-input" placeholder="&#9679;&#9679;&#9679;&#9679;" autocomplete="off" autocapitalize="characters" maxlength="64" onkeydown="if(event.key==='Enter')unlock()">
       <button id="unlock-btn" onclick="unlock()">Unlock</button>
     </div>
     <div class="lock-err" id="lock-err"></div>
@@ -718,7 +718,7 @@ a{color:inherit;text-decoration:none}
         <div class="link-name">Board admin</div>
         <div class="link-desc">Your own console for the office board. Switch any part of it on or off, hold a
           board up on every screen, change the targets, overrule the mug shot of the week, and put a line on
-          the scrolling banner. Password DANC, keep it to yourself.</div>
+          the scrolling banner. Same password as this page, keep it to yourself.</div>
         <span class="link-url" id="u-admin">https://dan-sells.co.uk/admin.html</span>
       </div>
       <div class="link-actions">
@@ -742,7 +742,7 @@ a{color:inherit;text-decoration:none}
     <div class="link-card">
       <div class="link-info">
         <div class="link-name">New Car Leaderboard: upload</div>
-        <div class="link-desc">For Nathan. Upload the daily 76 Plate screenshot and it goes straight onto the board in the managers' office. PIN 1991.</div>
+        <div class="link-desc">For Nathan. Upload the daily 76 Plate screenshot and it goes straight onto the board in the managers' office. Nathan has the PIN.</div>
         <span class="link-url" id="u-newcar">https://dan-sells.co.uk/newcar.html</span>
       </div>
       <div class="link-actions">
@@ -766,15 +766,12 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<script src="staff-gate.js"></script>
 <script>
-// SHA-256 hash of the PIN - PIN itself is never stored here
-const HASH = 'dbb882154f408af7e3fe2467765ae7dce18ee3ae6ab137d1f03ae4baf4a1c54f';
+// The password is checked by staff-gate.js (salted hash only, never the
+// password itself). Same password as admin.html. Change it with:
+//   node scripts/gate-hash.mjs admin
 const SK   = 'dan_links_unlocked';
-
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
 
 function showContent() {
   document.getElementById('lock').classList.add('hidden');
@@ -785,10 +782,9 @@ function showContent() {
 if (sessionStorage.getItem(SK) === '1') { showContent(); }
 
 async function unlock() {
-  const val = document.getElementById('pin-input').value.trim().toUpperCase();
+  const val = document.getElementById('pin-input').value.trim();
   if (!val) return;
-  const h = await sha256(val);
-  if (h === HASH) {
+  if (await window.dsGate.check('admin', val)) {
     sessionStorage.setItem(SK, '1');
     showContent();
   } else {
