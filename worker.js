@@ -10,24 +10,116 @@
  *   MOT_API_KEY       - DVSA MOT History API key
  *
  * Actor ID: Ca7tBqNduWgy2A2pq (AutoTrader scraper)
+ *
+ * Abuse protection (added Oct 2026):
+ *   - Only browsers on the allowed origins below get an answer. Anything else
+ *     (other websites, scripts with no Origin/Referer) gets 403. A script can
+ *     fake these headers, so the rate limits below are the real backstop.
+ *   - Per-IP rate limits via Cloudflare's Rate Limiting binding (configured in
+ *     wrangler.vehicleproxy.toml). If the binding is missing the worker falls
+ *     back to a best-effort in-memory limit, so it never fails open completely.
+ *   - runId and reg are validated before they go anywhere near an upstream URL.
+ *
+ * Deploy (from the repo root):  npx wrangler deploy -c wrangler.vehicleproxy.toml
  */
 
 const APIFY_ACTOR = 'Ca7tBqNduWgy2A2pq';
 
-const CORS = {
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+/* Sites allowed to call this worker from a browser. */
+const ALLOWED_ORIGINS = [
+  'https://dan-sells.co.uk',
+  'https://www.dan-sells.co.uk',
+  'https://danbmw.github.io',
+];
+/* Local testing on Dan's own machine (http://localhost:<any port>). */
+const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
+
+function allowedOrigin(request) {
+  const origin = request.headers.get('Origin');
+  if (origin) return (ALLOWED_ORIGINS.includes(origin) || LOCAL_ORIGIN.test(origin)) ? origin : null;
+  /* No Origin header: accept only a Referer from an allowed site. */
+  const referer = request.headers.get('Referer') || '';
+  try {
+    const o = new URL(referer).origin;
+    if (ALLOWED_ORIGINS.includes(o) || LOCAL_ORIGIN.test(o)) return o;
+  } catch (_) {}
+  return null;
+}
+
+function corsHeaders(origin) {
+  return {
+    'Access-Control-Allow-Origin':  origin,
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age':       '86400',
+    'Vary':                         'Origin',
+  };
+}
+
+/* Per-IP limits per 60 seconds. A customer typing a reg twice or a trade
+   value page polling every 3s for 45s stays well inside these; a script
+   hammering the paid lookups does not. Showroom wifi shares one IP, so the
+   numbers are deliberately generous. Keep in step with
+   wrangler.vehicleproxy.toml. */
+const LIMITS = {
+  lookup: { binding: 'LOOKUP_LIMITER', limit: 30 },   /* dvla-lookup, vehicle-lookup */
+  start:  { binding: 'MARKET_START_LIMITER', limit: 4 }, /* market-start = paid Apify run */
+  poll:   { binding: 'POLL_LIMITER', limit: 60 },     /* market-poll */
 };
+const TARGET_BUCKET = {
+  'dvla-lookup': 'lookup', 'vehicle-lookup': 'lookup',
+  'market-start': 'start', 'market-poll': 'poll',
+};
+
+/* Fallback used only if the Rate Limiting binding is not configured:
+   per-isolate memory, so it is best effort, but never "no limit at all". */
+const memHits = new Map();
+function memLimit(key, limit) {
+  const now = Date.now(), win = 60000;
+  let e = memHits.get(key);
+  if (!e || now - e.t > win) { e = { t: now, n: 0 }; memHits.set(key, e); }
+  e.n++;
+  if (memHits.size > 5000) memHits.clear();
+  return e.n <= limit;
+}
+
+async function withinLimit(env, bucket, ip) {
+  const cfg = LIMITS[bucket];
+  const key = bucket + ':' + ip;
+  const rl = env && env[cfg.binding];
+  if (rl && typeof rl.limit === 'function') {
+    try { const { success } = await rl.limit({ key }); return success; }
+    catch (_) { /* binding hiccup: fall through to the memory limit */ }
+  }
+  return memLimit(key, cfg.limit);
+}
+
+function json(body, status, origin) {
+  return new Response(JSON.stringify(body), {
+    status: status || 200,
+    headers: { ...(origin ? corsHeaders(origin) : { 'Vary': 'Origin' }), 'Content-Type': 'application/json' }
+  });
+}
 
 export default {
   async fetch(request, env) {
+    const origin = allowedOrigin(request);
+    if (!origin) return json({ error: 'Forbidden' }, 403, null);
+
     if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: CORS });
+      return new Response(null, { headers: corsHeaders(origin) });
     }
+    if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405, origin);
 
     const url    = new URL(request.url);
     const target = url.searchParams.get('target');
+    const bucket = TARGET_BUCKET[target];
+    if (!bucket) return json({ error: 'Unknown target' }, 200, origin);
+
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    if (!(await withinLimit(env, bucket, ip))) {
+      return json({ error: 'Too many requests, please try again in a minute' }, 429, origin);
+    }
 
     try {
       let body;
@@ -35,23 +127,24 @@ export default {
       else if (target === 'vehicle-lookup') body = await vehicleLookup(url.searchParams.get('reg') || '', env);
       else if (target === 'market-start')   body = await marketStart(url.searchParams, env);
       else if (target === 'market-poll')    body = await marketPoll(url.searchParams.get('runId') || '', env);
-      else                                  body = { error: 'Unknown target' };
 
-      return new Response(JSON.stringify(body), {
-        headers: { ...CORS, 'Content-Type': 'application/json' }
-      });
+      return json(body, 200, origin);
     } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), {
-        status: 500,
-        headers: { ...CORS, 'Content-Type': 'application/json' }
-      });
+      return json({ error: e.message }, 500, origin);
     }
   }
 };
 
+/* UK regs are at most 7 characters plus spaces; anything else never reaches DVLA/DVSA. */
+function cleanReg(reg) {
+  const r = String(reg || '').replace(/\s/g, '').toUpperCase();
+  return /^[A-Z0-9]{1,8}$/.test(r) ? r : '';
+}
+
 /* ── DVLA lookup ────────────────────────────────────────────────── */
 async function dvlaLookup(reg, env) {
   if (!reg) return { error: 'No reg provided' };
+  if (!cleanReg(reg)) return { error: 'Invalid reg' };
 
   const res = await fetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles', {
     method:  'POST',
@@ -117,6 +210,7 @@ async function motLookup(reg, env) {
 /* ── Combined lookup: DVLA (tax/MOT dates) + MOT History (model, tests) ── */
 async function vehicleLookup(reg, env) {
   if (!reg) return { error: 'No reg provided' };
+  if (!cleanReg(reg)) return { error: 'Invalid reg' };
   const [dvla, mot] = await Promise.all([
     dvlaLookup(reg, env).catch(() => ({})),
     motLookup(reg, env).catch(() => null),
@@ -228,6 +322,9 @@ async function marketStart(params, env) {
 /* ── Market poll ────────────────────────────────────────────────── */
 async function marketPoll(runId, env) {
   if (!runId) return { status: 'error', error: 'No runId provided' };
+  /* Apify run ids are short alphanumerics. Refuse anything else so a crafted
+     runId can't steer the token-bearing request to another Apify endpoint. */
+  if (!/^[A-Za-z0-9]{6,40}$/.test(runId)) return { status: 'error', error: 'Invalid runId' };
 
   const runRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${env.APIFY_TOKEN}`);
   if (!runRes.ok) return { status: 'error', error: 'Failed to poll: ' + runRes.status };
