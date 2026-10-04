@@ -143,13 +143,16 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
   </p>
 </div>
 
+<script src="staff-gate.js"></script>
 <script>
 /* ============================================================
    UI first, in a plain script. If the Firebase CDN is slow or
    blocked the page must still unlock, take a file and show a
    preview - only the send button waits on the backend.
    ============================================================ */
-var PIN='1991';          /* Nathan's own PIN - not the manager PIN on the board */
+/* Nathan's own PIN (not the manager PIN on the board) is the 'newcar' gate
+   in staff-gate.js - a salted hash only. Change it with:
+   node scripts/gate-hash.mjs newcar */
 var MAX_STORED=1300000;          /* keep clear of the 1.4MB the rules allow */
 var pending=null, backend=null;
 
@@ -157,10 +160,16 @@ function $(id){return document.getElementById(id)}
 function say(el,text,kind){el.className='msg '+(kind||'');el.textContent=text}
 
 /* ---- gate ---- */
+var checking=false;
 function unlock(){
-  if($('pin').value!==PIN){say($('gate-msg'),'Wrong PIN','err');$('pin').value='';$('pin').focus();return}
-  $('gate').classList.add('hidden');
-  $('app').classList.remove('hidden');
+  if(checking)return;
+  checking=true;
+  window.dsGate.check('newcar',$('pin').value).then(function(ok){
+    checking=false;
+    if(!ok){say($('gate-msg'),'Wrong PIN','err');$('pin').value='';$('pin').focus();return}
+    $('gate').classList.add('hidden');
+    $('app').classList.remove('hidden');
+  });
 }
 $('go').onclick=unlock;
 $('pin').addEventListener('keydown',function(e){if(e.key==='Enter')unlock()});

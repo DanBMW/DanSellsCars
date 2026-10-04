@@ -732,7 +732,8 @@ change one); server-side keys live in Cloudflare worker secrets. See
 - `Forecourt.html` — internal forecourt stock check tool (PIN-gated,
   Firebase-backed).
 - `newcar.html` — upload page for the new car manager's daily 76 Plate
-  leaderboard screenshot. PIN-gated, writes to `newcar/current`. Like the
+  leaderboard screenshot. PIN-gated (the `newcar` gate in `staff-gate.js`),
+  writes to `newcar/current`. Like the
   board, its UI runs from a plain script so a blocked Firebase CDN cannot
   leave a dead page.
 - `team-board.html` — the **£15,000 Profit Challenge** board: a live race-to-the-
@@ -921,8 +922,9 @@ said so.
   the screen. `monthState()` is the single source of truth for how a month is
   labelled (live / next month / finished) - `showMonth()` and `dsOnDeals()` both
   use it.
-- **Manager access** is the same shared PIN pattern as `Forecourt.html`
-  (`PIN` constant in the page). Note this is a client-side gate: the DB rules
+- **Manager access** is the same shared PIN as `Forecourt.html` (the
+  `manager` gate in `staff-gate.js`, a salted hash; change it with
+  `node scripts/gate-hash.mjs manager`). Note this is a client-side gate: the DB rules
   allow anyone to write to `profitchallenge`, so the PIN stops accidents, not a
   determined visitor. The rules do validate shape — known `exec` id, numeric
   `profit` within ±100000, short `reg` — and are scoped so a bad write cannot

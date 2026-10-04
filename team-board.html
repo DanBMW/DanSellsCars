@@ -1950,6 +1950,7 @@ body.premiere .pairqr{display:none!important}
   }, BOOT_MS);
 })();
 </script>
+<script src="staff-gate.js"></script>
 <script>
 /* ============================================================
    Board UI. Deliberately plain (non-module) and backend-free so
@@ -1969,7 +1970,7 @@ var TEAM=[
   {id:'md',ini:'MD',name:'Millie Demachen',photo:'team/md.jpg'}
 ];
 var BY_ID={};TEAM.forEach(function(t){BY_ID[t.id]=t});
-var TARGET=15000, UNIT_TARGET=8, PIN='1992';
+var TARGET=15000, UNIT_TARGET=8;   /* manager PIN: the 'manager' gate in staff-gate.js */
 
 /* ---- what is switched on ----
    Every moving part of this board can be turned off from the admin console
@@ -6034,15 +6035,21 @@ Array.prototype.forEach.call($('picker').querySelectorAll('.pick'),function(p){
   p.onclick=function(){setPick(p.getAttribute('data-id'))};
 });
 
+var pinChecking=false;
 function checkPin(){
-  if($('pin-input').value===PIN){
-    isManager=true;
-    closeModal('m-pin');
-    if(viewMonth!==monthKey())showMonth(monthKey());
-    resetForm();openModal('m-mgr');renderDeals();
-  }else{
-    toast('Incorrect PIN','err');$('pin-input').value='';$('pin-input').focus();
-  }
+  if(pinChecking)return;
+  pinChecking=true;
+  window.dsGate.check('manager',$('pin-input').value).then(function(ok){
+    pinChecking=false;
+    if(ok){
+      isManager=true;
+      closeModal('m-pin');
+      if(viewMonth!==monthKey())showMonth(monthKey());
+      resetForm();openModal('m-mgr');renderDeals();
+    }else{
+      toast('Incorrect PIN','err');$('pin-input').value='';$('pin-input').focus();
+    }
+  });
 }
 $('btn-manager').onclick=function(){
   paintEventPanel(); paintPairList();   /* never open on a stale message */
