@@ -5,8 +5,7 @@
  *     one this file does for you (mug shot deck, Nathan's upload, forecourt
  *     tools, the board's own stock/pairing writes);
  *   - "staff": a Google account whose uid Dan has added under /staff in the
- *     database (admin console, board manager actions, reading signed
- *     customer forms).
+ *     database (admin console, board manager actions).
  * Reads of the board's own data stay public so the office TV needs nothing.
  *
  * Everything here is lazy and fails soft: the Firebase Auth SDK is imported

@@ -9,7 +9,7 @@
  *   RULES=/path/to/repo/database.rules.json \
  *   npx firebase emulators:exec --only database --project demo-forecourt \
  *     "node test-firebase-rules.mjs"
- * Expect "103 passed, 0 failed" (October 2026).
+ * Expect "104 passed, 0 failed" (October 2026).
  */
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
 import { ref, get, set, push, remove } from 'firebase/database';
@@ -34,22 +34,14 @@ const staff = env.authenticatedContext('staffUid', { email: 'dan@gmail.com', ema
 const img = 'data:image/jpeg;base64,AAAA';
 const rec = (id) => ({ id, signedAt: '2026-10-04T00:00:00Z', customerName: 'T', forms: ['comm'] });
 
-console.log('--- signed customer forms');
-for (const [who, db] of [['nobody', nobody], ['anon', anon], ['google non-staff', google]]) {
+console.log('--- signed customer forms (feature removed Oct 2026: nobody reads or writes)');
+for (const [who, db] of [['nobody', nobody], ['anon', anon], ['google non-staff', google], ['staff', staff]]) {
   await t(who + ' read one record by id', get(ref(db, 'disclosures/multi_1_old')), 'deny');
   await t(who + ' list all records', get(ref(db, 'disclosures')), 'deny');
   await t(who + ' read rav_forms', get(ref(db, 'rav_forms/r1')), 'deny');
+  await t(who + ' create a record', set(ref(db, 'disclosures/multi_2_abc'), rec('multi_2_abc')), 'deny');
+  await t(who + ' write rav_forms', set(ref(db, 'rav_forms/x'), { a: 1 }), 'deny');
 }
-await t('nobody create new record (customer submits form)', set(ref(nobody, 'disclosures/multi_2_abc'), rec('multi_2_abc')), 'allow');
-await t('nobody create rav_ record', set(ref(nobody, 'disclosures/rav_3_abc'), rec('rav_3_abc')), 'allow');
-await t('nobody create disc_ record', set(ref(nobody, 'disclosures/disc_4_abc'), rec('disc_4_abc')), 'allow');
-await t('nobody overwrite existing record', set(ref(nobody, 'disclosures/multi_1_old'), rec('multi_1_old')), 'deny');
-await t('nobody delete existing record', remove(ref(nobody, 'disclosures/multi_1_old')), 'deny');
-await t('nobody create with id mismatch', set(ref(nobody, 'disclosures/multi_5_abc'), rec('other')), 'deny');
-await t('nobody write rav_forms', set(ref(nobody, 'rav_forms/x'), { a: 1 }), 'deny');
-await t('staff read one record', get(ref(staff, 'disclosures/multi_1_old')), 'allow');
-await t('staff list records', get(ref(staff, 'disclosures')), 'allow');
-await t('staff read rav_forms', get(ref(staff, 'rav_forms')), 'allow');
 
 console.log('--- staff list');
 await t('google reads own staff entry', get(ref(google, 'staff/randomGoogle')), 'allow');

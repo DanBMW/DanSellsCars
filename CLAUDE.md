@@ -17,17 +17,16 @@ the HTML/CSS/JS directly and push.
   `vip.css`, `contact.js`, `disclaimer.js`, `scroll-hint.js`.
 - **Firebase Realtime Database + Storage** (project `forecourt-1b6bc`,
   `europe-west1`) is the backend for the forms that persist data:
-  `Forecourt.html`, `combined-form.html` / `combined-download.html`,
-  `rav-form.html` / `rav-download.html`, `commission-disclosure.html` /
-  `commission-download.html`, the `forecourt-frenzy*.html` games, and
-  `team-board.html`. Rules
+  `Forecourt.html`, the `forecourt-frenzy*.html` games, and
+  `team-board.html`. (The customer signing pages - combined-form,
+  rav-form, commission-disclosure and their download pages - were removed in
+  October 2026; their records were backed up for Dan and deleted, and the
+  rules no longer allow `disclosures/` or `rav_forms/`.) Rules
   live in `database.rules.json` and `storage.rules` (deployed via
   `firebase.json`) — keep them in sync with any new DB paths. Writes need a
-  Firebase sign-in: "staff" paths (board control, admin, profit deals, reading
-  signed customer forms) need a Google account listed under `/staff/<uid>`;
+  Firebase sign-in: "staff" paths (board control, admin, profit deals) need a Google account listed under `/staff/<uid>`;
   colleague paths (mug shot, newcar, forecourt, the board's own stockwatch and
-  pairing writes) take the quiet anonymous sign-in from `staff-auth.js`. Signed
-  forms are create-only for customers and readable only by staff. Storage is
+  pairing writes) take the quiet anonymous sign-in from `staff-auth.js`. Storage is
   unused and fully locked. Test rule changes with
   `scripts/test-firebase-rules.mjs`; setup and limits are in `SECURITY-STAFF.md`.
 - **Cloudflare Worker** — `worker.js` is the source of the worker deployed at
@@ -582,7 +581,7 @@ Other notable pages: retired offer stubs (`ix3-offer.html`, `x1-offer.html`,
 `1series-offer.html`, `offers.html` which redirects to `stock.html`), valuation tools (`tradevalue.html`
 customer-facing, `Value.html` trade tool), dealership pages
 (`bmw-sevenoaks.html`, `bmw-sidcup.html`), and legal pages (`privacy.html`,
-`terms.html`, `commission-disclosure.html`, `disclaimer.js`).
+`terms.html`, `disclaimer.js`).
 
 ## Sitewide copy and CTA conventions
 
@@ -618,8 +617,7 @@ customer-facing, `Value.html` trade tool), dealership pages
   backend for all lead submissions: funnel final steps (`step8.html`,
   `ev-step6.html`, `ap5.html`, `sq3.html`, `vip7.html`), `yourcar.html` interest pings,
   `yourbrief.html`, `contact.js`, `tradevalue.html`,
-  `index.html`, offer pages, `combined-form.html`, `rav-form.html`,
-  `commission-disclosure.html`, `refer.html`, `thankyou.html`, `wait.html`,
+  `index.html`, offer pages, `refer.html`, `thankyou.html`, `wait.html`,
   and more. Search for `formspree.io` before changing anything about the
   payload shape.
 - **Find my BMW v2 payloads** (`fmb.js`). Contact, `form: find-my-bmw-v2`:

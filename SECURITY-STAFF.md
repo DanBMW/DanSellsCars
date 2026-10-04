@@ -15,10 +15,9 @@ PIN, token or key in it**.
 2. **Firebase Auth + database rules** (`staff-auth.js`, `database.rules.json`,
    `storage.rules`). This is the real protection, enforced by Google's
    servers:
-   - **Signed customer forms** (`disclosures/`): customers can create a record
-     but nobody can read, change or delete one except a staff account. Before
-     this change anyone could read a record by its ID, and anyone with an
-     anonymous Firebase sign-in could list every record.
+   - **Signed customer forms**: the signing pages were removed in October
+     2026. The records were backed up for Dan and deleted, and the rules no
+     longer allow anyone to read or write `disclosures/` or `rav_forms/`.
    - **Staff writes**: board control and settings (reload, videos, play, held
      board), the banner, birthdays, the used-car manager's screenshot,
      mug-shot blocking, event deals and profit-challenge deals need a Google

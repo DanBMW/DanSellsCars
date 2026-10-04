@@ -244,18 +244,6 @@
       }
     },
 
-    "disclosures": {
-      ".read": "auth != null && root.child('staff').child(auth.uid).val() === true",
-      "$disclosureId": {
-        ".write": "!data.exists() && newData.exists()",
-        ".validate": "newData.hasChildren(['id','signedAt']) && newData.child('id').val() === $disclosureId"
-      }
-    },
-
-    "rav_forms": {
-      ".read": "auth != null && root.child('staff').child(auth.uid).val() === true"
-    },
-
     "staff": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid"
