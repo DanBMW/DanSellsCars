@@ -1,0 +1,44 @@
+# GitHub Pages builds this site with Jekyll (there is deliberately no
+# .nojekyll). Nothing here is templated: no file has front matter, so every
+# page and asset is copied byte-for-byte. Jekyll is used only so that the
+# files below - which are part of the repo but not the website - are NOT
+# published on dan-sells.co.uk.
+#
+# automation/*.json must stay published: stock.html, fmb.js, which-bmw.js,
+# MBG.html and team-board.html fetch it at runtime. Only the scripts go.
+#
+# Rules for anyone editing the site:
+#  - Never start a served file with a "---" line: Jekyll would treat it as
+#    front matter and run it through Liquid.
+#  - Files and folders whose names start with "_" or "." are not published.
+#  - A new non-website file (docs, scripts, config)? Add it below.
+
+# No theme: otherwise GitHub Pages' default theme adds assets/css/style.css.
+theme: null
+
+exclude:
+  - "*.md"
+  - "*.py"
+  - "*/__pycache__"
+  - automation/.image-cache
+  - build.js
+  - worker.js
+  - firebase.json
+  - database.rules.json
+  - storage.rules
+  - partials/
+  - scripts/
+  - office-alerts-proxy/
+  - walkins-appscript.gs
+  - walkins-appscript.manifest.json
+  - .github
+  - .gitignore
+  - "*.yml"
+  - "*.yaml"
+  - "*.toml"
+  - "*.sh"
+  - ".env*"
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
