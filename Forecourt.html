@@ -72,8 +72,9 @@ input[type=text],input[type=number],input[type=password],textarea,select{width:1
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { ensureSignedIn } from "./staff-auth.js";
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
-const app=initializeApp(firebaseConfig); const db=getDatabase(app);
+const app=initializeApp(firebaseConfig); const db=getDatabase(app); ensureSignedIn(app); /* writes need any Firebase sign-in once the locked rules are published - see staff-auth.js */
 var CHECK_IDS=['soldboard','clean','fuel','charged','aircon','radio','satnav','bt','personal','receipts','tyre','aid','mileage','warning','profile','priceboard'];
 var CHECK_LABELS=['Sold Board in Window?','Clean Inside and Out','Min 1/4 Tank Fuel','Fully Charged EV-PHEV','Aircon Off','Radio Off','No Address in Sat Nav','No Phones Paired','No Personal Items','No Receipts in Glovebox','Tyre Inflator Kit / Spare Wheel / Run Flats','First Aid Kit Present','Mileage Reset','No Warning Lights','No Profile Set','Price Board & AUC Plate Present'];
 var CHECK_NOTES=['If YES, the car is sold and all remaining checks are skipped','Interior vacuumed, exterior washed','Fuel gauge at least a quarter full','Electric vehicles 80 percent or more','Air conditioning switched off','No audio playing','Clear navigation history','Bluetooth devices cleared','No staff belongings inside','Glovebox empty of paperwork','YES if inflator kit, spare wheel, or run-flat tyres fitted','Kit present and in-date','Trip computer reset to zero','Dashboard clear of all warnings','No driver profiles stored','Price board displayed, AUC plate fitted'];

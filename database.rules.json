@@ -5,7 +5,7 @@
 
     "forecourt": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null",
       "leaderboard": {
         ".indexOn": ["score"]
       },
@@ -21,7 +21,7 @@
           ".validate": "$month.matches(/^[0-9]{4}-[0-9]{2}$/)",
           "deals": {
             "$dealId": {
-              ".write": true,
+              ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
               ".validate": "newData.hasChildren(['exec','profit'])",
               "exec": {
                 ".validate": "newData.isString() && newData.val().matches(/^(dw|ca|ms|kj|ch|ta|dc|md)$/)"
@@ -50,7 +50,7 @@
     "newcar": {
       ".read": true,
       "current": {
-        ".write": true,
+        ".write": "auth != null",
         ".validate": "newData.hasChildren(['img','ts'])",
         "img": {
           ".validate": "newData.isString() && newData.val().length <= 1400000 && newData.val().matches(/^data:image\\/(jpeg|png|webp);base64,/)"
@@ -64,7 +64,7 @@
     "extra": {
       ".read": true,
       "used":   {
-        ".write": true,
+        ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
         ".validate": "newData.hasChildren(['img','ts'])",
         "img": {
           ".validate": "newData.isString() && newData.val().length <= 1400000 && newData.val().matches(/^data:image\\/(jpeg|png|webp);base64,/)"
@@ -74,7 +74,7 @@
         "$other": { ".validate": false }
       },
       "newcar": {
-        ".write": true,
+        ".write": "auth != null",
         ".validate": "newData.hasChildren(['img','ts'])",
         "img": {
           ".validate": "newData.isString() && newData.val().length <= 1400000 && newData.val().matches(/^data:image\\/(jpeg|png|webp);base64,/)"
@@ -89,7 +89,7 @@
     "mugshot": {
       ".read": true,
       "current": {
-        ".write": true,
+        ".write": "auth != null",
         ".validate": "newData.hasChildren(['week','ts'])",
         "week":  { ".validate": "newData.isString() && newData.val().length <= 12" },
         "ts":    { ".validate": "newData.isNumber()" },
@@ -103,7 +103,7 @@
       },
       "entries": {
         "$entryId": {
-          ".write": true,
+          ".write": "auth != null",
           ".validate": "newData.hasChildren(['img','ts'])",
           "img": { ".validate": "newData.isString() && newData.val().length <= 1400000 && newData.val().matches(/^data:image\\/(jpeg|png|webp);base64,/)" },
           "ts":  { ".validate": "newData.isNumber()" },
@@ -115,14 +115,14 @@
       "votes": {
         "$entryId": {
           "$voter": {
-            ".write": true,
+            ".write": "auth != null",
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
           }
         }
       },
       "blocked": {
         "$entryId": {
-          ".write": true,
+          ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
           ".validate": "newData.isBoolean()"
         }
       },
@@ -133,7 +133,7 @@
       ".read": true,
       "items": {
         "$itemId": {
-          ".write": true,
+          ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
           ".validate": "newData.hasChildren(['text','ts'])",
           "text": { ".validate": "newData.isString() && newData.val().length <= 240" },
           "by":   { ".validate": "newData.isString() && newData.val().length <= 40" },
@@ -147,7 +147,7 @@
 
     "eventdeals": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
       ".validate": "newData.hasChildren(['enc','salt','iv','ts'])",
       "enc":   { ".validate": "newData.isString() && newData.val().length <= 16000" },
       "salt":  { ".validate": "newData.isString() && newData.val().length <= 64" },
@@ -160,7 +160,7 @@
     "evpair": {
       ".read": true,
       "$screen": {
-        ".write": true,
+        ".write": "auth != null",
         ".validate": "newData.hasChildren(['pub','ts'])",
         "pub":  { ".validate": "newData.isString() && newData.val().length <= 200" },
         "ts":   { ".validate": "newData.isNumber()" },
@@ -174,7 +174,7 @@
     "boardsettings": {
       ".read": true,
       "$key": {
-        ".write": true,
+        ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
         ".validate": "newData.isBoolean() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000)"
       }
     },
@@ -182,11 +182,11 @@
     "stockwatch": {
       ".read": true,
       "seen": {
-        ".write": true,
+        ".write": "auth != null",
         "$id": { ".validate": "newData.isNumber()" }
       },
       "day": {
-        ".write": true,
+        ".write": "auth != null",
         ".validate": "newData.hasChildren(['day','ts'])",
         "day": { ".validate": "newData.isString() && newData.val().length <= 12" },
         "ts":  { ".validate": "newData.isNumber()" },
@@ -199,7 +199,7 @@
     "birthdays": {
       ".read": true,
       "$id": {
-        ".write": true,
+        ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
         ".validate": "newData.hasChildren(['name','ts'])",
         "name": { ".validate": "newData.isString() && newData.val().length <= 40" },
         "ts":   { ".validate": "newData.isNumber()" },
@@ -210,7 +210,7 @@
 
     "boardcontrol": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
       "videos": { ".validate": "newData.isBoolean()" },
       "reload": { ".validate": "newData.isNumber()" },
       "view": {
@@ -245,18 +245,20 @@
     },
 
     "disclosures": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('staff').child(auth.uid).val() === true",
       "$disclosureId": {
-        ".read": true,
-        ".write": "!data.exists()"
+        ".write": "!data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['id','signedAt']) && newData.child('id').val() === $disclosureId"
       }
     },
 
     "rav_forms": {
-      ".read": "auth != null",
-      "$ravId": {
-        ".read": true,
-        ".write": "!data.exists()"
+      ".read": "auth != null && root.child('staff').child(auth.uid).val() === true"
+    },
+
+    "staff": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
       }
     }
   }

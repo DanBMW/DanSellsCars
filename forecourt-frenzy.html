@@ -327,6 +327,7 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script>
 'use strict';
 
@@ -337,6 +338,9 @@ a.classic{color:#556077;font-size:.72rem;margin-top:14px;text-decoration:underli
 const FB_CONFIG = {apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 let fbDb=null;
 try{ firebase.initializeApp(FB_CONFIG); fbDb=firebase.database(); }catch(e){ console.warn('Firebase init failed',e); }
+/* Leaderboard writes need a Firebase sign-in once the locked rules are published:
+   a quiet anonymous one, nothing shown. Fails soft if Auth can't load. */
+try{ if(firebase.auth) firebase.auth().signInAnonymously()['catch'](function(e){ console.warn('anonymous sign-in unavailable', e && e.code); }); }catch(e){}
 const LB_PATH='forecourt/career';
 
 // ─── LEVELS ────────────────────────────────────────────────────

@@ -751,9 +751,13 @@ setTimeout(function(){
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, set, remove }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { ensureSignedIn, guard } from "./staff-auth.js";
 
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
-const db=getDatabase(initializeApp(firebaseConfig));
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+/* Writes need a Firebase sign-in once the locked rules are published - see staff-auth.js. */
+const STAFF=guard(app,'staff');   /* office TV control / admin: staff Google account */
 
 /* Firebase cancels a listener that errors and never brings it back on its
    own, so every watch re-subscribes with a backoff - the same helper the
@@ -771,20 +775,20 @@ function watch(p, cb, onErr){
 }
 
 window.adBindBackend({
-  setSetting:(k,v)=>set(ref(db,'boardsettings/'+k),v),
-  clearSetting:(k)=>remove(ref(db,'boardsettings/'+k)),
-  setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
-  setView:(id,ts)=>set(ref(db,'boardcontrol/view'),{id:String(id),ts:ts||Date.now()}),
-  setReload:(ts)=>set(ref(db,'boardcontrol/reload'),ts),
-  play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()}),
-  addTicker:(payload)=>push(ref(db,'ticker/items'),payload),
-  delTicker:(id)=>remove(ref(db,'ticker/items/'+id)),
-  blockMug:(id,on)=>on?set(ref(db,'mugshot/blocked/'+id),true)
-                     :remove(ref(db,'mugshot/blocked/'+id)),
-  setMugCurrent:(v)=>set(ref(db,'mugshot/current'),v),
-  clearMugCurrent:()=>remove(ref(db,'mugshot/current')),
-  delBirthday:(id)=>remove(ref(db,'birthdays/'+id)),
-  clearExtra:(who)=>remove(ref(db,'extra/'+who)),
+  setSetting:STAFF((k,v)=>set(ref(db,'boardsettings/'+k),v)),
+  clearSetting:STAFF((k)=>remove(ref(db,'boardsettings/'+k))),
+  setVideos:STAFF((on)=>set(ref(db,'boardcontrol/videos'),!!on)),
+  setView:STAFF((id,ts)=>set(ref(db,'boardcontrol/view'),{id:String(id),ts:ts||Date.now()})),
+  setReload:STAFF((ts)=>set(ref(db,'boardcontrol/reload'),ts)),
+  play:STAFF((clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()})),
+  addTicker:STAFF((payload)=>push(ref(db,'ticker/items'),payload)),
+  delTicker:STAFF((id)=>remove(ref(db,'ticker/items/'+id))),
+  blockMug:STAFF((id,on)=>on?set(ref(db,'mugshot/blocked/'+id),true)
+                     :remove(ref(db,'mugshot/blocked/'+id))),
+  setMugCurrent:STAFF((v)=>set(ref(db,'mugshot/current'),v)),
+  clearMugCurrent:STAFF(()=>remove(ref(db,'mugshot/current'))),
+  delBirthday:STAFF((id)=>remove(ref(db,'birthdays/'+id))),
+  clearExtra:STAFF((who)=>remove(ref(db,'extra/'+who))),
   watchSettings:(cb)=>watch('boardsettings',cb),
   watchControl:(cb,onErr)=>watch('boardcontrol',cb,onErr),
   watchTicker:(cb)=>watch('ticker/items',cb),

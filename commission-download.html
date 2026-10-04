@@ -89,9 +89,26 @@ h2{font-size:18px;font-weight:800;margin-bottom:4px}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { authSettled, staffSignIn, isDenied } from "./staff-auth.js";
 
 const FB = { apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E", authDomain:"forecourt-1b6bc.firebaseapp.com", databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app", projectId:"forecourt-1b6bc", storageBucket:"forecourt-1b6bc.firebasestorage.app", messagingSenderId:"1073459223252", appId:"1:1073459223252:web:d65abed953fc641fc7b941" };
-const db = getDatabase(initializeApp(FB));
+const app = initializeApp(FB);
+const db = getDatabase(app);
+
+/* Signed customer records are staff-only once the locked database rules are
+   published. Wait for any remembered sign-in, read, and if the database says
+   no, ask for a staff Google sign-in and read again. Before the rules change
+   this behaves exactly as it always did. */
+async function readRecord(id) {
+  await authSettled(app);
+  try {
+    return await get(ref(db, 'disclosures/' + id));
+  } catch (e) {
+    if (!isDenied(e)) throw e;
+    await staffSignIn(app, { reason: 'Signed customer forms are private. Sign in with your staff Google account to open this one.' });
+    return await get(ref(db, 'disclosures/' + id));
+  }
+}
 
 let loadedRecord = null;
 
@@ -115,7 +132,7 @@ if (!recordId) {
 } else {
   show('state-loading');
   try {
-    const snap = await get(ref(db, 'disclosures/' + recordId));
+    const snap = await readRecord(recordId);
     if (!snap.exists()) {
       err('Record not found. It may have been removed, or the link may be incomplete.');
     } else {

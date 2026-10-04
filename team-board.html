@@ -7515,9 +7515,15 @@ if(!startOfficeAlerts()) startWalkinAlerts();
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, update, remove, get, set }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { ensureSignedIn, guard } from "./staff-auth.js";
 
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
-const db=getDatabase(initializeApp(firebaseConfig));
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+/* Writes need a Firebase sign-in once the locked rules are published - see staff-auth.js. */
+ensureSignedIn(app);
+const STAFF=guard(app,'staff');   /* office TV control / admin: staff Google account */
+const SIGNED=guard(app,'signed'); /* colleague features: quiet anonymous sign-in */
 const path=m=>'profitchallenge/months/'+m+'/deals';
 
 /* A listener that errors is CANCELLED by Firebase - it never comes back on
@@ -7557,9 +7563,9 @@ window.dsBindBackend({
     };
     go();
   },
-  add:(m,payload)=>push(ref(db,path(m)),payload),
-  edit:(m,id,payload)=>update(ref(db,path(m)+'/'+id),payload),
-  del:(m,id)=>remove(ref(db,path(m)+'/'+id)),
+  add:STAFF((m,payload)=>push(ref(db,path(m)),payload)),
+  edit:STAFF((m,id,payload)=>update(ref(db,path(m)+'/'+id),payload)),
+  del:STAFF((m,id)=>remove(ref(db,path(m)+'/'+id))),
   months:()=>get(ref(db,'profitchallenge/months')).then(s=>Object.keys(s.val()||{})),
   read:(m)=>get(ref(db,path(m))).then(s=>s.val()||{}),
   watchNewCar(cb){ watch('newcar/current', cb) },
@@ -7567,32 +7573,32 @@ window.dsBindBackend({
   watchMug(cb){ watch('mugshot/current', cb) },
   watchMugBlocked(cb){ watch('mugshot/blocked', cb) },
   watchBirthdays(cb){ watch('birthdays', cb) },
-  addBirthday:(payload)=>push(ref(db,'birthdays'),payload),
-  delBirthday:(id)=>remove(ref(db,'birthdays/'+id)),
-  saveExtra:(who,payload)=>set(ref(db,'extra/'+who),payload),
-  clearExtra:(who)=>remove(ref(db,'extra/'+who)),
+  addBirthday:STAFF((payload)=>push(ref(db,'birthdays'),payload)),
+  delBirthday:STAFF((id)=>remove(ref(db,'birthdays/'+id))),
+  saveExtra:STAFF((who,payload)=>set(ref(db,'extra/'+who),payload)),
+  clearExtra:STAFF((who)=>remove(ref(db,'extra/'+who))),
   watchControl(cb,onErr){ watch('boardcontrol', cb, ()=>{onErr&&onErr()}) },
   watchSettings(cb){ watch('boardsettings', cb) },
   watchTicker(cb){ watch('ticker/items', cb) },
   watchEventDeals(cb){ watch('eventdeals', cb) },
   watchEvPair(cb){ watch('evpair', cb) },
-  setEvPair:(id,o)=>set(ref(db,'evpair/'+id),o),
-  setEvPairMsg:(id,o)=>update(ref(db,'evpair/'+id),o),
-  clearEvPair:(id)=>remove(ref(db,'evpair/'+id)),
+  setEvPair:SIGNED((id,o)=>set(ref(db,'evpair/'+id),o)),
+  setEvPairMsg:SIGNED((id,o)=>update(ref(db,'evpair/'+id),o)),
+  clearEvPair:SIGNED((id)=>remove(ref(db,'evpair/'+id))),
   /* two nodes, one callback - the roll needs both before it can decide */
   watchStock(cb){
     let seen=null, day=null, got=0;
     watch('stockwatch/seen', v=>{ seen=v||{}; got|=1; if(got&2)cb(seen,day) });
     watch('stockwatch/day',  v=>{ day=v||null; got|=2; if(got&1)cb(seen,day) });
   },
-  setStockSeen:(m)=>set(ref(db,'stockwatch/seen'),m),
-  setStockDay:(v)=>set(ref(db,'stockwatch/day'),v),
-  addTicker:(payload)=>push(ref(db,'ticker/items'),payload),
-  delTicker:(id)=>remove(ref(db,'ticker/items/'+id)),
-  setVideos:(on)=>set(ref(db,'boardcontrol/videos'),!!on),
-  setView:(id,ts)=>set(ref(db,'boardcontrol/view'),{id:String(id),ts:ts||Date.now()}),
-  setReload:(ts)=>set(ref(db,'boardcontrol/reload'),ts),
-  play:(clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()})
+  setStockSeen:SIGNED((m)=>set(ref(db,'stockwatch/seen'),m)),
+  setStockDay:SIGNED((v)=>set(ref(db,'stockwatch/day'),v)),
+  addTicker:STAFF((payload)=>push(ref(db,'ticker/items'),payload)),
+  delTicker:STAFF((id)=>remove(ref(db,'ticker/items/'+id))),
+  setVideos:STAFF((on)=>set(ref(db,'boardcontrol/videos'),!!on)),
+  setView:STAFF((id,ts)=>set(ref(db,'boardcontrol/view'),{id:String(id),ts:ts||Date.now()})),
+  setReload:STAFF((ts)=>set(ref(db,'boardcontrol/reload'),ts)),
+  play:STAFF((clip)=>set(ref(db,'boardcontrol/play'),{clip:clip,ts:Date.now()}))
 });
 </script>
 </body>

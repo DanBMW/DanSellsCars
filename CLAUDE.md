@@ -22,7 +22,14 @@ the HTML/CSS/JS directly and push.
   `commission-download.html`, the `forecourt-frenzy*.html` games, and
   `team-board.html`. Rules
   live in `database.rules.json` and `storage.rules` (deployed via
-  `firebase.json`) — keep them in sync with any new DB paths.
+  `firebase.json`) — keep them in sync with any new DB paths. Writes need a
+  Firebase sign-in: "staff" paths (board control, admin, profit deals, reading
+  signed customer forms) need a Google account listed under `/staff/<uid>`;
+  colleague paths (mug shot, newcar, forecourt, the board's own stockwatch and
+  pairing writes) take the quiet anonymous sign-in from `staff-auth.js`. Signed
+  forms are create-only for customers and readable only by staff. Storage is
+  unused and fully locked. Test rule changes with
+  `scripts/test-firebase-rules.mjs`; setup and limits are in `SECURITY-STAFF.md`.
 - **Cloudflare Worker** — `worker.js` is the source of the worker deployed at
   `https://vehicleproxy.danielcane1992.workers.dev`. It holds the API secrets
   and proxies, selected by a `?target=` query param:
@@ -924,12 +931,13 @@ said so.
   use it.
 - **Manager access** is the same shared PIN as `Forecourt.html` (the
   `manager` gate in `staff-gate.js`, a salted hash; change it with
-  `node scripts/gate-hash.mjs manager`). Note this is a client-side gate: the DB rules
-  allow anyone to write to `profitchallenge`, so the PIN stops accidents, not a
-  determined visitor. The rules do validate shape — known `exec` id, numeric
+  `node scripts/gate-hash.mjs manager`). Note this is a client-side gate; what
+  actually protects `profitchallenge` (and every other manager action) is the
+  database rule requiring a staff Google sign-in, which `staff-auth.js` asks
+  for the first time a write is refused. The rules also validate shape — known `exec` id, numeric
   `profit` within ±100000, short `reg` — and are scoped so a bad write cannot
-  touch any other path. Move to Firebase Auth if the figures ever need to be
-  genuinely private.
+  touch any other path. Reads stay public so the wall display needs no
+  sign-in; make them staff-only too if the figures ever need to be private.
 - **Will and Serge are animated cheerleaders** (inline SVG bodies + pom poms,
   their team photos as heads) and their speech bubbles rotate every 7.5s from
   the `LINES` pools in the page — one pool per character per mood (`empty`,

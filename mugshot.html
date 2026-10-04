@@ -846,9 +846,14 @@ setTimeout(function(){
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, set, remove }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { ensureSignedIn, guard } from "./staff-auth.js";
 
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
-const db=getDatabase(initializeApp(firebaseConfig));
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+/* Writes need a Firebase sign-in once the locked rules are published - see staff-auth.js. */
+ensureSignedIn(app);
+const SIGNED=guard(app,'signed'); /* colleague features: quiet anonymous sign-in */
 
 /* Firebase cancels a listener that errors and never brings it back, so every
    watch re-subscribes with a backoff - same helper the board uses. */
@@ -864,17 +869,17 @@ function watch(p, cb){
 }
 
 window.msBindBackend({
-  add:(payload)=>push(ref(db,'mugshot/entries'),payload),
-  vote:(id,who,n)=>set(ref(db,'mugshot/votes/'+id+'/'+who),Number(n)),
+  add:SIGNED((payload)=>push(ref(db,'mugshot/entries'),payload)),
+  vote:SIGNED((id,who,n)=>set(ref(db,'mugshot/votes/'+id+'/'+who),Number(n))),
   watchBlocked:(cb)=>watch('mugshot/blocked',cb),
-  clearCurrent:()=>remove(ref(db,'mugshot/current')),
-  unvote:(id,who)=>remove(ref(db,'mugshot/votes/'+id+'/'+who)),
+  clearCurrent:SIGNED(()=>remove(ref(db,'mugshot/current'))),
+  unvote:SIGNED((id,who)=>remove(ref(db,'mugshot/votes/'+id+'/'+who))),
   /* the rules allow a write per VOTER, not on the whole votes node for an
      entry - deleting the parent is refused, so each voter goes individually */
-  dropEntry:(id,voters)=>Promise.all(
+  dropEntry:SIGNED((id,voters)=>Promise.all(
     [remove(ref(db,'mugshot/entries/'+id))].concat(
-      (voters||[]).map(function(v){return remove(ref(db,'mugshot/votes/'+id+'/'+v))}))),
-  setCurrent:(v)=>set(ref(db,'mugshot/current'),v),
+      (voters||[]).map(function(v){return remove(ref(db,'mugshot/votes/'+id+'/'+v))})))),
+  setCurrent:SIGNED((v)=>set(ref(db,'mugshot/current'),v)),
   watchEntries:(cb)=>watch('mugshot/entries',cb),
   watchVotes:(cb)=>watch('mugshot/votes',cb),
   watchCurrent:(cb)=>watch('mugshot/current',cb)

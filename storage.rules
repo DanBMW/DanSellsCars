@@ -1,12 +1,18 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /disclosures/{fileName} {
-      // Anyone can upload a signed disclosure PDF (generated in the customer's browser)
-      allow write: if request.resource.size < 2 * 1024 * 1024
-                   && request.resource.contentType == 'application/pdf';
-      // Public read so the link in Dan's email works without signing in
-      allow read: if true;
+    // Locked (October 2026). No page on the site uses Firebase Storage any
+    // more: the signed forms keep their data in the Realtime Database and
+    // build the PDF in the browser. These rules used to let anyone read every
+    // signed disclosure PDF by name and let anyone upload. Any PDFs already
+    // in the bucket are still reachable by Dan in the Firebase console
+    // (the console is not bound by these rules).
+    //
+    // If a page ever needs to upload again, allow create only (never read):
+    //   allow create: if request.resource.size < 2 * 1024 * 1024
+    //                 && request.resource.contentType == 'application/pdf';
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }
