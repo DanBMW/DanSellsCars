@@ -22,7 +22,7 @@
 (function () {
   var GATES = {
     /* admin.html + links.html. Matched case-insensitively (typed text is upper-cased). */
-    admin:   { norm: 'upper', iter: 150000, salt: '2e41dbf541a69d15b001b3dd896738b0', hash: 'fd52264c4354b59a0d6602b5e7c4f1543c813207191024b4978fff5add4bf0f0' },
+    admin:   { norm: 'upper', iter: 150000, salt: '07aef1e82a8f5ff806b7286c90300627', hash: '667713b3013fcd2e90aee24c59d956a28fc92cdf65e4d33578e7130853830193' },
     /* Manager PIN on team-board.html and Forecourt.html. Exact match. */
     manager: { norm: 'none',  iter: 150000, salt: 'b4497faf339248519ea60453e8444a31', hash: 'bf5acd99f5e298b6ccb4481b45955a2427a6a6a74372d8364f89ff6c7ef65a1a' },
     /* Nathan's upload PIN on newcar.html. Exact match. */

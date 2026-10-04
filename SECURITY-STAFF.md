@@ -29,8 +29,8 @@ PIN, token or key in it**.
      scripted writes; anyone determined can still get an anonymous sign-in
      with the public API key. The next step up would be Firebase App Check.
    - **Reads** of board data stay public so the office TV needs no sign-in.
-   - **Storage**: no page uses it any more, so it is fully locked. Old PDFs are
-     still reachable in the Firebase console.
+   - **Storage**: no page uses it. The project has no Storage bucket (checked
+     October 2026), so no PDFs or other files are stored there.
 
 When a staff-only write is refused, the page shows a "Staff sign-in" card
 (Sign in with Google). If the account is not on the staff list, the card shows
