@@ -92,8 +92,9 @@ strong{color:var(--paper);font-weight:500}
 .ph-contact-link{
   font-family:var(--sans);font-weight:500;font-size:.78rem;letter-spacing:.18em;
   text-transform:uppercase;color:var(--paper);text-decoration:none;
-  padding-bottom:3px;border-bottom:1px solid var(--accent);
+  padding:12px 0 3px;border-bottom:1px solid var(--accent);
   transition:color .2s,border-color .2s;white-space:nowrap;
+  min-height:44px;display:inline-flex;align-items:center;
 }
 .ph-contact-link:hover{color:#fff;border-bottom-color:var(--paper)}
 .ph-menu-btn{
@@ -167,8 +168,20 @@ strong{color:var(--paper);font-weight:500}
   border:1px solid var(--accent);padding:17px 38px;
   background:transparent;cursor:pointer;
   transition:background .25s,color .25s,border-color .25s;
+  min-height:44px;
 }
 .btn-line:hover{background:var(--accent);color:#0a0c0f;border-color:var(--accent)}
+/* Solid primary CTA (WhatsApp / main action). Find my BMW blue fill. */
+.btn-fill{
+  display:inline-block;font-family:var(--sans);font-weight:600;
+  font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;
+  color:#fff;text-decoration:none;text-align:center;
+  border:1px solid #1559cf;padding:17px 38px;
+  background:#1559cf;cursor:pointer;
+  transition:background .25s,border-color .25s,color .25s;
+  min-height:44px;
+}
+.btn-fill:hover{background:#0e3f96;border-color:#0e3f96;color:#fff}
 .btn-quiet{
   display:inline-block;font-family:var(--sans);font-weight:500;
   font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;
@@ -252,7 +265,8 @@ button.contact-row{width:100%;background:none;border:none;border-bottom:1px soli
 
 /* ---------- contact primary WhatsApp + secondary links ---------- */
 .ph-contact-primary{margin-top:36px}
-.ph-contact-primary .btn-line{display:inline-block}
+.ph-contact-primary .btn-line,
+.ph-contact-primary .btn-fill{display:inline-block}
 .ph-contact-secondary{
   display:flex;flex-wrap:wrap;align-items:center;gap:clamp(18px,3vw,32px);
   margin-top:28px;
@@ -391,3 +405,38 @@ button.contact-row{width:100%;background:none;border:none;border-bottom:1px soli
 .mt-0{margin-top:0}.mt-24{margin-top:24px}.mt-40{margin-top:40px}.mt-64{margin-top:64px}
 .measure{max-width:var(--measure)}
 .portrait-treat{filter:saturate(.7) contrast(1.05) brightness(.88)}
+
+
+/* ---------- sticky mobile contact bar (sitewide) ---------- */
+.ds-sticky{
+  position:fixed;z-index:150;left:0;right:0;bottom:0;
+  display:none;align-items:stretch;gap:0;
+  box-shadow:0 -6px 24px rgba(0,0,0,.35);
+  padding-bottom:env(safe-area-inset-bottom);
+  transition:transform .25s ease,opacity .25s ease;
+}
+.ds-sticky.is-hidden{transform:translateY(140%);opacity:0;pointer-events:none}
+.ds-sticky-wa{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:10px;
+  background:#1559cf;color:#fff;text-decoration:none;
+  font-family:var(--sans);font-weight:600;font-size:.85rem;
+  letter-spacing:.08em;text-transform:uppercase;
+  min-height:48px;padding:14px 16px;
+}
+.ds-sticky-wa:hover{background:#0e3f96;color:#fff}
+.ds-sticky-call{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  background:#0e1114;color:var(--paper);text-decoration:none;
+  font-family:var(--sans);font-weight:500;font-size:.75rem;
+  letter-spacing:.14em;text-transform:uppercase;
+  min-height:48px;min-width:88px;padding:14px 18px;
+  border-left:1px solid var(--hairline);
+}
+.ds-sticky-call:hover{color:#fff;background:#14181e}
+@media(max-width:759px){
+  .ds-sticky{display:flex}
+  body.ds-has-sticky{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+}
+@media(min-width:760px){
+  .ds-sticky{display:none !important}
+}

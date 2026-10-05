@@ -7,7 +7,7 @@
   <title>Privacy Policy | DanSells | BMW at Hedin Ruxley</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <meta name="description" content="How Dan Cane and Hedin Automotive handle your personal data in accordance with UK GDPR."/>
-  <link rel="stylesheet" href="style.css?v=07538357"/>
+  <link rel="stylesheet" href="style.css?v=77d5364a"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
   <style>
@@ -25,8 +25,8 @@
     .back-link:hover{color:var(--blue);}
   </style>
 <script src="analytics.js" defer></script>
-<link rel="stylesheet" href="premium.css?v=07538357"/>
-<link rel="stylesheet" href="content-premium.css?v=07538357"/>
+<link rel="stylesheet" href="premium.css?v=77d5364a"/>
+<link rel="stylesheet" href="content-premium.css?v=77d5364a"/>
   <meta property="og:type" content="website"/>
   <meta property="og:url" content="https://dan-sells.co.uk/privacy.html"/>
   <meta property="og:title" content="Privacy Policy | DanSells | BMW at Hedin Ruxley"/>
@@ -45,7 +45,7 @@
   <div class="ph-header-inner">
     <a class="ph-logo" href="index.html">Dan Sells<small>BMW &middot; Hedin Ruxley</small></a>
     <div class="ph-actions">
-      <a class="ph-contact-link" href="#contact">Talk to Dan</a>
+      <a class="ph-contact-link" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">WhatsApp Dan</a>
       <button class="ph-menu-btn" id="phMenuBtn" aria-label="Open menu" aria-expanded="false" onclick="phOpenDrawer()">
         <span></span><span></span>
       </button>
@@ -174,9 +174,10 @@
     <h2>One conversation, whenever you are ready.</h2>
     <p class="measure">No forms to fight through and no call centre. Pick whichever way suits you and it comes straight to me. I will reply personally, usually the same day.</p>
     <div class="ph-contact-primary">
-      <a class="btn-line" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">Message me on WhatsApp</a>
+      <a class="btn-fill" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">Message me on WhatsApp</a>
     </div>
     <div class="ph-contact-secondary">
+      <a class="btn-quiet" href="tel:+447827138197">Call Dan</a>
       <button type="button" class="btn-quiet" onclick="phOpenContact()">Email Dan</button>
       <a class="btn-quiet" href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment</a>
       <a class="btn-quiet" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
@@ -217,6 +218,15 @@
     <p class="ph-footer-legal">dan-sells.co.uk is the personal website of Dan Cane, Sales Executive at Hedin Automotive Group (BMW Ruxley). Not an official BMW or Hedin Automotive website. BMW&reg; is a registered trademark of BMW AG. Finance and insurance are arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Finance subject to status and individual credit assessment. All offers subject to availability.</p>
   </div>
 </footer>
+
+
+<!-- Sitewide sticky mobile contact bar. Hidden on desktop, on funnel steps
+     (those pages omit this chrome), while MBG's own sticky is present, and
+     while the Find my BMW gate is open. -->
+<nav class="ds-sticky" id="dsSticky" aria-label="Quick contact">
+  <a class="ds-sticky-wa" id="dsStickyWa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">WhatsApp Dan</a>
+  <a class="ds-sticky-call" href="tel:+447827138197">Call</a>
+</nav>
 
 <div class="pmodal-bg" id="phContactModal" onclick="if(event.target===this)phCloseContact()">
   <div class="pmodal">
@@ -306,6 +316,36 @@
       err.hidden=false;btn.textContent='Try again';
     }).then(function(){phcSending=false;btn.disabled=false;});
   };
+
+  /* Sticky mobile contact bar: hide when a primary WhatsApp CTA or the
+     contact block is already on screen, when MBG's own sticky exists, or
+     while the Find my BMW gate is open. */
+  (function(){
+    var st = document.getElementById('dsSticky');
+    if (!st) return;
+    if (document.querySelector('.mbg-sticky')) { st.remove(); return; }
+    document.body.classList.add('ds-has-sticky');
+    var hideReasons = 0;
+    function setHidden(){ st.classList.toggle('is-hidden', hideReasons > 0); }
+    function bump(on){ hideReasons += on ? 1 : -1; if (hideReasons < 0) hideReasons = 0; setHidden(); }
+    if ('IntersectionObserver' in window) {
+      var seen = new Set();
+      var io = new IntersectionObserver(function(es){
+        es.forEach(function(e){ if (e.isIntersecting) seen.add(e.target); else seen['delete'](e.target); });
+        st.classList.toggle('is-hidden', seen.size > 0 || hideReasons > 0);
+      }, {threshold: 0.01});
+      ['.ph-contact-primary', '.ph-hero-actions', '#contact'].forEach(function(sel){
+        var el = document.querySelector(sel); if (el) io.observe(el);
+      });
+    }
+    var gate = document.getElementById('fmbGate');
+    if (gate && 'MutationObserver' in window) {
+      var syncGate = function(){ st.classList.toggle('is-hidden', !gate.hidden || hideReasons > 0); };
+      new MutationObserver(syncGate).observe(gate, {attributes:true, attributeFilter:['hidden','class']});
+      syncGate();
+    }
+  })();
+
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.phCloseDrawer();window.phCloseContact();}});
   document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});

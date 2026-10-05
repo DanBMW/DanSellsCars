@@ -20,7 +20,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
   <link rel="preload" href="automation/hedin-stock-snapshot.json" as="fetch" crossorigin/>
-  <link rel="stylesheet" href="premium.css?v=07538357"/>
+  <link rel="stylesheet" href="premium.css?v=77d5364a"/>
   <link rel="stylesheet" href="fmb.css?v=7"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
@@ -173,6 +173,27 @@
 <p class="fmb-sr" id="fmbLive" role="status" aria-live="polite"></p>
 
 <noscript><p style="padding:20px;color:#ece9e1">Find my BMW needs JavaScript. You can <a href="https://wa.me/447827138197" style="color:#5b8ac9">message me on WhatsApp</a> or browse <a href="stock.html" style="color:#5b8ac9">every car in stock</a>.</p></noscript>
+
+<nav class="ds-sticky" id="dsSticky" aria-label="Quick contact">
+  <a class="ds-sticky-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20find%20my%20next%20BMW" target="_blank" rel="noopener">WhatsApp Dan</a>
+  <a class="ds-sticky-call" href="tel:+447827138197">Call</a>
+</nav>
+<script>
+(function(){
+  var st = document.getElementById('dsSticky');
+  if (!st) return;
+  document.body.classList.add('ds-has-sticky');
+  var gate = document.getElementById('fmbGate');
+  function sync(){
+    var gateOpen = gate && !gate.hidden;
+    st.classList.toggle('is-hidden', !!gateOpen);
+  }
+  if (gate && 'MutationObserver' in window) {
+    new MutationObserver(sync).observe(gate, {attributes:true, attributeFilter:['hidden','class']});
+  }
+  sync();
+})();
+</script>
 <script src="disclaimer.js"></script>
 </body>
 </html>
