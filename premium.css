@@ -179,8 +179,10 @@ strong{color:var(--paper);font-weight:500}
 .sl-watch a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--hairline)}
 .sl-watch a:hover{color:var(--paper);border-bottom-color:var(--accent)}
 @media(max-width:759px){
-  .ph-hero-portrait{display:block}
+  .ph-hero-portrait{display:block;align-self:flex-start;margin-top:4px}
   .ph-hero-row{align-items:flex-start}
+  .ph-hero-content{padding-top:calc(88px + env(safe-area-inset-top));padding-bottom:clamp(48px,8vh,96px)}
+  .ph-hero{align-items:center}
 }
 .ph-scrollcue{
   position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:2;
