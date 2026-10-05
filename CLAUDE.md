@@ -581,7 +581,8 @@ Other notable pages: retired offer stubs (`ix3-offer.html`, `x1-offer.html`,
 `1series-offer.html`, `offers.html` which redirects to `stock.html`), valuation tools (`tradevalue.html`
 customer-facing, `Value.html` trade tool), dealership pages
 (`bmw-sevenoaks.html`, `bmw-sidcup.html`), and legal pages (`privacy.html`,
-`terms.html`, `disclaimer.js`).
+`terms.html`, `disclaimer.js` — first-visit acknowledgement is a slim bottom
+bar with the same wording and "Continue to page"; Find my BMW stays inline).
 
 ## Sitewide copy and CTA conventions
 

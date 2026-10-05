@@ -1,14 +1,19 @@
 /* Site-wide "confirm understanding" acknowledgement.
-   Shows once per visitor (stored in localStorage) across the whole site. */
+   Shows once per visitor (stored in localStorage) across the whole site.
+   Default presentation is a slim bottom bar (not a full-screen modal), so
+   the page the visitor came for stays visible. Exact wording and the
+   "Continue to page" button are unchanged. Find my BMW still uses inline
+   mode via <html data-dsc="inline">. Cookie consent is deliberately not
+   combined here yet. */
 (function () {
   var WORDING = 'This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan\u2019s personal website and is not the official website of BMW or Hedin Automotive. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>. Press continue to confirm your understanding.';
   function acked() { try { return localStorage.getItem('dsc_ack') === '1'; } catch (e) { return false; } }
   function ack() { try { localStorage.setItem('dsc_ack', '1'); } catch (e) {} }
 
-  /* Inline mode, for pages where a modal would sit on top of the very thing
-     somebody came to do (find-my-bmw.html: <html data-dsc="inline">). Same
-     wording and the same "Continue to page" button, written into every
-     [data-dsc-slot] on the page instead of over it. Nothing blocks. */
+  /* Inline mode, for pages where a bar would still sit on the task
+     (find-my-bmw.html: <html data-dsc="inline">). Same wording and the same
+     "Continue to page" button, written into every [data-dsc-slot] on the
+     page instead of over it. Nothing blocks. */
   if (document.documentElement.getAttribute('data-dsc') === 'inline') {
     var fill = function () {
       var slots = document.querySelectorAll('[data-dsc-slot]');
@@ -35,40 +40,35 @@
   if (acked()) return;
 
   var css = ''
-    + '.dsc-overlay{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;'
-    + 'padding:20px;background:rgba(6,12,22,.72);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}'
-    + '.dsc-box{background:#fff;border-radius:20px;max-width:440px;width:100%;padding:30px 26px 26px;'
-    + 'box-shadow:0 40px 90px -20px rgba(0,0,0,.55);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;'
-    + 'text-align:center;animation:dscPop .28s cubic-bezier(.2,.9,.3,1.1);}'
-    + '@keyframes dscPop{from{opacity:0;transform:translateY(14px) scale(.97);}to{opacity:1;transform:none;}}'
-    + '.dsc-badge{width:48px;height:48px;border-radius:14px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;'
-    + 'background:rgba(21,89,207,.1);color:#1559cf;}'
-    + '.dsc-box h2{font-size:1.15rem;font-weight:800;color:#141a22;margin:0 0 10px;line-height:1.3;}'
-    + '.dsc-box p{font-size:.9rem;line-height:1.65;color:#3c4a5e;margin:0 0 20px;}'
-    + '.dsc-box a{color:#1559cf;font-weight:700;text-decoration:none;}'
-    + '.dsc-box a:hover{text-decoration:underline;}'
-    + '.dsc-btn{display:block;width:100%;background:#1559cf;color:#fff;font-weight:700;font-size:.95rem;'
-    + 'border:none;border-radius:12px;padding:14px;cursor:pointer;transition:background .18s;}'
-    + '.dsc-btn:hover{background:#0e3f96;}'
-    + '@media(prefers-reduced-motion:reduce){.dsc-box{animation:none;}}'
-    /* Dark variant, applied only on pages carrying premium.css so the
-       acknowledgement matches the front-of-house design. Wording is
-       identical in both; only the styling differs. */
-    + '.dsc-overlay.dsc-dark{background:rgba(5,7,10,.88);}'
-    + '.dsc-dark .dsc-box{background:#0e1114;border:1px solid rgba(236,233,225,.14);border-radius:0;'
-    + 'box-shadow:0 40px 90px -20px rgba(0,0,0,.7);'
-    + 'font-family:"Satoshi",ui-sans-serif,system-ui,sans-serif;padding:34px 30px 30px;}'
-    + '.dsc-dark .dsc-badge{background:none;width:auto;height:auto;margin:0 auto 18px;color:#5b8ac9;}'
-    + '.dsc-dark .dsc-box h2{font-family:"Sentient",Georgia,serif;font-weight:400;font-size:1.3rem;'
-    + 'color:#ece9e1;letter-spacing:.005em;margin-bottom:14px;}'
-    + '.dsc-dark .dsc-box p{color:#b9b5ab;line-height:1.8;margin-bottom:24px;}'
-    + '.dsc-dark .dsc-box a{color:#5b8ac9;font-weight:500;}'
+    + '.dsc-bar{position:fixed;left:0;right:0;bottom:0;z-index:2000;'
+    + 'background:#fff;border-top:1px solid rgba(20,26,34,.12);'
+    + 'box-shadow:0 -12px 40px rgba(0,0,0,.18);'
+    + 'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;'
+    + 'padding:14px 18px calc(14px + env(safe-area-inset-bottom));'
+    + 'animation:dscSlide .28s ease-out;}'
+    + '@keyframes dscSlide{from{transform:translateY(110%);opacity:0}to{transform:none;opacity:1}}'
+    + '.dsc-bar-inner{max-width:920px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;}'
+    + '.dsc-bar-copy{flex:1 1 240px;min-width:0;}'
+    + '.dsc-bar h2{font-size:.92rem;font-weight:800;color:#141a22;margin:0 0 4px;line-height:1.3;}'
+    + '.dsc-bar p{font-size:.8rem;line-height:1.55;color:#3c4a5e;margin:0;}'
+    + '.dsc-bar a{color:#1559cf;font-weight:700;text-decoration:none;}'
+    + '.dsc-bar a:hover{text-decoration:underline;}'
+    + '.dsc-bar .dsc-btn{flex:0 0 auto;background:#1559cf;color:#fff;font-weight:700;font-size:.85rem;'
+    + 'border:none;border-radius:10px;padding:12px 18px;min-height:44px;cursor:pointer;transition:background .18s;}'
+    + '.dsc-bar .dsc-btn:hover{background:#0e3f96;}'
+    + '@media(prefers-reduced-motion:reduce){.dsc-bar{animation:none}}'
+    /* Dark / premium pages */
+    + '.dsc-bar.dsc-dark{background:#0e1114;border-top-color:rgba(236,233,225,.14);'
+    + 'font-family:"Satoshi",ui-sans-serif,system-ui,sans-serif;}'
+    + '.dsc-dark h2{font-family:"Sentient",Georgia,serif;font-weight:400;color:#ece9e1;}'
+    + '.dsc-dark p{color:#b9b5ab;}'
+    + '.dsc-dark a{color:#5b8ac9;font-weight:500;}'
     + '.dsc-dark .dsc-btn{background:transparent;border:1px solid #5b8ac9;border-radius:0;color:#ece9e1;'
-    + 'font-weight:500;font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;padding:16px;'
-    + 'transition:background .25s,color .25s;}'
-    + '.dsc-dark .dsc-btn:hover{background:#5b8ac9;color:#0a0c0f;}';
+    + 'font-weight:500;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;}'
+    + '.dsc-dark .dsc-btn:hover{background:#5b8ac9;color:#0a0c0f;}'
+    /* Sit above the sticky contact bar when both could show */
+    + 'body.ds-has-sticky .dsc-bar{bottom:calc(56px + env(safe-area-inset-bottom))}';
 
-  /* Pages using the new design system load premium.css; match its look. */
   function isPremiumPage() {
     var links = document.querySelectorAll('link[rel="stylesheet"]');
     for (var i = 0; i < links.length; i++) {
@@ -82,29 +82,27 @@
     style.textContent = css;
     document.head.appendChild(style);
 
-    var overlay = document.createElement('div');
-    overlay.className = 'dsc-overlay' + (isPremiumPage() ? ' dsc-dark' : '');
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-labelledby', 'dscTitle');
-    overlay.innerHTML =
-      '<div class="dsc-box">' +
-        '<div class="dsc-badge" aria-hidden="true">' +
-          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>' +
+    var bar = document.createElement('div');
+    bar.className = 'dsc-bar' + (isPremiumPage() ? ' dsc-dark' : '');
+    bar.setAttribute('role', 'dialog');
+    bar.setAttribute('aria-modal', 'false');
+    bar.setAttribute('aria-labelledby', 'dscTitle');
+    bar.innerHTML =
+      '<div class="dsc-bar-inner">' +
+        '<div class="dsc-bar-copy">' +
+          '<h2 id="dscTitle">Please read &amp; confirm understanding</h2>' +
+          '<p>' + WORDING + '</p>' +
         '</div>' +
-        '<h2 id="dscTitle">Please read &amp; confirm understanding</h2>' +
-        '<p>' + WORDING + '</p>' +
         '<button type="button" class="dsc-btn" id="dscOk">Continue to page</button>' +
       '</div>';
-    document.body.appendChild(overlay);
-    document.documentElement.style.overflow = 'hidden';
+    document.body.appendChild(bar);
+    // Do not lock scroll: the bar is non-blocking by design.
 
     var btn = document.getElementById('dscOk');
     btn.focus();
     btn.addEventListener('click', function () {
-      try { localStorage.setItem('dsc_ack', '1'); } catch (e) {}
-      overlay.parentNode && overlay.parentNode.removeChild(overlay);
-      document.documentElement.style.overflow = '';
+      ack();
+      bar.parentNode && bar.parentNode.removeChild(bar);
     });
   }
 
