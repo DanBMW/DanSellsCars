@@ -144,9 +144,9 @@ strong{color:var(--paper);font-weight:500}
 .ph-hero-content{position:relative;z-index:2;width:100%;padding-bottom:clamp(64px,10vh,120px)}
 .ph-hero h1{max-width:14ch}
 .ph-hero-sub{max-width:52ch;color:var(--body-c);font-size:1.02rem}
-.ph-hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:28px;margin-top:40px}
+.ph-hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px 28px;margin-top:40px;justify-content:flex-start}
 .ph-hero-row{display:flex;align-items:flex-end;gap:clamp(14px,3vw,22px)}
-.ph-hero-copy{flex:1;min-width:0}
+.ph-hero-copy{flex:1;min-width:0;text-align:left}
 .ph-hero-portrait{display:none;margin:0;flex:0 0 auto}
 .ph-hero-portrait img{
   width:96px;height:120px;object-fit:cover;object-position:center 18%;
@@ -155,7 +155,7 @@ strong{color:var(--paper);font-weight:500}
 }
 .ph-hero-review{
   margin-top:22px;max-width:52ch;font-family:var(--serif);
-  font-size:.92rem;line-height:1.55;color:var(--paper);
+  font-size:.92rem;line-height:1.55;color:var(--paper);text-align:left;
 }
 .ph-hero-review cite{
   display:block;margin-top:8px;font-style:normal;font-family:var(--sans);
@@ -179,10 +179,25 @@ strong{color:var(--paper);font-weight:500}
 .sl-watch a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--hairline)}
 .sl-watch a:hover{color:var(--paper);border-bottom-color:var(--accent)}
 @media(max-width:759px){
-  .ph-hero-portrait{display:block;align-self:flex-start;margin-top:4px}
-  .ph-hero-row{align-items:flex-start}
-  .ph-hero-content{padding-top:calc(88px + env(safe-area-inset-top));padding-bottom:clamp(48px,8vh,96px)}
-  .ph-hero{align-items:center}
+  /* Stack photo above full-width left-aligned copy so the text is not
+     squeezed into a narrow column beside the portrait. */
+  .ph-hero{align-items:flex-end}
+  .ph-hero-content{padding-top:calc(72px + env(safe-area-inset-top));padding-bottom:clamp(48px,8vh,88px)}
+  .ph-hero-row{flex-direction:column;align-items:flex-start;gap:16px}
+  .ph-hero-portrait{display:block}
+  .ph-hero-portrait img{width:88px;height:110px}
+  .ph-hero-copy{width:100%;text-align:left}
+  .ph-hero .plabel,
+  .ph-hero h1,
+  .ph-hero-sub,
+  .ph-hero-review{text-align:left}
+  .ph-hero h1{max-width:12ch}
+  .ph-hero-actions{
+    flex-direction:column;align-items:flex-start;justify-content:flex-start;
+    gap:14px;width:100%;
+  }
+  .ph-hero-actions .btn-fill,
+  .ph-hero-actions .btn-line{width:auto;max-width:100%}
 }
 .ph-scrollcue{
   position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:2;
