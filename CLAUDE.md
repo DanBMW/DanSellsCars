@@ -663,18 +663,20 @@ when adding/renaming funnel pages. Events:
   fallback_level, persona, quote_coverage}`, `fmb_more_matches`,
   `fmb_card_whatsapp {reg, rank, pct, source}`, `fmb_whatsapp_send`,
   `fmb_see_all`, and `fmb_complete` (once per session via `gaDone_fmb`).
-  analytics.js adds `generate_lead` on the contact POST (it fires per attempt,
-  so a retry counts again) and `lead_addendum_sent` on the PX POST.
+  analytics.js adds `generate_lead` on the contact POST only when Formspree
+  returns ok (a failed attempt is not counted) and `lead_addendum_sent` on the PX POST.
 - `<funnel>_step_<n>` — funnel step view. Funnels: `ev` (EV Finder, 1–6), `sq` (Service Qualifier, 1–3),
   `ap` (Appraisal, 1–5), `vip` (VIP Buyers Event, 1–7). Redirect pages fire
   nothing. `vip.html` is the invitation landing page, not a step: it fires
   its own `vip_invite_view` and `vip_start`.
 - `<funnel>_complete` — confirmation page view (`thankyou`/`wait`,
   `ev-thankyou`, `sq_done`, `ap6`, `vip-done`), deduped per session.
-- `generate_lead` `{form_page}` — any Formspree submission (a `fetch`
+- `generate_lead` `{form_page}` — a Formspree submission that succeeded (a `fetch`
   wrapper detects formspree.io calls, so new forms are tracked for free).
-- `whatsapp_click` `{link_location: float|header|drawer|inline}` — any
+- `whatsapp_click` `{link_location: float|header|drawer|contact|inline}` — any
   `wa.me` link click (delegated listener).
+- `call_click` `{link_location}` — any `tel:` link (contact block or sticky bar)
+- `booking_click` `{page}` — any cal.com booking link
 - `share` `{method: native, ref_code}` — the "Share my BMW story" native share.
 - `referral_visit` `{ref_code}` — landing with `?ref=CODE` from a shared
   story link. The code persists 90 days (localStorage `dsRefBy`) and is

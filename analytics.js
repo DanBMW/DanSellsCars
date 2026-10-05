@@ -5,11 +5,13 @@
    Events fired (see CLAUDE.md "GA4 events"):
    - <funnel>_step_<n>  view of a funnel step (funnels: fmb, ev, sq, ap, vip)
    - <funnel>_complete  first view of that funnel's confirmation page
-   - generate_lead      any Formspree submission ({form_page, ref_code})
+   - generate_lead      Formspree submission that succeeded ({form_page, ref_code})
    - lead_addendum_sent extra material for an already-counted lead, e.g.
                         thankyou.html's deferred PX-photo upload
                         ({form_page}) - not counted as generate_lead
-   - whatsapp_click     any wa.me link ({link_location: float|header|drawer|inline})
+   - whatsapp_click     any wa.me link ({link_location: float|header|drawer|contact|inline})
+   - call_click         any tel: link ({link_location})
+   - booking_click      any cal.com link ({page})
    - share              native "Share my BMW story" ({method:native, ref_code})
    - referral_visit     landing with ?ref=CODE ({ref_code}); the code is kept
                         for 90 days and stamped onto generate_lead events and
@@ -86,55 +88,86 @@
     if (!seen) track(fun + '_complete', { funnel: fun });
   }
 
-  /* ── Formspree submissions → generate_lead ─────────────────────────
+  /* ── Formspree submissions → generate_lead (success only) ──────────
      If the visitor arrived via a referral link, stamp the code onto the
      GA event and into the submission itself (referral_code) so it shows
      up in Dan's lead email. A submission carrying lead_addendum:"true"
      (e.g. thankyou.html's deferred PX-photo upload) is extra material for
      a lead already counted elsewhere, not a fresh one - fire a distinct
-     event instead of generate_lead so it isn't double-counted. */
+     event instead of generate_lead so it isn't double-counted.
+     generate_lead fires only after Formspree returns ok, so a failed
+     POST (and its WhatsApp fallback) is not counted as a lead. */
   if (window.fetch) {
     var origFetch = window.fetch;
     window.fetch = function (input, init) {
+      var url = '';
       try {
-        var url = (typeof input === 'string') ? input : ((input && input.url) || '');
-        if (url.indexOf('formspree.io') !== -1) {
-          var isAddendum = false;
-          if (init && typeof init.body === 'string') {
-            try { isAddendum = JSON.parse(init.body).lead_addendum === 'true'; } catch (e3) {}
-          }
-          if (isAddendum) {
-            track('lead_addendum_sent', { form_page: page, transport_type: 'beacon' });
-            return origFetch.apply(this, arguments);
-          }
-          var ref = refBy();
-          var params = { form_page: page, transport_type: 'beacon' };
-          if (ref) params.ref_code = ref;
-          track('generate_lead', params);
-          if (ref && init && typeof init.body === 'string') {
-            try {
-              var body = JSON.parse(init.body);
-              if (body && typeof body === 'object' && !Array.isArray(body) && !body.referral_code) {
-                body.referral_code = ref;
-                init.body = JSON.stringify(body);
-              }
-            } catch (e2) {}
-          }
+        url = (typeof input === 'string') ? input : ((input && input.url) || '');
+      } catch (e0) {}
+      if (url.indexOf('formspree.io') === -1) {
+        return origFetch.apply(this, arguments);
+      }
+      var isAddendum = false;
+      try {
+        if (init && typeof init.body === 'string') {
+          isAddendum = JSON.parse(init.body).lead_addendum === 'true';
         }
-      } catch (e) {}
-      return origFetch.apply(this, arguments);
+      } catch (e3) {}
+      if (isAddendum) {
+        track('lead_addendum_sent', { form_page: page, transport_type: 'beacon' });
+        return origFetch.apply(this, arguments);
+      }
+      var ref = refBy();
+      if (ref && init && typeof init.body === 'string') {
+        try {
+          var body = JSON.parse(init.body);
+          if (body && typeof body === 'object' && !Array.isArray(body) && !body.referral_code) {
+            body.referral_code = ref;
+            init = Object.assign({}, init, { body: JSON.stringify(body) });
+          }
+        } catch (e2) {}
+      }
+      return origFetch.call(this, input, init).then(function (r) {
+        var clone = r.clone();
+        return clone.json().catch(function () { return {}; }).then(function (j) {
+          if (r.ok && !(j && (j.ok === false || j.error || j.errors))) {
+            var params = { form_page: page, transport_type: 'beacon' };
+            if (ref) params.ref_code = ref;
+            track('generate_lead', params);
+          }
+          return r;
+        });
+      });
     };
   }
 
-  /* ── WhatsApp clicks (wa-float, header icon, drawer, inline links) ── */
+  /* ── WhatsApp clicks (float, premium header/drawer/contact, legacy) ── */
   document.addEventListener('click', function (e) {
     var a = e.target && e.target.closest && e.target.closest('a[href*="wa.me/"]');
     if (!a) return;
-    var loc = a.classList.contains('wa-float') ? 'float'
-      : a.closest('.site-header') ? 'header'
-      : a.closest('.nav-drawer') ? 'drawer'
+    var loc = a.classList.contains('wa-float') || a.classList.contains('ds-sticky-wa') || a.classList.contains('mbg-sticky') ? 'float'
+      : (a.closest('.ph-header') || a.closest('.site-header')) ? 'header'
+      : (a.closest('.ph-drawer') || a.closest('.nav-drawer')) ? 'drawer'
+      : a.closest('.ph-contact') ? 'contact'
       : 'inline';
     track('whatsapp_click', { link_location: loc, page: page, transport_type: 'beacon' });
+  }, true);
+
+  /* ── Call clicks (tel: links) ────────────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href^="tel:"]');
+    if (!a) return;
+    var loc = a.classList.contains('ds-sticky-call') ? 'float'
+      : a.closest('.ph-contact') ? 'contact'
+      : 'inline';
+    track('call_click', { link_location: loc, page: page, transport_type: 'beacon' });
+  }, true);
+
+  /* ── cal.com booking clicks ──────────────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href*="cal.com/"]');
+    if (!a) return;
+    track('booking_click', { link_location: page, page: page, transport_type: 'beacon' });
   }, true);
 
   /* ── native "Share my BMW story" ─────────────────────────────────── */
