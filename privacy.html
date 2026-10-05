@@ -301,6 +301,59 @@
     document.getElementById('phContactModal').classList.remove('open');
     document.body.style.overflow='';
   };
+
+  window.phOpenCallback=function(){
+    document.getElementById('phcbForm').style.display='block';
+    document.getElementById('phcbOk').style.display='none';
+    document.getElementById('phcbErr').hidden=true;
+    document.getElementById('phCallbackModal').classList.add('open');
+    document.body.style.overflow='hidden';
+    document.getElementById('phcbName').focus();
+  };
+  window.phCloseCallback=function(){
+    document.getElementById('phCallbackModal').classList.remove('open');
+    document.body.style.overflow='';
+  };
+  /* Callback request: same Formspree endpoint as the contact modal.
+     One email per request. Only says sent when Formspree says so. */
+  var phcbSending=false;
+  window.phSubmitCallback=function(){
+    if(phcbSending)return;
+    var n=document.getElementById('phcbName').value.trim();
+    var phone=document.getElementById('phcbPhone').value.trim();
+    var when=document.getElementById('phcbWhen').value.trim();
+    var note=document.getElementById('phcbNote').value.trim();
+    var btn=document.getElementById('phcbBtn'),err=document.getElementById('phcbErr');
+    if(!n||!phone){alert('Please add your name and mobile number.');return;}
+    var waParts=['Hi Dan, it\'s '+n+'. Please call me back on '+phone+'.'];
+    if(when) waParts.push('Best time: '+when);
+    if(note) waParts.push(note);
+    document.getElementById('phcbErrWa').href='https://wa.me/447827138197?text='+encodeURIComponent(waParts.join(' '));
+    phcbSending=true;err.hidden=true;btn.disabled=true;btn.textContent='Sending';
+    fetch('https://formspree.io/f/xqewleog',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        _subject:'Callback request: '+n,
+        name:n, phone:phone, best_time:when||'not given', message:note||'',
+        source:'callback',
+        page_url:(location&&location.href)||'',
+        _gotcha:document.getElementById('phcbGotcha').value
+      })
+    }).then(function(r){
+      return r.json().catch(function(){return {};}).then(function(j){
+        if(!r.ok||(j&&(j.ok===false||j.errors)))throw new Error(String(r.status));
+      });
+    }).then(function(){
+      document.getElementById('phcbForm').style.display='none';
+      document.getElementById('phcbOk').style.display='block';
+      btn.textContent='Send callback request';
+      if(typeof window.gtag==='function') window.gtag('event','callback_request',{page:(location.pathname.split('/').pop()||'index.html'),transport_type:'beacon'});
+    },function(){
+      err.hidden=false;btn.textContent='Try again';
+    }).then(function(){phcbSending=false;btn.disabled=false;});
+  };
+
   /* Only says "Sent" when Formspree says so. A failed request shows the
      error with a WhatsApp fallback carrying the same message, and a second tap
      while one is in flight is ignored. */
