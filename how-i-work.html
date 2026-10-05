@@ -11,7 +11,7 @@
   <meta name="robots" content="noindex, nofollow"/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
   <link rel="canonical" href="https://dan-sells.co.uk/how-i-work.html"/>
-  <link rel="stylesheet" href="premium.css?v=77d5364a"/>
+  <link rel="stylesheet" href="premium.css?v=e390ee17"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="analytics.js" defer></script>
@@ -155,7 +155,7 @@
       <a class="btn-fill" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">Message me on WhatsApp</a>
     </div>
     <div class="ph-contact-secondary">
-      <a class="btn-quiet" href="tel:+447827138197">Call Dan</a>
+      <button type="button" class="btn-quiet" onclick="phOpenCallback()">Request a callback</button>
       <button type="button" class="btn-quiet" onclick="phOpenContact()">Email Dan</button>
       <a class="btn-quiet" href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment</a>
       <a class="btn-quiet" href="https://www.instagram.com/dan_sells_bmw" target="_blank" rel="noopener">Instagram</a>
@@ -203,7 +203,7 @@
      while the Find my BMW gate is open. -->
 <nav class="ds-sticky" id="dsSticky" aria-label="Quick contact">
   <a class="ds-sticky-wa" id="dsStickyWa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">WhatsApp Dan</a>
-  <a class="ds-sticky-call" href="tel:+447827138197">Call</a>
+  <button type="button" class="ds-sticky-cb" onclick="phOpenCallback()">Callback</button>
 </nav>
 
 <div class="pmodal-bg" id="phContactModal" onclick="if(event.target===this)phCloseContact()">
@@ -224,6 +224,28 @@
     <div class="pm-success" id="phcOk">
       <p>Sent. Thank you.</p>
       <span>Your message is with me and I will come back to you personally.</span>
+    </div>
+  </div>
+</div>
+
+<div class="pmodal-bg" id="phCallbackModal" onclick="if(event.target===this)phCloseCallback()">
+  <div class="pmodal">
+    <button class="pmodal-close" onclick="phCloseCallback()" aria-label="Close">Close</button>
+    <div id="phcbForm">
+      <h3>Request a callback</h3>
+      <p class="pm-sub">Leave your name and mobile. I will call you back personally, usually the same day.</p>
+      <div class="pfield"><label for="phcbName">Your name</label><input id="phcbName" type="text" autocomplete="name"/></div>
+      <div class="pfield"><label for="phcbPhone">Mobile number</label><input id="phcbPhone" type="tel" autocomplete="tel" inputmode="tel"/></div>
+      <div class="pfield"><label for="phcbWhen">Best time to call (optional)</label><input id="phcbWhen" type="text" placeholder="Morning, afternoon, or a time that suits"/></div>
+      <div class="pfield"><label for="phcbNote">Short note (optional)</label><textarea id="phcbNote" rows="2" placeholder="What you are after, if you like"></textarea></div>
+      <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><label for="phcbGotcha">Leave this empty</label><input id="phcbGotcha" type="text" name="_gotcha" tabindex="-1" autocomplete="off"/></div>
+      <button class="btn-line" id="phcbBtn" type="button" onclick="phSubmitCallback()" style="width:100%;margin-top:6px">Send callback request</button>
+      <div id="phcbErr" role="alert" hidden style="margin-top:14px;padding:12px 14px;border:1px solid #c9785b;font-size:.84rem;line-height:1.6;color:var(--paper)">That did not go through, so nothing has reached me yet. Please try again, or <a id="phcbErrWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:var(--accent)">send it to me on WhatsApp</a> instead.</div>
+      <p class="pm-legal">Your details are used only to call you back about this request. See the <a href="privacy.html" style="color:inherit">privacy policy</a>.</p>
+    </div>
+    <div class="pm-success" id="phcbOk">
+      <p>Request sent. Thank you.</p>
+      <span>I have your number and I will call you back personally.</span>
     </div>
   </div>
 </div>
@@ -324,7 +346,7 @@
     }
   })();
 
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.phCloseDrawer();window.phCloseContact();}});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.phCloseDrawer();window.phCloseContact();window.phCloseCallback();}});
   document.querySelectorAll('#phDrawer nav a').forEach(function(a){a.addEventListener('click',function(){window.phCloseDrawer();});});
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
   document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});

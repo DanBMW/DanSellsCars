@@ -676,7 +676,7 @@ when adding/renaming funnel pages. Events:
   wrapper detects formspree.io calls, so new forms are tracked for free).
 - `whatsapp_click` `{link_location: float|header|drawer|contact|inline}` — any
   `wa.me` link click (delegated listener).
-- `call_click` `{link_location}` — any `tel:` link (contact block or sticky bar)
+- `callback_request` `{page}` — successful Request a callback form (contact block or sticky)
 - `booking_click` `{page}` — any cal.com booking link
 - `share` `{method: native, ref_code}` — the "Share my BMW story" native share.
 - `referral_visit` `{ref_code}` — landing with `?ref=CODE` from a shared

@@ -10,7 +10,7 @@
                         thankyou.html's deferred PX-photo upload
                         ({form_page}) - not counted as generate_lead
    - whatsapp_click     any wa.me link ({link_location: float|header|drawer|contact|inline})
-   - call_click         any tel: link ({link_location})
+   - callback_request   successful callback form ({page})
    - booking_click      any cal.com link ({page})
    - share              native "Share my BMW story" ({method:native, ref_code})
    - referral_visit     landing with ?ref=CODE ({ref_code}); the code is kept
@@ -151,16 +151,6 @@
       : a.closest('.ph-contact') ? 'contact'
       : 'inline';
     track('whatsapp_click', { link_location: loc, page: page, transport_type: 'beacon' });
-  }, true);
-
-  /* ── Call clicks (tel: links) ────────────────────────────────────── */
-  document.addEventListener('click', function (e) {
-    var a = e.target && e.target.closest && e.target.closest('a[href^="tel:"]');
-    if (!a) return;
-    var loc = a.classList.contains('ds-sticky-call') ? 'float'
-      : a.closest('.ph-contact') ? 'contact'
-      : 'inline';
-    track('call_click', { link_location: loc, page: page, transport_type: 'beacon' });
   }, true);
 
   /* ── cal.com booking clicks ──────────────────────────────────────── */
