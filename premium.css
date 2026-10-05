@@ -179,25 +179,40 @@ strong{color:var(--paper);font-weight:500}
 .sl-watch a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--hairline)}
 .sl-watch a:hover{color:var(--paper);border-bottom-color:var(--accent)}
 @media(max-width:759px){
-  /* Stack photo above full-width left-aligned copy so the text is not
-     squeezed into a narrow column beside the portrait. */
+  /* Photo beside eyebrow/H1; longer copy full width underneath, all left-aligned. */
   .ph-hero{align-items:flex-end}
-  .ph-hero-content{padding-top:calc(72px + env(safe-area-inset-top));padding-bottom:clamp(48px,8vh,88px)}
-  .ph-hero-row{flex-direction:column;align-items:flex-start;gap:16px}
-  .ph-hero-portrait{display:block}
+  .ph-hero-content{padding-top:calc(72px + env(safe-area-inset-top));padding-bottom:clamp(48px,8vh,88px);text-align:left}
+  .ph-hero-row{
+    display:grid;
+    grid-template-columns:88px minmax(0,1fr);
+    grid-template-areas:
+      "photo head"
+      "body body";
+    column-gap:14px;
+    row-gap:16px;
+    align-items:start;
+    width:100%;
+  }
+  .ph-hero-portrait{display:block;grid-area:photo;margin:0}
   .ph-hero-portrait img{width:88px;height:110px}
-  .ph-hero-copy{width:100%;text-align:left}
+  .ph-hero-copy{display:contents}
+  .ph-hero-head{grid-area:head;min-width:0;text-align:left}
+  .ph-hero-body{grid-area:body;min-width:0;width:100%;text-align:left}
   .ph-hero .plabel,
   .ph-hero h1,
   .ph-hero-sub,
-  .ph-hero-review{text-align:left}
-  .ph-hero h1{max-width:12ch}
+  .ph-hero-review,
+  .ph-hero-actions{text-align:left}
+  .ph-hero-head .plabel{margin-bottom:10px}
+  .ph-hero-head h1{margin-bottom:0;max-width:11ch}
+  .ph-hero-head .rule{margin:12px 0 0}
   .ph-hero-actions{
     flex-direction:column;align-items:flex-start;justify-content:flex-start;
-    gap:14px;width:100%;
+    gap:14px;width:100%;margin-top:28px;
   }
   .ph-hero-actions .btn-fill,
-  .ph-hero-actions .btn-line{width:auto;max-width:100%}
+  .ph-hero-actions .btn-line,
+  .ph-hero-actions .btn-quiet{align-self:flex-start;width:auto;max-width:100%}
 }
 .ph-scrollcue{
   position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:2;
