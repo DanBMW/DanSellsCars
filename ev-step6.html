@@ -46,6 +46,7 @@
         <a class="fv2-back" href="ev-step5.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
         <button class="fv2-back" id="sb" onclick="sendForm()" style="border:none;background:none;cursor:pointer;text-decoration:underline;color:inherit">Or send this brief by form</button>
       </div>
+      <div id="evErr" role="alert" hidden style="padding:12px 14px;border:1px solid #c9785b;border-radius:12px;font-size:.88rem;line-height:1.6;color:#5c2b1a;background:rgba(201,120,91,.08)">That did not go through, so nothing has reached me yet. Please try again, or <a id="evErrWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:#1559cf;font-weight:700">send it to me on WhatsApp</a> instead.</div>
     </div>
     <div class="fv2-trust">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
@@ -345,20 +346,7 @@ function buildEvWhatsAppSummary(){
   var nm = readVal("evName"); if (nm) parts.push("From " + nm.split(" ")[0]);
   return parts[0] + " " + parts.slice(1).join(" · ");
 }
-(function(){
-  var a = document.getElementById("waExit");
-  if (!a) return;
-  function refresh(){
-    a.href = "https://wa.me/447827138197?text=" + encodeURIComponent(buildEvWhatsAppSummary());
-  }
-  refresh();
-})();
-
-async function sendForm(){
-  var btn = document.getElementById("sb");
-  btn.textContent = "Sending…";
-  btn.disabled = true;
-
+function buildEvPayload(){
   var name  = readVal("evName");
   var email = readVal("evEmail");
 
@@ -451,15 +439,81 @@ async function sendForm(){
     px_photos_via:     pxPhotosVia
   };
   pxPhotos.forEach(function(u, i){ payload["px_photo_" + (i + 1)] = u; });
+  return payload;
+}
 
-  var moment = showIgnition();
-  var post = fetch("https://formspree.io/f/xqewleog", {
+function postEvBrief(opts){
+  opts = opts || {};
+  if (sessionStorage.getItem("evBriefSent") === "1") {
+    return Promise.resolve({ already: true });
+  }
+  var payload = buildEvPayload();
+  return fetch("https://formspree.io/f/xqewleog", {
     method: "POST",
     headers: {"Content-Type":"application/json","Accept":"application/json"},
-    body: JSON.stringify(payload)
-  }).catch(function(){});
+    body: JSON.stringify(payload),
+    keepalive: !!opts.keepalive
+  }).then(function(r){
+    return r.json().catch(function(){return {};}).then(function(j){
+      if(!r.ok||(j&&(j.ok===false||j.error||j.errors))) throw new Error(String(r.status));
+      sessionStorage.setItem("evBriefSent", "1");
+      return { ok: true };
+    });
+  });
+}
 
-  Promise.all([post, moment]).then(function(){
+(function(){
+  var a = document.getElementById("waExit");
+  if (!a) return;
+  function refresh(){
+    a.href = "https://wa.me/447827138197?text=" + encodeURIComponent(buildEvWhatsAppSummary());
+  }
+  refresh();
+  // Q2: fire the full Formspree brief on the same tap (keepalive), once per brief.
+  // WhatsApp stays primary; still one email per brief.
+  a.addEventListener("click", function(){
+    refresh();
+    postEvBrief({ keepalive: true }).catch(function(){});
+  });
+})();
+
+var evSending=false;
+async function sendForm(){
+  if (evSending) return;
+  var btn = document.getElementById("sb");
+  var err = document.getElementById("evErr");
+  err.hidden = true;
+  document.getElementById("evErrWa").href = "https://wa.me/447827138197?text=" + encodeURIComponent(buildEvWhatsAppSummary());
+
+  if (sessionStorage.getItem("evBriefSent") === "1") {
+    // Already emailed via WhatsApp tap; just finish the journey.
+    var moment0 = showIgnition();
+    await moment0;
+    var st0 = document.getElementById("ignStatus");
+    if (st0) st0.textContent = "Brief sent.";
+    if (window.evClearBackup) window.evClearBackup();
+    setTimeout(function(){ window.location.href = "ev-thankyou.html"; }, 380);
+    return;
+  }
+
+  evSending = true;
+  btn.textContent = "Sending…";
+  btn.disabled = true;
+
+  var moment = showIgnition();
+  var post = postEvBrief().catch(function(e){ return { fail: true }; });
+
+  Promise.all([post, moment]).then(function(results){
+    var postResult = results[0];
+    if (postResult && postResult.fail) {
+      var ign = document.getElementById("ign");
+      if (ign) { ign.classList.remove("show","pressed","running"); ign.style.display = "none"; }
+      err.hidden = false;
+      btn.textContent = "Try again";
+      btn.disabled = false;
+      evSending = false;
+      return;
+    }
     var st = document.getElementById("ignStatus");
     if (st) st.textContent = "Brief sent.";
     if (window.evClearBackup) window.evClearBackup();

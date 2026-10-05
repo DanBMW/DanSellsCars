@@ -94,6 +94,7 @@
     </div>
 
     <button class="btn" id="s1Btn" style="width:100%;" onclick="passStage1()">I'm interested →</button>
+    <div id="ycErr" role="alert" hidden style="margin-top:14px;padding:12px 14px;border:1px solid #c9785b;border-radius:12px;font-size:.88rem;line-height:1.6;color:#5c2b1a;background:rgba(201,120,91,.08)">That did not go through, so nothing has reached me yet. Please try again, or <a id="ycErrWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:#1559cf;font-weight:700">send it to me on WhatsApp</a> instead.</div>
     <p class="hint" style="margin-top:12px;">No forms, no photos. Dan will take a look at your car whilst it's physically here.</p>
   </div>
 
@@ -211,18 +212,22 @@
       mileage: document.getElementById("ycMileage").value.trim(),
       link: location.href
     }, extra||{});
-    try{
-      // keepalive: the email still sends even if they close the tab right away
-      fetch("https://formspree.io/f/xqewleog",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body:JSON.stringify(payload),
-        keepalive:true
-      }).catch(()=>{});
-    }catch(e){}
+    // keepalive: the email still sends even if they close the tab right away
+    return fetch("https://formspree.io/f/xqewleog",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify(payload),
+      keepalive:true
+    }).then(function(r){
+      return r.json().catch(function(){return {};}).then(function(j){
+        if(!r.ok||(j&&(j.ok===false||j.error||j.errors))) throw new Error(String(r.status));
+      });
+    });
   }
 
-  function passStage1(){
+  var ycSending=false;
+  async function passStage1(){
+    if(ycSending) return;
     const reg = document.getElementById("ycReg").value.trim();
     const mil = document.getElementById("ycMileage").value.trim();
     if(reg.replace(/\s/g,"").length < 4){ alert("Please check your registration."); return; }
@@ -231,21 +236,38 @@
     sessionStorage.setItem("ycName", linkName);
     sessionStorage.setItem("ycReg", reg);
     sessionStorage.setItem("ycMileage", mil);
+
+    const btn = document.getElementById("s1Btn");
+    const err = document.getElementById("ycErr");
+    var waParts = ["Hi Dan, it's "+(linkName||"a customer")+". My interest tap did not go through on the site.",
+      "Reg: "+reg, "Mileage: "+mil];
+    if(dvlaDesc) waParts.push(dvlaDesc);
+    document.getElementById("ycErrWa").href="https://wa.me/447827138197?text="+encodeURIComponent(waParts.join("\n"));
+
     // The interest signal: they tapped "I'm interested" with car + mileage confirmed.
     // This is the ONLY Formspree email this page sends - booking taps are GA
     // events, and real bookings arrive via cal.com's own confirmation.
     // Deduped per reg (not per session) so a different plate always re-fires -
     // which also means Dan can test with any reg and get the email every time.
     const pingKey = "ycPinged_" + reg.replace(/\s/g,"").toUpperCase();
-    if(!sessionStorage.getItem(pingKey)){
-      sessionStorage.setItem(pingKey,"1");
-      notify("🔥 " + (linkName||reg) + " tapped I'm interested", {
+    if(sessionStorage.getItem(pingKey)){
+      document.getElementById("stage1").style.display = "none";
+      document.getElementById("stage2").style.display = "block";
+      window.scrollTo({top:0});
+      return;
+    }
+    ycSending=true; err.hidden=true; btn.disabled=true; btn.textContent="Sending…";
+    try{
+      await notify("🔥 " + (linkName||reg) + " tapped I'm interested", {
         note: "Interest signal - service prospect (due in within the week) confirmed car + mileage and tapped I'm interested. Booking options are on their screen now; if they book, cal.com will confirm separately."
       });
+      sessionStorage.setItem(pingKey,"1");
+      document.getElementById("stage1").style.display = "none";
+      document.getElementById("stage2").style.display = "block";
+      window.scrollTo({top:0});
+    }catch(e){
+      err.hidden=false; btn.disabled=false; btn.textContent="I'm interested →"; ycSending=false;
     }
-    document.getElementById("stage1").style.display = "none";
-    document.getElementById("stage2").style.display = "block";
-    window.scrollTo({top:0});
   }
 
   // Booking taps are tracked in GA only (no Formspree - cal.com confirms real

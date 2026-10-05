@@ -219,6 +219,7 @@
           <div class="field-group"><label>Mobile</label><input id="dbPhone" type="tel" placeholder="Optional: I may have it on file" autocomplete="tel"/></div>
         </div>
         <button class="btn" id="sendBtn" style="width:100%;" onclick="sendBrief()">Send my brief to Dan →</button>
+        <div id="dbErr" role="alert" hidden style="margin-top:12px;padding:12px 14px;border:1px solid #c9785b;border-radius:12px;font-size:.88rem;line-height:1.6;color:#5c2b1a;background:rgba(201,120,91,.08)">That did not go through, so nothing has reached me yet. Please try again, or <a id="dbErrWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:#1559cf;font-weight:700">send it to me on WhatsApp</a> instead.</div>
         <p class="hint" style="text-align:center;">Anything you skipped, we'll simply cover in person. No chasing, no drama.</p>
       </div>
       <div class="stage-nav" style="margin-top:0;"><button class="nav-back" onclick="go(4)">‹ Back</button><span></span></div>
@@ -328,21 +329,28 @@
     ).join("");
   }
 
+  var dbSending=false;
   async function sendBrief(){
+    if(dbSending) return;
     const first = document.getElementById("dbFirst").value.trim();
     if(!first){ alert("Just your first name, so I know whose brief this is."); return; }
     if(sessionStorage.getItem("dbSent")){ go("done"); return; }
 
     const btn = document.getElementById("sendBtn");
+    const err = document.getElementById("dbErr");
+    dbSending = true; err.hidden = true;
     btn.disabled = true; btn.textContent = "Sending to Dan…";
 
     const isMonthly = answers.payType && answers.payType !== "cash";
+    const phone = document.getElementById("dbPhone").value.trim();
+    const notes = document.getElementById("dbNotes").value.trim();
+    const deposit = document.getElementById("dbDeposit").value.trim();
     const payload = {
       _subject: "Brief - " + first + (knownReg ? " (" + knownReg + ")" : ""),
       _replyto: "noreply@dan-sells.co.uk",
       lead_type: "Service Customer Brief",
       name: first,
-      phone: document.getElementById("dbPhone").value.trim(),
+      phone: phone,
       reg: knownReg,
       mileage: knownMiles,
       openness: sessionStorage.getItem("sqOpenness") || "",
@@ -351,22 +359,35 @@
       payment_method: answers.pay,
       monthly_budget: isMonthly ? answers.band : "",
       total_budget: answers.payType === "cash" ? answers.band : "",
-      deposit: document.getElementById("dbDeposit").value.trim(),
+      deposit: deposit,
       part_exchange: answers.px,
-      extra_notes: document.getElementById("dbNotes").value.trim(),
+      extra_notes: notes,
       note: "Optional deep-dive brief, sent after the initial interest + booking stage. One submission covers the lot."
     };
 
+    var waParts = ["Hi Dan, it's "+first+". My brief did not go through on the site."];
+    if(knownReg) waParts.push("Reg: "+knownReg);
+    if(answers.direction) waParts.push("Interest: "+answers.direction);
+    if(answers.timing) waParts.push("Timing: "+answers.timing);
+    if(answers.pay) waParts.push("Payment: "+answers.pay);
+    if(answers.band) waParts.push("Budget: "+answers.band);
+    if(answers.px) waParts.push("PX: "+answers.px);
+    if(notes) waParts.push("Notes: "+notes.slice(0,180));
+    document.getElementById("dbErrWa").href="https://wa.me/447827138197?text="+encodeURIComponent(waParts.join("\n"));
+
     try{
-      await fetch("https://formspree.io/f/xqewleog",{
+      const r = await fetch("https://formspree.io/f/xqewleog",{
         method:"POST",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
         body:JSON.stringify(payload)
       });
-    }catch(e){}
-
-    sessionStorage.setItem("dbSent","1");
-    go("done");
+      const j = await r.json().catch(function(){return {};});
+      if(!r.ok||(j&&(j.ok===false||j.error||j.errors))) throw new Error(String(r.status));
+      sessionStorage.setItem("dbSent","1");
+      go("done");
+    }catch(e){
+      err.hidden=false; btn.disabled=false; btn.textContent="Try again"; dbSending=false;
+    }
   }
 
   if(sessionStorage.getItem("dbSent")) go("done");

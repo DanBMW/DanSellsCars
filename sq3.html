@@ -69,6 +69,7 @@
       </div>
 
       <button class="btn" id="sendBtn" style="width:100%;" onclick="submit()">Get my figure ready →</button>
+      <div id="sqErr" role="alert" hidden style="margin-top:14px;padding:12px 14px;border:1px solid #c9785b;border-radius:12px;font-size:.88rem;line-height:1.6;color:#5c2b1a;background:rgba(201,120,91,.08)">That did not go through, so nothing has reached me yet. Please try again, or <a id="sqErrWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:#1559cf;font-weight:700">send it to me on WhatsApp</a> instead.</div>
     </div>
   </div>
 </div></div>
@@ -108,12 +109,16 @@
     return null;
   }
 
+  var sqSending=false;
   async function submit(){
+    if(sqSending) return;
     const first = document.getElementById("sqFirst").value.trim();
     const phone = document.getElementById("sqPhone").value.trim();
     if(!first||!phone){ alert("Please add your first name and mobile so Dan knows who to ask for."); return; }
 
     const btn = document.getElementById("sendBtn");
+    const err = document.getElementById("sqErr");
+    sqSending = true; err.hidden = true;
     btn.disabled = true; btn.textContent = "Sending to Dan…";
 
     sessionStorage.setItem("sqFirst", first);
@@ -130,6 +135,7 @@
       sessionStorage.getItem("sqDvlaColour")||"",
       sessionStorage.getItem("sqDvlaFuel")||""
     ].filter(Boolean).join(" ");
+    const reg = sessionStorage.getItem("sqPXReg")||"";
 
     const payload = {
       _subject: "Service Qualifier (Ramp Report) - " + first,
@@ -139,7 +145,7 @@
       phone: phone,
       email: document.getElementById("sqEmail").value.trim(),
       openness: sessionStorage.getItem("sqOpenness")||"",
-      px_reg: sessionStorage.getItem("sqPXReg")||"",
+      px_reg: reg,
       px_dvla_desc: dvlaDesc,
       px_market_low:            market ? market.low   : "",
       px_market_avg:            market ? market.avg   : "",
@@ -150,15 +156,26 @@
       marketing_channels: sqMktChannels
     };
 
+    var waParts = ["Hi Dan, it's "+first+". My Ramp Report did not go through on the site."];
+    if(reg) waParts.push("Reg: "+reg);
+    if(dvlaDesc) waParts.push(dvlaDesc);
+    if(phone) waParts.push("Mobile: "+phone);
+    var open = sessionStorage.getItem("sqOpenness")||"";
+    if(open) waParts.push("Openness: "+open);
+    document.getElementById("sqErrWa").href="https://wa.me/447827138197?text="+encodeURIComponent(waParts.join("\n"));
+
     try{
-      await fetch("https://formspree.io/f/xqewleog",{
+      const r = await fetch("https://formspree.io/f/xqewleog",{
         method:"POST",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
         body:JSON.stringify(payload)
       });
-    }catch(e){}
-
-    location.href="sq_done.html";
+      const j = await r.json().catch(function(){return {};});
+      if(!r.ok||(j&&(j.ok===false||j.error||j.errors))) throw new Error(String(r.status));
+      location.href="sq_done.html";
+    }catch(e){
+      err.hidden=false; btn.disabled=false; btn.textContent="Try again"; sqSending=false;
+    }
   }
 </script>
 <script src="scroll-hint.js"></script><script src="disclaimer.js"></script>
