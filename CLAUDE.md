@@ -334,16 +334,33 @@ any page. It is hidden from search, not private: anyone with the URL can read it
 - **`scripts/build-lookup.mjs` writes it** (Node 18+, no dependencies) from
   `hedin-stock-snapshot.json` (source `forecourt`), `hedin-group-stock.json`
   (source `group`), `stock-finance.json` and `car-details.json`:
-  `lookup/stock.json` (`generated_at`, `count`, `counts`, `cars` keyed by reg,
-  uppercase, no spaces) and one `lookup/reg/<REG>.json` per car. It deletes reg
-  files for cars that have left both lists, so a 404 means "not in stock".
-  A car in both lists is the forecourt's. Only fields the stock files hold,
-  null where they hold nothing. `finance` is the `stock-finance.json` entry
-  verbatim plus `representative_example` (dsfinance.js wording), and null when
-  there is no live quote.
+  `lookup/stock.json` (today's stock only: `generated_at`, `count`, `counts`,
+  `cars` keyed by reg, uppercase, no spaces), `lookup/recent.json` (cars that
+  left stock in the last 30 days, same shape) and one `lookup/reg/<REG>.json`
+  per car in either. A car in both lists is the forecourt's. Only fields the
+  stock files hold, null where they hold nothing. `finance` is the
+  `stock-finance.json` entry verbatim plus `representative_example`
+  (dsfinance.js wording), and null when there is no live quote.
+- **A car that leaves stock is kept for 30 days** (Dan, 7 October). Its reg
+  file keeps the last known data with `status: "removed"`, `removed_at` (the
+  London date the script first found it gone), `available_until` (removed_at
+  plus 30 days) and `finance: null`; the file is deleted once today is past
+  `available_until`. A car in stock has `status: "in_stock"` and both dates
+  null; one that comes back is in_stock again with fresh data. So a 404 means
+  "not in stock and not in the last 30 days".
+- **`lookup/_history.json` is the ledger** (`first_seen`, `last_seen`,
+  `removed_at` per reg, London dates). It is committed but, starting with an
+  underscore, Jekyll does not publish it. Do not delete it: without it every
+  car looks new and the 30 day clock restarts.
+- **Idempotent and guarded.** Reg files carry no timestamp and `generated_at`
+  only moves on a real change or the first run of a London day, so running it
+  twice in a day writes nothing the second time. It refuses to write and exits
+  1 if today's stock has fewer than 50 cars, more than 40% of yesterday's cars
+  vanish at once, or a stock file is missing or unreadable, rather than mark
+  good cars as removed. `LOOKUP_TODAY=YYYY-MM-DD` overrides the date for tests.
 - **Run it after every stock or quote refresh**: `node scripts/build-lookup.mjs`
-  then commit `lookup/`. Reg files carry no timestamp, so an unchanged car is
-  not rewritten and the diff shows only arrivals, departures and changes.
+  then commit all of `lookup/`, including `lookup/_history.json`, `recent.json`
+  and any deleted reg files.
 - `lookup/widget.js` is a drop in script the colleague's site loads from here;
   it fills a reg box's sibling fields and fires a `dsc:car` event. It never
   fills finance (a monthly figure needs its full representative example).
@@ -405,10 +422,13 @@ other stock"**, which merges in every other used BMW the group has -
   four parts in order, each its own commit and push: the Ruxley snapshot, then
   `group-stock.py`, then the Instagram cards, then `stock-finance.py`.
   **Routine, please also do this as a fifth step:** after `stock-finance.py`,
-  run `node scripts/build-lookup.mjs` and commit and push `lookup/` (message
-  "Daily lookup refresh"). It reads only the files the first four steps wrote,
-  takes a second, and needs no network. If it refuses (empty snapshot), leave
-  yesterday's `lookup/` alone. The
+  run `node scripts/build-lookup.mjs` and commit and push everything under
+  `lookup/`, including `lookup/_history.json` and any deleted reg files
+  (`git add -A lookup/`, message "Daily lookup refresh"). It reads only the
+  files the first four steps wrote, takes a second and needs no network. It is
+  safe to run more than once a day (a second run changes nothing), and another
+  agent also runs it at about 09:48. If it exits non zero (stock looks broken),
+  leave yesterday's `lookup/` alone. The
   group list sits before the quote run deliberately, because the quote job
   reads it. A group-list failure is not allowed to stop the rest: the script
   refuses to write rather than publish a bad list, and the routine is told to

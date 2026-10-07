@@ -16,7 +16,11 @@
    form, else the whole page, so two lookups can live on one page.
 
    Every lookup fires a "dsc:car" CustomEvent on the input (it bubbles):
-     e.detail = { reg: "LV73VOB", car: {...} or null, state: "found" | "missing" | "error" }
+     e.detail = { reg: "LV73VOB", car: {...} or null,
+                  state: "found" | "removed" | "missing" | "error" }
+   "removed" is a car that left stock in the last 30 days: its last known
+   details and photo are filled, the status reads "No longer in stock since
+   8 Oct 2026", car.status is "removed" and car.removed_at its date.
 
    Finance is never filled in: a monthly figure may only be shown with the full
    representative example. It is in e.detail.car.finance if you need it.
@@ -40,6 +44,13 @@
     function gbp(n) {
       try { return '\u00a3' + Math.round(Number(n)).toLocaleString('en-GB'); }
       catch (e) { return '\u00a3' + Math.round(Number(n)); }
+    }
+    function since(iso) {
+      try {
+        var d = new Date(String(iso) + 'T12:00:00Z');
+        if (isNaN(d)) return '';
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/London' });
+      } catch (e) { return String(iso || ''); }
     }
     function scopeOf(el) {
       return (el.closest && (el.closest('[data-dsc-scope]') || el.closest('form'))) || document;
@@ -73,7 +84,8 @@
         var key = el.getAttribute('data-dsc-field');
         if (!key || NOT_FILLED[key]) return;
         if (key === 'listing_url') {
-          var u = car && car.listing_url;
+          /* A car that has left stock: its old listing has usually gone too. */
+          var u = car && car.status !== 'removed' && car.listing_url;
           if (el.tagName === 'A') {
             if (u) { el.href = u; if (!el.textContent.trim()) el.textContent = 'View the full listing'; el.hidden = false; }
             else { el.removeAttribute('href'); el.hidden = true; }
@@ -140,9 +152,11 @@
             if (input._dscSeq !== mine) return car;     /* a newer lookup won */
             input._dscCar = car;
             fill(scope, car);
-            if (car) status(scope, 'found', plate(reg) + ': ' + (car.model || 'in stock'));
+            var state = !car ? 'missing' : car.status === 'removed' ? 'removed' : 'found';
+            if (state === 'found') status(scope, 'found', plate(reg) + ': ' + (car.model || 'in stock'));
+            else if (state === 'removed') status(scope, 'removed', plate(reg) + ': No longer in stock since ' + since(car.removed_at));
             else status(scope, 'missing', plate(reg) + ' is not in today\u2019s stock');
-            emit(input, reg, car, car ? 'found' : 'missing');
+            emit(input, reg, car, state);
             return car;
           })
           .catch(function () {

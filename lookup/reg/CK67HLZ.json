@@ -26,5 +26,8 @@
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/251574/pb-bmw-540-2017",
  "listing_id": "251574",
  "source": "group",
- "finance": null
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }

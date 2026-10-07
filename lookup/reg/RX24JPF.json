@@ -49,5 +49,8 @@
   "total_payable": 61495.82,
   "valid_to": "2026-12-31T23:59:59",
   "representative_example": "47 monthly payments of £772.17. Cash price £46,995. Customer deposit £4,699.50. Total amount of credit £42,295.50. Optional final payment £20,504.33. Total amount payable £61,495.82. Duration 48 months. 8,000 miles a year, 13.39p per excess mile. 11.9% APR representative. Lender BMW Group Financial Services. Finance subject to status, 18+, UK residents."
- }
+ },
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }
