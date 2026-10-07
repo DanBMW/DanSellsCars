@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Used car lookup</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!-- Hidden lookup, sent by link only. Built from lookup/stock.json, which
+     scripts/build-lookup.mjs writes from the daily stock files. Keep it noindex,
+     Disallow /lookup/ in robots.txt, out of sitemap.xml and unlinked. -->
+<style>
+  :root { --ink:#14181f; --muted:#5d6675; --line:#e3e6eb; --bg:#f6f7f9; --card:#fff; --accent:#1c69d4; }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0; font:16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  .wrap { max-width:1180px; margin:0 auto; padding:20px 16px 48px; }
+  h1 { font-size:1.35rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 16px; font-size:.95rem; }
+  form.search { display:flex; gap:8px; margin:0 0 12px; }
+  form.search input { flex:1; min-width:0; font:inherit; font-size:1.1rem; padding:12px 14px; border:1px solid #c9ced6; border-radius:10px; text-transform:uppercase; letter-spacing:.04em; background:#fff; }
+  form.search input::placeholder { text-transform:none; letter-spacing:0; }
+  button, .btn { font:inherit; font-weight:600; padding:12px 18px; border-radius:10px; border:0; background:var(--accent); color:#fff; cursor:pointer; text-decoration:none; display:inline-block; }
+  .btn.ghost { background:#fff; color:var(--ink); border:1px solid #c9ced6; }
+  .count { color:var(--muted); font-size:.9rem; margin:0 0 14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; text-decoration:none; color:inherit; display:flex; flex-direction:column; }
+  .card:hover, .card:focus-visible { border-color:var(--accent); outline:none; box-shadow:0 0 0 2px rgba(28,105,212,.2); }
+  .ph { aspect-ratio:16/9; background:#e9ecf0; display:block; width:100%; object-fit:cover; }
+  .noph { aspect-ratio:16/9; background:#e9ecf0; color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:.9rem; }
+  .cb { padding:12px 14px 14px; display:flex; flex-direction:column; gap:4px; }
+  .plate { display:inline-block; align-self:flex-start; background:#f7d117; color:#111; font-weight:700; letter-spacing:.06em; padding:2px 8px; border-radius:4px; font-size:.9rem; border:1px solid #d8b400; }
+  .model { font-weight:600; }
+  .meta { color:var(--muted); font-size:.9rem; }
+  .price { font-weight:700; font-size:1.05rem; }
+  .tag { font-size:.75rem; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:1px 8px; align-self:flex-start; }
+  .detail { background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; margin-bottom:24px; }
+  .dgrid { display:grid; grid-template-columns:1fr; }
+  @media (min-width:900px) { .dgrid { grid-template-columns:3fr 2fr; } }
+  .big { width:100%; aspect-ratio:16/9; object-fit:cover; background:#e9ecf0; display:block; }
+  .thumbs { display:flex; gap:6px; padding:8px; overflow-x:auto; }
+  .thumbs button { padding:0; border:2px solid transparent; border-radius:6px; background:none; flex:0 0 auto; }
+  .thumbs button[aria-pressed="true"] { border-color:var(--accent); }
+  .thumbs img { width:96px; height:54px; object-fit:cover; border-radius:4px; display:block; }
+  .dinfo { padding:18px; }
+  .dinfo h2 { margin:8px 0 2px; font-size:1.4rem; }
+  .dprice { font-size:1.6rem; font-weight:700; margin:6px 0 12px; }
+  table.spec { width:100%; border-collapse:collapse; font-size:.95rem; }
+  table.spec th { text-align:left; color:var(--muted); font-weight:500; padding:7px 10px 7px 0; width:42%; border-top:1px solid var(--line); }
+  table.spec td { padding:7px 0; border-top:1px solid var(--line); }
+  .fin { margin-top:16px; padding:12px 14px; background:var(--bg); border-radius:10px; font-size:.88rem; }
+  .fin strong { font-size:1rem; }
+  .fin details { margin-top:8px; color:var(--muted); }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .empty { background:#fff; border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:24px; }
+  .empty h2 { margin:0 0 6px; font-size:1.2rem; }
+  .err { color:#a3261a; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Used car lookup</h1>
+  <p class="sub" id="asof">Loading today's stock</p>
+
+  <form class="search" id="f" role="search" autocomplete="off">
+    <input id="q" name="reg" type="search" inputmode="text" placeholder="Search a reg or model, e.g. LV73 YKK" aria-label="Search a registration or model">
+    <button type="submit">Find</button>
+  </form>
+
+  <section id="detail" hidden></section>
+  <section id="missing" class="empty" hidden></section>
+
+  <p class="count" id="count"></p>
+  <div class="grid" id="grid"></div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var DATA = null, CARS = [];
+  var elGrid = document.getElementById('grid'), elCount = document.getElementById('count');
+  var elDetail = document.getElementById('detail'), elMissing = document.getElementById('missing');
+  var elQ = document.getElementById('q'), elAsof = document.getElementById('asof');
+
+  function norm(r) { return String(r || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  /* Data values are shown as stored, except that a dash between words reads as
+     a space (so "Plug-in hybrid" shows as "Plug in hybrid"). The JSON keeps the
+     stored value. */
+  function show(v) { return esc(String(v).replace(/\s*[\u002d\u2010-\u2015\u2212]\s*/g, ' ')); }
+  function drive(v) {
+    var m = { FourWheel:'Four wheel drive', FrontWheel:'Front wheel drive', RearWheel:'Rear wheel drive' };
+    return m[v] || v;
+  }
+  /* UK plates are shown with the usual space: two letters, two numbers, then three letters. */
+  function plate(r) { return /^[A-Z]{2}[0-9]{2}[A-Z]{3}$/.test(r) ? r.slice(0, 4) + ' ' + r.slice(4) : r; }
+  function bigPhoto(c) { return (c.images && c.images.length && c.image && c.images[0].indexOf(c.image.replace(/-preview\.jpg$/, '')) === 0) ? c.images[0] : (c.image || (c.images && c.images[0]) || null); }
+  function gallery(c) {
+    var out = [], first = bigPhoto(c);
+    if (first) out.push(first);
+    (c.images || []).forEach(function (u) { if (out.indexOf(u) === -1) out.push(u); });
+    return out;
+  }
+  function line(c) {
+    return [c.year, c.mileage, c.fuel, c.gearbox].filter(function (x) { return x !== null && x !== undefined && x !== ''; }).map(show).join(' \u00b7 ');
+  }
+  function money2(n) { return '\u00a3' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function finLive(f) { return !!(f && f.monthly && f.representative_example && !(f.valid_to && new Date(f.valid_to) < new Date())); }
+
+  function card(c) {
+    var pics = [c.image].concat(c.images || []).filter(Boolean);
+    var img = pics.length ? '<img class="ph" loading="lazy" decoding="async" src="' + esc(pics[0]) + '" data-alts="' + esc(pics.slice(1).join('|')) + '" alt="' + show(c.model || c.reg) + '">' : '<div class="noph">No photo yet</div>';
+    return '<a class="card" href="?reg=' + encodeURIComponent(c.reg) + '" data-reg="' + esc(c.reg) + '">' + img
+      + '<div class="cb"><span class="plate">' + esc(plate(c.reg)) + '</span>'
+      + '<span class="model">' + show(c.model || 'BMW') + '</span>'
+      + '<span class="meta">' + line(c) + '</span>'
+      + (c.price ? '<span class="price">' + show(c.price) + '</span>' : '')
+      + '<span class="tag">' + (c.source === 'forecourt' ? 'Our forecourt' : 'Group stock') + '</span>'
+      + '</div></a>';
+  }
+
+  function renderList(filter) {
+    var q = String(filter || '').trim(), nq = norm(q), words = q.toLowerCase().split(/\s+/).filter(Boolean);
+    var list = CARS.filter(function (c) {
+      if (!q) return true;
+      if (nq && c.reg.indexOf(nq) !== -1) return true;
+      var hay = [c.model, c.series, c.colour, c.fuel, c.body, c.trim, c.year].join(' ').toLowerCase();
+      return words.every(function (w) { return hay.indexOf(w) !== -1; });
+    });
+    elGrid.innerHTML = list.map(card).join('');
+    elCount.textContent = q
+      ? list.length + (list.length === 1 ? ' car matches' : ' cars match') + ' "' + q + '"'
+      : list.length + ' cars in today\u2019s stock';
+  }
+
+  function row(label, v) { return (v === null || v === undefined || v === '') ? '' : '<tr><th scope="row">' + label + '</th><td>' + v + '</td></tr>'; }
+
+  function renderDetail(c) {
+    var pics = gallery(c);
+    var f = c.finance;
+    var fin = finLive(f)
+      ? '<div class="fin"><strong>' + money2(f.monthly) + ' a month</strong> on ' + show(f.product) + '.'
+        + '<p><b>Representative example:</b> ' + esc(f.representative_example) + '</p>'
+        + (f.legal ? '<details><summary>Lender\u2019s full wording</summary><p>' + esc(f.legal) + '</p></details>' : '')
+        + '</div>'
+      : '';
+    elDetail.innerHTML = '<div class="detail"><div class="dgrid"><div>'
+      + (pics.length ? '<img class="big" id="big" src="' + esc(pics[0]) + '" data-alts="' + esc(pics.slice(1).concat(c.image ? [c.image] : []).join('|')) + '" alt="' + show(c.model || c.reg) + '">' : '<div class="noph">No photo yet</div>')
+      + (pics.length > 1 ? '<div class="thumbs">' + pics.map(function (u, i) {
+          return '<button type="button" data-src="' + esc(u) + '" aria-pressed="' + (i === 0) + '" aria-label="Photo ' + (i + 1) + '"><img loading="lazy" src="' + esc(u) + '" alt=""></button>';
+        }).join('') + '</div>' : '')
+      + '</div><div class="dinfo"><span class="plate">' + esc(plate(c.reg)) + '</span>'
+      + '<h2>' + show(c.model || 'BMW') + '</h2>'
+      + (c.price ? '<div class="dprice">' + show(c.price) + '</div>' : '')
+      + '<table class="spec"><tbody>'
+      + row('Registration', esc(plate(c.reg)))
+      + row('Year', c.year === null ? '' : show(c.year))
+      + row('Mileage', c.mileage ? show(c.mileage) : '')
+      + row('Series', c.series ? show(c.series) : '')
+      + row('Trim', c.trim ? show(c.trim) : '')
+      + row('Colour', c.colour ? show(c.colour) : '')
+      + row('Fuel', c.fuel ? show(c.fuel) : '')
+      + row('Body', c.body ? show(c.body) : '')
+      + row('Gearbox', c.gearbox ? show(c.gearbox) : '')
+      + row('Drive', c.drive ? show(drive(c.drive)) : '')
+      + row('Power', c.power ? show(c.power) : '')
+      + row('Seats', c.seats === null ? '' : show(c.seats))
+      + row('Doors', c.doors === null || c.doors === undefined ? '' : show(c.doors))
+      + row('Stock', c.source === 'forecourt' ? 'Our forecourt' : 'Group stock')
+      + '</tbody></table>' + fin
+      + '<div class="actions">'
+      + (c.listing_url ? '<a class="btn" href="' + esc(c.listing_url) + '" target="_blank" rel="noopener">View the full listing</a>' : '')
+      + '<a class="btn ghost" href="./">See all stock</a></div>'
+      + '</div></div></div>';
+    elDetail.hidden = false;
+    var big = document.getElementById('big');
+    elDetail.querySelectorAll('.thumbs button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        big.src = b.getAttribute('data-src');
+        elDetail.querySelectorAll('.thumbs button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      });
+    });
+  }
+
+  function route() {
+    if (!DATA) return;
+    var raw = new URLSearchParams(location.search).get('reg');
+    var r = norm(raw);
+    elDetail.hidden = true; elMissing.hidden = true;
+    if (!r) {
+      document.title = 'Used car lookup';
+      renderList(elQ.value);
+      return;
+    }
+    var c = DATA.cars[r];
+    if (c) {
+      document.title = plate(r) + ' ' + (c.model || '') + ' | Used car lookup';
+      renderDetail(c);
+      elQ.value = plate(r);
+      renderList('');
+      elCount.textContent = 'All of today\u2019s stock';
+      window.scrollTo(0, 0);
+    } else {
+      document.title = plate(r) + ' not in stock | Used car lookup';
+      elMissing.innerHTML = '<h2>' + esc(plate(r)) + ' is not in today\u2019s stock</h2>'
+        + '<p class="meta">It may have sold, not be listed yet, or the reg may be mistyped. Check the plate and search again, or browse today\u2019s stock below.</p>';
+      elMissing.hidden = false;
+      elQ.value = plate(r);
+      renderList('');
+      elCount.textContent = 'All of today\u2019s stock';
+    }
+  }
+
+  function go(reg) {
+    var url = reg ? '?reg=' + encodeURIComponent(norm(reg)) : location.pathname;
+    history.pushState(null, '', url);
+    route();
+  }
+
+  document.getElementById('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = elQ.value, n = norm(v);
+    if (!n) { go(''); return; }
+    /* A UK plate (current, prefix or suffix style) opens that car, or the
+       "not in today's stock" state. Anything else filters the cards. */
+    var plateLike = /^[A-Z]{2}[0-9]{2}[A-Z]{3}$|^[A-Z][0-9]{1,3}[A-Z]{3}$|^[A-Z]{3}[0-9]{1,3}[A-Z]$/.test(n);
+    if (DATA && (DATA.cars[n] || plateLike)) { go(n); return; }
+    /* Not a single reg: filter the cards by it instead. */
+    if (new URLSearchParams(location.search).get('reg')) { history.pushState(null, '', location.pathname); elDetail.hidden = true; elMissing.hidden = true; }
+    renderList(v);
+  });
+  elQ.addEventListener('input', function () {
+    if (new URLSearchParams(location.search).get('reg')) return;
+    renderList(elQ.value);
+  });
+  elGrid.addEventListener('click', function (e) {
+    var a = e.target.closest('a.card');
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    go(a.getAttribute('data-reg'));
+  });
+  window.addEventListener('popstate', route);
+  /* Some photo urls in the stock feed have since gone from Hedin's CDN. A
+     photo that fails moves on to the car's next one, a thumbnail that fails is
+     dropped, and a car with none left shows the plain placeholder. */
+  document.addEventListener('error', function (e) {
+    var img = e.target;
+    if (!img || img.tagName !== 'IMG') return;
+    if (img.closest('.thumbs')) { img.closest('button').remove(); return; }
+    var alts = (img.getAttribute('data-alts') || '').split('|').filter(Boolean);
+    if (alts.length) { img.setAttribute('data-alts', alts.slice(1).join('|')); img.src = alts[0]; return; }
+    var ph = document.createElement('div'); ph.className = 'noph'; ph.textContent = 'No photo yet';
+    img.replaceWith(ph);
+  }, true);
+
+  fetch('stock.json', { cache: 'no-cache' }).then(function (r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function (d) {
+    DATA = d;
+    CARS = Object.keys(d.cars).map(function (k) { return d.cars[k]; }).sort(function (a, b) {
+      return (a.source === b.source ? 0 : a.source === 'forecourt' ? -1 : 1)
+        || String(a.model || '').localeCompare(String(b.model || '')) || a.reg.localeCompare(b.reg);
+    });
+    var when = new Date(d.generated_at);
+    elAsof.textContent = d.count + ' used BMWs (' + d.counts.forecourt + ' on our forecourt, ' + d.counts.group + ' across the group). Updated '
+      + when.toLocaleString('en-GB', { timeZone: 'Europe/London', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) + ' UK time.';
+    route();
+  }).catch(function () {
+    elAsof.innerHTML = '<span class="err">Today\u2019s stock could not be loaded. Please refresh the page.</span>';
+  });
+})();
+</script>
+</body>
+</html>

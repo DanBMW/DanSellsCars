@@ -1,0 +1,32 @@
+{
+ "reg": "BX19YLT",
+ "model": "BMW 220i Luxury Gran Tourer",
+ "series": "2 Series",
+ "year": 2019,
+ "mileage": "63,896 miles",
+ "mileage_miles": 63896,
+ "colour": "Beige",
+ "fuel": "Petrol",
+ "body": "Coupe",
+ "gearbox": "Automatic",
+ "drive": "FrontWheel",
+ "seats": 7,
+ "doors": 5,
+ "power": "190 hp",
+ "trim": "Luxury",
+ "price": "£12,941",
+ "price_gbp": 12941,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e17c-1eef-74cb-abb1-04d738c68e76-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e17c-1eef-74cb-abb1-04d738c68e76-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e17c-1fd1-7b31-ae4c-f70120cbaf81-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e17c-2065-79ea-a20f-d7b8be54b01d-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e17c-2130-77c4-8b66-20759c73e1fa-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e17c-21da-7f4d-a324-5b71edf0927e-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e17c-227b-7f4b-a4ee-ade53ed18478-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/252688/pb-bmw-220-2019",
+ "listing_id": "252688",
+ "source": "group",
+ "finance": null
+}

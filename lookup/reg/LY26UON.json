@@ -1,0 +1,32 @@
+{
+ "reg": "LY26UON",
+ "model": "BMW 530e M Sport Pro Touring",
+ "series": "5 Series",
+ "year": 2026,
+ "mileage": "3,250 miles",
+ "mileage_miles": 3250,
+ "colour": "Green",
+ "fuel": "Plug-in hybrid",
+ "body": "Estate",
+ "gearbox": "Automatic",
+ "drive": "RearWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "298 hp",
+ "trim": "M Sport Pro/M Sport Plus",
+ "price": "£50,492",
+ "price_gbp": 50492,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0d7e3-1093-7995-814a-7026635bc48f-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0d7e3-1093-7995-814a-7026635bc48f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0d7e3-1178-7b50-a8ee-54c6ff723828-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0d7e3-1229-78f7-86da-71308cd82a4c-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0d7e3-1307-7d8e-b0d2-f85349570863-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0d7e3-13c5-7d5a-8560-069bf737572f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0d7e3-146f-742f-bca2-ee8da52e48db-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/253275/pb-bmw-530e-2026",
+ "listing_id": "253275",
+ "source": "group",
+ "finance": null
+}

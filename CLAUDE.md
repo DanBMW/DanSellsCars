@@ -323,6 +323,33 @@ Three things the page has to respect:
 - The term shown is the one the lender returned, which is not always 48
   months - it comes back shorter on older cars.
 
+### Hidden used car lookup - lookup/
+
+Added 7 October 2026 for a colleague's appointment booking page: they take a
+reg and pull that car's details and photo. **Sent by link only**: `lookup/index.html`
+carries `<meta name="robots" content="noindex,nofollow">`, `robots.txt` has
+`Disallow: /lookup/`, it is out of `sitemap.xml` and must never be linked from
+any page. It is hidden from search, not private: anyone with the URL can read it.
+
+- **`scripts/build-lookup.mjs` writes it** (Node 18+, no dependencies) from
+  `hedin-stock-snapshot.json` (source `forecourt`), `hedin-group-stock.json`
+  (source `group`), `stock-finance.json` and `car-details.json`:
+  `lookup/stock.json` (`generated_at`, `count`, `counts`, `cars` keyed by reg,
+  uppercase, no spaces) and one `lookup/reg/<REG>.json` per car. It deletes reg
+  files for cars that have left both lists, so a 404 means "not in stock".
+  A car in both lists is the forecourt's. Only fields the stock files hold,
+  null where they hold nothing. `finance` is the `stock-finance.json` entry
+  verbatim plus `representative_example` (dsfinance.js wording), and null when
+  there is no live quote.
+- **Run it after every stock or quote refresh**: `node scripts/build-lookup.mjs`
+  then commit `lookup/`. Reg files carry no timestamp, so an unchanged car is
+  not rewritten and the diff shows only arrivals, departures and changes.
+- `lookup/widget.js` is a drop in script the colleague's site loads from here;
+  it fills a reg box's sibling fields and fires a `dsc:car` event. It never
+  fills finance (a monthly figure needs its full representative example).
+  GitHub Pages serves everything with `Access-Control-Allow-Origin: *`, which
+  is what lets another site fetch the JSON.
+
 ### The rest of the group's stock - hedin-group-stock.json
 
 `stock.html` opens on Dan's own forecourt and nothing else. Underneath that
@@ -376,7 +403,12 @@ other stock"**, which merges in every other used BMW the group has -
 - **Both stock files are on the morning routine.** The Routine "Daily Stock
   Refresh + Group Stock + Finance Cards + Stock Quotes" runs at 07:00 and does
   four parts in order, each its own commit and push: the Ruxley snapshot, then
-  `group-stock.py`, then the Instagram cards, then `stock-finance.py`. The
+  `group-stock.py`, then the Instagram cards, then `stock-finance.py`.
+  **Routine, please also do this as a fifth step:** after `stock-finance.py`,
+  run `node scripts/build-lookup.mjs` and commit and push `lookup/` (message
+  "Daily lookup refresh"). It reads only the files the first four steps wrote,
+  takes a second, and needs no network. If it refuses (empty snapshot), leave
+  yesterday's `lookup/` alone. The
   group list sits before the quote run deliberately, because the quote job
   reads it. A group-list failure is not allowed to stop the rest: the script
   refuses to write rather than publish a bad list, and the routine is told to

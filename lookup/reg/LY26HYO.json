@@ -1,0 +1,32 @@
+{
+ "reg": "LY26HYO",
+ "model": "BMW iX xDrive45 M Sport",
+ "series": "iX",
+ "year": 2026,
+ "mileage": "5,995 miles",
+ "mileage_miles": 5995,
+ "colour": "Black",
+ "fuel": "Electric",
+ "body": "SUV",
+ "gearbox": "Automatic",
+ "drive": "FourWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "407 hp",
+ "trim": "M Sport",
+ "price": "£56,992",
+ "price_gbp": 56992,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08079-9190-78fa-85fc-aa040ec7ffb4-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08079-9190-78fa-85fc-aa040ec7ffb4-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08079-934d-7680-9d15-3e8cd6ede01a-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08079-944a-75ea-89ee-7577ade3f6c1-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08079-9519-7301-ad92-3a49153438ad-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08079-962a-7e49-ad88-e6b263188750-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08079-971a-7fd4-b77b-613ab8eaedf1-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/249570/pb-bmw-ix-2026",
+ "listing_id": "249570",
+ "source": "group",
+ "finance": null
+}

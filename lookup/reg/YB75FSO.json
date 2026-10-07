@@ -1,0 +1,32 @@
+{
+ "reg": "YB75FSO",
+ "model": "BMW X3 xDrive30 M Sport",
+ "series": "X3",
+ "year": 2025,
+ "mileage": "10,012 miles",
+ "mileage_miles": 10012,
+ "colour": "White",
+ "fuel": "Plug-in hybrid",
+ "body": "SUV",
+ "gearbox": "Automatic",
+ "drive": "FourWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "291 hp",
+ "trim": "M Sport",
+ "price": "£41,983",
+ "price_gbp": 41983,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd1a1-9247-7c59-bd3b-ca342a63e9e5-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd1a1-9247-7c59-bd3b-ca342a63e9e5-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd1a1-9309-748d-9e82-1cd4a2119fb9-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd1a1-939f-7645-a407-76b18f552509-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd1a1-9444-75fd-a26f-90fbb9180d31-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd1a1-94e7-7bf0-9e1c-085dea4ecfba-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd1a1-9587-7d8e-b80a-fb6ab7f9e7c0-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/234195/pb-bmw-x3-2025",
+ "listing_id": "234195",
+ "source": "group",
+ "finance": null
+}
