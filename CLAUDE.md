@@ -282,6 +282,39 @@ keep its shape.
   megabytes nobody asked for. The equipment list is built the first time its
   `<details>` is opened for the same reason - fourteen thousand list items
   otherwise.
+- **A photograph url is a lease, not an address**, and that is what
+  `automation/stock-images.py` exists for. Hedin re-process a car's pictures
+  from time to time and the old CDN file is deleted when they do, so anything
+  stored goes dead without warning. The snapshot never re-read its `image`
+  (the morning routine carried it across and fetched one only for a new
+  arrival) so the damage accumulated: 9 of 82 cars broken on 7 October 2026,
+  the oldest dead since the day the car arrived. `car-details.json` is worse
+  in principle because it is fetched once a car and then treated as done for
+  ever, which is true of the equipment and not of the pictures: 98 dead
+  gallery slides across 22 cars on the same morning. `group-stock.py` was the
+  one that was right, because it takes the image off the list payload on every
+  run, so it was never more than a day behind.
+  The script runs daily, after both stock lists and the car details, and does
+  three things in order: takes the hero off the group's own list payload (one
+  request for every car the group has, which is where the snapshot should
+  always have read it, the routine's old claim that "only the listing page
+  carries the photo" being simply wrong), asks the CDN whether each url
+  resolves, and for anything still dead reads that one car's listing page.
+  Two rules it must keep. **A url is only written once it has answered 200**,
+  so it can never put a worse guess over a working photograph, and a car it
+  cannot mend keeps what it had rather than being handed a blank. And **the
+  listing page is read by car id, never by taking the first `car_` block on
+  it**: a listing url for a car that has gone answers 404 with a 138KB page
+  carrying eight OTHER cars in a "similar vehicles" strip, and reading the
+  first gallery there puts a stranger's photographs on this car's card. That
+  page is far too big for the fetch size check to notice, and an id that is
+  absent from its own page is how a sold car is told apart from a broken one.
+  It exits non-zero only when more than a twentieth of a file cannot be
+  mended. One or two a morning is normal and not actionable: a car whose
+  listing has gone drops out of tomorrow's snapshot, and a car whose listing
+  is up with no pictures has not been photographed yet. Failing on those would
+  put a scheduled job permanently in the red, which is how a red job stops
+  being read.
 
 Three things the page has to respect:
 - **A quote expires, and they all expire together.** `valid_to` is BMW
