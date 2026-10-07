@@ -659,7 +659,13 @@ bar with the same wording and "Continue to page"; Find my BMW stays inline).
   Open Graph and `twitter:card`; internal tools carry `noindex` and are listed
   as `Disallow` in `robots.txt`. `sitemap.xml` is hand-maintained: add new
   public pages, keep redirect stubs, drafts (`how-i-work.html` until it goes
-  live) and internal tools out.
+  live) and internal tools out. Funnel steps and thank-you pages (`ap1`
+  to `ap6`, `sq1` to `sq3`, `sq_done`, `ev-step1` to `ev-step7`,
+  `ev-thankyou`, `thankyou`, `purchase-thankyou`, `x1-insta`) carry
+  `noindex, follow` and are deliberately **not** in `robots.txt`: a Disallow
+  would stop Google seeing the noindex. Their landing pages (`appraisal`,
+  `service`, `EV`) are the indexed entry points. Search Console, 7 October
+  2026.
 
 ## Shared IDs and endpoints
 
