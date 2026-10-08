@@ -27,7 +27,9 @@
     --dim:#847f75;--hair:rgba(236,233,225,.14);--accent:#5b8ac9;--go:#1f8f4e}
   .nc{background:var(--ink);color:var(--paper)}
   .nc-wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px}
-  .nc-hero{padding:46px 0 26px;border-bottom:1px solid var(--hair)}
+  /* the site header is position:fixed, so the page has to start below it */
+  .nc-hero{padding:calc(96px + env(safe-area-inset-top)) 0 26px;
+    border-bottom:1px solid var(--hair)}
   .nc-hero h1{font-size:clamp(30px,5vw,46px);line-height:1.06;margin:0 0 12px}
   .nc-hero p{color:var(--body-c);max-width:62ch;margin:0}
   .nc-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:20px 0}
@@ -83,6 +85,11 @@
   .nc-note{border:1px solid var(--hair);border-radius:12px;background:var(--ink-2);
     padding:16px 18px;margin:26px 0 0;font-size:13.5px;color:var(--body-c)}
   .nc-sheet-btn{display:none}
+  /* The phone's sticky button lives inside .nc-main, so on desktop it was
+     taking the second grid cell and pushing every card onto a row of its
+     own below the filters. Hidden by default, and the media query below
+     makes it fixed, which takes it out of the grid entirely. */
+  .nc-show{display:none}
   @media(max-width:860px){
     .nc-main{grid-template-columns:1fr}
     .nc-facets{position:fixed;inset:0;z-index:80;background:var(--ink);
@@ -91,7 +98,7 @@
     .nc-sheet-btn{display:inline-block}
     .nc-show{position:fixed;left:20px;right:20px;bottom:18px;z-index:81;
       background:var(--accent);color:#fff;border:0;border-radius:999px;
-      padding:16px;font:inherit;font-weight:600;display:none}
+      padding:16px;font:inherit;font-weight:600}
     .nc-facets.open ~ .nc-show{display:block}
   }
   .nc [hidden]{display:none!important}
