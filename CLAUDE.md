@@ -712,6 +712,23 @@ bar with the same wording and "Continue to page"; Find my BMW stays inline).
   `index.html`, offer pages, `refer.html`, `thankyou.html`, `wait.html`,
   and more. Search for `formspree.io` before changing anything about the
   payload shape.
+- **`_replyto` must be an address that can actually receive mail.** Every form
+  used to fall back to `noreply@dan-sells.co.uk` when the customer had not
+  given an email, and three of them (`yourcar.html`, `sq1.html`,
+  `yourbrief.html`) sent it every single time, because a one tap interest
+  signal never asks for one. **dan-sells.co.uk has no MX record** - it is
+  GitHub Pages, it cannot receive mail - so that address is undeliverable, and
+  Formspree filed those submissions as spam. They were accepted (`ok:true`,
+  HTTP 200) and simply never emailed: the dashboard had them under Spam while
+  Dan had no idea they existed, from 20 April to 8 October 2026. The evidence
+  fits exactly, and it was checked rather than assumed: every notification
+  that did arrive in that period carried a real customer address in
+  `_replyto`, and the ones that vanished were the three hardcoded to noreply.
+  The fallback is now `daniel.cane@hedinautomotive.co.uk`, which is Dan's own
+  address, is already public on every stock card, and sits on a domain with
+  real MX records. A customer's own email is still preferred wherever the page
+  has one. Do not reintroduce a noreply address on a domain that cannot
+  receive mail, here or anywhere else.
 - **Find my BMW v2 payloads** (`fmb.js`). Contact, `form: find-my-bmw-v2`:
   `lead_id` (`FMB-YYMMDD-XXXXX`, also in `sessionStorage.fmbLead`), `name,
   email, phone, _subject, _replyto, _gotcha` (honeypot), `interest`
