@@ -424,12 +424,24 @@ my BMW used result cards (`fmb.js`, only after the gate unlocks) and
   for video; group cars turn up at 3925 and 3929, so all five are tried). A
   missing file answers **403 AccessDenied**, not 404. First file that loads
   wins.
-- **Checks.** Video: one hidden `<video preload=metadata muted playsinline>`
-  per car, `loadedmetadata` means found, `error` or 8 seconds means next
-  library. Spin: frame 1 only, via `new Image()` (also given 8 seconds). The
-  result per reg (library, or '' after a completed check found nothing) is
-  kept in `sessionStorage` (`aos:v:REG`, `aos:s:REG`). A check cancelled
-  because the car left the screen is **not** remembered.
+- **Checks.** The spin goes first: frame 1 only, via `new Image()` (8
+  seconds a library). **A car with a spin gets the Video button straight
+  away** and no hidden video check runs: iPhones (Low Power Mode, data saver)
+  often never preload a `<video>` nobody can see, so a hidden check there
+  times out and the button went missing (8 October). Only a car with no spin
+  gets the hidden `<video preload=metadata muted playsinline>` check
+  (`loadedmetadata` found, `error` next library, 8 seconds no answer).
+- **The tap does the rest.** `openVideo()` sets the src and calls `play()`
+  synchronously inside the tap (iOS needs that), trying the spin's library
+  first. A 403 moves on to the next library (muted if iOS refuses an
+  unprompted start; the walkarounds have no sound); if none has it the photo
+  comes back quietly and the Video button goes for that car.
+- **The session cache** (`sessionStorage`, prefix `aos2:`, keys `v:REG` and
+  `s:REG`) holds the library, or '' only when every library answered "not
+  here". A check where any library never answered, or one cancelled because
+  the car left the screen, stores nothing. The prefix moved from `aos:` to
+  `aos2:` because the first version stored '' for timed out iPhone checks.
+  Pages load `aos-media.js?v=N`; bump N with a behaviour change.
 - **Only cars on screen are checked**: one IntersectionObserver, a 250ms
   dwell so a fast scroll does not fire checks, and a car that leaves the
   screen cancels its check. On 8 October a phone scrolling 3,000px down

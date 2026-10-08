@@ -41,16 +41,19 @@ window.aosMedia = (function () {
 
   /* ---------- what we already know this session ----------
      'v:REG' and 's:REG' hold the library that has the file, or '' when every
-     library was tried and none had it. A cancelled check stores nothing. */
-  var MEM = {};
+     library answered "not here". A cancelled check, or one where any library
+     simply never answered (a phone that will not preload video), stores
+     nothing, so the next visit asks again. The prefix is aos2: because the
+     first version stored '' for timed out video checks on iPhones. */
+  var PREFIX = 'aos2:', MEM = {};
   function recall(k) {
     if (Object.prototype.hasOwnProperty.call(MEM, k)) return MEM[k];
-    try { var v = sessionStorage.getItem('aos:' + k); if (v !== null) return (MEM[k] = v); } catch (e) {}
+    try { var v = sessionStorage.getItem(PREFIX + k); if (v !== null) return (MEM[k] = v); } catch (e) {}
     return undefined;
   }
   function remember(k, v) {
     MEM[k] = v;
-    try { sessionStorage.setItem('aos:' + k, v); } catch (e) {}
+    try { sessionStorage.setItem(PREFIX + k, v); } catch (e) {}
   }
 
   /* ---------- one candidate at a time ---------- */
@@ -79,7 +82,7 @@ window.aosMedia = (function () {
         cb = done;
         v.onloadedmetadata = function () { off(); stop(); cb(true); };
         v.onerror = function () { off(); cb(false); };
-        t = setTimeout(function () { off(); stop(); cb(false); }, PROBE_MS);
+        t = setTimeout(function () { off(); stop(); cb(null); }, PROBE_MS);
         v.src = url;
       },
       cancel: stop,
@@ -96,7 +99,7 @@ window.aosMedia = (function () {
         var me = img = new Image();
         me.onload = function () { if (img !== me) return; stop(); done(true); };
         me.onerror = function () { if (img !== me) return; stop(); done(false); };
-        t = setTimeout(function () { if (img !== me) return; stop(); done(false); }, PROBE_MS);
+        t = setTimeout(function () { if (img !== me) return; stop(); done(null); }, PROBE_MS);
         me.src = url;
       },
       cancel: stop,
@@ -112,22 +115,23 @@ window.aosMedia = (function () {
     var run = LIVE[key];
     if (!run) {
       run = LIVE[key] = { subs: [], tester: kind === 'v' ? videoTester() : imageTester(), over: false };
-      var libs = order(src), i = 0;
+      var libs = order(src), i = 0, unsure = false;
       var next = function () {
         if (run.over) return;
         run.subs = run.subs.filter(function (s) { return s.alive(); });
         if (!run.subs.length) { cancelRun(key, run); return; }
-        if (i >= libs.length) { finish(''); return; }
+        if (i >= libs.length) { finish(unsure ? null : ''); return; }
         var lib = libs[i++];
         run.tester.test(kind === 'v' ? videoUrl(lib, reg) : frameUrl(lib, reg, 1), function (ok) {
           if (run.over) return;
-          if (ok) finish(lib); else next();
+          if (ok) finish(lib);
+          else { if (ok === null) unsure = true; next(); }
         });
       };
       var finish = function (lib) {
         run.over = true; delete LIVE[key];
         run.tester.dispose();
-        remember(key, lib);
+        if (lib !== null) remember(key, lib);   /* null: some library never answered */
         run.subs.forEach(function (s) { s.done(lib); });
       };
       setTimeout(next, 0);
@@ -159,24 +163,33 @@ window.aosMedia = (function () {
     if (!st || st.running || !area.isConnected) return;
     st.running = true;
     var alive = function () { return area.isConnected && st.running; };
-    ['v', 's'].forEach(function (kind) {
-      if (st[kind] !== undefined) return;
-      st['un' + kind] = probe(kind, st.reg, st.src, {
-        alive: alive,
-        done: function (lib) { st[kind] = lib; st['un' + kind] = null; paint(area); settle(area); }
-      });
+    /* The 360 frame is an image, which every phone fetches, so it goes first.
+       A car with a spin was filmed, so it gets the Video button straight away
+       and the tap finds the file (openVideo). The hidden <video> check only
+       runs for a car with no spin: iPhones, above all in Low Power Mode or
+       on data saver, often never preload a video nobody can see. */
+    var kind = st.s === undefined ? 's' : (needsVideoCheck(st) ? 'v' : '');
+    if (!kind) { settle(area); return; }
+    st['un' + kind] = probe(kind, st.reg, st.src, {
+      alive: alive,
+      done: function (lib) {
+        st[kind] = lib; st['un' + kind] = null; paint(area);
+        if (kind === 's' && needsVideoCheck(st) && st.running) { st.running = false; start(area); return; }
+        settle(area);
+      }
     });
     settle(area);
   }
+  function needsVideoCheck(st) { return st.v === undefined && !st.s; }
   function stopChecks(area) {
     var st = area._aos; if (!st) return;
     clearTimeout(st.timer); st.timer = 0;
     st.running = false;
-    ['v', 's'].forEach(function (kind) { var u = st['un' + kind]; st['un' + kind] = null; if (u) u(); });
+    ['v', 's'].forEach(function (k) { var u = st['un' + k]; st['un' + k] = null; if (u) u(); });
   }
   function settle(area) {
     var st = area._aos;
-    if (st.v !== undefined && st.s !== undefined) { st.running = false; if (IO) IO.unobserve(area); }
+    if (st.s !== undefined && (st.s || st.v !== undefined)) { st.running = false; if (IO) IO.unobserve(area); }
   }
 
   /* ---------- the buttons ---------- */
@@ -185,9 +198,9 @@ window.aosMedia = (function () {
   var ICON_PHOTO = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="3" width="13" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="5.5" cy="6.5" r="1.3" fill="currentColor"/><path d="M2.5 12l4-3.5 3 2.5 2-1.5 2.5 2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 
   function paint(area) {
-    var st = area._aos, has = { v: !!st.v, s: !!st.s };
-    if (!has.v && !has.s) return;
+    var st = area._aos, has = { v: hasVideo(st), s: !!st.s };
     var bar = area.querySelector(':scope > .aos-bar');
+    if (!has.v && !has.s) { if (bar) bar.parentNode.removeChild(bar); return; }
     if (!bar) {
       bar = document.createElement('div');
       bar.className = 'aos-bar' + (st.mode === 'badges' ? ' aos-static' : '');
@@ -199,6 +212,13 @@ window.aosMedia = (function () {
     if (has.v) html += '<' + tag + (tag === 'button' ? ' type="button" aria-pressed="false"' : '') + ' class="aos-b" data-aos="video">' + ICON_PLAY + '<span>Video</span></' + tag + '>';
     if (has.s) html += '<' + tag + (tag === 'button' ? ' type="button" aria-pressed="false"' : '') + ' class="aos-b" data-aos="spin">' + ICON_SPIN + '<span>360</span></' + tag + '>';
     if (bar.getAttribute('data-k') !== html) { bar.innerHTML = html; bar.setAttribute('data-k', html); syncBar(area); }
+  }
+  function hasVideo(st) { return !!st.v || (!!st.s && st.v !== ''); }
+  /* Libraries to try on a tap: the one we know, else the spin's, then the rest */
+  function videoLibs(st) {
+    var first = st.v || st.s, out = first ? [first] : [];
+    order(st.src).forEach(function (l) { if (out.indexOf(l) === -1) out.push(l); });
+    return out;
   }
   function syncBar(area) {
     var bar = area.querySelector(':scope > .aos-bar'); if (!bar) return;
@@ -217,8 +237,8 @@ window.aosMedia = (function () {
     var stage = area.querySelector(':scope > .aos-stage');
     if (stage) {
       var v = stage.querySelector('video');
-      if (v) { try { v.pause(); } catch (e) {} v.removeAttribute('src'); try { v.load(); } catch (e) {} }
       stage.parentNode.removeChild(stage);
+      if (v) { v._aosClosed = true; try { v.pause(); } catch (e) {} v.removeAttribute('src'); try { v.load(); } catch (e) {} }
     }
     st.open = null; syncBar(area);
   }
@@ -231,20 +251,46 @@ window.aosMedia = (function () {
     area._aos.open = kind; syncBar(area);
     return s;
   }
+  /* Everything up to play() runs synchronously inside the tap, which is what
+     iOS needs before it will start a video. A library that errors (403) moves
+     on to the next; if none has it the photo comes back quietly and the Video
+     button goes for that car. */
   function openVideo(area) {
-    var st = area._aos; if (!st.v) return;
-    var s = stageFor(area, 'video'), played = false;
+    var st = area._aos; if (!hasVideo(st)) return;
+    var libs = videoLibs(st), i = 0, played = false;
+    var s = stageFor(area, 'video');
     var v = document.createElement('video');
-    v.controls = true; v.playsInline = true; v.preload = 'metadata';
-    v.setAttribute('playsinline', ''); v.setAttribute('controls', ''); v.setAttribute('preload', 'metadata');
+    v.controls = true; v.playsInline = true; v.preload = 'auto';
+    v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('controls', ''); v.setAttribute('preload', 'auto');
     v.setAttribute('aria-label', 'Walkaround video of ' + st.reg);
+    v.addEventListener('loadedmetadata', function () {
+      if (v._aosClosed) return;
+      if (st.v !== libs[i]) { st.v = libs[i]; remember('v:' + st.reg, libs[i]); }
+    });
     v.addEventListener('play', function () {
       if (played) return; played = true;
-      track('video_play', { reg: st.reg, library: st.v, page: location.pathname });
+      track('video_play', { reg: st.reg, library: libs[i], page: location.pathname });
     });
-    v.src = videoUrl(st.v, st.reg);
+    v.addEventListener('error', function () {
+      if (v._aosClosed || st.open !== 'video') return;
+      if (++i < libs.length) { go(); return; }
+      st.v = ''; remember('v:' + st.reg, '');
+      leave(area); paint(area);
+    });
+    function go() {
+      v.src = videoUrl(libs[i], st.reg);
+      var p = v.play();
+      if (p && p['catch']) p['catch'](function (err) {
+        /* A retry after a 403 is outside the tap. These walkarounds have no
+           sound, so a muted start loses nothing. */
+        if (err && err.name === 'NotAllowedError' && !v._aosClosed && !v.muted) {
+          v.muted = true; var q = v.play(); if (q && q['catch']) q['catch'](function () {});
+        }
+      });
+    }
     s.appendChild(v);
-    var p = v.play(); if (p && p['catch']) p['catch'](function () {});
+    go();
   }
   function openSpin(area) {
     var st = area._aos; if (!st.s) return;
