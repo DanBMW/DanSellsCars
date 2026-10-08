@@ -531,6 +531,59 @@ Other things it has to keep:
   **This is a financial promotion**, so it is Dan's to clear with Hedin and
   ITC Compliance (FRN 313486) before it goes live, not a decision to take in
   this repo.
+- **Ask for a personalised quotation.** The figures above that button are BMW's
+  example on BMW's own fixed terms, and nobody buys on those terms, so the
+  button asks for the real one. It opens the **site contact modal** rather than
+  WhatsApp, because the card already carries a WhatsApp button and two of those
+  is one decision too many, and it presets the message with the car, the order
+  number and the three things Dan cannot quote without: deposit, annual mileage
+  and term. GA `new_car_quote_request`.
+- **There is no RRP in the locator, and one must not be invented.** Dan asked
+  for the list price struck through beside the offer price on 8 October. The
+  whole payload was checked: there is **one** price a car
+  (`visible_cash_price`, which BMW's own tooltip says is the on the road price)
+  and a `dealer_price` boolean, true on 39 of the 80 and false on 41. There is
+  no second price anywhere in the results envelope, and the locator has no per
+  car route to read one off: the only paths on the whole page are `/results`
+  and the retailer form.
+  So the flag is published as `retailer_price` and the card says **which kind
+  of price it is**, "Hedin Ruxley price, on the road" or "BMW on the road
+  price", and claims no saving. `priceBlock()` already draws the struck through
+  figure and a "You save" line the moment a car carries a `list_price`, so the
+  day a list price per order number comes out of Hedin's system that is the one
+  place to fill in. Do not derive one: under the CMA's pricing guidance a
+  struck through price has to be one that was genuinely charged, so it is not
+  a number to work out, it is a fact to look up.
+- **The specification is published in the four parts BMW keep it in**:
+  `options` (the extras this car was ordered with, median 2), `packages`,
+  `standard` (median 22, max 35) and `standard_packages`. The `standard` flag
+  on each entry agrees exactly with the list it sits in, so the lists are kept
+  apart and the flag is not stored. Option **photographs are not stored**: 22
+  options a car at 700 characters a url is a megabyte on a file a phone
+  downloads, for pictures of a wheel. `options` keeps its old meaning because
+  the colleague contract already reads it.
+  The list is built the first time its `<details>` is opened, the same rule
+  `stock.html` keeps, and it is in the search haystack, which is what makes the
+  search box worth having here as it was there: "harman" finds 23 cars,
+  "heated seats" 73.
+- **Share this search.** Every filter, the sort and the search box already live
+  in the query string, so the current URL **is** the search and the share is a
+  one line summary plus that link ("11 brand new BMWs matching 1 Series:").
+  Native share where the phone has one, clipboard otherwise, and an honest
+  "Copy the address bar" when neither is allowed. GA `new_car_share`.
+- **The phone filter sheet measures the chrome, it does not assume it.**
+  `fitSheet()` reads the header's own bottom and the sticky bar's height into
+  `--nc-top` and `--nc-bot` when the sheet opens, on resize and while it is
+  open and the page scrolls. A hard coded 76px was wrong by the header's 1px
+  border on the first measurement, and would be wrong by more the first time
+  somebody edits `partials/header2.html`, which this page does not own. The
+  failure is not cosmetic: the sheet covering the header hides the menu, which
+  is the way out of the sheet.
+- **`window.ncDebug`** exposes `shareText`, `quoteMsg`, `byOrder`, `fitSheet`,
+  `shown` and `sel` for the tests, the same seam `fmb.js` gives. A headless
+  browser will not honestly answer for `navigator.share` or the clipboard, so
+  the tests check what the page *would* say through that seam and check the
+  button separately.
 - **The locator gives a 0 to 62 time**, which the used stock does not, so the
   page can sort on it. Do not copy that figure onto a used car: the quiz uses
   horsepower per tonne precisely because no used source publishes one.

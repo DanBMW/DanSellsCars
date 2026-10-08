@@ -354,6 +354,25 @@ def example_for(price, monthly, apr, terms):
     }
 
 
+def titles(entries):
+    """The option titles out of one of BMW's four specification lists.
+
+    Deduplicated and in the order BMW give them, which is roughly how a
+    brochure reads. The `standard` flag on each entry agrees exactly with the
+    list it sits in (1,659 standard options and 178 extras on the first run,
+    no disagreements), so the lists are kept apart and the flag is not stored.
+    """
+    out, seen = [], set()
+    for o in (entries or []):
+        if not isinstance(o, dict):
+            continue
+        t = clean(o.get('title'))
+        if t and t not in seen:
+            seen.add(t)
+            out.append(t)
+    return out
+
+
 def normalise(car, terms=None):
     num = order_number(car.get('order_number'))
     if not num:
@@ -385,8 +404,20 @@ def normalise(car, terms=None):
         'lead_time_weeks_min': car.get('lead_time_in_weeks_min'),
         'lead_time_weeks_max': car.get('lead_time_in_weeks_max'),
         'on_hold': bool(car.get('on_hold')),
-        'options': [clean(o.get('title')) for o in (car.get('non_standard_options') or [])
-                    if isinstance(o, dict) and o.get('title')],
+        # The specification, in the four parts BMW keep it in. `options` is
+        # left exactly where it was (the extras this car was ordered with)
+        # because the colleague contract already reads it; the other three are
+        # new. The option entries carry an option photograph each as well,
+        # which is not stored: 22 options a car at 700 characters a url is a
+        # megabyte on a file a phone downloads, for pictures of a wheel.
+        'options': titles(car.get('non_standard_options')),
+        'packages': titles(car.get('non_standard_packages')),
+        'standard': titles(car.get('standard_options')),
+        'standard_packages': titles(car.get('standard_packages')),
+        # BMW's own flag for whether this price is the retailer's or their
+        # standard on the road price. They publish no list price beside it, so
+        # this says which kind of price it is and never implies a saving.
+        'retailer_price': bool(car.get('dealer_price')),
         'image': shots[0] if shots else '',
         'images': shots,
     }

@@ -77,7 +77,12 @@
   .nc-body{padding:16px 16px 18px;display:flex;flex-direction:column;flex:1}
   .nc-card h2{font-size:19px;margin:0 0 6px;line-height:1.22}
   .nc-spec{font-size:13.5px;color:var(--body-c);margin:0 0 12px}
-  .nc-price{font-size:25px;font-weight:600;letter-spacing:-.01em;margin:auto 0 4px}
+  .nc-price{font-size:25px;font-weight:600;letter-spacing:-.01em;margin:auto 0 2px}
+  .nc-was{font-size:14px;color:var(--dim);margin:0 0 2px}
+  .nc-was s{text-decoration:line-through;text-decoration-thickness:1.5px}
+  .nc-was b{color:var(--go);font-weight:600}
+  .nc-plabel{font-size:12px;color:var(--dim);margin:0 0 10px;
+    letter-spacing:.04em}
   .nc-fin{font-size:12.5px;color:var(--dim);margin:0 0 13px}
   .nc-mon{font-size:15px;color:var(--paper);margin:0 0 2px}
   .nc-mon b{font-size:19px;font-weight:600}
@@ -93,6 +98,23 @@
   .nc-eg dt{margin:0}
   .nc-eg dd{margin:0;text-align:right;color:var(--paper)}
   .nc-eg p{color:var(--dim);line-height:1.55;margin:0 0 9px}
+  .nc-quote{display:block;width:100%;text-align:center;background:transparent;
+    color:var(--accent);border:1px solid rgba(91,138,201,.55);border-radius:999px;
+    padding:12px;font:inherit;font-size:14px;font-weight:600;min-height:44px;
+    cursor:pointer;margin:0 0 10px;text-decoration:none}
+  .nc-spec-list{border-top:1px solid var(--hair);margin:0 0 13px;font-size:12.5px}
+  .nc-spec-list>summary{cursor:pointer;padding:10px 0 9px;color:var(--accent);
+    list-style:none;min-height:40px}
+  .nc-spec-list>summary::-webkit-details-marker{display:none}
+  .nc-spec-list>summary::after{content:" +";color:var(--dim)}
+  .nc-spec-list[open]>summary::after{content:" \2212";color:var(--dim)}
+  .nc-spec-list h4{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);margin:4px 0 7px;font-weight:600}
+  .nc-spec-list ul{margin:0 0 12px;padding:0 0 0 17px;color:var(--body-c);
+    line-height:1.65}
+  .nc-share{background:var(--ink-2);color:var(--paper);border:1px solid var(--hair);
+    border-radius:10px;padding:13px 15px;font:inherit;cursor:pointer;min-height:44px}
+  .nc-share[data-done=yes]{border-color:var(--go);color:var(--go)}
   .nc-wa{display:block;text-align:center;background:var(--go);color:#fff;
     text-decoration:none;border-radius:999px;padding:13px;font-weight:600;min-height:44px}
   .nc-empty{padding:50px 0;text-align:center;color:var(--body-c)}
@@ -109,17 +131,24 @@
     /* The sheet sits UNDER the site header (z-index 200, position:fixed) and
        ABOVE the sitewide sticky contact bar (z-index 150), so it has to start
        below the one and its button has to clear the other. Covering the header
-       is not an option: the way out of the sheet is the menu. */
+       is not an option: the way out of the sheet is the menu.
+
+       --nc-top and --nc-bot are MEASURED off those two elements when the sheet
+       opens (fitSheet()), not written here. A number typed in once is a number
+       that goes wrong the first time the header changes, and the header is
+       stamped from a shared partial that this page does not own. The values
+       below are only the fallback for a browser that never runs the script. */
     .nc-facets{position:fixed;left:0;right:0;bottom:0;z-index:160;
-      top:calc(76px + env(safe-area-inset-top));background:var(--ink);
+      top:var(--nc-top,76px);background:var(--ink);
       border-top:1px solid var(--hair);
-      overflow:auto;padding:18px 20px 150px;display:none}
+      overflow:auto;-webkit-overflow-scrolling:touch;
+      padding:18px 20px calc(var(--nc-bot,74px) + 86px);display:none}
     .nc-facets.open{display:block}
     .nc-sheet-btn{display:inline-block}
     /* above the sticky WhatsApp bar, and lifted clear of it rather than
        hidden behind it, which is where it was */
     .nc-show{position:fixed;left:16px;right:16px;z-index:170;
-      bottom:calc(74px + env(safe-area-inset-bottom));
+      bottom:calc(var(--nc-bot,74px) + 12px);
       background:var(--accent);color:#fff;border:0;border-radius:999px;
       padding:17px;font:inherit;font-weight:600;
       box-shadow:0 8px 28px rgba(0,0,0,.5)}
@@ -188,6 +217,7 @@
       <option value="quick">Quickest, 0 to 62</option>
     </select>
     <button type="button" class="nc-btn nc-sheet-btn" id="ncOpen">Filters</button>
+    <button type="button" class="nc-share" id="ncShare">Share this search</button>
     <button type="button" class="nc-btn" id="ncReset">Reset</button>
   </div>
 
@@ -533,8 +563,15 @@
 
   /* The haystack is stamped on once rather than rebuilt per keystroke. */
   function hayFor(c){
+    /* The specification is what makes the search box worth having, the same
+       finding as the used stock: "harman kardon" or "tow bar" is unfindable
+       when the haystack is model, colour and trim. Standard equipment is in
+       here too, because a car having something as standard is still a car
+       that has it. */
     return [c.description, c.range, c.series, c.colour, c.fuel, c.drive,
-            c.wheels, c.upholstery, (c.options||[]).join(' ')]
+            c.wheels, c.upholstery,
+            (c.options||[]).join(' '), (c.packages||[]).join(' '),
+            (c.standard||[]).join(' '), (c.standard_packages||[]).join(' ')]
       .join(' ').toLowerCase();
   }
 
@@ -670,6 +707,27 @@
     if (dots) dots.textContent = (i + 1) + '/' + pics.length;
   }
 
+  /* The sheet has to start below the site header and stop above the sitewide
+     sticky bar, and both of those are stamped from shared partials this page
+     does not own. So they are measured rather than guessed: a hard coded 76px
+     is right until the day somebody changes the header, and then the sheet
+     covers the way out of itself with nothing to say why. */
+  function fitSheet(){
+    var hdr = document.querySelector('.ph-header');
+    var bar = document.getElementById('dsSticky');
+    var s = document.documentElement.style;
+    if (hdr){
+      var b = hdr.getBoundingClientRect().bottom;
+      if (b > 0) s.setProperty('--nc-top', Math.round(b) + 'px');
+    }
+    var bot = 12;
+    if (bar && !bar.classList.contains('is-hidden')){
+      var r = bar.getBoundingClientRect();
+      if (r.height && r.bottom > window.innerHeight - 4) bot = Math.round(r.height) + 12;
+    }
+    s.setProperty('--nc-bot', bot + 'px');
+  }
+
   function money(n){
     if (n == null) return '';
     return '£' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -716,6 +774,71 @@
       + '</details>';
   }
 
+  /* BMW publish ONE price a car plus a flag saying whose it is: their standard
+     on the road price, or the retailer's own. They publish no list price
+     beside a retailer one, so there is nothing honest to cross out, and a
+     "was" price is not a thing to derive: under the CMA's own guidance the
+     higher figure has to be one that was genuinely charged. So a retailer
+     price is labelled as one and the saving is left for Dan to confirm.
+     If a list price per order number ever comes out of Hedin's system, this
+     is the one place to add the struck-through figure. */
+  function priceBlock(c){
+    var p = '<p class="nc-price">' + esc(c.price || 'Price on request') + '</p>';
+    if (c.list_price && c.price_gbp && c.list_price > c.price_gbp){
+      p += '<p class="nc-was"><s>' + esc(money(c.list_price)) + '</s> '
+         + '<b>You save ' + esc(money(c.list_price - c.price_gbp)) + '</b></p>';
+      return p + '<p class="nc-plabel">Hedin Ruxley price, on the road</p>';
+    }
+    return p + '<p class="nc-plabel">' + (c.retailer_price
+      ? 'Hedin Ruxley price, on the road'
+      : 'BMW on the road price') + '</p>';
+  }
+
+  /* The figures above this button are BMW's published example on their own
+     fixed terms. Nobody buys on those terms, so the button asks for the real
+     thing, and it goes through the site contact form rather than WhatsApp
+     because the card already has a WhatsApp button and two of those is one
+     decision too many. The message carries the car and the three things Dan
+     needs before he can quote anything. */
+  function quoteMsg(c){
+    return 'Please can I have a personalised finance quotation for this one:\n'
+      + c.description + (c.colour ? ', ' + c.colour : '')
+      + (c.price ? ', ' + c.price : '')
+      + '\nBMW order number ' + c.order_number
+      + '\n\nMy deposit: \nAnnual mileage I do: \nTerm I would like: '
+      + '\nPart exchange: ';
+  }
+
+  /* Built only when the <details> is opened, the same rule stock.html keeps
+     for its equipment list: 80 cards times a median 22 standard options is
+     about two thousand list items nobody has asked to see. */
+  function specBlock(c){
+    var n = (c.options || []).length + (c.packages || []).length
+          + (c.standard || []).length + (c.standard_packages || []).length;
+    if (!n) return '';
+    return '<details class="nc-spec-list"><summary>Full specification, '
+      + n + ' items</summary><div data-spec="1"></div></details>';
+  }
+
+  function fillSpec(box, c){
+    if (box.getAttribute('data-done')) return;
+    box.setAttribute('data-done', '1');
+    var parts = [
+      ['Options on this car', c.options],
+      ['Packages', c.packages],
+      ['Standard equipment', c.standard],
+      ['Standard packages', c.standard_packages]
+    ], html = '';
+    parts.forEach(function(pair){
+      var list = pair[1];
+      if (!list || !list.length) return;
+      html += '<h4>' + esc(pair[0]) + '</h4><ul>'
+        + list.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('')
+        + '</ul>';
+    });
+    box.innerHTML = html;
+  }
+
   function card(c){
     var spec = [c.colour, c.wheels, c.fuel, c.drive === 'All Wheel' ? 'xDrive' : '']
       .filter(Boolean).join(' · ');
@@ -730,8 +853,11 @@
       + '<div class="nc-body">'
       + '<h2>' + esc(c.description) + '</h2>'
       + '<p class="nc-spec">' + esc(spec) + (c.zero_to_62 ? ' · 0 to 62 in ' + esc(c.zero_to_62) + 's' : '') + '</p>'
-      + '<p class="nc-price">' + esc(c.price || 'Price on request') + '</p>'
+      + priceBlock(c)
       + finBlock(c)
+      + '<button type="button" class="nc-quote" data-quote="' + esc(c.order_number)
+      + '">Ask for a personalised quotation</button>'
+      + specBlock(c)
       + '<a class="nc-wa" href="' + esc(msg) + '" target="_blank" rel="noopener" data-reg="' + esc(c.order_number) + '">Ask me about this one</a>'
       + '</div></article>';
   }
@@ -779,13 +905,85 @@
     var chip = e.target.closest ? e.target.closest('.nc-chip,.nc-pill') : null;
     if (chip && !chip.disabled){ toggle(chip.getAttribute('data-f'), chip.getAttribute('data-v')); return; }
     if (e.target.id === 'ncReset'){ SEL = {}; Q = ''; document.getElementById('ncQ').value = ''; render(); }
-    if (e.target.id === 'ncOpen'){ document.getElementById('ncFacets').classList.add('open'); }
+    if (e.target.id === 'ncOpen'){ fitSheet(); document.getElementById('ncFacets').classList.add('open'); }
     if (e.target.id === 'ncShow'){ document.getElementById('ncFacets').classList.remove('open'); }
+    if (e.target.id === 'ncShare'){ shareSearch(e.target); return; }
     var nav = e.target.closest ? e.target.closest('.nc-nav') : null;
     if (nav){ stepShot(nav.parentNode, nav.classList.contains('next') ? 1 : -1); return; }
+    var q = e.target.closest ? e.target.closest('.nc-quote') : null;
+    if (q){ askQuote(q.getAttribute('data-quote')); return; }
     var wa = e.target.closest ? e.target.closest('.nc-wa') : null;
     if (wa && window.gtag) gtag('event','new_car_enquiry',{order_number: wa.getAttribute('data-reg')});
   });
+
+  /* The spec list is filled on first open, not on render. */
+  document.addEventListener('toggle', function(e){
+    var d = e.target;
+    if (!d || !d.classList || !d.classList.contains('nc-spec-list') || !d.open) return;
+    var art = d.closest('.nc-card'), box = d.querySelector('[data-spec]');
+    var btn = art && art.querySelector('.nc-quote');
+    var c = btn && byOrder(btn.getAttribute('data-quote'));
+    if (box && c) fillSpec(box, c);
+  }, true);
+
+  function byOrder(n){
+    for (var i = 0; i < CARS.length; i++) if (CARS[i].order_number === n) return CARS[i];
+    return null;
+  }
+
+  function askQuote(order){
+    var c = byOrder(order);
+    if (!c) return;
+    if (window.gtag) gtag('event', 'new_car_quote_request', {order_number: order});
+    if (typeof window.phOpenContact === 'function'){ window.phOpenContact(quoteMsg(c)); return; }
+    /* The chrome is stamped on this page, so the modal is always there. If a
+       future page carrying this script has no contact block, WhatsApp still
+       gets the customer to Dan rather than the button doing nothing. */
+    window.open(WA + encodeURIComponent(quoteMsg(c)), '_blank', 'noopener');
+  }
+
+  /* Share the search, not the page. Every filter, the sort and the search box
+     already live in the query string (syncUrl), so the current URL IS the
+     search: the share is a one line summary plus that link. Native share
+     where the phone has one, clipboard otherwise, and the link itself if
+     neither is allowed. */
+  function shareText(){
+    var n = shown().length, bits = [];
+    FACETS.forEach(function(f){
+      (SEL[f.key] || []).forEach(function(v){
+        bits.push((f.name && f.name[v]) || v);
+      });
+    });
+    if (Q) bits.push('"' + Q + '"');
+    return n + (n === 1 ? ' brand new BMW' : ' brand new BMWs')
+      + (bits.length ? ' matching ' + bits.join(', ') : ' in stock at Hedin Ruxley')
+      + ':';
+  }
+
+  function shareSearch(btn){
+    var url = location.href, txt = shareText();
+    var done = function(word){
+      btn.textContent = word;
+      btn.setAttribute('data-done', 'yes');
+      setTimeout(function(){
+        btn.textContent = 'Share this search';
+        btn.removeAttribute('data-done');
+      }, 2600);
+    };
+    if (window.gtag) gtag('event', 'new_car_share', {matches: shown().length});
+    if (navigator.share){
+      navigator.share({title: 'Brand new BMWs at Hedin Ruxley',
+                       text: txt, url: url})
+        .then(function(){ done('Shared'); }, function(){ /* cancelled */ });
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt + '\n' + url)
+        .then(function(){ done('Link copied'); }, function(){ done('Copy the address bar'); });
+      return;
+    }
+    done('Copy the address bar');
+  }
 
   var tQ;
   document.getElementById('ncQ').addEventListener('input', function(e){
@@ -795,6 +993,25 @@
   document.getElementById('ncSort').addEventListener('change', function(e){
     SORT = e.target.value; render();
   });
+
+  /* The same seam fmb.js exposes, so the tests can check what the page would
+     say without driving a share sheet or the clipboard, neither of which a
+     headless browser will honestly answer for. */
+  window.ncDebug = {
+    shareText: shareText, quoteMsg: quoteMsg, byOrder: byOrder,
+    fitSheet: fitSheet, shown: shown,
+    sel: function(){ return SEL; }
+  };
+
+  fitSheet();
+  window.addEventListener('resize', fitSheet, {passive:true});
+  window.addEventListener('orientationchange', fitSheet);
+  /* The header shrinks its backdrop in on scroll and the sticky bar hides
+     itself when the contact block is on screen, so the measurement is taken
+     again while the sheet is actually open. */
+  window.addEventListener('scroll', function(){
+    if (document.getElementById('ncFacets').classList.contains('open')) fitSheet();
+  }, {passive:true});
 
   fetch('lookup/new-stock.json', {cache:'no-cache'})
     .then(function(r){ return r.json(); })
