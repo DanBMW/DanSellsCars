@@ -812,7 +812,7 @@ function shareRampWA() {
   if (!link) return;
   const f = rrFields();
   const when = f.day ? ' on ' + f.day : '';
-  const msg = 'Hi' + (f.name ? ' ' + f.name : '') + ", it's Dan from BMW Ruxley. Your car is booked in with our service team" + when + " - so I've set this up for you. Your reg is already filled in, it takes about 20 seconds, and I'll have your car's value ready for when we speak:\n\n" + link;
+  const msg = 'Hi' + (f.name ? ' ' + f.name : '') + ", it's Dan from BMW Ruxley. Your car is booked in with our service team" + when + ", so I've set this up for you. Your reg is already filled in, it takes about 20 seconds, and I'll have your car's value ready for when we speak:\n\n" + link;
   rrLogAdd('WA');
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
