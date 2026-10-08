@@ -4,17 +4,17 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <link rel="canonical" href="https://dan-sells.co.uk/new-cars.html"/>
-  <title>New BMWs, ready to build | Dan Cane</title>
+  <title>Brand new BMWs, in stock now | Hedin Ruxley | Dan Cane</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <meta name="description" content="Every new BMW that Hedin Ruxley can build without the usual wait. Filter by model, fuel, price and how soon it arrives."/>
+  <meta name="description" content="Brand new, unregistered BMWs already built and available through Hedin Ruxley. Filter by model, fuel, price and how soon you can have it."/>
   <meta property="og:type" content="website"/>
   <meta property="og:url" content="https://dan-sells.co.uk/new-cars.html"/>
-  <meta property="og:title" content="New BMWs, ready to build | Hedin Ruxley | Dan Cane"/>
+  <meta property="og:title" content="Brand new BMWs, in stock now | Hedin Ruxley | Dan Cane"/>
   <meta property="og:description" content="Every new BMW that Hedin Ruxley can build without the usual wait. Filter by model, fuel, price and how soon it arrives."/>
   <meta property="og:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
   <meta property="og:site_name" content="Dan Sells"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="New BMWs, ready to build | Hedin Ruxley | Dan Cane"/>
+  <meta name="twitter:title" content="Brand new BMWs, in stock now | Hedin Ruxley | Dan Cane"/>
   <meta name="twitter:description" content="Every new BMW that Hedin Ruxley can build without the usual wait. Filter by model, fuel, price and how soon it arrives."/>
   <meta name="twitter:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
@@ -148,10 +148,10 @@
 
 <main class="nc-wrap">
   <div class="nc-hero">
-    <h1>New BMWs, ready to build</h1>
-    <p>These are the new cars BMW will build for us now, rather than the usual
-      wait. Every one shows how soon it lands. Tell me which one and I will take
-      it from there.</p>
+    <h1>Brand new, and already built</h1>
+    <p>Not factory orders. These are brand new BMWs that are already built and
+      unregistered, so there is no waiting for a build slot. Every one shows how
+      soon you can have it. Tell me which and I will take it from there.</p>
   </div>
 
   <div class="nc-bar">
@@ -479,7 +479,7 @@
     { key:'price',  label:'Price',  of:priceBand, order:['u35','35-45','45-60','60-80','80up'],
       name:{ 'u35':'Under £35,000','35-45':'£35,000 to £45,000','45-60':'£45,000 to £60,000',
              '60-80':'£60,000 to £80,000','80up':'£80,000 and up' } },
-    { key:'when',   label:'Arrives', of:whenBand, order:['w3','w6','w9'],
+    { key:'when',   label:'Yours in', of:whenBand, order:['w3','w6','w9'],
       name:{ 'w3':'Within 3 weeks','w6':'3 to 6 weeks','w9':'6 weeks or more' } },
     { key:'seats',  label:'Seats',  of:function(c){ return c.seats ? String(c.seats) : ''; } },
     { key:'drive',  label:'Drive',  of:function(c){ return c.drive || ''; } },
@@ -665,8 +665,8 @@
     document.getElementById('ncGrid').innerHTML = rows.map(card).join('');
     document.getElementById('ncEmpty').hidden = rows.length > 0;
     document.getElementById('ncCount').innerHTML = rows.length === CARS.length
-      ? '<b>' + CARS.length + '</b> new BMWs ready to build'
-      : '<b>' + rows.length + '</b> of ' + CARS.length + ' new BMWs';
+      ? '<b>' + CARS.length + '</b> brand new BMWs in stock'
+      : '<b>' + rows.length + '</b> of ' + CARS.length + ' brand new BMWs';
     if (BUILT) paintFacets();
     paintPills();
     syncUrl();
@@ -730,11 +730,12 @@
       render();
       var when = d.generated_at ? new Date(d.generated_at) : null;
       document.getElementById('ncNote').textContent =
-        'These are new cars BMW can build for Hedin Ruxley now, read from the BMW '
-        + 'New Car Locator' + (when ? ' on ' + when.toLocaleDateString('en-GB',
+        'Brand new, unregistered BMWs already built and available through Hedin '
+        + 'Ruxley, read from the BMW New Car Locator' + (when ? ' on ' + when.toLocaleDateString('en-GB',
             {day:'numeric',month:'long',year:'numeric'}) : '')
         + '. Pictures are configurator renders of that exact specification rather than '
-        + 'photographs of the car. Prices and lead times come from BMW and can change. '
+        + 'photographs of the individual car. Prices and delivery times come from BMW '
+        + 'and can change. '
         + 'Finance is available on any of them: ask me and I will get you a proper '
         + 'quote with the full figures.';
     })

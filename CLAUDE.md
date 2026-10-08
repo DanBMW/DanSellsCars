@@ -408,6 +408,13 @@ equivalent of the used `lookup/stock.json` that Hedin Appointments already
 reads. `new-cars.html` is the customer facing search over it. First run,
 8 October 2026: 58 models, 8 requests, **80 cars**.
 
+**These are physical cars, already built and unregistered** (Dan, 8 October).
+Not factory orders and not build slots: the locator calls the wait a lead time
+because it is delivery, not manufacture. The first version of the page said
+"ready to build" and "the new cars BMW will build for us", which was wrong in
+the way that matters to a customer deciding whether to wait. The copy says
+brand new, already built, unregistered. Keep it that way.
+
 **It is a script on the morning routine, not a Cloudflare Worker.** The brief
 asked for a Worker publishing to `https://dan-sells.co.uk/lookup/new-stock.json`,
 and that cannot work: the URL is GitHub Pages serving this repo and a Worker
@@ -454,13 +461,34 @@ Other things it has to keep:
 - **Entities are unescaped on the way in.** The feed sends
   `BMW&nbsp;Individual Tanzanite Blue`; markup in a data file is wrong whether
   the page escapes it or not.
-- **No monthly payment reaches the page, and that is not an oversight.** The
-  locator gives `monthly_finance_payment` and an APR but no deposit, term,
-  optional final payment or total payable, so **there is no way to build the
-  representative example a monthly figure must carry**. It is published in the
-  JSON because it is Dan's data, and `new-cars.html` deliberately shows the
-  cash price and "message me for a quote". Do not promote it onto the page
-  without a real quote behind it.
+- **No monthly payment reaches the page, and that is not an oversight.** Dan
+  asked for the monthlies to be visible on 8 October and this was dug into
+  properly before answering. What the locator gives, and what is still
+  missing, is now known exactly:
+  - **Have**: the monthly figure, the APR per car (`monthly_apr`), the cash
+    price, and from BMW's own small print in the locator page the product
+    (**BMW Select PCP**), the **48 month** term and the **£4,500** deposit
+    those monthlies are calculated on.
+  - **Missing**: the **optional final payment**, the **total amount payable**
+    and the **annual mileage** (BMW's own template carries it as a
+    `%{mileage}` placeholder and the value is nowhere in the payload). Total
+    amount of credit is derivable, the other two are not.
+  An FCA representative example for a PCP needs all of them, and the optional
+  final payment comes out of the lender's residual tables, which is the same
+  reason `stock.html` refuses to recalculate a term or a mileage. So it cannot
+  be published from this data, however much of it we hold.
+  **The Codeweavers route was tested, not assumed.** `Status: 'New'` with the
+  OTR price and no registration validates against the same endpoint
+  `stock-finance.py` uses, and the lender answers "Please contact us directly
+  for finance information", which is its ordinary decline. The likely reason
+  is the missing VIN: the locator encrypts it (`vin` plus an `iv`, AES, not a
+  readable VIN) and there is no per-car URL on stock.bmw.co.uk to read one
+  from. **If a VIN per order number can be got out of Hedin's own system, try
+  that route again first** - it reuses a pipeline that already has compliance
+  sign-off and returns the final payment and total payable directly.
+  Until then `new-cars.html` shows the cash price and "message me for a
+  quote". Do not promote the monthly figure onto the page without a real
+  quote behind it.
 - **The locator gives a 0 to 62 time**, which the used stock does not, so the
   page can sort on it. Do not copy that figure onto a used car: the quiz uses
   horsepower per tonne precisely because no used source publishes one.
