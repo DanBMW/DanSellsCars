@@ -22,6 +22,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="analytics.js" defer></script>
+<script src="aos-media.js" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1094,7 +1095,7 @@
       if (col) spec.push(['Colour', '<i class="sl-dot" style="background:#1b1d20"></i>' + esc(col)]);
 
       return '<article class="sl-card">'
-        + (c.image ? '<div class="sl-hero"><img class="sl-photo" src="' + esc(c.image) + '" alt="' + esc((c.year||'') + ' ' + c.model)
+        + (c.image ? '<div class="sl-hero"' + (c.reg ? ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="forecourt"' : '') + '><img class="sl-photo" src="' + esc(c.image) + '" alt="' + esc((c.year||'') + ' ' + c.model)
              + '" loading="lazy" width="700" height="393"/>' + fin + '</div>' : '')
         + '<div class="sl-body">'
         + '<div class="sl-meta">' + yearReg + '</div>'
@@ -1111,6 +1112,8 @@
         + '</div>'
         + '</div></article>';
     }).join('');
+    /* walkaround video and 360 spin for the cards on screen (aos-media.js) */
+    if (window.aosMedia) aosMedia.scan(elList);
   }
 
   function failed(){

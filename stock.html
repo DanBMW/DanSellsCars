@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="premium.css?v=8af2b219"/>
   <script src="dsfinance.js"></script>
   <script src="stock-core.js"></script>
+  <script src="aos-media.js" defer></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="analytics.js" defer></script>
@@ -1336,7 +1337,10 @@
     el.className = 'sl-card';
     el.setAttribute('data-id', c.id);
     el.innerHTML = (pics.length
-          ? '<div class="sl-hero" data-i="0" data-pics="' + esc(pics.join('|')) + '">'
+          ? '<div class="sl-hero" data-i="0" data-pics="' + esc(pics.join('|')) + '"'
+            /* walkaround video and 360 spin, if AutoOnShow has them (aos-media.js) */
+            + (c.reg ? ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="' + (c._home ? 'forecourt' : 'group') + '"' : '')
+            + '>'
             + '<img class="sl-photo" src="' + esc(pics[0]) + '" alt="' + esc((c.year||'') + ' ' + c.model)
             + '" loading="lazy" width="700" height="393"/>'
             + (pics.length > 1
@@ -1461,6 +1465,8 @@
     }
 
     reconcile(rows.map(cardFor));
+    /* Only the cards that come on screen are checked for a video or a 360 */
+    if (window.aosMedia) aosMedia.scan(elList);
   }
 
   function failed(){
@@ -1576,6 +1582,7 @@
     var nav = e.target.closest('.sl-nav');
     if (!nav) return;
     var hero = nav.parentNode;
+    if (window.aosMedia) aosMedia.leave(hero);
     var pics = hero.getAttribute('data-pics').split('|');
     var i = (Number(hero.getAttribute('data-i')) + (nav.classList.contains('next') ? 1 : -1)
              + pics.length) % pics.length;

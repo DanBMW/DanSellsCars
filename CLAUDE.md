@@ -401,6 +401,63 @@ any page. It is hidden from search, not private: anyone with the URL can read it
   GitHub Pages serves everything with `Access-Control-Allow-Origin: *`, which
   is what lets another site fetch the JSON.
 
+### Walkaround video and 360 spin - aos-media.js
+
+Added 8 October 2026 at Dan's request. Hedin film most used BMWs for
+AutoOnShow: a walkaround video and a 125 frame exterior spin. Neither stock
+file carries them, so **`aos-media.js`** (one shared script, `window.aosMedia`)
+builds the address from the reg and the browser asks AutoOnShow's CDN
+directly. Used on `stock.html` (each card's photo area), `MBG.html`, the Find
+my BMW used result cards (`fmb.js`, only after the gate unlocks) and
+`lookup/` (badges on the list cards, the player in the detail view).
+
+- **Addresses.** `https://eu.cdn.autosonshow.tv/{library}/bmwforecourt/{REG}/video_med.mp4`
+  and `.../360_{frame}.jpg`, frame padded to at least two digits (`360_01` to
+  `360_125`). REG is uppercase letters and digits only. No query string is
+  needed. `internal01.jpg` in the same folder is an interior still, never a
+  spin frame.
+- **Libraries**: 3927 Ruxley, 3924 Bromley, 3925 Enfield, 3929 Woolwich,
+  4974 Blackheath. The stock files hold no branch, so a forecourt car
+  (`hedin-stock-snapshot.json`, `c._home`, lookup `source: forecourt`) tries
+  3927, 3924, 3925, 3929, 4974 and a group car tries 3924, 3925, 3929, 4974,
+  3927, for the video **and** the spin (the appointments app only tries two
+  for video; group cars turn up at 3925 and 3929, so all five are tried). A
+  missing file answers **403 AccessDenied**, not 404. First file that loads
+  wins.
+- **Checks.** Video: one hidden `<video preload=metadata muted playsinline>`
+  per car, `loadedmetadata` means found, `error` or 8 seconds means next
+  library. Spin: frame 1 only, via `new Image()` (also given 8 seconds). The
+  result per reg (library, or '' after a completed check found nothing) is
+  kept in `sessionStorage` (`aos:v:REG`, `aos:s:REG`). A check cancelled
+  because the car left the screen is **not** remembered.
+- **Only cars on screen are checked**: one IntersectionObserver, a 250ms
+  dwell so a fast scroll does not fire checks, and a car that leaves the
+  screen cancels its check. On 8 October a phone scrolling 3,000px down
+  stock.html checked 4 of 81 cars. Never check the whole list.
+- **Markup.** A page marks a photo area with `data-aos-reg`, `data-aos-src`
+  (`forecourt` or `group`) and optionally `data-aos-mode="badges"` (plain
+  labels, for a card that is itself a link), then calls `aosMedia.scan(root)`
+  after it renders. Nothing shows until a file is confirmed: then a small
+  "Video" and/or "360" button sits in the corner. Tapping one opens the
+  player or the spin **over the photo**, with a "Photos" button to go back;
+  photo arrows and thumbnails call `aosMedia.leave(area)`.
+- **The spin** swaps one `<img>` src. About 8px of drag is one frame,
+  dragging right goes forward, both ends wrap, the arrow buttons and the
+  keyboard arrows step, Escape leaves. It assumes 125 frames until one fails,
+  then `count = failedFrame - 1` (most cars are 122 to 124, found from the
+  preload of frames 124 and 125 behind frame 1). Only frames two behind to
+  twelve ahead are fetched. `touch-action: pan-y` keeps the page scrolling
+  on a phone; `user-select: none` and `draggable=false` stop the blue
+  highlight.
+- **Not used, deliberately**: the `br-api.aos.tv` API (it needs the BMW
+  page's bearer token; do not scrape or republish it), the worker (no
+  proxying), Firebase. No page has a Content-Security-Policy today; if one is
+  added it needs `media-src` and `img-src` for `https://eu.cdn.autosonshow.tv`.
+- **GA4**: `video_play {reg, library, page}` on the first play of an opened
+  video, `spin_open {reg, library, page}`.
+- Coverage on 8 October: 14 of 15 sampled cars had both (9 of 10 forecourt
+  cars at 3927, one at 3929; group cars at 3924, 3925 and 3929).
+
 ### New cars, ready to build - lookup/new-stock.json and new-cars.html
 
 `automation/new-stock.py` reads the BMW New Car Locator for retailer **22181,
@@ -1060,6 +1117,8 @@ when adding/renaming funnel pages. Events:
   `wa.me` link click (delegated listener).
 - `callback_request` `{page}` — successful Request a callback form (contact block or sticky)
 - `booking_click` `{page}` — any cal.com booking link
+- `video_play` `{reg, library, page}` and `spin_open` `{reg, library, page}`
+  — the AutoOnShow walkaround video and 360 spin (`aos-media.js`).
 - `share` `{method: native, ref_code}` — the "Share my BMW story" native share.
 - `referral_visit` `{ref_code}` — landing with `?ref=CODE` from a shared
   story link. The code persists 90 days (localStorage `dsRefBy`) and is

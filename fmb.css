@@ -173,6 +173,8 @@
 .fmb-pct i{position:absolute;left:0;bottom:0;height:2px;background:var(--accent);width:0;transition:width .5s ease .3s}
 .fmb-pct.hi{border-color:var(--green)}
 .fmb-pct.hi i{background:var(--green)}
+/* aos-media.js buttons sit bottom left, clear of the Best match ribbon and the match percentage */
+.fmb-ph .aos-bar{top:auto;bottom:10px}
 .fmb-cb{padding:16px}
 .fmb-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .fmb-pills span{font-size:.74rem;letter-spacing:.06em;color:var(--body-c);border:1px solid var(--hairline);padding:3px 8px;text-transform:uppercase}

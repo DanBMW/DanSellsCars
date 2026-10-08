@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Used car lookup</title>
+<script src="/aos-media.js" defer></script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <!-- Hidden lookup, sent by link only. Built from lookup/stock.json, which
      scripts/build-lookup.mjs writes from the daily stock files. Keep it noindex,
@@ -39,6 +40,7 @@
   .dgrid { display:grid; grid-template-columns:minmax(0,1fr); }
   .dgrid > div { min-width:0; }
   @media (min-width:900px) { .dgrid { grid-template-columns:minmax(0,3fr) minmax(0,2fr); } }
+  .stage { position:relative; }
   .big { width:100%; aspect-ratio:16/9; object-fit:cover; background:#e9ecf0; display:block; }
   .thumbs { display:flex; gap:6px; padding:8px; overflow-x:auto; }
   .thumbs button { padding:0; border:2px solid transparent; border-radius:6px; background:none; flex:0 0 auto; }
@@ -133,7 +135,9 @@
   function card(c) {
     var pics = [c.image].concat(c.images || []).filter(Boolean);
     var img = pics.length ? '<img class="ph" loading="lazy" decoding="async" src="' + esc(pics[0]) + '" data-alts="' + esc(pics.slice(1).join('|')) + '" alt="' + show(c.model || c.reg) + '">' : '<div class="noph">No photo yet</div>';
-    return '<a class="card' + (isGone(c) ? ' is-gone' : '') + '" href="?reg=' + encodeURIComponent(c.reg) + '" data-reg="' + esc(c.reg) + '">' + img
+    /* "Video" and "360" badges once AutoOnShow confirms them (aos-media.js) */
+    var media = isGone(c) ? '' : ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="' + (c.source === 'group' ? 'group' : 'forecourt') + '" data-aos-mode="badges"';
+    return '<a class="card' + (isGone(c) ? ' is-gone' : '') + '" href="?reg=' + encodeURIComponent(c.reg) + '" data-reg="' + esc(c.reg) + '"' + media + '>' + img
       + '<div class="cb"><span class="plate">' + esc(plate(c.reg)) + '</span>'
       + '<span class="model">' + show(c.model || 'BMW') + '</span>'
       + '<span class="meta">' + line(c) + '</span>'
@@ -162,6 +166,7 @@
     elRecentGrid.innerHTML = gone.map(card).join('');
     elRecentCount.textContent = gone.length + (gone.length === 1 ? ' car' : ' cars') + ' that left stock in the last 30 days';
     elRecentWrap.hidden = !gone.length;
+    if (window.aosMedia) aosMedia.scan(elGrid);
   }
 
   function row(label, v) { return (v === null || v === undefined || v === '') ? '' : '<tr><th scope="row">' + label + '</th><td>' + v + '</td></tr>'; }
@@ -176,8 +181,12 @@
         + (f.legal ? '<details><summary>Lender\u2019s full wording</summary><p>' + esc(f.legal) + '</p></details>' : '')
         + '</div>'
       : '';
+    /* The photo area also plays the walkaround video and the 360 spin when
+       AutoOnShow has them (aos-media.js). A sold car is not checked. */
     elDetail.innerHTML = '<div class="detail"><div class="dgrid"><div>'
+      + '<div class="stage" id="stage"' + (gone ? '' : ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="' + (c.source === 'group' ? 'group' : 'forecourt') + '"') + '>'
       + (pics.length ? '<img class="big" id="big" src="' + esc(pics[0]) + '" data-alts="' + esc(pics.slice(1).concat(c.image ? [c.image] : []).join('|')) + '" alt="' + show(c.model || c.reg) + '">' : '<div class="noph">No photo yet</div>')
+      + '</div>'
       + (pics.length > 1 ? '<div class="thumbs">' + pics.map(function (u, i) {
           return '<button type="button" data-src="' + esc(u) + '" aria-pressed="' + (i === 0) + '" aria-label="Photo ' + (i + 1) + '"><img loading="lazy" src="' + esc(u) + '" alt=""></button>';
         }).join('') + '</div>' : '')
@@ -206,10 +215,12 @@
       + '<a class="btn ghost" href="./">See all stock</a></div>'
       + '</div></div></div>';
     elDetail.hidden = false;
+    if (window.aosMedia) aosMedia.scan(elDetail);
     var big = document.getElementById('big');
     elDetail.querySelectorAll('.thumbs button').forEach(function (b) {
       b.addEventListener('click', function () {
-        big.src = b.getAttribute('data-src');
+        if (window.aosMedia) aosMedia.leave(document.getElementById('stage'));
+        if (big) big.src = b.getAttribute('data-src');
         elDetail.querySelectorAll('.thumbs button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
       });
     });
@@ -279,6 +290,7 @@
   document.addEventListener('error', function (e) {
     var img = e.target;
     if (!img || img.tagName !== 'IMG') return;
+    if (img.closest('.aos-stage')) return;   /* a 360 frame, handled by aos-media.js */
     if (img.closest('.thumbs')) { img.closest('button').remove(); return; }
     var alts = (img.getAttribute('data-alts') || '').split('|').filter(Boolean);
     if (alts.length) { img.setAttribute('data-alts', alts.slice(1).join('|')); img.src = alts[0]; return; }

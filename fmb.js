@@ -955,7 +955,7 @@
     var flags = r.miss.map(function (m) { return '<span class="fmb-flag">' + esc(m) + '</span>'; });
     if (!c._home) flags.push('<span class="fmb-flag grp">From our other BMW stock</span>');
     return '<article class="fmb-card' + (best ? ' best' : '') + (RM ? '' : ' rise') + '" style="animation-delay:' + (i * 90) + 'ms" data-i="' + i + '">'
-      + '<div class="fmb-ph">' + (best ? '<span class="fmb-ribbon">Best match</span>' : '')
+      + '<div class="fmb-ph"' + (c.reg ? ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="' + (c._home ? 'forecourt' : 'group') + '"' : '') + '>' + (best ? '<span class="fmb-ribbon">Best match</span>' : '')
       + (showPct ? '<span class="fmb-pct' + (r.pct >= 80 ? ' hi' : '') + '">' + r.pct + '% match<i style="width:0" data-w="' + r.pct + '"></i></span>' : '')
       + (u ? '<img src="' + esc(u) + '" alt="' + esc(alt) + '" width="640" height="360" loading="' + (i < 3 ? 'eager' : 'lazy') + '" decoding="async"/>'
            : '<div class="sil">' + (SIL[c._prim] || SIL[c._bodies[0]] || SIL.saloon) + '</div>')
@@ -1038,6 +1038,8 @@
     subs.innerHTML = lines.join('');
     cardsEl.innerHTML = list.map(card).join('') + (R.level >= 1 ? findCard() : '');
     cardsEl.querySelectorAll('.fmb-card[data-i]').forEach(function (el) { el.hidden = Number(el.getAttribute('data-i')) >= shownN; });
+    /* Walkaround video and 360 spin (aos-media.js): only cards on screen are checked */
+    if (window.aosMedia) window.aosMedia.scan(cardsEl);
     cardsEl.querySelectorAll('img').forEach(function (img) {
       img.addEventListener('error', function () {
         var c = list[Number(img.closest('[data-i]').getAttribute('data-i'))].c, d = document.createElement('div');
