@@ -718,12 +718,15 @@ bar with the same wording and "Continue to page"; Find my BMW stays inline).
   `yourbrief.html`) sent it every single time, because a one tap interest
   signal never asks for one. **dan-sells.co.uk has no MX record** - it is
   GitHub Pages, it cannot receive mail - so that address is undeliverable, and
-  Formspree filed those submissions as spam. They were accepted (`ok:true`,
-  HTTP 200) and simply never emailed: the dashboard had them under Spam while
-  Dan had no idea they existed, from 20 April to 8 October 2026. The evidence
-  fits exactly, and it was checked rather than assumed: every notification
-  that did arrive in that period carried a real customer address in
-  `_replyto`, and the ones that vanished were the three hardcoded to noreply.
+  Formspree filed those submissions as spam, and a spam-filed submission is
+  still accepted (`ok:true`, HTTP 200) while no notification goes out at all.
+  Dan found months of them sitting in the dashboard's Spam folder in October
+  2026. The undeliverable `_replyto` is the best explanation rather than a
+  proven one: the three pages hardcoded to noreply are exactly the ones whose
+  emails he missed, and the notifications that did arrive carried a real
+  customer address. **Notifications go to Dan's Hedin address**, not to the
+  gmail account, so checking the gmail mailbox proves nothing about whether a
+  submission was emailed.
   The fallback is now `daniel.cane@hedinautomotive.co.uk`, which is Dan's own
   address, is already public on every stock card, and sits on a domain with
   real MX records. A customer's own email is still preferred wherever the page
