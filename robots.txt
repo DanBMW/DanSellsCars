@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /desk.html
 Disallow: /team-board.html
 Disallow: /links.html
 Disallow: /walkins.html

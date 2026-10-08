@@ -1,15 +1,13 @@
-/* Find my BMW v2. One page: intro, seven tap only questions, an honest
- * matching moment, then the reveal with real cars, WhatsApp first and an
- * optional Formspree form (one submission per lead).
+/* Find my BMW. One page: intro, a needs analysis starting with the model,
+ * an honest matching moment, then the reveal with real cars behind a hard
+ * contact gate. WhatsApp first, one Formspree submission per lead.
  *
- * Reads the same files stock.html publishes (snapshot, group stock, lender
- * quotes, deposit ladder, car details) and the shared rules in stock-core.js
- * (window.dsStock) and dsfinance.js (window.dsFin), so counts, payments and
- * the "See all matches" hand-off agree with stock.html. Every payment shown is
- * the lender's; a car without a live quote says "Ask for a quote".
- * New or either buyers are also matched against lookup/new-stock.json (the
- * brand new cars already built for Hedin Ruxley); see "brand new stock" below.
- * Every answer is an active tap: nothing is pre selected and there is no Skip.
+ * Matching lives in fmb-match.js (window.fmbMatch), shared with desk mode, so
+ * both recommend the same car. It reads the same files stock.html publishes.
+ * Every payment shown is the lender's, with the full representative example.
+ * A brand new card shows the cash price and a personalised quote, never a
+ * monthly figure. Every answer is an active tap: nothing is pre selected and
+ * there is no Skip. No stock counts anywhere in the questions.
  * Plain ES2017, no dependencies.
  */
 (function () {
@@ -17,11 +15,10 @@
 
   var WA = 'https://wa.me/447827138197';
   var FORM_URL = 'https://formspree.io/f/xqewleog';
-  var KEY = 'fmbV2', TTL = 7 * 864e5;
+  var KEY = 'fmbV3', TTL = 7 * 864e5;
   var GBP = '\u00a3';
   var RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var ST = window.dsStock, FN = window.dsFin;
-  var QS = ['qi', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'qp', 'q7'];
 
   function $(id) { return document.getElementById(id); }
   function esc(s) {
@@ -34,7 +31,7 @@
   function cap1(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
   function track(name, p) {
     if (typeof window.gtag !== 'function') return;
-    var o = { funnel: 'fmb', fmb_version: '2' };
+    var o = { funnel: 'fmb', fmb_version: '3' };
     for (var k in (p || {})) o[k] = typeof p[k] === 'string' ? p[k].slice(0, 100) : p[k];
     window.gtag('event', name, o);
   }
@@ -44,7 +41,12 @@
     if (!seen) track('fmb_complete', { method: how });
   }
 
-  /* ---------------- options ---------------- */
+  /* ---------------- options (shared with desk mode) ---------------- */
+  var M = window.fmbMatch;
+  var MODELS = M.MODELS, BODY = M.BODY, FUEL = M.FUEL, WHO = M.WHO, LIFE = M.LIFE, MILES_A = M.MILES;
+  var PEOPLE = M.PEOPLE, BOOT = M.BOOT, CHARGE = M.CHARGE, WHEN = M.WHEN;
+  var MONTHLY = M.MONTHLY, DEPS = M.DEPS, CASH = M.CASH, EXTRAS = M.EXTRAS, COLOURS = M.COLOURS, SWATCH = M.SWATCH;
+  var TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
   var I_ = '<svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
   var SVG = {
     family: I_ + '<circle cx="11" cy="9" r="3.5"/><circle cx="22" cy="11" r="2.8"/><path d="M4 27v-4a7 7 0 0 1 14 0v4M17 27v-3a5 5 0 0 1 10 0v3"/></svg>',
@@ -67,76 +69,23 @@
     gran_coupe: '<svg ' + SIL_W + '><path d="M34,84 L25,84 Q17,84 16,76 L17,68 Q18,61 27,58 L36,55 Q54,38 74,33 L112,30 Q136,29 148,36 L166,50 L200,56 Q216,59 219,67 L220,75 Q220,84 210,84 L202,84"/><path d="M166,84 L80,84"/><path d="M46,54 Q62,40 78,36 L96,34.5 L97,53 Z M106,34 L126,33 Q140,33 149,40 L160,50 L107,53 Z" stroke-width="2.6" opacity=".5"/><path d="M128,34 L128,52" stroke-width="2.6" opacity=".5"/><circle cx="58" cy="84" r="14"/><circle cx="58" cy="84" r="5.5" opacity=".5"/><circle cx="184" cy="84" r="14"/><circle cx="184" cy="84" r="5.5" opacity=".5"/></svg>'
   };
   SIL.mpv = SIL.hatchback;
-
-  var LIFE = [
-    { v: 'family', t: 'Family life', l: 'School runs, big shops, weekends away.' },
-    { v: 'commute', t: 'The daily drive', l: 'Commutes and client visits, done in comfort.' },
-    { v: 'miles', t: 'Big motorway miles', l: 'Long runs where comfort really counts.' },
-    { v: 'thrill', t: 'Driving for fun', l: 'B roads, early starts, big grins.' },
-    { v: 'style', t: 'Turning heads', l: 'Arrive looking the part.' },
-    { v: 'open', t: 'A bit of everything', l: 'Honestly? Surprise me.' }
+  var INTEREST = [
+    { v: 'new', t: 'A brand new BMW', l: 'Already built, or ordered to your spec. I\u2019ll come back to you with options.' },
+    { v: 'used', t: 'An approved used BMW', l: 'Real cars across the Hedin BMW group, including my forecourt.' },
+    { v: 'either', t: 'Open to either', l: 'Brand new options plus approved used cars that fit.' }
   ];
-  var BODY = [
-    { v: 'suv', t: 'SUV', l: 'X1 to X7, iX1, iX3, iX and friends', keys: ['suv'], stock: ['suv', 'suv-coupe'] },
-    { v: 'saloon', t: 'Saloon', l: '3, 5 and 7 Series, i5 and i7', keys: ['saloon'], stock: ['saloon'] },
-    { v: 'touring', t: 'Touring', l: 'The estate versions, for the boot space', keys: ['touring'], stock: ['estate'] },
-    { v: 'hatchback', t: 'Hatchback', l: '1 Series, plus the Active Tourer and Gran Tourer', keys: ['hatchback', 'mpv'], stock: ['hatch', 'mpv'] },
-    { v: 'gran_coupe', t: 'Gran Coup\u00e9', l: 'Four door coup\u00e9s: 2 and 4 Series, i4', keys: ['gran_coupe'], stock: ['gran-coupe'] },
-    { v: 'coupe', t: 'Coup\u00e9', l: 'Two doors, plus the X4 and X6', keys: ['coupe'], stock: ['coupe', 'suv-coupe'] },
-    { v: 'convertible', t: 'Convertible', l: 'Roof down days', keys: ['convertible'], stock: ['convertible'] },
-    { v: 'open', t: 'Open minded', l: 'Show me every shape' }
-  ];
-  var BODY_NEAR = { saloon: ['gran_coupe', 'touring'], touring: ['suv', 'saloon'], suv: ['touring'],
-    hatchback: ['gran_coupe'], coupe: ['gran_coupe', 'convertible'], convertible: ['coupe'], gran_coupe: ['saloon', 'coupe'] };
-  var FUEL = [
-    { v: 'petrol', t: 'Petrol', l: 'Includes petrol mild hybrids.', keys: ['petrol', 'mhev-petrol'] },
-    { v: 'diesel', t: 'Diesel', l: 'Includes diesel mild hybrids.', keys: ['diesel', 'mhev-diesel'] },
-    { v: 'hybrid', t: 'Hybrid', l: 'Petrol or diesel with an electric helper. Never needs plugging in.', keys: ['mhev-petrol', 'mhev-diesel'] },
-    { v: 'phev', t: 'Plug-in hybrid', l: 'Electric for shorter trips, engine for the long ones.', keys: ['phev'] },
-    { v: 'electric', t: 'Electric', l: 'Fully electric. Charge at home or out and about.', keys: ['electric'] },
-    { v: 'open', t: 'Open minded', l: 'Show me the best of all of them.' }
-  ];
-  var FUEL_NEAR = { petrol: ['mhev-diesel'], diesel: ['mhev-petrol'], hybrid: ['petrol', 'diesel'],
-    phev: ['electric', 'mhev-petrol', 'mhev-diesel'], electric: ['phev'] };
-  var FUEL_NAME = { petrol: 'petrol', diesel: 'diesel', 'mhev-petrol': 'petrol mild hybrid',
-    'mhev-diesel': 'diesel mild hybrid', phev: 'plug-in hybrid', electric: 'electric' };
-  var MONTHLY = [300, 400, 500, 650, 800, 1000, 0];
-  var DEPS = [0, 1000, 2500, 5000, 10000, -1];
-  var CASH = [{ v: 20000, t: 'Under ' + GBP + '20k' }, { v: 30000, t: 'Up to ' + GBP + '30k' },
-    { v: 50000, t: 'Up to ' + GBP + '50k' }, { v: 70000, t: 'Up to ' + GBP + '70k' }, { v: 0, t: 'Any price' }];
-  var CASH_BANDS = { 20000: 'u20', 30000: 'u20,20to30', 50000: 'u20,20to30,30to50', 70000: 'u20,20to30,30to50,50to70' };
-  var EXTRAS = ['heated', 'pano', 'hud', 'sound', 'keyless', 'acc', 'xdrive', 'towbar', 'seven'];
-  var WHEN = [
-    { v: 'now', t: 'As soon as possible' }, { v: 'month', t: 'Within a month' },
-    { v: 'quarter', t: 'In the next few months' }, { v: 'browsing', t: 'Just browsing for now' }
-  ];
-  var SWATCH = { grey: '#8a8d91', black: '#1b1d20', white: '#e8e6e1', blue: '#2f5f9e', green: '#3d6b4a',
-    red: '#8c2f2f', silver: '#b9bcc0', purple: '#5b3f78', beige: '#cdbb98', brown: '#6b4a33',
-    orange: '#c9702d', yellow: '#d8b73a' };
-  var STEP_NAME = { qi: 'interest', q1: 'life', q2: 'body', q3: 'fuel', q4: 'budget', q5: 'extras', q6: 'colour', qp: 'part_exchange', q7: 'timing' };
-  var MULTI = { q2: 'body', q3: 'fuel', q5: 'extras', q6: 'colours' };
   var PXQ = [
     { v: 'yes', t: 'Yes', l: 'I\u2019ll ask a few quick things about it next.' },
     { v: 'no', t: 'No', l: 'No car to trade in.' },
     { v: 'maybe', t: 'Maybe', l: 'Not sure yet. You can tell me about it if you like.' }
   ];
-  var INTEREST = [
-    { v: 'new', t: 'A brand new BMW', l: 'Ordered to your spec, or from brand new stock that may be ready sooner. I\u2019ll come back to you with options.' },
-    { v: 'used', t: 'An approved used BMW', l: 'Real cars on my forecourt and across the group.' },
-    { v: 'either', t: 'Open to either', l: 'Brand new options from me, ordered to your spec or from new stock that may be ready sooner, plus approved used cars that fit.' }
-  ];
-  function byV(list, v) { for (var i = 0; i < list.length; i++) if (list[i].v === v) return list[i]; return null; }
+  function byV(list, v) { return M.byV(list, v); }
 
   /* ---------------- answers ---------------- */
-  /* mo: null not chosen, 0 no limit. dep: null = not sure (standard example).
-     cash: null not chosen, 0 any price. Nothing is ever pre selected. */
-  function blank() {
-    return { interest: null, life: null, body: [], fuel: [], pay: null, mo: null, dep: null, cash: null,
-      extras: [], colours: [], when: null, px: null };
-  }
+  function blank() { return M.blank(); }
   var A = blank();
-  var OPEN = {};         /* multi questions where "Open minded" / "Not fussed" is ticked */
-  var PRE = {};          /* questions pre answered from the link */
+  var OPEN = {};
+  var PRE = {};
   var depTouched = false;
   var cur = 'intro';
 
@@ -155,8 +104,8 @@
   }
 
   /* ---------------- data ---------------- */
-  var HOME = [], GROUP = [], FIN = {}, LAD = {}, DET = null;
-  var snapOK = null, finOK = false, ladOK = false, groupOK = false;
+  var HOME = [], GROUP = [], FIN = {}, LAD = {}, DET = null, NEWC = [];
+  var snapOK = null, finOK = false, ladOK = false, groupOK = false, newOK = false;
   var coverage = 1, quotedAny = true;
   function getJSON(url) {
     return fetch(url, { cache: 'no-cache' }).then(function (r) {
@@ -164,13 +113,10 @@
       return r.json();
     });
   }
-  function stamp(c, home) {
-    c._price = ST.num(c.price); c._miles = ST.num(c.mileage); c._year = ST.num(c.year);
-    c._hp = ST.num(c.power); c._home = home;
-    c._m = /(^|\s)M\d|\sM\d{2,3}[a-z]*\b|^BMW M\d/.test(c.model || '');
-    c._fuel = ST.fuelKey(c); c._bodies = ST.bodyKeys(c);
-    c._prim = ST.bodyPrimary(c);
-    return c;
+  function pushData() {
+    M.load({ home: HOME, group: GROUP, fin: FIN, lad: LAD, det: DET || {}, newCars: NEWC });
+    var d = M.data();
+    coverage = d.coverage; quotedAny = d.quotedAny;
   }
   var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 400); };
   var lazy = {};
@@ -179,413 +125,72 @@
     var url = { lad: 'automation/stock-finance-ladder.json', group: 'automation/hedin-group-stock.json',
       det: 'automation/car-details.json', newc: 'lookup/new-stock.json' }[name];
     lazy[name] = getJSON(url).then(function (j) {
-      if (name === 'lad') { LAD = j || {}; ladOK = true; capCache = {}; }
-      if (name === 'group') {
-        GROUP = (Array.isArray(j) ? j : []).map(function (c) { return stamp(c, false); });
-        groupOK = GROUP.length > 0; capCache = {};
-      }
+      if (name === 'lad') { LAD = j || {}; ladOK = true; }
+      if (name === 'group') { GROUP = Array.isArray(j) ? j : []; groupOK = GROUP.length > 0; }
       if (name === 'det') DET = j || {};
-      if (name === 'newc') { NEWC = ((j && j.cars) || []).filter(function (c) { return !c.on_hold; }).map(stampNew); newOK = true; }
-      refresh();
+      if (name === 'newc') { NEWC = ((j && j.cars) || []).filter(function (c) { return !c.on_hold; }); newOK = true; }
+      pushData(); refresh();
     })['catch'](function () {
       if (name === 'det') DET = DET || {};
-      if (name === 'newc') newOK = true;   /* silent: a failed list just means "I'll be in touch" */
+      if (name === 'newc') newOK = true;
       if (name === 'lad') ladOK = true;
-      refresh();
+      pushData(); refresh();
     });
     return lazy[name];
   }
   var pSnap = getJSON('automation/hedin-stock-snapshot.json').then(function (d) {
     if (!Array.isArray(d) || !d.length) throw new Error('empty');
-    HOME = d.map(function (c) { return stamp(c, true); });
-    snapOK = true;
-    calcCoverage();
-    refresh();
+    HOME = d; snapOK = true; pushData(); refresh();
     idle(function () { want('det'); want('lad'); want('group'); });
   })['catch'](function () { snapOK = false; refresh(); });
   var pFin = getJSON('automation/stock-finance.json').then(function (j) {
-    FIN = j || {}; finOK = true; calcCoverage(); refresh();
-  })['catch'](function () { FIN = {}; finOK = true; calcCoverage(); refresh(); });
+    FIN = j || {}; finOK = true; pushData(); refresh();
+  })['catch'](function () { FIN = {}; finOK = true; pushData(); refresh(); });
 
-  function calcCoverage() {
-    if (!HOME.length || !finOK) return;
-    var q = 0;
-    HOME.forEach(function (c) { if (FN.live(FIN[c.id])) q++; });
-    coverage = q / HOME.length;
-    quotedAny = q > 0;
-    capCache = {};
-  }
-  function finAt(c, dep) { return FN.at(FIN[c.id], LAD[c.id], dep === null || dep === undefined ? null : dep); }
+  /* ---------------- matching (delegated to fmb-match.js) ---------------- */
+  var NEW_QUOTE_DEP = M.NEW_QUOTE_DEP, NEW_PER_1000 = M.NEW_PER_1000;
+  var NEWRES = { fit: [], reach: [], count: 0 }, RESULT = null, SHOWN = [];
+  function wantsNew(a) { return M.wantsNew(a || A); }
+  function countIn(pool, a, R) { return M.countIn(pool, a, R); }
+  function findMatches(a) { return M.findUsed(a); }
+  function findNew(a) { return M.findNew(a, { stretch: false }); }
+  function newEstimate(c, dep) { return M.newEstimate(c, dep); }
+  function newWhen(c) { return M.newWhen(c); }
+  function newWhy(c, a) { return M.newWhy(c, a); }
+  function newLine(r) { return M.newLine(r); }
+  function shapeName(c) { return M.shapeName(c); }
+  function persona(a) { return M.persona(a); }
+  function extrasText(a) { return M.extrasText(a); }
+  function shapesText(a) { return M.shapesText(a); }
+  function fuelsText(a) { return M.fuelsText(a); }
+  function interestText(a) { return M.interestText(a); }
+  function lifeText(a) { var o = M.byV(LIFE, a.life); return o ? o.t : ''; }
+  function whenText(a) { var o = M.byV(WHEN, a.when); return o ? o.t : ''; }
+  function budgetLine(a) { return M.budgetLine(a); }
+  function carLine(r) { return M.carLine(r); }
+  function whyLine(r, a) { return r.why || M.whyLine(r, a); }
+  function list(arr, word) { return M.list(arr, word); }
+  function cap1(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function modelName(c) { return M.modelName(c); }
   function lowCov() { return finOK && coverage < 0.6; }
-
-  /* ---------------- matching ---------------- */
-  function bodySet(vals, near) {
-    var k = {};
-    vals.forEach(function (v) {
-      var o = byV(BODY, v); if (o && o.keys) o.keys.forEach(function (x) { k[x] = 1; });
-      if (near) (BODY_NEAR[v] || []).forEach(function (n) { byV(BODY, n).keys.forEach(function (x) { k[x] = 1; }); });
-    });
-    return k;
-  }
-  function fuelSet(vals, near) {
-    var k = {};
-    vals.forEach(function (v) {
-      var o = byV(FUEL, v); if (o && o.keys) o.keys.forEach(function (x) { k[x] = 1; });
-      if (near) (FUEL_NEAR[v] || []).forEach(function (x) { k[x] = 1; });
-    });
-    return k;
-  }
-  function bodyHit(c, vals, near) { var k = bodySet(vals, near); return c._bodies.some(function (b) { return k[b]; }); }
-  function fuelHit(c, vals, near) { return !!fuelSet(vals, near)[c._fuel]; }
-  function hasCeiling(a) { return (a.pay === 'monthly' && a.mo > 0) || (a.pay === 'cash' && a.cash > 0); }
-
-  /* Highest price among quoted cars inside the ceiling. When the lender is
-     quoting few cars, an unquoted car at or under it can still match on price
-     (and says "Ask for a quote"). */
-  var capCache = {};
-  function priceCap(a, stretch) {
-    var k = a.mo + '|' + a.dep + '|' + stretch;
-    if (capCache[k] !== undefined) return capCache[k];
-    var lim = a.mo * (1 + stretch), best = 0;
-    HOME.concat(GROUP).forEach(function (c) {
-      var f = finAt(c, a.dep);
-      if (f && f.monthly <= lim && c._price > best) best = c._price;
-    });
-    capCache[k] = best;
-    return best;
-  }
-  function budgetMet(c, a, stretch, strictQuotes) {
-    stretch = stretch || 0;
-    if (a.pay === 'monthly' && a.mo > 0) {
-      if (!quotedAny && !strictQuotes) return true;
-      var f = finAt(c, a.dep);
-      if (f) return f.monthly <= a.mo * (1 + stretch);
-      if (lowCov() && !strictQuotes) return c._price <= priceCap(a, stretch);
-      return false;
-    }
-    if (a.pay === 'cash' && a.cash > 0) return c._price < a.cash * (1 + stretch);
-    return true;
-  }
-  /* R: {stretch, fuelN, bodyN, noSeven, anyShape, anyFuel, strictQuotes} */
-  function matches(c, a, R) {
-    R = R || {};
-    if (a.body.length && !R.anyShape && !bodyHit(c, a.body, R.bodyN)) return false;
-    if (a.fuel.length && !R.anyFuel && !fuelHit(c, a.fuel, R.fuelN)) return false;
-    if (!budgetMet(c, a, R.stretch, R.strictQuotes)) return false;
-    if (!R.noSeven && a.extras.indexOf('seven') !== -1 && String(c.seats) !== '7') return false;
-    return true;
-  }
-  function countIn(pool, a, R) { var n = 0; for (var i = 0; i < pool.length; i++) if (matches(pool[i], a, R)) n++; return n; }
-  function clone(a) { return JSON.parse(JSON.stringify(a)); }
-  function feature(c, k) { return ST.hasFeature(c, DET ? DET[c.id] : null, k) === true; }
-
-  function evaluate(c, a) {
-    var got = 0, max = 0, soft = 0, miss = [];
-    var f = finAt(c, a.pay === 'monthly' ? a.dep : null);
-    if (a.body.length) {
-      max += 3;
-      if (bodyHit(c, a.body)) got += 3;
-      else miss.push(shapeName(c) + ', not ' + list(a.body.map(function (v) { return byV(BODY, v).t; }), 'or'));
-    }
-    if (a.fuel.length) {
-      max += 3;
-      if (fuelHit(c, a.fuel)) got += 3;
-      else miss.push(cap1(FUEL_NAME[c._fuel] || 'another fuel') + ', not ' + list(a.fuel.map(function (v) { return byV(FUEL, v).t.toLowerCase(); }), 'or'));
-    }
-    if (hasCeiling(a)) {
-      max += 3;
-      if (budgetMet(c, a, 0)) got += 3;
-      else if (a.pay === 'monthly' && f) miss.push(money(Math.ceil(f.monthly - a.mo)) + ' a month over your budget');
-      else if (a.pay === 'monthly') miss.push('No lender quote at your deposit yet');
-      else miss.push(money(c._price - a.cash + 1) + ' over your budget');
-    }
-    if (a.extras.indexOf('seven') !== -1) {
-      max += 3;
-      if (String(c.seats) === '7') got += 3; else miss.push((c.seats || '5') + ' seats');
-    }
-    if (a.colours.length) { max += 2; soft += 2; if (a.colours.indexOf(c.colour) !== -1) got += 2; }
-    var metExtras = [];
-    a.extras.forEach(function (k) {
-      if (k === 'seven') return;
-      max += 1; soft += 1;
-      if (feature(c, k)) { got += 1; metExtras.push(k); }
-    });
-    var pct = max ? Math.round(100 * got / max) : null;
-    /* ranking score: only ever breaks ties between equal percentages */
-    var s = c._home ? 12 : 0, aff = 0, b = c._bodies;
-    function has(k) { return b.indexOf(k) !== -1; }
-    if (a.life === 'family') { if (has('suv') || has('touring') || has('mpv')) aff += 4; if (String(c.seats) === '7') aff += 4; }
-    if (a.life === 'commute') { if (has('saloon')) aff += 4; if (c._fuel === 'electric' || c._fuel === 'phev') aff += 4; }
-    if (a.life === 'miles') { if (/diesel/.test(c._fuel) || c._fuel === 'phev') aff += 4; if (has('saloon') || has('touring')) aff += 4; }
-    if (a.life === 'thrill') { if (c._m || c._hp >= 250) aff += 4; if (has('coupe') || has('convertible')) aff += 4; }
-    if (a.life === 'style') { if (has('coupe') || has('gran_coupe') || has('convertible')) aff += 4; if (c._year >= new Date().getFullYear() - 2) aff += 4; }
-    s += Math.min(8, aff);
-    if (a.pay === 'monthly' && a.mo > 0 && f && f.monthly <= a.mo) s += (f.monthly / a.mo >= 0.8) ? 5 : 2;
-    if (f && (a.pay === 'monthly' || a.pay === 'notsure' || !a.pay)) s += 4;
-    if (c.image) s += 3;
-    s += Math.max(0, c._year - 2018) + Math.max(0, 8 - c._miles / 10000);
-    return { c: c, pct: pct, score: s, fin: f, miss: miss, metExtras: metExtras, soft: soft, quoted: !!f };
-  }
-  function pctOf(r) { return r.pct == null ? 0 : r.pct; }
-  function better(x, xs, y, ys) {
-    if (pctOf(x) !== pctOf(y)) return pctOf(x) > pctOf(y);
-    if (lowCov() && x.quoted !== y.quoted) return x.quoted;
-    return xs > ys;
-  }
-  function sig(r) { return (r.c.series || '') + '|' + r.c._fuel + '|' + r.c._prim; }
-  /* Variety: a car the same series, fuel and shape as one already picked loses
-     8 points, so the reveal is not three identical 320i M Sports. Skipped when
-     the ask is exactly one shape and one fuel. A 90% card never sits above 95%. */
-  function pick(cands, n, a, picked) {
-    var out = [], pool = cands.slice(), variety = !(a.body.length === 1 && a.fuel.length === 1);
-    while (out.length < n && pool.length) {
-      var bi = -1, bs = 0;
-      for (var i = 0; i < pool.length; i++) {
-        var r = pool[i], adj = r.score;
-        if (variety && picked.concat(out).some(function (o) { return sig(o) === sig(r); })) adj -= 8;
-        if (bi === -1 || better(r, adj, pool[bi], bs)) { bi = i; bs = adj; }
-      }
-      out.push(pool[bi]); pool.splice(bi, 1);
-    }
-    return out;
-  }
-
-  var SUBS = {
-    1: 'A few of these are in our other BMW stock. I can source them from across the group.',
-    2: 'Nothing hit every number, so a couple are just over budget.',
-    3: 'I\u2019ve included the closest fuel options too.',
-    4: 'I\u2019ve widened the shapes a little.',
-    5: 'I couldn\u2019t find a 7 seater that fits today.',
-    6: 'Nothing close enough today, so here are a few I\u2019d look at.'
-  };
-  var RELAX = { 1: 'searched our other BMW stock', 2: 'budget plus 10%', 3: 'closest fuels', 4: 'nearby shapes',
-    5: '7 seats dropped', 6: 'shape, fuel and wish list set aside' };
-
-  /* The fallback ladder: strict forecourt first, then one step wider at a
-     time, labelling every step. It always ends with cars. */
-  function findMatches(a) {
-    var res = [], seen = {}, levels = [];
-    function add(pool, R, lvl, limit) {
-      var c = pool.filter(function (x) { return !seen[x.id] && matches(x, a, R); }).map(function (x) { return evaluate(x, a); });
-      var got = pick(c, Math.max(0, limit - res.length), a, res);
-      got.forEach(function (r) { r.level = lvl; seen[r.c.id] = 1; res.push(r); });
-      if (got.length && levels.indexOf(lvl) === -1) levels.push(lvl);
-    }
-    var nHome = countIn(HOME, a, {}), nGroup = groupOK ? countIn(GROUP, a, {}) : 0;
-    add(HOME, {}, 0, 5);
-    if (res.length < 3 && groupOK) add(GROUP, {}, 1, 5);
-    var R = {};
-    if (res.length < 3 && hasCeiling(a)) { R = { stretch: 0.1 }; add(HOME, R, 2, 3); add(GROUP, R, 2, 3); }
-    if (res.length < 3 && a.fuel.length) { R = Object.assign({}, R, { fuelN: true }); add(HOME, R, 3, 3); add(GROUP, R, 3, 3); }
-    if (res.length < 3 && a.body.length) { R = Object.assign({}, R, { bodyN: true }); add(HOME, R, 4, 3); add(GROUP, R, 4, 3); }
-    if (res.length < 3 && a.extras.indexOf('seven') !== -1) { R = Object.assign({}, R, { noSeven: true }); add(HOME, R, 5, 3); add(GROUP, R, 5, 3); }
-    if (res.length < 3) add(HOME, { anyShape: true, anyFuel: true, noSeven: true }, 6, 3);
-    if (res.length < 3) {
-      var newest = HOME.filter(function (x) { return !seen[x.id]; })
-        .sort(function (x, y) { return y._year - x._year || x._miles - y._miles; });
-      newest.slice(0, 3 - res.length).forEach(function (x) { var r = evaluate(x, a); r.level = 6; seen[x.id] = 1; res.push(r); });
-      if (levels.indexOf(6) === -1) levels.push(6);
-    }
-    var level = levels.length ? Math.max.apply(null, levels) : 0;
-    var useGroup = levels.indexOf(1) !== -1 || res.some(function (r) { return !r.c._home; });
-    /* See all: the strict filters only, so the number equals stock.html's */
-    var seeN = countIn(HOME, a, { strictQuotes: true }) + (useGroup && groupOK ? countIn(GROUP, a, { strictQuotes: true }) : 0);
-    return { list: res, level: level, levels: levels, nHome: nHome, nGroup: nGroup, useGroup: useGroup,
-      seeN: seeN, seeUrl: seeAllUrl(a, useGroup) };
-  }
-
-  function seeAllUrl(a, all) {
-    var p = [];
-    if (a.body.length) {
-      var b = []; a.body.forEach(function (v) { byV(BODY, v).stock.forEach(function (k) { if (b.indexOf(k) === -1) b.push(k); }); });
-      p.push('body=' + b.join(','));
-    }
-    if (a.fuel.length) {
-      var f = []; a.fuel.forEach(function (v) { byV(FUEL, v).keys.forEach(function (k) { if (f.indexOf(k) === -1) f.push(k); }); });
-      p.push('fuel=' + f.join(','));
-    }
-    if (a.pay === 'monthly') {
-      if (a.dep !== null) p.push('dep=' + a.dep);
-      if (a.mo > 0) p.push('mo=' + a.mo);
-      p.push('sort=monthly-asc');
-    }
-    if (a.pay === 'cash' && a.cash > 0) p.push('price=' + CASH_BANDS[a.cash]);
-    if (a.extras.indexOf('seven') !== -1) p.push('seats=7');
-    if (all) p.push('all=1');
-    p.push('from=fmb');
-    return 'https://dan-sells.co.uk/stock.html?' + p.join('&');
-  }
-
-  /* ---------------- brand new stock ---------------- */
-  /* Dan, 8 October: a new or either buyer should see brand new cars that fit,
-     and nothing frightening when none do. The cars are lookup/new-stock.json.
-     BMW quotes every one at 4,500 pounds down (BMW Select PCP, 48 months).
-     For MATCHING ONLY, each 1,000 pounds more deposit takes 24 pounds a month
-     off and each 1,000 less adds 24, pro rata (Dan's rule of thumb):
-       estimate = quoted monthly - 24 x (their deposit - 4,500) / 1,000
-     That estimate is never shown to the customer, and nor is the quoted
-     monthly: the locator gives no optional final payment, total payable or
-     mileage, so no representative example can go with it (CLAUDE.md, new
-     cars). Cards show the cash price and offer a personalised quote; the
-     figures go to Dan in the lead email only. */
-  var NEW_QUOTE_DEP = 4500, NEW_PER_1000 = 24;
-  var NEWC = [], newOK = false, NEWRES = { list: [], count: 0 };
-  var NEW_FUEL = { petrol: 'petrol', diesel: 'diesel', phev: 'phev', electric: 'electric' };
-  function newBody(c) {
-    var d = String(c.description || ''), s = String(c.series || '');
-    if (/gran\s*coup/i.test(d)) return 'Coupe';        /* bodyKeys reads gran coupe off the name */
-    if (/coup/i.test(d)) return 'Coupe';
-    if (/saloon/i.test(d)) return 'Saloon';
-    if (s === '1 Series') return 'Hatchback';
-    if (/^[3578] Series$/.test(s) && !/touring/i.test(d)) return 'Saloon';
-    return '';
-  }
-  function stampNew(c) {
-    c._new = true;
-    c._bodies = ST.bodyKeys({ model: c.description, series: c.series, body: newBody(c) });
-    c._prim = ST.bodyPrimary({ model: c.description, series: c.series, body: newBody(c) });
-    c._fuel = NEW_FUEL[String(c.fuel || '').toLowerCase()] || ST.fuelKey(c);
-    c._price = c.price_gbp || ST.num(c.price);
-    c._quoted = parseFloat(String(c.monthly || '').replace(/[^0-9.]/g, '')) || 0;
-    return c;
-  }
-  function wantsNew(a) { a = a || A; return a.interest === 'new' || a.interest === 'either'; }
-  /* matching only, never displayed */
-  function newEstimate(c, dep) {
-    if (!c._quoted) return null;
-    var d = dep === null || dep === undefined ? NEW_QUOTE_DEP : dep;
-    return Math.round((c._quoted - NEW_PER_1000 * (d - NEW_QUOTE_DEP) / 1000) * 100) / 100;
-  }
-  function newFits(c, a) {
-    if (a.body.length && !bodyHit(c, a.body)) return false;
-    if (a.fuel.length && !fuelHit(c, a.fuel)) return false;
-    if (a.extras.indexOf('seven') !== -1 && String(c.seats) !== '7') return false;
-    if (a.pay === 'monthly' && a.mo > 0) {
-      var est = newEstimate(c, a.dep);
-      return est !== null && est <= a.mo;
-    }
-    if (a.pay === 'cash' && a.cash > 0) return c._price > 0 && c._price < a.cash;
-    return true;
-  }
-  /* Colour they asked for first, then the soonest here, then the lower price.
-     One of each model before any repeats, so three identical X3s never fill it. */
-  function findNew(a) {
-    if (!wantsNew(a)) return { list: [], count: 0 };
-    var fit = NEWC.filter(function (c) { return newFits(c, a); });
-    fit.sort(function (x, y) {
-      var cx = a.colours.indexOf(x.colour) !== -1 ? 0 : 1, cy = a.colours.indexOf(y.colour) !== -1 ? 0 : 1;
-      return cx - cy || (x.lead_time_weeks_max || 99) - (y.lead_time_weeks_max || 99) || x._price - y._price;
-    });
-    var out = [], seen = {};
-    fit.forEach(function (c) { if (out.length < 3 && !seen[c.description]) { seen[c.description] = 1; out.push(c); } });
-    fit.forEach(function (c) { if (out.length < 3 && out.indexOf(c) === -1) out.push(c); });
-    return { list: out.map(function (c) { return { c: c, est: newEstimate(c, a.pay === 'monthly' ? a.dep : null) }; }), count: fit.length };
-  }
-  function newWhen(c) {
-    var x = c.lead_time_weeks_min, y = c.lead_time_weeks_max;
-    if (!y) return '';
-    return x && x !== y ? 'Here in ' + x + ' to ' + y + ' weeks' : 'Here in ' + y + ' weeks';
-  }
-  function newWhy(c, a) {
-    var out = ['brand new, already built'];
-    if (a.body.length && bodyHit(c, a.body)) out.push(shapeName(c));
-    if (a.fuel.length && fuelHit(c, a.fuel)) out.push(FUEL_NAME[c._fuel]);
-    if (a.colours.length && a.colours.indexOf(c.colour) !== -1) out.push('in ' + c.colour);
-    if (a.extras.indexOf('seven') !== -1 && String(c.seats) === '7') out.push('7 seats');
-    if (a.pay === 'cash' && a.cash > 0) out.push(a.cash === 20000 ? 'under ' + GBP + '20k' : 'under your ' + GBP + (a.cash / 1000) + 'k');
-    if (a.pay === 'monthly' && a.mo > 0) out.push('should suit your monthly budget, confirmed with a personalised quote');
-    return cap1(out.join(', '));
-  }
-  function newLine(c) {
-    return 'Brand new ' + c.description + (c.colour ? ', ' + c.colour : '') + ', ' + (c.price || 'price on request') + ', order ' + c.order_number;
-  }
-
-  /* ---------------- words ---------------- */
-  function list(arr, word) {
-    if (arr.length <= 1) return arr.join('');
-    return arr.slice(0, -1).join(', ') + ' ' + word + ' ' + arr[arr.length - 1];
-  }
-  function shapeName(c) {
-    var map = { suv: 'SUV', saloon: 'Saloon', touring: 'Touring', hatchback: 'Hatchback', mpv: 'MPV',
-      gran_coupe: 'Gran Coup\u00e9', coupe: 'Coup\u00e9', convertible: 'Convertible', suv_coupe: 'SUV coup\u00e9' };
-    return map[c._prim] || c.body || 'Another shape';
-  }
-  function persona(a) {
-    var openAll = (!a.life || a.life === 'open') && !a.body.length && !a.fuel.length &&
-      (!a.pay || a.pay === 'notsure') && !a.extras.length && !a.colours.length;
-    var onlyPlug = a.fuel.length && a.fuel.every(function (f) { return f === 'electric' || f === 'phev'; });
-    var onlyStyle = a.body.length && a.body.every(function (b) { return b === 'coupe' || b === 'gran_coupe' || b === 'convertible'; });
-    if (openAll) return ['The Open Road Optimist', 'Open to anything, which means more great cars to choose from.'];
-    if (a.fuel.indexOf('electric') !== -1 && a.life === 'thrill') return ['The Silent Assassin', 'You want fast, quiet and clever.'];
-    if (a.life === 'thrill') return ['The B Road Hunter', 'You buy with your right foot. Feel first, figures second.'];
-    if (a.life === 'family') return ['The Weekend Warrior', 'Room for everyone and everything, and still a proper BMW to drive.'];
-    if (a.life === 'miles') return ['The Mile Muncher', 'Long days on the road. Comfort is the whole point.'];
-    if (onlyPlug) return ['The Future Proofer', 'You\u2019ve done the reading and you\u2019re ready to plug in.'];
-    if (a.life === 'style' || onlyStyle) return ['The Head Turner', 'Shape matters. You want people to look twice.'];
-    if (a.life === 'commute') return ['The Smooth Operator', 'Calm, quick and comfortable, every single day.'];
-    return ['The Smart Chooser', 'You know what you like and you want it done properly.'];
-  }
-  function extraWord(k) {
-    if (k === 'xdrive') return 'xDrive';
-    if (k === 'sound') return 'Harman Kardon or better';
-    return ST.FEATURES[k].label.toLowerCase();
-  }
-  /* Built only from asks the car really meets, then two plain facts if
-     nothing was stated. No range, economy or reliability claims. */
-  function whyLine(r, a) {
-    var c = r.c, out = [];
-    if (a.body.length && bodyHit(c, a.body)) out.push(shapeName(c));
-    if (a.fuel.length && fuelHit(c, a.fuel)) out.push(FUEL_NAME[c._fuel]);
-    if (hasCeiling(a) && budgetMet(c, a, 0)) {
-      out.push(a.pay === 'monthly' ? (r.fin ? 'inside your ' + money(a.mo) + ' a month' : 'priced like the cars inside your ' + money(a.mo) + ' a month')
-        : (a.cash === 20000 ? 'under ' + GBP + '20k' : 'under your ' + GBP + (a.cash / 1000) + 'k'));
-    }
-    if (a.colours.length && a.colours.indexOf(c.colour) !== -1) out.push('in ' + c.colour);
-    r.metExtras.forEach(function (k) { out.push(extraWord(k)); });
-    if (a.extras.indexOf('seven') !== -1 && String(c.seats) === '7') out.push('7 seats');
-    if (a.life === 'family' && Number(c.seats) >= 5 && (c._bodies.indexOf('suv') !== -1 || c._bodies.indexOf('touring') !== -1)) out.push('room for the family');
-    if (a.life === 'thrill' && c._hp && (c._m || c._hp >= 250)) out.push(c._hp + 'hp under your right foot');
-    if (!out.length) {
-      if (c._year) out.push(c._year + ' plate');
-      if (c._miles) out.push(c._miles.toLocaleString('en-GB') + ' miles');
-    }
-    return cap1(out.slice(0, 4).join(', '));
-  }
-  function modelName(c) { return String(c.model || '').replace(/^BMW\s+/i, ''); }
-  function budgetLine(a) {
-    if (a.pay === 'monthly') {
-      var dep = a.dep === null ? ', not sure on deposit' : ' with ' + money(a.dep) + ' down';
-      return a.mo > 0 ? 'Up to ' + money(a.mo) + ' a month' + dep : 'No monthly limit' + dep;
-    }
-    if (a.pay === 'cash') {
-      if (!(a.cash > 0)) return 'Any price';
-      return (a.cash === 20000 ? 'Under ' : 'Up to ') + GBP + (a.cash / 1000) + 'k in total';
-    }
-    return 'Not sure on budget yet';
-  }
-  function extrasText(a) { return a.extras.map(function (k) { return ST.FEATURES[k].label; }).join(', '); }
-  function shapesText(a) { return a.body.length ? list(a.body.map(function (v) { return byV(BODY, v).t; }), 'or') : 'Open minded on shape'; }
-  function fuelsText(a) { return a.fuel.length ? list(a.fuel.map(function (v) { return byV(FUEL, v).t; }), 'or') : 'Open minded on fuel'; }
-  function interestText(a) { return { 'new': 'A brand new BMW, either a factory order to my spec or a new car in stock that may be ready sooner', used: 'An approved used BMW', either: 'Brand new or approved used. Brand new could be a factory order to my spec or a new car in stock that may be ready sooner' }[a.interest] || ''; }
-  function lifeText(a) { var o = byV(LIFE, a.life); return o ? o.t : ''; }
-  function whenText(a) { var o = byV(WHEN, a.when); return o ? o.t : ''; }
-  function carLine(r) {
-    var c = r.c;
-    return (c.year ? c.year + ' ' : '') + c.model + ', reg ' + (c.reg || 'not listed') + ', ' + c.price
-      + (r.fin ? ', ' + money2(r.fin.monthly) + ' a month with ' + money(r.fin.deposit) + ' down' : ', ask for a quote');
-  }
+  var RELAX = M.RELAX, SUBS = M.SUBS;
+  function seeAllUrl(a) { return M.findUsed(a).seeUrl; }
 
   /* ---------------- WhatsApp ---------------- */
-  var RESULT = null, SHOWN = [];
   function waText(liked, listOverride, likedNew) {
     var SH = listOverride || SHOWN;
     var a = A, L = [];
-    if (likedNew) L.push('Hi Dan, I like the look of this brand new one:', newLine(likedNew.c), 'From Find my BMW.', '');
+    if (likedNew) L.push('Hi Dan, I like the look of this brand new one:', newLine(likedNew), 'From Find my BMW.', '');
     else if (liked) L.push('Hi Dan, I like the look of this one:', carLine(liked), 'From Find my BMW.', '');
     else L.push('Hi Dan, I\u2019ve just done Find my BMW.', '');
     L.push('What I\u2019m after:');
+    L.push('Model: ' + M.modelsText(A));
     if (A.interest) L.push(interestText(A));
+    if (A.who) L.push('Driver: ' + M.txt(WHO, A.who));
     if (a.life) L.push(lifeText(a));
+    if (A.miles) L.push('Miles a year: ' + M.txt(MILES_A, A.miles));
+    if (A.people) L.push('People: ' + M.txt(PEOPLE, A.people));
+    if (A.boot) L.push('Boot: ' + M.txt(BOOT, A.boot));
     L.push(shapesText(a), fuelsText(a), budgetLine(a));
     if (a.colours.length) L.push(list(a.colours, 'or'));
     if (a.extras.length) L.push('Wish list: ' + extrasText(a));
@@ -595,9 +200,9 @@
     var pxl = pxLine(); if (pxl) tail.push(pxl);
     if (RESULT && RESULT.level >= 2) tail.push('Nothing matched exactly, so I\u2019d love your help finding one.');
     var mt = [];
-    if (NEWRES.list.length) {
+    if ((NEWRES.fit || []).length) {
       mt.push('', 'Brand new ones that fit:');
-      NEWRES.list.forEach(function (r) { mt.push(newLine(r.c)); });
+      NEWRES.fit.forEach(function (r) { mt.push(newLine(r)); });
     }
     if (SH.length) {
       mt.push('', 'My top matches:');
@@ -611,20 +216,42 @@
   function waUrl(liked) { return WA + '?text=' + encodeURIComponent(waText(liked)); }
 
   /* ---------------- question screens ---------------- */
-  var TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  /* Order: model first, then new/used, needs analysis, shape only when it is
+     not implied by the model, fuel, budget, wish list, colour, part exchange,
+     timing. Shape and charging are dropped from the path when they do not
+     apply, so the progress count stays honest. */
+  var ALLQ = ['qm', 'qi', 'qw', 'ql', 'qmi', 'qpe', 'qb', 'qc', 'q2', 'q3', 'q4', 'q5', 'q6', 'qp', 'q7'];
+  function activeQS() {
+    var out = [];
+    ALLQ.forEach(function (q) {
+      if (q === 'q2' && M.shapeLocked(A)) return;
+      if (q === 'qc' && !M.needsCharge(A) && !(OPEN.q3)) return;
+      out.push(q);
+    });
+    return out;
+  }
+  function QS() { return activeQS(); }
+  var STEP_NAME = { qm: 'model', qi: 'interest', qw: 'who', ql: 'life', qmi: 'miles', qpe: 'people',
+    qb: 'boot', qc: 'charge', q2: 'body', q3: 'fuel', q4: 'budget', q5: 'extras', q6: 'colour',
+    qp: 'part_exchange', q7: 'timing' };
+  var MULTI = { qm: 'models', q2: 'body', q3: 'fuel', q5: 'extras', q6: 'colours' };
   var Q = {
-    qi: { n: 1, h: 'New or approved used?', hint: 'Pick one' },
-    q1: { n: 1, h: 'First things first. What\u2019s this BMW for?', hint: 'Pick one' },
-    q2: { n: 2, h: 'Which shapes catch your eye?', hint: 'Pick any' },
-    q3: { n: 3, h: 'What should power it?', hint: 'Pick any' },
-    q4: { n: 4, h: 'What feels comfortable?', hint: 'Rough is fine. Nothing here commits you to anything.' },
-    q5: { n: 5, h: 'Anything on your wish list?', hint: 'Pick any. These help me rank your matches. Only 7 seats rules cars out.' },
-    q6: { n: 6, h: 'Any colours you love?', hint: 'Pick any. I\u2019ll never rule out a great car over paint.' },
-    qp: { n: 8, h: 'Got a car to part exchange?', hint: 'Pick one. If it\u2019s a yes, I\u2019ll ask a few quick things about it next.' },
-    q7: { n: 7, h: 'Last one. When would you like to be driving it?', hint: 'Pick one' }
+    qm: { h: 'Which BMW are you thinking about?', hint: 'Pick any that appeal, or Open to ideas.' },
+    qi: { h: 'New or approved used?', hint: 'Pick one' },
+    qw: { h: 'Who will be behind the wheel most days?', hint: 'Pick one' },
+    ql: { h: 'What does a typical week look like?', hint: 'Pick the closest one' },
+    qmi: { h: 'Roughly how many miles a year?', hint: 'A guess is fine' },
+    qpe: { h: 'How many people, regularly?', hint: 'Pick one' },
+    qb: { h: 'How much boot space do you need?', hint: 'Pick one' },
+    qc: { h: 'Can you charge at home?', hint: 'Pick one. This only helps me rank electric and plug in cars.' },
+    q2: { h: 'Which shapes catch your eye?', hint: 'Pick any' },
+    q3: { h: 'What should power it?', hint: 'Pick any' },
+    q4: { h: 'What feels comfortable?', hint: 'Rough is fine. Nothing here commits you to anything.' },
+    q5: { h: 'Anything you would love it to have?', hint: 'Pick any. These help me rank your matches. Only 7 seats rules cars out.' },
+    q6: { h: 'Any colours you love?', hint: 'Pick any. I\u2019ll never rule out a great car over paint.' },
+    qp: { h: 'Got a car to part exchange?', hint: 'Pick one. If it\u2019s a yes, I\u2019ll ask a few quick things about it next.' },
+    q7: { h: 'When would you like to be driving it?', hint: 'Pick one' }
   };
-  QS.forEach(function (q, i) { Q[q].n = i + 1; });
-  var NQ = QS.length;
   function opt(q, type, v, t, l, ico, cls) {
     return '<label class="fmb-opt' + (cls ? ' ' + cls : '') + '" data-v="' + esc(v) + '">'
       + '<input type="' + type + '" name="' + q + '" value="' + esc(v) + '"/>'
@@ -634,7 +261,7 @@
       + '</span>'
       + '<span class="fmb-tick">' + TICK + '</span></span></label>';
   }
-  function chip(name, v, t, small) {
+  function chip(name, v, t) {
     return '<label class="fmb-chip" data-v="' + esc(v) + '"><input type="radio" name="' + name + '" value="' + esc(v) + '"/>'
       + '<span>' + esc(t) + '</span></label>';
   }
@@ -648,27 +275,35 @@
   }
   function buildQuestions() {
     var h = '';
+    h += qWrap('qm', '<div class="fmb-opts two models">' + MODELS.map(function (o) { return opt('qm', 'checkbox', o.v, o.t, '', ''); }).join('')
+      + opt('qm', 'checkbox', 'open', 'Open to ideas', 'Show me what suits, whatever the model', SVG.open, 'open') + '</div>');
     h += qWrap('qi', '<div class="fmb-opts">' + INTEREST.map(function (o) { return opt('qi', 'radio', o.v, o.t, o.l, ''); }).join('') + '</div>');
-    h += qWrap('q1', '<div class="fmb-opts">' + LIFE.map(function (o) { return opt('q1', 'radio', o.v, o.t, o.l, SVG[o.v]); }).join('') + '</div>');
+    h += qWrap('qw', '<div class="fmb-opts">' + WHO.map(function (o) { return opt('qw', 'radio', o.v, o.t, '', ''); }).join('') + '</div>');
+    h += qWrap('ql', '<div class="fmb-opts">' + LIFE.map(function (o) { return opt('ql', 'radio', o.v, o.t, o.l, SVG[o.v] || SVG.open); }).join('') + '</div>');
+    h += qWrap('qmi', '<div class="fmb-opts">' + MILES_A.map(function (o) { return opt('qmi', 'radio', o.v, o.t, '', ''); }).join('') + '</div>');
+    h += qWrap('qpe', '<div class="fmb-opts">' + PEOPLE.map(function (o) { return opt('qpe', 'radio', o.v, o.t, '', ''); }).join('') + '</div>');
+    h += qWrap('qb', '<div class="fmb-opts">' + BOOT.map(function (o) { return opt('qb', 'radio', o.v, o.t, o.l || '', ''); }).join('') + '</div>');
+    h += qWrap('qc', '<div class="fmb-opts">' + CHARGE.map(function (o) { return opt('qc', 'radio', o.v, o.t, '', ''); }).join('') + '</div>');
     h += qWrap('q2', '<div class="fmb-opts two shapes">' + BODY.map(function (o) {
-      return opt('q2', 'checkbox', o.v, o.t, o.l, o.v === 'open' ? SVG.open : SIL[o.v], o.v === 'open' ? 'open' : '');
-    }).join('') + '</div>');
+      return opt('q2', 'checkbox', o.v, o.t, o.l, SIL[o.v], '');
+    }).join('') + opt('q2', 'checkbox', 'open', 'Open minded', 'Show me every shape', SVG.open, 'open') + '</div>');
     h += qWrap('q3', '<div class="fmb-opts">' + FUEL.map(function (o) {
-      return opt('q3', 'checkbox', o.v, o.t, o.l, '', o.v === 'open' ? 'open' : '');
-    }).join('') + '</div>', '<p class="fmb-helper">Not sure? Pick Open minded and I\u2019ll talk you through the differences.</p>');
+      return opt('q3', 'checkbox', o.v, o.t, o.l, '', '');
+    }).join('') + opt('q3', 'checkbox', 'open', 'Open minded', 'Show me the best of all of them', '', 'open') + '</div>',
+      '<p class="fmb-helper">Not sure? Pick Open minded and I\u2019ll talk you through the differences.</p>');
     h += qWrap('q4',
       '<div class="fmb-seg" role="radiogroup" aria-label="How you\u2019d like to pay">'
       + chip('pay', 'monthly', 'A monthly figure') + chip('pay', 'cash', 'A total price') + chip('pay', 'notsure', 'Not sure yet') + '</div>'
       + '<div id="q4m" hidden>'
       + '<fieldset><legend class="fmb-sub">Up to how much a month?</legend><div class="fmb-chips" id="q4mo">'
-      + MONTHLY.map(function (m) { return chip('mo', String(m), m ? money(m) : 'No limit', true); }).join('') + '</div></fieldset>'
+      + MONTHLY.map(function (m) { return chip('mo', String(m), m ? money(m) : 'No limit'); }).join('') + '</div></fieldset>'
       + '<fieldset><legend class="fmb-sub">Anything to put down?</legend><div class="fmb-chips" id="q4dep">'
-      + DEPS.map(function (d) { return chip('dep', String(d), d < 0 ? 'Not sure' : money(d), true); }).join('') + '</div></fieldset>'
+      + DEPS.map(function (d) { return chip('dep', String(d), d < 0 ? 'Not sure' : money(d)); }).join('') + '</div></fieldset>'
       + '<p class="fmb-helper">Figures are BMW Financial Services\u2019 own quotes over 48 months at 8,000 miles a year. The full representative example is on each car.</p>'
       + '<p class="fmb-helper" id="q4low" hidden>The lender is quoting fewer cars than usual today, so I\u2019ll match on price as well.</p>'
       + '</div>'
       + '<div id="q4c" hidden><fieldset><legend class="fmb-sub">Up to how much in total?</legend><div class="fmb-chips" id="q4cash">'
-      + CASH.map(function (c) { return chip('cash', String(c.v), c.t, true); }).join('') + '</div></fieldset></div>'
+      + CASH.map(function (c) { return chip('cash', String(c.v), c.t); }).join('') + '</div></fieldset></div>'
       + '<p class="fmb-helper" id="q4n" hidden>No problem. I\u2019ll show you a good spread and we can work out the numbers together.</p>');
     h += qWrap('q5', '<div class="fmb-opts two">' + EXTRAS.map(function (k) {
       return opt('q5', 'checkbox', k, ST.FEATURES[k].label, '', '');
@@ -678,35 +313,37 @@
     h += qWrap('q7', '<div class="fmb-opts">' + WHEN.map(function (o) { return opt('q7', 'radio', o.v, o.t, '', SVG.clock); }).join('') + '</div>');
     $('fmbQuestions').innerHTML = h;
   }
-  /* A fixed list in a fixed order. It used to be the forecourt's own colours,
-     most stocked first, which is the stock leading the answer. */
-  var COLOURS = ['Black', 'White', 'Grey', 'Silver', 'Blue', 'Red', 'Green'];
   function colourOptions() {
-    var order = COLOURS;
     var box = $('q6opts');
-    if (box.getAttribute('data-built') === String(order.length)) return;
-    box.innerHTML = order.map(function (col) {
+    if (box.getAttribute('data-built') === '1') return;
+    box.innerHTML = COLOURS.map(function (col) {
       var sw = '<span class="fmb-sw" style="background:' + (SWATCH[col.toLowerCase()] || '#777') + '"></span>';
       return opt('q6', 'checkbox', col, col, '', sw);
     }).join('') + opt('q6', 'checkbox', 'open', 'Open minded', '', SVG.open, 'open');
-    box.setAttribute('data-built', String(order.length));
+    box.setAttribute('data-built', '1');
     syncInputs('q6');
   }
-
-  /* reflect A into the inputs (used on resume, back and pre fill) */
   function syncInputs(q) {
-    var s = $('s-' + q); if (!s) return;
+    var sec = $('s-' + q); if (!sec) return;
     var vals = [];
-    if (q === 'qp') vals = [A.px]; else if (q === 'qi') vals = [A.interest]; else if (q === 'q1') vals = [A.life]; else if (q === 'q7') vals = [A.when];
-    else if (MULTI[q]) vals = OPEN[q] ? ['open'] : A[MULTI[q]];
-    s.querySelectorAll('input[name=' + q + ']').forEach(function (i) { i.checked = vals.indexOf(i.value) !== -1; });
+    if (q === 'qp') vals = [A.px];
+    else if (q === 'qi') vals = [A.interest];
+    else if (q === 'qw') vals = [A.who];
+    else if (q === 'ql') vals = [A.life];
+    else if (q === 'qmi') vals = [A.miles];
+    else if (q === 'qpe') vals = [A.people];
+    else if (q === 'qb') vals = [A.boot];
+    else if (q === 'qc') vals = [A.charge];
+    else if (q === 'q7') vals = [A.when];
+    else if (MULTI[q]) vals = OPEN[q] && !(A[MULTI[q]] || []).length ? ['open'] : (A[MULTI[q]] || []).concat(OPEN[q] && q === 'qm' ? ['open'] : []);
+    sec.querySelectorAll('input[name=' + q + ']').forEach(function (i) { i.checked = vals.indexOf(i.value) !== -1; });
     if (q === 'q4') {
-      s.querySelectorAll('input[name=pay]').forEach(function (i) { i.checked = i.value === A.pay; });
-      s.querySelectorAll('input[name=mo]').forEach(function (i) { i.checked = A.mo !== null && i.value === String(A.mo); });
-      s.querySelectorAll('input[name=dep]').forEach(function (i) {
+      sec.querySelectorAll('input[name=pay]').forEach(function (i) { i.checked = i.value === A.pay; });
+      sec.querySelectorAll('input[name=mo]').forEach(function (i) { i.checked = A.mo !== null && i.value === String(A.mo); });
+      sec.querySelectorAll('input[name=dep]').forEach(function (i) {
         i.checked = depTouched && (A.dep === null ? i.value === '-1' : i.value === String(A.dep));
       });
-      s.querySelectorAll('input[name=cash]').forEach(function (i) { i.checked = A.cash !== null && i.value === String(A.cash); });
+      sec.querySelectorAll('input[name=cash]').forEach(function (i) { i.checked = A.cash !== null && i.value === String(A.cash); });
       q4Panels();
     }
   }
@@ -716,33 +353,23 @@
     $('q4n').hidden = A.pay !== 'notsure';
     $('q4low').hidden = !(A.pay === 'monthly' && lowCov());
   }
-
-  /* ---------------- no stock counts in the questions ----------------
-     Dan, 8 October: "the customers choices should be theirs, not led by our
-     stock". No counts on the tiles, no "X cars match" bar, no forecourt total
-     on the intro and no stock led nudges. Counts are still worked out
-     silently for the fmb_zero_match and fmb_answer events. */
   /* nothing on screen: only the zero match event, for Dan's reports */
   var lastN = null, zeroSent = {};
   function counter() {
     if (!snapOK) return;
-    var n = countIn(HOME, A, {});
-    if (n === 0 && lastN !== 0 && lastN !== null && QS.indexOf(cur) !== -1 && !zeroSent[cur]) {
-      zeroSent[cur] = 1; track('fmb_zero_match', { step: Q[cur].n, step_name: STEP_NAME[cur] });
+    var n = M.countIn(M.data().home, A, {});
+    if (n === 0 && lastN !== 0 && lastN !== null && QS().indexOf(cur) !== -1 && !zeroSent[cur]) {
+      zeroSent[cur] = 1; track('fmb_zero_match', { step: QS().indexOf(cur) + 1, step_name: STEP_NAME[cur] });
     }
     lastN = n;
   }
-  /* Dan, 8 October: every answer has to be the customer's own tap. Nothing is
-     pre selected, there is no Skip, and Continue stays off until they choose
-     (each question has an Open minded, Not fussed or Not sure tap for anyone
-     with no preference). The old design otherwise: no extra prompt, the
-     question's own hint line does the talking. needs() is the one rule for the
-     button and for next(), so Enter cannot get round it either. */
   function needs(q) {
-    if (q === 'qi') return A.interest ? '' : 'Tap new, used or either to carry on';
-    if (q === 'q1') return A.life ? '' : 'Tap the one that fits best to carry on';
-    if (q === 'qp') return A.px ? '' : 'Tap Yes, No or Maybe to carry on';
-    if (q === 'q7') return A.when ? '' : 'Tap when you would like it to carry on';
+    var single = { qi: ['interest', 'Tap new, used or either to carry on'], qw: ['who', 'Tap who drives it to carry on'],
+      ql: ['life', 'Tap the week that fits best to carry on'], qmi: ['miles', 'Tap a mileage to carry on'],
+      qpe: ['people', 'Tap how many people to carry on'], qb: ['boot', 'Tap the boot that fits to carry on'],
+      qc: ['charge', 'Tap whether you can charge at home'], qp: ['px', 'Tap Yes, No or Maybe to carry on'],
+      q7: ['when', 'Tap when you would like it to carry on'] };
+    if (single[q]) return A[single[q][0]] ? '' : single[q][1];
     if (q === 'q4') {
       if (!A.pay) return 'Tap how you would like to pay to carry on';
       if (A.pay === 'monthly' && A.mo === null) return 'Tap your monthly budget to carry on';
@@ -750,19 +377,20 @@
       if (A.pay === 'cash' && A.cash === null) return 'Tap your total budget to carry on';
       return '';
     }
-    if (MULTI[q] && !(A[MULTI[q]].length || OPEN[q])) {
-      return { q2: 'Tap a shape, or Open minded', q3: 'Tap a fuel, or Open minded',
+    if (MULTI[q] && !((A[MULTI[q]] || []).length || OPEN[q])) {
+      return { qm: 'Tap a model, or Open to ideas', q2: 'Tap a shape, or Open minded', q3: 'Tap a fuel, or Open minded',
         q5: 'Tap anything you want, or Not fussed', q6: 'Tap a colour, or Open minded' }[q];
     }
     return '';
   }
   function nextLabel() {
     var b = $('fmbNext'), q = cur, need = needs(q);
-    b.textContent = q === 'q7' ? 'Show my matches' : 'Continue';
+    var path = QS();
+    b.textContent = q === path[path.length - 1] ? 'Show my matches' : 'Continue';
     b.disabled = !!need;
   }
   function refresh() {
-    if (QS.indexOf(cur) !== -1) {
+    if (QS().indexOf(cur) !== -1 || ALLQ.indexOf(cur) !== -1) {
       if (cur === 'q6') colourOptions();
       if (cur === 'q4') q4Panels();
       counter(); nextLabel();
@@ -771,21 +399,28 @@
 
   /* ---------------- answering ---------------- */
   var autoT = null;
+  var RADIO_AUTO = { qi: 1, qw: 1, ql: 1, qmi: 1, qpe: 1, qb: 1, qc: 1, qp: 1, q7: 1 };
   function onChange(e) {
     var i = e.target; if (!i || !i.name) return;
     var q = i.name, v = i.value;
     if (q === 'qi' && (v === 'new' || v === 'either')) want('newc');
     if (q === 'qi') A.interest = v;
     else if (q === 'qp') A.px = v;
-    else if (q === 'q1') A.life = v;
+    else if (q === 'qw') A.who = v;
+    else if (q === 'ql') A.life = v;
+    else if (q === 'qmi') A.miles = v;
+    else if (q === 'qpe') A.people = v;
+    else if (q === 'qb') A.boot = v;
+    else if (q === 'qc') A.charge = v;
     else if (q === 'q7') A.when = v;
     else if (MULTI[q]) {
-      var s = $('s-' + q), boxes = s.querySelectorAll('input[name=' + q + ']');
-      if (v === 'open' && i.checked) boxes.forEach(function (b) { if (b.value !== 'open') b.checked = false; });
-      if (v !== 'open' && i.checked) boxes.forEach(function (b) { if (b.value === 'open') b.checked = false; });
+      var sec = $('s-' + q), boxes = sec.querySelectorAll('input[name=' + q + ']');
+      if (v === 'open' && i.checked && q !== 'qm') boxes.forEach(function (b) { if (b.value !== 'open') b.checked = false; });
+      if (v !== 'open' && i.checked && q !== 'qm') boxes.forEach(function (b) { if (b.value === 'open') b.checked = false; });
       var on = []; boxes.forEach(function (b) { if (b.checked && b.value !== 'open') on.push(b.value); });
       A[MULTI[q]] = on;
-      OPEN[q] = !on.length && !!s.querySelector('input[value=open]:checked');
+      OPEN[q] = !!sec.querySelector('input[value=open]:checked') && (q === 'qm' || !on.length);
+      if (q === 'qm') A.modelOpen = OPEN.qm;
       if (i.checked && !RM && navigator.vibrate && /Android/i.test(navigator.userAgent)) { try { navigator.vibrate(8); } catch (x) {} }
     }
     else if (q === 'pay') {
@@ -802,19 +437,17 @@
     save();
     refresh();
   }
-  /* Q1 and Q7 move on by themselves after a pointer tap (not on arrow keys,
-     which change radios as people move through them). */
   function onClick(e) {
     var lab = e.target.closest && e.target.closest('.fmb-opt');
     if (!lab || !e.detail) return;
     var inp = lab.querySelector('input');
-    if (!inp || (inp.name !== 'qi' && inp.name !== 'qp' && inp.name !== 'q1' && inp.name !== 'q7')) return;
+    if (!inp || !RADIO_AUTO[inp.name]) return;
     clearTimeout(autoT);
     autoT = setTimeout(function () { if (cur === inp.name) next(); }, 300);
   }
 
   /* ---------------- navigation ---------------- */
-  var ORDER = ['intro'].concat(QS, ['matching', 'reveal']);
+  function ORDER() { return ['intro'].concat(QS(), ['matching', 'reveal']); }
   function screenEl(s) { return s === 'intro' ? $('s-intro') : $('s-' + s); }
   function show(s, back) {
     var prev = cur;
@@ -823,7 +456,7 @@
     cur = s;
     el.hidden = false;
     void el.offsetWidth; el.classList.add('fmb-anim-in'); if (back) el.classList.add('back');
-    var qi = QS.indexOf(s);
+    var path = QS(), qi = path.indexOf(s), NQ = path.length;
     $('fmbProg').hidden = qi === -1;
     $('fmbBar').hidden = qi === -1;
     document.body.classList.toggle('wide', s === 'reveal');
@@ -837,7 +470,7 @@
       var pre = el.querySelector('[data-pre]'); if (pre) pre.hidden = !PRE[s];
       lastN = null;
       refresh();
-      if (prev !== s) track('fmb_step_' + (qi + 1), { step: qi + 1, step_name: STEP_NAME[s] });
+      if (prev !== s) track('fmb_step', { step: qi + 1, step_name: STEP_NAME[s], of: NQ });
       if (s === 'q4' || s === 'q5') { want('lad'); want('det'); want('group'); }
     } else if (s === 'reveal') {
       document.title = 'Your BMW matches | Find my BMW | Dan Sells';
@@ -860,25 +493,27 @@
     show(s, back);
   }
   function answerTrack(q) {
-    var vals = q === 'qp' ? [A.px || ''] : q === 'qi' ? [A.interest || ''] : q === 'q1' ? [A.life || ''] : q === 'q7' ? [A.when || ''] : q === 'q4'
-      ? [A.pay || 'skipped', A.mo === null ? '' : (A.mo ? 'mo' + A.mo : 'nolimit'), A.pay === 'monthly' ? (A.dep === null ? 'dep_notsure' : 'dep' + A.dep) : '', A.cash === null ? '' : 'cash' + A.cash]
-      : (OPEN[q] ? ['open'] : A[MULTI[q]]);
-    var open = q === 'qp' ? A.px === 'maybe' : q === 'qi' ? A.interest === 'either' : q === 'q4' ? (!A.pay || A.pay === 'notsure') : MULTI[q] ? !A[MULTI[q]].length : (q === 'q1' && (!A.life || A.life === 'open'));
-    track('fmb_answer', { step: Q[q].n, step_name: STEP_NAME[q], answer: vals.filter(Boolean).join(',') || 'skipped',
-      open_minded: open ? 'yes' : 'no', match_count: snapOK ? countIn(HOME, A, {}) : -1 });
+    var path = QS();
+    var vals = MULTI[q] ? (A[MULTI[q]] || []).concat(OPEN[q] ? ['open'] : [])
+      : q === 'q4' ? [A.pay || '', A.mo === null ? '' : String(A.mo), A.dep === null ? 'notsure' : String(A.dep == null ? '' : A.dep), A.cash == null ? '' : String(A.cash)]
+      : [A[{ qi: 'interest', qw: 'who', ql: 'life', qmi: 'miles', qpe: 'people', qb: 'boot', qc: 'charge', qp: 'px', q7: 'when' }[q]] || ''];
+    track('fmb_answer', { step: path.indexOf(q) + 1, step_name: STEP_NAME[q], answer: vals.filter(function (x) { return x !== '' && x != null; }).join(',').slice(0, 100),
+      open_minded: OPEN[q] || A.interest === 'either' ? 'yes' : 'no', match_count: snapOK ? M.countIn(M.data().home, A, {}) : -1 });
   }
   function next() {
-    var qi = QS.indexOf(cur);
+    var path = QS(), qi = path.indexOf(cur);
     if (qi === -1) return;
     if (needs(cur)) { nextLabel(); return; }
     answerTrack(cur);
-    if (qi < QS.length - 1) go(QS[qi + 1]);
+    var path2 = QS();
+    qi = path2.indexOf(cur);
+    if (qi < path2.length - 1) go(path2[qi + 1]);
     else runMatching();
   }
   function back() {
-    var qi = QS.indexOf(cur);
+    var path = QS(), qi = path.indexOf(cur);
     track('fmb_back', { from_step: qi + 1 });
-    if (qi > 0) go(QS[qi - 1], true); else go('intro', true);
+    if (qi > 0) go(path[qi - 1], true); else go('intro', true);
   }
 
   /* ---------------- matching moment ---------------- */
@@ -915,12 +550,9 @@
     NEWRES = findNew(A);
     if (!snapOK) { RESULT = null; return; }
     RESULT = findMatches(A);
+    RESULT.totals = M.stockTotal(A);
     moreShown = false; revealTracked = false;
     SHOWN = RESULT.list.slice(0, 3);
-    RESULT.list.forEach(function (r) {
-      r.why = whyLine(r, A);
-      r.relaxed = r.level >= 2 ? RELAX[r.level] : (r.level === 1 ? 'group stock' : '');
-    });
   }
   function photo(c) { var p = FN.photos(c, DET ? DET[c.id] : null); return p[0] || c.image || ''; }
 
@@ -955,7 +587,7 @@
     var flags = r.miss.map(function (m) { return '<span class="fmb-flag">' + esc(m) + '</span>'; });
     if (!c._home) flags.push('<span class="fmb-flag grp">From our other BMW stock</span>');
     return '<article class="fmb-card' + (best ? ' best' : '') + (RM ? '' : ' rise') + '" style="animation-delay:' + (i * 90) + 'ms" data-i="' + i + '">'
-      + '<div class="fmb-ph"' + (c.reg ? ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="' + (c._home ? 'forecourt' : 'group') + '"' : '') + '>' + (best ? '<span class="fmb-ribbon">Best match</span>' : '')
+      + '<div class="fmb-ph"' + (c.reg ? ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="' + (c._home ? 'forecourt' : 'group') + '"' : '') + '>' + (best ? '<span class="fmb-ribbon">' + (r.level === 0 ? 'My top pick' : 'Closest match') + '</span>' : '')
       + (showPct ? '<span class="fmb-pct' + (r.pct >= 80 ? ' hi' : '') + '">' + r.pct + '% match<i style="width:0" data-w="' + r.pct + '"></i></span>' : '')
       + (u ? '<img src="' + esc(u) + '" alt="' + esc(alt) + '" width="640" height="360" loading="' + (i < 3 ? 'eager' : 'lazy') + '" decoding="async"/>'
            : '<div class="sil">' + (SIL[c._prim] || SIL[c._bodies[0]] || SIL.saloon) + '</div>')
@@ -965,7 +597,8 @@
       + '<div class="fmb-price">' + esc(c.price || 'Price on request') + '</div>'
       + (flags.length ? '<div class="fmb-flags">' + flags.join('') + '</div>' : '')
       + (!c._home ? '<p class="fmb-grpline">I can source this one from across the group.</p>' : '')
-      + '<p class="fmb-why"><b>Why it fits:</b> ' + esc(r.why) + '</p>'
+      + (best && r.level === 0 ? '<div class="fmb-why"><b>Why this one</b><ul class="fmb-whylist">' + String(r.why).split(', ').map(function (x) { return '<li>' + esc(cap1(x)) + '</li>'; }).join('') + '</ul></div>'
+              : '<p class="fmb-why"><b>Why it fits:</b> ' + esc(r.why) + '</p>')
       + finBlock(r)
       + '<a class="fmb-btn wa wide" data-like="' + i + '" href="' + esc(WA) + '" target="_blank" rel="noopener">I like this one</a>'
       + '</div></article>';
@@ -979,7 +612,7 @@
      new-cars.html shows them. No monthly figure, quoted or estimated. */
   function newCard(r, i) {
     var c = r.c, u = c.image || '', when = newWhen(c);
-    var spec = [c.colour, c.fuel, c.drive === 'All Wheel' ? 'xDrive' : ''].filter(Boolean).join(' \u00b7 ');
+    var spec = [c.colour, c.fuel, c.drive === 'All Wheel' ? 'xDrive' : ''].filter(Boolean).join(', ');
     return '<article class="fmb-card fmb-newcard' + (RM ? '' : ' rise') + '" style="animation-delay:' + (i * 90) + 'ms" data-n="' + i + '">'
       + '<div class="fmb-ph">' + (u ? '<img src="' + esc(u) + '" alt="' + esc('Brand new ' + c.description + (c.colour ? ' in ' + c.colour : '')) + '" width="640" height="360" loading="eager" decoding="async"/>'
            : '<div class="sil">' + (SIL[c._prim] || SIL.saloon) + '</div>') + '</div>'
@@ -996,16 +629,17 @@
   function newSection() {
     var box = $('fmbNew');
     if (!box) return;
-    if (!wantsNew() || !NEWRES.list.length) { box.hidden = true; box.innerHTML = ''; return; }
+    var list = NEWRES.fit || NEWRES.list || [];
+    if (!wantsNew() || !list.length) { box.hidden = true; box.innerHTML = ''; return; }
     box.innerHTML = '<div class="fmb-narrow fmb-head"><h2>Brand new, already built, and a fit for you</h2>'
       + '<ul class="fmb-subs"><li>Unregistered BMWs available through Hedin Ruxley that match what you told me.'
-      + (NEWRES.count > NEWRES.list.length ? ' I have ' + NEWRES.count + ' that fit, so I\u2019ll send you the rest.' : '') + '</li></ul></div>'
-      + '<div class="fmb-cards">' + NEWRES.list.map(newCard).join('') + '</div>'
+      + (NEWRES.count > list.length ? ' I have ' + NEWRES.count + ' that fit, so I\u2019ll send you the rest.' : '') + '</li></ul></div>'
+      + '<div class="fmb-cards">' + list.map(newCard).join('') + '</div>'
       + '<p class="fmb-print">Pictures are configurator renders of that specification. Prices and delivery times come from BMW and can change. Finance subject to status.</p>';
     box.hidden = false;
     box.querySelectorAll('img').forEach(function (img) {
       img.addEventListener('error', function () {
-        var c = NEWRES.list[Number(img.closest('[data-n]').getAttribute('data-n'))].c, d = document.createElement('div');
+        var c = (NEWRES.fit || [])[Number(img.closest('[data-n]').getAttribute('data-n'))].c, d = document.createElement('div');
         d.className = 'sil'; d.innerHTML = SIL[c._prim] || SIL.saloon; img.replaceWith(d);
       }, { once: true });
     });
@@ -1023,23 +657,24 @@
       $('fmbMore').hidden = true; $('fmbSeeAll').hidden = true;
       return;
     }
-    var R = RESULT, list = R.list, strict = R.nHome + (R.levels.indexOf(1) !== -1 ? R.nGroup : 0);
+    var R = RESULT, list = R.list;
     var shownN = Math.min(list.length, moreShown ? 5 : 3);
     SHOWN = list.slice(0, shownN);
-    if (R.level <= 1 && strict > 0) head.textContent = strict === 1 ? 'I found 1 BMW that fits you.' : 'I found ' + strict + ' BMWs that fit you.';
-    else head.textContent = 'Nothing ticked every box today, so here are the closest.';
+    var tight = R.level === 0 && R.nStrict > 0;
+    head.textContent = tight ? M.heroLine(A, R.totals) : 'Nothing today nails every point, so leave it with me. Here are the closest, and I will come back to you personally.';
     var lines = [];
-    if (R.level === 0) lines.push('<li>Here are my top ' + Math.min(3, list.length) + '.</li>');
+    if (tight) lines.push('<li>Here is my top pick, then a couple of alternatives.</li>');
     R.levels.filter(function (l) { return l > 0; }).sort().forEach(function (l) { lines.push('<li class="relax">' + esc(SUBS[l]) + '</li>'); });
     var widened = R.levels.filter(function (l) { return l >= 2; }).sort().map(function (l) { return RELAX[l]; });
     if (widened.length) lines.push('<li class="relax">What I widened: ' + esc(widened.join(', ')) + '.</li>');
     if (A.pay === 'monthly' && A.mo > 0 && !quotedAny) lines.push('<li>The lender isn\u2019t quoting any cars today, so I\u2019ve left the monthly budget out. Ask me for figures on any of them.</li>');
     else if (A.pay === 'monthly' && A.mo > 0 && lowCov()) lines.push('<li>The lender is only quoting some cars today, so I\u2019ve matched the rest on price. Ask me for figures on any of them.</li>');
     subs.innerHTML = lines.join('');
-    cardsEl.innerHTML = list.map(card).join('') + (R.level >= 1 ? findCard() : '');
+    cardsEl.innerHTML = list.map(function (r, i) { return (i === 1 ? '<h3 class="fmb-alt-h" data-alt>' + (list.length > 2 ? 'Two more worth a look' : 'One more worth a look') + '</h3>' : '') + card(r, i); }).join('') + (R.level >= 2 ? findCard() : '');
     cardsEl.querySelectorAll('.fmb-card[data-i]').forEach(function (el) { el.hidden = Number(el.getAttribute('data-i')) >= shownN; });
     /* Walkaround video and 360 spin (aos-media.js): only cards on screen are checked */
     if (window.aosMedia) window.aosMedia.scan(cardsEl);
+    setTimeout(function () { if (window.aosMedia) window.aosMedia.scan(cardsEl); }, 1500);
     cardsEl.querySelectorAll('img').forEach(function (img) {
       img.addEventListener('error', function () {
         var c = list[Number(img.closest('[data-i]').getAttribute('data-i'))].c, d = document.createElement('div');
@@ -1055,20 +690,36 @@
     see.href = R.seeUrl;
     $('fmbSentAll').href = R.seeUrl; $('fmbSentAll').hidden = see.hidden; $('fmbSentAll').textContent = see.textContent;
     $('fmbLead').hidden = false;
+    nextSteps();
     pxBox();
     leadBanner();
-    if (A.interest === 'new' || A.interest === 'either') {
-      head.textContent = NEWRES.list.length ? 'And a couple of approved used BMWs that may be of interest.'
-        : 'While you wait for me to come back to you, here are a couple of used BMWs that may be of interest.';
-      var top = subs.querySelector('li:not(.relax)'); if (top && R.level === 0) top.remove();
+    if ((A.interest === 'new' || A.interest === 'either') && !(NEWRES.fit || []).length) {
+      var note = document.createElement('p'); note.className = 'fmb-helper';
+      note.textContent = 'No brand new car fits every point today. I\'ll be in touch with brand new options that suit you.';
+      $('fmbNew').hidden = false; $('fmbNew').innerHTML = ''; $('fmbNew').appendChild(note);
     }
     if (!revealTracked) {
       revealTracked = true;
-      track('fmb_reveal', { match_count: R.nHome, group_count: R.nGroup, top_pct: list[0].pct == null ? -1 : list[0].pct,
+      track('fmb_reveal', { match_count: R.nStrict, stock_x: R.totals ? R.totals.total : 0, top_pct: list[0].pct == null ? -1 : list[0].pct,
         fallback_level: R.level, persona: p[0], quote_coverage: Math.round(coverage * 100) });
     }
   }
   var revealTracked = false;
+  var BOOK = 'https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales';
+  /* After the recommendation: test drive, valuation, WhatsApp (the main
+     WhatsApp button is just below in #fmbLead). */
+  function nextSteps() {
+    var box = $('fmbNext2');
+    if (!box) {
+      box = document.createElement('div'); box.id = 'fmbNext2'; box.className = 'fmb-block fmb-next-steps';
+      $('fmbLead').parentNode.insertBefore(box, $('fmbLead'));
+    }
+    box.innerHTML = '<h2>What happens next</h2>'
+      + '<a class="fmb-btn ghost wide" id="fmbBook" href="' + BOOK + '" target="_blank" rel="noopener">Book a test drive with me</a>'
+      + (A.px === 'yes' || A.px === 'maybe' ? '' : '<a class="fmb-btn ghost wide" href="appraisal.html">Get a valuation on your car</a>');
+    var b = $('fmbBook');
+    b.onclick = function () { track('booking_click', { link_location: 'fmb_results' }); track('fmb_book_click', { top_reg: SHOWN[0] ? SHOWN[0].c.reg : '' }); };
+  }
 
   /* ---------------- the gate: contact (and part exchange) unlock the results ---------------- */
   /* Dan's rule (1 October): after the last question the results screen shows
@@ -1093,14 +744,12 @@
     return { id: LEAD.id || o.id || '', name: $('fName').value.trim() || o.name || '', phone: $('fPhone').value.trim() || o.phone || '', email: $('fEmail').value.trim() || o.email || '' };
   }
   function headline(R) {
-    var strict = R.nHome + (R.levels.indexOf(1) !== -1 ? R.nGroup : 0);
-    if (R.level <= 1 && strict > 0) return strict === 1 ? 'I found 1 BMW that fits you.' : 'I found ' + strict + ' BMWs that fit you.';
-    return 'Nothing ticked every box today, so I\u2019ve found the closest.';
+    if (R.level === 0 && R.nStrict > 0) return 'Your match is ready.';
+    return 'I\'ve found the closest matches for you.';
   }
   function matchCountText() {
     if (!RESULT) return '';
-    var R = RESULT, strict = R.nHome + (R.levels.indexOf(1) !== -1 ? R.nGroup : 0);
-    return strict > 0 && R.level <= 1 ? (strict === 1 ? '1 match ready' : strict + ' matches ready') : R.list.length + ' close matches ready';
+    return 'Your matches are ready';
   }
   function present() {
     if (UNLOCKED) { closeGate(true); reveal(); return; }
@@ -1118,7 +767,7 @@
     ['fmbMore', 'fmbSeeAll', 'fmbLead', 'fmbPxBox', 'fmbSent', 'fmbNew'].forEach(function (id) { $(id).hidden = true; });
     $('fmbNew').innerHTML = '';
     document.body.classList.add('locked');
-    track('fmb_reveal_locked', { match_count: RESULT ? RESULT.nHome : 0, persona: p[0] });
+    track('fmb_reveal_locked', { match_count: RESULT ? RESULT.nStrict : 0, persona: p[0] });
   }
   function setInert(on) {
     ['fmbMain', 'fmbTop'].forEach(function (id) {
@@ -1137,7 +786,7 @@
     $('gateCount').textContent = matchCountText();
     $('peekCount').textContent = matchCountText();
     gstep(LEAD.state === 'sent' ? (A.px === 'yes' ? 'px1' : A.px === 'maybe' ? 'pxask' : 'contact') : 'contact', true);
-    if (!gateOpen) track('fmb_gate_view', { match_count: RESULT ? RESULT.nHome : 0, px: A.px || 'none', interest: A.interest || 'either' });
+    if (!gateOpen) track('fmb_gate_view', { match_count: RESULT ? RESULT.nStrict : 0, px: A.px || 'none', interest: A.interest || 'either' });
     gateOpen = true;
   }
   function closeGate(silent) {
@@ -1215,11 +864,11 @@
 
   /* ---------- the contact submission ---------- */
   function payload() {
-    var R = RESULT || { nHome: 0, nGroup: 0, level: 0, levels: [], seeUrl: '', list: [] };
+    var R = RESULT || { nStrict: 0, level: 0, levels: [], seeUrl: '', list: [] };
     var ci = contactInfo(), opt = $('fOptin').checked;
     var top = R.list.slice(0, 5);
     var P = {
-      form: 'find-my-bmw-v2',
+      form: 'find-my-bmw-v3',
       lead_id: LEAD.id,
       _subject: 'DanSells lead: ' + (ci.name || 'website') + ' (Find my BMW' + (A.interest === 'new' ? ', new car' : '') + ')',
       _replyto: ci.email || 'daniel.cane@hedinautomotive.co.uk',
@@ -1230,6 +879,8 @@
       part_exchange: { yes: 'Yes', no: 'No', maybe: 'Maybe' }[A.px] || 'Not answered',
       marketing_opt_in: opt ? 'Yes' : 'No',
       marketing_channels: opt ? 'Email, WhatsApp' : '',
+      model: M.modelsText(A), who: M.txt(WHO, A.who), miles_a_year: M.txt(MILES_A, A.miles),
+      people: M.txt(PEOPLE, A.people), boot: M.txt(BOOT, A.boot), charge: M.txt(CHARGE, A.charge),
       lifestyle: lifeText(A) || 'not answered', body: shapesText(A), fuel: fuelsText(A),
       pay_route: A.pay || 'not answered',
       monthly_max: A.pay === 'monthly' ? (A.mo ? String(A.mo) : 'No limit') : '',
@@ -1237,9 +888,9 @@
       cash_max: A.pay === 'cash' ? (A.cash ? String(A.cash) : 'Any price') : '',
       extras: extrasText(A), colours: A.colours.join(', ') || 'Open minded', timing: whenText(A) || 'not answered',
       persona: persona(A)[0],
-      match_count_forecourt: String(R.nHome), match_count_group: String(R.nGroup),
+      match_count_strict: String(R.nStrict || 0), stock_x: String(R.totals ? R.totals.total : ''),
       fallback_level: String(R.level),
-      relaxed: R.levels.filter(function (l) { return l >= 1; }).map(function (l) { return RELAX[l]; }).join(', '),
+      relaxed: R.levels.filter(function (l) { return l >= 2; }).map(function (l) { return RELAX[l]; }).join(', '),
       quote_coverage: Math.round(coverage * 100) + '%',
       top_regs: top.map(function (r) { return r.c.reg; }).join(', '),
       see_all_url: R.seeUrl || '',
@@ -1247,11 +898,11 @@
       leadsummary: waText(null, top)
     };
     if (wantsNew()) {
-      P.new_match_count = String(NEWRES.count);
+      P.new_match_count = String(NEWRES.count); P.stock_x = String(R.totals ? R.totals.total : '');
       P.new_matching_basis = 'BMW quotes assume ' + money(NEW_QUOTE_DEP) + ' down. Matched on ' + GBP + NEW_PER_1000
         + ' a month less per ' + GBP + '1,000 more deposit (more per ' + GBP + '1,000 less). Estimates for Dan only, not shown to the customer. '
         + (A.pay === 'monthly' ? (A.dep === null ? 'Deposit not sure, so matched at ' + money(NEW_QUOTE_DEP) + '.' : 'Customer deposit ' + money(A.dep) + '.') : 'Not a monthly brief.');
-      NEWRES.list.forEach(function (r, i) {
+      (NEWRES.fit || []).forEach(function (r, i) {
         var n = 'new_match_' + (i + 1) + '_', c = r.c;
         P[n + 'order'] = c.order_number || '';
         P[n + 'model'] = c.description + (c.colour ? ', ' + c.colour : '');
@@ -1326,7 +977,7 @@
     post(P).then(function () {
       ss('fmbSent', String(Date.now())); ss('fmbSentName', LEAD.first);
       LEAD.state = 'sent';
-      track('fmb_lead_sent', { match_count: RESULT ? RESULT.nHome : 0, interest: A.interest || 'either' });
+      track('fmb_lead_sent', { match_count: RESULT ? RESULT.nStrict : 0, interest: A.interest || 'either' });
       markComplete('form');
       sending = false; btn.disabled = false;
       afterContact();
@@ -1500,6 +1151,7 @@
   /* the gate's WhatsApp: answers only (no cars before unlock); never unlocks */
   function gateWaText() {
     var L = ['Hi Dan, I\u2019ve just done Find my BMW. Please send me my matches.', '', 'What I\u2019m after:'];
+    L.push('Model: ' + M.modelsText(A));
     if (A.interest) L.push(interestText(A));
     if (A.life) L.push(lifeText(A));
     L.push(shapesText(A), fuelsText(A), budgetLine(A));
@@ -1518,7 +1170,7 @@
     var newish = A.interest === 'new' || A.interest === 'either';
     var n = LEAD.first || ss('fmbSentName') || '';
     $('fmbSent').hidden = false;
-    var newHit = newish && NEWRES.list.length > 0;
+    var newHit = newish && (NEWRES.fit || []).length > 0;
     $('fmbSentH').textContent = !newish ? (n ? 'Got them. Thank you, ' + n + '.' : 'Got them. Thank you.')
       : newHit ? (n ? 'Thanks, ' + n + '. Some brand new BMWs already fit what you told me.' : 'Thanks. Some brand new BMWs already fit what you told me.')
       : (n ? 'Thanks, ' + n + '. I\u2019ll be in touch with brand new options that suit you.' : 'Thanks. I\u2019ll be in touch with brand new options that suit you.');
@@ -1575,19 +1227,19 @@
     qs.addEventListener('click', onClick);
     $('fmbNext').addEventListener('click', next);
     $('fmbBack').addEventListener('click', back);
-    $('fmbStart').addEventListener('click', function () { track('fmb_start', { entry: 'intro' }); go(QS[0]); });
+    $('fmbStart').addEventListener('click', function () { track('fmb_start', { entry: 'intro' }); go(QS()[0]); });
     $('fmbCarryOn').addEventListener('click', function () {
-      var o = loadSaved(); if (!o) return go(QS[0]);
+      var o = loadSaved(); if (!o) return go(QS()[0]);
       track('fmb_resume', { step: o.step }); track('fmb_start', { entry: 'resume' });
       if (o.step === 'reveal') runMatching(true);
-      else go(QS.indexOf(o.step) !== -1 ? o.step : QS[0]);
+      else go(ALLQ.indexOf(o.step) !== -1 ? o.step : QS()[0]);
     });
     $('fmbRestart').addEventListener('click', function () {
       A = blank(); OPEN = {}; depTouched = false;
       try { localStorage.removeItem(KEY); } catch (e) {}
       $('fmbResume').hidden = true;
-      QS.forEach(syncInputs);
-      track('fmb_start', { entry: 'restart' }); go(QS[0]);
+      ALLQ.forEach(syncInputs);
+      track('fmb_start', { entry: 'restart' }); go(QS()[0]);
     });
     $('fmbMore').addEventListener('click', function () {
       moreShown = true;
@@ -1595,15 +1247,15 @@
       SHOWN = RESULT.list.slice(0, 5);
       this.hidden = true;
       $('fmbSeeAll').hidden = !(RESULT.seeN > SHOWN.length);
-      track('fmb_more_matches', { match_count: RESULT.nHome });
+      track('fmb_more_matches', { match_count: RESULT.nStrict });
       var c4 = document.querySelector('#fmbCards [data-i="3"] h3'); if (c4) { c4.tabIndex = -1; c4.focus(); }
     });
     $('s-reveal').addEventListener('click', function (e) {
       var a = e.target.closest('a'); if (!a) return;
       if (a.hasAttribute('data-newlike')) {
-        var nr = NEWRES.list[Number(a.getAttribute('data-newlike'))];
+        var nr = (NEWRES.fit || NEWRES.list)[Number(a.getAttribute('data-newlike'))];
         a.href = WA + '?text=' + encodeURIComponent(waText(null, null, nr));
-        track('fmb_card_whatsapp', { reg: nr.c.order_number, rank: NEWRES.list.indexOf(nr) + 1, pct: -1, source: 'new' });
+        track('fmb_card_whatsapp', { reg: nr.c.order_number, rank: (NEWRES.fit||[]).indexOf(nr) + 1, pct: -1, source: 'new' });
         markComplete('card_whatsapp');
       } else if (a.hasAttribute('data-like')) {
         var r = RESULT.list[Number(a.getAttribute('data-like'))];
@@ -1612,33 +1264,33 @@
         markComplete('card_whatsapp');
       } else if (a.id === 'fmbFind' || a.hasAttribute('data-wa-main')) {
         a.href = waUrl(null);
-        track('fmb_whatsapp_send', { match_count: RESULT ? RESULT.nHome : 0, top_reg: SHOWN[0] ? SHOWN[0].c.reg : '', place: a.id ? 'find_card' : 'fail' });
+        track('fmb_whatsapp_send', { match_count: RESULT ? RESULT.nStrict : 0, top_reg: SHOWN[0] ? SHOWN[0].c.reg : '', place: a.id ? 'find_card' : 'fail' });
         markComplete('whatsapp');
       }
     });
     function mainWa(place) {
       return function () {
         this.href = waUrl(null);
-        track('fmb_whatsapp_send', { match_count: RESULT ? RESULT.nHome : 0, top_reg: SHOWN[0] ? SHOWN[0].c.reg : '', place: place });
+        track('fmb_whatsapp_send', { match_count: RESULT ? RESULT.nStrict : 0, top_reg: SHOWN[0] ? SHOWN[0].c.reg : '', place: place });
         markComplete('whatsapp');
       };
     }
     $('fmbWa').addEventListener('click', mainWa('main'));
     $('fmbSentWa').addEventListener('click', mainWa('sent'));
-    $('fmbSeeAll').addEventListener('click', function () { track('fmb_see_all', { match_count: RESULT.seeN, all: RESULT.useGroup ? 'yes' : 'no' }); });
-    $('fmbSentAll').addEventListener('click', function () { track('fmb_see_all', { match_count: RESULT.seeN, all: RESULT.useGroup ? 'yes' : 'no', place: 'sent' }); });
+    $('fmbSeeAll').addEventListener('click', function () { track('fmb_see_all', { match_count: RESULT.seeN, all: 'yes' }); });
+    $('fmbSentAll').addEventListener('click', function () { track('fmb_see_all', { match_count: RESULT.seeN, all: 'yes', place: 'sent' }); });
     wireGate();
     $('fmbPxPhotosWa2').addEventListener('click', pxPhotosClick);
     window.addEventListener('popstate', function (e) {
       var s = (e.state && e.state.s) || (location.hash || '').slice(1) || 'intro';
-      if (s === 'matching') s = QS[NQ - 1];
-      var back = ORDER.indexOf(s) < ORDER.indexOf(cur);
-      if (back && QS.indexOf(cur) !== -1) track('fmb_back', { from_step: QS.indexOf(cur) + 1 });
+      if (s === 'matching') s = QS().slice(-1)[0];
+      var back = ORDER().indexOf(s) < ORDER().indexOf(cur);
+      if (back && QS().indexOf(cur) !== -1) track('fmb_back', { from_step: QS().indexOf(cur) + 1 });
       if (s === 'reveal') { if (!RESULT) compute(); show('reveal'); present(); }
-      else { if (gateOpen) closeGate(); show(ORDER.indexOf(s) !== -1 ? s : 'intro', back); }
+      else { if (gateOpen) closeGate(); show(ORDER().indexOf(s) !== -1 ? s : 'intro', back); }
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && QS.indexOf(cur) !== -1 && e.target && e.target.matches && e.target.matches('#fmbQuestions input')) {
+      if (e.key === 'Enter' && QS().indexOf(cur) !== -1 && e.target && e.target.matches && e.target.matches('#fmbQuestions input')) {
         e.preventDefault(); next();
       }
     });
@@ -1648,7 +1300,9 @@
   function preAnswers() {
     var p = new URLSearchParams(location.search), any = false;
     var it = p.get('interest'); if (it && byV(INTEREST, it)) { A.interest = it; PRE.qi = any = true; }
-    var life = p.get('life'); if (life && byV(LIFE, life)) { A.life = life; PRE.q1 = any = true; }
+    var life = p.get('life'); if (life && byV(LIFE, life)) { A.life = life; PRE.ql = any = true; }
+    var model = (p.get('model') || '').split(',').filter(function (v) { return M.modelBy(v); });
+    if (model.length) { A.models = model; PRE.qm = any = true; }
     var body = (p.get('body') || '').split(',').filter(function (v) { return byV(BODY, v) && v !== 'open'; });
     if (body.length) { A.body = body; PRE.q2 = any = true; }
     var fuel = (p.get('fuel') || '').split(',').filter(function (v) { return byV(FUEL, v) && v !== 'open'; });
@@ -1663,12 +1317,12 @@
     if (saved && !pre) { A = Object.assign(blank(), saved.answers); OPEN = saved.open || {}; depTouched = !!saved.dep; }
     UNLOCKED = !!(saved && saved.unlocked && !pre); PXSTATE = saved && !pre ? saved.pxstate || null : null;
     if (UNLOCKED) LEAD.state = 'sent';
-    QS.forEach(function (q) { if (q !== 'q6') syncInputs(q); });
+    ALLQ.forEach(function (q) { if (q !== 'q6') syncInputs(q); });
     history.replaceState({ s: 'intro' }, '', location.pathname + location.search + (hash && hash !== 'matching' ? '#' + hash : ''));
     if (hash === 'reveal' && saved) {
       track('fmb_resume', { step: 'reveal' });
       runMatching(true);
-    } else if (QS.indexOf(hash) !== -1) {
+    } else if (ALLQ.indexOf(hash) !== -1) {
       track('fmb_start', { entry: 'deeplink' });
       history.replaceState({ s: hash }, '', '#' + hash);
       show(hash);
@@ -1684,11 +1338,11 @@
 
   window.fmbDebug = {
     get A() { return A; }, get result() { return RESULT; }, get newResult() { return NEWRES; }, payload: null,
-    newMatches: function (a) { return findNew(Object.assign(blank(), a)); },
-    newEstimate: function (order, dep) { var c = NEWC.filter(function (x) { return x.order_number === order; })[0]; return c ? newEstimate(c, dep) : null; },
+    newMatches: function (a) { return M.findNew(Object.assign(blank(), a), { stretch: false }); },
+    newEstimate: function (order, dep) { var c = (M.data().newCars).filter(function (x) { return x.order_number === order; })[0]; return c ? newEstimate(c, dep) : null; },
     newReady: function () { return want('newc'); },
     waText: function (i) { return waText(i == null ? null : RESULT.list[i]); },
-    matches: function (a) { return findMatches(Object.assign(blank(), a)); },
+    matches: function (a) { return findMatches(Object.assign(blank(), a)); }, path: function () { return QS(); },
     ready: function () { return Promise.all([pSnap, pFin]); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();

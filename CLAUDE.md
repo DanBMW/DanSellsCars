@@ -907,6 +907,16 @@ they asked for, then soonest, then cheapest.
   phones from 5 October; the page's own script now hides it while a question
   screen (`#fmbBar`) or the gate is showing.
 
+
+### Find my BMW v3 and desk mode (8 October 2026)
+
+The public flow and Dan's desk share one matcher, `fmb-match.js`. `fmb.js` is the customer flow. `desk.html` + `desk.js` + `desk.css` is staff only.
+
+**Public flow** (`find-my-bmw.html`). Opens on "Which BMW are you thinking about?" (`#qm`), then new or used, who drives, a typical week, miles, people, boot, home charging only when electric or plug in is in play, shape only when the models do not already imply it, fuel, budget, wish list, colour, part exchange, timing. Continue stays disabled until that screen is answered. No stock counts on any question. The hard contact gate is unchanged: no regs, prices or photos until Formspree succeeds. The hero line on a strict match is "out of the X cars in our stock". X is every Hedin BMW group approved used car (Ruxley is inside that group figure, not added again) plus brand new cars when they asked for new or either. Saved answers are `localStorage.fmbV3`. The contact form name is `find-my-bmw-v3`. GA events carry `fmb_version: 3`. New cards still show cash price and a personalised quote line, never a monthly figure. A monthly figure on a used card still carries the full representative example.
+
+**Desk mode** (`https://dan-sells.co.uk/desk.html`). Dan's own fact find, not the customer funnel. Same password as the links page (the `admin` gate in `staff-gate.js`). `noindex`, `Disallow: /desk.html`, not in the sitemap, not linked from a public page. He fills any section in any order, then presses Find car. Customer name, mobile and email appear only after that. Submit sends one email to Formspree `xqewleog`, `form: find-my-bmw-desk`, body in `fact_find`, subject `Desk fact-find: NAME, MODEL REG`. Nothing is posted until he presses Submit. The draft lives only in `localStorage.fmbDeskDraft` on that device and clears on a successful Submit or New customer. Locking the screen, or the gate asking again, does not wipe the form. Brand new cars up to 5% over the budget (`NEW_STRETCH` in `fmb-match.js`) stay in a "Within reach" tier for Dan only, with the exact percentage. The customer view does not show that percentage. After Find car, Present this car opens a full screen customer view, using the Fullscreen API with an overlay if the browser refuses. It shows the top pick, alternatives and brand new options, with why lines drawn from what the customer said, and it hides notes, SIV, settlement, equity and any over budget percentage. Close or Escape returns to the fact find. A small ? on each field suggests an open question. Hover shows it and moving the mouse off hides it. Those tips never print and never go in the email. Customer profile prints A4 from the browser. GA on this page is `traffic_type: internal` and `desk_session: true`, and desk events use `funnel: fmb_desk`.
+
+
 ### "A few in stock that fit" - the Find my BMW matcher
 
 `stock-match.js` fills a section at the bottom of `thankyou.html` with real cars
@@ -1101,6 +1111,7 @@ bar with the same wording and "Continue to page"; Find my BMW stays inline).
 GA-tagged page) fires the conversion events; keep its slug→step map in sync
 when adding/renaming funnel pages. Events:
 
+- Find my BMW desk mode fires its own events from `desk.js` (all carry `funnel: fmb_desk`, and the page config sets `traffic_type: internal` and `desk_session: true` so these do not mix with customer traffic): `fmb_desk_open`, `fmb_desk_find`, `fmb_desk_submit`, `fmb_desk_copy`, `fmb_desk_mailto`, `fmb_desk_whatsapp`, `fmb_desk_profile`, `fmb_desk_print`, `fmb_desk_customer_view`, `fmb_desk_px_lookup`, `fmb_desk_lock`, `fmb_desk_restore`, `fmb_desk_new_customer`, `fmb_desk_present`.
 - Find my BMW v2 fires its own events from `fmb.js` (all carry
   `funnel: fmb, fmb_version: 2`): `fmb_intro_view`, `fmb_start {entry}`,
   `fmb_step_1`..`fmb_step_9 {step, step_name}`, `fmb_answer {step, step_name,
