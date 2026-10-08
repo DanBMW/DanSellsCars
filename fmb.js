@@ -31,7 +31,6 @@
   }
   function money(n) { return FN.money(n); }
   function money2(n) { return FN.money2(n); }
-  function cars(n) { return n === 1 ? '1 car' : n + ' cars'; }
   function cap1(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
   function track(name, p) {
     if (typeof window.gtag !== 'function') return;
@@ -632,12 +631,12 @@
       + '<span class="fmb-opt-in">' + (ico ? '<span class="fmb-ico">' + ico + '</span>' : '')
       + '<span class="fmb-txt"><span class="fmb-t">' + esc(t) + '</span>'
       + (l ? '<span class="fmb-l">' + esc(l) + '</span>' : '')
-      + '<span class="fmb-n" data-n="' + esc(v) + '"></span></span>'
+      + '</span>'
       + '<span class="fmb-tick">' + TICK + '</span></span></label>';
   }
   function chip(name, v, t, small) {
     return '<label class="fmb-chip" data-v="' + esc(v) + '"><input type="radio" name="' + name + '" value="' + esc(v) + '"/>'
-      + '<span>' + esc(t) + (small ? '<small data-n="' + esc(v) + '"></small>' : '') + '</span></label>';
+      + '<span>' + esc(t) + '</span></label>';
   }
   function qWrap(q, inner, after) {
     var d = Q[q];
@@ -679,14 +678,13 @@
     h += qWrap('q7', '<div class="fmb-opts">' + WHEN.map(function (o) { return opt('q7', 'radio', o.v, o.t, '', SVG.clock); }).join('') + '</div>');
     $('fmbQuestions').innerHTML = h;
   }
+  /* A fixed list in a fixed order. It used to be the forecourt's own colours,
+     most stocked first, which is the stock leading the answer. */
+  var COLOURS = ['Black', 'White', 'Grey', 'Silver', 'Blue', 'Red', 'Green'];
   function colourOptions() {
-    var seen = {}, order = [];
-    HOME.forEach(function (c) { if (c.colour && !seen[c.colour]) { seen[c.colour] = 1; order.push(c.colour); } });
-    if (!order.length) order = ['Black', 'Grey', 'White', 'Blue', 'Red', 'Silver'];
+    var order = COLOURS;
     var box = $('q6opts');
     if (box.getAttribute('data-built') === String(order.length)) return;
-    var n = {}; HOME.forEach(function (c) { n[c.colour] = (n[c.colour] || 0) + 1; });
-    order.sort(function (x, y) { return (n[y] || 0) - (n[x] || 0); });
     box.innerHTML = order.map(function (col) {
       var sw = '<span class="fmb-sw" style="background:' + (SWATCH[col.toLowerCase()] || '#777') + '"></span>';
       return opt('q6', 'checkbox', col, col, '', sw);
@@ -719,105 +717,27 @@
     $('q4low').hidden = !(A.pay === 'monthly' && lowCov());
   }
 
-  /* ---------------- counts ---------------- */
-  function withA(patch) { var a = clone(A); for (var k in patch) a[k] = patch[k]; return a; }
-  function setN(el, n, word, pending) {
-    if (!el) return;
-    var lab = el.closest('.fmb-opt, .fmb-chip');
-    if (pending) { el.innerHTML = '<span class="fmb-shim" aria-hidden="true"></span><span class="fmb-sr">Counting</span>'; if (lab) lab.classList.remove('zero'); return; }
-    el.textContent = n === 0 ? '0 today' : (word ? n + ' ' + word : cars(n));
-    if (lab) lab.classList.toggle('zero', n === 0);
-  }
-  function optionCounts(q) {
-    var s = $('s-' + q); if (!s || !snapOK) return;
-    var f = MULTI[q];
-    if (q === 'q2' || q === 'q3') {
-      s.querySelectorAll('.fmb-n').forEach(function (el) {
-        var v = el.getAttribute('data-n'), p = {}; p[f] = v === 'open' ? [] : [v];
-        setN(el, countIn(HOME, withA(p), {}));
-      });
-    }
-    if (q === 'q4') {
-      var pendM = !finOK || (A.dep !== null && !ladOK);
-      s.querySelectorAll('[name=mo]').forEach(function (i) {
-        var m = Number(i.value);
-        setN(i.parentNode.querySelector('small'), countIn(HOME, withA({ pay: 'monthly', mo: m }), {}), '', pendM && m > 0);
-      });
-      s.querySelectorAll('[name=dep]').forEach(function (i) {
-        var d = Number(i.value), dep = d < 0 ? null : d, a = withA({ pay: 'monthly', dep: dep });
-        var n;
-        if (a.mo > 0) n = countIn(HOME, a, {});
-        else n = HOME.filter(function (c) { return matches(c, a, {}) && finAt(c, dep); }).length;
-        setN(i.parentNode.querySelector('small'), n, 'quoted', !finOK || (dep !== null && !ladOK));
-      });
-      s.querySelectorAll('[name=cash]').forEach(function (i) {
-        setN(i.parentNode.querySelector('small'), countIn(HOME, withA({ pay: 'cash', cash: Number(i.value) }), {}));
-      });
-    }
-    if (q === 'q5') {
-      var base = withA({ extras: A.extras.filter(function (k) { return k === 'seven'; }) });
-      var pool = HOME.filter(function (c) { return matches(c, withA({ extras: [] }), {}); });
-      s.querySelectorAll('.fmb-n').forEach(function (el) {
-        var k = el.getAttribute('data-n');
-        if (k === 'open') { el.textContent = ''; return; }
-        if (k === 'seven') { setN(el, countIn(HOME, withA({ extras: ['seven'] }), {}), 'have it'); return; }
-        var src = A.extras.indexOf('seven') !== -1 ? pool.filter(function (c) { return String(c.seats) === '7'; }) : pool;
-        if (!ST.FEATURES[k].test && !DET) { setN(el, 0, '', true); return; }
-        setN(el, src.filter(function (c) { return feature(c, k); }).length, 'have it');
-      });
-      void base;
-    }
-    if (q === 'q6') {
-      var pool6 = HOME.filter(function (c) { return matches(c, A, {}); });
-      s.querySelectorAll('.fmb-n').forEach(function (el) {
-        var col = el.getAttribute('data-n');
-        if (col === 'open') { el.textContent = ''; return; }
-        setN(el, pool6.filter(function (c) { return c.colour === col; }).length);
-      });
-    }
-  }
-
-  var lastN = null, liveT = null, flashT = null, flashMsg = '', zeroSent = {};
+  /* ---------------- no stock counts in the questions ----------------
+     Dan, 8 October: "the customers choices should be theirs, not led by our
+     stock". No counts on the tiles, no "X cars match" bar, no forecourt total
+     on the intro and no stock led nudges. Counts are still worked out
+     silently for the fmb_zero_match and fmb_answer events. */
+  /* nothing on screen: only the zero match event, for Dan's reports */
+  var lastN = null, zeroSent = {};
   function counter() {
-    var el = $('fmbCount');
-    if (snapOK === false) { el.textContent = 'Stock is taking a moment. Keep going.'; return; }
-    if (!snapOK) { el.textContent = 'Checking stock'; return; }
-    var n = countIn(HOME, A, {}), g = groupOK ? countIn(GROUP, A, {}) : 0;
-    var main = n === 0 ? 'None on my forecourt yet. Keep going, I\u2019ll find the closest.'
-      : '<b>' + n + '</b> ' + (n === 1 ? 'car matches' : 'cars match');
-    if (flashMsg && n > 0) main = esc(flashMsg) + ' ' + main;
-    el.innerHTML = main + (n < 3 && g ? '<span class="g">+' + g + ' more across our other BMW stock</span>' : '');
-    var b = el.querySelector('b');
-    if (lastN !== null && n !== lastN && b && !RM) {
-      b.classList.remove('roll', 'pulse'); void b.offsetWidth; b.classList.add('roll', 'pulse');
-    }
-    if (n === 0 && lastN !== 0 && lastN !== null) {
-      if (!RM) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
-      if (QS.indexOf(cur) !== -1 && !zeroSent[cur]) { zeroSent[cur] = 1; track('fmb_zero_match', { step: Q[cur].n, step_name: STEP_NAME[cur] }); }
-    }
-    if (n !== lastN) {
-      clearTimeout(liveT);
-      var said = n === 0 ? 'No exact matches on the forecourt yet' : (n === 1 ? '1 car matches' : n + ' cars match');
-      liveT = setTimeout(function () { $('fmbLive').textContent = said; }, 700);
+    if (!snapOK) return;
+    var n = countIn(HOME, A, {});
+    if (n === 0 && lastN !== 0 && lastN !== null && QS.indexOf(cur) !== -1 && !zeroSent[cur]) {
+      zeroSent[cur] = 1; track('fmb_zero_match', { step: Q[cur].n, step_name: STEP_NAME[cur] });
     }
     lastN = n;
-  }
-  function flash(msg) {
-    flashMsg = msg; clearTimeout(flashT);
-    flashT = setTimeout(function () { flashMsg = ''; counter(); }, 2000);
-  }
-  function introLine() {
-    if (!snapOK) return;
-    $('fmbIntroCount').textContent = HOME.length + ' BMWs on the forecourt today';
-    $('fmbIntroLive').hidden = false;
   }
   /* Dan, 8 October: every answer has to be the customer's own tap. Nothing is
      pre selected, there is no Skip, and Continue stays off until they choose
      (each question has an Open minded, Not fussed or Not sure tap for anyone
-     with no preference). An answer filled in from the link they came in on
-     has to be confirmed: the button reads "Yes, that's right". The prompt
-     under the button says what is still needed. */
-  var TOUCHED = {};
+     with no preference). The old design otherwise: no extra prompt, the
+     question's own hint line does the talking. needs() is the one rule for the
+     button and for next(), so Enter cannot get round it either. */
   function needs(q) {
     if (q === 'qi') return A.interest ? '' : 'Tap new, used or either to carry on';
     if (q === 'q1') return A.life ? '' : 'Tap the one that fits best to carry on';
@@ -838,18 +758,14 @@
   }
   function nextLabel() {
     var b = $('fmbNext'), q = cur, need = needs(q);
-    var lab = q === 'q7' ? 'Show my matches' : 'Continue';
-    if (!need && PRE[q] && !TOUCHED[q]) lab = 'Yes, that\u2019s right';
-    b.textContent = lab; b.disabled = !!need;
-    var nd = $('fmbNudge');
-    if (nd) { nd.textContent = need || ''; nd.hidden = !need; }
+    b.textContent = q === 'q7' ? 'Show my matches' : 'Continue';
+    b.disabled = !!need;
   }
   function refresh() {
-    introLine();
     if (QS.indexOf(cur) !== -1) {
       if (cur === 'q6') colourOptions();
       if (cur === 'q4') q4Panels();
-      optionCounts(cur); counter(); nextLabel();
+      counter(); nextLabel();
     }
   }
 
@@ -858,7 +774,6 @@
   function onChange(e) {
     var i = e.target; if (!i || !i.name) return;
     var q = i.name, v = i.value;
-    TOUCHED[q === 'pay' || q === 'mo' || q === 'dep' || q === 'cash' ? 'q4' : q] = true;
     if (q === 'qi' && (v === 'new' || v === 'either')) want('newc');
     if (q === 'qi') A.interest = v;
     else if (q === 'qp') A.px = v;
@@ -872,10 +787,6 @@
       A[MULTI[q]] = on;
       OPEN[q] = !on.length && !!s.querySelector('input[value=open]:checked');
       if (i.checked && !RM && navigator.vibrate && /Android/i.test(navigator.userAgent)) { try { navigator.vibrate(8); } catch (x) {} }
-      if (q === 'q2' && A.body.indexOf('suv') !== -1 && A.body.indexOf('touring') !== -1 && i.checked) flash('Space lover.');
-      if (q === 'q3' && OPEN.q3 && v === 'open') flash('Love it. More choice for you.');
-      if (q === 'q5' && v === 'pano' && i.checked) flash('Good shout. Stargazing included.');
-      if (q === 'q6' && v === 'Black' && i.checked && topColour() === 'Black') flash('Black is the most popular colour on my forecourt.');
     }
     else if (q === 'pay') {
       A.pay = v;
@@ -890,11 +801,6 @@
     else return;
     save();
     refresh();
-  }
-  function topColour() {
-    var n = {}, best = '', bn = 0;
-    HOME.forEach(function (c) { n[c.colour] = (n[c.colour] || 0) + 1; if (n[c.colour] > bn) { bn = n[c.colour]; best = c.colour; } });
-    return best;
   }
   /* Q1 and Q7 move on by themselves after a pointer tap (not on arrow keys,
      which change radios as people move through them). */
@@ -965,7 +871,6 @@
     var qi = QS.indexOf(cur);
     if (qi === -1) return;
     if (needs(cur)) { nextLabel(); return; }
-    TOUCHED[cur] = true;
     answerTrack(cur);
     if (qi < QS.length - 1) go(QS[qi + 1]);
     else runMatching();
@@ -992,7 +897,7 @@
     lazy.group.then(function () { lazySettled.group = 1; }, function () { lazySettled.group = 1; });
     go('matching');
     var L = $('fmbMLines');
-    var lines = ['Checking ' + (HOME.length || 'the') + ' cars on my forecourt', 'Matching shape and fuel',
+    var lines = ['Checking the cars on my forecourt', 'Matching shape and fuel',
       'Checking the lender\u2019s latest figures', 'Picking your top three'];
     if (wantsNew()) lines.splice(3, 0, 'Checking brand new stock');
     L.innerHTML = lines.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
@@ -1676,7 +1581,7 @@
       else go(QS.indexOf(o.step) !== -1 ? o.step : QS[0]);
     });
     $('fmbRestart').addEventListener('click', function () {
-      A = blank(); OPEN = {}; depTouched = false; TOUCHED = {};
+      A = blank(); OPEN = {}; depTouched = false;
       try { localStorage.removeItem(KEY); } catch (e) {}
       $('fmbResume').hidden = true;
       QS.forEach(syncInputs);
@@ -1770,7 +1675,6 @@
       if (saved && !pre && saved.step && saved.step !== 'intro') $('fmbResume').hidden = false;
       var resumed = saved && !pre ? 'yes' : 'no';
       pSnap.then(function () {
-        if (cur === 'intro') introLine();
         track('fmb_intro_view', { stock_count: HOME.length || -1, resumed: resumed });
       });
     }
