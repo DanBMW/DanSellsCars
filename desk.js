@@ -131,8 +131,13 @@
       var host=tipHost(el); if(!host||!lines||host.querySelector('.qtip'))return;
       var d=document.createElement('span'); d.className='qtip no-print';
       d.innerHTML='<button type="button" tabindex="0" aria-label="A question to ask">?</button><span class="tip" role="tooltip">'+lines.map(esc).join('<br>')+'</span>';
+      if(host.classList.contains('desk-opt')||host.matches('legend,h3,p')){ host.appendChild(d); return; }
+      var lab=document.createElement('span'); lab.className='desk-lab';
+      var node=host.firstChild;
+      while(node&&node.nodeType===3){ var next=node.nextSibling; lab.appendChild(node); node=next; }
+      lab.appendChild(d);
       var ctrl=host.querySelector('input,textarea,select');
-      if(ctrl) host.insertBefore(d, ctrl); else host.appendChild(d);
+      if(ctrl) host.insertBefore(lab, ctrl); else host.appendChild(lab);
     }
     document.querySelectorAll('.desk-box').forEach(function(box){addTip(box.parentElement,TIPS[box.getAttribute('data-f')]);});
     ['likeModel','important','curCar','pxReg','pxMiles','pxVal','pxSiv','pxSettle','mustText','wouldText','notes','curMonthly','changeCycle','annualMiles','moFrom','mo','depFrom','dep','term','cash','cFirst','nsDriveWhen','nsFollow'].forEach(function(id){var e=$(id); if(e&&e.parentElement)addTip(e.parentElement,TIPS[id]||TIPS[id.replace('When','')]);});
@@ -176,6 +181,7 @@
     a.must = vals('mustF'); a.extras = vals('wouldF');
     readWords($('mustText').value, a.must);
     readWords($('wouldText').value, a.extras);
+    a.said = (nv('important') || nv('likeModel') || '').trim();
     a.pay = one('pay');
     if (a.pay === 'monthly') { a.mo = num($('mo').value) || 0; a.dep = num($('dep').value); }
     if (a.pay === 'cash') a.cash = num($('cash').value) || 0;
@@ -287,9 +293,12 @@
   /* One content model, two renderings: the Submit email (plain text) and the
      printable customer profile (HTML). They always match. */
   function nv(id) { var e = $(id); return e ? e.value.trim() : ''; }
+  function longDate(v) {
+    var d = v ? new Date(String(v).slice(0, 10) + 'T12:00:00') : new Date();
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
   function stamp() {
-    var now = new Date();
-    return now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ', ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' (UK)';
+    return longDate() + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' (UK)';
   }
   function usedRows(r) {
     var x = r.c;
@@ -345,7 +354,7 @@
         newFit: NEWR && M.wantsNew(a) ? NEWR.fit : null, newReach: NEWR && M.wantsNew(a) ? NEWR.reach : null };
     }
     D.next = [['Test drive', $('nsDrive').checked, nv('nsDriveWhen')], ['Valuation', $('nsVal').checked, ''],
-      ['Follow up date', null, nv('nsFollow') ? new Date(nv('nsFollow')).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '']];
+      ['Follow up date', null, nv('nsFollow') ? longDate(nv('nsFollow')) : '']];
     return D;
   }
   function emailBody() {
@@ -385,7 +394,7 @@
       L.push('CAR FOUND', R.lead);
       usedRows(R.top).forEach(function (r) { row(r[0], r[1]); });
       L.push('');
-      if (R.alts.length) { L.push('ALTERNATIVES'); R.alts.forEach(function (r, i) { L.push((i + 2) + '. ' + usedRows(r).filter(function (x) { return x[1]; }).map(function (x) { return x[0] + ': ' + x[1]; }).join('. ')); }); L.push(''); }
+      if (R.alts.length) { L.push('ALTERNATIVES'); R.alts.forEach(function (r, i) { L.push((i + 2) + '. ' + usedRows(r).filter(function (x) { return x[1]; }).map(function (x) { return x[0] + ': ' + String(x[1]).replace(/\.+$/, ''); }).join('. ')); }); L.push(''); }
       if (R.newFit) {
         L.push('BRAND NEW OPTIONS: FIT THE BUDGET'); if (R.newFit.length) R.newFit.forEach(function (r) { L.push(newRow(r, a, false)); }); else L.push('None fit every point today.');
         L.push('BRAND NEW OPTIONS: WITHIN REACH (up to ' + Math.round(M.NEW_STRETCH * 100) + '% over)'); if (R.newReach.length) R.newReach.forEach(function (r) { L.push(newRow(r, a, true)); }); else L.push('None.');
@@ -702,14 +711,8 @@
     return out;
   }
   function whyFor(slide) {
-    var said = clipWords(nv('important') || nv('likeModel'), 90);
-    var fit = slide.kind === 'new' ? M.newWhy(slide.r.c, A) : (slide.r.why || '');
-    var lines = [];
-    if (said) lines.push('You told me ' + said + ', so: ' + fit + '.');
-    else if (fit) lines.push(fit + '.');
-    var life = A && A.life ? M.txt(M.LIFE, A.life) : '';
-    if (life && (!said || said.toLowerCase().indexOf(life.toLowerCase()) === -1)) lines.push('A normal week for you is ' + life.toLowerCase() + '.');
-    return lines.slice(0, 3);
+    var line = slide.kind === 'new' ? M.newWhy(slide.r.c, A) : (slide.r.why || '');
+    return line ? [line.replace(/\.+$/, '.') ] : [];
   }
   function presentPics(c) {
     var det = M.data().det || {};

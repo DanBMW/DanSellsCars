@@ -597,8 +597,7 @@
       + '<div class="fmb-price">' + esc(c.price || 'Price on request') + '</div>'
       + (flags.length ? '<div class="fmb-flags">' + flags.join('') + '</div>' : '')
       + (!c._home ? '<p class="fmb-grpline">I can source this one from across the group.</p>' : '')
-      + (best && r.level === 0 ? '<div class="fmb-why"><b>Why this one</b><ul class="fmb-whylist">' + String(r.why).split(', ').map(function (x) { return '<li>' + esc(cap1(x)) + '</li>'; }).join('') + '</ul></div>'
-              : '<p class="fmb-why"><b>Why it fits:</b> ' + esc(r.why) + '</p>')
+      + '<p class="fmb-why"><b>' + (best ? 'Why this one' : 'Why it fits') + '</b> ' + esc(r.why) + '</p>'
       + finBlock(r)
       + '<a class="fmb-btn wa wide" data-like="' + i + '" href="' + esc(WA) + '" target="_blank" rel="noopener">I like this one</a>'
       + '</div></article>';
@@ -695,7 +694,7 @@
     leadBanner();
     if ((A.interest === 'new' || A.interest === 'either') && !(NEWRES.fit || []).length) {
       var note = document.createElement('p'); note.className = 'fmb-helper';
-      note.textContent = 'No brand new car fits every point today. I\'ll be in touch with brand new options that suit you.';
+      note.textContent = 'No brand new car fits every point today. I\u2019ll be in touch with brand new options that suit you.';
       $('fmbNew').hidden = false; $('fmbNew').innerHTML = ''; $('fmbNew').appendChild(note);
     }
     if (!revealTracked) {
@@ -1167,17 +1166,19 @@
     track('fmb_gate_whatsapp', { place: this.id, px: A.px || 'none' });
   }
   function leadBanner() {
-    var newish = A.interest === 'new' || A.interest === 'either';
     var n = LEAD.first || ss('fmbSentName') || '';
+    var good = RESULT && RESULT.list && RESULT.list.length && RESULT.level === 0 && RESULT.nStrict > 0;
+    var any = RESULT && RESULT.list && RESULT.list.length;
     $('fmbSent').hidden = false;
-    var newHit = newish && (NEWRES.fit || []).length > 0;
-    $('fmbSentH').textContent = !newish ? (n ? 'Got them. Thank you, ' + n + '.' : 'Got them. Thank you.')
-      : newHit ? (n ? 'Thanks, ' + n + '. Some brand new BMWs already fit what you told me.' : 'Thanks. Some brand new BMWs already fit what you told me.')
-      : (n ? 'Thanks, ' + n + '. I\u2019ll be in touch with brand new options that suit you.' : 'Thanks. I\u2019ll be in touch with brand new options that suit you.');
-    $('fmbSentP').textContent = !newish
-      ? 'Your answers and these cars are with me now. I\u2019ll come back to you personally, usually the same day.'
-      : newHit ? 'They are just below. Your answers are with me now, and I\u2019ll come back to you personally with a proper quote, usually the same day.'
-      : 'Your answers are with me now. I\u2019ll come back to you personally, usually the same day, with brand new cars that fit, already built or ordered to your spec.';
+    if (!any || !good) {
+      $('fmbSentH').textContent = n ? 'Thanks, ' + n + '. I\u2019ll be in touch.' : 'Thanks. I\u2019ll be in touch.';
+      $('fmbSentP').textContent = any
+        ? 'Nothing today is a perfect fit, so these are the closest. I\u2019ll come back to you personally.'
+        : 'Nothing in stock fits closely enough today. I\u2019ll come back to you personally, usually the same day.';
+    } else {
+      $('fmbSentH').textContent = n ? 'Thanks, ' + n + '. I\u2019ve found your BMW.' : 'Thanks. I\u2019ve found your BMW.';
+      $('fmbSentP').textContent = 'Your answers are with me now. I\u2019ll come back to you personally, usually the same day.';
+    }
     $('fmbSentWa').href = WA;
   }
   var pxBuiltFor;

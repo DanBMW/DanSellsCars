@@ -395,7 +395,7 @@ window.fmbMatch = (function () {
       if (levels.indexOf(6) === -1) levels.push(6);
     }
     var level = levels.length ? Math.max.apply(null, levels.map(function (l) { return l === 7 ? 4.5 : l; })) : 0;
-    res.forEach(function (r) { r.relaxed = r.level >= 2 ? RELAX[r.level] : ''; r.why = whyLine(r, a); });
+    res.forEach(function (r) { r.relaxed = r.level >= 2 ? RELAX[r.level] : ''; r.why = spokenWhy(r, a); });
     var seeN = countIn(pool, a, { strictQuotes: true });
     return { list: res, level: level, levels: levels, nStrict: nStrict, seeN: seeN, seeUrl: seeAllUrl(a) };
   }
@@ -475,6 +475,47 @@ window.fmbMatch = (function () {
     return { fit: take(fit, 3), reach: opts.stretch ? take(reach, 3) : [], count: fit.length, reachCount: reach.length };
   }
 
+  function softSaid(s) {
+    s = String(s || '').replace(/\s+/g, ' ').replace(/[.?\s]+$/g, '').trim();
+    if (!s) return '';
+    if (/^(BMW|X[1-7]|XM|Z4|iX[1-3]?|i[1-7]|M[2-8]|[1-8] Series)\b/.test(s)) return s;
+    return s.charAt(0).toLowerCase() + s.slice(1);
+  }
+  function joinBits(bits) {
+    if (!bits.length) return '';
+    function bare(b) { return b.replace(/^(a|an) /i, ''); }
+    if (bits.length === 1) return bits[0];
+    if (bits.length === 2) return bits[0] + ' with ' + bare(bits[1]);
+    var rest = bits.slice(1).map(bare);
+    return bits[0] + ' with ' + rest.slice(0, -1).join(', ') + ' and ' + rest[rest.length - 1];
+  }
+  function whyBits(c, a, r) {
+    var bits = [], body = effectiveBody(a);
+    if (body.length && bodyHit(c, body)) {
+      var sh = shapeName(c);
+      bits.push(sh === 'SUV' ? 'an SUV' : (/^[AEIOU]/i.test(sh) ? 'an ' : 'a ') + sh.toLowerCase());
+    }
+    if (a.boot === 'big') bits.push('a big boot');
+    else if (a.boot === 'tow') bits.push('room to tow');
+    var fuelName = { phev: 'plug-in hybrid running costs', electric: 'electric running costs', diesel: 'diesel running costs', petrol: 'petrol running costs', hybrid: 'hybrid running costs' };
+    if ((a.fuel || []).length && fuelHit(c, a.fuel) && fuelName[c._fuel]) bits.push(fuelName[c._fuel]);
+    if ((a.people === 'five' || a.people === 'seven' || a.who === 'family' || a.life === 'family') && Number(c.seats) >= 5) bits.push((Number(c.seats) || 5) + ' seats');
+    (r.metExtras || []).forEach(function (k) {
+      var w = k === 'seven' ? '7 seats' : (k === 'heated' ? 'heated seats' : extraWord(k));
+      if (bits.indexOf(w) === -1) bits.push(w);
+    });
+    if (wantsSeven(a) && String(c.seats) === '7' && bits.indexOf('7 seats') === -1) bits.push('7 seats');
+    return bits.slice(0, 4);
+  }
+  function spokenWhy(r, a) {
+    var said = softSaid(a && a.said);
+    if (!said && a && a.life && a.life !== 'open') said = softSaid(txt(LIFE, a.life));
+    var so = joinBits(whyBits(r.c, a, r));
+    if (said && so) return 'You mentioned ' + said + ', so ' + so + '.';
+    if (so) return cap1(so) + '.';
+    return whyLine(r, a);
+  }
+
   function whyLine(r, a) {
     var c = r.c, out = [];
     var body = effectiveBody(a);
@@ -492,13 +533,15 @@ window.fmbMatch = (function () {
     return cap1(out.slice(0, 5).join(', '));
   }
   function newWhy(c, a) {
-    var out = ['brand new, already built'];
-    if (seriesWanted(a).length && seriesHit(c, a)) out.push(c.series);
-    var body = effectiveBody(a);
-    if (body.length && bodyHit(c, body)) out.push(shapeName(c));
-    if ((a.fuel || []).length && fuelHit(c, a.fuel)) out.push(FUEL_NAME[c._fuel]);
-    if ((a.colours || []).length && a.colours.indexOf(c.colour) !== -1) out.push('in ' + c.colour);
-    return cap1(out.join(', '));
+    var fake = { c: c, metExtras: [] };
+    var said = softSaid(a && a.said);
+    if (!said && a && a.life && a.life !== 'open') said = softSaid(txt(LIFE, a.life));
+    var bits = whyBits(c, a, fake);
+    var lead = 'a brand new one, already built';
+    if (bits.length && /^(a|an) /.test(bits[0])) lead = bits.shift().replace(/^(a|an) /, 'a brand new ') + ', already built';
+    var so = joinBits([lead].concat(bits));
+    if (said && so) return 'You mentioned ' + said + ', so ' + so + '.';
+    return cap1(so) + '.';
   }
   function newWhen(c) {
     var x = c.lead_time_weeks_min, y = c.lead_time_weeks_max;
@@ -555,7 +598,7 @@ window.fmbMatch = (function () {
     modelBy: modelBy, byV: byV, chosenModels: chosenModels, modelOpen: modelOpen, impliedBodies: impliedBodies,
     shapeLocked: shapeLocked, effectiveBody: effectiveBody, needsCharge: needsCharge, wantsNew: wantsNew, wantsSeven: wantsSeven,
     matches: matches, countIn: countIn, stockTotal: stockTotal, findUsed: findUsed, findNew: findNew,
-    newEstimate: newEstimate, newOver: newOver, whyLine: whyLine, newWhy: newWhy, newWhen: newWhen,
+    newEstimate: newEstimate, newOver: newOver, whyLine: whyLine, spokenWhy: spokenWhy, newWhy: newWhy, softSaid: softSaid, newWhen: newWhen,
     shapeName: shapeName, modelName: modelName, repText: repText, heroLine: heroLine, xLine: xLine, persona: persona,
     modelsText: modelsText, shapesText: shapesText, fuelsText: fuelsText, budgetLine: budgetLine, extrasText: extrasText,
     interestText: interestText, carLine: carLine, newLine: newLine, txt: txt, list: list, money: money, money2: money2,

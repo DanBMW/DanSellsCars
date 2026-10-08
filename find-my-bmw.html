@@ -21,15 +21,15 @@
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
   <link rel="preload" href="automation/hedin-stock-snapshot.json" as="fetch" crossorigin/>
   <link rel="stylesheet" href="premium.css?v=8af2b219"/>
-  <link rel="stylesheet" href="fmb.css?v=12"/>
+  <link rel="stylesheet" href="fmb.css?v=13"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
   <script src="analytics.js" defer></script>
   <script src="dsfinance.js"></script>
   <script src="stock-core.js"></script>
-  <script src="fmb-match.js?v=2"></script>
+  <script src="fmb-match.js?v=3"></script>
   <script src="aos-media.js?v=2" defer></script>
-  <script src="fmb.js?v=12" defer></script>
+  <script src="fmb.js?v=13" defer></script>
 </head>
 <body class="fmb">
 
@@ -87,6 +87,13 @@
         <p id="fmbSentP">Your answers and these cars are with me now. I'll come back to you personally, usually the same day.</p>
         <div class="row"><a class="fmb-btn wa" id="fmbSentWa" href="#" target="_blank" rel="noopener">Say hi on WhatsApp</a><a class="fmb-btn ghost" id="fmbSentAll" href="stock.html" hidden>See all matches</a></div>
       </div>
+      <div class="fmb-head">
+        <h2 id="fmbHeadline"></h2>
+        <ul class="fmb-subs" id="fmbSubs"></ul>
+      </div>
+    </div>
+    <div class="fmb-cards" id="fmbCards"></div>
+    <div class="fmb-narrow">
       <div class="fmb-persona">
         <span class="fmb-kicker">Your BMW type</span>
         <h1 id="personaH" tabindex="-1"></h1>
@@ -94,13 +101,6 @@
       </div>
     </div>
     <div class="fmb-new" id="fmbNew" hidden></div>
-    <div class="fmb-narrow">
-      <div class="fmb-head">
-        <h2 id="fmbHeadline"></h2>
-        <ul class="fmb-subs" id="fmbSubs"></ul>
-      </div>
-    </div>
-    <div class="fmb-cards" id="fmbCards"></div>
     <div class="fmb-narrow">
       <button class="fmb-btn ghost wide fmb-more" type="button" id="fmbMore" hidden>Show me 2 more</button>
       <a class="fmb-btn ghost wide fmb-seeall" id="fmbSeeAll" href="stock.html" hidden>See all matches</a>
