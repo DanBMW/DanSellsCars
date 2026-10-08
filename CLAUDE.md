@@ -464,11 +464,38 @@ Other things it has to keep:
 - **The locator gives a 0 to 62 time**, which the used stock does not, so the
   page can sort on it. Do not copy that figure onto a used car: the quiz uses
   horsepower per tonne precisely because no used source publishes one.
+- **The card gallery fetches only the picture on screen**, the same rule
+  `stock.html` keeps: one `<img>` and the arrows set its `src`. 80 cards times
+  five configurator renders is a lot of picture nobody asked for. The urls ride
+  on the element in `data-pics` rather than in a closure, so a redraw cannot
+  lose them.
 - `confirmed_delivery_date_to` is left out: on a car whose availability read
   1 to 3 weeks it was already in the past. The week range is published instead.
 - The page is **`noindex` for now** and deliberately not in `robots.txt`, so
   Google can see the noindex (the same reasoning as the funnel steps). It is
   not in `sitemap.xml`. Make it public when Dan says so.
+
+**What a colleague's system draws on.** Two surfaces, the same pair the used
+cars give:
+
+- **`lookup/new-stock.json`**, the whole catalogue in one request, in the shape
+  the brief defined: `cars` as an array and the 30 day `removed` list beside
+  it. That shape is a contract somebody else already wrote against, so it is
+  left exactly as specified even though the used `stock.json` keys its cars by
+  reg instead.
+- **`lookup/order/<ORDER>.json`**, one file a car, which is
+  `lookup/reg/<REG>.json` for new stock. The key is the BMW order number
+  because there is no registration and no readable VIN. Each carries the same
+  three fields the used contract uses, `status` (`in_stock` or `removed`),
+  `removed_at` and `available_until`, null where they do not apply, so **a 404
+  means "not in stock and not in the last 30 days"** exactly as it does for a
+  reg. `new-stock.py` writes both, from one pull and one ledger: a second
+  source of truth for "what left when" would drift.
+
+  A file is rewritten only when its content changed and carries **no
+  `generated_at`**, so an ordinary morning touches nothing and the daily diff
+  stays readable. Files past the 30 days are deleted, which is what makes the
+  404 mean anything. Do not add a timestamp to these.
 
 ### The rest of the group's stock - hedin-group-stock.json
 

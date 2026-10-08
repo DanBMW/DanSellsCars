@@ -55,7 +55,9 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(os.path.dirname(HERE), 'lookup', 'new-stock.json')
+LOOKUP = os.path.join(os.path.dirname(HERE), 'lookup')
+OUT = os.path.join(LOOKUP, 'new-stock.json')
+ORDER_DIR = os.path.join(LOOKUP, 'order')
 
 RETAILER = '22181'
 RETAILER_NAME = 'Hedin Automotive Ruxley'
@@ -320,6 +322,57 @@ def roll_removed(prev, live, day):
     return out, back, gone, aged
 
 
+def write_order_files(live, removed, day):
+    """One file per order number, the way `lookup/reg/<REG>.json` works for the
+    used stock, so a colleague's system can ask about a single car without
+    pulling the whole catalogue down. Same three fields as the used contract:
+    `status`, `removed_at`, `available_until`, null where they do not apply.
+
+    A file is written only when its content has changed, and `generated_at` is
+    deliberately NOT in it, so an ordinary day touches almost nothing and the
+    daily diff stays readable. Files for cars past the 30 days are deleted,
+    which is what makes a 404 mean "not in stock and not in the last month".
+    """
+    os.makedirs(ORDER_DIR, exist_ok=True)
+    want, wrote = {}, 0
+    for car in live:
+        want[car['order_number']] = dict(car, status='in_stock',
+                                         removed_at=None, available_until=None)
+    for car in removed:
+        left = car.get('removed_at')
+        until = None
+        if left:
+            try:
+                until = (datetime.fromisoformat(left).date()
+                         + timedelta(days=KEEP_REMOVED_DAYS)).isoformat()
+            except ValueError:
+                until = None
+        want[car['order_number']] = dict(car, status='removed',
+                                         removed_at=left, available_until=until)
+
+    for num, rec in want.items():
+        path = os.path.join(ORDER_DIR, num + '.json')
+        body = json.dumps(rec, ensure_ascii=False, indent=1) + '\n'
+        try:
+            if open(path, encoding='utf-8').read() == body:
+                continue
+        except OSError:
+            pass
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write(body)
+        wrote += 1
+
+    dropped = 0
+    for name in os.listdir(ORDER_DIR):
+        if not name.endswith('.json'):
+            continue
+        if name[:-5] not in want:
+            os.remove(os.path.join(ORDER_DIR, name))
+            dropped += 1
+    print('order files: %d written or changed, %d past 30 days deleted, %d on file'
+          % (wrote, dropped, len(want)))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--check', action='store_true',
@@ -377,6 +430,7 @@ def main():
         json.dump(doc, fh, ensure_ascii=False, indent=1)
         fh.write('\n')
     print('wrote %s' % os.path.relpath(OUT, os.path.dirname(HERE)))
+    write_order_files(live, removed, day)
 
 
 if __name__ == '__main__':
