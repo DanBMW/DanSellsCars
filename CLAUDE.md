@@ -76,7 +76,8 @@ send nothing at all.
 
 `stock.html` is **Available Now**: the canonical, indexed used stock search
 (in `sitemap.xml`, daily changefreq) and the page every nav/drawer/footer/
-homepage "Available Now" link points at. `offers.html` is now a soft redirect
+homepage stock link points at (the menu and footers call it "Approved Used
+Stock"). `offers.html` is now a soft redirect
 stub to it (meta refresh + `location.replace` keeping the query string,
 canonical to stock.html, noindex) - do not rebuild a hand-picked list there.
 Each car's hero is the photo with a **finance example** over it (monthly
@@ -1104,6 +1105,15 @@ legal paragraph — used by `bmw-pcp-explained.html` and
 `bmw-finance-compared.html` for their finance disclaimers). `owner` (the name used in the footer2 and legal2 legal text, default
 "Dan Cane"; `MBG.html` sets it to "Dan" because Dan asked for his surname
 not to appear on that page).
+
+**The menu opens on two stock buttons** (Dan, 8 October 2026: "should show
+approved used stock/new car stock"): `partials/drawer2.html` has a "Stock"
+group straight under Home with **Approved Used Stock** (`stock.html`) and
+**New Car Stock** (`new-cars.html`) as outlined buttons
+(`.ph-drawer-stock` in `premium.css`, outlined so WhatsApp stays the only
+solid call to action). They replaced "Available Now" and "New cars" in the
+Practical group; the footers and the old `drawer.html` use the same two
+labels. Keep those labels in all four partials.
 
 Pages without the chrome markers (all funnel pages, plus
 `business-proposal.html`/`finance-proposal.html` which have their own minimal

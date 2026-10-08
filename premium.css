@@ -126,7 +126,19 @@ strong{color:var(--paper);font-weight:500}
   border-bottom:1px solid var(--hairline-soft);transition:color .2s,padding-left .25s;
 }
 .ph-drawer nav a:hover{color:#fff;padding-left:8px}
-.ph-drawer nav a small{font-family:var(--sans);font-size:.72rem;letter-spacing:.14em;color:var(--dim);margin-left:12px;text-transform:uppercase}
+.ph-drawer nav a small{display:inline-block;white-space:nowrap;font-family:var(--sans);font-size:.72rem;letter-spacing:.14em;color:var(--dim);margin-left:12px;text-transform:uppercase}
+/* The two stock buttons sit at the top of the menu (Dan, 8 October 2026):
+   outlined so WhatsApp stays the one solid call to action. */
+.ph-drawer nav.ph-drawer-stock{display:grid;gap:10px;margin-top:10px}
+.ph-drawer nav.ph-drawer-stock a{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:54px;padding:12px 18px;border:1px solid var(--accent);
+  font-family:var(--sans);font-size:1rem;font-weight:600;letter-spacing:.02em;
+  color:var(--paper);transition:background .2s,color .2s;
+}
+.ph-drawer nav.ph-drawer-stock a span{color:var(--accent);font-weight:400;transition:color .2s}
+.ph-drawer nav.ph-drawer-stock a:hover{padding-left:18px;background:var(--accent);color:#0a0c0f}
+.ph-drawer nav.ph-drawer-stock a:hover span{color:#0a0c0f}
 
 /* ---------- hero ---------- */
 .ph-hero{
