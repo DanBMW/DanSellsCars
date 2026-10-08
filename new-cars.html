@@ -79,6 +79,20 @@
   .nc-spec{font-size:13.5px;color:var(--body-c);margin:0 0 12px}
   .nc-price{font-size:25px;font-weight:600;letter-spacing:-.01em;margin:auto 0 4px}
   .nc-fin{font-size:12.5px;color:var(--dim);margin:0 0 13px}
+  .nc-mon{font-size:15px;color:var(--paper);margin:0 0 2px}
+  .nc-mon b{font-size:19px;font-weight:600}
+  .nc-mon span{color:var(--dim);font-size:13px}
+  .nc-eg{border-top:1px solid var(--hair);margin:0 0 13px;font-size:12.5px}
+  .nc-eg>summary{cursor:pointer;padding:10px 0 9px;color:var(--accent);
+    list-style:none;min-height:40px}
+  .nc-eg>summary::-webkit-details-marker{display:none}
+  .nc-eg>summary::after{content:" +";color:var(--dim)}
+  .nc-eg[open]>summary::after{content:" \2212";color:var(--dim)}
+  .nc-eg dl{display:grid;grid-template-columns:1fr auto;gap:5px 12px;margin:0 0 10px;
+    color:var(--body-c)}
+  .nc-eg dt{margin:0}
+  .nc-eg dd{margin:0;text-align:right;color:var(--paper)}
+  .nc-eg p{color:var(--dim);line-height:1.55;margin:0 0 9px}
   .nc-wa{display:block;text-align:center;background:var(--go);color:#fff;
     text-decoration:none;border-radius:999px;padding:13px;font-weight:600;min-height:44px}
   .nc-empty{padding:50px 0;text-align:center;color:var(--body-c)}
@@ -170,6 +184,7 @@
       <option value="soon">Arriving soonest</option>
       <option value="plow">Price, lowest first</option>
       <option value="phigh">Price, highest first</option>
+      <option value="mlow">Monthly, lowest first</option>
       <option value="quick">Quickest, 0 to 62</option>
     </select>
     <button type="button" class="nc-btn nc-sheet-btn" id="ncOpen">Filters</button>
@@ -609,6 +624,10 @@
                                  || (a.price_gbp||0) - (b.price_gbp||0); },
       plow:  function(a,b){ return (a.price_gbp||0) - (b.price_gbp||0); },
       phigh: function(a,b){ return (b.price_gbp||0) - (a.price_gbp||0); },
+      /* A car with no published monthly sorts after the ones that have one,
+         the same rule stock.html keeps: it is not a cheap car, it is a car we
+         cannot show a payment for. */
+      mlow:  function(a,b){ return (a.monthly_gbp||1e9) - (b.monthly_gbp||1e9); },
       quick: function(a,b){ return (a.zero_to_62||99) - (b.zero_to_62||99); }
     }[SORT];
     return rows.slice().sort(by);
@@ -651,6 +670,52 @@
     if (dots) dots.textContent = (i + 1) + '/' + pics.length;
   }
 
+  function money(n){
+    if (n == null) return '';
+    return '£' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  /* The monthly payment, the APR and the cash price are BMW's own figures for
+     this exact car, read off the New Car Locator. The optional final payment,
+     the total payable and the charge for credit are worked out from them in
+     automation/new-stock.py on the terms BMW themselves print, which is why
+     the sum lives there and not here: one implementation, written into the
+     file, so the colleague backend reading the same JSON cannot disagree with
+     this page about a customer's payment.
+
+     The excess mileage charge is deliberately absent. BMW publish no rate with
+     these figures and it runs from 4.1p to 28.4p a mile across the real quotes
+     we hold for the used stock, so it is named as confirmed on the order
+     rather than filled in with something plausible. */
+  function finBlock(c){
+    var e = c.finance_example;
+    if (!e) return '<p class="nc-fin">Finance available. Message me for a quote.</p>';
+    return '<p class="nc-mon"><b>' + esc(money(e.monthly)) + ' a month</b> '
+      + '<span>' + esc(e.product) + ', ' + esc(e.apr) + '% APR representative</span></p>'
+      + '<details class="nc-eg"><summary>The full figures</summary>'
+      + '<dl>'
+      + '<dt>' + e.payments + ' monthly payments of</dt><dd>' + esc(money(e.monthly)) + '</dd>'
+      + '<dt>Customer deposit</dt><dd>' + esc(money(e.deposit)) + '</dd>'
+      + '<dt>Cash price</dt><dd>' + esc(money(e.cash_price)) + '</dd>'
+      + '<dt>Amount of credit</dt><dd>' + esc(money(e.amount_of_credit)) + '</dd>'
+      + '<dt>Optional final payment</dt><dd>' + esc(money(e.final_payment)) + '</dd>'
+      + '<dt>Total amount payable</dt><dd>' + esc(money(e.total_payable)) + '</dd>'
+      + '<dt>Total charge for credit</dt><dd>' + esc(money(e.charge_for_credit)) + '</dd>'
+      + '<dt>Duration</dt><dd>' + e.term_months + ' months</dd>'
+      + '<dt>Annual mileage</dt><dd>' + esc(e.annual_mileage.toLocaleString('en-GB')) + '</dd>'
+      + '<dt>APR representative</dt><dd>' + esc(e.apr) + '%</dd>'
+      + '</dl>'
+      + '<p>Excess mileage is charged over ' + esc(e.contract_mileage.toLocaleString('en-GB'))
+      + ' miles and the rate is confirmed on your order, so it is not shown here.</p>'
+      + '<p>' + esc(e.basis) + ' Finance from ' + esc(e.lender)
+      + ', subject to credit acceptance to UK residents aged 18 or over. '
+      + 'Guarantees and indemnities may be required. At the end of the term, if '
+      + 'you want to buy the car outright you pay the optional final payment. '
+      + 'Hedin Automotive is a credit broker, not a lender. Ask me and I will '
+      + 'put a proper quote in writing before you commit to anything.</p>'
+      + '</details>';
+  }
+
   function card(c){
     var spec = [c.colour, c.wheels, c.fuel, c.drive === 'All Wheel' ? 'xDrive' : '']
       .filter(Boolean).join(' · ');
@@ -658,6 +723,7 @@
       "Hi Dan, I've seen this new one on your site and I'm interested.\n"
       + c.description + (c.colour ? ', ' + c.colour : '')
       + (c.price ? '\n' + c.price : '')
+      + (c.monthly ? '\n' + c.monthly + ' a month' : '')
       + '\nOrder ' + c.order_number);
     return '<article class="nc-card">'
       + shotBlock(c)
@@ -665,7 +731,7 @@
       + '<h2>' + esc(c.description) + '</h2>'
       + '<p class="nc-spec">' + esc(spec) + (c.zero_to_62 ? ' · 0 to 62 in ' + esc(c.zero_to_62) + 's' : '') + '</p>'
       + '<p class="nc-price">' + esc(c.price || 'Price on request') + '</p>'
-      + '<p class="nc-fin">Finance available. Message me for a quote.</p>'
+      + finBlock(c)
       + '<a class="nc-wa" href="' + esc(msg) + '" target="_blank" rel="noopener" data-reg="' + esc(c.order_number) + '">Ask me about this one</a>'
       + '</div></article>';
   }
@@ -746,8 +812,18 @@
         + '. Pictures are configurator renders of that exact specification rather than '
         + 'photographs of the individual car. Prices and delivery times come from BMW '
         + 'and can change. '
-        + 'Finance is available on any of them: ask me and I will get you a proper '
-        + 'quote with the full figures.';
+        + (d.finance_terms
+            ? 'Monthly payments are BMW’s own published figures for each car on a '
+              + d.finance_terms.product + ' agreement over '
+              + d.finance_terms.term_months + ' months with a £'
+              + d.finance_terms.deposit_gbp.toLocaleString('en-GB')
+              + ' deposit and '
+              + d.finance_terms.annual_mileage.toLocaleString('en-GB')
+              + ' miles a year. Tap "The full figures" on any car for the whole '
+              + 'example. They are an illustration and not a quotation: ask me and '
+              + 'I will get you one in writing, at your own deposit and mileage.'
+            : 'Finance is available on any of them: ask me and I will get you a '
+              + 'proper quote with the full figures.');
     })
     .catch(function(){
       document.getElementById('ncCount').textContent =

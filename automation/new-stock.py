@@ -41,13 +41,41 @@ Four things about the source, all of them confirmed against the live site on
   into a 404. They render the specification rather than the physical car, so
   two identical orders can share a url.
 
-The money fields need care. `monthly_finance_payment` is published here
-because it is Dan's data and the brief asks for it, but the locator gives no
-deposit, no term, no optional final payment and no total payable, so **there
-is no way to build the representative example a monthly payment has to carry**.
-It must not reach a customer facing page on this evidence. `new-cars.html`
-shows the cash price and asks Dan for a quote. Do not promote the monthly
-figure onto the page without a real quote behind it.
+The money fields need care, and the first version of this file was wrong about
+them. `monthly_finance_payment` and `monthly_apr` are BMW's own figures for
+that exact car. The *terms* behind them are published too, but not on the car:
+they are in the page's own wording, `finance_disclaimer`, which reads "Based on
+a £4,500 deposit, 48 month term and 8,000 miles/year", and `disclaimer_terms`,
+which names the product as BMW Select (PCP). `finance_terms()` reads them from
+there every run rather than hard coding them, because a campaign that changes
+the deposit would otherwise silently relabel every payment on the page.
+
+What the locator does **not** publish is the optional final payment, the total
+amount payable or the total charge for credit, and it prints its monthly under
+a heading of its own that says "Representative Example" without them.
+
+Those three are recovered by `example_for()`, and that is a calculation, so it
+is held to the standard the rest of this repo holds a calculation to:
+
+- **It was checked against the lender, not assumed.** The same sum run against
+  all 301 real BMW Financial Services quotes in `stock-finance.json` reproduces
+  the lender's own optional final payment with a median error of 15p and a
+  worst case of 29p; every one of the 301 lands within a pound.
+- **47 payments on a 48 month term is the lender's convention, not a guess.**
+  Every one of those 301 quotes has one fewer regular payment than its term.
+- **The answers behave like a residual table, which is the real test.** BMW set
+  a residual by derivative and mileage, not by how a car is optioned, so cars
+  of one derivative should come back close to the same figure in pounds however
+  far apart their prices are. They do: ten 120 M Sports spread over £1,708 of
+  price all land within £1 of £14,811, three M5 Saloons spread over £17,103 land
+  within £414, and the XMs within £359 over £7,315. A wrong deposit or term
+  would scatter them.
+
+What is still **not** ours, and is the reason the page says so rather than
+inventing it: the **excess mileage charge**. The locator publishes no rate at
+all, and in the 301 real quotes it runs from 4.1p to 28.4p a mile with no
+relation to anything we hold. It is a term of the agreement, so the card states
+that it is confirmed on the order instead of carrying a figure.
 """
 import argparse, base64, html, http.cookiejar, json, os, re, time
 import urllib.error, urllib.parse, urllib.request
@@ -68,6 +96,11 @@ CDN = 'https://prod.cosy.bmw.cloud/'
 
 MIN_CARS = 50          # below this the run is treated as broken, not as a sale
 KEEP_REMOVED_DAYS = 30
+# A residual outside this share of the cash price is dropped and named rather
+# than published, the same rule `car-details.py` keeps for a harvested figure:
+# an absurd number is worse than no number. Every one of the 80 cars on the
+# first run sat between 37% and 52%.
+RESIDUAL_BAND = (0.20, 0.70)
 PAGE_PAUSE = 1.0       # polite, and nowhere near one person scrolling results
 MAX_PAGES = 60
 RETRIES = 3
@@ -237,7 +270,91 @@ def series_of(name):
     return ''
 
 
-def normalise(car):
+def finance_terms(s):
+    """The deposit, term, mileage and product behind BMW's monthly payments.
+
+    Read off the retailer page every run. The page carries both the template
+    ("%{default_annual_mileage} miles/year") and the filled sentence; only the
+    filled one is any use, so a page that gives only the template is treated as
+    giving nothing and the figures are left out rather than guessed at.
+    """
+    status, page = s.get(BASE)
+    if status != 200 or not page:
+        return None
+    m = re.search(r'Based on a \\u00a3([\d,]+) deposit, (\d+) month term '
+                  r'and ([\d,]+) miles/year', page)
+    if not m:
+        m = re.search(r'Based on a £([\d,]+) deposit, (\d+) month term '
+                      r'and ([\d,]+) miles/year', page)
+    if not m:
+        print('  the locator did not publish its finance terms this run, so '
+              'no example is written')
+        return None
+    product = ('BMW Select (PCP)' if 'BMW Select (PCP)' in page
+               else 'BMW Select')
+    return {
+        'product': product,
+        'lender': 'BMW Financial Services (GB) Limited',
+        'deposit_gbp': int(m.group(1).replace(',', '')),
+        'term_months': int(m.group(2)),
+        'annual_mileage': int(m.group(3).replace(',', '')),
+        'source': BASE,
+    }
+
+
+def example_for(price, monthly, apr, terms):
+    """The rest of the representative example, from BMW's own three figures.
+
+    The optional final payment is what the agreement has to be worth at the end
+    of the term for BMW's monthly to be the monthly: discount the payments at
+    the effective monthly rate the APR implies, take that off the credit, and
+    carry the remainder forward to the end. Total payable and the charge for
+    credit then follow by addition, not by another model.
+    """
+    if not (price and monthly and apr is not None and terms):
+        return None
+    term = terms['term_months']
+    deposit = terms['deposit_gbp']
+    payments = term - 1          # the lender's convention on all 301 quotes
+    credit = price - deposit
+    if credit <= 0 or payments < 1:
+        return None
+    r = (1 + apr / 100.0) ** (1 / 12.0) - 1
+    if r <= 0:
+        return None
+    pv = monthly * (1 - (1 + r) ** -payments) / r
+    final = (credit - pv) * (1 + r) ** term
+    lo, hi = RESIDUAL_BAND
+    if not (price * lo <= final <= price * hi):
+        return None
+    total = deposit + monthly * payments + final
+    return {
+        'product': terms['product'],
+        'lender': terms['lender'],
+        'apr': apr,
+        'monthly': round(monthly, 2),
+        'payments': payments,
+        'term_months': term,
+        'deposit': deposit,
+        'cash_price': round(price, 2),
+        'amount_of_credit': round(credit, 2),
+        'final_payment': round(final, 2),
+        'total_payable': round(total, 2),
+        'charge_for_credit': round(total - price, 2),
+        'annual_mileage': terms['annual_mileage'],
+        'contract_mileage': terms['annual_mileage'] * term // 12,
+        # BMW publish no excess mileage rate with the stock figures, and it is
+        # a term of the agreement, so it is named as outstanding rather than
+        # filled in with a plausible number.
+        'excess_pence': None,
+        'basis': ('BMW publish the monthly payment, the APR and the cash price '
+                  'for this car. The optional final payment, total amount '
+                  'payable and total charge for credit are worked out from '
+                  'those on the terms BMW state, and are not a quotation.'),
+    }
+
+
+def normalise(car, terms=None):
     num = order_number(car.get('order_number'))
     if not num:
         return None
@@ -261,6 +378,10 @@ def normalise(car):
         'price': clean(car.get('visible_cash_price')) or '',
         'price_gbp': int(round(price_n)) if isinstance(price_n, (int, float)) else None,
         'monthly': clean(car.get('monthly_finance_payment')) or '',
+        'monthly_gbp': car.get('numeric_monthly_price'),
+        'apr': car.get('monthly_apr'),
+        'finance_example': example_for(price_n, car.get('numeric_monthly_price'),
+                                       car.get('monthly_apr'), terms),
         'lead_time_weeks_min': car.get('lead_time_in_weeks_min'),
         'lead_time_weeks_max': car.get('lead_time_in_weeks_max'),
         'on_hold': bool(car.get('on_hold')),
@@ -388,10 +509,17 @@ def main():
 
     rows = pull(ids)
 
+    terms = finance_terms(s)
+    if terms:
+        print('BMW\'s own finance terms: %s, %d months, £%s deposit, %s miles '
+              'a year' % (terms['product'], terms['term_months'],
+                          '{:,}'.format(terms['deposit_gbp']),
+                          '{:,}'.format(terms['annual_mileage'])))
+
     live, seen = [], set()
     dropped = 0
     for row in rows:
-        rec = normalise(row)
+        rec = normalise(row, terms)
         if not rec:
             dropped += 1
             continue
@@ -402,6 +530,8 @@ def main():
     live.sort(key=lambda c: (c.get('price_gbp') or 0, c['order_number']))
     print('%d cars (%d rows dropped for no usable order number)'
           % (len(live), dropped))
+    quoted = sum(1 for c in live if c.get('finance_example'))
+    print('%d of %d carry a full set of finance figures' % (quoted, len(live)))
 
     if len(live) < MIN_CARS:
         raise SystemExit('only %d cars, which is too few to be right; keeping '
@@ -419,6 +549,7 @@ def main():
         'retailer_id': RETAILER,
         'retailer_name': RETAILER_NAME,
         'count': len(live),
+        'finance_terms': terms,
         'cars': live,
         'removed': removed,
     }

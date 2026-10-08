@@ -461,34 +461,76 @@ Other things it has to keep:
 - **Entities are unescaped on the way in.** The feed sends
   `BMW&nbsp;Individual Tanzanite Blue`; markup in a data file is wrong whether
   the page escapes it or not.
-- **No monthly payment reaches the page, and that is not an oversight.** Dan
-  asked for the monthlies to be visible on 8 October and this was dug into
-  properly before answering. What the locator gives, and what is still
-  missing, is now known exactly:
-  - **Have**: the monthly figure, the APR per car (`monthly_apr`), the cash
-    price, and from BMW's own small print in the locator page the product
-    (**BMW Select PCP**), the **48 month** term and the **£4,500** deposit
-    those monthlies are calculated on.
-  - **Missing**: the **optional final payment**, the **total amount payable**
-    and the **annual mileage** (BMW's own template carries it as a
-    `%{mileage}` placeholder and the value is nowhere in the payload). Total
-    amount of credit is derivable, the other two are not.
-  An FCA representative example for a PCP needs all of them, and the optional
-  final payment comes out of the lender's residual tables, which is the same
-  reason `stock.html` refuses to recalculate a term or a mileage. So it cannot
-  be published from this data, however much of it we hold.
+- **The monthly payment and its representative example.** Dan asked for the
+  monthlies to be visible on 8 October. The first answer here was that it could
+  not be done; that answer was wrong in one specific way and the correction is
+  worth keeping, because it is the only calculated payment on this site that
+  the lender did not hand us directly.
+  - **BMW's own figures, not ours**: the monthly (`monthly_finance_payment`),
+    the APR per car (`monthly_apr`, running 2.9 / 3.9 / 4.9 / 5.9 on the first
+    run) and the cash price. These are published per car and are copied, never
+    touched.
+  - **BMW's own terms, read off the page every run** by `finance_terms()`:
+    **BMW Select (PCP), 48 months, £4,500 deposit, 8,000 miles a year**. The
+    first look missed the mileage because the page carries the *template*
+    (`%{default_annual_mileage}`) as well as the filled sentence; the filled
+    one is there, in `finance_disclaimer`, and only the filled one is read. A
+    run where the page gives only the template writes no example at all rather
+    than assuming last week's deposit still applies.
+  - **Worked out by `example_for()`**: the optional final payment, the total
+    amount payable and the total charge for credit. Discount the payments at
+    the effective monthly rate the APR implies, take that off the credit, carry
+    the remainder to the end of the term; the other two then follow by
+    addition.
+  Three pieces of evidence, all measured rather than argued, are why this is
+  allowed to reach a customer when "never calculate a payment here" is the
+  standing rule:
+  - **It was checked against the lender.** The same sum run against all 301
+    real BMW Financial Services quotes in `stock-finance.json` reproduces the
+    lender's own optional final payment with a **median error of 15p and a
+    worst case of 29p**; every one of the 301 is within a pound.
+  - **47 payments on a 48 month term is the lender's convention**, not a
+    guess: every one of those 301 quotes has exactly one fewer regular payment
+    than its term.
+  - **The answers behave like a residual table, which is the real test.** BMW
+    set a residual by derivative and mileage, not by how a car is optioned, so
+    cars of one derivative should land near the same figure **in pounds**
+    however far apart their prices are. They do: ten 120 M Sports spread over
+    £1,708 of price all land within **£1** of £14,811; three M5 Saloons spread
+    over £17,103 land within £414; the XMs within £359 over £7,315. A wrong
+    deposit or term would scatter them, and this is the check to re-run if the
+    figures are ever doubted.
+  **What is still not ours, and must not be invented: the excess mileage
+  charge.** The locator publishes no rate at all, and across the 301 real
+  quotes it runs from 4.1p to 28.4p a mile with no relation to anything we
+  hold. It is a term of the agreement, so the card says the rate is confirmed
+  on the order. Do not fill it in with a plausible figure.
+  **Guards**, neither optional: a residual outside `RESIDUAL_BAND` (20% to 70%
+  of the cash price) is dropped and the car falls back to "message me for a
+  quote", the same rule `car-details.py` keeps for an absurd harvested figure;
+  and the card states in its own words that the three derived figures are
+  worked out from BMW's published ones and are **not a quotation**.
+  **The sum lives in `new-stock.py`, not in the page**, and is written into the
+  JSON as `finance_example`. That is deliberate: the colleague backend reads
+  the same file, and a finance rule that drifts between two copies is the
+  mistake this repo has already made with `shrinkShot`/`shrink` and `clipKey`.
+  It is a different sum from `dsfinance.js`, which interpolates between quotes
+  the lender gave; this one recovers a term the lender did not publish.
   **The Codeweavers route was tested, not assumed.** `Status: 'New'` with the
   OTR price and no registration validates against the same endpoint
   `stock-finance.py` uses, and the lender answers "Please contact us directly
   for finance information", which is its ordinary decline. The likely reason
   is the missing VIN: the locator encrypts it (`vin` plus an `iv`, AES, not a
   readable VIN) and there is no per-car URL on stock.bmw.co.uk to read one
-  from. **If a VIN per order number can be got out of Hedin's own system, try
-  that route again first** - it reuses a pipeline that already has compliance
-  sign-off and returns the final payment and total payable directly.
-  Until then `new-cars.html` shows the cash price and "message me for a
-  quote". Do not promote the monthly figure onto the page without a real
-  quote behind it.
+  from. Hedin's own site has no new car listings to read one off either
+  (`/buy-car/new-cars` is a client side shell with no `car_` objects on it).
+  **If a VIN per order number can be got out of Hedin's own system, prefer
+  that route**: it reuses a pipeline that already has compliance sign-off and
+  returns the final payment, the total payable and the excess mileage rate
+  from the lender directly, so nothing would need deriving.
+  **This is a financial promotion**, so it is Dan's to clear with Hedin and
+  ITC Compliance (FRN 313486) before it goes live, not a decision to take in
+  this repo.
 - **The locator gives a 0 to 62 time**, which the used stock does not, so the
   page can sort on it. Do not copy that figure onto a used car: the quiz uses
   horsepower per tonne precisely because no used source publishes one.
@@ -524,6 +566,11 @@ cars give:
   `generated_at`**, so an ordinary morning touches nothing and the daily diff
   stays readable. Files past the 30 days are deleted, which is what makes the
   404 mean anything. Do not add a timestamp to these.
+
+  Both surfaces carry `finance_example` per car and `finance_terms` on the
+  catalogue. A colleague's page showing the monthly **must show the whole
+  example with it**, the way `stock.html` does: that is the condition the
+  figure is published under, not a presentational preference.
 
 ### The rest of the group's stock - hedin-group-stock.json
 
