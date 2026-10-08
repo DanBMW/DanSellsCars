@@ -92,13 +92,23 @@
   .nc-show{display:none}
   @media(max-width:860px){
     .nc-main{grid-template-columns:1fr}
-    .nc-facets{position:fixed;inset:0;z-index:80;background:var(--ink);
-      overflow:auto;padding:18px 20px 90px;display:none}
+    /* The sheet sits UNDER the site header (z-index 200, position:fixed) and
+       ABOVE the sitewide sticky contact bar (z-index 150), so it has to start
+       below the one and its button has to clear the other. Covering the header
+       is not an option: the way out of the sheet is the menu. */
+    .nc-facets{position:fixed;left:0;right:0;bottom:0;z-index:160;
+      top:calc(76px + env(safe-area-inset-top));background:var(--ink);
+      border-top:1px solid var(--hair);
+      overflow:auto;padding:18px 20px 150px;display:none}
     .nc-facets.open{display:block}
     .nc-sheet-btn{display:inline-block}
-    .nc-show{position:fixed;left:20px;right:20px;bottom:18px;z-index:81;
+    /* above the sticky WhatsApp bar, and lifted clear of it rather than
+       hidden behind it, which is where it was */
+    .nc-show{position:fixed;left:16px;right:16px;z-index:170;
+      bottom:calc(74px + env(safe-area-inset-bottom));
       background:var(--accent);color:#fff;border:0;border-radius:999px;
-      padding:16px;font:inherit;font-weight:600}
+      padding:17px;font:inherit;font-weight:600;
+      box-shadow:0 8px 28px rgba(0,0,0,.5)}
     .nc-facets.open ~ .nc-show{display:block}
   }
   .nc [hidden]{display:none!important}
@@ -170,7 +180,7 @@
   <p class="nc-count" id="ncCount">Loading the list&hellip;</p>
 
   <div class="nc-main">
-    <aside class="nc-facets" id="ncFacets"></aside>
+    <aside class="nc-facets" id="ncFacets" aria-label="Filters"></aside>
     <button type="button" class="nc-show" id="ncShow">Show cars</button>
     <section>
       <div class="nc-grid" id="ncGrid"></div>
