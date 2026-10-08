@@ -7,6 +7,9 @@
  * (window.dsStock) and dsfinance.js (window.dsFin), so counts, payments and
  * the "See all matches" hand-off agree with stock.html. Every payment shown is
  * the lender's; a car without a live quote says "Ask for a quote".
+ * New or either buyers are also matched against lookup/new-stock.json (the
+ * brand new cars already built for Hedin Ruxley); see "brand new stock" below.
+ * Every answer is an active tap: nothing is pre selected and there is no Skip.
  * Plain ES2017, no dependencies.
  */
 (function () {
@@ -175,7 +178,7 @@
   function want(name) {
     if (lazy[name]) return lazy[name];
     var url = { lad: 'automation/stock-finance-ladder.json', group: 'automation/hedin-group-stock.json',
-      det: 'automation/car-details.json' }[name];
+      det: 'automation/car-details.json', newc: 'lookup/new-stock.json' }[name];
     lazy[name] = getJSON(url).then(function (j) {
       if (name === 'lad') { LAD = j || {}; ladOK = true; capCache = {}; }
       if (name === 'group') {
@@ -183,9 +186,11 @@
         groupOK = GROUP.length > 0; capCache = {};
       }
       if (name === 'det') DET = j || {};
+      if (name === 'newc') { NEWC = ((j && j.cars) || []).filter(function (c) { return !c.on_hold; }).map(stampNew); newOK = true; }
       refresh();
     })['catch'](function () {
       if (name === 'det') DET = DET || {};
+      if (name === 'newc') newOK = true;   /* silent: a failed list just means "I'll be in touch" */
       if (name === 'lad') ladOK = true;
       refresh();
     });
@@ -412,6 +417,90 @@
     return 'https://dan-sells.co.uk/stock.html?' + p.join('&');
   }
 
+  /* ---------------- brand new stock ---------------- */
+  /* Dan, 8 October: a new or either buyer should see brand new cars that fit,
+     and nothing frightening when none do. The cars are lookup/new-stock.json.
+     BMW quotes every one at 4,500 pounds down (BMW Select PCP, 48 months).
+     For MATCHING ONLY, each 1,000 pounds more deposit takes 24 pounds a month
+     off and each 1,000 less adds 24, pro rata (Dan's rule of thumb):
+       estimate = quoted monthly - 24 x (their deposit - 4,500) / 1,000
+     That estimate is never shown to the customer, and nor is the quoted
+     monthly: the locator gives no optional final payment, total payable or
+     mileage, so no representative example can go with it (CLAUDE.md, new
+     cars). Cards show the cash price and offer a personalised quote; the
+     figures go to Dan in the lead email only. */
+  var NEW_QUOTE_DEP = 4500, NEW_PER_1000 = 24;
+  var NEWC = [], newOK = false, NEWRES = { list: [], count: 0 };
+  var NEW_FUEL = { petrol: 'petrol', diesel: 'diesel', phev: 'phev', electric: 'electric' };
+  function newBody(c) {
+    var d = String(c.description || ''), s = String(c.series || '');
+    if (/gran\s*coup/i.test(d)) return 'Coupe';        /* bodyKeys reads gran coupe off the name */
+    if (/coup/i.test(d)) return 'Coupe';
+    if (/saloon/i.test(d)) return 'Saloon';
+    if (s === '1 Series') return 'Hatchback';
+    if (/^[3578] Series$/.test(s) && !/touring/i.test(d)) return 'Saloon';
+    return '';
+  }
+  function stampNew(c) {
+    c._new = true;
+    c._bodies = ST.bodyKeys({ model: c.description, series: c.series, body: newBody(c) });
+    c._prim = ST.bodyPrimary({ model: c.description, series: c.series, body: newBody(c) });
+    c._fuel = NEW_FUEL[String(c.fuel || '').toLowerCase()] || ST.fuelKey(c);
+    c._price = c.price_gbp || ST.num(c.price);
+    c._quoted = parseFloat(String(c.monthly || '').replace(/[^0-9.]/g, '')) || 0;
+    return c;
+  }
+  function wantsNew(a) { a = a || A; return a.interest === 'new' || a.interest === 'either'; }
+  /* matching only, never displayed */
+  function newEstimate(c, dep) {
+    if (!c._quoted) return null;
+    var d = dep === null || dep === undefined ? NEW_QUOTE_DEP : dep;
+    return Math.round((c._quoted - NEW_PER_1000 * (d - NEW_QUOTE_DEP) / 1000) * 100) / 100;
+  }
+  function newFits(c, a) {
+    if (a.body.length && !bodyHit(c, a.body)) return false;
+    if (a.fuel.length && !fuelHit(c, a.fuel)) return false;
+    if (a.extras.indexOf('seven') !== -1 && String(c.seats) !== '7') return false;
+    if (a.pay === 'monthly' && a.mo > 0) {
+      var est = newEstimate(c, a.dep);
+      return est !== null && est <= a.mo;
+    }
+    if (a.pay === 'cash' && a.cash > 0) return c._price > 0 && c._price < a.cash;
+    return true;
+  }
+  /* Colour they asked for first, then the soonest here, then the lower price.
+     One of each model before any repeats, so three identical X3s never fill it. */
+  function findNew(a) {
+    if (!wantsNew(a)) return { list: [], count: 0 };
+    var fit = NEWC.filter(function (c) { return newFits(c, a); });
+    fit.sort(function (x, y) {
+      var cx = a.colours.indexOf(x.colour) !== -1 ? 0 : 1, cy = a.colours.indexOf(y.colour) !== -1 ? 0 : 1;
+      return cx - cy || (x.lead_time_weeks_max || 99) - (y.lead_time_weeks_max || 99) || x._price - y._price;
+    });
+    var out = [], seen = {};
+    fit.forEach(function (c) { if (out.length < 3 && !seen[c.description]) { seen[c.description] = 1; out.push(c); } });
+    fit.forEach(function (c) { if (out.length < 3 && out.indexOf(c) === -1) out.push(c); });
+    return { list: out.map(function (c) { return { c: c, est: newEstimate(c, a.pay === 'monthly' ? a.dep : null) }; }), count: fit.length };
+  }
+  function newWhen(c) {
+    var x = c.lead_time_weeks_min, y = c.lead_time_weeks_max;
+    if (!y) return '';
+    return x && x !== y ? 'Here in ' + x + ' to ' + y + ' weeks' : 'Here in ' + y + ' weeks';
+  }
+  function newWhy(c, a) {
+    var out = ['brand new, already built'];
+    if (a.body.length && bodyHit(c, a.body)) out.push(shapeName(c));
+    if (a.fuel.length && fuelHit(c, a.fuel)) out.push(FUEL_NAME[c._fuel]);
+    if (a.colours.length && a.colours.indexOf(c.colour) !== -1) out.push('in ' + c.colour);
+    if (a.extras.indexOf('seven') !== -1 && String(c.seats) === '7') out.push('7 seats');
+    if (a.pay === 'cash' && a.cash > 0) out.push(a.cash === 20000 ? 'under ' + GBP + '20k' : 'under your ' + GBP + (a.cash / 1000) + 'k');
+    if (a.pay === 'monthly' && a.mo > 0) out.push('should suit your monthly budget, confirmed with a personalised quote');
+    return cap1(out.join(', '));
+  }
+  function newLine(c) {
+    return 'Brand new ' + c.description + (c.colour ? ', ' + c.colour : '') + ', ' + (c.price || 'price on request') + ', order ' + c.order_number;
+  }
+
   /* ---------------- words ---------------- */
   function list(arr, word) {
     if (arr.length <= 1) return arr.join('');
@@ -489,10 +578,11 @@
 
   /* ---------------- WhatsApp ---------------- */
   var RESULT = null, SHOWN = [];
-  function waText(liked, listOverride) {
+  function waText(liked, listOverride, likedNew) {
     var SH = listOverride || SHOWN;
     var a = A, L = [];
-    if (liked) L.push('Hi Dan, I like the look of this one:', carLine(liked), 'From Find my BMW.', '');
+    if (likedNew) L.push('Hi Dan, I like the look of this brand new one:', newLine(likedNew.c), 'From Find my BMW.', '');
+    else if (liked) L.push('Hi Dan, I like the look of this one:', carLine(liked), 'From Find my BMW.', '');
     else L.push('Hi Dan, I\u2019ve just done Find my BMW.', '');
     L.push('What I\u2019m after:');
     if (A.interest) L.push(interestText(A));
@@ -506,6 +596,10 @@
     var pxl = pxLine(); if (pxl) tail.push(pxl);
     if (RESULT && RESULT.level >= 2) tail.push('Nothing matched exactly, so I\u2019d love your help finding one.');
     var mt = [];
+    if (NEWRES.list.length) {
+      mt.push('', 'Brand new ones that fit:');
+      NEWRES.list.forEach(function (r) { mt.push(newLine(r.c)); });
+    }
     if (SH.length) {
       mt.push('', 'My top matches:');
       SH.forEach(function (r, i) { mt.push((i + 1) + '. ' + carLine(r)); });
@@ -717,19 +811,38 @@
     $('fmbIntroCount').textContent = HOME.length + ' BMWs on the forecourt today';
     $('fmbIntroLive').hidden = false;
   }
-  function nextLabel() {
-    var b = $('fmbNext'), q = cur, lab = 'Continue', dis = false;
-    if (MULTI[q]) lab = (A[MULTI[q]].length || OPEN[q]) ? 'Continue' : 'Skip';
-    if (q === 'q1') lab = A.life ? 'Continue' : 'Skip';
-    if (q === 'qi') dis = !A.interest;
-    if (q === 'qp') lab = A.px ? 'Continue' : 'Skip';
+  /* Dan, 8 October: every answer has to be the customer's own tap. Nothing is
+     pre selected, there is no Skip, and Continue stays off until they choose
+     (each question has an Open minded, Not fussed or Not sure tap for anyone
+     with no preference). An answer filled in from the link they came in on
+     has to be confirmed: the button reads "Yes, that's right". The prompt
+     under the button says what is still needed. */
+  var TOUCHED = {};
+  function needs(q) {
+    if (q === 'qi') return A.interest ? '' : 'Tap new, used or either to carry on';
+    if (q === 'q1') return A.life ? '' : 'Tap the one that fits best to carry on';
+    if (q === 'qp') return A.px ? '' : 'Tap Yes, No or Maybe to carry on';
+    if (q === 'q7') return A.when ? '' : 'Tap when you would like it to carry on';
     if (q === 'q4') {
-      if (!A.pay) lab = 'Skip';
-      if (A.pay === 'monthly' && A.mo === null) dis = true;
-      if (A.pay === 'cash' && A.cash === null) dis = true;
+      if (!A.pay) return 'Tap how you would like to pay to carry on';
+      if (A.pay === 'monthly' && A.mo === null) return 'Tap your monthly budget to carry on';
+      if (A.pay === 'monthly' && !depTouched) return 'Now tap a deposit, or Not sure';
+      if (A.pay === 'cash' && A.cash === null) return 'Tap your total budget to carry on';
+      return '';
     }
-    if (q === 'q7') lab = 'Show my matches';
-    b.textContent = lab; b.disabled = dis;
+    if (MULTI[q] && !(A[MULTI[q]].length || OPEN[q])) {
+      return { q2: 'Tap a shape, or Open minded', q3: 'Tap a fuel, or Open minded',
+        q5: 'Tap anything you want, or Not fussed', q6: 'Tap a colour, or Open minded' }[q];
+    }
+    return '';
+  }
+  function nextLabel() {
+    var b = $('fmbNext'), q = cur, need = needs(q);
+    var lab = q === 'q7' ? 'Show my matches' : 'Continue';
+    if (!need && PRE[q] && !TOUCHED[q]) lab = 'Yes, that\u2019s right';
+    b.textContent = lab; b.disabled = !!need;
+    var nd = $('fmbNudge');
+    if (nd) { nd.textContent = need || ''; nd.hidden = !need; }
   }
   function refresh() {
     introLine();
@@ -745,6 +858,8 @@
   function onChange(e) {
     var i = e.target; if (!i || !i.name) return;
     var q = i.name, v = i.value;
+    TOUCHED[q === 'pay' || q === 'mo' || q === 'dep' || q === 'cash' ? 'q4' : q] = true;
+    if (q === 'qi' && (v === 'new' || v === 'either')) want('newc');
     if (q === 'qi') A.interest = v;
     else if (q === 'qp') A.px = v;
     else if (q === 'q1') A.life = v;
@@ -849,12 +964,8 @@
   function next() {
     var qi = QS.indexOf(cur);
     if (qi === -1) return;
-    if (cur === 'q4') {
-      if (A.pay === 'monthly' && A.mo === null) return;
-      if (A.pay === 'cash' && A.cash === null) return;
-      if (A.pay === 'monthly' && !depTouched) A.dep = null;
-    }
-    if (cur === 'qi' && !A.interest) return;
+    if (needs(cur)) { nextLabel(); return; }
+    TOUCHED[cur] = true;
     answerTrack(cur);
     if (qi < QS.length - 1) go(QS[qi + 1]);
     else runMatching();
@@ -870,19 +981,20 @@
     return new Promise(function (res) {
       var t0 = Date.now();
       (function tick() {
-        if ((snapOK !== null && finOK && ladOK && DET !== null && (groupOK || lazySettled.group)) || Date.now() - t0 > ms) return res();
+        if ((snapOK !== null && finOK && ladOK && DET !== null && (groupOK || lazySettled.group) && (!wantsNew() || newOK)) || Date.now() - t0 > ms) return res();
         setTimeout(tick, 80);
       })();
     });
   }
   var lazySettled = {};
   function runMatching(quick) {
-    want('lad'); want('group'); want('det');
+    want('lad'); want('group'); want('det'); if (wantsNew()) want('newc');
     lazy.group.then(function () { lazySettled.group = 1; }, function () { lazySettled.group = 1; });
     go('matching');
     var L = $('fmbMLines');
     var lines = ['Checking ' + (HOME.length || 'the') + ' cars on my forecourt', 'Matching shape and fuel',
       'Checking the lender\u2019s latest figures', 'Picking your top three'];
+    if (wantsNew()) lines.splice(3, 0, 'Checking brand new stock');
     L.innerHTML = lines.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
     var dur = quick ? 200 : (RM ? 300 : 1600);
     L.querySelectorAll('li').forEach(function (li, i) { setTimeout(function () { li.classList.add('on'); }, RM ? 0 : i * (dur / 4)); });
@@ -895,6 +1007,7 @@
     });
   }
   function compute() {
+    NEWRES = findNew(A);
     if (!snapOK) { RESULT = null; return; }
     RESULT = findMatches(A);
     moreShown = false; revealTracked = false;
@@ -957,11 +1070,47 @@
       + '<p>Tell me and I\u2019ll watch the incoming stock for you.</p>'
       + '<a class="fmb-btn wa wide" id="fmbFind" href="' + esc(WA) + '" target="_blank" rel="noopener">Find me one on WhatsApp</a></div>';
   }
+  /* Brand new cards: the cash price and a personalised quote, the way
+     new-cars.html shows them. No monthly figure, quoted or estimated. */
+  function newCard(r, i) {
+    var c = r.c, u = c.image || '', when = newWhen(c);
+    var spec = [c.colour, c.fuel, c.drive === 'All Wheel' ? 'xDrive' : ''].filter(Boolean).join(' \u00b7 ');
+    return '<article class="fmb-card fmb-newcard' + (RM ? '' : ' rise') + '" style="animation-delay:' + (i * 90) + 'ms" data-n="' + i + '">'
+      + '<div class="fmb-ph">' + (u ? '<img src="' + esc(u) + '" alt="' + esc('Brand new ' + c.description + (c.colour ? ' in ' + c.colour : '')) + '" width="640" height="360" loading="eager" decoding="async"/>'
+           : '<div class="sil">' + (SIL[c._prim] || SIL.saloon) + '</div>') + '</div>'
+      + '<div class="fmb-cb">'
+      + '<div class="fmb-pills"><span>Brand new</span>' + (when ? '<span>' + esc(when) + '</span>' : '') + '</div>'
+      + '<h3>' + esc(c.description) + '</h3>'
+      + (spec ? '<p class="fmb-newspec">' + esc(spec) + '</p>' : '')
+      + '<div class="fmb-price">' + esc(c.price || 'Price on request') + '</div>'
+      + '<p class="fmb-why"><b>Why it fits:</b> ' + esc(newWhy(c, A)) + '</p>'
+      + '<p class="fmb-quote">Finance available. I\u2019ll send you a personalised quote with the full figures.</p>'
+      + '<a class="fmb-btn wa wide" data-newlike="' + i + '" href="' + esc(WA) + '" target="_blank" rel="noopener">I like this one</a>'
+      + '</div></article>';
+  }
+  function newSection() {
+    var box = $('fmbNew');
+    if (!box) return;
+    if (!wantsNew() || !NEWRES.list.length) { box.hidden = true; box.innerHTML = ''; return; }
+    box.innerHTML = '<div class="fmb-narrow fmb-head"><h2>Brand new, already built, and a fit for you</h2>'
+      + '<ul class="fmb-subs"><li>Unregistered BMWs available through Hedin Ruxley that match what you told me.'
+      + (NEWRES.count > NEWRES.list.length ? ' I have ' + NEWRES.count + ' that fit, so I\u2019ll send you the rest.' : '') + '</li></ul></div>'
+      + '<div class="fmb-cards">' + NEWRES.list.map(newCard).join('') + '</div>'
+      + '<p class="fmb-print">Pictures are configurator renders of that specification. Prices and delivery times come from BMW and can change. Finance subject to status.</p>';
+    box.hidden = false;
+    box.querySelectorAll('img').forEach(function (img) {
+      img.addEventListener('error', function () {
+        var c = NEWRES.list[Number(img.closest('[data-n]').getAttribute('data-n'))].c, d = document.createElement('div');
+        d.className = 'sil'; d.innerHTML = SIL[c._prim] || SIL.saloon; img.replaceWith(d);
+      }, { once: true });
+    });
+  }
   var moreShown = false;
   function reveal() {
     var subs = $('fmbSubs'), head = $('fmbHeadline'), cardsEl = $('fmbCards');
     var p = persona(A);
     $('personaH').textContent = p[0]; $('personaL').textContent = p[1];
+    newSection();
     if (!RESULT || !RESULT.list.length) {
       head.textContent = 'I couldn\u2019t load today\u2019s stock just now.';
       subs.innerHTML = '<li>Send me your answers on WhatsApp and I\u2019ll pick some cars for you myself.</li>';
@@ -1002,7 +1151,8 @@
     pxBox();
     leadBanner();
     if (A.interest === 'new' || A.interest === 'either') {
-      head.textContent = 'While you wait for me to come back to you, here are a couple of used BMWs that may be of interest.';
+      head.textContent = NEWRES.list.length ? 'And a couple of approved used BMWs that may be of interest.'
+        : 'While you wait for me to come back to you, here are a couple of used BMWs that may be of interest.';
       var top = subs.querySelector('li:not(.relax)'); if (top && R.level === 0) top.remove();
     }
     if (!revealTracked) {
@@ -1058,7 +1208,8 @@
     $('fmbSubs').innerHTML = '';
     var sk = '<div class="fmb-card fmb-skel" aria-hidden="true"><div class="fmb-ph"></div><div class="fmb-cb"><i></i><i></i><i class="s"></i><i></i></div></div>';
     $('fmbCards').innerHTML = sk + sk + sk;
-    ['fmbMore', 'fmbSeeAll', 'fmbLead', 'fmbPxBox', 'fmbSent'].forEach(function (id) { $(id).hidden = true; });
+    ['fmbMore', 'fmbSeeAll', 'fmbLead', 'fmbPxBox', 'fmbSent', 'fmbNew'].forEach(function (id) { $(id).hidden = true; });
+    $('fmbNew').innerHTML = '';
     document.body.classList.add('locked');
     track('fmb_reveal_locked', { match_count: RESULT ? RESULT.nHome : 0, persona: p[0] });
   }
@@ -1188,6 +1339,21 @@
       page_url: location.href.split('#')[0],
       leadsummary: waText(null, top)
     };
+    if (wantsNew()) {
+      P.new_match_count = String(NEWRES.count);
+      P.new_matching_basis = 'BMW quotes assume ' + money(NEW_QUOTE_DEP) + ' down. Matched on ' + GBP + NEW_PER_1000
+        + ' a month less per ' + GBP + '1,000 more deposit (more per ' + GBP + '1,000 less). Estimates for Dan only, not shown to the customer. '
+        + (A.pay === 'monthly' ? (A.dep === null ? 'Deposit not sure, so matched at ' + money(NEW_QUOTE_DEP) + '.' : 'Customer deposit ' + money(A.dep) + '.') : 'Not a monthly brief.');
+      NEWRES.list.forEach(function (r, i) {
+        var n = 'new_match_' + (i + 1) + '_', c = r.c;
+        P[n + 'order'] = c.order_number || '';
+        P[n + 'model'] = c.description + (c.colour ? ', ' + c.colour : '');
+        P[n + 'price'] = c.price || '';
+        P[n + 'quoted_monthly'] = c._quoted ? money2(c._quoted) + ' with ' + money(NEW_QUOTE_DEP) + ' down (BMW locator)' : 'none';
+        P[n + 'est_monthly'] = r.est !== null && A.pay === 'monthly' && A.dep !== null ? 'about ' + money2(r.est) + ' with ' + money(A.dep) + ' down (estimate)' : '';
+        P[n + 'when'] = newWhen(c);
+      });
+    }
     top.forEach(function (r, i) {
       var n = 'match_' + (i + 1) + '_';
       P[n + 'reg'] = r.c.reg || '';
@@ -1445,12 +1611,14 @@
     var newish = A.interest === 'new' || A.interest === 'either';
     var n = LEAD.first || ss('fmbSentName') || '';
     $('fmbSent').hidden = false;
-    $('fmbSentH').textContent = newish
-      ? (n ? 'Thanks, ' + n + '. I\u2019ll come back to you with brand new options, both factory orders and new cars in stock.' : 'Thanks. I\u2019ll come back to you with brand new options, both factory orders and new cars in stock.')
-      : (n ? 'Got them. Thank you, ' + n + '.' : 'Got them. Thank you.');
-    $('fmbSentP').textContent = newish
-      ? 'Your answers are with me now. I\u2019ll come back to you personally, usually the same day.'
-      : 'Your answers and these cars are with me now. I\u2019ll come back to you personally, usually the same day.';
+    var newHit = newish && NEWRES.list.length > 0;
+    $('fmbSentH').textContent = !newish ? (n ? 'Got them. Thank you, ' + n + '.' : 'Got them. Thank you.')
+      : newHit ? (n ? 'Thanks, ' + n + '. Some brand new BMWs already fit what you told me.' : 'Thanks. Some brand new BMWs already fit what you told me.')
+      : (n ? 'Thanks, ' + n + '. I\u2019ll be in touch with brand new options that suit you.' : 'Thanks. I\u2019ll be in touch with brand new options that suit you.');
+    $('fmbSentP').textContent = !newish
+      ? 'Your answers and these cars are with me now. I\u2019ll come back to you personally, usually the same day.'
+      : newHit ? 'They are just below. Your answers are with me now, and I\u2019ll come back to you personally with a proper quote, usually the same day.'
+      : 'Your answers are with me now. I\u2019ll come back to you personally, usually the same day, with brand new cars that fit, already built or ordered to your spec.';
     $('fmbSentWa').href = WA;
   }
   var pxBuiltFor;
@@ -1508,7 +1676,7 @@
       else go(QS.indexOf(o.step) !== -1 ? o.step : QS[0]);
     });
     $('fmbRestart').addEventListener('click', function () {
-      A = blank(); OPEN = {}; depTouched = false;
+      A = blank(); OPEN = {}; depTouched = false; TOUCHED = {};
       try { localStorage.removeItem(KEY); } catch (e) {}
       $('fmbResume').hidden = true;
       QS.forEach(syncInputs);
@@ -1523,9 +1691,14 @@
       track('fmb_more_matches', { match_count: RESULT.nHome });
       var c4 = document.querySelector('#fmbCards [data-i="3"] h3'); if (c4) { c4.tabIndex = -1; c4.focus(); }
     });
-    $('fmbCards').addEventListener('click', function (e) {
+    $('s-reveal').addEventListener('click', function (e) {
       var a = e.target.closest('a'); if (!a) return;
-      if (a.hasAttribute('data-like')) {
+      if (a.hasAttribute('data-newlike')) {
+        var nr = NEWRES.list[Number(a.getAttribute('data-newlike'))];
+        a.href = WA + '?text=' + encodeURIComponent(waText(null, null, nr));
+        track('fmb_card_whatsapp', { reg: nr.c.order_number, rank: NEWRES.list.indexOf(nr) + 1, pct: -1, source: 'new' });
+        markComplete('card_whatsapp');
+      } else if (a.hasAttribute('data-like')) {
         var r = RESULT.list[Number(a.getAttribute('data-like'))];
         LIKED = r; a.href = waUrl(r);
         track('fmb_card_whatsapp', { reg: r.c.reg, rank: SHOWN.indexOf(r) + 1, pct: r.pct == null ? -1 : r.pct, source: r.c._home ? 'forecourt' : 'group' });
@@ -1604,7 +1777,10 @@
   }
 
   window.fmbDebug = {
-    get A() { return A; }, get result() { return RESULT; }, payload: null,
+    get A() { return A; }, get result() { return RESULT; }, get newResult() { return NEWRES; }, payload: null,
+    newMatches: function (a) { return findNew(Object.assign(blank(), a)); },
+    newEstimate: function (order, dep) { var c = NEWC.filter(function (x) { return x.order_number === order; })[0]; return c ? newEstimate(c, dep) : null; },
+    newReady: function () { return want('newc'); },
     waText: function (i) { return waText(i == null ? null : RESULT.list[i]); },
     matches: function (a) { return findMatches(Object.assign(blank(), a)); },
     ready: function () { return Promise.all([pSnap, pFin]); }

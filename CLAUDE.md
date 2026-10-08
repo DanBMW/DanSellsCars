@@ -792,6 +792,52 @@ Things that bite, all of them found the hard way:
   the Notes sheet says so rather than letting somebody assume otherwise. It
   grows by a row a day.
 
+### Find my BMW: brand new matches and no skipping (8 October 2026)
+
+Dan asked for two things on 8 October, and both live in `fmb.js`.
+
+**Every answer is the customer's own tap.** Nothing is pre selected, there is
+no Skip anywhere in the nine questions, and Continue stays disabled until the
+question is answered. `needs(q)` is the one rule for both the button and
+`next()` (so Enter cannot get round it), and its text shows in `#fmbNudge`
+under the button ("Tap your monthly budget to carry on", "Now tap a deposit,
+or Not sure"). Anyone with no preference has an explicit tap for it: Open
+minded, Not fussed, Not sure. On the budget question a monthly brief needs
+both a monthly chip and a deposit chip (Not sure counts). An answer filled
+in from the link (`?interest=&life=&body=&fuel=`) has to be confirmed: the
+button reads "Yes, that's right" until they touch it or press it. There are
+no sliders in this funnel (the budget is chips), so there is no starting
+value to carry through.
+
+**New or either buyers are matched against `lookup/new-stock.json`.** It is
+loaded lazily (`want('newc')`) once they tap new or either. Hard filters are
+the same as the used matcher: shape (body comes from `stock-core.js` with a
+body read off the description, since the locator has no body field), fuel,
+7 seats and budget. BMW quotes every car at **£4,500 down**; for matching
+only, each £1,000 more deposit takes £24 a month off and each £1,000 less
+adds £24, pro rata: `estimate = quoted - 24 x (deposit - 4500) / 1000`.
+Not sure on deposit matches at £4,500. A cash brief compares the cash price.
+Up to three are shown above the used cars, one of each model first, colour
+they asked for, then soonest, then cheapest.
+
+- **No monthly figure on a new car card, quoted or estimated.** The quoted
+  figure has no representative example behind it (see "New cars" above: no
+  optional final payment, total payable or mileage), and the £24 rule is
+  Dan's rule of thumb, not the lender's line, so it does not qualify for the
+  `dsfinance.js` exception either. Cards show the cash price, the delivery
+  window and "Finance available. I'll send you a personalised quote".
+- **Nothing fits is not a dead end.** The banner reads "Thanks, NAME. I'll be
+  in touch with brand new options that suit you." and the used cars follow
+  as before. The lead goes in the same single contact submission either way.
+- The contact payload gains `new_match_count`, `new_matching_basis` and
+  `new_match_N_{order, model, price, quoted_monthly, est_monthly, when}` for
+  the top three. Those figures are for Dan's email only.
+- A brand new card's WhatsApp fires the existing `fmb_card_whatsapp` with
+  `source: new` and the order number in `reg`.
+- The sitewide sticky WhatsApp/Callback bar sat over the Continue button on
+  phones from 5 October; the page's own script now hides it while a question
+  screen (`#fmbBar`) or the gate is showing.
+
 ### "A few in stock that fit" - the Find my BMW matcher
 
 `stock-match.js` fills a section at the bottom of `thankyou.html` with real cars
