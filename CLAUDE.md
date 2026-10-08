@@ -400,6 +400,76 @@ any page. It is hidden from search, not private: anyone with the URL can read it
   GitHub Pages serves everything with `Access-Control-Allow-Origin: *`, which
   is what lets another site fetch the JSON.
 
+### New cars, ready to build - lookup/new-stock.json and new-cars.html
+
+`automation/new-stock.py` reads the BMW New Car Locator for retailer **22181,
+Hedin Automotive Ruxley**, and writes `lookup/new-stock.json`: the new car
+equivalent of the used `lookup/stock.json` that Hedin Appointments already
+reads. `new-cars.html` is the customer facing search over it. First run,
+8 October 2026: 58 models, 8 requests, **80 cars**.
+
+**It is a script on the morning routine, not a Cloudflare Worker.** The brief
+asked for a Worker publishing to `https://dan-sells.co.uk/lookup/new-stock.json`,
+and that cannot work: the URL is GitHub Pages serving this repo and a Worker
+cannot write a file into it. A Worker would have to publish to its own
+workers.dev address, which every reader would then need repointing at. Doing
+it here keeps the URL the brief asked for and the same history and review as
+the used files.
+
+The source has four traps, all confirmed against the live locator rather than
+assumed:
+
+- **`https://stock.bmw.co.uk/retailer/22181` is the search form, not a list.**
+  The cars come from `/results`, which only answers to `Accept:
+  application/json`. The `data-modelno` ids are read off that form **every
+  run**: a model whose id is not in the query is absent from the results, so a
+  newly stocked model would go missing silently rather than loudly.
+- **`monthly_max` is the string `none`, base64 encoded**, not a high number. A
+  numeric cap quietly drops cars. `f`, `monthly_min`, `monthly_max` and
+  `debug` are all base64 of a plain string; the model ids are plain numbers.
+- **The paging offset lives in the `_new_car_stock_tool_session` cookie.**
+  `/results/more` without it is a 500, and two requests in parallel share one
+  offset and lose a page, so the pages are fetched strictly one at a time. A
+  500 means the session was lost rather than that the list ended: the whole
+  run restarts from `/results`, because keeping the partial list would publish
+  a short catalogue and mark everything after the break as removed.
+- **Image urls are copied byte for byte.** They are 600 to 900 character
+  configurator renders carrying `%25`, and decoding one turns it into a 404.
+  They render the **specification**, not the physical car, so two identical
+  orders share a url.
+
+Other things it has to keep:
+
+- **The order number is the key.** There is no registration and no readable
+  VIN; `vin` and `iv` are opaque tokens and are not published. `order_number`
+  is base64 of the digits and anything that is not 6 to 8 digits is dropped.
+- **A car is kept for 30 days after the locator drops it**, in `removed` on the
+  same file, with `removed_at` the London date it left. The clock runs from the
+  day it **left**, not the day it arrived: gone on 8 October, still listed on
+  7 November, gone on 8 November. A car that comes back leaves `removed`.
+- **A short run never empties the catalogue.** Under 50 cars, or no model ids,
+  is treated as a broken run and yesterday's file is kept. Only a full
+  successful pull updates `removed`, or one bad minute at BMW would mark all 80
+  cars as gone.
+- **Entities are unescaped on the way in.** The feed sends
+  `BMW&nbsp;Individual Tanzanite Blue`; markup in a data file is wrong whether
+  the page escapes it or not.
+- **No monthly payment reaches the page, and that is not an oversight.** The
+  locator gives `monthly_finance_payment` and an APR but no deposit, term,
+  optional final payment or total payable, so **there is no way to build the
+  representative example a monthly figure must carry**. It is published in the
+  JSON because it is Dan's data, and `new-cars.html` deliberately shows the
+  cash price and "message me for a quote". Do not promote it onto the page
+  without a real quote behind it.
+- **The locator gives a 0 to 62 time**, which the used stock does not, so the
+  page can sort on it. Do not copy that figure onto a used car: the quiz uses
+  horsepower per tonne precisely because no used source publishes one.
+- `confirmed_delivery_date_to` is left out: on a car whose availability read
+  1 to 3 weeks it was already in the past. The week range is published instead.
+- The page is **`noindex` for now** and deliberately not in `robots.txt`, so
+  Google can see the noindex (the same reasoning as the funnel steps). It is
+  not in `sitemap.xml`. Make it public when Dan says so.
+
 ### The rest of the group's stock - hedin-group-stock.json
 
 `stock.html` opens on Dan's own forecourt and nothing else. Underneath that
