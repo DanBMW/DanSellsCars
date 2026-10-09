@@ -306,12 +306,49 @@ five element opener and the product list. 1080x1920 portrait, 1m45s,
   element fetches nothing until the play button is pressed. Tested by watching
   the network: zero requests for the file on load, one after the press. Do not
   swap it for `metadata` or `auto` to make it start faster.
-- **The panel is the poster.** There is no poster image: **this sandbox's
-  Chromium has no H.264 decoder** (`canPlayType` is empty,
-  `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`) and there is no ffmpeg here, so no
-  frame could be extracted and none was invented. A still dropped into
-  `poster=""` later needs no other change. Real browsers play the file
-  normally; H.264 in MP4 is the most widely supported web video there is.
+- **`[hidden]` did not hide anything here, and that was the main fault.**
+  `.prot-vid-frame video` sets `display:block` and `.prot-vid-btn` sets
+  `display:flex`, and an author `display` beats the browser's own
+  `[hidden]{display:none}` whatever the specificity. So the script's
+  `vid.hidden=false; btn.hidden=true` did nothing at all: the video was never
+  hidden to begin with, and after the tap the opaque button panel stayed
+  exactly where it was, `inset:0` across the whole frame, with the clip
+  playing behind it and the controls underneath it too, so a second tap could
+  not rescue it. Measured in a browser rather than reasoned about:
+  `getComputedStyle(btn).display` came back `flex` and the box 328x585 with
+  `btn.hidden === true`. `.prot-vid [hidden]{display:none !important}` fixes
+  it. **This is the third page in this repo to hit the same trap** (see
+  `.wb [hidden]` on `which-bmw.html`), so check for it whenever a script
+  hides something by the `hidden` property on an element the CSS gives a
+  `display` to.
+- **The file must be written faststart, and the first one was not.** Dan
+  reported on 9 October that it would not play on his phone: "it just goes
+  black". The MP4 had `ftyp`, then a 20MB `mdat`, then `moov` at the very end,
+  so a phone could not begin until it had hunted the index down at the far end
+  of the file, over mobile data, after a `preload="none"` element had already
+  revealed itself as a black rectangle. It is now remuxed
+  `-movflags +faststart`: stream copy, so not a pixel changed. Verified rather
+  than assumed: `moov` moved to offset 32, the `mdat` payload is byte
+  identical by SHA-256, and all 6,320 chunk offsets shifted by exactly 140,818
+  and each one still lands on identical bytes. **Anything that ever replaces
+  this file has to be written faststart too**, and `python3` four lines of box
+  walking is enough to check.
+- **No `load()` before `play()`.** The click handler called `vid.load()` first.
+  It was never needed (with `preload="none"` it is `play()` that starts the
+  fetch) and it is actively harmful: `load()` resets the element and restarts
+  resource selection asynchronously, so `play()` is issued against an element
+  that has not finished choosing its source, which is one of the ways iOS
+  stops counting the user gesture. That was the second half of the black
+  screen.
+- **There IS a poster**, `fully-protected-poster.jpg`, a real frame half a
+  second in, 660x1174 and 51KB. The note that used to sit here said one could
+  not be made because this sandbox's Chromium has no H.264 decoder
+  (`canPlayType` is empty, `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`) and there was
+  no ffmpeg. The decoder part is still true and irrelevant: **ffmpeg is at
+  `/usr/bin/ffmpeg`** and extracted the frame in one command. A limit of the
+  tool at hand is not a limit of the problem, and it was recorded as one for a
+  day. 51KB fetched on load is the right trade: without it the press reveals a
+  black rectangle while the first bytes arrive.
 - **The frame is 9/16 and capped at 330px wide**, because a vertical phone
   video in a full width box is a tower on a desktop screen.
 - **The reveal order matters for iOS**: the video is un-hidden *before*

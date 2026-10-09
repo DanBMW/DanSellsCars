@@ -47,9 +47,28 @@
        It is 19MB and nearly two minutes, so `preload="none"` is load bearing:
        nothing of the file is fetched until somebody presses play. Without it
        every visitor to this page pays for a video most of them will not watch,
-       on a phone, on their own data. There is no poster image yet, so the
-       panel is the poster: a still from the clip can be dropped into
-       `poster=""` later and nothing else needs to change. */
+       on a phone, on their own data.
+
+       The poster is a real frame half a second in (fully-protected-poster.jpg,
+       660x1174, 51KB). The note that used to sit here said one could not be
+       made; that was true of the sandbox it was written in, whose Chromium has
+       no H.264 decoder, not of the file. ffmpeg extracted it in one command.
+       51KB on load is worth it: without a poster the press reveals a black
+       rectangle while the first bytes are still arriving, which is precisely
+       what "it just goes black on my phone" looked like. */
+    /* LOAD BEARING, and the whole reason the video "just went black" on Dan's
+       phone (9 October 2026). Both rules below set `display` on the very
+       elements the script hides with the `hidden` property, and an author
+       `display` beats the browser's own `[hidden]{display:none}` whatever the
+       specificity. So `hidden` did nothing here: the video was never hidden
+       before the tap, and after it the opaque button panel stayed exactly
+       where it was, inset:0 over the whole frame, with the clip playing
+       behind it. Not black, but indistinguishable from it, and the controls
+       were underneath as well, so a second tap could not rescue it.
+       `team-board.html` and `which-bmw.html` carry the same one-liner for the
+       same reason. Do not remove it, and do not reorder it above the rules it
+       is overriding. */
+    .prot-vid [hidden]{display:none !important}
     .prot-vid{margin-top:22px;display:flex;justify-content:center}
     .prot-vid-inner{width:min(100%,330px)}
     .prot-vid-frame{position:relative;aspect-ratio:9/16;background:#0d1117;
@@ -209,7 +228,7 @@
         <div class="prot-vid-inner">
           <div class="prot-vid-frame" id="protVidFrame">
             <video id="protVid" preload="none" playsinline controls hidden
-                   width="1080" height="1920"
+                   width="1080" height="1920" poster="fully-protected-poster.jpg"
                    aria-label="Dan explaining the Fully Protected Package">
               <source src="fully-protected.mp4" type="video/mp4"/>
               Your browser cannot play this video.
@@ -766,7 +785,28 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeOfferMo
    play() is called, because a hidden video cannot start on iOS, and play()
    is called inside the click itself rather than after an await, which is the
    other thing iOS refuses. A browser that still declines leaves the controls
-   there for a second tap rather than a dead frame. */
+   there for a second tap rather than a dead frame.
+
+   NO load() HERE, and that is the fix for "it just goes black on my phone"
+   (Dan, 9 October 2026). load() resets the element and restarts resource
+   selection asynchronously, so play() is then issued against an element that
+   has not finished choosing its source - and on iOS that is one of the ways
+   the user gesture stops counting. It was never needed: with preload="none"
+   it is play() itself that starts the fetch.
+
+   The other half of that fault was the file, not the page: fully-protected.mp4
+   was written with its moov atom AFTER a 20MB mdat, so a phone could not start
+   until it had hunted down the index at the far end of the file. It is now
+   remuxed faststart (stream copy, mdat byte-identical, all 6,320 chunk offsets
+   shifted by exactly 140,818 and verified against the original). Anything that
+   ever replaces this file must be written -movflags +faststart as well.
+
+   And there IS a poster now. The note that said one could not be made was
+   true of the sandbox it was written in, not of the file: that Chromium has
+   no H.264 decoder, but ffmpeg is present and extracted a real frame half a
+   second in. A poster means the reveal shows Dan rather than a black
+   rectangle even while the first bytes are still arriving, which is what a
+   customer on mobile data actually sees. */
 (function(){
   var btn = document.getElementById('protVidBtn');
   var vid = document.getElementById('protVid');
@@ -774,7 +814,6 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeOfferMo
   btn.addEventListener('click', function(){
     vid.hidden = false;
     btn.hidden = true;
-    try { vid.load(); } catch(e){}
     var p = vid.play();
     if (p && p.catch) p.catch(function(){ vid.controls = true; });
     if (typeof gtag === 'function') gtag('event','protection_video_play',{
