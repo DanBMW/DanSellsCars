@@ -110,10 +110,22 @@ strong{color:var(--paper);font-weight:500}
   opacity:0;pointer-events:none;transition:opacity .3s ease;
 }
 .ph-drawer.open{opacity:1;pointer-events:auto}
-.ph-drawer-inner{width:100%;max-width:560px;padding:32px clamp(24px,6vw,48px);max-height:100vh;overflow-y:auto}
+/* The menu is centred, so on a short screen the top of the list rises until
+   it meets the Close button, which is absolutely positioned at the top of the
+   drawer and not part of the flow. At 390x640 that put "Home" at 42 and Close
+   at 24 to 58: the first item in the menu sat under the only way out of it.
+   It takes no scrolling to happen, just a phone with browser chrome on it.
+   So the padding RESERVES the button's space inside the scroller, which holds
+   whether the content is shorter than the screen or taller than it. */
+.ph-drawer-inner{
+  width:100%;max-width:560px;
+  padding:calc(78px + env(safe-area-inset-top)) clamp(24px,6vw,48px)
+          calc(32px + env(safe-area-inset-bottom));
+  max-height:100vh;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;
+}
 .ph-drawer-close{
-  position:absolute;top:24px;right:clamp(20px,5vw,48px);
-  background:none;border:none;color:var(--dim);cursor:pointer;
+  position:absolute;top:calc(22px + env(safe-area-inset-top));right:clamp(20px,5vw,48px);
+  z-index:2;background:none;border:none;color:var(--dim);cursor:pointer;
   font-family:var(--sans);font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;
   padding:10px 2px;transition:color .2s;
 }
@@ -127,6 +139,12 @@ strong{color:var(--paper);font-weight:500}
 }
 .ph-drawer nav a:hover{color:#fff;padding-left:8px}
 .ph-drawer nav a small{font-family:var(--sans);font-size:.72rem;letter-spacing:.14em;color:var(--dim);margin-left:12px;text-transform:uppercase}
+/* "Book an appointment" plus "opens cal.com" does not fit one line on a small
+   phone, and half a label hanging off the end of the item reads as broken.
+   Below 400px it sits under the link instead, which is where it belongs. */
+@media(max-width:400px){
+  .ph-drawer nav a small{display:block;margin-left:0;margin-top:3px;letter-spacing:.1em}
+}
 
 /* ---------- hero ---------- */
 .ph-hero{

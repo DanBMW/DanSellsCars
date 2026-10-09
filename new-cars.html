@@ -18,7 +18,7 @@
   <meta name="twitter:description" content="Every new BMW that Hedin Ruxley can build without the usual wait. Filter by model, fuel, price and how soon it arrives."/>
   <meta name="twitter:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
-  <link rel="stylesheet" href="premium.css?v=7ed69f3c"/>
+  <link rel="stylesheet" href="premium.css?v=45a663c9"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
   <script src="analytics.js" defer></script>
@@ -62,6 +62,13 @@
     overflow:hidden;display:flex;flex-direction:column}
   .nc-shot{position:relative;background:#11151a;aspect-ratio:16/10}
   .nc-shot img{width:100%;height:100%;object-fit:cover;display:block}
+  /* Top left: the photo counter is bottom right and the delivery window
+     bottom left, so that corner is the one nothing else wants. */
+  .nc-fresh{position:absolute;top:10px;left:10px;background:var(--go);color:#fff;
+    border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600;
+    letter-spacing:.1em;text-transform:uppercase;
+    box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .nc-arr{color:#4fbf7f;font-weight:600}
   .nc-when{position:absolute;left:10px;bottom:10px;background:rgba(10,12,15,.82);
     border:1px solid var(--hair);border-radius:999px;padding:6px 11px;font-size:12.5px}
   .nc-nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;
@@ -190,8 +197,8 @@
     <p class="ph-drawer-label">Practical</p>
     <nav aria-label="Practical pages">
       <a href="current-opportunities.html">Current Opportunities</a>
-      <a href="stock.html">Available Now</a>
-      <a href="new-cars.html">New cars</a>
+      <a href="stock.html">Approved Used</a>
+      <a href="new-cars.html">New Cars</a>
       <a href="current-opportunities.html#protection">Protect my BMW</a>
       <a href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment <small>opens cal.com</small></a>
     </nav>
@@ -271,8 +278,8 @@
         <a href="appraisal.html">Value your car</a>
         <a href="service.html">In for service</a>
         <a href="current-opportunities.html">Current Opportunities</a>
-        <a href="stock.html">Available Now</a>
-        <a href="new-cars.html">New cars</a>
+        <a href="stock.html">Approved Used</a>
+        <a href="new-cars.html">New Cars</a>
       </div>
       <div class="ph-footer-col">
         <h4>More</h4>
@@ -528,7 +535,37 @@
   /* Every facet is one row here, the way stock.html is arranged, so adding a
      filter is adding a row and nothing else. `of` returns the value a car sits
      under; a car with no value simply sits in no option. */
+  /* Newly arrived orders. BMW publish no arrival date either, so `new-stock.py`
+     keeps its own ledger: `first_seen` per car and `seeded_on` for the day the
+     file itself began. A car whose first_seen is the seed day was already here
+     when the ledger started and is NOT newly arrived, the same rule the used
+     stock applies to its git history. Until a day has passed since the seed,
+     nothing is fresh and the chip simply does not appear. */
+  var SEED = '', TODAY = '', FRESH_DAYS = 7;
+  function stampFresh(){
+    CARS.forEach(function(c){
+      var d = c.first_seen;
+      c._fresh = false; c._arrAge = 1e9;
+      if (!d || !SEED || d === SEED) return;
+      var then = Date.parse(d + 'T00:00:00Z'),
+          now = Date.parse((TODAY || new Date().toISOString().slice(0,10)) + 'T00:00:00Z');
+      if (isNaN(then) || isNaN(now)) return;
+      c._arrAge = Math.round((now - then) / 86400000);
+      c._fresh = c._arrAge <= FRESH_DAYS;
+    });
+  }
+  function arrivedText(c){
+    if (!c._fresh) return '';
+    if (c._arrAge <= 0) return 'Arrived today';
+    if (c._arrAge === 1) return 'Arrived yesterday';
+    return 'Arrived ' + c._arrAge + ' days ago';
+  }
+
   var FACETS = [
+    /* A car with no value sits in no option, so this chip appears only once
+       something really is new and takes itself away again afterwards. */
+    { key:'fresh', label:'Just arrived', of:function(c){ return c._fresh ? 'week' : ''; },
+      name:{ 'week':'In the last ' + FRESH_DAYS + ' days' } },
     { key:'series', label:'Model',  of:function(c){ return c.series || ''; } },
     { key:'fuel',   label:'Fuel',   of:function(c){ return c.fuel || ''; } },
     { key:'price',  label:'Price',  of:priceBand, order:['u35','35-45','45-60','60-80','80up'],
@@ -687,6 +724,7 @@
       + esc(shots.join('|')) + '">'
       + '<img src="' + esc(shots[0]) + '" alt="' + esc(c.description) + '" loading="lazy"/>'
       + '<span class="nc-when">' + esc(whenText(c)) + '</span>'
+      + (c._fresh ? '<span class="nc-fresh">Fresh in</span>' : '')
       + (shots.length > 1
           ? '<button type="button" class="nc-nav prev" aria-label="Previous picture">&#8249;</button>'
             + '<button type="button" class="nc-nav next" aria-label="Next picture">&#8250;</button>'
@@ -852,6 +890,7 @@
       + shotBlock(c)
       + '<div class="nc-body">'
       + '<h2>' + esc(c.description) + '</h2>'
+      + (c._fresh ? '<p class="nc-spec"><b class="nc-arr">' + esc(arrivedText(c)) + '</b></p>' : '')
       + '<p class="nc-spec">' + esc(spec) + (c.zero_to_62 ? ' · 0 to 62 in ' + esc(c.zero_to_62) + 's' : '') + '</p>'
       + priceBlock(c)
       + finBlock(c)
@@ -1018,6 +1057,9 @@
     .then(function(d){
       CARS = (d.cars || []).filter(function(c){ return !c.on_hold; });
       CARS.forEach(function(c){ c._hay = hayFor(c); });
+      SEED = d.seeded_at || d.seeded_on || '';
+      TODAY = (d.generated_at || '').slice(0, 10);
+      stampFresh();
       readUrl();
       buildFacets();
       render();

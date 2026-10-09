@@ -18,7 +18,7 @@
   <meta name="twitter:description" content="Browse every approved used BMW in stock at Hedin Ruxley. Filter by price, monthly payment, body style, fuel and model. Message Dan on WhatsApp about any car."/>
   <meta name="twitter:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
-  <link rel="stylesheet" href="premium.css?v=7ed69f3c"/>
+  <link rel="stylesheet" href="premium.css?v=45a663c9"/>
   <script src="dsfinance.js"></script>
   <script src="stock-core.js"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
@@ -229,6 +229,13 @@
   .sl-dots{position:absolute;top:9px;right:10px;z-index:2;font-family:var(--sans);
     font-size:.68rem;letter-spacing:.04em;color:#fff;background:rgba(6,9,14,.55);
     padding:3px 8px;border-radius:999px}
+  /* Top left, which is the one corner of the photograph nothing else wants:
+     the photo counter is top right and the payment sits along the bottom. */
+  .sl-fresh{position:absolute;top:9px;left:10px;z-index:2;font-family:var(--sans);
+    font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    color:#fff;background:#1f8f4e;padding:4px 10px;border-radius:999px;
+    box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .sl-arr{color:#4fbf7f;font-weight:600}
   /* Equipment, filled the first time it is opened rather than for every card
      on load: forty-odd lines across three hundred cars is fourteen thousand
      list items nobody has asked to see. */
@@ -304,8 +311,8 @@
     <p class="ph-drawer-label">Practical</p>
     <nav aria-label="Practical pages">
       <a href="current-opportunities.html">Current Opportunities</a>
-      <a href="stock.html">Available Now</a>
-      <a href="new-cars.html">New cars</a>
+      <a href="stock.html">Approved Used</a>
+      <a href="new-cars.html">New Cars</a>
       <a href="current-opportunities.html#protection">Protect my BMW</a>
       <a href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book an appointment <small>opens cal.com</small></a>
     </nav>
@@ -317,7 +324,7 @@
 
   <section class="band" style="padding-top:clamp(140px,20vh,200px);padding-bottom:clamp(32px,5vw,48px)" aria-label="Introduction">
     <div class="wrap wrap-narrow">
-      <span class="plabel accent">Available Now</span>
+      <span class="plabel accent">Approved Used</span>
       <h1 style="font-size:clamp(2.2rem,5.5vw,3.6rem)">Every approved used BMW at Hedin Ruxley, updated every morning.</h1>
       <hr class="rule"/>
       <details class="ph-howto">
@@ -349,6 +356,7 @@
           <option value="monthly-desc">Monthly: high to low</option>
           <option value="miles-asc">Mileage: lowest first</option>
           <option value="year-desc">Newest first</option>
+          <option value="arrived-desc">Just arrived first</option>
         </select>
       </div>
 
@@ -461,8 +469,8 @@
         <a href="appraisal.html">Value your car</a>
         <a href="service.html">In for service</a>
         <a href="current-opportunities.html">Current Opportunities</a>
-        <a href="stock.html">Available Now</a>
-        <a href="new-cars.html">New cars</a>
+        <a href="stock.html">Approved Used</a>
+        <a href="new-cars.html">New Cars</a>
       </div>
       <div class="ph-footer-col">
         <h4>More</h4>
@@ -714,6 +722,11 @@
   var WA = 'https://wa.me/447827138197';
   var EMAIL = 'daniel.cane@hedinautomotive.co.uk';
   var ALL = [], FIN = {};
+  /* Arrival dates, from automation/stock-arrivals.json. Hedin publish no such
+     field on a car, so the sidecar works it out from the daily snapshots this
+     repo has been committing since 21 September. Failure is quiet: no badge,
+     no sort, no chip, and the page is exactly what it was. */
+  var ARR = null, ARRV = 0, FRESH_DAYS = 7;
 
   /* ---- the two lists ----
      ALL starts as the stock on Dan's own forecourt and is the whole page until
@@ -800,6 +813,14 @@
         band('50to70', GBP + '50k to ' + GBP + '70k',      function(c){ return c._price >= 50000 && c._price < 70000; }),
         band('o70',    GBP + '70k+',                       function(c){ return c._price >= 70000; })
       ] },
+    /* One option, deliberately. It is a facet rather than only a badge so it
+       carries a count, so it can be turned off again, and above all so it goes
+       into the query string: "here is what has just landed" is a link Dan
+       sends, and the share button is what makes that worth having. */
+    { key:'fresh', label:'Just arrived', single:true, fixed:[
+        band('week', 'In the last ' + FRESH_DAYS + ' days',
+             function(c){ return !!c._fresh; })
+      ] },
     { key:'series', label:'Model', of:function(c){ return c._family; },
       sort:function(a, b){
         var ra = seriesRank(a), rb = seriesRank(b);
@@ -884,6 +905,55 @@
      equipment list, which is the point: somebody can look for "harman kardon",
      "tow bar" or "heated seats" and find the cars that actually have it, which
      no amount of model and colour would ever have found. */
+  /* "Fresh in" is a claim about a real car on a real forecourt, so two rules
+     decide it and both of them are about not lying.
+
+     The first day of each list's history is a SEED: the snapshot turned up on
+     21 September with 70 cars already in it, and not one of them arrived that
+     day. A car whose first_seen is its own list's history_from is therefore
+     never fresh, however recent that date looks. The board's own stockwatch
+     learned this the same way.
+
+     And first_seen is the first day the car was EVER seen, not the first day
+     of its current spell, so a car that goes off the list and comes back is
+     not badged as new stock. */
+  function arrivalOf(c){
+    if (!ARR || !ARR.lists) return null;
+    var list = ARR.lists[c._home ? 'forecourt' : 'group'];
+    if (!list || !list.cars) return null;
+    var day = list.cars[String(c.id)];
+    if (!day || day === list.history_from) return null;
+    return day;
+  }
+  function daysAgo(day){
+    var then = Date.parse(day + 'T00:00:00Z');
+    var now = Date.parse((ARR && ARR.today ? ARR.today : new Date().toISOString().slice(0,10))
+                         + 'T00:00:00Z');
+    if (isNaN(then) || isNaN(now)) return 1e9;
+    return Math.round((now - then) / 86400000);
+  }
+  function stampFresh(){
+    ALL.forEach(function(c){
+      var day = arrivalOf(c);
+      c._arrived = day || '';
+      c._arrAge = day ? daysAgo(day) : 1e9;
+      c._fresh = !!day && c._arrAge <= FRESH_DAYS;
+    });
+    MORE.forEach(function(c){
+      if (ALL.indexOf(c) >= 0) return;
+      var day = arrivalOf(c);
+      c._arrived = day || '';
+      c._arrAge = day ? daysAgo(day) : 1e9;
+      c._fresh = !!day && c._arrAge <= FRESH_DAYS;
+    });
+  }
+  function arrivedText(c){
+    if (!c._arrived) return '';
+    if (c._arrAge <= 0) return 'Arrived today';
+    if (c._arrAge === 1) return 'Arrived yesterday';
+    return 'Arrived ' + c._arrAge + ' days ago';
+  }
+
   function stampHay(){
     ALL.forEach(hayFor);
     MORE.forEach(hayFor);
@@ -1085,7 +1155,11 @@
     ALL.forEach(function(c){ if (c._bodyKey) BODY_LABELS[c._bodyKey] = c._bodyLabel; });
     elFacets.innerHTML = FACETS.map(function(f){
       OPTS[f.key] = optionsFor(f);
-      if (OPTS[f.key].length < 2) return '';   /* one option filters nothing */
+      /* One option filters nothing, when the options are the values the cars
+         happen to have: every car being a Saloon is not a filter. A yes or no
+         facet is the exception, because its single option is a predicate and
+         does split the list, so it says `single` and is kept. */
+      if (OPTS[f.key].length < 2 && !f.single) return '';
       return '<div class="sl-facet" role="group" aria-labelledby="fh-' + f.key + '">'
         + '<h3 class="sl-facet-h" id="fh-' + f.key + '">' + esc(f.label)
         + (f.note ? ' <em>' + esc(f.note) + '</em>' : '') + '</h3>'
@@ -1260,6 +1334,10 @@
        look unquoted: excluded from a monthly filter and sorted to the bottom,
        while their own cards plainly show a monthly payment. */
     attachMonthly();
+    /* Same reasoning for the arrival dates: the merged cars have never been
+       stamped, so without this every unlocked car reads as having no history
+       and the Just arrived chip and sort quietly skip the lot. */
+    stampFresh();
     buildFacets();
   }
 
@@ -1317,7 +1395,7 @@
       + (c.reg ? ' (' + c.reg + ')' : '')
       + (c.price ? ', ' + c.price : '');
     var wa = WA + '?text=' + encodeURIComponent(
-      'Hi Dan, I saw the ' + label + ' on your Available Now page. Can you tell me more?');
+      'Hi Dan, I saw the ' + label + ' on your Approved Used page. Can you tell me more?');
     var mail = 'mailto:' + EMAIL
       + '?subject=' + encodeURIComponent('Enquiry: ' + label)
       + '&body=' + encodeURIComponent('Hi Dan,\n\nI am interested in the ' + label + '.\n\nThanks');
@@ -1341,10 +1419,13 @@
                   + '<button class="sl-nav prev" type="button" aria-label="Previous photo"><span>&#8249;</span></button>'
                   + '<button class="sl-nav next" type="button" aria-label="Next photo"><span>&#8250;</span></button>'
                 : '')
+            + (c._fresh ? '<span class="sl-fresh">Fresh in</span>' : '')
             + '<div class="sl-finslot"></div></div>'
           : '')
       + '<div class="sl-body">'
-      + '<div class="sl-meta">' + yearReg + '</div>'
+      + '<div class="sl-meta">' + yearReg
+      + (c._fresh ? ' &middot; <b class="sl-arr">' + esc(arrivedText(c)) + '</b>' : '')
+      + '</div>'
       + '<h3>' + esc(c.model) + '</h3>'
       + '<div class="sl-price">' + esc(c.price) + '</div>'
       + '<div class="sl-monthslot"></div>'
@@ -1366,9 +1447,12 @@
   }
 
   function cardFor(c){
-    var rec = CARDS[c.id];
-    if (!rec || rec.v !== DETV || rec.c !== c){
-      rec = CARDS[c.id] = {el: buildCard(c), v: DETV, c: c, sig: null};
+    /* The badge is baked into the card's markup, and the arrivals file can
+       land after the cards are built, so its version counts towards the
+       rebuild the same way the car details one does. */
+    var rec = CARDS[c.id], v = DETV + ':' + ARRV;
+    if (!rec || rec.v !== v || rec.c !== c){
+      rec = CARDS[c.id] = {el: buildCard(c), v: v, c: c, sig: null};
     }
     var fs = finSig(c);
     if (rec.sig !== fs.sig){ paintFin(rec.el, c, fs); rec.sig = fs.sig; }
@@ -1410,6 +1494,11 @@
       if (sort === 'price-desc') return b._price - a._price;
       if (sort === 'miles-asc')  return a._miles - b._miles;
       if (sort === 'year-desc')  return b._year  - a._year || a._price - b._price;
+      /* A car with no arrival date sorts after the ones that have one, the
+         same rule the monthly sorts keep: it is not an old car, it is a car
+         the history cannot speak for. */
+      if (sort === 'arrived-desc') return (a._arrAge || 1e9) - (b._arrAge || 1e9)
+                                       || a._price - b._price;
       if (sort === 'monthly-asc') {
         if (!a._monthly && !b._monthly) return a._price - b._price;
         if (!a._monthly) return 1;
@@ -1478,6 +1567,18 @@
     });
   }
 
+  /* Arrival dates. Quiet failure, like the details and the ladder: without it
+     no car is badged, the Just arrived chip finds nothing and is disabled by
+     the ordinary count, and the sort falls back to price. */
+  fetch('automation/stock-arrivals.json', {cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      ARR = j; ARRV++;
+      stampFresh();
+      if (ALL.length){ paintFacets(); render(); }
+    })
+    ['catch'](function(){ ARR = null; });
+
   fetch('automation/stock-finance.json', {cache:'no-cache'})
     .then(function(r){ return r.ok ? r.json() : {}; })
     .then(function(j){ FIN = j || {}; FINV++; attachMonthly(); if (ALL.length) render(); })
@@ -1526,6 +1627,7 @@
         return c;
       });
       attachMonthly();
+      stampFresh();
 
       buildFacets();
       buildBudget();

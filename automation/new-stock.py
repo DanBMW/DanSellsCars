@@ -436,6 +436,40 @@ def load_previous():
         return {'cars': [], 'removed': []}
 
 
+def carry_first_seen(prev, live, day):
+    """Stamp each car with the first day this file ever held it.
+
+    The used stock gets its arrival dates out of git, because its snapshot has
+    been committed every morning since 21 September. This file began on
+    8 October, so there is no history to read and the ledger has to build
+    itself from here: a car already in yesterday's file keeps its date, and a
+    car that is new to the file takes today's.
+
+    **The first run is a seed and nothing on it is fresh.** All 80 cars take
+    that day, and not one of them arrived on it. `seeded_on` is published so
+    the page can apply the same rule the used stock applies, and a car whose
+    first_seen equals it is never badged. The board's stockwatch and
+    stock-arrivals.py both learned this the same way.
+
+    A car that goes off the locator and comes back keeps its original date: it
+    is stock that was unavailable for a while, not new stock.
+    """
+    was = {c['order_number']: c.get('first_seen')
+           for c in (prev.get('cars') or []) if c.get('order_number')}
+    for r in (prev.get('removed') or []):
+        if r.get('order_number') and r.get('first_seen'):
+            was.setdefault(r['order_number'], r['first_seen'])
+    today = day.isoformat()
+    fresh = 0
+    for c in live:
+        seen = was.get(c['order_number'])
+        if not seen:
+            seen = today
+            fresh += 1
+        c['first_seen'] = seen
+    return fresh
+
+
 def roll_removed(prev, live, day):
     """Yesterday's list against today's, keeping a car for 30 days after the
     locator drops it. The clock runs from the day it LEFT, not from the day it
@@ -570,7 +604,13 @@ def main():
 
     day = today()
     prev = load_previous()
+    seeded_on = prev.get('seeded_on') or day.isoformat()
+    new_today = carry_first_seen(prev, live, day)
     removed, back, gone, aged = roll_removed(prev, live, day)
+    print('%d new to the file today (seeded %s)%s'
+          % (new_today, seeded_on,
+             ', which is the seed, so none of them is fresh in'
+             if seeded_on == day.isoformat() else ''))
     print('removed list: %d gone today, %d back in stock, %d aged out, %d held'
           % (gone, len(back), len(aged), len(removed)))
 
@@ -580,6 +620,9 @@ def main():
         'retailer_id': RETAILER,
         'retailer_name': RETAILER_NAME,
         'count': len(live),
+        # The first day this file ever ran. A car whose first_seen equals it
+        # was already here when the ledger began and is NOT newly arrived.
+        'seeded_on': seeded_on,
         'finance_terms': terms,
         'cars': live,
         'removed': removed,

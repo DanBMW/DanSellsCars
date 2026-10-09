@@ -74,9 +74,14 @@ send nothing at all.
 
 ### stock.html and its finance examples
 
-`stock.html` is **Available Now**: the canonical, indexed used stock search
+`stock.html` is **Approved Used**: the canonical, indexed used stock search
 (in `sitemap.xml`, daily changefreq) and the page every nav/drawer/footer/
-homepage "Available Now" link points at. `offers.html` is now a soft redirect
+homepage link to the used stock points at. It was labelled "Available Now"
+until 9 October, when Dan asked for the menu to say what the two pages
+actually are: **Approved Used** and **New Cars**. The labels changed in the
+four partials, on the homepage card and on the page's own `plabel`; the
+`<title>`, Open Graph and schema already said "approved used BMWs" and were
+left alone, since they are indexed and were already accurate. `offers.html` is now a soft redirect
 stub to it (meta refresh + `location.replace` keeping the query string,
 canonical to stock.html, noindex) - do not rebuild a hand-picked list there.
 Each car's hero is the photo with a **finance example** over it (monthly
@@ -254,6 +259,59 @@ diff stays readable.
   default quote. The term came back the same at every deposit on every car
   checked, but the page prints "47 monthly payments of ..." and a wrong count
   there is a wrong financial promotion.
+
+### "Fresh in" - automation/stock-arrivals.json
+
+Dan asked on 8 October for a marker on cars that have just landed, and for the
+used stock files to be left alone in the most part. **Hedin publish no arrival
+date on a car**, which is why the board keeps its own ledger in Firebase, so
+the answer comes from this repo's own history: a car's arrival is the first
+morning its id appears in a committed snapshot. `automation/stock-arrivals.py`
+reads that out of git and writes `automation/stock-arrivals.json`, which
+`stock.html` reads.
+
+- **A sidecar, so neither stock file changes.** Same reason `car-details.json`
+  is one: the snapshot is read by the board's forecourt view too and its shape
+  is a contract with readers this script knows nothing about.
+- **The first day of each list's history is a SEED and nothing on it is
+  fresh.** The snapshot arrived on 21 September with 70 cars already in it and
+  not one of them arrived that day; on the first run 57 of the 81 cars in
+  stock sat on that date. `history_from` is published so the page applies the
+  rule itself, and a car whose `first_seen` equals it is never badged. The
+  board's own stockwatch learned this the same way. **`lookup/_history.json`
+  is deliberately not the source**: it began on 7 October, so 311 of its 318
+  cars share one `first_seen` and every one of them would read as new.
+- **Rebuilt from git every run, so it is idempotent and self healing.** Nothing
+  carries forward. Miss it for three days and the next run reconstructs the
+  same answer; run it twice in a day and the second writes nothing. A job on a
+  routine that cannot be re-run is the one that goes wrong.
+- **A car that leaves and comes back keeps its original arrival.** It is stock
+  that was unavailable for a while, not new stock, and a badge saying otherwise
+  tells a customer something untrue.
+- The group list is tracked separately with its own seed (28 September),
+  because its history is shorter.
+- On the page: a green **Fresh in** badge on the photograph, "Arrived today /
+  yesterday / N days ago" on the meta line, a **Just arrived** facet and a
+  **Just arrived first** sort. The facet is the one place `buildFacets()`
+  keeps a single option: its `single` flag says so, because a yes or no facet
+  is a predicate that does split the list, where one option drawn from the
+  values the cars happen to have ("every car is a Saloon") filters nothing.
+  It is a facet rather than only a badge so it carries a count and goes into
+  the query string: "here is what has just landed" is a link Dan sends.
+- The arrivals file landing after the cards are built is why `ARRV` counts
+  towards the `cardFor()` rebuild alongside `DETV`, and why `stampFresh()` is
+  called again in `unlock()` - the merged group cars have never been stamped,
+  exactly the trap `attachMonthly()` already had.
+- **Failure is quiet**: no badge, no sort, the chip counts zero, and the page
+  is what it always was. `FRESH_DAYS` (7) is the window.
+- **The new cars have the same marker on a different ledger.** There is no git
+  history for `lookup/new-stock.json` worth reading (it began on 8 October), so
+  `new-stock.py` keeps `first_seen` per order itself, carried forward from
+  yesterday's file, plus `seeded_on` for the day the ledger began. Same seed
+  rule, same seven day window, same badge and chip on `new-cars.html`; the chip
+  is absent entirely until something really is new, because a car with no value
+  sits in no option.
+- **Run it after the snapshot and the group list**, and commit the file.
 
 ### Photographs and equipment - car-details.json
 
@@ -686,7 +744,15 @@ other stock"**, which merges in every other used BMW the group has -
   files the first four steps wrote, takes a second and needs no network. It is
   safe to run more than once a day (a second run changes nothing), and another
   agent also runs it at about 09:48. If it exits non zero (stock looks broken),
-  leave yesterday's `lookup/` alone. The
+  leave yesterday's `lookup/` alone.
+  **And a sixth step:** `python3 automation/new-stock.py` (the brand new car
+  catalogue, which `new-cars.html` and the colleague backend read) and then
+  `python3 automation/stock-arrivals.py`, committing
+  `lookup/new-stock.json`, `lookup/order/` and
+  `automation/stock-arrivals.json`. The arrivals script reads git alone, takes
+  a second and needs no network; it must run **after** the day's snapshot has
+  been committed, or the newest morning is missing from the history and
+  yesterday's arrivals read as today's. Both are safe to re-run. The
   group list sits before the quote run deliberately, because the quote job
   reads it. A group-list failure is not allowed to stop the rest: the script
   refuses to write rather than publish a bad list, and the routine is told to
@@ -1096,6 +1162,16 @@ To change the chrome: edit the partial, run **`node build.js`** (no
 dependencies), and commit both the partial and the restamped pages. CI
 (`.github/workflows/chrome-check.yml`) runs `node build.js --check` and fails
 if they're out of sync.
+
+**The nav drawer's Close button is absolutely positioned and the menu is
+centred**, so on a short screen the top of the list rises until it meets it:
+at 390x640 "Home" sat at 42 and Close at 24 to 58, which put the first item in
+the menu under the only way out of it. It needs no scrolling, just a phone
+with browser chrome on it. `.ph-drawer-inner` therefore **reserves** the
+button's space in its top padding (78px plus the safe area) rather than
+relying on the content being short, and the booking link's "opens cal.com"
+label drops to its own line below 400px instead of hanging off the end.
+Measured clear at 320x568 through 414x896.
 
 Per-page variation goes through `{{name|default}}` tokens in the partials,
 overridden by the JSON on a page's opening marker. Current tokens: `wa`
