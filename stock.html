@@ -728,7 +728,7 @@
   var ALL = [], FIN = {};
   /* Arrival dates, from automation/stock-arrivals.json. Hedin publish no such
      field on a car, so the sidecar works it out from the daily snapshots this
-     repo has been committing since 21 September. Failure is quiet: no badge,
+     repo has been committing since 13 August. Failure is quiet: no badge,
      no sort, no chip, and the page is exactly what it was. */
   var ARR = null, ARRV = 0, FRESH_DAYS = 7;
 
@@ -912,9 +912,9 @@
   /* "Fresh in" is a claim about a real car on a real forecourt, so two rules
      decide it and both of them are about not lying.
 
-     The first day of each list's history is a SEED: the snapshot turned up on
-     21 September with 70 cars already in it, and not one of them arrived that
-     day. A car whose first_seen is its own list's history_from is therefore
+     The first day of each list's history is a SEED: the snapshot's first
+     commit, 13 August, already carried 67 cars, and not one of them arrived
+     that day. A car whose first_seen is its own list's history_from is therefore
      never fresh, however recent that date looks. The board's own stockwatch
      learned this the same way.
 

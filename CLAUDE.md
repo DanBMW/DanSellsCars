@@ -339,13 +339,22 @@ reads that out of git and writes `automation/stock-arrivals.json`, which
   is one: the snapshot is read by the board's forecourt view too and its shape
   is a contract with readers this script knows nothing about.
 - **The first day of each list's history is a SEED and nothing on it is
-  fresh.** The snapshot arrived on 21 September with 70 cars already in it and
-  not one of them arrived that day; on the first run 57 of the 81 cars in
-  stock sat on that date. `history_from` is published so the page applies the
-  rule itself, and a car whose `first_seen` equals it is never badged. The
-  board's own stockwatch learned this the same way. **`lookup/_history.json`
+  fresh.** The snapshot's first commit, 13 August 2026, is titled "Seed
+  baseline snapshot" and already carried 67 cars, not one of which arrived
+  that day. `history_from` is published so the page applies the rule itself,
+  and a car whose `first_seen` equals it is never badged. The board's own
+  stockwatch learned this the same way. **`lookup/_history.json`
   is deliberately not the source**: it began on 7 October, so 311 of its 318
   cars share one `first_seen` and every one of them would read as new.
+- **The seed day is only ever as old as the clone.** This sidecar was first
+  written believing the history began on 21 September over 17 mornings. It
+  did not: that was a partially deepened clone, and the oldest commit it could
+  reach looked indistinguishable from the file's first. The truth is 38
+  mornings from 13 August, and the forecourt ledger holds 144 cars rather than
+  96. Nothing inside the 7 day badge window moved when it was rebuilt whole,
+  so no car was ever badged wrongly, but a figure read off a run in a
+  truncated clone is not a fact about the repository. Check
+  `git rev-parse --is-shallow-repository` before believing one.
 - **It refuses to run in a shallow clone, and that guard is not optional.**
   Every arrival date here is "the first morning this file appeared in a
   commit", so a clone holding only the last few days reports that morning as
@@ -1002,9 +1011,10 @@ Things that bite, all of them found the hard way:
   through. The rule lives in `model-table.py`; change it there, not in the
   workbook, which is rebuilt from it.
 - **The history only goes back as far as the file does.** The snapshot's first
-  commit is 21 September 2026, so that is the whole of the stock history, and
+  commit is 13 August 2026, so that is the whole of the stock history, and
   the Notes sheet says so rather than letting somebody assume otherwise. It
-  grows by a row a day.
+  grows by a row a day. (An earlier note here said 21 September: that was a
+  truncated clone talking, see "Fresh in" above.)
 
 ### Find my BMW: brand new matches and no skipping (8 October 2026)
 

@@ -5,7 +5,7 @@ Four sheets:
 
     Models          one row a model family: size, boot, pace, fit, price range
     Cars in stock   one row a car, every figure we hold for it
-    Stock history   the 12 daily snapshots in git, and how long each car has
+    Stock history   every daily snapshot in git, and how long each car has
                     been on the forecourt
     Notes           where each figure comes from, and every rule and caveat
 
@@ -85,7 +85,23 @@ def git_snapshots():
     This is the whole of the history available: the file is only as old as the
     first morning it was committed, which the Notes sheet states rather than
     leaving somebody to assume it goes back further.
+
+    A SHALLOW CLONE LIES HERE, and the Notes sheet repeats the lie as a fact.
+    `stock-arrivals.py` was written believing the history began on 21 September
+    over 17 mornings, off a container holding a partially deepened clone; it
+    is 38 mornings from 13 August. So warn loudly rather than quietly
+    publishing a short history as the whole of it.
     """
+    try:
+        shallow = subprocess.run(['git', '-C', REPO, 'rev-parse',
+                                  '--is-shallow-repository'],
+                                 capture_output=True, text=True).stdout.strip()
+    except Exception:
+        shallow = ''
+    if shallow == 'true':
+        print('WARNING: shallow clone. The stock history below is only what '
+              'this clone holds, not the whole of it, and the Notes sheet '
+              'will state it as fact. Run "git fetch --unshallow" first.')
     log = subprocess.run(['git', '-C', REPO, 'log', '--reverse',
                           '--format=%H\t%ad', '--date=short', '--', SNAP_REL],
                          capture_output=True, text=True).stdout.strip()

@@ -21,16 +21,24 @@ rather than a new one.
 
 Three things it has to keep, and the first one is the whole job:
 
-- **The first day in the history is a SEED, and nothing on it is fresh.** On
-  21 September the snapshot arrived with 70 cars in it; every one of them has
-  a first_seen of that day and not one of them arrived that day. The board's
-  own stockwatch learned this the same way ("the first run seeds the ledger
-  and claims nothing is new, otherwise the board would announce all sixty-nine
-  cars as fresh in"). `history_from` is published so the page can apply the
-  rule itself, and a car whose first_seen equals it is never badged.
+- **The first day in the history is a SEED, and nothing on it is fresh.** The
+  snapshot's first commit is 2026-08-13, literally titled "Seed baseline
+  snapshot", with 67 cars already in it; every one of them has a first_seen of
+  that day and not one of them arrived that day. The board's own stockwatch
+  learned this the same way ("the first run seeds the ledger and claims
+  nothing is new, otherwise the board would announce all sixty-nine cars as
+  fresh in"). `history_from` is published so the page can apply the rule
+  itself, and a car whose first_seen equals it is never badged.
   `lookup/_history.json` is not used for this, for exactly that reason: it
   began on 7 October, so 311 of its 318 cars share one first_seen and would
   all read as fresh.
+
+  **The seed day is whatever the clone can see, which is why the guard below
+  exists.** This file was written on 8 October believing the history began on
+  21 September over 17 mornings, because the container it ran in held a
+  partially deepened clone and the oldest commit it could see looked exactly
+  like the file's first. The real history is 38 mornings from 13 August. Never
+  read a seed date off a run without checking the clone is whole first.
 - **It is rebuilt from git every run, so it is idempotent and self healing.**
   Nothing is carried forward from the last run and nothing accumulates. Miss it
   for three days and the next run reconstructs the same answer; run it twice in

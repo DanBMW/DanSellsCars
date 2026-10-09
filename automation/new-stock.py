@@ -440,7 +440,7 @@ def carry_first_seen(prev, live, day):
     """Stamp each car with the first day this file ever held it.
 
     The used stock gets its arrival dates out of git, because its snapshot has
-    been committed every morning since 21 September. This file began on
+    been committed every morning since 13 August. This file began on
     8 October, so there is no history to read and the ledger has to build
     itself from here: a car already in yesterday's file keeps its date, and a
     car that is new to the file takes today's.
