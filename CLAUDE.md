@@ -261,6 +261,39 @@ diff stays readable.
   checked, but the page prints "47 monthly payments of ..." and a wrong count
   there is a wrong financial promotion.
 
+### The reception board's clock - walkins-appscript.gs
+
+`clockOn(ref, text)` turns the "Arrived: 23:59" line in a reception email into
+a real time. It stamps the stated hour onto the date of the email that carried
+it, **and the two are not always the same day**.
+
+Chris arrives at 23:59 and reception's notification is resent at 00:04. The
+old code stamped 23:59 onto the new day, which is 23h55m in the future, hit
+its own `more than 12 hours` test and threw the time away. The caller then
+falls back to the email's own timestamp, and the visit key is name plus
+arrival time, so the resend keyed as `chris|00:04` against the original's
+`chris|23:59`: **a second Chris on the wall that no pick-up cleared**. The fix
+rolls the stamped time to whichever day it is nearest, which is always the
+right one, and after rolling it is within 12 hours by construction so there is
+nothing left for the old test to catch.
+
+**It was found by a red CI run on an unrelated push.** `test-walkin-parse.js`
+anchors its sample emails to NOW (the version before it pinned them to 13:28,
+so they aged out of the four hour window and it passed all morning and failed
+all afternoon). Anchoring to now moved the problem rather than ending it: the
+oldest sample is 105 minutes back, so for **35 minutes a day** some samples
+fell on the previous date. Measured by running the suite at every minute:
+00:02 to 00:29, 00:50 to 00:51, and 01:40 to 01:44. A push landed at 01:44 on
+9 October 2026 and the job went red.
+
+`scripts/test-walkin-times.js` now runs the whole suite at **23 pinned times**,
+each in its own process with `Date` fixed, covering all three windows and
+their edges plus ordinary hours. It is in `board-check.yml` after the suite
+itself. Checked both ways: it fails on the old `clockOn` and passes on the new
+one, and the suite passes at every one of 480 three-minute slots across the
+day. **Do not "fix" a time-dependent failure here by loosening an assertion**;
+pin the clock, which is what this file is for.
+
 ### The Fully Protected walkthrough - fully-protected.mp4
 
 Dan's own phone video explaining the Fully Protected Package, added 9 October

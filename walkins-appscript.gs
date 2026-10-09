@@ -555,7 +555,18 @@ function clockOn(ref, text) {
   var d = new Date(ref);
   d.setHours(h, mi, 0, 0);
   var t = d.getTime();
-  if (Math.abs(t - ref) > 12 * 3600000) return null;
+  /* The stated time and the email's own clock can be on different days.
+     Chris arrives at 23:59 and reception's notification is resent at 00:04:
+     stamping "23:59" onto the NEW day puts it 23h55m in the future, and the
+     old `> 12 hours` test then threw the time away. Losing it is not
+     cosmetic, because the visit key is name + arrival time, so the resend
+     became a SECOND Chris on the wall and the pick-up cleared neither.
+     Roll to whichever day the stated time is nearest to instead, which is
+     always the right one: a time stated in an email is never half a day out
+     from when the email was sent. After rolling it is within 12 hours by
+     construction, so there is nothing left for that test to catch. */
+  if (t - ref > 12 * 3600000) t -= 86400000;
+  else if (ref - t > 12 * 3600000) t += 86400000;
   return t;
 }
 

@@ -23,3 +23,9 @@ jobs:
       # a merge can quietly revert the parsing and nothing notices until a
       # customer sits on the wall reading "waiting" for an hour.
       - run: node scripts/test-walkin-parse.js
+      # ...and again at pinned times of day. The suite above anchors its
+      # samples to NOW, so for 35 minutes a day, just after midnight, some of
+      # them fell on the previous date and it failed - which is how a real
+      # midnight bug in clockOn was found, on a push that had nothing to do
+      # with reception. This keeps both the bug and the flake from coming back.
+      - run: node scripts/test-walkin-times.js
