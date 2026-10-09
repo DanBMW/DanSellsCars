@@ -122,6 +122,11 @@ body.lb-on{overflow:hidden}
 .pc .terms{font-weight:400;color:inherit}
 .extras{margin-top:22px;display:grid;gap:4px;font-size:15.5px}
 .extras p{margin:0}
+.pc.main .offer-tag,.offer-tag{display:inline-block;margin:12px 0 0;padding:5px 12px;border-radius:999px;background:var(--gold2);color:var(--ink);font:500 11px/1.2 "Jost";letter-spacing:.14em;text-transform:uppercase}
+.pc .was{font-size:.55em;color:#8f887a;text-decoration-thickness:2px;margin-right:6px;vertical-align:middle}
+.needs{margin-top:30px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+.needs h3{font-size:30px;margin:0 0 12px}
+.needs ul{margin:0;padding-left:20px;display:grid;gap:10px;font-size:15.5px}
 @media (max-width:760px){.vids,.phases,.price-grid{grid-template-columns:1fr}.vid-m{max-width:300px}}
 </style>
 </head>
@@ -408,15 +413,25 @@ body.lb-on{overflow:hidden}
   <div class="wrap">
     <p class="k">Proposal</p>
     <h2>Simple, fixed pricing</h2>
+    <p class="lede">As one of my first projects, I am offering the build at an introductory price.</p>
     <div class="price-grid">
-      <div class="pc main"><h3>Website build</h3><div class="amt">£3,500</div><p>Phases 1 and 2: the full new site, the table request form, tappable contact details, redirects so Google rankings carry over, and a menu and events editor you can use yourselves.</p><p class="terms">£1,750 to start, £1,750 at launch.</p></div>
+      <div class="pc main"><h3>Website build</h3><p class="offer-tag">Introductory offer</p><div class="amt"><s class="was" aria-label="Standard price £3,500">£3,500</s> <span aria-label="Offer price £2,000">£2,000</span></div><p>Phases 1 and 2: the full new site, the table request form, tappable contact details, redirects so Google rankings carry over, and a menu and events editor you can use yourselves.</p><p class="terms">£1,000 to start, £1,000 at launch.</p></div>
       <div class="pc"><h3>Care plan</h3><div class="amt">£60<small> a month</small></div><p>Hosting, domain renewal, backups, fixes, and up to an hour of updates every month: menu changes, events, new photographs.</p><p class="terms">Monthly, cancel any time after the first three months.</p></div>
     </div>
     <div class="extras">
       <p><b>Online booking (Phase 3):</b> quoted when you are ready. Any booking platform's subscription is paid directly by the restaurant.</p>
       <p><b>Anything else:</b> £40 an hour, agreed before work starts.</p>
-      <p><b>Prefer to spread the cost?</b> £1,500 to start, then £150 a month for 12 months with the care plan included.</p>
+      <p><b>Prefer to spread the cost?</b> £500 to start, then £185 a month for 12 months with the care plan included.</p>
       <p><b>What is yours:</b> your domain, words and photographs always stay yours. The site and its code are handed over in full once the build is paid for.</p>
+    </div>
+    <div class="needs">
+      <h3>What I will need from you</h3>
+      <ul>
+        <li><b>Your domain details.</b> Who silkhousedining.com is registered with, and a login (or for you to add me as a user) so I can point it at the new site on launch day. Your email addresses on the domain will keep working, and I will check them before and after the switch.</li>
+        <li><b>Access to your current website builder account</b>, so nothing is lost and the old page addresses can be redirected to the new ones.</li>
+        <li><b>Access to your Google Business Profile</b>, to update the website link, opening hours and photos.</li>
+        <li><b>Any photographs you would like added</b>, and confirmation of which current images are your own.</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -431,8 +446,7 @@ body.lb-on{overflow:hidden}
       <li>Are there photographs of Adrian, the open kitchen in service, and the garden in autumn?</li>
       <li>Which of the existing images did you take yourselves, and which came from elsewhere?</li>
       <li>Should the full wine list stay offline, or would a highlights list help bookings?</li>
-      <li>Who holds the domain and the current website builder account (the site runs on Zyro, now part of Hostinger)?</li>
-    </ul>
+          </ul>
   </div>
 </section>
 
