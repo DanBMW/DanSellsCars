@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="robots" content="noindex,nofollow"/>
+  <title>Desk mode | Find my BMW | Dan Sells</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="premium.css?v=2538cd7f"/>
+  <link rel="stylesheet" href="fmb.css?v=12"/>
+  <link rel="stylesheet" href="desk.css?v=5"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6',{traffic_type:'internal',desk_session:'true'});</script>
+  <script src="dsfinance.js"></script>
+  <script src="stock-core.js"></script>
+  <script src="fmb-match.js?v=3"></script>
+  <script src="aos-media.js?v=2" defer></script>
+  <script src="staff-gate.js"></script>
+  <script src="desk.js?v=5" defer></script>
+</head>
+<body class="desk">
+<div class="desk-lock" id="deskLock">
+  <form id="deskLockForm">
+    <p class="desk-kicker">Staff only</p>
+    <h1>Desk mode</h1>
+    <p>Your own fact find for a customer sitting with you. Same password as your links page.</p>
+    <label for="deskPin">Password</label>
+    <input id="deskPin" type="password" autocomplete="current-password" required/>
+    <button class="fmb-btn" type="submit">Unlock</button>
+    <p class="desk-err" id="deskLockErr" role="alert" hidden></p>
+  </form>
+</div>
+
+<div class="desk-app" id="deskApp" hidden>
+  <header class="desk-top">
+    <div><span class="desk-kicker">Desk mode</span><strong>Find my BMW</strong></div>
+    <div class="desk-top-actions">
+      <button class="fmb-btn ghost" type="button" id="deskNew">New customer</button>
+      <button class="fmb-link" type="button" id="deskLockBtn">Lock</button>
+    </div>
+  </header>
+  <nav class="desk-jump" id="deskJump" aria-label="Sections"></nav>
+
+  <div class="desk-restore" id="deskRestore" hidden>
+    <p id="deskRestoreP">Carry on with this customer?</p>
+    <div><button class="fmb-btn" type="button" id="deskCarry">Carry on with this customer</button><button class="fmb-btn ghost" type="button" id="deskFresh">Start new customer</button></div>
+  </div>
+
+  <div class="desk-grid">
+    <form class="desk-form" id="deskForm" autocomplete="off">
+      <h2 class="desk-bar">Customer requirement</h2>
+      <section class="desk-sec" id="sec-model" data-sec="model"><h3>1. Car of interest</h3>
+        <fieldset><legend>Model</legend><div class="desk-box" data-f="models"></div></fieldset>
+        <fieldset><legend>New or used</legend><div class="desk-box" data-f="interest"></div></fieldset>
+        <label>What is it you like about this particular model?<textarea id="likeModel" rows="2" maxlength="600"></textarea></label>
+        <label>What is important to you when looking for a new car?<textarea id="important" rows="2" maxlength="600"></textarea></label>
+        <label class="desk-notes">Notes<textarea id="n_model" rows="2" maxlength="800"></textarea></label>
+      </section>
+      <section class="desk-sec" id="sec-usage" data-sec="usage"><h3>2. Customer and usage</h3>
+        <fieldset><legend>Who drives it most</legend><div class="desk-box" data-f="who"></div></fieldset>
+        <fieldset><legend>A typical week</legend><div class="desk-box" data-f="life"></div></fieldset>
+        <fieldset><legend>People</legend><div class="desk-box" data-f="people"></div></fieldset>
+        <fieldset><legend>Boot</legend><div class="desk-box" data-f="boot"></div></fieldset>
+        <fieldset><legend>Home charging</legend><div class="desk-box" data-f="charge"></div></fieldset>
+        <label class="desk-notes">Notes<textarea id="n_usage" rows="2" maxlength="800"></textarea></label>
+      </section>
+      <section class="desk-sec" id="sec-px" data-sec="px"><h3>3. Current car and part exchange</h3>
+        <div class="desk-row">
+          <label>Registration<input id="pxReg" maxlength="8" autocapitalize="characters" spellcheck="false" placeholder="AB12 CDE"/></label>
+          <button class="fmb-btn ghost" type="button" id="pxLookup">Look up</button>
+        </div>
+        <p class="desk-note" id="pxFound" hidden></p>
+        <label>Current car<input id="curCar" placeholder="Make and model"/></label>
+        <fieldset><legend>Fuel</legend><div class="desk-box" data-f="curFuel"></div></fieldset>
+        <fieldset><legend>Gearbox</legend><div class="desk-box" data-f="gear"></div></fieldset>
+        <fieldset><legend>Part exchange?</legend><div class="desk-box" data-f="pxyn"></div></fieldset>
+        <label>Rough mileage<input id="pxMiles" inputmode="numeric" placeholder="62000"/></label>
+        <fieldset><legend>Service history</legend><div class="desk-box" data-f="service"></div></fieldset>
+        <fieldset><legend>Outstanding finance</legend><div class="desk-box" data-f="pxfin"></div></fieldset>
+        <div class="desk-row">
+          <label>PX £<input id="pxVal" inputmode="numeric" placeholder="14000"/></label>
+          <label>SIV £<input id="pxSiv" inputmode="numeric" placeholder="15000"/></label>
+          <label>Settlement £<input id="pxSettle" inputmode="numeric" placeholder="6500"/></label>
+        </div>
+        <p class="desk-note" id="pxEquity" hidden></p>
+        <fieldset><legend>Condition</legend><div class="desk-box" data-f="cond"></div></fieldset>
+        <label>Notes on the car<textarea id="pxNotes" rows="2" maxlength="500"></textarea></label>
+        <fieldset><legend>Keys</legend><div class="desk-box" data-f="keys"></div></fieldset>
+        <label class="desk-notes">Notes<textarea id="n_px" rows="2" maxlength="800"></textarea></label>
+      </section>
+      <section class="desk-sec" id="sec-must" data-sec="must"><h3>4. Must have and would like</h3>
+        <div class="desk-cols">
+          <div><p class="desk-col-h">Must have</p><div class="desk-box" data-f="mustF"></div>
+            <label>Other must haves<textarea id="mustText" rows="2" maxlength="400"></textarea></label></div>
+          <div><p class="desk-col-h">Would like</p><div class="desk-box" data-f="wouldF"></div>
+            <label>Other would likes<textarea id="wouldText" rows="2" maxlength="400"></textarea></label></div>
+        </div>
+        <fieldset><legend>Shape</legend><div class="desk-box" data-f="body"></div></fieldset>
+        <fieldset><legend>Fuel</legend><div class="desk-box" data-f="fuel"></div></fieldset>
+        <fieldset><legend>Colours</legend><div class="desk-box" data-f="colours"></div></fieldset>
+        <label class="desk-notes">Notes<textarea id="n_must" rows="2" maxlength="800"></textarea></label>
+      </section>
+      <section class="desk-sec" id="sec-spec" data-sec="spec"><h3>5. Specified requirements</h3>
+        <textarea id="notes" rows="4" maxlength="1500" placeholder="Anything specific they asked for"></textarea>
+      </section>
+      <section class="desk-sec" id="sec-when" data-sec="when"><h3>6. Timeline</h3><div class="desk-box" data-f="when"></div>
+        <label class="desk-notes">Notes<textarea id="n_when" rows="2" maxlength="800"></textarea></label>
+      </section>
+      <h2 class="desk-bar">Customer funding requirements</h2>
+      <section class="desk-sec" id="sec-budget" data-sec="budget"><h3>7. Funding</h3>
+        <div class="desk-row">
+          <label class="red">Current monthly payment £<input id="curMonthly" inputmode="numeric" placeholder="420"/></label>
+          <label class="red">Change cycle<input id="changeCycle" placeholder="3 years"/></label>
+          <label class="red">Annual mileage<input id="annualMiles" inputmode="numeric" placeholder="10000"/></label>
+        </div>
+        <fieldset><legend>How they want to pay</legend><div class="desk-box" data-f="pay"></div></fieldset>
+        <div class="desk-row" id="budMonthly" hidden>
+          <label class="red">Monthly budget £<input id="moFrom" inputmode="numeric" placeholder="500"/></label>
+          <label class="red">Up to £<input id="mo" inputmode="numeric" placeholder="750"/></label>
+          <label class="red">Deposit £<input id="depFrom" inputmode="numeric" placeholder="3000"/></label>
+          <label class="red">Up to £<input id="dep" inputmode="numeric" placeholder="5000"/></label>
+          <label>Term, months<input id="term" inputmode="numeric" placeholder="48"/></label>
+        </div>
+        <div class="desk-row" id="budCash" hidden><label class="red">Cash budget up to £<input id="cash" inputmode="numeric" placeholder="50000"/></label></div>
+        <fieldset><legend>Funding method</legend><div class="desk-box" data-f="fundMethod"></div></fieldset>
+        <fieldset><legend>How has the customer SAID they are funding?</legend><div class="desk-box" data-f="said"></div></fieldset>
+        <fieldset><legend>Introduction To Business Manager</legend><div class="desk-box" data-f="introBM"></div></fieldset>
+        <label class="desk-notes">Notes<textarea id="n_budget" rows="2" maxlength="800"></textarea></label>
+        <button class="fmb-btn wide" type="button" id="deskFind">Find car</button>
+      </section>
+    </form>
+
+    <aside class="desk-side" id="deskSide">
+      <p class="desk-side-empty" id="deskEmpty">Fill in what you know, in any order, then press Find car.</p>
+      <div id="deskResult" hidden></div>
+      <div id="deskResultNotes" hidden>
+        <label class="desk-notes">Notes on the result<textarea id="n_result" rows="2" maxlength="800"></textarea></label>
+        <button class="fmb-btn ghost wide" type="button" id="deskProfileBtn">Customer profile</button>
+      </div>
+    </aside>
+  </div>
+
+  <section class="desk-customer" id="deskCustomer" hidden>
+    <h2>Next steps agreed</h2>
+    <div class="desk-row">
+      <label class="desk-opt"><input type="checkbox" id="nsDrive"/><span>Test drive booked</span></label>
+      <label>When<input id="nsDriveWhen" placeholder="Saturday 10am"/></label>
+    </div>
+    <div class="desk-row">
+      <label class="desk-opt"><input type="checkbox" id="nsVal"/><span>Valuation on their car</span></label>
+      <label>Follow up date<input id="nsFollow" type="date"/></label>
+    </div>
+    <label class="desk-notes">Notes on next steps<textarea id="n_next" rows="2" maxlength="800"></textarea></label>
+    <h2>Customer details</h2>
+    <p>Only now. Nothing above this holds a name, number or email.</p>
+    <div class="desk-row">
+      <label>First name<input id="cFirst" autocomplete="off"/></label>
+      <label>Surname<input id="cLast" autocomplete="off"/></label>
+    </div>
+    <div class="desk-row">
+      <label>Mobile<input id="cPhone" type="tel" inputmode="tel" autocomplete="off"/></label>
+      <label>Email<input id="cEmail" type="email" autocomplete="off"/></label>
+    </div>
+    <label class="desk-opt"><input type="checkbox" id="cOptin"/><span>They asked to be kept posted. Occasional BMW news from Dan, unsubscribe any time.</span></label>
+    <label class="desk-notes">Notes on the customer<textarea id="n_customer" rows="2" maxlength="800"></textarea></label>
+    <button class="fmb-btn ghost" type="button" id="deskProfileBtn2">Customer profile</button>
+    <button class="fmb-btn wide" type="button" id="deskSubmit">Submit</button>
+    <p class="desk-err" id="deskSubmitErr" role="alert" hidden></p>
+    <div class="desk-fallback" id="deskFallback" hidden>
+      <p>That did not send, so nothing has reached your inbox. The fact find is still saved on this device.</p>
+      <div class="desk-row">
+        <button class="fmb-btn" type="button" id="deskRetry">Try again</button>
+        <button class="fmb-btn ghost" type="button" id="deskCopy">Copy email</button>
+        <a class="fmb-btn ghost" id="deskMailto" href="#">Open in email</a>
+      </div>
+    </div>
+    <div class="desk-done" id="deskDone" hidden>
+      <p id="deskDoneP">Sent to your inbox.</p>
+      <a class="fmb-btn wa" id="deskWa" href="#" target="_blank" rel="noopener">WhatsApp this summary to the customer</a>
+    </div>
+  </section>
+</div>
+
+<div class="desk-profile-wrap" id="deskProfileWrap" hidden>
+  <div class="desk-profile-bar no-print">
+    <button class="fmb-btn" type="button" id="deskPrint">Print or save as PDF</button>
+    <button class="fmb-btn ghost" type="button" id="deskProfileClose">Back to the fact find</button>
+  </div>
+  <article class="desk-profile" id="deskProfile"></article>
+</div>
+
+
+<div class="desk-present" id="deskPresent" hidden>
+  <div class="dp-bar">
+    <button class="fmb-btn ghost" type="button" id="dpClose">Close</button>
+    <p id="dpCount"></p>
+  </div>
+  <button class="dp-arrow prev" type="button" id="dpPrev" aria-label="Previous car">&#8249;</button>
+  <div class="dp-stage" id="dpStage"></div>
+  <button class="dp-arrow next" type="button" id="dpNext" aria-label="Next car">&#8250;</button>
+  <div class="dp-end" id="dpEnd">
+    <a class="fmb-btn" id="dpBook" href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book a test drive</a>
+    <a class="fmb-btn wa" id="dpWa" href="#" target="_blank" rel="noopener">Send me this by WhatsApp</a>
+  </div>
+</div>
+
+<div class="desk-view" id="deskView" hidden>
+  <button class="fmb-btn ghost" type="button" id="deskViewClose">Back to the fact find</button>
+  <div id="deskViewBody"></div>
+</div>
+</body>
+</html>

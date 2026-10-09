@@ -1,7 +1,7 @@
 /* Find my BMW v2. Built on the premium.css tokens; square panels, one blue
    accent, light instead of shadows. Motion is CSS only and switches off under
    prefers-reduced-motion. */
-.fmb{--green:#4a9d6a;--amber:#d39b4a;--bar-h:100px;background:var(--ink);min-height:100vh;min-height:100dvh}
+.fmb{--green:#4a9d6a;--amber:#d39b4a;--bar-h:76px;background:var(--ink);min-height:100vh;min-height:100dvh}
 .fmb main{max-width:560px;margin:0 auto;padding:0 18px calc(var(--bar-h) + 40px + env(safe-area-inset-bottom))}
 .fmb-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .fmb :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -133,11 +133,6 @@
 @keyframes fmbLine{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(1);opacity:0}}
 @keyframes fmbShake{0%,100%{transform:none}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
 .fmb-next{min-width:140px}
-.fmb-next:disabled{opacity:.45;cursor:not-allowed}
-/* what is still needed before Continue (every answer is a real tap) */
-.fmb-nudge{flex:1 1 100%;order:3;margin:0;font-size:.86rem;color:#f0cf9a;text-align:right;line-height:1.3}
-.fmb-nudge[hidden]{display:none}
-.fmb-nudge::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:8px;vertical-align:1px}
 
 /* matching */
 .fmb-match{position:relative;overflow:hidden;background:var(--ink-2);border:1px solid var(--hairline);padding:28px 22px;margin-top:10px}
@@ -158,7 +153,8 @@
 .fmb-persona .fmb-kicker{margin-bottom:6px}
 .fmb-persona h1{margin-bottom:6px}
 .fmb-persona p{margin:0;color:var(--body-c)}
-.fmb-head h2{margin-bottom:6px}
+.fmb-head{margin:0 0 6px}
+.fmb-head h2{margin:0 0 4px;font-size:clamp(1.2rem,4.4vw,1.7rem);line-height:1.25}
 .fmb-subs{margin:0 0 18px;padding:0;list-style:none;display:grid;gap:6px}
 .fmb-subs li{color:var(--body-c);font-size:.95rem;line-height:1.55}
 .fmb-subs li.relax{color:var(--paper);padding-left:14px;border-left:2px solid var(--amber)}
@@ -178,6 +174,8 @@
 .fmb-pct i{position:absolute;left:0;bottom:0;height:2px;background:var(--accent);width:0;transition:width .5s ease .3s}
 .fmb-pct.hi{border-color:var(--green)}
 .fmb-pct.hi i{background:var(--green)}
+/* aos-media.js buttons sit bottom left, clear of the Best match ribbon and the match percentage */
+.fmb-ph .aos-bar{top:auto;bottom:10px}
 .fmb-cb{padding:16px}
 .fmb-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .fmb-pills span{font-size:.74rem;letter-spacing:.06em;color:var(--body-c);border:1px solid var(--hairline);padding:3px 8px;text-transform:uppercase}
@@ -231,9 +229,12 @@
 .fmb-ferr{color:#f0b49a;font-size:.88rem}
 .fmb-legal{font-size:.8rem;color:var(--body-c)}
 .fmb-legal a{color:var(--body-c)}
-.fmb-sent{border:1px solid var(--green);padding:20px 18px;margin-bottom:24px}
+.fmb-sent{border:1px solid var(--green);padding:12px 14px;margin-bottom:10px}
+.fmb-sent h2{margin:0 0 4px;font-size:clamp(1.15rem,4.2vw,1.55rem)}
+.fmb-sent p{margin:0;font-size:.92rem}
 .fmb-sent[hidden]{display:none}
-.fmb-sent .row,.fmb-err .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.fmb-sent .row,.fmb-err .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.fmb-sent .fmb-btn{min-height:40px;padding:8px 12px}
 .fmb-err .row .fmb-btn{margin-top:0}
 .fmb-err p{margin:0;font-size:.95rem}
 .fmb-screen>.fmb-err{margin-bottom:24px}
@@ -310,3 +311,11 @@
   .fmb-skel .fmb-ph{animation:none}
 }
 .fmb [hidden]{display:none!important}
+
+/* v3: model grid, top pick and alternatives */
+.fmb-opts.models{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fmb-opts.models .fmb-opt.open{grid-column:1/-1}
+.fmb-whylist{margin:6px 0 10px;padding-left:18px;color:var(--body-c);font-size:.95rem;line-height:1.55}
+.fmb-whylist li{margin:2px 0}
+.fmb-alt-h{grid-column:1/-1;font-size:1.05rem;margin:10px 0 0;color:var(--paper)}
+.fmb-next-steps{display:grid;gap:10px;margin:18px 0}

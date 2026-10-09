@@ -50,7 +50,7 @@ the final step.
 
 | Pages | Funnel |
 |---|---|
-| `find-my-bmw.html` (+ `fmb.js`, `fmb.css`, `stock-core.js`) | **"Find my BMW" v2**, rebuilt 1 October 2026. One page: intro, nine tap only questions (new or approved used, life, shape, fuel, budget, extras, colour, part exchange Yes/No/Maybe, timing; one per screen, `#qi`, `#q1`..`#q7`, `#qp` in the URL, Back and browser back work), a short honest matching moment, then the results behind a **hard contact gate**. Matches are computed in JS memory; until a Formspree submission succeeds the page renders only the persona, the match count and three blurred skeleton cards (no regs, prices, models, images or links in the DOM). The gate (`#fmbGate`, a bottom sheet on mobile, a centred modal on desktop; main is `inert`, focus is trapped, Esc collapses it to a peek bar but never unlocks) asks for name, mobile and email, all required. Success unlocks the real cards, unless part exchange is Yes: then the PX steps (reg, mileage, service history, finance, keys required; condition notes optional; photos via a WhatsApp button, never blocking) must be sent in a second submission first. For Maybe the PX steps are offered and skippable. A failed submission keeps the gate and shows Try again plus WhatsApp. "Rather just WhatsApp me" messages Dan with the answers (no cars) and does **not** unlock. Unlock persists in `localStorage.fmbV2` (answers kept 7 days); `sessionStorage.fmbSent`/`fmbPxSent` stop a second submission. New or either buyers see "I'll come back to you with new car options" above a couple of used cars. Live "X cars match" counter and per option counts come from the same files stock.html reads. Results are never zero: a fallback ladder (group stock, budget +10%, neighbouring fuels, neighbouring shapes, drop 7 seats, then anything in budget or the newest) widens one step at a time and says on screen what it widened. Monthly figures only with the lender's full representative example (the MBG.html display); no quote says "Ask for a quote". "See all matches" deep links to stock.html with the hard filters plus `from=fmb`. Pre answers from `?life=&body=&fuel=`. `window.fmbDebug` exposes the state for tests. The page uses disclaimer.js in **inline mode** (`<html data-dsc="inline">`): no modal over question 1, the full wording renders into `[data-dsc-slot]` on the results screen. `step1.html`..`step8.html`, `step1b`, `step4b/c/m`, `step5b` and `start.html` are now redirect stubs to `find-my-bmw.html` (offers.html pattern, query string kept). `thankyou.html`, `wait.html` and `stock-match.js` are left in place for old links; nothing new posts to them. |
+| `find-my-bmw.html` (+ `fmb.js`, `fmb.css`, `stock-core.js`) | **"Find my BMW" v2**, rebuilt 1 October 2026. One page: intro, nine tap only questions (new or approved used, life, shape, fuel, budget, extras, colour, part exchange Yes/No/Maybe, timing; one per screen, `#qi`, `#q1`..`#q7`, `#qp` in the URL, Back and browser back work), a short honest matching moment, then the results behind a **hard contact gate**. Matches are computed in JS memory; until a Formspree submission succeeds the page renders only the persona, the match count and three blurred skeleton cards (no regs, prices, models, images or links in the DOM). The gate (`#fmbGate`, a bottom sheet on mobile, a centred modal on desktop; main is `inert`, focus is trapped, Esc collapses it to a peek bar but never unlocks) asks for name, mobile and email, all required. Success unlocks the real cards, unless part exchange is Yes: then the PX steps (reg, mileage, service history, finance, keys required; condition notes optional; photos via a WhatsApp button, never blocking) must be sent in a second submission first. For Maybe the PX steps are offered and skippable. A failed submission keeps the gate and shows Try again plus WhatsApp. "Rather just WhatsApp me" messages Dan with the answers (no cars) and does **not** unlock. Unlock persists in `localStorage.fmbV2` (answers kept 7 days); `sessionStorage.fmbSent`/`fmbPxSent` stop a second submission. New or either buyers see "I'll come back to you with new car options" above a couple of used cars. **No stock counts anywhere in the questions** (Dan, 8 October: "the customers choices should be theirs, not led by our stock"): no counts on tiles or chips, no "X cars match" bar, no forecourt total on the intro, no stock led nudges, and the colour tiles are a fixed list rather than the forecourt's colours by popularity. Matching still reads the same files stock.html reads. Results are never zero: a fallback ladder (group stock, budget +10%, neighbouring fuels, neighbouring shapes, drop 7 seats, then anything in budget or the newest) widens one step at a time and says on screen what it widened. Monthly figures only with the lender's full representative example (the MBG.html display); no quote says "Ask for a quote". "See all matches" deep links to stock.html with the hard filters plus `from=fmb`. Pre answers from `?life=&body=&fuel=`. `window.fmbDebug` exposes the state for tests. The page uses disclaimer.js in **inline mode** (`<html data-dsc="inline">`): no modal over question 1, the full wording renders into `[data-dsc-slot]` on the results screen. `step1.html`..`step8.html`, `step1b`, `step4b/c/m`, `step5b` and `start.html` are now redirect stubs to `find-my-bmw.html` (offers.html pattern, query string kept). `thankyou.html`, `wait.html` and `stock-match.js` are left in place for old links; nothing new posts to them. |
 | `which-bmw.html` (+ `which-bmw.js`, `which-bmw.css`) | **"Which BMW suits me" quiz**, added 2 October 2026 and cut down to **eight questions** on 3 October when Dan asked for it punchier. Deliberately **separate from Find my BMW**: that funnel asks what car you want and shows the stock that matches; this asks about your life and answers with a **model**. **The cut was measured, not argued.** Over 300 random briefs, changing one answer at a time moved the recommended car: who 99%, pace 70%, charge 58%, park 53%, load 53%, weekend 52%, attention 47%, mood 34%, love 20%, longrun 16%, age 9%, and **daily mileage 1%**. Benchmarks put the sweet spot at 5 to 8 questions with completion falling about 15% per question past 8, so everything under half was cut or merged. The daily mileage question had a needle gauge and was the only thing on the page that asked anybody to type, and it changed the answer once in a hundred runs: charging, mileage and long runs are now one tap (`life`), and the mileage that reaches Dan’s inbox is an **estimate from that answer**, labelled as one. Dan asked for the miles/minutes toggle originally, so do not put it back without re-running the measurement. **No keyboard anywhere in the quiz**, including budget: monthly and cash are chips and the deposit chips are the lender’s **own rungs** from `stock-finance-ladder.json`, so the payment is a figure BMW Financial Services gave for that car rather than one read off the line between two quotes. Keep `DEPOSITS` here and `RUNGS` in `stock-finance.py` in step. **Every option carries a line drawing** (`ICON`, inline SVG on currentColor so it inherits the accent; the pace question draws the same dial at five sweeps): images in answers are the biggest single lever on completion in the benchmarks. **A single-choice question draws no Next button**, because the tap already advances and a second control is a second decision. The finance wording is one line through the questions and expands to the full disclosure on the results screen, where the payments actually are. **"What your budget says" against "what your heart says"** stays: with a budget given the brief is ranked again with the money out and personality doubled, shown side by side with the difference in plain money, and the heart card appears **only** when that car is genuinely over budget or the labels would be untrue. Answers live in `localStorage.wbQuiz` for 7 days. Fires its own `wb_*` GA events, so it is deliberately absent from the `STEPS` map in `analytics.js`. **Sent by link only** (Dan’s ruling): `noindex`, `Disallow` in `robots.txt`, out of `sitemap.xml`, never linked from a public page. The page is styled as an **instrument cluster** rather than like the rest of the site: title card, rev counter, giant ghost numeral per question, accent hue winding cold blue to warm amber across the eight, an interstitial at the halfway point and a short beat before the answer. Note `.wb [hidden] { display: none !important }` is load bearing: an author `display` beats the browser’s own `[hidden]` rule whatever the specificity. |
 | `sq1.html`–`sq3.html` (+ `sq_done`) | **Service Qualifier ("Ramp Report")** — reg-first flow for customers whose car is in for service (entry: `service.html`). sq1 reg-plate input + DVLA lookup + market-scrape kick-off, sq2 vehicle reveal + openness, sq3 contact + locked-value teaser, submits on `sq3.html` → `sq_done.html` (booking-first, cal.com links). Market prices are captured into Dan's Formspree email only — **never shown to the customer**. Funnel copy uses no dash separators at all (Dan's rule, see Sitewide copy and CTA conventions). `sq4`–`sq7` and `sq6b` are retired redirect stubs → `sq1.html`. |
 | `yourcar.html` | **Ramp Report personal share link** — Dan sends `yourcar.html?reg=AB12CDE&n=Kate&d=Friday` (built via the widget on `links.html`; `d` is the optional service day, echoed in the greeting); the plate arrives pre-filled, the customer confirms car + mileage then taps **"I'm interested"** (screen 1) and books (cal.com / WhatsApp). Personalised page: keep `noindex` and out of `sitemap.xml`. Both `sq1.html` and `yourcar.html` carry a tap-to-play voice note from Dan (`dan-service-intro.mp3`, GA event `dan_audio_play`). |
@@ -76,12 +76,13 @@ send nothing at all.
 
 `stock.html` is **Approved Used**: the canonical, indexed used stock search
 (in `sitemap.xml`, daily changefreq) and the page every nav/drawer/footer/
-homepage link to the used stock points at. It was labelled "Available Now"
-until 9 October, when Dan asked for the menu to say what the two pages
-actually are: **Approved Used** and **New Cars**. The labels changed in the
-four partials, on the homepage card and on the page's own `plabel`; the
+homepage stock link points at. The menu and footers call it **Approved Used
+Stock**, beside **New Car Stock**, in a Stock section at the top of the drawer
+(Dan, 8 and 9 October: he asked for the titles to say what the two pages
+actually are). The page's own `plabel` reads "Approved Used" to match; the
 `<title>`, Open Graph and schema already said "approved used BMWs" and were
-left alone, since they are indexed and were already accurate. `offers.html` is now a soft redirect
+left alone, since they are indexed and were already accurate.
+`offers.html` is now a soft redirect
 stub to it (meta refresh + `location.replace` keeping the query string,
 canonical to stock.html, noindex) - do not rebuild a hand-picked list there.
 Each car's hero is the photo with a **finance example** over it (monthly
@@ -457,6 +458,75 @@ any page. It is hidden from search, not private: anyone with the URL can read it
   fills finance (a monthly figure needs its full representative example).
   GitHub Pages serves everything with `Access-Control-Allow-Origin: *`, which
   is what lets another site fetch the JSON.
+
+### Walkaround video and 360 spin - aos-media.js
+
+Added 8 October 2026 at Dan's request. Hedin film most used BMWs for
+AutoOnShow: a walkaround video and a 125 frame exterior spin. Neither stock
+file carries them, so **`aos-media.js`** (one shared script, `window.aosMedia`)
+builds the address from the reg and the browser asks AutoOnShow's CDN
+directly. Used on `stock.html` (each card's photo area), `MBG.html`, the Find
+my BMW used result cards (`fmb.js`, only after the gate unlocks) and
+`lookup/` (badges on the list cards, the player in the detail view).
+
+- **Addresses.** `https://eu.cdn.autosonshow.tv/{library}/bmwforecourt/{REG}/video_med.mp4`
+  and `.../360_{frame}.jpg`, frame padded to at least two digits (`360_01` to
+  `360_125`). REG is uppercase letters and digits only. No query string is
+  needed. `internal01.jpg` in the same folder is an interior still, never a
+  spin frame.
+- **Libraries**: 3927 Ruxley, 3924 Bromley, 3925 Enfield, 3929 Woolwich,
+  4974 Blackheath. The stock files hold no branch, so a forecourt car
+  (`hedin-stock-snapshot.json`, `c._home`, lookup `source: forecourt`) tries
+  3927, 3924, 3925, 3929, 4974 and a group car tries 3924, 3925, 3929, 4974,
+  3927, for the video **and** the spin (the appointments app only tries two
+  for video; group cars turn up at 3925 and 3929, so all five are tried). A
+  missing file answers **403 AccessDenied**, not 404. First file that loads
+  wins.
+- **Checks.** The spin goes first: frame 1 only, via `new Image()` (8
+  seconds a library). **A car with a spin gets the Video button straight
+  away** and no hidden video check runs: iPhones (Low Power Mode, data saver)
+  often never preload a `<video>` nobody can see, so a hidden check there
+  times out and the button went missing (8 October). Only a car with no spin
+  gets the hidden `<video preload=metadata muted playsinline>` check
+  (`loadedmetadata` found, `error` next library, 8 seconds no answer).
+- **The tap does the rest.** `openVideo()` sets the src and calls `play()`
+  synchronously inside the tap (iOS needs that), trying the spin's library
+  first. A 403 moves on to the next library (muted if iOS refuses an
+  unprompted start; the walkarounds have no sound); if none has it the photo
+  comes back quietly and the Video button goes for that car.
+- **The session cache** (`sessionStorage`, prefix `aos2:`, keys `v:REG` and
+  `s:REG`) holds the library, or '' only when every library answered "not
+  here". A check where any library never answered, or one cancelled because
+  the car left the screen, stores nothing. The prefix moved from `aos:` to
+  `aos2:` because the first version stored '' for timed out iPhone checks.
+  Pages load `aos-media.js?v=N`; bump N with a behaviour change.
+- **Only cars on screen are checked**: one IntersectionObserver, a 250ms
+  dwell so a fast scroll does not fire checks, and a car that leaves the
+  screen cancels its check. On 8 October a phone scrolling 3,000px down
+  stock.html checked 4 of 81 cars. Never check the whole list.
+- **Markup.** A page marks a photo area with `data-aos-reg`, `data-aos-src`
+  (`forecourt` or `group`) and optionally `data-aos-mode="badges"` (plain
+  labels, for a card that is itself a link), then calls `aosMedia.scan(root)`
+  after it renders. Nothing shows until a file is confirmed: then a small
+  "Video" and/or "360" button sits in the corner. Tapping one opens the
+  player or the spin **over the photo**, with a "Photos" button to go back;
+  photo arrows and thumbnails call `aosMedia.leave(area)`.
+- **The spin** swaps one `<img>` src. About 8px of drag is one frame,
+  dragging right goes forward, both ends wrap, the arrow buttons and the
+  keyboard arrows step, Escape leaves. It assumes 125 frames until one fails,
+  then `count = failedFrame - 1` (most cars are 122 to 124, found from the
+  preload of frames 124 and 125 behind frame 1). Only frames two behind to
+  twelve ahead are fetched. `touch-action: pan-y` keeps the page scrolling
+  on a phone; `user-select: none` and `draggable=false` stop the blue
+  highlight.
+- **Not used, deliberately**: the `br-api.aos.tv` API (it needs the BMW
+  page's bearer token; do not scrape or republish it), the worker (no
+  proxying), Firebase. No page has a Content-Security-Policy today; if one is
+  added it needs `media-src` and `img-src` for `https://eu.cdn.autosonshow.tv`.
+- **GA4**: `video_play {reg, library, page}` on the first play of an opened
+  video, `spin_open {reg, library, page}`.
+- Coverage on 8 October: 14 of 15 sampled cars had both (9 of 10 forecourt
+  cars at 3927, one at 3929; group cars at 3924, 3925 and 3929).
 
 ### New cars, ready to build - lookup/new-stock.json and new-cars.html
 
@@ -865,15 +935,14 @@ Dan asked for two things on 8 October, and both live in `fmb.js`.
 **Every answer is the customer's own tap.** Nothing is pre selected, there is
 no Skip anywhere in the nine questions, and Continue stays disabled until the
 question is answered. `needs(q)` is the one rule for both the button and
-`next()` (so Enter cannot get round it), and its text shows in `#fmbNudge`
-under the button ("Tap your monthly budget to carry on", "Now tap a deposit,
-or Not sure"). Anyone with no preference has an explicit tap for it: Open
-minded, Not fussed, Not sure. On the budget question a monthly brief needs
-both a monthly chip and a deposit chip (Not sure counts). An answer filled
-in from the link (`?interest=&life=&body=&fuel=`) has to be confirmed: the
-button reads "Yes, that's right" until they touch it or press it. There are
-no sliders in this funnel (the budget is chips), so there is no starting
-value to carry through.
+`next()` (so Enter cannot get round it). It is presented in the original
+design: no prompt box, the question's own hint line is the guidance. Anyone
+with no preference has an explicit tap for it: Open minded, Not fussed, Not
+sure. On the budget question a monthly brief needs both a monthly chip and a
+deposit chip (Not sure counts). There are no sliders in this funnel (the
+budget is chips), so there is no starting value to carry through. Dan asked
+for the question screens back as they were on 8 October, so do not add
+prompt boxes or counts to them.
 
 **New or either buyers are matched against `lookup/new-stock.json`.** It is
 loaded lazily (`want('newc')`) once they tap new or either. Hard filters are
@@ -903,6 +972,16 @@ they asked for, then soonest, then cheapest.
 - The sitewide sticky WhatsApp/Callback bar sat over the Continue button on
   phones from 5 October; the page's own script now hides it while a question
   screen (`#fmbBar`) or the gate is showing.
+
+
+### Find my BMW v3 and desk mode (8 October 2026)
+
+The public flow and Dan's desk share one matcher, `fmb-match.js`. `fmb.js` is the customer flow. `desk.html` + `desk.js` + `desk.css` is staff only.
+
+**Public flow** (`find-my-bmw.html`). Opens on "Which BMW are you thinking about?" (`#qm`), then new or used, who drives, a typical week, miles, people, boot, home charging only when electric or plug in is in play, shape only when the models do not already imply it, fuel, budget, wish list, colour, part exchange, timing. Continue stays disabled until that screen is answered. No stock counts on any question. The hard contact gate is unchanged: no regs, prices or photos until Formspree succeeds. The hero line on a strict match is "out of the X cars in our stock". X is every Hedin BMW group approved used car (Ruxley is inside that group figure, not added again) plus brand new cars when they asked for new or either. Saved answers are `localStorage.fmbV3`. The contact form name is `find-my-bmw-v3`. GA events carry `fmb_version: 3`. New cards still show cash price and a personalised quote line, never a monthly figure. A monthly figure on a used card still carries the full representative example.
+
+**Desk mode** (`https://dan-sells.co.uk/desk.html`). Dan's own fact find, not the customer funnel. Same password as the links page (the `admin` gate in `staff-gate.js`). `noindex`, `Disallow: /desk.html`, not in the sitemap, not linked from a public page. He fills any section in any order, then presses Find car. Customer name, mobile and email appear only after that. Submit sends one email to Formspree `xqewleog`, `form: find-my-bmw-desk`, body in `fact_find`, subject `Desk fact-find: NAME, MODEL REG`. Nothing is posted until he presses Submit. The draft lives only in `localStorage.fmbDeskDraft` on that device and clears on a successful Submit or New customer. Locking the screen, or the gate asking again, does not wipe the form. Brand new cars up to 5% over the budget (`NEW_STRETCH` in `fmb-match.js`) stay in a "Within reach" tier for Dan only, with the exact percentage. The customer view does not show that percentage. After Find car, Present this car opens a full screen customer view, using the Fullscreen API with an overlay if the browser refuses. It shows the top pick, alternatives and brand new options, with why lines drawn from what the customer said, and it hides notes, SIV, settlement, equity and any over budget percentage. Close or Escape returns to the fact find. A small ? on each field suggests an open question. Hover shows it and moving the mouse off hides it. Those tips never print and never go in the email. Customer profile prints A4 from the browser. GA on this page is `traffic_type: internal` and `desk_session: true`, and desk events use `funnel: fmb_desk`.
+
 
 ### "A few in stock that fit" - the Find my BMW matcher
 
@@ -1098,6 +1177,7 @@ bar with the same wording and "Continue to page"; Find my BMW stays inline).
 GA-tagged page) fires the conversion events; keep its slug→step map in sync
 when adding/renaming funnel pages. Events:
 
+- Find my BMW desk mode fires its own events from `desk.js` (all carry `funnel: fmb_desk`, and the page config sets `traffic_type: internal` and `desk_session: true` so these do not mix with customer traffic): `fmb_desk_open`, `fmb_desk_find`, `fmb_desk_submit`, `fmb_desk_copy`, `fmb_desk_mailto`, `fmb_desk_whatsapp`, `fmb_desk_profile`, `fmb_desk_print`, `fmb_desk_customer_view`, `fmb_desk_px_lookup`, `fmb_desk_lock`, `fmb_desk_restore`, `fmb_desk_new_customer`, `fmb_desk_present`.
 - Find my BMW v2 fires its own events from `fmb.js` (all carry
   `funnel: fmb, fmb_version: 2`): `fmb_intro_view`, `fmb_start {entry}`,
   `fmb_step_1`..`fmb_step_9 {step, step_name}`, `fmb_answer {step, step_name,
@@ -1126,6 +1206,8 @@ when adding/renaming funnel pages. Events:
   `wa.me` link click (delegated listener).
 - `callback_request` `{page}` — successful Request a callback form (contact block or sticky)
 - `booking_click` `{page}` — any cal.com booking link
+- `video_play` `{reg, library, page}` and `spin_open` `{reg, library, page}`
+  — the AutoOnShow walkaround video and 360 spin (`aos-media.js`).
 - `share` `{method: native, ref_code}` — the "Share my BMW story" native share.
 - `referral_visit` `{ref_code}` — landing with `?ref=CODE` from a shared
   story link. The code persists 90 days (localStorage `dsRefBy`) and is
@@ -1181,6 +1263,15 @@ legal paragraph — used by `bmw-pcp-explained.html` and
 `bmw-finance-compared.html` for their finance disclaimers). `owner` (the name used in the footer2 and legal2 legal text, default
 "Dan Cane"; `MBG.html` sets it to "Dan" because Dan asked for his surname
 not to appear on that page).
+
+**The menu opens on two stock buttons** (Dan, 8 October 2026: "should show
+approved used stock/new car stock"): `partials/drawer2.html` has a "Stock"
+group straight under Home with **Approved Used Stock** (`stock.html`) and
+**New Car Stock** (`new-cars.html`) as outlined buttons
+(`.ph-drawer-stock` in `premium.css`, outlined so WhatsApp stays the only
+solid call to action). They replaced "Available Now" and "New cars" in the
+Practical group; the footers and the old `drawer.html` use the same two
+labels. Keep those labels in all four partials.
 
 Pages without the chrome markers (all funnel pages, plus
 `business-proposal.html`/`finance-proposal.html` which have their own minimal
