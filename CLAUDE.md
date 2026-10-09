@@ -296,10 +296,20 @@ pin the clock, which is what this file is for.
 
 ### The Fully Protected walkthrough - fully-protected.mp4
 
-Dan's own phone video explaining the Fully Protected Package, added 9 October
-2026 in the protection section of `current-opportunities.html`, between the
-five element opener and the product list. 1080x1920 portrait, 1m45s,
-**19.4MB** at 1.5 Mbps, H.264 and AAC.
+An **AI generated** video explaining the Fully Protected Package, added
+9 October 2026 in the protection section of `current-opportunities.html`,
+between the five element opener and the product list. 1080x1920 portrait,
+1m45s, **19.4MB** at 1.5 Mbps, H.264 and AAC.
+
+- **The caption says so, and must keep saying so** (Dan, 9 October). The clip
+  carries a "Video Created with AI" watermark in its own top right corner, and
+  the caption under it read "Filmed on my phone, so it is the same explanation
+  you would get across the desk" - which the watermark contradicted in front of
+  the customer. It now reads "This video is AI generated. The explanation is
+  the same one you would get from me across the desk", which is both halves of
+  the truth: the words are Dan's, the pictures are not a recording of him. Do
+  not quietly drop that first sentence, and do not reinstate any claim that it
+  was filmed.
 
 - **`preload="none"` is load bearing.** Nineteen megabytes on a public page
   that most visitors will not watch, on a phone, on their own data: the
