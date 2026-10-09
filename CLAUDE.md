@@ -890,28 +890,37 @@ other stock"**, which merges in every other used BMW the group has -
   the newly merged cars look unquoted to the filter while their own cards
   plainly show a monthly payment.
   The run is about 2 seconds a car, so 318 cars is roughly eleven minutes.
-- **Both stock files are on the morning routine.** The Routine "Daily Stock
-  Refresh + Group Stock + Finance Cards + Stock Quotes" runs at 07:00 and does
-  four parts in order, each its own commit and push: the Ruxley snapshot, then
-  `group-stock.py`, then the Instagram cards, then `stock-finance.py`.
-  **Routine, please also do this as a fifth step:** after `stock-finance.py`,
-  run `node scripts/build-lookup.mjs` and commit and push everything under
-  `lookup/`, including `lookup/_history.json` and any deleted reg files
-  (`git add -A lookup/`, message "Daily lookup refresh"). It reads only the
-  files the first four steps wrote, takes a second and needs no network. It is
-  safe to run more than once a day (a second run changes nothing), and another
-  agent also runs it at about 09:48. If it exits non zero (stock looks broken),
-  leave yesterday's `lookup/` alone.
-  **And a sixth step:** `python3 automation/new-stock.py` (the brand new car
-  catalogue, which `new-cars.html` and the colleague backend read) and then
-  `python3 automation/stock-arrivals.py`, committing
-  `lookup/new-stock.json`, `lookup/order/` and
-  `automation/stock-arrivals.json`. The arrivals script reads git alone, takes
-  a second and needs no network; it must run **after** the day's snapshot has
-  been committed, or the newest morning is missing from the history and
-  yesterday's arrivals read as today's. Both are safe to re-run. The
-  group list sits before the quote run deliberately, because the quote job
-  reads it. A group-list failure is not allowed to stop the rest: the script
+- **Both stock files are on the morning routine, and it is TWO Routines.**
+  "Daily Stock Refresh + Group Stock + Finance Cards + Stock Quotes" runs at
+  07:00 and finishes about 07:56, five parts in order, each its own commit and
+  push: the Ruxley snapshot, then `group-stock.py` with `car-details.py` and
+  `stock-images.py`, then the Instagram cards, then `stock-finance.py`, then
+  `new-stock.py`. The group list sits before the quote run deliberately,
+  because the quote job reads it. ("Daily New Car Stock Pull" also runs
+  `new-stock.py` on its own at 06:00; running it twice a day is deliberate.)
+  Then **"Daily lookup rebuild + Fresh in arrivals" at 08:15** runs
+  `node scripts/build-lookup.mjs` and `python3 automation/stock-arrivals.py`.
+  Both read only files the first Routine committed, need no network and take a
+  second each.
+  **They are a second Routine on purpose, and the reason is worth keeping.**
+  They were written up here as a "fifth and sixth step" of the big one and
+  simply never added to its instructions, so for the whole of their existence
+  they only ran when somebody ran them by hand. On 9 October 2026 the
+  snapshot, the group list and the quotes all refreshed at 07:22 while
+  `lookup/stock.json` still read 08:57 the previous morning: a colleague's
+  booking system was being handed yesterday's prices, and the Fresh in badges
+  were a day behind. Both scripts rebuild their whole answer from scratch, so
+  they are idempotent and self healing, which is exactly what makes them safe
+  to split off: a stall in the 35 minute quote job can no longer cost them,
+  and a run against yesterday's stock files just reproduces yesterday's
+  answer. A note in this file is not a scheduled job, and the two must not be
+  confused again.
+  The arrivals script must run **after** the day's snapshot has been
+  committed, not merely written, or the newest morning is missing from the
+  history and yesterday's arrivals read as today's. It also **refuses to run
+  in a shallow clone**, which the containers are by default, so that Routine
+  runs `git fetch --unshallow` first. If `build-lookup.mjs` exits non zero
+  (stock looks broken), leave yesterday's `lookup/` alone. A group-list failure is not allowed to stop the rest: the script
   refuses to write rather than publish a bad list, and the routine is told to
   leave yesterday's file alone and carry on, since the page and the quote run
   are both happy with a day-old one.
