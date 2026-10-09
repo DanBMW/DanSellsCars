@@ -40,6 +40,41 @@
     @media (max-width:560px){.prot-open{flex-direction:column;align-items:flex-start;gap:16px}
       .prot-hand{width:min(62vw,240px);align-self:center}}
 
+    /* Dan's own walkthrough of the Fully Protected package. Filmed on a phone,
+       so it is 1080x1920 portrait: the frame is 9/16 and capped in width, or a
+       vertical video on a desktop screen becomes a tower.
+
+       It is 19MB and nearly two minutes, so `preload="none"` is load bearing:
+       nothing of the file is fetched until somebody presses play. Without it
+       every visitor to this page pays for a video most of them will not watch,
+       on a phone, on their own data. There is no poster image yet, so the
+       panel is the poster: a still from the clip can be dropped into
+       `poster=""` later and nothing else needs to change. */
+    .prot-vid{margin-top:22px;display:flex;justify-content:center}
+    .prot-vid-inner{width:min(100%,330px)}
+    .prot-vid-frame{position:relative;aspect-ratio:9/16;background:#0d1117;
+      border:1px solid var(--hairline-soft);overflow:hidden}
+    .prot-vid-frame video{width:100%;height:100%;object-fit:cover;display:block}
+    .prot-vid-btn{position:absolute;inset:0;width:100%;display:flex;
+      flex-direction:column;align-items:center;justify-content:center;gap:14px;
+      background:linear-gradient(170deg,#141a22 0%,#0d1117 60%,#11161d 100%);
+      border:0;cursor:pointer;color:var(--paper);font:inherit;padding:24px;
+      text-align:center}
+    .prot-vid-btn:hover .prot-vid-play{background:var(--accent);border-color:var(--accent)}
+    .prot-vid-play{width:62px;height:62px;border-radius:50%;flex:0 0 auto;
+      border:1px solid var(--hairline-soft);background:rgba(236,233,225,.07);
+      display:flex;align-items:center;justify-content:center;
+      transition:background .2s,border-color .2s}
+    .prot-vid-play::after{content:'';border-left:17px solid currentColor;
+      border-top:11px solid transparent;border-bottom:11px solid transparent;
+      margin-left:5px}
+    .prot-vid-btn b{font-family:var(--serif);font-weight:400;
+      font-size:clamp(1.02rem,2.4vw,1.16rem);line-height:1.3;display:block}
+    .prot-vid-btn small{font-family:var(--sans);font-size:.72rem;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--dim);display:block}
+    .prot-vid-cap{font-family:var(--sans);font-size:.76rem;line-height:1.6;
+      color:var(--dim);margin:10px 0 0;text-align:center}
+
     .prot-list{display:flex;flex-direction:column;gap:1px;background:var(--hairline-soft);
       border:1px solid var(--hairline-soft);margin-top:28px}
     .prot-item{background:var(--ink-2)}
@@ -168,6 +203,26 @@
              alt="Dan's hand with the five protection products written on it, Tyre and Alloy on the thumb, then Ceramic, Warranty, Hedin Care and Hedin GAAP across the fingers, and Fully Protected on the palm"/>
         <p class="prot-open-line">Hedin&rsquo;s Fully Protected Package comprises of 5 elements.
           <span>One per finger, and I will go through them exactly like this in person. Tap any one below to see what it covers, what it will not, and whether I think it earns its keep on your car.</span></p>
+      </div>
+
+      <div class="prot-vid">
+        <div class="prot-vid-inner">
+          <div class="prot-vid-frame" id="protVidFrame">
+            <video id="protVid" preload="none" playsinline controls hidden
+                   width="1080" height="1920"
+                   aria-label="Dan explaining the Fully Protected Package">
+              <source src="fully-protected.mp4" type="video/mp4"/>
+              Your browser cannot play this video.
+              <a href="fully-protected.mp4">Download it instead</a>.
+            </video>
+            <button type="button" class="prot-vid-btn" id="protVidBtn">
+              <span class="prot-vid-play" aria-hidden="true"></span>
+              <b>Watch me explain the Fully Protected Package</b>
+              <small>1 min 45</small>
+            </button>
+          </div>
+          <p class="prot-vid-cap">Filmed on my phone, so it is the same explanation you would get across the desk.</p>
+        </div>
       </div>
 
       <div class="prot-list">
@@ -704,6 +759,30 @@ function submitOfferInterest(){
   });
 }
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeOfferModal();});
+
+/* The Fully Protected walkthrough. The video carries preload="none", so the
+   19MB is not touched until this runs: the panel is what the page ships with
+   and the file is fetched on the press. The element is revealed BEFORE
+   play() is called, because a hidden video cannot start on iOS, and play()
+   is called inside the click itself rather than after an await, which is the
+   other thing iOS refuses. A browser that still declines leaves the controls
+   there for a second tap rather than a dead frame. */
+(function(){
+  var btn = document.getElementById('protVidBtn');
+  var vid = document.getElementById('protVid');
+  if (!btn || !vid) return;
+  btn.addEventListener('click', function(){
+    vid.hidden = false;
+    btn.hidden = true;
+    try { vid.load(); } catch(e){}
+    var p = vid.play();
+    if (p && p.catch) p.catch(function(){ vid.controls = true; });
+    if (typeof gtag === 'function') gtag('event','protection_video_play',{
+      page:(location.pathname.split('/').pop()||'current-opportunities.html'),
+      video:'fully-protected'
+    });
+  });
+})();
 </script>
 <script src="disclaimer.js"></script>
 </body>

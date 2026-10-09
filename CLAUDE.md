@@ -261,6 +261,37 @@ diff stays readable.
   checked, but the page prints "47 monthly payments of ..." and a wrong count
   there is a wrong financial promotion.
 
+### The Fully Protected walkthrough - fully-protected.mp4
+
+Dan's own phone video explaining the Fully Protected Package, added 9 October
+2026 in the protection section of `current-opportunities.html`, between the
+five element opener and the product list. 1080x1920 portrait, 1m45s,
+**19.4MB** at 1.5 Mbps, H.264 and AAC.
+
+- **`preload="none"` is load bearing.** Nineteen megabytes on a public page
+  that most visitors will not watch, on a phone, on their own data: the
+  element fetches nothing until the play button is pressed. Tested by watching
+  the network: zero requests for the file on load, one after the press. Do not
+  swap it for `metadata` or `auto` to make it start faster.
+- **The panel is the poster.** There is no poster image: **this sandbox's
+  Chromium has no H.264 decoder** (`canPlayType` is empty,
+  `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`) and there is no ffmpeg here, so no
+  frame could be extracted and none was invented. A still dropped into
+  `poster=""` later needs no other change. Real browsers play the file
+  normally; H.264 in MP4 is the most widely supported web video there is.
+- **The frame is 9/16 and capped at 330px wide**, because a vertical phone
+  video in a full width box is a tower on a desktop screen.
+- **The reveal order matters for iOS**: the video is un-hidden *before*
+  `play()` is called (a hidden video cannot start) and `play()` runs inside
+  the click itself, not after an await. A refused play leaves the controls up
+  for a second tap rather than a dead frame.
+- GA `protection_video_play {page, video}`.
+- **Note for anyone verifying video work here**: the headless browser cannot
+  decode H.264, and `window.scrollTo` does not move this page, so a screenshot
+  has to use `captureBeyondViewport` with the clip set to the element's own
+  offset, and `.reveal` elements need `.in` added by hand first or the capture
+  comes back as an empty dark rectangle.
+
 ### "Fresh in" - automation/stock-arrivals.json
 
 Dan asked on 8 October for a marker on cars that have just landed, and for the
