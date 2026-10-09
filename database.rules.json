@@ -24,7 +24,7 @@
               ".write": "auth != null && root.child('staff').child(auth.uid).val() === true",
               ".validate": "newData.hasChildren(['exec','profit'])",
               "exec": {
-                ".validate": "newData.isString() && newData.val().matches(/^(dw|ca|ms|kj|ch|ta|dc|md)$/)"
+                ".validate": "newData.isString() && newData.val().matches(/^(dw|ca|ms|kj|ch|ta|dc)$/)"
               },
               "profit": {
                 ".validate": "newData.isNumber() && newData.val() >= -100000 && newData.val() <= 100000"
