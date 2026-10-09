@@ -28,5 +28,6 @@ Disallow: /yourcar.html
 Disallow: /yourbrief.html
 Disallow: /which-bmw.html
 Disallow: /lookup/
+Disallow: /silk-house/
 
 Sitemap: https://dan-sells.co.uk/sitemap.xml
