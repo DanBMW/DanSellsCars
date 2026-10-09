@@ -525,6 +525,11 @@ Three things the page has to respect:
   `.github/workflows/finance-requote.yml` doing exactly that was drafted on
   1 October but could not be pushed - the automation token has no Workflows
   permission - so until Dan adds it, the Routine is the only re-quote.
+  **That blockage is narrower than it reads.** A Claude Code session pushed
+  `.github/workflows/daily-lookup.yml` on 9 October with no trouble at all, so
+  it is the automation token specifically, not this repo. The re-quote
+  workflow is worth revisiting from a session: unlike the lookup job it does
+  reach out to Hedin's site, so it is Dan's call rather than a free one.
 - **A network error keeps a still-live quote.** `stock-finance.py` retries a
   car twice on a network or server error, and if it still cannot reach the
   lender it keeps the quote it already holds while that quote is inside its own
@@ -935,29 +940,35 @@ other stock"**, which merges in every other used BMW the group has -
   `new-stock.py`. The group list sits before the quote run deliberately,
   because the quote job reads it. ("Daily New Car Stock Pull" also runs
   `new-stock.py` on its own at 06:00; running it twice a day is deliberate.)
-  Then **"Daily lookup rebuild + Fresh in arrivals" at 08:15** runs
-  `node scripts/build-lookup.mjs` and `python3 automation/stock-arrivals.py`.
-  Both read only files the first Routine committed, need no network and take a
-  second each.
-  **They are a second Routine on purpose, and the reason is worth keeping.**
-  They were written up here as a "fifth and sixth step" of the big one and
-  simply never added to its instructions, so for the whole of their existence
-  they only ran when somebody ran them by hand. On 9 October 2026 the
-  snapshot, the group list and the quotes all refreshed at 07:22 while
-  `lookup/stock.json` still read 08:57 the previous morning: a colleague's
-  booking system was being handed yesterday's prices, and the Fresh in badges
-  were a day behind. Both scripts rebuild their whole answer from scratch, so
-  they are idempotent and self healing, which is exactly what makes them safe
-  to split off: a stall in the 35 minute quote job can no longer cost them,
-  and a run against yesterday's stock files just reproduces yesterday's
-  answer. A note in this file is not a scheduled job, and the two must not be
-  confused again.
+  Then **`.github/workflows/daily-lookup.yml` at 08:15 UTC** runs
+  `node scripts/build-lookup.mjs` and `python3 automation/stock-arrivals.py`
+  and commits what changed. About 25 seconds.
+  **It is a GitHub Actions workflow and not a Routine, deliberately.** These
+  two were written up here as a "fifth and sixth step" of the big Routine and
+  never added to its instructions, so for the whole of their existence they
+  ran only when somebody ran them by hand: on 9 October 2026 the snapshot, the
+  group list and the quotes all refreshed at 07:22 while `lookup/stock.json`
+  still read 08:57 the previous morning, so a colleague's booking system was
+  being handed yesterday's prices and the Fresh in badges were a day behind.
+  **A note in this file is not a scheduled job.** A Routine was tried first and
+  both test firings came up with no git checkout at all, which is a lot of
+  moving parts to put behind `node x.mjs`. Neither script needs the network, a
+  browser, a secret or any judgement, so GitHub, which already has the repo,
+  is the right place for them. The workflow can be pushed from a session like
+  this one, whatever the note on `finance-requote.yml` below says about the
+  automation token.
+  **`fetch-depth: 0` in that workflow is load bearing**, not a tidiness
+  setting. `stock-arrivals.py` derives each car's arrival from the first
+  morning its id appears in a committed snapshot, so a shallow clone reports
+  whatever few days it holds as the whole history; the script refuses to run
+  in one rather than write a confident wrong answer, so without the full depth
+  the job fails outright every morning. Checked in a real run: it printed
+  "144 cars, history from 2026-08-13 over 38 mornings".
   The arrivals script must run **after** the day's snapshot has been
   committed, not merely written, or the newest morning is missing from the
-  history and yesterday's arrivals read as today's. It also **refuses to run
-  in a shallow clone**, which the containers are by default, so that Routine
-  runs `git fetch --unshallow` first. If `build-lookup.mjs` exits non zero
-  (stock looks broken), leave yesterday's `lookup/` alone. A group-list failure is not allowed to stop the rest: the script
+  history and yesterday's arrivals read as today's. Either script refusing
+  leaves its own files alone, lets the other half push, and then fails the run
+  so it is visible rather than silent. A group-list failure is not allowed to stop the rest: the script
   refuses to write rather than publish a bad list, and the routine is told to
   leave yesterday's file alone and carry on, since the page and the quote run
   are both happy with a day-old one.
