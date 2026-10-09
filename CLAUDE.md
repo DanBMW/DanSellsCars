@@ -346,6 +346,20 @@ reads that out of git and writes `automation/stock-arrivals.json`, which
   board's own stockwatch learned this the same way. **`lookup/_history.json`
   is deliberately not the source**: it began on 7 October, so 311 of its 318
   cars share one `first_seen` and every one of them would read as new.
+- **It refuses to run in a shallow clone, and that guard is not optional.**
+  Every arrival date here is "the first morning this file appeared in a
+  commit", so a clone holding only the last few days reports that morning as
+  the seed and resets every car that genuinely arrived before it. A fresh
+  container on 9 October 2026 held **6 snapshot commits against the real 17
+  days**, and a run there would have rewritten a 96 car ledger to a 5 day one,
+  losing every true arrival date in between. It does not crash and it is not
+  visible in the output: the file comes out perfectly well formed and wrong.
+  Note the self healing claim below holds **only against the full history**.
+  `git fetch --unshallow` first (`--shallow-since` is not enough: the boundary
+  commit looks like the one that added the file, so the seed just moves to
+  wherever the clone happens to stop). If the morning Routine's checkout is
+  shallow this will now fail loudly rather than publish a wrong ledger, which
+  is the right way round but does mean the Routine needs the unshallow.
 - **Rebuilt from git every run, so it is idempotent and self healing.** Nothing
   carries forward. Miss it for three days and the next run reconstructs the
   same answer; run it twice in a day and the second writes nothing. A job on a

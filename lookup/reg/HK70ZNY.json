@@ -18,10 +18,12 @@
  "price_gbp": 24995,
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-192c-7ea6-a91b-6dd50ec7b8d2-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0deb3-aadd-73df-905b-e3ca45a183de-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0deb3-aba6-7429-b7f6-408fb9637c01-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0deb3-ac45-7bff-863f-740ddd81c823-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0deb3-ad04-7fc8-adc0-77ddf161fa57-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-192c-7ea6-a91b-6dd50ec7b8d2-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-19ea-7d20-9824-fb90a19e0e10-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-1a98-716f-ab8d-c424473606da-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-1ba5-7277-983e-e8758bdf8b83-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-1c56-7d97-8ead-bfb90920640f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-1cf6-7525-a7c2-44a8e83310ab-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/253493/pb-bmw-530e-2021",
  "listing_id": "253493",
@@ -41,7 +43,7 @@
   "payments": 47,
   "price": 24995,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-10-08T08:24:35.7834101+01:00",
+  "quoted_at": "2026-10-09T08:26:33.8577289+01:00",
   "reg": "HK70ZNY",
   "term": 48,
   "total_payable": 32652.19,

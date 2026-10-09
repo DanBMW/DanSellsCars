@@ -18,10 +18,12 @@
  "price_gbp": 29000,
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a101a3-ceea-7709-ad02-177445e4a7ad-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0fb78-9b70-7fea-8aef-c91d763562c8-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0fb78-9c35-7871-b308-62ff144628af-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0fb78-9cc9-728f-920c-02f9b1f73613-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0fb78-9d65-7b7e-959b-f66e099839e9-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a101a3-ceea-7709-ad02-177445e4a7ad-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a101a3-cfd0-7442-9722-c116431c3690-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a101a3-d07f-76fe-974e-cc03807f2d7f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a101a3-d150-7c7a-92a0-f8dd87f4eacc-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a101a3-d1da-704c-a742-d0a87894cfe4-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a101a3-d279-70ab-9c36-3174513977d0-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/254221/pb-bmw-520d-2022",
  "listing_id": "254221",
@@ -41,7 +43,7 @@
   "payments": 47,
   "price": 29000,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-10-08T08:37:51.9218176+01:00",
+  "quoted_at": "2026-10-09T08:39:08.834052+01:00",
   "reg": "LV72EGX",
   "term": 48,
   "total_payable": 38294.9,

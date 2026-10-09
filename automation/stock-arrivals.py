@@ -65,6 +65,32 @@ def git(*args):
                           capture_output=True, text=True).stdout
 
 
+def refuse_if_shallow():
+    """A shallow clone silently truncates the history this whole script is.
+
+    Every arrival date here is "the first morning this file appeared in a
+    commit", so a clone that only holds the last few days reports that morning
+    as the seed and resets every car that genuinely arrived before it. On
+    2026-10-09 a fresh container held 6 snapshot commits against the real 17
+    days, which would have rewritten a 96 car ledger to a 5 day one and lost
+    every true arrival date in between. It is not a crash and it is not
+    visible in the output: the file looks perfectly well formed.
+
+    The script is idempotent and self healing ONLY against the full history,
+    so refuse rather than write a confident wrong answer. Deepen the clone
+    (git fetch --unshallow) and run it again.
+    """
+    try:
+        shallow = git('rev-parse', '--is-shallow-repository').strip()
+    except Exception:
+        return                      # old git without the flag: carry on
+    if shallow == 'true':
+        sys.exit('refusing to run in a shallow clone: the arrival history '
+                 'would be truncated to whatever this clone happens to hold, '
+                 'and every earlier arrival date silently reset. '
+                 'Run "git fetch --unshallow" first.')
+
+
 def commits_for(path):
     """Every commit that touched the file, oldest first, as (sha, London date)."""
     out = git('log', '--reverse', '--format=%H %cI', '--', path).strip()
@@ -120,6 +146,8 @@ def main():
     ap.add_argument('--check', action='store_true',
                     help='report and write nothing')
     args = ap.parse_args()
+
+    refuse_if_shallow()
 
     today = datetime.now(LONDON).date().isoformat()
     doc = {

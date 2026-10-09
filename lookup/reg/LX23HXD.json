@@ -18,10 +18,12 @@
  "price_gbp": 24495,
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-62c5-73d7-88a3-107364b7b2c8-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0deb3-5309-7007-ad86-7303d3d7a021-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0deb3-541d-7afa-96af-a5b8316a2c8f-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0deb3-54de-786b-9f53-2feebfe3eedc-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0deb3-5593-7c7d-a11f-1c176388fff8-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-62c5-73d7-88a3-107364b7b2c8-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-6374-7744-8b00-493831a2babe-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-63fd-755f-bb05-83a9803cce8b-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-6486-7c75-be19-a444fb6f6c92-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-6503-7c49-9ab1-9cbd9096fadb-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-6587-7328-a57c-3071a8a31619-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/253489/pb-bmw-320-2023",
  "listing_id": "253489",
@@ -41,7 +43,7 @@
   "payments": 47,
   "price": 24495,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-10-08T08:24:57.9511343+01:00",
+  "quoted_at": "2026-10-09T08:26:56.843314+01:00",
   "reg": "LX23HXD",
   "term": 48,
   "total_payable": 32371.39,

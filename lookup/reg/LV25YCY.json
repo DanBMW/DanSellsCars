@@ -18,10 +18,12 @@
  "price_gbp": 35750,
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11680-6139-7135-abcd-439bf181794f-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e834-65af-7612-9d63-3fd2e8fb0234-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e834-6720-7f85-b31c-5f2dbef67a92-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e834-6903-7d3e-9658-f94b594b829d-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0e834-6b5e-7ef7-8077-a775f20157c1-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11680-6139-7135-abcd-439bf181794f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11680-61da-793e-a984-4250add1ec81-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11680-626a-7575-ab4e-a509744a20ae-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11680-62f6-7b4e-ad76-cd10eaecadae-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11680-637a-76b5-8b7a-eedd16336a7f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11680-640f-74ea-b6f7-cd0275263ff8-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/253557/pb-bmw-m135-2025",
  "listing_id": "253557",
@@ -41,7 +43,7 @@
   "payments": 47,
   "price": 35750,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-10-08T08:42:51.299628+01:00",
+  "quoted_at": "2026-10-09T08:43:52.3148315+01:00",
   "reg": "LV25YCY",
   "term": 48,
   "total_payable": 45843.47,
