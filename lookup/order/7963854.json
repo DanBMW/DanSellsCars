@@ -76,7 +76,7 @@
   "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWAVoBMXl9aV015toFnqItSuaPMVV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ZIqk6pVHHIchORYkVW4U60Nanhjd0rYet3UiePsME5%25VyJln4ikIZaxzDV2YbGofLI7sufdxbY4WnAgogsMLpjwdjWTQ1Cb2iLRUFcuAVQ9%25DhndYUSkl3pkU%25O2x5aqGk67oiGhX2E4dVf367KMgIAmV4qTwYjPMMXRNsCTnT89BWcU7RHSmLhQ29zOrQ3VHSv6PU5IOOtEJ%25iYO60KakVhxEeqG2PCSKyXf7JGXqZ8A4afKXbHjMGA%258uzCTflqHnvcRMVqzpth9Tcyv103SRhPtFe5O9Jp0Dyi6SjQelZVE2pvyxbIK7wwZouYq4tNbdnsXMK9ugpW8vm0nw1LHt2SpNFQz01o1BDUvenTFml%25tyeEDrxk0ZyllPo2ebuFxJd7yuZIoag4ZnbSdGwMbp8xgfNTu1H4wABRneZtNjm9py1LBCrS1ZFomcPOFbDH"
  ],
  "first_seen": "2026-10-09",
- "removed_at": "2026-10-09",
- "status": "removed",
- "available_until": "2026-11-08"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }
