@@ -1,0 +1,117 @@
+name: daily-lookup
+
+# The last two steps of the morning: rebuild the used car lookup a colleague's
+# booking system reads, and the "Fresh in" arrival dates stock.html badges.
+#
+# These were written up in CLAUDE.md as a "fifth and sixth step" of the 07:00
+# Routine and never added to its instructions, so for the whole of their
+# existence they ran only when somebody ran them by hand. On 9 October 2026 the
+# stock snapshot, the group list and the quotes all refreshed at 07:22 while
+# lookup/stock.json still read 08:57 the previous morning. A note in a markdown
+# file is not a scheduled job.
+#
+# This is a workflow rather than a Routine on purpose. Neither script needs the
+# network, a browser, a secret or any judgement: they read files this repo has
+# already committed and write files back. Two attempts at running them from a
+# Routine came up with no git checkout at all, and an agent container is a lot
+# of moving parts to put behind `node x.mjs`. GitHub already has the repo.
+#
+# fetch-depth: 0 is LOAD BEARING. stock-arrivals.py works out each car's
+# arrival from the first morning its id appears in a committed snapshot, so a
+# shallow clone reports whatever few days it happens to hold as the whole of
+# the history and silently resets every arrival date. The script refuses to run
+# in one rather than write a confident wrong answer, so without this line the
+# job would simply fail every morning.
+
+on:
+  schedule:
+    # 08:15 UTC, after the 07:00 stock Routine finishes (about 07:56).
+    - cron: '15 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-lookup
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sanity check the clone depth
+        run: |
+          test "$(git rev-parse --is-shallow-repository)" = "false" \
+            || { echo "::error::shallow clone, arrival dates would be truncated"; exit 1; }
+          echo "snapshot history: $(git log --oneline -- automation/hedin-stock-snapshot.json | wc -l) commits"
+
+      # The lookup a colleague's booking system reads. It refuses to write and
+      # exits 1 when today's stock looks broken (under 50 cars, or more than
+      # 40% of yesterday's gone at once) rather than marking good cars as
+      # removed. On a refusal, put lookup/ back exactly as it was and carry on
+      # to the arrivals, which is what a person would do.
+      - name: Rebuild lookup/
+        id: lookup
+        run: |
+          if node scripts/build-lookup.mjs; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::build-lookup.mjs refused, yesterday's lookup/ kept"
+            git checkout -- lookup/ 2>/dev/null || true
+            git clean -fd lookup/ 2>/dev/null || true
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # "Fresh in" badges. Reads git alone.
+      - name: Rebuild the arrivals ledger
+        id: arrivals
+        run: |
+          if python3 automation/stock-arrivals.py; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::stock-arrivals.py refused, yesterday's sidecar kept"
+            git checkout -- automation/stock-arrivals.json 2>/dev/null || true
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The reg files carry no timestamp and generated_at only moves on a real
+      # change, so an ordinary morning is often an empty diff. That is a
+      # success, not a failure: commit only when something actually moved.
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A lookup/ automation/stock-arrivals.json
+          if git diff --cached --quiet; then
+            echo "nothing changed, nothing committed"
+            exit 0
+          fi
+          CARS=$(node -e "try{console.log(require('./lookup/stock.json').count)}catch(e){console.log('?')}")
+          git commit -m "Daily lookup and arrivals refresh (${CARS} cars in stock)"
+          for i in 1 2 3 4; do
+            git push origin HEAD:main && exit 0
+            git pull --rebase origin main || true
+            sleep $((2 ** i))
+          done
+          echo "::error::could not push"
+          exit 1
+
+      # Fail the run if either script refused, AFTER the good half has been
+      # pushed. A red run is how this gets noticed; losing the other job's work
+      # to make the log tidy is not a trade worth making.
+      - name: Report refusals
+        if: steps.lookup.outputs.ok == 'false' || steps.arrivals.outputs.ok == 'false'
+        run: |
+          echo "lookup ok: ${{ steps.lookup.outputs.ok }}"
+          echo "arrivals ok: ${{ steps.arrivals.outputs.ok }}"
+          exit 1
