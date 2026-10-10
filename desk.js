@@ -34,33 +34,27 @@
   function num(v) { var n = String(v == null ? '' : v).replace(/[^0-9.]/g, ''); return n ? Number(n) : null; }
 
   /* ---------- choices ---------- */
-  var SERVICE = ['Full BMW', 'Full independent', 'Partial', 'None', 'Not sure'];
-  var PXFIN = ['Yes', 'No', 'Not sure'];
-  var COND = ['Excellent', 'Good', 'Some marks and wear', 'Needs some work'];
-  var KEYS = ['1', '2', 'More than 2'];
+  /* The part exchange here is deliberately four facts: reg, mileage,
+     settlement and a valuation (Dan, 10 October). Service history,
+     condition, keys, fuel, gearbox and a separate SIV all came off, because
+     he appraises and values the car properly when the customer comes in and
+     a desk guess at any of them is a figure somebody might hold him to. */
   var PAY = [{ v: 'monthly', t: 'Monthly' }, { v: 'cash', t: 'Cash price' }, { v: 'notsure', t: 'Not sure yet' }];
   var INTEREST = [{ v: 'new', t: 'Brand new' }, { v: 'used', t: 'Approved used' }, { v: 'either', t: 'Either' }];
   var FIELDS = {
     models: { multi: true, opts: M.MODELS.map(function (m) { return { v: m.v, t: m.t }; }).concat([{ v: 'open', t: 'Open to ideas' }]) },
     who: { opts: M.WHO }, life: { opts: M.LIFE }, miles: { opts: M.MILES }, people: { opts: M.PEOPLE },
     boot: { opts: M.BOOT }, charge: { opts: M.CHARGE },
-    service: { opts: SERVICE.map(function (x) { return { v: x, t: x }; }) },
-    pxfin: { opts: PXFIN.map(function (x) { return { v: x, t: x }; }) },
-    cond: { opts: COND.map(function (x) { return { v: x, t: x }; }) },
-    keys: { opts: KEYS.map(function (x) { return { v: x, t: x }; }) },
     pay: { opts: PAY }, when: { opts: M.WHEN }, interest: { opts: INTEREST },
     body: { multi: true, opts: M.BODY }, fuel: { multi: true, opts: M.FUEL },
     mustF: { multi: true, opts: M.EXTRAS.map(function (k) { return { v: k, t: k === 'seven' ? '7 seats' : ST.FEATURES[k].label }; }) },
     wouldF: { multi: true, opts: M.EXTRAS.map(function (k) { return { v: k, t: k === 'seven' ? '7 seats' : ST.FEATURES[k].label }; }) },
     colours: { multi: true, opts: M.COLOURS.map(function (c) { return { v: c, t: c }; }) },
-    curFuel: { multi: true, opts: [{ v: 'petrol', t: 'Petrol' }, { v: 'diesel', t: 'Diesel' }, { v: 'hybrid', t: 'Hybrid' }] },
-    gear: { opts: [{ v: 'auto', t: 'Auto' }, { v: 'manual', t: 'Manual' }] },
-    pxyn: { opts: [{ v: 'yes', t: 'Yes' }, { v: 'no', t: 'No' }] },
     fundMethod: { multi: true, opts: [{ v: 'pcp', t: 'BMW Select / PCP' }, { v: 'hp', t: 'HP' }, { v: 'other', t: 'Other' }, { v: 'savings', t: 'Savings' }, { v: 'loan', t: 'Loan' }, { v: 'motability', t: 'Motability' }] },
     said: { opts: [{ v: 'yes', t: 'Yes' }, { v: 'no', t: 'No' }] },
     introBM: { opts: [{ v: 'yes', t: 'Yes' }, { v: 'no', t: 'No' }] }
   };
-  var TEXTS = ['pxReg', 'pxMiles', 'pxSettle', 'pxSiv', 'pxVal', 'pxNotes', 'curCar', 'likeModel', 'important',
+  var TEXTS = ['pxReg', 'pxMiles', 'pxSettle', 'pxVal', 'curCar', 'likeModel', 'important',
     'mustText', 'wouldText', 'notes', 'curMonthly', 'changeCycle', 'annualMiles', 'moFrom', 'mo', 'dep', 'term', 'cash',
     'n_model', 'n_usage', 'n_px', 'n_budget', 'n_when', 'n_must', 'n_result', 'n_next', 'nsDriveWhen', 'nsFollow'];
   var CHECKS = ['nsDrive', 'nsVal', 'cOptin'];
@@ -87,18 +81,10 @@
       boot:["What do you end up carrying that the boot struggles with?"],
       charge:["Where would this car actually get charged?"],
       curCar:["What's not working about the car you're in now?"],
-      curFuel:["How has the fuel worked out for the miles you do?"],
-      gear:["Do you enjoy changing gear, or would you rather not think about it?"],
-      pxyn:["What are you hoping to do with the car you've got?"],
       pxReg:["What's the registration, so I can see what you're in?"],
       pxMiles:["Roughly how many miles has it done?"],
-      service:["How has it been looked after?"],
-      pxfin:["Is there any finance left on it?"],
-      pxVal:["What sort of figure were you hoping your car would be worth?"],
-      pxSiv:["If we stand your car in, what were you thinking it might be worth?"],
+      pxVal:["What were you hoping your car would be worth?"],
       pxSettle:["Roughly what's left to settle, if you know?"],
-      cond:["How would you describe it to a friend?"],
-      keys:["How many keys have you still got?"],
       mustF:["What would a car have to have for you to say yes?"],
       wouldF:["And what would be lovely, but you could live without?"],
       mustText:["Say that in your own words. What can't you do without?"],
@@ -139,7 +125,7 @@
       if(ctrl) host.insertBefore(lab, ctrl); else host.appendChild(lab);
     }
     document.querySelectorAll('.desk-box').forEach(function(box){addTip(box.parentElement,TIPS[box.getAttribute('data-f')]);});
-    ['likeModel','important','curCar','pxReg','pxMiles','pxVal','pxSiv','pxSettle','mustText','wouldText','notes','curMonthly','changeCycle','annualMiles','moFrom','mo','dep','term','cash','cFirst','nsDriveWhen','nsFollow'].forEach(function(id){var e=$(id); if(e&&e.parentElement)addTip(e.parentElement,TIPS[id]||TIPS[id.replace('When','')]);});
+    ['likeModel','important','curCar','pxReg','pxMiles','pxVal','pxSettle','mustText','wouldText','notes','curMonthly','changeCycle','annualMiles','moFrom','mo','dep','term','cash','cFirst','nsDriveWhen','nsFollow'].forEach(function(id){var e=$(id); if(e&&e.parentElement)addTip(e.parentElement,TIPS[id]||TIPS[id.replace('When','')]);});
     ['nsDrive','nsVal'].forEach(function(id){var e=$(id); if(e)addTip(e.parentElement,TIPS[id]);});
     document.addEventListener('click',function(ev){
       var btn=ev.target.closest&&ev.target.closest('.qtip>button');
@@ -176,26 +162,25 @@
   }
   function labels(keys) { return keys.map(function (k) { return k === 'seven' ? '7 seats' : (ST.FEATURES[k] ? ST.FEATURES[k].label : k); }); }
   function equity() {
-    var siv = num($('pxSiv').value), set = num($('pxSettle').value), el = $('pxEquity');
-    if (siv === null && set === null) { el.hidden = true; return null; }
-    var e = (siv || 0) - (set || 0);
-    el.hidden = false; el.textContent = 'Equity: ' + FN.money(e) + (e < 0 ? ' (negative equity)' : '');
+    var e = pxEquityForDeposit(), el = $('pxEquity');
+    if (e === null) { el.hidden = true; return null; }
+    el.hidden = false;
+    el.textContent = 'Equity: ' + FN.money(e) + (e < 0 ? ' (negative equity, it comes off the deposit)' : ', straight onto the deposit');
     return e;
   }
   /* The deposit, in one place and for every pay route.
      A part exchange IS a deposit, so the equity from section 3 is added to
      whatever cash they are putting in rather than left for Dan to total up
-     in his head. Equity is the SIV less the settlement where both are
-     known, falling back to the PX figure, and it only counts when they have
-     actually said they are part exchanging: a car they are keeping is not a
-     deposit. Negative equity counts too, downwards, because that is what it
-     does to the deal. */
+     in his head (Dan, 10 October: "assuming any equity would be used
+     towards deposit"). It is the valuation less the settlement, and the
+     valuation is what makes it a figure at all: a settlement on its own
+     would otherwise read as that much negative equity while he is still
+     typing, and drop the deposit below the cash. Negative equity counts,
+     downwards, because that is what it does to the deal. */
   function pxEquityForDeposit() {
-    if (one('pxyn') === 'no') return null;
-    var siv = num($('pxSiv').value), set = num($('pxSettle').value), px = num($('pxVal').value);
-    var base = siv !== null ? siv : px;
-    if (base === null && set === null) return null;
-    return (base || 0) - (set || 0);
+    var val = num($('pxVal').value), set = num($('pxSettle').value);
+    if (val === null) return null;
+    return val - (set || 0);
   }
   function depositTotal() {
     var cash = num($('dep').value), eq = pxEquityForDeposit();
@@ -203,9 +188,9 @@
     return (cash || 0) + (eq || 0);
   }
   function paintDeposit() {
-    var eq = pxEquityForDeposit(), tot = depositTotal(), keeping = one('pxyn') === 'no';
-    $('depPx').textContent = eq === null ? (keeping ? 'not part exchanging' : 'not yet') : FN.money(eq);
-    $('depPxNote').textContent = eq === null ? ''
+    var eq = pxEquityForDeposit(), tot = depositTotal();
+    $('depPx').textContent = eq === null ? 'no valuation yet' : FN.money(eq);
+    $('depPxNote').textContent = eq === null ? 'valuation less settlement, from section 3'
       : (eq < 0 ? 'negative equity, it comes off the deposit' : 'carried from section 3');
     $('depTotal').textContent = tot === null ? GBP + '0' : FN.money(tot);
     $('depHelp').textContent = tot === null
@@ -241,10 +226,8 @@
   }
   function pxInfo() {
     return { reg: $('pxReg').value.toUpperCase().replace(/[^A-Z0-9]/g, ''), found: $('pxFound').hidden ? '' : $('pxFound').textContent,
-      car: $('curCar').value.trim(), fuel: vals('curFuel'), gear: one('gear'), yn: one('pxyn'),
-      miles: num($('pxMiles').value), service: one('service'), fin: one('pxfin'),
-      px: num($('pxVal').value), siv: num($('pxSiv').value), settle: num($('pxSettle').value), equity: equity(),
-      cond: one('cond'), notes: $('pxNotes').value.trim(), keys: one('keys') };
+      car: $('curCar').value.trim(), miles: num($('pxMiles').value),
+      val: num($('pxVal').value), settle: num($('pxSettle').value), equity: equity() };
   }
 
   /* ---------- data ---------- */
@@ -261,11 +244,11 @@
   });
 
   /* ---------- Find car ---------- */
-  var FOUND = false, RES = null, NEWR = null, TOT = null, A = null;
+  var FOUND = false, RES = null, NEWR = null, TOT = null, A = null, VIEWCARS = [];
   function photo(c) { var p = FN.photos(c, M.data().det[c.id]); return p[0] || c.image || ''; }
-  function usedCard(r, i, forCustomer) {
+  function usedCard(r, i, forCustomer, k) {
     var c = r.c, f = r.fin, u = photo(c);
-    return '<article class="desk-card" data-i="' + i + '">'
+    return '<article class="desk-card is-tappable" data-i="' + i + '" data-car="' + k + '">'
       + '<div class="fmb-ph"' + (c.reg ? ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="' + (c._home ? 'forecourt' : 'group') + '"' : '') + '>'
       + (u ? '<img src="' + esc(u) + '" alt="" width="640" height="360" loading="lazy"/>' : '') + '</div>'
       + '<h3>' + (i === 0 ? 'Top pick: ' : '') + esc((c.year ? c.year + ' ' : '') + M.modelName(c)) + '</h3>'
@@ -275,9 +258,9 @@
       + (f ? '<p class="desk-note">' + esc(FN.money2(f.monthly)) + ' a month. Representative example: ' + esc(M.repText(f)) + '</p>' : '<p class="desk-note">No lender quote at this deposit. Ask for a quote.</p>')
       + '</article>';
   }
-  function newCard(r, reach, forCustomer) {
+  function newCard(r, reach, forCustomer, k) {
     var c = r.c;
-    return '<article class="desk-card' + (reach && !forCustomer ? ' desk-reach' : '') + '">'
+    return '<article class="desk-card is-tappable' + (reach && !forCustomer ? ' desk-reach' : '') + '" data-car="' + k + '">'
       + '<h3>Brand new ' + esc(c.description) + '</h3>'
       + '<p>' + esc([c.colour, c.price, M.newWhen(c)].filter(Boolean).join(', ')) + '</p>'
       + (reach && !forCustomer ? '<p class="desk-pct"><b>' + r.pct.toFixed(1) + '% over budget</b></p>' : '')
@@ -290,17 +273,22 @@
     var head = tight ? M.heroLine(A, TOT) : 'Out of the ' + TOT.total + ' cars in our stock, nothing nails every point today, so these are the closest.';
     var h = '<h2 class="desk-hero">' + esc(head) + '</h2>';
     if (!forCustomer) h += '<p class="desk-note">' + esc(M.xLine(A, TOT)) + '.' + (RES.level >= 2 ? ' Widened: ' + esc(RES.levels.filter(function (l) { return l >= 2; }).map(function (l) { return M.RELAX[l]; }).join(', ')) + '.' : '') + '</p>';
+    /* The cards and the full page car view read off one list, so a card's
+       data-car index can never point at a different car from the one it
+       is drawn from. */
+    VIEWCARS = [];
+    function keep(slide) { VIEWCARS.push(slide); return VIEWCARS.length - 1; }
     var top = RES.list.slice(0, 3);
-    h += top.map(function (r, i) { return usedCard(r, i, forCustomer); }).join('');
+    h += top.map(function (r, i) { return usedCard(r, i, forCustomer, keep({ kind: 'used', role: i === 0 ? 'top' : 'alt', r: r })); }).join('');
     if (M.wantsNew(A)) {
       var anyNew = NEWR.fit.length || NEWR.reach.length;
       h += '<h3 class="desk-sub">Brand new options</h3>';
       if (!anyNew) h += '<p>I\u2019ll be in touch with brand new options that suit you.</p>';
       else {
-        if (NEWR.fit.length) h += NEWR.fit.map(function (r) { return newCard(r, false, forCustomer); }).join('');
+        if (NEWR.fit.length) h += NEWR.fit.map(function (r) { return newCard(r, false, forCustomer, keep({ kind: 'new', role: 'new', r: r })); }).join('');
         if (NEWR.reach.length) {
           if (!forCustomer) h += '<h3 class="desk-sub">Within reach, up to ' + Math.round(M.NEW_STRETCH * 100) + '% over budget</h3>';
-          h += NEWR.reach.map(function (r) { return newCard(r, true, forCustomer); }).join('');
+          h += NEWR.reach.map(function (r) { return newCard(r, true, forCustomer, keep({ kind: 'new', role: 'reach', r: r })); }).join('');
         }
       }
     }
@@ -380,14 +368,14 @@
     D.customer = [['Name', (c.first + ' ' + c.last).trim()], ['Mobile', c.phone], ['Email', c.email], ['Marketing opt in', c.optin ? 'Yes' : 'No']];
     D.customerNotes = nv('n_customer');
     D.interestTicks = 'New ' + T(a.interest === 'new' || a.interest === 'either') + '  Used ' + T(a.interest === 'used' || a.interest === 'either');
-    D.carFuelTicks = 'Petrol ' + T(px.fuel.indexOf('petrol') !== -1) + '  Diesel ' + T(px.fuel.indexOf('diesel') !== -1) + '  Hybrid ' + T(px.fuel.indexOf('hybrid') !== -1);
-    D.pxTicks = 'Yes ' + T(px.yn === 'yes') + '  No ' + T(px.yn === 'no');
-    D.gearTicks = 'Auto ' + T(px.gear === 'auto') + '  Manual ' + T(px.gear === 'manual');
     D.usage = [['Main driver', M.txt(M.WHO, a.who)], ['Typical week', M.txt(M.LIFE, a.life)], ['People', M.txt(M.PEOPLE, a.people)],
       ['Boot', M.txt(M.BOOT, a.boot)], ['Home charging', M.txt(M.CHARGE, a.charge)]];
-    D.pxRows = [['Reg', [px.reg, px.found].filter(Boolean).join(', ')], ['Mileage', px.miles ? 'About ' + px.miles.toLocaleString('en-GB') + ' miles' : ''],
-      ['Service history', px.service], ['Outstanding finance', px.fin], ['Condition', px.cond], ['Keys', px.keys], ['Notes on the car', px.notes]];
-    D.money = [['PX', fm(px.px)], ['SIV', fm(px.siv)], ['Settlement', fm(px.settle)], ['Equity', px.equity === null ? '' : FN.money(px.equity) + (px.equity < 0 ? ' (negative)' : '')]];
+    D.pxRows = [['Reg', [px.reg, px.found].filter(Boolean).join(', ')], ['Mileage', px.miles ? 'About ' + px.miles.toLocaleString('en-GB') + ' miles' : '']];
+    D.money = [['Valuation', fm(px.val)], ['Settlement', fm(px.settle)], ['Equity', px.equity === null ? '' : FN.money(px.equity) + (px.equity < 0 ? ' (negative)' : '')]];
+    /* The desk figure is a working one. The appraisal happens in person, so
+       the document says so rather than letting a desk number read as a
+       valuation Dan has given. */
+    if (px.val !== null) D.money.push(['Valued', 'Desk figure. Full appraisal and valuation on arrival']);
     D.must = labels(vals('mustF')).concat(nv('mustText') ? [nv('mustText')] : []);
     D.would = labels(vals('wouldF')).concat(nv('wouldText') ? [nv('wouldText')] : []);
     D.prefs = [['Shape', M.shapesText(a)], ['Fuel', M.fuelsText(a)], ['Colours', a.colours.length ? M.list(a.colours, 'or') : 'Open minded']];
@@ -420,8 +408,7 @@
     L.push('CUSTOMER DETAILS'); D.customer.forEach(function (r) { row(r[0], r[1]); }); if (D.customerNotes) L.push('Notes: ' + D.customerNotes); L.push('');
     L.push('CUSTOMER REQUIREMENT');
     L.push('Car of interest: ' + M.modelsText(a) + '. ' + D.interestTicks);
-    L.push('Current car: ' + (D.px.car || D.px.found || 'Not given') + '. ' + D.carFuelTicks);
-    L.push('Part exchange? ' + D.pxTicks + '. ' + D.gearTicks);
+    L.push('Current car: ' + (D.px.car || D.px.found || 'Not given'));
     row('What is it you like about this particular model?', nv('likeModel'));
     row('What is important to you when looking for a new car?', nv('important'));
     notes('n_model');
@@ -477,8 +464,7 @@
     h += '<section class="cp-sec"><h2 class="cp-bar">Customer details</h2>' + tbl(D.customer.map(function (r) { return tr(r[0], v(r[1])); })) + (D.customerNotes ? '<div class="cp-notes"><b>Notes</b>' + v(D.customerNotes) + '</div>' : '') + '</section>';
     h += '<section class="cp-sec"><h2 class="cp-bar">Customer requirement</h2>' + tbl([
       tr('Car of interest', v(M.modelsText(a)) + '<span class="cp-ticks">' + esc(D.interestTicks) + '</span>'),
-      tr('Current car', v(D.px.car || D.px.found) + '<span class="cp-ticks">' + esc(D.carFuelTicks) + '</span>'),
-      tr('Part exchange?', esc(D.gearTicks) + ' &nbsp; ' + esc(D.pxTicks)),
+      tr('Current car', v(D.px.car || D.px.found)),
       tr('What is it you like about this particular model?', v(nv('likeModel'))),
       tr('What is important to you when looking for a new car?', v(nv('important')))
     ]) + notes('n_model') + '</section>';
@@ -517,7 +503,10 @@
     return h;
   }
   function buildProfile(opts) {
-    if (!FOUND) runFind(true);
+    /* It prints whatever is filled in. A document with no car on it is
+       still the document, and waiting for stock to load would be a
+       surprising reason not to print. */
+    if (!FOUND && ready) runFind(true);
     $('deskProfile').innerHTML = profileHtml(opts);
     return $('deskProfile');
   }
@@ -764,10 +753,10 @@
       if (/^px(Siv|Settle|Val)$/.test(e.target.id)) equity();
       /* The deposit is the PX equity plus the cash, so it has to repaint when
          any of the three moves, not only when the deposit box itself does. */
-      if (/^(dep|pxSiv|pxSettle|pxVal)$/.test(e.target.id)) paintDeposit();
+      if (/^(dep|pxSettle|pxVal)$/.test(e.target.id)) paintDeposit();
       if (e.target.id === 'pxReg') e.target.value = e.target.value.toUpperCase();
       paintFill(); actSummary(); saveSoon();
-      if (FOUND && /^(mo|dep|cash|pxSiv|pxSettle|pxVal)$/.test(e.target.id)) { clearTimeout(form._t); form._t = setTimeout(function () { runFind(true); }, 400); }
+      if (FOUND && /^(mo|dep|cash|pxSettle|pxVal)$/.test(e.target.id)) { clearTimeout(form._t); form._t = setTimeout(function () { runFind(true); }, 400); }
     });
     /* One step open at a time. Opening is the deliberate act, so only an
        open fires it; folding one by hand leaves the rest alone. */
@@ -802,6 +791,60 @@
       if (!document.fullscreenElement && box && !box.hidden && box.dataset.wantFs === '1') { /* overlay stays if fullscreen was refused or exited */ }
     });
     $('deskViewClose').addEventListener('click', function () { $('deskView').hidden = true; });
+
+    /* The two overlays. A result card and a customer view card both open
+       the same car view; the presentation hands it its own slide list, so
+       Next and Previous walk the cars that are actually on screen. */
+    cardTaps($('deskResult'), false, function () { return VIEWCARS; });
+    cardTaps($('deskViewBody'), true, function () { return VIEWCARS; });
+    $('dpStage').addEventListener('click', function (e) {
+      if (e.target.closest('.aos-bar, .aos-stage, a, button, input, label, summary')) return;
+      if (!PSLIDES.length) return;
+      openCar(PSLIDES, PIDX, true);
+    });
+    $('dcClose').addEventListener('click', closeCar);
+    $('dcPrev').addEventListener('click', function () { if (CIDX > 0) { CIDX -= 1; paintCar(); } });
+    $('dcNext').addEventListener('click', function () { if (CIDX < CARS.length - 1) { CIDX += 1; paintCar(); } });
+    $('dcBody').addEventListener('click', function (e) {
+      var t = e.target.closest('[data-shot]');
+      var area = $('dcBody').querySelector('.dc-photo');
+      if (t) {
+        /* A thumbnail swaps the photograph, and puts the 360 away first the
+           way every other page that carries one does. */
+        var k = parseInt(t.getAttribute('data-shot'), 10), pics = presentPics(CARS[CIDX].r.c);
+        if (window.aosMedia && area) window.aosMedia.leave(area);
+        clearInterval(SPINT);
+        var img = $('dcImg'); if (img) img.src = pics[k] || '';
+        [].forEach.call($('dcBody').querySelectorAll('[data-shot]'), function (b) { b.classList.toggle('on', b === t); });
+        return;
+      }
+      if (e.target.closest('.aos-bar, .aos-stage, a, button, summary')) return;
+      if (e.target.id === 'dcImg') {
+        var p = presentPics(CARS[CIDX].r.c);
+        var at = p.indexOf($('dcImg').getAttribute('src'));
+        openShot(p, at < 0 ? 0 : at, CARS[CIDX], CARCUST);
+      }
+    });
+    $('dshClose').addEventListener('click', closeShot);
+    $('deskShot').addEventListener('click', function (e) { if (e.target.id === 'deskShot' || e.target.classList.contains('dsh-in')) closeShot(); });
+    $('dshPrev').addEventListener('click', function () { SHOT.i = (SHOT.i - 1 + SHOT.pics.length) % SHOT.pics.length; paintShot(); });
+    $('dshNext').addEventListener('click', function () { SHOT.i = (SHOT.i + 1) % SHOT.pics.length; paintShot(); });
+    $('dshFull').addEventListener('click', function () {
+      var slide = SHOT.slide, cust = SHOT.cust; closeShot();
+      if (slide) openCar([slide], 0, cust);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (!$('deskShot').hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); closeShot(); }
+        else if (e.key === 'ArrowRight') { SHOT.i = (SHOT.i + 1) % SHOT.pics.length; paintShot(); }
+        else if (e.key === 'ArrowLeft') { SHOT.i = (SHOT.i - 1 + SHOT.pics.length) % SHOT.pics.length; paintShot(); }
+        return;
+      }
+      if ($('deskCar').hidden) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeCar(); }
+      else if (e.key === 'ArrowRight' && CIDX < CARS.length - 1) { CIDX += 1; paintCar(); }
+      else if (e.key === 'ArrowLeft' && CIDX > 0) { CIDX -= 1; paintCar(); }
+    });
     $('deskSubmit').addEventListener('click', submit);
     $('deskRetry').addEventListener('click', submit);
     $('deskCopy').addEventListener('click', copyEmail);
@@ -813,6 +856,10 @@
     });
     $('pxLookup').addEventListener('click', lookupReg);
     $('deskProfileBtn').addEventListener('click', openProfile);
+    /* Print sits in the action bar as well, because the customer
+       requirements document is a thing Dan prints at the desk, not only
+       something to look at after a car has been found. */
+    $('deskPrintBtn').addEventListener('click', openProfile);
     $('deskProfileBtn2').addEventListener('click', openProfile);
     $('deskProfileClose').addEventListener('click', function () { $('deskProfileWrap').hidden = true; });
     $('deskPrint').addEventListener('click', function () { buildProfile(); track('fmb_desk_print'); window.print(); });
@@ -877,6 +924,139 @@
       + '<h2 class="dp-name">' + esc(name) + '</h2><p class="dp-spec">' + esc(spec) + '</p>' + price + fin
       + '<h3>Why this one for you</h3><ul class="dp-why">' + whys + '</ul></div></article>';
   }
+  /* ---------- one car, full page, and a photograph, enlarged ----------
+     Dan, 10 October: a used car photograph should enlarge, and a car in the
+     presentation should open full page with the 360 and the information
+     under it, price included. Both overlays read the same slide shape the
+     deck uses, so there is one description of a car on this page rather
+     than three. */
+  var CARS = [], CIDX = 0, CARCUST = false, SPINT = null;
+  var SHOT = { pics: [], i: 0, slide: null, cust: false };
+
+  function carFacts(slide) {
+    var c = slide.r.c;
+    if (slide.kind === 'new') return [c.colour, c.fuel, c.transmission, M.newWhen(c), c.order_number ? 'Order ' + c.order_number : ''].filter(Boolean);
+    return [c.reg, c.year ? String(c.year) : '', String(c.mileage || '').replace(/\u00a0/g, ' '), c.colour, c.fuel,
+      c.seats ? c.seats + ' seats' : '', c._home ? 'Here at Ruxley' : 'In the group, I can bring it in'].filter(Boolean);
+  }
+  function carName(slide) {
+    var c = slide.r.c;
+    return slide.kind === 'new' ? 'Brand new ' + c.description : ((c.year ? c.year + ' ' : '') + M.modelName(c));
+  }
+  function carFinHtml(slide, forCustomer) {
+    if (slide.kind === 'new') return '<p class="dc-fin">Finance available. I\u2019ll put together a personalised quote.</p>';
+    var f = slide.r.fin;
+    /* A monthly figure never appears without the whole representative
+       example beside it, here as everywhere else on this site. */
+    return f ? '<p class="dc-fin"><b>' + esc(FN.money2(f.monthly)) + ' a month</b><span>Representative example: ' + esc(M.repText(f)) + '</span></p>'
+      : '<p class="dc-fin">' + (forCustomer ? 'Ask me for a quote on this one.' : 'No lender quote at this deposit. Ask for a quote.') + '</p>';
+  }
+  function carKit(slide) {
+    if (slide.kind === 'new') {
+      var l = (slide.r.c.options || []).concat(slide.r.c.packages || []).concat(slide.r.c.standard || []);
+      return l.filter(Boolean);
+    }
+    var det = (M.data().det || {})[slide.r.c.id] || {};
+    return (det.equipment || []).filter(Boolean);
+  }
+  function carHtml(slide, forCustomer) {
+    var c = slide.r.c, pics = presentPics(c), kit = carKit(slide);
+    var kicker = slide.role === 'top' ? 'The one for you' : (slide.role === 'alt' ? 'Also worth a look' : 'Brand new');
+    var aos = slide.kind === 'used' && c.reg ? ' data-aos-reg="' + esc(c.reg) + '" data-aos-src="' + (c._home ? 'forecourt' : 'group') + '"' : '';
+    var h = '<div class="dc-photo"' + aos + '>'
+      + (pics[0] ? '<img id="dcImg" src="' + esc(pics[0]) + '" alt=""/>' : '<div class="dc-nophoto">Photo coming</div>')
+      + (pics.length > 1 ? '<div class="dc-thumbs">' + pics.map(function (u, k) {
+          return '<button type="button" data-shot="' + k + '"' + (k === 0 ? ' class="on"' : '') + '><img src="' + esc(u) + '" alt=""/></button>'; }).join('') + '</div>' : '')
+      + '</div>';
+    h += '<div class="dc-info"><p class="dc-kicker">' + esc(kicker) + (slide.role === 'reach' && !forCustomer ? ', ' + slide.r.pct.toFixed(1) + '% over budget' : '') + '</p>'
+      + '<h2>' + esc(carName(slide)) + '</h2>'
+      + '<p class="dc-price">' + esc(c.price || 'Price on request') + '</p>'
+      + '<p class="dc-facts">' + esc(carFacts(slide).join(' \u00b7 ')) + '</p>'
+      + carFinHtml(slide, forCustomer);
+    var why = slide.kind === 'new' ? M.newWhy(c, A || answers()) : slide.r.why;
+    if (why) h += '<p class="dc-why"><b>Why this one for you:</b> ' + esc(String(why).replace(/\.+$/, '.')) + '</p>';
+    if (!forCustomer && slide.r.miss && slide.r.miss.length) h += '<p class="desk-note">Misses: ' + esc(slide.r.miss.join(', ')) + '</p>';
+    if (kit.length) h += '<details class="dc-kit"><summary>Specification (' + kit.length + ')</summary><ul>'
+      + kit.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></details>';
+    if (!forCustomer && c.url) h += '<p class="dc-link"><a href="' + esc(c.url) + '" target="_blank" rel="noopener">Open the listing</a></p>';
+    return h + '</div>';
+  }
+  /* A car with a spin should be turning when the page opens, which is what
+     Dan asked for. aos-media decides whether there is one, and that answer
+     arrives whenever the CDN gets round to it, so this waits for the button
+     to appear rather than assuming a time. A car with no spin keeps its
+     photographs and nothing happens. */
+  function autoSpin(area) {
+    clearInterval(SPINT);
+    var n = 0;
+    SPINT = setInterval(function () {
+      if (!area || !document.body.contains(area) || $('deskCar').hidden) { clearInterval(SPINT); return; }
+      var b = area.querySelector('button.aos-b[data-aos="spin"]');
+      if (b) { clearInterval(SPINT); b.click(); return; }
+      if (++n > 45) clearInterval(SPINT);
+    }, 500);
+  }
+  function paintCar() {
+    var slide = CARS[CIDX]; if (!slide) return;
+    $('dcBody').innerHTML = carHtml(slide, CARCUST);
+    $('dcBody').scrollTop = 0;
+    $('dcCount').textContent = CARS.length > 1 ? (CIDX + 1) + ' of ' + CARS.length : '';
+    $('dcPrev').disabled = CIDX === 0;
+    $('dcNext').disabled = CIDX === CARS.length - 1;
+    $('dcPrev').hidden = $('dcNext').hidden = CARS.length < 2;
+    var area = $('dcBody').querySelector('.dc-photo');
+    if (window.aosMedia && area) { window.aosMedia.scan($('dcBody')); autoSpin(area); }
+  }
+  function openCar(list, i, forCustomer) {
+    if (!list || !list.length) return;
+    CARS = list; CIDX = Math.max(0, Math.min(i || 0, list.length - 1)); CARCUST = !!forCustomer;
+    $('deskCar').hidden = false;
+    document.body.classList.add('dc-open');
+    paintCar();
+    $('dcClose').focus();
+    track('fmb_desk_car_view', { kind: CARS[CIDX].kind, customer: forCustomer ? 'yes' : 'no' });
+  }
+  function closeCar() {
+    clearInterval(SPINT);
+    $('deskCar').hidden = true; $('dcBody').innerHTML = '';
+    if ($('deskShot').hidden) document.body.classList.remove('dc-open');
+  }
+  function paintShot() {
+    $('dshImg').src = SHOT.pics[SHOT.i] || '';
+    $('dshCap').textContent = (SHOT.slide ? carName(SHOT.slide) + ', ' : '') + (SHOT.i + 1) + ' of ' + SHOT.pics.length;
+    $('dshPrev').hidden = $('dshNext').hidden = SHOT.pics.length < 2;
+    $('dshFull').hidden = !SHOT.slide;
+  }
+  function openShot(pics, i, slide, forCustomer) {
+    if (!pics || !pics.length) return;
+    SHOT = { pics: pics, i: Math.max(0, Math.min(i || 0, pics.length - 1)), slide: slide || null, cust: !!forCustomer };
+    $('deskShot').hidden = false;
+    document.body.classList.add('dc-open');
+    paintShot();
+    $('dshClose').focus();
+    track('fmb_desk_photo', { customer: forCustomer ? 'yes' : 'no' });
+  }
+  function closeShot() {
+    $('deskShot').hidden = true; $('dshImg').removeAttribute('src');
+    if ($('deskCar').hidden) document.body.classList.remove('dc-open');
+  }
+  /* What a tap means, in one place: a photograph enlarges, anything else on
+     a card opens that car full page. Controls aos-media or the page itself
+     put on the card are left alone. */
+  function cardTaps(root, forCustomer, listFor) {
+    root.addEventListener('click', function (e) {
+      if (e.target.closest('.aos-bar, .aos-stage, a, button, input, textarea, select, label, summary, details')) return;
+      var card = e.target.closest('[data-car]'); if (!card) return;
+      var list = listFor(), idx = parseInt(card.getAttribute('data-car'), 10);
+      var slide = list[idx]; if (!slide) return;
+      if (e.target.closest('.fmb-ph')) {
+        var pics = presentPics(slide.r.c);
+        if (pics.length) { openShot(pics, 0, slide, forCustomer); return; }
+      }
+      openCar(list, idx, forCustomer);
+    });
+  }
+
   function paintPresent() {
     var n = PSLIDES.length;
     if (!n) return;
@@ -923,6 +1103,10 @@
   function presentKey(e) {
     var box = $('deskPresent');
     if (!box || box.hidden) return;
+    /* The car view and the enlarged photograph sit on top of the deck and
+       answer for themselves, so the deck does not also step a car or close
+       itself underneath them. */
+    if (!$('deskCar').hidden || !$('deskShot').hidden) return;
     if (e.key === 'Escape') {
       if ($('dpStage').querySelector('.aos-stage')) return;
       e.preventDefault(); closePresent();
@@ -944,6 +1128,10 @@
       var mot = (d.motHistory || [])[0];
       $('pxFound').textContent = [d.yearOfManufacture, d.make, d.model, d.colour, d.fuelType].filter(Boolean).join(' ') + ' (from reg lookup)' + (mot && mot.mileage ? '. Last MOT ' + mot.mileage : '');
       if (mot && mot.odo && !$('pxMiles').value) $('pxMiles').value = String(mot.odo);
+      /* The lookup knows the car, so Dan does not type it again. His own
+         words win if he has already put something in the box. */
+      if (!$('curCar').value && (d.make || d.model)) $('curCar').value = [d.yearOfManufacture, d.make, d.model].filter(Boolean).join(' ');
+      paintFill();
       saveSoon(); track('fmb_desk_px_lookup', { ok: 'yes' });
     })['catch'](function () { $('pxFound').textContent = 'Could not look that reg up. Carry on and add the details by hand.'; track('fmb_desk_px_lookup', { ok: 'no' }); });
   }
