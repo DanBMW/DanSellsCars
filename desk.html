@@ -49,22 +49,22 @@
   <div class="desk-grid">
     <form class="desk-form" id="deskForm" autocomplete="off">
       <h2 class="desk-bar">Customer requirement</h2>
-      <section class="desk-sec" id="sec-model" data-sec="model"><h3>1. Car of interest</h3>
+      <details class="desk-sec" id="sec-model" data-sec="model" open><summary><h3>1. Car of interest</h3><span class="desk-fill" data-fill="model"></span></summary><div class="desk-sec-body">
         <fieldset><legend>Model</legend><div class="desk-box" data-f="models"></div></fieldset>
         <fieldset><legend>New or used</legend><div class="desk-box" data-f="interest"></div></fieldset>
         <label>What is it you like about this particular model?<textarea id="likeModel" rows="2" maxlength="600"></textarea></label>
         <label>What is important to you when looking for a new car?<textarea id="important" rows="2" maxlength="600"></textarea></label>
         <label class="desk-notes">Notes<textarea id="n_model" rows="2" maxlength="800"></textarea></label>
-      </section>
-      <section class="desk-sec" id="sec-usage" data-sec="usage"><h3>2. Customer and usage</h3>
+      </div></details>
+      <details class="desk-sec" id="sec-usage" data-sec="usage" open><summary><h3>2. Customer and usage</h3><span class="desk-fill" data-fill="usage"></span></summary><div class="desk-sec-body">
         <fieldset><legend>Who drives it most</legend><div class="desk-box" data-f="who"></div></fieldset>
         <fieldset><legend>A typical week</legend><div class="desk-box" data-f="life"></div></fieldset>
         <fieldset><legend>People</legend><div class="desk-box" data-f="people"></div></fieldset>
         <fieldset><legend>Boot</legend><div class="desk-box" data-f="boot"></div></fieldset>
         <fieldset><legend>Home charging</legend><div class="desk-box" data-f="charge"></div></fieldset>
         <label class="desk-notes">Notes<textarea id="n_usage" rows="2" maxlength="800"></textarea></label>
-      </section>
-      <section class="desk-sec" id="sec-px" data-sec="px"><h3>3. Current car and part exchange</h3>
+      </div></details>
+      <details class="desk-sec" id="sec-px" data-sec="px" open><summary><h3>3. Current car and part exchange</h3><span class="desk-fill" data-fill="px"></span></summary><div class="desk-sec-body">
         <div class="desk-row">
           <label>Registration<input id="pxReg" maxlength="8" autocapitalize="characters" spellcheck="false" placeholder="AB12 CDE"/></label>
           <button class="fmb-btn ghost" type="button" id="pxLookup">Look up</button>
@@ -87,8 +87,8 @@
         <label>Notes on the car<textarea id="pxNotes" rows="2" maxlength="500"></textarea></label>
         <fieldset><legend>Keys</legend><div class="desk-box" data-f="keys"></div></fieldset>
         <label class="desk-notes">Notes<textarea id="n_px" rows="2" maxlength="800"></textarea></label>
-      </section>
-      <section class="desk-sec" id="sec-must" data-sec="must"><h3>4. Must have and would like</h3>
+      </div></details>
+      <details class="desk-sec" id="sec-must" data-sec="must" open><summary><h3>4. Must have and would like</h3><span class="desk-fill" data-fill="must"></span></summary><div class="desk-sec-body">
         <div class="desk-cols">
           <div><p class="desk-col-h">Must have</p><div class="desk-box" data-f="mustF"></div>
             <label>Other must haves<textarea id="mustText" rows="2" maxlength="400"></textarea></label></div>
@@ -99,26 +99,44 @@
         <fieldset><legend>Fuel</legend><div class="desk-box" data-f="fuel"></div></fieldset>
         <fieldset><legend>Colours</legend><div class="desk-box" data-f="colours"></div></fieldset>
         <label class="desk-notes">Notes<textarea id="n_must" rows="2" maxlength="800"></textarea></label>
-      </section>
-      <section class="desk-sec" id="sec-spec" data-sec="spec"><h3>5. Specified requirements</h3>
+      </div></details>
+      <details class="desk-sec" id="sec-spec" data-sec="spec" open><summary><h3>5. Specified requirements</h3><span class="desk-fill" data-fill="spec"></span></summary><div class="desk-sec-body">
         <textarea id="notes" rows="4" maxlength="1500" placeholder="Anything specific they asked for"></textarea>
-      </section>
-      <section class="desk-sec" id="sec-when" data-sec="when"><h3>6. Timeline</h3><div class="desk-box" data-f="when"></div>
+      </div></details>
+      <details class="desk-sec" id="sec-when" data-sec="when" open><summary><h3>6. Timeline</h3><span class="desk-fill" data-fill="when"></span></summary><div class="desk-sec-body"><div class="desk-box" data-f="when"></div>
         <label class="desk-notes">Notes<textarea id="n_when" rows="2" maxlength="800"></textarea></label>
-      </section>
+      </div></details>
       <h2 class="desk-bar">Customer funding requirements</h2>
-      <section class="desk-sec" id="sec-budget" data-sec="budget"><h3>7. Funding</h3>
+      <details class="desk-sec" id="sec-budget" data-sec="budget" open><summary><h3>7. Funding</h3><span class="desk-fill" data-fill="budget"></span></summary><div class="desk-sec-body">
         <div class="desk-row">
           <label class="red">Current monthly payment £<input id="curMonthly" inputmode="numeric" placeholder="420"/></label>
           <label class="red">Change cycle<input id="changeCycle" placeholder="3 years"/></label>
           <label class="red">Annual mileage<input id="annualMiles" inputmode="numeric" placeholder="10000"/></label>
         </div>
         <fieldset><legend>How they want to pay</legend><div class="desk-box" data-f="pay"></div></fieldset>
+
+        <!-- Deposit, always on screen. It used to live inside the monthly
+             panel, so a cash buyer or a "not sure yet" never saw one at all,
+             and every payment on the results was then quoted at the lender's
+             default rather than at this customer's money. The part exchange
+             is a deposit too, so the equity from section 3 is added here
+             rather than left for Dan to add up in his head. -->
+        <div class="desk-dep" id="deskDep">
+          <div class="desk-dep-in">
+            <label class="red">Cash deposit £<input id="dep" inputmode="numeric" placeholder="3000"/></label>
+            <div class="desk-dep-px" id="depPxWrap">
+              <span class="desk-dep-k">Part exchange equity</span>
+              <strong id="depPx">not yet</strong>
+              <span class="desk-dep-note" id="depPxNote"></span>
+            </div>
+          </div>
+          <p class="desk-dep-tot"><span>Total deposit</span><strong id="depTotal">&pound;0</strong></p>
+          <p class="desk-dep-help" id="depHelp">Every monthly figure on the results is quoted at this deposit.</p>
+        </div>
+
         <div class="desk-row" id="budMonthly" hidden>
           <label class="red">Monthly budget £<input id="moFrom" inputmode="numeric" placeholder="500"/></label>
           <label class="red">Up to £<input id="mo" inputmode="numeric" placeholder="750"/></label>
-          <label class="red">Deposit £<input id="depFrom" inputmode="numeric" placeholder="3000"/></label>
-          <label class="red">Up to £<input id="dep" inputmode="numeric" placeholder="5000"/></label>
           <label>Term, months<input id="term" inputmode="numeric" placeholder="48"/></label>
         </div>
         <div class="desk-row" id="budCash" hidden><label class="red">Cash budget up to £<input id="cash" inputmode="numeric" placeholder="50000"/></label></div>
@@ -126,8 +144,7 @@
         <fieldset><legend>How has the customer SAID they are funding?</legend><div class="desk-box" data-f="said"></div></fieldset>
         <fieldset><legend>Introduction To Business Manager</legend><div class="desk-box" data-f="introBM"></div></fieldset>
         <label class="desk-notes">Notes<textarea id="n_budget" rows="2" maxlength="800"></textarea></label>
-        <button class="fmb-btn wide" type="button" id="deskFind">Find car</button>
-      </section>
+      </div></details>
     </form>
 
     <aside class="desk-side" id="deskSide">
@@ -138,6 +155,15 @@
         <button class="fmb-btn ghost wide" type="button" id="deskProfileBtn">Customer profile</button>
       </div>
     </aside>
+  </div>
+
+  <!-- Find car was the last thing in section 7, so it was four screens down
+       and only reachable once you had scrolled past everything. It lives
+       here instead, in sight the whole time, with what the match will
+       actually use written next to it. -->
+  <div class="desk-act no-print" id="deskAct">
+    <p class="desk-act-sum" id="deskActSum"></p>
+    <button class="fmb-btn" type="button" id="deskFind">Find car</button>
   </div>
 
   <section class="desk-customer" id="deskCustomer" hidden>
