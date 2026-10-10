@@ -29,7 +29,7 @@
  "listing_id": "252688",
  "source": "group",
  "finance": null,
- "status": "in_stock",
- "removed_at": null,
- "available_until": null
+ "status": "removed",
+ "removed_at": "2026-10-10",
+ "available_until": "2026-11-09"
 }
