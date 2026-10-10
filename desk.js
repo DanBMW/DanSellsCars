@@ -61,7 +61,7 @@
     introBM: { opts: [{ v: 'yes', t: 'Yes' }, { v: 'no', t: 'No' }] }
   };
   var TEXTS = ['pxReg', 'pxMiles', 'pxSettle', 'pxSiv', 'pxVal', 'pxNotes', 'curCar', 'likeModel', 'important',
-    'mustText', 'wouldText', 'notes', 'curMonthly', 'changeCycle', 'annualMiles', 'moFrom', 'mo', 'depFrom', 'dep', 'term', 'cash',
+    'mustText', 'wouldText', 'notes', 'curMonthly', 'changeCycle', 'annualMiles', 'moFrom', 'mo', 'dep', 'term', 'cash',
     'n_model', 'n_usage', 'n_px', 'n_budget', 'n_when', 'n_must', 'n_result', 'n_next', 'nsDriveWhen', 'nsFollow'];
   var CHECKS = ['nsDrive', 'nsVal', 'cOptin'];
   var PERSONAL = ['cFirst', 'cLast', 'cPhone', 'cEmail', 'n_customer'];
@@ -114,8 +114,7 @@
       pay:["How do you like to think about the money, monthly or as a total?"],
       moFrom:["What monthly figure would feel comfortable?"],
       mo:["And what's the most you'd want it to be?"],
-      depFrom:["What could you comfortably put down?"],
-      dep:["And what's the most you'd want to put down?"],
+      dep:["What could you comfortably put down?"],
       term:["How long would you want the agreement to run?"],
       cash:["What sort of total feels right, if you were paying outright?"],
       fundMethod:["How were you thinking of paying for it?"],
@@ -140,7 +139,7 @@
       if(ctrl) host.insertBefore(lab, ctrl); else host.appendChild(lab);
     }
     document.querySelectorAll('.desk-box').forEach(function(box){addTip(box.parentElement,TIPS[box.getAttribute('data-f')]);});
-    ['likeModel','important','curCar','pxReg','pxMiles','pxVal','pxSiv','pxSettle','mustText','wouldText','notes','curMonthly','changeCycle','annualMiles','moFrom','mo','depFrom','dep','term','cash','cFirst','nsDriveWhen','nsFollow'].forEach(function(id){var e=$(id); if(e&&e.parentElement)addTip(e.parentElement,TIPS[id]||TIPS[id.replace('When','')]);});
+    ['likeModel','important','curCar','pxReg','pxMiles','pxVal','pxSiv','pxSettle','mustText','wouldText','notes','curMonthly','changeCycle','annualMiles','moFrom','mo','dep','term','cash','cFirst','nsDriveWhen','nsFollow'].forEach(function(id){var e=$(id); if(e&&e.parentElement)addTip(e.parentElement,TIPS[id]||TIPS[id.replace('When','')]);});
     ['nsDrive','nsVal'].forEach(function(id){var e=$(id); if(e)addTip(e.parentElement,TIPS[id]);});
     document.addEventListener('click',function(ev){
       var btn=ev.target.closest&&ev.target.closest('.qtip>button');
@@ -148,8 +147,21 @@
       if(btn&&window.matchMedia('(hover: none)').matches){btn.parentNode.classList.toggle('open'); ev.preventDefault();}
     });
 
-    var secs = [].slice.call(document.querySelectorAll('.desk-sec'));
-    $('deskJump').innerHTML = secs.map(function (sec) { var h = sec.querySelector('h2, h3').cloneNode(true); var q=h.querySelector('.qtip'); if(q) q.remove(); return '<a href="#' + sec.id + '">' + esc(h.textContent.trim()) + '</a>'; }).join('');
+    /* The jump bar opens the step rather than linking to it: a plain anchor
+       scrolls to a folded <details> and leaves it folded, which reads as a
+       dead link. */
+    $('deskJump').innerHTML = secs().map(function (sec) {
+      var h = sec.querySelector('h2, h3').cloneNode(true);
+      var q = h.querySelector('.qtip'); if (q) q.remove();
+      return '<button type="button" data-jump="' + esc(sec.id) + '">' + esc(h.textContent.trim()) + '</button>';
+    }).join('');
+    $('deskJump').addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-jump]'); if (!b) return;
+      var sec = $(b.getAttribute('data-jump')); if (!sec) return;
+      openOnly(sec);
+      fitChrome();
+      sec.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
   }
 
   /* ---------- reading the form into the shared answer shape ---------- */
@@ -170,6 +182,38 @@
     el.hidden = false; el.textContent = 'Equity: ' + FN.money(e) + (e < 0 ? ' (negative equity)' : '');
     return e;
   }
+  /* The deposit, in one place and for every pay route.
+     A part exchange IS a deposit, so the equity from section 3 is added to
+     whatever cash they are putting in rather than left for Dan to total up
+     in his head. Equity is the SIV less the settlement where both are
+     known, falling back to the PX figure, and it only counts when they have
+     actually said they are part exchanging: a car they are keeping is not a
+     deposit. Negative equity counts too, downwards, because that is what it
+     does to the deal. */
+  function pxEquityForDeposit() {
+    if (one('pxyn') === 'no') return null;
+    var siv = num($('pxSiv').value), set = num($('pxSettle').value), px = num($('pxVal').value);
+    var base = siv !== null ? siv : px;
+    if (base === null && set === null) return null;
+    return (base || 0) - (set || 0);
+  }
+  function depositTotal() {
+    var cash = num($('dep').value), eq = pxEquityForDeposit();
+    if (cash === null && eq === null) return null;
+    return (cash || 0) + (eq || 0);
+  }
+  function paintDeposit() {
+    var eq = pxEquityForDeposit(), tot = depositTotal(), keeping = one('pxyn') === 'no';
+    $('depPx').textContent = eq === null ? (keeping ? 'not part exchanging' : 'not yet') : FN.money(eq);
+    $('depPxNote').textContent = eq === null ? ''
+      : (eq < 0 ? 'negative equity, it comes off the deposit' : 'carried from section 3');
+    $('depTotal').textContent = tot === null ? GBP + '0' : FN.money(tot);
+    $('depHelp').textContent = tot === null
+      ? 'Leave it blank and the lender’s own default deposit is used.'
+      : 'Every monthly figure on the results is quoted at ' + FN.money(tot) + '.';
+    actSummary();
+  }
+
   function answers() {
     var a = M.blank();
     var ms = vals('models');
@@ -183,7 +227,13 @@
     readWords($('wouldText').value, a.extras);
     a.said = (nv('important') || nv('likeModel') || '').trim();
     a.pay = one('pay');
-    if (a.pay === 'monthly') { a.mo = num($('mo').value) || 0; a.dep = num($('dep').value); }
+    /* The deposit goes in whatever the pay route, because it is what the
+       lender ladder is read at (fmb-match finAt). It used to be collected
+       only on the monthly route, so a cash or undecided customer had every
+       payment on the page quoted at the lender's default instead of their
+       own money. */
+    a.dep = depositTotal();
+    if (a.pay === 'monthly') a.mo = num($('mo').value) || 0;
     if (a.pay === 'cash') a.cash = num($('cash').value) || 0;
     var am = num($('annualMiles').value);
     if (am) a.miles = am < 6000 ? 'u6' : am < 10000 ? '6to10' : am < 15000 ? '10to15' : '15plus';
@@ -268,6 +318,7 @@
     $('deskCustomer').hidden = false; $('deskResultNotes').hidden = false;
     if (!silent) {
       track('fmb_desk_find', { stock_x: TOT.total, fallback_level: RES.level, new_fit: NEWR.fit.length, new_reach: NEWR.reach.length });
+      fitChrome();
       box.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     save();
@@ -343,7 +394,11 @@
     D.funding = {
       cur: fm(num(nv('curMonthly'))), cycle: nv('changeCycle'), miles: num(nv('annualMiles')) ? num(nv('annualMiles')).toLocaleString('en-GB') : '',
       pay: a.pay ? M.txt([{ v: 'monthly', t: 'Monthly' }, { v: 'cash', t: 'Cash price' }, { v: 'notsure', t: 'Not sure yet' }], a.pay) : '',
-      moFrom: fm(num(nv('moFrom'))), moTo: fm(num(nv('mo'))), depFrom: fm(num(nv('depFrom'))), depTo: fm(num(nv('dep'))),
+      moFrom: fm(num(nv('moFrom'))), moTo: fm(num(nv('mo'))),
+      /* The deposit reaches Dan's inbox and the printed profile the way
+         it is actually made up: the cash, the part exchange equity and
+         the total the cars were quoted at. */
+      depCash: fm(num(nv('dep'))), depPx: fm(pxEquityForDeposit()), depTotal: fm(depositTotal()),
       cash: fm(num(nv('cash'))), term: num(nv('term')) ? num(nv('term')) + ' months' : '',
       methods: vals('fundMethod'), said: one('said'), intro: one('introBM')
     };
@@ -383,7 +438,8 @@
     row('Current monthly payment', f.cur); row('Change cycle', f.cycle); row('Annual mileage', f.miles);
     row('How they want to pay', f.pay);
     if (f.moFrom || f.moTo) L.push('Monthly budget: ' + (f.moFrom || 'not given') + ', up to ' + (f.moTo || 'not given'));
-    if (f.depFrom || f.depTo) L.push('Deposit: ' + (f.depFrom || 'not given') + ', up to ' + (f.depTo || 'not given'));
+    if (f.depTotal) L.push('Deposit: ' + f.depTotal + ' in total'
+      + (f.depPx ? ' (' + (f.depCash || '\u00a30') + ' cash plus ' + f.depPx + ' part exchange equity)' : ''));
     row('Cash budget up to', f.cash); row('Term', f.term);
     L.push('Funding method: ' + FUND.map(function (m) { return m[1] + ' ' + T(f.methods.indexOf(m[0]) !== -1); }).join('  '));
     L.push('How has the customer SAID they are funding? Yes ' + T(f.said === 'yes') + '  No ' + T(f.said === 'no'));
@@ -435,7 +491,7 @@
     h += '<section class="cp-sec">' + tbl([tr('Timeline', v(M.txt(M.WHEN, a.when)))]) + notes('n_when') + '</section>';
     h += '<section class="cp-sec"><h2 class="cp-bar">Customer funding requirements</h2>'
       + '<table class="cp-t cp-grid3"><tr><td><span class="red">Current monthly payment \u00a3</span> ' + v(f.cur) + '</td><td><span class="red">Change cycle</span> ' + v(f.cycle) + '</td><td><span class="red">Annual mileage</span> ' + v(f.miles) + '</td></tr>'
-      + '<tr><td><span class="red">Monthly budget \u00a3</span> ' + v(f.moFrom) + '</td><td><span class="red">Up to \u00a3</span> ' + v(f.moTo) + '</td><td><span class="red">Deposit \u00a3</span> ' + v(f.depFrom) + ' <span class="red">Up to \u00a3</span> ' + v(f.depTo) + '</td></tr>'
+      + '<tr><td><span class="red">Monthly budget \u00a3</span> ' + v(f.moFrom) + '</td><td><span class="red">Up to \u00a3</span> ' + v(f.moTo) + '</td><td><span class="red">Deposit</span> ' + v(f.depTotal) + (f.depPx ? ' (' + v(f.depCash) + ' cash, ' + v(f.depPx) + ' PX)' : '') + '</td></tr>'
       + '<tr><td>How they want to pay: ' + v(f.pay) + '</td><td>Cash up to: ' + v(f.cash) + '</td><td>Term: ' + v(f.term) + '</td></tr></table>'
       + '<table class="cp-t cp-fund"><tr>' + FUND.map(function (m) { return '<td>' + T(f.methods.indexOf(m[0]) !== -1) + ' ' + esc(m[1]) + '</td>'; }).join('') + '</tr></table>'
       + notes('n_budget')
@@ -547,8 +603,8 @@
   function snapshot() {
     var f = {};
     [].forEach.call(document.querySelectorAll('#deskForm input[type=radio]:checked, #deskForm input[type=checkbox]:checked'), function (i) { (f[i.name] = f[i.name] || []).push(i.value); });
-    TEXTS.concat(PERSONAL).forEach(function (id) { f['#' + id] = $(id).value; });
-    CHECKS.forEach(function (id) { f['#' + id] = $(id).checked; });
+    TEXTS.concat(PERSONAL).forEach(function (id) { var e = $(id); if (e) f['#' + id] = e.value; });
+    CHECKS.forEach(function (id) { var e = $(id); if (e) f['#' + id] = e.checked; });
     f['#pxFound'] = $('pxFound').hidden ? '' : $('pxFound').textContent;
     return { t: Date.now(), fields: f, found: FOUND, scroll: window.scrollY,
       matches: RES ? RES.list.slice(0, 3).map(function (r) { return r.c.reg; }) : [], lead: LEAD_ID };
@@ -570,27 +626,83 @@
   function apply(d) {
     var f = d.fields || {};
     [].forEach.call(document.querySelectorAll('#deskForm input[type=radio], #deskForm input[type=checkbox]'), function (i) { i.checked = (f[i.name] || []).indexOf(i.value) !== -1; });
-    TEXTS.concat(PERSONAL).forEach(function (id) { if (f['#' + id] != null) $(id).value = f['#' + id]; });
-    CHECKS.forEach(function (id) { $(id).checked = !!f['#' + id]; });
+    TEXTS.concat(PERSONAL).forEach(function (id) { var e = $(id); if (e && f['#' + id] != null) e.value = f['#' + id]; });
+    CHECKS.forEach(function (id) { var e = $(id); if (e) e.checked = !!f['#' + id]; });
     if (f['#pxFound']) { $('pxFound').hidden = false; $('pxFound').textContent = f['#pxFound']; }
     LEAD_ID = d.lead || null;
-    budgetPanels();
+    budgetPanels(); equity(); paintDeposit(); paintFill(); actSummary();
     if (d.found) runFind(true);
     setTimeout(function () { window.scrollTo(0, d.scroll || 0); }, 60);
   }
   function clearDraft() { saveGen++; clearTimeout(saveT); clearTimeout(scrollT); try { localStorage.removeItem(DRAFT); } catch (e) {} }
   function resetAll() {
     $('deskForm').reset();
-    PERSONAL.concat(TEXTS).forEach(function (id) { $(id).value = ''; }); CHECKS.forEach(function (id) { $(id).checked = false; });
+    PERSONAL.concat(TEXTS).forEach(function (id) { var e = $(id); if (e) e.value = ''; }); CHECKS.forEach(function (id) { var e = $(id); if (e) e.checked = false; });
     $('deskResultNotes').hidden = true; $('deskProfileWrap').hidden = true; $('deskProfile').innerHTML = '';
     $('pxFound').hidden = true; $('pxFound').textContent = '';
     FOUND = false; RES = null; NEWR = null; LEAD_ID = null; LASTSENT = null;
     $('deskResult').hidden = true; $('deskResult').innerHTML = ''; closePresent(); $('deskEmpty').hidden = false; $('deskEmpty').textContent = 'Fill in what you know, in any order, then press Find car.';
     $('deskCustomer').hidden = true; $('deskDone').hidden = true; $('deskFallback').hidden = true; $('deskSubmitErr').hidden = true;
     $('deskSubmit').disabled = false; $('deskSubmit').textContent = 'Submit'; $('deskCopy').textContent = 'Copy email';
-    budgetPanels(); clearDraft(); window.scrollTo(0, 0);
+    budgetPanels(); paintDeposit(); paintFill(); actSummary();
+    var f1 = secs()[0]; if (f1) openOnly(f1);
+    clearDraft(); window.scrollTo(0, 0);
   }
   function budgetPanels() { var p = one('pay'); $('budMonthly').hidden = p !== 'monthly'; $('budCash').hidden = p !== 'cash'; }
+
+  /* ---------- the folded sections ----------
+     One open at a time, so the fact find is one screen rather than five.
+     A folded section still has to say whether it has been answered, or
+     folding it would hide the very thing Dan is checking, so each summary
+     carries a count of the answers inside it. */
+  function secs() { return [].slice.call(document.querySelectorAll('.desk-sec')); }
+  function filledIn(sec) {
+    var n = 0;
+    [].forEach.call(sec.querySelectorAll('input[type=radio],input[type=checkbox]'), function (i) { if (i.checked) n++; });
+    [].forEach.call(sec.querySelectorAll('input:not([type=radio]):not([type=checkbox]),textarea'), function (i) {
+      if (String(i.value || '').trim()) n++;
+    });
+    return n;
+  }
+  function paintFill() {
+    secs().forEach(function (sec) {
+      var b = sec.querySelector('.desk-fill'); if (!b) return;
+      var n = filledIn(sec);
+      b.textContent = n ? n + ' answered' : 'empty';
+      b.classList.toggle('on', n > 0);
+    });
+  }
+  function openOnly(sec) {
+    secs().forEach(function (s) { s.open = (s === sec); });
+  }
+  /* The header is sticky and wraps to two lines on a phone, so how far a
+     step has to clear it is measured from the header rather than assumed.
+     Same lesson as new-cars.html's filter sheet: a hard coded figure is
+     wrong on exactly the screen it matters on. */
+  function fitChrome() {
+    var h = document.querySelector('.desk-top'), px = h ? h.getBoundingClientRect().height : 0;
+    /* A zero means the header is not on screen yet (the gate is up), so the
+       last good figure is kept rather than overwritten with nothing. It is
+       measured again at the moment of every jump for the same reason. */
+    if (px > 0) document.documentElement.style.setProperty('--desk-chrome', Math.round(px + 10) + 'px');
+  }
+  /* What the match is actually going to use, beside the button that runs it,
+     so Dan can see at a glance whether it has enough to be worth pressing. */
+  function actSummary() {
+    var el = $('deskActSum'); if (!el) return;
+    var bits = [], ms = vals('models'), tot = depositTotal(), p = one('pay');
+    if (ms.length) bits.push('<b>' + esc(ms.length === 1 ? M.txt(FIELDS.models.opts, ms[0]) : ms.length + ' models') + '</b>');
+    if (one('interest')) bits.push(esc(M.txt(INTEREST, one('interest'))));
+    if (p === 'monthly') {
+      var mo = num($('mo').value);
+      bits.push(mo ? '<b>up to ' + esc(FN.money(mo)) + ' a month</b>' : 'monthly, no limit set');
+    } else if (p === 'cash') {
+      var ca = num($('cash').value);
+      bits.push(ca ? '<b>up to ' + esc(FN.money(ca)) + ' cash</b>' : 'cash, no limit set');
+    }
+    bits.push(tot === null ? 'no deposit yet' : '<b>' + esc(FN.money(tot)) + '</b> deposit');
+    el.innerHTML = bits.length ? bits.join(' &middot; ') : 'Fill in what you know, then press Find car.';
+  }
 
   /* ---------- the staff gate: a layer, never a reload ---------- */
   var lastActive = Date.now(), restoreChecked = false;
@@ -605,6 +717,7 @@
   }
   function openApp() {
     $('deskLock').hidden = true; $('deskApp').hidden = false; $('deskApp').removeAttribute('inert'); $('deskApp').removeAttribute('aria-hidden');
+    fitChrome();
     if (!restoreChecked) {
       restoreChecked = true;
       var d = loadDraft();
@@ -646,8 +759,23 @@
       var i = e.target; if (!i || i.tagName !== 'INPUT' || i.type !== 'radio') return;
       if (wasOn === i) { i.checked = false; wasOn = null; form.dispatchEvent(new Event('change')); }
     });
-    form.addEventListener('change', function () { budgetPanels(); equity(); if (FOUND) runFind(true); saveSoon(); });
-    form.addEventListener('input', function (e) { if (/^px(Siv|Settle)$/.test(e.target.id)) equity(); if (e.target.id === 'pxReg') e.target.value = e.target.value.toUpperCase(); saveSoon(); if (FOUND && /^(mo|dep|cash)$/.test(e.target.id)) { clearTimeout(form._t); form._t = setTimeout(function () { runFind(true); }, 400); } });
+    form.addEventListener('change', function () { budgetPanels(); equity(); paintDeposit(); paintFill(); if (FOUND) runFind(true); saveSoon(); });
+    form.addEventListener('input', function (e) {
+      if (/^px(Siv|Settle|Val)$/.test(e.target.id)) equity();
+      /* The deposit is the PX equity plus the cash, so it has to repaint when
+         any of the three moves, not only when the deposit box itself does. */
+      if (/^(dep|pxSiv|pxSettle|pxVal)$/.test(e.target.id)) paintDeposit();
+      if (e.target.id === 'pxReg') e.target.value = e.target.value.toUpperCase();
+      paintFill(); actSummary(); saveSoon();
+      if (FOUND && /^(mo|dep|cash|pxSiv|pxSettle|pxVal)$/.test(e.target.id)) { clearTimeout(form._t); form._t = setTimeout(function () { runFind(true); }, 400); }
+    });
+    /* One step open at a time. Opening is the deliberate act, so only an
+       open fires it; folding one by hand leaves the rest alone. */
+    form.addEventListener('toggle', function (e) {
+      var sec = e.target;
+      if (!sec.classList || !sec.classList.contains('desk-sec') || !sec.open) return;
+      secs().forEach(function (s) { if (s !== sec) s.open = false; });
+    }, true);
     $('deskCustomer').addEventListener('input', saveSoon);
     $('deskCustomer').addEventListener('change', saveSoon);
     $('deskFind').addEventListener('click', function () { runFind(false); });
@@ -822,12 +950,16 @@
 
   function start() {
     build(); wire(); wireGate(); budgetPanels();
+    /* Open on step 1 rather than all seven. */
+    var first = secs()[0]; if (first) openOnly(first);
+    paintDeposit(); paintFill(); actSummary(); fitChrome();
+    window.addEventListener('resize', fitChrome, { passive: true });
     if (unlocked()) openApp(); else lock('start');
   }
   window.fmbDeskDebug = {
     payload: null, answers: function () { return answers(); }, result: function () { return { used: RES, neu: NEWR, totals: TOT }; },
     emailBody: function () { return emailBody(); }, buildProfile: function (o) { return buildProfile(o); }, openProfile: function () { openProfile(); }, subject: function () { return subject(); }, lock: function () { lock('test'); }, presentText: function () { return presentText(); },
-    ready: function () { return pData; }, draft: function () { return loadDraft(); }, summary: function () { return customerSummary(); }
+    ready: function () { return pData; }, draft: function () { return loadDraft(); }, summary: function () { return customerSummary(); }, fitChrome: function () { return fitChrome(); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

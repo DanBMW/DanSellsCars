@@ -130,6 +130,58 @@
 .desk-jump a{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .desk [hidden]{display:none !important}
+
+/* ---- folded sections -------------------------------------------------
+   All seven open at once made the page 4,748px tall on a 1440 desktop,
+   which is five screens of scrolling with a customer sat beside you. Each
+   is a <details> now and desk.js keeps one open at a time, so the whole
+   fact find is one screen with the open step in it. The heading is the
+   summary, and the badge beside it says how much of that step is answered,
+   so a folded section still tells you whether you have been there. */
+.desk-sec{padding:0}
+.desk-sec>summary{display:flex;align-items:center;gap:10px;cursor:pointer;
+  padding:13px 16px;list-style:none;min-height:52px}
+.desk-sec>summary::-webkit-details-marker{display:none}
+.desk-sec>summary::after{content:'';flex:0 0 auto;width:8px;height:8px;margin-left:auto;
+  border-right:1.5px solid var(--body-c);border-bottom:1.5px solid var(--body-c);
+  transform:rotate(45deg);transition:transform .18s;margin-top:-4px}
+.desk-sec[open]>summary::after{transform:rotate(-135deg);margin-top:2px}
+.desk-sec>summary:hover{background:rgba(236,233,225,.035)}
+.desk-sec>summary h3{margin:0;flex:0 1 auto}
+.desk-sec-body{padding:0 16px 14px;border-top:1px solid var(--hairline-soft)}
+.desk-sec-body>*:first-child{margin-top:12px}
+.desk-fill{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+  border:1px solid var(--hairline);padding:3px 8px;white-space:nowrap}
+.desk-fill.on{color:var(--accent);border-color:rgba(91,138,201,.5)}
+
+/* ---- the deposit block ----------------------------------------------
+   Always on screen, whatever the pay route: a cash buyer still puts a part
+   exchange down, and the deposit is what every monthly figure on the
+   results is quoted at. */
+.desk-dep{border:1px solid rgba(91,138,201,.4);background:rgba(91,138,201,.06);
+  padding:12px 14px;margin:0 0 12px}
+.desk-dep-in{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.desk-dep-in>label{flex:0 1 200px}
+.desk-dep-px{display:grid;gap:2px;font-size:.85rem;padding-bottom:4px}
+.desk-dep-k{color:var(--body-c);font-size:.8rem}
+.desk-dep-px strong{font-size:1.05rem;color:var(--paper);font-weight:600}
+.desk-dep-note{color:var(--dim);font-size:.76rem}
+.desk-dep-tot{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin:12px 0 0;padding-top:10px;border-top:1px solid rgba(91,138,201,.3)}
+.desk-dep-tot span{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body-c)}
+.desk-dep-tot strong{font-size:1.5rem;font-weight:600;letter-spacing:-.01em}
+.desk-dep-help{margin:6px 0 0;font-size:.76rem;color:var(--dim)}
+
+/* ---- the action bar --------------------------------------------------
+   Find car used to be the last control in section 7. */
+.desk-act{position:sticky;bottom:0;z-index:18;display:flex;gap:14px;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;
+  padding:12px 20px;margin:0;border-top:1px solid var(--hairline);
+  background:rgba(10,12,15,.96);backdrop-filter:blur(8px)}
+.desk-act .fmb-btn{flex:0 0 auto;min-width:190px}
+.desk-act-sum{margin:0;font-size:.82rem;color:var(--body-c);flex:1 1 240px;line-height:1.45}
+.desk-act-sum b{color:var(--paper);font-weight:600}
+@media print{.desk-act{display:none!important}}
 .cp-ticks{margin-left:14px;white-space:nowrap}
 
 /* Present this car: full screen, customer facing */
@@ -165,3 +217,10 @@
   .dp-name{font-size:1.8rem}
 }
 @media print{.desk-present{display:none !important}}
+
+/* ---- scrolling to a step ---------------------------------------------
+   The header is sticky, so block:'start' puts a step's own title
+   underneath it. --desk-chrome is measured from the header itself in
+   desk.js, because this page's header wraps to two lines on a phone and a
+   hard coded figure would be wrong on exactly the screen it matters on. */
+.desk-sec,#deskResult{scroll-margin-top:var(--desk-chrome,84px)}
