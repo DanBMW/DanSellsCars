@@ -65,27 +65,19 @@
         <label class="desk-notes">Notes<textarea id="n_usage" rows="2" maxlength="800"></textarea></label>
       </div></details>
       <details class="desk-sec" id="sec-px" data-sec="px" open><summary><h3>3. Current car and part exchange</h3><span class="desk-fill" data-fill="px"></span></summary><div class="desk-sec-body">
+        <p class="desk-note">Enough to work the figures on. The proper appraisal and valuation happens when they come in.</p>
         <div class="desk-row">
           <label>Registration<input id="pxReg" maxlength="8" autocapitalize="characters" spellcheck="false" placeholder="AB12 CDE"/></label>
           <button class="fmb-btn ghost" type="button" id="pxLookup">Look up</button>
         </div>
         <p class="desk-note" id="pxFound" hidden></p>
         <label>Current car<input id="curCar" placeholder="Make and model"/></label>
-        <fieldset><legend>Fuel</legend><div class="desk-box" data-f="curFuel"></div></fieldset>
-        <fieldset><legend>Gearbox</legend><div class="desk-box" data-f="gear"></div></fieldset>
-        <fieldset><legend>Part exchange?</legend><div class="desk-box" data-f="pxyn"></div></fieldset>
-        <label>Rough mileage<input id="pxMiles" inputmode="numeric" placeholder="62000"/></label>
-        <fieldset><legend>Service history</legend><div class="desk-box" data-f="service"></div></fieldset>
-        <fieldset><legend>Outstanding finance</legend><div class="desk-box" data-f="pxfin"></div></fieldset>
         <div class="desk-row">
-          <label>PX £<input id="pxVal" inputmode="numeric" placeholder="14000"/></label>
-          <label>SIV £<input id="pxSiv" inputmode="numeric" placeholder="15000"/></label>
-          <label>Settlement £<input id="pxSettle" inputmode="numeric" placeholder="6500"/></label>
+          <label>Mileage<input id="pxMiles" inputmode="numeric" placeholder="62000"/></label>
+          <label>Settlement &pound;<input id="pxSettle" inputmode="numeric" placeholder="6500"/></label>
+          <label class="red">Valuation &pound;<input id="pxVal" inputmode="numeric" placeholder="14000"/></label>
         </div>
         <p class="desk-note" id="pxEquity" hidden></p>
-        <fieldset><legend>Condition</legend><div class="desk-box" data-f="cond"></div></fieldset>
-        <label>Notes on the car<textarea id="pxNotes" rows="2" maxlength="500"></textarea></label>
-        <fieldset><legend>Keys</legend><div class="desk-box" data-f="keys"></div></fieldset>
         <label class="desk-notes">Notes<textarea id="n_px" rows="2" maxlength="800"></textarea></label>
       </div></details>
       <details class="desk-sec" id="sec-must" data-sec="must" open><summary><h3>4. Must have and would like</h3><span class="desk-fill" data-fill="must"></span></summary><div class="desk-sec-body">
@@ -163,6 +155,7 @@
        actually use written next to it. -->
   <div class="desk-act no-print" id="deskAct">
     <p class="desk-act-sum" id="deskActSum"></p>
+    <button class="fmb-btn ghost" type="button" id="deskPrintBtn">Print</button>
     <button class="fmb-btn" type="button" id="deskFind">Find car</button>
   </div>
 
@@ -228,6 +221,33 @@
     <a class="fmb-btn" id="dpBook" href="https://cal.com/danbmwruxley/bmw-ruxley-appointment-with-dan-in-sales" target="_blank" rel="noopener">Book a test drive</a>
     <a class="fmb-btn wa" id="dpWa" href="#" target="_blank" rel="noopener">Send me this by WhatsApp</a>
   </div>
+</div>
+
+<!-- One car, full page: the 360 where the car has one, the photographs
+     where it does not, and everything about it underneath with the price
+     first. Opened from a result card or from the presentation. -->
+<div class="desk-car" id="deskCar" hidden aria-modal="true" role="dialog">
+  <div class="dc-bar">
+    <p class="dc-count" id="dcCount"></p>
+    <div class="dc-bar-r">
+      <button class="fmb-btn ghost" type="button" id="dcPrev">Previous car</button>
+      <button class="fmb-btn ghost" type="button" id="dcNext">Next car</button>
+      <button class="fmb-btn" type="button" id="dcClose">Close</button>
+    </div>
+  </div>
+  <div class="dc-body" id="dcBody"></div>
+</div>
+
+<!-- A photograph, enlarged: centred on a desktop, the whole screen on a
+     phone. -->
+<div class="desk-shot" id="deskShot" hidden aria-modal="true" role="dialog">
+  <div class="dsh-in">
+    <img id="dshImg" alt=""/>
+    <button class="dsh-step dsh-prev" type="button" id="dshPrev" aria-label="Previous photograph">&#8249;</button>
+    <button class="dsh-step dsh-next" type="button" id="dshNext" aria-label="Next photograph">&#8250;</button>
+    <p class="dsh-cap"><span id="dshCap"></span><button class="fmb-btn ghost" type="button" id="dshFull">360 and full details</button></p>
+  </div>
+  <button class="dsh-x" type="button" id="dshClose" aria-label="Close">&#215;</button>
 </div>
 
 <div class="desk-view" id="deskView" hidden>
