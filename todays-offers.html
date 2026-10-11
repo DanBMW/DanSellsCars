@@ -7,13 +7,16 @@
   <link rel="canonical" href="https://dan-sells.co.uk/todays-offers.html"/>
   <title>Today's offers | Dan Cane | Hedin Ruxley BMW</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-  <meta name="description" content="Three approved used BMWs and two brand new ones, picked for today only. Claim one and Dan comes back to you the same day."/>
+  <meta name="description" content="A handful of BMWs picked out for today, with the figures already worked out. Claim one and Dan comes back to you the same day."/>
   <meta property="og:type" content="website"/>
   <meta property="og:url" content="https://dan-sells.co.uk/todays-offers.html"/>
   <meta property="og:title" content="Today's offers | Dan Cane | Hedin Ruxley BMW"/>
-  <meta property="og:description" content="Today's cars, today only. Claim one and I'll come straight back to you."/>
+  <meta property="og:description" content="A few BMWs picked out for today, with the monthly figures already worked out. Tap one and I'll come straight back to you. Dan, Hedin Ruxley."/>
   <meta property="og:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
   <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Today's offers | Dan Cane | Hedin Ruxley BMW"/>
+  <meta name="twitter:description" content="A few BMWs picked out for today, with the monthly figures already worked out."/>
+  <meta name="twitter:image" content="https://dan-sells.co.uk/vid-dan-poster.jpg"/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
   <link rel="stylesheet" href="premium.css?v=2538cd7f"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
@@ -28,14 +31,14 @@
   .to{background:var(--ink);color:var(--paper)}
   .to-wrap{max-width:1100px;margin:0 auto;padding:0 20px 80px}
   /* the site header is position:fixed, so the page has to start below it */
-  .to-hero{padding:calc(96px + env(safe-area-inset-top)) 0 22px;border-bottom:1px solid var(--hair)}
+  .to-hero{padding:calc(92px + env(safe-area-inset-top)) 0 18px;border-bottom:1px solid var(--hair)}
   .to-kick{margin:0 0 8px;letter-spacing:.16em;text-transform:uppercase;font-size:.74rem;color:var(--accent)}
-  .to-hero h1{font-size:clamp(30px,5vw,46px);line-height:1.06;margin:0 0 12px}
-  .to-hero p{color:var(--body-c);max-width:62ch;margin:0}
-  .to-clock{display:inline-flex;align-items:center;gap:10px;margin-top:16px;
-    padding:10px 16px;border:1px solid var(--hair);border-radius:999px;background:var(--ink-2)}
+  .to-hero h1{font-size:clamp(30px,5vw,46px);line-height:1.06;margin:0 0 10px}
+  .to-hero p{color:var(--body-c);max-width:52ch;margin:0}
+  .to-clock{display:inline-flex;align-items:center;gap:8px;margin-top:14px;white-space:nowrap;
+    padding:9px 15px;border:1px solid var(--hair);border-radius:999px;background:var(--ink-2);font-size:.86rem}
   .to-clock b{font-variant-numeric:tabular-nums}
-  .to-sub{margin:34px 0 14px;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .to-sub{margin:28px 0 12px;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
   .to-grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
   .to-card{border:1px solid var(--hair);background:var(--ink-2);display:flex;flex-direction:column;overflow:hidden}
   .to-ph{position:relative;background:#14181f;aspect-ratio:16/10}
@@ -65,11 +68,78 @@
   .to-form textarea{min-height:64px;resize:vertical}
   .to-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   .to-err{margin:0;color:#ff8c8c;font-size:.86rem}
+  .to-formnote{margin:0;color:var(--body-c);font-size:.84rem;line-height:1.5}
   .to-done{margin:0;color:var(--go);font-weight:600}
   .to-note{margin:34px 0 0;padding-top:18px;border-top:1px solid var(--hair);color:var(--dim);font-size:.78rem;line-height:1.6;max-width:72ch}
   .to-note a{color:var(--body-c)}
   .to-empty{margin:40px 0;color:var(--body-c)}
   @media (max-width:560px){.to-grid{grid-template-columns:1fr}}
+
+  /* ---- the gallery on a card --------------------------------------
+     One <img>, the arrows set its src: five cars times six photographs is
+     a lot of picture nobody asked for, the same rule stock.html keeps. */
+  .to-ph{cursor:pointer}
+  .to-arrow{position:absolute;top:50%;width:40px;height:40px;margin-top:-20px;border:0;border-radius:50%;
+    background:rgba(6,9,14,.6);color:#fff;font-size:24px;line-height:1;cursor:pointer;z-index:5;
+    display:flex;align-items:center;justify-content:center;padding:0 0 2px;opacity:0;transition:opacity .2s}
+  .to-ph:hover .to-arrow,.to-ph:focus-within .to-arrow{opacity:1}
+  .to-prev{left:8px}.to-next{right:8px}
+  .to-dots{position:absolute;left:0;right:0;bottom:8px;display:flex;gap:5px;justify-content:center;z-index:5}
+  .to-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45)}
+  .to-dots i.on{background:#fff}
+  .to-more{position:absolute;left:10px;bottom:10px;z-index:5;padding:5px 10px;border-radius:999px;
+    background:rgba(6,9,14,.72);color:#fff;font-size:.72rem;letter-spacing:.03em}
+  @media (hover:none){.to-arrow{opacity:1}}
+
+  /* ---- not quite the one ------------------------------------------- */
+  .to-ask{margin:46px 0 0;padding:26px 22px;border:1px solid var(--hair);background:var(--ink-2)}
+  .to-ask h2{margin:0 0 8px;font-size:clamp(20px,3vw,26px)}
+  .to-ask p{margin:0 0 16px;color:var(--body-c);max-width:60ch}
+  .to-ask-row{display:flex;flex-wrap:wrap;gap:10px}
+  .to-ask-row .to-btn{flex:0 1 auto}
+  .to-trust{margin:18px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px 22px;
+    color:var(--dim);font-size:.82rem}
+  .to-trust li{position:relative;padding-left:16px}
+  .to-trust li:before{content:"";position:absolute;left:0;top:.52em;width:6px;height:6px;border-radius:50%;background:var(--go)}
+
+  /* ---- one car, full page ------------------------------------------ */
+  /* Above the site header (200) and the sticky bar (150). A car opened full
+     page is the whole screen, and the header bleeding through its top bar is
+     exactly what it looked like before this was raised. */
+  .to-car{position:fixed;inset:0;z-index:420;background:var(--ink);color:var(--paper);display:flex;flex-direction:column}
+  .to-car[hidden]{display:none}
+  .tc-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:10px 16px;border-bottom:1px solid var(--hair);flex:0 0 auto}
+  .tc-bar-r{display:flex;gap:8px;align-items:center}
+  .tc-count{margin:0;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;color:var(--dim)}
+  .tc-body{flex:1 1 auto;overflow:auto;-webkit-overflow-scrolling:touch}
+  .tc-photo{position:relative;background:#14181f;max-width:1000px;margin:0 auto}
+  .tc-photo>img{display:block;width:100%;height:min(54vh,580px);object-fit:cover}
+  .tc-thumbs{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;flex-wrap:wrap;z-index:5}
+  .tc-thumbs button{padding:0;border:2px solid transparent;background:none;width:58px;height:38px;overflow:hidden;cursor:pointer}
+  .tc-thumbs button.on{border-color:#fff}
+  .tc-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+  .tc-info{max-width:1000px;margin:0 auto;padding:18px 16px 48px}
+  .tc-kick{margin:0;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;color:var(--accent)}
+  .tc-info h2{margin:4px 0 0;font-size:clamp(1.4rem,3.4vw,2.1rem);line-height:1.15}
+  .tc-price{margin:6px 0 0;font-size:clamp(1.5rem,4vw,2.2rem);font-weight:600;letter-spacing:-.01em}
+  .tc-facts{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px 26px;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));color:var(--body-c);font-size:.92rem}
+  .tc-facts b{display:block;color:var(--dim);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+  .tc-kit{margin:18px 0 0;border-top:1px solid var(--hair);padding-top:10px}
+  .tc-kit summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--body-c)}
+  .tc-kit ul{columns:2;column-gap:26px;margin:8px 0 0;padding-left:18px;font-size:.88rem;color:var(--body-c)}
+  .tc-act{margin:18px 0 0;display:flex;flex-direction:column;gap:10px;max-width:420px}
+  @media (max-width:700px){
+    .tc-photo>img{height:42vh}
+    .tc-kit ul{columns:1}
+    .tc-bar-r .to-btn{padding:0 12px;min-height:44px}
+  }
+  body.to-open{overflow:hidden}
+  /* The sitewide sticky bar draws at z-index 150, above this overlay, so it
+     would sit across the bottom of a car somebody is reading. Same fix the
+     Find my BMW questions use. */
+  body.to-open .ds-sticky,body.to-open .ph-header{display:none!important}
 </style>
 </head>
 <body class="to">
@@ -120,27 +190,58 @@
 <main class="to-wrap">
   <section class="to-hero">
     <p class="to-kick" id="toKick">Today only</p>
-    <h1 id="toTitle">Today's offers</h1>
-    <p id="toLede">Three approved used BMWs and a couple of brand new ones, picked for today. Claim one and I'll come straight back to you.</p>
-    <p class="to-clock" id="toClock" hidden><span>Ends at midnight</span><b id="toLeft"></b></p>
+    <h1 id="toTitle">Today&rsquo;s offers</h1>
+    <p id="toLede">A few I&rsquo;ve picked out for today, with the figures already worked out. Tap one to see it properly.</p>
+    <p class="to-clock" id="toClock" hidden><span>Until midnight</span><b id="toLeft"></b></p>
   </section>
 
-  <p class="to-empty" id="toEmpty">Loading today's cars, one moment.</p>
+  <p class="to-empty" id="toEmpty">Loading today&rsquo;s cars, one moment.</p>
 
-  <h2 class="to-sub" id="toUsedH" hidden>Approved used</h2>
+  <h2 class="to-sub" id="toUsedH" hidden>Approved used, here on the forecourt</h2>
   <div class="to-grid" id="toUsed"></div>
 
-  <h2 class="to-sub" id="toNewH" hidden>Brand new, already built</h2>
+  <h2 class="to-sub" id="toNewH" hidden>Brand new, already built and waiting</h2>
   <div class="to-grid" id="toNew"></div>
 
+  <section class="to-ask" id="toAsk" hidden>
+    <h2>Not quite the one?</h2>
+    <p>These are the few I have picked out for today. There are a few hundred more behind them, and I will happily go and look for exactly what you are after.</p>
+    <div class="to-ask-row">
+      <a class="to-btn wa" id="toAskWa" href="#" target="_blank" rel="noopener">Tell me what you are after</a>
+      <a class="to-btn ghost" href="stock.html">See all the approved used stock</a>
+      <a class="to-btn ghost" href="find-my-bmw.html">Help me find one</a>
+    </div>
+    <ul class="to-trust">
+      <li>Part exchange welcome, I will value yours properly</li>
+      <li>Finance arranged through BMW Financial Services</li>
+      <li>15 minutes from the Dartford Crossing</li>
+    </ul>
+  </section>
+
   <p class="to-note" id="toNote">
-    Offers change at midnight and a car can only be claimed on the day it is here.
-    Every monthly figure is BMW Financial Services' own quote on the terms shown beside it,
-    and lapses on the lender's campaign end date. Finance subject to status, 18+, UK residents.
+    These change at midnight and a car can only be claimed on the day it is here.
+    Every monthly figure is BMW Financial Services&rsquo; own quote on the terms shown beside it,
+    and lapses on the lender&rsquo;s campaign end date. Finance subject to status, 18+, UK residents.
     Dan Cane is a credit broker, not a lender.
   </p>
   <p class="to-note" data-dsc-slot></p>
 </main>
+
+<!-- One car, full page: the 360 where there is one, the photographs where
+     there is not, and everything about it underneath. Same shape as desk
+     mode's car view, because a customer reading about a car on a phone wants
+     one column and the price near the top. -->
+<div class="to-car" id="toCar" hidden aria-modal="true" role="dialog" aria-label="Car details">
+  <div class="tc-bar">
+    <p class="tc-count" id="tcCount"></p>
+    <div class="tc-bar-r">
+      <button class="to-btn ghost" type="button" id="tcPrev">Previous</button>
+      <button class="to-btn ghost" type="button" id="tcNext">Next</button>
+      <button class="to-btn" type="button" id="tcClose">Close</button>
+    </div>
+  </div>
+  <div class="tc-body" id="tcBody"></div>
+</div>
 
 <!-- chrome:footer2 {"wa":"Hi%20Dan%2C%20I%27ve%20seen%20today%27s%20offers","blurb1":"New and approved used BMW buying with Dan Cane and the team at Hedin Ruxley, South East."} -->
 <section class="ph-contact" id="contact">

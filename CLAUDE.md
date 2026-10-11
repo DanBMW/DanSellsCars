@@ -939,11 +939,40 @@ for, and the morning does no more work than it did yesterday.
 - **If the morning's cards have not landed**, the newest day in the file is
   shown and the page says so in words rather than calling an older car today's
   offer.
+- **This page is the daily share, not the cards** (Dan, 11 October: "I plan on
+  sharing the page link daily instead of the cards, so make it customer
+  friendly"). That makes it the thing a customer opens from Instagram or
+  WhatsApp rather than an internal convenience, so it carries a real gallery,
+  a full page view per car, and a way out for the four in five it will not
+  suit.
+  - **Each card is a gallery**, one `<img>` whose src the arrows set, with the
+    urls on the element in `data-pics` rather than in a closure. Five cars
+    times six photographs is a lot of picture nobody asked for, which is the
+    rule `stock.html` and `new-cars.html` both keep. Stepping a photograph
+    calls `aosMedia.leave()` first, because the 360 may be open over it.
+  - **A tap anywhere else opens the car full page** (`#toCar`): the 360 where
+    AutoOnShow has one, opened by `autoSpin()` waiting for aos-media's own
+    button rather than assuming a time, then the price, the facts, the figures,
+    the specification and the claim underneath. One column at every width. It
+    draws at **z-index 420**, above the site header's 200 and the sticky bar's
+    150, and hides both while it is open: at 80 the header bled straight
+    through its top bar.
+  - **A claim made in either place shows in the other** (`paintEverywhere`), or
+    somebody who goes back is asked again for something Dan already has.
+    `claimClick()` is one description of what a tap on those controls means, so
+    the card and the full page view cannot drift apart.
+  - **WhatsApp sits beside the claim, not only after it**, because it is the
+    primary action everywhere else on this site and this link is itself shared
+    over WhatsApp. A "Not quite the one?" block closes the page with WhatsApp,
+    all the approved used stock and Find my BMW, since five cars will not suit
+    most people who open it.
 - `noindex, follow`, out of `sitemap.xml`, and deliberately **not** in
   `robots.txt`, so Google can see the noindex (the funnel step reasoning).
-  Linked from the Today section of `links.html`. Make it public when Dan says
-  so. GA `offers_view`, `offer_claim_open`, `offer_claim`, `offer_claim_error`,
-  `offer_whatsapp`. `window.toDebug` is the test seam.
+  It stays noindex even though Dan shares it daily: the content changes every
+  midnight, so an indexed snapshot would promise a car that has moved on.
+  Linked from the Today section of `links.html`. GA `offers_view`,
+  `offer_claim_open`, `offer_claim`, `offer_claim_error`, `offer_whatsapp`,
+  `offer_car_view`, `offer_ask_whatsapp`. `window.toDebug` is the test seam.
 
 ### The daily routines, and what owns what
 
