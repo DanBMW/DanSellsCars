@@ -226,7 +226,7 @@
   }
   function pxInfo() {
     return { reg: $('pxReg').value.toUpperCase().replace(/[^A-Z0-9]/g, ''), found: $('pxFound').hidden ? '' : $('pxFound').textContent,
-      car: $('curCar').value.trim(), miles: num($('pxMiles').value),
+      car: $('curCar').value.trim(), miles: num($('pxMiles').value), est: $('pxEst').hidden ? '' : $('pxEst').textContent.replace(/^Mileage estimate: /, ''),
       val: num($('pxVal').value), settle: num($('pxSettle').value), equity: equity() };
   }
 
@@ -312,6 +312,7 @@
     if (year && car.indexOf(year) !== 0) L.push('Year: ' + year);
     if (found && found !== car) L.push('From the reg lookup: ' + found);
     L.push('Mileage: ' + (px.miles ? px.miles.toLocaleString('en-GB') + ' miles' : 'Not given'));
+    if (px.est) L.push('Estimated mileage from MOT history: ' + px.est);
     if (px.settle !== null) L.push('Outstanding finance: ' + FN.money(px.settle) + ' to settle');
     if (nv('n_px')) L.push('Notes: ' + nv('n_px').replace(/\s*[\u2013\u2014]\s*/g, ', ').replace(/\s+-\s+/g, ', '));
     L.push('', 'The customer: ' + customerStory(a), '');
@@ -433,7 +434,7 @@
     D.interestTicks = 'New ' + T(a.interest === 'new' || a.interest === 'either') + '  Used ' + T(a.interest === 'used' || a.interest === 'either');
     D.usage = [['Main driver', M.txt(M.WHO, a.who)], ['Typical week', M.txt(M.LIFE, a.life)], ['People', M.txt(M.PEOPLE, a.people)],
       ['Boot', M.txt(M.BOOT, a.boot)], ['Home charging', M.txt(M.CHARGE, a.charge)]];
-    D.pxRows = [['Reg', [px.reg, px.found].filter(Boolean).join(', ')], ['Mileage', px.miles ? 'About ' + px.miles.toLocaleString('en-GB') + ' miles' : '']];
+    D.pxRows = [['Reg', [px.reg, px.found].filter(Boolean).join(', ')], ['Mileage', px.miles ? 'About ' + px.miles.toLocaleString('en-GB') + ' miles' : ''], ['Estimated mileage (MOT history)', px.est]].filter(function (r) { return r[0] !== 'Estimated mileage (MOT history)' || r[1]; });
     D.money = [['Valuation', fm(px.val)], ['Settlement', fm(px.settle)], ['Equity', px.equity === null ? '' : FN.money(px.equity) + (px.equity < 0 ? ' (negative)' : '')]];
     /* The desk figure is a working one. The appraisal happens in person, so
        the document says so rather than letting a desk number read as a
@@ -658,6 +659,7 @@
     TEXTS.concat(PERSONAL).forEach(function (id) { var e = $(id); if (e) f['#' + id] = e.value; });
     CHECKS.forEach(function (id) { var e = $(id); if (e) f['#' + id] = e.checked; });
     f['#pxFound'] = $('pxFound').hidden ? '' : $('pxFound').textContent;
+    f['#pxEst'] = $('pxEst').hidden ? '' : $('pxEst').textContent;
     return { t: Date.now(), fields: f, found: FOUND, scroll: window.scrollY,
       matches: RES ? RES.list.slice(0, 3).map(function (r) { return r.c.reg; }) : [], lead: LEAD_ID };
   }
@@ -684,6 +686,7 @@
     TEXTS.concat(PERSONAL).forEach(function (id) { var e = $(id); if (e && f['#' + id] != null) e.value = f['#' + id]; });
     CHECKS.forEach(function (id) { var e = $(id); if (e) e.checked = !!f['#' + id]; });
     if (f['#pxFound']) { $('pxFound').hidden = false; $('pxFound').textContent = f['#pxFound']; }
+    if (f['#pxEst']) { $('pxEst').hidden = false; $('pxEst').textContent = f['#pxEst']; }
     LEAD_ID = d.lead || null;
     budgetPanels(); equity(); paintDeposit(); paintFill(); actSummary(); paintWill();
     if (d.found) runFind(true);
@@ -695,6 +698,7 @@
     PERSONAL.concat(TEXTS).forEach(function (id) { var e = $(id); if (e) e.value = ''; }); CHECKS.forEach(function (id) { var e = $(id); if (e) e.checked = false; });
     $('deskResultNotes').hidden = true; $('deskProfileWrap').hidden = true; $('deskProfile').innerHTML = '';
     $('pxFound').hidden = true; $('pxFound').textContent = '';
+    $('pxEst').hidden = true; $('pxEst').textContent = '';
     FOUND = false; RES = null; NEWR = null; LEAD_ID = null; LASTSENT = null;
     $('deskResult').hidden = true; $('deskResult').innerHTML = ''; closePresent(); $('deskEmpty').hidden = false; $('deskEmpty').textContent = 'Fill in what you know, in any order, then press Find car.';
     $('deskCustomer').hidden = true; $('deskDone').hidden = true; $('deskFallback').hidden = true; $('deskSubmitErr').hidden = true;
@@ -1198,7 +1202,11 @@
       if (!d || d.error) throw new Error('nf');
       var mot = (d.motHistory || [])[0];
       $('pxFound').textContent = [d.yearOfManufacture, d.make, d.model, d.colour, d.fuelType].filter(Boolean).join(' ') + ' (from reg lookup)' + (mot && mot.mileage ? '. Last MOT ' + mot.mileage : '');
-      if (mot && mot.odo && !$('pxMiles').value) $('pxMiles').value = String(mot.odo);
+      /* Mileage today estimated from the MOT history (px-lookup.js); Dan sees the working. */
+      var est = window.dsPxLookup ? window.dsPxLookup.estimate(d) : null;
+      $('pxEst').hidden = !est; $('pxEst').textContent = est ? 'Mileage estimate: ' + est.working : '';
+      if (est && !$('pxMiles').value) $('pxMiles').value = String(est.miles);
+      else if (!est && mot && mot.odo && !$('pxMiles').value) $('pxMiles').value = String(mot.odo);
       /* The lookup knows the car, so Dan does not type it again. His own
          words win if he has already put something in the box. */
       if (!$('curCar').value && (d.make || d.model)) $('curCar').value = [d.yearOfManufacture, d.make, d.model].filter(Boolean).join(' ');

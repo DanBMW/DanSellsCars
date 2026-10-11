@@ -1211,10 +1211,11 @@
   /* Reg lookup (px-lookup.js, the site's vehicleproxy worker). Quiet on failure. */
   var PXV = null, PXOK = false, pxAsked = '', pxTimer = 0;
   function pxMilesSuggest(v) {
-    if (!v || !v.motMiles || rvq('pxMiles')) return;
+    var L = window.dsPxLookup, sug = L && L.suggest(v);
+    if (!sug || rvq('pxMiles')) return;
     var ex = document.querySelector('#pxSteps input[name=pxMiles][value="Exact figure"]'); if (!ex) return;
-    ex.checked = true; $('pxExactWrap').hidden = false; $('pxExact').value = String(v.motMiles);
-    $('pxMilesNote').hidden = false; $('pxMilesNote').textContent = 'That\u2019s the mileage from its last MOT. Please update it if it has gone up since.';
+    ex.checked = true; $('pxExactWrap').hidden = false; $('pxExact').value = String(sug);
+    $('pxMilesNote').hidden = false; $('pxMilesNote').textContent = L.suggestNote(v);
   }
   function rvq(n) { var i = document.querySelector('#pxSteps input[name=' + n + ']:checked'); return i ? i.value : ''; }
   function pxLook(force) {

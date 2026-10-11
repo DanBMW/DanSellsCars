@@ -46,9 +46,9 @@
     L.lookup(reg).then(function (v) {
       if (pxReg() !== reg) return;
       PXV = v; $('hqPxCard').innerHTML = L.card(v);
-      if (v.motMiles && !$('hqPxMiles').value) {
-        $('hqPxMiles').value = String(v.motMiles);
-        pxNote('That is the mileage from its last MOT. Please update it if it has gone up since.');
+      if (L.suggest(v) && !$('hqPxMiles').value) {
+        $('hqPxMiles').value = String(L.suggest(v));
+        pxNote(L.suggestNote(v));
       }
       track('home_quick_px_lookup', { ok: 'yes' });
     }, function () {
@@ -79,7 +79,7 @@
     var hasPx = q.px === 'yes' || q.px === 'maybe';
     if (hasPx && pxReg()) {
       q.pxReg = pxReg(); q.pxMiles = $('hqPxMiles').value.replace(/\D/g, '');
-      if (PXV) q.pxCar = { make: PXV.make, model: PXV.model, year: PXV.year, colour: PXV.colour, fuel: PXV.fuel, motExpiry: PXV.motExpiry, motMiles: PXV.motMiles, confirmed: PXOK };
+      if (PXV) q.pxCar = { make: PXV.make, model: PXV.model, year: PXV.year, colour: PXV.colour, fuel: PXV.fuel, motExpiry: PXV.motExpiry, motMiles: PXV.motMiles, est: PXV.est, confirmed: PXOK };
     }
     var P = {
       form: 'home-quick', lead_id: q.id,
