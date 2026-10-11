@@ -21,6 +21,10 @@ window.fmbMatch = (function () {
   var ST = window.dsStock, FN = window.dsFin;
   var GBP = '\u00a3';
   var NEW_QUOTE_DEP = 4500, NEW_PER_1000 = 24;
+  /* Full protection on every deal: about £2,500, paid out of the deposit, so
+     the deposit working on the car drops by this much. One number to change. */
+  var PROTECTION_COST = 2500;
+  var PROTECT_URL = 'https://dan-sells.co.uk/current-opportunities.html#protection';
   /* Dan, 8 October: at the desk a brand new car up to 5% over budget is still
      worth showing. One setting, desk mode only. The public flow never uses it. */
   var NEW_STRETCH = 0.05;
@@ -324,7 +328,38 @@ window.fmbMatch = (function () {
     if (f && (a.pay === 'monthly' || a.pay === 'notsure' || !a.pay)) s += 4;
     if (c.image) s += 3;
     s += Math.max(0, c._year - 2018) + Math.max(0, 8 - c._miles / 10000);
-    return { c: c, pct: pct, score: s, fin: f, miss: miss, metExtras: metMust.concat(metExtras), soft: soft, quoted: !!f };
+    var pr = protectFit(c, a, false);
+    return { c: c, pct: pct, score: s, fin: f, miss: miss, metExtras: metMust.concat(metExtras), soft: soft, quoted: !!f, protect: !!(pr && pr.fits), protectEst: pr ? pr.est : null };
+  }
+
+  /* Does the car still fit with PROTECTION_COST taken off the deposit?
+     Used: the lender's own ladder at the lower deposit when it reaches that far,
+     otherwise the quote's monthly plus the extra £2,500 borrowed, spread over the
+     payments at the quote's APR with the final payment unchanged (a standard
+     annuity; it slightly overstates the cost, which errs on the safe side).
+     New: the £24 per £1,000 rule. Cash: price plus £2,500 inside the budget.
+     est is for Dan only and is never shown to a customer. */
+  function protectFit(c, a, isNew) {
+    var P = PROTECTION_COST;
+    if (a.pay === 'cash' && a.cash > 0) return { fits: c._price > 0 && c._price + P < a.cash, est: null };
+    if (!(a.pay === 'monthly' && a.mo > 0)) return { fits: true, est: null };
+    if (isNew) {
+      var base = a.dep === null || a.dep === undefined ? NEW_QUOTE_DEP : a.dep;
+      var e = newEstimate(c, base - P);
+      return e === null ? null : { fits: e <= a.mo, est: e };
+    }
+    var f = finAt(c, a.dep);
+    if (!f) return null;
+    var lower = Number(f.deposit) - P, est = null;
+    if (lower >= 0) { var g = finAt(c, lower); if (g) est = g.monthly; }
+    if (est === null) {
+      var n = Number(f.payments) || Number(f.term) || 48, apr = Number(f.apr) || 0;
+      var i = Math.pow(1 + apr / 100, 1 / 12) - 1;
+      var extra = i > 0 ? P * i / (1 - Math.pow(1 + i, -n)) : P / n;
+      est = Number(f.monthly) + extra;
+    }
+    est = Math.round(est * 100) / 100;
+    return { fits: est <= a.mo, est: est };
   }
   function pctOf(r) { return r.pct == null ? 0 : r.pct; }
   function better(x, xs, y, ys) {
@@ -340,7 +375,7 @@ window.fmbMatch = (function () {
     while (out.length < n && pool.length) {
       var bi = -1, bs = 0;
       for (var i = 0; i < pool.length; i++) {
-        var r = pool[i], adj = r.score;
+        var r = pool[i], adj = r.score + (r.protect ? 3 : 0);
         if (variety && picked.concat(out).some(function (o) { return sig(o) === sig(r); })) adj -= 8;
         if (bi === -1 || better(r, adj, pool[bi], bs)) { bi = i; bs = adj; }
       }
@@ -458,12 +493,13 @@ window.fmbMatch = (function () {
     DATA.newCars.forEach(function (c) {
       if (!newHard(c, a, stretch)) return;
       var o = newOver(c, a);
-      var row = { c: c, est: o.est, over: o.over, pct: Math.round(o.over * 1000) / 10 };
+      var pr = protectFit(c, a, true);
+      var row = { c: c, est: o.est, over: o.over, pct: Math.round(o.over * 1000) / 10, protect: !!(pr && pr.fits), protectEst: pr ? pr.est : null };
       if (o.over <= 1e-9) fit.push(row); else reach.push(row);
     });
     function rank(x, y) {
       var cx = (a.colours || []).indexOf(x.c.colour) !== -1 ? 0 : 1, cy = (a.colours || []).indexOf(y.c.colour) !== -1 ? 0 : 1;
-      return cx - cy || (x.c.lead_time_weeks_max || 99) - (y.c.lead_time_weeks_max || 99) || x.c._price - y.c._price;
+      return cx - cy || (y.protect ? 1 : 0) - (x.protect ? 1 : 0) || (x.c.lead_time_weeks_max || 99) - (y.c.lead_time_weeks_max || 99) || x.c._price - y.c._price;
     }
     fit.sort(rank); reach.sort(function (x, y) { return x.over - y.over || rank(x, y); });
     function take(rows, n) {
@@ -483,10 +519,9 @@ window.fmbMatch = (function () {
   }
   function joinBits(bits) {
     if (!bits.length) return '';
-    function bare(b) { return b.replace(/^(a|an) /i, ''); }
     if (bits.length === 1) return bits[0];
-    if (bits.length === 2) return bits[0] + ' with ' + bare(bits[1]);
-    var rest = bits.slice(1).map(bare);
+    if (bits.length === 2) return bits[0] + ' with ' + bits[1];
+    var rest = bits.slice(1);
     return bits[0] + ' with ' + rest.slice(0, -1).join(', ') + ' and ' + rest[rest.length - 1];
   }
   function whyBits(c, a, r) {
@@ -593,7 +628,7 @@ window.fmbMatch = (function () {
   return {
     MODELS: MODELS, BODY: BODY, FUEL: FUEL, WHO: WHO, LIFE: LIFE, MILES: MILES, PEOPLE: PEOPLE, BOOT: BOOT,
     CHARGE: CHARGE, WHEN: WHEN, MONTHLY: MONTHLY, DEPS: DEPS, CASH: CASH, EXTRAS: EXTRAS, COLOURS: COLOURS, SWATCH: SWATCH,
-    NEW_STRETCH: NEW_STRETCH, NEW_QUOTE_DEP: NEW_QUOTE_DEP, NEW_PER_1000: NEW_PER_1000, RELAX: RELAX, SUBS: SUBS,
+    NEW_STRETCH: NEW_STRETCH, NEW_QUOTE_DEP: NEW_QUOTE_DEP, NEW_PER_1000: NEW_PER_1000, PROTECTION_COST: PROTECTION_COST, PROTECT_URL: PROTECT_URL, PROTECT_LINE: 'You could have our full protection with this car.', protectFit: protectFit, RELAX: RELAX, SUBS: SUBS,
     blank: blank, load: load, data: function () { return DATA; },
     modelBy: modelBy, byV: byV, chosenModels: chosenModels, modelOpen: modelOpen, impliedBodies: impliedBodies,
     shapeLocked: shapeLocked, effectiveBody: effectiveBody, needsCharge: needsCharge, wantsNew: wantsNew, wantsSeven: wantsSeven,

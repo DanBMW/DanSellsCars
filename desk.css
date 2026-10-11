@@ -288,3 +288,11 @@ body.dc-open{overflow:hidden}
 .desk-card.is-tappable{cursor:pointer}
 .desk-card.is-tappable .fmb-ph img{cursor:zoom-in}
 @media print{.desk-car,.desk-shot{display:none!important}}
+
+/* Full protection line, and Ask Will to value */
+.desk-protect,.dp-protect{margin:8px 0;padding:8px 12px;border:1px solid rgba(29,158,117,.55);background:rgba(29,158,117,.1);color:var(--paper)}
+.desk-protect a,.dp-protect a{color:inherit;text-decoration:underline}
+.dp-protect{font-size:1.02rem;max-width:40em}
+.desk-protect-no{color:#d39b4a}
+.desk-row .desk-will{align-self:end;min-height:46px;white-space:nowrap}
+@media print{.desk-will{display:none!important}}

@@ -255,6 +255,7 @@
       + '<p>' + esc([c.reg, c.price, String(c.mileage || '').replace(/\u00a0/g, ' '), c.colour, c._home ? 'Ruxley' : 'Group stock'].filter(Boolean).join(', ')) + '</p>'
       + '<p><b>Why this one:</b> ' + esc(r.why) + '</p>'
       + (r.miss && r.miss.length ? '<p class="desk-note">Misses: ' + esc(r.miss.join(', ')) + '</p>' : '')
+      + protectHtml(r, forCustomer)
       + (f ? '<p class="desk-note">' + esc(FN.money2(f.monthly)) + ' a month. Representative example: ' + esc(M.repText(f)) + '</p>' : '<p class="desk-note">No lender quote at this deposit. Ask for a quote.</p>')
       + '</article>';
   }
@@ -264,8 +265,68 @@
       + '<h3>Brand new ' + esc(c.description) + '</h3>'
       + '<p>' + esc([c.colour, c.price, M.newWhen(c)].filter(Boolean).join(', ')) + '</p>'
       + (reach && !forCustomer ? '<p class="desk-pct"><b>' + r.pct.toFixed(1) + '% over budget</b></p>' : '')
+      + protectHtml(r, forCustomer)
       + '<p>Finance available. I\u2019ll send you a personalised quote.</p>'
       + '</article>';
+  }
+
+  /* ---------- full protection (PROTECTION_COST out of the deposit) ---------- */
+  function protectHtml(r, forCustomer, cls) {
+    if (!r) return '';
+    if (!r.protect) return !forCustomer && r.protectEst ? '<p class="desk-note desk-protect-no">With full protection: about ' + esc(FN.money(r.protectEst)) + ' a month, over budget (estimate, for Dan only).</p>' : '';
+    var h = '<p class="' + (cls || 'desk-protect') + '">\u2713 ' + esc(M.PROTECT_LINE) + ' <a href="' + M.PROTECT_URL + '" target="_blank" rel="noopener">Learn more about the protection I offer</a></p>';
+    if (!forCustomer && r.protectEst) h += '<p class="desk-note">With full protection: about ' + esc(FN.money(r.protectEst)) + ' a month, ' + esc(FN.money(M.PROTECTION_COST)) + ' less deposit on the car (estimate, for Dan only).</p>';
+    return h;
+  }
+  function protectText(r) {
+    if (!r) return '';
+    var est = r.protectEst ? ' About ' + FN.money(r.protectEst) + ' a month with ' + FN.money(M.PROTECTION_COST) + ' less deposit on the car (estimate, for Dan only).' : '';
+    return (r.protect ? 'Yes, fits with full protection.' : 'No, over budget once protection comes out of the deposit.') + est;
+  }
+
+  /* ---------- Ask Will to value: a mailto in Dan's own mail app ---------- */
+  var WILL = 'Will.potter@hedinautomotive.co.uk';
+  function hasPx() { return !!($('pxReg').value.trim() || $('curCar').value.trim()); }
+  function paintWill() { var on = hasPx(); $('pxWill').hidden = !on; $('pxWillNote').hidden = !on; }
+  function customerStory(a) {
+    var bits = [];
+    var models = M.chosenModels(a).map(function (v) { return M.modelBy(v).t; });
+    var fuel = (a.fuel || []).length === 1 ? M.byV(M.FUEL, a.fuel[0]).t.toLowerCase() : '';
+    var what = models.length ? M.list(models, 'or') + (fuel ? ' ' + fuel : '') : (fuel ? 'a ' + fuel + ' BMW' : 'a BMW, open to ideas');
+    var life = a.life && a.life !== 'open' ? ' for ' + M.softSaid(M.txt(M.LIFE, a.life)) : '';
+    var when = a.when ? ', wants to change ' + M.softSaid(M.txt(M.WHEN, a.when)) : '';
+    if (a.when === 'browsing') when = ', just browsing for now';
+    var art = models.length ? (/^(X|M|i|8|11|18)/.test(models[0]) ? 'an ' : 'a ') : '';
+    bits.push('Looking at ' + art + what + life + when + '.');
+    if (a.pay) bits.push(M.budgetLine(a) + '.');
+    return bits.join(' ');
+  }
+  function willMail() {
+    var a = answers(), px = pxInfo();
+    var found = px.found.replace(/ \(from reg lookup\).*$/, '');
+    var year = (found.match(/^(19|20)\d\d/) || px.car.match(/^(19|20)\d\d/) || [''])[0];
+    var car = px.car || found || 'Not given';
+    var L = ['Hi Will,', '', 'Could you value a part exchange for me, please?', ''];
+    L.push('Reg: ' + (px.reg || 'Not given'));
+    L.push('Make and model: ' + car);
+    if (year && car.indexOf(year) !== 0) L.push('Year: ' + year);
+    if (found && found !== car) L.push('From the reg lookup: ' + found);
+    L.push('Mileage: ' + (px.miles ? px.miles.toLocaleString('en-GB') + ' miles' : 'Not given'));
+    if (px.settle !== null) L.push('Outstanding finance: ' + FN.money(px.settle) + ' to settle');
+    if (nv('n_px')) L.push('Notes: ' + nv('n_px').replace(/\s*[\u2013\u2014]\s*/g, ', ').replace(/\s+-\s+/g, ', '));
+    L.push('', 'The customer: ' + customerStory(a), '');
+    L.push('This car has been uploaded to the appraisal system, please value.', '', 'Thanks,', 'Dan');
+    var subj = 'PX valuation please: ' + (px.reg || '') + ' ' + car.replace(/^(19|20)\d\d\s+/, '');
+    return { to: WILL, subject: subj.replace(/\s+/g, ' ').trim(), body: L.join('\n') };
+  }
+  function willHref() {
+    var m = willMail();
+    return 'mailto:' + m.to + '?subject=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(m.body.replace(/\n/g, '\r\n'));
+  }
+  function askWill() {
+    if (!hasPx()) return;
+    track('fmb_desk_px_will');
+    window.location.href = willHref();
   }
   function resultHtml(forCustomer) {
     if (!RES) return '';
@@ -345,8 +406,9 @@
       ['Car', (x.year ? x.year + ' ' : '') + x.model],
       ['Reg, price, mileage', [x.reg, x.price, String(x.mileage || '').replace(/\u00a0/g, ' ')].filter(Boolean).join(', ')],
       ['Colour, location', [x.colour, x._home ? 'Ruxley forecourt' : 'Group stock'].filter(Boolean).join(', ')],
-      ['Why this one', r.why + (r.miss && r.miss.length ? '. Misses: ' + r.miss.join(', ') : '')],
+      ['Why this one', String(r.why || '').replace(/\.+$/, '') + (r.miss && r.miss.length ? '. Misses: ' + r.miss.join(', ') : '')],
       ['Listing', x.url || ''],
+      ['Full protection', protectText(r)],
       ['Finance', r.fin ? FN.money2(r.fin.monthly) + ' a month. Representative example: ' + M.repText(r.fin) : 'No lender quote at this deposit yet. Ask for a quote.']
     ];
   }
@@ -354,7 +416,8 @@
     var c = r.c, est = r.est;
     return 'BMW ' + c.description + ', ' + (c.colour || '') + ', ' + (c.price || '') + ', order ' + c.order_number + (M.newWhen(c) ? ', ' + M.newWhen(c).toLowerCase() : '')
       + (reach ? '. ' + r.pct.toFixed(1) + '% over budget' : '')
-      + (a.pay === 'monthly' && est ? '. For Dan only: about ' + FN.money(est) + ' a month at ' + (a.dep === null ? FN.money(M.NEW_QUOTE_DEP) + ' (deposit not given)' : 'their ' + FN.money(a.dep)) + ' deposit on the ' + GBP + M.NEW_PER_1000 + ' per ' + GBP + '1,000 rule' : '');
+      + (a.pay === 'monthly' && est ? '. For Dan only: about ' + FN.money(est) + ' a month at ' + (a.dep === null ? FN.money(M.NEW_QUOTE_DEP) + ' (deposit not given)' : 'their ' + FN.money(a.dep)) + ' deposit on the ' + GBP + M.NEW_PER_1000 + ' per ' + GBP + '1,000 rule' : '')
+      + '. Full protection: ' + protectText(r).replace(/\.$/, '');
   }
   /* One content model in the order of Dan's paper customer requirements
      document. The Submit email (text) and the A4 customer profile (HTML) are
@@ -489,7 +552,7 @@
         + '<p class="cp-rep">' + v(rows[rows.length - 1][1]) + '</p>' + tbl([tr('Matching', v(R.match))]) + notes('n_result') + '</section>';
       if (R.alts.length) h += '<section class="cp-sec"><h3 class="cp-sub">Alternatives</h3>' + tbl(R.alts.map(function (r, i) {
         var o = {}; usedRows(r).forEach(function (x) { o[x[0]] = x[1]; });
-        return tr((i + 2) + '. ' + (o['Car'] || ''), [o['Reg, price, mileage'], o['Colour, location'], o['Why this one'] ? 'Why: ' + o['Why this one'] : '', o['Listing']].filter(Boolean).map(v).join('<br/>') + (o['Finance'] ? '<br/><span class="cp-rep">' + v(o['Finance']) + '</span>' : ''));
+        return tr((i + 2) + '. ' + (o['Car'] || ''), [o['Reg, price, mileage'], o['Colour, location'], o['Why this one'] ? 'Why: ' + o['Why this one'] : '', o['Full protection'] ? 'Full protection: ' + o['Full protection'] : '', o['Listing']].filter(Boolean).map(v).join('<br/>') + (o['Finance'] ? '<br/><span class="cp-rep">' + v(o['Finance']) + '</span>' : ''));
       })) + '</section>';
       if (R.newFit) h += '<section class="cp-sec"><h3 class="cp-sub">Brand new options</h3>' + tbl([
         tr('Fit the budget', R.newFit.length ? R.newFit.map(function (r) { return v(newRow(r, a, false)); }).join('<br/>') : 'None fit every point today'),
@@ -602,12 +665,15 @@
      been opened past the gate: that would overwrite the saved customer with
      an empty form. */
   var pendingRestore = false;
+  /* After Submit or New customer nothing is written until Dan types again,
+     so a background refresh of the results cannot bring a sent customer back. */
+  var justCleared = false;
   function save() {
-    if (!restoreChecked || pendingRestore) return;
+    if (!restoreChecked || pendingRestore || justCleared) return;
     try { localStorage.setItem(DRAFT, JSON.stringify(snapshot())); dirty = false; } catch (e) {}
   }
   function saveSoon() {
-    dirty = true; var gen = ++saveGen; clearTimeout(saveT);
+    dirty = true; justCleared = false; var gen = ++saveGen; clearTimeout(saveT);
     saveT = setTimeout(function () { if (gen === saveGen) save(); }, 250);
   }
   function loadDraft() { try { return JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) { return null; } }
@@ -619,11 +685,11 @@
     CHECKS.forEach(function (id) { var e = $(id); if (e) e.checked = !!f['#' + id]; });
     if (f['#pxFound']) { $('pxFound').hidden = false; $('pxFound').textContent = f['#pxFound']; }
     LEAD_ID = d.lead || null;
-    budgetPanels(); equity(); paintDeposit(); paintFill(); actSummary();
+    budgetPanels(); equity(); paintDeposit(); paintFill(); actSummary(); paintWill();
     if (d.found) runFind(true);
     setTimeout(function () { window.scrollTo(0, d.scroll || 0); }, 60);
   }
-  function clearDraft() { saveGen++; clearTimeout(saveT); clearTimeout(scrollT); try { localStorage.removeItem(DRAFT); } catch (e) {} }
+  function clearDraft() { justCleared = true; saveGen++; clearTimeout(saveT); clearTimeout(scrollT); try { localStorage.removeItem(DRAFT); } catch (e) {} }
   function resetAll() {
     $('deskForm').reset();
     PERSONAL.concat(TEXTS).forEach(function (id) { var e = $(id); if (e) e.value = ''; }); CHECKS.forEach(function (id) { var e = $(id); if (e) e.checked = false; });
@@ -633,7 +699,7 @@
     $('deskResult').hidden = true; $('deskResult').innerHTML = ''; closePresent(); $('deskEmpty').hidden = false; $('deskEmpty').textContent = 'Fill in what you know, in any order, then press Find car.';
     $('deskCustomer').hidden = true; $('deskDone').hidden = true; $('deskFallback').hidden = true; $('deskSubmitErr').hidden = true;
     $('deskSubmit').disabled = false; $('deskSubmit').textContent = 'Submit'; $('deskCopy').textContent = 'Copy email';
-    budgetPanels(); paintDeposit(); paintFill(); actSummary();
+    budgetPanels(); paintDeposit(); paintFill(); actSummary(); paintWill();
     var f1 = secs()[0]; if (f1) openOnly(f1);
     clearDraft(); window.scrollTo(0, 0);
   }
@@ -755,6 +821,7 @@
          any of the three moves, not only when the deposit box itself does. */
       if (/^(dep|pxSettle|pxVal)$/.test(e.target.id)) paintDeposit();
       if (e.target.id === 'pxReg') e.target.value = e.target.value.toUpperCase();
+      if (/^(pxReg|curCar)$/.test(e.target.id)) paintWill();
       paintFill(); actSummary(); saveSoon();
       if (FOUND && /^(mo|dep|cash|pxSettle|pxVal)$/.test(e.target.id)) { clearTimeout(form._t); form._t = setTimeout(function () { runFind(true); }, 400); }
     });
@@ -855,6 +922,7 @@
       resetAll(); track('fmb_desk_new_customer');
     });
     $('pxLookup').addEventListener('click', lookupReg);
+    $('pxWill').addEventListener('click', askWill);
     $('deskProfileBtn').addEventListener('click', openProfile);
     /* Print sits in the action bar as well, because the customer
        requirements document is a thing Dan prints at the desk, not only
@@ -921,7 +989,7 @@
     }
     var whys = whyFor(slide).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
     return '<article class="dp-slide">' + photo + '<div class="dp-copy"><p class="dp-kicker">' + esc(kicker) + '</p>' + h
-      + '<h2 class="dp-name">' + esc(name) + '</h2><p class="dp-spec">' + esc(spec) + '</p>' + price + fin
+      + '<h2 class="dp-name">' + esc(name) + '</h2><p class="dp-spec">' + esc(spec) + '</p>' + price + fin + protectHtml(slide.r, true, 'dp-protect')
       + '<h3>Why this one for you</h3><ul class="dp-why">' + whys + '</ul></div></article>';
   }
   /* ---------- one car, full page, and a photograph, enlarged ----------
@@ -972,7 +1040,7 @@
       + '<h2>' + esc(carName(slide)) + '</h2>'
       + '<p class="dc-price">' + esc(c.price || 'Price on request') + '</p>'
       + '<p class="dc-facts">' + esc(carFacts(slide).join(' \u00b7 ')) + '</p>'
-      + carFinHtml(slide, forCustomer);
+      + carFinHtml(slide, forCustomer) + protectHtml(slide.r, forCustomer);
     var why = slide.kind === 'new' ? M.newWhy(c, A || answers()) : slide.r.why;
     if (why) h += '<p class="dc-why"><b>Why this one for you:</b> ' + esc(String(why).replace(/\.+$/, '.')) + '</p>';
     if (!forCustomer && slide.r.miss && slide.r.miss.length) h += '<p class="desk-note">Misses: ' + esc(slide.r.miss.join(', ')) + '</p>';
@@ -1131,7 +1199,7 @@
       /* The lookup knows the car, so Dan does not type it again. His own
          words win if he has already put something in the box. */
       if (!$('curCar').value && (d.make || d.model)) $('curCar').value = [d.yearOfManufacture, d.make, d.model].filter(Boolean).join(' ');
-      paintFill();
+      paintFill(); paintWill();
       saveSoon(); track('fmb_desk_px_lookup', { ok: 'yes' });
     })['catch'](function () { $('pxFound').textContent = 'Could not look that reg up. Carry on and add the details by hand.'; track('fmb_desk_px_lookup', { ok: 'no' }); });
   }
@@ -1140,14 +1208,14 @@
     build(); wire(); wireGate(); budgetPanels();
     /* Open on step 1 rather than all seven. */
     var first = secs()[0]; if (first) openOnly(first);
-    paintDeposit(); paintFill(); actSummary(); fitChrome();
+    paintDeposit(); paintFill(); actSummary(); fitChrome(); paintWill();
     window.addEventListener('resize', fitChrome, { passive: true });
     if (unlocked()) openApp(); else lock('start');
   }
   window.fmbDeskDebug = {
     payload: null, answers: function () { return answers(); }, result: function () { return { used: RES, neu: NEWR, totals: TOT }; },
     emailBody: function () { return emailBody(); }, buildProfile: function (o) { return buildProfile(o); }, openProfile: function () { openProfile(); }, subject: function () { return subject(); }, lock: function () { lock('test'); }, presentText: function () { return presentText(); },
-    ready: function () { return pData; }, draft: function () { return loadDraft(); }, summary: function () { return customerSummary(); }, fitChrome: function () { return fitChrome(); }
+    ready: function () { return pData; }, draft: function () { return loadDraft(); }, summary: function () { return customerSummary(); }, fitChrome: function () { return fitChrome(); }, willHref: function () { return willHref(); }, willMail: function () { return willMail(); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

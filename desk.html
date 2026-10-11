@@ -8,15 +8,15 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
   <link rel="stylesheet" href="premium.css?v=2538cd7f"/>
   <link rel="stylesheet" href="fmb.css?v=12"/>
-  <link rel="stylesheet" href="desk.css?v=5"/>
+  <link rel="stylesheet" href="desk.css?v=6"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6',{traffic_type:'internal',desk_session:'true'});</script>
   <script src="dsfinance.js"></script>
   <script src="stock-core.js"></script>
-  <script src="fmb-match.js?v=3"></script>
+  <script src="fmb-match.js?v=4"></script>
   <script src="aos-media.js?v=2" defer></script>
   <script src="staff-gate.js"></script>
-  <script src="desk.js?v=5" defer></script>
+  <script src="desk.js?v=6" defer></script>
 </head>
 <body class="desk">
 <div class="desk-lock" id="deskLock">
@@ -76,7 +76,9 @@
           <label>Mileage<input id="pxMiles" inputmode="numeric" placeholder="62000"/></label>
           <label>Settlement &pound;<input id="pxSettle" inputmode="numeric" placeholder="6500"/></label>
           <label class="red">Valuation &pound;<input id="pxVal" inputmode="numeric" placeholder="14000"/></label>
+          <button class="fmb-btn ghost desk-will" type="button" id="pxWill" hidden>Ask Will to value</button>
         </div>
+        <p class="desk-note" id="pxWillNote" hidden>Opens an email to Will Potter in your own mail app with the car and a line about the customer. Nothing sends until you press send.</p>
         <p class="desk-note" id="pxEquity" hidden></p>
         <label class="desk-notes">Notes<textarea id="n_px" rows="2" maxlength="800"></textarea></label>
       </div></details>

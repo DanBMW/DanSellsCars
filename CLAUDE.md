@@ -2358,3 +2358,8 @@ Three things it has to keep:
   on the first run. `viewport_deficit()` measures the shortfall from the browser
   itself rather than hard-coding it, the window is grown by that much, and the
   JPEG pass sizes its canvas to the frame so the surplus is cropped back off.
+
+## Full protection and Ask Will to value (11 October 2026)
+
+- `PROTECTION_COST = 2500` in fmb-match.js. It is paid out of the deposit, so every match is rechecked with the deposit £2,500 lower: used cars on the lender ladder at the lower deposit, or the quote plus £2,500 spread over the payments at the quote's APR when the ladder does not reach; new cars on the £24 per £1,000 rule from £4,500; cash buyers need price plus £2,500 inside the budget. A car that still fits gets "You could have our full protection with this car." linking to current-opportunities.html#protection, on public results, Present and desk. It is a soft tie break (+3 score), never a filter. The customer never sees a figure; desk shows "estimate, for Dan only", and so do the email and the A4 profile.
+- Desk section 3 has "Ask Will to value" next to Valuation £. It opens a mailto to Will.potter@hedinautomotive.co.uk in Dan's own mail app (nothing sends by itself): PX reg, car, year, mileage, settlement, PX notes, a one or two sentence customer story, and the exact line "This car has been uploaded to the appraisal system, please value." No customer contact details. Hidden until there is a reg or a car.

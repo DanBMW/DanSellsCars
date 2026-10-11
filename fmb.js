@@ -598,9 +598,13 @@
       + (flags.length ? '<div class="fmb-flags">' + flags.join('') + '</div>' : '')
       + (!c._home ? '<p class="fmb-grpline">I can source this one from across the group.</p>' : '')
       + '<p class="fmb-why"><b>' + (best ? 'Why this one' : 'Why it fits') + '</b> ' + esc(r.why) + '</p>'
+      + protectBadge(r)
       + finBlock(r)
       + '<a class="fmb-btn wa wide" data-like="' + i + '" href="' + esc(WA) + '" target="_blank" rel="noopener">I like this one</a>'
       + '</div></article>';
+  }
+  function protectBadge(r) {
+    return r && r.protect ? '<p class="fmb-protect"><span aria-hidden="true">\u2713</span> ' + esc(M.PROTECT_LINE) + ' <a href="' + M.PROTECT_URL + '" target="_blank" rel="noopener">Learn more about the protection I offer</a></p>' : '';
   }
   function findCard() {
     return '<div class="fmb-find' + (RM ? '' : ' fmb-card rise') + '"><h3>Want me to find the exact one?</h3>'
@@ -621,6 +625,7 @@
       + (spec ? '<p class="fmb-newspec">' + esc(spec) + '</p>' : '')
       + '<div class="fmb-price">' + esc(c.price || 'Price on request') + '</div>'
       + '<p class="fmb-why"><b>Why it fits:</b> ' + esc(newWhy(c, A)) + '</p>'
+      + protectBadge(r)
       + '<p class="fmb-quote">Finance available. I\u2019ll send you a personalised quote with the full figures.</p>'
       + '<a class="fmb-btn wa wide" data-newlike="' + i + '" href="' + esc(WA) + '" target="_blank" rel="noopener">I like this one</a>'
       + '</div></article>';
