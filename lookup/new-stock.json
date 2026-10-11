@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-10T08:51:16.000Z",
+ "generated_at": "2026-10-11T06:03:07.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
  "count": 70,
@@ -1477,8 +1477,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Electric Front Seats + Driver Memory",
@@ -2990,8 +2990,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
@@ -3217,8 +3217,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
@@ -3279,8 +3279,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "22\" BMW Individual aerodynamic wheels 1053 Bicolour",
@@ -3342,8 +3342,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Sun Protection Glass"
@@ -3420,8 +3420,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Sun Protection Glass"
@@ -3498,8 +3498,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Sun Protection Glass"
@@ -3979,8 +3979,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 6,
-   "lead_time_weeks_max": 8,
+   "lead_time_weeks_min": 5,
+   "lead_time_weeks_max": 7,
    "on_hold": false,
    "options": [
     "M Brakes with Red Calipers",
@@ -4070,8 +4070,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 5,
-   "lead_time_weeks_max": 7,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "M Brakes with Red Calipers",
