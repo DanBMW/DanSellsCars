@@ -27,7 +27,7 @@
  "listing_id": "255156",
  "source": "group",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-10-09",
- "available_until": "2026-11-08"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }
