@@ -9,7 +9,7 @@
   function clean(r) { return String(r || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
   /* Looks like a UK plate: 2 to 7 characters, at least one letter and one digit */
   function plausible(r) { r = clean(r); return r.length >= 2 && r.length <= 7 && /[A-Z]/.test(r) && /\d/.test(r); }
-  function title(s) { return String(s || '').toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); }).replace(/\bBmw\b/g, 'BMW'); }
+  function title(s) { return String(s || '').toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); }).replace(/\bBmw\b/g, 'BMW').replace(/\b(Mhev|Phev|Hev|Ev|Gt|Gti|Amg|Tdi|Tsi|Suv|Cvt|Dct)\b/g, function (w) { return w.toUpperCase(); }).replace(/\bXdrive/g, 'xDrive').replace(/\bSdrive/g, 'sDrive'); }
   function ukDate(s) {
     var m = /^(\d{4})[-.](\d{2})[-.](\d{2})/.exec(s || ''); if (!m) return '';
     var M = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
