@@ -1544,8 +1544,11 @@ group straight under Home with **Approved Used Stock** (`stock.html`) and
 **New Car Stock** (`new-cars.html`) as outlined buttons
 (`.ph-drawer-stock` in `premium.css`, outlined so WhatsApp stays the only
 solid call to action). They replaced "Available Now" and "New cars" in the
-Practical group; the footers and the old `drawer.html` use the same two
-labels. Keep those labels in all four partials.
+Practical group. **Today's offers** (`todays-offers.html`) is the third
+outlined button in that group (Dan, 11 October 2026), and the footers and the
+old `drawer.html` list it straight after New Car Stock. Keep those three labels
+in all four partials. Linking it does not change its noindex or keep it out of
+the sitemap.
 
 Pages without the chrome markers (all funnel pages, plus
 `business-proposal.html`/`finance-proposal.html` which have their own minimal
