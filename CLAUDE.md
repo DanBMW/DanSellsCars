@@ -972,7 +972,7 @@ for, and the morning does no more work than it did yesterday.
   midnight, so an indexed snapshot would promise a car that has moved on.
   Linked from the Today section of `links.html`. GA `offers_view`,
   `offer_claim_open`, `offer_claim`, `offer_claim_error`, `offer_whatsapp`,
-  `offer_car_view`, `offer_ask_whatsapp`. `window.toDebug` is the test seam.
+  `offer_car_view`, `offer_ask_whatsapp`, `offer_share` (the "Share today's offers on WhatsApp" button in the Not quite the one block, wa.me with no number so they pick the friend). The representative example renders `open` on this page (11 October review): it is the page Dan promotes daily, so the example sits in plain view beside every used monthly rather than behind a tap. `window.toDebug` is the test seam.
 
 ### The daily routines, and what owns what
 

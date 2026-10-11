@@ -202,7 +202,7 @@
     return '<p class="to-mo"><b>' + esc(FN.money2(o.fin.monthly)) + ' a month</b>'
       + '<span>' + esc(o.fin.product || 'BMW Select (PCP)') + ', ' + esc(FN.money(o.fin.deposit)) + ' deposit, '
       + esc(o.fin.term) + ' months, ' + esc(o.fin.apr) + '% APR representative.</span></p>'
-      + '<details class="to-rep"><summary>Representative example</summary>'
+      + '<details class="to-rep" open><summary>Representative example</summary>'
       + esc(FN.repExample(o.fin)) + (o.fin.legal ? ' ' + esc(o.fin.legal) : '') + '</details>';
   }
 
@@ -552,6 +552,10 @@
     $('toAskWa').href = 'https://wa.me/' + WA + '?text='
       + encodeURIComponent('Hi Dan, I saw today\u2019s offers. None of them are quite right, what I am after is ');
     $('toAskWa').addEventListener('click', function () { track('offer_ask_whatsapp', { offer_date: DAY }); });
+    /* Passing the page on is how a daily share travels, so it gets its own
+       button: wa.me with no number lets them pick the friend. */
+    var sh = $('toShare');
+    if (sh) sh.addEventListener('click', function () { track('offer_share', { offer_date: DAY, method: 'whatsapp' }); });
   }
 
   /* The countdown is the honest part of "today only": it says how long is
