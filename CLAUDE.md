@@ -892,6 +892,88 @@ cars give:
   example with it**, the way `stock.html` does: that is the condition the
   figure is published under, not a presentational preference.
 
+### Today's offers - todays-offers.html
+
+Dan asked on 11 October for the daily used car cards and a couple of new cars
+on one page that rotates daily, where a customer claims an offer on the day it
+is there and he gets a message with everything he needs.
+
+**It adds no automation at all, and that is the point.** The used offers are
+the three cars the morning routine already picks for the Instagram finance
+cards (`finance-posts/index.json`): they already rotate, already carry a 21 day
+cooldown so one car cannot come round twice in three weeks, and already hold a
+live lender quote with a quote reference. So the page shows exactly the cars
+that morning's posts show, which is what somebody who saw the post is looking
+for, and the morning does no more work than it did yesterday.
+
+- **The brand new pair comes off the London date alone** (`newPair()`, an FNV
+  hash of the date into the order-number-sorted list), the way the board picks
+  its forecourt six: every visitor on a day sees the same two, it rolls at
+  midnight with nobody pressing anything, and there is no state to keep. Two
+  different models where the stock allows it, because two 1 Series side by side
+  is one offer rather than two.
+- **The day is London's**, not UTC and not the visitor's clock, so two people
+  in different time zones see the same offer. The countdown is built by asking
+  what London says the time is and taking the rest of the day off the clock, so
+  it needs no table of when the clocks change, and when it runs out the page
+  reloads itself onto the new day rather than leaving yesterday's car
+  claimable.
+- **A used monthly figure carries the lender's whole representative example**,
+  read from `stock-finance.json` through `dsfinance.js` and only while
+  `FN.live()` says the quote stands. **A brand new card shows no monthly at
+  all**: BMW publish one but no deposit, term or final payment that could make
+  a compliant example, and the figures `new-stock.py` derives are explicitly
+  not a quotation. Same rule the Find my BMW matcher keeps. The cash price and
+  which kind of price it is go on the card instead.
+- **The claim is one Formspree submission**, `form: todays-offer`, guarded by
+  `localStorage` per offer reference (`OFFER-YYMMDD-REG`) so a refresh or a
+  double tap cannot fire a second: Formspree is rationed and a claim is the one
+  message this page exists to send. It carries the car, the reg or order
+  number, the price, the monthly, the deposit, the term, the APR, the quote
+  reference, the whole representative example, the customer and the day, so
+  Dan can act on the email without opening anything. `_replyto` is the
+  customer's email or Dan's Hedin address, never a noreply on a domain with no
+  MX. A failure keeps the form with Try again and a WhatsApp link, the same
+  shape the Find my BMW gate uses; success shows WhatsApp prefilled with the
+  same detail.
+- **If the morning's cards have not landed**, the newest day in the file is
+  shown and the page says so in words rather than calling an older car today's
+  offer.
+- `noindex, follow`, out of `sitemap.xml`, and deliberately **not** in
+  `robots.txt`, so Google can see the noindex (the funnel step reasoning).
+  Linked from the Today section of `links.html`. Make it public when Dan says
+  so. GA `offers_view`, `offer_claim_open`, `offer_claim`, `offer_claim_error`,
+  `offer_whatsapp`. `window.toDebug` is the test seam.
+
+### The daily routines, and what owns what
+
+Six Routines and one workflow run this site. Reviewed 11 October 2026:
+
+- **06:00 UTC, new car stock.** `new-stock.py`, about a minute.
+- **07:00 UTC, the big one.** Snapshot, group list, car details, images, the
+  three finance cards, then the quotes and the ladder. Twenty minutes to an
+  hour and a half, the quote run being nearly all of it.
+- **09:20 UTC, the sanity check.** Read only. It used to run at 07:30, inside
+  the window the quote job is still working in: on 10 October the quotes were
+  not committed until 08:50 and on 11 October not until 09:36, so the check was
+  reading a half finished morning and its "roughly twenty minutes" was wrong.
+- **09:00 UTC, the current opportunities post.**
+- **18:00 UTC every other day, the BMW Mad Product drop.**
+- **`daily-lookup.yml`**, which owns `lookup/` and `automation/stock-arrivals.json`.
+  **It is triggered by the morning's own commits, not only by its cron.** A
+  scheduled workflow fires when GitHub gets round to it, and on this repo that
+  was 14:26 and 14:53 on consecutive days against a `15 8` cron, so the lookup
+  a colleague's booking system reads sat a whole morning behind the stock it is
+  built from. The push trigger watches the four stock files; it cannot loop,
+  because a push made with `GITHUB_TOKEN` starts no workflow and the files this
+  job writes are not among the four anyway. The cron stays as a backstop.
+
+Two things found in that review that are Dan's call rather than this repo's:
+the 08:00 Instagram draft Routine still reads `offers.html` for its car list,
+and that page has been a 574 byte redirect stub since 8 October, so it has
+nothing to draw on; and `new-stock.py` was being run twice a day, once at 06:00
+and again as Part Five of the 07:00 Routine, for an identical answer.
+
 ### The rest of the group's stock - hedin-group-stock.json
 
 `stock.html` opens on Dan's own forecourt and nothing else. Underneath that

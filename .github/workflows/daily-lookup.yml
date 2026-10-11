@@ -23,9 +23,30 @@ name: daily-lookup
 # in one rather than write a confident wrong answer, so without this line the
 # job would simply fail every morning.
 
+# A scheduled workflow fires when GitHub gets round to it, and on this repo
+# that has been hours rather than minutes: '15 8' ran at 14:26 on 10 October
+# and 14:53 on 11 October, so lookup/stock.json sat a morning behind the stock
+# it is built from, which is the exact fault this job was written to end.
+#
+# So the real trigger is the morning's own commits. The stock Routine pushes
+# the snapshot, the group list and the quotes; this runs minutes later off
+# those paths and the lookup is current before anybody opens it. It cannot
+# loop: a push made with GITHUB_TOKEN starts no workflow, and the files this
+# job writes are not in the list below either way.
+#
+# The cron stays as a backstop for a morning where the Routine does not run at
+# all (the arrivals ledger is rebuilt from git every time, so a day it was
+# missed costs nothing and the next run reconstructs the same answer), and
+# concurrency keeps the two from overlapping.
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'automation/hedin-stock-snapshot.json'
+      - 'automation/hedin-group-stock.json'
+      - 'automation/stock-finance.json'
+      - 'automation/car-details.json'
   schedule:
-    # 08:15 UTC, after the 07:00 stock Routine finishes (about 07:56).
     - cron: '15 8 * * *'
   workflow_dispatch:
 
