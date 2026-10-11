@@ -116,6 +116,13 @@
 
   <!-- HERO -->
   <section class="hq-hero" id="top" aria-label="Introduction">
+    <div class="hq-media" aria-hidden="true">
+      <video muted loop playsinline preload="none" poster="vid-dan-poster.jpg" id="heroVid">
+        <source src="vid-dan.mp4" type="video/mp4"/>
+      </video>
+    </div>
+    <div class="hq-scrim" aria-hidden="true"></div>
+    <button class="ph-vid-toggle hq-vid-toggle" id="heroVidToggle" type="button" aria-label="Pause background video">Pause</button>
     <div class="wrap hq-grid">
       <div class="hq-copy">
         <div class="hq-who">
@@ -617,6 +624,9 @@
 <script>
 (function(){
   var v=document.getElementById('heroVid'),b=document.getElementById('heroVidToggle');
+  if(v){var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var go=function(){if(!still){v.preload='auto';var pr=v.play();if(pr&&pr.catch)pr.catch(function(){});}else if(b){b.textContent='Play';b.setAttribute('aria-label','Play background video');}};
+    if(document.readyState==='complete')go();else window.addEventListener('load',go);}
   if(v&&b){b.addEventListener('click',function(){
     if(v.paused){v.play();b.textContent='Pause';b.setAttribute('aria-label','Pause background video');}
     else{v.pause();b.textContent='Play';b.setAttribute('aria-label','Play background video');}

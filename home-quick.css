@@ -1,5 +1,5 @@
 /* Homepage draft: short hero with a five field quick form */
-.hq-hero{padding:96px 0 40px;background:radial-gradient(120% 80% at 80% 0%,#18202b 0%,var(--ink) 60%)}
+.hq-hero{position:relative;overflow:hidden;isolation:isolate;padding:96px 0 40px;background:radial-gradient(120% 80% at 80% 0%,#18202b 0%,var(--ink) 60%)}
 .hq-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:48px;align-items:start}
 .hq-who{display:flex;align-items:center;gap:14px;margin-bottom:14px}
 .hq-who img{width:72px;height:90px;object-fit:cover;border:1px solid var(--hairline)}
@@ -52,3 +52,10 @@
   .hq-steps{grid-template-columns:1fr}
 }
 .hq-card [hidden]{display:none !important}
+
+/* Hero video: background layer only, never takes layout space */
+.hq-media{position:absolute;inset:0;z-index:-2}
+.hq-media video{width:100%;height:100%;object-fit:cover;object-position:center}
+.hq-scrim{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(8,12,20,.55) 0%,rgba(8,12,20,.78) 45%,rgba(8,12,20,.94) 100%)}
+.hq-hero .hq-grid{position:relative;z-index:1}
+.hq-vid-toggle{position:absolute;right:14px;bottom:14px;z-index:2}
