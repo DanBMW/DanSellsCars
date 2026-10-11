@@ -64,6 +64,8 @@
   }
   </script>
 <script src="analytics.js" defer></script>
+<script src="home-quick.js?v=1" defer></script>
+  <link rel="stylesheet" href="home-quick.css?v=1"/>
 </head>
 <body>
 
@@ -113,78 +115,100 @@
 <main>
 
   <!-- HERO -->
-  <section class="ph-hero" id="top" aria-label="Introduction">
-    <div class="ph-hero-media">
-      <video autoplay muted loop playsinline poster="vid-dan-poster.jpg" id="heroVid">
-        <source src="vid-dan.mp4" type="video/mp4"/>
-      </video>
-    </div>
-    <div class="ph-hero-scrim"></div>
-    <div class="ph-hero-content">
-      <div class="wrap">
-        <div class="ph-hero-row">
-          <figure class="ph-hero-portrait">
-            <img src="dan.jpg" alt="Dan Cane, BMW Sales Executive at Hedin Ruxley" width="160" height="200" decoding="async"/>
-          </figure>
-          <div class="ph-hero-copy">
-            <div class="ph-hero-head">
-              <span class="plabel">Dan Cane &middot; BMW Sales Executive &middot; Hedin Ruxley, Sidcup</span>
-              <h1>Your next BMW,<br/>done <em>properly</em>.</h1>
-              <hr class="rule"/>
+  <section class="hq-hero" id="top" aria-label="Introduction">
+    <div class="wrap hq-grid">
+      <div class="hq-copy">
+        <div class="hq-who">
+          <img src="dan.jpg" alt="Dan Cane, BMW Sales Executive at Hedin Ruxley" width="88" height="110" decoding="async"/>
+          <span class="plabel">Dan Cane &middot; BMW Sales Executive &middot; Hedin Ruxley, Sidcup</span>
+        </div>
+        <h1>Your next BMW,<br/>done <em>properly</em>.</h1>
+        <p class="hq-sub">Tell me what you are after. I find it, sort the figures and look after you right through to the keys. One person, start to finish.</p>
+        <ul class="hq-ticks">
+          <li>New and approved used</li>
+          <li>Finance, cash or part exchange</li>
+          <li>A personal reply, usually the same day</li>
+        </ul>
+        <p class="hq-review">&ldquo;Dan and Chloe were extremely helpful and professional. We were given a wide range of options from Dan with regards to buying / keeping our existing vehicle.&rdquo; <cite>Customer review via Hedin Ruxley BMW, September 2026</cite></p>
+        <a class="btn-fill hq-wa" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">Message Dan on WhatsApp</a>
+      </div>
+
+      <div class="hq-card" id="quick">
+        <form id="hqForm" novalidate>
+          <h2>Start here. It takes 30 seconds.</h2>
+          <p class="hq-card-sub">Five quick things and it comes straight to me.</p>
+          <label>First name<input id="hqName" name="name" autocomplete="given-name" required/></label>
+          <label>Mobile<input id="hqPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required/></label>
+          <label>Email<input id="hqEmail" name="email" type="email" autocomplete="email" required/></label>
+          <fieldset><legend>What are you looking for?</legend>
+            <div class="hq-chips">
+              <label class="hq-chip"><input type="radio" name="hqWant" value="used" required/><span>Approved used</span></label>
+              <label class="hq-chip"><input type="radio" name="hqWant" value="new"/><span>Brand new</span></label>
+              <label class="hq-chip"><input type="radio" name="hqWant" value="either"/><span>Not sure yet</span></label>
             </div>
-            <div class="ph-hero-body">
-              <p class="ph-hero-sub">I'm Dan, at Hedin Ruxley on Maidstone Road. New or approved used, finance or cash, part exchange or not: you deal with me from the first message to the day you drive away.</p>
-              <div class="ph-hero-actions">
-                <a class="btn-fill" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27d%20like%20to%20talk%20about%20a%20BMW" target="_blank" rel="noopener">Message Dan on WhatsApp</a>
-                <a class="btn-quiet" href="stock.html">See today's used BMWs</a>
-                <a class="btn-quiet" href="appraisal.html">Value my car</a>
-              </div>
-              <p class="ph-hero-review">&ldquo;Dan and Chloe were extremely helpful and professional. We were given a wide range of options from Dan with regards to buying / keeping our existing vehicle.&rdquo; <cite>Customer review via Hedin Ruxley BMW, September 2026</cite></p>
+          </fieldset>
+          <fieldset><legend>A car to part exchange?</legend>
+            <div class="hq-chips">
+              <label class="hq-chip"><input type="radio" name="hqPx" value="yes" required/><span>Yes</span></label>
+              <label class="hq-chip"><input type="radio" name="hqPx" value="no"/><span>No</span></label>
+              <label class="hq-chip"><input type="radio" name="hqPx" value="maybe"/><span>Maybe</span></label>
             </div>
-          </div>
+          </fieldset>
+          <input type="text" id="hqGotcha" name="_gotcha" tabindex="-1" autocomplete="off" class="hq-hp" aria-hidden="true"/>
+          <p class="hq-err" id="hqErr" role="alert" hidden></p>
+          <button class="btn-fill hq-send" type="submit" id="hqSend">Send to Dan</button>
+          <p class="hq-small">Only I see this, and I only use it to help with your car. <a href="privacy.html">Privacy</a>.</p>
+        </form>
+        <div class="hq-done" id="hqDone" hidden tabindex="-1">
+          <p class="hq-tick" aria-hidden="true">&#10003;</p>
+          <h2 id="hqDoneH">Thanks. I&rsquo;ll be in touch shortly.</h2>
+          <p>Want to find a car that suits you while you wait? Tell me a little more and I&rsquo;ll match you to real cars in our stock. About two minutes, one tap at a time.</p>
+          <a class="btn-fill hq-go" id="hqGo" href="find-my-bmw.html?from=home">Find a car that suits me</a>
+          <a class="btn-quiet" id="hqWa" href="https://wa.me/447827138197" target="_blank" rel="noopener">Or message me on WhatsApp</a>
         </div>
       </div>
     </div>
-    <div class="ph-scrollcue" aria-hidden="true"></div>
-    <button class="ph-vid-toggle" id="heroVidToggle" aria-label="Pause background video">Pause</button>
   </section>
 
-  <!-- THE PROMISE -->
-  <section class="band" aria-label="What working with Dan looks like">
-    <div class="wrap wrap-narrow">
-      <div class="prose reveal">
-        <span class="plabel accent">The promise</span>
-        <h2>One name you know.<br/>A proper team behind it.</h2>
-        <hr class="rule"/>
-        <p class="lede">When you buy a BMW through me, I am your point of contact. Not a rotating cast, not a shared inbox: me.</p>
-        <p>And I have a strong team around me to help at every step: technicians who prepare your car properly, a handover team who present it beautifully, and a service department who look after it for years to come. You get the best of both: one familiar face who knows your whole story, and a proper dealership behind that face doing what it does best.</p>
-        <p>What that means for you is simple: the thread never gets dropped. You always know who to speak to, your questions come to someone who already knows the back-story, and nothing gets passed around until it goes quiet. From your first message to long after you have driven away, that person is me.</p>
-        <p>No scripts. No pressure. Just straight answers, so you can make your own call.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- PERSONAL CREDIBILITY -->
-  <section class="band band-raised" aria-label="About Dan">
+  <section class="band hq-how" aria-label="How it works">
     <div class="wrap">
-      <div class="split wide-text">
-        <div class="prose reveal">
-          <span class="plabel accent">A little about me</span>
-          <h2>Cars are not just the day job.</h2>
-          <hr class="rule"/>
-          <p>I have been around cars my whole life. Weekends have meant motorsport and autotesting, the kind of driving that teaches you what a car is really doing underneath you, and what separates a good one from a great one. You cannot fake that sort of interest for forty hours a week, and customers can always tell.</p>
-          <p>I also cover serious miles, 25 to 30,000 a year, and a good chunk of that is now electric. It has worked brilliantly for me, so when you ask about real-world range, charging on a long run, or how the sums actually stack up after a few years, you get an answer from someone who lives it, not a line from a brochure.</p>
-          <p>What that means is straightforward: when I give you a view, it comes from genuine experience with the cars, and it is always offered, never pushed.</p>
-        </div>
-        <figure class="split-media reveal">
-          <img src="dan.jpg" alt="Dan Cane at the Hedin Ruxley showroom" class="portrait-treat" style="object-position:center 20%"/>
-          <figcaption>Dan Cane, Hedin Ruxley</figcaption>
-        </figure>
-      </div>
+      <span class="plabel accent">How it works</span>
+      <h2>Three steps. I do the legwork.</h2>
+      <ol class="hq-steps">
+        <li><b>1</b><h3>You tell me what you need</h3><p>A model you love or just a rough idea. Thirty seconds above, or a chat on WhatsApp.</p></li>
+        <li><b>2</b><h3>I find it and sort the figures</h3><p>From the Ruxley forecourt, the wider group or a brand new build, with the finance and your part exchange worked in.</p></li>
+        <li><b>3</b><h3>You drive away happy</h3><p>Test drive, paperwork and a proper handover with Chloe. And I am still here after.</p></li>
+      </ol>
     </div>
   </section>
 
-  <!-- DOORWAYS -->
+  <section class="band band-raised" aria-label="What customers say">
+    <div class="wrap wrap-narrow">
+      <span class="plabel accent reveal">In their words</span>
+      <div class="quote-list mt-40">
+        <div class="quote-block reveal">
+          <blockquote>&ldquo;Dan and Chloe were extremely helpful and professional. We were given a wide range of options from Dan with regards to buying / keeping our existing vehicle.&rdquo;</blockquote>
+          <cite>Customer review via Hedin Ruxley BMW, September 2026</cite>
+        </div>
+        <div class="quote-block reveal">
+          <blockquote>&ldquo;The service was efficient, friendly and helpful. Dan and Chloe were great to deal with. The transition from old car to new was exceptionally easy&hellip;&rdquo;</blockquote>
+          <cite>Customer review via Hedin Ruxley BMW, July 2026</cite>
+        </div>
+        <div class="quote-block reveal">
+          <blockquote>&ldquo;The whole process from test drive, to purchase and through handover was amazingly smooth and well executed. Dan and Chloe were extremely supportive and answered any questions I had&hellip;&rdquo;</blockquote>
+          <cite>Customer review via Hedin Ruxley BMW, March 2026</cite>
+        </div>
+        <div class="quote-block reveal">
+          <blockquote>&ldquo;An excellent experience when purchasing my BMW at Hedin Ruxley. Dan Cane was very professional, knowledgeable and helpful when placing the order for my vehicle&hellip;&rdquo;</blockquote>
+          <cite>Customer review via Hedin Ruxley BMW, January 2026</cite>
+        </div>
+      </div>
+      <p class="ph-chloe reveal">Chloe looks after the handover side with me, so you are never left guessing who to ask.</p>
+      <p class="prose-note mt-40 reveal"><a href="https://www.hedinautomotiveruxleybmw.co.uk/about-us/customer-reviews/" target="_blank" rel="noopener" style="color:var(--accent)">See more reviews</a></p>
+    </div>
+  </section>
+
+  <!-- PRACTICAL MATTERS -->
   <section class="band" id="doorways" aria-label="Where to start">
     <div class="wrap">
       <div class="reveal">
@@ -238,33 +262,41 @@
   </section>
 
   <!-- TESTIMONIALS -->
-  <section class="band band-raised" aria-label="What customers say">
+  <section class="band hq-lower" aria-label="What working with Dan looks like">
     <div class="wrap wrap-narrow">
-      <span class="plabel accent reveal">In their words</span>
-      <div class="quote-list mt-40">
-        <div class="quote-block reveal">
-          <blockquote>&ldquo;Dan and Chloe were extremely helpful and professional. We were given a wide range of options from Dan with regards to buying / keeping our existing vehicle.&rdquo;</blockquote>
-          <cite>Customer review via Hedin Ruxley BMW, September 2026</cite>
-        </div>
-        <div class="quote-block reveal">
-          <blockquote>&ldquo;The service was efficient, friendly and helpful. Dan and Chloe were great to deal with. The transition from old car to new was exceptionally easy&hellip;&rdquo;</blockquote>
-          <cite>Customer review via Hedin Ruxley BMW, July 2026</cite>
-        </div>
-        <div class="quote-block reveal">
-          <blockquote>&ldquo;The whole process from test drive, to purchase and through handover was amazingly smooth and well executed. Dan and Chloe were extremely supportive and answered any questions I had&hellip;&rdquo;</blockquote>
-          <cite>Customer review via Hedin Ruxley BMW, March 2026</cite>
-        </div>
-        <div class="quote-block reveal">
-          <blockquote>&ldquo;An excellent experience when purchasing my BMW at Hedin Ruxley. Dan Cane was very professional, knowledgeable and helpful when placing the order for my vehicle&hellip;&rdquo;</blockquote>
-          <cite>Customer review via Hedin Ruxley BMW, January 2026</cite>
-        </div>
+      <div class="prose reveal">
+        <span class="plabel accent">The promise</span>
+        <h2>One name you know.<br/>A proper team behind it.</h2>
+        <hr class="rule"/>
+        <p class="lede">When you buy a BMW through me, I am your point of contact. Not a rotating cast, not a shared inbox: me.</p>
+        <p>And I have a strong team around me to help at every step: technicians who prepare your car properly, a handover team who present it beautifully, and a service department who look after it for years to come. You get the best of both: one familiar face who knows your whole story, and a proper dealership behind that face doing what it does best.</p>
+        <p>What that means for you is simple: the thread never gets dropped. You always know who to speak to, your questions come to someone who already knows the back-story, and nothing gets passed around until it goes quiet. From your first message to long after you have driven away, that person is me.</p>
+        <p>No scripts. No pressure. Just straight answers, so you can make your own call.</p>
       </div>
-      <p class="ph-chloe reveal">Chloe looks after the handover side with me, so you are never left guessing who to ask.</p>
-      <p class="prose-note mt-40 reveal"><a href="https://www.hedinautomotiveruxleybmw.co.uk/about-us/customer-reviews/" target="_blank" rel="noopener" style="color:var(--accent)">See more reviews</a></p>
     </div>
   </section>
 
-  <!-- PRACTICAL MATTERS -->
+  <!-- PERSONAL CREDIBILITY -->
+  <section class="band band-raised" aria-label="About Dan">
+    <div class="wrap">
+      <div class="split wide-text">
+        <div class="prose reveal">
+          <span class="plabel accent">A little about me</span>
+          <h2>Cars are not just the day job.</h2>
+          <hr class="rule"/>
+          <p>I have been around cars my whole life. Weekends have meant motorsport and autotesting, the kind of driving that teaches you what a car is really doing underneath you, and what separates a good one from a great one. You cannot fake that sort of interest for forty hours a week, and customers can always tell.</p>
+          <p>I also cover serious miles, 25 to 30,000 a year, and a good chunk of that is now electric. It has worked brilliantly for me, so when you ask about real-world range, charging on a long run, or how the sums actually stack up after a few years, you get an answer from someone who lives it, not a line from a brochure.</p>
+          <p>What that means is straightforward: when I give you a view, it comes from genuine experience with the cars, and it is always offered, never pushed.</p>
+        </div>
+        <figure class="split-media reveal">
+          <img src="dan.jpg" alt="Dan Cane at the Hedin Ruxley showroom" class="portrait-treat" style="object-position:center 20%"/>
+          <figcaption>Dan Cane, Hedin Ruxley</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOORWAYS -->
   <section class="band" aria-label="Practical pages">
     <div class="wrap">
       <div class="reveal">
@@ -289,6 +321,19 @@
 </main>
 
 <!-- chrome:footer2 -->
+
+  <section class="band hq-faq" aria-label="Questions">
+    <div class="wrap wrap-narrow">
+      <span class="plabel accent">Questions people ask</span>
+      <h2>Straight answers.</h2>
+      <details><summary>Can you take my car in part exchange?</summary><p>Yes. Tell me the reg and mileage and I will give you a realistic figure, then a proper appraisal when you come in. <a href="appraisal.html">Value your car</a>.</p></details>
+      <details><summary>New or used, which should I go for?</summary><p>Whichever suits you best. I sell both, so I have no reason to push either. <a href="find-my-bmw.html">Find my BMW</a> shows you both side by side.</p></details>
+      <details><summary>How does the finance work?</summary><p>I quote you on your own deposit and mileage, with the full representative example on every monthly figure. The <a href="guides.html">plain English finance guides</a> explain PCP and HP.</p></details>
+      <details><summary>Can you protect the car once I have it?</summary><p>Yes. <a href="current-opportunities.html#protection">See how I protect every BMW</a>.</p></details>
+      <details><summary>In for a service?</summary><p>A natural moment for a relaxed chat about what might come next. <a href="service.html">Book a word with me</a>.</p></details>
+    </div>
+  </section>
+
 <section class="ph-contact" id="contact">
   <div class="wrap">
     <span class="plabel accent">Talk to Dan</span>

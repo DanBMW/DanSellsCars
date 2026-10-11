@@ -735,6 +735,13 @@
      matches live in memory and go to Dan in the payload. A failed send keeps
      the gate, with Try again and WhatsApp. WhatsApp never unlocks. */
   var LEAD = { state: null, first: '', id: '' };
+  /* Homepage quick form handoff: the visitor has already given name, mobile
+     and email (one Formspree submission, ref in dsQuick.id). The gate is
+     skipped and the brief goes as one more submission under the same ref. */
+  var QUICK = null;
+  function readQuick() {
+    try { var q = JSON.parse(sessionStorage.getItem('dsQuick') || 'null'); return q && q.id && q.name && q.phone && q.email && !q.briefed ? q : null; } catch (x) { return null; }
+  }
   var PXD = { reg: '', miles: '', milesExact: '', service: '', fin: '', settle: '', cond: '', notes: '', keys: '', photosWa: false };
   var PXSTATE = null;   /* null | 'sent' | 'skipped' */
   var UNLOCKED = false, GSTEP = 'contact', gateOpen = false, gateLastFocus = null;
@@ -757,6 +764,7 @@
   }
   function present() {
     if (UNLOCKED) { closeGate(true); reveal(); return; }
+    if (QUICK && LEAD.state !== 'sent') { revealLocked(); quickBrief(); return; }
     revealLocked();
     openGate();
   }
@@ -901,6 +909,11 @@
       page_url: location.href.split('#')[0],
       leadsummary: waText(null, top)
     };
+    if (QUICK) {
+      P.form = 'find-my-bmw-v3-brief';
+      P.same_lead_as = QUICK.id;
+      P._subject = 'DanSells brief: ' + (ci.name || 'website') + ' (same person as quick form ' + QUICK.id + ')';
+    }
     if (wantsNew()) {
       P.new_match_count = String(NEWRES.count); P.stock_x = String(R.totals ? R.totals.total : '');
       P.new_matching_basis = 'BMW quotes assume ' + money(NEW_QUOTE_DEP) + ' down. Matched on ' + GBP + NEW_PER_1000
@@ -957,11 +970,16 @@
     return null;
   }
   function afterContact() {
+    if ((A.px === 'yes' || A.px === 'maybe') && !gateOpen) { openGate(); return; }
     if (A.px === 'yes') { track('fmb_px_start', { px: 'yes', entry: 'auto' }); gstep('px1'); }
     else if (A.px === 'maybe') gstep('pxask');
     else unlock('contact');
   }
-  function submitContact(e) {
+  function quickBrief() {
+    track('fmb_quick_brief', { interest: A.interest || 'either', px: A.px || 'none' });
+    submitContact(null, true);
+  }
+  function submitContact(e, quiet) {
     if (e) e.preventDefault();
     if (sending) return;
     if (ss('fmbSent')) { LEAD.state = 'sent'; return afterContact(); }
@@ -981,6 +999,7 @@
     post(P).then(function () {
       ss('fmbSent', String(Date.now())); ss('fmbSentName', LEAD.first);
       LEAD.state = 'sent';
+      if (QUICK) { QUICK.briefed = true; try { sessionStorage.setItem('dsQuick', JSON.stringify(QUICK)); } catch (x) {} }
       track('fmb_lead_sent', { match_count: RESULT ? RESULT.nStrict : 0, interest: A.interest || 'either' });
       markComplete('form');
       sending = false; btn.disabled = false;
@@ -990,6 +1009,7 @@
       btn.disabled = false; btn.textContent = A.px === 'yes' ? 'Continue' : 'Show my matches';
       track('fmb_lead_error', { status: String(x && x.message || 'network').slice(0, 40) });
       track('fmb_gate_submit_error', { which: 'contact', status: String(x && x.message || 'network').slice(0, 40) });
+      if (quiet) openGate();
       showGateErr('contact');
     });
   }
@@ -1318,6 +1338,12 @@
   function start() {
     buildQuestions();
     wire();
+    QUICK = readQuick();
+    if (QUICK) {
+      LEAD.id = QUICK.id; LEAD.first = QUICK.name;
+      $('fName').value = QUICK.name; $('fPhone').value = QUICK.phone; $('fEmail').value = QUICK.email;
+      if (QUICK.optin) $('fOptin').checked = true;
+    }
     var saved = loadSaved(), hash = (location.hash || '').slice(1);
     var pre = preAnswers();
     if (saved && !pre) { A = Object.assign(blank(), saved.answers); OPEN = saved.open || {}; depTouched = !!saved.dep; }
@@ -1325,6 +1351,16 @@
     if (UNLOCKED) LEAD.state = 'sent';
     ALLQ.forEach(function (q) { if (q !== 'q6') syncInputs(q); });
     history.replaceState({ s: 'intro' }, '', location.pathname + location.search + (hash && hash !== 'matching' ? '#' + hash : ''));
+    if (QUICK && !UNLOCKED) {
+      if (QUICK.want) A.interest = QUICK.want;
+      if (QUICK.px) A.px = QUICK.px;
+      ['qi', 'qp'].forEach(function (q) { syncInputs(q); });
+      track('fmb_start', { entry: 'home_quick' });
+      var q0 = QS()[0];
+      history.replaceState({ s: q0 }, '', '#' + q0);
+      show(q0);
+      return;
+    }
     if (hash === 'reveal' && saved) {
       track('fmb_resume', { step: 'reveal' });
       runMatching(true);
