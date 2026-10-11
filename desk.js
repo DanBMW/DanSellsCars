@@ -922,6 +922,9 @@
       resetAll(); track('fmb_desk_new_customer');
     });
     $('pxLookup').addEventListener('click', lookupReg);
+    /* Same pattern as the public forms: look the reg up by itself once it is typed. */
+    var pxAuto = '';
+    $('pxReg').addEventListener('blur', function () { var r = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); if (r.length >= 2 && /[A-Z]/.test(r) && /\d/.test(r) && r !== pxAuto) { pxAuto = r; lookupReg(); } });
     $('pxWill').addEventListener('click', askWill);
     $('deskProfileBtn').addEventListener('click', openProfile);
     /* Print sits in the action bar as well, because the customer

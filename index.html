@@ -64,7 +64,8 @@
   }
   </script>
 <script src="analytics.js" defer></script>
-<script src="home-quick.js?v=1" defer></script>
+<script src="px-lookup.js?v=1" defer></script>
+<script src="home-quick.js?v=2" defer></script>
   <link rel="stylesheet" href="home-quick.css?v=1"/>
 </head>
 <body>
@@ -161,6 +162,12 @@
               <label class="hq-chip"><input type="radio" name="hqPx" value="maybe"/><span>Maybe</span></label>
             </div>
           </fieldset>
+          <div class="hq-px" id="hqPxBox" hidden>
+            <label>Your car&rsquo;s reg<input id="hqPxReg" name="px_reg" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="AB12 CDE"/></label>
+            <div id="hqPxCard" aria-live="polite"></div>
+            <label>Approx mileage<input id="hqPxMiles" name="px_mileage" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="e.g. 32000"/></label>
+            <p class="hq-px-note" id="hqPxNote" hidden></p>
+          </div>
           <input type="text" id="hqGotcha" name="_gotcha" tabindex="-1" autocomplete="off" class="hq-hp" aria-hidden="true"/>
           <p class="hq-err" id="hqErr" role="alert" hidden></p>
           <button class="btn-fill hq-send" type="submit" id="hqSend">Send to Dan</button>

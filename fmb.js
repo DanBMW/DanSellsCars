@@ -797,7 +797,7 @@
     ensurePx();
     $('gateCount').textContent = matchCountText();
     $('peekCount').textContent = matchCountText();
-    gstep(LEAD.state === 'sent' ? (A.px === 'yes' ? 'px1' : A.px === 'maybe' ? 'pxask' : 'contact') : 'contact', true);
+    gstep(LEAD.state === 'sent' ? (A.px === 'yes' ? pxFirst() : A.px === 'maybe' ? 'pxask' : 'contact') : 'contact', true);
     if (!gateOpen) track('fmb_gate_view', { match_count: RESULT ? RESULT.nStrict : 0, px: A.px || 'none', interest: A.interest || 'either' });
     gateOpen = true;
   }
@@ -971,7 +971,7 @@
   }
   function afterContact() {
     if ((A.px === 'yes' || A.px === 'maybe') && !gateOpen) { openGate(); return; }
-    if (A.px === 'yes') { track('fmb_px_start', { px: 'yes', entry: 'auto' }); gstep('px1'); }
+    if (A.px === 'yes') { track('fmb_px_start', { px: 'yes', entry: 'auto' }); gstep(pxFirst()); }
     else if (A.px === 'maybe') gstep('pxask');
     else unlock('contact');
   }
@@ -1040,8 +1040,8 @@
   }
   function buildPx() {
     var h = '';
-    h += pstep('px1', 'What\u2019s the reg?', '<div class="fmb-field"><label class="fmb-sr" for="pxReg">Registration</label><input id="pxReg" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="e.g. AB12 CDE" class="fmb-reg"/></div>');
-    h += pstep('px2', 'Roughly how many miles?', pchips('pxMiles', MILES.concat(['Exact figure'])) + '<div class="fmb-field" id="pxExactWrap" hidden><label for="pxExact">Exact mileage</label><input id="pxExact" type="text" inputmode="numeric" autocomplete="off" maxlength="7"/></div>');
+    h += pstep('px1', 'What\u2019s the reg?', '<div class="fmb-field"><label class="fmb-sr" for="pxReg">Registration</label><input id="pxReg" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="e.g. AB12 CDE" class="fmb-reg"/></div><div id="pxCard" aria-live="polite"></div>');
+    h += pstep('px2', 'Roughly how many miles?', pchips('pxMiles', MILES.concat(['Exact figure'])) + '<div class="fmb-field" id="pxExactWrap" hidden><label for="pxExact">Exact mileage</label><input id="pxExact" type="text" inputmode="numeric" autocomplete="off" maxlength="7"/></div><p class="fmb-sub" id="pxMilesNote" hidden></p>');
     h += pstep('px3', 'Service history?', pchips('pxService', SERVICE));
     h += pstep('px4', 'Any finance left on it?', pchips('pxFin', PXFIN) + '<div class="fmb-field" id="pxSettleWrap" hidden><label for="pxSettle">Roughly how much to settle? (optional)</label><input id="pxSettle" type="text" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="\u00a3"/></div>');
     h += pstep('px5', 'What condition is it in?', pchips('pxCond', COND) + '<div class="fmb-field"><label for="pxNotes">Any damage or anything I should know?</label><textarea id="pxNotes" rows="3" maxlength="500"></textarea></div>', true);
@@ -1107,6 +1107,7 @@
       _gotcha: $('pxGotcha').value,
       name: ci.name, phone: ci.phone, email: ci.email,
       px_reg: PXD.reg,
+      px_lookup: PXV && window.dsPxLookup ? window.dsPxLookup.summary(PXV) + (PXOK ? ' (customer confirmed)' : ' (not confirmed by customer)') : '',
       px_answer: A.px,
       px_mileage: PXD.milesExact ? Number(PXD.milesExact).toLocaleString('en-GB') + ' (exact)' : PXD.miles,
       px_service_history: PXD.service,
@@ -1207,6 +1208,50 @@
     $('fmbSentWa').href = WA;
   }
   var pxBuiltFor;
+  /* Reg lookup (px-lookup.js, the site's vehicleproxy worker). Quiet on failure. */
+  var PXV = null, PXOK = false, pxAsked = '', pxTimer = 0;
+  function pxMilesSuggest(v) {
+    if (!v || !v.motMiles || rvq('pxMiles')) return;
+    var ex = document.querySelector('#pxSteps input[name=pxMiles][value="Exact figure"]'); if (!ex) return;
+    ex.checked = true; $('pxExactWrap').hidden = false; $('pxExact').value = String(v.motMiles);
+    $('pxMilesNote').hidden = false; $('pxMilesNote').textContent = 'That\u2019s the mileage from its last MOT. Please update it if it has gone up since.';
+  }
+  function rvq(n) { var i = document.querySelector('#pxSteps input[name=' + n + ']:checked'); return i ? i.value : ''; }
+  function pxLook(force) {
+    var L = window.dsPxLookup; if (!L || !$('pxReg')) return;
+    var reg = L.clean($('pxReg').value);
+    if (!L.plausible(reg) || (reg === pxAsked && !force)) return;
+    pxAsked = reg; PXV = null; PXOK = false; $('pxCard').innerHTML = '<p class="pxl-ok">Looking up ' + reg + '\u2026</p>';
+    L.lookup(reg).then(function (v) {
+      if (L.clean($('pxReg').value) !== reg) return;
+      PXV = v; $('pxCard').innerHTML = L.card(v); pxMilesSuggest(v); track('fmb_px_lookup', { ok: 'yes' });
+    }, function () {
+      if (L.clean($('pxReg').value) !== reg) return;
+      $('pxCard').innerHTML = '<p class="pxl-ok">I couldn\u2019t fetch the details just now, no problem. Carry on and I\u2019ll check it myself.</p>'; track('fmb_px_lookup', { ok: 'no' });
+    });
+  }
+  /* Where the part exchange questions start. If the homepage quick form
+     already has the reg and mileage, they are filled in and not asked again. */
+  function pxFirst() {
+    ensurePx();
+    if (QUICK && QUICK.pxReg && !$('pxReg').value) {
+      $('pxReg').value = QUICK.pxReg; pxAsked = QUICK.pxReg;
+      if (QUICK.pxCar) { PXV = Object.assign({ reg: QUICK.pxReg }, QUICK.pxCar); PXOK = !!QUICK.pxCar.confirmed; }
+      $('pxCard').innerHTML = '<p class="pxl-ok">\u2713 Already got it: ' + esc(QUICK.pxReg) + (PXV ? ', ' + esc(window.dsPxLookup ? window.dsPxLookup.carName(PXV) : '') : '') + '</p>';
+      if (QUICK.pxMiles) {
+        var ex = document.querySelector('#pxSteps input[name=pxMiles][value="Exact figure"]');
+        if (ex) { ex.checked = true; $('pxExactWrap').hidden = false; $('pxExact').value = QUICK.pxMiles; }
+      }
+    }
+    readPx();
+    if (QUICK && QUICK.pxReg && PXD.reg) {
+      var known = document.getElementById('pxKnown');
+      if (!known) { known = document.createElement('p'); known.id = 'pxKnown'; known.className = 'fmb-sub pxl-ok'; var s3 = document.querySelector('#pxSteps [data-g=px3]'); if (s3) s3.insertBefore(known, s3.firstChild); }
+      known.textContent = '\u2713 Your car: ' + PXD.reg + (PXV ? ', ' + window.dsPxLookup.carName(PXV) : '') + (PXD.milesExact ? ', ' + Number(PXD.milesExact).toLocaleString('en-GB') + ' miles' : '') + '. Already got these, thanks.';
+      return PXD.milesExact ? 'px3' : 'px2';
+    }
+    return 'px1';
+  }
   function ensurePx() { if (pxBuiltFor !== A.px) { buildPx(); pxBuiltFor = A.px; } }
   function wireGate() {
     $('fmbForm').addEventListener('submit', submitContact);
@@ -1217,7 +1262,7 @@
     $('gateWa').addEventListener('click', gateWaClick);
     $('gateErrWa').addEventListener('click', gateWaClick);
     $('fmbPeek').addEventListener('click', expandGate);
-    $('pxAskYes').addEventListener('click', function () { track('fmb_px_start', { px: 'maybe', entry: 'prompt' }); gstep('px1'); });
+    $('pxAskYes').addEventListener('click', function () { track('fmb_px_start', { px: 'maybe', entry: 'prompt' }); gstep(pxFirst()); });
     $('pxAskNo').addEventListener('click', function () { PXSTATE = 'skipped'; track('fmb_px_skip', { step: 0 }); unlock('contact'); });
     $('pxSteps').addEventListener('click', function (e) {
       var t = e.target.closest('button, a'); if (!t) return;
@@ -1240,7 +1285,21 @@
         var g = GSTEP; setTimeout(function () { if (GSTEP === g) pxNext(); }, 300);
       }
     });
-    $('pxSteps').addEventListener('input', function (e) { if (e.target.id === 'pxReg') { var c = e.target.selectionStart; e.target.value = e.target.value.toUpperCase(); try { e.target.setSelectionRange(c, c); } catch (x) {} } });
+    $('pxSteps').addEventListener('input', function (e) {
+      if (e.target.id === 'pxReg') {
+        var c = e.target.selectionStart; e.target.value = e.target.value.toUpperCase(); try { e.target.setSelectionRange(c, c); } catch (x) {}
+        var L = window.dsPxLookup, r = L ? L.clean(e.target.value) : '';
+        if (r !== pxAsked) { $('pxCard').innerHTML = ''; PXV = null; PXOK = false; }
+        clearTimeout(pxTimer); if (r.length >= 5) pxTimer = setTimeout(pxLook, 900);
+      }
+      if (e.target.id === 'pxExact') $('pxMilesNote').hidden = true;
+    });
+    $('pxSteps').addEventListener('focusout', function (e) { if (e.target.id === 'pxReg') { clearTimeout(pxTimer); pxLook(); } });
+    $('pxSteps').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-pxl]'); if (!b) return;
+      if (b.getAttribute('data-pxl') === 'yes') { PXOK = true; $('pxCard').innerHTML = '<p class="pxl-ok">\u2713 ' + esc(window.dsPxLookup.carName(PXV)) + ' (' + esc(PXV.reg) + ')</p>'; pxNext(); }
+      else { PXV = null; PXOK = false; pxAsked = ''; $('pxCard').innerHTML = ''; $('pxReg').value = ''; $('pxReg').focus(); }
+    });
     $('pxSteps').addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); if (GSTEP === 'px7') sendPx(); else pxNext(); } });
     document.addEventListener('keydown', trap, true);
   }

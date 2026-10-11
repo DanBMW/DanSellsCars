@@ -323,3 +323,14 @@
 .fmb-protect{margin:8px 0 10px;padding:8px 12px;border:1px solid rgba(29,158,117,.5);background:rgba(29,158,117,.08);font-size:.92rem;color:var(--paper);line-height:1.45}
 .fmb-protect span{color:var(--green);font-weight:700}
 .fmb-protect a{color:var(--paper);text-decoration:underline;white-space:nowrap}
+.pxl-card{border:1px solid var(--hairline);border-left:2px solid var(--accent);background:rgba(255,255,255,.03);padding:12px 14px;font-size:.9rem}
+.pxl-car{margin:0 0 8px;color:var(--paper)}
+.pxl-car b{display:inline-block;background:#f6d200;color:#111;padding:1px 6px;border-radius:2px;margin-right:6px;letter-spacing:.06em}
+.pxl-card dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0 0 8px}
+.pxl-card dt{color:var(--body-c);font-size:.8rem}
+.pxl-card dd{margin:0;color:var(--paper);font-size:.85rem}
+.pxl-q{margin:0 0 8px;font-weight:600;color:var(--paper)}
+.pxl-btns{display:flex;gap:8px;flex-wrap:wrap}
+.pxl-btns button{min-height:40px;padding:8px 14px;border:1px solid var(--hairline);background:transparent;color:var(--paper);font:inherit;cursor:pointer}
+.pxl-btns .pxl-yes{border-color:var(--accent)}
+.pxl-ok{font-size:.85rem;color:var(--paper);margin:0}
