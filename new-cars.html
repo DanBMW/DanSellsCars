@@ -706,7 +706,7 @@
       /* A car with no published monthly sorts after the ones that have one,
          the same rule stock.html keeps: it is not a cheap car, it is a car we
          cannot show a payment for. */
-      mlow:  function(a,b){ return (a.monthly_gbp||1e9) - (b.monthly_gbp||1e9); },
+      mlow:  function(a,b){ return (finOk(a) ? a.monthly_gbp : 1e9) - (finOk(b) ? b.monthly_gbp : 1e9); },
       quick: function(a,b){ return (a.zero_to_62||99) - (b.zero_to_62||99); }
     }[SORT];
     return rows.slice().sort(by);
@@ -786,34 +786,75 @@
 
      The excess mileage charge is deliberately absent. BMW publish no rate with
      these figures and it runs from 4.1p to 28.4p a mile across the real quotes
-     we hold for the used stock, so it is named as confirmed on the order
-     rather than filled in with something plausible. */
+     we hold for the used stock. It is a required item of the representative
+     example, so a car without excess_pence shows no monthly at all (finOk)
+     rather than a plausible figure or "confirmed on your order". */
+  /* NEW_FINANCE_APPROVED: the one switch for every new car monthly figure on
+     this page (card, sort, WhatsApp text, page note). The figures are a
+     financial promotion for Hedin / ITC Compliance (FRN 313486) to sign off.
+     They were live before sign-off was recorded, so the switch was left on
+     on 11 October 2026 rather than silently taking them down; see CLAUDE.md.
+     Even with it on, a car only shows a monthly when finOk() passes: every
+     item of the representative example present in its own record, the record
+     agreeing with itself, and the file no older than FIN_MAX_AGE_DAYS.
+     Anything else falls back to the cash price and the personalised quote
+     line. The £24 per £1,000 deposit rule is for matching only and never
+     appears here. */
+  var NEW_FINANCE_APPROVED = true;
+  var FIN_MAX_AGE_DAYS = 3;
+  var FIN_GENERATED = '';
+  var FIN_NEED = ['monthly','payments','term_months','cash_price','deposit',
+    'amount_of_credit','final_payment','total_payable','annual_mileage',
+    'excess_pence','apr'];
+  function num(v){ return typeof v === 'number' && isFinite(v); }
+  function finOk(c){
+    if (!NEW_FINANCE_APPROVED) return false;
+    var e = c && c.finance_example;
+    if (!e || !e.lender || !e.product) return false;
+    for (var i = 0; i < FIN_NEED.length; i++) if (!num(e[FIN_NEED[i]])) return false;
+    var t = Date.parse(FIN_GENERATED);
+    if (!t || Date.now() - t > FIN_MAX_AGE_DAYS * 864e5) return false;
+    var dc = num(e.deposit_contribution) ? e.deposit_contribution : 0;
+    if (Math.abs(e.cash_price - e.deposit - dc - e.amount_of_credit) > 0.02) return false;
+    if (Math.abs(e.deposit + e.payments * e.monthly + e.final_payment - e.total_payable) > 0.05) return false;
+    if (num(c.monthly_gbp) && Math.abs(c.monthly_gbp - e.monthly) > 0.005) return false;
+    if (num(c.apr) && c.apr !== e.apr) return false;
+    if (num(c.price_gbp) && Math.abs(c.price_gbp - e.cash_price) > 1) return false;
+    return true;
+  }
+  function money0(n){ return '£' + Math.round(n).toLocaleString('en-GB'); }
+
+  /* Same wording and order as the used car representative example
+     (dsfinance.js repExample), shown open beside the payment, plus the
+     lender and the credit broker statement. */
+  function repText(e){
+    var dc = num(e.deposit_contribution) && e.deposit_contribution > 0;
+    return e.payments + ' monthly payments of ' + money(e.monthly) + '. '
+      + 'Cash price ' + money(e.cash_price) + '. Customer deposit ' + money(e.deposit) + '. '
+      + (dc ? 'Deposit contribution ' + money(e.deposit_contribution) + '. ' : '')
+      + 'Total amount of credit ' + money(e.amount_of_credit) + '. '
+      + 'Optional final payment ' + money(e.final_payment) + '. '
+      + 'Total amount payable ' + money(e.total_payable) + '. '
+      + 'Duration ' + e.term_months + ' months. '
+      + Number(e.annual_mileage).toLocaleString('en-GB') + ' miles a year, '
+      + e.excess_pence + 'p per excess mile. '
+      + e.apr + '% APR representative. Lender ' + e.lender + '. '
+      + 'Finance subject to status, 18+, UK residents.';
+  }
+  var BROKER = 'Finance is arranged by Stephen James (Automotive) Ltd trading as '
+    + 'Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance '
+    + 'Limited (FRN 313486), authorised and regulated by the Financial Conduct '
+    + 'Authority. A credit broker, not a lender. Guarantees and indemnities may be required.';
+
   function finBlock(c){
+    if (!finOk(c)) return '<p class="nc-fin">Finance available. I’ll send you a personalised quote.</p>';
     var e = c.finance_example;
-    if (!e) return '<p class="nc-fin">Finance available. Message me for a quote.</p>';
     return '<p class="nc-mon"><b>' + esc(money(e.monthly)) + ' a month</b> '
-      + '<span>' + esc(e.product) + ', ' + esc(e.apr) + '% APR representative</span></p>'
-      + '<details class="nc-eg"><summary>The full figures</summary>'
-      + '<dl>'
-      + '<dt>' + e.payments + ' monthly payments of</dt><dd>' + esc(money(e.monthly)) + '</dd>'
-      + '<dt>Customer deposit</dt><dd>' + esc(money(e.deposit)) + '</dd>'
-      + '<dt>Cash price</dt><dd>' + esc(money(e.cash_price)) + '</dd>'
-      + '<dt>Amount of credit</dt><dd>' + esc(money(e.amount_of_credit)) + '</dd>'
-      + '<dt>Optional final payment</dt><dd>' + esc(money(e.final_payment)) + '</dd>'
-      + '<dt>Total amount payable</dt><dd>' + esc(money(e.total_payable)) + '</dd>'
-      + '<dt>Total charge for credit</dt><dd>' + esc(money(e.charge_for_credit)) + '</dd>'
-      + '<dt>Duration</dt><dd>' + e.term_months + ' months</dd>'
-      + '<dt>Annual mileage</dt><dd>' + esc(e.annual_mileage.toLocaleString('en-GB')) + '</dd>'
-      + '<dt>APR representative</dt><dd>' + esc(e.apr) + '%</dd>'
-      + '</dl>'
-      + '<p>Excess mileage is charged over ' + esc(e.contract_mileage.toLocaleString('en-GB'))
-      + ' miles and the rate is confirmed on your order, so it is not shown here.</p>'
-      + '<p>' + esc(e.basis) + ' Finance from ' + esc(e.lender)
-      + ', subject to credit acceptance to UK residents aged 18 or over. '
-      + 'Guarantees and indemnities may be required. At the end of the term, if '
-      + 'you want to buy the car outright you pay the optional final payment. '
-      + 'Hedin Automotive is a credit broker, not a lender. Ask me and I will '
-      + 'put a proper quote in writing before you commit to anything.</p>'
+      + '<span>' + esc(e.product) + ', ' + esc(money0(e.deposit)) + ' deposit, '
+      + esc(e.term_months) + ' months, ' + esc(e.apr) + '% APR representative.</span></p>'
+      + '<details class="nc-eg" open><summary>Representative example</summary>'
+      + '<p>' + esc(repText(e)) + '</p>'
+      + '<p>' + esc(BROKER) + '</p>'
       + '</details>';
   }
 
@@ -889,7 +930,7 @@
       "Hi Dan, I've seen this new one on your site and I'm interested.\n"
       + c.description + (c.colour ? ', ' + c.colour : '')
       + (c.price ? '\n' + c.price : '')
-      + (c.monthly ? '\n' + c.monthly + ' a month' : '')
+      + (finOk(c) ? '\n' + c.monthly + ' a month' : '')
       + '\nOrder ' + c.order_number);
     return '<article class="nc-card">'
       + shotBlock(c)
@@ -1064,6 +1105,12 @@
       CARS.forEach(function(c){ c._hay = hayFor(c); });
       SEED = d.seeded_at || d.seeded_on || '';
       TODAY = (d.generated_at || '').slice(0, 10);
+      FIN_GENERATED = d.generated_at || '';
+      if (!CARS.some(finOk)){
+        var mo = document.querySelector('#ncSort option[value="mlow"]');
+        if (mo) mo.remove();
+        if (SORT === 'mlow') SORT = 'soon';
+      }
       stampFresh();
       readUrl();
       buildFacets();
@@ -1076,18 +1123,18 @@
         + '. Pictures are configurator renders of that exact specification rather than '
         + 'photographs of the individual car. Prices and delivery times come from BMW '
         + 'and can change. '
-        + (d.finance_terms
+        + (d.finance_terms && CARS.some(finOk)
             ? 'Monthly payments are BMW’s own published figures for each car on a '
               + d.finance_terms.product + ' agreement over '
               + d.finance_terms.term_months + ' months with a £'
               + d.finance_terms.deposit_gbp.toLocaleString('en-GB')
               + ' deposit and '
               + d.finance_terms.annual_mileage.toLocaleString('en-GB')
-              + ' miles a year. Tap "The full figures" on any car for the whole '
-              + 'example. They are an illustration and not a quotation: ask me and '
+              + ' miles a year. The representative example sits '
+              + 'under each payment. They are an illustration and not a quotation: ask me and '
               + 'I will get you one in writing, at your own deposit and mileage.'
-            : 'Finance is available on any of them: ask me and I will get you a '
-              + 'proper quote with the full figures.');
+            : 'Finance is available on any of them: I’ll send you a personalised '
+              + 'quote with the full figures.');
     })
     .catch(function(){
       document.getElementById('ncCount').textContent =

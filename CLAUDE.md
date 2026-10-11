@@ -770,8 +770,9 @@ Other things it has to keep:
   **What is still not ours, and must not be invented: the excess mileage
   charge.** The locator publishes no rate at all, and across the 301 real
   quotes it runs from 4.1p to 28.4p a mile with no relation to anything we
-  hold. It is a term of the agreement, so the card says the rate is confirmed
-  on the order. Do not fill it in with a plausible figure.
+  hold. It is a term of the agreement and a required item of the example, so
+  a car without it shows no monthly (see `finOk`). Do not fill it in with a
+  plausible figure.
   **Guards**, neither optional: a residual outside `RESIDUAL_BAND` (20% to 70%
   of the cash price) is dropped and the car falls back to "message me for a
   quote", the same rule `car-details.py` keeps for an absurd harvested figure;
@@ -795,9 +796,28 @@ Other things it has to keep:
   that route**: it reuses a pipeline that already has compliance sign-off and
   returns the final payment, the total payable and the excess mileage rate
   from the lender directly, so nothing would need deriving.
-  **This is a financial promotion**, so it is Dan's to clear with Hedin and
-  ITC Compliance (FRN 313486) before it goes live, not a decision to take in
-  this repo.
+  **Sign-off: Dan confirmed 11 Oct 2026: the new car finance figures are
+  BMW's own quotes and are signed off.** Note for whoever touches this next:
+  the monthly, APR and cash price are BMW's; the optional final payment, total
+  payable and charge for credit are still derived by `example_for()`, and the
+  excess mileage rate is not in the data at all.
+- **`NEW_FINANCE_APPROVED` (new-cars.html, set true 11 Oct 2026)** is the one
+  switch for every new car monthly on that page: card, "Monthly, lowest first"
+  sort, WhatsApp prefill and page note. Even when true, `finOk(c)` shows a
+  monthly only if the car's own `finance_example` has every item of the
+  representative example as a number (monthly, payments, term_months,
+  cash_price, deposit, amount_of_credit, final_payment, total_payable,
+  annual_mileage, excess_pence, apr) plus lender and product; the record adds
+  up (cash = deposit + any `deposit_contribution` + credit; total = deposit +
+  payments x monthly + final; monthly, APR and price match the car's top level
+  fields); and `generated_at` is under `FIN_MAX_AGE_DAYS` (3) old. Anything
+  else shows the cash price and "Finance available. I'll send you a
+  personalised quote." The example is shown open, in the same words and order
+  as `dsfinance.js` `repExample`, with the Hedin / ITC credit broker statement.
+  **As of 11 Oct 2026 `excess_pence` is null on all 70 cars, so no new car
+  monthly is on screen** until `new-stock.py` can source a real rate. Never
+  fill it with a plausible figure, and never show the £24 per £1,000 rule to
+  a customer: it is for matching only.
 - **Ask for a personalised quotation.** The figures above that button are BMW's
   example on BMW's own fixed terms, and nobody buys on those terms, so the
   button asks for the real one. It opens the **site contact modal** rather than
