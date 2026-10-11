@@ -2486,3 +2486,14 @@ Rebuilt on the Elevate-style layout (branch home-elevate-draft, approved by Dan:
 ### Copy rulings for the homepage (Dan, October 2026)
 - **No one-person claims.** Reviews mention Dan and Chloe, so never write "one person, start to finish", "just me", "I do everything myself" or similar. The angle is "your inside BMW guy": Dan is the customer's person on the inside, who knows the cars and the people and brings the right ones in (Chloe, the business manager, the valuation team). Keep claims provable: "I often hear about cars before they're listed", not "first to see every car".
 - **Lead with Dan's friendly nature and genuine love of cars, not numbers.** Nothing about figures, numbers or finance in the hero, the meta/og/twitter descriptions or the How it works intro. Finance belongs in the FAQ and the funnels further down.
+
+## Part exchange reg lookup (px-lookup.js, 11 October 2026)
+
+- **Where:** homepage quick form (Reg and Approx mileage appear only after Yes or Maybe; required for Yes, optional for Maybe), Find my BMW's px1 reg step, and desk mode (desk.js has its own `lookupReg`, now also fired on blur of `#pxReg`, same endpoint).
+- **Worker only:** every lookup goes to `vehicleproxy.danielcane1992.workers.dev?target=vehicle-lookup&reg=` (DVLA plus MOT history). Never call DVLA or the MOT API from the browser, and don't loosen the worker's origin lock. Test locally by mocking the worker.
+- **What it shows:** a card with reg, year, make and model, colour, fuel, MOT expiry and last MOT mileage, then "Is this your car?" with Yes / Change. The last MOT mileage is suggested in the mileage box, but the customer confirms or edits it.
+- **Handoff:** the quick form saves `pxReg`, `pxMiles` and `pxCar` (looked up details plus `confirmed`) inside sessionStorage `dsQuick`. Find my BMW's `pxFirst()` fills them in and starts the part exchange questions at px3 (or px2 if no mileage), showing "Already got these".
+- **Single submission:** reg, mileage and `px_lookup` ride in the one quick form Formspree submission. No extra submission for the lookup. Find my BMW adds `px_lookup` to its own part exchange email.
+- **Failure:** quiet. A calm note, no card, and they can still send with just the reg and mileage (`px_lookup` then says "Lookup not available, check the reg"). 9 second timeout.
+- **Very new cars** have had no MOT, so there is no MOT mileage to suggest; the customer types it.
+- Tests: /workspace/site-review/elevate/px_test.py (mocked ok, failed and Maybe paths).
