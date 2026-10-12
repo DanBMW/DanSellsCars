@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-12T06:25:07.000Z",
+ "generated_at": "2026-10-12T08:53:40.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
  "count": 70,
@@ -4070,8 +4070,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 4,
-   "lead_time_weeks_max": 6,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "M Brakes with Red Calipers",
