@@ -29,7 +29,7 @@
  "listing_id": "242773",
  "source": "group",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-10-11",
- "available_until": "2026-11-10"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }
