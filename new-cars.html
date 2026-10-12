@@ -706,7 +706,7 @@
       /* A car with no published monthly sorts after the ones that have one,
          the same rule stock.html keeps: it is not a cheap car, it is a car we
          cannot show a payment for. */
-      mlow:  function(a,b){ return (finOk(a) ? a.monthly_gbp : 1e9) - (finOk(b) ? b.monthly_gbp : 1e9); },
+      mlow:  function(a,b){ return (finOk(a) ? a._q.monthly : 1e9) - (finOk(b) ? b._q.monthly : 1e9); },
       quick: function(a,b){ return (a.zero_to_62||99) - (b.zero_to_62||99); }
     }[SORT];
     return rows.slice().sort(by);
@@ -792,11 +792,12 @@
   /* NEW_FINANCE_APPROVED: the one switch for every new car monthly figure on
      this page (card, sort, WhatsApp text, page note). The figures are a
      financial promotion for Hedin / ITC Compliance (FRN 313486) to sign off.
-     They were live before sign-off was recorded, so the switch was left on
-     on 11 October 2026 rather than silently taking them down; see CLAUDE.md.
-     Even with it on, a car only shows a monthly when finOk() passes: every
-     item of the representative example present in its own record, the record
-     agreeing with itself, and the file no older than FIN_MAX_AGE_DAYS.
+     Dan confirmed sign-off on 11 October 2026. Since 12 October the figures
+     are the lender's own BMW FS quote per car (lookup/new-stock-quotes.json),
+     not anything derived. A car only shows a monthly when finOk() passes:
+     every item of the representative example present in its quote, the
+     quote agreeing with itself and with the car's price, still within its
+     valid_to, and the quotes file no older than FIN_MAX_AGE_DAYS.
      Anything else falls back to the cash price and the personalised quote
      line. The £24 per £1,000 deposit rule is for matching only and never
      appears here. */
@@ -804,21 +805,24 @@
   var FIN_MAX_AGE_DAYS = 3;
   var FIN_GENERATED = '';
   var FIN_NEED = ['monthly','payments','term_months','cash_price','deposit',
-    'amount_of_credit','final_payment','total_payable','annual_mileage',
-    'excess_pence','apr'];
+    'amount_of_credit','final_payment','total_payable','charge_for_credit',
+    'annual_mileage','excess_pence','apr'];
   function num(v){ return typeof v === 'number' && isFinite(v); }
   function finOk(c){
     if (!NEW_FINANCE_APPROVED) return false;
-    var e = c && c.finance_example;
+    /* c._q is the lender's own quote from lookup/new-stock-quotes.json
+       (automation/new-stock-quotes.mjs), never the derived finance_example. */
+    var e = c && c._q;
     if (!e || !e.lender || !e.product) return false;
+    var vt = Date.parse(e.valid_to);
+    if (!vt || vt < Date.now()) return false;
     for (var i = 0; i < FIN_NEED.length; i++) if (!num(e[FIN_NEED[i]])) return false;
     var t = Date.parse(FIN_GENERATED);
     if (!t || Date.now() - t > FIN_MAX_AGE_DAYS * 864e5) return false;
     var dc = num(e.deposit_contribution) ? e.deposit_contribution : 0;
     if (Math.abs(e.cash_price - e.deposit - dc - e.amount_of_credit) > 0.02) return false;
     if (Math.abs(e.deposit + e.payments * e.monthly + e.final_payment - e.total_payable) > 0.05) return false;
-    if (num(c.monthly_gbp) && Math.abs(c.monthly_gbp - e.monthly) > 0.005) return false;
-    if (num(c.apr) && c.apr !== e.apr) return false;
+    if (Math.abs(e.total_payable - e.cash_price - e.charge_for_credit) > 0.05) return false;
     if (num(c.price_gbp) && Math.abs(c.price_gbp - e.cash_price) > 1) return false;
     return true;
   }
@@ -835,6 +839,7 @@
       + 'Total amount of credit ' + money(e.amount_of_credit) + '. '
       + 'Optional final payment ' + money(e.final_payment) + '. '
       + 'Total amount payable ' + money(e.total_payable) + '. '
+      + 'Total charge for credit ' + money(e.charge_for_credit) + '. '
       + 'Duration ' + e.term_months + ' months. '
       + Number(e.annual_mileage).toLocaleString('en-GB') + ' miles a year, '
       + e.excess_pence + 'p per excess mile. '
@@ -848,7 +853,7 @@
 
   function finBlock(c){
     if (!finOk(c)) return '<p class="nc-fin">Finance available. I’ll send you a personalised quote.</p>';
-    var e = c.finance_example;
+    var e = c._q;
     return '<p class="nc-mon"><b>' + esc(money(e.monthly)) + ' a month</b> '
       + '<span>' + esc(e.product) + ', ' + esc(money0(e.deposit)) + ' deposit, '
       + esc(e.term_months) + ' months, ' + esc(e.apr) + '% APR representative.</span></p>'
@@ -930,7 +935,7 @@
       "Hi Dan, I've seen this new one on your site and I'm interested.\n"
       + c.description + (c.colour ? ', ' + c.colour : '')
       + (c.price ? '\n' + c.price : '')
-      + (finOk(c) ? '\n' + c.monthly + ' a month' : '')
+      + (finOk(c) ? '\n' + money(c._q.monthly) + ' a month' : '')
       + '\nOrder ' + c.order_number);
     return '<article class="nc-card">'
       + shotBlock(c)
@@ -1098,14 +1103,22 @@
     if (document.getElementById('ncFacets').classList.contains('open')) fitSheet();
   }, {passive:true});
 
+  /* The quotes file is optional: if it fails, every car falls back to the
+     cash price and the personalised quote line. */
+  var QUOTES = fetch('lookup/new-stock-quotes.json', {cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .catch(function(){ return {}; });
   fetch('lookup/new-stock.json', {cache:'no-cache'})
     .then(function(r){ return r.json(); })
+    .then(function(d){ return QUOTES.then(function(q){ d._quotes = q || {}; return d; }); })
     .then(function(d){
       CARS = (d.cars || []).filter(function(c){ return !c.on_hold; });
+      var QS = d._quotes.quotes || {};
+      CARS.forEach(function(c){ c._q = QS[c.order_number] || null; });
       CARS.forEach(function(c){ c._hay = hayFor(c); });
       SEED = d.seeded_at || d.seeded_on || '';
       TODAY = (d.generated_at || '').slice(0, 10);
-      FIN_GENERATED = d.generated_at || '';
+      FIN_GENERATED = d._quotes.generated_at || '';
       if (!CARS.some(finOk)){
         var mo = document.querySelector('#ncSort option[value="mlow"]');
         if (mo) mo.remove();
@@ -1123,15 +1136,11 @@
         + '. Pictures are configurator renders of that exact specification rather than '
         + 'photographs of the individual car. Prices and delivery times come from BMW '
         + 'and can change. '
-        + (d.finance_terms && CARS.some(finOk)
-            ? 'Monthly payments are BMW’s own published figures for each car on a '
-              + d.finance_terms.product + ' agreement over '
-              + d.finance_terms.term_months + ' months with a £'
-              + d.finance_terms.deposit_gbp.toLocaleString('en-GB')
-              + ' deposit and '
-              + d.finance_terms.annual_mileage.toLocaleString('en-GB')
-              + ' miles a year. The representative example sits '
-              + 'under each payment. They are an illustration and not a quotation: ask me and '
+        + (CARS.some(finOk)
+            ? 'Monthly payments are BMW Financial Services’ own quote for each car, '
+              + 'as shown on BMW’s page for it, on BMW Select (PCP) over 48 months '
+              + 'with a £4,500 deposit and 10,000 miles a year. The representative '
+              + 'example sits under each payment. They are an illustration and not a quotation: ask me and '
               + 'I will get you one in writing, at your own deposit and mileage.'
             : 'Finance is available on any of them: I’ll send you a personalised '
               + 'quote with the full figures.');

@@ -814,10 +814,36 @@ Other things it has to keep:
   else shows the cash price and "Finance available. I'll send you a
   personalised quote." The example is shown open, in the same words and order
   as `dsfinance.js` `repExample`, with the Hedin / ITC credit broker statement.
-  **As of 11 Oct 2026 `excess_pence` is null on all 70 cars, so no new car
-  monthly is on screen** until `new-stock.py` can source a real rate. Never
-  fill it with a plausible figure, and never show the £24 per £1,000 rule to
-  a customer: it is for matching only.
+  Never fill a missing item with a plausible figure, and never show the £24
+  per £1,000 rule to a customer: it is for matching only.
+- **New car lender quotes (12 Oct 2026, Dan chose this).** The card figures
+  are no longer `finance_example` (derived, no excess rate). Each car's own
+  page on stock.bmw.co.uk (`/vehicle/<vin>/<iv>?dn=22181&f=dHJ1ZQ%3D%3D`,
+  the locator's opaque vin/iv passed through URL encoded) loads a BMW
+  Financial Services quote via Codeweavers whose response carries the plain
+  VIN (`Vehicle.Physical.Vin`) and a full PCP example: £4,500 deposit, 48
+  months, 47 payments, **10,000 miles a year** (the locator's own monthly is
+  on 8,000, so the two differ; show only the quote's). 
+  `automation/new-stock-urls.py` lists the page links (never committed),
+  `automation/new-stock-quotes.mjs` opens each page once in headless Chrome,
+  one at a time with pauses, and records the VIN and the PCP quote into
+  `lookup/new-stock-quotes.json` keyed by order number. **Not yet
+  scheduled** (12 Oct 2026): the workflow `new-car-quotes.yml` (on push of
+  `lookup/new-stock.json`, cron 09:30 UTC) could not be pushed because the box
+  token lacks the `workflow` scope; the file is on the box at
+  site-review/newfin/new-car-quotes.yml for Dan to add in GitHub. Until then
+  the quotes file goes stale after 3 days and every card falls back. `new-cars.html` reads it as `c._q`; `finOk`
+  checks every field, cash = deposit + contribution + credit, total =
+  deposit + payments x monthly + final, total = cash + charge, quote cash
+  within £1 of the card price, `valid_to` in the future and the quotes file
+  under 3 days old. **Hard rules:** never decrypt or reverse engineer vin/iv
+  or pull keys out of BMW or Codeweavers JS; never call those APIs directly or
+  change quote parameters (that is why the mileage is 10,000, not Dan's
+  8,000); record only what the page's own requests return; never commit keys,
+  tokens or quote ids. The used route (`stock-finance.py`, Hedin listings)
+  cannot quote new cars: a new VIN is declined as "missing from the
+  inclusion list". How-to for other agents:
+  site-review/newfin/bmw-new-car-vin-quote-howto.md on the box.
 - **Ask for a personalised quotation.** The figures above that button are BMW's
   example on BMW's own fixed terms, and nobody buys on those terms, so the
   button asks for the real one. It opens the **site contact modal** rather than
