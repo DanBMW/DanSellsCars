@@ -28,29 +28,8 @@
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/249342/pb-bmw-m440-2023",
  "listing_id": "249342",
  "source": "group",
- "finance": {
-  "annual_mileage": 8000,
-  "apr": 11.9,
-  "charges": 12757.47,
-  "contract_mileage": 32000,
-  "credit": 37908,
-  "deposit": 1000,
-  "excess_pence": 11.29,
-  "final_payment": 17226.85,
-  "legal": null,
-  "lender": "BMW Group Financial Services",
-  "monthly": 711.46,
-  "payments": 47,
-  "price": 38908,
-  "product": "BMW Select (PCP)",
-  "quoted_at": "2026-10-12T09:35:24.4737632+01:00",
-  "reg": "MD73EFO",
-  "term": 48,
-  "total_payable": 51665.47,
-  "valid_to": "2026-12-31T23:59:59",
-  "representative_example": "47 monthly payments of £711.46. Cash price £38,908. Customer deposit £1,000.00. Total amount of credit £37,908.00. Optional final payment £17,226.85. Total amount payable £51,665.47. Duration 48 months. 8,000 miles a year, 11.29p per excess mile. 11.9% APR representative. Lender BMW Group Financial Services. Finance subject to status, 18+, UK residents."
- },
- "status": "in_stock",
- "removed_at": null,
- "available_until": null
+ "finance": null,
+ "status": "removed",
+ "removed_at": "2026-10-13",
+ "available_until": "2026-11-12"
 }

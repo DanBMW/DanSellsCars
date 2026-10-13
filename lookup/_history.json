@@ -17,7 +17,7 @@
  "BK23PSX": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "BP72KLD": {
   "first_seen": "2026-10-07",
@@ -182,7 +182,7 @@
  "GL23ZRY": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "GL71BJU": {
   "first_seen": "2026-10-07",
@@ -197,7 +197,7 @@
  "GM22AZW": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "GU72WSK": {
   "first_seen": "2026-10-07",
@@ -467,12 +467,12 @@
  "LM75HGZ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "LO75VOC": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "LP23XSX": {
   "first_seen": "2026-10-07",
@@ -487,7 +487,7 @@
  "LP24ABU": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "LP72VPM": {
   "first_seen": "2026-10-07",
@@ -559,6 +559,11 @@
   "last_seen": "2026-10-13",
   "removed_at": null
  },
+ "LS66NKM": {
+  "first_seen": "2026-10-13",
+  "last_seen": "2026-10-13",
+  "removed_at": null
+ },
  "LS73OKX": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
@@ -621,8 +626,8 @@
  },
  "LV23WVX": {
   "first_seen": "2026-10-07",
-  "last_seen": "2026-10-08",
-  "removed_at": "2026-10-09"
+  "last_seen": "2026-10-13",
+  "removed_at": null
  },
  "LV24KHJ": {
   "first_seen": "2026-10-07",
@@ -1292,7 +1297,7 @@
  "LY75FRJ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "LY75FTN": {
   "first_seen": "2026-10-07",
@@ -1337,7 +1342,7 @@
  "MD73EFO": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "ME72CXZ": {
   "first_seen": "2026-10-07",
@@ -1357,12 +1362,12 @@
  "NU22ZTB": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "NU23VHA": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-13",
-  "removed_at": null
+  "removed_at": "2026-10-13"
  },
  "NV25MXY": {
   "first_seen": "2026-10-07",
@@ -1476,6 +1481,11 @@
  },
  "YA73LDE": {
   "first_seen": "2026-10-11",
+  "last_seen": "2026-10-13",
+  "removed_at": null
+ },
+ "YA74RYN": {
+  "first_seen": "2026-10-13",
   "last_seen": "2026-10-13",
   "removed_at": null
  },
