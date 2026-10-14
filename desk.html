@@ -106,9 +106,10 @@
       <details class="desk-sec" id="sec-budget" data-sec="budget" open><summary><h3>7. Funding</h3><span class="desk-fill" data-fill="budget"></span></summary><div class="desk-sec-body">
         <div class="desk-row">
           <label class="red">Current monthly payment £<input id="curMonthly" inputmode="numeric" placeholder="420"/></label>
-          <label class="red">Change cycle<input id="changeCycle" placeholder="3 years"/></label>
           <label class="red">Annual mileage<input id="annualMiles" inputmode="numeric" placeholder="10000"/></label>
         </div>
+        <fieldset class="desk-keep"><legend>How long do you plan to keep it?</legend><div class="desk-box" data-f="keepTerm"></div>
+          <label class="desk-keep-other">Other, months<input id="termOther" inputmode="numeric" placeholder="60"/></label></fieldset>
         <fieldset><legend>How they want to pay</legend><div class="desk-box" data-f="pay"></div></fieldset>
 
         <!-- Deposit, always on screen. It used to live inside the monthly
@@ -130,10 +131,10 @@
           <p class="desk-dep-help" id="depHelp">Every monthly figure on the results is quoted at this deposit.</p>
         </div>
 
+        <p class="desk-dep-need" id="depNeed" hidden role="alert">Add the cash deposit before Find car. Type 0 if there is no deposit.</p>
         <div class="desk-row" id="budMonthly" hidden>
           <label class="red">Monthly budget £<input id="moFrom" inputmode="numeric" placeholder="500"/></label>
           <label class="red">Up to £<input id="mo" inputmode="numeric" placeholder="750"/></label>
-          <label>Term, months<input id="term" inputmode="numeric" placeholder="48"/></label>
         </div>
         <div class="desk-row" id="budCash" hidden><label class="red">Cash budget up to £<input id="cash" inputmode="numeric" placeholder="50000"/></label></div>
         <fieldset><legend>Funding method</legend><div class="desk-box" data-f="fundMethod"></div></fieldset>

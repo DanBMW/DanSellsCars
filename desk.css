@@ -296,3 +296,11 @@ body.dc-open{overflow:hidden}
 .desk-protect-no{color:#d39b4a}
 .desk-row .desk-will{align-self:end;min-height:46px;white-space:nowrap}
 @media print{.desk-will{display:none!important}}
+/* Deposit required before Find car, budget labels for Dan only (14 Oct) */
+.desk-dep-need{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#fdecea;color:#8c1d18;font-weight:600;font-size:.9rem}
+.desk-dep.need #dep{outline:2px solid #c0392b;outline-offset:1px}
+.desk-over{display:inline-block;margin:4px 0;padding:3px 10px;border-radius:999px;background:#fff3d6;color:#7a4b00;font-size:.8rem;font-weight:600}
+.desk-dan{margin:6px 0;padding:8px 10px;border-left:3px solid #d99a00;background:#fffaf0;font-size:.85rem}
+.desk-keep .desk-box{margin-bottom:6px}
+.desk-keep-other{max-width:180px}
+@media print{.desk-over,.desk-dan{display:none}}

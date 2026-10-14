@@ -583,6 +583,8 @@
   function card(r, i) {
     var c = r.c, u = photo(c), best = i === 0;
     var alt = (c.year ? c.year + ' ' : '') + modelName(c) + (c.colour ? ' in ' + c.colour : '');
+    /* r.miss never carries budget wording (fmb-match evaluate), so nothing
+       over budget can reach a customer here. */
     var showPct = r.pct != null && r.pct >= 30 && (r.soft > 0 || r.level >= 2 || r.miss.length);
     var flags = r.miss.map(function (m) { return '<span class="fmb-flag">' + esc(m) + '</span>'; });
     if (!c._home) flags.push('<span class="fmb-flag grp">From our other BMW stock</span>');
@@ -669,7 +671,7 @@
     var lines = [];
     if (tight) lines.push('<li>Here is my top pick, then a couple of alternatives.</li>');
     R.levels.filter(function (l) { return l > 0; }).sort().forEach(function (l) { lines.push('<li class="relax">' + esc(SUBS[l]) + '</li>'); });
-    var widened = R.levels.filter(function (l) { return l >= 2; }).sort().map(function (l) { return RELAX[l]; });
+    var widened = R.levels.filter(function (l) { return l >= 3; }).sort().map(function (l) { return RELAX[l]; });
     if (widened.length) lines.push('<li class="relax">What I widened: ' + esc(widened.join(', ')) + '.</li>');
     if (A.pay === 'monthly' && A.mo > 0 && !quotedAny) lines.push('<li>The lender isn\u2019t quoting any cars today, so I\u2019ve left the monthly budget out. Ask me for figures on any of them.</li>');
     else if (A.pay === 'monthly' && A.mo > 0 && lowCov()) lines.push('<li>The lender is only quoting some cars today, so I\u2019ve matched the rest on price. Ask me for figures on any of them.</li>');

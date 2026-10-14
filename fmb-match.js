@@ -25,9 +25,11 @@ window.fmbMatch = (function () {
      the deposit working on the car drops by this much. One number to change. */
   var PROTECTION_COST = 2500;
   var PROTECT_URL = 'https://dan-sells.co.uk/current-opportunities.html#protection';
-  /* Dan, 8 October: at the desk a brand new car up to 5% over budget is still
-     worth showing. One setting, desk mode only. The public flow never uses it. */
-  var NEW_STRETCH = 0.05;
+  /* Dan, 14 October: at the desk nothing is ever shown more than 15% over
+     the customer's budget, used or brand new. Within budget always comes
+     first. One setting, desk mode only. The public flow never uses it. */
+  var TOLERANCE = 0.15;
+  var NEW_STRETCH = TOLERANCE;
 
   var DATA = { home: [], group: [], fin: {}, lad: {}, det: {}, newCars: [], finOK: false, coverage: 1, quotedAny: true };
 
@@ -259,8 +261,38 @@ window.fmbMatch = (function () {
       if (lowCov() && !strictQuotes) return c._price <= priceCap(a, stretch);
       return false;
     }
-    if (a.pay === 'cash' && a.cash > 0) return c._price > 0 && c._price < a.cash * (1 + stretch);
+    if (a.pay === 'cash' && a.cash > 0) return c._price > 0 && c._price <= a.cash * (1 + stretch);
     return true;
+  }
+  /* How far over the budget a used car is: the lender quote at the
+     customer's deposit for monthly, the price for cash. null when it cannot
+     be priced (no lender quote). For Dan only, never shown to a customer. */
+  function overOf(c, a) {
+    if (a.pay === 'monthly' && a.mo > 0) {
+      var f = finAt(c, a.dep); if (!f) return null;
+      var d = Number(f.monthly) - a.mo;
+      return { amt: Math.max(0, d), pct: Math.max(0, d / a.mo), unit: 'mo' };
+    }
+    if (a.pay === 'cash' && a.cash > 0) {
+      if (!(c._price > 0)) return null;
+      var e = c._price - a.cash;
+      return { amt: Math.max(0, e), pct: Math.max(0, e / a.cash), unit: 'cash' };
+    }
+    return { amt: 0, pct: 0, unit: '' };
+  }
+  /* The smallest extra deposit, in 250 pound steps, that brings a used car
+     inside a monthly budget, read off the lender's own ladder. null when the
+     ladder does not reach or it is not a monthly brief. */
+  function depHint(c, a) {
+    if (!(a.pay === 'monthly' && a.mo > 0)) return null;
+    var base = a.dep || 0;
+    for (var x = 250; x <= 20000; x += 250) { var g = finAt(c, base + x); if (g && Number(g.deposit) >= base + x - 1 && g.monthly <= a.mo) return x; }
+    return null;
+  }
+  function overLabel(o, isEst) {
+    if (!o || !(o.amt > 0)) return '';
+    var pct = Math.round(o.pct * 100);
+    return (isEst ? 'About ' : '') + money(Math.ceil(o.amt)) + (o.unit === 'mo' ? ' a month' : '') + ' over, ' + (pct < 1 ? 'under 1' : pct) + '%';
   }
   function matches(c, a, R) {
     R = R || {};
@@ -292,10 +324,9 @@ window.fmbMatch = (function () {
     if ((a.fuel || []).length) { max += 3; if (fuelHit(c, a.fuel)) got += 3; else miss.push(cap1(FUEL_NAME[c._fuel] || 'another fuel') + ', not ' + list(a.fuel.map(function (v) { return byV(FUEL, v).t.toLowerCase(); }), 'or')); }
     if (hasCeiling(a)) {
       max += 3;
+      /* Budget wording never goes in miss: miss can reach a customer.
+         Dan's over budget label is built from overOf in desk mode only. */
       if (budgetMet(c, a, 0)) got += 3;
-      else if (a.pay === 'monthly' && f) miss.push(money(Math.ceil(f.monthly - a.mo)) + ' a month over your budget');
-      else if (a.pay === 'monthly') miss.push('No lender quote at your deposit yet');
-      else miss.push(money(c._price - a.cash + 1) + ' over your budget');
     }
     if (wantsSeven(a)) { max += 3; if (String(c.seats) === '7') got += 3; else miss.push((c.seats || '5') + ' seats'); }
     var metMust = [];
@@ -327,6 +358,9 @@ window.fmbMatch = (function () {
     if (a.pay === 'monthly' && a.mo > 0 && f && f.monthly <= a.mo) s += (f.monthly / a.mo >= 0.8) ? 5 : 2;
     if (f && (a.pay === 'monthly' || a.pay === 'notsure' || !a.pay)) s += 4;
     if (c.image) s += 3;
+    /* Cash buyers: prefer the car that uses the budget, not the cheapest
+       old one. Up to 10 points for being close to the ceiling. */
+    if (a.pay === 'cash' && a.cash > 0 && c._price > 0 && c._price <= a.cash) s += Math.round(10 * c._price / a.cash);
     s += Math.max(0, c._year - 2018) + Math.max(0, 8 - c._miles / 10000);
     var pr = protectFit(c, a, false);
     return { c: c, pct: pct, score: s, fin: f, miss: miss, metExtras: metMust.concat(metExtras), soft: soft, quoted: !!f, protect: !!(pr && pr.fits), protectEst: pr ? pr.est : null };
@@ -385,9 +419,10 @@ window.fmbMatch = (function () {
   }
 
   var RELAX = { 7: 'must haves relaxed', 2: 'budget plus 10%', 3: 'closest fuels', 4: 'nearby shapes', 5: '7 seats dropped', 6: 'model, shape, fuel and wish list set aside' };
+  var DESK_RELAX2 = 'up to 15% over budget';
   var SUBS = {
     7: 'Nothing had every must have, so a couple are missing one.',
-    2: 'Nothing hit every number, so a couple are just over budget.',
+    2: 'Nothing hit every number exactly, so these are the closest.',
     3: 'I\u2019ve included the closest fuel options too.',
     4: 'I\u2019ve widened the shapes a little.',
     5: 'I couldn\u2019t find a 7 seater that fits today.',
@@ -406,7 +441,8 @@ window.fmbMatch = (function () {
   }
   function wantsNew(a) { return a.interest === 'new' || a.interest === 'either'; }
 
-  function findUsed(a) {
+  function findUsed(a, opts) {
+    if (opts && opts.desk) return findDesk(a);
     var res = [], seen = {}, levels = [];
     var pool = DATA.home.concat(DATA.group);
     function add(R, lvl, limit) {
@@ -433,6 +469,59 @@ window.fmbMatch = (function () {
     res.forEach(function (r) { r.relaxed = r.level >= 2 ? RELAX[r.level] : ''; r.why = spokenWhy(r, a); });
     var seeN = countIn(pool, a, { strictQuotes: true });
     return { list: res, level: level, levels: levels, nStrict: nStrict, seeN: seeN, seeUrl: seeAllUrl(a) };
+  }
+
+  /* Desk mode. Hard ceiling at budget plus TOLERANCE, no padding. Each step
+     keeps the chosen model as long as possible: the strict brief first
+     (within budget, then up to 15% over, closest first), then the closest
+     fuels, nearby shapes, must haves and 7 seats, and only then other
+     models. Inside each step within budget comes before over, and cars that
+     still fit with full protection come first in each group. Monthly cars
+     need a real lender quote at the customer's deposit; nothing is guessed. */
+  function findDesk(a) {
+    var res = [], seen = {}, levels = [], pool = DATA.home.concat(DATA.group), ceil = hasCeiling(a);
+    function tag(r) { var o = overOf(r.c, a); r.over = o; r.overLabel = overLabel(o); r.depHint = o && o.amt > 0 ? depHint(r.c, a) : null; return r; }
+    function add(R, lvl) {
+      if (res.length >= 3) return;
+      var RR = Object.assign({}, R, { stretch: ceil ? TOLERANCE : 0, strictQuotes: true });
+      var c = pool.filter(function (x) { return !seen[x.id] && matches(x, a, RR); }).map(function (x) { return tag(evaluate(x, a)); });
+      var inb = c.filter(function (r) { return !(r.over && r.over.amt > 0); }), over = c.filter(function (r) { return r.over && r.over.amt > 0; });
+      var need = 3 - res.length;
+      var p1 = pick(inb.filter(function (r) { return r.protect; }), need, a, res);
+      var p2 = pick(inb.filter(function (r) { return !r.protect; }), need - p1.length, a, res.concat(p1));
+      over.sort(function (x, y) { return (y.protect ? 1 : 0) - (x.protect ? 1 : 0) || x.over.pct - y.over.pct || y.score - x.score; });
+      var p3 = over.slice(0, need - p1.length - p2.length);
+      p1.concat(p2).forEach(function (r) { r.level = lvl; });
+      p3.forEach(function (r) { r.level = lvl === 0 ? 2 : lvl; });
+      p1.concat(p2, p3).forEach(function (r) { seen[r.c.id] = 1; res.push(r); if (levels.indexOf(r.level) === -1) levels.push(r.level); if (r.level !== lvl && levels.indexOf(lvl) === -1 && lvl) levels.push(lvl); });
+    }
+    var nStrict = countIn(pool, a, { strictQuotes: true });
+    var R = {};
+    add(R, 0);
+    if ((a.fuel || []).length) { R = Object.assign({}, R, { fuelN: true }); add(R, 3); }
+    if (effectiveBody(a).length) { R = Object.assign({}, R, { bodyN: true }); add(R, 4); }
+    if ((a.must || []).length) { R = Object.assign({}, R, { noMust: true }); add(R, 7); }
+    if (wantsSeven(a)) { R = Object.assign({}, R, { noSeven: true }); add(R, 5); }
+    add({ anyModel: true, anyShape: true, anyFuel: true, noSeven: true, noMust: true }, 6);
+    var level = levels.length ? Math.max.apply(null, levels.map(function (l) { return l === 7 ? 4.5 : l; })) : 0;
+    res.forEach(function (r) { r.relaxed = r.level === 2 ? DESK_RELAX2 : r.level >= 2 ? RELAX[r.level] : ''; r.why = spokenWhy(r, a); });
+    var nearest = null;
+    if (ceil && !res.some(function (r) { return r.level === 0 || r.level === 2; })) {
+      /* Nothing within 15%: for Dan only, the nearest car on the brief with
+         a deposit hint. Never shown as a result, never padded in. */
+      var steps = [{}, { fuelN: true, bodyN: true, noMust: true, noSeven: true }];
+      if (!res.length) steps.push({ anyModel: true, anyShape: true, anyFuel: true, noSeven: true, noMust: true });
+      for (var i = 0; i < steps.length && !nearest; i++) {
+        var best = null;
+        pool.forEach(function (x) {
+          if (!matches(x, a, Object.assign({}, steps[i], { stretch: 1e9, strictQuotes: true }))) return;
+          var o = overOf(x, a); if (!o) return;
+          if (!best || o.pct < best.o.pct) best = { c: x, o: o };
+        });
+        if (best) nearest = { c: best.c, fin: finAt(best.c, a.pay === 'monthly' ? a.dep : null), over: best.o, overLabel: overLabel(best.o), depHint: depHint(best.c, a), sameModel: i === 0 };
+      }
+    }
+    return { list: res, level: level, levels: levels, nStrict: nStrict, seeN: countIn(pool, a, { strictQuotes: true }), seeUrl: seeAllUrl(a), nearest: nearest, desk: true };
   }
 
   function seeAllUrl(a) {
@@ -466,12 +555,12 @@ window.fmbMatch = (function () {
       var est = newEstimate(c, a.dep);
       if (est === null || !c._quoted) return null;
       if (est <= a.mo) return { over: 0, est: est };
-      return { over: (est - a.mo) / c._quoted, est: est };
+      return { over: (est - a.mo) / a.mo, est: est, amt: est - a.mo };
     }
     if (a.pay === 'cash' && a.cash > 0) {
       if (!(c._price > 0)) return null;
-      if (c._price < a.cash) return { over: 0, est: null };
-      return { over: (c._price - a.cash) / a.cash, est: null };
+      if (c._price <= a.cash) return { over: 0, est: null };
+      return { over: (c._price - a.cash) / a.cash, est: null, amt: c._price - a.cash };
     }
     return { over: 0, est: newEstimate(c, a.dep) };
   }
@@ -494,14 +583,15 @@ window.fmbMatch = (function () {
       if (!newHard(c, a, stretch)) return;
       var o = newOver(c, a);
       var pr = protectFit(c, a, true);
-      var row = { c: c, est: o.est, over: o.over, pct: Math.round(o.over * 1000) / 10, protect: !!(pr && pr.fits), protectEst: pr ? pr.est : null };
+      var row = { c: c, est: o.est, over: o.over, pct: Math.round(o.over * 1000) / 10, protect: !!(pr && pr.fits), protectEst: pr ? pr.est : null,
+        overLabel: o.over > 1e-9 ? overLabel({ amt: o.amt, pct: o.over, unit: a.pay === 'monthly' ? 'mo' : 'cash' }, a.pay === 'monthly') : '' };
       if (o.over <= 1e-9) fit.push(row); else reach.push(row);
     });
     function rank(x, y) {
       var cx = (a.colours || []).indexOf(x.c.colour) !== -1 ? 0 : 1, cy = (a.colours || []).indexOf(y.c.colour) !== -1 ? 0 : 1;
-      return cx - cy || (y.protect ? 1 : 0) - (x.protect ? 1 : 0) || (x.c.lead_time_weeks_max || 99) - (y.c.lead_time_weeks_max || 99) || x.c._price - y.c._price;
+      return (y.protect ? 1 : 0) - (x.protect ? 1 : 0) || cx - cy || (x.c.lead_time_weeks_max || 99) - (y.c.lead_time_weeks_max || 99) || x.c._price - y.c._price;
     }
-    fit.sort(rank); reach.sort(function (x, y) { return x.over - y.over || rank(x, y); });
+    fit.sort(rank); reach.sort(function (x, y) { return (y.protect ? 1 : 0) - (x.protect ? 1 : 0) || x.over - y.over || rank(x, y); });
     function take(rows, n) {
       var out = [], seen = {};
       rows.forEach(function (r) { if (out.length < n && !seen[r.c.description]) { seen[r.c.description] = 1; out.push(r); } });
@@ -628,7 +718,7 @@ window.fmbMatch = (function () {
   return {
     MODELS: MODELS, BODY: BODY, FUEL: FUEL, WHO: WHO, LIFE: LIFE, MILES: MILES, PEOPLE: PEOPLE, BOOT: BOOT,
     CHARGE: CHARGE, WHEN: WHEN, MONTHLY: MONTHLY, DEPS: DEPS, CASH: CASH, EXTRAS: EXTRAS, COLOURS: COLOURS, SWATCH: SWATCH,
-    NEW_STRETCH: NEW_STRETCH, NEW_QUOTE_DEP: NEW_QUOTE_DEP, NEW_PER_1000: NEW_PER_1000, PROTECTION_COST: PROTECTION_COST, PROTECT_URL: PROTECT_URL, PROTECT_LINE: 'You could have our full protection with this car.', protectFit: protectFit, RELAX: RELAX, SUBS: SUBS,
+    NEW_STRETCH: NEW_STRETCH, TOLERANCE: TOLERANCE, DESK_RELAX2: DESK_RELAX2, overOf: overOf, depHint: depHint, overLabel: overLabel, NEW_QUOTE_DEP: NEW_QUOTE_DEP, NEW_PER_1000: NEW_PER_1000, PROTECTION_COST: PROTECTION_COST, PROTECT_URL: PROTECT_URL, PROTECT_LINE: 'You could have our full protection with this car.', protectFit: protectFit, RELAX: RELAX, SUBS: SUBS,
     blank: blank, load: load, data: function () { return DATA; },
     modelBy: modelBy, byV: byV, chosenModels: chosenModels, modelOpen: modelOpen, impliedBodies: impliedBodies,
     shapeLocked: shapeLocked, effectiveBody: effectiveBody, needsCharge: needsCharge, wantsNew: wantsNew, wantsSeven: wantsSeven,

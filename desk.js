@@ -2,7 +2,7 @@
  *
  * Order (Dan, 8 October): the fact find holds no personal details. Find car
  * shows the recommendation, the "out of X" line, alternatives and brand new
- * options (with a Within reach tier up to fmbMatch.NEW_STRETCH over budget).
+ * options (with a Within reach tier up to fmbMatch.TOLERANCE, 15%, over budget).
  * Only then does Customer details appear, then Submit, which sends ONE
  * Formspree email laid out as a fact find. Nothing else touches Formspree.
  *
@@ -51,11 +51,12 @@
     wouldF: { multi: true, opts: M.EXTRAS.map(function (k) { return { v: k, t: k === 'seven' ? '7 seats' : ST.FEATURES[k].label }; }) },
     colours: { multi: true, opts: M.COLOURS.map(function (c) { return { v: c, t: c }; }) },
     fundMethod: { multi: true, opts: [{ v: 'pcp', t: 'BMW Select / PCP' }, { v: 'hp', t: 'HP' }, { v: 'other', t: 'Other' }, { v: 'savings', t: 'Savings' }, { v: 'loan', t: 'Loan' }, { v: 'motability', t: 'Motability' }] },
+    keepTerm: { opts: [{ v: '24', t: '24 months' }, { v: '36', t: '36 months' }, { v: '48', t: '48 months' }, { v: 'other', t: 'Other' }] },
     said: { opts: [{ v: 'yes', t: 'Yes' }, { v: 'no', t: 'No' }] },
     introBM: { opts: [{ v: 'yes', t: 'Yes' }, { v: 'no', t: 'No' }] }
   };
   var TEXTS = ['pxReg', 'pxMiles', 'pxSettle', 'pxVal', 'curCar', 'likeModel', 'important',
-    'mustText', 'wouldText', 'notes', 'curMonthly', 'changeCycle', 'annualMiles', 'moFrom', 'mo', 'dep', 'term', 'cash',
+    'mustText', 'wouldText', 'notes', 'curMonthly', 'termOther', 'annualMiles', 'moFrom', 'mo', 'dep', 'cash',
     'n_model', 'n_usage', 'n_px', 'n_budget', 'n_when', 'n_must', 'n_result', 'n_next', 'nsDriveWhen', 'nsFollow'];
   var CHECKS = ['nsDrive', 'nsVal', 'cOptin'];
   var PERSONAL = ['cFirst', 'cLast', 'cPhone', 'cEmail', 'n_customer'];
@@ -95,13 +96,12 @@
       notes:["What else should I know so I don't miss the point?"],
       when:["When would you like to be driving it, if it felt right?"],
       curMonthly:["What are you paying now, and how does that feel?"],
-      changeCycle:["How long do you usually keep a car?"],
+      termOther:["How long do you plan to keep it?"],
       annualMiles:["Roughly how many miles do you cover in a year?"],
       pay:["How do you like to think about the money, monthly or as a total?"],
       moFrom:["What monthly figure would feel comfortable?"],
       mo:["And what's the most you'd want it to be?"],
       dep:["What could you comfortably put down?"],
-      term:["How long would you want the agreement to run?"],
       cash:["What sort of total feels right, if you were paying outright?"],
       fundMethod:["How were you thinking of paying for it?"],
       said:["Have they told you, in their own words, how they'll fund it?"],
@@ -125,7 +125,7 @@
       if(ctrl) host.insertBefore(lab, ctrl); else host.appendChild(lab);
     }
     document.querySelectorAll('.desk-box').forEach(function(box){addTip(box.parentElement,TIPS[box.getAttribute('data-f')]);});
-    ['likeModel','important','curCar','pxReg','pxMiles','pxVal','pxSettle','mustText','wouldText','notes','curMonthly','changeCycle','annualMiles','moFrom','mo','dep','term','cash','cFirst','nsDriveWhen','nsFollow'].forEach(function(id){var e=$(id); if(e&&e.parentElement)addTip(e.parentElement,TIPS[id]||TIPS[id.replace('When','')]);});
+    ['likeModel','important','curCar','pxReg','pxMiles','pxVal','pxSettle','mustText','wouldText','notes','curMonthly','termOther','annualMiles','moFrom','mo','dep','cash','cFirst','nsDriveWhen','nsFollow'].forEach(function(id){var e=$(id); if(e&&e.parentElement)addTip(e.parentElement,TIPS[id]||TIPS[id.replace('When','')]);});
     ['nsDrive','nsVal'].forEach(function(id){var e=$(id); if(e)addTip(e.parentElement,TIPS[id]);});
     document.addEventListener('click',function(ev){
       var btn=ev.target.closest&&ev.target.closest('.qtip>button');
@@ -194,7 +194,7 @@
       : (eq < 0 ? 'negative equity, it comes off the deposit' : 'carried from section 3');
     $('depTotal').textContent = tot === null ? GBP + '0' : FN.money(tot);
     $('depHelp').textContent = tot === null
-      ? 'Leave it blank and the lender’s own default deposit is used.'
+      ? 'Needed before Find car. Type 0 if there is no deposit.'
       : 'Every monthly figure on the results is quoted at ' + FN.money(tot) + '.';
     actSummary();
   }
@@ -218,12 +218,29 @@
        payment on the page quoted at the lender's default instead of their
        own money. */
     a.dep = depositTotal();
-    if (a.pay === 'monthly') a.mo = num($('mo').value) || 0;
+    /* The ceiling is "Up to" when filled, otherwise the monthly budget. */
+    if (a.pay === 'monthly') a.mo = num($('mo').value) || num($('moFrom').value) || 0;
+    a.term = keepTerm();
     if (a.pay === 'cash') a.cash = num($('cash').value) || 0;
     var am = num($('annualMiles').value);
     if (am) a.miles = am < 6000 ? 'u6' : am < 10000 ? '6to10' : am < 15000 ? '10to15' : '15plus';
     return a;
   }
+  /* One question for change cycle and term: how long they plan to keep it. */
+  function keepTerm() {
+    var c = one('keepTerm'), o = num($('termOther') ? $('termOther').value : '');
+    if (c && c !== 'other') return Number(c);
+    return o || null;
+  }
+  /* Old drafts had a free text change cycle and a separate term. */
+  function termFromOld(f) {
+    var t = num(f['#term'] || ''); if (t) return t;
+    var cc = String(f['#changeCycle'] || '').toLowerCase(), m;
+    if ((m = cc.match(/(\d+(?:\.\d+)?)\s*(m|month)/))) return Math.round(Number(m[1]));
+    if ((m = cc.match(/(\d+(?:\.\d+)?)/))) { var n = Number(m[1]); return n <= 10 ? Math.round(n * 12) : Math.round(n); }
+    return null;
+  }
+  function depTyped() { return String($('dep').value || '').trim() !== '' && num($('dep').value) !== null; }
   function pxInfo() {
     return { reg: $('pxReg').value.toUpperCase().replace(/[^A-Z0-9]/g, ''), found: $('pxFound').hidden ? '' : $('pxFound').textContent,
       car: $('curCar').value.trim(), miles: num($('pxMiles').value), est: $('pxEst').hidden ? '' : $('pxEst').textContent.replace(/^Mileage estimate: /, ''),
@@ -254,9 +271,11 @@
       + '<h3>' + (i === 0 ? 'Top pick: ' : '') + esc((c.year ? c.year + ' ' : '') + M.modelName(c)) + '</h3>'
       + '<p>' + esc([c.reg, c.price, String(c.mileage || '').replace(/\u00a0/g, ' '), c.colour, c._home ? 'Ruxley' : 'Group stock'].filter(Boolean).join(', ')) + '</p>'
       + '<p><b>Why this one:</b> ' + esc(r.why) + '</p>'
-      + (r.miss && r.miss.length ? '<p class="desk-note">Misses: ' + esc(r.miss.join(', ')) + '</p>' : '')
+      + (!forCustomer && r.miss && r.miss.length ? '<p class="desk-note">Misses: ' + esc(r.miss.join(', ')) + '</p>' : '')
+      + (forCustomer ? '' : danBudget(r))
       + protectHtml(r, forCustomer)
       + (f ? '<p class="desk-note">' + esc(FN.money2(f.monthly)) + ' a month. Representative example: ' + esc(M.repText(f)) + '</p>' : '<p class="desk-note">No lender quote at this deposit. Ask for a quote.</p>')
+      + (forCustomer ? '' : termNote(f))
       + '</article>';
   }
   function newCard(r, reach, forCustomer, k) {
@@ -264,12 +283,34 @@
     return '<article class="desk-card is-tappable' + (reach && !forCustomer ? ' desk-reach' : '') + '" data-car="' + k + '">'
       + '<h3>Brand new ' + esc(c.description) + '</h3>'
       + '<p>' + esc([c.colour, c.price, M.newWhen(c)].filter(Boolean).join(', ')) + '</p>'
-      + (reach && !forCustomer ? '<p class="desk-pct"><b>' + r.pct.toFixed(1) + '% over budget</b></p>' : '')
+      + (reach && !forCustomer && r.overLabel ? '<p class="desk-over">' + esc(r.overLabel) + (A && A.pay === 'monthly' ? ' (estimate, for Dan only)' : '') + '</p>' : '')
       + protectHtml(r, forCustomer)
       + '<p>Finance available. I\u2019ll send you a personalised quote.</p>'
       + '</article>';
   }
 
+  /* Dan only: how far over, and the deposit that brings it in. */
+  function danBudget(r) {
+    var h = '';
+    if (r.overLabel) h += '<p class="desk-over">' + esc(r.overLabel) + '</p>';
+    if (r.depHint) h += '<p class="desk-note">' + esc(FN.money(r.depHint)) + ' more deposit gets this in.</p>';
+    return h;
+  }
+  function termNote(f) {
+    var t = A && A.term, q = f ? Number(f.term) : 0;
+    return t && q && t !== q ? '<p class="desk-note">Quote is on ' + q + ' months, they plan to keep it ' + t + ' months. Requote at ' + t + ' if it matters.</p>' : '';
+  }
+  function relaxName(l) { return l === 2 ? M.DESK_RELAX2 : M.RELAX[l]; }
+  function nearestHtml() {
+    var n = RES && RES.nearest; if (!n) return '';
+    var c = n.c, a = A;
+    var what = (c.year ? c.year + ' ' : '') + M.modelName(c) + (c.reg ? ', ' + c.reg : '') + ', ' + (c.price || '');
+    var fig = a.pay === 'monthly' ? 'at ' + FN.money(a.dep || 0) + ' deposit' : '';
+    return '<div class="desk-dan"><b>For Dan only.</b> ' + (RES.list.length ? 'Nothing on their chosen model within 15% of budget. ' : 'Nothing within 15% of budget today, so no cars are shown. ')
+      + 'Nearest' + (n.sameModel ? ' on the brief' : '') + ': ' + esc(what) + (fig ? ', ' + esc(fig) : '') + '. ' + esc(n.overLabel || '') + '.'
+      + (n.depHint ? ' ' + esc(FN.money(n.depHint)) + ' more deposit gets this in.' : (a.pay === 'monthly' ? ' The lender ladder does not reach a deposit that brings it in.' : ''))
+      + '</div>';
+  }
   /* ---------- full protection (PROTECTION_COST out of the deposit) ---------- */
   function protectHtml(r, forCustomer, cls) {
     if (!r) return '';
@@ -278,7 +319,8 @@
     if (!forCustomer && r.protectEst) h += '<p class="desk-note">With full protection: about ' + esc(FN.money(r.protectEst)) + ' a month, ' + esc(FN.money(M.PROTECTION_COST)) + ' less deposit on the car (estimate, for Dan only).</p>';
     return h;
   }
-  function protectText(r) {
+  function protectText(r, forDan) {
+    if (forDan === false) return r.protect ? 'Yes, fits with full protection.' : 'Ask me about full protection on this car.';
     if (!r) return '';
     var est = r.protectEst ? ' About ' + FN.money(r.protectEst) + ' a month with ' + FN.money(M.PROTECTION_COST) + ' less deposit on the car (estimate, for Dan only).' : '';
     return (r.protect ? 'Yes, fits with full protection.' : 'No, over budget once protection comes out of the deposit.') + est;
@@ -332,9 +374,11 @@
   function resultHtml(forCustomer) {
     if (!RES) return '';
     var tight = RES.level === 0 && RES.nStrict > 0;
-    var head = tight ? M.heroLine(A, TOT) : 'Out of the ' + TOT.total + ' cars in our stock, nothing nails every point today, so these are the closest.';
+    var head = !RES.list.length ? 'Leave this one with me. I will find you the right car and be in touch.'
+      : tight ? M.heroLine(A, TOT) : 'Out of the ' + TOT.total + ' cars in our stock, nothing nails every point today, so these are the closest.';
     var h = '<h2 class="desk-hero">' + esc(head) + '</h2>';
-    if (!forCustomer) h += '<p class="desk-note">' + esc(M.xLine(A, TOT)) + '.' + (RES.level >= 2 ? ' Widened: ' + esc(RES.levels.filter(function (l) { return l >= 2; }).map(function (l) { return M.RELAX[l]; }).join(', ')) + '.' : '') + '</p>';
+    if (!forCustomer) h += '<p class="desk-note">' + esc(M.xLine(A, TOT)) + '.' + (RES.level >= 2 ? ' Widened: ' + esc(RES.levels.filter(function (l) { return l >= 2; }).map(relaxName).join(', ')) + '.' : '') + (M.TOLERANCE && (A.pay === 'monthly' && A.mo > 0 || A.pay === 'cash' && A.cash > 0) ? ' Nothing over ' + Math.round(M.TOLERANCE * 100) + '% of budget is shown.' : '') + '</p>';
+    if (!forCustomer) h += nearestHtml();
     /* The cards and the full page car view read off one list, so a card's
        data-car index can never point at a different car from the one it
        is drawn from. */
@@ -354,13 +398,25 @@
         }
       }
     }
-    if (!forCustomer) h += '<div class="desk-row"><button class="fmb-btn wide" type="button" id="deskPresentBtn">Present this car</button><button class="fmb-btn ghost" type="button" id="deskShow">Customer view</button></div>';
+    if (!forCustomer) h += '<div class="desk-row">' + (VIEWCARS.length ? '<button class="fmb-btn wide" type="button" id="deskPresentBtn">Present this car</button>' : '') + '<button class="fmb-btn ghost" type="button" id="deskShow">Customer view</button></div>';
     return h;
   }
   function runFind(silent) {
     A = answers();
     if (!ready) { $('deskEmpty').textContent = 'Loading today\u2019s stock, one moment.'; FOUND = true; return; }
-    RES = M.findUsed(A); NEWR = M.findNew(A, { stretch: true }); TOT = M.stockTotal(A);
+    /* Dan, 14 October: Find car needs the deposit first (0 is fine if typed),
+       because every monthly figure is read off the lender ladder at it. A
+       cash buyer's budget does not depend on it. */
+    var needDep = A.pay !== 'cash' && !depTyped();
+    $('depNeed').hidden = !needDep; $('deskDep').classList.toggle('need', needDep);
+    if (needDep) {
+      FOUND = false; RES = null;
+      $('deskResult').hidden = true; $('deskEmpty').hidden = false;
+      $('deskEmpty').textContent = 'Add the cash deposit in section 7 first. Type 0 if there is no deposit.';
+      if (!silent) { var dsec = $('sec-budget'); if (dsec) dsec.open = true; $('dep').focus(); }
+      return;
+    }
+    RES = M.findUsed(A, { desk: true }); NEWR = M.findNew(A, { stretch: true }); TOT = M.stockTotal(A);
     FOUND = true;
     $('deskEmpty').hidden = true;
     var box = $('deskResult'); box.hidden = false; box.innerHTML = resultHtml(false);
@@ -401,22 +457,25 @@
   function stamp() {
     return longDate() + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' (UK)';
   }
-  function usedRows(r) {
-    var x = r.c;
+  /* forDan false is the customer profile: no budget wording, no estimate. */
+  function usedRows(r, forDan) {
+    var x = r.c, dan = forDan !== false;
     return [
       ['Car', (x.year ? x.year + ' ' : '') + x.model],
       ['Reg, price, mileage', [x.reg, x.price, String(x.mileage || '').replace(/\u00a0/g, ' ')].filter(Boolean).join(', ')],
       ['Colour, location', [x.colour, x._home ? 'Ruxley forecourt' : 'Group stock'].filter(Boolean).join(', ')],
-      ['Why this one', String(r.why || '').replace(/\.+$/, '') + (r.miss && r.miss.length ? '. Misses: ' + r.miss.join(', ') : '')],
+      ['Why this one', String(r.why || '').replace(/\.+$/, '') + (dan && r.miss && r.miss.length ? '. Misses: ' + r.miss.join(', ') : '')
+        + (dan && r.overLabel ? '. For Dan only: ' + r.overLabel + (r.depHint ? ', ' + FN.money(r.depHint) + ' more deposit gets this in' : '') : '')],
       ['Listing', x.url || ''],
-      ['Full protection', protectText(r)],
+      ['Full protection', protectText(r, dan)],
       ['Finance', r.fin ? FN.money2(r.fin.monthly) + ' a month. Representative example: ' + M.repText(r.fin) : 'No lender quote at this deposit yet. Ask for a quote.']
     ];
   }
-  function newRow(r, a, reach) {
-    var c = r.c, est = r.est;
+  function newRow(r, a, reach, forDan) {
+    var c = r.c, est = r.est, dan = forDan !== false;
+    if (!dan) return 'BMW ' + c.description + ', ' + (c.colour || '') + ', ' + (c.price || '') + ', order ' + c.order_number + (M.newWhen(c) ? ', ' + M.newWhen(c).toLowerCase() : '') + '. Full protection: ' + protectText(r, false).replace(/\.$/, '');
     return 'BMW ' + c.description + ', ' + (c.colour || '') + ', ' + (c.price || '') + ', order ' + c.order_number + (M.newWhen(c) ? ', ' + M.newWhen(c).toLowerCase() : '')
-      + (reach ? '. ' + r.pct.toFixed(1) + '% over budget' : '')
+      + (reach && r.overLabel ? '. For Dan only: ' + r.overLabel : '')
       + (a.pay === 'monthly' && est ? '. For Dan only: about ' + FN.money(est) + ' a month at ' + (a.dep === null ? FN.money(M.NEW_QUOTE_DEP) + ' (deposit not given)' : 'their ' + FN.money(a.dep)) + ' deposit on the ' + GBP + M.NEW_PER_1000 + ' per ' + GBP + '1,000 rule' : '')
       + '. Full protection: ' + protectText(r).replace(/\.$/, '');
   }
@@ -444,20 +503,21 @@
     D.would = labels(vals('wouldF')).concat(nv('wouldText') ? [nv('wouldText')] : []);
     D.prefs = [['Shape', M.shapesText(a)], ['Fuel', M.fuelsText(a)], ['Colours', a.colours.length ? M.list(a.colours, 'or') : 'Open minded']];
     D.funding = {
-      cur: fm(num(nv('curMonthly'))), cycle: nv('changeCycle'), miles: num(nv('annualMiles')) ? num(nv('annualMiles')).toLocaleString('en-GB') : '',
+      cur: fm(num(nv('curMonthly'))), miles: num(nv('annualMiles')) ? num(nv('annualMiles')).toLocaleString('en-GB') : '',
       pay: a.pay ? M.txt([{ v: 'monthly', t: 'Monthly' }, { v: 'cash', t: 'Cash price' }, { v: 'notsure', t: 'Not sure yet' }], a.pay) : '',
       moFrom: fm(num(nv('moFrom'))), moTo: fm(num(nv('mo'))),
       /* The deposit reaches Dan's inbox and the printed profile the way
          it is actually made up: the cash, the part exchange equity and
          the total the cars were quoted at. */
       depCash: fm(num(nv('dep'))), depPx: fm(pxEquityForDeposit()), depTotal: fm(depositTotal()),
-      cash: fm(num(nv('cash'))), term: num(nv('term')) ? num(nv('term')) + ' months' : '',
+      cash: fm(num(nv('cash'))), term: keepTerm() ? keepTerm() + ' months' : '',
       methods: vals('fundMethod'), said: one('said'), intro: one('introBM')
     };
     D.result = null;
     if (RES && RES.list.length) {
       D.result = { lead: M.xLine(a, TOT) + ', this is the one.', top: RES.list[0], alts: RES.list.slice(1, 3),
-        match: RES.level === 0 ? 'Strict match, nothing widened' : 'Widened: ' + RES.levels.filter(function (l) { return l >= 2; }).map(function (l) { return M.RELAX[l]; }).join(', '),
+        match: RES.level === 0 ? 'Strict match, nothing widened' : 'Widened: ' + RES.levels.filter(function (l) { return l >= 2; }).map(relaxName).join(', '),
+        matchCustomer: RES.level === 0 ? 'Matches everything you told me' : 'The closest to everything you told me',
         newFit: NEWR && M.wantsNew(a) ? NEWR.fit : null, newReach: NEWR && M.wantsNew(a) ? NEWR.reach : null };
     }
     D.next = [['Test drive', $('nsDrive').checked, nv('nsDriveWhen')], ['Valuation', $('nsVal').checked, ''],
@@ -486,12 +546,12 @@
     row('Timeline', M.txt(M.WHEN, a.when)); notes('n_when');
     L.push('');
     L.push('CUSTOMER FUNDING REQUIREMENTS');
-    row('Current monthly payment', f.cur); row('Change cycle', f.cycle); row('Annual mileage', f.miles);
+    row('Current monthly payment', f.cur); row('Plans to keep it', f.term); row('Annual mileage', f.miles);
     row('How they want to pay', f.pay);
     if (f.moFrom || f.moTo) L.push('Monthly budget: ' + (f.moFrom || 'not given') + ', up to ' + (f.moTo || 'not given'));
     if (f.depTotal) L.push('Deposit: ' + f.depTotal + ' in total'
       + (f.depPx ? ' (' + (f.depCash || '\u00a30') + ' cash plus ' + f.depPx + ' part exchange equity)' : ''));
-    row('Cash budget up to', f.cash); row('Term', f.term);
+    row('Cash budget up to', f.cash);
     L.push('Funding method: ' + FUND.map(function (m) { return m[1] + ' ' + T(f.methods.indexOf(m[0]) !== -1); }).join('  '));
     L.push('How has the customer SAID they are funding? Yes ' + T(f.said === 'yes') + '  No ' + T(f.said === 'no'));
     L.push('Introduction To Business Manager: Yes ' + T(f.intro === 'yes') + '  No ' + T(f.intro === 'no'));
@@ -508,6 +568,11 @@
         L.push('Finance on all brand new: personalised quote to follow.', '');
       }
       row('Matching', R.match); notes('n_result'); L.push('');
+    }
+    if (RES && !RES.list.length) {
+      L.push('CAR FOUND', 'Nothing within ' + Math.round(M.TOLERANCE * 100) + '% of budget today, so no cars were shown.');
+      if (RES.nearest) { var n = RES.nearest; L.push('For Dan only. Nearest: ' + (n.c.year ? n.c.year + ' ' : '') + n.c.model + ', ' + (n.c.reg || '') + ', ' + (n.c.price || '') + '. ' + (n.overLabel || '') + (n.depHint ? '. ' + FN.money(n.depHint) + ' more deposit gets this in' : '') + '.'); }
+      L.push('');
     }
     L.push('NEXT STEPS');
     D.next.forEach(function (n) { L.push(n[0] + ': ' + (n[1] === null ? (n[2] || 'Not set') : T(n[1]) + (n[2] ? ' ' + n[2] : ''))); });
@@ -540,24 +605,24 @@
     h += '<section class="cp-sec">' + tbl(D.pxRows.map(function (r) { return tr(r[0], v(r[1])); }).concat(D.money.map(function (r) { return tr(r[0], v(r[1]), 'strong'); }))) + notes('n_px') + '</section>';
     h += '<section class="cp-sec">' + tbl([tr('Timeline', v(M.txt(M.WHEN, a.when)))]) + notes('n_when') + '</section>';
     h += '<section class="cp-sec"><h2 class="cp-bar">Customer funding requirements</h2>'
-      + '<table class="cp-t cp-grid3"><tr><td><span class="red">Current monthly payment \u00a3</span> ' + v(f.cur) + '</td><td><span class="red">Change cycle</span> ' + v(f.cycle) + '</td><td><span class="red">Annual mileage</span> ' + v(f.miles) + '</td></tr>'
+      + '<table class="cp-t cp-grid3"><tr><td><span class="red">Current monthly payment \u00a3</span> ' + v(f.cur) + '</td><td><span class="red">Plans to keep it</span> ' + v(f.term) + '</td><td><span class="red">Annual mileage</span> ' + v(f.miles) + '</td></tr>'
       + '<tr><td><span class="red">Monthly budget \u00a3</span> ' + v(f.moFrom) + '</td><td><span class="red">Up to \u00a3</span> ' + v(f.moTo) + '</td><td><span class="red">Deposit</span> ' + v(f.depTotal) + (f.depPx ? ' (' + v(f.depCash) + ' cash, ' + v(f.depPx) + ' PX)' : '') + '</td></tr>'
-      + '<tr><td>How they want to pay: ' + v(f.pay) + '</td><td>Cash up to: ' + v(f.cash) + '</td><td>Term: ' + v(f.term) + '</td></tr></table>'
+      + '<tr><td>How they want to pay: ' + v(f.pay) + '</td><td>Cash up to: ' + v(f.cash) + '</td><td>Monthly ceiling used: ' + v(a.pay === 'monthly' && a.mo ? FN.money(a.mo) : '') + '</td></tr></table>'
       + '<table class="cp-t cp-fund"><tr>' + FUND.map(function (m) { return '<td>' + T(f.methods.indexOf(m[0]) !== -1) + ' ' + esc(m[1]) + '</td>'; }).join('') + '</tr></table>'
       + notes('n_budget')
       + '<table class="cp-t cp-grid2"><tr><td>How has the customer SAID they are funding? Yes ' + T(f.said === 'yes') + ' No ' + T(f.said === 'no') + '</td><td>Introduction To Business Manager Yes ' + T(f.intro === 'yes') + ' No ' + T(f.intro === 'no') + '</td></tr></table></section>';
     if (D.result) {
-      var R = D.result, top = R.top, u = photo(top.c), rows = usedRows(top);
+      var R = D.result, top = R.top, u = photo(top.c), rows = usedRows(top, false);
       h += '<section class="cp-sec"><h2 class="cp-bar">Car found</h2><p class="cp-lead">' + v(R.lead) + '</p>'
         + '<div class="cp-car">' + (u ? '<img src="' + esc(u) + '" alt=""/>' : '') + '<div>' + tbl(rows.filter(function (r) { return r[0] !== 'Finance'; }).map(function (r) { return tr(r[0], r[0] === 'Listing' && r[1] ? '<a href="' + esc(r[1]) + '">' + esc(r[1]) + '</a>' : v(r[1])); })) + '</div></div>'
-        + '<p class="cp-rep">' + v(rows[rows.length - 1][1]) + '</p>' + tbl([tr('Matching', v(R.match))]) + notes('n_result') + '</section>';
+        + '<p class="cp-rep">' + v(rows[rows.length - 1][1]) + '</p>' + tbl([tr('Matching', v(R.matchCustomer))]) + notes('n_result') + '</section>';
       if (R.alts.length) h += '<section class="cp-sec"><h3 class="cp-sub">Alternatives</h3>' + tbl(R.alts.map(function (r, i) {
-        var o = {}; usedRows(r).forEach(function (x) { o[x[0]] = x[1]; });
+        var o = {}; usedRows(r, false).forEach(function (x) { o[x[0]] = x[1]; });
         return tr((i + 2) + '. ' + (o['Car'] || ''), [o['Reg, price, mileage'], o['Colour, location'], o['Why this one'] ? 'Why: ' + o['Why this one'] : '', o['Full protection'] ? 'Full protection: ' + o['Full protection'] : '', o['Listing']].filter(Boolean).map(v).join('<br/>') + (o['Finance'] ? '<br/><span class="cp-rep">' + v(o['Finance']) + '</span>' : ''));
       })) + '</section>';
       if (R.newFit) h += '<section class="cp-sec"><h3 class="cp-sub">Brand new options</h3>' + tbl([
-        tr('Fit the budget', R.newFit.length ? R.newFit.map(function (r) { return v(newRow(r, a, false)); }).join('<br/>') : 'None fit every point today'),
-        tr('Within reach, up to ' + Math.round(M.NEW_STRETCH * 100) + '% over', R.newReach.length ? R.newReach.map(function (r) { return v(newRow(r, a, true)); }).join('<br/>') : 'None'),
+        tr('Brand new', R.newFit.length ? R.newFit.map(function (r) { return v(newRow(r, a, false, false)); }).join('<br/>') : 'None fit every point today'),
+        tr('Also worth a look', R.newReach.length ? R.newReach.map(function (r) { return v(newRow(r, a, true, false)); }).join('<br/>') : 'None'),
         tr('Finance', 'Personalised quote to follow on all brand new')]) + '</section>';
     }
     h += '<section class="cp-sec"><h2 class="cp-bar">Next steps</h2>' + tbl(D.next.map(function (n) { return tr(n[0], (n[1] === null ? '' : T(n[1]) + ' ') + v(n[2] || (n[1] === null ? 'Not set' : ''))); })) + notes('n_next') + '</section>';
@@ -684,6 +749,16 @@
     var f = d.fields || {};
     [].forEach.call(document.querySelectorAll('#deskForm input[type=radio], #deskForm input[type=checkbox]'), function (i) { i.checked = (f[i.name] || []).indexOf(i.value) !== -1; });
     TEXTS.concat(PERSONAL).forEach(function (id) { var e = $(id); if (e && f['#' + id] != null) e.value = f['#' + id]; });
+    /* Drafts saved before 14 October: change cycle and term become the one
+       "How long do you plan to keep it?" answer. */
+    if (!(f.d_keepTerm || []).length && !f['#termOther']) {
+      var old = termFromOld(f);
+      if (old) {
+        var chip = document.querySelector('input[name="d_keepTerm"][value="' + (old === 24 || old === 36 || old === 48 ? old : 'other') + '"]');
+        if (chip) chip.checked = true;
+        if (!(old === 24 || old === 36 || old === 48)) $('termOther').value = String(old);
+      }
+    }
     CHECKS.forEach(function (id) { var e = $(id); if (e) e.checked = !!f['#' + id]; });
     if (f['#pxFound']) { $('pxFound').hidden = false; $('pxFound').textContent = f['#pxFound']; }
     if (f['#pxEst']) { $('pxEst').hidden = false; $('pxEst').textContent = f['#pxEst']; }
@@ -935,6 +1010,7 @@
        requirements document is a thing Dan prints at the desk, not only
        something to look at after a car has been found. */
     $('deskPrintBtn').addEventListener('click', openProfile);
+    $('dep').addEventListener('input', function () { if (depTyped()) { $('depNeed').hidden = true; $('deskDep').classList.remove('need'); } });
     $('deskProfileBtn2').addEventListener('click', openProfile);
     $('deskProfileClose').addEventListener('click', function () { $('deskProfileWrap').hidden = true; });
     $('deskPrint').addEventListener('click', function () { buildProfile(); track('fmb_desk_print'); window.print(); });
@@ -1224,7 +1300,7 @@
     if (unlocked()) openApp(); else lock('start');
   }
   window.fmbDeskDebug = {
-    payload: null, answers: function () { return answers(); }, result: function () { return { used: RES, neu: NEWR, totals: TOT }; },
+    payload: null, answers: function () { return answers(); }, customerHtml: function () { return resultHtml(true); }, profileHtml: function () { return profileHtml(); }, result: function () { return { used: RES, neu: NEWR, totals: TOT }; },
     emailBody: function () { return emailBody(); }, buildProfile: function (o) { return buildProfile(o); }, openProfile: function () { openProfile(); }, subject: function () { return subject(); }, lock: function () { lock('test'); }, presentText: function () { return presentText(); },
     ready: function () { return pData; }, draft: function () { return loadDraft(); }, summary: function () { return customerSummary(); }, fitChrome: function () { return fitChrome(); }, willHref: function () { return willHref(); }, willMail: function () { return willMail(); }
   };
