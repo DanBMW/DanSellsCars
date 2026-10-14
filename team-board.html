@@ -638,6 +638,20 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
    top of the bottom row of the board on a short screen */
 body.hasticker{padding-bottom:52px}
 body.hasticker .credit{bottom:52px}
+/* ---- lockup strip (lockup.html) ----
+   From 5pm (4pm Saturday) a strip above the banner says who is locking up.
+   Amber while open, green once signed, red after 6:30pm unsigned. */
+.lockstrip{position:fixed;left:0;right:0;bottom:0;height:40px;z-index:321;display:none;align-items:center;justify-content:center;gap:10px;
+  font-weight:800;font-size:clamp(.85rem,1.3vw,1.15rem);color:#1a1206;background:var(--gold);letter-spacing:.01em}
+.lockstrip.show{display:flex}
+.lockstrip.signed{background:#2fbf71;color:#04170c}
+.lockstrip.overdue{background:#e05656;color:#fff}
+body.hasticker .lockstrip{bottom:44px}
+body.haslock{padding-bottom:48px}
+body.haslock.hasticker{padding-bottom:92px}
+body.haslock .credit{bottom:48px}
+body.haslock.hasticker .credit{bottom:92px}
+body.premiere .lockstrip{display:none!important}
 @media(prefers-reduced-motion:reduce){ .tk-track{animation:none!important} }
 /* Nathan gets the run of his own board, so Will comes over to argue. Only on
    the leaderboard view - an uploaded screenshot keeps the full width. */
@@ -1527,6 +1541,7 @@ body.premiere .pairqr{display:none!important}
      bottom. Above every scene: a 44px strip should not vanish for ten
      seconds because a sketch is playing. -->
 <div class="ticker" id="ticker" aria-hidden="true"><div class="tk-track" id="tk-track"></div></div>
+<div class="lockstrip" id="lockstrip" aria-live="polite"><span class="ls-ico" id="ls-ico">&#128273;</span><span id="ls-text"></span></div>
 
 <!-- PIN -->
 <div class="modal-bg" id="m-pin">
@@ -1951,6 +1966,7 @@ body.premiere .pairqr{display:none!important}
 })();
 </script>
 <script src="staff-gate.js"></script>
+<script src="lockup-rota.js"></script>
 <script>
 /* ============================================================
    Board UI. Deliberately plain (non-module) and backend-free so
@@ -7523,6 +7539,30 @@ function watch(p, cb, onErr){
 }
 
 let stop=null, dealsGen=0;
+
+/* ---- lockup strip: lockup/ in Firebase, logic shared with lockup.html ---- */
+const LK={weeks:{},status:{},cfg:{},bank:{}};
+function paintLock(){
+  const R=window.LockupRota, el=document.getElementById('lockstrip'), tx=document.getElementById('ls-text');
+  if(!R||!el)return;
+  const n=R.london(), hol=Object.assign({},LK.bank,(LK.cfg&&LK.cfg.holidays)||{});
+  const on=R.onFor(n.date,LK.weeks[n.week],hol);
+  const from=on.kind==='managers'?R.REMIND_SAT_MINS:R.REMIND_MINS;
+  const st=LK.status[n.date];
+  if(on.kind==='closed'||n.mins<from){el.classList.remove('show');document.body.classList.remove('haslock');return}
+  const team=(LK.cfg&&LK.cfg.team)||{}, who=on.kind==='managers'?'Managers':((team[on.id]&&team[on.id].name)||'Not set');
+  el.classList.toggle('signed',!!(st&&st.state==='signed'));
+  el.classList.toggle('overdue',!(st&&st.state==='signed')&&n.mins>=R.ESCALATE_MINS);
+  const t=st&&st.ts?new Date(st.ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
+  tx.textContent=st&&st.state==='signed'?'Locked up by '+st.by+' at '+t+(st.issues?' \u00b7 '+st.issues+' issue'+(st.issues>1?'s':'')+' noted':' \u2713'):
+    (n.mins>=R.ESCALATE_MINS?'Lockup not signed yet: '+who:'Lockup tonight: '+who);
+  el.classList.add('show');document.body.classList.add('haslock');
+}
+watch('lockup/weeks',v=>{LK.weeks=v||{};paintLock()});
+watch('lockup/status',v=>{LK.status=v||{};paintLock()});
+watch('lockup/config',v=>{LK.cfg=v||{};paintLock()});
+fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{LK.bank[e.date]=1});paintLock()}).catch(()=>{});
+setInterval(paintLock,30000);
 
 window.dsBindBackend({
   listen(m){

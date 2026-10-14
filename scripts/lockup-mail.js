@@ -1,0 +1,122 @@
+#!/usr/bin/env node
+/* Lockup emails, run by the lockup-emails GitHub Action every 15 minutes
+ * on weekday and Saturday afternoons. It works out UK time itself, so the
+ * cron covers both BST and GMT and this decides what is due:
+ *   5pm Mon to Fri  reminder to whoever is on the rota (4pm Saturday: managers)
+ *   6:30pm          managers, if nobody has signed, or with any issues noted
+ * Each send is marked under lockup/mail/<date>/<kind>, so a repeat or late run
+ * never sends twice. If this week's rota is missing it generates it with the
+ * same lockup-rota.js the page uses.
+ *
+ * Env: FIREBASE_SA (service account JSON), GMAIL_USER, GMAIL_APP_PASSWORD,
+ *      optional MAIL_FROM_NAME, DRY_RUN=1 (print, send nothing), NOW (ISO, for tests).
+ * Needs: npm i firebase-admin nodemailer
+ */
+'use strict';
+const R = require('../lockup-rota.js');
+const SITE = 'https://dan-sells.co.uk/lockup.html';
+const DRY = !!process.env.DRY_RUN;
+
+async function main() {
+  const admin = require('firebase-admin');
+  admin.initializeApp({
+    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SA)),
+    databaseURL: 'https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app'
+  });
+  const db = admin.database();
+  const n = R.london(process.env.NOW ? new Date(process.env.NOW) : new Date());
+  console.log('UK now', n.date, n.dow, Math.floor(n.mins / 60) + ':' + String(n.mins % 60).padStart(2, '0'));
+
+  const cfg = (await db.ref('lockup/config').get()).val();
+  if (!cfg) { console.log('No lockup config yet (open lockup.html once).'); return done(admin); }
+
+  let bank = {};
+  try {
+    const j = await (await fetch('https://www.gov.uk/bank-holidays.json')).json();
+    j['england-and-wales'].events.forEach(e => { bank[e.date] = { label: e.title }; });
+  } catch (e) { console.log('Bank holidays unavailable, carrying on'); }
+  const hol = Object.assign({}, bank, cfg.holidays || {});
+
+  const weeks = (await db.ref('lockup/weeks').get()).val() || {};
+  for (const w of [n.week, R.shiftWeek(n.week, 1)]) {
+    if (!weeks[w]) { weeks[w] = R.generate(w, cfg.team || {}, weeks); if (!DRY) await db.ref('lockup/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
+  }
+
+  const on = R.onFor(n.date, weeks[n.week], hol);
+  if (on.kind === 'closed') { console.log('Closed today'); return done(admin); }
+
+  const recsObj = (await db.ref('lockup/records/' + n.date).get()).val() || {};
+  const recs = Object.values(recsObj).sort((a, b) => a.ts - b.ts);
+  const mail = (await db.ref('lockup/mail/' + n.date).get()).val() || {};
+  const team = cfg.team || {}, mgrs = cfg.managers || {};
+  const mgrEmails = Object.values(mgrs).map(m => m.email).filter(Boolean);
+  const person = on.kind === 'staff' ? team[on.id] : null;
+  const dayName = R.DAY_NAMES[n.dow];
+  const remindAt = on.kind === 'managers' ? R.REMIND_SAT_MINS : R.REMIND_MINS;
+  const list = Object.keys(cfg.checklist || {}).filter(k => cfg.checklist[k].active !== false)
+    .sort((a, b) => (cfg.checklist[a].order || 0) - (cfg.checklist[b].order || 0)).map(k => cfg.checklist[k].label);
+  const tx = transport();
+
+  /* reminder: due from 5pm (4pm Sat) until 9pm, skipped once signed */
+  if (n.mins >= remindAt && n.mins < 21 * 60 && !mail.remind && !recs.length) {
+    let to, hi;
+    if (on.kind === 'managers') { to = mgrEmails; hi = 'Hi all'; }
+    else if (person) { to = [person.email].filter(Boolean); hi = 'Hi ' + person.name; }
+    else { to = mgrEmails; hi = 'Hi all, nobody is on the lockup rota tonight'; }
+    if (to.length) {
+      await send(tx, to, (on.kind === 'managers' ? 'Managers lockup tonight' : "It's your lockup tonight") + ', ' + dayName,
+        hi + ',', [
+          on.kind === 'managers' ? "It's Saturday, so it's managers' lockup tonight." : person ? "You're on lockup tonight." : 'Please pick someone to lock up.',
+          'Tick each one off on your phone as you go, then sign:'
+        ], list, 'Start lockup');
+      await mark(db, n.date, 'remind', to);
+    } else console.log('Reminder due but no email address set');
+  }
+
+  /* 6:30pm: not signed, or signed with issues */
+  if (n.mins >= R.ESCALATE_MINS && !mail.escalate && mgrEmails.length) {
+    const who = on.kind === 'managers' ? 'managers' : person ? person.fullName || person.name : 'nobody on the rota';
+    if (!recs.length) {
+      await send(tx, mgrEmails, 'Lockup not signed, ' + dayName, 'Hi all,',
+        ['Tonight\u2019s lockup hasn\u2019t been signed off yet.', 'On the rota: ' + who + '.', 'Please check the building is secure.'], list, 'Open lockup');
+      await mark(db, n.date, 'escalate', mgrEmails);
+    } else {
+      const issues = [];
+      recs.forEach(r => Object.values(r.items || {}).forEach(i => { if (!i.done || i.note) issues.push(i.label + (i.done ? '' : ' (not done)') + (i.note ? ': ' + i.note : '') + (i.photo ? ' [photo on record]' : '')); }));
+      const r = recs[0];
+      if (issues.length) {
+        await send(tx, mgrEmails, 'Lockup signed with notes, ' + dayName, 'Hi all,',
+          ['Lockup was signed by ' + r.signedByName + ' at ' + new Date(r.ts).toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' }) + (r.coveringFor ? ', covering for ' + ((team[r.coveringFor] || {}).name || r.coveringFor) : '') + '.', 'Notes from tonight:'], issues, 'See the record');
+      } else console.log('Signed, nothing to report');
+      await mark(db, n.date, 'escalate', issues.length ? mgrEmails : []);
+    }
+  }
+  return done(admin);
+}
+
+function transport() {
+  if (DRY) return null;
+  const nodemailer = require('nodemailer');
+  return nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD } });
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+async function send(tx, to, subject, hi, lines, bullets, cta) {
+  const text = [hi, '', ...lines, '', ...bullets.map(b => '  * ' + b), '', cta + ': ' + SITE, '', 'Hedin BMW Ruxley lockup'].join('\n');
+  const html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+    '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">&#128273; ' + esc(subject) + '</div>' +
+    '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px"><p style="margin:0 0 12px">' + esc(hi) + '</p>' +
+    lines.map(l => '<p style="margin:0 0 10px">' + esc(l) + '</p>').join('') +
+    '<ul style="padding-left:18px;margin:8px 0 18px">' + bullets.map(b => '<li style="margin:4px 0">' + esc(b) + '</li>').join('') + '</ul>' +
+    '<a href="' + SITE + '" style="display:block;text-align:center;background:#4d94d8;color:#fff;text-decoration:none;font-weight:800;padding:14px;border-radius:12px;font-size:17px">' + esc(cta) + '</a>' +
+    '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley lockup</p></div></div>';
+  console.log((DRY ? '[dry] ' : '') + 'Send "' + subject + '" to ' + to.join(', '));
+  if (DRY) { console.log(text); return; }
+  await tx.sendMail({ from: { name: process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to, subject, text, html });
+}
+async function mark(db, date, kind, to) {
+  if (DRY) return;
+  await db.ref('lockup/mail/' + date + '/' + kind).set({ ts: Date.now(), to: to.join(', ') });
+}
+function done(admin) { return admin.app().delete(); }
+
+main().catch(e => { console.error(e); process.exit(1); });

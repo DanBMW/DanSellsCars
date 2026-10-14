@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0b1220">
+<title>Lockup | Hedin BMW Ruxley</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<style>
+:root{--bg:#0b1220;--card:#141d2e;--card2:#1b2740;--line:#26344f;--text:#eef3fb;--muted:#93a3bd;--blue:#4d94d8;--gold:#f0ba6c;--green:#2fbf71;--amber:#f2a33a;--red:#e05656}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:16px;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px calc(110px + env(safe-area-inset-bottom))}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;position:sticky;top:0;z-index:20;background:rgba(11,18,32,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.02em}
+.brand .key{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#1f4f82);display:grid;place-items:center;font-size:18px}
+.brand small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;color:var(--muted)}
+.hero{margin:6px 0 18px;padding:20px;border-radius:20px;background:radial-gradient(120% 140% at 0% 0%,#1f3d66 0%,#141d2e 60%);border:1px solid var(--line)}
+.hero .kick{color:var(--gold);font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero h1{font-size:28px;line-height:1.15;margin:8px 0 6px}
+.hero p{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.big{display:block;width:100%;border:0;border-radius:14px;padding:18px;font-size:18px;font-weight:800;background:var(--blue);color:#fff;margin-bottom:10px}
+.big.alt{background:var(--card2);border:1px solid var(--line)}
+.big.green{background:var(--green)}
+.big:disabled{opacity:.4}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.names button{padding:16px 10px;border-radius:14px;border:1px solid var(--line);background:var(--card2);font-weight:800;font-size:16px}
+.prog{position:sticky;top:63px;z-index:10;background:var(--bg);padding:10px 0 12px}
+.bar{height:10px;border-radius:99px;background:var(--card2);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .3s}
+.prog .lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.item{background:var(--card);border:2px solid var(--line);border-radius:18px;margin-bottom:12px;overflow:hidden;transition:border-color .2s,background .2s}
+.item.done{border-color:var(--green);background:#11281e}
+.item.cant{border-color:var(--amber);background:#2a2112}
+.tick{display:flex;align-items:center;gap:14px;width:100%;padding:18px 16px;background:none;border:0;text-align:left;min-height:76px}
+.box{flex:none;width:44px;height:44px;border-radius:12px;border:2px solid var(--muted);display:grid;place-items:center;font-size:24px;font-weight:900;color:transparent;transition:all .2s}
+.item.done .box{background:var(--green);border-color:var(--green);color:#fff;transform:scale(1.05)}
+.item.cant .box{background:var(--amber);border-color:var(--amber);color:#1a1206}
+.tick b{display:block;font-size:18px}
+.tick small{color:var(--muted);font-size:13px}
+.acts{display:flex;gap:8px;padding:0 16px 14px}
+.acts button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card2);font-size:13px;font-weight:700;color:var(--muted)}
+.acts button.on{color:var(--amber);border-color:var(--amber)}
+.extra{padding:0 16px 16px;display:none}
+.extra.show{display:block}
+textarea,input[type=text],input[type=email],input[type=date],select,input[type=password]{width:100%;background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:16px}
+textarea{min-height:70px;resize:vertical}
+.photo{margin-top:8px;display:flex;gap:10px;align-items:center}
+.photo img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.photo label{padding:10px 12px;border-radius:10px;border:1px dashed var(--muted);font-size:13px;font-weight:700;color:var(--muted)}
+.foot{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(11,18,32,0),var(--bg) 30%);z-index:15}
+.foot .big{max-width:528px;margin:0 auto}
+.sigwrap{background:#fff;border-radius:16px;position:relative;touch-action:none;height:220px;overflow:hidden}
+.sigwrap canvas{width:100%;height:100%;display:block}
+.sigwrap .hint{position:absolute;left:16px;bottom:14px;right:16px;border-top:2px dashed #c9d3e2;padding-top:6px;color:#8a97ab;font-size:13px;pointer-events:none}
+.row{display:flex;gap:10px;align-items:center}
+.check{display:flex;gap:12px;align-items:flex-start;margin:14px 0;font-weight:600}
+.check input{width:26px;height:26px;flex:none;accent-color:var(--green)}
+.summary li{list-style:none;padding:8px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+.summary li:last-child{border:0}
+.ok{color:var(--green);font-weight:800}.warn{color:var(--amber);font-weight:800}.bad{color:var(--red);font-weight:800}
+.done-hero{text-align:center;padding:36px 20px}
+.done-hero .tickbig{width:96px;height:96px;margin:0 auto 16px;border-radius:50%;background:var(--green);display:grid;place-items:center;font-size:52px;color:#fff;animation:pop .5s ease}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.muted{color:var(--muted)}.small{font-size:13px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:4px 0 14px;padding-bottom:4px}
+.tabs button{flex:none;padding:9px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:14px;color:var(--muted)}
+.tabs button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.rota li{list-style:none;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.rota li:last-child{border:0}
+.rota .d{width:92px;font-weight:800}
+.rota .dt{display:block;color:var(--muted);font-size:12px;font-weight:600}
+.rota select{flex:1}
+.today{color:var(--gold)}
+.pill{display:inline-block;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:800;background:var(--card2);color:var(--muted)}
+.pill.g{background:#11281e;color:var(--green)}.pill.a{background:#2a2112;color:var(--amber)}.pill.r{background:#2c1414;color:var(--red)}
+.ppl{display:grid;gap:10px}
+.person{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px}
+.person .full{grid-column:1/-1}
+.person label{font-size:12px;color:var(--muted);font-weight:700}
+.hist{width:100%;border-collapse:collapse;font-size:14px}
+.hist td,.hist th{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.hist tr.click{cursor:pointer}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.filters .full{grid-column:1/-1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+.sheet img.sig{background:#fff;border-radius:10px;width:100%;max-width:360px}
+.toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-weight:700;z-index:60;display:none}
+.toast.show{display:block}
+[hidden]{display:none!important}
+@media print{
+  body{background:#fff;color:#000}header.top,.tabs,.filters,.noprint,.foot{display:none!important}
+  .card{border:0;background:#fff;padding:0}.hist td,.hist th{border-color:#ccc;color:#000}
+  .pill{background:none!important;color:#000!important;border:1px solid #999}
+  #view-manager>*:not(#mg-history){display:none!important}#mg-history{display:block!important}
+}
+</style>
+<script src="staff-gate.js"></script>
+<script src="lockup-rota.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="key">&#128273;</div><div>Lockup<small id="hdr-date">Hedin BMW Ruxley</small></div></div>
+  <button class="ghost" id="btn-manager" type="button">Managers</button>
+</header>
+
+<main class="wrap">
+  <!-- tonight -->
+  <section id="view-tonight">
+    <div class="hero">
+      <div class="kick" id="t-kick">Tonight</div>
+      <h1 id="t-title">Loading tonight&rsquo;s lockup&hellip;</h1>
+      <p id="t-sub"></p>
+    </div>
+    <div id="t-signed" hidden></div>
+    <div id="t-yesterday" hidden></div>
+    <div id="t-choose" hidden>
+      <button class="big" id="btn-me" type="button"></button>
+      <button class="big alt" id="btn-cover" type="button">Someone else is covering</button>
+      <div id="cover-list" hidden>
+        <p class="muted small" style="margin:6px 0 10px" id="cover-q">Who is locking up?</p>
+        <div class="names" id="cover-names"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- checklist -->
+  <section id="view-check" hidden>
+    <div class="prog"><div class="lbl"><span id="c-who"></span><span id="c-count">0 of 6</span></div><div class="bar"><i id="c-bar"></i></div></div>
+    <div id="c-items"></div>
+    <p class="muted small" style="text-align:center;margin-top:6px">Tap an item when it&rsquo;s done. If something can&rsquo;t be done, tap &ldquo;Can&rsquo;t do it&rdquo; and say why.</p>
+  </section>
+
+  <!-- signature -->
+  <section id="view-sign" hidden>
+    <div class="hero"><div class="kick">Last step</div><h1>Sign it off</h1><p id="s-sub"></p></div>
+    <div class="card"><ul class="summary" id="s-summary"></ul></div>
+    <div class="sigwrap" id="sigwrap"><canvas id="sig"></canvas><div class="hint">Sign here with your finger</div></div>
+    <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="ghost" id="sig-clear" type="button">Clear</button></div>
+    <label class="check"><input type="checkbox" id="s-confirm"><span id="s-confirm-text">I confirm the showroom is locked up.</span></label>
+  </section>
+
+  <!-- done -->
+  <section id="view-done" hidden>
+    <div class="card done-hero"><div class="tickbig">&#10003;</div><h1 style="font-size:26px">Locked up</h1><p class="muted" id="d-sub" style="margin-top:8px"></p></div>
+    <button class="big alt" id="btn-done-home" type="button">Back to tonight</button>
+  </section>
+
+  <!-- managers -->
+  <section id="view-manager" hidden>
+    <div class="tabs" id="mg-tabs">
+      <button data-tab="rota" class="on" type="button">Rota</button>
+      <button data-tab="history" type="button">History</button>
+      <button data-tab="team" type="button">Team</button>
+      <button data-tab="managers" type="button">Managers</button>
+      <button data-tab="checklist" type="button">Checklist</button>
+      <button data-tab="holidays" type="button">Closed days</button>
+    </div>
+    <div id="mg-rota" class="mgp">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:6px">
+          <button class="ghost" id="wk-prev" type="button">&lsaquo; Prev</button>
+          <b id="wk-label"></b>
+          <button class="ghost" id="wk-next" type="button">Next &rsaquo;</button>
+        </div>
+        <ul class="rota" id="wk-list"></ul>
+        <button class="big alt" id="wk-regen" type="button" style="margin-top:12px">Shuffle this week again</button>
+        <p class="muted small">The rota picks whoever has done the fewest lockups, never on their day off and never two nights running. Change any night with its dropdown.</p>
+      </div>
+      <div class="card"><b>Lockups so far</b><ul class="summary" id="wk-counts" style="margin-top:6px"></ul></div>
+    </div>
+    <div id="mg-history" class="mgp" hidden>
+      <div class="card">
+        <div class="filters">
+          <select id="h-person" class="full"><option value="">Everyone</option></select>
+          <input type="date" id="h-from"><input type="date" id="h-to">
+          <select id="h-kind" class="full"><option value="">All nights</option><option value="issues">With issues</option><option value="late">Signed late</option><option value="missed">Not signed</option></select>
+        </div>
+        <div class="row noprint" style="margin-bottom:10px"><button class="big alt" id="h-csv" type="button" style="margin:0">Download CSV</button><button class="big alt" id="h-pdf" type="button" style="margin:0">Save as PDF</button></div>
+        <table class="hist"><thead><tr><th>Date</th><th>Signed by</th><th>Time</th><th>Status</th></tr></thead><tbody id="h-rows"></tbody></table>
+      </div>
+    </div>
+    <div id="mg-team" class="mgp" hidden><div class="card"><div class="ppl" id="team-list"></div><button class="big alt" id="team-add" type="button" style="margin-top:12px">Add a person</button></div></div>
+    <div id="mg-managers" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">Managers lock up on Saturday and get the 6:30pm email if lockup isn&rsquo;t signed, with any issues from the night.</p><div class="ppl" id="mgr-list"></div><button class="big alt" id="mgr-add" type="button" style="margin-top:12px">Add a manager</button></div></div>
+    <div id="mg-checklist" class="mgp" hidden><div class="card"><div class="ppl" id="chk-list"></div><div class="row" style="margin-top:12px"><input type="text" id="chk-new" placeholder="New item, e.g. Alarm set"><button class="ghost" id="chk-add" type="button">Add</button></div></div></div>
+    <div id="mg-holidays" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">No reminder or manager email on these days. Sundays and UK bank holidays are closed automatically.</p><ul class="summary" id="hol-list"></ul><div class="row" style="margin-top:12px"><input type="date" id="hol-date"><input type="text" id="hol-label" placeholder="Reason"><button class="ghost" id="hol-add" type="button">Add</button></div></div></div>
+  </section>
+</main>
+
+<div class="foot" id="foot" hidden><button class="big" id="foot-btn" type="button"></button></div>
+
+<div class="modal" id="pin-modal"><div class="sheet"><h2 style="margin-bottom:12px">Manager access</h2><input type="password" id="pin-input" inputmode="numeric" placeholder="Manager PIN" style="text-align:center;font-size:24px;letter-spacing:6px"><div class="row" style="margin-top:12px"><button class="big alt" id="pin-cancel" type="button" style="margin:0">Cancel</button><button class="big" id="pin-go" type="button" style="margin:0">Enter</button></div></div></div>
+<div class="modal" id="rec-modal"><div class="sheet" id="rec-body"></div></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { ensureSignedIn } from "./staff-auth.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const app=initializeApp(firebaseConfig); const db=getDatabase(app); ensureSignedIn(app);
+const R=window.LockupRota, $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LAUNCH='2026-10-14';
+let CFG=null, WEEKS={}, RECORDS={}, STATUS={}, BANK={}, now=R.london();
+let draft=null, view='tonight', role='', mgWeek=now.week, histFilter={};
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2400)}
+function fmtDate(d,long){const x=new Date(d+'T12:00:00Z');return x.toLocaleDateString('en-GB',{timeZone:'UTC',weekday:long?'long':'short',day:'numeric',month:'short'})}
+function hm(ts){return new Date(ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'})}
+function team(){return (CFG&&CFG.team)||{}} function mgrs(){return (CFG&&CFG.managers)||{}}
+function nameOf(id){const p=team()[id]||mgrs()[id];return p?p.name:(id||'Nobody')}
+function items(){const c=(CFG&&CFG.checklist)||{};return Object.keys(c).filter(k=>c[k].active!==false).sort((a,b)=>(c[a].order||0)-(c[b].order||0)).map(k=>({id:k,label:c[k].label}))}
+function holidays(){return Object.assign({},BANK,(CFG&&CFG.holidays)||{})}
+function show(v){view=v;['tonight','check','sign','done','manager'].forEach(x=>$('view-'+x).hidden=x!==v);window.scrollTo(0,0);paintFoot()}
+
+/* ---- data ---- */
+fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{BANK[e.date]={label:e.title}});paint()}).catch(()=>{});
+onValue(ref(db,'lockup/config'),s=>{CFG=s.val(); if(!CFG||!CFG.seeded){const d=R.defaults(); set(ref(db,'lockup/config'),Object.assign({},CFG||{},{team:(CFG&&CFG.team)||d.team,managers:(CFG&&CFG.managers)||d.managers,checklist:(CFG&&CFG.checklist)||d.checklist,seeded:Date.now()})).catch(e=>console.error(e)); return} ensureWeeks(); paint()});
+onValue(ref(db,'lockup/weeks'),s=>{WEEKS=s.val()||{}; WEEKS._loaded=1; ensureWeeks(); paint()});
+onValue(ref(db,'lockup/records'),s=>{RECORDS=s.val()||{}; paint()});
+onValue(ref(db,'lockup/status'),s=>{STATUS=s.val()||{}; paint()});
+let ensuring={};
+function ensureWeeks(){ if(!CFG||!CFG.seeded||!WEEKS._loaded)return; [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(!WEEKS[w]&&!ensuring[w]){ensuring[w]=1; const all=Object.assign({},WEEKS);delete all._loaded; set(ref(db,'lockup/weeks/'+w),R.generate(w,team(),all)).catch(e=>{console.error(e);ensuring[w]=0})}})}
+function weeksClean(){const w=Object.assign({},WEEKS);delete w._loaded;return w}
+setInterval(()=>{const n=R.london(); if(n.date!==now.date){now=n;ensureWeeks()} now=n; if(view==='tonight')paintTonight()},30000);
+
+function recsFor(date){const r=RECORDS[date]||{};return Object.keys(r).map(k=>Object.assign({id:k},r[k])).sort((a,b)=>a.ts-b.ts)}
+function who(date){const w=WEEKS[R.isoWeek(date)];return R.onFor(date,w,holidays())}
+function paint(){ if(view==='tonight')paintTonight(); if(view==='manager')paintManager(); $('hdr-date').textContent=fmtDate(now.date,true) }
+
+/* ---- tonight ---- */
+function paintTonight(){
+  if(!CFG||!CFG.seeded)return;
+  const on=who(now.date), recs=recsFor(now.date);
+  $('t-signed').hidden=!recs.length; $('t-choose').hidden=true; $('t-yesterday').hidden=true;
+  const hol=holidays()[now.date];
+  if(on.kind==='closed'){ $('t-kick').textContent=fmtDate(now.date,true); $('t-title').textContent=hol?'Closed today':'Closed on Sundays'; $('t-sub').textContent=hol?hol.label+'. No lockup tonight.':'No lockup tonight. See you Monday.'; return }
+  $('t-kick').textContent=fmtDate(now.date,true)+' lockup';
+  const rostered=on.kind==='managers'?'Managers':nameOf(on.id);
+  if(recs.length){
+    const r=recs[0];
+    $('t-title').textContent='Locked up by '+r.signedByName;
+    $('t-sub').textContent='Signed at '+hm(r.ts)+(r.issues?' with '+r.issues+' issue'+(r.issues>1?'s':''):'. Everything done.');
+    $('t-signed').innerHTML='<div class="card"><ul class="summary">'+Object.keys(r.items||{}).map(k=>{const i=r.items[k];return '<li><span>'+esc(i.label)+(i.note?'<br><span class="muted small">'+esc(i.note)+'</span>':'')+'</span>'+(i.done?'<span class="ok">&#10003; '+(i.at?hm(i.at):'')+'</span>':'<span class="warn">Not done</span>')+'</li>'}).join('')+'</ul></div><button class="big alt" id="btn-again" type="button">Sign again as someone else</button>';
+    $('btn-again').onclick=()=>{ $('t-signed').hidden=true; chooser(on) };
+    return;
+  }
+  $('t-title').textContent=on.kind==='managers'?'Managers on lockup tonight':rostered+' is on lockup tonight';
+  const due=on.kind==='managers'?'4pm':'5pm';
+  $('t-sub').textContent=now.mins>=R.ESCALATE_MINS?'Not signed yet. Managers get an email at 6:30pm if it is still open.':'Reminder goes out at '+due+'. Tick everything off as you go, then sign.';
+  chooser(on);
+  const y=R.addDays(now.date,-1), yon=who(y);
+  if(now.mins<12*60&&yon.kind!=='closed'&&!recsFor(y).length&&y>=LAUNCH){ $('t-yesterday').hidden=false; $('t-yesterday').innerHTML='<div class="card"><b class="warn">Last night wasn&rsquo;t signed.</b><p class="muted small" style="margin:6px 0 10px">If it was done, sign it now. It will be marked as signed the next day.</p><button class="big alt" id="btn-yday" type="button" style="margin:0">Sign for '+fmtDate(y,true)+'</button></div>'; $('btn-yday').onclick=()=>{ $('t-yesterday').hidden=true; chooser(yon,y) } }
+}
+function chooser(on,date){
+  date=date||now.date; $('t-choose').hidden=false; $('cover-list').hidden=true;
+  const people=on.kind==='managers'?mgrs():team();
+  if(on.kind==='staff'&&on.id){ $('btn-me').hidden=false; $('btn-me').textContent='I\u2019m '+nameOf(on.id)+', start lockup'; $('btn-me').onclick=()=>start(date,on.id,on.id,''); $('btn-cover').textContent='Someone else is covering'; $('cover-q').textContent='Who is covering for '+nameOf(on.id)+'?' }
+  else { $('btn-me').hidden=true; $('btn-cover').textContent=on.kind==='managers'?'Start lockup':'Start lockup'; $('cover-q').textContent=on.kind==='managers'?'Which manager is locking up?':'Who is locking up?' }
+  const all=Object.assign({},people, on.kind==='managers'?{}:mgrs());
+  $('cover-names').innerHTML=Object.keys(all).filter(k=>k!==on.id&&all[k].active!==false).sort((a,b)=>(all[a].order||0)-(all[b].order||0)).map(k=>'<button type="button" data-id="'+esc(k)+'">'+esc(all[k].name)+'</button>').join('')+(on.kind==='managers'?'':'');
+  $('cover-names').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,on.kind==='staff'?on.id:'managers',on.kind==='staff'&&on.id?on.id:''));
+  $('btn-cover').onclick=()=>{ $('cover-list').hidden=!$('cover-list').hidden };
+}
+
+/* ---- checklist ---- */
+function saveDraft(){ try{localStorage.lockupDraft=JSON.stringify(draft)}catch(e){} }
+function start(date,signer,rostered,coveringFor){
+  let old=null; try{old=JSON.parse(localStorage.lockupDraft||'null')}catch(e){}
+  if(old&&old.date===date&&old.signer===signer) draft=old;
+  else draft={date,signer,rostered,coveringFor,items:{}};
+  items().forEach(i=>{ if(!draft.items[i.id]) draft.items[i.id]={label:i.label,done:false,cant:false,note:'',photo:'',at:0} });
+  saveDraft(); show('check'); paintCheck();
+}
+function paintCheck(){
+  const list=items(); $('c-who').textContent=nameOf(draft.signer)+(draft.coveringFor?' covering for '+nameOf(draft.coveringFor):'')+(draft.date!==now.date?', '+fmtDate(draft.date):'');
+  $('c-items').innerHTML=list.map(i=>{const d=draft.items[i.id];return '<div class="item'+(d.done?' done':'')+(d.cant?' cant':'')+'" data-id="'+i.id+'">'+
+    '<button class="tick" type="button" data-act="tick"><span class="box">'+(d.cant?'!':'&#10003;')+'</span><span><b>'+esc(i.label)+'</b><small>'+(d.done?'Done at '+hm(d.at):d.cant?'Couldn\u2019t be done':'Tap when done')+'</small></span></button>'+
+    '<div class="acts"><button type="button" data-act="note"'+(d.note&&!d.cant?' class="on"':'')+'>'+(d.note?'Edit note':'Add note')+'</button><button type="button" data-act="cant"'+(d.cant?' class="on"':'')+'>Can\u2019t do it</button></div>'+
+    '<div class="extra'+(d.cant||d.note||d._open?' show':'')+'"><textarea data-act="text" placeholder="'+(d.cant?'What stopped it? e.g. charger fault on iX':'Note, e.g. charger fault on iX')+'">'+esc(d.note)+'</textarea>'+
+    '<div class="photo">'+(d.photo?'<img src="'+d.photo+'" alt="">':'')+'<label>&#128247; '+(d.photo?'Change photo':'Add a photo (optional)')+'<input type="file" accept="image/*" capture="environment" hidden data-act="photo"></label>'+(d.photo?'<button class="ghost" type="button" data-act="rmphoto">Remove</button>':'')+'</div></div></div>'}).join('');
+  $('c-items').querySelectorAll('.item').forEach(el=>{const id=el.dataset.id,d=draft.items[id];
+    el.querySelector('[data-act=tick]').onclick=()=>{ if(d.cant){d.cant=false} d.done=!d.done; d.at=d.done?Date.now():0; if(d.done&&navigator.vibrate)navigator.vibrate(15); saveDraft(); paintCheck() };
+    el.querySelector('[data-act=note]').onclick=()=>{ d._open=!d._open; saveDraft(); paintCheck(); const t=$('c-items').querySelector('[data-id="'+id+'"] textarea'); if(t)t.focus() };
+    el.querySelector('[data-act=cant]').onclick=()=>{ d.cant=!d.cant; if(d.cant){d.done=false;d.at=Date.now()} saveDraft(); paintCheck(); if(d.cant){const t=$('c-items').querySelector('[data-id="'+id+'"] textarea'); if(t)t.focus()} };
+    el.querySelector('[data-act=text]').oninput=e=>{ d.note=e.target.value.slice(0,500); saveDraft(); paintFoot() };
+    el.querySelector('[data-act=photo]').onchange=e=>{ const f=e.target.files[0]; if(f) shrink(f).then(u=>{d.photo=u; saveDraft(); paintCheck()}).catch(()=>toast('Couldn\u2019t read that photo')) };
+    const rm=el.querySelector('[data-act=rmphoto]'); if(rm) rm.onclick=()=>{d.photo='';saveDraft();paintCheck()};
+  });
+  const n=list.filter(i=>draft.items[i.id].done||draft.items[i.id].cant).length;
+  $('c-count').textContent=n+' of '+list.length; $('c-bar').style.width=(list.length?n/list.length*100:0)+'%'; paintFoot();
+}
+function shrink(file){return new Promise((ok,no)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const s=Math.min(1,1000/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);let q=.72,out=c.toDataURL('image/jpeg',q);while(out.length>380000&&q>.3){q-=.1;out=c.toDataURL('image/jpeg',q)}ok(out)};img.onerror=no;img.src=u})}
+function checkReady(){const list=items();return list.length&&list.every(i=>{const d=draft.items[i.id];return d.done||(d.cant&&d.note.trim())})}
+
+/* ---- footer button ---- */
+function paintFoot(){
+  const f=$('foot'),b=$('foot-btn');
+  if(view==='check'){ f.hidden=false; const ok=checkReady(); const cantNoNote=items().some(i=>draft.items[i.id].cant&&!draft.items[i.id].note.trim()); b.disabled=!ok; b.className='big'+(ok?' green':''); b.textContent=ok?'Next: sign it off':cantNoNote?'Say why an item couldn\u2019t be done':'Tick everything to sign'; b.onclick=()=>{ if(checkReady()){show('sign');initSig();paintSign()} } }
+  else if(view==='sign'){ f.hidden=false; const ok=sigDirty&&$('s-confirm').checked; b.disabled=!ok||busy; b.className='big'+(ok?' green':''); b.textContent=busy?'Saving\u2026':'Sign and finish lockup'; b.onclick=submit }
+  else f.hidden=true;
+}
+
+/* ---- signature ---- */
+let sigDirty=false, busy=false, sigInit=false;
+function initSig(){
+  const c=$('sig'),w=$('sigwrap'),r=Math.min(2,window.devicePixelRatio||1);
+  c.width=w.clientWidth*r; c.height=w.clientHeight*r; const g=c.getContext('2d'); g.scale(r,r); g.lineWidth=2.6; g.lineCap='round'; g.lineJoin='round'; g.strokeStyle='#0b1a33'; sigDirty=false;
+  if(sigInit)return; sigInit=true; let drawing=false,last=null;
+  const pt=e=>{const b=c.getBoundingClientRect();return {x:e.clientX-b.left,y:e.clientY-b.top}};
+  c.addEventListener('pointerdown',e=>{drawing=true;last=pt(e);c.setPointerCapture(e.pointerId);const g=c.getContext('2d');g.beginPath();g.arc(last.x,last.y,1.2,0,7);g.fillStyle='#0b1a33';g.fill()});
+  c.addEventListener('pointermove',e=>{if(!drawing)return;const p=pt(e),g=c.getContext('2d');g.beginPath();g.moveTo(last.x,last.y);g.lineTo(p.x,p.y);g.stroke();last=p;if(!sigDirty){sigDirty=true;paintFoot()}});
+  ['pointerup','pointercancel','pointerleave'].forEach(t=>c.addEventListener(t,()=>{drawing=false}));
+  $('sig-clear').onclick=()=>{initSig();paintFoot()}; $('s-confirm').onchange=paintFoot;
+}
+function paintSign(){
+  const list=items(), issues=list.filter(i=>draft.items[i.id].cant);
+  $('s-sub').textContent=nameOf(draft.signer)+', '+fmtDate(draft.date,true)+(draft.coveringFor?', covering for '+nameOf(draft.coveringFor):'');
+  $('s-summary').innerHTML=list.map(i=>{const d=draft.items[i.id];return '<li><span>'+esc(i.label)+(d.note?'<br><span class="muted small">'+esc(d.note)+'</span>':'')+'</span>'+(d.done?'<span class="ok">&#10003;</span>':'<span class="warn">Issue</span>')+'</li>'}).join('');
+  $('s-confirm-text').textContent=issues.length?'I confirm lockup is done, apart from the '+issues.length+' issue'+(issues.length>1?'s':'')+' noted above.':'I confirm the showroom is locked up.';
+  $('s-confirm').checked=false;
+}
+async function submit(){
+  if(busy||!sigDirty||!$('s-confirm').checked)return; busy=true; paintFoot();
+  const sig=$('sig').toDataURL('image/png'), list=items(), its={}; let issues=0;
+  list.forEach(i=>{const d=draft.items[i.id]; its[i.id]={label:d.label,done:!!d.done,at:d.at||0}; if(d.note.trim())its[i.id].note=d.note.trim(); if(d.photo)its[i.id].photo=d.photo; if(d.cant){its[i.id].cant=true;issues++}});
+  const late=draft.date!==now.date||now.mins>=R.ESCALATE_MINS;
+  const signer=team()[draft.signer]||mgrs()[draft.signer]||{};
+  const rec={date:draft.date,signedById:draft.signer,signedByName:signer.name||draft.signer,signedByFull:signer.fullName||'',rosteredId:draft.rostered||'',coveringFor:draft.coveringFor||'',items:its,issues,late,nextDay:draft.date!==now.date,signature:sig,ts:serverTimestamp(),device:navigator.userAgent.slice(0,160)};
+  try{
+    await push(ref(db,'lockup/records/'+draft.date),rec);
+    await set(ref(db,'lockup/status/'+draft.date),{state:'signed',by:rec.signedByName,ts:serverTimestamp(),issues,late});
+    localStorage.removeItem('lockupDraft'); busy=false;
+    $('d-sub').textContent='Thanks '+rec.signedByName+'. Signed at '+hm(Date.now())+(issues?'. '+issues+' issue'+(issues>1?'s':'')+' passed to the managers.':'. Have a good night.');
+    show('done');
+  }catch(e){ console.error(e); busy=false; paintFoot(); toast('Couldn\u2019t save. Check signal and tap again.') }
+}
+$('btn-done-home').onclick=()=>{show('tonight');paintTonight()};
+
+/* ---- managers ---- */
+$('btn-manager').onclick=()=>{ if(view==='manager'){show('tonight');paintTonight();$('btn-manager').textContent='Managers';return} if(role==='manager'){openMgr();return} $('pin-modal').classList.add('show'); $('pin-input').value=''; setTimeout(()=>$('pin-input').focus(),50) };
+$('pin-cancel').onclick=()=>$('pin-modal').classList.remove('show');
+const tryPin=()=>window.dsGate.check('manager',$('pin-input').value).then(ok=>{ if(ok){role='manager';$('pin-modal').classList.remove('show');openMgr()} else {toast('Wrong PIN');$('pin-input').value=''} });
+$('pin-go').onclick=tryPin; $('pin-input').onkeydown=e=>{if(e.key==='Enter')tryPin()};
+function openMgr(){ show('manager'); $('btn-manager').textContent='Tonight'; paintManager() }
+let tab='rota';
+$('mg-tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;$('mg-tabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));paintManager()});
+function paintManager(){ if(!CFG)return; ['rota','history','team','managers','checklist','holidays'].forEach(t=>$('mg-'+t).hidden=t!==tab); ({rota:paintRota,history:paintHistory,team:paintTeam,managers:paintMgrs,checklist:paintChk,holidays:paintHol})[tab]() }
+function paintRota(){
+  const w=WEEKS[mgWeek], tm=team(), ids=Object.keys(tm).filter(k=>tm[k].active!==false).sort((a,b)=>(tm[a].order||0)-(tm[b].order||0));
+  $('wk-label').textContent='Week of '+fmtDate(R.weekStart(mgWeek));
+  const days=R.DAYS.concat(['sat','sun']);
+  $('wk-list').innerHTML=days.map(d=>{const date=R.dateFor(mgWeek,d),hol=holidays()[date],recs=recsFor(date),isT=date===now.date;
+    let right; if(d==='sun')right='<span class="muted">Closed</span>'; else if(hol)right='<span class="muted">Closed, '+esc(hol.label)+'</span>'; else if(d==='sat')right='<span>Managers</span>';
+    else { const cur=w&&w.days&&w.days[d]; right='<select data-day="'+d+'"'+(w?'':' disabled')+'><option value="">Nobody</option>'+ids.map(k=>'<option value="'+k+'"'+(k===cur?' selected':'')+(tm[k].off===d?' disabled':'')+'>'+esc(tm[k].name)+(tm[k].off===d?' (day off)':'')+'</option>').join('')+'</select>' }
+    const st=recs.length?'<span class="pill g">&#10003; '+esc(recs[0].signedByName)+'</span>':(date<now.date&&date>=LAUNCH&&d!=='sun'&&!hol?'<span class="pill r">Not signed</span>':'');
+    return '<li><span class="d'+(isT?' today':'')+'">'+R.DAY_NAMES[d].slice(0,3)+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span>'+right+st+'</li>'}).join('');
+  $('wk-list').querySelectorAll('select').forEach(s=>s.onchange=()=>{ const v=s.value; update(ref(db,'lockup/weeks/'+mgWeek+'/days'),{[s.dataset.day]:v||null}).then(()=>{ update(ref(db,'lockup/weeks/'+mgWeek),{edited:Date.now()}); toast('Rota updated') }).catch(()=>toast('Couldn\u2019t save')) });
+  $('wk-regen').onclick=()=>{ if(!confirm('Shuffle the whole week again? Any swaps you made this week will be lost.'))return; set(ref(db,'lockup/weeks/'+mgWeek),{days:reshuffle(mgWeek,tm,weeksClean()),generatedAt:Date.now(),seed:'reshuffle:'+mgWeek+':'+Date.now()}).then(()=>toast('New rota for the week')) };
+  if(!w){ $('wk-list').insertAdjacentHTML('beforeend','<li><button class="big" id="wk-make" type="button" style="margin:0">Make this week&rsquo;s rota</button></li>'); $('wk-make').onclick=()=>set(ref(db,'lockup/weeks/'+mgWeek),R.generate(mgWeek,tm,weeksClean())) }
+  const c=R.counts(weeksClean(),'9999'); $('wk-counts').innerHTML=ids.sort((a,b)=>(c[a]||0)-(c[b]||0)).map(k=>'<li><span>'+esc(tm[k].name)+' <span class="muted small">off '+(R.DAY_NAMES[tm[k].off]||'none')+'</span></span><b>'+(c[k]||0)+'</b></li>').join('');
+}
+/* a fresh shuffle: same fairness rules, different tie break */
+function reshuffle(week,tm,all){ return R.generate(week,tm,all,String(Date.now())).days }
+$('wk-prev').onclick=()=>{mgWeek=R.shiftWeek(mgWeek,-1);paintRota()}; $('wk-next').onclick=()=>{mgWeek=R.shiftWeek(mgWeek,1);paintRota()};
+
+function historyRows(){
+  const tm=team(), out=[];
+  Object.keys(RECORDS).forEach(d=>recsFor(d).forEach(r=>out.push({date:d,rec:r})));
+  const signed=new Set(Object.keys(RECORDS));
+  for(let d=LAUNCH; d<now.date; d=R.addDays(d,1)){ const o=who(d); if(o.kind!=='closed'&&!signed.has(d)) out.push({date:d,missed:true,rostered:o.kind==='managers'?'managers':o.id}) }
+  return out.sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:((b.rec&&b.rec.ts)||0)-((a.rec&&a.rec.ts)||0));
+}
+function filtered(){ const p=$('h-person').value,f=$('h-from').value,t=$('h-to').value,k=$('h-kind').value;
+  return historyRows().filter(x=>{ if(f&&x.date<f)return false; if(t&&x.date>t)return false;
+    if(p){ if(x.missed){if(x.rostered!==p)return false} else if(x.rec.signedById!==p&&x.rec.rosteredId!==p&&x.rec.coveringFor!==p)return false }
+    if(k==='issues')return x.rec&&x.rec.issues>0; if(k==='late')return x.rec&&x.rec.late; if(k==='missed')return x.missed; return true }) }
+function paintHistory(){
+  const sel=$('h-person'),cur=sel.value,all=Object.assign({},team(),mgrs());
+  sel.innerHTML='<option value="">Everyone</option>'+Object.keys(all).map(k=>'<option value="'+k+'">'+esc(all[k].name)+'</option>').join(''); sel.value=cur;
+  const rows=filtered();
+  $('h-rows').innerHTML=rows.length?rows.map((x,i)=>x.missed?'<tr><td>'+fmtDate(x.date)+'</td><td class="muted">'+esc(x.rostered==='managers'?'Managers':nameOf(x.rostered))+' (rota)</td><td>&nbsp;</td><td><span class="pill r">Not signed</span></td></tr>':
+    '<tr class="click" data-i="'+i+'"><td>'+fmtDate(x.date)+'</td><td>'+esc(x.rec.signedByName)+(x.rec.coveringFor?'<br><span class="muted small">for '+esc(nameOf(x.rec.coveringFor))+'</span>':'')+'</td><td>'+hm(x.rec.ts)+'</td><td>'+(x.rec.issues?'<span class="pill a">'+x.rec.issues+' issue'+(x.rec.issues>1?'s':'')+'</span> ':'<span class="pill g">All done</span> ')+(x.rec.late?'<span class="pill r">Late</span>':'')+'</td></tr>').join(''):'<tr><td colspan="4" class="muted">Nothing matches.</td></tr>';
+  $('h-rows').querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>openRec(rows[+tr.dataset.i]));
+}
+['h-person','h-from','h-to','h-kind'].forEach(id=>$(id).onchange=paintHistory);
+function openRec(x){ const r=x.rec;
+  $('rec-body').innerHTML='<div class="row" style="justify-content:space-between"><h2>'+fmtDate(x.date,true)+'</h2><button class="ghost" type="button" id="rec-close">Close</button></div>'+
+  '<p class="muted" style="margin:6px 0 12px">Signed by <b>'+esc(r.signedByFull||r.signedByName)+'</b> at '+hm(r.ts)+(r.nextDay?' the next day':'')+(r.coveringFor?', covering for '+esc(nameOf(r.coveringFor)):'')+'</p>'+
+  '<ul class="summary">'+Object.keys(r.items||{}).map(k=>{const i=r.items[k];return '<li><span>'+esc(i.label)+(i.note?'<br><span class="muted small">'+esc(i.note)+'</span>':'')+(i.photo?'<br><img src="'+i.photo+'" style="max-width:100%;border-radius:10px;margin-top:6px" alt="">':'')+'</span>'+(i.done?'<span class="ok">&#10003; '+(i.at?hm(i.at):'')+'</span>':'<span class="warn">Not done</span>')+'</li>'}).join('')+'</ul>'+
+  '<p class="muted small" style="margin:12px 0 6px">Signature</p><img class="sig" src="'+r.signature+'" alt="Signature"><p class="muted small" style="margin-top:10px">Record '+esc(r.id)+'. Records can&rsquo;t be edited or deleted.</p>';
+  $('rec-modal').classList.add('show'); $('rec-close').onclick=()=>$('rec-modal').classList.remove('show') }
+$('rec-modal').onclick=e=>{if(e.target.id==='rec-modal')$('rec-modal').classList.remove('show')};
+$('h-csv').onclick=()=>{ const list=items(), q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const head=['Date','Day','Status','Signed by','Covering for','Signed at','Late','Issues'].concat(list.map(i=>i.label)).concat(['Notes']);
+  const lines=[head.map(q).join(',')].concat(filtered().map(x=>{ if(x.missed)return [x.date,R.DAY_NAMES[who(x.date).dow],'Not signed',x.rostered==='managers'?'Managers':nameOf(x.rostered)].map(q).join(',');
+    const r=x.rec,its=r.items||{}; return [x.date,R.DAY_NAMES[who(x.date).dow],'Signed',r.signedByName,r.coveringFor?nameOf(r.coveringFor):'',hm(r.ts),r.late?'Yes':'No',r.issues||0].concat(list.map(i=>its[i.id]?(its[i.id].done?'Done '+hm(its[i.id].at):'Not done'):'')).concat([Object.keys(its).filter(k=>its[k].note).map(k=>its[k].label+': '+its[k].note).join(' | ')]).map(q).join(',') }));
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/csv'})); a.download='lockup-history-'+now.date+'.csv'; a.click() };
+$('h-pdf').onclick=()=>window.print();
+
+function personEditor(kind,box,addBtn){
+  const src=kind==='team'?team():mgrs(), ids=Object.keys(src).sort((a,b)=>(src[a].order||0)-(src[b].order||0));
+  $(box).innerHTML=ids.map(k=>{const p=src[k];return '<div class="person" data-id="'+k+'"><div><label>Name shown</label><input type="text" data-f="name" value="'+esc(p.name)+'"></div><div><label>Full name</label><input type="text" data-f="fullName" value="'+esc(p.fullName||'')+'"></div><div class="full"><label>Work email</label><input type="email" data-f="email" value="'+esc(p.email||'')+'"></div>'+
+    (kind==='team'?'<div><label>Day off</label><select data-f="off"><option value="">None</option>'+R.DAYS.map(d=>'<option value="'+d+'"'+(p.off===d?' selected':'')+'>'+R.DAY_NAMES[d]+'</option>').join('')+'</select></div><div><label>On the rota</label><select data-f="active"><option value="1"'+(p.active!==false?' selected':'')+'>Yes</option><option value="0"'+(p.active===false?' selected':'')+'>No</option></select></div>':'<div class="full"><label>Role</label><input type="text" data-f="role" value="'+esc(p.role||'')+'"></div><div class="full"><button class="ghost" type="button" data-rm="1">Remove manager</button></div>')+'</div>'}).join('');
+  $(box).querySelectorAll('.person').forEach(el=>{const id=el.dataset.id;
+    el.querySelectorAll('[data-f]').forEach(inp=>inp.onchange=()=>{let v=inp.value.trim(); if(inp.dataset.f==='active')v=v==='1'; update(ref(db,'lockup/config/'+kind+'/'+id),{[inp.dataset.f]:v}).then(()=>toast('Saved')).catch(()=>toast('Couldn\u2019t save'))});
+    const rm=el.querySelector('[data-rm]'); if(rm)rm.onclick=()=>{ if(confirm('Remove '+src[id].name+'?'))remove(ref(db,'lockup/config/'+kind+'/'+id)) } });
+  $(addBtn).onclick=()=>{ const n=(prompt('First name')||'').trim(); if(!n)return; let id=n.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)||'p'; while(src[id])id+='2'; set(ref(db,'lockup/config/'+kind+'/'+id),{name:n,fullName:n,email:'',order:ids.length,active:true,off:''}).then(()=>toast(n+' added')) };
+}
+function paintTeam(){personEditor('team','team-list','team-add')}
+function paintMgrs(){personEditor('managers','mgr-list','mgr-add')}
+function paintChk(){ const c=CFG.checklist||{}, ids=Object.keys(c).sort((a,b)=>(c[a].order||0)-(c[b].order||0));
+  $('chk-list').innerHTML=ids.map(k=>'<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)"><span style="flex:1'+(c[k].active===false?';opacity:.4;text-decoration:line-through':'')+'">'+esc(c[k].label)+'</span>'+(c[k].builtin?'<span class="pill">Standard</span>':'<button class="ghost" type="button" data-k="'+k+'">'+(c[k].active===false?'Turn on':'Turn off')+'</button>')+'</div>').join('');
+  $('chk-list').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>update(ref(db,'lockup/config/checklist/'+b.dataset.k),{active:c[b.dataset.k].active===false}));
+  $('chk-add').onclick=()=>{ const v=$('chk-new').value.trim().slice(0,80); if(!v)return; set(ref(db,'lockup/config/checklist/x'+Date.now().toString(36)),{label:v,order:ids.length,active:true}).then(()=>{$('chk-new').value='';toast('Added')}) } }
+function paintHol(){ const h=(CFG.holidays)||{}, up=Object.keys(BANK).filter(d=>d>=now.date).sort().slice(0,4);
+  $('hol-list').innerHTML=Object.keys(h).sort().map(d=>'<li><span>'+fmtDate(d,true)+' '+d.slice(0,4)+'<br><span class="muted small">'+esc(h[d].label||'')+'</span></span><button class="ghost" type="button" data-d="'+d+'">Remove</button></li>').join('')+up.map(d=>'<li><span>'+fmtDate(d,true)+' '+d.slice(0,4)+'<br><span class="muted small">'+esc(BANK[d].label)+'</span></span><span class="pill">Bank holiday</span></li>').join('');
+  $('hol-list').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>remove(ref(db,'lockup/config/holidays/'+b.dataset.d)));
+  $('hol-add').onclick=()=>{ const d=$('hol-date').value; if(!d)return; set(ref(db,'lockup/config/holidays/'+d),{label:$('hol-label').value.trim().slice(0,60)||'Closed'}).then(()=>{toast('Added');$('hol-label').value=''}) } }
+
+window.lockupDebug=()=>({CFG,WEEKS,RECORDS,STATUS,now,draft});
+paint();
+</script>
+</body>
+</html>
