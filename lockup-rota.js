@@ -220,10 +220,10 @@
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
     addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
-    REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 15, NUDGE_SAT_MINS: 17 * 60 + 15, ESCALATE_SAT_MINS: 17 * 60 + 30,
-    /* Saturday closes at 5pm: reminder 4pm, nudge 5:15pm, managers 5:30pm */
+    REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
+    /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },
-    nudgeAt: function (dow) { return dow === 'sat' ? 17 * 60 + 15 : 18 * 60 + 15; },
+    nudgeAt: function (dow) { return dow === 'sat' ? 17 * 60 + 5 : 18 * 60 + 5; },
     escalateAt: function (dow) { return dow === 'sat' ? 17 * 60 + 30 : 18 * 60 + 30; }, REMIND_SAT_MINS: 16 * 60, ESCALATE_MINS: 18 * 60 + 30 };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.LockupRota = api;
 })(this);

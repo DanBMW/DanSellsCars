@@ -3,7 +3,7 @@
  * on weekday and Saturday afternoons. It works out UK time itself, so the
  * cron covers both BST and GMT and this decides what is due:
  *   5pm Mon to Fri  reminder to both people on the rota (4pm Saturday: managers)
- *   6:15pm          nudge to tonight's people if still unsigned (5:15pm Sat)
+ *   6:05pm          nudge to tonight's people if still unsigned (5:05pm Sat)
  *   6:30pm          managers (5:30pm Sat), if nobody has signed, or with any issues noted
  * It also sends any queued manager notifications (lockup/notify, written by
  * the page for absences, cover and holidays) on every run, marking each sent.
@@ -148,7 +148,7 @@ async function main() {
     } else console.log('Reminder due but no email address set');
   }
 
-  /* 6:15pm nudge to tonight's people if still unsigned. Only in the window
+  /* 6:05pm (5:05pm Sat) nudge to tonight's people if still unsigned. Only in the window
      before 6:30pm, so a late run that is already due the manager email skips
      it, and never in the same run as the first reminder. */
   if (n.mins >= R.nudgeAt(n.dow) && n.mins < R.escalateAt(n.dow) && !mail.nudge && !recs.length && !remindedNow) {

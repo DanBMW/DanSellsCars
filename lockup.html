@@ -295,7 +295,7 @@ function paintTonight(){
   }
   $('t-title').textContent=on.kind==='managers'?'Managers on lockup tonight':on.ids.length?'Tonight: '+namesOf(on.ids):'Nobody on the rota tonight';
   const due=on.kind==='managers'?'4pm':'5pm';
-  const sat=on.kind==='managers', nT=sat?'5:15pm':'6:15pm', eT=sat?'5:30pm':'6:30pm';
+  const sat=on.kind==='managers', nT=sat?'5:05pm':'6:05pm', eT=sat?'5:30pm':'6:30pm';
   $('t-sub').textContent=now.mins>=R.escalateAt(now.dow)?'Not signed yet. Managers are emailed at '+eT+' while it is open.':now.mins>=R.nudgeAt(now.dow)?'Not signed yet. Managers get an email at '+eT+' if it is still open.':'Reminder at '+due+', a nudge at '+nT+' if it is still open, then the managers at '+eT+'. Tick everything off as you go, then sign.';
   chooser(on);
   const y=R.addDays(now.date,-1), yon=who(y);
