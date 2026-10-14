@@ -147,6 +147,68 @@
     return { days: days, v: 2, generatedAt: Date.now(), seed: 'lockup:' + week + (salt ? ':' + salt : '') };
   }
 
+  /* ---- absences: "I won't be in", holidays, and seeded ones ----
+     lockup/absences/<id>: {personId, from, to, kind: absent|holiday, status: booked|approved|cancelled}
+     Seeded entries are written once by whichever client first sees them missing,
+     so a change agreed before the rules went live still lands. */
+  var SEED_ABSENCES = {
+    seed_carl_20261016: { personId: 'carl', from: '2026-10-16', to: '2026-10-16', kind: 'absent', status: 'approved', by: 'Dan', note: 'Carl off Friday 16 Oct (Dan, 14 Oct)' }
+  };
+  function absentOn(absences, date) {
+    var out = {};
+    Object.keys(absences || {}).forEach(function (k) {
+      var a = absences[k];
+      if (a && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = a.kind || 'absent';
+    });
+    return out;
+  }
+  function pairOn(weeks, date) {
+    var w = weeks && weeks[isoWeek(date)], dow = london(new Date(date + 'T12:00:00Z')).dow;
+    return ids(w && w.days && w.days[dow]);
+  }
+  /* fewest nights first, never on a day off, never absent, never someone
+     already on that night; anyone working the night before or after is
+     only used when nobody else can do it */
+  function replacement(weeks, team, absences, date, pair) {
+    var dow = london(new Date(date + 'T12:00:00Z')).dow;
+    var near = [];
+    if (dow !== 'mon') near = near.concat(pairOn(weeks, addDays(date, -1)));
+    if (dow !== 'fri') near = near.concat(pairOn(weeks, addDays(date, 1)));
+    /* nights up to and including this week, so a later week doesn't skew it */
+    var c = counts(weeks, shiftWeek(isoWeek(date), 1)), away = absentOn(absences, date);
+    var cands = Object.keys(team || {}).filter(function (id) {
+      var t = team[id];
+      return t && t.active !== false && t.off !== dow && !away[id] && pair.indexOf(id) < 0;
+    });
+    cands.sort(function (a, b) {
+      return ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
+    });
+    return cands[0] || null;
+  }
+  /* replaces absent people on today's and later unsigned nights. Mutates
+     `weeks`, returns [{week, dow, date, out, in, pair}] for what changed */
+  function applyAbsences(weeks, team, absences, today, signed) {
+    var changes = [];
+    Object.keys(weeks || {}).sort().forEach(function (wk) {
+      if (wk < isoWeek(today) || !weeks[wk] || !weeks[wk].days) return;
+      DAYS.forEach(function (dow) {
+        var date = dateFor(wk, dow);
+        if (date < today || (signed && signed[date])) return;
+        var away = absentOn(absences, date), pair = ids(weeks[wk].days[dow]), changed = false;
+        pair.slice().forEach(function (p) {
+          if (!away[p]) return;
+          var rest = pair.filter(function (x) { return x !== p; });
+          var r = replacement(weeks, team, absences, date, rest.concat([p]));
+          pair = r ? pair.map(function (x) { return x === p ? r : x; }) : rest;
+          weeks[wk].days[dow] = pair; changed = true;
+          changes.push({ week: wk, dow: dow, date: date, out: p, 'in': r, pair: pair.slice() });
+        });
+        if (changed) weeks[wk].days[dow] = pair;
+      });
+    });
+    return changes;
+  }
+
   /* who is on for a date: { kind: 'staff'|'managers'|'closed', ids: [...] } */
   function onFor(dateStr, weekRec, holidays) {
     var dow = london(new Date(dateStr + 'T12:00:00Z')).dow;
@@ -157,7 +219,7 @@
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, generate: generate, onFor: onFor,
+    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, REMIND_SAT_MINS: 16 * 60, ESCALATE_MINS: 18 * 60 + 30 };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.LockupRota = api;
 })(this);

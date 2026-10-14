@@ -78,6 +78,14 @@ textarea{min-height:70px;resize:vertical}
 .rota .dt{display:block;color:var(--muted);font-size:12px;font-weight:600}
 .rota .pair{flex:1;display:grid;gap:6px}.rota select{flex:1;padding:9px}
 .today{color:var(--gold)}
+.rota.pub li{flex-wrap:wrap}
+.rota.pub .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.rota.pub .pn{font-weight:700}
+.rota.pub .away{font-size:12px;color:var(--amber);font-weight:700}
+.rota.pub li.is-today{background:linear-gradient(90deg,rgba(240,186,108,.16),rgba(240,186,108,0));border-radius:12px;padding-left:8px;margin:0 -8px;padding-right:8px}
+.rota.pub li.is-today .d{color:var(--gold)}
+.rota.pub li.is-past{opacity:.5}
+.rota.pub .cm{padding:7px 10px;font-size:12px}
 .pill{display:inline-block;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:800;background:var(--card2);color:var(--muted)}
 .pill.g{background:#11281e;color:var(--green)}.pill.a{background:#2a2112;color:var(--amber)}.pill.r{background:#2c1414;color:var(--red)}
 .ppl{display:grid;gap:10px}
@@ -130,6 +138,7 @@ textarea{min-height:70px;resize:vertical}
         <div class="names" id="cover-names"></div>
       </div>
     </div>
+    <div id="t-rota" style="margin-top:18px"></div>
   </section>
 
   <!-- checklist -->
@@ -164,6 +173,7 @@ textarea{min-height:70px;resize:vertical}
       <button data-tab="team" type="button">Team</button>
       <button data-tab="managers" type="button">Managers</button>
       <button data-tab="checklist" type="button">Checklist</button>
+      <button data-tab="timeoff" type="button">Time off</button>
       <button data-tab="holidays" type="button">Closed days</button>
     </div>
     <div id="mg-rota" class="mgp">
@@ -193,6 +203,7 @@ textarea{min-height:70px;resize:vertical}
     <div id="mg-team" class="mgp" hidden><div class="card"><div class="ppl" id="team-list"></div><button class="big alt" id="team-add" type="button" style="margin-top:12px">Add a person</button></div></div>
     <div id="mg-managers" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">Managers lock up on Saturday and get the 6:30pm email if lockup isn&rsquo;t signed, with any issues from the night.</p><div class="ppl" id="mgr-list"></div><button class="big alt" id="mgr-add" type="button" style="margin-top:12px">Add a manager</button></div></div>
     <div id="mg-checklist" class="mgp" hidden><div class="card"><div class="ppl" id="chk-list"></div><div class="row" style="margin-top:12px"><input type="text" id="chk-new" placeholder="New item, e.g. Alarm set"><button class="ghost" id="chk-add" type="button">Add</button></div></div></div>
+    <div id="mg-timeoff" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">Absences and holidays booked on the lockup page. Each one re-pairs the nights it touches and emails the managers.</p><ul class="summary" id="to-list"></ul></div></div>
     <div id="mg-holidays" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">No reminder or manager email on these days. Sundays and UK bank holidays are closed automatically.</p><ul class="summary" id="hol-list"></ul><div class="row" style="margin-top:12px"><input type="date" id="hol-date"><input type="text" id="hol-label" placeholder="Reason"><button class="ghost" id="hol-add" type="button">Add</button></div></div></div>
   </section>
 </main>
@@ -237,7 +248,7 @@ setInterval(()=>{const n=R.london(); if(n.date!==now.date){now=n;ensureWeeks()} 
 
 function recsFor(date){const r=RECORDS[date]||{};return Object.keys(r).map(k=>Object.assign({id:k},r[k])).sort((a,b)=>a.ts-b.ts)}
 function who(date){const w=WEEKS[R.isoWeek(date)];return R.onFor(date,w,holidays())}
-function paint(){ if(view==='tonight')paintTonight(); if(view==='manager')paintManager(); $('hdr-date').textContent=fmtDate(now.date,true) }
+function paint(){ if(view==='tonight'){paintTonight();paintPublicRota()} if(view==='manager')paintManager(); $('hdr-date').textContent=fmtDate(now.date,true) }
 
 /* ---- tonight ---- */
 function paintTonight(){
@@ -366,7 +377,7 @@ async function submit(){
     show('done');
   }catch(e){ console.error(e); busy=false; paintFoot(); toast('Couldn\u2019t save. Check signal and tap again.') }
 }
-$('btn-done-home').onclick=()=>{show('tonight');paintTonight()};
+$('btn-done-home').onclick=()=>{show('tonight');paint()};
 
 /* ---- managers ---- */
 $('btn-manager').onclick=()=>{ if(view==='manager'){show('tonight');paintTonight();$('btn-manager').textContent='Managers';return} if(role==='manager'){openMgr();return} $('pin-modal').classList.add('show'); $('pin-input').value=''; setTimeout(()=>$('pin-input').focus(),50) };
@@ -376,7 +387,7 @@ $('pin-go').onclick=tryPin; $('pin-input').onkeydown=e=>{if(e.key==='Enter')tryP
 function openMgr(){ show('manager'); $('btn-manager').textContent='Tonight'; paintManager() }
 let tab='rota';
 $('mg-tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;$('mg-tabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));paintManager()});
-function paintManager(){ if(!CFG)return; ['rota','history','team','managers','checklist','holidays'].forEach(t=>$('mg-'+t).hidden=t!==tab); ({rota:paintRota,history:paintHistory,team:paintTeam,managers:paintMgrs,checklist:paintChk,holidays:paintHol})[tab]() }
+function paintManager(){ if(!CFG)return; ['rota','history','team','managers','checklist','timeoff','holidays'].forEach(t=>$('mg-'+t).hidden=t!==tab); ({rota:paintRota,history:paintHistory,team:paintTeam,managers:paintMgrs,checklist:paintChk,timeoff:paintTimeoff,holidays:paintHol})[tab]() }
 function paintRota(){
   const w=WEEKS[mgWeek], tm=team(), ids=Object.keys(tm).filter(k=>tm[k].active!==false).sort((a,b)=>(tm[a].order||0)-(tm[b].order||0));
   $('wk-label').textContent='Week of '+fmtDate(R.weekStart(mgWeek));
@@ -450,7 +461,98 @@ function paintHol(){ const h=(CFG.holidays)||{}, up=Object.keys(BANK).filter(d=>
   $('hol-list').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>remove(ref(db,'lockup/config/holidays/'+b.dataset.d)));
   $('hol-add').onclick=()=>{ const d=$('hol-date').value; if(!d)return; set(ref(db,'lockup/config/holidays/'+d),{label:$('hol-label').value.trim().slice(0,60)||'Closed'}).then(()=>{toast('Added');$('hol-label').value=''}) } }
 
-window.lockupDebug=()=>({CFG,WEEKS,RECORDS,STATUS,now,draft});
+
+/* ---- time off, cover and the public rota ---- */
+let ABS={}, CHANGES={}, ABS_LOADED=false, REC_LOADED=false, applyT=null;
+onValue(ref(db,'lockup/absences'),s=>{ABS=s.val()||{};ABS_LOADED=true;scheduleApply();paint()});
+onValue(ref(db,'lockup/changes'),s=>{CHANGES=s.val()||{};if(view==='manager'&&tab==='timeoff')paintTimeoff()});
+onValue(ref(db,'lockup/records'),()=>{REC_LOADED=true;scheduleApply()});
+function signedDates(){const o={};Object.keys(RECORDS).forEach(d=>o[d]=1);return o}
+function cloneWeeks(){return JSON.parse(JSON.stringify(weeksClean()))}
+function changeLines(ch){return ch.map(c=>fmtDate(c.date,true)+': '+nameOf(c.out)+' out, '+(c.in?nameOf(c.in)+' in':'nobody free to step in')+'. Now on: '+(namesOf(c.pair)||'nobody'))}
+async function writeChanges(ch){ for(const c of ch) await update(ref(db,'lockup/weeks/'+c.week+'/days'),{[c.dow]:c.pair}) }
+async function notifyMgrs(kind,subject,lines,id){ const k=id||push(ref(db,'lockup/notify')).key; try{ await set(ref(db,'lockup/notify/'+k),{kind,subject:subject.slice(0,160),lines,ts:Date.now(),by:'lockup.html'}) }catch(e){ if(!id)console.error(e) } }
+async function logChange(kind,data){ try{ await push(ref(db,'lockup/changes'),Object.assign({kind,ts:Date.now()},data)) }catch(e){console.error(e)} }
+function scheduleApply(){clearTimeout(applyT);applyT=setTimeout(runApply,400)}
+async function runApply(){
+  if(!CFG||!CFG.seeded||!WEEKS._loaded||!ABS_LOADED||!REC_LOADED)return;
+  if(!R.isPaired(WEEKS[now.week]))return;
+  /* seeded absences, written once */
+  for(const id of Object.keys(R.SEED_ABSENCES)){ if(!ABS[id]){ const a=Object.assign({ts:Date.now()},R.SEED_ABSENCES[id]); ABS[id]=a;
+    try{ await set(ref(db,'lockup/absences/'+id),a); const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates()); await writeChanges(ch);
+      await notifyMgrs('absence',nameOf(a.personId)+' off '+fmtDate(a.from,true)+', lockup re-paired',[a.note||'',...changeLines(ch)].filter(Boolean),id) }catch(e){console.error(e)} } }
+  const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates());
+  if(ch.length) writeChanges(ch).catch(e=>console.error(e));
+}
+setInterval(scheduleApply,60000);
+async function addAbsence(personId,from,to,kind,note){
+  const id=push(ref(db,'lockup/absences')).key, a={personId,from,to,kind,status:kind==='holiday'?'booked':'approved',note:(note||'').slice(0,200),by:nameOf(personId),ts:Date.now()};
+  await set(ref(db,'lockup/absences/'+id),a); ABS[id]=a;
+  const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates()); await writeChanges(ch);
+  const range=from===to?fmtDate(from,true):fmtDate(from,true)+' to '+fmtDate(to,true);
+  await notifyMgrs(kind,(kind==='holiday'?'Holiday booked: ':'Lockup absence: ')+nameOf(personId)+', '+range,
+    [(kind==='holiday'?nameOf(personId)+' has booked holiday, '+range+'. Approve or cancel it on the lockup page.':nameOf(personId)+' won\u2019t be in for lockup on '+range+'.'),note?'Note: '+note:'',...(ch.length?changeLines(ch):['No lockup nights affected yet.'])].filter(Boolean));
+  return ch;
+}
+async function arrangeCover(date,outId,inId){
+  const wk=R.isoWeek(date), dow=who(date).dow, pair=R.pairOn(weeksClean(),date).map(x=>x===outId?inId:x);
+  await update(ref(db,'lockup/weeks/'+wk+'/days'),{[dow]:pair});
+  await logChange('cover',{date,out:outId,in:inId,pair});
+  await notifyMgrs('cover','Lockup cover: '+nameOf(inId)+' for '+nameOf(outId)+', '+fmtDate(date,true),[nameOf(inId)+' has agreed to cover '+nameOf(outId)+'\u2019s lockup on '+fmtDate(date,true)+'.','Now on: '+namesOf(pair)+'. The 5pm email goes to them.']);
+  return pair;
+}
+
+/* public rota: this week and next, no PIN */
+function paintPublicRota(){
+  const box=$('t-rota'); if(!box||!CFG)return;
+  const weeks=[now.week,R.shiftWeek(now.week,1)], hol=holidays(), signed=signedDates();
+  box.innerHTML='<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:4px"><b style="font-size:18px">Lockup rota</b><button class="ghost" id="btn-holiday" type="button">Book holiday</button></div>'+
+  weeks.map(wk=>'<p class="muted small" style="margin:12px 0 2px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Week of '+fmtDate(R.weekStart(wk))+'</p><ul class="rota pub">'+
+    R.DAYS.concat(['sat']).map(d=>{ const date=R.dateFor(wk,d), isT=date===now.date, past=date<now.date, away=R.absentOn(ABS,date), awayIds=Object.keys(away).filter(id=>team()[id]);
+      let mid; if(hol[date])mid='<span class="muted">Closed, '+esc(hol[date].label)+'</span>'; else if(d==='sat')mid='<span>Managers</span>'; else { const p=R.pairOn(weeksClean(),date); mid='<span class="pn">'+(p.length?esc(namesOf(p)):'<span class="muted">Not set yet</span>')+'</span>' }
+      const tags=(signed[date]?'<span class="pill g">&#10003; Signed</span>':'')+(awayIds.length?'<span class="away">Away: '+awayIds.map(id=>esc(nameOf(id))+(away[id]==='holiday'?' (holiday)':'')).join(', ')+'</span>':'');
+      const act=(d!=='sat'&&!hol[date]&&!past&&!signed[date]&&R.pairOn(weeksClean(),date).length)?'<button class="ghost cm" type="button" data-date="'+date+'">Can&rsquo;t make it?</button>':'';
+      return '<li class="'+(isT?'is-today':'')+(past?' is-past':'')+'"><span class="d">'+(isT?'Tonight':R.DAY_NAMES[d].slice(0,3))+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span><span class="mid">'+mid+tags+'</span>'+act+'</li>'}).join('')+'</ul>').join('')+'</div>';
+  box.querySelectorAll('.cm').forEach(b=>b.onclick=()=>openCantMake(b.dataset.date));
+  $('btn-holiday').onclick=openHoliday;
+}
+function sheet(html){ $('rec-body').innerHTML='<div class="row" style="justify-content:flex-end"><button class="ghost" type="button" id="sh-x">Close</button></div>'+html; $('rec-modal').classList.add('show'); $('sh-x').onclick=closeSheet }
+function closeSheet(){ $('rec-modal').classList.remove('show') }
+function openCantMake(date){
+  const pair=R.pairOn(weeksClean(),date);
+  sheet('<h2>'+fmtDate(date,true)+'</h2><p class="muted" style="margin:6px 0 14px">On lockup: '+esc(namesOf(pair))+'. Who are you?</p><div class="names">'+pair.map(id=>'<button type="button" data-id="'+esc(id)+'">'+esc(nameOf(id))+'</button>').join('')+'</div>');
+  $('rec-body').querySelectorAll('.names button').forEach(b=>b.onclick=()=>cantMakeFor(date,b.dataset.id));
+}
+function cantMakeFor(date,me){
+  sheet('<h2>'+esc(nameOf(me))+', '+fmtDate(date,true)+'</h2><p class="muted" style="margin:6px 0 14px">If someone has agreed to swap, arrange cover so the 5pm email goes to them. Otherwise tell us you won&rsquo;t be in and the rota picks someone fairly. The managers get an email either way.</p><button class="big" type="button" id="sh-cover">Arrange cover</button><button class="big alt" type="button" id="sh-out">I won&rsquo;t be in</button>');
+  $('sh-out').onclick=()=>{ sheet('<h2>Mark yourself away?</h2><p class="muted" style="margin:6px 0 14px">'+esc(nameOf(me))+' won&rsquo;t be in on '+fmtDate(date,true)+'. Someone else will be put on that night.</p><textarea id="sh-note" placeholder="Reason (optional)"></textarea><button class="big" type="button" id="sh-ok" style="margin-top:12px">Yes, I won&rsquo;t be in</button><button class="big alt" type="button" id="sh-back">No, go back</button>');
+    $('sh-back').onclick=()=>cantMakeFor(date,me);
+    $('sh-ok').onclick=async()=>{ $('sh-ok').disabled=true; try{ const ch=await addAbsence(me,date,date,'absent',$('sh-note').value.trim()); const c=ch.find(x=>x.date===date); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Sorted</h2><p class="muted" style="margin-top:8px">'+(c?fmtDate(date,true)+' is now '+esc(namesOf(c.pair))+'.':'Saved.')+' The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again');$('sh-ok').disabled=false} } };
+  $('sh-cover').onclick=()=>{ const dow=who(date).dow, pair=R.pairOn(weeksClean(),date), away=R.absentOn(ABS,date), tm=team();
+    const ids=Object.keys(tm).filter(k=>tm[k].active!==false&&pair.indexOf(k)<0&&tm[k].off!==dow&&!away[k]).sort((a,b)=>(tm[a].order||0)-(tm[b].order||0));
+    sheet('<h2>Who&rsquo;s covering?</h2><p class="muted" style="margin:6px 0 14px">Only pick someone who has said yes.</p><div class="names">'+ids.map(k=>'<button type="button" data-id="'+k+'">'+esc(tm[k].name)+'</button>').join('')+'</div>');
+    $('rec-body').querySelectorAll('.names button').forEach(b=>b.onclick=async()=>{ if(!confirm(tm[b.dataset.id].name+' covers '+nameOf(me)+' on '+fmtDate(date,true)+'?'))return; try{ const p=await arrangeCover(date,me,b.dataset.id); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Cover arranged</h2><p class="muted" style="margin-top:8px">'+fmtDate(date,true)+' is now '+esc(namesOf(p))+'. The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again')} }) };
+}
+function openHoliday(){
+  const tm=team(), ids=Object.keys(tm).filter(k=>tm[k].active!==false).sort((a,b)=>(tm[a].order||0)-(tm[b].order||0));
+  sheet('<h2>Book holiday</h2><p class="muted" style="margin:6px 0 14px">Any lockup nights you&rsquo;re on get re-paired, and the managers get an email to approve it.</p><select id="hb-who"><option value="">Who are you?</option>'+ids.map(k=>'<option value="'+k+'">'+esc(tm[k].name)+'</option>').join('')+'</select><div class="filters" style="margin-top:10px"><label class="small muted">First day off<input type="date" id="hb-from" min="'+now.date+'"></label><label class="small muted">Last day off<input type="date" id="hb-to" min="'+now.date+'"></label></div><textarea id="hb-note" placeholder="Note (optional)"></textarea><button class="big" type="button" id="hb-go" style="margin-top:12px">Book it</button>');
+  $('hb-from').onchange=()=>{ if(!$('hb-to').value||$('hb-to').value<$('hb-from').value)$('hb-to').value=$('hb-from').value };
+  $('hb-go').onclick=async()=>{ const p=$('hb-who').value,f=$('hb-from').value,t=$('hb-to').value; if(!p||!f||!t||t<f){toast('Pick your name and the dates');return} $('hb-go').disabled=true;
+    try{ const ch=await addAbsence(p,f,t,'holiday',$('hb-note').value.trim()); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Holiday booked</h2><p class="muted" style="margin-top:8px">'+(ch.length?ch.length+' lockup night'+(ch.length>1?'s':'')+' re-paired.':'No lockup nights to change yet.')+' The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again');$('hb-go').disabled=false} };
+}
+
+/* manager: time off */
+function paintTimeoff(){
+  const list=Object.keys(ABS).map(k=>Object.assign({id:k},ABS[k])).sort((a,b)=>a.from<b.from?1:-1);
+  const pill=a=>a.status==='cancelled'?'<span class="pill r">Cancelled</span>':a.status==='booked'?'<span class="pill a">Waiting</span>':'<span class="pill g">Approved</span>';
+  const covers=Object.keys(CHANGES).map(k=>CHANGES[k]).filter(c=>c.kind==='cover').sort((a,b)=>b.ts-a.ts).slice(0,20);
+  $('to-list').innerHTML=(list.length?list.map(a=>'<li><span><b>'+esc(nameOf(a.personId))+'</b> '+(a.kind==='holiday'?'holiday':'away')+'<br><span class="muted small">'+(a.from===a.to?fmtDate(a.from,true):fmtDate(a.from)+' to '+fmtDate(a.to))+(a.note?', '+esc(a.note):'')+'</span></span><span style="text-align:right">'+pill(a)+'<br>'+(a.status==='booked'?'<button class="ghost" type="button" data-ap="'+a.id+'">Approve</button> ':'')+(a.status!=='cancelled'?'<button class="ghost" type="button" data-cx="'+a.id+'">Cancel</button>':'')+'</span></li>').join(''):'<li class="muted">Nobody has booked time off.</li>')+
+    (covers.length?'<li style="display:block"><b>Cover arranged</b></li>'+covers.map(c=>'<li><span>'+esc(nameOf(c.in))+' for '+esc(nameOf(c.out))+'</span><span class="muted small">'+fmtDate(c.date)+'</span></li>').join(''):'');
+  $('to-list').querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>update(ref(db,'lockup/absences/'+b.dataset.ap),{status:'approved'}).then(()=>toast('Approved')));
+  $('to-list').querySelectorAll('[data-cx]').forEach(b=>b.onclick=()=>{ if(confirm('Cancel this time off? Nights already re-paired stay as they are; change them on the Rota tab if needed.'))update(ref(db,'lockup/absences/'+b.dataset.cx),{status:'cancelled'}).then(()=>toast('Cancelled')) });
+}
+
+window.lockupDebug=()=>({CFG,WEEKS,RECORDS,STATUS,ABS,now,draft});
 paint();
 </script>
 </body>

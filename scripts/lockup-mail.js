@@ -4,6 +4,8 @@
  * cron covers both BST and GMT and this decides what is due:
  *   5pm Mon to Fri  reminder to both people on the rota (4pm Saturday: managers)
  *   6:30pm          managers, if nobody has signed, or with any issues noted
+ * It also sends any queued manager notifications (lockup/notify, written by
+ * the page for absences, cover and holidays) on every run, marking each sent.
  * Each send is marked under lockup/mail/<date>/<kind>, so a repeat or late run
  * never sends twice. If this week's rota is missing it generates it with the
  * same lockup-rota.js the page uses.
@@ -42,6 +44,44 @@ async function main() {
     if (!R.isPaired(weeks[w])) { const prior = Object.assign({}, weeks); delete prior[w]; weeks[w] = R.generate(w, cfg.team || {}, prior); if (!DRY) await db.ref('lockup/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
   }
 
+  /* absences: seed any missing, then re-pair today's and later unsigned nights */
+  const team0 = cfg.team || {}, nm = id => (team0[id] || (cfg.managers || {})[id] || {}).name || id;
+  const absences = (await db.ref('lockup/absences').get()).val() || {};
+  const seededNow = [];
+  for (const id of Object.keys(R.SEED_ABSENCES)) {
+    if (absences[id]) continue;
+    seededNow.push(id);
+    absences[id] = Object.assign({ ts: Date.now() }, R.SEED_ABSENCES[id]);
+    if (!DRY) await db.ref('lockup/absences/' + id).set(absences[id]);
+    console.log('Seeded absence', id);
+  }
+  const allRecs = (await db.ref('lockup/records').get()).val() || {};
+  const signed = {}; Object.keys(allRecs).forEach(d => { signed[d] = 1; });
+  const changes = R.applyAbsences(weeks, team0, absences, n.date, signed);
+  for (const c of changes) {
+    console.log('Re-paired', c.date, nm(c.out), '->', c.in ? nm(c.in) : 'nobody', 'now', c.pair.map(nm).join(' and '));
+    if (!DRY) await db.ref('lockup/weeks/' + c.week + '/days/' + c.dow).set(c.pair);
+  }
+
+  /* queued notifications from lockup.html: absences, cover, holidays */
+  const mgrList = Object.values(cfg.managers || {}).map(m => m.email).filter(Boolean);
+  const queue = (await db.ref('lockup/notify').get()).val() || {};
+  for (const id of seededNow) {
+    if (queue[id]) continue;
+    const a = absences[id], ch = changes.filter(c => c.out === a.personId && c.date >= a.from && c.date <= a.to);
+    queue[id] = { kind: 'absence', ts: Date.now(), subject: nm(a.personId) + ' off ' + a.from + ', lockup re-paired',
+      lines: [a.note || nm(a.personId) + ' is away.'].concat(ch.map(c => c.date + ': ' + nm(c.out) + ' out, ' + (c.in ? nm(c.in) + ' in' : 'nobody free') + '. Now on: ' + c.pair.map(nm).join(' and '))) };
+    if (!DRY) await db.ref('lockup/notify/' + id).set(queue[id]);
+  }
+  for (const id of Object.keys(queue).sort((a, b) => (queue[a].ts || 0) - (queue[b].ts || 0))) {
+    const q = queue[id];
+    if (!q || q.sent) continue;
+    if (!mgrList.length) { console.log('Notification waiting, no manager emails set'); break; }
+    const lines = Array.isArray(q.lines) ? q.lines : Object.values(q.lines || {});
+    await send(transport(), mgrList, q.subject, 'Hi all,', lines.slice(0, 1), lines.slice(1), 'See the rota');
+    if (!DRY) await db.ref('lockup/notify/' + id + '/sent').set(Date.now());
+  }
+
   const on = R.onFor(n.date, weeks[n.week], hol);
   if (on.kind === 'closed') { console.log('Closed today'); return done(admin); }
 
@@ -57,6 +97,7 @@ async function main() {
   const list = Object.keys(cfg.checklist || {}).filter(k => cfg.checklist[k].active !== false)
     .sort((a, b) => (cfg.checklist[a].order || 0) - (cfg.checklist[b].order || 0)).map(k => cfg.checklist[k].label);
   const tx = transport();
+  void tx;
 
   /* reminder: due from 5pm (4pm Sat) until 9pm, skipped once signed */
   if (n.mins >= remindAt && n.mins < 21 * 60 && !mail.remind && !recs.length) {
