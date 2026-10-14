@@ -296,7 +296,10 @@
             "signature": {
               ".validate": "newData.isString() && newData.val().beginsWith('data:image/') && newData.val().length <= 250000"
             },
-            "signedByName": {
+            "signature2": {
+                ".validate": "newData.isString() && newData.val().beginsWith('data:image/') && newData.val().length <= 250000"
+              },
+              "signedByName": {
               ".validate": "newData.isString() && newData.val().length <= 60"
             },
             "items": {

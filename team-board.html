@@ -7550,7 +7550,7 @@ function paintLock(){
   const from=on.kind==='managers'?R.REMIND_SAT_MINS:R.REMIND_MINS;
   const st=LK.status[n.date];
   if(on.kind==='closed'||n.mins<from){el.classList.remove('show');document.body.classList.remove('haslock');return}
-  const team=(LK.cfg&&LK.cfg.team)||{}, who=on.kind==='managers'?'Managers':((team[on.id]&&team[on.id].name)||'Not set');
+  const team=(LK.cfg&&LK.cfg.team)||{}, nm=(on.ids||[]).map(id=>(team[id]&&team[id].name)||id), who=on.kind==='managers'?'Managers':(nm.length?nm.join(' and '):'Not set');
   el.classList.toggle('signed',!!(st&&st.state==='signed'));
   el.classList.toggle('overdue',!(st&&st.state==='signed')&&n.mins>=R.ESCALATE_MINS);
   const t=st&&st.ts?new Date(st.ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';

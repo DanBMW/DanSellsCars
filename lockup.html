@@ -29,6 +29,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;padding
 .big.green{background:var(--green)}
 .big:disabled{opacity:.4}
 .names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.names button.on{background:#11281e;border-color:var(--green);color:var(--green)}
 .names button{padding:16px 10px;border-radius:14px;border:1px solid var(--line);background:var(--card2);font-weight:800;font-size:16px}
 .prog{position:sticky;top:63px;z-index:10;background:var(--bg);padding:10px 0 12px}
 .bar{height:10px;border-radius:99px;background:var(--card2);overflow:hidden}
@@ -75,7 +76,7 @@ textarea{min-height:70px;resize:vertical}
 .rota li:last-child{border:0}
 .rota .d{width:92px;font-weight:800}
 .rota .dt{display:block;color:var(--muted);font-size:12px;font-weight:600}
-.rota select{flex:1}
+.rota .pair{flex:1;display:grid;gap:6px}.rota select{flex:1;padding:9px}
 .today{color:var(--gold)}
 .pill{display:inline-block;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:800;background:var(--card2);color:var(--muted)}
 .pill.g{background:#11281e;color:var(--green)}.pill.a{background:#2a2112;color:var(--amber)}.pill.r{background:#2c1414;color:var(--red)}
@@ -144,6 +145,8 @@ textarea{min-height:70px;resize:vertical}
     <div class="card"><ul class="summary" id="s-summary"></ul></div>
     <div class="sigwrap" id="sigwrap"><canvas id="sig"></canvas><div class="hint">Sign here with your finger</div></div>
     <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="ghost" id="sig-clear" type="button">Clear</button></div>
+    <div class="card" id="s-present-card"><b>Who was there tonight?</b><p class="muted small" style="margin:4px 0 10px">Tap to add or remove. You&rsquo;re always included.</p><div class="names" id="s-present"></div></div>
+    <div id="s-second" hidden><p style="font-weight:800;margin:14px 0 8px" id="s-second-q">Second signature (optional)</p><div class="sigwrap" id="sigwrap2"><canvas id="sig2"></canvas><div class="hint" id="sig2-hint">Second person signs here</div></div><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="ghost" id="sig2-clear" type="button">Clear</button></div></div>
     <label class="check"><input type="checkbox" id="s-confirm"><span id="s-confirm-text">I confirm the showroom is locked up.</span></label>
   </section>
 
@@ -215,6 +218,7 @@ function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');cle
 function fmtDate(d,long){const x=new Date(d+'T12:00:00Z');return x.toLocaleDateString('en-GB',{timeZone:'UTC',weekday:long?'long':'short',day:'numeric',month:'short'})}
 function hm(ts){return new Date(ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'})}
 function team(){return (CFG&&CFG.team)||{}} function mgrs(){return (CFG&&CFG.managers)||{}}
+function namesOf(list){list=(list||[]).map(nameOf);return list.length>1?list.slice(0,-1).join(', ')+' and '+list[list.length-1]:(list[0]||'Nobody')}
 function nameOf(id){const p=team()[id]||mgrs()[id];return p?p.name:(id||'Nobody')}
 function items(){const c=(CFG&&CFG.checklist)||{};return Object.keys(c).filter(k=>c[k].active!==false).sort((a,b)=>(c[a].order||0)-(c[b].order||0)).map(k=>({id:k,label:c[k].label}))}
 function holidays(){return Object.assign({},BANK,(CFG&&CFG.holidays)||{})}
@@ -227,7 +231,7 @@ onValue(ref(db,'lockup/weeks'),s=>{WEEKS=s.val()||{}; WEEKS._loaded=1; ensureWee
 onValue(ref(db,'lockup/records'),s=>{RECORDS=s.val()||{}; paint()});
 onValue(ref(db,'lockup/status'),s=>{STATUS=s.val()||{}; paint()});
 let ensuring={};
-function ensureWeeks(){ if(!CFG||!CFG.seeded||!WEEKS._loaded)return; [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(!WEEKS[w]&&!ensuring[w]){ensuring[w]=1; const all=Object.assign({},WEEKS);delete all._loaded; set(ref(db,'lockup/weeks/'+w),R.generate(w,team(),all)).catch(e=>{console.error(e);ensuring[w]=0})}})}
+function ensureWeeks(){ if(!CFG||!CFG.seeded||!WEEKS._loaded)return; [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(!R.isPaired(WEEKS[w])&&!ensuring[w]){ensuring[w]=1; const all=Object.assign({},WEEKS);delete all._loaded;delete all[w]; set(ref(db,'lockup/weeks/'+w),R.generate(w,team(),all)).catch(e=>{console.error(e);ensuring[w]=0})}})}
 function weeksClean(){const w=Object.assign({},WEEKS);delete w._loaded;return w}
 setInterval(()=>{const n=R.london(); if(n.date!==now.date){now=n;ensureWeeks()} now=n; if(view==='tonight')paintTonight()},30000);
 
@@ -243,16 +247,15 @@ function paintTonight(){
   const hol=holidays()[now.date];
   if(on.kind==='closed'){ $('t-kick').textContent=fmtDate(now.date,true); $('t-title').textContent=hol?'Closed today':'Closed on Sundays'; $('t-sub').textContent=hol?hol.label+'. No lockup tonight.':'No lockup tonight. See you Monday.'; return }
   $('t-kick').textContent=fmtDate(now.date,true)+' lockup';
-  const rostered=on.kind==='managers'?'Managers':nameOf(on.id);
-  if(recs.length){
+    if(recs.length){
     const r=recs[0];
-    $('t-title').textContent='Locked up by '+r.signedByName;
+    $('t-title').textContent='Locked up by '+(r.presentNames||r.signedByName);
     $('t-sub').textContent='Signed at '+hm(r.ts)+(r.issues?' with '+r.issues+' issue'+(r.issues>1?'s':''):'. Everything done.');
     $('t-signed').innerHTML='<div class="card"><ul class="summary">'+Object.keys(r.items||{}).map(k=>{const i=r.items[k];return '<li><span>'+esc(i.label)+(i.note?'<br><span class="muted small">'+esc(i.note)+'</span>':'')+'</span>'+(i.done?'<span class="ok">&#10003; '+(i.at?hm(i.at):'')+'</span>':'<span class="warn">Not done</span>')+'</li>'}).join('')+'</ul></div><button class="big alt" id="btn-again" type="button">Sign again as someone else</button>';
     $('btn-again').onclick=()=>{ $('t-signed').hidden=true; chooser(on) };
     return;
   }
-  $('t-title').textContent=on.kind==='managers'?'Managers on lockup tonight':rostered+' is on lockup tonight';
+  $('t-title').textContent=on.kind==='managers'?'Managers on lockup tonight':on.ids.length?'Tonight: '+namesOf(on.ids):'Nobody on the rota tonight';
   const due=on.kind==='managers'?'4pm':'5pm';
   $('t-sub').textContent=now.mins>=R.ESCALATE_MINS?'Not signed yet. Managers get an email at 6:30pm if it is still open.':'Reminder goes out at '+due+'. Tick everything off as you go, then sign.';
   chooser(on);
@@ -261,26 +264,30 @@ function paintTonight(){
 }
 function chooser(on,date){
   date=date||now.date; $('t-choose').hidden=false; $('cover-list').hidden=true;
-  const people=on.kind==='managers'?mgrs():team();
-  if(on.kind==='staff'&&on.id){ $('btn-me').hidden=false; $('btn-me').textContent='I\u2019m '+nameOf(on.id)+', start lockup'; $('btn-me').onclick=()=>start(date,on.id,on.id,''); $('btn-cover').textContent='Someone else is covering'; $('cover-q').textContent='Who is covering for '+nameOf(on.id)+'?' }
-  else { $('btn-me').hidden=true; $('btn-cover').textContent=on.kind==='managers'?'Start lockup':'Start lockup'; $('cover-q').textContent=on.kind==='managers'?'Which manager is locking up?':'Who is locking up?' }
+  const people=on.kind==='managers'?mgrs():team(), rost=on.kind==='staff'?on.ids:[];
+  const me=$('btn-me'); me.hidden=!rost.length;
+  me.outerHTML='<div id="btn-me"'+(rost.length?'':' hidden')+'>'+rost.map(id=>'<button class="big" type="button" data-id="'+esc(id)+'">I\u2019m '+esc(nameOf(id))+', start lockup</button>').join('')+'</div>';
+  $('btn-me').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,rost));
+  $('btn-cover').textContent=rost.length?'Someone else is covering':'Start lockup';
+  $('cover-q').textContent=on.kind==='managers'?'Which manager is locking up?':rost.length?'Who is covering for '+namesOf(rost)+'?':'Who is locking up?';
   const all=Object.assign({},people, on.kind==='managers'?{}:mgrs());
-  $('cover-names').innerHTML=Object.keys(all).filter(k=>k!==on.id&&all[k].active!==false).sort((a,b)=>(all[a].order||0)-(all[b].order||0)).map(k=>'<button type="button" data-id="'+esc(k)+'">'+esc(all[k].name)+'</button>').join('')+(on.kind==='managers'?'':'');
-  $('cover-names').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,on.kind==='staff'?on.id:'managers',on.kind==='staff'&&on.id?on.id:''));
+  $('cover-names').innerHTML=Object.keys(all).filter(k=>rost.indexOf(k)<0&&all[k].active!==false).sort((a,b)=>(all[a].order||0)-(all[b].order||0)).map(k=>'<button type="button" data-id="'+esc(k)+'">'+esc(all[k].name)+'</button>').join('');
+  $('cover-names').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,on.kind==='managers'?['managers']:rost));
   $('btn-cover').onclick=()=>{ $('cover-list').hidden=!$('cover-list').hidden };
 }
 
 /* ---- checklist ---- */
 function saveDraft(){ try{localStorage.lockupDraft=JSON.stringify(draft)}catch(e){} }
-function start(date,signer,rostered,coveringFor){
+function start(date,signer,rostered){
   let old=null; try{old=JSON.parse(localStorage.lockupDraft||'null')}catch(e){}
   if(old&&old.date===date&&old.signer===signer) draft=old;
-  else draft={date,signer,rostered,coveringFor,items:{}};
+  else draft={date,signer,rostered:rostered||[],present:(rostered||[]).filter(id=>id!=='managers').concat([signer]).filter((v,i,a)=>a.indexOf(v)===i),items:{}};
+  if(!draft.present)draft.present=[signer];
   items().forEach(i=>{ if(!draft.items[i.id]) draft.items[i.id]={label:i.label,done:false,cant:false,note:'',photo:'',at:0} });
   saveDraft(); show('check'); paintCheck();
 }
 function paintCheck(){
-  const list=items(); $('c-who').textContent=nameOf(draft.signer)+(draft.coveringFor?' covering for '+nameOf(draft.coveringFor):'')+(draft.date!==now.date?', '+fmtDate(draft.date):'');
+  const list=items(); $('c-who').textContent=nameOf(draft.signer)+' starting lockup'+(draft.date!==now.date?', '+fmtDate(draft.date):'');
   $('c-items').innerHTML=list.map(i=>{const d=draft.items[i.id];return '<div class="item'+(d.done?' done':'')+(d.cant?' cant':'')+'" data-id="'+i.id+'">'+
     '<button class="tick" type="button" data-act="tick"><span class="box">'+(d.cant?'!':'&#10003;')+'</span><span><b>'+esc(i.label)+'</b><small>'+(d.done?'Done at '+hm(d.at):d.cant?'Couldn\u2019t be done':'Tap when done')+'</small></span></button>'+
     '<div class="acts"><button type="button" data-act="note"'+(d.note&&!d.cant?' class="on"':'')+'>'+(d.note?'Edit note':'Add note')+'</button><button type="button" data-act="cant"'+(d.cant?' class="on"':'')+'>Can\u2019t do it</button></div>'+
@@ -309,20 +316,33 @@ function paintFoot(){
 }
 
 /* ---- signature ---- */
-let sigDirty=false, busy=false, sigInit=false;
-function initSig(){
-  const c=$('sig'),w=$('sigwrap'),r=Math.min(2,window.devicePixelRatio||1);
-  c.width=w.clientWidth*r; c.height=w.clientHeight*r; const g=c.getContext('2d'); g.scale(r,r); g.lineWidth=2.6; g.lineCap='round'; g.lineJoin='round'; g.strokeStyle='#0b1a33'; sigDirty=false;
-  if(sigInit)return; sigInit=true; let drawing=false,last=null;
+let sigDirty=false, sig2Dirty=false, busy=false; const sigInit={};
+function initPad(cid,wid,onDirty){
+  const c=$(cid),w=$(wid),r=Math.min(2,window.devicePixelRatio||1);
+  c.width=w.clientWidth*r; c.height=w.clientHeight*r; const g=c.getContext('2d'); g.setTransform(r,0,0,r,0,0); g.lineWidth=2.6; g.lineCap='round'; g.lineJoin='round'; g.strokeStyle='#0b1a33';
+  if(sigInit[cid])return; sigInit[cid]=1; let drawing=false,last=null;
   const pt=e=>{const b=c.getBoundingClientRect();return {x:e.clientX-b.left,y:e.clientY-b.top}};
   c.addEventListener('pointerdown',e=>{drawing=true;last=pt(e);c.setPointerCapture(e.pointerId);const g=c.getContext('2d');g.beginPath();g.arc(last.x,last.y,1.2,0,7);g.fillStyle='#0b1a33';g.fill()});
-  c.addEventListener('pointermove',e=>{if(!drawing)return;const p=pt(e),g=c.getContext('2d');g.beginPath();g.moveTo(last.x,last.y);g.lineTo(p.x,p.y);g.stroke();last=p;if(!sigDirty){sigDirty=true;paintFoot()}});
+  c.addEventListener('pointermove',e=>{if(!drawing)return;const p=pt(e),g=c.getContext('2d');g.beginPath();g.moveTo(last.x,last.y);g.lineTo(p.x,p.y);g.stroke();last=p;onDirty()});
   ['pointerup','pointercancel','pointerleave'].forEach(t=>c.addEventListener(t,()=>{drawing=false}));
-  $('sig-clear').onclick=()=>{initSig();paintFoot()}; $('s-confirm').onchange=paintFoot;
+}
+function initSig(){
+  sigDirty=false; sig2Dirty=false;
+  initPad('sig','sigwrap',()=>{if(!sigDirty){sigDirty=true;paintFoot()}});
+  $('sig-clear').onclick=()=>{sigDirty=false;initPad('sig','sigwrap',()=>{});paintFoot()}; $('s-confirm').onchange=paintFoot;
+  $('sig2-clear').onclick=()=>{sig2Dirty=false;initPad('sig2','sigwrap2',()=>{})};
+}
+function others(){return draft.present.filter(id=>id!==draft.signer)}
+function paintPresent(){
+  const all=Object.assign({},team(),mgrs()), ids=Object.keys(all).filter(k=>all[k].active!==false).sort((a,b)=>(team()[a]?0:100)+(all[a].order||0)-((team()[b]?0:100)+(all[b].order||0)));
+  $('s-present').innerHTML=ids.map(k=>'<button type="button" data-id="'+esc(k)+'" class="'+(draft.present.indexOf(k)>=0?'on':'')+'"'+(k===draft.signer?' disabled':'')+'>'+(draft.present.indexOf(k)>=0?'&#10003; ':'')+esc(all[k].name)+'</button>').join('');
+  $('s-present').querySelectorAll('button').forEach(b=>b.onclick=()=>{const id=b.dataset.id,i=draft.present.indexOf(id); if(i>=0)draft.present.splice(i,1); else draft.present.push(id); saveDraft(); paintPresent()});
+  const o=others(); $('s-second').hidden=!o.length;
+  if(o.length){ $('s-second-q').textContent=namesOf(o)+', add your signature (optional)'; $('sig2-hint').textContent=nameOf(o[0])+' signs here'; requestAnimationFrame(()=>initPad('sig2','sigwrap2',()=>{sig2Dirty=true})) }
 }
 function paintSign(){
   const list=items(), issues=list.filter(i=>draft.items[i.id].cant);
-  $('s-sub').textContent=nameOf(draft.signer)+', '+fmtDate(draft.date,true)+(draft.coveringFor?', covering for '+nameOf(draft.coveringFor):'');
+  $('s-sub').textContent=nameOf(draft.signer)+', '+fmtDate(draft.date,true); paintPresent();
   $('s-summary').innerHTML=list.map(i=>{const d=draft.items[i.id];return '<li><span>'+esc(i.label)+(d.note?'<br><span class="muted small">'+esc(d.note)+'</span>':'')+'</span>'+(d.done?'<span class="ok">&#10003;</span>':'<span class="warn">Issue</span>')+'</li>'}).join('');
   $('s-confirm-text').textContent=issues.length?'I confirm lockup is done, apart from the '+issues.length+' issue'+(issues.length>1?'s':'')+' noted above.':'I confirm the showroom is locked up.';
   $('s-confirm').checked=false;
@@ -333,12 +353,16 @@ async function submit(){
   list.forEach(i=>{const d=draft.items[i.id]; its[i.id]={label:d.label,done:!!d.done,at:d.at||0}; if(d.note.trim())its[i.id].note=d.note.trim(); if(d.photo)its[i.id].photo=d.photo; if(d.cant){its[i.id].cant=true;issues++}});
   const late=draft.date!==now.date||now.mins>=R.ESCALATE_MINS;
   const signer=team()[draft.signer]||mgrs()[draft.signer]||{};
-  const rec={date:draft.date,signedById:draft.signer,signedByName:signer.name||draft.signer,signedByFull:signer.fullName||'',rosteredId:draft.rostered||'',coveringFor:draft.coveringFor||'',items:its,issues,late,nextDay:draft.date!==now.date,signature:sig,ts:serverTimestamp(),device:navigator.userAgent.slice(0,160)};
+  const present=draft.present.slice(), rost=(draft.rostered||[]).filter(x=>x!=='managers'), allP=Object.assign({},team(),mgrs());
+  const covering=rost.filter(id=>present.indexOf(id)<0), coverers=present.filter(id=>rost.indexOf(id)<0);
+  const rec={date:draft.date,signedById:draft.signer,signedByName:signer.name||draft.signer,signedByFull:signer.fullName||'',
+    rosteredIds:rost,rosteredNames:rost.map(nameOf).join(' and '),rosteredId:rost[0]||'',presentIds:present,presentNames:namesOf(present),presentFull:present.map(id=>(allP[id]&&allP[id].fullName)||nameOf(id)),
+    coveringFor:covering.join(','),coveredBy:coverers.join(','),items:its,issues,late,nextDay:draft.date!==now.date,signature:sig,ts:serverTimestamp(),...(sig2Dirty&&others().length?{signature2:$('sig2').toDataURL('image/png'),signature2By:nameOf(others()[0])}:{}),device:navigator.userAgent.slice(0,160)};
   try{
     await push(ref(db,'lockup/records/'+draft.date),rec);
-    await set(ref(db,'lockup/status/'+draft.date),{state:'signed',by:rec.signedByName,ts:serverTimestamp(),issues,late});
+    await set(ref(db,'lockup/status/'+draft.date),{state:'signed',by:rec.presentNames,ts:serverTimestamp(),issues,late});
     localStorage.removeItem('lockupDraft'); busy=false;
-    $('d-sub').textContent='Thanks '+rec.signedByName+'. Signed at '+hm(Date.now())+(issues?'. '+issues+' issue'+(issues>1?'s':'')+' passed to the managers.':'. Have a good night.');
+    $('d-sub').textContent='Thanks '+rec.presentNames+'. Signed at '+hm(Date.now())+(issues?'. '+issues+' issue'+(issues>1?'s':'')+' passed to the managers.':'. Have a good night.');
     show('done');
   }catch(e){ console.error(e); busy=false; paintFoot(); toast('Couldn\u2019t save. Check signal and tap again.') }
 }
@@ -359,11 +383,12 @@ function paintRota(){
   const days=R.DAYS.concat(['sat','sun']);
   $('wk-list').innerHTML=days.map(d=>{const date=R.dateFor(mgWeek,d),hol=holidays()[date],recs=recsFor(date),isT=date===now.date;
     let right; if(d==='sun')right='<span class="muted">Closed</span>'; else if(hol)right='<span class="muted">Closed, '+esc(hol.label)+'</span>'; else if(d==='sat')right='<span>Managers</span>';
-    else { const cur=w&&w.days&&w.days[d]; right='<select data-day="'+d+'"'+(w?'':' disabled')+'><option value="">Nobody</option>'+ids.map(k=>'<option value="'+k+'"'+(k===cur?' selected':'')+(tm[k].off===d?' disabled':'')+'>'+esc(tm[k].name)+(tm[k].off===d?' (day off)':'')+'</option>').join('')+'</select>' }
-    const st=recs.length?'<span class="pill g">&#10003; '+esc(recs[0].signedByName)+'</span>':(date<now.date&&date>=LAUNCH&&d!=='sun'&&!hol?'<span class="pill r">Not signed</span>':'');
+    else { const cur=R.ids(w&&w.days&&w.days[d]); right='<span class="pair">'+[0,1].map(n=>'<select data-day="'+d+'" data-n="'+n+'"'+(w?'':' disabled')+'><option value="">Nobody</option>'+ids.map(k=>'<option value="'+k+'"'+(k===cur[n]?' selected':'')+(tm[k].off===d?' disabled':'')+'>'+esc(tm[k].name)+(tm[k].off===d?' (off)':'')+'</option>').join('')+'</select>').join('')+'</span>' }
+    const st=recs.length?'<span class="pill g">&#10003;</span>':(date<now.date&&date>=LAUNCH&&d!=='sun'&&!hol?'<span class="pill r">Not signed</span>':'');
     return '<li><span class="d'+(isT?' today':'')+'">'+R.DAY_NAMES[d].slice(0,3)+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span>'+right+st+'</li>'}).join('');
-  $('wk-list').querySelectorAll('select').forEach(s=>s.onchange=()=>{ const v=s.value; update(ref(db,'lockup/weeks/'+mgWeek+'/days'),{[s.dataset.day]:v||null}).then(()=>{ update(ref(db,'lockup/weeks/'+mgWeek),{edited:Date.now()}); toast('Rota updated') }).catch(()=>toast('Couldn\u2019t save')) });
+  $('wk-list').querySelectorAll('select').forEach(s=>s.onchange=()=>{ const d=s.dataset.day, sel=[...$('wk-list').querySelectorAll('select[data-day="'+d+'"]')].map(x=>x.value); if(sel[0]&&sel[0]===sel[1]){toast('Pick two different people');paintRota();return} update(ref(db,'lockup/weeks/'+mgWeek+'/days'),{[d]:sel.filter(Boolean)}).then(()=>{ update(ref(db,'lockup/weeks/'+mgWeek),{edited:Date.now()}); toast('Rota updated') }).catch(()=>toast('Couldn\u2019t save')) });
   $('wk-regen').onclick=()=>{ if(!confirm('Shuffle the whole week again? Any swaps you made this week will be lost.'))return; set(ref(db,'lockup/weeks/'+mgWeek),{days:reshuffle(mgWeek,tm,weeksClean()),generatedAt:Date.now(),seed:'reshuffle:'+mgWeek+':'+Date.now()}).then(()=>toast('New rota for the week')) };
+  if(w&&!R.isPaired(w)){ $('wk-list').insertAdjacentHTML('afterbegin','<li class="warn small">This week was made with one person a night. Shuffle it again for pairs.</li>') }
   if(!w){ $('wk-list').insertAdjacentHTML('beforeend','<li><button class="big" id="wk-make" type="button" style="margin:0">Make this week&rsquo;s rota</button></li>'); $('wk-make').onclick=()=>set(ref(db,'lockup/weeks/'+mgWeek),R.generate(mgWeek,tm,weeksClean())) }
   const c=R.counts(weeksClean(),'9999'); $('wk-counts').innerHTML=ids.sort((a,b)=>(c[a]||0)-(c[b]||0)).map(k=>'<li><span>'+esc(tm[k].name)+' <span class="muted small">off '+(R.DAY_NAMES[tm[k].off]||'none')+'</span></span><b>'+(c[k]||0)+'</b></li>').join('');
 }
@@ -375,33 +400,33 @@ function historyRows(){
   const tm=team(), out=[];
   Object.keys(RECORDS).forEach(d=>recsFor(d).forEach(r=>out.push({date:d,rec:r})));
   const signed=new Set(Object.keys(RECORDS));
-  for(let d=LAUNCH; d<now.date; d=R.addDays(d,1)){ const o=who(d); if(o.kind!=='closed'&&!signed.has(d)) out.push({date:d,missed:true,rostered:o.kind==='managers'?'managers':o.id}) }
+  for(let d=LAUNCH; d<now.date; d=R.addDays(d,1)){ const o=who(d); if(o.kind!=='closed'&&!signed.has(d)) out.push({date:d,missed:true,rostered:o.kind==='managers'?['managers']:o.ids}) }
   return out.sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:((b.rec&&b.rec.ts)||0)-((a.rec&&a.rec.ts)||0));
 }
 function filtered(){ const p=$('h-person').value,f=$('h-from').value,t=$('h-to').value,k=$('h-kind').value;
   return historyRows().filter(x=>{ if(f&&x.date<f)return false; if(t&&x.date>t)return false;
-    if(p){ if(x.missed){if(x.rostered!==p)return false} else if(x.rec.signedById!==p&&x.rec.rosteredId!==p&&x.rec.coveringFor!==p)return false }
+    if(p){ if(x.missed){if(x.rostered.indexOf(p)<0)return false} else if(x.rec.signedById!==p&&(x.rec.presentIds||[]).indexOf(p)<0&&(x.rec.rosteredIds||[x.rec.rosteredId]).indexOf(p)<0)return false }
     if(k==='issues')return x.rec&&x.rec.issues>0; if(k==='late')return x.rec&&x.rec.late; if(k==='missed')return x.missed; return true }) }
 function paintHistory(){
   const sel=$('h-person'),cur=sel.value,all=Object.assign({},team(),mgrs());
   sel.innerHTML='<option value="">Everyone</option>'+Object.keys(all).map(k=>'<option value="'+k+'">'+esc(all[k].name)+'</option>').join(''); sel.value=cur;
   const rows=filtered();
-  $('h-rows').innerHTML=rows.length?rows.map((x,i)=>x.missed?'<tr><td>'+fmtDate(x.date)+'</td><td class="muted">'+esc(x.rostered==='managers'?'Managers':nameOf(x.rostered))+' (rota)</td><td>&nbsp;</td><td><span class="pill r">Not signed</span></td></tr>':
-    '<tr class="click" data-i="'+i+'"><td>'+fmtDate(x.date)+'</td><td>'+esc(x.rec.signedByName)+(x.rec.coveringFor?'<br><span class="muted small">for '+esc(nameOf(x.rec.coveringFor))+'</span>':'')+'</td><td>'+hm(x.rec.ts)+'</td><td>'+(x.rec.issues?'<span class="pill a">'+x.rec.issues+' issue'+(x.rec.issues>1?'s':'')+'</span> ':'<span class="pill g">All done</span> ')+(x.rec.late?'<span class="pill r">Late</span>':'')+'</td></tr>').join(''):'<tr><td colspan="4" class="muted">Nothing matches.</td></tr>';
+  $('h-rows').innerHTML=rows.length?rows.map((x,i)=>x.missed?'<tr><td>'+fmtDate(x.date)+'</td><td class="muted">'+esc(x.rostered[0]==='managers'?'Managers':namesOf(x.rostered))+' (rota)</td><td>&nbsp;</td><td><span class="pill r">Not signed</span></td></tr>':
+    '<tr class="click" data-i="'+i+'"><td>'+fmtDate(x.date)+'</td><td>'+esc(x.rec.presentNames||x.rec.signedByName)+(x.rec.coveringFor?'<br><span class="muted small">covering '+esc(namesOf(x.rec.coveringFor.split(',')))+'</span>':'')+'</td><td>'+hm(x.rec.ts)+'</td><td>'+(x.rec.issues?'<span class="pill a">'+x.rec.issues+' issue'+(x.rec.issues>1?'s':'')+'</span> ':'<span class="pill g">All done</span> ')+(x.rec.late?'<span class="pill r">Late</span>':'')+'</td></tr>').join(''):'<tr><td colspan="4" class="muted">Nothing matches.</td></tr>';
   $('h-rows').querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>openRec(rows[+tr.dataset.i]));
 }
 ['h-person','h-from','h-to','h-kind'].forEach(id=>$(id).onchange=paintHistory);
 function openRec(x){ const r=x.rec;
   $('rec-body').innerHTML='<div class="row" style="justify-content:space-between"><h2>'+fmtDate(x.date,true)+'</h2><button class="ghost" type="button" id="rec-close">Close</button></div>'+
-  '<p class="muted" style="margin:6px 0 12px">Signed by <b>'+esc(r.signedByFull||r.signedByName)+'</b> at '+hm(r.ts)+(r.nextDay?' the next day':'')+(r.coveringFor?', covering for '+esc(nameOf(r.coveringFor)):'')+'</p>'+
+  '<p class="muted" style="margin:6px 0 12px">Signed by <b>'+esc(r.signedByFull||r.signedByName)+'</b> at '+hm(r.ts)+(r.nextDay?' the next day':'')+'.<br>There: <b>'+esc((r.presentFull||[]).join(', ')||r.presentNames||r.signedByName)+'</b>'+(r.rosteredNames?'<br>On the rota: '+esc(r.rosteredNames):'')+(r.coveringFor?'<br>Covering for '+esc(namesOf(r.coveringFor.split(','))):'')+'</p>'+
   '<ul class="summary">'+Object.keys(r.items||{}).map(k=>{const i=r.items[k];return '<li><span>'+esc(i.label)+(i.note?'<br><span class="muted small">'+esc(i.note)+'</span>':'')+(i.photo?'<br><img src="'+i.photo+'" style="max-width:100%;border-radius:10px;margin-top:6px" alt="">':'')+'</span>'+(i.done?'<span class="ok">&#10003; '+(i.at?hm(i.at):'')+'</span>':'<span class="warn">Not done</span>')+'</li>'}).join('')+'</ul>'+
-  '<p class="muted small" style="margin:12px 0 6px">Signature</p><img class="sig" src="'+r.signature+'" alt="Signature"><p class="muted small" style="margin-top:10px">Record '+esc(r.id)+'. Records can&rsquo;t be edited or deleted.</p>';
+  '<p class="muted small" style="margin:12px 0 6px">Signature, '+esc(r.signedByName)+'</p><img class="sig" src="'+r.signature+'" alt="Signature">'+(r.signature2?'<p class="muted small" style="margin:12px 0 6px">Signature, '+esc(r.signature2By||'')+'</p><img class="sig" src="'+r.signature2+'" alt="Second signature">':'')+'<p class="muted small" style="margin-top:10px">Record '+esc(r.id)+'. Records can&rsquo;t be edited or deleted.</p>';
   $('rec-modal').classList.add('show'); $('rec-close').onclick=()=>$('rec-modal').classList.remove('show') }
 $('rec-modal').onclick=e=>{if(e.target.id==='rec-modal')$('rec-modal').classList.remove('show')};
 $('h-csv').onclick=()=>{ const list=items(), q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-  const head=['Date','Day','Status','Signed by','Covering for','Signed at','Late','Issues'].concat(list.map(i=>i.label)).concat(['Notes']);
-  const lines=[head.map(q).join(',')].concat(filtered().map(x=>{ if(x.missed)return [x.date,R.DAY_NAMES[who(x.date).dow],'Not signed',x.rostered==='managers'?'Managers':nameOf(x.rostered)].map(q).join(',');
-    const r=x.rec,its=r.items||{}; return [x.date,R.DAY_NAMES[who(x.date).dow],'Signed',r.signedByName,r.coveringFor?nameOf(r.coveringFor):'',hm(r.ts),r.late?'Yes':'No',r.issues||0].concat(list.map(i=>its[i.id]?(its[i.id].done?'Done '+hm(its[i.id].at):'Not done'):'')).concat([Object.keys(its).filter(k=>its[k].note).map(k=>its[k].label+': '+its[k].note).join(' | ')]).map(q).join(',') }));
+  const head=['Date','Day','Status','Signed by','Present','On rota','Covering for','Signed at','Late','Issues'].concat(list.map(i=>i.label)).concat(['Notes']);
+  const lines=[head.map(q).join(',')].concat(filtered().map(x=>{ if(x.missed)return [x.date,R.DAY_NAMES[who(x.date).dow],'Not signed','','',x.rostered[0]==='managers'?'Managers':namesOf(x.rostered)].map(q).join(',');
+    const r=x.rec,its=r.items||{}; return [x.date,R.DAY_NAMES[who(x.date).dow],'Signed',r.signedByName,r.presentNames||r.signedByName,r.rosteredNames||'',r.coveringFor?namesOf(r.coveringFor.split(',')):'',hm(r.ts),r.late?'Yes':'No',r.issues||0].concat(list.map(i=>its[i.id]?(its[i.id].done?'Done '+hm(its[i.id].at):'Not done'):'')).concat([Object.keys(its).filter(k=>its[k].note).map(k=>its[k].label+': '+its[k].note).join(' | ')]).map(q).join(',') }));
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/csv'})); a.download='lockup-history-'+now.date+'.csv'; a.click() };
 $('h-pdf').onclick=()=>window.print();
 

@@ -2,7 +2,7 @@
 /* Lockup emails, run by the lockup-emails GitHub Action every 15 minutes
  * on weekday and Saturday afternoons. It works out UK time itself, so the
  * cron covers both BST and GMT and this decides what is due:
- *   5pm Mon to Fri  reminder to whoever is on the rota (4pm Saturday: managers)
+ *   5pm Mon to Fri  reminder to both people on the rota (4pm Saturday: managers)
  *   6:30pm          managers, if nobody has signed, or with any issues noted
  * Each send is marked under lockup/mail/<date>/<kind>, so a repeat or late run
  * never sends twice. If this week's rota is missing it generates it with the
@@ -39,7 +39,7 @@ async function main() {
 
   const weeks = (await db.ref('lockup/weeks').get()).val() || {};
   for (const w of [n.week, R.shiftWeek(n.week, 1)]) {
-    if (!weeks[w]) { weeks[w] = R.generate(w, cfg.team || {}, weeks); if (!DRY) await db.ref('lockup/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
+    if (!R.isPaired(weeks[w])) { const prior = Object.assign({}, weeks); delete prior[w]; weeks[w] = R.generate(w, cfg.team || {}, prior); if (!DRY) await db.ref('lockup/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
   }
 
   const on = R.onFor(n.date, weeks[n.week], hol);
@@ -50,7 +50,8 @@ async function main() {
   const mail = (await db.ref('lockup/mail/' + n.date).get()).val() || {};
   const team = cfg.team || {}, mgrs = cfg.managers || {};
   const mgrEmails = Object.values(mgrs).map(m => m.email).filter(Boolean);
-  const person = on.kind === 'staff' ? team[on.id] : null;
+  const people = on.kind === 'staff' ? on.ids.map(id => team[id]).filter(Boolean) : [];
+  const names = l => l.length > 1 ? l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1] : (l[0] || '');
   const dayName = R.DAY_NAMES[n.dow];
   const remindAt = on.kind === 'managers' ? R.REMIND_SAT_MINS : R.REMIND_MINS;
   const list = Object.keys(cfg.checklist || {}).filter(k => cfg.checklist[k].active !== false)
@@ -61,12 +62,12 @@ async function main() {
   if (n.mins >= remindAt && n.mins < 21 * 60 && !mail.remind && !recs.length) {
     let to, hi;
     if (on.kind === 'managers') { to = mgrEmails; hi = 'Hi all'; }
-    else if (person) { to = [person.email].filter(Boolean); hi = 'Hi ' + person.name; }
+    else if (people.length) { to = people.map(p => p.email).filter(Boolean); hi = 'Hi ' + names(people.map(p => p.name)); }
     else { to = mgrEmails; hi = 'Hi all, nobody is on the lockup rota tonight'; }
     if (to.length) {
-      await send(tx, to, (on.kind === 'managers' ? 'Managers lockup tonight' : "It's your lockup tonight") + ', ' + dayName,
+      await send(tx, to, (on.kind === 'managers' ? 'Managers lockup tonight' : people.length > 1 ? 'Lockup tonight: ' + names(people.map(p => p.name)) : "It's your lockup tonight") + ', ' + dayName,
         hi + ',', [
-          on.kind === 'managers' ? "It's Saturday, so it's managers' lockup tonight." : person ? "You're on lockup tonight." : 'Please pick someone to lock up.',
+          on.kind === 'managers' ? "It's Saturday, so it's managers' lockup tonight." : people.length > 1 ? "You're on lockup together tonight. Either of you can start the checklist." : people.length ? "You're on lockup tonight." : 'Please pick someone to lock up.',
           'Tick each one off on your phone as you go, then sign:'
         ], list, 'Start lockup');
       await mark(db, n.date, 'remind', to);
@@ -75,7 +76,7 @@ async function main() {
 
   /* 6:30pm: not signed, or signed with issues */
   if (n.mins >= R.ESCALATE_MINS && !mail.escalate && mgrEmails.length) {
-    const who = on.kind === 'managers' ? 'managers' : person ? person.fullName || person.name : 'nobody on the rota';
+    const who = on.kind === 'managers' ? 'managers' : people.length ? names(people.map(p => p.fullName || p.name)) : 'nobody on the rota';
     if (!recs.length) {
       await send(tx, mgrEmails, 'Lockup not signed, ' + dayName, 'Hi all,',
         ['Tonight\u2019s lockup hasn\u2019t been signed off yet.', 'On the rota: ' + who + '.', 'Please check the building is secure.'], list, 'Open lockup');
@@ -86,7 +87,7 @@ async function main() {
       const r = recs[0];
       if (issues.length) {
         await send(tx, mgrEmails, 'Lockup signed with notes, ' + dayName, 'Hi all,',
-          ['Lockup was signed by ' + r.signedByName + ' at ' + new Date(r.ts).toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' }) + (r.coveringFor ? ', covering for ' + ((team[r.coveringFor] || {}).name || r.coveringFor) : '') + '.', 'Notes from tonight:'], issues, 'See the record');
+          ['Lockup was signed by ' + r.signedByName + (r.presentNames && r.presentNames !== r.signedByName ? ' (there: ' + r.presentNames + ')' : '') + ' at ' + new Date(r.ts).toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' }) + (r.coveringFor ? ', covering for ' + names(r.coveringFor.split(',').map(id => (team[id] || {}).name || id)) : '') + '.', 'Notes from tonight:'], issues, 'See the record');
       } else console.log('Signed, nothing to report');
       await mark(db, n.date, 'escalate', issues.length ? mgrEmails : []);
     }

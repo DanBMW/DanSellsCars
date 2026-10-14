@@ -6,7 +6,8 @@
  * A week is picked once, then stored under lockup/weeks/<YYYY-Www>:
  *   - nobody is put on their day off;
  *   - fewest lockups so far goes first (counts from every stored week);
- *   - nobody does two nights running, and nobody twice in a week if avoidable;
+ *   - two people a night, nobody two nights running where avoidable;
+ *   - pairs vary: a pair that has already worked together is pushed back;
  *   - ties break by a shuffle seeded on the ISO week, so the same history
  *     always gives the same week.
  */
@@ -81,37 +82,69 @@
   function hashStr(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
   function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
+  /* a stored night as a list of ids: weeks before pairs held one string */
+  function ids(v) {
+    if (!v) return [];
+    if (typeof v === 'string') return [v];
+    return Object.keys(v).sort().map(function (k) { return v[k]; }).filter(Boolean);
+  }
+  function isPaired(weekRec) {
+    if (!weekRec || !weekRec.days) return false;
+    return weekRec.v === 2 && DAYS.every(function (d) { return typeof weekRec.days[d] !== 'string'; });
+  }
+
   /* nights each person has been given in stored weeks before `week` */
   function counts(weeks, week) {
     var c = {};
     Object.keys(weeks || {}).forEach(function (k) {
       if (week && k >= week) return;
       var d = (weeks[k] && weeks[k].days) || {};
-      DAYS.forEach(function (day) { if (d[day]) c[d[day]] = (c[d[day]] || 0) + 1; });
+      DAYS.forEach(function (day) { ids(d[day]).forEach(function (id) { c[id] = (c[id] || 0) + 1; }); });
     });
     return c;
   }
+  function pairKey(a, b) { return a < b ? a + '|' + b : b + '|' + a; }
+  /* how often each pair has worked together */
+  function pairCounts(weeks, week) {
+    var p = {};
+    Object.keys(weeks || {}).forEach(function (k) {
+      if (week && k >= week) return;
+      var d = (weeks[k] && weeks[k].days) || {};
+      DAYS.forEach(function (day) { var x = ids(d[day]); if (x.length > 1) { var q = pairKey(x[0], x[1]); p[q] = (p[q] || 0) + 1; } });
+    });
+    return p;
+  }
 
-  function generate(week, team, weeks, salt) {
-    var ids = Object.keys(team || {}).filter(function (id) { return team[id] && team[id].active !== false; }).sort();
+  /* two people a night, Mon to Fri. Lowest score wins each slot:
+     nights already this week (x100, keeps everyone at 1 or 2), nights in
+     earlier weeks (x10, balances totals), +30 if they worked last night,
+     +20 per time this pair has already worked together; ties break on the
+     shuffle seeded by the ISO week (plus a salt when a manager reshuffles). */
+  function generate(week, team, weeks, salt, perNight) {
+    perNight = perNight || 2;
+    var all = Object.keys(team || {}).filter(function (id) { return team[id] && team[id].active !== false; }).sort();
     var rnd = mulberry32(hashStr('lockup:' + week + (salt ? ':' + salt : '')));
-    var order = ids.slice();
+    var order = all.slice();
     for (var i = order.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)); var t = order[i]; order[i] = order[j]; order[j] = t; }
     var rank = {}; order.forEach(function (id, i) { rank[id] = i; });
-    var c = counts(weeks, week), days = {}, used = {}, prev = null;
+    var c = counts(weeks, week), pc = pairCounts(weeks, week), days = {}, prev = [], wk = {};
     DAYS.forEach(function (day) {
-      var ok = ids.filter(function (id) { return team[id].off !== day; });
-      var pick = function (list) {
-        list.sort(function (a, b) { return ((c[a] || 0) - (c[b] || 0)) || (rank[a] - rank[b]); });
-        return list[0] || null;
-      };
-      var p = pick(ok.filter(function (id) { return !used[id] && id !== prev; })) ||
-              pick(ok.filter(function (id) { return id !== prev; })) || pick(ok);
-      days[day] = p;
-      if (p) { used[p] = true; c[p] = (c[p] || 0) + 1; }
-      prev = p;
+      var ok = all.filter(function (id) { return team[id].off !== day; }), picked = [];
+      for (var n = 0; n < perNight; n++) {
+        var best = null, bs = 1e9;
+        ok.forEach(function (id) {
+          if (picked.indexOf(id) >= 0) return;
+          var s = (wk[id] || 0) * 100 + (c[id] || 0) * 10 + (prev.indexOf(id) >= 0 ? 30 : 0) +
+                  (picked.length ? (pc[pairKey(picked[0], id)] || 0) * 20 : 0) + rank[id] / 100;
+          if (s < bs) { bs = s; best = id; }
+        });
+        if (best) { picked.push(best); wk[best] = (wk[best] || 0) + 1; c[best] = (c[best] || 0) + 1; }
+      }
+      if (picked.length > 1) { var q = pairKey(picked[0], picked[1]); pc[q] = (pc[q] || 0) + 1; }
+      days[day] = picked;
+      prev = picked;
     });
-    return { days: days, generatedAt: Date.now(), seed: 'lockup:' + week + (salt ? ':' + salt : '') };
+    return { days: days, v: 2, generatedAt: Date.now(), seed: 'lockup:' + week + (salt ? ':' + salt : '') };
   }
 
   /* who is on for a date: { kind: 'staff'|'managers'|'closed', ids: [...] } */
@@ -119,12 +152,12 @@
     var dow = london(new Date(dateStr + 'T12:00:00Z')).dow;
     if (dow === 'sun' || (holidays && holidays[dateStr])) return { kind: 'closed', dow: dow };
     if (dow === 'sat') return { kind: 'managers', dow: dow };
-    var id = weekRec && weekRec.days && weekRec.days[dow];
-    return { kind: 'staff', dow: dow, id: id || null };
+    var list = ids(weekRec && weekRec.days && weekRec.days[dow]);
+    return { kind: 'staff', dow: dow, ids: list, id: list[0] || null };
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, generate: generate, onFor: onFor,
+    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, generate: generate, onFor: onFor,
     REMIND_MINS: 17 * 60, REMIND_SAT_MINS: 16 * 60, ESCALATE_MINS: 18 * 60 + 30 };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.LockupRota = api;
 })(this);
