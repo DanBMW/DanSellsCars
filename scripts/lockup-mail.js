@@ -11,6 +11,8 @@
  * never sends twice. If this week's rota is missing it generates it with the
  * same lockup-rota.js the page uses.
  *
+ * After that it runs scripts/forecourt-mail.js (08:30 forecourt reminder).
+ *
  * Env: FIREBASE_SA (service account JSON), GMAIL_USER, GMAIL_APP_PASSWORD,
  *      optional MAIL_FROM_NAME, DRY_RUN=1 (print, send nothing), NOW (ISO, for tests).
  * Needs: npm i firebase-admin nodemailer
@@ -208,4 +210,5 @@ async function mark(db, date, kind, to) {
 }
 function done(admin) { return admin.app().delete(); }
 
-main().catch(e => { console.error(e); process.exit(1); });
+/* Forecourt 08:30 reminder rides on the same workflow run (scripts/forecourt-mail.js). */
+main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });

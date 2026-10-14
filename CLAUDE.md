@@ -1612,6 +1612,14 @@ change one); server-side keys live in Cloudflare worker secrets. See
 
 - `Forecourt.html` — internal forecourt stock check tool (PIN-gated,
   Firebase-backed).
+  Vehicle statuses: `pending`, `in-progress`, `done` (sold is done with
+  answers.sold) and `inaccessible` (exec taps "Car is inaccessible", required
+  note saved as vehicles/<key>/inaccessible {note, by, at}, manager notice
+  raised; managers Reopen back to pending). `?sandbox=1` uses `forecourtTest/`.
+  `scripts/forecourt-mail.js` (run at the end of lockup-mail.js, same
+  workflow) emails each exec at 08:30 UK on open days with their pending or
+  in-progress cars; names matched to lockup/config/team, unmatched go to the
+  managers; dedupe at lockup/mail/<date>/forecourt/<exec>.
 - `newcar.html` — upload page for the new car manager's daily 76 Plate
   leaderboard screenshot. PIN-gated (the `newcar` gate in `staff-gate.js`),
   writes to `newcar/current`. Like the
