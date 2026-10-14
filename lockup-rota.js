@@ -31,7 +31,8 @@
     ['sergio', 'Sergio', 'Sergio Garaguso', 'sergio.garaguso@hedinautomotive.co.uk', 'Retail Manager']
   ];
   var DEFAULT_CHECKLIST = [
-    ['doors', 'Showroom doors secured'],
+    ['doors', 'Showroom front door secured'],
+    ['sliding', 'Showroom sliding car doors secured'], /* the big sliding doors cars drive through */
     ['windows', 'Upstairs windows closed'],
     ['chargers', 'Chargers reset on showroom cars'],
     ['used', 'Used cars locked'],

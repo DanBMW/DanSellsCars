@@ -7545,9 +7545,9 @@ let stop=null, dealsGen=0;
 /* ---- lockup strip: lockup/ in Firebase, logic shared with lockup.html ---- */
 /* test mode (lockup/config/testMode, missing = on) reads lockupTest/ instead,
    shows all day so it can be demoed, and is marked TEST MODE in orange */
-const LKS={lockup:{weeks:{},status:{},cfg:{}},lockupTest:{weeks:{},status:{},cfg:{}}};
+const LKS={lockup:{weeks:{},status:{},cfg:{},progress:{}},lockupTest:{weeks:{},status:{},cfg:{},progress:{}}};
 let LK_TEST=true;
-const LK={get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},bank:{}};
+const LK={get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},bank:{}};
 function paintLock(){
   const R=window.LockupRota, el=document.getElementById('lockstrip'), tx=document.getElementById('ls-text');
   if(!R||!el)return;
@@ -7563,12 +7563,15 @@ function paintLock(){
   const t=st&&st.ts?new Date(st.ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
   tx.textContent=st&&st.state==='signed'?'Locked up by '+st.by+' at '+t+(st.issues?' \u00b7 '+st.issues+' issue'+(st.issues>1?'s':'')+' noted':' \u2713'):
     (on.kind==='closed'?'Closed tonight':n.mins>=R.escalateAt(n.dow)?'Lockup not signed yet: '+who:'Lockup tonight: '+who);
+  if(!(st&&st.state==='signed')){ const cl=(LK.cfg&&LK.cfg.checklist)||{}, act=Object.keys(cl).filter(k=>cl[k].active!==false), pi=((LK.progress[n.date]||{}).items)||{};
+    const dn=act.filter(k=>pi[k]&&(pi[k].done||pi[k].cant)).length; if(dn)tx.textContent+=' \u00b7 '+dn+' of '+act.length+' done' }
   if(LK_TEST)tx.textContent='TEST MODE \u00b7 '+tx.textContent;
   el.classList.add('show');document.body.classList.add('haslock');
 }
 ['lockup','lockupTest'].forEach(r=>{
   watch(r+'/weeks',v=>{LKS[r].weeks=v||{};paintLock()});
   watch(r+'/status',v=>{LKS[r].status=v||{};paintLock()});
+  watch(r+'/progress',v=>{LKS[r].progress=v||{};paintLock()});
   watch(r+'/config',v=>{LKS[r].cfg=v||{};if(r==='lockup')LK_TEST=!(v&&v.testMode===false);paintLock()});
 });
 fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{LK.bank[e.date]=1});paintLock()}).catch(()=>{});

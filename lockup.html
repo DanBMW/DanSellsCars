@@ -255,14 +255,15 @@ function subscribeAll(){
   const on=(p,cb)=>UNSUB.push(onValue(ref(db,p),cb));
   on((RT+'/config'),s=>{CFG=s.val(); if(!CFG||!CFG.seeded){const d=R.defaults(); set(ref(db,RT+'/config'),Object.assign({},CFG||{},{team:(CFG&&CFG.team)||d.team,managers:(CFG&&CFG.managers)||d.managers,checklist:(CFG&&CFG.checklist)||d.checklist,seeded:Date.now()})).catch(e=>console.error(e)); return} ensureWeeks(); paint()});
   on((RT+'/weeks'),s=>{WEEKS=s.val()||{}; WEEKS._loaded=1; ensureWeeks(); paint()});
-  on((RT+'/records'),s=>{RECORDS=s.val()||{}; paint()});
+  on((RT+'/records'),s=>{RECORDS=s.val()||{}; signedElsewhere(); paint()});
   on((RT+'/status'),s=>{STATUS=s.val()||{}; paint()});
   on((RT+'/absences'),s=>{ABS=s.val()||{};ABS_LOADED=true;scheduleApply();paint()});
   on((RT+'/changes'),s=>{CHANGES=s.val()||{};if(view==='manager'&&tab==='timeoff')paintTimeoff()});
   on((RT+'/records'),()=>{REC_LOADED=true;scheduleApply()});
   paintTestBanner();
 }
-onValue(ref(db,'lockup/config/testMode'),s=>{ const t=s.val()!==false, r=t?'lockupTest':'lockup'; TEST=t; if(!MODE_KNOWN||r!==RT){MODE_KNOWN=true;RT=r;subscribeAll()} paintTestBanner() });
+const SANDBOX=new URLSearchParams(location.search).has('sandbox'); /* ?sandbox=1: this browser only uses the test copy */
+onValue(ref(db,'lockup/config/testMode'),s=>{ const t=SANDBOX||s.val()!==false, r=t?'lockupTest':'lockup'; TEST=t; if(!MODE_KNOWN||r!==RT){MODE_KNOWN=true;RT=r;stopProgress();subscribeAll()} paintTestBanner() });
 function paintTestBanner(){ const b=$('testbar'); if(b){b.hidden=!TEST; document.body.classList.toggle('testmode',TEST)} const m=$('mg-test-state'); if(m)paintModeCard() }
 
 /* weeks are made in order, each one seeing the weeks before it, so next
@@ -317,28 +318,50 @@ function chooser(on,date){
 
 /* ---- checklist ---- */
 function saveDraft(){ try{localStorage.lockupDraft=JSON.stringify(draft)}catch(e){} }
+/* ---- shared live progress: <root>/progress/<date>/items/<id>
+   Every tick, note and photo is written as it happens, so both people on the
+   night see each other's ticks. Each item carries ts (device time of the
+   change); the newer of local and remote wins, so the latest change wins and
+   a phone that was offline pushes its newer changes when it reconnects
+   (the draft is also kept in localStorage). Locked by the rules once signed. */
+let progUnsub=null, progPath='', noteT={};
+function itemPath(id){return RT+'/progress/'+draft.date+'/items/'+id}
+function pushItem(id){ const d=draft.items[id]; if(!d)return;
+  set(ref(db,itemPath(id)),{done:!!d.done,cant:!!d.cant,note:d.note||'',photo:d.photo||'',at:d.at||0,by:d.by||'',byName:d.byName||'',ts:d.ts||Date.now()}).catch(e=>console.warn('progress',e&&e.code)) }
+function touch(id){ const d=draft.items[id]; d.ts=Date.now(); d.by=draft.signer; d.byName=nameOf(draft.signer); saveDraft(); pushItem(id) }
+function watchProgress(){
+  const p=RT+'/progress/'+draft.date+'/items'; if(progPath===p&&progUnsub)return; if(progUnsub)progUnsub(); progPath=p;
+  progUnsub=onValue(ref(db,p),snap=>{ if(!draft)return; const r=snap.val()||{}; let changed=false;
+    Object.keys(draft.items).forEach(id=>{ const l=draft.items[id], x=r[id];
+      if(x&&(x.ts||0)>(l.ts||0)){ Object.assign(l,{done:!!x.done,cant:!!x.cant,note:x.note||'',photo:x.photo||'',at:x.at||0,by:x.by||'',byName:x.byName||'',ts:x.ts}); changed=true }
+      else if(l.ts&&(!x||(x.ts||0)<l.ts)) pushItem(id) });
+    if(changed){ saveDraft(); repaintSoon() } });
+}
+function repaintSoon(){ const a=document.activeElement; if(view==='check'){ if(a&&a.tagName==='TEXTAREA'){ a.onblur=()=>{a.onblur=null;paintCheck()}; return } paintCheck() } else if(view==='sign') paintSign() }
+function signedElsewhere(){ if(!draft||busy||(view!=='check'&&view!=='sign'))return; const r=recsFor(draft.date); if(!r.length)return; stopProgress(); try{localStorage.removeItem('lockupDraft')}catch(e){} toast('Already signed by '+r[0].signedByName); show('tonight'); paint() }
+function stopProgress(){ if(progUnsub)progUnsub(); progUnsub=null; progPath='' }
 function start(date,signer,rostered){
   let old=null; try{old=JSON.parse(localStorage.lockupDraft||'null')}catch(e){}
   if(old&&old.date===date&&old.signer===signer) draft=old;
   else draft={date,signer,rostered:rostered||[],present:(rostered||[]).filter(id=>id!=='managers').concat([signer]).filter((v,i,a)=>a.indexOf(v)===i),items:{}};
   if(!draft.present)draft.present=[signer];
   items().forEach(i=>{ if(!draft.items[i.id]) draft.items[i.id]={label:i.label,done:false,cant:false,note:'',photo:'',at:0} });
-  saveDraft(); show('check'); paintCheck();
+  saveDraft(); watchProgress(); show('check'); paintCheck();
 }
 function paintCheck(){
   const list=items(); $('c-who').textContent=nameOf(draft.signer)+' starting lockup'+(draft.date!==now.date?', '+fmtDate(draft.date):'');
   $('c-items').innerHTML=list.map(i=>{const d=draft.items[i.id];return '<div class="item'+(d.done?' done':'')+(d.cant?' cant':'')+'" data-id="'+i.id+'">'+
-    '<button class="tick" type="button" data-act="tick"><span class="box">'+(d.cant?'!':'&#10003;')+'</span><span><b>'+esc(i.label)+'</b><small>'+(d.done?'Done at '+hm(d.at):d.cant?'Couldn\u2019t be done':'Tap when done')+'</small></span></button>'+
+    '<button class="tick" type="button" data-act="tick"><span class="box">'+(d.cant?'!':'&#10003;')+'</span><span><b>'+esc(i.label)+'</b><small>'+(d.done?'Ticked by '+esc(d.byName||nameOf(draft.signer))+' '+hm(d.at):d.cant?'Flagged by '+esc(d.byName||nameOf(draft.signer))+', couldn\u2019t be done':'Tap when done')+'</small></span></button>'+
     '<div class="acts"><button type="button" data-act="note"'+(d.note&&!d.cant?' class="on"':'')+'>'+(d.note?'Edit note':'Add note')+'</button><button type="button" data-act="cant"'+(d.cant?' class="on"':'')+'>Can\u2019t do it</button></div>'+
     '<div class="extra'+(d.cant||d.note||d._open?' show':'')+'"><textarea data-act="text" placeholder="'+(d.cant?'What stopped it? e.g. charger fault on iX':'Note, e.g. charger fault on iX')+'">'+esc(d.note)+'</textarea>'+
     '<div class="photo">'+(d.photo?'<img src="'+d.photo+'" alt="">':'')+'<label>&#128247; '+(d.photo?'Change photo':'Add a photo (optional)')+'<input type="file" accept="image/*" capture="environment" hidden data-act="photo"></label>'+(d.photo?'<button class="ghost" type="button" data-act="rmphoto">Remove</button>':'')+'</div></div></div>'}).join('');
   $('c-items').querySelectorAll('.item').forEach(el=>{const id=el.dataset.id,d=draft.items[id];
-    el.querySelector('[data-act=tick]').onclick=()=>{ if(d.cant){d.cant=false} d.done=!d.done; d.at=d.done?Date.now():0; if(d.done&&navigator.vibrate)navigator.vibrate(15); saveDraft(); paintCheck() };
+    el.querySelector('[data-act=tick]').onclick=()=>{ if(d.cant){d.cant=false} d.done=!d.done; d.at=d.done?Date.now():0; if(d.done&&navigator.vibrate)navigator.vibrate(15); touch(id); paintCheck() };
     el.querySelector('[data-act=note]').onclick=()=>{ d._open=!d._open; saveDraft(); paintCheck(); const t=$('c-items').querySelector('[data-id="'+id+'"] textarea'); if(t)t.focus() };
-    el.querySelector('[data-act=cant]').onclick=()=>{ d.cant=!d.cant; if(d.cant){d.done=false;d.at=Date.now()} saveDraft(); paintCheck(); if(d.cant){const t=$('c-items').querySelector('[data-id="'+id+'"] textarea'); if(t)t.focus()} };
-    el.querySelector('[data-act=text]').oninput=e=>{ d.note=e.target.value.slice(0,500); saveDraft(); paintFoot() };
-    el.querySelector('[data-act=photo]').onchange=e=>{ const f=e.target.files[0]; if(f) shrink(f).then(u=>{d.photo=u; saveDraft(); paintCheck()}).catch(()=>toast('Couldn\u2019t read that photo')) };
-    const rm=el.querySelector('[data-act=rmphoto]'); if(rm) rm.onclick=()=>{d.photo='';saveDraft();paintCheck()};
+    el.querySelector('[data-act=cant]').onclick=()=>{ d.cant=!d.cant; if(d.cant){d.done=false;d.at=Date.now()} touch(id); paintCheck(); if(d.cant){const t=$('c-items').querySelector('[data-id="'+id+'"] textarea'); if(t)t.focus()} };
+    el.querySelector('[data-act=text]').oninput=e=>{ d.note=e.target.value.slice(0,500); d.ts=Date.now(); saveDraft(); paintFoot(); clearTimeout(noteT[id]); noteT[id]=setTimeout(()=>touch(id),700) };
+    el.querySelector('[data-act=photo]').onchange=e=>{ const f=e.target.files[0]; if(f) shrink(f).then(u=>{d.photo=u; touch(id); paintCheck()}).catch(()=>toast('Couldn\u2019t read that photo')) };
+    const rm=el.querySelector('[data-act=rmphoto]'); if(rm) rm.onclick=()=>{d.photo='';touch(id);paintCheck()};
   });
   const n=list.filter(i=>draft.items[i.id].done||draft.items[i.id].cant).length;
   $('c-count').textContent=n+' of '+list.length; $('c-bar').style.width=(list.length?n/list.length*100:0)+'%'; paintFoot();
@@ -389,7 +412,7 @@ function paintSign(){
 async function submit(){
   if(busy||!sigDirty||!$('s-confirm').checked)return; busy=true; paintFoot();
   const sig=$('sig').toDataURL('image/png'), list=items(), its={}; let issues=0;
-  list.forEach(i=>{const d=draft.items[i.id]; its[i.id]={label:d.label,done:!!d.done,at:d.at||0}; if(d.note.trim())its[i.id].note=d.note.trim(); if(d.photo)its[i.id].photo=d.photo; if(d.cant){its[i.id].cant=true;issues++}});
+  list.forEach(i=>{const d=draft.items[i.id]; its[i.id]={label:d.label,done:!!d.done,at:d.at||0}; if(d.by){its[i.id].by=d.by;its[i.id].byName=d.byName||''} if(d.note.trim())its[i.id].note=d.note.trim(); if(d.photo)its[i.id].photo=d.photo; if(d.cant){its[i.id].cant=true;issues++}});
   const late=draft.date!==now.date||now.mins>=R.escalateAt(now.dow);
   const signer=team()[draft.signer]||mgrs()[draft.signer]||{};
   const present=draft.present.slice(), rost=(draft.rostered||[]).filter(x=>x!=='managers'), allP=Object.assign({},team(),mgrs());
@@ -400,7 +423,7 @@ async function submit(){
   try{
     await push(ref(db,RT+'/records/'+draft.date),rec);
     await set(ref(db,RT+'/status/'+draft.date),{state:'signed',by:rec.presentNames,ts:serverTimestamp(),issues,late});
-    localStorage.removeItem('lockupDraft'); busy=false;
+    localStorage.removeItem('lockupDraft'); stopProgress(); busy=false;
     $('d-sub').textContent='Thanks '+rec.presentNames+'. Signed at '+hm(Date.now())+(issues?'. '+issues+' issue'+(issues>1?'s':'')+' passed to the managers.':'. Have a good night.');
     show('done');
   }catch(e){ console.error(e); busy=false; paintFoot(); toast('Couldn\u2019t save. Check signal and tap again.') }
@@ -458,7 +481,7 @@ function paintHistory(){
 function openRec(x){ const r=x.rec;
   $('rec-body').innerHTML='<div class="row" style="justify-content:space-between"><h2>'+fmtDate(x.date,true)+'</h2><button class="ghost" type="button" id="rec-close">Close</button></div>'+
   '<p class="muted" style="margin:6px 0 12px">Signed by <b>'+esc(r.signedByFull||r.signedByName)+'</b> at '+hm(r.ts)+(r.nextDay?' the next day':'')+'.<br>There: <b>'+esc((r.presentFull||[]).join(', ')||r.presentNames||r.signedByName)+'</b>'+(r.rosteredNames?'<br>On the rota: '+esc(r.rosteredNames):'')+(r.coveringFor?'<br>Covering for '+esc(namesOf(r.coveringFor.split(','))):'')+'</p>'+
-  '<ul class="summary">'+Object.keys(r.items||{}).map(k=>{const i=r.items[k];return '<li><span>'+esc(i.label)+(i.note?'<br><span class="muted small">'+esc(i.note)+'</span>':'')+(i.photo?'<br><img src="'+i.photo+'" style="max-width:100%;border-radius:10px;margin-top:6px" alt="">':'')+'</span>'+(i.done?'<span class="ok">&#10003; '+(i.at?hm(i.at):'')+'</span>':'<span class="warn">Not done</span>')+'</li>'}).join('')+'</ul>'+
+  '<ul class="summary">'+Object.keys(r.items||{}).map(k=>{const i=r.items[k];return '<li><span>'+esc(i.label)+(i.note?'<br><span class="muted small">'+esc(i.note)+'</span>':'')+(i.photo?'<br><img src="'+i.photo+'" style="max-width:100%;border-radius:10px;margin-top:6px" alt="">':'')+'</span>'+(i.done?'<span class="ok">&#10003; '+(i.byName?esc(i.byName)+' ':'')+(i.at?hm(i.at):'')+'</span>':'<span class="warn">Not done</span>')+'</li>'}).join('')+'</ul>'+
   '<p class="muted small" style="margin:12px 0 6px">Signature, '+esc(r.signedByName)+'</p><img class="sig" src="'+r.signature+'" alt="Signature">'+(r.signature2?'<p class="muted small" style="margin:12px 0 6px">Signature, '+esc(r.signature2By||'')+'</p><img class="sig" src="'+r.signature2+'" alt="Second signature">':'')+'<p class="muted small" style="margin-top:10px">Record '+esc(r.id)+'. Records can&rsquo;t be edited or deleted.</p>';
   $('rec-modal').classList.add('show'); $('rec-close').onclick=()=>$('rec-modal').classList.remove('show') }
 $('rec-modal').onclick=e=>{if(e.target.id==='rec-modal')$('rec-modal').classList.remove('show')};
