@@ -7559,10 +7559,10 @@ function paintLock(){
   if(on.kind==='closed'&&!LK_TEST||(n.mins<from&&!LK_TEST)){el.classList.remove('show');document.body.classList.remove('haslock');return}
   const team=(LK.cfg&&LK.cfg.team)||{}, nm=(on.ids||[]).map(id=>(team[id]&&team[id].name)||id), who=on.kind==='managers'?'Managers':(nm.length?nm.join(' and '):'Not set');
   el.classList.toggle('signed',!!(st&&st.state==='signed'));
-  el.classList.toggle('overdue',!(st&&st.state==='signed')&&n.mins>=R.ESCALATE_MINS);
+  el.classList.toggle('overdue',!(st&&st.state==='signed')&&n.mins>=R.escalateAt(n.dow));
   const t=st&&st.ts?new Date(st.ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
   tx.textContent=st&&st.state==='signed'?'Locked up by '+st.by+' at '+t+(st.issues?' \u00b7 '+st.issues+' issue'+(st.issues>1?'s':'')+' noted':' \u2713'):
-    (on.kind==='closed'?'Closed tonight':n.mins>=R.ESCALATE_MINS?'Lockup not signed yet: '+who:'Lockup tonight: '+who);
+    (on.kind==='closed'?'Closed tonight':n.mins>=R.escalateAt(n.dow)?'Lockup not signed yet: '+who:'Lockup tonight: '+who);
   if(LK_TEST)tx.textContent='TEST MODE \u00b7 '+tx.textContent;
   el.classList.add('show');document.body.classList.add('haslock');
 }

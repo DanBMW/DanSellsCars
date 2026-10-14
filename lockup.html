@@ -207,7 +207,7 @@ body.testmode .prog{top:97px}
       </div>
     </div>
     <div id="mg-team" class="mgp" hidden><div class="card"><div class="ppl" id="team-list"></div><button class="big alt" id="team-add" type="button" style="margin-top:12px">Add a person</button></div></div>
-    <div id="mg-managers" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">Managers lock up on Saturday and get the 6:30pm email if lockup isn&rsquo;t signed, with any issues from the night.</p><div class="ppl" id="mgr-list"></div><button class="big alt" id="mgr-add" type="button" style="margin-top:12px">Add a manager</button></div></div>
+    <div id="mg-managers" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">Managers lock up on Saturday and get the 6:30pm email (5:30pm Saturday) if lockup isn&rsquo;t signed, with any issues from the night.</p><div class="ppl" id="mgr-list"></div><button class="big alt" id="mgr-add" type="button" style="margin-top:12px">Add a manager</button></div></div>
     <div id="mg-checklist" class="mgp" hidden><div class="card"><div class="ppl" id="chk-list"></div><div class="row" style="margin-top:12px"><input type="text" id="chk-new" placeholder="New item, e.g. Alarm set"><button class="ghost" id="chk-add" type="button">Add</button></div></div></div>
     <div id="mg-timeoff" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">Absences and holidays booked on the lockup page. Each one re-pairs the nights it touches and emails the managers.</p><ul class="summary" id="to-list"></ul></div></div>
     <div id="mg-holidays" class="mgp" hidden><div class="card"><p class="muted small" style="margin-bottom:10px">No reminder or manager email on these days. Sundays and UK bank holidays are closed automatically.</p><ul class="summary" id="hol-list"></ul><div class="row" style="margin-top:12px"><input type="date" id="hol-date"><input type="text" id="hol-label" placeholder="Reason"><button class="ghost" id="hol-add" type="button">Add</button></div></div></div>
@@ -295,7 +295,8 @@ function paintTonight(){
   }
   $('t-title').textContent=on.kind==='managers'?'Managers on lockup tonight':on.ids.length?'Tonight: '+namesOf(on.ids):'Nobody on the rota tonight';
   const due=on.kind==='managers'?'4pm':'5pm';
-  $('t-sub').textContent=now.mins>=R.ESCALATE_MINS?'Not signed yet. Managers are emailed at 6:30pm while it is open.':now.mins>=R.NUDGE_MINS?'Not signed yet. Managers get an email at 6:30pm if it is still open.':'Reminder at '+due+', a nudge at 6:15pm if it is still open, then the managers at 6:30pm. Tick everything off as you go, then sign.';
+  const sat=on.kind==='managers', nT=sat?'5:15pm':'6:15pm', eT=sat?'5:30pm':'6:30pm';
+  $('t-sub').textContent=now.mins>=R.escalateAt(now.dow)?'Not signed yet. Managers are emailed at '+eT+' while it is open.':now.mins>=R.nudgeAt(now.dow)?'Not signed yet. Managers get an email at '+eT+' if it is still open.':'Reminder at '+due+', a nudge at '+nT+' if it is still open, then the managers at '+eT+'. Tick everything off as you go, then sign.';
   chooser(on);
   const y=R.addDays(now.date,-1), yon=who(y);
   if(now.mins<12*60&&yon.kind!=='closed'&&!recsFor(y).length&&y>=LAUNCH){ $('t-yesterday').hidden=false; $('t-yesterday').innerHTML='<div class="card"><b class="warn">Last night wasn&rsquo;t signed.</b><p class="muted small" style="margin:6px 0 10px">If it was done, sign it now. It will be marked as signed the next day.</p><button class="big alt" id="btn-yday" type="button" style="margin:0">Sign for '+fmtDate(y,true)+'</button></div>'; $('btn-yday').onclick=()=>{ $('t-yesterday').hidden=true; chooser(yon,y) } }
@@ -389,7 +390,7 @@ async function submit(){
   if(busy||!sigDirty||!$('s-confirm').checked)return; busy=true; paintFoot();
   const sig=$('sig').toDataURL('image/png'), list=items(), its={}; let issues=0;
   list.forEach(i=>{const d=draft.items[i.id]; its[i.id]={label:d.label,done:!!d.done,at:d.at||0}; if(d.note.trim())its[i.id].note=d.note.trim(); if(d.photo)its[i.id].photo=d.photo; if(d.cant){its[i.id].cant=true;issues++}});
-  const late=draft.date!==now.date||now.mins>=R.ESCALATE_MINS;
+  const late=draft.date!==now.date||now.mins>=R.escalateAt(now.dow);
   const signer=team()[draft.signer]||mgrs()[draft.signer]||{};
   const present=draft.present.slice(), rost=(draft.rostered||[]).filter(x=>x!=='managers'), allP=Object.assign({},team(),mgrs());
   const covering=rost.filter(id=>present.indexOf(id)<0), coverers=present.filter(id=>rost.indexOf(id)<0);

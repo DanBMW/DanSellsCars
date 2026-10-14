@@ -3,8 +3,8 @@
  * on weekday and Saturday afternoons. It works out UK time itself, so the
  * cron covers both BST and GMT and this decides what is due:
  *   5pm Mon to Fri  reminder to both people on the rota (4pm Saturday: managers)
- *   6:15pm          nudge to tonight's people if still unsigned
- *   6:30pm          managers, if nobody has signed, or with any issues noted
+ *   6:15pm          nudge to tonight's people if still unsigned (5:15pm Sat)
+ *   6:30pm          managers (5:30pm Sat), if nobody has signed, or with any issues noted
  * It also sends any queued manager notifications (lockup/notify, written by
  * the page for absences, cover and holidays) on every run, marking each sent.
  * Each send is marked under lockup/mail/<date>/<kind>, so a repeat or late run
@@ -151,18 +151,18 @@ async function main() {
   /* 6:15pm nudge to tonight's people if still unsigned. Only in the window
      before 6:30pm, so a late run that is already due the manager email skips
      it, and never in the same run as the first reminder. */
-  if (n.mins >= R.NUDGE_MINS && n.mins < R.ESCALATE_MINS && !mail.nudge && !recs.length && !remindedNow) {
+  if (n.mins >= R.nudgeAt(n.dow) && n.mins < R.escalateAt(n.dow) && !mail.nudge && !recs.length && !remindedNow) {
     const to = on.kind === 'managers' ? mgrEmails : people.length ? (TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean)) : [];
     if (to.length) {
       const hi = on.kind === 'managers' ? 'Hi all' : 'Hi ' + names(people.map(p => p.name));
       await send(tx, to, 'Lockup not signed yet, ' + dayName, hi + ',',
-        ['Just a nudge: tonight\u2019s lockup hasn\u2019t been signed off yet.', 'If it\u2019s done, tick it off and sign on your phone in a minute. The managers get an email at 6:30pm if it\u2019s still open.'], [], 'Sign off lockup');
+        ['Just a nudge: tonight\u2019s lockup hasn\u2019t been signed off yet.', 'If it\u2019s done, tick it off and sign on your phone in a minute. The managers get an email at ' + (n.dow === 'sat' ? '5:30pm' : '6:30pm') + ' if it\u2019s still open.'], [], 'Sign off lockup');
       await mark(db, n.date, 'nudge', to);
     } else console.log('Nudge due but no email address set');
   }
 
   /* 6:30pm: not signed, or signed with issues */
-  if (n.mins >= R.ESCALATE_MINS && !mail.escalate && mgrEmails.length) {
+  if (n.mins >= R.escalateAt(n.dow) && !mail.escalate && mgrEmails.length) {
     const who = on.kind === 'managers' ? 'managers' : people.length ? names(people.map(p => p.fullName || p.name)) : 'nobody on the rota';
     if (!recs.length) {
       await send(tx, mgrEmails, 'Lockup not signed, ' + dayName, 'Hi all,',
