@@ -24,7 +24,7 @@
     /* admin.html + links.html. Matched case-insensitively (typed text is upper-cased). */
     admin:   { norm: 'upper', iter: 150000, salt: 'cd315a98fd5e6f4a7be6fec4acb4ba0b', hash: 'c080824af06e74df47715d1e692e44255957b4ff9788c6db0b137a9e74dca488' },
     /* Manager PIN on team-board.html and Forecourt.html. Exact match. */
-    manager: { norm: 'none',  iter: 150000, salt: 'b4497faf339248519ea60453e8444a31', hash: 'bf5acd99f5e298b6ccb4481b45955a2427a6a6a74372d8364f89ff6c7ef65a1a' },
+    manager: { norm: 'none',  iter: 150000, salt: '2814fdf16d73f0fcf7acde11b0e416c3', hash: '2212a8645ed2851a5ba775387f0e0bc9e6ea9b3603516240e495dfc591c61160' },
     /* Nathan's upload PIN on newcar.html. Exact match. */
     newcar:  { norm: 'none',  iter: 150000, salt: 'a0aa2fe697270725bc4b7e83ca9d38fe', hash: '3776e2efcea324b111c5b5e8935ea15b971791f1db6ec7828c8e783b3e546169' }
   };
