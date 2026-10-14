@@ -652,6 +652,8 @@ body.haslock.hasticker{padding-bottom:92px}
 body.haslock .credit{bottom:48px}
 body.haslock.hasticker .credit{bottom:92px}
 body.premiere .lockstrip{display:none!important}
+.lockstrip.test{background:#ff8a00;color:#1a0d00}
+.lockstrip.test.signed{background:linear-gradient(90deg,#ff8a00 0 120px,#2fbf71 120px)}
 @media(prefers-reduced-motion:reduce){ .tk-track{animation:none!important} }
 /* Nathan gets the run of his own board, so Will comes over to argue. Only on
    the leaderboard view - an uploaded screenshot keeps the full width. */
@@ -7541,7 +7543,11 @@ function watch(p, cb, onErr){
 let stop=null, dealsGen=0;
 
 /* ---- lockup strip: lockup/ in Firebase, logic shared with lockup.html ---- */
-const LK={weeks:{},status:{},cfg:{},bank:{}};
+/* test mode (lockup/config/testMode, missing = on) reads lockupTest/ instead,
+   shows all day so it can be demoed, and is marked TEST MODE in orange */
+const LKS={lockup:{weeks:{},status:{},cfg:{}},lockupTest:{weeks:{},status:{},cfg:{}}};
+let LK_TEST=true;
+const LK={get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},bank:{}};
 function paintLock(){
   const R=window.LockupRota, el=document.getElementById('lockstrip'), tx=document.getElementById('ls-text');
   if(!R||!el)return;
@@ -7549,18 +7555,22 @@ function paintLock(){
   const on=R.onFor(n.date,LK.weeks[n.week],hol);
   const from=on.kind==='managers'?R.REMIND_SAT_MINS:R.REMIND_MINS;
   const st=LK.status[n.date];
-  if(on.kind==='closed'||n.mins<from){el.classList.remove('show');document.body.classList.remove('haslock');return}
+  el.classList.toggle('test',LK_TEST);
+  if(on.kind==='closed'&&!LK_TEST||(n.mins<from&&!LK_TEST)){el.classList.remove('show');document.body.classList.remove('haslock');return}
   const team=(LK.cfg&&LK.cfg.team)||{}, nm=(on.ids||[]).map(id=>(team[id]&&team[id].name)||id), who=on.kind==='managers'?'Managers':(nm.length?nm.join(' and '):'Not set');
   el.classList.toggle('signed',!!(st&&st.state==='signed'));
   el.classList.toggle('overdue',!(st&&st.state==='signed')&&n.mins>=R.ESCALATE_MINS);
   const t=st&&st.ts?new Date(st.ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
   tx.textContent=st&&st.state==='signed'?'Locked up by '+st.by+' at '+t+(st.issues?' \u00b7 '+st.issues+' issue'+(st.issues>1?'s':'')+' noted':' \u2713'):
-    (n.mins>=R.ESCALATE_MINS?'Lockup not signed yet: '+who:'Lockup tonight: '+who);
+    (on.kind==='closed'?'Closed tonight':n.mins>=R.ESCALATE_MINS?'Lockup not signed yet: '+who:'Lockup tonight: '+who);
+  if(LK_TEST)tx.textContent='TEST MODE \u00b7 '+tx.textContent;
   el.classList.add('show');document.body.classList.add('haslock');
 }
-watch('lockup/weeks',v=>{LK.weeks=v||{};paintLock()});
-watch('lockup/status',v=>{LK.status=v||{};paintLock()});
-watch('lockup/config',v=>{LK.cfg=v||{};paintLock()});
+['lockup','lockupTest'].forEach(r=>{
+  watch(r+'/weeks',v=>{LKS[r].weeks=v||{};paintLock()});
+  watch(r+'/status',v=>{LKS[r].status=v||{};paintLock()});
+  watch(r+'/config',v=>{LKS[r].cfg=v||{};if(r==='lockup')LK_TEST=!(v&&v.testMode===false);paintLock()});
+});
 fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{LK.bank[e.date]=1});paintLock()}).catch(()=>{});
 setInterval(paintLock,30000);
 

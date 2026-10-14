@@ -103,6 +103,10 @@ textarea{min-height:70px;resize:vertical}
 .sheet img.sig{background:#fff;border-radius:10px;width:100%;max-width:360px}
 .toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-weight:700;z-index:60;display:none}
 .toast.show{display:block}
+.testbar{position:sticky;top:0;z-index:30;background:#ff8a00;color:#1a0d00;font-weight:900;text-align:center;font-size:13px;letter-spacing:.04em;padding:8px 12px}
+body.testmode header.top{top:34px}
+body.testmode .prog{top:97px}
+.modecard{border-color:#ff8a00}
 [hidden]{display:none!important}
 @media print{
   body{background:#fff;color:#000}header.top,.tabs,.filters,.noprint,.foot{display:none!important}
@@ -115,6 +119,7 @@ textarea{min-height:70px;resize:vertical}
 <script src="lockup-rota.js"></script>
 </head>
 <body>
+<div id="testbar" class="testbar" hidden>TEST MODE &middot; practice data, emails to Dan and Nathan</div>
 <header class="top">
   <div class="brand"><div class="key">&#128273;</div><div>Lockup<small id="hdr-date">Hedin BMW Ruxley</small></div></div>
   <button class="ghost" id="btn-manager" type="button">Managers</button>
@@ -176,6 +181,7 @@ textarea{min-height:70px;resize:vertical}
       <button data-tab="timeoff" type="button">Time off</button>
       <button data-tab="holidays" type="button">Closed days</button>
     </div>
+    <div class="card modecard" id="mg-test-state"></div>
     <div id="mg-rota" class="mgp">
       <div class="card">
         <div class="row" style="justify-content:space-between;margin-bottom:6px">
@@ -223,6 +229,7 @@ const app=initializeApp(firebaseConfig); const db=getDatabase(app); ensureSigned
 const R=window.LockupRota, $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LAUNCH='2026-10-14';
+let ABS={}, CHANGES={}, ABS_LOADED=false, REC_LOADED=false, applyT=null;
 let CFG=null, WEEKS={}, RECORDS={}, STATUS={}, BANK={}, now=R.london();
 let draft=null, view='tonight', role='', mgWeek=now.week, histFilter={};
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2400)}
@@ -237,12 +244,28 @@ function show(v){view=v;['tonight','check','sign','done','manager'].forEach(x=>$
 
 /* ---- data ---- */
 fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{BANK[e.date]={label:e.title}});paint()}).catch(()=>{});
-onValue(ref(db,'lockup/config'),s=>{CFG=s.val(); if(!CFG||!CFG.seeded){const d=R.defaults(); set(ref(db,'lockup/config'),Object.assign({},CFG||{},{team:(CFG&&CFG.team)||d.team,managers:(CFG&&CFG.managers)||d.managers,checklist:(CFG&&CFG.checklist)||d.checklist,seeded:Date.now()})).catch(e=>console.error(e)); return} ensureWeeks(); paint()});
-onValue(ref(db,'lockup/weeks'),s=>{WEEKS=s.val()||{}; WEEKS._loaded=1; ensureWeeks(); paint()});
-onValue(ref(db,'lockup/records'),s=>{RECORDS=s.val()||{}; paint()});
-onValue(ref(db,'lockup/status'),s=>{STATUS=s.val()||{}; paint()});
 let ensuring={};
-function ensureWeeks(){ if(!CFG||!CFG.seeded||!WEEKS._loaded)return; [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(!R.isPaired(WEEKS[w])&&!ensuring[w]){ensuring[w]=1; const all=Object.assign({},WEEKS);delete all._loaded;delete all[w]; set(ref(db,'lockup/weeks/'+w),R.generate(w,team(),all)).catch(e=>{console.error(e);ensuring[w]=0})}})}
+/* ---- test mode: lockup/config/testMode (missing = on). In test mode every
+   read and write goes to lockupTest/, a separate copy; real lockup/ is untouched. ---- */
+let RT='lockupTest', TEST=true, UNSUB=[], MODE_KNOWN=false;
+const TEST_EXEC='daniel.cane@hedinautomotive.co.uk', TEST_MGR='nathan.jobson@hedinautomotive.co.uk';
+function subscribeAll(){
+  UNSUB.forEach(u=>u()); UNSUB=[];
+  CFG=null; WEEKS={}; RECORDS={}; STATUS={}; ABS={}; CHANGES={}; ABS_LOADED=false; REC_LOADED=false; ensuring={};
+  const on=(p,cb)=>UNSUB.push(onValue(ref(db,p),cb));
+  on((RT+'/config'),s=>{CFG=s.val(); if(!CFG||!CFG.seeded){const d=R.defaults(); set(ref(db,RT+'/config'),Object.assign({},CFG||{},{team:(CFG&&CFG.team)||d.team,managers:(CFG&&CFG.managers)||d.managers,checklist:(CFG&&CFG.checklist)||d.checklist,seeded:Date.now()})).catch(e=>console.error(e)); return} ensureWeeks(); paint()});
+  on((RT+'/weeks'),s=>{WEEKS=s.val()||{}; WEEKS._loaded=1; ensureWeeks(); paint()});
+  on((RT+'/records'),s=>{RECORDS=s.val()||{}; paint()});
+  on((RT+'/status'),s=>{STATUS=s.val()||{}; paint()});
+  on((RT+'/absences'),s=>{ABS=s.val()||{};ABS_LOADED=true;scheduleApply();paint()});
+  on((RT+'/changes'),s=>{CHANGES=s.val()||{};if(view==='manager'&&tab==='timeoff')paintTimeoff()});
+  on((RT+'/records'),()=>{REC_LOADED=true;scheduleApply()});
+  paintTestBanner();
+}
+onValue(ref(db,'lockup/config/testMode'),s=>{ const t=s.val()!==false, r=t?'lockupTest':'lockup'; TEST=t; if(!MODE_KNOWN||r!==RT){MODE_KNOWN=true;RT=r;subscribeAll()} paintTestBanner() });
+function paintTestBanner(){ const b=$('testbar'); if(b){b.hidden=!TEST; document.body.classList.toggle('testmode',TEST)} const m=$('mg-test-state'); if(m)paintModeCard() }
+
+function ensureWeeks(){ if(!CFG||!CFG.seeded||!WEEKS._loaded)return; [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(!R.isPaired(WEEKS[w])&&!ensuring[w]){ensuring[w]=1; const all=Object.assign({},WEEKS);delete all._loaded;delete all[w]; set(ref(db,RT+'/weeks/'+w),R.generate(w,team(),all)).catch(e=>{console.error(e);ensuring[w]=0})}})}
 function weeksClean(){const w=Object.assign({},WEEKS);delete w._loaded;return w}
 setInterval(()=>{const n=R.london(); if(n.date!==now.date){now=n;ensureWeeks()} now=n; if(view==='tonight')paintTonight()},30000);
 
@@ -370,8 +393,8 @@ async function submit(){
     rosteredIds:rost,rosteredNames:rost.map(nameOf).join(' and '),rosteredId:rost[0]||'',presentIds:present,presentNames:namesOf(present),presentFull:present.map(id=>(allP[id]&&allP[id].fullName)||nameOf(id)),
     coveringFor:covering.join(','),coveredBy:coverers.join(','),items:its,issues,late,nextDay:draft.date!==now.date,signature:sig,ts:serverTimestamp(),...(sig2Dirty&&others().length?{signature2:$('sig2').toDataURL('image/png'),signature2By:nameOf(others()[0])}:{}),device:navigator.userAgent.slice(0,160)};
   try{
-    await push(ref(db,'lockup/records/'+draft.date),rec);
-    await set(ref(db,'lockup/status/'+draft.date),{state:'signed',by:rec.presentNames,ts:serverTimestamp(),issues,late});
+    await push(ref(db,RT+'/records/'+draft.date),rec);
+    await set(ref(db,RT+'/status/'+draft.date),{state:'signed',by:rec.presentNames,ts:serverTimestamp(),issues,late});
     localStorage.removeItem('lockupDraft'); busy=false;
     $('d-sub').textContent='Thanks '+rec.presentNames+'. Signed at '+hm(Date.now())+(issues?'. '+issues+' issue'+(issues>1?'s':'')+' passed to the managers.':'. Have a good night.');
     show('done');
@@ -387,7 +410,7 @@ $('pin-go').onclick=tryPin; $('pin-input').onkeydown=e=>{if(e.key==='Enter')tryP
 function openMgr(){ show('manager'); $('btn-manager').textContent='Tonight'; paintManager() }
 let tab='rota';
 $('mg-tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;$('mg-tabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));paintManager()});
-function paintManager(){ if(!CFG)return; ['rota','history','team','managers','checklist','timeoff','holidays'].forEach(t=>$('mg-'+t).hidden=t!==tab); ({rota:paintRota,history:paintHistory,team:paintTeam,managers:paintMgrs,checklist:paintChk,timeoff:paintTimeoff,holidays:paintHol})[tab]() }
+function paintManager(){ paintModeCard(); if(!CFG)return; ['rota','history','team','managers','checklist','timeoff','holidays'].forEach(t=>$('mg-'+t).hidden=t!==tab); ({rota:paintRota,history:paintHistory,team:paintTeam,managers:paintMgrs,checklist:paintChk,timeoff:paintTimeoff,holidays:paintHol})[tab]() }
 function paintRota(){
   const w=WEEKS[mgWeek], tm=team(), ids=Object.keys(tm).filter(k=>tm[k].active!==false).sort((a,b)=>(tm[a].order||0)-(tm[b].order||0));
   $('wk-label').textContent='Week of '+fmtDate(R.weekStart(mgWeek));
@@ -397,10 +420,10 @@ function paintRota(){
     else { const cur=R.ids(w&&w.days&&w.days[d]); right='<span class="pair">'+[0,1].map(n=>'<select data-day="'+d+'" data-n="'+n+'"'+(w?'':' disabled')+'><option value="">Nobody</option>'+ids.map(k=>'<option value="'+k+'"'+(k===cur[n]?' selected':'')+(tm[k].off===d?' disabled':'')+'>'+esc(tm[k].name)+(tm[k].off===d?' (off)':'')+'</option>').join('')+'</select>').join('')+'</span>' }
     const st=recs.length?'<span class="pill g">&#10003;</span>':(date<now.date&&date>=LAUNCH&&d!=='sun'&&!hol?'<span class="pill r">Not signed</span>':'');
     return '<li><span class="d'+(isT?' today':'')+'">'+R.DAY_NAMES[d].slice(0,3)+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span>'+right+st+'</li>'}).join('');
-  $('wk-list').querySelectorAll('select').forEach(s=>s.onchange=()=>{ const d=s.dataset.day, sel=[...$('wk-list').querySelectorAll('select[data-day="'+d+'"]')].map(x=>x.value); if(sel[0]&&sel[0]===sel[1]){toast('Pick two different people');paintRota();return} update(ref(db,'lockup/weeks/'+mgWeek+'/days'),{[d]:sel.filter(Boolean)}).then(()=>{ update(ref(db,'lockup/weeks/'+mgWeek),{edited:Date.now()}); toast('Rota updated') }).catch(()=>toast('Couldn\u2019t save')) });
-  $('wk-regen').onclick=()=>{ if(!confirm('Shuffle the whole week again? Any swaps you made this week will be lost.'))return; set(ref(db,'lockup/weeks/'+mgWeek),{days:reshuffle(mgWeek,tm,weeksClean()),generatedAt:Date.now(),seed:'reshuffle:'+mgWeek+':'+Date.now()}).then(()=>toast('New rota for the week')) };
+  $('wk-list').querySelectorAll('select').forEach(s=>s.onchange=()=>{ const d=s.dataset.day, sel=[...$('wk-list').querySelectorAll('select[data-day="'+d+'"]')].map(x=>x.value); if(sel[0]&&sel[0]===sel[1]){toast('Pick two different people');paintRota();return} update(ref(db,RT+'/weeks/'+mgWeek+'/days'),{[d]:sel.filter(Boolean)}).then(()=>{ update(ref(db,RT+'/weeks/'+mgWeek),{edited:Date.now()}); toast('Rota updated') }).catch(()=>toast('Couldn\u2019t save')) });
+  $('wk-regen').onclick=()=>{ if(!confirm('Shuffle the whole week again? Any swaps you made this week will be lost.'))return; set(ref(db,RT+'/weeks/'+mgWeek),{days:reshuffle(mgWeek,tm,weeksClean()),generatedAt:Date.now(),seed:'reshuffle:'+mgWeek+':'+Date.now()}).then(()=>toast('New rota for the week')) };
   if(w&&!R.isPaired(w)){ $('wk-list').insertAdjacentHTML('afterbegin','<li class="warn small">This week was made with one person a night. Shuffle it again for pairs.</li>') }
-  if(!w){ $('wk-list').insertAdjacentHTML('beforeend','<li><button class="big" id="wk-make" type="button" style="margin:0">Make this week&rsquo;s rota</button></li>'); $('wk-make').onclick=()=>set(ref(db,'lockup/weeks/'+mgWeek),R.generate(mgWeek,tm,weeksClean())) }
+  if(!w){ $('wk-list').insertAdjacentHTML('beforeend','<li><button class="big" id="wk-make" type="button" style="margin:0">Make this week&rsquo;s rota</button></li>'); $('wk-make').onclick=()=>set(ref(db,RT+'/weeks/'+mgWeek),R.generate(mgWeek,tm,weeksClean())) }
   const c=R.counts(weeksClean(),'9999'); $('wk-counts').innerHTML=ids.sort((a,b)=>(c[a]||0)-(c[b]||0)).map(k=>'<li><span>'+esc(tm[k].name)+' <span class="muted small">off '+(R.DAY_NAMES[tm[k].off]||'none')+'</span></span><b>'+(c[k]||0)+'</b></li>').join('');
 }
 /* a fresh shuffle: same fairness rules, different tie break */
@@ -446,48 +469,46 @@ function personEditor(kind,box,addBtn){
   $(box).innerHTML=ids.map(k=>{const p=src[k];return '<div class="person" data-id="'+k+'"><div><label>Name shown</label><input type="text" data-f="name" value="'+esc(p.name)+'"></div><div><label>Full name</label><input type="text" data-f="fullName" value="'+esc(p.fullName||'')+'"></div><div class="full"><label>Work email</label><input type="email" data-f="email" value="'+esc(p.email||'')+'"></div>'+
     (kind==='team'?'<div><label>Day off</label><select data-f="off"><option value="">None</option>'+R.DAYS.map(d=>'<option value="'+d+'"'+(p.off===d?' selected':'')+'>'+R.DAY_NAMES[d]+'</option>').join('')+'</select></div><div><label>On the rota</label><select data-f="active"><option value="1"'+(p.active!==false?' selected':'')+'>Yes</option><option value="0"'+(p.active===false?' selected':'')+'>No</option></select></div>':'<div class="full"><label>Role</label><input type="text" data-f="role" value="'+esc(p.role||'')+'"></div><div class="full"><button class="ghost" type="button" data-rm="1">Remove manager</button></div>')+'</div>'}).join('');
   $(box).querySelectorAll('.person').forEach(el=>{const id=el.dataset.id;
-    el.querySelectorAll('[data-f]').forEach(inp=>inp.onchange=()=>{let v=inp.value.trim(); if(inp.dataset.f==='active')v=v==='1'; update(ref(db,'lockup/config/'+kind+'/'+id),{[inp.dataset.f]:v}).then(()=>toast('Saved')).catch(()=>toast('Couldn\u2019t save'))});
-    const rm=el.querySelector('[data-rm]'); if(rm)rm.onclick=()=>{ if(confirm('Remove '+src[id].name+'?'))remove(ref(db,'lockup/config/'+kind+'/'+id)) } });
-  $(addBtn).onclick=()=>{ const n=(prompt('First name')||'').trim(); if(!n)return; let id=n.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)||'p'; while(src[id])id+='2'; set(ref(db,'lockup/config/'+kind+'/'+id),{name:n,fullName:n,email:'',order:ids.length,active:true,off:''}).then(()=>toast(n+' added')) };
+    el.querySelectorAll('[data-f]').forEach(inp=>inp.onchange=()=>{let v=inp.value.trim(); if(inp.dataset.f==='active')v=v==='1'; update(ref(db,RT+'/config/'+kind+'/'+id),{[inp.dataset.f]:v}).then(()=>toast('Saved')).catch(()=>toast('Couldn\u2019t save'))});
+    const rm=el.querySelector('[data-rm]'); if(rm)rm.onclick=()=>{ if(confirm('Remove '+src[id].name+'?'))remove(ref(db,RT+'/config/'+kind+'/'+id)) } });
+  $(addBtn).onclick=()=>{ const n=(prompt('First name')||'').trim(); if(!n)return; let id=n.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)||'p'; while(src[id])id+='2'; set(ref(db,RT+'/config/'+kind+'/'+id),{name:n,fullName:n,email:'',order:ids.length,active:true,off:''}).then(()=>toast(n+' added')) };
 }
-function paintTeam(){personEditor('team','team-list','team-add')}
-function paintMgrs(){personEditor('managers','mgr-list','mgr-add')}
+function testNote(box,addr){ if(TEST)$(box).insertAdjacentHTML('afterbegin','<p class="small" style="color:#ff8a00;font-weight:700;margin-bottom:8px">Test mode: every email here actually goes to '+addr+'.</p>') }
+function paintTeam(){personEditor('team','team-list','team-add');testNote('team-list',TEST_EXEC)}
+function paintMgrs(){personEditor('managers','mgr-list','mgr-add');testNote('mgr-list',TEST_MGR+' only')}
 function paintChk(){ const c=CFG.checklist||{}, ids=Object.keys(c).sort((a,b)=>(c[a].order||0)-(c[b].order||0));
   $('chk-list').innerHTML=ids.map(k=>'<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)"><span style="flex:1'+(c[k].active===false?';opacity:.4;text-decoration:line-through':'')+'">'+esc(c[k].label)+'</span>'+(c[k].builtin?'<span class="pill">Standard</span>':'<button class="ghost" type="button" data-k="'+k+'">'+(c[k].active===false?'Turn on':'Turn off')+'</button>')+'</div>').join('');
-  $('chk-list').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>update(ref(db,'lockup/config/checklist/'+b.dataset.k),{active:c[b.dataset.k].active===false}));
-  $('chk-add').onclick=()=>{ const v=$('chk-new').value.trim().slice(0,80); if(!v)return; set(ref(db,'lockup/config/checklist/x'+Date.now().toString(36)),{label:v,order:ids.length,active:true}).then(()=>{$('chk-new').value='';toast('Added')}) } }
+  $('chk-list').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>update(ref(db,RT+'/config/checklist/'+b.dataset.k),{active:c[b.dataset.k].active===false}));
+  $('chk-add').onclick=()=>{ const v=$('chk-new').value.trim().slice(0,80); if(!v)return; set(ref(db,RT+'/config/checklist/x'+Date.now().toString(36)),{label:v,order:ids.length,active:true}).then(()=>{$('chk-new').value='';toast('Added')}) } }
 function paintHol(){ const h=(CFG.holidays)||{}, up=Object.keys(BANK).filter(d=>d>=now.date).sort().slice(0,4);
   $('hol-list').innerHTML=Object.keys(h).sort().map(d=>'<li><span>'+fmtDate(d,true)+' '+d.slice(0,4)+'<br><span class="muted small">'+esc(h[d].label||'')+'</span></span><button class="ghost" type="button" data-d="'+d+'">Remove</button></li>').join('')+up.map(d=>'<li><span>'+fmtDate(d,true)+' '+d.slice(0,4)+'<br><span class="muted small">'+esc(BANK[d].label)+'</span></span><span class="pill">Bank holiday</span></li>').join('');
-  $('hol-list').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>remove(ref(db,'lockup/config/holidays/'+b.dataset.d)));
-  $('hol-add').onclick=()=>{ const d=$('hol-date').value; if(!d)return; set(ref(db,'lockup/config/holidays/'+d),{label:$('hol-label').value.trim().slice(0,60)||'Closed'}).then(()=>{toast('Added');$('hol-label').value=''}) } }
+  $('hol-list').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>remove(ref(db,RT+'/config/holidays/'+b.dataset.d)));
+  $('hol-add').onclick=()=>{ const d=$('hol-date').value; if(!d)return; set(ref(db,RT+'/config/holidays/'+d),{label:$('hol-label').value.trim().slice(0,60)||'Closed'}).then(()=>{toast('Added');$('hol-label').value=''}) } }
 
 
 /* ---- time off, cover and the public rota ---- */
-let ABS={}, CHANGES={}, ABS_LOADED=false, REC_LOADED=false, applyT=null;
-onValue(ref(db,'lockup/absences'),s=>{ABS=s.val()||{};ABS_LOADED=true;scheduleApply();paint()});
-onValue(ref(db,'lockup/changes'),s=>{CHANGES=s.val()||{};if(view==='manager'&&tab==='timeoff')paintTimeoff()});
-onValue(ref(db,'lockup/records'),()=>{REC_LOADED=true;scheduleApply()});
+applyT=null;
 function signedDates(){const o={};Object.keys(RECORDS).forEach(d=>o[d]=1);return o}
 function cloneWeeks(){return JSON.parse(JSON.stringify(weeksClean()))}
 function changeLines(ch){return ch.map(c=>fmtDate(c.date,true)+': '+nameOf(c.out)+' out, '+(c.in?nameOf(c.in)+' in':'nobody free to step in')+'. Now on: '+(namesOf(c.pair)||'nobody'))}
-async function writeChanges(ch){ for(const c of ch) await update(ref(db,'lockup/weeks/'+c.week+'/days'),{[c.dow]:c.pair}) }
-async function notifyMgrs(kind,subject,lines,id){ const k=id||push(ref(db,'lockup/notify')).key; try{ await set(ref(db,'lockup/notify/'+k),{kind,subject:subject.slice(0,160),lines,ts:Date.now(),by:'lockup.html'}) }catch(e){ if(!id)console.error(e) } }
-async function logChange(kind,data){ try{ await push(ref(db,'lockup/changes'),Object.assign({kind,ts:Date.now()},data)) }catch(e){console.error(e)} }
+async function writeChanges(ch){ for(const c of ch) await update(ref(db,RT+'/weeks/'+c.week+'/days'),{[c.dow]:c.pair}) }
+async function notifyMgrs(kind,subject,lines,id){ const k=id||push(ref(db,RT+'/notify')).key; try{ await set(ref(db,RT+'/notify/'+k),{kind,subject:subject.slice(0,160),lines,ts:Date.now(),by:'lockup.html'}) }catch(e){ if(!id)console.error(e) } }
+async function logChange(kind,data){ try{ await push(ref(db,RT+'/changes'),Object.assign({kind,ts:Date.now()},data)) }catch(e){console.error(e)} }
 function scheduleApply(){clearTimeout(applyT);applyT=setTimeout(runApply,400)}
 async function runApply(){
   if(!CFG||!CFG.seeded||!WEEKS._loaded||!ABS_LOADED||!REC_LOADED)return;
   if(!R.isPaired(WEEKS[now.week]))return;
   /* seeded absences, written once */
   for(const id of Object.keys(R.SEED_ABSENCES)){ if(!ABS[id]){ const a=Object.assign({ts:Date.now()},R.SEED_ABSENCES[id]); ABS[id]=a;
-    try{ await set(ref(db,'lockup/absences/'+id),a); const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates()); await writeChanges(ch);
+    try{ await set(ref(db,RT+'/absences/'+id),a); const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates()); await writeChanges(ch);
       await notifyMgrs('absence',nameOf(a.personId)+' off '+fmtDate(a.from,true)+', lockup re-paired',[a.note||'',...changeLines(ch)].filter(Boolean),id) }catch(e){console.error(e)} } }
   const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates());
   if(ch.length) writeChanges(ch).catch(e=>console.error(e));
 }
 setInterval(scheduleApply,60000);
 async function addAbsence(personId,from,to,kind,note){
-  const id=push(ref(db,'lockup/absences')).key, a={personId,from,to,kind,status:kind==='holiday'?'booked':'approved',note:(note||'').slice(0,200),by:nameOf(personId),ts:Date.now()};
-  await set(ref(db,'lockup/absences/'+id),a); ABS[id]=a;
+  const id=push(ref(db,RT+'/absences')).key, a={personId,from,to,kind,status:kind==='holiday'?'booked':'approved',note:(note||'').slice(0,200),by:nameOf(personId),ts:Date.now()};
+  await set(ref(db,RT+'/absences/'+id),a); ABS[id]=a;
   const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates()); await writeChanges(ch);
   const range=from===to?fmtDate(from,true):fmtDate(from,true)+' to '+fmtDate(to,true);
   await notifyMgrs(kind,(kind==='holiday'?'Holiday booked: ':'Lockup absence: ')+nameOf(personId)+', '+range,
@@ -496,7 +517,7 @@ async function addAbsence(personId,from,to,kind,note){
 }
 async function arrangeCover(date,outId,inId){
   const wk=R.isoWeek(date), dow=who(date).dow, pair=R.pairOn(weeksClean(),date).map(x=>x===outId?inId:x);
-  await update(ref(db,'lockup/weeks/'+wk+'/days'),{[dow]:pair});
+  await update(ref(db,RT+'/weeks/'+wk+'/days'),{[dow]:pair});
   await logChange('cover',{date,out:outId,in:inId,pair});
   await notifyMgrs('cover','Lockup cover: '+nameOf(inId)+' for '+nameOf(outId)+', '+fmtDate(date,true),[nameOf(inId)+' has agreed to cover '+nameOf(outId)+'\u2019s lockup on '+fmtDate(date,true)+'.','Now on: '+namesOf(pair)+'. The 5pm email goes to them.']);
   return pair;
@@ -548,10 +569,18 @@ function paintTimeoff(){
   const covers=Object.keys(CHANGES).map(k=>CHANGES[k]).filter(c=>c.kind==='cover').sort((a,b)=>b.ts-a.ts).slice(0,20);
   $('to-list').innerHTML=(list.length?list.map(a=>'<li><span><b>'+esc(nameOf(a.personId))+'</b> '+(a.kind==='holiday'?'holiday':'away')+'<br><span class="muted small">'+(a.from===a.to?fmtDate(a.from,true):fmtDate(a.from)+' to '+fmtDate(a.to))+(a.note?', '+esc(a.note):'')+'</span></span><span style="text-align:right">'+pill(a)+'<br>'+(a.status==='booked'?'<button class="ghost" type="button" data-ap="'+a.id+'">Approve</button> ':'')+(a.status!=='cancelled'?'<button class="ghost" type="button" data-cx="'+a.id+'">Cancel</button>':'')+'</span></li>').join(''):'<li class="muted">Nobody has booked time off.</li>')+
     (covers.length?'<li style="display:block"><b>Cover arranged</b></li>'+covers.map(c=>'<li><span>'+esc(nameOf(c.in))+' for '+esc(nameOf(c.out))+'</span><span class="muted small">'+fmtDate(c.date)+'</span></li>').join(''):'');
-  $('to-list').querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>update(ref(db,'lockup/absences/'+b.dataset.ap),{status:'approved'}).then(()=>toast('Approved')));
-  $('to-list').querySelectorAll('[data-cx]').forEach(b=>b.onclick=()=>{ if(confirm('Cancel this time off? Nights already re-paired stay as they are; change them on the Rota tab if needed.'))update(ref(db,'lockup/absences/'+b.dataset.cx),{status:'cancelled'}).then(()=>toast('Cancelled')) });
+  $('to-list').querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>update(ref(db,RT+'/absences/'+b.dataset.ap),{status:'approved'}).then(()=>toast('Approved')));
+  $('to-list').querySelectorAll('[data-cx]').forEach(b=>b.onclick=()=>{ if(confirm('Cancel this time off? Nights already re-paired stay as they are; change them on the Rota tab if needed.'))update(ref(db,RT+'/absences/'+b.dataset.cx),{status:'cancelled'}).then(()=>toast('Cancelled')) });
 }
 
+function paintModeCard(){ const el=$('mg-test-state'); if(!el)return;
+  el.innerHTML=TEST?'<b style="color:#ff8a00">Test mode is on</b><p class="muted small" style="margin:6px 0 10px">Everything here is practice data in a separate copy. Staff emails go to '+TEST_EXEC+', manager emails only to '+TEST_MGR+', subjects start [TEST]. Real lockup records are not touched.</p><div class="row"><button class="big" type="button" id="mode-off" style="margin:0">Switch to real mode</button><button class="big alt" type="button" id="mode-wipe" style="margin:0">Wipe test data</button></div>'
+    :'<b class="ok">Real mode</b><p class="muted small" style="margin:6px 0 10px">Live rota, real records and real emails.</p><button class="big alt" type="button" id="mode-on" style="margin:0">Switch to test mode</button>';
+  const off=$('mode-off'),on=$('mode-on'),w=$('mode-wipe');
+  if(off)off.onclick=()=>{ if(confirm('Switch to real mode? The team sees the real rota and real emails go out.'))set(ref(db,'lockup/config/testMode'),false).then(()=>toast('Real mode on')).catch(()=>toast('Couldn\u2019t switch')) };
+  if(on)on.onclick=()=>{ if(confirm('Switch to test mode? The page, board and emails use practice data until you switch back.'))set(ref(db,'lockup/config/testMode'),true).then(()=>toast('Test mode on')).catch(()=>toast('Couldn\u2019t switch')) };
+  if(w)w.onclick=()=>{ if(confirm('Wipe all test data? The test rota is rebuilt fresh. Real data is not touched.'))remove(ref(db,'lockupTest')).then(()=>toast('Test data wiped')).catch(()=>toast('Couldn\u2019t wipe')) };
+}
 window.lockupDebug=()=>({CFG,WEEKS,RECORDS,STATUS,ABS,now,draft});
 paint();
 </script>

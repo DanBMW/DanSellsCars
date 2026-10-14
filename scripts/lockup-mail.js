@@ -18,6 +18,11 @@
 const R = require('../lockup-rota.js');
 const SITE = 'https://dan-sells.co.uk/lockup.html';
 const DRY = !!process.env.DRY_RUN;
+/* Test mode: lockup/config/testMode (missing = on). Everything is read from and
+   written to lockupTest/, staff emails go to TEST_EXEC, manager emails only to
+   TEST_MGR, and subjects start [TEST]. Real lockup/ is not touched. */
+const TEST_EXEC = 'daniel.cane@hedinautomotive.co.uk', TEST_MGR = 'nathan.jobson@hedinautomotive.co.uk';
+let ROOT = 'lockup', TEST = false;
 
 async function main() {
   const admin = require('firebase-admin');
@@ -29,7 +34,11 @@ async function main() {
   const n = R.london(process.env.NOW ? new Date(process.env.NOW) : new Date());
   console.log('UK now', n.date, n.dow, Math.floor(n.mins / 60) + ':' + String(n.mins % 60).padStart(2, '0'));
 
-  const cfg = (await db.ref('lockup/config').get()).val();
+  TEST = (await db.ref('lockup/config/testMode').get()).val() !== false;
+  ROOT = TEST ? 'lockupTest' : 'lockup';
+  console.log(TEST ? 'TEST MODE: using lockupTest/, emails to ' + TEST_EXEC + ' and ' + TEST_MGR : 'Real mode');
+  let cfg = (await db.ref(ROOT + '/config').get()).val();
+  if (TEST && (!cfg || !cfg.seeded)) { cfg = Object.assign(R.defaults(), { seeded: Date.now() }); if (!DRY) await db.ref(ROOT + '/config').set(cfg); console.log('Seeded test config'); }
   if (!cfg) { console.log('No lockup config yet (open lockup.html once).'); return done(admin); }
 
   let bank = {};
@@ -39,39 +48,39 @@ async function main() {
   } catch (e) { console.log('Bank holidays unavailable, carrying on'); }
   const hol = Object.assign({}, bank, cfg.holidays || {});
 
-  const weeks = (await db.ref('lockup/weeks').get()).val() || {};
+  const weeks = (await db.ref(ROOT + '/weeks').get()).val() || {};
   for (const w of [n.week, R.shiftWeek(n.week, 1)]) {
-    if (!R.isPaired(weeks[w])) { const prior = Object.assign({}, weeks); delete prior[w]; weeks[w] = R.generate(w, cfg.team || {}, prior); if (!DRY) await db.ref('lockup/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
+    if (!R.isPaired(weeks[w])) { const prior = Object.assign({}, weeks); delete prior[w]; weeks[w] = R.generate(w, cfg.team || {}, prior); if (!DRY) await db.ref(ROOT + '/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
   }
 
   /* absences: seed any missing, then re-pair today's and later unsigned nights */
   const team0 = cfg.team || {}, nm = id => (team0[id] || (cfg.managers || {})[id] || {}).name || id;
-  const absences = (await db.ref('lockup/absences').get()).val() || {};
+  const absences = (await db.ref(ROOT + '/absences').get()).val() || {};
   const seededNow = [];
   for (const id of Object.keys(R.SEED_ABSENCES)) {
     if (absences[id]) continue;
     seededNow.push(id);
     absences[id] = Object.assign({ ts: Date.now() }, R.SEED_ABSENCES[id]);
-    if (!DRY) await db.ref('lockup/absences/' + id).set(absences[id]);
+    if (!DRY) await db.ref(ROOT + '/absences/' + id).set(absences[id]);
     console.log('Seeded absence', id);
   }
-  const allRecs = (await db.ref('lockup/records').get()).val() || {};
+  const allRecs = (await db.ref(ROOT + '/records').get()).val() || {};
   const signed = {}; Object.keys(allRecs).forEach(d => { signed[d] = 1; });
   const changes = R.applyAbsences(weeks, team0, absences, n.date, signed);
   for (const c of changes) {
     console.log('Re-paired', c.date, nm(c.out), '->', c.in ? nm(c.in) : 'nobody', 'now', c.pair.map(nm).join(' and '));
-    if (!DRY) await db.ref('lockup/weeks/' + c.week + '/days/' + c.dow).set(c.pair);
+    if (!DRY) await db.ref(ROOT + '/weeks/' + c.week + '/days/' + c.dow).set(c.pair);
   }
 
   /* queued notifications from lockup.html: absences, cover, holidays */
-  const mgrList = Object.values(cfg.managers || {}).map(m => m.email).filter(Boolean);
-  const queue = (await db.ref('lockup/notify').get()).val() || {};
+  const mgrList = TEST ? [TEST_MGR] : Object.values(cfg.managers || {}).map(m => m.email).filter(Boolean);
+  const queue = (await db.ref(ROOT + '/notify').get()).val() || {};
   for (const id of seededNow) {
     if (queue[id]) continue;
     const a = absences[id], ch = changes.filter(c => c.out === a.personId && c.date >= a.from && c.date <= a.to);
     queue[id] = { kind: 'absence', ts: Date.now(), subject: nm(a.personId) + ' off ' + a.from + ', lockup re-paired',
       lines: [a.note || nm(a.personId) + ' is away.'].concat(ch.map(c => c.date + ': ' + nm(c.out) + ' out, ' + (c.in ? nm(c.in) + ' in' : 'nobody free') + '. Now on: ' + c.pair.map(nm).join(' and '))) };
-    if (!DRY) await db.ref('lockup/notify/' + id).set(queue[id]);
+    if (!DRY) await db.ref(ROOT + '/notify/' + id).set(queue[id]);
   }
   for (const id of Object.keys(queue).sort((a, b) => (queue[a].ts || 0) - (queue[b].ts || 0))) {
     const q = queue[id];
@@ -79,17 +88,17 @@ async function main() {
     if (!mgrList.length) { console.log('Notification waiting, no manager emails set'); break; }
     const lines = Array.isArray(q.lines) ? q.lines : Object.values(q.lines || {});
     await send(transport(), mgrList, q.subject, 'Hi all,', lines.slice(0, 1), lines.slice(1), 'See the rota');
-    if (!DRY) await db.ref('lockup/notify/' + id + '/sent').set(Date.now());
+    if (!DRY) await db.ref(ROOT + '/notify/' + id + '/sent').set(Date.now());
   }
 
   const on = R.onFor(n.date, weeks[n.week], hol);
   if (on.kind === 'closed') { console.log('Closed today'); return done(admin); }
 
-  const recsObj = (await db.ref('lockup/records/' + n.date).get()).val() || {};
+  const recsObj = (await db.ref(ROOT + '/records/' + n.date).get()).val() || {};
   const recs = Object.values(recsObj).sort((a, b) => a.ts - b.ts);
-  const mail = (await db.ref('lockup/mail/' + n.date).get()).val() || {};
+  const mail = (await db.ref(ROOT + '/mail/' + n.date).get()).val() || {};
   const team = cfg.team || {}, mgrs = cfg.managers || {};
-  const mgrEmails = Object.values(mgrs).map(m => m.email).filter(Boolean);
+  const mgrEmails = TEST ? [TEST_MGR] : Object.values(mgrs).map(m => m.email).filter(Boolean);
   const people = on.kind === 'staff' ? on.ids.map(id => team[id]).filter(Boolean) : [];
   const names = l => l.length > 1 ? l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1] : (l[0] || '');
   const dayName = R.DAY_NAMES[n.dow];
@@ -103,7 +112,7 @@ async function main() {
   if (n.mins >= remindAt && n.mins < 21 * 60 && !mail.remind && !recs.length) {
     let to, hi;
     if (on.kind === 'managers') { to = mgrEmails; hi = 'Hi all'; }
-    else if (people.length) { to = people.map(p => p.email).filter(Boolean); hi = 'Hi ' + names(people.map(p => p.name)); }
+    else if (people.length) { to = TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean); hi = 'Hi ' + names(people.map(p => p.name)); }
     else { to = mgrEmails; hi = 'Hi all, nobody is on the lockup rota tonight'; }
     if (to.length) {
       await send(tx, to, (on.kind === 'managers' ? 'Managers lockup tonight' : people.length > 1 ? 'Lockup tonight: ' + names(people.map(p => p.name)) : "It's your lockup tonight") + ', ' + dayName,
@@ -143,6 +152,7 @@ function transport() {
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 async function send(tx, to, subject, hi, lines, bullets, cta) {
+  if (TEST) subject = '[TEST] ' + subject;
   const text = [hi, '', ...lines, '', ...bullets.map(b => '  * ' + b), '', cta + ': ' + SITE, '', 'Hedin BMW Ruxley lockup'].join('\n');
   const html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
     '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">&#128273; ' + esc(subject) + '</div>' +
@@ -157,7 +167,7 @@ async function send(tx, to, subject, hi, lines, bullets, cta) {
 }
 async function mark(db, date, kind, to) {
   if (DRY) return;
-  await db.ref('lockup/mail/' + date + '/' + kind).set({ ts: Date.now(), to: to.join(', ') });
+  await db.ref(ROOT + '/mail/' + date + '/' + kind).set({ ts: Date.now(), to: to.join(', ') });
 }
 function done(admin) { return admin.app().delete(); }
 
