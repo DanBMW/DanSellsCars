@@ -4093,16 +4093,16 @@ var RADIO_KEY = '?direct=true&aw_0_1st.playerid=BMUK_Airable&aw_0_1st.skey=67782
    no Cloudflare stream proxy — that would burn Worker bandwidth). Kisstory
    with Airable key stays as a later try. Manager can Refresh stream. */
 var RADIO_SOURCES = [
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.mp3'+RADIO_KEY, /* Kisstory R&B first, Dan's station */
+  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY,/* Kisstory R&B AAC */
   'https://stream.soulconnexionradio.com/1045',                      /* Soul Connexion (no key) */
   'https://londonsoulradio.out.airtime.pro:8000/londonsoulradio_a',  /* London Soul */
   'https://a7.asurahosting.com:8230/radio.mp3',                      /* Soul Rhythms UK */
   'https://mystation.micast.media/radio/8020/radio.mp3',             /* SD Radio R&B */
-  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.mp3'+RADIO_KEY, /* Kisstory R&B */
   'https://stream-kiss.planetradio.co.uk/kisstory.mp3'+RADIO_KEY,    /* Kisstory MP3 mirror */
-  'https://live-bauerkiss.sharp-stream.com/kisstoryrb.aac'+RADIO_KEY,/* R&B AAC last */
   'https://live-kiss.sharp-stream.com/kiss100.mp3'                   /* Kiss national last resort */
 ];
-var RADIO_NAME='Soul / R&B';
+var RADIO_NAME='Kisstory R&B';
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 
 var radioLastTime=0, radioStallTicks=0, radioSwapEl=null, radioBuffering=false;
