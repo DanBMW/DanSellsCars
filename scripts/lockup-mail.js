@@ -3,6 +3,7 @@
  * on weekday and Saturday afternoons. It works out UK time itself, so the
  * cron covers both BST and GMT and this decides what is due:
  *   5pm Mon to Fri  reminder to both people on the rota (4pm Saturday: managers)
+ *   6:15pm          nudge to tonight's people if still unsigned
  *   6:30pm          managers, if nobody has signed, or with any issues noted
  * It also sends any queued manager notifications (lockup/notify, written by
  * the page for absences, cover and holidays) on every run, marking each sent.
@@ -109,6 +110,7 @@ async function main() {
   void tx;
 
   /* reminder: due from 5pm (4pm Sat) until 9pm, skipped once signed */
+  let remindedNow = false;
   if (n.mins >= remindAt && n.mins < 21 * 60 && !mail.remind && !recs.length) {
     let to, hi;
     if (on.kind === 'managers') { to = mgrEmails; hi = 'Hi all'; }
@@ -120,8 +122,21 @@ async function main() {
           on.kind === 'managers' ? "It's Saturday, so it's managers' lockup tonight." : people.length > 1 ? "You're on lockup together tonight. Either of you can start the checklist." : people.length ? "You're on lockup tonight." : 'Please pick someone to lock up.',
           'Tick each one off on your phone as you go, then sign:'
         ], list, 'Start lockup');
-      await mark(db, n.date, 'remind', to);
+      await mark(db, n.date, 'remind', to); remindedNow = true;
     } else console.log('Reminder due but no email address set');
+  }
+
+  /* 6:15pm nudge to tonight's people if still unsigned. Only in the window
+     before 6:30pm, so a late run that is already due the manager email skips
+     it, and never in the same run as the first reminder. */
+  if (n.mins >= R.NUDGE_MINS && n.mins < R.ESCALATE_MINS && !mail.nudge && !recs.length && !remindedNow) {
+    const to = on.kind === 'managers' ? mgrEmails : people.length ? (TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean)) : [];
+    if (to.length) {
+      const hi = on.kind === 'managers' ? 'Hi all' : 'Hi ' + names(people.map(p => p.name));
+      await send(tx, to, 'Lockup not signed yet, ' + dayName, hi + ',',
+        ['Just a nudge: tonight\u2019s lockup hasn\u2019t been signed off yet.', 'If it\u2019s done, tick it off and sign on your phone in a minute. The managers get an email at 6:30pm if it\u2019s still open.'], [], 'Sign off lockup');
+      await mark(db, n.date, 'nudge', to);
+    } else console.log('Nudge due but no email address set');
   }
 
   /* 6:30pm: not signed, or signed with issues */
@@ -158,7 +173,7 @@ async function send(tx, to, subject, hi, lines, bullets, cta) {
     '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">&#128273; ' + esc(subject) + '</div>' +
     '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px"><p style="margin:0 0 12px">' + esc(hi) + '</p>' +
     lines.map(l => '<p style="margin:0 0 10px">' + esc(l) + '</p>').join('') +
-    '<ul style="padding-left:18px;margin:8px 0 18px">' + bullets.map(b => '<li style="margin:4px 0">' + esc(b) + '</li>').join('') + '</ul>' +
+    (bullets.length ? '<ul style="padding-left:18px;margin:8px 0 18px">' : '<div style="height:8px"></div>') + bullets.map(b => '<li style="margin:4px 0">' + esc(b) + '</li>').join('') + (bullets.length ? '</ul>' : '') +
     '<a href="' + SITE + '" style="display:block;text-align:center;background:#4d94d8;color:#fff;text-decoration:none;font-weight:800;padding:14px;border-radius:12px;font-size:17px">' + esc(cta) + '</a>' +
     '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley lockup</p></div></div>';
   console.log((DRY ? '[dry] ' : '') + 'Send "' + subject + '" to ' + to.join(', '));

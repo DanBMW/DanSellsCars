@@ -291,7 +291,7 @@ function paintTonight(){
   }
   $('t-title').textContent=on.kind==='managers'?'Managers on lockup tonight':on.ids.length?'Tonight: '+namesOf(on.ids):'Nobody on the rota tonight';
   const due=on.kind==='managers'?'4pm':'5pm';
-  $('t-sub').textContent=now.mins>=R.ESCALATE_MINS?'Not signed yet. Managers get an email at 6:30pm if it is still open.':'Reminder goes out at '+due+'. Tick everything off as you go, then sign.';
+  $('t-sub').textContent=now.mins>=R.ESCALATE_MINS?'Not signed yet. Managers are emailed at 6:30pm while it is open.':now.mins>=R.NUDGE_MINS?'Not signed yet. Managers get an email at 6:30pm if it is still open.':'Reminder at '+due+', a nudge at 6:15pm if it is still open, then the managers at 6:30pm. Tick everything off as you go, then sign.';
   chooser(on);
   const y=R.addDays(now.date,-1), yon=who(y);
   if(now.mins<12*60&&yon.kind!=='closed'&&!recsFor(y).length&&y>=LAUNCH){ $('t-yesterday').hidden=false; $('t-yesterday').innerHTML='<div class="card"><b class="warn">Last night wasn&rsquo;t signed.</b><p class="muted small" style="margin:6px 0 10px">If it was done, sign it now. It will be marked as signed the next day.</p><button class="big alt" id="btn-yday" type="button" style="margin:0">Sign for '+fmtDate(y,true)+'</button></div>'; $('btn-yday').onclick=()=>{ $('t-yesterday').hidden=true; chooser(yon,y) } }
