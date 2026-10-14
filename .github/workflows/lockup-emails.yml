@@ -1,0 +1,41 @@
+name: lockup-emails
+
+# Lockup emails for lockup.html. Runs every 15 minutes, 6am to 7:45pm UTC,
+# Monday to Saturday (7am to 8pm UK in BST, 6am to 7:45pm in GMT). Each run
+# sends any queued manager notifications (absences, cover, holidays) and,
+# when due, the 4pm / 5pm reminders and the 6:30pm manager email.
+# scripts/lockup-mail.js works out UK time and only sends what is due, once.
+# GitHub can start a scheduled run late; the next run catches up.
+
+on:
+  schedule:
+    - cron: '*/15 6-19 * * 1-6'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print what would be sent, send nothing'
+        type: boolean
+        default: true
+
+concurrency:
+  group: lockup-emails
+  cancel-in-progress: false
+
+jobs:
+  mail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i --no-save --no-audit --no-fund firebase-admin@12 nodemailer@6
+      - run: node scripts/lockup-mail.js
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          MAIL_FROM_NAME: Hedin Used Cars
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
+          
