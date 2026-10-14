@@ -16,7 +16,7 @@
  "trim": "M Sport",
  "price": "£26,750",
  "price_gbp": 26750,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11b56-e985-71c8-9200-27a267b5b648-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13539-4131-7f4d-a141-7d56d0f30f06-preview.jpg",
  "images": [
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11b56-e985-71c8-9200-27a267b5b648-enlarged.jpg",
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11b56-f450-71ce-a16d-d4ee6b87f2e8-enlarged.jpg",
@@ -43,7 +43,7 @@
   "payments": 47,
   "price": 26750,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-10-13T08:59:32.2830777+01:00",
+  "quoted_at": "2026-10-14T12:12:47.9248035+01:00",
   "reg": "LY75DHL",
   "term": 48,
   "total_payable": 34333.43,

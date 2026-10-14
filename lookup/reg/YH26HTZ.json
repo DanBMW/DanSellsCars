@@ -16,12 +16,14 @@
  "trim": "M Sport",
  "price": "£72,995",
  "price_gbp": 72995,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cf26-f82b-7754-9a7e-b0c0896f426b-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13866-a316-74a6-9a2f-a7bab4b94d5d-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cf26-f82b-7754-9a7e-b0c0896f426b-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cf26-f8ce-7021-965b-20b7fe474934-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cf26-f966-7bd9-ada1-699f72e3ba7d-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cf26-fa4a-7497-baf9-057d7e08307c-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13866-a316-74a6-9a2f-a7bab4b94d5d-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13866-a3ae-7f8d-a4f1-666778ba71b0-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13866-a45e-7414-988b-1185328a94d3-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13866-a4e7-7d88-9b11-f1d2d0b771ff-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13866-a580-73ef-a353-9285111b0e5b-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13866-a5f6-751e-828a-593725194237-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/252981/pb-bmw-x5-2026",
  "listing_id": "252981",
@@ -41,7 +43,7 @@
   "payments": 47,
   "price": 72995,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-10-13T09:46:44.1067434+01:00",
+  "quoted_at": "2026-10-14T12:50:24.4801994+01:00",
   "reg": "YH26HTZ",
   "term": 48,
   "total_payable": 92395.23,

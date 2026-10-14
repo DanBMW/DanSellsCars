@@ -16,12 +16,14 @@
  "trim": "Standard",
  "price": "£70,000",
  "price_gbp": 70000,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a102bf-40a7-78ef-ab1f-51532ffbeb61-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a102bf-40a7-78ef-ab1f-51532ffbeb61-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a102bf-4149-70f6-a969-51c22c04cc7c-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a102bf-421b-7986-8d16-7bdfc64c5034-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a102bf-42bc-79d5-bcd4-8654b81f03bf-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3727-7629-9e68-28785f4ed903-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-37e9-7104-a1ac-ded8dbfb1b00-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-38bd-75f2-9cd3-4dfde6332689-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3996-7a53-ab95-79faf8926bec-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3a7c-78bf-8907-fae3a65112bd-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/254664/pb-bmw-x5m-2022",
  "listing_id": "254664",
@@ -41,7 +43,7 @@
   "payments": 47,
   "price": 70000,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-10-13T08:26:01.4106605+01:00",
+  "quoted_at": "2026-10-14T11:45:24.4613223+01:00",
   "reg": "RJ22DWF",
   "term": 48,
   "total_payable": 91657.1,
