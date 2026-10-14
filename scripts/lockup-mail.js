@@ -32,7 +32,8 @@ async function main() {
     databaseURL: 'https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app'
   });
   const db = admin.database();
-  const n = R.london(process.env.NOW ? new Date(process.env.NOW) : new Date());
+  const nowMs = process.env.NOW ? Date.parse(process.env.NOW) : Date.now();
+  const n = R.london(new Date(nowMs));
   console.log('UK now', n.date, n.dow, Math.floor(n.mins / 60) + ':' + String(n.mins % 60).padStart(2, '0'));
 
   TEST = (await db.ref('lockup/config/testMode').get()).val() !== false;
@@ -83,13 +84,34 @@ async function main() {
       lines: [a.note || nm(a.personId) + ' is away.'].concat(ch.map(c => c.date + ': ' + nm(c.out) + ' out, ' + (c.in ? nm(c.in) + ' in' : 'nobody free') + '. Now on: ' + c.pair.map(nm).join(' and '))) };
     if (!DRY) await db.ref(ROOT + '/notify/' + id).set(queue[id]);
   }
+  /* A queued entry can also carry: sendAfter (ms, held until then), to
+     ('team' | 'managers' | [emails]), html + text (sent as is), fromName. */
+  const teamList = TEST ? [TEST_EXEC] : Object.values(cfg.team || {}).filter(t => t.active !== false).map(t => t.email).filter(Boolean);
+  /* lockupPrivate/notify is the same queue but not publicly readable (the
+     database rules give it no read), for one off emails that carry the
+     manager PIN. Only the Action's service account can read or write it. */
+  const paths = {};
+  Object.keys(queue).forEach(id => { paths[id] = ROOT + '/notify/' + id; });
+  if (!TEST) {
+    const priv = (await db.ref('lockupPrivate/notify').get()).val() || {};
+    Object.keys(priv).forEach(id => { queue[id] = priv[id]; paths[id] = 'lockupPrivate/notify/' + id; });
+  }
   for (const id of Object.keys(queue).sort((a, b) => (queue[a].ts || 0) - (queue[b].ts || 0))) {
     const q = queue[id];
     if (!q || q.sent) continue;
-    if (!mgrList.length) { console.log('Notification waiting, no manager emails set'); break; }
-    const lines = Array.isArray(q.lines) ? q.lines : Object.values(q.lines || {});
-    await send(transport(), mgrList, q.subject, 'Hi all,', lines.slice(0, 1), lines.slice(1), 'See the rota');
-    if (!DRY) await db.ref(ROOT + '/notify/' + id + '/sent').set(Date.now());
+    if (q.sendAfter && nowMs < q.sendAfter) { console.log('Holding', id, 'until', new Date(q.sendAfter).toISOString()); continue; }
+    const to = q.to === 'team' ? teamList : Array.isArray(q.to) ? (TEST ? [TEST_EXEC] : q.to) : mgrList;
+    if (!to.length) { console.log('Notification', id, 'waiting, no recipients set'); continue; }
+    if (q.html) {
+      const subject = (TEST ? '[TEST] ' : '') + q.subject;
+      console.log((DRY ? '[dry] ' : '') + 'Send "' + subject + '" to ' + to.join(', '));
+      if (DRY) console.log(q.text || '');
+      else await transport().sendMail({ from: { name: q.fromName || process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to, subject, text: q.text || '', html: q.html });
+    } else {
+      const lines = Array.isArray(q.lines) ? q.lines : Object.values(q.lines || {});
+      await send(transport(), to, q.subject, 'Hi all,', lines.slice(0, 1), lines.slice(1), 'See the rota');
+    }
+    if (!DRY) await db.ref((paths[id] || ROOT + '/notify/' + id) + '/sent').set(Date.now());
   }
 
   const on = R.onFor(n.date, weeks[n.week], hol);

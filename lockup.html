@@ -265,7 +265,11 @@ function subscribeAll(){
 onValue(ref(db,'lockup/config/testMode'),s=>{ const t=s.val()!==false, r=t?'lockupTest':'lockup'; TEST=t; if(!MODE_KNOWN||r!==RT){MODE_KNOWN=true;RT=r;subscribeAll()} paintTestBanner() });
 function paintTestBanner(){ const b=$('testbar'); if(b){b.hidden=!TEST; document.body.classList.toggle('testmode',TEST)} const m=$('mg-test-state'); if(m)paintModeCard() }
 
-function ensureWeeks(){ if(!CFG||!CFG.seeded||!WEEKS._loaded)return; [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(!R.isPaired(WEEKS[w])&&!ensuring[w]){ensuring[w]=1; const all=Object.assign({},WEEKS);delete all._loaded;delete all[w]; set(ref(db,RT+'/weeks/'+w),R.generate(w,team(),all)).catch(e=>{console.error(e);ensuring[w]=0})}})}
+/* weeks are made in order, each one seeing the weeks before it, so next
+   week's fairness counts include this week's nights */
+function ensureWeeks(){ if(!CFG||!CFG.seeded||!WEEKS._loaded)return; const acc=Object.assign({},WEEKS); delete acc._loaded;
+  [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(R.isPaired(acc[w]))return; const prior=Object.assign({},acc); delete prior[w]; const g=R.generate(w,team(),prior); acc[w]=g;
+    if(!ensuring[w]){ ensuring[w]=1; set(ref(db,RT+'/weeks/'+w),g).catch(e=>{console.error(e);ensuring[w]=0}) } }) }
 function weeksClean(){const w=Object.assign({},WEEKS);delete w._loaded;return w}
 setInterval(()=>{const n=R.london(); if(n.date!==now.date){now=n;ensureWeeks()} now=n; if(view==='tonight')paintTonight()},30000);
 
