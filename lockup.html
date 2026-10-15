@@ -253,7 +253,7 @@ function subscribeAll(){
   UNSUB.forEach(u=>u()); UNSUB=[];
   CFG=null; WEEKS={}; RECORDS={}; STATUS={}; ABS={}; CHANGES={}; ABS_LOADED=false; REC_LOADED=false; ensuring={};
   const on=(p,cb)=>UNSUB.push(onValue(ref(db,p),cb));
-  on((RT+'/config'),s=>{CFG=s.val(); if(!CFG||!CFG.seeded){const d=R.defaults(); set(ref(db,RT+'/config'),Object.assign({},CFG||{},{team:(CFG&&CFG.team)||d.team,managers:(CFG&&CFG.managers)||d.managers,checklist:(CFG&&CFG.checklist)||d.checklist,seeded:Date.now()})).catch(e=>console.error(e)); return} ensureWeeks(); paint()});
+  on((RT+'/config'),s=>{CFG=s.val(); if(!CFG||!CFG.seeded){const d=R.defaults(); set(ref(db,RT+'/config'),Object.assign({},CFG||{},{team:(CFG&&CFG.team)||d.team,managers:(CFG&&CFG.managers)||d.managers,checklist:(CFG&&CFG.checklist)||d.checklist,seeded:Date.now()})).catch(e=>console.error(e)); return} ensureWeeks(); scheduleApply(); paint()});
   on((RT+'/weeks'),s=>{WEEKS=s.val()||{}; WEEKS._loaded=1; ensureWeeks(); paint()});
   on((RT+'/records'),s=>{RECORDS=s.val()||{}; signedElsewhere(); paint()});
   on((RT+'/status'),s=>{STATUS=s.val()||{}; paint()});
@@ -269,7 +269,7 @@ function paintTestBanner(){ const b=$('testbar'); if(b){b.hidden=!TEST; document
 /* weeks are made in order, each one seeing the weeks before it, so next
    week's fairness counts include this week's nights */
 function ensureWeeks(){ if(!CFG||!CFG.seeded||!WEEKS._loaded)return; const acc=Object.assign({},WEEKS); delete acc._loaded;
-  [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(R.isPaired(acc[w]))return; const prior=Object.assign({},acc); delete prior[w]; const g=R.generate(w,team(),prior); acc[w]=g;
+  [now.week,R.shiftWeek(now.week,1)].forEach(w=>{ if(!R.needsWeek(acc[w]))return; const prior=Object.assign({},acc); delete prior[w]; const g=R.generate(w,team(),prior); acc[w]=g;
     if(!ensuring[w]){ ensuring[w]=1; set(ref(db,RT+'/weeks/'+w),g).catch(e=>{console.error(e);ensuring[w]=0}) } }) }
 function weeksClean(){const w=Object.assign({},WEEKS);delete w._loaded;return w}
 setInterval(()=>{const n=R.london(); if(n.date!==now.date){now=n;ensureWeeks()} now=n; if(view==='tonight')paintTonight()},30000);
@@ -449,7 +449,7 @@ function paintRota(){
     const st=recs.length?'<span class="pill g">&#10003;</span>':(date<now.date&&date>=LAUNCH&&d!=='sun'&&!hol?'<span class="pill r">Not signed</span>':'');
     return '<li><span class="d'+(isT?' today':'')+'">'+R.DAY_NAMES[d].slice(0,3)+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span>'+right+st+'</li>'}).join('');
   $('wk-list').querySelectorAll('select').forEach(s=>s.onchange=()=>{ const d=s.dataset.day, sel=[...$('wk-list').querySelectorAll('select[data-day="'+d+'"]')].map(x=>x.value); if(sel[0]&&sel[0]===sel[1]){toast('Pick two different people');paintRota();return} update(ref(db,RT+'/weeks/'+mgWeek+'/days'),{[d]:sel.filter(Boolean)}).then(()=>{ update(ref(db,RT+'/weeks/'+mgWeek),{edited:Date.now()}); toast('Rota updated') }).catch(()=>toast('Couldn\u2019t save')) });
-  $('wk-regen').onclick=()=>{ if(!confirm('Shuffle the whole week again? Any swaps you made this week will be lost.'))return; set(ref(db,RT+'/weeks/'+mgWeek),{days:reshuffle(mgWeek,tm,weeksClean()),generatedAt:Date.now(),seed:'reshuffle:'+mgWeek+':'+Date.now()}).then(()=>toast('New rota for the week')) };
+  $('wk-regen').onclick=()=>{ if(!confirm('Shuffle the whole week again? Any swaps you made this week will be lost.'))return; set(ref(db,RT+'/weeks/'+mgWeek),{days:reshuffle(mgWeek,tm,weeksClean()),v:2,generatedAt:Date.now(),seed:'reshuffle:'+mgWeek+':'+Date.now()}).then(()=>toast('New rota for the week')) };
   if(w&&!R.isPaired(w)){ $('wk-list').insertAdjacentHTML('afterbegin','<li class="warn small">This week was made with one person a night. Shuffle it again for pairs.</li>') }
   if(!w){ $('wk-list').insertAdjacentHTML('beforeend','<li><button class="big" id="wk-make" type="button" style="margin:0">Make this week&rsquo;s rota</button></li>'); $('wk-make').onclick=()=>set(ref(db,RT+'/weeks/'+mgWeek),R.generate(mgWeek,tm,weeksClean())) }
   const c=R.counts(weeksClean(),'9999'); $('wk-counts').innerHTML=ids.sort((a,b)=>(c[a]||0)-(c[b]||0)).map(k=>'<li><span>'+esc(tm[k].name)+' <span class="muted small">off '+(R.DAY_NAMES[tm[k].off]||'none')+'</span></span><b>'+(c[k]||0)+'</b></li>').join('');
@@ -525,7 +525,7 @@ async function logChange(kind,data){ try{ await push(ref(db,RT+'/changes'),Objec
 function scheduleApply(){clearTimeout(applyT);applyT=setTimeout(runApply,400)}
 async function runApply(){
   if(!CFG||!CFG.seeded||!WEEKS._loaded||!ABS_LOADED||!REC_LOADED)return;
-  if(!R.isPaired(WEEKS[now.week]))return;
+  if(R.needsWeek(WEEKS[now.week]))return;
   /* seeded absences, written once */
   for(const id of Object.keys(R.SEED_ABSENCES)){ if(!ABS[id]){ const a=Object.assign({ts:Date.now()},R.SEED_ABSENCES[id]); ABS[id]=a;
     try{ await set(ref(db,RT+'/absences/'+id),a); const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates()); await writeChanges(ch);

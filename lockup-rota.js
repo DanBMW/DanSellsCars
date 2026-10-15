@@ -89,9 +89,14 @@
     if (typeof v === 'string') return [v];
     return Object.keys(v).sort().map(function (k) { return v[k]; }).filter(Boolean);
   }
+  /* a week is only ever made when it has no stored record at all. A stored
+     week is never regenerated because counts, days off or absences changed:
+     those only swap the affected slot (applyAbsences). A full reshuffle is
+     the manager's "Shuffle" button and nothing else. */
+  function needsWeek(weekRec) { return !weekRec || !weekRec.days; }
   function isPaired(weekRec) {
     if (!weekRec || !weekRec.days) return false;
-    return weekRec.v === 2 && DAYS.every(function (d) { return typeof weekRec.days[d] !== 'string'; });
+    return DAYS.every(function (d) { return typeof weekRec.days[d] !== 'string'; });
   }
 
   /* nights each person has been given in stored weeks before `week` */
@@ -197,7 +202,9 @@
         if (date < today || (signed && signed[date])) return;
         var away = absentOn(absences, date), pair = ids(weeks[wk].days[dow]), changed = false;
         pair.slice().forEach(function (p) {
-          if (!away[p]) return;
+          var t = team && team[p];
+          /* away, now off that day, or taken off the rota: swap just this slot */
+          if (!away[p] && t && t.active !== false && t.off !== dow) return;
           var rest = pair.filter(function (x) { return x !== p; });
           var r = replacement(weeks, team, absences, date, rest.concat([p]));
           pair = r ? pair.map(function (x) { return x === p ? r : x; }) : rest;
@@ -220,7 +227,7 @@
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },

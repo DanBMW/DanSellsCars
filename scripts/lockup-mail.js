@@ -54,7 +54,7 @@ async function main() {
 
   const weeks = (await db.ref(ROOT + '/weeks').get()).val() || {};
   for (const w of [n.week, R.shiftWeek(n.week, 1)]) {
-    if (!R.isPaired(weeks[w])) { const prior = Object.assign({}, weeks); delete prior[w]; weeks[w] = R.generate(w, cfg.team || {}, prior); if (!DRY) await db.ref(ROOT + '/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
+    if (R.needsWeek(weeks[w])) { const prior = Object.assign({}, weeks); delete prior[w]; weeks[w] = R.generate(w, cfg.team || {}, prior); if (!DRY) await db.ref(ROOT + '/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
   }
 
   /* absences: seed any missing, then re-pair today's and later unsigned nights */
