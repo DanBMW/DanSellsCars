@@ -31,20 +31,28 @@
     ['sergio', 'Sergio', 'Sergio Garaguso', 'sergio.garaguso@hedinautomotive.co.uk', 'Retail Manager']
   ];
   var DEFAULT_CHECKLIST = [
-    ['doors', 'Showroom front door secured'],
-    ['sliding', 'Showroom sliding car doors secured'], /* the big sliding doors cars drive through */
-    ['windows', 'Upstairs windows closed'],
-    ['chargers', 'Chargers reset on showroom cars'],
-    ['used', 'Used cars locked'],
-    ['front', 'Front cars locked'],
-    ['bollards', 'Bollards pulled up']
+    ['doors', 'Showroom front door secured', 'Front door'],
+    ['sliding', 'Showroom sliding car doors secured', 'Sliding doors'], /* the big sliding doors cars drive through */
+    ['windows', 'Upstairs windows closed', 'Windows'],
+    ['chargers', 'Chargers reset on showroom cars', 'Chargers'],
+    ['used', 'Used cars locked', 'Used cars'],
+    ['front', 'Front cars locked', 'Front cars'],
+    ['bollards', 'Bollards pulled up', 'Bollards']
   ];
+  /* short name for the board strip: config `short`, else the code default,
+     else the label cut to about 14 characters */
+  function shortLabel(id, item) {
+    if (item && item.short) return item.short;
+    for (var i = 0; i < DEFAULT_CHECKLIST.length; i++) if (DEFAULT_CHECKLIST[i][0] === id) return DEFAULT_CHECKLIST[i][2];
+    var l = String((item && item.label) || id).trim();
+    return l.length > 14 ? l.slice(0, 13).replace(/\s+\S*$/, '') + '\u2026' : l;
+  }
 
   function defaults() {
     var team = {}, managers = {}, checklist = {};
     DEFAULT_TEAM.forEach(function (t, i) { team[t[0]] = { name: t[1], fullName: t[2], email: t[3], off: t[4], active: true, order: i }; });
     DEFAULT_MANAGERS.forEach(function (t, i) { managers[t[0]] = { name: t[1], fullName: t[2], email: t[3], role: t[4], order: i }; });
-    DEFAULT_CHECKLIST.forEach(function (t, i) { checklist[t[0]] = { label: t[1], order: i, active: true, builtin: true }; });
+    DEFAULT_CHECKLIST.forEach(function (t, i) { checklist[t[0]] = { label: t[1], short: t[2], order: i, active: true, builtin: true }; });
     return { team: team, managers: managers, checklist: checklist };
   }
 
@@ -227,7 +235,7 @@
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, shortLabel: shortLabel, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },

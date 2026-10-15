@@ -641,9 +641,17 @@ body.hasticker .credit{bottom:52px}
 /* ---- lockup strip (lockup.html) ----
    From 5pm (4pm Saturday) a strip above the banner says who is locking up.
    Amber while open, green once signed, red after 6:30pm unsigned. */
-.lockstrip{position:fixed;left:0;right:0;bottom:0;height:40px;z-index:321;display:none;align-items:center;justify-content:center;gap:10px;
+.lockstrip{position:fixed;left:0;right:0;bottom:0;min-height:40px;flex-wrap:wrap;row-gap:2px;padding:4px 12px;box-sizing:border-box;z-index:321;display:none;align-items:center;justify-content:center;gap:10px;
   font-weight:800;font-size:clamp(.85rem,1.3vw,1.15rem);color:#1a1206;background:var(--gold);letter-spacing:.01em}
 .lockstrip.show{display:flex}
+.ls-steps{display:inline-flex;flex-wrap:wrap;gap:4px 6px;justify-content:center;font-size:.82em;font-weight:800}
+.ls-st{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.12);opacity:.55;white-space:nowrap}
+.ls-st.ok{opacity:1;background:rgba(255,255,255,.55);color:#0f6b3a}
+.ls-st.ok b{color:#1aa35a}
+.ls-st.cant{opacity:1;background:#7a3e00;color:#ffd36b}
+.lockstrip.signed .ls-st.ok{background:rgba(255,255,255,.35);color:#04170c}
+.lockstrip.overdue .ls-st{background:rgba(255,255,255,.18)}
+.lockstrip.overdue .ls-st.ok{background:#fff;color:#0f6b3a}
 .lockstrip.signed{background:#2fbf71;color:#04170c}
 .lockstrip.overdue{background:#e05656;color:#fff}
 body.hasticker .lockstrip{bottom:44px}
@@ -1543,7 +1551,7 @@ body.premiere .pairqr{display:none!important}
      bottom. Above every scene: a 44px strip should not vanish for ten
      seconds because a sketch is playing. -->
 <div class="ticker" id="ticker" aria-hidden="true"><div class="tk-track" id="tk-track"></div></div>
-<div class="lockstrip" id="lockstrip" aria-live="polite"><span class="ls-ico" id="ls-ico">&#128273;</span><span id="ls-text"></span></div>
+<div class="lockstrip" id="lockstrip" aria-live="polite"><span class="ls-ico" id="ls-ico">&#128273;</span><span id="ls-text"></span><span class="ls-steps" id="ls-steps"></span></div>
 
 <!-- PIN -->
 <div class="modal-bg" id="m-pin">
@@ -7546,7 +7554,7 @@ let stop=null, dealsGen=0;
 /* test mode (lockup/config/testMode, missing = on) reads lockupTest/ instead,
    shows all day so it can be demoed, and is marked TEST MODE in orange */
 const LKS={lockup:{weeks:{},status:{},cfg:{},progress:{}},lockupTest:{weeks:{},status:{},cfg:{},progress:{}}};
-let LK_TEST=true;
+let LK_TEST=true; const LK_SANDBOX=new URLSearchParams(location.search).has('sandbox'); /* ?sandbox=1 forces lockupTest/ on this screen only */
 const LK={get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},bank:{}};
 function paintLock(){
   const R=window.LockupRota, el=document.getElementById('lockstrip'), tx=document.getElementById('ls-text');
@@ -7563,8 +7571,12 @@ function paintLock(){
   const t=st&&st.ts?new Date(st.ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
   tx.textContent=st&&st.state==='signed'?'Locked up by '+st.by+' at '+t+(st.issues?' \u00b7 '+st.issues+' issue'+(st.issues>1?'s':'')+' noted':' \u2713'):
     (on.kind==='closed'?'Closed tonight':n.mins>=R.escalateAt(n.dow)?'Lockup not signed yet: '+who:'Lockup tonight: '+who);
-  if(!(st&&st.state==='signed')){ const cl=(LK.cfg&&LK.cfg.checklist)||{}, act=Object.keys(cl).filter(k=>cl[k].active!==false), pi=((LK.progress[n.date]||{}).items)||{};
-    const dn=act.filter(k=>pi[k]&&(pi[k].done||pi[k].cant)).length; if(dn)tx.textContent+=' \u00b7 '+dn+' of '+act.length+' done' }
+  /* the checklist stages, live from progress: tick when done, amber warning when "can't do it", dim when untouched; all ticked once signed */
+  const signedNow=!!(st&&st.state==='signed'), cl=(LK.cfg&&LK.cfg.checklist)||{}, act=Object.keys(cl).filter(k=>cl[k].active!==false).sort((a,b)=>(cl[a].order||0)-(cl[b].order||0)), pi=((LK.progress[n.date]||{}).items)||{};
+  const sx=document.getElementById('ls-steps');
+  if(sx){ sx.innerHTML=on.kind==='closed'?'':act.map(k=>{const p=pi[k]||{}, s=signedNow||p.done?'ok':p.cant?'cant':''; const lb=(R.shortLabel?R.shortLabel(k,cl[k]):cl[k].label).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    return '<span class="ls-st '+s+'">'+(s==='ok'?'<b>\u2713</b>':s==='cant'?'\u26a0\ufe0f':'')+lb+'</span>'}).join('') }
+  if(!signedNow){ const dn=act.filter(k=>pi[k]&&(pi[k].done||pi[k].cant)).length; if(dn)tx.textContent+=' \u00b7 '+dn+' of '+act.length+' done' }
   if(LK_TEST)tx.textContent='TEST MODE \u00b7 '+tx.textContent;
   el.classList.add('show');document.body.classList.add('haslock');
 }
@@ -7572,7 +7584,7 @@ function paintLock(){
   watch(r+'/weeks',v=>{LKS[r].weeks=v||{};paintLock()});
   watch(r+'/status',v=>{LKS[r].status=v||{};paintLock()});
   watch(r+'/progress',v=>{LKS[r].progress=v||{};paintLock()});
-  watch(r+'/config',v=>{LKS[r].cfg=v||{};if(r==='lockup')LK_TEST=!(v&&v.testMode===false);paintLock()});
+  watch(r+'/config',v=>{LKS[r].cfg=v||{};if(r==='lockup')LK_TEST=LK_SANDBOX||!(v&&v.testMode===false);paintLock()});
 });
 fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{LK.bank[e.date]=1});paintLock()}).catch(()=>{});
 setInterval(paintLock,30000);
