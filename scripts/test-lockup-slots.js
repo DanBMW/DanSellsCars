@@ -80,3 +80,36 @@ tf.molly = { name: 'Molly', active: true, off: 'thu', fixed: ['mon'] };
   assert.strictEqual(R.canDo(tf.chloe, 'wed'), false);
 }
 console.log('ok: fixed nights');
+
+/* every week: at least one night each, never two nights running, 52 weeks */
+{
+  const tf = JSON.parse(JSON.stringify(team));
+  tf.chloe = { name: 'Chloe', active: true, off: 'tue', never: ['wed'], fixed: ['mon'] };
+  tf.molly = { name: 'Molly', active: true, off: 'thu', fixed: ['mon'] };
+  const ws = base(); let k = '2026-W43'; const dist = {}; const tot = {};
+  for (let i = 0; i < 52; i++) {
+    k = R.shiftWeek(k, 1); ws[k] = R.generate(k, tf, ws);
+    const c = {};
+    R.DAYS.forEach((d, j) => {
+      const p = ws[k].days[d];
+      assert.strictEqual(p.length, 2, k + ' ' + d + ' has two');
+      p.forEach(id => {
+        c[id] = (c[id] || 0) + 1; tot[id] = (tot[id] || 0) + 1;
+        assert.ok(R.canDo(tf[id], d), k + ' ' + d + ' ' + id + ' on a day off');
+        if (j) assert.ok(ws[k].days[R.DAYS[j - 1]].indexOf(id) < 0, k + ' ' + id + ' two nights running');
+      });
+    });
+    assert.deepStrictEqual(ws[k].days.mon.slice().sort(), ['chloe', 'molly']);
+    Object.keys(tf).forEach(id => {
+      assert.ok((c[id] || 0) >= 1, k + ': ' + id + ' has no night');
+      dist[id] = dist[id] || {}; dist[id][c[id]] = (dist[id][c[id]] || 0) + 1;
+    });
+  }
+  Object.keys(tf).forEach(id => console.log('  ' + id + ': ' + tot[id] + ' nights, weeks by nights ' + JSON.stringify(dist[id])));
+  /* all time, including the two stored weeks before Chloe and Molly joined */
+  const all = {}; Object.keys(ws).forEach(x => R.DAYS.forEach(d => ws[x].days[d].forEach(id => { all[id] = (all[id] || 0) + 1; })));
+  const v = Object.keys(tf).map(id => all[id] || 0);
+  console.log('  all time: ' + Object.keys(tf).map(id => id + ' ' + (all[id] || 0)).join(', '));
+  assert.ok(Math.max(...v) - Math.min(...v) <= 2, 'all time within about one night (spread of 2 at most) over 52 weeks');
+}
+console.log('ok: at least one night each per week over 52 weeks');

@@ -147,7 +147,24 @@
      earlier weeks (x10, balances totals), +30 if they worked last night,
      +20 per time this pair has already worked together; ties break on the
      shuffle seeded by the ISO week (plus a salt when a manager reshuffles). */
+  function nextTo(days, d, id) {
+    var i = DAYS.indexOf(d);
+    return (i > 0 && ids(days[DAYS[i - 1]]).indexOf(id) >= 0) || (i < DAYS.length - 1 && ids(days[DAYS[i + 1]]).indexOf(id) >= 0);
+  }
+  /* tries a few shuffles and keeps the first that meets every rule
+     (nobody two nights running, everyone at least one night, everyone at
+     their fair share); otherwise the one that breaks the fewest */
   function generate(week, team, weeks, salt, perNight) {
+    var best = null, bs = 1e9;
+    for (var t = 0; t < 40; t++) {
+      var g = generateOnce(week, team, weeks, t ? (salt ? salt + ':' : '') + 'r' + t : salt, perNight);
+      if (g.penalty < bs) { bs = g.penalty; best = g; }
+      if (!g.penalty) break;
+    }
+    delete best.penalty;
+    return best;
+  }
+  function generateOnce(week, team, weeks, salt, perNight) {
     perNight = perNight || 2;
     var all = Object.keys(team || {}).filter(function (id) { return team[id] && team[id].active !== false; }).sort();
     var rnd = mulberry32(hashStr('lockup:' + week + (salt ? ':' + salt : '')));
@@ -169,7 +186,7 @@
         var best = null, bs = 1e9;
         ok.forEach(function (id) {
           if (picked.indexOf(id) >= 0) return;
-          var s = Math.max(0, (wk[id] || 0) - tgt[id] + 1) * 1000 + (wk[id] || 0) * 50 + (c[id] || 0) * 100 + (prev.indexOf(id) >= 0 ? 30 : 0) +
+          var s = Math.max(0, (wk[id] || 0) - tgt[id] + 1) * 1000 + (wk[id] || 0) * 50 + (c[id] || 0) * 100 + (prev.indexOf(id) >= 0 ? 5000 : 0) +
                   (picked.length ? (pc[pairKey(picked[0], id)] || 0) * 10 : 0) + rank[id] / 100;
           if (s < bs) { bs = s; best = id; }
         });
@@ -189,7 +206,7 @@
         if (moved) return;
         days[d].forEach(function (o, i) {
           if (moved || over.indexOf(o) < 0 || isFixedOn(team[o], d)) return;
-          var u = under.filter(function (id) { return normalOn(team[id], d) && days[d].indexOf(id) < 0; })
+          var u = under.filter(function (id) { return normalOn(team[id], d) && days[d].indexOf(id) < 0 && !nextTo(days, d, id); })
             .sort(function (x, y) { return ((c[x] || 0) - (c[y] || 0)) || (rank[x] - rank[y]); })[0];
           if (!u) return;
           days[d][i] = u; wk[o]--; wk[u] = (wk[u] || 0) + 1; c[o]--; c[u] = (c[u] || 0) + 1; moved = true;
@@ -197,7 +214,26 @@
       });
       if (!moved) break;
     }
-    return { days: days, v: 2, generatedAt: Date.now(), seed: 'lockup:' + week + (salt ? ':' + salt : '') };
+    /* everyone does at least one night a week: anyone still on none takes a
+       night from someone with two or more (never a fixed night, never next to
+       a night they already have, never a day off) */
+    all.forEach(function (z) {
+      if (wk[z]) return;
+      var done = false;
+      DAYS.forEach(function (d) {
+        if (done || !normalOn(team[z], d) || days[d].indexOf(z) >= 0 || nextTo(days, d, z)) return;
+        days[d].forEach(function (o, i) {
+          if (done || (wk[o] || 0) < 2 || isFixedOn(team[o], d)) return;
+          days[d][i] = z; wk[o]--; wk[z] = 1; c[o]--; c[z] = (c[z] || 0) + 1; done = true;
+        });
+      });
+    });
+    var pen = 0;
+    all.forEach(function (id) {
+      pen += Math.abs((wk[id] || 0) - tgt[id]) + (wk[id] ? 0 : 1000);
+      DAYS.forEach(function (d, i) { if (i && days[d].indexOf(id) >= 0 && days[DAYS[i - 1]].indexOf(id) >= 0) pen += 1000; });
+    });
+    return { penalty: pen, days: days, v: 2, generatedAt: Date.now(), seed: 'lockup:' + week + (salt ? ':' + salt : '') };
   }
 
   /* ---- absences: "I won't be in", holidays, and seeded ones ----
@@ -229,13 +265,15 @@
     if (dow !== 'fri') near = near.concat(pairOn(weeks, addDays(date, 1)));
     /* nights up to and including this week, so a later week doesn't skew it */
     var c = counts(weeks, shiftWeek(isoWeek(date), 1)), away = absentOn(absences, date);
+    var tw = {}, wr = weeks && weeks[isoWeek(date)];
+    DAYS.forEach(function (d) { ids(wr && wr.days && wr.days[d]).forEach(function (id) { tw[id] = (tw[id] || 0) + 1; }); });
     var cands = Object.keys(team || {}).filter(function (id) {
       var t = team[id];
       return canDo(t, dow) && !away[id] && pair.indexOf(id) < 0;
     });
     /* people kept to their fixed nights only step in when nobody else can */
     cands.sort(function (a, b) {
-      return ((!normalOn(team[a], dow)) - (!normalOn(team[b], dow))) || ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
+      return ((!normalOn(team[a], dow)) - (!normalOn(team[b], dow))) || ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((tw[a] ? 1 : 0) - (tw[b] ? 1 : 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
     });
     return cands[0] || null;
   }
