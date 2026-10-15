@@ -101,6 +101,19 @@
      week is never regenerated because counts, days off or absences changed:
      those only swap the affected slot (applyAbsences). A full reshuffle is
      the manager's "Shuffle" button and nothing else. */
+  /* per person rota settings, all optional on lockup/config/team/<id>:
+       off: 'tue'          weekly day off (never rostered)
+       never: ['wed']      other days never rostered (e.g. a half day)
+       fixed: ['mon']      nights they always do by default (a fixed pairing
+                           when two people share the same fixed night)
+       onlyFixed: true     only rostered on their fixed nights, unless nobody
+                           else can cover (fallback replacement) */
+  function arr(v) { if (!v) return []; if (typeof v === 'string') return [v]; if (v.length !== undefined) return Array.prototype.slice.call(v).filter(Boolean); return Object.keys(v).map(function (k) { return v[k]; }).filter(Boolean); }
+  function canDo(t, dow) { return !!t && t.active !== false && t.off !== dow && arr(t.never).indexOf(dow) < 0; }
+  function isFixedOn(t, dow) { return arr(t && t.fixed).indexOf(dow) >= 0; }
+  /* free for any night, not just a fallback */
+  function normalOn(t, dow) { return canDo(t, dow) && (!t.onlyFixed || isFixedOn(t, dow)); }
+  function fixedFor(team, dow) { return Object.keys(team || {}).filter(function (id) { return canDo(team[id], dow) && isFixedOn(team[id], dow); }).sort(); }
   function needsWeek(weekRec) { return !weekRec || !weekRec.days; }
   function isPaired(weekRec) {
     if (!weekRec || !weekRec.days) return false;
@@ -142,14 +155,22 @@
     for (var i = order.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)); var t = order[i]; order[i] = order[j]; order[j] = t; }
     var rank = {}; order.forEach(function (id, i) { rank[id] = i; });
     var c = counts(weeks, week), pc = pairCounts(weeks, week), days = {}, prev = [], wk = {};
+    /* this week's share: 10 nights over the team, the extra nights going to
+       whoever has done fewest so far, so totals stay within one of each other */
+    var slots = perNight * DAYS.length, tgt = {};
+    all.slice().sort(function (x, y) { return ((c[x] || 0) - (c[y] || 0)) || (rank[x] - rank[y]); })
+      .forEach(function (id, i) { tgt[id] = Math.floor(slots / all.length) + (i < slots % all.length ? 1 : 0); });
     DAYS.forEach(function (day) {
-      var ok = all.filter(function (id) { return team[id].off !== day; }), picked = [];
-      for (var n = 0; n < perNight; n++) {
+      var picked = fixedFor(team, day).slice(0, perNight);
+      picked.forEach(function (id) { wk[id] = (wk[id] || 0) + 1; c[id] = (c[id] || 0) + 1; });
+      var ok = all.filter(function (id) { return normalOn(team[id], day); });
+      if (ok.filter(function (id) { return picked.indexOf(id) < 0; }).length < perNight - picked.length) ok = all.filter(function (id) { return canDo(team[id], day); });
+      for (var n = picked.length; n < perNight; n++) {
         var best = null, bs = 1e9;
         ok.forEach(function (id) {
           if (picked.indexOf(id) >= 0) return;
-          var s = (wk[id] || 0) * 100 + (c[id] || 0) * 10 + (prev.indexOf(id) >= 0 ? 30 : 0) +
-                  (picked.length ? (pc[pairKey(picked[0], id)] || 0) * 20 : 0) + rank[id] / 100;
+          var s = Math.max(0, (wk[id] || 0) - tgt[id] + 1) * 1000 + (wk[id] || 0) * 50 + (c[id] || 0) * 100 + (prev.indexOf(id) >= 0 ? 30 : 0) +
+                  (picked.length ? (pc[pairKey(picked[0], id)] || 0) * 10 : 0) + rank[id] / 100;
           if (s < bs) { bs = s; best = id; }
         });
         if (best) { picked.push(best); wk[best] = (wk[best] || 0) + 1; c[best] = (c[best] || 0) + 1; }
@@ -158,6 +179,24 @@
       days[day] = picked;
       prev = picked;
     });
+    /* repair: move a night from anyone over their share to someone under it
+       who can do that night (fixed nights stay put) */
+    for (var guard = 0; guard < 50; guard++) {
+      var over = all.filter(function (id) { return (wk[id] || 0) > tgt[id]; }), under = all.filter(function (id) { return (wk[id] || 0) < tgt[id]; });
+      if (!over.length || !under.length) break;
+      var moved = false;
+      DAYS.forEach(function (d) {
+        if (moved) return;
+        days[d].forEach(function (o, i) {
+          if (moved || over.indexOf(o) < 0 || isFixedOn(team[o], d)) return;
+          var u = under.filter(function (id) { return normalOn(team[id], d) && days[d].indexOf(id) < 0; })
+            .sort(function (x, y) { return ((c[x] || 0) - (c[y] || 0)) || (rank[x] - rank[y]); })[0];
+          if (!u) return;
+          days[d][i] = u; wk[o]--; wk[u] = (wk[u] || 0) + 1; c[o]--; c[u] = (c[u] || 0) + 1; moved = true;
+        });
+      });
+      if (!moved) break;
+    }
     return { days: days, v: 2, generatedAt: Date.now(), seed: 'lockup:' + week + (salt ? ':' + salt : '') };
   }
 
@@ -192,10 +231,11 @@
     var c = counts(weeks, shiftWeek(isoWeek(date), 1)), away = absentOn(absences, date);
     var cands = Object.keys(team || {}).filter(function (id) {
       var t = team[id];
-      return t && t.active !== false && t.off !== dow && !away[id] && pair.indexOf(id) < 0;
+      return canDo(t, dow) && !away[id] && pair.indexOf(id) < 0;
     });
+    /* people kept to their fixed nights only step in when nobody else can */
     cands.sort(function (a, b) {
-      return ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
+      return ((!normalOn(team[a], dow)) - (!normalOn(team[b], dow))) || ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
     });
     return cands[0] || null;
   }
@@ -212,7 +252,7 @@
         pair.slice().forEach(function (p) {
           var t = team && team[p];
           /* away, now off that day, or taken off the rota: swap just this slot */
-          if (!away[p] && t && t.active !== false && t.off !== dow) return;
+          if (!away[p] && canDo(t, dow)) return;
           var rest = pair.filter(function (x) { return x !== p; });
           var r = replacement(weeks, team, absences, date, rest.concat([p]));
           pair = r ? pair.map(function (x) { return x === p ? r : x; }) : rest;
@@ -226,6 +266,42 @@
   }
 
   /* who is on for a date: { kind: 'staff'|'managers'|'closed', ids: [...] } */
+  /* puts fixed people onto their fixed nights in stored weeks, after `today`
+     (never tonight, past or signed nights). Only the slots it needs change:
+     the non fixed person with the most nights that week makes way. Each
+     night is done once (days_fixed marker) so a manager's later swap sticks.
+     Mutates `weeks`, returns changes like applyAbsences. */
+  function applyFixed(weeks, team, absences, today, signed, from) {
+    var changes = [];
+    Object.keys(weeks || {}).sort().forEach(function (wk) {
+      var w = weeks[wk]; if (!w || !w.days) return;
+      DAYS.forEach(function (dow) {
+        var date = dateFor(wk, dow);
+        if (date <= today || (from && date < from) || (signed && signed[date])) return;
+        var want = fixedFor(team, dow); if (!want.length) return;
+        var away = absentOn(absences, date), pair = ids(w.days[dow]);
+        var key = want.join('+');
+        if ((w.fixedDone || {})[dow] === key) return;
+        var before = pair.slice();
+        want.forEach(function (id) {
+          if (away[id] || pair.indexOf(id) >= 0) return;
+          var others = pair.filter(function (x) { return !isFixedOn(team[x], dow); });
+          if (pair.length < 2) { pair.push(id); return; }
+          if (!others.length) return;
+          var wn = {}; DAYS.forEach(function (d) { ids(w.days[d]).forEach(function (x) { wn[x] = (wn[x] || 0) + 1; }); });
+          others.sort(function (a, b) { return (wn[b] || 0) - (wn[a] || 0) || (a < b ? -1 : 1); });
+          pair = pair.map(function (x) { return x === others[0] ? id : x; });
+        });
+        w.fixedDone = w.fixedDone || {}; w.fixedDone[dow] = key;
+        if (pair.join() !== before.join()) {
+          w.days[dow] = pair;
+          before.forEach(function (x) { if (pair.indexOf(x) < 0) changes.push({ week: wk, dow: dow, date: date, out: x, 'in': pair.filter(function (y) { return before.indexOf(y) < 0; })[0], pair: pair.slice(), fixed: true }); });
+        }
+        changes.fixedMarks = (changes.fixedMarks || []).concat([{ week: wk, dow: dow, key: key }]);
+      });
+    });
+    return changes;
+  }
   function onFor(dateStr, weekRec, holidays) {
     var dow = london(new Date(dateStr + 'T12:00:00Z')).dow;
     if (dow === 'sun' || (holidays && holidays[dateStr])) return { kind: 'closed', dow: dow };
@@ -235,7 +311,7 @@
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, shortLabel: shortLabel, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },

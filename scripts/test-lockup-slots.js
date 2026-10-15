@@ -47,3 +47,36 @@ assert.strictEqual(R.needsWeek(base()['2026-W42']), false);
 assert.strictEqual(R.needsWeek({ days: { mon: ['a'] } }), false);
 assert.strictEqual(R.needsWeek(undefined), true);
 console.log('ok: only the absent person\u2019s slots change');
+
+/* fixed nights: Chloe and Molly paired on Mondays, a fair share of the rest */
+const tf = JSON.parse(JSON.stringify(team));
+tf.chloe = { name: 'Chloe', active: true, off: 'tue', never: ['wed'], fixed: ['mon'] };
+tf.molly = { name: 'Molly', active: true, off: 'thu', fixed: ['mon'] };
+{
+  const w = base(), fx = R.applyFixed(w, tf, {}, '2026-10-15', {});
+  const ch = diff(base(), w);
+  console.log('fixed Mondays: ' + ch.map(c => c.w.slice(-3) + ' ' + c.d + ' ' + c.out + ' -> ' + c.in).join(', '));
+  assert.deepStrictEqual(ch.map(c => c.w + c.d), ['2026-W43mon', '2026-W43mon']);
+  assert.deepStrictEqual(w['2026-W43'].days.mon.slice().sort(), ['chloe', 'molly']);
+  assert.strictEqual(R.applyFixed(w, tf, {}, '2026-10-15', {}).length, 0, 'second pass changes nothing');
+  /* Chloe away on Mon 26: only her slot, and a normal person covers */
+  const g = R.generate('2026-W44', tf, w);
+  assert.deepStrictEqual(g.days.mon.slice().sort(), ['chloe', 'molly']);
+  assert.ok(g.days.wed.indexOf('chloe') < 0 && g.days.tue.indexOf('chloe') < 0 && g.days.thu.indexOf('molly') < 0, 'days off and never days respected');
+  /* fairness: 26 weeks on, all nine within one night of each other in total (the newcomers catch up first) */
+  let ws = Object.assign({}, w), k = '2026-W43';
+  for (let i = 0; i < 26; i++) { k = R.shiftWeek(k, 1); ws[k] = R.generate(k, tf, ws); assert.deepStrictEqual(ws[k].days.mon.slice().sort(), ['chloe', 'molly']); }
+  const tot = {}; Object.keys(ws).forEach(x => R.DAYS.forEach(d => ws[x].days[d].forEach(id => { tot[id] = (tot[id] || 0) + 1; })));
+  const vals = Object.keys(tf).map(id => tot[id] || 0);
+  console.log('all time after 26 more weeks: ' + Object.keys(tf).map(id => id + ' ' + (tot[id] || 0)).join(', '));
+  assert.ok(Math.max(...vals) - Math.min(...vals) <= 1, 'within one night');
+  const w2 = Object.assign({}, w, { '2026-W44': JSON.parse(JSON.stringify(g)) });
+  const before = JSON.parse(JSON.stringify(w2));
+  R.applyAbsences(w2, tf, { a: { personId: 'chloe', from: '2026-10-26', to: '2026-10-26', status: 'approved' } }, '2026-10-15', {});
+  const c2 = diff(before, w2);
+  assert.ok(c2.length === 1 && c2[0].out === 'chloe' && c2[0].d === 'mon');
+  console.log('Chloe away Mon 26: ' + c2[0].out + ' -> ' + c2[0].in);
+  /* never on Wednesday, even as a fallback */
+  assert.strictEqual(R.canDo(tf.chloe, 'wed'), false);
+}
+console.log('ok: fixed nights');

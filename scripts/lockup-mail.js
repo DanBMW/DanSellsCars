@@ -76,6 +76,11 @@ async function main() {
     if (!DRY) await db.ref(ROOT + '/weeks/' + c.week + '/days/' + c.dow).set(c.pair);
   }
 
+  /* fixed nights (e.g. Chloe and Molly on Mondays), from tomorrow, once per night */
+  const fx = R.applyFixed(weeks, team0, absences, n.date, signed);
+  for (const c of fx) console.log('Fixed night', c.date, nm(c.out), '->', nm(c.in), 'now', c.pair.map(nm).join(' and '));
+  for (const m of (fx.fixedMarks || [])) if (!DRY) await db.ref(ROOT + '/weeks/' + m.week).update({ ['days/' + m.dow]: weeks[m.week].days[m.dow], ['fixedDone/' + m.dow]: m.key });
+
   /* queued notifications from lockup.html: absences, cover, holidays */
   const mgrList = TEST ? [TEST_MGR] : Object.values(cfg.managers || {}).map(m => m.email).filter(Boolean);
   const queue = (await db.ref(ROOT + '/notify').get()).val() || {};

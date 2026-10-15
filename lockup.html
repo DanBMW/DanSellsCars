@@ -114,6 +114,7 @@ body.testmode .prog{top:97px}
   .pill{background:none!important;color:#000!important;border:1px solid #999}
   #view-manager>*:not(#mg-history){display:none!important}#mg-history{display:block!important}
 }
+.daypick{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:4px}.daypick label{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:600;text-transform:none;letter-spacing:0}
 </style>
 <script src="staff-gate.js"></script>
 <script src="lockup-rota.js"></script>
@@ -445,7 +446,7 @@ function paintRota(){
   const days=R.DAYS.concat(['sat','sun']);
   $('wk-list').innerHTML=days.map(d=>{const date=R.dateFor(mgWeek,d),hol=holidays()[date],recs=recsFor(date),isT=date===now.date;
     let right; if(d==='sun')right='<span class="muted">Closed</span>'; else if(hol)right='<span class="muted">Closed, '+esc(hol.label)+'</span>'; else if(d==='sat')right='<span>Managers</span>';
-    else { const cur=R.ids(w&&w.days&&w.days[d]); right='<span class="pair">'+[0,1].map(n=>'<select data-day="'+d+'" data-n="'+n+'"'+(w?'':' disabled')+'><option value="">Nobody</option>'+ids.map(k=>'<option value="'+k+'"'+(k===cur[n]?' selected':'')+(tm[k].off===d?' disabled':'')+'>'+esc(tm[k].name)+(tm[k].off===d?' (off)':'')+'</option>').join('')+'</select>').join('')+'</span>' }
+    else { const cur=R.ids(w&&w.days&&w.days[d]); right='<span class="pair">'+[0,1].map(n=>'<select data-day="'+d+'" data-n="'+n+'"'+(w?'':' disabled')+'><option value="">Nobody</option>'+ids.map(k=>'<option value="'+k+'"'+(k===cur[n]?' selected':'')+(!R.canDo(tm[k],d)?' disabled':'')+'>'+esc(tm[k].name)+(!R.canDo(tm[k],d)?' (off)':R.isFixedOn(tm[k],d)?' (fixed)':'')+'</option>').join('')+'</select>').join('')+'</span>' }
     const st=recs.length?'<span class="pill g">&#10003;</span>':(date<now.date&&date>=LAUNCH&&d!=='sun'&&!hol?'<span class="pill r">Not signed</span>':'');
     return '<li><span class="d'+(isT?' today':'')+'">'+R.DAY_NAMES[d].slice(0,3)+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span>'+right+st+'</li>'}).join('');
   $('wk-list').querySelectorAll('select').forEach(s=>s.onchange=()=>{ const d=s.dataset.day, sel=[...$('wk-list').querySelectorAll('select[data-day="'+d+'"]')].map(x=>x.value); if(sel[0]&&sel[0]===sel[1]){toast('Pick two different people');paintRota();return} update(ref(db,RT+'/weeks/'+mgWeek+'/days'),{[d]:sel.filter(Boolean)}).then(()=>{ update(ref(db,RT+'/weeks/'+mgWeek),{edited:Date.now()}); toast('Rota updated') }).catch(()=>toast('Couldn\u2019t save')) });
@@ -495,9 +496,13 @@ $('h-pdf').onclick=()=>window.print();
 function personEditor(kind,box,addBtn){
   const src=kind==='team'?team():mgrs(), ids=Object.keys(src).sort((a,b)=>(src[a].order||0)-(src[b].order||0));
   $(box).innerHTML=ids.map(k=>{const p=src[k];return '<div class="person" data-id="'+k+'"><div><label>Name shown</label><input type="text" data-f="name" value="'+esc(p.name)+'"></div><div><label>Full name</label><input type="text" data-f="fullName" value="'+esc(p.fullName||'')+'"></div><div class="full"><label>Work email</label><input type="email" data-f="email" value="'+esc(p.email||'')+'"></div>'+
-    (kind==='team'?'<div><label>Day off</label><select data-f="off"><option value="">None</option>'+R.DAYS.map(d=>'<option value="'+d+'"'+(p.off===d?' selected':'')+'>'+R.DAY_NAMES[d]+'</option>').join('')+'</select></div><div><label>On the rota</label><select data-f="active"><option value="1"'+(p.active!==false?' selected':'')+'>Yes</option><option value="0"'+(p.active===false?' selected':'')+'>No</option></select></div>':'<div class="full"><label>Role</label><input type="text" data-f="role" value="'+esc(p.role||'')+'"></div><div class="full"><button class="ghost" type="button" data-rm="1">Remove manager</button></div>')+'</div>'}).join('');
+    (kind==='team'?'<div><label>Day off</label><select data-f="off"><option value="">None</option>'+R.DAYS.map(d=>'<option value="'+d+'"'+(p.off===d?' selected':'')+'>'+R.DAY_NAMES[d]+'</option>').join('')+'</select></div><div><label>On the rota</label><select data-f="active"><option value="1"'+(p.active!==false?' selected':'')+'>Yes</option><option value="0"'+(p.active===false?' selected':'')+'>No</option></select></div>'+
+      '<div class="full"><label>Fixed nights (always on these by default)</label><div class="daypick">'+R.DAYS.map(d=>'<label><input type="checkbox" data-arr="fixed" value="'+d+'"'+(R.arr(p.fixed).indexOf(d)>=0?' checked':'')+'> '+R.DAY_NAMES[d].slice(0,3)+'</label>').join('')+'</div></div>'+
+      '<div class="full"><label>Never on (half days etc, as well as the day off)</label><div class="daypick">'+R.DAYS.map(d=>'<label><input type="checkbox" data-arr="never" value="'+d+'"'+(R.arr(p.never).indexOf(d)>=0?' checked':'')+'> '+R.DAY_NAMES[d].slice(0,3)+'</label>').join('')+'</div></div>'+
+      '<div class="full"><label>Other nights</label><select data-f="onlyFixed"><option value="0"'+(!p.onlyFixed?' selected':'')+'>Any night, shared fairly</option><option value="1"'+(p.onlyFixed?' selected':'')+'>Fixed nights only, or cover if needed</option></select></div>':'<div class="full"><label>Role</label><input type="text" data-f="role" value="'+esc(p.role||'')+'"></div><div class="full"><button class="ghost" type="button" data-rm="1">Remove manager</button></div>')+'</div>'}).join('');
   $(box).querySelectorAll('.person').forEach(el=>{const id=el.dataset.id;
-    el.querySelectorAll('[data-f]').forEach(inp=>inp.onchange=()=>{let v=inp.value.trim(); if(inp.dataset.f==='active')v=v==='1'; update(ref(db,RT+'/config/'+kind+'/'+id),{[inp.dataset.f]:v}).then(()=>toast('Saved')).catch(()=>toast('Couldn\u2019t save'))});
+    el.querySelectorAll('[data-f]').forEach(inp=>inp.onchange=()=>{let v=inp.value.trim(); if(inp.dataset.f==='active'||inp.dataset.f==='onlyFixed')v=v==='1'; update(ref(db,RT+'/config/'+kind+'/'+id),{[inp.dataset.f]:v}).then(()=>toast('Saved')).catch(()=>toast('Couldn\u2019t save'))});
+    el.querySelectorAll('[data-arr]').forEach(cb=>cb.onchange=()=>{ const f=cb.dataset.arr, v=[...el.querySelectorAll('[data-arr="'+f+'"]:checked')].map(x=>x.value); update(ref(db,RT+'/config/'+kind+'/'+id),{[f]:v.length?v:null}).then(()=>toast('Saved')).catch(()=>toast('Couldn\u2019t save')) });
     const rm=el.querySelector('[data-rm]'); if(rm)rm.onclick=()=>{ if(confirm('Remove '+src[id].name+'?'))remove(ref(db,RT+'/config/'+kind+'/'+id)) } });
   $(addBtn).onclick=()=>{ const n=(prompt('First name')||'').trim(); if(!n)return; let id=n.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)||'p'; while(src[id])id+='2'; set(ref(db,RT+'/config/'+kind+'/'+id),{name:n,fullName:n,email:'',order:ids.length,active:true,off:''}).then(()=>toast(n+' added')) };
 }
@@ -532,6 +537,10 @@ async function runApply(){
       await notifyMgrs('absence',nameOf(a.personId)+' off '+fmtDate(a.from,true)+', lockup re-paired',[a.note||'',...changeLines(ch)].filter(Boolean),id) }catch(e){console.error(e)} } }
   const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates());
   if(ch.length) writeChanges(ch).catch(e=>console.error(e));
+  /* fixed nights (e.g. Chloe and Molly on Mondays): from tomorrow on, once per night */
+  const fx=R.applyFixed(w,team(),ABS,now.date,signedDates());
+  for(const m of (fx.fixedMarks||[])){ try{ await update(ref(db,RT+'/weeks/'+m.week),{['days/'+m.dow]:w[m.week].days[m.dow],['fixedDone/'+m.dow]:m.key}) }catch(e){console.error(e)} }
+  if(fx.length) logChange('fixed',{lines:changeLines(fx)});
 }
 setInterval(scheduleApply,60000);
 async function addAbsence(personId,from,to,kind,note){
@@ -578,7 +587,7 @@ function cantMakeFor(date,me){
     $('sh-back').onclick=()=>cantMakeFor(date,me);
     $('sh-ok').onclick=async()=>{ $('sh-ok').disabled=true; try{ const ch=await addAbsence(me,date,date,'absent',$('sh-note').value.trim()); const c=ch.find(x=>x.date===date); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Sorted</h2><p class="muted" style="margin-top:8px">'+(c?fmtDate(date,true)+' is now '+esc(namesOf(c.pair))+'.':'Saved.')+' The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again');$('sh-ok').disabled=false} } };
   $('sh-cover').onclick=()=>{ const dow=who(date).dow, pair=R.pairOn(weeksClean(),date), away=R.absentOn(ABS,date), tm=team();
-    const ids=Object.keys(tm).filter(k=>tm[k].active!==false&&pair.indexOf(k)<0&&tm[k].off!==dow&&!away[k]).sort((a,b)=>(tm[a].order||0)-(tm[b].order||0));
+    const ids=Object.keys(tm).filter(k=>R.canDo(tm[k],dow)&&pair.indexOf(k)<0&&!away[k]).sort((a,b)=>(tm[a].order||0)-(tm[b].order||0));
     sheet('<h2>Who&rsquo;s covering?</h2><p class="muted" style="margin:6px 0 14px">Only pick someone who has said yes.</p><div class="names">'+ids.map(k=>'<button type="button" data-id="'+k+'">'+esc(tm[k].name)+'</button>').join('')+'</div>');
     $('rec-body').querySelectorAll('.names button').forEach(b=>b.onclick=async()=>{ if(!confirm(tm[b.dataset.id].name+' covers '+nameOf(me)+' on '+fmtDate(date,true)+'?'))return; try{ const p=await arrangeCover(date,me,b.dataset.id); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Cover arranged</h2><p class="muted" style="margin-top:8px">'+fmtDate(date,true)+' is now '+esc(namesOf(p))+'. The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again')} }) };
 }
