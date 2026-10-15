@@ -523,7 +523,7 @@ function paintHol(){ const h=(CFG.holidays)||{}, up=Object.keys(BANK).filter(d=>
 applyT=null;
 function signedDates(){const o={};Object.keys(RECORDS).forEach(d=>o[d]=1);return o}
 function cloneWeeks(){return JSON.parse(JSON.stringify(weeksClean()))}
-function changeLines(ch){return ch.map(c=>fmtDate(c.date,true)+': '+nameOf(c.out)+' out, '+(c.in?nameOf(c.in)+' in':'nobody free to step in')+'. Now on: '+(namesOf(c.pair)||'nobody'))}
+function changeLines(ch){return ch.map(c=>fmtDate(c.date,true)+': '+nameOf(c.out)+' out, '+(c.in?nameOf(c.in)+' in':'nobody free to step in')+'. Now on: '+(namesOf(c.pair)||'nobody')+(c.note?'. '+c.note:''))}
 async function writeChanges(ch){ for(const c of ch) await update(ref(db,RT+'/weeks/'+c.week+'/days'),{[c.dow]:c.pair}) }
 async function notifyMgrs(kind,subject,lines,id){ const k=id||push(ref(db,RT+'/notify')).key; try{ await set(ref(db,RT+'/notify/'+k),{kind,subject:subject.slice(0,160),lines,ts:Date.now(),by:'lockup.html'}) }catch(e){ if(!id)console.error(e) } }
 async function logChange(kind,data){ try{ await push(ref(db,RT+'/changes'),Object.assign({kind,ts:Date.now()},data)) }catch(e){console.error(e)} }

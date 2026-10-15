@@ -88,7 +88,7 @@ async function main() {
     if (queue[id]) continue;
     const a = absences[id], ch = changes.filter(c => c.out === a.personId && c.date >= a.from && c.date <= a.to);
     queue[id] = { kind: 'absence', ts: Date.now(), subject: nm(a.personId) + ' off ' + a.from + ', lockup re-paired',
-      lines: [a.note || nm(a.personId) + ' is away.'].concat(ch.map(c => c.date + ': ' + nm(c.out) + ' out, ' + (c.in ? nm(c.in) + ' in' : 'nobody free') + '. Now on: ' + c.pair.map(nm).join(' and '))) };
+      lines: [a.note || nm(a.personId) + ' is away.'].concat(ch.map(c => c.date + ': ' + nm(c.out) + ' out, ' + (c.in ? nm(c.in) + ' in' : 'nobody free') + '. Now on: ' + c.pair.map(nm).join(' and ') + (c.note ? '. ' + c.note : ''))) };
     if (!DRY) await db.ref(ROOT + '/notify/' + id).set(queue[id]);
   }
   /* A queued entry can also carry: sendAfter (ms, held until then), to

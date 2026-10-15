@@ -295,12 +295,46 @@
           var r = replacement(weeks, team, absences, date, rest.concat([p]));
           pair = r ? pair.map(function (x) { return x === p ? r : x; }) : rest;
           weeks[wk].days[dow] = pair; changed = true;
-          changes.push({ week: wk, dow: dow, date: date, out: p, 'in': r, pair: pair.slice() });
+          var ch = { week: wk, dow: dow, date: date, out: p, 'in': r, pair: pair.slice() };
+          changes.push(ch);
+          if (away[p] === 'absent' && canDo(t, dow)) moveLater(weeks, team, absences, today, signed, wk, dow, p, ch, changes);
         });
-        if (changed) weeks[wk].days[dow] = pair;
+        if (changed) weeks[wk].days[dow] = ids(weeks[wk].days[dow]);
       });
     });
     return changes;
+  }
+  /* Dan's rule: if the night someone can't make was their only one that
+     week, move them to another valid night later that week (after today,
+     unsigned, not a day off or never day, not absent, not next to a night
+     they have). They swap with someone on that night who has two or more
+     nights; that person takes the vacated night if it is valid for them,
+     otherwise the cover already found keeps it. Sets ch.note for the email. */
+  function moveLater(weeks, team, absences, today, signed, wk, dow, p, ch, changes) {
+    var w = weeks[wk].days, n = {};
+    DAYS.forEach(function (d) { ids(w[d]).forEach(function (id) { n[id] = (n[id] || 0) + 1; }); });
+    if (n[p]) return;
+    var name = (team[p] && team[p].name) || p, i0 = DAYS.indexOf(dow);
+    for (var i = i0 + 1; i < DAYS.length; i++) {
+      var e = DAYS[i], de = dateFor(wk, e);
+      if (de <= today || (signed && signed[de]) || !canDo(team[p], e) || absentOn(absences, de)[p]) continue;
+      var pe = ids(w[e]); if (pe.indexOf(p) >= 0) continue;
+      var o = pe.filter(function (x) { return (n[x] || 0) >= 2 && !isFixedOn(team[x], e); })[0];
+      if (!o) continue;
+      pe = pe.map(function (x) { return x === o ? p : x; }); w[e] = pe;
+      if (nextTo(w, e, p)) { w[e] = ids(weeks[wk].days[e]).map(function (x) { return x === p ? o : x; }); continue; }
+      /* o into the vacated night instead of the cover, when valid */
+      var pd = ids(w[dow]), r = ch['in'];
+      if (r && pd.indexOf(o) < 0 && canDo(team[o], dow) && !absentOn(absences, ch.date)[o]) {
+        var trial = pd.map(function (x) { return x === r ? o : x; }), keep = w[dow]; w[dow] = trial;
+        if (!nextTo(w, dow, o)) { ch['in'] = o; ch.pair = trial.slice(); }
+        else w[dow] = keep;
+      }
+      changes.push({ week: wk, dow: e, date: de, out: o, 'in': p, pair: pe.slice(), moved: true });
+      ch.note = name + '\u2019s only lockup this week, so moved to ' + DAY_NAMES[e] + ' ' + (+de.slice(8)) + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+de.slice(5, 7) - 1] + ' in place of ' + ((team[o] && team[o].name) || o) + '.';
+      return;
+    }
+    ch.note = 'That was ' + name + '\u2019s only lockup this week and no other night this week works, so ' + name + ' has none this week.';
   }
 
   /* who is on for a date: { kind: 'staff'|'managers'|'closed', ids: [...] } */

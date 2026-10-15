@@ -20,7 +20,10 @@ function diff(a, b) {
 function check(label, weeks, tm, abs, today, who) {
   const before = base(), after = JSON.parse(JSON.stringify(weeks));
   R.applyAbsences(after, tm, abs, today, {});
-  const ch = diff(before, after);
+  /* a move of `who` to a later night (their only night that week) is allowed */
+  const all = diff(before, after), ch = all.filter(c => c.out === who);
+  all.filter(c => c.out !== who).forEach(c => assert.strictEqual(c.in, who, label + ': ' + c.w + ' ' + c.d + ' changed ' + c.out));
+  if (all.length > ch.length) console.log(label + ' (moved later): ' + all.filter(c => c.in === who).map(c => c.w.slice(-3) + ' ' + c.d + ' ' + c.out + ' -> ' + c.in).join(', '));
   ch.forEach(c => assert.strictEqual(c.out, who, label + ': ' + c.w + ' ' + c.d + ' changed ' + c.out + ', not ' + who));
   console.log(label + ': ' + ch.map(c => c.w.slice(-3) + ' ' + c.d + ' ' + c.out + ' -> ' + c.in).join(', '));
   return ch;
@@ -113,3 +116,29 @@ console.log('ok: fixed nights');
   assert.ok(Math.max(...v) - Math.min(...v) <= 2, 'all time within about one night (spread of 2 at most) over 52 weeks');
 }
 console.log('ok: at least one night each per week over 52 weeks');
+
+/* only night that week and "I can't make it": moved to a later valid night */
+{
+  const abs = (id, d, kind) => ({ a: { personId: id, from: d, to: d, status: 'approved', kind: kind || 'absent' } });
+  // Karis's only night is Tue 20; she can't make it, so she moves later that week
+  let w = base(), ch = R.applyAbsences(w, team, abs('karis', '2026-10-20'), '2026-10-15', {});
+  const d = w['2026-W43'].days, n = {};
+  R.DAYS.forEach((x, j) => d[x].forEach(id => { n[id] = (n[id] || 0) + 1; if (j && id === 'karis') assert.ok(d[R.DAYS[j - 1]].indexOf(id) < 0, id + ' back to back'); assert.ok(R.canDo(team[id], x), id + ' day off'); }));
+  assert.strictEqual(n.karis, 1, 'Karis still has one night');
+  assert.ok(d.tue.indexOf('karis') < 0);
+  const mv = ch.find(c => c.moved); assert.ok(mv && mv.in === 'karis' && mv.date > '2026-10-20');
+  assert.ok(ch.length <= 2, 'only the two slots change (or the cover plus the move)');
+  console.log('only night moved: ' + ch.map(c => c.date + ' ' + c.out + ' -> ' + c.in).join(', ') + ' | ' + ch[0].note);
+  // holiday: no move
+  w = base(); ch = R.applyAbsences(w, team, abs('karis', '2026-10-20', 'holiday'), '2026-10-15', {});
+  assert.ok(!ch.some(c => c.moved) && !ch[0].note, 'holiday is not moved');
+  // nothing later that week: current behaviour plus a note
+  w = base(); w['2026-W43'].days.tue = ['dan', 'tomi']; w['2026-W43'].days.fri = ['karis', 'danny'];
+  ch = R.applyAbsences(w, team, abs('karis', '2026-10-23'), '2026-10-15', {});
+  assert.ok(ch.length === 1 && /no other night/.test(ch[0].note));
+  console.log('no night left: ' + ch[0].note);
+  // never moved onto tonight or a past night: Danny off tonight Thu 15 (only W42 night), Fri 16 is later so allowed; today itself never
+  w = base(); ch = R.applyAbsences(w, team, abs('karis', '2026-10-15'), '2026-10-15', {});
+  ch.filter(c => c.moved).forEach(c => assert.ok(c.date > '2026-10-15'));
+}
+console.log('ok: only night moved later in the week');
