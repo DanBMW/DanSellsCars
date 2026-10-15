@@ -19,6 +19,11 @@
   "last_seen": "2026-10-13",
   "removed_at": "2026-10-13"
  },
+ "BP23YWF": {
+  "first_seen": "2026-10-15",
+  "last_seen": "2026-10-15",
+  "removed_at": null
+ },
  "BP72KLD": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-08",
@@ -262,7 +267,7 @@
  "HV73SZL": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-15",
-  "removed_at": null
+  "removed_at": "2026-10-15"
  },
  "HX22WUP": {
   "first_seen": "2026-10-07",
@@ -321,6 +326,11 @@
  },
  "LK26EXP": {
   "first_seen": "2026-10-07",
+  "last_seen": "2026-10-15",
+  "removed_at": null
+ },
+ "LK26EXT": {
+  "first_seen": "2026-10-15",
   "last_seen": "2026-10-15",
   "removed_at": null
  },
@@ -454,6 +464,11 @@
   "last_seen": "2026-10-15",
   "removed_at": null
  },
+ "LM26UAS": {
+  "first_seen": "2026-10-15",
+  "last_seen": "2026-10-15",
+  "removed_at": null
+ },
  "LM72HVO": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-15",
@@ -554,8 +569,18 @@
   "last_seen": "2026-10-15",
   "removed_at": null
  },
+ "LS26GFU": {
+  "first_seen": "2026-10-15",
+  "last_seen": "2026-10-15",
+  "removed_at": null
+ },
  "LS26UEZ": {
   "first_seen": "2026-10-07",
+  "last_seen": "2026-10-15",
+  "removed_at": null
+ },
+ "LS26VAH": {
+  "first_seen": "2026-10-15",
   "last_seen": "2026-10-15",
   "removed_at": null
  },
@@ -622,7 +647,7 @@
  "LV23VMD": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-15",
-  "removed_at": null
+  "removed_at": "2026-10-15"
  },
  "LV23VOO": {
   "first_seen": "2026-10-07",
@@ -892,7 +917,7 @@
  "LV72MZZ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-15",
-  "removed_at": null
+  "removed_at": "2026-10-15"
  },
  "LV72NEU": {
   "first_seen": "2026-10-07",
@@ -1549,6 +1574,11 @@
   "last_seen": "2026-10-15",
   "removed_at": null
  },
+ "YF21FGX": {
+  "first_seen": "2026-10-15",
+  "last_seen": "2026-10-15",
+  "removed_at": null
+ },
  "YF24BPU": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-15",
@@ -1572,7 +1602,7 @@
  "YG25OCE": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-15",
-  "removed_at": null
+  "removed_at": "2026-10-15"
  },
  "YG26FGZ": {
   "first_seen": "2026-10-07",
