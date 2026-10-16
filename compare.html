@@ -117,9 +117,11 @@ function verdict(c,cs){var o=[],oth=cs.filter(function(x){return x!==c});
  var oc=oth.filter(function(x){return x.t!=c.t});
  if(c.t=='n'&&oc.length){var d=c.price-Math.min.apply(0,oc.map(function(x){return x.price}));if(d>0)o.push('costs '+m0(d)+' more than the used option, for a brand new car built to this spec');}
  if(c.t=='u'&&oc.length){var d2=Math.max.apply(0,oc.map(function(x){return x.price}))-c.price;if(d2>0)o.push(m0(d2)+' less than new, and '+(c.ready.toLowerCase()));}
- if(c.monthly&&cs.every(function(x){return !x.monthly||x.monthly>=c.monthly}))o.push('the lowest monthly on the examples shown');
- if(c.power&&cs.every(function(x){return !x.power||x.power<=c.power})&&cs.filter(function(x){return x.power}).length>1)o.push('the most power');
- if(c.boot&&cs.every(function(x){return !x.boot||x.boot<=c.boot})&&cs.filter(function(x){return x.boot}).length>1)o.push('the biggest boot');
+ function top(f,low,label){var v=c[f];if(typeof v!='number')return;var has=cs.filter(function(x){return typeof x[f]=='number'});if(has.length<2)return;
+  if(!has.every(function(x){return low?x[f]>=v:x[f]<=v}))return;o.push(label+(has.length<cs.length?' of the cars with a figure listed':''))}
+ top('monthly',true,'the lowest monthly');top('power',false,'the most power');top('boot',false,'the biggest boot');
+ 
+ 
  if(!o.length)o.push('A strong all rounder against the others here');
  var s=o.join(', ');return s.charAt(0).toUpperCase()+s.slice(1)+'.'}
 function render(){
