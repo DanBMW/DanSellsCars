@@ -39,6 +39,7 @@
  "lead_time_weeks_max": 5,
  "on_hold": false,
  "options": [
+  "Space Silver",
   "Sun Protection Glass"
  ],
  "standard": [
@@ -49,9 +50,11 @@
   "DAB Radio",
   "BMW TeleServices",
   "Front Heated Seats",
+  "Charging cable Professional (Mode 3)",
   "Personal eSIM",
   "Active Guard",
   "Tyre Repair Kit Plus",
+  "AC Fast Charging Preparation",
   "eDrive Exterior Sound"
  ],
  "retailer_price": false,

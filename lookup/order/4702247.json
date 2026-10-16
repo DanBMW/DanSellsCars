@@ -38,14 +38,19 @@
  "lead_time_weeks_max": 3,
  "on_hold": false,
  "options": [
+  "Black Sapphire",
   "22\" BMW Individual aerodynamic wheels 1053 Bicolour",
   "Sun Protection Glass"
  ],
  "standard": [
+  "Storage for wireless charging",
   "DAB Radio",
   "BMW TeleServices",
   "Front Heated Seats",
   "Ambient Lighting",
+  "Charging cable Professional (Mode 3)",
+  "BMW Panoramic Vision",
+  "Driving Assistant Plus",
   "Active Guard",
   "Tyre Repair Kit Plus"
  ],

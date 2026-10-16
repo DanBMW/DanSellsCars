@@ -39,12 +39,14 @@
  "lead_time_weeks_max": 3,
  "on_hold": false,
  "options": [
-  "Sun Protection Glass"
+  "Sun Protection Glass",
+  "Black Sapphire"
  ],
  "standard": [
   "Parking Assistant",
   "Wireless Charging Tray",
   "M Sport Leather Steering Wheel",
+  "Charging cable Professional (Mode 3)",
   "Variable Sport Steering",
   "M Sport Suspension",
   "Anthracite Headlining",
@@ -59,6 +61,7 @@
   "Driving Assistant",
   "Personal eSIM",
   "Active Guard",
+  "AC Fast Charging Preparation",
   "eDrive Exterior Sound",
   "M Decor Fine-Brushed Aluminium Interior Trim",
   "Front Sport Seats",
