@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Compare BMWs | Dan Sells (draft)</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<script src="dsfinance.js"></script>
+<style>
+:root{--bg:#0b0d10;--card:#151920;--line:#262c36;--ink:#eef1f5;--mute:#8d97a6;--acc:#1c69d4;--win:#2fbf71;--wa:#25d366}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:18px 16px 8px;max-width:1200px;margin:auto}h1{margin:0;font-size:24px}header p{margin:4px 0 0;color:var(--mute)}
+.bar{position:sticky;top:0;z-index:5;background:rgba(11,13,16,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:none}
+.bar button,.bar a{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer;text-decoration:none}
+.bar .on{background:var(--acc);border-color:var(--acc)}.bar .wa{background:var(--wa);color:#04210f;border-color:var(--wa);font-weight:600;margin-left:auto}
+main{max-width:1200px;margin:auto;padding:12px 0 120px}
+.grid{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(78%,1fr);overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:0 16px}
+@media(min-width:760px){.grid{grid-auto-columns:minmax(0,1fr);overflow:visible}}
+.col{scroll-snap-align:start;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;min-width:0}
+.col img{width:100%;aspect-ratio:16/10;object-fit:cover;background:#222;display:block}
+.hd{padding:12px 14px;position:relative}.tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:6px;background:#22314a;color:#9cc2ff}
+.tag.u{background:#33291a;color:#ffcf8a}.hd h2{font-size:17px;margin:6px 0 2px}.hd .x{position:absolute;right:10px;top:10px;background:none;border:0;color:var(--mute);font-size:20px;cursor:pointer}
+.price{font-size:22px;font-weight:700}.verdict{margin:10px 14px;padding:10px 12px;border-radius:12px;background:#10233f;font-size:14px}
+.verdict b{display:block;font-size:12px;color:#9cc2ff;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.row{display:grid;grid-template-columns:1fr;padding:9px 14px;border-top:1px solid var(--line)}.row .k{font-size:12px;color:var(--mute)}.row .v{font-weight:600}
+.row.best .v::after{content:" ✓ best";color:var(--win);font-size:12px;font-weight:700}.row.same{opacity:.45}.hide-same .row.same{display:none}
+.only{padding:10px 14px;border-top:1px solid var(--line)}.only h3{font-size:13px;margin:0 0 6px;color:var(--win)}.only li{font-size:13px;margin:2px 0}.only ul{padding-left:18px;margin:0}
+details.eg{padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}details.eg summary{color:var(--ink);cursor:pointer}
+.add{display:flex;align-items:center;justify-content:center;min-height:240px;border:2px dashed var(--line);border-radius:16px;color:var(--mute);cursor:pointer;scroll-snap-align:start;background:none;font:inherit}
+.dots{display:flex;gap:6px;justify-content:center;margin:10px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}@media(min-width:760px){.dots{display:none}}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:9}.sheet.open{display:block}
+.sheet>div{position:absolute;left:0;right:0;bottom:0;max-height:85vh;background:var(--card);border-radius:18px 18px 0 0;padding:14px;overflow:auto;max-width:720px;margin:auto}
+.sheet input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0e1116;color:var(--ink);font:inherit}
+.seg{display:flex;gap:6px;margin:10px 0}.seg button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--line);background:none;color:var(--ink);font:inherit}.seg .on{background:var(--acc)}
+.pick{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}.pick img{width:84px;height:54px;object-fit:cover;border-radius:8px}.pick small{color:var(--mute);display:block}
+.legal{max-width:1200px;margin:20px auto;padding:0 16px;color:var(--mute);font-size:12px}
+.draft{background:#5a1d1d;color:#ffd5d5;text-align:center;font-size:12px;padding:4px}
+.soldb{position:absolute;left:12px;top:12px;background:#d23;color:#fff;font-weight:800;letter-spacing:.12em;padding:6px 12px;border-radius:8px}.sim{width:100%;padding:12px;border-radius:12px;border:0;background:var(--acc);color:#fff;font:inherit;font-weight:600;cursor:pointer}</style></head><body>
+<div class="draft">Draft preview, not linked from the live site</div>
+<header><h1>Compare side by side</h1><p>New and approved used, on one screen. Your inside BMW guy, Dan.</p></header>
+<div class="bar" id="bar">
+  <button id="bDiff" class="on">Only differences</button>
+  <button id="bAdd">Add a car</button>
+  <button id="bShare">Copy link</button>
+  <a class="wa" id="bWa" target="_blank" rel="noopener">WhatsApp Dan</a>
+</div>
+<main><div class="grid hide-same" id="grid"></div><div class="dots" id="dots"></div></main>
+<div class="legal" id="legal"></div>
+<div class="sheet" id="sheet"><div>
+  <b id="stitle" style="display:block;margin-bottom:8px"></b><input id="q" placeholder="Search model, reg or colour" autocomplete="off"/>
+  <div class="seg" id="seg"><button data-t="all" class="on">All</button><button data-t="n">New</button><button data-t="u">Approved used</button></div>
+  <div id="list"></div>
+</div></div>
+<script>
+(function(){
+var MAX=4, CARS={}, SEL=[], TYPE='all', GBP='\u00a3';
+var BROKER='Finance is arranged by Stephen James (Automotive) Ltd trading as Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Guarantees and indemnities may be required.';
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function num(s){var n=parseFloat(String(s).replace(/[^0-9.]/g,''));return isFinite(n)?n:null}
+function m0(n){return GBP+Math.round(n).toLocaleString('en-GB')}
+function m2(n){return GBP+Number(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function J(u){return fetch(u,{cache:'no-cache'}).then(function(r){return r.ok?r.json():{}}).catch(function(){return{}})}
+function newRep(e){return e.payments+' monthly payments of '+m2(e.monthly)+'. Cash price '+m2(e.cash_price)+'. Customer deposit '+m2(e.deposit)+'. '+(e.deposit_contribution>0?'Deposit contribution '+m2(e.deposit_contribution)+'. ':'')+'Total amount of credit '+m2(e.amount_of_credit)+'. Optional final payment '+m2(e.final_payment)+'. Total amount payable '+m2(e.total_payable)+'. Total charge for credit '+m2(e.charge_for_credit)+'. Duration '+e.term_months+' months. '+Number(e.annual_mileage).toLocaleString('en-GB')+' miles a year, '+e.excess_pence+'p per excess mile. '+e.apr+'% APR representative. Lender '+e.lender+'. Finance subject to status, 18+, UK residents.'}
+function newOk(e,c){if(!e||!e.lender||!e.monthly)return false;var vt=Date.parse(e.valid_to);if(!vt||vt<Date.now())return false;
+ if(Math.abs(e.deposit+e.payments*e.monthly+e.final_payment-e.total_payable)>0.05)return false;if(Math.abs(c.price_gbp-e.cash_price)>1)return false;return e.excess_pence!=null}
+Promise.all([J('lookup/new-stock.json'),J('lookup/new-stock-quotes.json'),J('automation/hedin-stock-snapshot.json'),J('automation/stock-finance.json'),J('automation/car-details.json'),J('automation/bmw-model-specs.json'),J('automation/stock-sold.json')]).then(function(r){
+ var SOLDN=(r[0].removed||[]).filter(function(c){return (Date.now()-Date.parse(c.removed_at))/864e5<=7}).map(function(c){c._sold=c.removed_at;return c});var ns=(r[0].cars||[]).concat(SOLDN),nq=(r[1].quotes)||{},us=Array.isArray(r[2])?r[2]:[],uf=r[3],ud=r[4],spec=r[5];
+ ns.forEach(function(c){if(c.on_hold)return;var q=c._sold?null:nq[c.order_number],sp=spec[c.series]||{};
+  CARS['n'+c.order_number]={key:'n'+c.order_number,t:'n',name:c.range,sub:c.colour+', '+(c.upholstery||''),img:c.image,series:c.series,
+   price:c.price_gbp,monthly:newOk(q,c)?q.monthly:null,rep:newOk(q,c)?newRep(q):null,fin:newOk(q,c)?q:null,
+   mileage:0,age:'Brand new',ageM:0,ready:c.lead_time_weeks_min+' to '+c.lead_time_weeks_max+' weeks',
+   fuel:c.fuel,gear:c.transmission,drive:c.drive,seats:c.seats,power:null,zero62:c.zero_to_62,engine:c.engine_cc?(c.engine_cc/1000).toFixed(1)+' litre':null,
+   boot:null,co2:null,ev:null,len:sp.length_mm,wheels:c.wheels,
+   body:sp.body,fg:c.fuel,sold:c._sold||null,equip:[].concat(c.packages||[],c.options||[],c.standard||[]),search:(c.range+' '+c.colour+' '+c.fuel).toLowerCase()}});
+ var SU=r[6].sold||{};us=us.concat(Object.keys(SU).filter(function(k){return SU[k].runs_missing>=(r[6].confirm_runs||1)}).map(function(k){var x=SU[k];x._sold=x.first_missing;return x}));
+ us.forEach(function(c){var f=c._sold?null:uf[c.id],d=ud[c.id]||{},sp=spec[c.series]||{},ok=dsFin.live(f)&&f.excess_pence!=null;
+  var fr=d.first_reg?new Date(d.first_reg):null,am=fr?Math.max(0,Math.round((Date.now()-fr)/2629800000)):null;
+  CARS['u'+c.id]={key:'u'+c.id,t:'u',name:c.model,sub:c.year+', '+c.colour+', '+c.reg,img:c.image,series:c.series,
+   price:num(c.price),monthly:ok?f.monthly:null,rep:ok?dsFin.repExample(f):null,fin:ok?f:null,
+   mileage:num(c.mileage),age:am==null?c.year:(am<12?am+' months':(am/12).toFixed(1)+' years')+' old',ageM:am,ready:'On the forecourt now',
+   fuel:c.fuel,gear:c.gearbox,drive:c.drive,seats:+c.seats,power:d.power_hp||num(c.power),zero62:null,engine:null,
+   boot:d.boot_l||null,co2:d.co2_gkm||null,ev:d.ev_miles||null,len:sp.length_mm,wheels:null,
+   body:c.body,fg:c.fuelGroup||c.fuel,sold:c._sold||null,equip:d.equipment||[],url:c.url,search:(c.model+' '+c.colour+' '+c.reg+' '+c.fuel).toLowerCase()}});
+ var p=new URLSearchParams(location.search).get('c');
+ SEL=(p?p.split(','):JSON.parse(localStorage.getItem('dscCompare')||'[]')).filter(function(k){return CARS[k]}).slice(0,MAX);
+ if(!SEL.length){var n=Object.keys(CARS).filter(function(k){return k[0]=='n'&&CARS[k].series=='1 Series'})[0],u=Object.keys(CARS).filter(function(k){return k[0]=='u'&&CARS[k].series=='1 Series'})[0];SEL=[n,u].filter(Boolean)}
+ render();
+});
+var ROWS=[
+ ['Cash price','price',function(v){return m0(v)},'low'],
+ ['Monthly (see example)','monthly',function(v){return m2(v)+' a month'},'low'],
+ ['Age','age',null,null,'ageM','low'],
+ ['Mileage','mileage',function(v){return v?v.toLocaleString('en-GB')+' miles':'Delivery miles'},'low'],
+ ['Ready','ready'],
+ ['Fuel','fuel'],['Gearbox','gear'],['Drive','drive'],
+ ['Power','power',function(v){return v+' hp'},'high'],
+ ['0 to 62 mph','zero62',function(v){return v+' seconds'},'low'],
+ ['Engine','engine'],
+ ['Electric range','ev',function(v){return v+' miles (official)'},'high'],
+ ['Boot','boot',function(v){return v+' litres'},'high'],
+ ['CO2','co2',function(v){return v+' g/km'},'low'],
+ ['Seats','seats'],['Length','len',function(v){return (v/1000).toFixed(2)+' m'},null],
+ ['Wheels','wheels']];
+function norm(s){return String(s).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,16)}
+function verdict(c,cs){var o=[],oth=cs.filter(function(x){return x!==c});
+ if(!oth.length)return 'Add another car to see how this one stacks up.';
+ var cheap=cs.every(function(x){return x.price>=c.price});if(cheap)o.push('The lowest cash price here');
+ var oc=oth.filter(function(x){return x.t!=c.t});
+ if(c.t=='n'&&oc.length){var d=c.price-Math.min.apply(0,oc.map(function(x){return x.price}));if(d>0)o.push('costs '+m0(d)+' more than the used option, for a brand new car built to this spec');}
+ if(c.t=='u'&&oc.length){var d2=Math.max.apply(0,oc.map(function(x){return x.price}))-c.price;if(d2>0)o.push(m0(d2)+' less than new, and '+(c.ready.toLowerCase()));}
+ if(c.monthly&&cs.every(function(x){return !x.monthly||x.monthly>=c.monthly}))o.push('the lowest monthly on the examples shown');
+ if(c.power&&cs.every(function(x){return !x.power||x.power<=c.power})&&cs.filter(function(x){return x.power}).length>1)o.push('the most power');
+ if(c.boot&&cs.every(function(x){return !x.boot||x.boot<=c.boot})&&cs.filter(function(x){return x.boot}).length>1)o.push('the biggest boot');
+ if(!o.length)o.push('A strong all rounder against the others here');
+ var s=o.join(', ');return s.charAt(0).toUpperCase()+s.slice(1)+'.'}
+function render(){
+ localStorage.setItem('dscCompare',JSON.stringify(SEL));
+ var all=SEL.map(function(k){return CARS[k]}),cs=all.filter(function(c){return !c.sold}),g=$('grid'),h='';
+ var eqN=cs.map(function(c){return c.equip.map(norm)});
+ all.forEach(function(c){var i=cs.indexOf(c);
+  if(c.sold){h+=soldCol(c);return}
+  h+='<section class="col"><img loading="lazy" src="'+esc(c.img)+'" alt=""/><div class="hd"><button class="x" data-rm="'+c.key+'" aria-label="Remove">×</button><span class="tag '+c.t+'">'+(c.t=='n'?'New':'Approved used')+'</span><h2>'+esc(c.name)+'</h2><div style="color:var(--mute);font-size:13px">'+esc(c.sub)+'</div><div class="price">'+m0(c.price)+'</div></div>';
+  h+='<div class="verdict"><b>Dan says</b>'+esc(verdict(c,cs))+'</div>';
+  ROWS.forEach(function(R){var v=c[R[1]],vals=cs.map(function(x){return x[R[1]]});
+   var shown=v==null||v===''?'Not listed':(R[2]?R[2](v):v);
+   var same=vals.every(function(x){return String(x)===String(vals[0])});
+   var bk=R[4]||R[1],dir=R[5]||R[3],best=false;
+   if(dir&&cs.length>1){var nums=cs.map(function(x){return x[bk]}).filter(function(x){return typeof x=='number'});
+     if(nums.length>1&&typeof c[bk]=='number'){var t=dir=='low'?Math.min.apply(0,nums):Math.max.apply(0,nums);best=c[bk]===t&&!same}}
+   h+='<div class="row'+(same?' same':'')+(best?' best':'')+'"><span class="k">'+R[0]+'</span><span class="v">'+esc(shown)+'</span></div>'});
+  var only=c.equip.filter(function(e,j){var n=eqN[i][j];return cs.length>1&&eqN.every(function(L,k){return k==i||L.indexOf(n)<0})}).slice(0,8);
+  if(only.length)h+='<div class="only"><h3>Only this car has</h3><ul>'+only.map(function(e){return '<li>'+esc(e)+'</li>'}).join('')+'</ul></div>';
+  if(c.rep)h+='<details class="eg"><summary>Representative example</summary>'+esc(c.rep)+'</details>';
+  else h+='<div class="row"><span class="k">Finance</span><span class="v">I’ll send you a personalised quote</span></div>';
+  h+='</section>'});
+ if(all.length<MAX)h+='<button class="add" id="addCol">+ Add a car to compare</button>';
+ g.innerHTML=h;
+ $('dots').innerHTML=cs.map(function(){return '<i></i>'}).join('');
+ var any=cs.some(function(c){return c.rep});$('legal').textContent=any?BROKER:'';
+ var msg='Hi Dan, I\u2019m comparing these:\n'+cs.map(function(c){return '\u2022 '+c.name+' ('+(c.t=='n'?'new':c.sub)+') '+m0(c.price)}).join('\n')+'\nWhich would you go for?\n'+shareUrl();
+ $('bWa').href='https://wa.me/447827138197?text='+encodeURIComponent(msg);
+}
+function soldCol(c){return '<section class="col sold"><div style="position:relative"><img loading="lazy" src="'+esc(c.img)+'" alt="" style="filter:grayscale(1) brightness(.6)"/><span class="soldb">SOLD</span></div><div class="hd"><button class="x" data-rm="'+c.key+'" aria-label="Remove">×</button><span class="tag '+c.t+'">'+(c.t=='n'?'New':'Approved used')+'</span><h2>'+esc(c.name)+'</h2><div style="color:var(--mute);font-size:13px">'+esc(c.sub)+'</div></div><div class="verdict"><b>Dan says</b>This one has found a new home. Tap below and I\u2019ll show you the closest cars I have now, new and used.</div><div style="padding:0 14px 14px"><button class="sim" data-sim="'+c.key+'">Find something similar</button></div></section>'}
+function similar(s){var age=function(c){return c.ageM||0};return Object.keys(CARS).map(function(k){return CARS[k]}).filter(function(c){return !c.sold&&SEL.indexOf(c.key)<0}).map(function(c){var sc=0;
+ if(c.series==s.series)sc+=40;if(c.body&&c.body==s.body)sc+=15;if(String(c.fg).split(' ')[0]==String(s.fg).split(' ')[0])sc+=15;
+ if(s.price)sc+=Math.max(0,20-Math.abs(c.price-s.price)/s.price*60);
+ sc+=Math.max(0,5-Math.abs(age(c)-age(s))/12);sc+=Math.max(0,5-Math.abs((c.mileage||0)-(s.mileage||0))/5000);return{c:c,sc:sc}})
+ .sort(function(a,b){return b.sc-a.sc}).slice(0,6).map(function(x){return x.c})}
+function shareUrl(){return location.origin+location.pathname+'?c='+SEL.join(',')}
+document.addEventListener('click',function(e){var t=e.target;
+ if(t.dataset&&t.dataset.rm){SEL=SEL.filter(function(k){return k!=t.dataset.rm});render()}
+ if(t.id=='addCol'||t.id=='bAdd'){openSheet()}
+ if(t.id=='sheet')$('sheet').classList.remove('open');
+ var pk=t.closest&&t.closest('.pick');if(pk&&SEL.filter(function(k){return !CARS[k].sold}).length<MAX&&SEL.indexOf(pk.dataset.k)<0){SEL=SEL.filter(function(k){return !(PRE&&CARS[k].sold)});SEL.push(pk.dataset.k);$('sheet').classList.remove('open');render()}
+ if(t.dataset&&t.dataset.sim){openSheet(similar(CARS[t.dataset.sim]),'Closest to the '+CARS[t.dataset.sim].name)}
+ if(t.dataset&&t.dataset.t){TYPE=t.dataset.t;[].forEach.call($('seg').children,function(b){b.classList.toggle('on',b===t)});list()}
+});
+$('bDiff').onclick=function(){this.classList.toggle('on');$('grid').classList.toggle('hide-same')};
+$('bShare').onclick=function(){var u=shareUrl();history.replaceState(null,'',u);(navigator.share?navigator.share({url:u,title:'Compare BMWs'}):navigator.clipboard.writeText(u)).catch(function(){});this.textContent='Link ready'};
+var PRE=null;function openSheet(pre,title){PRE=pre||null;$('stitle').textContent=title||'';$('sheet').classList.add('open');$('q').value='';list()}
+$('q').oninput=list;
+function list(){var q=$('q').value.toLowerCase().trim();
+ $('list').innerHTML=(PRE||Object.keys(CARS).map(function(k){return CARS[k]})).filter(function(c){return !c.sold&&(TYPE=='all'||c.t==TYPE)&&(!q||c.search.indexOf(q)>=0)&&SEL.indexOf(c.key)<0}).slice(0,60)
+ .map(function(c){return '<div class="pick" data-k="'+c.key+'"><img loading="lazy" src="'+esc(c.img)+'" alt=""/><div><b>'+esc(c.name)+'</b><small>'+(c.t=='n'?'New, ':'Used, ')+esc(c.sub)+', '+m0(c.price)+'</small></div></div>'}).join('')}
+})();
+</script></body></html>
