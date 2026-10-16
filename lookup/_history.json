@@ -317,7 +317,7 @@
  "LK25JNV": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-16",
-  "removed_at": null
+  "removed_at": "2026-10-16"
  },
  "LK26EVL": {
   "first_seen": "2026-10-07",
@@ -339,6 +339,11 @@
   "last_seen": "2026-10-16",
   "removed_at": null
  },
+ "LK26FDZ": {
+  "first_seen": "2026-10-16",
+  "last_seen": "2026-10-16",
+  "removed_at": null
+ },
  "LK26FGF": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-16",
@@ -347,7 +352,7 @@
  "LK26FGX": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-16",
-  "removed_at": null
+  "removed_at": "2026-10-16"
  },
  "LK26FHD": {
   "first_seen": "2026-10-07",
@@ -547,7 +552,7 @@
  "LR75TZK": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-16",
-  "removed_at": null
+  "removed_at": "2026-10-16"
  },
  "LS26CWL": {
   "first_seen": "2026-10-07",
@@ -586,6 +591,11 @@
  },
  "LS66NKM": {
   "first_seen": "2026-10-13",
+  "last_seen": "2026-10-16",
+  "removed_at": null
+ },
+ "LS72DRZ": {
+  "first_seen": "2026-10-16",
   "last_seen": "2026-10-16",
   "removed_at": null
  },
