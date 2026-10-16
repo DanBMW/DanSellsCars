@@ -1236,6 +1236,9 @@
   }
   function openPresent() {
     if (!RES || !RES.list.length) return;
+    /* Draft immersive presentation (present-v2.js), only behind ?present=v2.
+       Without the flag nothing here changes. */
+    if (window.dpV2 && /[?&]present=v2\b/.test(location.search)) { window.dpV2.open(); track('fmb_desk_present', { version: 'v2' }); return; }
     PSLIDES = presentSlides(); PIDX = 0;
     var box = $('deskPresent');
     box.hidden = false;
@@ -1299,6 +1302,13 @@
     window.addEventListener('resize', fitChrome, { passive: true });
     if (unlocked()) openApp(); else lock('start');
   }
+  /* Read only view of the presentation data for the present-v2 draft. */
+  window.fmbDeskPresentData = function () {
+    return { slides: presentSlides(), answers: A || answers(), total: TOT ? TOT.total : null, M: M, FN: FN, esc: esc,
+      pics: presentPics, why: whyFor, name: carName, facts: carFacts, fin: function (s) { return carFinHtml(s, true); },
+      protect: function (s) { return protectHtml(s.r, true, 'p2-protect'); }, kit: carKit, text: presentText,
+      first: String($('cFirst').value || '').trim(), phone: String($('cPhone').value || '') };
+  };
   window.fmbDeskDebug = {
     payload: null, answers: function () { return answers(); }, customerHtml: function () { return resultHtml(true); }, profileHtml: function () { return profileHtml(); }, result: function () { return { used: RES, neu: NEWR, totals: TOT }; },
     emailBody: function () { return emailBody(); }, buildProfile: function (o) { return buildProfile(o); }, openProfile: function () { openProfile(); }, subject: function () { return subject(); }, lock: function () { lock('test'); }, presentText: function () { return presentText(); },
