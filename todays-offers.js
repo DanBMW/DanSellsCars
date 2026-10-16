@@ -506,6 +506,202 @@
     });
   }
 
+  /* ---------- Dan's own cards for the day ----------
+     Dan, 16 October: "bring back the offer images that I can share on my
+     insta". The images were never lost. The morning routine writes the three
+     1080x1920 story cards into finance-posts/ every day, and they are the same
+     three cars this page shows, with the same lender quote on them. What went
+     away on 11 October, when he started sharing this page instead of the
+     cards, was his route to them: the page he now opens every morning had no
+     way to get at them. So it carries them.
+
+     Staff only, and query string only: ?dan=1 (or #posts) turns it on and that
+     device remembers it, so the link he shares with customers never shows it
+     and he never has to add anything after the first time. It is a tidiness
+     gate rather than a secret, the way finance-posts.html already is: the
+     cards and their captions are public files on a public site.
+
+     The brand new pair has no card image and cannot be given one here. BMW's
+     configurator renders are served with no Access-Control-Allow-Origin
+     header (checked, 16 October), so a canvas drawn from one cannot be
+     exported and anything built in the browser would come out blank. They get
+     their caption and a link to the photograph instead, which is what posting
+     one by hand from a phone actually needs. */
+  var POSTKEY = 'dsOfferPosts';
+  function wantPosts() {
+    var q = location.search + ' ' + location.hash;
+    if (/[?&]dan=0/.test(q)) { try { localStorage.removeItem(POSTKEY); } catch (e) {} return false; }
+    if (/[?&]dan=1/.test(q) || /#posts/.test(q)) { try { localStorage.setItem(POSTKEY, '1'); } catch (e) {} return true; }
+    try { return localStorage.getItem(POSTKEY) === '1'; } catch (e) { return false; }
+  }
+  /* A share sheet that will take the file itself is what gets a card into
+     Instagram in one go. Feature detected with a real File, because
+     navigator.share alone says nothing about whether files are allowed. */
+  function canShareFiles() {
+    try {
+      if (!navigator.share || !navigator.canShare || typeof File !== 'function') return false;
+      return navigator.canShare({ files: [new File([new Blob([''], { type: 'image/jpeg' })], 'a.jpg', { type: 'image/jpeg' })] });
+    } catch (e) { return false; }
+  }
+  function expiry(post) {
+    var d = post.valid_to ? new Date(post.valid_to) : null;
+    if (!d || isNaN(d)) return null;
+    var now = new Date();
+    if (d < now) return { gone: true, on: d };
+    if (d - now < 5 * 86400000) return { soon: true, on: d };
+    return null;
+  }
+  function shortDate(d) { return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); }
+
+  /* The brand new pair's caption. Same finance rule the cards themselves
+     keep: the cash price and which kind of price it is, and no monthly
+     figure, because there is no representative example to put beside one. */
+  function newCaption(o) {
+    var c = o.car, L = [];
+    L.push('Brand new BMW ' + (c.description || '') + ', built and waiting, unregistered.');
+    L.push([c.colour, c.upholstery, c.transmission].filter(Boolean).join(', '));
+    L.push('');
+    L.push(o.price + ', ' + o.priceKind + '.');
+    if (o.weeks) L.push('Delivery ' + o.weeks + '.');
+    L.push('');
+    L.push('Finance available through BMW Financial Services. Message me and I will put a personalised quote together on your own deposit and mileage.');
+    L.push('');
+    L.push('#BMW #BrandNew #HedinRuxley'
+      + (c.series ? ' #' + String(c.series).replace(/[^A-Za-z0-9]/g, '') : ''));
+    return L.join('\n');
+  }
+
+  function postsBlock(pick, news) {
+    if (!wantPosts()) return;
+    var posts = (pick && pick.posts) || [];
+    var sec = $('toPost'), out = $('toPostOut');
+    if (!sec || !out) return;
+    sec.hidden = false;
+    var files = canShareFiles();
+
+    var html = '';
+    if (!posts.length) {
+      html += '<p class="to-post-warn">No cards have been built yet. They land each morning with the stock refresh.</p>';
+    } else if (!pick.today) {
+      html += '<p class="to-post-warn">Today’s cards are not built yet. These are ' + esc(longDate(pick.day))
+        + '’s, so check the car is still here before you post it.</p>';
+    }
+
+    html += posts.map(function (p, i) {
+      var ex = expiry(p);
+      var flag = ex && ex.gone
+        ? '<span class="to-post-flag bad">Quote expired ' + esc(shortDate(ex.on)) + ', do not post</span>'
+        : ex && ex.soon
+          ? '<span class="to-post-flag warn">Rate ends ' + esc(shortDate(ex.on)) + '</span>' : '';
+      return '<article class="to-post-item' + (ex && ex.gone ? ' lapsed' : '') + '" data-post="' + i + '">'
+        + '<a class="to-post-shot" href="finance-posts/' + esc(p.image) + '" target="_blank" rel="noopener">'
+        + '<img src="finance-posts/' + esc(p.image) + '" alt="' + esc(p.model) + ' story card" loading="lazy"/></a>'
+        + '<div class="to-post-main">'
+        + '<h3>' + esc(p.model) + '</h3>'
+        + '<p class="to-post-figs">' + esc(p.reg) + ' · ' + esc(p.price) + ' · '
+        + FN.money2(p.monthly) + ' a month · ' + esc(p.apr) + '% APR · ' + esc(p.term) + ' months'
+        + '</p>' + flag
+        + '<pre class="to-post-cap" id="toCap' + i + '">' + esc(p.caption) + '</pre>'
+        + '<div class="to-post-act">'
+        + (files ? '<button class="to-btn" type="button" data-share="' + i + '">Share the card</button>' : '')
+        + '<a class="to-btn ghost" href="finance-posts/' + esc(p.image) + '" download="' + esc(p.image) + '" data-save="' + i + '">Save image</a>'
+        + '<button class="to-btn ghost" type="button" data-cap="' + i + '">Copy caption</button>'
+        + '</div></div></article>';
+    }).join('');
+
+    /* The brand new pair: no card image to hand, so the caption and the
+       photograph, which is what posting one by hand needs. */
+    if (news && news.length) {
+      html += '<p class="to-post-sub">The two brand new ones have no card built for them. Here is the caption and the photograph.</p>'
+        + news.map(function (o, j) {
+          return '<article class="to-post-item" data-new="' + j + '">'
+            + (o.photo ? '<a class="to-post-shot wide" href="' + esc(o.photo) + '" target="_blank" rel="noopener">'
+              + '<img src="' + esc(o.photo) + '" alt="' + esc(o.title) + '" loading="lazy"/></a>' : '')
+            + '<div class="to-post-main">'
+            + '<h3>' + esc(o.title) + '</h3>'
+            + '<p class="to-post-figs">Order ' + esc(o.ref) + ' · ' + esc(o.price) + ' · ' + esc(o.priceKind) + '</p>'
+            + '<pre class="to-post-cap" id="toNewCap' + j + '">' + esc(newCaption(o)) + '</pre>'
+            + '<div class="to-post-act">'
+            + '<button class="to-btn ghost" type="button" data-newcap="' + j + '">Copy caption</button>'
+            + (o.photo ? '<a class="to-btn ghost" href="' + esc(o.photo) + '" target="_blank" rel="noopener">Open the photograph</a>' : '')
+            + '</div></div></article>';
+        }).join('');
+    }
+
+    out.innerHTML = html;
+
+    function copied(btn) {
+      var was = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = was; }, 1600);
+    }
+    function copyFrom(id, btn) {
+      var t = (document.getElementById(id) || {}).textContent || '';
+      var ta;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(function () { copied(btn); }, function () { copied(btn); });
+        return;
+      }
+      ta = document.createElement('textarea');
+      ta.value = t; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); copied(btn); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    out.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-share],[data-cap],[data-newcap],[data-save]') : null;
+      if (!b) return;
+      var i;
+      if (b.hasAttribute('data-cap')) {
+        i = +b.getAttribute('data-cap');
+        copyFrom('toCap' + i, b);
+        track('offer_post_caption', { offer_date: pick.day || '', reg: posts[i] ? posts[i].reg : '' });
+      } else if (b.hasAttribute('data-newcap')) {
+        i = +b.getAttribute('data-newcap');
+        copyFrom('toNewCap' + i, b);
+        track('offer_post_caption', { offer_date: DAY, reg: news[i] ? String(news[i].ref) : '', kind: 'new' });
+      } else if (b.hasAttribute('data-save')) {
+        track('offer_post_save', { offer_date: pick.day || '', reg: posts[+b.getAttribute('data-save')].reg });
+      } else if (b.hasAttribute('data-share')) {
+        e.preventDefault();
+        i = +b.getAttribute('data-share');
+        shareCard(posts[i], b, pick.day || '');
+      }
+    });
+    $('toPostHide').addEventListener('click', function () {
+      try { localStorage.removeItem(POSTKEY); } catch (e) {}
+      sec.hidden = true;
+    });
+    track('offer_post_panel', { offer_date: pick.day || '', cards: posts.length });
+  }
+
+  /* One tap from the page to the share sheet, so the card goes straight into
+     Instagram. The caption rides along as text where the target takes it, and
+     is on the clipboard either way because Instagram does not. */
+  function shareCard(post, btn, day) {
+    var was = btn.textContent;
+    btn.textContent = 'Getting it ready';
+    btn.disabled = true;
+    function done(msg) { btn.textContent = msg || was; btn.disabled = false;
+      if (msg) setTimeout(function () { btn.textContent = was; }, 2200); }
+    fetch('finance-posts/' + post.image, { cache: 'no-cache' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+      .then(function (blob) {
+        var f = new File([blob], post.image, { type: 'image/jpeg' });
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(post.caption)['catch'](function () {});
+        }
+        return navigator.share({ files: [f], text: post.caption });
+      })
+      .then(function () {
+        track('offer_post_share', { offer_date: day, reg: post.reg });
+        done('Shared');
+      })['catch'](function (err) {
+        if (err && err.name === 'AbortError') { done(); return; }
+        done('Use Save image');
+      });
+  }
+
   /* ---------- build ---------- */
   function build() {
     var pick = cardsFor(DAY);
@@ -542,6 +738,7 @@
     });
     wireCar();
     askBlock();
+    postsBlock(pick, news);
     if (window.aosMedia) window.aosMedia.scan(document);
     track('offers_view', { offer_date: pick.day || '', used: pick.posts.length, brand_new: news.length });
   }
@@ -571,5 +768,6 @@
 
   /* for the tests */
   window.toDebug = { day: function () { return DAY; }, offers: function () { return OFFERS; },
-    ref: claimRef, waText: waText, newPair: newPair, msToMidnight: msToMidnight };
+    ref: claimRef, waText: waText, newPair: newPair, msToMidnight: msToMidnight,
+    wantPosts: wantPosts, newCaption: newCaption, expiry: expiry };
 })();

@@ -1013,13 +1013,36 @@ for, and the morning does no more work than it did yesterday.
     over WhatsApp. A "Not quite the one?" block closes the page with WhatsApp,
     all the approved used stock and Find my BMW, since five cars will not suit
     most people who open it.
+- **Dan's own cards are on the page he opens every morning** (Dan, 16 October:
+  "bring back the offer images that I can share on my insta"). The images were
+  never lost: the morning routine writes the three 1080x1920 story cards into
+  `finance-posts/` every day, and they are the same three cars this page
+  shows. What went when he started sharing the page link instead of the cards
+  was his route to them. `postsBlock()` draws a staff panel under the hero
+  with each card, its figures, its caption, Save image, Copy caption and, on a
+  phone whose share sheet takes files, one Share button that hands the JPEG
+  straight to Instagram with the caption on the clipboard. A quote that has
+  lapsed is flagged **do not post** and one ending within five days is flagged
+  too, because the whole point of the card is a rate somebody can still have.
+  It is `?dan=1` once (`links.html` opens it that way) and then remembered in
+  `localStorage.dsOfferPosts`, so the link he shares with customers is exactly
+  what it was; `?dan=0` or Hide this turns it off. A tidiness gate, not a
+  secret, the way `finance-posts.html` already is.
+  **The brand new pair cannot be given a card here.** BMW's configurator
+  renders come back with no `Access-Control-Allow-Origin` header (checked
+  16 October), so a canvas drawn from one cannot be exported and anything
+  built in the browser would come out blank. They get a generated caption and
+  a link to the photograph instead, which is what posting one by hand from a
+  phone actually needs. A real card for them means a Python job on the morning
+  routine, which is Dan's call: the finance on it would have to come from
+  `lookup/new-stock-quotes.json`, and that job is not scheduled yet.
 - `noindex, follow`, out of `sitemap.xml`, and deliberately **not** in
   `robots.txt`, so Google can see the noindex (the funnel step reasoning).
   It stays noindex even though Dan shares it daily: the content changes every
   midnight, so an indexed snapshot would promise a car that has moved on.
   Linked from the Today section of `links.html`. GA `offers_view`,
   `offer_claim_open`, `offer_claim`, `offer_claim_error`, `offer_whatsapp`,
-  `offer_car_view`, `offer_ask_whatsapp`, `offer_share` (the "Share today's offers on WhatsApp" button in the Not quite the one block, wa.me with no number so they pick the friend). The representative example renders `open` on this page (11 October review): it is the page Dan promotes daily, so the example sits in plain view beside every used monthly rather than behind a tap. `window.toDebug` is the test seam.
+  `offer_car_view`, `offer_ask_whatsapp`, `offer_share` (the "Share today's offers on WhatsApp" button in the Not quite the one block, wa.me with no number so they pick the friend), and, on the staff panel only, `offer_post_panel`, `offer_post_share`, `offer_post_save` and `offer_post_caption`. The representative example renders `open` on this page (11 October review): it is the page Dan promotes daily, so the example sits in plain view beside every used monthly rather than behind a tap. `window.toDebug` is the test seam.
 
 ### The daily routines, and what owns what
 
