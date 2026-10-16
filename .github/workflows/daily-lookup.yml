@@ -105,6 +105,10 @@ jobs:
             echo "ok=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Rebuild the sold ledger
+        run: |
+          python3 automation/stock-sold.py || { echo "::warning::stock-sold refused, yesterday's kept"; git checkout -- automation/stock-sold.json 2>/dev/null || true; }
+
       # The reg files carry no timestamp and generated_at only moves on a real
       # change, so an ordinary morning is often an empty diff. That is a
       # success, not a failure: commit only when something actually moved.
@@ -112,7 +116,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A lookup/ automation/stock-arrivals.json
+          git add -A lookup/ automation/stock-arrivals.json automation/stock-sold.json
           if git diff --cached --quiet; then
             echo "nothing changed, nothing committed"
             exit 0
