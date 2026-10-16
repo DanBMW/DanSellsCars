@@ -1,8 +1,12 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="robots" content="noindex,nofollow"/>
-<title>Compare BMWs | Dan Sells (draft)</title>
+<link rel="canonical" href="https://dan-sells.co.uk/compare.html"/>
+<title>Compare BMWs side by side, new and approved used | Dan Cane</title>
+<meta name="description" content="Compare up to four BMWs side by side, brand new and approved used, with the lender's own finance examples. Message Dan on WhatsApp about any of them."/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<script src="analytics.js" defer></script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <script src="dsfinance.js"></script>
 <style>
@@ -33,9 +37,10 @@ details.eg{padding:10px 14px;border-top:1px solid var(--line);font-size:12px;col
 .seg{display:flex;gap:6px;margin:10px 0}.seg button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--line);background:none;color:var(--ink);font:inherit}.seg .on{background:var(--acc)}
 .pick{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}.pick img{width:84px;height:54px;object-fit:cover;border-radius:8px}.pick small{color:var(--mute);display:block}
 .legal{max-width:1200px;margin:20px auto;padding:0 16px;color:var(--mute);font-size:12px}
-.draft{background:#5a1d1d;color:#ffd5d5;text-align:center;font-size:12px;padding:4px}
-.soldb{position:absolute;left:12px;top:12px;background:#d23;color:#fff;font-weight:800;letter-spacing:.12em;padding:6px 12px;border-radius:8px}.sim{width:100%;padding:12px;border-radius:12px;border:0;background:var(--acc);color:#fff;font:inherit;font-weight:600;cursor:pointer}</style></head><body>
-<div class="draft">Draft preview, not linked from the live site</div>
+.x-unused{background:#5a1d1d;color:#ffd5d5;text-align:center;font-size:12px;padding:4px}
+.soldb{position:absolute;left:12px;top:12px;background:#d23;color:#fff;font-weight:800;letter-spacing:.12em;padding:6px 12px;border-radius:8px}.sim{width:100%;padding:12px;border-radius:12px;border:0;background:var(--acc);color:#fff;font:inherit;font-weight:600;cursor:pointer}@media(min-width:760px){.bar{position:relative}}
+.gone{padding:14px;color:var(--mute)}</style></head><body>
+<nav style="max-width:1200px;margin:auto;padding:12px 16px 0;font-size:14px"><a href="new-cars.html" style="color:#9cc2ff">New Car Stock</a> &nbsp;·&nbsp; <a href="stock.html" style="color:#9cc2ff">Approved Used Stock</a></nav>
 <header><h1>Compare side by side</h1><p>New and approved used, on one screen. Your inside BMW guy, Dan.</p></header>
 <div class="bar" id="bar">
   <button id="bDiff" class="on">Only differences</button>
@@ -63,7 +68,7 @@ function J(u){return fetch(u,{cache:'no-cache'}).then(function(r){return r.ok?r.
 function newRep(e){return e.payments+' monthly payments of '+m2(e.monthly)+'. Cash price '+m2(e.cash_price)+'. Customer deposit '+m2(e.deposit)+'. '+(e.deposit_contribution>0?'Deposit contribution '+m2(e.deposit_contribution)+'. ':'')+'Total amount of credit '+m2(e.amount_of_credit)+'. Optional final payment '+m2(e.final_payment)+'. Total amount payable '+m2(e.total_payable)+'. Total charge for credit '+m2(e.charge_for_credit)+'. Duration '+e.term_months+' months. '+Number(e.annual_mileage).toLocaleString('en-GB')+' miles a year, '+e.excess_pence+'p per excess mile. '+e.apr+'% APR representative. Lender '+e.lender+'. Finance subject to status, 18+, UK residents.'}
 function newOk(e,c){if(!e||!e.lender||!e.monthly)return false;var vt=Date.parse(e.valid_to);if(!vt||vt<Date.now())return false;
  if(Math.abs(e.deposit+e.payments*e.monthly+e.final_payment-e.total_payable)>0.05)return false;if(Math.abs(c.price_gbp-e.cash_price)>1)return false;return e.excess_pence!=null}
-Promise.all([J('lookup/new-stock.json'),J('lookup/new-stock-quotes.json'),J('automation/hedin-stock-snapshot.json'),J('automation/stock-finance.json'),J('automation/car-details.json'),J('automation/bmw-model-specs.json'),J('automation/stock-sold.json')]).then(function(r){
+Promise.all([J('lookup/new-stock.json'),J('lookup/new-stock-quotes.json'),J('automation/hedin-stock-snapshot.json'),J('automation/stock-finance.json'),J('automation/car-details.json'),J('automation/bmw-model-specs.json'),J('automation/stock-sold.json'),J('automation/hedin-group-stock.json')]).then(function(r){
  var SOLDN=(r[0].removed||[]).filter(function(c){return (Date.now()-Date.parse(c.removed_at))/864e5<=7}).map(function(c){c._sold=c.removed_at;return c});var ns=(r[0].cars||[]).concat(SOLDN),nq=(r[1].quotes)||{},us=Array.isArray(r[2])?r[2]:[],uf=r[3],ud=r[4],spec=r[5];
  ns.forEach(function(c){if(c.on_hold)return;var q=c._sold?null:nq[c.order_number],sp=spec[c.series]||{};
   CARS['n'+c.order_number]={key:'n'+c.order_number,t:'n',name:c.range,sub:c.colour+', '+(c.upholstery||''),img:c.image,series:c.series,
@@ -72,7 +77,7 @@ Promise.all([J('lookup/new-stock.json'),J('lookup/new-stock-quotes.json'),J('aut
    fuel:c.fuel,gear:c.transmission,drive:c.drive,seats:c.seats,power:null,zero62:c.zero_to_62,engine:c.engine_cc?(c.engine_cc/1000).toFixed(1)+' litre':null,
    boot:null,co2:null,ev:null,len:sp.length_mm,wheels:c.wheels,
    body:sp.body,fg:c.fuel,sold:c._sold||null,equip:[].concat(c.packages||[],c.options||[],c.standard||[]),search:(c.range+' '+c.colour+' '+c.fuel).toLowerCase()}});
- var SU=r[6].sold||{};us=us.concat(Object.keys(SU).filter(function(k){return SU[k].runs_missing>=(r[6].confirm_runs||1)}).map(function(k){var x=SU[k];x._sold=x.first_missing;return x}));
+ var LIVEU={};us.concat(Array.isArray(r[7])?r[7]:[]).forEach(function(c){LIVEU[c.id]=1});us=us.concat((Array.isArray(r[7])?r[7]:[]).filter(function(c){return !us.some(function(x){return x.id==c.id})}));var SU=(r[6]&&r[6].sold)||{};us=us.concat(Object.keys(SU).filter(function(k){var x=SU[k];return !LIVEU[k]&&x.first_missing&&(Date.now()-Date.parse(x.first_missing))/864e5<=((r[6].keep_days)||7)&&(x.runs_missing||1)>=((r[6].confirm_runs)||1)}).map(function(k){var x=SU[k];x._sold=x.first_missing;return x}));
  us.forEach(function(c){var f=c._sold?null:uf[c.id],d=ud[c.id]||{},sp=spec[c.series]||{},ok=dsFin.live(f)&&f.excess_pence!=null;
   var fr=d.first_reg?new Date(d.first_reg):null,am=fr?Math.max(0,Math.round((Date.now()-fr)/2629800000)):null;
   CARS['u'+c.id]={key:'u'+c.id,t:'u',name:c.model,sub:c.year+', '+c.colour+', '+c.reg,img:c.image,series:c.series,
@@ -82,8 +87,12 @@ Promise.all([J('lookup/new-stock.json'),J('lookup/new-stock-quotes.json'),J('aut
    boot:d.boot_l||null,co2:d.co2_gkm||null,ev:d.ev_miles||null,len:sp.length_mm,wheels:null,
    body:c.body,fg:c.fuelGroup||c.fuel,sold:c._sold||null,equip:d.equipment||[],url:c.url,search:(c.model+' '+c.colour+' '+c.reg+' '+c.fuel).toLowerCase()}});
  var p=new URLSearchParams(location.search).get('c');
- SEL=(p?p.split(','):JSON.parse(localStorage.getItem('dscCompare')||'[]')).filter(function(k){return CARS[k]}).slice(0,MAX);
- if(!SEL.length){var n=Object.keys(CARS).filter(function(k){return k[0]=='n'&&CARS[k].series=='1 Series'})[0],u=Object.keys(CARS).filter(function(k){return k[0]=='u'&&CARS[k].series=='1 Series'})[0];SEL=[n,u].filter(Boolean)}
+ var META={};try{META=JSON.parse(localStorage.getItem('dscCompareMeta')||'{}')||{}}catch(e){}
+ SEL=(p?p.split(','):JSON.parse(localStorage.getItem('dscCompare')||'[]')).filter(function(k){return /^[nu]\w+$/.test(k)}).slice(0,MAX);
+ SEL.forEach(function(k){if(!CARS[k]){var m=META[k]||{};CARS[k]={key:k,t:k.charAt(0),name:m.name||'This BMW',sub:m.sub||'',img:m.img||'',series:m.series,body:m.body,fg:m.fg,price:m.price,ageM:m.ageM,mileage:m.mileage,sold:'gone',equip:[],search:''}}});
+ SEL.forEach(function(k){var c=CARS[k];if(c&&!c.sold&&c.name){META[k]={name:c.name,sub:c.sub,img:c.img,t:c.t,series:c.series,body:c.body,fg:c.fg,price:c.price,ageM:c.ageM,mileage:c.mileage}}});
+ try{localStorage.setItem('dscCompareMeta',JSON.stringify(META))}catch(e){}
+ if(!SEL.length){var n=Object.keys(CARS).filter(function(k){return !CARS[k].sold&&k[0]=='n'&&CARS[k].series=='1 Series'})[0],u=Object.keys(CARS).filter(function(k){return !CARS[k].sold&&k[0]=='u'&&CARS[k].series=='1 Series'})[0];SEL=[n,u].filter(Boolean)}
  render();
 });
 var ROWS=[
@@ -151,7 +160,7 @@ document.addEventListener('click',function(e){var t=e.target;
  if(t.dataset&&t.dataset.rm){SEL=SEL.filter(function(k){return k!=t.dataset.rm});render()}
  if(t.id=='addCol'||t.id=='bAdd'){openSheet()}
  if(t.id=='sheet')$('sheet').classList.remove('open');
- var pk=t.closest&&t.closest('.pick');if(pk&&SEL.filter(function(k){return !CARS[k].sold}).length<MAX&&SEL.indexOf(pk.dataset.k)<0){SEL=SEL.filter(function(k){return !(PRE&&CARS[k].sold)});SEL.push(pk.dataset.k);$('sheet').classList.remove('open');render()}
+ var pk=t.closest&&t.closest('.pick');if(pk&&SEL.filter(function(k){return !CARS[k].sold}).length<MAX&&SEL.indexOf(pk.dataset.k)<0){SEL=SEL.filter(function(k){return !(PRE&&CARS[k].sold)});SEL.push(pk.dataset.k);var c0=CARS[pk.dataset.k];try{var MM=JSON.parse(localStorage.getItem('dscCompareMeta')||'{}');MM[c0.key]={name:c0.name,sub:c0.sub,img:c0.img,t:c0.t,series:c0.series,body:c0.body,fg:c0.fg,price:c0.price,ageM:c0.ageM,mileage:c0.mileage};localStorage.setItem('dscCompareMeta',JSON.stringify(MM))}catch(e){}$('sheet').classList.remove('open');render()}
  if(t.dataset&&t.dataset.sim){openSheet(similar(CARS[t.dataset.sim]),'Closest to the '+CARS[t.dataset.sim].name)}
  if(t.dataset&&t.dataset.t){TYPE=t.dataset.t;[].forEach.call($('seg').children,function(b){b.classList.toggle('on',b===t)});list()}
 });
