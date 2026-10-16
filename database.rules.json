@@ -229,6 +229,14 @@
         "ts": { ".validate": "newData.isNumber()" },
         "$other": { ".validate": false }
       },
+      "announce": {
+        ".validate": "newData.hasChildren(['text','ts'])",
+        "kicker": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "title":  { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "text":   { ".validate": "newData.isString() && newData.val().length <= 300" },
+        "ts":     { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      },
       "play": {
         ".validate": "newData.hasChildren(['clip','ts'])",
         "clip": { ".validate": "newData.isString() && newData.val().length <= 120" },

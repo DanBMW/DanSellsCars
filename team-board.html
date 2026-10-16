@@ -3733,6 +3733,19 @@ window.dsOnControl=function(v){
       return;
     }
   }
+  /* one-off fun announcement: boardcontrol/announce {kicker,title,text,ts}.
+     Shown once per screen (remembered), only within 10 minutes of being set. */
+  var an=v.announce;
+  if(an&&typeof an.ts==='number'&&Date.now()-an.ts<600000){
+    var anKey='dsAnnounceSeen';
+    var anSeen=0; try{anSeen=+localStorage.getItem(anKey)||0}catch(e){}
+    if(an.ts>anSeen){
+      try{localStorage.setItem(anKey,String(an.ts))}catch(e){}
+      var ar={kind:'announce', kicker:an.kicker, customer:an.title, text:an.text};
+      walkinShowCard(ar);
+      if(typeof walkinSpeak==='function') walkinSpeak(ar);
+    }
+  }
   var pl=v.play;
   if(pl&&typeof pl.ts==='number'&&pl.ts>lastPlayTs){
     var first=!controlPrimed;
@@ -6551,6 +6564,7 @@ function walkinShowCard(r){
   else if(kind==='walk-in' || kind==='walkin-waiting') kicker='WALK-IN';
   else if(kind==='walkin-wait-10') kicker='STILL WAITING';
   else if(kind==='dealt') kicker='DEALT';
+  else if(kind==='announce') kicker=String(r.kicker||'ANNOUNCEMENT');
   else if(!wi) kicker=r.handover?'HANDOVER':'APPOINTMENT';
   $('walkin-kicker').textContent=kicker;
   $('walkin-name').textContent=r.customer||'A customer';
@@ -6569,6 +6583,7 @@ function walkinShowCard(r){
   else if(kind==='dealt') $('walkin-time').textContent='Deal done';
   else if(kind==='walk-in-taken' || kind==='walkin-taken' || kind==='walkin-arrived-taken' || kind==='walkin-waiting-taken')
     $('walkin-time').textContent=(r.assignedTo||r.bookedWith)?('With '+(r.assignedTo||r.bookedWith)):'With sales';
+  else if(kind==='announce') $('walkin-time').textContent='Just now';
   else $('walkin-time').textContent=r.arrived ? ('Arrived '+walkinClock(r.arrived)) : 'Just arrived';
   pop.hidden=false;
   requestAnimationFrame(function(){ pop.classList.add('show') });
@@ -6594,6 +6609,7 @@ function walkinAnnounceText(r){
   var tail=walkinVehicleTail(r);
 
   /* Nathan office-display copy (spoken + on-screen sentence). */
+  if(kind==='announce') return String(r.text||'');
   if(kind==='appointment'){
     var car=nu ? (' This is a '+nu+' car appointment.') : '';
     return name+' has arrived for their appointment with '+exec+'.'+car+tail;
