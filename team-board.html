@@ -906,6 +906,14 @@ body.premiere .pairqr{display:none!important}
 .radio-fab.on{background:#c8102e;box-shadow:0 6px 22px rgba(200,16,46,.45)}
 .radio-fab.wait{animation:radioPulse 1.4s ease-in-out infinite}
 .radio-fab[hidden]{display:none!important}
+/* Dan: the music button is always on screen, above the lockup strip, ticker
+   and pop-ups, and lifted clear of the strip text rather than covering it. */
+.radio-fab{z-index:530}
+body.haslock .radio-fab,body.hasticker .radio-fab{bottom:56px}
+body.haslock.hasticker .radio-fab{bottom:100px}
+.radio-fab.wait.tapstart::after{content:'Tap to start music';position:absolute;left:62px;top:50%;transform:translateY(-50%);
+  white-space:nowrap;font-size:14px;font-weight:800;padding:6px 10px;border-radius:999px;background:rgba(12,14,18,.88);color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);pointer-events:none}
 @keyframes radioPulse{0%,100%{opacity:.75}50%{opacity:1}}
 .cornerqr{
   position:fixed;top:clamp(10px,1.4vh,18px);right:clamp(10px,1.2vw,20px);z-index:310;
@@ -4151,6 +4159,7 @@ var radioLastTime=0, radioStallTicks=0, radioSwapEl=null, radioBuffering=false;
 function radioForceSound(){
   try{
     if(!radioWanted()) return;
+    if(radioUserPaused) return;
     var AC=window.AudioContext||window.webkitAudioContext;
     if(AC){
       if(!walkinActx) walkinActx=new AC();
@@ -4186,6 +4195,7 @@ function radioForceSound(){
 /* Hard reconnect from the top of the station list (admin / recovery). */
 function radioRefreshStream(){
   if(!radioWanted()) return;
+  if(radioUserPaused) return; /* paused on purpose on this screen */
   radioClearFade();
   radioFadeInPending=false;
   radioStallTicks=0;
@@ -4200,10 +4210,16 @@ function radioRefreshStream(){
 
 var radioUserArmed=false; /* phone/tablet: corner play button (or admin) arms audio */
 var radioUserPaused=false; /* corner pause — do not auto-resume until they hit play */
+/* Music is ON by default; an explicit pause on the corner button is remembered
+   on this screen (localStorage) until somebody taps play again. */
+try{ radioUserPaused = localStorage.getItem('dsRadioMuted')==='1' }catch(e){}
+function radioSaveMuted(m){ try{ if(m) localStorage.setItem('dsRadioMuted','1'); else localStorage.removeItem('dsRadioMuted') }catch(e){} }
 function radioWanted(){
   if(!sOn('radio')) return false;
   /* Walls auto-start; phones need an explicit play tap (browser autoplay rules). */
   if(window.innerWidth>=1200) return true;
+  /* a laptop/desktop (mouse pointer) is a board screen too, whatever its width */
+  try{ if(window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) return true }catch(e){}
   return !!radioUserArmed;
 }
 function radioVol(){ return sVol('radiovol', 45) / 100 }
@@ -4262,6 +4278,7 @@ function radioDrop(){
 
 function radioPlay(){
   if(!radioWanted()){ radioStop(); return }
+  if(radioUserPaused){ try{ paintRadioFab() }catch(e){} return } /* respect an explicit pause */
   /* Reuse the live element. radioAttach drops the stream, which is what made
      the walls go quiet after a scene. Only attach a fresh one when we have
      nothing to resume. */
@@ -4357,6 +4374,8 @@ function radioDuckLevel(){
 }
 function radioDuck(on){
   on=!!on;
+  /* paused on purpose here: an announcement must not start the music up */
+  if(radioUserPaused){ radioDucked=on; try{ paintRadio() }catch(e){} return }
   if(on===radioDucked){
     /* already in the requested state */
     /* 'waiting' belongs here too. A screen refused autoplay parks in it
@@ -4529,12 +4548,14 @@ function paintRadio(){
 function paintRadioFab(){
   var fab=$('radio-fab');
   if(!fab) return;
-  if(!sOn('radio')){ fab.hidden=true; return; }
+  /* always visible: when the radio is paused for every screen it shows plain ♪ */
   fab.hidden=false;
+  if(!sOn('radio')){ fab.classList.remove('on','wait','tapstart'); fab.textContent='♪'; fab.title='Play '+RADIO_NAME; return; }
   var playing=radioState==='playing' && radioEl && !radioEl.paused && !radioUserPaused;
   var wait=radioState==='waiting' || radioState==='connecting' || (window.innerWidth<1200 && !radioUserArmed);
   fab.classList.toggle('on', !!playing);
-  fab.classList.toggle('wait', !!wait && !playing);
+  fab.classList.toggle('wait', !!wait && !playing && !radioUserPaused);
+  fab.classList.toggle('tapstart', radioState==='waiting' && !playing && !radioUserPaused);
   fab.setAttribute('aria-label', playing ? 'Pause radio' : 'Play radio');
   fab.title = playing ? 'Pause radio' : 'Play '+RADIO_NAME;
   fab.textContent = playing ? '❚❚' : '♪';
@@ -4554,13 +4575,13 @@ function radioFabTap(){
     try{ setRadioOn(true) }catch(e){ SET.radio=true; }
   }
   if(radioState==='playing' && radioEl && !radioEl.paused && !radioUserPaused){
-    radioUserPaused=true;
+    radioUserPaused=true; radioSaveMuted(true);
     try{ radioEl.pause() }catch(e){}
     radioState='waiting';
     paintRadio();
     return;
   }
-  radioUserPaused=false;
+  radioUserPaused=false; radioSaveMuted(false);
   radioIdx=0;
   radioPlay();
   try{ radioForceSound() }catch(e){}
@@ -4604,7 +4625,7 @@ var audioOk=false, liveVideo=null;
     }
     if(bdCtx&&bdCtx.state==='suspended'&&bdCtx.resume)bdCtx.resume();
     /* the radio is refused on a screen nobody has touched, just like a clip */
-    if(radioWanted()&&!radioDucked){
+    if(radioWanted()&&!radioDucked&&!radioUserPaused){
       if(radioState!=='playing') radioPlay();
       try{ radioForceSound() }catch(e){}
     }
