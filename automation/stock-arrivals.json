@@ -1,11 +1,11 @@
 {
- "generated_at": "2026-10-16T07:24:41.000Z",
- "today": "2026-10-16",
+ "generated_at": "2026-10-17T07:20:50.000Z",
+ "today": "2026-10-17",
  "note": "first_seen is the first morning this repo saw the car in a stock snapshot. A car whose first_seen equals its list's history_from was already there when the history began and has NOT just arrived.",
  "lists": {
   "forecourt": {
    "history_from": "2026-08-13",
-   "days_of_history": 44,
+   "days_of_history": 45,
    "cars": {
     "219929": "2026-08-13",
     "226535": "2026-08-13",

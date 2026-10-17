@@ -1,5 +1,22 @@
 {
  "live": {
+  "251469": {
+   "id": "251469",
+   "model": "BMW M135i xDrive",
+   "series": "1 Series",
+   "year": "2023",
+   "reg": "LX73HZM",
+   "mileage": "44,003 miles",
+   "colour": "Grey",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "Hatchback",
+   "power": "306 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£23,495",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0fcdc-e9ca-7c3d-b3b2-14d6eb569150-preview.jpg"
+  },
   "256419": {
    "id": "256419",
    "model": "BMW 120 M Sport",
@@ -42,7 +59,7 @@
    "reg": "LX74HTE",
    "mileage": "19,948 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "196 hp",
@@ -100,7 +117,7 @@
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£38,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11236-ecbd-7376-9812-5625aaedef4c-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a143c8-cf94-773a-aad3-10195d61ec7e-preview.jpg"
   },
   "254948": {
    "id": "254948",
@@ -167,7 +184,7 @@
    "power": "135 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£21,995",
+   "price": "£22,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a102bf-7898-7a44-b94c-e00a5094332b-preview.jpg"
   },
   "254664": {
@@ -184,7 +201,7 @@
    "power": "624 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£70,000",
+   "price": "£69,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-preview.jpg"
   },
   "253984": {
@@ -201,7 +218,7 @@
    "power": "339 hp",
    "gearbox": "Automatic",
    "seats": "7",
-   "price": "£44,995",
+   "price": "£45,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0f220-1a1c-7e29-868a-b34d82d15919-preview.jpg"
   },
   "253983": {
@@ -218,7 +235,7 @@
    "power": "298 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£50,000",
+   "price": "£49,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a12153-fe3c-788e-9033-c1d87af11763-preview.jpg"
   },
   "247774": {
@@ -235,7 +252,7 @@
    "power": "203 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£34,562",
+   "price": "£34,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-fd83-763a-bcf9-561610cf6218-preview.jpg"
   },
   "247769": {
@@ -252,7 +269,7 @@
    "power": "313 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£35,992",
+   "price": "£36,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a04309-45ba-7cd8-bb15-a6745126a444-preview.jpg"
   },
   "245526": {
@@ -303,25 +320,8 @@
    "power": "135 hp",
    "gearbox": "Manual",
    "seats": "5",
-   "price": "£16,495",
+   "price": "£16,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a10f2d-9797-7472-b353-f6791a2a79b7-preview.jpg"
-  },
-  "253493": {
-   "id": "253493",
-   "model": "BMW 530e M Sport Saloon",
-   "series": "5 Series",
-   "year": "2021",
-   "reg": "HK70ZNY",
-   "mileage": "42,289 miles",
-   "colour": "Grey",
-   "fuel": "Plug-in hybrid",
-   "fuelGroup": "Plug-in hybrid",
-   "body": "Saloon",
-   "power": "291 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£24,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-192c-7ea6-a91b-6dd50ec7b8d2-preview.jpg"
   },
   "253491": {
    "id": "253491",
@@ -354,7 +354,7 @@
    "power": "291 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£39,995",
+   "price": "£37,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-aa89-7608-ab65-edff585a7258-preview.jpg"
   },
   "252930": {
@@ -371,7 +371,7 @@
    "power": "359 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£43,495",
+   "price": "£43,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0f51a-ed3b-794a-9f42-c8157e7c24a2-preview.jpg"
   },
   "236110": {
@@ -405,7 +405,7 @@
    "power": "182 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£32,989",
+   "price": "£32,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0d6ab-e802-7ec9-93cf-227252bb6841-preview.jpg"
   },
   "252730": {
@@ -450,13 +450,13 @@
    "reg": "HX22WUP",
    "mileage": "22,754 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "Saloon",
    "power": "189 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£25,944",
+   "price": "£25,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0dc01-6fbf-7c59-be08-cc4529d450b4-preview.jpg"
   },
   "251471": {
@@ -490,7 +490,7 @@
    "power": "299 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£34,000",
+   "price": "£33,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0ce9a-0511-74de-ad58-69e18fdb1f84-preview.jpg"
   },
   "251466": {
@@ -507,7 +507,7 @@
    "power": "286 hp",
    "gearbox": "Automatic",
    "seats": "4",
-   "price": "£30,000",
+   "price": "£29,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0f0bc-6fd3-7960-b534-88684fa2c62a-preview.jpg"
   },
   "237377": {
@@ -526,23 +526,6 @@
    "seats": "5",
    "price": "£44,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019ea786-3879-7508-a04a-57f57e8af647-preview.jpg"
-  },
-  "219929": {
-   "id": "219929",
-   "model": "BMW X3 20d xDrive M Sport",
-   "series": "X3",
-   "year": "2025",
-   "reg": "LV75GUG",
-   "mileage": "7,853 miles",
-   "colour": "Grey",
-   "fuel": "Diesel (mild hybrid)",
-   "fuelGroup": "Diesel",
-   "body": "SUV",
-   "power": "196 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£42,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019c8bb0-0f25-772c-b776-7c1c96aa5d82-preview.jpg"
   },
   "242784": {
    "id": "242784",
@@ -595,23 +578,6 @@
    "price": "£51,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0c833-bbb0-7282-b2b5-ccc9041a6b00-preview.jpg"
   },
-  "250723": {
-   "id": "250723",
-   "model": "BMW iX xDrive40 M Sport",
-   "series": "iX",
-   "year": "2022",
-   "reg": "LK72HUP",
-   "mileage": "31,163 miles",
-   "colour": "Black",
-   "fuel": "Electric",
-   "fuelGroup": "Electric",
-   "body": "SUV",
-   "power": "326 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£31,400",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cd72-c2ed-74c2-ac31-792fd4b83b5d-preview.jpg"
-  },
   "250260": {
    "id": "250260",
    "model": "BMW M135i xDrive",
@@ -626,7 +592,7 @@
    "power": "306 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£27,659",
+   "price": "£27,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0a588-42c7-7cd1-858a-68f8e0de5a07-preview.jpg"
   },
   "250258": {
@@ -643,7 +609,7 @@
    "power": "286 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£43,500",
+   "price": "£43,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0c449-530b-7568-b3be-682db53f9b2c-preview.jpg"
   },
   "249631": {
@@ -660,7 +626,7 @@
    "power": "189 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£26,351",
+   "price": "£25,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-5625-78e1-a484-2d4412588956-preview.jpg"
   },
   "249630": {
@@ -671,13 +637,13 @@
    "reg": "YE75KDK",
    "mileage": "1,217 miles",
    "colour": "Grey",
-   "fuel": "Petrol",
+   "fuel": "Petrol (mild hybrid)",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "207 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£46,817",
+   "price": "£46,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0899d-0acd-7a9c-828b-b766faffb58f-preview.jpg"
   },
   "249386": {
@@ -694,7 +660,7 @@
    "power": "286 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£41,302",
+   "price": "£41,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cb97-8b7e-7b99-9ea2-bec55587cc9c-preview.jpg"
   },
   "248445": {
@@ -728,7 +694,7 @@
    "power": "374 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£47,000",
+   "price": "£46,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08fcd-c361-779a-b4cb-3afb52c3066e-preview.jpg"
   },
   "248409": {
@@ -745,7 +711,7 @@
    "power": "182 hp",
    "gearbox": "Automatic",
    "seats": "4",
-   "price": "£33,000",
+   "price": "£32,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08571-3d56-72e4-beb5-e75c8bb6aaad-preview.jpg"
   },
   "247773": {
@@ -864,7 +830,7 @@
    "power": "207 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£46,533",
+   "price": "£46,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a04286-f1ee-7e2e-88c2-22cfdd84e46f-preview.jpg"
   },
   "247404": {
@@ -898,7 +864,7 @@
    "power": "291 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£31,612",
+   "price": "£31,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0428e-5567-7d5f-8ec1-7fe4453c66e8-preview.jpg"
   },
   "242787": {
@@ -909,7 +875,7 @@
    "reg": "LY75NUW",
    "mileage": "3,321 miles",
    "colour": "Black",
-   "fuel": "Petrol",
+   "fuel": "Petrol (mild hybrid)",
    "fuelGroup": "Petrol",
    "body": "Coupe",
    "power": "374 hp",
@@ -917,23 +883,6 @@
    "seats": "5",
    "price": "£49,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f8411-e6e4-7ed2-9489-b93c79f09ca5-preview.jpg"
-  },
-  "246277": {
-   "id": "246277",
-   "model": "BMW X1 M35i xDrive",
-   "series": "X1",
-   "year": "2025",
-   "reg": "LK75SNZ",
-   "mileage": "4,929 miles",
-   "colour": "Blue",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "SUV",
-   "power": "299 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£42,750",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a013b9-1959-786f-b93b-73f19b1f062c-preview.jpg"
   },
   "238265": {
    "id": "238265",
@@ -968,23 +917,6 @@
    "seats": "4",
    "price": "£28,750",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0039b-16b9-731d-a203-d915a20d12a7-preview.jpg"
-  },
-  "244226": {
-   "id": "244226",
-   "model": "BMW 118i M Sport",
-   "series": "1 Series",
-   "year": "2024",
-   "reg": "LX73JUH",
-   "mileage": "1,030 miles",
-   "colour": "Black",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "Hatchback",
-   "power": "135 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£22,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd6bb-72da-78c9-82c5-e665d4025a0f-preview.jpg"
   },
   "241291": {
    "id": "241291",
@@ -1073,25 +1005,6 @@
   }
  },
  "sold": {
-  "251469": {
-   "id": "251469",
-   "model": "BMW M135i xDrive",
-   "series": "1 Series",
-   "year": "2023",
-   "reg": "LX73HZM",
-   "mileage": "44,003 miles",
-   "colour": "Grey",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "Hatchback",
-   "power": "306 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£23,495",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0fcdc-e9ca-7c3d-b3b2-14d6eb569150-preview.jpg",
-   "first_missing": "2026-10-13",
-   "runs_missing": 4
-  },
   "248443": {
    "id": "248443",
    "model": "BMW 128ti",
@@ -1109,7 +1022,7 @@
    "price": "£23,799",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a07c6f-3f38-7b9d-aa65-7d682eff2b51-preview.jpg",
    "first_missing": "2026-10-13",
-   "runs_missing": 4
+   "runs_missing": 5
   },
   "247767": {
    "id": "247767",
@@ -1128,7 +1041,7 @@
    "price": "£75,950",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-b02b-7c7e-a729-48519086611f-preview.jpg",
    "first_missing": "2026-10-13",
-   "runs_missing": 4
+   "runs_missing": 5
   },
   "253492": {
    "id": "253492",
@@ -1147,7 +1060,7 @@
    "price": "£88,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11e75-b574-7ccb-80df-6c8391a2170d-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "253490": {
    "id": "253490",
@@ -1166,7 +1079,7 @@
    "price": "£31,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11c2b-1875-731f-95fc-c36130f1de98-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "253489": {
    "id": "253489",
@@ -1185,7 +1098,7 @@
    "price": "£24,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-62c5-73d7-88a3-107364b7b2c8-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "249565": {
    "id": "249565",
@@ -1204,7 +1117,7 @@
    "price": "£19,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08f82-1a3e-73ee-bc75-7ba89154424a-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "248444": {
    "id": "248444",
@@ -1223,7 +1136,7 @@
    "price": "£27,916",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a05d23-fa27-7eb7-869b-e13079801445-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "247765": {
    "id": "247765",
@@ -1242,7 +1155,7 @@
    "price": "£52,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-aa9b-737e-85fa-5210e58eb728-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "242783": {
    "id": "242783",
@@ -1261,7 +1174,7 @@
    "price": "£27,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f6c86-1fc8-774e-bda5-7a844d9e6e1d-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "242775": {
    "id": "242775",
@@ -1280,7 +1193,7 @@
    "price": "£31,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f7f01-463d-7b3a-baf0-93a9bb1d7a28-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "240865": {
    "id": "240865",
@@ -1299,7 +1212,7 @@
    "price": "£34,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f4d9f-cf60-7048-a0d4-1b8c652798b8-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "239863": {
    "id": "239863",
@@ -1318,7 +1231,7 @@
    "price": "£28,750",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f18d6-eec4-74ea-98f2-478ec54bdcfc-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 2
+   "runs_missing": 3
   },
   "247764": {
    "id": "247764",
@@ -1337,10 +1250,105 @@
    "price": "£42,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042fe-ec5d-7385-be3f-3d284d8dbd8b-preview.jpg",
    "first_missing": "2026-10-16",
+   "runs_missing": 2
+  },
+  "253493": {
+   "id": "253493",
+   "model": "BMW 530e M Sport Saloon",
+   "series": "5 Series",
+   "year": "2021",
+   "reg": "HK70ZNY",
+   "mileage": "42,289 miles",
+   "colour": "Grey",
+   "fuel": "Plug-in hybrid",
+   "fuelGroup": "Plug-in hybrid",
+   "body": "Saloon",
+   "power": "291 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£24,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-192c-7ea6-a91b-6dd50ec7b8d2-preview.jpg",
+   "first_missing": "2026-10-17",
+   "runs_missing": 1
+  },
+  "219929": {
+   "id": "219929",
+   "model": "BMW X3 20d xDrive M Sport",
+   "series": "X3",
+   "year": "2025",
+   "reg": "LV75GUG",
+   "mileage": "7,853 miles",
+   "colour": "Grey",
+   "fuel": "Diesel (mild hybrid)",
+   "fuelGroup": "Diesel",
+   "body": "SUV",
+   "power": "196 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£42,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019c8bb0-0f25-772c-b776-7c1c96aa5d82-preview.jpg",
+   "first_missing": "2026-10-17",
+   "runs_missing": 1
+  },
+  "250723": {
+   "id": "250723",
+   "model": "BMW iX xDrive40 M Sport",
+   "series": "iX",
+   "year": "2022",
+   "reg": "LK72HUP",
+   "mileage": "31,163 miles",
+   "colour": "Black",
+   "fuel": "Electric",
+   "fuelGroup": "Electric",
+   "body": "SUV",
+   "power": "326 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£31,400",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cd72-c2ed-74c2-ac31-792fd4b83b5d-preview.jpg",
+   "first_missing": "2026-10-17",
+   "runs_missing": 1
+  },
+  "246277": {
+   "id": "246277",
+   "model": "BMW X1 M35i xDrive",
+   "series": "X1",
+   "year": "2025",
+   "reg": "LK75SNZ",
+   "mileage": "4,929 miles",
+   "colour": "Blue",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "SUV",
+   "power": "299 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£42,750",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a013b9-1959-786f-b93b-73f19b1f062c-preview.jpg",
+   "first_missing": "2026-10-17",
+   "runs_missing": 1
+  },
+  "244226": {
+   "id": "244226",
+   "model": "BMW 118i M Sport",
+   "series": "1 Series",
+   "year": "2024",
+   "reg": "LX73JUH",
+   "mileage": "1,030 miles",
+   "colour": "Black",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "Hatchback",
+   "power": "135 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£22,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd6bb-72da-78c9-82c5-e665d4025a0f-preview.jpg",
+   "first_missing": "2026-10-17",
    "runs_missing": 1
   }
  },
- "updated": "2026-10-16",
+ "updated": "2026-10-17",
  "confirm_runs": 1,
  "keep_days": 7
 }
