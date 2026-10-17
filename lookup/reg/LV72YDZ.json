@@ -1,0 +1,33 @@
+{
+ "reg": "LV72YDZ",
+ "model": "BMW X5 xDrive30d M Sport",
+ "series": "X5",
+ "year": 2023,
+ "mileage": "35,506 miles",
+ "mileage_miles": 35506,
+ "colour": "Black",
+ "fuel": "Diesel",
+ "body": "SUV",
+ "gearbox": "Automatic",
+ "drive": "FourWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "286 hp",
+ "trim": "M Sport",
+ "price": "£40,930",
+ "price_gbp": 40930,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-dc2c-75ed-818e-1c1df6dff729-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-dc2c-75ed-818e-1c1df6dff729-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-dd42-7395-abd4-59e78dd03097-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-de2b-7604-8040-7438a502c559-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-df02-71fc-9b67-5ca616fa1c14-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/256614/pb-bmw-x5-2023",
+ "listing_id": "256614",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}

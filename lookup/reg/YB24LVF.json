@@ -1,0 +1,30 @@
+{
+ "reg": "YB24LVF",
+ "model": "BMW 320i M Sport Saloon",
+ "series": "3 Series",
+ "year": 2024,
+ "mileage": "28,026 miles",
+ "mileage_miles": 28026,
+ "colour": "Black",
+ "fuel": "Petrol",
+ "body": "Saloon",
+ "gearbox": "Automatic",
+ "drive": "RearWheel",
+ "seats": 5,
+ "doors": 4,
+ "power": "182 hp",
+ "trim": "M Sport",
+ "price": "£26,700",
+ "price_gbp": 26700,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a144be-bd61-7e4c-8251-c59faa724f53-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a144be-bd61-7e4c-8251-c59faa724f53-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/256564/pb-bmw-320-2024",
+ "listing_id": "256564",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}

@@ -1,0 +1,33 @@
+{
+ "reg": "LP24ORA",
+ "model": "BMW 330e M Sport Saloon",
+ "series": "3 Series",
+ "year": 2024,
+ "mileage": "18,713 miles",
+ "mileage_miles": 18713,
+ "colour": "Blue",
+ "fuel": "Plug-in hybrid",
+ "body": "Saloon",
+ "gearbox": "Automatic",
+ "drive": "RearWheel",
+ "seats": 5,
+ "doors": 4,
+ "power": "291 hp",
+ "trim": "M Sport",
+ "price": "£26,750",
+ "price_gbp": 26750,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1446f-7fe1-7011-85bd-56b36753b61d-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1446f-7fe1-7011-85bd-56b36753b61d-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1446f-80e5-7dc8-aed4-fd36bcdef3df-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1446f-81c4-76ab-a567-39a207ff651c-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1446f-8277-7848-933a-f62c13cdc147-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/256566/pb-bmw-330e-2024",
+ "listing_id": "256566",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}
