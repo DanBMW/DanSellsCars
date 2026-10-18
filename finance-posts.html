@@ -110,10 +110,29 @@ function niceDate(iso){
   return d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'});
 }
 
-fetch('finance-posts/index.json', {cache:'no-cache'})
-  .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
-  .then(function(d){
-    var posts = d.posts || [];
+/* The brand new cards are built by automation/new-car-post.py into their own
+   index, so the used contract this page was written against is untouched.
+   They are merged in here by date: Dan posts the day's five offers together,
+   so he should see the day's five cards together. A missing file is simply no
+   brand new cards. */
+Promise.all([
+  fetch('finance-posts/index.json', {cache:'no-cache'})
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); }),
+  fetch('finance-posts/new-index.json', {cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : {posts:[]}; })
+    .catch(function(){ return {posts:[]}; })
+])
+  .then(function(both){
+    var d = both[0];
+    var posts = (d.posts || []).concat((both[1].posts || []).map(function(p){
+      p.kind = 'new';
+      p.reg = 'Order ' + p.order;
+      p.mileage = 'Delivery ' + (p.delivery || 'to be confirmed');
+      p.year = 'Brand new';
+      p.term = p.term || '';
+      p.listing = 'new-cars.html?q=' + encodeURIComponent(p.order);
+      return p;
+    }));
     var t = d.terms || {};
     document.getElementById('terms').textContent =
       'Quoted on ' + money(t.deposit) + ' deposit (' + t.deposit_pct + '% on cars from '
@@ -126,6 +145,11 @@ fetch('finance-posts/index.json', {cache:'no-cache'})
       return;
     }
 
+    posts.sort(function(a, b){
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      if ((a.kind === 'new') !== (b.kind === 'new')) return a.kind === 'new' ? 1 : -1;
+      return String(a.reg) < String(b.reg) ? -1 : 1;
+    });
     var days = [], seen = {};
     posts.forEach(function(p){
       if (!seen[p.date]) { seen[p.date] = []; days.push(p.date); }
@@ -155,10 +179,13 @@ fetch('finance-posts/index.json', {cache:'no-cache'})
           + '<div class="meta">' + esc(p.year) + ' &middot; ' + esc(p.reg) + ' &middot; '
           + esc(p.colour) + ' &middot; ' + esc(p.mileage) + ' &middot; ' + esc(p.price) + '</div>'
           + '<div class="figs">'
-          + '<span class="chip"><b>' + money(Math.round(p.monthly)) + '</b> a month</span>'
-          + '<span class="chip">' + p.apr + '% APR</span>'
-          + '<span class="chip">' + money(Math.round(p.deposit)) + ' deposit</span>'
-          + '<span class="chip">' + p.term + ' months</span>'
+          + (p.kind === 'new' ? '<span class="chip">Brand new</span>' : '')
+          + (p.monthly
+              ? '<span class="chip"><b>' + money(Math.round(p.monthly)) + '</b> a month</span>'
+                + '<span class="chip">' + p.apr + '% APR</span>'
+                + '<span class="chip">' + money(Math.round(p.deposit)) + ' deposit</span>'
+                + '<span class="chip">' + p.term + ' months</span>'
+              : '<span class="chip">Price only, no live quote</span>')
           + flag
           + '</div>'
           + '<div class="cap" id="' + id + '">' + esc(p.caption) + '</div>'

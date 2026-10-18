@@ -163,7 +163,70 @@ window.dsFin = (function () {
       + 'Finance subject to status, 18+, UK residents.';
   }
 
+  /* ---------- brand new cars ----------
+     The lender's own BMW Financial Services quote per car, recorded from
+     BMW's own page for it by automation/new-stock-quotes.mjs into
+     lookup/new-stock-quotes.json. Never the derived finance_example, and
+     never the £24 per £1,000 matching rule, which is Dan's rule of thumb
+     and not the lender's line.
+
+     These rules were written inside new-cars.html and are now here, because
+     three pages and the morning's card job all have to agree about when a
+     brand new monthly may be shown: this repo has been bitten by twinned
+     code before (shrinkShot/shrink, clipKey) and a finance rule that drifts
+     between copies is worse than a cosmetic one. */
+  var NEW_NEED = ['monthly', 'payments', 'term_months', 'cash_price', 'deposit',
+    'amount_of_credit', 'final_payment', 'total_payable', 'charge_for_credit',
+    'annual_mileage', 'excess_pence', 'apr'];
+  var NEW_MAX_AGE_DAYS = 3;
+  function isNum(v) { return typeof v === 'number' && isFinite(v); }
+
+  /* car, its quote, and the quotes file's own generated_at. Everything has to
+     hold: every item of the representative example present, the quote adding
+     up three ways, agreeing with the car's price, still inside its own
+     valid_to, and the file itself fresh. Anything else shows no monthly. */
+  function newOk(car, e, generatedAt, now) {
+    var t = now || Date.now(), i;
+    if (!e || !e.lender || !e.product) return false;
+    var vt = Date.parse(e.valid_to);
+    if (!vt || vt < t) return false;
+    for (i = 0; i < NEW_NEED.length; i++) if (!isNum(e[NEW_NEED[i]])) return false;
+    var g = Date.parse(generatedAt);
+    if (!g || t - g > NEW_MAX_AGE_DAYS * 864e5) return false;
+    var dc = isNum(e.deposit_contribution) ? e.deposit_contribution : 0;
+    if (Math.abs(e.cash_price - e.deposit - dc - e.amount_of_credit) > 0.02) return false;
+    if (Math.abs(e.deposit + e.payments * e.monthly + e.final_payment - e.total_payable) > 0.05) return false;
+    if (Math.abs(e.total_payable - e.cash_price - e.charge_for_credit) > 0.05) return false;
+    if (car && isNum(car.price_gbp) && Math.abs(car.price_gbp - e.cash_price) > 1) return false;
+    return true;
+  }
+
+  /* Same wording and order as the used car example above, plus the total
+     charge for credit and the lender, which the new car quote carries. */
+  function newRep(e) {
+    var dc = isNum(e.deposit_contribution) && e.deposit_contribution > 0;
+    return e.payments + ' monthly payments of ' + money2(e.monthly) + '. '
+      + 'Cash price ' + money2(e.cash_price) + '. Customer deposit ' + money2(e.deposit) + '. '
+      + (dc ? 'Deposit contribution ' + money2(e.deposit_contribution) + '. ' : '')
+      + 'Total amount of credit ' + money2(e.amount_of_credit) + '. '
+      + 'Optional final payment ' + money2(e.final_payment) + '. '
+      + 'Total amount payable ' + money2(e.total_payable) + '. '
+      + 'Total charge for credit ' + money2(e.charge_for_credit) + '. '
+      + 'Duration ' + e.term_months + ' months. '
+      + Number(e.annual_mileage).toLocaleString('en-GB') + ' miles a year, '
+      + e.excess_pence + 'p per excess mile. '
+      + e.apr + '% APR representative. Lender ' + e.lender + '. '
+      + 'Finance subject to status, 18+, UK residents.';
+  }
+
+  var BROKER = 'Finance is arranged by Stephen James (Automotive) Ltd trading as '
+    + 'Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance '
+    + 'Limited (FRN 313486), authorised and regulated by the Financial Conduct '
+    + 'Authority. A credit broker, not a lender. Guarantees and indemnities may be required.';
+
   return { live: live, lineFor: lineFor, quoteAt: quoteAt, at: at,
            limit: limit, photos: photos, repExample: repExample,
+           newOk: newOk, newRep: newRep, BROKER: BROKER,
+           NEW_NEED: NEW_NEED, NEW_MAX_AGE_DAYS: NEW_MAX_AGE_DAYS,
            money: money, money2: money2, CDN: CDN, TOL: LINE_TOL };
 })();

@@ -67,14 +67,6 @@
     var d = new Date(key + 'T12:00:00');
     return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   }
-  /* A stable hash of the date, so the brand new pair is a function of the day
-     and nothing else. */
-  function seed(str) {
-    var h = 2166136261, i;
-    for (i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = (h * 16777619) >>> 0; }
-    return h;
-  }
-
   /* ---------- data ---------- */
   var DAY = todayKey(), DATA = {}, OFFERS = [];
   Promise.all([
@@ -83,9 +75,12 @@
     getJSON('automation/stock-finance.json')['catch'](function () { return {}; }),
     getJSON('automation/car-details.json')['catch'](function () { return {}; }),
     getJSON('automation/stock-arrivals.json')['catch'](function () { return null; }),
-    getJSON('lookup/new-stock.json')['catch'](function () { return { cars: [] }; })
+    getJSON('lookup/new-stock.json')['catch'](function () { return { cars: [] }; }),
+    getJSON('lookup/new-stock-quotes.json')['catch'](function () { return { quotes: {} }; }),
+    getJSON('finance-posts/new-index.json')['catch'](function () { return { posts: [] }; })
   ]).then(function (r) {
-    DATA = { cards: r[0], home: r[1] || [], fin: r[2] || {}, det: r[3] || {}, arr: r[4], neu: r[5] || { cars: [] } };
+    DATA = { cards: r[0], home: r[1] || [], fin: r[2] || {}, det: r[3] || {}, arr: r[4],
+      neu: r[5] || { cars: [] }, nq: r[6] || { quotes: {} }, ncards: r[7] || { posts: [] } };
     build();
   })['catch'](function () { fail(); });
 
@@ -115,27 +110,13 @@
     }
     return null;
   }
-  /* Two brand new cars, from the date alone. Different models where the stock
-     allows it, because two 1 Series side by side is one offer, not two. */
+  /* Two brand new cars, from the date alone. The rule itself is in
+     new-pair.js, shared with the morning job that builds their Instagram
+     cards: a card for a car this page is not offering would be worse than no
+     card at all. */
   function newPair(day) {
-    var cars = (DATA.neu.cars || []).filter(function (c) {
-      return c && c.order_number && c.price_gbp && String(c.on_hold) !== 'True';
-    });
-    if (!cars.length) return [];
-    cars = cars.slice().sort(function (a, b) { return String(a.order_number) < String(b.order_number) ? -1 : 1; });
-    var h = seed(day + '|new'), n = cars.length, out = [], used = {};
-    for (var step = 0; step < n && out.length < 2; step++) {
-      var c = cars[(h + step * 7919) % n];
-      var k = c.series || c.description;
-      if (used[k]) continue;
-      used[k] = 1; out.push(c);
-    }
-    /* A forecourt with one model on it still gets its second offer. */
-    for (var j = 0; j < n && out.length < 2; j++) {
-      var d = cars[(h + j) % n];
-      if (out.indexOf(d) === -1) out.push(d);
-    }
-    return out;
+    if (!window.dsNewPair) return [];
+    return window.dsNewPair.pick(DATA.neu.cars || [], day, 2);
   }
 
   /* ---------- a used offer ---------- */
@@ -163,13 +144,23 @@
       url: c.url
     };
   }
+  /* The lender's own BMW Financial Services quote for this car, or null.
+     The checks are dsFin.newOk, the same ones new-cars.html applies: every
+     item of the representative example present, the quote adding up and
+     agreeing with the car's price, inside its own valid_to, and the quotes
+     file itself no more than three days old. A quote that does not pass
+     shows no monthly figure at all. */
+  function newQuote(c) {
+    var q = ((DATA.nq && DATA.nq.quotes) || {})[c.order_number];
+    return FN.newOk && FN.newOk(c, q, DATA.nq && DATA.nq.generated_at) ? q : null;
+  }
   function newOffer(c) {
     var weeks = c.lead_time_weeks_min && c.lead_time_weeks_max
       ? c.lead_time_weeks_min + ' to ' + c.lead_time_weeks_max + ' weeks away'
       : (c.lead_time_weeks_max ? c.lead_time_weeks_max + ' weeks away' : '');
     var np = (c.images && c.images.length ? c.images : (c.image ? [c.image] : [])).slice(0, 5);
     return {
-      kind: 'new', id: 'N' + c.order_number, car: c, fin: null,
+      kind: 'new', id: 'N' + c.order_number, car: c, fin: null, nq: newQuote(c),
       ref: c.order_number, photo: np[0] || '', pics: np,
       title: 'Brand new BMW ' + (c.description || ''),
       meta: [c.colour, c.fuel, c.transmission, weeks].filter(Boolean).join(' · '),
@@ -188,6 +179,8 @@
     var L = ['Hi Dan, I’d like today’s offer on the ' + o.title + '.'];
     L.push(o.kind === 'used' ? 'Reg ' + o.ref + ', ' + (o.price || '') : 'Order ' + o.ref + ', ' + (o.price || ''));
     if (o.fin) L.push(FN.money2(o.fin.monthly) + ' a month at ' + FN.money(o.fin.deposit) + ' down.');
+    if (o.nq) L.push(FN.money2(o.nq.monthly) + ' a month at ' + FN.money(o.nq.deposit) + ' down, '
+      + o.nq.term_months + ' months.');
     L.push('Ref ' + claimRef(o) + '.');
     return L.join('\n');
   }
@@ -195,8 +188,22 @@
 
   function finHtml(o) {
     if (o.kind === 'new') {
-      return '<p class="to-mo"><b>' + esc(o.priceKind) + '</b>'
-        + '<span>Finance available. I’ll put a personalised quote together for you.</span></p>';
+      /* A brand new monthly is BMW Financial Services' own quote for that
+         car, recorded from BMW's own page for it, and it never appears
+         without the whole representative example beside it. Without a quote
+         that passes every check, the card says what kind of price it is and
+         offers a personalised quote, which is where this page started. */
+      if (!o.nq) {
+        return '<p class="to-mo"><b>' + esc(o.priceKind) + '</b>'
+          + '<span>Finance available. I’ll put a personalised quote together for you.</span></p>';
+      }
+      var q = o.nq;
+      return '<p class="to-mo"><b>' + esc(FN.money2(q.monthly)) + ' a month</b>'
+        + '<span>' + esc(q.product) + ', ' + esc(FN.money(q.deposit)) + ' deposit, '
+        + esc(q.term_months) + ' months, ' + esc(q.annual_mileage.toLocaleString('en-GB'))
+        + ' miles a year, ' + esc(q.apr) + '% APR representative.</span></p>'
+        + '<details class="to-rep" open><summary>Representative example</summary>'
+        + esc(FN.newRep(q)) + ' ' + esc(FN.BROKER) + '</details>';
     }
     if (!o.fin) return '<p class="to-mo"><span>Message me for a quote on this one.</span></p>';
     return '<p class="to-mo"><b>' + esc(FN.money2(o.fin.monthly)) + ' a month</b>'
@@ -315,12 +322,14 @@
       car: o.title, price: o.price || '',
       reg: o.kind === 'used' ? o.ref : '', order_number: o.kind === 'new' ? o.ref : '',
       listing: o.url || '',
-      monthly: o.fin ? FN.money2(o.fin.monthly) : '',
-      deposit: o.fin ? FN.money(o.fin.deposit) : '',
-      term: o.fin ? o.fin.term + ' months' : '',
-      apr: o.fin ? o.fin.apr + '%' : '',
+      monthly: o.fin ? FN.money2(o.fin.monthly) : (o.nq ? FN.money2(o.nq.monthly) : ''),
+      deposit: o.fin ? FN.money(o.fin.deposit) : (o.nq ? FN.money(o.nq.deposit) : ''),
+      term: o.fin ? o.fin.term + ' months' : (o.nq ? o.nq.term_months + ' months' : ''),
+      apr: o.fin ? o.fin.apr + '%' : (o.nq ? o.nq.apr + '%' : ''),
+      annual_mileage: o.nq ? o.nq.annual_mileage : (o.fin ? o.fin.annual_mileage : ''),
+      vin: o.nq && o.nq.vin ? o.nq.vin : '',
       quote_reference: (o.post && o.post.quote_reference) || (o.fin && o.fin.quote_reference) || '',
-      representative_example: o.fin ? FN.repExample(o.fin) : '',
+      representative_example: o.fin ? FN.repExample(o.fin) : (o.nq ? FN.newRep(o.nq) : ''),
       page_url: location.href
     };
     var ctl = window.AbortController ? new AbortController() : null;
@@ -564,11 +573,34 @@
     L.push(o.price + ', ' + o.priceKind + '.');
     if (o.weeks) L.push('Delivery ' + o.weeks + '.');
     L.push('');
-    L.push('Finance available through BMW Financial Services. Message me and I will put a personalised quote together on your own deposit and mileage.');
+    if (o.nq) {
+      /* A payment in a caption carries the whole representative example, the
+         same rule the card and the page keep. */
+      L.push('');
+      L.push(FN.money(o.nq.monthly) + ' a month on ' + o.nq.product + ' with '
+        + FN.money(o.nq.deposit) + ' down, ' + o.nq.term_months + ' months, '
+        + Number(o.nq.annual_mileage).toLocaleString('en-GB') + ' miles a year.');
+      L.push('');
+      L.push('Representative example: ' + FN.newRep(o.nq));
+      L.push(FN.BROKER);
+    } else {
+      L.push('Finance available through BMW Financial Services. Message me and I will put a personalised quote together on your own deposit and mileage.');
+    }
     L.push('');
     L.push('#BMW #BrandNew #HedinRuxley'
       + (c.series ? ' #' + String(c.series).replace(/[^A-Za-z0-9]/g, '') : ''));
     return L.join('\n');
+  }
+
+  /* Today's card for a brand new car, if the morning built one. Matched on
+     the order number and the day, so a card left over from yesterday is never
+     offered as today's. */
+  function newCardFor(o) {
+    var posts = (DATA.ncards && DATA.ncards.posts) || [];
+    for (var i = 0; i < posts.length; i++) {
+      if (String(posts[i].order) === String(o.ref) && posts[i].date === DAY) return posts[i];
+    }
+    return null;
   }
 
   function postsBlock(pick, news) {
@@ -609,21 +641,33 @@
         + '</div></div></article>';
     }).join('');
 
-    /* The brand new pair: no card image to hand, so the caption and the
-       photograph, which is what posting one by hand needs. */
+    /* The brand new pair. The morning job (automation/new-car-post.py) builds
+       a card for each of them from the same pick this page uses, so the card
+       is shown where there is one, exactly as the used cards are. Where there
+       is not, the caption and BMW's own photograph are still here, which is
+       what posting one by hand needs. */
     if (news && news.length) {
-      html += '<p class="to-post-sub">The two brand new ones have no card built for them. Here is the caption and the photograph.</p>'
+      html += '<p class="to-post-sub">The two brand new ones.</p>'
         + news.map(function (o, j) {
-          return '<article class="to-post-item" data-new="' + j + '">'
-            + (o.photo ? '<a class="to-post-shot wide" href="' + esc(o.photo) + '" target="_blank" rel="noopener">'
-              + '<img src="' + esc(o.photo) + '" alt="' + esc(o.title) + '" loading="lazy"/></a>' : '')
+          var card = newCardFor(o);
+          var shot = card
+            ? '<a class="to-post-shot" href="finance-posts/' + esc(card.image) + '" target="_blank" rel="noopener">'
+              + '<img src="finance-posts/' + esc(card.image) + '" alt="' + esc(o.title) + ' story card" loading="lazy"/></a>'
+            : (o.photo ? '<a class="to-post-shot wide" href="' + esc(o.photo) + '" target="_blank" rel="noopener">'
+              + '<img src="' + esc(o.photo) + '" alt="' + esc(o.title) + '" loading="lazy"/></a>' : '');
+          var figs = 'Order ' + o.ref + ' · ' + o.price
+            + (o.nq ? ' · ' + FN.money2(o.nq.monthly) + ' a month · ' + o.nq.apr + '% APR' : ' · ' + o.priceKind);
+          return '<article class="to-post-item" data-new="' + j + '">' + shot
             + '<div class="to-post-main">'
             + '<h3>' + esc(o.title) + '</h3>'
-            + '<p class="to-post-figs">Order ' + esc(o.ref) + ' · ' + esc(o.price) + ' · ' + esc(o.priceKind) + '</p>'
-            + '<pre class="to-post-cap" id="toNewCap' + j + '">' + esc(newCaption(o)) + '</pre>'
+            + '<p class="to-post-figs">' + esc(figs) + '</p>'
+            + (card ? '' : '<p class="to-post-warn">No card was built for this one today, so here is the caption and BMW\u2019s own picture.</p>')
+            + '<pre class="to-post-cap" id="toNewCap' + j + '">' + esc(card ? card.caption : newCaption(o)) + '</pre>'
             + '<div class="to-post-act">'
+            + (card && files ? '<button class="to-btn" type="button" data-newshare="' + j + '">Share the card</button>' : '')
+            + (card ? '<a class="to-btn ghost" href="finance-posts/' + esc(card.image) + '" download="' + esc(card.image) + '">Save image</a>' : '')
             + '<button class="to-btn ghost" type="button" data-newcap="' + j + '">Copy caption</button>'
-            + (o.photo ? '<a class="to-btn ghost" href="' + esc(o.photo) + '" target="_blank" rel="noopener">Open the photograph</a>' : '')
+            + (!card && o.photo ? '<a class="to-btn ghost" href="' + esc(o.photo) + '" target="_blank" rel="noopener">Open the photograph</a>' : '')
             + '</div></div></article>';
         }).join('');
     }
@@ -649,7 +693,7 @@
     }
 
     out.addEventListener('click', function (e) {
-      var b = e.target.closest ? e.target.closest('[data-share],[data-cap],[data-newcap],[data-save]') : null;
+      var b = e.target.closest ? e.target.closest('[data-share],[data-newshare],[data-cap],[data-newcap],[data-save]') : null;
       if (!b) return;
       var i;
       if (b.hasAttribute('data-cap')) {
@@ -666,6 +710,11 @@
         e.preventDefault();
         i = +b.getAttribute('data-share');
         shareCard(posts[i], b, pick.day || '');
+      } else if (b.hasAttribute('data-newshare')) {
+        e.preventDefault();
+        i = +b.getAttribute('data-newshare');
+        var card = newCardFor(news[i]);
+        if (card) shareCard({ image: card.image, caption: card.caption, reg: String(card.order) }, b, DAY);
       }
     });
     $('toPostHide').addEventListener('click', function () {

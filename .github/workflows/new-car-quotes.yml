@@ -1,0 +1,144 @@
+name: new-car-quotes
+
+# The lender's own BMW Financial Services quote for every brand new car, and
+# the Instagram card for the two the offers page is showing today.
+#
+# Why this exists: new-cars.html will only print a brand new monthly payment
+# while the quotes file is under three days old (dsFin.newOk), because a
+# payment is a financial promotion and a stale one is worse than none. Nothing
+# refreshed that file. It was written by hand on 12 October and by 18 October
+# every card on the page had fallen back to "Finance available, I'll send you a
+# personalised quote" - which is exactly the state this check is designed to
+# produce, and nobody was going to notice it from the outside.
+#
+# The drafted version of this file could not be pushed from the box in October
+# because that token has no workflow scope. A Claude Code session can push one
+# (daily-lookup.yml went up the same way on 9 October), so here it is.
+#
+# What it does, in order:
+#   1. new-stock-urls.py  - the locator's own vehicle page link per car. The
+#      vin/iv pair is passed through exactly as BMW hand it over and is never
+#      decrypted or committed.
+#   2. new-stock-quotes.mjs - opens each page once in headless Chrome, one at a
+#      time with a pause, and records what the page itself was sent. Nothing is
+#      requested that a visitor's browser does not request, no parameters are
+#      changed (which is why the mileage is BMW's 10,000 and not Dan's 8,000)
+#      and no key, token or quote id is written anywhere.
+#   3. new-car-post.py - today's two brand new story cards, through the page's
+#      own picking and finance rules (new-pair.js, dsfinance.js). A quote that
+#      fails any check produces a card with no payment on it rather than no
+#      card at all.
+#
+# Like daily-lookup.yml this is triggered by the morning's own commit rather
+# than only by its cron: a scheduled workflow fires when GitHub gets round to
+# it, which on this repo has been hours. The new car Routine pushes
+# lookup/new-stock.json at about 06:05 and 07:08, so this follows it. It
+# cannot loop: a push made with GITHUB_TOKEN starts no workflow, and this job
+# does not write that file either way.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lookup/new-stock.json'
+  schedule:
+    - cron: '47 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: new-car-quotes
+  cancel-in-progress: false
+
+jobs:
+  quote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # puppeteer-core drives a browser, it does not bring one. The runner
+      # image ships Google Chrome; if that ever stops being true, fall back to
+      # the Chrome puppeteer installs for itself rather than failing the run.
+      - name: Chrome and puppeteer
+        id: chrome
+        run: |
+          npm install --no-save --no-audit --no-fund puppeteer-core
+          CHROME=""
+          for c in /usr/bin/google-chrome /usr/bin/google-chrome-stable /usr/bin/chromium-browser /usr/bin/chromium; do
+            if [ -x "$c" ]; then CHROME="$c"; break; fi
+          done
+          if [ -z "$CHROME" ]; then
+            npm install --no-save --no-audit --no-fund puppeteer
+            CHROME="$(node -e "console.log(require('puppeteer').executablePath())")"
+          fi
+          test -x "$CHROME" || { echo "::error::no browser on this runner"; exit 1; }
+          echo "chrome=$CHROME" >> "$GITHUB_OUTPUT"
+          echo "using $CHROME"
+
+      - name: List the vehicle pages
+        run: python3 automation/new-stock-urls.py > /tmp/new-stock-urls.json
+
+      # The script keeps yesterday's file and exits non-zero if the pages stop
+      # answering, rather than publishing a half empty one. A refusal is
+      # reported at the end of the run, after the rest has been pushed.
+      - name: Record the lender's quotes
+        id: quotes
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome }}
+        run: |
+          if node automation/new-stock-quotes.mjs /tmp/new-stock-urls.json; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::new-stock-quotes.mjs did not finish, yesterday's quotes kept"
+            git checkout -- lookup/new-stock-quotes.json 2>/dev/null || true
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Today's two brand new cards. Rendered with the same browser.
+      - name: Build today's brand new cards
+        id: cards
+        env:
+          CHROMIUM_PATH: ${{ steps.chrome.outputs.chrome }}
+        run: |
+          if python3 automation/new-car-post.py; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::new-car-post.py failed, yesterday's cards kept"
+            git checkout -- finance-posts/ 2>/dev/null || true
+            git clean -fd finance-posts/ 2>/dev/null || true
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A lookup/new-stock-quotes.json finance-posts/
+          if git diff --cached --quiet; then
+            echo "nothing changed, nothing committed"
+            exit 0
+          fi
+          N=$(node -e "try{console.log(require('./lookup/new-stock-quotes.json').count)}catch(e){console.log('?')}")
+          git commit -m "New car lender quotes (${N}) and today's brand new cards"
+          for i in 1 2 3 4; do
+            git push origin HEAD:main && exit 0
+            git pull --rebase origin main || true
+            sleep $((2 ** i))
+          done
+          echo "::error::could not push"
+          exit 1
+
+      - name: Report refusals
+        if: steps.quotes.outputs.ok == 'false' || steps.cards.outputs.ok == 'false'
+        run: |
+          echo "quotes ok: ${{ steps.quotes.outputs.ok }}"
+          echo "cards ok: ${{ steps.cards.outputs.ok }}"
+          exit 1

@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="premium.css?v=2538cd7f"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+  <script src="dsfinance.js"></script>
   <script src="analytics.js" defer></script>
 <style>
   :root{--ink:#0a0c0f;--ink-2:#0e1114;--paper:#ece9e1;--body-c:#b9b5ab;
@@ -797,59 +798,29 @@
      not anything derived. A car only shows a monthly when finOk() passes:
      every item of the representative example present in its quote, the
      quote agreeing with itself and with the car's price, still within its
-     valid_to, and the quotes file no older than FIN_MAX_AGE_DAYS.
+     valid_to, and the quotes file no older than dsFin.NEW_MAX_AGE_DAYS.
      Anything else falls back to the cash price and the personalised quote
      line. The £24 per £1,000 deposit rule is for matching only and never
      appears here. */
   var NEW_FINANCE_APPROVED = true;
-  var FIN_MAX_AGE_DAYS = 3;
   var FIN_GENERATED = '';
-  var FIN_NEED = ['monthly','payments','term_months','cash_price','deposit',
-    'amount_of_credit','final_payment','total_payable','charge_for_credit',
-    'annual_mileage','excess_pence','apr'];
-  function num(v){ return typeof v === 'number' && isFinite(v); }
+  /* The checks themselves live in dsfinance.js (dsFin.newOk), because this
+     page, today's offers and the morning's card job all have to agree about
+     when a brand new monthly may be shown. With the module missing, no
+     monthly is shown, which is the safe way round. */
   function finOk(c){
-    if (!NEW_FINANCE_APPROVED) return false;
+    if (!NEW_FINANCE_APPROVED || !window.dsFin || !window.dsFin.newOk) return false;
     /* c._q is the lender's own quote from lookup/new-stock-quotes.json
        (automation/new-stock-quotes.mjs), never the derived finance_example. */
-    var e = c && c._q;
-    if (!e || !e.lender || !e.product) return false;
-    var vt = Date.parse(e.valid_to);
-    if (!vt || vt < Date.now()) return false;
-    for (var i = 0; i < FIN_NEED.length; i++) if (!num(e[FIN_NEED[i]])) return false;
-    var t = Date.parse(FIN_GENERATED);
-    if (!t || Date.now() - t > FIN_MAX_AGE_DAYS * 864e5) return false;
-    var dc = num(e.deposit_contribution) ? e.deposit_contribution : 0;
-    if (Math.abs(e.cash_price - e.deposit - dc - e.amount_of_credit) > 0.02) return false;
-    if (Math.abs(e.deposit + e.payments * e.monthly + e.final_payment - e.total_payable) > 0.05) return false;
-    if (Math.abs(e.total_payable - e.cash_price - e.charge_for_credit) > 0.05) return false;
-    if (num(c.price_gbp) && Math.abs(c.price_gbp - e.cash_price) > 1) return false;
-    return true;
+    return window.dsFin.newOk(c, c && c._q, FIN_GENERATED);
   }
   function money0(n){ return '£' + Math.round(n).toLocaleString('en-GB'); }
 
   /* Same wording and order as the used car representative example
      (dsfinance.js repExample), shown open beside the payment, plus the
      lender and the credit broker statement. */
-  function repText(e){
-    var dc = num(e.deposit_contribution) && e.deposit_contribution > 0;
-    return e.payments + ' monthly payments of ' + money(e.monthly) + '. '
-      + 'Cash price ' + money(e.cash_price) + '. Customer deposit ' + money(e.deposit) + '. '
-      + (dc ? 'Deposit contribution ' + money(e.deposit_contribution) + '. ' : '')
-      + 'Total amount of credit ' + money(e.amount_of_credit) + '. '
-      + 'Optional final payment ' + money(e.final_payment) + '. '
-      + 'Total amount payable ' + money(e.total_payable) + '. '
-      + 'Total charge for credit ' + money(e.charge_for_credit) + '. '
-      + 'Duration ' + e.term_months + ' months. '
-      + Number(e.annual_mileage).toLocaleString('en-GB') + ' miles a year, '
-      + e.excess_pence + 'p per excess mile. '
-      + e.apr + '% APR representative. Lender ' + e.lender + '. '
-      + 'Finance subject to status, 18+, UK residents.';
-  }
-  var BROKER = 'Finance is arranged by Stephen James (Automotive) Ltd trading as '
-    + 'Hedin Automotive (BMW Ruxley), an Appointed Representative of ITC Compliance '
-    + 'Limited (FRN 313486), authorised and regulated by the Financial Conduct '
-    + 'Authority. A credit broker, not a lender. Guarantees and indemnities may be required.';
+  function repText(e){ return window.dsFin.newRep(e); }
+  var BROKER = (window.dsFin && window.dsFin.BROKER) || '';
 
   function finBlock(c){
     if (!finOk(c)) return '<p class="nc-fin">Finance available. I’ll send you a personalised quote.</p>';

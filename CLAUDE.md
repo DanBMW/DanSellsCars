@@ -805,8 +805,10 @@ Other things it has to keep:
   excess mileage rate is not in the data at all.
 - **`NEW_FINANCE_APPROVED` (new-cars.html, set true 11 Oct 2026)** is the one
   switch for every new car monthly on that page: card, "Monthly, lowest first"
-  sort, WhatsApp prefill and page note. Even when true, `finOk(c)` shows a
-  monthly only if the car's own `finance_example` has every item of the
+  sort, WhatsApp prefill and page note. Even when true, `finOk(c)`, which is
+  now a thin call to `dsFin.newOk` in `dsfinance.js` so this page, today's
+  offers and the morning's card job cannot drift apart, shows a
+  monthly only if the car's own quote has every item of the
   representative example as a number (monthly, payments, term_months,
   cash_price, deposit, amount_of_credit, final_payment, total_payable,
   annual_mileage, excess_pence, apr) plus lender and product; the record adds
@@ -829,12 +831,20 @@ Other things it has to keep:
   `automation/new-stock-urls.py` lists the page links (never committed),
   `automation/new-stock-quotes.mjs` opens each page once in headless Chrome,
   one at a time with pauses, and records the VIN and the PCP quote into
-  `lookup/new-stock-quotes.json` keyed by order number. **Not yet
-  scheduled** (12 Oct 2026): the workflow `new-car-quotes.yml` (on push of
-  `lookup/new-stock.json`, cron 09:30 UTC) could not be pushed because the box
-  token lacks the `workflow` scope; the file is on the box at
-  site-review/newfin/new-car-quotes.yml for Dan to add in GitHub. Until then
-  the quotes file goes stale after 3 days and every card falls back. `new-cars.html` reads it as `c._q`; `finOk`
+  `lookup/new-stock-quotes.json` keyed by order number. **Scheduled since
+  18 October 2026**: `.github/workflows/new-car-quotes.yml` runs it off the
+  morning's own push of `lookup/new-stock.json` (cron 09:47 UTC as a
+  backstop), then builds the day's brand new cards, and commits both. It was
+  recorded here as unschedulable because the box token has no `workflow`
+  scope; a session can push a workflow, which is how `daily-lookup.yml` got
+  there, and the same applied here.
+  **Why that mattered, not tidiness.** A brand new monthly is shown only
+  while the quotes file is under three days old, so an unrun job does not
+  look broken, it looks like a page with no finance on it: written by hand on
+  12 October, by 18 October all 70 cars read "Finance available, I'll send
+  you a personalised quote" with 70 perfectly good quotes in the file, valid
+  to 4 January. Nothing outside the repo could tell the difference, which is
+  the argument for the job failing loudly when it cannot quote. `new-cars.html` reads it as `c._q`; `finOk`
   checks every field, cash = deposit + contribution + credit, total =
   deposit + payments x monthly + final, total = cash + charge, quote cash
   within £1 of the card price, `valid_to` in the future and the quotes file
@@ -1014,6 +1024,25 @@ for, and the morning does no more work than it did yesterday.
     over WhatsApp. A "Not quite the one?" block closes the page with WhatsApp,
     all the approved used stock and Find my BMW, since five cars will not suit
     most people who open it.
+- **A brand new card now shows the lender's monthly** (18 October). It used to
+  show no monthly at all, because when this page was built BMW published a
+  payment with no deposit, term or final payment that could make a compliant
+  example. That stopped being true on 12 October, when `new-stock-quotes.mjs`
+  began recording BMW Financial Services' own quote per car. So a brand new
+  card shows the payment on exactly the terms `new-cars.html` shows it, with
+  the whole representative example open beside it, and only while
+  `dsFin.newOk` passes: every item present, the quote adding up three ways
+  and agreeing with the car's price, inside its own `valid_to`, and the
+  quotes file under three days old. Anything else is the cash price, which
+  kind of price it is, and a personalised quote line, which is where this
+  page started. The checks and the wording live in **`dsfinance.js`**
+  (`newOk`, `newRep`, `BROKER`), lifted out of `new-cars.html` so the two
+  pages and the morning's card job cannot drift apart.
+- **The pair is picked by `new-pair.js`, which the card job runs too.** The
+  rule used to sit inside `todays-offers.js`; it now sits in one file that
+  both the browser and node read, because the morning builds an Instagram
+  card for each of the two and a card for a car the page is not offering
+  would be worse than no card.
 - **Dan's own cards are on the page he opens every morning** (Dan, 16 October:
   "bring back the offer images that I can share on my insta"). The images were
   never lost: the morning routine writes the three 1080x1920 story cards into
@@ -1029,14 +1058,14 @@ for, and the morning does no more work than it did yesterday.
   `localStorage.dsOfferPosts`, so the link he shares with customers is exactly
   what it was; `?dan=0` or Hide this turns it off. A tidiness gate, not a
   secret, the way `finance-posts.html` already is.
-  **The brand new pair cannot be given a card here.** BMW's configurator
-  renders come back with no `Access-Control-Allow-Origin` header (checked
-  16 October), so a canvas drawn from one cannot be exported and anything
-  built in the browser would come out blank. They get a generated caption and
-  a link to the photograph instead, which is what posting one by hand from a
-  phone actually needs. A real card for them means a Python job on the morning
-  routine, which is Dan's call: the finance on it would have to come from
-  `lookup/new-stock-quotes.json`, and that job is not scheduled yet.
+  **The brand new pair has its own cards since 18 October**, built by
+  `automation/new-car-post.py` on the morning routine and read from
+  `finance-posts/new-index.json`, so the panel offers all five of the day's
+  offers the same way. A card could not be drawn in the browser: BMW's
+  configurator renders come back with no `Access-Control-Allow-Origin` header
+  (checked 16 October), so a canvas drawn from one cannot be exported. Where
+  the morning has not built one, the panel still falls back to a generated
+  caption and a link to BMW's own photograph.
 - `noindex, follow`, out of `sitemap.xml`, and deliberately **not** in
   `robots.txt`, so Google can see the noindex (the funnel step reasoning).
   It stays noindex even though Dan shares it daily: the content changes every
@@ -1059,6 +1088,15 @@ Six Routines and one workflow run this site. Reviewed 11 October 2026:
   reading a half finished morning and its "roughly twenty minutes" was wrong.
 - **09:00 UTC, the current opportunities post.**
 - **18:00 UTC every other day, the BMW Mad Product drop.**
+- **`new-car-quotes.yml`**, which owns `lookup/new-stock-quotes.json` and the
+  brand new story cards. Triggered by the morning's push of
+  `lookup/new-stock.json`, with a 09:47 UTC cron behind it. It opens each
+  car's own page on stock.bmw.co.uk once in headless Chrome to record the
+  lender's quote, about 15 minutes for 70 cars, then runs
+  `automation/new-car-post.py`. A refused quote run keeps yesterday's file
+  and still fails the run at the end, so a quiet failure cannot leave the new
+  car pages without finance for days, which is exactly what happened between
+  12 and 18 October.
 - **`daily-lookup.yml`**, which owns `lookup/` and `automation/stock-arrivals.json`.
   **It is triggered by the morning's own commits, not only by its cron.** A
   scheduled workflow fires when GitHub gets round to it, and on this repo that
