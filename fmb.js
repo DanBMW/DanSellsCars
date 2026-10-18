@@ -456,7 +456,10 @@
     cur = s;
     el.hidden = false;
     void el.offsetWidth; el.classList.add('fmb-anim-in'); if (back) el.classList.add('back');
-    var path = QS(), qi = path.indexOf(s), NQ = path.length;
+    /* The total is the full question list, so it never changes as answers
+       drop the shape or charging question. The number is the question's place
+       among the ones actually asked, so it always counts up by one. */
+    var path = QS(), qi = path.indexOf(s), NQ = ALLQ.length;
     $('fmbProg').hidden = qi === -1;
     $('fmbBar').hidden = qi === -1;
     document.body.classList.toggle('wide', s === 'reveal');
@@ -470,7 +473,7 @@
       var pre = el.querySelector('[data-pre]'); if (pre) pre.hidden = !PRE[s];
       lastN = null;
       refresh();
-      if (prev !== s) track('fmb_step', { step: qi + 1, step_name: STEP_NAME[s], of: NQ });
+      if (prev !== s) track('fmb_step', { step: QS().indexOf(s) + 1, step_name: STEP_NAME[s], of: QS().length });
       if (s === 'q4' || s === 'q5') { want('lad'); want('det'); want('group'); }
     } else if (s === 'reveal') {
       document.title = 'Your BMW matches | Find my BMW | Dan Sells';

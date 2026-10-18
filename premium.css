@@ -529,7 +529,7 @@ button.contact-row{width:100%;background:none;border:none;border-bottom:1px soli
   background:#0e1114;color:var(--paper);text-decoration:none;
   font-family:var(--sans);font-weight:500;font-size:.75rem;
   letter-spacing:.14em;text-transform:uppercase;
-  min-height:48px;min-width:100px;padding:14px 16px;
+  min-height:48px;min-width:100px;padding:14px 12px;
   border:none;border-left:1px solid var(--hairline);cursor:pointer;
   appearance:none;-webkit-appearance:none;
 }
