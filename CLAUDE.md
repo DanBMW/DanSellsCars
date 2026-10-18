@@ -1846,10 +1846,10 @@ said so.
 
 - **Team roster** is the `TEAM` array at the top of the page script — id,
   initials, display name and photo path, in the same left-to-right order as the
-  old paper board (DW, CA, MS, KJ, CH, TA, DC, MD). Changing the team means
+  old paper board (DW, CA, MS, KJ, CH, TA, DC). Changing the team means
   editing that array **and** the `exec` regex in `database.rules.json`, which
   whitelists the same eight ids.
-- **Photos** are in `team/` (`dw|ca|ms|kj|ch|ta|dc|md.jpg`, plus `will.jpg` and
+- **Photos** are in `team/` (`dw|ca|ms|kj|ch|ta|dc.jpg`, plus `will.jpg` and
   `serge.jpg` for the two mascots at the top). All are 360×240 and framed the
   same way, so the CSS crops them with one shared `object-position`. They came
   from the Hedin Automotive Ruxley BMW team page, except `ms.jpg` (Mon Singh),
