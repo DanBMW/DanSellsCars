@@ -1,7 +1,7 @@
 {
- "generated_at": "2026-10-14T11:08:49.819Z",
+ "generated_at": "2026-10-18T08:30:19.169Z",
  "source": "stock.bmw.co.uk vehicle pages, BMW Financial Services quote as loaded by the page",
- "count": 78,
+ "count": 67,
  "quotes": {
   "4164527": {
    "vin": "WBA22FY080FW09258",
@@ -42,29 +42,29 @@
    "excess_pence": 12.15,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:44:27.2204196+01:00",
-   "fetched_at": "2026-10-14T10:44:28.974Z"
+   "quoted_at": "2026-10-18T09:22:21.9833161+01:00",
+   "fetched_at": "2026-10-18T08:22:23.558Z"
   },
   "4213554": {
    "vin": "WBA12HC090FW42154",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 606.31,
+   "monthly": 575.64,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 47633,
+   "cash_price": 46321.2,
    "deposit": 6500,
    "deposit_contribution": 0,
-   "amount_of_credit": 41133,
+   "amount_of_credit": 39821.2,
    "final_payment": 18403.8,
-   "total_payable": 53400.37,
-   "charge_for_credit": 5767.37,
+   "total_payable": 51958.88,
+   "charge_for_credit": 5637.68,
    "annual_mileage": 10000,
    "excess_pence": 11.7,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:45:22.1263519+01:00",
-   "fetched_at": "2026-10-14T10:45:23.912Z"
+   "quoted_at": "2026-10-18T09:22:38.8655209+01:00",
+   "fetched_at": "2026-10-18T08:22:40.140Z"
   },
   "4220782": {
    "vin": "WBA12GV090CW61098",
@@ -84,8 +84,8 @@
    "excess_pence": 14.1,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:58:19.2225207+01:00",
-   "fetched_at": "2026-10-14T10:58:21.065Z"
+   "quoted_at": "2026-10-18T09:25:15.7643857+01:00",
+   "fetched_at": "2026-10-18T08:25:16.583Z"
   },
   "4220794": {
    "vin": "WBA12GV010CW69065",
@@ -105,8 +105,8 @@
    "excess_pence": 14.1,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:58:28.9990407+01:00",
-   "fetched_at": "2026-10-14T10:58:30.810Z"
+   "quoted_at": "2026-10-18T09:25:23.513721+01:00",
+   "fetched_at": "2026-10-18T08:25:24.801Z"
   },
   "4340434": {
    "vin": "WBA12CM0108G05124",
@@ -126,8 +126,8 @@
    "excess_pence": 10.8,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:42:20.1912119+01:00",
-   "fetched_at": "2026-10-14T10:42:21.929Z"
+   "quoted_at": "2026-10-18T09:20:25.5371407+01:00",
+   "fetched_at": "2026-10-18T08:20:26.232Z"
   },
   "4340685": {
    "vin": "WBA22CM0708G09571",
@@ -147,29 +147,8 @@
    "excess_pence": 11.4,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:43:05.3506475+01:00",
-   "fetched_at": "2026-10-14T10:43:07.143Z"
-  },
-  "4347647": {
-   "vin": "WBA82GE0207V62064",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 395.89,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 34726,
-   "deposit": 4500,
-   "deposit_contribution": 0,
-   "amount_of_credit": 30226,
-   "final_payment": 14175.63,
-   "total_payable": 37282.46,
-   "charge_for_credit": 2556.46,
-   "annual_mileage": 10000,
-   "excess_pence": 9.3,
-   "apr": 2.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:08:07.827101+01:00",
-   "fetched_at": "2026-10-14T11:08:09.553Z"
+   "quoted_at": "2026-10-18T09:21:15.3555663+01:00",
+   "fetched_at": "2026-10-18T08:21:16.643Z"
   },
   "4347743": {
    "vin": "WBA82GE0107V99638",
@@ -189,29 +168,29 @@
    "excess_pence": 9.3,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:07:59.7966521+01:00",
-   "fetched_at": "2026-10-14T11:08:00.469Z"
+   "quoted_at": "2026-10-18T09:30:15.1796297+01:00",
+   "fetched_at": "2026-10-18T08:30:16.022Z"
   },
   "4361772": {
    "vin": "WBS32HK050CX05483",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 1290.09,
+   "monthly": 1040.94,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 98054.99,
+   "cash_price": 86989.79,
    "deposit": 10000,
    "deposit_contribution": 0,
-   "amount_of_credit": 88054.99,
+   "amount_of_credit": 76989.79,
    "final_payment": 34486.9,
-   "total_payable": 105121.13,
-   "charge_for_credit": 7066.14,
+   "total_payable": 93411.08,
+   "charge_for_credit": 6421.29,
    "annual_mileage": 10000,
    "excess_pence": 20.85,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:01:36.0814194+01:00",
-   "fetched_at": "2026-10-14T11:01:37.876Z"
+   "quoted_at": "2026-10-18T09:27:36.9251594+01:00",
+   "fetched_at": "2026-10-18T08:27:38.228Z"
   },
   "4374132": {
    "vin": "WBA12CM0008G37854",
@@ -231,8 +210,8 @@
    "excess_pence": 10.8,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:44:08.7712723+01:00",
-   "fetched_at": "2026-10-14T10:44:10.574Z"
+   "quoted_at": "2026-10-18T09:22:05.1816343+01:00",
+   "fetched_at": "2026-10-18T08:22:06.741Z"
   },
   "4374137": {
    "vin": "WBS32HJ090FW24714",
@@ -252,8 +231,8 @@
    "excess_pence": 22.35,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:02:12.1412324+01:00",
-   "fetched_at": "2026-10-14T11:02:13.903Z"
+   "quoted_at": "2026-10-18T09:28:17.8365571+01:00",
+   "fetched_at": "2026-10-18T08:28:18.976Z"
   },
   "4374253": {
    "vin": "WBA12EG0005765839",
@@ -273,8 +252,8 @@
    "excess_pence": 11.1,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:42:56.1553238+01:00",
-   "fetched_at": "2026-10-14T10:42:57.931Z"
+   "quoted_at": "2026-10-18T09:20:58.5368416+01:00",
+   "fetched_at": "2026-10-18T08:20:59.810Z"
   },
   "4374254": {
    "vin": "WBA12EG0X05779750",
@@ -294,8 +273,8 @@
    "excess_pence": 11.1,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:42:46.835438+01:00",
-   "fetched_at": "2026-10-14T10:42:48.596Z"
+   "quoted_at": "2026-10-18T09:20:50.2514872+01:00",
+   "fetched_at": "2026-10-18T08:20:51.527Z"
   },
   "4375361": {
    "vin": "WBS12CS0609547744",
@@ -315,29 +294,29 @@
    "excess_pence": 22.2,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:03:08.1864191+01:00",
-   "fetched_at": "2026-10-14T11:03:09.965Z"
+   "quoted_at": "2026-10-18T09:29:07.7684557+01:00",
+   "fetched_at": "2026-10-18T08:29:08.591Z"
   },
   "4378678": {
    "vin": "WBS32CS0309410348",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 2410.35,
+   "monthly": 2145.5,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 163395,
-   "deposit": 17592,
+   "cash_price": 143974.2,
+   "deposit": 9500,
    "deposit_contribution": 0,
-   "amount_of_credit": 145803,
+   "amount_of_credit": 134474.2,
    "final_payment": 51707.5,
-   "total_payable": 182585.95,
-   "charge_for_credit": 19190.95,
+   "total_payable": 162046,
+   "charge_for_credit": 18071.8,
    "annual_mileage": 10000,
    "excess_pence": 33.6,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-13T08:33:28.1826101+01:00",
-   "fetched_at": "2026-10-13T07:33:29.976Z"
+   "quoted_at": "2026-10-18T09:29:33.3080457+01:00",
+   "fetched_at": "2026-10-18T08:29:34.141Z"
   },
   "4379289": {
    "vin": "WBA22EN0409451059",
@@ -357,29 +336,29 @@
    "excess_pence": 20.7,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:01:26.6512728+01:00",
-   "fetched_at": "2026-10-14T11:01:28.853Z"
+   "quoted_at": "2026-10-18T09:28:01.7496386+01:00",
+   "fetched_at": "2026-10-18T08:28:02.811Z"
   },
   "4379911": {
    "vin": "WBS12CS0809495226",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 1730.14,
+   "monthly": 1647.96,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 118575,
-   "deposit": 15358.75,
+   "cash_price": 109201,
+   "deposit": 9500,
    "deposit_contribution": 0,
-   "amount_of_credit": 103216.25,
+   "amount_of_credit": 99701,
    "final_payment": 35370.84,
-   "total_payable": 132046.17,
-   "charge_for_credit": 13471.17,
+   "total_payable": 122324.96,
+   "charge_for_credit": 13123.96,
    "annual_mileage": 10000,
    "excess_pence": 22.2,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:03:25.930064+01:00",
-   "fetched_at": "2026-10-14T11:03:28.115Z"
+   "quoted_at": "2026-10-18T09:29:24.5621199+01:00",
+   "fetched_at": "2026-10-18T08:29:25.740Z"
   },
   "4385858": {
    "vin": "WBA22GE0407V95220",
@@ -399,8 +378,8 @@
    "excess_pence": 11.55,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:45:31.3609022+01:00",
-   "fetched_at": "2026-10-14T10:45:33.163Z"
+   "quoted_at": "2026-10-18T09:23:04.0460818+01:00",
+   "fetched_at": "2026-10-18T08:23:05.413Z"
   },
   "4402652": {
    "vin": "WBA82GE0107V97873",
@@ -420,8 +399,8 @@
    "excess_pence": 9.3,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:07:31.8976525+01:00",
-   "fetched_at": "2026-10-14T11:07:33.668Z"
+   "quoted_at": "2026-10-18T09:29:58.0386751+01:00",
+   "fetched_at": "2026-10-18T08:29:58.856Z"
   },
   "4404245": {
    "vin": "WBA66GP020N459635",
@@ -441,8 +420,8 @@
    "excess_pence": 15.45,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:59:43.4068305+01:00",
-   "fetched_at": "2026-10-14T10:59:45.241Z"
+   "quoted_at": "2026-10-18T09:26:21.0958996+01:00",
+   "fetched_at": "2026-10-18T08:26:22.681Z"
   },
   "4405732": {
    "vin": "WBA12CM0508G54794",
@@ -462,8 +441,8 @@
    "excess_pence": 10.8,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:42:37.6748445+01:00",
-   "fetched_at": "2026-10-14T10:42:39.464Z"
+   "quoted_at": "2026-10-18T09:20:41.8396006+01:00",
+   "fetched_at": "2026-10-18T08:20:43.127Z"
   },
   "4405735": {
    "vin": "WBA12CM0108G40259",
@@ -483,50 +462,50 @@
    "excess_pence": 11.25,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:45:03.9046312+01:00",
-   "fetched_at": "2026-10-14T10:45:05.755Z"
+   "quoted_at": "2026-10-18T09:22:47.2004533+01:00",
+   "fetched_at": "2026-10-18T08:22:48.490Z"
   },
   "4405742": {
    "vin": "WBA16GR030N429776",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 748.8,
+   "monthly": 659.31,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 59090,
+   "cash_price": 55262.22,
    "deposit": 6000,
    "deposit_contribution": 0,
-   "amount_of_credit": 53090,
+   "amount_of_credit": 49262.22,
    "final_payment": 25502.11,
-   "total_payable": 66695.71,
-   "charge_for_credit": 7605.71,
+   "total_payable": 62489.68,
+   "charge_for_credit": 7227.46,
    "annual_mileage": 10000,
    "excess_pence": 14.85,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:58:10.0671228+01:00",
-   "fetched_at": "2026-10-14T10:58:11.892Z"
+   "quoted_at": "2026-10-18T09:23:21.0692746+01:00",
+   "fetched_at": "2026-10-18T08:23:22.239Z"
   },
   "4405763": {
    "vin": "WBA22EN0109493737",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 1304.45,
+   "monthly": 1187.54,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 104435,
-   "deposit": 13500.6,
+   "cash_price": 96433.4,
+   "deposit": 10500,
    "deposit_contribution": 0,
-   "amount_of_credit": 90934.4,
+   "amount_of_credit": 85933.4,
    "final_payment": 42547.34,
-   "total_payable": 117357.09,
-   "charge_for_credit": 12922.09,
+   "total_payable": 108861.72,
+   "charge_for_credit": 12428.32,
    "annual_mileage": 10000,
    "excess_pence": 20.7,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:01:54.364306+01:00",
-   "fetched_at": "2026-10-14T11:01:56.068Z"
+   "quoted_at": "2026-10-18T09:27:45.3456463+01:00",
+   "fetched_at": "2026-10-18T08:27:46.628Z"
   },
   "4405765": {
    "vin": "WBA50FF0X08G60273",
@@ -549,27 +528,6 @@
    "quoted_at": "2026-10-14T11:43:50.6578797+01:00",
    "fetched_at": "2026-10-14T10:43:52.427Z"
   },
-  "4405778": {
-   "vin": "WBA40GK0708G70525",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 547.52,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 45865,
-   "deposit": 6500,
-   "deposit_contribution": 0,
-   "amount_of_credit": 39365,
-   "final_payment": 18068.95,
-   "total_payable": 50302.39,
-   "charge_for_credit": 4437.39,
-   "annual_mileage": 10000,
-   "excess_pence": 11.1,
-   "apr": 3.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:44:36.2368473+01:00",
-   "fetched_at": "2026-10-14T10:44:38.008Z"
-  },
   "4405792": {
    "vin": "WBS82FK060CX94717",
    "product": "BMW Select (PCP)",
@@ -588,29 +546,29 @@
    "excess_pence": 25.65,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:01:17.6873384+01:00",
-   "fetched_at": "2026-10-14T11:01:19.443Z"
+   "quoted_at": "2026-10-18T09:27:53.2979375+01:00",
+   "fetched_at": "2026-10-18T08:27:54.594Z"
   },
   "4406376": {
    "vin": "WBA32EF0105660057",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 574.91,
+   "monthly": 507.67,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 50895.01,
-   "deposit": 7995.3,
+   "cash_price": 46913.81,
+   "deposit": 7000,
    "deposit_contribution": 0,
-   "amount_of_credit": 42899.71,
+   "amount_of_credit": 39913.81,
    "final_payment": 19471.25,
-   "total_payable": 54487.32,
-   "charge_for_credit": 3592.31,
+   "total_payable": 50331.74,
+   "charge_for_credit": 3417.93,
    "annual_mileage": 10000,
    "excess_pence": 15.15,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:44:54.6468568+01:00",
-   "fetched_at": "2026-10-14T10:44:56.508Z"
+   "quoted_at": "2026-10-18T09:21:07.1572527+01:00",
+   "fetched_at": "2026-10-18T08:21:08.410Z"
   },
   "4691144": {
    "vin": "WBS82FK040CY83475",
@@ -630,8 +588,8 @@
    "excess_pence": 25.65,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:02:49.98915+01:00",
-   "fetched_at": "2026-10-14T11:02:51.800Z"
+   "quoted_at": "2026-10-18T09:28:51.386739+01:00",
+   "fetched_at": "2026-10-18T08:28:52.209Z"
   },
   "4691663": {
    "vin": "WBS82GV050CY45450",
@@ -651,8 +609,8 @@
    "excess_pence": 26.7,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:02:40.8778773+01:00",
-   "fetched_at": "2026-10-14T11:02:42.599Z"
+   "quoted_at": "2026-10-18T09:28:42.8824879+01:00",
+   "fetched_at": "2026-10-18T08:28:44.092Z"
   },
   "4693685": {
    "vin": "WBA32EE0105767806",
@@ -672,8 +630,8 @@
    "excess_pence": 13.5,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:43:41.6173794+01:00",
-   "fetched_at": "2026-10-14T10:43:43.445Z"
+   "quoted_at": "2026-10-18T09:21:48.6219557+01:00",
+   "fetched_at": "2026-10-18T08:21:49.874Z"
   },
   "4698884": {
    "vin": "WBA32EE0805733846",
@@ -693,29 +651,29 @@
    "excess_pence": 13.5,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:43:32.3329845+01:00",
-   "fetched_at": "2026-10-14T10:43:34.160Z"
+   "quoted_at": "2026-10-18T09:21:40.4449785+01:00",
+   "fetched_at": "2026-10-18T08:21:41.725Z"
   },
   "4700991": {
    "vin": "WBA16GR020N443586",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 746.41,
+   "monthly": 668.45,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 57985,
+   "cash_price": 54650.2,
    "deposit": 6000,
    "deposit_contribution": 0,
-   "amount_of_credit": 51985,
+   "amount_of_credit": 48650.2,
    "final_payment": 24287.73,
-   "total_payable": 65369,
-   "charge_for_credit": 7384,
+   "total_payable": 61704.88,
+   "charge_for_credit": 7054.68,
    "annual_mileage": 10000,
    "excess_pence": 14.85,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:57:33.1869445+01:00",
-   "fetched_at": "2026-10-14T10:57:35.021Z"
+   "quoted_at": "2026-10-18T09:23:29.2413048+01:00",
+   "fetched_at": "2026-10-18T08:23:30.521Z"
   },
   "4701726": {
    "vin": "WBS82FK000CY61764",
@@ -735,8 +693,8 @@
    "excess_pence": 25.65,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:02:59.3770476+01:00",
-   "fetched_at": "2026-10-14T11:03:00.831Z"
+   "quoted_at": "2026-10-18T09:28:59.1786077+01:00",
+   "fetched_at": "2026-10-18T08:29:00.374Z"
   },
   "4702247": {
    "vin": "WBA12HR030DA74652",
@@ -756,8 +714,8 @@
    "excess_pence": 15.75,
    "apr": 5.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:00:31.6709167+01:00",
-   "fetched_at": "2026-10-14T11:00:33.387Z"
+   "quoted_at": "2026-10-18T09:26:56.4015181+01:00",
+   "fetched_at": "2026-10-18T08:26:57.130Z"
   },
   "4703751": {
    "vin": "WBA12HR060DA72684",
@@ -777,29 +735,8 @@
    "excess_pence": 15.15,
    "apr": 5.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:00:03.4708051+01:00",
-   "fetched_at": "2026-10-14T11:00:05.292Z"
-  },
-  "4704503": {
-   "vin": "WBA12HR090DA72758",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 836.56,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 59425,
-   "deposit": 4500,
-   "deposit_contribution": 0,
-   "amount_of_credit": 54925,
-   "final_payment": 24892.68,
-   "total_payable": 68711,
-   "charge_for_credit": 9286,
-   "annual_mileage": 10000,
-   "excess_pence": 15.75,
-   "apr": 5.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:00:12.6594067+01:00",
-   "fetched_at": "2026-10-14T11:00:14.440Z"
+   "quoted_at": "2026-10-18T09:26:38.7306905+01:00",
+   "fetched_at": "2026-10-18T08:26:40.090Z"
   },
   "4704618": {
    "vin": "WBA12HR060DA72703",
@@ -819,29 +756,8 @@
    "excess_pence": 15.75,
    "apr": 5.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:00:21.908373+01:00",
-   "fetched_at": "2026-10-14T11:00:23.767Z"
-  },
-  "6197406": {
-   "vin": "WBA82GE0507W96017",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 400.41,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 35610,
-   "deposit": 5183.2,
-   "deposit_contribution": 0,
-   "amount_of_credit": 30426.8,
-   "final_payment": 14175.63,
-   "total_payable": 38178.1,
-   "charge_for_credit": 2568.1,
-   "annual_mileage": 10000,
-   "excess_pence": 9.3,
-   "apr": 2.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:08:16.5034939+01:00",
-   "fetched_at": "2026-10-14T11:08:18.683Z"
+   "quoted_at": "2026-10-18T09:26:46.8995756+01:00",
+   "fetched_at": "2026-10-18T08:26:48.197Z"
   },
   "6197418": {
    "vin": "WBA82GE0407W82965",
@@ -861,8 +777,8 @@
    "excess_pence": 9.3,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:07:50.0588832+01:00",
-   "fetched_at": "2026-10-14T11:07:51.906Z"
+   "quoted_at": "2026-10-18T09:30:05.958924+01:00",
+   "fetched_at": "2026-10-18T08:30:07.806Z"
   },
   "6197947": {
    "vin": "WBA66GP010N460758",
@@ -882,92 +798,8 @@
    "excess_pence": 15.45,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:59:53.3975831+01:00",
-   "fetched_at": "2026-10-14T10:59:55.207Z"
-  },
-  "6198491": {
-   "vin": "WBA82GE0007W84535",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 400.41,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 35610,
-   "deposit": 5183.2,
-   "deposit_contribution": 0,
-   "amount_of_credit": 30426.8,
-   "final_payment": 14175.63,
-   "total_payable": 38178.1,
-   "charge_for_credit": 2568.1,
-   "annual_mileage": 10000,
-   "excess_pence": 9.3,
-   "apr": 2.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:08:44.8096859+01:00",
-   "fetched_at": "2026-10-14T11:08:46.632Z"
-  },
-  "6198493": {
-   "vin": "WBA82GE0307W91849",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 400.41,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 35610,
-   "deposit": 5183.2,
-   "deposit_contribution": 0,
-   "amount_of_credit": 30426.8,
-   "final_payment": 14175.63,
-   "total_payable": 38178.1,
-   "charge_for_credit": 2568.1,
-   "annual_mileage": 10000,
-   "excess_pence": 9.3,
-   "apr": 2.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:08:35.2770199+01:00",
-   "fetched_at": "2026-10-14T11:08:37.265Z"
-  },
-  "6199030": {
-   "vin": "WBA22EF0005836091",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 539.29,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 47290,
-   "deposit": 7923.2,
-   "deposit_contribution": 0,
-   "amount_of_credit": 39366.8,
-   "final_payment": 17283.63,
-   "total_payable": 50553.46,
-   "charge_for_credit": 3263.46,
-   "annual_mileage": 10000,
-   "excess_pence": 13.35,
-   "apr": 2.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:43:59.8126539+01:00",
-   "fetched_at": "2026-10-14T10:44:01.578Z"
-  },
-  "6200374": {
-   "vin": "WBA82GE0207W90398",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 400.41,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 35610,
-   "deposit": 5183.2,
-   "deposit_contribution": 0,
-   "amount_of_credit": 30426.8,
-   "final_payment": 14175.63,
-   "total_payable": 38178.1,
-   "charge_for_credit": 2568.1,
-   "annual_mileage": 10000,
-   "excess_pence": 9.3,
-   "apr": 2.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:08:26.1015198+01:00",
-   "fetched_at": "2026-10-14T11:08:27.912Z"
+   "quoted_at": "2026-10-18T09:26:29.4640296+01:00",
+   "fetched_at": "2026-10-18T08:26:31.432Z"
   },
   "6200895": {
    "vin": "WBS22DM0608G87924",
@@ -987,8 +819,8 @@
    "excess_pence": 15.15,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:00:50.1452271+01:00",
-   "fetched_at": "2026-10-14T11:00:51.920Z"
+   "quoted_at": "2026-10-18T09:27:20.1606674+01:00",
+   "fetched_at": "2026-10-18T08:27:21.729Z"
   },
   "6200923": {
    "vin": "WBA32GG0507W70105",
@@ -1008,29 +840,8 @@
    "excess_pence": 12.15,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:45:12.7089163+01:00",
-   "fetched_at": "2026-10-14T10:45:14.905Z"
-  },
-  "6200964": {
-   "vin": "WBA12EG0205798051",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 423.2,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 36908.4,
-   "deposit": 4500,
-   "deposit_contribution": 0,
-   "amount_of_credit": 32408.4,
-   "final_payment": 15262.5,
-   "total_payable": 39652.9,
-   "charge_for_credit": 2744.5,
-   "annual_mileage": 10000,
-   "excess_pence": 9.9,
-   "apr": 2.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:42:11.3704188+01:00",
-   "fetched_at": "2026-10-14T10:42:12.700Z"
+   "quoted_at": "2026-10-18T09:22:55.4294985+01:00",
+   "fetched_at": "2026-10-18T08:22:56.705Z"
   },
   "6200989": {
    "vin": "WBA66GP020N459828",
@@ -1050,8 +861,8 @@
    "excess_pence": 15.45,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:59:34.0680343+01:00",
-   "fetched_at": "2026-10-14T10:59:35.891Z"
+   "quoted_at": "2026-10-18T09:26:12.542884+01:00",
+   "fetched_at": "2026-10-18T08:26:14.499Z"
   },
   "6200991": {
    "vin": "WBA66GP030N459613",
@@ -1071,8 +882,8 @@
    "excess_pence": 15.45,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:59:15.3168724+01:00",
-   "fetched_at": "2026-10-14T10:59:17.124Z"
+   "quoted_at": "2026-10-18T09:26:04.9498823+01:00",
+   "fetched_at": "2026-10-18T08:26:05.663Z"
   },
   "6200993": {
    "vin": "WBA66GP080N452642",
@@ -1092,8 +903,8 @@
    "excess_pence": 15.45,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:58:56.7779256+01:00",
-   "fetched_at": "2026-10-14T10:58:58.592Z"
+   "quoted_at": "2026-10-18T09:25:48.0745311+01:00",
+   "fetched_at": "2026-10-18T08:25:49.381Z"
   },
   "6200995": {
    "vin": "WBA66GP0X0N453162",
@@ -1113,8 +924,8 @@
    "excess_pence": 15.45,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:59:06.2268445+01:00",
-   "fetched_at": "2026-10-14T10:59:07.959Z"
+   "quoted_at": "2026-10-18T09:25:56.1693565+01:00",
+   "fetched_at": "2026-10-18T08:25:57.449Z"
   },
   "6201007": {
    "vin": "WBA16GR020N446830",
@@ -1155,8 +966,8 @@
    "excess_pence": 14.85,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:57:42.4702248+01:00",
-   "fetched_at": "2026-10-14T10:57:44.380Z"
+   "quoted_at": "2026-10-18T09:24:50.1497485+01:00",
+   "fetched_at": "2026-10-18T08:24:51.317Z"
   },
   "6201012": {
    "vin": "WBA16GR060N461735",
@@ -1176,8 +987,8 @@
    "excess_pence": 14.85,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:58:01.0633682+01:00",
-   "fetched_at": "2026-10-14T10:58:02.877Z"
+   "quoted_at": "2026-10-18T09:25:08.0272319+01:00",
+   "fetched_at": "2026-10-18T08:25:08.483Z"
   },
   "6201013": {
    "vin": "WBA16GR060N461783",
@@ -1197,8 +1008,8 @@
    "excess_pence": 14.85,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:57:51.958689+01:00",
-   "fetched_at": "2026-10-14T10:57:53.680Z"
+   "quoted_at": "2026-10-18T09:24:58.9465357+01:00",
+   "fetched_at": "2026-10-18T08:25:00.234Z"
   },
   "6201015": {
    "vin": "WBA16GR0X0N460913",
@@ -1218,8 +1029,8 @@
    "excess_pence": 14.85,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:58:38.2190814+01:00",
-   "fetched_at": "2026-10-14T10:58:40.059Z"
+   "quoted_at": "2026-10-18T09:25:32.191569+01:00",
+   "fetched_at": "2026-10-18T08:25:33.017Z"
   },
   "6201019": {
    "vin": "WBA36GP090N450689",
@@ -1239,8 +1050,8 @@
    "excess_pence": 15,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:57:14.4952442+01:00",
-   "fetched_at": "2026-10-14T10:57:16.199Z"
+   "quoted_at": "2026-10-18T09:24:33.4200435+01:00",
+   "fetched_at": "2026-10-18T08:24:34.735Z"
   },
   "6201026": {
    "vin": "WBA36GP050N465903",
@@ -1260,8 +1071,8 @@
    "excess_pence": 15,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:58:47.5409766+01:00",
-   "fetched_at": "2026-10-14T10:58:49.309Z"
+   "quoted_at": "2026-10-18T09:25:39.8235349+01:00",
+   "fetched_at": "2026-10-18T08:25:41.083Z"
   },
   "6201031": {
    "vin": "WBA72GP0409579249",
@@ -1281,8 +1092,8 @@
    "excess_pence": 18.15,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:01:08.4313549+01:00",
-   "fetched_at": "2026-10-14T11:01:10.222Z"
+   "quoted_at": "2026-10-18T09:27:28.7174231+01:00",
+   "fetched_at": "2026-10-18T08:27:30.028Z"
   },
   "6201034": {
    "vin": "WBA22EN0709558199",
@@ -1302,29 +1113,8 @@
    "excess_pence": 20.7,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:01:45.1905838+01:00",
-   "fetched_at": "2026-10-14T11:01:46.990Z"
-  },
-  "6201035": {
-   "vin": "WBA22EN0409576191",
-   "product": "BMW Select (PCP)",
-   "lender": "BMW Group Financial Services",
-   "monthly": 1316.43,
-   "payments": 47,
-   "term_months": 48,
-   "cash_price": 104615,
-   "deposit": 13506,
-   "deposit_contribution": 0,
-   "amount_of_credit": 91109,
-   "final_payment": 42138.23,
-   "total_payable": 117516.44,
-   "charge_for_credit": 12901.44,
-   "annual_mileage": 10000,
-   "excess_pence": 20.7,
-   "apr": 4.9,
-   "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:02:03.5477942+01:00",
-   "fetched_at": "2026-10-14T11:02:04.617Z"
+   "quoted_at": "2026-10-18T09:28:09.6643956+01:00",
+   "fetched_at": "2026-10-18T08:28:10.927Z"
   },
   "6201036": {
    "vin": "WBA22EN0909575862",
@@ -1344,8 +1134,8 @@
    "excess_pence": 20.7,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:02:22.6224157+01:00",
-   "fetched_at": "2026-10-14T11:02:24.303Z"
+   "quoted_at": "2026-10-18T09:28:25.7607801+01:00",
+   "fetched_at": "2026-10-18T08:28:27.043Z"
   },
   "6201055": {
    "vin": "WBA50FF0X08G79583",
@@ -1365,8 +1155,8 @@
    "excess_pence": 10.8,
    "apr": 3.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:44:45.734398+01:00",
-   "fetched_at": "2026-10-14T10:44:47.291Z"
+   "quoted_at": "2026-10-18T09:22:30.5206007+01:00",
+   "fetched_at": "2026-10-18T08:22:31.807Z"
   },
   "6205537": {
    "vin": "WBS22DM0X08G84878",
@@ -1386,8 +1176,8 @@
    "excess_pence": 15.15,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:00:59.3093585+01:00",
-   "fetched_at": "2026-10-14T11:01:01.070Z"
+   "quoted_at": "2026-10-18T09:27:12.33844+01:00",
+   "fetched_at": "2026-10-18T08:27:13.629Z"
   },
   "6206639": {
    "vin": "WBS22DM0908G82832",
@@ -1407,8 +1197,8 @@
    "excess_pence": 15.15,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:00:40.8595085+01:00",
-   "fetched_at": "2026-10-14T11:00:42.654Z"
+   "quoted_at": "2026-10-18T09:27:03.9033686+01:00",
+   "fetched_at": "2026-10-18T08:27:05.181Z"
   },
   "6213365": {
    "vin": "WBS32HJ060FX44129",
@@ -1428,8 +1218,8 @@
    "excess_pence": 22.35,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:02:31.6371449+01:00",
-   "fetched_at": "2026-10-14T11:02:33.466Z"
+   "quoted_at": "2026-10-18T09:28:33.8296052+01:00",
+   "fetched_at": "2026-10-18T08:28:35.810Z"
   },
   "6218054": {
    "vin": "WBA82GE0707W93863",
@@ -1449,29 +1239,29 @@
    "excess_pence": 9.3,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:07:22.6417985+01:00",
-   "fetched_at": "2026-10-14T11:07:24.484Z"
+   "quoted_at": "2026-10-18T09:29:49.5021622+01:00",
+   "fetched_at": "2026-10-18T08:29:50.589Z"
   },
   "6231776": {
    "vin": "WBA82GE0107W98573",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 378.98,
+   "monthly": 334.17,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 33975,
+   "cash_price": 31984.8,
    "deposit": 4500,
    "deposit_contribution": 0,
-   "amount_of_credit": 29475,
+   "amount_of_credit": 27484.8,
    "final_payment": 14175.63,
-   "total_payable": 36487.69,
-   "charge_for_credit": 2512.69,
+   "total_payable": 34381.62,
+   "charge_for_credit": 2396.82,
    "annual_mileage": 10000,
    "excess_pence": 9.3,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:07:41.0691455+01:00",
-   "fetched_at": "2026-10-14T11:07:42.902Z"
+   "quoted_at": "2026-10-18T09:29:41.5042308+01:00",
+   "fetched_at": "2026-10-18T08:29:42.289Z"
   },
   "7961346": {
    "vin": "WBA32EE0905811048",
@@ -1491,8 +1281,8 @@
    "excess_pence": 13.5,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:43:15.7212168+01:00",
-   "fetched_at": "2026-10-14T10:43:15.965Z"
+   "quoted_at": "2026-10-18T09:21:23.5658379+01:00",
+   "fetched_at": "2026-10-18T08:21:24.710Z"
   },
   "7963574": {
    "vin": "WBA12CM0708G48575",
@@ -1512,8 +1302,8 @@
    "excess_pence": 10.8,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:42:29.3536685+01:00",
-   "fetched_at": "2026-10-14T10:42:30.455Z"
+   "quoted_at": "2026-10-18T09:20:33.9209792+01:00",
+   "fetched_at": "2026-10-18T08:20:34.714Z"
   },
   "7963597": {
    "vin": "WBA16GR050N442433",
@@ -1533,8 +1323,8 @@
    "excess_pence": 14.85,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:57:05.1223079+01:00",
-   "fetched_at": "2026-10-14T10:57:06.910Z"
+   "quoted_at": "2026-10-18T09:24:17.2805089+01:00",
+   "fetched_at": "2026-10-18T08:24:18.326Z"
   },
   "7963598": {
    "vin": "WBA16GR000N439584",
@@ -1554,8 +1344,8 @@
    "excess_pence": 14.85,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:57:23.5381788+01:00",
-   "fetched_at": "2026-10-14T10:57:25.715Z"
+   "quoted_at": "2026-10-18T09:24:41.6243768+01:00",
+   "fetched_at": "2026-10-18T08:24:42.918Z"
   },
   "7963760": {
    "vin": "WBA32EE0605811329",
@@ -1575,29 +1365,29 @@
    "excess_pence": 13.5,
    "apr": 2.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:43:23.2631981+01:00",
-   "fetched_at": "2026-10-14T10:43:25.010Z"
+   "quoted_at": "2026-10-18T09:21:32.2787157+01:00",
+   "fetched_at": "2026-10-18T08:21:33.542Z"
   },
   "7963854": {
    "vin": "WBA66GP080N443763",
    "product": "BMW Select (PCP)",
    "lender": "BMW Group Financial Services",
-   "monthly": 786.38,
+   "monthly": 701.33,
    "payments": 47,
    "term_months": 48,
-   "cash_price": 61765,
+   "cash_price": 58126.9,
    "deposit": 8000,
    "deposit_contribution": 0,
-   "amount_of_credit": 53765,
+   "amount_of_credit": 50126.9,
    "final_payment": 24372.83,
-   "total_payable": 69332.69,
-   "charge_for_credit": 7567.69,
+   "total_payable": 65335.34,
+   "charge_for_credit": 7208.44,
    "annual_mileage": 10000,
    "excess_pence": 15.45,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:59:24.3367785+01:00",
-   "fetched_at": "2026-10-14T10:59:26.540Z"
+   "quoted_at": "2026-10-18T09:24:25.3226429+01:00",
+   "fetched_at": "2026-10-18T08:24:26.619Z"
   },
   "7974921": {
    "vin": "WBA12HC030FX09962",
@@ -1617,8 +1407,8 @@
    "excess_pence": 12.15,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-13T08:27:01.245562+01:00",
-   "fetched_at": "2026-10-13T07:27:02.808Z"
+   "quoted_at": "2026-10-18T09:24:08.9315664+01:00",
+   "fetched_at": "2026-10-18T08:24:09.771Z"
   },
   "7974922": {
    "vin": "WBA12HC040FX20503",
@@ -1638,8 +1428,8 @@
    "excess_pence": 12.15,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:45:58.5203157+01:00",
-   "fetched_at": "2026-10-14T10:46:00.288Z"
+   "quoted_at": "2026-10-18T09:23:59.5800368+01:00",
+   "fetched_at": "2026-10-18T08:24:01.537Z"
   },
   "7974926": {
    "vin": "WBA12HC030FX18094",
@@ -1659,8 +1449,8 @@
    "excess_pence": 12.15,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T11:45:40.5964694+01:00",
-   "fetched_at": "2026-10-14T10:45:42.388Z"
+   "quoted_at": "2026-10-18T09:23:12.5798041+01:00",
+   "fetched_at": "2026-10-18T08:23:13.855Z"
   },
   "7975243": {
    "vin": "WBS12CS0X09537248",
@@ -1680,8 +1470,8 @@
    "excess_pence": 22.2,
    "apr": 4.9,
    "valid_to": "2027-01-04T23:59:59",
-   "quoted_at": "2026-10-14T12:03:17.2782018+01:00",
-   "fetched_at": "2026-10-14T11:03:19.080Z"
+   "quoted_at": "2026-10-18T09:29:16.6351794+01:00",
+   "fetched_at": "2026-10-18T08:29:17.458Z"
   }
  }
 }
