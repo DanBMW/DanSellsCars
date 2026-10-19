@@ -66,7 +66,7 @@
   "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBLgV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ahfk6pVHHIchORYkVIx%2560Nanhjd0rYtu3UiePsy05%25VyJWZsikIZaLRqV2YbGQw%25I7sufdFRY4WnAg0osMLpjwC%25WTQ1CNcYLRUFcBw1Q9%25DhmNeUSkl3rBe%25O2x51Tsk67oiFNL2E4dVDVa7KMgIA5H4qTwYjiKMXRNsCIqT89BWcRpRHSmLh%2549zOrQ3O7Sv6PU5lQOtEJ%25mPs60KakrnSEeqG2%25cSKyXf7kGzqZ8A42fwXbHjM7PV8uzCTWFFHnvcRLKDzpth9QTkv103SExqtFe5OKso0Dyi6qW7elZVEXypyxbIK80%25ZouYqH8TbdnsXzHuugpW8vtZnw1LHtzcpNFQz0v71BDUvqthFml%25tX0bDrxk0lbl"
  ],
  "first_seen": "2026-10-09",
- "status": "in_stock",
- "removed_at": null,
- "available_until": null
+ "removed_at": "2026-10-19",
+ "status": "removed",
+ "available_until": "2026-11-18"
 }
