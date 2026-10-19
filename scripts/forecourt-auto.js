@@ -13,10 +13,12 @@
  *                          to Dan only), fuelDaily (default true) }
  *
  * On a cycle Monday (or the next open day if it is a bank holiday), once the
- * morning stock list is today's (or from 09:30 whatever it is), it:
+ * morning used car Routine has committed (the Ruxley list stock.html reads,
+ * automation/hedin-stock-snapshot.json; checked with stockFresh), or from
+ * 08:10 with the latest list, it:
  *   1. archives forecourt/current to forecourt/auto/history/<id>
- *   2. loads the Ruxley stock (the same list "Load today's stock" uses:
- *      lookup/stock.json, source forecourt, in stock) into a fresh current
+ *   2. loads the Ruxley stock (loadStock: the snapshot stock.html shows, with
+ *      lookup/stock.json describing cars that have left) into a fresh current
  *   3. shares the cars equally (counts within 1) across the active execs on
  *      lockup/config/team, rotating so nobody gets a car they had last cycle
  *   4. queues each exec their allocation email (wording from the board's own
@@ -157,7 +159,8 @@ function carRows(cur, stock) {
   return Object.keys(vehicles).map(k => Object.assign({ key: k }, vehicles[k])).sort((a, b) => (a.order || 0) - (b.order || 0)).map(v => {
     const a = answers[v.key] || {}, s = stock[v.key] || {};
     const fails = CHECK_IDS.filter(id => id !== 'soldboard' && a[id] === 'no').map(id => CHECK_LABELS[CHECK_IDS.indexOf(id)]);
-    const sold = a.soldboard === 'yes', gone = !s.reg && v.src === 'stock';
+    /* gone: loaded from stock but no longer on the Ruxley list stock.html shows (loadStock marks it removed) */
+    const sold = a.soldboard === 'yes', gone = v.src === 'stock' && !(s.reg && s.source === 'forecourt' && (!s.status || s.status === 'in_stock'));
     let state = v.status === 'done' ? (sold ? 'sold' : fails.length ? 'issues' : 'clear') : v.status === 'inaccessible' ? 'inaccessible' : gone ? 'gone' : v.status === 'in-progress' ? 'in-progress' : 'pending';
     return { key: v.key, reg: v.reg || dispReg(v.key), model: s.model || v.model || '', colour: s.colour || '', image: s.image || '', owner: ownerOf[v.key] || '', status: v.status, state, sold, fails, notes: a.notes || '', checkedBy: a.checkedBy || '', checkedAt: a.checkedAt || 0, inacc: v.inaccessible || null, fuel: !sold && v.status === 'done' && a.fuel === 'no', charge: !sold && v.status === 'done' && a.charged === 'no' };
   });
@@ -292,7 +295,8 @@ async function run(o) {
   const FC = cfg.sandbox ? 'forecourtTest' : 'forecourt', SB = !!cfg.sandbox;
   const ROOT = o.root || 'lockup', lcfg = o.lockupCfg || {}, team = lcfg.team || {}, mgrs = lcfg.managers || {};
   const absences = o.absences || {};
-  const stock = o.stock || {}, stockDate = o.stockGeneratedAt ? R.london(new Date(o.stockGeneratedAt)).date : '';
+  const stock = o.stock || {};
+  let stockAt = o.stockGeneratedAt || '', stockDate = stockAt ? R.london(new Date(stockAt)).date : '';
   const out = { queued: [] };
   const put = async (path, val) => { if (DRY) return log('[dry] ' + tag + 'write ' + path); await db.ref(path).set(val); };
   const queue = async (id, mail, to, sendAfter) => {
@@ -322,6 +326,10 @@ async function run(o) {
   const sched = scheduledOn(cfg, n.date), startDay = sched && startDayFor(sched, hol);
   if (sched && startDay === n.date && !cycles[sched] && isOpen(n.date, hol)) {
     if (!SB) for (const ek of Object.keys(cur.execs || {})) if (n.mins < 11 * 60) await markReminder(ek, 'new cycle today');
+    /* fresh = this morning's used car Routine (the one stock.html reads) has committed, and this run's checkout has it */
+    let fresh = null;
+    if (o.stockFresh && n.mins >= START_MINS) { try { fresh = await o.stockFresh(); } catch (e) { log(tag + 'stock freshness check failed: ' + e.message); } }
+    if (fresh && fresh.ranAt) { stockAt = fresh.ranAt; stockDate = R.london(new Date(fresh.ranAt)).date; if (stockDate === n.date && fresh.inCheckout === false) { log(tag + 'today\u2019s stock landed after this run started, next run picks it up'); stockDate = 'pending'; } }
     const ready = stockDate === n.date || n.mins >= FALLBACK_MINS;
     if (n.mins < START_MINS || !ready) log(tag + 'cycle ' + sched + ' due today, waiting for ' + (n.mins < START_MINS ? '07:30' : 'today\u2019s stock list (or 08:10)'));
     else if (n.mins >= LATE_MINS) log(tag + 'too late to start today');
@@ -337,7 +345,7 @@ async function run(o) {
       cars.forEach((k, i) => { newCur.vehicles[k] = { key: k, reg: dispReg(k), status: 'pending', order: i + 1, src: 'stock' }; newCur.answers[k] = { done: false, notes: '', checkedBy: '', sold: false }; });
       execs.forEach(e => { newCur.execs[execKey(e.name)] = { name: e.name, initials: initials(e), cars: alloc[e.name] || [] }; });
       const win = windowFor(n.date, hol);
-      const cycle = { id: sched, start: n.date, window: win, deadline: win[win.length - 1], status: 'open', createdAt: nowMs, cars, alloc, stockAt: o.stockGeneratedAt || '', execs: execs.map(e => e.name) };
+      const cycle = { id: sched, start: n.date, window: win, deadline: win[win.length - 1], status: 'open', createdAt: nowMs, cars, alloc, stockAt: stockAt || '', execs: execs.map(e => e.name) };
       if (cur.vehicles) await put(FC + '/auto/history/' + (cur.meta && cur.meta.cycle ? cur.meta.cycle : 'manual_' + ((cur.meta && cur.meta.stockLoadedOn) || n.date)), Object.assign({ archivedAt: nowMs }, cur));
       await put(FC + '/current', newCur);
       await put(FC + '/auto/cycles/' + sched, cycle);
@@ -357,7 +365,7 @@ async function run(o) {
         if (inDay !== n.date) bits.push(offReason(e, n.date, absences).replace('on your day off', 'day off') + ' today, email ' + DAYNAMES[dowOf(inDay)] + ' 08:00');
         if (fin && fin !== cycle.deadline) bits.push('off ' + DAYNAMES[dowOf(cycle.deadline)] + ', final day ' + DAYNAMES[dowOf(fin)]);
         if (bits.length) offInfo[e.name] = bits.join('; '); });
-      const stockNote = stockDate === n.date ? '' : 'Today\u2019s stock list had not come in by 08:10, so this uses the latest one' + (o.stockGeneratedAt ? ', from ' + when(Date.parse(o.stockGeneratedAt)) : '') + '. Cars that arrived since will not be on it; a manager can add them on the board.';
+      const stockNote = stockDate === n.date ? '' : 'Today\u2019s stock list had not come in by 08:10, so this uses the latest one' + (stockAt ? ', from ' + when(Date.parse(stockAt)) : '') + '. Cars that arrived since will not be on it; a manager can add them on the board.';
       if (stockNote) cycle.stockNote = stockNote;
       await queue('fc_' + sched + '_summary', summaryEmail(cycle, execs.map(e => ({ name: e.name, rows: (alloc[e.name] || []).map(k => rowsBy[k]) })), offInfo, stockNote), REPORT_TO, ukMs(n.date, SUMMARY_MINS));
       cycles[sched] = cycle; cur = newCur;
@@ -410,4 +418,36 @@ async function run(o) {
   return out;
 }
 
-module.exports = { run, excludeList, windowFor, finalDayFor, reminderNote, summaryEmail, REPORT_TO, allocate, pickExecs, scheduledOn, startDayFor, nextCycles, offReason, firstInDay, carRows, fuelList, allocationEmail, reportEmail, fuelEmail, CHECK_IDS, CHECK_LABELS, ukMs };
+/* ---- the stock list: the same Ruxley list stock.html shows ----
+   stock.html reads automation/hedin-stock-snapshot.json, which the 07:00 UTC used
+   car Routine commits. That file is the truth for which cars are at Ruxley; it
+   does not wait for daily-lookup.yml (whose cron has run hours late).
+   lookup/stock.json is kept only to describe cars that have left. */
+function loadStock(repoDir) {
+  const fs = require('fs'), path = require('path'), rd = f => { try { return JSON.parse(fs.readFileSync(path.join(repoDir, f), 'utf8')); } catch (e) { return null; } };
+  const lk = rd('lookup/stock.json'), snap = rd('automation/hedin-stock-snapshot.json');
+  const map = {};
+  Object.entries((lk && lk.cars) || {}).forEach(([k, c]) => { if (c) map[regKey(c.reg || k)] = Object.assign({}, c); });
+  if (Array.isArray(snap) && snap.length) {
+    const here = {};
+    snap.forEach(c => { if (!c || !c.reg) return; const k = regKey(c.reg); here[k] = 1; map[k] = Object.assign({}, map[k] || {}, { reg: k, model: c.model || (map[k] || {}).model || '', colour: c.colour || (map[k] || {}).colour || '', image: c.image || (map[k] || {}).image || '', source: 'forecourt', status: 'in_stock' }); });
+    Object.keys(map).forEach(k => { if (map[k].source === 'forecourt' && !here[k]) map[k].status = 'removed'; });
+  }
+  return { stock: map, from: Array.isArray(snap) && snap.length ? 'snapshot' : 'lookup', generatedAt: (lk && lk.generated_at) || '' };
+}
+/* when the Routine last committed this morning's stock files, and whether this run's checkout includes it */
+const ROUTINE_FILES = ['automation/hedin-stock-snapshot.json', 'automation/hedin-group-stock.json', 'automation/car-details.json', 'automation/stock-finance.json', 'automation/finance-post-log.json'];
+async function stockFresh(o) {
+  const H = { Accept: 'application/vnd.github+json', 'User-Agent': 'forecourt-auto' }; if (o.token) H.Authorization = 'Bearer ' + o.token;
+  let best = '';
+  for (const f of ROUTINE_FILES) {
+    const r = await fetch('https://api.github.com/repos/' + o.repo + '/commits?per_page=1&sha=main&path=' + encodeURIComponent(f), { headers: H });
+    if (!r.ok) throw new Error('GitHub ' + r.status);
+    const j = await r.json(), d = j && j[0] && j[0].commit && j[0].commit.committer && j[0].commit.committer.date;
+    if (d && d > best) best = d;
+  }
+  let head = ''; try { head = require('child_process').execSync('git log -1 --format=%cI HEAD', { cwd: o.repoDir, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch (e) {}
+  return { ranAt: best, inCheckout: head ? Date.parse(best) <= Date.parse(head) : true };
+}
+
+module.exports = { run, loadStock, stockFresh, ROUTINE_FILES, excludeList, windowFor, finalDayFor, reminderNote, summaryEmail, REPORT_TO, allocate, pickExecs, scheduledOn, startDayFor, nextCycles, offReason, firstInDay, carRows, fuelList, allocationEmail, reportEmail, fuelEmail, CHECK_IDS, CHECK_LABELS, ukMs };

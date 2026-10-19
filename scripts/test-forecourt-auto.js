@@ -150,6 +150,33 @@ const quiet = () => {};
     await A.run(Object.assign({}, base, { db: db4, nowMs: at('2026-10-28T17:00:00Z') }));
     const f = d4.lockup.notify['fc_2026-10-26_fuel_2026-10-28']; assert(f && f.to.indexOf('chloe@example.test') >= 0 && f.to.indexOf('molly@example.test') >= 0);
   });
+  await t('stock: the snapshot stock.html reads decides who is at Ruxley; a car that leaves shows as Left stock', async () => {
+    const fs = require('fs'), os = require('os'), path = require('path'), dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fca-'));
+    fs.mkdirSync(path.join(dir, 'lookup')); fs.mkdirSync(path.join(dir, 'automation'));
+    fs.writeFileSync(path.join(dir, 'lookup/stock.json'), JSON.stringify({ generated_at: '2026-10-24T07:10:00Z', cars: { AA11AAA: { reg: 'AA11AAA', model: 'BMW X1', source: 'forecourt', status: 'in_stock' }, BB22BBB: { reg: 'BB22BBB', model: 'BMW X3', source: 'forecourt', status: 'in_stock' }, GG11GGG: { reg: 'GG11GGG', source: 'group', status: 'in_stock' } } }));
+    fs.writeFileSync(path.join(dir, 'automation/hedin-stock-snapshot.json'), JSON.stringify([{ reg: 'AA11AAA', model: 'BMW X1', colour: 'Blue' }, { reg: 'CC33CCC', model: 'BMW i4', colour: 'Red' }]));
+    const ls = A.loadStock(dir); assert.strictEqual(ls.from, 'snapshot');
+    const here = Object.keys(ls.stock).filter(k => ls.stock[k].source === 'forecourt' && ls.stock[k].status === 'in_stock').sort();
+    assert.deepStrictEqual(here, ['AA11AAA', 'CC33CCC'], 'new arrival in, sold car out, before daily-lookup catches up');
+    const rows = A.carRows({ vehicles: { BB22BBB: { key: 'BB22BBB', status: 'pending', src: 'stock' }, AA11AAA: { key: 'AA11AAA', status: 'pending', src: 'stock' } } }, ls.stock);
+    assert.strictEqual(rows.find(r => r.key === 'BB22BBB').state, 'gone'); assert.strictEqual(rows.find(r => r.key === 'BB22BBB').model, 'BMW X3', 'still described');
+    assert.strictEqual(rows.find(r => r.key === 'AA11AAA').state, 'pending');
+  });
+  await t('cycle day: waits for this morning\u2019s Routine, then loads; from 08:10 uses the latest with a note', async () => {
+    const mk = () => ({ forecourt: { auto: { config: { enabled: true, start: '2026-10-26', exclude: ['chloe', 'molly'] } } }, lockup: { notify: {}, mail: {} } });
+    let fresh = { ranAt: '2026-10-25T07:20:00Z', inCheckout: true };
+    const d5 = mk(), go = (t) => A.run(Object.assign({}, base, { db: fakeDb(d5), nowMs: at(t), stockGeneratedAt: '2026-10-24T07:10:00Z', stockFresh: async () => fresh }));
+    await go('2026-10-26T07:30:00Z'); assert(!d5.forecourt.current, 'yesterday\u2019s, waits');
+    fresh = { ranAt: '2026-10-26T07:31:00Z', inCheckout: false }; await go('2026-10-26T07:45:00Z'); assert(!d5.forecourt.current, 'landed after checkout, waits');
+    fresh = { ranAt: '2026-10-26T07:31:00Z', inCheckout: true }; await go('2026-10-26T08:00:00Z'); assert(d5.forecourt.current, 'today\u2019s, loads');
+    assert(!/latest one/.test(d5.lockup.notify['fc_2026-10-26_summary'].text));
+    const d6 = mk(); fresh = { ranAt: '2026-10-25T07:20:00Z', inCheckout: true };
+    await A.run(Object.assign({}, base, { db: fakeDb(d6), nowMs: at('2026-10-26T08:15:00Z'), stockFresh: async () => fresh }));
+    assert(d6.forecourt.current); assert(/latest one, from Sun 25 Oct 07:20/.test(d6.lockup.notify['fc_2026-10-26_summary'].text));
+    const d7 = mk();
+    await A.run(Object.assign({}, base, { db: fakeDb(d7), nowMs: at('2026-10-26T08:15:00Z'), stockGeneratedAt: '2026-10-24T07:10:00Z', stockFresh: async () => { throw new Error('GitHub 500'); } }));
+    assert(d7.forecourt.current, 'API down: still loads at 08:15');
+  });
   await t('schedule: every other Monday, bank holiday moves to Tuesday', async () => {
     const c = A.nextCycles({ start: '2026-10-26', everyDays: 14 }, '2026-10-19', 4, {});
     assert.deepStrictEqual(c.map(x => x.start), ['2026-10-26', '2026-11-09', '2026-11-23', '2026-12-07']);

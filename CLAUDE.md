@@ -1732,6 +1732,17 @@ change one); server-side keys live in Cloudflare worker secrets. See
   Dan 19 Oct) are never allocated forecourt cars and never sent the 08:30
   forecourt reminder (forecourt-mail.js checks it too, even for a hand-added
   board), but stay on the lockup rota and still get the team fuel list.
+  **Stock source (19 Oct):** the cycle load and "Left stock" use
+  `loadStock()`: `automation/hedin-stock-snapshot.json`, the Ruxley list
+  stock.html itself reads (committed by the 07:00 UTC used car Routine), with
+  lookup/stock.json only describing cars that have left. It does not wait for
+  daily-lookup.yml (whose cron has run hours late; lookup's `generated_at`
+  also only moves on a change, so it is no freshness signal). On cycle day
+  `stockFresh()` asks the GitHub API (read only `GITHUB_TOKEN`, `permissions:
+  contents: read` in lockup-emails.yml) when the Routine last committed any
+  of its five morning files and whether this run's checkout has it; the load
+  waits for that until 08:10, then uses the latest list and says so in the
+  08:15 summary. If the API fails it loads anyway.
 - `newcar.html` — upload page for the new car manager's daily 76 Plate
   leaderboard screenshot. PIN-gated (the `newcar` gate in `staff-gate.js`),
   writes to `newcar/current`. Like the

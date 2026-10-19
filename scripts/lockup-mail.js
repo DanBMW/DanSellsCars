@@ -89,9 +89,10 @@ async function main() {
      out below in this same run (scripts/forecourt-auto.js, off unless
      forecourt/auto/config/enabled is true). A failure never stops lockup. */
   try {
-    let st = null; try { st = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../lookup/stock.json'), 'utf8')); } catch (e) {}
-    const stock = {}; Object.entries((st && st.cars) || {}).forEach(([k, c]) => { if (c) stock[String(c.reg || k).toUpperCase().replace(/[^A-Z0-9]/g, '')] = c; });
-    await require('./forecourt-auto.js').run({ db, root: ROOT, nowMs, dry: DRY, hol, absences, lockupCfg: cfg, stock, stockGeneratedAt: st && st.generated_at });
+    const FA = require('./forecourt-auto.js'), repoDir = require('path').join(__dirname, '..'), ls = FA.loadStock(repoDir);
+    console.log('[forecourt auto] stock from ' + ls.from + ', ' + Object.values(ls.stock).filter(c => c.source === 'forecourt' && c.status === 'in_stock').length + ' Ruxley cars');
+    await FA.run({ db, root: ROOT, nowMs, dry: DRY, hol, absences, lockupCfg: cfg, stock: ls.stock, stockGeneratedAt: ls.generatedAt,
+      stockFresh: process.env.GITHUB_REPOSITORY ? () => FA.stockFresh({ repo: process.env.GITHUB_REPOSITORY, token: process.env.GITHUB_TOKEN, repoDir }) : null });
   } catch (e) { console.error('forecourt auto failed', e); }
   const queue = (await db.ref(ROOT + '/notify').get()).val() || {};
   for (const id of seededNow) {
