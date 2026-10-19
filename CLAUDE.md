@@ -1684,6 +1684,36 @@ change one); server-side keys live in Cloudflare worker secrets. See
   workflow) emails each exec at 08:30 UK on open days with their pending or
   in-progress cars; names matched to lockup/config/team, unmatched go to the
   managers; dedupe at lockup/mail/<date>/forecourt/<exec>.
+- **Fortnightly forecourt check, automatic (built 19 October 2026, OFF until
+  Dan says).** `scripts/forecourt-auto.js`, called by lockup-mail.js just
+  before it sends its queue, so it reuses that Gmail sender and the
+  `lockup/notify` queue (fixed ids `fc_<cycle>_<kind>`, written once, marked
+  sent by the queue: nothing goes twice; a queued `csv` + `csvName` is sent as
+  an attachment). Switch: `forecourt/auto/config` `{enabled, sandbox, start:
+  '2026-10-26', everyDays: 14, fuelDaily}`; while `enabled` is not true it
+  writes nothing. `sandbox: true` runs it on `forecourtTest/` with every email
+  to Dan and `[SANDBOX]` subjects. Every other Monday (bank holiday: next open
+  day), from 07:30 once lookup/stock.json is that day's (or from 09:30 anyway),
+  it archives `forecourt/current` to `forecourt/auto/history/<id>`, loads the
+  Ruxley stock (same filter as "Load today's stock"), shares the cars across
+  the active lockup/config/team (counts within 1, the odd cars to people in
+  that Monday, rotated each cycle, swapped so nobody gets a car they had on
+  the board being archived) and queues each exec an allocation email in the
+  wording of the board's "Share with Sales Executives" message. Anyone off
+  that day (weekly `off`, `never`, or a lockup absence) gets theirs at 08:00
+  on their next working day. Cycle state: `forecourt/auto/cycles/<id>`. The
+  daily follow up is the existing 08:30 reminder; on cycle day and on an
+  exec's day off it is pre marked in lockup/mail so it skips them. When every
+  cycle car is done, inaccessible or gone from stock it queues Will Potter
+  the finished report (the board's "Copy issues" text as the spine, every car,
+  who, when, notes, inaccessible reasons, timings, the board's CSV attached)
+  and the fuel list to team plus managers; then a 09:00 fuel list on open days
+  while any are unticked, for the fortnight. Reports tab card: status, "Send
+  report to Will now" (writes `forecourt/auto/requests/report`), fuel list
+  link. Fuel = the existing check items "Min 1/4 Tank Fuel" or "Fully Charged
+  EV-PHEV" answered NO; ticks on `forecourt-fuel.html` (staff, noindex) at
+  `<root>/current/fuel/<key> {by, at}`. Tests: `scripts/test-forecourt-auto.js`
+  (board-check).
 - `newcar.html` — upload page for the new car manager's daily 76 Plate
   leaderboard screenshot. PIN-gated (the `newcar` gate in `staff-gate.js`),
   writes to `newcar/current`. Like the

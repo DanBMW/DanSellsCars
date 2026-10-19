@@ -29,3 +29,5 @@ jobs:
       # midnight bug in clockOn was found, on a push that had nothing to do
       # with reception. This keeps both the bug and the flake from coming back.
       - run: node scripts/test-walkin-times.js
+      # The fortnightly forecourt check: allocation, no repeats, no double sends.
+      - run: node scripts/test-forecourt-auto.js

@@ -11,7 +11,9 @@
  * never sends twice. If this week's rota is missing it generates it with the
  * same lockup-rota.js the page uses.
  *
- * After that it runs scripts/forecourt-mail.js (08:30 forecourt reminder).
+ * Before the queue it runs scripts/forecourt-auto.js (the fortnightly forecourt
+ * check, off by default), and after everything scripts/forecourt-mail.js (08:30
+ * forecourt reminder). A queued entry with csv + csvName goes with the CSV attached.
  *
  * Env: FIREBASE_SA (service account JSON), GMAIL_USER, GMAIL_APP_PASSWORD,
  *      optional MAIL_FROM_NAME, DRY_RUN=1 (print, send nothing), NOW (ISO, for tests).
@@ -83,6 +85,14 @@ async function main() {
 
   /* queued notifications from lockup.html: absences, cover, holidays */
   const mgrList = TEST ? [TEST_MGR] : Object.values(cfg.managers || {}).map(m => m.email).filter(Boolean);
+  /* automatic fortnightly forecourt check: queues its emails here, so they go
+     out below in this same run (scripts/forecourt-auto.js, off unless
+     forecourt/auto/config/enabled is true). A failure never stops lockup. */
+  try {
+    let st = null; try { st = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../lookup/stock.json'), 'utf8')); } catch (e) {}
+    const stock = {}; Object.entries((st && st.cars) || {}).forEach(([k, c]) => { if (c) stock[String(c.reg || k).toUpperCase().replace(/[^A-Z0-9]/g, '')] = c; });
+    await require('./forecourt-auto.js').run({ db, root: ROOT, nowMs, dry: DRY, hol, absences, lockupCfg: cfg, stock, stockGeneratedAt: st && st.generated_at });
+  } catch (e) { console.error('forecourt auto failed', e); }
   const queue = (await db.ref(ROOT + '/notify').get()).val() || {};
   for (const id of seededNow) {
     if (queue[id]) continue;
@@ -113,7 +123,7 @@ async function main() {
       const subject = (TEST ? '[TEST] ' : '') + q.subject;
       console.log((DRY ? '[dry] ' : '') + 'Send "' + subject + '" to ' + to.join(', '));
       if (DRY) console.log(q.text || '');
-      else await transport().sendMail({ from: { name: q.fromName || process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to, subject, text: q.text || '', html: q.html });
+      else await transport().sendMail(Object.assign({ from: { name: q.fromName || process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to, subject, text: q.text || '', html: q.html }, q.csv ? { attachments: [{ filename: q.csvName || 'forecourt.csv', content: q.csv, contentType: 'text/csv' }] } : {}));
     } else {
       const lines = Array.isArray(q.lines) ? q.lines : Object.values(q.lines || {});
       await send(transport(), to, q.subject, 'Hi all,', lines.slice(0, 1), lines.slice(1), 'See the rota');

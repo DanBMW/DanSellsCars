@@ -6,6 +6,7 @@ Disallow: /team-board.html
 Disallow: /links.html
 Disallow: /walkins.html
 Disallow: /Forecourt.html
+Disallow: /forecourt-fuel.html
 Disallow: /newcar.html
 Disallow: /mugshot.html
 Disallow: /forecourt-frenzy.html

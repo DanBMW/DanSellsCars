@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"/>
+<title>Forecourt fuel list</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<!-- The cars the forecourt check found low on fuel or charge ("Min 1/4 Tank
+     Fuel" or "Fully Charged EV-PHEV" answered NO on Forecourt.html). Anyone
+     can tick one as fuelled; the tick is live for everybody and records who
+     and when, at <root>/current/fuel/<key>. ?sandbox=1 uses forecourtTest/.
+     Linked from the fuel email (scripts/forecourt-auto.js). Staff only:
+     noindex, not in the sitemap, not linked from public pages. -->
+<style>
+:root{--blue:#4D94D8;--blue-d:#1f4f82;--ink:#12263a;--line:#d9e3ee;--muted:#6b7a8c;--green:#2f8f57;--green-bg:#e7f6ee;--amber:#9a5a00;--amber-bg:#fff5e8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#f7f9fc,#eef3f8);color:var(--ink);font-size:16px;min-height:100vh}
+button{font:inherit;cursor:pointer}
+.top{background:linear-gradient(135deg,var(--blue-d),var(--blue));color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;box-shadow:0 8px 18px rgba(31,79,130,.18)}
+.top h1{font-size:18px;font-weight:800}.top a{color:#fff;font-size:13px;font-weight:700;text-decoration:none;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.2);padding:7px 12px;border-radius:10px}
+.main{max-width:640px;margin:0 auto;padding:16px}
+.sum{display:flex;gap:10px;margin-bottom:14px}.kpi{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}.kpi b{display:block;font-size:28px;color:var(--amber)}.kpi.ok b{color:var(--green)}.kpi span{font-size:12px;color:var(--muted)}
+.me{font-size:13px;color:var(--muted);margin:0 0 12px}.me button{background:none;border:0;color:var(--blue-d);font-weight:800;text-decoration:underline}
+h2{font-size:15px;margin:18px 0 8px}
+.car{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 6px 14px rgba(18,38,58,.05)}
+.car.done{background:var(--green-bg);border-color:#a8dabf}
+.fc-thumb{width:72px;height:48px;object-fit:cover;border-radius:8px;flex:none;background:#e8eef5}
+.info{flex:1;min-width:0}.reg{font-family:'Courier New',monospace;font-weight:700;font-size:17px}.meta{font-size:12px;color:var(--muted)}.need{display:inline-block;margin-top:4px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--amber-bg);color:var(--amber)}.need.ev{background:#e8f2fb;color:var(--blue-d)}
+.who{font-size:12px;color:var(--green);font-weight:700;margin-top:4px}
+.tick{flex:none;min-width:96px;min-height:48px;border-radius:12px;border:1.5px solid #f2b65c;background:#fff;color:var(--amber);font-weight:800;font-size:14px}
+.car.done .tick{background:var(--green);border-color:var(--green);color:#fff}
+.empty{text-align:center;padding:40px 16px;color:#8a97a6}.empty b{display:block;font-size:40px;margin-bottom:6px}
+.sheet{position:fixed;inset:0;background:rgba(18,38,58,.5);display:none;align-items:flex-end;justify-content:center;z-index:10}.sheet.open{display:flex}
+.sheet>div{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:20px;max-height:80vh;overflow:auto}
+.sheet h3{font-size:18px;margin-bottom:12px}.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}.names button{padding:14px 8px;border-radius:12px;border:1.5px solid var(--line);background:#f8fbfe;font-weight:800}
+.cancel{margin-top:12px;width:100%;padding:12px;border-radius:12px;border:0;background:#eef3f8;font-weight:800}
+.sandbox{background:#ff8a00;color:#1a0d00;font-weight:900;text-align:center;font-size:13px;padding:7px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1d2b39;color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;display:none;z-index:20}
+</style>
+</head>
+<body>
+<div class="top"><h1>&#9981; Fuel list</h1><a href="Forecourt.html">Forecourt board</a></div>
+<div class="main">
+  <div class="sum"><div class="kpi"><b id="n-todo">&ndash;</b><span>to fuel or charge</span></div><div class="kpi ok"><b id="n-done">&ndash;</b><span>done</span></div></div>
+  <p class="me" id="me-line"></p>
+  <div id="list"><div class="empty"><p>Loading&hellip;</p></div></div>
+</div>
+<div class="sheet" id="who-sheet"><div><h3>Who&rsquo;s fuelling it?</h3><div class="names" id="who-names"></div><button class="cancel" type="button" id="who-cancel">Cancel</button></div></div>
+<div id="toast"></div>
+<script src="forecourt-stock.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { ensureSignedIn } from "./staff-auth.js";
+const app=initializeApp({apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"});
+const db=getDatabase(app); ensureSignedIn(app);
+const FC=new URLSearchParams(location.search).has('sandbox')?'forecourtTest':'forecourt';
+if(FC!=='forecourt'){const b=document.createElement('div');b.className='sandbox';b.textContent='SANDBOX \u00b7 practice board, real data untouched';document.body.insertBefore(b,document.body.firstChild)}
+const $=id=>document.getElementById(id), esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let vehicles={},answers={},ticks={},people=[],pending=null;
+let me=''; try{me=localStorage.fcFuelMe||''}catch(e){}
+function when(ts){if(!ts)return'';const d=new Date(ts);return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+function toast(t){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>{el.style.display='none'},2200)}
+function needs(){return Object.keys(vehicles).map(k=>Object.assign({key:k},vehicles[k])).filter(v=>{const a=answers[v.key]||{};return v.status==='done'&&a.soldboard!=='yes'&&(a.fuel==='no'||a.charged==='no')}).sort((a,b)=>(a.order||0)-(b.order||0)).map(v=>{const a=answers[v.key]||{};return Object.assign(v,{fuelNo:a.fuel==='no',chargeNo:a.charged==='no',flaggedBy:a.checkedBy||'',flaggedAt:a.checkedAt||0,tick:ticks[v.key]||null})})}
+function card(v){const kind=v.chargeNo&&!v.fuelNo?'Needs charging':v.chargeNo?'Fuel and charge':'Needs fuel';
+  return '<div class="car'+(v.tick?' done':'')+'">'+fcStock.thumb(v.key)+'<div class="info"><div class="reg">'+esc(v.reg||v.key)+'</div><div class="meta">'+(fcStock.meta(v.key)||'')+'</div><span class="need'+(v.chargeNo&&!v.fuelNo?' ev':'')+'">'+kind+'</span>'+
+  (v.tick?'<div class="who">&#10003; '+esc(v.tick.by||'')+' '+esc(when(v.tick.at))+'</div>':'<div class="meta" style="margin-top:4px">Flagged by '+esc(v.flaggedBy||'the check')+(v.flaggedAt?' '+esc(when(v.flaggedAt)):'')+'</div>')+
+  '</div><button class="tick" type="button" data-k="'+esc(v.key)+'">'+(v.tick?'&#10003; Fuelled':'Tick fuelled')+'</button></div>'}
+function paint(){const l=needs(),todo=l.filter(v=>!v.tick),done=l.filter(v=>v.tick);$('n-todo').textContent=todo.length;$('n-done').textContent=done.length;
+  $('me-line').innerHTML=me?'Ticking as <b>'+esc(me)+'</b> &middot; <button type="button" id="me-change">Not you?</button>':'';
+  const mc=$('me-change'); if(mc)mc.onclick=()=>{me='';try{localStorage.removeItem('fcFuelMe')}catch(e){};paint()};
+  $('list').innerHTML=!l.length?'<div class="empty"><b>&#9981;</b><p>Nothing needs fuel right now. Cars show up here when the forecourt check finds them below a quarter tank or not charged.</p></div>':
+    (todo.length?'<h2>To fuel or charge ('+todo.length+')</h2>'+todo.map(card).join(''):'<div class="empty"><b>&#9989;</b><p>All done. Thank you!</p></div>')+(done.length?'<h2>Done ('+done.length+')</h2>'+done.map(card).join(''):'');
+  $('list').querySelectorAll('.tick').forEach(b=>b.onclick=()=>tap(b.dataset.k))}
+function tap(k){const t=ticks[k];
+  if(t){if(confirm('Untick '+((vehicles[k]||{}).reg||k)+'? It goes back on the list.'))remove(ref(db,FC+'/current/fuel/'+k)).then(()=>toast('Back on the list')).catch(()=>toast('Could not save, try again'));return}
+  if(!me){pending=k;openWho();return} save(k)}
+function save(k){set(ref(db,FC+'/current/fuel/'+k),{by:me,at:Date.now()}).then(()=>{toast(((vehicles[k]||{}).reg||k)+' ticked');if(navigator.vibrate)navigator.vibrate(15)}).catch(()=>toast('Could not save, try again'))}
+function openWho(){$('who-names').innerHTML=people.map(p=>'<button type="button" data-n="'+esc(p)+'">'+esc(p)+'</button>').join('');$('who-names').querySelectorAll('button').forEach(b=>b.onclick=()=>{me=b.dataset.n;try{localStorage.fcFuelMe=me}catch(e){};$('who-sheet').classList.remove('open');if(pending){save(pending);pending=null}paint()});$('who-sheet').classList.add('open')}
+$('who-cancel').onclick=()=>{pending=null;$('who-sheet').classList.remove('open')};
+onValue(ref(db,FC+'/current/vehicles'),s=>{vehicles=s.val()||{};paint()});
+onValue(ref(db,FC+'/current/answers'),s=>{answers=s.val()||{};paint()});
+onValue(ref(db,FC+'/current/fuel'),s=>{ticks=s.val()||{};paint()});
+onValue(ref(db,'lockup/config'),s=>{const c=s.val()||{},list=[];[c.team||{},c.managers||{}].forEach(g=>Object.keys(g).map(k=>g[k]).filter(p=>p&&p.name&&p.active!==false).sort((a,b)=>(a.order||0)-(b.order||0)).forEach(p=>list.push(p.name)));people=list});
+fcStock.ready.then(paint);
+</script>
+</body>
+</html>
