@@ -25,10 +25,16 @@
  * The existing 08:30 reminder (forecourt-mail.js) is the daily follow up. On
  * cycle day it is pre marked as sent so nobody gets two emails, and on an
  * exec's day off (weekly off or a lockup absence) it is skipped for them.
- * When every cycle car is done, inaccessible or gone from stock, it queues
- * the finished report to Will Potter (with the board's CSV attached) and the
- * fuel list to the whole team. forecourt/auto/requests/report (the manager
- * "Send report to Will now" button) queues the report early.
+ * The checks window is three open days (Monday to Wednesday; a bank holiday
+ * moves the whole window). The cycle is loaded by 08:15 (from 08:10 it uses
+ * the latest stock list if today's is not in), and at 08:15 Will Potter and
+ * Elvis Urbonas get an allocation summary. At 17:00 on the deadline day they
+ * get the report (with the board's CSV attached), done or not, listing any
+ * car not done and whose it is, and the fuel list goes to the whole team.
+ * Finishing early does not send it early; forecourt/auto/requests/report (the
+ * manager "Send report to Will and Elvis now" button) does. The 08:30
+ * reminder says FINAL DAY on each exec's last working day of the window
+ * (reminderNote, read by forecourt-mail.js).
  * Fuel: the check already records "Min 1/4 Tank Fuel" (fuel) and "Fully
  * Charged EV-PHEV" (charged); a NO on either puts the car on the fuel list.
  * Ticks live at <root>/current/fuel/<key> (forecourt-fuel.html).
@@ -40,10 +46,14 @@ const R = require('../lockup-rota.js');
 const BOARD = 'https://dan-sells.co.uk/Forecourt.html';
 const FUEL = 'https://dan-sells.co.uk/forecourt-fuel.html';
 const TEST_EXEC = 'daniel.cane@hedinautomotive.co.uk';
-const WILL = 'will.potter@hedinautomotive.co.uk';
+const WILL = 'will.potter@hedinautomotive.co.uk', ELVIS = 'elvinas.urbonas@hedinautomotive.co.uk';
+/* the report and the Monday allocation summary go to the used car manager and the used car progressor (Dan, 19 Oct) */
+const REPORT_TO = [WILL, ELVIS], REPORT_HI = 'Will and Elvis';
 const CHECK_IDS = ['soldboard', 'clean', 'fuel', 'charged', 'aircon', 'radio', 'satnav', 'bt', 'personal', 'receipts', 'tyre', 'aid', 'mileage', 'warning', 'profile', 'priceboard'];
 const CHECK_LABELS = ['Sold Board in Window?', 'Clean Inside and Out', 'Min 1/4 Tank Fuel', 'Fully Charged EV-PHEV', 'Aircon Off', 'Radio Off', 'No Address in Sat Nav', 'No Phones Paired', 'No Personal Items', 'No Receipts in Glovebox', 'Tyre Inflator Kit / Spare Wheel / Run Flats', 'First Aid Kit Present', 'Mileage Reset', 'No Warning Lights', 'No Profile Set', 'Price Board & AUC Plate Present'];
-const START_MINS = 7 * 60 + 30, FALLBACK_MINS = 9 * 60 + 30, FUEL_DAILY_MINS = 9 * 60, LATE_MINS = 19 * 60 + 45;
+/* load from 07:30 once the morning stock list is in; from 08:10 use whatever is latest, so the 08:15 summary always goes.
+   The checks window is three open days (Monday to Wednesday), deadline 17:00 on the third, when the report goes. */
+const START_MINS = 7 * 60 + 30, FALLBACK_MINS = 8 * 60 + 10, SUMMARY_MINS = 8 * 60 + 15, DEADLINE_MINS = 17 * 60, WINDOW_DAYS = 3, FUEL_DAILY_MINS = 9 * 60, LATE_MINS = 19 * 60 + 45;
 const DOW = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAYNAMES = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday' };
@@ -79,6 +89,10 @@ function nextCycles(cfg, fromDate, count, hol) {
   return out;
 }
 
+function windowFor(start, hol) { const out = []; let d = start; for (let i = 0; i < 10 && out.length < WINDOW_DAYS; i++, d = R.addDays(d, 1)) if (isOpen(d, hol)) out.push(d); return out; }
+function deadlineText(cycle) { return cycle && cycle.deadline ? niceDate(cycle.deadline) + ' at 5pm' : ''; }
+function deadlineDay(cycle) { return cycle && cycle.deadline ? DAYNAMES[dowOf(cycle.deadline)] : ''; }
+
 /* ---- who is in ---- */
 function offReason(person, date, absences) {
   const dow = dowOf(date), ab = R.absentOn(absences || {}, date)[person.id];
@@ -87,12 +101,23 @@ function offReason(person, date, absences) {
   if (R.arr(person.never).indexOf(dow) >= 0) return 'off';
   return '';
 }
+/* the last day in the window this person is in: their final day to finish (Wednesday, or Tuesday if they are off Wednesday) */
+function finalDayFor(person, cycle, absences, hol) { const w = (cycle && cycle.window) || []; for (let i = w.length - 1; i >= 0; i--) if (isOpen(w[i], hol) && !offReason(person, w[i], absences)) return w[i]; return null; }
+/* what the 08:30 reminder says about the deadline, for forecourt-mail.js */
+function reminderNote(person, date, cycle, absences, hol) {
+  if (!cycle || !cycle.deadline) return null;
+  const dl = deadlineText(cycle), fin = person ? finalDayFor(person, cycle, absences, hol) : cycle.deadline;
+  if (date > cycle.deadline) return { final: false, overdue: true, line: 'The deadline was ' + dl + '. Please finish these today.' };
+  if (fin === date) return { final: true, line: date === cycle.deadline ? 'Today is your FINAL DAY to complete your forecourt checks. The deadline is 5pm today.' : 'Today is your FINAL DAY to complete your forecourt checks: you are off ' + (fin === cycle.deadline ? '' : 'on ' + niceDate(R.addDays(date, 1)) + ' and ') + 'the deadline is ' + dl + '.' };
+  return { final: false, line: 'Deadline: ' + dl + '.' };
+}
 function firstInDay(person, from, absences, hol) { let d = from; for (let i = 0; i < 14; i++, d = R.addDays(d, 1)) if (isOpen(d, hol) && !offReason(person, d, absences)) return d; return from; }
 function pickExecs(team, absences, start, hol) {
-  /* active team with an email, unless away every open day of the first week */
+  /* active team, unless they are off (day off or booked absence) every day of the three day window */
+  const w = windowFor(start, hol);
   return Object.keys(team || {}).map(id => Object.assign({ id }, team[id])).filter(t => t && t.active !== false && t.name)
     .sort((a, b) => (a.order || 0) - (b.order || 0) || a.id.localeCompare(b.id))
-    .filter(t => { for (let i = 0; i < 6; i++) { const d = R.addDays(start, i); if (isOpen(d, hol) && !R.absentOn(absences || {}, d)[t.id]) return true; } return false; });
+    .filter(t => w.some(d => !offReason(t, d, absences)));
 }
 const execKey = name => String(name).replace(/\s/g, '_');
 const initials = p => String(p.fullName || p.name).split(' ').map(x => x[0] || '').join('').toUpperCase().slice(0, 2);
@@ -157,17 +182,34 @@ function carTable(rows, right) {
 
 /* allocation: wording from Forecourt.html's "Share with Sales Executives" email
    (buildExecShareMessage), with their own cars listed */
-function allocationEmail(person, rows, cycle, late) {
-  const subject = 'Forecourt checks to complete: ' + plural(rows.length, 'car') + ' for you';
+function allocationEmail(person, rows, cycle, late, finalToday) {
+  const subject = (finalToday ? 'FINAL DAY: ' : '') + 'Forecourt checks to complete: ' + plural(rows.length, 'car') + ' for you';
+  const dl = cycle.deadline ? (finalToday ? 'Today is your FINAL DAY to complete them: the deadline is ' + deadlineText(cycle) + '.' : 'Deadline: ' + deadlineText(cycle) + '.') : '';
   const intro = "It's that time again! Please complete all forecourt checks as a priority using the link below.";
   const how = 'Open the link, tap your name, and complete all of your allocated cars.';
   const lines = ['Morning ' + person.name + ',', '', intro, '', (late ? 'This fortnight\u2019s check started on ' + niceDate(cycle.start) + ' while you were off. ' : '') + 'You have ' + plural(rows.length, 'car') + ' this fortnight:', '',
-    ...rows.map(r => '  * ' + r.reg + (r.model ? ' (' + [r.model, r.colour].filter(Boolean).join(', ') + ')' : '')), '', how,
+    ...rows.map(r => '  * ' + r.reg + (r.model ? ' (' + [r.model, r.colour].filter(Boolean).join(', ') + ')' : '')), '', ...(dl ? [dl, ''] : []), how,
     'If you cannot get to a car, open it on the board and tap "Car is inaccessible".', '', BOARD, '', 'Hedin BMW Ruxley forecourt'];
   const html = shell('&#128663; ' + esc(subject), P('Morning ' + esc(person.name) + ',') + P(esc(intro)) +
     P((late ? 'This fortnight&rsquo;s check started on ' + esc(niceDate(cycle.start)) + ' while you were off. ' : '') + 'You have <b>' + plural(rows.length, 'car') + '</b> this fortnight:') +
-    carTable(rows) + P(esc(how)) + '<p style="margin:0 0 14px;font-size:13px;color:#5f6e7d">If you cannot get to a car, open it on the board and tap &ldquo;Car is inaccessible&rdquo;. You will get a reminder each morning at 08:30 until your cars are done.</p>', 'Open the forecourt board', BOARD);
+    carTable(rows) + (dl ? '<p style="margin:0 0 12px;padding:10px 12px;border-radius:10px;font-weight:800;' + (finalToday ? 'background:#fff1f1;border:1.5px solid #efb0b0;color:#c54242' : 'background:#e8f2fb;border:1px solid #cfe0f0;color:#1f4f82') + '">&#9200; ' + esc(dl) + '</p>' : '') + P(esc(how)) + '<p style="margin:0 0 14px;font-size:13px;color:#5f6e7d">If you cannot get to a car, open it on the board and tap &ldquo;Car is inaccessible&rdquo;. You will get a reminder each morning at 08:30 until your cars are done.</p>', 'Open the forecourt board', BOARD);
   return { subject, text: lines.join('\n'), html };
+}
+
+/* 08:15 Monday: who has which cars, to Will and Elvis */
+function summaryEmail(cycle, execRows, offInfo, stockNote) {
+  const total = execRows.reduce((a, e) => a + e.rows.length, 0);
+  const subject = 'Forecourt check allocated: ' + plural(total, 'car') + ' across ' + execRows.length + ' execs, deadline ' + deadlineDay(cycle) + ' 5pm';
+  const L = ['Morning ' + REPORT_HI + ',', '', 'This fortnight\u2019s forecourt check is loaded and shared out. Each exec has their own email with their cars.', '', 'Deadline: ' + deadlineText(cycle) + '. The full report comes to you both then, done or not.', ''];
+  if (stockNote) L.push(stockNote, '');
+  execRows.forEach(e => { L.push(e.name + ': ' + plural(e.rows.length, 'car') + (offInfo[e.name] ? ' (' + offInfo[e.name] + ')' : '')); e.rows.forEach(r => L.push('  * ' + r.reg + (r.model ? ' ' + r.model : ''))); L.push(''); });
+  L.push('Board: ' + BOARD, '', 'Hedin BMW Ruxley forecourt');
+  let h = P('Morning ' + REPORT_HI + ',') + P('This fortnight&rsquo;s forecourt check is loaded and shared out. Each exec has their own email with their cars.') +
+    '<p style="margin:0 0 12px;padding:10px 12px;border-radius:10px;font-weight:800;background:#e8f2fb;border:1px solid #cfe0f0;color:#1f4f82">&#9200; Deadline: ' + esc(deadlineText(cycle)) + '. The full report comes to you both then, done or not.</p>' +
+    (stockNote ? '<p style="margin:0 0 12px;padding:10px 12px;background:#fff8ec;border:1px solid #f2b65c;border-radius:10px;color:#9a5a00;font-weight:700">' + esc(stockNote) + '</p>' : '') +
+    '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:0 0 12px">' + execRows.map(e => '<tr><td style="' + TD + 'font-weight:800">' + esc(e.name) + (offInfo[e.name] ? '<div style="font-weight:400;font-size:11px;color:#9a5a00">' + esc(offInfo[e.name]) + '</div>' : '') + '</td><td style="' + TD + 'text-align:right;font-weight:800">' + e.rows.length + '</td></tr>').join('') + '<tr><td style="padding:8px 6px;font-weight:800">Total</td><td style="padding:8px 6px;text-align:right;font-weight:800">' + total + '</td></tr></table>';
+  execRows.forEach(e => { h += '<h3 style="font-size:15px;margin:16px 0 4px">' + esc(e.name) + ' <span style="font-weight:400;color:#6b7a8c">' + plural(e.rows.length, 'car') + '</span></h3>' + carTable(e.rows); });
+  return { subject, text: L.join('\n'), html: shell('&#128203; ' + esc(subject), h, 'Open the forecourt board', BOARD) };
 }
 
 /* Will's report: the board's "Copy issues" snapshot (copyIssuesSnapshot) as the
@@ -180,19 +222,22 @@ function reportEmail(cur, stock, cycle, early, nowMs) {
   const fuel = rows.filter(r => r.fuel || r.charge);
   const times = done.map(r => r.checkedAt).filter(Boolean).sort();
   const startMs = cycle.createdAt || 0, lastMs = Math.max(times[times.length - 1] || 0, ...inacc.map(r => (r.inacc && r.inacc.at) || 0));
-  const subject = early ? 'Forecourt check report (sent early): ' + done.length + ' of ' + rows.length + ' checked' : 'Forecourt check complete: ' + niceDate(cycle.start, false) + ', ' + plural(rows.length, 'car');
+  const subject = early ? 'Forecourt check report (sent early): ' + done.length + ' of ' + rows.length + ' checked' : open.length ? 'Forecourt check report: ' + plural(open.length, 'car') + ' not done by the ' + (deadlineDay(cycle) || 'deadline') + ' 5pm deadline' : 'Forecourt check complete: ' + niceDate(cycle.start, false) + ', ' + plural(rows.length, 'car');
+  const stLbl = r => r.state === 'in-progress' ? 'in progress' : 'not started';
   const byExec = {}; (cycle.execs || []).forEach(nm => { byExec[nm] = { n: 0, done: 0, inacc: 0, issues: 0, first: 0, last: 0 }; });
   rows.forEach(r => { const o = r.owner || 'Not allocated'; const b = byExec[o] = byExec[o] || { n: 0, done: 0, inacc: 0, issues: 0, first: 0, last: 0 }; b.n++; if (r.status === 'done') { b.done++; if (r.fails.length) b.issues++; if (r.checkedAt) { b.first = b.first ? Math.min(b.first, r.checkedAt) : r.checkedAt; b.last = Math.max(b.last, r.checkedAt); } } if (r.state === 'inaccessible') b.inacc++; });
   /* text: the Copy issues format */
   const L = ['Forecourt Check, ' + niceDate(cycle.start) + (cycle.auto === false ? '' : ' (fortnightly)'), 'Hedin Ruxley', ''];
+  L.splice(0, 0, 'Hi ' + REPORT_HI + ',', '');
   if (early) L.push('Sent early by a manager: ' + plural(open.length, 'car') + ' not yet checked.', '');
+  else if (cycle.deadline) L.push(open.length ? 'Deadline ' + deadlineText(cycle) + ': ' + done.length + ' of ' + rows.length + ' checked, ' + plural(open.length, 'car') + ' NOT DONE.' : 'Every car was finished by the ' + deadlineText(cycle) + ' deadline.', '');
+  if (open.length) { L.push('\u23f3 ' + plural(open.length, 'car') + ' not done:'); open.forEach(r => L.push('  ' + r.reg + (r.model ? ' (' + r.model + ')' : '') + ': ' + (r.owner || 'not allocated') + ', ' + stLbl(r))); L.push(''); }
   if (issues.length) { L.push('\u26a0\ufe0f ' + plural(issues.length, 'car') + ' with issues:', ''); issues.forEach(r => { L.push([r.reg, r.checkedBy, hm(r.checkedAt)].filter(Boolean).join(' \u00b7 ')); r.fails.forEach(f => L.push('  \u2717 ' + f)); if (r.notes) L.push('  Note: ' + r.notes); L.push(''); }); }
   else L.push('\u2705 No issues found', '');
   if (clear.length) L.push('\u2705 ' + plural(clear.length, 'car') + ' all clear');
   if (sold.length) L.push('\ud83c\udf89 ' + plural(sold.length, 'car') + ' sold');
   if (inacc.length) { L.push('', '\ud83d\udeab ' + plural(inacc.length, 'car') + ' inaccessible:'); inacc.forEach(r => L.push('  ' + r.reg + ': ' + ((r.inacc && r.inacc.note) || '') + ' (' + [(r.inacc && r.inacc.by), when(r.inacc && r.inacc.at)].filter(Boolean).join(', ') + ')')); }
   if (gone.length) L.push('', '\ud83d\ude97 ' + plural(gone.length, 'car') + ' left stock before being checked: ' + gone.map(r => r.reg).join(', '));
-  if (open.length) L.push('', '\u23f3 ' + plural(open.length, 'car') + ' not yet checked: ' + open.map(r => r.reg + (r.owner ? ' (' + r.owner + ')' : '')).join(', '));
   if (fuel.length) L.push('', '\u26fd ' + plural(fuel.length, 'car') + ' need fuel or charging: ' + fuel.map(r => r.reg).join(', '));
   L.push('', 'Timings: started ' + when(startMs) + (lastMs ? ', last check ' + when(lastMs) : '') + (startMs && lastMs > startMs ? ', ' + dur(lastMs - startMs) + ' in all' : '') + '.', '', 'Who checked what:');
   Object.keys(byExec).forEach(nm => { const b = byExec[nm]; L.push('  ' + nm + ': ' + b.done + ' of ' + b.n + ' checked' + (b.inacc ? ', ' + b.inacc + ' inaccessible' : '') + (b.issues ? ', ' + b.issues + ' with issues' : '') + (b.last ? ', last ' + when(b.last) : '')); });
@@ -201,14 +246,14 @@ function reportEmail(cur, stock, cycle, early, nowMs) {
   const kpi = (n, l, c) => '<td style="width:25%;padding:10px 4px;text-align:center;border:1px solid #d9e3ee;border-radius:10px"><div style="font-size:26px;font-weight:800;color:' + c + '">' + n + '</div><div style="font-size:11px;color:#6b7a8c">' + l + '</div></td>';
   const badge = r => ({ issues: '<span style="color:#c54242;font-weight:800">' + plural(r.fails.length, 'issue') + '</span>', clear: '<span style="color:#2f8f57;font-weight:800">All clear</span>', sold: '<span style="color:#2f8f57;font-weight:800">Sold</span>', inaccessible: '<span style="color:#9a5a00;font-weight:800">Inaccessible</span>', gone: '<span style="color:#5f6e7d;font-weight:800">Left stock</span>', 'in-progress': '<span style="color:#2d6aa8;font-weight:800">In progress</span>', pending: '<span style="color:#5f6e7d;font-weight:800">Not checked</span>' }[r.state]);
   const H2 = t => '<h3 style="font-size:15px;margin:18px 0 6px">' + t + '</h3>';
-  let h = (early ? '<p style="margin:0 0 12px;padding:10px 12px;background:#fff8ec;border:1px solid #f2b65c;border-radius:10px;color:#9a5a00;font-weight:700">Sent early by a manager: ' + plural(open.length, 'car') + ' not yet checked.</p>' : P('Hi Will,') + P('Every car on this fortnight&rsquo;s forecourt check is done. Here is the full report.')) +
+  let h = (early ? '<p style="margin:0 0 12px;padding:10px 12px;background:#fff8ec;border:1px solid #f2b65c;border-radius:10px;color:#9a5a00;font-weight:700">Sent early by a manager: ' + plural(open.length, 'car') + ' not yet checked.</p>' : P('Hi ' + REPORT_HI + ',') + P(cycle.deadline ? (open.length ? 'The ' + esc(deadlineText(cycle)) + ' deadline has passed: <b>' + done.length + ' of ' + rows.length + '</b> checked. Here is the full report.' : 'Every car on this fortnight&rsquo;s forecourt check was done by the ' + esc(deadlineText(cycle)) + ' deadline. Here is the full report.') : 'Here is the forecourt check report.')) +
+    (open.length ? '<div style="margin:0 0 12px;padding:10px 12px;background:#fff1f1;border:1.5px solid #efb0b0;border-radius:10px"><div style="color:#c54242;font-weight:800;margin-bottom:4px">&#9203; ' + plural(open.length, 'car') + ' not done</div><table style="width:100%;border-collapse:collapse;font-size:13px">' + open.map(r => '<tr><td style="padding:5px 4px;font-weight:800;white-space:nowrap">' + esc(r.reg) + '</td><td style="padding:5px 4px;color:#5f6e7d">' + esc(r.model) + '</td><td style="padding:5px 4px;font-weight:800;text-align:right">' + esc(r.owner || 'Not allocated') + '<div style="font-weight:400;font-size:11px;color:#6b7a8c">' + stLbl(r) + '</div></td></tr>').join('') + '</table></div>' : '') +
     '<table style="width:100%;border-collapse:separate;border-spacing:6px 0;margin:0 0 8px"><tr>' + kpi(done.length, 'Checked', '#1f4f82') + kpi(issues.length, 'With issues', issues.length ? '#c54242' : '#2f8f57') + kpi(inacc.length, 'Inaccessible', '#9a5a00') + kpi(fuel.length, 'Need fuel', '#9a5a00') + '</tr></table>' +
     '<p style="margin:8px 0 0;font-size:13px;color:#5f6e7d">Started ' + esc(when(startMs)) + (lastMs ? ' &middot; last check ' + esc(when(lastMs)) : '') + (startMs && lastMs > startMs ? ' &middot; ' + esc(dur(lastMs - startMs)) + ' in all' : '') + '</p>';
   if (issues.length) { h += H2('&#9888;&#65039; ' + plural(issues.length, 'car') + ' with issues'); issues.forEach(r => { h += '<div style="border:1px solid #efb0b0;background:#fff8f8;border-radius:10px;padding:10px 12px;margin:0 0 8px"><b style="font-family:Courier New,monospace">' + esc(r.reg) + '</b> <span style="color:#5f6e7d;font-size:13px">' + esc(r.model) + '</span><div style="font-size:12px;color:#6b7a8c;margin:2px 0 6px">Checked by ' + esc(r.checkedBy || r.owner) + ', ' + esc(when(r.checkedAt)) + '</div>' + r.fails.map(f => '<div style="font-size:13px;color:#c54242">&#10007; ' + esc(f) + '</div>').join('') + (r.notes ? '<div style="margin-top:6px;padding:6px 8px;background:#fffaf0;border-left:3px solid #F0BA6C;font-size:13px;color:#6a5a36">&#128221; ' + esc(r.notes) + '</div>' : '') + '</div>'; }); }
   if (inacc.length) { h += H2('&#128683; ' + plural(inacc.length, 'car') + ' inaccessible'); h += carTable(inacc, r => esc((r.inacc && r.inacc.note) || '') + '<br><span style="font-size:11px">' + esc([(r.inacc && r.inacc.by), when(r.inacc && r.inacc.at)].filter(Boolean).join(', ')) + '</span>'); }
   if (gone.length) { h += H2('&#128663; ' + plural(gone.length, 'car') + ' left stock before being checked'); h += carTable(gone, r => esc(r.owner)); }
-  if (open.length) { h += H2('&#9203; ' + plural(open.length, 'car') + ' not yet checked'); h += carTable(open, r => esc(r.owner) + (r.state === 'in-progress' ? ' (in progress)' : '')); }
-  if (fuel.length) { h += H2('&#9981; ' + plural(fuel.length, 'car') + ' need fuel or charging'); h += carTable(fuel, r => (r.charge && !r.fuel ? 'Needs charging' : r.charge ? 'Fuel and charge' : 'Needs fuel') + (r.tick ? ', done' : '')) + '<p style="margin:-8px 0 8px;font-size:13px"><a href="' + FUEL + '">The fuel list</a> has been sent to the team.</p>'; }
+  if (fuel.length) { h += H2('&#9981; ' + plural(fuel.length, 'car') + ' need fuel or charging'); h += carTable(fuel, r => (r.charge && !r.fuel ? 'Needs charging' : r.charge ? 'Fuel and charge' : 'Needs fuel') + (r.tick ? ', done' : '')) + '<p style="margin:-8px 0 8px;font-size:13px"><a href="' + FUEL + '">The fuel list</a> goes to the team with this report.</p>'; }
   h += H2('Who checked what') + '<table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="color:#6b7a8c;text-align:left"><th style="' + TD + '">Exec</th><th style="' + TD + '">Checked</th><th style="' + TD + '">Issues</th><th style="' + TD + '">Inaccessible</th><th style="' + TD + '">Last check</th></tr>' +
     Object.keys(byExec).map(nm => { const b = byExec[nm]; return '<tr><td style="' + TD + 'font-weight:800">' + esc(nm) + '</td><td style="' + TD + '">' + b.done + ' of ' + b.n + '</td><td style="' + TD + '">' + (b.issues || '') + '</td><td style="' + TD + '">' + (b.inacc || '') + '</td><td style="' + TD + '">' + esc(when(b.last)) + '</td></tr>'; }).join('') + '</table>';
   h += H2('Every car') + '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:#6b7a8c;text-align:left"><th style="' + TD + '">Reg</th><th style="' + TD + '">Car</th><th style="' + TD + '">Result</th><th style="' + TD + '">Checked by</th><th style="' + TD + '">When</th></tr>' +
@@ -227,7 +272,7 @@ function reportEmail(cur, stock, cycle, early, nowMs) {
 function fuelEmail(list, cycle, daily) {
   const todo = list.filter(r => !r.tick), kind = r => r.charge && !r.fuel ? 'Needs charging' : r.charge ? 'Fuel and charge' : 'Needs fuel';
   const subject = (daily ? 'Still to fuel: ' : 'Fuel run: ') + plural(todo.length, 'car') + (daily ? ' on the forecourt' : ' need fuel');
-  const intro = daily ? 'These cars are still showing low on fuel or charge from the forecourt check.' : 'The forecourt check is done. These cars came up low on fuel or charge.';
+  const intro = daily ? 'These cars are still showing low on fuel or charge from the forecourt check.' : 'The forecourt check has closed. These cars came up low on fuel or charge.';
   const ask = 'When you fuel or charge one, tick it off on the fuel list so nobody else goes out to it.';
   const doneN = list.length - todo.length;
   const text = ['Hi all,', '', intro, '', ...todo.map(r => '  * ' + r.reg + (r.model ? ' (' + r.model + ')' : '') + ': ' + kind(r)), '', doneN ? doneN + ' already ticked off.' : '', ask, '', 'Fuel list: ' + FUEL, '', 'Hedin BMW Ruxley forecourt'].join('\n');
@@ -266,7 +311,7 @@ async function run(o) {
     if (!DRY) await db.ref(p).set({ ts: nowMs, skipped: why });
   };
   const people = {}; Object.keys(team).forEach(id => { const t = team[id]; if (t && t.name) people[t.name] = Object.assign({ id }, t); });
-  const everyone = Object.values(team).filter(t => t && t.active !== false && t.email).map(t => t.email).concat(Object.values(mgrs).map(m => m && m.email).filter(Boolean));
+  const everyone = Object.values(team).filter(t => t && t.active !== false && t.email).map(t => t.email).concat(Object.values(mgrs).map(m => m && m.email).filter(Boolean)).concat(REPORT_TO).filter((v, i, a) => a.indexOf(v) === i);
 
   let cur = (await db.ref(FC + '/current').get()).val() || {};
   const cycles = (await db.ref(FC + '/auto/cycles').get()).val() || {};
@@ -276,7 +321,7 @@ async function run(o) {
   if (sched && startDay === n.date && !cycles[sched] && isOpen(n.date, hol)) {
     if (!SB) for (const ek of Object.keys(cur.execs || {})) if (n.mins < 11 * 60) await markReminder(ek, 'new cycle today');
     const ready = stockDate === n.date || n.mins >= FALLBACK_MINS;
-    if (n.mins < START_MINS || !ready) log(tag + 'cycle ' + sched + ' due today, waiting for ' + (n.mins < START_MINS ? '07:30' : 'today\u2019s stock list (or 09:30)'));
+    if (n.mins < START_MINS || !ready) log(tag + 'cycle ' + sched + ' due today, waiting for ' + (n.mins < START_MINS ? '07:30' : 'today\u2019s stock list (or 08:10)'));
     else if (n.mins >= LATE_MINS) log(tag + 'too late to start today');
     else {
       const cars = Object.keys(stock).filter(k => stock[k].source === 'forecourt' && (!stock[k].status || stock[k].status === 'in_stock'));
@@ -289,7 +334,8 @@ async function run(o) {
       const newCur = { vehicles: {}, answers: {}, execs: {}, meta: { stockLoadedOn: n.date, cycle: sched, auto: true } };
       cars.forEach((k, i) => { newCur.vehicles[k] = { key: k, reg: dispReg(k), status: 'pending', order: i + 1, src: 'stock' }; newCur.answers[k] = { done: false, notes: '', checkedBy: '', sold: false }; });
       execs.forEach(e => { newCur.execs[execKey(e.name)] = { name: e.name, initials: initials(e), cars: alloc[e.name] || [] }; });
-      const cycle = { id: sched, start: n.date, status: 'open', createdAt: nowMs, cars, alloc, stockAt: o.stockGeneratedAt || '', execs: execs.map(e => e.name) };
+      const win = windowFor(n.date, hol);
+      const cycle = { id: sched, start: n.date, window: win, deadline: win[win.length - 1], status: 'open', createdAt: nowMs, cars, alloc, stockAt: o.stockGeneratedAt || '', execs: execs.map(e => e.name) };
       if (cur.vehicles) await put(FC + '/auto/history/' + (cur.meta && cur.meta.cycle ? cur.meta.cycle : 'manual_' + ((cur.meta && cur.meta.stockLoadedOn) || n.date)), Object.assign({ archivedAt: nowMs }, cur));
       await put(FC + '/current', newCur);
       await put(FC + '/auto/cycles/' + sched, cycle);
@@ -300,9 +346,18 @@ async function run(o) {
         const mine = (alloc[e.name] || []).map(k => rowsBy[k]); if (!mine.length) continue;
         const inDay = firstInDay(e, n.date, absences, hol), late = inDay !== n.date;
         if (!e.email) { log(tag + e.name + ' has no email on the lockup Team list'); continue; }
-        await queue('fc_' + sched + '_alloc_' + e.id, allocationEmail(e, mine, cycle, late), [e.email], late ? ukMs(inDay, 8 * 60) : 0);
+        await queue('fc_' + sched + '_alloc_' + e.id, allocationEmail(e, mine, cycle, late, finalDayFor(e, cycle, absences, hol) === inDay), [e.email], late ? ukMs(inDay, 8 * 60) : 0);
         if (!SB && !late) await markReminder(execKey(e.name), 'allocation email today');
       }
+      /* 08:15: who has which cars, to Will and Elvis */
+      const offInfo = {};
+      execs.forEach(e => { const bits = [], inDay = firstInDay(e, n.date, absences, hol), fin = finalDayFor(e, cycle, absences, hol);
+        if (inDay !== n.date) bits.push(offReason(e, n.date, absences).replace('on your day off', 'day off') + ' today, email ' + DAYNAMES[dowOf(inDay)] + ' 08:00');
+        if (fin && fin !== cycle.deadline) bits.push('off ' + DAYNAMES[dowOf(cycle.deadline)] + ', final day ' + DAYNAMES[dowOf(fin)]);
+        if (bits.length) offInfo[e.name] = bits.join('; '); });
+      const stockNote = stockDate === n.date ? '' : 'Today\u2019s stock list had not come in by 08:10, so this uses the latest one' + (o.stockGeneratedAt ? ', from ' + when(Date.parse(o.stockGeneratedAt)) : '') + '. Cars that arrived since will not be on it; a manager can add them on the board.';
+      if (stockNote) cycle.stockNote = stockNote;
+      await queue('fc_' + sched + '_summary', summaryEmail(cycle, execs.map(e => ({ name: e.name, rows: (alloc[e.name] || []).map(k => rowsBy[k]) })), offInfo, stockNote), REPORT_TO, ukMs(n.date, SUMMARY_MINS));
       cycles[sched] = cycle; cur = newCur;
     }
   }
@@ -320,30 +375,37 @@ async function run(o) {
     const rows = carRows(cur, stock).filter(r => (cyc.cars || []).indexOf(r.key) >= 0);
     const missing = (cyc.cars || []).filter(k => !(cur.vehicles || {})[k]).length;
     const allDone = rows.length && rows.every(closed);
-    if (cyc.status === 'open' && allDone && n.mins < LATE_MINS) {
-      log(tag + 'cycle ' + id + ' complete' + (missing ? ' (' + missing + ' removed from the board)' : ''));
-      await queue('fc_' + id + '_report', reportEmail(cur, stock, cyc, false, nowMs), [WILL]);
-      const fl = fuelList(cur, stock);
-      if (fl.filter(r => !r.tick).length) await queue('fc_' + id + '_fuel_' + n.date, fuelEmail(fl, cyc, false), everyone);
+    if (cyc.status === 'open' && allDone) {
+      /* finished early: the report still waits for the deadline (Dan, 19 Oct) */
+      log(tag + 'cycle ' + id + ' complete' + (missing ? ' (' + missing + ' removed from the board)' : '') + ', report waits for ' + deadlineText(cyc));
       await put(FC + '/auto/cycles/' + id + '/status', 'complete'); await put(FC + '/auto/cycles/' + id + '/completedAt', nowMs);
       cyc.status = 'complete';
     } else if (cyc.status === 'open') log(tag + 'cycle ' + id + ': ' + rows.filter(closed).length + ' of ' + rows.length + ' closed');
-    /* daily fuel list while any are outstanding, for 14 days from the start */
-    if (cfg.fuelDaily !== false && n.mins >= FUEL_DAILY_MINS && n.mins < LATE_MINS && isOpen(n.date, hol) && daysBetween(cyc.start, n.date) < (+cfg.everyDays || 14) && n.date !== cyc.start) {
+    /* 17:00 on the deadline day (Wednesday, or later if the window moved): the report to Will and Elvis, done or not, and the fuel list */
+    const inFortnight = daysBetween(cyc.start, n.date) < (+cfg.everyDays || 14);
+    if (cyc.deadline && !cyc.reportAt && inFortnight && isOpen(n.date, hol) && n.mins < LATE_MINS && (n.date > cyc.deadline || (n.date === cyc.deadline && n.mins >= DEADLINE_MINS))) {
+      log(tag + 'deadline ' + deadlineText(cyc) + ': report to ' + REPORT_TO.join(', '));
+      await queue('fc_' + id + '_report', reportEmail(cur, stock, cyc, false, nowMs), REPORT_TO);
+      const fl = fuelList(cur, stock);
+      if (fl.filter(r => !r.tick).length) await queue('fc_' + id + '_fuel_' + n.date, fuelEmail(fl, cyc, false), everyone);
+      await put(FC + '/auto/cycles/' + id + '/reportAt', nowMs); cyc.reportAt = nowMs;
+    }
+    /* then a 09:00 fuel list on open days while any are outstanding, for the rest of the fortnight */
+    if (cfg.fuelDaily !== false && n.mins >= FUEL_DAILY_MINS && n.mins < LATE_MINS && isOpen(n.date, hol) && inFortnight && cyc.deadline && n.date > cyc.deadline) {
       const fl = fuelList(cur, stock).filter(r => !r.tick);
       if (fl.length) await queue('fc_' + id + '_fuel_' + n.date, fuelEmail(fuelList(cur, stock), cyc, true), everyone);
     }
   }
 
-  /* 3. "Send report to Will now" from the board */
+  /* 3. "Send report to Will and Elvis now" from the board */
   const req = (await db.ref(FC + '/auto/requests/report').get()).val();
   if (req && req.at && !req.handled && n.mins < LATE_MINS) {
     const c = cyc || { id: 'manual', start: (cur.meta && cur.meta.stockLoadedOn) || n.date, createdAt: 0, auto: false };
     const rows = carRows(cur, stock), early = !rows.every(closed);
-    await queue('fc_' + c.id + '_report_req_' + req.at, reportEmail(cur, stock, c, early, nowMs), [WILL]);
+    await queue('fc_' + c.id + '_report_req_' + req.at, reportEmail(cur, stock, c, early, nowMs), REPORT_TO);
     await put(FC + '/auto/requests/report/handled', nowMs);
   }
   return out;
 }
 
-module.exports = { run, allocate, pickExecs, scheduledOn, startDayFor, nextCycles, offReason, firstInDay, carRows, fuelList, allocationEmail, reportEmail, fuelEmail, CHECK_IDS, CHECK_LABELS, ukMs };
+module.exports = { run, windowFor, finalDayFor, reminderNote, summaryEmail, REPORT_TO, allocate, pickExecs, scheduledOn, startDayFor, nextCycles, offReason, firstInDay, carRows, fuelList, allocationEmail, reportEmail, fuelEmail, CHECK_IDS, CHECK_LABELS, ukMs };

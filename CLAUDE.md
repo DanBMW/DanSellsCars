@@ -1714,6 +1714,20 @@ change one); server-side keys live in Cloudflare worker secrets. See
   EV-PHEV" answered NO; ticks on `forecourt-fuel.html` (staff, noindex) at
   `<root>/current/fuel/<key> {by, at}`. Tests: `scripts/test-forecourt-auto.js`
   (board-check).
+  **Changes 19 October (Dan):** the window is three open days, Monday to
+  Wednesday, deadline 17:00 on the third (a bank holiday moves the whole
+  window). Loading starts 07:30 once the stock list is in, and from 08:10 it
+  uses the latest list so the 08:15 allocation summary (who has which cars,
+  counts, deadline, any stock note) always goes to Will Potter and Elvis
+  Urbonas (elvinas.urbonas@, used car progressor; `REPORT_TO` in the script).
+  The report goes to both at 17:00 on the deadline day whether or not every
+  car is done, listing cars not done and whose; finishing early does not send
+  it early, only the manager button ("Send report to Will and Elvis now")
+  does. The fuel list goes with it, then 09:00 daily after the deadline while
+  any are unticked. Allocation emails and the 08:30 reminder carry the
+  deadline; the reminder says FINAL DAY on each exec's last working day of the
+  window (`reminderNote`, so someone off Wednesday or on a booked absence gets
+  it the day before). People off all three days are left out.
 - `newcar.html` — upload page for the new car manager's daily 76 Plate
   leaderboard screenshot. PIN-gated (the `newcar` gate in `staff-gate.js`),
   writes to `newcar/current`. Like the

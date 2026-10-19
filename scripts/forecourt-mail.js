@@ -56,7 +56,11 @@ async function run(opts) {
     const vehicles = cur.vehicles || {}, execs = cur.execs || {};
     const mail = (await db.ref('lockup/mail/' + n.date + '/forecourt').get()).val() || {};
     const byName = {};
-    Object.values(cfg.team || {}).forEach(p => { if (p && p.email) { byName[norm(p.name)] = p; if (p.fullName) byName[norm(p.fullName)] = p; } });
+    Object.entries(cfg.team || {}).forEach(([id, p]) => { if (p && p.email) { p = Object.assign({ id }, p); byName[norm(p.name)] = p; if (p.fullName) byName[norm(p.fullName)] = p; } });
+    /* an automatic fortnightly cycle (scripts/forecourt-auto.js) adds its deadline: FINAL DAY on each exec's last working day of the window */
+    let autoCycle = null, absences = {}; const hol = Object.assign({}, bank, cfg.holidays || {});
+    if (cur.meta && cur.meta.auto && cur.meta.cycle) { autoCycle = (await db.ref('forecourt/auto/cycles/' + cur.meta.cycle).get()).val(); absences = (await db.ref('lockup/absences').get()).val() || {}; }
+    const AUTO = autoCycle ? require('./forecourt-auto.js') : null;
     const mgrEmails = TEST ? [TEST_MGR] : Object.values(cfg.managers || {}).map(m => m.email).filter(Boolean);
     const stock = await stockMap();
     const tx = DRY ? null : require('nodemailer').createTransport({ service: 'gmail', auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD } });
@@ -75,15 +79,16 @@ async function run(opts) {
       if (mail[ek]) { console.log(tag + name + ': already sent today'); continue; }
       const rows = open.map(v => { const s = stock[regKey(v.key || v.reg)] || {}; return { reg: v.reg || v.key, desc: [s.model, s.colour].filter(Boolean).join(', '), st: v.status === 'in-progress' ? 'In progress' : 'Pending' }; });
       const to = TEST ? [TEST_EXEC] : [person.email];
-      const subject = (TEST ? '[TEST] ' : '') + 'Forecourt check: ' + open.length + ' car' + (open.length > 1 ? 's' : '') + ' for you today';
+      const note = AUTO ? AUTO.reminderNote(person, n.date, autoCycle, absences, hol) : null;
+      const subject = (TEST ? '[TEST] ' : '') + (note && note.final ? 'FINAL DAY: forecourt checks, ' + open.length + ' car' + (open.length > 1 ? 's' : '') + ' to finish' + (n.date === autoCycle.deadline ? ' by 5pm today' : ' today, you are off ' + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date(autoCycle.deadline + 'T12:00:00Z').getUTCDay()]) : 'Forecourt check: ' + open.length + ' car' + (open.length > 1 ? 's' : '') + ' for you today');
       const text = ['Morning ' + (person.name || name) + ',', '', 'You have ' + open.length + ' car' + (open.length > 1 ? 's' : '') + ' on the forecourt board still to check:', '',
-        ...rows.map(r => '  * ' + r.reg + (r.desc ? ' (' + r.desc + ')' : '') + ': ' + r.st), '',
+        ...rows.map(r => '  * ' + r.reg + (r.desc ? ' (' + r.desc + ')' : '') + ': ' + r.st), '', ...(note ? [note.line, ''] : []),
         'If you cannot get to a car, open it on the board and tap "Car is inaccessible".', '', 'Open the board: ' + BOARD, '', 'Hedin BMW Ruxley forecourt'].join('\n');
       const html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
         '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">&#128663; ' + esc(subject) + '</div>' +
         '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px"><p style="margin:0 0 12px">Morning ' + esc(person.name || name) + ',</p>' +
         '<p style="margin:0 0 10px">You have ' + open.length + ' car' + (open.length > 1 ? 's' : '') + ' on the forecourt board still to check:</p>' +
-        '<table style="width:100%;border-collapse:collapse;margin:6px 0 16px;font-size:14px">' + rows.map(r => '<tr><td style="padding:8px 6px;border-bottom:1px solid #edf2f7;font-weight:800;white-space:nowrap">' + esc(r.reg) + '</td><td style="padding:8px 6px;border-bottom:1px solid #edf2f7;color:#5f6e7d">' + esc(r.desc) + '</td><td style="padding:8px 6px;border-bottom:1px solid #edf2f7;text-align:right;white-space:nowrap;color:' + (r.st === 'Pending' ? '#5f6e7d' : '#2d6aa8') + ';font-weight:700">' + r.st + '</td></tr>').join('') + '</table>' +
+        '<table style="width:100%;border-collapse:collapse;margin:6px 0 16px;font-size:14px">' + rows.map(r => '<tr><td style="padding:8px 6px;border-bottom:1px solid #edf2f7;font-weight:800;white-space:nowrap">' + esc(r.reg) + '</td><td style="padding:8px 6px;border-bottom:1px solid #edf2f7;color:#5f6e7d">' + esc(r.desc) + '</td><td style="padding:8px 6px;border-bottom:1px solid #edf2f7;text-align:right;white-space:nowrap;color:' + (r.st === 'Pending' ? '#5f6e7d' : '#2d6aa8') + ';font-weight:700">' + r.st + '</td></tr>').join('') + '</table>' + (note ? '<p style="margin:0 0 14px;padding:10px 12px;border-radius:10px;font-weight:800;' + (note.final || note.overdue ? 'background:#fff1f1;border:1.5px solid #efb0b0;color:#c54242;font-size:16px' : 'background:#e8f2fb;border:1px solid #cfe0f0;color:#1f4f82') + '">&#9200; ' + esc(note.line) + '</p>' : '') +
         '<p style="margin:0 0 14px;font-size:13px;color:#5f6e7d">If you cannot get to a car, open it on the board and tap &ldquo;Car is inaccessible&rdquo;.</p>' +
         '<a href="' + BOARD + '" style="display:block;text-align:center;background:#4d94d8;color:#fff;text-decoration:none;font-weight:800;padding:14px;border-radius:12px;font-size:17px">Open the forecourt board</a>' +
         '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley forecourt</p></div></div>';
