@@ -112,10 +112,12 @@ function reminderNote(person, date, cycle, absences, hol) {
   return { final: false, line: 'Deadline: ' + dl + '.' };
 }
 function firstInDay(person, from, absences, hol) { let d = from; for (let i = 0; i < 14; i++, d = R.addDays(d, 1)) if (isOpen(d, hol) && !offReason(person, d, absences)) return d; return from; }
-function pickExecs(team, absences, start, hol) {
-  /* active team, unless they are off (day off or booked absence) every day of the three day window */
-  const w = windowFor(start, hol);
-  return Object.keys(team || {}).map(id => Object.assign({ id }, team[id])).filter(t => t && t.active !== false && t.name)
+/* forecourt/auto/config/exclude: lockup team ids never given forecourt cars or reminders (Dan, 19 Oct: chloe, molly). Array or {id: true}. */
+function excludeList(cfg) { const x = cfg && cfg.exclude; if (!x) return []; return (Array.isArray(x) ? x : Object.keys(x).filter(k => x[k])).map(v => String(v).toLowerCase()); }
+function pickExecs(team, absences, start, hol, exclude) {
+  /* active team, minus the exclude list, unless they are off (day off or booked absence) every day of the three day window */
+  const w = windowFor(start, hol), ex = exclude || [];
+  return Object.keys(team || {}).map(id => Object.assign({ id }, team[id])).filter(t => t && t.active !== false && t.name && ex.indexOf(t.id.toLowerCase()) < 0)
     .sort((a, b) => (a.order || 0) - (b.order || 0) || a.id.localeCompare(b.id))
     .filter(t => w.some(d => !offReason(t, d, absences)));
 }
@@ -325,7 +327,7 @@ async function run(o) {
     else if (n.mins >= LATE_MINS) log(tag + 'too late to start today');
     else {
       const cars = Object.keys(stock).filter(k => stock[k].source === 'forecourt' && (!stock[k].status || stock[k].status === 'in_stock'));
-      const execs = pickExecs(team, absences, n.date, hol);
+      const execs = pickExecs(team, absences, n.date, hol, excludeList(cfg));
       const prevOwner = {}; /* whoever had each car on the board being archived */
       Object.values(cur.execs || {}).forEach(e => ((e && e.cars) || []).forEach(k => { prevOwner[k] = e.name; }));
       const inToday = {}; execs.forEach(e => { if (!offReason(e, n.date, absences)) inToday[e.name] = true; });
@@ -408,4 +410,4 @@ async function run(o) {
   return out;
 }
 
-module.exports = { run, windowFor, finalDayFor, reminderNote, summaryEmail, REPORT_TO, allocate, pickExecs, scheduledOn, startDayFor, nextCycles, offReason, firstInDay, carRows, fuelList, allocationEmail, reportEmail, fuelEmail, CHECK_IDS, CHECK_LABELS, ukMs };
+module.exports = { run, excludeList, windowFor, finalDayFor, reminderNote, summaryEmail, REPORT_TO, allocate, pickExecs, scheduledOn, startDayFor, nextCycles, offReason, firstInDay, carRows, fuelList, allocationEmail, reportEmail, fuelEmail, CHECK_IDS, CHECK_LABELS, ukMs };

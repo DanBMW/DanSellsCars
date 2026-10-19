@@ -1728,6 +1728,10 @@ change one); server-side keys live in Cloudflare worker secrets. See
   deadline; the reminder says FINAL DAY on each exec's last working day of the
   window (`reminderNote`, so someone off Wednesday or on a booked absence gets
   it the day before). People off all three days are left out.
+  `forecourt/auto/config/exclude` (lockup team ids, now `['chloe','molly']`,
+  Dan 19 Oct) are never allocated forecourt cars and never sent the 08:30
+  forecourt reminder (forecourt-mail.js checks it too, even for a hand-added
+  board), but stay on the lockup rota and still get the team fuel list.
 - `newcar.html` — upload page for the new car manager's daily 76 Plate
   leaderboard screenshot. PIN-gated (the `newcar` gate in `staff-gate.js`),
   writes to `newcar/current`. Like the

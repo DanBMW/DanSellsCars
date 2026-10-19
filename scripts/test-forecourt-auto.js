@@ -135,6 +135,21 @@ const quiet = () => {};
     assert(d2.forecourtTest.current); assert(!d2.forecourt.current);
     Object.values(d2.lockup.notify).forEach(q => { assert.deepStrictEqual(q.to, ['daniel.cane@hedinautomotive.co.uk']); assert(/^\[SANDBOX\]/.test(q.subject)); });
   });
+  await t('exclude list: Chloe and Molly get no cars and no reminders, but are on the fuel list', async () => {
+    const d4 = { forecourt: { auto: { config: { enabled: true, start: '2026-10-26', exclude: ['chloe', 'molly'] } } }, lockup: { notify: {}, mail: {}, config: Object.assign({ testMode: false }, lockupCfg) } };
+    const db4 = fakeDb(d4);
+    await A.run(Object.assign({}, base, { db: db4, nowMs: at('2026-10-26T07:40:00Z'), stockGeneratedAt: '2026-10-26T07:10:00Z' }));
+    const ex = d4.forecourt.current.execs; assert(!ex.Chloe && !ex.Molly); assert.strictEqual(Object.keys(ex).length, 7);
+    const c = Object.values(ex).map(e => e.cars.length); assert.strictEqual(c.reduce((a, b) => a + b), 59); assert(Math.max(...c) - Math.min(...c) <= 1);
+    assert(!d4.lockup.notify['fc_2026-10-26_alloc_chloe'] && !d4.lockup.notify['fc_2026-10-26_alloc_molly']);
+    d4.forecourt.current.execs.Chloe = { name: 'Chloe', cars: [Object.keys(d4.forecourt.current.vehicles)[0]] }; /* added by hand on the board */
+    process.env.NOW = '2026-10-27T08:35:00Z'; mailed.length = 0;
+    await require('./forecourt-mail.js').run({ app: { database: () => db4 } });
+    assert(!mailed.some(m => m.to[0] === 'chloe@example.test' || m.to[0] === 'molly@example.test'));
+    const cur = d4.forecourt.current, k = Object.keys(cur.vehicles)[5]; cur.vehicles[k].status = 'done'; Object.assign(cur.answers[k], { done: true, fuel: 'no', soldboard: 'no' });
+    await A.run(Object.assign({}, base, { db: db4, nowMs: at('2026-10-28T17:00:00Z') }));
+    const f = d4.lockup.notify['fc_2026-10-26_fuel_2026-10-28']; assert(f && f.to.indexOf('chloe@example.test') >= 0 && f.to.indexOf('molly@example.test') >= 0);
+  });
   await t('schedule: every other Monday, bank holiday moves to Tuesday', async () => {
     const c = A.nextCycles({ start: '2026-10-26', everyDays: 14 }, '2026-10-19', 4, {});
     assert.deepStrictEqual(c.map(x => x.start), ['2026-10-26', '2026-11-09', '2026-11-23', '2026-12-07']);

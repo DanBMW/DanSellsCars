@@ -65,6 +65,9 @@ async function run(opts) {
     const stock = await stockMap();
     const tx = DRY ? null : require('nodemailer').createTransport({ service: 'gmail', auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD } });
 
+    /* forecourt/auto/config/exclude (lockup team ids, e.g. chloe, molly): never sent a forecourt reminder */
+    const exCfg = (await db.ref('forecourt/auto/config/exclude').get()).val();
+    const excluded = (Array.isArray(exCfg) ? exCfg : Object.keys(exCfg || {}).filter(k => exCfg[k])).map(v => String(v).toLowerCase());
     console.log(tag + Object.keys(execs).length + ' execs on the board');
     const unmatched = [], summary = [];
     for (const [ek, e] of Object.entries(execs)) {
@@ -75,6 +78,7 @@ async function run(opts) {
       summary.push(name + ': ' + open.length + ' to check' + (inacc ? ', ' + inacc + ' inaccessible' : ''));
       if (!open.length) { console.log(tag + name + ': nothing open'); continue; }
       const person = byName[norm(name)];
+      if (person && excluded.indexOf(String(person.id).toLowerCase()) >= 0) { console.log(tag + name + ': excluded from forecourt reminders'); continue; }
       if (!person) { unmatched.push(name + ' (' + open.length + ' car' + (open.length > 1 ? 's' : '') + ')'); continue; }
       if (mail[ek]) { console.log(tag + name + ': already sent today'); continue; }
       const rows = open.map(v => { const s = stock[regKey(v.key || v.reg)] || {}; return { reg: v.reg || v.key, desc: [s.model, s.colour].filter(Boolean).join(', '), st: v.status === 'in-progress' ? 'In progress' : 'Pending' }; });
