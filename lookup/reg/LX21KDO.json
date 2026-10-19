@@ -14,8 +14,8 @@
  "doors": 5,
  "power": "189 hp",
  "trim": "M Sport",
- "price": "£24,500",
- "price_gbp": 24500,
+ "price": "£24,000",
+ "price_gbp": 24000,
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a01513-e0ff-73b0-8d1b-6f829a14d381-preview.jpg",
  "images": [
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a01513-e0ff-73b0-8d1b-6f829a14d381-enlarged.jpg",
@@ -29,7 +29,7 @@
  "listing_id": "246283",
  "source": "group",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-10-14",
- "available_until": "2026-11-13"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }
