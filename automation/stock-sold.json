@@ -25,7 +25,7 @@
    "reg": "LV73YKX",
    "mileage": "30,764 miles",
    "colour": "Black",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "298 hp",
@@ -42,7 +42,7 @@
    "reg": "LX74HTE",
    "mileage": "19,948 miles",
    "colour": "Black",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "196 hp",
@@ -937,7 +937,7 @@
    "price": "£23,799",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a07c6f-3f38-7b9d-aa65-7d682eff2b51-preview.jpg",
    "first_missing": "2026-10-13",
-   "runs_missing": 26
+   "runs_missing": 27
   },
   "247767": {
    "id": "247767",
@@ -956,7 +956,7 @@
    "price": "£75,950",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-b02b-7c7e-a729-48519086611f-preview.jpg",
    "first_missing": "2026-10-13",
-   "runs_missing": 26
+   "runs_missing": 27
   },
   "253492": {
    "id": "253492",
@@ -975,7 +975,7 @@
    "price": "£88,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11e75-b574-7ccb-80df-6c8391a2170d-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "253490": {
    "id": "253490",
@@ -994,7 +994,7 @@
    "price": "£31,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11c2b-1875-731f-95fc-c36130f1de98-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "253489": {
    "id": "253489",
@@ -1013,7 +1013,7 @@
    "price": "£24,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1149b-62c5-73d7-88a3-107364b7b2c8-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "249565": {
    "id": "249565",
@@ -1032,7 +1032,7 @@
    "price": "£19,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08f82-1a3e-73ee-bc75-7ba89154424a-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "248444": {
    "id": "248444",
@@ -1051,7 +1051,7 @@
    "price": "£27,916",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a05d23-fa27-7eb7-869b-e13079801445-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "247765": {
    "id": "247765",
@@ -1070,7 +1070,7 @@
    "price": "£52,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-aa9b-737e-85fa-5210e58eb728-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "242783": {
    "id": "242783",
@@ -1089,7 +1089,7 @@
    "price": "£27,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f6c86-1fc8-774e-bda5-7a844d9e6e1d-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "242775": {
    "id": "242775",
@@ -1108,7 +1108,7 @@
    "price": "£31,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f7f01-463d-7b3a-baf0-93a9bb1d7a28-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "240865": {
    "id": "240865",
@@ -1127,7 +1127,7 @@
    "price": "£34,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f4d9f-cf60-7048-a0d4-1b8c652798b8-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "239863": {
    "id": "239863",
@@ -1146,7 +1146,7 @@
    "price": "£28,750",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f18d6-eec4-74ea-98f2-478ec54bdcfc-preview.jpg",
    "first_missing": "2026-10-15",
-   "runs_missing": 24
+   "runs_missing": 25
   },
   "247764": {
    "id": "247764",
@@ -1165,7 +1165,7 @@
    "price": "£42,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042fe-ec5d-7385-be3f-3d284d8dbd8b-preview.jpg",
    "first_missing": "2026-10-16",
-   "runs_missing": 23
+   "runs_missing": 24
   },
   "253493": {
    "id": "253493",
@@ -1184,7 +1184,7 @@
    "price": "£24,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-192c-7ea6-a91b-6dd50ec7b8d2-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 22
+   "runs_missing": 23
   },
   "219929": {
    "id": "219929",
@@ -1203,7 +1203,7 @@
    "price": "£42,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019c8bb0-0f25-772c-b776-7c1c96aa5d82-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 22
+   "runs_missing": 23
   },
   "250723": {
    "id": "250723",
@@ -1222,7 +1222,7 @@
    "price": "£31,400",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cd72-c2ed-74c2-ac31-792fd4b83b5d-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 22
+   "runs_missing": 23
   },
   "246277": {
    "id": "246277",
@@ -1241,7 +1241,7 @@
    "price": "£42,750",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a013b9-1959-786f-b93b-73f19b1f062c-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 22
+   "runs_missing": 23
   },
   "244226": {
    "id": "244226",
@@ -1260,7 +1260,7 @@
    "price": "£22,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd6bb-72da-78c9-82c5-e665d4025a0f-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 22
+   "runs_missing": 23
   },
   "251469": {
    "id": "251469",
@@ -1279,7 +1279,7 @@
    "price": "£23,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0fcdc-e9ca-7c3d-b3b2-14d6eb569150-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 12
+   "runs_missing": 13
   },
   "254665": {
    "id": "254665",
@@ -1298,7 +1298,7 @@
    "price": "£22,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a102bf-7898-7a44-b94c-e00a5094332b-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 12
+   "runs_missing": 13
   },
   "251471": {
    "id": "251471",
@@ -1317,7 +1317,7 @@
    "price": "£33,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0f3e9-2278-7763-aad0-3402b96a7952-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 12
+   "runs_missing": 13
   },
   "248445": {
    "id": "248445",
@@ -1336,7 +1336,7 @@
    "price": "£32,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09423-9702-7fab-b650-4d36f3690697-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 12
+   "runs_missing": 13
   },
   "247763": {
    "id": "247763",
@@ -1355,7 +1355,7 @@
    "price": "£43,840",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-aa4b-7863-9bad-163d87bc1588-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 12
+   "runs_missing": 13
   }
  },
  "updated": "2026-10-20",
