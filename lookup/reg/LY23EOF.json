@@ -1,0 +1,33 @@
+{
+ "reg": "LY23EOF",
+ "model": "BMW 530e M Sport Saloon",
+ "series": "5 Series",
+ "year": 2023,
+ "mileage": "27,822 miles",
+ "mileage_miles": 27822,
+ "colour": "Grey",
+ "fuel": "Plug-in hybrid",
+ "body": "Saloon",
+ "gearbox": "Automatic",
+ "drive": "RearWheel",
+ "seats": 5,
+ "doors": 4,
+ "power": "291 hp",
+ "trim": "M Sport",
+ "price": "£28,500",
+ "price_gbp": 28500,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1590c-ca3c-726e-a384-236c69e2b75e-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1590c-ca3c-726e-a384-236c69e2b75e-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1590c-cb0f-7d3f-8e3a-e6de27573bd6-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1590c-cbb5-73a9-8b32-13f8d92e81d1-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1590c-cc65-7095-9ee7-b974b7d71619-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/257028/pb-bmw-530e-2023",
+ "listing_id": "257028",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}

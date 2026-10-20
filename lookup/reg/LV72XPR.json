@@ -29,7 +29,7 @@
  "listing_id": "246895",
  "source": "group",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-10-19",
- "available_until": "2026-11-18"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }
