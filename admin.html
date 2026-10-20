@@ -161,6 +161,13 @@ input:focus{outline:2px solid var(--blue);outline-offset:1px}
       <p class="hint">Which screens the wall cycles through. Switching one off takes it off the wall
         straight away, and a slot with nothing in it is skipped anyway.</p>
       <div id="rot-togs"></div>
+
+      <h2 style="margin-top:20px">Which station</h2>
+      <p class="hint">The background music on the wall. A tap switches every screen live, with no
+        reload. Kisstory R&amp;B is the default and is what plays if this has never been set, so a
+        station chosen here stays chosen until somebody changes it back.</p>
+      <div class="clips" id="station-list"></div>
+
       <label for="n-viewsecs">Seconds on each screen</label>
       <div class="numrow">
         <div><input type="number" id="n-viewsecs" min="8" max="180" step="1" placeholder="30"></div>
@@ -464,6 +471,42 @@ $('walkin-test').onclick=function(){
   })['catch'](fail);
 };
 
+/* ---- which station ----
+   The names mirror RADIO_STATIONS in team-board.html. They are twins by
+   necessity, the same way clipKey() is: the board is deliberately self
+   contained and loads nothing from here. Change both together, and keep the
+   ids, because the id is what is stored in boardsettings/station.
+   The board treats an unknown or absent value as 1, so there is no second
+   default to keep in step. */
+var STATIONS=[
+  {id:1, name:'Kisstory R&B', sub:'The default'},
+  {id:2, name:'Kisstory',     sub:'Old skool'},
+  {id:3, name:'Jazz FM',      sub:'Jazz, soul and blues'}
+];
+function paintStations(){
+  var list=$('station-list'), now=sNum('station',1);
+  if(!list.childNodes.length){
+    list.innerHTML=STATIONS.map(function(st){
+      return '<button type="button" class="clipbtn" data-station="'+st.id+'">'+
+        '<span class="ply">&#9835;</span><span>'+esc(st.name)+
+        '<small>'+esc(st.sub)+'</small></span></button>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(b){
+      b.onclick=function(){
+        if(!backend){toast('Not connected to the board','err');return}
+        var id=Number(b.getAttribute('data-station'));
+        backend.setSetting('station',id).then(function(){
+          var st=STATIONS.filter(function(x){return x.id===id})[0];
+          toast((st?st.name:'Station')+' on every screen','ok');
+        })['catch'](fail);
+      };
+    });
+  }
+  Array.prototype.forEach.call(list.querySelectorAll('.clipbtn'),function(b){
+    b.classList.toggle('on', Number(b.getAttribute('data-station'))===now);
+  });
+}
+
 /* ---- the sketches ---- */
 var CLIPS=[
   {src:'video/sketch-team.mp4',        name:'Team dance'},
@@ -716,7 +759,7 @@ function paintBdays(){
 
 function paintAll(){
   if($('console').classList.contains('hidden'))return;
-  paintTogs(); paintNums(); paintViews(); paintClips(); paintClipTogs();
+  paintTogs(); paintNums(); paintViews(); paintStations(); paintClips(); paintClipTogs();
   paintMugs(); paintTicker(); paintExtras(); paintBdays();
 }
 function setState(kind,txt){
