@@ -1007,7 +1007,7 @@
  "LV72XPR": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-20",
-  "removed_at": null
+  "removed_at": "2026-10-20"
  },
  "LV72YDZ": {
   "first_seen": "2026-10-17",
@@ -1494,10 +1494,20 @@
   "last_seen": "2026-10-14",
   "removed_at": "2026-10-15"
  },
+ "ML72JHX": {
+  "first_seen": "2026-10-20",
+  "last_seen": "2026-10-20",
+  "removed_at": null
+ },
  "MW22EFZ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-17",
   "removed_at": "2026-10-17"
+ },
+ "NA73EVL": {
+  "first_seen": "2026-10-20",
+  "last_seen": "2026-10-20",
+  "removed_at": null
  },
  "ND23CGV": {
   "first_seen": "2026-10-07",

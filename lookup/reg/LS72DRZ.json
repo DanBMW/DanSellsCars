@@ -6,7 +6,7 @@
  "mileage": "32,836 miles",
  "mileage_miles": 32836,
  "colour": "White",
- "fuel": "Diesel",
+ "fuel": "Diesel (mild hybrid)",
  "body": "SUV",
  "gearbox": "Automatic",
  "drive": "FourWheel",
@@ -18,7 +18,6 @@
  "price_gbp": 52000,
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13f50-cdec-78ec-858c-873454e04f9a-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13ed0-32bb-7aff-a02b-8c63e754782a-enlarged.jpg",
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13f50-cdec-78ec-858c-873454e04f9a-enlarged.jpg",
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13f50-ceb8-7650-93ae-3d9b45115f8b-enlarged.jpg",
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13f50-cf54-71eb-acc9-1316d5414ad1-enlarged.jpg",
