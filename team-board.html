@@ -909,6 +909,10 @@ body.premiere .pairqr{display:none!important}
 /* Dan: the music button is always on screen, above the lockup strip, ticker
    and pop-ups, and lifted clear of the strip text rather than covering it. */
 .radio-fab{z-index:530}
+.stationbtn.on{outline:2px solid #c8102e;background:rgba(200,16,46,.18)}
+.radio-fab[data-station]:not(.tapstart)::after{content:attr(data-station);position:absolute;left:62px;top:50%;transform:translateY(-50%);
+  white-space:nowrap;font-size:13px;font-weight:800;padding:5px 9px;border-radius:999px;background:rgba(12,14,18,.82);color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);pointer-events:none}
 body.haslock .radio-fab,body.hasticker .radio-fab{bottom:56px}
 body.haslock.hasticker .radio-fab{bottom:100px}
 .radio-fab.wait.tapstart::after{content:'Tap to start music';position:absolute;left:62px;top:50%;transform:translateY(-50%);
@@ -1627,6 +1631,11 @@ body.haslock.hasticker .radio-fab{bottom:100px}
       <div class="tog on" id="radio-toggle">
         <div><b>Play the radio</b><span id="radio-state">Off.</span></div>
         <div class="sw"></div>
+      </div>
+      <div class="clips" id="radio-stations" style="margin-top:10px">
+        <button type="button" class="clipbtn stationbtn" data-station="1"><span class="ply">&#9835;</span><span>Kisstory R&amp;B<small>Default</small></span></button>
+        <button type="button" class="clipbtn stationbtn" data-station="2"><span class="ply">&#9835;</span><span>Kisstory<small>Old skool</small></span></button>
+        <button type="button" class="clipbtn stationbtn" data-station="3"><span class="ply">&#9835;</span><span>Jazz FM<small>Jazz, soul and blues</small></span></button>
       </div>
       <div class="clips" style="margin-top:10px">
         <button type="button" class="clipbtn" id="radio-refresh">
@@ -4150,6 +4159,59 @@ var RADIO_SOURCES = [
   'https://live-kiss.sharp-stream.com/kiss100.mp3'                   /* Kiss national last resort */
 ];
 var RADIO_NAME='Kisstory R&B';
+/* Station choice (managers panel -> boardsettings/station, a number because
+   boardsettings only takes numbers/booleans). 1 = Kisstory R&B (default, the
+   list above), 2 = Kisstory, 3 = Jazz FM. Each keeps the original soul list
+   behind it as a fallback so the wall is never silent. Bauer's own edges,
+   same public web player key as above; no proxy. */
+var RADIO_DEFAULT_SOURCES = RADIO_SOURCES.slice();
+var RADIO_STATIONS = {
+  1: { name:'Kisstory R&B', short:'Kisstory R&B', sources: RADIO_DEFAULT_SOURCES },
+  2: { name:'Kisstory', short:'Kisstory', sources: [
+       'https://live-bauerkiss.sharp-stream.com/kisstory.mp3'+RADIO_KEY,
+       'https://live-bauerkiss.sharp-stream.com/kisstory.aac'+RADIO_KEY
+     ].concat(RADIO_DEFAULT_SOURCES) },
+  3: { name:'Jazz FM', short:'Jazz FM', sources: [
+       'https://live-baueral.sharp-stream.com/jazz.mp3'+RADIO_KEY,
+       'https://live-baueral.sharp-stream.com/jazzhigh.aac'+RADIO_KEY
+     ].concat(RADIO_DEFAULT_SOURCES) }
+};
+var radioStationId = 1;
+function radioWantedStation(){
+  var v = (typeof SET==='object' && SET) ? SET.station : null;
+  return RADIO_STATIONS[v] ? v : 1;
+}
+/* called from applySettings: switch every screen live, no reload */
+function radioApplyStation(){
+  var id = radioWantedStation();
+  if(id===radioStationId) return;
+  radioStationId = id;
+  RADIO_SOURCES = RADIO_STATIONS[id].sources;
+  RADIO_NAME = RADIO_STATIONS[id].name;
+  radioIdx = 0;
+  try{ paintStationButtons() }catch(e){}
+  if(radioEl || radioState==='playing' || radioState==='connecting'){
+    try{ radioRefreshStream() }catch(e){}
+  }
+  try{ paintRadio() }catch(e){}
+}
+function paintStationButtons(){
+  var box=document.getElementById('radio-stations');
+  if(!box) return;
+  Array.prototype.forEach.call(box.querySelectorAll('[data-station]'), function(b){
+    b.classList.toggle('on', +b.getAttribute('data-station')===radioStationId);
+  });
+}
+function setStation(id){
+  id=+id; if(!RADIO_STATIONS[id]) return;
+  if(!backend||!backend.setSetting){
+    SET.station=id; radioApplyStation();
+    toast(RADIO_STATIONS[id].name+', this screen only','ok'); return;
+  }
+  backend.setSetting('station',id).then(function(){
+    toast(RADIO_STATIONS[id].name+' on every screen','ok');
+  })['catch'](function(e){console.error(e);toast('Could not reach the other screens','err')});
+}
 var radioEl=null, radioIdx=0, radioState='off', radioDucked=false;
 
 var radioLastTime=0, radioStallTicks=0, radioSwapEl=null, radioBuffering=false;
@@ -4559,6 +4621,7 @@ function paintRadioFab(){
   fab.setAttribute('aria-label', playing ? 'Pause radio' : 'Play radio');
   fab.title = playing ? 'Pause radio' : 'Play '+RADIO_NAME;
   fab.textContent = playing ? '❚❚' : '♪';
+  fab.setAttribute('data-station', RADIO_NAME);
 }
 
 function radioFabTap(){
@@ -6122,10 +6185,14 @@ $('ev-forget').onclick=function(){
   evSetKey(''); toast('Forgotten on this screen','ok'); paintEventPanel();
 };
 $('radio-toggle').onclick=function(){ setRadioOn(!sOn('radio')) };
+Array.prototype.forEach.call(document.querySelectorAll('#radio-stations [data-station]'),function(b){
+  b.onclick=function(){ setStation(b.getAttribute('data-station')) };
+});
+try{ paintStationButtons() }catch(e){}
 $('feat-play').onclick=featurePlayAll;
 var _rr=$('radio-refresh');
 if(_rr)_rr.onclick=function(){
-  try{ radioRefreshStream(); toast('Refreshing Kisstory R&B…','ok') }catch(e){ toast('Could not refresh radio','err') }
+  try{ radioRefreshStream(); toast('Refreshing '+RADIO_NAME+'…','ok') }catch(e){ toast('Could not refresh radio','err') }
 };
 $('prem-arm').onclick=premiereArmAll;
 $('prem-stream').onclick=premiereStreamAll;
@@ -6340,6 +6407,7 @@ function applySettings(v){
   if(liveVideo&&liveVideo.el&&liveVideo.wants&&!liveVideo.el.muted){
     try{ liveVideo.el.volume = liveVideo.full ? 1 : clipVol() }catch(e){}
   }
+  try{ radioApplyStation() }catch(e){}
   if(radioWanted()){
     /* Settings watch fires often — never restart a healthy stream from here. */
     if(radioState!=='playing' && radioState!=='connecting' && radioState!=='waiting')
