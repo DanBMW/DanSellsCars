@@ -136,4 +136,8 @@
     <loc>https://dan-sells.co.uk/compare.html</loc>
     <changefreq>daily</changefreq>
   </url>
+  <url>
+    <loc>https://dan-sells.co.uk/BlueMango/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>
