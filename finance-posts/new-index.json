@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-21T12:24:51",
+  "generated": "2026-10-21T14:52:19",
   "posts": [
     {
       "date": "2026-10-21",
@@ -39,7 +39,7 @@
       "annual_mileage": 10000,
       "product": "BMW Select (PCP)",
       "lender": "BMW Group Financial Services",
-      "valid_to": "2027-01-04T23:59:59"
+      "valid_to": "2027-01-04T23:59:59+00:00"
     },
     {
       "date": "2026-10-20",
