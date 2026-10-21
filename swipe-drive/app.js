@@ -271,8 +271,10 @@
     drawTri('#colourChips', [{ key: 'Any', label: 'Any' }].concat(famList.map(function (x) { return { key: x, label: x }; })), c.colours || ['Any'], c.colours_must || []);
     drawTri('#specChips', M.specOptions(), c.specs || [], c.specs_must || []);
     var px = c.px || {}; setChoice(f, 'px_has', px.reg ? 'yes' : 'no');
-    f.elements.px_reg.value = px.reg || ''; f.elements.px_mileage.value = px.mileage || ''; f.elements.px_condition.value = px.condition || ''; f.elements.px_finance.value = px.finance_outstanding == null ? '' : px.finance_outstanding;
+    f.elements.px_reg.value = px.reg || ''; f.elements.px_mileage.value = px.mileage || ''; f.elements.px_condition.value = px.condition || '';
     ['px_valuation_gbp', 'px_valued_on', 'px_settlement_gbp', 'px_settlement_valid_until'].forEach(function (k) { f.elements[k].value = c[k] == null ? '' : c[k]; });
+    /* one settlement box: older profiles kept "finance still owed" inside px, carry it across */
+    if (f.elements.px_settlement_gbp.value === '' && px.finance_outstanding != null) f.elements.px_settlement_gbp.value = px.finance_outstanding;
     $('#pxValBy').textContent = valBy(c); liveEquity();
     drawRates(c.px_condition_ratings); $('#pxConfirm').checked = false;
     $('#pxConfirmLabel').textContent = staff ? 'I confirm, on behalf of the customer, that this is what they told me' : 'I confirm';
@@ -341,7 +343,7 @@
         if ($('#pxConfirm').checked) { c.px_terms_confirmed_at = new Date().toISOString(); c.px_terms_confirmed_by = staff ? 'staff' : 'customer'; } }
       else { c.px_condition_ratings = {}; c.px_terms_confirmed_at = null; c.px_terms_confirmed_by = null; c.px_valuation_gbp = c.px_settlement_gbp = null; c.px_valued_on = c.px_settlement_valid_until = null; }
       if (LIVE) { delete c.px_valuation_set_by; delete c.px_valuation_set_by_name; delete c.px_valuation_set_by_user; } /* stamped by the database */
-      c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: el.px_condition.value, finance_outstanding: el.px_finance.value === '' ? null : +el.px_finance.value,
+      c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: el.px_condition.value, finance_outstanding: c.px_settlement_gbp, /* mirror of the settlement figure, kept for older readers */
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
       var wasNew = !(S.cust && S.cust.id); busy(btn, true);
       store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
@@ -506,7 +508,7 @@
       budget: c.budget_type === 'cash' ? 'Cash up to \u00a3' + (c.cash_gbp || '?') : 'Monthly up to \u00a3' + (c.monthly_gbp || '?'), deposit: c.deposit_gbp || '', annual_mileage: c.annual_mileage,
       colours: (c.colours || []).join(', ') || 'Any', colours_must_have: (c.colours_must || []).join(', '), specs_wanted: (c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '), specs_must_have: (c.specs_must || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '),
       fuel: c.fuel, body_or_size: c.body, models_of_interest: (c.models || []).join(', '), new_or_used: c.new_used,
-      px_reg: px.reg || 'None', px_mileage: px.mileage || '', px_condition: px.condition || '', px_finance_outstanding: px.finance_outstanding == null ? '' : px.finance_outstanding,
+      px_reg: px.reg || 'None', px_mileage: px.mileage || '', px_condition: px.condition || '', px_finance_outstanding: c.px_settlement_gbp != null ? c.px_settlement_gbp : px.finance_outstanding == null ? '' : px.finance_outstanding,
 px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gbp), px_valued_on: c.px_valued_on ? fmtDate(c.px_valued_on) : '', px_valuation_entered_by: c.px_valuation_gbp == null ? '' : c.px_valuation_set_by === 'customer' ? 'Customer' : (c.px_valuation_set_by_name || 'Dan'),
       px_settlement_figure: c.px_settlement_gbp == null ? '' : M.gbp(c.px_settlement_gbp), px_settlement_valid_until: c.px_settlement_valid_until ? fmtDate(c.px_settlement_valid_until) : '',
       px_condition_ratings: ratingsText(c.px_condition_ratings), px_terms_confirmed_at: c.px_terms_confirmed_at ? new Date(c.px_terms_confirmed_at).toLocaleString('en-GB') + ' by ' + (c.px_terms_confirmed_by || '') : '',
