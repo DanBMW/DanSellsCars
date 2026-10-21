@@ -64,7 +64,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return
 function num(s){var n=parseFloat(String(s).replace(/[^0-9.]/g,''));return isFinite(n)?n:null}
 function m0(n){return GBP+Math.round(n).toLocaleString('en-GB')}
 function m2(n){return GBP+Number(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function J(u){return fetch(u,{cache:'no-cache'}).then(function(r){return r.ok?r.json():{}}).catch(function(){return{}})}
+function J(u,again){return fetch(u,{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).catch(function(e){if(again)return{};return new Promise(function(go){setTimeout(go,800)}).then(function(){return J(u,1)})})}
 function newRep(e){return e.payments+' monthly payments of '+m2(e.monthly)+'. Cash price '+m2(e.cash_price)+'. Customer deposit '+m2(e.deposit)+'. '+(e.deposit_contribution>0?'Deposit contribution '+m2(e.deposit_contribution)+'. ':'')+'Total amount of credit '+m2(e.amount_of_credit)+'. Optional final payment '+m2(e.final_payment)+'. Total amount payable '+m2(e.total_payable)+'. Total charge for credit '+m2(e.charge_for_credit)+'. Duration '+e.term_months+' months. '+Number(e.annual_mileage).toLocaleString('en-GB')+' miles a year, '+e.excess_pence+'p per excess mile. '+e.apr+'% APR representative. Lender '+e.lender+'. Finance subject to status, 18+, UK residents.'}
 function newOk(e,c){if(!e||!e.lender||!e.monthly)return false;var vt=Date.parse(e.valid_to);if(!vt||vt<Date.now())return false;
  if(Math.abs(e.deposit+e.payments*e.monthly+e.final_payment-e.total_payable)>0.05)return false;if(Math.abs(c.price_gbp-e.cash_price)>1)return false;return e.excess_pence!=null}
@@ -86,13 +86,20 @@ Promise.all([J('lookup/new-stock.json'),J('lookup/new-stock-quotes.json'),J('aut
    fuel:c.fuel,gear:c.gearbox,drive:c.drive,seats:+c.seats,power:d.power_hp||num(c.power),zero62:null,engine:null,
    boot:d.boot_l||null,co2:d.co2_gkm||null,ev:d.ev_miles||null,len:sp.length_mm,wheels:null,
    body:c.body,fg:c.fuelGroup||c.fuel,sold:c._sold||null,equip:d.equipment||[],url:c.url,search:(c.model+' '+c.colour+' '+c.reg+' '+c.fuel).toLowerCase()}});
+ /* Whether we can honestly say anything about a car we cannot find.
+    A failed fetch empties the list, and every saved car then looks sold:
+    on 21 October LX26FWP, sitting on the forecourt at the time, came up
+    SOLD with "this one has found a new home" because the stock file had
+    not loaded. Nothing about that is a fact about the car. */
+ var HAVEU=(Array.isArray(r[2])&&r[2].length>0)&&(Array.isArray(r[7])&&r[7].length>0);
+ var HAVEN=Array.isArray(r[0].cars)&&r[0].cars.length>0;
  var p=new URLSearchParams(location.search).get('c');
  var META={};try{META=JSON.parse(localStorage.getItem('dscCompareMeta')||'{}')||{}}catch(e){}
  SEL=(p?p.split(','):JSON.parse(localStorage.getItem('dscCompare')||'[]')).filter(function(k){return /^[nu]\w+$/.test(k)}).slice(0,MAX);
- SEL.forEach(function(k){if(!CARS[k]){var m=META[k]||{};CARS[k]={key:k,t:k.charAt(0),name:m.name||'This BMW',sub:m.sub||'',img:m.img||'',series:m.series,body:m.body,fg:m.fg,price:m.price,ageM:m.ageM,mileage:m.mileage,sold:'gone',equip:[],search:''}}});
- SEL.forEach(function(k){var c=CARS[k];if(c&&!c.sold&&c.name){META[k]={name:c.name,sub:c.sub,img:c.img,t:c.t,series:c.series,body:c.body,fg:c.fg,price:c.price,ageM:c.ageM,mileage:c.mileage}}});
+ SEL.forEach(function(k){if(!CARS[k]){var m=META[k]||{},know=k.charAt(0)=='n'?HAVEN:HAVEU;CARS[k]={key:k,t:k.charAt(0),name:m.name||'This BMW',sub:m.sub||'',img:m.img||'',series:m.series,body:m.body,fg:m.fg,price:m.price,ageM:m.ageM,mileage:m.mileage,sold:know?'gone':null,stale:!know,equip:[],search:''}}});
+ SEL.forEach(function(k){var c=CARS[k];if(c&&!c.sold&&!c.stale&&c.name){META[k]={name:c.name,sub:c.sub,img:c.img,t:c.t,series:c.series,body:c.body,fg:c.fg,price:c.price,ageM:c.ageM,mileage:c.mileage}}});
  try{localStorage.setItem('dscCompareMeta',JSON.stringify(META))}catch(e){}
- if(!SEL.length){var n=Object.keys(CARS).filter(function(k){return !CARS[k].sold&&k[0]=='n'&&CARS[k].series=='1 Series'})[0],u=Object.keys(CARS).filter(function(k){return !CARS[k].sold&&k[0]=='u'&&CARS[k].series=='1 Series'})[0];SEL=[n,u].filter(Boolean)}
+ if(!SEL.length){var n=Object.keys(CARS).filter(function(k){return !CARS[k].sold&&!CARS[k].stale&&k[0]=='n'&&CARS[k].series=='1 Series'})[0],u=Object.keys(CARS).filter(function(k){return !CARS[k].sold&&!CARS[k].stale&&k[0]=='u'&&CARS[k].series=='1 Series'})[0];SEL=[n,u].filter(Boolean)}
  render();
 });
 var ROWS=[
@@ -126,9 +133,10 @@ function verdict(c,cs){var o=[],oth=cs.filter(function(x){return x!==c});
  var s=o.join(', ');return s.charAt(0).toUpperCase()+s.slice(1)+'.'}
 function render(){
  localStorage.setItem('dscCompare',JSON.stringify(SEL));
- var all=SEL.map(function(k){return CARS[k]}),cs=all.filter(function(c){return !c.sold}),g=$('grid'),h='';
+ var all=SEL.map(function(k){return CARS[k]}),cs=all.filter(function(c){return !c.sold&&!c.stale}),g=$('grid'),h='';
  var eqN=cs.map(function(c){return c.equip.map(norm)});
  all.forEach(function(c){var i=cs.indexOf(c);
+  if(c.stale){h+=staleCol(c);return}
   if(c.sold){h+=soldCol(c);return}
   h+='<section class="col"><img loading="lazy" src="'+esc(c.img)+'" alt=""/><div class="hd"><button class="x" data-rm="'+c.key+'" aria-label="Remove">×</button><span class="tag '+c.t+'">'+(c.t=='n'?'New':'Approved used')+'</span><h2>'+esc(c.name)+'</h2><div style="color:var(--mute);font-size:13px">'+esc(c.sub)+'</div><div class="price">'+m0(c.price)+'</div></div>';
   h+='<div class="verdict"><b>Dan says</b>'+esc(verdict(c,cs))+'</div>';
@@ -151,8 +159,13 @@ function render(){
  var msg='Hi Dan, I\u2019m comparing these:\n'+cs.map(function(c){return '\u2022 '+c.name+' ('+(c.t=='n'?'new':c.sub)+') '+m0(c.price)}).join('\n')+'\nWhich would you go for?\n'+shareUrl();
  $('bWa').href='https://wa.me/447827138197?text='+encodeURIComponent(msg);
 }
+/* We could not reach the stock list, so we know nothing about this car.
+   Say that, and nothing else: a customer reading SOLD on a car that is on
+   the forecourt is worse than a customer reading that the page is having a
+   moment. */
+function staleCol(c){return '<section class="col"><div style="position:relative">'+(c.img?'<img loading="lazy" src="'+esc(c.img)+'" alt="" style="filter:grayscale(.5) brightness(.75)"/>':'')+'</div><div class="hd"><button class="x" data-rm="'+esc(c.key)+'" aria-label="Remove">\u00d7</button><span class="tag '+c.t+'">'+(c.t=='n'?'New':'Approved used')+'</span><h2>'+esc(c.name)+'</h2><div style="color:var(--mute);font-size:13px">'+esc(c.sub)+'</div></div><div class="verdict"><b>Dan says</b>I could not load today\u2019s stock list just now, so I cannot show you this one\u2019s figures. That is my end playing up, not the car: try again in a moment, or message me and I will tell you where it is.</div><div style="padding:0 14px 14px"><button class="sim" data-retry="1">Try again</button></div></section>'}
 function soldCol(c){return '<section class="col sold"><div style="position:relative"><img loading="lazy" src="'+esc(c.img)+'" alt="" style="filter:grayscale(1) brightness(.6)"/><span class="soldb">SOLD</span></div><div class="hd"><button class="x" data-rm="'+c.key+'" aria-label="Remove">×</button><span class="tag '+c.t+'">'+(c.t=='n'?'New':'Approved used')+'</span><h2>'+esc(c.name)+'</h2><div style="color:var(--mute);font-size:13px">'+esc(c.sub)+'</div></div><div class="verdict"><b>Dan says</b>This one has found a new home. Tap below and I\u2019ll show you the closest cars I have now, new and used.</div><div style="padding:0 14px 14px"><button class="sim" data-sim="'+c.key+'">Find something similar</button></div></section>'}
-function similar(s){var age=function(c){return c.ageM||0};return Object.keys(CARS).map(function(k){return CARS[k]}).filter(function(c){return !c.sold&&SEL.indexOf(c.key)<0}).map(function(c){var sc=0;
+function similar(s){var age=function(c){return c.ageM||0};return Object.keys(CARS).map(function(k){return CARS[k]}).filter(function(c){return !c.sold&&!c.stale&&SEL.indexOf(c.key)<0}).map(function(c){var sc=0;
  if(c.series==s.series)sc+=40;if(c.body&&c.body==s.body)sc+=15;if(String(c.fg).split(' ')[0]==String(s.fg).split(' ')[0])sc+=15;
  if(s.price)sc+=Math.max(0,20-Math.abs(c.price-s.price)/s.price*60);
  sc+=Math.max(0,5-Math.abs(age(c)-age(s))/12);sc+=Math.max(0,5-Math.abs((c.mileage||0)-(s.mileage||0))/5000);return{c:c,sc:sc}})
@@ -162,7 +175,8 @@ document.addEventListener('click',function(e){var t=e.target;
  if(t.dataset&&t.dataset.rm){SEL=SEL.filter(function(k){return k!=t.dataset.rm});render()}
  if(t.id=='addCol'||t.id=='bAdd'){openSheet()}
  if(t.id=='sheet')$('sheet').classList.remove('open');
- var pk=t.closest&&t.closest('.pick');if(pk&&SEL.filter(function(k){return !CARS[k].sold}).length<MAX&&SEL.indexOf(pk.dataset.k)<0){SEL=SEL.filter(function(k){return !(PRE&&CARS[k].sold)});SEL.push(pk.dataset.k);var c0=CARS[pk.dataset.k];try{var MM=JSON.parse(localStorage.getItem('dscCompareMeta')||'{}');MM[c0.key]={name:c0.name,sub:c0.sub,img:c0.img,t:c0.t,series:c0.series,body:c0.body,fg:c0.fg,price:c0.price,ageM:c0.ageM,mileage:c0.mileage};localStorage.setItem('dscCompareMeta',JSON.stringify(MM))}catch(e){}$('sheet').classList.remove('open');render()}
+ var pk=t.closest&&t.closest('.pick');if(pk&&SEL.filter(function(k){return !CARS[k].sold&&!CARS[k].stale}).length<MAX&&SEL.indexOf(pk.dataset.k)<0){SEL=SEL.filter(function(k){return !(PRE&&CARS[k].sold)});SEL.push(pk.dataset.k);var c0=CARS[pk.dataset.k];try{var MM=JSON.parse(localStorage.getItem('dscCompareMeta')||'{}');MM[c0.key]={name:c0.name,sub:c0.sub,img:c0.img,t:c0.t,series:c0.series,body:c0.body,fg:c0.fg,price:c0.price,ageM:c0.ageM,mileage:c0.mileage};localStorage.setItem('dscCompareMeta',JSON.stringify(MM))}catch(e){}$('sheet').classList.remove('open');render()}
+ if(t.dataset&&t.dataset.retry){location.reload();return}
  if(t.dataset&&t.dataset.sim){openSheet(similar(CARS[t.dataset.sim]),'Closest to the '+CARS[t.dataset.sim].name)}
  if(t.dataset&&t.dataset.t){TYPE=t.dataset.t;[].forEach.call($('seg').children,function(b){b.classList.toggle('on',b===t)});list()}
 });
@@ -171,7 +185,7 @@ $('bShare').onclick=function(){var u=shareUrl();history.replaceState(null,'',u);
 var PRE=null;function openSheet(pre,title){PRE=pre||null;$('stitle').textContent=title||'';$('sheet').classList.add('open');$('q').value='';list()}
 $('q').oninput=list;
 function list(){var q=$('q').value.toLowerCase().trim();
- $('list').innerHTML=(PRE||Object.keys(CARS).map(function(k){return CARS[k]})).filter(function(c){return !c.sold&&(TYPE=='all'||c.t==TYPE)&&(!q||c.search.indexOf(q)>=0)&&SEL.indexOf(c.key)<0}).slice(0,60)
+ $('list').innerHTML=(PRE||Object.keys(CARS).map(function(k){return CARS[k]})).filter(function(c){return !c.sold&&!c.stale&&(TYPE=='all'||c.t==TYPE)&&(!q||c.search.indexOf(q)>=0)&&SEL.indexOf(c.key)<0}).slice(0,60)
  .map(function(c){return '<div class="pick" data-k="'+c.key+'"><img loading="lazy" src="'+esc(c.img)+'" alt=""/><div><b>'+esc(c.name)+'</b><small>'+(c.t=='n'?'New, ':'Used, ')+esc(c.sub)+', '+m0(c.price)+'</small></div></div>'}).join('')}
 })();
 </script></body></html>
