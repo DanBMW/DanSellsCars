@@ -63,10 +63,10 @@
       <h2 id="pfTitle">About you</h2>
       <p class="ct-sub" id="pfSub">Takes a minute. The more you tell me, the better your matches.</p>
       <fieldset><legend>You</legend>
-        <p class="ct-hint">Only <b>Name</b> and <b>Mobile</b> are required. Everything else helps the matching but can be left blank.</p>
+        <p class="ct-hint">Only <b>Name</b>, <b>Mobile</b><span data-staff-only hidden> and <b>Email</b></span> are required. Everything else helps the matching but can be left blank.</p>
         <label class="ct-f"><span>Name <em class="ct-req">required</em></span><input name="name" autocomplete="name" required aria-required="true"></label>
         <label class="ct-f"><span>Mobile <em class="ct-req">required</em></span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" required aria-required="true"></label>
-        <label class="ct-f" data-staff-only hidden><span>Customer email <em class="ct-opt">optional</em></span><input name="email" type="email" inputmode="email"></label>
+        <label class="ct-f" data-staff-only hidden><span>Customer email <em class="ct-req">required</em></span><input name="email" type="email" inputmode="email" aria-required="true"></label>
         <label class="ct-f"><span>Postcode <em class="ct-opt">optional</em></span><input name="postcode" autocomplete="postal-code"></label>
       </fieldset>
       <fieldset><legend>Budget</legend>
@@ -111,6 +111,7 @@
             <label class="ct-check"><input type="checkbox" id="pxConfirm"> <span id="pxConfirmLabel">I confirm</span></label><p class="ct-hint" id="pxConfirmed"></p></div>
         </div>
       </fieldset>
+      <fieldset><legend>More detail</legend><p class="ct-hint">The same questions as the desk sheet. All optional.</p><div id="deskBox"></div></fieldset>
       <button class="ct-btn ct-btn-big" type="submit" id="pfSave">Find my match</button>
       <p class="ct-msg" id="pfMsg" role="status"></p>
     </form>

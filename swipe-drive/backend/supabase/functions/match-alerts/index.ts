@@ -55,15 +55,26 @@ Deno.serve(async (req) => {
   // ---------- new stock matches ----------
   const stock = await (await fetch(SITE + '/lookup/stock.json', { cache: 'no-store' })).json();
   const cars: any[] = Object.values(stock.cars || {});
+  // new cars in retailer stock (lookup/new-stock.json), keyed NEW<order number>; budget fit uses a 90% price floor
+  let newCars: any[] = [];
+  try { const ns = await (await fetch(SITE + '/lookup/new-stock.json', { cache: 'no-store' })).json(); newCars = (ns.cars || []).filter((c: any) => c.order_number).map(M.fromNewStock); } catch (_) { newCars = []; }
   const { data: seen } = await db.from('stock_seen').select('reg');
   const seenSet = new Set((seen || []).map((r: any) => r.reg));
-  const fresh = seenSet.size ? cars.filter(c => !seenSet.has(c.reg)) : [];   // first run only seeds
+  const newSeeded = [...seenSet].some((r: any) => String(r).startsWith('NEW'));
+  const fresh = (seenSet.size ? cars.filter(c => !seenSet.has(c.reg)) : [])      // first run only seeds
+    .concat(newSeeded ? newCars.filter(c => !seenSet.has(c.reg)) : []);          // first run with new stock only seeds it
+  if (newCars.length) await db.from('stock_seen').upsert(newCars.map(c => ({ reg: c.reg })), { onConflict: 'reg', ignoreDuplicates: true });
   if (cars.length && (!seenSet.size || cars.length >= seenSet.size * 0.6))
     await db.from('stock_seen').upsert(cars.map(c => ({ reg: c.reg })), { onConflict: 'reg', ignoreDuplicates: true });
   out.fresh = fresh.length;
 
+  // customers whose 33 month point has arrived come back: equity baseline 0, flagged Due to change, matching resumes
+  const { data: back } = await db.rpc('reactivate_due_customers');
+  out.reactivated = (back || []).length;
+
   if (fresh.length) {
-    const { data: customers } = await db.from('customers').select('*');
+    const { data: all } = await db.from('customers').select('*');
+    const customers = (all || []).filter((c: any) => !c.dealt_at);   // dealt customers are paused
     const { data: sent } = await db.from('notifications_sent').select('recipient,customer_id,reg,channel');
     const done = new Set((sent || []).map((s: any) => [s.recipient, s.customer_id, s.reg, s.channel].join('|')));
     const digest = new Map<string, any[]>();     // recipient -> items
@@ -76,7 +87,8 @@ Deno.serve(async (req) => {
       if (owner) recips.push({ p: owner, staff: true });
       if (cu.user_id && byId.get(cu.user_id)) recips.push({ p: byId.get(cu.user_id), staff: false });
       for (const { p, staff } of recips) {
-        const items = hits.filter((h: any) => !done.has([p.id, cu.id, h.car.reg, 'push'].join('|')));
+        const mine = staff ? hits : hits.filter((h: any) => h.car.kind !== 'new_stock');   // 10% floor estimates are for staff only
+        const items = mine.filter((h: any) => !done.has([p.id, cu.id, h.car.reg, 'push'].join('|')));
         if (p.notify_push && items.length) {
           const c = items[0].car;
           const n = await push(p.id, { title: staff ? `New match for ${cu.name || 'a customer'}` : (items.length > 1 ? `${items.length} new matches for you` : 'New match for you'),
@@ -84,9 +96,9 @@ Deno.serve(async (req) => {
           if (n) { out.pushed += n; await db.from('notifications_sent').insert(items.map((h: any) => ({ recipient: p.id, customer_id: cu.id, reg: h.car.reg, channel: 'push' }))); }
         }
         const emailOk = staff ? STAFF_EMAIL_ENABLED : (CUSTOMER_EMAIL_ENABLED && STAFF_EMAIL_ENABLED && p.notify_email);
-        if (emailOk) for (const h of hits) if (!done.has([p.id, cu.id, h.car.reg, 'email'].join('|'))) {
+        if (emailOk) for (const h of mine) if (!done.has([p.id, cu.id, h.car.reg, 'email'].join('|'))) {
           const arr = digest.get(p.id) || []; digest.set(p.id, arr);
-          arr.push({ customer_id: cu.id, customerName: staff ? cu.name : '', car: h.car, finance: M.finance(h.car), wa: M.waLink(wa, h.car), waLabel: staff ? `WhatsApp ${cu.name || 'the customer'}` : 'WhatsApp about this car' });
+          arr.push({ customer_id: cu.id, customerName: staff ? cu.name + (cu.due_to_change_at ? ' (due to change)' : '') : '', note: staff ? h.reasons.join(', ') : '', car: h.car, finance: M.finance(h.car), wa: M.waLink(wa, h.car), waLabel: staff ? `WhatsApp ${cu.name || 'the customer'}` : 'WhatsApp about this car' });
         }
       }
     }
@@ -96,6 +108,9 @@ Deno.serve(async (req) => {
       if (staff) for (const it of items) { const cu = (customers || []).find((c: any) => c.id === it.customer_id); if (cu && cu.phone) it.wa = 'https://wa.me/' + String(cu.phone).replace(/\D/g, '').replace(/^0/, '44') + '?text=' + encodeURIComponent(`Hi ${cu.name || ''}, a car just came in that matches what you are after: ${it.car.model}, reg ${it.car.reg}. Want the details?`); }
       const msg = renderDigest({ toName: p.name, staff, items, matchesUrl: APP + (staff ? '#team' : '#matches'), unsubUrl: unsubUrl(p.unsubscribe_token), brokerText: BROKER });
       if (await sendEmail(p.email, msg, unsubUrl(p.unsubscribe_token))) {
+        // Dan also gets a copy of matches for colleagues' customers who are due to change
+        if (admin && pid !== admin.id) { const due = items.filter((it: any) => /due to change/.test(it.customerName));
+          if (due.length) await sendEmail(admin.email, renderDigest({ toName: admin.name, staff: true, items: due, matchesUrl: APP + '#team', unsubUrl: unsubUrl(admin.unsubscribe_token), brokerText: BROKER }), unsubUrl(admin.unsubscribe_token)); }
         out.emailed++; await db.from('notifications_sent').insert(items.map((it: any) => ({ recipient: pid, customer_id: it.customer_id, reg: it.car.reg, channel: 'email' })));
       }
     }
@@ -113,6 +128,7 @@ Deno.serve(async (req) => {
     if (cp && cp.notify_push) any = (await push(cp.id, r.push)) > 0 || any;
     const to = owner || admin;
     if (to && STAFF_EMAIL_ENABLED) any = (await sendEmail(to.email, r.staffEmail, unsubUrl(to.unsubscribe_token))) || any;
+    if (admin && to && to.id !== admin.id && STAFF_EMAIL_ENABLED) await sendEmail(admin.email, r.staffEmail, unsubUrl(admin.unsubscribe_token));
     if (any) { out.reminders++; await db.from('purchases').update({ reminder_sent_at: new Date().toISOString() }).eq('id', pu.id); }
   }
   return Response.json(out);

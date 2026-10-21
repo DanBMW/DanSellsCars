@@ -42,7 +42,8 @@
   /* Returns {score 0..100, reasons[], ok}. ok false = outside a hard limit. */
   function score(car, p) {
     p = p || {}; var sc = 40, why = [], ok = true, s = S();
-    var isNew = car.kind === 'new';
+    var isNew = car.kind === 'new', ns = car.kind === 'new_stock';   /* new_stock: a real new car in retailer stock */
+    if (ns) return scoreNewStock(car, p);
     if (p.new_used === 'new' && !isNew) return { score: 0, reasons: [], ok: false };
     if (p.new_used === 'used' && isNew) return { score: 0, reasons: [], ok: false };
     var fk = isNew ? car.fuelKeys || [] : [s.fuelKey(car)];
@@ -84,11 +85,37 @@
     }
     return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok };
   }
+  /* New stock budget fit uses a floor of 90% of the listed price (a discount of up to 10% may be possible,
+     never promised). Staff only: shown as "could fit with up to 10% off, ask for a quote". */
+  var NEW_FLOOR = 0.9;
+  function scoreNewStock(car, p) {
+    var sc = 38, why = [], ok = true, s = S();
+    if (p.new_used === 'used') return { score: 0, reasons: [], ok: false };
+    var fk = [s.fuelKey(car)];
+    if (p.fuel && p.fuel !== 'open') { if (fk.some(function (k) { return (FUEL_OK[p.fuel] || []).indexOf(k) !== -1; })) { sc += 20; why.push('Your fuel'); } else ok = false; } else sc += 8;
+    var bk = s.bodyKeys(car) || [];
+    if (p.body && p.body !== 'any') { if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12; }
+    var models = (p.models || []).map(function (m) { return String(m).toLowerCase(); });
+    if (models.length) { var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase();
+      if (models.some(function (m) { return name.indexOf(m) !== -1; })) { sc += 22; why.push('A model you picked'); } else sc -= 6; }
+    var floor = car.price_gbp ? car.price_gbp * NEW_FLOOR : 0, mfloor = car.monthly_gbp ? car.monthly_gbp * NEW_FLOOR : 0;
+    if (p.budget_type === 'cash' && p.cash_gbp > 0 && floor) {
+      if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at list price'); } else if (floor <= p.cash_gbp) { sc += 8; why.push('Could fit with up to 10% off'); } else ok = false; }
+    if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && mfloor) {
+      if (car.monthly_gbp <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at list price'); } else if (mfloor <= p.monthly_gbp) { sc += 8; why.push('Could fit monthly with up to 10% off'); } else ok = false; }
+    var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
+    if (cols.length) { var fam = colourFamily(car); if (cols.indexOf(fam) !== -1) { sc += 10; why.push(fam + ', a colour you like'); } else sc -= 4; if (mustC.length && fam && mustC.indexOf(fam) === -1) ok = false; }
+    (p.specs_must || []).forEach(function (k) { var h = hasSpec(car, k); if (h === false) ok = false; });
+    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok };
+  }
+  function fromNewStock(c) { return { kind: 'new_stock', reg: 'NEW' + c.order_number, order_number: c.order_number, model: c.range || ('BMW ' + c.description), series: c.series,
+    colour: c.colour, fuel: c.fuel, gearbox: c.transmission, price: c.price, price_gbp: c.price_gbp, monthly_gbp: c.monthly_gbp, image: c.image || '' }; }
   function rank(cars, p) {
     return cars.map(function (c) { var r = score(c, p); return { car: c, score: r.score, reasons: r.reasons, ok: r.ok }; })
       .filter(function (x) { return x.ok; }).sort(function (a, b) { return b.score - a.score; });
   }
   function waText(car, who) {
+    if (car.kind === 'new_stock') return 'Hi' + (who ? ' ' + who : '') + ', a new ' + car.model + (car.colour ? ' in ' + car.colour : '') + ' has come into stock that could suit you. Shall I put a quote together?';
     var hi = 'Hi' + (who ? ' ' + who : '') + ', ';
     if (car.kind === 'new') return hi + 'I matched with a new BMW ' + car.model + ' on Swipe Drive. Can we talk options?';
     return hi + 'I matched with the ' + car.model + (car.year ? ' (' + car.year + ')' : '') + ', reg ' + normReg(car.reg) + ', on Swipe Drive. Is it still available?';
@@ -102,5 +129,5 @@
     if (!f || !f.monthly || !f.representative_example) return null;
     return { monthly: gbp2(f.monthly), headline: gbp2(f.monthly) + ' a month, ' + f.product, example: f.representative_example, legal: f.legal || '' };
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, waLink: waLink, waText: waText, finance: finance, gbp: gbp };
+  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, NEW_FLOOR: NEW_FLOOR, waLink: waLink, waText: waText, finance: finance, gbp: gbp };
 })(typeof window !== 'undefined' ? window : globalThis);

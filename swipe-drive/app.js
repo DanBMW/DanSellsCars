@@ -18,6 +18,7 @@
     if (/px_needs_confirmation/.test(m)) return 'Part exchange details need the I confirm tick before they can be saved.';
     if (c === '23514' || /check constraint/i.test(m)) return 'One of the answers is not in the format the system expects (' + (m.match(/"([a-z_]+)"/) || [, 'check'])[1].replace(/_/g, ' ') + ').';
     if (c === '22P02' || /invalid input/i.test(m)) return 'One of the numbers or dates is not valid. Check the highlighted fields.';
+    if (c === 'PGRST204' || c === '42703' || /column .* does not exist|schema cache/i.test(m)) return 'The database needs a quick update before this can be saved. Ask Dan to run the latest Swipe Drive SQL.';
     if (/JWT|expired|not authenticated/i.test(m)) return 'Your sign in has expired. Sign out and sign in again.';
     return 'That did not save: ' + m; }
   function fieldErr(f, name, text) { var el = typeof name === 'string' ? f.elements[name] : name; if (!el) return null;
@@ -84,6 +85,7 @@
     swipes: function (cid) { return Promise.resolve((demoDb().swipes || {})[cid] || {}); },
     setSwipe: function (cid, reg, liked, extra) { var d = demoDb(); d.swipes[cid] = d.swipes[cid] || {}; d.swipes[cid][reg] = Object.assign({ liked: liked, at: Date.now() }, extra || {}); demoSave(d); return Promise.resolve(); },
     purchases: function (cid) { return Promise.resolve((demoDb().purchases || []).filter(function (p) { return p.customer_id === cid; })); },
+    markDealt: function (cid, pid) { var d = demoDb(); var c = (d.customers || []).find(function (x) { return x.id === cid; }); if (c) { c.dealt_at = pid ? new Date().toISOString() : null; c.dealt_purchase_id = pid || null; demoSave(d); } return Promise.resolve(); },
     savePurchase: function (p) { var d = demoDb(); p.id = p.id || uuid(); p.remind_on = addMonths(p.purchase_date, 33); d.purchases = (d.purchases || []).filter(function (x) { return x.id !== p.id; }); d.purchases.push(p); demoSave(d); return Promise.resolve(p); },
     staffList: function () { var d = demoDb(); return Promise.resolve(Object.values(d.staff || {}).filter(Boolean)); },
     invites: function () { return Promise.resolve(demoDb().invites || []); },
@@ -110,12 +112,15 @@
       /* No INSERT ... RETURNING: the read policy can't see a row inside the statement that creates it, so Postgres
          rejected every new customer. Insert or update first, then read the row back. */
       if (!row.id) row.id = uuid();
-      var w = isNew ? sb.from('customers').insert(row) : sb.from('customers').update(row).eq('id', row.id);
-      return w.then(function (r) { if (r.error) throw r.error; return sb.from('customers').select('*').eq('id', row.id).single(); })
+      function write(x) { return isNew ? sb.from('customers').insert(x) : sb.from('customers').update(x).eq('id', x.id); }
+      /* until Dan runs the desk SQL the desk column does not exist: save everything else and say so */
+      return write(row).then(function (r) { if (r.error && /desk/.test(r.error.message || '') && (r.error.code === 'PGRST204' || r.error.code === '42703')) { var x = Object.assign({}, row); delete x.desk; S.deskPending = true; return write(x); } return r; })
+        .then(function (r) { if (r.error) throw r.error; return sb.from('customers').select('*').eq('id', row.id).single(); })
         .then(function (r) { if (r.error) throw r.error; return r.data; }); },
     swipes: function (cid) { return sb.from('swipes').select('*').eq('customer_id', cid).then(function (r) { var o = {}; (r.data || []).forEach(function (s) { o[s.reg] = s; }); return o; }); },
     setSwipe: function (cid, reg, liked, extra) { return sb.from('swipes').upsert(Object.assign({ customer_id: cid, reg: reg, liked: liked, by_user: sbUser.id }, extra || {})); },
     purchases: function (cid) { return sb.from('purchases').select('*').eq('customer_id', cid).then(function (r) { return r.data || []; }); },
+    markDealt: function (cid, pid) { return sb.from('customers').update({ dealt_at: pid ? new Date().toISOString() : null, dealt_purchase_id: pid || null }).eq('id', cid).then(function (r) { if (r.error) throw r.error; }); },
     savePurchase: function (p) { var row = Object.assign({}, p); delete row.remind_on; row.created_by = sbUser.id; return sb.from('purchases').upsert(row).select().single().then(function (r) { if (r.error) throw r.error; return r.data; }); },
     staffList: function () { return sb.from('profiles').select('id,name,email,whatsapp,role').in('role', ['staff', 'admin']).then(function (r) { return r.data || []; }); },
     invites: function () { return sb.from('staff_invites').select('*').order('created_at', { ascending: false }).then(function (r) { return r.data || []; }); },
@@ -242,6 +247,39 @@
     return Promise.all([store.swipes(S.cust.id), store.owner(S.cust)]).then(function (r) { S.swipes = r[0]; S.owner = r[1]; badge(); });
   }
 
+  /* ---------------- desk questions (same as desk.html), stored in customers.desk ---------------- */
+  var O = function (s) { return s.split('|').map(function (x) { var a = x.split('='); return { v: a[0], t: a[1] || a[0] }; }); };
+  var DESK = [
+    { h: 'Car of interest', f: [['like_model', 'What do they like about this model?', 'text'], ['important', 'What is important when looking for a new car?', 'text'], ['n_model', 'Notes', 'text']] },
+    { h: 'Usage', f: [['who', 'Who drives it most', O('me=Mostly them|partner=Partner or someone else|family=Shared around the family|company=Company or pool car')],
+      ['life', 'A typical week', O('family=School runs and family life|commute=Daily commute|miles=Big motorway miles|thrill=Driving for fun|style=Turning heads|open=A bit of everything')],
+      ['people', 'People', O('one=Just them|two=Two|four=Up to four|five=Five or more|seven=Needs 7 seats')],
+      ['boot', 'Boot', O('small=Not much|normal=A normal boot|big=A big boot|tow=Tows')],
+      ['charge', 'Home charging', O('yes=Can charge at home|no=Not easily|notsure=Not sure yet')], ['n_usage', 'Notes', 'text']] },
+    { h: 'Current car', f: [['cur_car', 'Current car (make and model)', 'line'], ['n_px', 'Part exchange notes', 'text']] },
+    { h: 'Must have and would like', f: [['must_text', 'Other must haves', 'text'], ['would_text', 'Other would likes', 'text'], ['n_must', 'Notes', 'text'], ['spec_notes', 'Specified requirements', 'text']] },
+    { h: 'Timeline', f: [['when', 'When would they like to be driving it', O('now=As soon as possible|month=Within a month|quarter=In the next few months|browsing=Just browsing for now')], ['n_when', 'Notes', 'text']] },
+    { h: 'Funding', f: [['cur_monthly', 'Current monthly payment (\u00a3)', 'num'], ['keep', 'How long do they plan to keep it', O('24=24 months|36=36 months|48=48 months|other=Other')], ['keep_other', 'Other, months', 'num'],
+      ['monthly_from', 'Monthly budget from (\u00a3)', 'num'], ['pay_notsure', 'Not sure how they want to pay yet', 'check'],
+      ['fund', 'Funding method', O('pcp=BMW Select / PCP|hp=HP|other=Other|savings=Savings|loan=Loan|motability=Motability'), true],
+      ['said', 'Has the customer SAID how they are funding?', O('yes=Yes|no=No'), false, true], ['intro_bm', 'Introduction to Business Manager', O('yes=Yes|no=No'), false, true],
+      ['n_budget', 'Notes', 'text'], ['n_result', 'Notes on the result', 'text', false, true]] },
+    { h: 'Next steps agreed', staff: true, f: [['ns_drive', 'Test drive booked', 'check'], ['ns_drive_when', 'When', 'line'], ['ns_val', 'Valuation on their car', 'check'], ['ns_follow', 'Follow up date', 'date'], ['n_next', 'Notes on next steps', 'text']] },
+    { h: 'Customer', f: [['optin', 'They asked to be kept posted (occasional news from Dan, unsubscribe any time)', 'check'], ['n_customer', 'Notes on the customer', 'text']] }
+  ];
+  function deskHtml(staff) { return DESK.filter(function (g) { return staff || !g.staff; }).map(function (g) {
+      return '<details class="ct-more"><summary>' + esc(g.h) + ' <em class="ct-opt">optional</em></summary>' + g.f.filter(function (x) { return staff || !x[4]; }).map(function (x) { var k = x[0], t = x[2];
+        if (Array.isArray(t)) return '<span class="ct-lab">' + esc(x[1]) + '</span><div class="ct-chips' + (x[3] ? ' ct-multi' : '') + '" data-name="desk_' + k + '">' + t.map(function (o) { return '<button type="button" data-v="' + esc(o.v) + '">' + esc(o.t) + '</button>'; }).join('') + '</div>';
+        if (t === 'check') return '<label class="ct-check ct-check-sm"><input type="checkbox" data-desk="' + k + '"> <span>' + esc(x[1]) + '</span></label>';
+        if (t === 'text') return '<label class="ct-f"><span>' + esc(x[1]) + '</span><textarea data-desk="' + k + '" rows="2" maxlength="800"></textarea></label>';
+        return '<label class="ct-f"><span>' + esc(x[1]) + '</span><input data-desk="' + k + '"' + (t === 'num' ? ' type="number" inputmode="numeric" min="0"' : t === 'date' ? ' type="date"' : '') + '></label>'; }).join('') + '</details>'; }).join(''); }
+  function deskFill(f, v) { v = v || {}; $$('[data-desk]', f).forEach(function (el) { var k = el.getAttribute('data-desk'); if (el.type === 'checkbox') el.checked = !!v[k]; else el.value = v[k] == null ? '' : v[k]; });
+    DESK.forEach(function (g) { g.f.forEach(function (x) { if (Array.isArray(x[2])) setChoice(f, 'desk_' + x[0], v[x[0]] == null ? (x[3] ? [] : null) : v[x[0]]); }); }); }
+  function deskRead(f, prev) { var o = Object.assign({}, prev || {});
+    $$('[data-desk]', f).forEach(function (el) { var k = el.getAttribute('data-desk'), val = el.type === 'checkbox' ? el.checked : el.type === 'number' ? (el.value === '' ? null : +el.value) : el.value.trim();
+      if (val === '' || val === null || val === false) delete o[k]; else o[k] = val; });
+    DESK.forEach(function (g) { g.f.forEach(function (x) { if (!Array.isArray(x[2]) || !$('[data-name="desk_' + x[0] + '"]', f)) return; var v = choice(f, 'desk_' + x[0]); if (v == null || (Array.isArray(v) && !v.length)) delete o[x[0]]; else o[x[0]] = v; }); }); return o; }
+
   /* ---------------- profile form ---------------- */
   function bindChoice(root) {
     $$('.ct-seg[data-name], .ct-chips[data-name]', root).forEach(function (g) {
@@ -280,6 +318,7 @@
     $('#pxConfirmLabel').textContent = staff ? 'I confirm, on behalf of the customer, that this is what they told me' : 'I confirm';
     $('#pxConfirmed').textContent = c.px_terms_confirmed_at ? 'Last confirmed ' + new Date(c.px_terms_confirmed_at).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + (c.px_terms_confirmed_by === 'staff' && !staff ? ' by your sales executive' : '') : '';
     S.pxPhotos = (px.photos || []).slice(); drawThumbs(); showDeps(f);
+    var dk = $('#deskBox'); if (dk.getAttribute('data-for') !== String(staff)) { dk.innerHTML = deskHtml(staff); dk.setAttribute('data-for', String(staff)); bindChoice(dk); } deskFill(f, c.desk);
     $('#pfSave').textContent = staff ? 'Save and find matches' : 'Find my match';
   }
   function drawTri(sel, opts, on, must) { $(sel).innerHTML = opts.map(function (o) { var st = must.indexOf(o.key) !== -1 ? 'must' : on.indexOf(o.key) !== -1 ? 'like' : '';
@@ -325,7 +364,7 @@
       var bad = [], ph = el.phone.value.replace(/[^\d+]/g, ''), em = staff ? el.email.value.trim() : '';
       if (!el.name.value.trim()) bad.push(fieldErr(f, 'name', 'Add a name.'));
       if (!ph) bad.push(fieldErr(f, 'phone', 'Add a mobile number.')); else if (ph.replace(/\D/g, '').length < 10) bad.push(fieldErr(f, 'phone', 'That mobile number looks too short.'));
-      if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
+      if (staff && !em) bad.push(fieldErr(f, 'email', 'Add the customer email.')); else if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
       var rated = Object.keys(readRates()).length > 0;
       if (choice(f, 'px_has') === 'yes' && rated && !$('#pxConfirm').checked) bad.push(fieldErr(f, $('#pxConfirm'), 'Tick I confirm, because condition ratings are filled in.'));
       if (choice(f, 'px_has') === 'yes' && !el.px_reg.value.trim()) bad.push(fieldErr(f, 'px_reg', 'Add the part exchange reg, or choose No part exchange.'));
@@ -335,6 +374,7 @@
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
         annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), new_used: choice(f, 'new_used') });
       if (staff) c.email = el.email.value.trim() || null;
+      c.desk = deskRead(f, (S.cust || {}).desk);
       var num = function (v) { return v === '' ? null : Math.max(0, Math.round(+v)); }, prevVal = S.cust ? S.cust.px_valuation_gbp : null;
       c.px_valuation_gbp = num(el.px_valuation_gbp.value); c.px_valued_on = el.px_valued_on.value || null;
       c.px_settlement_gbp = num(el.px_settlement_gbp.value); c.px_settlement_valid_until = el.px_settlement_valid_until.value || null;
@@ -347,7 +387,7 @@
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
       var wasNew = !(S.cust && S.cust.id); busy(btn, true);
       store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
-        .then(function () { busy(btn, false); toast(staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deck = []; go('discover'); })
+        .then(function () { busy(btn, false); toast(S.deskPending ? 'Saved. The extra desk details will save once Dan runs the database update.' : staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deskPending = false; S.deck = []; go('discover'); })
         .catch(function (err) { busy(btn, false); console.warn('save customer', err); banner(f, plainErr(err)); track('profile_save_failed', { code: (err && err.code) || '' }); });
     });
   }
@@ -561,7 +601,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     var id = (ed || ca).getAttribute(ed ? 'data-edit-p' : 'data-cancel-p'); var cid = (ed || ca).closest('[data-cid]'); cid = cid ? cid.getAttribute('data-cid') : S.cust.id;
     var pre = cid !== (S.cust && S.cust.id) ? setActing(cid) : Promise.resolve();
     pre.then(function () { return store.purchases(S.cust.id); }).then(function (ps) { var p = ps.find(function (x) { return x.id === id; }); if (!p) return;
-      if (ca) { if (!confirm('Cancel the reminder for ' + p.reg + '?')) return; p.cancelled = true; store.savePurchase(p).then(function () { toast('Reminder cancelled'); route(); }); }
+      if (ca) { if (!confirm('Cancel the reminder for ' + p.reg + '?')) return; p.cancelled = true; store.savePurchase(p).then(function () { return S.session.role !== 'customer' && S.cust.dealt_purchase_id === p.id ? store.markDealt(S.cust.id, null) : null; }).then(function () { toast('Reminder cancelled'); route(); }); }
       else { S.editPurchase = p; go('bought'); } });
   }
 
@@ -586,8 +626,10 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
         var end = $('[data-ins-end]', l).value; if (end) o.ends_on = end; return o; });
       var ft = choice(f, 'finance_type');
       var p = Object.assign({}, S.editPurchase || {}, { customer_id: S.cust.id, reg: M.normReg(el.reg.value), model: el.model.value.trim(), purchase_date: el.purchase_date.value, finance_type: ft, term_months: ft === 'cash' ? null : (+el.term_months.value || null), insurances: ins, cancelled: false });
-      store.savePurchase(p).then(function () { S.editPurchase = null; track('bought_saved', { finance_type: ft, by: S.session.role }); toast('Saved. Reminder set for ' + fmtDate(addMonths(p.purchase_date, 33))); go(S.session.role === 'customer' ? 'me' : 'team'); })
-        .catch(function () { msg.textContent = 'That did not save. Please try again.'; }); });
+      var btn = $('button[type=submit]', f); busy(btn, true); msg.textContent = '';
+      store.savePurchase(p).then(function (saved) { var stf = S.session.role !== 'customer'; return (stf ? store.markDealt(S.cust.id, (saved && saved.id) || p.id) : Promise.resolve()).then(function () { return stf; }); })
+        .then(function (stf) { busy(btn, false); S.editPurchase = null; track('bought_saved', { finance_type: ft, by: S.session.role }); toast(stf ? 'Marked as dealt. Alerts paused until ' + fmtDate(addMonths(p.purchase_date, 33)) : 'Saved. Reminder set for ' + fmtDate(addMonths(p.purchase_date, 33))); go(stf ? 'team' : 'me'); })
+        .catch(function (err) { busy(btn, false); msg.textContent = plainErr(err); }); });
   }
 
   /* ---------------- staff ---------------- */
@@ -607,8 +649,11 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
           return '<div class="ct-c" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3><p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + (admin ? ' \u00b7 Owner: ' + esc(c.owner_staff_id ? names[c.owner_staff_id] || 'Colleague' : 'Dan direct') : '') + '</p>' +
             '<p>' + (freshN ? '<span class="ct-pill hot">' + freshN + ' new today</span>' : '') + '<span class="ct-pill">' + ranked.length + ' matches</span><span class="ct-pill">' + likes + ' liked</span>' + (c.user_id ? '<span class="ct-pill">Claimed</span>' : '') + '</p>' +
             (c.px && c.px.reg ? '<p>PX ' + esc(c.px.reg) + (c.px_terms_confirmed_at ? ' \u00b7 terms confirmed ' + esc(new Date(c.px_terms_confirmed_at).toLocaleDateString('en-GB')) : '') + '</p>' : '') + (ratingsText(c.px_condition_ratings) ? '<p>' + esc(ratingsText(c.px_condition_ratings)) + '</p>' : '') + pxMoneyHtml(c) +
+            (c.due_to_change_at ? '<p><span class="ct-pill due">Due to change</span> Back on matching since ' + esc(fmtDate(String(c.due_to_change_at).slice(0, 10))) + (c.px && c.px.equity_assumed_gbp === 0 ? '. PX equity assumed \u00a30 until valued' : '') + '</p>' : '') +
+            (c.dealt_at ? '<p><span class="ct-pill">Dealt</span> Alerts paused' + (p ? ' until <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b>' : '') + '</p>' : '') +
             (p ? '<p>Bought ' + esc(p.model) + ' (' + esc(p.reg) + '). Reminder <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b></p>' : '') +
-            '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-act="swipe">Swipe for them</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="matches">Shortlist</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="edit">Edit</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="bought">' + (p ? 'Edit bought car' : 'Bought') + '</button>' +
+            '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-act="swipe">Swipe for them</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="matches">Shortlist</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="edit">Edit</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="bought">' + (p ? 'Edit bought car' : 'Mark as dealt') + '</button>' +
+            (c.dealt_at ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="resume">Resume alerts</button>' : '') +
             (p ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-cancel-p="' + esc(p.id) + '">Cancel reminder</button>' : '') +
             (!c.user_id && c.email ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="claim">Invite to claim</button>' : '') + '</div></div>'; }).join('') || '<p class="ct-sub">No customers yet. Add your first one.</p>';
       });
@@ -621,6 +666,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       setActing(id).then(function () {
         if (act === 'swipe') go('discover'); else if (act === 'matches') go('matches'); else if (act === 'edit') go('profile');
         else if (act === 'bought') store.purchases(id).then(function (ps) { S.editPurchase = ps.filter(function (x) { return !x.cancelled; })[0] || null; go('bought'); });
+        else if (act === 'resume') store.markDealt(id, null).then(function () { toast('Alerts back on for ' + (S.cust.name || 'this customer')); showTeam(); }).catch(function (err) { toast(plainErr(err)); });
         else if (act === 'claim') { if (!LIVE) { toast('Demo mode: the claim email is sent once the backend is connected'); return; }
           sb.from('customer_claims').insert({ customer_id: id, email: S.cust.email, created_by: sbUser.id }).select().single().then(function (r) { if (r.error) throw r.error;
             return sb.auth.signInWithOtp({ email: S.cust.email, options: { emailRedirectTo: APP_URL + '?claim=' + r.data.id } }); }).then(function () { toast('Claim link sent to ' + S.cust.email); }).catch(function () { toast('That did not send'); }); }
