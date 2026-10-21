@@ -10,8 +10,8 @@ create or replace function pg_temp.as_user(u text) returns void language plpgsql
 -- staff A creates two customers, staff B creates one
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 insert into customers(id,owner_staff_id,name,email,colours,colours_must,specs,specs_must) values ('11111111-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000a','A cust 1','c@x.test','{Blue,Black}','{Blue}','{feat:pano,feat:hud}','{feat:pano}'),('11111111-0000-0000-0000-000000000002','00000000-0000-0000-0000-00000000000a','A cust 2',null,'{}','{}','{}','{}');
-do $$ begin begin update customers set px='{"reg":"AB12CDE"}' where id='11111111-0000-0000-0000-000000000001'; insert into r values ('PX cannot be saved without the I confirm tick', false);
- exception when check_violation then insert into r values ('PX cannot be saved without the I confirm tick', true); end; end $$;
+do $$ begin begin update customers set px='{"reg":"AB12CDE"}', px_condition_ratings='{"overall":{"rating":3}}' where id='11111111-0000-0000-0000-000000000001'; insert into r values ('PX ratings cannot be saved without the I confirm tick', false);
+ exception when check_violation then insert into r values ('PX ratings cannot be saved without the I confirm tick', true); end; end $$;
 update customers set px='{"reg":"AB12CDE"}', px_condition_ratings='{"overall":{"rating":4,"notes":"Small scuff"},"mot":{"rating":5}}', px_terms_confirmed_at=now(), px_terms_confirmed_by='staff', px_valuation_gbp=14500, px_valued_on='2026-10-21', px_settlement_gbp=9200, px_valuation_set_by='customer' where id='11111111-0000-0000-0000-000000000001';
 insert into r select 'staff A valuation is stamped staff even if the app claims customer', (select px_valuation_set_by from customers where id='11111111-0000-0000-0000-000000000001')='staff';
 insert into swipes(customer_id,reg,liked,by_user) values ('11111111-0000-0000-0000-000000000001','LV73VOB',true,auth.uid());
@@ -99,6 +99,16 @@ select pg_temp.as_user('00000000-0000-0000-0000-0000000000ee');
 insert into r select 'uninvited E is a customer, not staff', my_role()='customer';
 do $$ begin begin insert into customers(owner_staff_id,name) values ('00000000-0000-0000-0000-0000000000ee','x'); insert into r values ('uninvited E cannot act as staff', false);
  exception when others then insert into r values ('uninvited E cannot act as staff', true); end; end $$;
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000d');
+do $$ declare i uuid; begin begin insert into customers(owner_staff_id,name,phone) values (auth.uid(),'Dan new','07700900111') returning id into i; insert into r values ('admin insert returning works (add a customer)', i is not null);
+ exception when others then insert into r values ('admin insert returning works (add a customer)', false); end; end $$;
+do $$ declare i uuid; begin begin insert into customers(owner_staff_id,name,px) values (auth.uid(),'PX only','{"reg":"AB12CDE"}') returning id into i; insert into r values ('PX reg without ratings saves without the tick', i is not null);
+ exception when others then insert into r values ('PX reg without ratings saves without the tick', false); end; end $$;
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ declare i uuid; begin begin insert into customers(owner_staff_id,name) values (auth.uid(),'B new') returning id into i; insert into r values ('staff insert returning works', i is not null);
+ exception when others then insert into r values ('staff insert returning works', false); end; end $$;
 reset role;
 select (case when pass then 'PASS ' else 'FAIL ' end) || test as result from r;
 select count(*) filter (where pass) || ' of ' || count(*) || ' passed' as summary from r;

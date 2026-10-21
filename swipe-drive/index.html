@@ -63,10 +63,11 @@
       <h2 id="pfTitle">About you</h2>
       <p class="ct-sub" id="pfSub">Takes a minute. The more you tell me, the better your matches.</p>
       <fieldset><legend>You</legend>
-        <label class="ct-f"><span>Name</span><input name="name" autocomplete="name" required></label>
-        <label class="ct-f"><span>Mobile</span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
-        <label class="ct-f" data-staff-only hidden><span>Customer email</span><input name="email" type="email" inputmode="email"></label>
-        <label class="ct-f"><span>Postcode</span><input name="postcode" autocomplete="postal-code" required></label>
+        <p class="ct-hint">Only <b>Name</b> and <b>Mobile</b> are required. Everything else helps the matching but can be left blank.</p>
+        <label class="ct-f"><span>Name <em class="ct-req">required</em></span><input name="name" autocomplete="name" required aria-required="true"></label>
+        <label class="ct-f"><span>Mobile <em class="ct-req">required</em></span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" required aria-required="true"></label>
+        <label class="ct-f" data-staff-only hidden><span>Customer email <em class="ct-opt">optional</em></span><input name="email" type="email" inputmode="email"></label>
+        <label class="ct-f"><span>Postcode <em class="ct-opt">optional</em></span><input name="postcode" autocomplete="postal-code"></label>
       </fieldset>
       <fieldset><legend>Budget</legend>
         <div class="ct-seg" data-name="budget_type"><button type="button" data-v="monthly">Monthly</button><button type="button" data-v="cash">Cash price</button></div>
@@ -213,6 +214,11 @@
       <label class="ct-f"><span>Their WhatsApp number</span><input name="whatsapp" type="tel" placeholder="447700900000" required></label>
       <button class="ct-btn" type="submit">Invite</button>
       <p class="ct-msg" id="invMsg" role="status"></p>
+      <div class="ct-card-lite ct-share" id="invShare" hidden>
+        <p><b>Send this yourself.</b> Swipe Drive does not email invites.</p>
+        <p id="invShareText"></p>
+        <div class="ct-row"><a class="ct-btn ct-wa" id="invWa" target="_blank" rel="noopener" href="#">Share on WhatsApp</a><button class="ct-btn ct-btn-ghost" type="button" id="invCopy">Copy invite message</button></div>
+      </div>
       <div id="invList" class="ct-clist"></div>
     </form>
   </section>

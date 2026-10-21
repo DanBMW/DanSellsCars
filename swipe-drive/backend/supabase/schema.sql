@@ -53,7 +53,7 @@ create table if not exists public.customers (
   px_condition_ratings jsonb not null default '{}',
   px_terms_confirmed_at timestamptz,       -- "I confirm" tick on the PX terms note
   px_terms_confirmed_by text check (px_terms_confirmed_by in ('customer','staff')),
-  constraint px_needs_confirmation check (px is null or px_terms_confirmed_at is not null),
+  constraint px_needs_confirmation check (px_condition_ratings = '{}'::jsonb or px_terms_confirmed_at is not null),
   constraint px_ratings_1_to_5 check (jsonb_typeof(px_condition_ratings) = 'object'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -224,7 +224,9 @@ create policy i_all on public.staff_invites for all to authenticated using (publ
 
 drop policy if exists c_sel on public.customers; drop policy if exists c_ins on public.customers;
 drop policy if exists c_upd on public.customers; drop policy if exists c_del on public.customers;
-create policy c_sel on public.customers for select to authenticated using (public.can_access_customer(id));
+-- checks the row itself: can_access_customer(id) can't see a row inside the statement that inserts it
+create policy c_sel on public.customers for select to authenticated using (
+  public.is_admin() or (owner_staff_id = auth.uid() and public.my_role() = 'staff') or user_id = auth.uid());
 create policy c_ins on public.customers for insert to authenticated with check (
   public.is_admin()
   or (public.my_role() = 'staff' and owner_staff_id = auth.uid() and user_id is null)
@@ -279,3 +281,7 @@ create policy px_del on storage.objects for delete to authenticated using (bucke
 -- select cron.schedule('swipe-drive-match-alerts', '15 10 * * *', $$ select net.http_post(
 --   url := 'https://dexqyqrbelmdjdhxaboq.supabase.co/functions/v1/match-alerts',
 --   headers := jsonb_build_object('Authorization', 'Bearer ' || 'CRON_SECRET_HERE')) $$);
+
+-- existing databases: bring the constraint up to date (create table if not exists won't)
+alter table public.customers drop constraint if exists px_needs_confirmation;
+alter table public.customers add constraint px_needs_confirmation check (px_condition_ratings = '{}'::jsonb or px_terms_confirmed_at is not null);

@@ -229,3 +229,12 @@ a{color:#8fb0de}
 .ct-deck{height:clamp(400px,calc(100vh - 360px),620px);height:clamp(400px,calc(100dvh - 360px),620px)}
 .ct-actions{margin:14px 0 0}
 button,input,select,textarea{font-family:var(--sans)}
+
+.ct-req,.ct-opt{font-style:normal;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-left:6px}.ct-req{color:#f0b13c}.ct-opt{color:var(--mut);font-weight:500}
+.ct-ferr{display:block;color:#ffb4b6;font-size:13px;font-weight:600;margin:6px 0 0}
+[aria-invalid=true]{border-color:#e5484d!important;box-shadow:0 0 0 1px #e5484d}
+.ct-check [aria-invalid=true]{outline:2px solid #e5484d}
+.ct-banner{background:#2a1416;border:1px solid #7a3036;color:#ffd6d7;border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:14.5px;font-weight:600}
+.ct-banner.ok{background:#11261b;border-color:#2e7a4f;color:#c9f2d9}
+.ct-btn[disabled]{opacity:.65;cursor:progress}
+.ct-share{margin:12px 0}.ct-share #invShareText{background:#0f1216;border-radius:8px;padding:10px;font-size:13.5px;user-select:all}

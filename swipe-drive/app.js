@@ -10,6 +10,23 @@
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   function track(n, p) { try { if (window.gtag) window.gtag('event', 'swipe_drive_' + n, p || {}); } catch (e) {} (window.__ctEvents = window.__ctEvents || []).push('swipe_drive_' + n); }
+  /* turn a database or network error into plain English */
+  function plainErr(e) { e = e || {}; var m = String(e.message || e.error_description || e), c = String(e.code || '');
+    if (/fetch|network|Failed to fetch|offline/i.test(m) && !c) return 'No connection right now. Check your signal and try again.';
+    if (c === '23505' || /duplicate key/i.test(m)) return /staff_invites/.test(m) ? 'That email has already been invited.' : /user_id/.test(m) ? 'This customer already has their own profile.' : 'That already exists.';
+    if (c === '42501' || /row.level security/i.test(m)) return 'Your account is not allowed to save this. Sign out and back in, and if it still fails ask Dan to check your access.';
+    if (/px_needs_confirmation/.test(m)) return 'Part exchange details need the I confirm tick before they can be saved.';
+    if (c === '23514' || /check constraint/i.test(m)) return 'One of the answers is not in the format the system expects (' + (m.match(/"([a-z_]+)"/) || [, 'check'])[1].replace(/_/g, ' ') + ').';
+    if (c === '22P02' || /invalid input/i.test(m)) return 'One of the numbers or dates is not valid. Check the highlighted fields.';
+    if (/JWT|expired|not authenticated/i.test(m)) return 'Your sign in has expired. Sign out and sign in again.';
+    return 'That did not save: ' + m; }
+  function fieldErr(f, name, text) { var el = typeof name === 'string' ? f.elements[name] : name; if (!el) return null;
+    el.setAttribute('aria-invalid', 'true'); var id = 'err-' + (el.name || el.id); var sp = document.createElement('span'); sp.className = 'ct-ferr'; sp.id = id; sp.textContent = text;
+    (el.closest('label') || el.parentNode).appendChild(sp); el.setAttribute('aria-describedby', id); return el; }
+  function clearErrs(f) { $$('.ct-ferr', f).forEach(function (x) { x.remove(); }); $$('[aria-invalid]', f).forEach(function (x) { x.removeAttribute('aria-invalid'); x.removeAttribute('aria-describedby'); }); }
+  function banner(f, text, ok) { var b = $('.ct-banner', f); if (!b) { b = document.createElement('div'); b.className = 'ct-banner'; b.setAttribute('role', 'alert'); f.insertBefore(b, f.firstChild.nextSibling); }
+    b.hidden = !text; b.className = 'ct-banner' + (ok ? ' ok' : ''); b.textContent = text || ''; if (text) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  function busy(btn, on, label) { if (on) { btn.dataset.label = btn.textContent; btn.textContent = label || 'Saving...'; btn.disabled = true; btn.setAttribute('aria-busy', 'true'); } else { btn.textContent = btn.dataset.label || btn.textContent; btn.disabled = false; btn.removeAttribute('aria-busy'); } }
   function toast(t) { var el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { el.hidden = true; }, 2600); }
   var uuid = function () { return (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); })); };
   var fmtDate = function (d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; };
@@ -89,8 +106,13 @@
     signOut: function () { return sb.auth.signOut(); },
     customers: function () { return sb.from('customers').select('*').order('created_at', { ascending: false }).then(function (r) { if (r.error) throw r.error;
       return Promise.all(r.data.map(function (c) { if (c.px_valuation_set_by !== 'staff') return c; return sb.rpc('valuation_set_by_name', { cid: c.id }).then(function (n) { c.px_valuation_set_by_name = n.data; return c; }); })); }); },
-    saveCustomer: function (c) { var row = Object.assign({}, c); delete row.px_photos_preview; if (!row.id) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
-      return sb.from('customers').upsert(row).select().single().then(function (r) { if (r.error) throw r.error; return r.data; }); },
+    saveCustomer: function (c) { var row = Object.assign({}, c); delete row.px_photos_preview; var isNew = !row.id || !S.cust || S.cust.id !== row.id; if (isNew) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
+      /* No INSERT ... RETURNING: the read policy can't see a row inside the statement that creates it, so Postgres
+         rejected every new customer. Insert or update first, then read the row back. */
+      if (!row.id) row.id = uuid();
+      var w = isNew ? sb.from('customers').insert(row) : sb.from('customers').update(row).eq('id', row.id);
+      return w.then(function (r) { if (r.error) throw r.error; return sb.from('customers').select('*').eq('id', row.id).single(); })
+        .then(function (r) { if (r.error) throw r.error; return r.data; }); },
     swipes: function (cid) { return sb.from('swipes').select('*').eq('customer_id', cid).then(function (r) { var o = {}; (r.data || []).forEach(function (s) { o[s.reg] = s; }); return o; }); },
     setSwipe: function (cid, reg, liked, extra) { return sb.from('swipes').upsert(Object.assign({ customer_id: cid, reg: reg, liked: liked, by_user: sbUser.id }, extra || {})); },
     purchases: function (cid) { return sb.from('purchases').select('*').eq('customer_id', cid).then(function (r) { return r.data || []; }); },
@@ -98,6 +120,7 @@
     staffList: function () { return sb.from('profiles').select('id,name,email,whatsapp,role').in('role', ['staff', 'admin']).then(function (r) { return r.data || []; }); },
     invites: function () { return sb.from('staff_invites').select('*').order('created_at', { ascending: false }).then(function (r) { return r.data || []; }); },
     invite: function (inv) { inv.invited_by = sbUser.id; return sb.from('staff_invites').insert(inv).then(function (r) { if (r.error) throw r.error; }); },
+    findProfile: function (email) { return sb.from('profiles').select('role').eq('email', email).maybeSingle().then(function (r) { return r.data || null; }, function () { return null; }); },
     uploadPx: function (cid, file) { var path = cid + '/' + uuid() + '.' + ((file.type.split('/')[1]) || 'jpg');
       return sb.storage.from('px').upload(path, file, { contentType: file.type }).then(function (r) { if (r.error) throw r.error;
         return sb.storage.from('px').createSignedUrl(path, 30 * 86400); }).then(function (s) { return { path: path, link: s.data.signedUrl, preview: URL.createObjectURL(file) }; }); },
@@ -295,8 +318,17 @@
         .catch(function () { $('#pfMsg').textContent = 'A photo did not upload. You can send photos on WhatsApp instead.'; });
     });
     f.addEventListener('submit', function (e) {
-      e.preventDefault(); var el = f.elements, msg = $('#pfMsg'), staff = S.session.role !== 'customer';
-      if (!el.name.value.trim() || !el.phone.value.trim() || !el.postcode.value.trim()) { msg.textContent = 'Name, mobile and postcode please.'; return; }
+      e.preventDefault(); var el = f.elements, msg = $('#pfMsg'), staff = S.session.role !== 'customer', btn = $('#pfSave');
+      if (btn.disabled) return; clearErrs(f); banner(f, ''); msg.textContent = '';
+      var bad = [], ph = el.phone.value.replace(/[^\d+]/g, ''), em = staff ? el.email.value.trim() : '';
+      if (!el.name.value.trim()) bad.push(fieldErr(f, 'name', 'Add a name.'));
+      if (!ph) bad.push(fieldErr(f, 'phone', 'Add a mobile number.')); else if (ph.replace(/\D/g, '').length < 10) bad.push(fieldErr(f, 'phone', 'That mobile number looks too short.'));
+      if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
+      var rated = Object.keys(readRates()).length > 0;
+      if (choice(f, 'px_has') === 'yes' && rated && !$('#pxConfirm').checked) bad.push(fieldErr(f, $('#pxConfirm'), 'Tick I confirm, because condition ratings are filled in.'));
+      if (choice(f, 'px_has') === 'yes' && !el.px_reg.value.trim()) bad.push(fieldErr(f, 'px_reg', 'Add the part exchange reg, or choose No part exchange.'));
+      bad = bad.filter(Boolean);
+      if (bad.length) { banner(f, bad.length === 1 ? 'One thing to fix before saving.' : bad.length + ' things to fix before saving.'); bad[0].scrollIntoView({ block: 'center' }); bad[0].focus({ preventScroll: true }); return; }
       var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim(), postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
         annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), new_used: choice(f, 'new_used') });
@@ -305,14 +337,16 @@
       c.px_valuation_gbp = num(el.px_valuation_gbp.value); c.px_valued_on = el.px_valued_on.value || null;
       c.px_settlement_gbp = num(el.px_settlement_gbp.value); c.px_settlement_valid_until = el.px_settlement_valid_until.value || null;
       if (c.px_valuation_gbp !== prevVal && c.px_valuation_gbp != null) { c.px_valuation_set_by = staff ? 'staff' : 'customer'; c.px_valuation_set_by_name = staff ? (S.session.name || 'Dan') : ''; }
-      if (choice(f, 'px_has') === 'yes') { if (!$('#pxConfirm').checked) { msg.textContent = 'Please tick I confirm under the part exchange terms.'; $('#pxConfirm').focus(); return; }
-        c.px_condition_ratings = readRates(); c.px_terms_confirmed_at = new Date().toISOString(); c.px_terms_confirmed_by = staff ? 'staff' : 'customer'; }
+      if (choice(f, 'px_has') === 'yes') { c.px_condition_ratings = readRates();
+        if ($('#pxConfirm').checked) { c.px_terms_confirmed_at = new Date().toISOString(); c.px_terms_confirmed_by = staff ? 'staff' : 'customer'; } }
       else { c.px_condition_ratings = {}; c.px_terms_confirmed_at = null; c.px_terms_confirmed_by = null; c.px_valuation_gbp = c.px_settlement_gbp = null; c.px_valued_on = c.px_settlement_valid_until = null; }
       if (LIVE) { delete c.px_valuation_set_by; delete c.px_valuation_set_by_name; delete c.px_valuation_set_by_user; } /* stamped by the database */
       c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: el.px_condition.value, finance_outstanding: el.px_finance.value === '' ? null : +el.px_finance.value,
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
+      var wasNew = !(S.cust && S.cust.id); busy(btn, true);
       store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
-        .then(function () { S.deck = []; go('discover'); }).catch(function () { msg.textContent = 'That did not save. Please try again.'; });
+        .then(function () { busy(btn, false); toast(staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deck = []; go('discover'); })
+        .catch(function (err) { busy(btn, false); console.warn('save customer', err); banner(f, plainErr(err)); track('profile_save_failed', { code: (err && err.code) || '' }); });
     });
   }
 
@@ -593,9 +627,25 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   function showInvites() { store.invites().then(function (l) { $('#invList').innerHTML = l.map(function (i) { return '<div class="ct-c"><h3>' + esc(i.name) + '</h3><p>' + esc(i.email) + ' \u00b7 WhatsApp ' + esc(i.whatsapp) + '</p><p><span class="ct-pill' + (i.accepted_at ? '' : ' hot') + '">' + (i.accepted_at ? 'Signed in' : 'Invited, waiting') + '</span></p></div>'; }).join(''); }); }
   function initInvites() { $('#inviteForm').addEventListener('submit', function (e) { e.preventDefault(); var el = e.target.elements, msg = $('#invMsg');
     var inv = { name: el.name.value.trim(), email: el.email.value.trim().toLowerCase(), whatsapp: el.whatsapp.value.replace(/\D/g, '').replace(/^0/, '44') };
-    if (!inv.name || !/@/.test(inv.email) || inv.whatsapp.length < 11) { msg.textContent = 'Name, email and a full WhatsApp number please.'; return; }
-    store.invite(inv).then(function () { msg.className = 'ct-msg ok'; msg.textContent = LIVE ? 'Invited. They become staff when they sign in with ' + inv.email + '.' : 'Saved in demo mode. No email is sent.'; e.target.reset(); showInvites(); track('staff_invited'); })
-      .catch(function () { msg.className = 'ct-msg'; msg.textContent = 'That did not save.'; }); }); }
+    var f = e.target, btn = $('button[type=submit]', f); if (btn.disabled) return; clearErrs(f); banner(f, ''); msg.textContent = ''; $('#invShare').hidden = true;
+    var bad = [];
+    if (!inv.name) bad.push(fieldErr(f, 'name', 'Add their name.'));
+    if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(inv.email)) bad.push(fieldErr(f, 'email', 'Add the email they will sign in with.'));
+    if (inv.whatsapp.length < 11) bad.push(fieldErr(f, 'whatsapp', 'Add their full mobile number, for example 07700 900000.'));
+    bad = bad.filter(Boolean); if (bad.length) { bad[0].focus(); return; }
+    busy(btn, true, 'Inviting...');
+    var prior = store.findProfile ? store.findProfile(inv.email) : Promise.resolve(null);
+    prior.then(function (p) { return store.invite(inv).then(function () { return p; }); }).then(function (p) { busy(btn, false);
+        var already = p && p.role === 'customer';
+        banner(f, LIVE ? 'Invite saved for ' + inv.name + '. No email is sent, so send them the message below.' + (already ? ' Note: ' + inv.email + ' has already signed in once as a customer, so ask Dan to switch their role to staff.' : '') : 'Saved in demo mode. No email is sent.', true);
+        shareInvite(inv); f.reset(); showInvites(); toast('Invite saved'); track('staff_invited'); })
+      .catch(function (err) { busy(btn, false); console.warn('invite', err); banner(f, plainErr(err)); }); }); }
+  function shareInvite(inv) { var link = location.origin + '/swipe-drive/';
+    var text = 'Hi ' + inv.name.split(' ')[0] + ', I have added you to Swipe Drive. Open ' + link + ' and sign in with ' + inv.email + ' (that exact email). You will get a sign in link and code by email, and you will see your customers once you are in. Dan';
+    var box = $('#invShare'); box.hidden = false; $('#invShareText').textContent = text;
+    $('#invWa').href = 'https://wa.me/' + inv.whatsapp + '?text=' + encodeURIComponent(text);
+    $('#invCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast('Invite message copied'); }, function () {
+      var r = document.createRange(); r.selectNodeContents($('#invShareText')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Message selected, copy it'); }); }; }
 
   /* ---------------- install ---------------- */
   function installInfo() {
