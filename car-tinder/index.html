@@ -90,8 +90,18 @@
           <label class="ct-f"><span>Mileage</span><input name="px_mileage" type="number" inputmode="numeric" min="0"></label>
           <label class="ct-f"><span>Condition</span><select name="px_condition"><option value="">Choose</option><option>Excellent</option><option>Good</option><option>Fair</option><option>Needs work</option></select></label>
           <label class="ct-f"><span>Finance still owed (&pound;, 0 if none)</span><input name="px_finance" type="number" inputmode="numeric" min="0"></label>
+          <div class="ct-pair"><label class="ct-f"><span>PX valuation from Dan (&pound;)</span><input name="px_valuation_gbp" type="number" inputmode="numeric" min="0" step="50"></label>
+            <label class="ct-f"><span>Valued on</span><input name="px_valued_on" type="date"></label></div>
+          <p class="ct-hint" id="pxValBy"></p>
+          <div class="ct-pair"><label class="ct-f"><span>Settlement figure (&pound;)</span><input name="px_settlement_gbp" type="number" inputmode="numeric" min="0" step="50"></label>
+            <label class="ct-f"><span>Settlement valid until</span><input name="px_settlement_valid_until" type="date"></label></div>
+          <div class="ct-equity" id="pxEquity" hidden></div>
+          <span class="ct-lab">Condition ratings</span>
+          <div class="ct-rates" id="pxRates"></div>
           <label class="ct-f ct-file"><span>Photos of your car</span><input type="file" id="pxFile" accept="image/*" multiple></label>
           <div class="ct-thumbs" id="pxThumbs"></div>
+          <div class="ct-terms"><p id="pxTerms">Your part exchange valuation is based on the information and condition ratings you have provided being accurate. The final figure is subject to inspection of the vehicle and confirmation of any outstanding finance, and may change if the vehicle differs from the description given.</p>
+            <label class="ct-check"><input type="checkbox" id="pxConfirm"> <span id="pxConfirmLabel">I confirm</span></label><p class="ct-hint" id="pxConfirmed"></p></div>
         </div>
       </fieldset>
       <button class="ct-btn ct-btn-big" type="submit" id="pfSave">Find my match</button>

@@ -3,13 +3,17 @@
 insert into staff_invites(email,name,whatsapp) values ('a@x.test','Staff A','447700900001'),('b@x.test','Staff B','447700900002');
 insert into auth.users values ('00000000-0000-0000-0000-00000000000d','dan@x.test'),('00000000-0000-0000-0000-00000000000a','a@x.test'),
  ('00000000-0000-0000-0000-00000000000b','b@x.test'),('00000000-0000-0000-0000-00000000000c','c@x.test'),('00000000-0000-0000-0000-0000000000dd','d@x.test'),('00000000-0000-0000-0000-0000000000ee','e@x.test');
-update profiles set role='admin' where email='dan@x.test';
+update profiles set role='admin', name='Dan' where email='dan@x.test';
 create temp table r(test text, pass boolean); grant all on r to authenticated, anon;
 create or replace function pg_temp.as_user(u text) returns void language plpgsql as $$ begin perform set_config('request.jwt.claim.sub', u, false); execute 'set role authenticated'; end $$;
 
 -- staff A creates two customers, staff B creates one
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 insert into customers(id,owner_staff_id,name,email,colours,colours_must,specs,specs_must) values ('11111111-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000a','A cust 1','c@x.test','{Blue,Black}','{Blue}','{feat:pano,feat:hud}','{feat:pano}'),('11111111-0000-0000-0000-000000000002','00000000-0000-0000-0000-00000000000a','A cust 2',null,'{}','{}','{}','{}');
+do $$ begin begin update customers set px='{"reg":"AB12CDE"}' where id='11111111-0000-0000-0000-000000000001'; insert into r values ('PX cannot be saved without the I confirm tick', false);
+ exception when check_violation then insert into r values ('PX cannot be saved without the I confirm tick', true); end; end $$;
+update customers set px='{"reg":"AB12CDE"}', px_condition_ratings='{"overall":{"rating":4,"notes":"Small scuff"},"mot":{"rating":5}}', px_terms_confirmed_at=now(), px_terms_confirmed_by='staff', px_valuation_gbp=14500, px_valued_on='2026-10-21', px_settlement_gbp=9200, px_valuation_set_by='customer' where id='11111111-0000-0000-0000-000000000001';
+insert into r select 'staff A valuation is stamped staff even if the app claims customer', (select px_valuation_set_by from customers where id='11111111-0000-0000-0000-000000000001')='staff';
 insert into swipes(customer_id,reg,liked,by_user) values ('11111111-0000-0000-0000-000000000001','LV73VOB',true,auth.uid());
 insert into storage.objects(bucket_id,name) values ('px','11111111-0000-0000-0000-000000000001/px1.jpg');
 insert into purchases(customer_id,reg,model,purchase_date,finance_type,term_months,insurances) values ('11111111-0000-0000-0000-000000000001','LV73VOB','BMW M340d','2026-10-01','pcp',48,'[{"type":"gap","label":"GAP"}]');
@@ -35,10 +39,15 @@ insert into r select 'staff B cannot read staff A customer purchase', (select co
 do $$ begin begin insert into purchases(customer_id,reg,purchase_date,finance_type) values ('11111111-0000-0000-0000-000000000001','X1','2026-01-01','cash'); insert into r values ('staff B cannot add a purchase to A customer', false);
  exception when others then insert into r values ('staff B cannot add a purchase to A customer', true); end; end $$;
 insert into r select 'staff B cannot read A customer spec picks', not exists (select specs from customers where id='11111111-0000-0000-0000-000000000001');
+insert into r select 'staff B cannot read A customer valuation or settlement', not exists (select px_valuation_gbp from customers where id='11111111-0000-0000-0000-000000000001');
+update customers set px_valuation_gbp=1 where id='11111111-0000-0000-0000-000000000001';
+insert into r select 'staff B cannot read the valuation author name', valuation_set_by_name('11111111-0000-0000-0000-000000000001') is null;
+insert into r select 'staff B cannot read A customer condition ratings', not exists (select px_condition_ratings from customers where id='11111111-0000-0000-0000-000000000001');
 insert into r select 'staff B cannot read invites', (select count(*) from staff_invites)=0;
 reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 insert into r select 'staff A sees its 2 customers', (select count(*) from customers)=2;
+insert into r select 'staff A valuation untouched by B', (select px_valuation_gbp from customers where id='11111111-0000-0000-0000-000000000001')=14500;
 insert into r select 'staff A customer name not changed by B', (select name from customers where id='11111111-0000-0000-0000-000000000001')='A cust 1';
 insert into r select 'staff A sees own PX photo', (select count(*) from storage.objects)=1;
 insert into r select 'WhatsApp for A customer is A number', customer_whatsapp('11111111-0000-0000-0000-000000000001')='447700900001';
@@ -48,6 +57,9 @@ insert into r select 'admin reads all 3 customers', (select count(*) from custom
 insert into r select 'admin reads all PX photos', (select count(*) from storage.objects)=2;
 insert into r select 'admin reads all profiles', (select count(*) from profiles)=6;
 insert into r select 'admin reads all purchases', (select count(*) from purchases)=1;
+update customers set px_valuation_gbp=15000 where id='11111111-0000-0000-0000-000000000001';
+insert into r select 'admin can set a customer valuation, stamped Dan', valuation_set_by_name('11111111-0000-0000-0000-000000000001')='Dan';
+insert into r select 'admin reads condition ratings and confirmation', (select (px_condition_ratings->'overall'->>'rating')::int from customers where id='11111111-0000-0000-0000-000000000001')=4 and (select px_terms_confirmed_at is not null from customers where id='11111111-0000-0000-0000-000000000001');
 insert into r select 'admin reads invites', (select count(*) from staff_invites)=2;
 reset role;
 -- customer C claims A's customer 1
@@ -57,6 +69,13 @@ select claim_customer('22222222-0000-0000-0000-000000000001');
 insert into r select 'customer C sees only own profile after claim', (select count(*) from customers)=1 and (select id from customers)='11111111-0000-0000-0000-000000000001';
 insert into r select 'customer C sees own swipes and PX', (select count(*) from swipes)=1 and (select count(*) from storage.objects)=1;
 update customers set postcode='DA14 1AA';
+insert into r select 'customer C reads own valuation and settlement', (select px_valuation_gbp from customers)=15000 and (select px_settlement_gbp from customers)=9200;
+update customers set px_settlement_gbp=9000, px_settlement_valid_until='2026-11-04';
+insert into r select 'customer C settlement change keeps the valuation author', (select px_valuation_set_by from customers)='staff';
+update customers set px_valuation_gbp=16000, px_valuation_set_by='staff';
+update customers set px_condition_ratings = px_condition_ratings || '{"interior":{"rating":3}}', px_terms_confirmed_at=now(), px_terms_confirmed_by='customer';
+insert into r select 'customer C can rate own PX and confirm', (select px_condition_ratings->'interior'->>'rating' from customers)='3' and (select px_terms_confirmed_by from customers)='customer';
+insert into r select 'customer C valuation is stamped customer', (select px_valuation_set_by from customers)='customer' and valuation_set_by_name((select id from customers))='customer';
 insert into r select 'customer C sees own purchase', (select count(*) from purchases)=1;
 update purchases set cancelled=true;
 insert into r select 'customer C can cancel own reminder', (select cancelled from purchases);

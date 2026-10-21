@@ -15,6 +15,9 @@
   var fmtDate = function (d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; };
   function addMonths(d, n) { var x = new Date(d + 'T12:00:00'); var day = x.getDate(); x.setMonth(x.getMonth() + n); if (x.getDate() < day) x.setDate(0); return x.toISOString().slice(0, 10); }
   var INS = [['gap', 'GAP insurance'], ['tyre_alloy', 'Tyre and alloy insurance'], ['cosmetic', 'Cosmetic repair insurance'], ['warranty', 'Warranty'], ['other', 'Other cover']];
+  var RATE_AREAS = [['overall', 'Overall condition'], ['bodywork', 'Bodywork'], ['paintwork', 'Paintwork'], ['wheels_tyres', 'Wheels and tyres'], ['interior', 'Interior'], ['mechanical', 'Mechanical'], ['electrics', 'Electrics and warning lights'], ['service_history', 'Service history'], ['mot', 'MOT']];
+  var RATE_L = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
+  function ratingsText(r) { r = r || {}; return RATE_AREAS.filter(function (a) { return r[a[0]] && r[a[0]].rating; }).map(function (a) { var x = r[a[0]]; return a[1] + ': ' + RATE_L[x.rating] + ' (' + x.rating + '/5)' + (x.notes ? ', ' + x.notes : ''); }).join('; '); }
   var INS_L = {}; INS.forEach(function (i) { INS_L[i[0]] = i[1]; });
 
   /* ---------------- platform ---------------- */
@@ -83,7 +86,8 @@
       return sb.from('profiles').select('*').eq('id', sbUser.id).single().then(function (p) { sbProfile = p.data; return { uid: sbUser.id, role: p.data.role, email: p.data.email, name: p.data.name, whatsapp: p.data.whatsapp }; }); }); },
     sendLink: function (email) { return sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + location.pathname } }).then(function (r) { if (r.error) throw r.error; }); },
     signOut: function () { return sb.auth.signOut(); },
-    customers: function () { return sb.from('customers').select('*').order('created_at', { ascending: false }).then(function (r) { if (r.error) throw r.error; return r.data; }); },
+    customers: function () { return sb.from('customers').select('*').order('created_at', { ascending: false }).then(function (r) { if (r.error) throw r.error;
+      return Promise.all(r.data.map(function (c) { if (c.px_valuation_set_by !== 'staff') return c; return sb.rpc('valuation_set_by_name', { cid: c.id }).then(function (n) { c.px_valuation_set_by_name = n.data; return c; }); })); }); },
     saveCustomer: function (c) { var row = Object.assign({}, c); delete row.px_photos_preview; if (!row.id) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
       return sb.from('customers').upsert(row).select().single().then(function (r) { if (r.error) throw r.error; return r.data; }); },
     swipes: function (cid) { return sb.from('swipes').select('*').eq('customer_id', cid).then(function (r) { var o = {}; (r.data || []).forEach(function (s) { o[s.reg] = s; }); return o; }); },
@@ -225,15 +229,39 @@
     drawTri('#specChips', M.specOptions(), c.specs || [], c.specs_must || []);
     var px = c.px || {}; setChoice(f, 'px_has', px.reg ? 'yes' : 'no');
     f.elements.px_reg.value = px.reg || ''; f.elements.px_mileage.value = px.mileage || ''; f.elements.px_condition.value = px.condition || ''; f.elements.px_finance.value = px.finance_outstanding == null ? '' : px.finance_outstanding;
+    ['px_valuation_gbp', 'px_valued_on', 'px_settlement_gbp', 'px_settlement_valid_until'].forEach(function (k) { f.elements[k].value = c[k] == null ? '' : c[k]; });
+    $('#pxValBy').textContent = valBy(c); liveEquity();
+    drawRates(c.px_condition_ratings); $('#pxConfirm').checked = false;
+    $('#pxConfirmLabel').textContent = staff ? 'I confirm, on behalf of the customer, that this is what they told me' : 'I confirm';
+    $('#pxConfirmed').textContent = c.px_terms_confirmed_at ? 'Last confirmed ' + new Date(c.px_terms_confirmed_at).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + (c.px_terms_confirmed_by === 'staff' && !staff ? ' by your sales executive' : '') : '';
     S.pxPhotos = (px.photos || []).slice(); drawThumbs(); showDeps(f);
     $('#pfSave').textContent = staff ? 'Save and find matches' : 'Find my match';
   }
   function drawTri(sel, opts, on, must) { $(sel).innerHTML = opts.map(function (o) { var st = must.indexOf(o.key) !== -1 ? 'must' : on.indexOf(o.key) !== -1 ? 'like' : '';
       return '<button type="button" data-v="' + esc(o.key) + '" data-state="' + st + '" aria-pressed="' + (st ? 'true' : 'false') + '">' + esc(o.label) + '</button>'; }).join(''); }
   function triVals(sel) { var on = [], must = []; $$(sel + ' button').forEach(function (b) { var st = b.getAttribute('data-state'), v = b.getAttribute('data-v'); if (st) on.push(v); if (st === 'must') must.push(v); }); return { on: on, must: must }; }
+  function equity(c) { if (c.px_valuation_gbp == null || c.px_settlement_gbp == null) return null; var e = c.px_valuation_gbp - c.px_settlement_gbp;
+    return { neg: e < 0, text: M.gbp(Math.abs(e)), label: e < 0 ? 'Negative equity, subject to inspection and settlement confirmation' : 'Estimated equity, subject to inspection and settlement confirmation' }; }
+  function valBy(c) { if (c.px_valuation_gbp == null) return ''; var who = c.px_valuation_set_by === 'customer' ? (S.session && S.session.role === 'customer' ? 'you' : 'the customer') : (c.px_valuation_set_by_name || 'Dan');
+    return 'Valuation entered by ' + who + (c.px_valued_on ? ', valued on ' + fmtDate(c.px_valued_on) : ''); }
+  function pxMoneyHtml(c) { var bits = []; if (c.px_valuation_gbp != null) bits.push('PX valuation ' + M.gbp(c.px_valuation_gbp) + (c.px_valued_on ? ' (' + fmtDate(c.px_valued_on) + ')' : ''));
+    if (c.px_settlement_gbp != null) bits.push('Settlement ' + M.gbp(c.px_settlement_gbp) + (c.px_settlement_valid_until ? ' valid until ' + fmtDate(c.px_settlement_valid_until) : ''));
+    var e = equity(c); return (bits.length ? '<p>' + esc(bits.join(' \u00b7 ')) + '</p>' : '') + (c.px_valuation_gbp != null ? '<p>' + esc(valBy(c)) + '</p>' : '') + (e ? '<p><span class="ct-pill' + (e.neg ? ' hot' : '') + '">' + esc(e.text) + '</span> ' + esc(e.label) + '</p>' : ''); }
+  function liveEquity() { var f = $('#profileForm').elements, v = f.px_valuation_gbp.value, st = f.px_settlement_gbp.value, el = $('#pxEquity');
+    var e = equity({ px_valuation_gbp: v === '' ? null : +v, px_settlement_gbp: st === '' ? null : +st }); el.hidden = !e; if (e) { el.className = 'ct-equity' + (e.neg ? ' neg' : ''); el.innerHTML = '<b>' + esc(e.text) + '</b><small>' + esc(e.label) + '</small>'; } }
+  function drawRates(r) { r = r || {}; $('#pxRates').innerHTML = RATE_AREAS.map(function (a) { var x = r[a[0]] || {};
+      return '<div class="ct-rate" data-area="' + a[0] + '"><div class="ct-rate-h"><span>' + a[1] + '</span><em>' + (x.rating ? RATE_L[x.rating] : '') + '</em></div><div class="ct-rate-b">' +
+        [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-r="' + n + '" aria-label="' + RATE_L[n] + '" title="' + RATE_L[n] + '" aria-pressed="' + (x.rating === n ? 'true' : 'false') + '">' + n + '</button>'; }).join('') +
+        '</div><input type="text" maxlength="300" placeholder="Notes (optional)" value="' + esc(x.notes || '') + '"></div>'; }).join(''); }
+  function readRates() { var o = {}; $$('#pxRates .ct-rate').forEach(function (el) { var b = $('button[aria-pressed=true]', el), n = $('input', el).value.trim();
+      if (b || n) o[el.getAttribute('data-area')] = Object.assign(b ? { rating: +b.getAttribute('data-r') } : {}, n ? { notes: n } : {}); }); return o; }
   function drawThumbs() { $('#pxThumbs').innerHTML = S.pxPhotos.map(function (p) { return p.preview ? '<img src="' + esc(p.preview) + '" alt="Part exchange photo">' : '<span class="ct-pill">Photo saved</span>'; }).join(''); }
   function initProfile() {
     var f = $('#profileForm'); bindChoice(f);
+    ['px_valuation_gbp', 'px_settlement_gbp'].forEach(function (k) { f.elements[k].addEventListener('input', liveEquity); });
+    $('#pxRates').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b) return; var row = b.closest('.ct-rate'), on = b.getAttribute('aria-pressed') === 'true';
+      $$('button', row).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); }); if (!on) b.setAttribute('aria-pressed', 'true');
+      $('.ct-rate-h em', row).textContent = on ? '' : RATE_L[+b.getAttribute('data-r')]; platform.haptic(6); });
     $$('.ct-tri', f).forEach(function (g) { g.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return;
       var v = b.getAttribute('data-v'), st = b.getAttribute('data-state'), any = g.id === 'colourChips';
       var nx = any && v === 'Any' ? (st ? '' : 'like') : (st === '' ? 'like' : st === 'like' ? 'must' : '');
@@ -253,6 +281,14 @@
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
         annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), new_used: choice(f, 'new_used') });
       if (staff) c.email = el.email.value.trim() || null;
+      var num = function (v) { return v === '' ? null : Math.max(0, Math.round(+v)); }, prevVal = S.cust ? S.cust.px_valuation_gbp : null;
+      c.px_valuation_gbp = num(el.px_valuation_gbp.value); c.px_valued_on = el.px_valued_on.value || null;
+      c.px_settlement_gbp = num(el.px_settlement_gbp.value); c.px_settlement_valid_until = el.px_settlement_valid_until.value || null;
+      if (c.px_valuation_gbp !== prevVal && c.px_valuation_gbp != null) { c.px_valuation_set_by = staff ? 'staff' : 'customer'; c.px_valuation_set_by_name = staff ? (S.session.name || 'Dan') : ''; }
+      if (choice(f, 'px_has') === 'yes') { if (!$('#pxConfirm').checked) { msg.textContent = 'Please tick I confirm under the part exchange terms.'; $('#pxConfirm').focus(); return; }
+        c.px_condition_ratings = readRates(); c.px_terms_confirmed_at = new Date().toISOString(); c.px_terms_confirmed_by = staff ? 'staff' : 'customer'; }
+      else { c.px_condition_ratings = {}; c.px_terms_confirmed_at = null; c.px_terms_confirmed_by = null; c.px_valuation_gbp = c.px_settlement_gbp = null; c.px_valued_on = c.px_settlement_valid_until = null; }
+      if (LIVE) { delete c.px_valuation_set_by; delete c.px_valuation_set_by_name; delete c.px_valuation_set_by_user; } /* stamped by the database */
       c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: el.px_condition.value, finance_outstanding: el.px_finance.value === '' ? null : +el.px_finance.value,
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
       store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
@@ -392,7 +428,11 @@
       colours: (c.colours || []).join(', ') || 'Any', colours_must_have: (c.colours_must || []).join(', '), specs_wanted: (c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '), specs_must_have: (c.specs_must || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '),
       fuel: c.fuel, body_or_size: c.body, models_of_interest: (c.models || []).join(', '), new_or_used: c.new_used,
       px_reg: px.reg || 'None', px_mileage: px.mileage || '', px_condition: px.condition || '', px_finance_outstanding: px.finance_outstanding == null ? '' : px.finance_outstanding,
-      px_photo_links: (px.photos || []).map(function (p) { return p.link; }).filter(Boolean).join(' ') || ((px.photos || []).length ? (px.photos.length + ' photo(s) on the customer device, demo mode, not uploaded') : 'None'),
+px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gbp), px_valued_on: c.px_valued_on ? fmtDate(c.px_valued_on) : '', px_valuation_entered_by: c.px_valuation_gbp == null ? '' : c.px_valuation_set_by === 'customer' ? 'Customer' : (c.px_valuation_set_by_name || 'Dan'),
+      px_settlement_figure: c.px_settlement_gbp == null ? '' : M.gbp(c.px_settlement_gbp), px_settlement_valid_until: c.px_settlement_valid_until ? fmtDate(c.px_settlement_valid_until) : '',
+      px_condition_ratings: ratingsText(c.px_condition_ratings), px_terms_confirmed_at: c.px_terms_confirmed_at ? new Date(c.px_terms_confirmed_at).toLocaleString('en-GB') + ' by ' + (c.px_terms_confirmed_by || '') : '',
+      px_equity: equity(c) ? equity(c).label + ': ' + equity(c).text : '',
+            px_photo_links: (px.photos || []).map(function (p) { return p.link; }).filter(Boolean).join(' ') || ((px.photos || []).length ? (px.photos.length + ' photo(s) on the customer device, demo mode, not uploaded') : 'None'),
       liked_regs: L.filter(function (x) { return x.kind !== 'new'; }).map(function (x) { return x.reg; }).join(', '),
       liked_new_models: L.filter(function (x) { return x.kind === 'new'; }).map(function (x) { return x.model; }).join(', '),
       liked_cars: L.map(function (x) { return x.model + (x.kind === 'new' ? ' (new)' : ' ' + x.reg + ' ' + (x.price || '')); }).join(' | '),
@@ -409,7 +449,7 @@
     var c = S.cust || {}, staff = S.session.role !== 'customer';
     $('#meName').textContent = staff ? (c.name || 'Customer') : (c.name || 'You'); $('#meEmail').textContent = staff ? 'Signed in as ' + S.session.email : S.session.email;
     var b = c.budget_type === 'cash' ? (c.cash_gbp ? 'Up to ' + M.gbp(c.cash_gbp) : '') : (c.monthly_gbp ? 'Up to ' + M.gbp(c.monthly_gbp) + ' a month' : '');
-    $('#meSummary').innerHTML = '<dl><dt>Budget</dt><dd>' + esc(b || 'Not set') + '</dd><dt>Fuel</dt><dd>' + esc(c.fuel === 'open' ? 'Open minded' : c.fuel || '') + '</dd><dt>Colours</dt><dd>' + esc((c.colours || []).join(', ') || 'Any') + '</dd><dt>Spec</dt><dd>' + esc((c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', ') || 'Any') + '</dd><dt>Models</dt><dd>' + esc((c.models || []).join(', ') || 'Any') + '</dd><dt>Part exchange</dt><dd>' + esc(c.px && c.px.reg ? c.px.reg : 'None') + '</dd></dl>';
+    $('#meSummary').innerHTML = '<dl><dt>Budget</dt><dd>' + esc(b || 'Not set') + '</dd><dt>Fuel</dt><dd>' + esc(c.fuel === 'open' ? 'Open minded' : c.fuel || '') + '</dd><dt>Colours</dt><dd>' + esc((c.colours || []).join(', ') || 'Any') + '</dd><dt>Spec</dt><dd>' + esc((c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', ') || 'Any') + '</dd><dt>Models</dt><dd>' + esc((c.models || []).join(', ') || 'Any') + '</dd><dt>Part exchange</dt><dd>' + esc(c.px && c.px.reg ? c.px.reg : 'None') + '</dd></dl>' + pxMoneyHtml(c);
     $('#boughtBtn').textContent = staff ? 'Record a bought car' : "I've bought my car";
     store.purchases(c.id).then(function (ps) { $('#meBought').innerHTML = ps.filter(function (p) { return !p.cancelled; }).map(purchaseHtml).join('') || '<p class="ct-sub">Nothing recorded yet.</p>'; });
     var custEmail = !!CFG.CUSTOMER_EMAIL_ENABLED || staff; $$('[data-email-opt]').forEach(function (e) { e.hidden = !custEmail; });
@@ -482,6 +522,7 @@
           var p = row.ps.filter(function (x) { return !x.cancelled; })[0];
           return '<div class="ct-c" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3><p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + (admin ? ' \u00b7 Owner: ' + esc(c.owner_staff_id ? names[c.owner_staff_id] || 'Colleague' : 'Dan direct') : '') + '</p>' +
             '<p>' + (freshN ? '<span class="ct-pill hot">' + freshN + ' new today</span>' : '') + '<span class="ct-pill">' + ranked.length + ' matches</span><span class="ct-pill">' + likes + ' liked</span>' + (c.user_id ? '<span class="ct-pill">Claimed</span>' : '') + '</p>' +
+            (c.px && c.px.reg ? '<p>PX ' + esc(c.px.reg) + (c.px_terms_confirmed_at ? ' \u00b7 terms confirmed ' + esc(new Date(c.px_terms_confirmed_at).toLocaleDateString('en-GB')) : '') + '</p>' : '') + (ratingsText(c.px_condition_ratings) ? '<p>' + esc(ratingsText(c.px_condition_ratings)) + '</p>' : '') + pxMoneyHtml(c) +
             (p ? '<p>Bought ' + esc(p.model) + ' (' + esc(p.reg) + '). Reminder <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b></p>' : '') +
             '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-act="swipe">Swipe for them</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="matches">Shortlist</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="edit">Edit</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="bought">' + (p ? 'Edit bought car' : 'Bought') + '</button>' +
             (p ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-cancel-p="' + esc(p.id) + '">Cancel reminder</button>' : '') +

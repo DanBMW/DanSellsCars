@@ -42,7 +42,19 @@ create table if not exists public.customers (
   specs text[] not null default '{}',          -- spec keys, see car-tinder/match-core.js specOptions()
   specs_must text[] not null default '{}',
   new_used text check (new_used in ('new','used','both')),
-  px jsonb,                              -- {reg, mileage, condition, finance_outstanding}
+  px jsonb,                              -- {reg, mileage, condition, finance_outstanding, photos}
+  px_valuation_gbp int check (px_valuation_gbp >= 0),      -- PX valuation from Dan (no automatic valuations)
+  px_valued_on date,
+  px_valuation_set_by text check (px_valuation_set_by in ('customer','staff')),  -- stamped by trigger
+  px_valuation_set_by_user uuid references public.profiles(id),
+  px_settlement_gbp int check (px_settlement_gbp >= 0),    -- settlement figure, outstanding finance
+  px_settlement_valid_until date,
+  -- condition ratings: {"overall":{"rating":1..5,"notes":""},"bodywork":...,"paintwork","wheels_tyres","interior","mechanical","electrics","service_history","mot"}
+  px_condition_ratings jsonb not null default '{}',
+  px_terms_confirmed_at timestamptz,       -- "I confirm" tick on the PX terms note
+  px_terms_confirmed_by text check (px_terms_confirmed_by in ('customer','staff')),
+  constraint px_needs_confirmation check (px is null or px_terms_confirmed_at is not null),
+  constraint px_ratings_1_to_5 check (jsonb_typeof(px_condition_ratings) = 'object'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -150,6 +162,26 @@ begin
 drop trigger if exists guard_customer on public.customers;
 create trigger guard_customer before update on public.customers for each row execute function public.guard_customer();
 
+-- who last set the PX valuation, from the signed in role (the app cannot fake it)
+create or replace function public.stamp_valuation() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is not null and (tg_op = 'INSERT' and new.px_valuation_gbp is not null
+       or tg_op = 'UPDATE' and new.px_valuation_gbp is distinct from old.px_valuation_gbp) then
+    new.px_valuation_set_by = case when public.my_role() = 'customer' then 'customer' else 'staff' end;
+    new.px_valuation_set_by_user = auth.uid();
+  elsif tg_op = 'UPDATE' and auth.uid() is not null then
+    new.px_valuation_set_by = old.px_valuation_set_by; new.px_valuation_set_by_user = old.px_valuation_set_by_user;
+  end if;
+  return new; end $$;
+drop trigger if exists stamp_valuation on public.customers;
+create trigger stamp_valuation before insert or update on public.customers for each row execute function public.stamp_valuation();
+
+-- name of whoever last set a customer's valuation (for "Valuation entered by Dan")
+create or replace function public.valuation_set_by_name(cid uuid) returns text language sql stable security definer set search_path = public as
+$$ select case when c.px_valuation_set_by = 'customer' then 'customer' else coalesce(p.name, 'staff') end
+   from public.customers c left join public.profiles p on p.id = c.px_valuation_set_by_user
+   where c.id = cid and public.can_access_customer(cid) $$;
+
 -- customer claims a staff created profile from the emailed link (claim id is the secret)
 create or replace function public.claim_customer(claim uuid) returns uuid language plpgsql security definer set search_path = public as $$
 declare cl public.customer_claims; me text;
@@ -220,7 +252,7 @@ create policy ns_sel on public.notifications_sent for select to authenticated us
 
 grant usage on schema public to authenticated, anon;
 grant select, insert, update, delete on all tables in schema public to authenticated;
-grant execute on function public.claim_customer(uuid), public.customer_whatsapp(uuid) to authenticated;
+grant execute on function public.claim_customer(uuid), public.customer_whatsapp(uuid), public.valuation_set_by_name(uuid) to authenticated;
 grant execute on function public.email_unsubscribe(uuid) to anon, authenticated;
 
 -- ---------- Storage: private bucket px, path = <customer_id>/<file> ----------
@@ -234,6 +266,10 @@ create policy px_del on storage.objects for delete to authenticated using (bucke
 
 -- ---------- Upgrading an existing project from the first version:
 -- alter table public.customers add column if not exists colours text[] not null default '{}', add column if not exists colours_must text[] not null default '{}', add column if not exists specs text[] not null default '{}', add column if not exists specs_must text[] not null default '{}';
+
+-- alter table public.customers add column if not exists px_valuation_gbp int, add column if not exists px_valued_on date, add column if not exists px_valuation_set_by text, add column if not exists px_valuation_set_by_user uuid references public.profiles(id), add column if not exists px_settlement_gbp int, add column if not exists px_settlement_valid_until date;
+
+-- alter table public.customers add column if not exists px_condition_ratings jsonb not null default '{}', add column if not exists px_terms_confirmed_at timestamptz, add column if not exists px_terms_confirmed_by text, add constraint px_needs_confirmation check (px is null or px_terms_confirmed_at is not null);
 
 -- ---------- Make Dan the admin (after his first sign in) ----------
 -- update public.profiles set role = 'admin', whatsapp = '447827138197', name = 'Dan' where email = 'DAN_EMAIL_HERE';
