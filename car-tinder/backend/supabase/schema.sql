@@ -37,6 +37,10 @@ create table if not exists public.customers (
   annual_mileage int,
   fuel text check (fuel in ('petrol','diesel','hybrid','electric','open')),
   body text, models text[] not null default '{}',
+  colours text[] not null default '{}',        -- colour families liked (Black, Grey, Blue...)
+  colours_must text[] not null default '{}',   -- subset that is a must have
+  specs text[] not null default '{}',          -- spec keys, see car-tinder/match-core.js specOptions()
+  specs_must text[] not null default '{}',
   new_used text check (new_used in ('new','used','both')),
   px jsonb,                              -- {reg, mileage, condition, finance_outstanding}
   created_at timestamptz not null default now(),
@@ -227,6 +231,9 @@ create policy px_sel on storage.objects for select to authenticated using (bucke
 create policy px_ins on storage.objects for insert to authenticated with check (bucket_id = 'px' and public.can_access_customer(((storage.foldername(name))[1])::uuid));
 create policy px_upd on storage.objects for update to authenticated using (bucket_id = 'px' and public.can_access_customer(((storage.foldername(name))[1])::uuid));
 create policy px_del on storage.objects for delete to authenticated using (bucket_id = 'px' and public.can_access_customer(((storage.foldername(name))[1])::uuid));
+
+-- ---------- Upgrading an existing project from the first version:
+-- alter table public.customers add column if not exists colours text[] not null default '{}', add column if not exists colours_must text[] not null default '{}', add column if not exists specs text[] not null default '{}', add column if not exists specs_must text[] not null default '{}';
 
 -- ---------- Make Dan the admin (after his first sign in) ----------
 -- update public.profiles set role = 'admin', whatsapp = '447827138197', name = 'Dan' where email = 'DAN_EMAIL_HERE';

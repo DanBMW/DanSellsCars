@@ -16,6 +16,7 @@ const SITE = 'https://dan-sells.co.uk';
 await import(SITE + '/stock-core.js');
 await import(SITE + '/car-tinder/match-core.js');
 const M = (globalThis as any).ctMatch;
+(globalThis as any).ctDetails = await fetch(SITE + '/automation/car-details.json').then(r => r.json()).catch(() => null);  // equipment for spec picks
 const env = (k: string) => Deno.env.get(k) || '';
 const APP = SITE + '/car-tinder/';
 const CUSTOMER_EMAIL_ENABLED = env('CUSTOMER_EMAIL_ENABLED') === 'true';

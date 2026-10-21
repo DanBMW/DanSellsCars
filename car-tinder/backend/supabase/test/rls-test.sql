@@ -9,7 +9,7 @@ create or replace function pg_temp.as_user(u text) returns void language plpgsql
 
 -- staff A creates two customers, staff B creates one
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-insert into customers(id,owner_staff_id,name,email) values ('11111111-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000a','A cust 1','c@x.test'),('11111111-0000-0000-0000-000000000002','00000000-0000-0000-0000-00000000000a','A cust 2',null);
+insert into customers(id,owner_staff_id,name,email,colours,colours_must,specs,specs_must) values ('11111111-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000a','A cust 1','c@x.test','{Blue,Black}','{Blue}','{feat:pano,feat:hud}','{feat:pano}'),('11111111-0000-0000-0000-000000000002','00000000-0000-0000-0000-00000000000a','A cust 2',null,'{}','{}','{}','{}');
 insert into swipes(customer_id,reg,liked,by_user) values ('11111111-0000-0000-0000-000000000001','LV73VOB',true,auth.uid());
 insert into storage.objects(bucket_id,name) values ('px','11111111-0000-0000-0000-000000000001/px1.jpg');
 insert into purchases(customer_id,reg,model,purchase_date,finance_type,term_months,insurances) values ('11111111-0000-0000-0000-000000000001','LV73VOB','BMW M340d','2026-10-01','pcp',48,'[{"type":"gap","label":"GAP"}]');
@@ -34,6 +34,7 @@ do $$ begin begin update profiles set role='admin' where id=auth.uid(); insert i
 insert into r select 'staff B cannot read staff A customer purchase', (select count(*) from purchases)=0;
 do $$ begin begin insert into purchases(customer_id,reg,purchase_date,finance_type) values ('11111111-0000-0000-0000-000000000001','X1','2026-01-01','cash'); insert into r values ('staff B cannot add a purchase to A customer', false);
  exception when others then insert into r values ('staff B cannot add a purchase to A customer', true); end; end $$;
+insert into r select 'staff B cannot read A customer spec picks', not exists (select specs from customers where id='11111111-0000-0000-0000-000000000001');
 insert into r select 'staff B cannot read invites', (select count(*) from staff_invites)=0;
 reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
@@ -59,6 +60,8 @@ update customers set postcode='DA14 1AA';
 insert into r select 'customer C sees own purchase', (select count(*) from purchases)=1;
 update purchases set cancelled=true;
 insert into r select 'customer C can cancel own reminder', (select cancelled from purchases);
+update customers set specs_must='{}';
+insert into r select 'customer C can edit own colour and spec picks', (select specs_must from customers)='{}' and (select colours from customers)='{Blue,Black}';
 insert into r select 'customer C can edit own profile', (select postcode from customers)='DA14 1AA';
 insert into r select 'customer C sees only own login profile', (select count(*) from profiles)=1;
 do $$ begin begin update customers set owner_staff_id=null; insert into r values ('customer C cannot detach the owner', false);

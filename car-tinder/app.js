@@ -120,7 +120,8 @@
       });
       S.newRange = out;
     }).catch(function () { S.newRange = []; });
-    return Promise.all([stock, range]);
+    var det = fetch('../automation/car-details.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { window.ctDetails = d; }).catch(function () { window.ctDetails = null; });
+    return Promise.all([stock, range, det]);
   }
   /* body and fuel for a new model, only from its name and MBG.html group */
   function newCar(name, group) {
@@ -218,14 +219,27 @@
     f.elements.annual_mileage.value = String(c.annual_mileage || 8000);
     setChoice(f, 'budget_type', c.budget_type || 'monthly'); setChoice(f, 'fuel', c.fuel || 'open'); setChoice(f, 'body', c.body || 'any');
     setChoice(f, 'models', c.models || []); setChoice(f, 'new_used', c.new_used || 'both');
+    var fams = {}; S.cars.forEach(function (car) { var fm = M.colourFamily(car); if (fm) fams[fm] = 1; });
+    var famList = M.FAMILY.map(function (x) { return x[0]; }).filter(function (x) { return fams[x]; }); if (fams.Other) famList.push('Other');
+    drawTri('#colourChips', [{ key: 'Any', label: 'Any' }].concat(famList.map(function (x) { return { key: x, label: x }; })), c.colours || ['Any'], c.colours_must || []);
+    drawTri('#specChips', M.specOptions(), c.specs || [], c.specs_must || []);
     var px = c.px || {}; setChoice(f, 'px_has', px.reg ? 'yes' : 'no');
     f.elements.px_reg.value = px.reg || ''; f.elements.px_mileage.value = px.mileage || ''; f.elements.px_condition.value = px.condition || ''; f.elements.px_finance.value = px.finance_outstanding == null ? '' : px.finance_outstanding;
     S.pxPhotos = (px.photos || []).slice(); drawThumbs(); showDeps(f);
     $('#pfSave').textContent = staff ? 'Save and find matches' : 'Find my match';
   }
+  function drawTri(sel, opts, on, must) { $(sel).innerHTML = opts.map(function (o) { var st = must.indexOf(o.key) !== -1 ? 'must' : on.indexOf(o.key) !== -1 ? 'like' : '';
+      return '<button type="button" data-v="' + esc(o.key) + '" data-state="' + st + '" aria-pressed="' + (st ? 'true' : 'false') + '">' + esc(o.label) + '</button>'; }).join(''); }
+  function triVals(sel) { var on = [], must = []; $$(sel + ' button').forEach(function (b) { var st = b.getAttribute('data-state'), v = b.getAttribute('data-v'); if (st) on.push(v); if (st === 'must') must.push(v); }); return { on: on, must: must }; }
   function drawThumbs() { $('#pxThumbs').innerHTML = S.pxPhotos.map(function (p) { return p.preview ? '<img src="' + esc(p.preview) + '" alt="Part exchange photo">' : '<span class="ct-pill">Photo saved</span>'; }).join(''); }
   function initProfile() {
     var f = $('#profileForm'); bindChoice(f);
+    $$('.ct-tri', f).forEach(function (g) { g.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return;
+      var v = b.getAttribute('data-v'), st = b.getAttribute('data-state'), any = g.id === 'colourChips';
+      var nx = any && v === 'Any' ? (st ? '' : 'like') : (st === '' ? 'like' : st === 'like' ? 'must' : '');
+      if (any && v === 'Any' && nx) $$('button', g).forEach(function (x) { x.setAttribute('data-state', ''); x.setAttribute('aria-pressed', 'false'); });
+      if (any && v !== 'Any') { var a = $('[data-v=Any]', g); a.setAttribute('data-state', ''); a.setAttribute('aria-pressed', 'false'); }
+      b.setAttribute('data-state', nx); b.setAttribute('aria-pressed', nx ? 'true' : 'false'); platform.haptic(8); }); });
     $('#pxFile').addEventListener('change', function (e) {
       var files = [].slice.call(e.target.files || []).slice(0, 6); var cid = (S.cust && S.cust.id) || (S.pendingId = S.pendingId || uuid());
       $('#pfMsg').textContent = 'Adding photos...';
@@ -237,7 +251,7 @@
       if (!el.name.value.trim() || !el.phone.value.trim() || !el.postcode.value.trim()) { msg.textContent = 'Name, mobile and postcode please.'; return; }
       var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim(), postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
-        annual_mileage: +el.annual_mileage.value, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), new_used: choice(f, 'new_used') });
+        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), new_used: choice(f, 'new_used') });
       if (staff) c.email = el.email.value.trim() || null;
       c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: el.px_condition.value, finance_outstanding: el.px_finance.value === '' ? null : +el.px_finance.value,
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
@@ -256,13 +270,13 @@
   }
   function cardHtml(x) {
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
-    var img = isNew ? '<div class="ct-img ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (c.image ? '<div class="ct-img" style="background-image:url(\'' + esc(c.image) + '\')"></div>' : '<div class="ct-img ct-noimg">No photo yet</div>');
+    var img = isNew ? '<div class="ct-noimg-ph">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (photos(c).length ? photoHtml(c, 0, true) : '<div class="ct-noimg-ph">No photo yet</div>');
     var src = isNew ? 'Brand new' : c.source === 'group' ? 'I can source this one' : 'On my forecourt';
     var tags = isNew ? [c.group] : [c.year, c.mileage, c.fuel, c.gearbox];
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
       : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">Monthly: ask for a quote</div>');
-    return img + '<div class="ct-shade"></div><div class="ct-score"><b>' + x.score + '%</b> match</div><div class="ct-src">' + esc(src) + '</div>' +
-      '<div class="ct-stamp ct-stamp-like">LIKE</div><div class="ct-stamp ct-stamp-nope">NOPE</div>' +
+    return '<div class="ct-tarea">' + img + '<div class="ct-score"><b>' + x.score + '%</b> match</div><div class="ct-src">' + esc(src) + '</div>' +
+      '</div><div class="ct-stamp ct-stamp-like">LIKE</div><div class="ct-stamp ct-stamp-nope">NOPE</div>' +
       '<div class="ct-meta"><h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
       x.reasons.map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
@@ -284,7 +298,10 @@
     el.addEventListener('pointerdown', function (e) { down = true; sx = e.clientX; sy = e.clientY; t0 = lastT = performance.now(); lastX = e.clientX; el.style.transition = 'none'; el.setPointerCapture(e.pointerId); el.style.cursor = 'grabbing'; });
     el.addEventListener('pointermove', function (e) { if (!down) return; dx = e.clientX - sx; dy = (e.clientY - sy) * 0.4; var now = performance.now(); vx = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now; set(); });
     function up() { if (!down) return; down = false; el.style.cursor = '';
-      if (Math.abs(dx) < 6 && Math.abs(dy) < 6 && performance.now() - t0 < 300) { dx = dy = 0; set(); openSheet(x); return; }
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6 && performance.now() - t0 < 300) { dx = dy = 0; set();
+        var ph = $('.ct-ph', el), rb = ph && ph.getBoundingClientRect();
+        if (rb && sy < rb.bottom && photos(x.car).length > 1) { stepPhoto(el, x.car, sx < rb.left + rb.width / 2 ? -1 : 1); return; }
+        openSheet(x); return; }
       if (dx > 110 || vx > 0.6) fling(el, x, 1, vx); else if (dx < -110 || vx < -0.6) fling(el, x, -1, vx);
       else { el.style.transition = 'transform .45s cubic-bezier(.2,1.5,.4,1)'; dx = dy = 0; set(); like.style.opacity = nope.style.opacity = 0; } }
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
@@ -322,15 +339,22 @@
   }
   function openSheet(x) {
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
-    var imgs = (c.images && c.images.length ? c.images : c.image ? [c.image] : []);
+    var imgs = photos(c);
     var specs = isNew ? [['Range', c.group]] : [['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
-    $('#sheetBody').innerHTML = (imgs.length ? '<div class="ct-gal">' + imgs.slice(0, 8).map(function (u) { return '<img src="' + esc(u) + '" alt="" loading="lazy">'; }).join('') + '</div>' : '') +
+    $('#sheetBody').innerHTML = (imgs.length ? '<div class="ct-gal">' + imgs.slice(0, 10).map(function (u, k) { return photoHtml({ images: imgs, model: c.model }, k, false); }).join('') + '</div>' : '') +
       '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + esc(isNew ? 'Brand new BMW, ordered to your spec or from new stock' : c.source === 'group' ? 'I can source this one' : 'On my forecourt') + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
       (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
       '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>';
     $('#sheet').hidden = false;
   }
+  function photos(c) { var l = (c.images && c.images.length ? c.images : []).slice(0, 10); if (c.image && l.indexOf(c.image) === -1 && !l.length) l = [c.image]; return l; }
+  function photoHtml(c, i, dots) { var l = photos(c); if (!l.length) return '';
+    var u = esc(l[i || 0]); return '<div class="ct-ph" data-i="' + (i || 0) + '"><div class="ct-ph-bg" style="background-image:url(\'' + u + '\')"></div><img class="ct-ph-img" src="' + u + '" alt="' + esc(c.model) + '" draggable="false"' + (dots ? '' : ' loading="lazy"') + '>' +
+      (dots && l.length > 1 ? '<div class="ct-dots">' + l.map(function (_, k) { return '<i' + (k === (i || 0) ? ' class="on"' : '') + '></i>'; }).join('') + '</div>' : '') + '</div>'; }
+  function stepPhoto(el, c, dir) { var ph = $('.ct-ph', el), l = photos(c); if (!ph || l.length < 2) return false; var i = (+ph.getAttribute('data-i') + dir + l.length) % l.length;
+    ph.setAttribute('data-i', i); var u = l[i]; $('.ct-ph-img', ph).src = u; $('.ct-ph-bg', ph).style.backgroundImage = "url('" + u.replace(/'/g, '%27') + "')";
+    $$('.ct-dots i', ph).forEach(function (d, k) { d.className = k === i ? 'on' : ''; }); platform.haptic(6); return true; }
   function finHtml(f) { return f ? '<div class="ct-repx"><b>' + esc(f.headline) + '</b><br><b>Representative example.</b> ' + esc(f.example) + '</div>' : '<p class="ct-mon">Monthly: ask for a quote</p>'; }
   function topCard() { return $('#deck .ct-card:last-child'); }
   function initDeck() {
@@ -349,7 +373,7 @@
     var L = liked(), staff = S.session.role !== 'customer';
     $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + (waWho() || 'me') + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
-      return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : c.image ? '<img src="' + esc(c.image) + '" alt="' + esc(c.model) + '" loading="lazy">' : '<div class="ct-noimg">No photo yet</div>') +
+      return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">No photo yet</div>') +
         '<div class="ct-m-b"><h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
         (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
         '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp about ' + esc(isNew ? 'this model' : M.normReg(c.reg)) + '</a></div>' +
@@ -365,6 +389,7 @@
     var lead = 'CT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
     var body = { _subject: 'Car Tinder matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'car-tinder', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
       budget: c.budget_type === 'cash' ? 'Cash up to \u00a3' + (c.cash_gbp || '?') : 'Monthly up to \u00a3' + (c.monthly_gbp || '?'), deposit: c.deposit_gbp || '', annual_mileage: c.annual_mileage,
+      colours: (c.colours || []).join(', ') || 'Any', colours_must_have: (c.colours_must || []).join(', '), specs_wanted: (c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '), specs_must_have: (c.specs_must || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '),
       fuel: c.fuel, body_or_size: c.body, models_of_interest: (c.models || []).join(', '), new_or_used: c.new_used,
       px_reg: px.reg || 'None', px_mileage: px.mileage || '', px_condition: px.condition || '', px_finance_outstanding: px.finance_outstanding == null ? '' : px.finance_outstanding,
       px_photo_links: (px.photos || []).map(function (p) { return p.link; }).filter(Boolean).join(' ') || ((px.photos || []).length ? (px.photos.length + ' photo(s) on the customer device, demo mode, not uploaded') : 'None'),
@@ -384,7 +409,7 @@
     var c = S.cust || {}, staff = S.session.role !== 'customer';
     $('#meName').textContent = staff ? (c.name || 'Customer') : (c.name || 'You'); $('#meEmail').textContent = staff ? 'Signed in as ' + S.session.email : S.session.email;
     var b = c.budget_type === 'cash' ? (c.cash_gbp ? 'Up to ' + M.gbp(c.cash_gbp) : '') : (c.monthly_gbp ? 'Up to ' + M.gbp(c.monthly_gbp) + ' a month' : '');
-    $('#meSummary').innerHTML = '<dl><dt>Budget</dt><dd>' + esc(b || 'Not set') + '</dd><dt>Fuel</dt><dd>' + esc(c.fuel === 'open' ? 'Open minded' : c.fuel || '') + '</dd><dt>Models</dt><dd>' + esc((c.models || []).join(', ') || 'Any') + '</dd><dt>Part exchange</dt><dd>' + esc(c.px && c.px.reg ? c.px.reg : 'None') + '</dd></dl>';
+    $('#meSummary').innerHTML = '<dl><dt>Budget</dt><dd>' + esc(b || 'Not set') + '</dd><dt>Fuel</dt><dd>' + esc(c.fuel === 'open' ? 'Open minded' : c.fuel || '') + '</dd><dt>Colours</dt><dd>' + esc((c.colours || []).join(', ') || 'Any') + '</dd><dt>Spec</dt><dd>' + esc((c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', ') || 'Any') + '</dd><dt>Models</dt><dd>' + esc((c.models || []).join(', ') || 'Any') + '</dd><dt>Part exchange</dt><dd>' + esc(c.px && c.px.reg ? c.px.reg : 'None') + '</dd></dl>';
     $('#boughtBtn').textContent = staff ? 'Record a bought car' : "I've bought my car";
     store.purchases(c.id).then(function (ps) { $('#meBought').innerHTML = ps.filter(function (p) { return !p.cancelled; }).map(purchaseHtml).join('') || '<p class="ct-sub">Nothing recorded yet.</p>'; });
     var custEmail = !!CFG.CUSTOMER_EMAIL_ENABLED || staff; $$('[data-email-opt]').forEach(function (e) { e.hidden = !custEmail; });
