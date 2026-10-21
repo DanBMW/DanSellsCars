@@ -302,7 +302,7 @@
         var ph = $('.ct-ph', el), rb = ph && ph.getBoundingClientRect();
         if (rb && sy < rb.bottom && photos(x.car).length > 1) { stepPhoto(el, x.car, sx < rb.left + rb.width / 2 ? -1 : 1); return; }
         openSheet(x); return; }
-      if (dx > 110 || vx > 0.6) fling(el, x, 1, vx); else if (dx < -110 || vx < -0.6) fling(el, x, -1, vx);
+      if (dx > 110 || (vx > 0.6 && dx > 45)) fling(el, x, 1, vx); else if (dx < -110 || (vx < -0.6 && dx < -45)) fling(el, x, -1, vx);
       else { el.style.transition = 'transform .45s cubic-bezier(.2,1.5,.4,1)'; dx = dy = 0; set(); like.style.opacity = nope.style.opacity = 0; } }
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
     el._fling = function (dir) { fling(el, x, dir, 0); };
