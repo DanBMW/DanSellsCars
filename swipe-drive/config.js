@@ -4,8 +4,9 @@
    MODE 'supabase': fill the three values below from the Supabase project. */
 window.CT_CONFIG = {
   MODE: 'demo',
-  SUPABASE_URL: '',          // e.g. https://abcd1234.supabase.co
-  SUPABASE_ANON_KEY: '',     // Project Settings > API > anon public key
+  SUPABASE_URL: 'https://dexqyqrbelmdjdhxaboq.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRleHF5cXJiZWxtZGpkaHhhYm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MDkzMTUsImV4cCI6MjEwODE4NTMxNX0.TrUevRftRSZxIh8W8n_0ZJh7wQmehpyoGtygR02BCc8', // public anon key
+  // MODE stays 'demo' until the schema is applied; then set MODE: 'supabase'
   VAPID_PUBLIC_KEY: 'BLPdkG2xuSQSltCw39DiaVH9xmEpOmOD2Vurehq4CzR6gYhdKlGNhySEENAEXmIe-YfMbTHiZeALIxEnWniK0Mw',
   CUSTOMER_EMAIL_ENABLED: false, // customer match emails on hold: customers get push only
   FORMSPREE: 'https://formspree.io/f/xqewleog',

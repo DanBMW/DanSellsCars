@@ -274,8 +274,8 @@ create policy px_del on storage.objects for delete to authenticated using (bucke
 -- ---------- Make Dan the admin (after his first sign in) ----------
 -- update public.profiles set role = 'admin', whatsapp = '447827138197', name = 'Dan' where email = 'DAN_EMAIL_HERE';
 
--- ---------- Schedule the match job daily at 10:20 UK (09:20 UTC in BST) ----------
+-- ---------- Schedule the match job daily at 10:15 UTC ----------
 -- create extension if not exists pg_cron; create extension if not exists pg_net;
--- select cron.schedule('swipe-drive-match-alerts', '20 9 * * *', $$ select net.http_post(
---   url := 'https://PROJECT_REF.supabase.co/functions/v1/match-alerts',
+-- select cron.schedule('swipe-drive-match-alerts', '15 10 * * *', $$ select net.http_post(
+--   url := 'https://dexqyqrbelmdjdhxaboq.supabase.co/functions/v1/match-alerts',
 --   headers := jsonb_build_object('Authorization', 'Bearer ' || 'CRON_SECRET_HERE')) $$);

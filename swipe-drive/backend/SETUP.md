@@ -20,7 +20,7 @@ npx supabase secrets set VAPID_PUBLIC=<public key in config.js> VAPID_PRIVATE=<f
 npx supabase functions deploy match-alerts --no-verify-jwt
 npx supabase functions deploy unsubscribe --no-verify-jwt
 ```
-Then run the commented pg_cron block in schema.sql (daily 09:20 UTC, after the 08:48 UTC lookup rebuild).
+Then run the commented pg_cron block in schema.sql (daily 10:15 UTC, see after-signin-and-secrets.sql).
 Optional for email: `RESEND_API_KEY` and `MAIL_FROM="Swipe Drive <matches@mail.dan-sells.co.uk>"`.
 
 ## 3. Email (internal staff digests and sign in links)
