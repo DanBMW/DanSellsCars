@@ -81,10 +81,11 @@
   var sb = null, sbUser = null, sbProfile = null;
   var supa = {
     mode: 'supabase',
-    init: function () { return import('https://esm.sh/@supabase/supabase-js@2').then(function (m) { sb = m.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: { persistSession: true, detectSessionInUrl: true, flowType: 'pkce' } }); }); },
+    init: function () { return import('https://esm.sh/@supabase/supabase-js@2').then(function (m) { sb = m.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: { persistSession: true, detectSessionInUrl: true, flowType: 'implicit' } }); }); },
     session: function () { return sb.auth.getSession().then(function (r) { sbUser = r.data.session && r.data.session.user; if (!sbUser) return null;
       return sb.from('profiles').select('*').eq('id', sbUser.id).single().then(function (p) { sbProfile = p.data; return { uid: sbUser.id, role: p.data.role, email: p.data.email, name: p.data.name, whatsapp: p.data.whatsapp }; }); }); },
-    sendLink: function (email) { return sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + location.pathname } }).then(function (r) { if (r.error) throw r.error; }); },
+    verifyCode: function (email, code) { return sb.auth.verifyOtp({ email: email, token: code, type: 'email' }).then(function (r) { if (r.error) throw r.error; }); },
+    sendLink: function (email) { return sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: APP_URL } }).then(function (r) { if (r.error) throw r.error; }); },
     signOut: function () { return sb.auth.signOut(); },
     customers: function () { return sb.from('customers').select('*').order('created_at', { ascending: false }).then(function (r) { if (r.error) throw r.error;
       return Promise.all(r.data.map(function (c) { if (c.px_valuation_set_by !== 'staff') return c; return sb.rpc('valuation_set_by_name', { cid: c.id }).then(function (n) { c.px_valuation_set_by_name = n.data; return c; }); })); }); },
@@ -106,6 +107,13 @@
     owner: function (c) { if (!c || !c.owner_staff_id) return Promise.resolve(null); return sb.rpc('customer_whatsapp', { cid: c.id }).then(function (r) { return { whatsapp: r.data, name: '', email: '' }; }); },
     claim: function (id) { return sb.rpc('claim_customer', { claim: id }); }
   };
+  /* One fixed callback URL, so it always matches the Supabase redirect allow list
+     (location.pathname could be /swipe-drive/index.html or carry ?reg=). */
+  var APP_URL = location.origin + '/swipe-drive/';
+  /* Supabase puts a failed or expired link's reason in the hash: #error=...&error_description=... */
+  var AUTH_ERR = (function () { var h = new URLSearchParams((location.hash || '').slice(1)), q = new URLSearchParams(location.search);
+    var d = h.get('error_description') || q.get('error_description'); return d ? { code: h.get('error_code') || q.get('error_code') || '', text: d.replace(/\+/g, ' ') } : null; })();
+  function isAuthHash(h) { return /(^|&)(access_token|refresh_token|error|error_code|type)=/.test(h || ''); }
   var LIVE = CFG.MODE === 'supabase' && CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY;
   var store = LIVE ? supa : demo;
 
@@ -150,20 +158,26 @@
   function waWho() { return S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
 
   /* ---------------- routing ---------------- */
-  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites'];
+  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'pick'];
   function go(name) { if (location.hash !== '#' + name) location.hash = name; else route(); }
   function route() {
-    var h = (location.hash || '').slice(1) || (S.session ? 'discover' : 'signin');
+    var h = (location.hash || '').slice(1); if (isAuthHash(h)) h = '';
+    h = h || (S.session ? 'discover' : 'signin');
     if (!S.session) h = 'signin';
     if (SCREENS.indexOf(h) === -1) h = 'discover';
     var staff = S.session && S.session.role !== 'customer';
     if ((h === 'team' || h === 'invites') && !staff) h = 'discover';
     if (h === 'invites' && S.session.role !== 'admin') h = 'team';
-    if (S.session && !S.cust && ['discover', 'matches', 'bought', 'me'].indexOf(h) !== -1) h = staff ? 'team' : 'profile';
+    /* Staff with no customer picked: Discover and Matches explain what to do, Me shows the account.
+       (This used to bounce every tab back to Customers, so the nav looked dead.) */
+    var tab = h;
+    if (S.session && !S.cust && staff && (h === 'discover' || h === 'matches' || h === 'bought')) h = 'pick';
+    else if (S.session && !S.cust && !staff && ['discover', 'matches', 'bought', 'me'].indexOf(h) !== -1) h = 'profile';
+    if (h === 'pick') tab = tab === 'bought' ? 'team' : tab;
     if (S.session && S.cust && !S.cust.name && !staff && h !== 'profile') h = 'profile';
     $$('.ct-screen').forEach(function (s) { s.hidden = s.getAttribute('data-screen') !== h; });
     $('#nav').hidden = !S.session;
-    $$('[data-nav]').forEach(function (a) { if (a.getAttribute('data-nav') === h) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    $$('[data-nav]').forEach(function (a) { if (a.getAttribute('data-nav') === (h === 'pick' ? tab : h)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     $$('[data-staff-only]').forEach(function (e) { e.hidden = !staff; });
     var act = $('#acting'); act.hidden = !(staff && S.cust); if (S.cust) act.textContent = 'For ' + (S.cust.name || 'new customer');
     window.scrollTo(0, 0);
@@ -179,9 +193,15 @@
       if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) { msg.textContent = 'Please enter a valid email.'; return; }
       if (!LIVE) { msg.textContent = 'Demo mode: no email is sent. Use the button below to carry on.'; $('#demoBox').hidden = false; return; }
       msg.textContent = 'Sending...';
-      store.sendLink(em).then(function () { msg.className = 'ct-msg ok'; msg.textContent = 'Check your inbox for the sign in link. It works once.'; track('sign_in_link_sent'); })
+      store.sendLink(em).then(function () { msg.className = 'ct-msg ok'; msg.textContent = 'Check your inbox for the sign in link. It works once. Open it on this phone, or type the code from the email below.'; $('#codeBox').hidden = false; track('sign_in_link_sent'); })
         .catch(function () { msg.textContent = 'That did not send. Try again, or WhatsApp me on 07827 138197.'; });
     });
+    if (AUTH_ERR) { var m0 = $('#siMsg'); m0.textContent = (/expired|invalid/i.test(AUTH_ERR.code + AUTH_ERR.text) ? 'That sign in link has expired or was already used. Links work once. Send a new one below.' : 'Sign in did not finish: ' + AUTH_ERR.text + '. Send a new link below.');
+      history.replaceState(null, '', location.pathname + location.search); }
+    $('#codeForm').addEventListener('submit', function (e) { e.preventDefault(); var em = $('#siEmail').value.trim(), code = $('#siCode').value.replace(/\D/g, ''), msg = $('#siMsg');
+      if (code.length < 6) { msg.textContent = 'Type the code from the email.'; return; }
+      msg.textContent = 'Checking...'; store.verifyCode(em, code).then(function () { return store.session(); }).then(function (sess) { track('sign_in', { method: 'code' }); afterSignIn(sess); })
+        .catch(function () { msg.textContent = 'That code did not work. Check it, or send a new link.'; }); });
     $$('[data-demo]').forEach(function (b) { b.addEventListener('click', function () {
       store.signIn(b.getAttribute('data-demo'), $('#siEmail').value.trim()).then(afterSignIn); track('sign_in', { method: 'demo', role: b.getAttribute('data-demo') }); }); });
   }
@@ -311,9 +331,9 @@
     var tags = isNew ? [c.group] : [c.year, c.mileage, c.fuel, c.gearbox];
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
       : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">Monthly: ask for a quote</div>');
-    return '<div class="ct-tarea">' + img + '<div class="ct-score"><b>' + x.score + '%</b> match</div><div class="ct-src">' + esc(src) + '</div>' +
-      '</div><div class="ct-stamp ct-stamp-like">LIKE</div><div class="ct-stamp ct-stamp-nope">NOPE</div>' +
-      '<div class="ct-meta"><h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
+    return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' +
+      '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">TEST DRIVE</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
+      '<div class="ct-meta">' + (isNew ? '<span class="ct-plate ct-plate-new">NEW</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
       x.reasons.map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
   function showDeck() { if (!S.deck.length) buildDeck(); drawDeck(); }
@@ -329,8 +349,9 @@
   }
   function drag(el, x) {
     var sx = 0, sy = 0, dx = 0, dy = 0, t0 = 0, down = false, lastX = 0, lastT = 0, vx = 0;
-    var like = $('.ct-stamp-like', el), nope = $('.ct-stamp-nope', el);
-    function set() { el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + dx * 0.06 + 'deg)'; like.style.opacity = Math.max(0, Math.min(1, dx / 100)); nope.style.opacity = Math.max(0, Math.min(1, -dx / 100)); }
+    var like = $('.ct-stamp-like', el), nope = $('.ct-stamp-nope', el), sup = $('.ct-stamp-super', el), tread = treadTrail(el);
+    function set() { el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + dx * 0.06 + 'deg)'; like.style.opacity = Math.max(0, Math.min(1, dx / 100)); nope.style.opacity = Math.max(0, Math.min(1, -dx / 100));
+      sup.style.opacity = Math.max(0, Math.min(1, (-dy / 0.4 - Math.abs(dx)) / 160)); tread.draw(dx, dy); el.classList.toggle('is-go', dx > 40); el.classList.toggle('is-stop', dx < -40); }
     el.addEventListener('pointerdown', function (e) { down = true; sx = e.clientX; sy = e.clientY; t0 = lastT = performance.now(); lastX = e.clientX; el.style.transition = 'none'; el.setPointerCapture(e.pointerId); el.style.cursor = 'grabbing'; });
     el.addEventListener('pointermove', function (e) { if (!down) return; dx = e.clientX - sx; dy = (e.clientY - sy) * 0.4; var now = performance.now(); vx = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now; set(); });
     function up() { if (!down) return; down = false; el.style.cursor = '';
@@ -338,23 +359,26 @@
         var ph = $('.ct-ph', el), rb = ph && ph.getBoundingClientRect();
         if (rb && sy < rb.bottom && photos(x.car).length > 1) { stepPhoto(el, x.car, sx < rb.left + rb.width / 2 ? -1 : 1); return; }
         openSheet(x); return; }
+      if (-dy / 0.4 > 150 && Math.abs(dx) < 90) { fling(el, x, 2, 0); return; }
       if (dx > 110 || (vx > 0.6 && dx > 45)) fling(el, x, 1, vx); else if (dx < -110 || (vx < -0.6 && dx < -45)) fling(el, x, -1, vx);
-      else { el.style.transition = 'transform .45s cubic-bezier(.2,1.5,.4,1)'; dx = dy = 0; set(); like.style.opacity = nope.style.opacity = 0; } }
+      else { el.style.transition = 'transform .45s cubic-bezier(.2,1.5,.4,1)'; dx = dy = 0; set(); like.style.opacity = nope.style.opacity = sup.style.opacity = 0; tread.clear(); el.classList.remove('is-go', 'is-stop'); } }
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
     el._fling = function (dir) { fling(el, x, dir, 0); };
   }
   function fling(el, x, dir, v) {
-    var w = window.innerWidth; el.style.transition = 'transform .38s cubic-bezier(.3,.7,.4,1)';
-    var tx = dir * (w + 200), rot = dir * (30 + Math.min(20, Math.abs(v) * 10));
-    el.style.transform = 'translate(' + tx + 'px,-40px) rotate(' + rot + 'deg)';
-    $(dir > 0 ? '.ct-stamp-like' : '.ct-stamp-nope', el).style.opacity = 1;
-    platform.haptic(dir > 0 ? [10, 30, 16] : 10);
-    setTimeout(function () { decide(x, dir > 0); }, 300);
+    var w = window.innerWidth, rm = reduced(); el.style.transition = rm ? 'opacity .2s' : 'transform .38s cubic-bezier(.3,.7,.4,1)';
+    if (rm) el.style.opacity = 0;
+    else if (dir === 2) el.style.transform = 'translate(0,-' + (window.innerHeight + 200) + 'px) scale(.9)';
+    else el.style.transform = 'translate(' + dir * (w + 200) + 'px,-40px) rotate(' + dir * (30 + Math.min(20, Math.abs(v) * 10)) + 'deg)';
+    $(dir === 2 ? '.ct-stamp-super' : dir > 0 ? '.ct-stamp-like' : '.ct-stamp-nope', el).style.opacity = 1;
+    platform.haptic(dir === 2 ? [20, 30, 20, 30, 40] : dir > 0 ? [10, 30, 16] : 10);
+    setTimeout(function () { decide(x, dir > 0, dir === 2); }, rm ? 200 : 300);
   }
-  function decide(x, liked) {
-    S.deck.shift(); S.swipes[x.car.reg] = { liked: liked, at: Date.now() };
-    store.setSwipe(S.cust.id, x.car.reg, liked).catch(function () {});
-    track(liked ? 'swipe_right' : 'swipe_left', { reg: x.car.kind === 'new' ? '' : x.car.reg, kind: x.car.kind, score: x.score });
+  function decide(x, liked, superLike) {
+    S.deck.shift(); S.swipes[x.car.reg] = { liked: liked, at: Date.now(), shortlisted: !!superLike };
+    store.setSwipe(S.cust.id, x.car.reg, liked, superLike ? { shortlisted: true } : null).catch(function () {});
+    track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: x.car.kind === 'new' ? '' : x.car.reg, kind: x.car.kind, score: x.score });
+    if (superLike) { drawDeck(); badge(); matchMoment(x); return; }
     drawDeck(); badge();
     if (liked) { var likes = Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).length; if (likes === 1 || x.score >= 75) matchMoment(x); else toast('Added to your matches'); }
   }
@@ -365,7 +389,7 @@
     var a = $('#mmWa'); a.href = M.waLink(waNum(), c, waWho()); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
     m.hidden = false; confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
-  function confetti(cv) {
+  function confetti(cv) { if (reduced()) return;
     var ctx = cv.getContext('2d'), W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
     var cols = ['#ff4f7b', '#1c69d4', '#ffffff', '#ffd166', '#3ce07f'], P = [];
     for (var i = 0; i < 160; i++) P.push({ x: W / 2, y: H * 0.42, vx: (Math.random() - 0.5) * 22 * devicePixelRatio, vy: (-Math.random() * 18 - 6) * devicePixelRatio, r: (4 + Math.random() * 6) * devicePixelRatio, c: cols[i % 5], a: Math.random() * 6, s: Math.random() * 0.3 - 0.15 });
@@ -391,13 +415,34 @@
   function stepPhoto(el, c, dir) { var ph = $('.ct-ph', el), l = photos(c); if (!ph || l.length < 2) return false; var i = (+ph.getAttribute('data-i') + dir + l.length) % l.length;
     ph.setAttribute('data-i', i); var u = l[i]; $('.ct-ph-img', ph).src = u; $('.ct-ph-bg', ph).style.backgroundImage = "url('" + u.replace(/'/g, '%27') + "')";
     $$('.ct-dots i', ph).forEach(function (d, k) { d.className = k === i ? 'on' : ''; }); platform.haptic(6); return true; }
+  /* rev counter: 0 to 100 over 240 degrees, red line from 85 */
+  function gauge(sc) { var a0 = -210, sweep = 240, r = 26, cx = 32, cy = 32;
+    function pt(v, rr) { var a = (a0 + sweep * v / 100) * Math.PI / 180; return [cx + rr * Math.cos(a), cy + rr * Math.sin(a)]; }
+    function arc(v1, v2, rr) { var p1 = pt(v1, rr), p2 = pt(v2, rr), big = (v2 - v1) * sweep / 100 > 180 ? 1 : 0; return 'M' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1) + 'A' + rr + ' ' + rr + ' 0 ' + big + ' 1 ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1); }
+    var ticks = ''; for (var t = 0; t <= 100; t += 10) { var q1 = pt(t, 22), q2 = pt(t, t % 50 ? 19.5 : 17.5); ticks += '<line x1="' + q1[0].toFixed(1) + '" y1="' + q1[1].toFixed(1) + '" x2="' + q2[0].toFixed(1) + '" y2="' + q2[1].toFixed(1) + '"/>'; }
+    var n = pt(sc, 20);
+    return '<div class="ct-gauge" role="img" aria-label="' + sc + ' percent match"><svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">' +
+      '<path d="' + arc(0, 100, r) + '" class="g-bg"/><path d="' + arc(85, 100, r) + '" class="g-red"/><path d="' + arc(0, Math.max(1, sc), r) + '" class="g-val"/>' +
+      '<g class="g-tick">' + ticks + '</g><line class="g-needle" x1="32" y1="32" x2="' + n[0].toFixed(1) + '" y2="' + n[1].toFixed(1) + '"/><circle cx="32" cy="32" r="3" class="g-hub"/></svg>' +
+      '<span class="g-num">' + sc + '<small>%</small></span><span class="g-lab">match</span></div>'; }
+  function plate(reg) { return '<span class="ct-plate" aria-label="Registration ' + esc(reg) + '">' + esc(String(reg).replace(/^([A-Z]{2}\d{2})([A-Z]{3})$/, '$1 $2')) + '</span>'; }
   function finHtml(f) { return f ? '<div class="ct-repx"><b>' + esc(f.headline) + '</b><br><b>Representative example.</b> ' + esc(f.example) + '</div>' : '<p class="ct-mon">Monthly: ask for a quote</p>'; }
+  function reduced() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  /* tyre tread marks behind the card while it is dragged */
+  function treadTrail(el) { var cv = $('.ct-tread', el), ctx = cv && cv.getContext('2d'), pts = [];
+    function size() { var r = el.getBoundingClientRect(); cv.width = r.width * 2; cv.height = r.height * 2; }
+    return { draw: function (dx, dy) { if (!ctx || reduced()) return; if (!pts.length) size(); pts.push([dx, dy]); if (pts.length > 40) pts.shift();
+        ctx.clearRect(0, 0, cv.width, cv.height); var col = dx > 0 ? '60,207,122' : '229,72,77';
+        for (var i = 1; i < pts.length; i++) { var a = i / pts.length; ctx.strokeStyle = 'rgba(' + col + ',' + (a * 0.55) + ')'; ctx.lineWidth = 14; ctx.setLineDash([6, 5]);
+          [cv.width * 0.3, cv.width * 0.7].forEach(function (x0) { ctx.beginPath(); ctx.moveTo(x0 - pts[i - 1][0] * 2, cv.height * 0.92 - pts[i - 1][1] * 2); ctx.lineTo(x0 - pts[i][0] * 2, cv.height * 0.92 - pts[i][1] * 2); ctx.stroke(); }); } },
+      clear: function () { pts = []; if (ctx) ctx.clearRect(0, 0, cv.width, cv.height); } }; }
   function topCard() { return $('#deck .ct-card:last-child'); }
   function initDeck() {
     $('#btnLike').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(1); });
     $('#btnPass').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(-1); });
+    $('#btnSuper').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(2); });
     $('#btnInfo').addEventListener('click', function () { if (S.deck[0]) openSheet(S.deck[0]); });
-    document.addEventListener('keydown', function (e) { if ($('[data-screen=discover]').hidden || !$('#sheet').hidden) return; if (e.key === 'ArrowRight') $('#btnLike').click(); if (e.key === 'ArrowLeft') $('#btnPass').click(); });
+    document.addEventListener('keydown', function (e) { if ($('[data-screen=discover]').hidden || !$('#sheet').hidden) return; if (e.key === 'ArrowRight') $('#btnLike').click(); if (e.key === 'ArrowLeft') $('#btnPass').click(); if (e.key === 'ArrowUp') $('#btnSuper').click(); });
     $$('[data-close]').forEach(function (b) { b.addEventListener('click', function () { b.closest('.ct-sheet,.ct-match,.ct-ios').hidden = true; }); });
     $('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') e.target.hidden = true; });
   }
@@ -410,7 +455,7 @@
     $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + (waWho() || 'me') + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
       return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">No photo yet</div>') +
-        '<div class="ct-m-b"><h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
+        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
         (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
         '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp about ' + esc(isNew ? 'this model' : M.normReg(c.reg)) + '</a></div>' +
         '<button class="ct-unlike" type="button" data-unlike="' + esc(c.reg) + '">Remove from matches</button></div></article>'; }).join('');
@@ -446,12 +491,15 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
 
   /* ---------------- me ---------------- */
   function showMe() {
-    var c = S.cust || {}, staff = S.session.role !== 'customer';
+    var c = S.cust || {}, staff = S.session.role !== 'customer', none = staff && !S.cust;
+    $$('[data-cust-only]').forEach(function (e) { e.hidden = none; });
+
     $('#meName').textContent = staff ? (c.name || 'Customer') : (c.name || 'You'); $('#meEmail').textContent = staff ? 'Signed in as ' + S.session.email : S.session.email;
     var b = c.budget_type === 'cash' ? (c.cash_gbp ? 'Up to ' + M.gbp(c.cash_gbp) : '') : (c.monthly_gbp ? 'Up to ' + M.gbp(c.monthly_gbp) + ' a month' : '');
     $('#meSummary').innerHTML = '<dl><dt>Budget</dt><dd>' + esc(b || 'Not set') + '</dd><dt>Fuel</dt><dd>' + esc(c.fuel === 'open' ? 'Open minded' : c.fuel || '') + '</dd><dt>Colours</dt><dd>' + esc((c.colours || []).join(', ') || 'Any') + '</dd><dt>Spec</dt><dd>' + esc((c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', ') || 'Any') + '</dd><dt>Models</dt><dd>' + esc((c.models || []).join(', ') || 'Any') + '</dd><dt>Part exchange</dt><dd>' + esc(c.px && c.px.reg ? c.px.reg : 'None') + '</dd></dl>' + pxMoneyHtml(c);
     $('#boughtBtn').textContent = staff ? 'Record a bought car' : "I've bought my car";
-    store.purchases(c.id).then(function (ps) { $('#meBought').innerHTML = ps.filter(function (p) { return !p.cancelled; }).map(purchaseHtml).join('') || '<p class="ct-sub">Nothing recorded yet.</p>'; });
+    if (none) { $('#meName').textContent = 'Your account'; $('#meEmail').textContent = 'Signed in as ' + S.session.email + (S.session.role === 'admin' ? ' (admin)' : ''); }
+    if (!none) store.purchases(c.id).then(function (ps) { $('#meBought').innerHTML = ps.filter(function (p) { return !p.cancelled; }).map(purchaseHtml).join('') || '<p class="ct-sub">Nothing recorded yet.</p>'; });
     var custEmail = !!CFG.CUSTOMER_EMAIL_ENABLED || staff; $$('[data-email-opt]').forEach(function (e) { e.hidden = !custEmail; });
     store.notify().then(function (v) { if (!custEmail && (v === 'email' || v === 'both')) v = 'push'; $$('#notifySeg button').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-v') === v ? 'true' : 'false'); }); });
     installInfo();
@@ -539,7 +587,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
         else if (act === 'bought') store.purchases(id).then(function (ps) { S.editPurchase = ps.filter(function (x) { return !x.cancelled; })[0] || null; go('bought'); });
         else if (act === 'claim') { if (!LIVE) { toast('Demo mode: the claim email is sent once the backend is connected'); return; }
           sb.from('customer_claims').insert({ customer_id: id, email: S.cust.email, created_by: sbUser.id }).select().single().then(function (r) { if (r.error) throw r.error;
-            return sb.auth.signInWithOtp({ email: S.cust.email, options: { emailRedirectTo: location.origin + location.pathname + '?claim=' + r.data.id } }); }).then(function () { toast('Claim link sent to ' + S.cust.email); }).catch(function () { toast('That did not send'); }); }
+            return sb.auth.signInWithOtp({ email: S.cust.email, options: { emailRedirectTo: APP_URL + '?claim=' + r.data.id } }); }).then(function () { toast('Claim link sent to ' + S.cust.email); }).catch(function () { toast('That did not send'); }); }
       }); });
   }
   function showInvites() { store.invites().then(function (l) { $('#invList').innerHTML = l.map(function (i) { return '<div class="ct-c"><h3>' + esc(i.name) + '</h3><p>' + esc(i.email) + ' \u00b7 WhatsApp ' + esc(i.whatsapp) + '</p><p><span class="ct-pill' + (i.accepted_at ? '' : ' hot') + '">' + (i.accepted_at ? 'Signed in' : 'Invited, waiting') + '</span></p></div>'; }).join(''); }); }
@@ -568,14 +616,15 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   initSignin(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites();
   var dl = platform.deepLink();
   (LIVE ? supa.init() : Promise.resolve())
-    .then(function () { return loadStock(); })
+    .then(function () { if (LIVE) sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_IN' && !S.session) store.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); return loadStock(); })
     .then(function () {
       try { var prev = JSON.parse(localStorage.getItem('ctSeenRegs') || 'null'); S.fresh = {}; if (prev) { var ps = {}; prev.forEach(function (r) { ps[r] = 1; }); S.cars.forEach(function (c) { if (!ps[c.reg]) S.fresh[c.reg] = 1; }); }
         localStorage.setItem('ctSeenRegs', JSON.stringify(S.cars.map(function (c) { return c.reg; }))); } catch (e) {}
       return store.session(); })
     .then(function (sess) { if (sess && LIVE && dl.claim) return supa.claim(dl.claim).then(function () { history.replaceState(null, '', location.pathname); return store.session(); }); return sess; })
     .then(function (sess) { if (sess) track('sign_in', { method: LIVE ? 'magic_link' : 'demo', role: sess.role }); return sess ? afterSignIn(sess) : route(); })
+    .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
-    .catch(function (e) { console.warn('Swipe Drive start', e); route(); });
+    .catch(function (e) { console.warn('Swipe Drive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
   window.ctDebug = { S: S, store: store, platform: platform, route: route };
 })();
