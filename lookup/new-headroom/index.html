@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>New car headroom | Internal</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!-- INTERNAL ONLY. Sent by link only: noindex, robots.txt Disallow /lookup/,
+     out of sitemap.xml, never linked from a public page. Reads the files the
+     morning routine already writes (lookup/new-stock.json, new-stock-quotes.json),
+     so it is current every day with no extra build step. Every figure here is an
+     internal estimate, never a quote, never shown to customers. -->
+<style>
+:root{--ink:#14181f;--muted:#5d6675;--line:#e3e6eb;--bg:#f6f7f9;--accent:#1c69d4;--ok:#137333;--warn:#b06000;--bad:#b3261e}
+*{box-sizing:border-box}body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+.wrap{max-width:1280px;margin:0 auto;padding:18px 14px 48px}h1{font-size:1.3rem;margin:0 0 4px}
+.warn{background:#fff4e5;border:1px solid #f0c27a;border-radius:10px;padding:10px 12px;margin:10px 0 14px;font-size:.92rem}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+label{display:flex;flex-direction:column;font-size:.8rem;color:var(--muted);gap:3px}
+input,select{font:inherit;padding:8px 10px;border:1px solid #c9ced6;border-radius:8px;min-width:140px}
+.count{color:var(--muted);font-size:.9rem;margin:6px 0}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+th{background:#eef1f5;font-size:.78rem;color:var(--muted);cursor:pointer;position:sticky;top:0}
+td.l,th.l{text-align:left;white-space:normal}.small{font-size:.78rem;color:var(--muted)}
+.c-high{color:var(--ok);font-weight:600}.c-medium{color:var(--accent);font-weight:600}.c-low{color:var(--warn);font-weight:600}.c-none{color:var(--bad);font-weight:600}
+tr.fit td{background:#eef8f0}.scroll{overflow-x:auto}
+</style>
+</head>
+<body><div class="wrap">
+<h1>New car headroom</h1>
+<div class="small" id="gen"></div>
+<div class="warn"><b>Internal only. Never show or send to a customer.</b> Standard price, discount, floor and monthly at floor are estimates. The floor assumes a maximum of 10% off BMW standard price. Monthly at floor scales today's BMW Financial Services figure for the lower cash price on the same deposit, term, APR and final payment; it is not a quote. Get a real quote before talking numbers.</div>
+<div class="controls">
+<label>Customer max monthly £<input id="maxM" type="number" inputmode="numeric" placeholder="e.g. 450"></label>
+<label>Customer max cash price £<input id="maxC" type="number" inputmode="numeric" placeholder="e.g. 40000"></label>
+<label>Max discount off standard %<input id="pct" type="number" value="10" step="0.5" min="0" max="25"></label>
+<label>Series<select id="ser"><option value="">All</option></select></label>
+<label>Search<input id="q" placeholder="model, colour, order no"></label>
+<label><span>&nbsp;</span><span><input type="checkbox" id="only"> Only cars that could work</span></label>
+</div>
+<div class="count" id="count"></div>
+<div class="scroll"><table><thead><tr>
+<th class="l" data-k="name">Car</th><th data-k="price">Current price</th><th data-k="std">Est. standard</th><th class="l" data-k="conf">Confidence</th>
+<th data-k="disc">Discount applied</th><th data-k="floor">Floor</th><th data-k="head">Headroom left</th><th data-k="mNow">Monthly now</th><th data-k="mFloor">Est. monthly at floor</th>
+</tr></thead><tbody id="rows"></tbody></table></div>
+<p class="small">How standard price is worked out: a car on BMW standard price (locator flag off) uses its own price, confidence high. A retailer priced car uses the median price of standard priced cars of the same model and trim: medium with 2 or more of them, low with 1. Options differ between cars, so the gap mixes options with discount; a gap below zero shows as 0. No comparable means the current price is treated as standard (confidence none), so its headroom may be overstated.</p>
+</div>
+<script>
+const gbp=n=>n==null||isNaN(n)?'Not listed':'£'+Math.round(n).toLocaleString('en-GB');
+const gbp2=n=>n==null||isNaN(n)?'Not listed':'£'+n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const med=a=>{a=[...a].sort((x,y)=>x-y);const m=a.length>>1;return a.length%2?a[m]:(a[m-1]+a[m])/2};
+let cars=[],sortK='head',sortD=-1;
+function monthlyAt(fin,price,newPrice){ // lower credit by the price cut, same deposit, term, APR, final payment
+  if(!fin||!fin.monthly||fin.apr==null)return null;
+  const n=(fin.payments||((fin.term_months||48)-1)),r=Math.pow(1+fin.apr/100,1/12)-1;
+  const ann=r>0?(1-Math.pow(1+r,-n))/r:n;return Math.max(0,fin.monthly-(price-newPrice)/ann);
+}
+function build(stock,quotes){
+  const qs=(quotes&&quotes.quotes)||{},key=c=>(c.description||c.range||'').trim().toLowerCase();
+  const stdBy={};stock.cars.forEach(c=>{if(!c.retailer_price&&c.price_gbp)(stdBy[key(c)]=stdBy[key(c)]||[]).push(c.price_gbp)});
+  return stock.cars.map(c=>{
+    const price=(c.finance_example&&c.finance_example.cash_price)||c.price_gbp;let std,conf,note='';
+    if(!c.retailer_price){std=price;conf='high';note='On BMW standard price'}
+    else{const s=stdBy[key(c)]||[];if(s.length){std=med(s);conf=s.length>=2?'medium':'low';note=`Median of ${s.length} standard priced ${esc((c.description||'').trim())}, options may differ`}
+      else{std=price;conf='none';note='Retailer priced, no standard priced comparable'}}
+    const q=qs[c.order_number];const fin=q?{monthly:q.monthly,apr:q.apr,payments:q.payments,term_months:q.term_months,deposit:q.deposit,src:'lender quote',contrib:q.deposit_contribution}:(c.finance_example?{...c.finance_example,src:'locator figure'}:null);
+    return {c,price,std,conf,note,fin,name:(c.range||c.description||'').trim()};
+  });
+}
+function render(){
+  const pct=(parseFloat(pct_.value)||0)/100,mM=parseFloat(maxM.value),mC=parseFloat(maxC.value),s=ser.value,q=document.getElementById('q').value.trim().toLowerCase(),only=document.getElementById('only').checked;
+  const rows=cars.map(x=>{const disc=Math.max(0,x.std-x.price),floor=Math.min(x.price,x.std*(1-pct)),head=x.price-floor;
+    const mNow=x.fin?x.fin.monthly:null,mFloor=monthlyAt(x.fin,x.price,floor);
+    const fit=(isNaN(mM)||(mFloor!=null&&mFloor<=mM))&&(isNaN(mC)||floor<=mC)&&!(isNaN(mM)&&isNaN(mC));
+    return {...x,disc,dpc:x.std?disc/x.std*100:0,floor,head,mNow,mFloor,fit}})
+   .filter(x=>(!s||x.c.series===s)&&(!q||(x.name+' '+x.c.colour+' '+x.c.order_number).toLowerCase().includes(q))&&(!only||x.fit));
+  const ord={high:0,medium:1,low:2,none:3};
+  rows.sort((a,b)=>{const k=sortK;const va=k==='name'?a.name:k==='conf'?ord[a.conf]:a[k],vb=k==='name'?b.name:k==='conf'?ord[b.conf]:b[k];return (va>vb?1:va<vb?-1:0)*sortD});
+  document.getElementById('rows').innerHTML=rows.map(x=>`<tr class="${x.fit?'fit':''}">
+<td class="l"><b>${esc(x.name)}</b><div class="small">${esc(x.c.colour)} | order ${esc(x.c.order_number)}${x.c.on_hold?' | on hold':''}</div></td>
+<td>${gbp2(x.price)}<div class="small">${x.c.retailer_price?'Retailer price':'BMW standard'}</div></td>
+<td>${gbp(x.std)}</td><td class="l"><span class="c-${x.conf}">${x.conf}</span><div class="small">${x.note}</div></td>
+<td>${gbp(x.disc)}<div class="small">${x.dpc.toFixed(1)}%</div></td><td>${gbp(x.floor)}</td><td><b>${gbp(x.head)}</b></td>
+<td>${x.mNow!=null?gbp2(x.mNow):'Not listed'}<div class="small">${x.fin?esc(x.fin.src)+(x.fin.contrib?' | contribution '+gbp(x.fin.contrib):''):''}</div></td>
+<td><b>${x.mFloor!=null?gbp2(x.mFloor):'Not listed'}</b><div class="small">${x.fin?`internal estimate | ${gbp(x.fin.deposit)} dep, ${x.fin.apr}% APR`:''}</div></td></tr>`).join('');
+  const fits=rows.filter(r=>r.fit).length;
+  document.getElementById('count').textContent=`${rows.length} cars shown`+(!isNaN(mM)||!isNaN(mC)?` | ${fits} could work at floor`:'');
+}
+const pct_=document.getElementById('pct');
+document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',render));
+document.querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{const k=th.dataset.k;sortD=sortK===k?-sortD:(k==='name'||k==='conf'?1:-1);sortK=k;render()}));
+Promise.all([fetch('/lookup/new-stock.json',{cache:'no-cache'}).then(r=>r.json()),fetch('/lookup/new-stock-quotes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)])
+.then(([st,qu])=>{cars=build(st,qu);[...new Set(st.cars.map(c=>c.series).filter(Boolean))].sort().forEach(v=>ser.insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`));
+  document.getElementById('gen').textContent=`Stock from BMW New Car Locator, Hedin Ruxley | updated ${new Date(st.generated_at).toLocaleString('en-GB')}`+(qu?` | lender quotes ${new Date(qu.generated_at).toLocaleString('en-GB')}`:'');render()})
+.catch(()=>{document.getElementById('count').textContent='Could not load today\'s new stock file.'});
+</script>
+</body></html>

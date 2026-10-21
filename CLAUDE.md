@@ -678,6 +678,9 @@ my BMW used result cards (`fmb.js`, only after the gate unlocks) and
 - Coverage on 8 October: 14 of 15 sampled cars had both (9 of 10 forecourt
   cars at 3927, one at 3929; group cars at 3924, 3925 and 3929).
 
+### New car headroom - lookup/new-headroom/ (INTERNAL ONLY)
+Added 21 October 2026 for Dan. `lookup/new-headroom/index.html` reads `lookup/new-stock.json` and `lookup/new-stock-quotes.json` in the browser, so it is current after every morning run with no build step (nothing to add to the routine). Standard price: the car's own price when the locator `dealer_price` flag is off (`retailer_price` false, confidence high); otherwise the median of standard priced cars with the same `description` (medium with 2+, low with 1, none with 0, when the current price is treated as standard). Floor = standard less the max discount (default 10%, editable). Monthly at floor lowers the credit by the price cut on the quote's own deposit, APR, 47 payments and final payment; it is an internal estimate, never a quote. Budget filter by max monthly and/or max cash price. Never show to customers: `noindex,nofollow`, covered by `Disallow: /lookup/`, out of `sitemap.xml`, never linked from a public page.
+
 ### New cars, ready to build - lookup/new-stock.json and new-cars.html
 
 `automation/new-stock.py` reads the BMW New Car Locator for retailer **22181,
