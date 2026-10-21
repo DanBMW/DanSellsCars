@@ -6,8 +6,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
+  "background_color": "#0a0c0f",
+  "theme_color": "#0a0c0f",
   "description": "Swipe through BMWs that match what you want, then message Dan.",
   "categories": ["shopping", "lifestyle"],
   "icons": [
