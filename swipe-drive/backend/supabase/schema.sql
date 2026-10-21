@@ -1,4 +1,4 @@
--- Car Tinder schema for Supabase (Postgres + RLS). Run in the SQL editor once.
+-- Swipe Drive schema for Supabase (Postgres + RLS). Run in the SQL editor once.
 -- Roles: admin (Dan), staff (invited colleagues), customer.
 -- Every table has RLS on; access is decided by the helper functions below.
 
@@ -39,7 +39,7 @@ create table if not exists public.customers (
   body text, models text[] not null default '{}',
   colours text[] not null default '{}',        -- colour families liked (Black, Grey, Blue...)
   colours_must text[] not null default '{}',   -- subset that is a must have
-  specs text[] not null default '{}',          -- spec keys, see car-tinder/match-core.js specOptions()
+  specs text[] not null default '{}',          -- spec keys, see swipe-drive/match-core.js specOptions()
   specs_must text[] not null default '{}',
   new_used text check (new_used in ('new','used','both')),
   px jsonb,                              -- {reg, mileage, condition, finance_outstanding, photos}
@@ -276,6 +276,6 @@ create policy px_del on storage.objects for delete to authenticated using (bucke
 
 -- ---------- Schedule the match job daily at 10:20 UK (09:20 UTC in BST) ----------
 -- create extension if not exists pg_cron; create extension if not exists pg_net;
--- select cron.schedule('car-tinder-match-alerts', '20 9 * * *', $$ select net.http_post(
+-- select cron.schedule('swipe-drive-match-alerts', '20 9 * * *', $$ select net.http_post(
 --   url := 'https://PROJECT_REF.supabase.co/functions/v1/match-alerts',
 --   headers := jsonb_build_object('Authorization', 'Bearer ' || 'CRON_SECRET_HERE')) $$);

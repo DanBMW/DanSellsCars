@@ -1,4 +1,4 @@
-/* Car Tinder app. Plain JS, relative paths, no build step, so it can be
+/* Swipe Drive app. Plain JS, relative paths, no build step, so it can be
    wrapped later with Capacitor or PWABuilder. Platform specific bits (push,
    install, haptics, deep links, share) sit behind `platform` below.
    Data goes through `store`: 'demo' keeps everything on the device,
@@ -9,7 +9,7 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  function track(n, p) { try { if (window.gtag) window.gtag('event', 'car_tinder_' + n, p || {}); } catch (e) {} (window.__ctEvents = window.__ctEvents || []).push('car_tinder_' + n); }
+  function track(n, p) { try { if (window.gtag) window.gtag('event', 'swipe_drive_' + n, p || {}); } catch (e) {} (window.__ctEvents = window.__ctEvents || []).push('swipe_drive_' + n); }
   function toast(t) { var el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { el.hidden = true; }, 2600); }
   var uuid = function () { return (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); })); };
   var fmtDate = function (d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; };
@@ -423,7 +423,7 @@
   function sendLead() {
     var c = S.cust, L = liked(), msg = $('#sendMsg'), px = c.px || {};
     var lead = 'CT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-    var body = { _subject: 'Car Tinder matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'car-tinder', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
+    var body = { _subject: 'Swipe Drive matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'swipe-drive', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
       budget: c.budget_type === 'cash' ? 'Cash up to \u00a3' + (c.cash_gbp || '?') : 'Monthly up to \u00a3' + (c.monthly_gbp || '?'), deposit: c.deposit_gbp || '', annual_mileage: c.annual_mileage,
       colours: (c.colours || []).join(', ') || 'Any', colours_must_have: (c.colours_must || []).join(', '), specs_wanted: (c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '), specs_must_have: (c.specs_must || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '),
       fuel: c.fuel, body_or_size: c.body, models_of_interest: (c.models || []).join(', '), new_or_used: c.new_used,
@@ -553,7 +553,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   function installInfo() {
     var el = $('#installInfo');
     if (platform.standalone) { el.innerHTML = '<p class="ct-sub">You are using the app. Nice.</p>'; return; }
-    if (platform.ios) { el.innerHTML = '<p class="ct-sub">Add Car Tinder to your Home Screen to use it like an app and get alerts.</p><button class="ct-btn ct-btn-ghost" type="button" id="iosOpen">Show me how</button>'; $('#iosOpen').onclick = function () { $('#iosGuide').hidden = false; track('ios_guide_open'); }; return; }
+    if (platform.ios) { el.innerHTML = '<p class="ct-sub">Add Swipe Drive to your Home Screen to use it like an app and get alerts.</p><button class="ct-btn ct-btn-ghost" type="button" id="iosOpen">Show me how</button>'; $('#iosOpen').onclick = function () { $('#iosGuide').hidden = false; track('ios_guide_open'); }; return; }
     el.innerHTML = platform.deferredInstall ? '<button class="ct-btn" type="button" id="instNow">Install the app</button>' : '<p class="ct-sub">Use your browser menu and choose Install app or Add to Home screen.</p>';
     if ($('#instNow')) $('#instNow').onclick = doInstall;
   }
@@ -576,6 +576,6 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     .then(function (sess) { if (sess && LIVE && dl.claim) return supa.claim(dl.claim).then(function () { history.replaceState(null, '', location.pathname); return store.session(); }); return sess; })
     .then(function (sess) { if (sess) track('sign_in', { method: LIVE ? 'magic_link' : 'demo', role: sess.role }); return sess ? afterSignIn(sess) : route(); })
     .then(iosNudge)
-    .catch(function (e) { console.warn('Car Tinder start', e); route(); });
+    .catch(function (e) { console.warn('Swipe Drive start', e); route(); });
   window.ctDebug = { S: S, store: store, platform: platform, route: route };
 })();

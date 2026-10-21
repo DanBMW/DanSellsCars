@@ -1,4 +1,4 @@
-// Car Tinder daily job (Supabase Edge Function, Deno). Triggered by pg_cron
+// Swipe Drive daily job (Supabase Edge Function, Deno). Triggered by pg_cron
 // after the morning stock refresh (see schema.sql). It:
 //  1. reads lookup/stock.json, finds regs not seen before (stock_seen),
 //  2. scores them against every customer with match-core.js,
@@ -14,11 +14,11 @@ import { renderReminder } from './reminder.js';
 (globalThis as any).window = globalThis;
 const SITE = 'https://dan-sells.co.uk';
 await import(SITE + '/stock-core.js');
-await import(SITE + '/car-tinder/match-core.js');
+await import(SITE + '/swipe-drive/match-core.js');
 const M = (globalThis as any).ctMatch;
 (globalThis as any).ctDetails = await fetch(SITE + '/automation/car-details.json').then(r => r.json()).catch(() => null);  // equipment for spec picks
 const env = (k: string) => Deno.env.get(k) || '';
-const APP = SITE + '/car-tinder/';
+const APP = SITE + '/swipe-drive/';
 const CUSTOMER_EMAIL_ENABLED = env('CUSTOMER_EMAIL_ENABLED') === 'true';
 const STAFF_EMAIL_ENABLED = !!(env('RESEND_API_KEY') && env('MAIL_FROM'));
 const BROKER = 'Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender.';

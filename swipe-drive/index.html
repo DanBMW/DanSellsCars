@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en-GB" data-dsc="inline">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Swipe Drive | Dan Sells</title>
+<meta name="description" content="Swipe through BMWs that match what you want, then message Dan.">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Swipe Drive">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png">
+<link rel="stylesheet" href="app.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<script src="../analytics.js" defer></script>
+</head>
+<body class="ct">
+<div class="ct-app" id="app">
+  <header class="ct-top">
+    <div class="ct-brand"><img src="icons/icon-192.png" width="30" height="30" alt=""><span class="ct-brand-t">Swipe <b>Drive</b><small>powered by Dan Sells</small></span></div>
+    <div class="ct-acting" id="acting" hidden></div>
+    <button class="ct-install-btn" id="installBtn" type="button" hidden>Install the app</button>
+  </header>
+  <div class="ct-demo" id="demoBar" hidden>Demo mode: your profile stays on this phone. Real sign in switches on when Dan connects the backend.</div>
+
+  <!-- 1. sign in -->
+  <section class="ct-screen" data-screen="signin">
+    <div class="ct-hero">
+      <div class="ct-hero-cards" aria-hidden="true"><span></span><span></span><span></span></div>
+      <h1>Find the BMW you will fall for.</h1>
+      <p>Tell me what you want, swipe through cars that fit, and I will do the rest.</p>
+    </div>
+    <form class="ct-panel" id="signinForm" novalidate>
+      <label class="ct-f"><span>Your email</span><input type="email" id="siEmail" autocomplete="email" inputmode="email" required placeholder="you@example.com"></label>
+      <button class="ct-btn" type="submit">Email me a sign in link</button>
+      <p class="ct-msg" id="siMsg" role="status"></p>
+      <div class="ct-demo-box" id="demoBox" hidden>
+        <p><b>Sign in link placeholder.</b> The email step is not connected yet, so nothing is sent. Carry on in demo mode:</p>
+        <div class="ct-row"><button class="ct-btn ct-btn-ghost" type="button" data-demo="customer">Carry on as a customer</button></div>
+        <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-demo="staff">Demo: colleague view</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-demo="admin">Demo: Dan's admin view</button></div>
+      </div>
+    </form>
+  </section>
+
+  <!-- 2. profile -->
+  <section class="ct-screen" data-screen="profile" hidden>
+    <form class="ct-panel ct-form" id="profileForm" novalidate>
+      <h2 id="pfTitle">About you</h2>
+      <p class="ct-sub" id="pfSub">Takes a minute. The more you tell me, the better your matches.</p>
+      <fieldset><legend>You</legend>
+        <label class="ct-f"><span>Name</span><input name="name" autocomplete="name" required></label>
+        <label class="ct-f"><span>Mobile</span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
+        <label class="ct-f" data-staff-only hidden><span>Customer email</span><input name="email" type="email" inputmode="email"></label>
+        <label class="ct-f"><span>Postcode</span><input name="postcode" autocomplete="postal-code" required></label>
+      </fieldset>
+      <fieldset><legend>Budget</legend>
+        <div class="ct-seg" data-name="budget_type"><button type="button" data-v="monthly">Monthly</button><button type="button" data-v="cash">Cash price</button></div>
+        <label class="ct-f" data-show="budget_type=monthly"><span>Up to a month (&pound;)</span><input name="monthly_gbp" type="number" inputmode="numeric" min="0" step="10"></label>
+        <label class="ct-f" data-show="budget_type=cash"><span>Up to (&pound;)</span><input name="cash_gbp" type="number" inputmode="numeric" min="0" step="500"></label>
+        <label class="ct-f"><span>Deposit (&pound;)</span><input name="deposit_gbp" type="number" inputmode="numeric" min="0" step="100"></label>
+        <label class="ct-f"><span>Miles a year</span><select name="annual_mileage"><option value="6000">Up to 6,000</option><option value="8000" selected>About 8,000</option><option value="10000">About 10,000</option><option value="15000">About 15,000</option><option value="20000">20,000 or more</option></select></label>
+      </fieldset>
+      <fieldset><legend>The car</legend>
+        <span class="ct-lab">Fuel</span>
+        <div class="ct-chips" data-name="fuel"><button type="button" data-v="open">Open minded</button><button type="button" data-v="petrol">Petrol</button><button type="button" data-v="diesel">Diesel</button><button type="button" data-v="hybrid">Hybrid</button><button type="button" data-v="electric">Electric</button></div>
+        <span class="ct-lab">Body or size</span>
+        <div class="ct-chips" data-name="body"><button type="button" data-v="any">Any</button><button type="button" data-v="small">Small and easy</button><button type="button" data-v="hatchback">Hatchback</button><button type="button" data-v="saloon">Saloon</button><button type="button" data-v="estate">Touring</button><button type="button" data-v="suv">SUV</button><button type="button" data-v="family">Family space</button><button type="button" data-v="coupe">Coupe or convertible</button></div>
+        <span class="ct-lab">Models you like (pick any)</span>
+        <div class="ct-chips ct-multi" data-name="models" id="modelChips"></div>
+        <span class="ct-lab">Colours</span>
+        <p class="ct-hint">Tap once if you like it, tap again to make it a must have.</p>
+        <div class="ct-chips ct-tri" data-tri="colours" id="colourChips"></div>
+        <span class="ct-lab">Specification</span>
+        <div class="ct-chips ct-tri" data-tri="specs" id="specChips"></div>
+        <span class="ct-lab">New or used</span>
+        <div class="ct-seg" data-name="new_used"><button type="button" data-v="used">Used</button><button type="button" data-v="new">Brand new</button><button type="button" data-v="both">Either</button></div>
+      </fieldset>
+      <fieldset><legend>Part exchange</legend>
+        <div class="ct-seg" data-name="px_has"><button type="button" data-v="no">No car to swap</button><button type="button" data-v="yes">I have one</button></div>
+        <div data-show="px_has=yes">
+          <label class="ct-f"><span>Reg</span><input name="px_reg" autocapitalize="characters"></label>
+          <label class="ct-f"><span>Mileage</span><input name="px_mileage" type="number" inputmode="numeric" min="0"></label>
+          <label class="ct-f"><span>Condition</span><select name="px_condition"><option value="">Choose</option><option>Excellent</option><option>Good</option><option>Fair</option><option>Needs work</option></select></label>
+          <label class="ct-f"><span>Finance still owed (&pound;, 0 if none)</span><input name="px_finance" type="number" inputmode="numeric" min="0"></label>
+          <div class="ct-pair"><label class="ct-f"><span>PX valuation from Dan (&pound;)</span><input name="px_valuation_gbp" type="number" inputmode="numeric" min="0" step="50"></label>
+            <label class="ct-f"><span>Valued on</span><input name="px_valued_on" type="date"></label></div>
+          <p class="ct-hint" id="pxValBy"></p>
+          <div class="ct-pair"><label class="ct-f"><span>Settlement figure (&pound;)</span><input name="px_settlement_gbp" type="number" inputmode="numeric" min="0" step="50"></label>
+            <label class="ct-f"><span>Settlement valid until</span><input name="px_settlement_valid_until" type="date"></label></div>
+          <div class="ct-equity" id="pxEquity" hidden></div>
+          <span class="ct-lab">Condition ratings</span>
+          <div class="ct-rates" id="pxRates"></div>
+          <label class="ct-f ct-file"><span>Photos of your car</span><input type="file" id="pxFile" accept="image/*" multiple></label>
+          <div class="ct-thumbs" id="pxThumbs"></div>
+          <div class="ct-terms"><p id="pxTerms">Your part exchange valuation is based on the information and condition ratings you have provided being accurate. The final figure is subject to inspection of the vehicle and confirmation of any outstanding finance, and may change if the vehicle differs from the description given.</p>
+            <label class="ct-check"><input type="checkbox" id="pxConfirm"> <span id="pxConfirmLabel">I confirm</span></label><p class="ct-hint" id="pxConfirmed"></p></div>
+        </div>
+      </fieldset>
+      <button class="ct-btn ct-btn-big" type="submit" id="pfSave">Find my match</button>
+      <p class="ct-msg" id="pfMsg" role="status"></p>
+    </form>
+  </section>
+
+  <!-- 3. swipe -->
+  <section class="ct-screen" data-screen="discover" hidden>
+    <div class="ct-deck" id="deck"></div>
+    <div class="ct-empty" id="deckEmpty" hidden><h2>That is everyone for now.</h2><p>New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><a class="ct-btn" href="#matches">See your matches</a></div>
+    <div class="ct-actions" id="deckActions">
+      <button class="ct-act ct-pass" id="btnPass" type="button" aria-label="Pass"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>
+      <button class="ct-act ct-info" id="btnInfo" type="button" aria-label="More about this car"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+      <button class="ct-act ct-like" id="btnLike" type="button" aria-label="Like"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.8 5c2 0 3.5 1.1 5.2 3 1.7-1.9 3.2-3 5.2-3 3.5 0 5.6 3.4 4.3 6.7C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg></button>
+    </div>
+  </section>
+
+  <!-- 4. matches -->
+  <section class="ct-screen" data-screen="matches" hidden>
+    <div class="ct-panel">
+      <h2>Your matches</h2>
+      <p class="ct-sub" id="mSub"></p>
+      <div id="matchList" class="ct-mlist"></div>
+      <div class="ct-send" id="sendBox">
+        <button class="ct-btn ct-btn-big" id="sendBtn" type="button">Send my matches to Dan</button>
+        <p class="ct-msg" id="sendMsg" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- me: profile, bought, alerts, install -->
+  <section class="ct-screen" data-screen="me" hidden>
+    <div class="ct-panel">
+      <h2 id="meName">You</h2>
+      <p class="ct-sub" id="meEmail"></p>
+      <div class="ct-card-lite" id="meSummary"></div>
+      <div class="ct-row"><a class="ct-btn ct-btn-ghost" href="#profile">Edit my profile</a></div>
+      <h3>Bought your car?</h3>
+      <div id="meBought"></div>
+      <div class="ct-row"><a class="ct-btn" href="#bought" id="boughtBtn">I've bought my car</a></div>
+      <h3>Alerts</h3>
+      <div class="ct-seg" id="notifySeg"><button type="button" data-v="push">Phone alerts</button><button type="button" data-v="email" data-email-opt hidden>Email</button><button type="button" data-v="both" data-email-opt hidden>Both</button><button type="button" data-v="off">Off</button></div>
+      <p class="ct-msg" id="notifyMsg" role="status"></p>
+      <h3>Get the app</h3>
+      <div id="installInfo"></div>
+      <div data-dsc-slot></div>
+      <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender. <a href="../privacy.html">Privacy</a> &middot; <a href="../terms.html">Terms</a></p>
+      <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" id="signOut" type="button">Sign out</button></div>
+    </div>
+  </section>
+
+  <!-- bought my car -->
+  <section class="ct-screen" data-screen="bought" hidden>
+    <form class="ct-panel ct-form" id="boughtForm" novalidate>
+      <h2>I've bought my car</h2>
+      <p class="ct-sub" id="boughtSub">Congratulations. Save the details and I will remind you when you may be able to change it.</p>
+      <label class="ct-f"><span>Reg</span><input name="reg" required autocapitalize="characters"></label>
+      <label class="ct-f"><span>Model</span><input name="model" required></label>
+      <label class="ct-f"><span>Date you bought it</span><input name="purchase_date" type="date" required></label>
+      <span class="ct-lab">How you paid</span>
+      <div class="ct-chips" data-name="finance_type"><button type="button" data-v="pcp">PCP</button><button type="button" data-v="hp">HP</button><button type="button" data-v="lease">Lease</button><button type="button" data-v="cash">Cash</button><button type="button" data-v="other">Other</button></div>
+      <label class="ct-f" data-show="finance_type!=cash"><span>Term (months)</span><input name="term_months" type="number" inputmode="numeric" min="0" max="120"></label>
+      <span class="ct-lab">Cover you hold (optional end dates)</span>
+      <div class="ct-ins" id="insList"></div>
+      <div class="ct-reminder" id="remPreview"></div>
+      <button class="ct-btn ct-btn-big" type="submit">Save my car</button>
+      <p class="ct-msg" id="boughtMsg" role="status"></p>
+    </form>
+  </section>
+
+  <!-- staff dashboard -->
+  <section class="ct-screen" data-screen="team" hidden>
+    <div class="ct-panel">
+      <h2 id="teamTitle">My customers</h2>
+      <div class="ct-row ct-wrap"><button class="ct-btn ct-sm" id="addCust" type="button">Add a customer</button>
+        <label class="ct-f ct-inline" id="ownerFilterWrap" hidden><span>Owner</span><select id="ownerFilter"><option value="">Everyone</option></select></label>
+        <a class="ct-btn ct-btn-ghost ct-sm" href="#invites" id="invitesLink" hidden>Invite colleagues</a></div>
+      <div id="custList" class="ct-clist"></div>
+    </div>
+  </section>
+
+  <!-- admin: invites -->
+  <section class="ct-screen" data-screen="invites" hidden>
+    <form class="ct-panel ct-form" id="inviteForm" novalidate>
+      <h2>Colleagues</h2>
+      <p class="ct-sub">Invite a colleague by email. When they sign in with that address they become staff. Nobody can make themselves staff.</p>
+      <label class="ct-f"><span>Name</span><input name="name" required></label>
+      <label class="ct-f"><span>Email</span><input name="email" type="email" required></label>
+      <label class="ct-f"><span>Their WhatsApp number</span><input name="whatsapp" type="tel" placeholder="447700900000" required></label>
+      <button class="ct-btn" type="submit">Invite</button>
+      <p class="ct-msg" id="invMsg" role="status"></p>
+      <div id="invList" class="ct-clist"></div>
+    </form>
+  </section>
+
+  <nav class="ct-nav" id="nav" hidden>
+    <a href="#discover" data-nav="discover"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.8 5c2 0 3.5 1.1 5.2 3 1.7-1.9 3.2-3 5.2-3 3.5 0 5.6 3.4 4.3 6.7C19.5 16.4 12 21 12 21z"/></svg><span>Discover</span></a>
+    <a href="#matches" data-nav="matches"><svg viewBox="0 0 24 24"><path d="M4 5h16v4H4zM4 11h16v4H4zM4 17h10v3H4z"/></svg><span>Matches</span><i class="ct-badge" id="matchBadge" hidden></i></a>
+    <a href="#team" data-nav="team" data-staff-only hidden><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3.5"/><circle cx="16.5" cy="9" r="3"/><path d="M1.5 20c.5-4 3-6 6.5-6s6 2 6.5 6zM13 20c.3-2.4 1.2-4 3.5-4.6 3 .1 5.4 1.7 6 4.6z"/></svg><span>Customers</span></a>
+    <a href="#me" data-nav="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.6-4.5 3.7-7 8-7s7.4 2.5 8 7z"/></svg><span>Me</span></a>
+  </nav>
+</div>
+
+<div class="ct-sheet" id="sheet" hidden><div class="ct-sheet-in" role="dialog" aria-modal="true" aria-label="Car details"><button class="ct-x" type="button" data-close aria-label="Close">&times;</button><div id="sheetBody"></div></div></div>
+<div class="ct-match" id="matchModal" hidden><canvas id="confetti"></canvas><div class="ct-match-in"><h2>It's a match!</h2><div class="ct-match-pics"><img id="mmCar" alt=""><span class="ct-match-heart">&hearts;</span><img src="icons/icon-192.png" alt="Dan Sells"></div><p id="mmText"></p><a class="ct-btn ct-wa ct-btn-big" id="mmWa" target="_blank" rel="noopener">Message on WhatsApp</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Keep swiping</button></div></div>
+<div class="ct-ios" id="iosGuide" hidden><div class="ct-ios-in"><button class="ct-x" type="button" data-close aria-label="Close">&times;</button><h2>Add Swipe Drive to your Home Screen</h2><p>On iPhone, alerts only work once the app is on your Home Screen. It takes ten seconds:</p>
+  <ol><li><span class="ct-ios-ico"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 3v12M7 8l5-5 5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M5 12v8h14v-8" stroke="currentColor" stroke-width="2" fill="none"/></svg></span>Tap the <b>Share</b> button in Safari's toolbar.</li>
+  <li><span class="ct-ios-ico">&#x2795;</span>Scroll down and tap <b>Add to Home Screen</b>.</li>
+  <li><span class="ct-ios-ico"><img src="icons/icon-192.png" width="22" height="22" alt=""></span>Tap <b>Add</b>, then open Swipe Drive from your Home Screen and turn on alerts.</li></ol>
+  <div class="ct-ios-arrow" aria-hidden="true">&darr;</div></div></div>
+<div class="ct-toast" id="toast" role="status" hidden></div>
+
+<script src="config.js"></script>
+<script src="../stock-core.js"></script>
+<script src="match-core.js"></script>
+<script src="../disclaimer.js" defer></script>
+<script src="app.js"></script>
+</body>
+</html>
