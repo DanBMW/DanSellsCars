@@ -85,9 +85,7 @@
     }
     return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok };
   }
-  /* New stock budget fit uses a floor of 90% of the listed price (a discount of up to 10% may be possible,
-     never promised). Staff only: shown as "could fit with up to 10% off, ask for a quote". */
-  var NEW_FLOOR = 0.9;
+  /* New stock: in budget only on its actual current price. No discount assumptions. Staff alerts only. */
   function scoreNewStock(car, p) {
     var sc = 38, why = [], ok = true, s = S();
     if (p.new_used === 'used') return { score: 0, reasons: [], ok: false };
@@ -98,11 +96,8 @@
     var models = (p.models || []).map(function (m) { return String(m).toLowerCase(); });
     if (models.length) { var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase();
       if (models.some(function (m) { return name.indexOf(m) !== -1; })) { sc += 22; why.push('A model you picked'); } else sc -= 6; }
-    var floor = car.price_gbp ? car.price_gbp * NEW_FLOOR : 0, mfloor = car.monthly_gbp ? car.monthly_gbp * NEW_FLOOR : 0;
-    if (p.budget_type === 'cash' && p.cash_gbp > 0 && floor) {
-      if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at list price'); } else if (floor <= p.cash_gbp) { sc += 8; why.push('Could fit with up to 10% off'); } else ok = false; }
-    if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && mfloor) {
-      if (car.monthly_gbp <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at list price'); } else if (mfloor <= p.monthly_gbp) { sc += 8; why.push('Could fit monthly with up to 10% off'); } else ok = false; }
+    if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) { if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at the current price'); } else ok = false; }
+    if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && car.monthly_gbp) { if (car.monthly_gbp <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else ok = false; }
     var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
     if (cols.length) { var fam = colourFamily(car); if (cols.indexOf(fam) !== -1) { sc += 10; why.push(fam + ', a colour you like'); } else sc -= 4; if (mustC.length && fam && mustC.indexOf(fam) === -1) ok = false; }
     (p.specs_must || []).forEach(function (k) { var h = hasSpec(car, k); if (h === false) ok = false; });
@@ -129,5 +124,5 @@
     if (!f || !f.monthly || !f.representative_example) return null;
     return { monthly: gbp2(f.monthly), headline: gbp2(f.monthly) + ' a month, ' + f.product, example: f.representative_example, legal: f.legal || '' };
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, NEW_FLOOR: NEW_FLOOR, waLink: waLink, waText: waText, finance: finance, gbp: gbp };
+  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp };
 })(typeof window !== 'undefined' ? window : globalThis);

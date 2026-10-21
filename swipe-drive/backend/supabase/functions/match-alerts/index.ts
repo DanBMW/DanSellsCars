@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
   // ---------- new stock matches ----------
   const stock = await (await fetch(SITE + '/lookup/stock.json', { cache: 'no-store' })).json();
   const cars: any[] = Object.values(stock.cars || {});
-  // new cars in retailer stock (lookup/new-stock.json), keyed NEW<order number>; budget fit uses a 90% price floor
+  // new cars in retailer stock (lookup/new-stock.json), keyed NEW<order number>; in budget only on the actual current price
   let newCars: any[] = [];
   try { const ns = await (await fetch(SITE + '/lookup/new-stock.json', { cache: 'no-store' })).json(); newCars = (ns.cars || []).filter((c: any) => c.order_number).map(M.fromNewStock); } catch (_) { newCars = []; }
   const { data: seen } = await db.from('stock_seen').select('reg');
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
       if (owner) recips.push({ p: owner, staff: true });
       if (cu.user_id && byId.get(cu.user_id)) recips.push({ p: byId.get(cu.user_id), staff: false });
       for (const { p, staff } of recips) {
-        const mine = staff ? hits : hits.filter((h: any) => h.car.kind !== 'new_stock');   // 10% floor estimates are for staff only
+        const mine = staff ? hits : hits.filter((h: any) => h.car.kind !== 'new_stock');   // new stock alerts are for staff only
         const items = mine.filter((h: any) => !done.has([p.id, cu.id, h.car.reg, 'push'].join('|')));
         if (p.notify_push && items.length) {
           const c = items[0].car;
