@@ -1,0 +1,33 @@
+{
+ "reg": "YC22CDZ",
+ "model": "BMW 420i M Sport Gran Coupe",
+ "series": "4 Series",
+ "year": 2022,
+ "mileage": "18,557 miles",
+ "mileage_miles": 18557,
+ "colour": "Black",
+ "fuel": "Petrol",
+ "body": "Coupe",
+ "gearbox": "Automatic",
+ "drive": "RearWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "182 hp",
+ "trim": "M Sport",
+ "price": "£28,000",
+ "price_gbp": 28000,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a15e35-0f7b-73d2-af40-a20d68c26b01-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a15e35-0f7b-73d2-af40-a20d68c26b01-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a15e35-106f-77a1-9e92-7e80499d0ac4-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a15e35-111e-7d21-a0e7-a2a0152ff22a-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a15e35-11cc-777c-9ba5-39b2bb7ef18c-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/257250/pb-bmw-420-2022",
+ "listing_id": "257250",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}

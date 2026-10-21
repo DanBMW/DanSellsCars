@@ -29,7 +29,7 @@
  "listing_id": "236885",
  "source": "group",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-10-13",
- "available_until": "2026-11-12"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }
