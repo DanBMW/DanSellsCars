@@ -22,9 +22,9 @@ var ST=[
 var NOTE=/pass (that|your question|that request)/;function smalltalk(s){s=(s||"").trim();for(var k=0;k<ST.length;k++)if(ST[k][0].test(s)){var r=pick(ST[k][1]);return {say:r,note:NOTE.test(r)}}return null}
 var MOD={"1 Series":"The 1 Series, a cracking little hot hatch.","2 Series":"The 2 Series, fun on a Sunday road.","3 Series":"The 3 Series, a classic for good reason.","4 Series":"The 4 Series, very stylish choice.","5 Series":"The 5 Series, proper executive comfort.","7 Series":"The 7 Series! Ooh, first class.","8 Series":"The 8 Series, now that's a statement.","X1":"The X1, a brilliant all rounder.","X2":"The X2, sporty with a bit of attitude.","X3":"The X3, a family favourite.","X5":"The X5, plenty of room and presence.","X7":"The X7, the full luxury lounge.","i4":"The i4, smooth and silent. ⚡","i5":"The i5, electric executive, very nice.","i7":"The i7, peak electric luxury.","iX":"The iX, properly futuristic.","iX1":"The iX1, compact and electric.","Z4":"The Z4! Roof down weather, hopefully.","XM":"The XM, not one for blending in."};
 var COL={"Alpine White":"Alpine White, crisp and clean.","Black Sapphire":"Black Sapphire, sleek. Keep a chamois handy!","Brooklyn Grey":"Brooklyn Grey, very on trend.","Portimao Blue":"Portimao Blue, a real head turner.","Fire Red":"Fire Red, nobody will miss you coming.","Skyscraper Grey":"Skyscraper Grey, understated and classy.","Any colour":"Open minded, love it. More cars to choose from."};
-function react(q,v,A){v=String(v||"");if(/^(Skipped|Not sure|Not sure yet|No preference|Rather not say)$/.test(v))return q.id=="phone"?"No problem at all, WhatsApp works just as well.":pick(["No problem.","That's fine, Dan can fill that in.","Fair enough."]);
+function react(q,v,A){v=String(v||"");if(q.id=="name")return null;if(/^(Skipped|Not sure|Not sure yet|No preference|Rather not say)$/.test(v))return q.id=="phone"?"No problem at all, WhatsApp works just as well.":pick(["No problem.","That's fine, Dan can fill that in.","Fair enough."]);
  switch(q.id){
- case "name":return pick(["Great name!","Lovely to meet you, "+v+"."]);
+ case "name":return null; /* the next question already says nice to meet you */
  case "model":if(/^M\d|X\d M$/.test(v))return "Ooh, an M car. I can hear it from here! 🏁";return MOD[v]||(v=="Not sure yet"?"No problem at all, that's exactly what Swipe Drive is for.":"Good shout.");
  case "why":if(/Electric/.test(v))return "Electric, nice. Dan can talk you through charging too.";if(/Performance/.test(v))return "A driver after my own heart. 😄";if(/family/i.test(v))return "Room for everyone, noted.";return "Noted, that helps a lot.";
  case "cur":if(v=="No current car")return "Fresh start, lovely.";if(/bmw|series|\bx\d|\bi\d/i.test(v))return "Ah, already one of the family!";if(/audi|merc|mercedes|vw|volkswagen|ford|vauxhall|toyota|tesla|volvo|kia|hyundai/i.test(v))return pick(["Ooh, thinking of switching sides? 😄","Nice, we'll see if we can tempt you over."]);return "Got it.";
@@ -34,9 +34,9 @@ function react(q,v,A){v=String(v||"");if(/^(Skipped|Not sure|Not sure yet|No pre
  case "settle":return /£0|Paid off/.test(v)?"All paid off, nice and simple.":"Thanks, a rough figure is perfect.";
  case "curMonthly":return "Got it.";
  case "annual":var a=num(v);if(/Over 15k/.test(v)||a>15000)return "Big miles! You'll want something comfy.";if(/Under 6k/.test(v)||(a!=null&&a<6000))return "Low miles, nice and easy going.";return "Noted.";
- case "pay":return v=="Cash"?"Cash, nice and straightforward.":v=="Not sure yet"?"No problem, Dan can explain the options.":"Noted, Dan will go through the details with you.";
- case "budget":case "cash":return "Noted. Dan will work to that and won't push you past it.";
- case "stretch":case "stretchCash":return pick(["Good to know. Dan will always start with your normal budget.","Noted, that just helps Dan know what is possible. No pressure."]);
+ case "pay":return v=="Cash"?"Cash, nice and straightforward.":v=="Not sure yet"?"No problem, Dan can explain the options.":"Got it, Dan will go through the details with you.";
+ case "budget":case "cash":return "Lovely. Dan will work to that and won't push you past it.";
+ case "stretch":case "stretchCash":return pick(["Good to know. Dan will always start with your normal budget.","That just helps Dan know what is possible. No pressure."]);
  case "specs":var mh=(v.match(/Must have: ([^.]*)\./)||[])[1];return mh&&mh!="none"?"Must haves noted, Dan will keep those front of mind.":"Lovely, nice and flexible.";
  case "dep":return "Thanks.";
  case "colour":return COL[v]||"Nice choice.";

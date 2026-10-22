@@ -16,13 +16,34 @@ function money(s){var x=s.toLowerCase().replace(/,/g,"").replace(/£|gbp|pounds?
  var m=x.match(/(\d+(?:\.\d+)?)\s*(k|grand|thousand)?/);if(!m)return null;var v=parseFloat(m[1]);if(m[2])v*=1000;return Math.round(v)}
 var V={
  name:function(s){var t=s.trim().replace(/^(i'?m|it'?s|my name is|call me|name'?s)\s+/i,"");if(!/^[a-z][a-z' .]{0,30}$/i.test(t))return {ok:0,why:"name"};if(t.split(/\s+/).length>3)return {ok:0,why:"name"};return {ok:1,val:t.replace(/\b\w/g,function(c){return c.toUpperCase()})}},
- model:function(s){var t=s.toLowerCase().replace(/bmw\s*/,"").trim(),best=null,bd=99;
-  var n=t.match(/\b([1-8])\s*(series|er)?\b/);if(n&&!/^x/.test(t))return {ok:1,val:n[1]+" Series"};
-  MODELS.forEach(function(mo){var d=lev(t,mo.toLowerCase());if(t.indexOf(mo.toLowerCase())>=0&&mo.length>2)d=0;if(d<bd){bd=d;best=mo}});
-  if(bd<=Math.max(1,Math.floor(best.length/4)))return {ok:1,val:best,fixed:bd>0};
+ model:function(s){var t=" "+s.toLowerCase().replace(/\bbmw\b/g," ").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()+" ";
+  var W={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8};t=t.replace(/ (a|an|the|please|new|used|i|like|want|fancy|probably|maybe|prob|think|id|love|the new) /g," ").replace(/ (a|an|the|please|new|used|i|like|want|fancy|probably|maybe|prob|think|id|love) /g," ");t=t.replace(/ (one|two|three|four|five|six|seven|eight) /g,function(m,w){return " "+W[w]+" "});t=t.trim();
+  if(/^(not sure|unsure|dunno|no idea|don t know|any|anything)( yet)?$/.test(t))return {ok:1,val:"Not sure yet"};
+  var m;
+  /* X models, with optional M or M Performance suffix: x5 m, x5m, x5 m50, x3 m40d */
+  if(m=t.match(/^x\s?([1-7])\s?(m\d{0,2}[a-z]?)?\b/)){var xm=m[2];if(xm=="m"&&(m[1]=="3"||m[1]=="5"))return {ok:1,val:"X"+m[1]+" M"};return {ok:1,val:"X"+m[1]}}
+  if(/^xm\b/.test(t))return {ok:1,val:"XM"};
+  if(/^z\s?4\b/.test(t))return {ok:1,val:"Z4"};
+  if(m=t.match(/^i\s?x\s?([123])\b/))return {ok:1,val:"iX"+m[1]};
+  if(/^i\s?x\b/.test(t))return {ok:1,val:"iX"};
+  if(m=t.match(/^i\s?([457])\b/))return {ok:1,val:"i"+m[1]};
+  /* M cars: m2 m3 m4 m5 m8, but m340i or m135i are M Performance versions of the series */
+  if(m=t.match(/^m\s?([1-8])(\d\d)[a-z]*\b/))return {ok:1,val:m[1]+" Series"};
+  if(m=t.match(/^m\s?([23458])\b/))return {ok:1,val:"M"+m[1]};
+  /* engine codes like 320d, 118i, 530e */
+  if(m=t.match(/^([1-8])\d\d\s?[a-z]{0,2}\b/)){var se=m[1];if(se=="6")return {ok:0,why:"model"};var tail=t.slice(m[0].length);if(/touring|estate/.test(tail)&&/^[35]$/.test(se))return {ok:1,val:se+" Series Touring"};if(/gran coupe|gc\b/.test(tail)&&/^[24]$/.test(se))return {ok:1,val:se+" Series Gran Coupe"};return {ok:1,val:se+" Series"}}
+  /* 1 series, 3er, 3 series touring, 2 series gran coupe, active tourer */
+  if(m=t.match(/^([1-8])\s?(series|ser|er|seris|serise)?\b(.*)$/)){var n=m[1],rest=m[3]||"";if(n=="6")return {ok:0,why:"model"};
+   if(/gran coupe|gc\b/.test(rest)&&/^[24]$/.test(n))return {ok:1,val:n+" Series Gran Coupe"};if(/active|tourer/.test(rest)&&n=="2")return {ok:1,val:"2 Series Active Tourer"};if(/touring|estate/.test(rest)&&/^[35]$/.test(n))return {ok:1,val:n+" Series Touring"};
+   if(m[2]||!rest.trim())return {ok:1,val:n+" Series"}}
+  if(/^mini\b/.test(t))return {ok:1,val:"Mini"};
+  /* word only fuzzy match, never across different digits */
+  var best=null,bd=99,dig=(t.match(/\d/g)||[]).join("");
+  MODELS.forEach(function(mo){var ml=mo.toLowerCase();if((ml.match(/\d/g)||[]).join("")!==dig)return;var d=lev(t,ml);if(d<bd){bd=d;best=mo}});
+  if(best&&bd<=Math.max(1,Math.floor(best.length/4)))return {ok:1,val:best,fixed:bd>0};
   var mk=OTHER_MAKES.filter(function(k){return new RegExp("\\b"+k+"\\b").test(t)})[0];
   if(mk)return {ok:0,why:"othermake",hint:mk};return {ok:0,why:"model"}},
- anycar:function(s){var r=V.model(s);if(r.ok)return r;if(r.why=="othermake")return {ok:1,val:s.trim()};
+ anycar:function(s){if(new RegExp("\\b("+OTHER_MAKES.join("|")+")\\b","i").test(s))return {ok:1,val:s.trim()};var r=V.model(s);if(r.ok)return {ok:1,val:/\b(19|20)\d{2}\b|diesel|petrol|hybrid|electric|touring|auto|manual|\bbmw\b/i.test(s)?s.trim():r.val};if(r.why=="othermake")return {ok:1,val:s.trim()};
   if(/\b(19|20)\d{2}\b|\b\d\.\d\b|\b(diesel|petrol|hybrid|electric|estate|hatch|saloon|suv|coupe)\b/i.test(s))return {ok:1,val:s.trim()};
   if(/^(none|nothing|no car|don'?t have one|no)$/i.test(s.trim()))return {ok:1,val:"No current car"};return {ok:0,why:"car"}},
  reg:function(s){var t=s.toUpperCase().replace(/\s+/g,"");
@@ -41,10 +62,10 @@ function check(q,raw){var s=(raw||"").trim();
  if(!s)return {ok:0,why:"empty"};
  if(PROF.test(s))return {ok:0,why:"rude"};
  if(OFFTOPIC.test(s))return {ok:0,why:"offtopic"};
- if(UNSURE.test(s)){if(q.optional!==false)return {ok:1,val:"Not sure",unsure:1};return {ok:0,why:"need"}}
+ if(UNSURE.test(s)){if(q.optional!==false)return {ok:1,val:q.type=="model"?"Not sure yet":"Not sure",unsure:1};return {ok:0,why:"need"}}
  if(/\?$/.test(s)&&!/^(y|n)/i.test(s))return {ok:0,why:"question"};
  if(gibberish(s)&&q.type!="reg"&&q.type!="postcode")return {ok:0,why:"gibberish"};
- var L=q.choices||q.chips;if(L){var low=s.toLowerCase(),hit=null,bd=99;L.forEach(function(c){c=Array.isArray(c)?c[0]:c;var cl=c.toLowerCase();var d=cl==low?0:(low.length>3&&cl.indexOf(low)>=0)?0:lev(low,cl);if(d<bd){bd=d;hit=c}});if(bd==0||(bd<=2&&low.length>4))return {ok:1,val:hit}}
+ var L=q.choices||q.chips;if(L){var low=s.toLowerCase(),hit=null,bd=99;L.forEach(function(c){c=Array.isArray(c)?c[0]:c;var cl=c.toLowerCase();if((cl.match(/\d/g)||[]).join("")!==(low.match(/\d/g)||[]).join(""))return;var d=cl==low?0:(low.length>3&&cl.indexOf(low)>=0)?0:lev(low,cl);if(d<bd){bd=d;hit=c}});if(bd==0||(bd<=2&&low.length>4))return {ok:1,val:hit}}
  var f=q.fn||V[q.type]||V.text;return f(s)}
 var EX={name:"Just your first name is fine, like Sam.",model:"Something like X3, 3 Series or i4. Not sure is fine too.",othermake:"Lovely, though Swipe Drive is BMW only. Which BMW catches your eye? Something like X1 or 1 Series.",car:"Something like 2019 Audi A3 diesel, or just the make and model.",reg:"A UK reg looks like AB12 CDE.",num:"A number is perfect, like 32,000 or about 30k.",range:"That looks a bit outside what I'd expect. Something between {lo} and {hi}?",money:"A rough figure is spot on, like £300 or about 5k.",yesno:"Just yes or no is grand.",phone:"A UK mobile like 07700 900123.",email:"Something like name@example.com.",postcode:"Like DA14 6NF, or just the first half, DA14.",date:"Something like ASAP, next month or March.",short:"Give me a few words, no essay needed.",empty:"Pop an answer in, or tap one below.",need:"No worries if you're unsure, just a rough guess helps."};
 var LEAD={gibberish:["Ha, I think the keyboard got that one.","Hmm, that looks like a cat walked on the phone.","I didn't quite catch that."],rude:["Fair enough, car shopping can be stressful! Let's keep it friendly.","I'll pretend I didn't see that one."],offtopic:["Good question for another day! I'm just here for your next car.","I'll leave that one to Google. Back to cars for a sec."],question:["Good question, Dan can answer that one properly on WhatsApp.","Dan will happily cover that. For now,"],def:["Hmm, that doesn't look quite right.","Not sure that fits this one.","I might be being slow, but that doesn't match.","Close, but not quite what I was after."]};
