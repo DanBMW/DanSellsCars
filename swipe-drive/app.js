@@ -87,7 +87,6 @@
       c.updated_at = new Date().toISOString(); demoSave(d); return Promise.resolve(c); },
     swipes: function (cid) { return Promise.resolve((demoDb().swipes || {})[cid] || {}); },
     setSwipe: function (cid, reg, liked, extra) { var d = demoDb(); d.swipes[cid] = d.swipes[cid] || {}; d.swipes[cid][reg] = Object.assign({ liked: liked, at: Date.now() }, extra || {}); demoSave(d); return Promise.resolve(); },
-    resetSeen: function (cid) { var d = demoDb(), o = (d.swipes || {})[cid] || {}; Object.keys(o).forEach(function (r) { if (!o[r].liked) delete o[r]; }); demoSave(d); return Promise.resolve(); },
     purchases: function (cid) { return Promise.resolve((demoDb().purchases || []).filter(function (p) { return p.customer_id === cid; })); },
     markDealt: function (cid, pid) { var d = demoDb(); var c = (d.customers || []).find(function (x) { return x.id === cid; }); if (c) { c.dealt_at = pid ? new Date().toISOString() : null; c.dealt_purchase_id = pid || null; demoSave(d); } return Promise.resolve(); },
     savePurchase: function (p) { var d = demoDb(); p.id = p.id || uuid(); p.remind_on = addMonths(p.purchase_date, 33); d.purchases = (d.purchases || []).filter(function (x) { return x.id !== p.id; }); d.purchases.push(p); demoSave(d); return Promise.resolve(p); },
@@ -138,8 +137,6 @@
        (Calling .catch straight on the builder threw inside decide() and froze the deck on the next card.) */
     setSwipe: function (cid, reg, liked, extra) { return Promise.resolve().then(function () { if (!sbUser) throw new Error('signed out');
       return sb.from('swipes').upsert(Object.assign({ customer_id: cid, reg: reg, liked: liked, by_user: sbUser.id }, extra || {})); }).then(function (r) { if (r && r.error) throw r.error; }); },
-    /* passed cars only, so matches stay; RLS s_all lets a user delete swipes on their own customer */
-    resetSeen: function (cid) { return Promise.resolve(sb.from('swipes').delete().eq('customer_id', cid).eq('liked', false)).then(function (r) { if (r && r.error) throw r.error; }); },
     purchases: function (cid) { return sb.from('purchases').select('*').eq('customer_id', cid).then(function (r) { return r.data || []; }); },
     markDealt: function (cid, pid) { return sb.from('customers').update({ dealt_at: pid ? new Date().toISOString() : null, dealt_purchase_id: pid || null }).eq('id', cid).then(function (r) { if (r.error) throw r.error; }); },
     savePurchase: function (p) { var row = Object.assign({}, p); delete row.remind_on; row.created_by = sbUser.id; return sb.from('purchases').upsert(row).select().single().then(function (r) { if (r.error) throw r.error; return r.data; }); },
@@ -725,12 +722,6 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       platform.subscribePush().then(function (sub) { return store.savePush(sub); }).then(function (saved) { msg.className = 'ct-msg ok'; msg.textContent = saved ? 'Alerts are on. I will tell you when a new car fits.' : 'Alerts allowed on this phone. They start once the backend is connected (demo mode).'; track('push_enabled'); })
         .catch(function () { notifyState('off'); store.setNotify('off'); msg.textContent = 'Notifications were not allowed. You can switch them on in your phone settings, then tap Turn on again.'; }); });
     $('#meBought').addEventListener('click', purchaseClick);
-    $('#resetSeen').addEventListener('click', function () { var box = $('#resetAsk'); box.hidden = false; $('#resetMsg').textContent = ''; });
-    $('#resetNo').addEventListener('click', function () { $('#resetAsk').hidden = true; });
-    $('#resetYes').addEventListener('click', function () { var btn = $('#resetYes'), cid = S.cust && S.cust.id; if (!cid) return; busy(btn, true, 'Resetting...');
-      store.resetSeen(cid).then(function () { Object.keys(S.swipes).forEach(function (r) { if (!S.swipes[r].liked) delete S.swipes[r]; }); S.deck = []; busy(btn, false); $('#resetAsk').hidden = true;
-        $('#resetMsg').className = 'ct-msg ok'; $('#resetMsg').textContent = 'Done. Every car you passed on is back in your deck. Your matches are kept.'; track('reset_seen'); })
-        .catch(function (err) { busy(btn, false); $('#resetMsg').className = 'ct-msg'; $('#resetMsg').textContent = plainErr(err); }); });
     $('#meTerms').addEventListener('click', function (e) { if (!e.target.closest('#termsOk')) return; try { localStorage.setItem('sdTermsAt', new Date().toISOString()); localStorage.setItem('dsc_ack', '1'); } catch (x) {} termsBox(); track('terms_confirmed'); toast('Thanks, confirmed'); });
     $('#signOut').addEventListener('click', function () { store.signOut().then(function () { S.session = S.cust = null; sessionStorage.removeItem('ctActing'); location.hash = 'signin'; }); });
   }
