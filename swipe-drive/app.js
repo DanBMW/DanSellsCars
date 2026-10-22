@@ -249,7 +249,9 @@
     $('#demoBox').hidden = LIVE; $('#demoBar').hidden = LIVE;
     $('#signinForm').addEventListener('submit', function (e) {
       e.preventDefault(); var em = $('#siEmail').value.trim(), msg = $('#siMsg');
-      if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) { msg.textContent = 'Please enter a valid email.'; return; }
+      msg.className = 'ct-msg';
+      if (!em) { msg.textContent = 'Please enter your email.'; $('#siEmail').focus(); return; }
+      if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) { msg.textContent = 'That email doesn\u2019t look right. Check it and try again.'; $('#siEmail').focus(); return; }
       if (!LIVE) { msg.textContent = 'Demo mode: no email is sent. Use the button below to carry on.'; $('#demoBox').hidden = false; return; }
       msg.textContent = 'Sending...';
       store.sendLink(em).then(function () { msg.className = 'ct-msg ok'; msg.textContent = 'Check your inbox for the sign in link. It works once. Open it on this phone, or type the code from the email below.'; $('#codeBox').hidden = false; track('sign_in_link_sent'); })
@@ -827,10 +829,19 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     var el = $('#installInfo');
     if (platform.standalone) { el.innerHTML = '<p class="ct-sub">You are using the app. Nice.</p>'; return; }
     if (platform.ios) { el.innerHTML = '<p class="ct-sub">Add Swipe Drive to your Home Screen to use it like an app and get alerts.</p><button class="ct-btn ct-btn-ghost" type="button" id="iosOpen">Show me how</button>'; $('#iosOpen').onclick = function () { $('#iosGuide').hidden = false; track('ios_guide_open'); }; return; }
-    el.innerHTML = platform.deferredInstall ? '<button class="ct-btn" type="button" id="instNow">Install the app</button>' : '<p class="ct-sub">Use your browser menu and choose Install app or Add to Home screen.</p>';
-    if ($('#instNow')) $('#instNow').onclick = doInstall;
+    el.innerHTML = '<button class="ct-btn" type="button" id="instNow">Install the app</button><div id="installHelp" class="ct-sub" role="status" aria-live="polite"></div>';
+    $('#instNow').onclick = doInstall;
   }
-  function doInstall() { var p = platform.deferredInstall; if (!p) return; p.prompt(); p.userChoice.then(function (c) { track('install_' + c.outcome); platform.deferredInstall = null; $('#installBtn').hidden = true; installInfo(); }); }
+  /* No install prompt from the browser (desktop, iOS, already dismissed): say how to do it by hand */
+  function installHelp() {
+    var android = /android/i.test(navigator.userAgent);
+    var html = platform.ios ? 'On iPhone or iPad: tap the Share button in Safari, then Add to Home Screen.'
+      : android ? 'On Android: open the browser menu (the three dots), then tap Install app or Add to Home screen.'
+      : 'On a computer: click the install icon at the right of the address bar in Chrome or Edge, or open the browser menu and choose Install Swipe Drive. In Safari on a Mac choose File, then Add to Dock.';
+    if (platform.ios) { $('#iosGuide').hidden = false; return; }
+    function show() { var h = $('#installHelp'); if (h) { h.innerHTML = '<p>' + esc(html) + '</p>'; h.scrollIntoView({ block: 'center' }); } }
+    if ($('[data-screen=me]').hidden && S.session) { go('me'); setTimeout(show, 50); } else show(); track('install_help'); }
+  function doInstall() { var p = platform.deferredInstall; if (!p) { installHelp(); return; } p.prompt(); p.userChoice.then(function (c) { track('install_' + c.outcome); platform.deferredInstall = null; $('#installBtn').hidden = true; installInfo(); }); }
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); platform.deferredInstall = e; $('#installBtn').hidden = false; });
   window.addEventListener('appinstalled', function () { track('installed'); $('#installBtn').hidden = true; });
   $('#installBtn').addEventListener('click', doInstall);
