@@ -1,6 +1,6 @@
 /* Swipe Drive service worker: caches the app shell, serves offline.html when
    there is no connection, network first for stock data, and handles push. */
-const V = 'sd-v18';
+const V = 'sd-v19';
 const SHELL = ['./', './index.html', './app.css', './app.js', './config.js', './match-core.js', './offline.html',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

@@ -166,6 +166,12 @@
       <div id="meBought"></div>
       <div class="ct-row"><a class="ct-btn" href="#bought" id="boughtBtn">I've bought my car</a></div>
       </div>
+      <div data-cust-only><h3>Seen cars</h3>
+      <p class="ct-sub">Want another look at cars you passed on? Reset them and they come back into your deck.</p>
+      <div class="ct-row"><button class="ct-btn ct-btn-ghost" type="button" id="resetSeen">Reset seen cars</button></div>
+      <div id="resetAsk" class="ct-card-lite" hidden><p>Bring back every car you passed on? Your matches stay as they are.</p>
+        <div class="ct-row"><button class="ct-btn" type="button" id="resetYes">Yes, reset</button><button class="ct-btn ct-btn-ghost" type="button" id="resetNo">Cancel</button></div></div>
+      <p class="ct-msg" id="resetMsg" role="status" aria-live="polite"></p></div>
       <h3>Alerts</h3>
       <p class="ct-sub" id="notifyState">Phone notifications: Off, tap Turn on to hear when a car fits you</p>
       <div class="ct-seg" id="notifySeg" aria-label="Phone notifications"><button type="button" data-v="push">Turn on</button><button type="button" data-v="email" data-email-opt hidden>Email</button><button type="button" data-v="both" data-email-opt hidden>Both</button><button type="button" data-v="off">Off</button></div>
