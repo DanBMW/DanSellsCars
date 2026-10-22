@@ -139,6 +139,11 @@
   "last_seen": "2026-10-22",
   "removed_at": null
  },
+ "EO72SFU": {
+  "first_seen": "2026-10-22",
+  "last_seen": "2026-10-22",
+  "removed_at": null
+ },
  "EO73ZNT": {
   "first_seen": "2026-10-21",
   "last_seen": "2026-10-22",
@@ -844,6 +849,11 @@
   "last_seen": "2026-10-19",
   "removed_at": "2026-10-19"
  },
+ "LV26OHE": {
+  "first_seen": "2026-10-22",
+  "last_seen": "2026-10-22",
+  "removed_at": null
+ },
  "LV26OXP": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-22",
@@ -1401,6 +1411,16 @@
  },
  "LY26HYO": {
   "first_seen": "2026-10-07",
+  "last_seen": "2026-10-22",
+  "removed_at": null
+ },
+ "LY26NHH": {
+  "first_seen": "2026-10-22",
+  "last_seen": "2026-10-22",
+  "removed_at": null
+ },
+ "LY26OXA": {
+  "first_seen": "2026-10-22",
   "last_seen": "2026-10-22",
   "removed_at": null
  },
