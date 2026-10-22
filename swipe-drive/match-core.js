@@ -49,7 +49,7 @@
     var fk = isNew ? car.fuelKeys || [] : [s.fuelKey(car)];
     if (p.fuel && p.fuel !== 'open') {
       var hit = fk.some(function (k) { return (FUEL_OK[p.fuel] || []).indexOf(k) !== -1; });
-      if (hit) { sc += 20; why.push('Your fuel'); } else if (!isNew) { ok = false; } else sc -= 10;
+      if (hit) { sc += 20; why.push('Your fuel'); } else ok = false; /* a fuel filter is a hard filter for new and used */
     } else sc += 8;
     var bk = isNew ? car.bodyKeys || [] : s.bodyKeys(car);
     if (p.body && p.body !== 'any') {

@@ -167,11 +167,12 @@
       <div class="ct-row"><a class="ct-btn" href="#bought" id="boughtBtn">I've bought my car</a></div>
       </div>
       <h3>Alerts</h3>
-      <div class="ct-seg" id="notifySeg"><button type="button" data-v="push">Phone alerts</button><button type="button" data-v="email" data-email-opt hidden>Email</button><button type="button" data-v="both" data-email-opt hidden>Both</button><button type="button" data-v="off">Off</button></div>
+      <p class="ct-sub" id="notifyState">Phone notifications: Off, tap Turn on to hear when a car fits you</p>
+      <div class="ct-seg" id="notifySeg" aria-label="Phone notifications"><button type="button" data-v="push">Turn on</button><button type="button" data-v="email" data-email-opt hidden>Email</button><button type="button" data-v="both" data-email-opt hidden>Both</button><button type="button" data-v="off">Off</button></div>
       <p class="ct-msg" id="notifyMsg" role="status"></p>
       <h3>Get the app</h3>
       <div id="installInfo"></div>
-      <div data-dsc-slot></div>
+      <div class="ct-card-lite" id="meTerms"></div>
       <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender. <a href="../privacy.html">Privacy</a> &middot; <a href="../terms.html">Terms</a></p>
       <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" id="signOut" type="button">Sign out</button></div>
     </div>

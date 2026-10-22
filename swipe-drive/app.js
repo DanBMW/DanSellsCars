@@ -18,7 +18,7 @@
     if (/px_needs_confirmation/.test(m)) return 'Part exchange details need the I confirm tick before they can be saved.';
     if (c === '23514' || /check constraint/i.test(m)) return 'One of the answers is not in the format the system expects (' + (m.match(/"([a-z_]+)"/) || [, 'check'])[1].replace(/_/g, ' ') + ').';
     if (c === '22P02' || /invalid input/i.test(m)) return 'One of the numbers or dates is not valid. Check the highlighted fields.';
-    if (c === 'PGRST204' || c === '42703' || /column .* does not exist|schema cache/i.test(m)) return 'The database needs a quick update before this can be saved. Ask Dan to run the latest Swipe Drive SQL.';
+    if (c === 'PGRST204' || c === '42703' || /column .* does not exist|schema cache/i.test(m)) return 'That did not save just now. Please try again in a minute, or WhatsApp Dan on 07827 138197.';
     if (/JWT|expired|not authenticated/i.test(m)) return 'Your sign in has expired. Sign out and sign in again.';
     return 'That did not save: ' + m; }
   function fieldErr(f, name, text) { var el = typeof name === 'string' ? f.elements[name] : name; if (!el) return null;
@@ -105,6 +105,8 @@
   };
 
   var sb = null, sbUser = null, sbProfile = null;
+  /* earlier unsaved extras go first so this save's values win */
+  function row0(c) { return c && c.id ? Object.assign({}, pendingGet(c.id), c) : c; }
   var supa = {
     mode: 'supabase',
     init: function () { return import('https://esm.sh/@supabase/supabase-js@2').then(function (m) { sb = m.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: { persistSession: true, detectSessionInUrl: true, flowType: 'implicit' } }); }); },
@@ -115,15 +117,21 @@
     signOut: function () { return sb.auth.signOut(); },
     customers: function () { return sb.from('customers').select('*').order('created_at', { ascending: false }).then(function (r) { if (r.error) throw r.error;
       return Promise.all(r.data.map(function (c) { if (c.px_valuation_set_by !== 'staff') return c; return sb.rpc('valuation_set_by_name', { cid: c.id }).then(function (n) { c.px_valuation_set_by_name = n.data; return c; }); })); }); },
-    saveCustomer: function (c) { var row = Object.assign({}, c); delete row.px_photos_preview; var isNew = !row.id || !S.cust || S.cust.id !== row.id; if (isNew) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
+    saveCustomer: function (c) { var row = Object.assign({}, row0(c)); delete row.px_photos_preview; var isNew = !row.id || !S.cust || S.cust.id !== row.id; if (isNew) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
       /* No INSERT ... RETURNING: the read policy can't see a row inside the statement that creates it, so Postgres
          rejected every new customer. Insert or update first, then read the row back. */
       if (!row.id) row.id = uuid();
       function write(x) { return isNew ? sb.from('customers').insert(x) : sb.from('customers').update(x).eq('id', x.id); }
-      /* until Dan runs the desk SQL the desk column does not exist: save everything else and say so */
-      return write(row).then(function (r) { if (r.error && /desk/.test(r.error.message || '') && (r.error.code === 'PGRST204' || r.error.code === '42703')) { var x = Object.assign({}, row); delete x.desk; S.deskPending = true; return write(x); } return r; })
-        .then(function (r) { if (r.error) throw r.error; return sb.from('customers').select('*').eq('id', row.id).single(); })
-        .then(function (r) { if (r.error) throw r.error; return r.data; }); },
+      /* A column the database does not know (PGRST204 / 42703) must never stop the core profile saving or show a
+         technical message. Drop that one field, retry quietly, keep the dropped values on this phone and send them
+         again on the next save. */
+      var dropped = {}, tries = 0;
+      function attempt(x) { return Promise.resolve(write(x)).then(function (r) { var e = r && r.error;
+        if (e && (e.code === 'PGRST204' || e.code === '42703') && tries++ < 6) { var col = ((e.message || '').match(/'([a-z_]+)' column|column [a-z_]+\.([a-z_]+)|column "([a-z_]+)"/) || []).slice(1).filter(Boolean)[0];
+          if (col && col in x && col !== 'id') { dropped[col] = x[col]; var y = Object.assign({}, x); delete y[col]; return attempt(y); } }
+        return r; }); }
+      return attempt(row).then(function (r) { if (r.error) throw r.error; pendingCols(row.id, dropped); return sb.from('customers').select('*').eq('id', row.id).single(); })
+        .then(function (r) { if (r.error) throw r.error; return Object.assign(r.data, dropped); }); },
     swipes: function (cid) { return sb.from('swipes').select('*').eq('customer_id', cid).then(function (r) { var o = {}; (r.data || []).forEach(function (s) { o[s.reg] = s; }); return o; }); },
     /* Supabase query builders have .then but no .catch, so wrap in a real Promise and reject on r.error.
        (Calling .catch straight on the builder threw inside decide() and froze the deck on the next card.) */
@@ -157,6 +165,9 @@
   var AUTH_ERR = (function () { var h = new URLSearchParams((location.hash || '').slice(1)), q = new URLSearchParams(location.search);
     var d = h.get('error_description') || q.get('error_description'); return d ? { code: h.get('error_code') || q.get('error_code') || '', text: d.replace(/\+/g, ' ') } : null; })();
   function isAuthHash(h) { return /(^|&)(access_token|refresh_token|error|error_code|type)=/.test(h || ''); }
+  /* fields the database could not take yet, kept per customer and sent again with the next save */
+  function pendingCols(id, o) { try { var k = 'sdPendingCols:' + id; if (o && Object.keys(o).length) localStorage.setItem(k, JSON.stringify(o)); else localStorage.removeItem(k); } catch (e) {} }
+  function pendingGet(id) { try { return JSON.parse(localStorage.getItem('sdPendingCols:' + id) || 'null') || {}; } catch (e) { return {}; } }
   var LIVE = CFG.MODE === 'supabase' && CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY;
   var store = LIVE ? supa : demo;
 
@@ -181,7 +192,12 @@
   /* body and fuel for a new model, only from its name and MBG.html group */
   function newCar(name, group) {
     var n = name.toLowerCase(), b = [], f = [];
-    if (/^i/.test(n) || /electric/i.test(group)) f.push('electric');
+    /* fuel from the model name only (the MBG group names mix fuels): i models are electric, a trailing e is a
+       plug in hybrid (M760e, X5 M60e, XM, M5), M and M Performance cars are petrol, the rest come in several fuels */
+    if (/^i/.test(n)) f.push('electric');
+    else if (/\d+e\b/.test(n) || /\d+e xdrive/.test(n) || /^xm|^m5 /.test(n)) f.push('phev');
+    else if (/^m\d|\bm\d+i?\b|m\d{3}i?|\bm$/.test(n) || /^bmw m$|m performance/i.test(group)) f.push('petrol');
+    else f.push('petrol', 'diesel', 'mhev-petrol', 'mhev-diesel', 'phev');
     if (/^(x|ix)\d|^xm/.test(n)) b.push('suv');
     if (/touring/.test(n)) b.push('touring'); if (/gran coup/.test(n)) b.push('gran_coupe'); else if (/coup/.test(n)) b.push('coupe');
     if (/convertible/.test(n)) b.push('convertible'); if (/active tourer/.test(n)) b.push('mpv'); if (/saloon/.test(n)) b.push('saloon');
@@ -405,7 +421,7 @@
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
       var wasNew = !(S.cust && S.cust.id); busy(btn, true);
       store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
-        .then(function () { busy(btn, false); toast(S.deskPending ? 'Saved. The extra desk details will save once Dan runs the database update.' : staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deskPending = false; S.deck = []; go('discover'); })
+        .then(function () { busy(btn, false); toast(staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deck = []; go('discover'); })
         .catch(function (err) { busy(btn, false); console.warn('save customer', err); banner(f, plainErr(err)); track('profile_save_failed', { code: (err && err.code) || '' }); });
     });
   }
@@ -413,14 +429,15 @@
   /* ---------------- deck ---------------- */
   function buildDeck() {
     var ranked = M.rank(pool(), S.cust || {});
-    if (!ranked.length) ranked = M.rank(pool(), { new_used: (S.cust || {}).new_used });
-    var deep = platform.deepLink().reg; var seen = S.swipes;
-    S.deck = ranked.filter(function (x) { return !seen[x.car.reg]; });
+    /* Never pad the deck with cars outside the customer's filters: an empty deck shows the end screen instead.
+       One card per stable id (reg), and nothing already swiped. */
+    var deep = platform.deepLink().reg, seen = S.swipes, ids = {};
+    S.deck = ranked.filter(function (x) { var id = x.car.reg; if (!id || seen[id] || ids[id]) return false; ids[id] = 1; return true; });
     if (deep) { var i = S.deck.findIndex(function (x) { return x.car.reg === deep; }); if (i > 0) S.deck.unshift(S.deck.splice(i, 1)[0]); }
   }
   function cardHtml(x) {
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
-    var img = isNew ? '<div class="ct-noimg-ph">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (photos(c).length ? photoHtml(c, 0, true) : '<div class="ct-noimg-ph">No photo yet</div>');
+    var img = isNew ? '<div class="ct-noimg-ph">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (photos(c).length ? photoHtml(c, 0, true) : noPhoto(c));
     var src = isNew ? 'Brand new' : c.source === 'group' ? 'I can source this one' : 'On my forecourt';
     var tags = isNew ? [c.group] : [c.year, c.mileage, c.fuel, c.gearbox];
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
@@ -435,11 +452,14 @@
     var deck = $('#deck'); deck.innerHTML = '';
     var top = S.deck.slice(0, 3);
     $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length; deck.hidden = !top.length;
+    var left = $('#deckLeft'); if (!left) { left = document.createElement('p'); left.id = 'deckLeft'; left.className = 'ct-sub ct-left'; left.setAttribute('aria-live', 'polite'); $('#deckActions').parentNode.insertBefore(left, $('#deckActions').nextSibling); }
+    left.hidden = !top.length; left.textContent = S.deck.length === 1 ? 'Last car in your deck' : S.deck.length + ' cars left to see';
     top.slice().reverse().forEach(function (x, i, arr) {
       var el = document.createElement('div'); el.className = 'ct-card'; el.innerHTML = cardHtml(x); el.dataset.reg = x.car.reg;
       var depth = arr.length - 1 - i; el.style.transform = 'translateY(' + depth * 10 + 'px) scale(' + (1 - depth * 0.04) + ')'; el.style.zIndex = 10 - depth;
       if (depth === 0) drag(el, x); deck.appendChild(el);
     });
+    settlePhotos(deck);
   }
   function drag(el, x) {
     var sx = 0, sy = 0, dx = 0, dy = 0, t0 = 0, down = false, lastX = 0, lastT = 0, vx = 0;
@@ -491,7 +511,7 @@
     if (c.image) { mm.src = c.image; mm.hidden = false; } else mm.hidden = true;
     $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other.' : 'You and the ' + c.model + ' look made for each other.';
     var a = $('#mmWa'); a.href = M.waLink(waNum(), c, waWho()); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
-    m.hidden = false; confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
+    m.hidden = false; try { $('[data-close]', m).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
   function confetti(cv) { if (reduced()) return;
     var ctx = cv.getContext('2d'), W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
@@ -513,11 +533,14 @@
     $('#sheet').hidden = false;
   }
   function photos(c) { var l = (c.images && c.images.length ? c.images : []).slice(0, 10); if (c.image && l.indexOf(c.image) === -1 && !l.length) l = [c.image]; return l; }
+  function noPhoto(c) { return '<div class="ct-noimg-ph">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>'; }
+  /* Every photo starts with a spinner. load clears it, error shows the model name. Each load is checked against the
+     photo the card wants now, so a slow photo from an earlier card or filter can never blank the current one. */
   function photoHtml(c, i, dots) { var l = photos(c); if (!l.length) return '';
-    var u = esc(l[i || 0]); return '<div class="ct-ph" data-i="' + (i || 0) + '"><div class="ct-ph-bg" style="background-image:url(\'' + u + '\')"></div><img class="ct-ph-img" src="' + u + '" alt="' + esc(c.model) + '" draggable="false"' + (dots ? '' : ' loading="lazy"') + '>' +
+    var u = esc(l[i || 0]); return '<div class="ct-ph is-loading" data-i="' + (i || 0) + '" data-model="' + esc(String(c.model || '').replace(/^BMW /, '')) + '"><div class="ct-ph-bg" style="background-image:url(\'' + u + '\')"></div><span class="ct-spin" aria-hidden="true"></span><img class="ct-ph-img" src="' + u + '" data-want="' + u + '" alt="' + esc(c.model) + '" draggable="false"' + (dots ? '' : ' loading="lazy"') + '>' +
       (dots && l.length > 1 ? '<div class="ct-dots">' + l.map(function (_, k) { return '<i' + (k === (i || 0) ? ' class="on"' : '') + '></i>'; }).join('') + '</div>' : '') + '</div>'; }
   function stepPhoto(el, c, dir) { var ph = $('.ct-ph', el), l = photos(c); if (!ph || l.length < 2) return false; var i = (+ph.getAttribute('data-i') + dir + l.length) % l.length;
-    ph.setAttribute('data-i', i); var u = l[i]; $('.ct-ph-img', ph).src = u; $('.ct-ph-bg', ph).style.backgroundImage = "url('" + u.replace(/'/g, '%27') + "')";
+    ph.setAttribute('data-i', i); var u = l[i], im = $('.ct-ph-img', ph); ph.classList.remove('is-broken'); ph.classList.add('is-loading'); im.setAttribute('data-want', u); im.src = u; settlePhotos(ph); $('.ct-ph-bg', ph).style.backgroundImage = "url('" + u.replace(/'/g, '%27') + "')";
     $$('.ct-dots i', ph).forEach(function (d, k) { d.className = k === i ? 'on' : ''; }); platform.haptic(6); return true; }
   /* rev counter: 0 to 100 over 240 degrees, red line from 85 */
   function gauge(sc) { var a0 = -210, sweep = 240, r = 26, cx = 32, cy = 32;
@@ -540,14 +563,33 @@
         for (var i = 1; i < pts.length; i++) { var a = i / pts.length; ctx.strokeStyle = 'rgba(' + col + ',' + (a * 0.55) + ')'; ctx.lineWidth = 14; ctx.setLineDash([6, 5]);
           [cv.width * 0.3, cv.width * 0.7].forEach(function (x0) { ctx.beginPath(); ctx.moveTo(x0 - pts[i - 1][0] * 2, cv.height * 0.92 - pts[i - 1][1] * 2); ctx.lineTo(x0 - pts[i][0] * 2, cv.height * 0.92 - pts[i][1] * 2); ctx.stroke(); }); } },
       clear: function () { pts = []; if (ctx) ctx.clearRect(0, 0, cv.width, cv.height); } }; }
+  function photoState(img, ok) { var ph = img.closest('.ct-ph'); if (!ph) return;
+    var want = img.getAttribute('data-want'); if (want && img.getAttribute('src') !== want) return; /* stale load */
+    ph.classList.remove('is-loading'); ph.classList.toggle('is-broken', !ok);
+    if (!ok && !$('.ct-ph-fail', ph)) { var f = document.createElement('div'); f.className = 'ct-ph-fail'; f.textContent = ph.getAttribute('data-model') || 'Photo unavailable'; ph.appendChild(f); }
+    if (ok) { var x = $('.ct-ph-fail', ph); if (x) x.remove(); } }
+  document.addEventListener('load', function (e) { if (e.target.classList && e.target.classList.contains('ct-ph-img')) photoState(e.target, e.target.naturalWidth > 0); }, true);
+  document.addEventListener('error', function (e) { if (e.target.classList && e.target.classList.contains('ct-ph-img')) photoState(e.target, false); }, true);
+  /* photos already in the cache can finish before the listener sees them */
+  function settlePhotos(root) { $$('.ct-ph-img', root).forEach(function (im) { if (im.complete) photoState(im, im.naturalWidth > 0); }); }
   function topCard() { return $('#deck .ct-card:last-child'); }
+  var OVERLAYS = ['#sheet', '#matchModal', '#buyModal', '#iosGuide'];
+  function openOverlays() { return OVERLAYS.map(function (s) { return $(s); }).filter(function (el) { return el && !el.hidden; }); }
+  function closeOverlay(el) { if (!el) return; el.hidden = true; if (el.id === 'matchModal') { var c = $('#confetti'); try { c.getContext('2d').clearRect(0, 0, c.width, c.height); } catch (e) {} } }
   function initDeck() {
     $('#btnLike').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(1); });
     $('#btnPass').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(-1); });
     $('#btnSuper').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(2); });
     $('#btnInfo').addEventListener('click', function () { if (S.deck[0]) openSheet(S.deck[0]); });
-    document.addEventListener('keydown', function (e) { if ($('[data-screen=discover]').hidden || !$('#sheet').hidden) return; if (e.key === 'ArrowRight') $('#btnLike').click(); if (e.key === 'ArrowLeft') $('#btnPass').click(); if (e.key === 'ArrowUp') $('#btnSuper').click(); });
-    $$('[data-close]').forEach(function (b) { b.addEventListener('click', function () { b.closest('.ct-sheet,.ct-match,.ct-ios').hidden = true; }); });
+    /* While any pop up or sheet is open the deck takes no input at all, and Escape closes the top one. */
+    document.addEventListener('keydown', function (e) { var open = openOverlays();
+      if (open.length) { if (e.key === 'Escape') { e.preventDefault(); closeOverlay(open[open.length - 1]); } else if (/^Arrow/.test(e.key) && !/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || '')) e.preventDefault(); return; }
+      if ($('[data-screen=discover]').hidden || /INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || '')) return;
+      if (e.repeat) { if (/^Arrow/.test(e.key)) e.preventDefault(); return; } /* holding a key never swipes cards unseen */
+      if (e.key === 'ArrowRight') { e.preventDefault(); $('#btnLike').click(); } if (e.key === 'ArrowLeft') { e.preventDefault(); $('#btnPass').click(); } if (e.key === 'ArrowUp') { e.preventDefault(); $('#btnSuper').click(); } });
+    ['#btnLike', '#btnPass', '#btnSuper'].forEach(function (s) { $(s).addEventListener('click', function (e) { if (openOverlays().length) e.stopImmediatePropagation(); }, true); });
+    $('#deck').addEventListener('pointerdown', function (e) { if (openOverlays().length) e.stopPropagation(); }, true);
+    $$('[data-close]').forEach(function (b) { b.addEventListener('click', function () { closeOverlay(b.closest('.ct-sheet,.ct-match,.ct-ios')); }); });
     $('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') e.target.hidden = true; });
   }
 
@@ -558,7 +600,7 @@
     var L = liked(), staff = S.session.role !== 'customer';
     $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + (waWho() || 'me') + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
-      return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">No photo yet</div>') +
+      return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>') +
         '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
         (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
         '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp about ' + esc(isNew ? 'this model' : M.normReg(c.reg)) + '</a></div>' +
@@ -648,23 +690,37 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     if (none) { $('#meName').textContent = 'Your account'; $('#meEmail').textContent = 'Signed in as ' + S.session.email + (S.session.role === 'admin' ? ' (admin)' : ''); }
     if (!none) store.purchases(c.id).then(function (ps) { $('#meBought').innerHTML = ps.filter(function (p) { return !p.cancelled; }).map(purchaseHtml).join('') || '<p class="ct-sub">Nothing recorded yet.</p>'; });
     var custEmail = !!CFG.CUSTOMER_EMAIL_ENABLED || staff; $$('[data-email-opt]').forEach(function (e) { e.hidden = !custEmail; });
-    store.notify().then(function (v) { if (!custEmail && (v === 'email' || v === 'both')) v = 'push'; $$('#notifySeg button').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-v') === v ? 'true' : 'false'); }); });
+    store.notify().then(function (v) { if (!custEmail && (v === 'email' || v === 'both')) v = 'push';
+      /* only say On when this phone really has permission */
+      if ((v === 'push' || v === 'both') && (!platform.pushSupported() || Notification.permission !== 'granted')) v = v === 'both' ? 'email' : 'off';
+      notifyState(v); });
+    termsBox();
     installInfo();
   }
+  function notifyState(v) { $$('#notifySeg button').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-v') === v ? 'true' : 'false'); });
+    var on = v === 'push' || v === 'both'; $('#notifyState').textContent = 'Phone notifications: ' + (on ? 'On' : 'Off, tap Turn on to hear when a car fits you') + (v === 'email' || v === 'both' ? '. Email alerts: On' : '');
+    var b = $('#notifySeg [data-v=push]'); if (b) b.textContent = on ? 'On' : 'Turn on'; }
+  /* The site notice on the Me page: only says confirmed after this person pressed Confirm here (or on the site). */
+  var TERMS = 'This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan\u2019s personal website and is not the official website of BMW or Hedin Automotive. Full terms and conditions can be found <a href="../terms.html" target="_blank" rel="noopener">here</a>.';
+  function termsAt() { try { return localStorage.getItem('sdTermsAt') || ''; } catch (e) { return ''; } }
+  function termsBox() { var el = $('#meTerms'); if (!el) return; var at = termsAt();
+    el.innerHTML = '<h3>Please read and confirm</h3><p class="ct-sub">' + TERMS + '</p>' + (at ? '<p class="ct-msg ok">You confirmed this on ' + esc(new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })) + '.</p>'
+      : '<p class="ct-sub">Not confirmed yet.</p><div class="ct-row"><button class="ct-btn" type="button" id="termsOk">Confirm and continue</button></div>'); }
   function purchaseHtml(p) { var ins = (p.insurances || []).map(function (i) { return (i.type === 'other' && i.label ? i.label : INS_L[i.type]) + (i.ends_on ? ', ends ' + fmtDate(i.ends_on) : ''); });
     return '<div class="ct-c"><h3>' + esc(p.model) + ' <span class="ct-pill">' + esc(p.reg) + '</span></h3><p>Bought ' + esc(fmtDate(p.purchase_date)) + ', ' + esc(String(p.finance_type).toUpperCase()) + (p.term_months ? ' over ' + esc(p.term_months) + ' months' : '') + '</p>' +
       (ins.length ? '<p>Cover: ' + esc(ins.join('; ')) + '</p>' : '') + '<p><span class="ct-pill hot">Reminder ' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</span></p>' +
       '<div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-edit-p="' + esc(p.id) + '">Edit</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-cancel-p="' + esc(p.id) + '">Cancel reminder</button></div></div>'; }
   function initMe() {
     $('#notifySeg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var v = b.getAttribute('data-v'); var msg = $('#notifyMsg'); msg.className = 'ct-msg';
-      $$('#notifySeg button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      notifyState(v);
       store.setNotify(v); track('notify_pref', { value: v });
-      if (v !== 'push' && v !== 'both') { msg.textContent = v === 'off' ? 'Alerts are off.' : 'Email alerts are on.'; return; }
+      if (v !== 'push' && v !== 'both') { msg.textContent = v === 'off' ? 'Phone notifications are off.' : 'Email alerts are on.'; return; }
       if (platform.ios && !platform.standalone) { $('#iosGuide').hidden = false; msg.textContent = 'Add the app to your Home Screen first, then turn alerts on from there.'; return; }
       if (!platform.pushSupported()) { msg.textContent = 'This browser does not support phone alerts.'; return; }
       platform.subscribePush().then(function (sub) { return store.savePush(sub); }).then(function (saved) { msg.className = 'ct-msg ok'; msg.textContent = saved ? 'Alerts are on. I will tell you when a new car fits.' : 'Alerts allowed on this phone. They start once the backend is connected (demo mode).'; track('push_enabled'); })
-        .catch(function () { msg.textContent = 'Alerts were not allowed. You can switch them on in your phone settings.'; }); });
+        .catch(function () { notifyState('off'); store.setNotify('off'); msg.textContent = 'Notifications were not allowed. You can switch them on in your phone settings, then tap Turn on again.'; }); });
     $('#meBought').addEventListener('click', purchaseClick);
+    $('#meTerms').addEventListener('click', function (e) { if (!e.target.closest('#termsOk')) return; try { localStorage.setItem('sdTermsAt', new Date().toISOString()); localStorage.setItem('dsc_ack', '1'); } catch (x) {} termsBox(); track('terms_confirmed'); toast('Thanks, confirmed'); });
     $('#signOut').addEventListener('click', function () { store.signOut().then(function () { S.session = S.cust = null; sessionStorage.removeItem('ctActing'); location.hash = 'signin'; }); });
   }
   function purchaseClick(e) {
