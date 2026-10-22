@@ -13,8 +13,11 @@ import { renderDigest } from './digest.js';
 import { renderReminder } from './reminder.js';
 (globalThis as any).window = globalThis;
 const SITE = 'https://dan-sells.co.uk';
-await import(SITE + '/stock-core.js');
-await import(SITE + '/swipe-drive/match-core.js');
+// The hosted edge runtime cannot import remote URLs at run time (worker failed to boot), so fetch the live
+// browser scripts and run them in global scope: the job always uses the same rules as the site.
+async function loadScript(u: string) { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(u + ' ' + r.status); (0, eval)(await r.text()); }
+await loadScript(SITE + '/stock-core.js');
+await loadScript(SITE + '/swipe-drive/match-core.js');
 const M = (globalThis as any).ctMatch;
 (globalThis as any).ctDetails = await fetch(SITE + '/automation/car-details.json').then(r => r.json()).catch(() => null);  // equipment for spec picks
 const env = (k: string) => Deno.env.get(k) || '';
@@ -34,6 +37,9 @@ async function sendEmail(to: string, msg: {subject: string, html: string, text: 
 
 Deno.serve(async (req) => {
   if (req.headers.get('Authorization') !== 'Bearer ' + env('CRON_SECRET')) return new Response('no', { status: 401 });
+  try { return await run(); } catch (e: any) { console.error('match-alerts', e); return Response.json({ error: String(e && e.message || e) }, { status: 500 }); }
+});
+async function run() {
   const db = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
   webpush.setVapidDetails('mailto:' + (env('VAPID_CONTACT') || 'dan@dan-sells.co.uk'), env('VAPID_PUBLIC'), env('VAPID_PRIVATE'));
   const unsubUrl = (tok: string) => `${env('SUPABASE_URL')}/functions/v1/unsubscribe?t=${tok}`;
@@ -132,4 +138,4 @@ Deno.serve(async (req) => {
     if (any) { out.reminders++; await db.from('purchases').update({ reminder_sent_at: new Date().toISOString() }).eq('id', pu.id); }
   }
   return Response.json(out);
-});
+}

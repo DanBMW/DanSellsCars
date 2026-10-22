@@ -51,7 +51,10 @@
       for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
       return Notification.requestPermission().then(function (p) {
         if (p !== 'granted') throw new Error('denied');
-        return navigator.serviceWorker.ready.then(function (r) { return r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: arr }); });
+        /* if the phone holds a subscription made with an older key, drop it and subscribe again with the current one */
+        return navigator.serviceWorker.ready.then(function (r) { return r.pushManager.getSubscription().then(function (old) {
+          var same = old && old.options && old.options.applicationServerKey && new Uint8Array(old.options.applicationServerKey).join() === arr.join();
+          if (same) return old; return (old ? old.unsubscribe() : Promise.resolve()).then(function () { return r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: arr }); }); }); });
       });
     },
     openExternal: function (url) { window.open(url, '_blank', 'noopener'); },
@@ -252,8 +255,11 @@
       if (!staff) S.cust = list[0] || null;
       else { var last = sessionStorage.getItem('ctActing'); S.cust = list.find(function (c) { return c.id === last; }) || null; }
       return loadCust();
-    }).then(function () { if (!location.hash || location.hash === '#signin') location.hash = staff ? 'team' : (S.cust && S.cust.name ? 'discover' : 'profile'); else route(); iosNudge(); });
+    }).then(function () { resyncPush(); if (!location.hash || location.hash === '#signin') location.hash = staff ? 'team' : (S.cust && S.cust.name ? 'discover' : 'profile'); else route(); iosNudge(); });
   }
+  /* alerts already allowed: quietly refresh the subscription so a key change never leaves a phone without alerts */
+  function resyncPush() { try { if (!LIVE || !platform.pushSupported() || Notification.permission !== 'granted' || !CFG.VAPID_PUBLIC_KEY) return;
+    platform.subscribePush().then(function (sub) { return store.savePush(sub); }).catch(function (e) { console.warn('Swipe Drive push resync', e); }); } catch (e) {} }
   function loadCust() {
     if (!S.cust) { S.swipes = {}; S.owner = null; return Promise.resolve(); }
     return Promise.all([store.swipes(S.cust.id), store.owner(S.cust)]).then(function (r) { S.swipes = r[0]; S.owner = r[1]; badge(); });

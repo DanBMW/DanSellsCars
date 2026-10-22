@@ -1,0 +1,7 @@
+project_id = "dexqyqrbelmdjdhxaboq"
+[functions.match-alerts]
+verify_jwt = false
+[functions.unsubscribe]
+verify_jwt = false
+[functions.notify-buy-request]
+verify_jwt = true
