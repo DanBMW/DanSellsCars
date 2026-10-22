@@ -322,7 +322,7 @@
  "LJ72HRG": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-22",
-  "removed_at": null
+  "removed_at": "2026-10-22"
  },
  "LK23HVM": {
   "first_seen": "2026-10-07",
@@ -552,7 +552,7 @@
  "LP23XUC": {
   "first_seen": "2026-10-08",
   "last_seen": "2026-10-22",
-  "removed_at": null
+  "removed_at": "2026-10-22"
  },
  "LP24ABU": {
   "first_seen": "2026-10-07",
@@ -1478,6 +1478,11 @@
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-14",
   "removed_at": "2026-10-15"
+ },
+ "LY75FWD": {
+  "first_seen": "2026-10-22",
+  "last_seen": "2026-10-22",
+  "removed_at": null
  },
  "LY75JHV": {
   "first_seen": "2026-10-17",
