@@ -89,6 +89,10 @@
     savePurchase: function (p) { var d = demoDb(); p.id = p.id || uuid(); p.remind_on = addMonths(p.purchase_date, 33); d.purchases = (d.purchases || []).filter(function (x) { return x.id !== p.id; }); d.purchases.push(p); demoSave(d); return Promise.resolve(p); },
     staffList: function () { var d = demoDb(); return Promise.resolve(Object.values(d.staff || {}).filter(Boolean)); },
     invites: function () { return Promise.resolve(demoDb().invites || []); },
+    buyRequest: function (r) { var d = demoDb(); d.buys = d.buys || []; r.status = 'new'; r.created_at = new Date().toISOString(); d.buys.unshift(r); demoSave(d); return Promise.resolve(r); },
+    notifyBuy: function () { return Promise.resolve({ ok: false, reason: 'demo' }); },
+    buyRequests: function () { var d = demoDb(); return Promise.resolve((d.buys || []).filter(function (b) { var c = (d.customers || []).find(function (x) { return x.id === b.customer_id; }); return c && demo.visible(d, c); }).map(function (b) { b.customers = (d.customers || []).find(function (x) { return x.id === b.customer_id; }) || null; return b; })); },
+    setBuyStatus: function (id, st) { var d = demoDb(); (d.buys || []).forEach(function (b) { if (b.id === id) { b.status = st; b.called_at = st === 'called' ? new Date().toISOString() : null; } }); demoSave(d); return Promise.resolve(); },
     invite: function (inv) { var d = demoDb(); inv.id = uuid(); inv.created_at = new Date().toISOString(); d.invites.push(inv); demoSave(d); return Promise.resolve(inv); },
     uploadPx: function (cid, file) { return new Promise(function (res) { var r = new FileReader(); r.onload = function () { res({ preview: r.result, link: '' }); }; r.readAsDataURL(file); }); },
     setNotify: function (v) { var d = demoDb(); d.notify = v; demoSave(d); return Promise.resolve(); },
@@ -126,6 +130,11 @@
     markDealt: function (cid, pid) { return sb.from('customers').update({ dealt_at: pid ? new Date().toISOString() : null, dealt_purchase_id: pid || null }).eq('id', cid).then(function (r) { if (r.error) throw r.error; }); },
     savePurchase: function (p) { var row = Object.assign({}, p); delete row.remind_on; row.created_by = sbUser.id; return sb.from('purchases').upsert(row).select().single().then(function (r) { if (r.error) throw r.error; return r.data; }); },
     staffList: function () { return sb.from('profiles').select('id,name,email,whatsapp,role').in('role', ['staff', 'admin']).then(function (r) { return r.data || []; }); },
+    /* lead record first (no RETURNING: staff only read policy), then ask the edge function to email Dan */
+    buyRequest: function (r) { r.created_by = sbUser.id; return Promise.resolve(sb.from('buy_requests').insert(r)).then(function (x) { if (x.error) throw x.error; return r; }); },
+    notifyBuy: function (id) { return Promise.resolve(sb.functions.invoke('notify-buy-request', { body: { id: id } })).then(function (x) { if (x.error) throw x.error; return x.data; }); },
+    buyRequests: function () { return Promise.resolve(sb.from('buy_requests').select('*, customers(name, phone, email)').order('created_at', { ascending: false }).limit(200)).then(function (r) { if (r.error) throw r.error; return r.data || []; }); },
+    setBuyStatus: function (id, st) { return Promise.resolve(sb.from('buy_requests').update({ status: st, called_at: st === 'called' ? new Date().toISOString() : null, called_by: st === 'called' ? sbUser.id : null }).eq('id', id)).then(function (r) { if (r.error) throw r.error; }); },
     invites: function () { return sb.from('staff_invites').select('*').order('created_at', { ascending: false }).then(function (r) { return r.data || []; }); },
     invite: function (inv) { inv.invited_by = sbUser.id; return sb.from('staff_invites').insert(inv).then(function (r) { if (r.error) throw r.error; }); },
     findProfile: function (email) { return sb.from('profiles').select('role').eq('email', email).maybeSingle().then(function (r) { return r.data || null; }, function () { return null; }); },
@@ -189,7 +198,7 @@
   function waWho() { return S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
 
   /* ---------------- routing ---------------- */
-  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'pick'];
+  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'buys', 'pick'];
   function go(name) { if (location.hash !== '#' + name) location.hash = name; else route(); }
   function route() {
     var h = (location.hash || '').slice(1); if (isAuthHash(h)) h = '';
@@ -197,7 +206,7 @@
     if (!S.session) h = 'signin';
     if (SCREENS.indexOf(h) === -1) h = 'discover';
     var staff = S.session && S.session.role !== 'customer';
-    if ((h === 'team' || h === 'invites') && !staff) h = 'discover';
+    if ((h === 'team' || h === 'invites' || h === 'buys') && !staff) h = 'discover';
     if (h === 'invites' && S.session.role !== 'admin') h = 'team';
     /* Staff with no customer picked: Discover and Matches explain what to do, Me shows the account.
        (This used to bounce every tab back to Customers, so the nav looked dead.) */
@@ -212,7 +221,7 @@
     $$('[data-staff-only]').forEach(function (e) { e.hidden = !staff; });
     var act = $('#acting'); act.hidden = !(staff && S.cust); if (S.cust) act.textContent = 'For ' + (S.cust.name || 'new customer');
     window.scrollTo(0, 0);
-    ({ profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites }[h] || function () {})();
+    ({ profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites, buys: showBuys }[h] || function () {})();
   }
   window.addEventListener('hashchange', route);
 
@@ -547,10 +556,13 @@
         '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
         (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
         '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp about ' + esc(isNew ? 'this model' : M.normReg(c.reg)) + '</a></div>' +
+        '<button class="ct-btn ct-btn-big ct-buy" type="button" data-buy="' + esc(c.reg) + '">Buy this car</button>' +
         '<button class="ct-unlike" type="button" data-unlike="' + esc(c.reg) + '">Remove from matches</button></div></article>'; }).join('');
     $('#sendBox').hidden = !L.length; $('#sendBtn').textContent = staff ? 'Send these matches to Dan' : 'Send my matches to ' + (S.owner && S.owner.name ? S.owner.name.split(' ')[0] : 'Dan');
   }
   function initMatches() {
+    $('#matchList').addEventListener('click', function (e) { var bb = e.target.closest('[data-buy]'); if (bb) { var car = byReg(bb.getAttribute('data-buy')); if (car) askBuy(car); return; } });
+    $('#buyYes').addEventListener('click', confirmBuy);
     $('#matchList').addEventListener('click', function (e) { var b = e.target.closest('[data-unlike]'); if (!b) return; var r = b.getAttribute('data-unlike'); S.swipes[r] = { liked: false, at: Date.now() }; saveSwipe(r, false); showMatches(); badge(); });
     $('#sendBtn').addEventListener('click', sendLead);
   }
@@ -573,9 +585,49 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       owner_staff_name: S.owner ? (S.owner.name || '') : (S.session.role === 'staff' ? S.session.name : 'Dan'), owner_staff_email: S.owner ? (S.owner.email || '') : (S.session.role === 'staff' ? S.session.email : ''),
       submitted_by: S.session.role, app_mode: LIVE ? 'live' : 'demo' };
     msg.className = 'ct-msg'; msg.textContent = 'Sending...';
+    saveBuyRequest({ type: 'matches', cars: L.map(function (x) { return { reg: x.reg, model: x.model, price: x.kind === 'new' ? '' : (x.price || ''), kind: x.kind }; }) }).then(function (r) { body.request_id = r ? r.id : ''; });
     fetch(CFG.FORMSPREE, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) })
       .then(function (r) { if (!r.ok) throw new Error(r.status); msg.className = 'ct-msg ok'; msg.textContent = 'Sent. ' + (waWho() || 'Dan') + ' will be in touch, usually the same day.'; track('matches_sent', { count: L.length, lead_id: lead }); })
       .catch(function () { msg.textContent = 'That did not send. Tap WhatsApp on any car instead.'; });
+  }
+
+  /* ---------------- buy this car / buy requests ---------------- */
+  /* Saves the lead in buy_requests, then asks the edge function to email Dan. If the function is not deployed
+     yet the record is still saved and the customer still sees the confirmation and a WhatsApp fallback. */
+  function saveBuyRequest(extra) {
+    if (!S.cust) return Promise.resolve(null);
+    var r = Object.assign({ id: uuid(), customer_id: S.cust.id }, extra);
+    return Promise.resolve().then(function () { return store.buyRequest(r); })
+      .then(function (row) { Promise.resolve().then(function () { return store.notifyBuy(row.id); }).catch(function (e) { console.warn('Swipe Drive notify', e); }); track('buy_request', { type: r.type }); return row; })
+      .catch(function (e) { console.warn('Swipe Drive buy request', e); return null; });
+  }
+  function buyWa(c, ref) { var reg = c.kind === 'new' ? '' : ', reg ' + M.normReg(c.reg);
+    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on Swipe Drive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
+  function askBuy(c) { S.buyCar = c; var who = waWho() || 'Dan';
+    $('#buyTitle').textContent = 'Buy the ' + c.model + '?'; $('#buyText').textContent = who + ' will call you to take a deposit and arrange collection.';
+    $('#buyAsk').hidden = false; $('#buyDone').hidden = true; $('#buyYes').disabled = false; $('#buyModal').hidden = false; }
+  function confirmBuy() { var c = S.buyCar; if (!c) return; var btn = $('#buyYes'); btn.disabled = true; btn.textContent = 'Sending...';
+    saveBuyRequest({ type: 'buy', car_reg: c.reg, car_id: String(c.id || c.order_number || c.reg), car_model: c.model, car_price: c.kind === 'new' ? 'Brand new, quote live' : (c.price || '') }).then(function (row) {
+      btn.textContent = 'Yes, buy this car'; var who = waWho() || 'Dan';
+      $('#buyAsk').hidden = true; $('#buyDone').hidden = false;
+      $('#buyDoneText').textContent = row ? 'Done. ' + who + ' has your request for the ' + c.model + ' and will call you to take a deposit and arrange collection.' : 'That did not reach ' + who + ' just now. Tap WhatsApp below so nothing is missed.';
+      var a = $('#buyWa'); a.href = buyWa(c, row && row.id); a.textContent = row ? 'Or WhatsApp ' + who + ' now' : 'WhatsApp ' + who + ' about it';
+      platform.haptic([20, 40, 20]); });
+  }
+  function showBuys() { var el = $('#buyList'); el.innerHTML = '<p class="ct-sub">Loading...</p>';
+    store.buyRequests().then(function (l) {
+      el.innerHTML = l.map(function (b) { var c = b.customers || {}, buy = b.type === 'buy';
+        var what = buy ? esc(b.car_model || '') + (b.car_reg && !/^NEW-/.test(b.car_reg) ? ' <span class="ct-pill">' + esc(b.car_reg) + '</span>' : '') + (b.car_price ? ' · ' + esc(b.car_price) : '')
+          : 'Sent ' + (b.cars || []).length + ' matches: ' + esc((b.cars || []).map(function (x) { return x.model + (x.kind === 'new' ? ' (new)' : ' ' + x.reg); }).join(', '));
+        return '<div class="ct-c' + (b.status === 'new' ? ' ct-buy-new' : '') + '"><h3>' + esc(c.name || 'Customer') + ' <span class="ct-pill' + (buy ? ' hot' : '') + '">' + (buy ? 'Buy this car' : 'Matches') + '</span></h3><p>' + what + '</p>' +
+          '<p>' + esc(new Date(b.created_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })) + (b.status === 'called' && b.called_at ? ' · Called ' + esc(new Date(b.called_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })) : '') + '</p>' +
+          '<div class="ct-row">' + (c.phone ? '<a class="ct-btn ct-sm" href="tel:' + esc(String(c.phone).replace(/\s/g, '')) + '">Call ' + esc(c.phone) + '</a>' : '') +
+          (b.status === 'called' ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-buy-st="new" data-id="' + esc(b.id) + '">Called ✓ (undo)</button>' : '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-buy-st="called" data-id="' + esc(b.id) + '">Mark as called</button>') + '</div></div>'; }).join('') || '<p class="ct-sub">No buy requests yet.</p>';
+    }).catch(function (e) { el.innerHTML = '<p class="ct-msg">' + esc(plainErr(e)) + '</p>'; });
+  }
+  function initBuys() {
+    $('#buyList').addEventListener('click', function (e) { var b = e.target.closest('[data-buy-st]'); if (!b) return; b.disabled = true;
+      store.setBuyStatus(b.getAttribute('data-id'), b.getAttribute('data-buy-st')).then(showBuys).catch(function (err) { b.disabled = false; toast(plainErr(err)); }); });
   }
 
   /* ---------------- me ---------------- */
@@ -724,7 +776,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
 
   /* ---------------- boot ---------------- */
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(function (r) { window.__ctSW = r.scope; }).catch(function () {});
-  initSignin(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites();
+  initSignin(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites(); initBuys();
   var dl = platform.deepLink();
   (LIVE ? supa.init() : Promise.resolve())
     .then(function () { if (LIVE) sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_IN' && !S.session) store.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); return loadStock(); })

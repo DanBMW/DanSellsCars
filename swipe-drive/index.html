@@ -202,12 +202,22 @@
       <h2 id="teamTitle">My customers</h2>
       <div class="ct-row ct-wrap"><button class="ct-btn ct-sm" id="addCust" type="button">Add a customer</button>
         <label class="ct-f ct-inline" id="ownerFilterWrap" hidden><span>Owner</span><select id="ownerFilter"><option value="">Everyone</option></select></label>
-        <a class="ct-btn ct-btn-ghost ct-sm" href="#invites" id="invitesLink" hidden>Invite colleagues</a></div>
+        <a class="ct-btn ct-btn-ghost ct-sm" href="#invites" id="invitesLink" hidden>Invite colleagues</a>
+        <a class="ct-btn ct-btn-ghost ct-sm" href="#buys">Buy requests</a></div>
       <div id="custList" class="ct-clist"></div>
     </div>
   </section>
 
   <!-- admin: invites -->
+  <section class="ct-screen" data-screen="buys" hidden>
+    <div class="ct-panel">
+      <h2>Buy requests</h2>
+      <p class="ct-sub">Customers who tapped Buy this car or sent their matches. Mark them as called once you have spoken.</p>
+      <div class="ct-row"><a class="ct-btn ct-btn-ghost ct-sm" href="#team">Back to customers</a></div>
+      <div id="buyList" class="ct-clist"></div>
+    </div>
+  </section>
+
   <section class="ct-screen" data-screen="invites" hidden>
     <form class="ct-panel ct-form" id="inviteForm" novalidate>
       <h2>Colleagues</h2>
@@ -241,6 +251,10 @@
   <li><span class="ct-ios-ico">&#x2795;</span>Scroll down and tap <b>Add to Home Screen</b>.</li>
   <li><span class="ct-ios-ico"><img src="icons/icon-192.png" width="22" height="22" alt=""></span>Tap <b>Add</b>, then open Swipe Drive from your Home Screen and turn on alerts.</li></ol>
   <div class="ct-ios-arrow" aria-hidden="true">&darr;</div></div></div>
+<div class="ct-match ct-buym" id="buyModal" hidden><div class="ct-match-in">
+  <div id="buyAsk"><h2 id="buyTitle">Buy this car?</h2><p id="buyText"></p><button class="ct-btn ct-btn-big" id="buyYes" type="button">Yes, buy this car</button><button class="ct-btn ct-btn-ghost" type="button" data-close>Not yet</button></div>
+  <div id="buyDone" hidden><h2>Request sent</h2><p id="buyDoneText" role="status"></p><a class="ct-btn ct-wa ct-btn-big" id="buyWa" target="_blank" rel="noopener">WhatsApp</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Back to my matches</button></div>
+</div></div>
 <div class="ct-toast" id="toast" role="status" hidden></div>
 
 <script src="config.js"></script>

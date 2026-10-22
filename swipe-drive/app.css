@@ -247,3 +247,6 @@ button,input,select,textarea{font-family:var(--sans)}
 .ct-pill.due{background:#3a2e12;color:#ffd98a}
 
 .ct-alt-start{display:flex;flex-direction:column;gap:10px;margin-top:14px}.ct-alt-start .ct-btn{text-align:center;text-decoration:none}.ct-alt-t{margin:0;color:var(--mut);font-size:14px}
+
+/* buy this car */
+.ct-buy{width:100%;margin:10px 0 4px}.ct-buym{background:rgba(10,12,15,.97)!important;backdrop-filter:blur(6px)}.ct-buym h2{font-size:30px}.ct-buym p{font-size:16px;line-height:1.45}.ct-buy-new{border-color:var(--acc,#1c69d4);box-shadow:0 0 0 1px var(--acc,#1c69d4) inset}
