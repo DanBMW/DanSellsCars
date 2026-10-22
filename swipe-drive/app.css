@@ -245,3 +245,5 @@ button,input,select,textarea{font-family:var(--sans)}
 .ct-more[open]{padding-bottom:10px}.ct-check-sm{font-weight:600;font-size:14px;margin:4px 0 12px}
 .ct-more textarea{width:100%;background:#0a0c0f;border:1px solid var(--line);border-radius:10px;color:var(--tx);padding:10px 12px;font:inherit;font-size:15px}
 .ct-pill.due{background:#3a2e12;color:#ffd98a}
+
+.ct-alt-start{display:flex;flex-direction:column;gap:10px;margin-top:14px}.ct-alt-start .ct-btn{text-align:center;text-decoration:none}.ct-alt-t{margin:0;color:var(--mut);font-size:14px}
