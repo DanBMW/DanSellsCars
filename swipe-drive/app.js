@@ -118,7 +118,10 @@
         .then(function (r) { if (r.error) throw r.error; return sb.from('customers').select('*').eq('id', row.id).single(); })
         .then(function (r) { if (r.error) throw r.error; return r.data; }); },
     swipes: function (cid) { return sb.from('swipes').select('*').eq('customer_id', cid).then(function (r) { var o = {}; (r.data || []).forEach(function (s) { o[s.reg] = s; }); return o; }); },
-    setSwipe: function (cid, reg, liked, extra) { return sb.from('swipes').upsert(Object.assign({ customer_id: cid, reg: reg, liked: liked, by_user: sbUser.id }, extra || {})); },
+    /* Supabase query builders have .then but no .catch, so wrap in a real Promise and reject on r.error.
+       (Calling .catch straight on the builder threw inside decide() and froze the deck on the next card.) */
+    setSwipe: function (cid, reg, liked, extra) { return Promise.resolve().then(function () { if (!sbUser) throw new Error('signed out');
+      return sb.from('swipes').upsert(Object.assign({ customer_id: cid, reg: reg, liked: liked, by_user: sbUser.id }, extra || {})); }).then(function (r) { if (r && r.error) throw r.error; }); },
     purchases: function (cid) { return sb.from('purchases').select('*').eq('customer_id', cid).then(function (r) { return r.data || []; }); },
     markDealt: function (cid, pid) { return sb.from('customers').update({ dealt_at: pid ? new Date().toISOString() : null, dealt_purchase_id: pid || null }).eq('id', cid).then(function (r) { if (r.error) throw r.error; }); },
     savePurchase: function (p) { var row = Object.assign({}, p); delete row.remind_on; row.created_by = sbUser.id; return sb.from('purchases').upsert(row).select().single().then(function (r) { if (r.error) throw r.error; return r.data; }); },
@@ -442,6 +445,7 @@
     el._fling = function (dir) { fling(el, x, dir, 0); };
   }
   function fling(el, x, dir, v) {
+    if (el._flung) return; el._flung = true;
     var w = window.innerWidth, rm = reduced(); el.style.transition = rm ? 'opacity .2s' : 'transform .38s cubic-bezier(.3,.7,.4,1)';
     if (rm) el.style.opacity = 0;
     else if (dir === 2) el.style.transform = 'translate(0,-' + (window.innerHeight + 200) + 'px) scale(.9)';
@@ -450,12 +454,21 @@
     platform.haptic(dir === 2 ? [20, 30, 20, 30, 40] : dir > 0 ? [10, 30, 16] : 10);
     setTimeout(function () { decide(x, dir > 0, dir === 2); }, rm ? 200 : 300);
   }
+  /* The deck always advances first; saving happens after and a failed save only shows a small note. */
+  function saveSwipe(reg, liked, extra) {
+    var cid = S.cust && S.cust.id;
+    Promise.resolve().then(function () { if (!cid) throw new Error('no customer'); return store.setSwipe(cid, reg, liked, extra); })
+      .catch(function (err) { console.warn('Swipe Drive swipe save', err); toast('That swipe did not save. Carry on swiping.'); });
+  }
   function decide(x, liked, superLike) {
-    S.deck.shift(); S.swipes[x.car.reg] = { liked: liked, at: Date.now(), shortlisted: !!superLike };
-    store.setSwipe(S.cust.id, x.car.reg, liked, superLike ? { shortlisted: true } : null).catch(function () {});
+    if (x._decided) return; x._decided = true;
+    var i = S.deck.indexOf(x); if (i !== -1) S.deck.splice(i, 1); else S.deck = S.deck.filter(function (y) { return y.car.reg !== x.car.reg; });
+    S.swipes[x.car.reg] = { liked: liked, at: Date.now(), shortlisted: !!superLike };
+    try { drawDeck(); } catch (e) { console.warn('Swipe Drive deck', e); }
+    saveSwipe(x.car.reg, liked, superLike ? { shortlisted: true } : null);
     track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: x.car.kind === 'new' ? '' : x.car.reg, kind: x.car.kind, score: x.score });
-    if (superLike) { drawDeck(); badge(); matchMoment(x); return; }
-    drawDeck(); badge();
+    if (superLike) { badge(); matchMoment(x); return; }
+    badge();
     if (liked) { var likes = Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).length; if (likes === 1 || x.score >= 75) matchMoment(x); else toast('Added to your matches'); }
   }
   function matchMoment(x) {
@@ -538,7 +551,7 @@
     $('#sendBox').hidden = !L.length; $('#sendBtn').textContent = staff ? 'Send these matches to Dan' : 'Send my matches to ' + (S.owner && S.owner.name ? S.owner.name.split(' ')[0] : 'Dan');
   }
   function initMatches() {
-    $('#matchList').addEventListener('click', function (e) { var b = e.target.closest('[data-unlike]'); if (!b) return; var r = b.getAttribute('data-unlike'); S.swipes[r] = { liked: false, at: Date.now() }; store.setSwipe(S.cust.id, r, false); showMatches(); badge(); });
+    $('#matchList').addEventListener('click', function (e) { var b = e.target.closest('[data-unlike]'); if (!b) return; var r = b.getAttribute('data-unlike'); S.swipes[r] = { liked: false, at: Date.now() }; saveSwipe(r, false); showMatches(); badge(); });
     $('#sendBtn').addEventListener('click', sendLead);
   }
   function sendLead() {
