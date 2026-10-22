@@ -3,24 +3,24 @@
 <body><div class="app">
 <header><img src="../icons/logo.svg?v=9" width="32" height="32" alt=""><div class="brand">Swipe <b>Drive</b><small>powered by Dan Sells</small></div></header>
 
-<form class="card" id="q6"><h2>Seven quick questions</h2><p style="margin:0;color:var(--mut)">About 60 seconds, then it all goes to Dan in one message.</p>
-<label>1. Your first name<input id="q_name" data-type="name"></label><div class="err"></div>
+<form class="card" id="q6" novalidate><h2>Seven quick questions</h2><p style="margin:0;color:var(--mut)">About 60 seconds, then it all goes to Dan in one message.</p>
+<label>1. Your first name<input id="q_name" required maxlength="40" data-type="name"></label><div class="err"></div>
 <label>2. Which BMW do you fancy?<input id="q_model" data-type="model" placeholder="X3, 3 Series, not sure"></label><div class="err"></div>
 <label>3. What do you drive now?<input id="q_cur" data-type="anycar" placeholder="2019 Audi A3, or none"></label><div class="err"></div>
 <label>4. Monthly budget<input id="q_budget" data-type="cur" data-lo="50" data-hi="3000" placeholder="About £400"></label><div class="err"></div>
 <label>5. Imagine Dan found you the perfect car, ticking every single box of your needs. What would your monthly budget be then?<input id="q_stretch" data-type="cur" data-lo="50" data-hi="3000" placeholder="About £450"></label><div class="err"></div>
 <label>6. When are you hoping to change?<input id="q_when" data-type="date" placeholder="ASAP, next month"></label><div class="err"></div>
-<label>7. Best mobile<input id="q_phone" data-type="phone" inputmode="tel"></label><div class="err"></div>
+<label>7. Best mobile<input id="q_phone" required data-type="phone" inputmode="tel"></label><div class="err"></div>
 <button class="big pink" type="submit">Send to Dan on WhatsApp</button></form><div class="card"><h2>Rather not type?</h2>
 
-<button class="big ghost" id="showCall" type="button">Let Dan fill it in with you on a call</button></div><form class="card" id="call" hidden><h2>Dan will call you</h2>
+<button class="big ghost" id="showCall" type="button">Let Dan fill it in with you on a call</button></div><form class="card" id="call" hidden novalidate><h2>Dan will call you</h2>
 <label>First name<input id="cName"></label><div class="err" id="eName"></div>
 <label>Mobile<input id="cPhone" inputmode="tel"></label><div class="err" id="ePhone"></div>
 <label>Best time to call<select id="cTime"><option>Morning</option><option>Lunchtime</option><option>Afternoon</option><option>Evening</option><option>Weekend</option></select></label>
 <button class="big pink" type="submit">Send to Dan on WhatsApp</button></form>
 
 <p class="alt">Fancy a chat instead? <a href="./">Chat with Revvy</a><br>Or if you really prefer, <a class="small-wa" id="justwa" target="_blank" rel="noopener" href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%27m%20looking%20for%20my%20next%20BMW.">just message Dan on WhatsApp</a></p>
-</div><script src="onboard-core.js"></script><script>
+<p class="alt"><a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a></p></div><script src="onboard-core.js"></script><script>
 (function(){var O=Onboard,$=function(i){return document.getElementById(i)};
 $("showCall").onclick=function(){$("call").hidden=false;$("cName").focus()};
 function go(lines){location.href="https://wa.me/447827138197?text="+encodeURIComponent(lines.join("\n"))}
@@ -29,6 +29,6 @@ $("call").onsubmit=function(e){e.preventDefault();var n=O.check({type:"name"},$(
  if(n.ok&&p.ok)go(["Hi Dan, please give me a call to fill in Swipe Drive together.","Name: "+n.val,"Mobile: "+p.val,"Best time: "+$("cTime").value])};
 $("q6").onsubmit=function(e){e.preventDefault();var ok=true,lines=["Hi Dan, here are my Swipe Drive quick answers:"];
  this.querySelectorAll("input").forEach(function(inp){var q={type:inp.dataset.type};if(inp.dataset.lo)q.fn=O.V.pounds(+inp.dataset.lo,+inp.dataset.hi);if(q.type=="cur")q.ex="Something like £400 a month, or not sure.";
-  var r=inp.value.trim()?O.check(q,inp.value):{ok:1,val:"Not given"},err=inp.parentNode.nextElementSibling;if(inp.id=="q_stretch"&&r.ok&&inp.value.trim()){var bn=O.check(q,$("q_budget").value),num=function(x){return +String(x).replace(/[^0-9.]/g,"")};if(bn.ok&&num(r.val)<num(bn.val))r={ok:0,why:"low"}}err.textContent=r.ok?"":(r.why=="low"?"That's a touch under your normal budget. Same or higher here, please.":O.reply(q,r));if(!r.ok)ok=false;else if(inp.id=="q_stretch"){if(r.val!="Not given")lines.push("Perfect car stretch budget: "+r.val+" a month")}else lines.push(inp.parentNode.firstChild.textContent.replace(/^\d\. /,"")+": "+r.val+(inp.id=="q_budget"&&r.val!="Not given"?" a month":""))});
- if(ok)go(lines)};
+  var req=inp.id=="q_name"||inp.id=="q_phone";if(req)q.optional=false;var r=inp.value.trim()?O.check(q,inp.value):(req?{ok:0,why:"req"}:{ok:1,val:"Not given"}),err=inp.parentNode.nextElementSibling;if(inp.id=="q_stretch"&&r.ok&&inp.value.trim()){var bn=O.check(q,$("q_budget").value),num=function(x){return +String(x).replace(/[^0-9.]/g,"")};if(bn.ok&&num(r.val)<num(bn.val))r={ok:0,why:"low"}}err.textContent=r.ok?"":r.why=="req"?(inp.id=="q_name"?"Your first name, please, so Dan knows who he is talking to.":"A UK mobile, please, so Dan can get back to you."):(r.why=="low"?"That's a touch under your normal budget. Same or higher here, please.":O.reply(q,r));if(!r.ok)ok=false;else if(inp.id=="q_stretch"){if(r.val!="Not given")lines.push("Perfect car stretch budget: "+r.val+" a month")}else lines.push(inp.parentNode.firstChild.textContent.replace(/^\d\. /,"")+": "+r.val+(inp.id=="q_budget"&&r.val!="Not given"?" a month":""))});
+ if(ok)go(lines);else{var f=this.querySelector(".err:not(:empty)");if(f)f.previousElementSibling.scrollIntoView({block:"center",behavior:"smooth"})}};
 })();</script></body></html>

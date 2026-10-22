@@ -199,7 +199,9 @@ async def run_one(b, n, rng):
             else: i, e = rng.choice(PHONES); await typ(i, q); exp['phone'] = e
         else: raise Fail('unknown question ' + str(q))
         if rng.random() < 0.02 and q not in ('specs',):
-            await pg.click('#restart'); await idle()
+            await pg.click('#restart'); await asyncio.sleep(0.3)
+            if await cur() == 'name' and q != 'name': raise Fail('start again reset without confirm')
+            await pg.click('#restart'); await pg.wait_for_load_state(); await idle()
             if await cur() != 'name': raise Fail('start again did not reset')
             exp = {}; reloaded = True
     href = await pg.get_attribute('#tray a.cta', 'href')
@@ -224,6 +226,53 @@ async def run_one(b, n, rng):
     if errs: raise Fail('console: ' + '; '.join(errs))
     await ctx.close(); return dev, len(log)
 
+async def targeted(b):
+    out = []
+    for dev in DEVICES:
+        ctx = await b.new_context(**DEVICES[dev]); pg = await ctx.new_page(); errs = []
+        pg.on('pageerror', lambda e: errs.append(str(e)))
+        async def idle():
+            await pg.wait_for_function('!document.querySelector(".typing")&&(document.querySelector("#tray").children.length>0||!document.getElementById("form").hidden)', timeout=20000); await asyncio.sleep(0.05)
+        async def typ(s):
+            await idle(); await pg.fill('#inp', s); await pg.press('#inp', 'Enter'); await asyncio.sleep(0.1); await idle()
+        cur = lambda: pg.evaluate('SDChat.cur()')
+        ans = lambda: pg.evaluate('SDChat.answers()')
+        await pg.goto(BASE + 'index.html?fast'); await idle()
+        await typ('B' * 60); assert await cur() == 'name', 'long name accepted'
+        ow = await pg.evaluate('document.documentElement.scrollWidth - document.documentElement.clientWidth'); assert ow <= 1, f'page overflows by {ow}px'
+        await typ('Sam'); assert await cur() == 'model'
+        await pg.click('#restart'); await asyncio.sleep(0.3); assert (await ans()).get('name') == 'Sam', 'reset without confirm'
+        assert 'again' in (await pg.text_content('#restart')).lower()
+        await pg.click('#restart'); await pg.wait_for_load_state(); await idle(); assert await cur() == 'name' and not (await ans()).get('name'), 'confirmed reset failed'
+        await typ('Sam'); await typ('x1')
+        await pg.locator('#tray button', has_text='Done').click(); await idle()
+        await typ('2019 Audi A3'); await pg.locator('#tray button', has_text='Skip').click(); await idle()
+        await typ('-5'); assert await cur() == 'miles', 'negative miles accepted'
+        await typ('-5 miles'); assert await cur() == 'miles'
+        await pg.locator('#tray button', has_text='Over 80k').first.click(); await idle()
+        await pg.locator('#tray button', has_text='Done').click(); await idle()
+        a = await ans(); assert a['cond'] == 'Not rated', a['cond']
+        await typ('£-100'); assert await cur() == 'settle', 'negative settlement accepted'
+        await typ('paid off'); await typ('£300'); await pg.locator('#tray button', has_text='Under 6k').click(); await idle()
+        await pg.locator('#tray button', has_text='Cash').click(); await idle()
+        await pg.locator('#tray button', has_text="That's me").click(); await idle(); await pg.locator('#tray button', has_text="That's me").click(); await idle()
+        await pg.locator('#tray .swatch', has_text='Fire Red').click(); await idle()
+        names = [await pg.text_content('.dcard b')]
+        for k in range(6): await pg.locator('#tray .dbtns button', has_text='Would like').first.click(delay=0)
+        await asyncio.sleep(4.5)
+        cnt = await pg.text_content('.dcount'); assert cnt.startswith('7 of'), f'rapid taps lost answers, now at {cnt}'
+        for k in range(3): await pg.locator('#tray .dbtns button', has_text='Must have').first.click(delay=0)
+        await pg.locator('#tray .dbtns button', has_text="That's enough kit").click(); await idle()
+        sp = (await ans())['specs']; m, l = sp.split('Would like')
+        assert m.count(',') == 2 and l.count(',') == 5, f'rapid tap totals wrong: {sp}'
+        await idle(); await typ('asap'); await typ('01234567890'); assert await cur() == 'phone', 'landline accepted'
+        last = await pg.evaluate('[...document.querySelectorAll(".msg.bot")].pop().textContent'); assert '07' in last, last
+        await typ('07700 900123'); assert await cur() == 'end'
+        href = await pg.get_attribute('#tray a.cta', 'href'); txt = urllib.parse.unquote(href)
+        assert 'Condition: Not rated' in txt and 'not rated,' not in txt, txt
+        assert not errs, errs; out.append(dev); await ctx.close()
+    return out
+
 async def quick_suite(b):
     res = []
     for dev in DEVICES:
@@ -238,8 +287,7 @@ async def quick_suite(b):
         async with pg.expect_request(lambda r: 'wa.me' in r.url) as ri: await pg.click('#call button[type=submit]')
         t = urllib.parse.unquote((await ri.value).url); assert 'Name: Jo' in t and 'Mobile: 07700900123' in t, t
         cases = [({'q_name': 'Tom', 'q_model': '1 series', 'q_cur': '2018 Ford Focus', 'q_budget': 'about £450', 'q_stretch': '£520', 'q_when': 'next month', 'q_phone': '07700 900123'}, ['Your first name: Tom', 'Which BMW do you fancy?: 1 Series', 'About £450 a month', 'Perfect car stretch budget: £520 a month', '07700900123']),
-                 ({'q_name': 'sarah', 'q_model': 'm340i', 'q_cur': 'none', 'q_budget': 'three hundred', 'q_stretch': '', 'q_when': 'asap', 'q_phone': '+44 7700 900456'}, ['Sarah', '3 Series', '£300 a month', '07700900456']),
-                 ({'q_name': '', 'q_model': '', 'q_cur': '', 'q_budget': '', 'q_stretch': '', 'q_when': '', 'q_phone': ''}, ['Not given'])]
+                 ({'q_name': 'sarah', 'q_model': 'm340i', 'q_cur': 'none', 'q_budget': 'three hundred', 'q_stretch': '', 'q_when': 'asap', 'q_phone': '+44 7700 900456'}, ['Sarah', '3 Series', '£300 a month', '07700900456'])]
         for vals, want in cases:
             await pg.goto(BASE + 'quick.html')
             for k, v in vals.items(): await pg.fill('#' + k, v)
@@ -247,6 +295,12 @@ async def quick_suite(b):
             t = urllib.parse.unquote((await ri.value).url)
             for w in want: assert w in t, (w, t)
             assert not re.search(r'undefined|NaN|null', t), t
+        await pg.goto(BASE + 'quick.html'); await pg.click('#q6 button[type=submit]'); await asyncio.sleep(0.3)
+        e = await pg.evaluate('[...document.querySelectorAll("#q6 .err")].map(e=>e.textContent)')
+        assert pg.url.endswith('quick.html') and 'first name' in e[0] and 'mobile' in e[-1].lower(), ('empty quick form must be blocked', e)
+        await pg.fill('#q_name', 'Jo'); await pg.fill('#q_phone', '01234567890'); await pg.fill('#q_budget', '-100'); await pg.click('#q6 button[type=submit]'); await asyncio.sleep(0.3)
+        e = await pg.evaluate('[...document.querySelectorAll("#q6 .err")].map(e=>e.textContent)')
+        assert pg.url.endswith('quick.html') and '07' in e[-1] and 'below zero' in e[3], ('landline and negative must be blocked', e)
         await pg.goto(BASE + 'quick.html')
         for k, v in {'q_name': 'asdfgh', 'q_model': 'banana', 'q_budget': '£400', 'q_stretch': '£300', 'q_phone': '123'}.items(): await pg.fill('#' + k, v)
         await pg.click('#q6 button[type=submit]'); e = await pg.evaluate('[...document.querySelectorAll("#q6 .err")].map(e=>e.textContent)')
@@ -267,10 +321,14 @@ async def main():
             except Exception as e:
                 fails.append((n, str(e)[:500])); print(f'FAIL chat #{n}: {str(e)[:500]}', flush=True)
         try:
+            tg = await targeted(b); print('PASS targeted checks on', tg); tok = len(tg)
+        except Exception as e:
+            print('FAIL targeted', repr(e)[:600]); tok = 0
+        try:
             q = await quick_suite(b); print('PASS quick lane on', q); qok = len(q)
         except Exception as e:
             print('FAIL quick lane', repr(e)[:600]); qok = 0
         await b.close()
-        print(f'\nRESULT chat {ok}/{ran} passed, quick lane {qok}/{len(DEVICES)} devices passed')
-        sys.exit(0 if ok == ran and qok == len(DEVICES) else 1)
+        print(f'\nRESULT chat {ok}/{ran} passed, targeted {tok}/{len(DEVICES)}, quick lane {qok}/{len(DEVICES)} devices passed')
+        sys.exit(0 if ok == ran and qok == len(DEVICES) and tok == len(DEVICES) else 1)
 asyncio.run(main())

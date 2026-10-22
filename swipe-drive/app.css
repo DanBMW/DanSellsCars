@@ -263,3 +263,4 @@ button,input,select,textarea{font-family:var(--sans)}
 @keyframes ctSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.ct-ph .ct-spin{animation-duration:2.4s}}
 .ct-left{text-align:center;margin:6px 0 0;font-size:13px;opacity:.75}
+.ct-signin-legal{text-align:center;margin-top:14px}

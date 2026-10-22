@@ -39,23 +39,23 @@ function render(q){tray.innerHTML="";form.hidden=!!(q.kind&&q.kind!="single");in
  else if(q.kind=="multi"){var sel=[];q.choices.forEach(function(c){var b=chip(c,function(){var k=sel.indexOf(c);k<0?sel.push(c):sel.splice(k,1);b.classList.toggle("on")})});var d=el("button","chip go","Done");d.onclick=function(){answer(q,sel.length?sel.join(", "):"No preference")};tray.appendChild(d)}
  else if(q.kind=="slider"){var mn=q.stretchOf?(A["_n_"+q.stretchOf]||Q.filter(function(z){return z.id==q.stretchOf})[0].val):q.min,v0=q.stretchOf?mn:q.val,w=el("div","slide"),o=el("div","sval",q.fmt(v0)),r=el("input");r.type="range";r.min=mn;r.max=Math.max(q.max,mn);r.step=q.step;r.value=v0;r.setAttribute("aria-label",q.short);r.oninput=function(){o.textContent=q.fmt(+r.value)};var g=el("button","chip go","That's me");g.onclick=function(){var v=+r.value;if(q.stretchOf&&v<mn){bot("That's a touch under your normal budget. Pop it at "+q.fmt(mn)+" or above.");return}A["_n_"+q.id]=v;answer(q,q.fmt(v))};w.appendChild(o);w.appendChild(r);w.appendChild(g);tray.appendChild(w)}
  else if(q.kind=="colour"){q.choices.forEach(function(c){var b=el("button","swatch");var s=el("span");s.style.background=c[1];b.appendChild(s);b.appendChild(el("em",null,c[0]));b.onclick=function(){answer(q,c[0])};tray.appendChild(b)})}
- else if(q.kind=="rate"){var res={},box=el("div","rates");q.parts.forEach(function(p){var row=el("div","rrow");row.appendChild(el("b",null,p));["Rough","OK","Good","Mint"].forEach(function(l){var b=el("button","chip sm",l);b.onclick=function(){res[p]=l;row.querySelectorAll("button").forEach(function(x){x.classList.remove("on")});b.classList.add("on")};row.appendChild(b)});box.appendChild(row)});var g2=el("button","chip go","Done");g2.onclick=function(){answer(q,q.parts.map(function(p){return p+" "+(res[p]||"not rated")}).join(", "))};box.appendChild(g2);tray.appendChild(box)}
+ else if(q.kind=="rate"){var res={},box=el("div","rates");q.parts.forEach(function(p){var row=el("div","rrow");row.appendChild(el("b",null,p));["Rough","OK","Good","Mint"].forEach(function(l){var b=el("button","chip sm",l);b.onclick=function(){res[p]=l;row.querySelectorAll("button").forEach(function(x){x.classList.remove("on")});b.classList.add("on")};row.appendChild(b)});box.appendChild(row)});var g2=el("button","chip go","Done");g2.onclick=function(){var rated=q.parts.filter(function(p){return res[p]});answer(q,rated.length?rated.map(function(p){return p+" "+res[p]}).join(", ")+(rated.length<q.parts.length?", others not rated":""):"Not rated")};box.appendChild(g2);tray.appendChild(box)}
  else if(q.kind=="swipe")deck(q);
  else if(q.chips)q.chips.forEach(function(c){chip(c,function(){answer(q,c=="Skip"?"Skipped":c)})});
  setTimeout(function(){(form.hidden?tray:form).scrollIntoView({block:"end"});if(!form.hidden)inp.focus()},50)}
 function deck(q){var k=0,must=[],like=[],box=el("div","deck"),hint=el("p","dhint","Left for no, right for would like, up for must have"),btns=el("div","dbtns");tray.appendChild(box);tray.appendChild(btns);
- function fin(){answer(q,"Must have: "+(must.join(", ")||"none")+". Would like: "+(like.join(", ")||"none")+".")}
+ var finished=false;function fin(){if(finished)return;finished=true;var j=k+(busyCard?1:0);while(queue.length&&j<q.items.length){var v=queue.shift(),it=q.items[j];if(v=="must")must.push(it);else if(v=="like")like.push(it);j++}k=q.items.length;answer(q,"Must have: "+(must.join(", ")||"none")+". Would like: "+(like.join(", ")||"none")+".")}
  function show(){box.innerHTML="";if(k>=q.items.length)return fin();var c=el("div","dcard");c.appendChild(el("span","dcount",(k+1)+" of "+q.items.length));c.appendChild(el("b",null,q.items[k]));if(k==0)c.appendChild(hint);var st=el("i","dstamp");c.appendChild(st);box.appendChild(c);
-  var x0=0,y0=0,dx=0,dy=0,down=false,lastTap=0;
+  var x0=0,y0=0,dx=0,dy=0,down=false;
   c.addEventListener("pointerdown",function(e){down=true;x0=e.clientX;y0=e.clientY;dx=dy=0;c.setPointerCapture(e.pointerId);c.style.transition="none"});
   c.addEventListener("pointermove",function(e){if(!down)return;dx=e.clientX-x0;dy=e.clientY-y0;c.style.transform="translate("+dx+"px,"+dy+"px) rotate("+dx/18+"deg)";st.textContent=dy<-50&&Math.abs(dy)>Math.abs(dx)?"MUST HAVE":dx>40?"WOULD LIKE":dx<-40?"NO":"";st.className="dstamp"+(st.textContent?" on":"")});
   c.addEventListener("pointerup",function(){if(!down)return;down=false;c.style.transition="";
    if(dy<-80&&Math.abs(dy)>Math.abs(dx))return go("must");if(dx>80)return go("like");if(dx<-80)return go("no");
-   c.style.transform="";st.className="dstamp";if(Math.abs(dx)<8&&Math.abs(dy)<8){var t=Date.now();if(t-lastTap<350)go("must");lastTap=t}});
-  c.addEventListener("dblclick",function(){go("must")})}
- var busyCard=false;function go(v){if(busyCard)return;busyCard=true;var c=box.firstChild,it=q.items[k];if(v=="must"){must.push(it);var b=el("div","dburst","⭐ Must have");c.appendChild(b);c.classList.add("dmh")}else if(v=="like")like.push(it);
+   c.style.transform="";st.className="dstamp";if(Math.abs(dx)<8&&Math.abs(dy)<8){var t=Date.now();if(t-lastTap<350){lastTap=0;go("must")}else lastTap=t}});
+  c.addEventListener("dblclick",function(e){e.preventDefault()})}
+ var busyCard=false,queue=[],lastTap=0;function go(v){if(busyCard){if(queue.length<q.items.length)queue.push(v);return}if(k>=q.items.length)return;busyCard=true;var c=box.firstChild,it=q.items[k];if(v=="must"){must.push(it);var b=el("div","dburst","⭐ Must have");c.appendChild(b);c.classList.add("dmh")}else if(v=="like")like.push(it);
   if(v=="must"){c.style.transition="transform .3s ease";c.style.transform="scale(1.06)";setTimeout(function(){c.style.transition="transform .3s ease,opacity .3s";c.style.transform="translateY(-30%) scale(.9)";c.style.opacity="0"},380)}else{c.style.transition="transform .35s ease,opacity .35s";c.style.transform=v=="no"?"translateX(-140%) rotate(-18deg)":"translateX(140%) rotate(18deg)";c.style.opacity="0"}
-  setTimeout(function(){busyCard=false;k++;show()},v=="must"?720:360)}
+  setTimeout(function(){busyCard=false;if(finished)return;k++;show();if(queue.length&&k<q.items.length)go(queue.shift())},v=="must"?720:360)}
  [["No","no"],["Would like","like"],["Must have","must"]].forEach(function(b){var e=chip(b[0],function(){go(b[1])});e.classList.add("d"+b[1]);btns.appendChild(e)});var sk=chip("That's enough kit",fin);btns.appendChild(sk);show()}
 function chip(t,f){var b=el("button","chip",t);b.type="button";b.onclick=f;tray.appendChild(b);return b}
 function rescue(q){tray.innerHTML="";bot(miss>=3?"No stress at all. Tap an option, skip this one, or if you'd rather, message Dan directly.":"No stress, just tap one of these or skip it and we'll keep going.",function(){(q.chips||q.choices||[]).forEach(function(c){if(c!="Skip")chip(c,function(){answer(q,c)})});chip("Skip",function(){answer(q,"Skipped")});if(miss<3)return;var w=el("a","chip wa","WhatsApp Dan");w.href=O.waLink(A,Q);w.target="_blank";w.rel="noopener";tray.appendChild(w)})}
@@ -65,7 +65,7 @@ form.onsubmit=function(e){e.preventDefault();if(busy)return;var q=Q[i],s=inp.val
  var r=O.check(q,s);
  if(r.ok){answer(q,r.val,t);return}
  me(t);inp.value="";miss++;bot(O.reply(q,r),function(){if(miss>=2)rescue(q);else render(q)})};
-document.getElementById("restart").onclick=function(){O.clear();location.reload()};
+var rsb=document.getElementById("restart"),rst=0;rsb.onclick=function(){if(Date.now()-rst<4000){O.clear();location.reload();return}rst=Date.now();rsb.textContent="Tap again to clear";rsb.classList.add("warn");setTimeout(function(){if(Date.now()-rst>=3900){rsb.textContent="Start again";rsb.classList.remove("warn")}},4000)};
 window.SDChat={cur:function(){return Q[i]?Q[i].id:'end'},answers:function(){return A}};
 progress();if(A._i){i=A._i;next("Welcome back"+(A.name&&A.name!="Skipped"?", "+A.name:"")+"! I've kept your answers, let's carry on.")}else next();
 })();
