@@ -61,10 +61,11 @@ function chip(t,f){var b=el("button","chip",t);b.type="button";b.onclick=f;tray.
 function rescue(q){tray.innerHTML="";bot(miss>=3?"No stress at all. Tap an option, skip this one, or if you'd rather, message Dan directly.":"No stress, just tap one of these or skip it and we'll keep going.",function(){(q.chips||q.choices||[]).forEach(function(c){if(c!="Skip")chip(c,function(){answer(q,c)})});chip("Skip",function(){answer(q,"Skipped")});if(miss<3)return;var w=el("a","chip wa","WhatsApp Dan");w.href=O.waLink(A,Q);w.target="_blank";w.rel="noopener";tray.appendChild(w)})}
 form.onsubmit=function(e){e.preventDefault();if(busy)return;var q=Q[i],s=inp.value;if(!q||!s.trim())return;var t=s.trim();
  if(/^(skip|pass|skip it|next)$/i.test(t)&&(q.chips||[]).indexOf("Skip")>=0){answer(q,"Skipped",t);return}
- var st=R.smalltalk(t);if(st&&!(q.id=="name"&&/^call me\b/i.test(t))){me(t);inp.value="";if(st.note){A._notes=(A._notes||[]).concat([t]);O.save(A);progress()}bots([st.say,q.re||fill(q.say)],function(){render(q)});return}
+ var r0=q.id=="name"?null:O.check(q,s),st=(r0&&r0.ok)?null:R.smalltalk(t);if(st&&!(q.id=="name"&&/^call me\b/i.test(t))){me(t);inp.value="";if(st.note){A._notes=(A._notes||[]).concat([t]);O.save(A);progress()}bots([st.say,q.re||fill(q.say)],function(){render(q)});return}
  var r=O.check(q,s);
  if(r.ok){answer(q,r.val,t);return}
  me(t);inp.value="";miss++;bot(O.reply(q,r),function(){if(miss>=2)rescue(q);else render(q)})};
 document.getElementById("restart").onclick=function(){O.clear();location.reload()};
+window.SDChat={cur:function(){return Q[i]?Q[i].id:'end'},answers:function(){return A}};
 progress();if(A._i){i=A._i;next("Welcome back"+(A.name&&A.name!="Skipped"?", "+A.name:"")+"! I've kept your answers, let's carry on.")}else next();
 })();
