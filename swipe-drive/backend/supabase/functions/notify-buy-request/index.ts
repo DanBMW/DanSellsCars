@@ -17,14 +17,14 @@ Deno.serve(async (req) => {
   const { id } = await req.json().catch(() => ({}));
   if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return json({ error: 'id' }, 400);
   // 1. the caller must be signed in and able to access the customer on this request
+  //    (server side tests may instead send x-cron-secret, which only the box and pg_cron hold)
+  const trusted = !!env('CRON_SECRET') && req.headers.get('x-cron-secret') === env('CRON_SECRET');
   const asUser = createClient(env('SUPABASE_URL'), env('SUPABASE_ANON_KEY'), { global: { headers: { Authorization: auth } } });
-  const { data: u } = await asUser.auth.getUser();
-  if (!u?.user) return json({ error: 'auth' }, 401);
+  if (!trusted) { const { data: u } = await asUser.auth.getUser(); if (!u?.user) return json({ error: 'auth' }, 401); }
   const db = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
   const { data: r } = await db.from('buy_requests').select('*').eq('id', id).maybeSingle();
   if (!r) return json({ error: 'not found' }, 404);
-  const { data: ok } = await asUser.rpc('can_access_customer', { cid: r.customer_id });
-  if (!ok) return json({ error: 'forbidden' }, 403);
+  if (!trusted) { const { data: ok } = await asUser.rpc('can_access_customer', { cid: r.customer_id }); if (!ok) return json({ error: 'forbidden' }, 403); }
   if (r.notified_at) return json({ ok: true, already: true });
   if (!env('RESEND_API_KEY') || !env('MAIL_FROM') || !env('DAN_NOTIFY_EMAIL')) return json({ ok: false, reason: 'email not configured' });
   const { data: c } = await db.from('customers').select('name,phone,email,postcode').eq('id', r.customer_id).maybeSingle();
@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
   const res = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env('RESEND_API_KEY'), 'Content-Type': 'application/json' },
     body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject, html, text, ...(cust.email ? { reply_to: cust.email } : {}) }) });
   if (!res.ok) return json({ ok: false, reason: 'send failed', status: res.status }, 502);
+  const sent = await res.clone().json().catch(() => ({}));
   await db.from('buy_requests').update({ notified_at: new Date().toISOString() }).eq('id', id);
-  return json({ ok: true });
+  return json({ ok: true, email_id: sent?.id || null });
 });
