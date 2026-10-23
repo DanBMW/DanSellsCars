@@ -1653,7 +1653,9 @@ label drops to its own line below 400px instead of hanging off the end.
 Measured clear at 320x568 through 414x896.
 
 Per-page variation goes through `{{name|default}}` tokens in the partials,
-overridden by the JSON on a page's opening marker. Current tokens: `wa`
+overridden by the JSON on a page's opening marker. Current tokens: `base`
+(prefix on every internal link in the chrome, empty everywhere except
+`404.html`, which sets `"/"`), `wa`
 (URL-encoded WhatsApp pre-fill message, header), `blurb1`/`blurb2` (footer
 description lines), `legalTail` (extra sentence(s) at the end of the footer
 legal paragraph — used by `bmw-pcp-explained.html` and
@@ -1672,6 +1674,17 @@ outlined button in that group (Dan, 11 October 2026), and the footers and the
 old `drawer.html` list it straight after New Car Stock. Keep those three labels
 in all four partials. Linking it does not change its noindex or keep it out of
 the sitemap.
+
+**`404.html` is the one page whose chrome links must be absolute**, and that
+is what the `base` token is for. GitHub Pages serves it for any missing path,
+with the browser's address bar left on that path, so a relative `index.html`
+in the menu resolves against the missing folder and every link in the chrome
+is broken exactly when somebody is already lost. It was fixed on 22 October by
+editing the stamped block by hand, which the markers say never to do: the page
+then no longer matched the partial and `chrome-check` failed on every push
+from 08:01 on 23 October, including all five of the morning's stock commits.
+Fixing it in the partials means the build produces the absolute paths, so the
+check passes and nobody has to remember.
 
 Pages without the chrome markers (all funnel pages, plus
 `business-proposal.html`/`finance-proposal.html` which have their own minimal
