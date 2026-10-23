@@ -6,7 +6,7 @@
  "mileage": "35,506 miles",
  "mileage_miles": 35506,
  "colour": "Black",
- "fuel": "Diesel (mild hybrid)",
+ "fuel": "Diesel",
  "body": "SUV",
  "gearbox": "Automatic",
  "drive": "FourWheel",
@@ -16,12 +16,14 @@
  "trim": "M Sport",
  "price": "£40,930",
  "price_gbp": 40930,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-dc2c-75ed-818e-1c1df6dff729-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a16700-029f-71c7-848e-d360c92c310f-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-dc2c-75ed-818e-1c1df6dff729-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-dd42-7395-abd4-59e78dd03097-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-de2b-7604-8040-7438a502c559-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a145ba-df02-71fc-9b67-5ca616fa1c14-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a16700-029f-71c7-848e-d360c92c310f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a16700-0348-7318-aa7a-85ff6677ec65-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a16700-03de-78ef-86e2-70f01f9fa094-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a16700-04ab-7749-8c01-bdce8d522146-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a16700-0544-7537-bcd3-050487030889-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a16700-05ec-76bd-8ba3-12d76d26f254-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/256614/pb-bmw-x5-2023",
  "listing_id": "256614",
