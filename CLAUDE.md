@@ -2412,6 +2412,31 @@ said so.
   ladder dead on the first source and declared the whole station unreachable
   with three working fallbacks underneath it.
   Dan has confirmed the dealership holds a music licence covering this.
+  **Four stations, chosen by a number.** `RADIO_STATIONS` is keyed 1 to 4:
+  1 Kisstory R&B (the default), 2 Kisstory, 3 Jazz FM, 4 Country (Dan,
+  23 October). `boardsettings/station` holds the id, and it is a **number
+  rather than a station name because the rules take nothing else**:
+  `database.rules.json` validates every `boardsettings` value as
+  `isBoolean()` or a number, so a string would be refused by Firebase
+  silently and the wall would carry on playing whatever it already had.
+  `radioWantedStation()` treats an unknown or absent value as 1, so there is
+  no second default to keep in step, and changing station is the one settings
+  change that deliberately restarts a healthy stream, because the ladder it
+  is part way down belongs to the old station.
+  **Every station ends with the default list.** Each one's own sources are
+  concatenated in front of `RADIO_DEFAULT_SOURCES`, so a station whose edge
+  is down drops back to Kisstory rather than leaving the wall silent. It does
+  mean a country request can end up playing soul if Global's edge is out;
+  that is the accepted trade and it is the same for Jazz FM.
+  **Country is not a Bauer edge**, so the first two carry no `RADIO_KEY`:
+  Smooth Country's own MP3 needs no key at all, which also means it has no
+  skey to rot. Absolute Radio Country is Bauer and does take the key. MP3
+  first, as everywhere else here, because AAC stammered on the LG.
+  **The station list exists in three places and they are twins by
+  necessity**: `RADIO_STATIONS` and the `data-station` buttons in
+  `team-board.html`, and `STATIONS` in `admin.html`. The board is
+  deliberately self contained and loads nothing from the console, so adding
+  a station means editing all three and keeping the ids identical.
   Switches: `radio` (absent means on, like everything else) and `radiovol`,
   a 0-100 number, default 45. Pausing from the manager panel writes the
   shared setting, so it pauses every screen rather than just the one in

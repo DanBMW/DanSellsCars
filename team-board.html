@@ -1636,6 +1636,7 @@ body.haslock.hasticker .radio-fab{bottom:100px}
         <button type="button" class="clipbtn stationbtn" data-station="1"><span class="ply">&#9835;</span><span>Kisstory R&amp;B<small>Default</small></span></button>
         <button type="button" class="clipbtn stationbtn" data-station="2"><span class="ply">&#9835;</span><span>Kisstory<small>Old skool</small></span></button>
         <button type="button" class="clipbtn stationbtn" data-station="3"><span class="ply">&#9835;</span><span>Jazz FM<small>Jazz, soul and blues</small></span></button>
+        <button type="button" class="clipbtn stationbtn" data-station="4"><span class="ply">&#9835;</span><span>Country<small>Smooth Country</small></span></button>
       </div>
       <div class="clips" style="margin-top:10px">
         <button type="button" class="clipbtn" id="radio-refresh">
@@ -4174,6 +4175,18 @@ var RADIO_STATIONS = {
   3: { name:'Jazz FM', short:'Jazz FM', sources: [
        'https://live-baueral.sharp-stream.com/jazz.mp3'+RADIO_KEY,
        'https://live-baueral.sharp-stream.com/jazzhigh.aac'+RADIO_KEY
+     ].concat(RADIO_DEFAULT_SOURCES) },
+  /* 4 = Country (Dan, 23 October). Not a Bauer edge, so no RADIO_KEY on the
+     first two: Smooth Country is Global's, and its own MP3 needs no key at
+     all, which also means there is no skey to rot. MP3 first for the same
+     reason the rest of the list prefers it, AAC stammered on the LG. Checked
+     with curl from the build sandbox, the only honest check available here:
+     the MP3 answers audio/mpeg with icy-name "Smooth Country". Absolute
+     Country IS a Bauer edge and does take the key. */
+  4: { name:'Country', short:'Country', sources: [
+       'https://media-ice.musicradio.com/SmoothCountryMP3',
+       'https://media-ssl.musicradio.com/SmoothCountry',
+       'https://stream-ar.hellorayo.co.uk/absolutecountryhigh.aac'+RADIO_KEY
      ].concat(RADIO_DEFAULT_SOURCES) }
 };
 var radioStationId = 1;
