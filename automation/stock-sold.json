@@ -1,22 +1,5 @@
 {
  "live": {
-  "256419": {
-   "id": "256419",
-   "model": "BMW 120 M Sport",
-   "series": "1 Series",
-   "year": "2026",
-   "reg": "LV26JYS",
-   "mileage": "5,572 miles",
-   "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
-   "fuelGroup": "Petrol",
-   "body": "Hatchback",
-   "power": "170 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£26,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13fb6-ead1-7b77-8cbc-fdae3beecc1e-preview.jpg"
-  },
   "256418": {
    "id": "256418",
    "model": "BMW X5 xDrive30d M Sport",
@@ -25,13 +8,13 @@
    "reg": "LV73YKX",
    "mileage": "30,764 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "298 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£51,995",
+   "price": "£52,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a15e94-3ecb-7635-8d45-96233bfeff22-preview.jpg"
   },
   "255738": {
@@ -42,13 +25,13 @@
    "reg": "LX74HTE",
    "mileage": "19,948 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "196 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£40,000",
+   "price": "£39,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1615c-17fe-7073-9526-e7ad3e69c141-preview.jpg"
   },
   "255411": {
@@ -57,9 +40,9 @@
    "series": "X2",
    "year": "2025",
    "reg": "LX75FZO",
-   "mileage": "9,985 miles",
+   "mileage": "10,015 miles",
    "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "170 hp",
@@ -82,7 +65,7 @@
    "power": "488 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£67,500",
+   "price": "£67,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a142ad-821b-7241-8b82-3cd22b55bf48-preview.jpg"
   },
   "254946": {
@@ -93,13 +76,13 @@
    "reg": "LV73VOB",
    "mileage": "25,779 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "Saloon",
    "power": "339 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£38,000",
+   "price": "£37,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a143c8-cf94-773a-aad3-10195d61ec7e-preview.jpg"
   },
   "254948": {
@@ -116,7 +99,7 @@
    "power": "488 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£65,000",
+   "price": "£64,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a138c3-215c-78f1-ac54-ffb22bd47cbd-preview.jpg"
   },
   "254947": {
@@ -133,7 +116,7 @@
    "power": "135 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£22,323",
+   "price": "£22,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13290-7b23-7cd9-bd1b-c0417a70d45a-preview.jpg"
   },
   "254666": {
@@ -144,31 +127,14 @@
    "reg": "YG26FGZ",
    "mileage": "9,678 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "298 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£66,000",
+   "price": "£65,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11b6b-10c1-7fbf-a579-8b22a4b0be07-preview.jpg"
-  },
-  "254664": {
-   "id": "254664",
-   "model": "BMW X5 M Competition",
-   "series": "X5",
-   "year": "2022",
-   "reg": "RJ22DWF",
-   "mileage": "28,295 miles",
-   "colour": "Grey",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "SUV",
-   "power": "624 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£69,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-preview.jpg"
   },
   "253983": {
    "id": "253983",
@@ -184,7 +150,7 @@
    "power": "298 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£49,500",
+   "price": "£48,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a12153-fe3c-788e-9033-c1d87af11763-preview.jpg"
   },
   "247774": {
@@ -314,7 +280,7 @@
    "reg": "LV72NLT",
    "mileage": "22,586 miles",
    "colour": "Black",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "359 hp",
@@ -365,13 +331,13 @@
    "reg": "GU72WSK",
    "mileage": "31,223 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "339 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£49,000",
+   "price": "£48,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a115bc-a2f7-7045-9081-c56e2728f141-preview.jpg"
   },
   "238261": {
@@ -399,7 +365,7 @@
    "reg": "HX22WUP",
    "mileage": "22,754 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "Saloon",
    "power": "189 hp",
@@ -433,13 +399,13 @@
    "reg": "LM72HVO",
    "mileage": "22,830 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "Coupe",
    "power": "286 hp",
    "gearbox": "Automatic",
    "seats": "4",
-   "price": "£29,500",
+   "price": "£29,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0f0bc-6fd3-7960-b534-88684fa2c62a-preview.jpg"
   },
   "237377": {
@@ -490,7 +456,7 @@
    "power": "475 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£64,500",
+   "price": "£64,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0c3ee-3cf2-74f2-a79e-2b6e0522414a-preview.jpg"
   },
   "250724": {
@@ -507,7 +473,7 @@
    "power": "488 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£51,500",
+   "price": "£50,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0c833-bbb0-7282-b2b5-ccc9041a6b00-preview.jpg"
   },
   "250260": {
@@ -535,7 +501,7 @@
    "reg": "LX72JVG",
    "mileage": "24,990 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "286 hp",
@@ -552,13 +518,13 @@
    "reg": "YE75KDK",
    "mileage": "1,217 miles",
    "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "207 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£46,500",
+   "price": "£46,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0899d-0acd-7a9c-828b-b766faffb58f-preview.jpg"
   },
   "249386": {
@@ -569,7 +535,7 @@
    "reg": "LX72JXB",
    "mileage": "4,571 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "286 hp",
@@ -586,13 +552,13 @@
    "reg": "RX24JPF",
    "mileage": "4,058 miles",
    "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "Estate",
    "power": "374 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£46,500",
+   "price": "£46,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08fcd-c361-779a-b4cb-3afb52c3066e-preview.jpg"
   },
   "247773": {
@@ -688,7 +654,7 @@
    "reg": "LX26FYF",
    "mileage": "4,348 miles",
    "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "207 hp",
@@ -824,7 +790,7 @@
    "reg": "LV26KKN",
    "mileage": "5,151 miles",
    "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "Coupe",
    "power": "170 hp",
@@ -898,8 +864,25 @@
    "power": "182 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£31,500",
+   "price": "£31,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a165c0-0ae7-710f-8753-005cf46102e5-preview.jpg"
+  },
+  "257614": {
+   "id": "257614",
+   "model": "BMW X1 sDrive18d M Sport",
+   "series": "X1",
+   "year": "2023",
+   "reg": "LP23OSM",
+   "mileage": "19,990 miles",
+   "colour": "Grey",
+   "fuel": "Diesel",
+   "fuelGroup": "Diesel",
+   "body": "SUV",
+   "power": "150 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£30,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1681c-53fb-75a1-8b68-38ef4038600a-preview.jpg"
   }
  },
  "sold": {
@@ -920,7 +903,7 @@
    "price": "£42,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042fe-ec5d-7385-be3f-3d284d8dbd8b-preview.jpg",
    "first_missing": "2026-10-16",
-   "runs_missing": 47
+   "runs_missing": 48
   },
   "253493": {
    "id": "253493",
@@ -939,7 +922,7 @@
    "price": "£24,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a110b4-192c-7ea6-a91b-6dd50ec7b8d2-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 46
+   "runs_missing": 47
   },
   "219929": {
    "id": "219929",
@@ -958,7 +941,7 @@
    "price": "£42,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019c8bb0-0f25-772c-b776-7c1c96aa5d82-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 46
+   "runs_missing": 47
   },
   "250723": {
    "id": "250723",
@@ -977,7 +960,7 @@
    "price": "£31,400",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0cd72-c2ed-74c2-ac31-792fd4b83b5d-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 46
+   "runs_missing": 47
   },
   "246277": {
    "id": "246277",
@@ -996,7 +979,7 @@
    "price": "£42,750",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a013b9-1959-786f-b93b-73f19b1f062c-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 46
+   "runs_missing": 47
   },
   "244226": {
    "id": "244226",
@@ -1015,7 +998,7 @@
    "price": "£22,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019fd6bb-72da-78c9-82c5-e665d4025a0f-preview.jpg",
    "first_missing": "2026-10-17",
-   "runs_missing": 46
+   "runs_missing": 47
   },
   "251469": {
    "id": "251469",
@@ -1034,7 +1017,7 @@
    "price": "£23,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0fcdc-e9ca-7c3d-b3b2-14d6eb569150-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 36
+   "runs_missing": 37
   },
   "254665": {
    "id": "254665",
@@ -1053,7 +1036,7 @@
    "price": "£22,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a102bf-7898-7a44-b94c-e00a5094332b-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 36
+   "runs_missing": 37
   },
   "251471": {
    "id": "251471",
@@ -1072,7 +1055,7 @@
    "price": "£33,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0f3e9-2278-7763-aad0-3402b96a7952-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 36
+   "runs_missing": 37
   },
   "248445": {
    "id": "248445",
@@ -1091,7 +1074,7 @@
    "price": "£32,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09423-9702-7fab-b650-4d36f3690697-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 36
+   "runs_missing": 37
   },
   "247763": {
    "id": "247763",
@@ -1110,7 +1093,7 @@
    "price": "£43,840",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-aa4b-7863-9bad-163d87bc1588-preview.jpg",
    "first_missing": "2026-10-19",
-   "runs_missing": 36
+   "runs_missing": 37
   },
   "253984": {
    "id": "253984",
@@ -1129,7 +1112,7 @@
    "price": "£45,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a158c0-7212-7c0f-8d28-7273f94acecf-preview.jpg",
    "first_missing": "2026-10-21",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "249631": {
    "id": "249631",
@@ -1148,7 +1131,7 @@
    "price": "£25,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-5625-78e1-a484-2d4412588956-preview.jpg",
    "first_missing": "2026-10-21",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "248409": {
    "id": "248409",
@@ -1167,7 +1150,45 @@
    "price": "£32,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08571-3d56-72e4-beb5-e75c8bb6aaad-preview.jpg",
    "first_missing": "2026-10-22",
-   "runs_missing": 12
+   "runs_missing": 13
+  },
+  "256419": {
+   "id": "256419",
+   "model": "BMW 120 M Sport",
+   "series": "1 Series",
+   "year": "2026",
+   "reg": "LV26JYS",
+   "mileage": "5,572 miles",
+   "colour": "Grey",
+   "fuel": "Petrol (mild hybrid)",
+   "fuelGroup": "Petrol",
+   "body": "Hatchback",
+   "power": "170 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£26,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13fb6-ead1-7b77-8cbc-fdae3beecc1e-preview.jpg",
+   "first_missing": "2026-10-23",
+   "runs_missing": 1
+  },
+  "254664": {
+   "id": "254664",
+   "model": "BMW X5 M Competition",
+   "series": "X5",
+   "year": "2022",
+   "reg": "RJ22DWF",
+   "mileage": "28,295 miles",
+   "colour": "Grey",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "SUV",
+   "power": "624 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£69,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-preview.jpg",
+   "first_missing": "2026-10-23",
+   "runs_missing": 1
   }
  },
  "updated": "2026-10-23",
