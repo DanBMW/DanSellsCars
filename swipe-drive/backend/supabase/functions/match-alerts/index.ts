@@ -6,7 +6,9 @@
 //  4. sends ONE digest email per staff recipient (customer email behind CUSTOMER_EMAIL_ENABLED, default off),
 //  5. sends due "you may be able to change your car" reminders (purchase + 33 months),
 //  6. records everything in notifications_sent / purchases.reminder_sent_at so nothing repeats.
-// Secrets live only here: SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE, RESEND_API_KEY, CRON_SECRET, UNSUBSCRIBE_SECRET.
+//  7. emails Dan a one line health summary after every run, and an alert if it fails (DAN_NOTIFY_EMAIL),
+//     under a run lock (take_job_lock) so two overlapping runs cannot double send.
+// Secrets live only here: SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE, RESEND_API_KEY, CRON_SECRET, UNSUBSCRIBE_SECRET, DAN_NOTIFY_EMAIL.
 // Every email carries a visible unsubscribe button plus List-Unsubscribe and List-Unsubscribe-Post (one click).
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
@@ -15,15 +17,23 @@ import { renderReminder } from './reminder.js';
 import { signUnsub } from '../_shared/unsub.js';
 import { fetchAll } from '../_shared/paginate.js';
 import { pushUrl } from '../_shared/links.js';
+import { healthMessage, failureMessage, sendDan } from '../_shared/health.js';
 (globalThis as any).window = globalThis;
 const SITE = 'https://dan-sells.co.uk';
 // The hosted edge runtime cannot import remote URLs at run time (worker failed to boot), so fetch the live
 // browser scripts and run them in global scope: the job always uses the same rules as the site.
 async function loadScript(u: string) { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(u + ' ' + r.status); (0, eval)(await r.text()); }
-await loadScript(SITE + '/stock-core.js');
-await loadScript(SITE + '/swipe-drive/match-core.js');
-const M = (globalThis as any).ctMatch;
-(globalThis as any).ctDetails = await fetch(SITE + '/automation/car-details.json').then(r => r.json()).catch(() => null);  // equipment for spec picks
+// Loaded inside the request (not at boot) so a broken or missing script becomes a failure email to Dan,
+// not a worker that silently fails to start while pg_cron ignores the response.
+let M: any = null;
+async function init() {
+  if (M) return;
+  await loadScript(SITE + '/stock-core.js');
+  await loadScript(SITE + '/swipe-drive/match-core.js');
+  M = (globalThis as any).ctMatch;
+  if (!M || !M.rank) throw new Error('match-core.js loaded but ctMatch is missing');
+  (globalThis as any).ctDetails = await fetch(SITE + '/automation/car-details.json').then(r => r.json()).catch(() => null);  // equipment for spec picks
+}
 const env = (k: string) => Deno.env.get(k) || '';
 const APP = SITE + '/swipe-drive/';
 // customer emails also need UNSUBSCRIBE_SECRET, so a customer never gets an email without a working signed unsubscribe link
@@ -42,12 +52,36 @@ async function sendEmail(to: string, msg: {subject: string, html: string, text: 
 
 Deno.serve(async (req) => {
   if (req.headers.get('Authorization') !== 'Bearer ' + env('CRON_SECRET')) return new Response('no', { status: 401 });
-  try { return await run(); } catch (e: any) { console.error('match-alerts', e); return Response.json({ error: String(e && e.message || e) }, { status: 500 }); }
+  const out: any = { pushed: 0, emailed: 0, reminders: 0, fresh: 0, warnings: [], stage: 'start' };
+  let db: any = null, runId: string | null = null;
+  try {
+    db = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
+    // Run lock: two runs at once (cron plus a manual or retried call) could both read notifications_sent before
+    // either writes it and send twice. take_job_lock hands out one lock at a time and expires after 20 minutes.
+    out.stage = 'run lock';
+    const lk = await db.rpc('take_job_lock', { p_job: 'match-alerts', p_minutes: 20 });
+    if (lk.error) out.warnings.push('Run lock not available (' + lk.error.message + '), ran without it');
+    else if (!lk.data) return Response.json({ skipped: 'another match run is in progress' }, { status: 409 });
+    else runId = lk.data;
+    out.stage = 'loading match rules'; await init();
+    await run(db, out);
+    out.stage = 'done';
+    const h = await sendDan(env, healthMessage(out)); out.health_email = h.ok ? 'sent' : h.reason;
+    const { stage: _s, ...body } = out;
+    return Response.json(body);
+  } catch (e: any) {
+    console.error('match-alerts', out.stage, e);
+    const a = await sendDan(env, failureMessage(e, out.stage));
+    return Response.json({ error: String(e && e.message || e), stage: out.stage, alert_email: a.ok ? 'sent' : a.reason }, { status: 500 });
+  } finally {
+    if (db && runId) { try { await db.rpc('release_job_lock', { p_job: 'match-alerts', p_run: runId }); } catch (_) { /* expires on its own */ } }
+  }
 });
-async function run() {
-  const db = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
+// a write whose error PostgREST returns quietly: note it for Dan, because a lost notifications_sent row means a repeat tomorrow
+function noteErr(out: any, what: string, r: any) { if (r && r.error) out.warnings.push(what + ': ' + r.error.message); }
+async function run(db: any, out: any) {
   webpush.setVapidDetails('mailto:' + (env('VAPID_CONTACT') || 'dan@dan-sells.co.uk'), env('VAPID_PUBLIC'), env('VAPID_PRIVATE'));
-  const out: any = { pushed: 0, emailed: 0, reminders: 0 };
+  out.stage = 'reading profiles';
 
   const profiles = await fetchAll(db, 'profiles', '*', 'id');
   const byId = new Map((profiles || []).map((p: any) => [p.id, p]));
@@ -67,23 +101,29 @@ async function run() {
   }
 
   // ---------- new stock matches ----------
-  const stock = await (await fetch(SITE + '/lookup/stock.json', { cache: 'no-store' })).json();
+  out.stage = 'reading stock';
+  const sr = await fetch(SITE + '/lookup/stock.json', { cache: 'no-store' });
+  if (!sr.ok) throw new Error('lookup/stock.json ' + sr.status);
+  const stock = await sr.json();
   const cars: any[] = Object.values(stock.cars || {});
   // new cars in retailer stock (lookup/new-stock.json), keyed NEW<order number>; in budget only on the actual current price
   let newCars: any[] = [];
-  try { const ns = await (await fetch(SITE + '/lookup/new-stock.json', { cache: 'no-store' })).json(); newCars = (ns.cars || []).filter((c: any) => c.order_number).map(M.fromNewStock); } catch (_) { newCars = []; }
+  try { const ns = await (await fetch(SITE + '/lookup/new-stock.json', { cache: 'no-store' })).json(); newCars = (ns.cars || []).filter((c: any) => c.order_number).map(M.fromNewStock); } catch (e: any) { newCars = []; out.warnings.push('New stock not read: ' + String(e && e.message || e)); }
+  if (!cars.length) out.warnings.push('lookup/stock.json had no cars');
   const seen = await fetchAll(db, 'stock_seen', 'reg', 'reg');   // paged: a plain select stops at 1000 rows
   const seenSet = new Set((seen || []).map((r: any) => r.reg));
   const newSeeded = [...seenSet].some((r: any) => String(r).startsWith('NEW'));
   const fresh = (seenSet.size ? cars.filter(c => !seenSet.has(c.reg)) : [])      // first run only seeds
     .concat(newSeeded ? newCars.filter(c => !seenSet.has(c.reg)) : []);          // first run with new stock only seeds it
-  if (newCars.length) await db.from('stock_seen').upsert(newCars.map(c => ({ reg: c.reg })), { onConflict: 'reg', ignoreDuplicates: true });
+  out.stage = 'matching';
+  if (newCars.length) noteErr(out, 'stock_seen new stock', await db.from('stock_seen').upsert(newCars.map(c => ({ reg: c.reg })), { onConflict: 'reg', ignoreDuplicates: true }));
   if (cars.length && (!seenSet.size || cars.length >= seenSet.size * 0.6))
-    await db.from('stock_seen').upsert(cars.map(c => ({ reg: c.reg })), { onConflict: 'reg', ignoreDuplicates: true });
+    noteErr(out, 'stock_seen', await db.from('stock_seen').upsert(cars.map(c => ({ reg: c.reg })), { onConflict: 'reg', ignoreDuplicates: true }));
+  else if (cars.length) out.warnings.push(`Stock looked short (${cars.length} cars against ${seenSet.size} seen), stock_seen left as it was`);
   out.fresh = fresh.length;
 
   // customers whose 33 month point has arrived come back: equity baseline 0, flagged Due to change, matching resumes
-  const { data: back } = await db.rpc('reactivate_due_customers');
+  const rb = await db.rpc('reactivate_due_customers'); noteErr(out, 'reactivate_due_customers', rb); const back = rb.data;
   out.reactivated = (back || []).length;
 
   if (fresh.length) {
@@ -107,7 +147,7 @@ async function run() {
           const c = items[0].car;
           const n = await push(p.id, { title: staff ? `New match for ${cu.name || 'a customer'}` : (items.length > 1 ? `${items.length} new matches for you` : 'New match for you'),
             body: `${c.model}${c.year ? ', ' + c.year : ''}`, url: pushUrl(APP, items), image: c.image || '' });
-          if (n) { out.pushed += n; await db.from('notifications_sent').insert(items.map((h: any) => ({ recipient: p.id, customer_id: cu.id, reg: h.car.reg, channel: 'push' }))); }
+          if (n) { out.pushed += n; noteErr(out, 'notifications_sent push', await db.from('notifications_sent').insert(items.map((h: any) => ({ recipient: p.id, customer_id: cu.id, reg: h.car.reg, channel: 'push' })))); }
         }
         const emailOk = staff ? STAFF_EMAIL_ENABLED : (CUSTOMER_EMAIL_ENABLED && STAFF_EMAIL_ENABLED && p.notify_email);
         if (emailOk) for (const h of mine) if (!done.has([p.id, cu.id, h.car.reg, 'email'].join('|'))) {
@@ -125,14 +165,16 @@ async function run() {
         // Dan also gets a copy of matches for colleagues' customers who are due to change
         if (admin && pid !== admin.id) { const due = items.filter((it: any) => /due to change/.test(it.customerName));
           if (due.length) await sendEmail(admin.email, renderDigest({ toName: admin.name, staff: true, items: due, matchesUrl: APP + '#team', unsubUrl: unsub(admin), brokerText: BROKER }), unsub(admin)); }
-        out.emailed++; await db.from('notifications_sent').insert(items.map((it: any) => ({ recipient: pid, customer_id: it.customer_id, reg: it.car.reg, channel: 'email' })));
+        out.emailed++; noteErr(out, 'notifications_sent email', await db.from('notifications_sent').insert(items.map((it: any) => ({ recipient: pid, customer_id: it.customer_id, reg: it.car.reg, channel: 'email' }))));
       }
     }
   }
 
   // ---------- 33 month reminders ----------
   const today = new Date().toISOString().slice(0, 10);
-  const { data: due } = await db.from('purchases').select('*, customers(*)').lte('remind_on', today).is('reminder_sent_at', null).eq('cancelled', false);
+  out.stage = 'change reminders';
+  const { data: due, error: dueErr } = await db.from('purchases').select('*, customers(*)').lte('remind_on', today).is('reminder_sent_at', null).eq('cancelled', false);
+  if (dueErr) out.warnings.push('Reminders not read: ' + dueErr.message);
   for (const pu of due || []) {
     const cu = pu.customers; const owner = cu.owner_staff_id ? byId.get(cu.owner_staff_id) : admin;
     const wa = (owner && owner.whatsapp) || M.DAN_WA;
@@ -143,7 +185,7 @@ async function run() {
     const to = owner || admin;
     if (to && STAFF_EMAIL_ENABLED) any = (await sendEmail(to.email, r.staffEmail, unsub(to))) || any;
     if (admin && to && to.id !== admin.id && STAFF_EMAIL_ENABLED) await sendEmail(admin.email, r.staffEmail, unsub(admin));
-    if (any) { out.reminders++; await db.from('purchases').update({ reminder_sent_at: new Date().toISOString() }).eq('id', pu.id); }
+    if (any) { out.reminders++; noteErr(out, 'reminder_sent_at', await db.from('purchases').update({ reminder_sent_at: new Date().toISOString() }).eq('id', pu.id)); }
   }
-  return Response.json(out);
+  return out;
 }

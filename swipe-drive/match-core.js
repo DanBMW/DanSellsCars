@@ -88,8 +88,32 @@
       if (car.year) sc += Math.max(0, Math.min(6, car.year - 2019));
       if (p.annual_mileage > 12000 && /diesel|phev/.test(fk[0] || '')) sc += 3;
       if (car.source === 'forecourt') sc += 2;
+      if (justArrived(car)) { sc += 5; why.push('Just arrived'); }   /* a modest nudge, never enough to lift a car past the filters */
     }
     return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok };
+  }
+  /* Arrival dates from automation/stock-arrivals.json (the ledger stock.html uses): first morning the repo saw the
+     car in a snapshot, keyed by listing id per list. A car already there when the history began has no arrival. */
+  var JUST_DAYS = 7;
+  function londonDay(d) { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(d || new Date()); } catch (e) { return (d || new Date()).toISOString().slice(0, 10); } }
+  function arrivalOf(car, ledger) {
+    if (!car || !ledger || !ledger.lists || car.listing_id == null) return null;
+    var list = ledger.lists[car.source === 'forecourt' ? 'forecourt' : 'group'];
+    var day = list && list.cars && list.cars[String(car.listing_id)];
+    return day && day !== list.history_from ? day : null;
+  }
+  function daysBetween(a, b) { var x = Date.parse(a + 'T00:00:00Z'), y = Date.parse(b + 'T00:00:00Z'); return isNaN(x) || isNaN(y) ? null : Math.round((y - x) / 86400000); }
+  function stampArrivals(cars, ledger, today) {
+    today = today || londonDay();
+    (cars || []).forEach(function (c) { var d = arrivalOf(c, ledger); c.arrived_on = d || null; c.arrived_days = d ? daysBetween(d, today) : null; });
+    return cars;
+  }
+  function justArrived(car) { return !!car && car.arrived_days != null && car.arrived_days >= 0 && car.arrived_days < JUST_DAYS; }
+  function arrivedText(car) { var n = car && car.arrived_days; return n == null ? '' : n <= 0 ? 'Today' : n === 1 ? 'Yesterday' : n + ' days ago'; }
+  /* how many cars arrived after the day of the last visit (dates only, so a same day revisit counts none) */
+  function newSince(cars, lastVisitIso) {
+    if (!lastVisitIso) return 0; var last = londonDay(new Date(lastVisitIso));
+    return (cars || []).filter(function (c) { return c.arrived_on && c.arrived_on > last; }).length;
   }
   /* New stock: in budget only on its actual current price. No discount assumptions. Staff alerts only. */
   function scoreNewStock(car, p) {
@@ -158,5 +182,5 @@
     if (!f || !f.monthly || !f.representative_example) return null;
     return { monthly: gbp2(f.monthly), headline: gbp2(f.monthly) + ' a month, ' + f.product, example: f.representative_example, legal: f.legal || '' };
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, newStockFinance: newStockFinance };
+  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance };
 })(typeof window !== 'undefined' ? window : globalThis);

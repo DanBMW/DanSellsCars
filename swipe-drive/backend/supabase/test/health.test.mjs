@@ -1,0 +1,34 @@
+// Daily health line and failure alert to Dan. Usage: node test/health.test.mjs
+import { healthMessage, failureMessage, sendDan } from '../functions/_shared/health.js';
+import fs from 'fs';
+let p = 0, f = 0; const ok = (c, m) => { c ? p++ : (f++, console.log('FAIL', m)); };
+const when = new Date('2026-10-24T09:16:00Z');
+const h = healthMessage({ fresh: 5, pushed: 3, emailed: 2, reminders: 1, reactivated: 0, warnings: [] }, when);
+ok(h.subject === 'Swipe Drive daily run: 5 fresh cars, 3 pushed, 2 emailed', 'subject is the one line summary: ' + h.subject);
+ok(/1 change reminder sent/.test(h.text) && !/back on matching/.test(h.text), 'extras only when non zero');
+ok(healthMessage({ fresh: 1 }, when).subject.includes('1 fresh car,'), 'singular for one car');
+ok(healthMessage({}, when).subject.endsWith('0 fresh cars, 0 pushed, 0 emailed'), 'a quiet morning still reports');
+const w = healthMessage({ fresh: 0, warnings: ['notifications_sent email: boom', 'a \u2014 dash - here'] }, when);
+ok(w.subject.startsWith('Swipe Drive daily run, needs a look:') && w.text.includes('notifications_sent email: boom'), 'warnings flagged in subject and listed');
+const fm = failureMessage(new Error('lookup/stock.json 404'), 'reading stock', when);
+ok(fm.subject === 'Swipe Drive daily run FAILED, at reading stock' && fm.text.includes('lookup/stock.json 404') && fm.text.includes('10:16'), 'failure names stage, error and London time');
+ok(failureMessage('<script>x</script>').html.includes('&lt;script&gt;'), 'error text escaped in html');
+for (const m of [h, w, fm]) ok(!/[\u2013\u2014]| - /.test(m.subject + m.text + m.html), 'no dashes in ' + m.subject);
+const E = (o) => (k) => o[k] || '';
+let calls = [];
+const fake = async (u, o) => { calls.push({ u, o: JSON.parse(o.body), auth: o.headers.Authorization }); return { ok: true, status: 200 }; };
+let r = await sendDan(E({ RESEND_API_KEY: 'k', MAIL_FROM: 'alerts@mail.dan-sells.co.uk' }), h, fake);
+ok(!r.ok && r.reason === 'email not configured' && !calls.length, 'no DAN_NOTIFY_EMAIL, nothing sent');
+r = await sendDan(E({ RESEND_API_KEY: 'k', MAIL_FROM: 'alerts@mail.dan-sells.co.uk', DAN_NOTIFY_EMAIL: 'owner@example.test' }), h, fake);
+ok(r.ok && calls.length === 1 && calls[0].o.to[0] === 'owner@example.test' && calls[0].o.to.length === 1 && calls[0].o.subject === h.subject, 'goes only to DAN_NOTIFY_EMAIL from the secret');
+r = await sendDan(E({ RESEND_API_KEY: 'k', MAIL_FROM: 'a', DAN_NOTIFY_EMAIL: 'b' }), h, async () => { throw new Error('network down'); });
+ok(!r.ok && /network down/.test(r.reason), 'a failed send never throws');
+r = await sendDan(E({ RESEND_API_KEY: 'k', MAIL_FROM: 'a', DAN_NOTIFY_EMAIL: 'b' }), h, async () => ({ ok: false, status: 422 }));
+ok(!r.ok && r.reason === 'resend 422', 'resend refusal reported');
+// the job wiring
+const src = fs.readFileSync(new URL('../functions/match-alerts/index.ts', import.meta.url), 'utf8');
+ok(!/hedinautomotive|daniel\.cane/i.test(src + fs.readFileSync(new URL('../functions/_shared/health.js', import.meta.url), 'utf8')), "Dan's address is not in code");
+ok(/take_job_lock/.test(src) && /release_job_lock/.test(src) && /status: 409/.test(src), 'run lock taken, released, overlapping run refused');
+ok(/healthMessage\(out\)/.test(src) && /failureMessage\(e, out\.stage\)/.test(src), 'health on success, alert with stage on failure');
+ok(!/^await loadScript/m.test(src), 'scripts load inside the request, so a load failure is alerted');
+console.log(`${p} passed, ${f} failed`); process.exit(f ? 1 : 0);

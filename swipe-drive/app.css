@@ -308,3 +308,7 @@ body.ct::before{will-change:transform}
 .tut-ico{flex:0 0 34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;background:#20252d}
 .tut-like .tut-ico:before{content:"\2192";color:#3ccf7a}.tut-pass .tut-ico:before{content:"\2190";color:#e5484d}.tut-tap .tut-ico:before{content:"\25CF";color:#9dbbe6}.tut-info .tut-ico:before{content:"\21C4";color:#ffd76a}
 @media (prefers-reduced-motion: reduce){.ct-tut *{animation:none!important;transition:none!important}}
+/* Just arrived: under 7 days old in the arrivals ledger */
+.ct-just{position:absolute;top:22px;left:14px;z-index:3;background:#15803d;color:#fff;font-weight:700;font-size:11px;letter-spacing:.6px;text-transform:uppercase;padding:5px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.ct-just-inline{position:static;display:inline-block;vertical-align:middle;margin-right:6px;box-shadow:none}
+.ct-since{margin:0 0 10px;text-align:center;color:#86efac;font-weight:600;font-size:14px}

@@ -69,6 +69,8 @@
   var demo = {
     mode: 'demo',
     session: function () { return Promise.resolve(demoDb().session || null); },
+    lastVisit: function () { var d = demoDb(), s = d.session; return Promise.resolve(s && d.visits ? d.visits[s.user_id || s.email] || null : null); },
+    setLastVisit: function (iso) { var d = demoDb(), s = d.session; if (!s) return Promise.resolve(); d.visits = d.visits || {}; d.visits[s.user_id || s.email] = iso; demoSave(d); return Promise.resolve(); },
     signIn: function (role, email) {
       var d = demoDb(); var uid = 'demo-' + role;
       d.session = { uid: uid, role: role, email: email || (role === 'admin' ? 'dan@demo.local' : role === 'staff' ? 'colleague@demo.local' : 'you@demo.local'),
@@ -110,6 +112,9 @@
   var supa = {
     mode: 'supabase',
     init: function () { return import('https://esm.sh/@supabase/supabase-js@2').then(function (m) { sb = m.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: { persistSession: true, detectSessionInUrl: true, flowType: 'implicit' } }); }); },
+    /* last Discover visit kept on the signed in profile (auth user metadata), so it follows them across devices */
+    lastVisit: function () { return Promise.resolve(sbUser && sbUser.user_metadata ? sbUser.user_metadata.sd_last_visit || null : null); },
+    setLastVisit: function (iso) { if (!sbUser) return Promise.resolve(); return Promise.resolve(sb.auth.updateUser({ data: { sd_last_visit: iso } })).catch(function () {}); },
     session: function () { return sb.auth.getSession().then(function (r) { sbUser = r.data.session && r.data.session.user; if (!sbUser) return null;
       return sb.from('profiles').select('*').eq('id', sbUser.id).single().then(function (p) { sbProfile = p.data; return { uid: sbUser.id, role: p.data.role, email: p.data.email, name: p.data.name, whatsapp: p.data.whatsapp }; }); }); },
     verifyCode: function (email, code) { return sb.auth.verifyOtp({ email: email, token: code, type: 'email' }).then(function (r) { if (r.error) throw r.error; }); },
@@ -189,8 +194,10 @@
     /* real new cars in retailer stock, same ids as the alerts job (NEW + order number); cars on hold are left out */
     var ns = fetch('../lookup/new-stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
       S.newStock = (d.cars || []).filter(function (c) { return c.order_number && !c.on_hold && c.price_gbp; }).map(M.fromNewStock); }).catch(function () { S.newStock = []; });
+    /* arrival dates (the same ledger stock.html badges from); quiet failure means no Just arrived badges */
+    var arr = fetch('../automation/stock-arrivals.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { S.arrivals = d; }).catch(function () { S.arrivals = null; });
     var det = fetch('../automation/car-details.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { window.ctDetails = d; }).catch(function () { window.ctDetails = null; });
-    return Promise.all([stock, range, det, ns]).then(placeholders);
+    return Promise.all([stock, range, det, ns, arr]).then(function () { M.stampArrivals(S.cars, S.arrivals); placeholders(); });
   }
   /* body and fuel for a new model, only from its name and MBG.html group */
   function newCar(name, group) {
@@ -470,17 +477,38 @@
     var tags = isNew ? [c.group] : ns ? [c.colour, c.fuel, c.gearbox, ready(c)] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
       : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">Monthly: ask for a quote</div>');
-    return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' +
+    var just = M.justArrived(c) ? '<span class="ct-just">Just arrived</span>' : '';
+    return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' + just +
       '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">TEST DRIVE</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
       '<div class="ct-meta">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? 'NEW, IN STOCK' : 'NEW') + '</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
-      x.reasons.map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') + '</div>' + money + '</div>';
+      x.reasons.filter(function (r) { return r !== 'Just arrived'; }).map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
-  function showDeck() { if (!S.deck.length) buildDeck(); drawDeck(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
+  /* 'N new since your last visit': the previous visit is the later of this device's and the profile's record.
+     Worked out once per page load, then today's visit is saved for next time. */
+  function visitKey() { return 'sdLastVisit' + (S.cust && S.cust.id ? ':' + S.cust.id : ''); }
+  function noteVisit() {
+    if (S.visitNoted === visitKey()) return; S.visitNoted = visitKey(); S.sinceN = 0;
+    var dev = null; try { dev = localStorage.getItem(visitKey()) || localStorage.getItem('sdLastVisit'); } catch (e) {}
+    var own = S.session && S.session.role === 'customer';
+    return (own ? store.lastVisit() : Promise.resolve(null)).catch(function () { return null; }).then(function (prof) {
+      var prev = [dev, prof].filter(Boolean).sort().pop() || null;
+      S.sinceN = M.newSince(S.deck.map(function (x) { return x.car; }), prev); sinceLine();
+      var now = new Date().toISOString();
+      try { localStorage.setItem(visitKey(), now); localStorage.setItem('sdLastVisit', now); } catch (e) {}
+      if (own) store.setLastVisit(now);
+    });
+  }
+  function sinceLine() {
+    var el = $('#sinceLast'); if (!el) { el = document.createElement('p'); el.id = 'sinceLast'; el.className = 'ct-since'; el.setAttribute('aria-live', 'polite'); $('#deck').parentNode.insertBefore(el, $('#deck')); }
+    var n = S.sinceN || 0; el.hidden = !n || $('#deck').hidden; el.textContent = n === 1 ? '1 new car since your last visit' : n + ' new cars since your last visit';
+  }
+  function showDeck() { if (!S.deck.length) buildDeck(); drawDeck(); noteVisit(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
   function drawDeck() {
     var deck = $('#deck'); deck.innerHTML = '';
     var top = S.deck.slice(0, 3);
     $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length; deck.hidden = !top.length;
     var left = $('#deckLeft'); if (!left) { left = document.createElement('p'); left.id = 'deckLeft'; left.className = 'ct-sub ct-left'; left.setAttribute('aria-live', 'polite'); $('#deckActions').parentNode.insertBefore(left, $('#deckActions').nextSibling); }
+    sinceLine();
     left.hidden = !top.length; left.textContent = S.deck.length === 1 ? 'Last car in your deck' : S.deck.length + ' cars left to see';
     top.slice().reverse().forEach(function (x, i, arr) {
       var el = document.createElement('div'); el.className = 'ct-card'; el.innerHTML = cardHtml(x); el.dataset.reg = x.car.reg;
@@ -554,9 +582,9 @@
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     var imgs = photos(c);
     var ns = c.kind === 'new_stock';
-    var specs = isNew ? [['Range', c.group]] : ns ? [['Version', c.description], ['Colour', c.colour], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Drive', c.drive], ['Seats', c.seats], ['Upholstery', c.upholstery], ['Wheels', c.wheels], ['Order number', c.order_number], ['Ready', ready(c).replace(/^Ready /, '')]] : [['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
+    var specs = isNew ? [['Range', c.group]] : ns ? [['Version', c.description], ['Colour', c.colour], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Drive', c.drive], ['Seats', c.seats], ['Upholstery', c.upholstery], ['Wheels', c.wheels], ['Order number', c.order_number], ['Ready', ready(c).replace(/^Ready /, '')]] : [['Arrived', M.arrivedText(c)], ['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
     $('#sheetBody').innerHTML = (imgs.length ? '<div class="ct-gal">' + imgs.slice(0, 10).map(function (u, k) { return photoHtml({ images: imgs, model: c.model }, k, false); }).join('') + '</div>' : '') +
-      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + esc(isNew ? 'Brand new BMW, ordered to your spec' : stockLabel(c)) + '</p>' +
+      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + (M.justArrived(c) ? '<span class="ct-just ct-just-inline">Just arrived</span> ' : '') + esc(isNew ? 'Brand new BMW, ordered to your spec' : stockLabel(c)) + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
       (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
       (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
@@ -922,8 +950,9 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   (LIVE ? supa.init() : Promise.resolve())
     .then(function () { if (LIVE) { mountPw(); sb.auth.onAuthStateChange(function (ev) { if (ev === 'PASSWORD_RECOVERY') showRecover(); if (ev === 'SIGNED_IN' && !S.session) store.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); } return loadStock(); })
     .then(function () {
-      try { var prev = JSON.parse(localStorage.getItem('ctSeenRegs') || 'null'); S.fresh = {}; if (prev) { var ps = {}; prev.forEach(function (r) { ps[r] = 1; }); S.cars.forEach(function (c) { if (!ps[c.reg]) S.fresh[c.reg] = 1; }); }
-        localStorage.setItem('ctSeenRegs', JSON.stringify(S.cars.map(function (c) { return c.reg; }))); } catch (e) {}
+      /* staff 'new today' comes from the arrivals ledger, the same on every device, not from what this browser saw last */
+      S.fresh = {}; S.cars.forEach(function (c) { if (c.arrived_days === 0) S.fresh[c.reg] = 1; });
+      try { localStorage.removeItem('ctSeenRegs'); } catch (e) {}
       return store.session(); })
     .then(function (sess) { if (sess && LIVE && dl.claim) return supa.claim(dl.claim).then(function () { history.replaceState(null, '', location.pathname); return store.session(); }); return sess; })
     .then(function (sess) { if (sess) track('sign_in', { method: LIVE ? 'magic_link' : 'demo', role: sess.role }); return sess ? afterSignIn(sess) : route(); })
