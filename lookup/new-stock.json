@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-23T16:12:15.000Z",
+ "generated_at": "2026-10-24T06:04:05.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
  "count": 70,
@@ -190,8 +190,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -3563,8 +3563,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Black Sapphire",
@@ -3698,8 +3698,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Black Sapphire",
