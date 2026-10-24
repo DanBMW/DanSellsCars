@@ -60,6 +60,12 @@
       var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase();
       if (models.some(function (m) { return name.indexOf(m) !== -1; })) { sc += 22; why.push('A model you picked'); } else sc -= 6;
     }
+    /* model placeholder cards (no real stock for that model): no price of their own, so the budget test is against
+       the cheapest real new BMW in stock today (floor_cash / floor_monthly, set by the app). Below that, hide them. */
+    if (isNew) {
+      if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.floor_cash && p.cash_gbp < car.floor_cash) ok = false;
+      if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && car.floor_monthly && p.monthly_gbp < car.floor_monthly) ok = false;
+    }
     if (!isNew) {
       if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) {
         var r = car.price_gbp / p.cash_gbp;
@@ -97,14 +103,42 @@
     if (models.length) { var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase();
       if (models.some(function (m) { return name.indexOf(m) !== -1; })) { sc += 22; why.push('A model you picked'); } else sc -= 6; }
     if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) { if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at the current price'); } else ok = false; }
-    if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && car.monthly_gbp) { if (car.monthly_gbp <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else ok = false; }
+    /* monthly: only on a figure that comes with a full representative example (car.finance); otherwise no monthly test or figure */
+    if (p.budget_type === 'monthly' && p.monthly_gbp > 0) { if (car.finance && car.finance.monthly) { if (car.finance.monthly <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else ok = false; } else sc -= 4; }
     var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
     if (cols.length) { var fam = colourFamily(car); if (cols.indexOf(fam) !== -1) { sc += 10; why.push(fam + ', a colour you like'); } else sc -= 4; if (mustC.length && fam && mustC.indexOf(fam) === -1) ok = false; }
     (p.specs_must || []).forEach(function (k) { var h = hasSpec(car, k); if (h === false) ok = false; });
     return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok };
   }
-  function fromNewStock(c) { return { kind: 'new_stock', reg: 'NEW' + c.order_number, order_number: c.order_number, model: c.range || ('BMW ' + c.description), series: c.series,
-    colour: c.colour, fuel: c.fuel, gearbox: c.transmission, price: c.price, price_gbp: c.price_gbp, monthly_gbp: c.monthly_gbp, image: c.image || '' }; }
+  /* Real new car in retailer stock (lookup/new-stock.json). The id 'NEW' + order number is the same one the alerts job
+     stores in stock_seen, so app, alerts and buy requests all agree. Monthly only with a complete representative example. */
+  var FE_NEED = ['product', 'lender', 'apr', 'monthly', 'payments', 'term_months', 'deposit', 'cash_price', 'amount_of_credit', 'final_payment', 'total_payable', 'annual_mileage'];
+  function newStockFinance(fe) {
+    if (!fe || FE_NEED.some(function (k) { return fe[k] == null || fe[k] === ''; })) return null;
+    var ex = fe.product + ' from ' + fe.lender + '. ' + fe.payments + ' monthly payments of ' + gbp2(fe.monthly) + ', customer deposit ' + gbp2(fe.deposit) +
+      ', cash price ' + gbp2(fe.cash_price) + ', amount of credit ' + gbp2(fe.amount_of_credit) + ', optional final payment ' + gbp2(fe.final_payment) +
+      ', total amount payable ' + gbp2(fe.total_payable) + ', ' + fe.term_months + ' month agreement, ' + Number(fe.annual_mileage).toLocaleString('en-GB') + ' miles a year, representative APR ' + fe.apr + '%.' +
+      ' The final payment and totals are worked out from the figures BMW publish and are not a quotation.';
+    return { monthly: fe.monthly, product: fe.product, representative_example: ex, legal: 'Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender.' };
+  }
+  function fromNewStock(c) { var f = newStockFinance(c.finance_example);
+    return { kind: 'new_stock', reg: 'NEW' + c.order_number, id: String(c.order_number), order_number: String(c.order_number), model: c.range || ('BMW ' + c.description), description: c.description, series: c.series,
+      colour: c.colour, fuel: c.fuel, gearbox: c.transmission, transmission: c.transmission, drive: c.drive, seats: c.seats, upholstery: c.upholstery, wheels: c.wheels,
+      price: c.price || (c.price_gbp ? gbp(c.price_gbp) : ''), price_gbp: c.price_gbp, monthly_gbp: f ? c.monthly_gbp : null, finance: f,
+      lead_min: c.lead_time_weeks_min, lead_max: c.lead_time_weeks_max, on_hold: !!c.on_hold, image: c.image || '', images: (c.images || []).slice(0, 10), standard: c.standard || [], options: c.options || [] }; }
+  /* does a real stock car stand in for a model placeholder (MBG list name)? M cars only cover M names. */
+  var BODY = ['gran coupe', 'active tourer', 'convertible', 'touring', 'saloon', 'coupe'];
+  function nrm(x) { return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bmw\s+/, '').replace(/\s+/g, ' ').trim(); }
+  function isMCar(d) { return /^m\d|^(x\d|i\w{1,2}) m\d|^\w+ m$/.test(d); }
+  function covers(stock, name) {
+    var n = nrm(name), d = nrm(stock.description || stock.model), sr = nrm(stock.series);
+    var body = BODY.filter(function (b) { return n.indexOf(b) !== -1; })[0] || '';
+    if (body) { if (d.indexOf(body) === -1) return false; if (body === 'coupe' && d.indexOf('gran coupe') !== -1) return false; }
+    var core = BODY.reduce(function (a, b) { return a.replace(b, ''); }, n).trim();
+    if (isMCar(n)) { var tok = core.split(' ')[0]; return (d === tok || d.indexOf(tok + ' ') === 0) && (core.split(' ').length < 2 || d.indexOf(core) === 0); }
+    if (isMCar(d)) return false;
+    return sr === core || d.indexOf(core + ' ') === 0;
+  }
   function rank(cars, p) {
     return cars.map(function (c) { var r = score(c, p); return { car: c, score: r.score, reasons: r.reasons, ok: r.ok }; })
       .filter(function (x) { return x.ok; }).sort(function (a, b) { return b.score - a.score; });
@@ -124,5 +158,5 @@
     if (!f || !f.monthly || !f.representative_example) return null;
     return { monthly: gbp2(f.monthly), headline: gbp2(f.monthly) + ' a month, ' + f.product, example: f.representative_example, legal: f.legal || '' };
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp };
+  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, newStockFinance: newStockFinance };
 })(typeof window !== 'undefined' ? window : globalThis);

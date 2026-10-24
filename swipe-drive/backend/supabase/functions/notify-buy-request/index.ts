@@ -29,9 +29,9 @@ Deno.serve(async (req) => {
   if (!env('RESEND_API_KEY') || !env('MAIL_FROM') || !env('DAN_NOTIFY_EMAIL')) return json({ ok: false, reason: 'email not configured' });
   const { data: c } = await db.from('customers').select('name,phone,email,postcode').eq('id', r.customer_id).maybeSingle();
   const cust = c || {} as any;
-  const what = r.type === 'buy' ? `wants to buy ${r.car_model || ''} ${r.car_reg && !String(r.car_reg).startsWith('NEW-') ? r.car_reg : ''}`.trim() : `sent their matches (${(r.cars || []).length})`;
+  const what = r.type === 'buy' ? `wants to buy ${r.car_model || ''} ${r.car_reg && !String(r.car_reg).startsWith('NEW') ? r.car_reg : ''}`.trim() : `sent their matches (${(r.cars || []).length})`;
   const subject = `Swipe Drive: ${cust.name || 'A customer'} ${what}`;
-  const lines = r.type === 'buy' ? [`Car: ${r.car_model || ''}`, `Reg: ${r.car_reg || ''}`, `Price shown: ${r.car_price || 'n/a'}`]
+  const lines = r.type === 'buy' ? [`Car: ${r.car_model || ''}`, (/^NEW\d/.test(String(r.car_reg)) ? `Order number: ${String(r.car_reg).slice(3)} (new car in retailer stock)` : `Reg: ${r.car_reg || ''}`), `Price shown: ${r.car_price || 'n/a'}`]
     : (r.cars || []).map((x: any) => `${x.model || ''} ${x.kind === 'new' ? '(new)' : x.reg || ''} ${x.price || ''}`.trim());
   const text = [subject, '', `Name: ${cust.name || ''}`, `Phone: ${cust.phone || ''}`, `Email: ${cust.email || ''}`, `Postcode: ${cust.postcode || ''}`, '', ...lines, '',
     r.type === 'buy' ? 'They were told you will call to take a deposit and arrange collection.' : '', 'Open Swipe Drive > Customers > Buy requests: https://dan-sells.co.uk/swipe-drive/#buys'].join('\n');

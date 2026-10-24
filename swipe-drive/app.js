@@ -186,8 +186,11 @@
       });
       S.newRange = out;
     }).catch(function () { S.newRange = []; });
+    /* real new cars in retailer stock, same ids as the alerts job (NEW + order number); cars on hold are left out */
+    var ns = fetch('../lookup/new-stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
+      S.newStock = (d.cars || []).filter(function (c) { return c.order_number && !c.on_hold && c.price_gbp; }).map(M.fromNewStock); }).catch(function () { S.newStock = []; });
     var det = fetch('../automation/car-details.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { window.ctDetails = d; }).catch(function () { window.ctDetails = null; });
-    return Promise.all([stock, range, det]);
+    return Promise.all([stock, range, det, ns]).then(placeholders);
   }
   /* body and fuel for a new model, only from its name and MBG.html group */
   function newCar(name, group) {
@@ -203,7 +206,7 @@
     if (/convertible/.test(n)) b.push('convertible'); if (/active tourer/.test(n)) b.push('mpv'); if (/saloon/.test(n)) b.push('saloon');
     if (/^1 series|^m135/.test(n)) b.push('hatchback'); if (/^i3$|^i4|^i5|^i7/.test(n) && !b.length) b.push('saloon');
     var series = (name.match(/^(\d Series|i\d|iX\d?|X\d|XM|M\d)/i) || [name])[0];
-    return { kind: 'new', reg: 'NEW-' + name.replace(/[^A-Za-z0-9]+/g, '-').toUpperCase(), model: 'BMW ' + name, series: series, group: group, bodyKeys: b, fuelKeys: f };
+    return { kind: 'new', name: name, reg: 'NEW-' + name.replace(/[^A-Za-z0-9]+/g, '-').toUpperCase(), model: 'BMW ' + name, series: series, group: group, bodyKeys: b, fuelKeys: f };
   }
   function allModels() {
     var seen = {}, out = [];
@@ -211,7 +214,18 @@
     S.newRange.forEach(function (c) { if (c.series && !seen[c.series]) { seen[c.series] = 1; out.push(c.series); } });
     return out.sort(function (a, b) { return a.localeCompare(b, 'en', { numeric: true }); });
   }
-  function pool() { return S.cars.concat(S.newRange); }
+  function pool() { return S.cars.concat(S.newStock || [], S.newRange || []); }
+  /* model cards stay only where no real stock covers that model; their budget test uses the cheapest real new car */
+  function placeholders() { var st = S.newStock || [];
+    var fc = st.length ? Math.min.apply(null, st.map(function (c) { return c.price_gbp; })) : null;
+    var fm = st.filter(function (c) { return c.finance; }).map(function (c) { return c.finance.monthly; }); fm = fm.length ? Math.min.apply(null, fm) : null;
+    S.newRange = (S.newRange || []).filter(function (p) { return !st.some(function (c) { return M.covers(c, p.name); }); })
+      .map(function (p) { p.floor_cash = fc; p.floor_monthly = fm; return p; }); }
+  function stockLabel(c) { return c.kind === 'new_stock' ? 'New, in stock' : c.kind === 'new' ? 'Brand new, ordered for you' : c.source === 'group' ? 'I can source this one' : 'On my forecourt'; }
+  function ready(c) { return c.lead_min && c.lead_max ? (c.lead_min === c.lead_max ? 'Ready in about ' + c.lead_min + ' weeks' : 'Ready in ' + c.lead_min + ' to ' + c.lead_max + ' weeks') : ''; }
+  function askModelWa(c) { return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the look of a new ' + c.model + ' on Swipe Drive. Could you tell me about this model and what is available?'); }
+  function buyOrAsk(c) { return c.kind === 'new' ? '<a class="ct-btn ct-btn-big ct-wa ct-ask" target="_blank" rel="noopener" href="' + esc(askModelWa(c)) + '">Ask ' + esc(waWho() || 'Dan') + ' about this model</a>'
+    : '<button class="ct-btn ct-btn-big ct-buy" type="button" data-buy="' + esc(c.reg) + '">Buy this car</button>'; }
   function byReg(reg) { return pool().find(function (c) { return c.reg === reg; }); }
   function waNum() { return (S.owner && S.owner.whatsapp) || CFG.DAN_WA; }
   function waWho() { return S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
@@ -447,18 +461,18 @@
        One card per stable id (reg), and nothing already swiped. */
     var deep = platform.deepLink().reg, seen = S.swipes, ids = {};
     S.deck = ranked.filter(function (x) { var id = x.car.reg; if (!id || seen[id] || ids[id]) return false; ids[id] = 1; return true; });
-    if (deep) { var i = S.deck.findIndex(function (x) { return x.car.reg === deep; }); if (i > 0) S.deck.unshift(S.deck.splice(i, 1)[0]); }
+    if (deep) { var i = S.deck.findIndex(function (x) { return M.normReg(x.car.reg) === deep; }); if (i > 0) S.deck.unshift(S.deck.splice(i, 1)[0]); }
   }
   function cardHtml(x) {
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     var img = isNew ? '<div class="ct-noimg-ph">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (photos(c).length ? photoHtml(c, 0, true) : noPhoto(c));
-    var src = isNew ? 'Brand new' : c.source === 'group' ? 'I can source this one' : 'On my forecourt';
-    var tags = isNew ? [c.group] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
+    var ns = c.kind === 'new_stock', src = stockLabel(c);
+    var tags = isNew ? [c.group] : ns ? [c.colour, c.fuel, c.gearbox, ready(c)] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
       : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">Monthly: ask for a quote</div>');
     return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' +
       '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">TEST DRIVE</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
-      '<div class="ct-meta">' + (isNew ? '<span class="ct-plate ct-plate-new">NEW</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
+      '<div class="ct-meta">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? 'NEW, IN STOCK' : 'NEW') + '</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
       x.reasons.map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
   function showDeck() { if (!S.deck.length) buildDeck(); drawDeck(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
@@ -524,7 +538,7 @@
     var c = x.car, m = $('#matchModal'); var mm = $('#mmCar');
     if (c.image) { mm.src = c.image; mm.hidden = false; } else mm.hidden = true;
     $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other.' : 'You and the ' + c.model + ' look made for each other.';
-    var a = $('#mmWa'); a.href = M.waLink(waNum(), c, waWho()); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
+    var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
     m.hidden = false; try { $('[data-close]', m).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
   function confetti(cv) { if (reduced()) return;
@@ -539,12 +553,13 @@
     S.sheetAt = Date.now();
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     var imgs = photos(c);
-    var specs = isNew ? [['Range', c.group]] : [['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
+    var ns = c.kind === 'new_stock';
+    var specs = isNew ? [['Range', c.group]] : ns ? [['Version', c.description], ['Colour', c.colour], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Drive', c.drive], ['Seats', c.seats], ['Upholstery', c.upholstery], ['Wheels', c.wheels], ['Order number', c.order_number], ['Ready', ready(c).replace(/^Ready /, '')]] : [['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
     $('#sheetBody').innerHTML = (imgs.length ? '<div class="ct-gal">' + imgs.slice(0, 10).map(function (u, k) { return photoHtml({ images: imgs, model: c.model }, k, false); }).join('') + '</div>' : '') +
-      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + esc(isNew ? 'Brand new BMW, ordered to your spec or from new stock' : c.source === 'group' ? 'I can source this one' : 'On my forecourt') + '</p>' +
+      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + esc(isNew ? 'Brand new BMW, ordered to your spec' : stockLabel(c)) + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
       (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
-      '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>';
+      (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
     $('#sheet').hidden = false;
   }
   function photos(c) { var l = (c.images && c.images.length ? c.images : []).slice(0, 10); if (c.image && l.indexOf(c.image) === -1 && !l.length) l = [c.image]; return l; }
@@ -652,10 +667,10 @@
     $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + (waWho() || 'me') + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
       return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>') +
-        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
+        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : c.kind === 'new_stock' ? ['New, in stock', c.colour, c.fuel, ready(c)].filter(Boolean).join(', ') : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
         (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
-        '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp about ' + esc(isNew ? 'this model' : M.normReg(c.reg)) + '</a></div>' +
-        '<button class="ct-btn ct-btn-big ct-buy" type="button" data-buy="' + esc(c.reg) + '">Buy this car</button>' +
+        (isNew ? '' : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp about ' + esc(c.kind === 'new_stock' ? 'this car' : M.normReg(c.reg)) + '</a></div>') +
+        buyOrAsk(c) +
         '<button class="ct-unlike" type="button" data-unlike="' + esc(c.reg) + '">Remove from matches</button></div></article>'; }).join('');
     $('#sendBox').hidden = !L.length; $('#sendBtn').textContent = staff ? 'Send these matches to Dan' : 'Send my matches to ' + (S.owner && S.owner.name ? S.owner.name.split(' ')[0] : 'Dan');
   }
@@ -700,13 +715,17 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       .then(function (row) { Promise.resolve().then(function () { return store.notifyBuy(row.id); }).catch(function (e) { console.warn('Swipe Drive notify', e); }); track('buy_request', { type: r.type }); return row; })
       .catch(function (e) { console.warn('Swipe Drive buy request', e); return null; });
   }
-  function buyWa(c, ref) { var reg = c.kind === 'new' ? '' : ', reg ' + M.normReg(c.reg);
+  /* customer side WhatsApp text: a real new car names its order number so Dan can find it straight away */
+  function carWa(c) { if (c.kind !== 'new_stock') return M.waLink(waNum(), c, waWho());
+    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the new ' + c.model + (c.colour ? ' in ' + c.colour : '') + ' in stock on Swipe Drive (order ' + c.order_number + ', ' + c.price + '). Is it still available?'); }
+  function buyWa(c, ref) { var reg = c.kind === 'new' ? '' : c.kind === 'new_stock' ? ', order ' + c.order_number : ', reg ' + M.normReg(c.reg);
     return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on Swipe Drive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
   function askBuy(c) { S.buyCar = c; var who = waWho() || 'Dan';
     $('#buyTitle').textContent = 'Buy the ' + c.model + '?'; $('#buyText').textContent = who + ' will call you to take a deposit and arrange collection.';
     $('#buyAsk').hidden = false; $('#buyDone').hidden = true; $('#buyYes').disabled = false; $('#buyModal').hidden = false; }
   function confirmBuy() { var c = S.buyCar; if (!c) return; var btn = $('#buyYes'); btn.disabled = true; btn.textContent = 'Sending...';
-    saveBuyRequest({ type: 'buy', car_reg: c.reg, car_id: String(c.id || c.order_number || c.reg), car_model: c.model, car_price: c.kind === 'new' ? 'Brand new, quote live' : (c.price || '') }).then(function (row) {
+    if (c.kind === 'new') { btn.disabled = false; $('#buyModal').hidden = true; window.open(askModelWa(c), '_blank', 'noopener'); return; }   /* model cards are not a car to buy */
+    saveBuyRequest({ type: 'buy', car_reg: c.reg, car_id: String(c.order_number || c.id || c.reg), car_model: c.kind === 'new_stock' ? c.model + (c.colour ? ', ' + c.colour : '') + ', order ' + c.order_number : c.model, car_price: c.price || '' }).then(function (row) {
       btn.textContent = 'Yes, buy this car'; var who = waWho() || 'Dan';
       $('#buyAsk').hidden = true; $('#buyDone').hidden = false;
       $('#buyDoneText').textContent = row ? 'Done. ' + who + ' has your request for the ' + c.model + ' and will call you to take a deposit and arrange collection.' : 'That did not reach ' + who + ' just now. Tap WhatsApp below so nothing is missed.';
@@ -716,7 +735,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   function showBuys() { var el = $('#buyList'); el.innerHTML = '<p class="ct-sub">Loading...</p>';
     store.buyRequests().then(function (l) {
       el.innerHTML = l.map(function (b) { var c = b.customers || {}, buy = b.type === 'buy';
-        var what = buy ? esc(b.car_model || '') + (b.car_reg && !/^NEW-/.test(b.car_reg) ? ' <span class="ct-pill">' + esc(b.car_reg) + '</span>' : '') + (b.car_price ? ' · ' + esc(b.car_price) : '')
+        var what = buy ? esc(b.car_model || '') + (b.car_reg && /^NEW\d/.test(b.car_reg) ? ' <span class="ct-pill">Order ' + esc(b.car_reg.slice(3)) + '</span>' : b.car_reg && !/^NEW-/.test(b.car_reg) ? ' <span class="ct-pill">' + esc(b.car_reg) + '</span>' : '') + (b.car_price ? ' · ' + esc(b.car_price) : '')
           : 'Sent ' + (b.cars || []).length + ' matches: ' + esc((b.cars || []).map(function (x) { return x.model + (x.kind === 'new' ? ' (new)' : ' ' + x.reg); }).join(', '));
         return '<div class="ct-c' + (b.status === 'new' ? ' ct-buy-new' : '') + '"><h3>' + esc(c.name || 'Customer') + ' <span class="ct-pill' + (buy ? ' hot' : '') + '">' + (buy ? 'Buy this car' : 'Matches') + '</span></h3><p>' + what + '</p>' +
           '<p>' + esc(new Date(b.created_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })) + (b.status === 'called' && b.called_at ? ' · Called ' + esc(new Date(b.called_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })) : '') + '</p>' +
