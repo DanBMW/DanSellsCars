@@ -266,10 +266,22 @@
     $$('[data-demo]').forEach(function (b) { b.addEventListener('click', function () {
       store.signIn(b.getAttribute('data-demo'), $('#siEmail').value.trim()).then(afterSignIn); track('sign_in', { method: 'demo', role: b.getAttribute('data-demo') }); }); });
   }
+  /* email and password, forgot password and Google (behind GOOGLE_LOGIN_ENABLED), next to the email link and code */
+  function mountPw() { var box = $('#pwBox'); if (!box || !window.AuthUI) return; box.hidden = false;
+    window.AuthUI.mount($('#pwMount'), { sb: sb, cfg: CFG, redirect: APP_URL, code: false, autofocus: false, track: function (n) { track(n); },
+      onDone: function () { store.session().then(function (sess) { if (sess && !S.session) afterSignIn(sess); }); } }); }
+  function showRecover() { var o = document.createElement('div'); o.className = 'ct-sheet'; o.id = 'recoverSheet'; o.innerHTML = '<div class="ct-sheet-in"><h2>Pick a new password</h2><div id="recoverMount"></div></div>'; document.body.appendChild(o);
+    window.AuthUI.recover($('#recoverMount'), { sb: sb, onDone: function () { setTimeout(function () { o.remove(); }, 900); toast('Password saved'); } }); }
+  /* answers from the Revvy chat, waiting for a sign in that finished in the app (email link, confirm link or Google) */
+  function chatPending(sess) { if (!LIVE || !sess || sess.role !== 'customer' || !window.ChatProfile || !window.ChatProfile.pending()) return Promise.resolve();
+    var ans = null; try { ans = JSON.parse(localStorage.getItem('sd_chat_answers_v1') || 'null'); } catch (e) {}
+    if (!ans) return Promise.resolve();
+    return window.ChatProfile.save(sb, sbUser, ans).then(function () { track('chat_saved_to_profile', { where: 'app' }); try { ans._saved = sess.email || 'yes'; localStorage.setItem('sd_chat_answers_v1', JSON.stringify(ans)); } catch (e) {} toast('Your chat answers are saved to your profile'); })
+      .catch(function (e) { console.warn('chat save', e); }); }
   function afterSignIn(sess) {
     S.session = sess; if (!sess) { route(); return; }
     var staff = sess.role !== 'customer';
-    return store.customers().then(function (list) {
+    return chatPending(sess).then(function () { return store.customers(); }).then(function (list) {
       if (!staff) S.cust = list[0] || null;
       else { var last = sessionStorage.getItem('ctActing'); S.cust = list.find(function (c) { return c.id === last; }) || null; }
       return loadCust();
@@ -449,7 +461,7 @@
       '<div class="ct-meta">' + (isNew ? '<span class="ct-plate ct-plate-new">NEW</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
       x.reasons.map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
-  function showDeck() { if (!S.deck.length) buildDeck(); drawDeck(); }
+  function showDeck() { if (!S.deck.length) buildDeck(); drawDeck(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
   function drawDeck() {
     var deck = $('#deck'); deck.innerHTML = '';
     var top = S.deck.slice(0, 3);
@@ -468,13 +480,13 @@
     var like = $('.ct-stamp-like', el), nope = $('.ct-stamp-nope', el), sup = $('.ct-stamp-super', el), tread = treadTrail(el);
     function set() { el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + dx * 0.06 + 'deg)'; like.style.opacity = Math.max(0, Math.min(1, dx / 100)); nope.style.opacity = Math.max(0, Math.min(1, -dx / 100));
       sup.style.opacity = Math.max(0, Math.min(1, (-dy / 0.4 - Math.abs(dx)) / 160)); tread.draw(dx, dy); el.classList.toggle('is-go', dx > 40); el.classList.toggle('is-stop', dx < -40); }
-    el.addEventListener('pointerdown', function (e) { down = true; sx = e.clientX; sy = e.clientY; t0 = lastT = performance.now(); lastX = e.clientX; el.style.transition = 'none'; el.setPointerCapture(e.pointerId); el.style.cursor = 'grabbing'; });
+    /* the whole card drags, including the text: no native text drag or selection gets in the way */
+    el.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    el.addEventListener('pointerdown', function (e) { if (e.button > 0) return; down = true; dx = dy = 0; sx = e.clientX; sy = e.clientY; t0 = lastT = performance.now(); lastX = e.clientX; el.style.transition = 'none'; try { el.setPointerCapture(e.pointerId); } catch (er) {} el.style.cursor = 'grabbing'; if (e.pointerType === 'mouse') e.preventDefault(); });
     el.addEventListener('pointermove', function (e) { if (!down) return; dx = e.clientX - sx; dy = (e.clientY - sy) * 0.4; var now = performance.now(); vx = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now; set(); });
     function up() { if (!down) return; down = false; el.style.cursor = '';
-      if (Math.abs(dx) < 6 && Math.abs(dy) < 6 && performance.now() - t0 < 300) { dx = dy = 0; set();
-        var ph = $('.ct-ph', el), rb = ph && ph.getBoundingClientRect();
-        if (rb && sy < rb.bottom && photos(x.car).length > 1) { stepPhoto(el, x.car, sx < rb.left + rb.width / 2 ? -1 : 1); return; }
-        openSheet(x); return; }
+      /* a short tap with little movement anywhere on the photo or the info opens the details; anything more is a drag */
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 4 && performance.now() - t0 < 500) { dx = dy = 0; set(); openSheet(x); return; }
       if (-dy / 0.4 > 150 && Math.abs(dx) < 90) { fling(el, x, 2, 0); return; }
       if (dx > 110 || (vx > 0.6 && dx > 45)) fling(el, x, 1, vx); else if (dx < -110 || (vx < -0.6 && dx < -45)) fling(el, x, -1, vx);
       else { el.style.transition = 'transform .45s cubic-bezier(.2,1.5,.4,1)'; dx = dy = 0; set(); like.style.opacity = nope.style.opacity = sup.style.opacity = 0; tread.clear(); el.classList.remove('is-go', 'is-stop'); } }
@@ -524,6 +536,7 @@
       if (++t < 150 && !$('#matchModal').hidden) requestAnimationFrame(f); else ctx.clearRect(0, 0, W, H); })();
   }
   function openSheet(x) {
+    S.sheetAt = Date.now();
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     var imgs = photos(c);
     var specs = isNew ? [['Range', c.group]] : [['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
@@ -574,6 +587,40 @@
   document.addEventListener('error', function (e) { if (e.target.classList && e.target.classList.contains('ct-ph-img')) photoState(e.target, false); }, true);
   /* photos already in the cache can finish before the listener sees them */
   function settlePhotos(root) { $$('.ct-ph-img', root).forEach(function (im) { if (im.complete) photoState(im, im.naturalWidth > 0); }); }
+  /* In the open details, a clearly sideways drag still says no or yes and moves on to the next car.
+     Up and down stays a normal scroll (touch-action: pan-y), and the photo strip keeps its own sideways scroll. */
+  function sheetSwipe() { var p = $('#sheet .ct-sheet-in'), sx = 0, sy = 0, dx = 0, on = false, horiz = null, id = null;
+    p.addEventListener('pointerdown', function (e) { if (e.button > 0 || e.target.closest('.ct-gal,a,button,input,textarea,select')) return; on = true; horiz = null; dx = 0; sx = e.clientX; sy = e.clientY; id = e.pointerId; });
+    p.addEventListener('pointermove', function (e) { if (!on || e.pointerId !== id) return; var mx = e.clientX - sx, my = e.clientY - sy;
+      if (horiz === null && (Math.abs(mx) > 12 || Math.abs(my) > 12)) { horiz = Math.abs(mx) > Math.abs(my) * 1.6; if (horiz) { try { p.setPointerCapture(id); } catch (er) {} p.style.transition = 'none'; } else on = false; }
+      if (horiz) { dx = mx; p.style.transform = 'translateX(' + dx + 'px) rotate(' + dx * 0.02 + 'deg)'; p.classList.toggle('is-go', dx > 50); p.classList.toggle('is-stop', dx < -50); e.preventDefault(); } });
+    function end() { if (!on) return; on = false; if (!horiz) return; p.style.transition = 'transform .3s ease'; p.classList.remove('is-go', 'is-stop');
+      if (Math.abs(dx) > 90) { var dir = dx > 0 ? 1 : -1; p.style.transform = 'translateX(' + dir * 120 + '%)';
+        setTimeout(function () { $('#sheet').hidden = true; p.style.transition = 'none'; p.style.transform = ''; var t = topCard(); if (t && t._fling) t._fling(dir); track('sheet_swipe', { dir: dir }); }, 220); }
+      else p.style.transform = ''; }
+    p.addEventListener('pointerup', end); p.addEventListener('pointercancel', function () { if (on && horiz) end(); on = false; }); }
+  /* first visit tutorial over a demo card: like, pass, tap for details, swipe in details. Once per device, replay from How it works. */
+  var TUT = 'sd_discover_tutorial_v1';
+  function initTutorial() { var link = document.createElement('button'); link.type = 'button'; link.className = 'ct-howto'; link.id = 'howTo'; link.textContent = 'How it works';
+    link.addEventListener('click', function () { showTutorial(true); }); var acts = $('#deckActions'); acts.parentNode.insertBefore(link, acts.nextSibling); }
+  function maybeTutorial() { var seen = null; try { seen = localStorage.getItem(TUT); } catch (e) {} if (!seen && !$('#deck').hidden) showTutorial(false); }
+  function showTutorial(replay) { if ($('#tut')) return; var rm = reduced(), o = document.createElement('div'); o.className = 'ct-tut' + (rm ? ' is-static' : ''); o.id = 'tut';
+    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'How Swipe Drive works');
+    var STEPS = [['like', 'Swipe right on a car you like'], ['pass', 'Swipe left to pass'], ['tap', 'Tap the card for all the details'], ['info', 'Still swipe in the details to decide']];
+    var demo = '<div class="tut-card"><div class="tut-ph"><span>BMW X3</span></div><div class="tut-meta"><b>BMW X3 xDrive20d</b><i></i><i class="s"></i></div><em class="tut-st tut-yes">TEST DRIVE</em><em class="tut-st tut-no">PASS</em></div>' +
+      '<div class="tut-sheet"><div class="tut-ph"></div><b>Full details</b><i></i><i></i><i class="s"></i></div><div class="tut-hand" aria-hidden="true"><svg viewBox="0 0 48 48" width="54" height="54"><path d="M19 6a3 3 0 0 1 6 0v15l2-1a3 3 0 0 1 4 1l1 1a3 3 0 0 1 4 1l1 1a3 3 0 0 1 4 2v8c0 7-5 12-12 12h-2c-4 0-7-2-9-5l-7-10a3 3 0 0 1 5-3l3 3z" fill="#f4f1ea" stroke="#0a0c0f" stroke-width="1.6"/></svg></div>';
+    o.innerHTML = '<div class="ct-tut-in"><button class="ct-tut-skip" type="button">Skip</button>' +
+      (rm ? '<h2>How it works</h2><ol class="tut-list">' + STEPS.map(function (s) { return '<li class="tut-' + s[0] + '"><span class="tut-ico"></span>' + esc(s[1]) + '</li>'; }).join('') + '</ol>'
+          : '<div class="tut-stage" data-step="0">' + demo + '</div><p class="tut-cap" aria-live="polite">' + esc(STEPS[0][1]) + '</p><div class="tut-dots">' + STEPS.map(function () { return '<i></i>'; }).join('') + '</div>') +
+      '<button class="ct-btn tut-go" type="button">Got it</button></div>';
+    document.body.appendChild(o); var timers = [];
+    function close() { timers.forEach(clearTimeout); try { localStorage.setItem(TUT, String(Date.now())); } catch (e) {} o.remove(); track('tutorial_' + (done ? 'done' : 'skipped'), { replay: !!replay }); }
+    var done = false; $('.ct-tut-skip', o).addEventListener('click', close); $('.tut-go', o).addEventListener('click', function () { done = true; close(); });
+    o.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    if (!rm) { var st = $('.tut-stage', o), cap = $('.tut-cap', o), dots = $$('.tut-dots i', o);
+      STEPS.forEach(function (s, k) { timers.push(setTimeout(function () { st.setAttribute('data-step', k); st.className = 'tut-stage s-' + s[0]; void st.offsetWidth; cap.textContent = s[1]; dots.forEach(function (d, j) { d.className = j === k ? 'on' : ''; }); }, k * 2600)); });
+      timers.push(setTimeout(function () { done = true; $('.tut-go', o).focus(); }, STEPS.length * 2600)); }
+    try { $('.tut-go', o).focus({ preventScroll: true }); } catch (e) {} track('tutorial_shown', { replay: !!replay, reduced: rm }); }
   function topCard() { return $('#deck .ct-card:last-child'); }
   var OVERLAYS = ['#sheet', '#matchModal', '#buyModal', '#iosGuide'];
   function openOverlays() { return OVERLAYS.map(function (s) { return $(s); }).filter(function (el) { return el && !el.hidden; }); }
@@ -592,7 +639,9 @@
     ['#btnLike', '#btnPass', '#btnSuper'].forEach(function (s) { $(s).addEventListener('click', function (e) { if (openOverlays().length) e.stopImmediatePropagation(); }, true); });
     $('#deck').addEventListener('pointerdown', function (e) { if (openOverlays().length) e.stopPropagation(); }, true);
     $$('[data-close]').forEach(function (b) { b.addEventListener('click', function () { closeOverlay(b.closest('.ct-sheet,.ct-match,.ct-ios')); }); });
-    $('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') e.target.hidden = true; });
+    /* the click that follows the opening tap must not land on the backdrop and close it straight away */
+    $('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet' && Date.now() - (S.sheetAt || 0) > 450) e.target.hidden = true; });
+    sheetSwipe(); initTutorial();
   }
 
   /* ---------------- matches ---------------- */
@@ -852,7 +901,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   initSignin(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites(); initBuys();
   var dl = platform.deepLink();
   (LIVE ? supa.init() : Promise.resolve())
-    .then(function () { if (LIVE) sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_IN' && !S.session) store.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); return loadStock(); })
+    .then(function () { if (LIVE) { mountPw(); sb.auth.onAuthStateChange(function (ev) { if (ev === 'PASSWORD_RECOVERY') showRecover(); if (ev === 'SIGNED_IN' && !S.session) store.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); } return loadStock(); })
     .then(function () {
       try { var prev = JSON.parse(localStorage.getItem('ctSeenRegs') || 'null'); S.fresh = {}; if (prev) { var ps = {}; prev.forEach(function (r) { ps[r] = 1; }); S.cars.forEach(function (c) { if (!ps[c.reg]) S.fresh[c.reg] = 1; }); }
         localStorage.setItem('ctSeenRegs', JSON.stringify(S.cars.map(function (c) { return c.reg; }))); } catch (e) {}

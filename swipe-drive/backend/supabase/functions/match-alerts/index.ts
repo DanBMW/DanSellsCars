@@ -6,11 +6,13 @@
 //  4. sends ONE digest email per staff recipient (customer email behind CUSTOMER_EMAIL_ENABLED, default off),
 //  5. sends due "you may be able to change your car" reminders (purchase + 33 months),
 //  6. records everything in notifications_sent / purchases.reminder_sent_at so nothing repeats.
-// Secrets live only here: SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE, RESEND_API_KEY, CRON_SECRET.
+// Secrets live only here: SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE, RESEND_API_KEY, CRON_SECRET, UNSUBSCRIBE_SECRET.
+// Every email carries a visible unsubscribe button plus List-Unsubscribe and List-Unsubscribe-Post (one click).
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
 import { renderDigest } from './digest.js';
 import { renderReminder } from './reminder.js';
+import { signUnsub } from '../_shared/unsub.js';
 (globalThis as any).window = globalThis;
 const SITE = 'https://dan-sells.co.uk';
 // The hosted edge runtime cannot import remote URLs at run time (worker failed to boot), so fetch the live
@@ -22,7 +24,8 @@ const M = (globalThis as any).ctMatch;
 (globalThis as any).ctDetails = await fetch(SITE + '/automation/car-details.json').then(r => r.json()).catch(() => null);  // equipment for spec picks
 const env = (k: string) => Deno.env.get(k) || '';
 const APP = SITE + '/swipe-drive/';
-const CUSTOMER_EMAIL_ENABLED = env('CUSTOMER_EMAIL_ENABLED') === 'true';
+// customer emails also need UNSUBSCRIBE_SECRET, so a customer never gets an email without a working signed unsubscribe link
+const CUSTOMER_EMAIL_ENABLED = env('CUSTOMER_EMAIL_ENABLED') === 'true' && env('UNSUBSCRIBE_SECRET').length >= 16;
 const STAFF_EMAIL_ENABLED = !!(env('RESEND_API_KEY') && env('MAIL_FROM'));
 const BROKER = 'Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender.';
 
@@ -42,12 +45,15 @@ Deno.serve(async (req) => {
 async function run() {
   const db = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
   webpush.setVapidDetails('mailto:' + (env('VAPID_CONTACT') || 'dan@dan-sells.co.uk'), env('VAPID_PUBLIC'), env('VAPID_PRIVATE'));
-  const unsubUrl = (tok: string) => `${env('SUPABASE_URL')}/functions/v1/unsubscribe?t=${tok}`;
   const out: any = { pushed: 0, emailed: 0, reminders: 0 };
 
   const { data: profiles } = await db.from('profiles').select('*');
   const byId = new Map((profiles || []).map((p: any) => [p.id, p]));
   const admin = (profiles || []).find((p: any) => p.role === 'admin');
+  // signed per recipient token when UNSUBSCRIBE_SECRET is set, otherwise the stored uuid token (staff only, see CUSTOMER_EMAIL_ENABLED)
+  const U = new Map<string, string>();
+  for (const p of profiles || []) U.set(p.id, `${env('SUPABASE_URL')}/functions/v1/unsubscribe?t=` + encodeURIComponent(env('UNSUBSCRIBE_SECRET') ? await signUnsub(env('UNSUBSCRIBE_SECRET'), p.id) : p.unsubscribe_token));
+  const unsub = (p: any) => U.get(p.id) || '';
   const { data: subs } = await db.from('push_subscriptions').select('*');
   async function push(uid: string, payload: any) {
     let n = 0;
@@ -112,11 +118,11 @@ async function run() {
       const p = byId.get(pid); const staff = p.role !== 'customer';
       // Staff WhatsApp CTA goes to the customer's phone in the staff digest
       if (staff) for (const it of items) { const cu = (customers || []).find((c: any) => c.id === it.customer_id); if (cu && cu.phone) it.wa = 'https://wa.me/' + String(cu.phone).replace(/\D/g, '').replace(/^0/, '44') + '?text=' + encodeURIComponent(`Hi ${cu.name || ''}, a car just came in that matches what you are after: ${it.car.model}, reg ${it.car.reg}. Want the details?`); }
-      const msg = renderDigest({ toName: p.name, staff, items, matchesUrl: APP + (staff ? '#team' : '#matches'), unsubUrl: unsubUrl(p.unsubscribe_token), brokerText: BROKER });
-      if (await sendEmail(p.email, msg, unsubUrl(p.unsubscribe_token))) {
+      const msg = renderDigest({ toName: p.name, staff, items, matchesUrl: APP + (staff ? '#team' : '#matches'), unsubUrl: unsub(p), staffNote: staff, brokerText: BROKER });
+      if (await sendEmail(p.email, msg, unsub(p))) {
         // Dan also gets a copy of matches for colleagues' customers who are due to change
         if (admin && pid !== admin.id) { const due = items.filter((it: any) => /due to change/.test(it.customerName));
-          if (due.length) await sendEmail(admin.email, renderDigest({ toName: admin.name, staff: true, items: due, matchesUrl: APP + '#team', unsubUrl: unsubUrl(admin.unsubscribe_token), brokerText: BROKER }), unsubUrl(admin.unsubscribe_token)); }
+          if (due.length) await sendEmail(admin.email, renderDigest({ toName: admin.name, staff: true, items: due, matchesUrl: APP + '#team', unsubUrl: unsub(admin), brokerText: BROKER }), unsub(admin)); }
         out.emailed++; await db.from('notifications_sent').insert(items.map((it: any) => ({ recipient: pid, customer_id: it.customer_id, reg: it.car.reg, channel: 'email' })));
       }
     }
@@ -133,8 +139,8 @@ async function run() {
     const cp = cu.user_id && byId.get(cu.user_id);
     if (cp && cp.notify_push) any = (await push(cp.id, r.push)) > 0 || any;
     const to = owner || admin;
-    if (to && STAFF_EMAIL_ENABLED) any = (await sendEmail(to.email, r.staffEmail, unsubUrl(to.unsubscribe_token))) || any;
-    if (admin && to && to.id !== admin.id && STAFF_EMAIL_ENABLED) await sendEmail(admin.email, r.staffEmail, unsubUrl(admin.unsubscribe_token));
+    if (to && STAFF_EMAIL_ENABLED) any = (await sendEmail(to.email, r.staffEmail, unsub(to))) || any;
+    if (admin && to && to.id !== admin.id && STAFF_EMAIL_ENABLED) await sendEmail(admin.email, r.staffEmail, unsub(admin));
     if (any) { out.reminders++; await db.from('purchases').update({ reminder_sent_at: new Date().toISOString() }).eq('id', pu.id); }
   }
   return Response.json(out);

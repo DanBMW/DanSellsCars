@@ -30,6 +30,9 @@ MILES = [("45k", "45,000"), ("forty five thousand", "45,000"), ("about 30,000", 
 ANNUAL_T = [("12000", "12,000"), ("about 10k", "10,000"), ("200 a week", "10,400"), ("eight thousand", "8,000")]
 WHEN_T = ["next month", "in 2 weeks", "march", "asap", "after christmas", "few months"]
 PHONES = [("07700 900123", "07700900123"), ("+44 7700 900123", "07700900123"), ("07700900456", "07700900456")]
+NOCARS = ["no car", "I don't have one", "none", "first car", "dont have a car at the moment", "not got one", "this will be my first car"]
+KIT = ["Head up display", "Leather or synthetic leather seats", "Pro pack", "Comfort access", "Panoramic roof", "Electric seats", "Heated seats", "Heated steering wheel", "M Sport package", "Harman Kardon sound", "360 parking camera", "Adaptive cruise control", "Driving assistant", "Towbar", "7 seats", "Larger alloys", "Electric tailgate", "Wireless charging", "Ambient lighting", "Plug in hybrid or electric"]
+COLOURS = ['Alpine White', 'Black Sapphire', 'Brooklyn Grey', 'Portimao Blue', 'Fire Red', 'Skyscraper Grey']
 LONG = "I have been thinking about this for ages and honestly " * 12
 
 class Fail(Exception): pass
@@ -121,7 +124,8 @@ async def run_one(b, n, rng):
         elif q == 'cur':
             await maybe_bad(q, ['banana', 'hmm', LONG[:300]])
             r = rng.random()
-            if r < 0.25: await tap('No current car', q); exp['cur'] = 'No current car'
+            if r < 0.15: await tap('No current car', q); exp['cur'] = 'No current car'
+            elif r < 0.35: await typ(rng.choice(NOCARS), q); exp['cur'] = 'No current car'
             else: i, e = rng.choice(CURS); await typ(i, q); exp['cur'] = e
         elif q == 'reg':
             await maybe_bad(q, ['hello there mate', '???'])
@@ -141,6 +145,7 @@ async def run_one(b, n, rng):
             if rng.random() < 0.3: await tap(rng.choice(['Paid off', 'Not sure']), q)
             else: i, e = rng.choice(MONEY_GOOD); await typ(i, q); exp['settle'] = e
         elif q == 'curMonthly':
+            if exp.get('cur') == 'No current car': raise Fail('asked current monthly with no car')
             if rng.random() < 0.3: await tap(rng.choice(['None', 'Not sure']), q)
             else: i, e = rng.choice(MONTHLY); await typ(i, q); exp['curMonthly'] = e
         elif q == 'annual':
@@ -165,30 +170,31 @@ async def run_one(b, n, rng):
             if rng.random() < 0.3: await tap(rng.choice(['None', 'Not sure']), q)
             else: i, e = rng.choice(DEP); await typ(i, q); exp['dep'] = e
         elif q == 'colour':
-            c = rng.choice(['Alpine White', 'Black Sapphire', 'Brooklyn Grey', 'Portimao Blue', 'Fire Red', 'Skyscraper Grey', 'Any colour'])
-            await idle(); await pg.locator('#tray .swatch', has_text=c).click(); await asyncio.sleep(0.1); await idle(); exp['colour'] = c
+            await idle()
+            if rng.random() < 0.15: cs = ['Any colour']
+            else: cs = rng.sample(COLOURS, rng.randint(1, 4))
+            for c in cs: await pg.locator('#tray .swatch', has_text=c).click()
+            if rng.random() < 0.3 and len(cs) > 1:
+                await pg.locator('#tray .swatch', has_text=cs[-1]).click(); cs = cs[:-1]
+            await pg.locator('#tray button.go', has_text='Done').click(); await asyncio.sleep(0.1); await idle(); exp['colour'] = ', '.join(cs)
+            got = await pg.evaluate('SDChat.answers().colour')
+            if got != exp['colour']: raise Fail(f'colour {got} vs {exp["colour"]}')
         elif q == 'specs':
-            await idle(); must, like = [], []; total = rng.choice([3, 6, 20])
-            for k in range(total):
-                name = await pg.text_content('.dcard b'); a = rng.choice(['L', 'R', 'U', 'D', 'bno', 'blike', 'bmust'])
-                if a == 'L': await drag(-170, 0)
-                elif a == 'R': await drag(170, 0); like.append(name)
-                elif a == 'U': await drag(0, -170); must.append(name)
-                elif a == 'D': await pg.locator('.dcard').dblclick(); await asyncio.sleep(0.9); must.append(name)
-                else:
-                    await pg.locator('#tray .dbtns button', has_text={'bno': 'No', 'blike': 'Would like', 'bmust': 'Must have'}[a]).first.click(); await asyncio.sleep(0.9)
-                    if a == 'blike': like.append(name)
-                    if a == 'bmust': must.append(name)
-                if k < 19:
-                    nxt = await pg.text_content('.dcard b')
-                    if nxt == name: raise Fail(f'card did not advance on {a} for {name}')
-            if total < 20: await tap("That's enough kit", q)
-            else: await idle()
+            await idle(); st = {}
+            names = await pg.eval_on_selector_all('#tray .ktile b', 'e=>e.map(x=>x.textContent)')
+            if names != KIT: raise Fail(f'kit order {names[:6]}')
+            for k in rng.sample(range(20), rng.choice([0, 3, 8, 20])):
+                taps = rng.randint(1, 4)
+                for t in range(taps): await pg.locator('#tray .ktile').nth(k).click()
+                v = ['', 'like', 'must', ''][taps % 3] if taps < 4 else 'like'
+                tag = (await pg.locator('#tray .ktile').nth(k).get_attribute('data-s')) or ''
+                if tag != v: raise Fail(f'tile {KIT[k]} {taps} taps state {tag} expected {v}')
+                st[KIT[k]] = v
+            await pg.locator('#tray button.kdone').click(); await asyncio.sleep(0.1); await idle()
+            must = [x for x in KIT if st.get(x) == 'must']; like = [x for x in KIT if st.get(x) == 'like']
+            want = 'Must have: ' + (', '.join(must) or 'none') + '. Would like: ' + (', '.join(like) or 'none') + '.'
             got = await pg.evaluate('SDChat.answers().specs')
-            for x in must:
-                if x not in got.split('Would like')[0]: raise Fail(f'must {x} missing in {got}')
-            for x in like:
-                if x not in got.split('Would like')[1]: raise Fail(f'like {x} missing in {got}')
+            if got != want: raise Fail(f'specs {got} vs {want}')
         elif q == 'when':
             await maybe_bad(q, ['potato', 'blue'])
             if rng.random() < 0.5: await tap(rng.choice(['ASAP', 'Next month', 'In 3 months', 'Just looking']), q)
@@ -217,6 +223,12 @@ async def run_one(b, n, rng):
         if exp.get(k): need(exp[k])
     if exp.get('pay'): need('Paying by: ' + exp['pay'])
     if exp.get('colour'): need('Colour: ' + exp['colour'])
+    if exp.get('cur') == 'No current car':
+        for bad in ('Current monthly', 'Reg:', 'Mileage:', 'Finance settlement', 'Condition:'):
+            if bad in txt: raise Fail(f'no car but WA has {bad}')
+    if re.search(r'\n[^\n]+: *(\n|$)', txt): raise Fail('empty line in WA ' + txt)
+    for lab in ('Save my answers', 'No thanks'):
+        if not await pg.locator('#tray .chip', has_text=lab).count(): raise Fail('no end offer ' + lab)
     if exp.get('phone'): need('Mobile: ' + exp['phone'])
     if 'base' in exp:
         f = lambda v: '£' + format(v, ',')
@@ -256,20 +268,52 @@ async def targeted(b):
         await typ('paid off'); await typ('£300'); await pg.locator('#tray button', has_text='Under 6k').click(); await idle()
         await pg.locator('#tray button', has_text='Cash').click(); await idle()
         await pg.locator('#tray button', has_text="That's me").click(); await idle(); await pg.locator('#tray button', has_text="That's me").click(); await idle()
-        await pg.locator('#tray .swatch', has_text='Fire Red').click(); await idle()
-        names = [await pg.text_content('.dcard b')]
-        for k in range(6): await pg.locator('#tray .dbtns button', has_text='Would like').first.click(delay=0)
-        await asyncio.sleep(4.5)
-        cnt = await pg.text_content('.dcount'); assert cnt.startswith('7 of'), f'rapid taps lost answers, now at {cnt}'
-        for k in range(3): await pg.locator('#tray .dbtns button', has_text='Must have').first.click(delay=0)
-        await pg.locator('#tray .dbtns button', has_text="That's enough kit").click(); await idle()
-        sp = (await ans())['specs']; m, l = sp.split('Would like')
-        assert m.count(',') == 2 and l.count(',') == 5, f'rapid tap totals wrong: {sp}'
+        for c in ('Fire Red', 'Alpine White', 'Portimao Blue'): await pg.locator('#tray .swatch', has_text=c).click()
+        assert await pg.locator('#tray .swatch.on').count() == 3
+        await pg.locator('#tray .swatch', has_text='Any colour').click(); assert await pg.locator('#tray .swatch.on').count() == 1, 'any colour not exclusive'
+        await pg.locator('#tray .swatch', has_text='Fire Red').click(); await pg.locator('#tray .swatch', has_text='Alpine White').click()
+        assert await pg.locator('#tray .swatch.on').count() == 2, 'any colour not cleared'
+        await pg.locator('#tray button.go', has_text='Done').click(); await idle()
+        assert (await ans())['colour'] == 'Fire Red, Alpine White', (await ans())['colour']
+        t0 = pg.locator('#tray .ktile').nth(0)
+        assert await pg.locator('#tray .klegend').count() == 1, 'no legend'
+        await t0.click(); assert await t0.get_attribute('data-s') == 'like' and 'Would like' in await t0.text_content()
+        await t0.click(); assert await t0.get_attribute('data-s') == 'must' and 'Must have' in await t0.text_content()
+        await t0.click(); assert (await t0.get_attribute('data-s')) == '', 'third tap did not clear'
+        for k in range(6): await pg.locator('#tray .ktile').nth(k).click(delay=0)
+        for k in range(3): await pg.locator('#tray .ktile').nth(k).click(delay=0)
+        bg = await pg.evaluate("[getComputedStyle(document.querySelectorAll('.ktile')[0]).backgroundColor,getComputedStyle(document.querySelectorAll('.ktile')[4]).backgroundColor,getComputedStyle(document.querySelectorAll('.ktile')[9]).backgroundColor]")
+        assert len(set(bg)) == 3, f'states not distinct colours {bg}'
+        await pg.locator('#tray button.kdone').click(); await idle()
+        sp = (await ans())['specs']; assert sp == 'Must have: Head up display, Leather or synthetic leather seats, Pro pack. Would like: Comfort access, Panoramic roof, Electric seats.', sp
         await idle(); await typ('asap'); await typ('01234567890'); assert await cur() == 'phone', 'landline accepted'
         last = await pg.evaluate('[...document.querySelectorAll(".msg.bot")].pop().textContent'); assert '07' in last, last
         await typ('07700 900123'); assert await cur() == 'end'
         href = await pg.get_attribute('#tray a.cta', 'href'); txt = urllib.parse.unquote(href)
         assert 'Condition: Not rated' in txt and 'not rated,' not in txt, txt
+        assert 'Colour: Fire Red, Alpine White' in txt, txt
+        assert await pg.locator('#tray a.cta').is_visible()
+        await pg.locator('#tray .chip', has_text='No thanks').click(); await idle()
+        assert await pg.locator('#tray a.cta').is_visible(), 'WhatsApp gone after skipping sign in'
+        # no car path: fresh start
+        await pg.evaluate('localStorage.clear()'); await pg.goto(BASE + 'index.html?fast'); await idle()
+        await typ('Sam'); await typ('x3'); await pg.locator('#tray button', has_text='Done').click(); await idle()
+        await typ("I don't have one"); assert await cur() == 'annual', 'no car still asked ' + await cur()
+        a = await ans(); assert a['cur'] == 'No current car' and 'curMonthly' not in a and 'reg' not in a
+        await pg.locator('#tray button', has_text='6k to 10k').click(); await idle()
+        await pg.locator('#tray button', has_text='Monthly finance').click(); await idle()
+        await pg.locator('#tray button', has_text="That's me").click(); await idle(); await pg.locator('#tray button', has_text="That's me").click(); await idle()
+        await typ('none'); await pg.locator('#tray .swatch', has_text='Black Sapphire').click(); await pg.locator('#tray button.go', has_text='Done').click(); await idle()
+        await pg.locator('#tray button.kdone').click(); await idle(); await typ('asap'); await typ('07700 900123'); assert await cur() == 'end'
+        txt = urllib.parse.unquote(await pg.get_attribute('#tray a.cta', 'href'))
+        assert 'Current car: No current car' in txt and 'Current monthly' not in txt and 'Mileage' not in txt, txt
+        await pg.locator('#tray .chip', has_text='Save my answers').click()
+        await pg.wait_for_selector('#authbox .au input[name=au_email]', timeout=20000)
+        assert await pg.locator('#authbox .au-tabs button').count() == 3 and await pg.locator('#authbox .au-link', has_text='Forgot password').count() == 1
+        assert await pg.locator('#authbox .au-g').count() == 0, 'Google shown while flag is off'
+        assert await pg.locator('#tray a.cta').is_visible(), 'WhatsApp hidden behind sign in'
+        assert await pg.evaluate("localStorage.getItem('sd_chat_pending_save_v1')") == '1'
+
         assert not errs, errs; out.append(dev); await ctx.close()
     return out
 

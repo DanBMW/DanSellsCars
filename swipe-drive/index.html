@@ -57,6 +57,7 @@
       <label class="ct-f"><span>Or type the 6 digit code from the email</span><input id="siCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]*" placeholder="123456"></label>
       <button class="ct-btn ct-btn-ghost" type="submit">Sign in with code</button></div>
     </form>
+    <div class="ct-pw" id="pwBox" hidden><p class="ct-alt-t">Or sign in with a password</p><div id="pwMount"></div></div>
     <div class="ct-panel ct-alt-start"><p class="ct-alt-t">Rather not sign in yet? Tell Dan what you're after:</p><a class="ct-btn ct-btn-ghost" href="chat/">Chat with Dan's assistant</a><a class="ct-btn ct-btn-ghost" href="chat/quick.html">Quick 60 second version</a></div>
     <p class="ct-legal ct-signin-legal"><a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a></p>
   </section>
@@ -260,6 +261,8 @@
 <div class="ct-toast" id="toast" role="status" hidden></div>
 
 <script src="config.js"></script>
+<script src="auth-ui.js"></script>
+<script src="chat/profile-save.js"></script>
 <script src="../stock-core.js"></script>
 <script src="match-core.js"></script>
 <script src="../disclaimer.js" defer></script>

@@ -4,6 +4,9 @@ var MODELS=["1 Series","2 Series","2 Series Gran Coupe","2 Series Active Tourer"
 var OTHER_MAKES=["audi","mercedes","merc","vw","volkswagen","ford","vauxhall","toyota","nissan","kia","hyundai","tesla","volvo","skoda","seat","peugeot","renault","honda","mazda","lexus","jaguar","land rover","range rover","porsche","fiat","citroen","mini","polestar","cupra","mg","byd","dacia","suzuki","jeep"];
 var PROF=/\b(f+u+c+k+|sh[i1]t|c+u+n+t|bollocks|wank|twat|prick|bastard|piss off|arse|dick)\w*/i;
 var OFFTOPIC=/\b(weather|football|pizza|recipe|joke|who are you|are you (a )?(bot|robot|ai|real)|what time|bitcoin|crypto|politics|lottery|homework|song|movie|film)\b/i;
+var NOCAR=/^(no|nope|nah|none|nothing|n\/a|na)$|\b(no (current |existing )?car|no car (at the moment|right now|currently)|(don'?t|do not|dont) (have|own|drive|run)( a| one| any)?( car| one)?|(haven'?t|have not|havent) (got )?(a |one|any)( car)?|not got (a |one|any)( car)?|no(t)? (one|vehicle) (at the moment|currently|right now)|without a car|no motor|first car|my first|never (had|owned) (a |one)|between cars|sold (it|my car)|car ?less)\b/i;
+function noCar(s){s=String(s||"").trim();if(!NOCAR.test(s))return false;if(/^no (current |existing )?car\b/i.test(s))return true;
+ if(/\b(19|20)\d{2}\b/.test(s)||new RegExp("\\b("+OTHER_MAKES.join("|")+"|bmw)\\b","i").test(s)||/\b([1-8] ?series|x[1-7]|i[3-7]|ix\d?|z4|m[2-8])\b/i.test(s))return false;return true}
 var UNSURE=/^(not sure|unsure|dunno|don'?t know|idk|no idea|maybe|not really sure|no clue|pass|rather not say|prefer not to say|skip)\b/i;
 function lev(a,b){a=a.toLowerCase();b=b.toLowerCase();var m=[],i,j;for(i=0;i<=b.length;i++)m[i]=[i];for(j=0;j<=a.length;j++)m[0][j]=j;for(i=1;i<=b.length;i++)for(j=1;j<=a.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[j-1]==b[i-1]?0:1));return m[b.length][a.length]}
 function gibberish(s){var t=s.toLowerCase().replace(/[^a-z]/g,"");if(!t)return false;
@@ -48,7 +51,7 @@ var V={
   if(mk)return {ok:0,why:"othermake",hint:mk};return {ok:0,why:"model"}},
  anycar:function(s){if(new RegExp("\\b("+OTHER_MAKES.join("|")+")\\b","i").test(s))return {ok:1,val:s.trim()};var r=V.model(s);if(r.ok)return {ok:1,val:/\b(19|20)\d{2}\b|diesel|petrol|hybrid|electric|touring|auto|manual|\bbmw\b/i.test(s)?s.trim():r.val};if(r.why=="othermake")return {ok:1,val:s.trim()};
   if(/\b(19|20)\d{2}\b|\b\d\.\d\b|\b(diesel|petrol|hybrid|electric|estate|hatch|saloon|suv|coupe)\b/i.test(s))return {ok:1,val:s.trim()};
-  if(/^(none|nothing|no car|don'?t have one|no)$/i.test(s.trim()))return {ok:1,val:"No current car"};return {ok:0,why:"car"}},
+  if(noCar(s))return {ok:1,val:"No current car"};return {ok:0,why:"car"}},
  reg:function(s){var t=s.toUpperCase().replace(/\s+/g,"");
   if(/^[A-Z]{2}\d{2}[A-Z]{3}$/.test(t)||/^[A-Z]\d{1,3}[A-Z]{3}$/.test(t)||/^[A-Z]{3}\d{1,3}[A-Z]$/.test(t)||/^[A-Z]{1,3}\d{1,4}$/.test(t)||/^\d{1,4}[A-Z]{1,3}$/.test(t))return {ok:1,val:t.length==7?t.slice(0,4)+" "+t.slice(4):t};return {ok:0,why:"reg"}},
  miles:function(s){if(/^(low|not many|hardly any)/i.test(s))return {ok:1,val:"Low, not sure exactly"};var v=money(s);if(v==null)return {ok:0,why:"num"};if(v<1||v>400000)return {ok:0,why:"range",lo:"1",hi:"400,000"};return {ok:1,val:v.toLocaleString("en-GB")+" miles"}},
@@ -67,6 +70,7 @@ function check(q,raw){var s=(raw||"").trim();
  if(!s)return {ok:0,why:"empty"};
  if(PROF.test(s))return {ok:0,why:"rude"};
  if(OFFTOPIC.test(s))return {ok:0,why:"offtopic"};
+ if(q.type=="anycar"&&noCar(s))return {ok:1,val:"No current car"};
  if(UNSURE.test(s)){var L0=(q.choices||q.chips||[]).map(function(c){return Array.isArray(c)?c[0]:c}).filter(function(c){return /^not sure/i.test(c)})[0];if(q.optional!==false)return {ok:1,val:L0||(q.type=="model"?"Not sure yet":"Not sure"),unsure:1};return {ok:0,why:"need"}}
  if(/\?$/.test(s)&&!/^(y|n)/i.test(s))return {ok:0,why:"question"};
  if(gibberish(s)&&q.type!="reg"&&q.type!="postcode")return {ok:0,why:"gibberish"};
@@ -82,6 +86,6 @@ var KEY="sd_chat_answers_v1";
 function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
 function clear(){try{localStorage.removeItem(KEY)}catch(e){}}
-function waLink(ans,qs,intro){var lines=[intro||"Hi Dan, I started Swipe Drive. Here's what I've got so far:"];qs.forEach(function(q){if(ans[q.id]==null||q.stretchOf)return;var v=ans[q.id],st=qs.filter(function(z){return z.stretchOf==q.id})[0],f=function(n){return "£"+n.toLocaleString("en-GB")};if(st&&ans["_n_"+st.id]!=null&&ans["_n_"+q.id]!=null){v=ans["_n_"+st.id]>ans["_n_"+q.id]?f(ans["_n_"+q.id])+" to "+f(ans["_n_"+st.id])+(st.id=="stretch"?" a month":"")+" (normal, then stretch for the perfect car)":v+" (no stretch)"}lines.push(q.short+": "+v)});if(ans._notes&&ans._notes.length)lines.push("Questions for Dan: "+ans._notes.join(" / "));return "https://wa.me/447827138197?text="+encodeURIComponent(lines.join("\n"))}
-g.Onboard={V:V,MODELS:MODELS,check:check,reply:reply,save:save,load:load,clear:clear,waLink:waLink,lev:lev};
+function waLink(ans,qs,intro){var lines=[intro||"Hi Dan, I started Swipe Drive. Here's what I've got so far:"];qs.forEach(function(q){if(ans[q.id]==null||String(ans[q.id]).trim()===""||q.stretchOf||(q.skipIf&&q.skipIf(ans)))return;var v=ans[q.id],st=qs.filter(function(z){return z.stretchOf==q.id})[0],f=function(n){return "£"+n.toLocaleString("en-GB")};if(st&&ans["_n_"+st.id]!=null&&ans["_n_"+q.id]!=null){v=ans["_n_"+st.id]>ans["_n_"+q.id]?f(ans["_n_"+q.id])+" to "+f(ans["_n_"+st.id])+(st.id=="stretch"?" a month":"")+" (normal, then stretch for the perfect car)":v+" (no stretch)"}lines.push(q.short+": "+v)});if(ans._notes&&ans._notes.length)lines.push("Questions for Dan: "+ans._notes.join(" / "));return "https://wa.me/447827138197?text="+encodeURIComponent(lines.join("\n"))}
+g.Onboard={V:V,MODELS:MODELS,check:check,reply:reply,save:save,load:load,clear:clear,waLink:waLink,lev:lev,noCar:noCar};
 })(typeof window!="undefined"?window:globalThis);

@@ -9,5 +9,6 @@ window.CT_CONFIG = {
   VAPID_PUBLIC_KEY: 'BG1p5oUrGPbG5ZKSXbQXlZnGhtq-cPu3bBP7Vwg9YCrkTAAgAKS8b0hthElXCohNPgaxwwhAEjxnxdhrzMoxUUo',
   CUSTOMER_EMAIL_ENABLED: false, // customer match emails on hold: customers get push only
   FORMSPREE: 'https://formspree.io/f/xqewleog',
-  DAN_WA: '447827138197'
+  DAN_WA: '447827138197',
+  GOOGLE_LOGIN_ENABLED: false // turn on once the Google provider is set up in Supabase (see backend/GOOGLE-SIGN-IN.md)
 };

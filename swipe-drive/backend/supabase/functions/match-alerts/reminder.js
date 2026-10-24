@@ -1,4 +1,5 @@
-/* "You may be able to change your car" reminder, purchase date + 33 months.
+/* Staff only email (goes to the owning colleague or Dan, never the customer), so the List-Unsubscribe headers
+   from index.ts are enough and no customer unsubscribe footer is needed. "You may be able to change your car" reminder, purchase date + 33 months.
    No promises about equity or offers, no claims about what any cover includes. */
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 export const INSURANCE_LABELS = { gap: 'GAP insurance', tyre_alloy: 'Tyre and alloy insurance', cosmetic: 'Cosmetic repair insurance', warranty: 'Warranty', other: 'Other cover' };

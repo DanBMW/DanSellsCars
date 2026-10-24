@@ -39,10 +39,10 @@ function react(q,v,A){v=String(v||"");if(q.id=="name")return null;if(/^(Skipped|
  case "stretch":case "stretchCash":return pick(["Good to know. Dan will always start with your normal budget.","That just helps Dan know what is possible. No pressure."]);
  case "specs":var mh=(v.match(/Must have: ([^.]*)\./)||[])[1];return mh&&mh!="none"?"Must haves noted, Dan will keep those front of mind.":"Lovely, nice and flexible.";
  case "dep":return "Thanks.";
- case "colour":return COL[v]||"Nice choice.";
+ case "colour":if(v.indexOf(",")>0)return "Lovely, "+v.split(",").length+" colours noted. More choice means more cars to pick from.";return COL[v]||"Nice choice.";
  case "when":if(/asap|now|today|this week/i.test(v))return "Pedal to the metal, I like it! 🏎️";if(/just looking/i.test(v))return "Browsing is fine, no pressure at all.";return "Lovely, plenty of time to find the right one.";
  case "phone":return "Perfect, Dan will only use that about your car.";
  }return null}
-function typing(log,ms,cb){var t=document.createElement("div");t.className="msg bot typing";t.setAttribute("aria-label","Revvy is typing");t.innerHTML="<i></i><i></i><i></i>";log.appendChild(t);t.scrollIntoView({block:"end"});setTimeout(function(){t.remove();cb()},ms)}
+function typing(log,ms,cb){var t=document.createElement("div");t.className="msg bot typing";t.setAttribute("aria-label","Revvy is typing");t.innerHTML="<i></i><i></i><i></i>";log.appendChild(t);g.SDStick&&g.SDStick();setTimeout(function(){t.remove();cb()},ms)}
 g.Revvy={smalltalk:smalltalk,react:react,typing:typing,name:"Revvy"};
 })(window);
