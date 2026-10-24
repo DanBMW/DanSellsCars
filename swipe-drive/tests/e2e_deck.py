@@ -94,6 +94,17 @@ async def deck_suite(b, mobile):
     if SHOTS and not mobile: await pg.screenshot(path=os.path.join(SHOTS, 'deck-desktop-1280.png'))
     await ctx.close()
 
+async def deeplink_suite(b):
+    ctx, pg, errs = await setup(b, True)
+    reg = await pg.evaluate("ctDebug.S.deck[7].car.reg"); first = await top_reg(pg)
+    await pg.goto(BASE + '?reg=' + reg + '&src=alert'); await pg.wait_for_selector('#deck .ct-card'); await pg.wait_for_timeout(600)
+    ok(await top_reg(pg) == reg and reg != first, f'push link ?reg={reg} opens the deck on that car')
+    await pg.goto(BASE + '?reg=' + reg.lower()[:4] + ' ' + reg.lower()[4:] + '&src=alert'); await pg.wait_for_selector('#deck .ct-card'); await pg.wait_for_timeout(600)
+    ok(await top_reg(pg) == reg, 'lower case reg with a space still finds it')
+    await pg.goto(BASE + '?reg=ZZ99ZZZ'); await pg.wait_for_selector('#deck .ct-card'); await pg.wait_for_timeout(600)
+    ok(await top_reg(pg) == first, 'an unknown or sold reg just shows the normal deck')
+    ok(not errs, f'deep link no page errors {errs[:2]}'); await ctx.close()
+
 async def tutorial_suite(b):
     ctx, pg, errs = await setup(b, True, tut_seen=False)
     await pg.wait_for_selector('#tut', timeout=5000); ok(True, 'tutorial shows on first Discover visit')
@@ -118,7 +129,7 @@ async def tutorial_suite(b):
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(channel='chrome')
-        await deck_suite(b, True); await deck_suite(b, False); await tutorial_suite(b)
+        await deck_suite(b, True); await deck_suite(b, False); await deeplink_suite(b); await tutorial_suite(b)
         await b.close()
     n = sum(1 for c, _ in res if c); print(f'\nRESULT deck {n}/{len(res)} passed'); sys.exit(0 if n == len(res) else 1)
 asyncio.run(main())

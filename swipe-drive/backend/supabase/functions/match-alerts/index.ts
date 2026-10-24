@@ -13,6 +13,8 @@ import webpush from 'npm:web-push@3.6.7';
 import { renderDigest } from './digest.js';
 import { renderReminder } from './reminder.js';
 import { signUnsub } from '../_shared/unsub.js';
+import { fetchAll } from '../_shared/paginate.js';
+import { pushUrl } from '../_shared/links.js';
 (globalThis as any).window = globalThis;
 const SITE = 'https://dan-sells.co.uk';
 // The hosted edge runtime cannot import remote URLs at run time (worker failed to boot), so fetch the live
@@ -47,14 +49,14 @@ async function run() {
   webpush.setVapidDetails('mailto:' + (env('VAPID_CONTACT') || 'dan@dan-sells.co.uk'), env('VAPID_PUBLIC'), env('VAPID_PRIVATE'));
   const out: any = { pushed: 0, emailed: 0, reminders: 0 };
 
-  const { data: profiles } = await db.from('profiles').select('*');
+  const profiles = await fetchAll(db, 'profiles', '*', 'id');
   const byId = new Map((profiles || []).map((p: any) => [p.id, p]));
   const admin = (profiles || []).find((p: any) => p.role === 'admin');
   // signed per recipient token when UNSUBSCRIBE_SECRET is set, otherwise the stored uuid token (staff only, see CUSTOMER_EMAIL_ENABLED)
   const U = new Map<string, string>();
   for (const p of profiles || []) U.set(p.id, `${env('SUPABASE_URL')}/functions/v1/unsubscribe?t=` + encodeURIComponent(env('UNSUBSCRIBE_SECRET') ? await signUnsub(env('UNSUBSCRIBE_SECRET'), p.id) : p.unsubscribe_token));
   const unsub = (p: any) => U.get(p.id) || '';
-  const { data: subs } = await db.from('push_subscriptions').select('*');
+  const subs = await fetchAll(db, 'push_subscriptions', '*', 'id');
   async function push(uid: string, payload: any) {
     let n = 0;
     for (const s of (subs || []).filter((s: any) => s.user_id === uid)) {
@@ -70,7 +72,7 @@ async function run() {
   // new cars in retailer stock (lookup/new-stock.json), keyed NEW<order number>; in budget only on the actual current price
   let newCars: any[] = [];
   try { const ns = await (await fetch(SITE + '/lookup/new-stock.json', { cache: 'no-store' })).json(); newCars = (ns.cars || []).filter((c: any) => c.order_number).map(M.fromNewStock); } catch (_) { newCars = []; }
-  const { data: seen } = await db.from('stock_seen').select('reg');
+  const seen = await fetchAll(db, 'stock_seen', 'reg', 'reg');   // paged: a plain select stops at 1000 rows
   const seenSet = new Set((seen || []).map((r: any) => r.reg));
   const newSeeded = [...seenSet].some((r: any) => String(r).startsWith('NEW'));
   const fresh = (seenSet.size ? cars.filter(c => !seenSet.has(c.reg)) : [])      // first run only seeds
@@ -85,9 +87,9 @@ async function run() {
   out.reactivated = (back || []).length;
 
   if (fresh.length) {
-    const { data: all } = await db.from('customers').select('*');
+    const all = await fetchAll(db, 'customers', '*', 'id');
     const customers = (all || []).filter((c: any) => !c.dealt_at);   // dealt customers are paused
-    const { data: sent } = await db.from('notifications_sent').select('recipient,customer_id,reg,channel');
+    const sent = await fetchAll(db, 'notifications_sent', 'recipient,customer_id,reg,channel', ['recipient', 'customer_id', 'reg', 'channel']);
     const done = new Set((sent || []).map((s: any) => [s.recipient, s.customer_id, s.reg, s.channel].join('|')));
     const digest = new Map<string, any[]>();     // recipient -> items
     for (const cu of customers || []) {
@@ -104,7 +106,7 @@ async function run() {
         if (p.notify_push && items.length) {
           const c = items[0].car;
           const n = await push(p.id, { title: staff ? `New match for ${cu.name || 'a customer'}` : (items.length > 1 ? `${items.length} new matches for you` : 'New match for you'),
-            body: `${c.model}${c.year ? ', ' + c.year : ''}`, url: APP + '#matches', image: c.image || '' });
+            body: `${c.model}${c.year ? ', ' + c.year : ''}`, url: pushUrl(APP, items), image: c.image || '' });
           if (n) { out.pushed += n; await db.from('notifications_sent').insert(items.map((h: any) => ({ recipient: p.id, customer_id: cu.id, reg: h.car.reg, channel: 'push' }))); }
         }
         const emailOk = staff ? STAFF_EMAIL_ENABLED : (CUSTOMER_EMAIL_ENABLED && STAFF_EMAIL_ENABLED && p.notify_email);
@@ -118,7 +120,7 @@ async function run() {
       const p = byId.get(pid); const staff = p.role !== 'customer';
       // Staff WhatsApp CTA goes to the customer's phone in the staff digest
       if (staff) for (const it of items) { const cu = (customers || []).find((c: any) => c.id === it.customer_id); if (cu && cu.phone) it.wa = 'https://wa.me/' + String(cu.phone).replace(/\D/g, '').replace(/^0/, '44') + '?text=' + encodeURIComponent(`Hi ${cu.name || ''}, a car just came in that matches what you are after: ${it.car.model}, reg ${it.car.reg}. Want the details?`); }
-      const msg = renderDigest({ toName: p.name, staff, items, matchesUrl: APP + (staff ? '#team' : '#matches'), unsubUrl: unsub(p), staffNote: staff, brokerText: BROKER });
+      const msg = renderDigest({ toName: p.name, staff, items, matchesUrl: APP + (staff ? '#team' : '#matches'), unsubUrl: unsub(p), brokerText: BROKER });
       if (await sendEmail(p.email, msg, unsub(p))) {
         // Dan also gets a copy of matches for colleagues' customers who are due to change
         if (admin && pid !== admin.id) { const due = items.filter((it: any) => /due to change/.test(it.customerName));
