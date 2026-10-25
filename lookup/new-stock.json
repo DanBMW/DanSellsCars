@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-24T16:11:38.000Z",
+ "generated_at": "2026-10-25T06:03:57.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
  "count": 70,
@@ -480,8 +480,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -2903,8 +2903,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 4,
-   "lead_time_weeks_max": 6,
+   "lead_time_weeks_min": 3,
+   "lead_time_weeks_max": 5,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
@@ -2985,8 +2985,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 7,
-   "lead_time_weeks_max": 9,
+   "lead_time_weeks_min": 6,
+   "lead_time_weeks_max": 8,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
