@@ -5,6 +5,13 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const escH = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const clean = (s) => String(s == null ? '' : s).replace(/[\u2013\u2014]/g, ',').replace(/ - /g, ', ');
 
+/* Send the daily line only when something changed (new cars or alerts sent) or the run carried a problem.
+   A quiet run sends nothing. Failures go through failureMessage and always send. */
+export function shouldSendHealth(out) {
+  const o = out || {};
+  return (o.fresh || 0) > 0 || (o.pushed || 0) > 0 || (o.emailed || 0) > 0 || (o.reminders || 0) > 0 || (o.warnings || []).length > 0;
+}
+
 export function healthMessage(out, when = new Date()) {
   const o = out || {}, warn = (o.warnings || []).map(clean);
   const line = `${plural(o.fresh || 0, 'fresh car', 'fresh cars')}, ${o.pushed || 0} pushed, ${o.emailed || 0} emailed`;

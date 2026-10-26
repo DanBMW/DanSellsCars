@@ -6,7 +6,7 @@
 //  4. sends ONE digest email per staff recipient (customer email behind CUSTOMER_EMAIL_ENABLED, default off),
 //  5. sends due "you may be able to change your car" reminders (purchase + 33 months),
 //  6. records everything in notifications_sent / purchases.reminder_sent_at so nothing repeats.
-//  7. emails Dan a one line health summary after every run, and an alert if it fails (DAN_NOTIFY_EMAIL),
+//  7. emails Dan a one line health summary when a run sends or finds something, and an alert if it fails (DAN_NOTIFY_EMAIL),
 //     under a run lock (take_job_lock) so two overlapping runs cannot double send.
 // Secrets live only here: SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE, RESEND_API_KEY, CRON_SECRET, UNSUBSCRIBE_SECRET, DAN_NOTIFY_EMAIL.
 // Every email carries a visible unsubscribe button plus List-Unsubscribe and List-Unsubscribe-Post (one click).
@@ -17,7 +17,7 @@ import { renderReminder } from './reminder.js';
 import { signUnsub } from '../_shared/unsub.js';
 import { fetchAll } from '../_shared/paginate.js';
 import { pushUrl } from '../_shared/links.js';
-import { healthMessage, failureMessage, sendDan } from '../_shared/health.js';
+import { healthMessage, failureMessage, sendDan, shouldSendHealth } from '../_shared/health.js';
 (globalThis as any).window = globalThis;
 const SITE = 'https://dan-sells.co.uk';
 // The hosted edge runtime cannot import remote URLs at run time (worker failed to boot), so fetch the live
@@ -66,7 +66,8 @@ Deno.serve(async (req) => {
     out.stage = 'loading match rules'; await init();
     await run(db, out);
     out.stage = 'done';
-    const h = await sendDan(env, healthMessage(out)); out.health_email = h.ok ? 'sent' : h.reason;
+    if (shouldSendHealth(out)) { const h = await sendDan(env, healthMessage(out)); out.health_email = h.ok ? 'sent' : h.reason; }
+    else out.health_email = 'skipped, nothing changed';
     const { stage: _s, ...body } = out;
     return Response.json(body);
   } catch (e: any) {
