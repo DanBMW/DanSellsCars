@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-26T12:58:48.003Z",
+  "captured": "2026-10-26T14:02:34.707Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -149,7 +149,7 @@
       "appraisedAt": "2026-10-23T09:58:58.947Z",
       "make": "BMW",
       "model": "1 Series",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s---1-Uyiqm--/c_fill,h_300,w_300/v1792749584/Live/Appraisals/9596790/c0d0b722-0d64-4748-9533-6639f235773c.jpg"
@@ -189,7 +189,7 @@
       "appraisedAt": "2026-10-22T14:55:14.683Z",
       "make": "TOYOTA",
       "model": "Aygo X",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--7BF7-XYo--/c_fill,h_300,w_300/v1792680927/Live/Appraisals/9595774/ad738884-ffba-4802-b6d3-fb7d3546f632.jpg"
@@ -219,7 +219,7 @@
       "appraisedAt": "2026-10-22T10:59:44.358Z",
       "make": "TOYOTA",
       "model": "AYGO",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Average",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--i2PJWm4p--/c_fill,h_300,w_300/v1792666807/Live/Appraisals/9594983/e2cf1605-be7b-4b62-b00b-017ff31e8fa9.jpg"
