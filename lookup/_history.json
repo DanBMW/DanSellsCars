@@ -82,7 +82,7 @@
  "EA24ONR": {
   "first_seen": "2026-10-09",
   "last_seen": "2026-10-26",
-  "removed_at": null
+  "removed_at": "2026-10-26"
  },
  "EA26ZDV": {
   "first_seen": "2026-10-07",
@@ -309,6 +309,11 @@
   "last_seen": "2026-10-17",
   "removed_at": "2026-10-17"
  },
+ "KM23TLF": {
+  "first_seen": "2026-10-26",
+  "last_seen": "2026-10-26",
+  "removed_at": null
+ },
  "KP72CCK": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-26",
@@ -512,7 +517,7 @@
  "LM25ZNA": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-26",
-  "removed_at": null
+  "removed_at": "2026-10-26"
  },
  "LM26BBX": {
   "first_seen": "2026-10-07",
