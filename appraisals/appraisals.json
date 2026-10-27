@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-27T08:02:16.889Z",
+  "captured": "2026-10-27T10:03:09.024Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "DK70JTY",
+      "appraisedAt": "2026-10-27T09:47:27.724Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--wVaKIJ46--/c_fill,h_300,w_300/v1793094449/Live/Appraisals/9604589/d195c8e9-9076-4542-97a1-a039ef960f18.png"
+    },
+    {
+      "registration": "YG25EJV",
+      "appraisedAt": "2026-10-27T09:23:14.359Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--s3zRSAZG--/c_fill,h_300,w_300/v1793093050/Live/Appraisals/9604534/50cc76ba-0385-401c-95c4-4ed80daf0b11.jpg"
+    },
+    {
+      "registration": "LV15WNZ",
+      "appraisedAt": "2026-10-27T09:08:26.449Z",
+      "make": "BMW",
+      "model": "5 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--xhAye4eP--/c_fill,h_300,w_300/v1793092108/Live/Appraisals/9604503/c3ec04fb-54ba-406a-8039-91bc31659221.png"
+    },
     {
       "registration": "M400KES",
       "appraisedAt": "2026-10-26T17:26:29.695Z",
