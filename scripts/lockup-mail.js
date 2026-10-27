@@ -28,6 +28,8 @@ const DRY = !!process.env.DRY_RUN;
    TEST_MGR, and subjects start [TEST]. Real lockup/ is not touched. */
 const TEST_EXEC = 'daniel.cane@hedinautomotive.co.uk', TEST_MGR = 'nathan.jobson@hedinautomotive.co.uk';
 let ROOT = 'lockup', TEST = false;
+/* Lockup completed emails only for records signed after this went live (27 Oct 2026, 09:05 UK). */
+const COMPLETED_FROM = Date.parse('2026-10-27T09:05:00Z');
 
 async function main() {
   const admin = require('firebase-admin');
@@ -132,6 +134,28 @@ async function main() {
     if (!DRY) await db.ref((paths[id] || ROOT + '/notify/' + id) + '/sent').set(Date.now());
   }
 
+  /* Lockup completed: one email to the managers for each signed record, with
+     the checklist (done and not done) and the signature images attached inline.
+     Checks today and yesterday (late sign offs), marked under
+     mail/<date>/signed/<recordId> so each record is only sent once. */
+  {
+    const mgrTo = TEST ? [TEST_MGR] : Object.values(cfg.managers || {}).map(m => m.email).filter(Boolean);
+    for (const d of [R.addDays(n.date, -1), n.date]) {
+      const rs = (await db.ref(ROOT + '/records/' + d).get()).val() || {};
+      const sentMarks = ((await db.ref(ROOT + '/mail/' + d + '/signed').get()).val()) || {};
+      for (const rid of Object.keys(rs)) {
+        if (sentMarks[rid]) continue;
+        if (!(rs[rid].ts >= COMPLETED_FROM)) continue; /* signed before this email existed */
+        if (!mgrTo.length) { console.log('Lockup completed email waiting, no manager emails set'); break; }
+        const m = completedMail(rs[rid], rid, d);
+        console.log((DRY ? '[dry] ' : '') + 'Send "' + m.subject + '" to ' + mgrTo.join(', '));
+        if (DRY) { console.log(m.text); continue; }
+        await transport().sendMail({ from: { name: process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to: mgrTo, subject: m.subject, text: m.text, html: m.html, attachments: m.attachments });
+        await db.ref(ROOT + '/mail/' + d + '/signed/' + rid).set({ ts: Date.now(), to: mgrTo.join(', ') });
+      }
+    }
+  }
+
   const on = R.onFor(n.date, weeks[n.week], hol);
   if (on.kind === 'closed') { console.log('Closed today'); return done(admin); }
 
@@ -224,7 +248,41 @@ async function mark(db, date, kind, to) {
   if (DRY) return;
   await db.ref(ROOT + '/mail/' + date + '/' + kind).set({ ts: Date.now(), to: to.join(', ') });
 }
+/* Builds the "Lockup completed" email for one record. Exported for the preview test. */
+function completedMail(r, rid, date) {
+  const tm = ts => new Date(ts).toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' });
+  const dt = new Date(date + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'Europe/London', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const items = Object.values(r.items || {});
+  const done = items.filter(i => i.done), notDone = items.filter(i => !i.done);
+  const line = i => i.label + (i.at ? ' (' + tm(i.at) + (i.byName ? ', ' + i.byName : '') + ')' : '') + (i.note ? ': ' + i.note : '') + (i.photo ? ' [photo on record]' : '');
+  const by = r.presentNames || r.signedByName || '';
+  const subject = (TEST ? '[TEST] ' : '') + 'Lockup completed, ' + dt;
+  const att = [], sigs = [];
+  const addSig = (data, who, cid) => { const m = /^data:image\/png;base64,(.+)$/.exec(data || ''); if (!m) return; att.push({ filename: 'signature-' + cid + '.png', content: Buffer.from(m[1], 'base64'), contentType: 'image/png', cid: cid + '@lockup' }); sigs.push({ who, cid: cid + '@lockup' }); };
+  addSig(r.signature, r.signedByName, 'sig1');
+  addSig(r.signature2, r.signature2By, 'sig2');
+  const head = 'Lockup was completed by ' + by + ' at ' + (r.ts ? tm(r.ts) : 'unknown time') + ' on ' + dt + '.';
+  const extra = [];
+  if (r.signedByName && r.presentNames && r.presentNames !== r.signedByName) extra.push('Signed by ' + r.signedByName + '.');
+  if (r.coveringFor) extra.push('Covering for ' + (r.rosteredNames || r.coveringFor) + '.');
+  if (r.late) extra.push('Signed after the usual time.');
+  const text = ['Hi all,', '', head, ...extra, '', 'Done (' + done.length + ' of ' + items.length + '):', ...done.map(i => '  * ' + line(i)),
+    ...(notDone.length ? ['', 'Not done (' + notDone.length + '):', ...notDone.map(i => '  * ' + line(i))] : []),
+    '', 'Signature attached.', 'Record ' + rid + ': ' + SITE, '', 'Hedin BMW Ruxley lockup'].join('\n');
+  const li = (i, ok) => '<li style="margin:5px 0;list-style:none"><span style="color:' + (ok ? '#1f8a4c' : '#c0392b') + ';font-weight:800">' + (ok ? '&#10003;' : '&#10007;') + '</span> ' + esc(line(i)) + '</li>';
+  const html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+    '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">&#128273; ' + esc(subject) + '</div>' +
+    '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px"><p style="margin:0 0 12px">Hi all,</p>' +
+    '<p style="margin:0 0 10px">' + esc(head) + '</p>' + extra.map(e => '<p style="margin:0 0 10px">' + esc(e) + '</p>').join('') +
+    '<p style="margin:14px 0 4px;font-weight:800">Done (' + done.length + ' of ' + items.length + ')</p><ul style="padding-left:4px;margin:0 0 10px">' + done.map(i => li(i, true)).join('') + '</ul>' +
+    (notDone.length ? '<p style="margin:14px 0 4px;font-weight:800;color:#c0392b">Not done (' + notDone.length + ')</p><ul style="padding-left:4px;margin:0 0 10px">' + notDone.map(i => li(i, false)).join('') + '</ul>' : '') +
+    sigs.map(g => '<p style="color:#6b7a8c;font-size:13px;margin:14px 0 6px">Signature, ' + esc(g.who || '') + '</p><img src="cid:' + g.cid + '" alt="Signature" style="max-width:100%;border:1px solid #d9e3ee;border-radius:10px;background:#fff">').join('') +
+    '<a href="' + SITE + '" style="display:block;margin-top:18px;text-align:center;background:#4d94d8;color:#fff;text-decoration:none;font-weight:800;padding:14px;border-radius:12px;font-size:17px">See the record</a>' +
+    '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley lockup</p></div></div>';
+  return { subject, text, html, attachments: att };
+}
 function done(admin) { return admin.app().delete(); }
 
 /* Forecourt 08:30 reminder rides on the same workflow run (scripts/forecourt-mail.js). */
-main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });
+if (require.main === module) main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });
+module.exports = { completedMail };
