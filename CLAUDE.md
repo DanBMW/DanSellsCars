@@ -309,18 +309,33 @@ pin the clock, which is what this file is for.
 
 An **AI generated** video explaining the Fully Protected Package, added
 9 October 2026 in the protection section of `current-opportunities.html`,
-between the five element opener and the product list. 1080x1920 portrait,
-1m45s, **19.4MB** at 1.5 Mbps, H.264 and AAC.
+between the five element opener and the product list. **Replaced 27 October
+2026** at Dan's request with a longer, better made version: 832x1504 portrait
+(26:47, not a flat 9:16), **2m51s**, **22.8MB** at about 1.06 Mbps, H.264 and
+AAC. It has chapter cards for each of the five elements (Tyre and Alloy
+Insurance, Asset Protection, Williams Racing Ceramic Coating, Extended
+Warranty and the rest), no burnt in subtitles, and no watermark.
 
-- **The caption says so, and must keep saying so** (Dan, 9 October). The clip
-  carries a "Video Created with AI" watermark in its own top right corner, and
-  the caption under it read "Filmed on my phone, so it is the same explanation
-  you would get across the desk" - which the watermark contradicted in front of
-  the customer. It now reads "This video is AI generated. The explanation is
-  the same one you would get from me across the desk", which is both halves of
-  the truth: the words are Dan's, the pictures are not a recording of him. Do
-  not quietly drop that first sentence, and do not reinstate any claim that it
-  was filmed.
+- **The caption says it is AI generated, and must keep saying so** (Dan,
+  9 October). The original clip carried a "Video Created with AI" watermark in
+  its own top right corner, and the caption under it read "Filmed on my phone,
+  so it is the same explanation you would get across the desk" - which the
+  watermark contradicted in front of the customer. It now reads "This video is
+  AI generated. The explanation is the same one you would get from me across
+  the desk", which is both halves of the truth: the words are Dan's, the
+  pictures are not a recording of him. Do not quietly drop that first
+  sentence, and do not reinstate any claim that it was filmed.
+- **That sentence carries MORE weight since the replacement, not less.** The
+  new clip has no watermark, so the caption is now the only thing on the page
+  telling a customer, and the footage is good enough to pass for filmed: it is
+  unmistakably Dan, in the Ruxley showroom, in his own Hedin polo, and nothing
+  in the file's metadata says otherwise (encoder reads `Lavf63.1.101`, which is
+  only ffmpeg). It was checked frame by frame rather than taken on trust, and
+  it is generated: the Hedin wordmark on the polo is illegible and changes
+  shape shot to shot, and at about 2m25s in the workshop an arm melts into a
+  white box whose edges smear. If a later version ever is a real recording of
+  Dan, change the caption deliberately and say so here; do not assume either
+  way from the absence of a watermark.
 
 - **`preload="none"` is load bearing.** Nineteen megabytes on a public page
   that most visitors will not watch, on a phone, on their own data: the
@@ -342,18 +357,22 @@ between the five element opener and the product list. 1080x1920 portrait,
   `.wb [hidden]` on `which-bmw.html`), so check for it whenever a script
   hides something by the `hidden` property on an element the CSS gives a
   `display` to.
-- **The file must be written faststart, and the first one was not.** Dan
-  reported on 9 October that it would not play on his phone: "it just goes
-  black". The MP4 had `ftyp`, then a 20MB `mdat`, then `moov` at the very end,
-  so a phone could not begin until it had hunted the index down at the far end
-  of the file, over mobile data, after a `preload="none"` element had already
-  revealed itself as a black rectangle. It is now remuxed
-  `-movflags +faststart`: stream copy, so not a pixel changed. Verified rather
-  than assumed: `moov` moved to offset 32, the `mdat` payload is byte
-  identical by SHA-256, and all 6,320 chunk offsets shifted by exactly 140,818
-  and each one still lands on identical bytes. **Anything that ever replaces
-  this file has to be written faststart too**, and `python3` four lines of box
-  walking is enough to check.
+- **The file must be written faststart, and neither of them arrived that
+  way.** Dan reported on 9 October that the first one would not play on his
+  phone: "it just goes black". The MP4 had `ftyp`, then a 20MB `mdat`, then
+  `moov` at the very end, so a phone could not begin until it had hunted the
+  index down at the far end of the file, over mobile data, after a
+  `preload="none"` element had already revealed itself as a black rectangle.
+  **The 27 October replacement had exactly the same fault** - `moov` after a
+  22MB `mdat` - which is the argument for checking every time rather than
+  hoping. Both were remuxed `-movflags +faststart`: stream copy, so not a
+  pixel changed. Verified rather than assumed, both times: `moov` moved to
+  offset 32, the `mdat` payload is byte identical by SHA-256, and every chunk
+  offset shifted by exactly the size of the moved `moov` and still lands on
+  identical bytes (6,320 offsets by 140,818 in October; 8,208 by 119,947 on
+  the replacement). **Anything that ever replaces this file has to be written
+  faststart too**, and `python3` four lines of box walking is enough to
+  check.
 - **No `load()` before `play()`.** The click handler called `vid.load()` first.
   It was never needed (with `preload="none"` it is `play()` that starts the
   fetch) and it is actively harmful: `load()` resets the element and restarts
@@ -361,8 +380,10 @@ between the five element opener and the product list. 1080x1920 portrait,
   that has not finished choosing its source, which is one of the ways iOS
   stops counting the user gesture. That was the second half of the black
   screen.
-- **There IS a poster**, `fully-protected-poster.jpg`, a real frame half a
-  second in, 660x1174 and 51KB. The note that used to sit here said one could
+- **There IS a poster**, `fully-protected-poster.jpg`, a real frame from the
+  clip, 660x1194 and 51KB. It is taken at **68.5s**, not half a second in:
+  the replacement opens on a near black title card, and a poster of that is
+  precisely the black rectangle a poster exists to avoid. The note that used to sit here said one could
   not be made because this sandbox's Chromium has no H.264 decoder
   (`canPlayType` is empty, `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`) and there was
   no ffmpeg. The decoder part is still true and irrelevant: **ffmpeg is at
@@ -370,8 +391,11 @@ between the five element opener and the product list. 1080x1920 portrait,
   tool at hand is not a limit of the problem, and it was recorded as one for a
   day. 51KB fetched on load is the right trade: without it the press reveals a
   black rectangle while the first bytes arrive.
-- **The frame is 9/16 and capped at 330px wide**, because a vertical phone
-  video in a full width box is a tower on a desktop screen.
+- **The frame takes the clip's own ratio and is capped at 330px wide**,
+  because a vertical phone video in a full width box is a tower on a desktop
+  screen. It is `aspect-ratio:26/47` rather than a flat `9/16`: 832/1504 is
+  0.553 against 0.5625, and with `object-fit:cover` the difference is about
+  1.7% cropped off the top and bottom for nothing. Change it with the file.
 - **The reveal order matters for iOS**: the video is un-hidden *before*
   `play()` is called (a hidden video cannot start) and `play()` runs inside
   the click itself, not after an await. A refused play leaves the controls up
@@ -381,7 +405,12 @@ between the five element opener and the product list. 1080x1920 portrait,
   decode H.264, and `window.scrollTo` does not move this page, so a screenshot
   has to use `captureBeyondViewport` with the clip set to the element's own
   offset, and `.reveal` elements need `.in` added by hand first or the capture
-  comes back as an empty dark rectangle.
+  comes back as an empty dark rectangle. **ffmpeg is not in the container
+  either**, whatever an older note here said about `/usr/bin/ffmpeg`:
+  `pip install imageio-ffmpeg` fetches a full 7.x build and is what the
+  27 October remux, the poster and the frame by frame check were done with.
+  Playwright's own `/opt/pw-browsers/ffmpeg-1011` is built
+  `--disable-everything` and cannot even open an MP4.
 
 ### "Fresh in" - automation/stock-arrivals.json
 
