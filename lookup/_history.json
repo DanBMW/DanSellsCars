@@ -499,6 +499,11 @@
   "last_seen": "2026-10-27",
   "removed_at": null
  },
+ "LL72CCX": {
+  "first_seen": "2026-10-27",
+  "last_seen": "2026-10-27",
+  "removed_at": null
+ },
  "LL75UZB": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-27",
@@ -1752,7 +1757,7 @@
  "YB24LVF": {
   "first_seen": "2026-10-17",
   "last_seen": "2026-10-27",
-  "removed_at": null
+  "removed_at": "2026-10-27"
  },
  "YB24LYK": {
   "first_seen": "2026-10-17",
