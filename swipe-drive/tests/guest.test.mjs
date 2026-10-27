@@ -1,0 +1,48 @@
+// Guest swipe link: token rules, revoke, rate limit, and that the server never hands back customer details.
+// Usage: node tests/guest.test.mjs
+import fs from 'fs';
+globalThis.window = globalThis;
+(0, eval)(fs.readFileSync(new URL('../../stock-core.js', import.meta.url), 'utf8')); (0, eval)(fs.readFileSync(new URL('../match-core.js', import.meta.url), 'utf8'));
+const { guestHandle, RATE_PER_MIN } = await import('../backend/supabase/functions/_shared/guest.js');
+const { signGuest, verifyGuest, signUnsub } = await import('../backend/supabase/functions/_shared/unsub.js');
+const M = globalThis.ctMatch; let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + m); };
+const SEC = 's'.repeat(32), CID = '11111111-2222-3333-4444-555555555555', now = () => Math.floor(Date.now() / 1000);
+const cust = { id: CID, name: 'Lorna Hayre', phone: '07700900111', email: 'lorna@example.com', postcode: 'DA14 6AA', monthly_gbp: 450, budget_type: 'monthly', models: ['3 Series'], fuel: 'open', guest_version: 0, desk: { cur_car: 'Audi' }, px: { reg: 'AB12XYZ' } };
+const car = (reg, o) => Object.assign({ kind: 'used', reg, model: 'BMW 320i M Sport', series: '3 Series', fuel: 'Petrol', year: 2023, mileage: '9,000 miles', price: '£30,000', price_gbp: 30000, source: 'forecourt', image: 'https://x/y.jpg', listing_url: 'https://hedinautomotive.co.uk/x', status: 'in_stock', listing_id: '9', finance: null }, o);
+const cars = [car('AA11AAA'), car('BB22BBB', { listing_url: 'https://evil.example/x' }), car('CC33CCC', { status: 'sold' })];
+let hits = 0; const st = { sw: {}, req: [] };
+const db = { customer: async id => id === CID ? cust : null, hit: async () => ++hits, emailedRegs: async () => ['BB22BBB', 'CC33CCC'], swipes: async () => ({}), ownerWa: async () => '447827138197',
+  swipe: async (i, r, l) => { st.sw[r] = l; }, confirm: async (i, fill, upd) => { st.fill = fill; st.upd = upd; }, buyRequest: async (i, a, c) => { st.req.push([a, c]); } };
+const deps = { secret: SEC, db, M, loadCars: async () => cars };
+const good = await signGuest(SEC, CID, 0, now() + 30 * 86400);
+let r = await guestHandle({ t: good, action: 'deck' }, deps);
+ok(r.status === 200 && r.body.cars.length === 2 && r.body.cars[0].reg === 'BB22BBB', 'deck: emailed car first, sold car left out');
+const flat = JSON.stringify(r.body);
+ok(!/Lorna|07700900111|lorna@example|DA14|450|Audi|AB12XYZ|budget|monthly_gbp|postcode|phone|email|"name"/.test(flat), 'deck response holds no customer details or preferences');
+ok(!r.body.cars.some(c => c.listing_url && !c.listing_url.startsWith('https://hedinautomotive.co.uk/')), 'only Hedin links pass through');
+ok(r.body.cars.every(c => !('reasons' in c) && !('score' in c)), 'no match reasons (they would hint at preferences)');
+ok((await guestHandle({ action: 'deck' }, deps)).status === 401, 'no token: refused');
+ok((await guestHandle({ t: good.slice(0, -2) + 'xx', action: 'deck' }, deps)).status === 401, 'tampered token: refused');
+ok((await guestHandle({ t: await signGuest(SEC, CID, 0, now() - 10), action: 'deck' }, deps)).status === 410, 'expired token: refused');
+ok((await guestHandle({ t: await signGuest('o'.repeat(32), CID, 0, now() + 999), action: 'deck' }, deps)).status === 401, 'token signed with another secret: refused');
+ok((await guestHandle({ t: await signUnsub(SEC, CID, 'interested'), action: 'deck' }, deps)).status === 401, 'a reply button token cannot open the deck');
+ok(!(await verifyGuest(SEC, good.replace(CID, '99999999-2222-3333-4444-555555555555'))), 'token cannot be moved to another customer');
+cust.guest_version = 1; ok((await guestHandle({ t: good, action: 'deck' }, deps)).status === 410, 'revoked (version bumped): refused'); cust.guest_version = 0;
+cust.closed_at = '2026-10-27'; ok((await guestHandle({ t: good, action: 'deck' }, deps)).status === 410, 'closed customer: refused'); cust.closed_at = null;
+cust.email_opt_out = true; ok((await guestHandle({ t: good, action: 'deck' }, deps)).status === 410, 'unsubscribed customer: refused'); cust.email_opt_out = false;
+ok((await guestHandle({ t: good, action: 'swipe', reg: 'AA11AAA', liked: true }, deps)).status === 200 && st.sw.AA11AAA === true, 'swipe recorded');
+ok((await guestHandle({ t: good, action: 'swipe', reg: '<script>', liked: true }, deps)).status === 400, 'junk swipe refused');
+ok((await guestHandle({ t: good, action: 'profile' }, deps)).status === 400, 'any other action refused');
+ok((await guestHandle({ t: good, action: 'buy', reg: 'AA11AAA' }, deps)).status === 200 && st.req[0][0] === 'buy', 'Buy this car goes to Dan as a request');
+ok((await guestHandle({ t: good, action: 'send', regs: ['AA11AAA', 'ZZ99ZZZ'] }, deps)).body.ok && st.req[1][1].length === 1, 'Send my likes keeps real cars only');
+r = await guestHandle({ t: good, action: 'hints' }, deps); const hj = JSON.stringify(r.body);
+ok(r.status === 200 && r.body.phone_hint === 'a mobile ending 111' && r.body.email_hint === 'l***@e***.com', 'hints: masked mobile and email');
+ok(!/Lorna|07700900111|lorna@example|DA14|Audi|AB12XYZ|"450"|: ?450/.test(hj) && r.body.prefs.budget === 'around £400 to £500 a month', 'hints: no name, contact, postcode or exact budget');
+r = await guestHandle({ t: good, action: 'confirm', phone: '07700 900222', email: 'lorna@example.com', email_ok: true, name: 'Lorna' }, deps);
+ok(r.body.ok && !st.fill.phone && st.upd.proposed.phone === '07700900222' && r.body.held.join() === 'phone', 'a different mobile is held for Dan, not overwritten');
+ok(!st.upd.proposed.email, 'the same email is not flagged as a change');
+const saved = cust.phone; cust.phone = null; r = await guestHandle({ t: good, action: 'confirm', phone: '07700900333' }, deps); ok(st.fill.phone === '07700900333', 'a missing mobile is filled in'); cust.phone = saved;
+ok((await guestHandle({ t: good, action: 'confirm', phone: '12345' }, deps)).status === 400 && (await guestHandle({ t: good, action: 'confirm', email: 'x@' }, deps)).status === 400, 'junk phone or email refused');
+r = await guestHandle({ t: good, action: 'confirm', prefs_note: '<script>alert(1)</script> now want an X5' }, deps); ok(!/[<>]/.test(st.upd.prefs_note), 'free text cleaned');
+hits = RATE_PER_MIN; ok((await guestHandle({ t: good, action: 'deck' }, deps)).status === 429, 'rate limited after ' + RATE_PER_MIN + ' a minute');
+console.log(`\nRESULT guest ${pass}/${pass + fail}`); process.exit(fail ? 1 : 0);

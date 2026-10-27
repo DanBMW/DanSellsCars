@@ -5,3 +5,11 @@ verify_jwt = false
 verify_jwt = false
 [functions.notify-buy-request]
 verify_jwt = true
+[functions.send-latest-stock]
+verify_jwt = true
+[functions.guest-link]
+verify_jwt = true
+[functions.stock-reply]
+verify_jwt = false
+[functions.guest-deck]
+verify_jwt = false

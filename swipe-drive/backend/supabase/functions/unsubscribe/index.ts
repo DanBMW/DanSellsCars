@@ -11,6 +11,11 @@ const page = (body: string, status = 200) => new Response(`<!doctype html><html 
 
 async function unsubscribe(t: string): Promise<boolean> {
   const v = await verifyUnsub(env('UNSUBSCRIBE_SECRET'), t);
+  if (v && v.purpose === 'custmail') {   // "latest stock" emails sent to a customer record (no login needed)
+    const db = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
+    const { data, error } = await db.from('customers').update({ email_opt_out: true }).eq('id', v.id).select('id');
+    return !error && !!data && data.length > 0;
+  }
   if (v) {
     const db = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
     const { data, error } = await db.from('profiles').update({ notify_email: false }).eq('id', v.id).select('id');

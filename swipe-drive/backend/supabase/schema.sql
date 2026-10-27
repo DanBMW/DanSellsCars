@@ -43,6 +43,7 @@ create table if not exists public.customers (
   specs_must text[] not null default '{}',
   models_must text[] not null default '{}',   -- subset of models that is a must have
   mileage_bands text[] not null default '{}', -- optional preferred current mileage bands
+  closed_at timestamptz, closed_by uuid, closed_by_name text,  -- close customer (archived), soft flag only
   new_used text check (new_used in ('new','used','both')),
   px jsonb,                              -- {reg, mileage, condition, finance_outstanding, photos}
   px_valuation_gbp int check (px_valuation_gbp >= 0),      -- PX valuation from Dan (no automatic valuations)
@@ -341,3 +342,55 @@ language sql security definer set search_path = public as $$
 
 revoke all on function public.take_job_lock(text, int), public.release_job_lock(text, uuid) from public, anon, authenticated;
 grant execute on function public.take_job_lock(text, int), public.release_job_lock(text, uuid) to service_role;
+
+-- ---------- latest stock email (also in update-2026-10-27-latest-stock-email.sql) ----------
+-- Swipe Drive: "Send customer latest stock" email, reply buttons and send log. NOT applied yet; run after Dan approves.
+-- Customer emails still need CUSTOMER_EMAIL_ENABLED=true (Dan approves) before anything sends.
+alter table public.customers
+  add column if not exists email_opt_out boolean not null default false,   -- unsubscribed from customer emails
+  add column if not exists stock_reply text,                                -- interested | keepinformed | offmarket
+  add column if not exists stock_reply_at timestamptz,
+  add column if not exists close_suggested_at timestamptz;                  -- said no longer on the market: Dan decides whether to close
+create table if not exists public.stock_emails (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid not null references public.customers(id) on delete cascade,
+  sent_at timestamptz not null default now(),
+  sent_by uuid, sent_by_name text, to_email text,
+  cars jsonb not null default '[]',          -- [{reg, model, price, kind}]
+  status text not null default 'sent', resend_id text,
+  reply text, replied_at timestamptz);
+create index if not exists stock_emails_customer_idx on public.stock_emails (customer_id, sent_at desc);
+alter table public.stock_emails enable row level security;
+-- staff can read the log for customers they can access; only the edge functions (service role) write it
+drop policy if exists se_sel on public.stock_emails;
+create policy se_sel on public.stock_emails for select to authenticated using (public.can_access_customer(customer_id));
+
+-- ---------- guest swipe link (also in update-2026-10-27-guest-swipe.sql) ----------
+-- Swipe Drive: guest swipe link from the latest stock email. NOT applied yet; run after Dan approves,
+-- after update-2026-10-27-latest-stock-email.sql.
+alter table public.customers add column if not exists guest_version int not null default 0;   -- bump to revoke every guest link
+alter table public.swipes add column if not exists source text;          -- 'guest_link' when swiped from the email link
+alter table public.buy_requests add column if not exists source text;    -- 'guest_link' when sent from the email link
+-- per customer, per minute request counter for the guest-deck function (service role only)
+create table if not exists public.guest_hits (customer_id uuid not null, minute timestamptz not null, n int not null default 0, primary key (customer_id, minute));
+alter table public.guest_hits enable row level security;   -- no policies: only the service role can touch it
+create or replace function public.guest_hit(cid uuid) returns int
+language sql security definer set search_path = public as $$
+  delete from public.guest_hits where minute < now() - interval '1 hour';
+  insert into public.guest_hits (customer_id, minute, n) values (cid, date_trunc('minute', now()), 1)
+  on conflict (customer_id, minute) do update set n = public.guest_hits.n + 1
+  returning n; $$;
+revoke all on function public.guest_hit(uuid) from public, anon, authenticated;
+grant execute on function public.guest_hit(uuid) to service_role;
+-- closing a customer or unsubscribing revokes their guest links straight away
+create or replace function public.guest_revoke() returns trigger language plpgsql as $$
+begin
+  if (new.closed_at is not null and old.closed_at is null) or (new.email_opt_out and not old.email_opt_out) then
+    new.guest_version := old.guest_version + 1;
+  end if;
+  return new;
+end $$;
+drop trigger if exists customers_guest_revoke on public.customers;
+create trigger customers_guest_revoke before update on public.customers for each row execute function public.guest_revoke();
+-- Confirm your details from the guest page: changes to an existing phone or email wait here for Dan to apply
+alter table public.customers add column if not exists guest_update jsonb;

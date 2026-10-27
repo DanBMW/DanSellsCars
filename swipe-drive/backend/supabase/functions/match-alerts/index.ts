@@ -129,7 +129,7 @@ async function run(db: any, out: any) {
 
   if (fresh.length) {
     const all = await fetchAll(db, 'customers', '*', 'id');
-    const customers = (all || []).filter((c: any) => !c.dealt_at);   // dealt customers are paused
+    const customers = (all || []).filter((c: any) => !c.dealt_at && !c.closed_at);   // dealt customers are paused, closed (archived) customers get nothing
     const sent = await fetchAll(db, 'notifications_sent', 'recipient,customer_id,reg,channel', ['recipient', 'customer_id', 'reg', 'channel']);
     const done = new Set((sent || []).map((s: any) => [s.recipient, s.customer_id, s.reg, s.channel].join('|')));
     const digest = new Map<string, any[]>();     // recipient -> items
@@ -177,7 +177,8 @@ async function run(db: any, out: any) {
   const { data: due, error: dueErr } = await db.from('purchases').select('*, customers(*)').lte('remind_on', today).is('reminder_sent_at', null).eq('cancelled', false);
   if (dueErr) out.warnings.push('Reminders not read: ' + dueErr.message);
   for (const pu of due || []) {
-    const cu = pu.customers; const owner = cu.owner_staff_id ? byId.get(cu.owner_staff_id) : admin;
+    const cu = pu.customers; if (!cu || cu.closed_at) continue;   // closed (archived) customers get no reminders; left unsent so reopening brings it back
+    const owner = cu.owner_staff_id ? byId.get(cu.owner_staff_id) : admin;
     const wa = (owner && owner.whatsapp) || M.DAN_WA;
     const r = renderReminder({ purchase: pu, customer: cu, ownerName: owner ? owner.name : 'Dan', wa });
     let any = false;

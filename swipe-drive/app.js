@@ -28,6 +28,18 @@
   function banner(f, text, ok) { var b = $('.ct-banner', f); if (!b) { b = document.createElement('div'); b.className = 'ct-banner'; b.setAttribute('role', 'alert'); f.insertBefore(b, f.firstChild.nextSibling); }
     b.hidden = !text; b.className = 'ct-banner' + (ok ? ' ok' : ''); b.textContent = text || ''; if (text) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
   function busy(btn, on, label) { if (on) { btn.dataset.label = btn.textContent; btn.textContent = label || 'Saving...'; btn.disabled = true; btn.setAttribute('aria-busy', 'true'); } else { btn.textContent = btn.dataset.label || btn.textContent; btn.disabled = false; btn.removeAttribute('aria-busy'); } }
+  var STOCK_REPLY = { interested: 'Still on the market, wants an appointment', keepinformed: 'Keep me informed of more cars', offmarket: 'No longer on the market' };
+  function stockCanSend(c) { return !!CFG.CUSTOMER_EMAIL_ENABLED && !!c.email && !c.closed_at && !c.email_opt_out; }
+  /* Send customer latest stock: an "Are you sure?" window with the email address and the cars that go in it */
+  function askStock(c) { var cars = M.pickLatest(S.cars, c, 6); S.stockSend = { c: c, cars: cars };
+    $('#stockTitle').textContent = 'Are you sure?';
+    $('#stockTo').innerHTML = 'Send ' + esc(c.name || 'this customer') + ' the latest stock by email to <b>' + esc(c.email || 'no email saved') + '</b>' + (cars.length ? ' with these ' + cars.length + ' ' + (cars.length === 1 ? 'car' : 'cars') + ':' : '.');
+    $('#stockCars').innerHTML = cars.map(function (h) { var x = h.car; return '<div class="ct-stock-car">' + (x.image ? '<img src="' + esc(x.image) + '" alt="">' : '') + '<div><b>' + esc(x.model) + '</b><span>' + esc([x.kind === 'new_stock' ? 'Brand new' : x.year, x.kind === 'new_stock' ? '' : x.mileage, x.price].filter(Boolean).join(' \u00b7 ')) + '</span></div></div>'; }).join('');
+    var why = !CFG.CUSTOMER_EMAIL_ENABLED ? 'Customer emails are off. Dan needs to approve switching them on before this can send.' : !c.email ? 'Add an email address for this customer first.' : c.email_opt_out ? 'This customer unsubscribed from emails.' : !cars.length ? 'No matching cars in stock right now.' : '';
+    $('#stockNote').textContent = why; $('#stockNote').hidden = !why;
+    var can = stockCanSend(c) && cars.length > 0; $('#stockYes').disabled = !can; $('#stockYes').textContent = 'Send email'; $('#stockYes').hidden = false;
+    $('#stockModal').hidden = false; }
+  function undo(t, fn) { $('#undoText').textContent = t; S.undoFn = fn; $('#undoToast').hidden = false; clearTimeout(S.undoT); S.undoT = setTimeout(function () { $('#undoToast').hidden = true; S.undoFn = null; }, 10000); }
   function toast(t) { var el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { el.hidden = true; }, 2600); }
   var uuid = function () { return (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); })); };
   var fmtDate = function (d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; };
@@ -90,6 +102,9 @@
     swipes: function (cid) { return Promise.resolve((demoDb().swipes || {})[cid] || {}); },
     setSwipe: function (cid, reg, liked, extra) { var d = demoDb(); d.swipes[cid] = d.swipes[cid] || {}; d.swipes[cid][reg] = Object.assign({ liked: liked, at: Date.now() }, extra || {}); demoSave(d); return Promise.resolve(); },
     purchases: function (cid) { return Promise.resolve((demoDb().purchases || []).filter(function (p) { return p.customer_id === cid; })); },
+    sendLatestStock: function () { return Promise.resolve({ ok: false, reason: 'demo mode, nothing sent' }); },
+    guestLink: function () { return Promise.resolve({ ok: true, url: location.origin + location.pathname.replace(/[^/]*$/, '') + 'guest.html#t=DEMO', days: 30 }); },
+    setClosed: function (cid, on) { var d = demoDb(); var c = (d.customers || []).find(function (x) { return x.id === cid; }); if (c) { c.closed_at = on ? new Date().toISOString() : null; c.closed_by = on ? (d.session && d.session.id) || null : null; c.closed_by_name = on ? (S.session.name || 'Dan') : null; demoSave(d); } return Promise.resolve(); },
     markDealt: function (cid, pid) { var d = demoDb(); var c = (d.customers || []).find(function (x) { return x.id === cid; }); if (c) { c.dealt_at = pid ? new Date().toISOString() : null; c.dealt_purchase_id = pid || null; demoSave(d); } return Promise.resolve(); },
     savePurchase: function (p) { var d = demoDb(); p.id = p.id || uuid(); p.remind_on = addMonths(p.purchase_date, 33); d.purchases = (d.purchases || []).filter(function (x) { return x.id !== p.id; }); d.purchases.push(p); demoSave(d); return Promise.resolve(p); },
     staffList: function () { var d = demoDb(); return Promise.resolve(Object.values(d.staff || {}).filter(Boolean)); },
@@ -143,6 +158,10 @@
     setSwipe: function (cid, reg, liked, extra) { return Promise.resolve().then(function () { if (!sbUser) throw new Error('signed out');
       return sb.from('swipes').upsert(Object.assign({ customer_id: cid, reg: reg, liked: liked, by_user: sbUser.id }, extra || {})); }).then(function (r) { if (r && r.error) throw r.error; }); },
     purchases: function (cid) { return sb.from('purchases').select('*').eq('customer_id', cid).then(function (r) { return r.data || []; }); },
+    /* Close is a soft flag only: nothing else on the customer (swipes, matches, photos, purchases) is touched */
+    guestLink: function (cid) { return sb.functions.invoke('guest-link', { body: { customer_id: cid } }).then(function (r) { return r.data || { ok: false, reason: 'link failed' }; }); },
+    sendLatestStock: function (cid, regs) { return sb.functions.invoke('send-latest-stock', { body: { customer_id: cid, regs: regs } }).then(function (r) { if (r.error && !r.data) { var c = r.error.context; return c && c.json ? c.json().catch(function () { return { ok: false, reason: 'send failed' }; }) : { ok: false, reason: 'send failed' }; } return r.data; }); },
+    setClosed: function (cid, on) { return sb.from('customers').update(on ? { closed_at: new Date().toISOString(), closed_by: sbUser.id, closed_by_name: S.session.name || '' } : { closed_at: null, closed_by: null, closed_by_name: null }).eq('id', cid).then(function (r) { if (r.error) throw r.error; }); },
     markDealt: function (cid, pid) { return sb.from('customers').update({ dealt_at: pid ? new Date().toISOString() : null, dealt_purchase_id: pid || null }).eq('id', cid).then(function (r) { if (r.error) throw r.error; }); },
     savePurchase: function (p) { var row = Object.assign({}, p); delete row.remind_on; row.created_by = sbUser.id; return sb.from('purchases').upsert(row).select().single().then(function (r) { if (r.error) throw r.error; return r.data; }); },
     staffList: function () { return sb.from('profiles').select('id,name,email,whatsapp,role').in('role', ['staff', 'admin']).then(function (r) { return r.data || []; }); },
@@ -380,6 +399,8 @@
   function showProfile() {
     var f = $('#profileForm'), c = S.cust || {}, staff = S.session.role !== 'customer';
     $('#pfTitle').textContent = staff ? (c.id ? 'Edit ' + (c.name || 'customer') : 'Add a customer') : 'About you';
+    /* staff can add a customer with just a name; customers still give a mobile */
+    f.elements.phone.required = !staff; f.elements.phone.setAttribute('aria-required', String(!staff)); var rq = f.elements.phone.closest('label').querySelector('.ct-req'); if (rq) rq.textContent = staff ? 'optional' : 'required';
     $('#pfSub').textContent = staff ? 'Fill in what the customer told you. Their matches, swipes and photos stay visible to you and Dan only.' : 'Takes a minute. The more you tell me, the better your matches.';
     drawTri('#modelChips', allModels().map(function (m) { return { key: m, label: m }; }), c.models || [], c.models_must || []);
     ['name', 'phone', 'email', 'postcode', 'monthly_gbp', 'cash_gbp', 'deposit_gbp'].forEach(function (k) { if (f.elements[k]) f.elements[k].value = c[k] == null ? '' : c[k]; });
@@ -450,17 +471,17 @@
       if (btn.disabled) return; clearErrs(f); banner(f, ''); msg.textContent = '';
       var bad = [], ph = el.phone.value.replace(/[^\d+]/g, ''), em = staff ? el.email.value.trim() : '';
       if (!el.name.value.trim()) bad.push(fieldErr(f, 'name', 'Add a name.'));
-      if (!ph) bad.push(fieldErr(f, 'phone', 'Add a mobile number.')); else if (ph.replace(/\D/g, '').length < 10) bad.push(fieldErr(f, 'phone', 'That mobile number looks too short.'));
-      if (staff && !em) bad.push(fieldErr(f, 'email', 'Add the customer email.')); else if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
+      if (!ph) { if (!staff) bad.push(fieldErr(f, 'phone', 'Add a mobile number.')); } else if (ph.replace(/\D/g, '').length < 10) bad.push(fieldErr(f, 'phone', 'That mobile number looks too short.'));
+      if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
       var rated = Object.keys(readRates()).length > 0;
       if (choice(f, 'px_has') === 'yes' && rated && !$('#pxConfirm').checked) bad.push(fieldErr(f, $('#pxConfirm'), 'Tick I confirm, because condition ratings are filled in.'));
       if (choice(f, 'px_has') === 'yes' && !el.px_reg.value.trim()) bad.push(fieldErr(f, 'px_reg', 'Add the part exchange reg, or choose No part exchange.'));
       bad = bad.filter(Boolean);
       if (bad.length) { banner(f, bad.length === 1 ? 'One thing to fix before saving.' : bad.length + ' things to fix before saving.'); bad[0].scrollIntoView({ block: 'center' }); bad[0].focus({ preventScroll: true }); return; }
-      var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim(), postcode: el.postcode.value.trim().toUpperCase(),
+      var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim() || null, postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
         annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: [].concat(choice(f, 'fuel') || []).filter(function (x) { return x !== 'open'; }).join(',') || 'open', mileage_bands: [].concat(choice(f, 'mileage_bands') || []), body: choice(f, 'body'), models: $$('#modelChips button').length ? triVals('#modelChips').on : ((S.cust || {}).models || []), models_must: $$('#modelChips button').length ? triVals('#modelChips').must : ((S.cust || {}).models_must || []), new_used: choice(f, 'new_used') });
-      if (staff) c.email = el.email.value.trim() || null;
+      if (staff) c.email = el.email.value.trim() || null; /* staff can save a customer with a name only */
       c.desk = deskRead(f, (S.cust || {}).desk);
       var num = function (v) { return v === '' ? null : Math.max(0, Math.round(+v)); }, prevVal = S.cust ? S.cust.px_valuation_gbp : null;
       c.px_valuation_gbp = num(el.px_valuation_gbp.value); c.px_valued_on = el.px_valued_on.value || null;
@@ -884,28 +905,66 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       var list = r[0], staff = r[1], sw = r[2] || {}, names = {}; staff.forEach(function (s) { names[s.id] = s.name || s.email; });
       var of = $('#ownerFilter'); if (admin) { var cur = of.value; of.innerHTML = '<option value="">Everyone</option><option value="none">Dan direct</option>' + staff.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.name || s.email) + '</option>'; }).join(''); of.value = cur; }
       var fv = admin ? of.value : ''; list = list.filter(function (c) { return !fv || (fv === 'none' ? !c.owner_staff_id : c.owner_staff_id === fv); });
+      var arch = S.custTab === 'archived', nArch = list.filter(function (c) { return c.closed_at; }).length; $('#archN').textContent = nArch ? String(nArch) : '';
+      $$('#custTabs button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-tab') === (arch ? 'archived' : 'open') ? 'true' : 'false'); });
+      list = list.filter(function (c) { return arch ? !!c.closed_at : !c.closed_at; });
+      if (arch) { $('#custList').innerHTML = list.sort(function (a, b) { return String(b.closed_at).localeCompare(String(a.closed_at)); }).map(function (c) {
+          return '<div class="ct-c closed" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3><p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + '</p>' +
+            '<p><span class="ct-pill closed">Closed</span> ' + esc(fmtDate(String(c.closed_at).slice(0, 10))) + (c.closed_by_name ? ' by ' + esc(c.closed_by_name) : '') + '. No alerts or reminders.</p>' +
+            '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-act="reopen">Reopen</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="matches">Shortlist</button></div></div>'; }).join('') || '<p class="ct-sub">No closed customers.</p>'; return; }
       var since = Date.now() - 2 * 86400000;
       return Promise.all(list.map(function (c) { return Promise.all([store.purchases(c.id), r[2] ? Promise.resolve(sw[c.id] || {}) : store.swipes(c.id)]).then(function (x) { return { c: c, ps: x[0], sw: x[1] }; }); })).then(function (rows) {
         $('#custList').innerHTML = rows.map(function (row) { var c = row.c; var ranked = M.rank(S.cars.filter(function (car) { return !row.sw[car.reg]; }), c).filter(function (x) { return x.score >= 55; });
           var freshN = ranked.filter(function (x) { return S.fresh && S.fresh[x.car.reg]; }).length; var likes = Object.keys(row.sw).filter(function (k) { return row.sw[k].liked; }).length;
           var p = row.ps.filter(function (x) { return !x.cancelled; })[0];
           return '<div class="ct-c" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3><p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + (admin ? ' \u00b7 Owner: ' + esc(c.owner_staff_id ? names[c.owner_staff_id] || 'Colleague' : 'Dan direct') : '') + '</p>' +
-            '<p>' + (freshN ? '<span class="ct-pill hot">' + freshN + ' new today</span>' : '') + '<span class="ct-pill">' + ranked.length + ' matches</span><span class="ct-pill">' + likes + ' liked</span>' + (c.user_id ? '<span class="ct-pill">Claimed</span>' : '') + '</p>' +
+            '<p>' + (freshN ? '<span class="ct-pill hot">' + freshN + ' new today</span>' : '') + '<span class="ct-pill">' + ranked.length + ' matches</span><span class="ct-pill">' + likes + ' liked</span>' + (function () { var g = Object.keys(row.sw).filter(function (k) { return row.sw[k].source === 'guest_link'; }), gl = g.filter(function (k) { return row.sw[k].liked; }).length; return g.length ? '<span class="ct-pill hot">Email link: ' + g.length + ' swiped, ' + gl + ' liked</span>' : ''; })() + (c.user_id ? '<span class="ct-pill">Claimed</span>' : '') + '</p>' +
             (c.px && c.px.reg ? '<p>PX ' + esc(c.px.reg) + (c.px_terms_confirmed_at ? ' \u00b7 terms confirmed ' + esc(new Date(c.px_terms_confirmed_at).toLocaleDateString('en-GB')) : '') + '</p>' : '') + (ratingsText(c.px_condition_ratings) ? '<p>' + esc(ratingsText(c.px_condition_ratings)) + '</p>' : '') + pxMoneyHtml(c) +
             (c.due_to_change_at ? '<p><span class="ct-pill due">Due to change</span> Back on matching since ' + esc(fmtDate(String(c.due_to_change_at).slice(0, 10))) + (c.px && c.px.equity_assumed_gbp === 0 ? '. PX equity assumed \u00a30 until valued' : '') + '</p>' : '') +
+            (c.guest_update && c.guest_update.proposed && (c.guest_update.proposed.phone || c.guest_update.proposed.email) ? '<p><span class="ct-pill flag">New details</span> Customer sent ' + esc([c.guest_update.proposed.phone ? 'mobile ' + c.guest_update.proposed.phone : '', c.guest_update.proposed.email ? 'email ' + c.guest_update.proposed.email : ''].filter(Boolean).join(' and ')) + ' from the swipe link. <button class="ct-btn ct-sm" type="button" data-act="applyupd">Apply</button> <button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="dismissupd">Dismiss</button></p>' : '') +
+            (c.stock_reply ? '<p><span class="ct-pill' + (c.stock_reply === 'offmarket' ? ' flag' : '') + '">Email reply</span> ' + esc(STOCK_REPLY[c.stock_reply] || c.stock_reply) + (c.stock_reply_at ? ', ' + esc(fmtDate(String(c.stock_reply_at).slice(0, 10))) : '') + (c.close_suggested_at && c.stock_reply === 'offmarket' ? '. Close them?' : '') + '</p>' : '') +
             (c.dealt_at ? '<p><span class="ct-pill">Dealt</span> Alerts paused' + (p ? ' until <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b>' : '') + '</p>' : '') +
             (p ? '<p>Bought ' + esc(p.model) + ' (' + esc(p.reg) + '). Reminder <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b></p>' : '') +
             '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-act="swipe">Swipe for them</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="matches">Shortlist</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="edit">Edit</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="bought">' + (p ? 'Edit bought car' : 'Mark as dealt') + '</button>' +
             (c.dealt_at ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="resume">Resume alerts</button>' : '') +
             (p ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-cancel-p="' + esc(p.id) + '">Cancel reminder</button>' : '') +
-            (!c.user_id && c.email ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="claim">Invite to claim</button>' : '') + '</div></div>'; }).join('') || '<p class="ct-sub">No customers yet. Add your first one.</p>';
+            (!c.user_id && c.email ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="claim">Invite to claim</button>' : '') + '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="stock">Send customer latest stock</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="copylink">Copy swipe link</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="walink">Send swipe link on WhatsApp</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="close">Close customer</button></div></div>'; }).join('') || '<p class="ct-sub">No customers yet. Add your first one.</p>';
       });
     });
   }
   function initTeam() {
     $('#addCust').addEventListener('click', function () { S.cust = null; S.pendingId = null; sessionStorage.removeItem('ctActing'); S.swipes = {}; go('profile'); });
     $('#ownerFilter').addEventListener('change', showTeam);
+    $('#custTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; S.custTab = b.getAttribute('data-tab'); showTeam(); });
+    $('#stockNo').addEventListener('click', function () { $('#stockModal').hidden = true; S.stockSend = null; });
+    $('#stockModal').addEventListener('click', function (e) { if (e.target === e.currentTarget) { $('#stockModal').hidden = true; S.stockSend = null; } });
+    $('#stockYes').addEventListener('click', function () { var x = S.stockSend; if (!x || !stockCanSend(x.c)) return; var btn = $('#stockYes'); btn.disabled = true; btn.textContent = 'Sending...';
+      store.sendLatestStock(x.c.id, x.cars.map(function (h) { return h.car.reg; })).then(function (r) { $('#stockModal').hidden = true; S.stockSend = null; track('latest_stock_sent', { cars: x.cars.length });
+        toast(r && r.ok === false ? 'Not sent: ' + (r.reason || 'try again') : 'Latest stock sent to ' + (x.c.name || 'the customer')); showTeam(); })
+        .catch(function (err) { btn.disabled = false; btn.textContent = 'Send email'; toast(plainErr(err)); }); });
+    $('#closeNo').addEventListener('click', function () { $('#closeModal').hidden = true; S.closing = null; });
+    $('#closeModal').addEventListener('click', function (e) { if (e.target === e.currentTarget) { $('#closeModal').hidden = true; S.closing = null; } });
+    $('#closeYes').addEventListener('click', function () { var c = S.closing; if (!c) return; var btn = $('#closeYes'); btn.disabled = true;
+      store.setClosed(c.id, true).then(function () { btn.disabled = false; $('#closeModal').hidden = true; S.closing = null; track('customer_closed'); showTeam();
+        undo((c.name || 'Customer') + ' closed', function () { return store.setClosed(c.id, false).then(function () { toast((c.name || 'Customer') + ' reopened'); showTeam(); }); }); })
+        .catch(function (err) { btn.disabled = false; toast(plainErr(err)); }); });
+    $('#undoBtn').addEventListener('click', function () { var f = S.undoFn; $('#undoToast').hidden = true; clearTimeout(S.undoT); S.undoFn = null; if (f) f().catch(function (err) { toast(plainErr(err)); }); });
     $('#custList').addEventListener('click', function (e) { if (e.target.closest('[data-cancel-p]')) return purchaseClick(e); var b = e.target.closest('[data-act]'); if (!b) return; var id = b.closest('[data-cid]').getAttribute('data-cid'), act = b.getAttribute('data-act');
+      if (act === 'close') { var cc = null; store.customers().then(function (l) { cc = l.find(function (x) { return x.id === id; }); if (!cc) return; S.closing = cc;
+          $('#closeTitle').textContent = 'Close ' + (cc.name || 'this customer') + '?';
+          $('#closeText').textContent = (cc.name ? 'They' : 'This customer') + "'ll move to Archived and stop getting alerts. You can reopen them any time.";
+          $('#closeYes').disabled = false; $('#closeModal').hidden = false; $('#closeYes').focus(); }); return; }
+      if (act === 'copylink' || act === 'walink') { var waWin = act === 'walink' ? window.open('', '_blank') : null; /* opened inside the tap so phones do not block it */ store.customers().then(function (l) { var cc = l.find(function (x) { return x.id === id; }); if (!cc) return;
+          return store.guestLink(cc.id).then(function (r) { if (!r || !r.ok) { if (waWin) waWin.close(); toast('No link: ' + ((r && r.reason) || 'try again')); return; }
+            if (act === 'copylink') { (navigator.clipboard ? navigator.clipboard.writeText(r.url) : Promise.reject()).then(function () { toast('Swipe link copied. It works for ' + (r.days || 30) + ' days'); }, function () { window.prompt('Copy this swipe link', r.url); }); track('swipe_link_copied'); return; }
+            var first = String(cc.name || '').split(' ')[0], num = String(cc.phone || '').replace(/\D/g, '').replace(/^0/, '44');
+            var text = 'Hi' + (first ? ' ' + first : '') + ', it\'s ' + (S.session.name ? S.session.name.split(' ')[0] : 'Dan') + ' at BMW Ruxley. I have picked out some cars in stock I think you will like. Have a quick swipe through them here: ' + r.url;
+            var wu = 'https://wa.me/' + (num.length >= 11 ? num : '') + '?text=' + encodeURIComponent(text); if (waWin) { try { waWin.opener = null; } catch (e) {} waWin.location.href = wu; } else platform.openExternal(wu); track('swipe_link_whatsapp'); }); }).catch(function (err) { if (waWin) waWin.close(); toast(plainErr(err)); }); return; }
+      if (act === 'applyupd' || act === 'dismissupd') { store.customers().then(function (l) { var cc = l.find(function (x) { return x.id === id; }); if (!cc) return; var pr = (cc.guest_update && cc.guest_update.proposed) || {};
+          var patch = Object.assign({}, cc, { guest_update: null }); if (act === 'applyupd') { if (pr.phone) patch.phone = pr.phone; if (pr.email) patch.email = pr.email; }
+          S.cust = cc; return store.saveCustomer(patch).then(function () { toast(act === 'applyupd' ? 'New details applied' : 'Dismissed'); showTeam(); }); }).catch(function (err) { toast(plainErr(err)); }); return; }
+      if (act === 'stock') { store.customers().then(function (l) { var cc = l.find(function (x) { return x.id === id; }); if (cc) askStock(cc); }); return; }
+      if (act === 'reopen') { store.setClosed(id, false).then(function () { toast('Customer reopened'); showTeam(); }).catch(function (err) { toast(plainErr(err)); }); return; }
       setActing(id).then(function () {
         if (act === 'swipe') go('discover'); else if (act === 'matches') go('matches'); else if (act === 'edit') go('profile');
         else if (act === 'bought') store.purchases(id).then(function (ps) { S.editPurchase = ps.filter(function (x) { return !x.cancelled; })[0] || null; go('bought'); });

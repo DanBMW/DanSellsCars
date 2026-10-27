@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Swipe your matches | Swipe Drive</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="guest.css?v=29">
+</head>
+<body>
+<header class="g-top"><img src="icons/logo.svg" alt="" width="30" height="30"><div><b>Swipe Drive</b><small>Dan at BMW Ruxley</small></div></header>
+<main id="g-main">
+  <section id="g-load" class="g-msg"><p>Loading your cars...</p></section>
+  <section id="g-err" class="g-msg" hidden><h1 id="g-err-h">This link has expired</h1><p id="g-err-p"></p><a class="g-btn g-wa" id="g-err-wa" target="_blank" rel="noopener" href="https://wa.me/447827138197">WhatsApp Dan</a></section>
+  <section id="g-deck-wrap" hidden>
+    <p class="g-count" id="g-count"></p>
+    <div id="g-deck" class="g-deck" aria-live="polite"></div>
+    <div class="g-acts"><button type="button" class="g-round g-pass" id="g-pass" aria-label="Pass">&#x2715;</button><button type="button" class="g-round g-info" id="g-info" aria-label="Details">i</button><button type="button" class="g-round g-like" id="g-like" aria-label="Like">&#x2665;</button></div>
+    <div class="g-nudge" id="g-nudge" hidden><span>Confirm your details to receive more updates</span><button type="button" class="g-btn g-sm" data-confirm>Confirm</button><button type="button" class="g-link g-nx" id="g-nudge-x" aria-label="Not now">Not now</button></div>
+    <p class="g-hint">Swipe right to like, left to pass. Tap a car for photos and details.</p>
+  </section>
+  <section id="g-end" class="g-msg" hidden>
+    <h1>That's all for now</h1>
+    <p id="g-end-p"></p>
+    <button type="button" class="g-btn" id="g-send">Send my likes to Dan</button>
+    <p id="g-send-msg" class="g-ok" role="status"></p>
+    <a class="g-btn g-ghost g-wa2" id="g-wa" target="_blank" rel="noopener" href="https://wa.me/447827138197">WhatsApp Dan</a>
+    <div class="g-confirm" id="g-confirm-end"><p><b>Confirm your details to receive more updates</b></p><p class="g-small">Takes a minute with Revvy, Dan's assistant.</p><button type="button" class="g-btn" data-confirm>Confirm my details</button></div>
+    <div class="g-signin"><p>Sign in to see your profile and save everything.</p><a class="g-btn g-ghost" href="./">Sign in to Swipe Drive</a></div>
+    <button type="button" class="g-link" id="g-again">Look through them again</button>
+  </section>
+</main>
+<div id="g-sheet" class="g-sheet" hidden><div class="g-sheet-in" role="dialog" aria-modal="true" aria-label="Car details"><button type="button" class="g-x" id="g-x" aria-label="Close">&times;</button><div id="g-sheet-body"></div></div></div>
+<div id="g-tut" class="g-tut" hidden><div class="g-tut-in" role="dialog" aria-modal="true" aria-labelledby="g-tut-h">
+  <video id="g-tut-v" src="intro/intro.mp4" poster="intro/poster.jpg" muted playsinline autoplay loop preload="metadata"></video>
+  <h1 id="g-tut-h">Dan picked these out for you</h1>
+  <ol><li><b>Swipe right</b> on a car you like</li><li><b>Swipe left</b> to pass</li><li><b>Tap a car</b> for photos, price and details</li></ol>
+  <p class="g-small">Your likes go straight to Dan. Nothing else to fill in.</p>
+  <button type="button" class="g-btn" id="g-tut-go">Start swiping</button>
+</div></div>
+<div id="g-chat" class="g-chat" hidden><div class="g-chat-in" role="dialog" aria-modal="true" aria-label="Confirm your details with Revvy">
+  <div class="g-chat-top"><b>Revvy</b><small>Dan's Swipe Drive assistant</small><button type="button" class="g-x g-chat-x" id="g-chat-x" aria-label="Close">&times;</button></div>
+  <div class="g-log" id="g-log"></div><div class="g-tray" id="g-tray"></div>
+  <form class="g-in" id="g-in" novalidate hidden><input id="g-inp" autocomplete="off" aria-label="Your answer"><button class="g-btn g-sm" type="submit">Send</button></form>
+</div></div>
+<div id="g-toast" class="g-toast" role="status" hidden></div>
+<script src="config.js?v=29"></script>
+<script src="guest.js?v=29"></script>
+</body>
+</html>

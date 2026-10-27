@@ -197,5 +197,16 @@
     if (!f || !f.monthly || !f.representative_example) return null;
     return { monthly: gbp2(f.monthly), headline: gbp2(f.monthly) + ' a month, ' + f.product, example: f.representative_example, legal: f.legal || '' };
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit };
+  /* Send customer latest stock: their current top matches, real cars only (no model placeholders), sold or
+     removed cars left out, in stock preferred (forecourt, then group, then new in retailer stock), best first. */
+  function pickLatest(cars, p, n) {
+    var rank = { forecourt: 0, group: 1 };
+    return (cars || []).filter(function (c) { return c && c.kind !== 'new' && (!c.status || c.status === 'in_stock') && !c.removed_at; })
+      .map(function (c) { var r = score(c, p || {}); return { car: c, score: r.score, ok: r.ok, reasons: r.reasons }; })
+      .filter(function (x) { return x.ok && x.score >= 55; })
+      .sort(function (a, b) { var ra = a.car.kind === 'new_stock' ? 2 : (rank[a.car.source] != null ? rank[a.car.source] : 1), rb = b.car.kind === 'new_stock' ? 2 : (rank[b.car.source] != null ? rank[b.car.source] : 1);
+        return (b.score - a.score) || (ra - rb); })
+      .slice(0, n || 6);
+  }
+  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest };
 })(typeof window !== 'undefined' ? window : globalThis);
