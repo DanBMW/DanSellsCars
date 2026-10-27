@@ -2426,16 +2426,28 @@ said so.
   with three working fallbacks underneath it.
   Dan has confirmed the dealership holds a music licence covering this.
   **Four stations, chosen by a number.** `RADIO_STATIONS` is keyed 1 to 4:
-  1 Kisstory R&B (the default), 2 Kisstory, 3 Jazz FM, 4 Country (Dan,
-  23 October). `boardsettings/station` holds the id, and it is a **number
+  1 Kisstory R&B, 2 Kisstory, 3 Jazz FM, 4 Country (Dan, 23 October), and
+  **Country is the default** (`RADIO_DEFAULT_STATION`, Dan, 27 October).
+  `boardsettings/station` holds the id, and it is a **number
   rather than a station name because the rules take nothing else**:
   `database.rules.json` validates every `boardsettings` value as
   `isBoolean()` or a number, so a string would be refused by Firebase
   silently and the wall would carry on playing whatever it already had.
-  `radioWantedStation()` treats an unknown or absent value as 1, so there is
+  `radioWantedStation()` treats an unknown or absent value as
+  `RADIO_DEFAULT_STATION`, so there is
   no second default to keep in step, and changing station is the one settings
   change that deliberately restarts a healthy stream, because the ladder it
   is part way down belongs to the old station.
+  **A stored station still wins, and that is not a bug to work around.**
+  The default is only what a screen plays before the settings arrive and
+  when nobody has ever chosen; a manager's tap has to stick, or the console
+  would be lying about what it does. So changing the default in code does
+  **not** change a wall that already holds a `station` value: on
+  27 October the database read 3 (Jazz FM) and went on playing Jazz FM until
+  somebody tapped Country. Nothing in this repo can write that value either
+  (`boardsettings` needs a staff Google sign in, and an agent has none), so
+  "make it play X" is always a tap in the manager panel or the admin
+  console, never a commit.
   **Every station ends with the default list.** Each one's own sources are
   concatenated in front of `RADIO_DEFAULT_SOURCES`, so a station whose edge
   is down drops back to Kisstory rather than leaving the wall silent. It does
@@ -2462,6 +2474,43 @@ said so.
   render before the backend. A 30s keep-alive then picks it back up after a
   dropped stream or a refused autoplay, and stands off while a clip has ducked
   it.
+- **The seasonal backdrop.** Dan, 27 October: "a warming spooky one for
+  October then move to Christmas festive fire next month". A photograph sits
+  behind the whole board, fixed at **z-index -1** so nothing on the board had
+  to move for it and every cut scene still paints clean over the top. The
+  pictures are in **`season/`**, with their sources and licences in
+  `season/README.md`: Pexels and Unsplash, both of which allow commercial use
+  with no attribution, which is the only reason a public repository can carry
+  them. Do not add one without recording where it came from.
+  **Which picture shows is a function of the clock and nothing else**, the way
+  the mug shot week and the birthday card's midnight are: `seasonKey()` reads
+  the date against `SEASON_WHEN`, `seasonShot()` picks from that season's list
+  by the four minute slot the clock is in, so two screens on one wall cannot
+  disagree, nothing is stored, and 1 December needs nobody to press anything.
+  Christmas starts on **15 November**, because that is when the showroom does.
+  **One picture is fetched at a time**, only when it is about to be shown, and
+  the layer that fades out is emptied afterwards, so at most two frames are
+  ever decoded. That is the `warmVideo()` lesson spent rather than relearned:
+  about 70MB of prefetched sketches is what filled the LG's memory and left
+  the board dead on the wall. The whole folder is 2.7MB, each picture
+  1920x1080 and about a quarter of a megabyte.
+  **It does not animate.** A slow drift would look better for the thirty
+  seconds somebody watches it and would then keep a full screen layer
+  composited all day on that television. The 1.6s cross fade on a change is
+  the whole of the motion.
+  **Judge a new picture under the scrim, not on its own.** The board's panels
+  are opaque so the figures were never at risk, but the title, the month tabs
+  and the mascots' names sit straight on the backdrop; they carry a shadow
+  while one is up (`body.hasseason`). The first scrim was so heavy the season
+  was invisible, which is the other way to get this wrong.
+  **Failure is quiet**: a file that will not load leaves whatever is up alone,
+  and with `season/` missing the board is exactly what it was before. Switch
+  is `seasons` in the admin console, absent means on like everything else.
+  **The lists live above the boot sequence on purpose.** `var` hoists as
+  undefined, so with `SEASON_WHEN` declared further down the page the boot
+  call to `seasonPaint()` threw, `dsBootOK` was never set, and the watchdog
+  reloaded the screen in a loop. Found by booting the page in a browser, not
+  by reading it.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
   section: a toggle for the automatic slot and a play button per clip. Both go
   through `boardcontrol` in the database rather than staying local, because the

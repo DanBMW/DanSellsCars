@@ -46,6 +46,45 @@ body{
 }
 .wrap{max-width:1180px;margin:0 auto}
 
+/* ---------- the seasonal backdrop ----------
+   Dan, 27 October: carry the season behind the board - pumpkins through
+   October, the fire at Christmas, and round the year from there.
+
+   Three rules it has to keep.
+
+   It sits at z-index -1, BELOW every piece of content and above the canvas
+   the body gradient paints on, so nothing on the board has to move for it and
+   every cut scene still paints clean over the top.
+
+   It is never brighter than the board. The scrim is heavy on purpose: the
+   figures are read from across an office, and a photograph that makes the
+   title harder to read has cost more than it added. Judge a new picture
+   under the scrim, not on its own.
+
+   It does not animate. A slow drift would be prettier for the thirty seconds
+   somebody watches it and would then keep a full screen 1920 layer composited
+   all day on a television whose memory we have already filled once. The cross
+   fade on a change is the whole of the motion. */
+.season{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.season .sky{
+  position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease;
+  background-position:center;background-size:cover;background-repeat:no-repeat;
+}
+.season .sky.on{opacity:1}
+.season .scrim{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(1100px 620px at 50% -6%,rgba(11,15,22,.14),rgba(11,15,22,.44) 58%,rgba(11,15,22,.62) 100%),
+    linear-gradient(180deg,rgba(11,15,22,.34) 0%,rgba(11,15,22,.40) 45%,rgba(11,15,22,.58) 100%);
+}
+/* the title and the mascots' names are the only type that sits straight on
+   the backdrop rather than on a panel, so they get a shadow while one is up */
+body.hasseason .hero h1,
+body.hasseason .hero .sub,
+body.hasseason .mascot .nm,
+body.hasseason .mascot .rl{text-shadow:0 2px 16px rgba(0,0,0,.72)}
+@media (prefers-reduced-motion:reduce){ .season .sky{transition:none} }
+
 /* ---------- header ---------- */
 .hero{position:relative;text-align:center;padding:6px 0 14px}
 .hero h1{
@@ -1415,6 +1454,13 @@ body.haslock.hasticker .radio-fab{bottom:100px}
 </style>
 </head>
 <body>
+<!-- the seasonal backdrop: two layers so one can fade in over the other, and
+     a scrim that keeps the board readable whatever the picture is -->
+<div class="season" id="season" aria-hidden="true">
+  <div class="sky" id="sky-a"></div>
+  <div class="sky" id="sky-b"></div>
+  <div class="scrim"></div>
+</div>
 <div class="wrap">
 
   <div class="mascots">
@@ -1633,10 +1679,10 @@ body.haslock.hasticker .radio-fab{bottom:100px}
         <div class="sw"></div>
       </div>
       <div class="clips" id="radio-stations" style="margin-top:10px">
-        <button type="button" class="clipbtn stationbtn" data-station="1"><span class="ply">&#9835;</span><span>Kisstory R&amp;B<small>Default</small></span></button>
+        <button type="button" class="clipbtn stationbtn" data-station="1"><span class="ply">&#9835;</span><span>Kisstory R&amp;B<small>Soul and R&amp;B</small></span></button>
         <button type="button" class="clipbtn stationbtn" data-station="2"><span class="ply">&#9835;</span><span>Kisstory<small>Old skool</small></span></button>
         <button type="button" class="clipbtn stationbtn" data-station="3"><span class="ply">&#9835;</span><span>Jazz FM<small>Jazz, soul and blues</small></span></button>
-        <button type="button" class="clipbtn stationbtn" data-station="4"><span class="ply">&#9835;</span><span>Country<small>Smooth Country</small></span></button>
+        <button type="button" class="clipbtn stationbtn" data-station="4"><span class="ply">&#9835;</span><span>Country<small>Default, Smooth Country</small></span></button>
       </div>
       <div class="clips" style="margin-top:10px">
         <button type="button" class="clipbtn" id="radio-refresh">
@@ -2036,6 +2082,107 @@ function sVol(k,d){
 }
 
 var deals={}, viewMonth=null, isManager=false, editingId=null, pickExec=null, backend=null;
+
+/* This block sits up here with the other top-level data on purpose. The boot
+   sequence at the bottom of this script calls seasonPaint(), and a `var` is
+   only hoisted as undefined: with the lists further down, the first paint read
+   SEASON_WHEN before it existed, threw inside the boot sequence, and left
+   dsBootOK unset - which is the watchdog's reload loop, on the wall. Found by
+   booting the page in a browser rather than by reading it. */
+/* ============================================================
+   The seasonal backdrop (Dan, 27 October 2026)
+
+   "A warming spooky one for October then move to Christmas festive fire next
+   month." So: a set of pictures a season, a window a set, and the board picks
+   from the set it is in.
+
+   Everything here comes off the clock and nothing is stored. Each screen works
+   out the same answer from the same date and the same minute, exactly the way
+   the mug shot week and the birthday card's midnight do, so two screens on the
+   same wall can never disagree and nobody has to press anything on 1 December.
+
+   Memory first, because this page has form. `warmVideo()` pulling about 70MB
+   of sketches into the LG is what killed the board on the wall. So: one
+   picture is fetched at a time, only when it is about to be shown, and the
+   layer that fades out is emptied afterwards so the browser can let its frame
+   go. At most two are ever decoded.
+
+   Failure is quiet, like the arrivals sidecar and the forecourt slot: a file
+   that will not load leaves whatever is up alone, and with the whole folder
+   missing the board is exactly what it was before this existed.
+   ============================================================ */
+var SEASON_SETS = {
+  halloween:{ shots:['pumpkins.jpg','lantern.jpg','misty-wood.jpg'] },
+  christmas:{ shots:['hearth.jpg','logfire.jpg','tree-lights.jpg'] },
+  winter:   { shots:['pine-dusk.jpg','snow-trees.jpg'] },
+  spring:   { shots:['blossom-dusk.jpg','blossom-sky.jpg'] },
+  summer:   { shots:['hills-sunset.jpg','oak-sunset.jpg'] },
+  autumn:   { shots:['golden-trees.jpg','misty-wood.jpg'] }
+};
+/* Month and day, inclusive, in order. Christmas starts in the middle of
+   November because that is when the showroom does, and because Dan asked for
+   the fire "next month" while it was still October. Winter runs to the 29th so
+   a leap day lands somewhere. */
+var SEASON_WHEN = [
+  ['01-01','02-29','winter'],
+  ['03-01','05-31','spring'],
+  ['06-01','08-31','summer'],
+  ['09-01','09-30','autumn'],
+  ['10-01','11-14','halloween'],
+  ['11-15','12-31','christmas']
+];
+var SEASON_EVERY = 240000;   /* a different picture every four minutes */
+function seasonKey(d){
+  d = d || new Date();
+  var md = ('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  for(var i=0;i<SEASON_WHEN.length;i++){
+    if(md>=SEASON_WHEN[i][0] && md<=SEASON_WHEN[i][1]) return SEASON_WHEN[i][2];
+  }
+  return 'winter';
+}
+/* the picture is a function of the clock, so every screen shows the same one */
+function seasonShot(){
+  var set = SEASON_SETS[seasonKey()];
+  if(!set || !set.shots.length) return '';
+  var i = Math.floor(Date.now()/SEASON_EVERY) % set.shots.length;
+  return 'season/'+set.shots[i];
+}
+var seasonShown='', seasonLayer=0, seasonLoading='';
+function seasonPaint(){
+  var box=$('season');
+  if(!box) return;
+  if(!sOn('seasons')){
+    box.style.display='none';
+    document.body.classList.remove('hasseason');
+    $('sky-a').className='sky'; $('sky-a').style.backgroundImage='';
+    $('sky-b').className='sky'; $('sky-b').style.backgroundImage='';
+    seasonShown=''; seasonLoading='';
+    return;
+  }
+  box.style.display='';
+  var src=seasonShot();
+  if(!src || src===seasonShown || src===seasonLoading) return;
+  /* fetch it first and only swap once it is really there, so a missing file
+     cannot blank the wall */
+  seasonLoading=src;
+  var img=new Image();
+  img.onload=function(){
+    if(seasonLoading!==src) return;            /* a newer one overtook it */
+    seasonLoading='';
+    var next=$(seasonLayer? 'sky-a':'sky-b'), prev=$(seasonLayer? 'sky-b':'sky-a');
+    if(!next||!prev) return;
+    next.style.backgroundImage='url("'+src+'")';
+    next.classList.add('on');
+    prev.classList.remove('on');
+    /* let the old frame go once it has faded out */
+    setTimeout(function(){ if(!prev.classList.contains('on')) prev.style.backgroundImage='' },2000);
+    seasonLayer = seasonLayer? 0:1;
+    seasonShown = src;
+    document.body.classList.add('hasseason');
+  };
+  img.onerror=function(){ if(seasonLoading===src) seasonLoading='' };
+  img.src=src;
+}
 
 /* ---- helpers ---- */
 function $(id){return document.getElementById(id)}
@@ -4189,10 +4336,18 @@ var RADIO_STATIONS = {
        'https://stream-ar.hellorayo.co.uk/absolutecountryhigh.aac'+RADIO_KEY
      ].concat(RADIO_DEFAULT_SOURCES) }
 };
-var radioStationId = 1;
+/* Country is the default (Dan, 27 October). This is only what a screen plays
+   before the settings arrive and when nobody has chosen: a stored
+   boardsettings/station still wins, because a manager's tap has to stick.
+   RADIO_DEFAULT_SOURCES above stays the soul list every station falls back
+   to, so a station whose edge is down never leaves the wall silent. */
+var RADIO_DEFAULT_STATION = 4;
+var radioStationId = RADIO_DEFAULT_STATION;
+RADIO_SOURCES = RADIO_STATIONS[RADIO_DEFAULT_STATION].sources;
+RADIO_NAME    = RADIO_STATIONS[RADIO_DEFAULT_STATION].name;
 function radioWantedStation(){
   var v = (typeof SET==='object' && SET) ? SET.station : null;
-  return RADIO_STATIONS[v] ? v : 1;
+  return RADIO_STATIONS[v] ? v : RADIO_DEFAULT_STATION;
 }
 /* called from applySettings: switch every screen live, no reload */
 function radioApplyStation(){
@@ -6382,6 +6537,12 @@ scheduleStunts();
 paintTicker();
 paintTickerPanel();
 paintCornerQR();
+/* Absent means on, so the backdrop goes up at boot rather than waiting for the
+   settings watch, the same reasoning the radio starts here. The poll is how it
+   crosses four minutes, midnight and the turn of a season without a schedule
+   to keep - it compares the picture it should be showing with the one it is. */
+seasonPaint();
+setInterval(seasonPaint,30000);
 keepAwake();
 /* Start the radio here rather than waiting for the settings watch. Absent
    means on, so there is nothing to wait for - and a board whose Firebase is
@@ -6414,6 +6575,7 @@ function applySettings(v){
   paintTicker();
   paintCornerQR();
   paintSettingsNote();
+  seasonPaint();
   /* a pause from a phone has to reach the wall, and an unpause has to start
      it again - both arrive here as a settings change */
   /* a volume change made on a phone should reach a sketch already running */
@@ -6446,6 +6608,7 @@ function paintSettingsNote(){
   ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
    'premiere',
    'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','ticker',
+   'seasons',
    'eventdeals','dealmargin','radio',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
   n.style.display=off.length?'block':'none';
