@@ -325,6 +325,13 @@ Warranty and the rest), no burnt in subtitles, and no watermark.
   the desk", which is both halves of the truth: the words are Dan's, the
   pictures are not a recording of him. Do not quietly drop that first
   sentence, and do not reinstate any claim that it was filmed.
+  **It is two lines, not one run of grey** (Dan, 27 October: "have a line
+  below the video saying this video is AI generated in small writing"). It
+  had been below the video since 9 October, but as one unbroken sentence in
+  `--dim`, the faintest colour in the palette, and he read the page without
+  noticing it, which is the only test a disclosure has to pass. The AI
+  sentence is now its own line in `--body-c`; the size is unchanged, because
+  small is what he asked for. Do not merge them back.
 - **That sentence carries MORE weight since the replacement, not less.** The
   new clip has no watermark, so the caption is now the only thing on the page
   telling a customer, and the footage is good enough to pass for filmed: it is
