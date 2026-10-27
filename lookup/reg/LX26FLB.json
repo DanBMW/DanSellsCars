@@ -6,7 +6,7 @@
  "mileage": "4,139 miles",
  "mileage_miles": 4139,
  "colour": "Silver",
- "fuel": "Petrol (mild hybrid)",
+ "fuel": "Petrol",
  "body": "SUV",
  "gearbox": "Automatic",
  "drive": "FourWheel",
@@ -19,11 +19,11 @@
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-1fd3-711d-8bae-86b0ef002202-preview.jpg",
  "images": [
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-1fd3-711d-8bae-86b0ef002202-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-30bd-72f6-9f98-4a973298e26c-enlarged.jpg",
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-20dd-764a-9182-e1a3bc8eb543-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-2fa5-7659-a4a0-8de5383eff7d-enlarged.jpg",
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-2254-749a-8a69-84ade2c9e6f4-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-23e3-750a-8ca2-f2ad4d63428d-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-2537-7f21-9aff-0770c03de15a-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-2613-7f2e-9087-674e0a33aa80-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f1a21-23e3-750a-8ca2-f2ad4d63428d-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/240588/pb-bmw-x1-2026",
  "listing_id": "240588",
