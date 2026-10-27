@@ -83,7 +83,7 @@
     signOut: function () { var d = demoDb(); delete d.session; demoSave(d); return Promise.resolve(); },
     visible: function (d, c) { var s = d.session; if (!s) return false; return s.role === 'admin' || (s.role === 'staff' && c.owner_staff_id === s.uid) || c.user_id === s.uid; },
     customers: function () { var d = demoDb(); return Promise.resolve((d.customers || []).filter(function (c) { return demo.visible(d, c); })); },
-    saveCustomer: function (c) { var d = demoDb(); var s = d.session; var i = (d.customers || []).findIndex(function (x) { return x.id === c.id; });
+    saveCustomer: function (c) { c = safePrefs(Object.assign({}, c), S.cust && S.cust.id === c.id ? S.cust : null); var d = demoDb(); var s = d.session; var i = (d.customers || []).findIndex(function (x) { return x.id === c.id; });
       if (i === -1) { c.id = c.id || uuid(); c.owner_staff_id = s.role === 'customer' ? null : s.uid; c.created_at = new Date().toISOString(); d.customers.push(c); }
       else { if (!demo.visible(d, d.customers[i])) return Promise.reject(new Error('no access')); c.owner_staff_id = d.customers[i].owner_staff_id; c.user_id = d.customers[i].user_id; d.customers[i] = c; }
       c.updated_at = new Date().toISOString(); demoSave(d); return Promise.resolve(c); },
@@ -122,7 +122,7 @@
     signOut: function () { return sb.auth.signOut(); },
     customers: function () { return sb.from('customers').select('*').order('created_at', { ascending: false }).then(function (r) { if (r.error) throw r.error;
       return Promise.all(r.data.map(function (c) { if (c.px_valuation_set_by !== 'staff') return c; return sb.rpc('valuation_set_by_name', { cid: c.id }).then(function (n) { c.px_valuation_set_by_name = n.data; return c; }); })); }); },
-    saveCustomer: function (c) { var row = Object.assign({}, row0(c)); delete row.px_photos_preview; var isNew = !row.id || !S.cust || S.cust.id !== row.id; if (isNew) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
+    saveCustomer: function (c) { var row = Object.assign({}, row0(c)); delete row.px_photos_preview; safePrefs(row, S.cust && S.cust.id === row.id ? S.cust : null); var isNew = !row.id || !S.cust || S.cust.id !== row.id; if (isNew) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
       /* No INSERT ... RETURNING: the read policy can't see a row inside the statement that creates it, so Postgres
          rejected every new customer. Insert or update first, then read the row back. */
       if (!row.id) row.id = uuid();
@@ -171,6 +171,16 @@
     var d = h.get('error_description') || q.get('error_description'); return d ? { code: h.get('error_code') || q.get('error_code') || '', text: d.replace(/\+/g, ' ') } : null; })();
   function isAuthHash(h) { return /(^|&)(access_token|refresh_token|error|error_code|type)=/.test(h || ''); }
   /* fields the database could not take yet, kept per customer and sent again with the next save */
+  /* Never send null for a preference: the array columns are NOT NULL, and a save must never blank a choice the form
+     did not load. Missing or broken values fall back to what the customer already had, else an empty list. */
+  var PREF_ARR = ['models', 'models_must', 'mileage_bands', 'colours', 'colours_must', 'specs', 'specs_must'];
+  function safePrefs(row, prev) { prev = prev || {};
+    PREF_ARR.forEach(function (k) { var v = row[k]; if (Array.isArray(v)) return;
+      if (typeof v === 'string' && v) { row[k] = [v]; return; }
+      if (Array.isArray(prev[k])) row[k] = prev[k].slice(); else delete row[k]; });
+    if (row.models_must && row.models) row.models_must = row.models_must.filter(function (m) { return row.models.indexOf(m) !== -1; });
+    if (typeof row.fuel !== 'string' || !row.fuel) { if (typeof prev.fuel === 'string' && prev.fuel) row.fuel = prev.fuel; else row.fuel = 'open'; }
+    return row; }
   function pendingCols(id, o) { try { var k = 'sdPendingCols:' + id; if (o && Object.keys(o).length) localStorage.setItem(k, JSON.stringify(o)); else localStorage.removeItem(k); } catch (e) {} }
   function pendingGet(id) { try { return JSON.parse(localStorage.getItem('sdPendingCols:' + id) || 'null') || {}; } catch (e) { return {}; } }
   var LIVE = CFG.MODE === 'supabase' && CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY;
@@ -449,7 +459,7 @@
       if (bad.length) { banner(f, bad.length === 1 ? 'One thing to fix before saving.' : bad.length + ' things to fix before saving.'); bad[0].scrollIntoView({ block: 'center' }); bad[0].focus({ preventScroll: true }); return; }
       var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim(), postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
-        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel').filter(function (x) { return x !== 'open'; }).join(',') || 'open', mileage_bands: choice(f, 'mileage_bands'), body: choice(f, 'body'), models: triVals('#modelChips').on, models_must: triVals('#modelChips').must, new_used: choice(f, 'new_used') });
+        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: [].concat(choice(f, 'fuel') || []).filter(function (x) { return x !== 'open'; }).join(',') || 'open', mileage_bands: [].concat(choice(f, 'mileage_bands') || []), body: choice(f, 'body'), models: $$('#modelChips button').length ? triVals('#modelChips').on : ((S.cust || {}).models || []), models_must: $$('#modelChips button').length ? triVals('#modelChips').must : ((S.cust || {}).models_must || []), new_used: choice(f, 'new_used') });
       if (staff) c.email = el.email.value.trim() || null;
       c.desk = deskRead(f, (S.cust || {}).desk);
       var num = function (v) { return v === '' ? null : Math.max(0, Math.round(+v)); }, prevVal = S.cust ? S.cust.px_valuation_gbp : null;
@@ -967,5 +977,5 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
     .catch(function (e) { console.warn('Swipe Drive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
-  window.ctDebug = { S: S, store: store, platform: platform, route: route };
+  window.ctDebug = { S: S, store: store, safePrefs: safePrefs, platform: platform, route: route };
 })();

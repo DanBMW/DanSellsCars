@@ -73,7 +73,7 @@ async def main():
         ctx = await b.new_context(**PHONE); await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1')")
         async def flag(route):
             r = await route.fetch(); body = (await r.text()).replace('GOOGLE_LOGIN_ENABLED: false', 'GOOGLE_LOGIN_ENABLED: true'); await route.fulfill(response=r, body=body)
-        await ctx.route('**/swipe-drive/config.js', flag); pg = await ctx.new_page(); await pg.goto(BASE); await pg.wait_for_selector('#pwMount .au-g', timeout=20000)
+        await ctx.route('**/swipe-drive/config.js*', flag); pg = await ctx.new_page(); await pg.goto(BASE); await pg.wait_for_selector('#pwMount .au-g', timeout=20000)
         ok(True, 'Google button shows when the flag is on'); await pg.locator('#pwBox').scroll_into_view_if_needed(); await shot(pg, 'app-signin-google-flag-on.png'); await ctx.close()
         await b.close()
     n = sum(1 for c, _ in res if c); print(f'\nRESULT auth {n}/{len(res)} passed'); sys.exit(0 if n == len(res) else 1)

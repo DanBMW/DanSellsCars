@@ -14,7 +14,7 @@ async def setup(b, mobile, reduced=False, tut_seen=True):
     kw = dict(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, device_scale_factor=2) if mobile else dict(viewport={'width': 1280, 'height': 860})
     ctx = await b.new_context(reduced_motion='reduce' if reduced else 'no-preference', **kw)
     await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');" + ("localStorage.setItem('sd_discover_tutorial_v1','1');" if tut_seen else ""))
-    await ctx.route('**/swipe-drive/config.js', lambda r: r.fulfill(body=DEMO, content_type='text/javascript'))
+    await ctx.route('**/swipe-drive/config.js*', lambda r: r.fulfill(body=DEMO, content_type='text/javascript'))
     pg = await ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
     await pg.goto(BASE); await pg.wait_for_selector('#siEmail')
     await pg.fill('#siEmail', 'sam@example.com'); await pg.click('#signinForm button[type=submit]'); await pg.click('[data-demo=customer]')

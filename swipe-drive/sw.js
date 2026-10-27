@@ -1,8 +1,8 @@
 /* Swipe Drive service worker: caches the app shell, serves offline.html when
    there is no connection, network first for stock data, and handles push. */
-const V = 'sd-v25';
-const SHELL = ['./', './index.html', './app.css', './app.js', './config.js', './auth-ui.js', './chat/profile-save.js', './match-core.js', './offline.html',
-  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js'];
+const V = 'sd-v26';
+const SHELL = ['./', './index.html', './app.css', './app.css?v=26', './app.js', './app.js?v=26', './config.js', './config.js?v=26', './auth-ui.js', './auth-ui.js?v=26', './chat/profile-save.js', './chat/profile-save.js?v=26', './match-core.js', './match-core.js?v=26', './offline.html',
+  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../stock-core.js?v=26'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
