@@ -39,6 +39,23 @@
     if (key.indexOf('feat:') === 0) { var det = (root.ctDetails || {})[car.listing_id]; return S().hasFeature(car, det, key.slice(5)); }
     return null;
   }
+  /* Fuel is saved as one text value: 'open', a single fuel (older profiles) or a comma list like 'petrol,hybrid'.
+     Empty or open means any fuel. A car passes when its fuel fits any chosen type. */
+  function fuelList(v) { return [].concat(v == null ? [] : v).join(',').split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(function (x) { return x && x !== 'open'; }); }
+  /* Optional preferred current mileage: a soft preference (boost in band, small dip outside), never a hard filter. */
+  var MILEAGE_BANDS = { '0_8k': { min: 0, max: 8000, label: '0 to 8k' }, '8_15k': { min: 8000, max: 15000, label: '8k to 15k' }, '15_25k': { min: 15000, max: 25000, label: '15k to 25k' }, '25k_plus': { min: 25000, max: Infinity, label: '25k plus' } };
+  function carMiles(car) { var m = car && car.mileage; if (m == null || m === '') return null; if (typeof m === 'number') return m; var d = String(m).replace(/[^0-9]/g, ''); return d ? +d : null; }
+  /* Models: models[] holds every picked model, models_must[] the subset tapped twice. Older profiles have no
+     models_must, so their picks count as would like. Any must have model set = the car must be one of them. */
+  function modelFit(car, p) {
+    var low = function (a) { return (a || []).map(function (m) { return String(m).toLowerCase(); }); };
+    var must = low(p.models_must), all = low(p.models).concat(must); if (!all.length) return { sc: 0, ok: true };
+    var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase(), has = function (m) { return name.indexOf(m) !== -1; };
+    if (must.length && must.some(has)) return { sc: 26, ok: true, why: 'A must have model' };
+    if (must.length) return { sc: -6, ok: false };
+    if (all.some(has)) return { sc: 22, ok: true, why: 'A model you picked' };
+    return { sc: -6, ok: true };
+  }
   /* Returns {score 0..100, reasons[], ok}. ok false = outside a hard limit. */
   function score(car, p) {
     p = p || {}; var sc = 40, why = [], ok = true, s = S();
@@ -47,19 +64,16 @@
     if (p.new_used === 'new' && !isNew) return { score: 0, reasons: [], ok: false };
     if (p.new_used === 'used' && isNew) return { score: 0, reasons: [], ok: false };
     var fk = isNew ? car.fuelKeys || [] : [s.fuelKey(car)];
-    if (p.fuel && p.fuel !== 'open') {
-      var hit = fk.some(function (k) { return (FUEL_OK[p.fuel] || []).indexOf(k) !== -1; });
+    var fl = fuelList(p.fuel);
+    if (fl.length) {
+      var hit = fl.some(function (f) { return fk.some(function (k) { return (FUEL_OK[f] || []).indexOf(k) !== -1; }); });
       if (hit) { sc += 20; why.push('Your fuel'); } else ok = false; /* a fuel filter is a hard filter for new and used */
     } else sc += 8;
     var bk = isNew ? car.bodyKeys || [] : s.bodyKeys(car);
     if (p.body && p.body !== 'any') {
       if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12;
     }
-    var models = (p.models || []).map(function (m) { return String(m).toLowerCase(); });
-    if (models.length) {
-      var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase();
-      if (models.some(function (m) { return name.indexOf(m) !== -1; })) { sc += 22; why.push('A model you picked'); } else sc -= 6;
-    }
+    var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
     /* model placeholder cards (no real stock for that model): no price of their own, so the budget test is against
        the cheapest real new BMW in stock today (floor_cash / floor_monthly, set by the app). Below that, hide them. */
     if (isNew) {
@@ -85,6 +99,8 @@
       specs.forEach(function (k) { var h = hasSpec(car, k);
         if (h === true) { got++; sc += 6; } else if (mustS.indexOf(k) !== -1 && h === false) ok = false; });
       if (got) why.push(got === 1 ? '1 spec you ticked' : got + ' specs you ticked');
+      var bands = (p.mileage_bands || []).filter(function (k) { return MILEAGE_BANDS[k]; }), mi = carMiles(car);
+      if (bands.length && mi != null) { if (bands.some(function (k) { var b = MILEAGE_BANDS[k]; return mi >= b.min && mi < b.max; })) { sc += 8; why.push('Mileage you prefer'); } else sc -= 4; }
       if (car.year) sc += Math.max(0, Math.min(6, car.year - 2019));
       if (p.annual_mileage > 12000 && /diesel|phev/.test(fk[0] || '')) sc += 3;
       if (car.source === 'forecourt') sc += 2;
@@ -120,12 +136,11 @@
     var sc = 38, why = [], ok = true, s = S();
     if (p.new_used === 'used') return { score: 0, reasons: [], ok: false };
     var fk = [s.fuelKey(car)];
-    if (p.fuel && p.fuel !== 'open') { if (fk.some(function (k) { return (FUEL_OK[p.fuel] || []).indexOf(k) !== -1; })) { sc += 20; why.push('Your fuel'); } else ok = false; } else sc += 8;
+    var fl = fuelList(p.fuel);
+    if (fl.length) { if (fl.some(function (f) { return fk.some(function (k) { return (FUEL_OK[f] || []).indexOf(k) !== -1; }); })) { sc += 20; why.push('Your fuel'); } else ok = false; } else sc += 8;
     var bk = s.bodyKeys(car) || [];
     if (p.body && p.body !== 'any') { if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12; }
-    var models = (p.models || []).map(function (m) { return String(m).toLowerCase(); });
-    if (models.length) { var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase();
-      if (models.some(function (m) { return name.indexOf(m) !== -1; })) { sc += 22; why.push('A model you picked'); } else sc -= 6; }
+    var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
     if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) { if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at the current price'); } else ok = false; }
     /* monthly: only on a figure that comes with a full representative example (car.finance); otherwise no monthly test or figure */
     if (p.budget_type === 'monthly' && p.monthly_gbp > 0) { if (car.finance && car.finance.monthly) { if (car.finance.monthly <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else ok = false; } else sc -= 4; }
@@ -182,5 +197,5 @@
     if (!f || !f.monthly || !f.representative_example) return null;
     return { monthly: gbp2(f.monthly), headline: gbp2(f.monthly) + ' a month, ' + f.product, example: f.representative_example, legal: f.legal || '' };
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance };
+  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit };
 })(typeof window !== 'undefined' ? window : globalThis);

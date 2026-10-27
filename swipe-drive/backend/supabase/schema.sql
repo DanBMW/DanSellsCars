@@ -41,6 +41,8 @@ create table if not exists public.customers (
   colours_must text[] not null default '{}',   -- subset that is a must have
   specs text[] not null default '{}',          -- spec keys, see swipe-drive/match-core.js specOptions()
   specs_must text[] not null default '{}',
+  models_must text[] not null default '{}',   -- subset of models that is a must have
+  mileage_bands text[] not null default '{}', -- optional preferred current mileage bands
   new_used text check (new_used in ('new','used','both')),
   px jsonb,                              -- {reg, mileage, condition, finance_outstanding, photos}
   px_valuation_gbp int check (px_valuation_gbp >= 0),      -- PX valuation from Dan (no automatic valuations)

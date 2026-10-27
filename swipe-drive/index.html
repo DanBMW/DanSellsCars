@@ -83,11 +83,16 @@
       </fieldset>
       <fieldset><legend>The car</legend>
         <span class="ct-lab">Fuel</span>
-        <div class="ct-chips" data-name="fuel"><button type="button" data-v="open">Open minded</button><button type="button" data-v="petrol">Petrol</button><button type="button" data-v="diesel">Diesel</button><button type="button" data-v="hybrid">Hybrid</button><button type="button" data-v="electric">Electric</button></div>
+        <p class="ct-hint">Pick as many as you like.</p>
+        <div class="ct-chips ct-multi" data-name="fuel"><button type="button" data-v="open">Open minded</button><button type="button" data-v="petrol">Petrol</button><button type="button" data-v="diesel">Diesel</button><button type="button" data-v="hybrid">Hybrid</button><button type="button" data-v="electric">Electric</button></div>
         <span class="ct-lab">Body or size</span>
         <div class="ct-chips" data-name="body"><button type="button" data-v="any">Any</button><button type="button" data-v="small">Small and easy</button><button type="button" data-v="hatchback">Hatchback</button><button type="button" data-v="saloon">Saloon</button><button type="button" data-v="estate">Touring</button><button type="button" data-v="suv">SUV</button><button type="button" data-v="family">Family space</button><button type="button" data-v="coupe">Coupe or convertible</button></div>
-        <span class="ct-lab">Models you like (pick any)</span>
-        <div class="ct-chips ct-multi" data-name="models" id="modelChips"></div>
+        <span class="ct-lab">Models you like</span>
+        <p class="ct-hint">Tap once if you would like it, tap again to make it a must have, a third tap clears it.</p>
+        <div class="ct-chips ct-tri" data-tri="models" id="modelChips"></div>
+        <span class="ct-lab">Preferred current mileage (optional)</span>
+        <p class="ct-hint">Pick any that suit, or leave blank for any mileage.</p>
+        <div class="ct-chips ct-multi" data-name="mileage_bands"><button type="button" data-v="0_8k">0 to 8k</button><button type="button" data-v="8_15k">8k to 15k</button><button type="button" data-v="15_25k">15k to 25k</button><button type="button" data-v="25k_plus">25k plus</button></div>
         <span class="ct-lab">Colours</span>
         <p class="ct-hint">Tap once if you like it, tap again to make it a must have.</p>
         <div class="ct-chips ct-tri" data-tri="colours" id="colourChips"></div>
