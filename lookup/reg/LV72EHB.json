@@ -1,0 +1,33 @@
+{
+ "reg": "LV72EHB",
+ "model": "BMW X2 xDrive20d M Sport",
+ "series": "X2",
+ "year": 2022,
+ "mileage": "7,803 miles",
+ "mileage_miles": 7803,
+ "colour": "White",
+ "fuel": "Diesel",
+ "body": "SUV",
+ "gearbox": "Automatic",
+ "drive": "FourWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "189 hp",
+ "trim": "M Sport",
+ "price": "£26,000",
+ "price_gbp": 26000,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8ccb-7f74-8497-c3c51a0c77c1-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8ccb-7f74-8497-c3c51a0c77c1-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8daa-7fd3-ac37-1fd37a0bd676-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8e4e-7ffc-8f81-ca97de0a9b61-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8f1b-7671-a66c-694299fd048b-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/258087/pb-bmw-x2-2022",
+ "listing_id": "258087",
+ "source": "forecourt",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}

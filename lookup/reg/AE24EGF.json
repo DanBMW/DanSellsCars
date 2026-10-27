@@ -1,0 +1,33 @@
+{
+ "reg": "AE24EGF",
+ "model": "BMW iX2 eDrive20 M Sport",
+ "series": "iX2",
+ "year": 2024,
+ "mileage": "31,076 miles",
+ "mileage_miles": 31076,
+ "colour": "Black",
+ "fuel": "Electric",
+ "body": "SUV",
+ "gearbox": "Automatic",
+ "drive": "FrontWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "203 hp",
+ "trim": "M Sport",
+ "price": "£26,000",
+ "price_gbp": 26000,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8cca-7213-9c2a-dc2e159c01cd-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8cca-7213-9c2a-dc2e159c01cd-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8d92-7471-a344-8d4de6ea4180-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8e5a-7e8b-b67d-8232db7e4581-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8ee4-746f-9afa-92bf8217d6a8-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/258088/pb-bmw-ix2-2024",
+ "listing_id": "258088",
+ "source": "forecourt",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}

@@ -1,4 +1,9 @@
 {
+ "AE24EGF": {
+  "first_seen": "2026-10-27",
+  "last_seen": "2026-10-27",
+  "removed_at": null
+ },
  "AV73OUJ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-21",
@@ -57,7 +62,7 @@
  "CK67HLZ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-27",
-  "removed_at": null
+  "removed_at": "2026-10-27"
  },
  "CV22UFN": {
   "first_seen": "2026-10-07",
@@ -321,6 +326,11 @@
  },
  "KM23TLF": {
   "first_seen": "2026-10-26",
+  "last_seen": "2026-10-27",
+  "removed_at": null
+ },
+ "KP24DYJ": {
+  "first_seen": "2026-10-27",
   "last_seen": "2026-10-27",
   "removed_at": null
  },
@@ -962,7 +972,7 @@
  "LV26XFD": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-27",
-  "removed_at": null
+  "removed_at": "2026-10-27"
  },
  "LV26XHN": {
   "first_seen": "2026-10-07",
@@ -994,6 +1004,11 @@
   "last_seen": "2026-10-27",
   "removed_at": null
  },
+ "LV68DWW": {
+  "first_seen": "2026-10-27",
+  "last_seen": "2026-10-27",
+  "removed_at": null
+ },
  "LV71CXS": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-27",
@@ -1008,6 +1023,11 @@
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-10",
   "removed_at": "2026-10-11"
+ },
+ "LV72EHB": {
+  "first_seen": "2026-10-27",
+  "last_seen": "2026-10-27",
+  "removed_at": null
  },
  "LV72EHS": {
   "first_seen": "2026-10-26",
