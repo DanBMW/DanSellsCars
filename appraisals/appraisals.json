@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-26T20:02:16.883Z",
+  "captured": "2026-10-27T06:01:59.974Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -379,7 +379,7 @@
       "appraisedAt": "2026-10-19T13:46:54.879Z",
       "make": "BMW",
       "model": "3 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Poor",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--XFi0eZ5F--/c_fill,h_300,w_300/v1792417645/Live/Appraisals/9589265/4bdb4573-7ccb-4c83-993c-492dd3265184.jpg"
@@ -389,7 +389,7 @@
       "appraisedAt": "2026-10-19T13:08:48.395Z",
       "make": "JAGUAR",
       "model": "E-PACE",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--ywytRvAC--/c_fill,h_300,w_300/v1792415338/Live/Appraisals/9589124/666e24c4-6f5b-45a2-8166-dbd533359324.jpg"
@@ -399,7 +399,7 @@
       "appraisedAt": "2026-10-19T13:03:03.565Z",
       "make": "BMW",
       "model": "5 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Average",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--4Ja2RB-X--/c_fill,h_300,w_300/v1792415000/Live/Appraisals/9589102/cae6dfee-2050-495a-83af-d4c882df944f.jpg"
@@ -409,7 +409,7 @@
       "appraisedAt": "2026-10-19T12:05:34.311Z",
       "make": "AUDI",
       "model": "Q3",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -439,7 +439,7 @@
       "appraisedAt": "2026-10-19T10:10:06.062Z",
       "make": "MERCEDES-BENZ",
       "model": "CLA",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -449,7 +449,7 @@
       "appraisedAt": "2026-10-19T09:39:00.549Z",
       "make": "MINI",
       "model": "Hatch",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -459,7 +459,7 @@
       "appraisedAt": "2026-10-19T08:13:30.694Z",
       "make": "MERCEDES-BENZ",
       "model": "CLE",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--jE2EgzSF--/c_fill,h_300,w_300/v1792397611/Live/Appraisals/9587851/22b4be65-b7a8-4ca4-8a3a-30b56ca394d5.jpg"
