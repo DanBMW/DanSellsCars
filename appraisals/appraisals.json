@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-27T14:02:07.289Z",
+  "captured": "2026-10-27T16:03:08.895Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "FT68BPK",
+      "appraisedAt": "2026-10-27T15:05:07.168Z",
+      "make": "MERCEDES-BENZ",
+      "model": "CLA",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--NoVpDJCg--/c_fill,h_300,w_300/v1793113521/Live/Appraisals/9605896/e0dbb236-2e53-4a59-99d9-283185db9d8d.jpg"
+    },
+    {
+      "registration": "MM68OMX",
+      "appraisedAt": "2026-10-27T14:59:58.103Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--hcLD-U1f--/c_fill,h_300,w_300/v1793113217/Live/Appraisals/9605875/3033aee4-efd0-4048-a249-bac73f066f41.jpg"
+    },
     {
       "registration": "LY72AZA",
       "appraisedAt": "2026-10-27T11:38:26.471Z",
@@ -483,16 +503,6 @@
       "price": null,
       "condition": "Average",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--tz3_IVvO--/c_fill,h_300,w_300/v1792407651/Live/Appraisals/9588589/0bf3a1a0-5cda-46e8-a61c-0bae831f3212.jpg"
-    },
-    {
-      "registration": "FT68BPK",
-      "appraisedAt": "2026-10-19T10:10:06.062Z",
-      "make": "MERCEDES-BENZ",
-      "model": "CLA",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "KE19MKN",
