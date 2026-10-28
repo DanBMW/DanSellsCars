@@ -357,7 +357,7 @@
     drawTri('#colourChips', [{ key: 'Any', label: 'Any' }].concat(famList.map(function (x) { return { key: x, label: x }; })), c.colours || ['Any'], c.colours_must || []);
     drawTri('#specChips', M.specOptions(), c.specs || [], c.specs_must || []);
     var px = c.px || {}; setChoice(f, 'px_has', px.reg ? 'yes' : 'no');
-    f.elements.px_reg.value = px.reg || ''; f.elements.px_mileage.value = px.mileage || ''; f.elements.px_condition.value = px.condition || '';
+    f.elements.px_reg.value = px.reg || ''; f.elements.px_mileage.value = px.mileage || '';
     ['px_valuation_gbp', 'px_valued_on', 'px_settlement_gbp', 'px_settlement_valid_until'].forEach(function (k) { f.elements[k].value = c[k] == null ? '' : c[k]; });
     /* one settlement box: older profiles kept "finance still owed" inside px, carry it across */
     if (f.elements.px_settlement_gbp.value === '' && px.finance_outstanding != null) f.elements.px_settlement_gbp.value = px.finance_outstanding;
@@ -392,6 +392,8 @@
     $('#pxRates').innerHTML = row(RATE_AREAS[0], 'Anything we should know (optional)') +
       '<details class="ct-more"' + (open ? ' open' : '') + '><summary>Add more detail about the car (optional)</summary><div class="ct-rates">' +
       more.map(function (a) { return row(a, 'Notes (optional)'); }).join('') + '</div></details>'; }
+  /* the one condition word kept for emails and older readers, taken from Overall condition */
+  function overallLabel(r) { var x = (r || {}).overall; return x && x.rating ? RATE_L[x.rating] : ''; }
   function readRates() { var o = {}; $$('#pxRates .ct-rate').forEach(function (el) { var b = $('button[aria-pressed=true]', el), n = $('input', el).value.trim();
       if (b || n) o[el.getAttribute('data-area')] = Object.assign(b ? { rating: +b.getAttribute('data-r') } : {}, n ? { notes: n } : {}); }); return o; }
   function drawThumbs() { $('#pxThumbs').innerHTML = S.pxPhotos.map(function (p) { return p.preview ? '<img src="' + esc(p.preview) + '" alt="Part exchange photo">' : '<span class="ct-pill">Photo saved</span>'; }).join(''); }
@@ -438,7 +440,7 @@
         if ($('#pxConfirm').checked) { c.px_terms_confirmed_at = new Date().toISOString(); c.px_terms_confirmed_by = staff ? 'staff' : 'customer'; } }
       else { c.px_condition_ratings = {}; c.px_terms_confirmed_at = null; c.px_terms_confirmed_by = null; c.px_valuation_gbp = c.px_settlement_gbp = null; c.px_valued_on = c.px_settlement_valid_until = null; }
       if (LIVE) { delete c.px_valuation_set_by; delete c.px_valuation_set_by_name; delete c.px_valuation_set_by_user; } /* stamped by the database */
-      c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: el.px_condition.value, finance_outstanding: c.px_settlement_gbp, /* mirror of the settlement figure, kept for older readers */
+      c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: overallLabel(c.px_condition_ratings), finance_outstanding: c.px_settlement_gbp, /* mirror of the settlement figure, kept for older readers */
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
       var wasNew = !(S.cust && S.cust.id); busy(btn, true);
       store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
