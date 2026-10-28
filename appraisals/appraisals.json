@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-28T14:02:10.299Z",
+  "captured": "2026-10-28T16:02:17.831Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "C114RLA",
+      "appraisedAt": "2026-10-28T15:53:10.004Z",
+      "make": "BMW",
+      "model": "X6 M",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "YF20WZS",
+      "appraisedAt": "2026-10-28T15:35:23.781Z",
+      "make": "BMW",
+      "model": "2 Series Gran Tourer",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--CkgG5fMr--/c_fill,h_300,w_300/v1793201733/Live/Appraisals/9608034/9bee0501-923e-4ded-bd4d-f2bae96d3eaa.jpg"
+    },
+    {
+      "registration": "YA68FMF",
+      "appraisedAt": "2026-10-28T14:42:25.143Z",
+      "make": "MERCEDES-BENZ",
+      "model": "A Class",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "LV23EVD",
       "appraisedAt": "2026-10-28T12:58:46.411Z",
