@@ -309,3 +309,15 @@ body.ct::before{will-change:transform}
 .tut-ico{flex:0 0 34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;background:#20252d}
 .tut-like .tut-ico:before{content:"\2192";color:#3ccf7a}.tut-pass .tut-ico:before{content:"\2190";color:#e5484d}.tut-tap .tut-ico:before{content:"\25CF";color:#9dbbe6}.tut-info .tut-ico:before{content:"\21C4";color:#ffd76a}
 @media (prefers-reduced-motion: reduce){.ct-tut *{animation:none!important;transition:none!important}}
+/* Profile sections: the optional parts fold away until they are needed */
+.ct-sec{margin:0 0 6px;border-top:1px solid var(--line)}
+.ct-sec>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-family:var(--serif);font-size:20px;padding:14px 0}
+.ct-sec>summary::-webkit-details-marker{display:none}
+.ct-sec>summary::after{content:'+';font-family:var(--sans);font-size:22px;color:var(--acc);line-height:1}
+.ct-sec[open]>summary::after{content:'\2212'}
+.ct-sec>summary .ct-opt{font-family:var(--sans);font-size:12px;margin-left:auto;margin-right:12px}
+.ct-sec-b{padding-bottom:6px}
+/* Tap targets: 44px minimum for chips, segment buttons and rating buttons */
+.ct-chips button,.ct-seg button,.ct-tri button,.ct-rate-b button{min-height:44px}
+/* Colour and spec chips name their state: Like and Must */
+.ct-tri button[data-state=like]::after{content:'Like';margin-left:6px;font-size:10.5px;font-weight:800;background:rgba(255,255,255,.18);padding:1px 6px;border-radius:8px}

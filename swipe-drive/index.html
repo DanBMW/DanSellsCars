@@ -74,14 +74,14 @@
         <label class="ct-f" data-staff-only hidden><span>Customer email <em class="ct-req">required</em></span><input name="email" type="email" inputmode="email" aria-required="true"></label>
         <label class="ct-f"><span>Postcode <em class="ct-opt">optional</em></span><input name="postcode" autocomplete="postal-code"></label>
       </fieldset>
-      <fieldset><legend>Budget</legend>
+      <details class="ct-sec" data-sec="budget"><summary>Budget <em class="ct-opt">optional</em></summary><div class="ct-sec-b">
         <div class="ct-seg" data-name="budget_type"><button type="button" data-v="monthly">Monthly</button><button type="button" data-v="cash">Cash price</button></div>
         <label class="ct-f" data-show="budget_type=monthly"><span>Up to a month (&pound;)</span><input name="monthly_gbp" type="number" inputmode="numeric" min="0" step="10"></label>
         <label class="ct-f" data-show="budget_type=cash"><span>Up to (&pound;)</span><input name="cash_gbp" type="number" inputmode="numeric" min="0" step="500"></label>
         <label class="ct-f"><span>Deposit (&pound;)</span><input name="deposit_gbp" type="number" inputmode="numeric" min="0" step="100"></label>
         <label class="ct-f"><span>Miles a year</span><select name="annual_mileage"><option value="6000">Up to 6,000</option><option value="8000" selected>About 8,000</option><option value="10000">About 10,000</option><option value="15000">About 15,000</option><option value="20000">20,000 or more</option></select></label>
-      </fieldset>
-      <fieldset><legend>The car</legend>
+      </div></details>
+      <details class="ct-sec" data-sec="car"><summary>The car <em class="ct-opt">optional</em></summary><div class="ct-sec-b">
         <span class="ct-lab">Fuel</span>
         <div class="ct-chips" data-name="fuel"><button type="button" data-v="open">Open minded</button><button type="button" data-v="petrol">Petrol</button><button type="button" data-v="diesel">Diesel</button><button type="button" data-v="hybrid">Hybrid</button><button type="button" data-v="electric">Electric</button></div>
         <span class="ct-lab">Body or size</span>
@@ -89,21 +89,22 @@
         <span class="ct-lab">Models you like (pick any)</span>
         <div class="ct-chips ct-multi" data-name="models" id="modelChips"></div>
         <span class="ct-lab">Colours</span>
-        <p class="ct-hint">Tap once if you like it, tap again to make it a must have.</p>
+        <p class="ct-hint">Tap once to pick it. Tap again to make it a must have. Tap a third time to clear it.</p>
         <div class="ct-chips ct-tri" data-tri="colours" id="colourChips"></div>
-        <span class="ct-lab">Specification</span>
+        <span class="ct-lab">Specification</span><p class="ct-hint">Same taps as colours: pick it, tap again for a must have.</p>
         <div class="ct-chips ct-tri" data-tri="specs" id="specChips"></div>
         <span class="ct-lab">New or used</span>
         <div class="ct-seg" data-name="new_used"><button type="button" data-v="used">Used</button><button type="button" data-v="new">Brand new</button><button type="button" data-v="both">Either</button></div>
-      </fieldset>
-      <fieldset><legend>Part exchange</legend>
-        <div class="ct-seg" data-name="px_has"><button type="button" data-v="no">No car to swap</button><button type="button" data-v="yes">I have one</button></div>
+      </div></details>
+      <span class="ct-lab">Do you have a car to part exchange?</span><div class="ct-seg" data-name="px_has"><button type="button" data-v="no">No car to swap</button><button type="button" data-v="yes">I have one</button></div>
+<details class="ct-sec" data-sec="px"><summary>Part exchange <em class="ct-opt">optional</em></summary><div class="ct-sec-b">
+        
         <div data-show="px_has=yes">
           <label class="ct-f"><span>Reg</span><input name="px_reg" autocapitalize="characters"></label>
           <label class="ct-f"><span>Mileage</span><input name="px_mileage" type="number" inputmode="numeric" min="0"></label>
-          <div class="ct-pair"><label class="ct-f"><span>PX valuation from Dan (&pound;)</span><input name="px_valuation_gbp" type="number" inputmode="numeric" min="0" step="50"></label>
+          <div class="ct-pair" data-staff-only hidden><label class="ct-f"><span>PX valuation from Dan (&pound;)</span><input name="px_valuation_gbp" type="number" inputmode="numeric" min="0" step="50"></label>
             <label class="ct-f"><span>Valued on</span><input name="px_valued_on" type="date"></label></div>
-          <p class="ct-hint" id="pxValBy"></p>
+          <p class="ct-hint" id="pxValBy" data-staff-only hidden></p>
           <div class="ct-pair"><label class="ct-f"><span>Finance settlement figure (&pound;, 0 if none)</span><input name="px_settlement_gbp" type="number" inputmode="numeric" min="0" step="50"></label>
             <label class="ct-f"><span>Settlement valid until</span><input name="px_settlement_valid_until" type="date"></label></div>
           <div class="ct-equity" id="pxEquity" hidden></div>
@@ -114,8 +115,8 @@
           <div class="ct-terms"><p id="pxTerms">Your part exchange valuation is based on the information and condition ratings you have provided being accurate. The final figure is subject to inspection of the vehicle and confirmation of any outstanding finance, and may change if the vehicle differs from the description given.</p>
             <label class="ct-check"><input type="checkbox" id="pxConfirm"> <span id="pxConfirmLabel">I confirm</span></label><p class="ct-hint" id="pxConfirmed"></p></div>
         </div>
-      </fieldset>
-      <fieldset><legend>More detail</legend><p class="ct-hint">The same questions as the desk sheet. All optional.</p><div id="deskBox"></div></fieldset>
+      </div></details>
+      <details class="ct-sec" data-sec="more"><summary>More detail <em class="ct-opt">optional</em></summary><div class="ct-sec-b"><p class="ct-hint">The same questions as the desk sheet. All optional.</p><div id="deskBox"></div></div></details>
       <button class="ct-btn ct-btn-big" type="submit" id="pfSave">Find my match</button>
       <p class="ct-msg" id="pfMsg" role="status"></p>
     </form>
@@ -124,7 +125,7 @@
   <!-- 3. swipe -->
   <section class="ct-screen" data-screen="discover" hidden>
     <div class="ct-deck" id="deck"></div>
-    <div class="ct-empty" id="deckEmpty" hidden><h2>That is everyone for now.</h2><p>New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><a class="ct-btn" href="#matches">See your matches</a></div>
+    <div class="ct-empty" id="deckEmpty" hidden><h2 id="deckEmptyT">That is everyone for now.</h2><p id="deckEmptyP">New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><div class="ct-row" id="deckEmptyActs"><a class="ct-btn" href="#matches">See your matches</a></div></div>
     <div class="ct-actions" id="deckActions">
       <button class="ct-act ct-pass" id="btnPass" type="button" aria-label="Pass on this car (brake)"><svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><rect x="9" y="12" width="30" height="24" rx="6" fill="currentColor"/><g stroke="#0a0c0f" stroke-width="2.4" stroke-linecap="round"><path d="M14 18h20M14 24h20M14 30h20"/></g></svg><span>Brake</span></button>
       <button class="ct-act ct-info" id="btnInfo" type="button" aria-label="More about this car"><svg viewBox="0 0 48 48" width="26" height="26" aria-hidden="true"><path d="M8 32a16 16 0 1 1 32 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M24 32l8-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="32" r="3" fill="currentColor"/></svg><span>Info</span></button>
