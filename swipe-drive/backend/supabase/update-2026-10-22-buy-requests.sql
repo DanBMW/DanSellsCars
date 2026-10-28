@@ -1,4 +1,4 @@
--- Swipe Drive update, 22 Oct 2026: Buy this car and Send my matches leads. Safe to run more than once.
+-- SwipeToDrive update, 22 Oct 2026: Buy this car and Send my matches leads. Safe to run more than once.
 -- Paste into Supabase > SQL Editor > Run. Needs schema.sql (is_staff, can_access_customer) already in place.
 
 create table if not exists public.buy_requests (

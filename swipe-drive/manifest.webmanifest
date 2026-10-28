@@ -1,6 +1,6 @@
 {
-  "name": "Swipe Drive | Dan Sells",
-  "short_name": "Swipe Drive",
+  "name": "SwipeToDrive | Dan Sells",
+  "short_name": "SwipeToDrive",
   "id": "./",
   "start_url": "./?source=pwa",
   "scope": "./",

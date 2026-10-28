@@ -1,4 +1,4 @@
-// Swipe Drive: notify-buy-request (Supabase Edge Function, Deno).
+// SwipeToDrive: notify-buy-request (Supabase Edge Function, Deno).
 // The app calls this right after saving a buy_requests row. It checks the caller can see that customer,
 // emails Dan through Resend and stamps notified_at so a request is only emailed once.
 // Secrets (set with `supabase secrets set`, never in the repo):
@@ -30,15 +30,15 @@ Deno.serve(async (req) => {
   const { data: c } = await db.from('customers').select('name,phone,email,postcode').eq('id', r.customer_id).maybeSingle();
   const cust = c || {} as any;
   const what = r.type === 'buy' ? `wants to buy ${r.car_model || ''} ${r.car_reg && !String(r.car_reg).startsWith('NEW-') ? r.car_reg : ''}`.trim() : `sent their matches (${(r.cars || []).length})`;
-  const subject = `Swipe Drive: ${cust.name || 'A customer'} ${what}`;
+  const subject = `SwipeToDrive: ${cust.name || 'A customer'} ${what}`;
   const lines = r.type === 'buy' ? [`Car: ${r.car_model || ''}`, `Reg: ${r.car_reg || ''}`, `Price shown: ${r.car_price || 'n/a'}`]
     : (r.cars || []).map((x: any) => `${x.model || ''} ${x.kind === 'new' ? '(new)' : x.reg || ''} ${x.price || ''}`.trim());
   const text = [subject, '', `Name: ${cust.name || ''}`, `Phone: ${cust.phone || ''}`, `Email: ${cust.email || ''}`, `Postcode: ${cust.postcode || ''}`, '', ...lines, '',
-    r.type === 'buy' ? 'They were told you will call to take a deposit and arrange collection.' : '', 'Open Swipe Drive > Customers > Buy requests: https://dan-sells.co.uk/swipe-drive/#buys'].join('\n');
+    r.type === 'buy' ? 'They were told you will call to take a deposit and arrange collection.' : '', 'Open SwipeToDrive > Customers > Buy requests: https://dan-sells.co.uk/swipe-drive/#buys'].join('\n');
   const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5"><h2 style="margin:0 0 8px">${esc(subject)}</h2>` +
     `<p><b>${esc(cust.name)}</b><br>${esc(cust.phone)}<br>${esc(cust.email)}<br>${esc(cust.postcode)}</p><ul>${lines.map((l: string) => `<li>${esc(l)}</li>`).join('')}</ul>` +
     (r.type === 'buy' ? '<p>They were told you will call to take a deposit and arrange collection.</p>' : '') +
-    `<p><a href="https://dan-sells.co.uk/swipe-drive/#buys">Open Buy requests in Swipe Drive</a></p></div>`;
+    `<p><a href="https://dan-sells.co.uk/swipe-drive/#buys">Open Buy requests in SwipeToDrive</a></p></div>`;
   const res = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env('RESEND_API_KEY'), 'Content-Type': 'application/json' },
     body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject, html, text, ...(cust.email ? { reply_to: cust.email } : {}) }) });
   if (!res.ok) return json({ ok: false, reason: 'send failed', status: res.status }, 502);

@@ -1,4 +1,4 @@
-"""Swipe Drive sign in: email and password in the app and at the end of the Revvy chat, saving chat answers.
+"""SwipeToDrive sign in: email and password in the app and at the end of the Revvy chat, saving chat answers.
 Usage: python3 e2e_auth.py BASE_URL ACCOUNT_JSON [SHOTS_DIR]
 ACCOUNT_JSON holds {"email","password"} for a confirmed test customer (never printed). Talks to the real
 Supabase project for sign in and the save; sign up and forgot password are stubbed so no email is sent."""

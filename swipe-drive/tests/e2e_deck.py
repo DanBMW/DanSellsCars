@@ -1,4 +1,4 @@
-"""Swipe Drive Discover deck: drag from anywhere, tap opens details, swipe in details, first visit tutorial.
+"""SwipeToDrive Discover deck: drag from anywhere, tap opens details, swipe in details, first visit tutorial.
 Usage: python3 e2e_deck.py BASE_URL [SHOTS_DIR]   e.g. http://localhost:8765/swipe-drive/
 Runs the app in demo mode (config.js swapped in the browser only). Touch uses real CDP touch events, so
 touch-action and scrolling behave like a phone. Needs playwright and Google Chrome."""

@@ -1,7 +1,7 @@
 <!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Quick 60 second version | Swipe Drive | Dan Sells</title><meta name="robots" content="noindex"><link rel="icon" href="../icons/icon-192.png"><link rel="preconnect" href="https://api.fontshare.com"><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&f[]=satoshi@400,500,700,900&display=swap"><meta name="theme-color" content="#0a0c0f"><link rel="stylesheet" href="chat.css"></head>
+<title>Quick 60 second version | SwipeToDrive | Dan Sells</title><meta name="robots" content="noindex"><link rel="icon" href="../icons/icon-192.png"><link rel="preconnect" href="https://api.fontshare.com"><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&f[]=satoshi@400,500,700,900&display=swap"><meta name="theme-color" content="#0a0c0f"><link rel="stylesheet" href="chat.css"></head>
 <body><div class="app">
-<header><img src="../icons/logo.svg?v=9" width="32" height="32" alt=""><div class="brand">Swipe <b>Drive</b><small>powered by Dan Sells</small></div></header>
+<header><img src="../icons/logo.svg?v=10" width="32" height="32" alt=""><div class="brand"><span style="white-space:nowrap">SwipeTo<b>Drive</b></span><small>powered by Dan Sells</small></div></header>
 
 <form class="card" id="q6" novalidate><h2>Seven quick questions</h2><p style="margin:0;color:var(--mut)">About 60 seconds, then it all goes to Dan in one message.</p>
 <label>1. Your first name<input id="q_name" required maxlength="40" data-type="name"></label><div class="err"></div>
@@ -26,8 +26,8 @@ $("showCall").onclick=function(){$("call").hidden=false;$("cName").focus()};
 function go(lines){location.href="https://wa.me/447827138197?text="+encodeURIComponent(lines.join("\n"))}
 $("call").onsubmit=function(e){e.preventDefault();var n=O.check({type:"name"},$("cName").value),p=O.check({type:"phone",optional:false},$("cPhone").value);
  $("eName").textContent=n.ok?"":O.reply({type:"name"},n);$("ePhone").textContent=p.ok?"":O.reply({type:"phone"},p);
- if(n.ok&&p.ok)go(["Hi Dan, please give me a call to fill in Swipe Drive together.","Name: "+n.val,"Mobile: "+p.val,"Best time: "+$("cTime").value])};
-$("q6").onsubmit=function(e){e.preventDefault();var ok=true,lines=["Hi Dan, here are my Swipe Drive quick answers:"];
+ if(n.ok&&p.ok)go(["Hi Dan, please give me a call to fill in SwipeToDrive together.","Name: "+n.val,"Mobile: "+p.val,"Best time: "+$("cTime").value])};
+$("q6").onsubmit=function(e){e.preventDefault();var ok=true,lines=["Hi Dan, here are my SwipeToDrive quick answers:"];
  this.querySelectorAll("input").forEach(function(inp){var q={type:inp.dataset.type};if(inp.dataset.lo)q.fn=O.V.pounds(+inp.dataset.lo,+inp.dataset.hi);if(q.type=="cur")q.ex="Something like £400 a month, or not sure.";
   var req=inp.id=="q_name"||inp.id=="q_phone";if(req)q.optional=false;var r=inp.value.trim()?O.check(q,inp.value):(req?{ok:0,why:"req"}:{ok:1,val:"Not given"}),err=inp.parentNode.nextElementSibling;if(inp.id=="q_stretch"&&r.ok&&inp.value.trim()){var bn=O.check(q,$("q_budget").value),num=function(x){return +String(x).replace(/[^0-9.]/g,"")};if(bn.ok&&num(r.val)<num(bn.val))r={ok:0,why:"low"}}err.textContent=r.ok?"":r.why=="req"?(inp.id=="q_name"?"Your first name, please, so Dan knows who he is talking to.":"A UK mobile, please, so Dan can get back to you."):(r.why=="low"?"That's a touch under your normal budget. Same or higher here, please.":O.reply(q,r));if(!r.ok)ok=false;else if(inp.id=="q_stretch"){if(r.val!="Not given")lines.push("Perfect car stretch budget: "+r.val+" a month")}else lines.push(inp.parentNode.firstChild.textContent.replace(/^\d\. /,"")+": "+r.val+(inp.id=="q_budget"&&r.val!="Not given"?" a month":""))});
  if(ok)go(lines);else{var f=this.querySelector(".err:not(:empty)");if(f)f.previousElementSibling.scrollIntoView({block:"center",behavior:"smooth"})}};

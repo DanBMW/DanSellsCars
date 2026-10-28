@@ -1,4 +1,4 @@
-/* Swipe Drive matching, shared by the app (app.js) and the daily match job
+/* SwipeToDrive matching, shared by the app (app.js) and the daily match job
    (backend/supabase/functions/match-alerts). Body and fuel come from
    stock-core.js (window.dsStock), the same rules stock.html and Find my BMW use.
    Cars are rows of lookup/stock.json, built by scripts/build-lookup.mjs from
@@ -112,8 +112,8 @@
   function waText(car, who) {
     if (car.kind === 'new_stock') return 'Hi' + (who ? ' ' + who : '') + ', a new ' + car.model + (car.colour ? ' in ' + car.colour : '') + ' has come into stock that could suit you. Shall I put a quote together?';
     var hi = 'Hi' + (who ? ' ' + who : '') + ', ';
-    if (car.kind === 'new') return hi + 'I matched with a new BMW ' + car.model + ' on Swipe Drive. Can we talk options?';
-    return hi + 'I matched with the ' + car.model + (car.year ? ' (' + car.year + ')' : '') + ', reg ' + normReg(car.reg) + ', on Swipe Drive. Is it still available?';
+    if (car.kind === 'new') return hi + 'I matched with a new BMW ' + car.model + ' on SwipeToDrive. Can we talk options?';
+    return hi + 'I matched with the ' + car.model + (car.year ? ' (' + car.year + ')' : '') + ', reg ' + normReg(car.reg) + ', on SwipeToDrive. Is it still available?';
   }
   function waLink(number, car, who) { return 'https://wa.me/' + (number || DAN_WA) + '?text=' + encodeURIComponent(waText(car, who)); }
   var gbp = function (n) { return '\u00a3' + Number(n).toLocaleString('en-GB', { maximumFractionDigits: 0 }); };

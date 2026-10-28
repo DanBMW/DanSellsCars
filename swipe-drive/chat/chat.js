@@ -1,7 +1,7 @@
 (function(){
 var O=window.Onboard,P=O.V.pounds;
 var Q=[
- {id:"name",short:"Name",type:"name",say:"Hi, I'm Revvy, Dan's Swipe Drive assistant bot. I need to learn a little about you and your requirements before I can show you what is available. First up, what should I call you?",re:"What should I call you?",optional:false,chips:["Skip"]},
+ {id:"name",short:"Name",type:"name",say:"Hi, I'm Revvy, Dan's SwipeToDrive assistant bot. I need to learn a little about you and your requirements before I can show you what is available. First up, what should I call you?",re:"What should I call you?",optional:false,chips:["Skip"]},
  {id:"model",short:"Model I like",type:"model",say:"Nice to meet you{nm}! Which BMW has caught your eye?",chips:["X1","3 Series","X3","i4","Not sure yet"]},
  {id:"why",short:"What I like",kind:"multi",say:"What matters most to you? Tap as many as you like.",choices:["Comfort","Space for family","Low running costs","Performance","Tech","Electric","Looks","Reliability"]},
  {id:"cur",short:"Current car",type:"anycar",say:"What are you driving at the moment?",ex:"Something like 2019 Audi A3 diesel, or just the make and model.",chips:["No current car","Not sure"]},
@@ -36,18 +36,18 @@ function fill(s){var ok=A.name&&A.name!="Skipped"&&A.name!="Not sure";return s.r
 function progress(){var tot=Q.filter(function(q){return !(q.skipIf&&q.skipIf(A))}).length,done=Object.keys(A).filter(function(k){return k.charAt(0)!="_"}).length;var p=Math.min(1,done/tot);car.style.left="calc("+(p*100)+"% - "+(p*34)+"px)";document.getElementById("pct").textContent=Math.round(p*100)+"%";wa.href=O.waLink(A,Q)}
 function answer(q,val,shown){if(busy)return;tray.innerHTML="";me(shown||val);inp.value="";A[q.id]=val;i++;A._i=i;miss=0;O.save(A);progress();var rx=R.react(q,val,A);next(rx)}
 function next(pre){tray.innerHTML="";while(i<Q.length&&Q[i].skipIf&&Q[i].skipIf(A))i++;
- if(i>=Q.length){form.hidden=true;bots([pre,"That's everything"+fill("{nm}")+"! Tap the green button and your answers go straight to Dan on WhatsApp. He reads every one himself.","Want your answers saved to a Swipe Drive profile too? Sign in or create a free account and they'll be there next time. Totally optional."],endOffer);return}
+ if(i>=Q.length){form.hidden=true;bots([pre,"That's everything"+fill("{nm}")+"! Tap the green button and your answers go straight to Dan on WhatsApp. He reads every one himself.","Want your answers saved to a SwipeToDrive profile too? Sign in or create a free account and they'll be there next time. Totally optional."],endOffer);return}
  var q=Q[i];form.hidden=true;bots([pre,fill(q.say)],function(){render(q)})}
-function waBtn(){var b=el("a","cta","Send to Dan on WhatsApp");b.href=O.waLink(A,Q,"Hi Dan, I've finished Swipe Drive:");b.target="_blank";b.rel="noopener";b.id="waEnd";return b}
+function waBtn(){var b=el("a","cta","Send to Dan on WhatsApp");b.href=O.waLink(A,Q,"Hi Dan, I've finished SwipeToDrive:");b.target="_blank";b.rel="noopener";b.id="waEnd";return b}
 var CFG=window.CT_CONFIG||{},APP=location.origin+"/swipe-drive/",sbP=null;
 function getSb(){if(!sbP)sbP=import("https://esm.sh/@supabase/supabase-js@2").then(function(m){return m.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY,{auth:{persistSession:true,detectSessionInUrl:false,flowType:"implicit"}})});return sbP}
-function endOffer(){tray.innerHTML="";tray.appendChild(waBtn());if(A._saved){var ok=el("p","alt","Your answers are saved to your Swipe Drive profile.");tray.appendChild(ok);return}var row=el("div","saverow"),sv=chip("Save my answers",null),no=chip("No thanks",null);sv.classList.add("go");row.appendChild(sv);row.appendChild(no);tray.appendChild(row);var au=el("div","authbox");au.id="authbox";tray.appendChild(au);
+function endOffer(){tray.innerHTML="";tray.appendChild(waBtn());if(A._saved){var ok=el("p","alt","Your answers are saved to your SwipeToDrive profile.");tray.appendChild(ok);return}var row=el("div","saverow"),sv=chip("Save my answers",null),no=chip("No thanks",null);sv.classList.add("go");row.appendChild(sv);row.appendChild(no);tray.appendChild(row);var au=el("div","authbox");au.id="authbox";tray.appendChild(au);
  no.onclick=function(){row.remove();au.innerHTML="";bot("No problem. Your answers are still ready to send to Dan on WhatsApp.")};
  sv.onclick=function(){row.remove();au.innerHTML='<p class="alt">Loading sign in...</p>';if(!(CFG.SUPABASE_URL&&window.AuthUI&&window.ChatProfile)){au.innerHTML="";bot("Saving isn't available right now, but WhatsApp works just fine.");return}
   getSb().then(function(sb){return sb.auth.getSession().then(function(r){var s=r.data&&r.data.session;if(s)return doSave(sb,s.user,au);
    window.ChatProfile.markPending();
    window.AuthUI.mount(au,{sb:sb,cfg:CFG,redirect:APP,code:true,onDone:function(sess){doSave(sb,sess.user,au)},track:function(n){try{window.gtag&&gtag("event",n,{source:"chat"})}catch(e){}}});stick(true)})}).catch(function(){au.innerHTML="";bot("I couldn't load sign in just now. WhatsApp still works.")})};stick(true)}
-function doSave(sb,user,au){au.innerHTML='<p class="alt">Saving...</p>';window.ChatProfile.save(sb,user,A).then(function(){au.innerHTML="";A._saved=user.email||"yes";O.save(A);bot("Saved to your profile"+(user.email?" ("+user.email+")":"")+". Open Swipe Drive any time to see cars that fit. Don't forget to send your answers to Dan too.",function(){var a=el("a","chip","Open Swipe Drive");a.href=APP;au.appendChild(a);stick(true)})})
+function doSave(sb,user,au){au.innerHTML='<p class="alt">Saving...</p>';window.ChatProfile.save(sb,user,A).then(function(){au.innerHTML="";A._saved=user.email||"yes";O.save(A);bot("Saved to your profile"+(user.email?" ("+user.email+")":"")+". Open SwipeToDrive any time to see cars that fit. Don't forget to send your answers to Dan too.",function(){var a=el("a","chip","Open SwipeToDrive");a.href=APP;au.appendChild(a);stick(true)})})
  .catch(function(e){console.warn("chat save",e);au.innerHTML="";bot("That didn't save, sorry. Your answers are still safe here, and WhatsApp works just fine.")})}
 function render(q){tray.innerHTML="";form.hidden=!!(q.kind&&q.kind!="single");inp.value="";inp.placeholder=q.kind=="single"?"Tap or type":"Type your answer";
  if(q.kind=="single")q.choices.forEach(function(c){chip(c,function(){answer(q,c)})});

@@ -1,4 +1,4 @@
--- Swipe Drive schema for Supabase (Postgres + RLS). Run in the SQL editor once.
+-- SwipeToDrive schema for Supabase (Postgres + RLS). Run in the SQL editor once.
 -- Roles: admin (Dan), staff (invited colleagues), customer.
 -- Every table has RLS on; access is decided by the helper functions below.
 

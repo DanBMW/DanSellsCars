@@ -1,4 +1,4 @@
-/* Swipe Drive app. Plain JS, relative paths, no build step, so it can be
+/* SwipeToDrive app. Plain JS, relative paths, no build step, so it can be
    wrapped later with Capacitor or PWABuilder. Platform specific bits (push,
    install, haptics, deep links, share) sit behind `platform` below.
    Data goes through `store`: 'demo' keeps everything on the device,
@@ -289,7 +289,7 @@
   }
   /* alerts already allowed: quietly refresh the subscription so a key change never leaves a phone without alerts */
   function resyncPush() { try { if (!LIVE || !platform.pushSupported() || Notification.permission !== 'granted' || !CFG.VAPID_PUBLIC_KEY) return;
-    platform.subscribePush().then(function (sub) { return store.savePush(sub); }).catch(function (e) { console.warn('Swipe Drive push resync', e); }); } catch (e) {} }
+    platform.subscribePush().then(function (sub) { return store.savePush(sub); }).catch(function (e) { console.warn('SwipeToDrive push resync', e); }); } catch (e) {} }
   function loadCust() {
     if (!S.cust) { S.swipes = {}; S.owner = null; return Promise.resolve(); }
     return Promise.all([store.swipes(S.cust.id), store.owner(S.cust)]).then(function (r) { S.swipes = r[0]; S.owner = r[1]; badge(); });
@@ -507,13 +507,13 @@
   function saveSwipe(reg, liked, extra) {
     var cid = S.cust && S.cust.id;
     Promise.resolve().then(function () { if (!cid) throw new Error('no customer'); return store.setSwipe(cid, reg, liked, extra); })
-      .catch(function (err) { console.warn('Swipe Drive swipe save', err); toast('That swipe did not save. Carry on swiping.'); });
+      .catch(function (err) { console.warn('SwipeToDrive swipe save', err); toast('That swipe did not save. Carry on swiping.'); });
   }
   function decide(x, liked, superLike) {
     if (x._decided) return; x._decided = true;
     var i = S.deck.indexOf(x); if (i !== -1) S.deck.splice(i, 1); else S.deck = S.deck.filter(function (y) { return y.car.reg !== x.car.reg; });
     S.swipes[x.car.reg] = { liked: liked, at: Date.now(), shortlisted: !!superLike };
-    try { drawDeck(); } catch (e) { console.warn('Swipe Drive deck', e); }
+    try { drawDeck(); } catch (e) { console.warn('SwipeToDrive deck', e); }
     saveSwipe(x.car.reg, liked, superLike ? { shortlisted: true } : null);
     track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: x.car.kind === 'new' ? '' : x.car.reg, kind: x.car.kind, score: x.score });
     if (superLike) { badge(); matchMoment(x); return; }
@@ -605,7 +605,7 @@
     link.addEventListener('click', function () { showTutorial(true); }); var acts = $('#deckActions'); acts.parentNode.insertBefore(link, acts.nextSibling); }
   function maybeTutorial() { var seen = null; try { seen = localStorage.getItem(TUT); } catch (e) {} if (!seen && !$('#deck').hidden) showTutorial(false); }
   function showTutorial(replay) { if ($('#tut')) return; var rm = reduced(), o = document.createElement('div'); o.className = 'ct-tut' + (rm ? ' is-static' : ''); o.id = 'tut';
-    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'How Swipe Drive works');
+    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'How SwipeToDrive works');
     var STEPS = [['like', 'Swipe right on a car you like'], ['pass', 'Swipe left to pass'], ['tap', 'Tap the card for all the details'], ['info', 'Still swipe in the details to decide']];
     var demo = '<div class="tut-card"><div class="tut-ph"><span>BMW X3</span></div><div class="tut-meta"><b>BMW X3 xDrive20d</b><i></i><i class="s"></i></div><em class="tut-st tut-yes">TEST DRIVE</em><em class="tut-st tut-no">PASS</em></div>' +
       '<div class="tut-sheet"><div class="tut-ph"></div><b>Full details</b><i></i><i></i><i class="s"></i></div><div class="tut-hand" aria-hidden="true"><svg viewBox="0 0 48 48" width="54" height="54"><path d="M19 6a3 3 0 0 1 6 0v15l2-1a3 3 0 0 1 4 1l1 1a3 3 0 0 1 4 1l1 1a3 3 0 0 1 4 2v8c0 7-5 12-12 12h-2c-4 0-7-2-9-5l-7-10a3 3 0 0 1 5-3l3 3z" fill="#f4f1ea" stroke="#0a0c0f" stroke-width="1.6"/></svg></div>';
@@ -668,7 +668,7 @@
   function sendLead() {
     var c = S.cust, L = liked(), msg = $('#sendMsg'), px = c.px || {};
     var lead = 'CT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-    var body = { _subject: 'Swipe Drive matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'swipe-drive', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
+    var body = { _subject: 'SwipeToDrive matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'swipe-drive', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
       budget: c.budget_type === 'cash' ? 'Cash up to \u00a3' + (c.cash_gbp || '?') : 'Monthly up to \u00a3' + (c.monthly_gbp || '?'), deposit: c.deposit_gbp || '', annual_mileage: c.annual_mileage,
       colours: (c.colours || []).join(', ') || 'Any', colours_must_have: (c.colours_must || []).join(', '), specs_wanted: (c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '), specs_must_have: (c.specs_must || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '),
       fuel: c.fuel, body_or_size: c.body, models_of_interest: (c.models || []).join(', '), new_or_used: c.new_used,
@@ -697,11 +697,11 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     if (!S.cust) return Promise.resolve(null);
     var r = Object.assign({ id: uuid(), customer_id: S.cust.id }, extra);
     return Promise.resolve().then(function () { return store.buyRequest(r); })
-      .then(function (row) { Promise.resolve().then(function () { return store.notifyBuy(row.id); }).catch(function (e) { console.warn('Swipe Drive notify', e); }); track('buy_request', { type: r.type }); return row; })
-      .catch(function (e) { console.warn('Swipe Drive buy request', e); return null; });
+      .then(function (row) { Promise.resolve().then(function () { return store.notifyBuy(row.id); }).catch(function (e) { console.warn('SwipeToDrive notify', e); }); track('buy_request', { type: r.type }); return row; })
+      .catch(function (e) { console.warn('SwipeToDrive buy request', e); return null; });
   }
   function buyWa(c, ref) { var reg = c.kind === 'new' ? '' : ', reg ' + M.normReg(c.reg);
-    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on Swipe Drive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
+    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on SwipeToDrive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
   function askBuy(c) { S.buyCar = c; var who = waWho() || 'Dan';
     $('#buyTitle').textContent = 'Buy the ' + c.model + '?'; $('#buyText').textContent = who + ' will call you to take a deposit and arrange collection.';
     $('#buyAsk').hidden = false; $('#buyDone').hidden = true; $('#buyYes').disabled = false; $('#buyModal').hidden = false; }
@@ -867,7 +867,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
         shareInvite(inv); f.reset(); showInvites(); toast('Invite saved'); track('staff_invited'); })
       .catch(function (err) { busy(btn, false); console.warn('invite', err); banner(f, plainErr(err)); }); }); }
   function shareInvite(inv) { var link = location.origin + '/swipe-drive/';
-    var text = 'Hi ' + inv.name.split(' ')[0] + ', I have added you to Swipe Drive. Open ' + link + ' and sign in with ' + inv.email + ' (that exact email). You will get a sign in link and code by email, and you will see your customers once you are in. Dan';
+    var text = 'Hi ' + inv.name.split(' ')[0] + ', I have added you to SwipeToDrive. Open ' + link + ' and sign in with ' + inv.email + ' (that exact email). You will get a sign in link and code by email, and you will see your customers once you are in. Dan';
     var box = $('#invShare'); box.hidden = false; $('#invShareText').textContent = text;
     $('#invWa').href = 'https://wa.me/' + inv.whatsapp + '?text=' + encodeURIComponent(text);
     $('#invCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast('Invite message copied'); }, function () {
@@ -877,7 +877,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   function installInfo() {
     var el = $('#installInfo');
     if (platform.standalone) { el.innerHTML = '<p class="ct-sub">You are using the app. Nice.</p>'; return; }
-    if (platform.ios) { el.innerHTML = '<p class="ct-sub">Add Swipe Drive to your Home Screen to use it like an app and get alerts.</p><button class="ct-btn ct-btn-ghost" type="button" id="iosOpen">Show me how</button>'; $('#iosOpen').onclick = function () { $('#iosGuide').hidden = false; track('ios_guide_open'); }; return; }
+    if (platform.ios) { el.innerHTML = '<p class="ct-sub">Add SwipeToDrive to your Home Screen to use it like an app and get alerts.</p><button class="ct-btn ct-btn-ghost" type="button" id="iosOpen">Show me how</button>'; $('#iosOpen').onclick = function () { $('#iosGuide').hidden = false; track('ios_guide_open'); }; return; }
     el.innerHTML = '<button class="ct-btn" type="button" id="instNow">Install the app</button><div id="installHelp" class="ct-sub" role="status" aria-live="polite"></div>';
     $('#instNow').onclick = doInstall;
   }
@@ -886,7 +886,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     var android = /android/i.test(navigator.userAgent);
     var html = platform.ios ? 'On iPhone or iPad: tap the Share button in Safari, then Add to Home Screen.'
       : android ? 'On Android: open the browser menu (the three dots), then tap Install app or Add to Home screen.'
-      : 'On a computer: click the install icon at the right of the address bar in Chrome or Edge, or open the browser menu and choose Install Swipe Drive. In Safari on a Mac choose File, then Add to Dock.';
+      : 'On a computer: click the install icon at the right of the address bar in Chrome or Edge, or open the browser menu and choose Install SwipeToDrive. In Safari on a Mac choose File, then Add to Dock.';
     if (platform.ios) { $('#iosGuide').hidden = false; return; }
     function show() { var h = $('#installHelp'); if (h) { h.innerHTML = '<p>' + esc(html) + '</p>'; h.scrollIntoView({ block: 'center' }); } }
     if ($('[data-screen=me]').hidden && S.session) { go('me'); setTimeout(show, 50); } else show(); track('install_help'); }
@@ -910,6 +910,6 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     .then(function (sess) { if (sess) track('sign_in', { method: LIVE ? 'magic_link' : 'demo', role: sess.role }); return sess ? afterSignIn(sess) : route(); })
     .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
-    .catch(function (e) { console.warn('Swipe Drive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
+    .catch(function (e) { console.warn('SwipeToDrive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
   window.ctDebug = { S: S, store: store, platform: platform, route: route };
 })();

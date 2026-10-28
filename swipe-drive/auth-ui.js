@@ -1,4 +1,4 @@
-/* Swipe Drive sign in box: email and password (sign in, create account, forgot password), email code,
+/* SwipeToDrive sign in box: email and password (sign in, create account, forgot password), email code,
    and Continue with Google (only when CT_CONFIG.GOOGLE_LOGIN_ENABLED is true). Used by the app sign in
    screen and the end of the Revvy chat. Needs a supabase-js client. */
 (function(g){

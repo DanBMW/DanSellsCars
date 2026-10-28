@@ -1,10 +1,10 @@
--- Swipe Drive | paste this whole file into Supabase > SQL Editor > New query > Run.
+-- SwipeToDrive | paste this whole file into Supabase > SQL Editor > New query > Run.
 -- Project dexqyqrbelmdjdhxaboq. Safe to run more than once (idempotent).
 -- Creates tables, helper functions, triggers, row level security, the private
 -- "px" storage bucket and its policies. Contains no secrets.
 -- NOT included (see after-signin-and-secrets.sql): making Dan admin, pg_cron schedule.
 
--- Swipe Drive schema for Supabase (Postgres + RLS). Run in the SQL editor once.
+-- SwipeToDrive schema for Supabase (Postgres + RLS). Run in the SQL editor once.
 -- Roles: admin (Dan), staff (invited colleagues), customer.
 -- Every table has RLS on; access is decided by the helper functions below.
 

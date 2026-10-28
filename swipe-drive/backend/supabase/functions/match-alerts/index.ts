@@ -1,4 +1,4 @@
-// Swipe Drive daily job (Supabase Edge Function, Deno). Triggered by pg_cron
+// SwipeToDrive daily job (Supabase Edge Function, Deno). Triggered by pg_cron
 // after the morning stock refresh (see schema.sql). It:
 //  1. reads lookup/stock.json, finds regs not seen before (stock_seen),
 //  2. scores them against every customer with match-core.js,

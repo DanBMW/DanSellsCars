@@ -1,4 +1,4 @@
-/* Swipe Drive chat: turn Revvy answers into a customers row and save it for the signed in customer.
+/* SwipeToDrive chat: turn Revvy answers into a customers row and save it for the signed in customer.
    Uses existing columns only. Typed columns are filled only when empty, so a profile the customer already
    set up is never overwritten. The full chat sits in customers.desk.chat (desk is an existing jsonb column). */
 (function(g){
