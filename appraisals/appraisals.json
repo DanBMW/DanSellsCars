@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-28T12:02:33.115Z",
+  "captured": "2026-10-28T14:02:10.299Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV23EVD",
+      "appraisedAt": "2026-10-28T12:58:46.411Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jrHOFzJe--/c_fill,h_300,w_300/v1793192328/Live/Appraisals/9607469/f07c23da-74cd-4ee8-934b-6a2f008f68ba.jpg"
+    },
     {
       "registration": "CP71NHH",
       "appraisedAt": "2026-10-28T11:28:10.262Z",
@@ -4943,7 +4953,8 @@
       "status": "Returned",
       "price": null,
       "condition": "Average",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--ydVnStx8--/c_fill,h_300,w_300/v1785417425/Live/Appraisals/9385796/a5223ab8-ab79-4b6c-81a9-14ba0fa53c5b.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--ydVnStx8--/c_fill,h_300,w_300/v1785417425/Live/Appraisals/9385796/a5223ab8-ab79-4b6c-81a9-14ba0fa53c5b.jpg",
+      "droppedAt": "2026-10-28T14:02:10.298Z"
     },
     {
       "registration": "LX73JJZ",
