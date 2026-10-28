@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-28T16:02:17.831Z",
+  "captured": "2026-10-28T18:02:04.495Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "H24RJD",
+      "appraisedAt": "2026-10-28T17:31:41.713Z",
+      "make": "LAND ROVER",
+      "model": "Freelander 2",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "MX16VWR",
+      "appraisedAt": "2026-10-28T16:11:27.321Z",
+      "make": "MERCEDES-BENZ",
+      "model": "E Class",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--bFjWs2fu--/c_fill,h_300,w_300/v1793203901/Live/Appraisals/9608143/df5f6e64-a655-4806-9f8c-a4c82d0d0760.jpg"
+    },
     {
       "registration": "C114RLA",
       "appraisedAt": "2026-10-28T15:53:10.004Z",
