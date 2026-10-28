@@ -44,6 +44,37 @@ export function budgetText(c) {
   return '';
 }
 const FUEL = { petrol: 'Petrol', diesel: 'Diesel', hybrid: 'Hybrid', electric: 'Electric' };
+/* Car preferences the guest can review and change with Revvy (low risk, saved straight to the customer).
+   Option lists come from the same rules as the main app, and anything outside them is dropped. */
+export const BODY_OPTS = [['any', 'Any'], ['small', 'Small and easy'], ['hatchback', 'Hatchback'], ['saloon', 'Saloon'], ['estate', 'Touring'], ['suv', 'SUV'], ['family', 'Family space'], ['coupe', 'Coupe or convertible']];
+export const NEWUSED_OPTS = [['used', 'Used'], ['new', 'Brand new'], ['both', 'Either']];
+export const FUEL_OPTS = [['petrol', 'Petrol'], ['diesel', 'Diesel'], ['hybrid', 'Hybrid'], ['electric', 'Electric']];
+export function prefOptions(M, cars) {
+  const seen = {}, models = [];
+  (cars || []).forEach(c => { if (c.series && !seen[c.series]) { seen[c.series] = 1; models.push(c.series); } });
+  models.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+  return { models, colours: M.FAMILY.map(x => x[0]), specs: M.specOptions().map(o => [o.key, o.label]), fuel: FUEL_OPTS,
+    mileage: Object.keys(M.MILEAGE_BANDS).map(k => [k, M.MILEAGE_BANDS[k].label]), body: BODY_OPTS, new_used: NEWUSED_OPTS };
+}
+export function prefValues(c, M) {
+  const arr = v => Array.isArray(v) ? v.slice() : [];
+  return { models: arr(c.models), models_must: arr(c.models_must), colours: arr(c.colours).filter(x => x !== 'Any'), colours_must: arr(c.colours_must), specs: arr(c.specs), specs_must: arr(c.specs_must),
+    fuel: M.fuelList(c.fuel), mileage_bands: arr(c.mileage_bands), body: c.body || 'any', new_used: c.new_used || 'both' };
+}
+/* validate a guest's preference answers against the option lists; returns the patch and a plain English change list */
+export function cleanPrefs(body, cur, opts) {
+  const pick = (v, allowed, max) => Array.isArray(v) ? [...new Set(v.map(String))].filter(x => allowed.includes(x)).slice(0, max || 40) : null;
+  const keys = l => l.map(x => Array.isArray(x) ? x[0] : x), patch = {}, changes = [];
+  const lab = (l, k) => { const f = l.find(x => (Array.isArray(x) ? x[0] : x) === k); return f ? (Array.isArray(f) ? f[1] : f) : k; };
+  const tri = (k, mk, list, name) => { if (!(k in body)) return; const on = pick(body[k], keys(list)), must = pick(body[mk] || [], keys(list)); if (!on) return;
+    const m2 = must.filter(x => on.includes(x)); const before = JSON.stringify([[...cur[k]].sort(), [...cur[mk]].sort()]), after = JSON.stringify([[...on].sort(), [...m2].sort()]);
+    if (before !== after) { patch[k] = on; patch[mk] = m2; changes.push(`${name}: must have ${m2.map(x => lab(list, x)).join(', ') || 'none'}; would like ${on.filter(x => !m2.includes(x)).map(x => lab(list, x)).join(', ') || 'none'}`); } };
+  tri('models', 'models_must', opts.models, 'Models'); tri('colours', 'colours_must', opts.colours, 'Colours'); tri('specs', 'specs_must', opts.specs, 'Spec');
+  if ('fuel' in body) { const f = pick(body.fuel, keys(opts.fuel)); if (f && JSON.stringify([...f].sort()) !== JSON.stringify([...cur.fuel].sort())) { patch.fuel = f.join(',') || 'open'; changes.push('Fuel: ' + (f.map(x => lab(opts.fuel, x)).join(', ') || 'Open minded')); } }
+  if ('mileage_bands' in body) { const b = pick(body.mileage_bands, keys(opts.mileage)); if (b && JSON.stringify([...b].sort()) !== JSON.stringify([...cur.mileage_bands].sort())) { patch.mileage_bands = b; changes.push('Mileage: ' + (b.map(x => lab(opts.mileage, x)).join(', ') || 'Any')); } }
+  ['body', 'new_used'].forEach(k => { if (k in body && keys(opts[k]).includes(String(body[k])) && String(body[k]) !== cur[k]) { patch[k] = String(body[k]); changes.push((k === 'body' ? 'Body or size: ' : 'New or used: ') + lab(opts[k], patch[k])); } });
+  return { patch, changes };
+}
 export function guestHints(c, M) {
   const must = c.models_must || [], like = (c.models || []).filter(m => must.indexOf(m) < 0), fuels = M.fuelList(c.fuel);
   return { phone_hint: maskPhone(c.phone), email_hint: maskEmail(c.email), has_phone: !!maskPhone(c.phone), has_email: !!maskEmail(c.email),
@@ -61,7 +92,7 @@ export async function guestHandle(body, deps) {
     const cars = await loadCars();
     const deck = guestDeck(M, cars, cu, await db.emailedRegs(cu.id), 40);
     const sw = await db.swipes(cu.id);
-    return { status: 200, body: { cars: deck, swiped: sw, owner_wa: await db.ownerWa(cu), tut_key: cu.id.slice(0, 8) } };
+    return { status: 200, body: { cars: deck, swiped: sw, owner_wa: await db.ownerWa(cu) } };
   }
   if (act === 'swipe') {
     if (!REG.test(String(body.reg || '')) || typeof body.liked !== 'boolean') return { status: 400, body: { error: 'bad swipe' } };
@@ -76,7 +107,12 @@ export async function guestHandle(body, deps) {
     await db.buyRequest(cu.id, act, picked.map(c => ({ reg: c.reg, model: c.model, price: c.price || '', kind: c.kind || 'used' })));
     return { status: 200, body: { ok: true } };
   }
-  if (act === 'hints') return { status: 200, body: guestHints(cu, M) };
+  if (act === 'hints') { const cars = await loadCars(); return { status: 200, body: Object.assign(guestHints(cu, M), { values: prefValues(cu, M), options: prefOptions(M, cars) }) }; }
+  if (act === 'prefs') {
+    const cars = await loadCars(), r = cleanPrefs(body || {}, prefValues(cu, M), prefOptions(M, cars));
+    if (Object.keys(r.patch).length) await db.savePrefs(cu.id, r.patch, r.changes);
+    return { status: 200, body: { ok: true, changed: r.changes.length } };
+  }
   if (act === 'confirm') {
     const phone = clean(body.phone, 20).replace(/[\s()-]/g, ''), email = clean(body.email, 254).toLowerCase(), name = clean(body.name, 60), note = clean(body.prefs_note, 500);
     if (phone && !PHONE.test(phone)) return { status: 400, body: { error: 'phone' } };

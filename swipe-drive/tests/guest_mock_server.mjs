@@ -17,6 +17,7 @@ if (process.argv[3] === 'nophone') { cust.phone = null; }
 const db = { customer: async id => id === CID ? cust : null, hit: async () => { const m = Math.floor(Date.now() / 60000); if (state.min !== m) { state.min = m; state.hits = 0; } return ++state.hits; }, emailedRegs: async () => emailed,
   swipes: async () => Object.fromEntries(Object.entries(state.swipes).map(([k, v]) => [k, v.liked])), ownerWa: async () => '447827138197',
   swipe: async (id, reg, liked) => { state.swipes[reg] = { liked, source: 'guest_link' }; }, buyRequest: async (id, act, c) => { state.requests.push({ act, cars: c }); },
+  savePrefs: async (id, patch, changes) => { Object.assign(cust, patch); state.prefs = { patch, changes }; },
   confirm: async (id, fill, upd) => { Object.assign(cust, fill); state.confirm = upd; } };
 const tok = await signGuest(SECRET, CID, 0, Math.floor(Date.now() / 1000) + 30 * 86400);
 http.createServer((req, res) => {

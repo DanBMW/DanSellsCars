@@ -323,3 +323,5 @@ body.ct::before{will-change:transform}
 .ct-stock-car img{width:84px;height:56px;object-fit:cover;border-radius:8px;flex:none;background:#222}.ct-stock-car b{display:block;font-size:14px;line-height:1.3}.ct-stock-car span{font-size:13px;color:var(--mut,#9aa3b2)}
 .ct-stock-note{background:#3a2a12;color:#ffd99a;border-radius:12px;padding:10px 12px;font-size:14px!important;text-align:left}
 .ct-pill.flag{background:#3a2a12;color:#ffd99a}
+
+.ct-tags span.ct-note{background:#4a3a12;border-color:#8a6d1f;color:#ffe2a0}

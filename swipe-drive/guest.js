@@ -16,9 +16,9 @@
     $('#g-err-p').textContent = st === 429 ? 'Too many taps at once. Wait a minute and try again.' : 'Message Dan on WhatsApp and he will send you a fresh link or the cars directly.';
     show('#g-err'); }
   function spec(c) { return (c.kind === 'new_stock' ? ['Brand new', c.colour, c.fuel] : [c.year, c.mileage, c.fuel, c.gearbox]).filter(Boolean).join(' \u00b7 '); }
-  function cardHtml(c, under) { return '<div class="g-card' + (under ? ' under' : '') + '" data-reg="' + esc(c.reg) + '"><div class="ph" style="background-image:url(\'' + esc(c.image || 'icons/icon-512.png') + '\')"></div>' +
-      (c.kind === 'new_stock' ? '<span class="new">Brand new</span>' : '') + '<span class="tag l">LIKE</span><span class="tag p">PASS</span>' +
-      '<div class="bd"><h2>' + esc(c.model) + '</h2><div class="sp">' + esc(spec(c)) + '</div><div class="pr">' + esc(c.price || 'Price on request') + '</div></div></div>'; }
+  function cardHtml(c, under) { return '<div class="g-card' + (under ? ' under' : '') + '" data-reg="' + esc(c.reg) + '"><div class="ph" style="--ph:url(\'' + esc(c.image || 'icons/icon-512.png') + '\')"><img src="' + esc(c.image || 'icons/icon-512.png') + '" alt="" draggable="false"></div>' +
+      '<span class="tag l">LIKE</span><span class="tag p">PASS</span>' +
+      '<div class="bd">' + (c.kind === 'new_stock' ? '<span class="new">Brand new</span>' : '') + '<h2>' + esc(c.model) + '</h2><div class="sp">' + esc(spec(c)) + '</div><div class="pr">' + esc(c.price || 'Price on request') + '</div></div></div>'; }
   function draw() {
     if (S.i >= S.cars.length) return end();
     $('#g-count').textContent = 'Car ' + (S.i + 1) + ' of ' + S.cars.length;
@@ -38,7 +38,7 @@
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', function () { dx = 0; up(); }); }
   function details(c) { if (!c) return; var rows = [['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Colour', c.colour], ['Body', c.body], ['Power', c.power], ['Seats', c.seats]].filter(function (r) { return r[1]; });
     var ph = (c.images && c.images.length ? c.images : [c.image]).filter(Boolean);
-    $('#g-sheet-body').innerHTML = (ph.length ? '<div class="g-photos">' + ph.map(function (u) { return '<img src="' + esc(u) + '" alt="" loading="lazy">'; }).join('') + '</div>' : '') +
+    $('#g-sheet-body').innerHTML = (ph.length ? '<div class="g-photos">' + ph.map(function (u) { return '<div class="g-pf" style="--ph:url(\'' + esc(u) + '\')"><img src="' + esc(u) + '" alt="" loading="lazy"></div>'; }).join('') + '</div>' : '') +
       '<div class="g-det"><h2>' + esc(c.model) + '</h2><div class="pr" style="font-size:22px;font-weight:800">' + esc(c.price || 'Price on request') + '</div>' +
       (c.finance ? '<div class="g-fin"><b>' + esc(c.finance.headline) + '</b><strong>Representative example.</strong> ' + esc(c.finance.example) + (c.finance.legal ? ' ' + esc(c.finance.legal) : '') + '</div>' : '') +
       '<dl>' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' +
@@ -50,7 +50,8 @@
       b.disabled = true; call({ action: 'buy', reg: c.reg }).then(function (r) { if (r.ok) { $('#g-buy-msg').textContent = 'Sent to Dan. He will be in touch to talk it through.'; b.textContent = 'Sent to Dan'; } else { b.disabled = false; b.textContent = 'Buy this car'; b.removeAttribute('data-sure'); toast('That did not send. Try again or WhatsApp Dan.'); } }); };
     $('#g-s-like').onclick = function () { $('#g-sheet').hidden = true; decide(true); }; $('#g-s-pass').onclick = function () { $('#g-sheet').hidden = true; decide(false); }; }
   function end() { var n = S.liked.length; $('#g-end-p').textContent = n ? 'You liked ' + n + ' ' + (n === 1 ? 'car' : 'cars') + '. Send them to Dan and he will be in touch.' : 'Nothing caught your eye this time? No problem. Dan will keep looking.';
-    $('#g-send').hidden = !n; $('#g-send').disabled = false; $('#g-send-msg').textContent = ''; $('#g-wa').href = 'https://wa.me/' + S.wa; show('#g-end'); }
+    $('#g-send').hidden = !n; $('#g-send').disabled = false; $('#g-send-msg').textContent = ''; $('#g-wa').href = 'https://wa.me/' + S.wa; show('#g-end');
+    if (!S.confirmed && !S.autoChat) { S.autoChat = true; setTimeout(function () { if (!$('#g-end').hidden && $('#g-chat').hidden) confirmChat(); }, 900); } }
   $('#g-send').onclick = function () { var b = this; b.disabled = true; call({ action: 'send', regs: S.liked }).then(function (r) { if (r.ok) { $('#g-send-msg').textContent = 'Sent to Dan. He will be in touch.'; b.textContent = 'Sent'; } else { b.disabled = false; toast('That did not send. Try again or WhatsApp Dan.'); } }); };
   $('#g-again').onclick = function () { S.i = 0; draw(); };
   $('#g-like').onclick = function () { decide(true); }; $('#g-pass').onclick = function () { decide(false); }; $('#g-info').onclick = function () { details(S.cars[S.i]); };
@@ -87,14 +88,44 @@
       function email() { if (h.has_email) { bot('And Dan has ' + h.email_hint + ' as your email. Still right?');
           chips([{ t: 'Yes, that is right', go: 1, f: function () { A.email_ok = true; prefs(); } }, { t: 'It has changed', f: function () { bot("What's your new email?"); ask('Email address', okEmail, function (v) { A.email = v; prefs(); }); } }]); }
         else { bot('What email should Dan send updates to?'); ask('Email address', okEmail, function (v) { A.email = v; prefs(); }, true); } }
-      function prefs() { var p = h.prefs || {}, bits = [];
-        if (p.models_must && p.models_must.length) bits.push('must have: ' + p.models_must.join(', ')); if (p.models_like && p.models_like.length) bits.push((p.models_must && p.models_must.length ? 'would also like: ' : 'models: ') + p.models_like.join(', '));
-        bits.push('fuel: ' + p.fuel); if (p.colours && p.colours.length) bits.push('colours: ' + p.colours.join(', ')); if (p.budget) bits.push('budget ' + p.budget);
-        bot('Dan has you down for ' + bits.join('; ') + '. Is that still right?');
-        chips([{ t: 'Yes, still right', go: 1, f: function () { A.prefs_ok = true; send(); } }, { t: 'Something has changed', f: function () { bot("Tell me what's changed and I'll pass it to Dan."); ask("What's changed", function (v) { return v.length > 500 ? 'A bit shorter please.' : ''; }, function (v) { A.prefs_note = v; send(); }); } }]); }
-      function send() { bot('Saving that for Dan...'); call(Object.assign({ action: 'confirm' }, A)).then(function (r) {
+      /* car preferences one by one, with the same tap pickers as the main app. Saved straight to the profile. */
+      var V = h.values || {}, O = h.options || {}, P = {}, changed = false;
+      var low = function (t) { return /^[A-Z][a-z]/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t; };
+      var lab = function (l, k) { var f = (l || []).filter(function (x) { return (Array.isArray(x) ? x[0] : x) === k; })[0]; return f ? (Array.isArray(f) ? f[1] : f) : k; };
+      var names = function (l, ks) { return ks.map(function (k) { return lab(l, k); }).join(', '); };
+      function triText(l, on, must, me) { var like = on.filter(function (x) { return must.indexOf(x) < 0; }); return [must.length ? 'Must have ' + names(l, must) : '', like.length ? (must.length ? 'would also like ' : me ? 'Would like ' : '') + names(l, like) : ''].filter(Boolean).join(', and '); }
+      function picker(kind, list, on, must, done) { var tr = $('#g-tray'); tr.innerHTML = ''; $('#g-in').hidden = true;
+        var g = document.createElement('div'); g.className = 'g-picks' + (kind === 'tri' ? ' tri' : '');
+        if (kind === 'tri') { var lg = document.createElement('p'); lg.className = 'g-legend'; lg.textContent = 'Tap once for would like, twice for must have, a third tap clears it.'; tr.appendChild(lg); }
+        var st = {}; on.forEach(function (k) { st[k] = 'like'; }); must.forEach(function (k) { st[k] = 'must'; });
+        list.forEach(function (x) { var k = Array.isArray(x) ? x[0] : x, b = document.createElement('button'); b.type = 'button'; b.className = 'g-pick'; b.setAttribute('data-k', k); b.innerHTML = '<b></b><i></i>'; b.querySelector('b').textContent = Array.isArray(x) ? x[1] : x;
+          function paint() { var v = st[k] || ''; b.setAttribute('data-s', v); b.setAttribute('aria-pressed', v ? 'true' : 'false'); b.querySelector('i').textContent = v === 'must' ? 'Must have' : v === 'like' && kind === 'tri' ? 'Would like' : ''; }
+          b.onclick = function () { var v = st[k] || ''; if (kind === 'tri') st[k] = v === '' ? 'like' : v === 'like' ? 'must' : '';
+            else if (kind === 'single') { Object.keys(st).forEach(function (z) { st[z] = ''; }); st[k] = 'like'; g.querySelectorAll('.g-pick').forEach(function (z) { z.setAttribute('data-s', ''); z.setAttribute('aria-pressed', 'false'); }); }
+            else st[k] = v ? '' : 'like'; paint(); };
+          paint(); g.appendChild(b); });
+        tr.appendChild(g); var d = document.createElement('button'); d.type = 'button'; d.className = 'g-chip go g-done'; d.textContent = 'Done'; tr.appendChild(d);
+        d.onclick = function () { var o = [], m = []; Object.keys(st).forEach(function (k) { if (st[k]) o.push(k); if (st[k] === 'must') m.push(k); }); tr.innerHTML = ''; done(o, m); }; }
+      var STEPS = [
+        { k: 'models', mk: 'models_must', kind: 'tri', l: O.models, q: 'models', none: 'any model' },
+        { k: 'colours', mk: 'colours_must', kind: 'tri', l: O.colours, q: 'colours', none: 'any colour' },
+        { k: 'specs', mk: 'specs_must', kind: 'tri', l: O.specs, q: 'spec', none: 'any spec' },
+        { k: 'fuel', kind: 'multi', l: O.fuel, q: 'fuel', none: 'any fuel' },
+        { k: 'mileage_bands', kind: 'multi', l: O.mileage, q: 'current mileage', none: 'any mileage' },
+        { k: 'body', kind: 'single', l: O.body, q: 'body or size', none: 'any body style' },
+        { k: 'new_used', kind: 'single', l: O.new_used, q: 'new or used', none: 'new or used' }];
+      function prefs() { bot("Now your car preferences. I'll go through them one at a time."); step(0); }
+      function step(n) { var x = STEPS[n]; if (!x) return extra(); if (!x.l || !x.l.length) return step(n + 1);
+        var on = x.kind === 'single' ? [V[x.k]] : (V[x.k] || []), must = x.mk ? (V[x.mk] || []) : [];
+        var txt = x.kind === 'tri' ? triText(x.l, on, must) : x.kind === 'single' ? (on[0] && on[0] !== 'any' && on[0] !== 'both' ? low(lab(x.l, on[0])) : '') : names(x.l, on);
+        bot('For ' + x.q + ', Dan has ' + (txt ? 'you down for ' + (x.kind === 'tri' ? txt.charAt(0).toLowerCase() + txt.slice(1) : txt) : 'you open to ' + x.none) + '. Still right?');
+        chips([{ t: 'Yes, still right', go: 1, f: function () { step(n + 1); } }, { t: 'Change it', f: function () { bot(x.kind === 'tri' ? 'Tap to choose. Once for would like, twice for must have.' : x.kind === 'single' ? 'Pick one.' : 'Pick as many as you like, or none for any.');
+          picker(x.kind, x.l, on, must, function (o, m) { if (x.kind === 'single') { if (o[0]) P[x.k] = o[0]; } else { P[x.k] = o; if (x.mk) P[x.mk] = m; } changed = true;
+            var t2 = x.kind === 'tri' ? triText(x.l, o, m, 1) : x.kind === 'single' ? lab(x.l, o[0]) : names(x.l, o); me(t2 || 'None'); step(n + 1); }); } }]); }
+      function extra() { bot('Anything else Dan should know? A budget change, timing, anything.'); ask('Optional note', function (v) { return v.length > 500 ? 'A bit shorter please.' : ''; }, function (v) { A.prefs_note = v; A.prefs_ok = !changed && !v; send(); }, true); }
+      function send() { bot('Saving that for Dan...'); (changed ? call(Object.assign({ action: 'prefs' }, P)) : Promise.resolve({ ok: true })).then(function (pr) { if (!pr.ok) bot('Your car preferences did not save, sorry. Dan will go through them with you.'); return call(Object.assign({ action: 'confirm' }, A)); }).then(function (r) {
           if (!r.ok) { bot('That did not save, sorry. WhatsApp Dan and he will sort it.'); return; } S.confirmed = true; $('#g-confirm-end').hidden = true;
-          bot('All done, thank you. ' + (r.held && r.held.length ? 'Dan will check the new ' + r.held.join(' and ') + ' and update it for you. ' : '') + 'Dan will keep sending cars that fit.');
+          bot('All done, thank you. ' + (r.held && r.held.length ? 'Dan will check the new ' + r.held.join(' and ') + ' and update it for you. ' : '') + (changed ? 'Your car preferences are updated. ' : '') + 'Dan will keep sending cars that fit.');
           bot('Want to see your profile and save everything? Sign in or create a free account. Totally optional.');
           var tr = $('#g-tray'); tr.innerHTML = '<a class="g-chip go" href="./">Sign in to Swipe Drive</a>'; var c = document.createElement('button'); c.type = 'button'; c.className = 'g-chip'; c.textContent = 'Back to the cars'; c.onclick = function () { $('#g-chat').hidden = true; }; tr.appendChild(c); }); }
       name(); }); }

@@ -12,7 +12,7 @@ const car = (reg, o) => Object.assign({ kind: 'used', reg, model: 'BMW 320i M Sp
 const cars = [car('AA11AAA'), car('BB22BBB', { listing_url: 'https://evil.example/x' }), car('CC33CCC', { status: 'sold' })];
 let hits = 0; const st = { sw: {}, req: [] };
 const db = { customer: async id => id === CID ? cust : null, hit: async () => ++hits, emailedRegs: async () => ['BB22BBB', 'CC33CCC'], swipes: async () => ({}), ownerWa: async () => '447827138197',
-  swipe: async (i, r, l) => { st.sw[r] = l; }, confirm: async (i, fill, upd) => { st.fill = fill; st.upd = upd; }, buyRequest: async (i, a, c) => { st.req.push([a, c]); } };
+  swipe: async (i, r, l) => { st.sw[r] = l; }, savePrefs: async (i, p, c) => { st.pp = p; st.pc = c; }, confirm: async (i, fill, upd) => { st.fill = fill; st.upd = upd; }, buyRequest: async (i, a, c) => { st.req.push([a, c]); } };
 const deps = { secret: SEC, db, M, loadCars: async () => cars };
 const good = await signGuest(SEC, CID, 0, now() + 30 * 86400);
 let r = await guestHandle({ t: good, action: 'deck' }, deps);
@@ -44,5 +44,13 @@ ok(!st.upd.proposed.email, 'the same email is not flagged as a change');
 const saved = cust.phone; cust.phone = null; r = await guestHandle({ t: good, action: 'confirm', phone: '07700900333' }, deps); ok(st.fill.phone === '07700900333', 'a missing mobile is filled in'); cust.phone = saved;
 ok((await guestHandle({ t: good, action: 'confirm', phone: '12345' }, deps)).status === 400 && (await guestHandle({ t: good, action: 'confirm', email: 'x@' }, deps)).status === 400, 'junk phone or email refused');
 r = await guestHandle({ t: good, action: 'confirm', prefs_note: '<script>alert(1)</script> now want an X5' }, deps); ok(!/[<>]/.test(st.upd.prefs_note), 'free text cleaned');
+ok(!('tut_key' in (await guestHandle({ t: good, action: 'deck' }, deps)).body) && !JSON.stringify((await guestHandle({ t: good, action: 'deck' }, deps)).body).includes(CID.slice(0, 8)), 'deck response carries no part of the record id');
+r = await guestHandle({ t: good, action: 'hints' }, deps); ok(r.body.values.models.join() === '3 Series' && r.body.options.specs.length > 5 && r.body.options.models.includes('3 Series'), 'hints carry current preferences and the option lists');
+st.pp = null; r = await guestHandle({ t: good, action: 'prefs', models: ['3 Series', 'NotAModel'], models_must: ['3 Series'], colours: ['Blue', 'Hacker'], colours_must: ['Blue', 'Red'], specs: ['trim:M Sport'], specs_must: [], fuel: ['diesel', 'jet'], mileage_bands: ['0_8k', 'x'], body: 'suv', new_used: 'nonsense', phone: '07000000000', email: 'x@y.com', budget_type: 'cash', cash_gbp: 1 }, deps);
+ok(r.body.ok && st.pp.models.join() === '3 Series' && st.pp.models_must.join() === '3 Series' && st.pp.colours.join() === 'Blue' && st.pp.colours_must.join() === 'Blue', 'prefs: unknown values dropped, must have kept only inside the picks');
+ok(st.pp.fuel === 'diesel' && st.pp.mileage_bands.join() === '0_8k' && st.pp.body === 'suv' && !('new_used' in st.pp), 'prefs: fuel, mileage, body saved; bad new or used ignored');
+ok(!('phone' in st.pp) && !('email' in st.pp) && !('budget_type' in st.pp) && !('cash_gbp' in st.pp), 'prefs can never touch contact details or budget');
+ok(st.pc.some(c => c.startsWith('Models: must have 3 Series')) && st.pc.some(c => c === 'Fuel: Diesel'), 'Dan gets a plain English change list');
+st.pp = null; await guestHandle({ t: good, action: 'prefs', models: ['3 Series'], models_must: [] }, deps); ok(st.pp === null, 'no change, nothing saved');
 hits = RATE_PER_MIN; ok((await guestHandle({ t: good, action: 'deck' }, deps)).status === 429, 'rate limited after ' + RATE_PER_MIN + ' a minute');
 console.log(`\nRESULT guest ${pass}/${pass + fail}`); process.exit(fail ? 1 : 0);

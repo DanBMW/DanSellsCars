@@ -1,0 +1,32 @@
+/* Reversing camera spec: rules in stock-core.js, must have and would like handling in match-core.js */
+const assert = require('assert'); global.window = global;
+require('../../stock-core.js'); require('../match-core.js');
+const S = window.dsStock, M = window.ctMatch;
+const cam = (eq, extra) => S.reversingCamera(Object.assign({ listing_id: 'x', series: '4 Series', model: 'BMW 420i M Sport Coupe' }, extra || {}), eq ? { equipment: eq, first_reg: '2022-01-01' } : null);
+assert.strictEqual(cam(['Reversing camera']), true);
+assert.strictEqual(cam(['Rear view camera']), true);
+assert.strictEqual(cam(['Parking Assistant Plus']), true);
+assert.strictEqual(cam(['Parking Assistant Professional']), true);
+assert.strictEqual(cam(['Surround View']), true);
+assert.strictEqual(cam(['Parking Assistant']), null);
+assert.strictEqual(cam(['Park Distance Control (PDC), front and rear']), false);
+assert.strictEqual(cam(['Deletion of Reversing camera', 'PDC rear']), false);
+assert.strictEqual(cam(null), null);
+assert.strictEqual(S.reversingCamera({ listing_id: '257888' }, null), true, 'MC23OPS override');
+assert.strictEqual(S.reversingCamera({ listing_id: '1', series: 'X1', model: 'BMW X1 sDrive18i' }, { equipment: ['PDC'], first_reg: '2022-11-01' }), true);
+assert.strictEqual(S.reversingCamera({ listing_id: '1', series: 'X1', model: 'BMW X1 sDrive18i' }, { equipment: ['Parking Assistant'], first_reg: '2022-09-01' }), null);
+assert.strictEqual(S.reversingCamera({ listing_id: '1', series: '2 Series', model: 'BMW 218i M Sport Gran Coupe' }, { equipment: ['PDC'], first_reg: '2024-12-01' }), false, 'old 2 GC after cutoff');
+assert.ok(M.specOptions().some(o => o.key === 'feat:revcam' && o.label === 'Reversing camera'));
+// ranking
+window.ctDetails = { a: { equipment: ['Reversing camera'] }, b: { equipment: ['Parking Assistant'] }, c: { equipment: ['PDC'] } };
+const car = (id, reg) => ({ listing_id: id, reg, model: 'BMW 420i', series: '4 Series', year: 2021, fuel: 'Petrol' });
+const cars = [car('b', 'B1'), car('c', 'C1'), car('a', 'A1')];
+let r = M.rank(cars, { specs: ['feat:revcam'], specs_must: ['feat:revcam'] });
+assert.deepStrictEqual(r.map(x => x.car.reg), ['A1', 'B1']);
+assert.deepStrictEqual(r[1].notes, ['Check with Dan: reversing camera not confirmed']);
+assert.deepStrictEqual(r[0].notes, []);
+r = M.rank(cars, { specs: ['feat:revcam'] });
+const sc = Object.fromEntries(r.map(x => [x.car.reg, x.score]));
+assert.ok(sc.A1 > sc.B1 && sc.B1 === sc.C1, 'would like: unknown gets no boost');
+assert.ok(r.every(x => !x.notes.length));
+console.log('revcam tests ok');

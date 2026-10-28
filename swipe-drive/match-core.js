@@ -58,7 +58,7 @@
   }
   /* Returns {score 0..100, reasons[], ok}. ok false = outside a hard limit. */
   function score(car, p) {
-    p = p || {}; var sc = 40, why = [], ok = true, s = S();
+    p = p || {}; var sc = 40, why = [], ok = true, s = S(), notes = [], unconf = false;
     var isNew = car.kind === 'new', ns = car.kind === 'new_stock';   /* new_stock: a real new car in retailer stock */
     if (ns) return scoreNewStock(car, p);
     if (p.new_used === 'new' && !isNew) return { score: 0, reasons: [], ok: false };
@@ -97,7 +97,8 @@
         if (mustC.length && mustC.indexOf(fam) === -1) ok = false; }
       var specs = p.specs || [], mustS = p.specs_must || [], got = 0;
       specs.forEach(function (k) { var h = hasSpec(car, k);
-        if (h === true) { got++; sc += 6; } else if (mustS.indexOf(k) !== -1 && h === false) ok = false; });
+        if (h === true) { got++; sc += 6; } else if (mustS.indexOf(k) !== -1 && h === false) ok = false;
+        else if (h === null && k === CAM && mustS.indexOf(k) !== -1) { unconf = true; notes.push(CAM_NOTE); } });
       if (got) why.push(got === 1 ? '1 spec you ticked' : got + ' specs you ticked');
       var bands = (p.mileage_bands || []).filter(function (k) { return MILEAGE_BANDS[k]; }), mi = carMiles(car);
       if (bands.length && mi != null) { if (bands.some(function (k) { var b = MILEAGE_BANDS[k]; return mi >= b.min && mi < b.max; })) { sc += 8; why.push('Mileage you prefer'); } else sc -= 4; }
@@ -106,8 +107,11 @@
       if (car.source === 'forecourt') sc += 2;
       if (justArrived(car)) { sc += 5; why.push('Just arrived'); }   /* a modest nudge, never enough to lift a car past the filters */
     }
-    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok };
+    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok, notes: notes, unconfirmed: unconf };
   }
+  /* Reversing camera: a must have keeps cars with no clear answer, ranked below confirmed cars with a note.
+     A would like gives them no boost. Rules live in stock-core.js reversingCamera. */
+  var CAM = 'feat:revcam', CAM_NOTE = 'Check with Dan: reversing camera not confirmed';
   /* Arrival dates from automation/stock-arrivals.json (the ledger stock.html uses): first morning the repo saw the
      car in a snapshot, keyed by listing id per list. A car already there when the history began has no arrival. */
   var JUST_DAYS = 7;
@@ -146,8 +150,9 @@
     if (p.budget_type === 'monthly' && p.monthly_gbp > 0) { if (car.finance && car.finance.monthly) { if (car.finance.monthly <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else ok = false; } else sc -= 4; }
     var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
     if (cols.length) { var fam = colourFamily(car); if (cols.indexOf(fam) !== -1) { sc += 10; why.push(fam + ', a colour you like'); } else sc -= 4; if (mustC.length && fam && mustC.indexOf(fam) === -1) ok = false; }
-    (p.specs_must || []).forEach(function (k) { var h = hasSpec(car, k); if (h === false) ok = false; });
-    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok };
+    var notes = [], unconf = false;
+    (p.specs_must || []).forEach(function (k) { var h = hasSpec(car, k); if (h === false) ok = false; else if (h === null && k === CAM) { unconf = true; notes.push(CAM_NOTE); } });
+    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok, notes: notes, unconfirmed: unconf };
   }
   /* Real new car in retailer stock (lookup/new-stock.json). The id 'NEW' + order number is the same one the alerts job
      stores in stock_seen, so app, alerts and buy requests all agree. Monthly only with a complete representative example. */
@@ -179,8 +184,8 @@
     return sr === core || d.indexOf(core + ' ') === 0;
   }
   function rank(cars, p) {
-    return cars.map(function (c) { var r = score(c, p); return { car: c, score: r.score, reasons: r.reasons, ok: r.ok }; })
-      .filter(function (x) { return x.ok; }).sort(function (a, b) { return b.score - a.score; });
+    return cars.map(function (c) { var r = score(c, p); return { car: c, score: r.score, reasons: r.reasons, ok: r.ok, notes: r.notes || [], unconfirmed: !!r.unconfirmed }; })
+      .filter(function (x) { return x.ok; }).sort(function (a, b) { return (a.unconfirmed - b.unconfirmed) || (b.score - a.score); });
   }
   function waText(car, who) {
     if (car.kind === 'new_stock') return 'Hi' + (who ? ' ' + who : '') + ', a new ' + car.model + (car.colour ? ' in ' + car.colour : '') + ' has come into stock that could suit you. Shall I put a quote together?';
@@ -202,11 +207,11 @@
   function pickLatest(cars, p, n) {
     var rank = { forecourt: 0, group: 1 };
     return (cars || []).filter(function (c) { return c && c.kind !== 'new' && (!c.status || c.status === 'in_stock') && !c.removed_at; })
-      .map(function (c) { var r = score(c, p || {}); return { car: c, score: r.score, ok: r.ok, reasons: r.reasons }; })
+      .map(function (c) { var r = score(c, p || {}); return { car: c, score: r.score, ok: r.ok, reasons: r.reasons, notes: r.notes || [], unconfirmed: !!r.unconfirmed }; })
       .filter(function (x) { return x.ok && x.score >= 55; })
       .sort(function (a, b) { var ra = a.car.kind === 'new_stock' ? 2 : (rank[a.car.source] != null ? rank[a.car.source] : 1), rb = b.car.kind === 'new_stock' ? 2 : (rank[b.car.source] != null ? rank[b.car.source] : 1);
-        return (b.score - a.score) || (ra - rb); })
+        return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest };
+  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE };
 })(typeof window !== 'undefined' ? window : globalThis);

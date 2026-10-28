@@ -1,8 +1,8 @@
 /* Swipe Drive service worker: caches the app shell, serves offline.html when
    there is no connection, network first for stock data, and handles push. */
-const V = 'sd-v29';
-const SHELL = ['./', './index.html', './app.css', './app.css?v=29', './app.js', './app.js?v=29', './config.js', './config.js?v=29', './auth-ui.js', './auth-ui.js?v=29', './chat/profile-save.js', './chat/profile-save.js?v=29', './match-core.js', './match-core.js?v=29', './offline.html',
-  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../stock-core.js?v=29'];
+const V = 'sd-v32';
+const SHELL = ['./', './index.html', './app.css', './app.css?v=32', './app.js', './app.js?v=32', './config.js', './config.js?v=32', './auth-ui.js', './auth-ui.js?v=32', './chat/profile-save.js', './chat/profile-save.js?v=32', './match-core.js', './match-core.js?v=32', './offline.html',
+  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../stock-core.js?v=32'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {

@@ -520,7 +520,8 @@
     return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' + just +
       '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">TEST DRIVE</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
       '<div class="ct-meta">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? 'NEW, IN STOCK' : 'NEW') + '</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
-      x.reasons.filter(function (r) { return r !== 'Just arrived'; }).map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') + '</div>' + money + '</div>';
+      x.reasons.filter(function (r) { return r !== 'Just arrived'; }).map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') +
+      (x.notes || []).map(function (n) { return '<span class="ct-note">' + esc(n) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
   /* 'N new since your last visit': the previous visit is the later of this device's and the profile's record.
      Worked out once per page load, then today's visit is saved for next time. */

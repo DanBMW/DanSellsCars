@@ -44,6 +44,15 @@ Deno.serve(async (req) => {
           body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject: `Swipe Drive: ${cu?.name || 'A customer'} confirmed their details`, text: L.join('\n') }) }).catch(() => null);
       }
     },
+    // car preferences from Revvy: low risk, saved straight to the customer; Dan gets a summary of what changed
+    savePrefs: async (id: string, patch: any, changes: string[]) => {
+      const { data: cu } = await sb.from('customers').update(patch).eq('id', id).select('name').maybeSingle();
+      if (env('RESEND_API_KEY') && env('MAIL_FROM') && env('DAN_NOTIFY_EMAIL')) {
+        const L = [`${cu?.name || 'A customer'} updated their car preferences with Revvy from the swipe link. Saved to their profile:`, '', ...changes.map(c => '  ' + c), '', 'Open Swipe Drive > Customers: https://dan-sells.co.uk/swipe-drive/#team'];
+        await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env('RESEND_API_KEY'), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject: `Swipe Drive: ${cu?.name || 'A customer'} updated their car preferences`, text: L.join('\n') }) }).catch(() => null);
+      }
+    },
     buyRequest: async (id: string, act: string, cars: any[]) => {
       const row: any = act === 'buy' ? { customer_id: id, type: 'buy', car_reg: cars[0].reg, car_model: cars[0].model, car_price: cars[0].price, cars: [], created_by: null, source: 'guest_link' }
                                      : { customer_id: id, type: 'matches', cars, created_by: null, source: 'guest_link' };
