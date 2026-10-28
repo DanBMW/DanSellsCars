@@ -601,6 +601,73 @@ Three things the page has to respect:
 - The term shown is the one the lender returned, which is not always 48
   months - it comes back shorter on older cars.
 
+### BMW badges decoded - bmw-model-codes.html
+
+Dan sent seven American infographics on 28 October 2026 and asked for a
+section explaining the model codes "in the UK, reframed". The pictures were
+the brief, not the content: **two of their three fuel claims are wrong here**
+("Gas", "Diesel, not sold in the US") and the body words are American
+("Sedan"). The reframing is the whole value, so do not quietly let a later
+edit drift back towards the American version.
+
+It is a **guide page**, in `sitemap.xml`, carded first on `guides.html` and
+linked from the Keep reading block of both finance guides. Public and
+indexed: "what does 320i mean" is a real search and this is the kind of page
+that earns a link.
+
+- **Every claim was checked against this repo's own data, not against the
+  artwork or from memory.** `lookup/new-stock.json` is BMW's own UK locator
+  feed for Ruxley and `automation/hedin-*-stock.json` are the group's
+  listings, which is a better source for "what is BMW called in Britain
+  today" than anything else reachable from here. That is where the evidence
+  comes from: the 220i, 320i, 420i and 520i all reading **1,998cc** while a
+  120 reads **1,499cc** (so the middle number cannot be litres); a 120, a
+  320i and a 520i making about **170, 182 and 207hp** (so the tier is
+  relative to its own family); a 120d, a 320d and a 520d all making **189**;
+  and `M135` parked next to `M135i` on one forecourt.
+- **No claim about any model being discontinued.** The cards asserted two
+  ("the M8 ended production in 2026", "the X4 ended production in 2025") and
+  the forecourt contradicts both, since there is an X4 and an X6 in group
+  stock. Production status is not something this repo can know, so the page
+  says nothing about it and says out loud that it is saying nothing.
+- **The UK specific points the American charts have no room for**, and the
+  reason the page exists: diesel is everywhere here, up to an M Performance
+  diesel in the `M340d`; `sDrive` means two wheel drive and **which two
+  depends on the car** (an X1 sDrive drives the front, a 2 Series Coupe the
+  rear, both proven by the `drive` field); electric cars badge two wheel
+  drive as `eDrive` and keep `xDrive` for four; `iX` is its own model while
+  `iX1` and `iX3` are electric X cars; and BMW has started **dropping the
+  fuel letter** on petrol models (`120` for `120i`, `M135` for `M135i`,
+  `X3 20 xDrive` for `X3 20i`).
+- **The diagrams are CSS, not images.** They reflow on a phone, read to a
+  screen reader and cost nothing to download. The four part one carries
+  `is-long` and `is-word`, because at the three part glyph size "xDrive" ran
+  off the right edge of a 390px screen and sat on top of the "d" beside it.
+  Measured in a browser, not guessed.
+- **The decoder** (`window.mcDebug.parse`, the same test seam `fmb.js` and
+  `new-cars.html` give) reads a badge the way the prose explains it, so the
+  two cannot drift. It runs entirely in the browser and sends nothing
+  anywhere. It was checked against **all 102 distinct model names** in the
+  two used stock files plus BMW's new car feed, and the real list is what
+  found every bug: the `i3s`, the `128ti`, `XM Label`, `i4 M50` (an M
+  Performance tier that sits after the model), cars wearing two trim names
+  ("M Sport Shadow Edition") and a pasted registration document string
+  ("330e 2.0 330e 22.3kWh M Sport Auto Euro 6 (s/s) 4dr"). All 102 now parse
+  with nothing left unplaced. **It fails honestly**: an unrecognised chunk is
+  named, with a WhatsApp link, rather than dropped or guessed at, because a
+  decoder that invents an answer about somebody's car is worse than one that
+  says it does not know. Re-run that check against the live stock files
+  before changing the parser.
+- **`?q=M Sport` is deliberately not linked** from the M section. stock.html's
+  free text search is AND over words and matches equipment as well as trim, so
+  it returned 265 of 267 cars: a link showing almost everything reads as a
+  broken filter, even though the point it would be making (nearly all of it is
+  M Sport) is correct.
+- There is no `sr-only` class in `style.css`, `premium.css` or
+  `content-premium.css`, so the decoder's input label brings its own
+  (`.mc-sr`).
+- GA `codes_decode {badge, decoded, parts, entry}`.
+
 ### Hidden used car lookup - lookup/
 
 Added 7 October 2026 for a colleague's appointment booking page: they take a
