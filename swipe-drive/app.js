@@ -381,10 +381,17 @@
     var e = equity(c); return (bits.length ? '<p>' + esc(bits.join(' \u00b7 ')) + '</p>' : '') + (c.px_valuation_gbp != null ? '<p>' + esc(valBy(c)) + '</p>' : '') + (e ? '<p><span class="ct-pill' + (e.neg ? ' hot' : '') + '">' + esc(e.text) + '</span> ' + esc(e.label) + '</p>' : ''); }
   function liveEquity() { var f = $('#profileForm').elements, v = f.px_valuation_gbp.value, st = f.px_settlement_gbp.value, el = $('#pxEquity');
     var e = equity({ px_valuation_gbp: v === '' ? null : +v, px_settlement_gbp: st === '' ? null : +st }); el.hidden = !e; if (e) { el.className = 'ct-equity' + (e.neg ? ' neg' : ''); el.innerHTML = '<b>' + esc(e.text) + '</b><small>' + esc(e.label) + '</small>'; } }
-  function drawRates(r) { r = r || {}; $('#pxRates').innerHTML = RATE_AREAS.map(function (a) { var x = r[a[0]] || {};
+  /* Overall condition is the one rating asked for. The other areas sit behind "Add more detail" and open by themselves
+     when a customer has already filled one in. Keys are unchanged, so saved ratings and the desk still read the same. */
+  function drawRates(r) { r = r || {};
+    function row(a, placeholder) { var x = r[a[0]] || {};
       return '<div class="ct-rate" data-area="' + a[0] + '"><div class="ct-rate-h"><span>' + a[1] + '</span><em>' + (x.rating ? RATE_L[x.rating] : '') + '</em></div><div class="ct-rate-b">' +
         [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-r="' + n + '" aria-label="' + RATE_L[n] + '" title="' + RATE_L[n] + '" aria-pressed="' + (x.rating === n ? 'true' : 'false') + '">' + n + '</button>'; }).join('') +
-        '</div><input type="text" maxlength="300" placeholder="Notes (optional)" value="' + esc(x.notes || '') + '"></div>'; }).join(''); }
+        '</div><input type="text" maxlength="300" placeholder="' + placeholder + '" value="' + esc(x.notes || '') + '"></div>'; }
+    var more = RATE_AREAS.slice(1), open = more.some(function (a) { return r[a[0]] && (r[a[0]].rating || r[a[0]].notes); });
+    $('#pxRates').innerHTML = row(RATE_AREAS[0], 'Anything we should know (optional)') +
+      '<details class="ct-more"' + (open ? ' open' : '') + '><summary>Add more detail about the car (optional)</summary><div class="ct-rates">' +
+      more.map(function (a) { return row(a, 'Notes (optional)'); }).join('') + '</div></details>'; }
   function readRates() { var o = {}; $$('#pxRates .ct-rate').forEach(function (el) { var b = $('button[aria-pressed=true]', el), n = $('input', el).value.trim();
       if (b || n) o[el.getAttribute('data-area')] = Object.assign(b ? { rating: +b.getAttribute('data-r') } : {}, n ? { notes: n } : {}); }); return o; }
   function drawThumbs() { $('#pxThumbs').innerHTML = S.pxPhotos.map(function (p) { return p.preview ? '<img src="' + esc(p.preview) + '" alt="Part exchange photo">' : '<span class="ct-pill">Photo saved</span>'; }).join(''); }
