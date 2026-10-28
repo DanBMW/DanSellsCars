@@ -303,7 +303,7 @@
    "power": "394 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£41,500",
+   "price": "£34,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a14227-6431-77f8-b126-c378c26fbcd1-preview.jpg"
   },
   "252731": {
@@ -399,7 +399,7 @@
    "reg": "LM72HVO",
    "mileage": "22,830 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "Coupe",
    "power": "286 hp",
@@ -422,7 +422,7 @@
    "power": "189 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£44,000",
+   "price": "£43,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019ea786-3879-7508-a04a-57f57e8af647-preview.jpg"
   },
   "242784": {
@@ -439,7 +439,7 @@
    "power": "407 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£54,250",
+   "price": "£54,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f6c86-1fcc-7ce6-b3db-a8576c287470-preview.jpg"
   },
   "250259": {
@@ -518,7 +518,7 @@
    "reg": "YE75KDK",
    "mileage": "1,217 miles",
    "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "207 hp",
@@ -711,7 +711,7 @@
    "power": "182 hp",
    "gearbox": "Automatic",
    "seats": "4",
-   "price": "£28,750",
+   "price": "£28,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0039b-16b9-731d-a203-d915a20d12a7-preview.jpg"
   },
   "241291": {
@@ -728,7 +728,7 @@
    "power": "488 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£66,000",
+   "price": "£65,900",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f2849-6e65-71e2-893b-6e72c6af04c2-preview.jpg"
   },
   "241288": {
@@ -745,7 +745,7 @@
    "power": "530 hp",
    "gearbox": "Automatic",
    "seats": "4",
-   "price": "£66,500",
+   "price": "£66,250",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a14024-d902-7038-b383-8e9d2622587d-preview.jpg"
   },
   "238266": {
@@ -762,7 +762,7 @@
    "power": "170 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£27,500",
+   "price": "£26,900",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019ebc24-5e27-7650-9ad0-478a09ff0901-preview.jpg"
   },
   "238259": {
@@ -779,7 +779,7 @@
    "power": "170 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£24,900",
+   "price": "£25,250",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019eca4d-85e9-77b3-89a1-58949220494e-preview.jpg"
   },
   "237425": {
@@ -831,7 +831,7 @@
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£31,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a165c0-0ae7-710f-8753-005cf46102e5-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18122-fd84-7aa3-9209-609b77b2f6e6-preview.jpg"
   },
   "257614": {
    "id": "257614",
@@ -864,7 +864,7 @@
    "power": "286 hp",
    "gearbox": "Automatic",
    "seats": "5",
-   "price": "£28,000",
+   "price": "£27,800",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a177b7-d81f-7abc-8f66-6ac00ee85ba2-preview.jpg"
   },
   "258089": {
@@ -917,6 +917,23 @@
    "seats": "5",
    "price": "£26,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-8cca-7213-9c2a-dc2e159c01cd-preview.jpg"
+  },
+  "258115": {
+   "id": "258115",
+   "model": "BMW X5 xDrive30d M Sport",
+   "series": "X5",
+   "year": "2026",
+   "reg": "LV26MKM",
+   "mileage": "3,664 miles",
+   "colour": "Black",
+   "fuel": "Diesel (mild hybrid)",
+   "fuelGroup": "Diesel",
+   "body": "SUV",
+   "power": "298 hp",
+   "gearbox": "Automatic",
+   "seats": "7",
+   "price": "£69,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17e1f-f430-79b0-a860-e6702d55e4cc-preview.jpg"
   }
  },
  "sold": {
@@ -937,7 +954,7 @@
    "price": "£45,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a158c0-7212-7c0f-8d28-7273f94acecf-preview.jpg",
    "first_missing": "2026-10-21",
-   "runs_missing": 60
+   "runs_missing": 61
   },
   "249631": {
    "id": "249631",
@@ -956,7 +973,7 @@
    "price": "£25,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-5625-78e1-a484-2d4412588956-preview.jpg",
    "first_missing": "2026-10-21",
-   "runs_missing": 60
+   "runs_missing": 61
   },
   "248409": {
    "id": "248409",
@@ -975,7 +992,7 @@
    "price": "£32,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08571-3d56-72e4-beb5-e75c8bb6aaad-preview.jpg",
    "first_missing": "2026-10-22",
-   "runs_missing": 53
+   "runs_missing": 54
   },
   "256419": {
    "id": "256419",
@@ -994,7 +1011,7 @@
    "price": "£26,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13fb6-ead1-7b77-8cbc-fdae3beecc1e-preview.jpg",
    "first_missing": "2026-10-23",
-   "runs_missing": 41
+   "runs_missing": 42
   },
   "254664": {
    "id": "254664",
@@ -1013,7 +1030,7 @@
    "price": "£69,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-preview.jpg",
    "first_missing": "2026-10-23",
-   "runs_missing": 41
+   "runs_missing": 42
   },
   "247743": {
    "id": "247743",
@@ -1032,7 +1049,7 @@
    "price": "£79,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a04286-f17c-7d3c-8c23-f96f4223d138-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 10
+   "runs_missing": 11
   },
   "242787": {
    "id": "242787",
@@ -1051,7 +1068,7 @@
    "price": "£49,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f8411-e6e4-7ed2-9489-b93c79f09ca5-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 10
+   "runs_missing": 11
   },
   "247744": {
    "id": "247744",
@@ -1070,10 +1087,10 @@
    "price": "£57,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1788d-47c2-702a-8c8c-88f596874a9b-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 7
+   "runs_missing": 8
   }
  },
- "updated": "2026-10-27",
+ "updated": "2026-10-28",
  "confirm_runs": 1,
  "keep_days": 7
 }
