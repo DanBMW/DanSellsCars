@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-28T08:02:23.684Z",
+  "captured": "2026-10-28T10:02:07.553Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -2835,16 +2835,6 @@
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--CqC0u5cu--/c_fill,h_300,w_300/v1789033547/Live/Appraisals/9492435/92906c54-a90d-42ae-897c-06eb358f3d5b.png"
     },
     {
-      "registration": "LV19ZJZ",
-      "appraisedAt": "2026-09-09T15:11:53.188Z",
-      "make": "BMW",
-      "model": "3 Series",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
       "registration": "LV74PTO",
       "appraisedAt": "2026-09-09T13:22:00.122Z",
       "make": "BMW",
@@ -3062,6 +3052,16 @@
       "status": "Expired",
       "price": null,
       "condition": "",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LV19ZJZ",
+      "appraisedAt": "2026-09-07T15:44:26.591Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Expired",
+      "price": null,
+      "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
