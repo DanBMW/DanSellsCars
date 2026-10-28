@@ -8,7 +8,7 @@
    "reg": "LV73YKX",
    "mileage": "30,764 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "298 hp",
@@ -238,23 +238,6 @@
    "price": "£16,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a10f2d-9797-7472-b353-f6791a2a79b7-preview.jpg"
   },
-  "253491": {
-   "id": "253491",
-   "model": "BMW M3 Competition M xDrive Touring",
-   "series": "3 Series",
-   "year": "2024",
-   "reg": "LV73YKK",
-   "mileage": "15,275 miles",
-   "colour": "Red",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "Estate",
-   "power": "510 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£66,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a120a5-a502-7e0e-9529-81ac02e2a986-preview.jpg"
-  },
   "247766": {
    "id": "247766",
    "model": "BMW 330e M Sport Saloon",
@@ -357,23 +340,6 @@
    "price": "£35,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019eca4d-864a-7893-acd8-2b272226cbd9-preview.jpg"
   },
-  "251472": {
-   "id": "251472",
-   "model": "BMW 520d M Sport Saloon",
-   "series": "5 Series",
-   "year": "2022",
-   "reg": "HX22WUP",
-   "mileage": "22,754 miles",
-   "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
-   "fuelGroup": "Diesel",
-   "body": "Saloon",
-   "power": "189 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£25,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0dc01-6fbf-7c59-be08-cc4529d450b4-preview.jpg"
-  },
   "251470": {
    "id": "251470",
    "model": "BMW M135 xDrive",
@@ -399,7 +365,7 @@
    "reg": "LM72HVO",
    "mileage": "22,830 miles",
    "colour": "Black",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "Coupe",
    "power": "286 hp",
@@ -457,7 +423,7 @@
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£64,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0c3ee-3cf2-74f2-a79e-2b6e0522414a-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18154-59ee-7a4a-a1e8-0dc79e11a6eb-preview.jpg"
   },
   "250724": {
    "id": "250724",
@@ -954,7 +920,7 @@
    "price": "£45,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a158c0-7212-7c0f-8d28-7273f94acecf-preview.jpg",
    "first_missing": "2026-10-21",
-   "runs_missing": 63
+   "runs_missing": 64
   },
   "249631": {
    "id": "249631",
@@ -973,7 +939,7 @@
    "price": "£25,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-5625-78e1-a484-2d4412588956-preview.jpg",
    "first_missing": "2026-10-21",
-   "runs_missing": 63
+   "runs_missing": 64
   },
   "248409": {
    "id": "248409",
@@ -992,7 +958,7 @@
    "price": "£32,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08571-3d56-72e4-beb5-e75c8bb6aaad-preview.jpg",
    "first_missing": "2026-10-22",
-   "runs_missing": 56
+   "runs_missing": 57
   },
   "256419": {
    "id": "256419",
@@ -1011,7 +977,7 @@
    "price": "£26,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13fb6-ead1-7b77-8cbc-fdae3beecc1e-preview.jpg",
    "first_missing": "2026-10-23",
-   "runs_missing": 44
+   "runs_missing": 45
   },
   "254664": {
    "id": "254664",
@@ -1030,7 +996,7 @@
    "price": "£69,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-preview.jpg",
    "first_missing": "2026-10-23",
-   "runs_missing": 44
+   "runs_missing": 45
   },
   "247743": {
    "id": "247743",
@@ -1049,7 +1015,7 @@
    "price": "£79,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a04286-f17c-7d3c-8c23-f96f4223d138-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 13
+   "runs_missing": 14
   },
   "242787": {
    "id": "242787",
@@ -1068,7 +1034,7 @@
    "price": "£49,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f8411-e6e4-7ed2-9489-b93c79f09ca5-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 13
+   "runs_missing": 14
   },
   "247744": {
    "id": "247744",
@@ -1087,7 +1053,45 @@
    "price": "£57,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1788d-47c2-702a-8c8c-88f596874a9b-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 10
+   "runs_missing": 11
+  },
+  "253491": {
+   "id": "253491",
+   "model": "BMW M3 Competition M xDrive Touring",
+   "series": "3 Series",
+   "year": "2024",
+   "reg": "LV73YKK",
+   "mileage": "15,275 miles",
+   "colour": "Red",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "Estate",
+   "power": "510 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£66,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a120a5-a502-7e0e-9529-81ac02e2a986-preview.jpg",
+   "first_missing": "2026-10-28",
+   "runs_missing": 1
+  },
+  "251472": {
+   "id": "251472",
+   "model": "BMW 520d M Sport Saloon",
+   "series": "5 Series",
+   "year": "2022",
+   "reg": "HX22WUP",
+   "mileage": "22,754 miles",
+   "colour": "Black",
+   "fuel": "Diesel (mild hybrid)",
+   "fuelGroup": "Diesel",
+   "body": "Saloon",
+   "power": "189 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£25,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0dc01-6fbf-7c59-be08-cc4529d450b4-preview.jpg",
+   "first_missing": "2026-10-28",
+   "runs_missing": 1
   }
  },
  "updated": "2026-10-28",
