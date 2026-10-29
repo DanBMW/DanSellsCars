@@ -4,7 +4,7 @@ const assert = require("assert"); const F = require("../swipe-drive/crm/followup
   assert.ok(F.ITER >= 600000);
   const { key, vault } = await F.makeVault("correct horse battery staple");
   const rec = F.newRecord({ firstName: "Jo", email: "jo@example.com", car: "BMW X1", start: "2026-10-29" }, "2026-10-29");
-  const box = await F.encrypt(key, rec); assert.ok(!box.ct.includes("Jo") && !JSON.stringify(box).includes("example"));
+  const box = await F.encrypt(key, rec); assert.ok(!box.ct.includes("firstName") && !JSON.stringify(box).includes("example"));
   assert.deepStrictEqual(await F.decrypt(key, box), rec); n++;
   const box2 = await F.encrypt(key, rec); assert.notStrictEqual(box.iv, box2.iv); n++;
   const k2 = await F.openVault("correct horse battery staple", vault); assert.deepStrictEqual(await F.decrypt(k2, box), rec); n++;
