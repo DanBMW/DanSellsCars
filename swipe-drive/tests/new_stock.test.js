@@ -22,11 +22,13 @@ ok(M.score(fin[0], mb).ok !== false, 'monthly budget fits the cheapest represent
 ok(M.score(fin[fin.length - 1], mb).ok === false || M.score(fin[fin.length - 1], mb).score < 0, 'monthly budget rules out the dearest one');
 const plain = Object.assign({}, fin[0], { finance: null, monthly_gbp: null });
 const ps = M.score(plain, Object.assign({}, mb, { monthly_gbp: 1 }));
-ok(ps.ok !== false, 'a car without a full example is not filtered on a made up monthly');
+ok(ps.ok === false, 'with a monthly budget, a new car with no quoted monthly is not shown');
+ok(M.score(plain, Object.assign({}, mb, { monthly_gbp: 1, new_used: 'new' })).ok !== false, 'unless they chose brand new: never filtered on a made up monthly');
 // placeholder floor
 const ph = { kind: 'new', reg: 'NEW-X7', model: 'X7', group: 'X7', floor_cash: cheapest, floor_monthly: fin[0].finance.monthly };
 ok(M.score(ph, Object.assign({}, base, { cash_gbp: cheapest - 1 })).ok === false, 'model card hidden when cash is under the cheapest new BMW in stock');
-ok(M.score(ph, Object.assign({}, base, { cash_gbp: cheapest + 5000 })).ok !== false, 'model card shown when cash covers it');
+ok(M.score(ph, Object.assign({}, base, { cash_gbp: cheapest + 5000 })).ok === false, 'model card not shown to a cash budget (no price of its own)');
+ok(M.score(ph, Object.assign({}, base, { cash_gbp: cheapest + 5000, new_used: 'new' })).ok !== false, 'model card shown when they chose new and cash covers the cheapest');
 // covers
 ok(list.some(c => M.covers(c, 'M2')) && !M.covers({ description: 'M235 xDrive Gran Coupé', series: '2 Series Gran Coupé' }, 'M2') && !M.covers({ description: 'M2 Coupé', series: 'M2' }, '2 Series Gran Coupé'), 'M2 covered only by a real M2, not an M235');
 ok(!M.covers({ description: '220 Coupé', series: '2 Series' }, '2 Series Gran Coupé') && !M.covers({ description: '420i Gran Coupé', series: '4 Series' }, '4 Series Coupé'), 'Coupé and Gran Coupé never stand in for each other');

@@ -49,6 +49,14 @@
     $('#g-buy').onclick = function () { var b = this; if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Tap again to send to Dan'; return; }
       b.disabled = true; call({ action: 'buy', reg: c.reg }).then(function (r) { if (r.ok) { $('#g-buy-msg').textContent = 'Sent to Dan. He will be in touch to talk it through.'; b.textContent = 'Sent to Dan'; } else { b.disabled = false; b.textContent = 'Buy this car'; b.removeAttribute('data-sure'); toast('That did not send. Try again or WhatsApp Dan.'); } }); };
     $('#g-s-like').onclick = function () { $('#g-sheet').hidden = true; decide(true); }; $('#g-s-pass').onclick = function () { $('#g-sheet').hidden = true; decide(false); }; }
+  /* why a chosen model has nothing to show, worked out on the server from real stock; next steps that need no sign in */
+  function noStock() { var L = S.notes || [], wa = 'https://wa.me/447827138197';
+    var html = L.map(function (x) { var a = [];
+      if (x.kind === 'none') { a.push('<a class="g-chip go" href="./">Sign in for alerts</a>'); if (x.new_avail) a.push('<a class="g-chip" href="../find-my-bmw.html">Look at ordering new</a>'); }
+      else if (x.kind === 'filter' || x.kind === 'narrow' || x.kind === 'must') a.push('<button type="button" class="g-chip go" data-confirm>Change with Revvy</button>');
+      if (x.model) a.push('<a class="g-chip" target="_blank" rel="noopener" href="' + wa + '?text=' + encodeURIComponent('Hi Dan, I am looking for a ' + x.model + '. Can you help?') + '">WhatsApp Dan</a>');
+      return '<div class="g-ns-i"><p>' + esc(x.text) + '</p><div class="g-ns-acts">' + a.join('') + '</div></div>'; }).join('');
+    ['#g-ns', '#g-ns-end'].forEach(function (id) { var e = $(id); if (e) { e.innerHTML = html; e.hidden = !L.length; } }); }
   function end() { var n = S.liked.length; $('#g-end-p').textContent = n ? 'You liked ' + n + ' ' + (n === 1 ? 'car' : 'cars') + '. Send them to Dan and he will be in touch.' : 'Nothing caught your eye this time? No problem. Dan will keep looking.';
     $('#g-send').hidden = !n; $('#g-send').disabled = false; $('#g-send-msg').textContent = ''; $('#g-wa').href = 'https://wa.me/' + S.wa; show('#g-end');
     if (!S.confirmed && !S.autoChat) { S.autoChat = true; setTimeout(function () { if (!$('#g-end').hidden && $('#g-chat').hidden) confirmChat(); }, 900); } }
@@ -126,7 +134,7 @@
   if (!tok || !CFG.SUPABASE_URL) return fail(401);
   call({ action: 'deck' }).then(function (r) {
     if (r._status !== 200) return fail(r._status);
-    S.cars = r.cars || []; S.wa = r.owner_wa || S.wa; $('#g-err-wa').href = 'https://wa.me/' + S.wa;
+    S.cars = r.cars || []; S.wa = r.owner_wa || S.wa; S.notes = r.notes || []; noStock(); $('#g-err-wa').href = 'https://wa.me/' + S.wa;
     var sw = r.swiped || {}; S.liked = Object.keys(sw).filter(function (k) { return sw[k] && S.cars.some(function (c) { return c.reg === k; }); });
     tutorial(tok.slice(-12), function () { if (!S.cars.length) return end(); draw(); });
   }).catch(function () { fail(0); });

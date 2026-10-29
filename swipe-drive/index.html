@@ -20,8 +20,8 @@
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png">
 <link rel="preconnect" href="https://api.fontshare.com">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&f[]=satoshi@400,500,700,900&display=swap">
-<link rel="stylesheet" href="app.css?v=35">
-<link rel="stylesheet" href="crm/hub.css?v=35">
+<link rel="stylesheet" href="app.css?v=36">
+<link rel="stylesheet" href="crm/hub.css?v=36">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="../analytics.js" defer></script>
@@ -89,7 +89,7 @@
         <span class="ct-lab">Body or size</span>
         <div class="ct-chips" data-name="body"><button type="button" data-v="any">Any</button><button type="button" data-v="small">Small and easy</button><button type="button" data-v="hatchback">Hatchback</button><button type="button" data-v="saloon">Saloon</button><button type="button" data-v="estate">Touring</button><button type="button" data-v="suv">SUV</button><button type="button" data-v="family">Family space</button><button type="button" data-v="coupe">Coupe or convertible</button></div>
         <span class="ct-lab">Models you like</span>
-        <p class="ct-hint">Tap once if you would like it, tap again to make it a must have, a third tap clears it.</p>
+        <div class="ct-tapkey" role="note"><b>Only want to see certain models? Tap it twice.</b><div class="ct-chips ct-tri ct-tapkey-demo" aria-hidden="true"><button type="button" tabindex="-1" data-state="">X3</button><span>Not picked</span><button type="button" tabindex="-1" data-state="like">X3</button><span>Tap once: would like, shown first but other suggestions still appear</span><button type="button" tabindex="-1" data-state="must">X3</button><span>Tap twice: must have, you will only see these models, with no other suggestions</span></div><small>Tap a third time to clear it.</small></div>
         <div class="ct-chips ct-tri" data-tri="models" id="modelChips"></div>
         <span class="ct-lab">Preferred current mileage (optional)</span>
         <p class="ct-hint">Pick any that suit, or leave blank for any mileage.</p>
@@ -97,7 +97,7 @@
         <span class="ct-lab">Colours</span>
         <p class="ct-hint">Tap once to pick it. Tap again to make it a must have. Tap a third time to clear it.</p>
         <div class="ct-chips ct-tri" data-tri="colours" id="colourChips"></div>
-        <span class="ct-lab">Specification</span><p class="ct-hint">Same taps as colours: pick it, tap again for a must have.</p>
+        <span class="ct-lab">Specification</span><div class="ct-tapkey" role="note"><b>Only want to see cars with a certain spec? Tap it twice.</b><div class="ct-chips ct-tri ct-tapkey-demo" aria-hidden="true"><button type="button" tabindex="-1" data-state="">Heated seats</button><span>Not picked</span><button type="button" tabindex="-1" data-state="like">Heated seats</button><span>Tap once: would like, shown first but other suggestions still appear</span><button type="button" tabindex="-1" data-state="must">Heated seats</button><span>Tap twice: must have, you will only see cars with that spec, with no other suggestions</span></div><small>Tap a third time to clear it.</small></div>
         <div class="ct-chips ct-tri" data-tri="specs" id="specChips"></div>
         <span class="ct-lab">New or used</span>
         <div class="ct-seg" data-name="new_used"><button type="button" data-v="used">Used</button><button type="button" data-v="new">Brand new</button><button type="button" data-v="both">Either</button></div>
@@ -131,6 +131,7 @@
   <!-- 3. swipe -->
   <section class="ct-screen" data-screen="discover" hidden>
     <div class="ct-revvy-row" data-revvy-row hidden><button class="ct-revvy" type="button" data-revvy><img src="icons/icon-192.png" alt="">Chat to Revvy</button><a class="ct-btn ct-btn-ghost ct-edit-choices" href="#profile" data-edit-choices>Edit my choices</a></div>
+    <div class="ct-ns ct-ns-top" id="deckNoStock" hidden aria-live="polite"></div>
     <div class="ct-deck" id="deck"></div>
     <div class="ct-empty" id="deckEmpty" hidden><h2 id="deckEmptyT">That is everyone for now.</h2><p id="deckEmptyP">New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><div class="ct-row" id="deckEmptyActs"><a class="ct-btn" href="#matches">See your matches</a></div></div>
     <div class="ct-actions" id="deckActions">
@@ -297,19 +298,21 @@
 <div class="ct-toast ct-undo" id="undoToast" role="status" hidden><span id="undoText"></span><button type="button" id="undoBtn">Undo</button></div>
 <div class="ct-toast" id="toast" role="status" hidden></div>
 
-<script src="config.js?v=35"></script>
-<script src="auth-ui.js?v=35"></script>
-<script src="chat/profile-save.js?v=35"></script>
-<script src="../stock-core.js?v=35"></script>
-<script src="match-core.js?v=35"></script>
+<script src="config.js?v=36"></script>
+<script src="auth-ui.js?v=36"></script>
+<script src="chat/profile-save.js?v=36"></script>
+<script src="../stock-core.js?v=36"></script>
+<script src="../dsfinance.js?v=36"></script>
+<script src="match-core.js?v=36"></script>
 <script src="../disclaimer.js" defer></script>
-<script src="app.js?v=35"></script>
-<script src="../product-email.js?v=35"></script>
-<script src="../quote-email.js?v=35"></script>
-<script src="crm/followups-core.js?v=35"></script>
-<script src="revvy-flow.js?v=35"></script>
-<script src="revvy.js?v=35"></script>
-<script src="crm/hub.js?v=35"></script>
-<script src="crm/followups-ui.js?v=35"></script>
+<script src="app.js?v=36"></script>
+<script src="../product-email.js?v=36"></script>
+<script src="../quote-email.js?v=36"></script>
+<script src="crm/followups-core.js?v=36"></script>
+<script src="nostock-ui.js?v=36"></script>
+<script src="revvy-flow.js?v=36"></script>
+<script src="revvy.js?v=36"></script>
+<script src="crm/hub.js?v=36"></script>
+<script src="crm/followups-ui.js?v=36"></script>
 </body>
 </html>

@@ -117,7 +117,10 @@ export async function guestHandle(body, deps) {
     const cars = await loadCars();
     const deck = guestDeck(M, cars, cu, await db.emailedRegs(cu.id), 40);
     const sw = await db.swipes(cu.id);
-    return { status: 200, body: { cars: deck, swiped: sw, owner_wa: await db.ownerWa(cu) } };
+    /* a line per chosen model with nothing to show, and why (no figures: budget is only ever "does not stretch") */
+    const notes = M.noStock ? M.noStock(cars, cu).map(x => ({ model: x.model, kind: x.kind, m_car: !!x.m_car, new_avail: !!(x.new_avail || (x.m_car && !x.budget_set)), text: M.noStockText(x, { alerts: false }) })) : [];
+    const mn = M.mustNote && (notes.length || !deck.length) ? M.mustNote(cu) : ''; if (mn) notes.push({ model: '', kind: 'must', text: mn.replace('Make it a would like (one tap)', 'Ask Revvy to make it a would like') });
+    return { status: 200, body: { cars: deck, swiped: sw, owner_wa: await db.ownerWa(cu), notes } };
   }
   if (act === 'swipe') {
     if (!REG.test(String(body.reg || '')) || typeof body.liked !== 'boolean') return { status: 400, body: { error: 'bad swipe' } };

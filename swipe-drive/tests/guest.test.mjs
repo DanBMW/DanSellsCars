@@ -20,6 +20,10 @@ ok(r.status === 200 && r.body.cars.length === 2 && r.body.cars[0].reg === 'BB22B
 const flat = JSON.stringify(r.body);
 ok(!/Lorna|07700900111|lorna@example|DA14|450|Audi|AB12XYZ|budget|monthly_gbp|postcode|phone|email|"name"/.test(flat), 'deck response holds no customer details or preferences');
 ok(!r.body.cars.some(c => c.listing_url && !c.listing_url.startsWith('https://hedinautomotive.co.uk/')), 'only Hedin links pass through');
+ok(Array.isArray(r.body.notes) && r.body.notes.length === 0, 'deck: no no stock notes when the chosen model is in stock');
+{ const keep = cust.models; cust.models = ['M2', '3 Series']; const d2 = await guestHandle({ t: good, action: 'deck' }, deps); cust.models = keep;
+  const n2 = d2.body.notes || []; ok(n2.length === 1 && n2[0].model === 'M2' && n2[0].kind === 'none' && /^No M2 in stock right now, as M cars/.test(n2[0].text), 'deck: M2 note explains why');
+  ok(!/450|£|07700|lorna|Hayre/.test(JSON.stringify(n2)), 'deck notes hold no figures or contact details'); }
 ok(r.body.cars.every(c => !('reasons' in c) && !('score' in c)), 'no match reasons (they would hint at preferences)');
 ok((await guestHandle({ action: 'deck' }, deps)).status === 401, 'no token: refused');
 ok((await guestHandle({ t: good.slice(0, -2) + 'xx', action: 'deck' }, deps)).status === 401, 'tampered token: refused');

@@ -20,7 +20,7 @@
     function chips(a) { tray.innerHTML = ''; a.forEach(function (c) { var b = el(c.href ? 'a' : 'button', o.cls.chip + (c.go ? ' ' + o.cls.go : ''), c.t); if (c.href) b.href = c.href; else { b.type = 'button'; b.onclick = function () { tray.innerHTML = ''; if (!c.quiet) me(c.t); c.f(); }; } tray.appendChild(b); }); }
     function picker(f, done) { tray.innerHTML = ''; var st = {}, on = f.kind === 'single' ? (v[f.k] != null ? [v[f.k]] : []) : (v[f.k] || []), must = f.mk ? (v[f.mk] || []) : [];
       on.forEach(function (k) { st[k] = 'like'; }); must.forEach(function (k) { st[k] = 'must'; });
-      if (f.kind === 'tri') tray.appendChild(el('p', o.cls.legend, 'Tap once for would like, twice for must have, a third tap clears it.'));
+      if (f.kind === 'tri') tray.appendChild(el('p', o.cls.legend, f.legend || 'Tap once for would like, twice for must have, a third tap clears it.'));
       var g = el('div', o.cls.picks + (f.kind === 'tri' ? ' tri' : ''));
       f.list.forEach(function (x) { var k = key(x), b = el('button', o.cls.pick); b.type = 'button'; b.setAttribute('data-k', k); b.appendChild(el('b', null, lab(f.list, k))); var i = el('i'); b.appendChild(i);
         function paint() { var s = st[k] || ''; b.setAttribute('data-s', s); b.setAttribute('aria-pressed', s ? 'true' : 'false'); i.textContent = s === 'must' ? 'Must have' : s === 'like' && f.kind === 'tri' ? 'Would like' : ''; }
@@ -51,7 +51,8 @@
       Object.keys(p).forEach(function (k) { v[k] = p[k]; }); if (show(f, v) === before && before) return next();
       Promise.resolve().then(function () { return o.save(p, f); }).then(function () { changed.push(f.label); next(); }, function () { failed.push(f.label); bot('That one did not save, sorry. Dan will go through it with you.'); next(); }); }
     var n = 0;
-    function step() { var f = fields[n++]; if (!f) return end(); if (f.when && !f.when(v)) return step(); if (!f.kind && f.open) return section(f);
+    var prev = null;
+    function step() { if (prev && prev.after) { var said = ''; try { said = prev.after(v); } catch (e) {} if (said) bot(said); } prev = null; var f = fields[n++]; prev = f; if (!f) return end(); if (f.when && !f.when(v)) return step(); if (!f.kind && f.open) return section(f);
       var cur = show(f, v);
       if (cur) { bot((f.say ? f.say(cur) : 'For ' + f.label.toLowerCase() + ', you have ' + cur + '.') + ' Still right?');
         chips([{ t: 'Yes, still right', go: 1, f: step }, { t: 'Change it', f: function () { if (f.hint) bot(f.hint); edit(f, function (p) { apply(f, p, step); }); } }]); }
@@ -78,8 +79,8 @@
     if (D.people) D.people = [['one', 'Just me'], ['two', 'Two'], ['four', 'Up to four'], ['five', 'Five or more'], ['seven', 'Needs 7 seats']];
     var cash = function (v) { return v.budget_type === 'cash'; };
     var f = [
-      { k: 'models', mk: 'models_must', kind: 'tri', list: L.models, label: 'Models', q: 'Which BMW models do you like?' },
-      { k: 'specs', mk: 'specs_must', kind: 'tri', list: L.specs, label: 'Spec', q: 'Any spec you want, like a reversing camera, heated seats or M Sport?' },
+      { k: 'models', mk: 'models_must', kind: 'tri', list: L.models, label: 'Models', q: 'Which BMW models do you like? Tap once for would like, and I will still suggest others. Tap twice for must have, and you will only see those models, with no other suggestions.', legend: 'Once: would like, others still suggested. Twice: must have, only these models shown. Third tap clears it.' },
+      { k: 'specs', mk: 'specs_must', kind: 'tri', list: L.specs, label: 'Spec', q: 'Any spec you want, like a reversing camera, heated seats or M Sport? Tap once for would like. Tap twice for must have, and you will only see cars with it, with no other suggestions.', legend: 'Once: would like, others still suggested. Twice: must have, only cars with it shown. Third tap clears it.' },
       { k: 'colours', mk: 'colours_must', kind: 'tri', list: L.colours, label: 'Colours', q: 'Any colours you like, or any to avoid by leaving them out?' },
       { k: 'fuel', kind: 'multi', list: FUEL, exclusive: 'open', label: 'Fuel', q: 'Which fuel suits you?', hint: 'Pick as many as you like, or Open minded.' },
       { k: 'body', kind: 'single', list: BODY, label: 'Body or size', q: 'What body style or size?' },

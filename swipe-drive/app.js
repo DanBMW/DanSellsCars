@@ -224,7 +224,10 @@
     }).catch(function () { S.newRange = []; });
     /* real new cars in retailer stock, same ids as the alerts job (NEW + order number); cars on hold are left out */
     var ns = fetch('../lookup/new-stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
-      S.newStock = (d.cars || []).filter(function (c) { return c.order_number && !c.on_hold && c.price_gbp; }).map(M.fromNewStock); }).catch(function () { S.newStock = []; });
+      S.newStock = (d.cars || []).filter(function (c) { return c.order_number && !c.on_hold && c.price_gbp; }).map(M.fromNewStock);
+      /* monthly figures for new cars: the lender's own quote only (dsfinance.js rules), else no monthly */
+      return fetch('../lookup/new-stock-quotes.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        .then(function (qf) { M.applyLenderQuotes(S.newStock, qf, window.dsFin); }); }).catch(function () { S.newStock = []; });
     /* arrival dates (the same ledger stock.html badges from); quiet failure means no Just arrived badges */
     var arr = fetch('../automation/stock-arrivals.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { S.arrivals = d; }).catch(function () { S.arrivals = null; });
     var det = fetch('../automation/car-details.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { window.ctDetails = d; }).catch(function () { window.ctDetails = null; });
@@ -600,6 +603,7 @@
     var top = S.deck.slice(0, 3);
     $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length; deck.hidden = !top.length;
     if (!top.length) paintEmpty();
+    if (window.ctNoStock) window.ctNoStock.paint(!top.length);
     var left = $('#deckLeft'); if (!left) { left = document.createElement('p'); left.id = 'deckLeft'; left.className = 'ct-sub ct-left'; left.setAttribute('aria-live', 'polite'); $('#deckActions').parentNode.insertBefore(left, $('#deckActions').nextSibling); }
     sinceLine();
     left.hidden = !top.length; left.textContent = S.deck.length === 1 ? 'Last car in your deck' : S.deck.length + ' cars left to see';
@@ -1091,5 +1095,5 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
     .catch(function (e) { console.warn('SwipeToDrive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
-  window.ctDebug = { S: S, store: store, safePrefs: safePrefs, platform: platform, route: route, allModels: allModels, DESK: DESK, colourList: colourList };
+  window.ctDebug = { S: S, store: store, safePrefs: safePrefs, platform: platform, route: route, allModels: allModels, DESK: DESK, colourList: colourList, pool: pool, redeck: function () { S.deck = []; if (location.hash === '#discover') showDeck(); } };
 })();

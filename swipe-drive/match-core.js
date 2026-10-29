@@ -57,6 +57,7 @@
     return { sc: -6, ok: true };
   }
   /* Returns {score 0..100, reasons[], ok}. ok false = outside a hard limit. */
+  function hasBudget(p) { return !!p && ((p.budget_type === 'cash' && p.cash_gbp > 0) || (p.budget_type !== 'cash' && p.monthly_gbp > 0)); }
   function score(car, p) {
     p = p || {}; var sc = 40, why = [], ok = true, s = S(), notes = [], unconf = false;
     var isNew = car.kind === 'new', ns = car.kind === 'new_stock';   /* new_stock: a real new car in retailer stock */
@@ -76,6 +77,8 @@
     var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
     /* model placeholder cards (no real stock for that model): no price of their own, so the budget test is against
        the cheapest real new BMW in stock today (floor_cash / floor_monthly, set by the app). Below that, hide them. */
+    /* a model card has no price of its own: with a budget set, only show it to someone who chose brand new */
+    if (isNew && hasBudget(p) && p.new_used !== 'new') ok = false;
     if (isNew) {
       if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.floor_cash && p.cash_gbp < car.floor_cash) ok = false;
       if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && car.floor_monthly && p.monthly_gbp < car.floor_monthly) ok = false;
@@ -145,6 +148,8 @@
     var bk = s.bodyKeys(car) || [];
     if (p.body && p.body !== 'any') { if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12; }
     var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
+    /* with a budget set, a new car with no real price or quoted monthly is not shown unless they chose brand new */
+    if (hasBudget(p) && p.new_used !== 'new' && (p.budget_type === 'cash' ? !car.price_gbp : !(car.finance && car.finance.monthly))) ok = false;
     if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) { if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at the current price'); } else ok = false; }
     /* monthly: only on a figure that comes with a full representative example (car.finance); otherwise no monthly test or figure */
     if (p.budget_type === 'monthly' && p.monthly_gbp > 0) { if (car.finance && car.finance.monthly) { if (car.finance.monthly <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else ok = false; } else sc -= 4; }
@@ -170,6 +175,14 @@
       colour: c.colour, fuel: c.fuel, gearbox: c.transmission, transmission: c.transmission, drive: c.drive, seats: c.seats, upholstery: c.upholstery, wheels: c.wheels,
       price: c.price || (c.price_gbp ? gbp(c.price_gbp) : ''), price_gbp: c.price_gbp, monthly_gbp: f ? c.monthly_gbp : null, finance: f,
       lead_min: c.lead_time_weeks_min, lead_max: c.lead_time_weeks_max, on_hold: !!c.on_hold, image: c.image || '', images: (c.images || []).slice(0, 10), standard: c.standard || [], options: c.options || [] }; }
+  /* Brand new stock: the monthly comes only from the lender's own quote for that car (lookup/new-stock-quotes.json,
+     checked by dsfinance.js newOk: complete, adds up, matches the price, in date, file fresh). A car without a good
+     quote shows no monthly, so a monthly budget never matches it on a guess. fin is window.dsFin. */
+  function applyLenderQuotes(cars, file, fin, now) { var q = (file && file.quotes) || {}, gen = file && file.generated_at;
+    (cars || []).forEach(function (c) { if (c.kind !== 'new_stock') return; var e = q[String(c.order_number)];
+      if (fin && e && fin.newOk(c, e, gen, now)) { c.finance = { monthly: e.monthly, product: e.product, lender: e.lender, representative_example: fin.newRep(e), legal: fin.BROKER, source: 'lender' }; c.monthly_gbp = e.monthly; }
+      else { c.finance = null; c.monthly_gbp = null; } });
+    return cars; }
   /* does a real stock car stand in for a model placeholder (MBG list name)? M cars only cover M names. */
   var BODY = ['gran coupe', 'active tourer', 'convertible', 'touring', 'saloon', 'coupe'];
   function nrm(x) { return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bmw\s+/, '').replace(/\s+/g, ' ').trim(); }
@@ -183,6 +196,70 @@
     if (isMCar(d)) return false;
     return sr === core || d.indexOf(core + ' ') === 0;
   }
+
+  /* Why a chosen model has nothing to show, worked out from the real stock (used cars and new cars in stock;
+     model placeholder cards are not stock). One entry per chosen model with no car that fits:
+     none     nothing of that model in stock at all
+     budget   stock exists, the budget is what rules it out
+     filter   stock exists, one other choice rules it out (fuel, new or used, must have colour, must have spec)
+     narrow   stock exists, only the mix of choices together rules it out
+     Counts are real counts from the stock passed in. No prices, dates or promises. */
+  function hasModel(car, m) { var n = (String(car.series || '') + ' ' + String(car.model || '') + ' ' + String(car.description || '')).toLowerCase();
+    return new RegExp('(^|[^a-z0-9])' + String(m).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])').test(n); }
+  function isMModel(m) { m = String(m).trim().toLowerCase(); return /^m\d/.test(m) || /^(x\d|i\w{1,2})\s?m(\d|$)/.test(m) || /^xm$/.test(m); }
+  var LOOSEN = [
+    ['budget', function (p) { return Object.assign({}, p, { cash_gbp: 0, monthly_gbp: 0 }); }],
+    ['fuel', function (p) { return Object.assign({}, p, { fuel: 'open' }); }],
+    ['new_used', function (p) { return Object.assign({}, p, { new_used: 'both' }); }],
+    ['colours', function (p) { return Object.assign({}, p, { colours_must: [] }); }],
+    ['specs', function (p) { return Object.assign({}, p, { specs_must: [] }); }]];
+  function noStock(cars, p) { p = p || {}; var seen = {}, out = [];
+    var models = [].concat(p.models_must || [], p.models || []).filter(function (m) { var k = String(m).toLowerCase(); if (!m || seen[k]) return false; seen[k] = 1; return true; });
+    var real = (cars || []).filter(function (c) { return c.kind !== 'new'; });
+    models.forEach(function (m) {
+      var q = Object.assign({}, p, { models: [m], models_must: [m] }), mine = real.filter(function (c) { return hasModel(c, m); });
+      var ok = function (pp) { return mine.filter(function (c) { return score(c, pp).ok; }).length; };
+      if (mine.length && ok(q)) return;
+      var x = { model: m, m_car: isMModel(m), total: mine.length, used: mine.filter(function (c) { return c.kind !== 'new_stock'; }).length,
+        new_avail: false };
+      /* ordering new is only offered when a new one could fit their budget; a model card counts only with no budget or for someone who chose new */
+      var news = (cars || []).filter(function (c) { return (c.kind === 'new' || c.kind === 'new_stock') && hasModel(c, m); });
+      /* the budget indicator is the cheapest new one of that model in stock today, on its real price or lender quote;
+         with no new one of that model in stock there is no indicator, so ordering new is only offered with no budget set
+         (or to someone who chose brand new, where the model card already passed its own checks) */
+      x.new_avail = !hasBudget(p) ? news.length > 0 : news.some(function (c) { return (c.kind === 'new_stock' || p.new_used === 'new') && score(c, q).ok; });
+      x.budget_set = hasBudget(p);
+      if (!mine.length) { x.kind = news.length && x.budget_set && !x.new_avail && news.some(function (c) { return c.kind === 'new_stock' && score(c, Object.assign({}, q, { cash_gbp: 0, monthly_gbp: 0 })).ok; }) ? 'budget' : 'none'; out.push(x); return; }
+      var best = null; LOOSEN.forEach(function (l, i) { var n = ok(l[1](q)); if (n && (!best || (best.k !== 'budget' && n > best.n))) best = { k: l[0], n: n }; });
+      if (best && best.k === 'budget') { x.kind = 'budget'; x.freed = best.n; }
+      else if (best) { x.kind = 'filter'; x.filter = best.k; x.freed = best.n; x.electric_only = best.k === 'fuel' && fuelList(p.fuel).join() === 'electric'; x.fuel = fuelList(p.fuel); x.new_used = p.new_used; }
+      else x.kind = 'narrow';
+      out.push(x); });
+    return out; }
+  /* Plain words for one noStock entry. o.alerts: true when this customer gets match alerts. o.guest: on a swipe link. */
+  function noStockText(x, o) { o = o || {}; var m = x.model, n = x.total, cars = n === 1 ? '1 ' + m : n + ' ' + m + ' cars', is = n === 1 ? 'it' : 'they';
+    var alerts = o.alerts ? 'You will be notified when one comes into stock.' : 'Turn on alerts and you will be notified when one comes into stock.';
+    if (x.kind === 'none') {
+      if (x.m_car) return 'No ' + m + ' in stock right now, as M cars rarely come into approved used stock and tend to sell quickly. ' + alerts;
+      if (x.new_avail) return 'No used ' + m + ' in stock right now, but it is available new. ' + alerts;
+      return 'No ' + m + ' in stock right now. ' + alerts; }
+    if (x.kind === 'budget') return 'Your budget does not stretch to the ' + m + ' based on the parameters you set.';
+    if (x.kind === 'filter') {
+      if (x.filter === 'fuel') return x.electric_only ? 'We have ' + cars + ' in stock, but none are electric.' : 'We have ' + cars + ' in stock, but none are ' + x.fuel.join(' or ') + '.';
+      if (x.filter === 'new_used') return 'We have ' + cars + ' in stock, but ' + (n === 1 ? 'it is not' : 'none are') + ' ' + (x.new_used === 'new' ? 'brand new' : 'used') + '.';
+      if (x.filter === 'colours') return 'We have ' + cars + ' in stock, but ' + (n === 1 ? 'it is not' : 'none are') + ' in your must have colour.';
+      if (x.filter === 'specs') return 'We have ' + cars + ' in stock, but ' + (n === 1 ? 'it does not' : 'none') + ' have your must have spec.';
+    }
+    return 'We have ' + cars + ' in stock, but ' + (n === 1 ? 'it does not' : 'none') + ' fit all your choices together.'; }
+  /* when must haves are what keeps the deck small: say so, and how to open it up (tap the chip once instead) */
+  function mustNote(p) { p = p || {}; var mm = (p.models_must || []).length, ms = (p.specs_must || []).length;
+    if (!mm && !ms) return '';
+    var what = mm && ms ? 'must have models and spec' : mm ? (mm === 1 ? 'a must have model' : 'must have models') : (ms === 1 ? 'a must have spec' : 'must have spec');
+    return 'You have ' + what + ' set, so you only see cars that match, with no other suggestions. Make it a would like (one tap) to see other suggestions too.'; }
+  /* the one tap widen for an entry: a profile patch, or null */
+  function noStockWiden(x) { if (x.kind !== 'filter') return null;
+    return { fuel: { label: 'Show any fuel', patch: { fuel: 'open' } }, new_used: { label: 'Show new and used', patch: { new_used: 'both' } },
+      colours: { label: 'Any colour is fine', patch: { colours_must: [] } }, specs: { label: 'Make spec a would like', patch: { specs_must: [] } } }[x.filter] || null; }
   function rank(cars, p) {
     return cars.map(function (c) { var r = score(c, p); return { car: c, score: r.score, reasons: r.reasons, ok: r.ok, notes: r.notes || [], unconfirmed: !!r.unconfirmed }; })
       .filter(function (x) { return x.ok; }).sort(function (a, b) { return (a.unconfirmed - b.unconfirmed) || (b.score - a.score); });
@@ -213,5 +290,5 @@
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE };
+  root.ctMatch = { applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -61,3 +61,4 @@ header img{border-radius:8px}.brand{font-family:var(--serif);font-weight:500;fon
 .kdone{width:100%;padding:12px;font-size:16px}
 .saverow{display:flex;gap:8px;width:100%}.saverow .chip{flex:1;text-align:center}.authbox{width:100%}
 .tray{scroll-margin-bottom:12px}
+.klegend{border:2px solid #f2b33d;border-radius:12px;padding:8px;background:rgba(242,179,61,.08);font-size:13px;color:inherit}

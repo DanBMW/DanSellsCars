@@ -11,11 +11,13 @@ const env = (k: string) => Deno.env.get(k) || '';
 const CORS = { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Headers': 'content-type, apikey, authorization, x-client-info', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 async function loadScript(u: string) { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(u + ' ' + r.status); (0, eval)(await r.text()); }
 let M: any = null;
-async function init() { if (M) return; await loadScript(SITE + '/stock-core.js'); await loadScript(SITE + '/swipe-drive/match-core.js'); M = (globalThis as any).ctMatch; }
+async function init() { if (M) return; await loadScript(SITE + '/stock-core.js'); await loadScript(SITE + '/swipe-drive/match-core.js'); try { await loadScript(SITE + '/dsfinance.js'); } catch (_) { /* no lender quotes: no new car monthlies */ } M = (globalThis as any).ctMatch; }
 async function loadCars() {
   const st = await (await fetch(SITE + '/lookup/stock.json', { cache: 'no-store' })).json();
   let cars: any[] = Object.values(st.cars || {});
-  try { const ns = await (await fetch(SITE + '/lookup/new-stock.json', { cache: 'no-store' })).json(); cars = cars.concat((ns.cars || []).filter((c: any) => c.order_number).map(M.fromNewStock)); } catch (_) { /* used only */ }
+  try { const ns = await (await fetch(SITE + '/lookup/new-stock.json', { cache: 'no-store' })).json(); let nc = (ns.cars || []).filter((c: any) => c.order_number).map(M.fromNewStock);
+    if (M.applyLenderQuotes) { let qf = null; try { qf = await (await fetch(SITE + '/lookup/new-stock-quotes.json', { cache: 'no-store' })).json(); } catch (_) { qf = null; } M.applyLenderQuotes(nc, qf, (globalThis as any).dsFin); }
+    cars = cars.concat(nc); } catch (_) { /* used only */ }
   return cars;
 }
 Deno.serve(async (req) => {
