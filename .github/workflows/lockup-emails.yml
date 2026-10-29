@@ -47,6 +47,7 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MAIL_FROM_NAME: Hedin Used Cars
           GITHUB_TOKEN: ${{ github.token }}
+          ROTA_WEEKLY: '1'
           ROTA_NOW: ${{ github.event_name == 'workflow_dispatch' && inputs.rota_now && '1' || '' }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
           

@@ -5,7 +5,7 @@
  *   5pm Mon to Fri  reminder to both people on the rota (4pm Saturday: managers)
  *   6:05pm          nudge to tonight's people if still unsigned (5:05pm Sat)
  *   6:30pm          managers (5:30pm Sat), if nobody has signed, or with any issues noted
- *   Monday 08:00    the next two weeks of rota to the team (scripts/lockup-rota-mail.js, needs config/rotaEmail)
+ *   Monday 08:00    the next two weeks of rota to the team (scripts/lockup-rota-mail.js, needs ROTA_WEEKLY=1)
  * It also sends any queued manager notifications (lockup/notify, written by
  * the page for absences, cover and holidays) on every run, marking each sent.
  * Each send is marked under lockup/mail/<date>/<kind>, so a repeat or late run
@@ -158,7 +158,7 @@ async function main() {
   }
 
   /* Monday 08:00 UK rota email for the next two weeks (scripts/lockup-rota-mail.js).
-     Off until lockup/config/rotaEmail is true; ROTA_NOW=1 sends one now. */
+     On while ROTA_WEEKLY=1 in the workflow; ROTA_NOW=1 sends one now. */
   try {
     const RM = require('./lockup-rota-mail.js');
     const mailToday = (await db.ref(ROOT + '/mail/' + n.date).get()).val() || {};

@@ -6,8 +6,8 @@
  * (06:00 to 19:45 UTC, Monday to Saturday) and works out UK time itself, so
  * "Monday 08:00 London" holds through the clock changes with no new cron:
  * due on a Monday from 08:00 until 12:00 UK, once, marked at
- * <root>/mail/<date>/rota. It only runs when <root>/config/rotaEmail is true
- * (off until Dan switches it on), or when the Action is started by hand with
+ * <root>/mail/<date>/rota. It only runs when ROTA_WEEKLY=1 is set in the
+ * lockup-emails workflow (the database rules do not allow a config/rotaEmail key), or when the Action is started by hand with
  * ROTA_NOW=1 (one off send, optional ROTA_FROM=YYYY-MM-DD Monday). */
 'use strict';
 const R = require('../lockup-rota.js');
@@ -19,7 +19,7 @@ function fmt(date, opts) { return new Date(date + 'T12:00:00Z').toLocaleDateStri
 
 /* Is the weekly email due now? n = R.london(now). */
 function due(n, cfg, mailToday) {
-  return !!(cfg && cfg.rotaEmail === true) && n.dow === 'mon' && n.mins >= SEND_FROM_MINS && n.mins < SEND_UNTIL_MINS && !(mailToday && mailToday.rota);
+  return !!((cfg && cfg.rotaEmail === true) || process.env.ROTA_WEEKLY === '1') && n.dow === 'mon' && n.mins >= SEND_FROM_MINS && n.mins < SEND_UNTIL_MINS && !(mailToday && mailToday.rota);
 }
 
 /* Rows for the two weeks from the Monday `fromDate`: Monday to Saturday, Sunday left out (closed). */
