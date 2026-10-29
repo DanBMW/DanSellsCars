@@ -336,6 +336,44 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
 
+    <!-- Product Presentation Email builder -->
+    <div class="widget-card" id="pe-card">
+      <div class="widget-name">&#x1F6E1;&#xFE0F; Product Presentation Email <span class="tag tag-new">New</span></div>
+      <div class="widget-desc">Enter the customer's details, tick the products they've bought and pick pre or post handover. Create email shows a preview covering the products they haven't taken. Copy and open Outlook copies the email and opens a new message to the customer with Sergio on cc; paste the body in and press Send. Nothing is saved or sent from here.</div>
+      <input class="widget-input" id="pe-email" type="email" placeholder="Customer email address" autocomplete="off">
+      <input class="widget-input" id="pe-name" type="text" placeholder="Customer first name" autocomplete="off">
+      <input class="widget-input" id="pe-car" type="text" placeholder="Car e.g. BMW 1 Series" autocomplete="off">
+      <div class="widget-title" style="margin-bottom:8px;">Order date (deadline is 30 days later)</div>
+      <input class="widget-input" id="pe-date" type="date">
+      <input class="widget-input" id="pe-phone" type="tel" placeholder="Your phone for the signature (optional)" autocomplete="off">
+      <div class="widget-title" style="margin-bottom:8px;">Products they've bought</div>
+      <div class="chip-row">
+        <div class="chip" data-pe="tyreAlloy" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Tyre &amp; Alloy</div>
+        <div class="chip" data-pe="gap" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>GAP</div>
+        <div class="chip" data-pe="hedinCare" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Club HedinCare SMART</div>
+        <div class="chip" data-pe="ceramic" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Williams Ceramic</div>
+        <div class="chip" data-pe="warranty" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Extended Warranty</div>
+      </div>
+      <div class="widget-title" style="margin-bottom:8px;">Stage</div>
+      <div class="chip-row">
+        <div class="chip on" id="pe-pos" onclick="peStage('point_of_sale')"><span class="chip-dot"></span>Pre handover (point of sale)</div>
+        <div class="chip" id="pe-post" onclick="peStage('post_handover')"><span class="chip-dot"></span>Post handover</div>
+      </div>
+      <div class="lock-err" id="pe-err" style="margin-bottom:8px"></div>
+      <div class="btn-row">
+        <button class="btn-open" onclick="peCreate()">Create email</button>
+      </div>
+      <div id="pe-out" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+        <div class="widget-desc" id="pe-meta"></div>
+        <div style="background:#f4f4f4;border-radius:10px;overflow:auto;max-height:520px"><div id="pe-preview"></div></div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn-open" onclick="peSend()">&#x2709; Copy and open Outlook</button>
+          <button class="btn-copy" onclick="peCopy(this)">Copy email only</button>
+        </div>
+        <div class="widget-desc" id="pe-msg" style="margin-top:8px"></div>
+      </div>
+    </div>
+
     <!-- Customer Follow Up Email builder -->
     <div class="widget-card">
       <div class="widget-name">&#x1F4E7; Customer Follow Up Email <span class="tag tag-new">New</span></div>
@@ -1273,6 +1311,46 @@ function copyTmpl(i, btn) {
 }
 
 renderTemplates();
+</script>
+<script src="product-email.js"></script>
+<script>
+(function(){var t=new Date();document.getElementById('pe-date').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');})();
+var peStageVal='point_of_sale',peLast=null;
+function peStage(s){peStageVal=s;document.getElementById('pe-pos').classList.toggle('on',s==='point_of_sale');document.getElementById('pe-post').classList.toggle('on',s==='post_handover');}
+function peCreate(){
+  var err=document.getElementById('pe-err');err.textContent='';
+  var d={email:document.getElementById('pe-email').value,firstName:document.getElementById('pe-name').value,car:document.getElementById('pe-car').value,
+    orderDate:document.getElementById('pe-date').value,phone:document.getElementById('pe-phone').value.trim(),stage:peStageVal,
+    bought:[].slice.call(document.querySelectorAll('[data-pe].on')).map(function(c){return c.getAttribute('data-pe');})};
+  if(!ProductEmail.isValidEmail(d.email)){err.textContent='Please enter a valid customer email.';return;}
+  if(!d.firstName.trim()){err.textContent='Please enter the customer first name.';return;}
+  if(!d.orderDate){err.textContent='Please pick the order date.';return;}
+  try{peLast=ProductEmail.build(d);}catch(e){err.textContent=e.message;return;}
+  document.getElementById('pe-meta').innerHTML='<b>To:</b> '+peEsc(peLast.to)+'<br><b>Cc:</b> '+peLast.cc+'<br><b>Subject:</b> '+peEsc(peLast.subject);
+  document.getElementById('pe-preview').innerHTML=peLast.html;
+  document.getElementById('pe-msg').textContent='';
+  document.getElementById('pe-out').style.display='block';
+}
+function peEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function peCopyRich(){
+  var html=peLast.html,text=ProductEmail.toText(html);
+  if(navigator.clipboard&&window.ClipboardItem){
+    return navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})})]).catch(peCopyFallback);
+  }
+  return Promise.resolve(peCopyFallback());
+}
+function peCopyFallback(){
+  var el=document.getElementById('pe-preview'),r=document.createRange();r.selectNodeContents(el);
+  var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);var ok=false;try{ok=document.execCommand('copy');}catch(e){}sel.removeAllRanges();
+  if(!ok)throw new Error('copy failed');
+}
+function peCopy(btn){if(!peLast)return;peCopyRich().then(function(){document.getElementById('pe-msg').textContent='Copied. Paste it into the email body.';},function(){document.getElementById('pe-msg').textContent='Copy was blocked. Select the preview and copy it by hand.';});}
+function peSend(){
+  if(!peLast)return;
+  var go=function(){location.href='mailto:'+encodeURIComponent(peLast.to)+'?cc='+encodeURIComponent(peLast.cc)+'&subject='+encodeURIComponent(peLast.subject);};
+  peCopyRich().then(function(){document.getElementById('pe-msg').textContent='Copied. In the new email, click in the body, paste (Ctrl+V) and press Send.';go();},
+    function(){document.getElementById('pe-msg').textContent='Copy was blocked. Select the preview and copy it by hand, then paste into the email.';go();});
+}
 </script>
 <script src="disclaimer.js"></script>
 <script src="contact.js"></script>
