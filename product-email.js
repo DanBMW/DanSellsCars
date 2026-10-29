@@ -66,6 +66,7 @@
       subject = "Protection options for your new " + car;
       h += '<p>I just wanted to follow up regarding the additional protection policies available for your new car. Currently, you haven\'t taken out ' +
         esc(joinList(missing.map(function (p) { return p.inList; }), "or")) + ', so I\'ve included the information on ' + (one ? "this" : "these") + ' below. Tap ' + (one ? "the" : "any") + ' video to watch.</p>\n' +
+        '<p>Please note: the product videos in this email are AI generated.</p>\n' +
         '<table width="100%" cellpadding="0" cellspacing="0">' + missing.map(productBlock).join("") + '</table>\n';
       var zero = ["gap", "tyreAlloy"].map(function (id) { return missing.filter(function (p) { return p.id === id; })[0]; }).filter(Boolean);
       if (zero.length) h += '<p>We can also offer ' + esc(joinList(zero.map(function (p) { return p.name; }))) + ' on 0% finance over 10 months, should you prefer to spread the cost.</p>\n';
