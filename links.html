@@ -195,6 +195,43 @@ a{color:inherit;text-decoration:none}
 .q-grid label .widget-input{margin-top:4px}
 @media(max-width:480px){.dash-grid{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:13px;min-height:100px}.q-grid{grid-template-columns:1fr}}
 </style>
+<style>
+/* Follow up tracker */
+.fx{font-size:14px}.fx svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+.fx-lock{max-width:380px;margin:8px auto;text-align:center}.fx-lock>svg{width:40px;height:40px;color:var(--accent);margin:6px 0 10px}
+.fx-h{font-size:18px;font-weight:800;margin-bottom:6px}.fx-p{color:var(--muted);margin-bottom:14px}.fx-msg{color:var(--warn);font-size:13px;margin:8px 0;min-height:1em}
+.fx-warn{display:flex;gap:8px;text-align:left;font-size:13px;color:var(--warn);background:var(--warn-dim);border-radius:10px;padding:10px;margin:6px 0 12px}
+.fx-badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}.fx-badges span{font-size:11px;color:var(--success);background:var(--success-dim);border-radius:99px;padding:3px 9px}
+.fx-btn,.fx-ghost,.fx-ok{border:0;border-radius:10px;padding:10px 14px;font:600 14px var(--font);cursor:pointer;color:#fff;background:var(--accent)}
+.fx-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.fx-ok{background:var(--success)}.fx-danger{color:var(--red)}.fx-sm{padding:7px 11px;font-size:13px}
+.fx-lock .fx-btn{width:100%}.fx-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.fx-stats{display:flex;gap:8px}.fx-stats div{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 14px;min-width:84px}.fx-stats b{display:block;font-size:22px}.fx-stats span{font-size:11px;color:var(--muted)}
+.fx-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.fx-sec{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.fx-row{display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:6px}
+.fx-overdue{border-left-color:var(--red)}.fx-due{border-left-color:var(--warn)}.fx-soon{border-left-color:var(--accent)}
+.fx-av{width:36px;height:36px;border-radius:50%;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.fx-who{flex:1;min-width:0}.fx-who b{display:block}.fx-who small,.fx-when{color:var(--muted);font-size:12px}.fx-overdue .fx-when{color:var(--red)}.fx-due .fx-when{color:var(--warn)}.fx-empty{color:var(--muted);font-size:13px}
+.fx-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
+.fx-dlg{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;width:100%;max-width:640px}.fx-sub{font-size:12px;color:var(--muted);margin:10px 0 6px}
+.fx-opts,.fx-vars{display:grid;gap:6px;margin-bottom:8px}.fx-vars{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.fx-opt,.fx-var{text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font:13px var(--font);cursor:pointer}
+.fx-opt small,.fx-var small{display:block;color:var(--muted);font-size:12px}.fx-opt.on,.fx-var.on{border-color:var(--accent);background:var(--accent-dim)}.fx-vn{display:block;font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px}
+.fx-meta{font-size:12px;color:var(--muted);margin:8px 0}.fx-prev{background:#fff;border-radius:10px;padding:14px;margin-bottom:6px}
+.fx-who{background:none;border:0;color:inherit;text-align:left;font:inherit;cursor:pointer;padding:0}
+.fx-dots{display:flex;gap:4px;margin-top:6px}.fx-dots i{width:16px;height:4px;border-radius:2px;background:var(--border)}.fx-dots .fx-d-sent{background:var(--success)}.fx-dots .fx-d-skipped{background:#334155}
+.fx-dots .fx-d-overdue{background:var(--red)}.fx-dots .fx-d-due{background:var(--warn)}.fx-dots .fx-d-soon,.fx-dots .fx-d-upcoming{background:var(--accent)}
+.fx-tl{list-style:none;margin:12px 0;padding:0 0 0 18px;border-left:2px solid var(--border)}.fx-tl li{position:relative;padding:6px 0 10px 8px}
+.fx-tl li:before{content:"";position:absolute;left:-25px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--muted)}
+.fx-tl b{display:block}.fx-tl small{color:var(--muted);font-size:12px}.fx-tm{float:right;font-size:11px;color:var(--muted)}
+.fx-t-sent:before{background:var(--success)!important;border-color:var(--success)!important}.fx-t-skipped{opacity:.5}.fx-t-overdue:before{background:var(--red)!important;border-color:var(--red)!important}
+.fx-t-due:before{background:var(--warn)!important;border-color:var(--warn)!important}.fx-t-upcoming:before,.fx-t-soon:before{border-color:var(--accent)!important}
+.fx-t-overdue small{color:var(--red)}.fx-t-due small{color:var(--warn)}
+.fx-seg{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:10px}.fx-seg button{flex:1;border:0;background:none;color:var(--muted);padding:8px;border-radius:8px;font:600 13px var(--font);cursor:pointer}.fx-seg .on{background:var(--accent);color:#fff}
+.fx-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.fx-chip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:99px;padding:6px 11px;font:600 12px var(--font);cursor:pointer}.fx-chip.on{background:var(--success-dim);border-color:var(--success);color:var(--success)}.fx-chip.on:before{content:"\2713  "}
+.fx-chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin:4px 0 6px}
+.fx-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fx-two .fx-sub{display:block}.fx-hint{font-size:12px;color:var(--accent);margin:2px 0 8px}.fx-hint a{text-decoration:underline}
+@media(max-width:560px){.fx-row{flex-wrap:wrap}.fx-when{order:3;width:100%;padding-left:48px}}
+</style>
 </head>
 <body>
 
@@ -404,16 +441,24 @@ a{color:inherit;text-decoration:none}
       <input class="widget-input" id="q-email" type="email" placeholder="Customer email address" autocomplete="off">
       <input class="widget-input" id="q-name" type="text" placeholder="Customer first name" autocomplete="off">
       <input class="widget-input" id="q-vehicle" type="text" placeholder="Registration or model e.g. BMW X1 sDrive20i M Sport" autocomplete="off">
+      <div class="widget-title" style="margin-bottom:8px;">Customer</div>
+      <div class="chip-row" id="q-custs">
+        <div class="chip on" data-qc="Personal" onclick="qCust('Personal')"><span class="chip-dot"></span>Personal</div>
+        <div class="chip" data-qc="Business" onclick="qCust('Business')"><span class="chip-dot"></span>Business</div>
+      </div>
+      <input class="widget-input" id="q-company" type="text" placeholder="Company name (optional)" autocomplete="off" style="display:none">
+      <div class="widget-desc" id="q-vatnote"></div>
       <div class="widget-title" style="margin-bottom:8px;">Quotation type</div>
       <div class="chip-row" id="q-types">
         <div class="chip on" data-qt="PCP" onclick="qType('PCP')"><span class="chip-dot"></span>PCP</div>
         <div class="chip" data-qt="HP" onclick="qType('HP')"><span class="chip-dot"></span>HP</div>
-        <div class="chip" data-qt="PCH" onclick="qType('PCH')"><span class="chip-dot"></span>PCH</div>
+        <div class="chip" data-qt="PCH" onclick="qType('PCH')"><span class="chip-dot"></span><span id="q-pchlabel">PCH</span></div>
         <div class="chip" data-qt="Cash" onclick="qType('Cash')"><span class="chip-dot"></span>Cash</div>
       </div>
       <div class="widget-desc" id="q-typenote"></div>
       <div class="q-grid">
         <label data-qf="price">Cash price (£)<input class="widget-input" id="q-price" type="number" step="0.01" min="0"></label>
+        <label data-qf="initialMonths">Initial rental (months)<input class="widget-input" id="q-initialMonths" type="number" step="1" min="0"></label>
         <label data-qf="initialRental">Initial rental (£)<input class="widget-input" id="q-initialRental" type="number" step="0.01" min="0"></label>
         <label data-qf="deposit">Customer deposit (£)<input class="widget-input" id="q-deposit" type="number" step="0.01" min="0"></label>
         <label data-qf="credit">Total amount of credit (£)<input class="widget-input" id="q-credit" type="number" step="0.01" min="0"></label>
@@ -421,6 +466,7 @@ a{color:inherit;text-decoration:none}
         <label data-qf="payments">Number of monthly payments<input class="widget-input" id="q-payments" type="number" step="1" min="1"></label>
         <label data-qf="term">Duration (months)<input class="widget-input" id="q-term" type="number" step="1" min="1"></label>
         <label data-qf="finalPayment">Optional final payment (£)<input class="widget-input" id="q-finalPayment" type="number" step="0.01" min="0"></label>
+        <label data-qf="purchaseFee">Option to purchase fee (£)<input class="widget-input" id="q-purchaseFee" type="number" step="0.01" min="0"></label>
         <label data-qf="totalPayable">Total amount payable (£)<input class="widget-input" id="q-totalPayable" type="number" step="0.01" min="0"></label>
         <label data-qf="apr">APR representative (%)<input class="widget-input" id="q-apr" type="number" step="0.1" min="0"></label>
         <label data-qf="mileage">Annual mileage<input class="widget-input" id="q-mileage" type="number" step="1000" min="0"></label>
@@ -447,6 +493,13 @@ a{color:inherit;text-decoration:none}
         </div>
         <div class="widget-desc" id="q-msg" style="margin-top:8px"></div>
       </div>
+    </div>
+
+    <!-- Follow Up Tracker (end to end encrypted) -->
+    <div class="widget-card" id="fx-card">
+      <div class="widget-name">Customer Follow Up Tracker <span class="tag tag-new">New</span></div>
+      <div class="widget-desc">Every customer on one journey from the congratulations email at purchase to the final follow up at 45 months, part of your Swipe Drive customer system. End to end encrypted with your own passphrase and synced across your devices. When an email is due it appears under Send next follow up with three wordings to choose from.</div>
+      <div id="fx-root"></div>
     </div>
 
     <!-- Customer Follow Up Email builder -->
@@ -1493,15 +1546,20 @@ function peSend(){
   window.addEventListener('hashchange',show);show();
 })();
 /* Send Quotation */
-var qTypeVal='PCP',qLast=null;
+var qTypeVal='PCP',qCustVal='Personal',qLast=null;
+function qCust(c){qCustVal=c;[].forEach.call(document.querySelectorAll('[data-qc]'),function(x){x.classList.toggle('on',x.getAttribute('data-qc')===c);});
+  document.getElementById('q-company').style.display=c==='Business'?'':'none';
+  document.getElementById('q-pchlabel').textContent=c==='Business'?'BCH':'PCH';
+  document.getElementById('q-vatnote').textContent=c==='Business'?'Business: enter every figure excluding VAT. The email shows them as plus VAT.':'Personal: enter every figure including VAT.';
+  qType(qTypeVal);}
 var Q_NOTES={PCP:'Every figure below is needed so the monthly payment always appears with its full representative example. Copy them from the lender quote.',
   HP:'Every figure below is needed so the monthly payment always appears with its full representative example. Copy them from the lender quote.',
-  PCH:'Personal Contract Hire is a rental, so there is no cash price, APR or final payment. Copy the figures from the lender quote.',Cash:'Cash quotation: just the price.'};
+  PCH:'Contract hire is a rental, so there is no cash price, APR or final payment. The vehicle is returned at the end. Copy the figures from the lender quote.',Cash:'Cash quotation: just the price.'};
 function qType(t){qTypeVal=t;[].forEach.call(document.querySelectorAll('[data-qt]'),function(c){c.classList.toggle('on',c.getAttribute('data-qt')===t);});
   var need=QuoteEmail.NEED[t];[].forEach.call(document.querySelectorAll('[data-qf]'),function(l){l.style.display=need.indexOf(l.getAttribute('data-qf'))>=0?'':'none';});
   document.getElementById('q-typenote').textContent=Q_NOTES[t];}
-qType('PCP');
-function qData(){var d={type:qTypeVal,email:document.getElementById('q-email').value,firstName:document.getElementById('q-name').value,vehicle:document.getElementById('q-vehicle').value,
+qCust('Personal');
+function qData(){var d={type:qTypeVal,customer:qCustVal,company:qCustVal==='Business'?document.getElementById('q-company').value:'',email:document.getElementById('q-email').value,firstName:document.getElementById('q-name').value,vehicle:document.getElementById('q-vehicle').value,
   included:[].slice.call(document.querySelectorAll('[data-qp].on')).map(function(c){return c.getAttribute('data-qp');})};
   QuoteEmail.NEED[qTypeVal].forEach(function(k){d[k]=document.getElementById('q-'+k).value;});return d;}
 function qCreate(){var err=document.getElementById('q-err');err.textContent='';var d=qData();
@@ -1519,6 +1577,9 @@ function qCopy(){if(!qLast)return;qCopyRich().then(function(){document.getElemen
 function qSend(){if(!qLast)return;var go=function(){location.href='mailto:'+encodeURIComponent(qLast.to)+'?cc='+encodeURIComponent(qLast.cc)+'&subject='+encodeURIComponent(qLast.subject);};
   qCopyRich().then(function(){document.getElementById('q-msg').textContent='Copied. In the new email, click in the body, paste (Ctrl+V) and press Send.';go();},function(){document.getElementById('q-msg').textContent='Copy was blocked. Select the preview and copy it by hand.';go();});}
 </script>
+<script src="swipe-drive/config.js"></script>
+<script src="swipe-drive/crm/followups-core.js"></script>
+<script src="swipe-drive/crm/followups-ui.js"></script>
 <script src="disclaimer.js"></script>
 <script src="contact.js"></script>
 </body>

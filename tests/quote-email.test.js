@@ -1,12 +1,13 @@
 const assert = require("assert"); const Q = require("../quote-email.js"); const PE = require("../product-email.js");
 const base = { email: "jo@example.com", firstName: "Jo", vehicle: "BMW X1 sDrive20i", lender: "BMW Financial Services" };
-const fin = { price: 38000, deposit: 5000, credit: 33000, monthly: 399, payments: 47, term: 48, finalPayment: 16000, totalPayable: 39753, apr: 6.9, mileage: 8000, excessPence: 9 };
+const fin = { price: 38000, deposit: 5000, credit: 33000, monthly: 399, payments: 47, term: 48, finalPayment: 16000, purchaseFee: 10, totalPayable: 39763, apr: 6.9, mileage: 8000, excessPence: 9 };
 const ids = PE.PRODUCTS.map(p => p.id); let n = 0;
 const ex = {
-  PCP: { ...fin }, HP: { price: 38000, deposit: 5000, credit: 33000, monthly: 760, payments: 48, term: 48, totalPayable: 41480, apr: 6.9 },
-  PCH: { initialRental: 2700, monthly: 300, payments: 35, term: 36, mileage: 8000, excessPence: 9 }, Cash: { price: 38000 } };
-for (const type of Object.keys(ex)) for (let m = 0; m < 32; m++) {
-  const included = ids.filter((_, i) => m & (1 << i)); const r = Q.build({ ...base, ...ex[type], type, included }); n++;
+  PCP: { ...fin }, HP: { price: 38000, deposit: 5000, credit: 33000, monthly: 760, payments: 48, term: 48, purchaseFee: 10, totalPayable: 41490, apr: 6.9 },
+  PCH: { initialMonths: 9, initialRental: 2700, monthly: 300, payments: 35, term: 36, mileage: 8000, excessPence: 9 }, Cash: { price: 38000 } };
+for (const customer of ["Personal", "Business"]) for (const type of Object.keys(ex)) for (let m = 0; m < 32; m++) {
+  const B = customer === "Business", included = ids.filter((_, i) => m & (1 << i));
+  const r = Q.build({ ...base, ...ex[type], type, included, customer, company: B && m % 2 ? "Acme Ltd" : "" }); n++;
   const h = r.html, txt = PE.toText(h);
   // fully protected only when all five
   assert.strictEqual(h.includes("fully protected"), included.length === 5);
@@ -21,13 +22,19 @@ for (const type of Object.keys(ex)) for (let m = 0; m < 32; m++) {
   // monthly figure only with its full representative example
   if (type === "Cash") { assert.ok(!/monthly|APR|Representative/i.test(txt)); assert.ok(txt.includes("£38,000.00")); }
   else {
-    assert.ok(txt.includes("Representative example:")); assert.ok(txt.includes("credit broker, not a lender"));
+    const RE = "Representative example (" + (B ? "excluding" : "including") + " VAT):";
+    assert.ok(txt.includes(RE)); assert.ok(txt.includes("All figures " + (B ? "excluding" : "including") + " VAT.")); assert.ok(txt.includes("credit broker, not a lender"));
     for (const k of Q.NEED[type]) if (k !== "lender" && k !== "payments" && k !== "term") {
-      const v = ex[type][k]; const s = k === "apr" ? v + "%" : k === "mileage" ? v.toLocaleString("en-GB") + " miles" : k === "excessPence" ? v + "p" : "£" + v.toLocaleString("en-GB", { minimumFractionDigits: 2 });
-      assert.ok(txt.split("Representative example:")[1].includes(s), type + " rep example missing " + k); }
-    if (type === "PCH") assert.ok(txt.includes("you will not own the car") && !/APR|final payment|Cash price/.test(txt.split("Our quotation")[0]));
+      const v = ex[type][k]; const s = k === "apr" ? v + "%" : k === "mileage" ? v.toLocaleString("en-GB") + " miles" : k === "excessPence" ? v + "p" : k === "initialMonths" ? v + " months" : "£" + v.toLocaleString("en-GB", { minimumFractionDigits: 2 });
+      assert.ok(txt.split(RE)[1].includes(s), type + " rep example missing " + k); }
+    if (type === "PCH") assert.ok(txt.includes("the vehicle is returned") && txt.includes("Excess mileage and damage charges may apply") && (B ? txt.includes("Business Contract Hire (BCH)") && r.subject.startsWith("Your BCH") && !txt.includes("Personal Contract Hire") : txt.includes("Personal Contract Hire (PCH)")) && !/APR|final payment|Cash price/.test(txt.split("Our quotation")[0]));
     if (type === "HP") assert.ok(!/final payment|excess mile/i.test(txt.split("Our quotation")[0]));
   }
+  if (type !== "PCH") assert.ok(!txt.includes("vehicle is returned"));
+  if (type === "PCP" || type === "HP") assert.ok(txt.includes("Option to purchase fee £10.00"));
+  assert.strictEqual(/plus VAT/.test(txt), B); assert.ok(!(B ? /including VAT/ : /excluding VAT/).test(txt));
+  if (type === "Cash") assert.ok(txt.includes("All figures " + (B ? "excluding" : "including") + " VAT."));
+  assert.strictEqual(txt.includes("quotation for Acme Ltd below"), B && m % 2 === 1); assert.ok(txt.startsWith("Hi Jo,"));
   assert.strictEqual(h.includes("0% finance"), !included.includes("gap") || !included.includes("tyreAlloy"));
   assert.ok(/<p>Kind regards,<\/p><\/td>/.test(h) && !/Daniel|Phone:|Sales Executive/.test(h));
   assert.strictEqual(r.cc, "Sergio.Garaguso@hedinautomotive.co.uk");
@@ -42,4 +49,9 @@ assert.throws(() => Q.build({ ...base, type: "Loan", price: 1 }));
 assert.strictEqual(Q.build({ ...base, ...fin, type: "PCP" }).warnings.length, 0);
 assert.ok(Q.build({ ...base, ...fin, totalPayable: 30000, type: "PCP" }).warnings.length === 1);
 assert.ok(Q.build({ ...base, firstName: "<i>", type: "Cash", price: 1 }).html.includes("&lt;i&gt;"));
+for (const k of Q.NEED.HP) { const d = { ...base, ...ex.HP, type: "HP" }; delete d[k]; assert.throws(() => Q.build(d), k); }
+for (const k of Q.NEED.PCH) { const d = { ...base, ...ex.PCH, type: "PCH", customer: "Business" }; delete d[k]; assert.throws(() => Q.build(d), k); }
+assert.throws(() => Q.build({ ...base, type: "Cash", price: 1, customer: "Other" }));
+assert.ok(Q.build({ ...base, type: "Cash", price: 1, customer: "Business", company: "<b>X</b>" }).html.includes("&lt;b&gt;X"));
+assert.ok(Q.build({ ...base, ...ex.HP, totalPayable: 41480, type: "HP" }).warnings.length === 1);
 console.log("quote-email: " + n + " variants + edge cases OK");
