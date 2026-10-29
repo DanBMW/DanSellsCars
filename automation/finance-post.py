@@ -80,6 +80,7 @@ CHROMIUM = os.environ.get('CHROMIUM_PATH', '/opt/pw-browsers/chromium')
 
 def _chromium(args, timeout=180):
     return subprocess.run([CHROMIUM, '--headless', '--disable-gpu', '--no-sandbox',
+                           '--user-data-dir=' + os.path.join(__import__('tempfile').gettempdir(), 'dansells-chrome'),
                            '--hide-scrollbars'] + args,
                           capture_output=True, text=True, timeout=timeout)
 
@@ -97,9 +98,22 @@ def render(html_path, jpg_path):
     """
     png = jpg_path + '.tmp.png'
     r = _chromium(['--force-device-scale-factor=1', '--screenshot=' + png,
-                   '--window-size=1080,1920', 'file://' + os.path.abspath(html_path)])
+                   '--window-size=1080,1920', __import__('pathlib').Path(os.path.abspath(html_path)).as_uri()])
+    # dansells-wait
+    for _ in range(40):
+        if os.path.exists(png) and os.path.getsize(png) > 0:
+            break
+        __import__('time').sleep(0.5)
+    __import__('time').sleep(1.0)
     if not os.path.exists(png):
         raise SystemExit('render failed for %s: %s' % (html_path, r.stderr[-400:]))
+    try:
+        from PIL import Image
+        Image.open(png).convert('RGB').save(jpg_path, 'JPEG', quality=int(JPEG_QUALITY * 100))
+        os.remove(png)
+        return
+    except ImportError:
+        pass
 
     enc = jpg_path + '.tmp.html'
     open(enc, 'w').write(
@@ -112,7 +126,7 @@ def render(html_path, jpg_path):
         'if(i.complete)go();else i.onload=go;</script></body></html>'
         % (base64.b64encode(open(png, 'rb').read()).decode(), JPEG_QUALITY))
     r = _chromium(['--virtual-time-budget=10000', '--dump-dom',
-                   'file://' + os.path.abspath(enc)])
+                   __import__('pathlib').Path(os.path.abspath(enc)).as_uri()])
     m = re.search(r'data:image/jpeg;base64,([A-Za-z0-9+/=]+)', r.stdout)
     os.remove(enc)
     if not m:
