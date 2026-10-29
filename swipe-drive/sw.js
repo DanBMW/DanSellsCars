@@ -1,6 +1,6 @@
 /* SwipeToDrive service worker: caches the app shell, serves offline.html when
    there is no connection, network first for stock data, and handles push. */
-const V = 'sd-v36';
+const V = 'sd-v37';
 const SHELL = ['./', './index.html', './app.css', './app.css?v=36', './app.js', './app.js?v=36', './config.js', './config.js?v=36', './auth-ui.js', './auth-ui.js?v=36', './chat/profile-save.js', './chat/profile-save.js?v=36', './match-core.js', './match-core.js?v=36', './offline.html',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../dsfinance.js', '../dsfinance.js?v=36', '../stock-core.js?v=36', './nostock-ui.js', './nostock-ui.js?v=36', './revvy-flow.js', './revvy-flow.js?v=36', './revvy.js', './revvy.js?v=36', './crm/hub.css', './crm/hub.css?v=36', './crm/hub.js', './crm/hub.js?v=36', './crm/followups-core.js', './crm/followups-core.js?v=36', './crm/followups-ui.js', './crm/followups-ui.js?v=36', '../product-email.js', '../product-email.js?v=36', '../quote-email.js', '../quote-email.js?v=36'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

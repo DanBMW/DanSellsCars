@@ -553,6 +553,9 @@
       var d = c.first_seen;
       c._fresh = false; c._arrAge = 1e9;
       if (!d || !SEED || d === SEED) return;
+      /* More stock joined the feed on 29 October 2026, so a first_seen of that
+         day on those cars only means it was already here when reading began. */
+      if (String(c.retailer_id || '22181') !== '22181' && d <= '2026-10-29') return;
       var then = Date.parse(d + 'T00:00:00Z'),
           now = Date.parse((TODAY || new Date().toISOString().slice(0,10)) + 'T00:00:00Z');
       if (isNaN(then) || isNaN(now)) return;
