@@ -8,7 +8,7 @@ Same five parts, same order, same separate commits as the old scheduled task,
 so a problem in a later part never costs an earlier one:
 
   1  stock-snapshot.py            (Ruxley list)           -> commit 1, push
-  2  group-stock.py, car-details.py, stock-images.py      -> commit 2, push
+  2  group-stock.py, car-details.py, car-descriptions.py, stock-images.py -> commits, push
   3  finance-post.py --count 3                            -> commit 3, push
   4  stock-finance.py (about 40 min)                      -> commit 4, push
   5  new-stock.py                                         -> commit 5, push
@@ -268,6 +268,12 @@ def main():
         rc, out = script('car-details.py', timeout=1800)
         if rc != 0:
             REPORT.append('car-details failed: ' + tail(out))
+    desc_ok = False
+    if os.path.exists(os.path.join(HERE, 'car-descriptions.py')):
+        rc, out = script('car-descriptions.py', timeout=1800)
+        desc_ok = rc == 0
+        if rc != 0:
+            REPORT.append('car-descriptions failed, file left as it was: ' + tail(out))
     if os.path.exists(os.path.join(HERE, 'stock-images.py')):
         rc, out = script('stock-images.py', timeout=1800)
         if rc != 0:
@@ -275,6 +281,8 @@ def main():
     commit_push(['automation/hedin-group-stock.json', 'automation/car-details.json',
                  'automation/hedin-stock-snapshot.json'],
                 'Daily group stock, details and images')
+    if desc_ok:
+        commit_push(['automation/car-descriptions.json'], 'Daily car descriptions')
 
     # ---- PART 3: finance story cards (once a day only: the morning run) --
     if LITE:
