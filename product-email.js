@@ -73,9 +73,9 @@
     return { to: d.email.trim(), cc: CC, subject: subject, deadline: dl, html: html, missing: missing.map(function (p) { return p.id; }) };
   }
   function toText(html) {
-    return html.replace(/<br>/g, "\n").replace(/<\/p>/g, "\n\n").replace(/<a href="([^"]+)"[^>]*>(?:<img[^>]*>|([^<]*))<\/a>/g, function (m, u, t) { return t ? t.replace("&#9654; ", "") + ": " + u : ""; })
+    return html.replace(/<\/td>/g, " ").replace(/<\/tr>/g, "\n").replace(/&#10003;/g, "✓").replace(/<br>/g, "\n").replace(/<\/p>/g, "\n\n").replace(/<a href="([^"]+)"[^>]*>(?:<img[^>]*>|([^<]*))<\/a>/g, function (m, u, t) { return t ? t.replace("&#9654; ", "") + ": " + u : ""; })
       .replace(/<[^>]+>/g, "").replace(/&nbsp;\|&nbsp;/g, "\n").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/\n{3,}/g, "\n\n").trim();
   }
-  var api = { build: build, toText: toText, isValidEmail: isValidEmail, deadline: deadline, PRODUCTS: PRODUCTS, CC: CC };
+  var api = { productBlock: productBlock, esc: esc, joinList: joinList, VID: VID, build: build, toText: toText, isValidEmail: isValidEmail, deadline: deadline, PRODUCTS: PRODUCTS, CC: CC };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.ProductEmail = api;
 })(this);

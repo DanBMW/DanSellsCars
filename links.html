@@ -170,6 +170,30 @@ a{color:inherit;text-decoration:none}
   .link-actions{width:100%;justify-content:flex-end}
   .chip-row{gap:6px}
 }
+/* Dashboard */
+#dash{margin-bottom:8px}
+.dash-group{margin-bottom:22px}
+.dash-gtitle{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin:0 2px 10px}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;cursor:pointer;text-align:left;color:var(--text);font-family:var(--font);transition:transform .12s,background .12s,border-color .12s;min-height:112px}
+.tile:hover{background:var(--surface2);border-color:#1c69d4;transform:translateY(-1px)}
+.tile:active{transform:scale(.98)}
+.tile-ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(28,105,212,.16);color:#5b9cff}
+.tile-ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tile-name{font-size:14px;font-weight:700;line-height:1.2}
+.tile-sub{font-size:11px;color:var(--muted);line-height:1.3;margin-top:-4px}
+.tile-n{font-size:10px;font-weight:700;color:var(--muted)}
+.panel{display:none}
+.panel.open{display:block}
+.panel-head{display:flex;align-items:center;gap:10px;margin:0 0 14px;position:sticky;top:0;z-index:5;background:var(--bg,#0b0d10);padding:8px 0}
+.panel-back{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font)}
+.panel-back svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2}
+.panel-title{font-size:16px;font-weight:800}
+.wrap.dash-on > .section-title{display:none}
+.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.q-grid label{font-size:11px;font-weight:700;color:var(--muted)}
+.q-grid label .widget-input{margin-top:4px}
+@media(max-width:480px){.dash-grid{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:13px;min-height:100px}.q-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -370,6 +394,58 @@ a{color:inherit;text-decoration:none}
           <button class="btn-copy" onclick="peCopy(this)">Copy email only</button>
         </div>
         <div class="widget-desc" id="pe-msg" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- Send Quotation builder -->
+    <div class="widget-card" id="q-card">
+      <div class="widget-name">Send Quotation <span class="tag tag-new">New</span></div>
+      <div class="widget-desc">Build a cash or finance quotation email with the full product presentation. Tick what the quotation includes. Create email shows a preview, then Copy and open Outlook opens a new message to the customer with Sergio on cc. Nothing is saved or sent from here.</div>
+      <input class="widget-input" id="q-email" type="email" placeholder="Customer email address" autocomplete="off">
+      <input class="widget-input" id="q-name" type="text" placeholder="Customer first name" autocomplete="off">
+      <input class="widget-input" id="q-vehicle" type="text" placeholder="Registration or model e.g. BMW X1 sDrive20i M Sport" autocomplete="off">
+      <div class="widget-title" style="margin-bottom:8px;">Quotation type</div>
+      <div class="chip-row" id="q-types">
+        <div class="chip on" data-qt="PCP" onclick="qType('PCP')"><span class="chip-dot"></span>PCP</div>
+        <div class="chip" data-qt="HP" onclick="qType('HP')"><span class="chip-dot"></span>HP</div>
+        <div class="chip" data-qt="PCH" onclick="qType('PCH')"><span class="chip-dot"></span>PCH</div>
+        <div class="chip" data-qt="Cash" onclick="qType('Cash')"><span class="chip-dot"></span>Cash</div>
+      </div>
+      <div class="widget-desc" id="q-typenote"></div>
+      <div class="q-grid">
+        <label data-qf="price">Cash price (£)<input class="widget-input" id="q-price" type="number" step="0.01" min="0"></label>
+        <label data-qf="initialRental">Initial rental (£)<input class="widget-input" id="q-initialRental" type="number" step="0.01" min="0"></label>
+        <label data-qf="deposit">Customer deposit (£)<input class="widget-input" id="q-deposit" type="number" step="0.01" min="0"></label>
+        <label data-qf="credit">Total amount of credit (£)<input class="widget-input" id="q-credit" type="number" step="0.01" min="0"></label>
+        <label data-qf="monthly">Monthly payment (£)<input class="widget-input" id="q-monthly" type="number" step="0.01" min="0"></label>
+        <label data-qf="payments">Number of monthly payments<input class="widget-input" id="q-payments" type="number" step="1" min="1"></label>
+        <label data-qf="term">Duration (months)<input class="widget-input" id="q-term" type="number" step="1" min="1"></label>
+        <label data-qf="finalPayment">Optional final payment (£)<input class="widget-input" id="q-finalPayment" type="number" step="0.01" min="0"></label>
+        <label data-qf="totalPayable">Total amount payable (£)<input class="widget-input" id="q-totalPayable" type="number" step="0.01" min="0"></label>
+        <label data-qf="apr">APR representative (%)<input class="widget-input" id="q-apr" type="number" step="0.1" min="0"></label>
+        <label data-qf="mileage">Annual mileage<input class="widget-input" id="q-mileage" type="number" step="1000" min="0"></label>
+        <label data-qf="excessPence">Excess mileage (pence per mile)<input class="widget-input" id="q-excessPence" type="number" step="0.1" min="0"></label>
+        <label data-qf="lender">Lender<input class="widget-input" id="q-lender" type="text" value="BMW Financial Services"></label>
+      </div>
+      <div class="widget-title" style="margin-bottom:8px;">The quotation includes</div>
+      <div class="chip-row">
+        <div class="chip" data-qp="tyreAlloy" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Tyre &amp; Alloy</div>
+        <div class="chip" data-qp="gap" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>GAP</div>
+        <div class="chip" data-qp="hedinCare" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Club HedinCare SMART</div>
+        <div class="chip" data-qp="ceramic" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Williams Ceramic</div>
+        <div class="chip" data-qp="warranty" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Extended Warranty</div>
+      </div>
+      <div class="lock-err" id="q-err" style="margin-bottom:8px"></div>
+      <div class="btn-row"><button class="btn-open" onclick="qCreate()">Create email</button></div>
+      <div id="q-out" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+        <div class="widget-desc" id="q-warn" style="color:#f59e0b"></div>
+        <div class="widget-desc" id="q-meta"></div>
+        <div style="background:#f4f4f4;border-radius:10px;overflow:auto;max-height:620px"><div id="q-preview"></div></div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn-open" onclick="qSend()">&#x2709; Copy and open Outlook</button>
+          <button class="btn-copy" onclick="qCopy()">Copy email only</button>
+        </div>
+        <div class="widget-desc" id="q-msg" style="margin-top:8px"></div>
       </div>
     </div>
 
@@ -1350,6 +1426,98 @@ function peSend(){
   peCopyRich().then(function(){document.getElementById('pe-msg').textContent='Copied. In the new email, click in the body, paste (Ctrl+V) and press Send.';go();},
     function(){document.getElementById('pe-msg').textContent='Copy was blocked. Select the preview and copy it by hand, then paste into the email.';go();});
 }
+</script>
+<script src="quote-email.js"></script>
+<script>
+/* Dashboard: regroups the existing cards into icon tiles. Every card is moved, never removed. */
+(function(){
+  var I={
+    follow:'<path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/>',
+    quote:'<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/>',
+    shield:'<path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/>',
+    cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    wrench:'<path d="M14.7 6.3a4 4 0 0 0 5 5L22 14l-8 8-2.3-2.3a4 4 0 0 0-5-5L2 10l8-8z"/>',
+    star:'<path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/>',
+    sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    print:'<path d="M6 9V2h12v7M6 18H4v-7h16v7h-2"/><rect x="6" y="14" width="12" height="8"/>',
+    mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/>',
+    user:'<circle cx="12" cy="8" r="4"/><path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
+    pound:'<path d="M17 6.5A4 4 0 0 0 9 8v12M6 13h8M6 20h12"/>',
+    car:'<path d="M5 17h14M3 13l2-6h14l2 6v5H3z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>',
+    bag:'<path d="M6 7h12l1 15H5z"/><path d="M9 7a3 3 0 0 1 6 0"/>',
+    book:'<path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-5"/><path d="M20 4v15h-6"/>',
+    gift:'<rect x="3" y="8" width="18" height="13"/><path d="M12 8v13M3 12h18M12 8S10 3 7.5 4 9 8 12 8zm0 0s2-5 4.5-4S15 8 12 8z"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 14H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 3V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 10h.1a2 2 0 1 1 0 4z"/>',
+    dots:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>'
+  };
+  var GROUPS=[
+    {t:'Customers',p:[['followups','Customer follow ups','Follow up and thank you emails','follow'],['quote','Customer quotation','Send a cash or finance quote','quote'],['presentation','Product presentation','Protection products email','shield'],['appointments','Appointments','Booking links to send','cal'],['events','Events','VIP event invitations','star']]},
+    {t:'Service',p:[['service','Service prospecting','Ramp Report and service qualifier','wrench']]},
+    {t:'Sales tools',p:[['qualifiers','Customer qualifiers','Landing pages for leads','user'],['finance','Appraisal and finance','Valuations and proposals','pound'],['stock','Forecourt','Stock on the forecourt','car'],['products','Products','Accessories, mats, dash cams','bag'],['guides','Guides','Finance guides to send','book']]},
+    {t:'Marketing',p:[['today','Today','Offers, finance posts, carousel','sun'],['print','Print materials','In car cards','print'],['templates','Email templates','Copy and paste templates','mail'],['referral','Referral and fun','Refer a friend and games','gift']]},
+    {t:'Admin',p:[['admin','Admin and team','Boards, uploads, admin','gear'],['other','Other','Everything else','dots']]}
+  ];
+  var BYTEXT=[[/Telephone Appointment|Showroom Appointment|Chat with Sales/,'appointments'],[/Ramp Report|Service Customer Qualifier/,'service'],[/VIP Event/,'events'],
+    [/Product Presentation Email/,'presentation'],[/Send Quotation/,'quote'],[/Customer Follow Up|Purchase Thank You/,'followups']];
+  var BYSEC=[[/^Today/,'today'],[/^Print/,'print'],[/^Email Templates/,'templates'],[/^Customer Qualifiers/,'qualifiers'],[/^Appraisal/,'finance'],[/^Forecourt/,'stock'],
+    [/^Products/,'products'],[/^Guides/,'guides'],[/^Referral/,'referral'],[/^Team Board/,'admin']];
+  function pick(list,s){for(var i=0;i<list.length;i++)if(list[i][0].test(s))return list[i][1];return null;}
+  var wrap=document.querySelector('#content .wrap');if(!wrap)return;
+  var items={},sec='';
+  [].slice.call(wrap.children).forEach(function(el){
+    if(el.classList.contains('section-title')){sec=el.textContent.trim();return;}
+    if(el.tagName==='SCRIPT')return;
+    var name=(el.querySelector('.widget-name,.link-name')||{}).textContent||'';
+    var g=pick(BYTEXT,name)||pick(BYSEC,sec)||'other';(items[g]=items[g]||[]).push(el);
+  });
+  var dash=document.createElement('div');dash.id='dash';
+  var meta={};
+  GROUPS.forEach(function(G){
+    var tiles=G.p.filter(function(p){return items[p[0]];});if(!tiles.length)return;
+    var g=document.createElement('div');g.className='dash-group';
+    g.innerHTML='<div class="dash-gtitle">'+G.t+'</div><div class="dash-grid">'+tiles.map(function(p){meta[p[0]]=p;var n=items[p[0]].filter(function(e){return e.matches('.widget-card,.link-card');}).length;
+      return '<button class="tile" data-open="'+p[0]+'"><span class="tile-ic"><svg viewBox="0 0 24 24">'+I[p[3]]+'</svg></span><span class="tile-name">'+p[1]+'</span><span class="tile-sub">'+p[2]+'</span>'+(n>1?'<span class="tile-n">'+n+' items</span>':'')+'</button>';}).join('')+'</div>';
+    dash.appendChild(g);
+  });
+  var panels=document.createElement('div');
+  Object.keys(meta).forEach(function(k){
+    var p=document.createElement('section');p.className='panel';p.id='panel-'+k;
+    p.innerHTML='<div class="panel-head"><button class="panel-back" onclick="dashOpen(\'\')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Back</button><span class="panel-title">'+meta[k][1]+'</span></div>';
+    items[k].forEach(function(el){p.appendChild(el);});panels.appendChild(p);
+  });
+  wrap.insertBefore(panels,wrap.firstChild);wrap.insertBefore(dash,wrap.firstChild);wrap.classList.add('dash-on');
+  dash.addEventListener('click',function(e){var t=e.target.closest('[data-open]');if(t)dashOpen(t.getAttribute('data-open'));});
+  function show(){var k=(location.hash.match(/^#p=(\w+)/)||[])[1]||'';
+    dash.style.display=k&&meta[k]?'none':'';[].forEach.call(panels.children,function(p){p.classList.toggle('open',p.id==='panel-'+k);});window.scrollTo(0,0);}
+  window.dashOpen=function(k){if(k)location.hash='p='+k;else history.pushState('',document.title,location.pathname+location.search),show();};
+  window.addEventListener('hashchange',show);show();
+})();
+/* Send Quotation */
+var qTypeVal='PCP',qLast=null;
+var Q_NOTES={PCP:'Every figure below is needed so the monthly payment always appears with its full representative example. Copy them from the lender quote.',
+  HP:'Every figure below is needed so the monthly payment always appears with its full representative example. Copy them from the lender quote.',
+  PCH:'Personal Contract Hire is a rental, so there is no cash price, APR or final payment. Copy the figures from the lender quote.',Cash:'Cash quotation: just the price.'};
+function qType(t){qTypeVal=t;[].forEach.call(document.querySelectorAll('[data-qt]'),function(c){c.classList.toggle('on',c.getAttribute('data-qt')===t);});
+  var need=QuoteEmail.NEED[t];[].forEach.call(document.querySelectorAll('[data-qf]'),function(l){l.style.display=need.indexOf(l.getAttribute('data-qf'))>=0?'':'none';});
+  document.getElementById('q-typenote').textContent=Q_NOTES[t];}
+qType('PCP');
+function qData(){var d={type:qTypeVal,email:document.getElementById('q-email').value,firstName:document.getElementById('q-name').value,vehicle:document.getElementById('q-vehicle').value,
+  included:[].slice.call(document.querySelectorAll('[data-qp].on')).map(function(c){return c.getAttribute('data-qp');})};
+  QuoteEmail.NEED[qTypeVal].forEach(function(k){d[k]=document.getElementById('q-'+k).value;});return d;}
+function qCreate(){var err=document.getElementById('q-err');err.textContent='';var d=qData();
+  var v=QuoteEmail.validate(d);if(v.length){err.textContent=v[0];return;}
+  try{qLast=QuoteEmail.build(d);}catch(e){err.textContent=e.message;return;}
+  document.getElementById('q-warn').textContent=qLast.warnings.join(' ');
+  document.getElementById('q-meta').innerHTML='<b>To:</b> '+peEsc(qLast.to)+'<br><b>Cc:</b> '+qLast.cc+'<br><b>Subject:</b> '+peEsc(qLast.subject);
+  document.getElementById('q-preview').innerHTML=qLast.html;document.getElementById('q-msg').textContent='';document.getElementById('q-out').style.display='block';}
+function qCopyRich(){var html=qLast.html,text=ProductEmail.toText(html);
+  if(navigator.clipboard&&window.ClipboardItem)return navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})})]).catch(function(){return qFallback();});
+  return Promise.resolve().then(qFallback);}
+function qFallback(){var el=document.getElementById('q-preview'),r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  var ok=false;try{ok=document.execCommand('copy');}catch(e){}s.removeAllRanges();if(!ok)throw new Error('copy failed');}
+function qCopy(){if(!qLast)return;qCopyRich().then(function(){document.getElementById('q-msg').textContent='Copied. Paste it into the email body.';},function(){document.getElementById('q-msg').textContent='Copy was blocked. Select the preview and copy it by hand.';});}
+function qSend(){if(!qLast)return;var go=function(){location.href='mailto:'+encodeURIComponent(qLast.to)+'?cc='+encodeURIComponent(qLast.cc)+'&subject='+encodeURIComponent(qLast.subject);};
+  qCopyRich().then(function(){document.getElementById('q-msg').textContent='Copied. In the new email, click in the body, paste (Ctrl+V) and press Send.';go();},function(){document.getElementById('q-msg').textContent='Copy was blocked. Select the preview and copy it by hand.';go();});}
 </script>
 <script src="disclaimer.js"></script>
 <script src="contact.js"></script>
