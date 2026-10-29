@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-29T08:02:28.351Z",
+  "captured": "2026-10-29T10:02:32.628Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LY25FYF",
+      "appraisedAt": "2026-10-29T09:39:31.325Z",
+      "make": "BMW",
+      "model": "2 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "H24RJD",
       "appraisedAt": "2026-10-28T17:31:41.713Z",
