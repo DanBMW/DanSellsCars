@@ -122,6 +122,8 @@
   };
 
   var sb = null, sbUser = null, sbProfile = null;
+  /* the admin tools reuse this one signed in client, so there is never a second sign in */
+  window.ctSupa = function () { return sb; };
   /* earlier unsaved extras go first so this save's values win */
   function row0(c) { return c && c.id ? Object.assign({}, pendingGet(c.id), c) : c; }
   var supa = {
@@ -268,16 +270,18 @@
   function waWho() { return S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
 
   /* ---------------- routing ---------------- */
-  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'buys', 'pick'];
+  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'buys', 'pick', 'followups', 'quote', 'present'];
+  var HUB = ['followups', 'quote', 'present']; /* Dan's admin tools: admin only, never customers or guests */
   function go(name) { if (location.hash !== '#' + name) location.hash = name; else route(); }
   function route() {
     var h = (location.hash || '').slice(1); if (isAuthHash(h)) h = '';
-    h = h || (S.session ? 'discover' : 'signin');
+    h = h || (S.session ? (S.session.role === 'admin' ? 'team' : 'discover') : 'signin');
     if (!S.session) h = 'signin';
     if (SCREENS.indexOf(h) === -1) h = 'discover';
     var staff = S.session && S.session.role !== 'customer';
     if ((h === 'team' || h === 'invites' || h === 'buys') && !staff) h = 'discover';
     if (h === 'invites' && S.session.role !== 'admin') h = 'team';
+    if (HUB.indexOf(h) !== -1 && S.session.role !== 'admin') h = staff ? 'team' : 'discover';
     /* Staff with no customer picked: Discover and Matches explain what to do, Me shows the account.
        (This used to bounce every tab back to Customers, so the nav looked dead.) */
     var tab = h;
@@ -289,10 +293,12 @@
     $('#nav').hidden = !S.session;
     $$('[data-nav]').forEach(function (a) { if (a.getAttribute('data-nav') === (h === 'pick' ? tab : h)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     $$('[data-staff-only]').forEach(function (e) { e.hidden = !staff; });
+    $$('[data-admin-only]').forEach(function (e) { e.hidden = !(S.session && S.session.role === 'admin'); });
     var act = $('#acting'); act.hidden = !(staff && S.cust); if (S.cust) act.textContent = 'For ' + (S.cust.name || 'new customer');
     window.scrollTo(0, 0);
-    ({ profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites, buys: showBuys }[h] || function () {})();
+    ({ profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites, buys: showBuys, followups: hubShow, quote: hubShow, present: hubShow }[h] || function () {})();
   }
+  function hubShow() { if (window.ctHub && S.session && S.session.role === 'admin') window.ctHub.show(location.hash.slice(1)); }
   window.addEventListener('hashchange', route);
 
   /* ---------------- sign in ---------------- */
@@ -970,6 +976,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
             (c.stock_reply ? '<p><span class="ct-pill' + (c.stock_reply === 'offmarket' ? ' flag' : '') + '">Email reply</span> ' + esc(STOCK_REPLY[c.stock_reply] || c.stock_reply) + (c.stock_reply_at ? ', ' + esc(fmtDate(String(c.stock_reply_at).slice(0, 10))) : '') + (c.close_suggested_at && c.stock_reply === 'offmarket' ? '. Close them?' : '') + '</p>' : '') +
             (c.dealt_at ? '<p><span class="ct-pill">Dealt</span> Alerts paused' + (p ? ' until <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b>' : '') + '</p>' : '') +
             (p ? '<p>Bought ' + esc(p.model) + ' (' + esc(p.reg) + '). Reminder <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b></p>' : '') +
+            (admin ? '<div class="ct-row ct-hubrow"><button class="ct-btn ct-sm ct-hubb" type="button" data-hub="followups">Start follow up journey</button><button class="ct-btn ct-sm ct-hubb" type="button" data-hub="quote">Send quotation</button><button class="ct-btn ct-sm ct-hubb" type="button" data-hub="present">Product presentation</button></div>' : '') +
             '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-act="swipe">Swipe for them</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="matches">Shortlist</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="edit">Edit</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="bought">' + (p ? 'Edit bought car' : 'Mark as dealt') + '</button>' +
             (c.dealt_at ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="resume">Resume alerts</button>' : '') +
             (p ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-cancel-p="' + esc(p.id) + '">Cancel reminder</button>' : '') +

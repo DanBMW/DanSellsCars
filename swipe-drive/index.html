@@ -20,7 +20,8 @@
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png">
 <link rel="preconnect" href="https://api.fontshare.com">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&f[]=satoshi@400,500,700,900&display=swap">
-<link rel="stylesheet" href="app.css?v=33">
+<link rel="stylesheet" href="app.css?v=34">
+<link rel="stylesheet" href="crm/hub.css?v=34">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="../analytics.js" defer></script>
@@ -129,6 +130,7 @@
 
   <!-- 3. swipe -->
   <section class="ct-screen" data-screen="discover" hidden>
+    <button class="ct-revvy" type="button" data-revvy hidden><img src="icons/icon-192.png" alt="">Chat to Revvy</button>
     <div class="ct-deck" id="deck"></div>
     <div class="ct-empty" id="deckEmpty" hidden><h2 id="deckEmptyT">That is everyone for now.</h2><p id="deckEmptyP">New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><div class="ct-row" id="deckEmptyActs"><a class="ct-btn" href="#matches">See your matches</a></div></div>
     <div class="ct-actions" id="deckActions">
@@ -166,6 +168,7 @@
     <div class="ct-panel">
       <h2 id="meName">You</h2>
       <p class="ct-sub" id="meEmail"></p>
+      <button class="ct-revvy" type="button" data-revvy hidden><img src="icons/icon-192.png" alt="">Chat to Revvy</button>
       <div data-cust-only>
       <div class="ct-card-lite" id="meSummary"></div>
       <div class="ct-row"><a class="ct-btn ct-btn-ghost" href="#profile">Edit my profile</a></div>
@@ -207,6 +210,12 @@
   <!-- staff dashboard -->
   <section class="ct-screen" data-screen="team" hidden>
     <div class="ct-panel">
+      <div class="hb-tiles" data-admin-only hidden>
+        <a class="hb-tile" href="#followups"><span class="hb-ic"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/></svg></span>Follow ups</a>
+        <a class="hb-tile" href="#quote"><span class="hb-ic"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg></span>Quotation</a>
+        <a class="hb-tile" href="#present"><span class="hb-ic"><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg></span>Products</a>
+        <a class="hb-tile" href="#buys"><span class="hb-ic"><svg viewBox="0 0 24 24"><path d="M6 7h12l1 15H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span>Buy requests</a>
+      </div>
       <h2 id="teamTitle">My customers</h2>
       <div class="ct-row ct-wrap"><button class="ct-btn ct-sm" id="addCust" type="button">Add a customer</button>
         <label class="ct-f ct-inline" id="ownerFilterWrap" hidden><span>Owner</span><select id="ownerFilter"><option value="">Everyone</option></select></label>
@@ -215,6 +224,19 @@
       <div class="ct-seg ct-tabs" id="custTabs" role="tablist"><button type="button" role="tab" data-tab="open" aria-pressed="true">Customers</button><button type="button" role="tab" data-tab="archived" aria-pressed="false">Archived <span id="archN"></span></button></div>
       <div id="custList" class="ct-clist"></div>
     </div>
+  </section>
+
+  <!-- admin tools: follow ups, quotation, product presentation (admin only, routed by app.js) -->
+  <section class="ct-screen hb-screen" data-screen="followups" hidden>
+    <div class="ct-panel"><div class="hb-top"><button class="hb-back" type="button" data-hb-back aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Follow ups</h2></div>
+      <p class="ct-sub">Every customer on one journey from purchase to the final follow up at 45 months. End to end encrypted with your passphrase. Emails open in Outlook with Sergio on cc, nothing sends from here.</p>
+      <div id="fx-root"></div></div>
+  </section>
+  <section class="ct-screen hb-screen" data-screen="quote" hidden>
+    <div class="ct-panel"><div class="hb-top"><button class="hb-back" type="button" data-hb-back aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Send quotation</h2></div><div id="hbQuote"></div></div>
+  </section>
+  <section class="ct-screen hb-screen" data-screen="present" hidden>
+    <div class="ct-panel"><div class="hb-top"><button class="hb-back" type="button" data-hb-back aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Product presentation</h2></div><div id="hbPresent"></div></div>
   </section>
 
   <!-- admin: invites -->
@@ -249,6 +271,7 @@
     <a href="#discover" data-nav="discover"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.8 5c2 0 3.5 1.1 5.2 3 1.7-1.9 3.2-3 5.2-3 3.5 0 5.6 3.4 4.3 6.7C19.5 16.4 12 21 12 21z"/></svg><span>Discover</span></a>
     <a href="#matches" data-nav="matches"><svg viewBox="0 0 24 24"><path d="M4 5h16v4H4zM4 11h16v4H4zM4 17h10v3H4z"/></svg><span>Matches</span><i class="ct-badge" id="matchBadge" hidden></i></a>
     <a href="#team" data-nav="team" data-staff-only hidden><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3.5"/><circle cx="16.5" cy="9" r="3"/><path d="M1.5 20c.5-4 3-6 6.5-6s6 2 6.5 6zM13 20c.3-2.4 1.2-4 3.5-4.6 3 .1 5.4 1.7 6 4.6z"/></svg><span>Customers</span></a>
+    <a href="#followups" data-nav="followups" data-admin-only hidden><svg viewBox="0 0 24 24"><path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/></svg><span>Follow ups</span></a>
     <a href="#me" data-nav="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.6-4.5 3.7-7 8-7s7.4 2.5 8 7z"/></svg><span>Me</span></a>
   </nav>
 </div>
@@ -274,12 +297,18 @@
 <div class="ct-toast ct-undo" id="undoToast" role="status" hidden><span id="undoText"></span><button type="button" id="undoBtn">Undo</button></div>
 <div class="ct-toast" id="toast" role="status" hidden></div>
 
-<script src="config.js?v=33"></script>
-<script src="auth-ui.js?v=33"></script>
-<script src="chat/profile-save.js?v=33"></script>
-<script src="../stock-core.js?v=33"></script>
-<script src="match-core.js?v=33"></script>
+<script src="config.js?v=34"></script>
+<script src="auth-ui.js?v=34"></script>
+<script src="chat/profile-save.js?v=34"></script>
+<script src="../stock-core.js?v=34"></script>
+<script src="match-core.js?v=34"></script>
 <script src="../disclaimer.js" defer></script>
-<script src="app.js?v=33"></script>
+<script src="app.js?v=34"></script>
+<script src="../product-email.js?v=34"></script>
+<script src="../quote-email.js?v=34"></script>
+<script src="crm/followups-core.js?v=34"></script>
+<script src="revvy.js?v=34"></script>
+<script src="crm/hub.js?v=34"></script>
+<script src="crm/followups-ui.js?v=34"></script>
 </body>
 </html>

@@ -77,7 +77,8 @@
       + '<div class="fx-sec">Send next follow up</div>' + (due.length ? due.map(function (r) { return card(r, t); }).join('') : '<p class="fx-empty">Nothing due. You are all caught up.</p>')
       + '<div class="fx-sec">Coming up</div>' + (rest.length ? rest.map(function (r) { return card(r, t); }).join('') : '<p class="fx-empty">No customers scheduled yet.</p>')
       + (other.length ? '<div class="fx-sec">Stopped or complete</div>' + other.map(function (r) { return card(r, t); }).join('') : '') + '<div id="fx-modal"></div>');
-    if (msg && window.axSnack) window.axSnack(msg); /* Android style snackbar when the links shell is present */
+    if (msg && window.axSnack) window.axSnack(msg);
+    if (pending) { var pf = pending; pending = null; setTimeout(function () { window.FollowUpsUI.addFor(pf); }, 0); } /* Android style snackbar when the links shell is present */
     document.getElementById('fx-lock').onclick = function () { lock(); };
     document.getElementById('fx-add').onclick = function () { form(null); };
     document.getElementById('fx-exp').onclick = function () { var blob = new Blob([F.exportBackup(vault, rows)], { type: 'application/json' }), a = document.createElement('a');
@@ -97,7 +98,7 @@
     document.getElementById('fx-je').onclick = function () { form(id); };
     document.getElementById('fx-jstop').onclick = function () { save(Object.assign({}, r, { stopped: !r.stopped })).then(function () { render('app', (r.stopped ? 'Journey resumed for ' : 'Follow ups stopped for ') + r.firstName + '.'); }); };
   }
-  function form(id) { var r = id ? recs.find(function (x) { return x.id === id; }) : {}, t = today(), path = r.path || 'journey';
+  function form(id, pre) { var r = id ? recs.find(function (x) { return x.id === id; }) : (pre || {}), t = today(), path = r.path || 'journey';
     var m = modal('<div class="fx-h">' + (id ? 'Edit customer' : 'Add customer') + '</div>'
       + '<div class="fx-seg"><button data-p="journey" class="' + (path === 'journey' ? 'on' : '') + '">Bought a car</button><button data-p="kit" class="' + (path === 'kit' ? 'on' : '') + '">Keep in touch (not bought yet)</button></div>'
       + ['firstName:First name', 'lastName:Surname', 'email:Email address', 'phone:Mobile (optional)', 'car:Car e.g. BMW X1 xDrive23i M Sport'].map(function (f) { f = f.split(':');
@@ -135,7 +136,7 @@
       save(rec).then(function () { if (id) return render('app', 'Saved. ' + (rec.due ? 'Next follow up ' + nice(rec.due) + '.' : ''));
         render('app', 'Saved ' + rec.firstName + '.'); send(rec.id, f.sentDate); }, function (er) { document.getElementById('fx-ferr').textContent = er.message; }); };
   }
-  var sendDate = null;
+  var sendDate = null, pending = null;
   function send(id, onDate) { sel = recs.find(function (x) { return x.id === id; }); sendDate = onDate || today(); variant = F.suggestVariant(sel); draw(); }
   function draw() { var stg = F.nextStage(sel), vs = F.variants(stg.kind), mail = F.build(sel, variant);
     var m = modal('<div class="fx-h">Send next follow up to ' + e(sel.firstName) + '</div><div class="fx-sub">' + e(stg.label) + (stg.m != null ? ' &middot; month ' + stg.m + ' of ' + sel.term : '') + ' &middot; choose a wording</div><div class="fx-vars">'
@@ -155,6 +156,9 @@
   function start() { if (/[?&]fu=1/.test(location.search) && window.dashOpen) window.dashOpen('followups'); store.init().then(store.user).then(function (u) { if (!u) return render('signin');
     return store.getVault().then(function (v) { vault = v; render(v ? 'unlock' : 'create'); }); })
     .catch(function (er) { shell('<p class="fx-msg">Follow ups could not load: ' + e(er.message || er) + '</p>'); }); }
-  window.FollowUpsUI = { mount: function (el) { root = el; start(); }, open: function (id) { journey(id); } };
+  window.FollowUpsUI = { mount: function (el) { root = el; start(); }, open: function (id) { journey(id); },
+    /* open Add customer prefilled (from a SwipeToDrive customer record); waits for unlock if locked. The customer id is stored inside the encrypted record. */
+    addFor: function (pre) { var ex = pre && pre.swipeCustomerId && recs.find(function (r) { return r.swipeCustomerId === pre.swipeCustomerId; });
+      if (key && root && root.querySelector('#fx-add')) { if (ex) journey(ex.id); else form(null, pre); } else pending = pre; } };
   var host = document.getElementById('fx-root'); if (host && !window.FU_DEFER) window.FollowUpsUI.mount(host);
 })();

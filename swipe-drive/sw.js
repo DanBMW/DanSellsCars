@@ -1,8 +1,8 @@
 /* SwipeToDrive service worker: caches the app shell, serves offline.html when
    there is no connection, network first for stock data, and handles push. */
-const V = 'sd-v33';
-const SHELL = ['./', './index.html', './app.css', './app.css?v=33', './app.js', './app.js?v=33', './config.js', './config.js?v=33', './auth-ui.js', './auth-ui.js?v=33', './chat/profile-save.js', './chat/profile-save.js?v=33', './match-core.js', './match-core.js?v=33', './offline.html',
-  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../stock-core.js?v=33'];
+const V = 'sd-v34';
+const SHELL = ['./', './index.html', './app.css', './app.css?v=34', './app.js', './app.js?v=34', './config.js', './config.js?v=34', './auth-ui.js', './auth-ui.js?v=34', './chat/profile-save.js', './chat/profile-save.js?v=34', './match-core.js', './match-core.js?v=34', './offline.html',
+  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../stock-core.js?v=34', './revvy.js', './revvy.js?v=34', './crm/hub.css', './crm/hub.css?v=34', './crm/hub.js', './crm/hub.js?v=34', './crm/followups-core.js', './crm/followups-core.js?v=34', './crm/followups-ui.js', './crm/followups-ui.js?v=34', '../product-email.js', '../product-email.js?v=34', '../quote-email.js', '../quote-email.js?v=34'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
