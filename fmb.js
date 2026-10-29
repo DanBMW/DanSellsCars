@@ -17,7 +17,6 @@
   var FORM_URL = 'https://formspree.io/f/xqewleog';
   /* SwipeToDrive from the funnel: off until Dan has run the lead SQL and deployed funnel-lead. While off the box is
      hidden and nothing extra is sent. The funnel itself is unchanged either way. */
-  var STD_LEADS = window.DS_STD_LEADS === true;
   var STD_URL = 'https://dexqyqrbelmdjdhxaboq.supabase.co/functions/v1/funnel-lead';
   var KEY = 'fmbV3', TTL = 7 * 864e5;
   var GBP = '\u00a3';
@@ -1021,21 +1020,28 @@
     });
   }
 
-  /* After the enquiry has gone through, and only with the SwipeToDrive box ticked: create their profile in the
-     background (server side, validated and rate limited) and offer the claim link. A failure changes nothing. */
+  /* After every completed enquiry (Dan's decision, 29 Oct): create their SwipeToDrive record in the background,
+     server side, validated and rate limited, owned by Dan, with NO messaging consent. Then ask whether they would
+     like to join. Yes opens their profile (claim link). No closes the question; the record stays for Dan.
+     Messaging consent is only recorded if they tick the stock alert agreement and tap Yes. A failure changes nothing. */
+  var STD = null;
+  function stdPost(body) { return fetch(STD_URL, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.json(); }); }
   function stdLead() {
-    if (!STD_LEADS || !$('fStd') || !$('fStd').checked) return;
-    var body = { name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fEmail').value.trim(), consent: true, source: 'find-my-bmw',
+    var body = { name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fEmail').value.trim(), source: 'find-my-bmw',
       _gotcha: $('fGotcha') ? $('fGotcha').value : '',
       answers: { models: A.models, interest: A.interest, fuel: A.fuel, body: A.body, pay: A.pay, mo: A.mo, dep: A.dep, cash: A.cash, extras: A.extras, must: A.must, colours: A.colours, miles: A.miles, when: A.when } };
     track('fmb_std_start', {});
-    fetch(STD_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      .then(function (r) { return r.json(); }).then(function (j) {
+    stdPost(body).then(function (j) {
         if (!j || !j.ok || !j.url) { track('fmb_std_failed', { reason: String(j && j.reason || 'none').slice(0, 30) }); return; }
-        $('fmbStdGo').href = j.url; $('fmbStd').hidden = false; track('fmb_std_ready', { claim: !!j.claim }); })
+        STD = j; $('fmbStdYes').href = j.url; $('fmbStd').hidden = false; track('fmb_std_ready', { claim: !!j.claim }); })
       ['catch'](function () { track('fmb_std_failed', { reason: 'network' }); });
   }
-  if (STD_LEADS && $('fStdBox')) $('fStdBox').hidden = false;
+  if ($('fmbStdYes')) $('fmbStdYes').addEventListener('click', function () { var ok = $('fStdAlert') && $('fStdAlert').checked;
+    if (STD && STD.ref) stdPost({ action: 'join', claim: STD.ref, choice: 'yes', alert_consent: !!ok })['catch'](function () {});
+    track('fmb_std_join', { choice: 'yes', alerts: !!ok }); });
+  if ($('fmbStdNo')) $('fmbStdNo').addEventListener('click', function () {
+    if (STD && STD.ref) stdPost({ action: 'join', claim: STD.ref, choice: 'no' })['catch'](function () {});
+    $('fmbStd').hidden = true; track('fmb_std_join', { choice: 'no' }); });
 
   /* ---------- the part exchange steps (in the same sheet) ---------- */
   var MILES = ['Under 20k', '20k to 40k', '40k to 60k', '60k to 80k', '80k to 100k', 'Over 100k'];

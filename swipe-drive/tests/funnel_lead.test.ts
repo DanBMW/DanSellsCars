@@ -10,18 +10,17 @@ function fakeDb(o: any = {}) {
       insert: (r: any) => { if (t === 'customers') { if (o.insErr) return Promise.resolve({ error: { message: 'x' } }); st.customers.push(r); return Promise.resolve({}); } st.claims.push(r); return api; },
       update: (r: any) => { st.updates.push(r); return { eq: async () => ({}) }; } };
     return api; };
-  return { st, db: { rpc: async (_n: string, a: any) => o.rpcErr ? { error: {} } : { data: (st.hits[a.k] = (st.hits[a.k] || 0) + 1) }, from: q } };
+  return { st, db: { rpc: async (_n: string, a: any) => o.rpcErr ? { error: {} } : { data: (st.hits[a.key_hash] = (st.hits[a.key_hash] || 0) + 1) }, from: q } };
 }
-const body = (x: any = {}) => JSON.stringify({ name: 'Alex', phone: '07700900123', email: 'alex@example.com', consent: true, answers: { models: ['X5'] }, ...x });
+const body = (x: any = {}) => JSON.stringify({ name: 'Alex', phone: '07700900123', email: 'alex@example.com', answers: { models: ['X5'] }, ...x });
 const post = (b: string, ip = '1.1.1.1') => new Request('http://x/', { method: 'POST', body: b, headers: { 'x-forwarded-for': ip } });
 const eq = (a: unknown, b: unknown, m: string) => { if (a !== b) throw new Error(m + ': ' + a + ' != ' + b); };
 Deno.test('new lead: record with consent, Dan owns it, claim link', async () => {
   const f = fakeDb(); const r = await handle(post(body()), () => f.db, env); const j = await r.json();
   eq(r.status, 200, 'status'); eq(j.url.includes('?claim=claim-0#signin'), true, 'claim url'); const c = f.st.customers[0];
-  eq(c.owner_staff_id, null, 'owner'); eq(c.user_id, null, 'user'); eq(!!c.comms_consent_at, true, 'consent'); eq(c.desk.enquiry.source, 'find-my-bmw', 'enquiry'); eq(f.st.claims[0].email, 'alex@example.com', 'claim email'); });
-Deno.test('no consent, bad phone, bad json, too large, wrong method', async () => {
+  eq(c.owner_staff_id, null, 'owner'); eq(c.user_id, null, 'user'); eq(c.comms_consent_at, undefined, 'no consent'); eq(j.ref, 'claim-0', 'ref'); eq(c.desk.enquiry.source, 'find-my-bmw', 'enquiry'); eq(f.st.claims[0].email, 'alex@example.com', 'claim email'); });
+Deno.test('bad phone, bad json, too large, wrong method', async () => {
   const f = fakeDb();
-  eq((await handle(post(body({ consent: false })), () => f.db, env)).status, 400, 'consent');
   eq((await handle(post(body({ phone: '999' })), () => f.db, env)).status, 400, 'phone');
   eq((await handle(post('{nope'), () => f.db, env)).status, 400, 'json');
   eq((await handle(post('x'.repeat(20001)), () => f.db, env)).status, 413, 'size');
@@ -40,3 +39,23 @@ Deno.test('duplicate email: never overwritten, enquiry marked repeat, alert merg
   const u = f.st.updates[0]; eq(Object.keys(u).join(), 'desk', 'only desk updated'); eq(u.desk.enquiry.repeat, true, 'repeat'); eq(u.desk.note, 'keep', 'desk kept'); eq(u.desk.alerts.length, 2, 'alerts deduped'); });
 Deno.test('email wildcards are escaped', async () => { const f = fakeDb(); await handle(post(body({ email: 'a_b%c@example.com' })), () => f.db, env); eq(f.st.likes[0], 'a\\_b\\%c@example.com', 'escaped'); });
 Deno.test('save failure is reported, no claim', async () => { const f = fakeDb({ insErr: true }); eq((await handle(post(body()), () => f.db, env)).status, 500, '500'); eq(f.st.claims.length, 0, 'no claim'); });
+
+function joinDb(o: any = {}) {
+  const st: any = { updates: [] }; const cust = { id: 'cust-1', desk: { enquiry: { source: 'find-my-bmw' } }, comms_consent_at: o.consented || null };
+  const api = (t: string) => { const q: any = { select: () => q, eq: (_c: string, v: string) => { q.v = v; return q; },
+    maybeSingle: async () => t === 'customer_claims' ? { data: q.v === CLAIM ? { customer_id: 'cust-1' } : null } : { data: cust },
+    update: (r: any) => { st.updates.push(r); return { eq: async () => ({}) }; } }; return q; };
+  return { st, db: { rpc: async () => ({ data: 1 }), from: api } };
+}
+const CLAIM = '11111111-2222-3333-4444-555555555555';
+const jpost = (x: any) => post(JSON.stringify({ action: 'join', claim: CLAIM, ...x }));
+Deno.test('join yes without the alert tick: choice recorded, no consent', async () => {
+  const f = joinDb(); eq((await handle(jpost({ choice: 'yes' }), () => f.db, env)).status, 200, '200');
+  const u = f.st.updates[0]; eq(u.desk.std_join.choice, 'yes', 'yes'); eq(u.comms_consent_at, undefined, 'no consent'); eq(u.desk.enquiry.source, 'find-my-bmw', 'enquiry kept'); });
+Deno.test('join yes with the alert tick records consent; existing consent untouched', async () => {
+  const f = joinDb(); await handle(jpost({ choice: 'yes', alert_consent: true }), () => f.db, env); eq(!!f.st.updates[0].comms_consent_at, true, 'consent');
+  const g = joinDb({ consented: '2026-01-01' }); await handle(jpost({ choice: 'yes', alert_consent: true }), () => g.db, env); eq(g.st.updates[0].comms_consent_at, undefined, 'unchanged'); });
+Deno.test('join no: choice recorded, consent never set', async () => { const f = joinDb(); await handle(jpost({ choice: 'no', alert_consent: true }), () => f.db, env); eq(f.st.updates[0].desk.std_join.choice, 'no', 'no'); eq(f.st.updates[0].comms_consent_at, undefined, 'none'); });
+Deno.test('join with an unknown or malformed claim is refused', async () => { const f = joinDb();
+  eq((await handle(post(JSON.stringify({ action: 'join', claim: 'x', choice: 'yes' })), () => f.db, env)).status, 400, 'bad');
+  eq((await handle(post(JSON.stringify({ action: 'join', claim: '99999999-2222-3333-4444-555555555555', choice: 'yes' })), () => f.db, env)).status, 404, 'unknown'); eq(f.st.updates.length, 0, 'nothing'); });

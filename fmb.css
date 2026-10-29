@@ -334,3 +334,7 @@
 .pxl-btns button{min-height:40px;padding:8px 14px;border:1px solid var(--hairline);background:transparent;color:var(--paper);font:inherit;cursor:pointer}
 .pxl-btns .pxl-yes{border-color:var(--accent)}
 .pxl-ok{font-size:.85rem;color:var(--paper);margin:0}
+/* Would you like to join SwipeToDrive? (after the enquiry) */
+.fmb-std{margin:18px 0 0;padding:16px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.04)}
+.fmb-std p{margin:0 0 8px}.fmb-std .fmb-std-sub{opacity:.8;font-size:.95em}
+.fmb-std-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}

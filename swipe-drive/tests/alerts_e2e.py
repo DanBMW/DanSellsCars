@@ -86,17 +86,13 @@ try:
     a = pg.evaluate("JSON.parse(localStorage.ctDemoV1).customers.find(x=>x.id==='c-e1')")
     ok(a['desk']['enquiry']['actioned_at'] and a['name'] == 'Alpha Test', 'actioned time stored, card intact')
 
-    # 6. Find my BMW opt in: hidden by default, shown with the flag, claim link appears on success
-    pg2 = ctx.new_page(); pg2.on('pageerror', lambda e: errs.append(str(e)))
-    pg2.goto(SITE + 'find-my-bmw.html'); pg2.wait_for_timeout(800); ok(pg2.locator('#fStdBox').is_hidden(), 'opt in hidden while STD_LEADS is off')
-    ctx.add_init_script("window.DS_STD_LEADS=true;")
-    pg3 = ctx.new_page(); pg3.goto(SITE + 'find-my-bmw.html'); pg3.wait_for_timeout(800)
-    ok(pg3.evaluate("!document.getElementById('fStdBox').hidden"), 'opt in shown with the flag on')
-    ok(pg3.evaluate("!document.getElementById('fStd').checked"), 'opt in is not pre ticked')
-    pg3.evaluate("""(()=>{document.querySelectorAll('.fmb-screen').forEach(s=>s.hidden=true);var b=document.getElementById('fStdBox'),s=b.closest('.fmb-screen,section');if(s){s.hidden=false;s.classList.add('on');s.style.display='block'}b.scrollIntoView({block:'center'})})()""")
-    shot(pg3, 'fmb-optin')
-    pg3.evaluate("(()=>{var s=document.getElementById('fmbSent');s.hidden=false;var c=s.closest('.fmb-screen,section');if(c){c.hidden=false;c.style.display='block'};document.getElementById('fmbStdGo').href='#';document.getElementById('fmbStd').hidden=false;document.getElementById('fmbStd').scrollIntoView({block:'center'})})()")
-    shot(pg3, 'fmb-claim')
+    # 6. Find my BMW: no opt in box; the join question appears after the enquiry with the claim link
+    pg3 = ctx.new_page(); pg3.on('pageerror', lambda e: errs.append(str(e))); pg3.goto(SITE + 'find-my-bmw.html'); pg3.wait_for_timeout(800)
+    ok(pg3.locator('#fStd').count() == 0, 'no SwipeToDrive opt in box in the funnel')
+    ok(not pg3.is_checked('#fStdAlert'), 'stock alert agreement not pre ticked')
+    pg3.evaluate("(()=>{var s=document.getElementById('fmbSent');s.hidden=false;var c=s.closest('.fmb-screen,section');if(c){c.hidden=false;c.style.display='block'};var q=document.getElementById('fmbStd');q.hidden=false;document.getElementById('fmbStdYes').href='#claim';q.scrollIntoView({block:'center'})})()")
+    ok('Would you like to join SwipeToDrive?' in pg3.inner_text('#fmbStd'), 'join question shown'); shot(pg3, 'fmb-join')
+    pg3.click('#fmbStdNo'); ok(pg3.locator('#fmbStd').is_hidden(), 'No closes the question')
     ok(not errs, 'no page errors ' + '; '.join(errs))
   print('RESULT alerts_e2e %d/%d' % (n, n))
 finally:

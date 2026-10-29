@@ -2,9 +2,9 @@
 import assert from 'assert';
 import { validate, toCustomer, phone07, CONSENT } from '../backend/supabase/functions/_shared/funnel.js';
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
-const base = { name: 'Alex', phone: '07700 900123', email: 'Alex@Example.com', consent: true };
+const base = { name: 'Alex', phone: '07700 900123', email: 'Alex@Example.com' };
 ok(validate(base) === null, 'valid');
-ok(validate({ ...base, consent: false }) === 'consent' && validate({ ...base, consent: 'yes' }) === 'consent', 'consent must be a real tick');
+ok(validate({ ...base, phone: '020 7946 0000' }) === null, 'a landline the funnel accepted still makes a record');
 ok(validate({ ...base, _gotcha: 'x' }) === 'spam', 'honeypot');
 ok(validate({ ...base, phone: '123' }) === 'phone' && validate({ ...base, email: 'nope' }) === 'email' && validate({ ...base, name: '<b>' }) === 'name', 'bad fields refused');
 ok(phone07('+44 7700 900123') === '07700900123', '+44 numbers become 07');
@@ -16,7 +16,9 @@ ok(row.fuel === 'hybrid,diesel' && row.body === 'estate' && row.new_used === 'ne
 ok(row.budget_type === 'monthly' && row.monthly_gbp === 650 && row.deposit_gbp === 5000 && !row.cash_gbp, 'budget');
 ok(row.specs.join() === 'feat:heated,feat:xdrive,feat:hud' && row.specs_must.join() === 'feat:xdrive', 'spec picks and must haves');
 ok(row.colours.join() === 'Black' && row.annual_mileage === 12500 && row.desk.when === 'month', 'colours, mileage, timing');
-ok(row.comms_consent_at === '2026-10-29T22:40:00Z' && row.comms_consent_text === CONSENT, 'consent recorded');
+ok(!('comms_consent_at' in row) && !('comms_consent_text' in row), 'no messaging consent from the funnel itself');
+const withAlert = toCustomer({ ...base, alert_consent: true }, '2026-10-29T22:40:00Z');
+ok(withAlert.comms_consent_at === '2026-10-29T22:40:00Z' && withAlert.comms_consent_text === CONSENT, 'consent only with the stock alert agreement');
 ok(row.desk.enquiry.source === 'find-my-bmw' && row.desk.enquiry.actioned_at === null && row.desk.enquiry.first_name === 'Alex', 'shows as a new enquiry');
 ok(row.desk.alerts.length === 2 && row.desk.alerts[0].specs.join() === 'feat:xdrive', 'an alert per model');
 ok(!('user_id' in row) && !('owner_staff_id' in row) && !('id' in row), 'ownership is set by the function, never by the form');
