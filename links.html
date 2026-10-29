@@ -345,7 +345,6 @@ a{color:inherit;text-decoration:none}
       <input class="widget-input" id="pe-car" type="text" placeholder="Car e.g. BMW 1 Series" autocomplete="off">
       <div class="widget-title" style="margin-bottom:8px;">Order date (deadline is 30 days later)</div>
       <input class="widget-input" id="pe-date" type="date">
-      <input class="widget-input" id="pe-phone" type="tel" placeholder="Your phone for the signature (optional)" autocomplete="off">
       <div class="widget-title" style="margin-bottom:8px;">Products they've bought</div>
       <div class="chip-row">
         <div class="chip" data-pe="tyreAlloy" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Tyre &amp; Alloy</div>
@@ -1320,7 +1319,7 @@ function peStage(s){peStageVal=s;document.getElementById('pe-pos').classList.tog
 function peCreate(){
   var err=document.getElementById('pe-err');err.textContent='';
   var d={email:document.getElementById('pe-email').value,firstName:document.getElementById('pe-name').value,car:document.getElementById('pe-car').value,
-    orderDate:document.getElementById('pe-date').value,phone:document.getElementById('pe-phone').value.trim(),stage:peStageVal,
+    orderDate:document.getElementById('pe-date').value,stage:peStageVal,
     bought:[].slice.call(document.querySelectorAll('[data-pe].on')).map(function(c){return c.getAttribute('data-pe');})};
   if(!ProductEmail.isValidEmail(d.email)){err.textContent='Please enter a valid customer email.';return;}
   if(!d.firstName.trim()){err.textContent='Please enter the customer first name.';return;}

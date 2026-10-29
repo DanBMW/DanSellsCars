@@ -1,7 +1,6 @@
 /* Product presentation email builder. Runs fully in the browser; nothing is stored or sent. */
 (function (root) {
   var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  var SALES = { full: "Daniel Cane", first: "Daniel", title: "Sales Executive", email: "daniel.cane@hedinautomotive.co.uk" };
   var CC = "Sergio.Garaguso@hedinautomotive.co.uk";
   var PDF = "https://edge.sitecorecloud.io/hedinitaban27a1-hedin8837-prod5c4b-4604/media/project/hedin/retail/hedinautomotive/unitedkingdom/hedinautomotiveuksite/bmw/";
   var PAGE = "https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/";
@@ -32,11 +31,6 @@
   }
   function isValidEmail(e) { return typeof e === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e.trim()); }
   function joinList(a, w) { if (a.length <= 1) return a.join(""); return a.slice(0, -1).join(", ") + " " + (w || "and") + " " + a[a.length - 1]; }
-  function signature(phone) {
-    return '<p>Kind regards,<br><br>' + SALES.first + '</p><p style="font-size:13px;color:#555">______________________________<br>' + SALES.full + '<br>' + SALES.title +
-      '<br><br>Hedin Automotive<br>BMW<br>Ruxley<br><br>Visiting Address:<br>Maidstone Road, Sidcup, Kent<br>DA14 5BG London<br><br>Phone: ' + esc(phone || "{Phone}") +
-      '<br><br>Mail: ' + SALES.email + '<br>www.hedinautomotive.co.uk<br><br>Hedin Automotive</p>';
-  }
   function productBlock(p) {
     var url = VID + p.slug + ".html", n = esc(p.name);
     return '<tr><td style="padding:16px 0;border-top:1px solid #e5e5e5"><p style="margin:0 0 8px;font-size:17px;font-weight:bold;color:#1c69d4">' + n + '</p>\n' +
@@ -74,7 +68,7 @@
         '<p>You have until <b>' + dl + '</b> to let me know if you would like to take out ' + (one ? "this policy" : "any of these policies") + ', so there\'s still some time to have a look through the options!</p>\n' +
         '<p>If ' + (one ? "the policy is" : "any of the policies are") + ' of interest, or if you have any questions about your new car, please do let me know and I will be happy to assist.</p>\n';
     }
-    h += signature(d.phone);
+    h += '<p>Kind regards,</p>';
     var html = '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#222;padding:24px"><tr><td>\n' + h + '</td></tr></table></td></tr></table>';
     return { to: d.email.trim(), cc: CC, subject: subject, deadline: dl, html: html, missing: missing.map(function (p) { return p.id; }) };
   }
