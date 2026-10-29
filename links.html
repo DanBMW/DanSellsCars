@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>Dan | Internal Links</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="apple-touch-icon" href="links-app/apple-touch-icon.png"/>
+<link rel="manifest" href="links-app/manifest.webmanifest"/>
+<meta name="theme-color" content="#0f131a"/>
+<meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="robots" content="noindex,nofollow"/>
 <style>
 :root{
@@ -232,6 +235,7 @@ a{color:inherit;text-decoration:none}
 .fx-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fx-two .fx-sub{display:block}.fx-hint{font-size:12px;color:var(--accent);margin:2px 0 8px}.fx-hint a{text-decoration:underline}
 @media(max-width:560px){.fx-row{flex-wrap:wrap}.fx-when{order:3;width:100%;padding-left:48px}}
 </style>
+<link rel="stylesheet" href="links-app/app.css"/>
 </head>
 <body>
 
@@ -913,7 +917,7 @@ async function unlock() {
     showContent();
   } else {
     const input = document.getElementById('pin-input');
-    document.getElementById('lock-err').textContent = 'Incorrect password - try again.';
+    document.getElementById('lock-err').textContent = 'Incorrect password. Try again.';
     input.value = '';
     input.classList.remove('shake');
     void input.offsetWidth;
@@ -971,7 +975,7 @@ function rrFields() {
 }
 function buildRampLink() {
   const f = rrFields();
-  if (!f.reg) { alert('Please enter the registration.'); return null; }
+  if (!f.reg) { (window.axSnack||alert)('Please enter the registration.'); return null; }
   const params = new URLSearchParams({ reg: f.reg });
   if (f.name) params.set('n', f.name);
   if (f.day)  params.set('d', f.day);
@@ -1111,8 +1115,8 @@ function vipFields() {
 }
 function buildVipLink() {
   const f = vipFields();
-  if (!f.name) { alert('Please enter the customer first name - the page is built around it.'); return null; }
-  if (!f.date) { alert('Please enter the dates the event runs across.'); return null; }
+  if (!f.name) { (window.axSnack||alert)('Please enter the customer first name. The page is built around it.'); return null; }
+  if (!f.date) { (window.axSnack||alert)('Please enter the dates the event runs across.'); return null; }
   const params = new URLSearchParams({ n: f.name, d: f.date });
   if (f.time)  params.set('t', f.time);
   if (f.venue) params.set('v', f.venue);
@@ -1378,9 +1382,9 @@ function selectFollowUp(key) {
 }
 
 function emailFollowUp() {
-  if (!fuChosen) { alert('Please choose a follow up duration.'); return; }
+  if (!fuChosen) { (window.axSnack||alert)('Please choose a follow up duration.'); return; }
   const t = TEMPLATES.find(function(tpl){ return tpl.name.indexOf(FOLLOWUP_DURATIONS[fuChosen]) !== -1; });
-  if (!t) { alert('Template not found.'); return; }
+  if (!t) { (window.axSnack||alert)('Template not found.'); return; }
   const name  = document.getElementById('fu-name').value.trim();
   const email = document.getElementById('fu-email').value.trim();
   const model = document.getElementById('fu-model').value.trim();
@@ -1540,9 +1544,15 @@ function peSend(){
   });
   wrap.insertBefore(panels,wrap.firstChild);wrap.insertBefore(dash,wrap.firstChild);wrap.classList.add('dash-on');
   dash.addEventListener('click',function(e){var t=e.target.closest('[data-open]');if(t)dashOpen(t.getAttribute('data-open'));});
-  function show(){var k=(location.hash.match(/^#p=(\w+)/)||[])[1]||'';
-    dash.style.display=k&&meta[k]?'none':'';[].forEach.call(panels.children,function(p){p.classList.toggle('open',p.id==='panel-'+k);});window.scrollTo(0,0);}
-  window.dashOpen=function(k){if(k)location.hash='p='+k;else history.pushState('',document.title,location.pathname+location.search),show();};
+  var cur='',stack=0;
+  function show(){var k=(location.hash.match(/^#p=(\w+)/)||[])[1]||'';if(!meta[k])k='';
+    dash.style.display=k?'none':'';[].forEach.call(panels.children,function(p){var on=p.id==='panel-'+k;p.classList.toggle('open',on);p.classList.toggle('ax-enter',on&&k!==cur);p.style.transform='';p.style.opacity='';});
+    dash.classList.toggle('ax-back',!k&&!!cur);if(!k)stack=0;document.body.classList.toggle('ax-in-app',!!k);cur=k;window.scrollTo(0,0);
+    document.dispatchEvent(new CustomEvent('dash:show',{detail:{key:k}}));}
+  /* Opening pushes a history entry, so the phone back button, browser back and edge swipe all close the screen. */
+  window.dashOpen=function(k){if(k){if(k===cur)return;if(!cur)stack=1;if(cur)location.replace('#p='+k);else location.hash='p='+k;}
+    else if(stack){stack=0;history.back();}else{history.replaceState(history.state,document.title,location.pathname+location.search);show();}};
+  window.dashCurrent=function(){return cur;};
   window.addEventListener('hashchange',show);show();
 })();
 /* Send Quotation */
@@ -1582,5 +1592,6 @@ function qSend(){if(!qLast)return;var go=function(){location.href='mailto:'+enco
 <script src="swipe-drive/crm/followups-ui.js"></script>
 <script src="disclaimer.js"></script>
 <script src="contact.js"></script>
+<script src="links-app/app.js"></script>
 </body>
 </html>

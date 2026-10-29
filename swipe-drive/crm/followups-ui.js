@@ -73,10 +73,11 @@
     var soon = rest.filter(function (r) { return F.status(r, t) === 'soon'; }).length, other = recs.filter(function (r) { var s = F.status(r, t); return s === 'stopped' || s === 'complete'; });
     shell('<div class="fx-top"><div class="fx-stats"><div><b>' + due.length + '</b><span>Due now</span></div><div><b>' + soon + '</b><span>Next 14 days</span></div><div><b>' + (recs.length - other.length) + '</b><span>On a journey</span></div></div>'
       + '<div class="fx-actions"><button class="fx-btn" id="fx-add">+ Add customer</button><button class="fx-ghost" id="fx-exp">Encrypted backup</button><button class="fx-ghost" id="fx-lock">' + ICON + 'Lock</button></div></div>'
-      + (msg ? '<p class="fx-msg">' + e(msg) + '</p>' : '')
+      + (msg && !window.axSnack ? '<p class="fx-msg">' + e(msg) + '</p>' : '')
       + '<div class="fx-sec">Send next follow up</div>' + (due.length ? due.map(function (r) { return card(r, t); }).join('') : '<p class="fx-empty">Nothing due. You are all caught up.</p>')
       + '<div class="fx-sec">Coming up</div>' + (rest.length ? rest.map(function (r) { return card(r, t); }).join('') : '<p class="fx-empty">No customers scheduled yet.</p>')
       + (other.length ? '<div class="fx-sec">Stopped or complete</div>' + other.map(function (r) { return card(r, t); }).join('') : '') + '<div id="fx-modal"></div>');
+    if (msg && window.axSnack) window.axSnack(msg); /* Android style snackbar when the links shell is present */
     document.getElementById('fx-lock').onclick = function () { lock(); };
     document.getElementById('fx-add').onclick = function () { form(null); };
     document.getElementById('fx-exp').onclick = function () { var blob = new Blob([F.exportBackup(vault, rows)], { type: 'application/json' }), a = document.createElement('a');
@@ -84,7 +85,7 @@
     root.querySelectorAll('[data-send]').forEach(function (b) { b.onclick = function () { send(b.getAttribute('data-send')); }; });
     root.querySelectorAll('[data-tl]').forEach(function (b) { b.onclick = function () { journey(b.getAttribute('data-tl')); }; });
   }
-  function modal(html) { var m = document.getElementById('fx-modal'); m.innerHTML = '<div class="fx-ov"><div class="fx-dlg">' + html + '</div></div>';
+  function modal(html) { var m = document.getElementById('fx-modal'); m.innerHTML = '<div class="fx-ov"><div class="fx-dlg" role="dialog" aria-modal="true">' + html + '</div></div>';
     m.querySelectorAll('[data-close]').forEach(function (b) { b.onclick = function () { m.innerHTML = ''; }; }); return m; }
   function journey(id) { var r = recs.find(function (x) { return x.id === id; }), t = today(), tl = F.timeline(r, t);
     var m = modal('<div class="fx-h">' + e(r.firstName + ' ' + r.lastName) + '</div><div class="fx-sub">' + e(r.car || '') + (r.path === 'kit' ? ' &middot; Keep in touch' : ' &middot; ' + r.term + ' month agreement, collected ' + nice(r.start) + (r.purchaseDate ? ', bought ' + nice(r.purchaseDate) : '')) + '</div>'
