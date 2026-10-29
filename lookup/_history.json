@@ -47,7 +47,7 @@
  "BU73LGZ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-29",
-  "removed_at": null
+  "removed_at": "2026-10-29"
  },
  "BW23MWL": {
   "first_seen": "2026-10-07",
@@ -1036,6 +1036,11 @@
  },
  "LV71CXS": {
   "first_seen": "2026-10-07",
+  "last_seen": "2026-10-29",
+  "removed_at": null
+ },
+ "LV71YUJ": {
+  "first_seen": "2026-10-29",
   "last_seen": "2026-10-29",
   "removed_at": null
  },
