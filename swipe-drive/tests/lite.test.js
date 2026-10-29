@@ -11,7 +11,7 @@ const A = prep(full), B = prep(lite); let n = 0; const ok = (c, m) => { assert.o
 ok(A.length === B.length && A.length > 300, 'same cars: ' + A.length + ' / ' + B.length);
 const profiles = [{}, { models: ['X5'] }, { budget_type: 'cash', cash_gbp: 45000 }, { budget_type: 'monthly', monthly_gbp: 500 }, { fuel: 'electric' },
   { new_used: 'new', specs: ['gearbox:Automatic'], specs_must: ['gearbox:Automatic'] }, { specs_must: ['trim:M Sport'] }, { specs_must: ['feat:camera'], models: ['X3'] },
-  ...Object.keys((window.ctStock || window.dsStock || {}).FEATURES || {}).map(k => ({ specs_must: ['feat:' + k] }))];
+  ...M.specOptions().map(o => ({ specs_must: [o.key] })), ...M.specOptions().map(o => ({ specs: [o.key] }))];
 const key = (rk) => rk.map(x => x.car.reg + ':' + x.score + ':' + (x.notes || []).join('|')).join(',');
 const needsFull = (c) => !!((c.specs_must || []).length || (c.specs || []).length);
 /* app.js rule: spec choices read the full file and merge it into the light cars */

@@ -20,8 +20,9 @@
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png">
 <link rel="preconnect" href="https://api.fontshare.com">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&f[]=satoshi@400,500,700,900&display=swap">
-<link rel="stylesheet" href="app.css?v=36">
-<link rel="stylesheet" href="crm/hub.css?v=36">
+<link rel="stylesheet" href="app.css?v=39">
+<link rel="stylesheet" href="crm/hub.css?v=39">
+<link rel="stylesheet" href="crd.css?v=1">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="../analytics.js" defer></script>
@@ -75,6 +76,10 @@
         <label class="ct-f" data-staff-only hidden><span>Customer email <em class="ct-req">optional</em></span><input name="email" type="email" inputmode="email"></label>
         <label class="ct-f"><span>Postcode <em class="ct-opt">optional</em></span><input name="postcode" autocomplete="postal-code"></label>
       </fieldset>
+      <fieldset data-staff-only hidden id="consentBox"><legend>Messaging</legend>
+        <label class="ct-check"><input type="checkbox" id="commsConsent" name="comms_consent"> <span>The customer has agreed that I can message them, and that I can set them up on SwipeToDrive so they can use it themselves.</span></label>
+        <p class="ct-hint" id="commsConsentNote">Leave this unticked and nothing is ever sent to them. You can still print their customer page.</p>
+      </fieldset>
       <details class="ct-sec" data-sec="budget"><summary>Budget <em class="ct-opt">optional</em></summary><div class="ct-sec-b">
         <div class="ct-seg" data-name="budget_type"><button type="button" data-v="monthly">Monthly</button><button type="button" data-v="cash">Cash price</button></div>
         <label class="ct-f" data-show="budget_type=monthly"><span>Up to a month (&pound;)</span><input name="monthly_gbp" type="number" inputmode="numeric" min="0" step="10"></label>
@@ -98,6 +103,7 @@
         <p class="ct-hint">Tap once to pick it. Tap again to make it a must have. Tap a third time to clear it.</p>
         <div class="ct-chips ct-tri" data-tri="colours" id="colourChips"></div>
         <span class="ct-lab">Specification</span><div class="ct-tapkey" role="note"><b>Only want to see cars with a certain spec? Tap it twice.</b><div class="ct-chips ct-tri ct-tapkey-demo" aria-hidden="true"><button type="button" tabindex="-1" data-state="">Heated seats</button><span>Not picked</span><button type="button" tabindex="-1" data-state="like">Heated seats</button><span>Tap once: would like, shown first but other suggestions still appear</span><button type="button" tabindex="-1" data-state="must">Heated seats</button><span>Tap twice: must have, you will only see cars with that spec, with no other suggestions</span></div><small>Tap a third time to clear it.</small></div>
+        <p class="ct-hint">New and used cars are read the same way. If we cannot see something on a car (seat colour on a used car, for example) we never hide the car, we just tell you it is not confirmed.</p>
         <div class="ct-chips ct-tri" data-tri="specs" id="specChips"></div>
         <span class="ct-lab">New or used</span>
         <div class="ct-seg" data-name="new_used"><button type="button" data-v="used">Used</button><button type="button" data-v="new">Brand new</button><button type="button" data-v="both">Either</button></div>
@@ -123,6 +129,7 @@
         </div>
       </div></details>
       <details class="ct-sec" data-sec="more"><summary>More detail <em class="ct-opt">optional</em></summary><div class="ct-sec-b"><p class="ct-hint">The same questions as the desk sheet. All optional.</p><div id="deskBox"></div></div></details>
+      <button class="ct-btn ct-btn-ghost" type="button" id="pfPrint" data-staff-only hidden onclick="window.ctCrdPrintCurrent&&window.ctCrdPrintCurrent()">Print customer page</button>
       <button class="ct-btn ct-btn-big" type="submit" id="pfSave">Find my match</button>
       <p class="ct-msg" id="pfMsg" role="status"></p>
     </form>
@@ -298,21 +305,22 @@
 <div class="ct-toast ct-undo" id="undoToast" role="status" hidden><span id="undoText"></span><button type="button" id="undoBtn">Undo</button></div>
 <div class="ct-toast" id="toast" role="status" hidden></div>
 
-<script src="config.js?v=36"></script>
-<script src="auth-ui.js?v=36"></script>
-<script src="chat/profile-save.js?v=36"></script>
-<script src="../stock-core.js?v=36"></script>
-<script src="../dsfinance.js?v=36"></script>
-<script src="match-core.js?v=36"></script>
+<script src="config.js?v=39"></script>
+<script src="auth-ui.js?v=39"></script>
+<script src="chat/profile-save.js?v=39"></script>
+<script src="../stock-core.js?v=39"></script>
+<script src="../dsfinance.js?v=39"></script>
+<script src="match-core.js?v=39"></script>
 <script src="../disclaimer.js" defer></script>
-<script src="app.js?v=36"></script>
-<script src="../product-email.js?v=36"></script>
-<script src="../quote-email.js?v=36"></script>
-<script src="crm/followups-core.js?v=36"></script>
-<script src="nostock-ui.js?v=36"></script>
-<script src="revvy-flow.js?v=36"></script>
-<script src="revvy.js?v=36"></script>
-<script src="crm/hub.js?v=36"></script>
-<script src="crm/followups-ui.js?v=36"></script>
+<script src="app.js?v=39"></script>
+<script src="../product-email.js?v=39"></script>
+<script src="../quote-email.js?v=39"></script>
+<script src="crm/followups-core.js?v=39"></script>
+<script src="nostock-ui.js?v=39"></script>
+<script src="revvy-flow.js?v=39"></script>
+<script src="revvy.js?v=39"></script>
+<script src="crm/hub.js?v=39"></script>
+<script src="crm/followups-ui.js?v=39"></script>
+<script src="crd.js?v=1"></script>
 </body>
 </html>

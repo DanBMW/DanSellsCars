@@ -60,7 +60,7 @@ window.dsStock = (function () {
 
   function fuelKey(c) {
     var f = String((c && c.fuel) || '').toLowerCase();
-    if (f.indexOf('plug-in') !== -1 || f.indexOf('plug in') !== -1) return 'phev';
+    if (f.indexOf('plug-in') !== -1 || f.indexOf('plug in') !== -1 || f.indexOf('phev') !== -1) return 'phev';   /* new stock calls them PHEV */
     if (f.indexOf('electric') !== -1) return 'electric';
     if (f.indexOf('mild hybrid') !== -1 && f.indexOf('diesel') !== -1) return 'mhev-diesel';
     if (f.indexOf('mild hybrid') !== -1) return 'mhev-petrol';
@@ -101,6 +101,29 @@ window.dsStock = (function () {
     /* Reversing camera (separate from the 360 camera option). Three way: true, false, or null for unknown. */
     revcam:  { label: 'Reversing camera',        tri: function (c, det) { return reversingCamera(c, det); } }
   };
+  /* Light interior rules, 28 Oct 2026. Only upholstery lines count (seats in leather, Vernasca, Veganza, Sensatec,
+     Merino, Dakota, cloth); steering wheel, dashboard, headlining and trim lines are ignored.
+     yes   a pale seat colour: Oyster, Smoke White, Ivory White, Silverstone, Canberra Beige, Cream, Beige, White.
+     no    a dark or rich colour named: Black, Cognac, Tartufo, Mocha, Brown, Red, Anthracite, Grey, Blue.
+     null  no seat colour in the data (used listings never itemise it; new stock often says only Leather or Fabric).
+     A bicolour line counts by its first named colour, so "Silverstone and Black" is light. */
+  var INT_LINE = /leather|vernasca|veganza|sensatec|merino|dakota|cloth|fabric|upholster|alcantara/i;
+  var INT_SKIP = /steering|dashboard|headlin|interior trim|\btrim\b|instrument panel|deletion of/i;
+  var INT_LIGHT = /oyster|smoke white|ivory white|silverstone|canberra beige|venetian beige|cream|beige|\bwhite\b/i;
+  var INT_DARK = /black|cognac|tartufo|mocha|brown|\bred\b|anthracite|grey|gray|blue|magma|night/i;
+  function firstHit(t) {
+    var a = t.search(INT_LIGHT), b = t.search(INT_DARK);
+    if (a < 0 && b < 0) return null; if (a < 0) return false; if (b < 0) return true; return a < b;
+  }
+  function lightInterior(c, det) {
+    var lines = [].concat(det && det.equipment || [], c && c.options || [], c && c.standard || [], c && c.upholstery ? [c.upholstery] : []);
+    var seen = null;
+    for (var i = 0; i < lines.length; i++) {
+      var t = String(lines[i] || ''); if (!INT_LINE.test(t) || INT_SKIP.test(t)) continue;
+      var h = firstHit(t); if (h === true) return true; if (h === false) seen = false;
+    }
+    return seen;
+  }
   /* Reversing camera rules, agreed with Dan 28 Oct 2026:
      yes   the listing names a reversing or rear view camera, Parking Assistant Plus or Pro, or Surround View;
            or the car is a generation BMW UK lists with the camera as standard, first registered on or after the cutoff;
@@ -158,5 +181,5 @@ window.dsStock = (function () {
   return { bodyKeys: bodyKeys, bodyPrimary: bodyPrimary, stockBodyKey: stockBodyKey,
            stockBodyLabel: stockBodyLabel, STOCK_BODY: STOCK_BODY, fuelKey: fuelKey,
            FEATURES: FEATURES, DELETED: DELETED, hasFeature: hasFeature, num: num,
-           reversingCamera: reversingCamera, CAMERA_OVERRIDES: CAMERA_OVERRIDES };
+           reversingCamera: reversingCamera, CAMERA_OVERRIDES: CAMERA_OVERRIDES, lightInterior: lightInterior };
 })();

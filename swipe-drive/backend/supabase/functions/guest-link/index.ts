@@ -18,9 +18,10 @@ Deno.serve(async (req) => {
   const { data: me } = await db.from('profiles').select('role').eq('id', u.user.id).maybeSingle();
   if (!me || (me.role !== 'staff' && me.role !== 'admin')) return json({ error: 'staff only' }, 403);
   const { data: can } = await asUser.rpc('can_access_customer', { cid: customer_id }); if (!can) return json({ error: 'forbidden' }, 403);
-  const { data: cu } = await db.from('customers').select('id,closed_at,guest_version').eq('id', customer_id).maybeSingle();
+  const { data: cu } = await db.from('customers').select('id,closed_at,guest_version,user_id,comms_consent_at').eq('id', customer_id).maybeSingle();
   if (!cu) return json({ error: 'not found' }, 404);
   if (cu.closed_at) return json({ ok: false, reason: 'customer is closed' }, 409);
+  if (!cu.comms_consent_at && !cu.user_id) return json({ ok: false, reason: 'no messaging consent recorded' }, 409);   // staff must tick the consent box first
   const t = await signGuest(env('UNSUBSCRIBE_SECRET'), cu.id, cu.guest_version | 0, Math.floor(Date.now() / 1000) + GUEST_DAYS * 86400);
   return json({ ok: true, url: 'https://dan-sells.co.uk/swipe-drive/guest.html#t=' + encodeURIComponent(t), days: GUEST_DAYS });
 });

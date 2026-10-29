@@ -20,24 +20,118 @@
   var FAMILY = [['Black', /black|sapphire|carbon/i], ['White', /white|alpine/i], ['Grey', /grey|gray|graphite/i], ['Silver', /silver/i],
     ['Blue', /blue/i], ['Green', /green/i], ['Red', /red/i], ['Purple', /purple|violet/i], ['Brown', /brown|bronze/i], ['Orange', /orange|yellow|gold/i]];
   function colourFamily(c) { var v = String((c && c.colour) || ''); for (var i = 0; i < FAMILY.length; i++) if (FAMILY[i][1].test(v)) return FAMILY[i][0]; return v ? 'Other' : ''; }
-  /* Specification picks. Only things the data can test: trim and gearbox from
-     lookup/stock.json, equipment from automation/car-details.json through
-     stock-core.js FEATURES (the same rules stock.html uses). */
-  var SPEC_FIELDS = [
-    ['trim:M Sport', 'M Sport', function (c) { return /^M Sport/.test(c.trim || ''); }],
-    ['trim:M Sport Pro', 'M Sport Pro or Plus', function (c) { return /M Sport (Pro|Plus)/.test(c.trim || ''); }],
-    ['trim:M Performance', 'M Performance', function (c) { return c.trim === 'M Performance'; }],
-    ['gearbox:Automatic', 'Automatic', function (c) { return c.gearbox === 'Automatic'; }],
-    ['gearbox:Manual', 'Manual', function (c) { return c.gearbox === 'Manual'; }]];
-  function specOptions() {
-    var o = SPEC_FIELDS.map(function (f) { return { key: f[0], label: f[1] }; }), F = (S() || {}).FEATURES || {};
-    Object.keys(F).forEach(function (k) { o.push({ key: 'feat:' + k, label: F[k].label }); }); return o;
+  /* ---- Specification picks: ONE catalogue, read the same way for used and new cars ------------------------
+     THE RULE: a pick can only take a car OUT when that car's own data says it does not have the thing.
+     "We cannot see it" is UNKNOWN, never a no. Seat colour, for example, is visible on a new car (its options
+     say Oyster or Black) but not on a used car (its equipment list has no seat colour), so a used car is never
+     removed because someone picks a light interior. An unknown "must have" keeps the car, ranks it a touch
+     lower and adds a "Not confirmed" note, exactly like the reversing camera has always worked.
+     Evidence: used cars carry the Hedin equipment list (automation/car-details.json); new cars carry BMW's
+     standard and options lists, wheels and upholstery (lookup/new-stock.json). A used list is complete, so a
+     missing line means "no". A new car's standard list is NOT complete, so a missing line is only "no" for
+     things that are extras on every BMW (panoramic roof, tow bar).
+     STANDARD ON EVERY NEW BMW (Dan, 30 Oct 2026): heated seats, reversing camera, Apple CarPlay and self parking
+     (Parking Assistant). A new car is therefore always a yes for those four (flag newStd below), even though
+     BMW's standard list does not itemise them. A used car is read from its own equipment list. */
+  var GROUPS = ['Comfort', 'Technology', 'Driver aids', 'Driving feel', 'Look', 'Interior', 'Electric and hybrid', 'Practical'];
+  function cleanKit(a) { var D = (S() || {}).DELETED; return (a || []).filter(function (x) { return typeof x === 'string' && x && !(D && D.test(x)); }); }
+  function kitOf(car) {
+    if (car && car.kind === 'new_stock') return cleanKit((car.standard || []).concat(car.options || [], car.wheels ? [car.wheels] : [], car.upholstery ? [car.upholstery] : []));
+    var det = (root.ctDetails || {})[car && car.listing_id];
+    return det && det.equipment ? cleanKit(det.equipment) : null;     /* null: equipment list not loaded or not known */
   }
-  /* true, false, or null when the car's equipment list is not known */
+  function isNewCar(car) { return !!car && car.kind === 'new_stock'; }
+  function anyLine(kit, re, not) { return (kit || []).some(function (x) { return re.test(x) && !(not && not.test(x)); }); }
+  var SEATLINE = /sensatec|veganza|merino|vernasca|leather|alcantara|fabric|cloth|upholster/i, NOTSEAT = /steering wheel|dashboard|headlining|interior trim|trim finisher|decor|stitching|seat belt/i;
+  var LIGHT = /oyster|silverstone|canberra|beige|ivory|cream|white|cognac|castanea|mocha|taupe|light/i, DARK = /black|anthracite/i;
+  function seatLines(kit) { return (kit || []).filter(function (x) { return SEATLINE.test(x) && !NOTSEAT.test(x); }); }
+  function wheelInches(kit) { var best = null; (kit || []).forEach(function (x) { if (!/wheel|alloy|rim/i.test(x)) return; var m = x.match(/(\d\d)\s*["”“″]/); if (m) best = Math.max(best || 0, +m[1]); }); return best; }
+  function F() { return (S() || {}).FEATURES || {}; }
+  function ent(key, label, group, o) { o = o || {}; o.key = key; o.label = label; o.group = group; return o; }
+  function fe(k, label, group, o) { var f = F()[k] || {}; o = o || {}; o.re = f.re; o.not = f.not; return ent('feat:' + k, label, group, o); }
+  var CATALOGUE = null;
+  function catalogue() {
+    if (CATALOGUE) return CATALOGUE;
+    CATALOGUE = [
+      /* Comfort */
+      fe('heated', 'Heated seats', 'Comfort', { newStd: true }),
+      ent('sp:heatwheel', 'Heated steering wheel', 'Comfort', { re: /heated steering/i }),
+      ent('sp:memory', 'Electric or memory seats', 'Comfort', { re: /memory seats|electric (front )?seats|electric.*seat/i }),
+      ent('sp:massage', 'Ventilated or massage seats', 'Comfort', { re: /ventilat|massage/i }),
+      fe('pano', 'Panoramic roof', 'Comfort', { newNeg: true }),
+      fe('keyless', 'Keyless entry', 'Comfort'),
+      ent('sp:ambient', 'Ambient lighting', 'Comfort', { re: /ambient/i }),
+      /* Technology */
+      fe('hud', 'Head-up display', 'Technology'),
+      ent('sp:cockpit', 'Live Cockpit Professional', 'Technology', { re: /live cockpit pro/i }),
+      ent('sp:wireless', 'Wireless phone charging', 'Technology', { re: /wireless charging|wireless phone charging/i, not: /storage for|prep/i }),
+      fe('sound', 'Harman Kardon or better', 'Technology'),
+      /* Driver aids */
+      ent('sp:carplay', 'Apple CarPlay', 'Technology', { re: /carplay|apple car/i, usedNeg: false, newStd: true }),
+      fe('acc', 'Adaptive cruise', 'Driver aids'),
+      ent('sp:selfpark', 'Self parking (Parking Assistant)', 'Driver aids', { re: /parking assist/i, newStd: true }),
+      ent('sp:parkplus', 'Parking Assistant Plus or 360 camera', 'Driver aids', { re: /parking assist\w*\s+(plus|pro)|surround view|top view|panorama view/i }),
+      ent('feat:revcam', 'Reversing camera', 'Driver aids', { newStd: true, test: function (c, kit) {
+        var Sx = S(); if (!Sx || !Sx.reversingCamera) return null;
+        if (isNewCar(c)) return Sx.reversingCamera({ series: c.series, model: c.model }, { equipment: kit || [], first_reg: new Date().toISOString().slice(0, 10), version: c.description });
+        return Sx.reversingCamera(c, (root.ctDetails || {})[c.listing_id]); } }),
+      /* Driving feel */
+      ent('sp:adaptsusp', 'Adaptive suspension', 'Driving feel', { re: /adaptive (m )?suspension|dynamic damper/i }),
+      ent('sp:sportsteer', 'Sport steering', 'Driving feel', { re: /variable sport steering|integral active steering/i }),
+      ent('sp:ledlights', 'Adaptive LED or Laser lights', 'Driving feel', { re: /adaptive led|laserlight|bmw laser|matrix/i }),
+      /* Look */
+      ent('trim:M Sport', 'M Sport', 'Look', { test: function (c, kit) { if (isNewCar(c)) return /\bM Sport\b/i.test(c.description || '') || anyLine(kit, /^M Sport Package/i); return /^M Sport/.test(c.trim || ''); } }),
+      ent('trim:M Sport Pro', 'M Sport Pro or Plus', 'Look', { test: function (c, kit) { if (isNewCar(c)) return /M Sport (Pro|Plus)/i.test(c.description || '') || anyLine(kit, /^M Sport Pro/i); return /M Sport (Pro|Plus)/.test(c.trim || ''); } }),
+      ent('trim:M Performance', 'M Performance', 'Look', { test: function (c) { if (isNewCar(c)) return /^M\d|^[Xx]M\b|M Performance|^[Xx]\d M\d|^i\d M\d|\bM\d{2,3}[a-z]/.test(c.description || '') ? true : null; return c.trim === 'M Performance'; } }),
+      ent('sp:wheels19', 'Large wheels (19 inch or more)', 'Look', { test: function (c, kit) { var w = wheelInches(kit); return w == null ? null : w >= 19; } }),
+      /* Interior: new cars show it, used cars do not. Unknown never removes a car. */
+      ent('sp:leather', 'Leather or leatherette seats', 'Interior', { test: function (c, kit) {
+        if (isNewCar(c) && c.upholstery) return !/fabric|cloth/i.test(c.upholstery);
+        return anyLine(seatLines(kit), /leather|sensatec|veganza|merino|vernasca/i) ? true : null; } }),
+      ent('sp:fabric', 'Fabric seats', 'Interior', { test: function (c, kit) {
+        if (isNewCar(c) && c.upholstery) return /fabric|cloth/i.test(c.upholstery);
+        return null; } }),
+      /* Light interior: Dan's rules from 28 Oct 2026 in stock-core.js lightInterior (Oyster, Smoke White, Ivory White,
+         Silverstone, Canberra Beige are light; Cognac, Tartufo, Mocha and other dark or rich colours are not; no seat colour is unknown) */
+      ent('sp:intlight', 'Light interior', 'Interior', { test: function (c, kit) { return S().lightInterior(c, { equipment: kit || [] }); } }),
+      ent('sp:intdark', 'Dark interior', 'Interior', { test: function (c, kit) { var l = S().lightInterior(c, { equipment: kit || [] }); return l === null ? null : !l; } }),
+      /* Electric and hybrid */
+      ent('sp:fastcharge', 'Fast charging', 'Electric and hybrid', { re: /dc fast|fast charging|dc charging|ac fast/i, not: /prep/i, usedNeg: false }),
+      /* Practical */
+      fe('towbar', 'Tow bar', 'Practical', { newNeg: true }),
+      ent('feat:xdrive', 'xDrive all wheel drive', 'Practical', { test: function (c) { return c.drive ? /four|all/i.test(String(c.drive)) : null; } }),
+      ent('feat:seven', '7 seats', 'Practical', { test: function (c) { return c.seats == null || c.seats === '' ? null : String(c.seats) === '7'; } }),
+      ent('gearbox:Automatic', 'Automatic', 'Practical', { test: function (c) { return c.gearbox ? c.gearbox === 'Automatic' : null; } }),
+      ent('gearbox:Manual', 'Manual', 'Practical', { test: function (c) { return c.gearbox ? c.gearbox === 'Manual' : null; } })
+    ];
+    return CATALOGUE;
+  }
+  function entryFor(key) { var c = catalogue(); for (var i = 0; i < c.length; i++) if (c[i].key === key) return c[i]; return null; }
+  function specOptions() { return catalogue().map(function (e) { return { key: e.key, label: e.label, group: e.group }; }); }
+  function specLabel(key) { var e = entryFor(key); return e ? e.label : String(key).replace(/^[a-z]+:/, '').replace(/_/g, ' '); }
+  /* true, false, or null when the car's data cannot say. NULL IS NEVER A NO. */
   function hasSpec(car, key) {
-    for (var i = 0; i < SPEC_FIELDS.length; i++) if (SPEC_FIELDS[i][0] === key) return SPEC_FIELDS[i][2](car);
-    if (key.indexOf('feat:') === 0) { var det = (root.ctDetails || {})[car.listing_id]; return S().hasFeature(car, det, key.slice(5)); }
-    return null;
+    var e = entryFor(key);
+    if (!e) {                                  /* an older saved pick the catalogue no longer lists */
+      if (key.indexOf('feat:') === 0 && car && car.kind !== 'new_stock') { var det = (root.ctDetails || {})[car.listing_id]; return S().hasFeature(car, det, key.slice(5)); }
+      return null; }
+    var kit = kitOf(car);
+    if (e.newStd && isNewCar(car)) return true;            /* standard on every new BMW */
+    if (e.test) { var t = e.test(car, kit); if (t !== undefined) return t; }
+    if (!e.re || !kit) return null;
+    if (anyLine(kit, e.re, e.not)) return true;
+    return (isNewCar(car) ? e.newNeg : e.usedNeg !== false) ? false : null;
+  }
+  /* Score the picks for any car, used or new. likes add points; a must have removes a car ONLY on a definite no. */
+  function specScore(car, p) {
+    var o = { sc: 0, why: [], ok: true, notes: [], unconf: false }, must = p.specs_must || [], keys = (p.specs || []).slice(), got = 0;
+    must.forEach(function (k) { if (keys.indexOf(k) === -1) keys.push(k); });
+    keys.forEach(function (k) { var h = hasSpec(car, k), isMust = must.indexOf(k) !== -1;
+      if (h === true) { got++; o.sc += 6; }
+      else if (h === false && isMust) o.ok = false;
+      else if (h === null && isMust) { o.unconf = true; o.sc -= 2; var n = k === CAM ? CAM_NOTE : 'Not confirmed: ' + specLabel(k); if (o.notes.indexOf(n) === -1) o.notes.push(n); } });
+    if (got) o.why.push(got === 1 ? '1 spec you ticked' : got + ' specs you ticked');
+    return o;
   }
   /* Fuel is saved as one text value: 'open', a single fuel (older profiles) or a comma list like 'petrol,hybrid'.
      Empty or open means any fuel. A car passes when its fuel fits any chosen type. */
@@ -98,11 +192,7 @@
       if (cols.length) { var fam = colourFamily(car);
         if (cols.indexOf(fam) !== -1) { sc += 10; why.push(fam + ', a colour you like'); } else sc -= 4;
         if (mustC.length && mustC.indexOf(fam) === -1) ok = false; }
-      var specs = p.specs || [], mustS = p.specs_must || [], got = 0;
-      specs.forEach(function (k) { var h = hasSpec(car, k);
-        if (h === true) { got++; sc += 6; } else if (mustS.indexOf(k) !== -1 && h === false) ok = false;
-        else if (h === null && k === CAM && mustS.indexOf(k) !== -1) { unconf = true; notes.push(CAM_NOTE); } });
-      if (got) why.push(got === 1 ? '1 spec you ticked' : got + ' specs you ticked');
+      var sp = specScore(car, p); sc += sp.sc; sp.why.forEach(function (w) { why.push(w); }); if (!sp.ok) ok = false; sp.notes.forEach(function (n) { notes.push(n); }); if (sp.unconf) unconf = true;
       var bands = (p.mileage_bands || []).filter(function (k) { return MILEAGE_BANDS[k]; }), mi = carMiles(car);
       if (bands.length && mi != null) { if (bands.some(function (k) { var b = MILEAGE_BANDS[k]; return mi >= b.min && mi < b.max; })) { sc += 8; why.push('Mileage you prefer'); } else sc -= 4; }
       if (car.year) sc += Math.max(0, Math.min(6, car.year - 2019));
@@ -156,7 +246,7 @@
     var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
     if (cols.length) { var fam = colourFamily(car); if (cols.indexOf(fam) !== -1) { sc += 10; why.push(fam + ', a colour you like'); } else sc -= 4; if (mustC.length && fam && mustC.indexOf(fam) === -1) ok = false; }
     var notes = [], unconf = false;
-    (p.specs_must || []).forEach(function (k) { var h = hasSpec(car, k); if (h === false) ok = false; else if (h === null && k === CAM) { unconf = true; notes.push(CAM_NOTE); } });
+    var sp = specScore(car, p); sc += sp.sc; sp.why.forEach(function (w) { why.push(w); }); if (!sp.ok) ok = false; sp.notes.forEach(function (n) { notes.push(n); }); if (sp.unconf) unconf = true;
     return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok, notes: notes, unconfirmed: unconf };
   }
   /* Real new car in retailer stock (lookup/new-stock.json). The id 'NEW' + order number is the same one the alerts job
@@ -295,5 +385,5 @@
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE };
+  root.ctMatch = { applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
 })(typeof window !== 'undefined' ? window : globalThis);

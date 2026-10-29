@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
   if (!cu) return json({ error: 'not found' }, 404);
   if (cu.closed_at) return json({ ok: false, reason: 'customer is closed' }, 409);
   if (cu.email_opt_out) return json({ ok: false, reason: 'customer unsubscribed' }, 409);
+  if (!cu.comms_consent_at && !cu.user_id) return json({ ok: false, reason: 'no messaging consent recorded' }, 409);   // staff must tick the consent box first
   if (!cu.email || !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(cu.email)) return json({ ok: false, reason: 'no email' }, 409);
   await init();
   const stock = await (await fetch(SITE + '/lookup/stock.json', { cache: 'no-store' })).json();

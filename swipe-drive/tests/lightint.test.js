@@ -1,0 +1,33 @@
+/* Light interior: Dan's colour rules (stock-core.js lightInterior) behind the one spec list pick sp:intlight (match-core.js) */
+const assert = require('assert'); global.window = global;
+require('../../stock-core.js'); require('../match-core.js');
+const S = window.dsStock, M = window.ctMatch;
+const li = (eq, extra) => S.lightInterior(Object.assign({ listing_id: 'x' }, extra || {}), eq ? { equipment: eq } : null);
+assert.strictEqual(li(['Veganza perforated Oyster']), true);
+assert.strictEqual(li(['Silverstone and Black Bicolour extended Merino leather']), true);
+assert.strictEqual(li(['Vernasca leather Smoke White']), true);
+assert.strictEqual(li(['Dakota leather Ivory White']), true);
+assert.strictEqual(li(['Vernasca leather Canberra Beige']), true);
+assert.strictEqual(li(['Black Perforated Sensatec']), false);
+assert.strictEqual(li(['Vernasca leather Cognac']), false);
+assert.strictEqual(li(['Vernasca leather Tartufo']), false);
+assert.strictEqual(li(['Vernasca leather Mocha']), false);
+assert.strictEqual(li(['Sport Leather Steering Wheel', 'Anthracite Alcantara Headlining', 'Aluminium Hexacube Pale M interior trim']), null);
+assert.strictEqual(li(null, { upholstery: 'Leather' }), null);
+assert.strictEqual(li(null, { upholstery: 'Fabric' }), null);
+assert.strictEqual(li(null), null);
+assert.ok(M.specOptions().some(o => o.key === 'sp:intlight' && o.label === 'Light interior' && o.group === 'Interior'));
+window.ctDetails = { a: { equipment: ['Veganza perforated Oyster'] }, b: { equipment: ['PDC'] }, c: { equipment: ['Black Perforated Sensatec'] } };
+const car = (id, reg) => ({ listing_id: id, reg, model: 'BMW 420i', series: '4 Series', year: 2021, fuel: 'Petrol' });
+const cars = [car('b', 'B1'), car('c', 'C1'), car('a', 'A1')];
+let r = M.rank(cars, { specs: ['sp:intlight'], specs_must: ['sp:intlight'] });
+assert.deepStrictEqual(r.map(x => x.car.reg), ['A1', 'B1'], 'dark C1 removed, unknown B1 kept below the confirmed light car');
+assert.ok(r[1].unconfirmed && r[1].notes.some(n => /Not confirmed: Light interior/.test(n)) && !/[\u2013\u2014]|\s-\s/.test(r[1].notes.join(' ')));
+r = M.rank(cars, { specs: ['sp:intlight'] });
+const sc = Object.fromEntries(r.map(x => [x.car.reg, x.score]));
+assert.ok(sc.A1 > sc.B1 && sc.B1 === sc.C1, 'would like: unknown gets no boost');
+// new stock reads its own option list
+const ns = M.fromNewStock({ order_number: '1', description: '320i', series: '3 Series', options: ['Veganza perforated Oyster'], standard: [] });
+assert.strictEqual(M.hasSpec(ns, 'sp:intlight'), true);
+assert.strictEqual(M.hasSpec(M.fromNewStock({ order_number: '2', description: '320i', series: '3 Series', options: ['Vernasca leather Cognac'], standard: [] }), 'sp:intlight'), false, 'Cognac is not light');
+console.log('lightint tests ok');

@@ -1,8 +1,8 @@
 /* SwipeToDrive service worker: caches the app shell, serves offline.html when
    there is no connection, network first for stock data, and handles push. */
-const V = 'sd-v38';
-const SHELL = ['./', './index.html', './app.css', './app.css?v=36', './app.js', './app.js?v=36', './config.js', './config.js?v=36', './auth-ui.js', './auth-ui.js?v=36', './chat/profile-save.js', './chat/profile-save.js?v=36', './match-core.js', './match-core.js?v=36', './offline.html',
-  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../dsfinance.js', '../dsfinance.js?v=36', '../stock-core.js?v=36', './nostock-ui.js', './nostock-ui.js?v=36', './revvy-flow.js', './revvy-flow.js?v=36', './revvy.js', './revvy.js?v=36', './crm/hub.css', './crm/hub.css?v=36', './crm/hub.js', './crm/hub.js?v=36', './crm/followups-core.js', './crm/followups-core.js?v=36', './crm/followups-ui.js', './crm/followups-ui.js?v=36', '../product-email.js', '../product-email.js?v=36', '../quote-email.js', '../quote-email.js?v=36'];
+const V = 'sd-v39';
+const SHELL = ['./', './index.html', './app.css', './app.css?v=39', './app.js', './app.js?v=39', './config.js', './config.js?v=39', './auth-ui.js', './auth-ui.js?v=39', './chat/profile-save.js', './chat/profile-save.js?v=39', './match-core.js', './match-core.js?v=39', './offline.html',
+  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../dsfinance.js', '../dsfinance.js?v=39', '../stock-core.js?v=39', './crd.js', './crd.js?v=1', './crd.css', './crd.css?v=1', './nostock-ui.js', './nostock-ui.js?v=39', './revvy-flow.js', './revvy-flow.js?v=39', './revvy.js', './revvy.js?v=39', './crm/hub.css', './crm/hub.css?v=39', './crm/hub.js', './crm/hub.js?v=39', './crm/followups-core.js', './crm/followups-core.js?v=39', './crm/followups-ui.js', './crm/followups-ui.js?v=39', '../product-email.js', '../product-email.js?v=39', '../quote-email.js', '../quote-email.js?v=39'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {

@@ -361,3 +361,6 @@ body.ct::before{will-change:transform}
 .ct-tapkey-demo{display:grid!important;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;pointer-events:none}.ct-tapkey-demo button{margin:0;justify-self:start}.ct-tapkey-demo span{font-size:13px;line-height:1.35}
 .ct-tapkey small{display:block;margin-top:6px;opacity:.8}
 .rv-legend{border:2px solid var(--amber,#f2b33d);border-radius:12px;padding:8px 10px;background:rgba(242,179,61,.08);color:inherit;font-weight:600}
+
+.ct-grp{display:block;flex:0 0 100%;width:100%;margin:12px 0 2px;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.ct-grp:first-child{margin-top:2px}
