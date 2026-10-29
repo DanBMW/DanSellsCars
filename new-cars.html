@@ -164,6 +164,8 @@
   }
   .nc [hidden]{display:none!important}
 </style>
+<link rel="stylesheet" href="motion.css?v=1"/>
+<script src="motion.js?v=1" defer></script>
 </head>
 <body class="nc">
 
@@ -217,6 +219,7 @@
     <p>Not factory orders. These are brand new BMWs that are already built and
       unregistered, so there is no waiting for a build slot. Every one shows how
       soon you can have it. Tell me which and I will take it from there.</p>
+    <p>Not here yet? <a class="nc-alert" href="alerts.html?from=new-cars&amp;nu=new">Tell me when it arrives</a>.</p>
   </div>
 
   <div class="nc-bar">
@@ -244,6 +247,7 @@
       <div class="nc-empty" id="ncEmpty" hidden>
         <p>Nothing matches that just yet.</p>
         <p><a href="https://wa.me/447827138197?text=Hi%20Dan%2C%20I%20cannot%20see%20what%20I%20am%20after%20in%20the%20new%20cars.%20Can%20you%20look%20for%20me%3F">Tell me what you are after</a> and I will look across the whole network.</p>
+        <p><a class="nc-alert" href="alerts.html?from=new-cars-empty&amp;nu=new">Tell me when it arrives</a> and you will hear when one comes into stock.</p>
       </div>
       <p class="nc-note" id="ncNote"></p>
     </section>
@@ -929,6 +933,10 @@
     var rows = sortRows(shown());
     document.getElementById('ncGrid').innerHTML = rows.map(card).join('');
     document.getElementById('ncEmpty').hidden = rows.length > 0;
+    /* the alert link carries the one model picked, so the alert page opens on it */
+    var one = (SEL.series || []).length === 1 ? SEL.series[0] : '';
+    Array.prototype.forEach.call(document.querySelectorAll('a.nc-alert'), function(a){
+      a.href = a.href.replace(/&model=[^&]*/, '') + (one ? '&model=' + encodeURIComponent(one) : ''); });
     document.getElementById('ncCount').innerHTML = rows.length === CARS.length
       ? '<b>' + CARS.length + '</b> brand new BMWs in stock'
       : '<b>' + rows.length + '</b> of ' + CARS.length + ' brand new BMWs';

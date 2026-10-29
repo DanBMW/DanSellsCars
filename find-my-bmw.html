@@ -31,6 +31,8 @@
   <script src="aos-media.js?v=2" defer></script>
   <script src="px-lookup.js?v=3" defer></script>
   <script src="fmb.js?v=16" defer></script>
+<link rel="stylesheet" href="motion.css?v=1"/>
+<script src="motion.js?v=1" defer></script>
 </head>
 <body class="fmb">
 
@@ -86,6 +88,7 @@
       <div class="fmb-sent" id="fmbSent" hidden tabindex="-1">
         <h2 id="fmbSentH">Got them. Thank you.</h2>
         <p id="fmbSentP">Your answers and these cars are with me now. I'll come back to you personally, usually the same day.</p>
+        <p class="fmb-std" id="fmbStd" hidden>Your SwipeToDrive profile is ready, with an alert for the cars you picked. <a class="fmb-btn ghost" id="fmbStdGo" href="swipe-drive/">Open SwipeToDrive</a></p>
         <div class="row"><a class="fmb-btn wa" id="fmbSentWa" href="#" target="_blank" rel="noopener">Say hi on WhatsApp</a><a class="fmb-btn ghost" id="fmbSentAll" href="stock.html" hidden>See all matches</a></div>
       </div>
       <div class="fmb-head">
@@ -145,6 +148,7 @@
         <div class="fmb-field"><label for="fPhone">Mobile or WhatsApp number</label><input id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required/></div>
         <div class="fmb-field"><label for="fEmail">Email</label><input id="fEmail" name="email" type="email" autocomplete="email" required/></div>
         <label class="fmb-optin"><input type="checkbox" id="fOptin"/><span>Keep me posted. Occasional BMW news, new model alerts and offers, directly from me. No bulk email, no third parties, unsubscribe any time.</span></label>
+        <label class="fmb-optin" id="fStdBox" hidden><input type="checkbox" id="fStd"/><span>Set me up on SwipeToDrive, Dan&#39;s app, with these answers. I agree that Dan Cane at Hedin Ruxley can contact me by WhatsApp, phone call or app notification when a car that matches them comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me, Stock alerts.</span></label>
         <div class="fmb-hp" aria-hidden="true"><label for="fGotcha">Leave this empty</label><input id="fGotcha" name="_gotcha" type="text" tabindex="-1" autocomplete="off"/></div>
         <div id="fHidden"></div>
         <p class="fmb-ferr" id="fFieldErr" role="alert" hidden></p>

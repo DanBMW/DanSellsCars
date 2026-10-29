@@ -39,6 +39,9 @@ const APP = SITE + '/swipe-drive/';
 // customer emails also need UNSUBSCRIBE_SECRET, so a customer never gets an email without a working signed unsubscribe link
 const CUSTOMER_EMAIL_ENABLED = env('CUSTOMER_EMAIL_ENABLED') === 'true' && env('UNSUBSCRIBE_SECRET').length >= 16;
 const STAFF_EMAIL_ENABLED = !!(env('RESEND_API_KEY') && env('MAIL_FROM'));
+// Brand new stock alerts to customers themselves (push, and email only if CUSTOMER_EMAIL_ENABLED too). Off unless Dan sets
+// CUSTOMER_NEW_STOCK_ALERTS=true; until then new stock matches go to staff only, who message the customer.
+const CUSTOMER_NEW_STOCK = env('CUSTOMER_NEW_STOCK_ALERTS') === 'true';
 const BROKER = 'Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender.';
 
 async function sendEmail(to: string, msg: {subject: string, html: string, text: string}, unsub: string) {
@@ -142,7 +145,7 @@ async function run(db: any, out: any) {
       if (owner) recips.push({ p: owner, staff: true });
       if (cu.user_id && byId.get(cu.user_id)) recips.push({ p: byId.get(cu.user_id), staff: false });
       for (const { p, staff } of recips) {
-        const mine = staff ? hits : hits.filter((h: any) => h.car.kind !== 'new_stock');   // new stock alerts are for staff only
+        const mine = staff || CUSTOMER_NEW_STOCK ? hits : hits.filter((h: any) => h.car.kind !== 'new_stock');   // new stock to customers only when Dan turns it on
         const items = mine.filter((h: any) => !done.has([p.id, cu.id, h.car.reg, 'push'].join('|')));
         if (p.notify_push && items.length) {
           const c = items[0].car;

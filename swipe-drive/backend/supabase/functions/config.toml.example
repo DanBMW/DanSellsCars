@@ -13,3 +13,5 @@ verify_jwt = true
 verify_jwt = false
 [functions.guest-deck]
 verify_jwt = false
+[functions.funnel-lead]
+verify_jwt = false

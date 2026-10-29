@@ -15,6 +15,10 @@
 
   var WA = 'https://wa.me/447827138197';
   var FORM_URL = 'https://formspree.io/f/xqewleog';
+  /* SwipeToDrive from the funnel: off until Dan has run the lead SQL and deployed funnel-lead. While off the box is
+     hidden and nothing extra is sent. The funnel itself is unchanged either way. */
+  var STD_LEADS = window.DS_STD_LEADS === true;
+  var STD_URL = 'https://dexqyqrbelmdjdhxaboq.supabase.co/functions/v1/funnel-lead';
   var KEY = 'fmbV3', TTL = 7 * 864e5;
   var GBP = '\u00a3';
   var RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1005,6 +1009,7 @@
       track('fmb_lead_sent', { match_count: RESULT ? RESULT.nStrict : 0, interest: A.interest || 'either' });
       markComplete('form');
       sending = false; btn.disabled = false;
+      stdLead();
       afterContact();
     }, function (x) {
       LEAD.state = 'error'; sending = false;
@@ -1015,6 +1020,22 @@
       showGateErr('contact');
     });
   }
+
+  /* After the enquiry has gone through, and only with the SwipeToDrive box ticked: create their profile in the
+     background (server side, validated and rate limited) and offer the claim link. A failure changes nothing. */
+  function stdLead() {
+    if (!STD_LEADS || !$('fStd') || !$('fStd').checked) return;
+    var body = { name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fEmail').value.trim(), consent: true, source: 'find-my-bmw',
+      _gotcha: $('fGotcha') ? $('fGotcha').value : '',
+      answers: { models: A.models, interest: A.interest, fuel: A.fuel, body: A.body, pay: A.pay, mo: A.mo, dep: A.dep, cash: A.cash, extras: A.extras, must: A.must, colours: A.colours, miles: A.miles, when: A.when } };
+    track('fmb_std_start', {});
+    fetch(STD_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); }).then(function (j) {
+        if (!j || !j.ok || !j.url) { track('fmb_std_failed', { reason: String(j && j.reason || 'none').slice(0, 30) }); return; }
+        $('fmbStdGo').href = j.url; $('fmbStd').hidden = false; track('fmb_std_ready', { claim: !!j.claim }); })
+      ['catch'](function () { track('fmb_std_failed', { reason: 'network' }); });
+  }
+  if (STD_LEADS && $('fStdBox')) $('fStdBox').hidden = false;
 
   /* ---------- the part exchange steps (in the same sheet) ---------- */
   var MILES = ['Under 20k', '20k to 40k', '40k to 60k', '60k to 80k', '80k to 100k', 'Over 100k'];

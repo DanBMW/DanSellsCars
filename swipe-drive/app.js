@@ -312,7 +312,14 @@
     ({ profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites, buys: showBuys, followups: hubShow, quote: hubShow, present: hubShow }[h] || function () {})();
   }
   function hubShow() { if (window.ctHub && S.session && S.session.role === 'admin') window.ctHub.show(location.hash.slice(1)); }
-  window.addEventListener('hashchange', route);
+  /* Android style shared axis slide between tabs, where the browser supports view transitions. Moving right
+     along the bottom bar slides left, and back the other way. Off with reduced motion. */
+  var NAV_ORDER = ['discover', 'matches', 'team', 'followups', 'me'], lastScreen = null;
+  function routeAnimated() { var h = (location.hash || '').slice(1), reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!document.startViewTransition || reduce || !S.session || h === lastScreen || isAuthHash(h)) { lastScreen = h; return route(); }
+    var a = NAV_ORDER.indexOf(lastScreen), b = NAV_ORDER.indexOf(h); document.documentElement.dataset.moDir = a !== -1 && b !== -1 && b < a ? 'back' : ''; lastScreen = h;
+    try { var vt = document.startViewTransition(route), q = function () {}; vt.ready['catch'](q); vt.finished['catch'](q); vt.updateCallbackDone['catch'](q); } catch (e) { route(); } }
+  window.addEventListener('hashchange', routeAnimated);
 
   /* ---------------- sign in ---------------- */
   function initSignin() {
@@ -354,9 +361,27 @@
     return chatPending(sess).then(function () { return store.customers(); }).then(function (list) {
       if (!staff) S.cust = list[0] || null;
       else { var last = sessionStorage.getItem('ctActing'); S.cust = list.find(function (c) { return c.id === last; }) || null; }
-      return loadCust();
+      return (staff ? Promise.resolve() : alertPending()).then(loadCust);
     }).then(function () { resyncPush(); if (!location.hash || location.hash === '#signin') location.hash = staff ? 'team' : (S.cust && S.cust.name ? 'discover' : 'profile'); else route(); iosNudge(); });
   }
+  /* "Tell me when it arrives" (alerts.html): the alert waits on this device until the customer has signed in,
+     then joins their profile as a must have model (and spec). Their own consent is recorded with it. */
+  function alertPending() { var A = window.AlertSave, a = A && A.get(); if (!a) return Promise.resolve();
+    var patch = A.build(a, S.cust || {}), row = Object.assign({}, S.cust || {}, patch);
+    var CC = ['comms_consent_at', 'comms_consent_text'];
+    return store.saveCustomer(row).catch(function (err) { if (!/comms_consent/.test(String((err && (err.message || err.details)) || ''))) throw err;
+        var r2 = Object.assign({}, row); CC.forEach(function (k) { delete r2[k]; }); return store.saveCustomer(r2); })
+      .then(function (saved) { S.cust = saved; S.deck = []; A.clear(); S.alertJust = a; track('alert_saved', { model: a.model, specs: a.specs.length, source: a.source });
+        if (!location.hash || location.hash === '#signin') location.hash = saved && saved.name ? 'discover' : 'profile'; setTimeout(alertSheet, 600); })
+      .catch(function (e) { console.warn('alert save', e); toast('Your alert could not be saved just now. Message Dan and he will set it up.'); }); }
+  function alertSheet() { var a = S.alertJust; if (!a) return; S.alertJust = null; var who = waWho() || 'Dan';
+    var what = a.model + (a.specs.length ? ' with ' + a.specs.map(function (k) { return M.specLabel ? M.specLabel(k) : k; }).join(', ') : '');
+    var o = document.createElement('div'); o.className = 'ct-sheet'; o.id = 'alertSheet'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+    o.innerHTML = '<div class="ct-sheet-in"><h2>Your alert is saved</h2><p>' + esc(what) + '.</p><p class="ct-sub">When one comes into stock that fits, SwipeToDrive flags it to ' + esc(who) + ' and ' + esc(who) + ' messages you. Turn on notifications so the app can tell you directly as well.</p>' +
+      '<p class="ct-sub">The cars that fit right now are in Discover. To stop an alert at any time: Me, then Stock alerts, then Stop this alert, or reply STOP to Dan on WhatsApp.</p>' +
+      '<div class="ct-row"><a class="ct-btn ct-btn-big" href="#me" data-alert-x>Turn on notifications</a></div>' +
+      '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + who + ', I have set an alert on SwipeToDrive for the ' + what + '. Can you keep an eye out for me?') + '">WhatsApp ' + esc(who) + '</a><button class="ct-btn ct-btn-ghost" type="button" data-alert-x>See the cars that fit now</button></div></div>';
+    o.addEventListener('click', function (e) { if (e.target.closest('[data-alert-x]') || e.target === o) o.remove(); }); document.body.appendChild(o); }
   /* alerts already allowed: quietly refresh the subscription so a key change never leaves a phone without alerts */
   function resyncPush() { try { if (!LIVE || !platform.pushSupported() || Notification.permission !== 'granted' || !CFG.VAPID_PUBLIC_KEY) return;
     platform.subscribePush().then(function (sub) { return store.savePush(sub); }).catch(function (e) { console.warn('SwipeToDrive push resync', e); }); } catch (e) {} }
@@ -911,6 +936,15 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   }
 
   /* ---------------- me ---------------- */
+  /* Saved "Tell me when it arrives" alerts, each with its own Stop button (desk.alerts) */
+  function myAlerts() { var box = $('#myAlerts'); if (!box) return; var l = (S.cust && S.cust.desk && S.cust.desk.alerts) || []; box.hidden = !l.length; if (!l.length) { box.innerHTML = ''; return; }
+    box.innerHTML = '<h3>Stock alerts</h3>' + l.map(function (a, i) { return '<div class="ct-enq-r"><div><b>' + esc(a.model) + '</b><span>' + esc((a.specs || []).map(function (k) { return M.specLabel ? M.specLabel(k) : k; }).join(', ') || 'Any spec') + '</span></div><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-stop-alert="' + i + '">Stop this alert</button></div>'; }).join('');
+    box.onclick = function (e) { var b = e.target.closest('[data-stop-alert]'); if (!b) return; var i = +b.getAttribute('data-stop-alert'), desk = Object.assign({}, S.cust.desk), gone = desk.alerts[i];
+      desk.alerts = desk.alerts.filter(function (_, j) { return j !== i; }); var row = Object.assign({}, S.cust, { desk: desk });
+      if (gone) { row.models_must = (row.models_must || []).filter(function (m) { return m !== gone.model; }); }
+      delete row.px_valuation_set_by_name; if (LIVE) { delete row.px_valuation_set_by; delete row.px_valuation_set_by_user; }
+      b.disabled = true; store.saveCustomer(row).then(function (s) { S.cust = s; S.deck = []; myAlerts(); toast('Alert stopped'); track('alert_stopped', {}); })
+        ['catch'](function (err) { b.disabled = false; toast(plainErr(err)); }); }; }
   function showMe() {
     var c = S.cust || {}, staff = S.session.role !== 'customer', none = staff && !S.cust;
     $$('[data-cust-only]').forEach(function (e) { e.hidden = none; });
@@ -926,7 +960,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       /* only say On when this phone really has permission */
       if ((v === 'push' || v === 'both') && (!platform.pushSupported() || Notification.permission !== 'granted')) v = v === 'both' ? 'email' : 'off';
       notifyState(v); });
-    termsBox();
+    termsBox(); myAlerts();
     installInfo();
   }
   function notifyState(v) { $$('#notifySeg button').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-v') === v ? 'true' : 'false'); });
@@ -993,11 +1027,29 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
 
   /* ---------------- staff ---------------- */
   function setActing(id) { return store.customers().then(function (l) { S.cust = l.find(function (c) { return c.id === id; }) || null; sessionStorage.setItem('ctActing', id); S.deck = []; return loadCust(); }); }
+  /* New enquiries: Find my BMW and Tell me when it arrives sign ups (customers.desk.enquiry) nobody has actioned yet */
+  var ENQ_SRC = { 'find-my-bmw': 'Find my BMW', alerts: 'Stock alert', home: 'Stock alert, homepage', 'new-cars': 'Stock alert, new cars', 'new-cars-empty': 'Stock alert, new cars', stock: 'Stock alert, used stock', 'stock-empty': 'Stock alert, used stock' };
+  function enqSource(s) { s = String(s || '').replace(/^alert:/, ''); return ENQ_SRC[s] || (s ? 'Stock alert, ' + s : 'Website'); }
+  function enqWhen(at) { var d = new Date(at); if (isNaN(d)) return ''; var mins = Math.round((Date.now() - d) / 60000);
+    return mins < 60 ? (mins <= 1 ? 'just now' : mins + ' minutes ago') : mins < 1440 ? Math.round(mins / 60) + (Math.round(mins / 60) === 1 ? ' hour ago' : ' hours ago') : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
+  function openEnquiries(list) { return (list || []).filter(function (c) { var e = c.desk && c.desk.enquiry; return e && !e.actioned_at && !c.closed_at; })
+    .sort(function (a, b) { return String(b.desk.enquiry.at).localeCompare(String(a.desk.enquiry.at)); }); }
+  function paintEnq(list) { var box = $('#enqBox'); if (!box) return; var rows = openEnquiries(list); S.enq = rows; box.hidden = !rows.length; if (!rows.length) { box.innerHTML = ''; return; }
+    box.innerHTML = '<h2 id="enqH">New enquiries <span class="ct-pill hot">' + rows.length + '</span></h2>' + rows.map(function (c) { var e = c.desk.enquiry;
+      return '<div class="ct-enq-r" data-eid="' + esc(c.id) + '"><div><b>' + esc(e.first_name || (c.name || '').split(' ')[0] || 'New customer') + '</b><span>' + esc(enqSource(e.source)) + (e.repeat ? ', again' : '') + ' \u00b7 ' + esc(enqWhen(e.at)) + '</span></div>' +
+        '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-enq="open">Open card</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-enq="done">Mark as actioned</button></div></div>'; }).join(''); }
+  function enqClick(e) { var b = e.target.closest('[data-enq]'); if (!b) return; var id = b.closest('[data-eid]').getAttribute('data-eid'), c = (S.enq || []).find(function (x) { return x.id === id; }); if (!c) return;
+    if (b.getAttribute('data-enq') === 'open') { S.custTab = 'open'; var card = document.querySelector('#custList [data-cid="' + id + '"]');
+      if (card) { card.scrollIntoView({ block: 'center', behavior: 'smooth' }); card.classList.add('ct-flash'); setTimeout(function () { card.classList.remove('ct-flash'); }, 2200); } track('enquiry_open'); return; }
+    b.disabled = true; var desk = Object.assign({}, c.desk || {}); desk.enquiry = Object.assign({}, desk.enquiry, { actioned_at: new Date().toISOString(), actioned_by_name: (S.session && S.session.name) || '' });
+    var row = Object.assign({}, c, { desk: desk }); delete row.px_valuation_set_by_name; if (LIVE) { delete row.px_valuation_set_by; delete row.px_valuation_set_by_user; } S.cust = c; store.saveCustomer(row).then(function () { toast('Marked as actioned'); track('enquiry_actioned'); showTeam(); })
+      .catch(function (err) { b.disabled = false; toast(plainErr(err)); }); }
   function showTeam() {
     var admin = S.session.role === 'admin';
     $('#teamTitle').textContent = admin ? 'All customers' : 'My customers'; $('#ownerFilterWrap').hidden = !admin; $('#invitesLink').hidden = !admin;
     Promise.all([store.customers(), store.staffList(), demoDb && store.mode === 'demo' ? Promise.resolve(demoDb().swipes || {}) : Promise.resolve(null)]).then(function (r) {
       var list = r[0], staff = r[1], sw = r[2] || {}, names = {}; staff.forEach(function (s) { names[s.id] = s.name || s.email; });
+      paintEnq(list);
       var of = $('#ownerFilter'); if (admin) { var cur = of.value; of.innerHTML = '<option value="">Everyone</option><option value="none">Dan direct</option>' + staff.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.name || s.email) + '</option>'; }).join(''); of.value = cur; }
       var fv = admin ? of.value : ''; list = list.filter(function (c) { return !fv || (fv === 'none' ? !c.owner_staff_id : c.owner_staff_id === fv); });
       var arch = S.custTab === 'archived', nArch = list.filter(function (c) { return c.closed_at; }).length; $('#archN').textContent = nArch ? String(nArch) : '';
@@ -1045,6 +1097,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
         undo((c.name || 'Customer') + ' closed', function () { return store.setClosed(c.id, false).then(function () { toast((c.name || 'Customer') + ' reopened'); showTeam(); }); }); })
         .catch(function (err) { btn.disabled = false; toast(plainErr(err)); }); });
     $('#undoBtn').addEventListener('click', function () { var f = S.undoFn; $('#undoToast').hidden = true; clearTimeout(S.undoT); S.undoFn = null; if (f) f().catch(function (err) { toast(plainErr(err)); }); });
+    if ($('#enqBox')) $('#enqBox').addEventListener('click', enqClick);
     $('#custList').addEventListener('click', function (e) { if (e.target.closest('[data-cancel-p]')) return purchaseClick(e); var b = e.target.closest('[data-act]'); if (!b) return; var id = b.closest('[data-cid]').getAttribute('data-cid'), act = b.getAttribute('data-act');
       if (act === 'close') { var cc = null; store.customers().then(function (l) { cc = l.find(function (x) { return x.id === id; }); if (!cc) return; S.closing = cc;
           $('#closeTitle').textContent = 'Close ' + (cc.name || 'this customer') + '?';
@@ -1122,6 +1175,8 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(function (r) { window.__ctSW = r.scope; }).catch(function () {});
   initSignin(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites(); initBuys();
   var dl = platform.deepLink();
+  (function () { var a = window.AlertSave && window.AlertSave.get(), el = $('#alertNote'); if (!a || !el) return;
+    el.hidden = false; el.textContent = 'One step left. Enter your email to save your alert for the ' + a.model + '. If you are new, you will set a password or use the link we email you.'; })();
   (LIVE ? supa.init() : Promise.resolve())
     .then(function () { if (LIVE) { mountPw(); sb.auth.onAuthStateChange(function (ev) { if (ev === 'PASSWORD_RECOVERY') showRecover(); if (ev === 'SIGNED_IN' && !S.session) store.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); } return loadStock(); })
     .then(function () {

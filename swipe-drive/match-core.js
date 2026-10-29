@@ -144,7 +144,9 @@
   function modelFit(car, p) {
     var low = function (a) { return (a || []).map(function (m) { return String(m).toLowerCase(); }); };
     var must = low(p.models_must), all = low(p.models).concat(must); if (!all.length) return { sc: 0, ok: true };
-    var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase(), has = function (m) { return name.indexOf(m) !== -1; };
+    var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase(),
+      /* whole names only: an M2 alert must not match an M235 */
+      has = function (m) { return new RegExp('(^|[^a-z0-9])' + m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])').test(name); };
     if (must.length && must.some(has)) return { sc: 26, ok: true, why: 'A must have model' };
     if (must.length) return { sc: -6, ok: false };
     if (all.some(has)) return { sc: 22, ok: true, why: 'A model you picked' };
