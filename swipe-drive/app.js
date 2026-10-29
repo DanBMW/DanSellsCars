@@ -246,6 +246,9 @@
     var series = (name.match(/^(\d Series|i\d|iX\d?|X\d|XM|M\d)/i) || [name])[0];
     return { kind: 'new', name: name, reg: 'NEW-' + name.replace(/[^A-Za-z0-9]+/g, '-').toUpperCase(), model: 'BMW ' + name, series: series, group: group, bodyKeys: b, fuelKeys: f };
   }
+  /* colour families present in stock, the same list the profile shows */
+  function colourList() { var fams = {}; (S.cars || []).forEach(function (car) { var fm = M.colourFamily(car); if (fm) fams[fm] = 1; });
+    var l = M.FAMILY.map(function (x) { return x[0]; }).filter(function (x) { return fams[x]; }); if (fams.Other) l.push('Other'); return l.length ? l : M.FAMILY.map(function (x) { return x[0]; }); }
   function allModels() {
     var seen = {}, out = [];
     S.cars.forEach(function (c) { if (c.series && !seen[c.series]) { seen[c.series] = 1; out.push(c.series); } });
@@ -554,7 +557,7 @@
   /* the profile's sections open when they already hold an answer, so a returning customer sees what they chose */
   function openSections(c) { var sec = function (k) { return $('#profileForm details.ct-sec[data-sec="' + k + '"]'); };
     sec('budget').open = !!(c.monthly_gbp || c.cash_gbp || c.deposit_gbp);
-    sec('car').open = !!((c.fuel && c.fuel !== 'open') || (c.body && c.body !== 'any') || (c.models || []).length || (c.colours || []).length || (c.specs || []).length || (c.new_used && c.new_used !== 'both'));
+    sec('car').open = (S.session && S.session.role === 'customer') || !!((c.fuel && c.fuel !== 'open') || (c.body && c.body !== 'any') || (c.models || []).length || (c.colours || []).length || (c.specs || []).length || (c.new_used && c.new_used !== 'both'));
     sec('px').open = !!(c.px && c.px.reg);
     sec('more').open = !!(c.desk && Object.keys(c.desk).length);
   }
@@ -1088,5 +1091,5 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
     .catch(function (e) { console.warn('SwipeToDrive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
-  window.ctDebug = { S: S, store: store, safePrefs: safePrefs, platform: platform, route: route };
+  window.ctDebug = { S: S, store: store, safePrefs: safePrefs, platform: platform, route: route, allModels: allModels, DESK: DESK, colourList: colourList };
 })();

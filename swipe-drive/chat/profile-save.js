@@ -7,7 +7,8 @@ function n(v){if(v==null)return null;var m=String(v).replace(/,/g,"").match(/(\d
 var ANNUAL={"Under 6k":5000,"6k to 10k":8000,"10k to 15k":12500,"Over 15k":18000};
 var WHEN={"ASAP":"now","Next month":"month","In 3 months":"quarter","Just looking":"browsing"};
 function real(v){return v!=null&&v!==""&&!/^(Skipped|Not sure|Not sure yet|Rather not say|No preference)$/.test(String(v))}
-function empty(v){return v==null||v===""||(Array.isArray(v)&&!v.length)}
+/* the profile defaults (open fuel, any body, new or used, monthly) count as not chosen yet, so Revvy answers can fill them */
+function empty(v){return v==null||v===""||(Array.isArray(v)&&!v.length)||v==="open"||v==="any"||v==="both"}
 function build(a,existing,email){a=a||{};var ex=existing||{},p={},desk=Object.assign({},ex.desk||{});
  function put(k,v){if(v!=null&&v!==""&&!(Array.isArray(v)&&!v.length)&&empty(ex[k]))p[k]=v}
  if(real(a.name))put("name",String(a.name).slice(0,40));
@@ -18,7 +19,7 @@ function build(a,existing,email){a=a||{};var ex=existing||{},p={},desk=Object.as
  if(mm.length||ml.length){if(empty(ex.models)){p.models=mm.concat(ml);if(mm.length)p.models_must=mm}}
  else if(real(a.model)&&!/^(Must have|Would like):/.test(a.model))put("models",[a.model]);
  var am=ANNUAL[a.annual]!=null?ANNUAL[a.annual]:(real(a.annual)?n(a.annual):null);if(am)put("annual_mileage",am);
- if(a.pay=="Cash"){if(empty(ex.budget_type))p.budget_type="cash";if(a._n_cash)put("cash_gbp",a._n_cash)}
+ if(a.pay=="Cash"){if(empty(ex.budget_type)||(!ex.monthly_gbp&&!ex.cash_gbp))p.budget_type="cash";if(a._n_cash)put("cash_gbp",a._n_cash)}
  else if(a._n_budget){if(empty(ex.budget_type))p.budget_type="monthly";put("monthly_gbp",a._n_budget)}
  if(real(a.dep)){var d=/^(£0|None)/.test(a.dep)?0:n(a.dep);if(d!=null)put("deposit_gbp",d)}
  var noCar=a.cur=="No current car";

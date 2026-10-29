@@ -42,10 +42,13 @@ async def run(b, mobile):
     log = await pg.text_content('#g-log'); ok('l***@e***.com' in log and 'lorna@example.com' not in log, t + ': email shown only masked'); await shot('5-revvy-confirm')
     await pg.click('.g-chip >> text=It has changed'); await pg.wait_for_selector('#g-in:not([hidden])'); await pg.fill('#g-inp', 'nope'); await pg.press('#g-inp', 'Enter'); await pg.wait_for_timeout(200)
     ok('does not look right' in await pg.text_content('#g-log'), t + ': bad email caught'); await pg.fill('#g-inp', 'lorna.new@example.com'); await pg.press('#g-inp', 'Enter')
-    for k in range(7):
-        await pg.wait_for_selector('#g-tray .g-chip >> text=Yes, still right'); await pg.click('#g-tray .g-chip >> text=Yes, still right'); await pg.wait_for_timeout(120)
+    for k in range(40):
+        await pg.wait_for_timeout(150); last = await pg.locator('#g-log .g-m.bot').last.text_content()
+        if 'Anything else Dan' in last: break
+        for lab in ['Yes, still right', 'Skip']:
+            if await pg.locator('#g-tray .g-chip', has_text=lab).count(): await pg.locator('#g-tray .g-chip', has_text=lab).first.click(); break
     log = await pg.text_content('#g-log')
-    ok('For models, Dan has you down for 3 Series, X3' in log and 'Petrol, Hybrid, Diesel' in log and '450' not in log and '£' not in log, t + ': preferences shown one by one, no budget figures')
+    ok('For models, you have' in log and '3 Series, X3' in log and 'Petrol, Hybrid, Diesel' in log and '450' not in log and '£' not in log, t + ': every requirement walked one by one, no budget figures')
     await pg.wait_for_selector('#g-tray .g-chip >> text=Skip'); await pg.click('#g-tray .g-chip >> text=Skip'); await pg.wait_for_selector('text=Sign in to SwipeToDrive >> nth=-1'); await pg.wait_for_timeout(300)
     st = json.load(urllib.request.urlopen(MOCK + '/_state'))['confirm']; ok(st['proposed'].get('email') == 'lorna.new@example.com' and st['confirmed']['phone'] and st['confirmed']['prefs'] and not st['filled'], t + ': changed email held for Dan, confirmations saved')
     ok('Dan will check the new email' in await pg.text_content('#g-log'), t + ': tells them Dan will check the change'); await shot('6-revvy-done')

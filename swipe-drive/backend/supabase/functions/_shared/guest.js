@@ -49,17 +49,35 @@ const FUEL = { petrol: 'Petrol', diesel: 'Diesel', hybrid: 'Hybrid', electric: '
 export const BODY_OPTS = [['any', 'Any'], ['small', 'Small and easy'], ['hatchback', 'Hatchback'], ['saloon', 'Saloon'], ['estate', 'Touring'], ['suv', 'SUV'], ['family', 'Family space'], ['coupe', 'Coupe or convertible']];
 export const NEWUSED_OPTS = [['used', 'Used'], ['new', 'Brand new'], ['both', 'Either']];
 export const FUEL_OPTS = [['petrol', 'Petrol'], ['diesel', 'Diesel'], ['hybrid', 'Hybrid'], ['electric', 'Electric']];
+/* the customer facing desk questions a guest may answer (choices only, nothing personal); same keys as DESK in app.js */
+export const DESK_OPTS = {
+  fund: [['pcp', 'BMW Select / PCP'], ['hp', 'HP'], ['other', 'Other'], ['savings', 'Savings'], ['loan', 'Loan'], ['motability', 'Motability']],
+  keep: [['24', '24 months'], ['36', '36 months'], ['48', '48 months'], ['other', 'Other']],
+  when: [['now', 'As soon as possible'], ['month', 'Within a month'], ['quarter', 'In the next few months'], ['browsing', 'Just browsing for now']],
+  people: [['one', 'Just me'], ['two', 'Two'], ['four', 'Up to four'], ['five', 'Five or more'], ['seven', 'Needs 7 seats']],
+  boot: [['small', 'Not much'], ['normal', 'A normal boot'], ['big', 'A big boot'], ['tow', 'Tows']],
+  who: [['me', 'Mostly me'], ['partner', 'Partner or someone else'], ['family', 'Shared around the family'], ['company', 'Company or pool car']],
+  life: [['family', 'School runs and family life'], ['commute', 'Daily commute'], ['miles', 'Big motorway miles'], ['thrill', 'Driving for fun'], ['style', 'Turning heads'], ['open', 'A bit of everything']],
+  charge: [['yes', 'Can charge at home'], ['no', 'Not easily'], ['notsure', 'Not sure yet']] };
+const DESK_NAMES = { fund: 'Payment type', keep: 'Keeping it', when: 'Timescale', people: 'Seats', boot: 'Boot', who: 'Main driver', life: 'A typical week', charge: 'Home charging' };
 export function prefOptions(M, cars) {
   const seen = {}, models = [];
   (cars || []).forEach(c => { if (c.series && !seen[c.series]) { seen[c.series] = 1; models.push(c.series); } });
   models.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
   return { models, colours: M.FAMILY.map(x => x[0]), specs: M.specOptions().map(o => [o.key, o.label]), fuel: FUEL_OPTS,
-    mileage: Object.keys(M.MILEAGE_BANDS).map(k => [k, M.MILEAGE_BANDS[k].label]), body: BODY_OPTS, new_used: NEWUSED_OPTS };
+    mileage: Object.keys(M.MILEAGE_BANDS).map(k => [k, M.MILEAGE_BANDS[k].label]), body: BODY_OPTS, new_used: NEWUSED_OPTS, desk: DESK_OPTS };
 }
 export function prefValues(c, M) {
   const arr = v => Array.isArray(v) ? v.slice() : [];
   return { models: arr(c.models), models_must: arr(c.models_must), colours: arr(c.colours).filter(x => x !== 'Any'), colours_must: arr(c.colours_must), specs: arr(c.specs), specs_must: arr(c.specs_must),
-    fuel: M.fuelList(c.fuel), mileage_bands: arr(c.mileage_bands), body: c.body || 'any', new_used: c.new_used || 'both' };
+    fuel: M.fuelList(c.fuel), mileage_bands: arr(c.mileage_bands), body: c.body || 'any', new_used: c.new_used || 'both',
+    annual_mileage: c.annual_mileage > 0 ? Math.round(c.annual_mileage) : null, ...deskValues(c.desk) };
+}
+function deskValues(d) { d = d || {}; const o = {};
+  Object.keys(DESK_OPTS).forEach(k => { const ok = DESK_OPTS[k].map(x => x[0]);
+    if (k === 'fund') { const a = (Array.isArray(d.fund) ? d.fund : []).filter(x => ok.includes(x)); if (a.length) o['desk.fund'] = a; }
+    else if (ok.includes(String(d[k]))) o['desk.' + k] = String(d[k]); });
+  return o;
 }
 /* validate a guest's preference answers against the option lists; returns the patch and a plain English change list */
 export function cleanPrefs(body, cur, opts) {
@@ -73,6 +91,13 @@ export function cleanPrefs(body, cur, opts) {
   if ('fuel' in body) { const f = pick(body.fuel, keys(opts.fuel)); if (f && JSON.stringify([...f].sort()) !== JSON.stringify([...cur.fuel].sort())) { patch.fuel = f.join(',') || 'open'; changes.push('Fuel: ' + (f.map(x => lab(opts.fuel, x)).join(', ') || 'Open minded')); } }
   if ('mileage_bands' in body) { const b = pick(body.mileage_bands, keys(opts.mileage)); if (b && JSON.stringify([...b].sort()) !== JSON.stringify([...cur.mileage_bands].sort())) { patch.mileage_bands = b; changes.push('Mileage: ' + (b.map(x => lab(opts.mileage, x)).join(', ') || 'Any')); } }
   ['body', 'new_used'].forEach(k => { if (k in body && keys(opts[k]).includes(String(body[k])) && String(body[k]) !== cur[k]) { patch[k] = String(body[k]); changes.push((k === 'body' ? 'Body or size: ' : 'New or used: ') + lab(opts[k], patch[k])); } });
+  if ('annual_mileage' in body) { const n = Math.round(+body.annual_mileage); if (isFinite(n) && n >= 0 && n <= 100000 && n !== cur.annual_mileage) { patch.annual_mileage = n; changes.push('Miles a year: ' + n.toLocaleString('en-GB')); } }
+  const D = opts.desk || DESK_OPTS, desk = {};
+  Object.keys(D).forEach(k => { const bk = 'desk.' + k; if (!(bk in body)) return;
+    if (k === 'fund') { const a = pick(body[bk], keys(D.fund), 6); if (a && JSON.stringify([...a].sort()) !== JSON.stringify([...(cur[bk] || [])].sort())) { desk.fund = a; changes.push('Payment type: ' + (a.map(x => lab(D.fund, x)).join(', ') || 'none')); } }
+    else if (keys(D[k]).includes(String(body[bk])) && String(body[bk]) !== cur[bk]) { desk[k] = String(body[bk]); changes.push(DESK_NAMES[k] + ': ' + lab(D[k], desk[k])); } });
+  if ('desk.spec_notes' in body) { const t = String(body['desk.spec_notes'] || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 300); if (t) { desk.spec_notes_add = t; changes.push('Gearbox, age, interior or other needs: ' + t); } }
+  if (Object.keys(desk).length) patch.desk = desk;
   return { patch, changes };
 }
 export function guestHints(c, M) {
@@ -110,6 +135,8 @@ export async function guestHandle(body, deps) {
   if (act === 'hints') { const cars = await loadCars(); return { status: 200, body: Object.assign(guestHints(cu, M), { values: prefValues(cu, M), options: prefOptions(M, cars) }) }; }
   if (act === 'prefs') {
     const cars = await loadCars(), r = cleanPrefs(body || {}, prefValues(cu, M), prefOptions(M, cars));
+    if (r.patch.desk) { const d = Object.assign({}, cu.desk || {}), add = r.patch.desk.spec_notes_add; delete r.patch.desk.spec_notes_add; Object.assign(d, r.patch.desk);
+      if (add) d.spec_notes = ((d.spec_notes ? d.spec_notes + '\n' : '') + 'Revvy: ' + add).slice(-1500); r.patch.desk = d; }
     if (Object.keys(r.patch).length) await db.savePrefs(cu.id, r.patch, r.changes);
     return { status: 200, body: { ok: true, changed: r.changes.length } };
   }

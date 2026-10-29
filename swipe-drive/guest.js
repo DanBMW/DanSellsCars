@@ -106,23 +106,17 @@
           paint(); g.appendChild(b); });
         tr.appendChild(g); var d = document.createElement('button'); d.type = 'button'; d.className = 'g-chip go g-done'; d.textContent = 'Done'; tr.appendChild(d);
         d.onclick = function () { var o = [], m = []; Object.keys(st).forEach(function (k) { if (st[k]) o.push(k); if (st[k] === 'must') m.push(k); }); tr.innerHTML = ''; done(o, m); }; }
-      var STEPS = [
-        { k: 'models', mk: 'models_must', kind: 'tri', l: O.models, q: 'models', none: 'any model' },
-        { k: 'colours', mk: 'colours_must', kind: 'tri', l: O.colours, q: 'colours', none: 'any colour' },
-        { k: 'specs', mk: 'specs_must', kind: 'tri', l: O.specs, q: 'spec', none: 'any spec' },
-        { k: 'fuel', kind: 'multi', l: O.fuel, q: 'fuel', none: 'any fuel' },
-        { k: 'mileage_bands', kind: 'multi', l: O.mileage, q: 'current mileage', none: 'any mileage' },
-        { k: 'body', kind: 'single', l: O.body, q: 'body or size', none: 'any body style' },
-        { k: 'new_used', kind: 'single', l: O.new_used, q: 'new or used', none: 'new or used' }];
-      function prefs() { bot("Now your car preferences. I'll go through them one at a time."); step(0); }
-      function step(n) { var x = STEPS[n]; if (!x) return extra(); if (!x.l || !x.l.length) return step(n + 1);
-        var on = x.kind === 'single' ? [V[x.k]] : (V[x.k] || []), must = x.mk ? (V[x.mk] || []) : [];
-        var txt = x.kind === 'tri' ? triText(x.l, on, must) : x.kind === 'single' ? (on[0] && on[0] !== 'any' && on[0] !== 'both' ? low(lab(x.l, on[0])) : '') : names(x.l, on);
-        bot('For ' + x.q + ', Dan has ' + (txt ? 'you down for ' + (x.kind === 'tri' ? txt.charAt(0).toLowerCase() + txt.slice(1) : txt) : 'you open to ' + x.none) + '. Still right?');
-        chips([{ t: 'Yes, still right', go: 1, f: function () { step(n + 1); } }, { t: 'Change it', f: function () { bot(x.kind === 'tri' ? 'Tap to choose. Once for would like, twice for must have.' : x.kind === 'single' ? 'Pick one.' : 'Pick as many as you like, or none for any.');
-          picker(x.kind, x.l, on, must, function (o, m) { if (x.kind === 'single') { if (o[0]) P[x.k] = o[0]; } else { P[x.k] = o; if (x.mk) P[x.mk] = m; } changed = true;
-            var t2 = x.kind === 'tri' ? triText(x.l, o, m, 1) : x.kind === 'single' ? lab(x.l, o[0]) : names(x.l, o); me(t2 || 'None'); step(n + 1); }); } }]); }
-      function extra() { bot('Anything else Dan should know? A budget change, timing, anything.'); ask('Optional note', function (v) { return v.length > 500 ? 'A bit shorter please.' : ''; }, function (v) { A.prefs_note = v; A.prefs_ok = !changed && !v; send(); }, true); }
+      /* every requirement a guest can safely set, one by one, with the shared Revvy walkthrough (revvy-flow.js).
+         Budget, contact details, current car and part exchange are never shown or set from a link that could be forwarded. */
+      var OK = { models: 1, specs: 1, colours: 1, fuel: 1, body: 1, new_used: 1, mileage_bands: 1, annual_mileage: 1, 'desk.spec_notes': 1 };
+      Object.keys(O.desk || {}).forEach(function (k) { OK['desk.' + k] = 1; });
+      var FIELDS = window.RevvyFlow.fields({ models: O.models, specs: O.specs, colours: O.colours, desk: O.desk || {} }, { px: false }).filter(function (f) { return OK[f.k]; });
+      function prefs() { bot("Now everything you're looking for. I'll go through it one thing at a time, skip anything you like.");
+        $('#g-in').hidden = true;
+        window.RevvyFlow.run({ log: $('#g-log'), tray: $('#g-tray'), values: V, fields: FIELDS,
+          cls: { bot: 'g-m bot', me: 'g-m me', chip: 'g-chip', go: 'go', legend: 'g-legend', picks: 'g-picks', pick: 'g-pick', row: 'g-row', form: 'g-form', input: 'g-inp2', sum: 'g-sum' },
+          save: function (p) { Object.assign(P, p); changed = true; return Promise.resolve(); }, open: function () {}, done: function () { extra(); } }); }
+      function extra() { bot('Anything else Dan should know? A budget change, your part exchange, anything.'); ask('Optional note', function (v) { return v.length > 500 ? 'A bit shorter please.' : ''; }, function (v) { A.prefs_note = v; A.prefs_ok = !changed && !v; send(); }, true); }
       function send() { bot('Saving that for Dan...'); (changed ? call(Object.assign({ action: 'prefs' }, P)) : Promise.resolve({ ok: true })).then(function (pr) { if (!pr.ok) bot('Your car preferences did not save, sorry. Dan will go through them with you.'); return call(Object.assign({ action: 'confirm' }, A)); }).then(function (r) {
           if (!r.ok) { bot('That did not save, sorry. WhatsApp Dan and he will sort it.'); return; } S.confirmed = true; $('#g-confirm-end').hidden = true;
           bot('All done, thank you. ' + (r.held && r.held.length ? 'Dan will check the new ' + r.held.join(' and ') + ' and update it for you. ' : '') + (changed ? 'Your car preferences are updated. ' : '') + 'Dan will keep sending cars that fit.');

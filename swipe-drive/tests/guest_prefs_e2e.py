@@ -32,16 +32,28 @@ async def run(b, mobile):
     s3 = pg.locator('.g-pick[data-k="3 Series"]')
     await to('3 Series', ''); await to('X1', '')
     ok(await s3.get_attribute('data-s') == '', t + ': third tap clears'); await shot('2-models-picker')
-    await pg.click('.g-done'); await pg.wait_for_timeout(200)
-    await pg.click('#g-tray .g-chip >> text=Yes, still right')  # colours
-    await pg.click('#g-tray .g-chip >> text=Change it'); await pg.wait_for_selector('.g-picks.tri'); await shot('3-spec-picker')
-    await pg.locator('.g-pick').first.click(); await pg.click('.g-done'); await pg.wait_for_timeout(200)
-    await pg.click('#g-tray .g-chip >> text=Change it'); await pg.wait_for_selector('.g-picks')
-    for k in await pg.eval_on_selector_all('.g-pick[data-s="like"]', 'e=>e.map(x=>x.dataset.k)'): await pg.locator(f'.g-pick[data-k="{k}"]').click()
-    await pg.locator('.g-pick[data-k="diesel"]').click(); await shot('4-fuel-picker'); await pg.click('.g-done'); await pg.wait_for_timeout(200)
-    await pg.click('#g-tray .g-chip >> text=Change it'); await pg.wait_for_selector('.g-picks')
-    await pg.locator('.g-pick[data-k="0_8k"]').click(); await pg.click('.g-done'); await pg.wait_for_timeout(200)
-    for _ in range(2): await pg.click('#g-tray .g-chip >> text=Yes, still right'); await pg.wait_for_timeout(150)
+    done = '#g-tray .g-chip.go >> text=Done'
+    await pg.click(done); await pg.wait_for_timeout(200)
+    async def last():
+        b = pg.locator('#g-log .g-m.bot'); n = await b.count()
+        return ' '.join([await b.nth(i).text_content() for i in range(max(0, n - 2), n)])
+    seen = set()
+    for _ in range(50):
+        await pg.wait_for_timeout(150); q = await last()
+        if 'Anything else Dan' in q: break
+        if ('For spec' in q or 'Any spec you want' in q) and 'spec' not in seen:
+            if await pg.locator('#g-tray .g-chip >> text=Change it').count(): await pg.click('#g-tray .g-chip >> text=Change it')
+            await pg.wait_for_selector('.g-picks.tri'); await shot('3-spec-picker'); await pg.locator('.g-pick').first.click(); await pg.click(done); seen.add('spec'); continue
+        if 'For fuel' in q and 'fuel' not in seen:
+            await pg.click('#g-tray .g-chip >> text=Change it'); await pg.wait_for_selector('.g-picks')
+            for k in await pg.eval_on_selector_all('.g-pick[data-s="like"]', 'e=>e.map(x=>x.dataset.k)'): await pg.locator(f'.g-pick[data-k="{k}"]').click()
+            await pg.locator('.g-pick[data-k="diesel"]').click(); await shot('4-fuel-picker'); await pg.click(done); seen.add('fuel'); continue
+        if ('For current mileage' in q or 'already have done' in q) and 'miles' not in seen:
+            if await pg.locator('#g-tray .g-chip >> text=Change it').count(): await pg.click('#g-tray .g-chip >> text=Change it')
+            await pg.wait_for_selector('.g-picks'); await pg.locator('.g-pick[data-k="0_8k"]').click(); await pg.click(done); seen.add('miles'); continue
+        for lab in ['Yes, still right', 'Skip']:
+            if await pg.locator('#g-tray .g-chip', has_text=lab).count(): await pg.locator('#g-tray .g-chip', has_text=lab).first.click(); break
+    print(seen); ok(seen == {'spec', 'fuel', 'miles'}, t + ': spec, fuel and mileage reached in the walkthrough')
     await pg.click('#g-tray .g-chip >> text=Skip'); await pg.wait_for_selector('text=car preferences are updated'); await shot('5-done')
     s = json.load(urllib.request.urlopen(MOCK + '/_state')); pp = s.get('prefs') or {}; pt = pp.get('patch', {})
     ok(set(pt.get('models', [])) == {'X3', '5 Series'} and pt.get('models_must') == ['X3'], t + ': models saved with must have')

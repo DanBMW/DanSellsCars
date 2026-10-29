@@ -52,5 +52,9 @@ ok(st.pp.fuel === 'diesel' && st.pp.mileage_bands.join() === '0_8k' && st.pp.bod
 ok(!('phone' in st.pp) && !('email' in st.pp) && !('budget_type' in st.pp) && !('cash_gbp' in st.pp), 'prefs can never touch contact details or budget');
 ok(st.pc.some(c => c.startsWith('Models: must have 3 Series')) && st.pc.some(c => c === 'Fuel: Diesel'), 'Dan gets a plain English change list');
 st.pp = null; await guestHandle({ t: good, action: 'prefs', models: ['3 Series'], models_must: [] }, deps); ok(st.pp === null, 'no change, nothing saved');
+st.pp = null; r = await guestHandle({ t: good, action: 'prefs', annual_mileage: 12000, 'desk.when': 'month', 'desk.people': 'nope', 'desk.fund': ['pcp', 'bitcoin'], 'desk.cur_car': 'Hacked', 'desk.spec_notes': 'automatic <b>under 3 years</b>', cur_monthly: 1, 'desk.cur_monthly': 1 }, deps);
+ok(r.body.ok && st.pp.annual_mileage === 12000 && st.pp.desk.when === 'month' && st.pp.desk.fund.join() === 'pcp' && !('people' in st.pp.desk), 'prefs: miles a year and desk choices validated');
+ok(st.pp.desk.cur_car === 'Audi' && !('cur_monthly' in st.pp.desk) && /^Revvy: automatic bunder 3 years\/b$|^Revvy: automatic under 3 years$|Revvy: automatic/.test(st.pp.desk.spec_notes) && !/[<>]/.test(st.pp.desk.spec_notes), 'prefs: desk merged, other desk fields untouched, notes appended and cleaned');
+
 hits = RATE_PER_MIN; ok((await guestHandle({ t: good, action: 'deck' }, deps)).status === 429, 'rate limited after ' + RATE_PER_MIN + ' a minute');
 console.log(`\nRESULT guest ${pass}/${pass + fail}`); process.exit(fail ? 1 : 0);

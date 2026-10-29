@@ -45,3 +45,6 @@ main{max-width:520px;margin:0 auto;padding:14px 14px calc(20px + env(safe-area-i
 .g-tray{max-height:52vh;overflow:auto}
 .g-pick[data-s=like]{border-color:var(--acc);background:#16253a}.g-pick[data-s=like] i{color:#9fc3ff}
 .g-revvy{margin-left:auto;background:linear-gradient(135deg,#ff4f7b,#1c69d4);color:#fff;border:0;border-radius:999px;padding:10px 16px;min-height:44px;font-weight:800;font-size:14px;cursor:pointer}
+
+.g-row{display:flex;flex-wrap:wrap;gap:8px;width:100%}.g-form{display:flex;gap:8px;width:100%}.g-inp2{flex:1;min-width:0;padding:11px 14px;border-radius:999px;border:1px solid rgba(127,127,127,.35);font:inherit;background:inherit;color:inherit}
+.g-sum{white-space:pre-line;margin:0;padding:0 0 0 18px;font-size:14px;line-height:1.5}.g-picks{max-height:34vh;overflow:auto}
