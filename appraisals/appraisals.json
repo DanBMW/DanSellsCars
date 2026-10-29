@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-29T10:02:32.628Z",
+  "captured": "2026-10-29T12:02:07.560Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "YG64FZA",
+      "appraisedAt": "2026-10-29T11:42:19.504Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--4CRXtFWv--/c_fill,h_300,w_300/v1793274141/Live/Appraisals/9609274/a90d7cae-243b-4f6e-b5b7-8f0efebf78bb.jpg"
+    },
+    {
+      "registration": "LN18GKL",
+      "appraisedAt": "2026-10-29T11:03:15.378Z",
+      "make": "BMW",
+      "model": "5 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--MwWmseJY--/c_fill,h_300,w_300/v1793271876/Live/Appraisals/9609085/098ed13e-b208-45c2-bb00-27dd3c3618cc.jpg"
+    },
+    {
+      "registration": "LV73HHW",
+      "appraisedAt": "2026-10-29T10:08:01.463Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--29yxGqbq--/c_fill,h_300,w_300/v1793268487/Live/Appraisals/9608887/2b9740b6-333b-481e-96bf-81fbb61fb3b6.jpg"
+    },
     {
       "registration": "LY25FYF",
       "appraisedAt": "2026-10-29T09:39:31.325Z",
@@ -4973,7 +5003,8 @@
       "status": "Returned",
       "price": null,
       "condition": "Average",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Wihks0ly--/c_fill,h_300,w_300/v1785496104/Live/Appraisals/9387547/fdf614cc-dc9c-4638-95c1-9e979ccf196b.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Wihks0ly--/c_fill,h_300,w_300/v1785496104/Live/Appraisals/9387547/fdf614cc-dc9c-4638-95c1-9e979ccf196b.jpg",
+      "droppedAt": "2026-10-29T12:02:07.559Z"
     },
     {
       "registration": "YA68NPC",
