@@ -30,6 +30,12 @@ GROUP = os.path.join(HERE, 'hedin-group-stock.json')
 OUT   = os.path.join(HERE, 'car-descriptions.json')
 
 RECHECK_DAYS = 7
+# Hedin's copy is cleaned before it is stored, so every page reads the same text.
+# A sentence claiming one owner or BMW approval is left out until Dan has checked
+# those facts for each car: they are not in our data and must not be published on trust.
+UNVERIFIED = re.compile(r'(?i)\b(one|single|sole|1)\s+(previous\s+)?(owner|keeper)|\bprevious owners?\b|\bapproved\b')
+EMOJI = re.compile('[\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0F\u200d]')
+DASH = re.compile(r'\s*[\u2013\u2014]\s*|\s-\s')
 MIN_LEN, MAX_LEN = 80, 6000
 # Branch names must never reach the public file (see the group list rules).
 BRANCH = re.compile(r'ruxley|bromley|enfield|woolwich|blackheath|showroom|our branch', re.I)
@@ -42,6 +48,19 @@ def load_fetcher():
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+def publish(text):
+    """The text as a page may show it: no emoji, no dash separators, no unverified owner or approval sentences."""
+    text = DASH.sub(', ', EMOJI.sub('', text or ''))
+    paras = []
+    for para in re.split(r'\n\s*\n', text):
+        sents = re.split(r'(?<=[.!?])\s+', para.strip())
+        kept = ' '.join(x for x in sents if x and not UNVERIFIED.search(x))
+        kept = re.sub(r'\s{2,}', ' ', kept).strip()
+        if kept:
+            paras.append(kept)
+    return '\n\n'.join(paras)
 
 
 def clean(text):
@@ -80,16 +99,38 @@ def cars():
     return out
 
 
+def save_all(have, listing):
+    # Only cars still listed are kept: a sold car's text is not published.
+    kept = {k: v for k, v in have.items() if k in listing}
+    lines = ['"%s": %s' % (k, json.dumps(kept[k], ensure_ascii=False)) for k in sorted(kept)]
+    with open(OUT, 'w', encoding='utf-8') as f:
+        f.write('{\n"generated_at": %s,\n"cars": {\n' % json.dumps(datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')))
+        f.write(',\n'.join(lines))
+        f.write('\n}\n}\n')
+    return len(kept)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--limit', type=int, default=0)
     ap.add_argument('--only', default='')
+    ap.add_argument('--reclean', action='store_true', help='apply publish() to the texts already held')
     args = ap.parse_args()
 
     cd = load_fetcher()
     today = datetime.date.today()
     have = json.load(open(OUT, encoding='utf-8')).get('cars', {}) if os.path.exists(OUT) else {}
     listing = cars()
+    if args.reclean:
+        for cid in list(have):
+            text = publish(have[cid]['text'])
+            if cid not in listing or refuse(text, listing[cid][1]):
+                del have[cid]
+            else:
+                have[cid]['text'] = text
+        save_all(have, listing)
+        print('reclean: %d held' % len(have))
+        return
     only = set(x for x in args.only.split(',') if x)
     todo = [i for i in listing if (not only or i in only)
             and (i not in have or (today - datetime.date.fromisoformat(have[i]['checked'])).days >= RECHECK_DAYS)]
@@ -98,14 +139,7 @@ def main():
 
     fetched = failed = 0
     def save():
-        # Only cars still listed are kept: a sold car's text is not published.
-        kept = {k: v for k, v in have.items() if k in listing}
-        lines = ['"%s": %s' % (k, json.dumps(kept[k], ensure_ascii=False)) for k in sorted(kept)]
-        with open(OUT, 'w', encoding='utf-8') as f:
-            f.write('{\n"generated_at": %s,\n"cars": {\n' % json.dumps(datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')))
-            f.write(',\n'.join(lines))
-            f.write('\n}\n}\n')
-        return len(kept)
+        return save_all(have, listing)
 
     for n, cid in enumerate(todo, 1):
         if n % 20 == 0:
@@ -116,7 +150,7 @@ def main():
             if '"car_id"' not in html:
                 raise ValueError('no car_ fields on the page')
             text = cd.value_after(html, 'car_description')
-            text = clean(text if isinstance(text, str) else '')
+            text = publish(clean(text if isinstance(text, str) else ''))
             why = refuse(text, group)
             if why:
                 raise ValueError(why)

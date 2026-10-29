@@ -321,3 +321,6 @@ body.ct::before{will-change:transform}
 .ct-chips button,.ct-seg button,.ct-tri button,.ct-rate-b button{min-height:44px}
 /* Colour and spec chips name their state: Like and Must */
 .ct-tri button[data-state=like]::after{content:'Like';margin-left:6px;font-size:10.5px;font-weight:800;background:rgba(255,255,255,.18);padding:1px 6px;border-radius:8px}
+/* Hedin's description on a used car, in the detail sheet */
+.ct-desc{margin:16px 0 8px}.ct-desc h3{font-family:var(--serif);font-size:19px;font-weight:500;margin:0 0 8px}
+.ct-desc p{color:var(--mut);font-size:14px;line-height:1.55;margin:0 0 10px}.ct-desc .ct-desc-by{font-size:12px;opacity:.8}

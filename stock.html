@@ -247,6 +247,13 @@
   .sl-kit[open] summary::after{content:' \25b4'}
   .sl-kit ul{margin:7px 0 0;padding:0 0 0 16px;columns:2;column-gap:18px;line-height:1.6}
   .sl-kit li{break-inside:avoid}
+  .sl-desc{margin-top:10px;font-family:var(--sans);font-size:.76rem;color:var(--dim)}
+  .sl-desc summary{cursor:pointer;list-style:none;padding:2px 0;color:var(--body-c)}
+  .sl-desc summary::-webkit-details-marker{display:none}
+  .sl-desc summary::after{content:' \25be';opacity:.6}
+  .sl-desc[open] summary::after{content:' \25b4'}
+  .sl-desc div p{margin:7px 0 0;font-size:.8rem;line-height:1.55;color:var(--dim)}
+  .sl-desc-by{font-size:.7rem;opacity:.75}
   @media(max-width:560px){ .sl-kit ul{columns:1} }
   .sl-applied{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
   .sl-applied-h{font-family:var(--sans);font-size:.76rem;color:var(--dim);margin:0 2px 0 0}
@@ -783,6 +790,7 @@
   var SEL = {};                 /* facet key -> array of chosen option values */
   var LAD = {};                 /* the deposit ladder, keyed by listing id */
   var DET = {};                 /* photographs and equipment, keyed by listing id */
+  var DESC = {};                /* Hedin's own description, keyed by listing id (automation/car-descriptions.json) */
   var CDN = 'https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/';
   var DEPOSIT = null;           /* the deposit the customer has chosen, or null */
   var BUDGET = 0;               /* the most they want to pay a month, 0 for any */
@@ -1355,7 +1363,7 @@
      finance parts are repainted when the figure behind them changes (a new
      deposit, or the quote files landing), and the whole card is rebuilt only
      when the photographs and equipment arrive (DETV). */
-  var CARDS = {}, DETV = 0;
+  var CARDS = {}, DETV = 0, DESCV = 0;
 
   function finSig(c){
     var f = finFor(c);
@@ -1441,6 +1449,7 @@
       + '<div class="sl-spec">'
       + spec.map(function(kv){ return '<span>' + kv[0] + '</span><strong>' + kv[1] + '</strong>'; }).join('')
       + '</div>'
+      + (DESC[c.id] ? '<details class="sl-desc" data-desc="' + esc(c.id) + '"><summary>About this car</summary></details>' : '')
       + (kit.length
           ? '<details class="sl-kit" data-kit="' + esc(c.id) + '"><summary>'
             + kit.length + ' things on this one</summary></details>'
@@ -1459,7 +1468,7 @@
     /* The badge is baked into the card's markup, and the arrivals file can
        land after the cards are built, so its version counts towards the
        rebuild the same way the car details one does. */
-    var rec = CARDS[c.id], v = DETV + ':' + ARRV;
+    var rec = CARDS[c.id], v = DETV + ':' + DESCV + ':' + ARRV;
     if (!rec || rec.v !== v || rec.c !== c){
       rec = CARDS[c.id] = {el: buildCard(c), v: v, c: c, sig: null};
     }
@@ -1603,6 +1612,12 @@
     .then(function(j){ DET = j || {}; DETV++; stampHay(); if (ALL.length) render(); })
     ['catch'](function(){ DET = {}; });
 
+  /* Hedin's descriptions. Quiet on failure: the cards simply have no description section. */
+  fetch('automation/car-descriptions.json', {cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .then(function(j){ DESC = (j && j.cars) || {}; DESCV++; if (ALL.length) render(); })
+    ['catch'](function(){ DESC = {}; });
+
   /* The deposit ladder. A failure here is quiet on purpose: the deposit chips
      simply find nothing to quote and the page is the standard example it has
      always been, rather than a broken budget search. */
@@ -1701,6 +1716,13 @@
      nobody has asked to see them on. */
   elList.addEventListener('toggle', function(e){
     var d = e.target;
+    if (d.classList && d.classList.contains('sl-desc')) {
+      var e2 = DESC[d.getAttribute('data-desc')];
+      if (!d.open || !e2 || d.querySelector('div')) return;
+      var box = document.createElement('div');
+      box.innerHTML = e2.text.split(/\n\s*\n/).map(function(p){ return '<p>' + esc(p) + '</p>'; }).join('') + '<p class="sl-desc-by">Description from the Hedin listing.</p>';
+      d.appendChild(box); return;
+    }
     if (!d.classList || !d.classList.contains('sl-kit')) return;
     if (!d.open || d.querySelector('ul')) return;
     var kit = (DET[d.getAttribute('data-kit')] || {}).equipment || [];

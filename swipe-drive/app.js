@@ -172,7 +172,7 @@
   var store = LIVE ? supa : demo;
 
   /* ---------------- state ---------------- */
-  var S = { session: null, cust: null, owner: null, cars: [], newRange: [], newStock: [], emptyWhy: null, deck: [], swipes: {}, pxPhotos: [], generated: '' };
+  var S = { session: null, cust: null, owner: null, cars: [], newRange: [], newStock: [], desc: {}, emptyWhy: null, deck: [], swipes: {}, pxPhotos: [], generated: '' };
 
   /* ---------------- data ---------------- */
   function loadStock() {
@@ -191,7 +191,10 @@
     var newStock = fetch('../lookup/new-stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
       S.newStock = (d.cars || []).filter(function (c) { return c.order_number; }).map(function (c) { var x = M.fromNewStock(c); x.reg = 'NEW-' + c.order_number; return x; }); })
       .catch(function () { S.newStock = []; });
-    return Promise.all([stock, range, det, newStock]);
+    /* Hedin's own description per used car, keyed by listing id (automation/car-descriptions.json). Quiet on failure. */
+    var descs = fetch('../automation/car-descriptions.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { S.desc = d.cars || {}; })
+      .catch(function () { S.desc = {}; });
+    return Promise.all([stock, range, det, newStock, descs]);
   }
   /* body and fuel for a new model, only from its name and MBG.html group */
   function newCar(name, group) {
@@ -217,6 +220,9 @@
   }
   /* Brand new cars are only the ones in stock. The range list (S.newRange) feeds the model chips, never the deck. */
   function pool() { return S.cars.concat(S.newStock || []); }
+  /* Hedin's description, as paragraphs, for a used car. Nothing for brand new stock, which has no listing text. */
+  function descHtml(c) { var e = (S.desc || {})[String(c.listing_id || '')]; if (!e || !e.text) return '';
+    return '<div class="ct-desc"><h3>About this car</h3>' + e.text.split(/\n\s*\n/).map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '<p class="ct-desc-by">Description from the Hedin listing.</p></div>'; }
   function brandNew(c) { return c.kind === 'new' || c.kind === 'new_stock'; }
   function byReg(reg) { return pool().find(function (c) { return c.reg === reg; }); }
   function waNum() { return (S.owner && S.owner.whatsapp) || CFG.DAN_WA; }
@@ -593,6 +599,7 @@
       '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + esc(c.kind === 'new_stock' ? 'Brand new, already built and unregistered' : isNew ? 'Brand new BMW, ordered to your spec or from new stock' : c.source === 'group' ? 'I can source this one' : 'On my forecourt') + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
       (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (c.kind === 'new_stock' ? '<p>Brand new, so I quote it personally: ask me for a finance quote.</p>' : finHtml(f))) +
+      descHtml(c) +
       '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>';
     $('#sheet').hidden = false;
   }
