@@ -1,4 +1,4 @@
-"""Swipe Drive real new stock in the Discover deck (demo mode).
+"""SwipeToDrive real new stock in the Discover deck (demo mode).
 Usage: python3 e2e_new_stock.py BASE_URL [SHOTS_DIR]"""
 import asyncio, sys, os, json
 sys.argv += [] ; exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'e2e_deck.py')).read().split('async def main')[0])

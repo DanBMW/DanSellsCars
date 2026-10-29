@@ -46,7 +46,7 @@ async def run(b, mobile):
         await pg.wait_for_selector('#g-tray .g-chip >> text=Yes, still right'); await pg.click('#g-tray .g-chip >> text=Yes, still right'); await pg.wait_for_timeout(120)
     log = await pg.text_content('#g-log')
     ok('For models, Dan has you down for 3 Series, X3' in log and 'Petrol, Hybrid, Diesel' in log and '450' not in log and '£' not in log, t + ': preferences shown one by one, no budget figures')
-    await pg.wait_for_selector('#g-tray .g-chip >> text=Skip'); await pg.click('#g-tray .g-chip >> text=Skip'); await pg.wait_for_selector('text=Sign in to Swipe Drive >> nth=-1'); await pg.wait_for_timeout(300)
+    await pg.wait_for_selector('#g-tray .g-chip >> text=Skip'); await pg.click('#g-tray .g-chip >> text=Skip'); await pg.wait_for_selector('text=Sign in to SwipeToDrive >> nth=-1'); await pg.wait_for_timeout(300)
     st = json.load(urllib.request.urlopen(MOCK + '/_state'))['confirm']; ok(st['proposed'].get('email') == 'lorna.new@example.com' and st['confirmed']['phone'] and st['confirmed']['prefs'] and not st['filled'], t + ': changed email held for Dan, confirmations saved')
     ok('Dan will check the new email' in await pg.text_content('#g-log'), t + ': tells them Dan will check the change'); await shot('6-revvy-done')
     full = await pg.text_content('body'); ok(not any(x in full for x in ['07700900111', 'lorna@example.com', 'Hayre']), t + ': no stored contact details anywhere on the page')

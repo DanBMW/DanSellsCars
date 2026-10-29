@@ -1,4 +1,4 @@
-"""Swipe Drive Just arrived badge, 'new since your last visit' line and staff 'new today' (demo mode).
+"""SwipeToDrive Just arrived badge, 'new since your last visit' line and staff 'new today' (demo mode).
 Usage: python3 e2e_arrivals.py BASE_URL [SHOTS_DIR]
 The arrivals ledger is swapped for a fixture dated from today, so the checks do not depend on the morning's stock."""
 import asyncio, sys, os, json, datetime, urllib.request

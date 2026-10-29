@@ -1,4 +1,4 @@
--- Swipe Drive: "Send customer latest stock" email, reply buttons and send log. NOT applied yet; run after Dan approves.
+-- SwipeToDrive: "Send customer latest stock" email, reply buttons and send log. NOT applied yet; run after Dan approves.
 -- Customer emails still need CUSTOMER_EMAIL_ENABLED=true (Dan approves) before anything sends.
 alter table public.customers
   add column if not exists email_opt_out boolean not null default false,   -- unsubscribed from customer emails

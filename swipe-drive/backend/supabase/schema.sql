@@ -344,7 +344,7 @@ revoke all on function public.take_job_lock(text, int), public.release_job_lock(
 grant execute on function public.take_job_lock(text, int), public.release_job_lock(text, uuid) to service_role;
 
 -- ---------- latest stock email (also in update-2026-10-27-latest-stock-email.sql) ----------
--- Swipe Drive: "Send customer latest stock" email, reply buttons and send log. NOT applied yet; run after Dan approves.
+-- SwipeToDrive: "Send customer latest stock" email, reply buttons and send log. NOT applied yet; run after Dan approves.
 -- Customer emails still need CUSTOMER_EMAIL_ENABLED=true (Dan approves) before anything sends.
 alter table public.customers
   add column if not exists email_opt_out boolean not null default false,   -- unsubscribed from customer emails
@@ -366,7 +366,7 @@ drop policy if exists se_sel on public.stock_emails;
 create policy se_sel on public.stock_emails for select to authenticated using (public.can_access_customer(customer_id));
 
 -- ---------- guest swipe link (also in update-2026-10-27-guest-swipe.sql) ----------
--- Swipe Drive: guest swipe link from the latest stock email. NOT applied yet; run after Dan approves,
+-- SwipeToDrive: guest swipe link from the latest stock email. NOT applied yet; run after Dan approves,
 -- after update-2026-10-27-latest-stock-email.sql.
 alter table public.customers add column if not exists guest_version int not null default 0;   -- bump to revoke every guest link
 alter table public.swipes add column if not exists source text;          -- 'guest_link' when swiped from the email link

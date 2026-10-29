@@ -1,4 +1,4 @@
-// Swipe Drive: guest-deck (Supabase Edge Function, Deno). NOT deployed until Dan approves.
+// SwipeToDrive: guest-deck (Supabase Edge Function, Deno). NOT deployed until Dan approves.
 // The "Swipe your matches" link in the latest stock email. A signed, expiring, revocable per customer token
 // (../_shared/unsub.js signGuest) is the only key. It can: read car cards for that customer's matches, record
 // swipes, and send a Buy this car or Send my matches request to Dan. It never returns customer details.
@@ -39,18 +39,18 @@ Deno.serve(async (req) => {
           `Mobile: ${upd.filled.includes('phone') ? 'added ' + fill.phone : upd.proposed.phone ? 'wants it changed to ' + upd.proposed.phone + ' (not applied, tap Apply in Customers)' : upd.confirmed.phone ? 'confirmed' : 'not confirmed'}`,
           `Email: ${upd.filled.includes('email') ? 'added ' + fill.email : upd.proposed.email ? 'wants it changed to ' + upd.proposed.email + ' (not applied, tap Apply in Customers)' : upd.confirmed.email ? 'confirmed' : 'not confirmed'}`,
           upd.proposed.name ? `Name typed: ${upd.proposed.name}` : '', `Preferences: ${upd.confirmed.prefs ? 'still right' : 'something has changed'}${upd.prefs_note ? ': ' + upd.prefs_note : ''}`,
-          'Open Swipe Drive > Customers: https://dan-sells.co.uk/swipe-drive/#team'].filter(Boolean);
+          'Open SwipeToDrive > Customers: https://dan-sells.co.uk/swipe-drive/#team'].filter(Boolean);
         await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env('RESEND_API_KEY'), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject: `Swipe Drive: ${cu?.name || 'A customer'} confirmed their details`, text: L.join('\n') }) }).catch(() => null);
+          body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject: `SwipeToDrive: ${cu?.name || 'A customer'} confirmed their details`, text: L.join('\n') }) }).catch(() => null);
       }
     },
     // car preferences from Revvy: low risk, saved straight to the customer; Dan gets a summary of what changed
     savePrefs: async (id: string, patch: any, changes: string[]) => {
       const { data: cu } = await sb.from('customers').update(patch).eq('id', id).select('name').maybeSingle();
       if (env('RESEND_API_KEY') && env('MAIL_FROM') && env('DAN_NOTIFY_EMAIL')) {
-        const L = [`${cu?.name || 'A customer'} updated their car preferences with Revvy from the swipe link. Saved to their profile:`, '', ...changes.map(c => '  ' + c), '', 'Open Swipe Drive > Customers: https://dan-sells.co.uk/swipe-drive/#team'];
+        const L = [`${cu?.name || 'A customer'} updated their car preferences with Revvy from the swipe link. Saved to their profile:`, '', ...changes.map(c => '  ' + c), '', 'Open SwipeToDrive > Customers: https://dan-sells.co.uk/swipe-drive/#team'];
         await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env('RESEND_API_KEY'), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject: `Swipe Drive: ${cu?.name || 'A customer'} updated their car preferences`, text: L.join('\n') }) }).catch(() => null);
+          body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject: `SwipeToDrive: ${cu?.name || 'A customer'} updated their car preferences`, text: L.join('\n') }) }).catch(() => null);
       }
     },
     buyRequest: async (id: string, act: string, cars: any[]) => {

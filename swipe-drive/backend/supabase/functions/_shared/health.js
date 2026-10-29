@@ -20,10 +20,10 @@ export function healthMessage(out, when = new Date()) {
   if (o.reactivated) extra.push(plural(o.reactivated, 'customer', 'customers') + ' back on matching');
   if (o.skipped) extra.push(clean(o.skipped));
   const day = when.toLocaleDateString('en-GB', { timeZone: 'Europe/London', weekday: 'short', day: 'numeric', month: 'short' });
-  const subject = `${warn.length ? 'Swipe Drive daily run, needs a look: ' : 'Swipe Drive daily run: '}${line}`;
-  const text = [`Swipe Drive daily run, ${day}`, line + '.', ...extra.map((e) => e + '.'),
+  const subject = `${warn.length ? 'SwipeToDrive daily run, needs a look: ' : 'SwipeToDrive daily run: '}${line}`;
+  const text = [`SwipeToDrive daily run, ${day}`, line + '.', ...extra.map((e) => e + '.'),
     ...(warn.length ? ['', 'Problems this run:', ...warn.map((w) => '* ' + w)] : [])].join('\n');
-  const html = `<p><b>Swipe Drive daily run</b>, ${escH(day)}</p><p>${escH(line)}.</p>` + extra.map((e) => `<p>${escH(e)}.</p>`).join('') +
+  const html = `<p><b>SwipeToDrive daily run</b>, ${escH(day)}</p><p>${escH(line)}.</p>` + extra.map((e) => `<p>${escH(e)}.</p>`).join('') +
     (warn.length ? `<p><b>Problems this run:</b></p><ul>${warn.map((w) => `<li>${escH(w)}</li>`).join('')}</ul>` : '');
   return { subject, text, html };
 }
@@ -31,10 +31,10 @@ export function healthMessage(out, when = new Date()) {
 export function failureMessage(err, stage = '', when = new Date()) {
   const msg = clean(err && err.message ? err.message : err).slice(0, 1500) || 'unknown error';
   const at = when.toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'medium', timeStyle: 'short' });
-  const subject = 'Swipe Drive daily run FAILED' + (stage ? `, at ${clean(stage)}` : '');
-  const text = [`The Swipe Drive match job failed at ${at} London time.`, stage ? `Stage: ${clean(stage)}` : '', `Error: ${msg}`, '',
+  const subject = 'SwipeToDrive daily run FAILED' + (stage ? `, at ${clean(stage)}` : '');
+  const text = [`The SwipeToDrive match job failed at ${at} London time.`, stage ? `Stage: ${clean(stage)}` : '', `Error: ${msg}`, '',
     'No further alerts went out after this point. Anything already sent is recorded, so a rerun will not repeat it.'].filter((x) => x !== '').join('\n');
-  const html = `<p><b>The Swipe Drive match job failed</b> at ${escH(at)} London time.</p>` + (stage ? `<p>Stage: ${escH(clean(stage))}</p>` : '') +
+  const html = `<p><b>The SwipeToDrive match job failed</b> at ${escH(at)} London time.</p>` + (stage ? `<p>Stage: ${escH(clean(stage))}</p>` : '') +
     `<pre style="white-space:pre-wrap">${escH(msg)}</pre><p>No further alerts went out after this point. Anything already sent is recorded, so a rerun will not repeat it.</p>`;
   return { subject, text, html };
 }

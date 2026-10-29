@@ -1,4 +1,4 @@
--- Swipe Drive: close customer (soft archive). NOT applied yet; run after Dan approves, before the push.
+-- SwipeToDrive: close customer (soft archive). NOT applied yet; run after Dan approves, before the push.
 -- A flag only: nothing is deleted. Swipes, matches, photos, purchases and buy requests stay as they are.
 alter table public.customers
   add column if not exists closed_at timestamptz,

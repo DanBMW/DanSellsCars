@@ -1,4 +1,4 @@
--- Swipe Drive: run lock for the daily match job, so two overlapping runs cannot both read notifications_sent
+-- SwipeToDrive: run lock for the daily match job, so two overlapping runs cannot both read notifications_sent
 -- before either writes it and send the same alert twice. Service role only. Safe to run more than once.
 create table if not exists public.job_locks (job text primary key, locked_until timestamptz not null, run_id uuid not null);
 alter table public.job_locks enable row level security;   -- no policies: only the service role can touch it

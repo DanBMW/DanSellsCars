@@ -1,4 +1,4 @@
-// Swipe Drive: send-latest-stock (Supabase Edge Function, Deno). NOT deployed until Dan approves.
+// SwipeToDrive: send-latest-stock (Supabase Edge Function, Deno). NOT deployed until Dan approves.
 // Staff tap "Send customer latest stock". This re-ranks the customer's matches on the live stock (same rules as
 // the site, match-core.js), keeps only the cars the staff member confirmed that are still in stock, emails the
 // customer through Resend with three signed reply buttons and the GDPR unsubscribe button, and logs the send.

@@ -1,4 +1,4 @@
-// Swipe Drive: guest-link (Supabase Edge Function, Deno). NOT deployed until Dan approves.
+// SwipeToDrive: guest-link (Supabase Edge Function, Deno). NOT deployed until Dan approves.
 // Staff "Copy swipe link" / "Send swipe link on WhatsApp": returns a signed, 30 day, revocable guest swipe link
 // for a customer the caller can access. Works without an email address. Nothing is sent from here.
 import { createClient } from 'npm:@supabase/supabase-js@2';

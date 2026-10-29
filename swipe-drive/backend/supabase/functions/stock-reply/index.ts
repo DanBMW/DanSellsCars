@@ -1,4 +1,4 @@
-// Swipe Drive: stock-reply (Supabase Edge Function, Deno). NOT deployed until Dan approves.
+// SwipeToDrive: stock-reply (Supabase Edge Function, Deno). NOT deployed until Dan approves.
 // The three buttons in the "latest stock" email. GET shows a confirm page (link scanners never record anything),
 // POST records the answer on the customer and emails a staff notification to Dan (DAN_NOTIFY_EMAIL secret).
 // "No longer on the market" only flags the customer for Dan to close (close_suggested_at); it never closes them.
@@ -31,10 +31,10 @@ Deno.serve(async (req) => {
   if (error || !cu) return page('<p>That did not save. WhatsApp Dan on 07827 138197 instead.</p>', 500);
   await db.from('stock_emails').update({ reply: v.purpose, replied_at: now }).eq('customer_id', v.id).is('replied_at', null);
   if (env('RESEND_API_KEY') && env('MAIL_FROM') && env('DAN_NOTIFY_EMAIL')) {
-    const subject = `Swipe Drive: ${cu.name || 'A customer'} replied, ${label}`;
+    const subject = `SwipeToDrive: ${cu.name || 'A customer'} replied, ${label}`;
     const lines = [`Name: ${cu.name || ''}`, `Phone: ${cu.phone || ''}`, `Email: ${cu.email || ''}`, `Reply: ${label}`,
       v.purpose === 'offmarket' ? 'They are flagged on the Customers screen so you can close them. Nothing was closed automatically.' : '',
-      'Open Swipe Drive > Customers: https://dan-sells.co.uk/swipe-drive/#team'].filter(Boolean);
+      'Open SwipeToDrive > Customers: https://dan-sells.co.uk/swipe-drive/#team'].filter(Boolean);
     await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env('RESEND_API_KEY'), 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: env('MAIL_FROM'), to: [env('DAN_NOTIFY_EMAIL')], subject, text: lines.join('\n'),
         html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5"><h2 style="margin:0 0 8px">${esc(subject)}</h2>${lines.map(l => `<p style="margin:4px 0">${esc(l)}</p>`).join('')}</div>`,

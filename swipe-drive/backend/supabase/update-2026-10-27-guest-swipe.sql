@@ -1,4 +1,4 @@
--- Swipe Drive: guest swipe link from the latest stock email. NOT applied yet; run after Dan approves,
+-- SwipeToDrive: guest swipe link from the latest stock email. NOT applied yet; run after Dan approves,
 -- after update-2026-10-27-latest-stock-email.sql.
 alter table public.customers add column if not exists guest_version int not null default 0;   -- bump to revoke every guest link
 alter table public.swipes add column if not exists source text;          -- 'guest_link' when swiped from the email link
