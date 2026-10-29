@@ -1,4 +1,4 @@
--- Swipe Drive | run these AFTER paste-into-sql-editor.sql, one block at a time.
+-- SwipeToDrive | run these AFTER paste-into-sql-editor.sql, one block at a time.
 
 -- 1) Make Dan the admin. First sign in once on https://dan-sells.co.uk/swipe-drive/
 --    with the email below (after the app is switched to live mode), then run:

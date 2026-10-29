@@ -1,5 +1,5 @@
-/* Customer journey (follow ups) UI. Part of Swipe Drive, Dan's customer system. Hosted today in
-   links.html (#fx-root); Swipe Drive can mount it anywhere with FollowUpsUI.mount(el).
+/* Customer journey (follow ups) UI. Part of SwipeToDrive, Dan's customer system. Hosted today in
+   links.html (#fx-root); SwipeToDrive can mount it anywhere with FollowUpsUI.mount(el).
    Needs followups-core.js. Data is end to end encrypted: only ciphertext reaches Supabase.
    Set window.FU_STORE to swap in a mock store. */
 (function () {
@@ -38,7 +38,7 @@
   var ICON = '<svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
   function shell(inner) { root.innerHTML = '<div class="fx">' + inner + '</div>'; }
   function render(s, msg) {
-    if (s === 'signin') shell('<div class="fx-lock">' + ICON + '<div class="fx-h">Sign in to your follow ups</div><p class="fx-p">Use the same email you use for Swipe Drive. We will email you a sign in link.</p>'
+    if (s === 'signin') shell('<div class="fx-lock">' + ICON + '<div class="fx-h">Sign in to your follow ups</div><p class="fx-p">Use the same email you use for SwipeToDrive. We will email you a sign in link.</p>'
       + '<input class="widget-input" id="fx-email" type="email" placeholder="Your email" autocomplete="username"><button class="fx-btn" id="fx-go">Email me a sign in link</button><p class="fx-msg">' + e(msg) + '</p></div>');
     if (s === 'create') shell('<div class="fx-lock">' + ICON + '<div class="fx-h">Create your follow ups passphrase</div><p class="fx-p">Customer details are encrypted on this device before they are saved. Only this passphrase can unlock them. It is never stored or sent anywhere.</p>'
       + '<input class="widget-input" id="fx-p1" type="password" placeholder="Passphrase (12 characters or more)" autocomplete="new-password"><input class="widget-input" id="fx-p2" type="password" placeholder="Type it again" autocomplete="new-password">'
@@ -65,7 +65,7 @@
     var when = st === 'overdue' ? (-d) + ' days overdue' : st === 'due' ? 'Due today' : st === 'stopped' ? 'Stopped' : st === 'complete' ? 'Complete' : 'Due ' + nice(r.due);
     var tl = r.path === 'kit' ? '' : '<span class="fx-dots">' + F.timeline(r, t).map(function (x) { return '<i class="fx-d-' + x.state + '" title="' + e(x.label) + '"></i>'; }).join('') + '</span>';
     return '<div class="fx-row fx-' + st + '"><span class="fx-av">' + e((r.firstName[0] || '') + (r.lastName[0] || '')).toUpperCase() + '</span><button class="fx-who" data-tl="' + e(r.id) + '"><b>' + e(r.firstName + ' ' + r.lastName) + '</b><small>'
-      + e(r.car || 'No car noted') + ' &middot; ' + e(stageLabel(r)) + (r.swipeCustomerId ? ' &middot; Swipe Drive' : '') + '</small>' + tl + '</button><span class="fx-when">' + when + '</span>'
+      + e(r.car || 'No car noted') + ' &middot; ' + e(stageLabel(r)) + (r.swipeCustomerId ? ' &middot; SwipeToDrive' : '') + '</small>' + tl + '</button><span class="fx-when">' + when + '</span>'
       + (st === 'due' || st === 'overdue' ? '<button class="fx-btn fx-sm" data-send="' + e(r.id) + '">Send next follow up</button>' : '<button class="fx-ghost fx-sm" data-tl="' + e(r.id) + '">Journey</button>') + '</div>'; }
 
   function app(msg) {
@@ -109,7 +109,7 @@
       + '<div class="fx-two"><label><span class="fx-sub">Agreement term (months)</span><input class="widget-input" type="number" min="24" max="60" step="1" data-f="term" id="fx-term" value="' + (r.term || 48) + '"></label>'
       + '<label><span class="fx-sub">Collection date (journey starts here)</span><input class="widget-input" type="date" data-f="start" id="fx-start" value="' + (r.start || t) + '"></label></div>'
       + '<div class="fx-two"><label><span class="fx-sub">Purchase date</span><input class="widget-input" type="date" data-f="purchaseDate" id="fx-buy" value="' + (r.purchaseDate || '') + '"></label><span></span></div><p class="fx-hint" id="fx-hint"></p></div>'
-      + '<input class="widget-input" data-f="swipeCustomerId" placeholder="Swipe Drive customer ID (optional link)" value="' + e(r.swipeCustomerId || '') + '" autocomplete="off">'
+      + '<input class="widget-input" data-f="swipeCustomerId" placeholder="SwipeToDrive customer ID (optional link)" value="' + e(r.swipeCustomerId || '') + '" autocomplete="off">'
       + '<textarea class="widget-input" data-f="notes" placeholder="Private notes (encrypted)">' + e(r.notes || '') + '</textarea><p class="fx-msg" id="fx-ferr"></p>'
       + '<div class="fx-actions"><button class="fx-btn" id="fx-save">' + (id ? 'Save' : 'Save and open email') + '</button><button class="fx-ghost" data-close>Cancel</button></div>');
     var startTouched = !!id, buyTouched = !!id;

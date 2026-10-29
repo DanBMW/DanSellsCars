@@ -1,4 +1,4 @@
--- Swipe Drive fix, 21 Oct 2026. Safe to run more than once.
+-- SwipeToDrive fix, 21 Oct 2026. Safe to run more than once.
 -- 1) Read policy checks the row itself (no self lookup), so a new customer can be read back straight away.
 drop policy if exists c_sel on public.customers;
 create policy c_sel on public.customers for select to authenticated using (

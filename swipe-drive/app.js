@@ -1,4 +1,4 @@
-/* Swipe Drive app. Plain JS, relative paths, no build step, so it can be
+/* SwipeToDrive app. Plain JS, relative paths, no build step, so it can be
    wrapped later with Capacitor or PWABuilder. Platform specific bits (push,
    install, haptics, deep links, share) sit behind `platform` below.
    Data goes through `store`: 'demo' keeps everything on the device,
@@ -206,7 +206,7 @@
   var store = LIVE ? supa : demo;
 
   /* ---------------- state ---------------- */
-  var S = { session: null, cust: null, owner: null, cars: [], newRange: [], deck: [], swipes: {}, pxPhotos: [], generated: '' };
+  var S = { session: null, cust: null, owner: null, cars: [], newRange: [], newStock: [], emptyWhy: null, deck: [], swipes: {}, pxPhotos: [], generated: '' };
 
   /* ---------------- data ---------------- */
   function loadStock() {
@@ -259,9 +259,10 @@
       .map(function (p) { p.floor_cash = fc; p.floor_monthly = fm; return p; }); }
   function stockLabel(c) { return c.kind === 'new_stock' ? 'New, in stock' : c.kind === 'new' ? 'Brand new, ordered for you' : c.source === 'group' ? 'I can source this one' : 'On my forecourt'; }
   function ready(c) { return c.lead_min && c.lead_max ? (c.lead_min === c.lead_max ? 'Ready in about ' + c.lead_min + ' weeks' : 'Ready in ' + c.lead_min + ' to ' + c.lead_max + ' weeks') : ''; }
-  function askModelWa(c) { return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the look of a new ' + c.model + ' on Swipe Drive. Could you tell me about this model and what is available?'); }
+  function askModelWa(c) { return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the look of a new ' + c.model + ' on SwipeToDrive. Could you tell me about this model and what is available?'); }
   function buyOrAsk(c) { return c.kind === 'new' ? '<a class="ct-btn ct-btn-big ct-wa ct-ask" target="_blank" rel="noopener" href="' + esc(askModelWa(c)) + '">Ask ' + esc(waWho() || 'Dan') + ' about this model</a>'
     : '<button class="ct-btn ct-btn-big ct-buy" type="button" data-buy="' + esc(c.reg) + '">Buy this car</button>'; }
+  function brandNew(c) { return c.kind === 'new' || c.kind === 'new_stock'; }
   function byReg(reg) { return pool().find(function (c) { return c.reg === reg; }); }
   function waNum() { return (S.owner && S.owner.whatsapp) || CFG.DAN_WA; }
   function waWho() { return S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
@@ -339,7 +340,7 @@
   }
   /* alerts already allowed: quietly refresh the subscription so a key change never leaves a phone without alerts */
   function resyncPush() { try { if (!LIVE || !platform.pushSupported() || Notification.permission !== 'granted' || !CFG.VAPID_PUBLIC_KEY) return;
-    platform.subscribePush().then(function (sub) { return store.savePush(sub); }).catch(function (e) { console.warn('Swipe Drive push resync', e); }); } catch (e) {} }
+    platform.subscribePush().then(function (sub) { return store.savePush(sub); }).catch(function (e) { console.warn('SwipeToDrive push resync', e); }); } catch (e) {} }
   function loadCust() {
     if (!S.cust) { S.swipes = {}; S.owner = null; return Promise.resolve(); }
     return Promise.all([store.swipes(S.cust.id), store.owner(S.cust)]).then(function (r) { S.swipes = r[0]; S.owner = r[1]; badge(); });
@@ -412,13 +413,14 @@
     drawTri('#colourChips', [{ key: 'Any', label: 'Any' }].concat(famList.map(function (x) { return { key: x, label: x }; })), c.colours || ['Any'], c.colours_must || []);
     drawTri('#specChips', M.specOptions(), c.specs || [], c.specs_must || []);
     var px = c.px || {}; setChoice(f, 'px_has', px.reg ? 'yes' : 'no');
-    f.elements.px_reg.value = px.reg || ''; f.elements.px_mileage.value = px.mileage || ''; f.elements.px_condition.value = px.condition || '';
+    f.elements.px_reg.value = px.reg || ''; f.elements.px_mileage.value = px.mileage || '';
     ['px_valuation_gbp', 'px_valued_on', 'px_settlement_gbp', 'px_settlement_valid_until'].forEach(function (k) { f.elements[k].value = c[k] == null ? '' : c[k]; });
     /* one settlement box: older profiles kept "finance still owed" inside px, carry it across */
     if (f.elements.px_settlement_gbp.value === '' && px.finance_outstanding != null) f.elements.px_settlement_gbp.value = px.finance_outstanding;
     $('#pxValBy').textContent = valBy(c); liveEquity();
     drawRates(c.px_condition_ratings); $('#pxConfirm').checked = false;
     $('#pxConfirmLabel').textContent = staff ? 'I confirm, on behalf of the customer, that this is what they told me' : 'I confirm';
+    openSections(c);
     $('#pxConfirmed').textContent = c.px_terms_confirmed_at ? 'Last confirmed ' + new Date(c.px_terms_confirmed_at).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + (c.px_terms_confirmed_by === 'staff' && !staff ? ' by your sales executive' : '') : '';
     S.pxPhotos = (px.photos || []).slice(); drawThumbs(); showDeps(f);
     var dk = $('#deskBox'); if (dk.getAttribute('data-for') !== String(staff)) { dk.innerHTML = deskHtml(staff); dk.setAttribute('data-for', String(staff)); bindChoice(dk); } deskFill(f, c.desk);
@@ -439,17 +441,29 @@
   function pxMoneyHtml(c) { var bits = []; if (c.px_valuation_gbp != null) bits.push('PX valuation ' + M.gbp(c.px_valuation_gbp) + (c.px_valued_on ? ' (' + fmtDate(c.px_valued_on) + ')' : ''));
     if (c.px_settlement_gbp != null) bits.push('Settlement ' + M.gbp(c.px_settlement_gbp) + (c.px_settlement_valid_until ? ' valid until ' + fmtDate(c.px_settlement_valid_until) : ''));
     var e = equity(c); return (bits.length ? '<p>' + esc(bits.join(' \u00b7 ')) + '</p>' : '') + (c.px_valuation_gbp != null ? '<p>' + esc(valBy(c)) + '</p>' : '') + (e ? '<p><span class="ct-pill' + (e.neg ? ' hot' : '') + '">' + esc(e.text) + '</span> ' + esc(e.label) + '</p>' : ''); }
-  function liveEquity() { var f = $('#profileForm').elements, v = f.px_valuation_gbp.value, st = f.px_settlement_gbp.value, el = $('#pxEquity');
+  function liveEquity() { var f = $('#profileForm').elements, st = f.px_settlement_gbp.value, el = $('#pxEquity');
+    var v = S.session && S.session.role !== 'customer' ? f.px_valuation_gbp.value : (S.cust && S.cust.px_valuation_gbp != null ? String(S.cust.px_valuation_gbp) : '');
     var e = equity({ px_valuation_gbp: v === '' ? null : +v, px_settlement_gbp: st === '' ? null : +st }); el.hidden = !e; if (e) { el.className = 'ct-equity' + (e.neg ? ' neg' : ''); el.innerHTML = '<b>' + esc(e.text) + '</b><small>' + esc(e.label) + '</small>'; } }
-  function drawRates(r) { r = r || {}; $('#pxRates').innerHTML = RATE_AREAS.map(function (a) { var x = r[a[0]] || {};
+  /* Overall condition is the one rating asked for. The other areas sit behind "Add more detail" and open by themselves
+     when a customer has already filled one in. Keys are unchanged, so saved ratings and the desk still read the same. */
+  function drawRates(r) { r = r || {};
+    function row(a, placeholder) { var x = r[a[0]] || {};
       return '<div class="ct-rate" data-area="' + a[0] + '"><div class="ct-rate-h"><span>' + a[1] + '</span><em>' + (x.rating ? RATE_L[x.rating] : '') + '</em></div><div class="ct-rate-b">' +
         [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-r="' + n + '" aria-label="' + RATE_L[n] + '" title="' + RATE_L[n] + '" aria-pressed="' + (x.rating === n ? 'true' : 'false') + '">' + n + '</button>'; }).join('') +
-        '</div><input type="text" maxlength="300" placeholder="Notes (optional)" value="' + esc(x.notes || '') + '"></div>'; }).join(''); }
+        '</div><input type="text" maxlength="300" placeholder="' + placeholder + '" value="' + esc(x.notes || '') + '"></div>'; }
+    var more = RATE_AREAS.slice(1), open = more.some(function (a) { return r[a[0]] && (r[a[0]].rating || r[a[0]].notes); });
+    $('#pxRates').innerHTML = row(RATE_AREAS[0], 'Anything we should know (optional)') +
+      '<details class="ct-more"' + (open ? ' open' : '') + '><summary>Add more detail about the car (optional)</summary><div class="ct-rates">' +
+      more.map(function (a) { return row(a, 'Notes (optional)'); }).join('') + '</div></details>'; }
+  /* the one condition word kept for emails and older readers, taken from Overall condition */
+  function overallLabel(r) { var x = (r || {}).overall; return x && x.rating ? RATE_L[x.rating] : ''; }
   function readRates() { var o = {}; $$('#pxRates .ct-rate').forEach(function (el) { var b = $('button[aria-pressed=true]', el), n = $('input', el).value.trim();
       if (b || n) o[el.getAttribute('data-area')] = Object.assign(b ? { rating: +b.getAttribute('data-r') } : {}, n ? { notes: n } : {}); }); return o; }
   function drawThumbs() { $('#pxThumbs').innerHTML = S.pxPhotos.map(function (p) { return p.preview ? '<img src="' + esc(p.preview) + '" alt="Part exchange photo">' : '<span class="ct-pill">Photo saved</span>'; }).join(''); }
   function initProfile() {
     var f = $('#profileForm'); bindChoice(f);
+    /* choosing "I have one" opens the part exchange section, so its questions are right there */
+    $('.ct-seg[data-name="px_has"]', f).addEventListener('click', function () { if (choice(f, 'px_has') === 'yes') $('details.ct-sec[data-sec="px"]', f).open = true; });
     ['px_valuation_gbp', 'px_settlement_gbp'].forEach(function (k) { f.elements[k].addEventListener('input', liveEquity); });
     $('#pxRates').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b) return; var row = b.closest('.ct-rate'), on = b.getAttribute('aria-pressed') === 'true';
       $$('button', row).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); }); if (!on) b.setAttribute('aria-pressed', 'true');
@@ -477,6 +491,7 @@
       if (choice(f, 'px_has') === 'yes' && rated && !$('#pxConfirm').checked) bad.push(fieldErr(f, $('#pxConfirm'), 'Tick I confirm, because condition ratings are filled in.'));
       if (choice(f, 'px_has') === 'yes' && !el.px_reg.value.trim()) bad.push(fieldErr(f, 'px_reg', 'Add the part exchange reg, or choose No part exchange.'));
       bad = bad.filter(Boolean);
+      bad.forEach(function (el) { var d = el.closest('details'); if (d) d.open = true; });
       if (bad.length) { banner(f, bad.length === 1 ? 'One thing to fix before saving.' : bad.length + ' things to fix before saving.'); bad[0].scrollIntoView({ block: 'center' }); bad[0].focus({ preventScroll: true }); return; }
       var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim() || null, postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
@@ -484,14 +499,15 @@
       if (staff) c.email = el.email.value.trim() || null; /* staff can save a customer with a name only */
       c.desk = deskRead(f, (S.cust || {}).desk);
       var num = function (v) { return v === '' ? null : Math.max(0, Math.round(+v)); }, prevVal = S.cust ? S.cust.px_valuation_gbp : null;
-      c.px_valuation_gbp = num(el.px_valuation_gbp.value); c.px_valued_on = el.px_valued_on.value || null;
+      /* Dan's valuation: only staff write it. A customer's save keeps whatever is already there (the field is hidden from them). */
+    if (staff) { c.px_valuation_gbp = num(el.px_valuation_gbp.value); c.px_valued_on = el.px_valued_on.value || null; }
       c.px_settlement_gbp = num(el.px_settlement_gbp.value); c.px_settlement_valid_until = el.px_settlement_valid_until.value || null;
       if (c.px_valuation_gbp !== prevVal && c.px_valuation_gbp != null) { c.px_valuation_set_by = staff ? 'staff' : 'customer'; c.px_valuation_set_by_name = staff ? (S.session.name || 'Dan') : ''; }
       if (choice(f, 'px_has') === 'yes') { c.px_condition_ratings = readRates();
         if ($('#pxConfirm').checked) { c.px_terms_confirmed_at = new Date().toISOString(); c.px_terms_confirmed_by = staff ? 'staff' : 'customer'; } }
       else { c.px_condition_ratings = {}; c.px_terms_confirmed_at = null; c.px_terms_confirmed_by = null; c.px_valuation_gbp = c.px_settlement_gbp = null; c.px_valued_on = c.px_settlement_valid_until = null; }
       if (LIVE) { delete c.px_valuation_set_by; delete c.px_valuation_set_by_name; delete c.px_valuation_set_by_user; } /* stamped by the database */
-      c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: el.px_condition.value, finance_outstanding: c.px_settlement_gbp, /* mirror of the settlement figure, kept for older readers */
+      c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: overallLabel(c.px_condition_ratings), finance_outstanding: c.px_settlement_gbp, /* mirror of the settlement figure, kept for older readers */
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
       var wasNew = !(S.cust && S.cust.id); busy(btn, true);
       store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
@@ -508,6 +524,33 @@
     var deep = platform.deepLink().reg, seen = S.swipes, ids = {};
     S.deck = ranked.filter(function (x) { var id = x.car.reg; if (!id || seen[id] || ids[id]) return false; ids[id] = 1; return true; });
     if (deep) { var i = S.deck.findIndex(function (x) { return M.normReg(x.car.reg) === deep; }); if (i > 0) S.deck.unshift(S.deck.splice(i, 1)[0]); }
+    S.emptyWhy = S.deck.length ? null : emptyReason(ranked);
+  }
+  /* Why nothing is left, in plain words. Each check loosens one thing, so the customer hears the real reason. */
+  function emptyReason(ranked) {
+    if (ranked.length) return { kind: 'seen' };
+    var cust = S.cust || {}, fits = M.rank(pool(), Object.assign({}, cust, { budget_type: null, cash_gbp: 0, monthly_gbp: 0 })).map(function (x) { return x.car; });
+    if (cust.new_used === 'new' && !fits.some(brandNew)) return { kind: 'nonew' };
+    var prices = fits.filter(function (c) { return c.price_gbp; }).map(function (c) { return c.price_gbp; });
+    var budgetSet = cust.budget_type === 'cash' ? cust.cash_gbp : cust.monthly_gbp;
+    if (budgetSet && prices.length) return { kind: 'budget', from: Math.min.apply(null, prices) };
+    return { kind: 'choices' };
+  }
+  function paintEmpty() {
+    var why = S.emptyWhy || { kind: 'seen' }, who = waWho() || 'Dan', ask = 'https://wa.me/' + String(waNum()).replace(/\D/g, '');
+    var askLink = '<a class="ct-btn ct-btn-ghost" target="_blank" rel="noopener" href="' + esc(ask + '?text=' + encodeURIComponent('Hi ' + who + ', I could not find a car in my search on SwipeToDrive. Can you help?')) + '">Message ' + esc(who) + '</a>';
+    var t = 'That is everyone for now.', p = 'New cars arrive most mornings. Turn on alerts and I will tell you when one fits.', acts = '<a class="ct-btn" href="#matches">See your matches</a>';
+    if (why.kind === 'budget') { t = 'Nothing in your budget right now.'; p = 'The cheapest used car that fits everything else you chose is ' + M.gbp(why.from) + '. Raise your budget to see what is close, or ask ' + who + ' what is coming in.'; acts = '<a class="ct-btn" href="#profile">Change my budget</a>' + askLink; }
+    else if (why.kind === 'nonew') { t = 'No brand new cars in stock that fit.'; p = 'Brand new cars come in and out of stock. ' + who + ' can order one to your spec.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
+    else if (why.kind === 'choices') { t = 'No cars match every choice you made.'; p = 'Try opening up the body, fuel or colour on your profile.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
+    $('#deckEmptyT').textContent = t; $('#deckEmptyP').textContent = p; $('#deckEmptyActs').innerHTML = acts;
+  }
+  /* the profile's sections open when they already hold an answer, so a returning customer sees what they chose */
+  function openSections(c) { var sec = function (k) { return $('#profileForm details.ct-sec[data-sec="' + k + '"]'); };
+    sec('budget').open = !!(c.monthly_gbp || c.cash_gbp || c.deposit_gbp);
+    sec('car').open = !!((c.fuel && c.fuel !== 'open') || (c.body && c.body !== 'any') || (c.models || []).length || (c.colours || []).length || (c.specs || []).length || (c.new_used && c.new_used !== 'both'));
+    sec('px').open = !!(c.px && c.px.reg);
+    sec('more').open = !!(c.desk && Object.keys(c.desk).length);
   }
   function cardHtml(x) {
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
@@ -547,6 +590,7 @@
     var deck = $('#deck'); deck.innerHTML = '';
     var top = S.deck.slice(0, 3);
     $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length; deck.hidden = !top.length;
+    if (!top.length) paintEmpty();
     var left = $('#deckLeft'); if (!left) { left = document.createElement('p'); left.id = 'deckLeft'; left.className = 'ct-sub ct-left'; left.setAttribute('aria-live', 'polite'); $('#deckActions').parentNode.insertBefore(left, $('#deckActions').nextSibling); }
     sinceLine();
     left.hidden = !top.length; left.textContent = S.deck.length === 1 ? 'Last car in your deck' : S.deck.length + ' cars left to see';
@@ -589,15 +633,15 @@
   function saveSwipe(reg, liked, extra) {
     var cid = S.cust && S.cust.id;
     Promise.resolve().then(function () { if (!cid) throw new Error('no customer'); return store.setSwipe(cid, reg, liked, extra); })
-      .catch(function (err) { console.warn('Swipe Drive swipe save', err); toast('That swipe did not save. Carry on swiping.'); });
+      .catch(function (err) { console.warn('SwipeToDrive swipe save', err); toast('That swipe did not save. Carry on swiping.'); });
   }
   function decide(x, liked, superLike) {
     if (x._decided) return; x._decided = true;
     var i = S.deck.indexOf(x); if (i !== -1) S.deck.splice(i, 1); else S.deck = S.deck.filter(function (y) { return y.car.reg !== x.car.reg; });
     S.swipes[x.car.reg] = { liked: liked, at: Date.now(), shortlisted: !!superLike };
-    try { drawDeck(); } catch (e) { console.warn('Swipe Drive deck', e); }
+    try { drawDeck(); } catch (e) { console.warn('SwipeToDrive deck', e); }
     saveSwipe(x.car.reg, liked, superLike ? { shortlisted: true } : null);
-    track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: x.car.kind === 'new' ? '' : x.car.reg, kind: x.car.kind, score: x.score });
+    track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: brandNew(x.car) ? '' : x.car.reg, kind: x.car.kind, score: x.score });
     if (superLike) { badge(); matchMoment(x); return; }
     badge();
     if (liked) { var likes = Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).length; if (likes === 1 || x.score >= 75) matchMoment(x); else toast('Added to your matches'); }
@@ -688,7 +732,7 @@
     link.addEventListener('click', function () { showTutorial(true); }); var acts = $('#deckActions'); acts.parentNode.insertBefore(link, acts.nextSibling); }
   function maybeTutorial() { var seen = null; try { seen = localStorage.getItem(TUT); } catch (e) {} if (!seen && !$('#deck').hidden) showTutorial(false); }
   function showTutorial(replay) { if ($('#tut')) return; var rm = reduced(), o = document.createElement('div'); o.className = 'ct-tut' + (rm ? ' is-static' : ''); o.id = 'tut';
-    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'How Swipe Drive works');
+    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'How SwipeToDrive works');
     var STEPS = [['like', 'Swipe right on a car you like'], ['pass', 'Swipe left to pass'], ['tap', 'Tap the card for all the details'], ['info', 'Still swipe in the details to decide']];
     var demo = '<div class="tut-card"><div class="tut-ph"><span>BMW X3</span></div><div class="tut-meta"><b>BMW X3 xDrive20d</b><i></i><i class="s"></i></div><em class="tut-st tut-yes">TEST DRIVE</em><em class="tut-st tut-no">PASS</em></div>' +
       '<div class="tut-sheet"><div class="tut-ph"></div><b>Full details</b><i></i><i></i><i class="s"></i></div><div class="tut-hand" aria-hidden="true"><svg viewBox="0 0 48 48" width="54" height="54"><path d="M19 6a3 3 0 0 1 6 0v15l2-1a3 3 0 0 1 4 1l1 1a3 3 0 0 1 4 1l1 1a3 3 0 0 1 4 2v8c0 7-5 12-12 12h-2c-4 0-7-2-9-5l-7-10a3 3 0 0 1 5-3l3 3z" fill="#f4f1ea" stroke="#0a0c0f" stroke-width="1.6"/></svg></div>';
@@ -751,7 +795,7 @@
   function sendLead() {
     var c = S.cust, L = liked(), msg = $('#sendMsg'), px = c.px || {};
     var lead = 'CT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-    var body = { _subject: 'Swipe Drive matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'swipe-drive', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
+    var body = { _subject: 'SwipeToDrive matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'swipe-drive', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
       budget: c.budget_type === 'cash' ? 'Cash up to \u00a3' + (c.cash_gbp || '?') : 'Monthly up to \u00a3' + (c.monthly_gbp || '?'), deposit: c.deposit_gbp || '', annual_mileage: c.annual_mileage,
       colours: (c.colours || []).join(', ') || 'Any', colours_must_have: (c.colours_must || []).join(', '), specs_wanted: (c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '), specs_must_have: (c.specs_must || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '),
       fuel: fuelText(c), preferred_mileage: bandsText(c), body_or_size: c.body, models_must_have: (c.models_must || []).join(', ') || 'None', models_would_like: (c.models || []).filter(function (m) { return (c.models_must || []).indexOf(m) === -1; }).join(', ') || 'None', new_or_used: c.new_used,
@@ -761,9 +805,9 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       px_condition_ratings: ratingsText(c.px_condition_ratings), px_terms_confirmed_at: c.px_terms_confirmed_at ? new Date(c.px_terms_confirmed_at).toLocaleString('en-GB') + ' by ' + (c.px_terms_confirmed_by || '') : '',
       px_equity: equity(c) ? equity(c).label + ': ' + equity(c).text : '',
             px_photo_links: (px.photos || []).map(function (p) { return p.link; }).filter(Boolean).join(' ') || ((px.photos || []).length ? (px.photos.length + ' photo(s) on the customer device, demo mode, not uploaded') : 'None'),
-      liked_regs: L.filter(function (x) { return x.kind !== 'new'; }).map(function (x) { return x.reg; }).join(', '),
-      liked_new_models: L.filter(function (x) { return x.kind === 'new'; }).map(function (x) { return x.model; }).join(', '),
-      liked_cars: L.map(function (x) { return x.model + (x.kind === 'new' ? ' (new)' : ' ' + x.reg + ' ' + (x.price || '')); }).join(' | '),
+      liked_regs: L.filter(function (x) { return !brandNew(x); }).map(function (x) { return x.reg; }).join(', '),
+      liked_new_models: L.filter(function (x) { return brandNew(x); }).map(function (x) { return x.model + (x.order_number ? ' (order ' + x.order_number + ')' : ''); }).join(', '),
+      liked_cars: L.map(function (x) { return x.model + (brandNew(x) ? ' (new' + (x.order_number ? ', order ' + x.order_number : '') + ')' : ' ' + x.reg + ' ' + (x.price || '')); }).join(' | '),
       owner_staff_name: S.owner ? (S.owner.name || '') : (S.session.role === 'staff' ? S.session.name : 'Dan'), owner_staff_email: S.owner ? (S.owner.email || '') : (S.session.role === 'staff' ? S.session.email : ''),
       submitted_by: S.session.role, app_mode: LIVE ? 'live' : 'demo' };
     msg.className = 'ct-msg'; msg.textContent = 'Sending...';
@@ -780,14 +824,14 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     if (!S.cust) return Promise.resolve(null);
     var r = Object.assign({ id: uuid(), customer_id: S.cust.id }, extra);
     return Promise.resolve().then(function () { return store.buyRequest(r); })
-      .then(function (row) { Promise.resolve().then(function () { return store.notifyBuy(row.id); }).catch(function (e) { console.warn('Swipe Drive notify', e); }); track('buy_request', { type: r.type }); return row; })
-      .catch(function (e) { console.warn('Swipe Drive buy request', e); return null; });
+      .then(function (row) { Promise.resolve().then(function () { return store.notifyBuy(row.id); }).catch(function (e) { console.warn('SwipeToDrive notify', e); }); track('buy_request', { type: r.type }); return row; })
+      .catch(function (e) { console.warn('SwipeToDrive buy request', e); return null; });
   }
   /* customer side WhatsApp text: a real new car names its order number so Dan can find it straight away */
   function carWa(c) { if (c.kind !== 'new_stock') return M.waLink(waNum(), c, waWho());
-    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the new ' + c.model + (c.colour ? ' in ' + c.colour : '') + ' in stock on Swipe Drive (order ' + c.order_number + ', ' + c.price + '). Is it still available?'); }
+    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the new ' + c.model + (c.colour ? ' in ' + c.colour : '') + ' in stock on SwipeToDrive (order ' + c.order_number + ', ' + c.price + '). Is it still available?'); }
   function buyWa(c, ref) { var reg = c.kind === 'new' ? '' : c.kind === 'new_stock' ? ', order ' + c.order_number : ', reg ' + M.normReg(c.reg);
-    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on Swipe Drive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
+    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on SwipeToDrive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
   function askBuy(c) { S.buyCar = c; var who = waWho() || 'Dan';
     $('#buyTitle').textContent = 'Buy the ' + c.model + '?'; $('#buyText').textContent = who + ' will call you to take a deposit and arrange collection.';
     $('#buyAsk').hidden = false; $('#buyDone').hidden = true; $('#buyYes').disabled = false; $('#buyModal').hidden = false; }
@@ -992,7 +1036,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
         shareInvite(inv); f.reset(); showInvites(); toast('Invite saved'); track('staff_invited'); })
       .catch(function (err) { busy(btn, false); console.warn('invite', err); banner(f, plainErr(err)); }); }); }
   function shareInvite(inv) { var link = location.origin + '/swipe-drive/';
-    var text = 'Hi ' + inv.name.split(' ')[0] + ', I have added you to Swipe Drive. Open ' + link + ' and sign in with ' + inv.email + ' (that exact email). You will get a sign in link and code by email, and you will see your customers once you are in. Dan';
+    var text = 'Hi ' + inv.name.split(' ')[0] + ', I have added you to SwipeToDrive. Open ' + link + ' and sign in with ' + inv.email + ' (that exact email). You will get a sign in link and code by email, and you will see your customers once you are in. Dan';
     var box = $('#invShare'); box.hidden = false; $('#invShareText').textContent = text;
     $('#invWa').href = 'https://wa.me/' + inv.whatsapp + '?text=' + encodeURIComponent(text);
     $('#invCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast('Invite message copied'); }, function () {
@@ -1002,7 +1046,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   function installInfo() {
     var el = $('#installInfo');
     if (platform.standalone) { el.innerHTML = '<p class="ct-sub">You are using the app. Nice.</p>'; return; }
-    if (platform.ios) { el.innerHTML = '<p class="ct-sub">Add Swipe Drive to your Home Screen to use it like an app and get alerts.</p><button class="ct-btn ct-btn-ghost" type="button" id="iosOpen">Show me how</button>'; $('#iosOpen').onclick = function () { $('#iosGuide').hidden = false; track('ios_guide_open'); }; return; }
+    if (platform.ios) { el.innerHTML = '<p class="ct-sub">Add SwipeToDrive to your Home Screen to use it like an app and get alerts.</p><button class="ct-btn ct-btn-ghost" type="button" id="iosOpen">Show me how</button>'; $('#iosOpen').onclick = function () { $('#iosGuide').hidden = false; track('ios_guide_open'); }; return; }
     el.innerHTML = '<button class="ct-btn" type="button" id="instNow">Install the app</button><div id="installHelp" class="ct-sub" role="status" aria-live="polite"></div>';
     $('#instNow').onclick = doInstall;
   }
@@ -1011,7 +1055,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     var android = /android/i.test(navigator.userAgent);
     var html = platform.ios ? 'On iPhone or iPad: tap the Share button in Safari, then Add to Home Screen.'
       : android ? 'On Android: open the browser menu (the three dots), then tap Install app or Add to Home screen.'
-      : 'On a computer: click the install icon at the right of the address bar in Chrome or Edge, or open the browser menu and choose Install Swipe Drive. In Safari on a Mac choose File, then Add to Dock.';
+      : 'On a computer: click the install icon at the right of the address bar in Chrome or Edge, or open the browser menu and choose Install SwipeToDrive. In Safari on a Mac choose File, then Add to Dock.';
     if (platform.ios) { $('#iosGuide').hidden = false; return; }
     function show() { var h = $('#installHelp'); if (h) { h.innerHTML = '<p>' + esc(html) + '</p>'; h.scrollIntoView({ block: 'center' }); } }
     if ($('[data-screen=me]').hidden && S.session) { go('me'); setTimeout(show, 50); } else show(); track('install_help'); }
@@ -1036,6 +1080,6 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     .then(function (sess) { if (sess) track('sign_in', { method: LIVE ? 'magic_link' : 'demo', role: sess.role }); return sess ? afterSignIn(sess) : route(); })
     .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
-    .catch(function (e) { console.warn('Swipe Drive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
+    .catch(function (e) { console.warn('SwipeToDrive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
   window.ctDebug = { S: S, store: store, safePrefs: safePrefs, platform: platform, route: route };
 })();

@@ -1,4 +1,4 @@
--- Swipe Drive update, 21 Oct 2026 (second part). Safe to run more than once.
+-- SwipeToDrive update, 21 Oct 2026 (second part). Safe to run more than once.
 -- Includes the earlier fix (fix-2026-10-21-customers.sql) so one paste covers everything.
 
 -- A) read policy checks the row itself, so Add a customer can read the new row back

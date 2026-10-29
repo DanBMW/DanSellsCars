@@ -1,4 +1,4 @@
-/* Swipe Drive config. Public values only: never put a service role key,
+/* SwipeToDrive config. Public values only: never put a service role key,
    VAPID private key or Resend key here (they live in Supabase secrets).
    MODE 'demo': profile and swipes live on this device, sign in is a placeholder.
    MODE 'supabase': fill the three values below from the Supabase project. */

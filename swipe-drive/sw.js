@@ -1,8 +1,8 @@
-/* Swipe Drive service worker: caches the app shell, serves offline.html when
+/* SwipeToDrive service worker: caches the app shell, serves offline.html when
    there is no connection, network first for stock data, and handles push. */
-const V = 'sd-v32';
-const SHELL = ['./', './index.html', './app.css', './app.css?v=32', './app.js', './app.js?v=32', './config.js', './config.js?v=32', './auth-ui.js', './auth-ui.js?v=32', './chat/profile-save.js', './chat/profile-save.js?v=32', './match-core.js', './match-core.js?v=32', './offline.html',
-  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../stock-core.js?v=32'];
+const V = 'sd-v33';
+const SHELL = ['./', './index.html', './app.css', './app.css?v=33', './app.js', './app.js?v=33', './config.js', './config.js?v=33', './auth-ui.js', './auth-ui.js?v=33', './chat/profile-save.js', './chat/profile-save.js?v=33', './match-core.js', './match-core.js?v=33', './offline.html',
+  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js', '../stock-core.js?v=33'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
@@ -31,7 +31,7 @@ self.addEventListener('fetch', e => {
 self.addEventListener('push', e => {
   let d = {}; try { d = e.data ? e.data.json() : {}; } catch (x) {}
   e.waitUntil(self.registration.showNotification(d.title || 'New match for you', {
-    body: d.body || 'Open Swipe Drive to see it.', icon: 'icons/icon-192.png', badge: 'icons/maskable-192.png',
+    body: d.body || 'Open SwipeToDrive to see it.', icon: 'icons/icon-192.png', badge: 'icons/maskable-192.png',
     image: d.image || undefined, data: { url: d.url || './#matches' } }));
 });
 self.addEventListener('notificationclick', e => {

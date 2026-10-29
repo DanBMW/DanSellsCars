@@ -1,4 +1,4 @@
-/* Swipe Drive guest swipe (from the latest stock email). The link's token is the only key and it lives in the
+/* SwipeToDrive guest swipe (from the latest stock email). The link's token is the only key and it lives in the
    URL hash, so it never reaches a server log. This page talks to ONE server function (guest-deck), which only
    returns car cards and records swipes and requests to Dan. No customer details are loaded or shown here. */
 (function () {
@@ -127,7 +127,7 @@
           if (!r.ok) { bot('That did not save, sorry. WhatsApp Dan and he will sort it.'); return; } S.confirmed = true; $('#g-confirm-end').hidden = true;
           bot('All done, thank you. ' + (r.held && r.held.length ? 'Dan will check the new ' + r.held.join(' and ') + ' and update it for you. ' : '') + (changed ? 'Your car preferences are updated. ' : '') + 'Dan will keep sending cars that fit.');
           bot('Want to see your profile and save everything? Sign in or create a free account. Totally optional.');
-          var tr = $('#g-tray'); tr.innerHTML = '<a class="g-chip go" href="./">Sign in to Swipe Drive</a>'; var c = document.createElement('button'); c.type = 'button'; c.className = 'g-chip'; c.textContent = 'Back to the cars'; c.onclick = function () { $('#g-chat').hidden = true; }; tr.appendChild(c); }); }
+          var tr = $('#g-tray'); tr.innerHTML = '<a class="g-chip go" href="./">Sign in to SwipeToDrive</a>'; var c = document.createElement('button'); c.type = 'button'; c.className = 'g-chip'; c.textContent = 'Back to the cars'; c.onclick = function () { $('#g-chat').hidden = true; }; tr.appendChild(c); }); }
       name(); }); }
   if (!tok || !CFG.SUPABASE_URL) return fail(401);
   call({ action: 'deck' }).then(function (r) {

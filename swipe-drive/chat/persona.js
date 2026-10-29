@@ -1,4 +1,4 @@
-/* Revvy: Dan's Swipe Drive assistant bot. Free, rule based, runs in the browser. Never quotes prices, discounts or finance. */
+/* Revvy: Dan's SwipeToDrive assistant bot. Free, rule based, runs in the browser. Never quotes prices, discounts or finance. */
 (function(g){
 var n=0;function pick(a){return a[(n++)%a.length]}
 function num(s){var m=String(s).replace(/,/g,"").match(/(\d+(?:\.\d+)?)\s*(k)?/i);return m?parseFloat(m[1])*(m[2]?1000:1):null}
@@ -6,7 +6,7 @@ var DAN="I'll pass that to Dan and he'll answer it when he gets your details. Fo
 var ST=[
  [/^(hi|hello|hey|hiya|yo|alright|morning|afternoon|evening|good (morning|afternoon|evening))\b[!.? ]*$/i,["Hello! 👋","Hiya, lovely to have you here.","Hey there!"]],
  [/\bhow (are|r) (you|u)\b|how'?s it going|you ok\b|you alright/i,["Running smoothly, thanks for asking! Full tank and all.","Very well thank you, just had my oil checked. 😄","Top form, ta. Ready when you are."]],
- [/\b(who are you|what are you|your name|what('?s| is) your name)\b/i,["I'm Revvy, Dan's assistant bot here at Swipe Drive. I gather the basics so Dan can find you the right car.","Revvy's the name. I'm a friendly bot that helps Dan get to know what you're after."]],
+ [/\b(who are you|what are you|your name|what('?s| is) your name)\b/i,["I'm Revvy, Dan's assistant bot here at SwipeToDrive. I gather the basics so Dan can find you the right car.","Revvy's the name. I'm a friendly bot that helps Dan get to know what you're after."]],
  [/\bare (you|u) (a |an )?(bot|robot|ai|real|human|person)\b|\bis this (a )?(bot|real person|human)\b|\btalking to a (bot|robot|person|human)\b/i,["Honest answer: yes, I'm a bot. Dan's assistant, to be precise. Dan sees everything you tell me and picks it up personally.","I am a bot, but a well meaning one! Dan reads every answer and takes it from there."]],
  [/^(thanks|thank you|cheers|ta|nice one|lovely|great|brilliant|awesome|perfect)\b[!. ]*$/i,["You're welcome!","Pleasure. 🙂","Any time."]],
  [/^(lol|haha+|ha+|lmao|😂|🤣)[!. ]*$/i,["Glad I'm amusing someone! 😄","I'll be here all week. Try the veal."]],
@@ -25,7 +25,7 @@ var COL={"Alpine White":"Alpine White, crisp and clean.","Black Sapphire":"Black
 function react(q,v,A){v=String(v||"");if(q.id=="name")return null;if(/^(Skipped|Not sure|Not sure yet|No preference|Rather not say)$/.test(v))return q.id=="phone"?"No problem at all, WhatsApp works just as well.":pick(["No problem.","That's fine, Dan can fill that in.","Fair enough."]);
  switch(q.id){
  case "name":return null; /* the next question already says nice to meet you */
- case "model":if(/^M\d|X\d M$/.test(v))return "Ooh, an M car. I can hear it from here! 🏁";return MOD[v]||(v=="Not sure yet"?"No problem at all, that's exactly what Swipe Drive is for.":"Good shout.");
+ case "model":if(/^M\d|X\d M$/.test(v))return "Ooh, an M car. I can hear it from here! 🏁";return MOD[v]||(v=="Not sure yet"?"No problem at all, that's exactly what SwipeToDrive is for.":"Good shout.");
  case "why":if(/Electric/.test(v))return "Electric, nice. Dan can talk you through charging too.";if(/Performance/.test(v))return "A driver after my own heart. 😄";if(/family/i.test(v))return "Room for everyone, noted.";return "Noted, that helps a lot.";
  case "cur":if(v=="No current car")return "Fresh start, lovely.";if(/bmw|series|\bx\d|\bi\d/i.test(v))return "Ah, already one of the family!";if(/audi|merc|mercedes|vw|volkswagen|ford|vauxhall|toyota|tesla|volvo|kia|hyundai/i.test(v))return pick(["Ooh, thinking of switching sides? 😄","Nice, we'll see if we can tempt you over."]);return "Got it.";
  case "reg":return "Thanks, that helps Dan look it up.";

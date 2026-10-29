@@ -9,7 +9,7 @@ const url='https://dexqyqrbelmdjdhxaboq.supabase.co/functions/v1/unsubscribe?t='
 const m=renderDigest({toName:'Sam',staff:false,matchesUrl:'https://dan-sells.co.uk/swipe-drive/#matches',unsubUrl:url,brokerText:'Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender.',
  items:[{car:{model:'BMW X3 xDrive20d M Sport',year:2022,mileage:'21,400 miles',fuel:'Diesel',gearbox:'Automatic',colour:'Black Sapphire',price:'Price on request',kind:'used'},finance:null,wa:'https://wa.me/447827138197?text=X3',waLabel:'WhatsApp about this car'}]});
 ok(m.html.includes('Unsubscribe from these emails')&&m.html.includes(url.replace(/&/g,'&amp;'))&&m.text.includes('Unsubscribe: '+url),'unsub in html and text');
-ok(/signed up to Swipe Drive/.test(m.html)&&/signed up/.test(m.text),'why line');
+ok(/signed up to SwipeToDrive/.test(m.html)&&/signed up/.test(m.text),'why line');
 ok(!/[\u2013\u2014]| - /.test(m.html.replace(/<[^>]+>/g,'')),'no dashes');
 let threw=false;try{renderDigest({toName:'x',staff:false,items:[],matchesUrl:'',unsubUrl:''})}catch(e){threw=true}ok(threw,'missing unsub throws');
 if(process.argv[2])fs.writeFileSync(process.argv[2],m.html);console.log(p+' passed, '+f+' failed');

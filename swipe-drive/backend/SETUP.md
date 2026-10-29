@@ -1,4 +1,4 @@
-# Swipe Drive backend setup (Supabase)
+# SwipeToDrive backend setup (Supabase)
 
 The app at /swipe-drive/ runs in demo mode until these steps are done. Nothing
 secret is ever committed: the service role key, VAPID private key, Resend key
@@ -21,10 +21,10 @@ npx supabase functions deploy match-alerts --no-verify-jwt
 npx supabase functions deploy unsubscribe --no-verify-jwt
 ```
 Then run the commented pg_cron block in schema.sql (daily 10:15 UTC, see after-signin-and-secrets.sql).
-Optional for email: `RESEND_API_KEY` and `MAIL_FROM="Swipe Drive <matches@mail.dan-sells.co.uk>"`.
+Optional for email: `RESEND_API_KEY` and `MAIL_FROM="SwipeToDrive <matches@mail.dan-sells.co.uk>"`.
 
 ## 3. Email (internal staff digests and sign in links)
-See the Swipe Drive report for the recommended route (Resend on mail.dan-sells.co.uk) and the GoDaddy records.
+See the SwipeToDrive report for the recommended route (Resend on mail.dan-sells.co.uk) and the GoDaddy records.
 Supabase's built in email only delivers to members of the Supabase project team and is heavily rate limited,
 so magic link sign in for customers and colleagues needs custom SMTP: Authentication > SMTP settings,
 host `smtp.resend.com`, port 465, user `resend`, password = the Resend API key, sender `signin@mail.dan-sells.co.uk`.

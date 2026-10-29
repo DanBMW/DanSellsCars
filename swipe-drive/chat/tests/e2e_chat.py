@@ -1,4 +1,4 @@
-"""Swipe Drive chat and quick lane end to end suite (headless Chrome, phone size).
+"""SwipeToDrive chat and quick lane end to end suite (headless Chrome, phone size).
 Usage: python3 e2e_chat.py BASE_URL [N] [--slow]
 BASE_URL is the folder holding index.html and quick.html, e.g. https://dan-sells.co.uk/swipe-drive/chat/ or file:///path/to/chat/
 Needs: pip install playwright, and Google Chrome installed (channel='chrome')."""

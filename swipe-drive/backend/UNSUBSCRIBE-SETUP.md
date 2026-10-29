@@ -1,6 +1,6 @@
 # Email unsubscribe (GDPR and PECR), not deployed yet
 
-Every Swipe Drive email that can reach a customer (the match digest) now has a visible Unsubscribe button,
+Every SwipeToDrive email that can reach a customer (the match digest) now has a visible Unsubscribe button,
 a line saying why they got it, and the List-Unsubscribe plus List-Unsubscribe-Post: List-Unsubscribe=One-Click
 headers. The link carries a signed per recipient token (`functions/_shared/unsub.js`).
 
