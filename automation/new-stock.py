@@ -88,6 +88,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 LOOKUP = os.path.join(os.path.dirname(HERE), 'lookup')
 OUT = os.path.join(LOOKUP, 'new-stock.json')
 ORDER_DIR = os.path.join(LOOKUP, 'order')
+LITE = os.path.join(LOOKUP, 'new-stock-lite.json')
+# The day the other three Hedin retailers joined the list: their cars all took
+# that first_seen, and not one of them arrived on it.
+GROUP_SEED_DAY = '2026-10-29'
+LITE_FIELDS = ('order_number', 'retailer_id', 'retailer_name', 'series', 'range',
+               'description', 'fuel', 'transmission', 'colour', 'price_gbp',
+               'monthly_gbp', 'apr', 'image', 'first_seen', 'first_seen_seed',
+               'on_hold', 'lead_time_weeks_min', 'lead_time_weeks_max')
 
 # Every Hedin BMW retailer on the BMW New Car Locator (its own retailer
 # dropdown, checked 29 October 2026). Ruxley stays first: the top-level
@@ -661,6 +669,10 @@ def main():
     print('removed list: %d gone today, %d back in stock, %d aged out, %d held'
           % (gone, len(back), len(aged), len(removed)))
 
+    for c in live:
+        if c.get('first_seen') == GROUP_SEED_DAY and c.get('retailer_id') != RETAILER:
+            c['first_seen_seed'] = True
+
     doc = {
         'generated_at': datetime.now(ZoneInfo('UTC')).strftime(
             '%Y-%m-%dT%H:%M:%S.000Z'),
@@ -684,6 +696,13 @@ def main():
         fh.write('\n')
     print('wrote %s' % os.path.relpath(OUT, os.path.dirname(HERE)))
     write_order_files(live, removed, day)
+    lite = {k: doc[k] for k in ('generated_at', 'count', 'retailers',
+                                'finance_terms', 'seeded_on')}
+    lite['cars'] = [{k: c[k] for k in LITE_FIELDS if k in c} for c in live]
+    with open(LITE, 'w', encoding='utf-8') as fh:
+        json.dump(lite, fh, ensure_ascii=False, separators=(',', ':'))
+    print('wrote %s (%d bytes)' % (os.path.relpath(LITE, os.path.dirname(HERE)),
+                                  os.path.getsize(LITE)))
 
 
 if __name__ == '__main__':

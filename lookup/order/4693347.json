@@ -68,6 +68,7 @@
  "retailer_id": "16267",
  "retailer_name": "Hedin Automotive Enfield",
  "first_seen": "2026-10-29",
+ "first_seen_seed": true,
  "status": "in_stock",
  "removed_at": null,
  "available_until": null

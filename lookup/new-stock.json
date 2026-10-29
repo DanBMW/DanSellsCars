@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-29T21:24:50.000Z",
+ "generated_at": "2026-10-29T21:42:12.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
  "count": 393,
@@ -626,7 +626,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6212714",
@@ -848,7 +849,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197421",
@@ -922,7 +924,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198491",
@@ -1366,7 +1369,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198497",
@@ -1440,7 +1444,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198507",
@@ -1514,7 +1519,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198513",
@@ -1588,7 +1594,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198514",
@@ -1736,7 +1743,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6200374",
@@ -1884,7 +1892,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6223230",
@@ -2033,7 +2042,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198905",
@@ -2108,7 +2118,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197416",
@@ -2258,7 +2269,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7968914",
@@ -2333,7 +2345,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4350903",
@@ -2409,7 +2422,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198916",
@@ -2485,7 +2499,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197411",
@@ -2561,7 +2576,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197397",
@@ -2636,7 +2652,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969942",
@@ -2717,7 +2734,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969943",
@@ -2801,7 +2819,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198939",
@@ -2876,7 +2895,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198560",
@@ -2951,7 +2971,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6229285",
@@ -3028,7 +3049,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404392",
@@ -3112,7 +3134,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385675",
@@ -3197,7 +3220,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198915",
@@ -3275,7 +3299,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4340425",
@@ -3358,7 +3383,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197451",
@@ -3443,7 +3469,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197608",
@@ -3518,7 +3545,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4340434",
@@ -3672,7 +3700,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7963574",
@@ -3921,7 +3950,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4374135",
@@ -4001,7 +4031,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6230146",
@@ -4077,7 +4108,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4371844",
@@ -4157,7 +4189,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197960",
@@ -4241,7 +4274,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7973898",
@@ -4313,7 +4347,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4374254",
@@ -4468,7 +4503,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4374253",
@@ -4624,7 +4660,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4400570",
@@ -4710,7 +4747,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4402553",
@@ -4781,7 +4819,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4693688",
@@ -4852,7 +4891,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6222441",
@@ -4923,7 +4963,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4374595",
@@ -5009,7 +5050,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4382017",
@@ -5081,7 +5123,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6209369",
@@ -5168,7 +5211,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199022",
@@ -5239,7 +5283,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4400579",
@@ -5325,7 +5370,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404407",
@@ -5406,7 +5452,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4402568",
@@ -5486,7 +5533,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4405765",
@@ -5635,7 +5683,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4374132",
@@ -5806,7 +5855,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198947",
@@ -5894,7 +5944,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4691270",
@@ -5972,7 +6023,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4402558",
@@ -6044,7 +6096,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969981",
@@ -6119,7 +6172,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4378099",
@@ -6200,7 +6254,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403278",
@@ -6280,7 +6335,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385679",
@@ -6362,7 +6418,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4302441",
@@ -6445,7 +6502,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4401667",
@@ -6516,7 +6574,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4693347",
@@ -6587,7 +6646,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4698884",
@@ -6729,7 +6789,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7961346",
@@ -6959,7 +7020,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4693685",
@@ -7115,7 +7177,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373179",
@@ -7197,7 +7260,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4374576",
@@ -7276,7 +7340,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7970399",
@@ -7349,7 +7414,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969966",
@@ -7429,7 +7495,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373805",
@@ -7507,7 +7574,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4164527",
@@ -7665,7 +7733,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4206251",
@@ -7741,7 +7810,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4139988",
@@ -7821,7 +7891,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4402576",
@@ -7901,7 +7972,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198575",
@@ -7981,7 +8053,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4209450",
@@ -8132,7 +8205,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197592",
@@ -8205,7 +8279,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4340681",
@@ -8290,7 +8365,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4340685",
@@ -8455,7 +8531,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4400609",
@@ -8537,7 +8614,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4405735",
@@ -8704,7 +8782,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197590",
@@ -8776,7 +8855,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404406",
@@ -8858,7 +8938,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969970",
@@ -8941,7 +9022,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403253",
@@ -9029,7 +9111,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403268",
@@ -9117,7 +9200,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403270",
@@ -9205,7 +9289,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4213554",
@@ -9370,7 +9455,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404288",
@@ -9453,7 +9539,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199030",
@@ -9599,7 +9686,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199035",
@@ -9672,7 +9760,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403254",
@@ -9760,7 +9849,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403260",
@@ -9848,7 +9938,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403266",
@@ -9936,7 +10027,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403267",
@@ -10024,7 +10116,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403269",
@@ -10112,7 +10205,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7960643",
@@ -10191,7 +10285,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969985",
@@ -10274,7 +10369,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969797",
@@ -10347,7 +10443,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4398593",
@@ -10429,7 +10526,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4402570",
@@ -10511,7 +10609,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4406376",
@@ -10660,7 +10759,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969969",
@@ -10744,7 +10844,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198529",
@@ -10827,7 +10928,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198530",
@@ -10910,7 +11012,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4302448",
@@ -10993,7 +11096,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4213569",
@@ -11078,7 +11182,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198588",
@@ -11152,7 +11257,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198548",
@@ -11241,7 +11347,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198547",
@@ -11329,7 +11436,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6200952",
@@ -11401,7 +11509,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4376089",
@@ -11478,7 +11587,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6200953",
@@ -11550,7 +11660,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4402571",
@@ -11633,7 +11744,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198590",
@@ -11708,7 +11820,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198592",
@@ -11783,7 +11896,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198593",
@@ -11858,7 +11972,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403363",
@@ -11934,7 +12049,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385685",
@@ -12018,7 +12134,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403287",
@@ -12100,7 +12217,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199028",
@@ -12178,7 +12296,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403265",
@@ -12266,7 +12385,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4375527",
@@ -12350,7 +12470,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969986",
@@ -12433,7 +12554,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198119",
@@ -12507,7 +12629,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4249038",
@@ -12586,7 +12709,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198585",
@@ -12660,7 +12784,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198587",
@@ -12734,7 +12859,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403306",
@@ -12810,7 +12936,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403307",
@@ -12886,7 +13013,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198429",
@@ -12968,7 +13096,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198569",
@@ -13043,7 +13172,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198570",
@@ -13118,7 +13248,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198571",
@@ -13193,7 +13324,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6200864",
@@ -13276,7 +13408,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197596",
@@ -13350,7 +13483,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201630",
@@ -13426,7 +13560,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7974926",
@@ -13592,7 +13727,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404282",
@@ -13677,7 +13813,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6200923",
@@ -13841,7 +13978,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6222342",
@@ -14000,7 +14138,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7974922",
@@ -14169,7 +14308,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4374668",
@@ -14253,7 +14393,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7974921",
@@ -14414,7 +14555,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373631",
@@ -14501,7 +14643,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385858",
@@ -14664,7 +14807,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373804",
@@ -14742,7 +14886,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373806",
@@ -14820,7 +14965,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198579",
@@ -14895,7 +15041,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198580",
@@ -14970,7 +15117,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198581",
@@ -15045,7 +15193,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967823",
@@ -15130,7 +15279,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967825",
@@ -15215,7 +15365,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967826",
@@ -15300,7 +15451,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6220910",
@@ -15381,7 +15533,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4691404",
@@ -15463,7 +15616,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403282",
@@ -15547,7 +15701,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403290",
@@ -15632,7 +15787,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197380",
@@ -15716,7 +15872,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404432",
@@ -15802,7 +15959,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4220782",
@@ -15977,7 +16135,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4696897",
@@ -16052,7 +16211,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201019",
@@ -16222,7 +16382,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4700991",
@@ -16388,7 +16549,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969976",
@@ -16474,7 +16636,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201007",
@@ -16734,7 +16897,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969855",
@@ -16819,7 +16983,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967785",
@@ -16907,7 +17072,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4405742",
@@ -17159,7 +17325,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7969979",
@@ -17242,7 +17409,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199840",
@@ -17326,7 +17494,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4209786",
@@ -17415,7 +17584,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4209787",
@@ -17504,7 +17674,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197382",
@@ -17588,7 +17759,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4395691",
@@ -17674,7 +17846,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4395692",
@@ -17760,7 +17933,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4395696",
@@ -17846,7 +18020,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6202985",
@@ -17929,7 +18104,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197385",
@@ -18017,7 +18193,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197383",
@@ -18100,7 +18277,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199838",
@@ -18185,7 +18363,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201026",
@@ -18438,7 +18617,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7962136",
@@ -18524,7 +18704,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4703067",
@@ -18594,7 +18775,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702322",
@@ -18663,7 +18845,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4704000",
@@ -18732,7 +18915,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201010",
@@ -19051,7 +19235,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702527",
@@ -19121,7 +19306,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702760",
@@ -19191,7 +19377,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7963854",
@@ -19344,7 +19531,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4704566",
@@ -19414,7 +19602,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702763",
@@ -19571,7 +19760,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4703284",
@@ -19641,7 +19831,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4703751",
@@ -19795,7 +19986,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201015",
@@ -19951,7 +20143,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4704503",
@@ -20108,7 +20301,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4703236",
@@ -20252,7 +20446,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197489",
@@ -20339,7 +20534,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702606",
@@ -20412,7 +20608,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404235",
@@ -20498,7 +20695,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199849",
@@ -20585,7 +20783,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702247",
@@ -20795,7 +20994,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4703718",
@@ -20866,7 +21066,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197487",
@@ -20954,7 +21155,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199841",
@@ -21043,7 +21245,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404253",
@@ -21129,7 +21332,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404245",
@@ -21632,7 +21836,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6211897",
@@ -21721,7 +21926,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967757",
@@ -21808,7 +22014,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702930",
@@ -21971,7 +22178,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967756",
@@ -22060,7 +22268,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197947",
@@ -22234,7 +22443,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197939",
@@ -22323,7 +22533,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967775",
@@ -22412,7 +22623,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967776",
@@ -22501,7 +22713,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967777",
@@ -22590,7 +22803,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967778",
@@ -22679,7 +22893,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967779",
@@ -22767,7 +22982,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967782",
@@ -22855,7 +23071,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967784",
@@ -22943,7 +23160,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967786",
@@ -23031,7 +23249,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197482",
@@ -23120,7 +23339,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702480",
@@ -23194,7 +23414,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199863",
@@ -23284,7 +23505,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198459",
@@ -23373,7 +23595,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198460",
@@ -23462,7 +23685,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198467",
@@ -23548,7 +23772,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198463",
@@ -23636,7 +23861,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198464",
@@ -23724,7 +23950,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198465",
@@ -23812,7 +24039,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198466",
@@ -23899,7 +24127,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198468",
@@ -23986,7 +24215,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198469",
@@ -24073,7 +24303,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6193277",
@@ -24160,7 +24391,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197486",
@@ -24247,7 +24479,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198437",
@@ -24342,7 +24575,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4702207",
@@ -24420,7 +24654,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7967772",
@@ -24509,7 +24744,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385738",
@@ -24601,7 +24837,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198470",
@@ -24691,7 +24928,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4300256",
@@ -24784,7 +25022,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6220165",
@@ -24876,7 +25115,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4379286",
@@ -24967,7 +25207,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197491",
@@ -25061,7 +25302,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199853",
@@ -25155,7 +25397,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6213138",
@@ -25249,7 +25492,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4376363",
@@ -25341,7 +25585,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6206639",
@@ -25721,7 +25966,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6200773",
@@ -25816,7 +26062,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4693474",
@@ -25902,7 +26149,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4701468",
@@ -25992,7 +26240,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4329829",
@@ -26085,7 +26334,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4377304",
@@ -26178,7 +26428,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4402669",
@@ -26272,7 +26523,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373373",
@@ -26364,7 +26616,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201031",
@@ -26549,7 +26802,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385726",
@@ -26640,7 +26894,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4693323",
@@ -26726,7 +26981,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198474",
@@ -26820,7 +27076,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373392",
@@ -26910,7 +27167,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4376394",
@@ -26999,7 +27257,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4364018",
@@ -27093,7 +27352,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385727",
@@ -27184,7 +27444,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385716",
@@ -27275,7 +27536,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373370",
@@ -27365,7 +27627,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385700",
@@ -27453,7 +27716,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373390",
@@ -27543,7 +27807,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373371",
@@ -27633,7 +27898,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373384",
@@ -27722,7 +27988,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373360",
@@ -27813,7 +28080,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197278",
@@ -27905,7 +28173,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6223625",
@@ -27999,7 +28268,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6202468",
@@ -28092,7 +28362,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4385977",
@@ -28185,7 +28456,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4361872",
@@ -28277,7 +28549,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7966925",
@@ -28365,7 +28638,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197371",
@@ -28458,7 +28732,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4693669",
@@ -28550,7 +28825,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7972989",
@@ -28637,7 +28913,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197958",
@@ -28733,7 +29010,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6203968",
@@ -28826,7 +29104,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7963077",
@@ -28916,7 +29195,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4401171",
@@ -29008,7 +29288,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4373499",
@@ -29097,7 +29378,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198967",
@@ -29191,7 +29473,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4295341",
@@ -29281,7 +29564,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4405763",
@@ -29457,7 +29741,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4376455",
@@ -29543,7 +29828,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199948",
@@ -29626,7 +29912,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6213365",
@@ -29804,7 +30091,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7970732",
@@ -29897,7 +30185,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197478",
@@ -29983,7 +30272,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403905",
@@ -30069,7 +30359,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6199856",
@@ -30155,7 +30446,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6224407",
@@ -30240,7 +30532,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4379289",
@@ -30417,7 +30710,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "7964080",
@@ -30505,7 +30799,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201034",
@@ -30684,7 +30979,8 @@
    ],
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4359526",
@@ -30779,7 +31075,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6201036",
@@ -31128,7 +31425,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198447",
@@ -31214,7 +31512,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6198448",
@@ -31300,7 +31599,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4375069",
@@ -31395,7 +31695,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4375626",
@@ -31491,7 +31792,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4691663",
@@ -31765,7 +32067,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4691144",
@@ -31947,7 +32250,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404311",
@@ -32040,7 +32344,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4404323",
@@ -32136,7 +32441,8 @@
    ],
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4375065",
@@ -32228,7 +32534,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403722",
@@ -32320,7 +32627,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4403730",
@@ -32412,7 +32720,8 @@
    ],
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29"
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "4378678",
