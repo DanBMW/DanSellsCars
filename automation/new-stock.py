@@ -17,7 +17,9 @@ every reader of the file would need repointing. Doing it here keeps the URL the
 brief asks for, puts the data under the same review and history as everything
 else, and costs one more step on a routine that already runs four.
 
-What the list is. Retailer 22181, Hedin Automotive Ruxley. These are cars the
+What the list is. Every Hedin BMW retailer in RETAILERS (Ruxley 22181,
+Bromley 26177, Enfield 16267, Woolwich 16215), each car tagged with its
+retailer_id and retailer_name. These are cars the
 BMW New Car Locator will build now, not the whole order bank. There is no
 registration and no readable VIN, so **the order number is the key**.
 
@@ -87,9 +89,22 @@ LOOKUP = os.path.join(os.path.dirname(HERE), 'lookup')
 OUT = os.path.join(LOOKUP, 'new-stock.json')
 ORDER_DIR = os.path.join(LOOKUP, 'order')
 
-RETAILER = '22181'
-RETAILER_NAME = 'Hedin Automotive Ruxley'
-BASE = 'https://stock.bmw.co.uk/retailer/' + RETAILER
+# Every Hedin BMW retailer on the BMW New Car Locator (its own retailer
+# dropdown, checked 29 October 2026). Ruxley stays first: the top-level
+# retailer_id/retailer_name keep naming it so existing readers do not change.
+RETAILERS = [('22181', 'Hedin Automotive Ruxley'),
+             ('26177', 'Hedin Automotive Bromley'),
+             ('16267', 'Hedin Automotive Enfield'),
+             ('16215', 'Hedin Automotive Woolwich')]
+RETAILER, RETAILER_NAME = RETAILERS[0]
+LOCATOR = 'https://stock.bmw.co.uk/retailer/'
+BASE = LOCATOR + RETAILER          # repointed per retailer by use_retailer()
+RETAILER_PAUSE = 5.0               # between retailers, on top of PAGE_PAUSE
+
+
+def use_retailer(rid):
+    global BASE
+    BASE = LOCATOR + rid
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
 CDN = 'https://prod.cosy.bmw.cloud/'
@@ -565,36 +580,69 @@ def main():
                     help='pull and report, write nothing')
     args = ap.parse_args()
 
-    s = Session()
-    ids = model_ids(s)
-    print('%d models on the search form' % len(ids))
-    if not ids:
-        raise SystemExit('no model ids on the retailer page, keeping the '
-                         'existing file')
+    prev = load_previous()
+    prev_by_site = {}
+    for c in (prev.get('cars') or []):
+        prev_by_site.setdefault(str(c.get('retailer_id') or RETAILER), []).append(c)
 
-    rows = pull(ids)
+    live, seen = [], set()
+    dropped, terms, sites = 0, None, []
+    for n, (rid, rname) in enumerate(RETAILERS):
+        if n:
+            time.sleep(RETAILER_PAUSE)
+        use_retailer(rid)
+        before = prev_by_site.get(rid, [])
+        got, err = [], None
+        try:
+            s = Session()               # a fresh session for every retailer
+            ids = model_ids(s)
+            print('%s (%s): %d models on the search form' % (rname, rid, len(ids)))
+            if not ids:
+                raise RuntimeError('no model ids on the retailer page')
+            rows = pull(ids)
+            t = finance_terms(s)
+            if t and terms is None:
+                terms = t
+            for row in rows:
+                rec = normalise(row, t or terms)
+                if not rec:
+                    dropped += 1
+                    continue
+                rec['retailer_id'] = rid
+                rec['retailer_name'] = rname
+                got.append(rec)
+        except Exception as e:
+            err = str(e)[:120]
+        # A site that comes back empty or with under half its last good count is
+        # treated as failed: its previous cars are kept, not marked removed.
+        if err or not got or (before and len(got) < len(before) / 2):
+            why = err or ('%d cars against %d last time' % (len(got), len(before)))
+            print('  %s FAILED (%s); keeping its %d previous cars' % (rname, why, len(before)))
+            got = [dict(c, retailer_id=rid, retailer_name=rname) for c in before]
+            ok = False
+        else:
+            ok = True
+        fresh = 0
+        for rec in got:
+            if rec['order_number'] in seen:
+                continue
+            seen.add(rec['order_number'])
+            live.append(rec)
+            fresh += 1
+        sites.append({'retailer_id': rid, 'retailer_name': rname,
+                      'count': fresh, 'ok': ok})
+        print('  %s: %d cars%s' % (rname, fresh, '' if ok else ' (kept from last run)'))
 
-    terms = finance_terms(s)
+    live.sort(key=lambda c: (c.get('price_gbp') or 0, c['order_number']))
+    print('%d cars across %d retailers (%d rows dropped for no usable order number)'
+          % (len(live), len(RETAILERS), dropped))
     if terms:
-        print('BMW\'s own finance terms: %s, %d months, £%s deposit, %s miles '
+        print('BMW\'s own finance terms: %s, %d months, %s deposit, %s miles '
               'a year' % (terms['product'], terms['term_months'],
                           '{:,}'.format(terms['deposit_gbp']),
                           '{:,}'.format(terms['annual_mileage'])))
-
-    live, seen = [], set()
-    dropped = 0
-    for row in rows:
-        rec = normalise(row, terms)
-        if not rec:
-            dropped += 1
-            continue
-        if rec['order_number'] in seen:
-            continue
-        seen.add(rec['order_number'])
-        live.append(rec)
-    live.sort(key=lambda c: (c.get('price_gbp') or 0, c['order_number']))
-    print('%d cars (%d rows dropped for no usable order number)'
-          % (len(live), dropped))
+    if not any(x['ok'] for x in sites):
+        raise SystemExit('every retailer failed; keeping the existing file')
     quoted = sum(1 for c in live if c.get('finance_example'))
     print('%d of %d carry a full set of finance figures' % (quoted, len(live)))
 
@@ -603,7 +651,6 @@ def main():
                          'the existing file' % len(live))
 
     day = today()
-    prev = load_previous()
     seeded_on = prev.get('seeded_on') or day.isoformat()
     new_today = carry_first_seen(prev, live, day)
     removed, back, gone, aged = roll_removed(prev, live, day)
@@ -620,6 +667,7 @@ def main():
         'retailer_id': RETAILER,
         'retailer_name': RETAILER_NAME,
         'count': len(live),
+        'retailers': sites,
         # The first day this file ever ran. A car whose first_seen equals it
         # was already here when the ledger began and is NOT newly arrived.
         'seeded_on': seeded_on,

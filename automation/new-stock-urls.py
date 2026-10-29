@@ -16,14 +16,22 @@ ns = importlib.util.module_from_spec(spec); spec.loader.exec_module(ns)
 
 F = urllib.parse.quote(base64.b64encode(b'true').decode())
 with contextlib.redirect_stdout(sys.stderr):  # pull() prints progress
-    rows = ns.pull(ns.model_ids(ns.Session()))
-out = []
+    rows = []
+    for n, (rid, _name) in enumerate(ns.RETAILERS):
+        if n:
+            ns.time.sleep(ns.RETAILER_PAUSE)
+        ns.use_retailer(rid)
+        for r in ns.pull(ns.model_ids(ns.Session())):
+            r['_retailer'] = rid
+            rows.append(r)
+out, seen = [], set()
 for r in rows:
     num = ns.order_number(r.get('order_number'))
-    if not num or not r.get('vin') or not r.get('iv'):
+    if not num or not r.get('vin') or not r.get('iv') or num in seen:
         continue
+    seen.add(num)
     out.append({'order': num, 'url': 'https://stock.bmw.co.uk/vehicle/%s/%s?dn=%s&f=%s' % (
         urllib.parse.quote(r['vin'], safe=''), urllib.parse.quote(r['iv'], safe=''),
-        ns.RETAILER, F)})
+        r['_retailer'], F)})
 json.dump(out, sys.stdout)
 print('%d vehicle pages' % len(out), file=sys.stderr)
