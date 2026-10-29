@@ -552,10 +552,7 @@
     CARS.forEach(function(c){
       var d = c.first_seen;
       c._fresh = false; c._arrAge = 1e9;
-      if (!d || !SEED || d === SEED) return;
-      /* More stock joined the feed on 29 October 2026, so a first_seen of that
-         day on those cars only means it was already here when reading began. */
-      if (String(c.retailer_id || '22181') !== '22181' && d <= '2026-10-29') return;
+      if (!d || !SEED || d === SEED || c.first_seen_seed) return;   /* first_seen_seed: already here when that stock began to be read */
       var then = Date.parse(d + 'T00:00:00Z'),
           now = Date.parse((TODAY || new Date().toISOString().slice(0,10)) + 'T00:00:00Z');
       if (isNaN(then) || isNaN(now)) return;
@@ -852,7 +849,8 @@
          + '<b>You save ' + esc(money(c.list_price - c.price_gbp)) + '</b></p>';
       return p + '<p class="nc-plabel">Hedin Ruxley price, on the road</p>';
     }
-    return p + '<p class="nc-plabel">' + (c.retailer_price
+    /* the light list does not say whose price it is, so until the car's full record is in, it is just on the road */
+    return p + '<p class="nc-plabel">' + (!c._full ? 'On the road price' : c.retailer_price
       ? 'Hedin Ruxley price, on the road'
       : 'BMW on the road price') + '</p>';
   }
@@ -878,6 +876,7 @@
   function specBlock(c){
     var n = (c.options || []).length + (c.packages || []).length
           + (c.standard || []).length + (c.standard_packages || []).length;
+    if (!c._full) return '<details class="nc-spec-list"><summary>Full specification</summary><div data-spec="1"></div></details>';
     if (!n) return '';
     return '<details class="nc-spec-list"><summary>Full specification, '
       + n + ' items</summary><div data-spec="1"></div></details>';
@@ -969,10 +968,13 @@
     var chip = e.target.closest ? e.target.closest('.nc-chip,.nc-pill') : null;
     if (chip && !chip.disabled){ toggle(chip.getAttribute('data-f'), chip.getAttribute('data-v')); return; }
     if (e.target.id === 'ncReset'){ SEL = {}; Q = ''; document.getElementById('ncQ').value = ''; render(); }
-    if (e.target.id === 'ncOpen'){ fitSheet(); document.getElementById('ncFacets').classList.add('open'); }
+    if (e.target.id === 'ncOpen'){ wantAllFull(); fitSheet(); document.getElementById('ncFacets').classList.add('open'); }
     if (e.target.id === 'ncShow'){ document.getElementById('ncFacets').classList.remove('open'); }
     if (e.target.id === 'ncShare'){ shareSearch(e.target); return; }
     var nav = e.target.closest ? e.target.closest('.nc-nav') : null;
+    var shot1 = e.target.closest ? e.target.closest('.nc-shot[data-n="1"]') : null;
+    if (shot1){ var a1 = shot1.closest('.nc-card'), b1 = a1 && a1.querySelector('.nc-quote'), c1 = b1 && byOrder(b1.getAttribute('data-quote'));
+      if (c1 && !c1._full) withDetail(c1).then(function(){ if ((c1.images || []).length > 1) refreshCard(a1, c1); }); }
     if (nav){ stepShot(nav.parentNode, nav.classList.contains('next') ? 1 : -1); return; }
     var q = e.target.closest ? e.target.closest('.nc-quote') : null;
     if (q){ askQuote(q.getAttribute('data-quote')); return; }
@@ -987,8 +989,48 @@
     var art = d.closest('.nc-card'), box = d.querySelector('[data-spec]');
     var btn = art && art.querySelector('.nc-quote');
     var c = btn && byOrder(btn.getAttribute('data-quote'));
-    if (box && c) fillSpec(box, c);
+    if (box && c){ if (c._full) fillSpec(box, c); else { box.textContent = 'Loading the specification'; withDetail(c).then(function(){ refreshCard(art, c); }); } }
   }, true);
+
+  /* The list comes from lookup/new-stock-lite.json. One car's full record
+     (every picture, equipment, wheels, seats, whose price it is) is
+     lookup/order/<order>.json, fetched when that car is opened. */
+  var FULL_KEYS = ['images','wheels','drive','seats','upholstery','zero_to_62','engine_cc','options','packages','standard','standard_packages','retailer_price','price'];
+  function mergeFull(c, d){
+    if (!d || String(d.order_number) !== String(c.order_number)) return;
+    FULL_KEYS.forEach(function(k){ if (d[k] != null && d[k] !== '') c[k] = d[k]; });
+    c._full = true; c._hay = hayFor(c);
+  }
+  function withDetail(c){
+    if (c._full) return Promise.resolve(c);
+    if (!c._detail) c._detail = fetch('lookup/order/' + encodeURIComponent(c.order_number) + '.json', {cache:'no-cache'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){ mergeFull(c, d); return c; })
+      ['catch'](function(){ c._detail = null; return c; });
+    return c._detail;
+  }
+  function refreshCard(art, c){
+    if (!art || !art.parentNode) return;
+    var open = c._full;
+    var tmp = document.createElement('div'); tmp.innerHTML = card(c);
+    var fresh = tmp.firstChild; art.parentNode.replaceChild(fresh, art);
+    var d = fresh.querySelector('.nc-spec-list');
+    if (d && open){ d.open = true; fillSpec(d.querySelector('[data-spec]'), c); }
+  }
+  /* Searching by equipment ("tow bar") and the drive and seats filters need
+     every car's full record, so the full file is read only once someone
+     searches or opens the filters, never on first load. */
+  var ALL_FULL = null;
+  function wantAllFull(){
+    if (ALL_FULL) return ALL_FULL;
+    ALL_FULL = fetch('lookup/new-stock.json', {cache:'no-cache'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){ var by = {}; (d.cars || []).forEach(function(x){ by[x.order_number] = x; });
+        CARS.forEach(function(c){ mergeFull(c, by[c.order_number]); });
+        buildFacets(); render(); })
+      ['catch'](function(){ ALL_FULL = null; });
+    return ALL_FULL;
+  }
 
   function byOrder(n){
     for (var i = 0; i < CARS.length; i++) if (CARS[i].order_number === n) return CARS[i];
@@ -1051,7 +1093,7 @@
 
   var tQ;
   document.getElementById('ncQ').addEventListener('input', function(e){
-    clearTimeout(tQ); var v = e.target.value;
+    clearTimeout(tQ); var v = e.target.value; wantAllFull();
     tQ = setTimeout(function(){ Q = v.trim(); render(); }, 150);
   });
   document.getElementById('ncSort').addEventListener('change', function(e){
@@ -1082,13 +1124,13 @@
   var QUOTES = fetch('lookup/new-stock-quotes.json', {cache:'no-cache'})
     .then(function(r){ return r.ok ? r.json() : {}; })
     .catch(function(){ return {}; });
-  fetch('lookup/new-stock.json', {cache:'no-cache'})
+  fetch('lookup/new-stock-lite.json', {cache:'no-cache'})
     .then(function(r){ return r.json(); })
     .then(function(d){ return QUOTES.then(function(q){ d._quotes = q || {}; return d; }); })
     .then(function(d){
       CARS = (d.cars || []).filter(function(c){ return !c.on_hold; });
       var QS = d._quotes.quotes || {};
-      CARS.forEach(function(c){ c._q = QS[c.order_number] || null; });
+      CARS.forEach(function(c){ c._q = QS[c.order_number] || null; if (!c.price && c.price_gbp) c.price = money0(c.price_gbp); });
       CARS.forEach(function(c){ c._hay = hayFor(c); });
       SEED = d.seeded_at || d.seeded_on || '';
       TODAY = (d.generated_at || '').slice(0, 10);
@@ -1100,6 +1142,7 @@
       }
       stampFresh();
       readUrl();
+      if (Q || SEL.drive || SEL.seats) wantAllFull();
       buildFacets();
       render();
       var when = d.generated_at ? new Date(d.generated_at) : null;

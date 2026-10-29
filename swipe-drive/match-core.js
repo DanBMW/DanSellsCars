@@ -175,6 +175,11 @@
       colour: c.colour, fuel: c.fuel, gearbox: c.transmission, transmission: c.transmission, drive: c.drive, seats: c.seats, upholstery: c.upholstery, wheels: c.wheels,
       price: c.price || (c.price_gbp ? gbp(c.price_gbp) : ''), price_gbp: c.price_gbp, monthly_gbp: f ? c.monthly_gbp : null, finance: f,
       lead_min: c.lead_time_weeks_min, lead_max: c.lead_time_weeks_max, on_hold: !!c.on_hold, image: c.image || '', images: (c.images || []).slice(0, 10), standard: c.standard || [], options: c.options || [] }; }
+  /* The deck reads lookup/new-stock-lite.json; the full record for one car (lookup/order/<order>.json) is fetched
+     when the customer opens it and merged in here: pictures, equipment and the rest of the specification. */
+  function mergeNewDetail(car, d) { if (!car || !d) return car;
+    var x = fromNewStock(d); ['description', 'colour', 'fuel', 'gearbox', 'transmission', 'drive', 'seats', 'upholstery', 'wheels', 'image'].forEach(function (k) { if (x[k] != null && x[k] !== '') car[k] = x[k]; });
+    if (x.images && x.images.length) car.images = x.images; car.standard = x.standard; car.options = x.options; car.detail = true; return car; }
   /* Brand new stock: the monthly comes only from the lender's own quote for that car (lookup/new-stock-quotes.json,
      checked by dsfinance.js newOk: complete, adds up, matches the price, in date, file fresh). A car without a good
      quote shows no monthly, so a monthly budget never matches it on a guess. fin is window.dsFin. */
@@ -290,5 +295,5 @@
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE };
+  root.ctMatch = { applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE };
 })(typeof window !== 'undefined' ? window : globalThis);

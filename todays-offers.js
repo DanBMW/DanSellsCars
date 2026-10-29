@@ -75,13 +75,19 @@
     getJSON('automation/stock-finance.json')['catch'](function () { return {}; }),
     getJSON('automation/car-details.json')['catch'](function () { return {}; }),
     getJSON('automation/stock-arrivals.json')['catch'](function () { return null; }),
-    getJSON('lookup/new-stock.json')['catch'](function () { return { cars: [] }; }),
+    /* the light list: the same cars and order numbers as the full file, so the pair matches the morning cards */
+    getJSON('lookup/new-stock-lite.json')['catch'](function () { return { cars: [] }; }),
     getJSON('lookup/new-stock-quotes.json')['catch'](function () { return { quotes: {} }; }),
     getJSON('finance-posts/new-index.json')['catch'](function () { return { posts: [] }; })
   ]).then(function (r) {
     DATA = { cards: r[0], home: r[1] || [], fin: r[2] || {}, det: r[3] || {}, arr: r[4],
       neu: r[5] || { cars: [] }, nq: r[6] || { quotes: {} }, ncards: r[7] || { posts: [] } };
-    build();
+    /* then the full record for just the two picked cars (pictures, whose price it is) */
+    return Promise.all(newPair(DAY).map(function (c) {
+      return getJSON('lookup/order/' + encodeURIComponent(c.order_number) + '.json').then(function (d) {
+        if (d && String(d.order_number) === String(c.order_number)) { Object.keys(d).forEach(function (k) { if (c[k] == null || c[k] === '') c[k] = d[k]; }); c._full = true; }
+      })['catch'](function () {});
+    })).then(build);
   })['catch'](function () { fail(); });
 
   function fail() {
@@ -164,8 +170,8 @@
       ref: c.order_number, photo: np[0] || '', pics: np,
       title: 'Brand new BMW ' + (c.description || ''),
       meta: [c.colour, c.fuel, c.transmission, weeks].filter(Boolean).join(' · '),
-      price: c.price, weeks: weeks,
-      priceKind: String(c.retailer_price) === 'True' ? 'Hedin Ruxley price, on the road' : 'BMW on the road price'
+      price: c.price || (c.price_gbp ? '\u00a3' + Math.round(c.price_gbp).toLocaleString('en-GB') : ''), weeks: weeks,
+      priceKind: !c._full ? 'On the road price' : String(c.retailer_price) === 'True' ? 'Hedin Ruxley price, on the road' : 'BMW on the road price'
     };
   }
 

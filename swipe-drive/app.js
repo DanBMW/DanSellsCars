@@ -223,7 +223,8 @@
       S.newRange = out;
     }).catch(function () { S.newRange = []; });
     /* real new cars in retailer stock, same ids as the alerts job (NEW + order number); cars on hold are left out */
-    var ns = fetch('../lookup/new-stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
+    /* the light list (no pictures beyond the first, no equipment lists); a car's full record loads when it is opened */
+    var ns = fetch('../lookup/new-stock-lite.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
       S.newStock = (d.cars || []).filter(function (c) { return c.order_number && !c.on_hold && c.price_gbp; }).map(M.fromNewStock);
       /* monthly figures for new cars: the lender's own quote only (dsfinance.js rules), else no monthly */
       return fetch('../lookup/new-stock-quotes.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
@@ -597,7 +598,15 @@
     var el = $('#sinceLast'); if (!el) { el = document.createElement('p'); el.id = 'sinceLast'; el.className = 'ct-since'; el.setAttribute('aria-live', 'polite'); $('#deck').parentNode.insertBefore(el, $('#deck')); }
     var n = S.sinceN || 0; el.hidden = !n || $('#deck').hidden; el.textContent = n === 1 ? '1 new car since your last visit' : n + ' new cars since your last visit';
   }
-  function showDeck() { if (!S.deck.length) buildDeck(); drawDeck(); noteVisit(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
+  /* The light list has no seats, drive or equipment. A customer with spec choices (7 seats, for one) is matched on the
+     full file, read once and only then; if it cannot be read the light list stands and those cars score as before. */
+  function needsFull(c) { c = c || {}; return !!(((c.specs_must || []).length || (c.specs || []).length) && (S.newStock || []).length); }
+  function ensureFull() { if (S.fullNs) return S.fullNs;
+    S.fullNs = fetch('../lookup/new-stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { var by = {};
+      (d.cars || []).forEach(function (x) { by[String(x.order_number)] = x; }); (S.newStock || []).forEach(function (c) { if (by[c.order_number]) M.mergeNewDetail(c, by[c.order_number]); }); })
+      .catch(function () { S.fullNs = null; }); return S.fullNs; }
+  function showDeck() { if (needsFull(S.cust) && !S.fullDone) { S.fullDone = true; ensureFull().then(function () { S.deck = []; if (!$('#deck').hidden) { buildDeck(); drawDeck(); } }); }
+    if (!S.deck.length) buildDeck(); drawDeck(); noteVisit(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
   function drawDeck() {
     var deck = $('#deck'); deck.innerHTML = '';
     var top = S.deck.slice(0, 3);
@@ -677,6 +686,10 @@
   function openSheet(x) {
     S.sheetAt = Date.now();
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
+    if (c.kind === 'new_stock' && !c.detail && !c._detailAsked) { c._detailAsked = true; S.sheetCar = c;
+      fetch('../lookup/order/' + encodeURIComponent(c.order_number) + '.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (!d) return; M.mergeNewDetail(c, d); if (S.sheetCar === c && !$('#sheet').hidden) openSheet(x); }).catch(function () {}); }
+    S.sheetCar = c;
     var imgs = photos(c);
     var ns = c.kind === 'new_stock';
     var specs = isNew ? [['Range', c.group]] : ns ? [['Version', c.description], ['Colour', c.colour], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Drive', c.drive], ['Seats', c.seats], ['Upholstery', c.upholstery], ['Wheels', c.wheels], ['Order number', c.order_number], ['Ready', ready(c).replace(/^Ready /, '')]] : [['Arrived', M.arrivedText(c)], ['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
