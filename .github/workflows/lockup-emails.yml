@@ -16,6 +16,10 @@ on:
         description: 'Print what would be sent, send nothing'
         type: boolean
         default: true
+      rota_now:
+        description: 'Send the lockup rota email for the next two weeks now'
+        type: boolean
+        default: false
 
 # read only: the forecourt check asks the GitHub API when this morning's used car
 # Routine last committed its stock files (scripts/forecourt-auto.js stockFresh)
@@ -43,5 +47,6 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MAIL_FROM_NAME: Hedin Used Cars
           GITHUB_TOKEN: ${{ github.token }}
+          ROTA_NOW: ${{ github.event_name == 'workflow_dispatch' && inputs.rota_now && '1' || '' }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
           

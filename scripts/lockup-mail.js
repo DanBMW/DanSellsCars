@@ -5,6 +5,7 @@
  *   5pm Mon to Fri  reminder to both people on the rota (4pm Saturday: managers)
  *   6:05pm          nudge to tonight's people if still unsigned (5:05pm Sat)
  *   6:30pm          managers (5:30pm Sat), if nobody has signed, or with any issues noted
+ *   Monday 08:00    the next two weeks of rota to the team (scripts/lockup-rota-mail.js, needs config/rotaEmail)
  * It also sends any queued manager notifications (lockup/notify, written by
  * the page for absences, cover and holidays) on every run, marking each sent.
  * Each send is marked under lockup/mail/<date>/<kind>, so a repeat or late run
@@ -155,6 +156,35 @@ async function main() {
       }
     }
   }
+
+  /* Monday 08:00 UK rota email for the next two weeks (scripts/lockup-rota-mail.js).
+     Off until lockup/config/rotaEmail is true; ROTA_NOW=1 sends one now. */
+  try {
+    const RM = require('./lockup-rota-mail.js');
+    const mailToday = (await db.ref(ROOT + '/mail/' + n.date).get()).val() || {};
+    const force = process.env.ROTA_NOW === '1';
+    if (force || RM.due(n, cfg, mailToday)) {
+      const from = RM.fromDateFor(n, process.env.ROTA_FROM);
+      for (const w of [R.isoWeek(from), R.shiftWeek(R.isoWeek(from), 1)]) {
+        if (R.needsWeek(weeks[w])) { const prior = Object.assign({}, weeks); delete prior[w]; weeks[w] = R.generate(w, cfg.team || {}, prior); if (!DRY) await db.ref(ROOT + '/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
+      }
+      const ch2 = R.applyAbsences(weeks, cfg.team || {}, absences, n.date, signed);
+      for (const c of ch2) if (!DRY) await db.ref(ROOT + '/weeks/' + c.week + '/days/' + c.dow).set(c.pair);
+      const fx2 = R.applyFixed(weeks, cfg.team || {}, absences, n.date, signed);
+      for (const m2 of (fx2.fixedMarks || [])) if (!DRY) await db.ref(ROOT + '/weeks/' + m2.week).update({ ['days/' + m2.dow]: weeks[m2.week].days[m2.dow], ['fixedDone/' + m2.dow]: m2.key });
+      const m = RM.build({ fromDate: from, weeks, team: cfg.team || {}, absences, hol, test: TEST });
+      const cc = TEST ? [] : mgrList;
+      if (!teamList.length) console.log('Rota email due but no team emails set');
+      else {
+        console.log((DRY ? '[dry] ' : '') + 'Send "' + m.subject + '" to ' + teamList.join(', ') + (cc.length ? ' cc ' + cc.join(', ') : ''));
+        if (DRY) console.log(m.text);
+        else {
+          await transport().sendMail({ from: { name: process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to: teamList, cc, subject: m.subject, text: m.text, html: m.html });
+          await db.ref(ROOT + '/mail/' + n.date + '/rota').set({ ts: Date.now(), from, to: teamList.join(', '), cc: cc.join(', ') });
+        }
+      }
+    }
+  } catch (e) { console.error('rota email failed', e); }
 
   const on = R.onFor(n.date, weeks[n.week], hol);
   if (on.kind === 'closed') { console.log('Closed today'); return done(admin); }
