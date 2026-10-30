@@ -118,12 +118,13 @@ body.testmode .prog{top:97px}
 </style>
 <script src="staff-gate.js"></script>
 <script src="lockup-rota.js"></script>
+<script src="team-identity.js"></script><script src="team-session.js"></script>
 </head>
 <body>
 <div id="testbar" class="testbar" hidden>TEST MODE &middot; practice data, emails to Dan and Nathan</div>
 <header class="top">
   <div class="brand"><div class="key">&#128273;</div><div>Lockup<small id="hdr-date">Hedin BMW Ruxley</small></div></div>
-  <button class="ghost" id="btn-manager" type="button">Managers</button>
+  <a class="ghost" href="team.html" style="text-decoration:none;margin-right:6px">Team</a><button class="ghost" id="btn-manager" type="button">Managers</button>
 </header>
 
 <main class="wrap">
@@ -225,6 +226,8 @@ body.testmode .prog{top:97px}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, update, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { ensureSignedIn } from "./staff-auth.js";
+import { makeBackend } from "./team-backend.js";
+const managerCheck=()=>{ TeamSession.start(makeBackend(app)); return TeamSession.ready().then(s=>!!s.canManage) };
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 const app=initializeApp(firebaseConfig); const db=getDatabase(app); ensureSignedIn(app);
 const R=window.LockupRota, $=id=>document.getElementById(id);
@@ -432,7 +435,7 @@ async function submit(){
 $('btn-done-home').onclick=()=>{show('tonight');paint()};
 
 /* ---- managers ---- */
-$('btn-manager').onclick=()=>{ if(view==='manager'){show('tonight');paintTonight();$('btn-manager').textContent='Managers';return} if(role==='manager'){openMgr();return} $('pin-modal').classList.add('show'); $('pin-input').value=''; setTimeout(()=>$('pin-input').focus(),50) };
+$('btn-manager').onclick=()=>{ if(view==='manager'){show('tonight');paintTonight();$('btn-manager').textContent='Managers';return} if(role==='manager'){openMgr();return} managerCheck().then(ok=>{ if(ok){role='manager';openMgr();return} $('pin-modal').classList.add('show'); $('pin-input').value=''; setTimeout(()=>$('pin-input').focus(),50) }) };
 $('pin-cancel').onclick=()=>$('pin-modal').classList.remove('show');
 const tryPin=()=>window.dsGate.check('manager',$('pin-input').value).then(ok=>{ if(ok){role='manager';$('pin-modal').classList.remove('show');openMgr()} else {toast('Wrong PIN');$('pin-input').value=''} });
 $('pin-go').onclick=tryPin; $('pin-input').onkeydown=e=>{if(e.key==='Enter')tryPin()};
