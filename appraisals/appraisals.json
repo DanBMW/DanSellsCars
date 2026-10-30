@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-30T14:02:23.618Z",
+  "captured": "2026-10-30T16:02:18.523Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "WP18EHO",
+      "appraisedAt": "2026-10-30T15:51:50.812Z",
+      "make": "VOLKSWAGEN",
+      "model": "Tiguan",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "JN07NEV",
+      "appraisedAt": "2026-10-30T14:50:53.419Z",
+      "make": "VOLVO",
+      "model": "XC40",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LV24SXN",
+      "appraisedAt": "2026-10-30T14:10:29.607Z",
+      "make": "TOYOTA",
+      "model": "Yaris Cross",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--0M4fToWj--/c_fill,h_300,w_300/v1793369442/Live/Appraisals/9612095/5d1b4046-a172-4853-899f-2b2d3fbf1f87.jpg"
+    },
     {
       "registration": "LL69WLP",
       "appraisedAt": "2026-10-30T12:52:08.801Z",
@@ -83,6 +113,16 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--fh3tdz6M--/c_fill,h_300,w_300/v1793284724/Live/Appraisals/9609941/ba2e7a80-8023-4374-b322-22fee46339b5.jpg"
+    },
+    {
+      "registration": "LV72NBX",
+      "appraisedAt": "2026-10-29T14:32:55.537Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Expired",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Fkf97PnD--/c_fill,h_300,w_300/v1793284398/Live/Appraisals/9609922/5fbb7069-069e-45e9-bf1d-4ba846479481.jpg"
     },
     {
       "registration": "YG64FZA",
@@ -2685,16 +2725,6 @@
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--EFKJvNKi--/c_fill,h_300,w_300/v1789309773/Live/Appraisals/9502756/b5f604e8-bdc3-4de1-99bb-660d57e10dc5.jpg"
     },
     {
-      "registration": "LV24SXN",
-      "appraisedAt": "2026-09-13T14:22:41.723Z",
-      "make": "TOYOTA",
-      "model": "Yaris Cross",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--7FSJ8no5--/c_fill,h_300,w_300/v1788618258/Live/Appraisals/9480446/2f441097-176a-4f02-968b-9d58f8b4a0a1.png"
-    },
-    {
       "registration": "T4PRW",
       "appraisedAt": "2026-09-13T13:24:14.817Z",
       "make": "BMW",
@@ -5043,8 +5073,7 @@
       "status": "Returned",
       "price": null,
       "condition": "Good",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--K6oAI9_8--/c_fill,h_300,w_300/v1785500057/Live/Appraisals/9387861/47d79b44-9a1e-44a6-87b8-dfdd12b20bfc.jpg",
-      "droppedAt": "2026-10-30T10:02:36.454Z"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--K6oAI9_8--/c_fill,h_300,w_300/v1785500057/Live/Appraisals/9387861/47d79b44-9a1e-44a6-87b8-dfdd12b20bfc.jpg"
     },
     {
       "registration": "LV72GVM",
@@ -5223,17 +5252,6 @@
       "condition": "Fair",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--kUYY-ZpD--/c_fill,h_300,w_300/v1785234773/Live/Appraisals/9380790/25e6e1ce-127c-40a1-b485-d9eab57b6bdc.png",
       "droppedAt": "2026-10-29T06:02:00.415Z"
-    },
-    {
-      "registration": "LV72NBX",
-      "appraisedAt": "2026-07-28T08:16:12.092Z",
-      "make": "BMW",
-      "model": "3 Series",
-      "status": "SaleInProgress",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--vIFpPiJf--/c_fill,h_300,w_300/v1785226590/Live/Appraisals/9380257/f74e8ea2-11b4-46ce-bbb3-472f72752710.jpg",
-      "droppedAt": "2026-10-29T06:02:00.416Z"
     },
     {
       "registration": "LB70YFD",
