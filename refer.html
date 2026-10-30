@@ -202,6 +202,7 @@
           </button>
         </div>
 
+        <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><label for="rfGotcha">Leave this empty</label><input id="rfGotcha" type="text" name="_gotcha" tabindex="-1" autocomplete="off"/></div>
         <div class="tick-box">&#10004; Your details are shared only with Dan and used only to process your referral reward.</div>
         <button class="btn" id="rfSendBtn" onclick="submitReferral()" style="width:100%;padding:15px;">Submit my referral</button>
         <div id="rfErr" role="alert" hidden style="margin-top:14px;padding:12px 14px;border:1px solid #c9785b;border-radius:12px;font-size:.88rem;line-height:1.6;color:#5c2b1a;background:rgba(201,120,91,.08)">That did not go through, so nothing has reached me yet. Please try again, or <a id="rfErrWa" href="https://wa.me/447827138197" target="_blank" rel="noopener" style="color:#1559cf;font-weight:700">send it to me on WhatsApp</a> instead.</div>
@@ -505,6 +506,19 @@
     rewardChosen = btn.dataset.val;
   }
 
+  /* SwipeToDrive: after the referral has gone through, both people get a SwipeToDrive record for Dan (referral-lead).
+     Needs the referrals SQL and the referral-lead function live first. Fire and forget: the page never waits on it
+     and nothing is sent to either person. */
+  var STD_REF_URL = "https://dexqyqrbelmdjdhxaboq.supabase.co/functions/v1/referral-lead";
+  function sendToSwipeToDrive(p){
+    try{
+      var g=document.getElementById("rfGotcha");
+      fetch(STD_REF_URL,{method:"POST",headers:{"Content-Type":"application/json"},keepalive:true,
+        body:JSON.stringify({referrer_name:p.referrer_name,referrer_phone:p.referrer_phone,referrer_email:p.referrer_email,
+          friend_name:p.friend_name,friend_phone:p.friend_phone,notes:p.notes,reward_preference:p.reward_preference,_gotcha:g?g.value:""})}).catch(function(){});
+    }catch(e){}
+  }
+
   var rfSending=false;
   async function submitReferral(){
     if(rfSending) return;
@@ -552,6 +566,7 @@
       });
       const j = await r.json().catch(function(){return {};});
       if(!r.ok||(j&&(j.ok===false||j.error||j.errors))) throw new Error(String(r.status));
+      sendToSwipeToDrive(payload);
       document.getElementById("referralForm").style.display = "none";
       document.getElementById("successMsg").style.display = "block";
       document.getElementById("friendNameConfirm").textContent = frName;

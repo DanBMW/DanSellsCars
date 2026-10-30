@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="crm/hub.css?v=41">
 <link rel="stylesheet" href="crd.css?v=1">
 <link rel="stylesheet" href="../motion.css?v=1"/>
-<link rel="stylesheet" href="premium.css?v=2">
+<link rel="stylesheet" href="premium.css?v=3">
 <script src="../motion.js?v=1" defer></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
@@ -72,6 +72,7 @@
   <section class="ct-screen" data-screen="profile" hidden>
     <form class="ct-panel ct-form" id="profileForm" novalidate>
       <h2 id="pfTitle">About you</h2>
+      <p id="pfRef" hidden></p>
       <p class="ct-sub" id="pfSub">Takes a minute. The more you tell me, the better your matches.</p>
       <fieldset><legend>You</legend>
         <p class="ct-hint">Only <b>Name</b>, <b>Mobile</b><span data-staff-only hidden> and <b>Email</b></span> are required. Everything else helps the matching but can be left blank.</p>
@@ -235,7 +236,7 @@
         <a class="ct-btn ct-btn-ghost ct-sm" href="#invites" id="invitesLink" hidden>Invite colleagues</a>
         <a class="ct-btn ct-btn-ghost ct-sm" href="#buys">Buy requests</a></div>
       <section class="ct-enq" id="enqBox" hidden aria-labelledby="enqH"></section>
-      <div class="ct-seg ct-tabs" id="custTabs" role="tablist"><button type="button" role="tab" data-tab="open" aria-pressed="true">Customers</button><button type="button" role="tab" data-tab="archived" aria-pressed="false">Archived <span id="archN"></span></button></div>
+      <div class="ct-seg ct-tabs" id="custTabs" role="tablist"><button type="button" role="tab" data-tab="open" aria-pressed="true">Customers</button><button type="button" role="tab" data-tab="archived" aria-pressed="false">Archived <span id="archN"></span></button><button type="button" role="tab" data-tab="referrals" aria-pressed="false" id="refTab" hidden>Referrals</button></div>
       <div id="custList" class="ct-clist"></div>
     </div>
   </section>

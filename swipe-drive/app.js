@@ -117,6 +117,9 @@
     invites: function () { return Promise.resolve(demoDb().invites || []); },
     buyRequest: function (r) { var d = demoDb(); d.buys = d.buys || []; r.status = 'new'; r.created_at = new Date().toISOString(); d.buys.unshift(r); demoSave(d); return Promise.resolve(r); },
     notifyBuy: function () { return Promise.resolve({ ok: false, reason: 'demo' }); },
+    referrals: function () { var d = demoDb(); return Promise.resolve(d.session && d.session.role === 'admin' ? (d.referrals || []).slice().sort(function (a, b) { return String(b.created_at).localeCompare(String(a.created_at)); }) : []); },
+    setReferralPaid: function (id, paid) { var d = demoDb(); (d.referrals || []).forEach(function (r) { if (r.id === id) { r.paid_out_at = paid ? new Date().toISOString() : null; r.paid_out_by_name = paid ? (S.session.name || 'Dan') : null; } }); demoSave(d); return Promise.resolve(); },
+    setReferralStatus: function (id, st) { var d = demoDb(); (d.referrals || []).forEach(function (r) { if (r.id === id) r.status = st; }); demoSave(d); return Promise.resolve(); },
     buyRequests: function () { var d = demoDb(); return Promise.resolve((d.buys || []).filter(function (b) { var c = (d.customers || []).find(function (x) { return x.id === b.customer_id; }); return c && demo.visible(d, c); }).map(function (b) { b.customers = (d.customers || []).find(function (x) { return x.id === b.customer_id; }) || null; return b; })); },
     setBuyStatus: function (id, st) { var d = demoDb(); (d.buys || []).forEach(function (b) { if (b.id === id) { b.status = st; b.called_at = st === 'called' ? new Date().toISOString() : null; } }); demoSave(d); return Promise.resolve(); },
     invite: function (inv) { var d = demoDb(); inv.id = uuid(); inv.created_at = new Date().toISOString(); d.invites.push(inv); demoSave(d); return Promise.resolve(inv); },
@@ -176,6 +179,10 @@
     /* lead record first (no RETURNING: staff only read policy), then ask the edge function to email Dan */
     buyRequest: function (r) { r.created_by = sbUser.id; return Promise.resolve(sb.from('buy_requests').insert(r)).then(function (x) { if (x.error) throw x.error; return r; }); },
     notifyBuy: function (id) { return Promise.resolve(sb.functions.invoke('notify-buy-request', { body: { id: id } })).then(function (x) { if (x.error) throw x.error; return x.data; }); },
+    /* referrals table may not exist yet (SQL pending): the tab then shows an empty list instead of an error */
+    referrals: function () { return Promise.resolve(sb.from('referrals').select('*').order('created_at', { ascending: false }).limit(300)).then(function (r) { return r.error ? [] : r.data || []; }); },
+    setReferralPaid: function (id, paid) { return Promise.resolve(sb.rpc('referral_set_paid', { rid: id, paid: !!paid })).then(function (r) { if (r.error) throw r.error; }); },
+    setReferralStatus: function (id, st) { return Promise.resolve(sb.rpc('referral_set_status', { rid: id, st: st })).then(function (r) { if (r.error) throw r.error; }); },
     buyRequests: function () { return Promise.resolve(sb.from('buy_requests').select('*, customers(name, phone, email)').order('created_at', { ascending: false }).limit(200)).then(function (r) { if (r.error) throw r.error; return r.data || []; }); },
     setBuyStatus: function (id, st) { return Promise.resolve(sb.from('buy_requests').update({ status: st, called_at: st === 'called' ? new Date().toISOString() : null, called_by: st === 'called' ? sbUser.id : null }).eq('id', id)).then(function (r) { if (r.error) throw r.error; }); },
     invites: function () { return sb.from('staff_invites').select('*').order('created_at', { ascending: false }).then(function (r) { return r.data || []; }); },
@@ -445,6 +452,7 @@
   function showProfile() {
     var f = $('#profileForm'), c = S.cust || {}, staff = S.session.role !== 'customer';
     $('#pfTitle').textContent = staff ? (c.id ? 'Edit ' + (c.name || 'customer') : 'Add a customer') : 'About you';
+    var rb = $('#pfRef'); if (rb) { rb.innerHTML = staff ? refBadge(c) : ''; rb.hidden = !rb.innerHTML; }
     /* staff can add a customer with just a name; customers still give a mobile */
     f.elements.phone.required = !staff; f.elements.phone.setAttribute('aria-required', String(!staff)); var rq = f.elements.phone.closest('label').querySelector('.ct-req'); if (rq) rq.textContent = staff ? 'optional' : 'required';
     $('#pfSub').textContent = staff ? 'Fill in what the customer told you. Their matches, swipes and photos stay visible to you and Dan only.' : 'Takes a minute. The more you tell me, the better your matches.';
@@ -1028,7 +1036,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   /* ---------------- staff ---------------- */
   function setActing(id) { return store.customers().then(function (l) { S.cust = l.find(function (c) { return c.id === id; }) || null; sessionStorage.setItem('ctActing', id); S.deck = []; return loadCust(); }); }
   /* New enquiries: Find my BMW and Tell me when it arrives sign ups (customers.desk.enquiry) nobody has actioned yet */
-  var ENQ_SRC = { 'find-my-bmw': 'Find my BMW', alerts: 'Stock alert', home: 'Stock alert, homepage', 'new-cars': 'Stock alert, new cars', 'new-cars-empty': 'Stock alert, new cars', stock: 'Stock alert, used stock', 'stock-empty': 'Stock alert, used stock' };
+  var ENQ_SRC = { referral: 'Referral', 'find-my-bmw': 'Find my BMW', alerts: 'Stock alert', home: 'Stock alert, homepage', 'new-cars': 'Stock alert, new cars', 'new-cars-empty': 'Stock alert, new cars', stock: 'Stock alert, used stock', 'stock-empty': 'Stock alert, used stock' };
   function enqSource(s) { s = String(s || '').replace(/^alert:/, ''); return ENQ_SRC[s] || (s ? 'Stock alert, ' + s : 'Website'); }
   function enqWhen(at) { var d = new Date(at); if (isNaN(d)) return ''; var mins = Math.round((Date.now() - d) / 60000);
     return mins < 60 ? (mins <= 1 ? 'just now' : mins + ' minutes ago') : mins < 1440 ? Math.round(mins / 60) + (Math.round(mins / 60) === 1 ? ' hour ago' : ' hours ago') : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
@@ -1044,6 +1052,24 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     b.disabled = true; var desk = Object.assign({}, c.desk || {}); desk.enquiry = Object.assign({}, desk.enquiry, { actioned_at: new Date().toISOString(), actioned_by_name: (S.session && S.session.name) || '' });
     var row = Object.assign({}, c, { desk: desk }); delete row.px_valuation_set_by_name; if (LIVE) { delete row.px_valuation_set_by; delete row.px_valuation_set_by_user; } S.cust = c; store.saveCustomer(row).then(function () { toast('Marked as actioned'); track('enquiry_actioned'); showTeam(); })
       .catch(function (err) { b.disabled = false; toast(plainErr(err)); }); }
+  /* Referrals (admin only): one row per refer.html referral. Both people already have records; the reward is ticked here once paid */
+  var REF_ST = { new: 'New', contacted: 'Contacted', sold: 'Bought', lost: 'Not going ahead' };
+  function refBadge(c) { var r = c && c.desk && c.desk.referred_by; return r && r.first_name ? '<span class="ct-pill ref">Referred by ' + esc(r.first_name) + '</span>' : ''; }
+  function paintReferrals(list) { var box = $('#custList');
+    return store.referrals().then(function (refs) { S.refs = refs; var unpaid = refs.filter(function (r) { return !r.paid_out_at; }).length;
+      box.innerHTML = '<div class="rf-head"><span class="rf-k">Referrals</span><span class="rf-n">' + refs.length + '</span><span class="rf-k">Unpaid</span><span class="rf-n">' + unpaid + '</span></div>' + (refs.map(function (r) {
+        var d = new Date(r.created_at), when = isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        return '<div class="rf-r' + (r.paid_out_at ? ' paid' : '') + '" data-rid="' + esc(r.id) + '"><div class="rf-who"><b>' + esc(r.referrer_first_name || 'Unknown') + '</b><span class="rf-arrow" aria-hidden="true"></span><b>' + esc(r.referred_first_name || 'Unknown') + '</b></div>' +
+          '<div class="rf-meta"><span>' + esc(when) + '</span><span class="ct-pill' + (r.reward_choice === 'credit' ? ' ref' : '') + '">' + esc(r.reward_label || r.reward_choice) + '</span></div>' +
+          '<div class="ct-row rf-ctl"><label class="ct-f ct-inline"><span>Status</span><select data-rst>' + Object.keys(REF_ST).map(function (k) { return '<option value="' + k + '"' + (r.status === k ? ' selected' : '') + '>' + REF_ST[k] + '</option>'; }).join('') + '</select></label>' +
+          '<label class="rf-paid"><input type="checkbox" data-rpaid' + (r.paid_out_at ? ' checked' : '') + '/> <span>Paid out</span></label>' + (r.referred_customer_id && (list || []).some(function (c) { return c.id === r.referred_customer_id; }) ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-ropen="' + esc(r.referred_customer_id) + '">Open ' + esc(r.referred_first_name || 'card') + '</button>' : '') + '</div>' +
+          (r.paid_out_at ? '<p class="rf-stamp">Paid ' + esc(new Date(r.paid_out_at).toLocaleDateString('en-GB')) + (r.paid_out_by_name ? ' by ' + esc(r.paid_out_by_name) : '') + '</p>' : '') + '</div>'; }).join('') || '<p class="ct-sub">No referrals yet. They appear here when someone uses the Refer a friend page.</p>'); }); }
+  function refClick(e) { var t = e.target, row = t.closest && t.closest('[data-rid]'); if (!row || S.custTab !== 'referrals') return; var id = row.getAttribute('data-rid');
+    if (t.hasAttribute('data-ropen')) { S.custTab = 'open'; var cid = t.getAttribute('data-ropen'); showTeam(); setTimeout(function () { var card = document.querySelector('#custList [data-cid="' + cid + '"]'); if (card) { card.scrollIntoView({ block: 'center', behavior: 'smooth' }); card.classList.add('ct-flash'); } }, 600); return; }
+    if (e.type !== 'change') return;
+    var p = t.hasAttribute('data-rpaid') ? store.setReferralPaid(id, t.checked).then(function () { toast(t.checked ? 'Marked as paid out' : 'Paid out removed'); track('referral_paid', { on: t.checked }); })
+      : t.hasAttribute('data-rst') ? store.setReferralStatus(id, t.value).then(function () { toast('Status saved'); }) : null;
+    if (p) { t.disabled = true; p.then(showTeam).catch(function (err) { t.disabled = false; toast(plainErr(err)); }); } }
   function showTeam() {
     var admin = S.session.role === 'admin';
     $('#teamTitle').textContent = admin ? 'All customers' : 'My customers'; $('#ownerFilterWrap').hidden = !admin; $('#invitesLink').hidden = !admin;
@@ -1052,6 +1078,8 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       paintEnq(list);
       var of = $('#ownerFilter'); if (admin) { var cur = of.value; of.innerHTML = '<option value="">Everyone</option><option value="none">Dan direct</option>' + staff.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.name || s.email) + '</option>'; }).join(''); of.value = cur; }
       var fv = admin ? of.value : ''; list = list.filter(function (c) { return !fv || (fv === 'none' ? !c.owner_staff_id : c.owner_staff_id === fv); });
+      $('#refTab').hidden = !admin; if (S.custTab === 'referrals' && !admin) S.custTab = 'open';
+      if (S.custTab === 'referrals') { $$('#custTabs button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-tab') === 'referrals' ? 'true' : 'false'); }); return paintReferrals(list); }
       var arch = S.custTab === 'archived', nArch = list.filter(function (c) { return c.closed_at; }).length; $('#archN').textContent = nArch ? String(nArch) : '';
       $$('#custTabs button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-tab') === (arch ? 'archived' : 'open') ? 'true' : 'false'); });
       list = list.filter(function (c) { return arch ? !!c.closed_at : !c.closed_at; });
@@ -1064,7 +1092,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
         $('#custList').innerHTML = rows.map(function (row) { var c = row.c, okc = consentOK(c); var ranked = M.rank(S.cars.filter(function (car) { return !row.sw[car.reg]; }), c).filter(function (x) { return x.score >= 55; });
           var freshN = ranked.filter(function (x) { return S.fresh && S.fresh[x.car.reg]; }).length; var likes = Object.keys(row.sw).filter(function (k) { return row.sw[k].liked; }).length;
           var p = row.ps.filter(function (x) { return !x.cancelled; })[0];
-          return '<div class="ct-c" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3><p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + (admin ? ' \u00b7 Owner: ' + esc(c.owner_staff_id ? names[c.owner_staff_id] || 'Colleague' : 'Dan direct') : '') + '</p>' +
+          return '<div class="ct-c" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3>' + (refBadge(c) ? '<p>' + refBadge(c) + '</p>' : '') + '<p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + (admin ? ' \u00b7 Owner: ' + esc(c.owner_staff_id ? names[c.owner_staff_id] || 'Colleague' : 'Dan direct') : '') + '</p>' +
             '<p>' + (freshN ? '<span class="ct-pill hot">' + freshN + ' new today</span>' : '') + '<span class="ct-pill">' + ranked.length + ' matches</span><span class="ct-pill">' + likes + ' liked</span>' + (function () { var g = Object.keys(row.sw).filter(function (k) { return row.sw[k].source === 'guest_link'; }), gl = g.filter(function (k) { return row.sw[k].liked; }).length; return g.length ? '<span class="ct-pill hot">Email link: ' + g.length + ' swiped, ' + gl + ' liked</span>' : ''; })() + (c.user_id ? '<span class="ct-pill">Claimed</span>' : '') + (okc ? '' : '<span class="ct-pill flag">No messaging consent</span>') + '</p>' +
             (c.px && c.px.reg ? '<p>PX ' + esc(c.px.reg) + (c.px_terms_confirmed_at ? ' \u00b7 terms confirmed ' + esc(new Date(c.px_terms_confirmed_at).toLocaleDateString('en-GB')) : '') + '</p>' : '') + (ratingsText(c.px_condition_ratings) ? '<p>' + esc(ratingsText(c.px_condition_ratings)) + '</p>' : '') + pxMoneyHtml(c) +
             (c.due_to_change_at ? '<p><span class="ct-pill due">Due to change</span> Back on matching since ' + esc(fmtDate(String(c.due_to_change_at).slice(0, 10))) + (c.px && c.px.equity_assumed_gbp === 0 ? '. PX equity assumed \u00a30 until valued' : '') + '</p>' : '') +
@@ -1098,6 +1126,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
         .catch(function (err) { btn.disabled = false; toast(plainErr(err)); }); });
     $('#undoBtn').addEventListener('click', function () { var f = S.undoFn; $('#undoToast').hidden = true; clearTimeout(S.undoT); S.undoFn = null; if (f) f().catch(function (err) { toast(plainErr(err)); }); });
     if ($('#enqBox')) $('#enqBox').addEventListener('click', enqClick);
+    $('#custList').addEventListener('change', refClick); $('#custList').addEventListener('click', refClick);
     $('#custList').addEventListener('click', function (e) { if (e.target.closest('[data-cancel-p]')) return purchaseClick(e); var b = e.target.closest('[data-act]'); if (!b) return; var id = b.closest('[data-cid]').getAttribute('data-cid'), act = b.getAttribute('data-act');
       if (act === 'close') { var cc = null; store.customers().then(function (l) { cc = l.find(function (x) { return x.id === id; }); if (!cc) return; S.closing = cc;
           $('#closeTitle').textContent = 'Close ' + (cc.name || 'this customer') + '?';
