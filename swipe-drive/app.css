@@ -373,3 +373,4 @@ body.ct::before{will-change:transform}
 .ct-alert-note{margin:0 0 10px}
 .ct-my-alerts{margin:12px 0}.ct-my-alerts h3{font-size:1rem;margin:0 0 6px}
 #nav{view-transition-name:ct-nav}
+.ct-prog{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.ct-prog-h{width:100%;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8fa6c8}.ct-pill.ok{background:rgba(52,199,123,.16);color:#bff0d3}

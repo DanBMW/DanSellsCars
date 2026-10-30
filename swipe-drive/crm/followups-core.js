@@ -91,6 +91,7 @@
     var r = { id: f.id || b64(rand(9)).replace(/[+/=]/g, 'x'), firstName: f.firstName.trim(), lastName: (f.lastName || '').trim(), email: f.email.trim(),
       phone: (f.phone || '').trim(), car: (f.car || '').trim(), notes: (f.notes || '').trim(), term: term, path: path,
       swipeCustomerId: f.swipeCustomerId || null, products: Array.isArray(f.products) ? f.products.slice() : null, history: [], created: todayIso };
+    if (f.progress && typeof f.progress === 'object') r.progress = Object.assign(normProgress(f.progress), { updated_at: f.progress.updated_at || null, updated_by_name: f.progress.updated_by_name || '' });
     if (path === 'kit') { r.start = sent; return withDue(r); }
     var at = st.filter(function (s) { return s.id === stage; })[0]; if (!at) throw new Error('Unknown stage for this agreement term');
     /* start = collection date. Back calculated from the email being sent now unless given. */
@@ -147,7 +148,34 @@
   function fill(s, rec, stage, html) {
     var car = rec.car || (rec.path === 'kit' ? 'your next car' : 'BMW'), name = html ? escH(rec.firstName) : rec.firstName, c = html ? escH(car) : car;
     return s.split('{name}').join(name).split('{car}').join(c).split('{n}').join(stage && stage.m != null ? stage.m : '')
-      .split('{ty}').join(link(TY + '?name=' + encodeURIComponent(rec.firstName), html)).split('{wa}').join(link(WA, html)).split('{refer}').join(link(REFER, html)).split('{refresh}').join(link(REFRESH, html)); }
+      .split('{ty}').join(link(tyLink(rec), html)).split('{wa}').join(link(WA, html)).split('{refer}').join(link(REFER, html)).split('{refresh}').join(link(REFRESH, html)); }
+  /* Purchase progress, same as the links.html Purchase Thank You tool. c = deposit, finance, order digits:
+     1 done, 0 not yet, finance 2 = cash buyer (n/a). type = stock, order or used. seen=0 when not seen in person. */
+  var PTYPES = ['stock', 'order', 'used'];
+  function normProgress(p) { p = p || {}; return { deposit: !!p.deposit, finance: p.finance === 'yes' || p.finance === 'na' ? p.finance : 'no', order: !!p.order,
+    type: PTYPES.indexOf(p.type) >= 0 ? p.type : null, seen: p.seen === 'yes' || p.seen === 'no' ? p.seen : null, token: validToken(p.token) ? p.token : null,
+    products: Array.isArray(p.products) ? PIDS.filter(function (id) { return p.products.indexOf(id) >= 0; }) : null }; }
+  /* product chips: same ids and labels as links.html (ticked = the customer has taken it) */
+  var PIDS = ['tyreAlloy', 'gap', 'hedinCare', 'ceramic', 'warranty'];
+  var PCHIPS = { tyreAlloy: 'Tyre & Alloy', gap: 'GAP', hedinCare: 'Club HedinCare SMART', ceramic: 'Williams Ceramic', warranty: 'Extended Warranty' };
+  /* gentle mention of what they have not taken, worded from product-email.js; nothing when products were never ticked */
+  function productMention(p) { p = normProgress(p); if (!p.products) return ''; var PE; try { PE = PEmod(); } catch (er) { return ''; }
+    var not = PE.PRODUCTS.filter(function (x) { return p.products.indexOf(x.id) < 0; }); if (!not.length) return '';
+    return 'There are also other protection products available to add if you would like them: ' + PE.joinList(not.map(function (x) { return x.name; })) + '.'; }
+  /* unguessable progress token: 24 url safe chars (144 bits). The FAQ page looks it up for live ticks. */
+  function validToken(t) { return typeof t === 'string' && /^[A-Za-z0-9_-]{22,64}$/.test(t); }
+  function newToken() { var a = rand(18); return b64(a).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function progressCode(p) { p = normProgress(p); return (p.deposit ? '1' : '0') + (p.finance === 'yes' ? '1' : p.finance === 'na' ? '2' : '0') + (p.order ? '1' : '0'); }
+  function tyLink(rec) { var p = normProgress(rec.progress), q = 'c=' + progressCode(p);
+    if (rec.firstName) q += '&name=' + encodeURIComponent(rec.firstName); if (p.type) q += '&type=' + p.type; if (p.seen === 'no') q += '&seen=0'; if (p.token) q += '&t=' + p.token;
+    return TY + '?' + q; }
+  function progressSummary(p) { p = normProgress(p); var a = [];
+    a.push((p.deposit ? '\u2713 ' : '\u25CB ') + 'Deposit Paid'); a.push(p.finance === 'na' ? '\u2713 Cash Buyer' : (p.finance === 'yes' ? '\u2713 ' : '\u25CB ') + 'Proposal Form'); a.push((p.order ? '\u2713 ' : '\u25CB ') + 'Signed Order Form');
+    return a; }
+  function waText(rec) { var g = rec.firstName ? 'Congratulations ' + rec.firstName + ' on your' : 'Congratulations on your';
+    var pm = productMention(rec.progress);
+    return g + " purchase with BMW Ruxley, please find some useful information and FAQ's within the link below.\n\n" + tyLink(rec) + (pm ? '\n\n' + pm : ''); }
+  function waLink(rec, phone) { var n = String(phone || '').replace(/\D/g, ''); if (n.charAt(0) === '0') n = '44' + n.slice(1); return 'https://wa.me/' + n + '?text=' + encodeURIComponent(waText(rec)); }
   function variants(kind) { if (!W[kind]) throw new Error('Unknown stage'); return W[kind]; }
   function suggestVariant(rec) { var h = (rec.history || []).filter(function (x) { return !x.skipped; }), last = h.length ? h[h.length - 1].variant : -1; return (last + 1) % 3; }
   /* month 0: product presentation, reusing product-email.js (same included / available to add layout and AI video note).
@@ -166,7 +194,8 @@
   function build(rec, variant, stage) {
     stage = stage || nextStage(rec); if (!stage) throw new Error('Journey complete');
     var v = variants(stage.kind)[variant]; if (!v) throw new Error('Pick one of the three wordings');
-    var paras = v.p.concat(['Kind regards,']), ps = stage.kind === 'initial' && Array.isArray(rec.products) ? productSection(rec) : null, at = paras.length - 2;
+    var pm0 = stage.kind === 'purchase' ? productMention(rec.progress) : '', vp = pm0 ? v.p.slice(0, -1).concat([pm0], v.p.slice(-1)) : v.p;
+    var paras = vp.concat(['Kind regards,']), ps = stage.kind === 'initial' && Array.isArray(rec.products) ? productSection(rec) : null, at = paras.length - 2;
     var html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#111;max-width:600px"><p style="margin:0 0 14px">Hi ' + escH(rec.firstName) + ',</p>'
       + paras.map(function (p, i) { return (ps && i === at ? ps.html : '') + '<p style="margin:0 0 14px">' + fill(p, rec, stage, true) + '</p>'; }).join('') + '</div>';
     var tp = paras.map(function (p) { return fill(p, rec, stage, false); }); if (ps) tp.splice(at, 0, ps.text);
@@ -183,5 +212,5 @@
 
   return { ITER: ITER, CC: CC, WA: WA, WORDING: W, newSalt: newSalt, deriveKey: deriveKey, encrypt: encrypt, decrypt: decrypt, makeVault: makeVault, openVault: openVault,
     KINDS: KINDS, stagesFor: stagesFor, nextStage: nextStage, dueDate: dueDate, withDue: withDue, timeline: timeline, stageById: stageById, addMonths: addMonths, addDays: addDays, planDate: planDate, status: status, dueNow: dueNow, sortByDue: sortByDue, markSent: markSent, newRecord: newRecord, iso: iso,
-    variants: variants, productSection: productSection, suggestVariant: suggestVariant, build: build, mailto: mailto, exportBackup: exportBackup, readBackup: readBackup };
+    variants: variants, productSection: productSection, suggestVariant: suggestVariant, build: build, mailto: mailto, normProgress: normProgress, PCHIPS: PCHIPS, productMention: productMention, newToken: newToken, validToken: validToken, progressCode: progressCode, tyLink: tyLink, progressSummary: progressSummary, waText: waText, waLink: waLink, exportBackup: exportBackup, readBackup: readBackup };
 });

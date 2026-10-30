@@ -93,9 +93,10 @@
       + '<ol class="fx-tl">' + tl.map(function (x) { return '<li class="fx-t-' + x.state + '"><span class="fx-tm">' + (x.m != null ? 'Month ' + x.m : '') + '</span><b>' + e(x.label) + '</b><small>' + STATE[x.state] + (x.date ? ' &middot; ' + nice(x.date) : '') + '</small></li>'; }).join('') + '</ol>'
       + (r.notes ? '<div class="fx-meta">' + e(r.notes) + '</div>' : '')
       + '<div class="fx-actions">' + (F.status(r, t) === 'due' || F.status(r, t) === 'overdue' ? '<button class="fx-btn" id="fx-js">Send next follow up</button>' : '')
-      + '<button class="fx-ghost" id="fx-je">Edit</button><button class="fx-ghost' + (r.stopped ? '' : ' fx-danger') + '" id="fx-jstop">' + (r.stopped ? 'Resume journey' : 'Stop follow ups') + '</button><button class="fx-ghost" data-close>Close</button></div>');
+      + (r.path === 'kit' ? '' : '<button class="fx-ghost" id="fx-jp">Purchase progress</button>') + '<button class="fx-ghost" id="fx-je">Edit</button><button class="fx-ghost' + (r.stopped ? '' : ' fx-danger') + '" id="fx-jstop">' + (r.stopped ? 'Resume journey' : 'Stop follow ups') + '</button><button class="fx-ghost" data-close>Close</button></div>');
     if (document.getElementById('fx-js')) document.getElementById('fx-js').onclick = function () { send(id); };
     document.getElementById('fx-je').onclick = function () { form(id); };
+    if (document.getElementById('fx-jp')) document.getElementById('fx-jp').onclick = function () { progress(id); };
     document.getElementById('fx-jstop').onclick = function () { save(Object.assign({}, r, { stopped: !r.stopped })).then(function () { render('app', (r.stopped ? 'Journey resumed for ' : 'Follow ups stopped for ') + r.firstName + '.'); }); };
   }
   function form(id, pre) { var r = id ? recs.find(function (x) { return x.id === id; }) : (pre || {}), t = today(), path = r.path || 'journey';
@@ -136,16 +137,56 @@
       save(rec).then(function () { if (id) return render('app', 'Saved. ' + (rec.due ? 'Next follow up ' + nice(rec.due) + '.' : ''));
         render('app', 'Saved ' + rec.firstName + '.'); send(rec.id, f.sentDate); }, function (er) { document.getElementById('fx-ferr').textContent = er.message; }); };
   }
+  /* ---------- purchase progress (links.html Purchase Thank You chips). Saved on the encrypted record and, for SwipeToDrive
+     customers, on customers.desk.purchase_progress via window.FU_PROGRESS so it restores anywhere. ---------- */
+  function progHtml(p) { p = F.normProgress(p);
+    function chip(id, on, label, kind) { return '<button type="button" class="fx-pc' + (on ? ' on' : '') + (kind ? ' fx-pc-' + kind : '') + '" data-pg="' + id + '" aria-pressed="' + !!on + '"><i></i>' + label + '</button>'; }
+    return '<div class="fx-prog" id="fx-prog"><div class="fx-pt">Purchase progress <small>Tick what they have done so far. The link updates to match.</small></div>'
+      + '<span class="fx-pl">What did they buy?</span><div class="fx-pr">' + chip('t-stock', p.type === 'stock', 'Stock New Car', 'one') + chip('t-order', p.type === 'order', 'Factory Order', 'one') + chip('t-used', p.type === 'used', 'BMW Used', 'one') + '</div>'
+      + '<span class="fx-pl">Has the customer seen the car in person?</span><div class="fx-pr">' + chip('s-yes', p.seen === 'yes', 'Seen in person', 'one') + chip('s-no', p.seen === 'no', 'Not seen: add extra info', 'one') + '</div>'
+      + '<span class="fx-pl">Documents</span><div class="fx-pr">' + chip('deposit', p.deposit, 'Deposit Paid') + chip('finance', p.finance === 'yes', 'Proposal Form') + chip('na', p.finance === 'na', 'N/A: Cash Buyer', 'one') + chip('order', p.order, 'Signed Order Form') + '</div>'
+      + '<span class="fx-pl">Products taken <small>(anything not ticked gets a gentle mention)</small></span><div class="fx-pr">' + Object.keys(F.PCHIPS).map(function (k) { return chip('p-' + k, (p.products || []).indexOf(k) >= 0, e(F.PCHIPS[k])); }).join('') + '</div>'
+      + '<div class="fx-plink"><b>Link</b> <code id="fx-plk"></code></div><p class="fx-hint" id="fx-pmsg">' + (p.updated_at ? '' : '') + '</p></div>'; }
+  function progTap(p, id) { p = F.normProgress(p);
+    if (id === 'deposit') p.deposit = !p.deposit; else if (id === 'order') p.order = !p.order;
+    else if (id === 'finance') p.finance = p.finance === 'yes' ? 'no' : 'yes'; else if (id === 'na') p.finance = p.finance === 'na' ? 'no' : 'na';
+    else if (id.indexOf('t-') === 0) { var t = id.slice(2); p.type = p.type === t ? null : t; } else if (id.indexOf('p-') === 0) { var pk = id.slice(2), l = (p.products || []).slice(), ix = l.indexOf(pk); if (ix >= 0) l.splice(ix, 1); else l.push(pk); p.products = l; p = F.normProgress(p); } else if (id.indexOf('s-') === 0) { var v = id.slice(2); p.seen = p.seen === v ? null : v; }
+    return p; }
+  function progStamp(when, by) { return when ? 'Last saved ' + new Date(when).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + (by ? ' by ' + by : '') : ''; }
+  /* restore: the newest of the encrypted record and the SwipeToDrive customer record wins */
+  function progRestore(rec) { var PROG = window.FU_PROGRESS; if (!PROG || !rec.swipeCustomerId) return Promise.resolve(rec);
+    return PROG.get(rec.swipeCustomerId).then(function (d) { if (d && (!rec.progress || String(d.updated_at || '') > String(rec.progress.updated_at || ''))) rec.progress = d; return rec; }, function () { return rec; }); }
+  var progT = null;
+  function progSave(rec, msgEl) { clearTimeout(progT); progT = setTimeout(function () { var PROG = window.FU_PROGRESS, by = PROG && PROG.by ? PROG.by() : '';
+      var np = F.normProgress(rec.progress); if (!np.token) np.token = F.newToken(); rec.progress = Object.assign(np, { updated_at: new Date().toISOString(), updated_by_name: by });
+      Promise.all([save(rec), PROG && rec.swipeCustomerId ? PROG.set(rec.swipeCustomerId, rec.progress) : null])
+        .then(function () { if (msgEl) msgEl.textContent = progStamp(rec.progress.updated_at, by) + (rec.swipeCustomerId ? ', on their SwipeToDrive record too.' : '.'); },
+          function (er) { if (msgEl) msgEl.textContent = 'Could not save: ' + (er.message || er); }); }, 500); }
+  function progBind(m, rec, onChange) { var box = m.querySelector('#fx-prog'); if (!box) return;
+    function paint() { var p = F.normProgress(rec.progress); box.querySelector('#fx-plk').textContent = F.tyLink(rec).replace('https://', '');
+      box.querySelectorAll('[data-pg]').forEach(function (b) { var id = b.getAttribute('data-pg'), on = id === 'deposit' ? p.deposit : id === 'order' ? p.order : id === 'finance' ? p.finance === 'yes' : id === 'na' ? p.finance === 'na' : id.indexOf('t-') === 0 ? p.type === id.slice(2) : id.indexOf('p-') === 0 ? (p.products || []).indexOf(id.slice(2)) >= 0 : p.seen === id.slice(2);
+        b.classList.toggle('on', !!on); b.setAttribute('aria-pressed', !!on); }); }
+    box.querySelector('#fx-pmsg').textContent = rec.progress && rec.progress.updated_at ? progStamp(rec.progress.updated_at, rec.progress.updated_by_name) : '';
+    box.querySelectorAll('[data-pg]').forEach(function (b) { b.onclick = function () { var tk = F.normProgress(rec.progress).token || F.newToken(); rec.progress = Object.assign(progTap(rec.progress, b.getAttribute('data-pg')), { token: tk, updated_at: (rec.progress || {}).updated_at, updated_by_name: (rec.progress || {}).updated_by_name });
+      paint(); box.querySelector('#fx-pmsg').textContent = 'Saving...'; progSave(rec, box.querySelector('#fx-pmsg')); if (onChange) onChange(); }; }); paint(); }
+  function waBtn(rec) { return '<a class="fx-wa" id="fx-wa" href="' + e(F.waLink(rec, rec.phone)) + '" target="_blank" rel="noopener">Send by WhatsApp</a>'; }
+  /* progress sheet: update the ticks any time after purchase and resend the updated link */
+  function progress(id) { var r = recs.find(function (x) { return x.id === id; }); progRestore(r).then(function (rec) {
+    var m = modal('<div class="fx-h">Purchase progress for ' + e(rec.firstName) + '</div><div class="fx-sub">' + e(rec.car || '') + '</div>' + progHtml(rec.progress)
+      + '<div class="fx-actions">' + waBtn(rec) + '<button class="fx-ghost" id="fx-pcopy">Copy message</button><button class="fx-ghost" data-close>Close</button></div>');
+    progBind(m, rec, function () { m.querySelector('#fx-wa').href = F.waLink(rec, rec.phone); });
+    m.querySelector('#fx-pcopy').onclick = function () { if (navigator.clipboard) navigator.clipboard.writeText(F.waText(rec)).then(function () { m.querySelector('#fx-pmsg').textContent = 'Copied.'; }); }; }); }
   var sendDate = null, pending = null;
-  function send(id, onDate) { sel = recs.find(function (x) { return x.id === id; }); sendDate = onDate || today(); variant = F.suggestVariant(sel); draw(); }
+  function send(id, onDate) { sel = recs.find(function (x) { return x.id === id; }); sendDate = onDate || today(); variant = F.suggestVariant(sel); var k = F.nextStage(sel); draw(); if (k && k.kind === 'purchase') { var was = JSON.stringify(sel.progress || null), me = sel; progRestore(sel).then(function () { if (sel === me && JSON.stringify(sel.progress || null) !== was && document.getElementById('fx-prog')) draw(); }); } }
   function draw() { var stg = F.nextStage(sel), vs = F.variants(stg.kind), mail = F.build(sel, variant);
     var m = modal('<div class="fx-h">Send next follow up to ' + e(sel.firstName) + '</div><div class="fx-sub">' + e(stg.label) + (stg.m != null ? ' &middot; month ' + stg.m + ' of ' + sel.term : '') + ' &middot; choose a wording</div><div class="fx-vars">'
       + vs.map(function (v, i) { var b = F.build(sel, i); return '<button class="fx-var' + (i === variant ? ' on' : '') + '" data-v="' + i + '"><span class="fx-vn">Option ' + (i + 1) + (i === F.suggestVariant(sel) ? ' &middot; suggested' : '') + '</span><b>' + e(b.subject) + '</b><small>' + e(b.text.split('\n\n')[2].slice(0, 110)) + '...</small></button>'; }).join('')
-      + '</div><div class="fx-meta"><b>To:</b> ' + e(mail.to) + '<br><b>Cc:</b> ' + e(mail.cc) + '<br><b>Subject:</b> ' + e(mail.subject) + '</div><div class="fx-prev">' + mail.html + '</div>'
+      + '</div>' + (stg.kind === 'purchase' ? progHtml(sel.progress) : '') + '<div class="fx-meta"><b>To:</b> ' + e(mail.to) + '<br><b>Cc:</b> ' + e(mail.cc) + '<br><b>Subject:</b> ' + e(mail.subject) + '</div><div class="fx-prev">' + mail.html + '</div>'
       + (stg.kind === 'initial' && !mail.products && window.dashOpen ? '<p class="fx-hint">Tip: send the Product presentation email too. <a href="#p=presentation">Open it</a></p>' : '')
       + '<p class="fx-msg" id="fx-smsg">Nothing sends from here. Copy and open email opens a new message, then you press Send.</p>'
-      + '<div class="fx-actions"><button class="fx-btn" id="fx-open">Copy and open email</button><button class="fx-ok" id="fx-done">Mark as sent</button><button class="fx-ghost" data-close>Close</button></div>');
+      + '<div class="fx-actions"><button class="fx-btn" id="fx-open">Copy and open email</button>' + (stg.kind === 'purchase' ? waBtn(sel) : '') + '<button class="fx-ok" id="fx-done">Mark as sent</button><button class="fx-ghost" data-close>Close</button></div>');
     m.querySelectorAll('[data-v]').forEach(function (b) { b.onclick = function () { variant = +b.getAttribute('data-v'); draw(); }; });
+    if (stg.kind === 'purchase') progBind(m, sel, function () { mail = F.build(sel, variant); m.querySelector('.fx-prev').innerHTML = mail.html; m.querySelector('#fx-wa').href = F.waLink(sel, sel.phone); });
     document.getElementById('fx-open').onclick = function () { var go = function () { location.href = F.mailto(mail); };
       (navigator.clipboard && window.ClipboardItem ? navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([mail.html], { type: 'text/html' }), 'text/plain': new Blob([mail.text], { type: 'text/plain' }) })]) : Promise.reject())
         .then(function () { document.getElementById('fx-smsg').textContent = 'Copied. The email opens with the text filled in. Once sent, press Mark as sent.'; }, function () {}).then(go); };
@@ -156,7 +197,7 @@
   function start() { if (/[?&]fu=1/.test(location.search) && window.dashOpen) window.dashOpen('followups'); store.init().then(store.user).then(function (u) { if (!u) return render('signin');
     return store.getVault().then(function (v) { vault = v; render(v ? 'unlock' : 'create'); }); })
     .catch(function (er) { shell('<p class="fx-msg">Follow ups could not load: ' + e(er.message || er) + '</p>'); }); }
-  window.FollowUpsUI = { mount: function (el) { root = el; start(); }, open: function (id) { journey(id); },
+  window.FollowUpsUI = { mount: function (el) { root = el; start(); }, open: function (id) { journey(id); }, progress: function (id) { progress(id); },
     /* open Add customer prefilled (from a SwipeToDrive customer record); waits for unlock if locked. The customer id is stored inside the encrypted record. */
     addFor: function (pre) { var ex = pre && pre.swipeCustomerId && recs.find(function (r) { return r.swipeCustomerId === pre.swipeCustomerId; });
       if (key && root && root.querySelector('#fx-add')) { if (ex) journey(ex.id); else form(null, pre); } else pending = pre; } };

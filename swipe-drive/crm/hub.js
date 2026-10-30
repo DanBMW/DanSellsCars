@@ -17,6 +17,15 @@
   function live() { return !!sb(); }
   function ok(r) { if (r.error) throw r.error; return r.data; }
   window.FU_DEFER = true;
+  /* purchase progress ticks live on customers.desk.purchase_progress (existing jsonb, no schema change) */
+  window.FU_PROGRESS = {
+    by: function () { var S = D().S; return (S && S.session && S.session.name) || ''; },
+    get: function (cid) { return D().store.customers().then(function (l) { var c = (l || []).find(function (x) { return x.id === cid; }); return c && c.desk && c.desk.purchase_progress || null; }); },
+    set: function (cid, p) { var A = D(), st = A.store; return st.customers().then(function (l) { var c = (l || []).find(function (x) { return x.id === cid; }); if (!c) return;
+      var desk = Object.assign({}, c.desk || {}); desk.purchase_progress = { deposit: !!p.deposit, finance: p.finance, order: !!p.order, type: p.type || null, seen: p.seen || null, token: p.token || null, products: Array.isArray(p.products) ? p.products.slice() : null, updated_at: p.updated_at, updated_by_name: p.updated_by_name || '' };
+      var row = Object.assign({}, c, { desk: desk }); delete row.px_valuation_set_by_name; if (live()) { delete row.px_valuation_set_by; delete row.px_valuation_set_by_user; }
+      var keep = A.S && A.S.cust; if (A.S) A.S.cust = c; return st.saveCustomer(row).then(function (r) { if (A.S) A.S.cust = keep && keep.id === c.id ? Object.assign({}, keep, { desk: desk }) : keep; return r; }); }); }
+  };
   window.FU_STORE = {
     init: function () { return Promise.resolve(); },
     user: function () { if (!isAdmin()) return Promise.resolve(null); if (!live()) return Promise.resolve({ id: 'demo-admin' });
@@ -116,6 +125,7 @@
       var p = (r[1] || []).filter(function (x) { return !x.cancelled; })[0], parts = String(c.name || '').trim().split(/\s+/);
       var car = p ? p.model : ((c.models || [])[0] ? 'BMW ' + c.models[0] : '');
       var x = { firstName: parts[0] || '', lastName: parts.slice(1).join(' '), email: c.email || '', phone: c.phone || '', car: car || '', swipeCustomerId: c.id };
+      if (c.desk && c.desk.purchase_progress) x.progress = c.desk.purchase_progress;
       if (p) { x.purchaseDate = p.purchase_date; x.start = p.collected_on || p.purchase_date; if (p.term_months) x.term = p.term_months; }
       if (what === 'followups') pre.fu = x; else pre[what] = x;
       if (location.hash === '#' + what) show(what); else location.hash = what; }); }, true);

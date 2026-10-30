@@ -17,3 +17,6 @@ verify_jwt = false
 verify_jwt = false
 [functions.referral-lead]
 verify_jwt = false
+
+[functions.purchase-progress]
+verify_jwt = false

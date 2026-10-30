@@ -1422,7 +1422,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
       },300);
     }
     setTimeout(function(){
-      whenClear(function(){ if(!touched)summarise(arrival); });
+      whenClear(function(){ if(!touched)summarise(window.tyLiveArrival||arrival); });
     },700);
   });
 })();
@@ -1437,10 +1437,11 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 });
 
-// URL checklist pre-population - ?c=101 (deposit/finance/order: 1=yes 0=no 2=n/a)
-document.addEventListener('DOMContentLoaded',function(){
-  var params=new URLSearchParams(window.location.search);
-  var code=params.get('c');
+// URL checklist pre-population - ?c=101 (deposit/finance/order: 1=yes 0=no 2=n/a).
+// With &t=<token> the page first asks purchase-progress for the ticks Dan has set since, so the
+// customer always sees the latest. If that fails or is slow, the ?c code in the link is used.
+var PP_URL='https://dexqyqrbelmdjdhxaboq.supabase.co/functions/v1/purchase-progress';
+function tyApplyCode(code){
   if(!code||code.length<3)return;
   var map=[
     {q:'deposit', vals:{'1':'yes','0':'no'}},
@@ -1453,6 +1454,22 @@ document.addEventListener('DOMContentLoaded',function(){
     var btn=document.querySelector('.ty-check-btn[data-q="'+item.q+'"][data-v="'+val+'"]');
     if(btn)btn.click();
   });
+}
+function tyLive(t){
+  if(!t||!/^[A-Za-z0-9_-]{22,64}$/.test(t)||!window.fetch)return Promise.reject();
+  var ctl=window.AbortController?new AbortController():null; var tm=setTimeout(function(){if(ctl)ctl.abort();},3500);
+  return fetch(PP_URL+'?t='+encodeURIComponent(t),{signal:ctl?ctl.signal:undefined,cache:'no-store'}).then(function(r){clearTimeout(tm);if(!r.ok)throw 0;return r.json();});
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var params=new URLSearchParams(window.location.search);
+  var code=params.get('c'), t=params.get('t');
+  tyLive(t).then(function(j){
+    if(!j||!j.ok)throw 0;
+    window.tyLiveArrival={deposit:j.deposit,finance:j.finance,order:j.order};
+    tyApplyCode((j.deposit==='yes'?'1':'0')+(j.finance==='yes'?'1':j.finance==='na'?'2':'0')+(j.order==='yes'?'1':'0'));
+    var si=document.getElementById('seenInfo'); if(si)si.style.display=j.seen==='no'?'flex':'none';
+    document.documentElement.setAttribute('data-ty-live','1');
+  }).catch(function(){ tyApplyCode(code); });
 });
 
 // Social share

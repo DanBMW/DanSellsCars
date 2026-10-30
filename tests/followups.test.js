@@ -67,7 +67,7 @@ const assert = require("assert"); const F = require("../swipe-drive/crm/followup
   const pc = F.newRecord({ firstName: "Ann", email: "ann@example.com", car: "BMW X5", purchaseDate: "2026-10-01", start: "2026-10-20", sentDate: "2026-10-01" }, "2026-10-01");
   assert.strictEqual(pc.due, "2026-10-01"); const pc1 = F.markSent(pc, "2026-10-01", 0); assert.strictEqual(F.nextStage(pc1).id, "m0"); assert.strictEqual(pc1.due, "2026-10-22");
   const pc2 = F.markSent(pc1, "2026-10-22", 1); assert.strictEqual(pc2.due, "2027-04-20"); assert.strictEqual(F.markSent(pc2, "2027-04-20", 0).due, "2027-10-20"); n++;
-  const pm = F.build(pc, 0), im = F.build(pc1, 0); assert.ok(pm.text.includes("https://dan-sells.co.uk/purchase-thankyou.html?name=Ann") && /FAQs/.test(pm.text) && !/survey/.test(pm.text));
+  const pm = F.build(pc, 0), im = F.build(pc1, 0); assert.ok(pm.text.includes("https://dan-sells.co.uk/purchase-thankyou.html?c=000&name=Ann") && /FAQs/.test(pm.text) && !/survey/.test(pm.text));
   assert.ok(/survey/.test(im.text) && im.text.includes("controls-refresh") && !im.text.includes("purchase-thankyou")); n++;
   assert.throws(() => F.newRecord({ firstName: "A", email: "a@b.co", purchaseDate: "2026-11-01", start: "2026-10-20" }, "2026-10-01"), /Purchase date/);
   const at0 = F.newRecord({ firstName: "B", email: "b@b.co", stage: "m0", sentDate: "2026-10-31" }, "2026-10-31"); assert.strictEqual(at0.start, "2026-10-29"); assert.strictEqual(at0.history[0].stage, "buy"); n++;
