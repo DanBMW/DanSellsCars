@@ -33,5 +33,6 @@ Disallow: /lookup/
 Disallow: /silk-house/
 Disallow: /car-tinder/
 Disallow: /swipe-drive/
+Disallow: /mbg-offer.html
 
 Sitemap: https://dan-sells.co.uk/sitemap.xml
