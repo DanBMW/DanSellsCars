@@ -60,7 +60,12 @@ const FIX = {
     },
     audit: {}
   },
-  staff: { dan1: true }
+  staff: { dan1: true },
+  /* email + PIN accounts (Firebase email/password). verified is what the person's email link does */
+  accounts: {
+    'tomiwa.adelaja@hedinautomotive.co.uk': { pin: '246810', uid: 'tomi1', verified: true },
+    'chloe.smith@hedinautomotive.co.uk': { pin: '135790', uid: 'chloe1', verified: false }
+  }
 };
 const U = {
   tomi: { uid: 'tomi1', email: 'tomiwa.adelaja@hedinautomotive.co.uk', emailVerified: true },
@@ -69,8 +74,10 @@ const U = {
   will: { uid: 'will1', email: 'will.potter@hedinautomotive.co.uk', emailVerified: true },
   dan: { uid: 'dan1', email: 'daniel.cane@hedinautomotive.co.uk', emailVerified: true },
   gmail: { uid: 'g1', email: 'someone@gmail.com', emailVerified: true },
-  unverified: { uid: 'u1', email: 'tomiwa.adelaja@hedinautomotive.co.uk', emailVerified: false },
-  stranger: { uid: 's1', email: 'stranger@hedinautomotive.co.uk', emailVerified: true }
+  unverified: { uid: 'u1', email: 'new.person@hedinautomotive.co.uk', emailVerified: false },
+  stranger: { uid: 's1', email: 'stranger@hedinautomotive.co.uk', emailVerified: true },
+  nathan: { uid: 'nathan1', email: 'nathan.jobson@hedinautomotive.co.uk', emailVerified: true },
+  creator: { uid: 'dan9', email: 'daniel.cane@hedinautomotive.co.uk', emailVerified: true }
 };
 const BANK = { 'england-and-wales': { events: [{ title: 'Christmas Day', date: '2026-12-25' }] } };
 
@@ -97,10 +104,11 @@ async function open(browser, base, page0, url, user, opts) {
     else r.fulfill({ contentType: 'application/javascript', body: 'export default {};' });
   });
   const data = JSON.parse(JSON.stringify(opts.data || FIX));
+  const accounts = JSON.parse(JSON.stringify(opts.accounts || FIX.accounts || {}));
   const popup = opts.popupUser === undefined ? user : opts.popupUser;
-  await page.addInitScript(({ data, user, popup }) => {
-    window.__STORE = { data, user, popupUser: popup, log: [] };
-  }, { data, user: user || null, popup: popup || null });
+  await page.addInitScript(({ data, user, popup, accounts }) => {
+    window.__STORE = { data, user, popupUser: popup, accounts, log: [] };
+  }, { data, user: user || null, popup: popup || null, accounts });
   await page.goto(base + url);
   page.__errors = errors;
   page.__ctx = ctx;
@@ -110,16 +118,28 @@ const store = (page) => page.evaluate(() => ({ data: window.__STORE.data, log: w
 const at = (data, p) => p.split('/').filter(Boolean).reduce((o, k) => (o == null ? undefined : o[k]), data);
 const visible = (page, sel) => page.locator(sel).first().isVisible().catch(() => false);
 const txt = (page, sel) => page.locator(sel).first().textContent().catch(() => '');
-async function setNow(page, d) { await page.evaluate((d) => { if (window.TeamHome) window.TeamHome._setNow(d); if (window.ShiftsApp) window.ShiftsApp._setNow(d); }, d); }
+async function setNow(page, d) { await page.evaluate((d) => { if (window.TeamHome) window.TeamHome._setNow(d); if (window.ShiftsApp) { window.ShiftsApp._setNow(d); window.ShiftsApp._render(); } }, d); }
 
 /* ---------- the scenarios ---------- */
 async function scenarios(browser, base) {
   /* 1. the team home: every sign in state */
   {
-    const p = await open(browser, base, null, '/team.html', null);
+    let p = await open(browser, base, null, '/team.html', null);
     await p.waitForSelector('#v-signin:not([hidden])', { timeout: 8000 });
     check('home: signed out shows the sign in card', await visible(p, '#btn-signin'));
     check('home: signed out has no cards', (await p.locator('#cards a').count()) === 0);
+    await p.fill('#pin-email', 'tomiwa.adelaja@hedinautomotive.co.uk');
+    await p.fill('#pin-code', '000000');
+    await p.click('#pin-in');
+    await p.waitForTimeout(300);
+    check('home: a wrong PIN is refused, in plain words', /don.t match/.test(await txt(p, '#signin-msg')), await txt(p, '#signin-msg'));
+    await p.fill('#pin-code', '246810');
+    await p.click('#pin-in');
+    await p.waitForSelector('#v-home:not([hidden])', { timeout: 8000 });
+    check('home: the right PIN signs Tomi in with no Google window', await visible(p, '#v-home'));
+    await p.close();
+    p = await open(browser, base, null, '/team.html', null);
+    await p.waitForSelector('#v-signin:not([hidden])', { timeout: 8000 });
     await p.click('#btn-signin');
     await p.waitForTimeout(300);
     check('home: a cancelled popup is not an error message', (await txt(p, '#signin-msg')).trim() === '');
@@ -127,14 +147,22 @@ async function scenarios(browser, base) {
   }
   {
     const p = await open(browser, base, null, '/team.html', U.gmail, { popupUser: U.gmail });
+    await p.waitForTimeout(1200);
+    if (!(await visible(p, '#v-wrong'))) console.log('DEBUG gmail', JSON.stringify(await p.evaluate(() => ({ st: window.TeamSession && TeamSession.state(), sections: [...document.querySelectorAll('main section')].map(x => x.id + ':' + x.hidden) }))), p.__errors);
     await p.waitForSelector('#v-wrong:not([hidden])', { timeout: 8000 });
     check('home: a personal Gmail is refused', (await txt(p, '#wrong-email')).indexOf('gmail') >= 0);
     await p.close();
   }
   {
     const p = await open(browser, base, null, '/team.html', U.unverified);
-    await p.waitForSelector('#v-wrong:not([hidden])', { timeout: 8000 });
-    check('home: an unverified Hedin address is refused', await visible(p, '#v-wrong'));
+    await p.waitForSelector('#v-unverified:not([hidden])', { timeout: 8000 });
+    check('home: an unverified Hedin address is asked to verify, and gets nothing else', (await txt(p, '#unv-email')).indexOf('new.person') >= 0 && !(await visible(p, '#v-home')));
+    /* verify it in the (stub) mailbox, then continue */
+    await p.evaluate(() => { window.__STORE.accounts = window.__STORE.accounts || {}; });
+    await p.click('#unv-resend');
+    await p.waitForTimeout(200);
+    check('home: send it again is logged to the mail', (await store(p)).log.some(l => l[0] === 'verify-email'));
+    await p.close();
     await p.close();
   }
   {
@@ -313,7 +341,8 @@ async function scenarios(browser, base) {
     await p.waitForTimeout(600);
     await p.click('#btn-manager');
     await p.waitForTimeout(500);
-    check('lockup: a team member is asked for the manager PIN', await visible(p, '#pin-modal.show'));
+    await p.waitForURL(/team\.html\?next=lockup\.html/, { timeout: 5000 }).catch(() => {});
+    check('lockup: a colleague is sent to team sign in, to come back to lockup', /team\.html\?next=lockup\.html/.test(p.url()), p.url());
     check('lockup: the page loads with no errors for a colleague', p.__errors.length === 0, p.__errors.join(' | '));
     await p.close();
   }
@@ -333,7 +362,8 @@ async function scenarios(browser, base) {
     await p.waitForTimeout(600);
     await p.click('#btn-manager');
     await p.waitForTimeout(400);
-    check('lockup: a signed out visitor still gets the PIN (the old way)', await visible(p, '#pin-modal.show'));
+    await p.waitForURL(/team\.html\?next=lockup\.html/, { timeout: 5000 }).catch(() => {});
+    check('lockup: a signed out visitor is sent to team sign in too', /team\.html\?next=lockup\.html/.test(p.url()), p.url());
     await p.close();
   }
   {
@@ -342,7 +372,8 @@ async function scenarios(browser, base) {
     await p.waitForTimeout(700);
     await p.evaluate(() => window.switchRole());
     await p.waitForTimeout(500);
-    check('forecourt: a colleague is asked for the PIN', await visible(p, '#pin-modal.open'));
+    await p.waitForURL(/team\.html\?next=Forecourt\.html/, { timeout: 5000 }).catch(() => {});
+    check('forecourt: a colleague is sent to team sign in', /team\.html\?next=Forecourt\.html/.test(p.url()), p.url());
     await p.close();
   }
   {
@@ -361,7 +392,8 @@ async function scenarios(browser, base) {
     await p.waitForTimeout(700);
     await p.click('#btn-manager');
     await p.waitForTimeout(500);
-    check('board: a colleague is asked for the PIN', await visible(p, '#m-pin.open'));
+    await p.waitForURL(/team\.html\?next=team-board\.html/, { timeout: 5000 }).catch(() => {});
+    check('board: a colleague is sent to team sign in', /team\.html\?next=team-board\.html/.test(p.url()), p.url());
     await p.close();
   }
   {
@@ -395,6 +427,183 @@ async function scenarios(browser, base) {
   }
 }
 
+
+/* ---------- PIN accounts, roles, the redirect back, and the calendar's new flows ---------- */
+async function extraScenarios(browser, base) {
+  /* a. set a PIN for a new work address: verification is sent, and until it is verified nothing else opens */
+  {
+    const p = await open(browser, base, null, '/team.html', null);
+    await p.waitForSelector('#v-signin:not([hidden])', { timeout: 8000 });
+    await p.fill('#pin-email', 'new.person@hedinautomotive.co.uk');
+    await p.fill('#pin-code', '12345');
+    await p.click('#pin-new');
+    await p.waitForTimeout(200);
+    check('pin: a PIN shorter than six digits is refused before anything is sent', /six digit/.test(await txt(p, '#signin-msg')), await txt(p, '#signin-msg'));
+    await p.fill('#pin-code', '111222');
+    await p.click('#pin-new');
+    await p.waitForSelector('#v-unverified:not([hidden])', { timeout: 8000 });
+    let st = await store(p);
+    check('pin: setting a PIN creates the account and sends the verification email', st.log.some(l => l[0] === 'create') && st.log.some(l => l[0] === 'verify-email'), JSON.stringify(st.log));
+    check('pin: until verified, the person is asked to verify and sees no team tiles', await visible(p, '#v-unverified') && !(await visible(p, '#v-home')));
+    await p.evaluate(() => { window.__STORE.accounts['new.person@hedinautomotive.co.uk'].verified = true; });
+    await p.click('#unv-continue');
+    await p.waitForSelector('#v-unlinked:not([hidden])', { timeout: 8000 });
+    check('pin: once verified, the team list decides (not on it: told so)', await visible(p, '#v-unlinked'));
+    check('pin: no errors setting a PIN', p.__errors.length === 0, p.__errors.join(' | '));
+    await p.close();
+  }
+  /* b. a PIN that already exists is not created twice; forgot my PIN sends the reset to the work address */
+  {
+    const p = await open(browser, base, null, '/team.html', null);
+    await p.waitForSelector('#v-signin:not([hidden])', { timeout: 8000 });
+    await p.fill('#pin-email', 'tomiwa.adelaja@hedinautomotive.co.uk');
+    await p.fill('#pin-code', '999999');
+    await p.click('#pin-new');
+    await p.waitForTimeout(250);
+    check('pin: a second PIN for the same address is refused', /already have a PIN/.test(await txt(p, '#signin-msg')), await txt(p, '#signin-msg'));
+    await p.click('#pin-reset');
+    await p.waitForTimeout(250);
+    const st = await store(p);
+    check('pin: forgot my PIN emails a reset to the work address', st.log.some(l => l[0] === 'reset-email' && l[1] === 'tomiwa.adelaja@hedinautomotive.co.uk'), JSON.stringify(st.log.slice(-2)));
+    check('pin: the reset message does not say whether the address has a PIN', /If that work address has a PIN/.test(await txt(p, '#signin-msg')));
+    await p.fill('#pin-email', 'someone@gmail.com');
+    await p.click('#pin-reset');
+    await p.waitForTimeout(150);
+    check('pin: a personal address is not sent a reset', /Use your Hedin work address/.test(await txt(p, '#signin-msg')) || /work address/.test(await txt(p, '#signin-msg')), await txt(p, '#signin-msg'));
+    await p.close();
+  }
+  /* c. the roles: the creator is admin with no staff entry, Nathan is management from the lockup list */
+  {
+    const p = await open(browser, base, null, '/team.html', U.creator);
+    await p.waitForSelector('#v-home:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(200);
+    check('roles: Dan on his work account is admin with no staff entry', (await txt(p, '#home-role')) === 'Admin' && (await p.locator('#cards a[href="team-admin.html"]').count()) === 1, await txt(p, '#home-role'));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team.html', U.nathan);
+    await p.waitForSelector('#v-home:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(200);
+    check('roles: Nathan is management from the lockup list, with no extra flag', (await txt(p, '#home-role')) === 'Manager', await txt(p, '#home-role'));
+    await p.close();
+  }
+  /* d. a manager asked for a page is sent back to it; a colleague is told the page is for managers */
+  {
+    const p = await open(browser, base, null, '/team.html?next=lockup.html', U.will);
+    await p.waitForURL(/lockup\.html/, { timeout: 8000 }).catch(() => {});
+    check('redirect: a manager who signs in is sent back to the page they asked for', /lockup\.html/.test(p.url()), p.url());
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team.html?next=lockup.html', U.tomi);
+    await p.waitForSelector('#v-home:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(300);
+    check('redirect: a colleague stays on the home page and is told the page is for managers', /team\.html/.test(p.url()) && await visible(p, '#next-note'), p.url());
+    await p.close();
+  }
+  /* e. the Android shell: bottom navigation, the floating button, and a sheet of what to ask for */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.tomi);
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(250);
+    check('android: a colleague has two bottom navigation items (calendar, requests)', (await p.locator('#tabs button').count()) === 2, 'got ' + (await p.locator('#tabs button').count()));
+    check('android: the bottom navigation is at the foot of the screen', await p.evaluate(() => { const r = document.getElementById('tabs').getBoundingClientRect(); return r.bottom > window.innerHeight - 4; }));
+    check('android: the floating New button shows on the calendar', await visible(p, '#fab'));
+    await p.click('#fab');
+    await p.waitForSelector('#m-sheet.show');
+    const items = await p.locator('#sheet .listrow').allTextContents();
+    check('android: New opens a sheet of what to ask for, leave first', items.length === 4 && /Book leave/.test(items[0]), items.join(' | '));
+    check('android: nothing in the sheet offers to add time off for someone to a colleague', !items.some(x => /Add time off/.test(x)));
+    await p.screenshot({ path: path.join(OUT, 'calendar-new-sheet-phone.png'), fullPage: false });
+    /* f. leave: a Ciphr reference and the tick are both needed before it can be sent */
+    await p.click('#sheet [data-act="holiday"]');
+    await p.waitForSelector('#rq-form');
+    check('leave: the sheet says annual leave is approved on Ciphr first', /Ciphr/.test(await txt(p, '#sheet')) && /cannot be booked here/.test(await txt(p, '#sheet')));
+    await p.fill('#rq-form [name=from]', '2026-11-16');
+    await p.fill('#rq-form [name=to]', '2026-11-18');
+    check('leave: no Send until the Ciphr reference and the tick are both there', await p.locator('#rq-go').isDisabled());
+    await p.fill('#rq-form [name=ciphr]', 'CPH-7741');
+    check('leave: still no Send without the tick', await p.locator('#rq-go').isDisabled());
+    await p.check('#rq-form [name=ciphrOk]');
+    await p.fill('#rq-form [name=note]', 'Wedding abroad');
+    await p.waitForTimeout(60);
+    check('leave: Send opens once it is all there', !(await p.locator('#rq-go').isDisabled()));
+    await p.click('#rq-go');
+    await p.waitForTimeout(300);
+    let st = await store(p);
+    const leave = Object.keys(st.data.shifts.requests || {}).map(k => st.data.shifts.requests[k]).find(r => r.ciphr === 'CPH-7741');
+    check('leave: the request is sent as pending with its Ciphr reference and note', leave && leave.status === 'pending' && leave.kind === 'holiday' && leave.note === 'Wedding abroad', JSON.stringify(leave));
+    check('leave: nothing is booked in lockup until a manager confirms it', !Object.keys(st.data.lockup.absences || {}).some(k => /^sh_/.test(k) && st.data.lockup.absences[k].personId === 'tomi'));
+    await p.close();
+  }
+  /* g. a switch is always the manager's decision: the warnings show, the send still works */
+  {
+    const data = JSON.parse(JSON.stringify(FIX)); data.shifts.config = { weekdayMin: 9 };
+    const p = await open(browser, base, null, '/shifts.html', U.tomi, { data });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(250);
+    await p.click('#fab');
+    await p.waitForSelector('#m-sheet.show');
+    await p.click('#sheet [data-act="switch"]');
+    await p.waitForSelector('#rq-form');
+    await p.fill('#rq-form [name=giveUp]', '2026-11-19');
+    await p.fill('#rq-form [name=takeOn]', '2026-11-20');
+    await p.waitForTimeout(80);
+    const pv = await txt(p, '#pv');
+    check('switch: warnings show on the days that fall short', /minimum 9/.test(pv) && /Warnings do not stop/.test(pv), pv.slice(0, 200));
+    check('switch: the warnings do not stop it being sent', !(await p.locator('#rq-go').isDisabled()));
+    await p.click('#rq-go');
+    await p.waitForTimeout(300);
+    const st = await store(p);
+    const sw = Object.keys(st.data.shifts.requests || {}).map(k => st.data.shifts.requests[k]).find(r => r.kind === 'switch');
+    check('switch: it is sent to a manager as pending, not approved', sw && sw.status === 'pending' && !sw.auto, JSON.stringify(sw));
+    check('switch: nothing is written to lockup until a manager approves', !Object.keys(st.data.lockup.absences || {}).some(k => /^sh_/.test(k)));
+    await p.close();
+  }
+  /* h. the day sheet: a person's note, and a day with no handover cover */
+  {
+    const data = JSON.parse(JSON.stringify(FIX));
+    data.lockup.absences.hc = { personId: 'chloe', from: '2026-11-05', to: '2026-11-05', kind: 'absent', status: 'approved', note: 'Dentist' };
+    data.lockup.absences.hm = { personId: 'molly', from: '2026-11-05', to: '2026-11-05', kind: 'absent', status: 'approved' };
+    const p = await open(browser, base, null, '/shifts.html', U.tomi, { data });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    await p.click('#cal .months button[data-month="2026-11"]');
+    await p.waitForSelector('#cal .dc[data-day="2026-11-05"]');
+    await p.click('#cal .dc[data-day="2026-11-05"]');
+    await p.waitForSelector('#m-sheet.show');
+    check('handover: a Thursday with neither Chloe nor Molly says so on the day', /No handover cover/.test(await txt(p, '#sheet')), (await txt(p, '#sheet')).slice(0, 200));
+    check('handover: that day shows as short on the calendar', /short/.test(await p.locator('#cal .dc[data-day="2026-11-05"]').getAttribute('class')));
+    await p.click('#sheet [data-close]');
+    await p.waitForTimeout(150);
+    await p.click('#cal .dc[data-day="2026-11-05"]');
+    await p.click('#cal .dc[data-day="2026-11-10"]').catch(() => {});
+    await p.waitForTimeout(150);
+    await p.click('#sheet [data-close]').catch(() => {});
+    await p.click('#cal .dc[data-day="2026-11-10"]');
+    await p.waitForSelector('#m-sheet.show');
+    check('notes: the day sheet shows why someone is away, in their own words', /Carl holiday/.test(await txt(p, '#sheet')), (await txt(p, '#sheet')).slice(0, 200));
+    await p.close();
+  }
+  /* i. managers see the management tabs, and the New sheet adds time off for someone */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.will);
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    check('android: a manager has the five bottom navigation items', (await p.locator('#tabs button').count()) === 5, 'got ' + (await p.locator('#tabs button').count()));
+    await p.click('#fab');
+    await p.waitForSelector('#m-sheet.show');
+    check('android: a manager can add time off for someone from the same sheet', (await txt(p, '#sheet')).indexOf('Add time off for someone') >= 0);
+    check('shifts: no page errors for a manager', p.__errors.length === 0, p.__errors.join(' | '));
+    await p.screenshot({ path: path.join(OUT, 'calendar-phone-android.png'), fullPage: false });
+    await p.close();
+  }
+}
+
 const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -403,6 +612,7 @@ const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
   const browser = await chromium.launch({ executablePath: process.env.CHROME || undefined });
   try {
     await scenarios(browser, base);
+    await extraScenarios(browser, base);
   } catch (e) {
     console.log('FAIL scenario crashed: ' + (e && e.message));
     CHECKS.push({ name: 'run', ok: false });

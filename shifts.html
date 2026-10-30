@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#0b1220">
 <title>Shifts | Hedin BMW Ruxley</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="stylesheet" href="team.css">
 <style>
 :root{--bg:#0b1220;--card:#141d2e;--card2:#1b2740;--line:#26344f;--text:#eef3fb;--muted:#93a3bd;--blue:#4d94d8;--gold:#f0ba6c;--green:#2fbf71;--amber:#f2a33a;--red:#e05656;--purple:#a58bf0}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -168,7 +169,7 @@ select[data-off]{background:#0e1626;border:1px solid var(--line);border-radius:1
   </section>
 
   <section id="v-app" hidden>
-    <nav class="tabs" id="tabs"></nav>
+    <nav class="bottomnav" id="tabs" aria-label="Calendar"></nav>
 
     <div id="p-calendar">
       <div class="hero" style="margin-bottom:12px">
@@ -178,7 +179,6 @@ select[data-off]{background:#0e1626;border:1px solid var(--line);border-radius:1
         <p class="muted small" id="mins" style="margin-top:6px"></p>
       </div>
       <div class="card" id="cal" style="padding:12px"></div>
-      <div class="actions" id="actions"></div>
     </div>
 
     <div id="p-requests" hidden></div>
@@ -188,6 +188,7 @@ select[data-off]{background:#0e1626;border:1px solid var(--line);border-radius:1
   </section>
 </main>
 
+<button class="fab" id="fab" type="button" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New</button>
 <div class="modal" id="m-sheet"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast" role="status"></div>
 

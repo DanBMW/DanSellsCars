@@ -21,7 +21,7 @@ const base = { team, managers };
 
 // signed out, unverified, outside the domain
 assert.strictEqual(T.resolve(Object.assign({}, base, { user: null })).status, 'signedout');
-assert.strictEqual(T.resolve(Object.assign({}, base, { user: ok('tomiwa.adelaja@hedinautomotive.co.uk', { emailVerified: false }) })).status, 'wrongdomain', 'unverified is refused');
+assert.strictEqual(T.resolve(Object.assign({}, base, { user: ok('tomiwa.adelaja@hedinautomotive.co.uk', { emailVerified: false }) })).status, 'unverified', 'an unverified Hedin address is told to verify, and gets nothing else');
 assert.strictEqual(T.resolve(Object.assign({}, base, { user: ok('someone@gmail.com') })).status, 'wrongdomain', 'personal address is refused');
 assert.strictEqual(T.resolve(Object.assign({}, base, { user: ok('x@hedinautomotive.co.uk.evil.com') })).status, 'wrongdomain', 'lookalike domain is refused');
 assert.strictEqual(T.resolve(Object.assign({}, base, { user: ok('Tomiwa.Adelaja@HEDINAUTOMOTIVE.co.uk') })).status, 'team', 'case does not matter');
@@ -42,12 +42,17 @@ console.log('ok: a team member is linked by email once, then by the saved link')
 // roles: staff, manager (shifts list), admin (staff list), and a manager who is not on the sales team
 s = T.resolve(Object.assign({}, base, { user: ok('daniel.cane@hedinautomotive.co.uk'), staffAdmin: true }));
 assert.deepStrictEqual([s.role, s.admin, s.canManage], ['admin', true, true]);
+// the creator is always admin on his work account, even with no staff entry
+s = T.resolve(Object.assign({}, base, { user: ok('Daniel.Cane@hedinautomotive.co.uk'), link: 'dan' }));
+assert.deepStrictEqual([s.role, s.admin], ['admin', true]);
+s = T.resolve(Object.assign({}, base, { user: ok('daniel.cane@hedinautomotive.co.uk', { emailVerified: false }) }));
+assert.strictEqual(s.admin, false, 'an unverified creator address gets nothing'); 
 s = T.resolve(Object.assign({}, base, { user: ok('carl.hadwin@hedinautomotive.co.uk'), shiftsManagers: { carl: true } }));
 assert.deepStrictEqual([s.role, s.canManage], ['manager', true]);
-s = T.resolve(Object.assign({}, base, { user: ok('will.potter@hedinautomotive.co.uk'), shiftsManagers: { will: true } }));
-assert.deepStrictEqual([s.status, s.personId, s.role], ['team', 'will', 'manager'], 'managers list counts as a team person');
 s = T.resolve(Object.assign({}, base, { user: ok('will.potter@hedinautomotive.co.uk') }));
-assert.strictEqual(s.role, 'staff', 'a manager not given manager access is staff');
+assert.deepStrictEqual([s.status, s.personId, s.role, s.canManage], ['team', 'will', 'manager', true], 'Will is on the managers list, so he is management with no flag needed');
+s = T.resolve(Object.assign({}, base, { user: ok('mon.singh@hedinautomotive.co.uk') }));
+assert.strictEqual(s.status, 'unlinked', 'a sales person not on the list is still unlinked');
 // the link wins over the email, so a changed address does not lock a person out of the link they made
 s = T.resolve(Object.assign({}, base, { user: ok('new.address@hedinautomotive.co.uk'), link: 'carl' }));
 assert.deepStrictEqual([s.status, s.personId], ['team', 'carl']);

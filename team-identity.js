@@ -17,6 +17,8 @@
   var DOMAIN = /^[a-z0-9._-]+@hedinautomotive\.co\.uk$/i;
   var ID = /^[a-z0-9_]{1,24}$/;
   var DAYS = ['', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  /* the creator of the rota always has admin, whatever the staff list says */
+  var CREATOR = 'daniel.cane@hedinautomotive.co.uk';
 
   function lower(s) { return String(s || '').trim().toLowerCase(); }
 
@@ -37,18 +39,22 @@
 
   /* i = { user, team, managers, link, staffAdmin, shiftsManagers }
      returns { status, personId, name, role, admin, canManage, linkNeeded }
-     status: signedout | wrongdomain | unlinked | team */
+     status: signedout | wrongdomain | unverified | unlinked | team
+     Management is Nathan, Will and Sergio (the lockup managers list) plus anyone
+     given manager access in shifts/managers. Admin is the creator (Dan) and the
+     Firebase staff list. */
   function resolve(i) {
     i = i || {};
     var base = { status: 'signedout', personId: null, name: null, role: null, admin: false, canManage: false, linkNeeded: false };
     if (!i.user) return base;
-    if (!emailOk(i.user)) return Object.assign(base, { status: 'wrongdomain' });
+    if (!DOMAIN.test(String(i.user.email || ''))) return Object.assign(base, { status: 'wrongdomain' });
+    if (i.user.emailVerified !== true) return Object.assign(base, { status: 'unverified' });
     var match = personForEmail(i.user.email, i.team, i.managers);
     var personId = i.link || (match && match.id) || null;
     if (!personId) return Object.assign(base, { status: 'unlinked' });
     var list = (i.team && i.team[personId]) || (i.managers && i.managers[personId]) || null;
-    var admin = i.staffAdmin === true;
-    var manager = admin || !!(i.shiftsManagers && i.shiftsManagers[personId] === true);
+    var admin = i.staffAdmin === true || lower(i.user.email) === CREATOR;
+    var manager = admin || !!(i.shiftsManagers && i.shiftsManagers[personId] === true) || !!(i.managers && i.managers[personId]);
     return {
       status: 'team', personId: personId, name: list ? list.name : personId,
       role: admin ? 'admin' : manager ? 'manager' : 'staff',
@@ -95,6 +101,6 @@
     return id;
   }
 
-  var api = { emailOk: emailOk, personForEmail: personForEmail, resolve: resolve, cardsFor: cardsFor, validPerson: validPerson, newPersonId: newPersonId, DOMAIN: DOMAIN };
+  var api = { CREATOR: CREATOR, emailOk: emailOk, personForEmail: personForEmail, resolve: resolve, cardsFor: cardsFor, validPerson: validPerson, newPersonId: newPersonId, DOMAIN: DOMAIN };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.TeamIdentity = api;
 })(this);

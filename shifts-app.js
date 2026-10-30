@@ -265,7 +265,7 @@
     }
     html += '<div class="legend"><span><i class="k ok"></i>At or above minimum</span><span><i class="k short"></i>Below minimum</span><span><i class="k closed"></i>Closed</span><span><i class="k bh"></i>Bank holiday rota</span></div>';
     $('cal').innerHTML = html;
-    paintActions();
+    paintFab();
   }
   function peopleTable(c) {
     var n = daysInMonth(st.ym), ids = teamIds(), days = [];
@@ -292,16 +292,23 @@
     var c = ctx(), k = S.countDay(c, date);
     var ids = teamIds();
     var lock = (k.kind === 'weekday' || k.kind === 'sat') ? R.pairOn(st.D.weeks, date) : [];
+    var awayNote = {};
+    S.whoIn(c, date, date)[0].away.forEach(function (a) { awayNote[a.id] = a; });
     var rows = ids.map(function (id) {
-      var p = S.personDay(c, id, date);
+      var p = S.personDay(c, id, date), a = awayNote[id];
       var cls = p.on ? 'ok' : (p.why === 'holiday' || p.why === 'absent' ? 'warn' : 'muted');
-      return '<li><span>' + esc(nameOf(id)) + '</span><span class="' + cls + '">' + esc(WHY[p.why] || p.why) + '</span></li>';
+      return '<li><span>' + esc(nameOf(id)) + (a && a.note ? '<br><span class="muted small">' + esc(a.note) + '</span>' : '') +
+        '</span><span class="' + cls + '">' + esc(WHY[p.why] || p.why) + '</span></li>';
     }).join('');
+    var warns = [];
+    if (k.reasons && k.reasons.indexOf('staff') >= 0) warns.push('Below the minimum: ' + k.count + ' on, minimum ' + k.min + '.');
+    if (k.reasons && k.reasons.indexOf('handover') >= 0) warns.push('No handover cover: Chloe or Molly needs to be in.');
     var head = fmt(date, true);
     var status = k.kind === 'closed' ? 'Closed' : k.noRota ? 'No bank holiday rota yet' :
       (k.ok ? k.count + ' on, minimum ' + k.min : '<span class="bad">' + k.count + ' on, minimum ' + k.min + ', short by ' + k.short + '</span>');
     var body = '<h2>' + esc(head) + '</h2>' +
       '<p class="sub">' + status + (HOL[date] ? ' · ' + esc(HOL[date].label) : '') + '</p>' +
+      (warns.length ? warns.map(function (w) { return '<p class="bad small">' + esc(w) + '</p>'; }).join('') : '') +
       (k.kind !== 'closed' ? '<ul class="sum">' + rows + '</ul>' : '<p class="muted">The office is closed.</p>') +
       (lock.length ? '<p class="small muted">Lockup tonight: ' + esc(lock.map(nameOf).join(' and ')) + '</p>' : '') +
       '<div class="row end"><button class="ghost" type="button" data-close>Close</button></div>';
@@ -332,6 +339,8 @@
       acts = '<button class="ghost" type="button" data-cancel="' + r.id + '">Cancel</button>';
     }
     return '<li><div><b>' + esc(nameOf(r.personId)) + '</b> <span class="muted small">' + esc(kindLabel(r.kind)) + '</span><br>' + esc(describe(r)) +
+      (r.ciphr ? '<br><span class="muted small">Ciphr ' + esc(r.ciphr) + '</span>' : '') +
+      (r.note ? '<br><span class="muted small">' + esc(r.note) + '</span>' : '') +
       (r.reason ? '<br><span class="muted small">' + esc(r.reason) + '</span>' : '') +
       (r.override ? '<br><span class="warn small">Approved below minimum</span>' : '') + '</div>' +
       '<div class="rq-r"><span class="pill ' + st2[1] + '">' + esc(pillText) + '</span>' + (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div></li>';
@@ -426,15 +435,24 @@
   }
 
   /* ---------- actions bar ---------- */
-  function paintActions() {
-    var box = $('actions');
-    if (!box) return;
-    var html = '<button class="big" type="button" data-act="holiday">Book holiday</button>' +
-      '<button class="big alt" type="button" data-act="absence">Report an absence</button>' +
-      '<button class="big alt" type="button" data-act="switch">Switch my day off</button>' +
-      '<button class="big alt" type="button" data-act="swap">Give a shift to a colleague</button>';
-    if (isMgr()) html += '<button class="big alt" type="button" data-act="mgr-holiday">Add time off for someone</button>';
-    box.innerHTML = html;
+  /* the floating button opens a list of what you can ask for, like an Android
+     sheet. Leave is first because it is the one people look for. */
+  var NEW_ITEMS = [
+    ['holiday', 'Book leave', 'Annual leave, approved on Ciphr first. A manager confirms it.', 'M4 7h16M4 12h16M4 17h10'],
+    ['absence', 'Report an absence', 'Sickness or anything that stops you coming in. Recorded now.', 'M12 4v8l5 3'],
+    ['switch', 'Switch my day off', 'Work your usual day off instead. A manager approves it.', 'M4 8h13l-3-3M20 16H7l3 3'],
+    ['swap', 'Give a shift to a colleague', 'They accept it, then a manager approves it.', 'M8 7h11M8 12h11M8 17h11M4 7h.01M4 12h.01M4 17h.01']
+  ];
+  function openNew() {
+    var rows = NEW_ITEMS.map(function (it) {
+      return '<button type="button" class="listrow" data-act="' + it[0] + '"><span class="ico"><svg viewBox="0 0 24 24"><path d="' + it[3] + '"/></svg></span><span>' + esc(it[1]) + '<small>' + esc(it[2]) + '</small></span></button>';
+    });
+    if (isMgr()) rows.push('<button type="button" class="listrow" data-act="mgr-holiday"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span>Add time off for someone<small>Managers only. Booked straight away.</small></span></button>');
+    sheet('<h2>What do you need?</h2><p class="sub">Pick one. Nothing is booked until it is sent.</p><div class="stack" style="gap:0">' + rows.join('') + '</div>');
+  }
+  function paintFab() {
+    var f = $('fab');
+    if (f) f.hidden = !(st.tab === 'calendar' || st.tab === 'requests');
   }
 
   /* ---------- request forms (sheet) ---------- */
@@ -451,16 +469,18 @@
     var me = st.me, body = '', title = '', help = '';
     var people = teamIds();
     if (kind === 'holiday') {
-      title = 'Book holiday';
-      help = 'Goes to a manager to approve. It is not booked until they do.';
-      body = dateField('from', 'First day', NOW.date) + dateField('to', 'Last day', NOW.date) + noteField();
+      title = 'Book leave';
+      help = 'Annual leave cannot be booked here. Book it and get it approved on Ciphr first, then send it here so the rota matches. A manager confirms it on the rota.';
+      body = dateField('from', 'First day', NOW.date) + dateField('to', 'Last day', NOW.date) +
+        '<label class="fld"><span>Ciphr reference (required)</span><input type="text" name="ciphr" maxlength="40" autocomplete="off"></label>' +
+        '<label class="check"><input type="checkbox" name="ciphrOk"> <span>I have had this approved on Ciphr</span></label>' + noteField();
     } else if (kind === 'absence') {
       title = 'Report an absence';
       help = 'For sickness or anything that stops you coming in. It is recorded straight away and lockup cover is arranged from it.';
       body = dateField('from', 'First day', NOW.date) + dateField('to', 'Last day', NOW.date) + noteField();
     } else if (kind === 'switch') {
       title = 'Switch my day off';
-      help = 'Give up a day you are working and work your usual day off instead, in the same week. It goes through now if the office stays staffed, otherwise a manager approves it.';
+      help = 'Give up a day you are working and work your usual day off instead, in the same week. A manager approves it. Warnings show if a day falls below the minimum, but you can still send it.';
       body = dateField('giveUp', 'Day you give up', '') + dateField('takeOn', 'Day off you work instead', '') + noteField();
     } else if (kind === 'swap') {
       title = 'Give a shift to a colleague';
@@ -490,6 +510,7 @@
     Array.prototype.forEach.call(f.elements, function (el) { if (el.name) v[el.name] = el.type === 'checkbox' ? el.checked : el.value; });
     var me = st.me, r = { kind: kind };
     if (kind === 'holiday' || kind === 'absence') { r.personId = me; r.from = v.from; r.to = v.to; }
+    if (kind === 'holiday') { r.ciphr = (v.ciphr || '').trim().slice(0, 40); r.ciphrOk = v.ciphrOk === true; }
     if (kind === 'switch') { r.personId = me; r.giveUp = v.giveUp; r.takeOn = v.takeOn; }
     if (kind === 'swap') { r.personId = me; r.date = v.date; r.withId = v.withId; }
     if (kind === 'mgr-holiday') { r.personId = v.personId; r.kind = v.kind; r.from = v.from; r.to = v.to; }
@@ -506,25 +527,38 @@
     if (!chk.valid) {
       html = chk.errors.map(function (e) { return '<p class="bad">' + esc(e) + '</p>'; }).join('');
     } else {
-      var rows = chk.impact.days.filter(function (d) { return d.before.count !== d.after.count || !d.after.ok; });
+      var rows = chk.impact.days.filter(function (d) { return d.before.count !== d.after.count || !d.after.ok || d.before.ok !== d.after.ok; });
       if (rows.length) {
         html += '<ul class="sum">' + rows.map(function (d) {
-          return '<li><span>' + esc(fmt(d.date, true)) + '</span><span class="' + (d.after.ok ? 'ok' : 'bad') + '">' + d.before.count + ' → ' + d.after.count + ' (minimum ' + d.min + ')</span></li>';
+          return '<li><span>' + esc(fmt(d.date, true)) + '</span><span class="' + (d.after.ok ? 'ok' : 'bad') + '">' + esc(dayWarn(d)) + '</span></li>';
         }).join('') + '</ul>';
       }
-      html += '<p class="small' + (k === 'holiday' ? '' : chk.impact.ok ? ' ok' : ' warn') + '">' + esc(outcome(k, chk)) + '</p>';
+      html += '<p class="small' + (k === 'holiday' || k === 'switch' ? '' : chk.impact.ok ? ' ok' : ' warn') + '">' + esc(outcome(k, chk)) + '</p>';
       if (k === 'mgr-holiday' && !chk.impact.ok) {
         html += '<p class="small warn">Short-staffed: tick the override and give a reason to book it anyway.</p>';
         ok = !!(v.override && v.reasonText);
-      } else if (k === 'holiday' && chk.impact.ok === false) {
-        html += '<p class="small warn">This would be below minimum. A manager will have to approve it.</p>';
+      } else if (k === 'holiday' && !v.ciphrOk) {
+        html += '<p class="small warn">Tick that it is approved on Ciphr to send it.</p>';
+        ok = false;
+      } else if ((k === 'holiday' || k === 'switch') && chk.impact.ok === false) {
+        html += '<p class="small warn">Warnings do not stop you sending it. A manager will decide.</p>';
       }
     }
     if (pv) pv.innerHTML = html;
     if (go) go.disabled = !ok;
   }
+  /* what is wrong on a day, in words a person can act on */
+  function dayWarn(d) {
+    var parts = [];
+    if (d.after.reasons && d.after.reasons.indexOf('staff') >= 0) parts.push(d.after.count + ' on, minimum ' + d.min);
+    if (d.after.reasons && d.after.reasons.indexOf('handover') >= 0) parts.push('no Chloe or Molly on');
+    if (!parts.length) return d.before.count + ' \u2192 ' + d.after.count + ' (minimum ' + d.min + ')';
+    if (d.before.count !== d.after.count) parts.unshift(d.before.count + ' \u2192 ' + d.after.count);
+    return parts.join(', ');
+  }
   function outcome(k, chk) {
-    if (k === 'holiday') return 'Goes to a manager to approve.';
+    if (k === 'holiday') return 'Goes to a manager to confirm against Ciphr.';
+    if (k === 'switch') return 'Goes to a manager to approve. Warnings do not stop you sending it.';
     if (k === 'absence') return 'Recorded now. Lockup cover is arranged from it' + (chk.impact.ok ? '.' : ', and managers are told it leaves a day short.');
     if (k === 'switch') return chk.impact.ok ? 'Goes through now, the office stays staffed.' : 'This leaves a day below minimum, so a manager approves it.';
     if (k === 'swap') return 'Goes to ' + nameOf(formValues(k).withId) + ' to accept. Then it goes through if the day stays staffed, otherwise a manager approves it.';
@@ -538,8 +572,8 @@
     go.disabled = true;
     var p;
     if (kind === 'holiday') {
-      p = createRequest(clean({ personId: r.personId, kind: 'holiday', from: r.from, to: r.to, note: r.note || undefined })).then(function (id) {
-        notify('Holiday request: ' + nameOf(r.personId) + ', ' + rangeText(r.from, r.to), ['Approve or decline it in Shifts.', r.note].filter(Boolean));
+      p = createRequest(clean({ personId: r.personId, kind: 'holiday', from: r.from, to: r.to, ciphr: r.ciphr, note: r.note || undefined })).then(function (id) {
+        notify('Leave request: ' + nameOf(r.personId) + ', ' + rangeText(r.from, r.to), ['Ciphr reference: ' + r.ciphr + '. Confirm it is approved on Ciphr, then approve it here.', r.note].filter(Boolean));
         auditLine('Requested: ' + describe({ kind: 'holiday', from: r.from, to: r.to, personId: r.personId }));
         return 'Sent to a manager.';
       });
@@ -553,19 +587,13 @@
         });
       });
     } else if (kind === 'switch') {
+      /* a switch is always the manager's decision; the warnings are for them too */
       p = createRequest(clean({ personId: r.personId, kind: 'switch', giveUp: r.giveUp, takeOn: r.takeOn, note: r.note || undefined })).then(function (id) {
         var rec = { id: id, kind: 'switch', personId: r.personId, giveUp: r.giveUp, takeOn: r.takeOn };
-        if (!chk.impact.ok) {
-          notify('Day off switch needs approval: ' + nameOf(r.personId), [describe(rec), 'It leaves a day below minimum. Approve or decline it in Shifts.']);
-          return 'Sent to a manager.';
-        }
-        return applyEffects(id, rec, chk.edits).then(function (ch) {
-          return B.update(st.RS + '/requests/' + id, { status: 'approved', auto: true, decidedBy: nameOf(r.personId), decidedAt: Date.now() }).then(function () {
-            auditLine('Switched: ' + describe(rec));
-            if (ch.length) notify('Lockup cover re-paired: ' + nameOf(r.personId), coverLines(ch));
-            return 'Switched.';
-          });
-        });
+        var warn = chk.impact.newlyShort.map(function (d) { return fmt(d.date, true) + ': ' + dayWarn(d); });
+        notify('Day off switch: ' + nameOf(r.personId) + ', ' + fmt(r.giveUp, true) + ' for ' + fmt(r.takeOn, true), [describe(rec), r.note].filter(Boolean).concat(warn.length ? ['Warnings: '].concat(warn) : []).concat(['Approve or decline it in Shifts.']));
+        auditLine('Requested: ' + describe(rec));
+        return 'Sent to a manager.';
       });
     } else if (kind === 'swap') {
       p = createRequest(clean({ personId: r.personId, withId: r.withId, kind: 'swap', date: r.date, status: 'awaiting', note: r.note || undefined })).then(function (id) {
@@ -618,6 +646,7 @@
     if ((d = t.getAttribute('data-day'))) { openDay(d); return; }
     if ((d = t.getAttribute('data-act'))) { openForm(d); return; }
     if (t.hasAttribute('data-close')) { closeSheet(); return; }
+    if (t.id === 'fab') { openNew(); return; }
     if ((d = t.getAttribute('data-review'))) { openReview(d); return; }
     if ((d = t.getAttribute('data-cancel'))) {
       var rc = st.D.requests[d]; if (!rc) return;
@@ -728,8 +757,16 @@
   function paintTabs() {
     var mgr = isMgr();
     var tabs = [['calendar', 'Calendar', true], ['requests', 'Requests', true], ['bh', 'Bank holidays', mgr], ['staff', 'Staffing', mgr], ['settings', 'Settings', mgr]];
+    var ICON = {
+      calendar: 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4',
+      requests: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+      bh: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z',
+      staff: 'M4 19V5M4 19h16M8 15l3-4 3 2 5-6',
+      settings: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1'
+    };
     $('tabs').innerHTML = tabs.filter(function (t) { return t[2]; }).map(function (t) {
-      return '<button type="button" class="' + (st.tab === t[0] ? 'on' : '') + '" data-tab="' + t[0] + '">' + t[1] +
+      return '<button type="button" class="' + (st.tab === t[0] ? 'on' : '') + '" data-tab="' + t[0] + '"' + (st.tab === t[0] ? ' aria-current="page"' : '') + '>' +
+        '<span class="ind"><svg viewBox="0 0 24 24"><path d="' + ICON[t[0]] + '"/></svg></span>' + t[1] +
         (t[0] === 'requests' ? ' <span class="tabn" id="tab-requests-n"></span>' : '') + '</button>';
     }).join('');
     ['calendar', 'requests', 'bh', 'staff', 'settings'].forEach(function (k) { $('p-' + k).hidden = st.tab !== k; });

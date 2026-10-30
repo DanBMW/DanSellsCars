@@ -172,7 +172,12 @@ async function main() {
       for (const c of ch2) if (!DRY) await db.ref(ROOT + '/weeks/' + c.week + '/days/' + c.dow).set(c.pair);
       const fx2 = R.applyFixed(weeks, cfg.team || {}, absences, n.date, signed);
       for (const m2 of (fx2.fixedMarks || [])) if (!DRY) await db.ref(ROOT + '/weeks/' + m2.week).update({ ['days/' + m2.dow]: weeks[m2.week].days[m2.dow], ['fixedDone/' + m2.dow]: m2.key });
-      const m = RM.build({ fromDate: from, weeks, team: cfg.team || {}, absences, hol, test: TEST });
+      /* the calendar's settings and bank holiday rota, so the who's-in section and the calendar agree */
+      const SR = TEST ? 'shiftsTest' : 'shifts';
+      const shiftsCfg = (await db.ref(SR + '/config').get()).val() || {};
+      const shiftsBh = (await db.ref(SR + '/bh').get()).val() || {};
+      const m = RM.build({ fromDate: from, weeks, team: cfg.team || {}, absences, hol, test: TEST,
+        shifts: { config: shiftsCfg, bh: shiftsBh, holidays: hol, closed: cfg.holidays || {}, absences, team: cfg.team || {}, managers: cfg.managers || {}, today: n.date } });
       const cc = TEST ? [] : mgrList;
       if (!teamList.length) console.log('Rota email due but no team emails set');
       else {

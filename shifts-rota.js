@@ -23,7 +23,7 @@
 (function (root) {
   var LR = (typeof module !== 'undefined' && module.exports) ? require('./lockup-rota.js') : root.LockupRota;
 
-  var DEFAULT_CONFIG = { weekdayMin: 5, saturdayMin: 7, bhStaff: 4, bhExclude: ['molly', 'chloe'], switchesPerWeek: 1 };
+  var DEFAULT_CONFIG = { weekdayMin: 5, saturdayMin: 7, bhStaff: 4, bhExclude: ['molly', 'chloe'], switchesPerWeek: 1, handoverMin: 1, handoverIds: ['chloe', 'molly'] };
 
   /* a list stored as an array, as {id: true}, as {0: id, 1: id} or as one string */
   function listOf(v) {
@@ -40,6 +40,7 @@
       c[k] = (config && config[k] != null) ? config[k] : DEFAULT_CONFIG[k];
     });
     c.bhExclude = listOf(c.bhExclude);
+    c.handoverIds = listOf(c.handoverIds);
     return c;
   }
   function dowOf(date) { return LR.london(new Date(date + 'T12:00:00Z')).dow; }
@@ -115,14 +116,28 @@
       .sort(function (a, b) { return ((ctx.team[a].order || 0) - (ctx.team[b].order || 0)) || (a < b ? -1 : 1); });
   }
 
-  /* the staffing of one date against its minimum */
+  /* the staffing of one date against its minimum. Two minimums:
+       staff     the sales team on that day (weekdays, Saturday, bank holidays)
+       handover  at least handoverMin of the handover team (Chloe, Molly) in
+                 on every open day except bank holidays, whose rota leaves
+                 them out. */
   function countDay(ctx, date) {
     var kind = dayKind(ctx, date), min = minFor(ctx, kind);
     var ids = kind === 'closed' ? [] : staffOn(ctx, date);
-    var ok = kind === 'closed' || ids.length >= min;
+    var hIds = ctx.config.handoverIds || [];
+    var hCount = kind === 'closed' ? 0 : ids.filter(function (id) { return hIds.indexOf(id) >= 0; }).length;
+    var hApplies = kind === 'weekday' || kind === 'sat';
+    var hMin = hApplies ? ctx.config.handoverMin : 0;
+    var staffOk = kind === 'closed' || ids.length >= min;
+    var handoverOk = !hApplies || hCount >= hMin;
+    var ok = staffOk && handoverOk;
+    var reasons = [];
+    if (!staffOk) reasons.push('staff');
+    if (!handoverOk) reasons.push('handover');
     return {
       date: date, dow: dowOf(date), kind: kind, count: ids.length, min: min, ids: ids, ok: ok,
-      short: ok ? 0 : min - ids.length, noRota: kind === 'bh' && !ctx.bh[date]
+      short: staffOk ? 0 : min - ids.length, noRota: kind === 'bh' && !ctx.bh[date],
+      handover: { count: hCount, min: hMin, ok: handoverOk }, reasons: reasons
     };
   }
 
@@ -209,6 +224,8 @@
         if (booked) errors.push(booked + '.');
         workDates = rangeDates(req.from, req.to).filter(function (d) { return personDay(ctx, req.personId, d).on; });
         if (!workDates.length && req.kind === 'holiday') errors.push('No working days in that range.');
+        /* annual leave is booked and approved on Ciphr first; this only records it */
+        if (req.kind === 'holiday' && !String(req.ciphr || '').trim()) errors.push('Enter the Ciphr reference. Annual leave has to be approved on Ciphr before it is sent here.');
       }
     } else if (req.kind === 'switch') {
       var lw = req.giveUp && LR.isoWeek(req.giveUp);
@@ -285,6 +302,20 @@
     return out;
   }
 
+  /* the week ahead, day by day, for the Monday email and the home page: who is
+     in, who is away (with their note), and whether each minimum is met */
+  function whoIn(ctx, from, to) {
+    return rangeDates(from, to).map(function (d) {
+      var c = countDay(ctx, d), away = LR.absentOn(ctx.absences, d);
+      var awayList = Object.keys(away).filter(function (id) { return ctx.team[id]; }).map(function (id) {
+        var a = Object.keys(ctx.absences).map(function (k) { return ctx.absences[k]; })
+          .filter(function (x) { return x && x.personId === id && x.kind !== 'works' && x.status !== 'cancelled' && x.from <= d && d <= x.to; })[0] || {};
+        return { id: id, kind: away[id], note: a.note || '' };
+      });
+      return Object.assign({}, c, { away: awayList });
+    });
+  }
+
   /* the bank holidays (from gov.uk) between two dates */
   function bhDates(ctx, from, to) {
     return Object.keys(ctx.holidays).filter(function (d) { return d >= from && d <= to && !ctx.closed[d]; }).sort();
@@ -308,7 +339,7 @@
     DEFAULT_CONFIG: DEFAULT_CONFIG, listOf: listOf, cfgOf: cfgOf, makeCtx: makeCtx, dowOf: dowOf, rangeDates: rangeDates,
     dayKind: dayKind, minFor: minFor, personDay: personDay, staffOn: staffOn, countDay: countDay, shortDays: shortDays,
     impact: impact, editsFor: editsFor, checkRequest: checkRequest, bhPick: bhPick, bhGenerate: bhGenerate, bhDates: bhDates,
-    weeklyOffEffect: weeklyOffEffect
+    weeklyOffEffect: weeklyOffEffect, whoIn: whoIn
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ShiftRota = api;
 })(this);
