@@ -135,6 +135,32 @@ await t('the admin unlinks a sign in', remove(ref(A, 'shifts/links/danny1')), 'a
 await t('the admin removes a manager flag', remove(ref(A, 'shifts/managers/nathan')), 'allow');
 await t('a manager cannot remove a manager flag', remove(ref(W, 'shifts/managers/will')), 'deny');
 
+// management: Dan is always admin as the creator; Nathan, Will and Sergio are management from the lockup list
+const CREATOR = { uid: 'dan2', email: HEDIN('daniel.cane'), email_verified: true };
+const UNVERIFIED_CREATOR = { uid: 'dan3', email: HEDIN('daniel.cane'), email_verified: false };
+const NATHAN = { uid: 'nathan1', email: HEDIN('nathan.jobson'), email_verified: true };
+await env.withSecurityRulesDisabled(async (c) => {
+  const d = c.database();
+  await set(ref(d, 'lockup/config/managers/nathan'), { name: 'Nathan', email: NATHAN.email, active: true });
+  await set(ref(d, 'shifts/links/nathan1'), 'nathan');
+});
+const CR = authDb(CREATOR), UC = authDb(UNVERIFIED_CREATOR), NA = authDb(NATHAN);
+await t('the creator is admin with no staff entry: changes the settings', set(ref(CR, 'shifts/config/weekdayMin'), 5), 'allow');
+await t('the creator is admin: adds a manager flag', set(ref(CR, 'shifts/managers/sergio'), true), 'allow');
+await t('an unverified creator address is not admin', set(ref(UC, 'shifts/managers/carl'), true), 'deny');
+await t('Nathan, on the management list, approves a request', update(ref(NA, 'shifts/requests/r1'), { status: 'approved', decidedBy: 'Nathan', decidedAt: 5 }), 'allow');
+await t('Nathan, on the management list, cannot make managers (admin only)', set(ref(NA, 'shifts/managers/nobody'), true), 'deny');
+await t('the creator writes to the test copy as well', set(ref(CR, 'shiftsTest/config/weekdayMin'), 5), 'allow');
+// the Ciphr reference on a leave request: optional, short
+await t('a leave request carries its Ciphr reference', set(ref(T, 'shifts/requests/c1'), req({ ts: 9, ciphr: 'CPH-123456' })), 'allow');
+await t('a Ciphr reference over 40 characters is refused', set(ref(T, 'shifts/requests/c2'), req({ ts: 9, ciphr: 'x'.repeat(41) })), 'deny');
+// the handover team: a minimum from 0 to 3, and only the handover names
+await t('the handover minimum is set by a manager', set(ref(W, 'shifts/config/handoverMin'), 1), 'allow');
+await t('a handover minimum of 9 is refused', set(ref(W, 'shifts/config/handoverMin'), 9), 'deny');
+await t('a handover name that is not a person id is refused', set(ref(W, 'shifts/config/handoverIds/Bad-Name'), true), 'deny');
+await t('a management list member sets the handover team', set(ref(NA, 'shifts/config/handoverIds/chloe'), true), 'allow');
+await t('a colleague cannot set the handover team', set(ref(T, 'shifts/config/handoverMin'), 0), 'deny');
+
 // lockup absences: 'works' is accepted, unknown kinds are not
 await t('a day off switch is written to lockup as works', set(ref(T, 'lockup/absences/sw1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'works', status: 'approved', ts: 7 }), 'allow');
 await t('an unknown absence kind is refused', set(ref(T, 'lockup/absences/sw2'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'bogus', status: 'approved', ts: 7 }), 'deny');

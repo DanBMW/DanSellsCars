@@ -16,7 +16,7 @@
 <body>
 <div id="testbar" class="testbar" hidden>TEST MODE &middot; the team home is reading the practice copies</div>
 <header class="top">
-  <a class="brand" href="team.html"><div class="key">&#127968;</div><div>Team home<small id="hdr-sub">Hedin BMW Ruxley</small></div></a>
+  <a class="brand" href="team.html"><div class="key">&#127968;</div><div>Team<small id="hdr-sub">Hedin BMW Ruxley</small></div></a>
   <div class="hdr-r"><span id="who"></span><button class="ghost" id="btn-out" type="button" hidden>Sign out</button></div>
 </header>
 
@@ -26,27 +26,46 @@
   <section id="v-signin" hidden>
     <div class="hero signin">
       <div class="kick">Hedin BMW Ruxley</div>
-      <h1>Team home</h1>
-      <p class="muted">Lockup, forecourt checks, the team board and the team calendar, in one place. Sign in with your <b>@hedinautomotive.co.uk</b> account.</p>
-      <button class="big" id="btn-signin" type="button">Sign in with Google</button>
-      <p class="muted small" id="signin-msg" style="margin-top:12px"></p>
+      <h1>Team</h1>
+      <p class="muted">Lockup, forecourt checks, the team board and the calendar, in one place. Sign in with your <b>@hedinautomotive.co.uk</b> address.</p>
+      <button class="big" id="btn-signin" type="button" style="width:100%">Sign in with Google</button>
+      <p class="muted small" style="margin:14px 0 8px">or with your own PIN</p>
+      <form class="pinbox" id="pin-form" autocomplete="on">
+        <input class="inp" id="pin-email" type="email" inputmode="email" autocomplete="username" placeholder="name@hedinautomotive.co.uk">
+        <input class="inp" id="pin-code" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 digit PIN">
+        <div class="row"><button class="big" id="pin-in" type="submit" style="flex:1">Sign in</button></div>
+      </form>
+      <div class="row" style="justify-content:space-between;margin-top:12px">
+        <button class="ghost" id="pin-new" type="button">Set my PIN</button>
+        <button class="ghost" id="pin-reset" type="button">Forgot my PIN?</button>
+      </div>
+      <p class="msg" id="signin-msg" style="margin-top:12px" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="v-unverified" hidden>
+    <div class="card"><b>Check your work email</b>
+      <p class="muted small" style="margin:6px 0 12px">We need to know it is you. Open the verification link we sent to <span id="unv-email"></span>, then continue.</p>
+      <div class="row"><button class="big" id="unv-continue" type="button">I&rsquo;ve verified it, continue</button><button class="ghost" id="unv-resend" type="button">Send it again</button><button class="ghost" id="unv-out" type="button">Sign out</button></div>
+      <p class="msg" id="unv-msg" style="margin-top:10px" aria-live="polite"></p>
     </div>
   </section>
 
   <section id="v-wrong" hidden>
     <div class="card"><b>That isn&rsquo;t a work account</b>
-      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Use your Hedin address, and make sure Google has verified it.</p>
+      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Use your Hedin address.</p>
       <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
     </div>
   </section>
 
   <section id="v-unlinked" hidden>
     <div class="card"><b>Your address isn&rsquo;t on the team list</b>
-      <p class="muted small" style="margin:6px 0 12px"><span id="unlinked-email"></span> isn&rsquo;t the work address of anyone on the team yet. Ask Dan to add you under Team admin &gt; People.</p>
+      <p class="muted small" style="margin:6px 0 12px"><span id="unlinked-email"></span> isn&rsquo;t anyone&rsquo;s work address on the team list. Ask Dan to add you under Team admin &gt; People.</p>
     </div>
   </section>
 
   <section id="v-home" hidden>
+    <p class="card msg bad" id="next-note" hidden>That page is for managers. Ask Dan if you need access.</p>
     <div class="hero">
       <div class="kick" id="home-date"></div>
       <h1 id="home-hello"></h1>
@@ -59,6 +78,15 @@
     </div>
   </section>
 </main>
+
+<nav class="bottomnav" id="bottomnav" aria-label="Team">
+  <a href="team.html" class="on" aria-current="page"><span class="ind"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></span>Home</a>
+  <a href="lockup.html"><span class="ind"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>Lockup</a>
+  <a href="shifts.html"><span class="ind"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>Calendar</a>
+  <a href="team-board.html"><span class="ind"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/></svg></span>Board</a>
+  <a href="Forecourt.html"><span class="ind"><svg viewBox="0 0 24 24"><path d="M5 17h14M6 17l1.5-6h9L18 17"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg></span>Forecourt</a>
+</nav>
+
 <div class="modal" id="m-sheet"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -69,10 +97,36 @@ import { makeBackend } from "./team-backend.js";
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 const app=initializeApp(firebaseConfig);
 TeamSession.start(makeBackend(app));
-const signin=()=>TeamSession.signIn().catch(e=>{ const m=document.getElementById('signin-msg'); if(m) m.textContent=(e&&e.code==='auth/popup-closed-by-user')?'':'Sign-in did not work ('+((e&&e.code)||e)+'). Try again.' });
-document.getElementById('btn-signin').onclick=signin;
-document.getElementById('btn-signin2').onclick=signin;
-document.getElementById('btn-out').onclick=()=>TeamSession.signOut();
+const $=id=>document.getElementById(id);
+const DOMAIN=/^[a-z0-9._-]+@hedinautomotive\.co\.uk$/i;
+const say=(id,text,ok)=>{ const m=$(id); m.textContent=text; m.className='msg '+(ok?'ok':'bad'); };
+const errText=(e)=>{ const c=e&&e.code||'';
+  if(c==='auth/popup-closed-by-user') return '';
+  if(c==='auth/invalid-credential'||c==='auth/wrong-password'||c==='auth/user-not-found') return 'That email and PIN don\u2019t match. Forgot your PIN? Use Forgot my PIN.';
+  if(c==='auth/too-many-requests') return 'Too many attempts. Wait a few minutes, or reset your PIN.';
+  if(c==='auth/invalid-email') return 'That email address doesn\u2019t look right.';
+  return 'That didn\u2019t work ('+(c||e)+'). Try again.'; };
+const pinOk=p=>/^[0-9]{6}$/.test(p);
+const emailVal=()=>$('pin-email').value.trim().toLowerCase();
+$('btn-signin').onclick=()=>TeamSession.signIn().catch(e=>{ const t=errText(e); if(t) say('signin-msg',t,false); });
+$('btn-signin2').onclick=$('btn-signin').onclick;
+$('btn-out').onclick=()=>TeamSession.signOut();
+$('pin-form').onsubmit=e=>{ e.preventDefault(); const em=emailVal(), p=$('pin-code').value;
+  if(!DOMAIN.test(em)) return say('signin-msg','Use your Hedin work address.',false);
+  if(!pinOk(p)) return say('signin-msg','Your PIN is six digits.',false);
+  say('signin-msg','Signing in\u2026',true);
+  TeamSession.signInPin(em,p).then(()=>say('signin-msg','',true)).catch(x=>say('signin-msg',errText(x),false)); };
+$('pin-new').onclick=()=>{ const em=emailVal(), p=$('pin-code').value;
+  if(!DOMAIN.test(em)) return say('signin-msg','Type your Hedin work address first.',false);
+  if(!pinOk(p)) return say('signin-msg','Type the six digit PIN you want, then press Set my PIN.',false);
+  TeamSession.signUpPin(em,p).then(()=>{ $('pin-code').value=''; say('signin-msg','We\u2019ve sent a verification link to '+em+'. Open it, then come back and sign in.',true); })
+    .catch(x=>{ if(x&&x.code==='auth/email-already-in-use') say('signin-msg','You already have a PIN. Sign in with it, or use Forgot my PIN.',false); else say('signin-msg',errText(x),false); }); };
+$('pin-reset').onclick=()=>{ const em=emailVal();
+  if(!DOMAIN.test(em)) return say('signin-msg','Type your Hedin work address first, then press Forgot my PIN.',false);
+  TeamSession.resetPin(em).then(()=>say('signin-msg','If that work address has a PIN, a reset link is on its way.',true)).catch(x=>say('signin-msg',errText(x),false)); };
+$('unv-continue').onclick=()=>{ say('unv-msg','Checking\u2026',true); TeamSession.reloadUser().then(()=>{ const s=TeamSession.state(); if(s&&s.status==='unverified') say('unv-msg','Not verified yet. Open the link in the email, then try again.',false); }).catch(x=>say('unv-msg',errText(x),false)); };
+$('unv-resend').onclick=()=>TeamSession.resendVerification().then(()=>say('unv-msg','Sent again.',true)).catch(x=>say('unv-msg',errText(x),false));
+$('unv-out').onclick=()=>TeamSession.signOut();
 TeamHome.start();
 </script>
 </body>

@@ -11,6 +11,7 @@
  * ROTA_NOW=1 (one off send, optional ROTA_FROM=YYYY-MM-DD Monday). */
 'use strict';
 const R = require('../lockup-rota.js');
+const S = require('../shifts-rota.js');
 const SITE = 'https://dan-sells.co.uk/lockup.html';
 const SEND_FROM_MINS = 8 * 60, SEND_UNTIL_MINS = 12 * 60;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -40,21 +41,48 @@ function rows(fromDate, weeks, team, absences, hol, nWeeks) {
   return out;
 }
 
+/* who is in this week, Monday to Saturday, from the same rules the calendar uses.
+   o.shifts = { config, bh, holidays, closed, absences, team, managers, today }. Returns [] without it. */
+function whoIn(fromDate, shifts) {
+  if (!shifts) return [];
+  const ctx = S.makeCtx(Object.assign({}, shifts, { today: shifts.today || fromDate }));
+  return S.whoIn(ctx, fromDate, R.addDays(fromDate, 5)).filter(d => d.kind !== 'closed').map(d => {
+    const nm = id => (shifts.team[id] || (shifts.managers || {})[id] || {}).name || id;
+    const warn = [];
+    if (d.reasons.indexOf('staff') >= 0) warn.push(d.count + ' on, minimum ' + d.min);
+    if (d.reasons.indexOf('handover') >= 0) warn.push('no Chloe or Molly on');
+    if (d.noRota) warn.push('no bank holiday rota yet');
+    return { date: d.date, day: R.DAY_NAMES[d.dow], dateLabel: fmt(d.date, { day: 'numeric', month: 'short' }), kind: d.kind,
+      names: d.ids.map(nm), away: d.away.map(a => nm(a.id) + (a.kind === 'holiday' ? ' (holiday' : ' (away') + (a.note ? ': ' + a.note : '') + ')'), warn: warn };
+  });
+}
+
 function build(o) {
-  /* o: { fromDate (Monday), weeks, team, absences, hol, test } */
+  /* o: { fromDate (Monday), weeks, team, absences, hol, test, shifts (optional, see whoIn) } */
   const rs = rows(o.fromDate, o.weeks, o.team, o.absences, o.hol, 2);
   const start = fmt(o.fromDate, { weekday: 'long', day: 'numeric', month: 'long' });
-  const subject = (o.test ? '[TEST] ' : '') + 'Lockup rota for the next two weeks, from ' + start;
+  const wk = whoIn(o.fromDate, o.shifts);
+  const subject = (o.test ? '[TEST] ' : '') + (wk.length
+    ? 'Week ahead from ' + start + ': who is in, and the lockup rota'
+    : 'Lockup rota for the next two weeks, from ' + start);
   const intro = ['Here\u2019s the lockup rota for the next two weeks. Please have a quick look for your nights.',
     'If you can\u2019t make a night, or you\u2019re away or on holiday, please update the lockup page as soon as possible. It only takes a minute, and it means the rota can pick someone fairly, the 5pm reminder goes to the right people and the building is always locked up properly.',
     'On the lockup page, tap Can\u2019t make it? next to your night, or use Book holiday for longer.'];
   const byWeek = {}; rs.forEach(r => { (byWeek[r.week] = byWeek[r.week] || []).push(r); });
-  const text = ['Hi all,', '', intro[0], ''].concat(...Object.keys(byWeek).map(wk => ['Week of ' + fmt(R.weekStart(wk), { weekday: 'long', day: 'numeric', month: 'long' }) + ':']
+  /* the week ahead: who is in, who is away and why, and any minimum that is short */
+  const whoText = wk.length ? ['WHO\u2019S IN THIS WEEK'].concat(wk.map(d => '  ' + d.day + ' ' + d.dateLabel + ': ' + (d.names.join(', ') || 'nobody') +
+    (d.away.length ? ' | away: ' + d.away.join(', ') : '') + (d.warn.length ? ' | SHORT: ' + d.warn.join('; ') : '')), ['', 'LOCKUP ROTA', '']) : [];
+  const text = ['Hi all,', '', intro[0], ''].concat(whoText, ...Object.keys(byWeek).map(wk => ['Week of ' + fmt(R.weekStart(wk), { weekday: 'long', day: 'numeric', month: 'long' }) + ':']
     .concat(byWeek[wk].map(r => '  ' + r.day + ' ' + r.dateLabel + ': ' + r.who + (r.away.length ? ' (away: ' + r.away.join(', ') + ')' : '')), ['']))).concat([intro[1], '', intro[2], '', 'Update my availability: ' + SITE, '', 'Thank you!', 'Hedin BMW Ruxley lockup']).join('\n');
   const td = 'padding:9px 10px;border-bottom:1px solid #e6edf4;font-size:14px;vertical-align:top';
+  const whoHtml = wk.length ? '<p style="margin:16px 0 6px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4d6680">Who\u2019s in this week</p>' +
+    '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #e6edf4;border-radius:10px">' +
+    wk.map(d => '<tr style="background:' + (d.warn.length ? '#fff1f1' : '#fff') + '"><td style="' + td + ';width:96px;font-weight:700;white-space:nowrap">' + esc(d.day.slice(0, 3)) + ' ' + esc(d.dateLabel) + '</td><td style="' + td + '">' +
+      esc(d.names.join(', ') || 'Nobody') + (d.away.length ? '<br><span style="font-size:12px;color:#b26a00">Away: ' + esc(d.away.join(', ')) + '</span>' : '') +
+      (d.warn.length ? '<br><span style="font-size:12px;color:#c0392b;font-weight:700">Short: ' + esc(d.warn.join('; ')) + '</span>' : '') + '</td></tr>').join('') + '</table>' : '';
   const html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:auto;color:#12263a">' +
     '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">&#128273; ' + esc(subject) + '</div>' +
-    '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px"><p style="margin:0 0 12px">Hi all,</p><p style="margin:0 0 14px">' + esc(intro[0]) + '</p>' +
+    '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px"><p style="margin:0 0 12px">Hi all,</p><p style="margin:0 0 14px">' + esc(intro[0]) + '</p>' + whoHtml +
     Object.keys(byWeek).map(wk => '<p style="margin:16px 0 6px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4d6680">Week of ' + esc(fmt(R.weekStart(wk), { day: 'numeric', month: 'long' })) + '</p>' +
       '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #e6edf4;border-radius:10px">' +
       byWeek[wk].map(r => '<tr style="background:' + (r.kind === 'closed' ? '#f6f8fa' : '#fff') + '"><td style="' + td + ';width:96px;font-weight:700;white-space:nowrap">' + r.day.slice(0, 3) + ' ' + esc(r.dateLabel) + '</td><td style="' + td + (r.kind === 'closed' ? ';color:#8796a5' : '') + '">' + esc(r.who) +
@@ -72,4 +100,4 @@ function fromDateFor(n, override) {
   return idx === 0 ? n.date : R.addDays(n.date, 7 - idx);
 }
 
-module.exports = { build, rows, due, fromDateFor, SEND_FROM_MINS, SEND_UNTIL_MINS };
+module.exports = { build, rows, whoIn, due, fromDateFor, SEND_FROM_MINS, SEND_UNTIL_MINS };

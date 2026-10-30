@@ -165,7 +165,7 @@
     $('hdr-sub').textContent = TS.paths().testMode ? 'Test copy' : 'Hedin BMW Ruxley';
     if (!st) { show('loading'); return; }
     if (st.status === 'signedout') { show('signin'); return; }
-    if (st.status === 'wrongdomain') { $('wrong-email').textContent = TS.email(); show('wrong'); return; }
+    if (st.status === 'wrongdomain' || st.status === 'unverified') { $('wrong-email').textContent = TS.email(); show('wrong'); return; }
     if (st.status === 'unlinked') { $('unlinked-email').textContent = TS.email(); show('unlinked'); return; }
     if (st.status !== 'team') { $('loading-msg').textContent = 'Loading…'; show('loading'); return; }
     if (!st.canManage) {

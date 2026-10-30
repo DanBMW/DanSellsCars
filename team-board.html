@@ -6333,9 +6333,8 @@ $('btn-manager').onclick=function(){
   /* a signed in team manager needs no PIN; everyone else gets it as before */
   window.managerCheck().then(function(ok){
     if(ok){ isManager=true; if(viewMonth!==monthKey())showMonth(monthKey()); resetForm(); openModal('m-mgr'); renderDeals(); return }
-    $('pin-input').value='';
-    openModal('m-pin');
-    setTimeout(function(){$('pin-input').focus()},80);
+    /* managers sign in with their own team account (team.html), then come back here */
+    window.goTeamSignIn('team-board.html');
   });
 };
 $('pin-go').onclick=checkPin;
@@ -7807,6 +7806,8 @@ import { getDatabase, ref, onValue, push, update, remove, get, set }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { ensureSignedIn, guard } from "./staff-auth.js";
 import { makeBackend } from "./team-backend.js";
+const goTeamSignIn=page=>{ location.href='team.html?next='+encodeURIComponent(page) };
+window.goTeamSignIn=goTeamSignIn; /* the manager button is wired in the plain script below */
 const managerCheck=()=>{ TeamSession.start(makeBackend(app)); return TeamSession.ready().then(s=>!!s.canManage) };
 window.managerCheck=managerCheck; /* the manager button is wired in the plain script above */
 

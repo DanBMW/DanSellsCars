@@ -103,9 +103,16 @@
     return out;
   }
 
+  /* ?next=page.html: a manager sends people here to sign in, then straight back.
+     Only a plain page name in this folder is followed. */
+  function nextPage() {
+    var n = new URLSearchParams(location.search).get('next') || '';
+    return /^[A-Za-z0-9_-]+\.html$/.test(n) ? n : '';
+  }
+
   /* ---- drawing ---- */
   function show(view) {
-    ['loading', 'signin', 'wrong', 'unlinked', 'home'].forEach(function (x) { $('v-' + x).hidden = x !== view; });
+    ['loading', 'signin', 'unverified', 'wrong', 'unlinked', 'home'].forEach(function (x) { $('v-' + x).hidden = x !== view; });
     $('btn-out').hidden = view !== 'home';
   }
   function paint() {
@@ -115,6 +122,7 @@
     $('hdr-sub').textContent = TS.paths().testMode ? 'Test copy' : 'Hedin BMW Ruxley';
     if (!st) { show('loading'); return; }
     if (st.status === 'signedout') { show('signin'); return; }
+    if (st.status === 'unverified') { $('unv-email').textContent = TS.email(); $('bottomnav').hidden = true; show('unverified'); return; }
     if (st.status === 'wrongdomain') { $('wrong-email').textContent = (TS.email()) || ''; show('wrong'); return; }
     if (st.status === 'unlinked') { $('unlinked-email').textContent = TS.email(); show('unlinked'); return; }
     if (st.status === 'loading') { $('loading-msg').textContent = 'Loading…'; show('loading'); return; }
@@ -122,8 +130,12 @@
       $('loading-msg').textContent = 'The team list is not set up on this copy yet. Open lockup.html once, then come back.';
       show('loading'); return;
     }
+    $('bottomnav').hidden = false;
     show('home');
     subscribe();
+    var next = nextPage();
+    if (next && st.canManage) { location.replace(next); return; }
+    $('next-note').hidden = !next || st.canManage;
     $('who').textContent = st.name;
     $('home-date').textContent = fmt(NOW.date, true);
     $('home-hello').textContent = 'Hello, ' + st.name;
