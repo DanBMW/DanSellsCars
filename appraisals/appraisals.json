@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-29T20:03:05.108Z",
+  "captured": "2026-10-30T06:02:08.290Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -419,7 +419,7 @@
       "appraisedAt": "2026-10-22T14:35:54.373Z",
       "make": "BMW",
       "model": "3 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -429,7 +429,7 @@
       "appraisedAt": "2026-10-22T12:44:11.886Z",
       "make": "BMW",
       "model": "X3",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--HZ3JFCik--/c_fill,h_300,w_300/v1792673053/Live/Appraisals/9595335/9d5baaff-0966-41c6-83c4-ffbd3bf46102.jpg"
@@ -449,7 +449,7 @@
       "appraisedAt": "2026-10-22T07:42:13.949Z",
       "make": "BMW",
       "model": "iX3",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -5105,7 +5105,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--2bo9Uet4--/c_fill,h_300,w_300/v1785334149/Live/Appraisals/9383889/a509ce38-d5f0-4735-9763-389711d60eab.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--2bo9Uet4--/c_fill,h_300,w_300/v1785334149/Live/Appraisals/9383889/a509ce38-d5f0-4735-9763-389711d60eab.jpg",
+      "droppedAt": "2026-10-30T06:02:08.289Z"
     },
     {
       "registration": "TEW712",
@@ -5115,7 +5116,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--uFhjIiFJ--/c_fill,h_300,w_300/v1785327071/Live/Appraisals/9383444/5ea90c5f-7d67-4160-961c-4892053fe536.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--uFhjIiFJ--/c_fill,h_300,w_300/v1785327071/Live/Appraisals/9383444/5ea90c5f-7d67-4160-961c-4892053fe536.jpg",
+      "droppedAt": "2026-10-30T06:02:08.289Z"
     },
     {
       "registration": "LV22CZP",
@@ -5125,7 +5127,8 @@
       "status": "SaleInProgress",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Bg47SHxV--/c_fill,h_300,w_300/v1785324138/Live/Appraisals/9383257/a83725d4-5ff2-4572-adff-a5157b86c53e.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Bg47SHxV--/c_fill,h_300,w_300/v1785324138/Live/Appraisals/9383257/a83725d4-5ff2-4572-adff-a5157b86c53e.jpg",
+      "droppedAt": "2026-10-30T06:02:08.289Z"
     },
     {
       "registration": "YF69UEH",
