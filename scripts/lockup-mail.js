@@ -176,8 +176,10 @@ async function main() {
       const SR = TEST ? 'shiftsTest' : 'shifts';
       const shiftsCfg = (await db.ref(SR + '/config').get()).val() || {};
       const shiftsBh = (await db.ref(SR + '/bh').get()).val() || {};
+      /* the who's in section is held until launch: set ROTA_WHOS_IN=1 in the workflow to switch it on */
+      const WHOS_IN = process.env.ROTA_WHOS_IN === '1';
       const m = RM.build({ fromDate: from, weeks, team: cfg.team || {}, absences, hol, test: TEST,
-        shifts: { config: shiftsCfg, bh: shiftsBh, holidays: hol, closed: cfg.holidays || {}, absences, team: cfg.team || {}, managers: cfg.managers || {}, today: n.date } });
+        shifts: !WHOS_IN ? undefined : { config: shiftsCfg, bh: shiftsBh, holidays: hol, closed: cfg.holidays || {}, absences, team: cfg.team || {}, managers: cfg.managers || {}, today: n.date } });
       const cc = TEST ? [] : mgrList;
       if (!teamList.length) console.log('Rota email due but no team emails set');
       else {
