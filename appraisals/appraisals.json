@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-30T10:02:36.455Z",
+  "captured": "2026-10-30T12:02:23.353Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "FV15JVN",
+      "appraisedAt": "2026-10-30T11:58:34.716Z",
+      "make": "LAND ROVER",
+      "model": "Discovery Sport",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LV60RCZ",
+      "appraisedAt": "2026-10-30T11:35:58.306Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--88nIF-zj--/c_fill,h_300,w_300/v1793360160/Live/Appraisals/9611383/5e76f984-527f-4e1e-987a-0e037b8eb851.png"
+    },
+    {
+      "registration": "EK26UOT",
+      "appraisedAt": "2026-10-30T10:13:31.052Z",
+      "make": "BMW",
+      "model": "X3",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "DV68YYS",
       "appraisedAt": "2026-10-30T09:58:04.266Z",
@@ -23,16 +53,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--i55NEAc3--/c_fill,h_300,w_300/v1793352339/Live/Appraisals/9610860/995fd487-4acc-4bfb-b1ac-114fc6302fb6.png"
-    },
-    {
-      "registration": "EK26UOT",
-      "appraisedAt": "2026-10-30T08:57:45.972Z",
-      "make": "BMW",
-      "model": "X3",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "LM69NRV",
