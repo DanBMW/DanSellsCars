@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-30T12:02:23.353Z",
+  "captured": "2026-10-30T14:02:23.618Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LL69WLP",
+      "appraisedAt": "2026-10-30T12:52:08.801Z",
+      "make": "BMW",
+      "model": "X3",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "BJ70UTY",
+      "appraisedAt": "2026-10-30T12:01:31.868Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "FV15JVN",
       "appraisedAt": "2026-10-30T11:58:34.716Z",
