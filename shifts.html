@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0b1220">
+<title>Shifts | Hedin BMW Ruxley</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<style>
+:root{--bg:#0b1220;--card:#141d2e;--card2:#1b2740;--line:#26344f;--text:#eef3fb;--muted:#93a3bd;--blue:#4d94d8;--gold:#f0ba6c;--green:#2fbf71;--amber:#f2a33a;--red:#e05656;--purple:#a58bf0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:16px;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.wrap{max-width:900px;margin:0 auto;padding:14px 14px calc(40px + env(safe-area-inset-bottom))}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;position:sticky;top:0;z-index:20;background:rgba(11,18,32,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.02em}
+.brand .key{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#1f4f82);display:grid;place-items:center;font-size:17px}
+.brand small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.hdr-r{display:flex;align-items:center;gap:10px;min-width:0}
+#who{color:var(--muted);font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40vw}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;color:var(--muted)}
+.testbar{position:sticky;top:0;z-index:30;background:#ff8a00;color:#1a0d00;font-weight:900;text-align:center;font-size:13px;letter-spacing:.04em;padding:7px 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.hero{margin:4px 0 14px;padding:18px;border-radius:20px;background:radial-gradient(120% 140% at 0% 0%,#1f3d66 0%,#141d2e 60%);border:1px solid var(--line)}
+.hero .kick{color:var(--gold);font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero h1{font-size:24px;line-height:1.2;margin:6px 0 6px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.ok{color:var(--green);font-weight:700}.warn{color:var(--amber);font-weight:700}.bad{color:var(--red);font-weight:700}
+.big{display:inline-block;border:0;border-radius:14px;padding:13px 16px;font-size:16px;font-weight:800;background:var(--blue);color:#fff;margin:0}
+.big.alt{background:var(--card2);border:1px solid var(--line);color:var(--text)}
+.big.small-btn{padding:8px 12px;font-size:14px}
+.big:disabled{opacity:.4;cursor:default}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:4px 0 14px;padding-bottom:4px}
+.tabs button{flex:none;padding:9px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:14px;color:var(--muted)}
+.tabs button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tabn{display:inline-block;min-width:18px;padding:0 6px;border-radius:99px;background:var(--amber);color:#1a0d00;font-size:12px;font-weight:900;line-height:18px;text-align:center}
+.months{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:4px}
+.months button{flex:none;padding:8px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:13px;color:var(--muted)}
+.months button.on{background:var(--gold);color:#1a0d00;border-color:var(--gold)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.seg button{padding:8px 14px;background:var(--card);border:0;font-weight:700;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--card2);color:var(--text)}
+.grid-head,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.grid-head span{text-align:center;color:var(--muted);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding-bottom:2px}
+.dc{position:relative;min-height:62px;padding:6px;border-radius:12px;border:1px solid var(--line);background:var(--card);text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:2px;color:var(--text)}
+.dc b{font-size:15px}
+.dc span{font-size:12px;font-weight:800}
+.dc em{font-style:normal;font-size:10px;color:var(--purple);font-weight:700;line-height:1.1;overflow:hidden;max-height:24px}
+.dc.out{background:transparent;border-color:transparent;min-height:0;pointer-events:none}
+.dc.ok span{color:var(--green)}
+.dc.short{border-color:rgba(224,86,86,.7);background:#2c1414}
+.dc.short span{color:var(--red)}
+.dc.closed{background:#101827;color:var(--muted)}
+.dc.closed span{color:var(--muted);font-weight:700}
+.dc.bh{border-color:rgba(165,139,240,.6)}
+.dc.bad{border-color:var(--red)}
+.dc.past{opacity:.55}
+.dc.today{outline:2px solid var(--gold);outline-offset:1px}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:12px;color:var(--muted);font-size:12px;font-weight:700}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.k{display:inline-block;width:12px;height:12px;border-radius:4px;border:1px solid var(--line)}
+.k.ok{background:#11281e;border-color:var(--green)}.k.short{background:#2c1414;border-color:var(--red)}.k.closed{background:#101827}.k.bh{border-color:var(--purple)}
+.people{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.people table{border-collapse:collapse;font-size:12px}
+.people th,.people td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);min-width:30px;height:34px;text-align:center;padding:0}
+.people thead th{position:sticky;top:0;background:var(--card2);font-weight:800}
+.people thead th small{display:block;color:var(--muted);font-weight:700;font-size:10px}
+.people thead th.short{color:var(--red)}
+.people thead th.closed{color:var(--muted)}
+.people tbody th{position:sticky;left:0;background:var(--card);text-align:left;padding:0 10px;min-width:110px;white-space:nowrap;font-weight:800;z-index:1}
+.people td.counts,.people tr.counts th{font-weight:900}
+.people td.ok{color:var(--green)}.people td.short{color:var(--red);background:#2c1414}.people td.closed{background:#101827}
+.people td.sym{font-weight:900}
+.people td.w{color:var(--green)}.people td.s{color:var(--blue)}.people td.o{color:var(--muted)}.people td.h{color:var(--amber);background:#2a2112}.people td.a{color:var(--red);background:#2c1414}.people td.bh{color:var(--purple);font-size:10px}.people td.x{color:var(--red)}
+.reqs{list-style:none;margin-top:8px}
+.reqs li{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.reqs li:last-child{border:0}
+.reqs li > div:first-child{flex:1;min-width:180px}
+.rq-r{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.acts button{padding:8px 12px;font-size:13px}
+.pill{display:inline-block;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:800;background:var(--card2);color:var(--muted);white-space:nowrap}
+.pill.a{background:#2a2112;color:var(--amber)}.pill.g{background:#11281e;color:var(--green)}.pill.r{background:#2c1414;color:var(--red)}
+.sum{list-style:none}
+.sum li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sum li:last-child{border:0}
+.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}
+.pick{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card2);font-weight:700;font-size:14px}
+.pick.away{opacity:.6}
+.pick input{width:18px;height:18px;accent-color:var(--green)}
+.bhc{margin-bottom:10px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.between{justify-content:space-between}
+.row.end{justify-content:flex-end;margin-top:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.fld{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:var(--muted)}
+.fld input,.fld select,.stack input[type=text],.stack select,.stack input[type=date]{width:100%;background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:11px;font-size:16px;color:var(--text)}
+.fld input[type=number]{width:100%;background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:11px;font-size:16px;color:var(--text)}
+select[data-off]{background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:14px;color:var(--text);min-width:130px}
+.off-list .off-ctl{display:flex;gap:8px;align-items:center}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:14px;margin:6px 0}
+.check input{width:20px;height:20px;accent-color:var(--green)}
+.preview{min-height:8px}
+.preview .sum{margin:6px 0}
+.preview p{margin:6px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+.sheet h2{font-size:20px;margin-bottom:6px}
+.sheet p.sub{color:var(--muted);font-size:14px;margin-bottom:12px}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-weight:700;z-index:60;display:none;max-width:90vw;text-align:center}
+.toast.show{display:block}
+.signin{text-align:center;padding:30px 18px}
+.signin .big{padding:16px 22px;font-size:17px;margin-top:14px}
+@media (max-width:560px){
+  .grid-head,.grid{gap:3px}
+  .dc{min-height:56px;padding:4px}
+  .dc span{font-size:11px}
+  #who{display:none}
+  .grid2{grid-template-columns:1fr}
+  .reqs li{flex-direction:column}
+  .rq-r{align-items:flex-start}
+  .acts{justify-content:flex-start}
+  .actions .big{flex:1 1 100%}
+}
+@media print{header.top,.tabs,.actions,.seg,.months,.testbar{display:none!important}}
+</style>
+<script src="lockup-rota.js"></script>
+<script src="shifts-rota.js"></script>
+</head>
+<body>
+<div id="testbar" class="testbar" hidden>TEST MODE &middot; practice copies of lockup and shifts, not the live rota</div>
+<header class="top">
+  <div class="brand"><div class="key">&#128197;</div><div>Shifts<small id="hdr-sub">Hedin BMW Ruxley</small></div></div>
+  <div class="hdr-r"><span id="who"></span><button class="ghost" id="btn-out" type="button" hidden>Sign out</button></div>
+</header>
+
+<main class="wrap">
+  <section id="v-loading"><div class="card"><p class="muted" id="loading-msg">Loading the rota&hellip;</p></div></section>
+
+  <section id="v-signin" hidden>
+    <div class="hero signin">
+      <div class="kick">Team rota</div>
+      <h1>Sign in with your work email</h1>
+      <p class="muted">Shifts, days off, holidays and bank holidays. Use your <b>@hedinautomotive.co.uk</b> account.</p>
+      <button class="big" id="btn-signin" type="button">Sign in with Google</button>
+      <p class="muted small" id="signin-msg" style="margin-top:12px"></p>
+    </div>
+  </section>
+
+  <section id="v-wrong" hidden>
+    <div class="card"><b>That isn&rsquo;t a work account</b>
+      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Sign in with your Hedin address (it has to be verified by Google).</p>
+      <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
+    </div>
+  </section>
+
+  <section id="v-unlinked" hidden>
+    <div class="card"><b>Your address isn&rsquo;t on the team list</b>
+      <p class="muted small" style="margin:6px 0 12px"><span id="unlinked-email"></span> isn&rsquo;t the work address of anyone on the lockup team yet. Ask Dan to add it under Lockup &gt; Team.</p>
+    </div>
+  </section>
+
+  <section id="v-app" hidden>
+    <nav class="tabs" id="tabs"></nav>
+
+    <div id="p-calendar">
+      <div class="hero" style="margin-bottom:12px">
+        <div class="kick">Who is in</div>
+        <h1 style="font-size:20px">Six months at a glance</h1>
+        <p class="muted small">Green is at or above the minimum, red is short. Tap a day to see who is in and who is covering lockup.</p>
+        <p class="muted small" id="mins" style="margin-top:6px"></p>
+      </div>
+      <div class="card" id="cal" style="padding:12px"></div>
+      <div class="actions" id="actions"></div>
+    </div>
+
+    <div id="p-requests" hidden></div>
+    <div id="p-bh" hidden></div>
+    <div id="p-staff" hidden></div>
+    <div id="p-settings" hidden></div>
+  </section>
+</main>
+
+<div class="modal" id="m-sheet"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="shifts-app.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const app=initializeApp(firebaseConfig), db=getDatabase(app), auth=getAuth(app);
+
+/* the only place the app touches Firebase: the page logic in shifts-app.js is
+   written against this small interface, so it can be tested with a fake */
+const backend={
+  onAuth(cb){ return onAuthStateChanged(auth,u=>cb(u&&!u.isAnonymous?{uid:u.uid,email:u.email||'',emailVerified:!!u.emailVerified}:null)) },
+  signIn(){ const p=new GoogleAuthProvider(); p.setCustomParameters({hd:'hedinautomotive.co.uk',prompt:'select_account'}); return signInWithPopup(auth,p) },
+  signOut(){ return signOut(auth) },
+  watch(path,cb){ return onValue(ref(db,path),s=>cb(s.val()),err=>console.warn('shifts: '+path+' '+(err&&err.code))) },
+  set(path,v){ return set(ref(db,path),v) },
+  update(path,v){ return update(ref(db,path),v) },
+  remove(path){ return remove(ref(db,path)) },
+  push(path,v){ const r=push(ref(db,path)); return set(r,v).then(()=>r.key) },
+  key(path){ return push(ref(db,path)).key }
+};
+window.ShiftsApp.start(backend);
+document.getElementById('btn-out').onclick=()=>signOut(auth);
+const signin=()=>backend.signIn().catch(e=>{ const m=document.getElementById('signin-msg'); if(m) m.textContent=(e&&e.code==='auth/popup-closed-by-user')?'':'Sign-in did not work ('+((e&&e.code)||e)+'). Try again.' });
+document.getElementById('btn-signin').onclick=signin;
+document.getElementById('btn-signin2').onclick=signin;
+</script>
+</body>
+</html>

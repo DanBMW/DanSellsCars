@@ -601,7 +601,7 @@ function openHoliday(){
 
 /* manager: time off */
 function paintTimeoff(){
-  const list=Object.keys(ABS).map(k=>Object.assign({id:k},ABS[k])).sort((a,b)=>a.from<b.from?1:-1);
+  const list=Object.keys(ABS).map(k=>Object.assign({id:k},ABS[k])).filter(a=>a.kind!=='works').sort((a,b)=>a.from<b.from?1:-1);
   const pill=a=>a.status==='cancelled'?'<span class="pill r">Cancelled</span>':a.status==='booked'?'<span class="pill a">Waiting</span>':'<span class="pill g">Approved</span>';
   const covers=Object.keys(CHANGES).map(k=>CHANGES[k]).filter(c=>c.kind==='cover').sort((a,b)=>b.ts-a.ts).slice(0,20);
   $('to-list').innerHTML=(list.length?list.map(a=>'<li><span><b>'+esc(nameOf(a.personId))+'</b> '+(a.kind==='holiday'?'holiday':'away')+'<br><span class="muted small">'+(a.from===a.to?fmtDate(a.from,true):fmtDate(a.from)+' to '+fmtDate(a.to))+(a.note?', '+esc(a.note):'')+'</span></span><span style="text-align:right">'+pill(a)+'<br>'+(a.status==='booked'?'<button class="ghost" type="button" data-ap="'+a.id+'">Approve</button> ':'')+(a.status!=='cancelled'?'<button class="ghost" type="button" data-cx="'+a.id+'">Cancel</button>':'')+'</span></li>').join(''):'<li class="muted">Nobody has booked time off.</li>')+
