@@ -6,7 +6,7 @@
  "mileage": "10,015 miles",
  "mileage_miles": 10015,
  "colour": "Grey",
- "fuel": "Petrol (mild hybrid)",
+ "fuel": "Petrol",
  "body": "SUV",
  "gearbox": "Automatic",
  "drive": "FrontWheel",
@@ -16,7 +16,7 @@
  "trim": "M Sport",
  "price": "£35,537",
  "price_gbp": 35537,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11f77-faea-75cd-8b36-cf496ca4caf3-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18b07-8b55-7b1f-a779-93fedfc986bc-preview.jpg",
  "images": [
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11f77-faea-75cd-8b36-cf496ca4caf3-enlarged.jpg",
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11f77-fbb4-7563-9c0b-25d49fa34b15-enlarged.jpg",

@@ -25,7 +25,7 @@
    "reg": "LX74HTE",
    "mileage": "19,948 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "196 hp",
@@ -42,14 +42,14 @@
    "reg": "LX75FZO",
    "mileage": "10,015 miles",
    "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "170 hp",
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£35,537",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a11f77-faea-75cd-8b36-cf496ca4caf3-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18b07-8b55-7b1f-a779-93fedfc986bc-preview.jpg"
   },
   "254949": {
    "id": "254949",
@@ -450,14 +450,14 @@
    "reg": "LX72JVG",
    "mileage": "24,990 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "286 hp",
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£43,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0c449-530b-7568-b3be-682db53f9b2c-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18b12-c39a-74e9-a980-f449d089228b-preview.jpg"
   },
   "249630": {
    "id": "249630",
@@ -501,7 +501,7 @@
    "reg": "RX24JPF",
    "mileage": "4,058 miles",
    "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
+   "fuel": "Petrol",
    "fuelGroup": "Petrol",
    "body": "Estate",
    "power": "374 hp",
@@ -903,25 +903,6 @@
   }
  },
  "sold": {
-  "248409": {
-   "id": "248409",
-   "model": "BMW 420i M Sport Convertible",
-   "series": "4 Series",
-   "year": "2023",
-   "reg": "LV23EPC",
-   "mileage": "16,501 miles",
-   "colour": "White",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "Convertible",
-   "power": "182 hp",
-   "gearbox": "Automatic",
-   "seats": "4",
-   "price": "£32,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a08571-3d56-72e4-beb5-e75c8bb6aaad-preview.jpg",
-   "first_missing": "2026-10-22",
-   "runs_missing": 75
-  },
   "256419": {
    "id": "256419",
    "model": "BMW 120 M Sport",
@@ -939,7 +920,7 @@
    "price": "£26,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13fb6-ead1-7b77-8cbc-fdae3beecc1e-preview.jpg",
    "first_missing": "2026-10-23",
-   "runs_missing": 63
+   "runs_missing": 64
   },
   "254664": {
    "id": "254664",
@@ -958,7 +939,7 @@
    "price": "£69,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-preview.jpg",
    "first_missing": "2026-10-23",
-   "runs_missing": 63
+   "runs_missing": 64
   },
   "247743": {
    "id": "247743",
@@ -977,7 +958,7 @@
    "price": "£79,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a04286-f17c-7d3c-8c23-f96f4223d138-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 32
+   "runs_missing": 33
   },
   "242787": {
    "id": "242787",
@@ -996,7 +977,7 @@
    "price": "£49,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f8411-e6e4-7ed2-9489-b93c79f09ca5-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 32
+   "runs_missing": 33
   },
   "247744": {
    "id": "247744",
@@ -1015,7 +996,7 @@
    "price": "£57,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1788d-47c2-702a-8c8c-88f596874a9b-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 29
+   "runs_missing": 30
   },
   "253491": {
    "id": "253491",
@@ -1034,7 +1015,7 @@
    "price": "£66,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a120a5-a502-7e0e-9529-81ac02e2a986-preview.jpg",
    "first_missing": "2026-10-28",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "251472": {
    "id": "251472",
@@ -1053,7 +1034,7 @@
    "price": "£25,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0dc01-6fbf-7c59-be08-cc4529d450b4-preview.jpg",
    "first_missing": "2026-10-28",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "236110": {
    "id": "236110",
@@ -1072,10 +1053,10 @@
    "price": "£34,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a14227-6431-77f8-b126-c378c26fbcd1-preview.jpg",
    "first_missing": "2026-10-29",
-   "runs_missing": 9
+   "runs_missing": 10
   }
  },
- "updated": "2026-10-29",
+ "updated": "2026-10-30",
  "confirm_runs": 1,
  "keep_days": 7
 }
