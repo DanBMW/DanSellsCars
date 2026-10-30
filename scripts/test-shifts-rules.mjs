@@ -82,9 +82,16 @@ await t('colleague records an absence as approved, marked auto', set(ref(T, 'shi
 await t('colleague cannot approve an absence for someone else', set(ref(T, 'shifts/requests/ab2'), { personId: 'carl', kind: 'absence', from: '2026-11-16', to: '2026-11-16', status: 'approved', auto: true, ts: 2 }), 'deny');
 await t('colleague cannot mark a holiday as approved by themselves', set(ref(T, 'shifts/requests/ab3'), { personId: 'tomi', kind: 'holiday', from: '2026-11-16', to: '2026-11-16', status: 'approved', auto: true, ts: 2 }), 'deny');
 
-// day off switch: colleague may have it approved automatically; not any other kind
+// day off switch: always a manager's decision, so a colleague cannot mark it approved
 const sw = { personId: 'tomi', kind: 'switch', giveUp: '2026-11-17', takeOn: '2026-11-16', status: 'approved', auto: true, ts: 4 };
-await t('colleague switch approved when marked auto', set(ref(T, 'shifts/requests/s1'), sw), 'allow');
+await t('colleague cannot approve their own switch, even marked auto', set(ref(T, 'shifts/requests/s1'), sw), 'deny');
+await t('a manager approves a switch', set(ref(W, 'shifts/requests/s1'), sw), 'allow');
+// shift swap: only the colleague taking the shift can accept it automatically
+const swp = { personId: 'tomi', withId: 'carl', kind: 'swap', date: '2026-11-18', status: 'pending', ts: 5 };
+await t('colleague asks for a swap', set(ref(T, 'shifts/requests/w1'), swp), 'allow');
+await t('the asker cannot approve their own swap', set(ref(T, 'shifts/requests/w1/status'), 'approved'), 'deny');
+await t('the asker cannot approve their own swap marked auto', update(ref(T, 'shifts/requests/w1'), { status: 'approved', auto: true }), 'deny');
+await t('the colleague taking the shift accepts it', update(ref(C, 'shifts/requests/w1'), { status: 'approved', auto: true }), 'allow');
 await t('colleague holiday approved when marked auto is refused', set(ref(T, 'shifts/requests/s2'), req({ status: 'approved', auto: true, ts: 4 })), 'deny');
 await t('switch without auto is not approved by the colleague', set(ref(T, 'shifts/requests/s3'), Object.assign({}, sw, { auto: false })), 'deny');
 
@@ -167,4 +174,4 @@ await t('an unknown absence kind is refused', set(ref(T, 'lockup/absences/sw2'),
 await t('the lockupTest copy takes works too', set(ref(T, 'lockupTest/absences/sw1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'works', status: 'approved', ts: 7 }), 'allow');
 
 console.log(`\n${pass} passed, ${fail} failed`);
-if (fail) process.exit(1);
+process.exit(fail ? 1 : 0);
