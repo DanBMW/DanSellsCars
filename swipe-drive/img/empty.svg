@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 160" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#1c69d4" stop-opacity="0"/><stop offset=".5" stop-color="#4f8fe8"/><stop offset="1" stop-color="#1c69d4" stop-opacity="0"/></linearGradient></defs>
+<g stroke="#ffffff" stroke-opacity=".07" stroke-width="1"><path d="M0 40H320M0 80H320M0 120H320M40 0V160M80 0V160M120 0V160M160 0V160M200 0V160M240 0V160M280 0V160"/></g>
+<path d="M20 128H300" stroke="url(#g)" stroke-width="1.5"/>
+<g stroke="#e8ecf2" stroke-opacity=".85" stroke-width="1.6">
+<path d="M46 112c-6 0-10-4-10-9v-9c0-5 3-8 8-9l30-6 34-22c6-4 13-6 20-6h56c9 0 17 3 24 8l26 20 36 6c8 1 14 7 14 15v6c0 4-3 6-7 6h-14"/>
+<path d="M118 112h84"/>
+<path d="M80 79l36-20c4-2 9-4 14-4h32v24z"/><path d="M170 55h18c7 0 13 2 18 6l20 18h-56z"/>
+<circle cx="98" cy="112" r="17"/><circle cx="98" cy="112" r="7" stroke-opacity=".5"/>
+<circle cx="222" cy="112" r="17"/><circle cx="222" cy="112" r="7" stroke-opacity=".5"/>
+</g>
+<g stroke="#4f8fe8" stroke-width="1.2"><path d="M262 36v-10h-10M58 26H48v10M262 128"/><circle cx="160" cy="84" r="3" fill="#4f8fe8"/></g>
+<g fill="#8a94a6" font-family="ui-monospace,monospace" font-size="7" letter-spacing="1.2"><text x="48" y="20">SCANNING STOCK</text><text x="226" y="20">00:00</text></g>
+</svg>
