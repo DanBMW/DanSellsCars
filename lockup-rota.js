@@ -247,7 +247,18 @@
     var out = {};
     Object.keys(absences || {}).forEach(function (k) {
       var a = absences[k];
-      if (a && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = a.kind || 'absent';
+      if (a && a.kind !== 'works' && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = a.kind || 'absent';
+    });
+    return out;
+  }
+  /* 'works': a day off swapped for a working day (or a shift taken over from a
+     colleague). Free for cover on that date even if it is their usual day off.
+     Written by shifts.html; never makes anyone away. */
+  function worksOn(absences, date) {
+    var out = {};
+    Object.keys(absences || {}).forEach(function (k) {
+      var a = absences[k];
+      if (a && a.kind === 'works' && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = true;
     });
     return out;
   }
@@ -264,16 +275,16 @@
     if (dow !== 'mon') near = near.concat(pairOn(weeks, addDays(date, -1)));
     if (dow !== 'fri') near = near.concat(pairOn(weeks, addDays(date, 1)));
     /* nights up to and including this week, so a later week doesn't skew it */
-    var c = counts(weeks, shiftWeek(isoWeek(date), 1)), away = absentOn(absences, date);
+    var c = counts(weeks, shiftWeek(isoWeek(date), 1)), away = absentOn(absences, date), works = worksOn(absences, date);
     var tw = {}, wr = weeks && weeks[isoWeek(date)];
     DAYS.forEach(function (d) { ids(wr && wr.days && wr.days[d]).forEach(function (id) { tw[id] = (tw[id] || 0) + 1; }); });
     var cands = Object.keys(team || {}).filter(function (id) {
       var t = team[id];
-      return canDo(t, dow) && !away[id] && pair.indexOf(id) < 0;
+      return (canDo(t, dow) || works[id]) && !away[id] && pair.indexOf(id) < 0;
     });
     /* people kept to their fixed nights only step in when nobody else can */
     cands.sort(function (a, b) {
-      return ((!normalOn(team[a], dow)) - (!normalOn(team[b], dow))) || ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((tw[a] ? 1 : 0) - (tw[b] ? 1 : 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
+      return ((!(normalOn(team[a], dow) || works[a])) - (!(normalOn(team[b], dow) || works[b]))) || ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((tw[a] ? 1 : 0) - (tw[b] ? 1 : 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
     });
     return cands[0] || null;
   }
@@ -286,11 +297,11 @@
       DAYS.forEach(function (dow) {
         var date = dateFor(wk, dow);
         if (date < today || (signed && signed[date])) return;
-        var away = absentOn(absences, date), pair = ids(weeks[wk].days[dow]), changed = false;
+        var away = absentOn(absences, date), works = worksOn(absences, date), pair = ids(weeks[wk].days[dow]), changed = false;
         pair.slice().forEach(function (p) {
           var t = team && team[p];
           /* away, now off that day, or taken off the rota: swap just this slot */
-          if (!away[p] && canDo(t, dow)) return;
+          if (!away[p] && (canDo(t, dow) || works[p])) return;
           var rest = pair.filter(function (x) { return x !== p; });
           var r = replacement(weeks, team, absences, date, rest.concat([p]));
           pair = r ? pair.map(function (x) { return x === p ? r : x; }) : rest;
@@ -383,7 +394,7 @@
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },
