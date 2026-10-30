@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-30T06:02:08.290Z",
+  "captured": "2026-10-30T10:02:36.455Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "DV68YYS",
+      "appraisedAt": "2026-10-30T09:58:04.266Z",
+      "make": "VAUXHALL",
+      "model": "Astra",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--d-QcDGa4--/c_fill,h_300,w_300/v1793354345/Live/Appraisals/9610946/4dce6cce-b3c6-49d1-bf32-afd3fa5d6ecc.jpg"
+    },
+    {
+      "registration": "LK75FWM",
+      "appraisedAt": "2026-10-30T09:25:37.633Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--i55NEAc3--/c_fill,h_300,w_300/v1793352339/Live/Appraisals/9610860/995fd487-4acc-4bfb-b1ac-114fc6302fb6.png"
+    },
+    {
+      "registration": "EK26UOT",
+      "appraisedAt": "2026-10-30T08:57:45.972Z",
+      "make": "BMW",
+      "model": "X3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "LM69NRV",
       "appraisedAt": "2026-10-29T14:38:23.730Z",
@@ -273,16 +303,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--khMlWUaB--/c_fill,h_300,w_300/v1793012257/Live/Appraisals/9602693/78a3657f-f8f5-4849-a1b0-a3ecd84be719.jpg"
-    },
-    {
-      "registration": "DV68YYS",
-      "appraisedAt": "2026-10-26T09:45:27.209Z",
-      "make": "VAUXHALL",
-      "model": "Astra",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "LH16AFZ",
@@ -4983,7 +5003,8 @@
       "status": "Returned",
       "price": null,
       "condition": "Good",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--K6oAI9_8--/c_fill,h_300,w_300/v1785500057/Live/Appraisals/9387861/47d79b44-9a1e-44a6-87b8-dfdd12b20bfc.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--K6oAI9_8--/c_fill,h_300,w_300/v1785500057/Live/Appraisals/9387861/47d79b44-9a1e-44a6-87b8-dfdd12b20bfc.jpg",
+      "droppedAt": "2026-10-30T10:02:36.454Z"
     },
     {
       "registration": "LV72GVM",
