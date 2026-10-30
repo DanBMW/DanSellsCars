@@ -11,7 +11,7 @@
  *     "node test-shifts-rules.mjs"
  */
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { ref, get, set, update, push } from 'firebase/database';
+import { ref, get, set, update, push, remove } from 'firebase/database';
 import { readFileSync } from 'fs';
 
 const rules = readFileSync(process.env.RULES || new URL('../database.rules.json', import.meta.url), 'utf8');
@@ -126,6 +126,14 @@ await t('colleague requests in the test copy', set(ref(T, 'shiftsTest/requests/t
 await t('colleague cannot change settings in the test copy', set(ref(T, 'shiftsTest/config/weekdayMin'), 4), 'deny');
 await t('manager changes settings in the test copy', set(ref(W, 'shiftsTest/config/weekdayMin'), 5), 'allow');
 await t('an outsider cannot read the test copy', get(ref(O, 'shiftsTest/requests/t1')), 'deny');
+
+// access, as the admin panel uses it: only an admin unlinks a sign in, and a person cannot unlink themselves
+// danny1 was linked to his own person by the self-link case above
+await t('a colleague cannot unlink their own sign in', remove(ref(authDb(who.danny), 'shifts/links/danny1')), 'deny');
+await t('a manager cannot unlink someone else', remove(ref(W, 'shifts/links/danny1')), 'deny');
+await t('the admin unlinks a sign in', remove(ref(A, 'shifts/links/danny1')), 'allow');
+await t('the admin removes a manager flag', remove(ref(A, 'shifts/managers/nathan')), 'allow');
+await t('a manager cannot remove a manager flag', remove(ref(W, 'shifts/managers/will')), 'deny');
 
 // lockup absences: 'works' is accepted, unknown kinds are not
 await t('a day off switch is written to lockup as works', set(ref(T, 'lockup/absences/sw1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'works', status: 'approved', ts: 7 }), 'allow');

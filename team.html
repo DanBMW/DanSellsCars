@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0b1220">
+<title>Team home | Hedin BMW Ruxley</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="stylesheet" href="team.css">
+<script src="lockup-rota.js"></script>
+<script src="shifts-rota.js"></script>
+<script src="team-identity.js"></script>
+<script src="team-session.js"></script>
+</head>
+<body>
+<div id="testbar" class="testbar" hidden>TEST MODE &middot; the team home is reading the practice copies</div>
+<header class="top">
+  <a class="brand" href="team.html"><div class="key">&#127968;</div><div>Team home<small id="hdr-sub">Hedin BMW Ruxley</small></div></a>
+  <div class="hdr-r"><span id="who"></span><button class="ghost" id="btn-out" type="button" hidden>Sign out</button></div>
+</header>
+
+<main class="wrap">
+  <section id="v-loading"><div class="card"><p class="muted" id="loading-msg">Loading&hellip;</p></div></section>
+
+  <section id="v-signin" hidden>
+    <div class="hero signin">
+      <div class="kick">Hedin BMW Ruxley</div>
+      <h1>Team home</h1>
+      <p class="muted">Lockup, forecourt checks, the team board and the team calendar, in one place. Sign in with your <b>@hedinautomotive.co.uk</b> account.</p>
+      <button class="big" id="btn-signin" type="button">Sign in with Google</button>
+      <p class="muted small" id="signin-msg" style="margin-top:12px"></p>
+    </div>
+  </section>
+
+  <section id="v-wrong" hidden>
+    <div class="card"><b>That isn&rsquo;t a work account</b>
+      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Use your Hedin address, and make sure Google has verified it.</p>
+      <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
+    </div>
+  </section>
+
+  <section id="v-unlinked" hidden>
+    <div class="card"><b>Your address isn&rsquo;t on the team list</b>
+      <p class="muted small" style="margin:6px 0 12px"><span id="unlinked-email"></span> isn&rsquo;t the work address of anyone on the team yet. Ask Dan to add you under Team admin &gt; People.</p>
+    </div>
+  </section>
+
+  <section id="v-home" hidden>
+    <div class="hero">
+      <div class="kick" id="home-date"></div>
+      <h1 id="home-hello"></h1>
+      <p><span class="pill" id="home-role"></span></p>
+    </div>
+    <div class="cards" id="cards"></div>
+    <div class="grid2">
+      <div class="card"><h3>Your next seven days</h3><ul class="sum" id="next-days"></ul></div>
+      <div class="card"><h3>Waiting on you</h3><ul class="sum" id="waiting"></ul></div>
+    </div>
+  </section>
+</main>
+<div class="modal" id="m-sheet"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="team-home.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { makeBackend } from "./team-backend.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const app=initializeApp(firebaseConfig);
+TeamSession.start(makeBackend(app));
+const signin=()=>TeamSession.signIn().catch(e=>{ const m=document.getElementById('signin-msg'); if(m) m.textContent=(e&&e.code==='auth/popup-closed-by-user')?'':'Sign-in did not work ('+((e&&e.code)||e)+'). Try again.' });
+document.getElementById('btn-signin').onclick=signin;
+document.getElementById('btn-signin2').onclick=signin;
+document.getElementById('btn-out').onclick=()=>TeamSession.signOut();
+TeamHome.start();
+</script>
+</body>
+</html>

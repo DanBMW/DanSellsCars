@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0b1220">
+<title>Team admin | Hedin BMW Ruxley</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="stylesheet" href="team.css">
+<script src="lockup-rota.js"></script>
+<script src="team-identity.js"></script>
+<script src="team-session.js"></script>
+</head>
+<body>
+<div id="testbar" class="testbar" hidden>TEST MODE &middot; this admin panel is changing the practice copies</div>
+<header class="top">
+  <a class="brand" href="team.html"><div class="key">&#9881;</div><div>Team admin<small id="hdr-sub">Hedin BMW Ruxley</small></div></a>
+  <div class="hdr-r"><a class="ghost" href="team.html">Team home</a><span id="who"></span><button class="ghost" id="btn-out" type="button" hidden>Sign out</button></div>
+</header>
+
+<main class="wrap">
+  <section id="v-loading"><div class="card"><p class="muted" id="loading-msg">Loading&hellip;</p></div></section>
+
+  <section id="v-signin" hidden>
+    <div class="hero signin">
+      <div class="kick">Team admin</div>
+      <h1>Sign in to continue</h1>
+      <p class="muted">Use your <b>@hedinautomotive.co.uk</b> account.</p>
+      <button class="big" id="btn-signin" type="button">Sign in with Google</button>
+      <p class="muted small" id="signin-msg" style="margin-top:12px"></p>
+    </div>
+  </section>
+
+  <section id="v-wrong" hidden>
+    <div class="card"><b>That isn&rsquo;t a work account</b>
+      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>.</p>
+      <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
+    </div>
+  </section>
+
+  <section id="v-unlinked" hidden>
+    <div class="card"><b>Your address isn&rsquo;t on the team list</b>
+      <p class="muted small" style="margin:6px 0 12px"><span id="unlinked-email"></span> isn&rsquo;t anyone&rsquo;s work address on the team list.</p>
+    </div>
+  </section>
+
+  <section id="v-app" hidden>
+    <div class="card" id="ro-note" hidden><p class="warn">Read only. Admins change people, managers and access. You can see everything here.</p></div>
+
+    <div class="card">
+      <div class="row between"><h3>People</h3><button class="big sm" id="btn-add" type="button" hidden>Add a person</button></div>
+      <p class="muted small" style="margin-bottom:8px">The lockup team and managers lists. Everything on the calendar, lockup rota and home page reads from here. Taking someone off is <b>Active: off</b>, not a delete, so their history stays.</p>
+      <div style="overflow-x:auto"><table class="tbl" id="people"></table></div>
+    </div>
+
+    <div class="card">
+      <h3>Managers</h3>
+      <p class="muted small" style="margin-bottom:8px">Managers approve time off, set the minimums and the bank holiday rota, and manage the lockup, forecourt and board screens without a PIN.</p>
+      <div id="mgr-list"></div>
+    </div>
+
+    <div class="card">
+      <h3>Access</h3>
+      <p class="muted small" style="margin-bottom:8px">Each team member signs in once with their work address, which links them to their person here. Unlink someone to let them link again, for example after a change of address.</p>
+      <div style="overflow-x:auto"><table class="tbl" id="links"></table></div>
+    </div>
+
+    <div class="card">
+      <h3>Test mode</h3>
+      <p class="muted small" id="tm-text" style="margin-bottom:10px"></p>
+      <button class="big alt" id="tm-btn" type="button" hidden></button>
+    </div>
+
+    <div class="card">
+      <h3>Recent changes</h3>
+      <ul class="sum" id="audit"></ul>
+    </div>
+  </section>
+</main>
+
+<div class="modal" id="m-sheet"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="team-admin.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { makeBackend } from "./team-backend.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const app=initializeApp(firebaseConfig);
+TeamSession.start(makeBackend(app));
+const signin=()=>TeamSession.signIn().catch(e=>{ const m=document.getElementById('signin-msg'); if(m) m.textContent=(e&&e.code==='auth/popup-closed-by-user')?'':'Sign-in did not work ('+((e&&e.code)||e)+'). Try again.' });
+document.getElementById('btn-signin').onclick=signin;
+document.getElementById('btn-signin2').onclick=signin;
+document.getElementById('btn-out').onclick=()=>TeamSession.signOut();
+TeamAdmin.start();
+</script>
+</body>
+</html>

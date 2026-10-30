@@ -2041,6 +2041,7 @@ body.haslock.hasticker .radio-fab{bottom:100px}
 </script>
 <script src="staff-gate.js"></script>
 <script src="lockup-rota.js"></script>
+<script src="team-identity.js"></script><script src="team-session.js"></script>
 <script>
 /* ============================================================
    Board UI. Deliberately plain (non-module) and backend-free so
@@ -6329,9 +6330,13 @@ $('btn-manager').onclick=function(){
   paintWake();
   featCheck();   /* is the file actually there? */
   if(isManager){resetForm();openModal('m-mgr');renderDeals();return}
-  $('pin-input').value='';
-  openModal('m-pin');
-  setTimeout(function(){$('pin-input').focus()},80);
+  /* a signed in team manager needs no PIN; everyone else gets it as before */
+  window.managerCheck().then(function(ok){
+    if(ok){ isManager=true; if(viewMonth!==monthKey())showMonth(monthKey()); resetForm(); openModal('m-mgr'); renderDeals(); return }
+    $('pin-input').value='';
+    openModal('m-pin');
+    setTimeout(function(){$('pin-input').focus()},80);
+  });
 };
 $('pin-go').onclick=checkPin;
 $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPin()});
@@ -7801,6 +7806,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, onValue, push, update, remove, get, set }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { ensureSignedIn, guard } from "./staff-auth.js";
+import { makeBackend } from "./team-backend.js";
+const managerCheck=()=>{ TeamSession.start(makeBackend(app)); return TeamSession.ready().then(s=>!!s.canManage) };
+window.managerCheck=managerCheck; /* the manager button is wired in the plain script above */
 
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 const app=initializeApp(firebaseConfig);
