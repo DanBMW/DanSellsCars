@@ -244,6 +244,8 @@
         .then(function (qf) { M.applyLenderQuotes(S.newStock, qf, window.dsFin); }); }).catch(function () { S.newStock = []; });
     /* arrival dates (the same ledger stock.html badges from); quiet failure means no Just arrived badges */
     var arr = fetch('../automation/stock-arrivals.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { S.arrivals = d; }).catch(function () { S.arrivals = null; });
+    /* Hedin's description of each used car, keyed by listing id. Never waited on: without it the sheet simply has no About this car. */
+    fetch('../automation/car-descriptions.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { window.ctDesc = d || null; }).catch(function () { window.ctDesc = null; });
     var det = fetch('../automation/car-details.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { window.ctDetails = d; }).catch(function () { window.ctDetails = null; });
     return Promise.all([stock, range, det, ns, arr]).then(function () { M.stampArrivals(S.cars, S.arrivals); placeholders(); });
   }
@@ -754,10 +756,16 @@
     $('#sheetBody').innerHTML = (imgs.length ? '<div class="ct-gal">' + imgs.slice(0, 10).map(function (u, k) { return photoHtml({ images: imgs, model: c.model }, k, false); }).join('') + '</div>' : '') +
       '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + (M.justArrived(c) ? '<span class="ct-just ct-just-inline">Just arrived</span> ' : '') + esc(isNew ? 'Brand new BMW, ordered to your spec' : stockLabel(c)) + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
+      descHtml(c) +
       (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
       (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
     $('#sheet').hidden = false;
   }
+  /* About this car: Hedin's own words, minus the dealer boilerplate shared by every car, with dashes read as spaces to match the site */
+  function descHtml(c) { var d = c && c.listing_id != null && (window.ctDesc || {})[String(c.listing_id)], t = d && d.text; if (!t || typeof t !== 'string') return '';
+    var ps = t.split(/\n\s*\n/).map(function (p) { return p.replace(/\s*[\u2010-\u2015-]+\s*/g, ' ').replace(/\s+/g, ' ').trim(); })
+      .filter(function (p) { return p && !/^Buy with confidence/i.test(p) && !/^Welcome to BMW/i.test(p) && !/^We assist you with everything/i.test(p); }); if (!ps.length) return '';
+    return '<div class="ct-desc"><h4>About this car</h4>' + ps.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>'; }
   function photos(c) { var l = (c.images && c.images.length ? c.images : []).slice(0, 10); if (c.image && l.indexOf(c.image) === -1 && !l.length) l = [c.image]; return l; }
   function noPhoto(c) { return '<div class="ct-noimg-ph">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>'; }
   /* Every photo starts with a spinner. load clears it, error shows the model name. Each load is checked against the

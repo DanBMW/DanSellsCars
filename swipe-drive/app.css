@@ -374,3 +374,9 @@ body.ct::before{will-change:transform}
 .ct-my-alerts{margin:12px 0}.ct-my-alerts h3{font-size:1rem;margin:0 0 6px}
 #nav{view-transition-name:ct-nav}
 .ct-prog{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.ct-prog-h{width:100%;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8fa6c8}.ct-pill.ok{background:rgba(52,199,123,.16);color:#bff0d3}
+
+/* About this car in the details sheet */
+.ct-desc{margin:14px 0 6px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.ct-desc h4{margin:0 0 6px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.ct-desc p{margin:0 0 8px;font-size:.92rem;line-height:1.5}
+.ct-desc p:last-child{margin-bottom:0}
