@@ -11,6 +11,7 @@
 <script src="lockup-rota.js"></script>
 <script src="team-identity.js"></script>
 <script src="team-session.js"></script>
+<link rel="manifest" href="team.webmanifest"><link rel="apple-touch-icon" href="team-icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Team"><script src="team-pwa.js" defer></script>
 </head>
 <body>
 <div id="testbar" class="testbar" hidden>TEST MODE &middot; this admin panel is changing the practice copies</div>
@@ -27,7 +28,9 @@
       <div class="kick">Team admin</div>
       <h1>Sign in to continue</h1>
       <p class="muted">Use your <b>@hedinautomotive.co.uk</b> account.</p>
-      <button class="big" id="btn-signin" type="button">Sign in with Google</button>
+      <a class="big" id="btn-pin" href="team.html?next=team-admin.html" style="display:block;text-align:center;text-decoration:none">Sign in with work email and PIN</a>
+      <p class="muted small" style="margin:14px 0 8px">or, if your work address has a Google account</p>
+      <button class="ghost" id="btn-signin" type="button">Sign in with Google</button>
       <p class="muted small" id="signin-msg" style="margin-top:12px"></p>
     </div>
   </section>

@@ -12,6 +12,7 @@
 <script src="shifts-rota.js"></script>
 <script src="team-identity.js"></script>
 <script src="team-session.js"></script>
+<link rel="manifest" href="team.webmanifest"><link rel="apple-touch-icon" href="team-icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Team"><script src="team-pwa.js" defer></script>
 </head>
 <body>
 <div id="testbar" class="testbar" hidden>TEST MODE &middot; the team home is reading the practice copies</div>
@@ -28,8 +29,7 @@
       <div class="kick">Hedin BMW Ruxley</div>
       <h1>Team</h1>
       <p class="muted">Lockup, forecourt checks, the team board and the calendar, in one place. Sign in with your <b>@hedinautomotive.co.uk</b> address.</p>
-      <button class="big" id="btn-signin" type="button" style="width:100%">Sign in with Google</button>
-      <p class="muted small" style="margin:14px 0 8px">or with your own PIN</p>
+      <p class="muted small" style="margin:14px 0 8px">Sign in with your work email and your own six digit PIN. First time? Type your email and a new PIN, then press Set my PIN.</p>
       <form class="pinbox" id="pin-form" autocomplete="on">
         <input class="inp" id="pin-email" type="email" inputmode="email" autocomplete="username" placeholder="name@hedinautomotive.co.uk">
         <input class="inp" id="pin-code" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 digit PIN">
@@ -39,6 +39,8 @@
         <button class="ghost" id="pin-new" type="button">Set my PIN</button>
         <button class="ghost" id="pin-reset" type="button">Forgot my PIN?</button>
       </div>
+      <p class="muted small" style="margin:16px 0 8px">or, if your work address has a Google account</p>
+      <button class="ghost" id="btn-signin" type="button" style="width:100%">Sign in with Google</button>
       <p class="msg" id="signin-msg" style="margin-top:12px" aria-live="polite"></p>
     </div>
   </section>

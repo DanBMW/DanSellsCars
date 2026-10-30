@@ -96,6 +96,7 @@ header.top .brand{font-size:19px}
 .modal.show .sheet{transform:none}
 .sheet::before{content:'';display:block;width:36px;height:4px;border-radius:2px;background:#3a4e6c;margin:0 auto 14px}
 .pinbox{display:grid;gap:10px}
-.pinbox input{font-size:20px;letter-spacing:.3em;text-align:center}
+.pinbox input{width:100%;box-sizing:border-box;font-size:17px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text);text-align:left}
+.pinbox input[type=password]{font-size:20px;letter-spacing:.3em;text-align:center}
 .msg{font-size:14px;line-height:1.4}
 .msg.ok{color:var(--green)}.msg.bad{color:var(--red)}

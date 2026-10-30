@@ -134,8 +134,9 @@
     show('home');
     subscribe();
     var next = nextPage();
-    if (next && st.canManage) { location.replace(next); return; }
-    $('next-note').hidden = !next || st.canManage;
+    var open = next && (st.canManage || next === 'shifts.html');
+    if (open) { location.replace(next); return; }
+    $('next-note').hidden = !next || open;
     $('who').textContent = st.name;
     $('home-date').textContent = fmt(NOW.date, true);
     $('home-hello').textContent = 'Hello, ' + st.name;
