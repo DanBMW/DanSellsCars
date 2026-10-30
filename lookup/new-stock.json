@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-29T21:42:12.000Z",
+ "generated_at": "2026-10-30T06:07:02.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
  "count": 393,
@@ -32383,8 +32383,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "BMW Individual Techno-Violet",
