@@ -618,7 +618,8 @@
   /* the profile's sections open when they already hold an answer, so a returning customer sees what they chose */
   function openSections(c) { var sec = function (k) { return $('#profileForm details.ct-sec[data-sec="' + k + '"]'); };
     sec('budget').open = !!(c.monthly_gbp || c.cash_gbp || c.deposit_gbp);
-    sec('car').open = (S.session && S.session.role === 'customer') || !!((c.fuel && c.fuel !== 'open') || (c.body && c.body !== 'any') || (c.models || []).length || (c.colours || []).length || (c.specs || []).length || (c.new_used && c.new_used !== 'both'));
+    /* the car picks (fuel, body, models, colours, every spec) are the core of a profile: always open, for staff and customers */
+    sec('car').open = true;
     sec('px').open = !!(c.px && c.px.reg);
     sec('more').open = !!(c.desk && Object.keys(c.desk).length);
   }
