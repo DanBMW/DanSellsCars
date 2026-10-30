@@ -34,7 +34,7 @@ async function t(name, p, expect) {
   catch (e) { fail++; console.log('FAIL ', expect.padEnd(5), name, '-', String(e.message).slice(0, 160)); }
 }
 
-const req = (o) => Object.assign({ personId: 'tomi', kind: 'holiday', from: '2026-11-16', to: '2026-11-18', status: 'pending', ts: 1 }, o);
+const req = (o) => Object.assign({ personId: 'tomi', kind: 'holiday', from: '2026-11-16', to: '2026-11-18', status: 'pending', ts: 1, ciphrConfirmed: true, ciphrConfirmedBy: 'Tomi', ciphrConfirmedAt: 1 }, o);
 
 await env.withSecurityRulesDisabled(async (c) => {
   const db = c.database();
@@ -92,7 +92,7 @@ await t('colleague asks for a swap', set(ref(T, 'shifts/requests/w1'), swp), 'al
 await t('the asker cannot approve their own swap', set(ref(T, 'shifts/requests/w1/status'), 'approved'), 'deny');
 await t('the asker cannot approve their own swap marked auto', update(ref(T, 'shifts/requests/w1'), { status: 'approved', auto: true }), 'deny');
 await t('the colleague taking the shift accepts it', update(ref(C, 'shifts/requests/w1'), { status: 'approved', auto: true }), 'allow');
-await t('colleague holiday approved when marked auto is refused', set(ref(T, 'shifts/requests/s2'), req({ status: 'approved', auto: true, ts: 4 })), 'deny');
+await t('colleague holiday approved when marked auto is refused without the Ciphr tick', set(ref(T, 'shifts/requests/s2'), req({ status: 'approved', auto: true, ts: 4, ciphrConfirmed: null })), 'deny');
 await t('switch without auto is not approved by the colleague', set(ref(T, 'shifts/requests/s3'), Object.assign({}, sw, { auto: false })), 'deny');
 
 // shift swap: the colleague who takes it confirms, but cannot change who it is for
@@ -172,6 +172,21 @@ await t('a colleague cannot set the handover team', set(ref(T, 'shifts/config/ha
 await t('a day off switch is written to lockup as works', set(ref(T, 'lockup/absences/sw1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'works', status: 'approved', ts: 7 }), 'allow');
 await t('an unknown absence kind is refused', set(ref(T, 'lockup/absences/sw2'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'bogus', status: 'approved', ts: 7 }), 'deny');
 await t('the lockupTest copy takes works too', set(ref(T, 'lockupTest/absences/sw1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'works', status: 'approved', ts: 7 }), 'allow');
+
+// annual leave: added straight on, but only with the Ciphr tick, and only for yourself
+const leave = { personId: 'tomi', kind: 'holiday', from: '2026-12-01', to: '2026-12-02', status: 'approved', auto: true, ts: 20, ciphrConfirmed: true, ciphrConfirmedBy: 'Tomi', ciphrConfirmedAt: 20 };
+await t('colleague adds their own leave straight on with the Ciphr tick', set(ref(T, 'shifts/requests/L1'), leave), 'allow');
+await t('leave without the Ciphr tick is refused', set(ref(T, 'shifts/requests/L2'), Object.assign({}, leave, { ciphrConfirmed: null })), 'deny');
+await t('leave with the tick set to false is refused', set(ref(T, 'shifts/requests/L3'), Object.assign({}, leave, { ciphrConfirmed: false })), 'deny');
+await t('a colleague cannot add leave for someone else', set(ref(T, 'shifts/requests/L4'), Object.assign({}, leave, { personId: 'carl' })), 'deny');
+await t('the Ciphr reference is optional', set(ref(T, 'shifts/requests/L5'), Object.assign({}, leave, { from: '2026-12-10', to: '2026-12-10' })), 'allow');
+await t('a pending leave request also needs the tick', set(ref(T, 'shifts/requests/L6'), { personId: 'tomi', kind: 'holiday', from: '2026-12-12', to: '2026-12-12', status: 'pending', ts: 21 }), 'deny');
+await t('a manager adds leave for someone without the tick', set(ref(W, 'shifts/requests/L7'), { personId: 'carl', kind: 'holiday', from: '2026-12-14', to: '2026-12-14', status: 'approved', ts: 22 }), 'allow');
+await t('a manager removes a colleague\'s leave', update(ref(W, 'shifts/requests/L1'), { status: 'cancelled' }), 'allow');
+await t('a manager edits a colleague\'s leave dates', update(ref(W, 'shifts/requests/L5'), { to: '2026-12-11' }), 'allow');
+await t('the test copy needs the tick too', set(ref(T, 'shiftsTest/requests/L8'), Object.assign({}, leave, { ciphrConfirmed: null })), 'deny');
+await t('their leave is written to lockup so cover is re-paired', set(ref(T, 'lockup/absences/sh_L1_a'), { personId: 'tomi', from: '2026-12-01', to: '2026-12-02', kind: 'holiday', status: 'approved', ts: 20 }), 'allow');
+await t('the test copy takes leave with the tick', set(ref(T, 'shiftsTest/requests/L9'), leave), 'allow');
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

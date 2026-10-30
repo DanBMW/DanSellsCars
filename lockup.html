@@ -577,7 +577,7 @@ function paintPublicRota(){
       const act=(d!=='sat'&&!hol[date]&&!past&&!signed[date]&&R.pairOn(weeksClean(),date).length)?'<button class="ghost cm" type="button" data-date="'+date+'">Can&rsquo;t make it?</button>':'';
       return '<li class="'+(isT?'is-today':'')+(past?' is-past':'')+'"><span class="d">'+(isT?'Tonight':R.DAY_NAMES[d].slice(0,3))+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span><span class="mid">'+mid+tags+'</span>'+act+'</li>'}).join('')+'</ul>').join('')+'</div>';
   box.querySelectorAll('.cm').forEach(b=>b.onclick=()=>openCantMake(b.dataset.date));
-  $('btn-holiday').onclick=openHoliday;
+  $('btn-holiday').onclick=()=>{ location.href='shifts.html?new=holiday'; };
 }
 function sheet(html){ $('rec-body').innerHTML='<div class="row" style="justify-content:flex-end"><button class="ghost" type="button" id="sh-x">Close</button></div>'+html; $('rec-modal').classList.add('show'); $('sh-x').onclick=closeSheet }
 function closeSheet(){ $('rec-modal').classList.remove('show') }

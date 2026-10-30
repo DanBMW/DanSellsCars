@@ -516,25 +516,29 @@ async function extraScenarios(browser, base) {
     check('android: New opens a sheet of what to ask for, leave first', items.length === 4 && /Book leave/.test(items[0]), items.join(' | '));
     check('android: nothing in the sheet offers to add time off for someone to a colleague', !items.some(x => /Add time off/.test(x)));
     await p.screenshot({ path: path.join(OUT, 'calendar-new-sheet-phone.png'), fullPage: false });
-    /* f. leave: a Ciphr reference and the tick are both needed before it can be sent */
+    /* f. leave: the Ciphr tick is needed, the reference is optional, and it goes straight on */
     await p.click('#sheet [data-act="holiday"]');
     await p.waitForSelector('#rq-form');
-    check('leave: the sheet says annual leave is approved on Ciphr first', /Ciphr/.test(await txt(p, '#sheet')) && /cannot be booked here/.test(await txt(p, '#sheet')));
+    check('leave: the sheet says annual leave is authorised on Ciphr first', /authorised on Ciphr first/.test(await txt(p, '#sheet')));
+    check('leave: the tick reads as a confirmation', /I confirm this annual leave has been authorised on Ciphr/.test(await txt(p, '#sheet')));
+    check('leave: the Ciphr reference is marked optional', /Ciphr reference \(optional\)/.test(await txt(p, '#sheet')));
     await p.fill('#rq-form [name=from]', '2026-11-16');
     await p.fill('#rq-form [name=to]', '2026-11-18');
-    check('leave: no Send until the Ciphr reference and the tick are both there', await p.locator('#rq-go').isDisabled());
     await p.fill('#rq-form [name=ciphr]', 'CPH-7741');
-    check('leave: still no Send without the tick', await p.locator('#rq-go').isDisabled());
+    await p.waitForTimeout(60);
+    check('leave: no Send without the tick, even with a reference', await p.locator('#rq-go').isDisabled());
+    await p.fill('#rq-form [name=ciphr]', '');
     await p.check('#rq-form [name=ciphrOk]');
     await p.fill('#rq-form [name=note]', 'Wedding abroad');
     await p.waitForTimeout(60);
-    check('leave: Send opens once it is all there', !(await p.locator('#rq-go').isDisabled()));
+    check('leave: the tick alone opens Send', !(await p.locator('#rq-go').isDisabled()));
+    await p.screenshot({ path: path.join(OUT, 'leave-form-phone.png'), fullPage: false });
     await p.click('#rq-go');
     await p.waitForTimeout(300);
     let st = await store(p);
-    const leave = Object.keys(st.data.shifts.requests || {}).map(k => st.data.shifts.requests[k]).find(r => r.ciphr === 'CPH-7741');
-    check('leave: the request is sent as pending with its Ciphr reference and note', leave && leave.status === 'pending' && leave.kind === 'holiday' && leave.note === 'Wedding abroad', JSON.stringify(leave));
-    check('leave: nothing is booked in lockup until a manager confirms it', !Object.keys(st.data.lockup.absences || {}).some(k => /^sh_/.test(k) && st.data.lockup.absences[k].personId === 'tomi'));
+    const leave = Object.keys(st.data.shifts.requests || {}).map(k => st.data.shifts.requests[k]).find(r => r.kind === 'holiday' && r.note === 'Wedding abroad');
+    check('leave: it goes straight on as approved, with who ticked it and when', leave && leave.status === 'approved' && leave.ciphrConfirmed === true && leave.ciphrConfirmedBy === 'Tomi' && typeof leave.ciphrConfirmedAt === 'number' && !leave.ciphr, JSON.stringify(leave));
+    check('leave: it is written to lockup so cover is re-paired as today', Object.keys(st.data.lockup.absences || {}).some(k => /^sh_/.test(k) && st.data.lockup.absences[k].personId === 'tomi' && st.data.lockup.absences[k].kind === 'holiday'));
     await p.close();
   }
   /* g. a switch is always the manager's decision: the warnings show, the send still works */

@@ -224,8 +224,8 @@
         if (booked) errors.push(booked + '.');
         workDates = rangeDates(req.from, req.to).filter(function (d) { return personDay(ctx, req.personId, d).on; });
         if (!workDates.length && req.kind === 'holiday') errors.push('No working days in that range.');
-        /* annual leave is booked and approved on Ciphr first; this only records it */
-        if (req.kind === 'holiday' && !String(req.ciphr || '').trim()) errors.push('Enter the Ciphr reference. Annual leave has to be approved on Ciphr before it is sent here.');
+        /* annual leave is authorised on Ciphr first; the person confirms that with a tick (a manager adding it does not need one) */
+        if (req.kind === 'holiday' && !req.byManager && req.ciphrOk !== true && req.ciphrConfirmed !== true) errors.push('Tick to confirm this annual leave has been authorised on Ciphr.');
       }
     } else if (req.kind === 'switch') {
       var lw = req.giveUp && LR.isoWeek(req.giveUp);

@@ -39,11 +39,11 @@ const count = (c, date) => S.countDay(c, date);
 {
   const c = ctx();
   // one holiday on Tuesday: 6 -> 5, still at the minimum, fine
-  let r = S.checkRequest(c, { kind: 'holiday', ciphr: 'CPH-1', personId: 'tomi', from: '2026-11-03', to: '2026-11-03' });
+  let r = S.checkRequest(c, { kind: 'holiday', ciphrOk: true, personId: 'tomi', from: '2026-11-03', to: '2026-11-03' });
   assert.strictEqual(r.valid, true); assert.strictEqual(r.impact.ok, true);
   // two on the same Tuesday: 6 -> 4, short
   const c2 = ctx({ absences: { a: hol('dan', '2026-11-03', '2026-11-03') } });
-  r = S.checkRequest(c2, { kind: 'holiday', ciphr: 'CPH-1', personId: 'tomi', from: '2026-11-03', to: '2026-11-03' });
+  r = S.checkRequest(c2, { kind: 'holiday', ciphrOk: true, personId: 'tomi', from: '2026-11-03', to: '2026-11-03' });
   assert.strictEqual(r.valid, true);
   assert.strictEqual(r.impact.ok, false, 'second person off on a day already at 5 must be newly short');
   assert.deepStrictEqual(r.impact.newlyShort.map(d => d.date), ['2026-11-03']);
@@ -72,17 +72,17 @@ const count = (c, date) => S.countDay(c, date);
 /* ---- validation ---- */
 {
   const c = ctx();
-  let r = S.checkRequest(c, { kind: 'holiday', ciphr: 'CPH-1', personId: 'tomi', from: '2026-10-01', to: '2026-10-02' });
+  let r = S.checkRequest(c, { kind: 'holiday', ciphrOk: true, personId: 'tomi', from: '2026-10-01', to: '2026-10-02' });
   assert.ok(r.errors.some(e => /past/.test(e)), 'holiday in the past');
-  r = S.checkRequest(c, { kind: 'holiday', ciphr: 'CPH-1', personId: 'dan', from: '2026-11-02', to: '2026-11-02' });
+  r = S.checkRequest(c, { kind: 'holiday', ciphrOk: true, personId: 'dan', from: '2026-11-02', to: '2026-11-02' });
   assert.ok(r.errors.some(e => /No working days/.test(e)), 'Dan off on Monday has no working day to take');
-  r = S.checkRequest(c, { kind: 'holiday', ciphr: 'CPH-1', personId: 'tomi', from: '2026-11-10', to: '2026-11-05' });
+  r = S.checkRequest(c, { kind: 'holiday', ciphrOk: true, personId: 'tomi', from: '2026-11-10', to: '2026-11-05' });
   assert.ok(r.errors.some(e => /before the start/.test(e)));
   const booked = ctx({ absences: { a: hol('tomi', '2026-11-09', '2026-11-12') } });
-  r = S.checkRequest(booked, { kind: 'holiday', ciphr: 'CPH-1', personId: 'tomi', from: '2026-11-11', to: '2026-11-13' });
+  r = S.checkRequest(booked, { kind: 'holiday', ciphrOk: true, personId: 'tomi', from: '2026-11-11', to: '2026-11-13' });
   assert.ok(r.errors.some(e => /Already booked/.test(e)), 'overlap with an approved holiday');
-  const requested = ctx({ requests: { q: { kind: 'holiday', ciphr: 'CPH-1', personId: 'tomi', from: '2026-11-20', to: '2026-11-24', status: 'pending' } } });
-  r = S.checkRequest(requested, { kind: 'holiday', ciphr: 'CPH-1', personId: 'tomi', from: '2026-11-23', to: '2026-11-25' });
+  const requested = ctx({ requests: { q: { kind: 'holiday', ciphrOk: true, personId: 'tomi', from: '2026-11-20', to: '2026-11-24', status: 'pending' } } });
+  r = S.checkRequest(requested, { kind: 'holiday', ciphrOk: true, personId: 'tomi', from: '2026-11-23', to: '2026-11-25' });
   assert.ok(r.errors.some(e => /Already requested/.test(e)), 'overlap with a pending request');
   // an absence can be recorded for today
   r = S.checkRequest(c, { kind: 'absence', personId: 'carl', from: TODAY, to: TODAY });
@@ -211,19 +211,23 @@ const count = (c, date) => S.countDay(c, date);
   console.log('ok: stored lists read back in any of their shapes, and config defaults fill the gaps');
 }
 
-/* ---- leave is booked on Ciphr first: the reference is required ---- */
+/* ---- leave is authorised on Ciphr first: the tick is required, the reference is optional ---- */
 {
   const c = ctx();
   let r = S.checkRequest(c, { kind: 'holiday', personId: 'tomi', from: '2026-11-16', to: '2026-11-18' });
-  assert.ok(r.errors.some(e => /Ciphr/.test(e)), 'no Ciphr reference is refused');
-  r = S.checkRequest(c, { kind: 'holiday', personId: 'tomi', from: '2026-11-16', to: '2026-11-18', ciphr: '   ' });
-  assert.ok(r.errors.some(e => /Ciphr/.test(e)), 'a blank reference is refused');
+  assert.ok(r.errors.some(e => /Ciphr/.test(e)), 'no tick is refused');
   r = S.checkRequest(c, { kind: 'holiday', personId: 'tomi', from: '2026-11-16', to: '2026-11-18', ciphr: 'CPH-99' });
+  assert.ok(r.errors.some(e => /Ciphr/.test(e)), 'a reference without the tick is refused');
+  r = S.checkRequest(c, { kind: 'holiday', personId: 'tomi', from: '2026-11-16', to: '2026-11-18', ciphrOk: true });
   assert.strictEqual(r.valid, true, r.errors.join('; '));
+  r = S.checkRequest(c, { kind: 'holiday', personId: 'tomi', from: '2026-11-16', to: '2026-11-18', ciphrConfirmed: true });
+  assert.strictEqual(r.valid, true, 'a stored, ticked leave stays valid');
+  r = S.checkRequest(c, { kind: 'holiday', personId: 'tomi', from: '2026-11-16', to: '2026-11-18', byManager: true });
+  assert.strictEqual(r.valid, true, 'a manager adding leave needs no tick');
   // absences and switches do not need one
   r = S.checkRequest(c, { kind: 'absence', personId: 'tomi', from: '2026-11-16', to: '2026-11-16' });
   assert.strictEqual(r.valid, true);
-  console.log('ok: a leave request needs its Ciphr reference; absences do not');
+  console.log('ok: leave needs the Ciphr tick, the reference is optional; absences do not');
 }
 
 /* ---- handover: Chloe or Molly on every open day, except bank holidays ---- */
@@ -245,7 +249,7 @@ const count = (c, date) => S.countDay(c, date);
   const bh = ctx({ holidays: { '2026-12-25': { label: 'Christmas Day' } }, bh: { '2026-12-25': { staff: ['tomi', 'carl', 'karis', 'clive'] } } });
   assert.strictEqual(count(bh, '2026-12-25').ok, true, 'a bank holiday rota with no handover is fine');
   // a request that takes the handover team away is flagged as a handover warning, and the impact says so
-  const r = S.checkRequest(c2, { kind: 'holiday', ciphr: 'CPH-2', personId: 'chloe', from: '2026-11-05', to: '2026-11-05' });
+  const r = S.checkRequest(c2, { kind: 'holiday', ciphr: 'CPH-2', ciphrOk: true, personId: 'chloe', from: '2026-11-05', to: '2026-11-05' });
   assert.strictEqual(r.valid, true, 'warnings never stop a request');
   assert.strictEqual(r.impact.ok, false, 'but the impact is short');
   assert.deepStrictEqual(r.impact.newlyShort[0].after.reasons, ['handover']);

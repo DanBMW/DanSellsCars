@@ -146,7 +146,8 @@
   }
   function approve(r, o) {
     o = o || {};
-    var chk = S.checkRequest(ctx(), Object.assign({}, r, { id: r.id }));
+    /* a manager approving an older leave request needs no tick of their own */
+    var chk = S.checkRequest(ctx(), Object.assign({}, r, { id: r.id, byManager: true }));
     if (!chk.valid) { toast(chk.errors[0]); return Promise.resolve(false); }
     var short = !chk.impact.ok;
     if (short && !o.override) { toast('That takes a day below its minimum. Tick override to approve anyway.'); return Promise.resolve(false); }
@@ -303,6 +304,13 @@
     var warns = [];
     if (k.reasons && k.reasons.indexOf('staff') >= 0) warns.push('Below the minimum: ' + k.count + ' on, minimum ' + k.min + '.');
     if (k.reasons && k.reasons.indexOf('handover') >= 0) warns.push('No handover cover: Chloe or Molly needs to be in.');
+    if (isMgr() && !k.ok) {
+      Object.keys(st.D.requests || {}).forEach(function (rid) {
+        var q = st.D.requests[rid];
+        if (q && q.kind === 'holiday' && q.status === 'approved' && q.ciphrConfirmed && q.from <= date && date <= q.to)
+          warns.push('Leave added by ' + nameOf(q.personId) + ' (Ciphr confirmed by ' + (q.ciphrConfirmedBy || nameOf(q.personId)) + ') is on this short day.');
+      });
+    }
     var head = fmt(date, true);
     var status = k.kind === 'closed' ? 'Closed' : k.noRota ? 'No bank holiday rota yet' :
       (k.ok ? k.count + ' on, minimum ' + k.min : '<span class="bad">' + k.count + ' on, minimum ' + k.min + ', short by ' + k.short + '</span>');
@@ -438,7 +446,7 @@
   /* the floating button opens a list of what you can ask for, like an Android
      sheet. Leave is first because it is the one people look for. */
   var NEW_ITEMS = [
-    ['holiday', 'Book leave', 'Annual leave, approved on Ciphr first. A manager confirms it.', 'M4 7h16M4 12h16M4 17h10'],
+    ['holiday', 'Book leave', 'Annual leave authorised on Ciphr. Goes straight on the calendar.', 'M4 7h16M4 12h16M4 17h10'],
     ['absence', 'Report an absence', 'Sickness or anything that stops you coming in. Recorded now.', 'M12 4v8l5 3'],
     ['switch', 'Switch my day off', 'Work your usual day off instead. A manager approves it.', 'M4 8h13l-3-3M20 16H7l3 3'],
     ['swap', 'Give a shift to a colleague', 'They accept it, then a manager approves it.', 'M8 7h11M8 12h11M8 17h11M4 7h.01M4 12h.01M4 17h.01']
@@ -470,10 +478,10 @@
     var people = teamIds();
     if (kind === 'holiday') {
       title = 'Book leave';
-      help = 'Annual leave cannot be booked here. Book it and get it approved on Ciphr first, then send it here so the rota matches. A manager confirms it on the rota.';
+      help = 'Get your annual leave authorised on Ciphr first. Then add it here and it goes straight on the calendar.';
       body = dateField('from', 'First day', NOW.date) + dateField('to', 'Last day', NOW.date) +
-        '<label class="fld"><span>Ciphr reference (required)</span><input type="text" name="ciphr" maxlength="40" autocomplete="off"></label>' +
-        '<label class="check"><input type="checkbox" name="ciphrOk"> <span>I have had this approved on Ciphr</span></label>' + noteField();
+        '<label class="fld"><span>Ciphr reference (optional)</span><input type="text" name="ciphr" maxlength="40" autocomplete="off"></label>' +
+        '<label class="check"><input type="checkbox" name="ciphrOk" required> <span>I confirm this annual leave has been authorised on Ciphr</span></label>' + noteField();
     } else if (kind === 'absence') {
       title = 'Report an absence';
       help = 'For sickness or anything that stops you coming in. It is recorded straight away and lockup cover is arranged from it.';
@@ -513,7 +521,7 @@
     if (kind === 'holiday') { r.ciphr = (v.ciphr || '').trim().slice(0, 40); r.ciphrOk = v.ciphrOk === true; }
     if (kind === 'switch') { r.personId = me; r.giveUp = v.giveUp; r.takeOn = v.takeOn; }
     if (kind === 'swap') { r.personId = me; r.date = v.date; r.withId = v.withId; }
-    if (kind === 'mgr-holiday') { r.personId = v.personId; r.kind = v.kind; r.from = v.from; r.to = v.to; }
+    if (kind === 'mgr-holiday') { r.personId = v.personId; r.kind = v.kind; r.from = v.from; r.to = v.to; r.byManager = true; }
     r.note = (v.note || '').trim().slice(0, 200);
     r.reasonText = (v.reason || '').trim().slice(0, 200);
     r.override = !!v.override;
@@ -538,9 +546,11 @@
         html += '<p class="small warn">Short-staffed: tick the override and give a reason to book it anyway.</p>';
         ok = !!(v.override && v.reasonText);
       } else if (k === 'holiday' && !v.ciphrOk) {
-        html += '<p class="small warn">Tick that it is approved on Ciphr to send it.</p>';
+        html += '<p class="small warn">Tick to confirm it has been authorised on Ciphr to add it.</p>';
         ok = false;
-      } else if ((k === 'holiday' || k === 'switch') && chk.impact.ok === false) {
+      } else if (k === 'holiday' && chk.impact.ok === false) {
+        html += '<p class="small warn">Warnings do not stop you adding it. Managers will see the short day flagged.</p>';
+      } else if (k === 'switch' && chk.impact.ok === false) {
         html += '<p class="small warn">Warnings do not stop you sending it. A manager will decide.</p>';
       }
     }
@@ -557,7 +567,7 @@
     return parts.join(', ');
   }
   function outcome(k, chk) {
-    if (k === 'holiday') return 'Goes to a manager to confirm against Ciphr.';
+    if (k === 'holiday') return 'Goes straight on the calendar. Lockup cover is arranged from it' + (chk.impact.ok ? '.' : ', and managers are told it leaves a day short.');
     if (k === 'switch') return 'Goes to a manager to approve. Warnings do not stop you sending it.';
     if (k === 'absence') return 'Recorded now. Lockup cover is arranged from it' + (chk.impact.ok ? '.' : ', and managers are told it leaves a day short.');
     if (k === 'switch') return chk.impact.ok ? 'Goes through now, the office stays staffed.' : 'This leaves a day below minimum, so a manager approves it.';
@@ -572,10 +582,17 @@
     go.disabled = true;
     var p;
     if (kind === 'holiday') {
-      p = createRequest(clean({ personId: r.personId, kind: 'holiday', from: r.from, to: r.to, ciphr: r.ciphr, note: r.note || undefined })).then(function (id) {
-        notify('Leave request: ' + nameOf(r.personId) + ', ' + rangeText(r.from, r.to), ['Ciphr reference: ' + r.ciphr + '. Confirm it is approved on Ciphr, then approve it here.', r.note].filter(Boolean));
-        auditLine('Requested: ' + describe({ kind: 'holiday', from: r.from, to: r.to, personId: r.personId }));
-        return 'Sent to a manager.';
+      if (r.ciphrOk !== true) { toast('Tick to confirm this annual leave has been authorised on Ciphr.'); go.disabled = false; return; }
+      p = createRequest(clean({ personId: r.personId, kind: 'holiday', from: r.from, to: r.to, ciphr: r.ciphr || undefined, note: r.note || undefined,
+        status: 'approved', auto: true, ciphrConfirmed: true, ciphrConfirmedBy: nameOf(st.me), ciphrConfirmedAt: Date.now(), short: !chk.impact.ok ? true : undefined })).then(function (id) {
+        var reqRec = { id: id, kind: 'holiday', personId: r.personId, from: r.from, to: r.to, note: r.note };
+        return applyEffects(id, reqRec, chk.edits).then(function (ch) {
+          if (!chk.impact.ok || ch.length) notify((chk.impact.ok ? 'Lockup cover re-paired: ' : 'Leave leaves a day short: ') + nameOf(r.personId) + ', ' + rangeText(r.from, r.to),
+            ['Annual leave confirmed as authorised on Ciphr by ' + nameOf(st.me) + (r.ciphr ? ' (reference ' + r.ciphr + ')' : '') + '.']
+              .concat(!chk.impact.ok ? chk.impact.newlyShort.map(function (d) { return fmt(d.date, true) + ': ' + dayWarn(d); }) : []).concat(coverLines(ch)));
+          auditLine('Leave added (Ciphr confirmed): ' + describe(reqRec));
+          return 'Added to the calendar.';
+        });
       });
     } else if (kind === 'absence') {
       p = createRequest(clean({ personId: r.personId, kind: 'absence', from: r.from, to: r.to, note: r.note || undefined, status: 'approved', auto: true })).then(function (id) {
@@ -795,6 +812,8 @@
     paintTabs();
     if (st.tab === 'calendar') paintCalendar();
     if (st.tab === 'requests') paintRequests();
+    /* lockup's Book holiday sends people here with ?new=holiday */
+    if (!st.openedNew && new URLSearchParams(location.search).get('new') === 'holiday') { st.openedNew = true; openForm('holiday'); }
     if (st.tab === 'bh' && isMgr()) paintBH();
     if (st.tab === 'staff' && isMgr()) paintStaff();
     if (st.tab === 'settings' && isMgr()) paintSettings();
