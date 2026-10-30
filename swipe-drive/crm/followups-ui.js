@@ -66,7 +66,7 @@
     var tl = r.path === 'kit' ? '' : '<span class="fx-dots">' + F.timeline(r, t).map(function (x) { return '<i class="fx-d-' + x.state + '" title="' + e(x.label) + '"></i>'; }).join('') + '</span>';
     return '<div class="fx-row fx-' + st + '"><span class="fx-av">' + e((r.firstName[0] || '') + (r.lastName[0] || '')).toUpperCase() + '</span><button class="fx-who" data-tl="' + e(r.id) + '"><b>' + e(r.firstName + ' ' + r.lastName) + '</b><small>'
       + e(r.car || 'No car noted') + ' &middot; ' + e(stageLabel(r)) + (r.swipeCustomerId ? ' &middot; SwipeToDrive' : '') + '</small>' + tl + '</button><span class="fx-when">' + when + '</span>'
-      + (st === 'due' || st === 'overdue' ? '<button class="fx-btn fx-sm" data-send="' + e(r.id) + '">Send next follow up</button>' : '<button class="fx-ghost fx-sm" data-tl="' + e(r.id) + '">Journey</button>') + '</div>'; }
+      + (st === 'due' || st === 'overdue' ? '<button class="fx-btn fx-sm" data-send="' + e(r.id) + '">Send next follow up</button>' : '<button class="fx-ghost fx-sm" data-tl="' + e(r.id) + '">Journey</button>') + (r.path === 'kit' ? '' : '<button class="fx-ghost fx-sm fx-pbtn" data-prog="' + e(r.id) + '">Purchase progress</button>') + '</div>'; }
 
   function app(msg) {
     var t = today(), due = F.dueNow(recs, t), rest = F.sortByDue(recs.filter(function (r) { var s = F.status(r, t); return s === 'soon' || s === 'upcoming'; }));
@@ -85,6 +85,7 @@
       a.href = URL.createObjectURL(blob); a.download = 'followups-backup-' + t + '.json'; a.click(); };
     root.querySelectorAll('[data-send]').forEach(function (b) { b.onclick = function () { send(b.getAttribute('data-send')); }; });
     root.querySelectorAll('[data-tl]').forEach(function (b) { b.onclick = function () { journey(b.getAttribute('data-tl')); }; });
+    root.querySelectorAll('[data-prog]').forEach(function (b) { b.onclick = function () { progress(b.getAttribute('data-prog')); }; });
   }
   function modal(html) { var m = document.getElementById('fx-modal'); m.innerHTML = '<div class="fx-ov"><div class="fx-dlg" role="dialog" aria-modal="true">' + html + '</div></div>';
     m.querySelectorAll('[data-close]').forEach(function (b) { b.onclick = function () { m.innerHTML = ''; }; }); return m; }
