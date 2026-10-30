@@ -21,9 +21,9 @@
     closed: 'Closed', inactive: 'Not active', 'not-team': 'Not on the team'
   };
   var SYM = {
-    working: ['●', 'w', 'In'], 'swapped-in': ['⇄', 's', 'In (swapped)'], off: ['–', 'o', 'Usual day off'],
+    working: ['●', 'w', 'In'], 'swapped-in': ['⇄', 's', 'In (swapped)'], off: ['·', 'o', 'Usual day off'],
     holiday: ['H', 'h', 'Holiday'], absent: ['A', 'a', 'Away'], bh: ['BH', 'bh', 'Bank holiday'],
-    'bh-off': ['–', 'o', 'Not on the bank holiday rota'], 'bh-no-rota': ['?', 'x', 'No bank holiday rota yet'], closed: ['', 'c', 'Closed']
+    'bh-off': ['·', 'o', 'Not on the bank holiday rota'], 'bh-no-rota': ['?', 'x', 'No bank holiday rota yet'], closed: ['', 'c', 'Closed']
   };
 
   var NOW = R.london(), FIXED = null;
