@@ -159,8 +159,8 @@
   var PIDS = ['tyreAlloy', 'gap', 'hedinCare', 'ceramic', 'warranty'];
   var PCHIPS = { tyreAlloy: 'Tyre & Alloy', gap: 'GAP', hedinCare: 'Club HedinCare SMART', ceramic: 'Williams Ceramic', warranty: 'Extended Warranty' };
   /* gentle mention of what they have not taken, worded from product-email.js; nothing when products were never ticked */
-  function productMention(p) { p = normProgress(p); if (!p.products) return ''; var PE; try { PE = PEmod(); } catch (er) { return ''; }
-    var not = PE.PRODUCTS.filter(function (x) { return p.products.indexOf(x.id) < 0; }); if (!not.length) return '';
+  function productMention(p) { p = normProgress(p); var taken = p.products || []; var PE; try { PE = PEmod(); } catch (er) { return ''; }
+    var not = PE.PRODUCTS.filter(function (x) { return taken.indexOf(x.id) < 0; }); if (!not.length) return '';
     return 'There are also other protection products available to add if you would like them: ' + PE.joinList(not.map(function (x) { return x.name; })) + '.'; }
   /* unguessable progress token: 24 url safe chars (144 bits). The FAQ page looks it up for live ticks. */
   function validToken(t) { return typeof t === 'string' && /^[A-Za-z0-9_-]{22,64}$/.test(t); }

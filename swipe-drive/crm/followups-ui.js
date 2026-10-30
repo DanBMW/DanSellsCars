@@ -174,8 +174,10 @@
   /* progress sheet: update the ticks any time after purchase and resend the updated link */
   function progress(id) { var r = recs.find(function (x) { return x.id === id; }); progRestore(r).then(function (rec) {
     var m = modal('<div class="fx-h">Purchase progress for ' + e(rec.firstName) + '</div><div class="fx-sub">' + e(rec.car || '') + '</div>' + progHtml(rec.progress)
-      + '<div class="fx-actions">' + waBtn(rec) + '<button class="fx-ghost" id="fx-pcopy">Copy message</button><button class="fx-ghost" data-close>Close</button></div>');
+      + '<div class="fx-actions"><button class="fx-btn" id="fx-pmail">Copy and open congratulations email</button>' + waBtn(rec) + '<button class="fx-ghost" id="fx-pcopy">Copy message</button><button class="fx-ghost" data-close>Close</button></div>');
     progBind(m, rec, function () { m.querySelector('#fx-wa').href = F.waLink(rec, rec.phone); });
+    m.querySelector('#fx-pmail').onclick = function () { var buy = F.stagesFor(rec.term || 48).filter(function (x) { return x.kind === 'purchase'; })[0], mail = F.build(rec, F.suggestVariant(rec) % 3, buy);
+      (navigator.clipboard && window.ClipboardItem ? navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([mail.html], { type: 'text/html' }), 'text/plain': new Blob([mail.text], { type: 'text/plain' }) })]) : Promise.reject()).then(null, function () {}).then(function () { location.href = F.mailto(mail); }); };
     m.querySelector('#fx-pcopy').onclick = function () { if (navigator.clipboard) navigator.clipboard.writeText(F.waText(rec)).then(function () { m.querySelector('#fx-pmsg').textContent = 'Copied.'; }); }; }); }
   var sendDate = null, pending = null;
   function send(id, onDate) { sel = recs.find(function (x) { return x.id === id; }); sendDate = onDate || today(); variant = F.suggestVariant(sel); var k = F.nextStage(sel); draw(); if (k && k.kind === 'purchase') { var was = JSON.stringify(sel.progress || null), me = sel; progRestore(sel).then(function () { if (sel === me && JSON.stringify(sel.progress || null) !== was && document.getElementById('fx-prog')) draw(); }); } }

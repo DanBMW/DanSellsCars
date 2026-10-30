@@ -23,7 +23,7 @@ const rp = F.newRecord({ firstName: "Ann", email: "ann@example.com", car: "BMW X
 assert.deepStrictEqual(rp.progress.products, ["gap", "ceramic"]); n++;
 const mp = F.productMention(rp.progress); assert.ok(/Tyre & Alloy Insurance, Hedin Club Care SMART Protection and Extended Warranty\.$/.test(mp) && !/GAP|Ceramic/.test(mp)); n++;
 assert.ok(F.waText(rp).endsWith(mp) && F.build(rp, 0).text.includes(mp)); n++;
-assert.strictEqual(F.productMention({}), ""); assert.ok(!F.build(r, 0).text.includes("protection products")); n++;
+assert.ok(/Tyre & Alloy Insurance, GAP Insurance, Hedin Club Care SMART Protection, Williams Racing Ceramic Coating and Extended Warranty\.$/.test(F.productMention({}))); assert.ok(F.build(r, 0).text.includes("Extended Warranty") && F.waText(r).includes("GAP Insurance")); n++;
 assert.strictEqual(F.productMention({ products: ["tyreAlloy", "gap", "hedinCare", "ceramic", "warranty"] }), ""); n++;
 assert.ok(F.build(rp, 0).text.trim().endsWith("Kind regards,")); n++;
 console.log("purchase progress tests passed: " + n);
