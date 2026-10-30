@@ -122,6 +122,8 @@
   function effectLabel(r) {
     if (r.kind === 'holiday') return 'Holiday';
     if (r.kind === 'absence') return 'Away' + (r.note ? ': ' + r.note : '');
+    if (r.kind === 'training') return 'Training' + (r.note ? ': ' + r.note : '');
+    if (r.kind === 'lieu') return 'Lieu day' + (r.note ? ': ' + r.note : '');
     if (r.kind === 'switch') return 'Day off switched';
     if (r.kind === 'swap') return 'Shift swapped with ' + nameOf(r.withId);
     return '';
@@ -182,23 +184,30 @@
   function acceptSwap(r) {
     var chk = S.checkRequest(ctx(), Object.assign({}, r, { id: r.id }));
     if (!chk.valid) { toast(chk.errors[0]); return Promise.resolve(false); }
-    if (chk.impact.ok) {
+    /* swaps go through on acceptance unless managers have turned approval on */
+    var needs = S.cfgOf(st.D.scfg || {}).swapNeedsApproval === true;
+    if (!needs) {
       return applyEffects(r.id, r, chk.edits).then(function (ch) {
         return B.update(st.RS + '/requests/' + r.id, { status: 'approved', auto: true, decidedBy: nameOf(st.me), decidedAt: Date.now() }).then(function () {
           auditLine('Swap accepted and approved: ' + describe(r));
-          if (ch.length) notify('Lockup cover re-paired: ' + nameOf(r.personId), coverLines(ch));
+          var warn = chk.impact.newlyShort.map(function (d) { return fmt(d.date, true) + ': ' + dayWarn(d); });
+          notify('Shift swap agreed: ' + nameOf(r.personId) + ' and ' + nameOf(r.withId) + ', ' + fmt(r.date, true),
+            [nameOf(r.withId) + ' has agreed to take ' + nameOf(r.personId) + '\u2019s shift on ' + fmt(r.date, true) + '. No approval is needed; this is for your information.']
+              .concat(warn.length ? ['Warnings: '].concat(warn) : []).concat(coverLines(ch)));
           return true;
         });
       });
     }
     return B.update(st.RS + '/requests/' + r.id, { status: 'pending', decidedBy: nameOf(st.me), decidedAt: Date.now() }).then(function () {
-      notify('Shift swap needs a manager: ' + fmt(r.date, true), [nameOf(r.withId) + ' has agreed to take ' + nameOf(r.personId) + '’s shift on ' + fmt(r.date, true) + '.', 'It takes a day below the minimum, so it needs approving in Shifts.']);
+      notify('Shift swap needs a manager: ' + fmt(r.date, true), [nameOf(r.withId) + ' has agreed to take ' + nameOf(r.personId) + '’s shift on ' + fmt(r.date, true) + '.', 'Swaps need a manager at the moment, so it needs approving in Shifts.']);
       return true;
     });
   }
   function describe(r) {
     if (r.kind === 'holiday') return 'Holiday ' + rangeText(r.from, r.to);
     if (r.kind === 'absence') return 'Away ' + rangeText(r.from, r.to) + (r.note ? ' (' + r.note + ')' : '');
+    if (r.kind === 'training') return 'Training ' + rangeText(r.from, r.to) + (r.note ? ' (' + r.note + ')' : '');
+    if (r.kind === 'lieu') return 'Lieu day ' + rangeText(r.from, r.to) + (r.note ? ' (' + r.note + ')' : '');
     if (r.kind === 'switch') return 'Day off switch: give up ' + fmt(r.giveUp) + ' and work ' + fmt(r.takeOn) + ' instead';
     if (r.kind === 'swap') return 'Shift on ' + fmt(r.date) + ' given to ' + nameOf(r.withId);
     return 'Request';
@@ -353,7 +362,7 @@
       (r.override ? '<br><span class="warn small">Approved below minimum</span>' : '') + '</div>' +
       '<div class="rq-r"><span class="pill ' + st2[1] + '">' + esc(pillText) + '</span>' + (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div></li>';
   }
-  function kindLabel(k) { return { holiday: 'Holiday', absence: 'Absence', switch: 'Day off switch', swap: 'Shift swap' }[k] || k; }
+  function kindLabel(k) { return { holiday: 'Holiday', absence: 'Absence', training: 'Training', lieu: 'Lieu day', switch: 'Day off switch', swap: 'Shift swap' }[k] || k; }
 
   /* ---------- rendering: bank holidays (managers) ---------- */
   function paintBH() {
@@ -415,6 +424,7 @@
       field('bhStaff', 'Bank holidays, rota size', cfg.bhStaff, 0, 10) +
       field('switchesPerWeek', 'Day off switches per person a week', cfg.switchesPerWeek, 0, 5) +
       '</form>' +
+      '<label class="check" style="margin-top:10px"><input type="checkbox" form="cfg-form" name="swapNeedsApproval"' + (cfg.swapNeedsApproval ? ' checked' : '') + '> <span>Shift swaps between colleagues need a manager to approve them (when off, they go through once the colleague accepts and managers are told)</span></label>' +
       '<p class="small" style="margin:10px 0 6px"><b>Left off the bank holiday rota</b></p><div class="names">' + ids.map(function (id) {
         return '<label class="pick"><input type="checkbox" form="cfg-form" name="bhx" value="' + esc(id) + '"' + (cfg.bhExclude.indexOf(id) >= 0 ? ' checked' : '') + '> ' + esc(nameOf(id)) + '</label>';
       }).join('') + '</div>' +
@@ -448,14 +458,15 @@
   var NEW_ITEMS = [
     ['holiday', 'Book leave', 'Annual leave authorised on Ciphr. Goes straight on the calendar.', 'M4 7h16M4 12h16M4 17h10'],
     ['absence', 'Report an absence', 'Sickness or anything that stops you coming in. Recorded now.', 'M12 4v8l5 3'],
-    ['switch', 'Switch my day off', 'Work your usual day off instead. A manager approves it.', 'M4 8h13l-3-3M20 16H7l3 3'],
-    ['swap', 'Give a shift to a colleague', 'They accept it, then a manager approves it.', 'M8 7h11M8 12h11M8 17h11M4 7h.01M4 12h.01M4 17h.01']
+    ['training', 'Add a training day', 'Goes straight on the calendar.', 'M4 10l8-4 8 4-8 4zM8 12v4c2 2 6 2 8 0v-4'],
+    ['switch', 'Switch my day off', 'Take a different day off in the same week. A manager approves it.', 'M4 8h13l-3-3M20 16H7l3 3'],
+    ['swap', 'Give a shift to a colleague', 'They accept it and it goes through. Managers are told.', 'M8 7h11M8 12h11M8 17h11M4 7h.01M4 12h.01M4 17h.01']
   ];
   function openNew() {
     var rows = NEW_ITEMS.map(function (it) {
       return '<button type="button" class="listrow" data-act="' + it[0] + '"><span class="ico"><svg viewBox="0 0 24 24"><path d="' + it[3] + '"/></svg></span><span>' + esc(it[1]) + '<small>' + esc(it[2]) + '</small></span></button>';
     });
-    if (isMgr()) rows.push('<button type="button" class="listrow" data-act="mgr-holiday"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span>Add time off for someone<small>Managers only. Booked straight away.</small></span></button>');
+    if (isMgr()) rows.push('<button type="button" class="listrow" data-act="mgr-holiday"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span>Add an entry for anyone<small>Leave, training, lieu day or absence. Booked straight away.</small></span></button>');
     sheet('<h2>What do you need?</h2><p class="sub">Pick one. Nothing is booked until it is sent.</p><div class="stack" style="gap:0">' + rows.join('') + '</div>');
   }
   function paintFab() {
@@ -486,19 +497,23 @@
       title = 'Report an absence';
       help = 'For sickness or anything that stops you coming in. It is recorded straight away and lockup cover is arranged from it.';
       body = dateField('from', 'First day', NOW.date) + dateField('to', 'Last day', NOW.date) + noteField();
+    } else if (kind === 'training') {
+      title = 'Add a training day';
+      help = 'It goes straight on the calendar and counts as away for the headcount. Lockup cover is arranged from it.';
+      body = dateField('from', 'First day', NOW.date) + dateField('to', 'Last day', NOW.date) + noteField();
     } else if (kind === 'switch') {
       title = 'Switch my day off';
       help = 'Give up a day you are working and work your usual day off instead, in the same week. A manager approves it. Warnings show if a day falls below the minimum, but you can still send it.';
-      body = dateField('giveUp', 'Day you give up', '') + dateField('takeOn', 'Day off you work instead', '') + noteField();
+      body = dateField('giveUp', 'Day you want off (a day you are working)', '') + dateField('takeOn', 'Your usual day off, which you work instead', '') + noteField();
     } else if (kind === 'swap') {
       title = 'Give a shift to a colleague';
       help = 'Pick a shift you are working and a colleague who is off that day. They accept it, then it goes through if the office stays staffed, otherwise a manager approves it.';
       body = dateField('date', 'The shift', '') + '<label class="fld"><span>Colleague taking it</span><select name="withId"><option value="">Choose</option>' + opt(people.filter(function (id) { return id !== me; }), '') + '</select></label>' + noteField();
     } else if (kind === 'mgr-holiday') {
-      title = 'Add time off for someone';
-      help = 'Booked straight away, as a manager. Use this for holidays agreed in person.';
+      title = 'Add an entry for someone';
+      help = 'Booked straight away, as a manager, for anyone. No Ciphr tick is needed.';
       body = '<label class="fld"><span>Who</span><select name="personId">' + opt(people, '') + '</select></label>' +
-        '<label class="fld"><span>Type</span><select name="kind"><option value="holiday">Holiday</option><option value="absence">Away (sickness or other)</option></select></label>' +
+        '<label class="fld"><span>Type</span><select name="kind"><option value="holiday">Annual leave</option><option value="training">Training</option><option value="lieu">Lieu day</option><option value="absence">Away (sickness or other)</option></select></label>' +
         dateField('from', 'First day', NOW.date) + dateField('to', 'Last day', NOW.date) + noteField() +
         '<label class="check"><input type="checkbox" name="override"> <span>Override the minimum if it is short-staffed</span></label><label class="fld"><span>Reason for the override</span><input type="text" name="reason" maxlength="200"></label>';
     }
@@ -517,7 +532,7 @@
     var f = $('rq-form'), v = {};
     Array.prototype.forEach.call(f.elements, function (el) { if (el.name) v[el.name] = el.type === 'checkbox' ? el.checked : el.value; });
     var me = st.me, r = { kind: kind };
-    if (kind === 'holiday' || kind === 'absence') { r.personId = me; r.from = v.from; r.to = v.to; }
+    if (kind === 'holiday' || kind === 'absence' || kind === 'training') { r.personId = me; r.from = v.from; r.to = v.to; }
     if (kind === 'holiday') { r.ciphr = (v.ciphr || '').trim().slice(0, 40); r.ciphrOk = v.ciphrOk === true; }
     if (kind === 'switch') { r.personId = me; r.giveUp = v.giveUp; r.takeOn = v.takeOn; }
     if (kind === 'swap') { r.personId = me; r.date = v.date; r.withId = v.withId; }
@@ -569,9 +584,10 @@
   function outcome(k, chk) {
     if (k === 'holiday') return 'Goes straight on the calendar. Lockup cover is arranged from it' + (chk.impact.ok ? '.' : ', and managers are told it leaves a day short.');
     if (k === 'switch') return 'Goes to a manager to approve. Warnings do not stop you sending it.';
+    if (k === 'training') return 'Goes straight on the calendar. Lockup cover is arranged from it' + (chk.impact.ok ? '.' : ', and managers are told it leaves a day short.');
     if (k === 'absence') return 'Recorded now. Lockup cover is arranged from it' + (chk.impact.ok ? '.' : ', and managers are told it leaves a day short.');
     if (k === 'switch') return chk.impact.ok ? 'Goes through now, the office stays staffed.' : 'This leaves a day below minimum, so a manager approves it.';
-    if (k === 'swap') return 'Goes to ' + nameOf(formValues(k).withId) + ' to accept. Then it goes through if the day stays staffed, otherwise a manager approves it.';
+    if (k === 'swap') return 'Goes to ' + nameOf(formValues(k).withId) + ' to accept. ' + (S.cfgOf(st.D.scfg || {}).swapNeedsApproval ? 'Then a manager approves it.' : 'Once they accept it goes through, and managers are told.');
     if (k === 'mgr-holiday') return chk.impact.ok ? 'Booked straight away.' : 'Short-staffed, see below.';
     return '';
   }
@@ -601,6 +617,16 @@
           if (!chk.impact.ok || ch.length) notify((chk.impact.ok ? 'Lockup cover re-paired: ' : 'Short today: ') + nameOf(r.personId) + ', ' + rangeText(r.from, r.to),
             (!chk.impact.ok ? chk.impact.newlyShort.map(function (d) { return fmt(d.date, true) + ': ' + d.after.count + ' on, minimum ' + d.min; }) : []).concat(coverLines(ch)));
           return 'Recorded.';
+        });
+      });
+    } else if (kind === 'training') {
+      p = createRequest(clean({ personId: r.personId, kind: 'training', from: r.from, to: r.to, note: r.note || undefined, status: 'approved', auto: true })).then(function (id) {
+        var reqRec = { id: id, kind: 'training', personId: r.personId, from: r.from, to: r.to, note: r.note };
+        return applyEffects(id, reqRec, chk.edits).then(function (ch) {
+          if (!chk.impact.ok || ch.length) notify((chk.impact.ok ? 'Lockup cover re-paired: ' : 'Training leaves a day short: ') + nameOf(r.personId) + ', ' + rangeText(r.from, r.to),
+            (!chk.impact.ok ? chk.impact.newlyShort.map(function (d) { return fmt(d.date, true) + ': ' + dayWarn(d); }) : []).concat(coverLines(ch)));
+          auditLine('Training added: ' + describe(reqRec));
+          return 'Added to the calendar.';
         });
       });
     } else if (kind === 'switch') {
@@ -730,8 +756,10 @@
     v.saturdayMin = num('saturdayMin', 0, 10, 7);
     v.bhStaff = num('bhStaff', 0, 10, 4);
     v.switchesPerWeek = num('switchesPerWeek', 0, 5, 1);
+    v.swapNeedsApproval = !!f.elements.swapNeedsApproval.checked;
     v.bhExclude = ex;
-    B.set(st.RS + '/config', v).then(function () {
+    /* update, not set, so the handover settings saved elsewhere are kept */
+    B.update(st.RS + '/config', v).then(function () {
       auditLine('Changed the staffing settings: weekdays ' + v.weekdayMin + ', Saturday ' + v.saturdayMin + ', bank holidays ' + v.bhStaff);
       toast('Settings saved');
     }).catch(function () { toast('That did not save.'); });

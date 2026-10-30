@@ -513,8 +513,8 @@ async function extraScenarios(browser, base) {
     await p.click('#fab');
     await p.waitForSelector('#m-sheet.show');
     const items = await p.locator('#sheet .listrow').allTextContents();
-    check('android: New opens a sheet of what to ask for, leave first', items.length === 4 && /Book leave/.test(items[0]), items.join(' | '));
-    check('android: nothing in the sheet offers to add time off for someone to a colleague', !items.some(x => /Add time off/.test(x)));
+    check('android: New opens a sheet of what to ask for, leave first', items.length === 5 && /Book leave/.test(items[0]), items.join(' | '));
+    check('android: nothing in the sheet offers to add an entry for someone to a colleague', !items.some(x => /Add an entry/.test(x)));
     await p.screenshot({ path: path.join(OUT, 'calendar-new-sheet-phone.png'), fullPage: false });
     /* f. leave: the Ciphr tick is needed, the reference is optional, and it goes straight on */
     await p.click('#sheet [data-act="holiday"]');
@@ -601,10 +601,103 @@ async function extraScenarios(browser, base) {
     check('android: a manager has the five bottom navigation items', (await p.locator('#tabs button').count()) === 5, 'got ' + (await p.locator('#tabs button').count()));
     await p.click('#fab');
     await p.waitForSelector('#m-sheet.show');
-    check('android: a manager can add time off for someone from the same sheet', (await txt(p, '#sheet')).indexOf('Add time off for someone') >= 0);
+    check('android: a manager can add time off for someone from the same sheet', (await txt(p, '#sheet')).indexOf('Add an entry for anyone') >= 0);
     check('shifts: no page errors for a manager', p.__errors.length === 0, p.__errors.join(' | '));
     await p.screenshot({ path: path.join(OUT, 'calendar-phone-android.png'), fullPage: false });
     await p.close();
+  }
+  /* j. day off switch, training, manager entries and swaps without approval */
+  {
+    const SO = process.env.SHOTS_DIR;
+    const vps = SO ? [['phone', { width: 390, height: 844 }], ['desktop', { width: 1280, height: 900 }]] : [['phone', { width: 390, height: 844 }]];
+    for (const [v, vp] of vps) {
+      const cell = async (p, d) => (await p.locator('[data-day="' + d + '"] span').first().textContent().catch(() => '')).trim();
+      const toNov = async (p) => { await p.locator('button', { hasText: 'Nov 26' }).first().click().catch(() => {}); await p.waitForTimeout(200); };
+      /* Carl's usual day off is Tuesday. He asks for Thursday 19 Nov off and works Tuesday 17 Nov instead. */
+      let p = await open(browser, base, null, '/shifts.html', U.carl, { viewport: vp });
+      await p.waitForSelector('#fab', { timeout: 8000 }); await setNow(p, '2026-11-02'); await toNov(p);
+      const tueBefore = await cell(p, '2026-11-17'), thuBefore = await cell(p, '2026-11-19');
+      await p.click('#fab'); await p.waitForSelector('#m-sheet.show'); await p.click('#sheet [data-act="switch"]'); await p.waitForSelector('#rq-form');
+      await p.fill('#rq-form [name=giveUp]', '2026-11-19'); await p.fill('#rq-form [name=takeOn]', '2026-11-17'); await p.waitForTimeout(150);
+      if (SO) await p.screenshot({ path: SO + '/dayoff-request-' + v + '.png' });
+      await p.click('#rq-go'); await p.waitForTimeout(400);
+      let st = await store(p);
+      const swId = Object.keys(st.data.shifts.requests).find(k => st.data.shifts.requests[k].kind === 'switch' && st.data.shifts.requests[k].personId === 'carl');
+      check('dayoff ' + v + ': the switch is sent as pending', swId && st.data.shifts.requests[swId].status === 'pending');
+      check('dayoff ' + v + ': managers are notified', Object.values(st.data.lockup.notify || {}).some(n => /Day off switch: Carl/.test(n.subject)));
+      check('dayoff ' + v + ': nothing changes before approval', (await cell(p, '2026-11-17')) === tueBefore && !Object.keys(st.data.lockup.absences).some(k => k.indexOf(swId) >= 0));
+      const data = st.data; await p.__ctx.close();
+      /* Will approves it */
+      p = await open(browser, base, null, '/shifts.html', U.will, { viewport: vp, data });
+      await p.waitForSelector('#tabs button', { timeout: 8000 }); await setNow(p, '2026-11-02');
+      await p.evaluate((id) => { const b = document.createElement('button'); b.setAttribute('data-review', id); document.body.appendChild(b); b.click(); }, swId);
+      await p.waitForSelector('[data-rv-approve]'); if (SO) await p.screenshot({ path: SO + '/dayoff-review-' + v + '.png' });
+      await p.click('[data-rv-approve]'); await p.waitForTimeout(500);
+      st = await store(p);
+      check('dayoff ' + v + ': approved', st.data.shifts.requests[swId].status === 'approved');
+      const ab = Object.keys(st.data.lockup.absences).filter(k => k.indexOf(swId) >= 0).map(k => st.data.lockup.absences[k]);
+      check('dayoff ' + v + ': lockup has Thursday away and Tuesday working', ab.some(a => a.kind === 'absent' && a.from === '2026-11-19') && ab.some(a => a.kind === 'works' && a.from === '2026-11-17'), JSON.stringify(ab));
+      const after = st.data; await p.__ctx.close();
+      p = await open(browser, base, null, '/shifts.html', U.will, { viewport: vp, data: after }); await p.waitForSelector('#fab', { timeout: 8000 }).catch(() => {}); await setNow(p, '2026-11-02'); await toNov(p);
+      const tueAfter = await cell(p, '2026-11-17'), thuAfter = await cell(p, '2026-11-19');
+      check('dayoff ' + v + ': headcounts move (Tue up one, Thu down one)', parseInt(tueAfter) === parseInt(tueBefore) + 1 && parseInt(thuAfter) === parseInt(thuBefore) - 1, tueBefore + '>' + tueAfter + ' ' + thuBefore + '>' + thuAfter);
+      if (SO) await p.screenshot({ path: SO + '/dayoff-approved-' + v + '.png' });
+      await p.__ctx.close();
+      /* a declined switch changes nothing */
+      const d2 = JSON.parse(JSON.stringify(FIX)); d2.shifts.requests.dx = { personId: 'carl', kind: 'switch', giveUp: '2026-11-26', takeOn: '2026-11-24', status: 'pending', ts: 5 };
+      p = await open(browser, base, null, '/shifts.html', U.will, { viewport: vp, data: d2 });
+      await p.waitForSelector('#tabs button', { timeout: 8000 }); await setNow(p, '2026-11-02');
+      await p.evaluate(() => { const b = document.createElement('button'); b.setAttribute('data-review', 'dx'); document.body.appendChild(b); b.click(); });
+      await p.waitForSelector('[data-rv-decline]'); await p.click('[data-rv-decline]'); await p.waitForTimeout(400);
+      st = await store(p);
+      check('dayoff ' + v + ': a decline leaves the rota unchanged', st.data.shifts.requests.dx.status === 'declined' && !Object.keys(st.data.lockup.absences).some(k => k.indexOf('dx') >= 0));
+      await p.__ctx.close();
+      /* training: Tomi adds his own, straight on */
+      p = await open(browser, base, null, '/shifts.html', U.tomi, { viewport: vp });
+      await p.waitForSelector('#fab', { timeout: 8000 }); await setNow(p, '2026-11-02');
+      await p.click('#fab'); await p.waitForSelector('#m-sheet.show'); await p.click('#sheet [data-act="training"]'); await p.waitForSelector('#rq-form');
+      await p.fill('#rq-form [name=from]', '2026-11-18'); await p.fill('#rq-form [name=to]', '2026-11-18'); await p.fill('#rq-form [name=note]', 'BMW product course'); await p.waitForTimeout(150);
+      if (SO) await p.screenshot({ path: SO + '/training-form-' + v + '.png' });
+      check('training ' + v + ': Send is open with no approval step', !(await p.locator('#rq-go').isDisabled()));
+      await p.click('#rq-go'); await p.waitForTimeout(400);
+      st = await store(p);
+      const tr = Object.values(st.data.shifts.requests).find(r => r.kind === 'training');
+      check('training ' + v + ': goes straight on as approved with its note', tr && tr.status === 'approved' && tr.note === 'BMW product course', JSON.stringify(tr));
+      check('training ' + v + ': counts as away in lockup', Object.values(st.data.lockup.absences).some(a => a.personId === 'tomi' && a.kind === 'absent' && a.from === '2026-11-18' && /Training/.test(a.note || '')));
+      await toNov(p); await p.locator('[data-day="2026-11-18"]').first().click(); await p.waitForTimeout(300);
+      check('training ' + v + ': the day sheet shows the note', /BMW product course/.test(await txt(p, '#sheet')));
+      if (SO) await p.screenshot({ path: SO + '/training-daysheet-' + v + '.png' });
+      await p.__ctx.close();
+      /* managers add any type for anyone */
+      p = await open(browser, base, null, '/shifts.html', U.will, { viewport: vp });
+      await p.waitForSelector('#fab', { timeout: 8000 }); await setNow(p, '2026-11-02');
+      await p.click('#fab'); await p.waitForSelector('#m-sheet.show'); await p.click('#sheet [data-act="mgr-holiday"]'); await p.waitForSelector('#rq-form');
+      const types = await p.locator('#rq-form [name=kind] option').allTextContents();
+      check('manager ' + v + ': can pick leave, training, lieu day or absence', ['Annual leave', 'Training', 'Lieu day'].every(x => types.indexOf(x) >= 0), types.join(','));
+      await p.selectOption('#rq-form [name=personId]', 'karis'); await p.selectOption('#rq-form [name=kind]', 'lieu');
+      await p.fill('#rq-form [name=from]', '2026-11-20'); await p.fill('#rq-form [name=to]', '2026-11-20'); await p.waitForTimeout(150);
+      if (SO) await p.screenshot({ path: SO + '/training-manager-entry-' + v + '.png' });
+      await p.click('#rq-go'); await p.waitForTimeout(400);
+      st = await store(p);
+      check('manager ' + v + ': a lieu day for Karis is booked', Object.values(st.data.shifts.requests).some(r => r.kind === 'lieu' && r.personId === 'karis' && r.status === 'approved'));
+      await p.__ctx.close();
+      /* a swap goes through when Danny accepts, and managers are told */
+      p = await open(browser, base, null, '/shifts.html', U.danny, { viewport: vp, data: Object.assign(JSON.parse(JSON.stringify(FIX)), {}) });
+      await p.waitForSelector('#fab', { timeout: 8000 }).catch(() => {}); await setNow(p, '2026-11-02');
+      await p.evaluate(() => { const b = document.createElement('button'); b.setAttribute('data-accept', 'w1'); document.body.appendChild(b); b.click(); }); await p.waitForTimeout(500);
+      st = await store(p);
+      check('swap ' + v + ': accepted with no manager step', st.data.shifts.requests.w1.status === 'approved', JSON.stringify(st.data.shifts.requests.w1));
+      check('swap ' + v + ': managers are told', Object.values(st.data.lockup.notify || {}).some(n => /Shift swap agreed/.test(n.subject)));
+      await p.__ctx.close();
+      /* with approval on, a short swap waits for a manager */
+      const d3 = JSON.parse(JSON.stringify(FIX)); d3.shifts.config = { swapNeedsApproval: true, weekdayMin: 9 };
+      p = await open(browser, base, null, '/shifts.html', U.danny, { viewport: vp, data: d3 });
+      await p.waitForSelector('#fab', { timeout: 8000 }).catch(() => {}); await setNow(p, '2026-11-02');
+      await p.evaluate(() => { const b = document.createElement('button'); b.setAttribute('data-accept', 'w1'); document.body.appendChild(b); b.click(); }); await p.waitForTimeout(500);
+      st = await store(p);
+      check('swap ' + v + ': with approval on, it goes to a manager', st.data.shifts.requests.w1.status === 'pending', JSON.stringify(st.data.shifts.requests.w1));
+      await p.__ctx.close();
+    }
   }
 }
 

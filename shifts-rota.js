@@ -23,7 +23,7 @@
 (function (root) {
   var LR = (typeof module !== 'undefined' && module.exports) ? require('./lockup-rota.js') : root.LockupRota;
 
-  var DEFAULT_CONFIG = { weekdayMin: 5, saturdayMin: 7, bhStaff: 4, bhExclude: ['molly', 'chloe'], switchesPerWeek: 1, handoverMin: 1, handoverIds: ['chloe', 'molly'] };
+  var DEFAULT_CONFIG = { weekdayMin: 5, saturdayMin: 7, bhStaff: 4, bhExclude: ['molly', 'chloe'], switchesPerWeek: 1, swapNeedsApproval: false, handoverMin: 1, handoverIds: ['chloe', 'molly'] };
 
   /* a list stored as an array, as {id: true}, as {0: id, 1: id} or as one string */
   function listOf(v) {
@@ -168,9 +168,11 @@
     return { days: days, newlyShort: newlyShort, ok: newlyShort.length === 0 };
   }
 
+  var RANGE_KINDS = ['holiday', 'absence', 'training', 'lieu'];
   /* the change a request makes, as lockup/absences style edits */
   function editsFor(req) {
-    if (req.kind === 'holiday' || req.kind === 'absence') {
+    /* training and lieu days are time away, recorded in lockup as away like an absence */
+    if (RANGE_KINDS.indexOf(req.kind) >= 0) {
       return [{ personId: req.personId, from: req.from, to: req.to, kind: req.kind === 'holiday' ? 'holiday' : 'absent' }];
     }
     if (req.kind === 'switch') {
@@ -199,7 +201,7 @@
     Object.keys(ctx.requests).forEach(function (k) {
       if (k === ignoreId) return;
       var r = ctx.requests[k];
-      if (!r || r.personId !== personId || ['holiday', 'absence'].indexOf(r.kind) < 0) return;
+      if (!r || r.personId !== personId || RANGE_KINDS.indexOf(r.kind) < 0) return;
       if (['pending', 'approved'].indexOf(r.status) < 0) return;
       if (r.from <= to && from <= r.to) hit = 'Already requested ' + r.from + (r.to !== r.from ? ' to ' + r.to : '');
     });
@@ -214,11 +216,11 @@
     var iso = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
     var t = ctx.team[req.personId];
     if (!t) errors.push('Pick who this is for.');
-    if (req.kind === 'holiday' || req.kind === 'absence') {
+    if (RANGE_KINDS.indexOf(req.kind) >= 0) {
       if (!iso.test(req.from || '') || !iso.test(req.to || '')) errors.push('Pick a start and end date.');
       else if (req.to < req.from) errors.push('The end date is before the start.');
       else if (req.kind === 'holiday' && req.from < ctx.today) errors.push('Holiday starts in the past.');
-      else if (req.kind === 'absence' && req.to < ctx.today) errors.push('That absence is in the past.');
+      else if (req.kind !== 'holiday' && req.to < ctx.today) errors.push('That is in the past.');
       else {
         var booked = overlapsBooked(ctx, req.personId, req.from, req.to, req.id);
         if (booked) errors.push(booked + '.');

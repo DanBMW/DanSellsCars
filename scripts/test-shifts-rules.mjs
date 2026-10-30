@@ -188,5 +188,42 @@ await t('the test copy needs the tick too', set(ref(T, 'shiftsTest/requests/L8')
 await t('their leave is written to lockup so cover is re-paired', set(ref(T, 'lockup/absences/sh_L1_a'), { personId: 'tomi', from: '2026-12-01', to: '2026-12-02', kind: 'holiday', status: 'approved', ts: 20 }), 'allow');
 await t('the test copy takes leave with the tick', set(ref(T, 'shiftsTest/requests/L9'), leave), 'allow');
 
+// training days: staff add their own straight on; lieu days and entries for others are for managers
+const tr = { personId: 'tomi', kind: 'training', from: '2026-12-03', to: '2026-12-03', status: 'approved', auto: true, ts: 30, note: 'Product course' };
+await t('colleague adds their own training day straight on', set(ref(T, 'shifts/requests/T1'), tr), 'allow');
+await t('colleague cannot add training for someone else', set(ref(T, 'shifts/requests/T2'), Object.assign({}, tr, { personId: 'carl' })), 'deny');
+await t('colleague cannot add a lieu day, even for themselves', set(ref(T, 'shifts/requests/T3'), Object.assign({}, tr, { kind: 'lieu' })), 'deny');
+await t('colleague cannot ask for a lieu day as pending either', set(ref(T, 'shifts/requests/T4'), Object.assign({}, tr, { kind: 'lieu', status: 'pending', auto: null })), 'deny');
+await t('colleague cannot turn their training into leave without the tick', update(ref(T, 'shifts/requests/T1'), { kind: 'holiday' }), 'deny');
+await t('colleague cannot turn their training into a lieu day', update(ref(T, 'shifts/requests/T1'), { kind: 'lieu' }), 'deny');
+await t('colleague cancels their own training day', update(ref(T, 'shifts/requests/T1'), { status: 'cancelled' }), 'allow');
+await t('a manager adds a lieu day for someone', set(ref(W, 'shifts/requests/T5'), { personId: 'carl', kind: 'lieu', from: '2026-12-04', to: '2026-12-04', status: 'approved', ts: 31 }), 'allow');
+await t('a manager adds training for someone', set(ref(W, 'shifts/requests/T6'), Object.assign({}, tr, { personId: 'carl', auto: null })), 'allow');
+await t('a manager adds an absence for someone', set(ref(W, 'shifts/requests/T7'), { personId: 'carl', kind: 'absence', from: '2026-12-07', to: '2026-12-07', status: 'approved', ts: 32 }), 'allow');
+await t('admin adds a lieu day for someone', set(ref(A, 'shifts/requests/T8'), { personId: 'tomi', kind: 'lieu', from: '2026-12-08', to: '2026-12-08', status: 'approved', ts: 33 }), 'allow');
+await t('an unknown entry type is refused', set(ref(W, 'shifts/requests/T9'), Object.assign({}, tr, { kind: 'party' })), 'deny');
+await t('the test copy takes training too', set(ref(T, 'shiftsTest/requests/T1'), tr), 'allow');
+await t('the test copy refuses a colleague lieu day', set(ref(T, 'shiftsTest/requests/T3'), Object.assign({}, tr, { kind: 'lieu' })), 'deny');
+// day off switch: pending from the colleague, a manager approves or declines
+const swm = { personId: 'tomi', kind: 'switch', giveUp: '2026-12-16', takeOn: '2026-12-14', status: 'pending', ts: 40 };
+await t('colleague asks to move their day off', set(ref(T, 'shifts/requests/D1'), swm), 'allow');
+await t('a manager approves the move', update(ref(W, 'shifts/requests/D1'), { status: 'approved', decidedBy: 'Will', decidedAt: 41 }), 'allow');
+await t('colleague asks again', set(ref(T, 'shifts/requests/D2'), Object.assign({}, swm, { ts: 42 })), 'allow');
+await t('a manager declines it', update(ref(W, 'shifts/requests/D2'), { status: 'declined', decidedBy: 'Will', decidedAt: 43 }), 'allow');
+await t('colleague cannot decline or approve it themselves', update(ref(T, 'shifts/requests/D2'), { status: 'approved' }), 'deny');
+
+// shift swaps: no manager needed unless managers turn approval on
+const sw2 = { personId: 'tomi', withId: 'carl', kind: 'swap', date: '2026-12-21', status: 'awaiting', ts: 50 };
+await t('a manager turns swap approval on', update(ref(W, 'shifts/config'), { swapNeedsApproval: true }), 'allow');
+await t('a colleague cannot change the swap setting', update(ref(T, 'shifts/config'), { swapNeedsApproval: false }), 'deny');
+await t('colleague asks for a swap with approval on', set(ref(T, 'shifts/requests/X1'), sw2), 'allow');
+await t('with approval on, the colleague cannot push it through', update(ref(C, 'shifts/requests/X1'), { status: 'approved', auto: true }), 'deny');
+await t('with approval on, the colleague can send it to a manager', update(ref(C, 'shifts/requests/X1'), { status: 'pending' }), 'allow');
+await t('a manager approves it', update(ref(W, 'shifts/requests/X1'), { status: 'approved' }), 'allow');
+await t('the swap setting must be true or false', update(ref(W, 'shifts/config'), { swapNeedsApproval: 'yes' }), 'deny');
+await t('a manager turns swap approval back off', update(ref(W, 'shifts/config'), { swapNeedsApproval: false }), 'allow');
+await t('colleague asks again', set(ref(T, 'shifts/requests/X2'), Object.assign({}, sw2, { ts: 51 })), 'allow');
+await t('with approval off, the colleague accepting puts it through', update(ref(C, 'shifts/requests/X2'), { status: 'approved', auto: true }), 'allow');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

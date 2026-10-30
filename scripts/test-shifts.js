@@ -262,3 +262,18 @@ const count = (c, date) => S.countDay(c, date);
 }
 
 console.log('all shifts tests passed');
+
+/* ---- training and lieu days count as away; a day off switch moves the day off ---- */
+{
+  const c = ctx();
+  let r = S.checkRequest(c, { kind: 'training', personId: 'tomi', from: '2026-11-16', to: '2026-11-16', note: 'Course' });
+  assert.strictEqual(r.valid, true, r.errors.join('; '));
+  assert.deepStrictEqual(r.edits, [{ personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'absent' }]);
+  assert.strictEqual(r.impact.days[0].after.count, r.impact.days[0].before.count - 1, 'training takes one off the headcount');
+  r = S.checkRequest(c, { kind: 'lieu', personId: 'tomi', from: '2026-11-16', to: '2026-11-16', byManager: true });
+  assert.strictEqual(r.valid, true, r.errors.join('; '));
+  assert.strictEqual(r.edits[0].kind, 'absent');
+  r = S.checkRequest(c, { kind: 'training', personId: 'tomi', from: '2026-10-01', to: '2026-10-01' });
+  assert.strictEqual(r.valid, false, 'training in the past is refused');
+  console.log('ok: training and lieu days count as away for the headcount');
+}
