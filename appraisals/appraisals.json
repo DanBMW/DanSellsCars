@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-30T16:02:18.523Z",
+  "captured": "2026-10-30T18:02:31.899Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "B21KSL",
+      "appraisedAt": "2026-10-30T17:23:15.697Z",
+      "make": "BMW",
+      "model": "4 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--3ryJVBC7--/c_fill,h_300,w_300/v1793380997/Live/Appraisals/9612906/8bee4264-e290-4ad5-94f1-698aa9a77b43.jpg"
+    },
+    {
+      "registration": "V40JDT",
+      "appraisedAt": "2026-10-30T16:39:08.895Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Fair",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--uthJe9g3--/c_fill,h_300,w_300/v1793378357/Live/Appraisals/9612732/d0e32a84-1f47-4a99-85a0-4208af988bd5.jpg"
+    },
     {
       "registration": "WP18EHO",
       "appraisedAt": "2026-10-30T15:51:50.812Z",
@@ -122,7 +142,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Fkf97PnD--/c_fill,h_300,w_300/v1793284398/Live/Appraisals/9609922/5fbb7069-069e-45e9-bf1d-4ba846479481.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Fkf97PnD--/c_fill,h_300,w_300/v1793284398/Live/Appraisals/9609922/5fbb7069-069e-45e9-bf1d-4ba846479481.jpg",
+      "droppedAt": "2026-10-30T18:02:31.898Z"
     },
     {
       "registration": "YG64FZA",
@@ -843,16 +864,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s---CPCaqo1--/c_fill,h_300,w_300/v1792229452/Live/Appraisals/9584189/33bbaae4-299a-4ff8-81e1-bdbcd0ad43e9.jpg"
-    },
-    {
-      "registration": "V40JDT",
-      "appraisedAt": "2026-10-17T09:22:54.636Z",
-      "make": "BMW",
-      "model": "X5",
-      "status": "Expired",
-      "price": null,
-      "condition": "Fair",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--UbEvg5ad--/c_fill,h_300,w_300/v1792228980/Live/Appraisals/9584156/af133588-6acd-4d69-8966-7aed12a2a85c.jpg"
     },
     {
       "registration": "TE10SKY",
