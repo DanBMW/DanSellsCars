@@ -4,6 +4,11 @@
   "last_seen": "2026-10-31",
   "removed_at": null
  },
+ "AO71PYV": {
+  "first_seen": "2026-10-31",
+  "last_seen": "2026-10-31",
+  "removed_at": null
+ },
  "AV73OUJ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-21",
@@ -474,6 +479,11 @@
   "last_seen": "2026-10-31",
   "removed_at": null
  },
+ "LK72JDU": {
+  "first_seen": "2026-10-31",
+  "last_seen": "2026-10-31",
+  "removed_at": null
+ },
  "LK73HSG": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-31",
@@ -541,6 +551,11 @@
  },
  "LL75XGM": {
   "first_seen": "2026-10-07",
+  "last_seen": "2026-10-31",
+  "removed_at": null
+ },
+ "LM23AGO": {
+  "first_seen": "2026-10-31",
   "last_seen": "2026-10-31",
   "removed_at": null
  },
@@ -669,6 +684,11 @@
   "last_seen": "2026-10-31",
   "removed_at": null
  },
+ "LS23NXV": {
+  "first_seen": "2026-10-31",
+  "last_seen": "2026-10-31",
+  "removed_at": null
+ },
  "LS26CWL": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-31",
@@ -681,8 +701,8 @@
  },
  "LS26EKP": {
   "first_seen": "2026-10-21",
-  "last_seen": "2026-10-23",
-  "removed_at": "2026-10-23"
+  "last_seen": "2026-10-31",
+  "removed_at": null
  },
  "LS26ENH": {
   "first_seen": "2026-10-07",
@@ -952,7 +972,7 @@
  "LV26USD": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-31",
-  "removed_at": null
+  "removed_at": "2026-10-31"
  },
  "LV26VLU": {
   "first_seen": "2026-10-07",
@@ -1477,7 +1497,7 @@
  "LY26BLF": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-31",
-  "removed_at": null
+  "removed_at": "2026-10-31"
  },
  "LY26FJF": {
   "first_seen": "2026-10-07",
@@ -1802,7 +1822,7 @@
  "VK23XDO": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-31",
-  "removed_at": null
+  "removed_at": "2026-10-31"
  },
  "W14JNR": {
   "first_seen": "2026-10-07",
@@ -1832,7 +1852,7 @@
  "YB24LYK": {
   "first_seen": "2026-10-17",
   "last_seen": "2026-10-31",
-  "removed_at": null
+  "removed_at": "2026-10-31"
  },
  "YB24MFU": {
   "first_seen": "2026-10-07",
@@ -1992,7 +2012,7 @@
  "YJ74HPN": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-10-31",
-  "removed_at": null
+  "removed_at": "2026-10-31"
  },
  "YK24AOD": {
   "first_seen": "2026-10-07",

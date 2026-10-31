@@ -1,0 +1,33 @@
+{
+ "reg": "LK72JDU",
+ "model": "BMW X1 sDrive 18d M Sport Premier Pro",
+ "series": "X1",
+ "year": 2022,
+ "mileage": "20,631 miles",
+ "mileage_miles": 20631,
+ "colour": "Grey",
+ "fuel": "Diesel",
+ "body": "SUV",
+ "gearbox": "Automatic",
+ "drive": "FrontWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "150 hp",
+ "trim": "M Sport",
+ "price": "£27,000",
+ "price_gbp": 27000,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18ced-db59-7e16-92ed-d76632d37b42-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18ced-db59-7e16-92ed-d76632d37b42-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18ced-dc01-7011-86f8-f5cb8cc43ffc-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18ced-dc98-7aff-af08-8539ea9e81a7-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18ced-dd4a-7fb4-a9dd-77cd2ed86ba3-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/258716/pb-bmw-x1-2022",
+ "listing_id": "258716",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}
