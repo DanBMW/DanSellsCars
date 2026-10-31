@@ -27,9 +27,7 @@
     <div class="hero signin">
       <div class="kick">Hedin BMW Ruxley</div>
       <h1>Team</h1>
-      <p class="muted">Lockup, forecourt checks, the team board and the calendar, in one place. Sign in with your <b>@hedinautomotive.co.uk</b> address.</p>
-      <button class="big" id="btn-signin" type="button" style="width:100%">Sign in with Google</button>
-      <p class="muted small" style="margin:14px 0 8px">or with your own PIN</p>
+      <p class="muted">Lockup, forecourt checks, the team board and the calendar, in one place. Sign in with your <b>@hedinautomotive.co.uk</b> address and your six digit PIN.</p>
       <form class="pinbox" id="pin-form" autocomplete="on">
         <input class="inp" id="pin-email" type="email" inputmode="email" autocomplete="username" placeholder="name@hedinautomotive.co.uk">
         <input class="inp" id="pin-code" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 digit PIN">
@@ -54,7 +52,7 @@
   <section id="v-wrong" hidden>
     <div class="card"><b>That isn&rsquo;t a work account</b>
       <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Use your Hedin address.</p>
-      <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
+      <button class="big" id="btn-signin2" type="button">Sign out and try again</button>
     </div>
   </section>
 
@@ -114,8 +112,7 @@ const errText=(e)=>{ const c=e&&e.code||'';
   return 'That didn\u2019t work ('+(c||e)+'). Try again.'; };
 const pinOk=p=>/^[0-9]{6}$/.test(p);
 const emailVal=()=>$('pin-email').value.trim().toLowerCase();
-$('btn-signin').onclick=()=>TeamSession.signIn().catch(e=>{ const t=errText(e); if(t) say('signin-msg',t,false); });
-$('btn-signin2').onclick=$('btn-signin').onclick;
+$('btn-signin2').onclick=()=>TeamSession.signOut();
 $('btn-out').onclick=()=>TeamSession.signOut();
 $('pin-form').onsubmit=e=>{ e.preventDefault(); const em=emailVal(), p=$('pin-code').value;
   if(!DOMAIN.test(em)) return say('signin-msg','Use your Hedin work address.',false);

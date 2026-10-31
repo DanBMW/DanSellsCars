@@ -26,8 +26,8 @@
     <div class="hero signin">
       <div class="kick">Team admin</div>
       <h1>Sign in to continue</h1>
-      <p class="muted">Use your <b>@hedinautomotive.co.uk</b> account.</p>
-      <button class="big" id="btn-signin" type="button">Sign in with Google</button>
+      <p class="muted">Use your <b>@hedinautomotive.co.uk</b> address and your PIN, on the team page.</p>
+      <a class="big" id="btn-signin" href="team.html?next=team-admin.html" style="display:block;text-align:center;text-decoration:none">Sign in on the team page</a>
       <p class="muted small" id="signin-msg" style="margin-top:12px"></p>
     </div>
   </section>
@@ -35,7 +35,7 @@
   <section id="v-wrong" hidden>
     <div class="card"><b>That isn&rsquo;t a work account</b>
       <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>.</p>
-      <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
+      <button class="big" id="btn-signin2" type="button">Sign out and try again</button>
     </div>
   </section>
 
@@ -95,9 +95,7 @@ import { makeBackend } from "./team-backend.js";
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 const app=initializeApp(firebaseConfig);
 TeamSession.start(makeBackend(app));
-const signin=()=>TeamSession.signIn().catch(e=>{ const m=document.getElementById('signin-msg'); if(m) m.textContent=(e&&e.code==='auth/popup-closed-by-user')?'':'Sign-in did not work ('+((e&&e.code)||e)+'). Try again.' });
-document.getElementById('btn-signin').onclick=signin;
-document.getElementById('btn-signin2').onclick=signin;
+document.getElementById('btn-signin2').onclick=()=>TeamSession.signOut();
 document.getElementById('btn-out').onclick=()=>TeamSession.signOut();
 TeamAdmin.start();
 </script>

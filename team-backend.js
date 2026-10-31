@@ -3,7 +3,7 @@
  * session only ever talks to this small interface, so tests can supply a fake.
  */
 import { getDatabase, ref, onValue, set, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, onIdTokenChanged, signInWithPopup, GoogleAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onIdTokenChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 export function makeBackend(app) {
   const db = getDatabase(app), auth = getAuth(app);
@@ -11,11 +11,6 @@ export function makeBackend(app) {
     onAuth(cb) {
       /* token changes too, so a verified email shows up without a reload */
       return onIdTokenChanged(auth, u => cb(u && !u.isAnonymous ? { uid: u.uid, email: u.email || '', emailVerified: !!u.emailVerified } : null));
-    },
-    signIn() {
-      const p = new GoogleAuthProvider();
-      p.setCustomParameters({ hd: 'hedinautomotive.co.uk', prompt: 'select_account' });
-      return signInWithPopup(auth, p);
     },
     signOut() { return signOut(auth); },
     /* a personal PIN: a six digit password on the work address. Firebase's own

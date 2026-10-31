@@ -6,7 +6,7 @@
  *   TeamSession.ready()            Promise of the state once it is known
  *   TeamSession.canManage()        Promise<boolean>
  *   TeamSession.onChange(fn)       fn(state) on every change
- *   TeamSession.signIn() / signOut(), signUpPin / signInPin / resetPin / resendVerification
+ *   TeamSession.signOut(), signUpPin / signInPin / resetPin / resendVerification
  *   TeamSession.paths()            { RL, RS } roots, lockup and shifts (test copies follow testMode)
  *   TeamSession.config()           the lockup config as last read (team and managers lists)
  *
@@ -97,7 +97,6 @@
     state: function () { return current; },
     canManage: function () { return ready().then(function (s) { return !!s.canManage; }); },
     onChange: function (fn) { listeners.push(fn); if (current) fn(current); },
-    signIn: function () { return B ? B.signIn() : Promise.reject(new Error('not started')); },
     signOut: function () { return B ? B.signOut() : Promise.resolve(); },
     signUpPin: function (e, p) { return B.signUpPin(e, p); },
     signInPin: function (e, p) { return B.signInPin(e, p); },

@@ -324,7 +324,7 @@ function chooser(on,date){
     return;
   }
   $('btn-cover').hidden=false;
-  $('t-who').innerHTML='Not signed in. <a href="team.html?next=lockup.html">Sign in with your work Google account</a> so your name goes on the record.';
+  $('t-who').innerHTML='Not signed in. <a href="team.html?next=lockup.html">Sign in with your work email and PIN</a> so your name goes on the record.';
   const me=$('btn-me'); me.hidden=!rost.length;
   me.outerHTML='<div id="btn-me"'+(rost.length?'':' hidden')+'>'+rost.map(id=>'<button class="big" type="button" data-id="'+esc(id)+'">I\u2019m '+esc(nameOf(id))+', start lockup</button>').join('')+'</div>';
   $('btn-me').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,rost));

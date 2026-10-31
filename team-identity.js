@@ -3,7 +3,7 @@
  * and scripts/test-team.js run exactly the same rules.
  *
  * One identity for every team system (Dan, 30 October 2026):
- *   - the Google account must be verified and @hedinautomotive.co.uk;
+ *   - the account must be a verified @hedinautomotive.co.uk address;
  *   - it is linked to a person on the lockup team list or managers list, by
  *     email (shifts/links/<uid> remembers the link once made);
  *   - admin  = the uid is on the Firebase staff list (staff/<uid>, Dan);

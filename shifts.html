@@ -151,15 +151,15 @@ select[data-off]{background:#0e1626;border:1px solid var(--line);border-radius:1
       <div class="kick">Team rota</div>
       <h1>Sign in with your work email</h1>
       <p class="muted">Shifts, days off, holidays and bank holidays. Use your <b>@hedinautomotive.co.uk</b> account.</p>
-      <button class="big" id="btn-signin" type="button">Sign in with Google</button>
+      <a class="big" id="btn-signin" href="team.html?next=shifts.html" style="display:block;text-align:center;text-decoration:none">Sign in on the team page</a>
       <p class="muted small" id="signin-msg" style="margin-top:12px"></p>
     </div>
   </section>
 
   <section id="v-wrong" hidden>
     <div class="card"><b>That isn&rsquo;t a work account</b>
-      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Sign in with your Hedin address (it has to be verified by Google).</p>
-      <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
+      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Sign in with your Hedin address and PIN on the team page.</p>
+      <button class="big" id="btn-signin2" type="button">Sign out and try again</button>
     </div>
   </section>
 
@@ -197,7 +197,7 @@ select[data-off]{background:#0e1626;border:1px solid var(--line);border-radius:1
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 const app=initializeApp(firebaseConfig), db=getDatabase(app), auth=getAuth(app);
 
@@ -205,7 +205,6 @@ const app=initializeApp(firebaseConfig), db=getDatabase(app), auth=getAuth(app);
    written against this small interface, so it can be tested with a fake */
 const backend={
   onAuth(cb){ return onAuthStateChanged(auth,u=>cb(u&&!u.isAnonymous?{uid:u.uid,email:u.email||'',emailVerified:!!u.emailVerified}:null)) },
-  signIn(){ const p=new GoogleAuthProvider(); p.setCustomParameters({hd:'hedinautomotive.co.uk',prompt:'select_account'}); return signInWithPopup(auth,p) },
   signOut(){ return signOut(auth) },
   watch(path,cb){ return onValue(ref(db,path),s=>cb(s.val()),err=>console.warn('shifts: '+path+' '+(err&&err.code))) },
   set(path,v){ return set(ref(db,path),v) },
@@ -216,9 +215,7 @@ const backend={
 };
 window.ShiftsApp.start(backend);
 document.getElementById('btn-out').onclick=()=>signOut(auth);
-const signin=()=>backend.signIn().catch(e=>{ const m=document.getElementById('signin-msg'); if(m) m.textContent=(e&&e.code==='auth/popup-closed-by-user')?'':'Sign-in did not work ('+((e&&e.code)||e)+'). Try again.' });
-document.getElementById('btn-signin').onclick=signin;
-document.getElementById('btn-signin2').onclick=signin;
+document.getElementById('btn-signin2').onclick=()=>signOut(auth);
 </script>
 </body>
 </html>
