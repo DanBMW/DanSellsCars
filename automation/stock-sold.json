@@ -25,7 +25,7 @@
    "reg": "LX74HTE",
    "mileage": "19,948 miles",
    "colour": "Black",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "196 hp",
@@ -42,7 +42,7 @@
    "reg": "LX75FZO",
    "mileage": "10,015 miles",
    "colour": "Grey",
-   "fuel": "Petrol",
+   "fuel": "Petrol (mild hybrid)",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "170 hp",
@@ -450,7 +450,7 @@
    "reg": "LX72JVG",
    "mileage": "24,990 miles",
    "colour": "Black",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "286 hp",
@@ -501,7 +501,7 @@
    "reg": "RX24JPF",
    "mileage": "4,058 miles",
    "colour": "Grey",
-   "fuel": "Petrol",
+   "fuel": "Petrol (mild hybrid)",
    "fuelGroup": "Petrol",
    "body": "Estate",
    "power": "374 hp",
@@ -765,23 +765,6 @@
    "price": "£19,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a16d39-8ed0-722b-8175-3e067e879e86-preview.jpg"
   },
-  "257458": {
-   "id": "257458",
-   "model": "BMW 320i M Sport Saloon",
-   "series": "3 Series",
-   "year": "2024",
-   "reg": "YK24BCP",
-   "mileage": "15,582 miles",
-   "colour": "Grey",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "Saloon",
-   "power": "182 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£31,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18122-fd84-7aa3-9209-609b77b2f6e6-preview.jpg"
-  },
   "257614": {
    "id": "257614",
    "model": "BMW X1 sDrive18d M Sport",
@@ -797,7 +780,7 @@
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£30,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1681c-53fb-75a1-8b68-38ef4038600a-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18c21-37bf-75bf-9be1-49efdc758644-preview.jpg"
   },
   "240864": {
    "id": "240864",
@@ -815,23 +798,6 @@
    "seats": "5",
    "price": "£27,800",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a185e9-588c-760b-871c-848d217961a4-preview.jpg"
-  },
-  "258089": {
-   "id": "258089",
-   "model": "BMW 118i M Sport Shadow Edition 5-door",
-   "series": "1 Series",
-   "year": "2018",
-   "reg": "LV68DWW",
-   "mileage": "58,158 miles",
-   "colour": "Blue",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "Hatchback",
-   "power": "135 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£13,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-9703-7a59-8c66-c624abd97794-preview.jpg"
   },
   "258087": {
    "id": "258087",
@@ -900,47 +866,43 @@
    "seats": "5",
    "price": "£20,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1872c-395a-795d-b876-fafd950fff75-preview.jpg"
+  },
+  "251472": {
+   "id": "251472",
+   "model": "BMW 520d M Sport Saloon",
+   "series": "5 Series",
+   "year": "2022",
+   "reg": "HX22WUP",
+   "mileage": "22,754 miles",
+   "colour": "Black",
+   "fuel": "Diesel (mild hybrid)",
+   "fuelGroup": "Diesel",
+   "body": "Saloon",
+   "power": "189 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£25,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0dc01-6fbf-7c59-be08-cc4529d450b4-preview.jpg"
+  },
+  "249631": {
+   "id": "249631",
+   "model": "BMW X3 xDrive20d M Sport",
+   "series": "X3",
+   "year": "2020",
+   "reg": "PX20KHZ",
+   "mileage": "28,232 miles",
+   "colour": "Grey",
+   "fuel": "Diesel",
+   "fuelGroup": "Diesel",
+   "body": "SUV",
+   "power": "189 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£25,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18d9a-69b9-7f45-a004-07af02ee0b47-preview.jpg"
   }
  },
  "sold": {
-  "256419": {
-   "id": "256419",
-   "model": "BMW 120 M Sport",
-   "series": "1 Series",
-   "year": "2026",
-   "reg": "LV26JYS",
-   "mileage": "5,572 miles",
-   "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
-   "fuelGroup": "Petrol",
-   "body": "Hatchback",
-   "power": "170 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£26,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13fb6-ead1-7b77-8cbc-fdae3beecc1e-preview.jpg",
-   "first_missing": "2026-10-23",
-   "runs_missing": 67
-  },
-  "254664": {
-   "id": "254664",
-   "model": "BMW X5 M Competition",
-   "series": "X5",
-   "year": "2022",
-   "reg": "RJ22DWF",
-   "mileage": "28,295 miles",
-   "colour": "Grey",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "SUV",
-   "power": "624 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£69,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a134cc-3658-710b-9771-1d3b59697602-preview.jpg",
-   "first_missing": "2026-10-23",
-   "runs_missing": 67
-  },
   "247743": {
    "id": "247743",
    "model": "BMW X7 xDrive40d M Sport",
@@ -958,7 +920,7 @@
    "price": "£79,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a04286-f17c-7d3c-8c23-f96f4223d138-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 36
+   "runs_missing": 37
   },
   "242787": {
    "id": "242787",
@@ -977,7 +939,7 @@
    "price": "£49,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f8411-e6e4-7ed2-9489-b93c79f09ca5-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 36
+   "runs_missing": 37
   },
   "247744": {
    "id": "247744",
@@ -996,7 +958,7 @@
    "price": "£57,495",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1788d-47c2-702a-8c8c-88f596874a9b-preview.jpg",
    "first_missing": "2026-10-27",
-   "runs_missing": 33
+   "runs_missing": 34
   },
   "253491": {
    "id": "253491",
@@ -1015,26 +977,7 @@
    "price": "£66,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a120a5-a502-7e0e-9529-81ac02e2a986-preview.jpg",
    "first_missing": "2026-10-28",
-   "runs_missing": 23
-  },
-  "251472": {
-   "id": "251472",
-   "model": "BMW 520d M Sport Saloon",
-   "series": "5 Series",
-   "year": "2022",
-   "reg": "HX22WUP",
-   "mileage": "22,754 miles",
-   "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
-   "fuelGroup": "Diesel",
-   "body": "Saloon",
-   "power": "189 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£25,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0dc01-6fbf-7c59-be08-cc4529d450b4-preview.jpg",
-   "first_missing": "2026-10-28",
-   "runs_missing": 23
+   "runs_missing": 24
   },
   "236110": {
    "id": "236110",
@@ -1053,10 +996,48 @@
    "price": "£34,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a14227-6431-77f8-b126-c378c26fbcd1-preview.jpg",
    "first_missing": "2026-10-29",
-   "runs_missing": 13
+   "runs_missing": 14
+  },
+  "257458": {
+   "id": "257458",
+   "model": "BMW 320i M Sport Saloon",
+   "series": "3 Series",
+   "year": "2024",
+   "reg": "YK24BCP",
+   "mileage": "15,582 miles",
+   "colour": "Grey",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "Saloon",
+   "power": "182 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£31,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18122-fd84-7aa3-9209-609b77b2f6e6-preview.jpg",
+   "first_missing": "2026-10-31",
+   "runs_missing": 1
+  },
+  "258089": {
+   "id": "258089",
+   "model": "BMW 118i M Sport Shadow Edition 5-door",
+   "series": "1 Series",
+   "year": "2018",
+   "reg": "LV68DWW",
+   "mileage": "58,158 miles",
+   "colour": "Blue",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "Hatchback",
+   "power": "135 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£13,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-9703-7a59-8c66-c624abd97794-preview.jpg",
+   "first_missing": "2026-10-31",
+   "runs_missing": 1
   }
  },
- "updated": "2026-10-30",
+ "updated": "2026-10-31",
  "confirm_runs": 1,
  "keep_days": 7
 }

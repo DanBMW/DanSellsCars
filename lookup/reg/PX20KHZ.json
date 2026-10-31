@@ -16,20 +16,13 @@
  "trim": "M Sport",
  "price": "£25,500",
  "price_gbp": 25500,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-5625-78e1-a484-2d4412588956-preview.jpg",
- "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-5625-78e1-a484-2d4412588956-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-56da-7791-8629-ec7fef30a79e-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-576f-7391-9b12-ec32a9d32363-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-58a5-72ee-a3d5-18aa7b454568-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-5944-75ce-bc57-88db4b39c7fd-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a09f76-59e5-70e6-a279-72b53f7a9081-enlarged.jpg"
- ],
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18d9a-69b9-7f45-a004-07af02ee0b47-preview.jpg",
+ "images": null,
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/249631/pb-bmw-x3-2020",
  "listing_id": "249631",
  "source": "forecourt",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-10-21",
- "available_until": "2026-11-20"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }

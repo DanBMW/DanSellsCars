@@ -27,7 +27,7 @@
  "listing_id": "258089",
  "source": "forecourt",
  "finance": null,
- "status": "in_stock",
- "removed_at": null,
- "available_until": null
+ "status": "removed",
+ "removed_at": "2026-10-31",
+ "available_until": "2026-11-30"
 }
