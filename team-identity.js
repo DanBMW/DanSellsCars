@@ -39,7 +39,7 @@
 
   /* i = { user, team, managers, link, staffAdmin, shiftsManagers }
      returns { status, personId, name, role, admin, canManage, linkNeeded }
-     status: signedout | wrongdomain | unverified | unlinked | team
+     status: signedout | wrongdomain | unverified | unlinked | inactive | team
      Management is Nathan, Will and Sergio (the lockup managers list) plus anyone
      given manager access in shifts/managers. Admin is the creator (Dan) and the
      Firebase staff list. */
@@ -53,7 +53,11 @@
     var personId = i.link || (match && match.id) || null;
     if (!personId) return Object.assign(base, { status: 'unlinked' });
     var list = (i.team && i.team[personId]) || (i.managers && i.managers[personId]) || null;
+    /* a link to someone no longer on either list is not a person at all */
+    if (!list) return Object.assign(base, { status: 'unlinked', personId: null });
     var admin = i.staffAdmin === true || lower(i.user.email) === CREATOR;
+    /* taken off the team (Active off) ends access, but the creator is never locked out */
+    if (list.active === false && !admin) return Object.assign(base, { status: 'inactive', personId: personId, name: list.name });
     var manager = admin || !!(i.shiftsManagers && i.shiftsManagers[personId] === true) || !!(i.managers && i.managers[personId]);
     return {
       status: 'team', personId: personId, name: list ? list.name : personId,
@@ -88,6 +92,9 @@
     if (String(p.fullName || '').length > 60) errs.push('The full name is too long.');
     if (!DOMAIN.test(String(p.email || '').trim())) errs.push('Use their Hedin work address (name@hedinautomotive.co.uk).');
     if (DAYS.indexOf(p.off || '') < 0) errs.push('Pick a usual day off, or none.');
+    /* sign in links people by work address, so two people on one address would link to the wrong one */
+    var mine = lower(p.email);
+    if ((opts.others || []).some(function (o) { return o.id !== opts.id && lower(o.email) === mine; })) errs.push('Another person already uses that work address.');
     if (p.order != null && (!(+p.order >= 0) || +p.order > 99)) errs.push('Order has to be between 0 and 99.');
     return errs;
   }

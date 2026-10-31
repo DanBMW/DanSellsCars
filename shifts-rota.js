@@ -307,7 +307,9 @@
   function whoIn(ctx, from, to) {
     return rangeDates(from, to).map(function (d) {
       var c = countDay(ctx, d), away = LR.absentOn(ctx.absences, d);
-      var awayList = Object.keys(away).filter(function (id) { return ctx.team[id]; }).map(function (id) {
+      /* only someone who would otherwise be on counts as away: a holiday on a usual day off is not a day lost */
+      var noAway = Object.assign({}, ctx, { absences: {} });
+      var awayList = Object.keys(away).filter(function (id) { return ctx.team[id] && personDay(noAway, id, d).on; }).map(function (id) {
         var a = Object.keys(ctx.absences).map(function (k) { return ctx.absences[k]; })
           .filter(function (x) { return x && x.personId === id && x.kind !== 'works' && x.status !== 'cancelled' && x.from <= d && d <= x.to; })[0] || {};
         return { id: id, kind: away[id], note: a.note || '' };

@@ -257,4 +257,13 @@ const count = (c, date) => S.countDay(c, date);
   console.log('ok: handover is a minimum on open days, a warning rather than a block on requests, and the week view keeps notes');
 }
 
+/* ---- the week view: a holiday on a usual day off is not a day lost ---- */
+{
+  const w = S.whoIn(ctx({ absences: { h: hol('dan', '2026-11-02', '2026-11-02') } }), '2026-11-02', '2026-11-02')[0];
+  assert.strictEqual(w.away.length, 0, 'Dan is not working Monday, so a holiday that day is not away');
+  const w2 = S.whoIn(ctx({ absences: { h: hol('dan', '2026-11-03', '2026-11-03') } }), '2026-11-03', '2026-11-03')[0];
+  assert.deepStrictEqual(w2.away.map(a => a.id), ['dan'], 'but Dan on a Tuesday he works is away');
+  console.log('ok: the week view lists only people who would otherwise be working as away');
+}
+
 console.log('all shifts tests passed');

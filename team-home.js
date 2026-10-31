@@ -105,14 +105,16 @@
 
   /* ?next=page.html: a manager sends people here to sign in, then straight back.
      Only a plain page name in this folder is followed. */
+  var TEAM_PAGES = ['lockup.html', 'Forecourt.html', 'team-board.html', 'shifts.html', 'team-admin.html', 'team.html'];
   function nextPage() {
     var n = new URLSearchParams(location.search).get('next') || '';
-    return /^[A-Za-z0-9_-]+\.html$/.test(n) ? n : '';
+    /* only the team's own pages: a manager is sent back to one of these and nowhere else */
+    return TEAM_PAGES.indexOf(n) >= 0 ? n : '';
   }
 
   /* ---- drawing ---- */
   function show(view) {
-    ['loading', 'signin', 'unverified', 'wrong', 'unlinked', 'home'].forEach(function (x) { $('v-' + x).hidden = x !== view; });
+    ['loading', 'signin', 'unverified', 'wrong', 'unlinked', 'inactive', 'home'].forEach(function (x) { $('v-' + x).hidden = x !== view; });
     $('btn-out').hidden = view !== 'home';
   }
   function paint() {
@@ -125,6 +127,7 @@
     if (st.status === 'unverified') { $('unv-email').textContent = TS.email(); $('bottomnav').hidden = true; show('unverified'); return; }
     if (st.status === 'wrongdomain') { $('wrong-email').textContent = (TS.email()) || ''; show('wrong'); return; }
     if (st.status === 'unlinked') { $('unlinked-email').textContent = TS.email(); show('unlinked'); return; }
+    if (st.status === 'inactive') { show('inactive'); return; }
     if (st.status === 'loading') { $('loading-msg').textContent = 'Loading…'; show('loading'); return; }
     if (!Object.keys(TS.config().team || {}).length) {
       $('loading-msg').textContent = 'The team list is not set up on this copy yet. Open lockup.html once, then come back.';

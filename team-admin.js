@@ -43,8 +43,14 @@
   function whoName() { var s = TS.state(); return s && s.name ? s.name : 'someone'; }
 
   /* ---- writes (admins only; the UI hides them otherwise) ---- */
+  /* everyone on either list, for the one-address-one-person check */
+  function others() {
+    var c = config(), out = [];
+    [c.team || {}, c.managers || {}].forEach(function (g) { Object.keys(g).forEach(function (id) { out.push({ id: id, email: (g[id] || {}).email }); }); });
+    return out;
+  }
   function savePerson(list, id, f) {
-    var errs = TI.validPerson(f, { isNew: false });
+    var errs = TI.validPerson(f, { isNew: false, id: id, others: others() });
     if (errs.length) { toast(errs[0]); return Promise.resolve(false); }
     var path = 'lockup/config/' + list + '/' + id;
     var val = { name: f.name.trim(), fullName: (f.fullName || '').trim(), email: f.email.trim().toLowerCase(), off: f.off || null, order: +f.order || 0 };
@@ -58,7 +64,7 @@
   function addPerson(list, f) {
     var c = config(), taken = Object.keys(c.team || {}).concat(Object.keys(c.managers || {}));
     var id = (f.id || TI.newPersonId(f.name, taken)).trim();
-    var errs = TI.validPerson(f, { isNew: true, id: id, taken: taken });
+    var errs = TI.validPerson(f, { isNew: true, id: id, taken: taken, others: others() });
     if (errs.length) { toast(errs[0]); return Promise.resolve(false); }
     var val = { name: f.name.trim(), fullName: (f.fullName || '').trim(), email: f.email.trim().toLowerCase(), order: +f.order || 0 };
     if (f.off) val.off = f.off;
@@ -96,7 +102,7 @@
 
   /* ---- drawing ---- */
   function show(view) {
-    ['loading', 'signin', 'wrong', 'unlinked', 'app'].forEach(function (x) { $('v-' + x).hidden = x !== view; });
+    ['loading', 'signin', 'wrong', 'unlinked', 'inactive', 'app'].forEach(function (x) { $('v-' + x).hidden = x !== view; });
     $('btn-out').hidden = view !== 'app';
   }
   function personRow(list, id, p, admin) {
@@ -167,6 +173,7 @@
     if (st.status === 'signedout') { show('signin'); return; }
     if (st.status === 'wrongdomain' || st.status === 'unverified') { $('wrong-email').textContent = TS.email(); show('wrong'); return; }
     if (st.status === 'unlinked') { $('unlinked-email').textContent = TS.email(); show('unlinked'); return; }
+    if (st.status === 'inactive') { show('inactive'); return; }
     if (st.status !== 'team') { $('loading-msg').textContent = 'Loading…'; show('loading'); return; }
     if (!st.canManage) {
       $('loading-msg').textContent = 'The team admin is for managers and admins.';

@@ -76,8 +76,10 @@
     Object.keys(st.D.status || {}).forEach(function (d) { if (st.D.status[d] && st.D.status[d].state === 'signed') o[d] = 1; });
     return o;
   }
-  function isAdmin() { return !!st.D.admin; }
-  function isMgr() { return !!st.me && (st.D.admin || st.D.managers[st.me] === true); }
+  /* admin: the staff list or the creator's verified work address. Management: the admin, anyone on the
+     lockup managers list (Nathan, Will, Sergio), or an extra manager flagged in shifts/managers. Same rules as team-identity.js */
+  function isAdmin() { return !!(st.D.admin || (st.user && st.user.emailVerified && String(st.user.email || '').toLowerCase() === (root.TeamIdentity && root.TeamIdentity.CREATOR))); }
+  function isMgr() { return !!st.me && (isAdmin() || st.D.managers[st.me] === true || !!mgrCfg()[st.me]); }
   function plusMonths(date, n) { var a = date.split('-'); var d = new Date(Date.UTC(+a[0], +a[1] - 1 + n, 1)); return d.toISOString().slice(0, 7) + '-01'; }
   function daysInMonth(ym) { var a = ym.split('-'); return new Date(Date.UTC(+a[0], +a[1], 0)).getUTCDate(); }
 
@@ -829,6 +831,8 @@
     var linked = st.D.link || null;
     var fromEmail = personForEmail(st.user.email);
     st.me = linked || fromEmail || null;
+    /* taken off the team (Active off): no access to the calendar either */
+    if (st.me && teamCfg()[st.me] && teamCfg()[st.me].active === false && !isAdmin()) st.me = null;
     if (st.D.linkLoaded && !linked && fromEmail && !linking) {
       linking = true;
       B.set(st.RS + '/links/' + st.user.uid, fromEmail).catch(function (e) { console.error('link', e); }).then(function () { linking = false; });

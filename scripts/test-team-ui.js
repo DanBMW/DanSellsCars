@@ -583,7 +583,7 @@ async function extraScenarios(browser, base) {
     await p.click('#cal .dc[data-day="2026-11-10"]').catch(() => {});
     await p.waitForTimeout(150);
     await p.click('#sheet [data-close]').catch(() => {});
-    await p.click('#cal .dc[data-day="2026-11-10"]');
+    await p.click('#cal .dc[data-day="2026-11-11"]');
     await p.waitForSelector('#m-sheet.show');
     check('notes: the day sheet shows why someone is away, in their own words', /Carl holiday/.test(await txt(p, '#sheet')), (await txt(p, '#sheet')).slice(0, 200));
     await p.close();
@@ -604,6 +604,76 @@ async function extraScenarios(browser, base) {
   }
 }
 
+
+/* ---------- bugs found in the second pass: each one has a check here ---------- */
+async function bugScenarios(browser, base) {
+  /* a. Will is management from the lockup list alone: no shifts flag, so he gets the manager tabs on the calendar */
+  {
+    const data = JSON.parse(JSON.stringify(FIX)); data.shifts.managers = {};
+    const p = await open(browser, base, null, '/shifts.html', U.will, { data });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    check('calendar: Will is management from the lockup list, no extra flag needed (five tabs)', (await p.locator('#tabs button').count()) === 5, 'got ' + (await p.locator('#tabs button').count()));
+    await p.close();
+  }
+  /* b. Dan on his work account is admin on the calendar with no staff entry: he can approve */
+  {
+    const data = JSON.parse(JSON.stringify(FIX)); data.shifts.managers = {};
+    const p = await open(browser, base, null, '/shifts.html', U.creator, { data });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    check('calendar: the creator is admin on the calendar with no staff entry (manager tabs)', (await p.locator('#tabs button').count()) === 5);
+    await p.close();
+  }
+  /* c. a person taken off the team loses access: the team home says so, and the calendar treats them as not on the team */
+  {
+    const data = JSON.parse(JSON.stringify(FIX)); data.lockup.config.team.tomi.active = false;
+    const p = await open(browser, base, null, '/team.html', U.tomi, { data });
+    await p.waitForSelector('#v-inactive:not([hidden])', { timeout: 8000 });
+    check('home: a person taken off the team is told their access has ended, with no tiles', (await p.locator('#cards a').count()) === 0);
+    await p.close();
+  }
+  /* d. the manager redirect only goes to the team's own pages */
+  {
+    const p = await open(browser, base, null, '/team.html?next=desk.html', U.will);
+    await p.waitForSelector('#v-home:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(400);
+    check('redirect: a manager is not sent to a page outside the team set (desk.html)', /team\.html/.test(p.url()), p.url());
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team.html?next=' + encodeURIComponent('//evil.example/x.html'), U.will);
+    await p.waitForSelector('#v-home:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(400);
+    check('redirect: an off-site address is ignored (we stay on this site)', new URL(p.url()).host === new URL(base).host && /team\.html/.test(p.url()), p.url());
+    await p.close();
+  }
+  /* f. the admin panel refuses an address another person already uses */
+  {
+    const p = await open(browser, base, null, '/team-admin.html', U.dan);
+    await p.waitForSelector('#v-app:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(300);
+    await p.locator('[data-edit="team|carl"]').click();
+    await p.waitForSelector('#pf');
+    await p.fill('#pf [name=email]', 'tomiwa.adelaja@hedinautomotive.co.uk');
+    await p.click('#pf button[type=submit]');
+    await p.waitForTimeout(250);
+    const st = await store(p);
+    check('admin: a second person on Tomi\u2019s work address is refused, nothing written', at(st.data, 'lockup/config/team/carl').email === 'carl.hadwin@hedinautomotive.co.uk' && !st.log.some(l => /config\/team\/carl/.test(l[1])));
+    await p.close();
+  }
+  /* e. narrow phones (320px): no page runs off the side */
+  for (const url of ['/team.html', '/team-admin.html', '/shifts.html']) {
+    const p = await open(browser, base, null, url, url === '/team-admin.html' ? U.dan : U.tomi, { viewport: { width: 320, height: 640 } });
+    await p.waitForTimeout(900);
+    const over = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    check('phone 320px: ' + url + ' does not scroll sideways', over <= 0, 'overflows by ' + over + 'px');
+    await p.close();
+  }
+}
+
 const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -613,6 +683,7 @@ const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
   try {
     await scenarios(browser, base);
     await extraScenarios(browser, base);
+    await bugScenarios(browser, base);
   } catch (e) {
     console.log('FAIL scenario crashed: ' + (e && e.message));
     CHECKS.push({ name: 'run', ok: false });

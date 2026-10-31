@@ -58,7 +58,15 @@ s = T.resolve(Object.assign({}, base, { user: ok('new.address@hedinautomotive.co
 assert.deepStrictEqual([s.status, s.personId], ['team', 'carl']);
 // a link to someone who has since gone from the list is not a person
 s = T.resolve(Object.assign({}, base, { user: ok('new.address@hedinautomotive.co.uk'), link: 'gone' }));
-assert.strictEqual(s.personId, 'gone', 'the link is kept; the cards still show, the name falls back to the id');
+assert.deepStrictEqual([s.status, s.personId], ['unlinked', null], 'a link to someone no longer on either list is not a person');
+console.log('ok: a link to someone removed from both lists is unlinked');
+// taken off the team (Active off): access ends, but the creator is never locked out
+const off = Object.assign({}, base, { team: Object.assign({}, team, { tomi: Object.assign({}, team.tomi, { active: false }) }) });
+s = T.resolve(Object.assign({}, off, { user: ok('tomiwa.adelaja@hedinautomotive.co.uk'), link: 'tomi' }));
+assert.deepStrictEqual([s.status, s.personId, s.name], ['inactive', 'tomi', 'Tomi']);
+s = T.resolve(Object.assign({}, off, { user: ok('daniel.cane@hedinautomotive.co.uk'), link: 'dan' }));
+assert.strictEqual(s.status, 'team', 'the creator is never locked out');
+console.log('ok: a person taken off the team is inactive; the creator is not');
 console.log('ok: admin, manager and staff roles come from the staff list, the managers list and the link');
 
 // the home cards: team members see the four systems, admins also see the admin panel
@@ -80,6 +88,11 @@ assert.ok(T.validPerson(good, { isNew: true, id: 'Bad Id!' }).length >= 1, 'bad 
 assert.ok(T.validPerson(good, { isNew: true, id: 'tomi', taken: ['tomi'] }).length >= 1, 'taken id refused');
 assert.ok(T.validPerson(Object.assign({}, good, { order: 150 })).length === 1, 'order out of range refused');
 assert.strictEqual(T.validPerson(Object.assign({}, good, { name: 'x'.repeat(41) })).length, 1);
+// one work address, one person: a second person on the same address is refused, their own address is not
+const others = [{ id: 'tomi', email: 'tomiwa.adelaja@hedinautomotive.co.uk' }, { id: 'carl', email: 'carl.hadwin@hedinautomotive.co.uk' }];
+assert.ok(T.validPerson({ name: 'Jack', email: 'Tomiwa.Adelaja@hedinautomotive.co.uk', off: 'wed' }, { isNew: true, id: 'jack', others }).some(e => /already uses/.test(e)), 'a duplicate address, any case, is refused');
+assert.deepStrictEqual(T.validPerson({ name: 'Tomi', email: 'tomiwa.adelaja@hedinautomotive.co.uk', off: 'fri' }, { id: 'tomi', others }), [], 'a person keeps their own address');
+console.log('ok: two people cannot share a work address');
 console.log('ok: the admin panel refuses a bad email, day, id, order or name');
 
 // ids from names are unique and safe
