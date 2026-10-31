@@ -23,7 +23,7 @@
 (function (root) {
   var LR = (typeof module !== 'undefined' && module.exports) ? require('./lockup-rota.js') : root.LockupRota;
 
-  var DEFAULT_CONFIG = { weekdayMin: 5, saturdayMin: 7, bhStaff: 4, bhExclude: ['molly', 'chloe'], switchesPerWeek: 1, swapNeedsApproval: false, handoverMin: 1, handoverIds: ['chloe', 'molly'] };
+  var DEFAULT_CONFIG = { weekdayMin: 5, saturdayMin: 7, bhStaff: 4, bhExclude: ['molly', 'chloe'], switchesPerWeek: 1, swapNeedsApproval: false, handoverMin: 1, handoverIds: ['chloe', 'molly'], countExclude: ['chloe', 'molly', 'elvis'] };
 
   /* a list stored as an array, as {id: true}, as {0: id, 1: id} or as one string */
   function listOf(v) {
@@ -41,6 +41,7 @@
     });
     c.bhExclude = listOf(c.bhExclude);
     c.handoverIds = listOf(c.handoverIds);
+    c.countExclude = listOf(c.countExclude);
     return c;
   }
   function dowOf(date) { return LR.london(new Date(date + 'T12:00:00Z')).dow; }
@@ -128,15 +129,19 @@
     var hCount = kind === 'closed' ? 0 : ids.filter(function (id) { return hIds.indexOf(id) >= 0; }).length;
     var hApplies = kind === 'weekday' || kind === 'sat';
     var hMin = hApplies ? ctx.config.handoverMin : 0;
-    var staffOk = kind === 'closed' || ids.length >= min;
+    /* the minimum counts sales executives only: not the handover team, not
+       Elvis, not managers (who are not on the team list) */
+    var ex = ctx.config.countExclude || [];
+    var sales = ids.filter(function (id) { return ex.indexOf(id) < 0 && !(ctx.managers && ctx.managers[id]); });
+    var staffOk = kind === 'closed' || sales.length >= min;
     var handoverOk = !hApplies || hCount >= hMin;
     var ok = staffOk && handoverOk;
     var reasons = [];
     if (!staffOk) reasons.push('staff');
     if (!handoverOk) reasons.push('handover');
     return {
-      date: date, dow: dowOf(date), kind: kind, count: ids.length, min: min, ids: ids, ok: ok,
-      short: staffOk ? 0 : min - ids.length, noRota: kind === 'bh' && !ctx.bh[date],
+      date: date, dow: dowOf(date), kind: kind, count: sales.length, min: min, ids: ids, salesIds: sales, ok: ok,
+      short: staffOk ? 0 : min - sales.length, noRota: kind === 'bh' && !ctx.bh[date],
       handover: { count: hCount, min: hMin, ok: handoverOk }, reasons: reasons
     };
   }

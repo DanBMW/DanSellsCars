@@ -3,7 +3,7 @@
    Network first, so a new push shows up on the next open; the cache is only
    a fallback when there is no signal. Bump VERSION to clear old copies. */
 'use strict';
-const VERSION = 'team-v1';
+const VERSION = 'team-v2';
 const PAGES = ['/team.html', '/shifts.html', '/team-admin.html', '/lockup.html', '/Forecourt.html'];
 const FILES = ['/team.css', '/favicon.svg', '/apple-touch-icon.png', '/team-icon-192.png', '/team-icon-512.png', '/team.webmanifest', '/team-pwa.js',
   '/lockup-rota.js', '/shifts-rota.js', '/shifts-app.js', '/team-home.js', '/team-identity.js', '/team-session.js', '/team-admin.js',

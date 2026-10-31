@@ -77,7 +77,8 @@
     return o;
   }
   function isAdmin() { return !!st.D.admin; }
-  function isMgr() { return !!st.me && (st.D.admin || st.D.managers[st.me] === true); }
+  /* manager = admin, shifts/managers, or on the lockup managers list (Nathan, Will, Sergio); the rules accept all three */
+  function isMgr() { return !!st.me && (st.D.admin || st.D.managers[st.me] === true || !!mgrCfg()[st.me]); }
   function plusMonths(date, n) { var a = date.split('-'); var d = new Date(Date.UTC(+a[0], +a[1] - 1 + n, 1)); return d.toISOString().slice(0, 7) + '-01'; }
   function daysInMonth(ym) { var a = ym.split('-'); return new Date(Date.UTC(+a[0], +a[1], 0)).getUTCDate(); }
 

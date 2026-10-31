@@ -156,6 +156,9 @@ await t('the creator is admin with no staff entry: changes the settings', set(re
 await t('the creator is admin: adds a manager flag', set(ref(CR, 'shifts/managers/sergio'), true), 'allow');
 await t('an unverified creator address is not admin', set(ref(UC, 'shifts/managers/carl'), true), 'deny');
 await t('Nathan, on the management list, approves a request', update(ref(NA, 'shifts/requests/r1'), { status: 'approved', decidedBy: 'Nathan', decidedAt: 5 }), 'allow');
+await t('Nathan, on the lockup managers list only, books annual leave for Karis with no Ciphr tick', set(ref(NA, 'shifts/requests/n1'), { personId: 'karis', kind: 'holiday', from: '2026-11-26', to: '2026-11-26', status: 'approved', ts: 11, by: 'Nathan', decidedBy: 'Nathan', decidedAt: 11 }), 'allow');
+await t('Nathan writes that leave to lockup absences for Karis', set(ref(NA, 'lockup/absences/n1'), { personId: 'karis', from: '2026-11-26', to: '2026-11-26', kind: 'holiday', status: 'approved', ts: 11 }), 'allow');
+await t('Nathan books a lieu day for Karis', set(ref(NA, 'shifts/requests/n2'), { personId: 'karis', kind: 'lieu', from: '2026-11-27', to: '2026-11-27', status: 'approved', ts: 12, by: 'Nathan', decidedBy: 'Nathan', decidedAt: 12 }), 'allow');
 await t('Nathan, on the management list, cannot make managers (admin only)', set(ref(NA, 'shifts/managers/nobody'), true), 'deny');
 await t('the creator writes to the test copy as well', set(ref(CR, 'shiftsTest/config/weekdayMin'), 5), 'allow');
 // the Ciphr reference on a leave request: optional, short

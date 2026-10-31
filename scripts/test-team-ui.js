@@ -606,6 +606,24 @@ async function extraScenarios(browser, base) {
     await p.screenshot({ path: path.join(OUT, 'calendar-phone-android.png'), fullPage: false });
     await p.close();
   }
+  /* i2. Nathan is on the lockup managers list only (no shifts/managers flag, as live): he can add leave for anyone, no Ciphr tick */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.nathan);
+    await p.waitForSelector('#fab', { timeout: 8000 });
+    await setNow(p, '2026-11-02'); await p.waitForTimeout(200);
+    await p.click('#fab'); await p.waitForSelector('#m-sheet.show');
+    check('lockup manager: Nathan sees Add an entry for anyone', (await txt(p, '#sheet')).indexOf('Add an entry for anyone') >= 0);
+    await p.click('#sheet [data-act="mgr-holiday"]'); await p.waitForSelector('#rq-form');
+    check('lockup manager: no Ciphr tick on the manager form', (await p.locator('#rq-form [name=ciphrOk]').count()) === 0);
+    await p.selectOption('#rq-form [name=personId]', 'karis'); await p.selectOption('#rq-form [name=kind]', 'holiday');
+    await p.fill('#rq-form [name=from]', '2026-11-26'); await p.fill('#rq-form [name=to]', '2026-11-26'); await p.waitForTimeout(150);
+    await p.screenshot({ path: path.join(OUT, 'nathan-manager-entry.png') });
+    await p.click('#rq-go'); await p.waitForTimeout(400);
+    const st = await store(p);
+    check('lockup manager: annual leave for Karis is booked by Nathan', Object.values(st.data.shifts.requests).some(r => r.kind === 'holiday' && r.personId === 'karis' && r.from === '2026-11-26' && r.status === 'approved'));
+    check('lockup manager: no page errors', p.__errors.length === 0, p.__errors.join(' | '));
+    await p.__ctx.close();
+  }
   /* j. day off switch, training, manager entries and swaps without approval */
   {
     const SO = process.env.SHOTS_DIR;

@@ -14,7 +14,28 @@ team.chloe = { name: 'Chloe', fullName: 'Chloe', email: 'chloe@example.test', of
 team.molly = { name: 'Molly', fullName: 'Molly', email: 'molly@example.test', off: 'thu', fixed: ['mon'], active: true, order: 8 };
 
 const TODAY = '2026-10-30';
-const ctx = (extra) => S.makeCtx(Object.assign({ team, today: TODAY, holidays: {}, closed: {}, absences: {}, bh: {}, config: {} }, extra || {}));
+/* the request logic below was written against a head count of the whole team list;
+   countExclude: [] keeps those scenarios, and 'sales executives only' has its own block */
+const ctx = (extra) => { const o = Object.assign({ team, today: TODAY, holidays: {}, closed: {}, absences: {}, bh: {}, config: {} }, extra || {}); o.config = Object.assign({ countExclude: [] }, o.config); return S.makeCtx(o); };
+const salesCtx = (extra) => S.makeCtx(Object.assign({ team: Object.assign({}, team, { elvis: { name: 'Elvis', off: 'sun', active: true, order: 20 } }), managers: { nathan: { name: 'Nathan' }, will: { name: 'Will' }, sergio: { name: 'Sergio' } }, today: TODAY, holidays: {}, closed: {}, absences: {}, bh: {}, config: {} }, extra || {}));
+
+/* ---- the minimum counts sales executives only ---- */
+{
+  const c = salesCtx();
+  // Tue 3 Nov: Carl, Clive, Chloe off. In: Dan, Danny, Karis, Mon, Tomi, Molly, Elvis -> 5 sales execs
+  const t = S.countDay(c, '2026-11-03');
+  assert.strictEqual(t.count, 5, 'Molly and Elvis are not counted');
+  assert.ok(t.ids.includes('molly') && t.ids.includes('elvis') && t.ids.includes('dan'), 'everyone in is still listed');
+  assert.ok(!t.salesIds.includes('molly') && !t.salesIds.includes('elvis') && t.salesIds.includes('dan'));
+  assert.strictEqual(t.handover.count, 1, 'Molly still counts for the Chloe or Molly rule');
+  // Sat 7 Nov: 7 sales execs on, minimum 7
+  assert.strictEqual(S.countDay(c, '2026-11-07').count, 7);
+  // a manager put on the team list by mistake is still not counted
+  const c2 = salesCtx({ team: Object.assign({}, team, { nathan: { name: 'Nathan', off: 'sun', active: true, order: 30 } }) });
+  assert.ok(!S.countDay(c2, '2026-11-07').salesIds.includes('nathan'));
+  console.log('ok: the daily minimum counts sales executives only (not Chloe, Molly, Elvis or managers); Dan counts');
+}
+
 const hol = (id, from, to, kind, status) => ({ personId: id, from, to, kind: kind || 'holiday', status: status || 'approved' });
 const count = (c, date) => S.countDay(c, date);
 
