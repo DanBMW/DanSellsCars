@@ -96,7 +96,7 @@
     if (t.active === false) return { on: false, why: 'inactive' };
     var kind = dayKind(ctx, date);
     if (kind === 'closed') return { on: false, why: 'closed' };
-    var away = LR.absentOn(ctx.absences, date)[id] || null;
+    var away = LR.awayOn(ctx.absences, date)[id] || null;
     if (kind === 'bh') {
       var rota = ctx.bh[date];
       if (!rota) return { on: false, why: 'bh-no-rota' };
@@ -199,7 +199,7 @@
     var hit = null;
     Object.keys(ctx.absences).forEach(function (k) {
       var a = ctx.absences[k];
-      if (!a || a.personId !== personId || a.kind === 'works' || a.status === 'cancelled') return;
+      if (!a || a.personId !== personId || a.kind === 'works' || a.kind === 'nolockup' || a.status === 'cancelled') return;
       if (a.from <= to && from <= a.to) hit = 'Already booked ' + a.from + (a.to !== a.from ? ' to ' + a.to : '');
     });
     if (hit) return hit;
@@ -258,7 +258,7 @@
       else if (!ctx.team[req.withId]) errors.push('Pick the colleague who is taking it.');
       else if (req.withId === req.personId) errors.push('Pick someone else.');
       else if (personDay(ctx, req.withId, req.date).on) errors.push(ctx.team[req.withId].name + ' is already on that day.');
-      else if (LR.absentOn(ctx.absences, req.date)[req.withId]) errors.push(ctx.team[req.withId].name + ' is away that day.');
+      else if (LR.awayOn(ctx.absences, req.date)[req.withId]) errors.push(ctx.team[req.withId].name + ' is away that day.');
     } else {
       errors.push('Unknown request.');
     }
@@ -282,7 +282,7 @@
     });
     var pool = Object.keys(ctx.team).filter(function (id) {
       var t = ctx.team[id];
-      return t.active !== false && excl.indexOf(id) < 0 && !LR.absentOn(ctx.absences, date)[id];
+      return t.active !== false && excl.indexOf(id) < 0 && !LR.awayOn(ctx.absences, date)[id];
     }).sort();
     var rnd = mulberry32(hashStr('bh:' + date));
     var rank = {};
@@ -313,7 +313,7 @@
      in, who is away (with their note), and whether each minimum is met */
   function whoIn(ctx, from, to) {
     return rangeDates(from, to).map(function (d) {
-      var c = countDay(ctx, d), away = LR.absentOn(ctx.absences, d);
+      var c = countDay(ctx, d), away = LR.awayOn(ctx.absences, d);
       var awayList = Object.keys(away).filter(function (id) { return ctx.team[id]; }).map(function (id) {
         var a = Object.keys(ctx.absences).map(function (k) { return ctx.absences[k]; })
           .filter(function (x) { return x && x.personId === id && x.kind !== 'works' && x.status !== 'cancelled' && x.from <= d && d <= x.to; })[0] || {};

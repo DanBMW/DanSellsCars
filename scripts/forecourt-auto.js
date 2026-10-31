@@ -97,7 +97,7 @@ function deadlineDay(cycle) { return cycle && cycle.deadline ? DAYNAMES[dowOf(cy
 
 /* ---- who is in ---- */
 function offReason(person, date, absences) {
-  const dow = dowOf(date), ab = R.absentOn(absences || {}, date)[person.id];
+  const dow = dowOf(date), ab = R.awayOn(absences || {}, date)[person.id];
   if (ab) return ab === 'holiday' ? 'on holiday' : 'off';
   if (person.off === dow) return 'on your day off';
   if (R.arr(person.never).indexOf(dow) >= 0) return 'off';

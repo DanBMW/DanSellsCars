@@ -298,3 +298,16 @@ console.log('all shifts tests passed');
   assert.strictEqual(r.valid, false, 'training in the past is refused');
   console.log('ok: training and lieu days count as away for the headcount');
 }
+
+/* ---- 'nolockup': frees the lockup night, still in on the calendar ---- */
+{
+  const abs = { n1: { personId: 'tomi', from: '2026-11-04', to: '2026-11-04', kind: 'nolockup', status: 'approved', note: 'Not available' } };
+  assert.strictEqual(LR.absentOn(abs, '2026-11-04').tomi, 'nolockup', 'lockup treats it as away');
+  assert.strictEqual(LR.awayOn(abs, '2026-11-04').tomi, undefined, 'the calendar does not');
+  const c = ctx({ absences: abs });
+  assert.strictEqual(S.personDay(c, 'tomi', '2026-11-04').on, true);
+  assert.strictEqual(S.countDay(c, '2026-11-04').count, S.countDay(ctx(), '2026-11-04').count, 'headcount unchanged');
+  const r = S.checkRequest(c, { kind: 'holiday', ciphrOk: true, personId: 'tomi', from: '2026-11-04', to: '2026-11-04' });
+  assert.ok(!r.errors.some(e => /Already booked/.test(e)), 'leave can still be booked that day');
+  console.log("ok: can't lockup frees the night for lockup but leaves them in on the calendar");
+}

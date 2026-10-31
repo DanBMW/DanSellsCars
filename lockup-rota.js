@@ -237,20 +237,23 @@
   }
 
   /* ---- absences: "I won't be in", holidays, and seeded ones ----
-     lockup/absences/<id>: {personId, from, to, kind: absent|holiday, status: booked|approved|cancelled}
+     lockup/absences/<id>: {personId, from, to, kind: absent|holiday|works|nolockup, status: booked|approved|cancelled}
      Seeded entries are written once by whichever client first sees them missing,
      so a change agreed before the rules went live still lands. */
   var SEED_ABSENCES = {
     seed_carl_20261016: { personId: 'carl', from: '2026-10-16', to: '2026-10-16', kind: 'absent', status: 'approved', by: 'Dan', note: 'Carl off Friday 16 Oct (Dan, 14 Oct)' }
   };
-  function absentOn(absences, date) {
+  /* 'nolockup': in that day, but can't do lockup (a reason is required). Frees
+     the lockup night like an absence; the calendar (awayOn) still shows them in. */
+  function absentOn(absences, date, calendar) {
     var out = {};
     Object.keys(absences || {}).forEach(function (k) {
       var a = absences[k];
-      if (a && a.kind !== 'works' && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = a.kind || 'absent';
+      if (a && a.kind !== 'works' && !(calendar && a.kind === 'nolockup') && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = a.kind || 'absent';
     });
     return out;
   }
+  function awayOn(absences, date) { return absentOn(absences, date, true); }
   /* 'works': a day off swapped for a working day (or a shift taken over from a
      colleague). Free for cover on that date even if it is their usual day off.
      Written by shifts.html; never makes anyone away. */
@@ -414,7 +417,7 @@
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, satIds: satIds, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, awayOn: awayOn, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, satIds: satIds, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },

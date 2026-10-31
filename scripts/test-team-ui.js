@@ -346,6 +346,35 @@ async function scenarios(browser, base) {
     check('lockup: the page loads with no errors for a colleague', p.__errors.length === 0, p.__errors.join(' | '));
     await p.close();
   }
+  /* lockup: I can't lockup this day, with a required reason; frees the night, not an absence on the calendar */
+  {
+    const p = await open(browser, base, null, '/lockup.html', null, { viewport: { width: 400, height: 860 } });
+    await p.waitForSelector('#t-rota .cm', { timeout: 8000 });
+    const date = await p.locator('#t-rota .cm').last().getAttribute('data-date');
+    await p.locator('#t-rota .cm').last().click(); await p.waitForSelector('#rec-body .names button');
+    const who = await p.locator('#rec-body .names button').first().getAttribute('data-id');
+    await p.locator('#rec-body .names button').first().click(); await p.waitForSelector('#sh-nolock');
+    await p.click('#sh-nolock'); await p.waitForSelector('#nl-ok');
+    await p.screenshot({ path: path.join(OUT, 'lockup-cant-form.png') });
+    await p.click('#nl-ok'); await p.waitForTimeout(300);
+    let st = await store(p);
+    check('lockup cant: no reason, nothing saved', !Object.values(st.data.lockup.absences || {}).some(a => a.kind === 'nolockup'));
+    await p.selectOption('#nl-why', 'Other'); await p.click('#nl-ok'); await p.waitForTimeout(300);
+    st = await store(p);
+    check('lockup cant: Other with no details, nothing saved', !Object.values(st.data.lockup.absences || {}).some(a => a.kind === 'nolockup'));
+    await p.selectOption('#nl-why', 'Not available'); await p.fill('#nl-note', 'dentist at 6'); await p.click('#nl-ok'); await p.waitForTimeout(900);
+    st = await store(p);
+    const a = Object.values(st.data.lockup.absences || {}).find(x => x.kind === 'nolockup');
+    check('lockup cant: saved as nolockup with the reason', a && a.personId === who && a.from === date && a.note === 'Not available: dentist at 6' && a.status === 'approved', JSON.stringify(a));
+    const R2 = require('../lockup-rota.js');
+    const pair = R2.pairOn(st.data.lockup.weeks, date);
+    check('lockup cant: the night is re-paired without them', pair.indexOf(who) < 0 && pair.length > 0, JSON.stringify(pair));
+    check('lockup cant: managers told', Object.values(st.data.lockup.notify || {}).some(n => /Can\u2019t lockup/.test(n.subject)));
+    check('lockup cant: still in on the team calendar', !R2.awayOn(st.data.lockup.absences, date)[who] && !!R2.absentOn(st.data.lockup.absences, date)[who]);
+    await p.screenshot({ path: path.join(OUT, 'lockup-cant-done.png') });
+    check('lockup cant: no page errors', p.__errors.length === 0, p.__errors.join(' | '));
+    await p.close();
+  }
   {
     const p = await open(browser, base, null, '/lockup.html', U.will);
     await p.waitForSelector('#btn-manager', { timeout: 8000 });

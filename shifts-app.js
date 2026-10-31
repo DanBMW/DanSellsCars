@@ -383,7 +383,7 @@
       body += '<div class="card bhc"><div class="row between"><b>' + esc(fmt(d, true)) + '</b><span class="muted small">' + esc((HOL[d] || {}).label || '') + '</span></div>' +
         (short > 0 ? '<p class="bad small">' + rota.length + ' of ' + c.config.bhStaff + ' chosen' + (short ? ', ' + short + ' short' : '') + '</p>' : '<p class="ok small">' + rota.length + ' of ' + c.config.bhStaff + ' chosen</p>') +
         '<div class="names">' + pool.map(function (id) {
-          var on = rota.indexOf(id) >= 0, away = !!R.absentOn(st.D.absences, d)[id];
+          var on = rota.indexOf(id) >= 0, away = !!R.awayOn(st.D.absences, d)[id];
           return '<label class="pick' + (away ? ' away' : '') + '"><input type="checkbox" data-bh-date="' + d + '" value="' + esc(id) + '"' + (on ? ' checked' : '') + (isMgr() ? '' : ' disabled') + '> ' + esc(nameOf(id)) + (away ? ' (away)' : '') + '</label>';
         }).join('') + '</div>' +
         (isMgr() ? '<div class="row end"><button class="ghost" type="button" data-bh-save="' + d + '">Save</button></div>' : '') + '</div>';
@@ -406,7 +406,7 @@
     html += '</div>';
     html += '<div class="card"><b>Time off this week and next</b><p class="muted small">Approved holidays and absences from lockup, so the two always agree.</p><ul class="sum">';
     var rows = Object.keys(st.D.absences).map(function (k) { return st.D.absences[k]; })
-      .filter(function (a) { return a && a.kind !== 'works' && a.status !== 'cancelled' && a.to >= NOW.date && a.from <= R.addDays(NOW.date, 14); })
+      .filter(function (a) { return a && a.kind !== 'works' && a.kind !== 'nolockup' && a.status !== 'cancelled' && a.to >= NOW.date && a.from <= R.addDays(NOW.date, 14); })
       .sort(function (a, b) { return a.from < b.from ? -1 : 1; });
     html += rows.length ? rows.map(function (a) {
       return '<li><span>' + esc(nameOf(a.personId)) + '</span><span class="muted small">' + esc(rangeText(a.from, a.to)) + ' · ' + (a.kind === 'holiday' ? 'holiday' : 'away') + '</span></li>';
