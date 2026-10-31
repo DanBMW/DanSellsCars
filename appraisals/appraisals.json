@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-31T10:02:18.302Z",
+  "captured": "2026-10-31T12:02:34.347Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "GJ23MBX",
+      "appraisedAt": "2026-10-31T11:47:37.688Z",
+      "make": "VOLKSWAGEN",
+      "model": "Golf",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--hFuzEhsD--/c_fill,h_300,w_300/v1793447274/Live/Appraisals/9614060/758bbad6-134b-4fe0-852c-ae5ce87a7b1a.jpg"
+    },
+    {
+      "registration": "LY16OUO",
+      "appraisedAt": "2026-10-31T11:43:20.494Z",
+      "make": "BMW",
+      "model": "X4",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--H6nUb0lI--/c_fill,h_300,w_300/v1793447024/Live/Appraisals/9614033/13e15da3-09d8-4e81-901f-5188bdd2b5cc.jpg"
+    },
+    {
+      "registration": "OW67AAE",
+      "appraisedAt": "2026-10-31T10:30:11.938Z",
+      "make": "AUDI",
+      "model": "Q3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--lFSVwN_U--/c_fill,h_300,w_300/v1793442613/Live/Appraisals/9613588/af198672-b7be-4b04-b72d-d7e5f35ee4f8.png"
+    },
     {
       "registration": "F7DLB",
       "appraisedAt": "2026-10-31T09:44:08.124Z",
@@ -736,16 +766,6 @@
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--4Ja2RB-X--/c_fill,h_300,w_300/v1792415000/Live/Appraisals/9589102/cae6dfee-2050-495a-83af-d4c882df944f.jpg"
     },
     {
-      "registration": "OW67AAE",
-      "appraisedAt": "2026-10-19T12:05:34.311Z",
-      "make": "AUDI",
-      "model": "Q3",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
       "registration": "EJ25SUU",
       "appraisedAt": "2026-10-19T11:38:57.762Z",
       "make": "MERCEDES-BENZ",
@@ -804,16 +824,6 @@
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--naQVubCC--/c_fill,h_300,w_300/v1792248962/Live/Appraisals/9586030/e59db588-b583-4e90-a343-a11f80655de7.jpg"
-    },
-    {
-      "registration": "GJ23MBX",
-      "appraisedAt": "2026-10-17T14:14:09.816Z",
-      "make": "VOLKSWAGEN",
-      "model": "Golf",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--gktC1O2N--/c_fill,h_300,w_300/v1792246469/Live/Appraisals/9585822/dfdfae16-cad7-4334-a307-923eace3eb4c.jpg"
     },
     {
       "registration": "AN07AAT",
