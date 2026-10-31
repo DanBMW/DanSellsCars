@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-31T12:02:34.347Z",
+  "captured": "2026-10-31T14:02:53.319Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LR64VGL",
+      "appraisedAt": "2026-10-31T12:18:53.943Z",
+      "make": "BMW",
+      "model": "4 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "GJ23MBX",
       "appraisedAt": "2026-10-31T11:47:37.688Z",
@@ -5063,7 +5073,8 @@
       "status": "Returned",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--0bWQoWgp--/c_fill,h_300,w_300/v1785579545/Live/Appraisals/9390045/70ba3212-b651-4105-99c3-8e1e8ba41e52.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--0bWQoWgp--/c_fill,h_300,w_300/v1785579545/Live/Appraisals/9390045/70ba3212-b651-4105-99c3-8e1e8ba41e52.jpg",
+      "droppedAt": "2026-10-31T14:02:53.318Z"
     },
     {
       "registration": "AL15HAD",
