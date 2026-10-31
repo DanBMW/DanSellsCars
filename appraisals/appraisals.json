@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-10-31T08:02:36.910Z",
+  "captured": "2026-10-31T10:02:18.302Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "F7DLB",
+      "appraisedAt": "2026-10-31T09:44:08.124Z",
+      "make": "MINI",
+      "model": "Countryman",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--MJe1G4VS--/c_fill,h_300,w_300/v1793439851/Live/Appraisals/9613358/b818f2ab-4f8a-4e3a-971d-2bc1cb343e7d.jpg"
+    },
     {
       "registration": "B21KSL",
       "appraisedAt": "2026-10-30T17:23:15.697Z",
