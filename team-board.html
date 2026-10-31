@@ -648,6 +648,31 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fc-when{margin-top:clamp(7px,1.4vh,13px);color:var(--muted);
   font-size:clamp(.6rem,1.1vw,.8rem);font-weight:600;text-align:center}
+/* who is in this week: a board of six days, the lockup in orange */
+.wiscene{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(60% 60% at 50% 40%,rgba(21,89,207,.14),rgba(5,8,13,.96) 70%),rgba(5,8,13,.95);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+  pointer-events:none;padding:clamp(10px,2vh,26px);
+}
+.wiscene.show{opacity:1;visibility:visible}
+.wi-inner{display:flex;flex-direction:column;align-items:center;width:100%;max-width:1100px;max-height:100%}
+@media(min-width:1200px){ .wi-inner{max-width:min(1100px,calc(100vw - 2*(var(--qrbox) + 46px)))} }
+.wi-kicker{font-family:var(--display);font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-size:clamp(.62rem,1.5vw,1rem);margin-bottom:4px;text-align:center}
+.wi-sub{color:var(--muted);font-size:clamp(.6rem,1.1vw,.8rem);font-weight:600;margin-bottom:clamp(8px,1.6vh,16px)}
+.wi-rows{width:100%;display:grid;gap:clamp(4px,.8vh,8px)}
+.wi-row{display:grid;grid-template-columns:clamp(96px,16%,170px) 1fr;gap:clamp(8px,1.4vw,18px);align-items:start;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:clamp(7px,1.2vh,11px) clamp(10px,1.3vw,16px)}
+.wi-row.today{border-color:var(--gold)}
+.wi-row.closed{opacity:.55}
+.wi-day{font-family:var(--display);font-weight:700;font-size:clamp(.8rem,1.4vw,1.05rem);line-height:1.15}
+.wi-day small{display:block;color:var(--muted);font-weight:600;font-size:clamp(.58rem,.9vw,.72rem);letter-spacing:.02em}
+.wi-names{font-weight:600;font-size:clamp(.78rem,1.3vw,1.05rem);line-height:1.35}
+.wi-names .sep{color:var(--muted);font-weight:400}
+.wi-lock{color:#ff9a1f;font-weight:800}
+.wi-lockline{color:#ff9a1f;font-weight:700;font-size:clamp(.6rem,.95vw,.78rem);margin-top:3px}
+.wi-away{color:var(--muted);font-weight:600;font-size:clamp(.6rem,.95vw,.76rem);margin-top:2px}
+.wi-when{margin-top:clamp(7px,1.4vh,13px);color:var(--muted);font-size:clamp(.6rem,1.1vw,.8rem);font-weight:600;text-align:center}
 .fc-new{
   display:inline-block;background:var(--gold);color:#1a1206;border-radius:5px;
   font-weight:800;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
@@ -1890,6 +1915,15 @@ body.haslock.hasticker .radio-fab{bottom:100px}
   </div>
 </div>
 
+<div class="wiscene" id="wiscene" aria-hidden="true">
+  <div class="wi-inner">
+    <div class="wi-kicker" id="wi-kicker">Who&rsquo;s in this week</div>
+    <div class="wi-sub" id="wi-sub"></div>
+    <div class="wi-rows" id="wi-rows"></div>
+    <div class="wi-when" id="wi-when"></div>
+  </div>
+</div>
+
 <div class="fcscene" id="fcscene" aria-hidden="true">
   <div class="fc-inner">
     <div class="fc-kicker" id="fc-kicker">What&rsquo;s new on the forecourt?</div>
@@ -2041,6 +2075,7 @@ body.haslock.hasticker .radio-fab{bottom:100px}
 </script>
 <script src="staff-gate.js"></script>
 <script src="lockup-rota.js"></script>
+<script src="shifts-rota.js"></script>
 <script src="team-identity.js"></script><script src="team-session.js"></script>
 <script>
 /* ============================================================
@@ -3465,6 +3500,59 @@ function paintForecourt(){
     ? 'From the stock list · checked every morning at 9'
     : 'From the stock list · a different six every morning';
 }
+/* ---- who is in this week: the calendar's own rules, read off the public lockup
+   data (team, days off, absences, approved leave, cover). The bank holiday
+   rota lives behind the staff sign in, so a bank holiday reads Closed for
+   lockup and no names, rather than guessing who was on. Sunday shows next week. */
+function whosinWeek(){
+  /* the rotation is built at boot, which can run before the lockup data is declared */
+  if(!window.dsRoster)return null;
+  const RO=window.dsRoster;
+  const R=window.LockupRota, S=window.ShiftRota;
+  if(!R||!S)return null;
+  const team=(RO.cfg&&RO.cfg.team)||{};
+  if(!Object.keys(team).length)return null;
+  const n=R.london();
+  const wk=n.dow==='sun'?R.shiftWeek(n.week,1):n.week;
+  const hol=Object.assign({},RO.bank);
+  const closed=(RO.cfg&&RO.cfg.holidays)||{};
+  const ctx=S.makeCtx({team:team, managers:(RO.cfg&&RO.cfg.managers)||{}, absences:RO.absences||{},
+    config:{}, bh:{}, holidays:hol, closed:closed, today:n.date});
+  const nm=id=>(team[id]&&team[id].name)||(RO.cfg.managers&&RO.cfg.managers[id]&&RO.cfg.managers[id].name)||id;
+  const days=['mon','tue','wed','thu','fri','sat'].map(function(d){
+    const date=R.dateFor(wk,d), k=S.dayKind(ctx,date);
+    const base={date:date, dow:d, today:date===n.date};
+    if(k==='closed')return Object.assign(base,{kind:'closed'});
+    if(k==='bh')return Object.assign(base,{kind:'bh'});
+    const on=R.onFor(date,RO.weeks[wk],hol);
+    const lock=on.kind==='managers'?['Managers']:(on.ids||[]).map(nm);
+    const names=S.staffOn(ctx,date).map(nm);
+    const away=S.whoIn(ctx,date,date)[0].away.map(a=>nm(a.id)+(a.kind==='holiday'?' (holiday)':' (away)'));
+    return Object.assign(base,{kind:k, names:names, lock:lock, away:away});
+  });
+  return {wk:wk, days:days, today:n.date};
+}
+function paintWhosIn(){
+  const w=whosinWeek(); if(!w)return;
+  const R=window.LockupRota;
+  $('wi-kicker').innerHTML='Who&rsquo;s in this week';
+  $('wi-sub').textContent='Week of '+new Date(R.weekStart(w.wk)+'T12:00:00Z').toLocaleDateString('en-GB',{timeZone:'UTC',day:'numeric',month:'long'});
+  $('wi-rows').innerHTML=w.days.map(function(d){
+    const day=new Date(d.date+'T12:00:00Z').toLocaleDateString('en-GB',{timeZone:'UTC',weekday:'long'})+
+      '<small>'+new Date(d.date+'T12:00:00Z').toLocaleDateString('en-GB',{timeZone:'UTC',day:'numeric',month:'short'})+(d.today?' · today':'')+'</small>';
+    const cls='wi-row'+(d.today?' today':'')+(d.kind==='closed'||d.kind==='bh'?' closed':'');
+    if(d.kind==='closed')return '<div class="'+cls+'"><div class="wi-day">'+day+'</div><div class="wi-names muted">Closed</div></div>';
+    if(d.kind==='bh')return '<div class="'+cls+'"><div class="wi-day">'+day+'</div><div class="wi-names muted">Bank holiday, closed for lockup. The rota is on the calendar.</div></div>';
+    const names=d.names.length?d.names.map(function(n){
+      return d.lock.indexOf(n)>=0?'<span class="wi-lock">'+esc(n)+'</span>':esc(n);
+    }).join('<span class="sep"> · </span>'):'<span class="muted">Nobody on the rota</span>';
+    const lockLine=d.lock.length?'<div class="wi-lockline">Lockup: '+esc(d.lock.join(' and '))+'</div>':'';
+    const away=d.away.length?'<div class="wi-away">Away: '+esc(d.away.join(', '))+'</div>':'';
+    return '<div class="'+cls+'"><div class="wi-day">'+day+'</div><div><div class="wi-names">'+names+'</div>'+lockLine+away+'</div></div>';
+  }).join('');
+  $('wi-when').textContent='From the lockup and calendar records · updated as they change';
+}
+
 /* the snapshot is refreshed in the repo overnight and a screen may have been
    up for days, so look again on the hour - which is also what rolls it at 9 */
 function watchStock(){
@@ -3585,6 +3673,8 @@ function views(){
      is up it is the thing the team most need off the wall */
   if(sOn('eventdeals')&&evLive())out.push({id:'eventdeals', kind:'eventdeals'});
   /* what has landed on the forecourt since yesterday morning */
+  /* who is in this week, with tonight's lockup in orange */
+  if(sOn('whosin')&&whosinWeek())out.push({id:'whosin', kind:'whosin'});
   if(sOn('forecourt')&&fcCars())out.push({id:'forecourt', kind:'forecourt'});
   /* birthdays come after the boards and screenshots, not in between them */
   if(sOn('birthdays'))liveBirthdays().forEach(function(bd){
@@ -3619,6 +3709,8 @@ function showView(i){
   }
   if(v.kind==='eventdeals')paintEventDeals();
   if(v.kind==='forecourt')paintForecourt();
+  if(v.kind==='whosin')paintWhosIn();
+  $('wiscene').classList.toggle('show',v.kind==='whosin');
   $('ncscene').classList.toggle('show',!!v.img);
   $('bdayview').classList.toggle('show',v.kind==='birthday');
   $('edscene').classList.toggle('show',v.kind==='eventdeals');
@@ -3683,6 +3775,7 @@ var VIEWPINS=[
   {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
   {id:'extra-newcar', name:'New car secondary',       sub:"Nathan's screenshot"},
   {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'},
+  {id:'whosin',      name:"Who's in this week",    sub:'With tonight\u2019s lockup in orange'},
   {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock, from the stock list'},
   {id:'eventdeals',   name:'Event deals',            sub:'Highest margin first'}
 ];
@@ -3716,6 +3809,7 @@ function viewAvailable(id){
   if(id==='extra-newcar')return !!EXTRA.newcar;
   if(id==='mugshot')return !!liveMug();
   if(id==='forecourt')return !!fcCars();
+  if(id==='whosin')return !!whosinWeek();
   return false;
 }
 
@@ -6611,7 +6705,7 @@ function paintSettingsNote(){
   var off=[];
   ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
    'premiere',
-   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','ticker',
+   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','whosin','ticker',
    'seasons',
    'eventdeals','dealmargin','radio',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
@@ -7843,9 +7937,11 @@ let stop=null, dealsGen=0;
 /* ---- lockup strip: lockup/ in Firebase, logic shared with lockup.html ---- */
 /* test mode (lockup/config/testMode, missing = on) reads lockupTest/ instead,
    shows all day so it can be demoed, and is marked TEST MODE in orange */
-const LKS={lockup:{weeks:{},status:{},cfg:{},progress:{}},lockupTest:{weeks:{},status:{},cfg:{},progress:{}}};
+const LKS={lockup:{weeks:{},status:{},cfg:{},progress:{},absences:{}},lockupTest:{weeks:{},status:{},cfg:{},progress:{},absences:{}}};
 let LK_TEST=true; const LK_SANDBOX=new URLSearchParams(location.search).has('sandbox'); /* ?sandbox=1 forces lockupTest/ on this screen only */
-const LK={get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},bank:{}};
+const LK={get absences(){return LKS[LK_TEST?'lockupTest':'lockup'].absences},get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},bank:{}};
+/* the plain script (who is in this week) reads the lockup data through this, since LK lives in the module */
+window.dsRoster={get cfg(){return LK.cfg},get weeks(){return LK.weeks},get absences(){return LK.absences},get bank(){return LK.bank}};
 function paintLock(){
   const R=window.LockupRota, el=document.getElementById('lockstrip'), tx=document.getElementById('ls-text');
   if(!R||!el)return;
@@ -7871,9 +7967,10 @@ function paintLock(){
   el.classList.add('show');document.body.classList.add('haslock');
 }
 ['lockup','lockupTest'].forEach(r=>{
-  watch(r+'/weeks',v=>{LKS[r].weeks=v||{};paintLock()});
+  watch(r+'/weeks',v=>{LKS[r].weeks=v||{};paintLock();if(curViewId==='whosin')paintWhosIn()});
   watch(r+'/status',v=>{LKS[r].status=v||{};paintLock()});
   watch(r+'/progress',v=>{LKS[r].progress=v||{};paintLock()});
+  watch(r+'/absences',v=>{LKS[r].absences=v||{};paintLock();if(curViewId==='whosin')paintWhosIn()});
   watch(r+'/config',v=>{LKS[r].cfg=v||{};if(r==='lockup')LK_TEST=LK_SANDBOX||!(v&&v.testMode===false);paintLock()});
 });
 fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{LK.bank[e.date]=1});paintLock()}).catch(()=>{});

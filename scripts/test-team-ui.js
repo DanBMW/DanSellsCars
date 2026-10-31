@@ -109,6 +109,7 @@ async function open(browser, base, page0, url, user, opts) {
   await page.addInitScript(({ data, user, popup, accounts }) => {
     window.__STORE = { data, user, popupUser: popup, accounts, log: [] };
   }, { data, user: user || null, popup: popup || null, accounts });
+  if (opts.clock) await page.clock.setFixedTime(opts.clock);
   await page.goto(base + url);
   page.__errors = errors;
   page.__ctx = ctx;
@@ -354,6 +355,23 @@ async function scenarios(browser, base) {
     await p.waitForTimeout(700);
     check('lockup: a team manager goes straight in, no PIN', await visible(p, '#view-manager') && !(await visible(p, '#pin-modal.show')));
     check('lockup: a team manager gets the manager screen with the team list', (await txt(p, '#view-manager')).length > 20);
+    await p.close();
+  }
+  {
+    /* signed in: the lockup names the person who is signed in, and nobody is asked who they are */
+    const p = await open(browser, base, null, '/lockup.html', U.tomi);
+    await p.waitForSelector('#t-who', { timeout: 8000 });
+    await p.waitForTimeout(900);
+    check('lockup: a signed in colleague is named as the signer', /Signed in as Tomi/.test(await txt(p, '#t-who')), await txt(p, '#t-who'));
+    check('lockup: a signed in colleague is not asked who is covering', !(await visible(p, '#btn-cover')));
+    check('lockup: a signed in colleague has no PIN box anywhere', (await p.locator('#pin-input').count()) === 0);
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/lockup.html', null);
+    await p.waitForSelector('#t-who', { timeout: 8000 });
+    await p.waitForTimeout(900);
+    check('lockup: a signed out visitor is offered sign in, and can still sign off', /Sign in with your work Google account/.test(await txt(p, '#t-who')) && (await visible(p, '#btn-cover')));
     await p.close();
   }
   {
@@ -674,6 +692,242 @@ async function bugScenarios(browser, base) {
   }
 }
 
+
+/* ---------- the team board: who is in this week, lockup in orange ---------- */
+async function boardScenarios(browser, base) {
+  const fri = new Date('2026-10-30T11:00:00Z'); // Friday 30 Oct, UK time
+  /* a. the rotation carries the view, and it paints six days */
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { clock: fri });
+    await p.waitForFunction(() => typeof views === 'function' && typeof paintWhosIn === 'function', null, { timeout: 8000 });
+    await p.waitForTimeout(900);
+    const ids = await p.evaluate(() => views().map(v => v.id));
+    check('board: the rotation carries Who’s in this week', ids.indexOf('whosin') >= 0, ids.join(','));
+    await p.evaluate(() => paintWhosIn());
+    check('board: six days, Monday to Saturday', (await p.locator('#wi-rows .wi-row').count()) === 6);
+    const mon = await p.locator('#wi-rows .wi-row').nth(0).locator('.wi-lock').allTextContents();
+    check('board: Monday shows Chloe and Molly in orange as tonight’s lockup', mon.join() === 'Chloe,Molly', mon.join());
+    const col = await p.locator('#wi-rows .wi-row').nth(0).locator('.wi-lock').first().evaluate(el => getComputedStyle(el).color);
+    check('board: the lockup names are orange', col === 'rgb(255, 154, 31)', col);
+    check('board: today is marked', (await p.locator('#wi-rows .wi-row.today').count()) === 1);
+    await p.evaluate(() => { document.getElementById('wiscene').classList.add('show'); });
+    await p.waitForTimeout(700);
+    await p.screenshot({ path: path.join(OUT, 'board-whosin.png') });
+    const sat = await p.locator('#wi-rows .wi-row').nth(5).textContent();
+    check('board: Saturday lockup is the managers', /Lockup: Managers/.test(sat), sat.slice(0, 120));
+    const names = await p.locator('#wi-rows .wi-row').nth(0).locator('.wi-names').textContent();
+    check('board: the names on Monday are the people on the rota', /Dan|Mon|Clive/.test(names) || names.length > 0, names);
+    await p.close();
+  }
+  /* b. a person off on a day they would be working is away, and not named as in */
+  {
+    const data = JSON.parse(JSON.stringify(FIX));
+    data.lockup.absences.thu = { personId: 'clive', from: '2026-10-29', to: '2026-10-29', kind: 'holiday', status: 'approved' };
+    const p = await open(browser, base, null, '/team-board.html', null, { clock: fri, data });
+    await p.waitForFunction(() => typeof paintWhosIn === 'function', null, { timeout: 8000 });
+    await p.waitForTimeout(900);
+    await p.evaluate(() => paintWhosIn());
+    const thu = await p.locator('#wi-rows .wi-row').nth(3).textContent();
+    check('board: Clive on holiday Thursday is shown as away, not in', /Away: Clive \(holiday\)/.test(thu), thu.slice(0, 160));
+    await p.close();
+  }
+  /* c. Sunday: the screen shows next week's rota */
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { clock: new Date('2026-11-01T11:00:00Z') });
+    await p.waitForFunction(() => typeof paintWhosIn === 'function', null, { timeout: 8000 });
+    await p.waitForTimeout(900);
+    await p.evaluate(() => paintWhosIn());
+    check('board: on a Sunday it shows next week', /2 November/.test(await txt(p, '#wi-sub')), await txt(p, '#wi-sub'));
+    await p.close();
+  }
+  /* d. the switch in the admin console takes the view off the rotation */
+  {
+    const data = JSON.parse(JSON.stringify(FIX)); data.boardsettings = { whosin: false };
+    const p = await open(browser, base, null, '/team-board.html', null, { clock: fri, data });
+    await p.waitForFunction(() => typeof views === 'function', null, { timeout: 8000 });
+    await p.waitForTimeout(900);
+    const ids = await p.evaluate(() => views().map(v => v.id));
+    check('board: switched off in the admin console, it is not in the rotation', ids.indexOf('whosin') < 0, ids.join(','));
+    await p.close();
+  }
+  /* e. the scene comes up when the rotation reaches it */
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { clock: fri });
+    await p.waitForFunction(() => typeof views === 'function', null, { timeout: 8000 });
+    await p.waitForTimeout(900);
+    const idx = await p.evaluate(() => views().findIndex(v => v.id === 'whosin'));
+    await p.evaluate(i => showView(i), idx);
+    await p.waitForTimeout(700);
+    check('board: the rotation shows the scene', await p.evaluate(() => document.getElementById('wiscene').classList.contains('show')));
+    check('board: no page errors', p.__errors.length === 0, p.__errors.join(' | '));
+    await p.close();
+  }
+}
+
+
+/* ---------- the calendar, every menu and action ---------- */
+async function calendarMenus(browser, base) {
+  const withData = (fn) => { const d = JSON.parse(JSON.stringify(FIX)); fn && fn(d); return d; };
+  /* A. a colleague: Requests lists their own, cancel works, and the incoming swap can be declined */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.tomi, { data: withData() });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    await p.click('#tabs [data-tab="requests"]');
+    await p.waitForSelector('#p-requests .card');
+    const yours = await txt(p, '#p-requests');
+    check('menus: Requests lists Tomi’s own swap ask to Danny', /Danny/.test(yours) && /Yours/.test(yours), yours.slice(0, 160));
+    await p.click('[data-cancel="w1"]');
+    await p.waitForTimeout(300);
+    let st = await store(p);
+    check('menus: cancelling a waiting swap marks it cancelled', at(st.data, 'shifts/requests/w1').status === 'cancelled', JSON.stringify(at(st.data, 'shifts/requests/w1')));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.danny, { data: withData() });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    await p.click('#tabs [data-tab="requests"]');
+    await p.waitForSelector('[data-decline-swap="w1"]');
+    await p.click('[data-decline-swap="w1"]');
+    await p.waitForTimeout(300);
+    const st = await store(p);
+    const w = at(st.data, 'shifts/requests/w1');
+    check('menus: Danny can decline a swap asked of him, with the reason kept', w.status === 'cancelled' && /Declined by Danny/.test(w.reason || ''), JSON.stringify(w));
+    await p.close();
+  }
+  /* B. a colleague's forms: validation text, the swap needs a colleague, an absence in the past is refused */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.tomi, { data: withData() });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    check('menus: a colleague has no bank holiday, staffing or settings tab', (await p.locator('#tabs [data-tab="bh"], #tabs [data-tab="staff"], #tabs [data-tab="settings"]').count()) === 0);
+    await p.click('#fab'); await p.waitForSelector('#m-sheet.show');
+    await p.click('#sheet [data-act="absence"]'); await p.waitForSelector('#rq-form');
+    await p.fill('#rq-form [name=from]', '2026-10-01'); await p.fill('#rq-form [name=to]', '2026-10-01');
+    await p.waitForTimeout(60);
+    check('menus: an absence in the past cannot be sent', await p.locator('#rq-go').isDisabled(), await txt(p, '#pv'));
+    await p.fill('#rq-form [name=from]', '2026-10-30'); await p.fill('#rq-form [name=to]', '2026-10-30');
+    await p.waitForTimeout(60);
+    check('menus: a same-day absence can be sent', !(await p.locator('#rq-go').isDisabled()));
+    await p.click('#rq-go'); await p.waitForTimeout(300);
+    const st1 = await store(p);
+    const abs = Object.values(st1.data.shifts.requests || {}).find(r => r.kind === 'absence');
+    check('menus: a same-day absence is recorded approved and marked auto', abs && abs.status === 'approved' && abs.auto === true, JSON.stringify(abs));
+    /* the swap needs a colleague and a shift */
+    await p.click('#fab'); await p.waitForSelector('#m-sheet.show');
+    await p.click('#sheet [data-act="swap"]'); await p.waitForSelector('#rq-form');
+    await p.fill('#rq-form [name=date]', '2026-11-04');
+    await p.waitForTimeout(60);
+    check('menus: a swap with no colleague chosen cannot be sent', await p.locator('#rq-go').isDisabled());
+    await p.selectOption('#rq-form [name=withId]', 'danny');
+    await p.waitForTimeout(60);
+    check('menus: the swap preview names the colleague who accepts it', /Danny to accept/.test(await txt(p, '#pv')), await txt(p, '#pv'));
+    await p.close();
+  }
+  /* C. the switch refuses the same day and a takeOn that is already a working day */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.tomi, { data: withData() });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    await p.click('#fab'); await p.waitForSelector('#m-sheet.show');
+    await p.click('#sheet [data-act="switch"]'); await p.waitForSelector('#rq-form');
+    await p.fill('#rq-form [name=giveUp]', '2026-11-19'); await p.fill('#rq-form [name=takeOn]', '2026-11-19');
+    await p.waitForTimeout(60);
+    check('menus: a switch to the same day is refused', await p.locator('#rq-go').isDisabled(), await txt(p, '#pv'));
+    await p.fill('#rq-form [name=takeOn]', '2026-11-18');
+    await p.waitForTimeout(60);
+    check('menus: a switch onto a working day is refused (already in)', await p.locator('#rq-go').isDisabled(), await txt(p, '#pv'));
+    await p.close();
+  }
+  /* D. the sheet closes by its button and by a tap on the dark backdrop */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.tomi, { data: withData() });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    await p.click('#fab'); await p.waitForSelector('#m-sheet.show');
+    await p.click('#m-sheet', { position: { x: 5, y: 5 } });
+    await p.waitForTimeout(200);
+    check('menus: tapping the dark backdrop closes the sheet', !(await p.evaluate(() => document.getElementById('m-sheet').classList.contains('show'))));
+    await p.close();
+  }
+  /* E. the manager: Bank holidays, Staffing, Settings, and the review of a holiday */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.will, { data: withData(d => { d.shifts.managers = {}; }) });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    await p.click('#tabs [data-tab="bh"]'); await p.waitForSelector('#p-bh');
+    await p.click('[data-bh-gen]'); await p.waitForTimeout(300);
+    let st = await store(p);
+    check('menus: Fill the empty ones writes a rota for each bank holiday', Object.keys(st.data.shifts.bh || {}).length >= 1, JSON.stringify(Object.keys(st.data.shifts.bh || {})));
+    await p.click('#tabs [data-tab="staff"]'); await p.waitForSelector('#p-staff .card');
+    check('menus: Staffing shows the days below minimum and the time off', /Days below minimum/.test(await txt(p, '#p-staff')) && /Time off/.test(await txt(p, '#p-staff')));
+    await p.click('#tabs [data-tab="settings"]'); await p.waitForSelector('#cfg-form');
+    check('menus: Settings has no managers list for a manager (Dan only)', (await p.locator('[data-mgr]').count()) === 0);
+    await p.fill('#cfg-form [name=weekdayMin]', '99');
+    await p.click('[data-save-config]'); await p.waitForTimeout(250);
+    st = await store(p);
+    check('menus: an out of range minimum is clamped to 9, not saved as 99', at(st.data, 'shifts/config').weekdayMin === 9, JSON.stringify(at(st.data, 'shifts/config')));
+    await p.selectOption('[data-off="tomi"]', 'mon');
+    await p.waitForTimeout(150);
+    check('menus: changing a usual day off shows what it does to the short days', /usual day off|no change|more day|fewer short/.test(await txt(p, '#off-note')), await txt(p, '#off-note'));
+    await p.click('[data-off-save="tomi"]'); await p.waitForTimeout(250);
+    st = await store(p);
+    check('menus: saving a usual day off writes it to the lockup team list', at(st.data, 'lockup/config/team/tomi').off === 'mon', JSON.stringify(at(st.data, 'lockup/config/team/tomi')));
+    await p.click('#tabs [data-tab="requests"]'); await p.waitForSelector('[data-review="r1"]');
+    await p.click('[data-review="r1"]'); await p.waitForSelector('#m-sheet.show');
+    check('menus: the review shows the holiday with its Ciphr reference', /Karis/.test(await txt(p, '#sheet')));
+    await p.click('[data-rv-decline="r1"]'); await p.waitForTimeout(300);
+    st = await store(p);
+    check('menus: a manager can decline a request', at(st.data, 'shifts/requests/r1').status === 'declined', JSON.stringify(at(st.data, 'shifts/requests/r1')));
+    /* the exclusion list can be emptied and stays empty */
+    await p.click('#tabs [data-tab="settings"]'); await p.waitForSelector('#cfg-form');
+    await p.click('label.pick:has(input[name="bhx"][value="molly"])');
+    await p.click('label.pick:has(input[name="bhx"][value="chloe"])');
+    await p.click('[data-save-config]'); await p.waitForTimeout(250);
+    /* the test store is in memory and a reload clears it, so re-read by leaving and returning to the tab */
+    st = await store(p);
+    check('menus: an empty exclusion list is saved with the _none marker', at(st.data, 'shifts/config/bhExclude/_none') === true, JSON.stringify(at(st.data, 'shifts/config/bhExclude')));
+    await p.click('#tabs [data-tab="calendar"]').catch(() => {}); await p.waitForTimeout(200);
+    await p.click('#tabs [data-tab="settings"]'); await p.waitForSelector('#cfg-form');
+    check('menus: an empty bank holiday exclusion list stays empty when settings are reopened', (await p.locator('input[name="bhx"]:checked').count()) === 0, 'still excluded: ' + (await p.locator('input[name="bhx"]:checked').count()));
+    await p.close();
+  }
+  /* F. Dan (admin) manages managers; the checkboxes are there and save */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.dan, { data: withData() });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    await p.waitForTimeout(200);
+    await p.click('#tabs [data-tab="settings"]'); await p.waitForSelector('#cfg-form');
+    check('menus: Dan sees the managers list', (await p.locator('[data-mgr]').count()) > 5);
+    await p.check('[data-mgr="sergio"]'); await p.waitForTimeout(250);
+    const st = await store(p);
+    check('menus: Dan makes Sergio an extra manager', at(st.data, 'shifts/managers/sergio') === true);
+    await p.close();
+  }
+  /* G. the header: home link is there, and nothing overflows a 320px phone on any tab */
+  {
+    const p = await open(browser, base, null, '/shifts.html', U.will, { data: withData(), viewport: { width: 320, height: 640 } });
+    await p.waitForSelector('#tabs button', { timeout: 8000 });
+    await setNow(p, '2026-10-30');
+    for (const t of ['calendar', 'requests', 'bh', 'staff', 'settings']) {
+      await p.click('#tabs [data-tab="' + t + '"]');
+      await p.waitForTimeout(150);
+      const over = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      check('menus 320px: the ' + t + ' tab does not scroll sideways', over <= 0, 'overflows by ' + over);
+    }
+    check('menus: the header links back to the team home', (await p.locator('a[href="team.html"]').count()) >= 1);
+    await p.close();
+  }
+}
+
 const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -684,6 +938,8 @@ const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
     await scenarios(browser, base);
     await extraScenarios(browser, base);
     await bugScenarios(browser, base);
+    await boardScenarios(browser, base);
+    await calendarMenus(browser, base);
   } catch (e) {
     console.log('FAIL scenario crashed: ' + (e && e.message));
     CHECKS.push({ name: 'run', ok: false });

@@ -144,6 +144,7 @@ body.testmode .prog{top:97px}
         <p class="muted small" style="margin:6px 0 10px" id="cover-q">Who is locking up?</p>
         <div class="names" id="cover-names"></div>
       </div>
+      <p class="muted small" id="t-who" style="margin:10px 0 0"></p>
     </div>
     <div id="t-rota" style="margin-top:18px"></div>
   </section>
@@ -218,7 +219,6 @@ body.testmode .prog{top:97px}
 
 <div class="foot" id="foot" hidden><button class="big" id="foot-btn" type="button"></button></div>
 
-<div class="modal" id="pin-modal"><div class="sheet"><h2 style="margin-bottom:12px">Manager access</h2><input type="password" id="pin-input" inputmode="numeric" placeholder="Manager PIN" style="text-align:center;font-size:24px;letter-spacing:6px"><div class="row" style="margin-top:12px"><button class="big alt" id="pin-cancel" type="button" style="margin:0">Cancel</button><button class="big" id="pin-go" type="button" style="margin:0">Enter</button></div></div></div>
 <div class="modal" id="rec-modal"><div class="sheet" id="rec-body"></div></div>
 <div class="toast" id="toast"></div>
 
@@ -228,7 +228,6 @@ import { getDatabase, ref, onValue, set, update, push, remove, serverTimestamp }
 import { ensureSignedIn } from "./staff-auth.js";
 import { makeBackend } from "./team-backend.js";
 const goTeamSignIn=page=>{ location.href='team.html?next='+encodeURIComponent(page) };
-const managerCheck=()=>{ TeamSession.start(makeBackend(app)); return TeamSession.ready().then(s=>!!s.canManage) };
 const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
 const app=initializeApp(firebaseConfig); const db=getDatabase(app); ensureSignedIn(app);
 const R=window.LockupRota, $=id=>document.getElementById(id);
@@ -267,6 +266,10 @@ function subscribeAll(){
   on((RT+'/records'),()=>{REC_LOADED=true;scheduleApply()});
   paintTestBanner();
 }
+let SESSION={status:'loading',canManage:false};
+function signedPerson(){ return SESSION.status==='team'&&SESSION.personId?SESSION.personId:null }
+function onSession(s){ SESSION=s||SESSION; if(view==='manager'&&!SESSION.canManage){ show('tonight'); $('btn-manager').textContent='Managers' } if(CFG)paint() }
+TeamSession.start(makeBackend(app)); TeamSession.onChange(onSession);
 const SANDBOX=new URLSearchParams(location.search).has('sandbox'); /* ?sandbox=1: this browser only uses the test copy */
 onValue(ref(db,'lockup/config/testMode'),s=>{ const t=SANDBOX||s.val()!==false, r=t?'lockupTest':'lockup'; TEST=t; if(!MODE_KNOWN||r!==RT){MODE_KNOWN=true;RT=r;stopProgress();subscribeAll()} paintTestBanner() });
 function paintTestBanner(){ const b=$('testbar'); if(b){b.hidden=!TEST; document.body.classList.toggle('testmode',TEST)} const m=$('mg-test-state'); if(m)paintModeCard() }
@@ -310,6 +313,18 @@ function paintTonight(){
 function chooser(on,date){
   date=date||now.date; $('t-choose').hidden=false; $('cover-list').hidden=true;
   const people=on.kind==='managers'?mgrs():team(), rost=on.kind==='staff'?on.ids:[];
+  const mine=signedPerson(), who=on.kind==='managers'?['managers']:rost;
+  if(mine){
+    /* signed in: the signer is the person who is signed in, so nobody is asked who they are */
+    const nm=nameOf(mine), self=rost.indexOf(mine)>=0||on.kind==='managers';
+    $('btn-me').outerHTML='<div id="btn-me"><button class="big" type="button" data-id="'+esc(mine)+'">'+(self?'I\u2019m '+esc(nm)+', start lockup':'Start lockup as '+esc(nm))+'</button></div>';
+    $('btn-me').querySelector('button').onclick=()=>start(date,mine,who);
+    $('btn-cover').hidden=true; $('cover-list').hidden=true;
+    $('t-who').innerHTML='Signed in as '+esc(nm)+'. Your name goes on the record.';
+    return;
+  }
+  $('btn-cover').hidden=false;
+  $('t-who').innerHTML='Not signed in. <a href="team.html?next=lockup.html">Sign in with your work Google account</a> so your name goes on the record.';
   const me=$('btn-me'); me.hidden=!rost.length;
   me.outerHTML='<div id="btn-me"'+(rost.length?'':' hidden')+'>'+rost.map(id=>'<button class="big" type="button" data-id="'+esc(id)+'">I\u2019m '+esc(nameOf(id))+', start lockup</button>').join('')+'</div>';
   $('btn-me').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,rost));
@@ -436,10 +451,7 @@ async function submit(){
 $('btn-done-home').onclick=()=>{show('tonight');paint()};
 
 /* ---- managers ---- */
-$('btn-manager').onclick=()=>{ if(view==='manager'){show('tonight');paintTonight();$('btn-manager').textContent='Managers';return} if(role==='manager'){openMgr();return} managerCheck().then(ok=>{ if(ok){role='manager';openMgr();return} goTeamSignIn('lockup.html') }) };
-$('pin-cancel').onclick=()=>$('pin-modal').classList.remove('show');
-const tryPin=()=>window.dsGate.check('manager',$('pin-input').value).then(ok=>{ if(ok){role='manager';$('pin-modal').classList.remove('show');openMgr()} else {toast('Wrong PIN');$('pin-input').value=''} });
-$('pin-go').onclick=tryPin; $('pin-input').onkeydown=e=>{if(e.key==='Enter')tryPin()};
+$('btn-manager').onclick=()=>{ if(view==='manager'){show('tonight');paintTonight();$('btn-manager').textContent='Managers';return} TeamSession.ready().then(s=>{ if(s.canManage){openMgr();return} goTeamSignIn('lockup.html') }) };
 function openMgr(){ show('manager'); $('btn-manager').textContent='Tonight'; paintManager() }
 let tab='rota';
 $('mg-tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;$('mg-tabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));paintManager()});
@@ -581,7 +593,8 @@ function paintPublicRota(){
 function sheet(html){ $('rec-body').innerHTML='<div class="row" style="justify-content:flex-end"><button class="ghost" type="button" id="sh-x">Close</button></div>'+html; $('rec-modal').classList.add('show'); $('sh-x').onclick=closeSheet }
 function closeSheet(){ $('rec-modal').classList.remove('show') }
 function openCantMake(date){
-  const pair=R.pairOn(weeksClean(),date);
+  const pair=R.pairOn(weeksClean(),date), mine=signedPerson();
+  if(mine){ if(pair.indexOf(mine)>=0) return cantMakeFor(date,mine); toast('You are not on lockup that night'); return }
   sheet('<h2>'+fmtDate(date,true)+'</h2><p class="muted" style="margin:6px 0 14px">On lockup: '+esc(namesOf(pair))+'. Who are you?</p><div class="names">'+pair.map(id=>'<button type="button" data-id="'+esc(id)+'">'+esc(nameOf(id))+'</button>').join('')+'</div>');
   $('rec-body').querySelectorAll('.names button').forEach(b=>b.onclick=()=>cantMakeFor(date,b.dataset.id));
 }
@@ -599,6 +612,7 @@ function openHoliday(){
   const tm=team(), ids=Object.keys(tm).filter(k=>tm[k].active!==false).sort((a,b)=>(tm[a].order||0)-(tm[b].order||0));
   sheet('<h2>Book holiday</h2><p class="muted" style="margin:6px 0 14px">Any lockup nights you&rsquo;re on get re-paired, and the managers get an email to approve it.</p><select id="hb-who"><option value="">Who are you?</option>'+ids.map(k=>'<option value="'+k+'">'+esc(tm[k].name)+'</option>').join('')+'</select><div class="filters" style="margin-top:10px"><label class="small muted">First day off<input type="date" id="hb-from" min="'+now.date+'"></label><label class="small muted">Last day off<input type="date" id="hb-to" min="'+now.date+'"></label></div><textarea id="hb-note" placeholder="Note (optional)"></textarea><button class="big" type="button" id="hb-go" style="margin-top:12px">Book it</button>');
   $('hb-from').onchange=()=>{ if(!$('hb-to').value||$('hb-to').value<$('hb-from').value)$('hb-to').value=$('hb-from').value };
+  const mine=signedPerson(); if(mine&&ids.indexOf(mine)>=0){ $('hb-who').value=mine; $('hb-who').disabled=true }
   $('hb-go').onclick=async()=>{ const p=$('hb-who').value,f=$('hb-from').value,t=$('hb-to').value; if(!p||!f||!t||t<f){toast('Pick your name and the dates');return} $('hb-go').disabled=true;
     try{ const ch=await addAbsence(p,f,t,'holiday',$('hb-note').value.trim()); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Holiday booked</h2><p class="muted" style="margin-top:8px">'+(ch.length?ch.length+' lockup night'+(ch.length>1?'s':'')+' re-paired.':'No lockup nights to change yet.')+' The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again');$('hb-go').disabled=false} };
 }

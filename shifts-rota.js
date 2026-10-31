@@ -34,12 +34,14 @@
       .filter(function (k) { return v[k] === true || (typeof v[k] === 'string' && v[k]); })
       .map(function (k) { return v[k] === true ? k : v[k]; });
   }
+  var NONE_MARK = '_none';
   function cfgOf(config) {
     var c = {};
     Object.keys(DEFAULT_CONFIG).forEach(function (k) {
       c[k] = (config && config[k] != null) ? config[k] : DEFAULT_CONFIG[k];
     });
-    c.bhExclude = listOf(c.bhExclude);
+    /* an empty exclusion list is saved as the _none marker, because Firebase drops an empty object */
+    c.bhExclude = listOf(c.bhExclude).filter(function (id) { return id !== NONE_MARK; });
     c.handoverIds = listOf(c.handoverIds);
     return c;
   }

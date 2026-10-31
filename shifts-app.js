@@ -715,6 +715,7 @@
     v.saturdayMin = num('saturdayMin', 0, 10, 7);
     v.bhStaff = num('bhStaff', 0, 10, 4);
     v.switchesPerWeek = num('switchesPerWeek', 0, 5, 1);
+    if (!Object.keys(ex).length) ex['_none'] = true; // marker: Firebase drops an empty object, see shifts-rota.js cfgOf
     v.bhExclude = ex;
     B.set(st.RS + '/config', v).then(function () {
       auditLine('Changed the staffing settings: weekdays ' + v.weekdayMin + ', Saturday ' + v.saturdayMin + ', bank holidays ' + v.bhStaff);
