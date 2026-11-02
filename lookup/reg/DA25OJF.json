@@ -1,0 +1,33 @@
+{
+ "reg": "DA25OJF",
+ "model": "BMW 530e 2.0 530e 22.1kWh M Sport Steptronic Euro 6 (s/s) 4dr",
+ "series": "5 Series",
+ "year": 2025,
+ "mileage": "14,187 miles",
+ "mileage_miles": 14187,
+ "colour": "Grey",
+ "fuel": "Plug-in hybrid",
+ "body": "Saloon",
+ "gearbox": "Automatic",
+ "drive": "RearWheel",
+ "seats": 5,
+ "doors": 4,
+ "power": "298 hp",
+ "trim": "M Sport",
+ "price": "£41,000",
+ "price_gbp": 41000,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19bd6-4c17-7d2b-aa06-6ccad6dd08fb-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19bd6-4c17-7d2b-aa06-6ccad6dd08fb-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19bd6-4d1f-7833-9543-465adab0a794-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19bd6-4dc3-70ee-8a90-731ec6395f32-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19bd6-4e90-7571-97f9-2e2842e1436d-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/259090/pb-bmw-530e-2025",
+ "listing_id": "259090",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}
