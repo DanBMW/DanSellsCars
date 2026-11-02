@@ -62,6 +62,8 @@
   .ty-welcome-frame video{display:block;width:100%;height:auto;aspect-ratio:768/432}
   .ty-welcome-note{font-size:.8rem;color:var(--muted);line-height:1.6;margin:12px auto 0;max-width:768px}
   @media(max-width:480px){.ty-welcome{padding:32px 0 4px}}
+  /* Finance proposal already done: the finance prompts are not needed */
+  .ty-finance-done .ty-finance-band,.ty-finance-done .ty-finance-cta{display:none!important}
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>
@@ -1238,6 +1240,8 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     });
     btn.classList.add(v==='no'?'ty-check-btn-no':'ty-check-btn-yes');
     answers[q]=v;
+    // Finance proposal already done: drop the finance sections (every route in, taps and links, comes through here)
+    document.documentElement.classList.toggle('ty-finance-done',answers.finance==='yes');
 
     // Render the help for this question directly beneath it
     var SLOTS={
