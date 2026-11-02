@@ -57,7 +57,9 @@
         '<p>All of your policy documents will follow shortly, but if you have any questions about your cover or your new car, please do let me know and I will be happy to assist.</p>\n';
     } else {
       var one = missing.length === 1;
+      var included = PRODUCTS.filter(function (p) { return bought.indexOf(p.id) >= 0; });
       subject = "Protection options for your new " + car;
+      if (included.length) h += '<p>Your car is protected with ' + esc(joinList(included.map(function (p) { return p.name; }))) + '.</p>\n';
       h += '<p>I just wanted to follow up regarding the additional protection policies available for your new car. Currently, you haven\'t taken out ' +
         esc(joinList(missing.map(function (p) { return p.inList; }), "or")) + ', so I\'ve included the information on ' + (one ? "this" : "these") + ' below. Tap ' + (one ? "the" : "any") + ' video to watch.</p>\n' +
         '<p>Please note: the product videos in this email are AI generated.</p>\n' +
