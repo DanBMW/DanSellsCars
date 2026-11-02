@@ -412,11 +412,11 @@ a{color:inherit;text-decoration:none}
       <input class="widget-input" id="pe-date" type="date">
       <div class="widget-title" style="margin-bottom:8px;">Products they've bought</div>
       <div class="chip-row">
-        <div class="chip" data-pe="tyreAlloy" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Tyre &amp; Alloy</div>
-        <div class="chip" data-pe="gap" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>GAP</div>
-        <div class="chip" data-pe="hedinCare" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Club HedinCare SMART</div>
-        <div class="chip" data-pe="ceramic" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Williams Ceramic</div>
-        <div class="chip" data-pe="warranty" onclick="this.classList.toggle('on')"><span class="chip-dot"></span>Extended Warranty</div>
+        <div class="chip" data-pe="tyreAlloy" onclick="this.classList.toggle('on');peLive()"><span class="chip-dot"></span>Tyre &amp; Alloy</div>
+        <div class="chip" data-pe="gap" onclick="this.classList.toggle('on');peLive()"><span class="chip-dot"></span>GAP</div>
+        <div class="chip" data-pe="hedinCare" onclick="this.classList.toggle('on');peLive()"><span class="chip-dot"></span>Club HedinCare SMART</div>
+        <div class="chip" data-pe="ceramic" onclick="this.classList.toggle('on');peLive()"><span class="chip-dot"></span>Williams Ceramic</div>
+        <div class="chip" data-pe="warranty" onclick="this.classList.toggle('on');peLive()"><span class="chip-dot"></span>Extended Warranty</div>
       </div>
       <div class="widget-title" style="margin-bottom:8px;">Stage</div>
       <div class="chip-row">
@@ -1450,19 +1450,21 @@ renderTemplates();
 <script>
 (function(){var t=new Date();document.getElementById('pe-date').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');})();
 var peStageVal='point_of_sale',peLast=null;
-function peStage(s){peStageVal=s;document.getElementById('pe-pos').classList.toggle('on',s==='point_of_sale');document.getElementById('pe-post').classList.toggle('on',s==='post_handover');}
-function peCreate(){
+function peStage(s){peStageVal=s;document.getElementById('pe-pos').classList.toggle('on',s==='point_of_sale');document.getElementById('pe-post').classList.toggle('on',s==='post_handover');peLive();}
+// Keep the preview in step with the ticks: once a preview is showing, any change to the products or stage rebuilds it.
+function peLive(){if(document.getElementById('pe-out').style.display==='block')peCreate(true);}
+function peCreate(silent){
   var err=document.getElementById('pe-err');err.textContent='';
   var d={email:document.getElementById('pe-email').value,firstName:document.getElementById('pe-name').value,car:document.getElementById('pe-car').value,
     orderDate:document.getElementById('pe-date').value,stage:peStageVal,
     bought:[].slice.call(document.querySelectorAll('[data-pe].on')).map(function(c){return c.getAttribute('data-pe');})};
-  if(!ProductEmail.isValidEmail(d.email)){err.textContent='Please enter a valid customer email.';return;}
-  if(!d.firstName.trim()){err.textContent='Please enter the customer first name.';return;}
-  if(!d.orderDate){err.textContent='Please pick the order date.';return;}
-  try{peLast=ProductEmail.build(d);}catch(e){err.textContent=e.message;return;}
+  if(!ProductEmail.isValidEmail(d.email)){if(!silent)err.textContent='Please enter a valid customer email.';return;}
+  if(!d.firstName.trim()){if(!silent)err.textContent='Please enter the customer first name.';return;}
+  if(!d.orderDate){if(!silent)err.textContent='Please pick the order date.';return;}
+  try{peLast=ProductEmail.build(d);}catch(e){if(!silent)err.textContent=e.message;return;}
   document.getElementById('pe-meta').innerHTML='<b>To:</b> '+peEsc(peLast.to)+'<br><b>Cc:</b> '+peLast.cc+'<br><b>Subject:</b> '+peEsc(peLast.subject);
   document.getElementById('pe-preview').innerHTML=peLast.html;
-  document.getElementById('pe-msg').textContent='';
+  if(!silent)document.getElementById('pe-msg').textContent='';
   document.getElementById('pe-out').style.display='block';
 }
 function peEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
