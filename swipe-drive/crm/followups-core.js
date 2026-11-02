@@ -181,21 +181,28 @@
   /* month 0: product presentation, reusing product-email.js (same included / available to add layout and AI video note).
      rec.products = ids of products the customer has; null or missing = no product section. */
   function PEmod() { if (typeof ProductEmail !== 'undefined') return ProductEmail; if (typeof require === 'function') return require('../../product-email.js'); throw new Error('product-email.js not loaded'); }
-  function productSection(rec) { var PE = PEmod(), has = rec.products || [], inc = PE.PRODUCTS.filter(function (p) { return has.indexOf(p.id) >= 0; }), exc = PE.PRODUCTS.filter(function (p) { return has.indexOf(p.id) < 0; });
-    var intro = !exc.length ? 'Thank you for choosing our full range of protection. With ' + PE.joinList(inc.map(function (p) { return p.name; })) + ' all in place, you can simply enjoy the drive. Here is a reminder of what each one covers.'
+  function productSection(rec, unknown) { var PE = PEmod(), has = rec.products || [], inc = PE.PRODUCTS.filter(function (p) { return has.indexOf(p.id) >= 0; }), exc = PE.PRODUCTS.filter(function (p) { return has.indexOf(p.id) < 0; });
+    var intro = unknown ? 'Below is some information on the protection products available for your new car, with a short video for each. Tap any video to watch.' : !exc.length ? 'Thank you for choosing our full range of protection. With ' + PE.joinList(inc.map(function (p) { return p.name; })) + ' all in place, you can simply enjoy the drive. Here is a reminder of what each one covers.'
       : inc.length ? 'Your car is protected with ' + PE.joinList(inc.map(function (p) { return p.name; })) + '. Below is a reminder of what you have, along with the other protection products available to add if you would like them.'
       : 'Below is some information on the protection products available for your new car, in case any would be useful. Tap any video to watch.';
     var h = '<p style="margin:0 0 14px">' + PE.esc(intro) + '</p><p style="margin:0 0 14px">Please note: the product videos in this email are AI generated.</p><table width="100%" cellpadding="0" cellspacing="0">'
       + PE.PRODUCTS.map(function (p) { var on = has.indexOf(p.id) >= 0;
-        var tag = '<p style="margin:16px 0 0;font-size:12px;font-weight:bold;letter-spacing:.04em;color:' + (on ? '#1a7f37' : '#8a6d00') + '">' + (on ? '&#10003; INCLUDED WITH YOUR CAR' : 'NOT INCLUDED, AVAILABLE TO ADD') + '</p>';
+        var tag = unknown ? '' : '<p style="margin:16px 0 0;font-size:12px;font-weight:bold;letter-spacing:.04em;color:' + (on ? '#1a7f37' : '#8a6d00') + '">' + (on ? '&#10003; INCLUDED WITH YOUR CAR' : 'NOT INCLUDED, AVAILABLE TO ADD') + '</p>';
         return PE.productBlock(p).replace('<td style="padding:16px 0;border-top:1px solid #e5e5e5">', '<td style="padding:0 0 16px;border-top:1px solid #e5e5e5">' + tag); }).join('')
       + '</table><p style="margin:0 0 14px"><a href="' + PE.VID + 'full-presentation.html" style="color:#1c69d4">&#9654; Watch our full protection presentation</a></p>';
     return { html: h, text: PE.toText(h), included: inc.map(function (p) { return p.id; }), available: exc.map(function (p) { return p.id; }) }; }
   function build(rec, variant, stage) {
     stage = stage || nextStage(rec); if (!stage) throw new Error('Journey complete');
     var v = variants(stage.kind)[variant]; if (!v) throw new Error('Pick one of the three wordings');
-    var pm0 = stage.kind === 'purchase' ? productMention(rec.progress) : '', vp = pm0 ? v.p.slice(0, -1).concat([pm0], v.p.slice(-1)) : v.p;
-    var paras = vp.concat(['Kind regards,']), ps = stage.kind === 'initial' && Array.isArray(rec.products) ? productSection(rec) : null, at = paras.length - 2;
+    /* The congratulations email carries the product presentation videos. Which products the customer has comes from the follow up record
+       (rec.products) or the purchase tool ticks (rec.progress.products); if neither was ticked the section is shown without included tags. */
+    var ps = null, pm0 = '';
+    if (stage.kind === 'purchase') {
+      var pp = normProgress(rec.progress).products, have = Array.isArray(rec.products) ? rec.products : Array.isArray(pp) ? pp : null;
+      try { ps = productSection({ products: have || [] }, !have); } catch (er) { ps = null; pm0 = productMention(rec.progress); }
+    } else if (stage.kind === 'initial' && Array.isArray(rec.products)) ps = productSection(rec);
+    var vp = pm0 ? v.p.slice(0, -1).concat([pm0], v.p.slice(-1)) : v.p;
+    var paras = vp.concat(['Kind regards,']), at = paras.length - 2;
     var html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#111;max-width:600px"><p style="margin:0 0 14px">Hi ' + escH(rec.firstName) + ',</p>'
       + paras.map(function (p, i) { return (ps && i === at ? ps.html : '') + '<p style="margin:0 0 14px">' + fill(p, rec, stage, true) + '</p>'; }).join('') + '</div>';
     var tp = paras.map(function (p) { return fill(p, rec, stage, false); }); if (ps) tp.splice(at, 0, ps.text);

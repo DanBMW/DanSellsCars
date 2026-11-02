@@ -6,19 +6,19 @@
   var PAGE = "https://hedinautomotive.co.uk/buy-car/finance-and-protection-products/protection-products/bmw/";
   var PRODUCTS = [
     { id: "tyreAlloy", slug: "tyre-alloy", name: "Tyre & Alloy Insurance", inList: "Tyre & Alloy Insurance", zero: true,
-      text: "Up to 5 new tyres and 5 alloy wheel repairs a year (15 of each on a three-year policy), plus unlimited puncture repairs. It covers accidental and malicious damage and is Defaqto 5-star rated.",
+      text: "Up to 5 new tyres and 5 alloy wheel repairs a year (15 of each on a three year policy), plus unlimited puncture repairs. It covers accidental and malicious damage and is Defaqto 5 star rated.",
       pdf: PDF + "personal-finance/ipid-for-sjames-taw-202401-combined.pdf" },
     { id: "gap", slug: "gap", name: "GAP Insurance", inList: "GAP Insurance", zero: true,
       text: "Return to Invoice cover if your car is written off, with a contribution towards your motor insurance excess and towards a temporary replacement car. Available for 36 or 48 months.",
       pdf: PDF + "personal-finance/ipid-for-sjms-rtigme-36m-30d-500axs-202407.pdf" },
     { id: "hedinCare", slug: "club-hedincare", name: "Hedin Club Care SMART Protection", inList: "Hedin Club Care SMART Protection", zero: false,
-      text: "Unlimited repairs for chips, light scratches, scuffs and minor dents, done in-house or by our mobile team, with two assessments a year. It won't affect your no-claims bonus.",
+      text: "Unlimited repairs for chips, light scratches, scuffs and minor dents, done in house or by our mobile team, with two assessments a year. It won't affect your no claims bonus.",
       page: PAGE + "club-hedincare-cosmetic-repair" },
     { id: "ceramic", slug: "williams-ceramic", name: "Williams Racing Ceramic Coating", inList: "Williams Racing Ceramic Coating", zero: false,
-      text: "A high-gloss ceramic coating that protects your paintwork from tree sap, pollutants, UV and the British weather, plus interior fabric protection, all with a lifetime guarantee.",
+      text: "A high gloss ceramic coating that protects your paintwork from tree sap, pollutants, UV and the British weather, plus interior fabric protection, all with a lifetime guarantee.",
       page: PAGE + "williams-racing" },
     { id: "warranty", slug: "extended-warranty", name: "Extended Warranty", inList: "an Extended Warranty", zero: false,
-      text: "Unlimited claims covering parts and labour with new-for-old manufacturer-specification parts, a replacement car for up to 7 days after the first 24 hours, European cover for up to 60 days a year, plus roadside assistance (UK breakdown cover only).",
+      text: "Unlimited claims covering parts and labour with new for old manufacturer specification parts, a replacement car for up to 7 days after the first 24 hours, European cover for up to 60 days a year, plus roadside assistance (UK breakdown cover only).",
       pdf: PDF + "warranty-presenter/12513-hedin-certified-warranty-sales-presenter-jan26-final.pdf" }
   ];
   var VID = "https://dan-sells.co.uk/product-videos/";

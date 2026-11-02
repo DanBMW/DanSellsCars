@@ -22,7 +22,8 @@ assert.ok(!/[\u2013\u2014]/.test(F.progressSummary({ finance: "na" }).join(" "))
 const rp = F.newRecord({ firstName: "Ann", email: "ann@example.com", car: "BMW X1", progress: { products: ["gap", "ceramic", "bogus"] } }, "2026-10-30");
 assert.deepStrictEqual(rp.progress.products, ["gap", "ceramic"]); n++;
 const mp = F.productMention(rp.progress); assert.ok(/Tyre & Alloy Insurance, Hedin Club Care SMART Protection and Extended Warranty\.$/.test(mp) && !/GAP|Ceramic/.test(mp)); n++;
-assert.ok(F.waText(rp).endsWith(mp) && F.build(rp, 0).text.includes(mp)); n++;
+assert.ok(F.waText(rp).endsWith(mp)); n++;   // WhatsApp keeps the one line mention
+{ const m = F.build(rp, 0); assert.ok(!m.text.includes(mp) && /Watch the video/i.test(m.text + m.html) && /INCLUDED WITH YOUR CAR/.test(m.html) && /NOT INCLUDED, AVAILABLE TO ADD/.test(m.html)); n++; }   // congratulations email: video cards replace the one line mention
 assert.ok(/Tyre & Alloy Insurance, GAP Insurance, Hedin Club Care SMART Protection, Williams Racing Ceramic Coating and Extended Warranty\.$/.test(F.productMention({}))); assert.ok(F.build(r, 0).text.includes("Extended Warranty") && F.waText(r).includes("GAP Insurance")); n++;
 assert.strictEqual(F.productMention({ products: ["tyreAlloy", "gap", "hedinCare", "ceramic", "warranty"] }), ""); n++;
 assert.ok(F.build(rp, 0).text.trim().endsWith("Kind regards,")); n++;

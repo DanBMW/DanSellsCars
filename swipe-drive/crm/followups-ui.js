@@ -105,7 +105,7 @@
       + '<div class="fx-seg"><button data-p="journey" class="' + (path === 'journey' ? 'on' : '') + '">Bought a car</button><button data-p="kit" class="' + (path === 'kit' ? 'on' : '') + '">Keep in touch (not bought yet)</button></div>'
       + ['firstName:First name', 'lastName:Surname', 'email:Email address', 'phone:Mobile (optional)', 'car:Car e.g. BMW X1 xDrive23i M Sport'].map(function (f) { f = f.split(':');
         return '<input class="widget-input" data-f="' + f[0] + '" placeholder="' + f[1] + '" value="' + e(r[f[0]] || '') + '" autocomplete="off">'; }).join('')
-      + '<div id="fx-jf"><div class="fx-sub">Protection products they have (shown in the initial follow up after collection)</div><div class="fx-chips">'
+      + '<div id="fx-jf"><div class="fx-sub">Protection products they have (shown in the congratulations and initial follow up)</div><div class="fx-chips">'
       + (window.ProductEmail ? ProductEmail.PRODUCTS.map(function (p) { return '<button class="fx-chip' + ((r.products || []).indexOf(p.id) >= 0 ? ' on' : '') + '" data-pr="' + p.id + '">' + e(p.name) + '</button>'; }).join('') : '')
       + '</div><label class="fx-chk"><input type="checkbox" id="fx-incp"' + (!id || Array.isArray(r.products) ? ' checked' : '') + '> Include the product presentation in the initial follow up</label>' + (id ? '' : '<div class="fx-sub">Which email are you sending now?</div><select class="widget-input" data-f="stage" id="fx-stage"></select>'
       + '<div class="fx-sub">Date of this email</div><input class="widget-input" type="date" data-f="sentDate" id="fx-sent" value="' + t + '">')

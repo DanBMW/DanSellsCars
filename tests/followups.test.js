@@ -84,9 +84,11 @@ const assert = require("assert"); const F = require("../swipe-drive/crm/followup
       assert.ok(!/0% finance|£/.test(m.text)); assert.ok(m.text.endsWith("Kind regards,")); assert.ok(m.text.indexOf("AI generated") < m.text.indexOf("wa.me"));
       const intro = m.text.split("\n\n")[3]; assert.ok(!/[-\u2010-\u2015]/.test(intro), intro); } }
   // products only on month 0; no products field = plain congrats
-  const plain = F.build({ ...rec, products: null }, 0); assert.ok(!plain.html.includes("AI generated")); assert.strictEqual(plain.products, null);
+  // congratulations (buy) now carries the product videos; with nothing ticked they show neutrally, no included tags
+  const buyNone = F.build({ ...rec, products: null }, 0); assert.ok(buyNone.html.includes("AI generated") && !/INCLUDED/.test(buyNone.html));
+  const plain = F.build({ ...rec, products: null }, 0, F.stagesFor(48).find(s => s.kind === "initial")); assert.ok(!plain.html.includes("AI generated")); assert.strictEqual(plain.products, null);
   const later = F.markSent(F.newRecord({ firstName: "Jo", email: "jo@example.com", products: ["gap"], stage: "m0" }, "2026-10-29"), "2026-10-29", 0);
-  assert.ok(!F.build(F.newRecord({ firstName: "Jo", email: "jo@example.com", products: ["gap"] }, "2026-10-29"), 0).html.includes("AI generated"));
+  { const buyGap = F.build(F.newRecord({ firstName: "Jo", email: "jo@example.com", products: ["gap"] }, "2026-10-29"), 0).html; assert.ok(buyGap.includes("AI generated") && buyGap.includes("INCLUDED WITH YOUR CAR")); }   // congratulations carries the videos, ticked products tagged
   assert.ok(!F.build(later, 0).html.includes("AI generated")); n++;
   // mid journey entry keeps products in the encrypted record
   const midP = F.newRecord({ firstName: "Sam", email: "sam@example.com", stage: "m12", sentDate: "2026-10-29", products: ["gap", "warranty"] }, "2026-10-29");

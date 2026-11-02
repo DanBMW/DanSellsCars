@@ -4,7 +4,9 @@ const NOTE = "<p>Please note: the product videos in this email are AI generated.
 const base = { email: "james@example.com", firstName: "James", car: "BMW 1 Series", orderDate: "2026-10-27", stage: "point_of_sale" };
 // matches yesterday's approved test email body
 const ref0 = fs.readFileSync("/workspace/hedin-products/test-email-sergio.html", "utf8").match(/<tr><td>\n([\s\S]*)<\/td><\/tr><\/table><\/td><\/tr><\/table>/)[1];
-const ref = ref0.replace(/<p>Kind regards,[\s\S]*$/, "<p>Kind regards,</p>");
+// 2 Nov 2026: product copy reworded without hyphens (site rule: no dashes in visible copy)
+const DEHY = [["three-year","three year"],["5-star","5 star"],["high-gloss","high gloss"],["in-house","in house"],["no-claims","no claims"],["new-for-old","new for old"],["manufacturer-specification","manufacturer specification"]];
+const ref = DEHY.reduce((t, [a, b]) => t.split(a).join(b), ref0).replace(/<p>Kind regards,[\s\S]*$/, "<p>Kind regards,</p>");
 const r0 = PE.build({ ...base, bought: [] });
 assert.strictEqual(r0.html.replace(NOTE + "\n", "").match(/<tr><td>\n([\s\S]*)<\/td><\/tr><\/table><\/td><\/tr><\/table>/)[1], ref, "matches test email");
 assert.strictEqual(r0.deadline, "26th November"); assert.strictEqual(r0.cc, "Sergio.Garaguso@hedinautomotive.co.uk");
