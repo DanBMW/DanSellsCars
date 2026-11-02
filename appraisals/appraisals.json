@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-02T10:02:24.684Z",
+  "captured": "2026-11-02T12:02:36.549Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "M4LSO",
+      "appraisedAt": "2026-11-02T11:11:39.961Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--uU2aoDGI--/c_fill,h_300,w_300/v1793617982/Live/Appraisals/9617443/c37dc7d0-0797-49e2-91f1-fd9a8f5fe227.jpg"
+    },
     {
       "registration": "LR64VGL",
       "appraisedAt": "2026-10-31T12:18:53.943Z",
@@ -426,6 +436,16 @@
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--D8B_ZDnh--/c_fill,h_300,w_300/v1793028194/Live/Appraisals/9603800/0ba2b9d2-2c16-4782-a751-97878c17634e.jpg"
     },
     {
+      "registration": "LV25YDB",
+      "appraisedAt": "2026-10-26T12:04:21.388Z",
+      "make": "KIA",
+      "model": "Picanto",
+      "status": "Returned",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jvXtIoas--/c_fill,h_300,w_300/v1793016284/Live/Appraisals/9602994/52aefd0b-4a6b-4570-b341-291d4d1f2f1a.jpg"
+    },
+    {
       "registration": "OO55EVE",
       "appraisedAt": "2026-10-26T12:04:21.388Z",
       "make": "KIA",
@@ -433,7 +453,8 @@
       "status": "SaleInProgress",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jvXtIoas--/c_fill,h_300,w_300/v1793016284/Live/Appraisals/9602994/52aefd0b-4a6b-4570-b341-291d4d1f2f1a.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jvXtIoas--/c_fill,h_300,w_300/v1793016284/Live/Appraisals/9602994/52aefd0b-4a6b-4570-b341-291d4d1f2f1a.jpg",
+      "droppedAt": "2026-11-02T12:02:36.548Z"
     },
     {
       "registration": "EO25SKZ",
