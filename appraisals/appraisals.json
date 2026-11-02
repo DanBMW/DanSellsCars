@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-02T14:02:20.165Z",
+  "captured": "2026-11-02T16:02:10.402Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "C114RLA",
+      "appraisedAt": "2026-11-02T14:55:47.290Z",
+      "make": "BMW",
+      "model": "X6 M",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--HW_K4Lov--/c_fill,h_300,w_300/v1793631348/Live/Appraisals/9618374/7fffb930-775c-40f5-a5f9-12636d537d04.jpg"
+    },
+    {
+      "registration": "EO25SKZ",
+      "appraisedAt": "2026-11-02T14:43:33.920Z",
+      "make": "BMW",
+      "model": "M3",
+      "status": "ManualValuationPending",
+      "price": null,
+      "condition": "",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--fXgbTbnX--/c_fill,h_300,w_300/v1793630615/Live/Appraisals/9618328/bdceb469-1835-4e4f-9792-dae8ff946a09.jpg"
+    },
     {
       "registration": "M4LSO",
       "appraisedAt": "2026-11-02T11:11:39.961Z",
@@ -266,16 +286,6 @@
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--bFjWs2fu--/c_fill,h_300,w_300/v1793203901/Live/Appraisals/9608143/df5f6e64-a655-4806-9f8c-a4c82d0d0760.jpg"
     },
     {
-      "registration": "C114RLA",
-      "appraisedAt": "2026-10-28T15:53:10.004Z",
-      "make": "BMW",
-      "model": "X6 M",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
       "registration": "YF20WZS",
       "appraisedAt": "2026-10-28T15:35:23.781Z",
       "make": "BMW",
@@ -455,16 +465,6 @@
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--jvXtIoas--/c_fill,h_300,w_300/v1793016284/Live/Appraisals/9602994/52aefd0b-4a6b-4570-b341-291d4d1f2f1a.jpg",
       "droppedAt": "2026-11-02T12:02:36.548Z"
-    },
-    {
-      "registration": "EO25SKZ",
-      "appraisedAt": "2026-10-26T11:57:58.600Z",
-      "make": "BMW",
-      "model": "M3",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "LY75EUE",
