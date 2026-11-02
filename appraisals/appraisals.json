@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-02T16:02:10.402Z",
+  "captured": "2026-11-02T18:02:02.957Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "EO25SKZ",
+      "appraisedAt": "2026-11-02T16:04:39.512Z",
+      "make": "BMW",
+      "model": "M3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--fXgbTbnX--/c_fill,h_300,w_300/v1793630615/Live/Appraisals/9618328/bdceb469-1835-4e4f-9792-dae8ff946a09.jpg"
+    },
     {
       "registration": "C114RLA",
       "appraisedAt": "2026-11-02T14:55:47.290Z",
@@ -13,16 +23,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--HW_K4Lov--/c_fill,h_300,w_300/v1793631348/Live/Appraisals/9618374/7fffb930-775c-40f5-a5f9-12636d537d04.jpg"
-    },
-    {
-      "registration": "EO25SKZ",
-      "appraisedAt": "2026-11-02T14:43:33.920Z",
-      "make": "BMW",
-      "model": "M3",
-      "status": "ManualValuationPending",
-      "price": null,
-      "condition": "",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--fXgbTbnX--/c_fill,h_300,w_300/v1793630615/Live/Appraisals/9618328/bdceb469-1835-4e4f-9792-dae8ff946a09.jpg"
     },
     {
       "registration": "M4LSO",
