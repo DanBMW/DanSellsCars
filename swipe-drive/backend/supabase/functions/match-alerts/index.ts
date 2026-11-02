@@ -121,9 +121,10 @@ async function run(db: any, out: any) {
     .concat(newSeeded ? newCars.filter(c => !seenSet.has(c.reg)) : []);          // first run with new stock only seeds it
   out.stage = 'matching';
   if (newCars.length) noteErr(out, 'stock_seen new stock', await db.from('stock_seen').upsert(newCars.map(c => ({ reg: c.reg })), { onConflict: 'reg', ignoreDuplicates: true }));
-  if (cars.length && (!seenSet.size || cars.length >= seenSet.size * 0.6))
+  const usedSeen = [...seenSet].filter((r: any) => !String(r).startsWith('NEW')).length;   // NEW<order> rows are new stock, not part of lookup/stock.json
+  if (cars.length && (!usedSeen || cars.length >= usedSeen * 0.6))
     noteErr(out, 'stock_seen', await db.from('stock_seen').upsert(cars.map(c => ({ reg: c.reg })), { onConflict: 'reg', ignoreDuplicates: true }));
-  else if (cars.length) out.warnings.push(`Stock looked short (${cars.length} cars against ${seenSet.size} seen), stock_seen left as it was`);
+  else if (cars.length) out.warnings.push(`Stock looked short (${cars.length} cars against ${usedSeen} used cars seen), stock_seen left as it was`);
   out.fresh = fresh.length;
 
   // customers whose 33 month point has arrived come back: equity baseline 0, flagged Due to change, matching resumes
@@ -177,7 +178,7 @@ async function run(db: any, out: any) {
   // ---------- 33 month reminders ----------
   const today = new Date().toISOString().slice(0, 10);
   out.stage = 'change reminders';
-  const { data: due, error: dueErr } = await db.from('purchases').select('*, customers(*)').lte('remind_on', today).is('reminder_sent_at', null).eq('cancelled', false);
+  const { data: due, error: dueErr } = await db.from('purchases').select('*, customers!purchases_customer_id_fkey(*)').lte('remind_on', today).is('reminder_sent_at', null).eq('cancelled', false);
   if (dueErr) out.warnings.push('Reminders not read: ' + dueErr.message);
   for (const pu of due || []) {
     const cu = pu.customers; if (!cu || cu.closed_at) continue;   // closed (archived) customers get no reminders; left unsent so reopening brings it back
