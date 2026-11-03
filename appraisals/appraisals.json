@@ -1,9 +1,49 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-03T14:02:02.063Z",
+  "captured": "2026-11-03T16:02:03.578Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LY16OUO",
+      "appraisedAt": "2026-11-03T15:36:08.334Z",
+      "make": "BMW",
+      "model": "X4",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jR0PsnA2--/c_fill,h_300,w_300/v1793720177/Live/Appraisals/9620485/f2b64785-cee3-40f1-90c5-bacc73e9b441.jpg"
+    },
+    {
+      "registration": "LY73ELX",
+      "appraisedAt": "2026-11-03T15:32:56.549Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--SbHp3T32--/c_fill,h_300,w_300/v1793720249/Live/Appraisals/9620469/21be8a42-5f9b-4b18-8208-c5c25801174f.jpg"
+    },
+    {
+      "registration": "LY75HGG",
+      "appraisedAt": "2026-11-03T14:40:51.370Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LV23EWT",
+      "appraisedAt": "2026-11-03T14:37:28.083Z",
+      "make": "BMW",
+      "model": "2 Series Active Tourer",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "LV74HPJ",
       "appraisedAt": "2026-11-03T13:31:20.845Z",
@@ -73,16 +113,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--hFuzEhsD--/c_fill,h_300,w_300/v1793447274/Live/Appraisals/9614060/758bbad6-134b-4fe0-852c-ae5ce87a7b1a.jpg"
-    },
-    {
-      "registration": "LY16OUO",
-      "appraisedAt": "2026-10-31T11:43:20.494Z",
-      "make": "BMW",
-      "model": "X4",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--H6nUb0lI--/c_fill,h_300,w_300/v1793447024/Live/Appraisals/9614033/13e15da3-09d8-4e81-901f-5188bdd2b5cc.jpg"
     },
     {
       "registration": "OW67AAE",
@@ -4854,8 +4884,7 @@
       "status": "Returned",
       "price": null,
       "condition": "Good",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--TlU112hL--/c_fill,h_300,w_300/v1786108505/Live/Appraisals/9404336/d6109181-036e-4bfb-a4b3-d8e10d12c04c.jpg",
-      "droppedAt": "2026-11-02T06:02:48.124Z"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--TlU112hL--/c_fill,h_300,w_300/v1786108505/Live/Appraisals/9404336/d6109181-036e-4bfb-a4b3-d8e10d12c04c.jpg"
     },
     {
       "registration": "JC62UCE",
