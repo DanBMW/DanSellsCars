@@ -36,11 +36,11 @@
   "payments": 47,
   "price": 31600,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-11-03T07:06:29.1768142+00:00",
+  "quoted_at": "2026-11-03T12:06:24.6619875+00:00",
   "reg": "AY72FHL",
   "term": 48,
   "total_payable": 41431.57,
-  "valid_to": "2026-12-31T23:59:59+00:00",
+  "valid_to": "2026-12-31T23:59:59",
   "representative_example": "47 monthly payments of £612.12. Cash price £31,600. Customer deposit £1,000.00. Total amount of credit £30,600.00. Optional final payment £11,661.93. Total amount payable £41,431.57. Duration 48 months. 8,000 miles a year, 6.3p per excess mile. 11.9% APR representative. Lender BMW Group Financial Services. Finance subject to status, 18+, UK residents."
  },
  "status": "in_stock",

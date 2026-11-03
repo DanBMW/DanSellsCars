@@ -43,11 +43,11 @@
   "payments": 47,
   "price": 25750,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-11-03T07:04:16.6018917+00:00",
+  "quoted_at": "2026-11-03T12:04:17.8146026+00:00",
   "reg": "LX75FLC",
   "term": 48,
   "total_payable": 33322.78,
-  "valid_to": "2026-12-31T23:59:59+00:00",
+  "valid_to": "2026-12-31T23:59:59",
   "representative_example": "47 monthly payments of £374.81. Cash price £25,750. Customer deposit £1,000.00. Total amount of credit £24,750.00. Optional final payment £14,706.71. Total amount payable £33,322.78. Duration 48 months. 8,000 miles a year, 11.6p per excess mile. 9.9% APR representative. Lender BMW Group Financial Services. Finance subject to status, 18+, UK residents."
  },
  "status": "in_stock",
