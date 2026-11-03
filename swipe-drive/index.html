@@ -88,6 +88,7 @@
         <div class="ct-chips" data-name="body"><button type="button" data-v="any">Any</button><button type="button" data-v="small">Small and easy</button><button type="button" data-v="hatchback">Hatchback</button><button type="button" data-v="saloon">Saloon</button><button type="button" data-v="estate">Touring</button><button type="button" data-v="suv">SUV</button><button type="button" data-v="family">Family space</button><button type="button" data-v="coupe">Coupe or convertible</button></div>
         <span class="ct-lab">Models you like (pick any)</span>
         <div class="ct-chips ct-multi" data-name="models" id="modelChips"></div>
+        <label class="ct-f"><span>Model year, from</span><select name="year_from"><option value="">Any year</option><option value="2022">2022 or newer</option><option value="2023">2023 or newer</option><option value="2024">2024 or newer</option><option value="2025">2025 or newer</option><option value="2026">2026 only</option></select></label>
         <span class="ct-lab">Colours</span>
         <p class="ct-hint">Tap once to pick it. Tap again to make it a must have. Tap a third time to clear it.</p>
         <div class="ct-chips ct-tri" data-tri="colours" id="colourChips"></div>
@@ -125,7 +126,8 @@
   <!-- 3. swipe -->
   <section class="ct-screen" data-screen="discover" hidden>
     <div class="ct-deck" id="deck"></div>
-    <div class="ct-empty" id="deckEmpty" hidden><h2 id="deckEmptyT">That is everyone for now.</h2><p id="deckEmptyP">New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><div class="ct-row" id="deckEmptyActs"><a class="ct-btn" href="#matches">See your matches</a></div></div>
+    <div class="ct-row" id="relaxBar" hidden><span class="ct-sub" id="relaxText"></span><button class="ct-btn ct-btn-ghost ct-sm" id="relaxReset" type="button">Back to my own search</button></div>
+    <div class="ct-empty" id="deckEmpty" hidden><h2 id="deckEmptyT">That is everyone for now.</h2><p id="deckEmptyP">New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><div class="ct-row" id="deckEmptyActs"><a class="ct-btn" href="#matches">See your matches</a></div><div class="ct-widen" id="deckWiden"></div><div class="ct-notify"><p class="ct-hint">Want the next one that fits? I will message you the moment it comes in.</p><button class="ct-btn" id="notifyBtn" type="button">Notify me when one comes in</button><p class="ct-msg" id="notifyMsg" role="status"></p></div></div>
     <div class="ct-actions" id="deckActions">
       <button class="ct-act ct-pass" id="btnPass" type="button" aria-label="Pass on this car (brake)"><svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><rect x="9" y="12" width="30" height="24" rx="6" fill="currentColor"/><g stroke="#0a0c0f" stroke-width="2.4" stroke-linecap="round"><path d="M14 18h20M14 24h20M14 30h20"/></g></svg><span>Brake</span></button>
       <button class="ct-act ct-info" id="btnInfo" type="button" aria-label="More about this car"><svg viewBox="0 0 48 48" width="26" height="26" aria-hidden="true"><path d="M8 32a16 16 0 1 1 32 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M24 32l8-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="32" r="3" fill="currentColor"/></svg><span>Info</span></button>

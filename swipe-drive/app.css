@@ -324,3 +324,7 @@ body.ct::before{will-change:transform}
 /* Hedin's description on a used car, in the detail sheet */
 .ct-desc{margin:16px 0 8px}.ct-desc h3{font-family:var(--serif);font-size:19px;font-weight:500;margin:0 0 8px}
 .ct-desc p{color:var(--mut);font-size:14px;line-height:1.55;margin:0 0 10px}.ct-desc .ct-desc-by{font-size:12px;opacity:.8}
+/* Widening the search and notifying: the empty state gives a way forward, never a dead end */
+.ct-widen{display:flex;flex-direction:column;gap:8px;margin:14px 0}.ct-widen .ct-sub{margin:0 0 4px}
+.ct-notify{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}.ct-notify .ct-hint{margin:0 0 8px}
+#relaxBar{justify-content:space-between;align-items:center;margin:0 0 10px;font-size:13px}

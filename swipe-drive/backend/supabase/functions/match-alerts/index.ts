@@ -128,6 +128,38 @@ async function run() {
     }
   }
 
+  // ---------- "notify me" requests: wishes saved when nothing fitted, checked against each new arrival ----------
+  if (fresh.length) {
+    const { data: reqs } = await db.from('alert_requests').select('*').eq('active', true);
+    const { data: sentNow } = await db.from('notifications_sent').select('recipient,customer_id,reg,channel');
+    const sentSet = new Set((sentNow || []).map((x: any) => [x.recipient, x.customer_id, x.reg, x.channel].join('|')));
+    for (const r of reqs || []) {
+      const { data: cu } = await db.from('customers').select('*').eq('id', r.customer_id).maybeSingle();
+      if (!cu || cu.dealt_at) continue;
+      const hits: any[] = M.rank(fresh, r.criteria || {}).map((x: any) => x.car);
+      const owner = cu.owner_staff_id ? byId.get(cu.owner_staff_id) : admin;
+      const recips: { p: any, staff: boolean }[] = [];
+      if (owner) recips.push({ p: owner, staff: true });
+      if (cu.user_id && byId.get(cu.user_id)) recips.push({ p: byId.get(cu.user_id), staff: false });
+      for (const { p, staff } of recips) {
+        // new stock is for staff only, as in the daily matches
+        const items = hits.filter((c: any) => (staff || c.kind !== 'new_stock') && !sentSet.has([p.id, cu.id, c.reg, 'push'].join('|')));
+        if (!p.notify_push || !items.length) continue;
+        const c = items[0];
+        const n = await push(p.id, {
+          title: staff ? `New match for ${cu.name || 'a customer'}: ${r.label}` : 'A car you asked for is in',
+          body: `${c.model}${c.year ? ', ' + c.year : ''}${items.length > 1 ? ' and ' + (items.length - 1) + ' more' : ''}`,
+          url: staff ? APP + '#team' : APP + '?reg=' + encodeURIComponent(c.reg), image: c.image || '' });
+        if (n) {
+          out.pushed += n;
+          await db.from('notifications_sent').insert(items.map((x: any) => ({ recipient: p.id, customer_id: cu.id, reg: x.reg, channel: 'push' })));
+          items.forEach((x: any) => sentSet.add([p.id, cu.id, x.reg, 'push'].join('|')));
+        }
+      }
+      await db.from('alert_requests').update({ last_checked_at: new Date().toISOString() }).eq('id', r.id);
+    }
+  }
+
   // ---------- 33 month reminders ----------
   const today = new Date().toISOString().slice(0, 10);
   const { data: due } = await db.from('purchases').select('*, customers(*)').lte('remind_on', today).is('reminder_sent_at', null).eq('cancelled', false);

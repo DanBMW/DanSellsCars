@@ -20,6 +20,25 @@
   var FAMILY = [['Black', /black|sapphire|carbon/i], ['White', /white|alpine/i], ['Grey', /grey|gray|graphite/i], ['Silver', /silver/i],
     ['Blue', /blue/i], ['Green', /green/i], ['Red', /red/i], ['Purple', /purple|violet/i], ['Brown', /brown|bronze/i], ['Orange', /orange|yellow|gold/i]];
   function colourFamily(c) { var v = String((c && c.colour) || ''); for (var i = 0; i < FAMILY.length; i++) if (FAMILY[i][1].test(v)) return FAMILY[i][0]; return v ? 'Other' : ''; }
+  /* Model choices. The stock files file an M car under its parent series ("BMW M3 Competition" is series "3 Series"), so a
+     customer who picks a series also gets its M cars, and an M choice (M2, M3, M4, M5, M8, M Performance) asks for those alone. */
+  function variantOf(car) {
+    var m = String(car.model || ''), a = /^BMW M(\d)\b/.exec(m);
+    if (a) return 'M' + a[1];
+    if (/^BMW M\d{3}/.test(m)) return 'M Performance';
+    return '';
+  }
+  function modelOk(car, models) {
+    if (!models || !models.length) return true;
+    var family = String(car.series || ''), v = variantOf(car);
+    return models.some(function (m) { return m === family || (v !== '' && m === v); });
+  }
+  /* Newest model year, from a chosen year. A car with no known year is left out once a year is set. New stock is not dated. */
+  function yearOk(car, from) {
+    if (!from || car.kind === 'new' || car.kind === 'new_stock') return true;
+    var y = parseInt(car.year, 10);
+    return !!y && y >= +from;
+  }
   /* Specification picks. Only things the data can test: trim and gearbox from
      lookup/stock.json, equipment from automation/car-details.json through
      stock-core.js FEATURES (the same rules stock.html uses). */
@@ -55,11 +74,10 @@
     if (p.body && p.body !== 'any') {
       if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12;
     }
-    var models = (p.models || []).map(function (m) { return String(m).toLowerCase(); });
-    if (models.length) {
-      var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase();
-      if (models.some(function (m) { return name.indexOf(m) !== -1; })) { sc += 22; why.push('A model you picked'); } else sc -= 6;
-    }
+    /* Explicit choices are hard limits: a customer who asks for M3 is not shown a 3 Series, and a customer who asks for a 2024 or newer is not shown a 2022. */
+    var models = p.models || [];
+    if (models.length) { if (modelOk(car, models)) { sc += 22; why.push('A model you picked'); } else ok = false; }
+    if (!yearOk(car, p.year_from)) ok = false;
     if (!isNew) {
       if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) {
         var r = car.price_gbp / p.cash_gbp;
@@ -93,9 +111,8 @@
     if (p.fuel && p.fuel !== 'open') { if (fk.some(function (k) { return (FUEL_OK[p.fuel] || []).indexOf(k) !== -1; })) { sc += 20; why.push('Your fuel'); } else ok = false; } else sc += 8;
     var bk = s.bodyKeys(car) || [];
     if (p.body && p.body !== 'any') { if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12; }
-    var models = (p.models || []).map(function (m) { return String(m).toLowerCase(); });
-    if (models.length) { var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase();
-      if (models.some(function (m) { return name.indexOf(m) !== -1; })) { sc += 22; why.push('A model you picked'); } else sc -= 6; }
+    var models = p.models || [];
+    if (models.length) { if (modelOk(car, models)) { sc += 22; why.push('A model you picked'); } else ok = false; }
     if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) { if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at the current price'); } else ok = false; }
     if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && car.monthly_gbp) { if (car.monthly_gbp <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else ok = false; }
     var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
@@ -124,5 +141,5 @@
     if (!f || !f.monthly || !f.representative_example) return null;
     return { monthly: gbp2(f.monthly), headline: gbp2(f.monthly) + ' a month, ' + f.product, example: f.representative_example, legal: f.legal || '' };
   }
-  root.ctMatch = { colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp };
+  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, waLink: waLink, waText: waText, finance: finance, gbp: gbp };
 })(typeof window !== 'undefined' ? window : globalThis);

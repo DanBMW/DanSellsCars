@@ -94,6 +94,7 @@
     invites: function () { return Promise.resolve(demoDb().invites || []); },
     buyRequest: function (r) { var d = demoDb(); d.buys = d.buys || []; r.status = 'new'; r.created_at = new Date().toISOString(); d.buys.unshift(r); demoSave(d); return Promise.resolve(r); },
     notifyBuy: function () { return Promise.resolve({ ok: false, reason: 'demo' }); },
+    alertRequest: function (r) { var d = demoDb(); d.alerts = d.alerts || []; r.id = uuid(); r.created_at = new Date().toISOString(); d.alerts.push(r); demoSave(d); return Promise.resolve(r); },
     buyRequests: function () { var d = demoDb(); return Promise.resolve((d.buys || []).filter(function (b) { var c = (d.customers || []).find(function (x) { return x.id === b.customer_id; }); return c && demo.visible(d, c); }).map(function (b) { b.customers = (d.customers || []).find(function (x) { return x.id === b.customer_id; }) || null; return b; })); },
     setBuyStatus: function (id, st) { var d = demoDb(); (d.buys || []).forEach(function (b) { if (b.id === id) { b.status = st; b.called_at = st === 'called' ? new Date().toISOString() : null; } }); demoSave(d); return Promise.resolve(); },
     invite: function (inv) { var d = demoDb(); inv.id = uuid(); inv.created_at = new Date().toISOString(); d.invites.push(inv); demoSave(d); return Promise.resolve(inv); },
@@ -143,6 +144,7 @@
     staffList: function () { return sb.from('profiles').select('id,name,email,whatsapp,role').in('role', ['staff', 'admin']).then(function (r) { return r.data || []; }); },
     /* lead record first (no RETURNING: staff only read policy), then ask the edge function to email Dan */
     buyRequest: function (r) { r.created_by = sbUser.id; return Promise.resolve(sb.from('buy_requests').insert(r)).then(function (x) { if (x.error) throw x.error; return r; }); },
+    alertRequest: function (r) { r.created_by = sbUser.id; return Promise.resolve(sb.from('alert_requests').insert(r)).then(function (x) { if (x.error) throw x.error; return r; }); },
     notifyBuy: function (id) { return Promise.resolve(sb.functions.invoke('notify-buy-request', { body: { id: id } })).then(function (x) { if (x.error) throw x.error; return x.data; }); },
     buyRequests: function () { return Promise.resolve(sb.from('buy_requests').select('*, customers(name, phone, email)').order('created_at', { ascending: false }).limit(200)).then(function (r) { if (r.error) throw r.error; return r.data || []; }); },
     setBuyStatus: function (id, st) { return Promise.resolve(sb.from('buy_requests').update({ status: st, called_at: st === 'called' ? new Date().toISOString() : null, called_by: st === 'called' ? sbUser.id : null }).eq('id', id)).then(function (r) { if (r.error) throw r.error; }); },
@@ -212,11 +214,13 @@
     var series = (name.match(/^(\d Series|i\d|iX\d?|X\d|XM|M\d)/i) || [name])[0];
     return { kind: 'new', reg: 'NEW-' + name.replace(/[^A-Za-z0-9]+/g, '-').toUpperCase(), model: 'BMW ' + name, series: series, group: group, bodyKeys: b, fuelKeys: f };
   }
+  /* Model choices: each family of the range (3 Series, X5...), then the M models on their own (M2, M3, M4, M5, M8, M Performance).
+     A family choice includes its M cars; an M choice asks for those alone (see match-core.js). */
   function allModels() {
-    var seen = {}, out = [];
-    S.cars.forEach(function (c) { if (c.series && !seen[c.series]) { seen[c.series] = 1; out.push(c.series); } });
-    S.newRange.forEach(function (c) { if (c.series && !seen[c.series]) { seen[c.series] = 1; out.push(c.series); } });
-    return out.sort(function (a, b) { return a.localeCompare(b, 'en', { numeric: true }); });
+    var fam = {}, vars = {};
+    pool().concat(S.newRange).forEach(function (c) { if (c.series && !/^M\d/.test(c.series)) fam[c.series] = 1; var v = M.variantOf(c); if (v) vars[v] = 1; });
+    var sort = function (a, b) { return a.localeCompare(b, 'en', { numeric: true }); };
+    return Object.keys(fam).sort(sort).concat(Object.keys(vars).sort(sort));
   }
   /* Brand new cars are only the ones in stock. The range list (S.newRange) feeds the model chips, never the deck. */
   function pool() { return S.cars.concat(S.newStock || []); }
@@ -363,7 +367,7 @@
     ['name', 'phone', 'email', 'postcode', 'monthly_gbp', 'cash_gbp', 'deposit_gbp'].forEach(function (k) { if (f.elements[k]) f.elements[k].value = c[k] == null ? '' : c[k]; });
     f.elements.annual_mileage.value = String(c.annual_mileage || 8000);
     setChoice(f, 'budget_type', c.budget_type || 'monthly'); setChoice(f, 'fuel', c.fuel || 'open'); setChoice(f, 'body', c.body || 'any');
-    setChoice(f, 'models', c.models || []); setChoice(f, 'new_used', c.new_used || 'both');
+    setChoice(f, 'models', c.models || []); f.elements.year_from.value = c.year_from ? String(c.year_from) : ''; setChoice(f, 'new_used', c.new_used || 'both');
     var fams = {}; S.cars.forEach(function (car) { var fm = M.colourFamily(car); if (fm) fams[fm] = 1; });
     var famList = M.FAMILY.map(function (x) { return x[0]; }).filter(function (x) { return fams[x]; }); if (fams.Other) famList.push('Other');
     drawTri('#colourChips', [{ key: 'Any', label: 'Any' }].concat(famList.map(function (x) { return { key: x, label: x }; })), c.colours || ['Any'], c.colours_must || []);
@@ -446,7 +450,7 @@
       if (bad.length) { banner(f, bad.length === 1 ? 'One thing to fix before saving.' : bad.length + ' things to fix before saving.'); bad[0].scrollIntoView({ block: 'center' }); bad[0].focus({ preventScroll: true }); return; }
       var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim(), postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
-        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), new_used: choice(f, 'new_used') });
+        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), year_from: +el.year_from.value || null, new_used: choice(f, 'new_used') });
       if (staff) c.email = el.email.value.trim() || null;
       c.desk = deskRead(f, (S.cust || {}).desk);
       var num = function (v) { return v === '' ? null : Math.max(0, Math.round(+v)); }, prevVal = S.cust ? S.cust.px_valuation_gbp : null;
@@ -462,14 +466,14 @@
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
       var wasNew = !(S.cust && S.cust.id); busy(btn, true);
       store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
-        .then(function () { busy(btn, false); toast(staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deck = []; go('discover'); })
+        .then(function () { busy(btn, false); toast(staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deck = []; S.relax = null; go('discover'); })
         .catch(function (err) { busy(btn, false); console.warn('save customer', err); banner(f, plainErr(err)); track('profile_save_failed', { code: (err && err.code) || '' }); });
     });
   }
 
   /* ---------------- deck ---------------- */
   function buildDeck() {
-    var ranked = M.rank(pool(), S.cust || {});
+    var ranked = M.rank(pool(), relaxed(S.cust, S.relax));
     /* Never pad the deck with cars outside the customer's filters: an empty deck shows the end screen instead.
        One card per stable id (reg), and nothing already swiped. */
     var deep = platform.deepLink().reg, seen = S.swipes, ids = {};
@@ -487,6 +491,72 @@
     if (budgetSet && prices.length) return { kind: 'budget', from: Math.min.apply(null, prices) };
     return { kind: 'choices' };
   }
+  /* A wider search for this visit only. Each step loosens one thing; the customer's own answers are never changed by it. */
+  var WIDEN = {
+    fuel: function (p) { p.fuel = 'open'; }, body: function (p) { p.body = 'any'; }, models: function (p) { p.models = []; },
+    year: function (p) { p.year_from = null; }, colours: function (p) { p.colours = []; p.colours_must = []; },
+    specs: function (p) { p.specs = []; p.specs_must = []; }, new_used: function (p) { p.new_used = 'both'; }
+  };
+  function relaxed(cust, relax) {
+    var p = Object.assign({}, cust || {});
+    if (!relax) return p;
+    if (relax.budget && p.budget_type === 'cash') p.cash_gbp = (p.cash_gbp || 0) + relax.budget;
+    if (relax.budget && p.budget_type === 'monthly') p.monthly_gbp = (p.monthly_gbp || 0) + relax.budget;
+    if (relax.budgetTo != null && p.budget_type === 'cash') p.cash_gbp = relax.budgetTo;
+    if (relax.budgetTo != null && p.budget_type === 'monthly') p.monthly_gbp = relax.budgetTo;
+    (relax.clear || []).forEach(function (k) { WIDEN[k](p); });
+    return p;
+  }
+  function unswiped(cars) { return cars.filter(function (c) { return !S.swipes[c.reg]; }); }
+  /* The price a car is measured at against the budget: its cash price, or its lender monthly figure */
+  function budgetValue(c, type) { return type === 'cash' ? c.price_gbp : ((c.finance && c.finance.monthly) || c.monthly_gbp); }
+  function widenOptions(cust) {
+    var out = [];
+    var add = function (label, relax) { var n = M.rank(unswiped(pool()), relaxed(cust, relax)).length; if (n) out.push({ label: label, relax: relax, n: n }); };
+    if (cust.budget_type === 'cash' || cust.budget_type === 'monthly') {
+      /* the cheapest cars that fit everything except the budget: "raise your budget to £X to see them" */
+      var rest = M.rank(unswiped(pool()), Object.assign({}, cust, { budget_type: null, cash_gbp: 0, monthly_gbp: 0 })).map(function (x) { return x.car; });
+      var vals = rest.map(function (c) { return budgetValue(c, cust.budget_type); }).filter(function (v) { return v > 0; }).sort(function (a, b) { return a - b; });
+      if (vals.length) {
+        var lowest = Math.ceil(vals[0]), money = Number(lowest).toLocaleString('en-GB', { maximumFractionDigits: 0 });
+        var n = M.rank(unswiped(pool()), relaxed(cust, { budgetTo: lowest })).length;
+        if (n) out.push({ label: 'Raise your ' + (cust.budget_type === 'cash' ? 'budget' : 'monthly budget') + ' to \u00a3' + money + (cust.budget_type === 'monthly' ? ' a month' : '') + ' to see', relax: { budgetTo: lowest }, n: n });
+      }
+    }
+    if (cust.budget_type === 'cash') [50, 500].forEach(function (s) { add('Increase budget by \u00a3' + s + ' to see', { budget: s }); });
+    if (cust.budget_type === 'monthly') [50, 100].forEach(function (s) { add('Increase budget by \u00a3' + s + ' a month to see', { budget: s }); });
+    if (cust.fuel && cust.fuel !== 'open') add('Any fuel', { clear: ['fuel'] });
+    if (cust.body && cust.body !== 'any') add('Any shape or size', { clear: ['body'] });
+    if ((cust.models || []).length) add('Any model', { clear: ['models'] });
+    if (cust.year_from) add('Any model year', { clear: ['year'] });
+    if ((cust.colours || []).length) add('Any colour', { clear: ['colours'] });
+    if ((cust.specs || []).length) add('Drop the spec choices', { clear: ['specs'] });
+    if (cust.new_used === 'new' || cust.new_used === 'used') add('Include ' + (cust.new_used === 'new' ? 'used cars' : 'brand new cars') + ' too', { clear: ['new_used'] });
+    return out.slice(0, 5);
+  }
+  function paintWiden() {
+    var box = $('#deckWiden'), opts = widenOptions(S.cust || {});
+    box._opts = opts;
+    box.innerHTML = opts.length ? '<p class="ct-sub">Or widen one thing, and I will show you what fits:</p>' + opts.map(function (o, i) {
+      return '<button class="ct-btn ct-btn-ghost" type="button" data-widen="' + i + '">' + esc(o.label) + ' (' + o.n + (o.n === 1 ? ' car' : ' cars') + ')</button>'; }).join('') : '';
+  }
+  /* What the customer asked for, in words: "M3, 2024 or newer, up to £40,000" */
+  function criteriaOf(c) {
+    return { new_used: c.new_used || 'both', budget_type: c.budget_type || null, cash_gbp: c.cash_gbp || null, monthly_gbp: c.monthly_gbp || null,
+      fuel: c.fuel || 'open', body: c.body || 'any', models: c.models || [], year_from: c.year_from || null,
+      colours: c.colours || [], colours_must: c.colours_must || [], specs: c.specs || [], specs_must: c.specs_must || [] };
+  }
+  function describeCriteria(k) {
+    var budget = k.budget_type === 'cash' && k.cash_gbp ? 'up to \u00a3' + Number(k.cash_gbp).toLocaleString('en-GB') : k.budget_type === 'monthly' && k.monthly_gbp ? 'up to \u00a3' + Number(k.monthly_gbp).toLocaleString('en-GB') + ' a month' : '';
+    return [k.models.length ? k.models.join(', ') : 'Any model', k.year_from ? k.year_from + ' or newer' : '', k.fuel !== 'open' ? k.fuel : '', k.body !== 'any' ? k.body : '', k.new_used === 'new' ? 'brand new' : k.new_used === 'used' ? 'used' : '', budget].filter(Boolean).join(', ');
+  }
+  function notifyMe() {
+    var cust = S.cust || {}, msg = $('#notifyMsg'), k = criteriaOf(cust), label = describeCriteria(k);
+    msg.className = 'ct-msg'; msg.textContent = 'Saving...';
+    store.alertRequest({ customer_id: cust.id, criteria: k, label: label }).then(function () {
+      msg.className = 'ct-msg ok'; msg.textContent = 'Done. I will message you the moment a car like this comes in.'; track('alert_request', { models: k.models.length, year: !!k.year_from }); })
+      .catch(function (err) { msg.className = 'ct-msg'; msg.textContent = plainErr(err); });
+  }
   function paintEmpty() {
     var why = S.emptyWhy || { kind: 'seen' }, who = waWho() || 'Dan', ask = 'https://wa.me/' + String(waNum()).replace(/\D/g, '');
     var askLink = '<a class="ct-btn ct-btn-ghost" target="_blank" rel="noopener" href="' + esc(ask + '?text=' + encodeURIComponent('Hi ' + who + ', I could not find a car in my search on SwipeToDrive. Can you help?')) + '">Message ' + esc(who) + '</a>';
@@ -495,6 +565,7 @@
     else if (why.kind === 'nonew') { t = 'No brand new cars in stock that fit.'; p = 'Brand new cars come in and out of stock. ' + who + ' can order one to your spec.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
     else if (why.kind === 'choices') { t = 'No cars match every choice you made.'; p = 'Try opening up the body, fuel or colour on your profile.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
     $('#deckEmptyT').textContent = t; $('#deckEmptyP').textContent = p; $('#deckEmptyActs').innerHTML = acts;
+    paintWiden(); $('#notifyMsg').textContent = '';
   }
   /* the profile's sections open when they already hold an answer, so a returning customer sees what they chose */
   function openSections(c) { var sec = function (k) { return $('#profileForm details.ct-sec[data-sec="' + k + '"]'); };
@@ -521,6 +592,7 @@
     var top = S.deck.slice(0, 3);
     $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length; deck.hidden = !top.length;
     if (!top.length) paintEmpty();
+    var rb = $('#relaxBar'); rb.hidden = !S.relax; if (S.relax) $('#relaxText').textContent = 'Showing a wider search: ' + S.relaxLabel + '.';
     var left = $('#deckLeft'); if (!left) { left = document.createElement('p'); left.id = 'deckLeft'; left.className = 'ct-sub ct-left'; left.setAttribute('aria-live', 'polite'); $('#deckActions').parentNode.insertBefore(left, $('#deckActions').nextSibling); }
     left.hidden = !top.length; left.textContent = S.deck.length === 1 ? 'Last car in your deck' : S.deck.length + ' cars left to see';
     top.slice().reverse().forEach(function (x, i, arr) {
@@ -682,6 +754,10 @@
   function openOverlays() { return OVERLAYS.map(function (s) { return $(s); }).filter(function (el) { return el && !el.hidden; }); }
   function closeOverlay(el) { if (!el) return; el.hidden = true; if (el.id === 'matchModal') { var c = $('#confetti'); try { c.getContext('2d').clearRect(0, 0, c.width, c.height); } catch (e) {} } }
   function initDeck() {
+    $('#deckWiden').addEventListener('click', function (e) { var b = e.target.closest('[data-widen]'); if (!b) return; var o = $('#deckWiden')._opts[+b.getAttribute('data-widen')];
+      if (!o) return; S.relax = o.relax; S.relaxLabel = o.label.replace(/ to see$/, '').toLowerCase(); S.deck = []; showDeck(); });
+    $('#relaxReset').addEventListener('click', function () { S.relax = null; S.deck = []; showDeck(); });
+    $('#notifyBtn').addEventListener('click', notifyMe);
     $('#btnLike').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(1); });
     $('#btnPass').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(-1); });
     $('#btnSuper').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(2); });
@@ -867,7 +943,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   }
 
   /* ---------------- staff ---------------- */
-  function setActing(id) { return store.customers().then(function (l) { S.cust = l.find(function (c) { return c.id === id; }) || null; sessionStorage.setItem('ctActing', id); S.deck = []; return loadCust(); }); }
+  function setActing(id) { return store.customers().then(function (l) { S.cust = l.find(function (c) { return c.id === id; }) || null; sessionStorage.setItem('ctActing', id); S.deck = []; S.relax = null; return loadCust(); }); }
   function showTeam() {
     var admin = S.session.role === 'admin';
     $('#teamTitle').textContent = admin ? 'All customers' : 'My customers'; $('#ownerFilterWrap').hidden = !admin; $('#invitesLink').hidden = !admin;
