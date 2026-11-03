@@ -154,7 +154,7 @@ console.log('ok: only night moved later in the week');
   console.log('saturday pair ok');
 }
 
-/* replacement rules (Dan, 3 Nov): fewest that week, no back to back unless forced (flagged), least paired with partner */
+/* replacement rules (Dan, 3 Nov): fewest that week, no back to back unless forced (flagged) */
 {
   const tm = { a: { name: 'A' }, b: { name: 'B' }, c: { name: 'C' }, d: { name: 'D' }, e: { name: 'E' } };
   const wk = '2026-W47'; // Mon 16 Nov
@@ -176,9 +176,11 @@ console.log('ok: only night moved later in the week');
   const w2 = { [wk]: { days: { mon: ['a', 'b'], tue: ['d', 'e'], wed: ['d', 'e'], thu: [], fri: [] } } };
   const ch = R.applyAbsences(w2, tm2, { q: { personId: 'e', from: '2026-11-17', to: '2026-11-17', kind: 'absent', status: 'approved' } }, '2026-11-16', {});
   assert.ok(ch.some(x => x.date === '2026-11-17' && /night before or after/.test(x.note || '')), JSON.stringify(ch));
-  // least paired with the partner breaks a tie
+  // partner history is not used: tie goes to fewest overall, then id
   const w3 = { '2026-W40': { days: { mon: ['a', 'd'], tue: ['a', 'd'] } }, [wk]: { days: { mon: [], tue: [], wed: ['d', 'x'], thu: [], fri: [] } } };
   assert.strictEqual(R.replacement(w3, { a: tm.a, b: tm.b, d: tm.d }, {}, '2026-11-18', ['d', 'x'], { partner: ['d'] }), 'b');
+  const w4 = { [wk]: { days: { mon: [], tue: [], wed: ['d', 'x'], thu: [], fri: [] } } };
+  assert.strictEqual(R.replacement(w4, { a: tm.a, b: tm.b, d: tm.d }, {}, '2026-11-18', ['d', 'x'], {}), 'a', 'alphabetical last');
   console.log('replacement rules ok');
 }
 
@@ -193,4 +195,21 @@ console.log('ok: only night moved later in the week');
   assert.deepStrictEqual(R.onFor(d, null, {}, cfg, { a: Object.assign(nl('chloe', 'in'), { status: 'cancelled' }) }).ids, ['chloe', 'sergio']);
   assert.strictEqual(R.awayOn({ a: nl('chloe', 'out') }, d).chloe, undefined, 'still in on the calendar');
   console.log('saturday cant lockup ok');
+}
+
+/* 2 night cap: only exceeded when nobody else is eligible, and flagged */
+{
+  const tm = { a: { name: 'A' }, b: { name: 'B' }, c: { name: 'C' } };
+  const wk = '2026-W47';
+  // a has 2 nights (Mon, Wed), b has 2 (Mon, Fri), c has 0; Thu? c not free (off thu) -> forced over cap
+  const tm2 = { a: tm.a, b: tm.b, c: { name: 'C', off: 'tue' } };
+  const w = { [wk]: { days: { mon: ['a', 'b'], tue: [], wed: [], thu: ['a', 'x'], fri: ['b', 'x'] } } };
+  let info = {};
+  assert.strictEqual(R.replacement(w, tm2, {}, '2026-11-18', [], info), 'c', 'under cap picked'); assert.ok(!info.fallback);
+  info = {};
+  const r = R.replacement(w, tm2, {}, '2026-11-17', [], info);
+  assert.ok(r === 'a' || r === 'b'); assert.ok(/over cap/.test(info.fallback), info.fallback);
+  const ch = R.applyAbsences(JSON.parse(JSON.stringify({ [wk]: { days: { mon: ['a', 'b'], tue: ['c', 'x'], wed: [], thu: ['a', 'x'], fri: ['b', 'x'] } } })), tm2, {}, '2026-11-16', {});
+  assert.ok(ch.some(x => x.date === '2026-11-17' && /more than 2 lockups/.test(x.note || '')), JSON.stringify(ch));
+  console.log('cap ok');
 }
