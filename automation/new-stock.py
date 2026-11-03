@@ -17,7 +17,9 @@ every reader of the file would need repointing. Doing it here keeps the URL the
 brief asks for, puts the data under the same review and history as everything
 else, and costs one more step on a routine that already runs four.
 
-What the list is. Retailer 22181, Hedin Automotive Ruxley. These are cars the
+What the list is. Every Hedin BMW retailer in RETAILERS (Ruxley 22181,
+Bromley 26177, Enfield 16267, Woolwich 16215), each car tagged with its
+retailer_id and retailer_name. These are cars the
 BMW New Car Locator will build now, not the whole order bank. There is no
 registration and no readable VIN, so **the order number is the key**.
 
@@ -86,10 +88,39 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 LOOKUP = os.path.join(os.path.dirname(HERE), 'lookup')
 OUT = os.path.join(LOOKUP, 'new-stock.json')
 ORDER_DIR = os.path.join(LOOKUP, 'order')
+LITE = os.path.join(LOOKUP, 'new-stock-lite.json')
+# Every order number this script has ever seen, kept for good with its images.
+# Separate from new-stock.json so the feed phones download never grows.
+ARCHIVE = os.path.join(LOOKUP, 'new-stock-archive.json')
+ARCHIVE_IMAGES = 12      # exterior shots first, then interior; caps file size
+ARCHIVE_FIELDS = ('order_number', 'description', 'range', 'series', 'colour',
+                  'fuel', 'transmission', 'drive', 'wheels', 'upholstery',
+                  'seats', 'retailer_id', 'retailer_name', 'first_seen',
+                  'options', 'packages')
+# The day the other three Hedin retailers joined the list: their cars all took
+# that first_seen, and not one of them arrived on it.
+GROUP_SEED_DAY = '2026-10-29'
+LITE_FIELDS = ('order_number', 'retailer_id', 'retailer_name', 'series', 'range',
+               'description', 'fuel', 'transmission', 'colour', 'price_gbp',
+               'monthly_gbp', 'apr', 'image', 'first_seen', 'first_seen_seed',
+               'on_hold', 'lead_time_weeks_min', 'lead_time_weeks_max')
 
-RETAILER = '22181'
-RETAILER_NAME = 'Hedin Automotive Ruxley'
-BASE = 'https://stock.bmw.co.uk/retailer/' + RETAILER
+# Every Hedin BMW retailer on the BMW New Car Locator (its own retailer
+# dropdown, checked 29 October 2026). Ruxley stays first: the top-level
+# retailer_id/retailer_name keep naming it so existing readers do not change.
+RETAILERS = [('22181', 'Hedin Automotive Ruxley'),
+             ('26177', 'Hedin Automotive Bromley'),
+             ('16267', 'Hedin Automotive Enfield'),
+             ('16215', 'Hedin Automotive Woolwich')]
+RETAILER, RETAILER_NAME = RETAILERS[0]
+LOCATOR = 'https://stock.bmw.co.uk/retailer/'
+BASE = LOCATOR + RETAILER          # repointed per retailer by use_retailer()
+RETAILER_PAUSE = 5.0               # between retailers, on top of PAGE_PAUSE
+
+
+def use_retailer(rid):
+    global BASE
+    BASE = LOCATOR + rid
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
 CDN = 'https://prod.cosy.bmw.cloud/'
@@ -559,42 +590,192 @@ def write_order_files(live, removed, day):
           % (wrote, dropped, len(want)))
 
 
+def load_archive():
+    try:
+        doc = json.loads(open(ARCHIVE, encoding='utf-8').read())
+        return doc.get('cars') or {}
+    except (OSError, ValueError):
+        return {}
+
+
+def archive_record(car, old, day, status, removed_at=None):
+    """One car's permanent record. Images are only ever added to, never
+    replaced by a shorter list, so a thin later pull cannot lose a picture."""
+    rec = dict(old or {})
+    for k in ARCHIVE_FIELDS:
+        if car.get(k) not in (None, '', []):
+            rec[k] = car[k]
+    imgs = list(rec.get('images') or [])
+    for u in ([car.get('image')] + list(car.get('images') or [])):
+        if u and u not in imgs:
+            imgs.append(u)
+    rec['images'] = imgs[:ARCHIVE_IMAGES]
+    if rec['images']:
+        rec['image'] = rec['images'][0]
+    rec['order_number'] = car.get('order_number') or rec.get('order_number')
+    rec.setdefault('first_archived', day.isoformat())
+    rec['last_seen'] = day.isoformat() if status == 'in_stock' else rec.get('last_seen', day.isoformat())
+    rec['status'] = status
+    rec['removed_at'] = removed_at
+    return rec
+
+
+def update_archive(live, removed, day):
+    """Keep every order number forever. A car still on the locator is marked
+    in_stock; one that dropped off is marked removed with its removed_at, and
+    stays here after the 30 day order file is deleted. Nothing is ever deleted
+    from the archive, so it only grows (about 8 KB a car with 12 images)."""
+    arch = load_archive()
+    for car in removed:
+        n = car['order_number']
+        arch[n] = archive_record(car, arch.get(n), day, 'removed',
+                                 car.get('removed_at') or day.isoformat())
+    for car in live:                         # live last: back in stock wins
+        n = car['order_number']
+        arch[n] = archive_record(car, arch.get(n), day, 'in_stock')
+    doc = {'generated_at': datetime.now(ZoneInfo('UTC')).strftime(
+               '%Y-%m-%dT%H:%M:%S.000Z'),
+           'note': 'Every order number ever seen, newest data wins, never '
+                   'deleted. image urls are BMW configurator renders of the '
+                   'exact specification, copied byte for byte.',
+           'count': len(arch),
+           'cars': dict(sorted(arch.items()))}
+    tmp = ARCHIVE + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as fh:
+        json.dump(doc, fh, ensure_ascii=False, separators=(',', ':'))
+    os.replace(tmp, ARCHIVE)
+    gone = sum(1 for r in arch.values() if r['status'] == 'removed')
+    print('archive: %d orders kept (%d in stock, %d dropped off), %s bytes'
+          % (len(arch), len(arch) - gone, gone,
+             '{:,}'.format(os.path.getsize(ARCHIVE))))
+
+
+def backfill_archive():
+    """One off: replay git history of lookup/new-stock.json so orders that
+    already aged out of the 30 day list are recovered too. Run by hand with
+    --backfill-archive; safe to repeat."""
+    import subprocess
+    repo = os.path.dirname(HERE)
+    rel = 'lookup/new-stock.json'
+    log = subprocess.run(['git', 'log', '--reverse', '--format=%H %cs', '--', rel],
+                         cwd=repo, capture_output=True, text=True, check=True
+                         ).stdout.split('\n')
+    arch, seen_commits = load_archive(), 0
+    for line in filter(None, log):
+        sha, cday = line.split()
+        day = datetime.fromisoformat(cday).date()
+        try:
+            raw = subprocess.run(['git', 'show', '%s:%s' % (sha, rel)], cwd=repo,
+                                 capture_output=True, check=True).stdout
+            doc = json.loads(raw.decode('utf-8'))
+        except Exception:
+            continue
+        seen_commits += 1
+        for car in (doc.get('cars') or []):
+            if car.get('order_number'):
+                n = car['order_number']
+                arch[n] = archive_record(car, arch.get(n), day, 'in_stock')
+        for car in (doc.get('removed') or []):
+            if car.get('order_number'):
+                n = car['order_number']
+                if n not in arch or arch[n].get('status') != 'in_stock':
+                    arch[n] = archive_record(car, arch.get(n), day, 'removed',
+                                             car.get('removed_at'))
+    # Anything the newest commit no longer lists as live is dropped off.
+    live_now = set()
+    try:
+        cur = json.loads(open(OUT, encoding='utf-8').read())
+        live_now = {c['order_number'] for c in (cur.get('cars') or [])}
+    except (OSError, ValueError):
+        pass
+    for n, rec in arch.items():
+        if n not in live_now and rec.get('status') == 'in_stock':
+            rec['status'] = 'removed'
+            rec['removed_at'] = rec.get('removed_at') or rec.get('last_seen')
+    doc = {'generated_at': datetime.now(ZoneInfo('UTC')).strftime(
+               '%Y-%m-%dT%H:%M:%S.000Z'),
+           'note': 'Every order number ever seen, never deleted.',
+           'count': len(arch), 'cars': dict(sorted(arch.items()))}
+    with open(ARCHIVE + '.tmp', 'w', encoding='utf-8') as fh:
+        json.dump(doc, fh, ensure_ascii=False, separators=(',', ':'))
+    os.replace(ARCHIVE + '.tmp', ARCHIVE)
+    print('backfill: %d commits read, %d orders in the archive' % (seen_commits, len(arch)))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--check', action='store_true',
                     help='pull and report, write nothing')
+    ap.add_argument('--backfill-archive', action='store_true',
+                    help='one off: rebuild the archive from git history')
     args = ap.parse_args()
+    if args.backfill_archive:
+        backfill_archive()
+        return
 
-    s = Session()
-    ids = model_ids(s)
-    print('%d models on the search form' % len(ids))
-    if not ids:
-        raise SystemExit('no model ids on the retailer page, keeping the '
-                         'existing file')
+    prev = load_previous()
+    prev_by_site = {}
+    for c in (prev.get('cars') or []):
+        prev_by_site.setdefault(str(c.get('retailer_id') or RETAILER), []).append(c)
 
-    rows = pull(ids)
+    live, seen = [], set()
+    dropped, terms, sites = 0, None, []
+    for n, (rid, rname) in enumerate(RETAILERS):
+        if n:
+            time.sleep(RETAILER_PAUSE)
+        use_retailer(rid)
+        before = prev_by_site.get(rid, [])
+        got, err = [], None
+        try:
+            s = Session()               # a fresh session for every retailer
+            ids = model_ids(s)
+            print('%s (%s): %d models on the search form' % (rname, rid, len(ids)))
+            if not ids:
+                raise RuntimeError('no model ids on the retailer page')
+            rows = pull(ids)
+            t = finance_terms(s)
+            if t and terms is None:
+                terms = t
+            for row in rows:
+                rec = normalise(row, t or terms)
+                if not rec:
+                    dropped += 1
+                    continue
+                rec['retailer_id'] = rid
+                rec['retailer_name'] = rname
+                got.append(rec)
+        except Exception as e:
+            err = str(e)[:120]
+        # A site that comes back empty or with under half its last good count is
+        # treated as failed: its previous cars are kept, not marked removed.
+        if err or not got or (before and len(got) < len(before) / 2):
+            why = err or ('%d cars against %d last time' % (len(got), len(before)))
+            print('  %s FAILED (%s); keeping its %d previous cars' % (rname, why, len(before)))
+            got = [dict(c, retailer_id=rid, retailer_name=rname) for c in before]
+            ok = False
+        else:
+            ok = True
+        fresh = 0
+        for rec in got:
+            if rec['order_number'] in seen:
+                continue
+            seen.add(rec['order_number'])
+            live.append(rec)
+            fresh += 1
+        sites.append({'retailer_id': rid, 'retailer_name': rname,
+                      'count': fresh, 'ok': ok})
+        print('  %s: %d cars%s' % (rname, fresh, '' if ok else ' (kept from last run)'))
 
-    terms = finance_terms(s)
+    live.sort(key=lambda c: (c.get('price_gbp') or 0, c['order_number']))
+    print('%d cars across %d retailers (%d rows dropped for no usable order number)'
+          % (len(live), len(RETAILERS), dropped))
     if terms:
-        print('BMW\'s own finance terms: %s, %d months, £%s deposit, %s miles '
+        print('BMW\'s own finance terms: %s, %d months, %s deposit, %s miles '
               'a year' % (terms['product'], terms['term_months'],
                           '{:,}'.format(terms['deposit_gbp']),
                           '{:,}'.format(terms['annual_mileage'])))
-
-    live, seen = [], set()
-    dropped = 0
-    for row in rows:
-        rec = normalise(row, terms)
-        if not rec:
-            dropped += 1
-            continue
-        if rec['order_number'] in seen:
-            continue
-        seen.add(rec['order_number'])
-        live.append(rec)
-    live.sort(key=lambda c: (c.get('price_gbp') or 0, c['order_number']))
-    print('%d cars (%d rows dropped for no usable order number)'
-          % (len(live), dropped))
+    if not any(x['ok'] for x in sites):
+        raise SystemExit('every retailer failed; keeping the existing file')
     quoted = sum(1 for c in live if c.get('finance_example'))
     print('%d of %d carry a full set of finance figures' % (quoted, len(live)))
 
@@ -603,7 +784,6 @@ def main():
                          'the existing file' % len(live))
 
     day = today()
-    prev = load_previous()
     seeded_on = prev.get('seeded_on') or day.isoformat()
     new_today = carry_first_seen(prev, live, day)
     removed, back, gone, aged = roll_removed(prev, live, day)
@@ -614,12 +794,17 @@ def main():
     print('removed list: %d gone today, %d back in stock, %d aged out, %d held'
           % (gone, len(back), len(aged), len(removed)))
 
+    for c in live:
+        if c.get('first_seen') == GROUP_SEED_DAY and c.get('retailer_id') != RETAILER:
+            c['first_seen_seed'] = True
+
     doc = {
         'generated_at': datetime.now(ZoneInfo('UTC')).strftime(
             '%Y-%m-%dT%H:%M:%S.000Z'),
         'retailer_id': RETAILER,
         'retailer_name': RETAILER_NAME,
         'count': len(live),
+        'retailers': sites,
         # The first day this file ever ran. A car whose first_seen equals it
         # was already here when the ledger began and is NOT newly arrived.
         'seeded_on': seeded_on,
@@ -636,6 +821,17 @@ def main():
         fh.write('\n')
     print('wrote %s' % os.path.relpath(OUT, os.path.dirname(HERE)))
     write_order_files(live, removed, day)
+    try:                                     # never let the archive stop the feed
+        update_archive(live, removed, day)
+    except Exception as e:
+        print('archive FAILED (%s); the stock feed is unaffected' % e)
+    lite = {k: doc[k] for k in ('generated_at', 'count', 'retailers',
+                                'finance_terms', 'seeded_on')}
+    lite['cars'] = [{k: c[k] for k in LITE_FIELDS if k in c} for c in live]
+    with open(LITE, 'w', encoding='utf-8') as fh:
+        json.dump(lite, fh, ensure_ascii=False, separators=(',', ':'))
+    print('wrote %s (%d bytes)' % (os.path.relpath(LITE, os.path.dirname(HERE)),
+                                  os.path.getsize(LITE)))
 
 
 if __name__ == '__main__':

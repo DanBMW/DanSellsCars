@@ -28,6 +28,24 @@
   function banner(f, text, ok) { var b = $('.ct-banner', f); if (!b) { b = document.createElement('div'); b.className = 'ct-banner'; b.setAttribute('role', 'alert'); f.insertBefore(b, f.firstChild.nextSibling); }
     b.hidden = !text; b.className = 'ct-banner' + (ok ? ' ok' : ''); b.textContent = text || ''; if (text) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
   function busy(btn, on, label) { if (on) { btn.dataset.label = btn.textContent; btn.textContent = label || 'Saving...'; btn.disabled = true; btn.setAttribute('aria-busy', 'true'); } else { btn.textContent = btn.dataset.label || btn.textContent; btn.disabled = false; btn.removeAttribute('aria-busy'); } }
+  var STOCK_REPLY = { interested: 'Still on the market, wants an appointment', keepinformed: 'Keep me informed of more cars', offmarket: 'No longer on the market' };
+  /* Messaging consent. A customer a colleague adds is NEVER contacted (no email, no WhatsApp link, no invite) until a
+     member of staff has ticked the consent box on their profile, and a customer who signed in themselves has consented
+     by doing so. The server refuses too (guest-link, send-latest-stock), so this is not only a hidden button. */
+  var NO_CONSENT = 'No messaging consent yet. Tick the consent box on their profile first.';
+  var CONSENT_TEXT = 'Customer agreed to be messaged by staff and to be set up on SwipeToDrive so they can use it themselves.';
+  function consentOK(c) { return !!(c && (c.comms_consent_at || c.user_id)); }
+  function stockCanSend(c) { return !!CFG.CUSTOMER_EMAIL_ENABLED && !!c.email && !c.closed_at && !c.email_opt_out && consentOK(c); }
+  /* Send customer latest stock: an "Are you sure?" window with the email address and the cars that go in it */
+  function askStock(c) { if (!consentOK(c)) { toast(NO_CONSENT); return; } var cars = M.pickLatest(S.cars, c, 6); S.stockSend = { c: c, cars: cars };
+    $('#stockTitle').textContent = 'Are you sure?';
+    $('#stockTo').innerHTML = 'Send ' + esc(c.name || 'this customer') + ' the latest stock by email to <b>' + esc(c.email || 'no email saved') + '</b>' + (cars.length ? ' with these ' + cars.length + ' ' + (cars.length === 1 ? 'car' : 'cars') + ':' : '.');
+    $('#stockCars').innerHTML = cars.map(function (h) { var x = h.car; return '<div class="ct-stock-car">' + (x.image ? '<img src="' + esc(x.image) + '" alt="">' : '') + '<div><b>' + esc(x.model) + '</b><span>' + esc([x.kind === 'new_stock' ? 'Brand new' : x.year, x.kind === 'new_stock' ? '' : x.mileage, x.price].filter(Boolean).join(' \u00b7 ')) + '</span></div></div>'; }).join('');
+    var why = !CFG.CUSTOMER_EMAIL_ENABLED ? 'Customer emails are off. Dan needs to approve switching them on before this can send.' : !c.email ? 'Add an email address for this customer first.' : c.email_opt_out ? 'This customer unsubscribed from emails.' : !cars.length ? 'No matching cars in stock right now.' : '';
+    $('#stockNote').textContent = why; $('#stockNote').hidden = !why;
+    var can = stockCanSend(c) && cars.length > 0; $('#stockYes').disabled = !can; $('#stockYes').textContent = 'Send email'; $('#stockYes').hidden = false;
+    $('#stockModal').hidden = false; }
+  function undo(t, fn) { $('#undoText').textContent = t; S.undoFn = fn; $('#undoToast').hidden = false; clearTimeout(S.undoT); S.undoT = setTimeout(function () { $('#undoToast').hidden = true; S.undoFn = null; }, 10000); }
   function toast(t) { var el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { el.hidden = true; }, 2600); }
   var uuid = function () { return (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); })); };
   var fmtDate = function (d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; };
@@ -69,6 +87,8 @@
   var demo = {
     mode: 'demo',
     session: function () { return Promise.resolve(demoDb().session || null); },
+    lastVisit: function () { var d = demoDb(), s = d.session; return Promise.resolve(s && d.visits ? d.visits[s.user_id || s.email] || null : null); },
+    setLastVisit: function (iso) { var d = demoDb(), s = d.session; if (!s) return Promise.resolve(); d.visits = d.visits || {}; d.visits[s.user_id || s.email] = iso; demoSave(d); return Promise.resolve(); },
     signIn: function (role, email) {
       var d = demoDb(); var uid = 'demo-' + role;
       d.session = { uid: uid, role: role, email: email || (role === 'admin' ? 'dan@demo.local' : role === 'staff' ? 'colleague@demo.local' : 'you@demo.local'),
@@ -81,13 +101,16 @@
     signOut: function () { var d = demoDb(); delete d.session; demoSave(d); return Promise.resolve(); },
     visible: function (d, c) { var s = d.session; if (!s) return false; return s.role === 'admin' || (s.role === 'staff' && c.owner_staff_id === s.uid) || c.user_id === s.uid; },
     customers: function () { var d = demoDb(); return Promise.resolve((d.customers || []).filter(function (c) { return demo.visible(d, c); })); },
-    saveCustomer: function (c) { var d = demoDb(); var s = d.session; var i = (d.customers || []).findIndex(function (x) { return x.id === c.id; });
+    saveCustomer: function (c) { c = safePrefs(Object.assign({}, c), S.cust && S.cust.id === c.id ? S.cust : null); var d = demoDb(); var s = d.session; var i = (d.customers || []).findIndex(function (x) { return x.id === c.id; });
       if (i === -1) { c.id = c.id || uuid(); c.owner_staff_id = s.role === 'customer' ? null : s.uid; c.created_at = new Date().toISOString(); d.customers.push(c); }
       else { if (!demo.visible(d, d.customers[i])) return Promise.reject(new Error('no access')); c.owner_staff_id = d.customers[i].owner_staff_id; c.user_id = d.customers[i].user_id; d.customers[i] = c; }
       c.updated_at = new Date().toISOString(); demoSave(d); return Promise.resolve(c); },
     swipes: function (cid) { return Promise.resolve((demoDb().swipes || {})[cid] || {}); },
     setSwipe: function (cid, reg, liked, extra) { var d = demoDb(); d.swipes[cid] = d.swipes[cid] || {}; d.swipes[cid][reg] = Object.assign({ liked: liked, at: Date.now() }, extra || {}); demoSave(d); return Promise.resolve(); },
     purchases: function (cid) { return Promise.resolve((demoDb().purchases || []).filter(function (p) { return p.customer_id === cid; })); },
+    sendLatestStock: function () { return Promise.resolve({ ok: false, reason: 'demo mode, nothing sent' }); },
+    guestLink: function () { return Promise.resolve({ ok: true, url: location.origin + location.pathname.replace(/[^/]*$/, '') + 'guest.html#t=DEMO', days: 30 }); },
+    setClosed: function (cid, on) { var d = demoDb(); var c = (d.customers || []).find(function (x) { return x.id === cid; }); if (c) { c.closed_at = on ? new Date().toISOString() : null; c.closed_by = on ? (d.session && d.session.id) || null : null; c.closed_by_name = on ? (S.session.name || 'Dan') : null; demoSave(d); } return Promise.resolve(); },
     markDealt: function (cid, pid) { var d = demoDb(); var c = (d.customers || []).find(function (x) { return x.id === cid; }); if (c) { c.dealt_at = pid ? new Date().toISOString() : null; c.dealt_purchase_id = pid || null; demoSave(d); } return Promise.resolve(); },
     savePurchase: function (p) { var d = demoDb(); p.id = p.id || uuid(); p.remind_on = addMonths(p.purchase_date, 33); d.purchases = (d.purchases || []).filter(function (x) { return x.id !== p.id; }); d.purchases.push(p); demoSave(d); return Promise.resolve(p); },
     staffList: function () { var d = demoDb(); return Promise.resolve(Object.values(d.staff || {}).filter(Boolean)); },
@@ -95,6 +118,9 @@
     buyRequest: function (r) { var d = demoDb(); d.buys = d.buys || []; r.status = 'new'; r.created_at = new Date().toISOString(); d.buys.unshift(r); demoSave(d); return Promise.resolve(r); },
     notifyBuy: function () { return Promise.resolve({ ok: false, reason: 'demo' }); },
     alertRequest: function (r) { var d = demoDb(); d.alerts = d.alerts || []; r.id = uuid(); r.created_at = new Date().toISOString(); d.alerts.push(r); demoSave(d); return Promise.resolve(r); },
+    referrals: function () { var d = demoDb(); return Promise.resolve(d.session && d.session.role === 'admin' ? (d.referrals || []).slice().sort(function (a, b) { return String(b.created_at).localeCompare(String(a.created_at)); }) : []); },
+    setReferralPaid: function (id, paid) { var d = demoDb(); (d.referrals || []).forEach(function (r) { if (r.id === id) { r.paid_out_at = paid ? new Date().toISOString() : null; r.paid_out_by_name = paid ? (S.session.name || 'Dan') : null; } }); demoSave(d); return Promise.resolve(); },
+    setReferralStatus: function (id, st) { var d = demoDb(); (d.referrals || []).forEach(function (r) { if (r.id === id) r.status = st; }); demoSave(d); return Promise.resolve(); },
     buyRequests: function () { var d = demoDb(); return Promise.resolve((d.buys || []).filter(function (b) { var c = (d.customers || []).find(function (x) { return x.id === b.customer_id; }); return c && demo.visible(d, c); }).map(function (b) { b.customers = (d.customers || []).find(function (x) { return x.id === b.customer_id; }) || null; return b; })); },
     setBuyStatus: function (id, st) { var d = demoDb(); (d.buys || []).forEach(function (b) { if (b.id === id) { b.status = st; b.called_at = st === 'called' ? new Date().toISOString() : null; } }); demoSave(d); return Promise.resolve(); },
     invite: function (inv) { var d = demoDb(); inv.id = uuid(); inv.created_at = new Date().toISOString(); d.invites.push(inv); demoSave(d); return Promise.resolve(inv); },
@@ -108,11 +134,16 @@
   };
 
   var sb = null, sbUser = null, sbProfile = null;
+  /* the admin tools reuse this one signed in client, so there is never a second sign in */
+  window.ctSupa = function () { return sb; };
   /* earlier unsaved extras go first so this save's values win */
   function row0(c) { return c && c.id ? Object.assign({}, pendingGet(c.id), c) : c; }
   var supa = {
     mode: 'supabase',
     init: function () { return import('https://esm.sh/@supabase/supabase-js@2').then(function (m) { sb = m.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: { persistSession: true, detectSessionInUrl: true, flowType: 'implicit' } }); }); },
+    /* last Discover visit kept on the signed in profile (auth user metadata), so it follows them across devices */
+    lastVisit: function () { return Promise.resolve(sbUser && sbUser.user_metadata ? sbUser.user_metadata.sd_last_visit || null : null); },
+    setLastVisit: function (iso) { if (!sbUser) return Promise.resolve(); return Promise.resolve(sb.auth.updateUser({ data: { sd_last_visit: iso } })).catch(function () {}); },
     session: function () { return sb.auth.getSession().then(function (r) { sbUser = r.data.session && r.data.session.user; if (!sbUser) return null;
       return sb.from('profiles').select('*').eq('id', sbUser.id).single().then(function (p) { sbProfile = p.data; return { uid: sbUser.id, role: p.data.role, email: p.data.email, name: p.data.name, whatsapp: p.data.whatsapp }; }); }); },
     verifyCode: function (email, code) { return sb.auth.verifyOtp({ email: email, token: code, type: 'email' }).then(function (r) { if (r.error) throw r.error; }); },
@@ -120,7 +151,7 @@
     signOut: function () { return sb.auth.signOut(); },
     customers: function () { return sb.from('customers').select('*').order('created_at', { ascending: false }).then(function (r) { if (r.error) throw r.error;
       return Promise.all(r.data.map(function (c) { if (c.px_valuation_set_by !== 'staff') return c; return sb.rpc('valuation_set_by_name', { cid: c.id }).then(function (n) { c.px_valuation_set_by_name = n.data; return c; }); })); }); },
-    saveCustomer: function (c) { var row = Object.assign({}, row0(c)); delete row.px_photos_preview; var isNew = !row.id || !S.cust || S.cust.id !== row.id; if (isNew) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
+    saveCustomer: function (c) { var row = Object.assign({}, row0(c)); delete row.px_photos_preview; safePrefs(row, S.cust && S.cust.id === row.id ? S.cust : null); var isNew = !row.id || !S.cust || S.cust.id !== row.id; if (isNew) { row.owner_staff_id = sbProfile.role === 'customer' ? null : sbUser.id; if (sbProfile.role === 'customer') row.user_id = sbUser.id; }
       /* No INSERT ... RETURNING: the read policy can't see a row inside the statement that creates it, so Postgres
          rejected every new customer. Insert or update first, then read the row back. */
       if (!row.id) row.id = uuid();
@@ -141,6 +172,10 @@
     setSwipe: function (cid, reg, liked, extra) { return Promise.resolve().then(function () { if (!sbUser) throw new Error('signed out');
       return sb.from('swipes').upsert(Object.assign({ customer_id: cid, reg: reg, liked: liked, by_user: sbUser.id }, extra || {})); }).then(function (r) { if (r && r.error) throw r.error; }); },
     purchases: function (cid) { return sb.from('purchases').select('*').eq('customer_id', cid).then(function (r) { return r.data || []; }); },
+    /* Close is a soft flag only: nothing else on the customer (swipes, matches, photos, purchases) is touched */
+    guestLink: function (cid) { return sb.functions.invoke('guest-link', { body: { customer_id: cid } }).then(function (r) { return r.data || { ok: false, reason: 'link failed' }; }); },
+    sendLatestStock: function (cid, regs) { return sb.functions.invoke('send-latest-stock', { body: { customer_id: cid, regs: regs } }).then(function (r) { if (r.error && !r.data) { var c = r.error.context; return c && c.json ? c.json().catch(function () { return { ok: false, reason: 'send failed' }; }) : { ok: false, reason: 'send failed' }; } return r.data; }); },
+    setClosed: function (cid, on) { return sb.from('customers').update(on ? { closed_at: new Date().toISOString(), closed_by: sbUser.id, closed_by_name: S.session.name || '' } : { closed_at: null, closed_by: null, closed_by_name: null }).eq('id', cid).then(function (r) { if (r.error) throw r.error; }); },
     markDealt: function (cid, pid) { return sb.from('customers').update({ dealt_at: pid ? new Date().toISOString() : null, dealt_purchase_id: pid || null }).eq('id', cid).then(function (r) { if (r.error) throw r.error; }); },
     savePurchase: function (p) { var row = Object.assign({}, p); delete row.remind_on; row.created_by = sbUser.id; return sb.from('purchases').upsert(row).select().single().then(function (r) { if (r.error) throw r.error; return r.data; }); },
     staffList: function () { return sb.from('profiles').select('id,name,email,whatsapp,role').in('role', ['staff', 'admin']).then(function (r) { return r.data || []; }); },
@@ -148,6 +183,10 @@
     buyRequest: function (r) { r.created_by = sbUser.id; return Promise.resolve(sb.from('buy_requests').insert(r)).then(function (x) { if (x.error) throw x.error; return r; }); },
     alertRequest: function (r) { r.created_by = sbUser.id; return Promise.resolve(sb.from('alert_requests').insert(r)).then(function (x) { if (x.error) throw x.error; return r; }); },
     notifyBuy: function (id) { return Promise.resolve(sb.functions.invoke('notify-buy-request', { body: { id: id } })).then(function (x) { if (x.error) throw x.error; return x.data; }); },
+    /* referrals table may not exist yet (SQL pending): the tab then shows an empty list instead of an error */
+    referrals: function () { return Promise.resolve(sb.from('referrals').select('*').order('created_at', { ascending: false }).limit(300)).then(function (r) { return r.error ? [] : r.data || []; }); },
+    setReferralPaid: function (id, paid) { return Promise.resolve(sb.rpc('referral_set_paid', { rid: id, paid: !!paid })).then(function (r) { if (r.error) throw r.error; }); },
+    setReferralStatus: function (id, st) { return Promise.resolve(sb.rpc('referral_set_status', { rid: id, st: st })).then(function (r) { if (r.error) throw r.error; }); },
     buyRequests: function () { return Promise.resolve(sb.from('buy_requests').select('*, customers(name, phone, email)').order('created_at', { ascending: false }).limit(200)).then(function (r) { if (r.error) throw r.error; return r.data || []; }); },
     setBuyStatus: function (id, st) { return Promise.resolve(sb.from('buy_requests').update({ status: st, called_at: st === 'called' ? new Date().toISOString() : null, called_by: st === 'called' ? sbUser.id : null }).eq('id', id)).then(function (r) { if (r.error) throw r.error; }); },
     invites: function () { return sb.from('staff_invites').select('*').order('created_at', { ascending: false }).then(function (r) { return r.data || []; }); },
@@ -173,6 +212,16 @@
     var d = h.get('error_description') || q.get('error_description'); return d ? { code: h.get('error_code') || q.get('error_code') || '', text: d.replace(/\+/g, ' ') } : null; })();
   function isAuthHash(h) { return /(^|&)(access_token|refresh_token|error|error_code|type)=/.test(h || ''); }
   /* fields the database could not take yet, kept per customer and sent again with the next save */
+  /* Never send null for a preference: the array columns are NOT NULL, and a save must never blank a choice the form
+     did not load. Missing or broken values fall back to what the customer already had, else an empty list. */
+  var PREF_ARR = ['models', 'models_must', 'mileage_bands', 'colours', 'colours_must', 'specs', 'specs_must'];
+  function safePrefs(row, prev) { prev = prev || {};
+    PREF_ARR.forEach(function (k) { var v = row[k]; if (Array.isArray(v)) return;
+      if (typeof v === 'string' && v) { row[k] = [v]; return; }
+      if (Array.isArray(prev[k])) row[k] = prev[k].slice(); else delete row[k]; });
+    if (row.models_must && row.models) row.models_must = row.models_must.filter(function (m) { return row.models.indexOf(m) !== -1; });
+    if (typeof row.fuel !== 'string' || !row.fuel) { if (typeof prev.fuel === 'string' && prev.fuel) row.fuel = prev.fuel; else row.fuel = 'open'; }
+    return row; }
   function pendingCols(id, o) { try { var k = 'sdPendingCols:' + id; if (o && Object.keys(o).length) localStorage.setItem(k, JSON.stringify(o)); else localStorage.removeItem(k); } catch (e) {} }
   function pendingGet(id) { try { return JSON.parse(localStorage.getItem('sdPendingCols:' + id) || 'null') || {}; } catch (e) { return {}; } }
   var LIVE = CFG.MODE === 'supabase' && CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY;
@@ -193,15 +242,19 @@
       });
       S.newRange = out;
     }).catch(function () { S.newRange = []; });
+    /* real new cars in retailer stock, same ids as the alerts job (NEW + order number); cars on hold are left out */
+    /* the light list (no pictures beyond the first, no equipment lists); a car's full record loads when it is opened */
+    var ns = fetch('../lookup/new-stock-lite.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
+      S.newStock = (d.cars || []).filter(function (c) { return c.order_number && !c.on_hold && c.price_gbp; }).map(M.fromNewStock);
+      /* monthly figures for new cars: the lender's own quote only (dsfinance.js rules), else no monthly */
+      return fetch('../lookup/new-stock-quotes.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        .then(function (qf) { M.applyLenderQuotes(S.newStock, qf, window.dsFin); }); }).catch(function () { S.newStock = []; });
+    /* arrival dates (the same ledger stock.html badges from); quiet failure means no Just arrived badges */
+    var arr = fetch('../automation/stock-arrivals.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { S.arrivals = d; }).catch(function () { S.arrivals = null; });
+    /* Hedin's description of each used car, keyed by listing id. Never waited on: without it the sheet simply has no About this car. */
+    fetch('../automation/car-descriptions.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { window.ctDesc = d || null; }).catch(function () { window.ctDesc = null; });
     var det = fetch('../automation/car-details.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { window.ctDetails = d; }).catch(function () { window.ctDetails = null; });
-    /* real brand new stock (lookup/new-stock.json). The order number is the id, so the reg slot carries NEW-<order>, as on the buy list. */
-    var newStock = fetch('../lookup/new-stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
-      S.newStock = (d.cars || []).filter(function (c) { return c.order_number; }).map(function (c) { var x = M.fromNewStock(c); x.reg = 'NEW-' + c.order_number; return x; }); })
-      .catch(function () { S.newStock = []; });
-    /* Hedin's own description per used car, keyed by listing id (automation/car-descriptions.json). Quiet on failure. */
-    var descs = fetch('../automation/car-descriptions.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { S.desc = d.cars || {}; })
-      .catch(function () { S.desc = {}; });
-    return Promise.all([stock, range, det, newStock, descs]);
+    return Promise.all([stock, range, det, ns, arr]).then(function () { M.stampArrivals(S.cars, S.arrivals); placeholders(); });
   }
   /* body and fuel for a new model, only from its name and MBG.html group */
   function newCar(name, group) {
@@ -217,37 +270,49 @@
     if (/convertible/.test(n)) b.push('convertible'); if (/active tourer/.test(n)) b.push('mpv'); if (/saloon/.test(n)) b.push('saloon');
     if (/^1 series|^m135/.test(n)) b.push('hatchback'); if (/^i3$|^i4|^i5|^i7/.test(n) && !b.length) b.push('saloon');
     var series = (name.match(/^(\d Series|i\d|iX\d?|X\d|XM|M\d)/i) || [name])[0];
-    return { kind: 'new', reg: 'NEW-' + name.replace(/[^A-Za-z0-9]+/g, '-').toUpperCase(), model: 'BMW ' + name, series: series, group: group, bodyKeys: b, fuelKeys: f };
+    return { kind: 'new', name: name, reg: 'NEW-' + name.replace(/[^A-Za-z0-9]+/g, '-').toUpperCase(), model: 'BMW ' + name, series: series, group: group, bodyKeys: b, fuelKeys: f };
   }
   /* Model choices: each family of the range (3 Series, X5...), then the M models on their own (M2, M3, M4, M5, M8, M Performance).
      A family choice includes its M cars; an M choice asks for those alone (see match-core.js). */
+  /* colour families present in stock, the same list the profile shows */
+  function colourList() { var fams = {}; (S.cars || []).forEach(function (car) { var fm = M.colourFamily(car); if (fm) fams[fm] = 1; });
+    var l = M.FAMILY.map(function (x) { return x[0]; }).filter(function (x) { return fams[x]; }); if (fams.Other) l.push('Other'); return l.length ? l : M.FAMILY.map(function (x) { return x[0]; }); }
   function allModels() {
     var fam = {}, vars = {};
     pool().concat(S.newRange).forEach(function (c) { if (c.series && !/^M\d/.test(c.series)) fam[c.series] = 1; var v = M.variantOf(c); if (v) vars[v] = 1; });
     var sort = function (a, b) { return a.localeCompare(b, 'en', { numeric: true }); };
     return Object.keys(fam).sort(sort).concat(Object.keys(vars).sort(sort));
   }
-  /* Brand new cars are only the ones in stock. The range list (S.newRange) feeds the model chips, never the deck. */
-  function pool() { return S.cars.concat(S.newStock || []); }
-  /* Hedin's description, as paragraphs, for a used car. Nothing for brand new stock, which has no listing text. */
-  function descHtml(c) { var e = (S.desc || {})[String(c.listing_id || '')]; if (!e || !e.text) return '';
-    return '<div class="ct-desc"><h3>About this car</h3>' + e.text.split(/\n\s*\n/).map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '<p class="ct-desc-by">Description from the Hedin listing.</p></div>'; }
+  function pool() { return S.cars.concat(S.newStock || [], S.newRange || []); }
+  /* model cards stay only where no real stock covers that model; their budget test uses the cheapest real new car */
+  function placeholders() { var st = S.newStock || [];
+    var fc = st.length ? Math.min.apply(null, st.map(function (c) { return c.price_gbp; })) : null;
+    var fm = st.filter(function (c) { return c.finance; }).map(function (c) { return c.finance.monthly; }); fm = fm.length ? Math.min.apply(null, fm) : null;
+    S.newRange = (S.newRange || []).filter(function (p) { return !st.some(function (c) { return M.covers(c, p.name); }); })
+      .map(function (p) { p.floor_cash = fc; p.floor_monthly = fm; return p; }); }
+  function stockLabel(c) { return c.kind === 'new_stock' ? 'New, in stock' : c.kind === 'new' ? 'Brand new, ordered for you' : c.source === 'group' ? 'I can source this one' : 'On my forecourt'; }
+  function ready(c) { return c.lead_min && c.lead_max ? (c.lead_min === c.lead_max ? 'Ready in about ' + c.lead_min + ' weeks' : 'Ready in ' + c.lead_min + ' to ' + c.lead_max + ' weeks') : ''; }
+  function askModelWa(c) { return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the look of a new ' + c.model + ' on SwipeToDrive. Could you tell me about this model and what is available?'); }
+  function buyOrAsk(c) { return c.kind === 'new' ? '<a class="ct-btn ct-btn-big ct-wa ct-ask" target="_blank" rel="noopener" href="' + esc(askModelWa(c)) + '">Ask ' + esc(waWho() || 'Dan') + ' about this model</a>'
+    : '<button class="ct-btn ct-btn-big ct-buy" type="button" data-buy="' + esc(c.reg) + '">Buy this car</button>'; }
   function brandNew(c) { return c.kind === 'new' || c.kind === 'new_stock'; }
   function byReg(reg) { return pool().find(function (c) { return c.reg === reg; }); }
   function waNum() { return (S.owner && S.owner.whatsapp) || CFG.DAN_WA; }
   function waWho() { return S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
 
   /* ---------------- routing ---------------- */
-  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'buys', 'pick'];
+  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'buys', 'pick', 'followups', 'quote', 'present'];
+  var HUB = ['followups', 'quote', 'present']; /* Dan's admin tools: admin only, never customers or guests */
   function go(name) { if (location.hash !== '#' + name) location.hash = name; else route(); }
   function route() {
     var h = (location.hash || '').slice(1); if (isAuthHash(h)) h = '';
-    h = h || (S.session ? 'discover' : 'signin');
+    h = h || (S.session ? (S.session.role === 'admin' ? 'team' : 'discover') : 'signin');
     if (!S.session) h = 'signin';
     if (SCREENS.indexOf(h) === -1) h = 'discover';
     var staff = S.session && S.session.role !== 'customer';
     if ((h === 'team' || h === 'invites' || h === 'buys') && !staff) h = 'discover';
     if (h === 'invites' && S.session.role !== 'admin') h = 'team';
+    if (HUB.indexOf(h) !== -1 && S.session.role !== 'admin') h = staff ? 'team' : 'discover';
     /* Staff with no customer picked: Discover and Matches explain what to do, Me shows the account.
        (This used to bounce every tab back to Customers, so the nav looked dead.) */
     var tab = h;
@@ -259,11 +324,20 @@
     $('#nav').hidden = !S.session;
     $$('[data-nav]').forEach(function (a) { if (a.getAttribute('data-nav') === (h === 'pick' ? tab : h)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     $$('[data-staff-only]').forEach(function (e) { e.hidden = !staff; });
+    $$('[data-admin-only]').forEach(function (e) { e.hidden = !(S.session && S.session.role === 'admin'); });
     var act = $('#acting'); act.hidden = !(staff && S.cust); if (S.cust) act.textContent = 'For ' + (S.cust.name || 'new customer');
     window.scrollTo(0, 0);
-    ({ profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites, buys: showBuys }[h] || function () {})();
+    ({ profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites, buys: showBuys, followups: hubShow, quote: hubShow, present: hubShow }[h] || function () {})();
   }
-  window.addEventListener('hashchange', route);
+  function hubShow() { if (window.ctHub && S.session && S.session.role === 'admin') window.ctHub.show(location.hash.slice(1)); }
+  /* Android style shared axis slide between tabs, where the browser supports view transitions. Moving right
+     along the bottom bar slides left, and back the other way. Off with reduced motion. */
+  var NAV_ORDER = ['discover', 'matches', 'team', 'followups', 'me'], lastScreen = null;
+  function routeAnimated() { var h = (location.hash || '').slice(1), reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!document.startViewTransition || reduce || !S.session || h === lastScreen || isAuthHash(h)) { lastScreen = h; return route(); }
+    var a = NAV_ORDER.indexOf(lastScreen), b = NAV_ORDER.indexOf(h); document.documentElement.dataset.moDir = a !== -1 && b !== -1 && b < a ? 'back' : ''; lastScreen = h;
+    try { var vt = document.startViewTransition(route), q = function () {}; vt.ready['catch'](q); vt.finished['catch'](q); vt.updateCallbackDone['catch'](q); } catch (e) { route(); } }
+  window.addEventListener('hashchange', routeAnimated);
 
   /* ---------------- sign in ---------------- */
   function initSignin() {
@@ -305,9 +379,27 @@
     return chatPending(sess).then(function () { return store.customers(); }).then(function (list) {
       if (!staff) S.cust = list[0] || null;
       else { var last = sessionStorage.getItem('ctActing'); S.cust = list.find(function (c) { return c.id === last; }) || null; }
-      return loadCust();
+      return (staff ? Promise.resolve() : alertPending()).then(loadCust);
     }).then(function () { resyncPush(); if (!location.hash || location.hash === '#signin') location.hash = staff ? 'team' : (S.cust && S.cust.name ? 'discover' : 'profile'); else route(); iosNudge(); });
   }
+  /* "Tell me when it arrives" (alerts.html): the alert waits on this device until the customer has signed in,
+     then joins their profile as a must have model (and spec). Their own consent is recorded with it. */
+  function alertPending() { var A = window.AlertSave, a = A && A.get(); if (!a) return Promise.resolve();
+    var patch = A.build(a, S.cust || {}), row = Object.assign({}, S.cust || {}, patch);
+    var CC = ['comms_consent_at', 'comms_consent_text'];
+    return store.saveCustomer(row).catch(function (err) { if (!/comms_consent/.test(String((err && (err.message || err.details)) || ''))) throw err;
+        var r2 = Object.assign({}, row); CC.forEach(function (k) { delete r2[k]; }); return store.saveCustomer(r2); })
+      .then(function (saved) { S.cust = saved; S.deck = []; A.clear(); S.alertJust = a; track('alert_saved', { model: a.model, specs: a.specs.length, source: a.source });
+        if (!location.hash || location.hash === '#signin') location.hash = saved && saved.name ? 'discover' : 'profile'; setTimeout(alertSheet, 600); })
+      .catch(function (e) { console.warn('alert save', e); toast('Your alert could not be saved just now. Message Dan and he will set it up.'); }); }
+  function alertSheet() { var a = S.alertJust; if (!a) return; S.alertJust = null; var who = waWho() || 'Dan';
+    var what = a.model + (a.specs.length ? ' with ' + a.specs.map(function (k) { return M.specLabel ? M.specLabel(k) : k; }).join(', ') : '');
+    var o = document.createElement('div'); o.className = 'ct-sheet'; o.id = 'alertSheet'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+    o.innerHTML = '<div class="ct-sheet-in"><h2>Your alert is saved</h2><p>' + esc(what) + '.</p><p class="ct-sub">When one comes into stock that fits, SwipeToDrive flags it to ' + esc(who) + ' and ' + esc(who) + ' messages you. Turn on notifications so the app can tell you directly as well.</p>' +
+      '<p class="ct-sub">The cars that fit right now are in Discover. To stop an alert at any time: Me, then Stock alerts, then Stop this alert, or reply STOP to Dan on WhatsApp.</p>' +
+      '<div class="ct-row"><a class="ct-btn ct-btn-big" href="#me" data-alert-x>Turn on notifications</a></div>' +
+      '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + who + ', I have set an alert on SwipeToDrive for the ' + what + '. Can you keep an eye out for me?') + '">WhatsApp ' + esc(who) + '</a><button class="ct-btn ct-btn-ghost" type="button" data-alert-x>See the cars that fit now</button></div></div>';
+    o.addEventListener('click', function (e) { if (e.target.closest('[data-alert-x]') || e.target === o) o.remove(); }); document.body.appendChild(o); }
   /* alerts already allowed: quietly refresh the subscription so a key change never leaves a phone without alerts */
   function resyncPush() { try { if (!LIVE || !platform.pushSupported() || Notification.permission !== 'granted' || !CFG.VAPID_PUBLIC_KEY) return;
     platform.subscribePush().then(function (sub) { return store.savePush(sub); }).catch(function (e) { console.warn('SwipeToDrive push resync', e); }); } catch (e) {} }
@@ -336,6 +428,7 @@
     { h: 'Next steps agreed', staff: true, f: [['ns_drive', 'Test drive booked', 'check'], ['ns_drive_when', 'When', 'line'], ['ns_val', 'Valuation on their car', 'check'], ['ns_follow', 'Follow up date', 'date'], ['n_next', 'Notes on next steps', 'text']] },
     { h: 'Customer', f: [['optin', 'They asked to be kept posted (occasional news from Dan, unsubscribe any time)', 'check'], ['n_customer', 'Notes on the customer', 'text']] }
   ];
+  window.ctDeskDef = DESK;
   function deskHtml(staff) { return DESK.filter(function (g) { return staff || !g.staff; }).map(function (g) {
       return '<details class="ct-more"><summary>' + esc(g.h) + ' <em class="ct-opt">optional</em></summary>' + g.f.filter(function (x) { return staff || !x[4]; }).map(function (x) { var k = x[0], t = x[2];
         if (Array.isArray(t)) return '<span class="ct-lab">' + esc(x[1]) + '</span><div class="ct-chips' + (x[3] ? ' ct-multi' : '') + '" data-name="desk_' + k + '">' + t.map(function (o) { return '<button type="button" data-v="' + esc(o.v) + '">' + esc(o.t) + '</button>'; }).join('') + '</div>';
@@ -353,7 +446,10 @@
   function bindChoice(root) {
     $$('.ct-seg[data-name], .ct-chips[data-name]', root).forEach(function (g) {
       g.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return;
-        if (g.classList.contains('ct-multi')) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+        if (g.classList.contains('ct-multi')) { var nowOn = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', nowOn ? 'true' : 'false');
+          /* fuel: Open minded and named fuels are exclusive; nothing picked falls back to Open minded */
+          if (g.getAttribute('data-name') === 'fuel') { var op = $('[data-v=open]', g); if (b === op && nowOn) $$('button', g).forEach(function (x) { if (x !== op) x.setAttribute('aria-pressed', 'false'); }); else if (nowOn) op.setAttribute('aria-pressed', 'false');
+            if (!$$('button[aria-pressed=true]', g).length) op.setAttribute('aria-pressed', 'true'); } }
         else $$('button', g).forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
         platform.haptic(8); showDeps(root); });
     });
@@ -367,13 +463,16 @@
   function showProfile() {
     var f = $('#profileForm'), c = S.cust || {}, staff = S.session.role !== 'customer';
     $('#pfTitle').textContent = staff ? (c.id ? 'Edit ' + (c.name || 'customer') : 'Add a customer') : 'About you';
+    var rb = $('#pfRef'); if (rb) { rb.innerHTML = staff ? refBadge(c) : ''; rb.hidden = !rb.innerHTML; }
+    /* staff can add a customer with just a name; customers still give a mobile */
+    f.elements.phone.required = !staff; f.elements.phone.setAttribute('aria-required', String(!staff)); var rq = f.elements.phone.closest('label').querySelector('.ct-req'); if (rq) rq.textContent = staff ? 'optional' : 'required';
     $('#pfSub').textContent = staff ? 'Fill in what the customer told you. Their matches, swipes and photos stay visible to you and Dan only.' : 'Takes a minute. The more you tell me, the better your matches.';
-    var mc = $('#modelChips'); mc.innerHTML = allModels().map(function (m) { return '<button type="button" data-v="' + esc(m) + '">' + esc(m) + '</button>'; }).join('');
+    drawTri('#modelChips', allModels().map(function (m) { return { key: m, label: m }; }), c.models || [], c.models_must || []);
     ['name', 'phone', 'email', 'postcode', 'monthly_gbp', 'cash_gbp', 'deposit_gbp'].forEach(function (k) { if (f.elements[k]) f.elements[k].value = c[k] == null ? '' : c[k]; });
     f.elements.annual_mileage.value = String(c.annual_mileage || 8000);
-    setChoice(f, 'budget_type', c.budget_type || 'monthly'); setChoice(f, 'fuel', c.fuel || 'open'); setChoice(f, 'body', c.body || 'any');
-    f.elements.email_alerts.checked = !!c.email_alerts;
-    setChoice(f, 'models', c.models || []); f.elements.year_from.value = c.year_from ? String(c.year_from) : ''; setChoice(f, 'new_used', c.new_used || 'both');
+    setChoice(f, 'budget_type', c.budget_type || 'monthly'); setChoice(f, 'fuel', M.fuelList(c.fuel).length ? M.fuelList(c.fuel) : ['open']); setChoice(f, 'mileage_bands', c.mileage_bands || []); setChoice(f, 'body', c.body || 'any');
+    f.elements.email_alerts.checked = !!c.email_alerts; f.elements.year_from.value = c.year_from ? String(c.year_from) : '';
+    setChoice(f, 'new_used', c.new_used || 'both');
     var fams = {}; S.cars.forEach(function (car) { var fm = M.colourFamily(car); if (fm) fams[fm] = 1; });
     var famList = M.FAMILY.map(function (x) { return x[0]; }).filter(function (x) { return fams[x]; }); if (fams.Other) famList.push('Other');
     drawTri('#colourChips', [{ key: 'Any', label: 'Any' }].concat(famList.map(function (x) { return { key: x, label: x }; })), c.colours || ['Any'], c.colours_must || []);
@@ -390,11 +489,19 @@
     $('#pxConfirmed').textContent = c.px_terms_confirmed_at ? 'Last confirmed ' + new Date(c.px_terms_confirmed_at).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + (c.px_terms_confirmed_by === 'staff' && !staff ? ' by your sales executive' : '') : '';
     S.pxPhotos = (px.photos || []).slice(); drawThumbs(); showDeps(f);
     var dk = $('#deskBox'); if (dk.getAttribute('data-for') !== String(staff)) { dk.innerHTML = deskHtml(staff); dk.setAttribute('data-for', String(staff)); bindChoice(dk); } deskFill(f, c.desk);
+    var cb = $('#commsConsent'); if (cb) { cb.checked = !!c.comms_consent_at; var nt = $('#commsConsentNote');
+      nt.textContent = c.user_id ? 'This customer signed in themselves, so they have agreed to use SwipeToDrive.' : c.comms_consent_at ? 'Consent recorded ' + new Date(c.comms_consent_at).toLocaleDateString('en-GB') + (c.comms_consent_by_name ? ' by ' + c.comms_consent_by_name : '') + '. Untick and save to withdraw it: their swipe links stop working.' : 'Leave this unticked and nothing is ever sent to them. You can still print their customer page.'; }
     $('#pfSave').textContent = staff ? 'Save and find matches' : 'Find my match';
   }
-  function drawTri(sel, opts, on, must) { $(sel).innerHTML = opts.map(function (o) { var st = must.indexOf(o.key) !== -1 ? 'must' : on.indexOf(o.key) !== -1 ? 'like' : '';
-      return '<button type="button" data-v="' + esc(o.key) + '" data-state="' + st + '" aria-pressed="' + (st ? 'true' : 'false') + '">' + esc(o.label) + '</button>'; }).join(''); }
+  function drawTri(sel, opts, on, must) { var lastG = null; $(sel).innerHTML = opts.map(function (o) { var st = must.indexOf(o.key) !== -1 ? 'must' : on.indexOf(o.key) !== -1 ? 'like' : '';
+      var head = o.group && o.group !== lastG ? '<span class="ct-grp">' + esc(o.group) + '</span>' : ''; lastG = o.group || lastG;
+      return head + '<button type="button" data-v="' + esc(o.key) + '" data-state="' + st + '" aria-pressed="' + (st ? 'true' : 'false') + '">' + esc(o.label) + '</button>'; }).join(''); }
   function triVals(sel) { var on = [], must = []; $$(sel + ' button').forEach(function (b) { var st = b.getAttribute('data-state'), v = b.getAttribute('data-v'); if (st) on.push(v); if (st === 'must') must.push(v); }); return { on: on, must: must }; }
+  var FUEL_L = { petrol: 'Petrol', diesel: 'Diesel', hybrid: 'Hybrid', electric: 'Electric' };
+  function fuelText(c) { var l = M.fuelList(c.fuel); return l.length ? l.map(function (x) { return FUEL_L[x] || x; }).join(', ') : 'Open minded'; }
+  function bandsText(c) { var l = (c.mileage_bands || []).map(function (k) { return M.MILEAGE_BANDS[k] ? M.MILEAGE_BANDS[k].label : k; }); return l.length ? l.join(', ') : 'Any'; }
+  function modelsText(c) { var must = c.models_must || [], like = (c.models || []).filter(function (m) { return must.indexOf(m) === -1; });
+    if (!must.length && !like.length) return 'Any'; return [must.length ? 'Must have: ' + must.join(', ') : '', like.length ? 'Would like: ' + like.join(', ') : ''].filter(Boolean).join('. '); }
   function equity(c) { if (c.px_valuation_gbp == null || c.px_settlement_gbp == null) return null; var e = c.px_valuation_gbp - c.px_settlement_gbp;
     return { neg: e < 0, text: M.gbp(Math.abs(e)), label: e < 0 ? 'Negative equity, subject to inspection and settlement confirmation' : 'Estimated equity, subject to inspection and settlement confirmation' }; }
   function valBy(c) { if (c.px_valuation_gbp == null) return ''; var who = c.px_valuation_set_by === 'customer' ? (S.session && S.session.role === 'customer' ? 'you' : 'the customer') : (c.px_valuation_set_by_name || 'Dan');
@@ -421,6 +528,7 @@
   function readRates() { var o = {}; $$('#pxRates .ct-rate').forEach(function (el) { var b = $('button[aria-pressed=true]', el), n = $('input', el).value.trim();
       if (b || n) o[el.getAttribute('data-area')] = Object.assign(b ? { rating: +b.getAttribute('data-r') } : {}, n ? { notes: n } : {}); }); return o; }
   function drawThumbs() { $('#pxThumbs').innerHTML = S.pxPhotos.map(function (p) { return p.preview ? '<img src="' + esc(p.preview) + '" alt="Part exchange photo">' : '<span class="ct-pill">Photo saved</span>'; }).join(''); }
+  window.ctCrdPrintCurrent = function () { if (S.cust && window.ctCrd) window.ctCrd.open(S.cust, S.session); else toast('Save the customer first, then print.'); };
   function initProfile() {
     var f = $('#profileForm'); bindChoice(f);
     /* choosing "I have one" opens the part exchange section, so its questions are right there */
@@ -446,19 +554,27 @@
       if (btn.disabled) return; clearErrs(f); banner(f, ''); msg.textContent = '';
       var bad = [], ph = el.phone.value.replace(/[^\d+]/g, ''), em = staff ? el.email.value.trim() : '';
       if (!el.name.value.trim()) bad.push(fieldErr(f, 'name', 'Add a name.'));
-      if (!ph) bad.push(fieldErr(f, 'phone', 'Add a mobile number.')); else if (ph.replace(/\D/g, '').length < 10) bad.push(fieldErr(f, 'phone', 'That mobile number looks too short.'));
-      if (staff && !em) bad.push(fieldErr(f, 'email', 'Add the customer email.')); else if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
+      if (!ph) { if (!staff) bad.push(fieldErr(f, 'phone', 'Add a mobile number.')); } else if (ph.replace(/\D/g, '').length < 10) bad.push(fieldErr(f, 'phone', 'That mobile number looks too short.'));
+      if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
       var rated = Object.keys(readRates()).length > 0;
       if (choice(f, 'px_has') === 'yes' && rated && !$('#pxConfirm').checked) bad.push(fieldErr(f, $('#pxConfirm'), 'Tick I confirm, because condition ratings are filled in.'));
       if (choice(f, 'px_has') === 'yes' && !el.px_reg.value.trim()) bad.push(fieldErr(f, 'px_reg', 'Add the part exchange reg, or choose No part exchange.'));
       bad = bad.filter(Boolean);
       bad.forEach(function (el) { var d = el.closest('details'); if (d) d.open = true; });
       if (bad.length) { banner(f, bad.length === 1 ? 'One thing to fix before saving.' : bad.length + ' things to fix before saving.'); bad[0].scrollIntoView({ block: 'center' }); bad[0].focus({ preventScroll: true }); return; }
-      var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim(), postcode: el.postcode.value.trim().toUpperCase(),
+      var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim() || null, postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
-        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), year_from: +el.year_from.value || null, new_used: choice(f, 'new_used') });
-      if (staff) { c.email = el.email.value.trim() || null; c.email_alerts = el.email_alerts.checked; }
+        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: [].concat(choice(f, 'fuel') || []).filter(function (x) { return x !== 'open'; }).join(',') || 'open', mileage_bands: [].concat(choice(f, 'mileage_bands') || []), body: choice(f, 'body'), models: $$('#modelChips button').length ? triVals('#modelChips').on : ((S.cust || {}).models || []), models_must: $$('#modelChips button').length ? triVals('#modelChips').must : ((S.cust || {}).models_must || []), year_from: +el.year_from.value || null, new_used: choice(f, 'new_used') });
+      if (staff) { c.email = el.email.value.trim() || null; c.email_alerts = el.email_alerts.checked; } /* staff can save a customer with a name only */
       c.desk = deskRead(f, (S.cust || {}).desk);
+      if (staff && $('#commsConsent')) { var want = $('#commsConsent').checked, had = !!(S.cust && S.cust.comms_consent_at);
+        if (want && !had) {
+          /* failsafe: a second, plain statement of what ticking means, before anything is recorded */
+          if (!window.confirm('Please confirm.\n\n' + (c.name || 'This customer') + ' has agreed that you can message them, and that you can set them up on SwipeToDrive so they can use it themselves.\n\nNothing is sent automatically. You choose when to send anything.\n\nPress Cancel to save the profile WITHOUT recording consent.')) {
+            /* the profile always saves; declining only means consent is not recorded */
+            $('#commsConsent').checked = false; msg.textContent = 'Saved without messaging consent. Nothing will be sent to them.'; }
+          else { c.comms_consent_at = new Date().toISOString(); c.comms_consent_text = CONSENT_TEXT; c.comms_consent_by_name = S.session.name || ''; } }
+        else if (!want && had) { c.comms_consent_at = null; c.comms_consent_text = null; c.comms_consent_by_name = null; c.comms_consent_by = null; } }
       var num = function (v) { return v === '' ? null : Math.max(0, Math.round(+v)); }, prevVal = S.cust ? S.cust.px_valuation_gbp : null;
       /* Dan's valuation: only staff write it. A customer's save keeps whatever is already there (the field is hidden from them). */
     if (staff) { c.px_valuation_gbp = num(el.px_valuation_gbp.value); c.px_valued_on = el.px_valued_on.value || null; }
@@ -471,7 +587,12 @@
       c.px = choice(f, 'px_has') === 'yes' ? { reg: M.normReg(el.px_reg.value), mileage: +el.px_mileage.value || null, condition: overallLabel(c.px_condition_ratings), finance_outstanding: c.px_settlement_gbp, /* mirror of the settlement figure, kept for older readers */
         photos: S.pxPhotos.map(function (p) { return LIVE ? { path: p.path, link: p.link } : p; }) } : null;
       var wasNew = !(S.cust && S.cust.id); busy(btn, true);
-      store.saveCustomer(c).then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
+      /* the profile always saves: until the consent SQL has been run the database has no consent columns, so save without them */
+      var CC = ['comms_consent_at', 'comms_consent_text', 'comms_consent_by_name', 'comms_consent_by'];
+      store.saveCustomer(c).catch(function (err) { var m = String((err && (err.message || err.details)) || '');
+        if (!/comms_consent/.test(m)) throw err; var c2 = Object.assign({}, c); CC.forEach(function (k) { delete c2[k]; });
+        return store.saveCustomer(c2).then(function (saved) { setTimeout(function () { toast('Saved. Consent could not be recorded yet, so nothing will be sent to them.'); }, 1200); return saved; }); })
+        .then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
         .then(function () { busy(btn, false); toast(staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deck = []; S.relax = null; go('discover'); })
         .catch(function (err) { busy(btn, false); console.warn('save customer', err); banner(f, plainErr(err)); track('profile_save_failed', { code: (err && err.code) || '' }); });
     });
@@ -484,7 +605,7 @@
        One card per stable id (reg), and nothing already swiped. */
     var deep = platform.deepLink().reg, seen = S.swipes, ids = {};
     S.deck = ranked.filter(function (x) { var id = x.car.reg; if (!id || seen[id] || ids[id]) return false; ids[id] = 1; return true; });
-    if (deep) { var i = S.deck.findIndex(function (x) { return x.car.reg === deep; }); if (i > 0) S.deck.unshift(S.deck.splice(i, 1)[0]); }
+    if (deep) { var i = S.deck.findIndex(function (x) { return M.normReg(x.car.reg) === deep; }); if (i > 0) S.deck.unshift(S.deck.splice(i, 1)[0]); }
     S.emptyWhy = S.deck.length ? null : emptyReason(ranked);
   }
   /* Why nothing is left, in plain words. Each check loosens one thing, so the customer hears the real reason. */
@@ -499,7 +620,7 @@
   }
   /* A wider search for this visit only. Each step loosens one thing; the customer's own answers are never changed by it. */
   var WIDEN = {
-    fuel: function (p) { p.fuel = 'open'; }, body: function (p) { p.body = 'any'; }, models: function (p) { p.models = []; },
+    fuel: function (p) { p.fuel = 'open'; }, body: function (p) { p.body = 'any'; }, models: function (p) { p.models = []; p.models_must = []; },
     year: function (p) { p.year_from = null; }, colours: function (p) { p.colours = []; p.colours_must = []; },
     specs: function (p) { p.specs = []; p.specs_must = []; }, new_used: function (p) { p.new_used = 'both'; }
   };
@@ -549,7 +670,7 @@
   /* What the customer asked for, in words: "M3, 2024 or newer, up to £40,000" */
   function criteriaOf(c) {
     return { new_used: c.new_used || 'both', budget_type: c.budget_type || null, cash_gbp: c.cash_gbp || null, monthly_gbp: c.monthly_gbp || null,
-      fuel: c.fuel || 'open', body: c.body || 'any', models: c.models || [], year_from: c.year_from || null,
+      fuel: c.fuel || 'open', body: c.body || 'any', models: c.models || [], models_must: c.models_must || [], mileage_bands: c.mileage_bands || [], year_from: c.year_from || null,
       colours: c.colours || [], colours_must: c.colours_must || [], specs: c.specs || [], specs_must: c.specs_must || [] };
   }
   function describeCriteria(k) {
@@ -576,30 +697,62 @@
   /* the profile's sections open when they already hold an answer, so a returning customer sees what they chose */
   function openSections(c) { var sec = function (k) { return $('#profileForm details.ct-sec[data-sec="' + k + '"]'); };
     sec('budget').open = !!(c.monthly_gbp || c.cash_gbp || c.deposit_gbp);
-    sec('car').open = !!((c.fuel && c.fuel !== 'open') || (c.body && c.body !== 'any') || (c.models || []).length || (c.colours || []).length || (c.specs || []).length || (c.new_used && c.new_used !== 'both'));
+    /* the car picks (fuel, body, models, colours, every spec) are the core of a profile: always open, for staff and customers */
+    sec('car').open = true;
     sec('px').open = !!(c.px && c.px.reg);
     sec('more').open = !!(c.desk && Object.keys(c.desk).length);
   }
   function cardHtml(x) {
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     var img = isNew ? '<div class="ct-noimg-ph">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (photos(c).length ? photoHtml(c, 0, true) : noPhoto(c));
-    var src = isNew ? 'Brand new' : c.kind === 'new_stock' ? 'Brand new, in stock' : c.source === 'group' ? 'I can source this one' : 'On my forecourt';
-    var tags = isNew ? [c.group] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
+    var ns = c.kind === 'new_stock', src = stockLabel(c);
+    var tags = isNew ? [c.group] : ns ? [c.colour, c.fuel, c.gearbox, ready(c)] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
-      : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (c.kind === 'new_stock' ? '<div class="ct-mon">Brand new and unregistered. Ask me for a personal quote.</div>' : f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">Monthly: ask for a quote</div>');
-    return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' +
+      : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">Monthly: ask for a quote</div>');
+    var just = M.justArrived(c) ? '<span class="ct-just">Just arrived</span>' : '';
+    return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' + just +
       '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">TEST DRIVE</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
-      '<div class="ct-meta">' + (brandNew(c) ? '<span class="ct-plate ct-plate-new">NEW</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
-      x.reasons.map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') + '</div>' + money + '</div>';
+      '<div class="ct-meta">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? 'NEW, IN STOCK' : 'NEW') + '</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
+      x.reasons.filter(function (r) { return r !== 'Just arrived'; }).map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') +
+      (x.notes || []).map(function (n) { return '<span class="ct-note">' + esc(n) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
-  function showDeck() { if (!S.deck.length) buildDeck(); drawDeck(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
+  /* 'N new since your last visit': the previous visit is the later of this device's and the profile's record.
+     Worked out once per page load, then today's visit is saved for next time. */
+  function visitKey() { return 'sdLastVisit' + (S.cust && S.cust.id ? ':' + S.cust.id : ''); }
+  function noteVisit() {
+    if (S.visitNoted === visitKey()) return; S.visitNoted = visitKey(); S.sinceN = 0;
+    var dev = null; try { dev = localStorage.getItem(visitKey()) || localStorage.getItem('sdLastVisit'); } catch (e) {}
+    var own = S.session && S.session.role === 'customer';
+    return (own ? store.lastVisit() : Promise.resolve(null)).catch(function () { return null; }).then(function (prof) {
+      var prev = [dev, prof].filter(Boolean).sort().pop() || null;
+      S.sinceN = M.newSince(S.deck.map(function (x) { return x.car; }), prev); sinceLine();
+      var now = new Date().toISOString();
+      try { localStorage.setItem(visitKey(), now); localStorage.setItem('sdLastVisit', now); } catch (e) {}
+      if (own) store.setLastVisit(now);
+    });
+  }
+  function sinceLine() {
+    var el = $('#sinceLast'); if (!el) { el = document.createElement('p'); el.id = 'sinceLast'; el.className = 'ct-since'; el.setAttribute('aria-live', 'polite'); $('#deck').parentNode.insertBefore(el, $('#deck')); }
+    var n = S.sinceN || 0; el.hidden = !n || $('#deck').hidden; el.textContent = n === 1 ? '1 new car since your last visit' : n + ' new cars since your last visit';
+  }
+  /* The light list has no seats, drive or equipment. A customer with spec choices (7 seats, for one) is matched on the
+     full file, read once and only then; if it cannot be read the light list stands and those cars score as before. */
+  function needsFull(c) { c = c || {}; return !!(((c.specs_must || []).length || (c.specs || []).length) && (S.newStock || []).length); }
+  function ensureFull() { if (S.fullNs) return S.fullNs;
+    S.fullNs = fetch('../lookup/new-stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { var by = {};
+      (d.cars || []).forEach(function (x) { by[String(x.order_number)] = x; }); (S.newStock || []).forEach(function (c) { if (by[c.order_number]) M.mergeNewDetail(c, by[c.order_number]); }); })
+      .catch(function () { S.fullNs = null; }); return S.fullNs; }
+  function showDeck() { if (needsFull(S.cust) && !S.fullDone) { S.fullDone = true; ensureFull().then(function () { S.deck = []; if (!$('#deck').hidden) { buildDeck(); drawDeck(); } }); }
+    if (!S.deck.length) buildDeck(); drawDeck(); noteVisit(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
   function drawDeck() {
     var deck = $('#deck'); deck.innerHTML = '';
     var top = S.deck.slice(0, 3);
     $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length; deck.hidden = !top.length;
     if (!top.length) paintEmpty();
     var rb = $('#relaxBar'); rb.hidden = !S.relax; if (S.relax) $('#relaxText').textContent = 'Showing a wider search: ' + S.relaxLabel + '.';
+    if (window.ctNoStock) window.ctNoStock.paint(!top.length);
     var left = $('#deckLeft'); if (!left) { left = document.createElement('p'); left.id = 'deckLeft'; left.className = 'ct-sub ct-left'; left.setAttribute('aria-live', 'polite'); $('#deckActions').parentNode.insertBefore(left, $('#deckActions').nextSibling); }
+    sinceLine();
     left.hidden = !top.length; left.textContent = S.deck.length === 1 ? 'Last car in your deck' : S.deck.length + ' cars left to see';
     top.slice().reverse().forEach(function (x, i, arr) {
       var el = document.createElement('div'); el.className = 'ct-card'; el.innerHTML = cardHtml(x); el.dataset.reg = x.car.reg;
@@ -657,7 +810,7 @@
     var c = x.car, m = $('#matchModal'); var mm = $('#mmCar');
     if (c.image) { mm.src = c.image; mm.hidden = false; } else mm.hidden = true;
     $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other.' : 'You and the ' + c.model + ' look made for each other.';
-    var a = $('#mmWa'); a.href = M.waLink(waNum(), c, waWho()); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
+    var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
     m.hidden = false; try { $('[data-close]', m).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
   function confetti(cv) { if (reduced()) return;
@@ -671,16 +824,26 @@
   function openSheet(x) {
     S.sheetAt = Date.now();
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
+    if (c.kind === 'new_stock' && !c.detail && !c._detailAsked) { c._detailAsked = true; S.sheetCar = c;
+      fetch('../lookup/order/' + encodeURIComponent(c.order_number) + '.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (!d) return; M.mergeNewDetail(c, d); if (S.sheetCar === c && !$('#sheet').hidden) openSheet(x); }).catch(function () {}); }
+    S.sheetCar = c;
     var imgs = photos(c);
-    var specs = c.kind === 'new_stock' ? [['Colour', c.colour], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Order', c.order_number]] : isNew ? [['Range', c.group]] : [['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
+    var ns = c.kind === 'new_stock';
+    var specs = isNew ? [['Range', c.group]] : ns ? [['Version', c.description], ['Colour', c.colour], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Drive', c.drive], ['Seats', c.seats], ['Upholstery', c.upholstery], ['Wheels', c.wheels], ['Order number', c.order_number], ['Ready', ready(c).replace(/^Ready /, '')]] : [['Arrived', M.arrivedText(c)], ['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
     $('#sheetBody').innerHTML = (imgs.length ? '<div class="ct-gal">' + imgs.slice(0, 10).map(function (u, k) { return photoHtml({ images: imgs, model: c.model }, k, false); }).join('') + '</div>' : '') +
-      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + esc(c.kind === 'new_stock' ? 'Brand new, already built and unregistered' : isNew ? 'Brand new BMW, ordered to your spec or from new stock' : c.source === 'group' ? 'I can source this one' : 'On my forecourt') + '</p>' +
+      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + (M.justArrived(c) ? '<span class="ct-just ct-just-inline">Just arrived</span> ' : '') + esc(isNew ? 'Brand new BMW, ordered to your spec' : stockLabel(c)) + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
-      (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (c.kind === 'new_stock' ? '<p>Brand new, so I quote it personally: ask me for a finance quote.</p>' : finHtml(f))) +
       descHtml(c) +
-      '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>';
+      (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
+      (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
     $('#sheet').hidden = false;
   }
+  /* About this car: Hedin's own words, minus the dealer boilerplate shared by every car, with dashes read as spaces to match the site */
+  function descHtml(c) { var d = c && c.listing_id != null && (window.ctDesc || {})[String(c.listing_id)], t = d && d.text; if (!t || typeof t !== 'string') return '';
+    var ps = t.split(/\n\s*\n/).map(function (p) { return p.replace(/\s*[\u2010-\u2015-]+\s*/g, ' ').replace(/\s+/g, ' ').trim(); })
+      .filter(function (p) { return p && !/^Buy with confidence/i.test(p) && !/^Welcome to BMW/i.test(p) && !/^We assist you with everything/i.test(p); }); if (!ps.length) return '';
+    return '<div class="ct-desc"><h4>About this car</h4>' + ps.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>'; }
   function photos(c) { var l = (c.images && c.images.length ? c.images : []).slice(0, 10); if (c.image && l.indexOf(c.image) === -1 && !l.length) l = [c.image]; return l; }
   function noPhoto(c) { return '<div class="ct-noimg-ph">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>'; }
   /* Every photo starts with a spinner. load clears it, error shows the model name. Each load is checked against the
@@ -790,10 +953,10 @@
     $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + (waWho() || 'me') + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
       return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>') +
-        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : brandNew(c) ? '<span class="ct-plate ct-plate-new">NEW</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(c.kind === 'new_stock' ? ['Brand new, in stock', c.colour, c.fuel, c.gearbox].filter(Boolean).join(' \u00b7 ') : isNew ? 'Brand new, ' + c.group : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
-        (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (c.kind === 'new_stock' ? '<p>Brand new, so I quote it personally: ask me for a finance quote.</p>' : finHtml(f))) +
-        '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(M.waLink(waNum(), c, waWho())) + '">WhatsApp about ' + esc(isNew ? 'this model' : M.normReg(c.reg)) + '</a></div>' +
-        '<button class="ct-btn ct-btn-big ct-buy" type="button" data-buy="' + esc(c.reg) + '">Buy this car</button>' +
+        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : c.kind === 'new_stock' ? ['New, in stock', c.colour, c.fuel, ready(c)].filter(Boolean).join(', ') : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
+        (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
+        (isNew ? '' : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp about ' + esc(c.kind === 'new_stock' ? 'this car' : M.normReg(c.reg)) + '</a></div>') +
+        buyOrAsk(c) +
         '<button class="ct-unlike" type="button" data-unlike="' + esc(c.reg) + '">Remove from matches</button></div></article>'; }).join('');
     $('#sendBox').hidden = !L.length; $('#sendBtn').textContent = staff ? 'Send these matches to Dan' : 'Send my matches to ' + (S.owner && S.owner.name ? S.owner.name.split(' ')[0] : 'Dan');
   }
@@ -809,7 +972,7 @@
     var body = { _subject: 'SwipeToDrive matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'swipe-drive', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
       budget: c.budget_type === 'cash' ? 'Cash up to \u00a3' + (c.cash_gbp || '?') : 'Monthly up to \u00a3' + (c.monthly_gbp || '?'), deposit: c.deposit_gbp || '', annual_mileage: c.annual_mileage,
       colours: (c.colours || []).join(', ') || 'Any', colours_must_have: (c.colours_must || []).join(', '), specs_wanted: (c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '), specs_must_have: (c.specs_must || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '),
-      fuel: c.fuel, body_or_size: c.body, models_of_interest: (c.models || []).join(', '), new_or_used: c.new_used,
+      fuel: fuelText(c), preferred_mileage: bandsText(c), body_or_size: c.body, models_must_have: (c.models_must || []).join(', ') || 'None', models_would_like: (c.models || []).filter(function (m) { return (c.models_must || []).indexOf(m) === -1; }).join(', ') || 'None', new_or_used: c.new_used,
       px_reg: px.reg || 'None', px_mileage: px.mileage || '', px_condition: px.condition || '', px_finance_outstanding: c.px_settlement_gbp != null ? c.px_settlement_gbp : px.finance_outstanding == null ? '' : px.finance_outstanding,
 px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gbp), px_valued_on: c.px_valued_on ? fmtDate(c.px_valued_on) : '', px_valuation_entered_by: c.px_valuation_gbp == null ? '' : c.px_valuation_set_by === 'customer' ? 'Customer' : (c.px_valuation_set_by_name || 'Dan'),
       px_settlement_figure: c.px_settlement_gbp == null ? '' : M.gbp(c.px_settlement_gbp), px_settlement_valid_until: c.px_settlement_valid_until ? fmtDate(c.px_settlement_valid_until) : '',
@@ -838,13 +1001,17 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       .then(function (row) { Promise.resolve().then(function () { return store.notifyBuy(row.id); }).catch(function (e) { console.warn('SwipeToDrive notify', e); }); track('buy_request', { type: r.type }); return row; })
       .catch(function (e) { console.warn('SwipeToDrive buy request', e); return null; });
   }
+  /* customer side WhatsApp text: a real new car names its order number so Dan can find it straight away */
+  function carWa(c) { if (c.kind !== 'new_stock') return M.waLink(waNum(), c, waWho());
+    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the new ' + c.model + (c.colour ? ' in ' + c.colour : '') + ' in stock on SwipeToDrive (order ' + c.order_number + ', ' + c.price + '). Is it still available?'); }
   function buyWa(c, ref) { var reg = c.kind === 'new' ? '' : c.kind === 'new_stock' ? ', order ' + c.order_number : ', reg ' + M.normReg(c.reg);
     return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on SwipeToDrive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
   function askBuy(c) { S.buyCar = c; var who = waWho() || 'Dan';
     $('#buyTitle').textContent = 'Buy the ' + c.model + '?'; $('#buyText').textContent = who + ' will call you to take a deposit and arrange collection.';
     $('#buyAsk').hidden = false; $('#buyDone').hidden = true; $('#buyYes').disabled = false; $('#buyModal').hidden = false; }
   function confirmBuy() { var c = S.buyCar; if (!c) return; var btn = $('#buyYes'); btn.disabled = true; btn.textContent = 'Sending...';
-    saveBuyRequest({ type: 'buy', car_reg: c.reg, car_id: String(c.id || c.order_number || c.reg), car_model: c.model, car_price: c.kind === 'new' ? 'Brand new, quote live' : (c.price || '') }).then(function (row) {
+    if (c.kind === 'new') { btn.disabled = false; $('#buyModal').hidden = true; window.open(askModelWa(c), '_blank', 'noopener'); return; }   /* model cards are not a car to buy */
+    saveBuyRequest({ type: 'buy', car_reg: c.reg, car_id: String(c.order_number || c.id || c.reg), car_model: c.kind === 'new_stock' ? c.model + (c.colour ? ', ' + c.colour : '') + ', order ' + c.order_number : c.model, car_price: c.price || '' }).then(function (row) {
       btn.textContent = 'Yes, buy this car'; var who = waWho() || 'Dan';
       $('#buyAsk').hidden = true; $('#buyDone').hidden = false;
       $('#buyDoneText').textContent = row ? 'Done. ' + who + ' has your request for the ' + c.model + ' and will call you to take a deposit and arrange collection.' : 'That did not reach ' + who + ' just now. Tap WhatsApp below so nothing is missed.';
@@ -854,8 +1021,8 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   function showBuys() { var el = $('#buyList'); el.innerHTML = '<p class="ct-sub">Loading...</p>';
     store.buyRequests().then(function (l) {
       el.innerHTML = l.map(function (b) { var c = b.customers || {}, buy = b.type === 'buy';
-        var what = buy ? esc(b.car_model || '') + (b.car_reg && !/^NEW-/.test(b.car_reg) ? ' <span class="ct-pill">' + esc(b.car_reg) + '</span>' : '') + (b.car_price ? ' · ' + esc(b.car_price) : '')
-          : 'Sent ' + (b.cars || []).length + ' matches: ' + esc((b.cars || []).map(function (x) { return x.model + (brandNew(x) ? ' (new)' : ' ' + x.reg); }).join(', '));
+        var what = buy ? esc(b.car_model || '') + (b.car_reg && /^NEW\d/.test(b.car_reg) ? ' <span class="ct-pill">Order ' + esc(b.car_reg.slice(3)) + '</span>' : b.car_reg && !/^NEW-/.test(b.car_reg) ? ' <span class="ct-pill">' + esc(b.car_reg) + '</span>' : '') + (b.car_price ? ' · ' + esc(b.car_price) : '')
+          : 'Sent ' + (b.cars || []).length + ' matches: ' + esc((b.cars || []).map(function (x) { return x.model + (x.kind === 'new' ? ' (new)' : ' ' + x.reg); }).join(', '));
         return '<div class="ct-c' + (b.status === 'new' ? ' ct-buy-new' : '') + '"><h3>' + esc(c.name || 'Customer') + ' <span class="ct-pill' + (buy ? ' hot' : '') + '">' + (buy ? 'Buy this car' : 'Matches') + '</span></h3><p>' + what + '</p>' +
           '<p>' + esc(new Date(b.created_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })) + (b.status === 'called' && b.called_at ? ' · Called ' + esc(new Date(b.called_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })) : '') + '</p>' +
           '<div class="ct-row">' + (c.phone ? '<a class="ct-btn ct-sm" href="tel:' + esc(String(c.phone).replace(/\s/g, '')) + '">Call ' + esc(c.phone) + '</a>' : '') +
@@ -868,13 +1035,22 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   }
 
   /* ---------------- me ---------------- */
+  /* Saved "Tell me when it arrives" alerts, each with its own Stop button (desk.alerts) */
+  function myAlerts() { var box = $('#myAlerts'); if (!box) return; var l = (S.cust && S.cust.desk && S.cust.desk.alerts) || []; box.hidden = !l.length; if (!l.length) { box.innerHTML = ''; return; }
+    box.innerHTML = '<h3>Stock alerts</h3>' + l.map(function (a, i) { return '<div class="ct-enq-r"><div><b>' + esc(a.model) + '</b><span>' + esc((a.specs || []).map(function (k) { return M.specLabel ? M.specLabel(k) : k; }).join(', ') || 'Any spec') + '</span></div><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-stop-alert="' + i + '">Stop this alert</button></div>'; }).join('');
+    box.onclick = function (e) { var b = e.target.closest('[data-stop-alert]'); if (!b) return; var i = +b.getAttribute('data-stop-alert'), desk = Object.assign({}, S.cust.desk), gone = desk.alerts[i];
+      desk.alerts = desk.alerts.filter(function (_, j) { return j !== i; }); var row = Object.assign({}, S.cust, { desk: desk });
+      if (gone) { row.models_must = (row.models_must || []).filter(function (m) { return m !== gone.model; }); }
+      delete row.px_valuation_set_by_name; if (LIVE) { delete row.px_valuation_set_by; delete row.px_valuation_set_by_user; }
+      b.disabled = true; store.saveCustomer(row).then(function (s) { S.cust = s; S.deck = []; myAlerts(); toast('Alert stopped'); track('alert_stopped', {}); })
+        ['catch'](function (err) { b.disabled = false; toast(plainErr(err)); }); }; }
   function showMe() {
     var c = S.cust || {}, staff = S.session.role !== 'customer', none = staff && !S.cust;
     $$('[data-cust-only]').forEach(function (e) { e.hidden = none; });
 
     $('#meName').textContent = staff ? (c.name || 'Customer') : (c.name || 'You'); $('#meEmail').textContent = staff ? 'Signed in as ' + S.session.email : S.session.email;
     var b = c.budget_type === 'cash' ? (c.cash_gbp ? 'Up to ' + M.gbp(c.cash_gbp) : '') : (c.monthly_gbp ? 'Up to ' + M.gbp(c.monthly_gbp) + ' a month' : '');
-    $('#meSummary').innerHTML = '<dl><dt>Budget</dt><dd>' + esc(b || 'Not set') + '</dd><dt>Fuel</dt><dd>' + esc(c.fuel === 'open' ? 'Open minded' : c.fuel || '') + '</dd><dt>Colours</dt><dd>' + esc((c.colours || []).join(', ') || 'Any') + '</dd><dt>Spec</dt><dd>' + esc((c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', ') || 'Any') + '</dd><dt>Models</dt><dd>' + esc((c.models || []).join(', ') || 'Any') + '</dd><dt>Part exchange</dt><dd>' + esc(c.px && c.px.reg ? c.px.reg : 'None') + '</dd></dl>' + pxMoneyHtml(c);
+    $('#meSummary').innerHTML = '<dl><dt>Budget</dt><dd>' + esc(b || 'Not set') + '</dd><dt>Fuel</dt><dd>' + esc(fuelText(c)) + '</dd><dt>Mileage</dt><dd>' + esc(bandsText(c)) + '</dd><dt>Colours</dt><dd>' + esc((c.colours || []).join(', ') || 'Any') + '</dd><dt>Spec</dt><dd>' + esc((c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', ') || 'Any') + '</dd><dt>Models</dt><dd>' + esc(modelsText(c)) + '</dd><dt>Part exchange</dt><dd>' + esc(c.px && c.px.reg ? c.px.reg : 'None') + '</dd></dl>' + pxMoneyHtml(c);
     $('#boughtBtn').textContent = staff ? 'Record a bought car' : "I've bought my car";
     if (none) { $('#meName').textContent = 'Your account'; $('#meEmail').textContent = 'Signed in as ' + S.session.email + (S.session.role === 'admin' ? ' (admin)' : ''); }
     if (!none) store.purchases(c.id).then(function (ps) { $('#meBought').innerHTML = ps.filter(function (p) { return !p.cancelled; }).map(purchaseHtml).join('') || '<p class="ct-sub">Nothing recorded yet.</p>'; });
@@ -883,7 +1059,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       /* only say On when this phone really has permission */
       if ((v === 'push' || v === 'both') && (!platform.pushSupported() || Notification.permission !== 'granted')) v = v === 'both' ? 'email' : 'off';
       notifyState(v); });
-    termsBox();
+    termsBox(); myAlerts();
     installInfo();
   }
   function notifyState(v) { $$('#notifySeg button').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-v') === v ? 'true' : 'false'); });
@@ -953,40 +1129,126 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
 
   /* ---------------- staff ---------------- */
   function setActing(id) { return store.customers().then(function (l) { S.cust = l.find(function (c) { return c.id === id; }) || null; sessionStorage.setItem('ctActing', id); S.deck = []; S.relax = null; return loadCust(); }); }
+  /* New enquiries: Find my BMW and Tell me when it arrives sign ups (customers.desk.enquiry) nobody has actioned yet */
+  var ENQ_SRC = { referral: 'Referral', 'find-my-bmw': 'Find my BMW', alerts: 'Stock alert', home: 'Stock alert, homepage', 'new-cars': 'Stock alert, new cars', 'new-cars-empty': 'Stock alert, new cars', stock: 'Stock alert, used stock', 'stock-empty': 'Stock alert, used stock' };
+  function enqSource(s) { s = String(s || '').replace(/^alert:/, ''); return ENQ_SRC[s] || (s ? 'Stock alert, ' + s : 'Website'); }
+  function enqWhen(at) { var d = new Date(at); if (isNaN(d)) return ''; var mins = Math.round((Date.now() - d) / 60000);
+    return mins < 60 ? (mins <= 1 ? 'just now' : mins + ' minutes ago') : mins < 1440 ? Math.round(mins / 60) + (Math.round(mins / 60) === 1 ? ' hour ago' : ' hours ago') : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
+  function openEnquiries(list) { return (list || []).filter(function (c) { var e = c.desk && c.desk.enquiry; return e && !e.actioned_at && !c.closed_at; })
+    .sort(function (a, b) { return String(b.desk.enquiry.at).localeCompare(String(a.desk.enquiry.at)); }); }
+  function paintEnq(list) { var box = $('#enqBox'); if (!box) return; var rows = openEnquiries(list); S.enq = rows; box.hidden = !rows.length; if (!rows.length) { box.innerHTML = ''; return; }
+    box.innerHTML = '<h2 id="enqH">New enquiries <span class="ct-pill hot">' + rows.length + '</span></h2>' + rows.map(function (c) { var e = c.desk.enquiry;
+      return '<div class="ct-enq-r" data-eid="' + esc(c.id) + '"><div><b>' + esc(e.first_name || (c.name || '').split(' ')[0] || 'New customer') + '</b><span>' + esc(enqSource(e.source)) + (e.repeat ? ', again' : '') + ' \u00b7 ' + esc(enqWhen(e.at)) + '</span></div>' +
+        '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-enq="open">Open card</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-enq="done">Mark as actioned</button></div></div>'; }).join(''); }
+  function enqClick(e) { var b = e.target.closest('[data-enq]'); if (!b) return; var id = b.closest('[data-eid]').getAttribute('data-eid'), c = (S.enq || []).find(function (x) { return x.id === id; }); if (!c) return;
+    if (b.getAttribute('data-enq') === 'open') { S.custTab = 'open'; var card = document.querySelector('#custList [data-cid="' + id + '"]');
+      if (card) { card.scrollIntoView({ block: 'center', behavior: 'smooth' }); card.classList.add('ct-flash'); setTimeout(function () { card.classList.remove('ct-flash'); }, 2200); } track('enquiry_open'); return; }
+    b.disabled = true; var desk = Object.assign({}, c.desk || {}); desk.enquiry = Object.assign({}, desk.enquiry, { actioned_at: new Date().toISOString(), actioned_by_name: (S.session && S.session.name) || '' });
+    var row = Object.assign({}, c, { desk: desk }); delete row.px_valuation_set_by_name; if (LIVE) { delete row.px_valuation_set_by; delete row.px_valuation_set_by_user; } S.cust = c; store.saveCustomer(row).then(function () { toast('Marked as actioned'); track('enquiry_actioned'); showTeam(); })
+      .catch(function (err) { b.disabled = false; toast(plainErr(err)); }); }
+  /* Referrals (admin only): one row per refer.html referral. Both people already have records; the reward is ticked here once paid */
+  var REF_ST = { new: 'New', contacted: 'Contacted', sold: 'Bought', lost: 'Not going ahead' };
+  /* Purchase progress ticked in the Congratulations follow up (customers.desk.purchase_progress) */
+  function progPills(g) { var T = { stock: 'New stock', order: 'New order', used: 'Used' };
+    var it = [['Deposit Paid', !!g.deposit], g.finance === 'na' ? ['Cash Buyer', true] : ['Proposal Form', g.finance === 'yes'], ['Signed Order Form', !!g.order]];
+    return '<p class="ct-prog"><span class="ct-prog-h">Purchase progress' + (T[g.type] ? ' \u00b7 ' + T[g.type] : '') + '</span>' + it.map(function (x) { return '<span class="ct-pill' + (x[1] ? ' ok' : '') + '">' + (x[1] ? '\u2713 ' : '') + esc(x[0]) + '</span>'; }).join('') + (g.seen === 'no' ? '<span class="ct-pill flag">Not seen in person</span>' : '') + '</p>'; }
+  function refBadge(c) { var r = c && c.desk && c.desk.referred_by; return r && r.first_name ? '<span class="ct-pill ref">Referred by ' + esc(r.first_name) + '</span>' : ''; }
+  function paintReferrals(list) { var box = $('#custList');
+    return store.referrals().then(function (refs) { S.refs = refs; var unpaid = refs.filter(function (r) { return !r.paid_out_at; }).length;
+      box.innerHTML = '<div class="rf-head"><span class="rf-k">Referrals</span><span class="rf-n">' + refs.length + '</span><span class="rf-k">Unpaid</span><span class="rf-n">' + unpaid + '</span></div>' + (refs.map(function (r) {
+        var d = new Date(r.created_at), when = isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        return '<div class="rf-r' + (r.paid_out_at ? ' paid' : '') + '" data-rid="' + esc(r.id) + '"><div class="rf-who"><b>' + esc(r.referrer_first_name || 'Unknown') + '</b><span class="rf-arrow" aria-hidden="true"></span><b>' + esc(r.referred_first_name || 'Unknown') + '</b></div>' +
+          '<div class="rf-meta"><span>' + esc(when) + '</span><span class="ct-pill' + (r.reward_choice === 'credit' ? ' ref' : '') + '">' + esc(r.reward_label || r.reward_choice) + '</span></div>' +
+          '<div class="ct-row rf-ctl"><label class="ct-f ct-inline"><span>Status</span><select data-rst>' + Object.keys(REF_ST).map(function (k) { return '<option value="' + k + '"' + (r.status === k ? ' selected' : '') + '>' + REF_ST[k] + '</option>'; }).join('') + '</select></label>' +
+          '<label class="rf-paid"><input type="checkbox" data-rpaid' + (r.paid_out_at ? ' checked' : '') + '/> <span>Paid out</span></label>' + (r.referred_customer_id && (list || []).some(function (c) { return c.id === r.referred_customer_id; }) ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-ropen="' + esc(r.referred_customer_id) + '">Open ' + esc(r.referred_first_name || 'card') + '</button>' : '') + '</div>' +
+          (r.paid_out_at ? '<p class="rf-stamp">Paid ' + esc(new Date(r.paid_out_at).toLocaleDateString('en-GB')) + (r.paid_out_by_name ? ' by ' + esc(r.paid_out_by_name) : '') + '</p>' : '') + '</div>'; }).join('') || '<p class="ct-sub">No referrals yet. They appear here when someone uses the Refer a friend page.</p>'); }); }
+  function refClick(e) { var t = e.target, row = t.closest && t.closest('[data-rid]'); if (!row || S.custTab !== 'referrals') return; var id = row.getAttribute('data-rid');
+    if (t.hasAttribute('data-ropen')) { S.custTab = 'open'; var cid = t.getAttribute('data-ropen'); showTeam(); setTimeout(function () { var card = document.querySelector('#custList [data-cid="' + cid + '"]'); if (card) { card.scrollIntoView({ block: 'center', behavior: 'smooth' }); card.classList.add('ct-flash'); } }, 600); return; }
+    if (e.type !== 'change') return;
+    var p = t.hasAttribute('data-rpaid') ? store.setReferralPaid(id, t.checked).then(function () { toast(t.checked ? 'Marked as paid out' : 'Paid out removed'); track('referral_paid', { on: t.checked }); })
+      : t.hasAttribute('data-rst') ? store.setReferralStatus(id, t.value).then(function () { toast('Status saved'); }) : null;
+    if (p) { t.disabled = true; p.then(showTeam).catch(function (err) { t.disabled = false; toast(plainErr(err)); }); } }
   function showTeam() {
     var admin = S.session.role === 'admin';
     $('#teamTitle').textContent = admin ? 'All customers' : 'My customers'; $('#ownerFilterWrap').hidden = !admin; $('#invitesLink').hidden = !admin;
     Promise.all([store.customers(), store.staffList(), demoDb && store.mode === 'demo' ? Promise.resolve(demoDb().swipes || {}) : Promise.resolve(null)]).then(function (r) {
       var list = r[0], staff = r[1], sw = r[2] || {}, names = {}; staff.forEach(function (s) { names[s.id] = s.name || s.email; });
+      paintEnq(list);
       var of = $('#ownerFilter'); if (admin) { var cur = of.value; of.innerHTML = '<option value="">Everyone</option><option value="none">Dan direct</option>' + staff.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.name || s.email) + '</option>'; }).join(''); of.value = cur; }
       var fv = admin ? of.value : ''; list = list.filter(function (c) { return !fv || (fv === 'none' ? !c.owner_staff_id : c.owner_staff_id === fv); });
+      $('#refTab').hidden = !admin; if (S.custTab === 'referrals' && !admin) S.custTab = 'open';
+      if (S.custTab === 'referrals') { $$('#custTabs button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-tab') === 'referrals' ? 'true' : 'false'); }); return paintReferrals(list); }
+      var arch = S.custTab === 'archived', nArch = list.filter(function (c) { return c.closed_at; }).length; $('#archN').textContent = nArch ? String(nArch) : '';
+      $$('#custTabs button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-tab') === (arch ? 'archived' : 'open') ? 'true' : 'false'); });
+      list = list.filter(function (c) { return arch ? !!c.closed_at : !c.closed_at; });
+      if (arch) { $('#custList').innerHTML = list.sort(function (a, b) { return String(b.closed_at).localeCompare(String(a.closed_at)); }).map(function (c) {
+          return '<div class="ct-c closed" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3><p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + '</p>' +
+            '<p><span class="ct-pill closed">Closed</span> ' + esc(fmtDate(String(c.closed_at).slice(0, 10))) + (c.closed_by_name ? ' by ' + esc(c.closed_by_name) : '') + '. No alerts or reminders.</p>' +
+            '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-act="reopen">Reopen</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="matches">Shortlist</button></div></div>'; }).join('') || '<p class="ct-sub">No closed customers.</p>'; return; }
       var since = Date.now() - 2 * 86400000;
       return Promise.all(list.map(function (c) { return Promise.all([store.purchases(c.id), r[2] ? Promise.resolve(sw[c.id] || {}) : store.swipes(c.id)]).then(function (x) { return { c: c, ps: x[0], sw: x[1] }; }); })).then(function (rows) {
-        $('#custList').innerHTML = rows.map(function (row) { var c = row.c; var ranked = M.rank(S.cars.filter(function (car) { return !row.sw[car.reg]; }), c).filter(function (x) { return x.score >= 55; });
+        $('#custList').innerHTML = rows.map(function (row) { var c = row.c, okc = consentOK(c); var ranked = M.rank(S.cars.filter(function (car) { return !row.sw[car.reg]; }), c).filter(function (x) { return x.score >= 55; });
           var freshN = ranked.filter(function (x) { return S.fresh && S.fresh[x.car.reg]; }).length; var likes = Object.keys(row.sw).filter(function (k) { return row.sw[k].liked; }).length;
           var p = row.ps.filter(function (x) { return !x.cancelled; })[0];
-          return '<div class="ct-c" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3><p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + (admin ? ' \u00b7 Owner: ' + esc(c.owner_staff_id ? names[c.owner_staff_id] || 'Colleague' : 'Dan direct') : '') + '</p>' +
-            '<p>' + (freshN ? '<span class="ct-pill hot">' + freshN + ' new today</span>' : '') + '<span class="ct-pill">' + ranked.length + ' matches</span><span class="ct-pill">' + likes + ' liked</span>' + (c.user_id ? '<span class="ct-pill">Claimed</span>' : '') + '</p>' +
+          return '<div class="ct-c" data-cid="' + esc(c.id) + '"><h3>' + esc(c.name || 'Unnamed') + '</h3>' + (refBadge(c) ? '<p>' + refBadge(c) + '</p>' : '') + '<p>' + esc([c.phone, c.postcode].filter(Boolean).join(' \u00b7 ')) + (admin ? ' \u00b7 Owner: ' + esc(c.owner_staff_id ? names[c.owner_staff_id] || 'Colleague' : 'Dan direct') : '') + '</p>' +
+            '<p>' + (freshN ? '<span class="ct-pill hot">' + freshN + ' new today</span>' : '') + '<span class="ct-pill">' + ranked.length + ' matches</span><span class="ct-pill">' + likes + ' liked</span>' + (function () { var g = Object.keys(row.sw).filter(function (k) { return row.sw[k].source === 'guest_link'; }), gl = g.filter(function (k) { return row.sw[k].liked; }).length; return g.length ? '<span class="ct-pill hot">Email link: ' + g.length + ' swiped, ' + gl + ' liked</span>' : ''; })() + (c.user_id ? '<span class="ct-pill">Claimed</span>' : '') + (okc ? '' : '<span class="ct-pill flag">No messaging consent</span>') + '</p>' +
             (c.px && c.px.reg ? '<p>PX ' + esc(c.px.reg) + (c.px_terms_confirmed_at ? ' \u00b7 terms confirmed ' + esc(new Date(c.px_terms_confirmed_at).toLocaleDateString('en-GB')) : '') + '</p>' : '') + (ratingsText(c.px_condition_ratings) ? '<p>' + esc(ratingsText(c.px_condition_ratings)) + '</p>' : '') + pxMoneyHtml(c) +
             (c.due_to_change_at ? '<p><span class="ct-pill due">Due to change</span> Back on matching since ' + esc(fmtDate(String(c.due_to_change_at).slice(0, 10))) + (c.px && c.px.equity_assumed_gbp === 0 ? '. PX equity assumed \u00a30 until valued' : '') + '</p>' : '') +
+            (c.guest_update && c.guest_update.proposed && (c.guest_update.proposed.phone || c.guest_update.proposed.email) ? '<p><span class="ct-pill flag">New details</span> Customer sent ' + esc([c.guest_update.proposed.phone ? 'mobile ' + c.guest_update.proposed.phone : '', c.guest_update.proposed.email ? 'email ' + c.guest_update.proposed.email : ''].filter(Boolean).join(' and ')) + ' from the swipe link. <button class="ct-btn ct-sm" type="button" data-act="applyupd">Apply</button> <button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="dismissupd">Dismiss</button></p>' : '') +
+            (c.stock_reply ? '<p><span class="ct-pill' + (c.stock_reply === 'offmarket' ? ' flag' : '') + '">Email reply</span> ' + esc(STOCK_REPLY[c.stock_reply] || c.stock_reply) + (c.stock_reply_at ? ', ' + esc(fmtDate(String(c.stock_reply_at).slice(0, 10))) : '') + (c.close_suggested_at && c.stock_reply === 'offmarket' ? '. Close them?' : '') + '</p>' : '') +
             (c.dealt_at ? '<p><span class="ct-pill">Dealt</span> Alerts paused' + (p ? ' until <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b>' : '') + '</p>' : '') +
+            (admin && c.desk && c.desk.purchase_progress ? progPills(c.desk.purchase_progress) : '') +
             (p ? '<p>Bought ' + esc(p.model) + ' (' + esc(p.reg) + '). Reminder <b>' + esc(fmtDate(p.remind_on || addMonths(p.purchase_date, 33))) + '</b></p>' : '') +
+            (admin ? '<div class="ct-row ct-hubrow">' + (okc ? '<button class="ct-btn ct-sm ct-hubb" type="button" data-hub="followups">Start follow up journey</button><button class="ct-btn ct-sm ct-hubb" type="button" data-hub="quote">Send quotation</button>' : '') + '<button class="ct-btn ct-sm ct-hubb" type="button" data-hub="present">Product presentation</button></div>' : '') +
             '<div class="ct-row"><button class="ct-btn ct-sm" type="button" data-act="swipe">Swipe for them</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="matches">Shortlist</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="edit">Edit</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="bought">' + (p ? 'Edit bought car' : 'Mark as dealt') + '</button>' +
             (c.dealt_at ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="resume">Resume alerts</button>' : '') +
             (p ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-cancel-p="' + esc(p.id) + '">Cancel reminder</button>' : '') +
-            (!c.user_id && c.email ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="claim">Invite to claim</button>' : '') + '</div></div>'; }).join('') || '<p class="ct-sub">No customers yet. Add your first one.</p>';
+            '<button class="ct-btn ct-sm" type="button" data-act="crd">Print customer page</button>' + (okc ? (!c.user_id && c.email ? '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="claim">Invite to claim</button>' : '') + '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="stock">Send customer latest stock</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="copylink">Copy swipe link</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="walink">Send swipe link on WhatsApp</button>' : '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="consent">Record consent to message</button>') + '<button class="ct-btn ct-btn-ghost ct-sm" type="button" data-act="close">Close customer</button></div></div>'; }).join('') || '<p class="ct-sub">No customers yet. Add your first one.</p>';
       });
     });
   }
   function initTeam() {
     $('#addCust').addEventListener('click', function () { S.cust = null; S.pendingId = null; sessionStorage.removeItem('ctActing'); S.swipes = {}; go('profile'); });
     $('#ownerFilter').addEventListener('change', showTeam);
+    $('#custTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; S.custTab = b.getAttribute('data-tab'); showTeam(); });
+    $('#stockNo').addEventListener('click', function () { $('#stockModal').hidden = true; S.stockSend = null; });
+    $('#stockModal').addEventListener('click', function (e) { if (e.target === e.currentTarget) { $('#stockModal').hidden = true; S.stockSend = null; } });
+    $('#stockYes').addEventListener('click', function () { var x = S.stockSend; if (!x || !stockCanSend(x.c)) return; var btn = $('#stockYes'); btn.disabled = true; btn.textContent = 'Sending...';
+      store.sendLatestStock(x.c.id, x.cars.map(function (h) { return h.car.reg; })).then(function (r) { $('#stockModal').hidden = true; S.stockSend = null; track('latest_stock_sent', { cars: x.cars.length });
+        toast(r && r.ok === false ? 'Not sent: ' + (r.reason || 'try again') : 'Latest stock sent to ' + (x.c.name || 'the customer')); showTeam(); })
+        .catch(function (err) { btn.disabled = false; btn.textContent = 'Send email'; toast(plainErr(err)); }); });
+    $('#closeNo').addEventListener('click', function () { $('#closeModal').hidden = true; S.closing = null; });
+    $('#closeModal').addEventListener('click', function (e) { if (e.target === e.currentTarget) { $('#closeModal').hidden = true; S.closing = null; } });
+    $('#closeYes').addEventListener('click', function () { var c = S.closing; if (!c) return; var btn = $('#closeYes'); btn.disabled = true;
+      store.setClosed(c.id, true).then(function () { btn.disabled = false; $('#closeModal').hidden = true; S.closing = null; track('customer_closed'); showTeam();
+        undo((c.name || 'Customer') + ' closed', function () { return store.setClosed(c.id, false).then(function () { toast((c.name || 'Customer') + ' reopened'); showTeam(); }); }); })
+        .catch(function (err) { btn.disabled = false; toast(plainErr(err)); }); });
+    $('#undoBtn').addEventListener('click', function () { var f = S.undoFn; $('#undoToast').hidden = true; clearTimeout(S.undoT); S.undoFn = null; if (f) f().catch(function (err) { toast(plainErr(err)); }); });
+    if ($('#enqBox')) $('#enqBox').addEventListener('click', enqClick);
+    $('#custList').addEventListener('change', refClick); $('#custList').addEventListener('click', refClick);
     $('#custList').addEventListener('click', function (e) { if (e.target.closest('[data-cancel-p]')) return purchaseClick(e); var b = e.target.closest('[data-act]'); if (!b) return; var id = b.closest('[data-cid]').getAttribute('data-cid'), act = b.getAttribute('data-act');
+      if (act === 'close') { var cc = null; store.customers().then(function (l) { cc = l.find(function (x) { return x.id === id; }); if (!cc) return; S.closing = cc;
+          $('#closeTitle').textContent = 'Close ' + (cc.name || 'this customer') + '?';
+          $('#closeText').textContent = (cc.name ? 'They' : 'This customer') + "'ll move to Archived and stop getting alerts. You can reopen them any time.";
+          $('#closeYes').disabled = false; $('#closeModal').hidden = false; $('#closeYes').focus(); }); return; }
+      if (act === 'copylink' || act === 'walink') { var waWin = act === 'walink' ? window.open('', '_blank') : null; /* opened inside the tap so phones do not block it */ store.customers().then(function (l) { var cc = l.find(function (x) { return x.id === id; }); if (!cc) return; if (!consentOK(cc)) { if (waWin) waWin.close(); toast(NO_CONSENT); return; }
+          return store.guestLink(cc.id).then(function (r) { if (!r || !r.ok) { if (waWin) waWin.close(); toast('No link: ' + ((r && r.reason) || 'try again')); return; }
+            if (act === 'copylink') { (navigator.clipboard ? navigator.clipboard.writeText(r.url) : Promise.reject()).then(function () { toast('Swipe link copied. It works for ' + (r.days || 30) + ' days'); }, function () { window.prompt('Copy this swipe link', r.url); }); track('swipe_link_copied'); return; }
+            var first = String(cc.name || '').split(' ')[0], num = String(cc.phone || '').replace(/\D/g, '').replace(/^0/, '44');
+            var text = 'Hi' + (first ? ' ' + first : '') + ', it\'s ' + (S.session.name ? S.session.name.split(' ')[0] : 'Dan') + ' at BMW Ruxley. I have picked out some cars in stock I think you will like. Have a quick swipe through them here: ' + r.url;
+            var wu = 'https://wa.me/' + (num.length >= 11 ? num : '') + '?text=' + encodeURIComponent(text); if (waWin) { try { waWin.opener = null; } catch (e) {} waWin.location.href = wu; } else platform.openExternal(wu); track('swipe_link_whatsapp'); }); }).catch(function (err) { if (waWin) waWin.close(); toast(plainErr(err)); }); return; }
+      if (act === 'applyupd' || act === 'dismissupd') { store.customers().then(function (l) { var cc = l.find(function (x) { return x.id === id; }); if (!cc) return; var pr = (cc.guest_update && cc.guest_update.proposed) || {};
+          var patch = Object.assign({}, cc, { guest_update: null }); if (act === 'applyupd') { if (pr.phone) patch.phone = pr.phone; if (pr.email) patch.email = pr.email; }
+          S.cust = cc; return store.saveCustomer(patch).then(function () { toast(act === 'applyupd' ? 'New details applied' : 'Dismissed'); showTeam(); }); }).catch(function (err) { toast(plainErr(err)); }); return; }
+      if (act === 'crd') { store.customers().then(function (l) { var cc = l.find(function (x) { return x.id === id; }); if (cc && window.ctCrd) window.ctCrd.open(cc, S.session); track('crd_print_open'); }).catch(function (err) { toast(plainErr(err)); }); return; }
+      if (act === 'consent') { setActing(id).then(function () { go('profile'); setTimeout(function () { var b = $('#consentBox'); if (b) b.scrollIntoView({ block: 'center' }); }, 400); }); return; }
+      if (act === 'stock') { store.customers().then(function (l) { var cc = l.find(function (x) { return x.id === id; }); if (cc) askStock(cc); }); return; }
+      if (act === 'reopen') { store.setClosed(id, false).then(function () { toast('Customer reopened'); showTeam(); }).catch(function (err) { toast(plainErr(err)); }); return; }
       setActing(id).then(function () {
         if (act === 'swipe') go('discover'); else if (act === 'matches') go('matches'); else if (act === 'edit') go('profile');
         else if (act === 'bought') store.purchases(id).then(function (ps) { S.editPurchase = ps.filter(function (x) { return !x.cancelled; })[0] || null; go('bought'); });
         else if (act === 'resume') store.markDealt(id, null).then(function () { toast('Alerts back on for ' + (S.cust.name || 'this customer')); showTeam(); }).catch(function (err) { toast(plainErr(err)); });
-        else if (act === 'claim') { if (!LIVE) { toast('Demo mode: the claim email is sent once the backend is connected'); return; }
+        else if (act === 'claim') { if (!consentOK(S.cust)) { toast(NO_CONSENT); return; } if (!LIVE) { toast('Demo mode: the claim email is sent once the backend is connected'); return; }
           sb.from('customer_claims').insert({ customer_id: id, email: S.cust.email, created_by: sbUser.id }).select().single().then(function (r) { if (r.error) throw r.error;
             return sb.auth.signInWithOtp({ email: S.cust.email, options: { emailRedirectTo: APP_URL + '?claim=' + r.data.id } }); }).then(function () { toast('Claim link sent to ' + S.cust.email); }).catch(function () { toast('That did not send'); }); }
       }); });
@@ -1029,9 +1291,12 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       : android ? 'On Android: open the browser menu (the three dots), then tap Install app or Add to Home screen.'
       : 'On a computer: click the install icon at the right of the address bar in Chrome or Edge, or open the browser menu and choose Install SwipeToDrive. In Safari on a Mac choose File, then Add to Dock.';
     if (platform.ios) { $('#iosGuide').hidden = false; return; }
-    function show() { var h = $('#installHelp'); if (h) { h.innerHTML = '<p>' + esc(html) + '</p>'; h.scrollIntoView({ block: 'center' }); } }
+    function show() { var h = $('#installHelp'); if (h && h.offsetParent !== null) { h.innerHTML = '<p>' + esc(html) + '</p>'; h.scrollIntoView({ block: 'center' }); } else toast(platform.ios || /android/i.test(navigator.userAgent) ? html : 'Click the install icon in the address bar, or open the browser menu and choose Install SwipeToDrive.'); }
     if ($('[data-screen=me]').hidden && S.session) { go('me'); setTimeout(show, 50); } else show(); track('install_help'); }
-  function doInstall() { var p = platform.deferredInstall; if (!p) { installHelp(); return; } p.prompt(); p.userChoice.then(function (c) { track('install_' + c.outcome); platform.deferredInstall = null; $('#installBtn').hidden = true; installInfo(); }); }
+  function doInstall() { var p = platform.deferredInstall; if (!p) { installHelp(); return; } platform.deferredInstall = null;
+    var shown; try { shown = p.prompt(); } catch (err) { console.warn('install prompt', err); installHelp(); return; }
+    if (shown && shown.catch) shown.catch(function (err) { console.warn('install prompt', err); installHelp(); });
+    p.userChoice.then(function (c) { track('install_' + c.outcome); platform.deferredInstall = null; $('#installBtn').hidden = true; installInfo(); }); }
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); platform.deferredInstall = e; $('#installBtn').hidden = false; });
   window.addEventListener('appinstalled', function () { track('installed'); $('#installBtn').hidden = true; });
   $('#installBtn').addEventListener('click', doInstall);
@@ -1041,16 +1306,19 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(function (r) { window.__ctSW = r.scope; }).catch(function () {});
   initSignin(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites(); initBuys();
   var dl = platform.deepLink();
+  (function () { var a = window.AlertSave && window.AlertSave.get(), el = $('#alertNote'); if (!a || !el) return;
+    el.hidden = false; el.textContent = 'One step left. Enter your email to save your alert for the ' + a.model + '. If you are new, you will set a password or use the link we email you.'; })();
   (LIVE ? supa.init() : Promise.resolve())
     .then(function () { if (LIVE) { mountPw(); sb.auth.onAuthStateChange(function (ev) { if (ev === 'PASSWORD_RECOVERY') showRecover(); if (ev === 'SIGNED_IN' && !S.session) store.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); } return loadStock(); })
     .then(function () {
-      try { var prev = JSON.parse(localStorage.getItem('ctSeenRegs') || 'null'); S.fresh = {}; if (prev) { var ps = {}; prev.forEach(function (r) { ps[r] = 1; }); S.cars.forEach(function (c) { if (!ps[c.reg]) S.fresh[c.reg] = 1; }); }
-        localStorage.setItem('ctSeenRegs', JSON.stringify(S.cars.map(function (c) { return c.reg; }))); } catch (e) {}
+      /* staff 'new today' comes from the arrivals ledger, the same on every device, not from what this browser saw last */
+      S.fresh = {}; S.cars.forEach(function (c) { if (c.arrived_days === 0) S.fresh[c.reg] = 1; });
+      try { localStorage.removeItem('ctSeenRegs'); } catch (e) {}
       return store.session(); })
     .then(function (sess) { if (sess && LIVE && dl.claim) return supa.claim(dl.claim).then(function () { history.replaceState(null, '', location.pathname); return store.session(); }); return sess; })
     .then(function (sess) { if (sess) track('sign_in', { method: LIVE ? 'magic_link' : 'demo', role: sess.role }); return sess ? afterSignIn(sess) : route(); })
     .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
     .catch(function (e) { console.warn('SwipeToDrive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
-  window.ctDebug = { S: S, store: store, platform: platform, route: route };
+  window.ctDebug = { S: S, store: store, safePrefs: safePrefs, platform: platform, route: route, allModels: allModels, DESK: DESK, colourList: colourList, pool: pool, redeck: function () { S.deck = []; if (location.hash === '#discover') showDeck(); } };
 })();

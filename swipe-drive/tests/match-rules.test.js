@@ -39,8 +39,8 @@ check('no model picked keeps all', M.modelOk(c320, []), true);
 
 // the hard limit goes through rank()
 function ranked(cars, prefs) { return M.rank(cars, prefs).map(function (x) { return x.car.model; }); }
-check('rank: M3 only', ranked([m3, c320, m2, x5], { models: ['M3'] }).join('|'), 'BMW M3 Competition M xDrive Touring');
-check('rank: 3 Series gives 320d and M3', ranked([m3, c320, m2, x5], { models: ['3 Series'] }).length, 2);
+check('rank: M3 only (must)', ranked([m3, c320, m2, x5], { models_must: ['M3'] }).join('|'), 'BMW M3 Competition M xDrive Touring');
+check('rank: 3 Series (must) gives 320d and M3', ranked([m3, c320, m2, x5], { models_must: ['3 Series'] }).length, 2);
 
 // model year: from 2024 keeps 2024 and newer, drops older and unknown years
 check('year 2024 keeps 2025', M.yearOk(m3, 2024), true);

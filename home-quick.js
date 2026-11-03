@@ -12,10 +12,12 @@
   }
   var WANT = { used: 'Approved used', 'new': 'Brand new', either: 'Not sure yet' };
   var PX = { yes: 'Yes', no: 'No', maybe: 'Maybe' };
+  /* Same UK mobile rule as SwipeToDrive (chat/onboard-core.js V.phone) */
+  function ukMobile(s) { var t = String(s).replace(/[\s().-]/g, '').replace(/^\+44\(?0?\)?/, '0').replace(/^0044/, '0').replace(/^447/, '07'); return /^07\d{9}$/.test(t); }
   function check() {
     var name = $('hqName').value.trim(), phone = $('hqPhone').value.trim(), email = $('hqEmail').value.trim(), d = phone.replace(/\D/g, '');
     if (!name) return ['Please add your first name.', 'hqName'];
-    if (d.length < 10 || d.length > 15 || /[^\d\s+()-]/.test(phone)) return ['Please check your mobile number.', 'hqPhone'];
+    if (!ukMobile(phone)) return ['Please add a UK mobile starting 07, like 07700 900123.', 'hqPhone'];
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) return ['Please check your email address.', 'hqEmail'];
     if (!val('hqWant')) return ['Pick what you are looking for.', null];
     if (!val('hqPx')) return ['Let me know about a part exchange.', null];

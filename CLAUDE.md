@@ -51,7 +51,10 @@ the final step.
 | Pages | Funnel |
 |---|---|
 | `find-my-bmw.html` (+ `fmb.js`, `fmb.css`, `stock-core.js`) | **"Find my BMW" v2**, rebuilt 1 October 2026. One page: intro, nine tap only questions (new or approved used, life, shape, fuel, budget, extras, colour, part exchange Yes/No/Maybe, timing; one per screen, `#qi`, `#q1`..`#q7`, `#qp` in the URL, Back and browser back work), a short honest matching moment, then the results behind a **hard contact gate**. Matches are computed in JS memory; until a Formspree submission succeeds the page renders only the persona, the match count and three blurred skeleton cards (no regs, prices, models, images or links in the DOM). The gate (`#fmbGate`, a bottom sheet on mobile, a centred modal on desktop; main is `inert`, focus is trapped, Esc collapses it to a peek bar but never unlocks) asks for name, mobile and email, all required. Success unlocks the real cards, unless part exchange is Yes: then the PX steps (reg, mileage, service history, finance, keys required; condition notes optional; photos via a WhatsApp button, never blocking) must be sent in a second submission first. For Maybe the PX steps are offered and skippable. A failed submission keeps the gate and shows Try again plus WhatsApp. "Rather just WhatsApp me" messages Dan with the answers (no cars) and does **not** unlock. Unlock persists in `localStorage.fmbV2` (answers kept 7 days); `sessionStorage.fmbSent`/`fmbPxSent` stop a second submission. New or either buyers see "I'll come back to you with new car options" above a couple of used cars. **No stock counts anywhere in the questions** (Dan, 8 October: "the customers choices should be theirs, not led by our stock"): no counts on tiles or chips, no "X cars match" bar, no forecourt total on the intro, no stock led nudges, and the colour tiles are a fixed list rather than the forecourt's colours by popularity. Matching still reads the same files stock.html reads. Results are never zero: a fallback ladder (group stock, budget +10%, neighbouring fuels, neighbouring shapes, drop 7 seats, then anything in budget or the newest) widens one step at a time and says on screen what it widened. Monthly figures only with the lender's full representative example (the MBG.html display); no quote says "Ask for a quote". "See all matches" deep links to stock.html with the hard filters plus `from=fmb`. Pre answers from `?life=&body=&fuel=`. `window.fmbDebug` exposes the state for tests. The page uses disclaimer.js in **inline mode** (`<html data-dsc="inline">`): no modal over question 1, the full wording renders into `[data-dsc-slot]` on the results screen. `step1.html`..`step8.html`, `step1b`, `step4b/c/m`, `step5b` and `start.html` are now redirect stubs to `find-my-bmw.html` (offers.html pattern, query string kept). `thankyou.html`, `wait.html` and `stock-match.js` are left in place for old links; nothing new posts to them. |
+| **Second round, 30 October 2026**, on the same pages. (1) **Personal PINs**: `team.html` offers Google or work email plus a six digit PIN, which is a Firebase email/password account (`team-backend.js` `signUpPin` / `signInPin` / `resetPin`). A new PIN sends a verification email, nothing else opens until it is verified, and Forgot my PIN emails a reset to the work address. Dan must enable Email/Password under Authentication, Sign-in method. (2) **Management**: Nathan, Will and Sergio are management because they are on the lockup managers list (`team-identity.js`, and `shifts/managers` is now only for extra managers). **Dan is always admin** as the creator: `auth.token.email == daniel.cane@hedinautomotive.co.uk` with a verified email counts as admin in the rules as well as the staff list. (3) **Leave**: annual leave cannot be booked here. A leave request needs its Ciphr reference (`ciphr`, max 40) and a tick that it is approved on Ciphr (`shifts-rota.js` refuses it without the reference). It is recorded for a manager to confirm, not approved by the system. (4) **Handover**: Chloe and Molly, one of them in on every open day (Monday to Saturday, not bank holidays). It is part of the day's minimum, so approvals need an override as for staff, and requests show a warning but are not stopped. (5) **Android shell**: bottom navigation, a floating New button that opens a list of what to ask for, and bottom sheets, on the calendar and home page. (6) **One Monday email**: `scripts/lockup-rota-mail.js` puts a who-is-in-this-week section (Monday to Saturday, notes on each absence, shorts flagged) above the lockup rota, from the same rules as the calendar. Other notifications still go separately. Tests: `scripts/test-rota-mail.js`, `scripts/test-shifts.js`, the rules suites, and `scripts/test-team-ui.js` (100 checks). |
+| `team.html` (+ `team-home.js`, `team-session.js`, `team-identity.js`, `team-backend.js`, `team.css`), `team-admin.html` (+ `team-admin.js`) | **Team home and admin panel**, added 30 October 2026. One Google sign in across the team systems: `team-session.js` is the single session every page asks (signed in? which person? may manage?), and `team-identity.js` holds the rules (verified `@hedinautomotive.co.uk` only; linked to a person on the lockup team or managers list by email, then remembered at `shifts/links/<uid>`; admin = `staff/<uid>`; manager = admin or `shifts/managers/<personId>`). The home page shows Lockup (tonight and whether signed), Forecourt checks, the Team board, the Team calendar (today, your next seven days, what is waiting on you) and Team admin for admins. The admin panel edits people (`lockup/config/team` and `managers`, validated by `TeamIdentity.validPerson`), managers, access (unlinks), test mode, and shows the audit log; managers see it read only. Lockup, Forecourt and the team board now let a signed in manager straight in; everyone else is sent to `team.html?next=<page>` to sign in and comes back to the page if they are a manager (the shared manager PIN is no longer asked for on those pages, though `staff-gate.js` still holds it for other gates). Colleague sign off and the TV stay open as before. `noindex`, `Disallow` in `robots.txt`. Tests: `node scripts/test-team.js`, and `node scripts/test-team-ui.js` (the real pages in headless Chromium against `scripts/ui-stubs/`, an in-memory Firebase). Not yet enforced by the rules: lockup config and board writes still accept any sign in, so only the UI keeps non-managers out of those screens. |
 | `lockup.html` (+ `lockup-rota.js`, `scripts/lockup-mail.js`) | **Lockup rota and sign off**, added 14 October 2026. **Two people a night** Mon to Fri (Dan, 14 Oct): `weeks/<wk>/days/<dow>` is an array of two ids, `v:2`; a stored week with single string entries is regenerated by the page and the mail script. Either rostered person starts; at sign off the signer picks who was there (`presentIds`) and a second person may add `signature2`. **Time off** (14 Oct): `lockup/absences` (absent or holiday, booked/approved/cancelled; `SEED_ABSENCES` in lockup-rota.js are written once, e.g. Carl off Fri 16 Oct), `applyAbsences` replaces only the absent person on today and later unsigned nights (fewest nights, not off, not away, not the night before or after if possible). "Arrange cover" swaps in an agreed colleague and logs to `lockup/changes`. A 6:05pm nudge (5:05pm Sat, escalation 5:30pm Sat via `R.nudgeAt/escalateAt`; showroom closes 5pm Saturday) (`mail/<date>/nudge`) goes to tonight's people if unsigned, only before 6:30pm and never in the same run as the 5pm reminder. Every one queues `lockup/notify/<id>` (create only) which the mail script emails to managers and marks `sent`. Public two week rota on the page, no PIN. **Shared progress** (14 Oct): each tick, note and photo is written to `<root>/progress/<date>/items/<id>` with `by`, `byName`, `ts`; both phones listen, newest `ts` wins, localStorage draft is the offline fallback; rules lock progress once `records/<date>` exists. `?sandbox=1` makes one browser use `lockupTest/` without flipping the global flag. **Test mode** (14 Oct, for the demo): `lockup/config/testMode` (missing = ON). While on, lockup.html, the board strip and the mail script use `lockupTest/` (same shape, deletable; managers can wipe it), staff emails go to daniel.cane@, manager emails only to nathan.jobson@, subjects start [TEST], orange TEST MODE banner. Real `lockup/` is untouched, so its seeds (Carl off Fri 16 Oct) only land once real mode starts. Phone first: tonight's rostered person (or "someone else is covering"), big tick cards for the checklist, optional note and photo per item, "Can't do it" needs a note, then a drawn signature. Records go to `lockup/records/<date>/<pushId>` and the rules make them **append only** (no edit, no delete; `ts` must be the server time). `lockup/status/<date>` drives the strip on `team-board.html` (amber from 5pm, 4pm Saturday; green when signed; red after 6:30pm). Rota: Mon to Fri generated per ISO week by `lockup-rota.js` (seeded shuffle, fewest lockups first, never on a day off, never two nights running) and stored in `lockup/weeks/<YYYY-Www>`; Saturday is managers, Sunday and UK bank holidays closed. Manager screen behind the `manager` PIN: rota swaps and reshuffle, history with filters, CSV and print to PDF, team, managers, checklist and closed days. No PIN to sign (Dan, 14 Oct). Emails: `scripts/lockup-mail.js` via the `lockup-emails` Action (Gmail SMTP, secrets GMAIL_USER, GMAIL_APP_PASSWORD, FIREBASE_SA); Dan adds the workflow file himself. `noindex`, robots Disallow, out of sitemap. |
+| `shifts.html` (+ `shifts-app.js`, `shifts-rota.js`, `lockup-rota.js`) | **Shift and day-off calendar**, added 30 October 2026. Team only, `noindex`, `Disallow` in `robots.txt`, linked from nowhere public. **Sign in with a verified `@hedinautomotive.co.uk` Google account** (popup with the `hd` hint); the address must match a person on `lockup/config/team` or `managers`, and the person is linked once at `shifts/links/<uid>` (the rules check the email against the lockup config). **Managers** are people listed under `shifts/managers/<personId>`, set by Dan (`staff/<uid>`) on the Settings tab; Dan can always approve. **Six months at a glance**: a day grid (count against the minimum) and a who-is-in grid, both from one rules module. **Minimums** in `shifts/config` (weekdays 5, Saturday 7, bank holidays 4 from the sales team excluding `bhExclude` = Molly and Chloe, switches a week 1), changed by managers only. **Requests** in `shifts/requests`: holiday (needs a manager), absence (recorded at once, cover arranged, managers told if short), day off switch (give up a working day, work the usual day off instead in the same ISO week; always a manager's decision since 30 October, with warnings that never block sending), shift swap (a colleague accepts; through if staffing holds, otherwise a manager). A request that takes a day below its minimum needs a manager with an override and a reason. Managers can also add time off for someone, approved at once. **Bank holiday rota**: `shifts/bh/<date>`, filled by `bhPick` (fewest earlier bank holidays first, usual day off last, shuffle seeded by the date); a manager's saved rota is never overwritten by Fill. **Lockup integration**: approved time off and switches are written to `lockup/absences` (keys `sh_<requestId>_a|w`); a switch's day taken is kind `works` (added to `lockup-rota.js`: never away, free for cover, so `applyAbsences` and `replacement` can use it), then `applyAbsences` re-pairs the lockup weeks, logs `lockup/changes` and queues `lockup/notify`. Usual day off changes write `lockup/config/team/<id>/off`. Signed-off nights are never touched. **Test copy**: `lockup/config/testMode` picks `shiftsTest/` with `lockupTest/`, so the calendar never writes live data while lockup is in test mode. Rules: the `shifts` and `shiftsTest` sections of `database.rules.json` (keep them identical); `audit` is append only. Tests: `node scripts/test-shifts.js` (the rules), `scripts/test-shifts-rules.mjs` (the rules in the Firebase emulator, see the top of that file), and `scripts/test-lockup-slots.js` still covers the lockup rota the calendar relies on. Assumes the team's work email is a Google Workspace account; if it is Microsoft 365 the Google button will not sign anyone in and the provider needs changing. |
 | `compare.html` (+ `compare-tray.js`, `automation/stock-sold.py`) | **Compare these cars**, added 16 October 2026 (Dan approved, max 4). Indexed like the stock pages (canonical, sitemap). `compare-tray.js` is loaded by stock.html and new-cars.html and is additive only: it appends a Compare tick to each `.sl-card` (key `u`+data-id) and `.nc-card` (key `n`+order number via `[data-quote]`) and shows a tray that lifts itself above `.ds-sticky` and `.dsc-bar`; a 5th car is refused with a toast. List in `localStorage.dscCompare`, card names and images in `dscCompareMeta`, nothing sent anywhere. compare.html mixes new and used (`?c=n123,u456` share link, WhatsApp prefill), Only differences toggle, best marks, Only this car has, a Dan says line built only from on screen figures, missing data reads Not listed, monthly only from the lender quote with the full representative example and broker text. **Sold for 7 days**: new from `lookup/new-stock.json` `removed` (removed_at within 7 days); used from `automation/stock-sold.json` written by `automation/stock-sold.py` (first_missing, runs_missing, `confirm_runs` 1, `keep_days` 7, refuses a snapshot under 60% of the last, a car that reappears is cleared). A car in a saved compare that is in neither file shows as sold from its saved meta,
 **but only when the lists actually loaded** (`HAVEU`, `HAVEN`): `J()` returns an
 empty object for a file it cannot fetch, so one dropped request used to make every
@@ -309,18 +312,40 @@ pin the clock, which is what this file is for.
 
 An **AI generated** video explaining the Fully Protected Package, added
 9 October 2026 in the protection section of `current-opportunities.html`,
-between the five element opener and the product list. 1080x1920 portrait,
-1m45s, **19.4MB** at 1.5 Mbps, H.264 and AAC.
+between the five element opener and the product list. **Replaced 27 October
+2026** at Dan's request with a longer, better made version: 832x1504 portrait
+(26:47, not a flat 9:16), **2m51s**, **22.8MB** at about 1.06 Mbps, H.264 and
+AAC. It has chapter cards for each of the five elements (Tyre and Alloy
+Insurance, Asset Protection, Williams Racing Ceramic Coating, Extended
+Warranty and the rest), no burnt in subtitles, and no watermark.
 
-- **The caption says so, and must keep saying so** (Dan, 9 October). The clip
-  carries a "Video Created with AI" watermark in its own top right corner, and
-  the caption under it read "Filmed on my phone, so it is the same explanation
-  you would get across the desk" - which the watermark contradicted in front of
-  the customer. It now reads "This video is AI generated. The explanation is
-  the same one you would get from me across the desk", which is both halves of
-  the truth: the words are Dan's, the pictures are not a recording of him. Do
-  not quietly drop that first sentence, and do not reinstate any claim that it
-  was filmed.
+- **The caption says it is AI generated, and must keep saying so** (Dan,
+  9 October). The original clip carried a "Video Created with AI" watermark in
+  its own top right corner, and the caption under it read "Filmed on my phone,
+  so it is the same explanation you would get across the desk" - which the
+  watermark contradicted in front of the customer. It now reads "This video is
+  AI generated. The explanation is the same one you would get from me across
+  the desk", which is both halves of the truth: the words are Dan's, the
+  pictures are not a recording of him. Do not quietly drop that first
+  sentence, and do not reinstate any claim that it was filmed.
+  **It is two lines, not one run of grey** (Dan, 27 October: "have a line
+  below the video saying this video is AI generated in small writing"). It
+  had been below the video since 9 October, but as one unbroken sentence in
+  `--dim`, the faintest colour in the palette, and he read the page without
+  noticing it, which is the only test a disclosure has to pass. The AI
+  sentence is now its own line in `--body-c`; the size is unchanged, because
+  small is what he asked for. Do not merge them back.
+- **That sentence carries MORE weight since the replacement, not less.** The
+  new clip has no watermark, so the caption is now the only thing on the page
+  telling a customer, and the footage is good enough to pass for filmed: it is
+  unmistakably Dan, in the Ruxley showroom, in his own Hedin polo, and nothing
+  in the file's metadata says otherwise (encoder reads `Lavf63.1.101`, which is
+  only ffmpeg). It was checked frame by frame rather than taken on trust, and
+  it is generated: the Hedin wordmark on the polo is illegible and changes
+  shape shot to shot, and at about 2m25s in the workshop an arm melts into a
+  white box whose edges smear. If a later version ever is a real recording of
+  Dan, change the caption deliberately and say so here; do not assume either
+  way from the absence of a watermark.
 
 - **`preload="none"` is load bearing.** Nineteen megabytes on a public page
   that most visitors will not watch, on a phone, on their own data: the
@@ -342,18 +367,22 @@ between the five element opener and the product list. 1080x1920 portrait,
   `.wb [hidden]` on `which-bmw.html`), so check for it whenever a script
   hides something by the `hidden` property on an element the CSS gives a
   `display` to.
-- **The file must be written faststart, and the first one was not.** Dan
-  reported on 9 October that it would not play on his phone: "it just goes
-  black". The MP4 had `ftyp`, then a 20MB `mdat`, then `moov` at the very end,
-  so a phone could not begin until it had hunted the index down at the far end
-  of the file, over mobile data, after a `preload="none"` element had already
-  revealed itself as a black rectangle. It is now remuxed
-  `-movflags +faststart`: stream copy, so not a pixel changed. Verified rather
-  than assumed: `moov` moved to offset 32, the `mdat` payload is byte
-  identical by SHA-256, and all 6,320 chunk offsets shifted by exactly 140,818
-  and each one still lands on identical bytes. **Anything that ever replaces
-  this file has to be written faststart too**, and `python3` four lines of box
-  walking is enough to check.
+- **The file must be written faststart, and neither of them arrived that
+  way.** Dan reported on 9 October that the first one would not play on his
+  phone: "it just goes black". The MP4 had `ftyp`, then a 20MB `mdat`, then
+  `moov` at the very end, so a phone could not begin until it had hunted the
+  index down at the far end of the file, over mobile data, after a
+  `preload="none"` element had already revealed itself as a black rectangle.
+  **The 27 October replacement had exactly the same fault** - `moov` after a
+  22MB `mdat` - which is the argument for checking every time rather than
+  hoping. Both were remuxed `-movflags +faststart`: stream copy, so not a
+  pixel changed. Verified rather than assumed, both times: `moov` moved to
+  offset 32, the `mdat` payload is byte identical by SHA-256, and every chunk
+  offset shifted by exactly the size of the moved `moov` and still lands on
+  identical bytes (6,320 offsets by 140,818 in October; 8,208 by 119,947 on
+  the replacement). **Anything that ever replaces this file has to be written
+  faststart too**, and `python3` four lines of box walking is enough to
+  check.
 - **No `load()` before `play()`.** The click handler called `vid.load()` first.
   It was never needed (with `preload="none"` it is `play()` that starts the
   fetch) and it is actively harmful: `load()` resets the element and restarts
@@ -361,8 +390,10 @@ between the five element opener and the product list. 1080x1920 portrait,
   that has not finished choosing its source, which is one of the ways iOS
   stops counting the user gesture. That was the second half of the black
   screen.
-- **There IS a poster**, `fully-protected-poster.jpg`, a real frame half a
-  second in, 660x1174 and 51KB. The note that used to sit here said one could
+- **There IS a poster**, `fully-protected-poster.jpg`, a real frame from the
+  clip, 660x1194 and 51KB. It is taken at **68.5s**, not half a second in:
+  the replacement opens on a near black title card, and a poster of that is
+  precisely the black rectangle a poster exists to avoid. The note that used to sit here said one could
   not be made because this sandbox's Chromium has no H.264 decoder
   (`canPlayType` is empty, `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`) and there was
   no ffmpeg. The decoder part is still true and irrelevant: **ffmpeg is at
@@ -370,8 +401,11 @@ between the five element opener and the product list. 1080x1920 portrait,
   tool at hand is not a limit of the problem, and it was recorded as one for a
   day. 51KB fetched on load is the right trade: without it the press reveals a
   black rectangle while the first bytes arrive.
-- **The frame is 9/16 and capped at 330px wide**, because a vertical phone
-  video in a full width box is a tower on a desktop screen.
+- **The frame takes the clip's own ratio and is capped at 330px wide**,
+  because a vertical phone video in a full width box is a tower on a desktop
+  screen. It is `aspect-ratio:26/47` rather than a flat `9/16`: 832/1504 is
+  0.553 against 0.5625, and with `object-fit:cover` the difference is about
+  1.7% cropped off the top and bottom for nothing. Change it with the file.
 - **The reveal order matters for iOS**: the video is un-hidden *before*
   `play()` is called (a hidden video cannot start) and `play()` runs inside
   the click itself, not after an await. A refused play leaves the controls up
@@ -381,7 +415,12 @@ between the five element opener and the product list. 1080x1920 portrait,
   decode H.264, and `window.scrollTo` does not move this page, so a screenshot
   has to use `captureBeyondViewport` with the clip set to the element's own
   offset, and `.reveal` elements need `.in` added by hand first or the capture
-  comes back as an empty dark rectangle.
+  comes back as an empty dark rectangle. **ffmpeg is not in the container
+  either**, whatever an older note here said about `/usr/bin/ffmpeg`:
+  `pip install imageio-ffmpeg` fetches a full 7.x build and is what the
+  27 October remux, the poster and the frame by frame check were done with.
+  Playwright's own `/opt/pw-browsers/ffmpeg-1011` is built
+  `--disable-everything` and cannot even open an MP4.
 
 ### "Fresh in" - automation/stock-arrivals.json
 
@@ -564,6 +603,73 @@ Three things the page has to respect:
   lender's own wording for that quote reference. This page goes to customers.
 - The term shown is the one the lender returned, which is not always 48
   months - it comes back shorter on older cars.
+
+### BMW badges decoded - bmw-model-codes.html
+
+Dan sent seven American infographics on 28 October 2026 and asked for a
+section explaining the model codes "in the UK, reframed". The pictures were
+the brief, not the content: **two of their three fuel claims are wrong here**
+("Gas", "Diesel, not sold in the US") and the body words are American
+("Sedan"). The reframing is the whole value, so do not quietly let a later
+edit drift back towards the American version.
+
+It is a **guide page**, in `sitemap.xml`, carded first on `guides.html` and
+linked from the Keep reading block of both finance guides. Public and
+indexed: "what does 320i mean" is a real search and this is the kind of page
+that earns a link.
+
+- **Every claim was checked against this repo's own data, not against the
+  artwork or from memory.** `lookup/new-stock.json` is BMW's own UK locator
+  feed for Ruxley and `automation/hedin-*-stock.json` are the group's
+  listings, which is a better source for "what is BMW called in Britain
+  today" than anything else reachable from here. That is where the evidence
+  comes from: the 220i, 320i, 420i and 520i all reading **1,998cc** while a
+  120 reads **1,499cc** (so the middle number cannot be litres); a 120, a
+  320i and a 520i making about **170, 182 and 207hp** (so the tier is
+  relative to its own family); a 120d, a 320d and a 520d all making **189**;
+  and `M135` parked next to `M135i` on one forecourt.
+- **No claim about any model being discontinued.** The cards asserted two
+  ("the M8 ended production in 2026", "the X4 ended production in 2025") and
+  the forecourt contradicts both, since there is an X4 and an X6 in group
+  stock. Production status is not something this repo can know, so the page
+  says nothing about it and says out loud that it is saying nothing.
+- **The UK specific points the American charts have no room for**, and the
+  reason the page exists: diesel is everywhere here, up to an M Performance
+  diesel in the `M340d`; `sDrive` means two wheel drive and **which two
+  depends on the car** (an X1 sDrive drives the front, a 2 Series Coupe the
+  rear, both proven by the `drive` field); electric cars badge two wheel
+  drive as `eDrive` and keep `xDrive` for four; `iX` is its own model while
+  `iX1` and `iX3` are electric X cars; and BMW has started **dropping the
+  fuel letter** on petrol models (`120` for `120i`, `M135` for `M135i`,
+  `X3 20 xDrive` for `X3 20i`).
+- **The diagrams are CSS, not images.** They reflow on a phone, read to a
+  screen reader and cost nothing to download. The four part one carries
+  `is-long` and `is-word`, because at the three part glyph size "xDrive" ran
+  off the right edge of a 390px screen and sat on top of the "d" beside it.
+  Measured in a browser, not guessed.
+- **The decoder** (`window.mcDebug.parse`, the same test seam `fmb.js` and
+  `new-cars.html` give) reads a badge the way the prose explains it, so the
+  two cannot drift. It runs entirely in the browser and sends nothing
+  anywhere. It was checked against **all 102 distinct model names** in the
+  two used stock files plus BMW's new car feed, and the real list is what
+  found every bug: the `i3s`, the `128ti`, `XM Label`, `i4 M50` (an M
+  Performance tier that sits after the model), cars wearing two trim names
+  ("M Sport Shadow Edition") and a pasted registration document string
+  ("330e 2.0 330e 22.3kWh M Sport Auto Euro 6 (s/s) 4dr"). All 102 now parse
+  with nothing left unplaced. **It fails honestly**: an unrecognised chunk is
+  named, with a WhatsApp link, rather than dropped or guessed at, because a
+  decoder that invents an answer about somebody's car is worse than one that
+  says it does not know. Re-run that check against the live stock files
+  before changing the parser.
+- **`?q=M Sport` is deliberately not linked** from the M section. stock.html's
+  free text search is AND over words and matches equipment as well as trim, so
+  it returned 265 of 267 cars: a link showing almost everything reads as a
+  broken filter, even though the point it would be making (nearly all of it is
+  M Sport) is correct.
+- There is no `sr-only` class in `style.css`, `premium.css` or
+  `content-premium.css`, so the decoder's input label brings its own
+  (`.mc-sr`).
+- GA `codes_decode {badge, decoded, parts, entry}`.
 
 ### Hidden used car lookup - lookup/
 
@@ -2426,16 +2532,28 @@ said so.
   with three working fallbacks underneath it.
   Dan has confirmed the dealership holds a music licence covering this.
   **Four stations, chosen by a number.** `RADIO_STATIONS` is keyed 1 to 4:
-  1 Kisstory R&B (the default), 2 Kisstory, 3 Jazz FM, 4 Country (Dan,
-  23 October). `boardsettings/station` holds the id, and it is a **number
+  1 Kisstory R&B, 2 Kisstory, 3 Jazz FM, 4 Country (Dan, 23 October), and
+  **Country is the default** (`RADIO_DEFAULT_STATION`, Dan, 27 October).
+  `boardsettings/station` holds the id, and it is a **number
   rather than a station name because the rules take nothing else**:
   `database.rules.json` validates every `boardsettings` value as
   `isBoolean()` or a number, so a string would be refused by Firebase
   silently and the wall would carry on playing whatever it already had.
-  `radioWantedStation()` treats an unknown or absent value as 1, so there is
+  `radioWantedStation()` treats an unknown or absent value as
+  `RADIO_DEFAULT_STATION`, so there is
   no second default to keep in step, and changing station is the one settings
   change that deliberately restarts a healthy stream, because the ladder it
   is part way down belongs to the old station.
+  **A stored station still wins, and that is not a bug to work around.**
+  The default is only what a screen plays before the settings arrive and
+  when nobody has ever chosen; a manager's tap has to stick, or the console
+  would be lying about what it does. So changing the default in code does
+  **not** change a wall that already holds a `station` value: on
+  27 October the database read 3 (Jazz FM) and went on playing Jazz FM until
+  somebody tapped Country. Nothing in this repo can write that value either
+  (`boardsettings` needs a staff Google sign in, and an agent has none), so
+  "make it play X" is always a tap in the manager panel or the admin
+  console, never a commit.
   **Every station ends with the default list.** Each one's own sources are
   concatenated in front of `RADIO_DEFAULT_SOURCES`, so a station whose edge
   is down drops back to Kisstory rather than leaving the wall silent. It does
@@ -2462,6 +2580,43 @@ said so.
   render before the backend. A 30s keep-alive then picks it back up after a
   dropped stream or a refused autoplay, and stands off while a clip has ducked
   it.
+- **The seasonal backdrop.** Dan, 27 October: "a warming spooky one for
+  October then move to Christmas festive fire next month". A photograph sits
+  behind the whole board, fixed at **z-index -1** so nothing on the board had
+  to move for it and every cut scene still paints clean over the top. The
+  pictures are in **`season/`**, with their sources and licences in
+  `season/README.md`: Pexels and Unsplash, both of which allow commercial use
+  with no attribution, which is the only reason a public repository can carry
+  them. Do not add one without recording where it came from.
+  **Which picture shows is a function of the clock and nothing else**, the way
+  the mug shot week and the birthday card's midnight are: `seasonKey()` reads
+  the date against `SEASON_WHEN`, `seasonShot()` picks from that season's list
+  by the four minute slot the clock is in, so two screens on one wall cannot
+  disagree, nothing is stored, and 1 December needs nobody to press anything.
+  Christmas starts on **15 November**, because that is when the showroom does.
+  **One picture is fetched at a time**, only when it is about to be shown, and
+  the layer that fades out is emptied afterwards, so at most two frames are
+  ever decoded. That is the `warmVideo()` lesson spent rather than relearned:
+  about 70MB of prefetched sketches is what filled the LG's memory and left
+  the board dead on the wall. The whole folder is 2.7MB, each picture
+  1920x1080 and about a quarter of a megabyte.
+  **It does not animate.** A slow drift would look better for the thirty
+  seconds somebody watches it and would then keep a full screen layer
+  composited all day on that television. The 1.6s cross fade on a change is
+  the whole of the motion.
+  **Judge a new picture under the scrim, not on its own.** The board's panels
+  are opaque so the figures were never at risk, but the title, the month tabs
+  and the mascots' names sit straight on the backdrop; they carry a shadow
+  while one is up (`body.hasseason`). The first scrim was so heavy the season
+  was invisible, which is the other way to get this wrong.
+  **Failure is quiet**: a file that will not load leaves whatever is up alone,
+  and with `season/` missing the board is exactly what it was before. Switch
+  is `seasons` in the admin console, absent means on like everything else.
+  **The lists live above the boot sequence on purpose.** `var` hoists as
+  undefined, so with `SEASON_WHEN` declared further down the page the boot
+  call to `seasonPaint()` threw, `dsBootOK` was never set, and the watchdog
+  reloaded the screen in a loop. Found by booting the page in a browser, not
+  by reading it.
 - **Manager control of the sketches.** The manager panel has a "Sketches"
   section: a toggle for the automatic slot and a play button per clip. Both go
   through `boardcontrol` in the database rather than staying local, because the

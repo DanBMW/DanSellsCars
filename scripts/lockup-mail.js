@@ -5,6 +5,7 @@
  *   5pm Mon to Fri  reminder to both people on the rota (4pm Saturday: managers)
  *   6:05pm          nudge to tonight's people if still unsigned (5:05pm Sat)
  *   6:30pm          managers (5:30pm Sat), if nobody has signed, or with any issues noted
+ *   Monday 08:00    the next two weeks of rota to the team (scripts/lockup-rota-mail.js, needs ROTA_WEEKLY=1)
  * It also sends any queued manager notifications (lockup/notify, written by
  * the page for absences, cover and holidays) on every run, marking each sent.
  * Each send is marked under lockup/mail/<date>/<kind>, so a repeat or late run
@@ -28,6 +29,8 @@ const DRY = !!process.env.DRY_RUN;
    TEST_MGR, and subjects start [TEST]. Real lockup/ is not touched. */
 const TEST_EXEC = 'daniel.cane@hedinautomotive.co.uk', TEST_MGR = 'nathan.jobson@hedinautomotive.co.uk';
 let ROOT = 'lockup', TEST = false;
+/* Lockup completed emails only for records signed after this went live (27 Oct 2026, 09:05 UK). */
+const COMPLETED_FROM = Date.parse('2026-10-27T09:05:00Z');
 
 async function main() {
   const admin = require('firebase-admin');
@@ -132,7 +135,65 @@ async function main() {
     if (!DRY) await db.ref((paths[id] || ROOT + '/notify/' + id) + '/sent').set(Date.now());
   }
 
-  const on = R.onFor(n.date, weeks[n.week], hol);
+  /* Lockup completed: one email to the managers for each signed record, with
+     the checklist (done and not done) and the signature images attached inline.
+     Checks today and yesterday (late sign offs), marked under
+     mail/<date>/signed/<recordId> so each record is only sent once. */
+  {
+    const mgrTo = TEST ? [TEST_MGR] : Object.values(cfg.managers || {}).map(m => m.email).filter(Boolean);
+    for (const d of [R.addDays(n.date, -1), n.date]) {
+      const rs = (await db.ref(ROOT + '/records/' + d).get()).val() || {};
+      const sentMarks = ((await db.ref(ROOT + '/mail/' + d + '/signed').get()).val()) || {};
+      for (const rid of Object.keys(rs)) {
+        if (sentMarks[rid]) continue;
+        if (!(rs[rid].ts >= COMPLETED_FROM)) continue; /* signed before this email existed */
+        if (!mgrTo.length) { console.log('Lockup completed email waiting, no manager emails set'); break; }
+        const m = completedMail(rs[rid], rid, d);
+        console.log((DRY ? '[dry] ' : '') + 'Send "' + m.subject + '" to ' + mgrTo.join(', '));
+        if (DRY) { console.log(m.text); continue; }
+        await transport().sendMail({ from: { name: process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to: mgrTo, subject: m.subject, text: m.text, html: m.html, attachments: m.attachments });
+        await db.ref(ROOT + '/mail/' + d + '/signed/' + rid).set({ ts: Date.now(), to: mgrTo.join(', ') });
+      }
+    }
+  }
+
+  /* Monday 08:00 UK rota email for the next two weeks (scripts/lockup-rota-mail.js).
+     On while ROTA_WEEKLY=1 in the workflow; ROTA_NOW=1 sends one now. */
+  try {
+    const RM = require('./lockup-rota-mail.js');
+    const mailToday = (await db.ref(ROOT + '/mail/' + n.date).get()).val() || {};
+    const force = process.env.ROTA_NOW === '1';
+    if (force || RM.due(n, cfg, mailToday)) {
+      const from = RM.fromDateFor(n, process.env.ROTA_FROM);
+      for (const w of [R.isoWeek(from), R.shiftWeek(R.isoWeek(from), 1)]) {
+        if (R.needsWeek(weeks[w])) { const prior = Object.assign({}, weeks); delete prior[w]; weeks[w] = R.generate(w, cfg.team || {}, prior); if (!DRY) await db.ref(ROOT + '/weeks/' + w).set(weeks[w]); console.log('Generated rota', w, weeks[w].days); }
+      }
+      const ch2 = R.applyAbsences(weeks, cfg.team || {}, absences, n.date, signed);
+      for (const c of ch2) if (!DRY) await db.ref(ROOT + '/weeks/' + c.week + '/days/' + c.dow).set(c.pair);
+      const fx2 = R.applyFixed(weeks, cfg.team || {}, absences, n.date, signed);
+      for (const m2 of (fx2.fixedMarks || [])) if (!DRY) await db.ref(ROOT + '/weeks/' + m2.week).update({ ['days/' + m2.dow]: weeks[m2.week].days[m2.dow], ['fixedDone/' + m2.dow]: m2.key });
+      /* the calendar's settings and bank holiday rota, so the who's-in section and the calendar agree */
+      const SR = TEST ? 'shiftsTest' : 'shifts';
+      const shiftsCfg = (await db.ref(SR + '/config').get()).val() || {};
+      const shiftsBh = (await db.ref(SR + '/bh').get()).val() || {};
+      /* the who's in section is held until launch: set ROTA_WHOS_IN=1 in the workflow to switch it on */
+      const WHOS_IN = process.env.ROTA_WHOS_IN === '1';
+      const m = RM.build({ fromDate: from, weeks, team: cfg.team || {}, absences, hol, test: TEST, cfg,
+        shifts: !WHOS_IN ? undefined : { config: shiftsCfg, bh: shiftsBh, holidays: hol, closed: cfg.holidays || {}, absences, team: cfg.team || {}, managers: cfg.managers || {}, today: n.date } });
+      const cc = TEST ? [] : mgrList;
+      if (!teamList.length) console.log('Rota email due but no team emails set');
+      else {
+        console.log((DRY ? '[dry] ' : '') + 'Send "' + m.subject + '" to ' + teamList.join(', ') + (cc.length ? ' cc ' + cc.join(', ') : ''));
+        if (DRY) console.log(m.text);
+        else {
+          await transport().sendMail({ from: { name: process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to: teamList, cc, subject: m.subject, text: m.text, html: m.html });
+          await db.ref(ROOT + '/mail/' + n.date + '/rota').set({ ts: Date.now(), from, to: teamList.join(', '), cc: cc.join(', ') });
+        }
+      }
+    }
+  } catch (e) { console.error('rota email failed', e); }
+
+  const on = R.onFor(n.date, weeks[n.week], hol, cfg, absences);
   if (on.kind === 'closed') { console.log('Closed today'); return done(admin); }
 
   const recsObj = (await db.ref(ROOT + '/records/' + n.date).get()).val() || {};
@@ -140,7 +201,8 @@ async function main() {
   const mail = (await db.ref(ROOT + '/mail/' + n.date).get()).val() || {};
   const team = cfg.team || {}, mgrs = cfg.managers || {};
   const mgrEmails = TEST ? [TEST_MGR] : Object.values(mgrs).map(m => m.email).filter(Boolean);
-  const people = on.kind === 'staff' ? on.ids.map(id => team[id]).filter(Boolean) : [];
+  const people = (on.ids || []).map(id => team[id] || mgrs[id]).filter(Boolean);
+  const satNamed = on.kind === 'managers' && people.length > 0;
   const names = l => l.length > 1 ? l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1] : (l[0] || '');
   const dayName = R.DAY_NAMES[n.dow];
   const remindAt = on.kind === 'managers' ? R.REMIND_SAT_MINS : R.REMIND_MINS;
@@ -153,13 +215,13 @@ async function main() {
   let remindedNow = false;
   if (n.mins >= remindAt && n.mins < 21 * 60 && !mail.remind && !recs.length) {
     let to, hi;
-    if (on.kind === 'managers') { to = mgrEmails; hi = 'Hi all'; }
+    if (on.kind === 'managers' && !satNamed) { to = mgrEmails; hi = 'Hi all'; }
     else if (people.length) { to = TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean); hi = 'Hi ' + names(people.map(p => p.name)); }
     else { to = mgrEmails; hi = 'Hi all, nobody is on the lockup rota tonight'; }
     if (to.length) {
-      await send(tx, to, (on.kind === 'managers' ? 'Managers lockup tonight' : people.length > 1 ? 'Lockup tonight: ' + names(people.map(p => p.name)) : "It's your lockup tonight") + ', ' + dayName,
+      await send(tx, to, (on.kind === 'managers' && !satNamed ? 'Managers lockup tonight' : people.length > 1 ? 'Lockup tonight: ' + names(people.map(p => p.name)) : "It's your lockup tonight") + ', ' + dayName,
         hi + ',', [
-          on.kind === 'managers' ? "It's Saturday, so it's managers' lockup tonight." : people.length > 1 ? "You're on lockup together tonight. Either of you can start the checklist." : people.length ? "You're on lockup tonight." : 'Please pick someone to lock up.',
+          on.kind === 'managers' && !satNamed ? "It's Saturday, so it's managers' lockup tonight." : people.length > 1 ? "You're on lockup together tonight. Either of you can start the checklist." : people.length ? "You're on lockup tonight." : 'Please pick someone to lock up.',
           'Tick each one off on your phone as you go, then sign:'
         ], list, 'Start lockup');
       await mark(db, n.date, 'remind', to); remindedNow = true;
@@ -170,9 +232,9 @@ async function main() {
      before 6:30pm, so a late run that is already due the manager email skips
      it, and never in the same run as the first reminder. */
   if (n.mins >= R.nudgeAt(n.dow) && n.mins < R.escalateAt(n.dow) && !mail.nudge && !recs.length && !remindedNow) {
-    const to = on.kind === 'managers' ? mgrEmails : people.length ? (TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean)) : [];
+    const to = on.kind === 'managers' && !satNamed ? mgrEmails : people.length ? (TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean)) : [];
     if (to.length) {
-      const hi = on.kind === 'managers' ? 'Hi all' : 'Hi ' + names(people.map(p => p.name));
+      const hi = on.kind === 'managers' && !satNamed ? 'Hi all' : 'Hi ' + names(people.map(p => p.name));
       await send(tx, to, 'Lockup not signed yet, ' + dayName, hi + ',',
         ['Just a nudge: tonight\u2019s lockup hasn\u2019t been signed off yet.', 'If it\u2019s done, tick it off and sign on your phone in a minute. The managers get an email at ' + (n.dow === 'sat' ? '5:30pm' : '6:30pm') + ' if it\u2019s still open.'], [], 'Sign off lockup');
       await mark(db, n.date, 'nudge', to);
@@ -181,7 +243,7 @@ async function main() {
 
   /* 6:30pm: not signed, or signed with issues */
   if (n.mins >= R.escalateAt(n.dow) && !mail.escalate && mgrEmails.length) {
-    const who = on.kind === 'managers' ? 'managers' : people.length ? names(people.map(p => p.fullName || p.name)) : 'nobody on the rota';
+    const who = on.kind === 'managers' && !satNamed ? 'managers' : people.length ? names(people.map(p => p.fullName || p.name)) : 'nobody on the rota';
     if (!recs.length) {
       await send(tx, mgrEmails, 'Lockup not signed, ' + dayName, 'Hi all,',
         ['Tonight\u2019s lockup hasn\u2019t been signed off yet.', 'On the rota: ' + who + '.', 'Please check the building is secure.'], list, 'Open lockup');
@@ -224,7 +286,41 @@ async function mark(db, date, kind, to) {
   if (DRY) return;
   await db.ref(ROOT + '/mail/' + date + '/' + kind).set({ ts: Date.now(), to: to.join(', ') });
 }
+/* Builds the "Lockup completed" email for one record. Exported for the preview test. */
+function completedMail(r, rid, date) {
+  const tm = ts => new Date(ts).toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' });
+  const dt = new Date(date + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'Europe/London', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const items = Object.values(r.items || {});
+  const done = items.filter(i => i.done), notDone = items.filter(i => !i.done);
+  const line = i => i.label + (i.at ? ' (' + tm(i.at) + (i.byName ? ', ' + i.byName : '') + ')' : '') + (i.note ? ': ' + i.note : '') + (i.photo ? ' [photo on record]' : '');
+  const by = r.presentNames || r.signedByName || '';
+  const subject = (TEST ? '[TEST] ' : '') + 'Lockup completed, ' + dt;
+  const att = [], sigs = [];
+  const addSig = (data, who, cid) => { const m = /^data:image\/png;base64,(.+)$/.exec(data || ''); if (!m) return; att.push({ filename: 'signature-' + cid + '.png', content: Buffer.from(m[1], 'base64'), contentType: 'image/png', cid: cid + '@lockup' }); sigs.push({ who, cid: cid + '@lockup' }); };
+  addSig(r.signature, r.signedByName, 'sig1');
+  addSig(r.signature2, r.signature2By, 'sig2');
+  const head = 'Lockup was completed by ' + by + ' at ' + (r.ts ? tm(r.ts) : 'unknown time') + ' on ' + dt + '.';
+  const extra = [];
+  if (r.signedByName && r.presentNames && r.presentNames !== r.signedByName) extra.push('Signed by ' + r.signedByName + '.');
+  if (r.coveringFor) extra.push('Covering for ' + (r.rosteredNames || r.coveringFor) + '.');
+  if (r.late) extra.push('Signed after the usual time.');
+  const text = ['Hi all,', '', head, ...extra, '', 'Done (' + done.length + ' of ' + items.length + '):', ...done.map(i => '  * ' + line(i)),
+    ...(notDone.length ? ['', 'Not done (' + notDone.length + '):', ...notDone.map(i => '  * ' + line(i))] : []),
+    '', 'Signature attached.', 'Record ' + rid + ': ' + SITE, '', 'Hedin BMW Ruxley lockup'].join('\n');
+  const li = (i, ok) => '<li style="margin:5px 0;list-style:none"><span style="color:' + (ok ? '#1f8a4c' : '#c0392b') + ';font-weight:800">' + (ok ? '&#10003;' : '&#10007;') + '</span> ' + esc(line(i)) + '</li>';
+  const html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+    '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">&#128273; ' + esc(subject) + '</div>' +
+    '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px"><p style="margin:0 0 12px">Hi all,</p>' +
+    '<p style="margin:0 0 10px">' + esc(head) + '</p>' + extra.map(e => '<p style="margin:0 0 10px">' + esc(e) + '</p>').join('') +
+    '<p style="margin:14px 0 4px;font-weight:800">Done (' + done.length + ' of ' + items.length + ')</p><ul style="padding-left:4px;margin:0 0 10px">' + done.map(i => li(i, true)).join('') + '</ul>' +
+    (notDone.length ? '<p style="margin:14px 0 4px;font-weight:800;color:#c0392b">Not done (' + notDone.length + ')</p><ul style="padding-left:4px;margin:0 0 10px">' + notDone.map(i => li(i, false)).join('') + '</ul>' : '') +
+    sigs.map(g => '<p style="color:#6b7a8c;font-size:13px;margin:14px 0 6px">Signature, ' + esc(g.who || '') + '</p><img src="cid:' + g.cid + '" alt="Signature" style="max-width:100%;border:1px solid #d9e3ee;border-radius:10px;background:#fff">').join('') +
+    '<a href="' + SITE + '" style="display:block;margin-top:18px;text-align:center;background:#4d94d8;color:#fff;text-decoration:none;font-weight:800;padding:14px;border-radius:12px;font-size:17px">See the record</a>' +
+    '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley lockup</p></div></div>';
+  return { subject, text, html, attachments: att };
+}
 function done(admin) { return admin.app().delete(); }
 
 /* Forecourt 08:30 reminder rides on the same workflow run (scripts/forecourt-mail.js). */
-main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });
+if (require.main === module) main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });
+module.exports = { completedMail };

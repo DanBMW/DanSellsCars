@@ -1,0 +1,25 @@
+/* referral-lead: validation and the mapping onto two SwipeToDrive records plus one referral row. */
+import assert from 'assert';
+import { validateReferral, toRows, mergeReferred, mergeReferrer, REWARDS } from '../backend/supabase/functions/_shared/referral.js';
+let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
+const base = { referrer_name: 'Sam Jones', referrer_phone: '07700 900111', referrer_email: '', friend_name: 'Alex  Smith', friend_phone: '', reward_preference: '\u00a3250 BMW Credit' };
+ok(validateReferral(base) === null, 'valid');
+ok(validateReferral({ ...base, _gotcha: 'x' }) === 'spam', 'honeypot');
+ok(validateReferral({ ...base, referrer_phone: '12' }) === 'referrer_phone', 'phone');
+ok(validateReferral({ ...base, friend_name: '<b>' }) === 'friend_name', 'name');
+ok(validateReferral({ ...base, reward_preference: '\u00a31000 Cash' }) === 'reward', 'only the two page rewards');
+ok(validateReferral({ ...base, friend_phone: '07700900111' }) === 'same', 'self referral');
+ok(validateReferral({ ...base, referrer_email: 'bad' }) === 'referrer_email', 'email');
+ok(Object.keys(REWARDS).length === 2, 'two rewards');
+const r = toRows({ ...base, referral_id: 'R1', reward_preference: '\u00a3125 Cash' }, '2026-10-30T09:00:00Z');
+ok(r.referral.reward_choice === 'cash' && r.referral.reward_label === '\u00a3125 Cash', 'reward stored as picked');
+ok(r.referral.referrer_first_name === 'Sam' && r.referral.referred_first_name === 'Alex', 'first names');
+ok(r.referred.desk.referred_by.first_name === 'Sam' && r.referred.desk.referred_by.referral_id === 'R1', 'referred by');
+ok(r.referred.desk.enquiry.source === 'referral' && r.referred.desk.enquiry.actioned_at === null, 'friend shows in New enquiries');
+ok(!r.referrer.desk.enquiry, 'referrer is not an enquiry');
+ok(!('comms_consent_at' in r.referrer) && !('comms_consent_at' in r.referred), 'no consent recorded');
+ok(r.referrer.email === null && r.referrer.phone === '07700900111', 'phone normalised');
+const m = mergeReferred({ referred_by: { first_name: 'Old' }, note: 'keep', enquiry: { source: 'find-my-bmw' } }, r.referred.desk);
+ok(m.referred_by.first_name === 'Old' && m.note === 'keep' && m.enquiry.repeat === true, 'first referrer kept, desk kept');
+ok(mergeReferrer({ referrals_made: [{ x: 1 }] }, r.referrer.desk).referrals_made.length === 2, 'referrals appended');
+console.log('referral.test.mjs: ' + n + ' passed');

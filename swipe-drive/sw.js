@@ -1,8 +1,8 @@
 /* SwipeToDrive service worker: caches the app shell, serves offline.html when
    there is no connection, network first for stock data, and handles push. */
-const V = 'sd-v24';
-const SHELL = ['./', './index.html', './app.css', './app.js', './config.js', './auth-ui.js', './chat/profile-save.js', './match-core.js', './offline.html',
-  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../stock-core.js'];
+const V = 'sd-v53';
+const SHELL = ['./', './index.html', './app.css', './app.css?v=41', './app.js', './app.js?v=41', './config.js', './config.js?v=41', './auth-ui.js', './auth-ui.js?v=41', './chat/profile-save.js', './chat/profile-save.js?v=41', './match-core.js', './match-core.js?v=41', './offline.html', './premium.css', './premium.css?v=3', './fonts/inter-var.woff2', './fonts/jbmono-500.woff2', './img/empty.svg', './img/hero-i7-800.webp',
+  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/logo.svg', '../motion.css?v=1', '../motion.js?v=1', '../stock-core.js', '../dsfinance.js', '../dsfinance.js?v=41', '../stock-core.js?v=41', './alert-save.js', './alert-save.js?v=41', './crd.js', './crd.js?v=1', './crd.css', './crd.css?v=1', './nostock-ui.js', './nostock-ui.js?v=41', './revvy-flow.js', './revvy-flow.js?v=41', './revvy.js', './revvy.js?v=41', './crm/hub.css', './crm/hub.css?v=41', './crm/hub.js', './crm/hub.js?v=41', './crm/followups-core.js', './crm/followups-core.js?v=41', './crm/followups-ui.js', './crm/followups-ui.js?v=41', '../product-email.js', '../product-email.js?v=41', '../quote-email.js', '../quote-email.js?v=41'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
@@ -15,6 +15,8 @@ self.addEventListener('fetch', e => {
   if (/\/intro\/.*\.mp4$/.test(u.pathname)) return;
   /* chat and quick lane pages: plain network, so they never replace the cached app shell */
   if (r.mode === 'navigate' && /\/chat\//.test(u.pathname)) return;
+  /* guest swipe page from the latest stock email: plain network, never cached, never replaces the app shell */
+  if (/\/guest\.(html|js|css)$/.test(u.pathname)) return;
   if (r.mode === 'navigate') {
     e.respondWith(fetch(r).then(res => { const c = res.clone(); caches.open(V).then(x => x.put('./index.html', c)); return res; })
       .catch(() => caches.match('./index.html').then(m => m || caches.match('./offline.html'))));

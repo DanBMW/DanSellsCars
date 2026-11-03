@@ -1,0 +1,86 @@
+/* Printable customer page, ported from desk.css */
+.ct-crd-wrap{position:fixed;inset:0;z-index:60;background:#d9dbde;overflow:auto;padding:20px}
+.ct-crd-bar{display:flex;gap:10px;flex-wrap:wrap;max-width:210mm;margin:0 auto 12px}
+.ct-crd{background:#fff;color:#111;max-width:210mm;margin:0 auto;padding:12mm 12mm;font:10.5pt/1.4 Arial,Helvetica,sans-serif}
+.ct-crd h1{font-size:15pt;margin:0;color:#111}
+.ct-crd h2{font-size:11pt;margin:0 0 4px;padding:3px 0;border-bottom:1.5px solid #111;color:#111;text-transform:uppercase;letter-spacing:.04em}
+.cp-head{display:flex;justify-content:space-between;gap:12px;border-bottom:2.5px solid #111;padding-bottom:6px;margin-bottom:8px}
+.cp-head p{margin:0;font-size:9.5pt}
+.cp-example{border:2px solid #111;padding:4px 8px;font-weight:700;margin:0 0 8px;text-align:center}
+.cp-sec{break-inside:avoid;page-break-inside:avoid;margin:0 0 8px}
+.cp-sec table{width:100%;border-collapse:collapse}
+.cp-sec td{border:1px solid #999;padding:3px 6px;vertical-align:top;font-size:9.5pt;color:#111}
+.cp-sec td.k{width:32%;background:#f2f2f2;font-weight:600}
+.cp-notes{border:1px solid #999;border-top:0;padding:3px 6px;min-height:14mm;font-size:9.5pt;white-space:pre-wrap}
+.cp-notes b{display:block;font-size:8.5pt;text-transform:uppercase;letter-spacing:.04em}
+.cp-car{display:flex;gap:8px;align-items:flex-start}
+.cp-car img{width:48mm;height:auto;border:1px solid #999}
+.cp-rep{font-size:8.5pt;color:#222}
+.cp-box{border:1px solid #111;min-height:26mm;padding:4px 6px}
+.cp-sign{display:grid;grid-template-columns:1fr 1fr;gap:12mm;margin-top:8mm}
+.cp-sign div{border-top:1px solid #111;padding-top:3px;font-size:9pt}
+.cp-tick{display:inline-block;width:10px;height:10px;border:1px solid #111;margin-right:5px;vertical-align:-1px;text-align:center;line-height:9px;font-size:9px}
+@media print{
+  @page{size:A4 portrait;margin:12mm 11mm}
+  html,body{background:#fff!important;color:#111!important}
+  a{color:#111;text-decoration:none}
+}
+.desk-bar{background:#22262c;color:#fff;font-size:.95rem;letter-spacing:.12em;text-transform:uppercase;padding:9px 14px;margin:6px 0 0;border-left:4px solid var(--accent)}
+.desk-sec h3{font-size:1rem;margin:0 0 10px}
+.desk-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.desk-col-h{margin:0 0 6px;font-weight:600}
+.desk label.red{color:#e08a8a}
+@media(max-width:600px){.desk-cols{grid-template-columns:1fr}}
+/* modern section labels, not the paper form */
+.desk-bar{background:none;color:var(--accent);border:0;padding:16px 2px 0;margin:0;font-size:.75rem;letter-spacing:.16em}
+/* question ideas: hover on a pointer, tap on touch, never in print */
+.qtip{position:relative;display:inline-flex;margin-left:6px;vertical-align:middle}
+.qtip>button{width:18px;height:18px;border-radius:50%;border:1px solid var(--hairline);background:transparent;color:var(--body-c);font:700 .72rem/16px inherit;cursor:help;padding:0}
+.qtip .tip{display:none;position:absolute;left:0;top:22px;z-index:40;width:240px;background:#1c2128;color:#ece9e1;border:1px solid var(--accent);padding:8px 10px;font:400 .82rem/1.4 inherit;letter-spacing:0;text-transform:none}
+@media (hover:hover) and (pointer:fine){.qtip:hover .tip{display:block}}
+@media (hover:none){.qtip.open .tip{display:block}}
+.cp-bar{display:block;background:#1a1a1a;color:#fff;margin:0 0 0;padding:5px 8px;font-size:10pt;letter-spacing:.08em;text-transform:uppercase;border:0}
+.cp-t{width:100%;border-collapse:collapse;margin:0}
+.cp-t th{width:36%;text-align:left;background:#f3f3f3;border:1px solid #bbb;padding:3px 6px;font-size:9pt;font-weight:600;color:#111;vertical-align:top}
+.cp-t td{border:1px solid #bbb;padding:3px 6px;font-size:9.5pt;vertical-align:top}
+.cp-t th.strong{background:#fff}
+.cp-cols{display:grid;grid-template-columns:1fr 1fr;border:1px solid #bbb;margin-bottom:6px}
+.cp-cols>div{padding:0 0 4px}
+.cp-cols h3{margin:0;background:#eee;padding:3px 6px;font-size:9.5pt;color:#111}
+.cp-cols ul{margin:4px 0 0;padding-left:18px}
+.cp-spec{border:1px solid #bbb;min-height:16mm;padding:4px 6px;white-space:pre-wrap}
+.cp-fund td{text-align:center;font-size:8pt}
+.cp-grid3 td,.cp-grid2 td{font-size:9pt}
+.ct-crd .red{color:#9b1c1c;font-weight:700}
+.cp-ticks{float:right;letter-spacing:.02em}
+.cp-lead{margin:4px 0;font-weight:700}
+.cp-sub{font-size:10pt;margin:8px 0 4px}
+@media print{.qtip,.tip{display:none!important}}
+.ct-crd h2.cp-bar{color:#fff;border:0;margin:0}
+.ct-crd h3,.ct-crd .cp-sub{color:#111}
+.ct-crd .cp-sub{text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid #111;padding-bottom:2px}
+@media print{
+  .ct-crd{font-size:9pt;line-height:1.3}
+  .cp-t th,.cp-t td{padding:2px 5px;font-size:8.5pt}
+  .cp-notes{min-height:8mm;font-size:8.5pt}
+  .cp-spec{min-height:10mm}
+  .cp-sec{margin:0 0 5px}
+  .cp-car img{width:40mm}
+  .cp-rep{font-size:7.5pt}
+  .cp-box{min-height:22mm}
+  .cp-sign{margin-top:5mm}
+}
+
+.cp-spec b{display:block;margin-bottom:2px}
+.cp-ticks{float:none}
+.desk-jump a{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.ct-crd-wrap{position:fixed;inset:0;z-index:200}
+.ct-crd-bar .ct-btn{width:auto}
+body.ct-crd-open{overflow:hidden}
+@media print{
+  body.ct-crd-open>*:not(.ct-crd-wrap){display:none!important}
+  .ct-crd-wrap{position:static;background:#fff;padding:0;overflow:visible}
+  .no-print{display:none!important}
+}
+.cp-ticks{margin-left:14px;white-space:nowrap}

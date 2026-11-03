@@ -237,17 +237,41 @@
   }
 
   /* ---- absences: "I won't be in", holidays, and seeded ones ----
-     lockup/absences/<id>: {personId, from, to, kind: absent|holiday, status: booked|approved|cancelled}
+     lockup/absences/<id>: {personId, from, to, kind: absent|holiday|works|nolockup, status: booked|approved|cancelled}
      Seeded entries are written once by whichever client first sees them missing,
      so a change agreed before the rules went live still lands. */
   var SEED_ABSENCES = {
     seed_carl_20261016: { personId: 'carl', from: '2026-10-16', to: '2026-10-16', kind: 'absent', status: 'approved', by: 'Dan', note: 'Carl off Friday 16 Oct (Dan, 14 Oct)' }
   };
-  function absentOn(absences, date) {
+  /* 'nolockup': in that day, but can't do lockup (a reason is required). Frees
+     the lockup night like an absence; the calendar (awayOn) still shows them in. */
+  function absentOn(absences, date, calendar) {
     var out = {};
     Object.keys(absences || {}).forEach(function (k) {
       var a = absences[k];
-      if (a && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = a.kind || 'absent';
+      if (a && a.kind !== 'works' && !(calendar && a.kind === 'nolockup') && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = a.kind || 'absent';
+    });
+    return out;
+  }
+  function awayOn(absences, date) { return absentOn(absences, date, true); }
+  /* "I can't lockup" carries a type: nlType 'out' (not in that day, off or
+     away) or 'in' (in but can't lock up). Both free the night the same way. */
+  function cantLabel(absences, date, id) {
+    var t = null;
+    Object.keys(absences || {}).forEach(function (k) {
+      var a = absences[k];
+      if (a && a.kind === 'nolockup' && a.personId === id && a.status !== 'cancelled' && a.from <= date && date <= a.to) t = a.nlType || t || 'in';
+    });
+    return t === 'out' ? 'can\u2019t lockup, not in' : t ? 'can\u2019t lockup, in' : '';
+  }
+  /* 'works': a day off swapped for a working day (or a shift taken over from a
+     colleague). Free for cover on that date even if it is their usual day off.
+     Written by shifts.html; never makes anyone away. */
+  function worksOn(absences, date) {
+    var out = {};
+    Object.keys(absences || {}).forEach(function (k) {
+      var a = absences[k];
+      if (a && a.kind === 'works' && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = true;
     });
     return out;
   }
@@ -258,22 +282,34 @@
   /* fewest nights first, never on a day off, never absent, never someone
      already on that night; anyone working the night before or after is
      only used when nobody else can do it */
-  function replacement(weeks, team, absences, date, pair) {
+  /* Dan's rules (3 Nov): fewest nights that week first; at most 2 a week; never back to back
+     with the night before or after, and if that leaves nobody, the fallback
+     is flagged (info.fallback) for the managers' notice. Then fewest nights overall,
+     then id, so it is always the same answer for the same data. */
+  function replacement(weeks, team, absences, date, pair, info) {
     var dow = london(new Date(date + 'T12:00:00Z')).dow;
     var near = [];
     if (dow !== 'mon') near = near.concat(pairOn(weeks, addDays(date, -1)));
     if (dow !== 'fri') near = near.concat(pairOn(weeks, addDays(date, 1)));
     /* nights up to and including this week, so a later week doesn't skew it */
-    var c = counts(weeks, shiftWeek(isoWeek(date), 1)), away = absentOn(absences, date);
+    var nextWk = shiftWeek(isoWeek(date), 1), c = counts(weeks, nextWk), away = absentOn(absences, date), works = worksOn(absences, date);
     var tw = {}, wr = weeks && weeks[isoWeek(date)];
     DAYS.forEach(function (d) { ids(wr && wr.days && wr.days[d]).forEach(function (id) { tw[id] = (tw[id] || 0) + 1; }); });
     var cands = Object.keys(team || {}).filter(function (id) {
       var t = team[id];
-      return canDo(t, dow) && !away[id] && pair.indexOf(id) < 0;
+      return (canDo(t, dow) || works[id]) && !away[id] && pair.indexOf(id) < 0;
     });
+    /* hard rules, relaxed only when nobody fits: no back to back, and at most
+       2 nights a week (CAP). Tried in order: both kept, cap kept, b2b kept, any. */
+    var CAP = 2, nb = function (id) { return near.indexOf(id) < 0; }, uc = function (id) { return (tw[id] || 0) < CAP; };
+    var tiers = [[function (id) { return nb(id) && uc(id); }, null], [uc, 'back to back'], [nb, 'over cap'], [function () { return true; }, 'back to back, over cap']];
+    for (var ti = 0; ti < tiers.length; ti++) {
+      var tier = cands.filter(tiers[ti][0]);
+      if (tier.length) { if (tiers[ti][1] && info) info.fallback = tiers[ti][1]; cands = tier; break; }
+    }
     /* people kept to their fixed nights only step in when nobody else can */
     cands.sort(function (a, b) {
-      return ((!normalOn(team[a], dow)) - (!normalOn(team[b], dow))) || ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((tw[a] ? 1 : 0) - (tw[b] ? 1 : 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
+      return ((!(normalOn(team[a], dow) || works[a])) - (!(normalOn(team[b], dow) || works[b]))) || ((tw[a] || 0) - (tw[b] || 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
     });
     return cands[0] || null;
   }
@@ -286,16 +322,19 @@
       DAYS.forEach(function (dow) {
         var date = dateFor(wk, dow);
         if (date < today || (signed && signed[date])) return;
-        var away = absentOn(absences, date), pair = ids(weeks[wk].days[dow]), changed = false;
+        var away = absentOn(absences, date), works = worksOn(absences, date), pair = ids(weeks[wk].days[dow]), changed = false;
         pair.slice().forEach(function (p) {
           var t = team && team[p];
           /* away, now off that day, or taken off the rota: swap just this slot */
-          if (!away[p] && canDo(t, dow)) return;
+          if (!away[p] && (canDo(t, dow) || works[p])) return;
           var rest = pair.filter(function (x) { return x !== p; });
-          var r = replacement(weeks, team, absences, date, rest.concat([p]));
+          var info = {};
+          var r = replacement(weeks, team, absences, date, rest.concat([p]), info);
           pair = r ? pair.map(function (x) { return x === p ? r : x; }) : rest;
           weeks[wk].days[dow] = pair; changed = true;
           var ch = { week: wk, dow: dow, date: date, out: p, 'in': r, pair: pair.slice() };
+          if (r && info.fallback) { var rn = (team[r] && team[r].name) || r, fb = info.fallback;
+            ch.note = rn + (fb === 'back to back' ? ' is on the night before or after too' : fb === 'over cap' ? ' now has more than 2 lockups this week' : ' is on the night before or after too and now has more than 2 lockups this week') + ', as nobody else was free.'; }
           changes.push(ch);
           if (away[p] === 'absent' && canDo(t, dow)) moveLater(weeks, team, absences, today, signed, wk, dow, p, ch, changes);
         });
@@ -331,10 +370,10 @@
         else w[dow] = keep;
       }
       changes.push({ week: wk, dow: e, date: de, out: o, 'in': p, pair: pe.slice(), moved: true });
-      ch.note = name + '\u2019s only lockup this week, so moved to ' + DAY_NAMES[e] + ' ' + (+de.slice(8)) + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+de.slice(5, 7) - 1] + ' in place of ' + ((team[o] && team[o].name) || o) + '.';
+      ch.note = (ch.note ? ch.note + ' ' : '') + name + '\u2019s only lockup this week, so moved to ' + DAY_NAMES[e] + ' ' + (+de.slice(8)) + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+de.slice(5, 7) - 1] + ' in place of ' + ((team[o] && team[o].name) || o) + '.';
       return;
     }
-    ch.note = 'That was ' + name + '\u2019s only lockup this week and no other night this week works, so ' + name + ' has none this week.';
+    ch.note = (ch.note ? ch.note + ' ' : '') + 'That was ' + name + '\u2019s only lockup this week and no other night this week works, so ' + name + ' has none this week.';
   }
 
   /* who is on for a date: { kind: 'staff'|'managers'|'closed', ids: [...] } */
@@ -374,16 +413,24 @@
     });
     return changes;
   }
-  function onFor(dateStr, weekRec, holidays) {
+  /* Saturday is managers' lockup (timings, cover list and the 5:30pm email
+     stay the managers'), but lockup/config/saturday can name who is on it,
+     e.g. ['chloe', 'sergio']: they get the reminder and nudge and are shown
+     by name. Absent people are left out (pass absences). */
+  function satIds(cfg, dateStr, absences) {
+    var away = absences ? absentOn(absences, dateStr) : {};
+    return arr(cfg && cfg.saturday).filter(function (id) { return !away[id]; });
+  }
+  function onFor(dateStr, weekRec, holidays, cfg, absences) {
     var dow = london(new Date(dateStr + 'T12:00:00Z')).dow;
     if (dow === 'sun' || (holidays && holidays[dateStr])) return { kind: 'closed', dow: dow };
-    if (dow === 'sat') return { kind: 'managers', dow: dow };
+    if (dow === 'sat') { var s = satIds(cfg, dateStr, absences); return { kind: 'managers', dow: dow, ids: s, id: s[0] || null }; }
     var list = ids(weekRec && weekRec.days && weekRec.days[dow]);
     return { kind: 'staff', dow: dow, ids: list, id: list[0] || null };
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, awayOn: awayOn, cantLabel: cantLabel, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, satIds: satIds, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },

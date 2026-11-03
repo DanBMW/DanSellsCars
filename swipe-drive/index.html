@@ -18,9 +18,13 @@
 <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1170x2532.png">
 <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1290x2796.png">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png">
-<link rel="preconnect" href="https://api.fontshare.com">
-<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=sentient@400,500,700&f[]=satoshi@400,500,700,900&display=swap">
-<link rel="stylesheet" href="app.css">
+<link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css?v=50">
+<link rel="stylesheet" href="crm/hub.css?v=48">
+<link rel="stylesheet" href="crd.css?v=1">
+<link rel="stylesheet" href="../motion.css?v=1"/>
+<link rel="stylesheet" href="premium.css?v=3">
+<script src="../motion.js?v=1" defer></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
 <script src="../analytics.js" defer></script>
@@ -39,10 +43,12 @@
   <!-- 1. sign in -->
   <section class="ct-screen" data-screen="signin">
     <div class="ct-hero">
-      <div class="ct-hero-road" aria-hidden="true"><svg class="ct-wheel" viewBox="0 0 100 100" width="120" height="120" aria-hidden="true"><circle cx="50" cy="50" r="47" class="w-tyre"/><circle cx="50" cy="50" r="36" class="w-rim"/><g class="w-spokes"><path d="M50 50 L46 16 L54 16 Z" transform="rotate(0 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(72 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(144 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(216 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(288 50 50)"/></g><circle cx="50" cy="50" r="9" class="w-hub"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(36 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(108 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(180 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(252 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(324 50 50)"/></svg></div>
+      <div class="ct-hero-media" aria-hidden="true"><img src="img/hero-i7-800.webp" srcset="img/hero-i7-800.webp 800w, img/hero-i7.webp 1280w" sizes="(min-width:520px) 520px, 100vw" alt="" width="1280" height="812" fetchpriority="high" decoding="async"><span class="ct-hud ct-hud-tl">SWIPETODRIVE</span><span class="ct-hud ct-hud-tr">LIVE STOCK</span><span class="ct-hud-line"></span></div><a class="ct-credit" href="https://commons.wikimedia.org/wiki/File:BMW_i7_xDrive60_1X7A6822.jpg" target="_blank" rel="noopener">Photo: Alexander-93, CC BY-SA 4.0</a>
+      <p class="ct-eyebrow">Hedin Ruxley stock, matched to you</p>
       <h1>Find the BMW you will fall for.</h1>
       <p>Tell me what you want, swipe through cars that fit, and I will do the rest.</p>
     </div>
+    <p class="ct-msg ok ct-alert-note" id="alertNote" hidden></p>
     <form class="ct-panel" id="signinForm" novalidate>
       <label class="ct-f"><span>Your email</span><input type="email" id="siEmail" autocomplete="email" inputmode="email" required placeholder="you@example.com"></label>
       <button class="ct-btn" type="submit">Email me a sign in link</button>
@@ -66,14 +72,19 @@
   <section class="ct-screen" data-screen="profile" hidden>
     <form class="ct-panel ct-form" id="profileForm" novalidate>
       <h2 id="pfTitle">About you</h2>
+      <p id="pfRef" hidden></p>
       <p class="ct-sub" id="pfSub">Takes a minute. The more you tell me, the better your matches.</p>
       <fieldset><legend>You</legend>
         <p class="ct-hint">Only <b>Name</b>, <b>Mobile</b><span data-staff-only hidden> and <b>Email</b></span> are required. Everything else helps the matching but can be left blank.</p>
         <label class="ct-f"><span>Name <em class="ct-req">required</em></span><input name="name" autocomplete="name" required aria-required="true"></label>
         <label class="ct-f"><span>Mobile <em class="ct-req">required</em></span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" required aria-required="true"></label>
-        <label class="ct-f" data-staff-only hidden><span>Customer email <em class="ct-req">required</em></span><input name="email" type="email" inputmode="email" aria-required="true"></label>
-<label class="ct-check" data-staff-only hidden><input type="checkbox" name="email_alerts"> <span>Email this customer match alerts. Only customers ticked here are sent them.</span></label>
+        <label class="ct-f" data-staff-only hidden><span>Customer email <em class="ct-req">optional</em></span><input name="email" type="email" inputmode="email"></label>
+        <label class="ct-check" data-staff-only hidden><input type="checkbox" name="email_alerts"> <span>Email this customer match alerts. Only customers ticked here are sent them.</span></label>
         <label class="ct-f"><span>Postcode <em class="ct-opt">optional</em></span><input name="postcode" autocomplete="postal-code"></label>
+      </fieldset>
+      <fieldset data-staff-only hidden id="consentBox"><legend>Messaging</legend>
+        <label class="ct-check"><input type="checkbox" id="commsConsent" name="comms_consent"> <span>The customer has agreed that I can message them, and that I can set them up on SwipeToDrive so they can use it themselves.</span></label>
+        <p class="ct-hint" id="commsConsentNote">Leave this unticked and nothing is ever sent to them. You can still print their customer page.</p>
       </fieldset>
       <details class="ct-sec" data-sec="budget"><summary>Budget <em class="ct-opt">optional</em></summary><div class="ct-sec-b">
         <div class="ct-seg" data-name="budget_type"><button type="button" data-v="monthly">Monthly</button><button type="button" data-v="cash">Cash price</button></div>
@@ -84,16 +95,22 @@
       </div></details>
       <details class="ct-sec" data-sec="car"><summary>The car <em class="ct-opt">optional</em></summary><div class="ct-sec-b">
         <span class="ct-lab">Fuel</span>
-        <div class="ct-chips" data-name="fuel"><button type="button" data-v="open">Open minded</button><button type="button" data-v="petrol">Petrol</button><button type="button" data-v="diesel">Diesel</button><button type="button" data-v="hybrid">Hybrid</button><button type="button" data-v="electric">Electric</button></div>
+        <p class="ct-hint">Pick as many as you like.</p>
+        <div class="ct-chips ct-multi" data-name="fuel"><button type="button" data-v="open">Open minded</button><button type="button" data-v="petrol">Petrol</button><button type="button" data-v="diesel">Diesel</button><button type="button" data-v="hybrid">Hybrid</button><button type="button" data-v="electric">Electric</button></div>
         <span class="ct-lab">Body or size</span>
         <div class="ct-chips" data-name="body"><button type="button" data-v="any">Any</button><button type="button" data-v="small">Small and easy</button><button type="button" data-v="hatchback">Hatchback</button><button type="button" data-v="saloon">Saloon</button><button type="button" data-v="estate">Touring</button><button type="button" data-v="suv">SUV</button><button type="button" data-v="family">Family space</button><button type="button" data-v="coupe">Coupe or convertible</button></div>
-        <span class="ct-lab">Models you like (pick any)</span>
-        <div class="ct-chips ct-multi" data-name="models" id="modelChips"></div>
+        <span class="ct-lab">Models you like</span>
+        <div class="ct-tapkey" role="note"><b>Only want to see certain models? Tap it twice.</b><div class="ct-chips ct-tri ct-tapkey-demo" aria-hidden="true"><button type="button" tabindex="-1" data-state="">X3</button><span>Not picked</span><button type="button" tabindex="-1" data-state="like">X3</button><span>Tap once: would like, shown first but other suggestions still appear</span><button type="button" tabindex="-1" data-state="must">X3</button><span>Tap twice: must have, you will only see these models, with no other suggestions</span></div><small>Tap a third time to clear it.</small></div>
+        <div class="ct-chips ct-tri" data-tri="models" id="modelChips"></div>
         <label class="ct-f"><span>Model year, from</span><select name="year_from"><option value="">Any year</option><option value="2022">2022 or newer</option><option value="2023">2023 or newer</option><option value="2024">2024 or newer</option><option value="2025">2025 or newer</option><option value="2026">2026 only</option></select></label>
+        <span class="ct-lab">Preferred current mileage (optional)</span>
+        <p class="ct-hint">Pick any that suit, or leave blank for any mileage.</p>
+        <div class="ct-chips ct-multi" data-name="mileage_bands"><button type="button" data-v="0_8k">0 to 8k</button><button type="button" data-v="8_15k">8k to 15k</button><button type="button" data-v="15_25k">15k to 25k</button><button type="button" data-v="25k_plus">25k plus</button></div>
         <span class="ct-lab">Colours</span>
         <p class="ct-hint">Tap once to pick it. Tap again to make it a must have. Tap a third time to clear it.</p>
         <div class="ct-chips ct-tri" data-tri="colours" id="colourChips"></div>
-        <span class="ct-lab">Specification</span><p class="ct-hint">Same taps as colours: pick it, tap again for a must have.</p>
+        <span class="ct-lab">Specification</span><div class="ct-tapkey" role="note"><b>Only want to see cars with a certain spec? Tap it twice.</b><div class="ct-chips ct-tri ct-tapkey-demo" aria-hidden="true"><button type="button" tabindex="-1" data-state="">Heated seats</button><span>Not picked</span><button type="button" tabindex="-1" data-state="like">Heated seats</button><span>Tap once: would like, shown first but other suggestions still appear</span><button type="button" tabindex="-1" data-state="must">Heated seats</button><span>Tap twice: must have, you will only see cars with that spec, with no other suggestions</span></div><small>Tap a third time to clear it.</small></div>
+        <p class="ct-hint">New and used cars are read the same way. If we cannot see something on a car (seat colour on a used car, for example) we never hide the car, we just tell you it is not confirmed.</p>
         <div class="ct-chips ct-tri" data-tri="specs" id="specChips"></div>
         <span class="ct-lab">New or used</span>
         <div class="ct-seg" data-name="new_used"><button type="button" data-v="used">Used</button><button type="button" data-v="new">Brand new</button><button type="button" data-v="both">Either</button></div>
@@ -119,6 +136,7 @@
         </div>
       </div></details>
       <details class="ct-sec" data-sec="more"><summary>More detail <em class="ct-opt">optional</em></summary><div class="ct-sec-b"><p class="ct-hint">The same questions as the desk sheet. All optional.</p><div id="deskBox"></div></div></details>
+      <button class="ct-btn ct-btn-ghost" type="button" id="pfPrint" data-staff-only hidden onclick="window.ctCrdPrintCurrent&&window.ctCrdPrintCurrent()">Print customer page</button>
       <button class="ct-btn ct-btn-big" type="submit" id="pfSave">Find my match</button>
       <p class="ct-msg" id="pfMsg" role="status"></p>
     </form>
@@ -126,6 +144,8 @@
 
   <!-- 3. swipe -->
   <section class="ct-screen" data-screen="discover" hidden>
+    <div class="ct-revvy-row" data-revvy-row hidden><button class="ct-revvy" type="button" data-revvy><img src="icons/icon-192.png" alt="">Chat to Revvy</button><a class="ct-btn ct-btn-ghost ct-edit-choices" href="#profile" data-edit-choices>Edit my choices</a></div>
+    <div class="ct-ns ct-ns-top" id="deckNoStock" hidden aria-live="polite"></div>
     <div class="ct-deck" id="deck"></div>
     <div class="ct-row" id="relaxBar" hidden><span class="ct-sub" id="relaxText"></span><button class="ct-btn ct-btn-ghost ct-sm" id="relaxReset" type="button">Back to my own search</button></div>
     <div class="ct-empty" id="deckEmpty" hidden><h2 id="deckEmptyT">That is everyone for now.</h2><p id="deckEmptyP">New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><div class="ct-row" id="deckEmptyActs"><a class="ct-btn" href="#matches">See your matches</a></div><div class="ct-widen" id="deckWiden"></div><div class="ct-notify"><p class="ct-hint">Want the next one that fits? I will message you the moment it comes in.</p><button class="ct-btn" id="notifyBtn" type="button">Notify me when one comes in</button><p class="ct-msg" id="notifyMsg" role="status"></p></div></div>
@@ -164,6 +184,7 @@
     <div class="ct-panel">
       <h2 id="meName">You</h2>
       <p class="ct-sub" id="meEmail"></p>
+      <div class="ct-revvy-row" data-revvy-row hidden><button class="ct-revvy" type="button" data-revvy><img src="icons/icon-192.png" alt="">Chat to Revvy</button><a class="ct-btn ct-btn-ghost ct-edit-choices" href="#profile" data-edit-choices>Edit my choices</a></div>
       <div data-cust-only>
       <div class="ct-card-lite" id="meSummary"></div>
       <div class="ct-row"><a class="ct-btn ct-btn-ghost" href="#profile">Edit my profile</a></div>
@@ -176,6 +197,7 @@
       <div class="ct-seg" id="notifySeg" aria-label="Phone notifications"><button type="button" data-v="push">Turn on</button><button type="button" data-v="off">Off</button></div>
       <div id="emailAlerts" hidden><label class="ct-check"><input type="checkbox" id="emailAlertsBox"> <span>Send me email alerts when a car fits what I asked for. Untick to stop them.</span></label><p class="ct-msg" id="emailAlertsMsg" role="status"></p></div>
       <p class="ct-msg" id="notifyMsg" role="status"></p>
+      <div class="ct-my-alerts" id="myAlerts" data-cust-only hidden></div>
       <h3>Get the app</h3>
       <div id="installInfo"></div>
       <div class="ct-card-lite" id="meTerms"></div>
@@ -206,13 +228,34 @@
   <!-- staff dashboard -->
   <section class="ct-screen" data-screen="team" hidden>
     <div class="ct-panel">
+      <div class="hb-tiles" data-admin-only hidden>
+        <a class="hb-tile" href="#followups"><span class="hb-ic"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/></svg></span>Follow ups</a>
+        <a class="hb-tile" href="#quote"><span class="hb-ic"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg></span>Quotation</a>
+        <a class="hb-tile" href="#present"><span class="hb-ic"><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg></span>Products</a>
+        <a class="hb-tile" href="#buys"><span class="hb-ic"><svg viewBox="0 0 24 24"><path d="M6 7h12l1 15H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span>Buy requests</a>
+      </div>
       <h2 id="teamTitle">My customers</h2>
       <div class="ct-row ct-wrap"><button class="ct-btn ct-sm" id="addCust" type="button">Add a customer</button>
         <label class="ct-f ct-inline" id="ownerFilterWrap" hidden><span>Owner</span><select id="ownerFilter"><option value="">Everyone</option></select></label>
         <a class="ct-btn ct-btn-ghost ct-sm" href="#invites" id="invitesLink" hidden>Invite colleagues</a>
         <a class="ct-btn ct-btn-ghost ct-sm" href="#buys">Buy requests</a></div>
+      <section class="ct-enq" id="enqBox" hidden aria-labelledby="enqH"></section>
+      <div class="ct-seg ct-tabs" id="custTabs" role="tablist"><button type="button" role="tab" data-tab="open" aria-pressed="true">Customers</button><button type="button" role="tab" data-tab="archived" aria-pressed="false">Archived <span id="archN"></span></button><button type="button" role="tab" data-tab="referrals" aria-pressed="false" id="refTab" hidden>Referrals</button></div>
       <div id="custList" class="ct-clist"></div>
     </div>
+  </section>
+
+  <!-- admin tools: follow ups, quotation, product presentation (admin only, routed by app.js) -->
+  <section class="ct-screen hb-screen" data-screen="followups" hidden>
+    <div class="ct-panel"><div class="hb-top"><button class="hb-back" type="button" data-hb-back aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Follow ups</h2></div>
+      <p class="ct-sub">Every customer on one journey from purchase to the final follow up at 45 months. End to end encrypted with your passphrase. Emails open in Outlook with Sergio on cc, nothing sends from here.</p>
+      <div id="fx-root"></div></div>
+  </section>
+  <section class="ct-screen hb-screen" data-screen="quote" hidden>
+    <div class="ct-panel"><div class="hb-top"><button class="hb-back" type="button" data-hb-back aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Send quotation</h2></div><div id="hbQuote"></div></div>
+  </section>
+  <section class="ct-screen hb-screen" data-screen="present" hidden>
+    <div class="ct-panel"><div class="hb-top"><button class="hb-back" type="button" data-hb-back aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Product presentation</h2></div><div id="hbPresent"></div></div>
   </section>
 
   <!-- admin: invites -->
@@ -244,10 +287,11 @@
   </section>
 
   <nav class="ct-nav" id="nav" hidden>
-    <a href="#discover" data-nav="discover"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.8 5c2 0 3.5 1.1 5.2 3 1.7-1.9 3.2-3 5.2-3 3.5 0 5.6 3.4 4.3 6.7C19.5 16.4 12 21 12 21z"/></svg><span>Discover</span></a>
-    <a href="#matches" data-nav="matches"><svg viewBox="0 0 24 24"><path d="M4 5h16v4H4zM4 11h16v4H4zM4 17h10v3H4z"/></svg><span>Matches</span><i class="ct-badge" id="matchBadge" hidden></i></a>
-    <a href="#team" data-nav="team" data-staff-only hidden><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3.5"/><circle cx="16.5" cy="9" r="3"/><path d="M1.5 20c.5-4 3-6 6.5-6s6 2 6.5 6zM13 20c.3-2.4 1.2-4 3.5-4.6 3 .1 5.4 1.7 6 4.6z"/></svg><span>Customers</span></a>
-    <a href="#me" data-nav="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.6-4.5 3.7-7 8-7s7.4 2.5 8 7z"/></svg><span>Me</span></a>
+    <a href="#discover" data-nav="discover"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/></svg><span>Discover</span></a>
+    <a href="#matches" data-nav="matches"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg><span>Matches</span><i class="ct-badge" id="matchBadge" hidden></i></a>
+    <a href="#team" data-nav="team" data-staff-only hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg><span>Customers</span></a>
+    <a href="#followups" data-nav="followups" data-admin-only hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Follow ups</span></a>
+    <a href="#me" data-nav="me"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg><span>Me</span></a>
   </nav>
 </div>
 
@@ -262,14 +306,33 @@
   <div id="buyAsk"><h2 id="buyTitle">Buy this car?</h2><p id="buyText"></p><button class="ct-btn ct-btn-big" id="buyYes" type="button">Yes, buy this car</button><button class="ct-btn ct-btn-ghost" type="button" data-close>Not yet</button></div>
   <div id="buyDone" hidden><h2>Request sent</h2><p id="buyDoneText" role="status"></p><a class="ct-btn ct-wa ct-btn-big" id="buyWa" target="_blank" rel="noopener">WhatsApp</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Back to my matches</button></div>
 </div></div>
+<div class="ct-match ct-buym" id="closeModal" hidden><div class="ct-match-in" role="alertdialog" aria-modal="true" aria-labelledby="closeTitle">
+  <h2 id="closeTitle">Close customer?</h2><p id="closeText"></p><button class="ct-btn ct-btn-big ct-btn-warn" id="closeYes" type="button">Close customer</button><button class="ct-btn ct-btn-ghost" id="closeNo" type="button">Cancel</button>
+</div></div>
+<div class="ct-match ct-buym" id="stockModal" hidden><div class="ct-match-in ct-stockm" role="alertdialog" aria-modal="true" aria-labelledby="stockTitle">
+  <h2 id="stockTitle">Are you sure?</h2><p id="stockTo"></p><div id="stockCars" class="ct-stock-cars"></div><p id="stockNote" class="ct-stock-note" hidden></p>
+  <button class="ct-btn ct-btn-big" id="stockYes" type="button">Send email</button><button class="ct-btn ct-btn-ghost" id="stockNo" type="button">Cancel</button>
+</div></div>
+<div class="ct-toast ct-undo" id="undoToast" role="status" hidden><span id="undoText"></span><button type="button" id="undoBtn">Undo</button></div>
 <div class="ct-toast" id="toast" role="status" hidden></div>
 
-<script src="config.js"></script>
-<script src="auth-ui.js"></script>
-<script src="chat/profile-save.js"></script>
-<script src="../stock-core.js"></script>
-<script src="match-core.js"></script>
+<script src="config.js?v=41"></script>
+<script src="auth-ui.js?v=41"></script>
+<script src="chat/profile-save.js?v=41"></script>
+<script src="../stock-core.js?v=41"></script>
+<script src="../dsfinance.js?v=41"></script>
+<script src="match-core.js?v=41"></script>
 <script src="../disclaimer.js" defer></script>
-<script src="app.js"></script>
+<script src="alert-save.js?v=41"></script>
+<script src="app.js?v=51"></script>
+<script src="../product-email.js?v=42"></script>
+<script src="../quote-email.js?v=41"></script>
+<script src="crm/followups-core.js?v=48"></script>
+<script src="nostock-ui.js?v=41"></script>
+<script src="revvy-flow.js?v=41"></script>
+<script src="revvy.js?v=41"></script>
+<script src="crm/hub.js?v=48"></script>
+<script src="crm/followups-ui.js?v=48"></script>
+<script src="crd.js?v=1"></script>
 </body>
 </html>

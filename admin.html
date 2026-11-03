@@ -343,7 +343,8 @@ var ROT=[
   ['forecourt',"What's new on the forecourt", 'Fresh stock, off the stock list'],
   ['birthdays','Birthday cards',        'For a week from the day they go up'],
   ['ticker',   'Banner along the bottom','The scrolling line'],
-  ['radio',    'Background radio',       'Kisstory R&B on the wall display when nothing else is playing'],
+  ['seasons',  'Seasonal backdrop',      'Pumpkins through October, the fire at Christmas, behind the board'],
+  ['radio',    'Background radio',       'The station below, on the wall display, when nothing else is playing'],
   ['eventdeals','Event deals',           'Will\u2019s list, highest margin first. Internal - takes itself down on its expiry'],
   ['dealmargin','Show the margin figure','Off keeps the order but hides the pounds']
 ];
@@ -479,13 +480,13 @@ $('walkin-test').onclick=function(){
    The board treats an unknown or absent value as 1, so there is no second
    default to keep in step. */
 var STATIONS=[
-  {id:1, name:'Kisstory R&B', sub:'The default'},
+  {id:1, name:'Kisstory R&B', sub:'Soul and R&B'},
   {id:2, name:'Kisstory',     sub:'Old skool'},
   {id:3, name:'Jazz FM',      sub:'Jazz, soul and blues'},
-  {id:4, name:'Country',      sub:'Smooth Country'}
+  {id:4, name:'Country',      sub:'The default, Smooth Country'}
 ];
 function paintStations(){
-  var list=$('station-list'), now=sNum('station',1);
+  var list=$('station-list'), now=sNum('station',4);   /* Country is the default (Dan, 27 Oct) */
   if(!list.childNodes.length){
     list.innerHTML=STATIONS.map(function(st){
       return '<button type="button" class="clipbtn" data-station="'+st.id+'">'+

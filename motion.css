@@ -1,0 +1,57 @@
+/* Shared motion for alerts.html, find-my-bmw.html and SwipeToDrive. Android style: shared axis page
+   transitions, springy presses, touch ripples, content that settles in as it scrolls into view.
+   CSS only apart from motion.js (ripples, under 1 KB). Everything sits behind prefers-reduced-motion. */
+:root{
+  /* Material 3 expressive "fast spatial" spring, sampled into linear() */
+  --mo-spring:linear(0,.009,.035 2.1%,.141 4.4%,.723 12.9%,.938 16.7%,1.017 19.9%,1.067 23.2%,1.077 25.9%,1.071 28.9%,1.017 37.7%,.997 43.5%,.995 51%,1);
+  --mo-emph:cubic-bezier(.2,0,0,1);
+  --mo-fast:220ms;--mo-med:380ms
+}
+@media (prefers-reduced-motion:no-preference){
+  @view-transition{navigation:auto}
+  ::view-transition-old(root){animation:moOut var(--mo-fast) var(--mo-emph) both}
+  ::view-transition-new(root){animation:moIn var(--mo-med) var(--mo-emph) both}
+  html[data-mo-dir=back]::view-transition-old(root){animation-name:moOutBack}
+  html[data-mo-dir=back]::view-transition-new(root){animation-name:moInBack}
+  @keyframes moOut{to{opacity:0;transform:translateX(-30px)}}
+  @keyframes moIn{from{opacity:0;transform:translateX(30px)}}
+  @keyframes moOutBack{to{opacity:0;transform:translateX(30px)}}
+  @keyframes moInBack{from{opacity:0;transform:translateX(-30px)}}
+
+  /* presses: a quick squash, released on a spring */
+  .mo-press{transition:transform var(--mo-med) var(--mo-spring)}
+  .mo-press:active{transform:scale(.96);transition-duration:90ms;transition-timing-function:ease-out}
+  .mo-press[aria-pressed=true]{animation:moPop var(--mo-med) var(--mo-spring)}
+  @keyframes moPop{from{transform:scale(.9)}to{transform:none}}
+
+  /* kinetic headline: words rise one after another (motion.js wraps them) */
+  .mo-kinetic .mo-w{display:inline-block;animation:moRise .7s var(--mo-emph) both;animation-delay:calc(var(--i) * 60ms)}
+  @keyframes moRise{from{opacity:0;transform:translateY(.6em) rotate(2deg);filter:blur(4px)}}
+
+  /* a number that changes rolls in */
+  .mo-tick{display:inline-block;animation:moTick var(--mo-med) var(--mo-spring)}
+  @keyframes moTick{from{opacity:.2;transform:translateY(40%)}}
+
+  /* content settles in as it scrolls into view, where the browser can tie it to the scroll */
+  @supports (animation-timeline:view()){
+    .mo-reveal{animation:moReveal linear both;animation-timeline:view();animation-range:entry 0% entry 60%}
+    @keyframes moReveal{from{opacity:0;transform:translateY(28px) scale(.98)}}
+    /* parallax: the hero art drifts slower than the page */
+    .mo-parallax{animation:moPara linear both;animation-timeline:scroll(root);animation-range:0 600px}
+    @keyframes moPara{to{transform:translateY(90px) scale(1.04)}}
+  }
+  /* bottom sheets come up on the spring */
+  .ct-sheet .ct-sheet-in{animation:moSheet var(--mo-med) var(--mo-spring) both}
+  @keyframes moSheet{from{transform:translateY(60%);opacity:0}}
+  /* SwipeToDrive tab changes (same document view transition, see app.js) */
+  ::view-transition-group(ct-nav),::view-transition-group(ct-top){animation:none}
+}
+/* touch ripple */
+.mo-rip{position:relative;overflow:hidden;isolation:isolate}
+.mo-rip .mo-ink{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.18;transform:scale(0);animation:moInk .55s var(--mo-emph) forwards;z-index:-1}
+@keyframes moInk{to{transform:scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.mo-rip .mo-ink{display:none}}
+@media (prefers-reduced-motion:no-preference){
+  .fmb-screen.fmb-anim-in{animation-timing-function:var(--mo-spring)!important}
+  .fmb-opt[aria-pressed=true],.fmb-opt[aria-checked=true],.fmb-opt.on{animation:moPop var(--mo-med) var(--mo-spring)}
+}

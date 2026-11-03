@@ -60,7 +60,7 @@ window.dsStock = (function () {
 
   function fuelKey(c) {
     var f = String((c && c.fuel) || '').toLowerCase();
-    if (f.indexOf('plug-in') !== -1 || f.indexOf('plug in') !== -1) return 'phev';
+    if (f.indexOf('plug-in') !== -1 || f.indexOf('plug in') !== -1 || f.indexOf('phev') !== -1) return 'phev';   /* new stock calls them PHEV */
     if (f.indexOf('electric') !== -1) return 'electric';
     if (f.indexOf('mild hybrid') !== -1 && f.indexOf('diesel') !== -1) return 'mhev-diesel';
     if (f.indexOf('mild hybrid') !== -1) return 'mhev-petrol';
@@ -97,13 +97,75 @@ window.dsStock = (function () {
                not: /prep/i },
     towbar:  { label: 'Tow bar',                 re: /tow ?bar|towbar|trailer tow/i },
     xdrive:  { label: 'xDrive all wheel drive',  test: function (c) { return c.drive === 'FourWheel'; } },
-    seven:   { label: '7 seats',                 test: function (c) { return String(c.seats) === '7'; } }
+    seven:   { label: '7 seats',                 test: function (c) { return String(c.seats) === '7'; } },
+    /* Reversing camera (separate from the 360 camera option). Three way: true, false, or null for unknown. */
+    revcam:  { label: 'Reversing camera',        tri: function (c, det) { return reversingCamera(c, det); } }
   };
+  /* Light interior rules, 28 Oct 2026. Only upholstery lines count (seats in leather, Vernasca, Veganza, Sensatec,
+     Merino, Dakota, cloth); steering wheel, dashboard, headlining and trim lines are ignored.
+     yes   a pale seat colour: Oyster, Smoke White, Ivory White, Silverstone, Canberra Beige, Cream, Beige, White.
+     no    a dark or rich colour named: Black, Cognac, Tartufo, Mocha, Brown, Red, Anthracite, Grey, Blue.
+     null  no seat colour in the data (used listings never itemise it; new stock often says only Leather or Fabric).
+     A bicolour line counts by its first named colour, so "Silverstone and Black" is light. */
+  var INT_LINE = /leather|vernasca|veganza|sensatec|merino|dakota|cloth|fabric|upholster|alcantara/i;
+  var INT_SKIP = /steering|dashboard|headlin|interior trim|\btrim\b|instrument panel|deletion of/i;
+  var INT_LIGHT = /oyster|smoke white|ivory white|silverstone|canberra beige|venetian beige|cream|beige|\bwhite\b/i;
+  var INT_DARK = /black|cognac|tartufo|mocha|brown|\bred\b|anthracite|grey|gray|blue|magma|night/i;
+  function firstHit(t) {
+    var a = t.search(INT_LIGHT), b = t.search(INT_DARK);
+    if (a < 0 && b < 0) return null; if (a < 0) return false; if (b < 0) return true; return a < b;
+  }
+  function lightInterior(c, det) {
+    var lines = [].concat(det && det.equipment || [], c && c.options || [], c && c.standard || [], c && c.upholstery ? [c.upholstery] : []);
+    var seen = null;
+    for (var i = 0; i < lines.length; i++) {
+      var t = String(lines[i] || ''); if (!INT_LINE.test(t) || INT_SKIP.test(t)) continue;
+      var h = firstHit(t); if (h === true) return true; if (h === false) seen = false;
+    }
+    return seen;
+  }
+  /* Reversing camera rules, agreed with Dan 28 Oct 2026:
+     yes   the listing names a reversing or rear view camera, Parking Assistant Plus or Pro, or Surround View;
+           or the car is a generation BMW UK lists with the camera as standard, first registered on or after the cutoff;
+           or Dan has confirmed it by hand (CAMERA_OVERRIDES).
+     no    parking sensors only (PDC) and nothing above.
+     null  plain Parking Assistant, which does not by itself mean a camera, or no equipment list. */
+  var CAMERA_OVERRIDES = {      /* listing id: true or false, add a line per car Dan confirms */
+    '257888': true              /* MC23OPS 218i Gran Coupe, Dan confirmed 28 Oct 2026 */
+  };
+  var CAMERA_YES = /revers\w*\s+(assist\s+)?camera|rear.?view camera|rear camera|parking assist\w*\s+(plus|pro)|surround view|top view|panorama view|360.{0,4}camera|camera.{0,6}360/i;
+  var CAMERA_MAYBE = /parking assist/i;
+  var CAMERA_NO = /park distance control|pdc|parking sensor/i;
+  /* [test on series and model text, first month with the camera standard]. Older generations sold alongside are excluded by name. */
+  var CAMERA_STD = [
+    [function (t) { return /1 series/.test(t) && !/11[68]i|11[68]d|128ti/.test(t); }, '2024-10'],
+    [function (t) { return /gran coupe/.test(t) && /2 series/.test(t) && !/21[68]i|218d|220d|m235i xdrive gran/.test(t); }, '2024-10'],
+    [function (t) { return /\bi?x1\b/.test(t); }, '2022-10'],
+    [function (t) { return /\bi?x2\b/.test(t); }, '2023-10'],
+    [function (t) { return /3 series|\bi3\b/.test(t) && !/gran turismo/.test(t); }, '2022-07'],
+    [function (t) { return /5 series|\bi5\b/.test(t) && !/gran turismo/.test(t); }, '2023-10'],
+    [function (t) { return /\bx3\b|\bix3\b/.test(t); }, '2024-11'],
+    [function (t) { return /\bx5\b/.test(t); }, '2023-04'],
+    [function (t) { return /\bi4\b|4 series gran coupe|4\d\d[id] .*gran coupe/.test(t); }, '2024-03']
+  ];
+  function reversingCamera(c, det) {
+    var id = c && c.listing_id != null ? String(c.listing_id) : '';
+    if (Object.prototype.hasOwnProperty.call(CAMERA_OVERRIDES, id)) return CAMERA_OVERRIDES[id];
+    var kit = det && det.equipment ? det.equipment.filter(function (x) { return !DELETED.test(x) && !/prep/i.test(x); }) : null;
+    if (kit && kit.some(function (x) { return CAMERA_YES.test(x); })) return true;
+    var t = (String((c && c.series) || '') + ' ' + String((c && c.model) || '') + ' ' + String((det && det.version) || '')).toLowerCase().replace(/coup\u00e9/g, 'coupe');
+    var reg = String((det && det.first_reg) || '').slice(0, 7);
+    if (reg && CAMERA_STD.some(function (r) { return r[0](t) && reg >= r[1]; })) return true;
+    if (!kit) return null;
+    if (kit.some(function (x) { return CAMERA_MAYBE.test(x); })) return null;
+    return kit.some(function (x) { return CAMERA_NO.test(x); }) ? false : null;
+  }
   /* true / false, or null when the equipment list has not loaded yet */
   function hasFeature(c, det, key) {
     var f = FEATURES[key];
     if (!f) return false;
     if (f.test) return !!f.test(c);
+    if (f.tri) return f.tri(c, det);
     if (!det) return null;
     var kit = det.equipment || [];
     for (var i = 0; i < kit.length; i++) {
@@ -118,5 +180,6 @@ window.dsStock = (function () {
 
   return { bodyKeys: bodyKeys, bodyPrimary: bodyPrimary, stockBodyKey: stockBodyKey,
            stockBodyLabel: stockBodyLabel, STOCK_BODY: STOCK_BODY, fuelKey: fuelKey,
-           FEATURES: FEATURES, DELETED: DELETED, hasFeature: hasFeature, num: num };
+           FEATURES: FEATURES, DELETED: DELETED, hasFeature: hasFeature, num: num,
+           reversingCamera: reversingCamera, CAMERA_OVERRIDES: CAMERA_OVERRIDES, lightInterior: lightInterior };
 })();
