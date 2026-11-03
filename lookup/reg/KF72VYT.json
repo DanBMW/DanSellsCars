@@ -1,0 +1,33 @@
+{
+ "reg": "KF72VYT",
+ "model": "BMW iX xDrive40 M Sport",
+ "series": "iX",
+ "year": 2022,
+ "mileage": "25,192 miles",
+ "mileage_miles": 25192,
+ "colour": "Black",
+ "fuel": "Electric",
+ "body": "SUV",
+ "gearbox": "Automatic",
+ "drive": "FourWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "326 hp",
+ "trim": "M Sport",
+ "price": "£33,849",
+ "price_gbp": 33849,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19d77-5647-7a60-8d98-271a1ec66154-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19d77-5647-7a60-8d98-271a1ec66154-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19d77-5706-7ba5-9f5d-4fefdcf0dbec-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19d77-5799-7379-b2b3-8ef6848a679f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a19d77-5835-7cd4-82e6-011821eb291b-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/259140/pb-bmw-ix-2022",
+ "listing_id": "259140",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}
