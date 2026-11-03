@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-02T20:02:05.166Z",
+  "captured": "2026-11-03T06:02:18.355Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -430,7 +430,7 @@
       "appraisedAt": "2026-10-26T17:26:29.695Z",
       "make": "MERCEDES-BENZ",
       "model": "E Class",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--pVIruwMn--/c_fill,h_300,w_300/v1793035596/Live/Appraisals/9604267/d6288dbe-083a-4dd8-b155-183e15446e17.jpg"
@@ -471,7 +471,7 @@
       "appraisedAt": "2026-10-26T10:57:02.598Z",
       "make": "BMW",
       "model": "X1",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--khMlWUaB--/c_fill,h_300,w_300/v1793012257/Live/Appraisals/9602693/78a3657f-f8f5-4849-a1b0-a3ecd84be719.jpg"
