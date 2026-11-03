@@ -254,6 +254,16 @@
     return out;
   }
   function awayOn(absences, date) { return absentOn(absences, date, true); }
+  /* "I can't lockup" carries a type: nlType 'out' (not in that day, off or
+     away) or 'in' (in but can't lock up). Both free the night the same way. */
+  function cantLabel(absences, date, id) {
+    var t = null;
+    Object.keys(absences || {}).forEach(function (k) {
+      var a = absences[k];
+      if (a && a.kind === 'nolockup' && a.personId === id && a.status !== 'cancelled' && a.from <= date && date <= a.to) t = a.nlType || t || 'in';
+    });
+    return t === 'out' ? 'can\u2019t lockup, not in' : t ? 'can\u2019t lockup, in' : '';
+  }
   /* 'works': a day off swapped for a working day (or a shift taken over from a
      colleague). Free for cover on that date even if it is their usual day off.
      Written by shifts.html; never makes anyone away. */
@@ -417,7 +427,7 @@
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, awayOn: awayOn, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, satIds: satIds, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, awayOn: awayOn, cantLabel: cantLabel, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, satIds: satIds, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },

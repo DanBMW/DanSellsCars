@@ -358,14 +358,11 @@ async function scenarios(browser, base) {
     await p.screenshot({ path: path.join(OUT, 'lockup-cant-form.png') });
     await p.click('#nl-ok'); await p.waitForTimeout(300);
     let st = await store(p);
-    check('lockup cant: no reason, nothing saved', !Object.values(st.data.lockup.absences || {}).some(a => a.kind === 'nolockup'));
-    await p.selectOption('#nl-why', 'Other'); await p.click('#nl-ok'); await p.waitForTimeout(300);
-    st = await store(p);
-    check('lockup cant: Other with no details, nothing saved', !Object.values(st.data.lockup.absences || {}).some(a => a.kind === 'nolockup'));
-    await p.selectOption('#nl-why', 'Not available'); await p.fill('#nl-note', 'dentist at 6'); await p.click('#nl-ok'); await p.waitForTimeout(900);
+    check('lockup cant: no type picked, nothing saved', !Object.values(st.data.lockup.absences || {}).some(a => a.kind === 'nolockup'));
+    await p.check('input[name="nlt"][value="in"]'); await p.fill('#nl-note', 'dentist at 6'); await p.click('#nl-ok'); await p.waitForTimeout(900);
     st = await store(p);
     const a = Object.values(st.data.lockup.absences || {}).find(x => x.kind === 'nolockup');
-    check('lockup cant: saved as nolockup with the reason', a && a.personId === who && a.from === date && a.note === 'Not available: dentist at 6' && a.status === 'approved', JSON.stringify(a));
+    check('lockup cant: saved as nolockup with the type and reason', a && a.personId === who && a.from === date && a.nlType === 'in' && a.note === 'dentist at 6' && a.status === 'approved', JSON.stringify(a));
     const R2 = require('../lockup-rota.js');
     const pair = R2.pairOn(st.data.lockup.weeks, date);
     check('lockup cant: the night is re-paired without them', pair.indexOf(who) < 0 && pair.length > 0, JSON.stringify(pair));

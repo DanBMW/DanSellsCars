@@ -303,6 +303,9 @@ console.log('all shifts tests passed');
 {
   const abs = { n1: { personId: 'tomi', from: '2026-11-04', to: '2026-11-04', kind: 'nolockup', status: 'approved', note: 'Not available' } };
   assert.strictEqual(LR.absentOn(abs, '2026-11-04').tomi, 'nolockup', 'lockup treats it as away');
+  assert.strictEqual(LR.cantLabel(abs, '2026-11-04', 'tomi'), 'can\u2019t lockup, in', 'no type reads as in');
+  assert.strictEqual(LR.cantLabel({ n: Object.assign({}, abs.n1, { nlType: 'out' }) }, '2026-11-04', 'tomi'), 'can\u2019t lockup, not in');
+  assert.strictEqual(LR.awayOn({ n: Object.assign({}, abs.n1, { nlType: 'out' }) }, '2026-11-04').tomi, undefined, 'not in type still not marked out on the calendar');
   assert.strictEqual(LR.awayOn(abs, '2026-11-04').tomi, undefined, 'the calendar does not');
   const c = ctx({ absences: abs });
   assert.strictEqual(S.personDay(c, 'tomi', '2026-11-04').on, true);

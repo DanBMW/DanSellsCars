@@ -172,10 +172,13 @@ await t('a management list member sets the handover team', set(ref(NA, 'shifts/c
 await t('a colleague cannot set the handover team', set(ref(T, 'shifts/config/handoverMin'), 0), 'deny');
 
 // can't lockup this day: a reason is required
-await t("can't lockup with a reason is accepted", set(ref(T, 'lockup/absences/nl1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', note: 'Not available', ts: 7 }), 'allow');
-await t("can't lockup with no reason is refused", set(ref(T, 'lockup/absences/nl2'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', ts: 7 }), 'deny');
-await t("can't lockup with a blank reason is refused", set(ref(T, 'lockup/absences/nl3'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', note: '', ts: 7 }), 'deny');
-await t("lockupTest takes can't lockup too", set(ref(T, 'lockupTest/absences/nl1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', note: 'Not in', ts: 7 }), 'allow');
+await t("can't lockup, in, with a reason is accepted", set(ref(T, 'lockup/absences/nl1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', ts: 7, nlType: 'in', note: 'Not available' }), 'allow');
+await t("can't lockup, not in, no reason is accepted", set(ref(T, 'lockup/absences/nl2'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', ts: 7, nlType: 'out' }), 'allow');
+await t("can't lockup with no type is refused", set(ref(T, 'lockup/absences/nl3'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', ts: 7, note: 'x' }), 'deny');
+await t("can't lockup with a bad type is refused", set(ref(T, 'lockup/absences/nl4'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', ts: 7, nlType: 'maybe' }), 'deny');
+await t("lockupTest takes can't lockup too", set(ref(T, 'lockupTest/absences/nl1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'nolockup', status: 'approved', ts: 7, nlType: 'out', note: 'Not in' }), 'allow');
+await t("saturday pair is accepted", set(ref(T, 'lockup/config/saturday'), ['chloe', 'sergio']), 'allow');
+await t("saturday pair with a bad id is refused", set(ref(T, 'lockup/config/saturday'), ['Chloe Wust']), 'deny');
 // lockup absences: 'works' is accepted, unknown kinds are not
 await t('a day off switch is written to lockup as works', set(ref(T, 'lockup/absences/sw1'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'works', status: 'approved', ts: 7 }), 'allow');
 await t('an unknown absence kind is refused', set(ref(T, 'lockup/absences/sw2'), { personId: 'tomi', from: '2026-11-16', to: '2026-11-16', kind: 'bogus', status: 'approved', ts: 7 }), 'deny');

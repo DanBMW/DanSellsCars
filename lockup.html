@@ -548,13 +548,13 @@ async function runApply(){
   if(fx.length) logChange('fixed',{lines:changeLines(fx)});
 }
 setInterval(scheduleApply,60000);
-async function addAbsence(personId,from,to,kind,note){
-  const id=push(ref(db,RT+'/absences')).key, a={personId,from,to,kind,status:kind==='holiday'?'booked':'approved',note:(note||'').slice(0,200),by:nameOf(personId),ts:Date.now()};
+async function addAbsence(personId,from,to,kind,note,nlType){
+  const id=push(ref(db,RT+'/absences')).key, a={personId,from,to,kind,status:kind==='holiday'?'booked':'approved',note:(note||'').slice(0,200),by:nameOf(personId),ts:Date.now()}; if(kind==='nolockup')a.nlType=nlType==='out'?'out':'in';
   await set(ref(db,RT+'/absences/'+id),a); ABS[id]=a;
   const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates()); await writeChanges(ch);
   const range=from===to?fmtDate(from,true):fmtDate(from,true)+' to '+fmtDate(to,true);
   await notifyMgrs(kind,(kind==='holiday'?'Holiday booked: ':kind==='nolockup'?'Can\u2019t lockup: ':'Lockup absence: ')+nameOf(personId)+', '+range,
-    [(kind==='holiday'?nameOf(personId)+' has booked holiday, '+range+'. Approve or cancel it on the lockup page.':kind==='nolockup'?nameOf(personId)+' is in but can\u2019t do lockup on '+range+'.':nameOf(personId)+' won\u2019t be in for lockup on '+range+'.'),note?'Note: '+note:'',...(ch.length?changeLines(ch):['No lockup nights affected yet.'])].filter(Boolean));
+    [(kind==='holiday'?nameOf(personId)+' has booked holiday, '+range+'. Approve or cancel it on the lockup page.':kind==='nolockup'?nameOf(personId)+(nlType==='out'?' isn\u2019t in and can\u2019t do lockup on ':' is in but can\u2019t do lockup on ')+range+'.':nameOf(personId)+' won\u2019t be in for lockup on '+range+'.'),note?'Note: '+note:'',...(ch.length?changeLines(ch):['No lockup nights affected yet.'])].filter(Boolean));
   return ch;
 }
 async function arrangeCover(date,outId,inId){
@@ -573,7 +573,7 @@ function paintPublicRota(){
   weeks.map(wk=>'<p class="muted small" style="margin:12px 0 2px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Week of '+fmtDate(R.weekStart(wk))+'</p><ul class="rota pub">'+
     R.DAYS.concat(['sat']).map(d=>{ const date=R.dateFor(wk,d), isT=date===now.date, past=date<now.date, away=R.absentOn(ABS,date), awayIds=Object.keys(away).filter(id=>team()[id]);
       let mid; if(hol[date])mid='<span class="muted">Closed, '+esc(hol[date].label)+'</span>'; else if(d==='sat'){const sa=R.satIds(CFG,date,ABS);mid='<span class="pn">'+(sa.length?esc(namesOf(sa)):'Managers')+'</span>'} else { const p=R.pairOn(weeksClean(),date); mid='<span class="pn">'+(p.length?esc(namesOf(p)):'<span class="muted">Not set yet</span>')+'</span>' }
-      const tags=(signed[date]?'<span class="pill g">&#10003; Signed</span>':'')+(awayIds.length?'<span class="away">Away: '+awayIds.map(id=>esc(nameOf(id))+(away[id]==='holiday'?' (holiday)':away[id]==='nolockup'?' (can\u2019t lockup)':'')).join(', ')+'</span>':'');
+      const tags=(signed[date]?'<span class="pill g">&#10003; Signed</span>':'')+(awayIds.length?'<span class="away">Away: '+awayIds.map(id=>esc(nameOf(id))+(away[id]==='holiday'?' (holiday)':away[id]==='nolockup'?' ('+R.cantLabel(ABS,date,id)+')':'')).join(', ')+'</span>':'');
       const act=(d!=='sat'&&!hol[date]&&!past&&!signed[date]&&R.pairOn(weeksClean(),date).length)?'<button class="ghost cm" type="button" data-date="'+date+'">Can&rsquo;t make it?</button>':'';
       return '<li class="'+(isT?'is-today':'')+(past?' is-past':'')+'"><span class="d">'+(isT?'Tonight':R.DAY_NAMES[d].slice(0,3))+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span><span class="mid">'+mid+tags+'</span>'+act+'</li>'}).join('')+'</ul>').join('')+'</div>';
   box.querySelectorAll('.cm').forEach(b=>b.onclick=()=>openCantMake(b.dataset.date));
@@ -588,12 +588,12 @@ function openCantMake(date){
 }
 /* in that day but can't do lockup: frees the night (re-paired like an absence) and the calendar still shows them in */
 function cantLockup(date,me){
-  sheet('<h2>Can&rsquo;t lockup '+fmtDate(date,true)+'?</h2><p class="muted" style="margin:6px 0 14px">'+esc(nameOf(me))+' is still in that day on the team calendar. Someone else is put on lockup and the managers are told.</p><select id="nl-why"><option value="">Why? (required)</option><option>Not in at closing</option><option>Not available</option><option>Other</option></select><textarea id="nl-note" placeholder="Details (required for Other)" style="margin-top:10px"></textarea><button class="big" type="button" id="nl-ok" style="margin-top:12px">I can&rsquo;t lockup this day</button><button class="big alt" type="button" id="nl-back">Go back</button>');
+  sheet('<h2>Can&rsquo;t lockup '+fmtDate(date,true)+'?</h2><p class="muted" style="margin:6px 0 14px">Someone else is put on lockup and the managers are told. The team calendar isn&rsquo;t changed.</p><div id="nl-type"><label style="display:block;margin:6px 0"><input type="radio" name="nlt" value="out"> I&rsquo;m not in that day (off or away)</label><label style="display:block;margin:6px 0"><input type="radio" name="nlt" value="in"> I&rsquo;m in but can&rsquo;t lock up</label></div><textarea id="nl-note" placeholder="Reason (optional)" style="margin-top:10px"></textarea><button class="big" type="button" id="nl-ok" style="margin-top:12px">I can&rsquo;t lockup this day</button><button class="big alt" type="button" id="nl-back">Go back</button>');
   $('nl-back').onclick=()=>cantMakeFor(date,me);
-  $('nl-ok').onclick=async()=>{ const why=$('nl-why').value, det=$('nl-note').value.trim();
-    if(!why||(why==='Other'&&det.length<3)){toast(why?'Add the details':'Pick a reason');return}
-    const note=(why==='Other'?det:why+(det?': '+det:'')).slice(0,200); $('nl-ok').disabled=true;
-    try{ const ch=await addAbsence(me,date,date,'nolockup',note); const c=ch.find(x=>x.date===date); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Sorted</h2><p class="muted" style="margin-top:8px">'+(c?fmtDate(date,true)+' lockup is now '+esc(namesOf(c.pair))+'.':'Saved.')+' The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again');$('nl-ok').disabled=false} };
+  $('nl-ok').onclick=async()=>{ const tEl=document.querySelector('input[name="nlt"]:checked'), nlType=tEl?tEl.value:'', note=$('nl-note').value.trim().slice(0,200);
+    if(!nlType){toast('Pick one of the two options');return}
+    $('nl-ok').disabled=true;
+    try{ const ch=await addAbsence(me,date,date,'nolockup',note,nlType); const c=ch.find(x=>x.date===date); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Sorted</h2><p class="muted" style="margin-top:8px">'+(c?fmtDate(date,true)+' lockup is now '+esc(namesOf(c.pair))+'.':'Saved.')+' The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again');$('nl-ok').disabled=false} };
 }
 function cantMakeFor(date,me){
   sheet('<h2>'+esc(nameOf(me))+', '+fmtDate(date,true)+'</h2><p class="muted" style="margin:6px 0 14px">If someone has agreed to swap, arrange cover so the 5pm email goes to them. Otherwise tell us you won&rsquo;t be in and the rota picks someone fairly. The managers get an email either way.</p><button class="big" type="button" id="sh-cover">Arrange cover</button><button class="big alt" type="button" id="sh-out">I won&rsquo;t be in</button><button class="big alt" type="button" id="sh-nolock">I can&rsquo;t lockup this day</button>');
@@ -619,7 +619,7 @@ function paintTimeoff(){
   const list=Object.keys(ABS).map(k=>Object.assign({id:k},ABS[k])).filter(a=>a.kind!=='works').sort((a,b)=>a.from<b.from?1:-1);
   const pill=a=>a.status==='cancelled'?'<span class="pill r">Cancelled</span>':a.status==='booked'?'<span class="pill a">Waiting</span>':'<span class="pill g">Approved</span>';
   const covers=Object.keys(CHANGES).map(k=>CHANGES[k]).filter(c=>c.kind==='cover').sort((a,b)=>b.ts-a.ts).slice(0,20);
-  $('to-list').innerHTML=(list.length?list.map(a=>'<li><span><b>'+esc(nameOf(a.personId))+'</b> '+(a.kind==='holiday'?'holiday':a.kind==='nolockup'?'can\u2019t lockup':'away')+'<br><span class="muted small">'+(a.from===a.to?fmtDate(a.from,true):fmtDate(a.from)+' to '+fmtDate(a.to))+(a.note?', '+esc(a.note):'')+'</span></span><span style="text-align:right">'+pill(a)+'<br>'+(a.status==='booked'?'<button class="ghost" type="button" data-ap="'+a.id+'">Approve</button> ':'')+(a.status!=='cancelled'?'<button class="ghost" type="button" data-cx="'+a.id+'">Cancel</button>':'')+'</span></li>').join(''):'<li class="muted">Nobody has booked time off.</li>')+
+  $('to-list').innerHTML=(list.length?list.map(a=>'<li><span><b>'+esc(nameOf(a.personId))+'</b> '+(a.kind==='holiday'?'holiday':a.kind==='nolockup'?(a.nlType==='out'?'can\u2019t lockup, not in':'can\u2019t lockup, in'):'away')+'<br><span class="muted small">'+(a.from===a.to?fmtDate(a.from,true):fmtDate(a.from)+' to '+fmtDate(a.to))+(a.note?', '+esc(a.note):'')+'</span></span><span style="text-align:right">'+pill(a)+'<br>'+(a.status==='booked'?'<button class="ghost" type="button" data-ap="'+a.id+'">Approve</button> ':'')+(a.status!=='cancelled'?'<button class="ghost" type="button" data-cx="'+a.id+'">Cancel</button>':'')+'</span></li>').join(''):'<li class="muted">Nobody has booked time off.</li>')+
     (covers.length?'<li style="display:block"><b>Cover arranged</b></li>'+covers.map(c=>'<li><span>'+esc(nameOf(c.in))+' for '+esc(nameOf(c.out))+'</span><span class="muted small">'+fmtDate(c.date)+'</span></li>').join(''):'');
   $('to-list').querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>update(ref(db,RT+'/absences/'+b.dataset.ap),{status:'approved'}).then(()=>toast('Approved')));
   $('to-list').querySelectorAll('[data-cx]').forEach(b=>b.onclick=()=>{ if(confirm('Cancel this time off? Nights already re-paired stay as they are; change them on the Rota tab if needed.'))update(ref(db,RT+'/absences/'+b.dataset.cx),{status:'cancelled'}).then(()=>toast('Cancelled')) });
