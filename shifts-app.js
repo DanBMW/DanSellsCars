@@ -302,7 +302,7 @@
   function openDay(date) {
     var c = ctx(), k = S.countDay(c, date);
     var ids = teamIds();
-    var lock = (k.kind === 'weekday' || k.kind === 'sat') ? R.pairOn(st.D.weeks, date) : [];
+    var lock = k.kind === 'sat' ? R.satIds(st.D.lcfg, date, st.D.absences) : k.kind === 'weekday' ? R.pairOn(st.D.weeks, date) : [];
     var awayNote = {};
     S.whoIn(c, date, date)[0].away.forEach(function (a) { awayNote[a.id] = a; });
     var rows = ids.map(function (id) {
