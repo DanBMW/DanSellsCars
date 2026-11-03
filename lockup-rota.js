@@ -269,22 +269,32 @@
   /* fewest nights first, never on a day off, never absent, never someone
      already on that night; anyone working the night before or after is
      only used when nobody else can do it */
-  function replacement(weeks, team, absences, date, pair) {
+  /* Dan's rules (3 Nov): fewest nights that week first; never back to back
+     with the night before or after, and if that leaves nobody, the fallback
+     is flagged (info.fallback) for the managers' notice. Then whoever has
+     worked least with the partner on the night, then fewest nights overall,
+     then id, so it is always the same answer for the same data. */
+  function replacement(weeks, team, absences, date, pair, info) {
     var dow = london(new Date(date + 'T12:00:00Z')).dow;
     var near = [];
     if (dow !== 'mon') near = near.concat(pairOn(weeks, addDays(date, -1)));
     if (dow !== 'fri') near = near.concat(pairOn(weeks, addDays(date, 1)));
     /* nights up to and including this week, so a later week doesn't skew it */
-    var c = counts(weeks, shiftWeek(isoWeek(date), 1)), away = absentOn(absences, date), works = worksOn(absences, date);
+    var nextWk = shiftWeek(isoWeek(date), 1), c = counts(weeks, nextWk), pc = pairCounts(weeks, nextWk), away = absentOn(absences, date), works = worksOn(absences, date);
     var tw = {}, wr = weeks && weeks[isoWeek(date)];
     DAYS.forEach(function (d) { ids(wr && wr.days && wr.days[d]).forEach(function (id) { tw[id] = (tw[id] || 0) + 1; }); });
+    var partner = (info && info.partner) || [];
     var cands = Object.keys(team || {}).filter(function (id) {
       var t = team[id];
       return (canDo(t, dow) || works[id]) && !away[id] && pair.indexOf(id) < 0;
     });
+    var clear = cands.filter(function (id) { return near.indexOf(id) < 0; });
+    if (!clear.length && cands.length && info) info.fallback = 'back to back';
+    if (clear.length) cands = clear;
+    var pw = function (id) { return partner.reduce(function (n, q) { return n + (pc[pairKey(id, q)] || 0); }, 0); };
     /* people kept to their fixed nights only step in when nobody else can */
     cands.sort(function (a, b) {
-      return ((!(normalOn(team[a], dow) || works[a])) - (!(normalOn(team[b], dow) || works[b]))) || ((near.indexOf(a) >= 0) - (near.indexOf(b) >= 0)) || ((tw[a] ? 1 : 0) - (tw[b] ? 1 : 0)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
+      return ((!(normalOn(team[a], dow) || works[a])) - (!(normalOn(team[b], dow) || works[b]))) || ((tw[a] || 0) - (tw[b] || 0)) || (pw(a) - pw(b)) || ((c[a] || 0) - (c[b] || 0)) || (a < b ? -1 : 1);
     });
     return cands[0] || null;
   }
@@ -303,10 +313,12 @@
           /* away, now off that day, or taken off the rota: swap just this slot */
           if (!away[p] && (canDo(t, dow) || works[p])) return;
           var rest = pair.filter(function (x) { return x !== p; });
-          var r = replacement(weeks, team, absences, date, rest.concat([p]));
+          var info = { partner: rest };
+          var r = replacement(weeks, team, absences, date, rest.concat([p]), info);
           pair = r ? pair.map(function (x) { return x === p ? r : x; }) : rest;
           weeks[wk].days[dow] = pair; changed = true;
           var ch = { week: wk, dow: dow, date: date, out: p, 'in': r, pair: pair.slice() };
+          if (r && info.fallback) ch.note = ((team[r] && team[r].name) || r) + ' is on the night before or after too, as nobody else was free.';
           changes.push(ch);
           if (away[p] === 'absent' && canDo(t, dow)) moveLater(weeks, team, absences, today, signed, wk, dow, p, ch, changes);
         });
@@ -342,10 +354,10 @@
         else w[dow] = keep;
       }
       changes.push({ week: wk, dow: e, date: de, out: o, 'in': p, pair: pe.slice(), moved: true });
-      ch.note = name + '\u2019s only lockup this week, so moved to ' + DAY_NAMES[e] + ' ' + (+de.slice(8)) + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+de.slice(5, 7) - 1] + ' in place of ' + ((team[o] && team[o].name) || o) + '.';
+      ch.note = (ch.note ? ch.note + ' ' : '') + name + '\u2019s only lockup this week, so moved to ' + DAY_NAMES[e] + ' ' + (+de.slice(8)) + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+de.slice(5, 7) - 1] + ' in place of ' + ((team[o] && team[o].name) || o) + '.';
       return;
     }
-    ch.note = 'That was ' + name + '\u2019s only lockup this week and no other night this week works, so ' + name + ' has none this week.';
+    ch.note = (ch.note ? ch.note + ' ' : '') + 'That was ' + name + '\u2019s only lockup this week and no other night this week works, so ' + name + ' has none this week.';
   }
 
   /* who is on for a date: { kind: 'staff'|'managers'|'closed', ids: [...] } */
