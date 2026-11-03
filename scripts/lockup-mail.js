@@ -178,7 +178,7 @@ async function main() {
       const shiftsBh = (await db.ref(SR + '/bh').get()).val() || {};
       /* the who's in section is held until launch: set ROTA_WHOS_IN=1 in the workflow to switch it on */
       const WHOS_IN = process.env.ROTA_WHOS_IN === '1';
-      const m = RM.build({ fromDate: from, weeks, team: cfg.team || {}, absences, hol, test: TEST,
+      const m = RM.build({ fromDate: from, weeks, team: cfg.team || {}, absences, hol, test: TEST, cfg,
         shifts: !WHOS_IN ? undefined : { config: shiftsCfg, bh: shiftsBh, holidays: hol, closed: cfg.holidays || {}, absences, team: cfg.team || {}, managers: cfg.managers || {}, today: n.date } });
       const cc = TEST ? [] : mgrList;
       if (!teamList.length) console.log('Rota email due but no team emails set');
@@ -193,7 +193,7 @@ async function main() {
     }
   } catch (e) { console.error('rota email failed', e); }
 
-  const on = R.onFor(n.date, weeks[n.week], hol);
+  const on = R.onFor(n.date, weeks[n.week], hol, cfg, absences);
   if (on.kind === 'closed') { console.log('Closed today'); return done(admin); }
 
   const recsObj = (await db.ref(ROOT + '/records/' + n.date).get()).val() || {};
@@ -201,7 +201,8 @@ async function main() {
   const mail = (await db.ref(ROOT + '/mail/' + n.date).get()).val() || {};
   const team = cfg.team || {}, mgrs = cfg.managers || {};
   const mgrEmails = TEST ? [TEST_MGR] : Object.values(mgrs).map(m => m.email).filter(Boolean);
-  const people = on.kind === 'staff' ? on.ids.map(id => team[id]).filter(Boolean) : [];
+  const people = (on.ids || []).map(id => team[id] || mgrs[id]).filter(Boolean);
+  const satNamed = on.kind === 'managers' && people.length > 0;
   const names = l => l.length > 1 ? l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1] : (l[0] || '');
   const dayName = R.DAY_NAMES[n.dow];
   const remindAt = on.kind === 'managers' ? R.REMIND_SAT_MINS : R.REMIND_MINS;
@@ -214,13 +215,13 @@ async function main() {
   let remindedNow = false;
   if (n.mins >= remindAt && n.mins < 21 * 60 && !mail.remind && !recs.length) {
     let to, hi;
-    if (on.kind === 'managers') { to = mgrEmails; hi = 'Hi all'; }
+    if (on.kind === 'managers' && !satNamed) { to = mgrEmails; hi = 'Hi all'; }
     else if (people.length) { to = TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean); hi = 'Hi ' + names(people.map(p => p.name)); }
     else { to = mgrEmails; hi = 'Hi all, nobody is on the lockup rota tonight'; }
     if (to.length) {
-      await send(tx, to, (on.kind === 'managers' ? 'Managers lockup tonight' : people.length > 1 ? 'Lockup tonight: ' + names(people.map(p => p.name)) : "It's your lockup tonight") + ', ' + dayName,
+      await send(tx, to, (on.kind === 'managers' && !satNamed ? 'Managers lockup tonight' : people.length > 1 ? 'Lockup tonight: ' + names(people.map(p => p.name)) : "It's your lockup tonight") + ', ' + dayName,
         hi + ',', [
-          on.kind === 'managers' ? "It's Saturday, so it's managers' lockup tonight." : people.length > 1 ? "You're on lockup together tonight. Either of you can start the checklist." : people.length ? "You're on lockup tonight." : 'Please pick someone to lock up.',
+          on.kind === 'managers' && !satNamed ? "It's Saturday, so it's managers' lockup tonight." : people.length > 1 ? "You're on lockup together tonight. Either of you can start the checklist." : people.length ? "You're on lockup tonight." : 'Please pick someone to lock up.',
           'Tick each one off on your phone as you go, then sign:'
         ], list, 'Start lockup');
       await mark(db, n.date, 'remind', to); remindedNow = true;
@@ -231,9 +232,9 @@ async function main() {
      before 6:30pm, so a late run that is already due the manager email skips
      it, and never in the same run as the first reminder. */
   if (n.mins >= R.nudgeAt(n.dow) && n.mins < R.escalateAt(n.dow) && !mail.nudge && !recs.length && !remindedNow) {
-    const to = on.kind === 'managers' ? mgrEmails : people.length ? (TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean)) : [];
+    const to = on.kind === 'managers' && !satNamed ? mgrEmails : people.length ? (TEST ? [TEST_EXEC] : people.map(p => p.email).filter(Boolean)) : [];
     if (to.length) {
-      const hi = on.kind === 'managers' ? 'Hi all' : 'Hi ' + names(people.map(p => p.name));
+      const hi = on.kind === 'managers' && !satNamed ? 'Hi all' : 'Hi ' + names(people.map(p => p.name));
       await send(tx, to, 'Lockup not signed yet, ' + dayName, hi + ',',
         ['Just a nudge: tonight\u2019s lockup hasn\u2019t been signed off yet.', 'If it\u2019s done, tick it off and sign on your phone in a minute. The managers get an email at ' + (n.dow === 'sat' ? '5:30pm' : '6:30pm') + ' if it\u2019s still open.'], [], 'Sign off lockup');
       await mark(db, n.date, 'nudge', to);
@@ -242,7 +243,7 @@ async function main() {
 
   /* 6:30pm: not signed, or signed with issues */
   if (n.mins >= R.escalateAt(n.dow) && !mail.escalate && mgrEmails.length) {
-    const who = on.kind === 'managers' ? 'managers' : people.length ? names(people.map(p => p.fullName || p.name)) : 'nobody on the rota';
+    const who = on.kind === 'managers' && !satNamed ? 'managers' : people.length ? names(people.map(p => p.fullName || p.name)) : 'nobody on the rota';
     if (!recs.length) {
       await send(tx, mgrEmails, 'Lockup not signed, ' + dayName, 'Hi all,',
         ['Tonight\u2019s lockup hasn\u2019t been signed off yet.', 'On the rota: ' + who + '.', 'Please check the building is secure.'], list, 'Open lockup');

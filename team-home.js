@@ -47,6 +47,7 @@
     on(p.RL + '/status', function (v) { D.status = v || {}; });
     on(p.RL + '/absences', function (v) { D.absences = v || {}; });
     on(p.RL + '/config/holidays', function (v) { D.closedCfg = v || {}; });
+    on(p.RL + '/config/saturday', function (v) { D.sat = v || null; });
     on(p.RS + '/config', function (v) { D.scfg = S.cfgOf(v || {}); });
     on(p.RS + '/requests', function (v) { D.requests = v || {}; });
     on(p.RS + '/bh', function (v) { D.bh = v || {}; });
@@ -63,8 +64,8 @@
   function tonight() {
     var date = NOW.date, c = ctx(), k = S.countDay(c, date);
     if (k.kind === 'closed') return { text: 'Closed today', cls: '' };
-    var on = R.onFor(date, D.weeks[R.isoWeek(date)], closedDays());
-    var ids = on.kind === 'staff' ? on.ids : [];
+    var on = R.onFor(date, D.weeks[R.isoWeek(date)], closedDays(), { saturday: D.sat }, D.absences);
+    var ids = on.ids || [];
     var st = D.status[date];
     var who = ids.length ? ids.map(nameOf).join(' and ') : (NOW.dow === 'sat' ? 'Managers' : 'Nobody on the rota');
     if (st && st.state === 'signed') return { text: 'Signed by ' + (st.by || 'someone'), cls: 'ok' };

@@ -385,16 +385,24 @@
     });
     return changes;
   }
-  function onFor(dateStr, weekRec, holidays) {
+  /* Saturday is managers' lockup (timings, cover list and the 5:30pm email
+     stay the managers'), but lockup/config/saturday can name who is on it,
+     e.g. ['chloe', 'sergio']: they get the reminder and nudge and are shown
+     by name. Absent people are left out (pass absences). */
+  function satIds(cfg, dateStr, absences) {
+    var away = absences ? absentOn(absences, dateStr) : {};
+    return arr(cfg && cfg.saturday).filter(function (id) { return !away[id]; });
+  }
+  function onFor(dateStr, weekRec, holidays, cfg, absences) {
     var dow = london(new Date(dateStr + 'T12:00:00Z')).dow;
     if (dow === 'sun' || (holidays && holidays[dateStr])) return { kind: 'closed', dow: dow };
-    if (dow === 'sat') return { kind: 'managers', dow: dow };
+    if (dow === 'sat') { var s = satIds(cfg, dateStr, absences); return { kind: 'managers', dow: dow, ids: s, id: s[0] || null }; }
     var list = ids(weekRec && weekRec.days && weekRec.days[dow]);
     return { kind: 'staff', dow: dow, ids: list, id: list[0] || null };
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, satIds: satIds, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },

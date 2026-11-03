@@ -281,7 +281,7 @@ function weeksClean(){const w=Object.assign({},WEEKS);delete w._loaded;return w}
 setInterval(()=>{const n=R.london(); if(n.date!==now.date){now=n;ensureWeeks()} now=n; if(view==='tonight')paintTonight()},30000);
 
 function recsFor(date){const r=RECORDS[date]||{};return Object.keys(r).map(k=>Object.assign({id:k},r[k])).sort((a,b)=>a.ts-b.ts)}
-function who(date){const w=WEEKS[R.isoWeek(date)];return R.onFor(date,w,holidays())}
+function who(date){const w=WEEKS[R.isoWeek(date)];return R.onFor(date,w,holidays(),CFG,ABS)}
 function paint(){ if(view==='tonight'){paintTonight();paintPublicRota()} if(view==='manager')paintManager(); $('hdr-date').textContent=fmtDate(now.date,true) }
 
 /* ---- tonight ---- */
@@ -300,7 +300,7 @@ function paintTonight(){
     $('btn-again').onclick=()=>{ $('t-signed').hidden=true; chooser(on) };
     return;
   }
-  $('t-title').textContent=on.kind==='managers'?'Managers on lockup tonight':on.ids.length?'Tonight: '+namesOf(on.ids):'Nobody on the rota tonight';
+  $('t-title').textContent=on.kind==='managers'?(on.ids.length?'Tonight: '+namesOf(on.ids):'Managers on lockup tonight'):on.ids.length?'Tonight: '+namesOf(on.ids):'Nobody on the rota tonight';
   const due=on.kind==='managers'?'4pm':'5pm';
   const sat=on.kind==='managers', nT=sat?'5:05pm':'6:05pm', eT=sat?'5:30pm':'6:30pm';
   $('t-sub').textContent=now.mins>=R.escalateAt(now.dow)?'Not signed yet. Managers are emailed at '+eT+' while it is open.':now.mins>=R.nudgeAt(now.dow)?'Not signed yet. Managers get an email at '+eT+' if it is still open.':'Reminder at '+due+', a nudge at '+nT+' if it is still open, then the managers at '+eT+'. Tick everything off as you go, then sign.';
@@ -310,15 +310,15 @@ function paintTonight(){
 }
 function chooser(on,date){
   date=date||now.date; $('t-choose').hidden=false; $('cover-list').hidden=true;
-  const people=on.kind==='managers'?mgrs():team(), rost=on.kind==='staff'?on.ids:[];
+  const people=on.kind==='managers'?mgrs():team(), rost=on.ids||[];
   const me=$('btn-me'); me.hidden=!rost.length;
   me.outerHTML='<div id="btn-me"'+(rost.length?'':' hidden')+'>'+rost.map(id=>'<button class="big" type="button" data-id="'+esc(id)+'">I\u2019m '+esc(nameOf(id))+', start lockup</button>').join('')+'</div>';
   $('btn-me').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,rost));
   $('btn-cover').textContent=rost.length?'Someone else is covering':'Start lockup';
-  $('cover-q').textContent=on.kind==='managers'?'Which manager is locking up?':rost.length?'Who is covering for '+namesOf(rost)+'?':'Who is locking up?';
+  $('cover-q').textContent=on.kind==='managers'&&!rost.length?'Which manager is locking up?':rost.length?'Who is covering for '+namesOf(rost)+'?':'Who is locking up?';
   const all=Object.assign({},people, on.kind==='managers'?{}:mgrs());
   $('cover-names').innerHTML=Object.keys(all).filter(k=>rost.indexOf(k)<0&&all[k].active!==false).sort((a,b)=>(all[a].order||0)-(all[b].order||0)).map(k=>'<button type="button" data-id="'+esc(k)+'">'+esc(all[k].name)+'</button>').join('');
-  $('cover-names').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,on.kind==='managers'?['managers']:rost));
+  $('cover-names').querySelectorAll('button').forEach(b=>b.onclick=()=>start(date,b.dataset.id,on.kind==='managers'&&!rost.length?['managers']:rost));
   $('btn-cover').onclick=()=>{ $('cover-list').hidden=!$('cover-list').hidden };
 }
 
@@ -450,7 +450,7 @@ function paintRota(){
   $('wk-label').textContent='Week of '+fmtDate(R.weekStart(mgWeek));
   const days=R.DAYS.concat(['sat','sun']);
   $('wk-list').innerHTML=days.map(d=>{const date=R.dateFor(mgWeek,d),hol=holidays()[date],recs=recsFor(date),isT=date===now.date;
-    let right; if(d==='sun')right='<span class="muted">Closed</span>'; else if(hol)right='<span class="muted">Closed, '+esc(hol.label)+'</span>'; else if(d==='sat')right='<span>Managers</span>';
+    let right; if(d==='sun')right='<span class="muted">Closed</span>'; else if(hol)right='<span class="muted">Closed, '+esc(hol.label)+'</span>'; else if(d==='sat'){const sa=R.satIds(CFG,date,ABS);right='<span>'+(sa.length?esc(namesOf(sa)):'Managers')+'</span>'}
     else { const cur=R.ids(w&&w.days&&w.days[d]); right='<span class="pair">'+[0,1].map(n=>'<select data-day="'+d+'" data-n="'+n+'"'+(w?'':' disabled')+'><option value="">Nobody</option>'+ids.map(k=>'<option value="'+k+'"'+(k===cur[n]?' selected':'')+(!R.canDo(tm[k],d)?' disabled':'')+'>'+esc(tm[k].name)+(!R.canDo(tm[k],d)?' (off)':R.isFixedOn(tm[k],d)?' (fixed)':'')+'</option>').join('')+'</select>').join('')+'</span>' }
     const st=recs.length?'<span class="pill g">&#10003;</span>':(date<now.date&&date>=LAUNCH&&d!=='sun'&&!hol?'<span class="pill r">Not signed</span>':'');
     return '<li><span class="d'+(isT?' today':'')+'">'+R.DAY_NAMES[d].slice(0,3)+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span>'+right+st+'</li>'}).join('');
@@ -468,7 +468,7 @@ function historyRows(){
   const tm=team(), out=[];
   Object.keys(RECORDS).forEach(d=>recsFor(d).forEach(r=>out.push({date:d,rec:r})));
   const signed=new Set(Object.keys(RECORDS));
-  for(let d=LAUNCH; d<now.date; d=R.addDays(d,1)){ const o=who(d); if(o.kind!=='closed'&&!signed.has(d)) out.push({date:d,missed:true,rostered:o.kind==='managers'?['managers']:o.ids}) }
+  for(let d=LAUNCH; d<now.date; d=R.addDays(d,1)){ const o=who(d); if(o.kind!=='closed'&&!signed.has(d)) out.push({date:d,missed:true,rostered:o.kind==='managers'&&!o.ids.length?['managers']:o.ids}) }
   return out.sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:((b.rec&&b.rec.ts)||0)-((a.rec&&a.rec.ts)||0));
 }
 function filtered(){ const p=$('h-person').value,f=$('h-from').value,t=$('h-to').value,k=$('h-kind').value;

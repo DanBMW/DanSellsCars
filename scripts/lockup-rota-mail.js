@@ -24,16 +24,16 @@ function due(n, cfg, mailToday) {
 }
 
 /* Rows for the two weeks from the Monday `fromDate`: Monday to Saturday, Sunday left out (closed). */
-function rows(fromDate, weeks, team, absences, hol, nWeeks) {
+function rows(fromDate, weeks, team, absences, hol, nWeeks, cfg) {
   const out = [], wk0 = R.isoWeek(fromDate);
   for (let w = 0; w < (nWeeks || 2); w++) {
     const wk = R.shiftWeek(wk0, w);
     R.DAYS.concat(['sat']).forEach(d => {
-      const date = R.dateFor(wk, d), on = R.onFor(date, weeks[wk], hol);
+      const date = R.dateFor(wk, d), on = R.onFor(date, weeks[wk], hol, cfg, absences);
       const away = R.absentOn(absences || {}, date), awayNames = Object.keys(away).filter(id => team[id]).map(id => team[id].name + (away[id] === 'holiday' ? ' (holiday)' : ''));
       let who;
       if (on.kind === 'closed') who = 'Closed' + (hol[date] && hol[date].label ? ', ' + hol[date].label : '');
-      else if (on.kind === 'managers') who = 'Managers';
+      else if (on.kind === 'managers') who = on.ids.length ? names(on.ids.map(id => ((team[id] || (cfg && cfg.managers || {})[id]) || {}).name || id)) : 'Managers';
       else who = on.ids.length ? names(on.ids.map(id => (team[id] || {}).name || id)) : 'Not set yet';
       out.push({ week: wk, date, dow: d, day: R.DAY_NAMES[d], dateLabel: fmt(date, { day: 'numeric', month: 'short' }), who, away: awayNames, kind: on.kind });
     });
@@ -59,7 +59,7 @@ function whoIn(fromDate, shifts) {
 
 function build(o) {
   /* o: { fromDate (Monday), weeks, team, absences, hol, test, shifts (optional, see whoIn) } */
-  const rs = rows(o.fromDate, o.weeks, o.team, o.absences, o.hol, 2);
+  const rs = rows(o.fromDate, o.weeks, o.team, o.absences, o.hol, 2, o.cfg);
   const start = fmt(o.fromDate, { weekday: 'long', day: 'numeric', month: 'long' });
   const wk = whoIn(o.fromDate, o.shifts);
   const subject = (o.test ? '[TEST] ' : '') + (wk.length

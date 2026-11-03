@@ -142,3 +142,14 @@ console.log('ok: at least one night each per week over 52 weeks');
   ch.filter(c => c.moved).forEach(c => assert.ok(c.date > '2026-10-15'));
 }
 console.log('ok: only night moved later in the week');
+
+/* Saturday named pair (lockup/config/saturday), managers kind kept */
+{
+  const cfg = { saturday: ['chloe', 'sergio'] };
+  const s = R.onFor('2026-11-07', null, {}, cfg, {});
+  assert.strictEqual(s.kind, 'managers'); assert.deepStrictEqual(s.ids, ['chloe', 'sergio']);
+  assert.deepStrictEqual(R.onFor('2026-11-07', null, {}).ids, []);
+  const away = R.onFor('2026-11-07', null, {}, cfg, { a: { personId: 'chloe', from: '2026-11-07', to: '2026-11-07', kind: 'away' } });
+  assert.deepStrictEqual(away.ids, ['sergio']);
+  console.log('saturday pair ok');
+}

@@ -7850,12 +7850,12 @@ function paintLock(){
   const R=window.LockupRota, el=document.getElementById('lockstrip'), tx=document.getElementById('ls-text');
   if(!R||!el)return;
   const n=R.london(), hol=Object.assign({},LK.bank,(LK.cfg&&LK.cfg.holidays)||{});
-  const on=R.onFor(n.date,LK.weeks[n.week],hol);
+  const on=R.onFor(n.date,LK.weeks[n.week],hol,LK.cfg);
   const from=on.kind==='managers'?R.REMIND_SAT_MINS:R.REMIND_MINS;
   const st=LK.status[n.date];
   el.classList.toggle('test',LK_TEST);
   if(on.kind==='closed'&&!LK_TEST||(n.mins<from&&!LK_TEST)){el.classList.remove('show');document.body.classList.remove('haslock');return}
-  const team=(LK.cfg&&LK.cfg.team)||{}, nm=(on.ids||[]).map(id=>(team[id]&&team[id].name)||id), who=on.kind==='managers'?'Managers':(nm.length?nm.join(' and '):'Not set');
+  const team=Object.assign({},(LK.cfg&&LK.cfg.managers)||{},(LK.cfg&&LK.cfg.team)||{}), nm=(on.ids||[]).map(id=>(team[id]&&team[id].name)||id), who=on.kind==='managers'&&!nm.length?'Managers':(nm.length?nm.join(' and '):'Not set');
   el.classList.toggle('signed',!!(st&&st.state==='signed'));
   el.classList.toggle('overdue',!(st&&st.state==='signed')&&n.mins>=R.escalateAt(n.dow));
   const t=st&&st.ts?new Date(st.ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
