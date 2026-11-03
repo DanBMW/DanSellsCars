@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-03T12:02:10.438Z",
+  "captured": "2026-11-03T14:02:02.063Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV74HPJ",
+      "appraisedAt": "2026-11-03T13:31:20.845Z",
+      "make": "BMW",
+      "model": "M4",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "MT25JPX",
+      "appraisedAt": "2026-11-03T12:44:28.721Z",
+      "make": "RENAULT",
+      "model": "Trafic",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--fYZmQca5--/c_fill,h_300,w_300/v1793709870/Live/Appraisals/9619943/fe7ce717-c2cf-486c-a272-09a8d1f8dab0.png"
+    },
     {
       "registration": "EO25SKZ",
       "appraisedAt": "2026-11-02T16:04:39.512Z",
