@@ -1206,9 +1206,12 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       : android ? 'On Android: open the browser menu (the three dots), then tap Install app or Add to Home screen.'
       : 'On a computer: click the install icon at the right of the address bar in Chrome or Edge, or open the browser menu and choose Install SwipeToDrive. In Safari on a Mac choose File, then Add to Dock.';
     if (platform.ios) { $('#iosGuide').hidden = false; return; }
-    function show() { var h = $('#installHelp'); if (h) { h.innerHTML = '<p>' + esc(html) + '</p>'; h.scrollIntoView({ block: 'center' }); } }
+    function show() { var h = $('#installHelp'); if (h && h.offsetParent !== null) { h.innerHTML = '<p>' + esc(html) + '</p>'; h.scrollIntoView({ block: 'center' }); } else toast(platform.ios || /android/i.test(navigator.userAgent) ? html : 'Click the install icon in the address bar, or open the browser menu and choose Install SwipeToDrive.'); }
     if ($('[data-screen=me]').hidden && S.session) { go('me'); setTimeout(show, 50); } else show(); track('install_help'); }
-  function doInstall() { var p = platform.deferredInstall; if (!p) { installHelp(); return; } p.prompt(); p.userChoice.then(function (c) { track('install_' + c.outcome); platform.deferredInstall = null; $('#installBtn').hidden = true; installInfo(); }); }
+  function doInstall() { var p = platform.deferredInstall; if (!p) { installHelp(); return; } platform.deferredInstall = null;
+    var shown; try { shown = p.prompt(); } catch (err) { console.warn('install prompt', err); installHelp(); return; }
+    if (shown && shown.catch) shown.catch(function (err) { console.warn('install prompt', err); installHelp(); });
+    p.userChoice.then(function (c) { track('install_' + c.outcome); platform.deferredInstall = null; $('#installBtn').hidden = true; installInfo(); }); }
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); platform.deferredInstall = e; $('#installBtn').hidden = false; });
   window.addEventListener('appinstalled', function () { track('installed'); $('#installBtn').hidden = true; });
   $('#installBtn').addEventListener('click', doInstall);
