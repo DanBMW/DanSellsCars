@@ -20,10 +20,12 @@ function carBlock(it) {
    <tr><td style="padding:4px 20px 20px"><a href="${esc(it.wa)}" style="display:inline-block;background:#25d366;color:#ffffff;font:700 15px Helvetica,Arial,sans-serif;padding:12px 22px;border-radius:24px;text-decoration:none">${esc(it.waLabel || 'WhatsApp about this car')}</a></td></tr>
   </table></td></tr>`;
 }
-export function renderDigest({ toName, staff, items, matchesUrl, unsubUrl, brokerText }) {
+export function renderDigest({ toName, staff, items, matchesUrl, unsubUrl, manageUrl, brokerText }) {
   if (!unsubUrl) throw new Error('every SwipeToDrive email needs an unsubscribe link');
+  // customers stop their emails on their own account page; colleagues keep the one click unsubscribe
+  const stopUrl = manageUrl || unsubUrl, stopLabel = manageUrl ? 'Manage email alerts' : 'Unsubscribe from these emails';
   const why = staff ? 'You are getting this because you are a SwipeToDrive colleague and match emails are on for your customers.'
-                    : 'You are getting this because you signed up to SwipeToDrive at dan-sells.co.uk and turned on email match alerts. One tap below stops them.';
+                    : 'You are getting this because Dan has set up email match alerts for you on SwipeToDrive. To stop them, untick email alerts on your account page: use the button below.';
   const n = items.length;
   const subject = staff ? `${n} new ${n === 1 ? 'match' : 'matches'} for your customers | SwipeToDrive`
                         : `${n} new ${n === 1 ? 'match' : 'matches'} for you | SwipeToDrive`;
@@ -38,8 +40,8 @@ export function renderDigest({ toName, staff, items, matchesUrl, unsubUrl, broke
 <tr><td style="background:#ffffff;padding:0 24px 24px" align="center"><a href="${esc(matchesUrl)}" style="display:inline-block;background:#1c69d4;color:#fff;font:700 15px Helvetica,Arial,sans-serif;padding:12px 24px;border-radius:24px;text-decoration:none">See all matches</a></td></tr>
 <tr><td style="padding:18px 24px 6px;font:11px/1.5 Helvetica,Arial,sans-serif;color:#6b7280">${esc(brokerText || '')}<br><br>Prices and availability can change.</td></tr>
 <tr><td style="padding:6px 24px 4px;font:13px/1.5 Helvetica,Arial,sans-serif;color:#4a5568">${esc(why)}</td></tr>
-<tr><td style="padding:8px 24px 28px"><a href="${esc(unsubUrl)}" style="display:inline-block;border:1px solid #9aa3b2;color:#374151;background:#ffffff;font:600 14px Helvetica,Arial,sans-serif;padding:10px 20px;border-radius:22px;text-decoration:none">Unsubscribe from these emails</a></td></tr>
+<tr><td style="padding:8px 24px 28px"><a href="${esc(stopUrl)}" style="display:inline-block;border:1px solid #9aa3b2;color:#374151;background:#ffffff;font:600 14px Helvetica,Arial,sans-serif;padding:10px 20px;border-radius:22px;text-decoration:none">${esc(stopLabel)}</a></td></tr>
 </table></td></tr></table></body></html>`;
-  const text = `Hi ${toName || 'there'},\n\n${intro}\n\n` + items.map(it => `${it.car.model}${it.customerName ? ' for ' + it.customerName : ''}\n${it.car.price || ''}\n${it.finance ? it.finance.headline + '\nRepresentative example. ' + it.finance.example : 'Monthly: ask for a quote'}\nWhatsApp: ${it.wa}\n`).join('\n') + `\nSee all matches: ${matchesUrl}\n\n${why}\nUnsubscribe: ${unsubUrl}\n`;
+  const text = `Hi ${toName || 'there'},\n\n${intro}\n\n` + items.map(it => `${it.car.model}${it.customerName ? ' for ' + it.customerName : ''}\n${it.car.price || ''}\n${it.finance ? it.finance.headline + '\nRepresentative example. ' + it.finance.example : 'Monthly: ask for a quote'}\nWhatsApp: ${it.wa}\n`).join('\n') + `\nSee all matches: ${matchesUrl}\n\n${why}\n${stopLabel}: ${stopUrl}\n`;
   return { subject, html, text };
 }

@@ -72,6 +72,7 @@
         <label class="ct-f"><span>Name <em class="ct-req">required</em></span><input name="name" autocomplete="name" required aria-required="true"></label>
         <label class="ct-f"><span>Mobile <em class="ct-req">required</em></span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" required aria-required="true"></label>
         <label class="ct-f" data-staff-only hidden><span>Customer email <em class="ct-req">required</em></span><input name="email" type="email" inputmode="email" aria-required="true"></label>
+<label class="ct-check" data-staff-only hidden><input type="checkbox" name="email_alerts"> <span>Email this customer match alerts. Only customers ticked here are sent them.</span></label>
         <label class="ct-f"><span>Postcode <em class="ct-opt">optional</em></span><input name="postcode" autocomplete="postal-code"></label>
       </fieldset>
       <details class="ct-sec" data-sec="budget"><summary>Budget <em class="ct-opt">optional</em></summary><div class="ct-sec-b">
@@ -172,7 +173,8 @@
       </div>
       <h3>Alerts</h3>
       <p class="ct-sub" id="notifyState">Phone notifications: Off, tap Turn on to hear when a car fits you</p>
-      <div class="ct-seg" id="notifySeg" aria-label="Phone notifications"><button type="button" data-v="push">Turn on</button><button type="button" data-v="email" data-email-opt hidden>Email</button><button type="button" data-v="both" data-email-opt hidden>Both</button><button type="button" data-v="off">Off</button></div>
+      <div class="ct-seg" id="notifySeg" aria-label="Phone notifications"><button type="button" data-v="push">Turn on</button><button type="button" data-v="off">Off</button></div>
+      <div id="emailAlerts" hidden><label class="ct-check"><input type="checkbox" id="emailAlertsBox"> <span>Send me email alerts when a car fits what I asked for. Untick to stop them.</span></label><p class="ct-msg" id="emailAlertsMsg" role="status"></p></div>
       <p class="ct-msg" id="notifyMsg" role="status"></p>
       <h3>Get the app</h3>
       <div id="installInfo"></div>

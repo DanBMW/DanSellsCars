@@ -100,6 +100,8 @@
     invite: function (inv) { var d = demoDb(); inv.id = uuid(); inv.created_at = new Date().toISOString(); d.invites.push(inv); demoSave(d); return Promise.resolve(inv); },
     uploadPx: function (cid, file) { return new Promise(function (res) { var r = new FileReader(); r.onload = function () { res({ preview: r.result, link: '' }); }; r.readAsDataURL(file); }); },
     setNotify: function (v) { var d = demoDb(); d.notify = v; demoSave(d); return Promise.resolve(); },
+    emailOn: function () { return !demoDb().emailOff; },
+    setEmailOn: function (v) { var d = demoDb(); d.emailOff = !v; demoSave(d); return Promise.resolve(); },
     notify: function () { return Promise.resolve(demoDb().notify || 'push'); },
     savePush: function () { return Promise.resolve(false); },
     owner: function (c) { var d = demoDb(); return Promise.resolve(c && c.owner_staff_id ? (d.staff || {})[c.owner_staff_id] || null : null); }
@@ -154,8 +156,11 @@
     uploadPx: function (cid, file) { var path = cid + '/' + uuid() + '.' + ((file.type.split('/')[1]) || 'jpg');
       return sb.storage.from('px').upload(path, file, { contentType: file.type }).then(function (r) { if (r.error) throw r.error;
         return sb.storage.from('px').createSignedUrl(path, 30 * 86400); }).then(function (s) { return { path: path, link: s.data.signedUrl, preview: URL.createObjectURL(file) }; }); },
-    setNotify: function (v) { return sb.from('profiles').update({ notify_push: v === 'push' || v === 'both', notify_email: v === 'email' || v === 'both' }).eq('id', sbUser.id); },
-    notify: function () { var p = sbProfile || {}; return Promise.resolve(p.notify_push && p.notify_email ? 'both' : p.notify_push ? 'push' : p.notify_email ? 'email' : 'off'); },
+    setNotify: function (v) { return sb.from('profiles').update({ notify_push: v === 'push' || v === 'both' }).eq('id', sbUser.id); },
+    /* the customer's own email switch: no email_unsubscribed_at means they receive match emails (once Dan has ticked them) */
+    emailOn: function () { return !(sbProfile && sbProfile.email_unsubscribed_at); },
+    setEmailOn: function (v) { var at = v ? null : new Date().toISOString(); return sb.from('profiles').update({ email_unsubscribed_at: at }).eq('id', sbUser.id).then(function (r) { if (r.error) throw r.error; if (sbProfile) sbProfile.email_unsubscribed_at = at; }); },
+    notify: function () { var p = sbProfile || {}; return Promise.resolve(p.notify_push ? 'push' : 'off'); },
     savePush: function (sub) { var j = sub.toJSON(); return sb.from('push_subscriptions').upsert({ user_id: sbUser.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }, { onConflict: 'endpoint' }).then(function () { return true; }); },
     owner: function (c) { if (!c || !c.owner_staff_id) return Promise.resolve(null); return sb.rpc('customer_whatsapp', { cid: c.id }).then(function (r) { return { whatsapp: r.data, name: '', email: '' }; }); },
     claim: function (id) { return sb.rpc('claim_customer', { claim: id }); }
@@ -367,6 +372,7 @@
     ['name', 'phone', 'email', 'postcode', 'monthly_gbp', 'cash_gbp', 'deposit_gbp'].forEach(function (k) { if (f.elements[k]) f.elements[k].value = c[k] == null ? '' : c[k]; });
     f.elements.annual_mileage.value = String(c.annual_mileage || 8000);
     setChoice(f, 'budget_type', c.budget_type || 'monthly'); setChoice(f, 'fuel', c.fuel || 'open'); setChoice(f, 'body', c.body || 'any');
+    f.elements.email_alerts.checked = !!c.email_alerts;
     setChoice(f, 'models', c.models || []); f.elements.year_from.value = c.year_from ? String(c.year_from) : ''; setChoice(f, 'new_used', c.new_used || 'both');
     var fams = {}; S.cars.forEach(function (car) { var fm = M.colourFamily(car); if (fm) fams[fm] = 1; });
     var famList = M.FAMILY.map(function (x) { return x[0]; }).filter(function (x) { return fams[x]; }); if (fams.Other) famList.push('Other');
@@ -451,7 +457,7 @@
       var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim(), postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
         annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: choice(f, 'fuel'), body: choice(f, 'body'), models: choice(f, 'models'), year_from: +el.year_from.value || null, new_used: choice(f, 'new_used') });
-      if (staff) c.email = el.email.value.trim() || null;
+      if (staff) { c.email = el.email.value.trim() || null; c.email_alerts = el.email_alerts.checked; }
       c.desk = deskRead(f, (S.cust || {}).desk);
       var num = function (v) { return v === '' ? null : Math.max(0, Math.round(+v)); }, prevVal = S.cust ? S.cust.px_valuation_gbp : null;
       /* Dan's valuation: only staff write it. A customer's save keeps whatever is already there (the field is hidden from them). */
@@ -872,8 +878,8 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     $('#boughtBtn').textContent = staff ? 'Record a bought car' : "I've bought my car";
     if (none) { $('#meName').textContent = 'Your account'; $('#meEmail').textContent = 'Signed in as ' + S.session.email + (S.session.role === 'admin' ? ' (admin)' : ''); }
     if (!none) store.purchases(c.id).then(function (ps) { $('#meBought').innerHTML = ps.filter(function (p) { return !p.cancelled; }).map(purchaseHtml).join('') || '<p class="ct-sub">Nothing recorded yet.</p>'; });
-    var custEmail = !!CFG.CUSTOMER_EMAIL_ENABLED || staff; $$('[data-email-opt]').forEach(function (e) { e.hidden = !custEmail; });
-    store.notify().then(function (v) { if (!custEmail && (v === 'email' || v === 'both')) v = 'push';
+    $('#emailAlerts').hidden = staff || !c.email_alerts; $('#emailAlertsBox').checked = store.emailOn();
+    store.notify().then(function (v) {
       /* only say On when this phone really has permission */
       if ((v === 'push' || v === 'both') && (!platform.pushSupported() || Notification.permission !== 'granted')) v = v === 'both' ? 'email' : 'off';
       notifyState(v); });
@@ -902,6 +908,9 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       if (!platform.pushSupported()) { msg.textContent = 'This browser does not support phone alerts.'; return; }
       platform.subscribePush().then(function (sub) { return store.savePush(sub); }).then(function (saved) { msg.className = 'ct-msg ok'; msg.textContent = saved ? 'Alerts are on. I will tell you when a new car fits.' : 'Alerts allowed on this phone. They start once the backend is connected (demo mode).'; track('push_enabled'); })
         .catch(function () { notifyState('off'); store.setNotify('off'); msg.textContent = 'Notifications were not allowed. You can switch them on in your phone settings, then tap Turn on again.'; }); });
+    $('#emailAlertsBox').addEventListener('change', function (e) { var msg = $('#emailAlertsMsg'); msg.className = 'ct-msg'; msg.textContent = 'Saving...';
+      store.setEmailOn(e.target.checked).then(function () { msg.className = 'ct-msg ok'; msg.textContent = e.target.checked ? 'Email alerts are on.' : 'Email alerts are off. You will not get match emails.'; track('email_pref', { on: e.target.checked }); })
+        .catch(function (err) { e.target.checked = !e.target.checked; msg.className = 'ct-msg'; msg.textContent = plainErr(err); }); });
     $('#meBought').addEventListener('click', purchaseClick);
     $('#meTerms').addEventListener('click', function (e) { if (!e.target.closest('#termsOk')) return; try { localStorage.setItem('sdTermsAt', new Date().toISOString()); localStorage.setItem('dsc_ack', '1'); } catch (x) {} termsBox(); track('terms_confirmed'); toast('Thanks, confirmed'); });
     $('#signOut').addEventListener('click', function () { store.signOut().then(function () { S.session = S.cust = null; sessionStorage.removeItem('ctActing'); location.hash = 'signin'; }); });

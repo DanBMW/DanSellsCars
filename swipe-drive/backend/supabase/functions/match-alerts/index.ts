@@ -107,7 +107,8 @@ async function run() {
             body: `${c.model}${c.year ? ', ' + c.year : ''}`, url: APP + '#matches', image: c.image || '' });
           if (n) { out.pushed += n; await db.from('notifications_sent').insert(items.map((h: any) => ({ recipient: p.id, customer_id: cu.id, reg: h.car.reg, channel: 'push' }))); }
         }
-        const emailOk = staff ? STAFF_EMAIL_ENABLED : (CUSTOMER_EMAIL_ENABLED && STAFF_EMAIL_ENABLED && p.notify_email);
+        // a customer is emailed only when Dan has ticked them and they have not unsubscribed (see update-2026-11-03-email.sql)
+        const emailOk = staff ? STAFF_EMAIL_ENABLED : (CUSTOMER_EMAIL_ENABLED && STAFF_EMAIL_ENABLED && cu.email_alerts && !p.email_unsubscribed_at && !!p.email);
         if (emailOk) for (const h of mine) if (!done.has([p.id, cu.id, h.car.reg, 'email'].join('|'))) {
           const arr = digest.get(p.id) || []; digest.set(p.id, arr);
           arr.push({ customer_id: cu.id, customerName: staff ? cu.name + (cu.due_to_change_at ? ' (due to change)' : '') : '', note: staff ? h.reasons.join(', ') : '', car: h.car, finance: M.finance(h.car), wa: M.waLink(wa, h.car), waLabel: staff ? `WhatsApp ${cu.name || 'the customer'}` : 'WhatsApp about this car' });
@@ -118,7 +119,7 @@ async function run() {
       const p = byId.get(pid); const staff = p.role !== 'customer';
       // Staff WhatsApp CTA goes to the customer's phone in the staff digest
       if (staff) for (const it of items) { const cu = (customers || []).find((c: any) => c.id === it.customer_id); if (cu && cu.phone) it.wa = 'https://wa.me/' + String(cu.phone).replace(/\D/g, '').replace(/^0/, '44') + '?text=' + encodeURIComponent(`Hi ${cu.name || ''}, a car just came in that matches what you are after: ${it.car.model}, reg ${it.car.reg}. Want the details?`); }
-      const msg = renderDigest({ toName: p.name, staff, items, matchesUrl: APP + (staff ? '#team' : '#matches'), unsubUrl: unsub(p), staffNote: staff, brokerText: BROKER });
+      const msg = renderDigest({ toName: p.name, staff, items, matchesUrl: APP + (staff ? '#team' : '#matches'), unsubUrl: unsub(p), manageUrl: staff ? '' : APP + '#me', staffNote: staff, brokerText: BROKER });
       if (await sendEmail(p.email, msg, unsub(p))) {
         // Dan also gets a copy of matches for colleagues' customers who are due to change
         if (admin && pid !== admin.id) { const due = items.filter((it: any) => /due to change/.test(it.customerName));

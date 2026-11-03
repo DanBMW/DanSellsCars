@@ -13,7 +13,7 @@ async function unsubscribe(t: string): Promise<boolean> {
   const v = await verifyUnsub(env('UNSUBSCRIBE_SECRET'), t);
   if (v) {
     const db = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
-    const { data, error } = await db.from('profiles').update({ notify_email: false }).eq('id', v.id).select('id');
+    const { data, error } = await db.from('profiles').update({ email_unsubscribed_at: new Date().toISOString() }).eq('id', v.id).select('id');
     return !error && !!data && data.length > 0;
   }
   if (/^[0-9a-f-]{36}$/i.test(t)) {   // legacy token from an older email
