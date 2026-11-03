@@ -181,3 +181,16 @@ console.log('ok: only night moved later in the week');
   assert.strictEqual(R.replacement(w3, { a: tm.a, b: tm.b, d: tm.d }, {}, '2026-11-18', ['d', 'x'], { partner: ['d'] }), 'b');
   console.log('replacement rules ok');
 }
+
+/* Saturday "can't lockup": either type drops that person; both out falls back to managers */
+{
+  const cfg = { saturday: ['chloe', 'sergio'] }, d = '2026-11-07';
+  const nl = (id, t) => ({ personId: id, from: d, to: d, kind: 'nolockup', nlType: t, status: 'approved' });
+  assert.deepStrictEqual(R.onFor(d, null, {}, cfg, { a: nl('chloe', 'in') }).ids, ['sergio']);
+  assert.deepStrictEqual(R.onFor(d, null, {}, cfg, { a: nl('sergio', 'out') }).ids, ['chloe']);
+  const both = R.onFor(d, null, {}, cfg, { a: nl('chloe', 'in'), b: nl('sergio', 'out') });
+  assert.strictEqual(both.kind, 'managers'); assert.deepStrictEqual(both.ids, []);
+  assert.deepStrictEqual(R.onFor(d, null, {}, cfg, { a: Object.assign(nl('chloe', 'in'), { status: 'cancelled' }) }).ids, ['chloe', 'sergio']);
+  assert.strictEqual(R.awayOn({ a: nl('chloe', 'out') }, d).chloe, undefined, 'still in on the calendar');
+  console.log('saturday cant lockup ok');
+}

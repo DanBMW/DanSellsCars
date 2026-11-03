@@ -553,8 +553,10 @@ async function addAbsence(personId,from,to,kind,note,nlType){
   await set(ref(db,RT+'/absences/'+id),a); ABS[id]=a;
   const w=cloneWeeks(), ch=R.applyAbsences(w,team(),ABS,now.date,signedDates()); await writeChanges(ch);
   const range=from===to?fmtDate(from,true):fmtDate(from,true)+' to '+fmtDate(to,true);
+  /* Saturdays this touches where they are on the named Saturday pair */
+  const satL=[]; if(R.arr(CFG&&CFG.saturday).indexOf(personId)>=0) for(let d=from;d<=to;d=R.addDays(d,1)){ if(R.london(new Date(d+'T12:00:00Z')).dow!=='sat'||d<now.date)continue; const left=R.satIds(CFG,d,ABS); satL.push(fmtDate(d,true)+': '+(left.length?'Saturday lockup is now '+namesOf(left)+'.':'Nobody from the Saturday pair is free, so it is managers\u2019 lockup.')) }
   await notifyMgrs(kind,(kind==='holiday'?'Holiday booked: ':kind==='nolockup'?'Can\u2019t lockup: ':'Lockup absence: ')+nameOf(personId)+', '+range,
-    [(kind==='holiday'?nameOf(personId)+' has booked holiday, '+range+'. Approve or cancel it on the lockup page.':kind==='nolockup'?nameOf(personId)+(nlType==='out'?' isn\u2019t in and can\u2019t do lockup on ':' is in but can\u2019t do lockup on ')+range+'.':nameOf(personId)+' won\u2019t be in for lockup on '+range+'.'),note?'Note: '+note:'',...(ch.length?changeLines(ch):['No lockup nights affected yet.'])].filter(Boolean));
+    [(kind==='holiday'?nameOf(personId)+' has booked holiday, '+range+'. Approve or cancel it on the lockup page.':kind==='nolockup'?nameOf(personId)+(nlType==='out'?' isn\u2019t in and can\u2019t do lockup on ':' is in but can\u2019t do lockup on ')+range+'.':nameOf(personId)+' won\u2019t be in for lockup on '+range+'.'),note?'Note: '+note:'',...(ch.length?changeLines(ch):satL.length?[]:['No lockup nights affected yet.']),...satL].filter(Boolean));
   return ch;
 }
 async function arrangeCover(date,outId,inId){
@@ -574,26 +576,27 @@ function paintPublicRota(){
     R.DAYS.concat(['sat']).map(d=>{ const date=R.dateFor(wk,d), isT=date===now.date, past=date<now.date, away=R.absentOn(ABS,date), awayIds=Object.keys(away).filter(id=>team()[id]);
       let mid; if(hol[date])mid='<span class="muted">Closed, '+esc(hol[date].label)+'</span>'; else if(d==='sat'){const sa=R.satIds(CFG,date,ABS);mid='<span class="pn">'+(sa.length?esc(namesOf(sa)):'Managers')+'</span>'} else { const p=R.pairOn(weeksClean(),date); mid='<span class="pn">'+(p.length?esc(namesOf(p)):'<span class="muted">Not set yet</span>')+'</span>' }
       const tags=(signed[date]?'<span class="pill g">&#10003; Signed</span>':'')+(awayIds.length?'<span class="away">Away: '+awayIds.map(id=>esc(nameOf(id))+(away[id]==='holiday'?' (holiday)':away[id]==='nolockup'?' ('+R.cantLabel(ABS,date,id)+')':'')).join(', ')+'</span>':'');
-      const act=(d!=='sat'&&!hol[date]&&!past&&!signed[date]&&R.pairOn(weeksClean(),date).length)?'<button class="ghost cm" type="button" data-date="'+date+'">Can&rsquo;t make it?</button>':'';
+      const act=(!hol[date]&&!past&&!signed[date]&&(d==='sat'?R.satIds(CFG,date,ABS).length:R.pairOn(weeksClean(),date).length))?'<button class="ghost cm" type="button" data-date="'+date+'">Can&rsquo;t make it?</button>':'';
       return '<li class="'+(isT?'is-today':'')+(past?' is-past':'')+'"><span class="d">'+(isT?'Tonight':R.DAY_NAMES[d].slice(0,3))+'<span class="dt">'+fmtDate(date).replace(/^\w+ /,'')+'</span></span><span class="mid">'+mid+tags+'</span>'+act+'</li>'}).join('')+'</ul>').join('')+'</div>';
   box.querySelectorAll('.cm').forEach(b=>b.onclick=()=>openCantMake(b.dataset.date));
   $('btn-holiday').onclick=()=>{ location.href='shifts.html?new=holiday'; };
 }
 function sheet(html){ $('rec-body').innerHTML='<div class="row" style="justify-content:flex-end"><button class="ghost" type="button" id="sh-x">Close</button></div>'+html; $('rec-modal').classList.add('show'); $('sh-x').onclick=closeSheet }
 function closeSheet(){ $('rec-modal').classList.remove('show') }
+function isSat(date){return R.london(new Date(date+'T12:00:00Z')).dow==='sat'}
 function openCantMake(date){
-  const pair=R.pairOn(weeksClean(),date);
+  const pair=isSat(date)?R.satIds(CFG,date,ABS):R.pairOn(weeksClean(),date);
   sheet('<h2>'+fmtDate(date,true)+'</h2><p class="muted" style="margin:6px 0 14px">On lockup: '+esc(namesOf(pair))+'. Who are you?</p><div class="names">'+pair.map(id=>'<button type="button" data-id="'+esc(id)+'">'+esc(nameOf(id))+'</button>').join('')+'</div>');
-  $('rec-body').querySelectorAll('.names button').forEach(b=>b.onclick=()=>cantMakeFor(date,b.dataset.id));
+  $('rec-body').querySelectorAll('.names button').forEach(b=>b.onclick=()=>isSat(date)?cantLockup(date,b.dataset.id):cantMakeFor(date,b.dataset.id));
 }
 /* in that day but can't do lockup: frees the night (re-paired like an absence) and the calendar still shows them in */
 function cantLockup(date,me){
   sheet('<h2>Can&rsquo;t lockup '+fmtDate(date,true)+'?</h2><p class="muted" style="margin:6px 0 14px">Someone else is put on lockup and the managers are told. The team calendar isn&rsquo;t changed.</p><div id="nl-type"><label style="display:block;margin:6px 0"><input type="radio" name="nlt" value="out"> I&rsquo;m not in that day (off or away)</label><label style="display:block;margin:6px 0"><input type="radio" name="nlt" value="in"> I&rsquo;m in but can&rsquo;t lock up</label></div><textarea id="nl-note" placeholder="Reason (optional)" style="margin-top:10px"></textarea><button class="big" type="button" id="nl-ok" style="margin-top:12px">I can&rsquo;t lockup this day</button><button class="big alt" type="button" id="nl-back">Go back</button>');
-  $('nl-back').onclick=()=>cantMakeFor(date,me);
+  $('nl-back').onclick=()=>isSat(date)?openCantMake(date):cantMakeFor(date,me);
   $('nl-ok').onclick=async()=>{ const tEl=document.querySelector('input[name="nlt"]:checked'), nlType=tEl?tEl.value:'', note=$('nl-note').value.trim().slice(0,200);
     if(!nlType){toast('Pick one of the two options');return}
     $('nl-ok').disabled=true;
-    try{ const ch=await addAbsence(me,date,date,'nolockup',note,nlType); const c=ch.find(x=>x.date===date); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Sorted</h2><p class="muted" style="margin-top:8px">'+(c?fmtDate(date,true)+' lockup is now '+esc(namesOf(c.pair))+'.':'Saved.')+' The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again');$('nl-ok').disabled=false} };
+    try{ const ch=await addAbsence(me,date,date,'nolockup',note,nlType); const c=ch.find(x=>x.date===date); sheet('<div class="done-hero"><div class="tickbig">&#10003;</div><h2>Sorted</h2><p class="muted" style="margin-top:8px">'+(c?fmtDate(date,true)+' lockup is now '+esc(namesOf(c.pair))+'.':isSat(date)?fmtDate(date,true)+' lockup is now '+(R.satIds(CFG,date,ABS).length?esc(namesOf(R.satIds(CFG,date,ABS))):'the managers')+'.':'Saved.')+' The managers have been told.</p></div>') }catch(e){console.error(e);toast('Couldn\u2019t save, try again');$('nl-ok').disabled=false} };
 }
 function cantMakeFor(date,me){
   sheet('<h2>'+esc(nameOf(me))+', '+fmtDate(date,true)+'</h2><p class="muted" style="margin:6px 0 14px">If someone has agreed to swap, arrange cover so the 5pm email goes to them. Otherwise tell us you won&rsquo;t be in and the rota picks someone fairly. The managers get an email either way.</p><button class="big" type="button" id="sh-cover">Arrange cover</button><button class="big alt" type="button" id="sh-out">I won&rsquo;t be in</button><button class="big alt" type="button" id="sh-nolock">I can&rsquo;t lockup this day</button>');
