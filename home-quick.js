@@ -110,6 +110,16 @@
   function boot() {
     var f = $('hqForm'); if (!f) return;
     f.addEventListener('submit', submit);
+    /* Re-validate as people fix things: once the field behind the shown
+       error is valid (eg a proper 07 mobile), clear the red message. */
+    function recheck() {
+      var err = $('hqErr'); if (err.hidden) return;
+      var b = check();
+      if (!b || b[0] !== err.textContent) { err.hidden = true; err.textContent = ''; }
+    }
+    f.addEventListener('input', recheck);
+    f.addEventListener('change', recheck);
+    f.addEventListener('focusout', recheck);
     f.addEventListener('focusin', function once() { track('home_quick_start'); f.removeEventListener('focusin', once); });
     f.addEventListener('change', function (e) { if (e.target.name === 'hqPx') pxShow(); });
     $('hqPxReg').addEventListener('input', function () {

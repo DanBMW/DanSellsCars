@@ -75,3 +75,13 @@
 .pxl-btns button{min-height:40px;padding:8px 14px;border:1px solid var(--hairline);background:transparent;color:var(--paper);font:inherit;cursor:pointer}
 .pxl-btns .pxl-yes{border-color:var(--accent)}
 .pxl-ok{font-size:.85rem;color:var(--paper);margin:0}
+
+/* Keep fields and chips clear of the fixed header and the sticky WhatsApp
+   bar on small screens so every chip can be tapped. */
+.hq-card{position:relative;z-index:2}
+.hq-card input,.hq-card label.hq-chip,.hq-card fieldset,.hq-err{scroll-margin-top:96px;scroll-margin-bottom:96px}
+@media (max-width:759px){
+  html{scroll-padding-top:96px;scroll-padding-bottom:96px}
+  .hq-hero{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+  .hq-card form{padding-bottom:8px}
+}
