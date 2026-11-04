@@ -98,6 +98,7 @@
         else { bot('What email should Dan send updates to?'); ask('Email address', okEmail, function (v) { A.email = v; prefs(); }, true); } }
       /* car preferences one by one, with the same tap pickers as the main app. Saved straight to the profile. */
       var V = h.values || {}, O = h.options || {}, P = {}, changed = false;
+      if (!Array.isArray(V.fuel_must)) V.fuel_must = (V.fuel || []).slice(); /* older profiles: every picked fuel was a must */
       var low = function (t) { return /^[A-Z][a-z]/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t; };
       var lab = function (l, k) { var f = (l || []).filter(function (x) { return (Array.isArray(x) ? x[0] : x) === k; })[0]; return f ? (Array.isArray(f) ? f[1] : f) : k; };
       var names = function (l, ks) { return ks.map(function (k) { return lab(l, k); }).join(', '); };

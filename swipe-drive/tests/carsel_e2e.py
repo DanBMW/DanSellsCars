@@ -17,7 +17,7 @@ async def main():
         await pg.wait_for_timeout(1200); await pg.evaluate(SEED); await pg.evaluate("location.hash='#me'"); await pg.wait_for_timeout(500); await pg.evaluate("location.hash='#team'"); await pg.wait_for_timeout(1200)
         await pg.locator('.ct-c[data-cid="c-cs1"] [data-act=edit]').click(); await pg.wait_for_timeout(1500)
         if SHOT: await pg.locator('details[data-sec=car] > summary').scroll_into_view_if_needed(); await pg.screenshot(path=SHOT)
-        for sel, m in [('[data-name=fuel]', 'fuel'), ('[data-name=body]', 'body'), ('#modelChips', 'models'), ('#colourChips', 'colours'), ('#specChips', 'specs'), ('[data-name=new_used]', 'new or used')]:
+        for sel, m in [('#fuelChips', 'fuel'), ('[data-name=body]', 'body'), ('#modelChips', 'models'), ('#colourChips', 'colours'), ('#specChips', 'specs'), ('[data-name=new_used]', 'new or used')]:
             ok(await pg.is_visible('#profileForm ' + sel), m + ' visible')
         n = await pg.locator('#specChips button').count(); vis = await pg.evaluate("[...document.querySelectorAll('#specChips button')].filter(b=>b.checkVisibility()).length")
         ok(n >= 33 and vis == n, f'all spec picks visible ({vis}/{n})')

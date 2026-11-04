@@ -163,6 +163,11 @@
       function attempt(x) { return Promise.resolve(write(x)).then(function (r) { var e = r && r.error;
         if (e && (e.code === 'PGRST204' || e.code === '42703') && tries++ < 6) { var col = ((e.message || '').match(/'([a-z_]+)' column|column [a-z_]+\.([a-z_]+)|column "([a-z_]+)"/) || []).slice(1).filter(Boolean)[0];
           if (col && col in x && col !== 'id') { dropped[col] = x[col]; var y = Object.assign({}, x); delete y[col]; return attempt(y); } }
+        /* until the plug in hybrid fuel value is allowed by the database check, save it as hybrid (which includes plug in
+           hybrids) and keep the exact choice on this phone, sent again with the next save */
+        if (e && e.code === '23514' && /fuel/.test(e.message || '') && /(^|,)phev(,|$)/.test(x.fuel || '') && tries++ < 6) { dropped.fuel = x.fuel; if (Array.isArray(x.fuel_must)) dropped.fuel_must = x.fuel_must;
+          var sw = function (l) { var o = []; l.forEach(function (f) { f = f === 'phev' ? 'hybrid' : f; if (o.indexOf(f) < 0) o.push(f); }); return o; }, z = Object.assign({}, x);
+          z.fuel = sw(x.fuel.split(',')).join(','); if (Array.isArray(x.fuel_must)) z.fuel_must = sw(x.fuel_must); return attempt(z); }
         return r; }); }
       return attempt(row).then(function (r) { if (r.error) throw r.error; pendingCols(row.id, dropped); return sb.from('customers').select('*').eq('id', row.id).single(); })
         .then(function (r) { if (r.error) throw r.error; return Object.assign(r.data, dropped); }); },
@@ -470,7 +475,7 @@
     drawTri('#modelChips', allModels().map(function (m) { return { key: m, label: m }; }), c.models || [], c.models_must || []);
     ['name', 'phone', 'email', 'postcode', 'monthly_gbp', 'cash_gbp', 'deposit_gbp'].forEach(function (k) { if (f.elements[k]) f.elements[k].value = c[k] == null ? '' : c[k]; });
     f.elements.annual_mileage.value = String(c.annual_mileage || 8000);
-    setChoice(f, 'budget_type', c.budget_type || 'monthly'); setChoice(f, 'fuel', M.fuelList(c.fuel).length ? M.fuelList(c.fuel) : ['open']); setChoice(f, 'mileage_bands', c.mileage_bands || []); setChoice(f, 'body', c.body || 'any');
+    setChoice(f, 'budget_type', c.budget_type || 'monthly'); var fp = M.fuelPrefs(c); drawTri('#fuelChips', FUEL_OPTS, fp.all.length ? fp.all : ['open'], fp.must); setChoice(f, 'mileage_bands', c.mileage_bands || []); setChoice(f, 'body', c.body || 'any');
     f.elements.email_alerts.checked = !!c.email_alerts; f.elements.year_from.value = c.year_from ? String(c.year_from) : '';
     setChoice(f, 'new_used', c.new_used || 'both');
     var fams = {}; S.cars.forEach(function (car) { var fm = M.colourFamily(car); if (fm) fams[fm] = 1; });
@@ -497,8 +502,11 @@
       var head = o.group && o.group !== lastG ? '<span class="ct-grp">' + esc(o.group) + '</span>' : ''; lastG = o.group || lastG;
       return head + '<button type="button" data-v="' + esc(o.key) + '" data-state="' + st + '" aria-pressed="' + (st ? 'true' : 'false') + '">' + esc(o.label) + '</button>'; }).join(''); }
   function triVals(sel) { var on = [], must = []; $$(sel + ' button').forEach(function (b) { var st = b.getAttribute('data-state'), v = b.getAttribute('data-v'); if (st) on.push(v); if (st === 'must') must.push(v); }); return { on: on, must: must }; }
-  var FUEL_L = { petrol: 'Petrol', diesel: 'Diesel', hybrid: 'Hybrid', electric: 'Electric' };
-  function fuelText(c) { var l = M.fuelList(c.fuel); return l.length ? l.map(function (x) { return FUEL_L[x] || x; }).join(', ') : 'Open minded'; }
+  var FUEL_L = { petrol: 'Petrol', diesel: 'Diesel', hybrid: 'Hybrid', phev: 'Plug in hybrid', electric: 'Electric' };
+  var FUEL_OPTS = [{ key: 'open', label: 'Open minded' }].concat(['petrol', 'diesel', 'hybrid', 'phev', 'electric'].map(function (k) { return { key: k, label: FUEL_L[k] }; }));
+  function fuelText(c) { var fp = M.fuelPrefs(c), n = function (l) { return l.map(function (x) { return FUEL_L[x] || x; }).join(', '); };
+    if (!fp.all.length) return 'Open minded'; if (fp.legacy) return n(fp.all);
+    return [fp.must.length ? 'Must have: ' + n(fp.must) : '', fp.want.length ? 'Would like: ' + n(fp.want) : ''].filter(Boolean).join('. '); }
   function bandsText(c) { var l = (c.mileage_bands || []).map(function (k) { return M.MILEAGE_BANDS[k] ? M.MILEAGE_BANDS[k].label : k; }); return l.length ? l.join(', ') : 'Any'; }
   function modelsText(c) { var must = c.models_must || [], like = (c.models || []).filter(function (m) { return must.indexOf(m) === -1; });
     if (!must.length && !like.length) return 'Any'; return [must.length ? 'Must have: ' + must.join(', ') : '', like.length ? 'Would like: ' + like.join(', ') : ''].filter(Boolean).join('. '); }
@@ -538,10 +546,10 @@
       $$('button', row).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); }); if (!on) b.setAttribute('aria-pressed', 'true');
       $('.ct-rate-h em', row).textContent = on ? '' : RATE_L[+b.getAttribute('data-r')]; platform.haptic(6); });
     $$('.ct-tri', f).forEach(function (g) { g.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return;
-      var v = b.getAttribute('data-v'), st = b.getAttribute('data-state'), any = g.id === 'colourChips';
-      var nx = any && v === 'Any' ? (st ? '' : 'like') : (st === '' ? 'like' : st === 'like' ? 'must' : '');
-      if (any && v === 'Any' && nx) $$('button', g).forEach(function (x) { x.setAttribute('data-state', ''); x.setAttribute('aria-pressed', 'false'); });
-      if (any && v !== 'Any') { var a = $('[data-v=Any]', g); a.setAttribute('data-state', ''); a.setAttribute('aria-pressed', 'false'); }
+      var v = b.getAttribute('data-v'), st = b.getAttribute('data-state'), anyKey = g.id === 'colourChips' ? 'Any' : g.id === 'fuelChips' ? 'open' : null, any = !!anyKey;
+      var nx = any && v === anyKey ? (st ? '' : 'like') : (st === '' ? 'like' : st === 'like' ? 'must' : '');
+      if (any && v === anyKey && nx) $$('button', g).forEach(function (x) { x.setAttribute('data-state', ''); x.setAttribute('aria-pressed', 'false'); });
+      if (any && v !== anyKey) { var a = $('[data-v="' + anyKey + '"]', g); a.setAttribute('data-state', ''); a.setAttribute('aria-pressed', 'false'); }
       b.setAttribute('data-state', nx); b.setAttribute('aria-pressed', nx ? 'true' : 'false'); platform.haptic(8); }); });
     $('#pxFile').addEventListener('change', function (e) {
       var files = [].slice.call(e.target.files || []).slice(0, 6); var cid = (S.cust && S.cust.id) || (S.pendingId = S.pendingId || uuid());
@@ -565,7 +573,7 @@
       if (bad.length) { banner(f, bad.length === 1 ? 'One thing to fix before saving.' : bad.length + ' things to fix before saving.'); bad[0].scrollIntoView({ block: 'center' }); bad[0].focus({ preventScroll: true }); return; }
       var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim() || null, postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
-        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: [].concat(choice(f, 'fuel') || []).filter(function (x) { return x !== 'open'; }).join(',') || 'open', mileage_bands: [].concat(choice(f, 'mileage_bands') || []), body: choice(f, 'body'), models: $$('#modelChips button').length ? triVals('#modelChips').on : ((S.cust || {}).models || []), models_must: $$('#modelChips button').length ? triVals('#modelChips').must : ((S.cust || {}).models_must || []), year_from: +el.year_from.value || null, new_used: choice(f, 'new_used') });
+        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: triVals('#fuelChips').on.filter(function (x) { return x !== 'open'; }).join(',') || 'open', fuel_must: triVals('#fuelChips').must.filter(function (x) { return x !== 'open'; }), mileage_bands: [].concat(choice(f, 'mileage_bands') || []), body: choice(f, 'body'), models: $$('#modelChips button').length ? triVals('#modelChips').on : ((S.cust || {}).models || []), models_must: $$('#modelChips button').length ? triVals('#modelChips').must : ((S.cust || {}).models_must || []), year_from: +el.year_from.value || null, new_used: choice(f, 'new_used') });
       if (staff) { c.email = el.email.value.trim() || null; c.email_alerts = el.email_alerts.checked; } /* staff can save a customer with a name only */
       c.desk = deskRead(f, (S.cust || {}).desk);
       if (staff && $('#commsConsent')) { var want = $('#commsConsent').checked, had = !!(S.cust && S.cust.comms_consent_at);
@@ -621,7 +629,7 @@
   }
   /* A wider search for this visit only. Each step loosens one thing; the customer's own answers are never changed by it. */
   var WIDEN = {
-    fuel: function (p) { p.fuel = 'open'; }, body: function (p) { p.body = 'any'; }, models: function (p) { p.models = []; p.models_must = []; },
+    fuel: function (p) { p.fuel = 'open'; p.fuel_must = []; }, body: function (p) { p.body = 'any'; }, models: function (p) { p.models = []; p.models_must = []; },
     year: function (p) { p.year_from = null; }, colours: function (p) { p.colours = []; p.colours_must = []; },
     specs: function (p) { p.specs = []; p.specs_must = []; }, new_used: function (p) { p.new_used = 'both'; }
   };
@@ -653,7 +661,7 @@
     }
     if (cust.budget_type === 'cash') [50, 500].forEach(function (s) { add('Increase budget by \u00a3' + s + ' to see', { budget: s }); });
     if (cust.budget_type === 'monthly') [50, 100].forEach(function (s) { add('Increase budget by \u00a3' + s + ' a month to see', { budget: s }); });
-    if (cust.fuel && cust.fuel !== 'open') add('Any fuel', { clear: ['fuel'] });
+    if (M.fuelPrefs(cust).must.length) add('Any fuel', { clear: ['fuel'] }); /* a would like fuel never hides a car, so only a must have needs widening */
     if (cust.body && cust.body !== 'any') add('Any shape or size', { clear: ['body'] });
     if ((cust.models || []).length) add('Any model', { clear: ['models'] });
     if (cust.year_from) add('Any model year', { clear: ['year'] });
@@ -671,7 +679,7 @@
   /* What the customer asked for, in words: "M3, 2024 or newer, up to £40,000" */
   function criteriaOf(c) {
     return { new_used: c.new_used || 'both', budget_type: c.budget_type || null, cash_gbp: c.cash_gbp || null, monthly_gbp: c.monthly_gbp || null,
-      fuel: c.fuel || 'open', body: c.body || 'any', models: c.models || [], models_must: c.models_must || [], mileage_bands: c.mileage_bands || [], year_from: c.year_from || null,
+      fuel: c.fuel || 'open', fuel_must: M.fuelPrefs(c).must, body: c.body || 'any', models: c.models || [], models_must: c.models_must || [], mileage_bands: c.mileage_bands || [], year_from: c.year_from || null,
       colours: c.colours || [], colours_must: c.colours_must || [], specs: c.specs || [], specs_must: c.specs_must || [] };
   }
   function describeCriteria(k) {

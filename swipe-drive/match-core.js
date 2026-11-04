@@ -10,7 +10,7 @@
   function normReg(r) { return String(r || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
   var FUEL_OK = {
     petrol: ['petrol', 'mhev-petrol'], diesel: ['diesel', 'mhev-diesel'],
-    hybrid: ['phev', 'mhev-petrol', 'mhev-diesel'], electric: ['electric'] };
+    hybrid: ['phev', 'mhev-petrol', 'mhev-diesel'], phev: ['phev'], electric: ['electric'] };
   var BODY_OK = { /* profile body -> stock-core body keys */
     suv: ['suv'], hatchback: ['hatchback'], saloon: ['saloon', 'gran_coupe'], estate: ['touring'],
     coupe: ['coupe', 'gran_coupe', 'convertible'], mpv: ['mpv'], small: ['hatchback', 'mpv'],
@@ -155,6 +155,17 @@
   /* Fuel is saved as one text value: 'open', a single fuel (older profiles) or a comma list like 'petrol,hybrid'.
      Empty or open means any fuel. A car passes when its fuel fits any chosen type. */
   function fuelList(v) { return [].concat(v == null ? [] : v).join(',').split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(function (x) { return x && x !== 'open'; }); }
+  /* Want and Must for fuel, like models, colours and spec: fuel holds every picked fuel, fuel_must the subset tapped
+     twice. Profiles saved before fuel_must existed (no array) keep today's behaviour: every picked fuel is a must. */
+  function fuelPrefs(p) { p = p || {}; var all = fuelList(p.fuel);
+    var must = Array.isArray(p.fuel_must) ? fuelList(p.fuel_must).filter(function (f) { return all.indexOf(f) !== -1; }) : all.slice();
+    return { all: all, must: must, want: all.filter(function (f) { return must.indexOf(f) === -1; }), legacy: !Array.isArray(p.fuel_must) }; }
+  /* Must is a hard filter (the car has to fit one must have fuel). Want only moves the car up or down the deck. */
+  function fuelFit(fk, p) { var fp = fuelPrefs(p);
+    var hit = function (l) { return l.some(function (f) { return fk.some(function (k) { return (FUEL_OK[f] || []).indexOf(k) !== -1; }); }); };
+    if (!fp.all.length) return { sc: 8, ok: true };
+    if (fp.must.length) return hit(fp.must) ? { sc: 20, ok: true, why: 'Your fuel' } : { sc: 0, ok: false };
+    return hit(fp.want) ? { sc: 20, ok: true, why: 'A fuel you would like' } : { sc: -6, ok: true }; }
   /* Optional preferred current mileage: a soft preference (boost in band, small dip outside), never a hard filter. */
   var MILEAGE_BANDS = { '0_8k': { min: 0, max: 8000, label: '0 to 8k' }, '8_15k': { min: 8000, max: 15000, label: '8k to 15k' }, '15_25k': { min: 15000, max: 25000, label: '15k to 25k' }, '25k_plus': { min: 25000, max: Infinity, label: '25k plus' } };
   function carMiles(car) { var m = car && car.mileage; if (m == null || m === '') return null; if (typeof m === 'number') return m; var d = String(m).replace(/[^0-9]/g, ''); return d ? +d : null; }
@@ -180,11 +191,7 @@
     if (p.new_used === 'new' && !isNew) return { score: 0, reasons: [], ok: false };
     if (p.new_used === 'used' && isNew) return { score: 0, reasons: [], ok: false };
     var fk = isNew ? car.fuelKeys || [] : [s.fuelKey(car)];
-    var fl = fuelList(p.fuel);
-    if (fl.length) {
-      var hit = fl.some(function (f) { return fk.some(function (k) { return (FUEL_OK[f] || []).indexOf(k) !== -1; }); });
-      if (hit) { sc += 20; why.push('Your fuel'); } else ok = false; /* a fuel filter is a hard filter for new and used */
-    } else sc += 8;
+    var ff = fuelFit(fk, p); sc += ff.sc; if (ff.why) why.push(ff.why); if (!ff.ok) ok = false; /* a must have fuel is a hard filter for new and used */
     var bk = isNew ? car.bodyKeys || [] : s.bodyKeys(car);
     if (p.body && p.body !== 'any') {
       if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12;
@@ -255,8 +262,7 @@
     var sc = 38, why = [], ok = true, s = S();
     if (p.new_used === 'used') return { score: 0, reasons: [], ok: false };
     var fk = [s.fuelKey(car)];
-    var fl = fuelList(p.fuel);
-    if (fl.length) { if (fl.some(function (f) { return fk.some(function (k) { return (FUEL_OK[f] || []).indexOf(k) !== -1; }); })) { sc += 20; why.push('Your fuel'); } else ok = false; } else sc += 8;
+    var ff = fuelFit(fk, p); sc += ff.sc; if (ff.why) why.push(ff.why); if (!ff.ok) ok = false;
     var bk = s.bodyKeys(car) || [];
     if (p.body && p.body !== 'any') { if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12; }
     var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
@@ -326,7 +332,7 @@
   function isMModel(m) { m = String(m).trim().toLowerCase(); return /^m\d/.test(m) || /^(x\d|i\w{1,2})\s?m(\d|$)/.test(m) || /^xm$/.test(m); }
   var LOOSEN = [
     ['budget', function (p) { return Object.assign({}, p, { cash_gbp: 0, monthly_gbp: 0 }); }],
-    ['fuel', function (p) { return Object.assign({}, p, { fuel: 'open' }); }],
+    ['fuel', function (p) { return Object.assign({}, p, { fuel: 'open', fuel_must: [] }); }],
     ['new_used', function (p) { return Object.assign({}, p, { new_used: 'both' }); }],
     ['colours', function (p) { return Object.assign({}, p, { colours_must: [] }); }],
     ['specs', function (p) { return Object.assign({}, p, { specs_must: [] }); }]];
@@ -349,7 +355,7 @@
       if (!mine.length) { x.kind = news.length && x.budget_set && !x.new_avail && news.some(function (c) { return c.kind === 'new_stock' && score(c, Object.assign({}, q, { cash_gbp: 0, monthly_gbp: 0 })).ok; }) ? 'budget' : 'none'; out.push(x); return; }
       var best = null; LOOSEN.forEach(function (l, i) { var n = ok(l[1](q)); if (n && (!best || (best.k !== 'budget' && n > best.n))) best = { k: l[0], n: n }; });
       if (best && best.k === 'budget') { x.kind = 'budget'; x.freed = best.n; }
-      else if (best) { x.kind = 'filter'; x.filter = best.k; x.freed = best.n; x.electric_only = best.k === 'fuel' && fuelList(p.fuel).join() === 'electric'; x.fuel = fuelList(p.fuel); x.new_used = p.new_used; }
+      else if (best) { x.kind = 'filter'; x.filter = best.k; x.freed = best.n; x.electric_only = best.k === 'fuel' && fuelPrefs(p).must.join() === 'electric'; x.fuel = fuelPrefs(p).must.map(function (f) { return f === 'phev' ? 'plug in hybrid' : f; }); x.new_used = p.new_used; }
       else x.kind = 'narrow';
       out.push(x); });
     return out; }
@@ -369,13 +375,14 @@
     }
     return 'We have ' + cars + ' in stock, but ' + (n === 1 ? 'it does not' : 'none') + ' fit all your choices together.'; }
   /* when must haves are what keeps the deck small: say so, and how to open it up (tap the chip once instead) */
-  function mustNote(p) { p = p || {}; var mm = (p.models_must || []).length, ms = (p.specs_must || []).length;
-    if (!mm && !ms) return '';
-    var what = mm && ms ? 'must have models and spec' : mm ? (mm === 1 ? 'a must have model' : 'must have models') : (ms === 1 ? 'a must have spec' : 'must have spec');
+  function mustNote(p) { p = p || {}; var mm = (p.models_must || []).length, ms = (p.specs_must || []).length, mf = Array.isArray(p.fuel_must) ? fuelPrefs(p).must.length : 0;
+    if (!mm && !ms && !mf) return '';
+    var parts = [mm ? (mm === 1 ? 'a must have model' : 'must have models') : '', ms ? (ms === 1 ? 'a must have spec' : 'must have spec') : '', mf ? (mf === 1 ? 'a must have fuel' : 'must have fuels') : ''].filter(Boolean);
+    var what = !mf ? (mm && ms ? 'must have models and spec' : parts[0]) : parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1] : parts[0];
     return 'You have ' + what + ' set, so you only see cars that match, with no other suggestions. Make it a would like (one tap) to see other suggestions too.'; }
   /* the one tap widen for an entry: a profile patch, or null */
   function noStockWiden(x) { if (x.kind !== 'filter') return null;
-    return { fuel: { label: 'Show any fuel', patch: { fuel: 'open' } }, new_used: { label: 'Show new and used', patch: { new_used: 'both' } },
+    return { fuel: { label: 'Show any fuel', patch: { fuel: 'open', fuel_must: [] } }, new_used: { label: 'Show new and used', patch: { new_used: 'both' } },
       colours: { label: 'Any colour is fine', patch: { colours_must: [] } }, specs: { label: 'Make spec a would like', patch: { specs_must: [] } } }[x.filter] || null; }
   function rank(cars, p) {
     return cars.map(function (c) { var r = score(c, p); return { car: c, score: r.score, reasons: r.reasons, ok: r.ok, notes: r.notes || [], unconfirmed: !!r.unconfirmed }; })
@@ -407,5 +414,5 @@
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
+  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
 })(typeof window !== 'undefined' ? window : globalThis);

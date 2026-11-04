@@ -14,7 +14,7 @@
   function values(c) { var v = {}, M = window.ctMatch;
     ['models', 'models_must', 'specs', 'specs_must', 'mileage_bands'].forEach(function (k) { v[k] = (c[k] || []).slice(); });
     v.colours = (c.colours || []).filter(function (x) { return x !== 'Any'; }); v.colours_must = (c.colours_must || []).slice();
-    var fl = M.fuelList(c.fuel); v.fuel = fl.length ? fl : (c.fuel === 'open' ? ['open'] : []);
+    var fl = M.fuelList(c.fuel); v.fuel = fl.length ? fl : (c.fuel === 'open' ? ['open'] : []); v.fuel_must = M.fuelPrefs(c).must; /* older profiles: every fuel was a must */
     ['body', 'new_used', 'budget_type', 'annual_mileage', 'monthly_gbp', 'cash_gbp', 'deposit_gbp'].forEach(function (k) { v[k] = c[k] == null ? null : c[k]; });
     Object.keys(c.desk || {}).forEach(function (k) { if (k !== 'chat') v['desk.' + k] = c.desk[k]; });
     var px = c.px || {}; v.px_has = px.reg ? 'yes' : null; v.px_reg = px.reg || ''; v.px_mileage = px.mileage == null || px.mileage === '' ? null : +px.mileage;
@@ -23,11 +23,12 @@
     Object.keys(p).forEach(function (k) { var val = p[k];
       if (k.indexOf('desk.') === 0) { if (val == null || val === '' || (Array.isArray(val) && !val.length)) delete desk[k.slice(5)]; else desk[k.slice(5)] = val; }
       else if (k === 'fuel') n.fuel = (val || []).filter(function (x) { return x !== 'open'; }).join(',') || 'open';
+      else if (k === 'fuel_must') n.fuel_must = (val || []).filter(function (x) { return x !== 'open'; });
       else if (k === 'px_has') { if (val === 'no') { px = {}; n.px_condition_ratings = {}; n.px_terms_confirmed_at = null; n.px_terms_confirmed_by = null; n.px_settlement_gbp = null; n.px_settlement_valid_until = null; } }
       else if (k === 'px_reg') px.reg = String(val).toUpperCase().replace(/\s+/g, ' ').trim();
       else if (k === 'px_mileage') px.mileage = val;
       else n[k] = val; });
-    n.desk = desk; n.px = Object.keys(px).length ? px : null; if (n.models_must && n.models) n.models_must = n.models_must.filter(function (m) { return n.models.indexOf(m) >= 0; }); return n; }
+    n.desk = desk; n.px = Object.keys(px).length ? px : null; if (Array.isArray(n.fuel_must)) { var nf = window.ctMatch.fuelList(n.fuel); n.fuel_must = n.fuel_must.filter(function (x) { return nf.indexOf(x) >= 0; }); } if (n.models_must && n.models) n.models_must = n.models_must.filter(function (m) { return n.models.indexOf(m) >= 0; }); return n; }
   /* after the models question, say in a line why any chosen model has nothing to show (match-core.js noStock) */
   function withNoStock(fs) { var M = window.ctMatch; fs.forEach(function (f) { if (f.k !== 'models') return;
       f.after = function (v) { var d = D(); if (!M.noStock || !d.pool) return '';

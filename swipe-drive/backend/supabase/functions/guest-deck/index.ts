@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
   const sb = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'));
   await init();
   const db = {
-    customer: async (id: string) => (await sb.from('customers').select('id,name,phone,email,owner_staff_id,closed_at,email_opt_out,guest_version,models,models_must,fuel,body,colours,colours_must,specs,specs_must,new_used,budget_type,monthly_gbp,cash_gbp,mileage_bands,annual_mileage').eq('id', id).maybeSingle()).data,
+    customer: async (id: string) => (await sb.from('customers').select('id,name,phone,email,owner_staff_id,closed_at,email_opt_out,guest_version,models,models_must,fuel,fuel_must,body,colours,colours_must,specs,specs_must,new_used,budget_type,monthly_gbp,cash_gbp,mileage_bands,annual_mileage').eq('id', id).maybeSingle()).data,
     hit: async (id: string) => (await sb.rpc('guest_hit', { cid: id })).data || 0,
     emailedRegs: async (id: string) => { const r = (await sb.from('stock_emails').select('cars').eq('customer_id', id).order('sent_at', { ascending: false }).limit(1).maybeSingle()).data; return (r?.cars || []).map((c: any) => c.reg); },
     swipes: async (id: string) => { const o: any = {}; ((await sb.from('swipes').select('reg,liked').eq('customer_id', id)).data || []).forEach((s: any) => { o[s.reg] = s.liked; }); return o; },

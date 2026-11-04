@@ -22,7 +22,7 @@ async def main():
     await pg.evaluate("location.hash='#profile'"); await pg.wait_for_selector('#modelChips button')
     await pg.evaluate("ctDebug.S.cust=Object.assign({},ctDebug.S.cust||{},{name:'Sam',phone:'07700900123',models:['X3'],fuel:'diesel',colours:['Blue'],specs:[]});delete ctDebug.S.cust.models_must;delete ctDebug.S.cust.mileage_bands;location.hash='#discover'")
     await pg.wait_for_timeout(400); await pg.evaluate("location.hash='#profile'"); await pg.wait_for_timeout(600)
-    st=await pg.evaluate("JSON.stringify({like:[...document.querySelectorAll('#modelChips [data-state=like]')].map(b=>b.dataset.v),must:[...document.querySelectorAll('#modelChips [data-state=must]')].map(b=>b.dataset.v),fuel:[...document.querySelectorAll('[data-name=fuel] [aria-pressed=true]')].map(b=>b.dataset.v)})")
+    st=await pg.evaluate("JSON.stringify({like:[...document.querySelectorAll('#modelChips [data-state=like]')].map(b=>b.dataset.v),must:[...document.querySelectorAll('#modelChips [data-state=must]')].map(b=>b.dataset.v),fuel:[...document.querySelectorAll('#fuelChips [aria-pressed=true]')].map(b=>b.dataset.v)})")
     ok(json.loads(st)=={'like':['X3'],'must':[],'fuel':['diesel']},'old models load as would like, old single fuel loads '+st)
     await pg.fill('#profileForm [name=name]','Sam'); await pg.click('#pfSave'); await pg.wait_for_function("location.hash=='#discover'",timeout=15000)
     c=json.loads(await pg.evaluate("JSON.stringify(ctDebug.S.cust)"))

@@ -43,12 +43,12 @@ export function budgetText(c) {
   if (c.budget_type === 'monthly' && c.monthly_gbp > 0) { const [a, b] = band(c.monthly_gbp, 100); return `around \u00a3${a} to \u00a3${b} a month`; }
   return '';
 }
-const FUEL = { petrol: 'Petrol', diesel: 'Diesel', hybrid: 'Hybrid', electric: 'Electric' };
+const FUEL = { petrol: 'Petrol', diesel: 'Diesel', hybrid: 'Hybrid', phev: 'Plug in hybrid', electric: 'Electric' };
 /* Car preferences the guest can review and change with Revvy (low risk, saved straight to the customer).
    Option lists come from the same rules as the main app, and anything outside them is dropped. */
 export const BODY_OPTS = [['any', 'Any'], ['small', 'Small and easy'], ['hatchback', 'Hatchback'], ['saloon', 'Saloon'], ['estate', 'Touring'], ['suv', 'SUV'], ['family', 'Family space'], ['coupe', 'Coupe or convertible']];
 export const NEWUSED_OPTS = [['used', 'Used'], ['new', 'Brand new'], ['both', 'Either']];
-export const FUEL_OPTS = [['petrol', 'Petrol'], ['diesel', 'Diesel'], ['hybrid', 'Hybrid'], ['electric', 'Electric']];
+export const FUEL_OPTS = [['petrol', 'Petrol'], ['diesel', 'Diesel'], ['hybrid', 'Hybrid'], ['phev', 'Plug in hybrid'], ['electric', 'Electric']];
 /* the customer facing desk questions a guest may answer (choices only, nothing personal); same keys as DESK in app.js */
 export const DESK_OPTS = {
   fund: [['pcp', 'BMW Select / PCP'], ['hp', 'HP'], ['other', 'Other'], ['savings', 'Savings'], ['loan', 'Loan'], ['motability', 'Motability']],
@@ -70,7 +70,7 @@ export function prefOptions(M, cars) {
 export function prefValues(c, M) {
   const arr = v => Array.isArray(v) ? v.slice() : [];
   return { models: arr(c.models), models_must: arr(c.models_must), colours: arr(c.colours).filter(x => x !== 'Any'), colours_must: arr(c.colours_must), specs: arr(c.specs), specs_must: arr(c.specs_must),
-    fuel: M.fuelList(c.fuel), mileage_bands: arr(c.mileage_bands), body: c.body || 'any', new_used: c.new_used || 'both',
+    fuel: M.fuelList(c.fuel), fuel_must: M.fuelPrefs ? M.fuelPrefs(c).must : M.fuelList(c.fuel), mileage_bands: arr(c.mileage_bands), body: c.body || 'any', new_used: c.new_used || 'both',
     annual_mileage: c.annual_mileage > 0 ? Math.round(c.annual_mileage) : null, ...deskValues(c.desk) };
 }
 function deskValues(d) { d = d || {}; const o = {};
@@ -88,7 +88,11 @@ export function cleanPrefs(body, cur, opts) {
     const m2 = must.filter(x => on.includes(x)); const before = JSON.stringify([[...cur[k]].sort(), [...cur[mk]].sort()]), after = JSON.stringify([[...on].sort(), [...m2].sort()]);
     if (before !== after) { patch[k] = on; patch[mk] = m2; changes.push(`${name}: must have ${m2.map(x => lab(list, x)).join(', ') || 'none'}; would like ${on.filter(x => !m2.includes(x)).map(x => lab(list, x)).join(', ') || 'none'}`); } };
   tri('models', 'models_must', opts.models, 'Models'); tri('colours', 'colours_must', opts.colours, 'Colours'); tri('specs', 'specs_must', opts.specs, 'Spec');
-  if ('fuel' in body) { const f = pick(body.fuel, keys(opts.fuel)); if (f && JSON.stringify([...f].sort()) !== JSON.stringify([...cur.fuel].sort())) { patch.fuel = f.join(',') || 'open'; changes.push('Fuel: ' + (f.map(x => lab(opts.fuel, x)).join(', ') || 'Open minded')); } }
+  /* fuel: Want and Must like the other picks. A guest app without fuel_must (older cached page) keeps every fuel a must. */
+  if ('fuel' in body) { const f = pick(body.fuel, keys(opts.fuel)); if (f) { const fm = ('fuel_must' in body ? (pick(body.fuel_must, keys(opts.fuel)) || []) : f).filter(x => f.includes(x)), curM = cur.fuel_must || cur.fuel;
+    if (JSON.stringify([[...f].sort(), [...fm].sort()]) !== JSON.stringify([[...cur.fuel].sort(), [...curM].sort()])) { patch.fuel = f.join(',') || 'open';
+      if (!('fuel_must' in body)) changes.push('Fuel: ' + (f.map(x => lab(opts.fuel, x)).join(', ') || 'Open minded'));
+      else { patch.fuel_must = fm; const want = f.filter(x => !fm.includes(x)); changes.push('Fuel: ' + (!f.length ? 'Open minded' : `must have ${fm.map(x => lab(opts.fuel, x)).join(', ') || 'none'}; would like ${want.map(x => lab(opts.fuel, x)).join(', ') || 'none'}`)); } } } }
   if ('mileage_bands' in body) { const b = pick(body.mileage_bands, keys(opts.mileage)); if (b && JSON.stringify([...b].sort()) !== JSON.stringify([...cur.mileage_bands].sort())) { patch.mileage_bands = b; changes.push('Mileage: ' + (b.map(x => lab(opts.mileage, x)).join(', ') || 'Any')); } }
   ['body', 'new_used'].forEach(k => { if (k in body && keys(opts[k]).includes(String(body[k])) && String(body[k]) !== cur[k]) { patch[k] = String(body[k]); changes.push((k === 'body' ? 'Body or size: ' : 'New or used: ') + lab(opts[k], patch[k])); } });
   if ('annual_mileage' in body) { const n = Math.round(+body.annual_mileage); if (isFinite(n) && n >= 0 && n <= 100000 && n !== cur.annual_mileage) { patch.annual_mileage = n; changes.push('Miles a year: ' + n.toLocaleString('en-GB')); } }
