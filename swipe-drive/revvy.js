@@ -50,7 +50,7 @@
     var b = document.createElement('div'); b.className = 'rv-m bot'; b.textContent = 'Hi' + nm + ", I'm Revvy, Dan's assistant. Let's go through everything you are looking for, one thing at a time. Anything already set I'll check with you, anything missing I'll ask. Skip whatever you like.";
     $('#rvLog').appendChild(b);
     window.RevvyFlow.run({ log: $('#rvLog'), tray: $('#rvTray'), values: values(c), fields: withNoStock(window.RevvyFlow.fields(lists(), { px: true })), cls: CLS, open: section,
-      save: function (p) { var st = D().store, cur = S().cust; return st.saveCustomer(onto(cur, p)).then(function (saved) { D().S.cust = saved; D().S.deck = []; }); },
+      save: function (p) { var st = D().store, cur = S().cust; return st.saveCustomer(onto(cur, p)).then(function (saved) { D().S.cust = saved; D().S.deck = []; D().S.relax = null; /* a wider search (e.g. Any fuel) must not override new answers */ }); },
       done: function (r) { var tr = $('#rvTray'); tr.innerHTML = '';
         [['Back to the cars', 'discover', 1], ['See my matches', 'matches'], ['Open my profile', 'profile']].forEach(function (x) { var a = document.createElement('button'); a.type = 'button'; a.className = 'ct-btn' + (x[2] ? '' : ' ct-btn-ghost') + ' rv-c'; a.textContent = x[0];
           a.onclick = function () { close(); setTimeout(function () { location.hash = x[1]; }, 30); }; tr.appendChild(a); }); } }); }
