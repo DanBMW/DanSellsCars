@@ -20,7 +20,8 @@
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png">
 <link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="app.css?v=50">
-<link rel="stylesheet" href="revvy-character.css?v=1">
+<link rel="stylesheet" href="revvy-character.css?v=2">
+<link rel="stylesheet" href="premium-actions.css?v=1">
 <link rel="stylesheet" href="crm/hub.css?v=48">
 <link rel="stylesheet" href="crd.css?v=1">
 <link rel="stylesheet" href="../motion.css?v=1"/>
@@ -151,10 +152,10 @@
     <div class="ct-row" id="relaxBar" hidden><span class="ct-sub" id="relaxText"></span><button class="ct-btn ct-btn-ghost ct-sm" id="relaxReset" type="button">Back to my own search</button></div>
     <div class="ct-empty" id="deckEmpty" hidden><h2 id="deckEmptyT">That is everyone for now.</h2><p id="deckEmptyP">New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><div class="ct-row" id="deckEmptyActs"><a class="ct-btn" href="#matches">See your matches</a></div><div class="ct-widen" id="deckWiden"></div><div class="ct-notify"><p class="ct-hint">Want the next one that fits? I will message you the moment it comes in.</p><button class="ct-btn" id="notifyBtn" type="button">Notify me when one comes in</button><p class="ct-msg" id="notifyMsg" role="status"></p></div></div>
     <div class="ct-actions" id="deckActions">
-      <button class="ct-act ct-pass" id="btnPass" type="button" aria-label="Pass on this car (brake)"><svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><rect x="9" y="12" width="30" height="24" rx="6" fill="currentColor"/><g stroke="#0a0c0f" stroke-width="2.4" stroke-linecap="round"><path d="M14 18h20M14 24h20M14 30h20"/></g></svg><span>Brake</span></button>
-      <button class="ct-act ct-info" id="btnInfo" type="button" aria-label="More about this car"><svg viewBox="0 0 48 48" width="26" height="26" aria-hidden="true"><path d="M8 32a16 16 0 1 1 32 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M24 32l8-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="32" r="3" fill="currentColor"/></svg><span>Info</span></button>
-      <button class="ct-act ct-super" id="btnSuper" type="button" aria-label="Super like: keys please"><svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true"><circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M24 14v9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M17.5 18.5a9 9 0 1 0 13 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><span>Start</span></button>
-      <button class="ct-act ct-like" id="btnLike" type="button" aria-label="Like this car (accelerate)"><svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><path d="M15 6h18l3 36H12z" fill="currentColor"/><g stroke="#0a0c0f" stroke-width="2.4" stroke-linecap="round"><path d="M18 14h12M17.5 21h13M17 28h14M16.5 35h15"/></g></svg><span>Go</span></button>
+      <button class="ct-act ct-pass" id="btnPass" type="button" aria-label="Pass on this car (brake)"><svg class="pa-ic" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg><span>Pass</span></button>
+      <button class="ct-act ct-info" id="btnInfo" type="button" aria-label="More about this car"><svg class="pa-ic" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".6" fill="currentColor"/></svg><span>Info</span></button>
+      <button class="ct-act ct-super" id="btnSuper" type="button" aria-label="Super like: keys please"><svg class="pa-ic" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.5l-5.1 2.8 1.1-5.7-4.3-4 5.8-.7z"/></svg><span>Super</span></button>
+      <button class="ct-act ct-like" id="btnLike" type="button" aria-label="Like this car (accelerate)"><svg class="pa-ic" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg><span>Like</span></button>
     </div>
   </section>
 
@@ -297,7 +298,7 @@
 </div>
 
 <div class="ct-sheet" id="sheet" hidden><div class="ct-sheet-in" role="dialog" aria-modal="true" aria-label="Car details"><button class="ct-x" type="button" data-close aria-label="Close">&times;</button><div id="sheetBody"></div></div></div>
-<div class="ct-match" id="matchModal" hidden><canvas id="confetti"></canvas><div class="ct-match-in"><h2>It's a match!</h2><div class="ct-match-pics"><img id="mmCar" alt=""><span class="ct-match-heart">&hearts;</span><img src="icons/icon-192.png" alt="Dan Sells"></div><p id="mmText"></p><a class="ct-btn ct-btn-big ct-td" id="mmTd" target="_blank" rel="noopener">Book a test drive</a><a class="ct-btn ct-wa" id="mmWa" target="_blank" rel="noopener">Message on WhatsApp</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Keep swiping</button></div></div>
+<div class="ct-match" id="matchModal" hidden><canvas id="confetti"></canvas><div class="ct-match-in"><h2>It's a match!</h2><div class="ct-match-pics"><img id="mmCar" alt=""><span class="ct-match-heart"><svg class="pa-ic" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg></span><img src="icons/icon-192.png" alt="Dan Sells"></div><p id="mmText"></p><a class="ct-btn ct-btn-big ct-td" id="mmTd" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>Book a test drive</a><a class="ct-btn ct-wa" id="mmWa" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5l1.2-3.4A7.5 7.5 0 1 1 9 18z"/></svg>Message on WhatsApp</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Keep swiping</button></div></div>
 <div class="ct-ios" id="iosGuide" hidden><div class="ct-ios-in"><button class="ct-x" type="button" data-close aria-label="Close">&times;</button><h2>Add SwipeToDrive to your Home Screen</h2><p>On iPhone, alerts only work once the app is on your Home Screen. It takes ten seconds:</p>
   <ol><li><span class="ct-ios-ico"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 3v12M7 8l5-5 5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M5 12v8h14v-8" stroke="currentColor" stroke-width="2" fill="none"/></svg></span>Tap the <b>Share</b> button in Safari's toolbar.</li>
   <li><span class="ct-ios-ico">&#x2795;</span>Scroll down and tap <b>Add to Home Screen</b>.</li>
@@ -332,7 +333,7 @@
 <script src="nostock-ui.js?v=41"></script>
 <script src="revvy-flow.js?v=42"></script>
 <script src="revvy.js?v=42"></script>
-<script src="revvy-character.js?v=1"></script>
+<script src="revvy-character.js?v=2"></script>
 <script src="crm/hub.js?v=48"></script>
 <script src="crm/followups-ui.js?v=48"></script>
 <script src="crd.js?v=2"></script>

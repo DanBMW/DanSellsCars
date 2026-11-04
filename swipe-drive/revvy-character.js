@@ -7,9 +7,16 @@
   var timers = new WeakMap();
   function setEl(el, st, ms) { clearTimeout(timers.get(el)); el.setAttribute('data-state', st); if (ms) timers.set(el, setTimeout(function () { el.setAttribute('data-state', 'idle'); }, ms)); }
   function all() { return document.querySelectorAll('.rvc'); }
-  function set(st, ms) { all().forEach(function (el) { setEl(el, st, ms); }); }
+  function set(st, ms) { all().forEach(function (el) { if (!el.hasAttribute('data-lock')) setEl(el, st, ms); }); }
   function swapImgs(root) {
-    (root || document).querySelectorAll('.ct-revvy > img, .rv-top > img').forEach(function (img) { var r = make(); setEl(r, 'wink', 1400); img.replaceWith(r); });
+    root = root || document;
+    root.querySelectorAll('.ct-revvy > img, .rv-top > img').forEach(function (img) { var r = make(); setEl(r, 'wink', 1400); img.replaceWith(r); });
+    root.querySelectorAll('.botrow .av:empty').forEach(function (a) { var r = make(); setEl(r, 'wink', 1400); a.appendChild(r); });
+    root.querySelectorAll('.g-chat-top:not([data-rvc]), .g-revvy:not([data-rvc])').forEach(function (h) { h.setAttribute('data-rvc', '1'); var r = make(); setEl(r, 'wink', 1400); h.insertBefore(r, h.firstChild); });
+    root.querySelectorAll('#g-load:not([data-rvc])').forEach(function (l) { l.setAttribute('data-rvc', '1'); var r = make('rvc-lg rvc-load'); r.setAttribute('data-lock', 'scan'); r.setAttribute('data-state', 'scan'); l.insertBefore(r, l.firstChild); });
+    var bub = root.querySelectorAll('.msg.bot:not([data-rvc]), .g-m.bot:not([data-rvc])');
+    bub.forEach(function (b) { b.setAttribute('data-rvc', '1'); b.classList.add('rvc-has'); var r = make('rvc-bub'); b.insertBefore(r, b.firstChild); });
+    if (bub.length) document.querySelectorAll('.rvc-bub.rvc-last').forEach(function (x) { x.classList.remove('rvc-last'); }), (function () { var l = document.querySelectorAll('.rvc-bub'); if (l.length) l[l.length - 1].classList.add('rvc-last'); })();
   }
   function matchHook() {
     var m = document.getElementById('matchModal'); if (!m) return;
@@ -23,7 +30,7 @@
       all().forEach(function (el) { var s = el.getAttribute('data-state'); if (loading && s === 'idle') setEl(el, 'scan'); else if (!loading && s === 'scan') setEl(el, 'idle'); }); }
     new MutationObserver(chk).observe(d, { childList: true }); chk();
   }
-  document.addEventListener('click', function (e) { var t = e.target.closest && e.target.closest('a.ct-td, #mmTd'); if (t) set('thumbs', 2600); }, true);
+  document.addEventListener('click', function (e) { var t = e.target.closest && e.target.closest('a.ct-td, #mmTd'); if (t) set('thumbs', 2600); var g = e.target.closest && e.target.closest('#g-like, #g-s-like'); if (g) set('heart', 1600); }, true);
   function init() {
     swapImgs(); matchHook(); deckHook();
     new MutationObserver(function (ms) { ms.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1 && n.querySelector) swapImgs(n.parentNode || n); }); }); }).observe(document.body, { childList: true, subtree: true });

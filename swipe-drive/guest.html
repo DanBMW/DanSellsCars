@@ -8,6 +8,8 @@
 <title>Swipe your matches | SwipeToDrive</title>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="guest.css?v=36">
+<link rel="stylesheet" href="revvy-character.css?v=2">
+<link rel="stylesheet" href="premium-actions.css?v=1">
 </head>
 <body>
 <header class="g-top"><img src="icons/logo.svg" alt="" width="30" height="30"><div><b>SwipeToDrive</b><small>Dan at BMW Ruxley</small></div><button type="button" class="g-revvy" data-confirm>Chat to Revvy</button></header>
@@ -18,7 +20,7 @@
     <p class="g-count" id="g-count"></p>
     <div class="g-ns" id="g-ns" hidden></div>
     <div id="g-deck" class="g-deck" aria-live="polite"></div>
-    <div class="g-acts"><button type="button" class="g-round g-pass" id="g-pass" aria-label="Pass">&#x2715;</button><button type="button" class="g-round g-info" id="g-info" aria-label="Details">i</button><button type="button" class="g-round g-like" id="g-like" aria-label="Like">&#x2665;</button></div>
+    <div class="g-acts"><button type="button" class="g-round g-pass" id="g-pass" aria-label="Pass"><svg class="pa-ic" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button><button type="button" class="g-round g-info" id="g-info" aria-label="Details"><svg class="pa-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".6" fill="currentColor"/></svg></button><button type="button" class="g-round g-like" id="g-like" aria-label="Like"><svg class="pa-ic" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg></button></div>
     <div class="g-nudge" id="g-nudge" hidden><span>Confirm your details to receive more updates</span><button type="button" class="g-btn g-sm" data-confirm>Confirm</button><button type="button" class="g-link g-nx" id="g-nudge-x" aria-label="Not now">Not now</button></div>
     <p class="g-hint">Swipe right to like, left to pass. Tap a car for photos and details.</p>
   </section>
@@ -51,5 +53,6 @@
 <script src="config.js?v=31"></script>
 <script src="revvy-flow.js?v=37"></script>
 <script src="guest.js?v=37"></script>
+<script src="revvy-character.js?v=2"></script>
 </body>
 </html>

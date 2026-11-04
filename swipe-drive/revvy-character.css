@@ -28,3 +28,10 @@
 @keyframes rvcScan{from{transform:translateY(-12px)}to{transform:translateY(12px)}}
 @keyframes rvcLook{from{transform:translateX(-5px)}to{transform:translateX(5px)}}
 @media (prefers-reduced-motion:reduce){.rvc *{animation:none!important}.rvc[data-state=scan] .rvc-scan{transform:none}}
+/* chat and guest pages */
+.botrow .av .rvc{width:22px;height:26px}.botrow .av{overflow:visible}
+.g-chat-top .rvc,.g-revvy .rvc{width:30px;height:36px;float:left;margin:-4px 10px 0 0}.g-revvy .rvc{float:none;margin:-8px 4px -8px -4px}
+.rvc-load{display:block;margin:0 auto 10px}
+.rvc-has{position:relative;margin-left:34px!important;overflow:visible}
+.rvc-bub{position:absolute;left:-36px;bottom:-4px;width:28px;height:33px}
+.rvc-bub:not(.rvc-last) *{animation:none!important}
