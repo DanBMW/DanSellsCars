@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-04T08:02:09.827Z",
+  "captured": "2026-11-04T10:02:38.542Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LY73KMA",
+      "appraisedAt": "2026-11-04T09:24:13.713Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Poor",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--L39dpg_2--/c_fill,h_300,w_300/v1793784349/Live/Appraisals/9621312/044dc62c-b01d-4181-a696-0da6d37739c4.jpg"
+    },
     {
       "registration": "LY16OUO",
       "appraisedAt": "2026-11-03T15:36:08.334Z",
