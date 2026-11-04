@@ -10,7 +10,7 @@ window.CT_CONFIG = {
   CUSTOMER_EMAIL_ENABLED: true, // customer match emails: only to customers Dan has ticked, and who have not unsubscribed
   FORMSPREE: 'https://formspree.io/f/xqewleog',
   DAN_WA: '447827138197',
-  TEST_DRIVE_BOOKING_URL: '', // Dan's approval only booking link. Empty = book by WhatsApp instead
+  TEST_DRIVE_BOOKING_URL: 'https://cal.com/danbmwruxley/test-drive-with-dan-at-bmw-ruxley', // Dan's approval only booking link. Empty = book by WhatsApp instead
   TEST_DRIVE_NOTES_PARAM: 'notes', // query param the booking tool reads for the car details. Set '' if it has none
   GOOGLE_LOGIN_ENABLED: false // turn on once the Google provider is set up in Supabase (see backend/GOOGLE-SIGN-IN.md)
 };
