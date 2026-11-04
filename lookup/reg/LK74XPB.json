@@ -17,7 +17,12 @@
  "price": "£41,000",
  "price_gbp": 41000,
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-6051-751f-98c8-fe56674624a3-preview.jpg",
- "images": null,
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-6051-751f-98c8-fe56674624a3-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-60f9-77ca-ba7f-ce2dfd34599a-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-618c-700c-be43-d2aa86936863-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-6225-7c1d-8b62-47dbec4796bc-enlarged.jpg"
+ ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/259388/pb-bmw-840-2024",
  "listing_id": "259388",
  "source": "forecourt",
