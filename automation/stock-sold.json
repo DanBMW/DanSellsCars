@@ -25,7 +25,7 @@
    "reg": "LX74HTE",
    "mileage": "19,948 miles",
    "colour": "Black",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "196 hp",
@@ -118,23 +118,6 @@
    "seats": "5",
    "price": "£48,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a12153-fe3c-788e-9033-c1d87af11763-preview.jpg"
-  },
-  "247774": {
-   "id": "247774",
-   "model": "BMW iX1 eDrive20 Shadow Edition",
-   "series": "iX1",
-   "year": "2026",
-   "reg": "LX26FZD",
-   "mileage": "7,651 miles",
-   "colour": "Black",
-   "fuel": "Electric",
-   "fuelGroup": "Electric",
-   "body": "SUV",
-   "power": "203 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£34,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-fd83-763a-bcf9-561610cf6218-preview.jpg"
   },
   "247769": {
    "id": "247769",
@@ -297,7 +280,7 @@
    "reg": "LM72HVO",
    "mileage": "22,830 miles",
    "colour": "Black",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "Coupe",
    "power": "286 hp",
@@ -954,7 +937,7 @@
    "price": "£66,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a120a5-a502-7e0e-9529-81ac02e2a986-preview.jpg",
    "first_missing": "2026-10-28",
-   "runs_missing": 61
+   "runs_missing": 62
   },
   "236110": {
    "id": "236110",
@@ -973,7 +956,7 @@
    "price": "£34,995",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a14227-6431-77f8-b126-c378c26fbcd1-preview.jpg",
    "first_missing": "2026-10-29",
-   "runs_missing": 51
+   "runs_missing": 52
   },
   "257458": {
    "id": "257458",
@@ -992,7 +975,7 @@
    "price": "£31,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18122-fd84-7aa3-9209-609b77b2f6e6-preview.jpg",
    "first_missing": "2026-10-31",
-   "runs_missing": 38
+   "runs_missing": 39
   },
   "258089": {
    "id": "258089",
@@ -1011,7 +994,7 @@
    "price": "£13,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a17d50-9703-7a59-8c66-c624abd97794-preview.jpg",
    "first_missing": "2026-10-31",
-   "runs_missing": 38
+   "runs_missing": 39
   },
   "254949": {
    "id": "254949",
@@ -1030,7 +1013,7 @@
    "price": "£67,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a142ad-821b-7241-8b82-3cd22b55bf48-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "254947": {
    "id": "254947",
@@ -1049,7 +1032,7 @@
    "price": "£22,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13290-7b23-7cd9-bd1b-c0417a70d45a-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "253494": {
    "id": "253494",
@@ -1068,7 +1051,7 @@
    "price": "£16,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a10f2d-9797-7472-b353-f6791a2a79b7-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "238259": {
    "id": "238259",
@@ -1087,7 +1070,7 @@
    "price": "£25,250",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019eca4d-85e9-77b3-89a1-58949220494e-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "240864": {
    "id": "240864",
@@ -1106,7 +1089,7 @@
    "price": "£27,800",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a185e9-588c-760b-871c-848d217961a4-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "251472": {
    "id": "251472",
@@ -1125,7 +1108,7 @@
    "price": "£25,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0dc01-6fbf-7c59-be08-cc4529d450b4-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 19
+   "runs_missing": 20
   },
   "249631": {
    "id": "249631",
@@ -1144,7 +1127,26 @@
    "price": "£25,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18d9a-69b9-7f45-a004-07af02ee0b47-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 19
+   "runs_missing": 20
+  },
+  "247774": {
+   "id": "247774",
+   "model": "BMW iX1 eDrive20 Shadow Edition",
+   "series": "iX1",
+   "year": "2026",
+   "reg": "LX26FZD",
+   "mileage": "7,651 miles",
+   "colour": "Black",
+   "fuel": "Electric",
+   "fuelGroup": "Electric",
+   "body": "SUV",
+   "power": "203 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£34,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-fd83-763a-bcf9-561610cf6218-preview.jpg",
+   "first_missing": "2026-11-04",
+   "runs_missing": 1
   }
  },
  "updated": "2026-11-04",
