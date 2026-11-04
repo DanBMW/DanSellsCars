@@ -6,7 +6,7 @@
   function el(t, c, txt) { var e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; }
   var key = function (x) { return Array.isArray(x) ? x[0] : x; }, lab = function (l, k) { var f = (l || []).filter(function (x) { return key(x) === k; })[0]; return f ? (Array.isArray(f) ? f[1] : f) : k; };
   function show(f, v) { var on = v[f.k], must = f.mk ? (v[f.mk] || []) : [];
-    if (f.kind === 'tri') { on = on || []; if (!on.length) return ''; var like = on.filter(function (x) { return must.indexOf(x) < 0; });
+    if (f.kind === 'tri') { on = on || []; if (f.exclusive && on.indexOf(f.exclusive) >= 0) return lab(f.list, f.exclusive); if (!on.length) return ''; var like = on.filter(function (x) { return must.indexOf(x) < 0; });
       return [must.length ? 'must have ' + must.map(function (k) { return lab(f.list, k); }).join(', ') : '', like.length ? (must.length ? 'would also like ' : 'would like ') + like.map(function (k) { return lab(f.list, k); }).join(', ') : ''].filter(Boolean).join(', and '); }
     if (f.kind === 'multi') return (on || []).map(function (k) { return lab(f.list, k); }).join(', ');
     if (f.kind === 'single') return on == null || on === '' || (f.unset || []).indexOf(on) >= 0 ? '' : lab(f.list, on);
@@ -24,7 +24,10 @@
       var g = el('div', o.cls.picks + (f.kind === 'tri' ? ' tri' : ''));
       f.list.forEach(function (x) { var k = key(x), b = el('button', o.cls.pick); b.type = 'button'; b.setAttribute('data-k', k); b.appendChild(el('b', null, lab(f.list, k))); var i = el('i'); b.appendChild(i);
         function paint() { var s = st[k] || ''; b.setAttribute('data-s', s); b.setAttribute('aria-pressed', s ? 'true' : 'false'); i.textContent = s === 'must' ? 'Must have' : s === 'like' && f.kind === 'tri' ? 'Would like' : ''; }
-        b.onclick = function () { var s = st[k] || ''; if (f.kind === 'tri') st[k] = s === '' ? 'like' : s === 'like' ? 'must' : '';
+        b.onclick = function () { var s = st[k] || ''; if (f.kind === 'tri') { st[k] = f.exclusive && k === f.exclusive ? (s ? '' : 'like') : s === '' ? 'like' : s === 'like' ? 'must' : '';
+            /* fuel: Open minded and named fuels are exclusive */
+            if (f.exclusive && st[k]) { if (k === f.exclusive) Object.keys(st).forEach(function (z) { if (z !== k) st[z] = ''; }); else st[f.exclusive] = '';
+              [].forEach.call(g.children, function (z) { var zk = z.getAttribute('data-k'), zs = st[zk] || ''; z.setAttribute('data-s', zs); z.setAttribute('aria-pressed', zs ? 'true' : 'false'); z.querySelector('i').textContent = zs === 'must' ? 'Must have' : zs === 'like' ? 'Would like' : ''; }); } }
           else if (f.kind === 'single') { Object.keys(st).forEach(function (z) { st[z] = ''; }); st[k] = 'like'; [].forEach.call(g.children, function (z) { z.setAttribute('data-s', ''); z.setAttribute('aria-pressed', 'false'); }); }
           else { st[k] = s ? '' : 'like'; if (f.exclusive) { if (k === f.exclusive && st[k]) Object.keys(st).forEach(function (z) { if (z !== k) st[z] = ''; }); else if (st[k]) st[f.exclusive] = ''; [].forEach.call(g.children, function (z) { var zk = z.getAttribute('data-k'); z.setAttribute('data-s', st[zk] || ''); z.setAttribute('aria-pressed', st[zk] ? 'true' : 'false'); }); } }
           paint(); };
@@ -70,7 +73,7 @@
    (signed in only: a forwarded guest link must never write a part exchange). Keys starting desk. live in customers.desk. */
 (function (root) {
   var gbp = function (n) { return '\u00a3' + Number(n).toLocaleString('en-GB'); };
-  var FUEL = [['open', 'Open minded'], ['petrol', 'Petrol'], ['diesel', 'Diesel'], ['hybrid', 'Hybrid'], ['electric', 'Electric']];
+  var FUEL = [['open', 'Open minded'], ['petrol', 'Petrol'], ['diesel', 'Diesel'], ['hybrid', 'Hybrid'], ['phev', 'Plug in hybrid'], ['electric', 'Electric']];
   var BODY = [['any', 'Any'], ['small', 'Small and easy'], ['hatchback', 'Hatchback'], ['saloon', 'Saloon'], ['estate', 'Touring'], ['suv', 'SUV'], ['family', 'Family space'], ['coupe', 'Coupe or convertible']];
   var NU = [['used', 'Used'], ['new', 'Brand new'], ['both', 'Either']];
   var MILES = [['0_8k', '0 to 8k'], ['8_15k', '8k to 15k'], ['15_25k', '15k to 25k'], ['25k_plus', '25k plus']];
@@ -82,7 +85,7 @@
       { k: 'models', mk: 'models_must', kind: 'tri', list: L.models, label: 'Models', q: 'Which BMW models do you like? Tap once for would like, and I will still suggest others. Tap twice for must have, and you will only see those models, with no other suggestions.', legend: 'Once: would like, others still suggested. Twice: must have, only these models shown. Third tap clears it.' },
       { k: 'specs', mk: 'specs_must', kind: 'tri', list: L.specs, label: 'Spec', q: 'Any spec you want, like a reversing camera, heated seats or M Sport? Tap once for would like. Tap twice for must have, and you will only see cars with it, with no other suggestions.', legend: 'Once: would like, others still suggested. Twice: must have, only cars with it shown. Third tap clears it.' },
       { k: 'colours', mk: 'colours_must', kind: 'tri', list: L.colours, label: 'Colours', q: 'Any colours you like, or any to avoid by leaving them out?' },
-      { k: 'fuel', kind: 'multi', list: FUEL, exclusive: 'open', label: 'Fuel', q: 'Which fuel suits you?', hint: 'Pick as many as you like, or Open minded.' },
+      { k: 'fuel', mk: 'fuel_must', kind: 'tri', list: FUEL, exclusive: 'open', label: 'Fuel', q: 'Which fuel suits you? Tap once for would like, and I will still show other fuels lower down. Tap twice for must have, and you will only see that fuel. Or pick Open minded.', legend: 'Once: would like, other fuels still shown. Twice: must have, only that fuel shown. Third tap clears it.' },
       { k: 'body', kind: 'single', list: BODY, label: 'Body or size', q: 'What body style or size?' },
       { k: 'new_used', kind: 'single', list: NU, label: 'New or used', q: 'Brand new, used, or either?' },
       { k: 'mileage_bands', kind: 'multi', list: MILES, label: 'Current mileage on the car', q: 'How many miles should the car already have done?', hint: 'Pick any that are fine, or none for any.' },

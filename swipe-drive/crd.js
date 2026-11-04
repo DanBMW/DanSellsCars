@@ -38,6 +38,10 @@
     var li = function (a) { return a.length ? a.map(function (x) { return '<li>' + v(x) + '</li>'; }).join('') : '<li>None stated</li>'; };
     var nu = { new: 'Brand new', used: 'Used', both: 'New or used' }[c.new_used] || '';
     var fuel = (c.fuel || '') === 'open' ? 'Open minded' : String(c.fuel || '').split(',').filter(Boolean).join(', ');
+    /* fuel Want and Must: only profiles saved with fuel_must split them; older ones keep the plain list */
+    if (Array.isArray(c.fuel_must) && (c.fuel || 'open') !== 'open') { var FL = { phev: 'plug in hybrid' }, fl = String(c.fuel).split(',').filter(Boolean), fm = c.fuel_must.filter(function (x) { return fl.indexOf(x) !== -1; });
+      fm.forEach(function (x) { must.push((FL[x] || x) + ' fuel'); }); fl.filter(function (x) { return fm.indexOf(x) === -1; }).forEach(function (x) { would.push((FL[x] || x) + ' fuel'); });
+      fuel = fl.map(function (x) { return (FL[x] || x) + (fm.indexOf(x) !== -1 ? ' (must)' : ' (would like)'); }).join(', '); }
     var keep = d.keep === 'other' ? (d.keep_other ? d.keep_other + ' months' : 'Other') : optText('keep', d.keep);
     var fund = [].concat(d.fund || []);
     var fundOpts = (field('fund') || [])[2] || [];
