@@ -17,12 +17,17 @@
  "price": "£31,600",
  "price_gbp": 31600,
  "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a3ce-e7fe-7437-9ca8-11fb2c902d45-preview.jpg",
- "images": null,
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a3ce-e7fe-7437-9ca8-11fb2c902d45-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a3ce-e88c-71ee-8225-8f7faec7af8b-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a3ce-e909-7da1-94d0-97ec2addbe8d-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a3ce-e974-769f-bbcb-de65f99661e5-enlarged.jpg"
+ ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/259132/pb-bmw-ix3-2022",
  "listing_id": "259132",
  "source": "group",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-11-04",
- "available_until": "2026-12-04"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }

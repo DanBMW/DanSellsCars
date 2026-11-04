@@ -27,7 +27,7 @@
  "AY72FHL": {
   "first_seen": "2026-11-03",
   "last_seen": "2026-11-04",
-  "removed_at": "2026-11-04"
+  "removed_at": null
  },
  "AY73EKC": {
   "first_seen": "2026-10-07",
@@ -872,7 +872,7 @@
  "LV23VOO": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-04",
-  "removed_at": null
+  "removed_at": "2026-11-04"
  },
  "LV23WVX": {
   "first_seen": "2026-10-07",
@@ -957,7 +957,7 @@
  "LV26KWS": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-04",
-  "removed_at": null
+  "removed_at": "2026-11-04"
  },
  "LV26KZJ": {
   "first_seen": "2026-10-07",
@@ -1837,7 +1837,7 @@
  "RF23NWO": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-04",
-  "removed_at": null
+  "removed_at": "2026-11-04"
  },
  "RJ22DWF": {
   "first_seen": "2026-10-07",
