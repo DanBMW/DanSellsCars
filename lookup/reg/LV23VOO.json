@@ -6,7 +6,7 @@
  "mileage": "30,088 miles",
  "mileage_miles": 30088,
  "colour": "Blue",
- "fuel": "Diesel (mild hybrid)",
+ "fuel": "Diesel",
  "body": "Saloon",
  "gearbox": "Automatic",
  "drive": "RearWheel",
@@ -29,7 +29,7 @@
  "listing_id": "251545",
  "source": "group",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-11-02",
- "available_until": "2026-12-02"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }

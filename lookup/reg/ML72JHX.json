@@ -27,7 +27,7 @@
  "listing_id": "257064",
  "source": "group",
  "finance": null,
- "status": "removed",
- "removed_at": "2026-11-02",
- "available_until": "2026-12-02"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }
