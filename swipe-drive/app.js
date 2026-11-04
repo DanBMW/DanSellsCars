@@ -809,11 +809,24 @@
     badge();
     if (liked) { var likes = Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).length; if (likes === 1 || x.score >= 75) matchMoment(x); else toast('Added to your matches'); }
   }
+  /* Book a test drive: hands off to Dan's approval only booking link, or WhatsApp while there is none. Never on the swipe screen. */
+  function tdGone(c) { var st = String(c.status || c.availability || '').toLowerCase(); return !!(c.sold || c.reserved || /sold|reserv/.test(st)); }
+  function tdText(c) { return [c.year, c.model, c.reg && c.kind !== 'new' ? 'reg ' + c.reg : '', c.price].filter(Boolean).join(', '); }
+  function tdHref(c) { var u = String(CFG.TEST_DRIVE_BOOKING_URL || '').trim(), car = tdText(c);
+    if (!u) return 'https://wa.me/' + String(CFG.DAN_WA || waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to arrange a test drive of the ' + car + '. When suits?');
+    var k = CFG.TEST_DRIVE_NOTES_PARAM; if (!k) return u;
+    return u + (u.indexOf('?') < 0 ? '?' : '&') + encodeURIComponent(k) + '=' + encodeURIComponent('Test drive request from SwipeToDrive: ' + car); }
+  function tdButton(a, c) { if (tdGone(c)) { a.textContent = 'Reserved, see similar'; a.removeAttribute('href'); a.removeAttribute('target'); a.setAttribute('data-close', ''); a.setAttribute('data-td-similar', '1'); return; }
+    a.removeAttribute('data-close'); a.removeAttribute('data-td-similar'); a.setAttribute('target', '_blank'); a.textContent = 'Book a test drive'; a.href = tdHref(c);
+    a.onclick = function () { track('test_drive_click', { kind: c.kind, via: CFG.TEST_DRIVE_BOOKING_URL ? 'link' : 'whatsapp' }); }; }
+  function tdHtml(c) { return tdGone(c) ? '<div class="ct-row"><button class="ct-btn ct-btn-big ct-td" type="button" data-td-similar="1">Reserved, see similar</button></div>'
+    : '<div class="ct-row"><a class="ct-btn ct-btn-big ct-td" target="_blank" rel="noopener" href="' + esc(tdHref(c)) + '">Book a test drive</a></div>'; }
+  document.addEventListener('click', function (e) { var t = e.target.closest && e.target.closest('[data-td-similar]'); if (!t) return; e.preventDefault(); var sh = $('#sheet'); if (sh) sh.hidden = true; var m = $('#matchModal'); if (m) m.hidden = true; });
   function matchMoment(x) {
     var c = x.car, m = $('#matchModal'); var mm = $('#mmCar');
     if (c.image) { mm.src = c.image; mm.hidden = false; } else mm.hidden = true;
     $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other.' : 'You and the ' + c.model + ' look made for each other.';
-    var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
+    tdButton($('#mmTd'), c); var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
     m.hidden = false; try { $('[data-close]', m).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
   function confetti(cv) { if (reduced()) return;
@@ -839,7 +852,7 @@
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
       descHtml(c) +
       (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
-      (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
+      tdHtml(c) + (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
     $('#sheet').hidden = false;
   }
   /* About this car: Hedin's own words, minus the dealer boilerplate shared by every car, with dashes read as spaces to match the site */
