@@ -554,7 +554,8 @@
       if (btn.disabled) return; clearErrs(f); banner(f, ''); msg.textContent = '';
       var bad = [], ph = el.phone.value.replace(/[^\d+]/g, ''), em = staff ? el.email.value.trim() : '';
       if (!el.name.value.trim()) bad.push(fieldErr(f, 'name', 'Add a name.'));
-      if (!ph) { if (!staff) bad.push(fieldErr(f, 'phone', 'Add a mobile number.')); } else if (ph.replace(/\D/g, '').length < 10) bad.push(fieldErr(f, 'phone', 'That mobile number looks too short.'));
+      if (!ph) { if (!staff) bad.push(fieldErr(f, 'phone', 'Add a mobile number.')); } else if (!/^07\d{9}$/.test(ph.replace(/^\+?44/, '0').replace(/^00/, ''))) bad.push(fieldErr(f, 'phone', 'Please use a UK mobile starting 07 or +447, like 07700 900123.'));
+      ['monthly_gbp', 'cash_gbp', 'deposit_gbp', 'px_mileage'].forEach(function (k) { var x = el[k]; if (!x) return; var raw = String(x.value).trim(); if ((x.validity && x.validity.badInput) || /-\s*$/.test(raw) || (raw !== '' && !(+raw >= 0))) bad.push(fieldErr(f, k, k === 'px_mileage' ? 'Mileage can\'t go below zero. Just the figure, like 30000.' : 'Amounts can\'t go below zero. Just the figure, like 400.')); });
       if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
       var rated = Object.keys(readRates()).length > 0;
       if (choice(f, 'px_has') === 'yes' && rated && !$('#pxConfirm').checked) bad.push(fieldErr(f, $('#pxConfirm'), 'Tick I confirm, because condition ratings are filled in.'));
@@ -747,6 +748,8 @@
   function drawDeck() {
     var deck = $('#deck'); deck.innerHTML = '';
     var top = S.deck.slice(0, 3);
+    /* warm the next few photos so a fast swipe never shows a blank card */
+    S.deck.slice(1, 4).forEach(function (x) { var u = x.car && (x.car.image || (x.car.images || [])[0]); if (u && !(S.pre = S.pre || {})[u]) { S.pre[u] = new Image(); S.pre[u].decoding = 'async'; S.pre[u].src = u; } });
     $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length; deck.hidden = !top.length;
     if (!top.length) paintEmpty();
     var rb = $('#relaxBar'); rb.hidden = !S.relax; if (S.relax) $('#relaxText').textContent = 'Showing a wider search: ' + S.relaxLabel + '.';

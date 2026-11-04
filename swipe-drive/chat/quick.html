@@ -11,7 +11,7 @@
 <label>5. Imagine Dan found you the perfect car, ticking every single box of your needs. What would your monthly budget be then?<input id="q_stretch" data-type="cur" data-lo="50" data-hi="3000" placeholder="About £450"></label><div class="err"></div>
 <label>6. When are you hoping to change?<input id="q_when" data-type="date" placeholder="ASAP, next month"></label><div class="err"></div>
 <label>7. Best mobile<input id="q_phone" required data-type="phone" inputmode="tel"></label><div class="err"></div>
-<button class="big pink" type="submit">Send to Dan on WhatsApp</button></form><div class="card"><h2>Rather not type?</h2>
+<div class="err" id="q6err" role="alert"></div><button class="big pink" type="submit">Send to Dan on WhatsApp</button></form><div class="card"><h2>Rather not type?</h2>
 
 <button class="big ghost" id="showCall" type="button">Let Dan fill it in with you on a call</button></div><form class="card" id="call" hidden novalidate><h2>Dan will call you</h2>
 <label>First name<input id="cName"></label><div class="err" id="eName"></div>
@@ -27,7 +27,7 @@ function go(lines){location.href="https://wa.me/447827138197?text="+encodeURICom
 $("call").onsubmit=function(e){e.preventDefault();var n=O.check({type:"name"},$("cName").value),p=O.check({type:"phone",optional:false},$("cPhone").value);
  $("eName").textContent=n.ok?"":O.reply({type:"name"},n);$("ePhone").textContent=p.ok?"":O.reply({type:"phone"},p);
  if(n.ok&&p.ok)go(["Hi Dan, please give me a call to fill in SwipeToDrive together.","Name: "+n.val,"Mobile: "+p.val,"Best time: "+$("cTime").value])};
-$("q6").onsubmit=function(e){e.preventDefault();var ok=true,lines=["Hi Dan, here are my SwipeToDrive quick answers:"];
+$("q6").onsubmit=function(e){e.preventDefault();var fe=$("q6err");if(["q_model","q_cur","q_budget","q_stretch","q_when"].every(function(i){return !$(i).value.trim()})){fe.textContent="Pop in at least one answer about the car you want, even just a rough budget, so Dan has something to go on.";fe.scrollIntoView({block:"center",behavior:"smooth"});return}fe.textContent="";var ok=true,lines=["Hi Dan, here are my SwipeToDrive quick answers:"];
  this.querySelectorAll("input").forEach(function(inp){var q={type:inp.dataset.type};if(inp.dataset.lo)q.fn=O.V.pounds(+inp.dataset.lo,+inp.dataset.hi);if(q.type=="cur")q.ex="Something like £400 a month, or not sure.";
   var req=inp.id=="q_name"||inp.id=="q_phone";if(req)q.optional=false;var r=inp.value.trim()?O.check(q,inp.value):(req?{ok:0,why:"req"}:{ok:1,val:"Not given"}),err=inp.parentNode.nextElementSibling;if(inp.id=="q_stretch"&&r.ok&&inp.value.trim()){var bn=O.check(q,$("q_budget").value),num=function(x){return +String(x).replace(/[^0-9.]/g,"")};if(bn.ok&&num(r.val)<num(bn.val))r={ok:0,why:"low"}}err.textContent=r.ok?"":r.why=="req"?(inp.id=="q_name"?"Your first name, please, so Dan knows who he is talking to.":"A UK mobile, please, so Dan can get back to you."):(r.why=="low"?"That's a touch under your normal budget. Same or higher here, please.":O.reply(q,r));if(!r.ok)ok=false;else if(inp.id=="q_stretch"){if(r.val!="Not given")lines.push("Perfect car stretch budget: "+r.val+" a month")}else lines.push(inp.parentNode.firstChild.textContent.replace(/^\d\. /,"")+": "+r.val+(inp.id=="q_budget"&&r.val!="Not given"?" a month":""))});
  if(ok)go(lines);else{var f=this.querySelector(".err:not(:empty)");if(f)f.previousElementSibling.scrollIntoView({block:"center",behavior:"smooth"})}};
