@@ -814,8 +814,10 @@
   function tdText(c) { return [c.year, c.model, c.reg && c.kind !== 'new' ? 'reg ' + c.reg : '', c.price].filter(Boolean).join(', '); }
   function tdHref(c) { var u = String(CFG.TEST_DRIVE_BOOKING_URL || '').trim(), car = tdText(c);
     if (!u) return 'https://wa.me/' + String(CFG.DAN_WA || waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to arrange a test drive of the ' + car + '. When suits?');
-    var k = CFG.TEST_DRIVE_NOTES_PARAM; if (!k) return u;
-    return u + (u.indexOf('?') < 0 ? '?' : '&') + encodeURIComponent(k) + '=' + encodeURIComponent('Test drive request from SwipeToDrive: ' + car); }
+    var k = CFG.TEST_DRIVE_NOTES_PARAM, cu = S.cust || {}, q = [];
+    if (S.session && S.session.role === 'customer') { if (cu.name) q.push('name=' + encodeURIComponent(cu.name)); if (cu.email) q.push('email=' + encodeURIComponent(cu.email)); }
+    if (k) q.push(encodeURIComponent(k) + '=' + encodeURIComponent('Test drive: ' + car + '\nBooked via SwipeToDrive'));
+    return q.length ? u + (u.indexOf('?') < 0 ? '?' : '&') + q.join('&') : u; }
   function tdButton(a, c) { if (tdGone(c)) { a.textContent = 'Reserved, see similar'; a.removeAttribute('href'); a.removeAttribute('target'); a.setAttribute('data-close', ''); a.setAttribute('data-td-similar', '1'); return; }
     a.removeAttribute('data-close'); a.removeAttribute('data-td-similar'); a.setAttribute('target', '_blank'); a.textContent = 'Book a test drive'; a.href = tdHref(c);
     a.onclick = function () { track('test_drive_click', { kind: c.kind, via: CFG.TEST_DRIVE_BOOKING_URL ? 'link' : 'whatsapp' }); }; }
