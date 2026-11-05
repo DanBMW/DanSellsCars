@@ -69,11 +69,13 @@ window.__backend = backend;
   function show(v) { ['v-loading', 'v-signedout', 'v-main'].forEach(function (x) { $(x).hidden = x !== v; }); }
   function nameOf(id) { var t = (TeamSession.config().team || {})[id] || (TeamSession.config().managers || {})[id] || {}; return t.name || id; }
 
+  /* ?test=1 uses the practice copy (lockupTest) for trying the page out, whatever the live switch says */
+  function RLROOT() { return new URLSearchParams(location.search).has('test') ? 'lockupTest' : TeamSession.paths().RL; }
   var LOG = null, LOGWATCH = '';
   function hours(m) { return Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm'; }
   function watchLog() {
     if (!STATE || !STATE.canManage || LOGWATCH) return;
-    var path = TeamSession.paths().RL === 'lockupTest' ? 'receptionLogTest' : 'receptionLog';
+    var path = RLROOT() === 'lockupTest' ? 'receptionLogTest' : 'receptionLog';
     LOGWATCH = path;
     TeamSession.backend().watch(path, function (v) { LOG = v || {}; paintStats(); });
   }
@@ -91,7 +93,7 @@ window.__backend = backend;
   }
 
   function watchDay(date) {
-    var RL = TeamSession.paths().RL, path = RL + '/reception/' + date;
+    var RL = RLROOT(), path = RL + '/reception/' + date;
     if (WATCHING === path) return;
     WATCHING = path;
     TeamSession.backend().watch(path, function (v) { DAY = v || {}; paint(); });
@@ -154,7 +156,7 @@ window.__backend = backend;
   }
 
   function replyAbsent(shiftId, status, text, date) {
-    var RL = TeamSession.paths().RL;
+    var RL = RLROOT();
     TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/absent/reply', { status: status, text: text, ts: Date.now() })
       .then(function () { alert(status === 'here' ? 'Thanks, we have you as here.' : 'Thanks, the managers have the reason.'); })
       .catch(function () { alert('That did not save. Try again.'); });
@@ -163,7 +165,7 @@ window.__backend = backend;
   function unable(shiftId, personId, text, date) {
     if (!STATE || !STATE.canManage) return;
     if (!confirm(nameOf(personId) + ' is unable to do it because: ' + text + '. They come off the shift, it is logged as a skip, and someone else is put on.')) return;
-    var RL = TeamSession.paths().RL;
+    var RL = RLROOT();
     TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/reallocate', { personId: personId, text: text, by: STATE.personId, ts: Date.now() })
       .then(function () { alert('Sent. The next person is being put on.'); })
       .catch(function () { alert('That did not save. Try again.'); });
@@ -172,14 +174,14 @@ window.__backend = backend;
   function tagAbsent(shiftId, personId, date) {
     if (!STATE || !STATE.canManage) return;
     if (!confirm('Nudge ' + nameOf(personId) + '? They get an email asking where they are. They stay on the shift.')) return;
-    var RL = TeamSession.paths().RL;
+    var RL = RLROOT();
     TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/absent', { personId: personId, by: STATE.personId, ts: Date.now() })
       .then(function () { alert('Nudged. They have been emailed, and they stay on the shift.'); })
       .catch(function () { alert('That did not save. Try again.'); });
   }
 
   function ack(shiftId, date) {
-    var RL = TeamSession.paths().RL;
+    var RL = RLROOT();
     TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'covering', personId: STATE.personId, ts: Date.now() })
       .then(function () { $('r-msg') && (($('r-msg').textContent = 'Thanks, you are covering.')); })
       .catch(function () { $('r-msg') && ($('r-msg').textContent = 'That did not save. Try again.'); });
@@ -196,7 +198,7 @@ window.__backend = backend;
       var ans = RR.answer(kind, text);
       if (!ans || ans.status !== 'declined' || (need && !text)) { $('r-msg').textContent = 'Please say why.'; return; }
       $('r-send').disabled = true;
-      var RL = TeamSession.paths().RL;
+      var RL = RLROOT();
       TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
         .then(function () { $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told.'; })
         .catch(function () { $('r-send').disabled = false; $('r-msg').textContent = 'That did not save. Try again.'; });
