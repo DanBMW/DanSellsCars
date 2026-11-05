@@ -922,6 +922,65 @@ async function calendarMenus(browser, base) {
   }
 }
 
+
+/* showroom cover: the page the person on cover uses, and the board's corner badge */
+async function receptionScenarios(browser, base) {
+  const DATE = '2026-11-02', CLOCK = '2026-11-02T10:30:00Z'; /* a Monday morning in London */
+  const plan = (status, extra) => ({ [DATE]: { _day: { plannedAt: 1 },
+    am: Object.assign({ personId: 'tomi', status: status, ts: 1 }, extra || {}),
+    mid: { personId: 'carl', status: 'assigned', ts: 1 }, pm: { personId: 'dan', status: 'assigned', ts: 1 } } });
+  const seeded = (status, extra) => { const d = JSON.parse(JSON.stringify(FIX)); ['lockup', 'lockupTest'].forEach(r => { d[r] = d[r] || {}; d[r].reception = plan(status, extra); }); return d; };
+  /* the page writes to whichever copy the screen is on: the copy whose shift has changed */
+  const whichRoot = async (p, key, before) => { const d = (await store(p)).data; for (const r of ['lockup', 'lockupTest']) { const v = at(d, r + '/reception/' + DATE + '/' + key); if (v !== undefined && v !== before) return v; } return null; };
+  {
+    const p = await open(browser, base, null, '/reception.html', null, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-signedout:not([hidden])', { timeout: 8000 }).catch(() => {});
+    check('cover: signed out sees the sign in prompt, not the cover', await visible(p, '#v-signedout') && !(await visible(p, '#v-main')));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    check('cover: the person on the morning shift is told they are on cover until 12:00', /on showroom cover until 12:00/.test(await txt(p, '#r-mine')), await txt(p, '#r-mine'));
+    await p.click('[data-ack="am"]'); await p.waitForTimeout(300);
+    const covering = await whichRoot(p, 'am/status', 'assigned');
+    check('cover: "I am covering" is saved on the shift', covering === 'covering', String(covering));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    await p.click('[data-why="cannot"]');
+    await p.click('#r-send');
+    check('cover: "I cannot cover right now" needs a reason before it is sent', /Please say why/.test(await txt(p, '#r-msg')));
+    await p.fill('#r-text', 'with a customer');
+    await p.click('#r-send'); await p.waitForTimeout(300);
+    const st = await store(p), rec = at(st.data, 'lockupTest/reception/' + DATE + '/am') || {}, rec2 = at(st.data, 'lockup/reception/' + DATE + '/am') || {};
+    const live = rec2.status !== 'assigned' ? rec2 : rec;
+    check('cover: the decline is saved with the reason and the words', live.status === 'declined' && live.reason === 'I cannot cover right now' && live.reasonText === 'with a customer', JSON.stringify(live));
+    check('cover: the person who declined keeps their own name on the record', live.personId === 'tomi', String(live.personId));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('assigned'), clock: CLOCK });
+    let vis = false;
+    for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcbadge'); if (!vis) await p.waitForTimeout(250); }
+    check('board: the corner shows who is on showroom cover now', vis);
+    check('board: the corner names the person on the shift', /Tomi/.test(await txt(p, '#rcname')), await txt(p, '#rcname'));
+    check('board: the corner shows the shift times', /09:00 to 12:00|12:00 to 15:00/.test(await txt(p, '#rctime')), await txt(p, '#rctime'));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('declined'), clock: CLOCK });
+    let vis = false;
+    for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcbadge'); if (!vis) await p.waitForTimeout(250); }
+    check('board: a declined shift shows cover needed in amber', vis && /Showroom cover needed/.test(await txt(p, '#rcsmall')), await txt(p, '#rcsmall'));
+    await p.close();
+  }
+}
+
 const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -934,6 +993,7 @@ const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
     await bugScenarios(browser, base);
     await boardScenarios(browser, base);
     await calendarMenus(browser, base);
+    await receptionScenarios(browser, base);
   } catch (e) {
     console.log('FAIL scenario crashed: ' + (e && e.message));
     CHECKS.push({ name: 'run', ok: false });

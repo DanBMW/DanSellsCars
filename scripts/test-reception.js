@@ -1,0 +1,77 @@
+#!/usr/bin/env node
+/* Tests the showroom cover rules (reception-rota.js). Pure, no Firebase.
+ *   node scripts/test-reception.js
+ */
+'use strict';
+const assert = require('assert');
+const R = require('../reception-rota.js');
+
+const team = {
+  tomi: { order: 0 }, carl: { order: 1 }, dan: { order: 2 }, will: { order: 3 }, chloe: { order: 4 }, molly: { order: 5 }, ben: { order: 6 }
+};
+const wk = R.shiftsFor(2), sat = R.shiftsFor(6);
+const everyone = ['tomi', 'carl', 'dan', 'chloe', 'molly', 'ben'];
+
+// three shifts on open days, two on Sunday (none), Saturday has its own hours
+assert.strictEqual(wk.length, 3); assert.strictEqual(sat.length, 3); assert.strictEqual(R.shiftsFor(0).length, 0);
+assert.deepStrictEqual([wk[0].from, wk[2].to], ['09:00', '18:00']);
+console.log('ok: three shifts on each open day, none on Sunday');
+
+// handover team and excluded people are never on reception
+const pool = R.poolFor(everyone, team, ['ben']);
+assert.deepStrictEqual(pool, ['tomi', 'carl', 'dan']);
+console.log('ok: only sales executives go on reception, Chloe and Molly never');
+
+// one person per shift, and each person covers a shift before anyone covers two
+const plan = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan', 'chloe'], team, history: {} });
+const people = Object.keys(plan.assignments).map(k => plan.assignments[k]);
+assert.strictEqual(new Set(people).size, 3, 'three different people on three shifts: ' + JSON.stringify(plan.assignments));
+assert.ok(people.indexOf('chloe') < 0);
+assert.deepStrictEqual(plan.short, []);
+console.log('ok: three different sales executives cover the three shifts');
+
+// fairness: the person with fewest recent shifts goes first
+const fair = R.planDay({ shifts: [wk[0]], available: ['tomi', 'carl'], team, history: { tomi: 4, carl: 1 } });
+assert.strictEqual(fair.assignments.am, 'carl');
+console.log('ok: the person with fewest recent reception shifts is picked');
+
+// too few people: the shift is short, not silently given to someone twice without need
+const thin = R.planDay({ shifts: wk, available: ['tomi'], team, history: {} });
+assert.strictEqual(thin.assignments.am, 'tomi');
+assert.strictEqual(thin.assignments.mid, 'tomi', 'one person covers two shifts only when nobody else is in');
+assert.deepStrictEqual(thin.short, []);
+const none = R.planDay({ shifts: wk, available: [], team, history: {} });
+assert.deepStrictEqual(none.short, ['am', 'mid', 'pm']);
+console.log('ok: with nobody in the shifts are marked short, and one person can cover twice only when alone');
+
+// declined: the person who cannot cover is taken off that shift, the next fair person goes on
+const dec = R.planDay({ shifts: [wk[0]], available: ['tomi', 'carl'], team, history: {}, declined: { am: ['tomi'] } });
+assert.strictEqual(dec.assignments.am, 'carl');
+console.log('ok: a person who cannot cover is replaced on that shift');
+
+// standing assignments are kept on a re-plan; only the open shift changes
+const keep = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan'], team, history: {}, existing: { am: 'dan' }, declined: { mid: ['carl'] } });
+assert.strictEqual(keep.assignments.am, 'dan');
+assert.notStrictEqual(keep.assignments.mid, 'carl');
+console.log('ok: a re-plan keeps the people already on and changes only the shift that needs it');
+
+// the answers: covering, the three reasons, and Other needs words
+assert.deepStrictEqual(R.answer('covering'), { status: 'covering', reassign: false });
+assert.strictEqual(R.answer('cannot', 'busy with a customer').reason, 'I cannot cover right now');
+assert.strictEqual(R.answer('notin').reassign, true);
+assert.strictEqual(R.answer('cannot', 'with a customer').reasonText, 'with a customer', 'the words are kept for I cannot cover too');
+assert.strictEqual(R.answer('offsite').reason, 'I am off site');
+assert.strictEqual(R.answer('other', ''), null, 'Other with no words is refused');
+assert.strictEqual(R.answer('other', '  at the dentist  ').reasonText, 'at the dentist');
+assert.strictEqual(R.answer('bogus'), null);
+console.log('ok: the four answers, and Other needs a reason');
+
+// the email says what Dan asked for
+const m = R.coverEmail('Tomi', wk[1]);
+assert.ok(/You are on showroom cover\. Please cover showroom until 15:00\./.test(m.text), m.text);
+assert.ok(/12:00 to 15:00/.test(m.subject));
+const mn = R.managerNote('Carl', wk[0], 'I cannot cover right now', 'with a customer');
+assert.ok(/Carl said: I cannot cover right now: with a customer/.test(mn.text));
+console.log('ok: the cover email reads "You are on showroom cover. Please cover showroom until HH:MM."');
+
+console.log('all reception tests passed');

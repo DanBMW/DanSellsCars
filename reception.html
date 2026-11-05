@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0b1220">
+<title>Showroom cover | Hedin BMW Ruxley</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="stylesheet" href="team.css">
+<script src="lockup-rota.js"></script>
+<script src="reception-rota.js"></script>
+<script src="team-identity.js"></script>
+<script src="team-session.js"></script>
+</head>
+<body>
+<div id="testbar" class="testbar" hidden>TEST MODE &middot; this is the practice copy of showroom cover</div>
+<header class="top">
+  <a class="brand" href="team.html"><div class="key">&#9881;</div><div>Showroom cover<small>Hedin BMW Ruxley</small></div></a>
+  <div class="hdr-r"><a class="ghost" href="team.html">Team home</a><span id="who"></span></div>
+</header>
+
+<main class="wrap">
+  <section id="v-loading"><div class="card"><p class="muted">Loading&hellip;</p></div></section>
+
+  <section id="v-signedout" hidden>
+    <div class="card"><b>Sign in to see showroom cover</b>
+      <p class="muted small" style="margin:6px 0 12px">Use your work email and PIN on the team page.</p>
+      <a class="big" href="team.html?next=reception.html" style="display:block;text-align:center;text-decoration:none">Go to team sign in</a>
+    </div>
+  </section>
+
+  <section id="v-main" hidden>
+    <div class="hero">
+      <div class="kick" id="r-kick">Today</div>
+      <h1 id="r-title">Showroom cover</h1>
+      <p class="muted" id="r-sub"></p>
+    </div>
+    <div id="r-mine"></div>
+    <div class="card" style="margin-top:14px"><b>Today&rsquo;s cover</b>
+      <ul class="summary" id="r-list" style="margin-top:8px"></ul>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { makeBackend } from "./team-backend.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const app = initializeApp(firebaseConfig);
+const backend = makeBackend(app);
+TeamSession.start(backend);
+window.__backend = backend;
+</script>
+<script>
+(function () {
+  'use strict';
+  var R = window.LockupRota, RR = window.ReceptionRota, $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var WATCHING = '', DAY = {}, STATE = null, OPEN = '';
+
+  function hm(mins) { return String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0'); }
+  function minsOf(t) { return +t.slice(0, 2) * 60 + +t.slice(3, 5); }
+  function show(v) { ['v-loading', 'v-signedout', 'v-main'].forEach(function (x) { $(x).hidden = x !== v; }); }
+  function nameOf(id) { var t = (TeamSession.config().team || {})[id] || (TeamSession.config().managers || {})[id] || {}; return t.name || id; }
+
+  function watchDay(date) {
+    var RL = TeamSession.paths().RL, path = RL + '/reception/' + date;
+    if (WATCHING === path) return;
+    WATCHING = path;
+    TeamSession.backend().watch(path, function (v) { DAY = v || {}; paint(); });
+  }
+
+  function paint() {
+    if (!STATE || STATE.status !== 'team') return;
+    var now = R.london(), date = now.date, shifts = RR.shiftsFor(now.dow), me = STATE.personId;
+    $('who').textContent = STATE.name || '';
+    $('r-kick').textContent = R.DAY_NAMES ? (R.DAY_NAMES[now.dow] + ' ' + date) : date;
+    if (!shifts.length) { $('r-title').textContent = 'Closed today'; $('r-sub').textContent = 'No showroom cover on a Sunday.'; $('r-mine').innerHTML = ''; $('r-list').innerHTML = ''; return; }
+    $('r-title').textContent = 'Showroom cover today';
+    $('r-sub').textContent = 'One person covers the showroom in each shift. Tell us here if you cannot.';
+
+    var mine = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && (r.status === 'assigned' || r.status === 'covering') && minsOf(s.to) > now.mins; })[0];
+    var mineDone = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && r.status === 'declined'; });
+    var html = '';
+    if (mine) {
+      var r = DAY[mine.id] || {};
+      html += '<div class="card"><b>You are on showroom cover until ' + esc(mine.to) + '.</b>' +
+        '<p class="muted small" style="margin:6px 0 10px">' + (r.status === 'covering' ? 'You have said you are covering.' : 'Tap if you are covering, or tell us if you cannot.') + '</p>' +
+        '<button class="big" type="button" data-ack="' + esc(mine.id) + '">I am covering</button>' +
+        '<div style="margin-top:12px" class="names">' +
+        Object.keys(RR.REASONS).filter(function (k) { return k !== 'covering'; }).map(function (k) { return '<button class="ghost" type="button" data-why="' + k + '" data-shift="' + esc(mine.id) + '">' + esc(RR.REASONS[k]) + '</button>'; }).join('') +
+        '</div><div id="r-why"></div><p class="msg" id="r-msg" aria-live="polite"></p></div>';
+    } else if (mineDone.length) {
+      html += '<div class="card"><b>You said you cannot cover ' + esc(mineDone[0].from) + ' to ' + esc(mineDone[0].to) + '.</b><p class="muted small" style="margin:6px 0 0">The managers have been told and someone else has been put on.</p></div>';
+    }
+    $('r-mine').innerHTML = html;
+    $('r-mine').querySelectorAll('[data-ack]').forEach(function (b) { b.onclick = function () { ack(b.getAttribute('data-ack'), date); }; });
+    $('r-mine').querySelectorAll('[data-why]').forEach(function (b) { b.onclick = function () { askWhy(b.getAttribute('data-why'), b.getAttribute('data-shift'), date); }; });
+
+    $('r-list').innerHTML = shifts.map(function (s) {
+      var r = DAY[s.id] || {}, who = r.personId ? nameOf(r.personId) : 'Nobody yet';
+      var pill = r.status === 'covering' ? '<span class="pill g">Covering</span>' : r.status === 'declined' ? '<span class="pill r">Cannot cover</span>' : r.personId ? '<span class="pill">On</span>' : '<span class="pill r">Open</span>';
+      return '<li><b>' + esc(s.from) + ' to ' + esc(s.to) + '</b> ' + esc(who) + ' ' + pill + '</li>';
+    }).join('');
+    watchDay(date);
+  }
+
+  function ack(shiftId, date) {
+    var RL = TeamSession.paths().RL;
+    TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'covering', personId: STATE.personId, ts: Date.now() })
+      .then(function () { $('r-msg') && (($('r-msg').textContent = 'Thanks, you are covering.')); })
+      .catch(function () { $('r-msg') && ($('r-msg').textContent = 'That did not save. Try again.'); });
+  }
+
+  function askWhy(kind, shiftId, date) {
+    OPEN = kind;
+    var need = kind === 'cannot' || kind === 'other';
+    $('r-why').innerHTML = '<div class="card" style="margin-top:12px"><b>' + esc(RR.REASONS[kind]) + '</b>' +
+      '<textarea id="r-text" rows="3" maxlength="500" placeholder="' + (need ? 'Tell the managers why (required)' : 'Anything to add (optional)') + '" style="width:100%;margin-top:8px"></textarea>' +
+      '<button class="big" type="button" id="r-send" style="margin-top:10px">Send to the managers</button></div>';
+    $('r-send').onclick = function () {
+      var text = ($('r-text').value || '').trim();
+      var ans = RR.answer(kind, text);
+      if (!ans || ans.status !== 'declined' || (need && !text)) { $('r-msg').textContent = 'Please say why.'; return; }
+      $('r-send').disabled = true;
+      var RL = TeamSession.paths().RL;
+      TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
+        .then(function () { $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told.'; })
+        .catch(function () { $('r-send').disabled = false; $('r-msg').textContent = 'That did not save. Try again.'; });
+    };
+  }
+
+  TeamSession.onChange(function (s) {
+    STATE = s;
+    if (!s || s.status === 'loading') return;
+    if (s.status !== 'team') { show('v-signedout'); return; }
+    show('v-main'); paint();
+  });
+  setInterval(paint, 60000);
+})();
+</script>
+</body>
+</html>

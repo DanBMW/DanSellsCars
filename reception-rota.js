@@ -1,0 +1,118 @@
+/* reception-rota.js - who covers the showroom (reception desk or the desk by the
+ * halo) each shift. Pure functions, so the scheduled job (scripts/reception-mail.js),
+ * the browser page (reception.html) and scripts/test-reception.js run the same rules.
+ *
+ * Rules (Dan):
+ *   - sales executives only, so the handover team (Chloe and Molly) are never
+ *     put on reception; anyone off, on holiday or away is left out, using the
+ *     shift calendar's own availability (ShiftRota.staffOn);
+ *   - three shifts across the day, one person on each;
+ *   - fair: people with fewest recent reception shifts first, then people who
+ *     have not already covered a shift today, so one person does not get the
+ *     whole day when someone else is free;
+ *   - a person who says they cannot cover is taken off that shift and the next
+ *     fair person is put on, with the reason going to the managers.
+ *
+ * Shift hours are a guess until Dan confirms them: see SHIFTS below.
+ */
+(function (root) {
+  'use strict';
+
+  /* three shifts a day. Times are local (UK). Dan to confirm. */
+  var SHIFTS = {
+    weekday: [
+      { id: 'am', from: '09:00', to: '12:00' },
+      { id: 'mid', from: '12:00', to: '15:00' },
+      { id: 'pm', from: '15:00', to: '18:00' }
+    ],
+    sat: [
+      { id: 'am', from: '09:00', to: '12:00' },
+      { id: 'mid', from: '12:00', to: '14:00' },
+      { id: 'pm', from: '14:00', to: '17:00' }
+    ]
+  };
+  var REASONS = {
+    cannot: 'I cannot cover right now',
+    notin: 'I am not in today',
+    offsite: 'I am off site',
+    other: 'Other'
+  };
+  var NEVER = ['chloe', 'molly']; /* handover team, not sales executives */
+
+  function shiftsFor(dow) {
+    /* dow: 1 Monday .. 6 Saturday, 0 Sunday (closed, no shifts) */
+    if (dow === 0) return [];
+    return dow === 6 ? SHIFTS.sat : SHIFTS.weekday;
+  }
+
+  /* the pool for a day: available sales people, minus the handover team and
+     anyone the config excludes, in team order */
+  function poolFor(available, team, exclude) {
+    var skip = (exclude || []).concat(NEVER);
+    return (available || []).filter(function (id) { return skip.indexOf(id) < 0; })
+      .sort(function (a, b) {
+        var ta = (team && team[a]) || {}, tb = (team && team[b]) || {};
+        return ((ta.order || 0) - (tb.order || 0)) || (a < b ? -1 : 1);
+      });
+  }
+
+  /* plan one day.
+     opts = { shifts, available, team, exclude, history, declined, existing }
+       shifts    the day's shifts (shiftsFor)
+       available ids on the sales team that day (ShiftRota.staffOn)
+       history   { id: reception shifts in the last 30 days }
+       declined  { shiftId: [ids who said they cannot cover that shift] }
+       existing  { shiftId: id } already put on and still standing; these are kept
+     returns { assignments: { shiftId: id|null }, short: [shiftId] } */
+  function planDay(opts) {
+    var shifts = opts.shifts || [], pool = poolFor(opts.available, opts.team, opts.exclude);
+    var hist = opts.history || {}, declined = opts.declined || {}, existing = opts.existing || {};
+    var out = {}, short = [], today = {};
+    /* keep standing assignments as they are */
+    shifts.forEach(function (s) { if (existing[s.id] && pool.indexOf(existing[s.id]) >= 0) { out[s.id] = existing[s.id]; today[existing[s.id]] = (today[existing[s.id]] || 0) + 1; } });
+    shifts.forEach(function (s) {
+      if (out[s.id]) return;
+      var no = declined[s.id] || [];
+      var cand = pool.filter(function (id) { return no.indexOf(id) < 0 && Object.keys(out).every(function (k) { return out[k] !== id; }); });
+      /* only if nobody new is free, let someone already on today cover a second shift */
+      if (!cand.length) cand = pool.filter(function (id) { return no.indexOf(id) < 0; });
+      if (!cand.length) { out[s.id] = null; short.push(s.id); return; }
+      cand.sort(function (a, b) {
+        return ((today[a] || 0) - (today[b] || 0)) || ((hist[a] || 0) - (hist[b] || 0)) || (pool.indexOf(a) - pool.indexOf(b));
+      });
+      out[s.id] = cand[0];
+      today[cand[0]] = (today[cand[0]] || 0) + 1;
+    });
+    return { assignments: out, short: short };
+  }
+
+  /* what a covering person can answer, and what it does to the day */
+  function answer(kind, reason) {
+    if (kind === 'covering') return { status: 'covering', reassign: false };
+    if (!REASONS[kind]) return null;
+    var r = String(reason || '').trim(); /* the words are kept for every reason, not only Other */
+    if (kind === 'other' && !r) return null; /* a reason is needed for Other */
+    return { status: 'declined', reassign: true, reason: REASONS[kind], reasonText: r.slice(0, 500) };
+  }
+
+  /* the wording of the cover email, as Dan asked: "you are on showroom cover,
+     please cover showroom until ##:##" */
+  function coverEmail(name, shift) {
+    return {
+      subject: 'Showroom cover ' + shift.from + ' to ' + shift.to,
+      text: 'Hi ' + name + ',\n\nYou are on showroom cover. Please cover showroom until ' + shift.to + '.\n\n' +
+        'If you cannot cover, tell us at reception.html and give a reason.'
+    };
+  }
+
+  /* the email to managers when someone cannot cover */
+  function managerNote(name, shift, reason, reasonText) {
+    return {
+      subject: name + ' cannot cover the showroom ' + shift.from + ' to ' + shift.to,
+      text: name + ' said: ' + reason + (reasonText ? ': ' + reasonText : '') + '. The next person has been put on.'
+    };
+  }
+
+  var api = { SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, managerNote: managerNote };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
+})(this);

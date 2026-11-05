@@ -97,6 +97,20 @@ async function main() {
     await FA.run({ db, root: ROOT, nowMs, dry: DRY, hol, absences, lockupCfg: cfg, stock: ls.stock, stockGeneratedAt: ls.generatedAt,
       stockFresh: process.env.GITHUB_REPOSITORY ? () => FA.stockFresh({ repo: process.env.GITHUB_REPOSITORY, token: process.env.GITHUB_TOKEN, repoDir }) : null });
   } catch (e) { console.error('forecourt auto failed', e); }
+  /* showroom cover (scripts/reception-mail.js): plans each open day after 07:30 and
+     queues the cover emails and the managers' notes, so they go out in this run */
+  try {
+    const RC = require('./reception-mail.js');
+    const rc = await RC.load(db, ROOT, TEST ? 'shiftsTest' : 'shifts');
+    const notifyNow = (await db.ref(ROOT + '/notify').get()).val() || {};
+    const rq = RC.makeQueue(db, ROOT, notifyNow);
+    const rr = await RC.run({ db, root: ROOT, n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg, testExec: TEST ? TEST_EXEC : null,
+      queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log, reception: rc.reception, absences,
+      shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {} });
+    await rq.flush();
+    console.log('Showroom cover', JSON.stringify(rr));
+  } catch (e) { console.error('showroom cover failed', e); }
+
   const queue = (await db.ref(ROOT + '/notify').get()).val() || {};
   for (const id of seededNow) {
     if (queue[id]) continue;

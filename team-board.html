@@ -1476,6 +1476,18 @@ body.haslock.hasticker .radio-fab{bottom:100px}
   .mascot .rl{display:none}
   .totals .stat{flex:1 1 calc(50% - 4px)}
 }
+/* showroom cover: who is on reception now, top left, out of the way of the QR and the title */
+.rcbadge{position:fixed;top:12px;left:12px;z-index:305;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;background:rgba(10,16,28,.92);border:1px solid #2a3850;border-radius:14px;color:#e8eef9;max-width:min(360px,46vw);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.rcbadge[hidden]{display:none!important}
+.rcbadge .rcph{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none;background:#1e2b40;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#ffd27a;overflow:hidden}
+.rcbadge .rcph img{width:100%;height:100%;object-fit:cover}
+.rcbadge small{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#9fb0ca}
+.rcbadge b{display:block;font-size:18px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcbadge span{display:block;font-size:13px;color:#cfd8e8}
+.rcbadge.open{border-color:#ff9a1f}
+.rcbadge.open b{color:#ffb14d}
+body.premiere .rcbadge{display:none!important}
+@media(max-width:1199px){ .rcbadge{top:auto;bottom:12px;left:12px} }
 </style>
 </head>
 <body>
@@ -1600,6 +1612,10 @@ body.haslock.hasticker .radio-fab{bottom:100px}
 </div>
 
 <!-- only while this screen is locked and waiting to be paired -->
+<div class="rcbadge" id="rcbadge" hidden aria-live="polite">
+  <div class="rcph" id="rcph"></div>
+  <div><small id="rcsmall">On showroom cover</small><b id="rcname"></b><span id="rctime"></span></div>
+</div>
 <div class="pairqr" id="pairqr" aria-hidden="true">
   <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37" class="segno"><path class="qrline" stroke="#000" d="M2 2.5h7m2 0h2m1 0h1m1 0h4m3 0h2m3 0h7m-33 1h1m5 0h1m2 0h2m3 0h1m7 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m2 0h1m2 0h2m2 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h3m2 0h8m3 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h1m1 0h1m1 0h2m4 0h1m3 0h1m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h2m1 0h1m2 0h2m2 0h2m2 0h1m-22 1h2m3 0h1m2 0h1m2 0h3m1 0h1m2 0h2m5 0h2m1 0h1m-27 1h3m6 0h1m3 0h2m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-32 1h2m1 0h1m1 0h1m1 0h1m3 0h1m2 0h1m3 0h1m1 0h1m1 0h1m5 0h2m1 0h1m-30 1h2m4 0h5m3 0h1m1 0h2m1 0h1m1 0h6m-28 1h5m1 0h2m2 0h1m2 0h1m1 0h1m6 0h1m1 0h2m4 0h1m-33 1h4m1 0h1m1 0h3m1 0h4m2 0h1m1 0h3m1 0h2m1 0h2m1 0h1m1 0h2m-29 1h4m3 0h1m1 0h1m4 0h2m1 0h1m1 0h2m2 0h1m2 0h1m1 0h1m-32 1h1m2 0h1m5 0h6m7 0h4m2 0h1m-25 1h3m1 0h1m3 0h1m3 0h2m1 0h1m3 0h1m1 0h2m1 0h1m1 0h1m-30 1h1m6 0h2m2 0h1m1 0h2m2 0h3m1 0h1m2 0h1m2 0h1m1 0h2m-30 1h2m1 0h1m4 0h1m2 0h1m4 0h1m1 0h1m1 0h5m1 0h2m1 0h1m-30 1h1m1 0h1m1 0h5m1 0h2m1 0h1m2 0h1m3 0h3m2 0h2m1 0h2m-33 1h1m1 0h2m1 0h2m2 0h5m1 0h1m2 0h3m1 0h1m1 0h1m1 0h2m-27 1h2m1 0h1m4 0h3m1 0h3m1 0h1m1 0h3m1 0h1m1 0h3m4 0h1m-33 1h2m1 0h1m2 0h1m2 0h1m2 0h5m2 0h1m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h1m-31 1h1m1 0h1m2 0h1m1 0h5m1 0h1m2 0h1m5 0h1m2 0h3m-30 1h2m1 0h4m1 0h1m1 0h1m2 0h5m1 0h2m2 0h7m-22 1h2m1 0h1m1 0h1m3 0h1m1 0h2m1 0h1m1 0h1m3 0h1m3 0h1m-33 1h7m4 0h1m2 0h3m1 0h3m1 0h1m1 0h1m1 0h1m1 0h5m-33 1h1m5 0h1m6 0h2m2 0h1m1 0h2m1 0h3m3 0h2m1 0h2m-33 1h1m1 0h3m1 0h1m3 0h1m1 0h4m4 0h1m2 0h6m2 0h1m-32 1h1m1 0h3m1 0h1m2 0h1m2 0h1m1 0h7m1 0h2m1 0h1m1 0h4m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m1 0h3m1 0h2m1 0h4m1 0h2m1 0h3m-33 1h1m5 0h1m1 0h4m3 0h1m6 0h1m1 0h1m2 0h2m-29 1h7m2 0h3m2 0h7m1 0h1m1 0h2m1 0h3m2 0h1"/></svg></div>
   <b>Unlock this screen</b>
@@ -2076,6 +2092,7 @@ body.haslock.hasticker .radio-fab{bottom:100px}
 <script src="staff-gate.js"></script>
 <script src="lockup-rota.js"></script>
 <script src="shifts-rota.js"></script>
+<script src="reception-rota.js"></script>
 <script src="team-identity.js"></script><script src="team-session.js"></script>
 <script>
 /* ============================================================
@@ -3532,6 +3549,39 @@ function whosinWeek(){
   });
   return {wk:wk, days:days, today:n.date};
 }
+
+/* showroom cover (reception.html): the corner badge shows who is on reception now, with their photo.
+   Reads the day's plan from the lockup root the board is on; the job writes it, the person covering
+   answers on reception.html. An open shift (declined, not yet re-covered) shows in amber. */
+function paintCover(){
+  const b=document.getElementById('rcbadge'); if(!b)return;
+  const RO=window.dsRoster, R=window.LockupRota, RR=window.ReceptionRota;
+  if(!RO||!R||!RR||!RO.reception){ b.hidden=true; return; } /* wait for the plan: before it loads every shift would read as open */
+  const n=R.london(), shifts=RR.shiftsFor(n.dow), day=(RO.reception||{})[n.date]||{};
+  const now=shifts.filter(s=>{ const e=+s.to.slice(0,2)*60+ +s.to.slice(3,5), st=+s.from.slice(0,2)*60+ +s.from.slice(3,5); return n.mins>=st && n.mins<e; })[0];
+  if(!now){ b.hidden=true; return; }
+  const r=day[now.id]||{}, team=(RO.cfg||{}).team||{};
+  const open=r.status==='declined'||!r.personId;
+  b.classList.toggle('open',open);
+  if(open){
+    document.getElementById('rcph').textContent='!';
+    document.getElementById('rcsmall').textContent='Showroom cover needed';
+    document.getElementById('rcname').textContent='Nobody yet';
+  } else {
+    const who=team[r.personId]||{}, name=who.name||r.personId;
+    const ph=document.getElementById('rcph'); ph.innerHTML='';
+    const img=new Image(); img.alt=name; img.onerror=()=>{ ph.textContent=(name||'?').charAt(0).toUpperCase(); };
+    img.onload=()=>{ ph.innerHTML=''; ph.appendChild(img); };
+    img.src='team/'+encodeURIComponent(r.personId)+'.jpg';
+    ph.textContent=(name||'?').charAt(0).toUpperCase();
+    document.getElementById('rcsmall').textContent='On showroom cover';
+    document.getElementById('rcname').textContent=name;
+  }
+  document.getElementById('rctime').textContent=now.from+' to '+now.to;
+  b.hidden=false;
+}
+window.paintCover=paintCover;
+setInterval(paintCover,60000);
 function paintWhosIn(){
   const w=whosinWeek(); if(!w)return;
   const R=window.LockupRota;
@@ -7937,11 +7987,11 @@ let stop=null, dealsGen=0;
 /* ---- lockup strip: lockup/ in Firebase, logic shared with lockup.html ---- */
 /* test mode (lockup/config/testMode, missing = on) reads lockupTest/ instead,
    shows all day so it can be demoed, and is marked TEST MODE in orange */
-const LKS={lockup:{weeks:{},status:{},cfg:{},progress:{},absences:{}},lockupTest:{weeks:{},status:{},cfg:{},progress:{},absences:{}}};
+const LKS={lockup:{weeks:{},status:{},cfg:{},progress:{},absences:{},reception:null},lockupTest:{weeks:{},status:{},cfg:{},progress:{},absences:{},reception:null}};
 let LK_TEST=true; const LK_SANDBOX=new URLSearchParams(location.search).has('sandbox'); /* ?sandbox=1 forces lockupTest/ on this screen only */
-const LK={get absences(){return LKS[LK_TEST?'lockupTest':'lockup'].absences},get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},bank:{}};
+const LK={get absences(){return LKS[LK_TEST?'lockupTest':'lockup'].absences},get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},get reception(){return LKS[LK_TEST?'lockupTest':'lockup'].reception},bank:{}};
 /* the plain script (who is in this week) reads the lockup data through this, since LK lives in the module */
-window.dsRoster={get cfg(){return LK.cfg},get weeks(){return LK.weeks},get absences(){return LK.absences},get bank(){return LK.bank}};
+window.dsRoster={get cfg(){return LK.cfg},get weeks(){return LK.weeks},get absences(){return LK.absences},get reception(){return LK.reception},get bank(){return LK.bank}};
 function paintLock(){
   const R=window.LockupRota, el=document.getElementById('lockstrip'), tx=document.getElementById('ls-text');
   if(!R||!el)return;
@@ -7971,6 +8021,7 @@ function paintLock(){
   watch(r+'/status',v=>{LKS[r].status=v||{};paintLock()});
   watch(r+'/progress',v=>{LKS[r].progress=v||{};paintLock()});
   watch(r+'/absences',v=>{LKS[r].absences=v||{};paintLock();if(curViewId==='whosin')paintWhosIn()});
+  watch(r+'/reception',v=>{LKS[r].reception=v||{};if(window.paintCover)window.paintCover()}); /* null until the first read, so the corner waits */
   watch(r+'/config',v=>{LKS[r].cfg=v||{};if(r==='lockup')LK_TEST=LK_SANDBOX||!(v&&v.testMode===false);paintLock()});
 });
 fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{LK.bank[e.date]=1});paintLock()}).catch(()=>{});

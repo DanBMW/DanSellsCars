@@ -32,6 +32,7 @@ Disallow: /lockup.html
 Disallow: /shifts.html
 Disallow: /team.html
 Disallow: /team-admin.html
+Disallow: /reception.html
 Disallow: /lookup/
 Disallow: /silk-house/
 Disallow: /car-tinder/
