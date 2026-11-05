@@ -111,6 +111,20 @@
   }
 
   /* the email to managers when someone cannot cover */
+  /* the email to managers when a shift has nobody free: the names they can choose from, and why the others are not */
+  function shortNote(shift, free, onOther, booked, names) {
+    var nm = function (id) { return (names || {})[id] || id; };
+    var lines = [];
+    lines.push('Nobody free is left for showroom cover ' + shift.from + ' to ' + shift.to + '. Please choose someone.');
+    lines.push('');
+    lines.push('Free and not on a shift yet: ' + (free.length ? free.map(nm).join(', ') : 'nobody'));
+    lines.push('Free but already on another shift today: ' + (onOther.length ? onOther.map(nm).join(', ') : 'nobody'));
+    lines.push('With an appointment over this shift: ' + (booked.length ? booked.map(nm).join(', ') : 'nobody'));
+    lines.push('');
+    lines.push('Assign on reception.html (managers, Assign under the shift).');
+    return { subject: 'Showroom not covered ' + shift.from + ' to ' + shift.to + ': please choose', text: lines.join('\n') };
+  }
+
   function managerNote(name, shift, reason, reasonText) {
     return {
       subject: name + ' cannot cover the showroom ' + shift.from + ' to ' + shift.to,
@@ -167,6 +181,6 @@
   /* one-off corrections to who is in on a day, on top of the shift calendar. Tomi has appointments on Friday 6
      November, his usual day off, so he is assumed in for that day. Remove the line once the rota itself is corrected. */
   var ONE_OFF_IN = { '2026-11-06': ['tomi'] };
-  var api = { TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, minsOf: minsOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, managerNote: managerNote };
+  var api = { shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, minsOf: minsOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, managerNote: managerNote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

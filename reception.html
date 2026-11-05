@@ -165,14 +165,40 @@ window.__backend = backend;
         '<div id="u-' + esc(s.id) + '" hidden style="margin-top:8px"><textarea rows="2" maxlength="500" data-unable-text="' + esc(s.id) + '" placeholder="Why they cannot do it" style="width:100%"></textarea>' +
         '<button class="big" type="button" data-unable-send="' + esc(s.id) + '" data-who="' + esc(r.personId) + '" style="margin-top:6px">Send and reallocate</button></div></div>' : '';
       var note = r.absent ? '<div class="muted small" style="margin-top:4px">Nudged: ' + esc(nameOf(r.absent.personId)) + (r.absent.reply ? (r.absent.reply.status === 'here' ? '. Says they are here.' : '. Not in: ' + esc(r.absent.reply.text || '')) : '. No reply yet.') + '</div>' : '';
-      return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + tag + '</div>';
+      var pick = '';
+      if (STATE.canManage && !r.personId) {
+        var busyIds = shifts.filter(function (x) { return x.id !== s.id && (DAY[x.id] || {}).personId; }).map(function (x) { return DAY[x.id].personId; });
+        var opts = ['<option value="">Choose someone</option>'].concat(salesIds().map(function (id) {
+          return '<option value="' + esc(id) + '">' + esc(nameOf(id)) + (busyIds.indexOf(id) >= 0 ? ' (already on another shift)' : '') + '</option>';
+        })).join('');
+        pick = '<div class="rc-actions"><select id="as-' + esc(s.id) + '" style="flex:1 1 220px;min-height:44px;font-size:15px;background:#0e1626;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:8px">' + opts + '</select>' +
+          '<button class="big" type="button" data-assign="' + esc(s.id) + '">Assign</button></div>';
+      }
+      return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + tag + '</div>';
     }).join('');
+    $('r-list').querySelectorAll('[data-assign]').forEach(function (b) { b.onclick = function () { var sid = b.getAttribute('data-assign'), pid = document.getElementById('as-' + sid).value; if (!pid) { alert('Choose someone first.'); return; } assign(sid, pid, date); }; });
     $('r-list').querySelectorAll('[data-tag]').forEach(function (b) { b.onclick = function () { tagAbsent(b.getAttribute('data-tag'), b.getAttribute('data-who'), date); }; });
     $('r-list').querySelectorAll('[data-unable]').forEach(function (b) { b.onclick = function () { var f = document.getElementById('u-' + b.getAttribute('data-unable')); f.hidden = !f.hidden; }; });
     $('r-list').querySelectorAll('[data-unable-send]').forEach(function (b) { b.onclick = function () { var sid = b.getAttribute('data-unable-send'), t = document.querySelector('[data-unable-text="' + sid + '"]').value.trim(); if (!t) { alert('Say why they cannot do it.'); return; } unable(sid, b.getAttribute('data-who'), t, date); }; });
     $('r-mgr').hidden = !STATE.canManage;
     if (STATE.canManage) { watchLog(); paintStats(); }
     watchDay(date);
+  }
+
+  /* the sales team, in team order (the handover team are never put on cover) */
+  function salesIds() {
+    var team = TeamSession.config().team || {};
+    return Object.keys(team).filter(function (id) { return team[id].active !== false && id !== 'chloe' && id !== 'molly'; })
+      .sort(function (a, b) { return ((team[a].order || 0) - (team[b].order || 0)) || (a < b ? -1 : 1); });
+  }
+
+  function assign(shiftId, personId, date) {
+    if (!STATE || !STATE.canManage) return;
+    if (!confirm('Put ' + nameOf(personId) + ' on showroom cover for this shift? They will be emailed.')) return;
+    var RL = RLROOT();
+    TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/assign', { personId: personId, by: STATE.personId, ts: Date.now() })
+      .then(function () { alert('Assigned. They are being emailed.'); })
+      .catch(function () { alert('That did not save. Try again.'); });
   }
 
   function replyAbsent(shiftId, status, text, date) {

@@ -71,6 +71,22 @@ async function run(o) {
   for (const s of shifts) {
     let r = today[s.id] || {};
     /* a manager reallocated the shift: the person on it is logged as a skip, and the shift is freed */
+    /* a manager chose someone for a shift nobody could cover: they go on it, and are emailed as usual */
+    if (r.assign && r.assign.ts !== r.assignHandledTs && r.assign.personId) {
+      const pid = r.assign.personId, p = team[pid] || {};
+      const change = { personId: pid, status: 'assigned', ts: Date.now(), assignHandledTs: r.assign.ts, declined: r.declined || {} };
+      today[s.id] = Object.assign({}, r, change);
+      if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(change);
+      if (!dry) await logWrite('on_' + date + '_' + s.id + '_' + change.ts, { kind: 'on', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: change.ts, by: r.assign.by || '' });
+      if (p.email) {
+        const mail = RR.coverEmail(firstName(p, pid), s);
+        qAdd('rc_' + date + '_' + s.id + '_' + pid + '_' + change.ts, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
+      }
+      say('Manager chose ' + firstName(p, pid) + ' for ' + s.id);
+      r = today[s.id];
+      existing[s.id] = pid;
+      continue;
+    }
     if (r.reallocate && r.reallocate.ts !== r.reallocateHandledTs) {
       const rl = r.reallocate, pid = r.personId;
       const dm = Object.assign({}, r.declined || {});
@@ -185,9 +201,15 @@ async function run(o) {
         today[id] = cur;
         await db.ref(root + '/reception/' + date + '/' + id).update({ personId: null, status: 'short', ts: cur.ts });
       } else if (dry) today[id] = Object.assign({}, today[id] || {}, { status: 'short' });
-      qAdd('rc_short_' + date + '_' + id, { to: 'managers', subject: 'Showroom not covered ' + s2.from + ' to ' + s2.to,
-        text: 'Showroom not covered ' + s2.from + ' to ' + s2.to + '. Nobody from the sales team is free to cover the showroom. Please arrange cover.',
-        html: '<p>Showroom not covered ' + esc(s2.from) + ' to ' + esc(s2.to) + '.</p><p>Nobody from the sales team is free to cover the showroom. Please arrange cover.</p>', ts: Date.now() }, dry);
+      const taken = Object.keys(plan.assignments).map(k => plan.assignments[k]).filter(Boolean);
+      const pool2 = RR.poolFor(available, team, []);
+      const booked = pool2.filter(pid => RR.clashes(busy, pid, s2) && declined[id].indexOf(pid) < 0);
+      const free = pool2.filter(pid => !RR.clashes(busy, pid, s2) && declined[id].indexOf(pid) < 0 && taken.indexOf(pid) < 0);
+      const onOther = pool2.filter(pid => !RR.clashes(busy, pid, s2) && declined[id].indexOf(pid) < 0 && taken.indexOf(pid) >= 0);
+      const names = {}; Object.keys(team).forEach(k => { names[k] = firstName(team[k], k); });
+      const note = RR.shortNote(s2, free, onOther, booked, names);
+      qAdd('rc_short_' + date + '_' + id, { to: 'managers', subject: note.subject, text: note.text,
+        html: '<p>' + note.text.split('\n').map(esc).join('</p><p>') + '</p>', ts: Date.now() }, dry);
     }
     if (!dayMark && !dry) await db.ref(root + '/reception/' + date + '/_day').update({ plannedAt: Date.now() });
   }
