@@ -815,7 +815,7 @@
     track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: brandNew(x.car) ? '' : x.car.reg, kind: x.car.kind, score: x.score });
     if (superLike) { badge(); matchMoment(x); return; }
     badge();
-    if (liked) { var likes = Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).length; if (likes === 1 || x.score >= 75) matchMoment(x); else toast('Added to your shortlist'); } /* right swipe always shortlists; strong likes get the match pop up, shortlist first, test drive below */
+    if (liked) { var likes = Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).length; if (likes === 1 || x.score > 90) matchMoment(x); else toast('Added to your shortlist'); } /* right swipe always shortlists; strong likes get the match pop up, shortlist first, test drive below */
   }
   /* Book a test drive: hands off to Dan's approval only booking link, or WhatsApp while there is none. Never on the swipe screen. */
   function tdGone(c) { var st = String(c.status || c.availability || '').toLowerCase(); return !!(c.sold || c.reserved || /sold|reserv/.test(st)); }
