@@ -66,13 +66,23 @@ assert.strictEqual(R.answer('other', '  at the dentist  ').reasonText, 'at the d
 assert.strictEqual(R.answer('bogus'), null);
 console.log('ok: the four answers, and Other needs a reason');
 
-// the email says what Dan asked for
-const m = R.coverEmail('Tomi', wk[1]);
+// the email says what Dan asked for, with tap links for covering / cannot cover
+const m = R.coverEmail('Tomi', wk[1], { date: '2026-11-02' });
 assert.ok(/You are on showroom cover\. Please cover showroom until 15:00\./.test(m.text), m.text);
 assert.ok(/12:00 to 15:00/.test(m.subject));
+assert.ok(/action=covering/.test(m.coveringUrl), m.coveringUrl);
+assert.ok(/action=cannot/.test(m.cannotUrl), m.cannotUrl);
+assert.ok(/test=1/.test(m.coveringUrl), 'practice links keep test=1 while TEST_ONLY');
+assert.ok(/date=2026-11-02/.test(m.coveringUrl) && /shift=mid/.test(m.coveringUrl), m.coveringUrl);
+assert.ok(/I am covering/.test(m.html) && /I cannot cover/.test(m.html), 'html has the tap buttons');
+assert.ok(m.html.indexOf(m.coveringUrl.replace(/&/g, '&amp;')) >= 0 && m.html.indexOf(m.cannotUrl.replace(/&/g, '&amp;')) >= 0, 'html links match the urls');
+assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html/.test(m.text), m.text);
+const ab = R.absentEmail('Tomi', wk[1], { date: '2026-11-02' });
+assert.ok(/action=here/.test(ab.hereUrl) && /action=away/.test(ab.awayUrl), ab.hereUrl);
+assert.ok(/I am here/.test(ab.html) && /I cannot be in/.test(ab.html));
 const mn = R.managerNote('Carl', wk[0], 'I cannot cover right now', 'with a customer');
 assert.ok(/Carl said: I cannot cover right now: with a customer/.test(mn.text));
-console.log('ok: the cover email reads "You are on showroom cover. Please cover showroom until HH:MM."');
+console.log('ok: the cover email has tap buttons for I am covering and I cannot cover');
 
 // management stats: time and shifts from the log; a skip or an absence tag takes that shift back out
 const log = {

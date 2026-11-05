@@ -74,6 +74,10 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(r.added.length, 3, 'three cover emails: ' + r.added.join(','));
   const mail = db.data.lockupTest.notify[r.added[0]];
   assert.ok(/You are on showroom cover\. Please cover showroom until/.test(mail.text), mail.text);
+  assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?test=1/.test(mail.text), mail.text);
+  assert.ok(/action=cannot/.test(mail.text), mail.text);
+  assert.ok(/I am covering/.test(mail.html) && /I cannot cover/.test(mail.html), 'queued html has tap buttons');
+  assert.ok(/action=covering/.test(mail.html) && /action=cannot/.test(mail.html), mail.html.slice(0, 400));
   assert.deepStrictEqual(mail.to, ['daniel.cane@hedinautomotive.co.uk'], 'test mode sends to Dan');
   assert.ok(db.data.lockupTest.reception[MON]._day.plannedAt, 'the day is marked planned');
   console.log('ok: at 08:00 three people are planned, each emailed once');
