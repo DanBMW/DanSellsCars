@@ -815,7 +815,7 @@
     track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: brandNew(x.car) ? '' : x.car.reg, kind: x.car.kind, score: x.score });
     if (superLike) { badge(); matchMoment(x); return; }
     badge();
-    if (liked) toast('Added to your shortlist'); /* right swipe only shortlists; the match pop up with Book a test drive is for Keys please */
+    if (liked) { var likes = Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).length; if (likes === 1 || x.score >= 75) matchMoment(x); else toast('Added to your shortlist'); } /* right swipe always shortlists; strong likes get the match pop up, shortlist first, test drive below */
   }
   /* Book a test drive: hands off to Dan's approval only booking link, or WhatsApp while there is none. Never on the swipe screen. */
   function tdGone(c) { var st = String(c.status || c.availability || '').toLowerCase(); return !!(c.sold || c.reserved || /sold|reserv/.test(st)); }
@@ -835,7 +835,7 @@
   function matchMoment(x) {
     var c = x.car, m = $('#matchModal'); var mm = $('#mmCar');
     if (c.image) { mm.src = c.image; mm.hidden = false; } else mm.hidden = true;
-    $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other.' : 'You and the ' + c.model + ' look made for each other.';
+    $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other. Added to their shortlist.' : 'You and the ' + c.model + ' look made for each other. Added to your shortlist.';
     tdButton($('#mmTd'), c); var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
     m.hidden = false; try { $('[data-close]', m).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
