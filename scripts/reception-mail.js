@@ -80,6 +80,15 @@ async function run(o) {
   const declined = {};
   shifts.forEach(s => { declined[s.id] = Object.keys((today[s.id] || {}).declined || {}); });
 
+  /* everyone on the team needs a work email to be put on showroom cover; tell the managers once about anyone who has none */
+  for (const id of Object.keys(team)) {
+    if (team[id] && team[id].active !== false && !team[id].email) {
+      queueAdd('rc_noemail_' + id, { to: 'managers', subject: (team[id].name || id) + ' has no work email',
+        text: (team[id].name || id) + ' has no work email on the lockup team list, so they cannot be put on showroom cover. Please add their Hedin address.',
+        html: '<p>' + esc((team[id].name || id)) + ' has no work email on the lockup team list, so they cannot be put on showroom cover. Please add their Hedin address.</p>', ts: Date.now() }, dry);
+    }
+  }
+
   /* 2. plan once after 07:30, then only to fill shifts that were reassigned or are open */
   const dayMark = (today._day || {}).plannedAt;
   if (!dayMark && n.mins < PLAN_FROM) return { skipped: 'before 07:30' };
@@ -101,9 +110,17 @@ async function run(o) {
       queueAdd('rc_' + date + '_' + s.id + '_' + pid, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
       say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid));
     }
-    if (plan.short.length) {
-      const names = plan.short.map(id => shifts.filter(s => s.id === id)[0]).map(s => s.from + ' to ' + s.to).join(', ');
-      queueAdd('rc_short_' + date + '_' + plan.short.join('') , { to: 'managers', subject: 'Showroom cover not covered ' + date, text: 'Nobody free for showroom cover: ' + names + '. Please arrange cover.', html: '<p>Nobody free for showroom cover: ' + esc(names) + '. Please arrange cover.</p>', ts: Date.now() }, dry);
+    for (const id of plan.short) {
+      const s2 = shifts.filter(x => x.id === id)[0];
+      if (!s2) continue;
+      if (!dry && (today[id] || {}).status !== 'short') {
+        const cur = Object.assign({}, today[id] || {}, { personId: null, status: 'short', ts: Date.now() });
+        today[id] = cur;
+        await db.ref(root + '/reception/' + date + '/' + id).update({ personId: null, status: 'short', ts: cur.ts });
+      } else if (dry) today[id] = Object.assign({}, today[id] || {}, { status: 'short' });
+      queueAdd('rc_short_' + date + '_' + id, { to: 'managers', subject: 'Showroom not covered ' + s2.from + ' to ' + s2.to,
+        text: 'Showroom not covered ' + s2.from + ' to ' + s2.to + '. Nobody from the sales team is free to cover the showroom. Please arrange cover.',
+        html: '<p>Showroom not covered ' + esc(s2.from) + ' to ' + esc(s2.to) + '.</p><p>Nobody from the sales team is free to cover the showroom. Please arrange cover.</p>', ts: Date.now() }, dry);
     }
     if (!dayMark && !dry) await db.ref(root + '/reception/' + date + '/_day').set({ plannedAt: Date.now() });
   }

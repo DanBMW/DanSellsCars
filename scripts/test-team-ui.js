@@ -976,6 +976,11 @@ async function receptionScenarios(browser, base) {
     const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('declined'), clock: CLOCK });
     let vis = false;
     for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcbadge'); if (!vis) await p.waitForTimeout(250); }
+    const p2 = await open(browser, base, null, '/team-board.html', null, { data: seeded('short'), clock: CLOCK });
+    let vis2 = false;
+    for (let i = 0; i < 80 && !vis2; i++) { vis2 = await visible(p2, '#rcbadge'); if (!vis2) await p2.waitForTimeout(250); }
+    check('board: a shift nobody can cover says showroom not covered', vis2 && /Showroom not covered/.test(await txt(p2, '#rcsmall')), await txt(p2, '#rcsmall'));
+    await p2.close();
     check('board: a declined shift shows cover needed in amber', vis && /Showroom cover needed/.test(await txt(p, '#rcsmall')), await txt(p, '#rcsmall'));
     await p.close();
   }

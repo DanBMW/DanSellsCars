@@ -3561,9 +3561,14 @@ function paintCover(){
   const now=shifts.filter(s=>{ const e=+s.to.slice(0,2)*60+ +s.to.slice(3,5), st=+s.from.slice(0,2)*60+ +s.from.slice(3,5); return n.mins>=st && n.mins<e; })[0];
   if(!now){ b.hidden=true; return; }
   const r=day[now.id]||{}, team=(RO.cfg||{}).team||{};
-  const open=r.status==='declined'||!r.personId;
+  const short=r.status==='short';
+  const open=short||r.status==='declined'||!r.personId;
   b.classList.toggle('open',open);
-  if(open){
+  if(short){
+    document.getElementById('rcph').textContent='!';
+    document.getElementById('rcsmall').textContent='Showroom not covered';
+    document.getElementById('rcname').textContent='Nobody free';
+  } else if(open){
     document.getElementById('rcph').textContent='!';
     document.getElementById('rcsmall').textContent='Showroom cover needed';
     document.getElementById('rcname').textContent='Nobody yet';

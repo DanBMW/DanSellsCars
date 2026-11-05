@@ -121,5 +121,31 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.notStrictEqual(first, 'tomi', 'nobody is put on who has no email');
   console.log('ok: nobody without a work email is put on reception');
 
+  // nobody free: the shift is marked not covered and the managers are told, once
+  const everyoneAway = {};
+  Object.keys(team).forEach(id => { everyoneAway['a_' + id] = { personId: id, kind: 'holiday', status: 'booked', from: MON, to: MON, note: '' }; });
+  db = fakeDb();
+  r = await runAt(db, MON, 8, 0, { absences: everyoneAway });
+  const shortDay = db.data.lockupTest.reception[MON];
+  assert.strictEqual(shortDay.am.status, 'short', JSON.stringify(shortDay.am));
+  assert.strictEqual(shortDay.mid.status, 'short');
+  const shortNote = r.added.filter(id => /^rc_short_/.test(id));
+  assert.strictEqual(shortNote.length, 3, 'one note per uncovered shift: ' + r.added.join(','));
+  const shortMail = db.data.lockupTest.notify[shortNote[0]];
+  assert.ok(/Showroom not covered 09:00 to 12:00/.test(shortMail.subject), shortMail.subject);
+  assert.strictEqual(shortMail.to, 'managers');
+  r = await runAt(db, MON, 8, 30, { absences: everyoneAway });
+  assert.strictEqual(r.added.filter(id => /^rc_short_/.test(id)).length, 0, 'not told again on the next run');
+  console.log('ok: when nobody is free the shift is marked not covered and the managers are told once');
+
+  // a team member with no work email: the managers are told once, and nobody is put on for them
+  const noMail = Object.assign({}, team, { ben: Object.assign({}, team.ben, { email: '' }) });
+  db = fakeDb();
+  r = await runAt(db, MON, 8, 0, { team: noMail });
+  assert.strictEqual(r.added.filter(id => /^rc_noemail_ben/.test(id)).length, 1, 'Ben is flagged: ' + r.added.join(','));
+  r = await runAt(db, MON, 8, 30, { team: noMail });
+  assert.strictEqual(r.added.filter(id => /^rc_noemail_ben/.test(id)).length, 0, 'flagged once');
+  console.log('ok: anyone on the team without a work email is flagged to the managers once');
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });
