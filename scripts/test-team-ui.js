@@ -177,7 +177,7 @@ async function scenarios(browser, base) {
     check('home: greeting uses his first name', (await txt(p, '#home-hello')) === 'Hello, Tomi', await txt(p, '#home-hello'));
     check('home: role is Team', (await txt(p, '#home-role')) === 'Team');
     const cards = await p.locator('#cards a').allTextContents();
-    check('home: a team member sees the four systems', cards.length === 4 && ['Lockup', 'Forecourt', 'Team board', 'Team calendar'].every(w => cards.some(c => c.indexOf(w) === 0)), cards.join(' | '));
+    check('home: a team member sees the five systems', cards.length === 5 && ['Lockup', 'Forecourt', 'Showroom cover', 'Team board', 'Team calendar'].every(w => cards.some(c => c.indexOf(w) === 0)), cards.join(' | '));
     check('home: no admin card for staff', !cards.some(c => c.indexOf('Team admin') === 0));
     check('home: the first sign in saves the link to his person', st.log.some(l => l[0] === 'set' && l[1] === 'shifts/links/tomi1'), JSON.stringify(st.log.slice(-4)));
     check('home: lockup tile says tonight is signed by Carl', (await txt(p, '#cards a[href="lockup.html"] .live')).indexOf('Signed by Carl') >= 0, await txt(p, '#cards a[href="lockup.html"] .live'));

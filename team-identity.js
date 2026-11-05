@@ -73,6 +73,7 @@
     var cards = [
       { id: 'lockup', title: 'Lockup', href: 'lockup.html', blurb: 'Tonight’s lockup, the checklist and sign off.' },
       { id: 'forecourt', title: 'Forecourt checks', href: 'Forecourt.html', blurb: 'This week’s forecourt check, car by car.' },
+      { id: 'reception', title: 'Showroom cover', href: 'reception.html', blurb: 'Who is on the showroom today, and tell us if you cannot cover.' },
       { id: 'board', title: 'Team board', href: 'team-board.html', blurb: 'The £15,000 profit challenge and the wall display.' },
       { id: 'calendar', title: 'Team calendar', href: 'shifts.html', blurb: 'Who is in, days off, holidays and bank holidays.' }
     ];

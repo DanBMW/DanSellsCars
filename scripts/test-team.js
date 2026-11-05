@@ -71,7 +71,7 @@ console.log('ok: admin, manager and staff roles come from the staff list, the ma
 
 // the home cards: team members see the four systems, admins also see the admin panel
 const staffCards = T.cardsFor(T.resolve(Object.assign({}, base, { user: ok('tomiwa.adelaja@hedinautomotive.co.uk'), link: 'tomi' })));
-assert.deepStrictEqual(staffCards.map(c => c.id), ['lockup', 'forecourt', 'board', 'calendar']);
+assert.deepStrictEqual(staffCards.map(c => c.id), ['lockup', 'forecourt', 'reception', 'board', 'calendar']);
 const adminCards = T.cardsFor(T.resolve(Object.assign({}, base, { user: ok('daniel.cane@hedinautomotive.co.uk'), staffAdmin: true, link: 'dan' })));
 assert.ok(adminCards.some(c => c.id === 'admin' && c.href === 'team-admin.html'));
 assert.deepStrictEqual(T.cardsFor({ status: 'signedout' }), [], 'no cards without a team identity');
