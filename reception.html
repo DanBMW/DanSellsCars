@@ -70,7 +70,7 @@ window.__backend = backend;
   function nameOf(id) { var t = (TeamSession.config().team || {})[id] || (TeamSession.config().managers || {})[id] || {}; return t.name || id; }
 
   /* ?test=1 uses the practice copy (lockupTest) for trying the page out, whatever the live switch says */
-  function RLROOT() { return new URLSearchParams(location.search).has('test') ? 'lockupTest' : TeamSession.paths().RL; }
+  function RLROOT() { return window.ReceptionRota.RECEPTION_ROOT; } /* the cover's own root, test copy while TEST_ONLY */
   var LOG = null, LOGWATCH = '';
   function hours(m) { return Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm'; }
   function watchLog() {

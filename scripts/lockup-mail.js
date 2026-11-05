@@ -22,6 +22,7 @@
  */
 'use strict';
 const R = require('../lockup-rota.js');
+const RR = require('../reception-rota.js');
 const SITE = 'https://dan-sells.co.uk/lockup.html';
 const DRY = !!process.env.DRY_RUN;
 /* Test mode: lockup/config/testMode (missing = on). Everything is read from and
@@ -101,16 +102,17 @@ async function main() {
      at 07:30 (today, and re-checks it) and at 17:30 (tomorrow), and queues the emails in this run */
   try {
     const RC = require('./reception-mail.js');
-    const rc = await RC.load(db, ROOT, TEST ? 'shiftsTest' : 'shifts');
+    const RROOT = RR.RECEPTION_ROOT;
+    const rc = await RC.load(db, RROOT, TEST ? 'shiftsTest' : 'shifts');
     const tom = R.addDays(n.date, 1);
-    const markOf = async d => (await db.ref(ROOT + '/reception/' + d + '/_day').get()).val() || {};
+    const markOf = async d => (await db.ref(RROOT + '/reception/' + d + '/_day').get()).val() || {};
     const todayMark = await markOf(n.date), tomMark = await markOf(tom);
     const needToday = n.mins >= 7 * 60 + 30 && (!todayMark.plannedAt || !todayMark.rechecked);
     const needTomorrow = n.mins >= 17 * 60 + 30 && !tomMark.plannedAt;
     const feedToday = needToday ? await RC.readBusy(n.date) : null;
     const feedTomorrow = needTomorrow ? await RC.readBusy(tom) : null;
     const rq = RC.makeQueue(db, ROOT, (await db.ref(ROOT + '/notify').get()).val() || {});
-    const base = { db, root: ROOT, logRoot: TEST ? 'receptionLogTest' : 'receptionLog', n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg,
+    const base = { db, root: RROOT, logRoot: RR.RECEPTION_LOG, n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg,
       testExec: TEST ? TEST_EXEC : null, queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log,
       reception: rc.reception, absences, shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {} };
     const rToday = await RC.run(Object.assign({}, base, { date: n.date, planAt: 7 * 60 + 30, recheck: !!feedToday,
@@ -147,10 +149,11 @@ async function main() {
     const q = queue[id];
     if (!q || q.sent) continue;
     if (q.sendAfter && nowMs < q.sendAfter) { console.log('Holding', id, 'until', new Date(q.sendAfter).toISOString()); continue; }
-    const to = q.to === 'team' ? teamList : Array.isArray(q.to) ? (TEST ? [TEST_EXEC] : q.to) : mgrList;
+    /* cover emails (rcTest) go only to the two test addresses, whatever the live switch says */
+    const to = q.rcTest ? (q.to === 'managers' ? [TEST_MGR] : [TEST_EXEC]) : q.to === 'team' ? teamList : Array.isArray(q.to) ? (TEST ? [TEST_EXEC] : q.to) : mgrList;
     if (!to.length) { console.log('Notification', id, 'waiting, no recipients set'); continue; }
     if (q.html) {
-      const subject = (TEST ? '[TEST] ' : '') + q.subject;
+      const subject = (TEST || q.rcTest ? '[TEST] ' : '') + q.subject;
       console.log((DRY ? '[dry] ' : '') + 'Send "' + subject + '" to ' + to.join(', '));
       if (DRY) console.log(q.text || '');
       else await transport().sendMail(Object.assign({ from: { name: q.fromName || process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to, subject, text: q.text || '', html: q.html }, q.csv ? { attachments: [{ filename: q.csvName || 'forecourt.csv', content: q.csv, contentType: 'text/csv' }] } : {}));

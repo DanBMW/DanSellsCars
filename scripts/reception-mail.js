@@ -51,6 +51,8 @@ async function run(o) {
   const date0 = o.date || n.date;
   const say = log || console.log;
   const logRoot = o.logRoot || 'receptionLog';
+  const flag = Object.assign({}, RR.TEST_ONLY ? { rcTest: true } : {});
+  const qAdd = (id, rec, dry) => queueAdd(id, Object.assign({}, rec, flag), dry);
   /* the management log (skips, absence tags, and every shift someone was put on): admin writes only */
   const logWrite = async (key, entry) => { if (!dry) await db.ref(logRoot + '/' + key).set(entry); };
   const date = date0, dow = SR.dowOf(date);
@@ -86,7 +88,7 @@ async function run(o) {
     if (r.absent && r.absent.reply) {
       const rp = r.absent.reply, who = firstName(team[r.absent.personId], r.absent.personId);
       const line = rp.status === 'here' ? who + ' says they are here.' : who + ' is not in: ' + (rp.text || 'no reason given') + '.';
-      queueAdd('rc_reply_' + date + '_' + s.id + '_' + rp.ts, { to: 'managers', subject: who + (rp.status === 'here' ? ' is here' : ' is not in') + ' (' + s.from + ' to ' + s.to + ')', text: line, html: '<p>' + esc(line) + '</p>', ts: Date.now() }, dry);
+      qAdd('rc_reply_' + date + '_' + s.id + '_' + rp.ts, { to: 'managers', subject: who + (rp.status === 'here' ? ' is here' : ' is not in') + ' (' + s.from + ' to ' + s.to + ')', text: line, html: '<p>' + esc(line) + '</p>', ts: Date.now() }, dry);
     }
     /* a manager nudged someone who is not in the showroom: log it and email them. They stay on the shift. */
     if (r.absent && r.absent.ts !== r.absentHandledTs) {
@@ -95,7 +97,7 @@ async function run(o) {
       if (ap.email) {
         const first = firstName(ap, ab.personId);
         const line = 'Hi ' + first + ', you are not in the showroom. You are on showroom cover ' + s.from + ' to ' + s.to + '.';
-        queueAdd('rc_absent_' + date + '_' + s.id + '_' + ab.ts, { to: [testExec || ap.email], subject: 'Where are you? 👀',
+        qAdd('rc_absent_' + date + '_' + s.id + '_' + ab.ts, { to: [testExec || ap.email], subject: 'Where are you? 👀',
           text: line + '\n\nWhere are you? If you are here, tell us: I am here. If you cannot be in, update the reason.\n\nhttps://dan-sells.co.uk/reception.html',
           html: '<p>' + esc(line) + '</p><p>Where are you? 👀 If you are here, tell us: <b>I am here</b>. If you cannot be in, update the reason.</p><p><a href="https://dan-sells.co.uk/reception.html">Open showroom cover</a></p>', ts: Date.now() }, dry);
       }
@@ -108,7 +110,7 @@ async function run(o) {
       const who = firstName(team[r.personId] || (managers || {})[r.personId], r.personId);
       const note = RR.managerNote(who, s, r.reason || 'Cannot cover', r.reasonText || '');
       await logWrite('skip_' + date + '_' + s.id + '_' + r.ts, { kind: 'skip', personId: r.personId, date, shift: s.id, from: s.from, to: s.to, ts: r.ts, reason: r.reason || '', reasonText: r.reasonText || '' });
-      queueAdd('rc_decl_' + date + '_' + s.id + '_' + r.ts, { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
+      qAdd('rc_decl_' + date + '_' + s.id + '_' + r.ts, { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
       const dm = Object.assign({}, r.declined || {});
       if (r.personId) dm[r.personId] = true;
       const freed = { personId: null, status: 'open', declined: dm, handledTs: r.ts };
@@ -143,7 +145,7 @@ async function run(o) {
   /* everyone on the team needs a work email to be put on showroom cover; tell the managers once about anyone who has none */
   for (const id of Object.keys(team)) {
     if (team[id] && team[id].active !== false && !team[id].email) {
-      queueAdd('rc_noemail_' + id, { to: 'managers', subject: (team[id].name || id) + ' has no work email',
+      qAdd('rc_noemail_' + id, { to: 'managers', subject: (team[id].name || id) + ' has no work email',
         text: (team[id].name || id) + ' has no work email on the lockup team list, so they cannot be put on showroom cover. Please add their Hedin address.',
         html: '<p>' + esc((team[id].name || id)) + ' has no work email on the lockup team list, so they cannot be put on showroom cover. Please add their Hedin address.</p>', ts: Date.now() }, dry);
     }
@@ -151,7 +153,7 @@ async function run(o) {
 
   /* 2. plan once (tomorrow from 17:30, today from 07:30), then only to fill shifts that were reassigned or are open */
   if (o.feedFailed && !dry && !(today._day || {}).plannedAt) {
-    queueAdd('rc_feed_' + date, { to: 'managers', subject: 'Appointments not read for ' + date, text: 'The appointment times could not be read, so showroom cover for ' + date + ' is planned from the shift calendar alone. Please check the appointments.', html: '<p>The appointment times could not be read, so showroom cover for ' + esc(date) + ' is planned from the shift calendar alone. Please check the appointments.</p>', ts: Date.now() }, dry);
+    qAdd('rc_feed_' + date, { to: 'managers', subject: 'Appointments not read for ' + date, text: 'The appointment times could not be read, so showroom cover for ' + date + ' is planned from the shift calendar alone. Please check the appointments.', html: '<p>The appointment times could not be read, so showroom cover for ' + esc(date) + ' is planned from the shift calendar alone. Please check the appointments.</p>', ts: Date.now() }, dry);
   }
   const dayMark = (today._day || {}).plannedAt;
   const planAt = o.planAt != null ? o.planAt : PLAN_FROM;
@@ -172,7 +174,7 @@ async function run(o) {
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(rec);
       await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
       const mail = RR.coverEmail(firstName(p, pid), s);
-      queueAdd('rc_' + date + '_' + s.id + '_' + pid, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
+      qAdd('rc_' + date + '_' + s.id + '_' + pid, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
       say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid));
     }
     for (const id of plan.short) {
@@ -183,7 +185,7 @@ async function run(o) {
         today[id] = cur;
         await db.ref(root + '/reception/' + date + '/' + id).update({ personId: null, status: 'short', ts: cur.ts });
       } else if (dry) today[id] = Object.assign({}, today[id] || {}, { status: 'short' });
-      queueAdd('rc_short_' + date + '_' + id, { to: 'managers', subject: 'Showroom not covered ' + s2.from + ' to ' + s2.to,
+      qAdd('rc_short_' + date + '_' + id, { to: 'managers', subject: 'Showroom not covered ' + s2.from + ' to ' + s2.to,
         text: 'Showroom not covered ' + s2.from + ' to ' + s2.to + '. Nobody from the sales team is free to cover the showroom. Please arrange cover.',
         html: '<p>Showroom not covered ' + esc(s2.from) + ' to ' + esc(s2.to) + '.</p><p>Nobody from the sales team is free to cover the showroom. Please arrange cover.</p>', ts: Date.now() }, dry);
     }
