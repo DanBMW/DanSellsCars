@@ -170,9 +170,8 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(absents.length, 1, JSON.stringify(absents));
   assert.strictEqual(absents[0].personId, midBefore);
   assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip').length, 1, 'an absence tag is not a skip');
-  assert.notStrictEqual(db.data.lockupTest.reception[MON].mid.personId, midBefore, 'the absent person is taken off the shift');
-  assert.ok(db.data.lockupTest.reception[MON].mid.personId, 'someone else is put on');
-  console.log('ok: a manager absence tag is logged as an absence, reassigns the shift, and is not a skip');
+  assert.strictEqual(db.data.lockupTest.reception[MON].mid.personId, midBefore, 'a nudge does not take them off the shift');
+  console.log('ok: a nudge is logged as an absence, is not a skip, and leaves them on the shift');
 
   // an absence tag emails the person "Where are you?", and their reply goes to the managers once
   db = fakeDb();
@@ -194,14 +193,15 @@ async function runAt(db, date, h, m, cfgExtra) {
 
   // a manager reallocates a shift: the person on it is logged as a skip with the reason, and the next person goes on
   const onNow = db.data.lockupTest.reception[MON].am.personId;
-  db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { reallocate: { personId: onNow, by: 'will', ts: 7000 } });
+  db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { reallocate: { personId: onNow, by: 'will', ts: 7000, text: 'at the dentist' } });
   r = await runAt(db, MON, 10, 45);
-  const rskips = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip' && e.reason === 'Reallocated by manager');
+  const rskips = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip' && e.reason === 'Unable to do it');
   assert.strictEqual(rskips.length, 1, JSON.stringify(rskips));
   assert.strictEqual(rskips[0].personId, onNow, 'logged as a skip against the person taken off');
   assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, onNow, 'reallocated to someone else');
   assert.ok(db.data.lockupTest.reception[MON].am.personId, 'and the shift is covered');
-  console.log('ok: a reallocation is logged as a skip with its reason and the shift is covered by someone else');
+  assert.strictEqual(rskips[0].reasonText, 'at the dentist', 'the manager\'s words are kept');
+  console.log('ok: unable to do it is logged as a skip with the manager\'s words, and the shift is covered by someone else');
 
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

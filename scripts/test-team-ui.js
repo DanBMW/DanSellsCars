@@ -1005,10 +1005,13 @@ async function receptionScenarios(browser, base) {
     const p = await open(browser, base, null, '/reception.html', U.will, { data: seeded('assigned'), clock: CLOCK });
     await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
     await p.waitForTimeout(500);
-    await p.click('[data-realloc="mid"]'); await p.waitForTimeout(300);
+    await p.click('[data-unable="mid"]'); await p.waitForTimeout(200);
+    check('absent: "unable to do it" opens a text box for the reason', await visible(p, '[data-unable-text="mid"]'));
+    await p.fill('[data-unable-text="mid"]', 'at the dentist');
+    await p.click('[data-unable-send="mid"]'); await p.waitForTimeout(300);
     const st = await store(p);
     const re = at(st.data, 'lockupTest/reception/' + DATE + '/mid/reallocate') || at(st.data, 'lockup/reception/' + DATE + '/mid/reallocate');
-    check('absent: a manager can reallocate a shift', !!re && re.personId === 'carl', JSON.stringify(re));
+    check('absent: a manager can say someone is unable to do it, with the reason, and the shift is reallocated', !!re && re.personId === 'carl' && re.text === 'at the dentist', JSON.stringify(re));
     await p.close();
   }
   {

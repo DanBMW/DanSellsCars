@@ -382,7 +382,7 @@
             },
             "reallocate": {
               ".write": "auth != null && auth.token.email_verified === true && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shifts/managers').child(root.child('shifts/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shifts/links').child(auth.uid).val()).val() !== null)",
-              ".validate": "newData.hasChildren(['ts']) && newData.child('ts').isNumber()"
+              ".validate": "newData.hasChildren(['ts']) && newData.child('ts').isNumber() && (!newData.child('text').exists() || newData.child('text').val().length <= 500)"
             },
             "status": { ".validate": "newData.isString()" },
             "personId": { ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,24}$/)" },
@@ -544,7 +544,7 @@
             },
             "reallocate": {
               ".write": "auth != null && auth.token.email_verified === true && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shiftsTest/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() !== null)",
-              ".validate": "newData.hasChildren(['ts']) && newData.child('ts').isNumber()"
+              ".validate": "newData.hasChildren(['ts']) && newData.child('ts').isNumber() && (!newData.child('text').exists() || newData.child('text').val().length <= 500)"
             },
             "status": { ".validate": "newData.isString()" },
             "personId": { ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,24}$/)" },

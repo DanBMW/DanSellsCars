@@ -138,13 +138,16 @@ window.__backend = backend;
     $('r-list').innerHTML = shifts.map(function (s) {
       var r = DAY[s.id] || {}, who = r.personId ? nameOf(r.personId) : 'Nobody yet';
       var pill = r.status === 'short' ? '<span class="pill r">Not covered</span>' : r.status === 'covering' ? '<span class="pill g">Covering</span>' : r.status === 'declined' ? '<span class="pill r">Cannot cover</span>' : r.personId ? '<span class="pill">On</span>' : '<span class="pill r">Open</span>';
-      var tag = (STATE.canManage && r.personId) ? ' <button class="ghost" type="button" data-tag="' + esc(s.id) + '" data-who="' + esc(r.personId) + '" style="margin-left:6px">Tag ' + esc(nameOf(r.personId)) + ' absent</button>' +
-        ' <button class="ghost" type="button" data-realloc="' + esc(s.id) + '" data-who="' + esc(r.personId) + '" style="margin-left:6px">Reallocate</button>' : '';
-      var note = r.absent ? '<div class="muted small" style="margin-top:4px">Tagged absent: ' + esc(nameOf(r.absent.personId)) + (r.absent.reply ? (r.absent.reply.status === 'here' ? '. Says they are here.' : '. Not in: ' + esc(r.absent.reply.text || '')) : '. Not replied yet.') + '</div>' : '';
-      return '<li><b>' + esc(s.from) + ' to ' + esc(s.to) + '</b> ' + esc(who) + ' ' + pill + tag + note + '</li>';
+      var tag = (STATE.canManage && r.personId) ? '<div style="margin-top:6px"><button class="ghost" type="button" data-tag="' + esc(s.id) + '" data-who="' + esc(r.personId) + '">Nudge ' + esc(nameOf(r.personId)) + ', not in the showroom</button> ' +
+        '<button class="ghost" type="button" data-unable="' + esc(s.id) + '" data-who="' + esc(r.personId) + '">' + esc(nameOf(r.personId)) + ' is unable to do it because&hellip;</button>' +
+        '<div id="u-' + esc(s.id) + '" hidden style="margin-top:8px"><textarea rows="2" maxlength="500" data-unable-text="' + esc(s.id) + '" placeholder="Why they cannot do it" style="width:100%"></textarea>' +
+        '<button class="big" type="button" data-unable-send="' + esc(s.id) + '" data-who="' + esc(r.personId) + '" style="margin-top:6px">Send and reallocate</button></div></div>' : '';
+      var note = r.absent ? '<div class="muted small" style="margin-top:4px">Nudged: ' + esc(nameOf(r.absent.personId)) + (r.absent.reply ? (r.absent.reply.status === 'here' ? '. Says they are here.' : '. Not in: ' + esc(r.absent.reply.text || '')) : '. No reply yet.') + '</div>' : '';
+      return '<li><b>' + esc(s.from) + ' to ' + esc(s.to) + '</b> ' + esc(who) + ' ' + pill + note + tag + '</li>';
     }).join('');
     $('r-list').querySelectorAll('[data-tag]').forEach(function (b) { b.onclick = function () { tagAbsent(b.getAttribute('data-tag'), b.getAttribute('data-who'), date); }; });
-    $('r-list').querySelectorAll('[data-realloc]').forEach(function (b) { b.onclick = function () { reallocate(b.getAttribute('data-realloc'), b.getAttribute('data-who'), date); }; });
+    $('r-list').querySelectorAll('[data-unable]').forEach(function (b) { b.onclick = function () { var f = document.getElementById('u-' + b.getAttribute('data-unable')); f.hidden = !f.hidden; }; });
+    $('r-list').querySelectorAll('[data-unable-send]').forEach(function (b) { b.onclick = function () { var sid = b.getAttribute('data-unable-send'), t = document.querySelector('[data-unable-text="' + sid + '"]').value.trim(); if (!t) { alert('Say why they cannot do it.'); return; } unable(sid, b.getAttribute('data-who'), t, date); }; });
     $('r-mgr').hidden = !STATE.canManage;
     if (STATE.canManage) { watchLog(); paintStats(); }
     watchDay(date);
@@ -157,21 +160,21 @@ window.__backend = backend;
       .catch(function () { alert('That did not save. Try again.'); });
   }
 
-  function reallocate(shiftId, personId, date) {
+  function unable(shiftId, personId, text, date) {
     if (!STATE || !STATE.canManage) return;
-    if (!confirm('Reallocate this shift? ' + nameOf(personId) + ' is taken off it, it is logged as a skip, and someone else is put on.')) return;
+    if (!confirm(nameOf(personId) + ' is unable to do it because: ' + text + '. They come off the shift, it is logged as a skip, and someone else is put on.')) return;
     var RL = TeamSession.paths().RL;
-    TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/reallocate', { personId: personId, by: STATE.personId, ts: Date.now() })
-      .then(function () { alert('Reallocated. The next person is being put on.'); })
+    TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/reallocate', { personId: personId, text: text, by: STATE.personId, ts: Date.now() })
+      .then(function () { alert('Sent. The next person is being put on.'); })
       .catch(function () { alert('That did not save. Try again.'); });
   }
 
   function tagAbsent(shiftId, personId, date) {
     if (!STATE || !STATE.canManage) return;
-    if (!confirm('Tag ' + nameOf(personId) + ' absent for this shift? Someone else will be put on, and it is logged.')) return;
+    if (!confirm('Nudge ' + nameOf(personId) + '? They get an email asking where they are. They stay on the shift.')) return;
     var RL = TeamSession.paths().RL;
     TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/absent', { personId: personId, by: STATE.personId, ts: Date.now() })
-      .then(function () { alert('Tagged absent. Someone else is being put on, and it is in the log.'); })
+      .then(function () { alert('Nudged. They have been emailed, and they stay on the shift.'); })
       .catch(function () { alert('That did not save. Try again.'); });
   }
 
