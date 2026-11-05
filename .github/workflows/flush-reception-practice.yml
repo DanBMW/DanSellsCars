@@ -1,0 +1,32 @@
+name: flush-reception-practice
+
+# Reception practice flush: lockupTest only, rcTest emails to Dan and Nathan only.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/triggers/flush-reception-practice'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flush-reception-practice
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i --no-save --no-audit --no-fund firebase-admin@12 nodemailer@6
+      - run: node scripts/flush-reception-practice.js
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
