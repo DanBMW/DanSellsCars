@@ -766,9 +766,15 @@ async function receptionScenarios(browser, base) {
     await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
     await p.waitForTimeout(500);
     check('cover: the person on the morning shift is told they are on cover until 12:00', /on showroom cover until 12:00/.test(await txt(p, '#r-mine')), await txt(p, '#r-mine'));
-    await p.click('[data-ack="am"]'); await p.waitForTimeout(300);
+    const kicks = [];
+    await p.route('**/vehicleproxy.danielcane1992.workers.dev/**', async (r) => {
+      kicks.push(r.request().url());
+      await r.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true }) });
+    });
+    await p.click('[data-ack="am"]'); await p.waitForTimeout(400);
     const covering = await whichRoot(p, 'am/status', 'assigned');
     check('cover: "I am covering" is saved on the shift', covering === 'covering', String(covering));
+    check('cover: after a save the page kicks the mail job', kicks.some(u => /[?&]target=cover-kick\b/.test(u)), JSON.stringify(kicks));
     await p.close();
   }
   {

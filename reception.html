@@ -82,6 +82,9 @@ window.__backend = backend;
   'use strict';
   var R = window.LockupRota, RR = window.ReceptionRota, $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
+  /* Fire-and-forget: ask the worker to dispatch lockup-emails now. Failures are ignored; the 15-minute cron is the backstop. */
+  function kickCover() { try { fetch(WORKER + '?target=cover-kick').catch(function () {}); } catch (e) {} }
   var WATCHING = '', DAY = {}, STATE = null, OPEN = '', DEEP = null, DEEP_DONE = '';
 
   function hm(mins) { return String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0'); }
@@ -260,14 +263,14 @@ window.__backend = backend;
     if (!confirm('Put ' + nameOf(personId) + ' on showroom cover for this shift? They will be emailed.')) return;
     var RL = RLROOT();
     TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/assign', { personId: personId, by: STATE.personId, ts: Date.now() })
-      .then(function () { alert('Assigned. They are being emailed.'); })
+      .then(function () { kickCover(); alert('Assigned. They are being emailed.'); })
       .catch(function () { alert('That did not save. Try again.'); });
   }
 
   function replyAbsent(shiftId, status, text, date) {
     var RL = RLROOT();
     TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/absent/reply', { status: status, text: text, ts: Date.now() })
-      .then(function () { alert(status === 'here' ? 'Thanks, we have you as here.' : 'Thanks, the managers have the reason.'); })
+      .then(function () { kickCover(); alert(status === 'here' ? 'Thanks, we have you as here.' : 'Thanks, the managers have the reason.'); })
       .catch(function () { alert('That did not save. Try again.'); });
   }
 
@@ -276,7 +279,7 @@ window.__backend = backend;
     if (!confirm(nameOf(personId) + ' is unable to do it because: ' + text + '. They come off the shift, it is logged as a skip, and someone else is put on.')) return;
     var RL = RLROOT();
     TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/reallocate', { personId: personId, text: text, by: STATE.personId, ts: Date.now() })
-      .then(function () { alert('Sent. The next person is being put on.'); })
+      .then(function () { kickCover(); alert('Sent. The next person is being put on.'); })
       .catch(function () { alert('That did not save. Try again.'); });
   }
 
@@ -285,14 +288,14 @@ window.__backend = backend;
     if (!confirm('Nudge ' + nameOf(personId) + '? They get an email asking where they are. They stay on the shift.')) return;
     var RL = RLROOT();
     TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/absent', { personId: personId, by: STATE.personId, ts: Date.now() })
-      .then(function () { alert('Nudged. They have been emailed, and they stay on the shift.'); })
+      .then(function () { kickCover(); alert('Nudged. They have been emailed, and they stay on the shift.'); })
       .catch(function () { alert('That did not save. Try again.'); });
   }
 
   function ack(shiftId, date) {
     var RL = RLROOT();
     TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'covering', personId: STATE.personId, ts: Date.now() })
-      .then(function () { $('r-msg') && (($('r-msg').textContent = 'Thanks, you are covering.')); })
+      .then(function () { kickCover(); $('r-msg') && (($('r-msg').textContent = 'Thanks, you are covering.')); })
       .catch(function () { $('r-msg') && ($('r-msg').textContent = 'That did not save. Try again.'); });
   }
 
@@ -301,7 +304,7 @@ window.__backend = backend;
     var ans = RR.answer(kind, text);
     var RL = RLROOT();
     TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
-      .then(function () { $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told, and the next person is being put on.'; })
+      .then(function () { kickCover(); $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told, and the next person is being put on.'; })
       .catch(function () { $('r-msg').textContent = 'That did not save. Try again.'; });
   }
 
@@ -320,7 +323,7 @@ window.__backend = backend;
       $('r-send').disabled = true;
       var RL = RLROOT();
       TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
-        .then(function () { $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told.'; })
+        .then(function () { kickCover(); $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told.'; })
         .catch(function () { $('r-send').disabled = false; $('r-msg').textContent = 'That did not save. Try again.'; });
     };
   }

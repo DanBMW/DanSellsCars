@@ -8,6 +8,7 @@
  *   MOT_CLIENT_ID     - DVSA MOT History API client id
  *   MOT_CLIENT_SECRET - DVSA MOT History API client secret
  *   MOT_API_KEY       - DVSA MOT History API key
+ *   GITHUB_TOKEN      - fine-grained GitHub token (Actions: Read and write) for cover-kick
  *
  * Actor ID: Ca7tBqNduWgy2A2pq (AutoTrader scraper)
  *
@@ -65,10 +66,12 @@ const LIMITS = {
   lookup: { binding: 'LOOKUP_LIMITER', limit: 30 },   /* dvla-lookup, vehicle-lookup */
   start:  { binding: 'MARKET_START_LIMITER', limit: 4 }, /* market-start = paid Apify run */
   poll:   { binding: 'POLL_LIMITER', limit: 60 },     /* market-poll */
+  kick:   { binding: 'COVER_KICK_LIMITER', limit: 10 }, /* cover-kick = GitHub workflow dispatch */
 };
 const TARGET_BUCKET = {
   'dvla-lookup': 'lookup', 'vehicle-lookup': 'lookup',
   'market-start': 'start', 'market-poll': 'poll',
+  'cover-kick': 'kick',
 };
 
 /* Fallback used only if the Rate Limiting binding is not configured:
@@ -127,6 +130,14 @@ export default {
       else if (target === 'vehicle-lookup') body = await vehicleLookup(url.searchParams.get('reg') || '', env);
       else if (target === 'market-start')   body = await marketStart(url.searchParams, env);
       else if (target === 'market-poll')    body = await marketPoll(url.searchParams.get('runId') || '', env);
+      else if (target === 'cover-kick') {
+        body = await coverKick(env);
+        if (body && body.__status) {
+          const status = body.__status;
+          delete body.__status;
+          return json(body, status, origin);
+        }
+      }
 
       return json(body, 200, origin);
     } catch (e) {
@@ -134,6 +145,44 @@ export default {
     }
   }
 };
+
+
+/* ── Cover kick: dispatch lockup-emails so showroom cover mail goes out fast ──
+   At most one GitHub dispatch per minute (module-wide). The per-IP kick bucket
+   still applies above. Token is a Cloudflare secret; never returned. */
+let lastCoverKickAt = 0;
+async function coverKick(env) {
+  const now = Date.now();
+  if (now - lastCoverKickAt < 60000) {
+    return { __status: 429, error: 'Too many requests, please try again in a minute' };
+  }
+  if (!env || !env.GITHUB_TOKEN) return { error: 'GITHUB_TOKEN not configured' };
+  lastCoverKickAt = now;
+  const res = await fetch(
+    'https://api.github.com/repos/DanBMW/DanSellsCars/actions/workflows/lockup-emails.yml/dispatches',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + env.GITHUB_TOKEN,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'vehicleproxy',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ref: 'main', inputs: { dry_run: false, rota_now: false } }),
+    }
+  );
+  if (res.status === 204 || res.ok) return { ok: true };
+  let detail = '';
+  try {
+    const j = await res.json();
+    detail = (j && (j.message || j.error)) ? String(j.message || j.error) : JSON.stringify(j);
+  } catch (_) {
+    try { detail = await res.text(); } catch (__) { detail = ''; }
+  }
+  detail = String(detail).split(String(env.GITHUB_TOKEN)).join('[redacted]').slice(0, 200);
+  return { error: 'GitHub dispatch failed: ' + res.status, detail: detail };
+}
 
 /* UK regs are at most 7 characters plus spaces; anything else never reaches DVLA/DVSA. */
 function cleanReg(reg) {
