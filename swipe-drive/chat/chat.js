@@ -1,7 +1,7 @@
 (function(){
 var O=window.Onboard,P=O.V.pounds;
 var Q=[
- {id:"name",short:"Name",type:"name",say:"Hi, I'm Revvy, Dan's SwipeToDrive assistant bot. I need to learn a little about you and your requirements before I can show you what is available. This takes about 150 seconds. First up, what should I call you?",re:"What should I call you?",optional:false,chips:["Skip"]},
+ {id:"name",short:"Name",type:"name",say:"Hi, I'm Revvy, Dan's SwipeToDrive assistant bot. I need to learn a little about you and your requirements before I can show you what is available. It takes less than 3 minutes to build your profile. First up, what should I call you?",re:"What should I call you?",optional:false,chips:["Skip"]},
  {id:"model",short:"Model I like",type:"model",tri:true,say:"Nice to meet you{nm}! Which BMWs have caught your eye? Tap once for would like, and I will still suggest others. Tap twice for must have, and you will only see those models, with no other suggestions. A third tap clears it. You can type one too.",re:"Which BMWs have caught your eye?",items:["1 Series","2 Series","3 Series","4 Series","5 Series","7 Series","8 Series","X1","X2","X3","X4","X5","X6","X7","i4","i5","i7","iX","iX1","iX3","Z4"],chips:["Not sure yet"]},
  {id:"why",short:"What I like",kind:"multi",say:"What matters most to you? Tap as many as you like.",choices:["Comfort","Space for family","Low running costs","Performance","Tech","Electric","Looks","Reliability"]},
  {id:"cur",short:"Current car",type:"anycar",say:"What are you driving at the moment?",ex:"Something like 2019 Audi A3 diesel, or just the make and model.",chips:["No current car","Not sure"]},
