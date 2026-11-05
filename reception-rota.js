@@ -35,6 +35,7 @@
     cannot: 'I cannot cover right now',
     notin: 'I am not in today',
     offsite: 'I am off site',
+    customer: "I'm with a customer now, cannot cover",
     other: 'Other'
   };
   var NEVER = ['chloe', 'molly']; /* handover team, not sales executives */
