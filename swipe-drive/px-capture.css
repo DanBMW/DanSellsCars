@@ -13,3 +13,4 @@
 .pxc-shoot{width:74px;height:74px;border-radius:50%;border:5px solid #fff;background:rgba(255,255,255,.25);cursor:pointer}
 .pxc.flash::after{content:'';position:absolute;inset:0;background:#fff;opacity:.7}
 @media (prefers-reduced-motion:reduce){.pxc.flash::after{display:none}}
+.pxc-i{position:absolute;left:3%;top:20%;width:94%;max-height:48%;object-fit:contain;opacity:.9;pointer-events:none;filter:drop-shadow(0 0 3px rgba(0,0,0,.6))}.pxc-i.flip{transform:scaleX(-1)}
