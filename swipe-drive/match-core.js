@@ -183,6 +183,8 @@
     return { sc: -6, ok: true };
   }
   /* Returns {score 0..100, reasons[], ok}. ok false = outside a hard limit. */
+  /* new cars only: show stock priced up to 5% over the customer's budget (cash price or quoted monthly). Used keeps its own rule. */
+  var NEW_LEEWAY = 1.05;
   function hasBudget(p) { return !!p && ((p.budget_type === 'cash' && p.cash_gbp > 0) || (p.budget_type !== 'cash' && p.monthly_gbp > 0)); }
   function score(car, p) {
     p = p || {}; var sc = 40, why = [], ok = true, s = S(), notes = [], unconf = false;
@@ -202,8 +204,8 @@
     /* a model card has no price of its own: with a budget set, only show it to someone who chose brand new */
     if (isNew && hasBudget(p) && p.new_used !== 'new') ok = false;
     if (isNew) {
-      if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.floor_cash && p.cash_gbp < car.floor_cash) ok = false;
-      if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && car.floor_monthly && p.monthly_gbp < car.floor_monthly) ok = false;
+      if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.floor_cash && p.cash_gbp * NEW_LEEWAY < car.floor_cash) ok = false;
+      if (p.budget_type === 'monthly' && p.monthly_gbp > 0 && car.floor_monthly && p.monthly_gbp * NEW_LEEWAY < car.floor_monthly) ok = false;
     }
     if (!yearOk(car, p.year_from)) ok = false;   /* 'from 2024' is a hard limit (update-2026-11-03-alerts.sql) */
     if (!isNew) {
@@ -268,9 +270,9 @@
     var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
     /* with a budget set, a new car with no real price or quoted monthly is not shown unless they chose brand new */
     if (hasBudget(p) && p.new_used !== 'new' && (p.budget_type === 'cash' ? !car.price_gbp : !(car.finance && car.finance.monthly))) ok = false;
-    if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) { if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at the current price'); } else ok = false; }
+    if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) { if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at the current price'); } else if (car.price_gbp > p.cash_gbp * NEW_LEEWAY) ok = false; }
     /* monthly: only on a figure that comes with a full representative example (car.finance); otherwise no monthly test or figure */
-    if (p.budget_type === 'monthly' && p.monthly_gbp > 0) { if (car.finance && car.finance.monthly) { if (car.finance.monthly <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else ok = false; } else sc -= 4; }
+    if (p.budget_type === 'monthly' && p.monthly_gbp > 0) { if (car.finance && car.finance.monthly) { if (car.finance.monthly <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else if (car.finance.monthly > p.monthly_gbp * NEW_LEEWAY) ok = false; } else sc -= 4; }
     var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
     if (cols.length) { var fam = colourFamily(car); if (cols.indexOf(fam) !== -1) { sc += 10; why.push(fam + ', a colour you like'); } else sc -= 4; if (mustC.length && fam && mustC.indexOf(fam) === -1) ok = false; }
     var notes = [], unconf = false;
