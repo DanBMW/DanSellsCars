@@ -48,6 +48,9 @@ function historyOf(all, date) {
 async function run(o) {
   const { db, root, n, dry, team, managers, cfg, testExec, queueAdd, log } = o;
   const say = log || console.log;
+  const logRoot = o.logRoot || 'receptionLog';
+  /* the management log (skips, absence tags, and every shift someone was put on): admin writes only */
+  const logWrite = async (key, entry) => { if (!dry) await db.ref(logRoot + '/' + key).set(entry); };
   const date = n.date, dow = SR.dowOf(date);
   const absences = o.absences || {};
   const ctx = shiftCtx({ team, managers, absences, shiftCfg: o.shiftCfg, bh: o.bh, holidays: o.holidays, closed: o.closed, n });
@@ -62,10 +65,22 @@ async function run(o) {
      remember the person as declined for that shift, and free the shift */
   const existing = {};
   for (const s of shifts) {
-    const r = today[s.id] || {};
+    let r = today[s.id] || {};
+    /* a manager tagged someone absent on this shift: log it, keep them off the shift, free it if they were on it */
+    if (r.absent && r.absent.ts !== r.absentHandledTs) {
+      const ab = r.absent, who = firstName(team[ab.personId] || (managers || {})[ab.personId], ab.personId);
+      await logWrite('absent_' + date + '_' + s.id + '_' + ab.ts, { kind: 'absent', personId: ab.personId, date, shift: s.id, from: s.from, to: s.to, ts: ab.ts, by: ab.by || '' });
+      const dm = Object.assign({}, r.declined || {}); if (ab.personId) dm[ab.personId] = true;
+      const change = Object.assign({ declined: dm, absentHandledTs: ab.ts }, r.personId === ab.personId ? { personId: null, status: 'open' } : {});
+      today[s.id] = Object.assign({}, r, change);
+      if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(change);
+      say('Tagged absent on ' + s.id + ': ' + who);
+      r = today[s.id];
+    }
     if (r.status === 'declined' && r.ts !== r.handledTs) {
       const who = firstName(team[r.personId] || (managers || {})[r.personId], r.personId);
       const note = RR.managerNote(who, s, r.reason || 'Cannot cover', r.reasonText || '');
+      await logWrite('skip_' + date + '_' + s.id + '_' + r.ts, { kind: 'skip', personId: r.personId, date, shift: s.id, from: s.from, to: s.to, ts: r.ts, reason: r.reason || '', reasonText: r.reasonText || '' });
       queueAdd('rc_decl_' + date + '_' + s.id + '_' + r.ts, { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
       const dm = Object.assign({}, r.declined || {});
       if (r.personId) dm[r.personId] = true;
@@ -106,6 +121,7 @@ async function run(o) {
       const p = team[pid] || {};
       today[s.id] = Object.assign({}, today[s.id] || {}, rec);
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(rec);
+      await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
       const mail = RR.coverEmail(firstName(p, pid), s);
       queueAdd('rc_' + date + '_' + s.id + '_' + pid, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
       say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid));

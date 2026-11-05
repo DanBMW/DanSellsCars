@@ -47,7 +47,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   const q = J.makeQueue(db, 'lockupTest', queue);
   const reception = (await db.ref('lockupTest/reception').get()).val() || {};
   const res = await J.run(Object.assign({
-    db, root: 'lockupTest', n: Object.assign({ date: date, dow: 1 }, at(h, m)), dry: false,
+    db, root: 'lockupTest', logRoot: 'receptionLogTest', n: Object.assign({ date: date, dow: 1 }, at(h, m)), dry: false,
     team, managers: {}, cfg: {}, testExec: 'daniel.cane@hedinautomotive.co.uk',
     queueAdd: (id, rec, dry) => q.add(id, rec, dry), log: () => {},
     reception, absences: {}, shiftCfg: undefined, bh: {}, holidays: {}, closed: {}
@@ -146,6 +146,33 @@ async function runAt(db, date, h, m, cfgExtra) {
   r = await runAt(db, MON, 8, 30, { team: noMail });
   assert.strictEqual(r.added.filter(id => /^rc_noemail_ben/.test(id)).length, 0, 'flagged once');
   console.log('ok: anyone on the team without a work email is flagged to the managers once');
+
+  // the management log: every shift someone is put on, every skip, every absence tag
+  db = fakeDb();
+  await runAt(db, MON, 8, 0);
+  const logged = Object.values(db.data.receptionLogTest || {});
+  assert.strictEqual(logged.filter(e => e.kind === 'on').length, 3, 'three shifts logged as on: ' + JSON.stringify(logged));
+  await runAt(db, MON, 8, 15);
+  assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on').length, 3, 'a later run logs nothing twice');
+  const amWho = db.data.lockupTest.reception[MON].am.personId;
+  db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { status: 'declined', reason: 'I am off site', reasonText: '', ts: 2000 });
+  await runAt(db, MON, 9, 0);
+  const skips = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip');
+  assert.strictEqual(skips.length, 1);
+  assert.strictEqual(skips[0].personId, amWho, 'the skip is logged against the person who declined');
+  console.log('ok: each shift put on and each skip is logged, once');
+
+  // a manager tags someone absent: logged as an absence (not a skip), they are taken off that shift and the next person goes on
+  const midBefore = db.data.lockupTest.reception[MON].mid.personId;
+  db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, { absent: { personId: midBefore, by: 'will', ts: 3000 } });
+  await runAt(db, MON, 10, 0);
+  const absents = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'absent');
+  assert.strictEqual(absents.length, 1, JSON.stringify(absents));
+  assert.strictEqual(absents[0].personId, midBefore);
+  assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip').length, 1, 'an absence tag is not a skip');
+  assert.notStrictEqual(db.data.lockupTest.reception[MON].mid.personId, midBefore, 'the absent person is taken off the shift');
+  assert.ok(db.data.lockupTest.reception[MON].mid.personId, 'someone else is put on');
+  console.log('ok: a manager absence tag is logged as an absence, reassigns the shift, and is not a skip');
 
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

@@ -40,6 +40,11 @@
     <div class="card" style="margin-top:14px"><b>Today&rsquo;s cover</b>
       <ul class="summary" id="r-list" style="margin-top:8px"></ul>
     </div>
+    <div class="card" id="r-mgr" style="margin-top:14px" hidden>
+      <b>Management</b>
+      <p class="muted small" style="margin:4px 0 10px">Time on showroom cover. Skips are the times someone said they could not cover, absences are the times a manager tagged them absent.</p>
+      <div id="r-stats"></div>
+    </div>
   </section>
 </main>
 
@@ -63,6 +68,27 @@ window.__backend = backend;
   function minsOf(t) { return +t.slice(0, 2) * 60 + +t.slice(3, 5); }
   function show(v) { ['v-loading', 'v-signedout', 'v-main'].forEach(function (x) { $(x).hidden = x !== v; }); }
   function nameOf(id) { var t = (TeamSession.config().team || {})[id] || (TeamSession.config().managers || {})[id] || {}; return t.name || id; }
+
+  var LOG = null, LOGWATCH = '';
+  function hours(m) { return Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm'; }
+  function watchLog() {
+    if (!STATE || !STATE.canManage || LOGWATCH) return;
+    var path = TeamSession.paths().RL === 'lockupTest' ? 'receptionLogTest' : 'receptionLog';
+    LOGWATCH = path;
+    TeamSession.backend().watch(path, function (v) { LOG = v || {}; paintStats(); });
+  }
+  function paintStats() {
+    var el = $('r-stats'); if (!el || !LOG) return;
+    var now = R.london(), today = now.date;
+    var last30 = R.addDays(today, -29);
+    var rows = RR.stats(LOG, TeamSession.config().team || {}, last30, today);
+    var all = RR.stats(LOG, TeamSession.config().team || {}, '0000-01-01', '9999-12-31');
+    var totals = all.reduce(function (t, r) { t.m += r.minutes; t.s += r.shifts; return t; }, { m: 0, s: 0 });
+    el.innerHTML = '<p class="small" style="margin:0 0 8px"><b>Last 30 days</b></p>' +
+      '<table class="tbl" style="width:100%;border-collapse:collapse;font-size:14px"><tr><th align="left">Name</th><th align="right">Shifts</th><th align="right">Time</th><th align="right">Skips</th><th align="right">Absent</th></tr>' +
+      rows.map(function (r) { return '<tr><td>' + esc(r.name) + '</td><td align="right">' + r.shifts + '</td><td align="right">' + hours(r.minutes) + '</td><td align="right">' + r.skips + '</td><td align="right">' + r.absent + '</td></tr>'; }).join('') +
+      '</table><p class="muted small" style="margin:10px 0 0">All time: ' + totals.s + ' shifts, ' + hours(totals.m) + ' on showroom cover.</p>';
+  }
 
   function watchDay(date) {
     var RL = TeamSession.paths().RL, path = RL + '/reception/' + date;
@@ -100,10 +126,23 @@ window.__backend = backend;
 
     $('r-list').innerHTML = shifts.map(function (s) {
       var r = DAY[s.id] || {}, who = r.personId ? nameOf(r.personId) : 'Nobody yet';
-      var pill = r.status === 'covering' ? '<span class="pill g">Covering</span>' : r.status === 'declined' ? '<span class="pill r">Cannot cover</span>' : r.personId ? '<span class="pill">On</span>' : '<span class="pill r">Open</span>';
-      return '<li><b>' + esc(s.from) + ' to ' + esc(s.to) + '</b> ' + esc(who) + ' ' + pill + '</li>';
+      var pill = r.status === 'short' ? '<span class="pill r">Not covered</span>' : r.status === 'covering' ? '<span class="pill g">Covering</span>' : r.status === 'declined' ? '<span class="pill r">Cannot cover</span>' : r.personId ? '<span class="pill">On</span>' : '<span class="pill r">Open</span>';
+      var tag = (STATE.canManage && r.personId) ? ' <button class="ghost" type="button" data-tag="' + esc(s.id) + '" data-who="' + esc(r.personId) + '" style="margin-left:6px">Tag ' + esc(nameOf(r.personId)) + ' absent</button>' : '';
+      return '<li><b>' + esc(s.from) + ' to ' + esc(s.to) + '</b> ' + esc(who) + ' ' + pill + tag + '</li>';
     }).join('');
+    $('r-list').querySelectorAll('[data-tag]').forEach(function (b) { b.onclick = function () { tagAbsent(b.getAttribute('data-tag'), b.getAttribute('data-who'), date); }; });
+    $('r-mgr').hidden = !STATE.canManage;
+    if (STATE.canManage) { watchLog(); paintStats(); }
     watchDay(date);
+  }
+
+  function tagAbsent(shiftId, personId, date) {
+    if (!STATE || !STATE.canManage) return;
+    if (!confirm('Tag ' + nameOf(personId) + ' absent for this shift? Someone else will be put on, and it is logged.')) return;
+    var RL = TeamSession.paths().RL;
+    TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/absent', { personId: personId, by: STATE.personId, ts: Date.now() })
+      .then(function () { alert('Tagged absent. Someone else is being put on, and it is in the log.'); })
+      .catch(function () { alert('That did not save. Try again.'); });
   }
 
   function ack(shiftId, date) {

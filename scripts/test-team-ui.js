@@ -963,6 +963,31 @@ async function receptionScenarios(browser, base) {
     check('cover: the person who declined keeps their own name on the record', live.personId === 'tomi', String(live.personId));
     await p.close();
   }
+  /* management: the stats, and tagging someone absent; the person on cover does not see either */
+  {
+    const d = seeded('assigned');
+    const entries = { x1: { kind: 'on', personId: 'tomi', date: DATE, shift: 'am', from: '09:00', to: '12:00' }, x2: { kind: 'skip', personId: 'carl', date: DATE, shift: 'mid', from: '12:00', to: '15:00', reason: 'I am off site' } };
+    d.lockup.receptionLog = entries; d.lockupTest.receptionLog = entries; d.receptionLog = entries; d.receptionLogTest = entries;
+    const p = await open(browser, base, null, '/reception.html', U.will, { data: d, clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(700);
+    check('cover: a manager sees the management stats', await visible(p, '#r-mgr') && /Last 30 days/.test(await txt(p, '#r-stats')));
+    check('cover: the stats show time on cover, from the log', /Tomi[\s\S]*3h 00m/.test(await txt(p, '#r-stats')), (await txt(p, '#r-stats')).slice(0, 200));
+    check('cover: the stats show skips', /Carl[\s\S]*1\s*$|Carl[\s\S]*\b1\b/.test(await txt(p, '#r-stats')));
+    await p.click('[data-tag="mid"]');
+    await p.waitForTimeout(400);
+    const abs = (await store(p)).data;
+    const tagged = at(abs, 'lockupTest/reception/' + DATE + '/mid/absent') || at(abs, 'lockup/reception/' + DATE + '/mid/absent');
+    check('cover: a manager can tag someone absent on a shift', !!tagged && tagged.personId === 'carl', JSON.stringify(tagged));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    check('cover: the person on cover does not see the management stats or the absence tag', !(await visible(p, '#r-mgr')) && (await p.locator('[data-tag]').count()) === 0);
+    await p.close();
+  }
   {
     const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('assigned'), clock: CLOCK });
     let vis = false;

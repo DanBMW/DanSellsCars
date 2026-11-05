@@ -262,6 +262,14 @@
       }
     },
 
+    "receptionLog": {
+      ".read": "(root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shifts/managers').child(root.child('shifts/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shifts/links').child(auth.uid).val()).val() !== null)",
+      ".write": false
+    },
+    "receptionLogTest": {
+      ".read": "(root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shiftsTest/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() !== null)",
+      ".write": false
+    },
     "lockup": {
       ".read": true,
       "config": {
@@ -367,6 +375,10 @@
             ".read": true,
             ".write": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/) && $shift.matches(/^(am|mid|pm)$/) && data.child('personId').val() === root.child('shifts/links').child(auth.uid).val() && newData.child('personId').val() === data.child('personId').val()",
             ".validate": "newData.hasChildren(['status', 'personId', 'ts']) && newData.child('status').val().matches(/^(assigned|covering|declined)$/) && newData.child('ts').isNumber() && (!newData.child('reason').exists() || newData.child('reason').val().length <= 60) && (!newData.child('reasonText').exists() || newData.child('reasonText').val().length <= 500)",
+            "absent": {
+              ".write": "auth != null && auth.token.email_verified === true && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shifts/managers').child(root.child('shifts/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shifts/links').child(auth.uid).val()).val() !== null)",
+              ".validate": "newData.hasChildren(['personId', 'ts']) && newData.child('ts').isNumber()"
+            },
             "status": { ".validate": "newData.isString()" },
             "personId": { ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,24}$/)" },
             "reason": { ".validate": "newData.isString()" },
@@ -520,6 +532,10 @@
             ".read": true,
             ".write": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/) && $shift.matches(/^(am|mid|pm)$/) && data.child('personId').val() === root.child('shiftsTest/links').child(auth.uid).val() && newData.child('personId').val() === data.child('personId').val()",
             ".validate": "newData.hasChildren(['status', 'personId', 'ts']) && newData.child('status').val().matches(/^(assigned|covering|declined)$/) && newData.child('ts').isNumber() && (!newData.child('reason').exists() || newData.child('reason').val().length <= 60) && (!newData.child('reasonText').exists() || newData.child('reasonText').val().length <= 500)",
+            "absent": {
+              ".write": "auth != null && auth.token.email_verified === true && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shiftsTest/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() !== null)",
+              ".validate": "newData.hasChildren(['personId', 'ts']) && newData.child('ts').isNumber()"
+            },
             "status": { ".validate": "newData.isString()" },
             "personId": { ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,24}$/)" },
             "reason": { ".validate": "newData.isString()" },

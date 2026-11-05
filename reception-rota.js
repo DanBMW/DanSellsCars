@@ -113,6 +113,27 @@
     };
   }
 
-  var api = { SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, managerNote: managerNote };
+  function minsOf(t) { return +String(t).slice(0, 2) * 60 + +String(t).slice(3, 5); }
+
+  /* management's totals from the log. Entries: { kind: on|skip|absent, personId, date, shift, from, to }.
+     A shift someone was put on counts for them unless they skipped it or were tagged absent for it.
+     Returns one row per person on the team, most time first. */
+  function stats(log, team, from, to) {
+    var rows = {}, void_ = {};
+    function row(id) { return rows[id] || (rows[id] = { id: id, name: ((team || {})[id] || {}).name || id, shifts: 0, minutes: 0, skips: 0, absent: 0 }); }
+    var entries = Object.keys(log || {}).map(function (k) { return log[k]; }).filter(function (e) { return e && e.personId && e.date >= from && e.date <= to; });
+    entries.forEach(function (e) { if (e.kind !== 'on') void_[e.personId + '|' + e.date + '|' + e.shift] = true; });
+    entries.forEach(function (e) {
+      if (e.kind === 'skip') row(e.personId).skips++;
+      else if (e.kind === 'absent') row(e.personId).absent++;
+      else if (e.kind === 'on' && !void_[e.personId + '|' + e.date + '|' + e.shift]) {
+        var r = row(e.personId); r.shifts++; r.minutes += Math.max(0, minsOf(e.to) - minsOf(e.from));
+      }
+    });
+    Object.keys(team || {}).forEach(function (id) { if ((team[id] || {}).active !== false && NEVER.indexOf(id) < 0) row(id); });
+    return Object.keys(rows).map(function (k) { return rows[k]; }).sort(function (a, b) { return (b.minutes - a.minutes) || (a.name < b.name ? -1 : 1); });
+  }
+
+  var api = { stats: stats, minsOf: minsOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, managerNote: managerNote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

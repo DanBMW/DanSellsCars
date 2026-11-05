@@ -74,4 +74,23 @@ const mn = R.managerNote('Carl', wk[0], 'I cannot cover right now', 'with a cust
 assert.ok(/Carl said: I cannot cover right now: with a customer/.test(mn.text));
 console.log('ok: the cover email reads "You are on showroom cover. Please cover showroom until HH:MM."');
 
+// management stats: time and shifts from the log; a skip or an absence tag takes that shift back out
+const log = {
+  a: { kind: 'on', personId: 'tomi', date: '2026-11-02', shift: 'am', from: '09:00', to: '12:00' },
+  b: { kind: 'on', personId: 'carl', date: '2026-11-02', shift: 'mid', from: '12:00', to: '15:00' },
+  c: { kind: 'on', personId: 'carl', date: '2026-11-03', shift: 'pm', from: '15:00', to: '18:00' },
+  d: { kind: 'skip', personId: 'carl', date: '2026-11-03', shift: 'pm', from: '15:00', to: '18:00' },
+  e: { kind: 'absent', personId: 'tomi', date: '2026-11-04', shift: 'am', from: '09:00', to: '12:00' },
+  f: { kind: 'on', personId: 'tomi', date: '2026-11-04', shift: 'am', from: '09:00', to: '12:00' }
+};
+const st = R.stats(log, team, '2026-11-01', '2026-11-30');
+const tomi = st.filter(x => x.id === 'tomi')[0], carl = st.filter(x => x.id === 'carl')[0];
+assert.deepStrictEqual([tomi.shifts, tomi.minutes, tomi.absent], [1, 180, 1], 'the 4 November shift is taken back out by the absence tag: ' + JSON.stringify(tomi));
+assert.deepStrictEqual([carl.shifts, carl.minutes, carl.skips], [1, 180, 1], 'Carl skipped his 15:00 shift, so only the midday one counts: ' + JSON.stringify(carl));
+assert.ok(st.every((x, i) => i === 0 || st[i - 1].minutes >= x.minutes), 'most time first');
+assert.ok(st.some(x => x.id === 'chloe') === false, 'the handover team is not in the sales rows');
+const outside = R.stats(log, team, '2026-10-01', '2026-10-31');
+assert.strictEqual(outside.filter(x => x.shifts || x.skips || x.absent).length, 0, 'nothing outside the dates counts');
+console.log('ok: management totals count shifts, time, skips and absences, and a skip takes the shift back out');
+
 console.log('all reception tests passed');

@@ -104,7 +104,7 @@ async function main() {
     const rc = await RC.load(db, ROOT, TEST ? 'shiftsTest' : 'shifts');
     const notifyNow = (await db.ref(ROOT + '/notify').get()).val() || {};
     const rq = RC.makeQueue(db, ROOT, notifyNow);
-    const rr = await RC.run({ db, root: ROOT, n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg, testExec: TEST ? TEST_EXEC : null,
+    const rr = await RC.run({ db, root: ROOT, logRoot: TEST ? 'receptionLogTest' : 'receptionLog', n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg, testExec: TEST ? TEST_EXEC : null,
       queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log, reception: rc.reception, absences,
       shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {} });
     await rq.flush();
