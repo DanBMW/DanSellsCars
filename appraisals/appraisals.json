@@ -1,9 +1,59 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-05T12:02:19.216Z",
+  "captured": "2026-11-05T14:02:06.697Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "YF24JLX",
+      "appraisedAt": "2026-11-05T13:56:03.448Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--ud_l8npp--/c_fill,h_300,w_300/v1793887020/Live/Appraisals/9624425/784d5dd6-f4db-4de0-8ee6-910174a825f9.jpg"
+    },
+    {
+      "registration": "D12JKC",
+      "appraisedAt": "2026-11-05T12:58:13.403Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Fair",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Yu-eNvCC--/c_fill,h_300,w_300/v1790761155/Live/Appraisals/9543113/914177c3-8778-489e-a42e-a8ded260719f.png"
+    },
+    {
+      "registration": "W66JMS",
+      "appraisedAt": "2026-11-05T12:57:56.084Z",
+      "make": "BMW",
+      "model": "4 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--nCmkwaW8--/c_fill,h_300,w_300/v1793883492/Live/Appraisals/9624228/4a5dff9d-207e-4570-a5db-a63c39d9a00b.jpg"
+    },
+    {
+      "registration": "AV72YEK",
+      "appraisedAt": "2026-11-05T12:24:09.916Z",
+      "make": "BMW",
+      "model": "iX3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--42sKkeA_--/c_fill,h_300,w_300/v1793881452/Live/Appraisals/9624102/fb27434f-0c36-4825-a802-8c8e4236a7d6.png"
+    },
+    {
+      "registration": "SV11JJJ",
+      "appraisedAt": "2026-11-05T12:08:36.096Z",
+      "make": "MERCEDES-BENZ",
+      "model": "E Class",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "PE72YPL",
       "appraisedAt": "2026-11-05T11:33:27.988Z",
@@ -2055,16 +2105,6 @@
       "price": null,
       "condition": "Good",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "D12JKC",
-      "appraisedAt": "2026-09-30T09:39:13.867Z",
-      "make": "BMW",
-      "model": "X5",
-      "status": "Expired",
-      "price": null,
-      "condition": "Fair",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--Yu-eNvCC--/c_fill,h_300,w_300/v1790761155/Live/Appraisals/9543113/914177c3-8778-489e-a42e-a8ded260719f.png"
     },
     {
       "registration": "RJ22DWF",
