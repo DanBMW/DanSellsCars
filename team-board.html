@@ -702,9 +702,10 @@ input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
    top of the bottom row of the board on a short screen */
 body.hasticker{padding-bottom:52px}
 body.hasticker .credit{bottom:52px}
-/* ---- lockup strip (lockup.html) ----
-   From 5pm (4pm Saturday) a strip above the banner says who is locking up.
-   Amber while open, green once signed, red after 6:30pm unsigned. */
+/* ---- lockup strip ----
+   Always on at the bottom: today's lockup names (UK date), live from Firebase.
+   Amber while open, green once signed, red after 6:30pm unsigned. Checklist
+   steps join from the evening remind time. */
 .lockstrip{position:fixed;left:0;right:0;bottom:0;min-height:40px;flex-wrap:wrap;row-gap:2px;padding:4px 12px;box-sizing:border-box;z-index:321;display:none;align-items:center;justify-content:center;gap:10px;
   font-weight:800;font-size:clamp(.85rem,1.3vw,1.15rem);color:#1a1206;background:var(--gold);letter-spacing:.01em}
 .lockstrip.show{display:flex}
@@ -7995,8 +7996,8 @@ function watch(p, cb, onErr){
 let stop=null, dealsGen=0;
 
 /* ---- lockup strip: lockup/ in Firebase, logic shared with lockup.html ---- */
-/* test mode (lockup/config/testMode, missing = on) reads lockupTest/ instead,
-   shows all day so it can be demoed, and is marked TEST MODE in orange */
+/* Always on with today's names. test mode (lockup/config/testMode, missing = on)
+   reads lockupTest/ instead and is marked TEST MODE in orange. */
 const LKS={lockup:{weeks:{},status:{},cfg:{},progress:{},absences:{},reception:null},lockupTest:{weeks:{},status:{},cfg:{},progress:{},absences:{},reception:null}};
 let LK_TEST=true; const LK_SANDBOX=new URLSearchParams(location.search).has('sandbox'); /* ?sandbox=1 forces lockupTest/ on this screen only */
 const LK={get absences(){return LKS[LK_TEST?'lockupTest':'lockup'].absences},get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},get reception(){return LKS[(window.ReceptionRota&&window.ReceptionRota.RECEPTION_ROOT)||(LK_TEST?'lockupTest':'lockup')].reception} /* the cover's own root, whatever the lockup's live switch says */,bank:{}};
@@ -8008,21 +8009,31 @@ function paintLock(){
   const n=R.london(), hol=Object.assign({},LK.bank,(LK.cfg&&LK.cfg.holidays)||{});
   const on=R.onFor(n.date,LK.weeks[n.week],hol,LK.cfg);
   const from=on.kind==='managers'?R.REMIND_SAT_MINS:R.REMIND_MINS;
+  const evening=n.mins>=from;
   const st=LK.status[n.date];
   el.classList.toggle('test',LK_TEST);
-  if(on.kind==='closed'&&!LK_TEST||(n.mins<from&&!LK_TEST)){el.classList.remove('show');document.body.classList.remove('haslock');return}
-  const team=Object.assign({},(LK.cfg&&LK.cfg.managers)||{},(LK.cfg&&LK.cfg.team)||{}), nm=(on.ids||[]).map(id=>(team[id]&&team[id].name)||id), who=on.kind==='managers'&&!nm.length?'Managers':(nm.length?nm.join(' and '):'Not set');
+  /* Always visible (premiere hides via CSS). Same Firebase weeks/status the lockup page and mail job use. */
+  const team=Object.assign({},(LK.cfg&&LK.cfg.managers)||{},(LK.cfg&&LK.cfg.team)||{}), nm=(on.ids||[]).map(id=>(team[id]&&team[id].name)||id), who=on.kind==='managers'&&!nm.length?'Managers':(nm.length?nm.join(' and '):'Not set yet');
   el.classList.toggle('signed',!!(st&&st.state==='signed'));
   el.classList.toggle('overdue',!(st&&st.state==='signed')&&n.mins>=R.escalateAt(n.dow));
   const t=st&&st.ts?new Date(st.ts).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
-  tx.textContent=st&&st.state==='signed'?'Locked up by '+st.by+' at '+t+(st.issues?' \u00b7 '+st.issues+' issue'+(st.issues>1?'s':'')+' noted':' \u2713'):
-    (on.kind==='closed'?'Closed tonight':n.mins>=R.escalateAt(n.dow)?'Lockup not signed yet: '+who:'Lockup tonight: '+who);
-  /* the checklist stages, live from progress: tick when done, amber warning when "can't do it", dim when untouched; all ticked once signed */
+  if(st&&st.state==='signed'){
+    tx.textContent='Locked up by '+st.by+' at '+t+(st.issues?' \u00b7 '+st.issues+' issue'+(st.issues>1?'s':'')+' noted':' \u2713');
+  }else if(on.kind==='closed'){
+    tx.textContent='Closed today';
+  }else if(n.mins>=R.escalateAt(n.dow)){
+    tx.textContent='Lockup not signed yet: '+who;
+  }else if(evening){
+    tx.textContent='Lockup tonight: '+who;
+  }else{
+    tx.textContent="Today's lockup: "+who;
+  }
+  /* checklist stages from the evening remind time: tick when done, amber when "can't do it" */
   const signedNow=!!(st&&st.state==='signed'), cl=(LK.cfg&&LK.cfg.checklist)||{}, act=Object.keys(cl).filter(k=>cl[k].active!==false).sort((a,b)=>(cl[a].order||0)-(cl[b].order||0)), pi=((LK.progress[n.date]||{}).items)||{};
   const sx=document.getElementById('ls-steps');
-  if(sx){ sx.innerHTML=on.kind==='closed'?'':act.map(k=>{const p=pi[k]||{}, s=signedNow||p.done?'ok':p.cant?'cant':''; const lb=(R.shortLabel?R.shortLabel(k,cl[k]):cl[k].label).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  if(sx){ sx.innerHTML=(on.kind==='closed'||!evening)?'':act.map(k=>{const p=pi[k]||{}, s=signedNow||p.done?'ok':p.cant?'cant':''; const lb=(R.shortLabel?R.shortLabel(k,cl[k]):cl[k].label).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     return '<span class="ls-st '+s+'">'+(s==='ok'?'<b>\u2713</b>':s==='cant'?'\u26a0\ufe0f':'')+lb+'</span>'}).join('') }
-  if(!signedNow){ const dn=act.filter(k=>pi[k]&&(pi[k].done||pi[k].cant)).length; if(dn)tx.textContent+=' \u00b7 '+dn+' of '+act.length+' done' }
+  if(evening&&!signedNow){ const dn=act.filter(k=>pi[k]&&(pi[k].done||pi[k].cant)).length; if(dn)tx.textContent+=' \u00b7 '+dn+' of '+act.length+' done' }
   if(LK_TEST)tx.textContent='TEST MODE \u00b7 '+tx.textContent;
   el.classList.add('show');document.body.classList.add('haslock');
 }

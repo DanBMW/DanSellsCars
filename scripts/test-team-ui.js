@@ -433,6 +433,46 @@ async function scenarios(browser, base) {
     check('board: no page errors for a manager', p.__errors.length === 0, p.__errors.join(' | '));
     await p.close();
   }
+  /* today's lockup strip: always on the board, from lockup/weeks (UK date), live */
+  {
+    const CLOCK = '2026-10-27T10:30:00Z'; /* Tuesday morning W44, well before the 5pm strip */
+    const p = await open(browser, base, null, '/team-board.html', null, { data: FIX, clock: CLOCK });
+    let shown = false, label = '';
+    for (let i = 0; i < 40 && !shown; i++) {
+      shown = await p.locator('#lockstrip.show').count().then(n => n > 0).catch(() => false);
+      if (!shown) await p.waitForTimeout(100);
+    }
+    label = await txt(p, '#ls-text');
+    check("board: today's lockup strip is on in the morning", shown, 'strip visible=' + shown + ' text=' + label);
+    check("board: today's lockup names who is on from the rota", /Today's lockup: Tomi and Karis/.test(label), label);
+    await p.evaluate(async () => {
+      const m = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+      const db = m.getDatabase();
+      await m.set(m.ref(db, 'lockup/weeks/2026-W44/days/tue'), ['dan', 'will']);
+    });
+    let live = '';
+    for (let i = 0; i < 40; i++) {
+      live = await txt(p, '#ls-text');
+      if (/Dan and Will/.test(live)) break;
+      await p.waitForTimeout(100);
+    }
+    check("board: today's lockup updates live when the rota changes", /Today's lockup: Dan and Will/.test(live), live);
+    await p.close();
+  }
+  {
+    const CLOCK = '2026-10-27T10:30:00Z';
+    const d = JSON.parse(JSON.stringify(FIX));
+    d.lockup.weeks = {};
+    const p = await open(browser, base, null, '/team-board.html', null, { data: d, clock: CLOCK });
+    let label = '';
+    for (let i = 0; i < 40; i++) {
+      label = await txt(p, '#ls-text');
+      if (/Not set yet/.test(label)) break;
+      await p.waitForTimeout(100);
+    }
+    check("board: today's lockup says Not set yet when nobody is assigned", /Today's lockup: Not set yet/.test(label), label);
+    await p.close();
+  }
 
   /* 4. the calendar still works on the same login (regression on the shifts page) */
   {
