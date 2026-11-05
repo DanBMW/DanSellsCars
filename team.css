@@ -100,3 +100,4 @@ header.top .brand{font-size:19px}
 .pinbox input[type=password]{font-size:20px;letter-spacing:.3em;text-align:center}
 .msg{font-size:14px;line-height:1.4}
 .msg.ok{color:var(--green)}.msg.bad{color:var(--red)}
+.beta{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;vertical-align:middle;background:#3a2a0c;color:#f0ba6c;border:1px solid #6b4c17}

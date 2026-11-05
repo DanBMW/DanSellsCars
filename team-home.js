@@ -147,7 +147,7 @@
     var live = { lockup: t, calendar: c, forecourt: { text: 'Open the check', cls: 'muted' }, board: { text: 'Open the board', cls: 'muted' }, admin: { text: 'People, managers and access', cls: 'muted' } };
     $('cards').innerHTML = TI.cardsFor(st).map(function (card) {
       var l = live[card.id] || { text: '', cls: 'muted' };
-      return '<a class="tile" href="' + esc(card.href) + '"><b>' + esc(card.title) + '</b><span class="blurb">' + esc(card.blurb) + '</span>' +
+      return '<a class="tile" href="' + esc(card.href) + '"><b>' + esc(card.title) + (card.beta ? '<span class="beta">Beta</span>' : '') + '</b><span class="blurb">' + esc(card.blurb) + '</span>' +
         '<span class="live ' + esc(l.cls) + '">' + esc(l.text) + '</span></a>';
     }).join('');
     $('next-days').innerHTML = nextDays(7).map(function (x) {
