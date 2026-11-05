@@ -1,10 +1,15 @@
 name: seed-reception-practice
 
-# One-shot: seed lockupTest/reception/<today-UK> with dan on am/mid/pm for
-# Showroom cover practice. Does not email anyone. Does not touch live lockup/.
+# Seeds lockupTest/reception/<today-UK> with dan on am/mid/pm for Showroom cover
+# practice. Does not email anyone. Does not touch live lockup/.
+# Triggered by workflow_dispatch OR by pushing .github/triggers/seed-reception-practice
+# (fine-grained PATs often cannot create workflow_dispatch events).
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/triggers/seed-reception-practice'
 
 permissions:
   contents: read
