@@ -3,16 +3,21 @@
    No camera (or permission refused): falls back to the phone's own camera picker for that shot. */
 (function () {
   'use strict';
-  var Q34 = 'M40 150 L52 112 Q60 96 80 92 L118 66 Q132 56 156 56 L232 56 Q254 56 270 70 L300 96 Q326 100 340 112 L352 128 L352 156 Q352 166 342 166 L326 166 M262 166 L132 166 M70 166 L50 166 Q40 166 40 156 Z M118 96 L150 66 L208 66 L208 96 Z M218 66 L250 66 Q262 66 272 78 L290 96 L218 96 Z';
-  var WHEELS = '<circle cx="101" cy="166" r="27"/><circle cx="294" cy="166" r="27"/>';
-  var CAR = function (flip) { return '<g' + (flip ? ' transform="translate(392 0) scale(-1 1)"' : '') + '><path d="' + Q34 + '"/>' + WHEELS + '</g>'; };
+  /* line icon style outlines (three quarter view of a generic saloon, end face on the left; flipped for the other side) */
+  var BODY = '<path class="b" d="M46 160 Q36 160 36 150 L36 114 Q38 96 66 92 L304 92 Q352 98 358 120 L358 148 Q358 160 346 160 Z"/>' +
+    '<path d="M66 92 Q84 62 122 58 L244 58 Q272 60 304 92"/><path d="M122 58 L150 92 L150 160"/>' +
+    '<path d="M162 88 L180 66 L234 66 L236 88 Z"/><path d="M248 88 L246 66 Q270 66 290 88 Z"/><path d="M166 128 L344 122"/>' +
+    '<circle class="w" cx="64" cy="164" r="15"/><circle class="w" cx="126" cy="164" r="15"/><circle class="w" cx="300" cy="162" r="23"/>';
+  var FRONT = BODY + '<path d="M42 110 L68 114 M146 110 L120 114"/><path d="M68 132 L118 132"/><path d="M38 144 L148 144"/>';
+  var REAR = BODY + '<path class="s" d="M42 112 L72 114 M146 112 L116 114"/><rect x="80" y="124" width="34" height="11" rx="2"/><path d="M38 144 L148 144"/>';
+  var CAR = function (flip, rear) { return '<g' + (flip ? ' transform="translate(392 0) scale(-1 1)"' : '') + '>' + (rear ? REAR : FRONT) + '<path class="g" d="M16 190 L376 190"/></g>'; };
   var DASH = '<path d="M40 70 Q196 20 352 70 L352 150 Q196 120 40 150 Z"/><circle cx="140" cy="100" r="34"/><circle cx="252" cy="100" r="34"/><rect x="170" y="128" width="52" height="20" rx="4"/><text x="196" y="172" text-anchor="middle">Mileage here</text>';
   var SEATS = '<path d="M70 190 L82 70 Q90 50 120 50 L150 50 Q170 52 172 76 L176 190 Z"/><path d="M322 190 L310 70 Q302 50 272 50 L242 50 Q222 52 220 76 L216 190 Z"/><rect x="180" y="120" width="32" height="70" rx="8"/>';
   var SHOTS = [
-    { id: 'front-left', t: 'Front left corner', h: 'Stand at the front left corner, a few steps back, so the whole car fits the outline.', svg: CAR(false) },
-    { id: 'front-right', t: 'Front right corner', h: 'Walk round to the front right corner and line the car up again.', svg: CAR(true) },
-    { id: 'rear-right', t: 'Rear right corner', h: 'Now the rear right corner, whole car in the outline.', svg: CAR(false) },
-    { id: 'rear-left', t: 'Rear left corner', h: 'Last corner: rear left.', svg: CAR(true) },
+    { id: 'front-left', t: 'Front left corner', h: 'Stand at the front left corner, a few steps back, so the whole car fits the outline.', svg: CAR(false, false) },
+    { id: 'front-right', t: 'Front right corner', h: 'Walk round to the front right corner and line the car up again.', svg: CAR(true, false) },
+    { id: 'rear-right', t: 'Rear right corner', h: 'Now the rear right corner, whole car in the outline.', svg: CAR(false, true) },
+    { id: 'rear-left', t: 'Rear left corner', h: 'Last corner: rear left.', svg: CAR(true, true) },
     { id: 'dash-mileage', t: 'Dashboard with mileage', h: 'Switch the ignition on (engine off is fine) so the mileage and any warning lights show. Fit the dials in the outline.', svg: DASH },
     { id: 'interior-front', t: 'Front seats', h: 'From the back seat or an open rear door, take the front seats and dashboard.', svg: SEATS }
   ];
