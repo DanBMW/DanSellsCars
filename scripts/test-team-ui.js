@@ -109,6 +109,7 @@ async function open(browser, base, page0, url, user, opts) {
   await page.addInitScript(({ data, user, popup, accounts }) => {
     window.__STORE = { data, user, popupUser: popup, accounts, log: [] };
   }, { data, user: user || null, popup: popup || null, accounts });
+  if (opts.clock) await page.clock.setFixedTime(opts.clock);
   await page.goto(base + url);
   page.__errors = errors;
   page.__ctx = ctx;
@@ -182,7 +183,7 @@ async function scenarios(browser, base) {
     check('home: greeting uses his first name', (await txt(p, '#home-hello')) === 'Hello, Tomi', await txt(p, '#home-hello'));
     check('home: role is Team', (await txt(p, '#home-role')) === 'Team');
     const cards = await p.locator('#cards a').allTextContents();
-    check('home: a team member sees the four systems', cards.length === 4 && ['Lockup', 'Forecourt', 'Team board', 'Team calendar'].every(w => cards.some(c => c.indexOf(w) === 0)), cards.join(' | '));
+    check('home: a team member sees the five systems', cards.length === 5 && ['Lockup', 'Forecourt', 'Showroom cover', 'Team board', 'Team calendar'].every(w => cards.some(c => c.indexOf(w) === 0)), cards.join(' | '));
     check('home: no admin card for staff', !cards.some(c => c.indexOf('Team admin') === 0));
     check('home: the first sign in saves the link to his person', st.log.some(l => l[0] === 'set' && l[1] === 'shifts/links/tomi1'), JSON.stringify(st.log.slice(-4)));
     check('home: lockup tile says tonight is signed by Carl', (await txt(p, '#cards a[href="lockup.html"] .live')).indexOf('Signed by Carl') >= 0, await txt(p, '#cards a[href="lockup.html"] .live'));
@@ -745,6 +746,120 @@ async function extraScenarios(browser, base) {
   }
 }
 
+
+async function receptionScenarios(browser, base) {
+  const DATE = '2026-11-02', CLOCK = '2026-11-02T10:30:00Z'; /* a Monday morning in London */
+  const plan = (status, extra) => ({ [DATE]: { _day: { plannedAt: 1 },
+    am: Object.assign({ personId: 'tomi', status: status, ts: 1 }, extra || {}),
+    mid: { personId: 'carl', status: 'assigned', ts: 1 }, pm: { personId: 'dan', status: 'assigned', ts: 1 } } });
+  const seeded = (status, extra) => { const d = JSON.parse(JSON.stringify(FIX)); ['lockup', 'lockupTest'].forEach(r => { d[r] = d[r] || {}; d[r].reception = plan(status, extra); }); return d; };
+  /* the page writes to whichever copy the screen is on: the copy whose shift has changed */
+  const whichRoot = async (p, key, before) => { const d = (await store(p)).data; for (const r of ['lockup', 'lockupTest']) { const v = at(d, r + '/reception/' + DATE + '/' + key); if (v !== undefined && v !== before) return v; } return null; };
+  {
+    const p = await open(browser, base, null, '/reception.html', null, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-signedout:not([hidden])', { timeout: 8000 }).catch(() => {});
+    check('cover: signed out sees the sign in prompt, not the cover', await visible(p, '#v-signedout') && !(await visible(p, '#v-main')));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    check('cover: the person on the morning shift is told they are on cover until 12:00', /on showroom cover until 12:00/.test(await txt(p, '#r-mine')), await txt(p, '#r-mine'));
+    await p.click('[data-ack="am"]'); await p.waitForTimeout(300);
+    const covering = await whichRoot(p, 'am/status', 'assigned');
+    check('cover: "I am covering" is saved on the shift', covering === 'covering', String(covering));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    await p.click('[data-why="cannot"]');
+    await p.click('#r-send');
+    check('cover: "I cannot cover right now" needs a reason before it is sent', /Please say why/.test(await txt(p, '#r-msg')));
+    await p.fill('#r-text', 'with a customer');
+    await p.click('#r-send'); await p.waitForTimeout(300);
+    const st = await store(p), rec = at(st.data, 'lockupTest/reception/' + DATE + '/am') || {}, rec2 = at(st.data, 'lockup/reception/' + DATE + '/am') || {};
+    const live = rec2.status !== 'assigned' ? rec2 : rec;
+    check('cover: the decline is saved with the reason and the words', live.status === 'declined' && live.reason === 'I cannot cover right now' && live.reasonText === 'with a customer', JSON.stringify(live));
+    check('cover: the person who declined keeps their own name on the record', live.personId === 'tomi', String(live.personId));
+    await p.close();
+  }
+  /* management: the stats, and tagging someone absent; the person on cover does not see either */
+  {
+    const d = seeded('assigned');
+    const entries = { x1: { kind: 'on', personId: 'tomi', date: DATE, shift: 'am', from: '09:00', to: '12:00' }, x2: { kind: 'skip', personId: 'carl', date: DATE, shift: 'mid', from: '12:00', to: '15:00', reason: 'I am off site' } };
+    d.lockup.receptionLog = entries; d.lockupTest.receptionLog = entries; d.receptionLog = entries; d.receptionLogTest = entries;
+    const p = await open(browser, base, null, '/reception.html', U.will, { data: d, clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(700);
+    check('cover: a manager sees the management stats', await visible(p, '#r-mgr') && /Last 30 days/.test(await txt(p, '#r-stats')));
+    check('cover: the stats show time on cover, from the log', /Tomi[\s\S]*3h 00m/.test(await txt(p, '#r-stats')), (await txt(p, '#r-stats')).slice(0, 200));
+    check('cover: the stats show skips', /Carl[\s\S]*1\s*$|Carl[\s\S]*\b1\b/.test(await txt(p, '#r-stats')));
+    await p.click('[data-tag="mid"]');
+    await p.waitForTimeout(400);
+    const abs = (await store(p)).data;
+    const tagged = at(abs, 'lockupTest/reception/' + DATE + '/mid/absent') || at(abs, 'lockup/reception/' + DATE + '/mid/absent');
+    check('cover: a manager can tag someone absent on a shift', !!tagged && tagged.personId === 'carl', JSON.stringify(tagged));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    check('cover: the person on cover does not see the management stats or the absence tag', !(await visible(p, '#r-mgr')) && (await p.locator('[data-tag]').count()) === 0);
+    await p.close();
+  }
+  /* tagged absent: the person is asked where they are and can say they are here; a manager can reallocate */
+  {
+    const d = seeded('assigned', { absent: { personId: 'tomi', by: 'will', ts: 9000 } });
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: d, clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    check('absent: the person is asked where they are', /Where are you/.test(await txt(p, '#r-mine')), await txt(p, '#r-mine'));
+    await p.click('[data-here="am"]'); await p.waitForTimeout(300);
+    const st = await store(p);
+    const reply = at(st.data, 'lockupTest/reception/' + DATE + '/am/absent/reply') || at(st.data, 'lockup/reception/' + DATE + '/am/absent/reply');
+    check('absent: "I am here" is saved against the absence', !!reply && reply.status === 'here', JSON.stringify(reply));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.will, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    await p.click('[data-unable="mid"]'); await p.waitForTimeout(200);
+    check('absent: "unable to do it" opens a text box for the reason', await visible(p, '[data-unable-text="mid"]'));
+    await p.fill('[data-unable-text="mid"]', 'at the dentist');
+    await p.click('[data-unable-send="mid"]'); await p.waitForTimeout(300);
+    const st = await store(p);
+    const re = at(st.data, 'lockupTest/reception/' + DATE + '/mid/reallocate') || at(st.data, 'lockup/reception/' + DATE + '/mid/reallocate');
+    check('absent: a manager can say someone is unable to do it, with the reason, and the shift is reallocated', !!re && re.personId === 'carl' && re.text === 'at the dentist', JSON.stringify(re));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('assigned'), clock: CLOCK });
+    let vis = false;
+    for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcbadge'); if (!vis) await p.waitForTimeout(250); }
+    check('board: the corner shows who is on showroom cover now', vis);
+    check('board: the corner names the person on the shift', /Tomi/.test(await txt(p, '#rcname')), await txt(p, '#rcname'));
+    check('board: the corner shows the shift times', /09:00 to 12:00|12:00 to 15:00/.test(await txt(p, '#rctime')), await txt(p, '#rctime'));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('declined'), clock: CLOCK });
+    let vis = false;
+    for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcbadge'); if (!vis) await p.waitForTimeout(250); }
+    const p2 = await open(browser, base, null, '/team-board.html', null, { data: seeded('short'), clock: CLOCK });
+    let vis2 = false;
+    for (let i = 0; i < 80 && !vis2; i++) { vis2 = await visible(p2, '#rcbadge'); if (!vis2) await p2.waitForTimeout(250); }
+    check('board: a shift nobody can cover says showroom not covered', vis2 && /Showroom not covered/.test(await txt(p2, '#rcsmall')), await txt(p2, '#rcsmall'));
+    await p2.close();
+    check('board: a declined shift shows cover needed in amber', vis && /Showroom cover needed/.test(await txt(p, '#rcsmall')), await txt(p, '#rcsmall'));
+    await p.close();
+  }
+}
+
 const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -754,6 +869,7 @@ const OUT = path.join(process.env.TMPDIR || '/tmp', 'team-ui-shots');
   try {
     await scenarios(browser, base);
     await extraScenarios(browser, base);
+    await receptionScenarios(browser, base);
   } catch (e) {
     console.log('FAIL scenario crashed: ' + (e && e.message));
     CHECKS.push({ name: 'run', ok: false });
