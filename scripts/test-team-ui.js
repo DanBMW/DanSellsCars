@@ -988,6 +988,29 @@ async function receptionScenarios(browser, base) {
     check('cover: the person on cover does not see the management stats or the absence tag', !(await visible(p, '#r-mgr')) && (await p.locator('[data-tag]').count()) === 0);
     await p.close();
   }
+  /* tagged absent: the person is asked where they are and can say they are here; a manager can reallocate */
+  {
+    const d = seeded('assigned', { absent: { personId: 'tomi', by: 'will', ts: 9000 } });
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: d, clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    check('absent: the person is asked where they are', /Where are you/.test(await txt(p, '#r-mine')), await txt(p, '#r-mine'));
+    await p.click('[data-here="am"]'); await p.waitForTimeout(300);
+    const st = await store(p);
+    const reply = at(st.data, 'lockupTest/reception/' + DATE + '/am/absent/reply') || at(st.data, 'lockup/reception/' + DATE + '/am/absent/reply');
+    check('absent: "I am here" is saved against the absence', !!reply && reply.status === 'here', JSON.stringify(reply));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.will, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    await p.click('[data-realloc="mid"]'); await p.waitForTimeout(300);
+    const st = await store(p);
+    const re = at(st.data, 'lockupTest/reception/' + DATE + '/mid/reallocate') || at(st.data, 'lockup/reception/' + DATE + '/mid/reallocate');
+    check('absent: a manager can reallocate a shift', !!re && re.personId === 'carl', JSON.stringify(re));
+    await p.close();
+  }
   {
     const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('assigned'), clock: CLOCK });
     let vis = false;

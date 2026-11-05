@@ -66,10 +66,38 @@ async function run(o) {
   const existing = {};
   for (const s of shifts) {
     let r = today[s.id] || {};
+    /* a manager reallocated the shift: the person on it is logged as a skip, and the shift is freed */
+    if (r.reallocate && r.reallocate.ts !== r.reallocateHandledTs) {
+      const rl = r.reallocate, pid = r.personId;
+      const dm = Object.assign({}, r.declined || {});
+      if (pid) {
+        await logWrite('realloc_' + date + '_' + s.id + '_' + rl.ts, { kind: 'skip', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rl.ts, reason: 'Reallocated by manager', reasonText: rl.by ? 'by ' + rl.by : '' });
+        dm[pid] = true;
+      }
+      const change = { declined: dm, reallocateHandledTs: rl.ts, personId: null, status: 'open' };
+      today[s.id] = Object.assign({}, r, change);
+      if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(change);
+      say('Reallocated ' + s.id + (pid ? ' from ' + firstName(team[pid], pid) : ''));
+      r = today[s.id];
+    }
+    /* a reply from someone tagged absent goes to the managers */
+    if (r.absent && r.absent.reply) {
+      const rp = r.absent.reply, who = firstName(team[r.absent.personId], r.absent.personId);
+      const line = rp.status === 'here' ? who + ' says they are here.' : who + ' is not in: ' + (rp.text || 'no reason given') + '.';
+      queueAdd('rc_reply_' + date + '_' + s.id + '_' + rp.ts, { to: 'managers', subject: who + (rp.status === 'here' ? ' is here' : ' is not in') + ' (' + s.from + ' to ' + s.to + ')', text: line, html: '<p>' + esc(line) + '</p>', ts: Date.now() }, dry);
+    }
     /* a manager tagged someone absent on this shift: log it, keep them off the shift, free it if they were on it */
     if (r.absent && r.absent.ts !== r.absentHandledTs) {
       const ab = r.absent, who = firstName(team[ab.personId] || (managers || {})[ab.personId], ab.personId);
       await logWrite('absent_' + date + '_' + s.id + '_' + ab.ts, { kind: 'absent', personId: ab.personId, date, shift: s.id, from: s.from, to: s.to, ts: ab.ts, by: ab.by || '' });
+      const ap = team[ab.personId] || {};
+      if (ap.email) {
+        const first = firstName(ap, ab.personId);
+        const line = 'Hi ' + first + ', you have been marked absent on showroom cover ' + s.from + ' to ' + s.to + '. It isn\'t reception.';
+        queueAdd('rc_absent_' + date + '_' + s.id + '_' + ab.ts, { to: [testExec || ap.email], subject: 'Where are you? 👀',
+          text: line + '\n\nWhere are you? If you are here, tell us: I am here. If you cannot be in, update the reason.\n\nhttps://dan-sells.co.uk/reception.html',
+          html: '<p>' + esc(line) + '</p><p>Where are you? 👀 If you are here, tell us: <b>I am here</b>. If you cannot be in, update the reason.</p><p><a href="https://dan-sells.co.uk/reception.html">Open showroom cover</a></p>', ts: Date.now() }, dry);
+      }
       const dm = Object.assign({}, r.declined || {}); if (ab.personId) dm[ab.personId] = true;
       const change = Object.assign({ declined: dm, absentHandledTs: ab.ts }, r.personId === ab.personId ? { personId: null, status: 'open' } : {});
       today[s.id] = Object.assign({}, r, change);

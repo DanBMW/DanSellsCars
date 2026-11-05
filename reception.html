@@ -108,7 +108,16 @@ window.__backend = backend;
 
     var mine = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && (r.status === 'assigned' || r.status === 'covering') && minsOf(s.to) > now.mins; })[0];
     var mineDone = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && r.status === 'declined'; });
+    var missing = shifts.filter(function (s) { var a = (DAY[s.id] || {}).absent; return a && a.personId === me && !a.reply; })[0];
     var html = '';
+    if (missing) {
+      html += '<div class="card" style="border-color:#ff9a1f"><b>Where are you? 👀</b>' +
+        '<p class="muted small" style="margin:6px 0 10px">You have been marked absent on showroom cover ' + esc(missing.from) + ' to ' + esc(missing.to) + '. It isn&rsquo;t reception. Tell us:</p>' +
+        '<button class="big" type="button" data-here="' + esc(missing.id) + '">I am here</button>' +
+        '<div style="margin-top:12px"><textarea id="r-away" rows="2" maxlength="500" placeholder="Or the reason you cannot be in" style="width:100%"></textarea>' +
+        '<button class="ghost" type="button" data-away="' + esc(missing.id) + '" style="margin-top:8px">Send the reason</button></div>' +
+        '<p class="msg" id="r-away-msg" aria-live="polite"></p></div>';
+    }
     if (mine) {
       var r = DAY[mine.id] || {};
       html += '<div class="card"><b>You are on showroom cover until ' + esc(mine.to) + '.</b>' +
@@ -121,19 +130,40 @@ window.__backend = backend;
       html += '<div class="card"><b>You said you cannot cover ' + esc(mineDone[0].from) + ' to ' + esc(mineDone[0].to) + '.</b><p class="muted small" style="margin:6px 0 0">The managers have been told and someone else has been put on.</p></div>';
     }
     $('r-mine').innerHTML = html;
+    $('r-mine').querySelectorAll('[data-here]').forEach(function (b) { b.onclick = function () { replyAbsent(b.getAttribute('data-here'), 'here', '', date); }; });
+    $('r-mine').querySelectorAll('[data-away]').forEach(function (b) { b.onclick = function () { var t = ($('r-away').value || '').trim(); if (!t) { $('r-away-msg').textContent = 'Please give a reason.'; return; } replyAbsent(b.getAttribute('data-away'), 'reason', t, date); }; });
     $('r-mine').querySelectorAll('[data-ack]').forEach(function (b) { b.onclick = function () { ack(b.getAttribute('data-ack'), date); }; });
     $('r-mine').querySelectorAll('[data-why]').forEach(function (b) { b.onclick = function () { askWhy(b.getAttribute('data-why'), b.getAttribute('data-shift'), date); }; });
 
     $('r-list').innerHTML = shifts.map(function (s) {
       var r = DAY[s.id] || {}, who = r.personId ? nameOf(r.personId) : 'Nobody yet';
       var pill = r.status === 'short' ? '<span class="pill r">Not covered</span>' : r.status === 'covering' ? '<span class="pill g">Covering</span>' : r.status === 'declined' ? '<span class="pill r">Cannot cover</span>' : r.personId ? '<span class="pill">On</span>' : '<span class="pill r">Open</span>';
-      var tag = (STATE.canManage && r.personId) ? ' <button class="ghost" type="button" data-tag="' + esc(s.id) + '" data-who="' + esc(r.personId) + '" style="margin-left:6px">Tag ' + esc(nameOf(r.personId)) + ' absent</button>' : '';
-      return '<li><b>' + esc(s.from) + ' to ' + esc(s.to) + '</b> ' + esc(who) + ' ' + pill + tag + '</li>';
+      var tag = (STATE.canManage && r.personId) ? ' <button class="ghost" type="button" data-tag="' + esc(s.id) + '" data-who="' + esc(r.personId) + '" style="margin-left:6px">Tag ' + esc(nameOf(r.personId)) + ' absent</button>' +
+        ' <button class="ghost" type="button" data-realloc="' + esc(s.id) + '" data-who="' + esc(r.personId) + '" style="margin-left:6px">Reallocate</button>' : '';
+      var note = r.absent ? '<div class="muted small" style="margin-top:4px">Tagged absent: ' + esc(nameOf(r.absent.personId)) + (r.absent.reply ? (r.absent.reply.status === 'here' ? '. Says they are here.' : '. Not in: ' + esc(r.absent.reply.text || '')) : '. Not replied yet.') + '</div>' : '';
+      return '<li><b>' + esc(s.from) + ' to ' + esc(s.to) + '</b> ' + esc(who) + ' ' + pill + tag + note + '</li>';
     }).join('');
     $('r-list').querySelectorAll('[data-tag]').forEach(function (b) { b.onclick = function () { tagAbsent(b.getAttribute('data-tag'), b.getAttribute('data-who'), date); }; });
+    $('r-list').querySelectorAll('[data-realloc]').forEach(function (b) { b.onclick = function () { reallocate(b.getAttribute('data-realloc'), b.getAttribute('data-who'), date); }; });
     $('r-mgr').hidden = !STATE.canManage;
     if (STATE.canManage) { watchLog(); paintStats(); }
     watchDay(date);
+  }
+
+  function replyAbsent(shiftId, status, text, date) {
+    var RL = TeamSession.paths().RL;
+    TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/absent/reply', { status: status, text: text, ts: Date.now() })
+      .then(function () { alert(status === 'here' ? 'Thanks, we have you as here.' : 'Thanks, the managers have the reason.'); })
+      .catch(function () { alert('That did not save. Try again.'); });
+  }
+
+  function reallocate(shiftId, personId, date) {
+    if (!STATE || !STATE.canManage) return;
+    if (!confirm('Reallocate this shift? ' + nameOf(personId) + ' is taken off it, it is logged as a skip, and someone else is put on.')) return;
+    var RL = TeamSession.paths().RL;
+    TeamSession.backend().set(RL + '/reception/' + date + '/' + shiftId + '/reallocate', { personId: personId, by: STATE.personId, ts: Date.now() })
+      .then(function () { alert('Reallocated. The next person is being put on.'); })
+      .catch(function () { alert('That did not save. Try again.'); });
   }
 
   function tagAbsent(shiftId, personId, date) {

@@ -174,5 +174,34 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.ok(db.data.lockupTest.reception[MON].mid.personId, 'someone else is put on');
   console.log('ok: a manager absence tag is logged as an absence, reassigns the shift, and is not a skip');
 
+  // an absence tag emails the person "Where are you?", and their reply goes to the managers once
+  db = fakeDb();
+  await runAt(db, MON, 8, 0);
+  const absPerson = db.data.lockupTest.reception[MON].pm.personId;
+  db.data.lockupTest.reception[MON].pm = Object.assign({}, db.data.lockupTest.reception[MON].pm, { absent: { personId: absPerson, by: 'will', ts: 5000 } });
+  r = await runAt(db, MON, 10, 0);
+  const whereAre = r.added.filter(id => /^rc_absent_/.test(id));
+  assert.strictEqual(whereAre.length, 1, 'one where-are-you email: ' + r.added.join(','));
+  const wm = db.data.lockupTest.notify[whereAre[0]];
+  assert.ok(/Where are you\?/.test(wm.subject) && /reception\.html/.test(wm.text) && /I am here/.test(wm.text), wm.text);
+  assert.deepStrictEqual(wm.to, ['daniel.cane@hedinautomotive.co.uk'], 'test mode sends it to Dan');
+  db.data.lockupTest.reception[MON].pm = Object.assign({}, db.data.lockupTest.reception[MON].pm, { absent: Object.assign({}, db.data.lockupTest.reception[MON].pm.absent, { reply: { status: 'here', ts: 6000 } }) });
+  r = await runAt(db, MON, 10, 15);
+  assert.strictEqual(r.added.filter(id => /^rc_reply_/.test(id)).length, 1, 'the reply reaches the managers');
+  r = await runAt(db, MON, 10, 30);
+  assert.strictEqual(r.added.filter(id => /^rc_reply_/.test(id)).length, 0, 'once');
+  console.log('ok: an absence tag emails the person "Where are you?" and their reply goes to the managers once');
+
+  // a manager reallocates a shift: the person on it is logged as a skip with the reason, and the next person goes on
+  const onNow = db.data.lockupTest.reception[MON].am.personId;
+  db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { reallocate: { personId: onNow, by: 'will', ts: 7000 } });
+  r = await runAt(db, MON, 10, 45);
+  const rskips = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip' && e.reason === 'Reallocated by manager');
+  assert.strictEqual(rskips.length, 1, JSON.stringify(rskips));
+  assert.strictEqual(rskips[0].personId, onNow, 'logged as a skip against the person taken off');
+  assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, onNow, 'reallocated to someone else');
+  assert.ok(db.data.lockupTest.reception[MON].am.personId, 'and the shift is covered');
+  console.log('ok: a reallocation is logged as a skip with its reason and the shift is covered by someone else');
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });
