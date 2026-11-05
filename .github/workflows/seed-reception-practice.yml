@@ -1,0 +1,28 @@
+name: seed-reception-practice
+
+# One-shot: seed lockupTest/reception/<today-UK> with dan on am/mid/pm for
+# Showroom cover practice. Does not email anyone. Does not touch live lockup/.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seed-reception-practice
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i --no-save --no-audit --no-fund firebase-admin@12
+      - run: node scripts/seed-reception-practice.js
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
