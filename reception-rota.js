@@ -79,8 +79,7 @@
       var no = declined[s.id] || [];
       var free = function (id) { return no.indexOf(id) < 0 && !clashes(busy, id, s); };
       var cand = pool.filter(function (id) { return free(id) && Object.keys(out).every(function (k) { return out[k] !== id; }); });
-      /* only if nobody new is free, let someone already on today cover a second shift */
-      if (!cand.length) cand = pool.filter(free);
+      /* no double shifts: someone already on today is never put on a second one. If nobody new is free the shift is short. */
       if (!cand.length) { out[s.id] = null; short.push(s.id); return; }
       cand.sort(function (a, b) {
         return ((today[a] || 0) - (today[b] || 0)) || ((hist[a] || 0) - (hist[b] || 0)) || (pool.indexOf(a) - pool.indexOf(b));
