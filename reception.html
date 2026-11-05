@@ -270,8 +270,19 @@ window.__backend = backend;
       .catch(function () { $('r-msg') && ($('r-msg').textContent = 'That did not save. Try again.'); });
   }
 
+  /* one decline, from the person on shift: writes it to the shift, the job reallocates and tells the managers */
+  function sendDecline(kind, shiftId, date, text) {
+    var ans = RR.answer(kind, text);
+    var RL = RLROOT();
+    TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
+      .then(function () { $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told, and the next person is being put on.'; })
+      .catch(function () { $('r-msg').textContent = 'That did not save. Try again.'; });
+  }
+
   function askWhy(kind, shiftId, date) {
     OPEN = kind;
+    /* with a customer needs no words: it is sent at once, and the shift is reallocated */
+    if (kind === 'customer') { $('r-why').innerHTML = ''; sendDecline(kind, shiftId, date, ''); return; }
     var need = kind === 'cannot' || kind === 'other';
     $('r-why').innerHTML = '<div class="card" style="margin-top:12px"><b>' + esc(RR.REASONS[kind]) + '</b>' +
       '<textarea id="r-text" rows="3" maxlength="500" placeholder="' + (need ? 'Tell the managers why (required)' : 'Anything to add (optional)') + '" style="width:100%;margin-top:8px"></textarea>' +

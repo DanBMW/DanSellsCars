@@ -777,6 +777,16 @@ async function receptionScenarios(browser, base) {
     await p.waitForTimeout(500);
     await p.click('[data-why="cannot"]');
     await p.click('#r-send');
+    {
+      const pc = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
+      await pc.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+      await pc.waitForTimeout(500);
+      await pc.click('[data-why="customer"]');
+      await pc.waitForTimeout(400);
+      const stc = await store(pc), recc = at(stc.data, 'lockupTest/reception/' + DATE + '/am') || {};
+      check("cover: \"I'm with a customer now\" is sent at once, with no words", recc.status === 'declined' && recc.reason === "I'm with a customer now, cannot cover", JSON.stringify(recc));
+      await pc.close();
+    }
     check('cover: "I cannot cover right now" needs a reason before it is sent', /Please say why/.test(await txt(p, '#r-msg')));
     await p.fill('#r-text', 'with a customer');
     await p.click('#r-send'); await p.waitForTimeout(300);

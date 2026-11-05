@@ -231,5 +231,17 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(new Set(onDay).size, onDay.length, 'no double shifts: ' + JSON.stringify(onDay));
   console.log('ok: someone on a day off is not put on, and nobody is on twice');
 
+  // with a customer: the person on the shift is taken off at once, logged as a skip with that reason, and the next person goes on
+  db = fakeDb();
+  await runAt(db, MON, 8, 0);
+  const custWho = db.data.lockupTest.reception[MON].am.personId;
+  db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { status: 'declined', reason: "I'm with a customer now, cannot cover", reasonText: '', ts: 8000 });
+  await runAt(db, MON, 8, 30);
+  const custSkip = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip' && e.reason === "I'm with a customer now, cannot cover");
+  assert.strictEqual(custSkip.length, 1, 'logged as a skip');
+  assert.strictEqual(custSkip[0].personId, custWho);
+  assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, custWho, 'the next person goes on');
+  console.log('ok: with a customer is logged as a skip and the next person goes on');
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

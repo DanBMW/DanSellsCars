@@ -68,6 +68,8 @@ assert.strictEqual(R.answer('offsite').reason, 'I am off site');
 assert.strictEqual(R.answer('other', ''), null, 'Other with no words is refused');
 assert.strictEqual(R.answer('other', '  at the dentist  ').reasonText, 'at the dentist');
 assert.strictEqual(R.answer('bogus'), null);
+const cust = R.answer('customer');
+assert.deepStrictEqual([cust.status, cust.reassign, cust.reason, cust.reasonText], ['declined', true, "I'm with a customer now, cannot cover", ''], 'with a customer needs no words and reallocates at once');
 console.log('ok: the four answers, and Other needs a reason');
 
 // the email says what Dan asked for, with tap links for covering / cannot cover
