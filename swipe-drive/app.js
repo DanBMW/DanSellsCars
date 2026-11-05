@@ -720,7 +720,7 @@
       : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">Monthly: ask for a quote</div>');
     var just = M.justArrived(c) ? '<span class="ct-just">Just arrived</span>' : '';
     return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' + just +
-      '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">TEST DRIVE</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
+      '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">SHORTLIST</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
       '<div class="ct-meta">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? 'NEW, IN STOCK' : 'NEW') + '</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
       x.reasons.filter(function (r) { return r !== 'Just arrived'; }).map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') +
       (x.notes || []).map(function (n) { return '<span class="ct-note">' + esc(n) + '</span>'; }).join('') + '</div>' + money + '</div>';
@@ -815,7 +815,7 @@
     track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: brandNew(x.car) ? '' : x.car.reg, kind: x.car.kind, score: x.score });
     if (superLike) { badge(); matchMoment(x); return; }
     badge();
-    if (liked) { var likes = Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).length; if (likes === 1 || x.score >= 75) matchMoment(x); else toast('Added to your matches'); }
+    if (liked) toast('Added to your shortlist'); /* right swipe only shortlists; the match pop up with Book a test drive is for Keys please */
   }
   /* Book a test drive: hands off to Dan's approval only booking link, or WhatsApp while there is none. Never on the swipe screen. */
   function tdGone(c) { var st = String(c.status || c.availability || '').toLowerCase(); return !!(c.sold || c.reserved || /sold|reserv/.test(st)); }
@@ -929,8 +929,8 @@
   function maybeTutorial() { var seen = null; try { seen = localStorage.getItem(TUT); } catch (e) {} if (!seen && !$('#deck').hidden) showTutorial(false); }
   function showTutorial(replay) { if ($('#tut')) return; var rm = reduced(), o = document.createElement('div'); o.className = 'ct-tut' + (rm ? ' is-static' : ''); o.id = 'tut';
     o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'How SwipeToDrive works');
-    var STEPS = [['like', 'Swipe right on a car you like'], ['pass', 'Swipe left to pass'], ['tap', 'Tap the card for all the details'], ['info', 'Still swipe in the details to decide']];
-    var demo = '<div class="tut-card"><div class="tut-ph"><span>BMW X3</span></div><div class="tut-meta"><b>BMW X3 xDrive20d</b><i></i><i class="s"></i></div><em class="tut-st tut-yes">TEST DRIVE</em><em class="tut-st tut-no">PASS</em></div>' +
+    var STEPS = [['like', 'Swipe right to add a car to your shortlist'], ['pass', 'Swipe left to pass'], ['tap', 'Tap the card for all the details'], ['info', 'Still swipe in the details to decide']];
+    var demo = '<div class="tut-card"><div class="tut-ph"><span>BMW X3</span></div><div class="tut-meta"><b>BMW X3 xDrive20d</b><i></i><i class="s"></i></div><em class="tut-st tut-yes">SHORTLIST</em><em class="tut-st tut-no">PASS</em></div>' +
       '<div class="tut-sheet"><div class="tut-ph"></div><b>Full details</b><i></i><i></i><i class="s"></i></div><div class="tut-hand" aria-hidden="true"><svg viewBox="0 0 48 48" width="54" height="54"><path d="M19 6a3 3 0 0 1 6 0v15l2-1a3 3 0 0 1 4 1l1 1a3 3 0 0 1 4 1l1 1a3 3 0 0 1 4 2v8c0 7-5 12-12 12h-2c-4 0-7-2-9-5l-7-10a3 3 0 0 1 5-3l3 3z" fill="#f4f1ea" stroke="#0a0c0f" stroke-width="1.6"/></svg></div>';
     o.innerHTML = '<div class="ct-tut-in"><button class="ct-tut-skip" type="button">Skip</button>' +
       (rm ? '<h2>How it works</h2><ol class="tut-list">' + STEPS.map(function (s) { return '<li class="tut-' + s[0] + '"><span class="tut-ico"></span>' + esc(s[1]) + '</li>'; }).join('') + '</ol>'
