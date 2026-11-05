@@ -3578,7 +3578,11 @@ function paintCover(){
     const ph=document.getElementById('rcph'); ph.innerHTML='';
     const img=new Image(); img.alt=name; img.onerror=()=>{ ph.textContent=(name||'?').charAt(0).toUpperCase(); };
     img.onload=()=>{ ph.innerHTML=''; ph.appendChild(img); };
-    img.src='team/'+encodeURIComponent(r.personId)+'.jpg';
+    /* the same photo the board uses for them: matched by name, so 'Daniel Cane' finds Dan Cane */
+    const pic=(function(full){ const w=String(full||'').trim().split(/\s+/); const last=(w[w.length-1]||'').toLowerCase(), first=(w[0]||'').toLowerCase();
+      const hit=(window.TEAM||[]).filter(t=>{ const tw=t.name.trim().split(/\s+/), tf=(tw[0]||'').toLowerCase(), tl=(tw[tw.length-1]||'').toLowerCase(); return tl===last && (tf===first || tf.indexOf(first)===0 || first.indexOf(tf)===0); })[0];
+      return hit?hit.photo:''; })(who.fullName||who.name);
+    if(pic) img.src=pic; else ph.textContent=(name||'?').charAt(0).toUpperCase();
     ph.textContent=(name||'?').charAt(0).toUpperCase();
     document.getElementById('rcsmall').textContent='On showroom cover';
     document.getElementById('rcname').textContent=name;
@@ -7995,7 +7999,7 @@ let stop=null, dealsGen=0;
    shows all day so it can be demoed, and is marked TEST MODE in orange */
 const LKS={lockup:{weeks:{},status:{},cfg:{},progress:{},absences:{},reception:null},lockupTest:{weeks:{},status:{},cfg:{},progress:{},absences:{},reception:null}};
 let LK_TEST=true; const LK_SANDBOX=new URLSearchParams(location.search).has('sandbox'); /* ?sandbox=1 forces lockupTest/ on this screen only */
-const LK={get absences(){return LKS[LK_TEST?'lockupTest':'lockup'].absences},get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},get reception(){return LKS[LK_TEST?'lockupTest':'lockup'].reception},bank:{}};
+const LK={get absences(){return LKS[LK_TEST?'lockupTest':'lockup'].absences},get weeks(){return LKS[LK_TEST?'lockupTest':'lockup'].weeks},get status(){return LKS[LK_TEST?'lockupTest':'lockup'].status},get cfg(){return LKS[LK_TEST?'lockupTest':'lockup'].cfg},get progress(){return LKS[LK_TEST?'lockupTest':'lockup'].progress},get reception(){return LKS[(window.ReceptionRota&&window.ReceptionRota.RECEPTION_ROOT)||(LK_TEST?'lockupTest':'lockup')].reception} /* the cover's own root, whatever the lockup's live switch says */,bank:{}};
 /* the plain script (who is in this week) reads the lockup data through this, since LK lives in the module */
 window.dsRoster={get cfg(){return LK.cfg},get weeks(){return LK.weeks},get absences(){return LK.absences},get reception(){return LK.reception},get bank(){return LK.bank}};
 function paintLock(){
