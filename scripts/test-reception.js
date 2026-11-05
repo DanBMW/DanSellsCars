@@ -38,11 +38,15 @@ console.log('ok: the person with fewest recent reception shifts is picked');
 // too few people: the shift is short, not silently given to someone twice without need
 const thin = R.planDay({ shifts: wk, available: ['tomi'], team, history: {} });
 assert.strictEqual(thin.assignments.am, 'tomi');
-assert.strictEqual(thin.assignments.mid, 'tomi', 'one person covers two shifts only when nobody else is in');
-assert.deepStrictEqual(thin.short, []);
+assert.strictEqual(thin.assignments.mid, null, 'nobody does a double shift: with one person in, the second shift is short');
+assert.deepStrictEqual(thin.short, ['mid', 'pm']);
 const none = R.planDay({ shifts: wk, available: [], team, history: {} });
 assert.deepStrictEqual(none.short, ['am', 'mid', 'pm']);
-console.log('ok: with nobody in the shifts are marked short, and one person can cover twice only when alone');
+const two = R.planDay({ shifts: wk, available: ['tomi', 'carl'], team, history: {} });
+const twoPeople = Object.keys(two.assignments).map(k => two.assignments[k]).filter(Boolean);
+assert.strictEqual(new Set(twoPeople).size, twoPeople.length, 'no one is on twice: ' + JSON.stringify(two.assignments));
+assert.strictEqual(two.short.length, 1, 'with two people the third shift is short, not doubled up');
+console.log('ok: nobody does a double shift; a shift with nobody free is short');
 
 // declined: the person who cannot cover is taken off that shift, the next fair person goes on
 const dec = R.planDay({ shifts: [wk[0]], available: ['tomi', 'carl'], team, history: {}, declined: { am: ['tomi'] } });

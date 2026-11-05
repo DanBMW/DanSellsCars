@@ -221,5 +221,15 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.ok(!Object.values(db.data.receptionLogTest || {}).some(e => e.kind === 'skip'), 'no skip for a booking');
   console.log('ok: a booking that clashes with a shift that has not started moves them off it, with no skip');
 
+  // the rota: someone whose usual day off is this Monday is not put on, and nobody is on twice
+  const offTeam = Object.assign({}, team, { carl: Object.assign({}, team.carl, { off: 'mon' }), tomi: Object.assign({}, team.tomi, { off: 'mon' }) });
+  db = fakeDb();
+  await runAt(db, MON, 8, 0, { team: offTeam });
+  const offDay = db.data.lockupTest.reception[MON];
+  const onDay = ['am', 'mid', 'pm'].map(k => offDay[k] && offDay[k].personId).filter(Boolean);
+  assert.ok(!onDay.includes('carl') && !onDay.includes('tomi'), 'days off are respected: ' + JSON.stringify(onDay));
+  assert.strictEqual(new Set(onDay).size, onDay.length, 'no double shifts: ' + JSON.stringify(onDay));
+  console.log('ok: someone on a day off is not put on, and nobody is on twice');
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });
