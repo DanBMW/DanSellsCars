@@ -6,3 +6,6 @@ out/
 __pycache__/
 *.pyc
 automation/.image-cache/
+
+# Supabase CLI local state (linked project metadata), never committed
+swipe-drive/backend/supabase/.temp/
