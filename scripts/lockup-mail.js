@@ -97,18 +97,30 @@ async function main() {
     await FA.run({ db, root: ROOT, nowMs, dry: DRY, hol, absences, lockupCfg: cfg, stock: ls.stock, stockGeneratedAt: ls.generatedAt,
       stockFresh: process.env.GITHUB_REPOSITORY ? () => FA.stockFresh({ repo: process.env.GITHUB_REPOSITORY, token: process.env.GITHUB_TOKEN, repoDir }) : null });
   } catch (e) { console.error('forecourt auto failed', e); }
-  /* showroom cover (scripts/reception-mail.js): plans each open day after 07:30 and
-     queues the cover emails and the managers' notes, so they go out in this run */
+  /* showroom cover (scripts/reception-mail.js): plans each open day, reading the appointment feed
+     at 07:30 (today, and re-checks it) and at 17:30 (tomorrow), and queues the emails in this run */
   try {
     const RC = require('./reception-mail.js');
     const rc = await RC.load(db, ROOT, TEST ? 'shiftsTest' : 'shifts');
-    const notifyNow = (await db.ref(ROOT + '/notify').get()).val() || {};
-    const rq = RC.makeQueue(db, ROOT, notifyNow);
-    const rr = await RC.run({ db, root: ROOT, logRoot: TEST ? 'receptionLogTest' : 'receptionLog', n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg, testExec: TEST ? TEST_EXEC : null,
-      queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log, reception: rc.reception, absences,
-      shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {} });
+    const tom = R.addDays(n.date, 1);
+    const markOf = async d => (await db.ref(ROOT + '/reception/' + d + '/_day').get()).val() || {};
+    const todayMark = await markOf(n.date), tomMark = await markOf(tom);
+    const needToday = n.mins >= 7 * 60 + 30 && (!todayMark.plannedAt || !todayMark.rechecked);
+    const needTomorrow = n.mins >= 17 * 60 + 30 && !tomMark.plannedAt;
+    const feedToday = needToday ? await RC.readBusy(n.date) : null;
+    const feedTomorrow = needTomorrow ? await RC.readBusy(tom) : null;
+    const rq = RC.makeQueue(db, ROOT, (await db.ref(ROOT + '/notify').get()).val() || {});
+    const base = { db, root: ROOT, logRoot: TEST ? 'receptionLogTest' : 'receptionLog', n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg,
+      testExec: TEST ? TEST_EXEC : null, queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log,
+      reception: rc.reception, absences, shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {} };
+    const rToday = await RC.run(Object.assign({}, base, { date: n.date, planAt: 7 * 60 + 30, recheck: !!feedToday,
+      busy: feedToday ? feedToday.busy : null, feedFailed: needToday && !feedToday }));
+    console.log('Showroom cover today', JSON.stringify(rToday));
+    if (needTomorrow) {
+      const rTom = await RC.run(Object.assign({}, base, { date: tom, planAt: 0, busy: feedTomorrow ? feedTomorrow.busy : null, feedFailed: !feedTomorrow }));
+      console.log('Showroom cover tomorrow', JSON.stringify(rTom));
+    }
     await rq.flush();
-    console.log('Showroom cover', JSON.stringify(rr));
   } catch (e) { console.error('showroom cover failed', e); }
 
   const queue = (await db.ref(ROOT + '/notify').get()).val() || {};

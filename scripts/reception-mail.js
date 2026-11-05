@@ -28,6 +28,7 @@ const KEEP_DAYS = 14;
 
 function hm(mins) { return String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0'); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function minsOf(t) { return +String(t).slice(0, 2) * 60 + +String(t).slice(3, 5); }
 function firstName(p, id) { return (p && p.name) || id; }
 
 /* the shift calendar's view of the day, as the rota reads it */
@@ -47,11 +48,12 @@ function historyOf(all, date) {
 
 async function run(o) {
   const { db, root, n, dry, team, managers, cfg, testExec, queueAdd, log } = o;
+  const date0 = o.date || n.date;
   const say = log || console.log;
   const logRoot = o.logRoot || 'receptionLog';
   /* the management log (skips, absence tags, and every shift someone was put on): admin writes only */
   const logWrite = async (key, entry) => { if (!dry) await db.ref(logRoot + '/' + key).set(entry); };
-  const date = n.date, dow = SR.dowOf(date);
+  const date = date0, dow = SR.dowOf(date);
   const absences = o.absences || {};
   const ctx = shiftCtx({ team, managers, absences, shiftCfg: o.shiftCfg, bh: o.bh, holidays: o.holidays, closed: o.closed, n });
   if (SR.dayKind(ctx, date) === 'closed') return { skipped: 'closed' };
@@ -120,6 +122,24 @@ async function run(o) {
   const declined = {};
   shifts.forEach(s => { declined[s.id] = Object.keys((today[s.id] || {}).declined || {}); });
 
+  /* the 07:30 re-read of today's bookings: a shift not yet started that its person now clashes with is freed.
+     This is not a skip, they were not refusing it, the booking came in. */
+  const busy = o.busy || {};
+  if (o.recheck && o.busy && !dry) {
+    for (const s of shifts) {
+      const r = today[s.id] || {};
+      if (!r.personId || minsOf(s.from) <= n.mins) continue;
+      if (RR.clashes(busy, r.personId, s)) {
+        const change = { personId: null, status: 'open' };
+        today[s.id] = Object.assign({}, r, change);
+        delete existing[s.id];
+        await db.ref(root + '/reception/' + date + '/' + s.id).update(change);
+        say('Freed ' + s.id + ': ' + firstName(team[r.personId], r.personId) + ' has an appointment');
+      }
+    }
+    await db.ref(root + '/reception/' + date + '/_day').update({ rechecked: Date.now() });
+  }
+
   /* everyone on the team needs a work email to be put on showroom cover; tell the managers once about anyone who has none */
   for (const id of Object.keys(team)) {
     if (team[id] && team[id].active !== false && !team[id].email) {
@@ -129,13 +149,17 @@ async function run(o) {
     }
   }
 
-  /* 2. plan once after 07:30, then only to fill shifts that were reassigned or are open */
+  /* 2. plan once (tomorrow from 17:30, today from 07:30), then only to fill shifts that were reassigned or are open */
+  if (o.feedFailed && !dry && !(today._day || {}).plannedAt) {
+    queueAdd('rc_feed_' + date, { to: 'managers', subject: 'Appointments not read for ' + date, text: 'The appointment times could not be read, so showroom cover for ' + date + ' is planned from the shift calendar alone. Please check the appointments.', html: '<p>The appointment times could not be read, so showroom cover for ' + esc(date) + ' is planned from the shift calendar alone. Please check the appointments.</p>', ts: Date.now() }, dry);
+  }
   const dayMark = (today._day || {}).plannedAt;
-  if (!dayMark && n.mins < PLAN_FROM) return { skipped: 'before 07:30' };
+  const planAt = o.planAt != null ? o.planAt : PLAN_FROM;
+  if (!dayMark && planAt > 0 && n.mins < planAt) return { skipped: 'before the plan time' };
   if (!dayMark || Object.keys(existing).length < shifts.length) {
     const available = SR.staffOn(ctx, date);
     const plan = RR.planDay({
-      shifts, available, team, exclude: ((cfg && cfg.receptionExclude) || []).concat(Object.keys(team).filter(id => !(team[id] || {}).email)), history: historyOf(all, date),
+      shifts, available, team, busy, exclude: ((cfg && cfg.receptionExclude) || []).concat(Object.keys(team).filter(id => !(team[id] || {}).email)), history: historyOf(all, date),
       declined: declined, existing: existing
     });
     for (const s of shifts) {
@@ -163,7 +187,7 @@ async function run(o) {
         text: 'Showroom not covered ' + s2.from + ' to ' + s2.to + '. Nobody from the sales team is free to cover the showroom. Please arrange cover.',
         html: '<p>Showroom not covered ' + esc(s2.from) + ' to ' + esc(s2.to) + '.</p><p>Nobody from the sales team is free to cover the showroom. Please arrange cover.</p>', ts: Date.now() }, dry);
     }
-    if (!dayMark && !dry) await db.ref(root + '/reception/' + date + '/_day').set({ plannedAt: Date.now() });
+    if (!dayMark && !dry) await db.ref(root + '/reception/' + date + '/_day').update({ plannedAt: Date.now() });
   }
 
   /* 3. prune old days */
@@ -198,4 +222,18 @@ function makeQueue(db, root, existing) {
   };
 }
 
-module.exports = { run, load, makeQueue, PLAN_FROM, hm, historyOf };
+/* the booking feed: busy start times for the next week. Returns { busy, unknown, day } for one date, or null
+   when the feed cannot be read (the plan then uses the shift calendar alone, and the managers are told). */
+const APPT_FEED = 'https://hedin-vehicle-lookup.nathangjj.workers.dev/v1/busy-week';
+async function readBusy(date, fetchImpl) {
+  try {
+    const res = await (fetchImpl || fetch)(APPT_FEED, { headers: { accept: 'application/json' } });
+    if (!res.ok) return null;
+    const j = await res.json();
+    const day = (j.days || []).filter(d => d.date === date)[0];
+    if (!day) return null;
+    return Object.assign({ day: date }, RR.busyIntervals(day));
+  } catch (e) { return null; }
+}
+
+module.exports = { run, load, makeQueue, readBusy, APPT_FEED, PLAN_FROM, hm, historyOf };

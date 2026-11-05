@@ -60,7 +60,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   // before 07:30: nothing is planned or sent
   let db = fakeDb();
   let r = await runAt(db, MON, 7, 20);
-  assert.strictEqual(r.res.skipped, 'before 07:30');
+  assert.strictEqual(r.res.skipped, 'before the plan time');
   assert.strictEqual(r.added.length, 0);
   console.log('ok: nothing is planned before 07:30');
 
@@ -202,6 +202,20 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.ok(db.data.lockupTest.reception[MON].am.personId, 'and the shift is covered');
   assert.strictEqual(rskips[0].reasonText, 'at the dentist', 'the manager\'s words are kept');
   console.log('ok: unable to do it is logged as a skip with the manager\'s words, and the shift is covered by someone else');
+
+  // appointments: someone with a booking over a shift is not put on it
+  db = fakeDb();
+  await runAt(db, MON, 8, 0, { busy: { carl: [{ from: '08:30', to: '10:30' }] } });
+  assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, 'carl', 'a booking from 08:30 keeps Carl off the morning');
+  console.log('ok: a person with an appointment over a shift is not put on it');
+
+  // the 07:30 re-read: someone now booked over a shift that has not started is moved off it, with no skip logged
+  db = fakeDb();
+  await runAt(db, MON, 8, 0);
+  const pmBefore = db.data.lockupTest.reception[MON].pm.personId;
+  await runAt(db, MON, 7, 40, { recheck: true, busy: { [pmBefore]: [{ from: '15:30', to: '17:30' }] } });
+  assert.ok(!Object.values(db.data.receptionLogTest || {}).some(e => e.kind === 'skip'), 'no skip for a booking');
+  console.log('ok: a booking that clashes with a shift that has not started moves them off it, with no skip');
 
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

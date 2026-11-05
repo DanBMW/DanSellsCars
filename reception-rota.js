@@ -38,6 +38,10 @@
     other: 'Other'
   };
   var NEVER = ['chloe', 'molly']; /* handover team, not sales executives */
+  /* appointments: the booking feed gives a start time only, so each one is taken as this long */
+  var APPT_MINS = 120;
+  /* the feed's first names to team ids */
+  var APPT_NAMES = { Carl: 'carl', Clive: 'clive', Daniel: 'dan', Danny: 'danny', Mon: 'mon', Tomiwa: 'tomi', Karis: 'karis' };
 
   function shiftsFor(dow) {
     /* dow: 1 Monday .. 6 Saturday, 0 Sunday (closed, no shifts) */
@@ -66,16 +70,17 @@
      returns { assignments: { shiftId: id|null }, short: [shiftId] } */
   function planDay(opts) {
     var shifts = opts.shifts || [], pool = poolFor(opts.available, opts.team, opts.exclude);
-    var hist = opts.history || {}, declined = opts.declined || {}, existing = opts.existing || {};
+    var hist = opts.history || {}, declined = opts.declined || {}, existing = opts.existing || {}, busy = opts.busy || {};
     var out = {}, short = [], today = {};
     /* keep standing assignments as they are */
     shifts.forEach(function (s) { if (existing[s.id] && pool.indexOf(existing[s.id]) >= 0) { out[s.id] = existing[s.id]; today[existing[s.id]] = (today[existing[s.id]] || 0) + 1; } });
     shifts.forEach(function (s) {
       if (out[s.id]) return;
       var no = declined[s.id] || [];
-      var cand = pool.filter(function (id) { return no.indexOf(id) < 0 && Object.keys(out).every(function (k) { return out[k] !== id; }); });
+      var free = function (id) { return no.indexOf(id) < 0 && !clashes(busy, id, s); };
+      var cand = pool.filter(function (id) { return free(id) && Object.keys(out).every(function (k) { return out[k] !== id; }); });
       /* only if nobody new is free, let someone already on today cover a second shift */
-      if (!cand.length) cand = pool.filter(function (id) { return no.indexOf(id) < 0; });
+      if (!cand.length) cand = pool.filter(free);
       if (!cand.length) { out[s.id] = null; short.push(s.id); return; }
       cand.sort(function (a, b) {
         return ((today[a] || 0) - (today[b] || 0)) || ((hist[a] || 0) - (hist[b] || 0)) || (pool.indexOf(a) - pool.indexOf(b));
@@ -114,6 +119,28 @@
   }
 
   function minsOf(t) { return +String(t).slice(0, 2) * 60 + +String(t).slice(3, 5); }
+  function hmOf(m) { return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+
+  /* one day of the booking feed ({ busy: [{ name, times: ['HH:MM'] }] }) as busy intervals per team id.
+     Returns { busy, unknown } where unknown lists feed names with no team id. */
+  function busyIntervals(day) {
+    var busy = {}, unknown = [];
+    ((day && day.busy) || []).forEach(function (b) {
+      var id = APPT_NAMES[b.name];
+      if (!id) { unknown.push(b.name); return; }
+      busy[id] = (busy[id] || []).concat((b.times || []).map(function (t) {
+        var from = minsOf(t);
+        return { from: hmOf(from), to: hmOf(from + APPT_MINS) };
+      }));
+    });
+    return { busy: busy, unknown: unknown };
+  }
+
+  /* does this person have an appointment during this shift */
+  function clashes(busy, id, shift) {
+    var list = (busy || {})[id] || [];
+    return list.some(function (a) { return minsOf(a.from) < minsOf(shift.to) && minsOf(a.to) > minsOf(shift.from); });
+  }
 
   /* management's totals from the log. Entries: { kind: on|skip|absent, personId, date, shift, from, to }.
      A shift someone was put on counts for them unless they skipped it or were tagged absent for it.
@@ -134,6 +161,6 @@
     return Object.keys(rows).map(function (k) { return rows[k]; }).sort(function (a, b) { return (b.minutes - a.minutes) || (a.name < b.name ? -1 : 1); });
   }
 
-  var api = { stats: stats, minsOf: minsOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, managerNote: managerNote };
+  var api = { busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, minsOf: minsOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, managerNote: managerNote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

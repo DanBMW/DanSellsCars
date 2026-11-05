@@ -93,4 +93,18 @@ const outside = R.stats(log, team, '2026-10-01', '2026-10-31');
 assert.strictEqual(outside.filter(x => x.shifts || x.skips || x.absent).length, 0, 'nothing outside the dates counts');
 console.log('ok: management totals count shifts, time, skips and absences, and a skip takes the shift back out');
 
+// appointments: a booking is two hours from its start time, and blocks a shift it overlaps
+const feed = { busy: [{ name: 'Clive', times: ['09:56', '15:25'] }, { name: 'Daniel', times: ['13:00'] }, { name: 'Tomiwa', times: ['12:00'] }, { name: 'Zed', times: ['10:00'] }] };
+const bi = R.busyIntervals(feed);
+assert.deepStrictEqual(bi.busy.clive[0], { from: '09:56', to: '11:56' });
+assert.deepStrictEqual(bi.unknown, ['Zed'], 'unknown names are reported, not guessed');
+assert.strictEqual(R.clashes(bi.busy, 'clive', wk[0]), true, 'a 09:56 booking clashes with the 09:00 to 12:00 shift');
+assert.strictEqual(R.clashes(bi.busy, 'tomi', wk[0]), false, 'a 12:00 booking does not clash with the morning, which ends at 12:00');
+assert.strictEqual(R.clashes(bi.busy, 'tomi', wk[1]), true, 'a 12:00 booking clashes with the midday shift');
+const booked = R.planDay({ shifts: [wk[0]], available: ['clive', 'carl'], team, history: {}, busy: bi.busy });
+assert.strictEqual(booked.assignments.am, 'carl', 'a booked person is not put on that shift');
+const allBooked = R.planDay({ shifts: [wk[0]], available: ['clive'], team, history: {}, busy: bi.busy });
+assert.deepStrictEqual(allBooked.short, ['am'], 'with the only person booked the shift is short');
+console.log('ok: appointments block the shifts they overlap, two hours each, and unknown names are reported');
+
 console.log('all reception tests passed');
