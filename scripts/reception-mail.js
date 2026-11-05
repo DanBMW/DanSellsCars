@@ -52,7 +52,7 @@ async function run(o) {
   const say = log || console.log;
   const logRoot = o.logRoot || 'receptionLog';
   const flag = Object.assign({}, RR.TEST_ONLY ? { rcTest: true } : {});
-  const qAdd = (id, rec, dry) => queueAdd(id, Object.assign({}, rec, flag), dry);
+  const qAdd = (id, rec, dry) => queueAdd(id, Object.assign({}, rec, flag, { subject: '[Beta] ' + rec.subject }), dry);
   /* the management log (skips, absence tags, and every shift someone was put on): admin writes only */
   const logWrite = async (key, entry) => { if (!dry) await db.ref(logRoot + '/' + key).set(entry); };
   const date = date0, dow = SR.dowOf(date);
