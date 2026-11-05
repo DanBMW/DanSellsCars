@@ -328,3 +328,5 @@ body.ct::before{will-change:transform}
 .ct-widen{display:flex;flex-direction:column;gap:8px;margin:14px 0}.ct-widen .ct-sub{margin:0 0 4px}
 .ct-notify{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}.ct-notify .ct-hint{margin:0 0 8px}
 #relaxBar{justify-content:space-between;align-items:center;margin:0 0 10px;font-size:13px}
+/* BETA badge beside the wordmark */
+.ct-beta{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:6px;font:700 9.5px/1.4 var(--sans);letter-spacing:.14em;vertical-align:middle;background:var(--acc);color:#fff}
