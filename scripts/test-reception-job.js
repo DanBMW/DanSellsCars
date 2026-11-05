@@ -243,5 +243,22 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, custWho, 'the next person goes on');
   console.log('ok: with a customer is logged as a skip and the next person goes on');
 
+  // nobody free: the managers are emailed the choices, and a manager's choice puts that person on and emails them
+  db = fakeDb();
+  const everyoneBusy = {};
+  Object.keys(team).forEach(id => { everyoneBusy['a_' + id] = { personId: id, kind: 'holiday', status: 'booked', from: MON, to: MON, note: '' }; });
+  await runAt(db, MON, 8, 0, { absences: everyoneBusy });
+  const shortNoteId = Object.keys(db.data.lockupTest.notify).filter(k => /^rc_short_/.test(k))[0];
+  const shortText = db.data.lockupTest.notify[shortNoteId].text;
+  assert.ok(/Free and not on a shift yet: nobody/.test(shortText) && /Please choose someone/.test(shortText), shortText);
+  console.log('ok: when nobody is free the managers are emailed who is free, who is busy, and that they should choose');
+
+  db.data.lockupTest.reception[MON] = Object.assign({}, db.data.lockupTest.reception[MON] || {}, { am: { status: 'short', ts: 9000, assign: { personId: 'carl', by: 'will', ts: 9500 } } });
+  const carlIn = Object.assign({}, everyoneBusy); delete carlIn.a_carl;
+  r = await runAt(db, MON, 9, 0, { absences: carlIn });
+  assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'carl', 'the manager choice is put on the shift');
+  assert.ok(r.added.some(id => id.indexOf('rc_' + MON + '_am_carl') === 0), 'and emailed');
+  console.log('ok: a manager choice puts that person on the shift and emails them');
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

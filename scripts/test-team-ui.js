@@ -787,6 +787,20 @@ async function receptionScenarios(browser, base) {
       check("cover: \"I'm with a customer now\" is sent at once, with no words", recc.status === 'declined' && recc.reason === "I'm with a customer now, cannot cover", JSON.stringify(recc));
       await pc.close();
     }
+    {
+      /* nobody on the morning: a manager can choose someone for it */
+      const dd = seeded('short'); dd.lockupTest.reception[DATE].am = { status: 'short', ts: 1 }; dd.lockup.reception[DATE].am = { status: 'short', ts: 1 };
+      const pm = await open(browser, base, null, '/reception.html', U.will, { data: dd, clock: CLOCK });
+      await pm.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+      await pm.waitForTimeout(500);
+      check('cover: a manager sees a choice for a shift nobody can cover', await visible(pm, '#as-am'));
+      await pm.selectOption('#as-am', 'tomi');
+      await pm.click('[data-assign="am"]'); await pm.waitForTimeout(300);
+      const sta = await store(pm);
+      const asg = at(sta.data, 'lockupTest/reception/' + DATE + '/am/assign') || at(sta.data, 'lockup/reception/' + DATE + '/am/assign');
+      check('cover: a manager can choose someone for it', !!asg && asg.personId === 'tomi', JSON.stringify(asg));
+      await pm.close();
+    }
     check('cover: "I cannot cover right now" needs a reason before it is sent', /Please say why/.test(await txt(p, '#r-msg')));
     await p.fill('#r-text', 'with a customer');
     await p.click('#r-send'); await p.waitForTimeout(300);
