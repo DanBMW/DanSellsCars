@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-05T10:02:05.511Z",
+  "captured": "2026-11-05T12:02:19.216Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "PE72YPL",
+      "appraisedAt": "2026-11-05T11:33:27.988Z",
+      "make": "BMW",
+      "model": "iX3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--CXpp1F1Q--/c_fill,h_300,w_300/v1793878422/Live/Appraisals/9623902/4122ed5a-c17f-4b37-8617-f791a4f0503c.jpg"
+    },
+    {
+      "registration": "MX16VWR",
+      "appraisedAt": "2026-11-05T11:05:09.802Z",
+      "make": "MERCEDES-BENZ",
+      "model": "E Class",
+      "status": "Returned",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--pVIruwMn--/c_fill,h_300,w_300/v1793035596/Live/Appraisals/9604267/d6288dbe-083a-4dd8-b155-183e15446e17.jpg"
+    },
+    {
+      "registration": "WF73LCC",
+      "appraisedAt": "2026-11-05T10:03:31.723Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--yzqZH2ho--/c_fill,h_300,w_300/v1793873014/Live/Appraisals/9623521/3876e13f-2cd0-4310-9931-ced7fa554b69.png"
+    },
     {
       "registration": "H22ACW",
       "appraisedAt": "2026-11-04T12:09:50.780Z",
@@ -39,7 +69,7 @@
       "appraisedAt": "2026-11-03T15:36:08.334Z",
       "make": "BMW",
       "model": "X4",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--jR0PsnA2--/c_fill,h_300,w_300/v1793720177/Live/Appraisals/9620485/f2b64785-cee3-40f1-90c5-bacc73e9b441.jpg"
@@ -139,7 +169,7 @@
       "appraisedAt": "2026-10-31T11:47:37.688Z",
       "make": "VOLKSWAGEN",
       "model": "Golf",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--hFuzEhsD--/c_fill,h_300,w_300/v1793447274/Live/Appraisals/9614060/758bbad6-134b-4fe0-852c-ae5ce87a7b1a.jpg"
@@ -269,7 +299,7 @@
       "appraisedAt": "2026-10-30T09:58:04.266Z",
       "make": "VAUXHALL",
       "model": "Astra",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--d-QcDGa4--/c_fill,h_300,w_300/v1793354345/Live/Appraisals/9610946/4dce6cce-b3c6-49d1-bf32-afd3fa5d6ecc.jpg"
@@ -356,16 +386,6 @@
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
-      "registration": "MX16VWR",
-      "appraisedAt": "2026-10-28T16:11:27.321Z",
-      "make": "MERCEDES-BENZ",
-      "model": "E Class",
-      "status": "SaleInProgress",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--bFjWs2fu--/c_fill,h_300,w_300/v1793203901/Live/Appraisals/9608143/df5f6e64-a655-4806-9f8c-a4c82d0d0760.jpg"
-    },
-    {
       "registration": "YF20WZS",
       "appraisedAt": "2026-10-28T15:35:23.781Z",
       "make": "BMW",
@@ -440,7 +460,7 @@
       "appraisedAt": "2026-10-27T15:05:07.168Z",
       "make": "MERCEDES-BENZ",
       "model": "CLA",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--NoVpDJCg--/c_fill,h_300,w_300/v1793113521/Live/Appraisals/9605896/e0dbb236-2e53-4a59-99d9-283185db9d8d.jpg"
@@ -506,16 +526,6 @@
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--xhAye4eP--/c_fill,h_300,w_300/v1793092108/Live/Appraisals/9604503/c3ec04fb-54ba-406a-8039-91bc31659221.png"
     },
     {
-      "registration": "M400KES",
-      "appraisedAt": "2026-10-26T17:26:29.695Z",
-      "make": "MERCEDES-BENZ",
-      "model": "E Class",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--pVIruwMn--/c_fill,h_300,w_300/v1793035596/Live/Appraisals/9604267/d6288dbe-083a-4dd8-b155-183e15446e17.jpg"
-    },
-    {
       "registration": "LV68DWW",
       "appraisedAt": "2026-10-26T15:23:01.202Z",
       "make": "BMW",
@@ -565,6 +575,16 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "M400KES",
+      "appraisedAt": "2026-10-24T12:43:26.477Z",
+      "make": "MERCEDES-BENZ",
+      "model": "E Class",
+      "status": "Expired",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--pVIruwMn--/c_fill,h_300,w_300/v1793035596/Live/Appraisals/9604267/d6288dbe-083a-4dd8-b155-183e15446e17.jpg"
     },
     {
       "registration": "KR15OOJ",
