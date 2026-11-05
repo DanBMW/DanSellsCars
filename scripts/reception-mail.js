@@ -159,7 +159,7 @@ async function run(o) {
   const planAt = o.planAt != null ? o.planAt : PLAN_FROM;
   if (!dayMark && planAt > 0 && n.mins < planAt) return { skipped: 'before the plan time' };
   if (!dayMark || Object.keys(existing).length < shifts.length) {
-    const available = SR.staffOn(ctx, date);
+    const available = Array.from(new Set(SR.staffOn(ctx, date).concat((RR.ONE_OFF_IN || {})[date] || [])));
     const plan = RR.planDay({
       shifts, available, team, busy, exclude: ((cfg && cfg.receptionExclude) || []).concat(Object.keys(team).filter(id => !(team[id] || {}).email)), history: historyOf(all, date),
       declined: declined, existing: existing
