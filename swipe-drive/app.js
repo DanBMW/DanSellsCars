@@ -803,29 +803,15 @@
     $('#matchList').addEventListener('click', function (e) { var b = e.target.closest('[data-unlike]'); if (!b) return; var r = b.getAttribute('data-unlike'); S.swipes[r] = { liked: false, at: Date.now() }; saveSwipe(r, false); showMatches(); badge(); });
     $('#sendBtn').addEventListener('click', sendLead);
   }
+  /* Send my matches: saved as a buy request, and notify-buy-request emails Dan through Resend. Formspree is not used
+     any more (its submissions are rationed). The request also shows in the Buy requests list, so nothing is lost if the email fails. */
   function sendLead() {
-    var c = S.cust, L = liked(), msg = $('#sendMsg'), px = c.px || {};
-    var lead = 'CT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-    var body = { _subject: 'SwipeToDrive matches: ' + (c.name || '') + ' (' + L.length + ')', form_page: 'swipe-drive', lead_id: lead, name: c.name, phone: c.phone, email: c.email || S.session.email, postcode: c.postcode,
-      budget: c.budget_type === 'cash' ? 'Cash up to \u00a3' + (c.cash_gbp || '?') : 'Monthly up to \u00a3' + (c.monthly_gbp || '?'), deposit: c.deposit_gbp || '', annual_mileage: c.annual_mileage,
-      colours: (c.colours || []).join(', ') || 'Any', colours_must_have: (c.colours_must || []).join(', '), specs_wanted: (c.specs || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '), specs_must_have: (c.specs_must || []).map(function (k) { var o = M.specOptions().find(function (x) { return x.key === k; }); return o ? o.label : k; }).join(', '),
-      fuel: c.fuel, body_or_size: c.body, models_of_interest: (c.models || []).join(', '), new_or_used: c.new_used,
-      px_reg: px.reg || 'None', px_mileage: px.mileage || '', px_condition: px.condition || '', px_finance_outstanding: c.px_settlement_gbp != null ? c.px_settlement_gbp : px.finance_outstanding == null ? '' : px.finance_outstanding,
-px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gbp), px_valued_on: c.px_valued_on ? fmtDate(c.px_valued_on) : '', px_valuation_entered_by: c.px_valuation_gbp == null ? '' : c.px_valuation_set_by === 'customer' ? 'Customer' : (c.px_valuation_set_by_name || 'Dan'),
-      px_settlement_figure: c.px_settlement_gbp == null ? '' : M.gbp(c.px_settlement_gbp), px_settlement_valid_until: c.px_settlement_valid_until ? fmtDate(c.px_settlement_valid_until) : '',
-      px_condition_ratings: ratingsText(c.px_condition_ratings), px_terms_confirmed_at: c.px_terms_confirmed_at ? new Date(c.px_terms_confirmed_at).toLocaleString('en-GB') + ' by ' + (c.px_terms_confirmed_by || '') : '',
-      px_equity: equity(c) ? equity(c).label + ': ' + equity(c).text : '',
-            px_photo_links: (px.photos || []).map(function (p) { return p.link; }).filter(Boolean).join(' ') || ((px.photos || []).length ? (px.photos.length + ' photo(s) on the customer device, demo mode, not uploaded') : 'None'),
-      liked_regs: L.filter(function (x) { return !brandNew(x); }).map(function (x) { return x.reg; }).join(', '),
-      liked_new_models: L.filter(function (x) { return brandNew(x); }).map(function (x) { return x.model + (x.order_number ? ' (order ' + x.order_number + ')' : ''); }).join(', '),
-      liked_cars: L.map(function (x) { return x.model + (brandNew(x) ? ' (new' + (x.order_number ? ', order ' + x.order_number : '') + ')' : ' ' + x.reg + ' ' + (x.price || '')); }).join(' | '),
-      owner_staff_name: S.owner ? (S.owner.name || '') : (S.session.role === 'staff' ? S.session.name : 'Dan'), owner_staff_email: S.owner ? (S.owner.email || '') : (S.session.role === 'staff' ? S.session.email : ''),
-      submitted_by: S.session.role, app_mode: LIVE ? 'live' : 'demo' };
+    var L = liked(), msg = $('#sendMsg');
     msg.className = 'ct-msg'; msg.textContent = 'Sending...';
-    saveBuyRequest({ type: 'matches', cars: L.map(function (x) { return { reg: x.reg, model: x.model, price: x.kind === 'new' ? '' : (x.price || ''), kind: x.kind }; }) }).then(function (r) { body.request_id = r ? r.id : ''; });
-    fetch(CFG.FORMSPREE, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); msg.className = 'ct-msg ok'; msg.textContent = 'Sent. ' + (waWho() || 'Dan') + ' will be in touch, usually the same day.'; track('matches_sent', { count: L.length, lead_id: lead }); })
-      .catch(function () { msg.textContent = 'That did not send. Tap WhatsApp on any car instead.'; });
+    saveBuyRequest({ type: 'matches', cars: L.map(function (x) { return { reg: x.reg, model: x.model, price: x.kind === 'new' ? '' : (x.price || ''), kind: x.kind }; }) }).then(function (r) {
+      if (r) { msg.className = 'ct-msg ok'; msg.textContent = 'Sent. ' + (waWho() || 'Dan') + ' will be in touch, usually the same day.'; track('matches_sent', { count: L.length }); }
+      else { msg.textContent = 'That did not send. Tap WhatsApp on any car instead.'; }
+    });
   }
 
   /* ---------------- buy this car / buy requests ---------------- */
