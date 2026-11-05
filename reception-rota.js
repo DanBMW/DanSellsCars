@@ -100,14 +100,68 @@
     return { status: 'declined', reassign: true, reason: REASONS[kind], reasonText: r.slice(0, 500) };
   }
 
+  /* deep link into reception.html for one shift action (covering / cannot / here / away) */
+  var SITE = 'https://dan-sells.co.uk/reception.html';
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function coverPageUrl(opts) {
+    opts = opts || {};
+    var q = [];
+    if (TEST_ONLY || opts.test) q.push('test=1');
+    if (opts.date) q.push('date=' + encodeURIComponent(opts.date));
+    if (opts.shift) q.push('shift=' + encodeURIComponent(opts.shift));
+    if (opts.action) q.push('action=' + encodeURIComponent(opts.action));
+    return SITE + (q.length ? '?' + q.join('&') : '');
+  }
+  function mailBtn(href, label, kind) {
+    var base = 'display:block;text-align:center;text-decoration:none;font-weight:800;padding:14px;border-radius:12px;font-size:17px;';
+    var style = kind === 'danger'
+      ? base + 'background:#fff;color:#c0392b;border:2px solid #c0392b;margin-top:10px'
+      : base + 'background:#4d94d8;color:#fff;border:0';
+    return '<a href="' + escHtml(href) + '" style="' + style + '">' + escHtml(label) + '</a>';
+  }
+
   /* the wording of the cover email, as Dan asked: "you are on showroom cover,
-     please cover showroom until ##:##" */
-  function coverEmail(name, shift) {
-    return {
-      subject: 'Showroom cover ' + shift.from + ' to ' + shift.to,
-      text: 'Hi ' + name + ',\n\nYou are on showroom cover. Please cover showroom until ' + shift.to + '.\n\n' +
-        'If you cannot cover, tell us at reception.html and give a reason.'
-    };
+     please cover showroom until ##:##". opts.date makes the tap links open that day. */
+  function coverEmail(name, shift, opts) {
+    opts = opts || {};
+    var covering = coverPageUrl({ date: opts.date, shift: shift.id, action: 'covering' });
+    var cannot = coverPageUrl({ date: opts.date, shift: shift.id, action: 'cannot' });
+    var open = coverPageUrl({ date: opts.date, shift: shift.id });
+    var subject = 'Showroom cover ' + shift.from + ' to ' + shift.to;
+    var text = 'Hi ' + name + ',\n\nYou are on showroom cover. Please cover showroom until ' + shift.to + '.\n\n' +
+      'I am covering:\n' + covering + '\n\n' +
+      'I cannot cover:\n' + cannot + '\n\n' +
+      'Open showroom cover:\n' + open;
+    var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Showroom cover ' + escHtml(shift.from) + ' to ' + escHtml(shift.to) + '</div>' +
+      '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
+      '<p style="margin:0 0 12px">Hi ' + escHtml(name) + ',</p>' +
+      '<p style="margin:0 0 16px">You are on showroom cover. Please cover showroom until ' + escHtml(shift.to) + '.</p>' +
+      mailBtn(covering, 'I am covering', 'primary') +
+      mailBtn(cannot, 'I cannot cover', 'danger') +
+      '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover</p></div></div>';
+    return { subject: subject, text: text, html: html, coveringUrl: covering, cannotUrl: cannot };
+  }
+
+  /* "where are you" nudge: tap I am here, or say you cannot be in */
+  function absentEmail(name, shift, opts) {
+    opts = opts || {};
+    var here = coverPageUrl({ date: opts.date, shift: shift.id, action: 'here' });
+    var away = coverPageUrl({ date: opts.date, shift: shift.id, action: 'away' });
+    var line = 'Hi ' + name + ', you are not in the showroom. You are on showroom cover ' + shift.from + ' to ' + shift.to + '.';
+    var text = line + '\n\nI am here:\n' + here + '\n\nI cannot be in:\n' + away;
+    var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Where are you? &#128064;</div>' +
+      '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
+      '<p style="margin:0 0 16px">' + escHtml(line) + '</p>' +
+      mailBtn(here, 'I am here', 'primary') +
+      mailBtn(away, 'I cannot be in', 'danger') +
+      '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover</p></div></div>';
+    return { subject: 'Where are you? \ud83d\udc40', text: text, html: html, hereUrl: here, awayUrl: away };
   }
 
   /* the email to managers when someone cannot cover */
@@ -164,6 +218,6 @@
   /* cover runs in the practice copy only, whatever the lockup's live switch says, and its emails go only to
      the two test addresses (Dan and Nathan). Change this to false only when Dan says it goes live. */
   var TEST_ONLY = true;
-  var api = { TEST_ONLY: TEST_ONLY, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, minsOf: minsOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, managerNote: managerNote };
+  var api = { TEST_ONLY: TEST_ONLY, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, minsOf: minsOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

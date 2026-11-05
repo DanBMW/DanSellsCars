@@ -26,7 +26,7 @@
   <section id="v-signedout" hidden>
     <div class="card"><b>Sign in to see showroom cover</b>
       <p class="muted small" style="margin:6px 0 12px">Use your work email and PIN on the team page.</p>
-      <a class="big" href="team.html?next=reception.html" style="display:block;text-align:center;text-decoration:none">Go to team sign in</a>
+      <a class="big" id="r-signin" href="team.html?next=reception.html" style="display:block;text-align:center;text-decoration:none">Go to team sign in</a>
     </div>
   </section>
 
@@ -62,12 +62,41 @@ window.__backend = backend;
   'use strict';
   var R = window.LockupRota, RR = window.ReceptionRota, $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  var WATCHING = '', DAY = {}, STATE = null, OPEN = '';
+  var WATCHING = '', DAY = {}, STATE = null, OPEN = '', DEEP = null, DEEP_DONE = '';
 
   function hm(mins) { return String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0'); }
   function minsOf(t) { return +t.slice(0, 2) * 60 + +t.slice(3, 5); }
   function show(v) { ['v-loading', 'v-signedout', 'v-main'].forEach(function (x) { $(x).hidden = x !== v; }); }
   function nameOf(id) { var t = (TeamSession.config().team || {})[id] || (TeamSession.config().managers || {})[id] || {}; return t.name || id; }
+  function queryOf() {
+    var q = {};
+    String(location.search || '').replace(/^\?/, '').split('&').forEach(function (p) {
+      if (!p) return;
+      var i = p.indexOf('='), k = decodeURIComponent(i < 0 ? p : p.slice(0, i)), v = decodeURIComponent(i < 0 ? '' : p.slice(i + 1).replace(/\+/g, ' '));
+      q[k] = v;
+    });
+    return q;
+  }
+  function readDeep() {
+    var q = queryOf();
+    DEEP = {
+      test: q.test === '1' || q.test === 'true',
+      date: /^\d{4}-\d{2}-\d{2}$/.test(q.date || '') ? q.date : '',
+      shift: q.shift || '',
+      action: q.action || ''
+    };
+    var next = 'reception.html' + (location.search || '');
+    var a = $('r-signin'); if (a) a.href = 'team.html?next=' + encodeURIComponent(next);
+  }
+  function clearDeepAction() {
+    try {
+      var q = queryOf(), keep = [];
+      Object.keys(q).forEach(function (k) { if (k === 'action') return; keep.push(encodeURIComponent(k) + '=' + encodeURIComponent(q[k])); });
+      history.replaceState(null, '', location.pathname + (keep.length ? '?' + keep.join('&') : '') + (location.hash || ''));
+    } catch (e) {}
+    if (DEEP) DEEP.action = '';
+  }
+  readDeep();
 
   /* ?test=1 uses the practice copy (lockupTest) for trying the page out, whatever the live switch says */
   function RLROOT() { return window.ReceptionRota.RECEPTION_ROOT; } /* the cover's own root, test copy while TEST_ONLY */
@@ -101,14 +130,18 @@ window.__backend = backend;
 
   function paint() {
     if (!STATE || STATE.status !== 'team') return;
-    var now = R.london(), date = now.date, shifts = RR.shiftsFor(now.dow), me = STATE.personId;
+    var now = R.london();
+    var date = (DEEP && DEEP.date) ? DEEP.date : now.date;
+    var view = (date === now.date) ? now : R.london(new Date(date + 'T12:00:00Z'));
+    var shifts = RR.shiftsFor(view.dow), me = STATE.personId;
+    var clockMins = (date === now.date) ? now.mins : 24 * 60; /* a linked future day: treat shifts as still open */
     $('who').textContent = STATE.name || '';
-    $('r-kick').textContent = R.DAY_NAMES ? (R.DAY_NAMES[now.dow] + ' ' + date) : date;
+    $('r-kick').textContent = R.DAY_NAMES ? (R.DAY_NAMES[view.dow] + ' ' + date) : date;
     if (!shifts.length) { $('r-title').textContent = 'Closed today'; $('r-sub').textContent = 'No showroom cover on a Sunday.'; $('r-mine').innerHTML = ''; $('r-list').innerHTML = ''; return; }
     $('r-title').textContent = 'Showroom cover today';
     $('r-sub').textContent = 'One person covers the showroom in each shift. Tell us here if you cannot.';
 
-    var mine = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && (r.status === 'assigned' || r.status === 'covering') && minsOf(s.to) > now.mins; })[0];
+    var mine = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && (r.status === 'assigned' || r.status === 'covering') && minsOf(s.to) > clockMins; })[0];
     var mineDone = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && r.status === 'declined'; });
     var missing = shifts.filter(function (s) { var a = (DAY[s.id] || {}).absent; return a && a.personId === me && !a.reply; })[0];
     var html = '';
@@ -136,6 +169,7 @@ window.__backend = backend;
     $('r-mine').querySelectorAll('[data-away]').forEach(function (b) { b.onclick = function () { var t = ($('r-away').value || '').trim(); if (!t) { $('r-away-msg').textContent = 'Please give a reason.'; return; } replyAbsent(b.getAttribute('data-away'), 'reason', t, date); }; });
     $('r-mine').querySelectorAll('[data-ack]').forEach(function (b) { b.onclick = function () { ack(b.getAttribute('data-ack'), date); }; });
     $('r-mine').querySelectorAll('[data-why]').forEach(function (b) { b.onclick = function () { askWhy(b.getAttribute('data-why'), b.getAttribute('data-shift'), date); }; });
+    applyDeep(mine, missing, date);
 
     $('r-list').innerHTML = shifts.map(function (s) {
       var r = DAY[s.id] || {}, who = r.personId ? nameOf(r.personId) : 'Nobody yet';
@@ -153,6 +187,35 @@ window.__backend = backend;
     $('r-mgr').hidden = !STATE.canManage;
     if (STATE.canManage) { watchLog(); paintStats(); }
     watchDay(date);
+  }
+
+  function applyDeep(mine, missing, date) {
+    if (!DEEP || !DEEP.action) return;
+    var key = DEEP.action + '|' + (DEEP.shift || '') + '|' + date;
+    if (DEEP_DONE === key) return;
+    var sid = DEEP.shift;
+    if (DEEP.action === 'cannot' && mine && (!sid || mine.id === sid)) {
+      DEEP_DONE = key; clearDeepAction();
+      askWhy('cannot', mine.id, date);
+      return;
+    }
+    if (DEEP.action === 'covering' && mine && (!sid || mine.id === sid)) {
+      DEEP_DONE = key; clearDeepAction();
+      var b = $('r-mine').querySelector('[data-ack="' + mine.id + '"]');
+      if (b) try { b.focus(); b.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      return;
+    }
+    if (DEEP.action === 'here' && missing && (!sid || missing.id === sid)) {
+      DEEP_DONE = key; clearDeepAction();
+      replyAbsent(missing.id, 'here', '', date);
+      return;
+    }
+    if (DEEP.action === 'away' && missing && (!sid || missing.id === sid)) {
+      DEEP_DONE = key; clearDeepAction();
+      var t = $('r-away'); if (t) try { t.focus(); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      return;
+    }
+    /* wait until the matching card is on screen (shift data may still be loading) */
   }
 
   function replyAbsent(shiftId, status, text, date) {

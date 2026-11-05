@@ -96,10 +96,9 @@ async function run(o) {
       await logWrite('absent_' + date + '_' + s.id + '_' + ab.ts, { kind: 'absent', personId: ab.personId, date, shift: s.id, from: s.from, to: s.to, ts: ab.ts, by: ab.by || '' });
       if (ap.email) {
         const first = firstName(ap, ab.personId);
-        const line = 'Hi ' + first + ', you are not in the showroom. You are on showroom cover ' + s.from + ' to ' + s.to + '.';
-        qAdd('rc_absent_' + date + '_' + s.id + '_' + ab.ts, { to: [testExec || ap.email], subject: 'Where are you? 👀',
-          text: line + '\n\nWhere are you? If you are here, tell us: I am here. If you cannot be in, update the reason.\n\nhttps://dan-sells.co.uk/reception.html',
-          html: '<p>' + esc(line) + '</p><p>Where are you? 👀 If you are here, tell us: <b>I am here</b>. If you cannot be in, update the reason.</p><p><a href="https://dan-sells.co.uk/reception.html">Open showroom cover</a></p>', ts: Date.now() }, dry);
+        const mail = RR.absentEmail(first, s, { date: date });
+        qAdd('rc_absent_' + date + '_' + s.id + '_' + ab.ts, { to: [testExec || ap.email], subject: mail.subject,
+          text: mail.text, html: mail.html, ts: Date.now() }, dry);
       }
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ absentHandledTs: ab.ts });
       today[s.id] = Object.assign({}, r, { absentHandledTs: ab.ts });
@@ -173,8 +172,8 @@ async function run(o) {
       today[s.id] = Object.assign({}, today[s.id] || {}, rec);
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(rec);
       await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
-      const mail = RR.coverEmail(firstName(p, pid), s);
-      qAdd('rc_' + date + '_' + s.id + '_' + pid, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
+      const mail = RR.coverEmail(firstName(p, pid), s, { date: date });
+      qAdd('rc_' + date + '_' + s.id + '_' + pid, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, dry);
       say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid));
     }
     for (const id of plan.short) {
