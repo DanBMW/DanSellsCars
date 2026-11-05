@@ -17,7 +17,8 @@
  * forecourt reminder). A queued entry with csv + csvName goes with the CSV attached.
  *
  * Env: FIREBASE_SA (service account JSON), GMAIL_USER, GMAIL_APP_PASSWORD,
- *      optional MAIL_FROM_NAME, DRY_RUN=1 (print, send nothing), NOW (ISO, for tests).
+ *      optional MAIL_FROM_NAME, DRY_RUN=1 (print, send nothing), NOW (ISO, for tests),
+ *      LAUNCH_EMAIL=1 (one-off showroom cover launch mail to the live team; once only).
  * Needs: npm i firebase-admin nodemailer
  */
 'use strict';
@@ -136,6 +137,18 @@ async function main() {
   /* A queued entry can also carry: sendAfter (ms, held until then), to
      ('team' | 'managers' | [emails]), html + text (sent as is), fromName. */
   const teamList = TEST ? [TEST_EXEC] : Object.values(cfg.team || {}).filter(t => t.active !== false).map(t => t.email).filter(Boolean);
+
+  /* One-off showroom cover launch email (workflow_dispatch launch_email=true).
+     Always uses the LIVE lockup/config team + managers, and a one-shot Firebase flag.
+     Never fires from the cron alone. */
+  if (process.env.LAUNCH_EMAIL === '1') {
+    try {
+      const Launch = require('./showroom-cover-launch-mail.js');
+      const liveCfg = (await db.ref('lockup/config').get()).val() || cfg;
+      await Launch.maybeSend({ db, transport: DRY ? null : transport(), dry: DRY, fromAddress: process.env.GMAIL_USER, cfg: liveCfg, log: console.log });
+    } catch (e) { console.error('launch email failed', e); }
+  }
+
   /* lockupPrivate/notify is the same queue but not publicly readable (the
      database rules give it no read), for one off emails that carry the
      manager PIN. Only the Action's service account can read or write it. */

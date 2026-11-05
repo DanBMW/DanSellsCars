@@ -1488,6 +1488,9 @@ body.haslock.hasticker .radio-fab{bottom:100px}
 .rcbadge.open{border-color:#ff9a1f}
 .beta{display:inline-block;margin-left:0;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;vertical-align:middle;background:#3a2a0c;color:#f0ba6c;border:1px solid #6b4c17}
 .rcbadge.open b{color:#ffb14d}
+.rcbadge.covering{border-color:#2fbf71;box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 0 1px rgba(47,191,113,.35)}
+.rcbadge.covering b{color:#7dffb5}
+.rcbadge.covering small{color:#9fd9b5}
 body.premiere .rcbadge{display:none!important}
 @media(max-width:1199px){ .rcbadge{top:auto;bottom:12px;left:12px} }
 </style>
@@ -3554,7 +3557,8 @@ function whosinWeek(){
 
 /* showroom cover (reception.html): the corner badge shows who is on reception now, with their photo.
    Reads the day's plan from the lockup root the board is on; the job writes it, the person covering
-   answers on reception.html. An open shift (declined, not yet re-covered) shows in amber. */
+   answers on reception.html. An open shift (declined, not yet re-covered) shows in amber. A confirmed
+   "I'm covering" is green; an assigned shift with no tap yet stays neutral (assumed covering). */
 function paintCover(){
   const b=document.getElementById('rcbadge'); if(!b)return;
   const RO=window.dsRoster, R=window.LockupRota, RR=window.ReceptionRota;
@@ -3565,7 +3569,9 @@ function paintCover(){
   const r=day[now.id]||{}, team=(RO.cfg||{}).team||{};
   const short=r.status==='short';
   const open=short||r.status==='declined'||!r.personId;
+  const covering=!open && r.status==='covering';
   b.classList.toggle('open',open);
+  b.classList.toggle('covering',covering);
   if(short){
     document.getElementById('rcph').textContent='!';
     document.getElementById('rcsmall').textContent='Showroom not covered';

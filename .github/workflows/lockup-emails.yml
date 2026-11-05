@@ -20,6 +20,10 @@ on:
         description: 'Send the lockup rota email for the next two weeks now'
         type: boolean
         default: false
+      launch_email:
+        description: 'Send the one-off showroom cover launch email to the live team (once only)'
+        type: boolean
+        default: false
 
 # read only: the forecourt check asks the GitHub API when this morning's used car
 # Routine last committed its stock files (scripts/forecourt-auto.js stockFresh)
@@ -49,5 +53,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           ROTA_WEEKLY: '1'
           ROTA_NOW: ${{ github.event_name == 'workflow_dispatch' && inputs.rota_now && '1' || '' }}
+          LAUNCH_EMAIL: ${{ github.event_name == 'workflow_dispatch' && inputs.launch_email && '1' || '' }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
           

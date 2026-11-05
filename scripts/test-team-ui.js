@@ -914,6 +914,15 @@ async function receptionScenarios(browser, base) {
     check('board: the corner shows who is on showroom cover now', vis);
     check('board: the corner names the person on the shift', /Tomi/.test(await txt(p, '#rcname')), await txt(p, '#rcname'));
     check('board: the corner shows the shift times', /09:00 to 12:00|12:00 to 15:00/.test(await txt(p, '#rctime')), await txt(p, '#rctime'));
+    check('board: an assigned shift stays neutral until they tap covering', !(await p.locator('#rcbadge.covering').count()) && !(await p.locator('#rcbadge.open').count()), await p.locator('#rcbadge').getAttribute('class'));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('covering'), clock: CLOCK });
+    let vis = false;
+    for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcbadge'); if (!vis) await p.waitForTimeout(250); }
+    check('board: a confirmed covering shift shows green on the corner', vis && !!(await p.locator('#rcbadge.covering').count()), await p.locator('#rcbadge').getAttribute('class'));
+    check('board: covering still names the person', /Tomi/.test(await txt(p, '#rcname')), await txt(p, '#rcname'));
     await p.close();
   }
   {
