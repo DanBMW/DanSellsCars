@@ -1,0 +1,33 @@
+{
+ "reg": "YG26FXV",
+ "model": "BMW X3 20 xDrive M Sport",
+ "series": "X3",
+ "year": 2025,
+ "mileage": "7,991 miles",
+ "mileage_miles": 7991,
+ "colour": "Grey",
+ "fuel": "Petrol (mild hybrid)",
+ "body": "SUV",
+ "gearbox": "Automatic",
+ "drive": "FourWheel",
+ "seats": 5,
+ "doors": 5,
+ "power": "207 hp",
+ "trim": "M Sport",
+ "price": "£45,500",
+ "price_gbp": 45500,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ac92-a0e6-7e67-b6b8-8920bed672dc-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ac92-a0e6-7e67-b6b8-8920bed672dc-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ac92-a18d-7ffa-ac31-c5b992abf91a-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ac92-a236-7f7d-a212-0cf01537fb1d-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ac92-a2c7-76e0-8663-d2c732f99265-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/259826/pb-bmw-x3-2025",
+ "listing_id": "259826",
+ "source": "group",
+ "finance": null,
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
+}
