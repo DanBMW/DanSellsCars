@@ -11,6 +11,11 @@
  *   the next fair person on, emailing them the same way. Anyone can write a
  *   take request to volunteer for a shift; the job puts them on, notifies the
  *   previous person, and logs took_over.
+ *   When the team-board walk-in feed reports that the person currently on the
+ *   active showroom cover shift has taken a walk-in, the job writes the same
+ *   reallocate record the managers' "unable" button writes, so the next fair
+ *   person is put on and emailed. Outside the active shift window, or when the
+ *   taker is not the cover person, nothing changes. Each alert id is handled once.
  *
  *   Email ids are fixed (rc_live_<date>_<shift>_<person> or rc_test_…), so each
  *   email is queued once, and test runs can never block live sends. Planned
@@ -79,6 +84,32 @@ function coverAlreadySent(existing, date, shift, pid) {
 }
 
 
+/* Same public proxy the team board polls for walk-in / office-display alerts. */
+const OFFICE_ALERTS_URL = 'https://dansells-office-alerts.danielcane1992.workers.dev/alerts';
+
+/* Read walk-in-taken (and related) alerts from the office-display feed.
+   Returns [] on any failure so cover planning never blocks on the feed. */
+async function fetchWalkinAlerts(fetchImpl) {
+  try {
+    const res = await (fetchImpl || fetch)(OFFICE_ALERTS_URL, { headers: { accept: 'application/json' } });
+    if (!res.ok) return [];
+    const j = await res.json();
+    const raw = (j && j.alerts) || [];
+    return raw.map(a => {
+      if (!a || !a.id) return null;
+      const kind = String(a.kind || '').toLowerCase().replace(/[\s_]+/g, '-');
+      return {
+        id: String(a.id),
+        kind: kind,
+        assignedTo: a.salesExecutiveName || a.assignedTo || a.bookedWith || '',
+        customer: a.customerName || a.customer || a.name || '',
+        eventAt: a.eventAt || a.arrivedAt || null,
+        ts: a.eventAt || a.arrivedAt || null
+      };
+    }).filter(Boolean);
+  } catch (e) { return []; }
+}
+
 /* UK clock minutes from an epoch ms timestamp. */
 function ukMinsFromTs(ts) {
   if (!ts) return null;
@@ -143,6 +174,39 @@ async function run(o) {
   const all = o.reception || {};
   const today = Object.assign({}, all[date] || {});
   const endMins = s => +s.to.slice(0, 2) * 60 + +s.to.slice(3, 5);
+
+  /* 0. walk-in taken by the person on the active cover shift → same reallocate as Unable */
+  const walkinHandled = Object.assign({}, ((today._day || {}).walkinHandled) || {});
+  let walkinHandledDirty = false;
+  const walkinAlerts = o.walkinAlerts != null ? o.walkinAlerts : await fetchWalkinAlerts(o.fetch);
+  for (const a of walkinAlerts || []) {
+    const aid = a && a.id ? String(a.id) : '';
+    const action = RR.walkinCoverReallocate({
+      alertId: aid,
+      kind: a.kind,
+      assignedTo: a.assignedTo,
+      customer: a.customer,
+      team: team,
+      shifts: shifts,
+      nowMins: n.mins,
+      day: today,
+      handled: walkinHandled,
+      ts: (typeof a.eventAt === 'number' ? a.eventAt : null) || (typeof a.ts === 'number' ? a.ts : null) || Date.now()
+    });
+    if (aid) { walkinHandled[aid] = true; walkinHandledDirty = true; }
+    if (!action) continue;
+    const prev = today[action.shiftId] || {};
+    today[action.shiftId] = Object.assign({}, prev, { reallocate: action.reallocate });
+    if (!dry) await db.ref(root + '/reception/' + date + '/' + action.shiftId + '/reallocate').set(action.reallocate);
+    say('Walk-in taken by cover ' + firstName(team[action.personId], action.personId) + ' on ' + action.shiftId + ': queue reallocate');
+  }
+  if (walkinHandledDirty && !dry) {
+    const dayPath = root + '/reception/' + date + '/_day';
+    const dayCur = Object.assign({}, today._day || {});
+    dayCur.walkinHandled = walkinHandled;
+    today._day = dayCur;
+    await db.ref(dayPath).update({ walkinHandled: walkinHandled });
+  }
 
   /* 1. a decline: note it to the managers once (keyed by the decline's own time),
      remember the person as declined for that shift, and free the shift */
@@ -413,4 +477,4 @@ async function readBusy(date, fetchImpl) {
   } catch (e) { return null; }
 }
 
-module.exports = { run, load, makeQueue, readBusy, APPT_FEED, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };
+module.exports = { run, load, makeQueue, readBusy, APPT_FEED, OFFICE_ALERTS_URL, fetchWalkinAlerts, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };

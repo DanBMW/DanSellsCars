@@ -414,5 +414,77 @@ async function runAt(db, date, h, m, cfgExtra) {
     console.log('ok: take the shift works on an uncovered shift');
   }
 
+  // walk-in taken by the person on the active cover shift: same path as Unable
+  {
+    const teamW = {
+      tomi: { name: 'Tomi', fullName: 'Tomi Adelaja', email: 'tomiwa.adelaja@hedinautomotive.co.uk', order: 0, active: true },
+      carl: { name: 'Carl', fullName: 'Carl Hadwin', email: 'carl.hadwin@hedinautomotive.co.uk', order: 1, active: true },
+      danny: { name: 'Danny', fullName: 'Danny Willis', email: 'danny.willis@hedinautomotive.co.uk', order: 2, active: true },
+      dan: { name: 'Dan', fullName: 'Daniel Cane', email: 'daniel.cane@hedinautomotive.co.uk', order: 3, active: true },
+      ben: { name: 'Ben', fullName: 'Ben X', email: 'ben.x@hedinautomotive.co.uk', order: 4, active: true },
+      chloe: { name: 'Chloe', email: 'chloe.x@hedinautomotive.co.uk', order: 5, active: true },
+      molly: { name: 'Molly', email: 'molly.x@hedinautomotive.co.uk', order: 6, active: true }
+    };
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { team: teamW });
+    // put Danny on the morning so the walk-in match is deterministic
+    const amWas = db.data.lockupTest.reception[MON].am.personId;
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
+      personId: 'danny', status: 'covering', coveringMins: 9 * 60, ts: 1
+    });
+    // someone else takes a walk-in: nothing
+    r = await runAt(db, MON, 10, 0, {
+      team: teamW,
+      walkinAlerts: [{ id: 'w-other', kind: 'walk-in-taken', assignedTo: 'Carl Hadwin', customer: 'Mr A' }]
+    });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'danny', 'other taker leaves cover alone');
+    assert.ok(db.data.lockupTest.reception[MON]._day.walkinHandled['w-other'], 'alert marked seen');
+    assert.strictEqual(r.added.filter(id => id.indexOf(rcPfx() + '_realloc_') === 0 || /Unable to do it/.test((db.data.lockupTest.notify[id] || {}).text || '')).length, 0);
+
+    // Danny (on cover) takes a walk-in during the active window.
+    // Drop the morning's am cover notify ids so the replacement is free to be emailed
+    // under the same rc_<date>_am_<person> form the plan uses for reallocations.
+    Object.keys(db.data.lockupTest.notify || {}).forEach(id => {
+      if (id.indexOf(rcPfx() + '_' + MON + '_am_') === 0) delete db.data.lockupTest.notify[id];
+    });
+    r = await runAt(db, MON, 10, 15, {
+      team: teamW,
+      walkinAlerts: [
+        { id: 'w-other', kind: 'walk-in-taken', assignedTo: 'Carl Hadwin', customer: 'Mr A' },
+        { id: 'w-danny', kind: 'walk-in-taken', assignedTo: 'Danny Willis', customer: 'Mr Patel' }
+      ]
+    });
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, 'danny', 'Danny is taken off cover');
+    assert.ok(db.data.lockupTest.reception[MON].am.personId, 'someone else is put on');
+    assert.ok(db.data.lockupTest.reception[MON].am.declined.danny, 'Danny is declined so he is not put back');
+    const wskips = Object.values(db.data.receptionLogTest || {}).filter(e => e.kind === 'skip' && e.reason === 'Unable to do it' && e.personId === 'danny');
+    assert.strictEqual(wskips.length, 1, 'logged as unable/skip: ' + JSON.stringify(wskips));
+    assert.ok(/Took a walk-in/.test(wskips[0].reasonText), wskips[0].reasonText);
+    const newCover = db.data.lockupTest.reception[MON].am.personId;
+    assert.ok(r.added.some(id => id === rcPfx() + '_' + MON + '_am_' + newCover), 'new cover person is emailed: ' + r.added.join(','));
+    assert.ok(!db.data.lockupTest.notify[rcPfx() + '_' + MON + '_am_' + newCover].sendAfter, 'walk-in realloc cover sends now');
+
+    // same alerts again: no second reallocation
+    const after = db.data.lockupTest.reception[MON].am.personId;
+    r = await runAt(db, MON, 10, 30, {
+      team: teamW,
+      walkinAlerts: [{ id: 'w-danny', kind: 'walk-in-taken', assignedTo: 'Danny Willis', customer: 'Mr Patel' }]
+    });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, after, 'no double reallocation');
+    assert.strictEqual(Object.values(db.data.receptionLogTest || {}).filter(e => e.kind === 'skip' && e.personId === 'danny').length, 1);
+
+    // outside the active window: nothing
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { team: teamW });
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { personId: 'danny', status: 'assigned', ts: 1 });
+    r = await runAt(db, MON, 8, 40, {
+      team: teamW,
+      walkinAlerts: [{ id: 'w-early', kind: 'walk-in-taken', assignedTo: 'Danny Willis', customer: 'Early' }]
+    });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'danny', 'before the shift window, cover stays');
+    assert.ok(db.data.lockupTest.reception[MON]._day.walkinHandled['w-early']);
+    console.log('ok: walk-in taken by the cover person reallocates like Unable; other cases leave cover alone');
+  }
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

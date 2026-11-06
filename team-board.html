@@ -7891,6 +7891,10 @@ function walkinMapOfficeAlert(a, i){
     office:true
   };
 }
+/* Showroom cover: when a walk-in-taken alert names the person currently on the
+   active cover shift, scripts/reception-mail.js (lockup-emails) writes the same
+   reallocate the Unable button uses, so the next fair person is put on. The board
+   only displays the card; the mail job reads this same office-alerts feed. */
 function walkinDeliverOfficeAlerts(j){
   var raw = (j && j.alerts) || [];
   var rows = raw.map(walkinMapOfficeAlert).filter(Boolean);
