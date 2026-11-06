@@ -162,7 +162,17 @@ async function run(o) {
   const say = log || console.log;
   const logRoot = o.logRoot || 'receptionLog';
   const flag = Object.assign({}, RR.TEST_ONLY ? { rcTest: true } : {});
-  const qAdd = (id, rec, dry) => queueAdd(id, Object.assign({}, rec, flag, { subject: '[Beta] ' + rec.subject }), dry);
+  /* every email to managers names the date and links to the page; cover emails to people are as before */
+  const qAdd = (id, rec, dry) => {
+    const r2 = Object.assign({}, rec, flag, { subject: '[Beta] ' + rec.subject });
+    if (rec.to === 'managers') {
+      const when = RR.longDate(date);
+      r2.subject = '[Beta] ' + rec.subject + ' · ' + when;
+      r2.text = rec.text + '\n\n' + when + '\nOpen showroom cover: ' + RR.PAGE_URL;
+      r2.html = (rec.html || '') + '<p><b>' + esc(when) + '</b><br><a href="' + RR.PAGE_URL + '">Open showroom cover</a></p>';
+    }
+    return queueAdd(id, r2, dry);
+  };
   /* the management log (skips, absence tags, and every shift someone was put on): admin writes only */
   const logWrite = async (key, entry) => { if (!dry) await db.ref(logRoot + '/' + key).set(entry); };
   const date = date0, dow = SR.dowOf(date);

@@ -255,6 +255,9 @@ async function runAt(db, date, h, m, cfgExtra) {
   const shortNoteId = Object.keys(db.data.lockupTest.notify).filter(k => k.indexOf(rcPfx() + '_short_') === 0)[0];
   const shortText = db.data.lockupTest.notify[shortNoteId].text;
   assert.ok(/Free and not on a shift yet: nobody/.test(shortText) && /Please choose someone/.test(shortText), shortText);
+  const shortMail = db.data.lockupTest.notify[shortNoteId];
+  assert.ok(/Monday 2 November/.test(shortMail.subject) && /Monday 2 November/.test(shortMail.text), 'the managers email names the date: ' + shortMail.subject);
+  assert.ok(/https:\/\/dan-sells\.co\.uk\/reception\.html/.test(shortMail.text) && /reception\.html/.test(shortMail.html), 'and links to the page');
   console.log('ok: when nobody is free the managers are emailed who is free, who is busy, and that they should choose');
 
   db.data.lockupTest.reception[MON] = Object.assign({}, db.data.lockupTest.reception[MON] || {}, { am: { status: 'short', ts: 9000, assign: { personId: 'carl', by: 'will', ts: 9500 } } });

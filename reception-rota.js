@@ -173,6 +173,14 @@
 
   /* the email to managers when someone cannot cover */
   /* the email to managers when a shift has nobody free: the names they can choose from, and why the others are not */
+  /* the page managers and cover people open, and a plain date for emails: "Thursday 5 November" */
+  var PAGE_URL = 'https://dan-sells.co.uk/reception.html';
+  function longDate(iso) {
+    var p = String(iso || '').split('-').map(Number);
+    if (p.length !== 3 || p.some(isNaN)) return String(iso || '');
+    return new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+  }
+
   function shortNote(shift, free, onOther, booked, names) {
     var nm = function (id) { return (names || {})[id] || id; };
     var lines = [];
@@ -386,6 +394,6 @@
   /* one-off corrections to who is in on a day, on top of the shift calendar. Tomi has appointments on Friday 6
      November, his usual day off, so he is assumed in for that day. Remove the line once the rota itself is corrected. */
   var ONE_OFF_IN = { '2026-11-06': ['tomi'] };
-var api = { shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate };
+var api = { PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);
