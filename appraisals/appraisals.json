@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-06T14:02:16.420Z",
+  "captured": "2026-11-06T16:02:13.752Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV73HJX",
+      "appraisedAt": "2026-11-06T15:54:27.844Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--bodkO_TG--/c_fill,h_300,w_300/v1793980486/Live/Appraisals/9631001/ef9ed069-78e6-4b63-873c-a35fcd04b617.jpg"
+    },
+    {
+      "registration": "E3NSC",
+      "appraisedAt": "2026-11-06T15:49:44.259Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "V11CSH",
+      "appraisedAt": "2026-11-06T15:18:23.806Z",
+      "make": "PORSCHE",
+      "model": "Macan",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "YH73UPY",
       "appraisedAt": "2026-11-06T13:48:55.962Z",
@@ -59,16 +89,6 @@
       "appraisedAt": "2026-11-06T08:50:47.974Z",
       "make": "BMW",
       "model": "X3",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "LV73HJX",
-      "appraisedAt": "2026-11-06T08:13:49.442Z",
-      "make": "BMW",
-      "model": "1 Series",
       "status": "Valued",
       "price": null,
       "condition": "Excellent",
