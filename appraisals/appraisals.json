@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-06T16:02:13.752Z",
+  "captured": "2026-11-06T18:02:32.051Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "RO25DYB",
+      "appraisedAt": "2026-11-06T17:22:58.645Z",
+      "make": "FORD",
+      "model": "Explorer",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--u8Ex6lzB--/c_fill,h_300,w_300/v1793985789/Live/Appraisals/9631268/88adbdb0-dc11-48d4-bcd9-118eda3d075b.jpg"
+    },
+    {
+      "registration": "UUM51",
+      "appraisedAt": "2026-11-06T16:09:07.901Z",
+      "make": "BMW",
+      "model": "5 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--2tDNrvjm--/c_fill,h_300,w_300/v1793981367/Live/Appraisals/9631058/b9e3fd0b-5440-4799-beb5-9bfdc9ebe926.jpg"
+    },
     {
       "registration": "LV73HJX",
       "appraisedAt": "2026-11-06T15:54:27.844Z",
@@ -89,16 +109,6 @@
       "appraisedAt": "2026-11-06T08:50:47.974Z",
       "make": "BMW",
       "model": "X3",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "RO25DYB",
-      "appraisedAt": "2026-11-05T17:21:41.091Z",
-      "make": "FORD",
-      "model": "Explorer",
       "status": "Valued",
       "price": null,
       "condition": "Excellent",
@@ -5947,17 +5957,6 @@
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--ohR4NVUT--/c_fill,h_300,w_300/v1784809055/Live/Appraisals/9369667/c948c64f-d2b4-484c-b181-e76e14732646.jpg",
-      "droppedAt": "2026-10-26T12:58:48.002Z"
-    },
-    {
-      "registration": "UUM51",
-      "appraisedAt": "2026-07-22T15:59:49.724Z",
-      "make": "BMW",
-      "model": "5 Series",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
       "droppedAt": "2026-10-26T12:58:48.002Z"
     },
     {
