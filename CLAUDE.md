@@ -2791,6 +2791,37 @@ said so.
   build if they disagree (`.github/workflows/board-check.yml`). Out of step
   there is no visible error: the board renders the new person fine and Firebase
   silently rejects every deal entered for them.
+- **Pasting a list of deals.** Will sends the month's deals as one email,
+  registration, who sold it, the total, and typing eleven of those into the
+  form on a phone is the kind of job that gets put off until the board is a
+  fortnight behind. "Paste a list" in the manager panel takes the email whole
+  (`bulkParse`, `bulkCheck`, `bulkAdd`).
+  It reads the text as a **stream of words, not as columns**, because the same
+  list arrives three ways: three columns from Outlook, one field a line when it
+  is copied on a phone, and tab separated out of a spreadsheet. A registration
+  starts a row, the words after it are the name, the first number ends it, so
+  the header and the signature fall out without being special cased. Checked
+  against Will's own list in all four arrangements, with and without pound
+  signs and with a space in the registration: 11 of 11 every time.
+  **Nothing is written until it has been read back.** Check the list draws
+  every row it found, every line it could not read and every car already on the
+  board, and only then does Add them light up; editing the paste clears it
+  again. A silent importer that guesses at a name is how somebody else's deal
+  ends up against your figure.
+  **A name is only matched when the answer is not in doubt.** The email says
+  Tomiwa Adelaja and Daniel Cane where `TEAM` says Tomi and Dan, so a surname
+  plus a first name that is a prefix of the other counts, and so do initials;
+  anything matching two people or none is shown as unread rather than guessed.
+  A figure outside the rules' own +/-100,000 is refused the same way.
+  **A car already on the month is shown and skipped**, compared on letters and
+  digits alone so "LX75 FZS" and "LX75FZS" are one car: pasting the same email
+  twice must not double somebody's figure. Deals are written one at a time, so
+  a failure names the car it belongs to and the rest still land.
+  **Nothing can write these figures but a person.** `profitchallenge` needs a
+  staff Google sign in, so an agent cannot add deals to the board at all; this
+  is the nearest thing to doing it for him. Do not commit a list of profit
+  figures to this repo to save a paste: margin per car is confidential and this
+  repository is public.
 - **The manager panel** leads with the day-to-day half - add a deal, then this
   month's deals - and folds everything about what the wall is showing (board
   picker, sketches, screenshot, reload) into a closed `<details>` underneath.

@@ -277,11 +277,24 @@ body.hasseason .mascot .rl{text-shadow:0 2px 16px rgba(0,0,0,.72)}
 .modal h2{font-family:var(--display);font-weight:700;font-size:1.2rem;margin-bottom:4px}
 .modal .hint{font-size:.78rem;color:var(--muted);margin-bottom:16px;line-height:1.45}
 label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 6px}
-input,select{
+input,select,textarea{
   width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
   color:var(--text);font-family:var(--font);font-size:1rem;padding:11px 13px;margin-bottom:14px;
 }
-input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:1px}
+/* a pasted list is read back before it is written, so the preview has to be
+   legible at a glance on a phone: one row a car, the money on the right */
+#bulk-text{font-size:.86rem;line-height:1.45;resize:vertical;min-height:96px}
+.bk{display:flex;align-items:center;gap:8px;padding:7px 10px;margin-bottom:5px;
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:10px;font-size:.8rem}
+.bk b{font-weight:800}
+.bk .who{flex:1;min-width:0}
+.bk .who span{display:block;font-size:.68rem;color:var(--muted);font-weight:600;margin-top:1px}
+.bk .amt{font-weight:800;white-space:nowrap}
+.bk.skip{opacity:.62}
+.bk.skip .amt{text-decoration:line-through}
+.bk.bad{border-color:rgba(226,86,77,.5)}
+.bk.bad .who span{color:var(--red)}
 #pin-input{text-align:center;font-size:1.8rem;letter-spacing:.5em;font-weight:700}
 .tog{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -1722,6 +1735,20 @@ body.premiere .rcrota{display:none!important}
       <button class="btn" style="flex:1" id="mgr-cancel">Close</button>
       <button class="btn primary" style="flex:1" id="mgr-save">Add deal</button>
     </div>
+
+    <details class="fold" id="bulk-fold">
+      <summary>Paste a list<span>A whole email of deals at once</span></summary>
+      <p class="hint" style="margin:12px 0 10px">Paste Will's list straight in: registration, who sold it, the
+        total, in any arrangement. Pound signs, commas and the header and signature lines are ignored. Check it
+        first, then add them to the month picked above.</p>
+      <textarea id="bulk-text" rows="7" spellcheck="false" autocapitalize="characters"
+        placeholder="YL73ELX   Tomiwa Adelaja   2,246.73"></textarea>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn" style="flex:1" id="bulk-check">Check the list</button>
+        <button class="btn primary" style="flex:1" id="bulk-add" disabled>Add them</button>
+      </div>
+      <div id="bulk-out"></div>
+    </details>
 
     <h2 style="margin-top:22px;font-size:1rem" id="deals-heading">This month's deals</h2>
     <p class="hint" style="margin-bottom:8px">Tap the pencil to correct a figure, or the bin to remove it.</p>
@@ -6332,6 +6359,143 @@ function saveDeal(){
   }
 }
 
+/* ============================================================
+   Pasting a list of deals (Dan, 6 November 2026)
+
+   Will sends the month's deals as one email - registration, who sold it, the
+   total - and typing eleven of those into the form above, on a phone, is the
+   kind of job that gets put off until the board is a fortnight behind. So the
+   same email can be pasted in whole.
+
+   It reads the text as a stream of words rather than as columns, because the
+   same list arrives three ways: three columns from Outlook, one field a line
+   when it is copied on a phone, and tab separated out of a spreadsheet. A
+   registration starts a row, the words after it are the name, and the first
+   number ends it. The header and the signature carry neither a registration
+   nor a figure, so they fall out without being special cased.
+
+   Two rules it must keep.
+
+   **Nothing is written until it has been read back.** Check the list draws
+   every row it found, every row it could not read, and every car already on
+   the board, and only then does Add them light up. A silent importer that
+   guesses at a name is how somebody else's deal ends up against your figure.
+
+   **A name is only matched when the answer is not in doubt.** The email says
+   Tomiwa Adelaja and Daniel Cane where TEAM says Tomi and Dan, so a surname
+   with a first name that is a prefix of the other counts; anything matching
+   two people, or none, is shown as unread rather than guessed at.
+   ============================================================ */
+var BULK=[];
+/* current style, prefix style, suffix style; the space in LX26 FWP is put
+   back together by the walker, which is why this is anchored */
+var REG_RE=/^(?:[A-Z]{2}\d{2}[A-Z]{3}|[A-Z]\d{1,3}[A-Z]{3}|[A-Z]{3}\d{1,3}[A-Z])$/;
+var REG_HEAD=/^[A-Z]{2}\d{2}$/, REG_TAIL=/^[A-Z]{3}$/;
+var NUM_RE=/^-?[\d,]+(?:\.\d+)?$/;
+function bulkClean(t){ return String(t||'').replace(/[^a-z]/gi,'').toLowerCase() }
+/* one exec, or nothing: never a guess between two */
+function execFromName(words){
+  var full=words.join(' ').toLowerCase().replace(/[^a-z ]/g,'').trim();
+  if(!full) return null;
+  var parts=full.split(/\s+/), last=parts[parts.length-1], first=parts[0];
+  var hits=[];
+  TEAM.forEach(function(t){
+    var tp=t.name.toLowerCase().split(/\s+/), tlast=tp[tp.length-1], tfirst=tp[0];
+    if(full===t.name.toLowerCase()){ hits.push(t.id); return }
+    if(parts.length>1 && last===tlast &&
+       (first===tfirst || first.indexOf(tfirst)===0 || tfirst.indexOf(first)===0)){ hits.push(t.id); return }
+    if(parts.length===1 && (full===t.ini.toLowerCase() || full===tfirst)) hits.push(t.id);
+  });
+  return hits.length===1 ? hits[0] : null;
+}
+function bulkParse(text){
+  var toks=String(text||'').replace(/[£€]/g,' ').split(/[\s ]+/).filter(Boolean);
+  var rows=[], bad=[], i=0;
+  while(i<toks.length){
+    var up=toks[i].toUpperCase().replace(/[^A-Z0-9]/g,''), reg='';
+    if(REG_RE.test(up)) reg=up;
+    else if(REG_HEAD.test(up) && i+1<toks.length && REG_TAIL.test(toks[i+1].toUpperCase().replace(/[^A-Z0-9]/g,''))){
+      reg=up+toks[i+1].toUpperCase().replace(/[^A-Z0-9]/g,''); i++;
+    }
+    if(!reg){ i++; continue }
+    i++;
+    var words=[], amt=null;
+    while(i<toks.length){
+      var t=toks[i];
+      if(NUM_RE.test(t.replace(/^\(|\)$/g,''))){ amt=parseFloat(t.replace(/[(),]/g,'')); i++; break }
+      if(REG_RE.test(t.toUpperCase().replace(/[^A-Z0-9]/g,''))) break;   /* next car, this one never gave a figure */
+      words.push(t); i++;
+      if(words.length>6) break;
+    }
+    var ex=execFromName(words);
+    if(amt===null || !isFinite(amt) || !ex || Math.abs(amt)>100000){
+      bad.push(reg+' '+words.join(' ')+(amt===null?'':' '+amt));
+      continue;
+    }
+    rows.push({reg:reg, exec:ex, profit:Math.round(amt)});
+  }
+  return {rows:rows, bad:bad};
+}
+/* a car already on this month is shown and skipped: pasting the same email
+   twice must not double somebody's figure */
+function bulkOnBoard(reg){
+  var r=bulkClean(reg), found=false;
+  Object.keys(deals).forEach(function(k){
+    if(bulkClean(deals[k].reg)===r) found=true;
+  });
+  return found;
+}
+function bulkCheck(){
+  var out=$('bulk-out'), got=bulkParse($('bulk-text').value);
+  BULK=[];
+  var html='', add=0;
+  got.rows.forEach(function(r){
+    var dup=bulkOnBoard(r.reg), t=BY_ID[r.exec];
+    if(!dup){ BULK.push(r); add++ }
+    html+='<div class="bk'+(dup?' skip':'')+'"><span class="who"><b>'+esc(t.name)+'</b>'+
+      '<span>'+esc(r.reg)+(dup?' &middot; already on the board':'')+'</span></span>'+
+      '<span class="amt">'+money(r.profit)+'</span></div>';
+  });
+  got.bad.forEach(function(line){
+    html+='<div class="bk bad"><span class="who"><b>Could not read this</b>'+
+      '<span>'+esc(line)+'</span></span></div>';
+  });
+  if(!html) html='<p class="hint" style="margin:0">Nothing found to add. Each car needs a registration, a name and a figure.</p>';
+  else html+='<p class="hint" style="margin:8px 0 0">'+
+    (add? add+(add===1?' deal':' deals')+' to add to <b>'+esc(monthName(viewMonth))+'</b>.' : 'Nothing new to add.')+
+    (got.bad.length? ' '+got.bad.length+(got.bad.length===1?' line':' lines')+' could not be read, so '+
+      (got.bad.length===1?'it is':'they are')+' left out. Add '+(got.bad.length===1?'it':'them')+' with the form above.' : '')+
+    '</p>';
+  out.innerHTML=html;
+  $('bulk-add').disabled = add===0;
+  $('bulk-add').textContent = add? 'Add '+add+(add===1?' deal':' deals') : 'Add them';
+}
+/* written one at a time: eleven writes off a phone on office wifi, and a
+   failure that names the car it belongs to */
+function bulkAdd(){
+  if(!requireBackend())return;
+  if(!BULK.length)return;
+  var btn=$('bulk-add'), queue=BULK.slice(), done=0, failed=[];
+  btn.disabled=true;
+  var step=function(){
+    if(!queue.length){
+      btn.textContent='Add them';
+      if(done) toast(done+(done===1?' deal':' deals')+' added','ok');
+      if(failed.length) toast('Could not add '+failed.join(', '),'err');
+      $('bulk-text').value = failed.length? $('bulk-text').value : '';
+      BULK=[]; $('bulk-out').innerHTML='';
+      refreshMonthTabs();
+      return;
+    }
+    var r=queue.shift();
+    btn.textContent='Adding '+r.reg+'...';
+    backend.add(viewMonth,{exec:r.exec,profit:r.profit,reg:r.reg,ts:Date.now()}).then(function(){
+      done++;
+    })['catch'](function(e){ console.error(e); failed.push(r.reg) }).then(step,step);
+  };
+  step();
+}
+
 function delDeal(id){
   if(!requireBackend())return;
   var d=deals[id];if(!d)return;
@@ -6555,6 +6719,14 @@ $('btn-manager').onclick=function(){
 $('pin-go').onclick=checkPin;
 $('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPin()});
 $('mgr-save').onclick=saveDeal;
+$('bulk-check').onclick=bulkCheck;
+$('bulk-add').onclick=bulkAdd;
+/* editing the paste invalidates whatever was checked: never write a list
+   that is no longer the one on screen */
+$('bulk-text').oninput=function(){
+  BULK=[]; $('bulk-add').disabled=true; $('bulk-add').textContent='Add them';
+  $('bulk-out').innerHTML='';
+};
 $('vid-toggle').onclick=function(){setVideosOn(!videosOn)};
 $('reload-all').onclick=reloadAllScreens;
 $('ev-unlock').onclick=function(){
