@@ -829,7 +829,8 @@ async function receptionScenarios(browser, base) {
       await pc.waitForTimeout(500);
       await pc.click('[data-why="customer"]');
       await pc.waitForTimeout(400);
-      const stc = await store(pc), recc = at(stc.data, 'lockupTest/reception/' + DATE + '/am') || {};
+      const stc = await store(pc);
+      const recc = at(stc.data, 'lockup/reception/' + DATE + '/am') || at(stc.data, 'lockupTest/reception/' + DATE + '/am') || {};
       check("cover: \"I'm with a customer now\" is sent at once, with no words", recc.status === 'declined' && recc.reason === "I'm with a customer now, cannot cover", JSON.stringify(recc));
       await pc.close();
     }

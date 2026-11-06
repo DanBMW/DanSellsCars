@@ -78,7 +78,8 @@ assert.ok(/You are on showroom cover\. Please cover showroom until 15:00\./.test
 assert.ok(/12:00 to 15:00/.test(m.subject));
 assert.ok(/action=covering/.test(m.coveringUrl), m.coveringUrl);
 assert.ok(/action=cannot/.test(m.cannotUrl), m.cannotUrl);
-assert.ok(/test=1/.test(m.coveringUrl), 'practice links keep test=1 while TEST_ONLY');
+if (R.TEST_ONLY) assert.ok(/test=1/.test(m.coveringUrl), 'practice links keep test=1 while TEST_ONLY');
+else assert.ok(!/test=1/.test(m.coveringUrl) && !/test=1/.test(m.cannotUrl), 'live links drop test=1 when TEST_ONLY is off: ' + m.coveringUrl);
 assert.ok(/date=2026-11-02/.test(m.coveringUrl) && /shift=mid/.test(m.coveringUrl), m.coveringUrl);
 assert.ok(/I am covering/.test(m.html) && /I cannot cover/.test(m.html), 'html has the tap buttons');
 assert.ok(m.html.indexOf(m.coveringUrl.replace(/&/g, '&amp;')) >= 0 && m.html.indexOf(m.cannotUrl.replace(/&/g, '&amp;')) >= 0, 'html links match the urls');

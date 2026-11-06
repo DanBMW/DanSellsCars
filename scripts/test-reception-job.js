@@ -7,6 +7,7 @@
 'use strict';
 const assert = require('assert');
 const J = require('./reception-mail.js');
+const RR = require('../reception-rota.js');
 
 function fakeDb(init) {
   const data = JSON.parse(JSON.stringify(init || {}));
@@ -74,11 +75,12 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(r.added.length, 3, 'three cover emails: ' + r.added.join(','));
   const mail = db.data.lockupTest.notify[r.added[0]];
   assert.ok(/You are on showroom cover\. Please cover showroom until/.test(mail.text), mail.text);
-  assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?test=1/.test(mail.text), mail.text);
+  if (RR.TEST_ONLY) assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?test=1/.test(mail.text), mail.text);
+  else assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?(?!test=)/.test(mail.text) && !/reception\.html\?test=1/.test(mail.text), mail.text);
   assert.ok(/action=cannot/.test(mail.text), mail.text);
   assert.ok(/I am covering/.test(mail.html) && /I cannot cover/.test(mail.html), 'queued html has tap buttons');
   assert.ok(/action=covering/.test(mail.html) && /action=cannot/.test(mail.html), mail.html.slice(0, 400));
-  assert.deepStrictEqual(mail.to, ['daniel.cane@hedinautomotive.co.uk'], 'test mode sends to Dan');
+  assert.deepStrictEqual(mail.to, ['daniel.cane@hedinautomotive.co.uk'], 'testExec routes the cover email to Dan');
   assert.ok(db.data.lockupTest.reception[MON]._day.plannedAt, 'the day is marked planned');
   console.log('ok: at 08:00 three people are planned, each emailed once');
 
@@ -187,7 +189,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(whereAre.length, 1, 'one where-are-you email: ' + r.added.join(','));
   const wm = db.data.lockupTest.notify[whereAre[0]];
   assert.ok(/Where are you\?/.test(wm.subject) && /reception\.html/.test(wm.text) && /I am here/.test(wm.text), wm.text);
-  assert.deepStrictEqual(wm.to, ['daniel.cane@hedinautomotive.co.uk'], 'test mode sends it to Dan');
+  assert.deepStrictEqual(wm.to, ['daniel.cane@hedinautomotive.co.uk'], 'testExec routes the cover email to Dan');
   db.data.lockupTest.reception[MON].pm = Object.assign({}, db.data.lockupTest.reception[MON].pm, { absent: Object.assign({}, db.data.lockupTest.reception[MON].pm.absent, { reply: { status: 'here', ts: 6000 } }) });
   r = await runAt(db, MON, 10, 15);
   assert.strictEqual(r.added.filter(id => /^rc_reply_/.test(id)).length, 1, 'the reply reaches the managers');

@@ -8049,7 +8049,7 @@ function paintLock(){
   watch(r+'/progress',v=>{LKS[r].progress=v||{};paintLock()});
   watch(r+'/absences',v=>{LKS[r].absences=v||{};paintLock();if(curViewId==='whosin')paintWhosIn()});
   watch(r+'/reception',v=>{LKS[r].reception=v||{};if(window.paintCover)window.paintCover()}); /* null until the first read, so the corner waits */
-  watch(r+'/config',v=>{LKS[r].cfg=v||{};if(r==='lockup')LK_TEST=LK_SANDBOX||!(v&&v.testMode===false);paintLock()});
+  watch(r+'/config',v=>{LKS[r].cfg=v||{};if(r==='lockup')LK_TEST=LK_SANDBOX||!(v&&v.testMode===false);paintLock();if(window.paintCover)window.paintCover()});
 });
 fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{LK.bank[e.date]=1});paintLock()}).catch(()=>{});
 setInterval(paintLock,30000);

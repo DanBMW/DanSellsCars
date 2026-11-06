@@ -231,7 +231,7 @@
 
   /* cover runs in the practice copy only, whatever the lockup's live switch says, and its emails go only to
      the two test addresses (Dan and Nathan). Change this to false only when Dan says it goes live. */
-  var TEST_ONLY = true;
+  var TEST_ONLY = false;
   /* one-off corrections to who is in on a day, on top of the shift calendar. Tomi has appointments on Friday 6
      November, his usual day off, so he is assumed in for that day. Remove the line once the rota itself is corrected. */
   var ONE_OFF_IN = { '2026-11-06': ['tomi'] };
