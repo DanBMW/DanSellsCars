@@ -1,9 +1,49 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-06T08:02:21.361Z",
+  "captured": "2026-11-06T10:02:27.139Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV73XNS",
+      "appraisedAt": "2026-11-06T09:43:18.489Z",
+      "make": "BMW",
+      "model": "2 Series Gran Coupe",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "YF73VTU",
+      "appraisedAt": "2026-11-06T09:15:25.475Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "ARV50N",
+      "appraisedAt": "2026-11-06T08:50:47.974Z",
+      "make": "BMW",
+      "model": "X3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LV73HJX",
+      "appraisedAt": "2026-11-06T08:13:49.442Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "RO25DYB",
       "appraisedAt": "2026-11-05T17:21:41.091Z",
@@ -1475,16 +1515,6 @@
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--AoMwpiwD--/c_fill,h_300,w_300/v1791802046/Live/Appraisals/9572392/365a780d-9d8a-4e90-8492-07bdb5de8cde.jpg"
-    },
-    {
-      "registration": "ARV50N",
-      "appraisedAt": "2026-10-12T10:07:41.844Z",
-      "make": "BMW",
-      "model": "X3",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "YC21VUX",
