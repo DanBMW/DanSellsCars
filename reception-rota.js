@@ -291,6 +291,79 @@
     return out.sort(function (a, b) { return (b.date < a.date ? -1 : b.date > a.date ? 1 : 0) || (b.ts - a.ts); });
   }
 
+  /* normalise a person name for matching walk-in / booking feed names to team ids */
+  function normName(s) {
+    return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+
+  /* Match an office-alerts / walk-in taker name to a team id.
+     Prefers fullName, then short name, then APPT_NAMES first-name map, then a unique first name. */
+  function matchPersonByName(name, team) {
+    var n = normName(name);
+    if (!n) return null;
+    var ids = Object.keys(team || {});
+    var i, p, full, short, exact = null, firstHits = [];
+    var first = n.split(' ')[0];
+    for (i = 0; i < ids.length; i++) {
+      p = team[ids[i]] || {};
+      full = normName(p.fullName);
+      short = normName(p.name);
+      if (full && full === n) return ids[i];
+      if (short && short === n) exact = exact || ids[i];
+      if (full && (full === first || full.indexOf(first + ' ') === 0)) firstHits.push(ids[i]);
+      else if (short && short === first) firstHits.push(ids[i]);
+    }
+    if (exact) return exact;
+    var rawFirst = String(name || '').trim().split(/\s+/)[0];
+    if (rawFirst && APPT_NAMES[rawFirst]) return APPT_NAMES[rawFirst];
+    if (firstHits.length === 1) return firstHits[0];
+    return null;
+  }
+
+  /* The shift whose window contains nowMins, or null outside every window (heads-up does not count). */
+  function activeShiftAt(shifts, nowMins) {
+    var i, s;
+    for (i = 0; i < (shifts || []).length; i++) {
+      s = shifts[i];
+      if (nowMins >= minsOf(s.from) && nowMins < minsOf(s.to)) return s;
+    }
+    return null;
+  }
+
+  /* When a walk-in-taken alert names the person currently on the active cover shift,
+     return the same reallocate payload the managers' "unable" button writes. Otherwise null.
+     opts = { alertId, kind, assignedTo, customer, team, shifts, nowMins, day, handled, ts } */
+  function walkinCoverReallocate(opts) {
+    opts = opts || {};
+    var alertId = String(opts.alertId || '');
+    if (alertId && opts.handled && opts.handled[alertId]) return null;
+    var kind = String(opts.kind || '').toLowerCase().replace(/[\s_]+/g, '-');
+    if (kind !== 'walk-in-taken' && kind !== 'walkin-taken'
+        && kind !== 'walkin-arrived-taken' && kind !== 'walk-in-arrived-taken'
+        && kind !== 'walkin-waiting-taken' && kind !== 'walk-in-waiting-taken') return null;
+    var shift = activeShiftAt(opts.shifts, opts.nowMins);
+    if (!shift) return null;
+    var rec = (opts.day || {})[shift.id] || {};
+    if (!rec.personId || rec.status === 'declined' || rec.status === 'short' || rec.status === 'open') return null;
+    /* a reallocate already queued and not yet handled: do not stack another */
+    if (rec.reallocate && rec.reallocate.ts !== rec.reallocateHandledTs) return null;
+    var pid = matchPersonByName(opts.assignedTo, opts.team);
+    if (!pid || pid !== rec.personId) return null;
+    var cust = String(opts.customer || '').trim().slice(0, 80);
+    return {
+      shiftId: shift.id,
+      personId: pid,
+      alertId: alertId,
+      reallocate: {
+        personId: pid,
+        text: cust ? ('Took a walk-in (' + cust + ')') : 'Took a walk-in',
+        by: 'walkin',
+        ts: opts.ts || Date.now(),
+        alertId: alertId
+      }
+    };
+  }
+
   /* email when someone takes (or is given) a shift that already had a person */
   function takenEmail(name, takerName, shift, opts) {
     opts = opts || {};
@@ -313,6 +386,6 @@
   /* one-off corrections to who is in on a day, on top of the shift calendar. Tomi has appointments on Friday 6
      November, his usual day off, so he is assumed in for that day. Remove the line once the rota itself is corrected. */
   var ONE_OFF_IN = { '2026-11-06': ['tomi'] };
-var api = { shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote };
+var api = { shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

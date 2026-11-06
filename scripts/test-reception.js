@@ -155,4 +155,65 @@ const te = R.takenEmail('Tomi', 'Carl', wk[0], { date: '2026-11-02' });
 assert.ok(/Carl has taken your showroom cover 09:00 to 12:00/.test(te.text), te.text);
 console.log('ok: handed-back minutes stay on the record, history lists reasons, taken email names the taker');
 
+// walk-in taken by the person on cover → same reallocate payload as Unable
+{
+  const teamNames = {
+    tomi: { name: 'Tomi', fullName: 'Tomi Adelaja', order: 0 },
+    carl: { name: 'Carl', fullName: 'Carl Hadwin', order: 1 },
+    danny: { name: 'Danny', fullName: 'Danny Willis', order: 2 },
+    dan: { name: 'Dan', fullName: 'Daniel Cane', order: 3 }
+  };
+  assert.strictEqual(R.matchPersonByName('Danny Willis', teamNames), 'danny');
+  assert.strictEqual(R.matchPersonByName('Tomiwa', teamNames), 'tomi');
+  assert.strictEqual(R.matchPersonByName('Daniel Cane', teamNames), 'dan');
+  assert.strictEqual(R.matchPersonByName('Nobody Here', teamNames), null);
+  assert.strictEqual(R.activeShiftAt(wk, R.minsOf('10:00')).id, 'am');
+  assert.strictEqual(R.activeShiftAt(wk, R.minsOf('08:45')), null, 'heads-up before first shift is not active');
+  assert.strictEqual(R.activeShiftAt(wk, R.minsOf('18:00')), null, 'at shift end the window is closed');
+
+  const day = { am: { personId: 'danny', status: 'covering', ts: 1 } };
+  const hit = R.walkinCoverReallocate({
+    alertId: 'a1', kind: 'walk-in-taken', assignedTo: 'Danny Willis', customer: 'Mr Patel',
+    team: teamNames, shifts: wk, nowMins: R.minsOf('10:00'), day: day, handled: {}
+  });
+  assert.ok(hit, 'cover person taking a walk-in queues a reallocate');
+  assert.strictEqual(hit.shiftId, 'am');
+  assert.strictEqual(hit.personId, 'danny');
+  assert.strictEqual(hit.reallocate.by, 'walkin');
+  assert.ok(/Took a walk-in/.test(hit.reallocate.text));
+
+  assert.strictEqual(R.walkinCoverReallocate({
+    alertId: 'a1', kind: 'walk-in-taken', assignedTo: 'Danny Willis',
+    team: teamNames, shifts: wk, nowMins: R.minsOf('10:00'), day: day, handled: { a1: true }
+  }), null, 'same alert is not handled twice');
+
+  assert.strictEqual(R.walkinCoverReallocate({
+    alertId: 'a2', kind: 'walk-in-taken', assignedTo: 'Carl Hadwin',
+    team: teamNames, shifts: wk, nowMins: R.minsOf('10:00'), day: day, handled: {}
+  }), null, 'someone not on cover taking a walk-in changes nothing');
+
+  assert.strictEqual(R.walkinCoverReallocate({
+    alertId: 'a3', kind: 'walk-in', assignedTo: 'Danny Willis',
+    team: teamNames, shifts: wk, nowMins: R.minsOf('10:00'), day: day, handled: {}
+  }), null, 'a waiting walk-in (not taken) changes nothing');
+
+  assert.strictEqual(R.walkinCoverReallocate({
+    alertId: 'a4', kind: 'walk-in-taken', assignedTo: 'Danny Willis',
+    team: teamNames, shifts: wk, nowMins: R.minsOf('08:40'), day: day, handled: {}
+  }), null, 'outside the active shift window changes nothing');
+
+  const already = { am: { personId: 'danny', status: 'covering', ts: 1, reallocate: { personId: 'danny', ts: 5, by: 'walkin', text: 'Took a walk-in' } } };
+  assert.strictEqual(R.walkinCoverReallocate({
+    alertId: 'a5', kind: 'walk-in-taken', assignedTo: 'Danny Willis',
+    team: teamNames, shifts: wk, nowMins: R.minsOf('10:30'), day: already, handled: {}
+  }), null, 'a second walk-in while a reallocate is already queued does not stack');
+
+  const freed = { am: { personId: 'carl', status: 'assigned', ts: 2, declined: { danny: true } } };
+  assert.strictEqual(R.walkinCoverReallocate({
+    alertId: 'a6', kind: 'walk-in-taken', assignedTo: 'Danny Willis',
+    team: teamNames, shifts: wk, nowMins: R.minsOf('10:00'), day: freed, handled: {}
+  }), null, 'after they are freed, a later walk-in does not put them back or re-queue');
+  console.log('ok: walk-in taken by the cover person queues one reallocate; other cases do nothing');
+}
+
 console.log('all reception tests passed');
