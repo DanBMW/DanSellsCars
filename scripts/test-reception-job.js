@@ -42,6 +42,7 @@ const team = {
 };
 const at = (h, m) => ({ mins: h * 60 + m });
 const MON = '2026-11-02', SUN = '2026-11-08';
+const rcPfx = () => (RR.TEST_ONLY ? 'rc_test' : 'rc_live');
 
 async function runAt(db, date, h, m, cfgExtra) {
   const queue = (await db.ref('lockupTest/notify').get()).val() || {};
@@ -51,7 +52,8 @@ async function runAt(db, date, h, m, cfgExtra) {
     db, root: 'lockupTest', logRoot: 'receptionLogTest', n: Object.assign({ date: date, dow: 1 }, at(h, m)), dry: false,
     team, managers: {}, cfg: {}, testExec: 'daniel.cane@hedinautomotive.co.uk',
     queueAdd: (id, rec, dry) => q.add(id, rec, dry), log: () => {},
-    reception, absences: {}, shiftCfg: undefined, bh: {}, holidays: {}, closed: {}
+    reception, absences: {}, shiftCfg: undefined, bh: {}, holidays: {}, closed: {},
+    notify: queue
   }, cfgExtra || {}));
   await q.flush();
   return { res, added: q.added };
@@ -94,7 +96,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   const was = day.am.personId;
   db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { status: 'declined', reason: 'I cannot cover right now', reasonText: 'with a customer', ts: 1000 });
   r = await runAt(db, MON, 9, 0);
-  const notes = r.added.filter(id => /^rc_decl_/.test(id));
+  const notes = r.added.filter(id => id.indexOf(rcPfx() + '_decl_') === 0);
   assert.strictEqual(notes.length, 1, 'one manager note: ' + r.added.join(','));
   assert.strictEqual(db.data.lockupTest.notify[notes[0]].to, 'managers');
   assert.ok(/with a customer/.test(db.data.lockupTest.notify[notes[0]].text));
@@ -102,12 +104,12 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.notStrictEqual(now.personId, was, 'the decliner is taken off the shift');
   assert.strictEqual(now.status, 'assigned');
   assert.deepStrictEqual(Object.keys(now.declined), [was]);
-  assert.ok(r.added.some(id => id === 'rc_' + MON + '_am_' + now.personId), 'the new person is emailed');
+  assert.ok(r.added.some(id => id === rcPfx() + '_' + MON + '_am_' + now.personId), 'the new person is emailed');
   console.log('ok: a decline notifies the managers with the reason and puts the next fair person on');
 
   // the same decline is not handled twice, and the decliner is not put back on
   r = await runAt(db, MON, 9, 30);
-  assert.strictEqual(r.added.filter(id => /^rc_decl_/.test(id)).length, 0);
+  assert.strictEqual(r.added.filter(id => id.indexOf(rcPfx() + '_decl_') === 0).length, 0);
   assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, was);
   console.log('ok: a decline is handled once and the person who declined is not put back');
 
@@ -135,22 +137,22 @@ async function runAt(db, date, h, m, cfgExtra) {
   const shortDay = db.data.lockupTest.reception[MON];
   assert.strictEqual(shortDay.am.status, 'short', JSON.stringify(shortDay.am));
   assert.strictEqual(shortDay.mid.status, 'short');
-  const shortNote = r.added.filter(id => /^rc_short_/.test(id));
+  const shortNote = r.added.filter(id => id.indexOf(rcPfx() + '_short_') === 0);
   assert.strictEqual(shortNote.length, 3, 'one note per uncovered shift: ' + r.added.join(','));
   const shortMail = db.data.lockupTest.notify[shortNote[0]];
   assert.ok(/Showroom not covered 09:00 to 12:00/.test(shortMail.subject), shortMail.subject);
   assert.strictEqual(shortMail.to, 'managers');
   r = await runAt(db, MON, 8, 30, { absences: everyoneAway });
-  assert.strictEqual(r.added.filter(id => /^rc_short_/.test(id)).length, 0, 'not told again on the next run');
+  assert.strictEqual(r.added.filter(id => id.indexOf(rcPfx() + '_short_') === 0).length, 0, 'not told again on the next run');
   console.log('ok: when nobody is free the shift is marked not covered and the managers are told once');
 
   // a team member with no work email: the managers are told once, and nobody is put on for them
   const noMail = Object.assign({}, team, { ben: Object.assign({}, team.ben, { email: '' }) });
   db = fakeDb();
   r = await runAt(db, MON, 8, 0, { team: noMail });
-  assert.strictEqual(r.added.filter(id => /^rc_noemail_ben/.test(id)).length, 1, 'Ben is flagged: ' + r.added.join(','));
+  assert.strictEqual(r.added.filter(id => id === rcPfx() + '_noemail_ben').length, 1, 'Ben is flagged: ' + r.added.join(','));
   r = await runAt(db, MON, 8, 30, { team: noMail });
-  assert.strictEqual(r.added.filter(id => /^rc_noemail_ben/.test(id)).length, 0, 'flagged once');
+  assert.strictEqual(r.added.filter(id => id === rcPfx() + '_noemail_ben').length, 0, 'flagged once');
   console.log('ok: anyone on the team without a work email is flagged to the managers once');
 
   // the management log: every shift someone is put on, every skip, every absence tag
@@ -185,16 +187,16 @@ async function runAt(db, date, h, m, cfgExtra) {
   const absPerson = db.data.lockupTest.reception[MON].pm.personId;
   db.data.lockupTest.reception[MON].pm = Object.assign({}, db.data.lockupTest.reception[MON].pm, { absent: { personId: absPerson, by: 'will', ts: 5000 } });
   r = await runAt(db, MON, 10, 0);
-  const whereAre = r.added.filter(id => /^rc_absent_/.test(id));
+  const whereAre = r.added.filter(id => id.indexOf(rcPfx() + '_absent_') === 0);
   assert.strictEqual(whereAre.length, 1, 'one where-are-you email: ' + r.added.join(','));
   const wm = db.data.lockupTest.notify[whereAre[0]];
   assert.ok(/Where are you\?/.test(wm.subject) && /reception\.html/.test(wm.text) && /I am here/.test(wm.text), wm.text);
   assert.deepStrictEqual(wm.to, ['daniel.cane@hedinautomotive.co.uk'], 'testExec routes the cover email to Dan');
   db.data.lockupTest.reception[MON].pm = Object.assign({}, db.data.lockupTest.reception[MON].pm, { absent: Object.assign({}, db.data.lockupTest.reception[MON].pm.absent, { reply: { status: 'here', ts: 6000 } }) });
   r = await runAt(db, MON, 10, 15);
-  assert.strictEqual(r.added.filter(id => /^rc_reply_/.test(id)).length, 1, 'the reply reaches the managers');
+  assert.strictEqual(r.added.filter(id => id.indexOf(rcPfx() + '_reply_') === 0).length, 1, 'the reply reaches the managers');
   r = await runAt(db, MON, 10, 30);
-  assert.strictEqual(r.added.filter(id => /^rc_reply_/.test(id)).length, 0, 'once');
+  assert.strictEqual(r.added.filter(id => id.indexOf(rcPfx() + '_reply_') === 0).length, 0, 'once');
   console.log('ok: an absence tag emails the person "Where are you?" and their reply goes to the managers once');
 
   // a manager reallocates a shift: the person on it is logged as a skip with the reason, and the next person goes on
@@ -250,7 +252,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   const everyoneBusy = {};
   Object.keys(team).forEach(id => { everyoneBusy['a_' + id] = { personId: id, kind: 'holiday', status: 'booked', from: MON, to: MON, note: '' }; });
   await runAt(db, MON, 8, 0, { absences: everyoneBusy });
-  const shortNoteId = Object.keys(db.data.lockupTest.notify).filter(k => /^rc_short_/.test(k))[0];
+  const shortNoteId = Object.keys(db.data.lockupTest.notify).filter(k => k.indexOf(rcPfx() + '_short_') === 0)[0];
   const shortText = db.data.lockupTest.notify[shortNoteId].text;
   assert.ok(/Free and not on a shift yet: nobody/.test(shortText) && /Please choose someone/.test(shortText), shortText);
   console.log('ok: when nobody is free the managers are emailed who is free, who is busy, and that they should choose');
@@ -259,8 +261,49 @@ async function runAt(db, date, h, m, cfgExtra) {
   const carlIn = Object.assign({}, everyoneBusy); delete carlIn.a_carl;
   r = await runAt(db, MON, 9, 0, { absences: carlIn });
   assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'carl', 'the manager choice is put on the shift');
-  assert.ok(r.added.some(id => id.indexOf('rc_' + MON + '_am_carl') === 0), 'and emailed');
+  assert.ok(r.added.some(id => id.indexOf(rcPfx() + '_' + MON + '_am_carl') === 0), 'and emailed');
   console.log('ok: a manager choice puts that person on the shift and emails them');
+
+
+  // cover emails use mode-scoped ids and sendAfter = shift start - 10 mins on first plan
+  {
+    db = fakeDb();
+    r = await runAt(db, MON, 8, 0);
+    assert.ok(r.added.every(id => id.indexOf(rcPfx() + '_') === 0), 'ids are mode-scoped: ' + r.added.join(','));
+    const amId = r.added.filter(id => id.indexOf(rcPfx() + '_' + MON + '_am_') === 0)[0];
+    const amMail = db.data.lockupTest.notify[amId];
+    assert.ok(amMail && amMail.sendAfter, 'planned cover carries sendAfter');
+    assert.strictEqual(amMail.sendAfter, J.coverSendAfterMs(MON, '09:00'), String(amMail.sendAfter));
+    // a decline reallocation email has no sendAfter (sends now)
+    const was = db.data.lockupTest.reception[MON].am.personId;
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { status: 'declined', reason: 'I cannot cover right now', reasonText: 'x', ts: 2000 });
+    r = await runAt(db, MON, 9, 0);
+    const newPid = db.data.lockupTest.reception[MON].am.personId;
+    assert.notStrictEqual(newPid, was);
+    const reallocId = r.added.filter(id => id === rcPfx() + '_' + MON + '_am_' + newPid)[0];
+    assert.ok(reallocId, 'realloc cover queued: ' + r.added.join(','));
+    assert.ok(!db.data.lockupTest.notify[reallocId].sendAfter, 'realloc cover sends immediately');
+    console.log('ok: cover emails are mode-scoped, held until 10 mins before the shift, reallocations send now');
+  }
+
+  // ensure path: live recovers when an old unscoped id was only a test send
+  {
+    const date = MON;
+    const oldId = 'rc_' + date + '_am_tomi';
+    db = fakeDb({ lockupTest: { notify: { [oldId]: { kind: 'reception', rcTest: true, sent: 1, to: ['daniel.cane@hedinautomotive.co.uk'], subject: 'x', text: 'x', html: '<p>x</p>', ts: 1 } },
+      reception: { [date]: { _day: { plannedAt: 1 }, am: { personId: 'tomi', status: 'assigned', ts: 1 }, mid: { personId: 'carl', status: 'assigned', ts: 1 }, pm: { personId: 'dan', status: 'assigned', ts: 1 } } } } });
+    r = await runAt(db, date, 10, 0);
+    const liveAm = rcPfx() + '_' + date + '_am_tomi';
+    assert.ok(r.added.indexOf(liveAm) >= 0, 'ensure requeues under mode id after a test send: ' + r.added.join(','));
+    assert.ok(db.data.lockupTest.notify[liveAm].sendAfter, 'ensure keeps sendAfter');
+    // a real (non-rcTest) prior send must not requeue
+    const sentLive = 'rc_' + date + '_mid_carl';
+    db = fakeDb({ lockupTest: { notify: { [sentLive]: { kind: 'reception', sent: 1, to: ['carl.hadwin@hedinautomotive.co.uk'], subject: 'x', text: 'x', html: '<p>x</p>', ts: 1 } },
+      reception: { [date]: { _day: { plannedAt: 1 }, am: { personId: 'tomi', status: 'assigned', ts: 1 }, mid: { personId: 'carl', status: 'assigned', ts: 1 }, pm: { personId: 'dan', status: 'assigned', ts: 1 } } } } });
+    r = await runAt(db, date, 10, 0);
+    assert.ok(r.added.indexOf(rcPfx() + '_' + date + '_mid_carl') < 0, 'does not resend after a live send: ' + r.added.join(','));
+    console.log('ok: ensure requeues after test collision, never after a live send');
+  }
 
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

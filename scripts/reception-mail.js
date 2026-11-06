@@ -9,8 +9,11 @@
  *   declined. The next run queues a manager note with their reason, takes them
  *   off that shift and puts the next fair person on, emailing them the same way.
  *
- *   Email ids are fixed (rc_<date>_<shift>_<person>), so each email is queued
- *   once, however many runs there are. Old days are pruned after 14 days.
+ *   Email ids are fixed (rc_live_<date>_<shift>_<person> or rc_test_…), so each
+ *   email is queued once, and test runs can never block live sends. Planned
+ *   cover emails carry sendAfter = shift start minus 10 minutes (UK); a
+ *   reallocation after a decline sends straight away. Old days are pruned
+ *   after 14 days.
  *
  * Still to do (Dan to provide): the appointment link, read at 07:30 and 17:30,
  * to skip people with customers booked. Until then the plan uses the shift
@@ -30,6 +33,47 @@ function hm(mins) { return String(Math.floor(mins / 60)).padStart(2, '0') + ':' 
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function minsOf(t) { return +String(t).slice(0, 2) * 60 + +String(t).slice(3, 5); }
 function firstName(p, id) { return (p && p.name) || id; }
+
+/* live and test share the lockup notify queue when lockup is live; scope every
+   reception id so a test send can never block the real one. */
+function rcMode() { return RR.TEST_ONLY ? 'test' : 'live'; }
+function rcId() { return ['rc', rcMode()].concat([].slice.call(arguments)).join('_'); }
+
+/* UK wall-clock (date + HH:MM) → epoch ms, via Europe/London. */
+function ukTimeToMs(date, hhmm) {
+  const parts = String(hhmm).split(':');
+  const H = +parts[0], M = +(parts[1] || 0);
+  const want = Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10), H, M, 0);
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/London', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  const asUtc = (ms) => {
+    const o = {};
+    dtf.formatToParts(new Date(ms)).forEach(p => { if (p.type !== 'literal') o[p.type] = p.value; });
+    return Date.UTC(+o.year, +o.month - 1, +o.day, (+o.hour % 24), +o.minute, +o.second);
+  };
+  let t = want;
+  for (let i = 0; i < 4; i++) t += want - asUtc(t);
+  return t;
+}
+
+/* Cover email held until 10 minutes before the shift starts (UK). */
+function coverSendAfterMs(date, from) {
+  return ukTimeToMs(date, hm(Math.max(0, minsOf(from) - 10)));
+}
+
+/* True when this person already got a live (non-rcTest) cover mail for the shift,
+   under the old rc_<date>_… id or the new rc_live_/rc_test_ form. */
+function coverAlreadySent(existing, date, shift, pid) {
+  const re = new RegExp('^rc_(?:(?:live|test)_)?' + date.replace(/-/g, '\\-') + '_' + shift + '_' + pid + '(?:_|$)');
+  return Object.keys(existing || {}).some(id => {
+    const q = existing[id];
+    if (!q || !q.sent || q.rcTest) return false;
+    return re.test(id);
+  });
+}
 
 /* the shift calendar's view of the day, as the rota reads it */
 function shiftCtx(o) {
@@ -80,7 +124,7 @@ async function run(o) {
       if (!dry) await logWrite('on_' + date + '_' + s.id + '_' + change.ts, { kind: 'on', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: change.ts, by: r.assign.by || '' });
       if (p.email) {
         const mail = RR.coverEmail(firstName(p, pid), s);
-        qAdd('rc_' + date + '_' + s.id + '_' + pid + '_' + change.ts, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
+        qAdd(rcId(date, s.id, pid, change.ts), { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
       }
       say('Manager chose ' + firstName(p, pid) + ' for ' + s.id);
       r = today[s.id];
@@ -104,7 +148,7 @@ async function run(o) {
     if (r.absent && r.absent.reply) {
       const rp = r.absent.reply, who = firstName(team[r.absent.personId], r.absent.personId);
       const line = rp.status === 'here' ? who + ' says they are here.' : who + ' is not in: ' + (rp.text || 'no reason given') + '.';
-      qAdd('rc_reply_' + date + '_' + s.id + '_' + rp.ts, { to: 'managers', subject: who + (rp.status === 'here' ? ' is here' : ' is not in') + ' (' + s.from + ' to ' + s.to + ')', text: line, html: '<p>' + esc(line) + '</p>', ts: Date.now() }, dry);
+      qAdd(rcId('reply', date, s.id, rp.ts), { to: 'managers', subject: who + (rp.status === 'here' ? ' is here' : ' is not in') + ' (' + s.from + ' to ' + s.to + ')', text: line, html: '<p>' + esc(line) + '</p>', ts: Date.now() }, dry);
     }
     /* a manager nudged someone who is not in the showroom: log it and email them. They stay on the shift. */
     if (r.absent && r.absent.ts !== r.absentHandledTs) {
@@ -113,7 +157,7 @@ async function run(o) {
       if (ap.email) {
         const first = firstName(ap, ab.personId);
         const mail = RR.absentEmail(first, s, { date: date });
-        qAdd('rc_absent_' + date + '_' + s.id + '_' + ab.ts, { to: [testExec || ap.email], subject: mail.subject,
+        qAdd(rcId('absent', date, s.id, ab.ts), { to: [testExec || ap.email], subject: mail.subject,
           text: mail.text, html: mail.html, ts: Date.now() }, dry);
       }
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ absentHandledTs: ab.ts });
@@ -125,7 +169,7 @@ async function run(o) {
       const who = firstName(team[r.personId] || (managers || {})[r.personId], r.personId);
       const note = RR.managerNote(who, s, r.reason || 'Cannot cover', r.reasonText || '');
       await logWrite('skip_' + date + '_' + s.id + '_' + r.ts, { kind: 'skip', personId: r.personId, date, shift: s.id, from: s.from, to: s.to, ts: r.ts, reason: r.reason || '', reasonText: r.reasonText || '' });
-      qAdd('rc_decl_' + date + '_' + s.id + '_' + r.ts, { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
+      qAdd(rcId('decl', date, s.id, r.ts), { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
       const dm = Object.assign({}, r.declined || {});
       if (r.personId) dm[r.personId] = true;
       const freed = { personId: null, status: 'open', declined: dm, handledTs: r.ts };
@@ -160,7 +204,7 @@ async function run(o) {
   /* everyone on the team needs a work email to be put on showroom cover; tell the managers once about anyone who has none */
   for (const id of Object.keys(team)) {
     if (team[id] && team[id].active !== false && !team[id].email) {
-      qAdd('rc_noemail_' + id, { to: 'managers', subject: (team[id].name || id) + ' has no work email',
+      qAdd(rcId('noemail', id), { to: 'managers', subject: (team[id].name || id) + ' has no work email',
         text: (team[id].name || id) + ' has no work email on the lockup team list, so they cannot be put on showroom cover. Please add their Hedin address.',
         html: '<p>' + esc((team[id].name || id)) + ' has no work email on the lockup team list, so they cannot be put on showroom cover. Please add their Hedin address.</p>', ts: Date.now() }, dry);
     }
@@ -168,7 +212,7 @@ async function run(o) {
 
   /* 2. plan once (tomorrow from 17:30, today from 07:30), then only to fill shifts that were reassigned or are open */
   if (o.feedFailed && !dry && !(today._day || {}).plannedAt) {
-    qAdd('rc_feed_' + date, { to: 'managers', subject: 'Appointments not read for ' + date, text: 'The appointment times could not be read, so showroom cover for ' + date + ' is planned from the shift calendar alone. Please check the appointments.', html: '<p>The appointment times could not be read, so showroom cover for ' + esc(date) + ' is planned from the shift calendar alone. Please check the appointments.</p>', ts: Date.now() }, dry);
+    qAdd(rcId('feed', date), { to: 'managers', subject: 'Appointments not read for ' + date, text: 'The appointment times could not be read, so showroom cover for ' + date + ' is planned from the shift calendar alone. Please check the appointments.', html: '<p>The appointment times could not be read, so showroom cover for ' + esc(date) + ' is planned from the shift calendar alone. Please check the appointments.</p>', ts: Date.now() }, dry);
   }
   const dayMark = (today._day || {}).plannedAt;
   const planAt = o.planAt != null ? o.planAt : PLAN_FROM;
@@ -189,8 +233,11 @@ async function run(o) {
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(rec);
       await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
       const mail = RR.coverEmail(firstName(p, pid), s, { date: date });
-      qAdd('rc_' + date + '_' + s.id + '_' + pid, { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, dry);
-      say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid));
+      const cover = { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() };
+      /* first plan of the day: hold until 10 mins before the shift; a reallocation sends now */
+      if (!dayMark) cover.sendAfter = coverSendAfterMs(date, s.from);
+      qAdd(rcId(date, s.id, pid), cover, dry);
+      say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid) + (cover.sendAfter ? ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')' : ' (now)'));
     }
     for (const id of plan.short) {
       const s2 = shifts.filter(x => x.id === id)[0];
@@ -207,10 +254,26 @@ async function run(o) {
       const onOther = pool2.filter(pid => !RR.clashes(busy, pid, s2) && declined[id].indexOf(pid) < 0 && taken.indexOf(pid) >= 0);
       const names = {}; Object.keys(team).forEach(k => { names[k] = firstName(team[k], k); });
       const note = RR.shortNote(s2, free, onOther, booked, names);
-      qAdd('rc_short_' + date + '_' + id, { to: 'managers', subject: note.subject, text: note.text,
+      qAdd(rcId('short', date, id), { to: 'managers', subject: note.subject, text: note.text,
         html: '<p>' + note.text.split('\n').map(esc).join('</p><p>') + '</p>', ts: Date.now() }, dry);
     }
     if (!dayMark && !dry) await db.ref(root + '/reception/' + date + '/_day').update({ plannedAt: Date.now() });
+  }
+
+  /* 2b. ensure every assigned/covering shift has a mode-scoped cover email.
+     Lets live recover when an older unscoped rc_<date>_… id was eaten by a test
+     send (rcTest). Never re-queues if a non-test send already went out. */
+  const notifyMap = o.notify || {};
+  for (const s of shifts) {
+    const r = today[s.id] || {};
+    const pid = r.personId;
+    if (!pid || (r.status !== 'assigned' && r.status !== 'covering')) continue;
+    if (coverAlreadySent(notifyMap, date, s.id, pid)) continue;
+    const p = team[pid] || {};
+    if (!(testExec || p.email)) continue;
+    const mail = RR.coverEmail(firstName(p, pid), s, { date: date });
+    const cover = { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now(), sendAfter: coverSendAfterMs(date, s.from) };
+    if (qAdd(rcId(date, s.id, pid), cover, dry)) say('Queued cover ' + s.id + ' for ' + firstName(p, pid) + ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')');
   }
 
   /* 3. prune old days */
@@ -259,4 +322,4 @@ async function readBusy(date, fetchImpl) {
   } catch (e) { return null; }
 }
 
-module.exports = { run, load, makeQueue, readBusy, APPT_FEED, PLAN_FROM, hm, historyOf };
+module.exports = { run, load, makeQueue, readBusy, APPT_FEED, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs };

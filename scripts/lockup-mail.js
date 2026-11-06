@@ -33,6 +33,15 @@ const TEST_EXEC = 'daniel.cane@hedinautomotive.co.uk', TEST_MGR = 'nathan.jobson
 let ROOT = 'lockup', TEST = false;
 /* Lockup completed emails only for records signed after this went live (27 Oct 2026, 09:05 UK). */
 const COMPLETED_FROM = Date.parse('2026-10-27T09:05:00Z');
+/* Soft-launch: BCC Dan on every showroom-cover (rc_*) system email through 12 Nov 2026 UK. */
+const RC_BCC_UNTIL = '2026-11-12';
+const RC_BCC_ADDR = 'daniel.cane@hedinautomotive.co.uk';
+function rcBccFor(id, nowMs) {
+  if (!id || id.indexOf('rc_') !== 0) return [];
+  const d = R.london(new Date(nowMs)).date;
+  if (d > RC_BCC_UNTIL) return [];
+  return [RC_BCC_ADDR];
+}
 
 async function main() {
   const admin = require('firebase-admin');
@@ -112,10 +121,12 @@ async function main() {
     const needTomorrow = n.mins >= 17 * 60 + 30 && !tomMark.plannedAt;
     const feedToday = needToday ? await RC.readBusy(n.date) : null;
     const feedTomorrow = needTomorrow ? await RC.readBusy(tom) : null;
-    const rq = RC.makeQueue(db, ROOT, (await db.ref(ROOT + '/notify').get()).val() || {});
+    const notifySnap = (await db.ref(ROOT + '/notify').get()).val() || {};
+    const rq = RC.makeQueue(db, ROOT, notifySnap);
     const base = { db, root: RROOT, logRoot: RR.RECEPTION_LOG, n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg,
       testExec: TEST ? TEST_EXEC : null, queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log,
-      reception: rc.reception, absences, shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {} };
+      reception: rc.reception, absences, shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {},
+      notify: notifySnap };
     const rToday = await RC.run(Object.assign({}, base, { date: n.date, planAt: 7 * 60 + 30, recheck: !!feedToday,
       busy: feedToday ? feedToday.busy : null, feedFailed: needToday && !feedToday }));
     console.log('Showroom cover today', JSON.stringify(rToday));
@@ -167,9 +178,10 @@ async function main() {
     if (!to.length) { console.log('Notification', id, 'waiting, no recipients set'); continue; }
     if (q.html) {
       const subject = (TEST || q.rcTest ? '[TEST] ' : '') + q.subject;
-      console.log((DRY ? '[dry] ' : '') + 'Send "' + subject + '" to ' + to.join(', '));
+      const bcc = rcBccFor(id, nowMs);
+      console.log((DRY ? '[dry] ' : '') + 'Send "' + subject + '" to ' + to.join(', ') + (bcc.length ? ' (bcc Dan)' : ''));
       if (DRY) console.log(q.text || '');
-      else await transport().sendMail(Object.assign({ from: { name: q.fromName || process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to, subject, text: q.text || '', html: q.html }, q.csv ? { attachments: [{ filename: q.csvName || 'forecourt.csv', content: q.csv, contentType: 'text/csv' }] } : {}));
+      else await transport().sendMail(Object.assign({ from: { name: q.fromName || process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to, subject, text: q.text || '', html: q.html }, bcc.length ? { bcc } : {}, q.csv ? { attachments: [{ filename: q.csvName || 'forecourt.csv', content: q.csv, contentType: 'text/csv' }] } : {}));
     } else {
       const lines = Array.isArray(q.lines) ? q.lines : Object.values(q.lines || {});
       await send(transport(), to, q.subject, 'Hi all,', lines.slice(0, 1), lines.slice(1), 'See the rota');
@@ -365,4 +377,4 @@ function done(admin) { return admin.app().delete(); }
 
 /* Forecourt 08:30 reminder rides on the same workflow run (scripts/forecourt-mail.js). */
 if (require.main === module) main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });
-module.exports = { completedMail };
+module.exports = { completedMail, rcBccFor, RC_BCC_UNTIL, RC_BCC_ADDR };
