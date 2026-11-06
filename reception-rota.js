@@ -38,6 +38,13 @@
     customer: "I'm with a customer now, cannot cover",
     other: 'Other'
   };
+  /* why a cover segment is on the history record */
+  var COVER_REASONS = {
+    planned: 'planned',
+    took_over: 'took over',
+    reallocated: 'reallocated',
+    handed_back: 'handed back'
+  };
   var NEVER = ['chloe', 'molly']; /* handover team, not sales executives */
   /* appointments: the booking feed gives a start time only, so each one is taken as this long */
   var APPT_MINS = 120;
@@ -210,23 +217,94 @@
     return list.some(function (a) { return minsOf(a.from) < minsOf(shift.to) && minsOf(a.to) > minsOf(shift.from); });
   }
 
-  /* management's totals from the log. Entries: { kind: on|skip|absent, personId, date, shift, from, to }.
-     A shift someone was put on counts for them unless they skipped it or were tagged absent for it.
-     Returns one row per person on the team, most time first. */
+  /* bank the time someone DID cover before they handed a shift back.
+     opts = { nowMins, confirmMins }. confirmMins is when they tapped "I am covering" (UK clock mins);
+     if they never confirmed, credit runs from the shift start once the shift has begun.
+     Returns { from, to, minutes } or null when nothing to bank (e.g. they declined before the shift). */
+  function bankCover(shift, opts) {
+    opts = opts || {};
+    if (!shift || opts.nowMins == null) return null;
+    var fromM = minsOf(shift.from), toM = minsOf(shift.to), now = opts.nowMins;
+    var start;
+    if (opts.confirmMins != null) start = Math.max(fromM, opts.confirmMins);
+    else {
+      if (now <= fromM) return null;
+      start = fromM;
+    }
+    var end = Math.min(now, toM);
+    if (end <= start) return null;
+    return { from: hmOf(start), to: hmOf(end), minutes: end - start };
+  }
+
+  /* remaining slot after a hand-back or take-over, from now (or shift start) to the shift end */
+  function remainCover(shift, nowMins) {
+    if (!shift || nowMins == null) return null;
+    var fromM = minsOf(shift.from), toM = minsOf(shift.to);
+    var start = Math.max(fromM, nowMins);
+    if (start >= toM) return null;
+    return { from: hmOf(start), to: shift.to, minutes: toM - start };
+  }
+
+  /* management's totals from the log.
+     Entries: { kind: on|skip|absent|cover, personId, date, shift, from, to, reason? }.
+     A planned/reallocated/took_over "on" counts unless skipped or tagged absent.
+     A "cover" (handed_back partial) always adds its minutes on top, so a mid-shift
+     decline still credits the time they did. Returns one row per person, most time first. */
   function stats(log, team, from, to) {
     var rows = {}, void_ = {};
-    function row(id) { return rows[id] || (rows[id] = { id: id, name: ((team || {})[id] || {}).name || id, shifts: 0, minutes: 0, skips: 0, absent: 0 }); }
+    function row(id) { return rows[id] || (rows[id] = { id: id, name: ((team || {})[id] || {}).name || id, shifts: 0, minutes: 0, skips: 0, absent: 0, handed: 0 }); }
     var entries = Object.keys(log || {}).map(function (k) { return log[k]; }).filter(function (e) { return e && e.personId && e.date >= from && e.date <= to; });
-    entries.forEach(function (e) { if (e.kind !== 'on') void_[e.personId + '|' + e.date + '|' + e.shift] = true; });
+    entries.forEach(function (e) { if (e.kind === 'skip' || e.kind === 'absent') void_[e.personId + '|' + e.date + '|' + e.shift] = true; });
     entries.forEach(function (e) {
       if (e.kind === 'skip') row(e.personId).skips++;
       else if (e.kind === 'absent') row(e.personId).absent++;
-      else if (e.kind === 'on' && !void_[e.personId + '|' + e.date + '|' + e.shift]) {
-        var r = row(e.personId); r.shifts++; r.minutes += Math.max(0, minsOf(e.to) - minsOf(e.from));
+      else if (e.kind === 'cover') {
+        var r = row(e.personId);
+        var m = e.minutes != null ? e.minutes : Math.max(0, minsOf(e.to) - minsOf(e.from));
+        r.minutes += m;
+        if (e.reason === 'handed_back') r.handed += m;
+        else { r.shifts++; }
+      } else if (e.kind === 'on' && !void_[e.personId + '|' + e.date + '|' + e.shift]) {
+        var r2 = row(e.personId); r2.shifts++; r2.minutes += Math.max(0, minsOf(e.to) - minsOf(e.from));
       }
     });
     Object.keys(team || {}).forEach(function (id) { if ((team[id] || {}).active !== false && NEVER.indexOf(id) < 0) row(id); });
     return Object.keys(rows).map(function (k) { return rows[k]; }).sort(function (a, b) { return (b.minutes - a.minutes) || (a.name < b.name ? -1 : 1); });
+  }
+
+  /* durable cover history for managers: every on/cover segment in the date window, newest first */
+  function historyRows(log, team, from, to) {
+    var out = [];
+    Object.keys(log || {}).forEach(function (k) {
+      var e = log[k];
+      if (!e || !e.personId || e.date < from || e.date > to) return;
+      if (e.kind !== 'on' && e.kind !== 'cover') return;
+      var reason = e.reason || (e.kind === 'cover' ? 'handed_back' : 'planned');
+      var mins = e.minutes != null ? e.minutes : Math.max(0, minsOf(e.to) - minsOf(e.from));
+      out.push({
+        key: k, personId: e.personId, name: ((team || {})[e.personId] || {}).name || e.personId,
+        date: e.date, shift: e.shift, from: e.from, to: e.to, minutes: mins,
+        reason: reason, reasonLabel: COVER_REASONS[reason] || reason, ts: e.ts || 0,
+        replacedPersonId: e.replacedPersonId || ''
+      });
+    });
+    return out.sort(function (a, b) { return (b.date < a.date ? -1 : b.date > a.date ? 1 : 0) || (b.ts - a.ts); });
+  }
+
+  /* email when someone takes (or is given) a shift that already had a person */
+  function takenEmail(name, takerName, shift, opts) {
+    opts = opts || {};
+    var open = coverPageUrl({ date: opts.date, shift: shift.id });
+    var subject = 'Showroom cover taken ' + shift.from + ' to ' + shift.to;
+    var text = 'Hi ' + name + ',\n\n' + takerName + ' has taken your showroom cover ' + shift.from + ' to ' + shift.to + '. You are no longer on that shift.\n\nOpen showroom cover:\n' + open;
+    var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Showroom cover taken</div>' +
+      '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
+      '<p style="margin:0 0 12px">Hi ' + escHtml(name) + ',</p>' +
+      '<p style="margin:0 0 16px">' + escHtml(takerName) + ' has taken your showroom cover ' + escHtml(shift.from) + ' to ' + escHtml(shift.to) + '. You are no longer on that shift.</p>' +
+      mailBtn(open, 'Open showroom cover', 'primary') +
+      '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover</p></div></div>';
+    return { subject: subject, text: text, html: html };
   }
 
   /* cover runs in the practice copy only, whatever the lockup's live switch says, and its emails go only to
@@ -235,6 +313,6 @@
   /* one-off corrections to who is in on a day, on top of the shift calendar. Tomi has appointments on Friday 6
      November, his usual day off, so he is assumed in for that day. Remove the line once the rota itself is corrected. */
   var ONE_OFF_IN = { '2026-11-06': ['tomi'] };
-var api = { shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, minsOf: minsOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote };
+var api = { shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

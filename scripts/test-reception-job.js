@@ -305,5 +305,114 @@ async function runAt(db, date, h, m, cfgExtra) {
     console.log('ok: ensure requeues after test collision, never after a live send');
   }
 
+
+  // mid-shift decline banks the time already covered
+  {
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const who = db.data.lockupTest.reception[MON].am.personId;
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
+      status: 'covering', coveringMins: 9 * 60, ts: 1000
+    });
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
+      status: 'declined', reason: 'I cannot cover right now', reasonText: 'customer walked in', ts: 9000
+    });
+    r = await runAt(db, MON, 10, 0);
+    const covers = Object.values(db.data.receptionLogTest || {}).filter(e => e.kind === 'cover' && e.reason === 'handed_back');
+    assert.strictEqual(covers.length, 1, 'one handed_back: ' + JSON.stringify(covers));
+    assert.strictEqual(covers[0].personId, who);
+    assert.deepStrictEqual([covers[0].from, covers[0].to, covers[0].minutes], ['09:00', '10:00', 60]);
+    const note = r.added.filter(id => id.indexOf(rcPfx() + '_decl_') === 0)[0];
+    assert.ok(note && /covered 09:00 to 10:00/.test(db.data.lockupTest.notify[note].text), db.data.lockupTest.notify[note].text);
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, who, 'remainder reallocated');
+    const reallocOn = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on' && e.reason === 'reallocated');
+    assert.ok(reallocOn.length >= 1, 'replacement logged as reallocated');
+    console.log('ok: mid-shift decline banks the hour already covered and reallocates the rest');
+  }
+
+  // decline before the shift starts banks nothing
+  {
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const who = db.data.lockupTest.reception[MON].pm.personId;
+    db.data.lockupTest.reception[MON].pm = Object.assign({}, db.data.lockupTest.reception[MON].pm, {
+      status: 'declined', reason: 'I am not in today', reasonText: '', ts: 11000
+    });
+    await runAt(db, MON, 8, 30);
+    const covers = Object.values(db.data.receptionLogTest || {}).filter(e => e.kind === 'cover' && e.personId === who);
+    assert.strictEqual(covers.length, 0, 'no bank before the shift: ' + JSON.stringify(covers));
+    console.log('ok: a decline before the shift starts banks nothing');
+  }
+
+  // take the shift: volunteer goes on, previous person is told, history reason took_over, no double cover email
+  {
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const prev = db.data.lockupTest.reception[MON].mid.personId;
+    assert.ok(prev && prev !== 'ben');
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, {
+      take: { personId: 'ben', by: 'ben', ts: 12000 }
+    });
+    r = await runAt(db, MON, 10, 0);
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid.personId, 'ben', 'Ben is now on mid');
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid.status, 'assigned');
+    const took = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on' && e.reason === 'took_over' && e.personId === 'ben');
+    assert.strictEqual(took.length, 1, JSON.stringify(took));
+    assert.strictEqual(took[0].replacedPersonId, prev);
+    assert.strictEqual(took[0].from, '12:00', 'future shift keeps its start: ' + took[0].from);
+    assert.strictEqual(took[0].to, '15:00');
+    const takenMail = r.added.filter(id => id.indexOf(rcPfx() + '_taken_') === 0);
+    assert.strictEqual(takenMail.length, 1, 'previous person notified: ' + r.added.join(','));
+    assert.ok(/has taken your showroom cover/.test(db.data.lockupTest.notify[takenMail[0]].text));
+    const benCover = r.added.filter(id => id.indexOf(rcPfx() + '_' + MON + '_mid_ben') === 0 || id.indexOf(rcPfx() + '_' + MON + '_mid_ben_take_') === 0);
+    assert.ok(benCover.length >= 1, 'Ben gets a cover email: ' + r.added.join(','));
+    // same run must not also ensure a second cover for Ben
+    assert.strictEqual(benCover.length, 1, 'exactly one cover email for Ben: ' + benCover.join(','));
+    // previous person is declined for the shift so plan will not put them back
+    assert.ok(db.data.lockupTest.reception[MON].mid.declined[prev], 'previous person marked declined');
+    // a second run must not re-handle the same take
+    r = await runAt(db, MON, 10, 15);
+    assert.strictEqual(r.added.filter(id => id.indexOf(rcPfx() + '_taken_') === 0).length, 0);
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid.personId, 'ben');
+    console.log('ok: take the shift puts the volunteer on, banks/notifies the previous person, once');
+  }
+
+  // take mid-shift: banks the previous person's time and logs remainder from now
+  {
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const prev = db.data.lockupTest.reception[MON].am.personId;
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
+      status: 'covering', coveringMins: 9 * 60, take: { personId: 'ben', by: 'ben', ts: 14000 }
+    });
+    r = await runAt(db, MON, 10, 30);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'ben');
+    const handed = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'cover' && e.reason === 'handed_back' && e.personId === prev);
+    assert.strictEqual(handed.length, 1, JSON.stringify(handed));
+    assert.deepStrictEqual([handed[0].from, handed[0].to, handed[0].minutes], ['09:00', '10:30', 90]);
+    const took = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on' && e.reason === 'took_over' && e.personId === 'ben');
+    assert.strictEqual(took[0].from, '10:30', took[0].from);
+    assert.strictEqual(took[0].to, '12:00');
+    console.log('ok: mid-shift take banks the previous cover and starts the volunteer from now');
+  }
+
+  // take an open/short shift
+  {
+    db = fakeDb();
+    const everyoneAway = {};
+    Object.keys(team).forEach(id => { everyoneAway['a_' + id] = { personId: id, kind: 'holiday', status: 'booked', from: MON, to: MON, note: '' }; });
+    await runAt(db, MON, 8, 0, { absences: everyoneAway });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.status, 'short');
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
+      take: { personId: 'carl', by: 'carl', ts: 13000 }
+    });
+    const carlIn = Object.assign({}, everyoneAway); delete carlIn.a_carl;
+    r = await runAt(db, MON, 9, 0, { absences: carlIn });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'carl');
+    const took = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on' && e.reason === 'took_over' && e.personId === 'carl');
+    assert.ok(took.length >= 1);
+    console.log('ok: take the shift works on an uncovered shift');
+  }
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

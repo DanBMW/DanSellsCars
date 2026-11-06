@@ -124,4 +124,35 @@ const allBooked = R.planDay({ shifts: [wk[0]], available: ['clive'], team, histo
 assert.deepStrictEqual(allBooked.short, ['am'], 'with the only person booked the shift is short');
 console.log('ok: appointments block the shifts they overlap, two hours each, and unknown names are reported');
 
+
+// bankCover: credit from confirm (or shift start) up to the moment they cannot
+assert.strictEqual(R.bankCover(wk[0], { nowMins: R.minsOf('08:30') }), null, 'nothing before the shift starts');
+assert.deepStrictEqual(R.bankCover(wk[0], { nowMins: R.minsOf('10:00') }), { from: '09:00', to: '10:00', minutes: 60 }, 'rostered time from start when never confirmed');
+assert.deepStrictEqual(R.bankCover(wk[0], { nowMins: R.minsOf('10:00'), confirmMins: R.minsOf('09:30') }), { from: '09:30', to: '10:00', minutes: 30 }, 'from confirm when they tapped covering late');
+assert.deepStrictEqual(R.bankCover(wk[0], { nowMins: R.minsOf('10:00'), confirmMins: R.minsOf('08:45') }), { from: '09:00', to: '10:00', minutes: 60 }, 'early confirm still banks from shift start');
+assert.deepStrictEqual(R.bankCover(wk[0], { nowMins: R.minsOf('13:00'), confirmMins: R.minsOf('09:00') }), { from: '09:00', to: '12:00', minutes: 180 }, 'cap at shift end');
+assert.strictEqual(R.bankCover(wk[0], { nowMins: R.minsOf('09:00'), confirmMins: R.minsOf('09:00') }), null, 'zero minutes is not banked');
+assert.deepStrictEqual(R.remainCover(wk[0], R.minsOf('10:00')), { from: '10:00', to: '12:00', minutes: 120 });
+assert.strictEqual(R.remainCover(wk[0], R.minsOf('12:00')), null);
+console.log('ok: bankCover credits partial time, remainCover is the leftover slot');
+
+// stats: a handed_back cover still credits minutes after a skip voids the planned on
+const log2 = {
+  a: { kind: 'on', personId: 'tomi', date: '2026-11-02', shift: 'am', from: '09:00', to: '12:00', reason: 'planned' },
+  b: { kind: 'cover', personId: 'tomi', date: '2026-11-02', shift: 'am', from: '09:00', to: '10:00', minutes: 60, reason: 'handed_back' },
+  c: { kind: 'skip', personId: 'tomi', date: '2026-11-02', shift: 'am', from: '09:00', to: '12:00' },
+  d: { kind: 'on', personId: 'carl', date: '2026-11-02', shift: 'am', from: '10:00', to: '12:00', reason: 'took_over' }
+};
+const st2 = R.stats(log2, team, '2026-11-01', '2026-11-30');
+const tomi2 = st2.filter(x => x.id === 'tomi')[0], carl2 = st2.filter(x => x.id === 'carl')[0];
+assert.deepStrictEqual([tomi2.minutes, tomi2.handed, tomi2.skips, tomi2.shifts], [60, 60, 1, 0], 'Tomi keeps the hour he did: ' + JSON.stringify(tomi2));
+assert.deepStrictEqual([carl2.minutes, carl2.shifts], [120, 1], 'Carl gets the took_over remainder: ' + JSON.stringify(carl2));
+const hist = R.historyRows(log2, team, '2026-11-01', '2026-11-30');
+assert.ok(hist.some(h => h.reason === 'handed_back' && h.minutes === 60));
+assert.ok(hist.some(h => h.reason === 'took_over'));
+assert.ok(hist.some(h => h.reason === 'planned'));
+const te = R.takenEmail('Tomi', 'Carl', wk[0], { date: '2026-11-02' });
+assert.ok(/Carl has taken your showroom cover 09:00 to 12:00/.test(te.text), te.text);
+console.log('ok: handed-back minutes stay on the record, history lists reasons, taken email names the taker');
+
 console.log('all reception tests passed');

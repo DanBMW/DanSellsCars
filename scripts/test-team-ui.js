@@ -909,6 +909,40 @@ async function receptionScenarios(browser, base) {
     await p.close();
   }
   {
+    const p = await open(browser, base, null, '/reception.html', U.carl, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    check('cover: someone not on a shift sees Take the shift', (await p.locator('[data-take="am"]').count()) === 1);
+    await p.click('[data-take="am"]'); await p.waitForTimeout(300);
+    const st = await store(p);
+    const tk = at(st.data, 'lockupTest/reception/' + DATE + '/am/take') || at(st.data, 'lockup/reception/' + DATE + '/am/take');
+    check('cover: Take the shift saves a take request for the signed-in person', !!tk && tk.personId === 'carl', JSON.stringify(tk));
+    await p.close();
+  }
+  {
+    const p = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(500);
+    check('cover: the person already on the shift does not see Take on their own shift', (await p.locator('[data-take="am"]').count()) === 0);
+    await p.close();
+  }
+  {
+    const d = seeded('assigned');
+    const entries = {
+      x1: { kind: 'on', personId: 'tomi', date: DATE, shift: 'am', from: '09:00', to: '12:00', reason: 'planned' },
+      x2: { kind: 'cover', personId: 'carl', date: DATE, shift: 'mid', from: '12:00', to: '13:00', minutes: 60, reason: 'handed_back' },
+      x3: { kind: 'skip', personId: 'carl', date: DATE, shift: 'mid', from: '12:00', to: '15:00', reason: 'I am off site' }
+    };
+    d.lockup.receptionLog = entries; d.lockupTest.receptionLog = entries; d.receptionLog = entries; d.receptionLogTest = entries;
+    const p = await open(browser, base, null, '/reception.html', U.will, { data: d, clock: CLOCK });
+    await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(700);
+    check('cover: managers see cover history', await visible(p, '#r-history') && /handed back|planned/i.test(await txt(p, '#r-history')), await txt(p, '#r-history'));
+    await p.click('#r-range-week'); await p.waitForTimeout(200);
+    check('cover: week range switch keeps history', /Tomi|Carl|handed|planned/i.test(await txt(p, '#r-history') + await txt(p, '#r-stats')));
+    await p.close();
+  }
+  {
     const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('assigned'), clock: CLOCK });
     let vis = false;
     for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcbadge'); if (!vis) await p.waitForTimeout(250); }

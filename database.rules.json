@@ -390,6 +390,10 @@
               ".write": "auth != null && auth.token.email_verified === true && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shifts/managers').child(root.child('shifts/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shifts/links').child(auth.uid).val()).val() !== null)",
               ".validate": "newData.hasChildren(['personId', 'ts']) && newData.child('personId').isString() && newData.child('personId').val().matches(/^[a-z0-9_]{1,24}$/) && newData.child('ts').isNumber()"
             },
+                        "take": {
+              ".write": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/) && newData.child('personId').val() === root.child('shifts/links').child(auth.uid).val()",
+              ".validate": "newData.hasChildren(['personId', 'ts']) && newData.child('personId').isString() && newData.child('personId').val().matches(/^[a-z0-9_]{1,24}$/) && newData.child('ts').isNumber()"
+            },
             "status": { ".validate": "newData.isString()" },
             "personId": { ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,24}$/)" },
             "reason": { ".validate": "newData.isString()" },
@@ -397,6 +401,9 @@
             "ts": { ".validate": "newData.isNumber()" },
             "declined": { ".validate": "newData.hasChildren()" },
             "handledTs": { ".validate": "newData.isNumber()" },
+            "takeHandledTs": { ".validate": "newData.isNumber()" },
+            "coveringMins": { ".validate": "newData.isNumber()" },
+            "coveringTs": { ".validate": "newData.isNumber()" },
             "$other": { ".validate": false }
           },
           "_day": { ".validate": "newData.hasChildren(['plannedAt'])" }
@@ -558,6 +565,10 @@
               ".write": "auth != null && auth.token.email_verified === true && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shiftsTest/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() !== null)",
               ".validate": "newData.hasChildren(['personId', 'ts']) && newData.child('personId').isString() && newData.child('personId').val().matches(/^[a-z0-9_]{1,24}$/) && newData.child('ts').isNumber()"
             },
+                        "take": {
+              ".write": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/) && newData.child('personId').val() === root.child('shiftsTest/links').child(auth.uid).val()",
+              ".validate": "newData.hasChildren(['personId', 'ts']) && newData.child('personId').isString() && newData.child('personId').val().matches(/^[a-z0-9_]{1,24}$/) && newData.child('ts').isNumber()"
+            },
             "status": { ".validate": "newData.isString()" },
             "personId": { ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,24}$/)" },
             "reason": { ".validate": "newData.isString()" },
@@ -565,6 +576,9 @@
             "ts": { ".validate": "newData.isNumber()" },
             "declined": { ".validate": "newData.hasChildren()" },
             "handledTs": { ".validate": "newData.isNumber()" },
+            "takeHandledTs": { ".validate": "newData.isNumber()" },
+            "coveringMins": { ".validate": "newData.isNumber()" },
+            "coveringTs": { ".validate": "newData.isNumber()" },
             "$other": { ".validate": false }
           },
           "_day": { ".validate": "newData.hasChildren(['plannedAt'])" }

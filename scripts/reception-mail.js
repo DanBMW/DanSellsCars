@@ -6,8 +6,11 @@
  *   <root>/reception/<date>/<shift>, and queue one email per person:
  *   "You are on showroom cover. Please cover showroom until HH:MM."
  *   A person who answers "cannot cover" on reception.html is recorded there as
- *   declined. The next run queues a manager note with their reason, takes them
- *   off that shift and puts the next fair person on, emailing them the same way.
+ *   declined. The next run queues a manager note with their reason, banks any
+ *   time they already covered (handed_back), takes them off that shift and puts
+ *   the next fair person on, emailing them the same way. Anyone can write a
+ *   take request to volunteer for a shift; the job puts them on, notifies the
+ *   previous person, and logs took_over.
  *
  *   Email ids are fixed (rc_live_<date>_<shift>_<person> or rc_test_…), so each
  *   email is queued once, and test runs can never block live sends. Planned
@@ -75,6 +78,38 @@ function coverAlreadySent(existing, date, shift, pid) {
   });
 }
 
+
+/* UK clock minutes from an epoch ms timestamp. */
+function ukMinsFromTs(ts) {
+  if (!ts) return null;
+  const dtf = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hour12: false });
+  const parts = dtf.formatToParts(new Date(ts));
+  const o = {};
+  parts.forEach(p => { if (p.type !== 'literal') o[p.type] = p.value; });
+  return (+o.hour % 24) * 60 + (+o.minute);
+}
+
+/* Confirm time for banking: coveringMins if stored, else coveringTs, else ts when status is covering. */
+function confirmMinsOf(rec) {
+  if (!rec) return null;
+  if (rec.coveringMins != null) return +rec.coveringMins;
+  if (rec.coveringTs) return ukMinsFromTs(rec.coveringTs);
+  if (rec.status === 'covering' && rec.ts) return ukMinsFromTs(rec.ts);
+  return null;
+}
+
+/* Log a handed-back partial when someone leaves mid-shift. Returns the banked segment or null. */
+async function bankHandBack(logWrite, s, rec, n, date, extra) {
+  const bank = RR.bankCover(s, { nowMins: n.mins, confirmMins: confirmMinsOf(rec) });
+  if (!bank) return null;
+  const ts = (extra && extra.ts) || Date.now();
+  await logWrite('cover_' + date + '_' + s.id + '_' + ts, Object.assign({
+    kind: 'cover', reason: 'handed_back', personId: rec.personId, date, shift: s.id,
+    from: bank.from, to: bank.to, minutes: bank.minutes, ts
+  }, extra || {}));
+  return bank;
+}
+
 /* the shift calendar's view of the day, as the rota reads it */
 function shiftCtx(o) {
   return SR.makeCtx({ team: o.team, managers: o.managers, absences: o.absences, config: o.shiftCfg, bh: o.bh, holidays: o.holidays, closed: o.closed, today: o.n.date });
@@ -112,6 +147,8 @@ async function run(o) {
   /* 1. a decline: note it to the managers once (keyed by the decline's own time),
      remember the person as declined for that shift, and free the shift */
   const existing = {};
+  const mailedCover = {}; /* person|shift mailed a cover email this run — stops ensure double-sends */
+  const markMailed = (shift, pid) => { if (pid) mailedCover[shift + '|' + pid] = true; };
   for (const s of shifts) {
     let r = today[s.id] || {};
     /* a manager reallocated the shift: the person on it is logged as a skip, and the shift is freed */
@@ -121,12 +158,60 @@ async function run(o) {
       const change = { personId: pid, status: 'assigned', ts: Date.now(), assignHandledTs: r.assign.ts, declined: r.declined || {} };
       today[s.id] = Object.assign({}, r, change);
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(change);
-      if (!dry) await logWrite('on_' + date + '_' + s.id + '_' + change.ts, { kind: 'on', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: change.ts, by: r.assign.by || '' });
+      if (!dry) await logWrite('on_' + date + '_' + s.id + '_' + change.ts, { kind: 'on', reason: 'planned', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: change.ts, by: r.assign.by || '' });
       if (p.email) {
         const mail = RR.coverEmail(firstName(p, pid), s);
         qAdd(rcId(date, s.id, pid, change.ts), { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
+        markMailed(s.id, pid);
       }
       say('Manager chose ' + firstName(p, pid) + ' for ' + s.id);
+      r = today[s.id];
+      existing[s.id] = pid;
+      continue;
+    }
+
+    /* someone volunteered to take the shift (or the remainder of it) */
+    if (r.take && r.take.ts !== r.takeHandledTs && r.take.personId) {
+      const tk = r.take, pid = tk.personId, p = team[pid] || {};
+      const prev = r.personId && r.personId !== pid ? r.personId : null;
+      if (prev) {
+        await bankHandBack(logWrite, s, r, n, date, { ts: tk.ts, by: pid });
+        const dm = Object.assign({}, r.declined || {});
+        dm[prev] = true;
+        r = Object.assign({}, r, { declined: dm });
+      }
+      const slot = RR.remainCover(s, n.mins) || { from: s.from, to: s.to, minutes: minsOf(s.to) - minsOf(s.from) };
+      const change = {
+        personId: pid, status: 'assigned', ts: Date.now(), takeHandledTs: tk.ts,
+        declined: r.declined || {}, coveringMins: null, coveringTs: null
+      };
+      today[s.id] = Object.assign({}, r, change);
+      if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(change);
+      await logWrite('on_' + date + '_' + s.id + '_' + change.ts, {
+        kind: 'on', reason: 'took_over', personId: pid, date, shift: s.id,
+        from: slot.from, to: slot.to, minutes: slot.minutes, ts: change.ts,
+        replacedPersonId: prev || '', by: tk.by || pid
+      });
+      if (p.email) {
+        const mail = RR.coverEmail(firstName(p, pid), Object.assign({}, s, { from: slot.from, to: slot.to }), { date: date });
+        qAdd(rcId(date, s.id, pid, 'take', tk.ts), { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, dry);
+        markMailed(s.id, pid);
+      }
+      if (prev) {
+        const prevP = team[prev] || {};
+        if (prevP.email) {
+          const note = RR.takenEmail(firstName(prevP, prev), firstName(p, pid), s, { date: date });
+          qAdd(rcId('taken', date, s.id, prev, tk.ts), { to: [testExec || prevP.email], subject: note.subject, text: note.text, html: note.html, ts: Date.now() }, dry);
+        }
+        qAdd(rcId('takeMgr', date, s.id, tk.ts), {
+          to: 'managers',
+          subject: firstName(p, pid) + ' took showroom cover ' + s.from + ' to ' + s.to,
+          text: firstName(p, pid) + ' took the shift from ' + firstName(team[prev], prev) + '.',
+          html: '<p>' + esc(firstName(p, pid) + ' took the shift from ' + firstName(team[prev], prev) + '.') + '</p>',
+          ts: Date.now()
+        }, dry);
+      }
+      say((prev ? firstName(p, pid) + ' took ' + s.id + ' from ' + firstName(team[prev], prev) : firstName(p, pid) + ' took open ' + s.id));
       r = today[s.id];
       existing[s.id] = pid;
       continue;
@@ -135,6 +220,7 @@ async function run(o) {
       const rl = r.reallocate, pid = r.personId;
       const dm = Object.assign({}, r.declined || {});
       if (pid) {
+        await bankHandBack(logWrite, s, r, n, date, { ts: rl.ts, by: rl.by || '' });
         await logWrite('realloc_' + date + '_' + s.id + '_' + rl.ts, { kind: 'skip', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rl.ts, reason: 'Unable to do it', reasonText: String(rl.text || '').slice(0, 500), by: rl.by || '' });
         dm[pid] = true;
       }
@@ -168,14 +254,16 @@ async function run(o) {
     if (r.status === 'declined' && r.ts !== r.handledTs) {
       const who = firstName(team[r.personId] || (managers || {})[r.personId], r.personId);
       const note = RR.managerNote(who, s, r.reason || 'Cannot cover', r.reasonText || '');
+      const banked = await bankHandBack(logWrite, s, r, n, date, { ts: r.ts });
       await logWrite('skip_' + date + '_' + s.id + '_' + r.ts, { kind: 'skip', personId: r.personId, date, shift: s.id, from: s.from, to: s.to, ts: r.ts, reason: r.reason || '', reasonText: r.reasonText || '' });
-      qAdd(rcId('decl', date, s.id, r.ts), { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
+      const bankLine = banked ? (' They covered ' + banked.from + ' to ' + banked.to + ' (' + banked.minutes + ' mins) before handing back.') : '';
+      qAdd(rcId('decl', date, s.id, r.ts), { to: 'managers', subject: note.subject, text: note.text + bankLine, html: '<p>' + esc(note.text + bankLine) + '</p>', ts: Date.now() }, dry);
       const dm = Object.assign({}, r.declined || {});
       if (r.personId) dm[r.personId] = true;
       const freed = { personId: null, status: 'open', declined: dm, handledTs: r.ts };
       today[s.id] = Object.assign({}, r, freed);
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(freed);
-      if (endMins(s) > n.mins) say('Reassigning ' + s.id + ' after ' + who + ' declined');
+      if (endMins(s) > n.mins) say('Reassigning ' + s.id + ' after ' + who + ' declined' + (banked ? ' (banked ' + banked.minutes + 'm)' : ''));
       continue;
     }
     if (r.personId && r.status !== 'declined') existing[s.id] = r.personId;
@@ -231,12 +319,14 @@ async function run(o) {
       const p = team[pid] || {};
       today[s.id] = Object.assign({}, today[s.id] || {}, rec);
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(rec);
-      await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
+      const why = dayMark ? 'reallocated' : 'planned';
+      await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', reason: why, personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
       const mail = RR.coverEmail(firstName(p, pid), s, { date: date });
       const cover = { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() };
       /* first plan of the day: hold until 10 mins before the shift; a reallocation sends now */
       if (!dayMark) cover.sendAfter = coverSendAfterMs(date, s.from);
       qAdd(rcId(date, s.id, pid), cover, dry);
+      markMailed(s.id, pid);
       say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid) + (cover.sendAfter ? ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')' : ' (now)'));
     }
     for (const id of plan.short) {
@@ -268,12 +358,13 @@ async function run(o) {
     const r = today[s.id] || {};
     const pid = r.personId;
     if (!pid || (r.status !== 'assigned' && r.status !== 'covering')) continue;
+    if (mailedCover[s.id + '|' + pid]) continue;
     if (coverAlreadySent(notifyMap, date, s.id, pid)) continue;
     const p = team[pid] || {};
     if (!(testExec || p.email)) continue;
     const mail = RR.coverEmail(firstName(p, pid), s, { date: date });
     const cover = { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now(), sendAfter: coverSendAfterMs(date, s.from) };
-    if (qAdd(rcId(date, s.id, pid), cover, dry)) say('Queued cover ' + s.id + ' for ' + firstName(p, pid) + ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')');
+    if (qAdd(rcId(date, s.id, pid), cover, dry)) { markMailed(s.id, pid); say('Queued cover ' + s.id + ' for ' + firstName(p, pid) + ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')'); }
   }
 
   /* 3. prune old days */
@@ -322,4 +413,4 @@ async function readBusy(date, fetchImpl) {
   } catch (e) { return null; }
 }
 
-module.exports = { run, load, makeQueue, readBusy, APPT_FEED, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs };
+module.exports = { run, load, makeQueue, readBusy, APPT_FEED, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };
