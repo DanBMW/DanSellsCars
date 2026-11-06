@@ -926,6 +926,38 @@ async function receptionScenarios(browser, base) {
     check('board: covering still names the person', /Tomi/.test(await txt(p, '#rcname')), await txt(p, '#rcname'));
     await p.close();
   }
+  /* 08:30 heads-up: before the first shift, the corner shows who is on from 09:00 */
+  {
+    const early = await open(browser, base, null, '/team-board.html', null, { data: seeded('assigned'), clock: '2026-11-02T08:00:00Z' });
+    await early.waitForTimeout(900);
+    check('board: before 08:30 the heads-up is not up yet', !(await visible(early, '#rcbadge')), await txt(early, '#rcsmall'));
+    await early.close();
+  }
+  {
+    const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('assigned'), clock: '2026-11-02T08:35:00Z' });
+    let vis = false;
+    for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcbadge'); if (!vis) await p.waitForTimeout(250); }
+    check('board: from 08:30 the corner shows the first shift heads-up', vis && /Showroom from 09:00/.test(await txt(p, '#rcsmall')), await txt(p, '#rcsmall'));
+    check('board: the heads-up names who is on the first shift', /Tomi/.test(await txt(p, '#rcname')), await txt(p, '#rcname'));
+    check('board: the heads-up keeps the heads class until the shift starts', !!(await p.locator('#rcbadge.heads').count()), await p.locator('#rcbadge').getAttribute('class'));
+    await p.close();
+  }
+  /* today's showroom rota list: every shift, live, with names and status colour */
+  {
+    const d = seeded('assigned');
+    d.lockup.reception[DATE].am = { personId: 'tomi', status: 'covering', ts: 1 };
+    d.lockup.reception[DATE].mid = { personId: 'carl', status: 'assigned', ts: 1 };
+    d.lockup.reception[DATE].pm = { status: 'short', ts: 1 };
+    d.lockupTest.reception[DATE] = JSON.parse(JSON.stringify(d.lockup.reception[DATE]));
+    const p = await open(browser, base, null, '/team-board.html', null, { data: d, clock: CLOCK });
+    let vis = false;
+    for (let i = 0; i < 80 && !vis; i++) { vis = await visible(p, '#rcrota'); if (!vis) await p.waitForTimeout(250); }
+    const body = await txt(p, '#rcrota');
+    check("board: today's showroom rota is on the board", vis, body.slice(0, 200));
+    check('board: the rota lists every shift with names', /09:00/.test(body) && /12:00/.test(body) && /15:00/.test(body) && /Tomi/.test(body) && /Carl/.test(body), body);
+    check('board: the rota marks covering, on, and not covered', !!(await p.locator('#rcrota-rows .rcrota-row.covering').count()) && !!(await p.locator('#rcrota-rows .rcrota-row.short').count()), await p.locator('#rcrota-rows').innerHTML());
+    await p.close();
+  }
   {
     const p = await open(browser, base, null, '/team-board.html', null, { data: seeded('declined'), clock: CLOCK });
     let vis = false;

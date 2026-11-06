@@ -1492,7 +1492,31 @@ body.haslock.hasticker .radio-fab{bottom:100px}
 .rcbadge.covering b{color:#7dffb5}
 .rcbadge.covering small{color:#9fd9b5}
 body.premiere .rcbadge{display:none!important}
-@media(max-width:1199px){ .rcbadge{top:auto;bottom:12px;left:12px} }
+.rcbadge.heads small{color:#ffd27a}
+/* today's full showroom rota: under the corner badge, out of the way of the lockup strip */
+.rcrota{position:fixed;top:96px;left:12px;z-index:304;min-width:220px;max-width:min(340px,48vw);padding:10px 12px;background:rgba(10,16,28,.92);border:1px solid #2a3850;border-radius:14px;color:#e8eef9;box-shadow:0 6px 18px rgba(0,0,0,.35);font-size:13px}
+.rcrota[hidden]{display:none!important}
+.rcrota-h{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#9fb0ca;font-weight:800;margin:0 0 8px}
+.rcrota-row{display:grid;grid-template-columns:78px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #243247}
+.rcrota-row:first-child{border-top:0;padding-top:0}
+.rcrota-t{color:#cfd8e8;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rcrota-n{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rcrota-s{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#9fb0ca;white-space:nowrap}
+.rcrota-row.covering{border-left:3px solid #2fbf71;padding-left:8px;margin-left:-2px}
+.rcrota-row.covering .rcrota-n{color:#7dffb5}
+.rcrota-row.covering .rcrota-s{color:#9fd9b5}
+.rcrota-row.open{border-left:3px solid #ff9a1f;padding-left:8px;margin-left:-2px}
+.rcrota-row.open .rcrota-n{color:#ffb14d}
+.rcrota-row.open .rcrota-s{color:#ffb14d}
+.rcrota-row.short{border-left:3px solid #e05656;padding-left:8px;margin-left:-2px}
+.rcrota-row.short .rcrota-n,.rcrota-row.short .rcrota-s{color:#ff8f8f}
+body.premiere .rcrota{display:none!important}
+@media(max-width:1199px){
+  .rcbadge{top:auto;bottom:12px;left:12px}
+  .rcrota{top:12px;left:12px;max-width:min(340px,70vw)}
+  body.haslock .rcbadge{bottom:56px}
+  body.haslock.hasticker .rcbadge{bottom:100px}
+}
 </style>
 </head>
 <body>
@@ -1620,6 +1644,10 @@ body.premiere .rcbadge{display:none!important}
 <div class="rcbadge" id="rcbadge" hidden aria-live="polite">
   <div class="rcph" id="rcph"></div>
   <div><small id="rcsmall">On showroom cover</small><span class="beta" style="margin-left:0;margin-bottom:4px">Beta</span><b id="rcname"></b><span id="rctime"></span></div>
+</div>
+<div class="rcrota" id="rcrota" hidden aria-live="polite">
+  <div class="rcrota-h">Today&rsquo;s showroom</div>
+  <div id="rcrota-rows"></div>
 </div>
 <div class="pairqr" id="pairqr" aria-hidden="true">
   <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37" class="segno"><path class="qrline" stroke="#000" d="M2 2.5h7m2 0h2m1 0h1m1 0h4m3 0h2m3 0h7m-33 1h1m5 0h1m2 0h2m3 0h1m7 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m2 0h1m2 0h2m2 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h3m2 0h8m3 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h1m1 0h1m1 0h2m4 0h1m3 0h1m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h2m1 0h1m2 0h2m2 0h2m2 0h1m-22 1h2m3 0h1m2 0h1m2 0h3m1 0h1m2 0h2m5 0h2m1 0h1m-27 1h3m6 0h1m3 0h2m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-32 1h2m1 0h1m1 0h1m1 0h1m3 0h1m2 0h1m3 0h1m1 0h1m1 0h1m5 0h2m1 0h1m-30 1h2m4 0h5m3 0h1m1 0h2m1 0h1m1 0h6m-28 1h5m1 0h2m2 0h1m2 0h1m1 0h1m6 0h1m1 0h2m4 0h1m-33 1h4m1 0h1m1 0h3m1 0h4m2 0h1m1 0h3m1 0h2m1 0h2m1 0h1m1 0h2m-29 1h4m3 0h1m1 0h1m4 0h2m1 0h1m1 0h2m2 0h1m2 0h1m1 0h1m-32 1h1m2 0h1m5 0h6m7 0h4m2 0h1m-25 1h3m1 0h1m3 0h1m3 0h2m1 0h1m3 0h1m1 0h2m1 0h1m1 0h1m-30 1h1m6 0h2m2 0h1m1 0h2m2 0h3m1 0h1m2 0h1m2 0h1m1 0h2m-30 1h2m1 0h1m4 0h1m2 0h1m4 0h1m1 0h1m1 0h5m1 0h2m1 0h1m-30 1h1m1 0h1m1 0h5m1 0h2m1 0h1m2 0h1m3 0h3m2 0h2m1 0h2m-33 1h1m1 0h2m1 0h2m2 0h5m1 0h1m2 0h3m1 0h1m1 0h1m1 0h2m-27 1h2m1 0h1m4 0h3m1 0h3m1 0h1m1 0h3m1 0h1m1 0h3m4 0h1m-33 1h2m1 0h1m2 0h1m2 0h1m2 0h5m2 0h1m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h1m-31 1h1m1 0h1m2 0h1m1 0h5m1 0h1m2 0h1m5 0h1m2 0h3m-30 1h2m1 0h4m1 0h1m1 0h1m2 0h5m1 0h2m2 0h7m-22 1h2m1 0h1m1 0h1m3 0h1m1 0h2m1 0h1m1 0h1m3 0h1m3 0h1m-33 1h7m4 0h1m2 0h3m1 0h3m1 0h1m1 0h1m1 0h1m1 0h5m-33 1h1m5 0h1m6 0h2m2 0h1m1 0h2m1 0h3m3 0h2m1 0h2m-33 1h1m1 0h3m1 0h1m3 0h1m1 0h4m4 0h1m2 0h6m2 0h1m-32 1h1m1 0h3m1 0h1m2 0h1m2 0h1m1 0h7m1 0h2m1 0h1m1 0h4m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m1 0h3m1 0h2m1 0h4m1 0h2m1 0h3m-33 1h1m5 0h1m1 0h4m3 0h1m6 0h1m1 0h1m2 0h2m-29 1h7m2 0h3m2 0h7m1 0h1m1 0h2m1 0h3m2 0h1"/></svg></div>
@@ -3556,42 +3584,70 @@ function whosinWeek(){
 }
 
 /* showroom cover (reception.html): the corner badge shows who is on reception now, with their photo.
-   Reads the day's plan from the lockup root the board is on; the job writes it, the person covering
-   answers on reception.html. An open shift (declined, not yet re-covered) shows in amber. A confirmed
-   "I'm covering" is green; an assigned shift with no tap yet stays neutral (assumed covering). */
+   From 08:30 UK until the first shift starts, the same badge is a heads-up for that first shift
+   ("Showroom from 09:00"). Once a shift is underway the live current-shift behaviour continues.
+   #rcrota lists every shift today, live from lockup/reception. A confirmed "I'm covering" is green;
+   assigned stays neutral; open / declined amber; short (nobody free) red. */
+function coverEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function coverMins(t){ return +String(t).slice(0,2)*60 + +String(t).slice(3,5); }
+function paintCoverRota(shifts, day, team){
+  const el=document.getElementById('rcrota'), rows=document.getElementById('rcrota-rows');
+  if(!el||!rows)return;
+  if(!shifts||!shifts.length){ el.hidden=true; rows.innerHTML=''; return; }
+  rows.innerHTML=shifts.map(function(s){
+    const r=day[s.id]||{};
+    const short=r.status==='short';
+    const open=short||r.status==='declined'||!r.personId;
+    const covering=!open && r.status==='covering';
+    const name=short?'Nobody free':(open?'Nobody yet':((team[r.personId]&&team[r.personId].name)||r.personId));
+    const st=covering?'Covering':(short?'Not covered':(open?(r.status==='declined'?'Cannot cover':'Open'):'On'));
+    const cls=covering?'covering':(short?'short':(open?'open':''));
+    return '<div class="rcrota-row '+cls+'"><span class="rcrota-t">'+coverEsc(s.from)+'\u2013'+coverEsc(s.to)+'</span><span class="rcrota-n">'+coverEsc(name)+'</span><span class="rcrota-s">'+coverEsc(st)+'</span></div>';
+  }).join('');
+  el.hidden=false;
+}
 function paintCover(){
   const b=document.getElementById('rcbadge'); if(!b)return;
   const RO=window.dsRoster, R=window.LockupRota, RR=window.ReceptionRota;
-  if(!RO||!R||!RR||!RO.reception){ b.hidden=true; return; } /* wait for the plan: before it loads every shift would read as open */
-  const n=R.london(), shifts=RR.shiftsFor(n.dow), day=(RO.reception||{})[n.date]||{};
-  const now=shifts.filter(s=>{ const e=+s.to.slice(0,2)*60+ +s.to.slice(3,5), st=+s.from.slice(0,2)*60+ +s.from.slice(3,5); return n.mins>=st && n.mins<e; })[0];
-  if(!now){ b.hidden=true; return; }
-  const r=day[now.id]||{}, team=(RO.cfg||{}).team||{};
+  const rota=document.getElementById('rcrota');
+  if(!RO||!R||!RR||!RO.reception){ b.hidden=true; if(rota)rota.hidden=true; return; } /* wait for the plan */
+  const n=R.london(), shifts=RR.shiftsFor(n.dow), day=(RO.reception||{})[n.date]||{}, team=(RO.cfg||{}).team||{};
+  paintCoverRota(shifts, day, team);
+  if(!shifts.length){ b.hidden=true; b.classList.remove('heads','open','covering'); return; }
+  const HEAD_FROM=8*60+30; /* 08:30 UK heads-up for the first shift */
+  let now=shifts.filter(function(s){ const e=coverMins(s.to), st=coverMins(s.from); return n.mins>=st && n.mins<e; })[0];
+  let heads=false;
+  if(!now){
+    const first=shifts[0], start=coverMins(first.from);
+    if(n.mins>=HEAD_FROM && n.mins<start){ now=first; heads=true; }
+  }
+  if(!now){ b.hidden=true; b.classList.remove('heads','open','covering'); return; }
+  const r=day[now.id]||{};
   const short=r.status==='short';
   const open=short||r.status==='declined'||!r.personId;
   const covering=!open && r.status==='covering';
   b.classList.toggle('open',open);
   b.classList.toggle('covering',covering);
+  b.classList.toggle('heads',heads);
   if(short){
     document.getElementById('rcph').textContent='!';
-    document.getElementById('rcsmall').textContent='Showroom not covered';
+    document.getElementById('rcsmall').textContent=heads?('Showroom from '+now.from):'Showroom not covered';
     document.getElementById('rcname').textContent='Nobody free';
   } else if(open){
     document.getElementById('rcph').textContent='!';
-    document.getElementById('rcsmall').textContent='Showroom cover needed';
+    document.getElementById('rcsmall').textContent=heads?('Showroom from '+now.from):'Showroom cover needed';
     document.getElementById('rcname').textContent='Nobody yet';
   } else {
     const who=team[r.personId]||{}, name=who.name||r.personId;
     const ph=document.getElementById('rcph'); ph.innerHTML='';
-    const img=new Image(); img.alt=name; img.onerror=()=>{ ph.textContent=(name||'?').charAt(0).toUpperCase(); };
-    img.onload=()=>{ ph.innerHTML=''; ph.appendChild(img); };
-    /* the same photo the board uses for them: matched by name, so 'Daniel Cane' finds Dan Cane */
+    const img=new Image(); img.alt=name; img.onerror=function(){ ph.textContent=(name||'?').charAt(0).toUpperCase(); };
+    img.onload=function(){ ph.innerHTML=''; ph.appendChild(img); };
     const pic=(function(full){ const w=String(full||'').trim().split(/\s+/); const last=(w[w.length-1]||'').toLowerCase(), first=(w[0]||'').toLowerCase();
-      const hit=(window.TEAM||[]).filter(t=>{ const tw=t.name.trim().split(/\s+/), tf=(tw[0]||'').toLowerCase(), tl=(tw[tw.length-1]||'').toLowerCase(); return tl===last && (tf===first || tf.indexOf(first)===0 || first.indexOf(tf)===0); })[0];
+      const hit=(window.TEAM||[]).filter(function(t){ const tw=t.name.trim().split(/\s+/), tf=(tw[0]||'').toLowerCase(), tl=(tw[tw.length-1]||'').toLowerCase(); return tl===last && (tf===first || tf.indexOf(first)===0 || first.indexOf(tf)===0); })[0];
       return hit?hit.photo:''; })(who.fullName||who.name);
     if(pic) img.src=pic; else ph.textContent=(name||'?').charAt(0).toUpperCase();
     ph.textContent=(name||'?').charAt(0).toUpperCase();
-    document.getElementById('rcsmall').textContent='On showroom cover';
+    document.getElementById('rcsmall').textContent=heads?('Showroom from '+now.from):'On showroom cover';
     document.getElementById('rcname').textContent=name;
   }
   document.getElementById('rctime').textContent=now.from+' to '+now.to;
