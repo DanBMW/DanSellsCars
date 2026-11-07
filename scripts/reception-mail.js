@@ -390,15 +390,17 @@ async function run(o) {
       const prev = (today[s.id] || {}).personId;
       if (!pid || pid === prev) continue;
       const rec = { personId: pid, status: 'assigned', ts: Date.now(), declined: (today[s.id] || {}).declined || {} };
+      /* a shift that someone declined earlier today is a reallocation and sends now; any other planned shift is held */
+      const reallocated = Object.keys((today[s.id] || {}).declined || {}).length > 0;
       const p = team[pid] || {};
       today[s.id] = Object.assign({}, today[s.id] || {}, rec);
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(rec);
-      const why = dayMark ? 'reallocated' : 'planned';
+      const why = Object.keys((today[s.id] || {}).declined || {}).length ? 'reallocated' : 'planned';
       await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', reason: why, personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
       const mail = RR.coverEmail(firstName(p, pid), s, { date: date });
       const cover = { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() };
-      /* first plan of the day: hold until 10 mins before the shift; a reallocation sends now */
-      if (!dayMark) cover.sendAfter = coverSendAfterMs(date, s.from);
+      /* planned shifts are held until 10 mins before the shift starts; a reallocation sends now */
+      if (!reallocated) cover.sendAfter = coverSendAfterMs(date, s.from);
       qAdd(rcId(date, s.id, pid), cover, dry);
       markMailed(s.id, pid);
       say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid) + (cover.sendAfter ? ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')' : ' (now)'));

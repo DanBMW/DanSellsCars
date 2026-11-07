@@ -52,7 +52,10 @@
   var APPT_NAMES = { Carl: 'carl', Clive: 'clive', Daniel: 'dan', Danny: 'danny', Mon: 'mon', Tomiwa: 'tomi', Karis: 'karis' };
 
   function shiftsFor(dow) {
-    /* dow: 1 Monday .. 6 Saturday, 0 Sunday (closed, no shifts) */
+    /* dow: 1 Monday .. 6 Saturday, 0 Sunday (closed, no shifts), or the three letter name the lockup
+       calendar gives ('mon'..'sun'). The names were not read before, so Saturday got weekday hours. */
+    var NUM = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+    if (typeof dow === 'string') dow = NUM.hasOwnProperty(dow.toLowerCase()) ? NUM[dow.toLowerCase()] : dow;
     if (dow === 0) return [];
     return dow === 6 ? SHIFTS.sat : SHIFTS.weekday;
   }

@@ -216,4 +216,10 @@ console.log('ok: handed-back minutes stay on the record, history lists reasons, 
   console.log('ok: walk-in taken by the cover person queues one reallocate; other cases do nothing');
 }
 
+// the lockup calendar gives the day as a name: Saturday must get Saturday's hours, Sunday none
+assert.deepStrictEqual(R.shiftsFor('sat').map(x => x.to), ['12:00', '14:00', '17:00'], 'Saturday hours from the day name');
+assert.strictEqual(R.shiftsFor('sun').length, 0);
+assert.deepStrictEqual(R.shiftsFor('fri').map(x => x.to), ['12:00', '15:00', '18:00']);
+console.log('ok: days given as names get the right hours, Saturday included');
+
 console.log('all reception tests passed');

@@ -489,5 +489,12 @@ async function runAt(db, date, h, m, cfgExtra) {
     console.log('ok: walk-in taken by the cover person reallocates like Unable; other cases leave cover alone');
   }
 
+  // a planned cover email is held until 10 minutes before its shift; a reallocation sends now
+  db = fakeDb();
+  await runAt(db, MON, 8, 0);
+  const heldMail = Object.values(db.data.lockupTest.notify).filter(e => /Showroom cover \d/.test(e.subject || '') && !/not covered/.test(e.subject));
+  assert.ok(heldMail.length > 0 && heldMail.every(e => typeof e.sendAfter === 'number'), 'planned cover emails are held: ' + JSON.stringify(heldMail.map(e => e.sendAfter)));
+  console.log('ok: planned cover emails are held until 10 minutes before the shift');
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });
