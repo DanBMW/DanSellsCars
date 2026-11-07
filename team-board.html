@@ -3624,7 +3624,7 @@ function paintCoverRota(shifts, day, team){
     const short=r.status==='short';
     const open=short||r.status==='declined'||!r.personId;
     const covering=!open && r.status==='covering';
-    const name=short?'Nobody free':(open?'Nobody yet':((team[r.personId]&&team[r.personId].name)||r.personId));
+    const name=short?'No one':(open?'Nobody yet':((team[r.personId]&&team[r.personId].name)||r.personId));
     const st=covering?'Covering':(short?'Not covered':(open?(r.status==='declined'?'Cannot cover':'Open'):'On'));
     const cls=covering?'covering':(short?'short':(open?'open':''));
     return '<div class="rcrota-row '+cls+'"><span class="rcrota-t">'+coverEsc(s.from)+'\u2013'+coverEsc(s.to)+'</span><span class="rcrota-n">'+coverEsc(name)+'</span><span class="rcrota-s">'+coverEsc(st)+'</span></div>';
@@ -3655,9 +3655,10 @@ function paintCover(){
   b.classList.toggle('covering',covering);
   b.classList.toggle('heads',heads);
   if(short){
-    document.getElementById('rcph').textContent='!';
+    /* nobody free: show no one, no photo and no placeholder */
+    document.getElementById('rcph').textContent='';
     document.getElementById('rcsmall').textContent=heads?('Showroom from '+now.from):'Showroom not covered';
-    document.getElementById('rcname').textContent='Nobody free';
+    document.getElementById('rcname').textContent='No one';
   } else if(open){
     document.getElementById('rcph').textContent='!';
     document.getElementById('rcsmall').textContent=heads?('Showroom from '+now.from):'Showroom cover needed';
