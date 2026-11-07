@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-07T14:02:18.653Z",
+  "captured": "2026-11-07T16:02:39.652Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "X111CVE",
+      "appraisedAt": "2026-11-07T15:22:45.068Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--1a4WqK8U--/c_fill,h_300,w_300/v1794064971/Live/Appraisals/9633693/8eef975c-ff07-4b34-abe5-215b322b692d.jpg"
+    },
+    {
+      "registration": "LX20HZZ",
+      "appraisedAt": "2026-11-07T15:01:52.574Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--uK9-864X--/c_fill,h_300,w_300/v1794063751/Live/Appraisals/9633596/b942a523-ad3e-40f0-a21e-d641b1c9065a.jpg"
+    },
     {
       "registration": "B8NNW",
       "appraisedAt": "2026-11-07T13:32:27.718Z",
