@@ -1,9 +1,59 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-07T12:02:24.292Z",
+  "captured": "2026-11-07T14:02:18.653Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "B8NNW",
+      "appraisedAt": "2026-11-07T13:32:27.718Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "SA72FYW",
+      "appraisedAt": "2026-11-07T12:51:29.179Z",
+      "make": "AUDI",
+      "model": "Q2",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "FJ70RVL",
+      "appraisedAt": "2026-11-07T12:27:45.175Z",
+      "make": "MINI",
+      "model": "Hatch",
+      "status": "Valued",
+      "price": null,
+      "condition": "Fair",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LG24VZS",
+      "appraisedAt": "2026-11-07T12:25:49.271Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "YH19MMR",
+      "appraisedAt": "2026-11-07T12:13:17.409Z",
+      "make": "BMW",
+      "model": "2 Series Active Tourer",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--VKLh9fuL--/c_fill,h_300,w_300/v1794053609/Live/Appraisals/9632646/70748f2f-4865-49c7-9887-3fde75d4213b.jpg"
+    },
     {
       "registration": "MM18UXL",
       "appraisedAt": "2026-11-07T11:49:57.577Z",
