@@ -1,9 +1,49 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-07T10:02:18.208Z",
+  "captured": "2026-11-07T12:02:24.292Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "MM18UXL",
+      "appraisedAt": "2026-11-07T11:49:57.577Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--_rgcGeeH--/c_fill,h_300,w_300/v1794052199/Live/Appraisals/9632511/77f8ce8b-2a00-4adb-b153-4f667148a080.png"
+    },
+    {
+      "registration": "SV11JJJ",
+      "appraisedAt": "2026-11-07T11:30:34.905Z",
+      "make": "MERCEDES-BENZ",
+      "model": "E Class",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "AV72YEK",
+      "appraisedAt": "2026-11-07T11:01:13.385Z",
+      "make": "BMW",
+      "model": "iX3",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--JCL14-HN--/c_fill,h_300,w_300/v1794049278/Live/Appraisals/9632171/c56212d8-dbc6-43cf-adab-9a18d5749ebc.png"
+    },
+    {
+      "registration": "LY26JKJ",
+      "appraisedAt": "2026-11-07T10:36:34.974Z",
+      "make": "BMW",
+      "model": "X6",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "RO25DYB",
       "appraisedAt": "2026-11-06T17:22:58.645Z",
@@ -203,26 +243,6 @@
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--nCmkwaW8--/c_fill,h_300,w_300/v1793883492/Live/Appraisals/9624228/4a5dff9d-207e-4570-a5db-a63c39d9a00b.jpg"
-    },
-    {
-      "registration": "AV72YEK",
-      "appraisedAt": "2026-11-05T12:24:09.916Z",
-      "make": "BMW",
-      "model": "iX3",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--42sKkeA_--/c_fill,h_300,w_300/v1793881452/Live/Appraisals/9624102/fb27434f-0c36-4825-a802-8c8e4236a7d6.png"
-    },
-    {
-      "registration": "SV11JJJ",
-      "appraisedAt": "2026-11-05T12:08:36.096Z",
-      "make": "MERCEDES-BENZ",
-      "model": "E Class",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "PE72YPL",
