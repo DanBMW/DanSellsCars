@@ -115,6 +115,15 @@ async function main() {
     const RROOT = RR.RECEPTION_ROOT;
     const rc = await RC.load(db, RROOT, TEST ? 'shiftsTest' : 'shifts');
     const tom = R.addDays(n.date, 1);
+    /* a one off fresh start for a day (workflow input reception_reset = that date, sent by hand): clears the day's
+       plan and its cover emails (sent or not), so the day is planned again from the calendar and the rota. */
+    if (process.env.RECEPTION_RESET === n.date && !DRY) {
+      await db.ref(RROOT + '/reception/' + n.date).remove();
+      const allNotify = (await db.ref(ROOT + '/notify').get()).val() || {};
+      for (const id of Object.keys(allNotify)) if (/^rc/.test(id) && id.indexOf(n.date) >= 0) await db.ref(ROOT + '/notify/' + id).remove();
+      if (rc.reception) delete rc.reception[n.date];
+      console.log('Cover reset for', n.date, '(plan and cover emails cleared)');
+    }
     const markOf = async d => (await db.ref(RROOT + '/reception/' + d + '/_day').get()).val() || {};
     const todayMark = await markOf(n.date), tomMark = await markOf(tom);
     const needToday = n.mins >= 7 * 60 + 30 && (!todayMark.plannedAt || !todayMark.rechecked);

@@ -20,6 +20,10 @@ on:
         description: 'Send the lockup rota email for the next two weeks now'
         type: boolean
         default: false
+      reception_reset:
+        description: 'Showroom cover fresh start: a date (YYYY-MM-DD) to clear that day plan and its cover emails, then plan it again. Leave blank otherwise.'
+        type: string
+        default: ''
       launch_email:
         description: 'Send the one-off showroom cover launch email to the live team (once only)'
         type: boolean
@@ -54,5 +58,6 @@ jobs:
           ROTA_WEEKLY: '1'
           ROTA_NOW: ${{ github.event_name == 'workflow_dispatch' && inputs.rota_now && '1' || '' }}
           LAUNCH_EMAIL: ${{ github.event_name == 'workflow_dispatch' && inputs.launch_email && '1' || '' }}
+          RECEPTION_RESET: ${{ github.event_name == 'workflow_dispatch' && inputs.reception_reset || '' }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
           
