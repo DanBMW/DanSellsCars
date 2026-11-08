@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-11-07T16:13:46.000Z",
+ "generated_at": "2026-11-08T06:05:14.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
- "count": 390,
+ "count": 389,
  "retailers": [
   {
    "retailer_id": "22181",
@@ -19,13 +19,13 @@
   {
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "count": 148,
+   "count": 144,
    "ok": true
   },
   {
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "count": 78,
+   "count": 81,
    "ok": true
   }
  ],
@@ -224,8 +224,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -922,8 +922,8 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33LsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSdzAY6N%25%25BxoI5mANB8fY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33LsV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75u3dk6pVHHIchORYkVIx%2560Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "16267",
-   "retailer_name": "Hedin Automotive Enfield",
+   "retailer_id": "16215",
+   "retailer_name": "Hedin Automotive Woolwich",
    "first_seen": "2026-10-09"
   },
   {
@@ -996,8 +996,8 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgno1AY6N%25%25BxoI5mANB8fY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33rcV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ahfk6pVHHIchORYkVIx%2560Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "16267",
-   "retailer_name": "Hedin Automotive Enfield",
+   "retailer_id": "16215",
+   "retailer_name": "Hedin Automotive Woolwich",
    "first_seen": "2026-10-29",
    "first_seen_seed": true
   },
@@ -1071,8 +1071,8 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33rCV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgS0cAY6N%25%25BxoI5mANB8fY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33rCV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75uN4k6pVHHIchORYkVIx%2560Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "16267",
-   "retailer_name": "Hedin Automotive Enfield",
+   "retailer_id": "16215",
+   "retailer_name": "Hedin Automotive Woolwich",
    "first_seen": "2026-10-29",
    "first_seen_seed": true
   },
@@ -1557,8 +1557,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Black Sapphire",
@@ -1632,8 +1632,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -2005,8 +2005,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -2081,8 +2081,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -2308,8 +2308,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Veganza perforated Oyster",
@@ -2384,8 +2384,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Veganza perforated Black",
@@ -2461,8 +2461,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -3018,8 +3018,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Black Sapphire",
@@ -3257,8 +3257,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Harman/Kardon Surround Sound Audio System",
@@ -6014,78 +6014,6 @@
    "retailer_name": "Hedin Automotive Woolwich",
    "first_seen": "2026-10-29",
    "first_seen_seed": true
-  },
-  {
-   "order_number": "6220123",
-   "description": "X1 sDrive20i M Sport",
-   "range": "BMW X1 sDrive20i M Sport",
-   "series": "X1",
-   "colour": "Alpine White",
-   "fuel": "Petrol",
-   "transmission": "Automatic",
-   "drive": "Front",
-   "wheels": "18\" wheels",
-   "upholstery": "Synthetic Leather",
-   "seats": 5,
-   "engine_cc": 1499,
-   "zero_to_62": 8.3,
-   "price": "£43,090.00",
-   "price_gbp": 43090,
-   "monthly": "£501.55",
-   "monthly_gbp": 501.55,
-   "apr": 2.9,
-   "finance_example": {
-    "product": "BMW Select (PCP)",
-    "lender": "BMW Financial Services (GB) Limited",
-    "apr": 2.9,
-    "monthly": 501.55,
-    "payments": 47,
-    "term_months": 48,
-    "deposit": 4500,
-    "cash_price": 43090.0,
-    "amount_of_credit": 38590.0,
-    "final_payment": 18292.02,
-    "total_payable": 46364.87,
-    "charge_for_credit": 3274.87,
-    "annual_mileage": 8000,
-    "contract_mileage": 32000,
-    "excess_pence": null,
-    "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
-   },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
-   "on_hold": false,
-   "options": [
-    "Veganza perforated Black",
-    "Heated Steering Wheel",
-    "Sun Protection Glass"
-   ],
-   "standard": [
-    "High-gloss Shadowline Roof Rails",
-    "Luxury Instrument Panel",
-    "Parking Assistant",
-    "Child seat i-Size attachment for front passenger",
-    "DAB Radio",
-    "Larger Fuel Tank",
-    "BMW TeleServices",
-    "Front Heated Seats",
-    "48V mild hybrid technology",
-    "Personal eSIM",
-    "Active Guard",
-    "Tyre Repair Kit Plus"
-   ],
-   "retailer_price": false,
-   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYatLMV2vf99ArPkQjVfms52E1dzPBuElj6HJ5GKxCqEaifqocXCGVAXdhQMfIj8g3piAYCHwu0QjsczNnwYCWhvBpKucL3tm1rVhQ50rFPC3UiePD105%25VyJlFqikIZaxDqV2YbG0QcI7sufeF3Y4WnAyAgsMLpjBGSWTQ1CmfMLRUFcrjTQ9%25DhPUtUSkl3JVW%25O2x5alUk67oiGZ52E4dVloc7KMgIxvk4qTwYVPkMXRNsIwOT89BWYN1RHSmLsoA9zOrQheeSv6PU3MyOtEJ%255QI60Kak4bTEeqG2McuKyXf7ThsqZ8A4RXtXbHjM9KV8uzCTS9QHnvcROSzzpth96E8v103SEOPtFe5OK6s0Dyi6TEJelZVERKHyxbIKZHZ",
-   "images": [
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYatLMV2vf99ArPkQjVfms52E1dzPBuElj6HJ5GKxCqEaifqocXCGVAXdhQMfIj8g3piAYCHwu0QjsczNnwYCWhvBpKucL3tm1rVhQ50rFPC3UiePD105%25VyJlFqikIZaxDqV2YbG0QcI7sufeF3Y4WnAyAgsMLpjBGSWTQ1CmfMLRUFcrjTQ9%25DhPUtUSkl3JVW%25O2x5alUk67oiGZ52E4dVloc7KMgIxvk4qTwYVPkMXRNsIwOT89BWYN1RHSmLsoA9zOrQheeSv6PU3MyOtEJ%255QI60Kak4bTEeqG2McuKyXf7ThsqZ8A4RXtXbHjM9KV8uzCTS9QHnvcROSzzpth96E8v103SEOPtFe5OK6s0Dyi6TEJelZVERKHyxbIKZHZ",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23pMK%25Oni88VCcSTI%25ij7QOtwJucAotmIvbhQ50rYet3UiePsyY5%25VyJWTKikIZaLgUV2YbGo1TI7sufdG2Y4WnAg0osMLpjwC%25WTQ1CNcYLRUFcBw1Q9%25DhmNeUSkl3rBe%25O2x51Tsk67oiFNL2E4dVDVa7KMgIA5H4qTwYjiKMXRNsCIqT89BWcRpRHSmLh%2549zOrQ3mRSv6PU5lQOtEJ%25mPs60KakrnSEeqG2%25cSKyXf7kGzqZ8A42fwXbHjM7PV8uzCTWFFHnvcRLKDzpth9QTkv103SExqtFe5OKso0Dyi6qW7elZVEXypyxbIK80%25ZouYqH8TbdnsXzHuugpW8vtZnw1LHtzcpNFQz0v71BDUvqthFml%25tX0bDrxk0lbl",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23pMK%25Oni88VCcSTI%25ij7QOtwJucAotmIvbhQ50rYet3UiePsyY5%25VyJWTKikIZaLgUV2YbGo1TI7sufdG2Y4WnAg0osMLpjwC%25WTQ1CNcYLRUFcBw1Q9%25DhmNeUSkl3rBe%25O2x51Tsk67oiFNL2E4dVDVa7KMgIA5H4qTwYjiKMXRNsCIqT89BWcRpRHSmLh%2549zOrQ3mRSv6PU5lQOtEJ%25mPs60KakrnSEeqG2%25cSKyXf7kGzqZ8A42fwXbHjM7PV8uzCTWFFHnvcRLKDzpth9QTkv103SExqtFe5OKso0Dyi6qW7elZVEXypyxbIK80%25ZouYqH8TbdnsXzHuugpW8vtZnw1LHtzcpNFQz0v71BDUvqthFml%25tX0bDrxk0lbl",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgE3LAY6N%25%25BxoI5mANlcGY40nOoDz4Zm7SdGwMbrT4gfNTuPRrwABRnJ5LNjm9patfBCrS1zK5mcPOFv1CrhJ6DtMzP3aEl0xAJ5GKxeoraifqoy0KGVAXdZeTfIj8gbyTAYCHwK5PjsczNqeaCWhvBXBpcL3tmDwkhQ50rlNL3UiePxmQ5%25VyJoiEikIZadAhV2YbGgZiI7sufw8GY4WnAZuPsMLpjb6IWTQ1CAoILRUFcj12Q9%25DhCF0USkl3cuB%25O2x5Jqqk67oiaLX2E4dVG5j7KMgIWHQ4qTwYLPzMXRNsQJcT89BWURERHSmL%25MA9zOrQk%255Sv6PU2kOOtEJ%2574960Kak42oEeqG2M7cKyXf7Q4dqZ8A4UMSXbHjM8S8",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA751Tqk6pVHHIchORYkVC4U60Nanhjd0rYtu3UiePsy05%25VyJWZsikIZaLRqV2YbGQw%25I7sufdFRY4WnAgf7sMLpjwedWTQ1CNckLRUFcBhsQ9%25DhmNFUSkl3rBy%25O2x5Pmyk67oiFRW2E4dVDBQ7KMgIlIG4qTwYjizMXRNsCVqT89BWcYXRHSmLh919zOrQ3kMSv6PU5r9OtEJ%25ixU60KakrJWEeqG2PpOKyXf7khOqZ8A42fvXbHjM7AN8uzCT4JIHnvcRLDDzpth9Qqlv103SUR2tFe5OKoX0Dyi6qWdelZVEXL4yxbIK8Z1ZouYqHekbdnsXzHRugpW8vznnw1LHt0bpNFQz0vh1BDUvet4Fml%25tX03Drxk08eulPo2exux"
-   ],
-   "retailer_id": "16267",
-   "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-11-07"
   },
   {
    "order_number": "4403278",
@@ -16958,8 +16886,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
@@ -17651,8 +17579,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
@@ -18031,8 +17959,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Eucalyptus Green",
@@ -18420,8 +18348,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "M steering wheel",
@@ -18716,8 +18644,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Space Silver",
@@ -19026,8 +18954,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "M steering wheel",
@@ -19096,8 +19024,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "M steering wheel",
@@ -19613,8 +19541,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -19687,8 +19615,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "M steering wheel",
@@ -19850,8 +19778,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Parking Assistant Plus",
@@ -20010,8 +19938,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "M steering wheel",
@@ -20868,8 +20796,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Parking Assistant Professional",
@@ -21537,8 +21465,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Parking Assistant Professional",
@@ -22049,8 +21977,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -23558,8 +23486,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 8,
-   "lead_time_weeks_max": 10,
+   "lead_time_weeks_min": 7,
+   "lead_time_weeks_max": 9,
    "on_hold": false,
    "options": [
     "M Adaptive Suspension",
@@ -23826,8 +23754,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "Sophisto Grey",
@@ -28877,8 +28805,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "BMW Individual Lights Shadow Line",
@@ -29336,8 +29264,8 @@
     "excess_pence": null,
     "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
    },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "BMW Individual Lights Shadow Line",
@@ -37572,6 +37500,79 @@
    "first_seen": "2026-10-29",
    "first_seen_seed": true,
    "removed_at": "2026-11-07"
+  },
+  {
+   "order_number": "6220123",
+   "description": "X1 sDrive20i M Sport",
+   "range": "BMW X1 sDrive20i M Sport",
+   "series": "X1",
+   "colour": "Alpine White",
+   "fuel": "Petrol",
+   "transmission": "Automatic",
+   "drive": "Front",
+   "wheels": "18\" wheels",
+   "upholstery": "Synthetic Leather",
+   "seats": 5,
+   "engine_cc": 1499,
+   "zero_to_62": 8.3,
+   "price": "£43,090.00",
+   "price_gbp": 43090,
+   "monthly": "£501.55",
+   "monthly_gbp": 501.55,
+   "apr": 2.9,
+   "finance_example": {
+    "product": "BMW Select (PCP)",
+    "lender": "BMW Financial Services (GB) Limited",
+    "apr": 2.9,
+    "monthly": 501.55,
+    "payments": 47,
+    "term_months": 48,
+    "deposit": 4500,
+    "cash_price": 43090.0,
+    "amount_of_credit": 38590.0,
+    "final_payment": 18292.02,
+    "total_payable": 46364.87,
+    "charge_for_credit": 3274.87,
+    "annual_mileage": 8000,
+    "contract_mileage": 32000,
+    "excess_pence": null,
+    "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
+   },
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
+   "on_hold": false,
+   "options": [
+    "Veganza perforated Black",
+    "Heated Steering Wheel",
+    "Sun Protection Glass"
+   ],
+   "standard": [
+    "High-gloss Shadowline Roof Rails",
+    "Luxury Instrument Panel",
+    "Parking Assistant",
+    "Child seat i-Size attachment for front passenger",
+    "DAB Radio",
+    "Larger Fuel Tank",
+    "BMW TeleServices",
+    "Front Heated Seats",
+    "48V mild hybrid technology",
+    "Personal eSIM",
+    "Active Guard",
+    "Tyre Repair Kit Plus"
+   ],
+   "retailer_price": false,
+   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYatLMV2vf99ArPkQjVfms52E1dzPBuElj6HJ5GKxCqEaifqocXCGVAXdhQMfIj8g3piAYCHwu0QjsczNnwYCWhvBpKucL3tm1rVhQ50rFPC3UiePD105%25VyJlFqikIZaxDqV2YbG0QcI7sufeF3Y4WnAyAgsMLpjBGSWTQ1CmfMLRUFcrjTQ9%25DhPUtUSkl3JVW%25O2x5alUk67oiGZ52E4dVloc7KMgIxvk4qTwYVPkMXRNsIwOT89BWYN1RHSmLsoA9zOrQheeSv6PU3MyOtEJ%255QI60Kak4bTEeqG2McuKyXf7ThsqZ8A4RXtXbHjM9KV8uzCTS9QHnvcROSzzpth96E8v103SEOPtFe5OK6s0Dyi6TEJelZVERKHyxbIKZHZ",
+   "images": [
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYatLMV2vf99ArPkQjVfms52E1dzPBuElj6HJ5GKxCqEaifqocXCGVAXdhQMfIj8g3piAYCHwu0QjsczNnwYCWhvBpKucL3tm1rVhQ50rFPC3UiePD105%25VyJlFqikIZaxDqV2YbG0QcI7sufeF3Y4WnAyAgsMLpjBGSWTQ1CmfMLRUFcrjTQ9%25DhPUtUSkl3JVW%25O2x5alUk67oiGZ52E4dVloc7KMgIxvk4qTwYVPkMXRNsIwOT89BWYN1RHSmLsoA9zOrQheeSv6PU3MyOtEJ%255QI60Kak4bTEeqG2McuKyXf7ThsqZ8A4RXtXbHjM9KV8uzCTS9QHnvcROSzzpth96E8v103SEOPtFe5OK6s0Dyi6TEJelZVERKHyxbIKZHZ",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23pMK%25Oni88VCcSTI%25ij7QOtwJucAotmIvbhQ50rYet3UiePsyY5%25VyJWTKikIZaLgUV2YbGo1TI7sufdG2Y4WnAg0osMLpjwC%25WTQ1CNcYLRUFcBw1Q9%25DhmNeUSkl3rBe%25O2x51Tsk67oiFNL2E4dVDVa7KMgIA5H4qTwYjiKMXRNsCIqT89BWcRpRHSmLh%2549zOrQ3mRSv6PU5lQOtEJ%25mPs60KakrnSEeqG2%25cSKyXf7kGzqZ8A42fwXbHjM7PV8uzCTWFFHnvcRLKDzpth9QTkv103SExqtFe5OKso0Dyi6qW7elZVEXypyxbIK80%25ZouYqH8TbdnsXzHuugpW8vtZnw1LHtzcpNFQz0v71BDUvqthFml%25tX0bDrxk0lbl",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23pMK%25Oni88VCcSTI%25ij7QOtwJucAotmIvbhQ50rYet3UiePsyY5%25VyJWTKikIZaLgUV2YbGo1TI7sufdG2Y4WnAg0osMLpjwC%25WTQ1CNcYLRUFcBw1Q9%25DhmNeUSkl3rBe%25O2x51Tsk67oiFNL2E4dVDVa7KMgIA5H4qTwYjiKMXRNsCIqT89BWcRpRHSmLh%2549zOrQ3mRSv6PU5lQOtEJ%25mPs60KakrnSEeqG2%25cSKyXf7kGzqZ8A42fwXbHjM7PV8uzCTWFFHnvcRLKDzpth9QTkv103SExqtFe5OKso0Dyi6qW7elZVEXypyxbIK80%25ZouYqH8TbdnsXzHuugpW8vtZnw1LHtzcpNFQz0v71BDUvqthFml%25tX0bDrxk0lbl",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgE3LAY6N%25%25BxoI5mANlcGY40nOoDz4Zm7SdGwMbrT4gfNTuPRrwABRnJ5LNjm9patfBCrS1zK5mcPOFv1CrhJ6DtMzP3aEl0xAJ5GKxeoraifqoy0KGVAXdZeTfIj8gbyTAYCHwK5PjsczNqeaCWhvBXBpcL3tmDwkhQ50rlNL3UiePxmQ5%25VyJoiEikIZadAhV2YbGgZiI7sufw8GY4WnAZuPsMLpjb6IWTQ1CAoILRUFcj12Q9%25DhCF0USkl3cuB%25O2x5Jqqk67oiaLX2E4dVG5j7KMgIWHQ4qTwYLPzMXRNsQJcT89BWURERHSmL%25MA9zOrQk%255Sv6PU2kOOtEJ%2574960Kak42oEeqG2M7cKyXf7Q4dqZ8A4UMSXbHjM8S8",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbfkSMXl9aV015toFnqItSuaBMsV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA751Tqk6pVHHIchORYkVC4U60Nanhjd0rYtu3UiePsy05%25VyJWZsikIZaLRqV2YbGQw%25I7sufdFRY4WnAgf7sMLpjwedWTQ1CNckLRUFcBhsQ9%25DhmNFUSkl3rBy%25O2x5Pmyk67oiFRW2E4dVDBQ7KMgIlIG4qTwYjizMXRNsCVqT89BWcYXRHSmLh919zOrQ3kMSv6PU5r9OtEJ%25ixU60KakrJWEeqG2PpOKyXf7khOqZ8A42fvXbHjM7AN8uzCT4JIHnvcRLDDzpth9Qqlv103SUR2tFe5OKoX0Dyi6qWdelZVEXL4yxbIK8Z1ZouYqHekbdnsXzHRugpW8vznnw1LHt0bpNFQz0vh1BDUvet4Fml%25tX03Drxk08eulPo2exux"
+   ],
+   "retailer_id": "16267",
+   "retailer_name": "Hedin Automotive Enfield",
+   "first_seen": "2026-11-07",
+   "removed_at": "2026-11-08"
   }
  ]
 }
