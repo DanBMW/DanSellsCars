@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-08T14:02:19.334Z",
+  "captured": "2026-11-08T16:02:10.340Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "GM70ZGN",
+      "appraisedAt": "2026-11-08T14:40:05.394Z",
+      "make": "BMW",
+      "model": "X6",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--rf2R801L--/c_fill,h_300,w_300/v1794148821/Live/Appraisals/9635067/3c1e7090-234d-42b4-82da-45ef64ae5868.jpg"
+    },
+    {
+      "registration": "LV23FLN",
+      "appraisedAt": "2026-11-08T14:31:23.323Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "GM67EYZ",
       "appraisedAt": "2026-11-08T12:56:05.003Z",
@@ -309,7 +329,7 @@
       "appraisedAt": "2026-11-05T14:28:51.513Z",
       "make": "RENAULT",
       "model": "Trafic",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--4KvWsFOf--/c_fill,h_300,w_300/v1793888959/Live/Appraisals/9624534/a9ef3098-9002-411e-b0ca-7d7e33f3fea1.jpg"
