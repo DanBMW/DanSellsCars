@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-07T20:02:20.460Z",
+  "captured": "2026-11-08T06:02:40.164Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -459,7 +459,7 @@
       "appraisedAt": "2026-10-31T12:18:53.943Z",
       "make": "BMW",
       "model": "4 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -479,7 +479,7 @@
       "appraisedAt": "2026-10-31T10:30:11.938Z",
       "make": "AUDI",
       "model": "Q3",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--lFSVwN_U--/c_fill,h_300,w_300/v1793442613/Live/Appraisals/9613588/af198672-b7be-4b04-b72d-d7e5f35ee4f8.png"
@@ -489,7 +489,7 @@
       "appraisedAt": "2026-10-31T09:44:08.124Z",
       "make": "MINI",
       "model": "Countryman",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--MJe1G4VS--/c_fill,h_300,w_300/v1793439851/Live/Appraisals/9613358/b818f2ab-4f8a-4e3a-971d-2bc1cb343e7d.jpg"
@@ -5164,7 +5164,8 @@
       "status": "Returned",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--X-yl8oNp--/c_fill,h_300,w_300/v1786111303/Live/Appraisals/9404561/77ebe698-2d66-442d-a486-7c1715e63847.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--X-yl8oNp--/c_fill,h_300,w_300/v1786111303/Live/Appraisals/9404561/77ebe698-2d66-442d-a486-7c1715e63847.jpg",
+      "droppedAt": "2026-11-08T06:02:40.163Z"
     },
     {
       "registration": "GJ18LUL",
@@ -5174,7 +5175,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-08T06:02:40.163Z"
     },
     {
       "registration": "DX20XYJ",
@@ -5195,7 +5197,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--85NkGUD0--/c_fill,h_300,w_300/v1786103669/Live/Appraisals/9403978/62da891d-0315-429d-9a88-c396e36ba768.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--85NkGUD0--/c_fill,h_300,w_300/v1786103669/Live/Appraisals/9403978/62da891d-0315-429d-9a88-c396e36ba768.jpg",
+      "droppedAt": "2026-11-08T06:02:40.163Z"
     },
     {
       "registration": "YB23EDP",
