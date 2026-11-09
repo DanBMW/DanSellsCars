@@ -42,3 +42,20 @@ exclude:
   - Gemfile.lock
   - node_modules
   - vendor
+  # Unreferenced media: not linked from any HTML/JS/CSS. Kept in the repo for
+  # history / source assets, but not published (saves ~63 MB on every Pages build).
+  - tests
+  - vid-1series.mp4
+  - vid-end.mp4
+  - vid-ix3.mp4
+  - vid-mid.mp4
+  - x1-forecourt.jpg
+  - x1-showroom.jpg
+  - model-1series.jpg
+  - ix3-showroom1.jpg
+  - ix3-showroom2.jpg
+  - ix3-finance.jpg
+  - ix3-spec1.jpg
+  - ix3-spec2.jpg
+  - assets/hero-forecourt.jpg
+  - assets/whats-hot-now-instagram.png
