@@ -106,6 +106,7 @@
       else { if (!demo.visible(d, d.customers[i])) return Promise.reject(new Error('no access')); c.owner_staff_id = d.customers[i].owner_staff_id; c.user_id = d.customers[i].user_id; d.customers[i] = c; }
       c.updated_at = new Date().toISOString(); demoSave(d); return Promise.resolve(c); },
     swipes: function (cid) { return Promise.resolve((demoDb().swipes || {})[cid] || {}); },
+    unswipe: function (cid, reg, prev) { var d = demoDb(); d.swipes[cid] = d.swipes[cid] || {}; if (prev) d.swipes[cid][reg] = prev; else delete d.swipes[cid][reg]; demoSave(d); return Promise.resolve(); },
     setSwipe: function (cid, reg, liked, extra) { var d = demoDb(); d.swipes[cid] = d.swipes[cid] || {}; d.swipes[cid][reg] = Object.assign({ liked: liked, at: Date.now() }, extra || {}); demoSave(d); return Promise.resolve(); },
     purchases: function (cid) { return Promise.resolve((demoDb().purchases || []).filter(function (p) { return p.customer_id === cid; })); },
     sendLatestStock: function () { return Promise.resolve({ ok: false, reason: 'demo mode, nothing sent' }); },
@@ -176,6 +177,9 @@
        (Calling .catch straight on the builder threw inside decide() and froze the deck on the next card.) */
     setSwipe: function (cid, reg, liked, extra) { return Promise.resolve().then(function () { if (!sbUser) throw new Error('signed out');
       return sb.from('swipes').upsert(Object.assign({ customer_id: cid, reg: reg, liked: liked, by_user: sbUser.id }, extra || {})); }).then(function (r) { if (r && r.error) throw r.error; }); },
+    unswipe: function (cid, reg, prev) { return Promise.resolve().then(function () { if (!sbUser) throw new Error('signed out');
+      return prev ? sb.from('swipes').upsert({ customer_id: cid, reg: reg, liked: !!prev.liked, shortlisted: !!prev.shortlisted, by_user: sbUser.id }) : sb.from('swipes').delete().eq('customer_id', cid).eq('reg', reg); })
+      .then(function (r) { if (r && r.error) throw r.error; }); },
     purchases: function (cid) { return sb.from('purchases').select('*').eq('customer_id', cid).then(function (r) { return r.data || []; }); },
     /* Close is a soft flag only: nothing else on the customer (swipes, matches, photos, purchases) is touched */
     guestLink: function (cid) { return sb.functions.invoke('guest-link', { body: { customer_id: cid } }).then(function (r) { return r.data || { ok: false, reason: 'link failed' }; }); },
@@ -345,6 +349,10 @@
   window.addEventListener('hashchange', routeAnimated);
   /* the phone's back button (or any screen change) never leaves a car sheet or pop up stranded over another screen */
   window.addEventListener('hashchange', function () { openOverlays().forEach(closeOverlay); });
+  /* Back with the car sheet open just closes it. Closing it any other way drops the extra history entry again. */
+  window.addEventListener('popstate', function () { if (!S.sheetHist) return; S.sheetHist = false; closeOverlay($('#sheet')); });
+  function watchSheet() { var sh = $('#sheet'); if (!sh || !window.MutationObserver) return;
+    new MutationObserver(function () { if (!sh.hidden || !S.sheetHist) return; S.sheetHist = false; if (history.state && history.state.ctSheet) history.back(); }).observe(sh, { attributes: true, attributeFilter: ['hidden'] }); }
 
   /* ---------------- sign in ---------------- */
   function initSignin() {
@@ -624,9 +632,8 @@
     if (ranked.length) return { kind: 'seen' };
     var cust = S.cust || {}, fits = M.rank(pool(), Object.assign({}, cust, { budget_type: null, cash_gbp: 0, monthly_gbp: 0 })).map(function (x) { return x.car; });
     if (cust.new_used === 'new' && !fits.some(brandNew)) return { kind: 'nonew' };
-    var prices = fits.filter(function (c) { return c.price_gbp; }).map(function (c) { return c.price_gbp; });
-    var budgetSet = cust.budget_type === 'cash' ? cust.cash_gbp : cust.monthly_gbp;
-    if (budgetSet && prices.length) return { kind: 'budget', from: Math.min.apply(null, prices) };
+    var gap = M.budgetGap(fits, cust);   /* monthly budgets in monthly figures, cash in cash */
+    if (gap) return { kind: 'budget', gap: gap };
     return { kind: 'choices' };
   }
   /* A wider search for this visit only. Each step loosens one thing; the customer's own answers are never changed by it. */
@@ -699,7 +706,7 @@
     var why = S.emptyWhy || { kind: 'seen' }, who = waWho() || 'Dan', ask = 'https://wa.me/' + String(waNum()).replace(/\D/g, '');
     var askLink = '<a class="ct-btn ct-btn-ghost" target="_blank" rel="noopener" href="' + esc(ask + '?text=' + encodeURIComponent('Hi ' + who + ', I could not find a car in my search on SwipeToDrive. Can you help?')) + '">Message ' + esc(who) + '</a>';
     var t = 'That is everyone for now.', p = 'New cars arrive most mornings. Turn on alerts and I will tell you when one fits.', acts = '<a class="ct-btn" href="#matches">See your matches</a>';
-    if (why.kind === 'budget') { t = 'Nothing in your budget right now.'; p = 'The cheapest used car that fits everything else you chose is ' + M.gbp(why.from) + '. Raise your budget to see what is close, or ask ' + who + ' what is coming in.'; acts = '<a class="ct-btn" href="#profile">Change my budget</a>' + askLink; }
+    if (why.kind === 'budget') { t = 'Nothing in your budget right now.'; p = M.budgetGapText(why.gap, who); acts = '<a class="ct-btn" href="#profile">Change my budget</a>' + askLink; }
     else if (why.kind === 'nonew') { t = 'No brand new cars in stock that fit.'; p = 'Brand new cars come in and out of stock. ' + who + ' can order one to your spec.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
     else if (why.kind === 'choices') { t = 'No cars match every choice you made.'; p = 'Try opening up the body, fuel or colour on your profile.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
     $('#deckEmptyT').textContent = t; $('#deckEmptyP').textContent = p; $('#deckEmptyActs').innerHTML = acts;
@@ -760,7 +767,9 @@
     var top = S.deck.slice(0, 3);
     /* warm the next few photos so a fast swipe never shows a blank card */
     S.deck.slice(1, 4).forEach(function (x) { var u = x.car && (x.car.image || (x.car.images || [])[0]); if (u && !(S.pre = S.pre || {})[u]) { S.pre[u] = new Image(); S.pre[u].decoding = 'async'; S.pre[u].src = u; } });
-    $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length; deck.hidden = !top.length;
+    var canUndo = !!(S.undo && S.undo.length);
+    $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length && !canUndo; deck.hidden = !top.length;
+    $('#btnUndo').disabled = !canUndo; ['#btnPass', '#btnInfo', '#btnSuper', '#btnLike'].forEach(function (s) { $(s).disabled = !top.length; });
     if (!top.length) paintEmpty();
     var rb = $('#relaxBar'); rb.hidden = !S.relax; if (S.relax) $('#relaxText').textContent = 'Showing a wider search: ' + S.relaxLabel + '.';
     if (window.ctNoStock) window.ctNoStock.paint(!top.length);
@@ -805,13 +814,29 @@
   /* The deck always advances first; saving happens after and a failed save only shows a small note. */
   function saveSwipe(reg, liked, extra) {
     var cid = S.cust && S.cust.id;
-    Promise.resolve().then(function () { if (!cid) throw new Error('no customer'); return store.setSwipe(cid, reg, liked, extra); })
+    (S.saving = S.saving || {})[reg] = Promise.resolve().then(function () { if (!cid) throw new Error('no customer'); return store.setSwipe(cid, reg, liked, extra); })
       .catch(function (err) { console.warn('SwipeToDrive swipe save', err); toast('That swipe did not save. Carry on swiping.'); });
+  }
+  /* Undo: put the last swiped card (up to UNDO_MAX back) on top again, and remove its swipe, like and shortlist */
+  var UNDO_MAX = 5;
+  function undoSwipe() {
+    var rec = (S.undo || []).pop(); if (!rec) return; var x = rec.x, reg = x.car.reg, cid = S.cust && S.cust.id;
+    if (rec.prev) S.swipes[reg] = rec.prev; else delete S.swipes[reg];
+    x._decided = false; S.deck = S.deck.filter(function (y) { return y.car.reg !== reg; }); S.deck.unshift(x);
+    closeOverlay($('#matchModal'));
+    try { drawDeck(); } catch (e) { console.warn('SwipeToDrive deck', e); }
+    badge(); toast('Undone: ' + x.car.model + ' is back');
+    var saved = (S.saving && S.saving[reg]) || Promise.resolve();
+    saved.then(function () { if (!cid) throw new Error('no customer'); return store.unswipe(cid, reg, rec.prev || null); })
+      .catch(function (err) { console.warn('SwipeToDrive undo save', err); toast('That undo did not save. Swipe the car again.'); });
+    track('swipe_undo', { kind: x.car.kind });
   }
   function decide(x, liked, superLike) {
     if (x._decided) return; x._decided = true;
     var i = S.deck.indexOf(x); if (i !== -1) S.deck.splice(i, 1); else S.deck = S.deck.filter(function (y) { return y.car.reg !== x.car.reg; });
+    var prev = S.swipes[x.car.reg];
     S.swipes[x.car.reg] = { liked: liked, at: Date.now(), shortlisted: !!superLike };
+    (S.undo = S.undo || []).push({ x: x, prev: prev }); if (S.undo.length > UNDO_MAX) S.undo.shift();
     try { drawDeck(); } catch (e) { console.warn('SwipeToDrive deck', e); }
     saveSwipe(x.car.reg, liked, superLike ? { shortlisted: true } : null);
     track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: brandNew(x.car) ? '' : x.car.reg, kind: x.car.kind, score: x.score });
@@ -849,8 +874,10 @@
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); ctx.restore(); });
       if (++t < 150 && !$('#matchModal').hidden) requestAnimationFrame(f); else ctx.clearRect(0, 0, W, H); })();
   }
-  function openSheet(x) {
-    S.sheetAt = Date.now();
+  function openSheet(x, from) {
+    S.sheetAt = Date.now(); S.sheetFrom = from || 'deck';
+    /* Back closes the sheet: one history entry while it is open (same address, so no screen change) */
+    if ($('#sheet').hidden && !S.sheetHist) { try { history.pushState({ ctSheet: 1 }, '', location.href); S.sheetHist = true; } catch (e) {} }
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     if (c.kind === 'new_stock' && !c.detail && !c._detailAsked) { c._detailAsked = true; S.sheetCar = c;
       fetch('../lookup/order/' + encodeURIComponent(c.order_number) + '.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; })
@@ -918,7 +945,7 @@
   /* In the open details, a clearly sideways drag still says no or yes and moves on to the next car.
      Up and down stays a normal scroll (touch-action: pan-y), and the photo strip keeps its own sideways scroll. */
   function sheetSwipe() { var p = $('#sheet .ct-sheet-in'), sx = 0, sy = 0, dx = 0, on = false, horiz = null, id = null;
-    p.addEventListener('pointerdown', function (e) { if (e.button > 0 || e.target.closest('.ct-gal,a,button,input,textarea,select')) return; on = true; horiz = null; dx = 0; sx = e.clientX; sy = e.clientY; id = e.pointerId; });
+    p.addEventListener('pointerdown', function (e) { if (e.button > 0 || S.sheetFrom === 'matches' || e.target.closest('.ct-gal,a,button,input,textarea,select')) return; on = true; horiz = null; dx = 0; sx = e.clientX; sy = e.clientY; id = e.pointerId; });
     p.addEventListener('pointermove', function (e) { if (!on || e.pointerId !== id) return; var mx = e.clientX - sx, my = e.clientY - sy;
       if (horiz === null && (Math.abs(mx) > 12 || Math.abs(my) > 12)) { horiz = Math.abs(mx) > Math.abs(my) * 1.6; if (horiz) { try { p.setPointerCapture(id); } catch (er) {} p.style.transition = 'none'; } else on = false; }
       if (horiz) { dx = mx; p.style.transform = 'translateX(' + dx + 'px) rotate(' + dx * 0.02 + 'deg)'; p.classList.toggle('is-go', dx > 50); p.classList.toggle('is-stop', dx < -50); e.preventDefault(); } });
@@ -963,18 +990,20 @@
     $('#btnPass').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(-1); });
     $('#btnSuper').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(2); });
     $('#btnInfo').addEventListener('click', function () { if (S.deck[0]) openSheet(S.deck[0]); });
+    $('#btnUndo').addEventListener('click', undoSwipe);
     /* While any pop up or sheet is open the deck takes no input at all, and Escape closes the top one. */
     document.addEventListener('keydown', function (e) { var open = openOverlays();
       if (open.length) { if (e.key === 'Escape') { e.preventDefault(); closeOverlay(open[open.length - 1]); } else if (/^Arrow/.test(e.key) && !/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || '')) e.preventDefault(); return; }
       if ($('[data-screen=discover]').hidden || /INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || '')) return;
       if (e.repeat) { if (/^Arrow/.test(e.key)) e.preventDefault(); return; } /* holding a key never swipes cards unseen */
+      if (e.key === 'ArrowDown' || ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z'))) { e.preventDefault(); $('#btnUndo').click(); return; }
       if (e.key === 'ArrowRight') { e.preventDefault(); $('#btnLike').click(); } if (e.key === 'ArrowLeft') { e.preventDefault(); $('#btnPass').click(); } if (e.key === 'ArrowUp') { e.preventDefault(); $('#btnSuper').click(); } });
-    ['#btnLike', '#btnPass', '#btnSuper'].forEach(function (s) { $(s).addEventListener('click', function (e) { if (openOverlays().length) e.stopImmediatePropagation(); }, true); });
+    ['#btnLike', '#btnPass', '#btnSuper', '#btnUndo'].forEach(function (s) { $(s).addEventListener('click', function (e) { if (openOverlays().length) e.stopImmediatePropagation(); }, true); });
     $('#deck').addEventListener('pointerdown', function (e) { if (openOverlays().length) e.stopPropagation(); }, true);
     $$('[data-close]').forEach(function (b) { b.addEventListener('click', function () { closeOverlay(b.closest('.ct-sheet,.ct-match,.ct-ios')); }); });
     /* the click that follows the opening tap must not land on the backdrop and close it straight away */
     $('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet' && Date.now() - (S.sheetAt || 0) > 450) e.target.hidden = true; });
-    sheetSwipe(); initTutorial();
+    sheetSwipe(); initTutorial(); watchSheet();
   }
 
   /* ---------------- matches ---------------- */
@@ -984,7 +1013,7 @@
     var L = liked(), staff = S.session.role !== 'customer';
     $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + (waWho() || 'me') + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
-      return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>') +
+      return '<article class="ct-m" data-open="' + esc(c.reg) + '" tabindex="0" aria-label="' + esc('Full details: ' + c.model) + '">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>') +
         '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : c.kind === 'new_stock' ? ['New, in stock', c.colour, c.fuel, ready(c)].filter(Boolean).join(', ') : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
         (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f, c)) +
         (isNew ? '' : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp about ' + esc(c.kind === 'new_stock' ? 'this car' : M.normReg(c.reg)) + '</a></div>') +
@@ -995,6 +1024,10 @@
   function initMatches() {
     $('#matchList').addEventListener('click', function (e) { var bb = e.target.closest('[data-buy]'); if (bb) { var car = byReg(bb.getAttribute('data-buy')); if (car) askBuy(car); return; } });
     $('#buyYes').addEventListener('click', confirmBuy);
+    var openFromMatches = function (e) { var a = e.target.closest('[data-open]'); if (!a || e.target.closest('a,button,input,select,textarea')) return;
+      var c = byReg(a.getAttribute('data-open')); if (c) openSheet({ car: c, score: 0, reasons: [] }, 'matches'); };
+    $('#matchList').addEventListener('click', openFromMatches);
+    $('#matchList').addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-open]')) { e.preventDefault(); openFromMatches(e); } });
     $('#matchList').addEventListener('click', function (e) { var b = e.target.closest('[data-unlike]'); if (!b) return; var r = b.getAttribute('data-unlike'); S.swipes[r] = { liked: false, at: Date.now() }; saveSwipe(r, false); showMatches(); badge(); });
     $('#sendBtn').addEventListener('click', sendLead);
   }

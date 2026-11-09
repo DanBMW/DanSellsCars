@@ -187,3 +187,8 @@ a{color:var(--acc2)}
 .rf-stamp{margin:8px 0 0;color:#7fd8a8;font:500 11px/1.4 var(--mono);letter-spacing:.06em}
 #pfRef{margin:-4px 0 10px}
 .rf-ctl .ct-f{flex:1 1 100%;display:flex;align-items:center;gap:10px;margin:0}.rf-ctl .ct-f select{flex:1;min-width:0;width:auto}.rf-paid span{white-space:nowrap}
+/* undo the last swipe: a small round control beside Pass, dimmed when there is nothing to undo */
+.ct-undo{width:44px;height:44px;align-self:center;color:#c9d1db;border-radius:50%!important}
+.ct-act:disabled{opacity:.35;cursor:default}
+@media (max-width:380px){.ct-actions{gap:10px}}
+.ct-m[data-open]{cursor:pointer}

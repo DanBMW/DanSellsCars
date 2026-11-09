@@ -302,6 +302,20 @@
     var m = rs.length % 2 ? rs[(rs.length - 1) / 2] : (rs[rs.length / 2 - 1] + rs[rs.length / 2]) / 2;
     return Math.round(m * p);
   }
+  /* 'Nothing in your budget': how far the cheapest car that fits everything else is from the budget, in the customer's own
+     terms. Monthly budgets use real lender monthly figures only (never the hidden rough estimate); cash budgets the cash price. */
+  function budgetGap(cars, p) { p = p || {}; var real = (cars || []).filter(function (c) { return c && c.kind !== 'new'; }), asc = function (a, b) { return a - b; };
+    if (p.budget_type === 'monthly') { if (!(p.monthly_gbp > 0) || !real.length) return null;
+      var q = real.map(function (c) { return c.finance && c.finance.monthly; }).filter(function (v) { return v > 0; }).sort(asc);
+      return { type: 'monthly', budget: p.monthly_gbp, from: q.length ? q[0] : null, over: q.length ? Math.round((q[0] - p.monthly_gbp) * 100) / 100 : null }; }
+    if (p.budget_type === 'cash' && p.cash_gbp > 0) { var pr = real.map(function (c) { return c.price_gbp; }).filter(function (v) { return v > 0; }).sort(asc);
+      return pr.length ? { type: 'cash', budget: p.cash_gbp, from: pr[0], over: pr[0] - p.cash_gbp } : null; }
+    return null; }
+  function budgetGapText(g, who) { if (!g) return ''; who = who || 'Dan';
+    if (g.type === 'cash') return 'The cheapest used car that fits everything else you chose is ' + gbp(g.from) + '. Raise your budget to see what is close, or ask ' + who + ' what is coming in.';
+    if (!g.from) return 'None of the cars that fit everything else you chose has a monthly figure yet. Ask ' + who + ' for figures, or raise your monthly budget.';
+    return 'The lowest monthly payment on a car that fits everything else you chose is ' + gbp2(g.from) + ' a month' + (g.over > 0 ? ', ' + gbp2(g.over) + ' over your ' + gbp(g.budget) + ' a month budget' : '') +
+      '. That is the lender\'s representative example, so a bigger deposit or longer term can bring it down. Raise your monthly budget to see what is close, or ask ' + who + '.'; }
   function stampEstimates(cars) { (cars || []).forEach(function (c) { if (c && c.kind !== 'new' && !(c.finance && c.finance.monthly) && c.est_monthly === undefined) c.est_monthly = estimateMonthly(c, cars); }); return cars; }
   function maybeMonthly(car, p) { var e = car.est_monthly; return !!(e > 0 && p && p.monthly_gbp > 0 && e <= p.monthly_gbp * EST_KEEP); }
   /* for the card and detail views: show 'This may be in budget, ask Dan for figures' instead of a monthly price */
@@ -444,5 +458,5 @@
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
+  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, budgetGap: budgetGap, budgetGapText: budgetGapText, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
 })(typeof window !== 'undefined' ? window : globalThis);
