@@ -187,7 +187,7 @@
   var NEW_LEEWAY = 1.05;
   function hasBudget(p) { return !!p && ((p.budget_type === 'cash' && p.cash_gbp > 0) || (p.budget_type !== 'cash' && p.monthly_gbp > 0)); }
   function score(car, p) {
-    p = p || {}; var sc = 40, why = [], ok = true, s = S(), notes = [], unconf = false;
+    p = p || {}; var sc = 40, why = [], ok = true, s = S(), notes = [], unconf = false, maybe = false;
     var isNew = car.kind === 'new', ns = car.kind === 'new_stock';   /* new_stock: a real new car in retailer stock */
     if (ns) return scoreNewStock(car, p);
     if (p.new_used === 'new' && !isNew) return { score: 0, reasons: [], ok: false };
@@ -217,7 +217,7 @@
         if (car.finance && car.finance.monthly) {
           var q = car.finance.monthly / p.monthly_gbp;
           if (q > 1.1) ok = false; else if (q <= 1) { sc += 15; why.push('In your monthly budget'); } else sc += 4;
-        } else ok = false;   /* no lender quote: we cannot say it fits a monthly budget, so it is not shown (same rule as new stock) */
+        } else { if (maybeMonthly(car, p)) { maybe = true; sc -= 4; why.push('May be in your monthly budget'); } else ok = false; }   /* no lender quote: the rough estimate decides, never shown */
       }
       var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
       if (cols.length) { var fam = colourFamily(car);
@@ -231,7 +231,7 @@
       if (car.source === 'forecourt') sc += 2;
       if (justArrived(car)) { sc += 5; why.push('Just arrived'); }   /* a modest nudge, never enough to lift a car past the filters */
     }
-    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok, notes: notes, unconfirmed: unconf };
+    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok, notes: notes, unconfirmed: unconf, budgetMaybe: ok && maybe };
   }
   /* Reversing camera: a must have keeps cars with no clear answer, ranked below confirmed cars with a note.
      A would like gives them no boost. Rules live in stock-core.js reversingCamera. */
@@ -261,24 +261,51 @@
   }
   /* New stock: in budget only on its actual current price. No discount assumptions. Staff alerts only. */
   function scoreNewStock(car, p) {
-    var sc = 38, why = [], ok = true, s = S();
+    var sc = 38, why = [], ok = true, s = S(), maybe = false;
     if (p.new_used === 'used') return { score: 0, reasons: [], ok: false };
     var fk = [s.fuelKey(car)];
     var ff = fuelFit(fk, p); sc += ff.sc; if (ff.why) why.push(ff.why); if (!ff.ok) ok = false;
     var bk = s.bodyKeys(car) || [];
     if (p.body && p.body !== 'any') { if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12; }
     var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
-    /* with a budget set, a new car with no real price or quoted monthly is not shown unless they chose brand new */
-    if (hasBudget(p) && p.new_used !== 'new' && (p.budget_type === 'cash' ? !car.price_gbp : !(car.finance && car.finance.monthly))) ok = false;
+    /* with a cash budget set, a new car with no real price is not shown unless they chose brand new (monthly: see below) */
+    if (hasBudget(p) && p.new_used !== 'new' && p.budget_type === 'cash' && !car.price_gbp) ok = false;
     if (p.budget_type === 'cash' && p.cash_gbp > 0 && car.price_gbp) { if (car.price_gbp <= p.cash_gbp) { sc += 15; why.push('In budget at the current price'); } else if (car.price_gbp > p.cash_gbp * NEW_LEEWAY) ok = false; }
-    /* monthly: only on a figure that comes with a full representative example (car.finance); otherwise no monthly test or figure */
-    if (p.budget_type === 'monthly' && p.monthly_gbp > 0) { if (car.finance && car.finance.monthly) { if (car.finance.monthly <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else if (car.finance.monthly > p.monthly_gbp * NEW_LEEWAY) ok = false; } else sc -= 4; }
+    /* monthly: a real figure only with a full representative example (car.finance). Without one, the rough estimate
+       (never shown) decides: may fit, keep it with 'ask for figures'; clearly over, hide it. */
+    if (p.budget_type === 'monthly' && p.monthly_gbp > 0) { if (car.finance && car.finance.monthly) { if (car.finance.monthly <= p.monthly_gbp) { sc += 15; why.push('In monthly budget at the current price'); } else if (car.finance.monthly > p.monthly_gbp * NEW_LEEWAY) ok = false; }
+      else if (maybeMonthly(car, p)) { maybe = true; sc -= 4; why.push('May be in your monthly budget'); }
+      else if (car.est_monthly > 0 || p.new_used !== 'new') ok = false; else sc -= 4; }   /* no data for any estimate: brand new only customers still see it, as before */
     var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
     if (cols.length) { var fam = colourFamily(car); if (cols.indexOf(fam) !== -1) { sc += 10; why.push(fam + ', a colour you like'); } else sc -= 4; if (mustC.length && fam && mustC.indexOf(fam) === -1) ok = false; }
     var notes = [], unconf = false;
     var sp = specScore(car, p); sc += sp.sc; sp.why.forEach(function (w) { why.push(w); }); if (!sp.ok) ok = false; sp.notes.forEach(function (n) { notes.push(n); }); if (sp.unconf) unconf = true;
-    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok, notes: notes, unconfirmed: unconf };
+    return { score: Math.max(1, Math.min(99, Math.round(sc))), reasons: why, ok: ok, notes: notes, unconfirmed: unconf, budgetMaybe: ok && maybe };
   }
+  /* Rough monthly for a car with no lender quote (used with no quote, or new stock whose quote no longer matches the price).
+     NEVER shown to anyone: it only decides whether a monthly-budget customer may be in budget ('ask for figures') or is
+     clearly over (hidden). est_monthly is stamped on the car by stampEstimates, which rank/pickLatest/noStock call.
+     1) new stock with an out of date lender quote: that quote's monthly, scaled by (price - deposit) / (old cash price - deposit).
+     2) otherwise the median monthly-to-price ratio of comparable quoted cars in the same list (same new/used, price within
+        25%, used within 1 year of age), at least 3 of them, else all quoted cars of that type, times this car's price. */
+  var EST_KEEP = 1.15;   /* the estimate is rough: anything up to 15% over budget 'may be in budget'; beyond that is clearly over */
+  function quoteRatio(c) { return c && c.finance && c.finance.monthly && c.price_gbp > 0 ? c.finance.monthly / c.price_gbp : null; }
+  function estimateMonthly(car, cars) {
+    if (!car || car.kind === 'new' || !(car.price_gbp > 0)) return null;
+    var sq = car.stale_quote, p = car.price_gbp;
+    if (sq && sq.monthly > 0 && sq.cash_price > 0) { var dep = sq.deposit > 0 && sq.deposit < Math.min(p, sq.cash_price) ? sq.deposit : 0; return Math.round(sq.monthly * (p - dep) / (sq.cash_price - dep)); }
+    var ns = car.kind === 'new_stock', y = parseInt(car.year, 10);
+    var pick = function (tight) { return (cars || []).filter(function (c) { if (c === car || c.kind === 'new' || (c.kind === 'new_stock') !== ns || !quoteRatio(c)) return false;
+        if (!tight) return true; if (Math.abs(c.price_gbp - p) / p > 0.25) return false;
+        if (!ns) { var cy = parseInt(c.year, 10); if (!y || !cy || Math.abs(cy - y) > 1) return false; } return true; }).map(quoteRatio).sort(function (a, b) { return a - b; }); };
+    var rs = pick(true); if (rs.length < 3) rs = pick(false); if (!rs.length) return null;
+    var m = rs.length % 2 ? rs[(rs.length - 1) / 2] : (rs[rs.length / 2 - 1] + rs[rs.length / 2]) / 2;
+    return Math.round(m * p);
+  }
+  function stampEstimates(cars) { (cars || []).forEach(function (c) { if (c && c.kind !== 'new' && !(c.finance && c.finance.monthly) && c.est_monthly === undefined) c.est_monthly = estimateMonthly(c, cars); }); return cars; }
+  function maybeMonthly(car, p) { var e = car.est_monthly; return !!(e > 0 && p && p.monthly_gbp > 0 && e <= p.monthly_gbp * EST_KEEP); }
+  /* for the card and detail views: show 'This may be in budget, ask Dan for figures' instead of a monthly price */
+  function budgetMaybe(car, p) { return !!(car && car.kind !== 'new' && !(car.finance && car.finance.monthly) && p && p.budget_type === 'monthly' && maybeMonthly(car, p)); }
   /* Real new car in retailer stock (lookup/new-stock.json). The id 'NEW' + order number is the same one the alerts job
      stores in stock_seen, so app, alerts and buy requests all agree. Monthly only with a complete representative example. */
   var FE_NEED = ['product', 'lender', 'apr', 'monthly', 'payments', 'term_months', 'deposit', 'cash_price', 'amount_of_credit', 'final_payment', 'total_payable', 'annual_mileage'];
@@ -306,7 +333,8 @@
   function applyLenderQuotes(cars, file, fin, now) { var q = (file && file.quotes) || {}, gen = file && file.generated_at;
     (cars || []).forEach(function (c) { if (c.kind !== 'new_stock') return; var e = q[String(c.order_number)];
       if (fin && e && fin.newOk(c, e, gen, now)) { c.finance = { monthly: e.monthly, product: e.product, lender: e.lender, representative_example: fin.newRep(e), legal: fin.BROKER, source: 'lender' }; c.monthly_gbp = e.monthly; }
-      else { c.finance = null; c.monthly_gbp = null; } });
+      else { c.finance = null; c.monthly_gbp = null; c.est_monthly = undefined;   /* re-estimated by stampEstimates */
+        c.stale_quote = e && e.monthly > 0 && e.cash_price > 0 ? { monthly: e.monthly, cash_price: e.cash_price, deposit: e.deposit } : null; } });
     return cars; }
   /* does a real stock car stand in for a model placeholder (MBG list name)? M cars only cover M names. */
   var BODY = ['gran coupe', 'active tourer', 'convertible', 'touring', 'saloon', 'coupe'];
@@ -338,7 +366,7 @@
     ['new_used', function (p) { return Object.assign({}, p, { new_used: 'both' }); }],
     ['colours', function (p) { return Object.assign({}, p, { colours_must: [] }); }],
     ['specs', function (p) { return Object.assign({}, p, { specs_must: [] }); }]];
-  function noStock(cars, p) { p = p || {}; var seen = {}, out = [];
+  function noStock(cars, p) { p = p || {}; var seen = {}, out = []; stampEstimates(cars);
     var models = [].concat(p.models_must || [], p.models || []).filter(function (m) { var k = String(m).toLowerCase(); if (!m || seen[k]) return false; seen[k] = 1; return true; });
     var real = (cars || []).filter(function (c) { return c.kind !== 'new'; });
     models.forEach(function (m) {
@@ -386,8 +414,8 @@
   function noStockWiden(x) { if (x.kind !== 'filter') return null;
     return { fuel: { label: 'Show any fuel', patch: { fuel: 'open', fuel_must: [] } }, new_used: { label: 'Show new and used', patch: { new_used: 'both' } },
       colours: { label: 'Any colour is fine', patch: { colours_must: [] } }, specs: { label: 'Make spec a would like', patch: { specs_must: [] } } }[x.filter] || null; }
-  function rank(cars, p) {
-    return cars.map(function (c) { var r = score(c, p); return { car: c, score: r.score, reasons: r.reasons, ok: r.ok, notes: r.notes || [], unconfirmed: !!r.unconfirmed }; })
+  function rank(cars, p) { stampEstimates(cars);
+    return cars.map(function (c) { var r = score(c, p); return { car: c, score: r.score, reasons: r.reasons, ok: r.ok, notes: r.notes || [], unconfirmed: !!r.unconfirmed, budgetMaybe: !!r.budgetMaybe }; })
       .filter(function (x) { return x.ok; }).sort(function (a, b) { return (a.unconfirmed - b.unconfirmed) || (b.score - a.score); });
   }
   function waText(car, who) {
@@ -408,13 +436,13 @@
   /* Send customer latest stock: their current top matches, real cars only (no model placeholders), sold or
      removed cars left out, in stock preferred (forecourt, then group, then new in retailer stock), best first. */
   function pickLatest(cars, p, n) {
-    var rank = { forecourt: 0, group: 1 };
+    var rank = { forecourt: 0, group: 1 }; stampEstimates(cars);
     return (cars || []).filter(function (c) { return c && c.kind !== 'new' && (!c.status || c.status === 'in_stock') && !c.removed_at; })
-      .map(function (c) { var r = score(c, p || {}); return { car: c, score: r.score, ok: r.ok, reasons: r.reasons, notes: r.notes || [], unconfirmed: !!r.unconfirmed }; })
+      .map(function (c) { var r = score(c, p || {}); return { car: c, score: r.score, ok: r.ok, reasons: r.reasons, notes: r.notes || [], unconfirmed: !!r.unconfirmed, budgetMaybe: !!r.budgetMaybe }; })
       .filter(function (x) { return x.ok && x.score >= 55; })
       .sort(function (a, b) { var ra = a.car.kind === 'new_stock' ? 2 : (rank[a.car.source] != null ? rank[a.car.source] : 1), rb = b.car.kind === 'new_stock' ? 2 : (rank[b.car.source] != null ? rank[b.car.source] : 1);
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
+  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
 })(typeof window !== 'undefined' ? window : globalThis);

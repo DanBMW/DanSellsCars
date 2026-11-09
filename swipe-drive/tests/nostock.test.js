@@ -42,7 +42,8 @@ global.window.dsFin = { newOk: (c, e) => e && e.good, newRep: e => 'rep ' + e.mo
 const qcars = [nsCar({ order_number: '1', finance: { monthly: 1 } }), nsCar({ order_number: '2', finance: { monthly: 1 } })];
 M.applyLenderQuotes(qcars, { generated_at: 'x', quotes: { 1: { good: true, monthly: 480, product: 'PCP', lender: 'BMW FS' }, 2: { good: false, monthly: 100 } } }, window.dsFin);
 ok(qcars[0].finance.monthly === 480 && qcars[0].finance.source === 'lender' && qcars[1].finance === null, 'only a checked lender quote sets a new car monthly');
-ok(M.rank(qcars, { budget_type: 'monthly', monthly_gbp: 500 }).length === 1, 'monthly budget matches only on the real quote');
+ok(M.rank(qcars, { budget_type: 'monthly', monthly_gbp: 500 }).map(x => x.car.order_number + (x.budgetMaybe ? 'maybe' : '')).join() === '1,2maybe', 'monthly budget: real quote matches, a car with a rejected quote only as may be in budget (rough estimate, never shown)');
+ok(M.rank([nsCar({ order_number: '1', finance: { monthly: 480 } }), nsCar({ order_number: '5', finance: null })], { budget_type: 'monthly', monthly_gbp: 300 }).length === 0, 'estimate clearly over budget: hidden');
 r = M.noStock([nsCar({ series: 'X5', model: 'BMW X5', price_gbp: 70000, order_number: '3' }), ph], { models: ['X5'], budget_type: 'cash', cash_gbp: 40000 });
 ok(r[0].kind === 'budget' && !r[0].new_avail, 'cheapest new X5 in stock over budget: budget message, no order suggestion');
 r = M.noStock([nsCar({ series: 'X5', model: 'BMW X5', price_gbp: 70000, order_number: '3' })], { models: ['X5'], budget_type: 'cash', cash_gbp: 80000, new_used: 'used' });

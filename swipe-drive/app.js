@@ -717,7 +717,7 @@
     var ns = c.kind === 'new_stock', src = stockLabel(c);
     var tags = isNew ? [c.group] : ns ? [c.colour, c.fuel, c.gearbox, ready(c)] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
-      : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">Monthly: ask for a quote</div>');
+      : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">' + esc(noQuoteText(c, x.budgetMaybe)) + '</div>');
     var just = M.justArrived(c) ? '<span class="ct-just">Just arrived</span>' : '';
     return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' + just +
       '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">SHORTLIST</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
@@ -861,7 +861,7 @@
       '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + (M.justArrived(c) ? '<span class="ct-just ct-just-inline">Just arrived</span> ' : '') + esc(isNew ? 'Brand new BMW, ordered to your spec' : stockLabel(c)) + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
       descHtml(c) +
-      (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
+      (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f, c)) +
       tdHtml(c) + (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
     $('#sheet').hidden = false;
   }
@@ -891,7 +891,10 @@
       '<g class="g-tick">' + ticks + '</g><line class="g-needle" x1="32" y1="32" x2="' + n[0].toFixed(1) + '" y2="' + n[1].toFixed(1) + '"/><circle cx="32" cy="32" r="3" class="g-hub"/></svg>' +
       '<span class="g-num">' + sc + '<small>%</small></span><span class="g-lab">match</span></div>'; }
   function plate(reg) { return '<span class="ct-plate" aria-label="Registration ' + esc(reg) + '">' + esc(String(reg).replace(/^([A-Z]{2}\d{2})([A-Z]{3})$/, '$1 $2')) + '</span>'; }
-  function finHtml(f) { return f ? '<div class="ct-repx"><b>' + esc(f.headline) + '</b><br><b>Representative example.</b> ' + esc(f.example) + '</div>' : '<p class="ct-mon">Monthly: ask for a quote</p>'; }
+  function finHtml(f, c) { return f ? '<div class="ct-repx"><b>' + esc(f.headline) + '</b><br><b>Representative example.</b> ' + esc(f.example) + '</div>' : '<p class="ct-mon">' + esc(noQuoteText(c)) + '</p>'; }
+  /* no lender quote: a rough estimate (never shown, match-core.js estimateMonthly) says whether a monthly budget may stretch to it */
+  function noQuoteText(c, maybe) { if (maybe == null) maybe = !!(c && S.cust && M.budgetMaybe && M.budgetMaybe(c, S.cust));
+    return maybe ? 'This may be in budget, ask ' + (waWho() || 'me') + ' for figures' : 'Monthly: ask for a quote'; }
   function reduced() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
   /* tyre tread marks behind the card while it is dragged */
   function treadTrail(el) { var cv = $('.ct-tread', el), ctx = cv && cv.getContext('2d'), pts = [];
@@ -980,7 +983,7 @@
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
       return '<article class="ct-m">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>') +
         '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : c.kind === 'new_stock' ? ['New, in stock', c.colour, c.fuel, ready(c)].filter(Boolean).join(', ') : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
-        (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f)) +
+        (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f, c)) +
         (isNew ? '' : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp about ' + esc(c.kind === 'new_stock' ? 'this car' : M.normReg(c.reg)) + '</a></div>') +
         buyOrAsk(c) +
         '<button class="ct-unlike" type="button" data-unlike="' + esc(c.reg) + '">Remove from matches</button></div></article>'; }).join('');
