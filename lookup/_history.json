@@ -191,8 +191,8 @@
  },
  "EO72SFU": {
   "first_seen": "2026-10-22",
-  "last_seen": "2026-10-23",
-  "removed_at": "2026-10-23"
+  "last_seen": "2026-11-09",
+  "removed_at": null
  },
  "EO73ZNT": {
   "first_seen": "2026-10-21",
@@ -222,7 +222,7 @@
  "EY73MHU": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-09",
-  "removed_at": null
+  "removed_at": "2026-11-09"
  },
  "FD23KYU": {
   "first_seen": "2026-10-07",
