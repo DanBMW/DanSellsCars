@@ -1,0 +1,20 @@
+name: cancel-stuck-pages
+# One-off: clears a Pages deployment GitHub still thinks is running (from 20:37 UK, 9 Nov 2026).
+on:
+  push:
+    paths: ['.github/workflows/cancel-stuck-pages.yml']
+permissions:
+  pages: write
+  deployments: write
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel stuck Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for sha in 8f9ebcce6313ca0e232380f30d039cdf2e53bf94 00e6b45afa908034e22428b57e0955dc90cd38c3; do
+            echo "Cancelling $sha"
+            gh api -X POST "repos/${{ github.repository }}/pages/deployments/$sha/cancel" || true
+          done
