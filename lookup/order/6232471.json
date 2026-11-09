@@ -35,8 +35,8 @@
   "excess_pence": null,
   "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
  },
- "lead_time_weeks_min": 4,
- "lead_time_weeks_max": 6,
+ "lead_time_weeks_min": 3,
+ "lead_time_weeks_max": 5,
  "on_hold": false,
  "options": [
   "Sun Protection Glass"
