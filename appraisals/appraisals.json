@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-09T12:02:18.013Z",
+  "captured": "2026-11-09T14:02:20.939Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV72SSO",
+      "appraisedAt": "2026-11-09T13:11:28.900Z",
+      "make": "BMW",
+      "model": "iX3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "RV71AVM",
+      "appraisedAt": "2026-11-09T12:20:00.980Z",
+      "make": "TOYOTA",
+      "model": "RAV4",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--rF6Ja9qK--/c_fill,h_300,w_300/v1794226872/Live/Appraisals/9636105/531f9ec7-7406-4d69-87f8-1a555d8198a7.jpg"
+    },
+    {
+      "registration": "LV64SOU",
+      "appraisedAt": "2026-11-09T12:12:28.717Z",
+      "make": "BMW",
+      "model": "2 Series Active Tourer",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--4oghWw_f--/c_fill,h_300,w_300/v1794226351/Live/Appraisals/9636074/58edcd80-39d3-4ecd-b1f9-74d649feaf1e.jpg"
+    },
     {
       "registration": "GM70ZGN",
       "appraisedAt": "2026-11-08T14:40:05.394Z",
