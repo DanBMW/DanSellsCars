@@ -1,9 +1,59 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-09T14:02:20.939Z",
+  "captured": "2026-11-09T16:02:16.197Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "Y99RKE",
+      "appraisedAt": "2026-11-09T15:48:34.024Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "KS67HVL",
+      "appraisedAt": "2026-11-09T15:25:13.058Z",
+      "make": "VOLKSWAGEN",
+      "model": "Passat",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "YS67HVL",
+      "appraisedAt": "2026-11-09T15:23:10.074Z",
+      "make": "NISSAN",
+      "model": "NT400 Cabstar",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "D16BYY",
+      "appraisedAt": "2026-11-09T15:20:41.769Z",
+      "make": "AUDI",
+      "model": "Q5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LV75HOJ",
+      "appraisedAt": "2026-11-09T14:55:04.000Z",
+      "make": "CUPRA",
+      "model": "Terramar",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "LV72SSO",
       "appraisedAt": "2026-11-09T13:11:28.900Z",
