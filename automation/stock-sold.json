@@ -297,7 +297,7 @@
    "reg": "LV26HBH",
    "mileage": "6,984 miles",
    "colour": "White",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "Coupe",
    "power": "189 hp",
@@ -729,7 +729,7 @@
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£41,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-684e-7385-9921-eebbf49d6c19-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1c022-11ba-77c5-93ef-d0f85fe771d8-preview.jpg"
   },
   "259391": {
    "id": "259391",
@@ -763,7 +763,7 @@
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£47,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-65f3-7cd0-9f05-095eccd474cc-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1c00e-d5b2-7bf7-bc28-8390a98650ca-preview.jpg"
   },
   "259389": {
    "id": "259389",
@@ -934,6 +934,40 @@
    "seats": "5",
    "price": "£34,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1b60c-7eb9-7623-a76a-52d881163e19-preview.jpg"
+  },
+  "260154": {
+   "id": "260154",
+   "model": "BMW X1 sDrive20i M Sport",
+   "series": "X1",
+   "year": "2024",
+   "reg": "YF24JLX",
+   "mileage": "15,801 miles",
+   "colour": "Grey",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "SUV",
+   "power": "170 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£30,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1bfd3-5979-7eeb-916c-fa888bc20190-preview.jpg"
+  },
+  "260153": {
+   "id": "260153",
+   "model": "BMW iX3 M Sport",
+   "series": "iX3",
+   "year": "2022",
+   "reg": "AV72YEK",
+   "mileage": "33,325 miles",
+   "colour": "Grey",
+   "fuel": "Electric",
+   "fuelGroup": "Electric",
+   "body": "SUV",
+   "power": "286 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£26,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1c01c-90e4-73c8-91ee-6dfbd41ad4d5-preview.jpg"
   }
  },
  "sold": {
@@ -954,7 +988,7 @@
    "price": "£67,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a142ad-821b-7241-8b82-3cd22b55bf48-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 66
+   "runs_missing": 67
   },
   "254947": {
    "id": "254947",
@@ -973,7 +1007,7 @@
    "price": "£22,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a13290-7b23-7cd9-bd1b-c0417a70d45a-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 66
+   "runs_missing": 67
   },
   "253494": {
    "id": "253494",
@@ -992,7 +1026,7 @@
    "price": "£16,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a10f2d-9797-7472-b353-f6791a2a79b7-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 66
+   "runs_missing": 67
   },
   "238259": {
    "id": "238259",
@@ -1011,7 +1045,7 @@
    "price": "£25,250",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019eca4d-85e9-77b3-89a1-58949220494e-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 66
+   "runs_missing": 67
   },
   "240864": {
    "id": "240864",
@@ -1030,7 +1064,7 @@
    "price": "£27,800",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a185e9-588c-760b-871c-848d217961a4-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 66
+   "runs_missing": 67
   },
   "251472": {
    "id": "251472",
@@ -1049,7 +1083,7 @@
    "price": "£25,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0dc01-6fbf-7c59-be08-cc4529d450b4-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 66
+   "runs_missing": 67
   },
   "249631": {
    "id": "249631",
@@ -1068,7 +1102,7 @@
    "price": "£25,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18d9a-69b9-7f45-a004-07af02ee0b47-preview.jpg",
    "first_missing": "2026-11-02",
-   "runs_missing": 66
+   "runs_missing": 67
   },
   "247774": {
    "id": "247774",
@@ -1087,7 +1121,7 @@
    "price": "£34,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-fd83-763a-bcf9-561610cf6218-preview.jpg",
    "first_missing": "2026-11-04",
-   "runs_missing": 47
+   "runs_missing": 48
   },
   "241291": {
    "id": "241291",
@@ -1106,7 +1140,7 @@
    "price": "£65,750",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f2849-6e65-71e2-893b-6e72c6af04c2-preview.jpg",
    "first_missing": "2026-11-05",
-   "runs_missing": 37
+   "runs_missing": 38
   },
   "250259": {
    "id": "250259",
@@ -1125,7 +1159,7 @@
    "price": "£63,850",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18154-59ee-7a4a-a1e8-0dc79e11a6eb-preview.jpg",
    "first_missing": "2026-11-05",
-   "runs_missing": 34
+   "runs_missing": 35
   },
   "244227": {
    "id": "244227",
@@ -1144,7 +1178,7 @@
    "price": "£27,450",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0039b-16b9-731d-a203-d915a20d12a7-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 15
+   "runs_missing": 16
   },
   "259393": {
    "id": "259393",
@@ -1163,7 +1197,7 @@
    "price": "£18,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ac8b-c61c-78e8-8bc5-82cdbd35b356-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 15
+   "runs_missing": 16
   },
   "257458": {
    "id": "257458",
@@ -1182,7 +1216,7 @@
    "price": "£30,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18122-fd84-7aa3-9209-609b77b2f6e6-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 15
+   "runs_missing": 16
   },
   "259387": {
    "id": "259387",
@@ -1201,7 +1235,7 @@
    "price": "£23,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-472d-76e4-9d6e-609f5e500ebb-preview.jpg",
    "first_missing": "2026-11-08",
-   "runs_missing": 5
+   "runs_missing": 6
   }
  },
  "updated": "2026-11-09",

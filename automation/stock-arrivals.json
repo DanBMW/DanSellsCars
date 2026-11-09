@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-09T07:00:31.000Z",
+ "generated_at": "2026-11-09T12:00:34.000Z",
  "today": "2026-11-09",
  "note": "first_seen is the first morning this repo saw the car in a stock snapshot. A car whose first_seen equals its list's history_from was already there when the history began and has NOT just arrived.",
  "lists": {
@@ -175,7 +175,9 @@
     "260129": "2026-11-07",
     "260130": "2026-11-07",
     "260131": "2026-11-07",
-    "260132": "2026-11-07"
+    "260132": "2026-11-07",
+    "260153": "2026-11-09",
+    "260154": "2026-11-09"
    }
   },
   "group": {
