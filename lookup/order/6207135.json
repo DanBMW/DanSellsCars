@@ -71,7 +71,7 @@
  "retailer_id": "26177",
  "retailer_name": "Hedin Automotive Bromley",
  "first_seen": "2026-11-02",
- "status": "in_stock",
- "removed_at": null,
- "available_until": null
+ "removed_at": "2026-11-09",
+ "status": "removed",
+ "available_until": "2026-12-09"
 }
