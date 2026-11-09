@@ -343,6 +343,8 @@
     var a = NAV_ORDER.indexOf(lastScreen), b = NAV_ORDER.indexOf(h); document.documentElement.dataset.moDir = a !== -1 && b !== -1 && b < a ? 'back' : ''; lastScreen = h;
     try { var vt = document.startViewTransition(route), q = function () {}; vt.ready['catch'](q); vt.finished['catch'](q); vt.updateCallbackDone['catch'](q); } catch (e) { route(); } }
   window.addEventListener('hashchange', routeAnimated);
+  /* the phone's back button (or any screen change) never leaves a car sheet or pop up stranded over another screen */
+  window.addEventListener('hashchange', function () { openOverlays().forEach(closeOverlay); });
 
   /* ---------------- sign in ---------------- */
   function initSignin() {
@@ -949,8 +951,9 @@
     try { $('.tut-go', o).focus({ preventScroll: true }); } catch (e) {} track('tutorial_shown', { replay: !!replay, reduced: rm }); }
   function topCard() { return $('#deck .ct-card:last-child'); }
   var OVERLAYS = ['#sheet', '#matchModal', '#buyModal', '#iosGuide'];
-  function openOverlays() { return OVERLAYS.map(function (s) { return $(s); }).filter(function (el) { return el && !el.hidden; }); }
-  function closeOverlay(el) { if (!el) return; el.hidden = true; if (el.id === 'matchModal') { var c = $('#confetti'); try { c.getContext('2d').clearRect(0, 0, c.width, c.height); } catch (e) {} } }
+  /* the first-visit tutorial counts too: while it is up, arrow keys and buttons must not swipe the cards hidden behind it */
+  function openOverlays() { return OVERLAYS.map(function (s) { return $(s); }).concat([$('.ct-tut')]).filter(function (el) { return el && !el.hidden; }); }
+  function closeOverlay(el) { if (!el) return; if (el.classList.contains('ct-tut')) { var sk = $('.ct-tut-skip', el); if (sk) sk.click(); else el.remove(); return; } el.hidden = true; if (el.id === 'matchModal') { var c = $('#confetti'); try { c.getContext('2d').clearRect(0, 0, c.width, c.height); } catch (e) {} } }
   function initDeck() {
     $('#deckWiden').addEventListener('click', function (e) { var b = e.target.closest('[data-widen]'); if (!b) return; var o = $('#deckWiden')._opts[+b.getAttribute('data-widen')];
       if (!o) return; S.relax = o.relax; S.relaxLabel = o.label.replace(/ to see$/, '').toLowerCase(); S.deck = []; showDeck(); });
