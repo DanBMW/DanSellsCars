@@ -217,7 +217,7 @@
         if (car.finance && car.finance.monthly) {
           var q = car.finance.monthly / p.monthly_gbp;
           if (q > 1.1) ok = false; else if (q <= 1) { sc += 15; why.push('In your monthly budget'); } else sc += 4;
-        } else sc -= 4;
+        } else ok = false;   /* no lender quote: we cannot say it fits a monthly budget, so it is not shown (same rule as new stock) */
       }
       var cols = (p.colours || []).filter(function (x) { return x !== 'Any'; }), mustC = p.colours_must || [];
       if (cols.length) { var fam = colourFamily(car);
