@@ -801,6 +801,25 @@
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
     el._fling = function (dir) { fling(el, x, dir, 0); };
   }
+  /* Short phones: the buttons float over the foot of the card. A sideways drag that starts on one of them swipes the card,
+     so the buttons never take away part of the card's swipe area. A tap still presses the button. */
+  function floatDrag() {
+    var acts = $('#deckActions'), st = null;
+    acts.addEventListener('pointerdown', function (e) {
+      st = null; if (e.button > 0 || !e.target.closest('.ct-act') || getComputedStyle(acts).position !== 'fixed') return;
+      st = { id: e.pointerId, x: e.clientX, y: e.clientY, type: e.pointerType };
+    });
+    acts.addEventListener('pointermove', function (e) {
+      if (!st || e.pointerId !== st.id) return;
+      var dx = e.clientX - st.x, dy = e.clientY - st.y; if (Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy)) return;
+      var s = st, card = $('#deck .ct-card:last-child'); st = null; if (!card || openOverlays().length) return;
+      var o = { bubbles: true, cancelable: true, pointerId: s.id, pointerType: s.type, isPrimary: true, button: 0, buttons: 1 };
+      card.dispatchEvent(new PointerEvent('pointerdown', Object.assign({ clientX: s.x, clientY: s.y }, o)));
+      try { card.setPointerCapture(s.id); } catch (er) {}
+      card.dispatchEvent(new PointerEvent('pointermove', Object.assign({ clientX: e.clientX, clientY: e.clientY }, o)));
+    });
+    ['pointerup', 'pointercancel'].forEach(function (t) { acts.addEventListener(t, function () { st = null; }); });
+  }
   function fling(el, x, dir, v) {
     if (el._flung) return; el._flung = true;
     var w = window.innerWidth, rm = reduced(); el.style.transition = rm ? 'opacity .2s' : 'transform .38s cubic-bezier(.3,.7,.4,1)';
@@ -1000,6 +1019,7 @@
       if (e.key === 'ArrowRight') { e.preventDefault(); $('#btnLike').click(); } if (e.key === 'ArrowLeft') { e.preventDefault(); $('#btnPass').click(); } if (e.key === 'ArrowUp') { e.preventDefault(); $('#btnSuper').click(); } });
     ['#btnLike', '#btnPass', '#btnSuper', '#btnUndo'].forEach(function (s) { $(s).addEventListener('click', function (e) { if (openOverlays().length) e.stopImmediatePropagation(); }, true); });
     $('#deck').addEventListener('pointerdown', function (e) { if (openOverlays().length) e.stopPropagation(); }, true);
+    floatDrag();
     $$('[data-close]').forEach(function (b) { b.addEventListener('click', function () { closeOverlay(b.closest('.ct-sheet,.ct-match,.ct-ios')); }); });
     /* the click that follows the opening tap must not land on the backdrop and close it straight away */
     $('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet' && Date.now() - (S.sheetAt || 0) > 450) e.target.hidden = true; });
