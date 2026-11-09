@@ -68,6 +68,18 @@
       <button class="btn ghost" id="nl-out" type="button">Sign in as someone else</button></div>
   </section>
 
+  <section id="v-soon" hidden>
+    <div class="soon">
+      <div class="soon-tree" aria-hidden="true"><span class="star">&#11088;</span><svg viewBox="0 0 200 240"><use href="#treesvg"/></svg></div>
+      <div class="soon-kick">Hedin BMW Ruxley</div>
+      <h2 class="xfont soon-h">Coming soon</h2>
+      <p class="soon-p">The elves are wrapping things up. Secret Santa opens here very soon, and you&rsquo;ll get an email the moment it does &#127877;</p>
+      <div id="soon-count"></div>
+      <div class="soon-gifts" aria-hidden="true"><span>&#127873;</span><span>&#129478;</span><span>&#127850;</span><span>&#127873;</span><span>&#9731;&#65039;</span></div>
+    </div>
+    <p class="org-note" id="soon-org" hidden>&#129501; Only organisers see the tabs below. Everyone else sees this until you press Launch in Elf HQ.</p>
+  </section>
+
   <section id="v-home" hidden>
     <div class="hello"><span id="hello"></span></div>
     <div class="count" id="count"></div>
@@ -95,11 +107,19 @@
     <div class="paper">
       <h2 class="xfont">Elf HQ</h2>
       <p class="small">Organisers only. You can set things up and run the draw, but you can&rsquo;t see who has who.</p>
+      <div class="hq-count" id="hq-count"></div>
       <div class="grid2">
+        <label class="fld">Names announced<input id="set-announce" type="datetime-local"></label>
+        <label class="fld">Present exchange day<input id="set-date" type="date"></label>
         <label class="fld">Budget (&pound;)<input id="set-budget" type="number" min="0" max="500" step="1"></label>
-        <label class="fld">Gift exchange day<input id="set-date" type="date"></label>
+        <label class="check"><input id="set-rem" type="checkbox" checked> Weekly reminder emails</label>
       </div>
+      <p class="small" id="set-who">Only Dan can change these.</p>
       <div class="row end"><button class="btn green sm" id="set-save" type="button">Save</button></div>
+    </div>
+    <div class="paper launch">
+      <h2 class="xfont">Launch</h2>
+      <div id="launch-state"></div>
     </div>
     <div class="paper">
       <div class="row between"><h2 class="xfont">The nice list <span class="badge" id="mem-count"></span></h2></div>
@@ -143,6 +163,11 @@
 <div class="toast" id="toast" role="status"></div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="treesvg" viewBox="0 0 200 240">
+    <path d="M100 8 40 90h28L28 150h34L18 214h164l-44-64h34l-40-60h28z" fill="#1f7a45" stroke="#0f4a28" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="86" y="214" width="28" height="22" rx="3" fill="#7a4a22"/>
+    <circle cx="80" cy="80" r="7" fill="#e0263f"/><circle cx="120" cy="112" r="7" fill="#f0ba6c"/><circle cx="72" cy="140" r="7" fill="#5ab3ff"/><circle cx="130" cy="168" r="7" fill="#e0263f"/><circle cx="96" cy="186" r="7" fill="#ffd34d"/><circle cx="60" cy="196" r="6" fill="#f0ba6c"/><circle cx="146" cy="200" r="6" fill="#5ab3ff"/><circle cx="104" cy="56" r="6" fill="#ffd34d"/>
+  </symbol>
   <symbol id="giftsvg" viewBox="0 0 120 120">
     <rect x="14" y="48" width="92" height="64" rx="6" fill="#c8102e"/><rect x="8" y="34" width="104" height="22" rx="5" fill="#e0263f"/>
     <rect x="52" y="34" width="16" height="78" fill="#f0ba6c"/><path d="M60 34c-6-16-30-22-30-8 0 9 18 9 30 8zM60 34c6-16 30-22 30-8 0 9-18 9-30 8z" fill="#f0ba6c" stroke="#b98336" stroke-width="2"/>

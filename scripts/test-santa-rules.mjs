@@ -36,6 +36,17 @@ for (const R of ['santa', 'santaTest']) {
   await no(assertFails(set(ref(db('dan'), R + '/members/' + K('a.b@gmail.com')), mem('other@gmail.com', 'Mismatch'))), 'key must match email');
   await ok(assertSucceeds(set(ref(db('dan'), R + '/settings'), { budget: 20, exchange: '2026-12-18', title: 'Ruxley Secret Santa' })));
   await no(assertFails(set(ref(db('carl'), R + '/settings/budget'), 999)));
+  await no(assertFails(set(ref(db('nathan'), R + '/settings/budget'), 25)), 'managers cannot change settings');
+  await ok(assertSucceeds(update(ref(db('dan'), R + '/settings'), { announce: '2026-12-01T10:00', announceTs: 1, reminders: true, live: false })));
+  await no(assertFails(set(ref(db('dan'), R + '/settings/announce'), '1 Dec')));
+  await ok(assertSucceeds(get(ref(db('carl'), R + '/settings'))), 'staff read the settings (for Coming soon)');
+  await no(assertFails(get(ref(anon, R + '/settings'))));
+  await no(assertFails(set(ref(db('nathan'), R + '/launchRequest'), { by: 'nat1', byName: 'Nathan', ts: serverTimestamp() })), 'only Dan launches');
+  await no(assertFails(set(ref(db('carl'), R + '/launchRequest'), { by: 'carl1', byName: 'Carl', ts: serverTimestamp() })));
+  await ok(assertSucceeds(set(ref(db('dan'), R + '/launchRequest'), { by: 'dan1', byName: 'Dan', ts: serverTimestamp() })));
+  await no(assertFails(set(ref(db('dan'), R + '/launched'), { ts: 1 })), 'launched is server only');
+  await no(assertFails(set(ref(db('dan'), R + '/mail/launch'), 1)), 'mail marks are server only');
+  await no(assertFails(get(ref(db('carl'), R + '/mail'))));
   /* members read the list, outsiders do not; extras sign in with their own email */
   await ok(assertSucceeds(get(ref(db('carl'), R + '/members'))));
   await ok(assertSucceeds(get(ref(db('elf'), R + '/members'))));
@@ -55,6 +66,16 @@ for (const R of ['santa', 'santaTest']) {
     const a = {}; Object.keys(pairs).forEach(g => { a[g] = { to: pairs[g], name: 'n', drawId: 'D1' }; });
     await update(ref(x.database(), R), { assign: a, sealed: { drawId: 'D1', pairs }, draw: { id: 'D1', ts: 1, count: 4 }, drawRequest: null });
   });
+  /* before launch (Coming soon) and before the names time, nobody reads a pairing or probes for one */
+  await env.withSecurityRulesDisabled(x => update(ref(x.database(), R + '/settings'), { live: false, announceTs: 1 }));
+  await no(assertFails(get(ref(db('carl'), R + '/assign/' + c))), 'coming soon: not even your own');
+  await env.withSecurityRulesDisabled(x => update(ref(x.database(), R + '/settings'), { live: true, announceTs: Date.now() + 864e5 }));
+  await no(assertFails(get(ref(db('carl'), R + '/assign/' + c))), 'before the names time: not even your own');
+  await env.withSecurityRulesDisabled(x => set(ref(x.database(), R + '/wish/' + m), { text: 'x', ts: 1 }));
+  await no(assertFails(get(ref(db('carl'), R + '/wish/' + m))), 'no probing wishlists to find your giftee early');
+  await no(assertFails(set(ref(db('carl'), R + '/notes/' + m + '/early'), { text: 'hi', ts: serverTimestamp() })), 'no probing notes to find your giftee early');
+  await ok(assertSucceeds(get(ref(db('molly'), R + '/wish/' + m))), 'your own wishlist is always yours');
+  await env.withSecurityRulesDisabled(x => update(ref(x.database(), R + '/settings'), { announceTs: Date.now() - 1000 }));
   /* each person reads only their own */
   await ok(assertSucceeds(get(ref(db('carl'), R + '/assign/' + c))));
   await no(assertFails(get(ref(db('carl'), R + '/assign/' + m))));

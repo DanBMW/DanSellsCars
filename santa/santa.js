@@ -20,7 +20,7 @@
   var R = PRACTICE ? 'santaTest' : 'santa';
   var SV = { '.sv': 'timestamp' };
   var B = null, user = null, me = null, view = 'home', unsub = [], orgUnsub = [];
-  var D = { settings: {}, member: undefined, members: null, draw: null, req: null, err: null, assign: null, giftWish: null, myWish: null, notes: {}, uncovered: {}, audit: {}, excl: {}, sealed: null, admin: false, link: null, managers: {}, team: {} };
+  var D = { settings: {}, launched: null, launchReq: null, member: undefined, members: null, draw: null, req: null, err: null, assign: null, giftWish: null, myWish: null, notes: {}, uncovered: {}, audit: {}, excl: {}, sealed: null, admin: false, link: null, managers: {}, team: {} };
   var giftWishUnsub = null, sealedUnsub = null, splashUntil = Date.now() + 1400;
 
   function $(id) { return document.getElementById(id); }
@@ -41,6 +41,7 @@
     D.member = undefined; D.members = null; D.assign = null; D.myWish = null; D.notes = {}; D.admin = false; D.link = null;
     if (!user || !user.emailVerified) return paint();
     me = K(user.email);
+    watch(unsub, R + '/settings', function (v) { D.settings = v || {}; announceTimer(); });
     watch(unsub, 'staff/' + user.uid, function (v) { D.admin = v === true; orgCheck(); });
     if (/@hedinautomotive\.co\.uk$/i.test(user.email)) watch(unsub, 'shifts/links/' + user.uid, function (v) { D.link = v || null; orgCheck(); });
     watch(unsub, 'lockup/config/managers', function (v) { D.managers = v || {}; orgCheck(); });
@@ -51,16 +52,29 @@
     });
   }
   var memUnsub = [], orgOn = false;
+  var assignUnsub = null, annT = null;
+  function assignSub() {
+    if (assignUnsub) assignUnsub();
+    assignUnsub = D.member ? B.watch(R + '/assign/' + me, function (v) { D.assign = v || null; gifteeSub(); paint(); }) : null;
+  }
+  /* the rules only open your pairing at the names time (and once live), so ask again then */
+  function announceTimer() {
+    clearTimeout(annT);
+    var t = D.settings.announceTs;
+    if (D.member && t && t > Date.now() && t - Date.now() < 864e5 * 20) annT = setTimeout(assignSub, t - Date.now() + 1500);
+    if (D.member && !D.assign && namesOut()) assignSub();
+  }
+  function namesOut() { return D.settings.live === true && !!D.settings.announceTs && Date.now() >= D.settings.announceTs; }
   function memberSubs() {
     clear(memUnsub);
     if (!D.member) return;
-    watch(memUnsub, R + '/assign/' + me, function (v) { D.assign = v || null; gifteeSub(); });
+    assignSub(); announceTimer();
     watch(memUnsub, R + '/wish/' + me, function (v) { D.myWish = v || null; fillWish(); });
     watch(memUnsub, R + '/notes/' + me, function (v) { D.notes = v || {}; });
     commonSubs(memUnsub);
   }
   function commonSubs(list) {
-    watch(list, R + '/settings', function (v) { D.settings = v || {}; });
+    watch(list, R + '/launched', function (v) { D.launched = v || null; });
     watch(list, R + '/members', function (v) { D.members = v || {}; });
     watch(list, R + '/draw', function (v) { D.draw = v || null; });
     watch(list, R + '/drawRequest', function (v) { D.req = v || null; });
@@ -75,6 +89,7 @@
     watch(orgUnsub, R + '/exclusions', function (v) { D.excl = v || {}; });
     watch(orgUnsub, R + '/audit', function (v) { D.audit = v || {}; });
     watch(orgUnsub, R + '/drawError', function (v) { D.err = v || null; });
+    watch(orgUnsub, R + '/launchRequest', function (v) { D.launchReq = v || null; });
   }
   function gifteeSub() {
     if (giftWishUnsub) { giftWishUnsub(); giftWishUnsub = null; }
@@ -85,8 +100,8 @@
 
   /* ---------- views ---------- */
   function show(v) {
-    ['signin', 'unverified', 'notlisted', 'home', 'wishes', 'elves'].forEach(function (x) { $('v-' + x).hidden = x !== v; });
-    var app = v === 'home' || v === 'wishes' || v === 'elves';
+    ['signin', 'unverified', 'notlisted', 'soon', 'home', 'wishes', 'elves'].forEach(function (x) { $('v-' + x).hidden = x !== v; });
+    var app = (v === 'home' || v === 'wishes' || v === 'elves') && (isOrg() || D.settings.live === true);
     $('tabs').hidden = !app;
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-v') === v); });
   }
@@ -98,10 +113,13 @@
     if (!user) return show('signin');
     if (!user.emailVerified) { $('unv-email').textContent = user.email; pollVerified(); return show('unverified'); }
     if (D.member === undefined) return;
-    var org = isOrg();
+    var org = isOrg(), live = D.settings.live === true;
     $('tab-elves').hidden = !org;
+    if (!live && !org) { paintSoon(); $('soon-org').hidden = true; return show('soon'); }
     if (!D.member && !org) { $('nl-email').textContent = user.email; return show('notlisted'); }
     if (!D.member && view !== 'elves') view = 'elves';
+    if (!live && view === 'home') { show('home'); $('v-home').hidden = true; $('v-soon').hidden = false; $('soon-org').hidden = false; return paintSoon(); }
+    $('v-soon').hidden = true;
     show(view);
     if (view === 'home') paintHome();
     if (view === 'wishes') paintWishes();
@@ -109,15 +127,26 @@
   }
 
   function exchangeMs() { var d = D.settings.exchange; return d ? Date.parse(d + 'T12:00:00Z') : null; }
+  function longWhen(ms) { return new Date(ms).toLocaleString('en-GB', { timeZone: 'Europe/London', weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', hour12: true }).replace(':00', '').replace(' am', 'am').replace(' pm', 'pm'); }
+  function cdHtml(label, t) {
+    var left = Math.max(0, t - Date.now()), dd = Math.floor(left / 864e5), hh = Math.floor(left % 864e5 / 36e5), mm = Math.floor(left % 36e5 / 6e4);
+    return '<div class="cd-label">' + label + '</div><div class="cd"><div><b>' + dd + '</b><span>days</span></div><div><b>' + hh + '</b><span>hours</span></div><div><b>' + mm + '</b><span>mins</span></div></div>';
+  }
+  /* before the names time: count down to it; after: to the exchange day */
+  function countdown() {
+    var a = D.settings.announceTs, t = exchangeMs();
+    if (a && Date.now() < a) return cdHtml('Names announced ' + esc(longWhen(a)), a);
+    if (t) return cdHtml('Present exchange ' + esc(new Date(t).toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' })), t);
+    return '<div class="cd-label">The dates are still to be set</div>';
+  }
+  function paintSoon() {
+    var a = D.settings.announceTs;
+    $('soon-count').innerHTML = a && Date.now() < a ? cdHtml('Names announced ' + esc(longWhen(a)), a) : '';
+  }
   function paintHome() {
     $('hello').innerHTML = 'Merry Christmas, <b>' + esc(myName()) + '</b> &#127876;';
-    var t = exchangeMs(), budget = D.settings.budget;
-    var c = '';
-    if (t) {
-      var left = Math.max(0, t - Date.now()), dd = Math.floor(left / 864e5), hh = Math.floor(left % 864e5 / 36e5), mm = Math.floor(left % 36e5 / 6e4);
-      c = '<div class="cd-label">Gift exchange ' + esc(new Date(t).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })) + '</div>' +
-        '<div class="cd"><div><b>' + dd + '</b><span>days</span></div><div><b>' + hh + '</b><span>hours</span></div><div><b>' + mm + '</b><span>mins</span></div></div>';
-    } else c = '<div class="cd-label">The exchange day is still to be set</div>';
+    var budget = D.settings.budget;
+    var c = countdown();
     if (budget != null) c += '<div class="budget">&#128176; Spend up to <b>&pound;' + esc(budget) + '</b></div>';
     $('count').innerHTML = c;
     var unc = D.draw && D.uncovered && D.uncovered[D.draw.id];
@@ -125,7 +154,17 @@
     if (unc) $('uncovered-note').innerHTML = '&#128065; The organiser uncovered this year&rsquo;s list (' + esc(unc.name) + ', ' + esc(when(unc.ts)) + ').';
 
     var gz = $('gift-zone');
+    if (D.settings.announceTs && Date.now() < D.settings.announceTs) {
+      if (gz.getAttribute('data-k') !== 'locked') {
+        gz.setAttribute('data-k', 'locked');
+        gz.innerHTML = '<div class="giftbox locked"><div class="present" aria-label="Your present is locked until the names are announced"><span class="lid"><span class="bow"></span></span><span class="box"><span class="ribbon"></span></span><span class="tag">For you</span></div><div class="lock">&#128274;</div>' +
+          '<p class="tap">Your present unlocks when the names are announced</p><p class="small center">' + esc(longWhen(D.settings.announceTs)) + '. Write your wishlist while you wait &#128220;</p></div>';
+      }
+      $('giftee-zone').innerHTML = '';
+      return;
+    }
     if (!D.draw || !D.assign) {
+      gz.removeAttribute('data-k');
       var n = D.members ? Object.keys(D.members).length : 0;
       gz.innerHTML = '<div class="paper center"><img class="banner" src="img/trees.jpg" alt=""><div class="hat">&#127877;</div><h2 class="xfont">The names are in the hat</h2><p>' + (D.req ? 'The elves are drawing right now. Your present appears here within 15 minutes.' : 'Once the organiser draws the names, your present appears here to unwrap.') + '</p><p class="small">' + n + ' elves on the list so far.</p></div>';
       $('giftee-zone').innerHTML = '';
@@ -184,6 +223,13 @@
     var drawn = !!D.draw, list = memberList();
     if (document.activeElement !== $('set-budget')) $('set-budget').value = D.settings.budget != null ? D.settings.budget : '';
     if (document.activeElement !== $('set-date')) $('set-date').value = D.settings.exchange || '';
+    if (document.activeElement !== $('set-announce')) $('set-announce').value = D.settings.announce || '';
+    $('set-rem').checked = D.settings.reminders !== false;
+    var adm = isAdmin();
+    ['set-budget', 'set-date', 'set-announce', 'set-rem', 'set-save'].forEach(function (id) { $(id).disabled = !adm; });
+    $('set-who').hidden = adm;
+    $('hq-count').innerHTML = countdown();
+    paintLaunch(list, adm);
     $('mem-count').textContent = list.length;
     $('mem-locked').hidden = !drawn; $('mem-tools').hidden = drawn;
     $('people').innerHTML = list.map(function (p) {
@@ -210,6 +256,45 @@
     if (unc) watchSealed(); else $('sealed-list').innerHTML = '';
     var au = Object.keys(D.audit || {}).map(function (k) { return D.audit[k]; }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
     $('audit').innerHTML = au.length ? au.slice(0, 30).map(function (a) { return '<li><b>' + esc(a.name) + '</b> ' + esc(a.what) + '<span>' + esc(when(a.ts)) + '</span></li>'; }).join('') : '<li class="small">Nothing yet.</li>';
+  }
+  function paintLaunch(list, adm) {
+    var s = D.settings, L = D.launched, h = '';
+    if (L) {
+      h = '<div class="state live"><span class="big-ico">&#127881;</span><div><b>Live since ' + esc(when(L.ts)) + '</b><span class="small">Launched by ' + esc(L.byName) + '. Everyone got an email' + (s.announceTs && L.ts < s.announceTs ? ', and gets another when the names are out' : '') + '. ' + (s.reminders === false ? 'Weekly reminders are off.' : 'Weekly reminders go on Mondays from 10am until the exchange.') + '</span></div></div>';
+    } else if (D.launchReq) {
+      h = '<div class="state soon2"><span class="spin">&#10052;</span><div><b>Launching</b><span class="small">Asked by ' + esc(D.launchReq.byName) + ' ' + esc(when(D.launchReq.ts)) + '. Within 15 minutes (Monday to Saturday daytime) the elves draw the names if they aren&rsquo;t drawn yet, switch off Coming soon and email everyone.</span></div></div>';
+    } else {
+      var miss = [];
+      if (!s.announceTs) miss.push('the names announced time'); if (!s.exchange) miss.push('the present exchange day'); if (list.length < 3) miss.push('at least three people');
+      h = '<div class="state soon2"><span class="big-ico">&#128679;</span><div><b>Coming soon is on</b><span class="small">Everyone except the organisers sees the Coming soon screen.</span></div></div>' +
+        '<p class="small">Launch switches Secret Santa on and emails all ' + list.length + ' people. ' + (D.draw ? 'The names are already drawn.' : 'The names are drawn at the same moment, on the server.') + ' Nobody can see who they have until ' + (s.announceTs ? esc(longWhen(s.announceTs)) : 'the names announced time') + '.</p>' +
+        (miss.length ? '<p class="msg bad">Before launching, set ' + esc(miss.join(' and ')) + '.</p>' : '') +
+        (adm ? '<button class="btn launch-go" id="launch-go" type="button"' + (miss.length ? ' disabled' : '') + '>&#128640; Launch Secret Santa</button>' : '<p class="small">Only Dan can launch.</p>');
+    }
+    $('launch-state').innerHTML = h;
+    if ($('launch-go')) $('launch-go').onclick = launchConfirm;
+  }
+  function launchConfirm() {
+    var n = memberList().length, s = D.settings, before = s.announceTs && Date.now() < s.announceTs;
+    $('mbox').innerHTML = '<div class="mico">&#128640;</div><h2 id="modal-h">Are you sure?</h2><p>This launches the Ruxley Secret Santa for real.</p><ul class="warn">' +
+      '<li>Coming soon switches off for everyone.</li>' + (D.draw ? '' : '<li>The names are drawn now (on the server) and the list locks.</li>') +
+      '<li>All <b>' + n + '</b> people get an email saying it&rsquo;s live' + (before ? ', and that names are out ' + esc(longWhen(s.announceTs)) : ', with a button to see who they&rsquo;ve got') + '.</li>' +
+      '<li>It only happens once and can&rsquo;t be undone.</li></ul>' +
+      '<div class="mrow"><button class="btn launch-go" id="m-yes" type="button">Yes, launch it!</button><button class="btn ghost" id="m-no" type="button">Not yet</button></div>';
+    $('modal').classList.add('show');
+    $('m-no').onclick = closeModal;
+    $('m-yes').onclick = function () {
+      $('m-yes').disabled = true;
+      B.set(R + '/launchRequest', { by: user.uid, byName: myName().slice(0, 40), ts: SV }).then(function () { audit('Pressed Launch'); closeModal(); toast('Launching! Emails go within 15 minutes'); })
+        .catch(function (e) { closeModal(); toast('Not allowed (' + (e && e.code || e) + ')'); });
+    };
+  }
+  /* 'YYYY-MM-DDTHH:MM' London time to ms */
+  function londonMs(str) {
+    var guess = Date.parse(str + ':00Z');
+    var p = {}; new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(guess).forEach(function (x) { p[x.type] = x.value; });
+    var asLondon = Date.parse(p.year + '-' + p.month + '-' + p.day + 'T' + p.hour + ':' + p.minute + ':00Z');
+    return guess - (asLondon - guess);
   }
   function request(mode, what) {
     B.set(R + '/drawRequest', { by: user.uid, byName: myName().slice(0, 40), ts: SV, mode: mode }).then(function () { audit(what); toast(mode === 'draw' ? 'Into the hat they go' : 'Cancelling'); }).catch(function (e) { toast('That didn\u2019t work (' + (e && e.code || e) + ')'); });
@@ -308,9 +393,11 @@
       B.set(R + '/wish/' + me, { text: $('wish-text').value.trim().slice(0, 600), ts: SV }).then(function () { say('wish-msg', 'Saved. Your Santa can see it now.', true); }).catch(function () { say('wish-msg', 'That didn\u2019t save. Try again.', false); });
     };
     $('set-save').onclick = function () {
-      var b = +$('set-budget').value, d = $('set-date').value, u = {};
+      var b = +$('set-budget').value, d = $('set-date').value, a = $('set-announce').value.slice(0, 16), u = { reminders: $('set-rem').checked };
       if ($('set-budget').value !== '') { if (!(b >= 0 && b <= 500)) return toast('Budget between \u00a30 and \u00a3500'); u.budget = Math.round(b); }
       if (d) u.exchange = d;
+      if (a) { u.announce = a; u.announceTs = londonMs(a); }
+      if (a && d && a.slice(0, 10) > d) return toast('The names need announcing before the exchange day');
       B.update(R + '/settings', u).then(function () { toast('Saved'); audit('Changed the settings'); }).catch(function () { toast('That didn\u2019t save'); });
     };
     $('add-go').onclick = function () {
@@ -347,7 +434,7 @@
     $('pin-reset').onclick = function () { if (!DOM()) return say('signin-msg', 'Type your email first.', false); B.resetPin(DOM()).then(function () { say('signin-msg', 'If that email has a PIN, a reset link is on its way.', true); }); };
     $('g-in').onclick = function () { B.signIn().catch(function (x) { var t = err(x); if (t) say('signin-msg', t, false); }); };
     $('unv-out').onclick = $('nl-out').onclick = function () { B.signOut(); };
-    setInterval(function () { if (view === 'home' && !$('v-home').hidden) paintHome(); }, 30000);
+    setInterval(function () { paint(); }, 30000);
   }
 
   root.Santa = {

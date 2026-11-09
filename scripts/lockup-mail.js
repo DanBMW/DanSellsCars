@@ -55,11 +55,12 @@ async function main() {
   const n = R.london(new Date(nowMs));
   console.log('UK now', n.date, n.dow, Math.floor(n.mins / 60) + ':' + String(n.mins % 60).padStart(2, '0'));
 
-  /* Secret Santa: any draw an organiser asked for in santa/ is done here, server side,
-     so no browser ever holds the whole list (scripts/santa-draw.js). Never stops lockup. */
-  if (!DRY) { try { await require('./santa-draw.js').run(db); } catch (e) { console.error('santa draw failed', e && e.message); } }
   TEST = (await db.ref('lockup/config/testMode').get()).val() !== false;
   ROOT = TEST ? 'lockupTest' : 'lockup';
+  /* Secret Santa: the draw, the launch and its emails, done here server side so no
+     browser ever holds the whole list (scripts/santa-draw.js). Anything it queues goes
+     out below in this same run. Never stops lockup. */
+  if (!DRY) { try { await require('./santa-draw.js').run(db, { nowMs, notifyRoot: ROOT + '/notify' }); } catch (e) { console.error('santa failed', e && e.message); } }
   console.log(TEST ? 'TEST MODE: using lockupTest/, emails to ' + TEST_EXEC + ' and ' + TEST_MGR : 'Real mode');
   let cfg = (await db.ref(ROOT + '/config').get()).val();
   if (TEST && (!cfg || !cfg.seeded)) { cfg = Object.assign(R.defaults(), { seeded: Date.now() }); if (!DRY) await db.ref(ROOT + '/config').set(cfg); console.log('Seeded test config'); }

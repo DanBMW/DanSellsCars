@@ -24,7 +24,7 @@ button{cursor:pointer}
 .sleigh{font-size:30px;margin-top:18px;animation:fly 2.4s linear infinite}
 @keyframes fly{from{transform:translateX(-60vw)}to{transform:translateX(60vw)}}
 
-.practice{position:sticky;top:0;z-index:35;background:#ffd34d;color:#3a2000;font-weight:700;text-align:center;font-size:12px;letter-spacing:.06em;padding:24px 6px 6px}
+.practice{position:relative;z-index:35;background:#ffd34d;color:#3a2000;font-weight:700;text-align:center;font-size:12px;letter-spacing:.06em;padding:24px 6px 6px}
 .sh{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:calc(24px + env(safe-area-inset-top)) 14px 12px;background:linear-gradient(180deg,var(--red2),rgba(142,16,32,.92));border-bottom:3px solid var(--gold);box-shadow:0 6px 18px rgba(0,0,0,.4)}
 .sh::after{content:'';position:absolute;left:0;right:0;bottom:-12px;height:10px;background:radial-gradient(circle at 10px -2px,#fff 9px,transparent 10px) 0 0/20px 10px repeat-x;opacity:.95}
 .back{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;text-decoration:none;background:rgba(0,0,0,.2);font-size:20px}
@@ -155,3 +155,31 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (min-width:900px){.app{max-width:680px}.sh-title .xfont{font-size:36px}}
 .banner{display:block;width:calc(100% + 36px);max-width:none;height:150px;object-fit:cover;margin:-18px -18px 14px;border-radius:16px 16px 0 0}
+
+/* Coming soon */
+.soon{position:relative;text-align:center;padding:26px 16px 22px;border-radius:24px;background:radial-gradient(120% 90% at 50% 0,#d42a3a,#8e1020 60%,#4a0610);border:3px solid var(--gold);box-shadow:0 0 0 6px rgba(255,255,255,.08),0 18px 40px rgba(0,0,0,.5);overflow:hidden}
+.soon::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 15% 20%,rgba(255,255,255,.8) 0 2px,transparent 3px),radial-gradient(circle at 80% 35%,rgba(255,255,255,.7) 0 2px,transparent 3px),radial-gradient(circle at 40% 75%,rgba(255,255,255,.6) 0 1.5px,transparent 2.5px);background-size:90px 80px;animation:santasnowfall 7s linear infinite;pointer-events:none}
+@keyframes santasnowfall{to{background-position:0 80px,0 80px,0 80px}}
+.soon-tree{position:relative;width:150px;margin:0 auto}
+.soon-tree svg{width:150px;height:180px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
+.soon-tree .star{position:absolute;left:50%;top:-14px;transform:translateX(-50%);font-size:34px;animation:starglow 1.8s ease-in-out infinite;z-index:1}
+@keyframes starglow{50%{filter:drop-shadow(0 0 12px #ffd34d);transform:translateX(-50%) scale(1.15)}}
+.soon-kick{color:#ffe1b0;font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:12px;margin-top:8px}
+.soon-h{font-size:64px;line-height:1;color:#fff;text-shadow:0 4px 0 #4a0610,0 0 26px rgba(255,210,126,.7);margin:6px 0 10px;text-transform:uppercase;letter-spacing:.02em}
+.soon-p{color:#fff3df;line-height:1.5;max-width:420px;margin:0 auto 12px}
+.soon .cd div{background:rgba(255,255,255,.12)}
+.soon-gifts{display:flex;justify-content:center;gap:12px;font-size:30px;margin-top:10px}
+.soon-gifts span{animation:bob 2s ease-in-out infinite}.soon-gifts span:nth-child(2n){animation-delay:.5s}.soon-gifts span:nth-child(3n){animation-delay:1s}
+.org-note{margin:14px 4px 0;font-size:13px;color:#ffe1b0;text-align:center}
+.locked .present{animation:none;filter:saturate(.75)}
+.lock{position:absolute;left:50%;top:118px;transform:translateX(-50%);z-index:4;width:64px;height:64px;border-radius:50%;background:var(--cream);display:grid;place-items:center;font-size:32px;box-shadow:0 6px 16px rgba(0,0,0,.45);border:3px solid var(--gold)}
+.hq-count{background:linear-gradient(135deg,var(--green),#10432a);color:#fff;border-radius:16px;padding:10px;text-align:center;margin:8px 0 12px}
+.hq-count .cd{margin:6px 0 0}.hq-count .cd div{min-width:64px}
+.check{display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;color:var(--green);align-self:end;padding-bottom:10px}
+.check input{width:20px;height:20px;accent-color:var(--green)}
+.launch .state{display:flex;gap:12px;align-items:flex-start;border-radius:14px;padding:12px;margin-bottom:10px}
+.launch .state.soon2{background:#fff3cd}.launch .state.live{background:#dff3e6}
+.launch .state b{display:block}
+.launch .big-ico{font-size:32px}
+.btn.launch-go{width:100%;padding:20px;font-size:22px;background:linear-gradient(180deg,#ffd34d,#f0ba6c);color:#4a0610;box-shadow:0 5px 0 #b98336;font-family:'Mountains of Christmas',cursive}
+@media (max-width:480px){.grid2{grid-template-columns:1fr}}

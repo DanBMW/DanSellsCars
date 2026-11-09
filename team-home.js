@@ -210,6 +210,12 @@
     TSt.watchCover(TS.paths().RL + '/reception/' + NOW.date);
     if (statusOn) return;
     statusOn = true;
+    /* the Secret Santa button says Coming soon until Dan launches it (santa/settings/live) */
+    TS.backend().watch('santa/settings/live', function (v) {
+      var live = v === true;
+      if ($('santa-soon')) $('santa-soon').hidden = live;
+      if ($('santa-sub')) $('santa-sub').textContent = live ? 'Unwrap who you\u2019re buying for' : 'Coming soon\u2026';
+    });
     TSt.start(TS.backend(), statusData, repaintLights);
     document.addEventListener('click', function (e) {
       var l = e.target.closest && e.target.closest('[data-light]');

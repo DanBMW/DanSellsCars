@@ -1,86 +1,255 @@
-/* santa-draw.js - the Secret Santa draw, done on the server so no browser
- * ever holds the whole list. Run by scripts/lockup-mail.js on every lockup
- * emails run (every 15 minutes, Monday to Saturday daytime), or on its own:
- *   FIREBASE_SA=... node scripts/santa-draw.js
+/* santa-draw.js - the server side of Secret Santa: the draw, the launch and the
+ * emails. Run by scripts/lockup-mail.js on every lockup emails run (every 15
+ * minutes, Monday to Saturday 06:00 to 19:59 UTC), so no browser ever holds the
+ * whole list. On its own: FIREBASE_SA=... node scripts/santa-draw.js
  *
- * An organiser asks for a draw in the app (santa/drawRequest {mode:'draw'|'cancel'}).
- * This then writes, with the admin SDK (the rules let no browser write these):
- *   santa/assign/<giverKey> = { to, name, drawId }   readable only by that giver
- *   santa/sealed            = { drawId, pairs }      readable only by an admin AFTER
- *                                                    santa/uncovered/<drawId> is written,
- *                                                    which is permanent and shown to everyone
- *   santa/draw              = { id, ts, count, byName }
- * Keys are the member's email, lower case, with '.' as ','. The rules compute the
- * same key from the signed in, verified email, which is what makes the reads personal.
- * Pure helpers (keyOf, derange) are exported for scripts/test-santa-draw.js.
+ * Timing (Dan, 9 November 2026):
+ *   - Coming soon until launched. settings/live is false until the launch.
+ *   - Launch (Dan presses Launch in Elf HQ, santa/launchRequest): if the names
+ *     are not drawn yet they are drawn now, then live = true and one launch
+ *     email per person is queued. Once only (santa/launched, santa/mail/launch).
+ *   - Names announced (settings/announceTs): the rules let nobody read their
+ *     pairing before then, however early the draw was. If the launch was before
+ *     that, a "names are out" email goes at the first run after it.
+ *   - Weekly reminder: Mondays, first run from 10:00 London, while live and
+ *     before the exchange day, unless settings/reminders is false. One a week
+ *     (santa/mail/week_<isoWeek>), none in the launch's first two days.
+ *   - Exchange nearly here: the last Monday to Saturday before the exchange day,
+ *     from 10:00 London (santa/mail/eve), same switch as the weekly reminder.
+ * No email ever names anyone's giftee: they all say open the app.
+ * santaTest (the practice copy) never emails the team: one sample of each email
+ * goes to Dan only, subject starting [PRACTICE].
+ *
+ * Writes, with the admin SDK (the rules let no browser write these):
+ *   R/assign/<giverKey> = { to, name, drawId }  readable only by that giver, after the announce time
+ *   R/sealed            = { drawId, pairs }     readable only by Dan after R/uncovered/<drawId>
+ *   R/draw              = { id, ts, count, byName }
+ * Keys are the member's email, lower case, with '.' as ','.
  */
 'use strict';
 const crypto = require('crypto');
+const LR = require('../lockup-rota.js');
+const APP = 'https://dan-sells.co.uk/santa/';
+const DAN = 'daniel.cane@hedinautomotive.co.uk';
 
 function keyOf(email) { return String(email || '').trim().toLowerCase().split('.').join(','); }
+function mailId(k) { return String(k).replace(/[^a-z0-9]+/g, '_').slice(0, 60); }
+let RAND = n => crypto.randomInt(n);
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = RAND(i + 1); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 
-function rnd(n) { return crypto.randomInt(n); }
-function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-
-/* one big loop (A gives to B, B to C ... last to A): nobody draws themselves and
-   there are no little closed pairs. Exclusions (both ways) are respected; if a
-   loop cannot be found it falls back to any derangement that respects them. */
-function derange(keys, excl, tries) {
+class DrawError extends Error {}
+/* Who can't be matched at all, for a clear Elf HQ message */
+function explain(keys, bad, names) {
+  const nm = k => (names && names[k]) || k;
+  for (const g of keys) if (!keys.some(r => !bad(g, r))) return nm(g) + ' is kept apart from everyone, so nobody can be drawn for them. Remove one of their keep apart pairs.';
+  return 'No draw fits all the keep apart pairs. Remove one or two of them and draw again.';
+}
+/* The draw. Tries for one big loop first (A gives to B, B to C ... back to A),
+   which is the nicest; if the keep apart pairs make a loop hard, it finds a
+   perfect matching (Kuhn's augmenting paths over a shuffled order), which
+   always finds a valid draw when one exists. Throws DrawError when none does. */
+function derange(keys, excl, names, loopTries) {
   excl = excl || {};
   const bad = (a, b) => a === b || !!((excl[a] || {})[b] || (excl[b] || {})[a]);
-  if (keys.length < 2) throw new Error('need at least two people');
-  tries = tries || 5000;
-  for (let t = 0; t < tries; t++) {
+  if (keys.length < 2) throw new DrawError('You need at least two people to draw names.');
+  if (new Set(keys).size !== keys.length) throw new DrawError('Someone is on the list twice.');
+  loopTries = loopTries == null ? 300 : loopTries;
+  for (let t = 0; t < loopTries; t++) {
     const o = shuffle(keys), pairs = {};
     let ok = true;
     for (let i = 0; i < o.length; i++) { const g = o[i], r = o[(i + 1) % o.length]; if (bad(g, r)) { ok = false; break; } pairs[g] = r; }
     if (ok) return pairs;
   }
-  for (let t = 0; t < tries; t++) {
-    const r = shuffle(keys), pairs = {};
-    if (keys.every((g, i) => !bad(g, r[i]) && (pairs[g] = r[i]))) return pairs;
+  const givers = shuffle(keys), match = {}; /* receiver -> giver */
+  const adj = {}; givers.forEach(g => { adj[g] = shuffle(keys).filter(r => !bad(g, r)); });
+  function aug(g, seen) {
+    for (const r of adj[g]) {
+      if (seen[r]) continue; seen[r] = 1;
+      if (match[r] === undefined || aug(match[r], seen)) { match[r] = g; return true; }
+    }
+    return false;
   }
-  throw new Error('no draw fits those exclusions');
+  for (const g of givers) if (!aug(g, {})) throw new DrawError(explain(keys, bad, names));
+  const pairs = {}; Object.keys(match).forEach(r => { pairs[match[r]] = r; });
+  return pairs;
+}
+/* a draw is valid when it is a bijection on the members with no self and no kept apart pair */
+function valid(keys, pairs, excl) {
+  excl = excl || {};
+  const g = Object.keys(pairs).sort(), r = Object.values(pairs).sort(), k = keys.slice().sort();
+  if (JSON.stringify(g) !== JSON.stringify(k) || JSON.stringify(r) !== JSON.stringify(k)) return false;
+  return g.every(a => pairs[a] !== a && !((excl[a] || {})[pairs[a]] || (excl[pairs[a]] || {})[a]));
 }
 
-async function runRoot(db, R, log) {
-  const req = (await db.ref(R + '/drawRequest').get()).val();
-  if (!req) return false;
-  const now = Date.now();
-  if (req.mode === 'cancel') {
-    await db.ref(R).update({ assign: null, sealed: null, draw: null, notes: null, drawRequest: null, drawError: null });
-    log(R + ': draw cancelled by ' + (req.byName || '?'));
-    return true;
-  }
-  const members = (await db.ref(R + '/members').get()).val() || {};
-  const excl = (await db.ref(R + '/exclusions').get()).val() || {};
-  const keys = Object.keys(members).filter(k => keyOf(members[k].email) === k);
+/* ---------- the emails ---------- */
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function longDate(d) { return new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' }); }
+function whenLondon(ms) {
+  const d = new Date(ms);
+  return d.toLocaleDateString('en-GB', { timeZone: 'Europe/London', weekday: 'long', day: 'numeric', month: 'long' }) + ' at ' +
+    d.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '').replace(':00', '');
+}
+function daysTo(date, today) { return Math.round((Date.parse(date + 'T12:00:00Z') - Date.parse(today + 'T12:00:00Z')) / 864e5); }
+function page(title, paras, button, foot) {
+  const p = paras.map(x => '<p style="margin:0 0 14px;line-height:1.55;font-size:16px">' + x + '</p>').join('');
+  return '<div style="background:#3a0610;padding:22px 10px;font-family:-apple-system,Segoe UI,Arial,sans-serif">' +
+    '<div style="max-width:520px;margin:auto;background:#fff8ec;border-radius:18px;overflow:hidden;border:3px solid #f0ba6c">' +
+    '<div style="background:#c8102e;background:linear-gradient(135deg,#d42a3a,#8e1020);color:#fff;text-align:center;padding:22px 16px 18px">' +
+    '<div style="font-size:15px;letter-spacing:6px">&#10052; &#127876; &#10052; &#127873; &#10052; &#127876; &#10052;</div>' +
+    '<div style="font-family:Georgia,serif;font-size:30px;font-weight:bold;margin:8px 0 2px">' + title + '</div>' +
+    '<div style="color:#ffe1b0;font-size:13px;font-weight:bold">Hedin BMW Ruxley Secret Santa</div></div>' +
+    '<div style="padding:22px 20px 8px;color:#3b1d12">' + p +
+    '<a href="' + APP + '" style="display:block;margin:6px 0 16px;text-align:center;background:#1f7a45;color:#fff;text-decoration:none;font-weight:bold;padding:16px;border-radius:14px;font-size:18px;border-bottom:4px solid #0f4a28">' + button + '</a>' +
+    '<p style="color:#7a5a48;font-size:12px;margin:0 0 16px;text-align:center">' + (foot || 'Sign in with your work email and PIN, the same as the Team app.') + '</p></div></div></div>';
+}
+/* kind: launch | announce | weekly | eve. m: member {name}. s: settings. today: London date */
+function makeMail(kind, m, s, today, nowMs) {
+  const first = String(m.name || '').split(' ')[0] || 'there';
+  const budget = s.budget != null ? '\u00a3' + s.budget : null;
+  const ex = s.exchange ? longDate(s.exchange) : null;
+  const dx = s.exchange ? daysTo(s.exchange, today) : null;
+  const before = s.announceTs && nowMs < s.announceTs;
+  let subject, title, paras, text, button;
+  const line = { budget: budget ? 'Spend up to ' + budget + '.' : '', ex: ex ? 'Presents are exchanged on ' + ex + '.' : '' };
+  if (kind === 'launch') {
+    subject = before ? '\uD83C\uDF85 Secret Santa is live! Names out ' + whenLondon(s.announceTs) : '\uD83C\uDF85 Secret Santa is live! Open the app to see who you\u2019ve got';
+    title = 'Secret Santa is live!';
+    paras = before
+      ? ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is open. The names have been drawn and sealed by the elves, and nobody (not even Dan) can see who has who.', 'Names are announced on <b>' + esc(whenLondon(s.announceTs)) + '</b>. Open the app then to unwrap who you\u2019re buying for.', 'In the meantime, write your wishlist so your Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)]
+      : ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn. <b>Open the app to unwrap who you\u2019ve got</b> &#128513;', 'Nobody else can see it, not even Dan, so keep it to yourself!', 'Then write your wishlist so your own Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)];
+    button = before ? 'Open Secret Santa and write my wishlist' : 'Open the app and unwrap my present';
+  } else if (kind === 'announce') {
+    subject = '\uD83C\uDF81 The Secret Santa names are out! Open the app to see who you\u2019ve got';
+    title = 'The names are out!';
+    paras = ['Ho ho ho, ' + esc(first) + '!', 'Your present is ready to unwrap. <b>Open the app to see who you\u2019re Secret Santa for.</b>', 'Check nobody is looking over your shoulder first &#129323;', esc(line.budget) + ' ' + esc(line.ex)];
+    button = 'Unwrap my present';
+  } else if (kind === 'weekly') {
+    subject = '\uD83C\uDF84 Secret Santa: ' + (dx != null ? dx + ' day' + (dx === 1 ? '' : 's') + ' to go' : 'your weekly reminder');
+    title = dx != null ? dx + ' day' + (dx === 1 ? '' : 's') + ' to go' : 'Secret Santa';
+    paras = ['Hi ' + esc(first) + ',', 'Your weekly Secret Santa nudge from the elves. ' + esc(line.ex) + ' ' + esc(line.budget),
+      '&#128220; <b>Is your wishlist up to date?</b> Your Santa reads it, so a few hints go a long way.',
+      before ? '&#128274; Names are announced on <b>' + esc(whenLondon(s.announceTs)) + '</b>.' : '&#127873; <b>Had a look at your giftee\u2019s wishlist?</b> They may have added to it. You can send them an anonymous note in the app too.'];
+    button = 'Open Secret Santa';
+  } else if (kind === 'eve') {
+    const when = dx === 1 ? 'tomorrow' : 'on ' + ex;
+    subject = '\uD83C\uDF81 Secret Santa is ' + when + '! Have you got your present?';
+    title = dx === 1 ? 'It\u2019s tomorrow!' : 'Nearly time!';
+    paras = ['Hi ' + esc(first) + ',', 'The Secret Santa exchange is <b>' + esc(when) + '</b>. ' + esc(line.budget), 'Wrapped and ready? If you need a last minute idea, your giftee\u2019s wishlist is in the app.'];
+    button = 'Open Secret Santa';
+  } else throw new Error('unknown mail ' + kind);
+  text = paras.map(x => x.replace(/<[^>]+>/g, '').replace(/&#\d+;/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, '\u2019').replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n\n') + '\n\n' + button + ': ' + APP + '\n\nSign in with your work email and PIN, the same as the Team app.\n\nThe Ruxley elves';
+  return { subject, text, html: page(esc(title), paras, esc(button)), fromName: 'Hedin Used Cars', ts: nowMs };
+}
+
+/* ---------- the run ---------- */
+async function val(db, p) { return (await db.ref(p).get()).val(); }
+
+async function doDraw(db, R, byName, nowMs, log) {
+  const members = (await val(db, R + '/members')) || {};
+  const excl = (await val(db, R + '/exclusions')) || {};
+  const keys = Object.keys(members).filter(k => members[k] && keyOf(members[k].email) === k);
+  const names = {}; keys.forEach(k => { names[k] = members[k].name; });
   let pairs;
-  try { pairs = derange(keys, excl); } catch (e) {
-    await db.ref(R).update({ drawRequest: null, drawError: { msg: e.message, ts: now } });
+  try { pairs = derange(keys, excl, names); } catch (e) {
+    if (!(e instanceof DrawError)) throw e;
+    await db.ref(R).update({ drawRequest: null, drawError: { msg: e.message, ts: nowMs } });
     log(R + ': draw refused, ' + e.message);
-    return true;
+    return null;
   }
-  const id = 'd' + now.toString(36) + crypto.randomBytes(3).toString('hex');
+  if (!valid(keys, pairs, excl)) throw new Error('draw failed its own check');
+  const id = 'd' + nowMs.toString(36) + crypto.randomBytes(3).toString('hex');
   const assign = {};
   keys.forEach(g => { assign[g] = { to: pairs[g], name: members[pairs[g]].name, drawId: id }; });
-  await db.ref(R).update({
-    assign, notes: null, drawError: null, drawRequest: null,
-    sealed: { drawId: id, pairs },
-    draw: { id, ts: now, count: keys.length, byName: req.byName || '' }
-  });
+  await db.ref(R).update({ assign, notes: null, drawError: null, drawRequest: null, sealed: { drawId: id, pairs }, draw: { id, ts: nowMs, count: keys.length, byName: byName || '' } });
   log(R + ': drew ' + keys.length + ' names (draw ' + id + '), nothing printed');
-  return true;
+  return id;
 }
 
-async function run(db, log) {
-  log = log || (m => console.log('santa: ' + m));
+/* queue one email per member (practice: one sample to Dan). Never overwrites a queued id. */
+async function queue(db, R, kind, notifyRoot, s, today, nowMs, log) {
+  const members = (await val(db, R + '/members')) || {};
+  const practice = R !== 'santa';
+  let list = Object.keys(members).filter(k => members[k] && members[k].email).map(k => ({ k, m: members[k] }));
+  if (practice) list = list.length ? [{ k: 'practice', m: { name: 'Dan', email: DAN } }] : [];
+  let n = 0;
+  for (const { k, m } of list) {
+    const id = (practice ? 'santatest_' : 'santa_') + kind + '_' + (kind === 'weekly' ? LR.isoWeek(today).replace('-', '_') + '_' : '') + mailId(k);
+    const ref = db.ref(notifyRoot + '/' + id);
+    if ((await ref.get()).val()) continue;
+    const mail = makeMail(kind, m, s, today, nowMs);
+    if (practice) mail.subject = '[PRACTICE] ' + mail.subject;
+    await ref.set(Object.assign({ to: [String(m.email).toLowerCase()] }, mail));
+    n++;
+  }
+  log(R + ': queued ' + n + ' ' + kind + ' email' + (n === 1 ? '' : 's'));
+  return n;
+}
+/* the last Monday to Saturday day strictly before the exchange */
+function eveDay(exchange) { let d = LR.addDays(exchange, -1); while (LR.london(new Date(d + 'T12:00:00Z')).dow === 'sun') d = LR.addDays(d, -1); return d; }
+
+async function runRoot(db, R, o) {
+  const log = o.log, nowMs = o.nowMs, notifyRoot = o.notifyRoot;
+  const L = LR.london(new Date(nowMs)), today = L.date;
+  let s = (await val(db, R + '/settings')) || {};
+  let launched = await val(db, R + '/launched');
+  const draw0 = await val(db, R + '/draw');
+
+  /* 1. draw or cancel asked for in Elf HQ */
+  const req = await val(db, R + '/drawRequest');
+  if (req) {
+    const announced = s.announceTs && nowMs >= s.announceTs;
+    if (launched && (req.mode === 'cancel' || announced)) {
+      await db.ref(R).update({ drawRequest: null, drawError: { msg: req.mode === 'cancel' ? 'Secret Santa is already launched, so the draw can\u2019t be cancelled.' : 'The names are already announced, so they can\u2019t be drawn again.', ts: nowMs } });
+      log(R + ': ' + req.mode + ' refused after launch');
+    } else if (req.mode === 'cancel') {
+      await db.ref(R).update({ assign: null, sealed: null, draw: null, notes: null, drawRequest: null, drawError: null });
+      log(R + ': draw cancelled by ' + (req.byName || '?'));
+    } else await doDraw(db, R, req.byName, nowMs, log);
+  }
+
+  /* 2. launch: once only */
+  const lr = await val(db, R + '/launchRequest');
+  if (lr) {
+    if (launched) await db.ref(R + '/launchRequest').remove();
+    else if (!s.announceTs || !s.exchange) {
+      await db.ref(R).update({ launchRequest: null, drawError: { msg: 'Set the names announced time and the exchange day before launching.', ts: nowMs } });
+    } else {
+      const drawn = (await val(db, R + '/draw')) || null;
+      const id = drawn ? drawn.id : await doDraw(db, R, lr.byName, nowMs, log);
+      if (id) {
+        launched = { ts: nowMs, byName: lr.byName || '', drawId: id };
+        await db.ref(R).update({ launched, launchRequest: null, 'settings/live': true });
+        s.live = true;
+        log(R + ': launched by ' + (lr.byName || '?'));
+      } else await db.ref(R + '/launchRequest').remove();
+    }
+  }
+  if (!launched) return;
+  const mail = (await val(db, R + '/mail')) || {};
+  const mark = k => db.ref(R + '/mail/' + k).set(nowMs);
+
+  /* 3. the launch emails, then "names are out" if the launch came before the announce time */
+  if (!mail.launch) { await mark('launch'); await queue(db, R, 'launch', notifyRoot, s, today, nowMs, log); }
+  if (s.announceTs && nowMs >= s.announceTs && launched.ts < s.announceTs && !mail.announce) {
+    await mark('announce'); await queue(db, R, 'announce', notifyRoot, s, today, nowMs, log);
+  }
+  /* 4. reminders, unless switched off; never on or after the exchange day */
+  if (s.reminders === false || !s.exchange || today >= s.exchange) return;
+  if (today === eveDay(s.exchange) && L.mins >= 600 && !mail.eve) { await mark('eve'); await queue(db, R, 'eve', notifyRoot, s, today, nowMs, log); return; }
+  const wk = 'week_' + LR.isoWeek(today);
+  if (L.dow === 'mon' && L.mins >= 600 && !mail[wk] && !mail.eve && nowMs - launched.ts > 2 * 864e5) { await mark(wk); await queue(db, R, 'weekly', notifyRoot, s, today, nowMs, log); }
+}
+
+async function run(db, o) {
+  o = o || {};
+  if (typeof o === 'function') o = { log: o };
+  const opts = { log: o.log || (m => console.log('santa: ' + m)), nowMs: o.nowMs || Date.now(), notifyRoot: o.notifyRoot || 'lockup/notify' };
   for (const R of ['santa', 'santaTest']) {
-    try { await runRoot(db, R, log); } catch (e) { log(R + ' failed: ' + (e && e.message)); }
+    try { await runRoot(db, R, opts); } catch (e) { opts.log(R + ' failed: ' + (e && e.message)); }
   }
 }
 
-module.exports = { keyOf, derange, run, runRoot };
+module.exports = { keyOf, derange, valid, explain, DrawError, run, runRoot, makeMail, eveDay, mailId, _setRand: f => { RAND = f; } };
 
 if (require.main === module) {
   const admin = require('firebase-admin');
