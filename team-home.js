@@ -43,12 +43,12 @@
     D = { weeks: {}, status: {}, absences: {}, closedCfg: {}, scfg: {}, requests: {}, bh: {} };
     var b = TS.backend();
     function on(path, cb) { unsub.push(b.watch(path, function (v) { cb(v); paint(); })); }
-    on(p.RL + '/weeks', function (v) { D.weeks = v || {}; });
+    on(p.RL + '/weeks', function (v) { D.weeks = v || {}; D.weeksLoaded = true; });
     on(p.RL + '/status', function (v) { D.status = v || {}; });
     on(p.RL + '/absences', function (v) { D.absences = v || {}; });
     on(p.RL + '/config/holidays', function (v) { D.closedCfg = v || {}; });
     on(p.RL + '/config/saturday', function (v) { D.sat = v || null; });
-    on(p.RS + '/config', function (v) { D.scfg = S.cfgOf(v || {}); });
+    on(p.RS + '/config', function (v) { D.scfg = S.cfgOf(v || {}); D.calLoaded = true; });
     on(p.RS + '/requests', function (v) { D.requests = v || {}; });
     on(p.RS + '/bh', function (v) { D.bh = v || {}; });
   }
@@ -111,9 +111,21 @@
     return /^[A-Za-z0-9_-]+\.html$/.test(n) ? n : '';
   }
 
+  /* while someone waits on "check your email", look every 5 seconds, so clicking
+     the link (on this phone or any other device) carries the page on by itself */
+  var pollT = null;
+  function pollVerified() {
+    if (pollT) return;
+    pollT = setInterval(function () {
+      var s = TS.state();
+      if (!s || s.status !== 'unverified') { clearInterval(pollT); pollT = null; return; }
+      if (!document.hidden && TS.reloadUser) TS.reloadUser().catch(function () {});
+    }, 5000);
+  }
+
   /* ---- drawing ---- */
   function show(view) {
-    ['loading', 'signin', 'unverified', 'wrong', 'unlinked', 'home'].forEach(function (x) { $('v-' + x).hidden = x !== view; });
+    ['loading', 'signin', 'signup', 'unverified', 'wrong', 'unlinked', 'home'].forEach(function (x) { $('v-' + x).hidden = x !== view; });
     $('btn-out').hidden = view !== 'home';
   }
   function paint() {
@@ -122,8 +134,8 @@
     $('testbar').hidden = !TS.paths().testMode;
     $('hdr-sub').textContent = TS.paths().testMode ? 'Test copy' : 'Hedin BMW Ruxley';
     if (!st) { show('loading'); return; }
-    if (st.status === 'signedout') { show('signin'); return; }
-    if (st.status === 'unverified') { $('unv-email').textContent = TS.email(); $('bottomnav').hidden = true; show('unverified'); return; }
+    if (st.status === 'signedout') { show(/[?&]signup=1\b/.test(location.search) ? 'signup' : 'signin'); return; }
+    if (st.status === 'unverified') { $('unv-email').textContent = TS.email(); $('bottomnav').hidden = true; show('unverified'); pollVerified(); return; }
     if (st.status === 'wrongdomain') { $('wrong-email').textContent = (TS.email()) || ''; show('wrong'); return; }
     if (st.status === 'unlinked') { $('unlinked-email').textContent = TS.email(); show('unlinked'); return; }
     if (st.status === 'loading') { $('loading-msg').textContent = 'Loading…'; show('loading'); return; }
@@ -145,9 +157,10 @@
     $('home-role').className = 'pill ' + (st.role === 'staff' ? '' : 'b');
     var t = tonight(), c = todayCalendar();
     var live = { lockup: t, calendar: c, forecourt: { text: 'Open the check', cls: 'muted' }, board: { text: 'Open the board', cls: 'muted' }, admin: { text: 'People, managers and access', cls: 'muted' } };
+    startStatus();
     $('cards').innerHTML = TI.cardsFor(st).map(function (card) {
       var l = live[card.id] || { text: '', cls: 'muted' };
-      return '<a class="tile" href="' + esc(card.href) + '"><b>' + esc(card.title) + (card.beta ? '<span class="beta">Beta</span>' : '') + '</b><span class="blurb">' + esc(card.blurb) + '</span>' +
+      return '<a class="tile" href="' + esc(card.href) + '" data-id="' + esc(card.id) + '">' + lightHtml(card.id) + '<b>' + esc(card.title) + (card.beta ? '<span class="beta">Beta</span>' : '') + '</b><span class="blurb">' + esc(card.blurb) + '</span>' +
         '<span class="live ' + esc(l.cls) + '">' + esc(l.text) + '</span></a>';
     }).join('');
     $('next-days').innerHTML = nextDays(7).map(function (x) {
@@ -158,6 +171,51 @@
     $('waiting').innerHTML = w.length ? w.map(function (x) {
       return '<li><span>' + esc(x.text) + '</span><a class="big sm" href="' + esc(x.href) + '">' + esc(x.action) + '</a></li>';
     }).join('') : '<li class="muted">Nothing needs you.</li>';
+  }
+
+  /* ---- the green and red lights (team-status.js) ---- */
+  var LIGHT = { up: 'Up', down: 'Down', unknown: 'Checking' }, statusOn = false;
+  function statusData() {
+    var k = S.dayKind(ctx(), NOW.date);
+    return { weeksLoaded: !!D.weeksLoaded, hasWeek: !!(D.weeks || {})[R.isoWeek(NOW.date)], calLoaded: !!D.calLoaded, openDay: k !== 'closed', mins: NOW.mins || 0 };
+  }
+  function lightHtml(id) {
+    var TSt = root.TeamStatus;
+    if (!TSt || id === 'admin') return '';
+    var r = TSt.forTile(id);
+    var tip = r.checks.map(function (c) { return c.why; }).join(' ');
+    return '<span class="light ' + r.s + '" role="button" tabindex="0" data-light="' + esc(id) + '" title="' + esc(tip) + '" aria-label="' + esc(LIGHT[r.s] + '. ' + tip) + '"><i></i>' + LIGHT[r.s] + '</span>';
+  }
+  function repaintLights() {
+    Array.prototype.forEach.call(document.querySelectorAll('.tile[data-id]'), function (t) {
+      var old = t.querySelector('.light'), html = lightHtml(t.getAttribute('data-id'));
+      if (!html) return;
+      var tmp = document.createElement('span'); tmp.innerHTML = html;
+      if (old) old.replaceWith(tmp.firstChild); else t.insertBefore(tmp.firstChild, t.firstChild);
+    });
+  }
+  function lightSheet(id) {
+    var r = root.TeamStatus.forTile(id), card = TI.cardsFor(TS.state()).filter(function (c) { return c.id === id; })[0] || { title: id };
+    var dot = { up: 'ok', down: 'bad', unknown: 'muted' };
+    $('sheet').innerHTML = '<h2>' + esc(card.title) + ': ' + LIGHT[r.s] + '</h2><p class="sub">What the light checks, right now.</p><ul class="sum">' +
+      r.checks.map(function (c) { return '<li><span><b>' + esc(c.name) + '</b><br><span class="muted small">' + esc(c.why) + '</span></span><span class="' + dot[c.s] + '">' + LIGHT[c.s] + '</span></li>'; }).join('') +
+      '</ul><div class="row end"><button class="ghost" type="button" id="light-refresh">Check again</button><button class="big sm" type="button" id="light-close">Close</button></div>';
+    $('m-sheet').classList.add('show');
+    $('light-close').onclick = function () { $('m-sheet').classList.remove('show'); };
+    $('light-refresh').onclick = function () { root.TeamStatus.refresh(); $('m-sheet').classList.remove('show'); };
+  }
+  function startStatus() {
+    var TSt = root.TeamStatus;
+    if (!TSt) return;
+    TSt.watchCover(TS.paths().RL + '/reception/' + NOW.date);
+    if (statusOn) return;
+    statusOn = true;
+    TSt.start(TS.backend(), statusData, repaintLights);
+    document.addEventListener('click', function (e) {
+      var l = e.target.closest && e.target.closest('[data-light]');
+      if (!l) { if (e.target.id === 'm-sheet') $('m-sheet').classList.remove('show'); return; }
+      e.preventDefault(); e.stopPropagation(); lightSheet(l.getAttribute('data-light'));
+    }, true);
   }
 
   var TeamHome = {

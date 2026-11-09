@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#7a0f1a">
+<title>Secret Santa | Hedin BMW Ruxley</title>
+<link rel="manifest" href="santa.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Secret Santa">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="santa.css">
+<script src="../team-pwa.js" defer></script>
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+<div class="bulbs" aria-hidden="true" id="bulbs"></div>
+
+<div id="splash" class="splash">
+  <div class="splash-in">
+    <div class="splash-gift" aria-hidden="true"><svg viewBox="0 0 120 120"><use href="#giftsvg"/></svg></div>
+    <h1 class="xfont">Secret Santa</h1>
+    <p>Hedin BMW Ruxley</p>
+    <div class="sleigh" aria-hidden="true">&#127877;&#129420;&#129420;</div>
+    <p class="small" id="splash-msg">Loading the sleigh&hellip;</p>
+  </div>
+</div>
+
+<div id="practice" class="practice" hidden>PRACTICE COPY &middot; nothing here is the real draw</div>
+<header class="sh">
+  <a class="back" href="../team.html" aria-label="Back to Team">&#8592;</a>
+  <div class="sh-title"><span class="xfont">Secret Santa</span><small id="sh-sub">Hedin BMW Ruxley</small></div>
+  <button class="music" id="music" type="button" aria-pressed="false" title="Music">&#9835;<span>off</span></button>
+</header>
+
+<main class="app" id="app">
+  <section id="v-signin" hidden>
+    <div class="paper">
+      <img class="banner" src="img/bauble-cookies.jpg" alt="">
+      <h2 class="xfont">Ho ho ho!</h2>
+      <p>Sign in with the same work email and PIN you use for the Team app.</p>
+      <form id="pin-form" class="stack">
+        <input id="pin-email" type="email" autocomplete="username" placeholder="Your email">
+        <input id="pin-code" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="6 digit PIN">
+        <button class="btn red" type="submit">Sign in</button>
+      </form>
+      <div class="row between"><button class="link" id="pin-new" type="button">New here? Set my PIN</button><button class="link" id="pin-reset" type="button">Forgot my PIN?</button></div>
+      <button class="btn ghost" id="g-in" type="button">Sign in with Google</button>
+      <p class="msg" id="signin-msg" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="v-unverified" hidden>
+    <div class="paper"><h2 class="xfont">Check your email</h2>
+      <p>We&rsquo;ve emailed a link to <b id="unv-email"></b>. Wait up to 60 seconds for it, then click the link to finish signing in. This page carries on by itself.</p>
+      <button class="btn ghost" id="unv-out" type="button">Sign out</button></div>
+  </section>
+
+  <section id="v-notlisted" hidden>
+    <div class="paper"><h2 class="xfont">Not on the nice list yet</h2>
+      <p><b id="nl-email"></b> isn&rsquo;t in this year&rsquo;s Secret Santa. Ask Dan to add you, then come back.</p>
+      <button class="btn ghost" id="nl-out" type="button">Sign in as someone else</button></div>
+  </section>
+
+  <section id="v-home" hidden>
+    <div class="hello"><span id="hello"></span></div>
+    <div class="count" id="count"></div>
+    <div id="uncovered-note" class="alert" hidden></div>
+    <div id="gift-zone"></div>
+    <div id="giftee-zone"></div>
+  </section>
+
+  <section id="v-wishes" hidden>
+    <div class="paper">
+      <h2 class="xfont">My wishlist</h2>
+      <p class="small">Your Secret Santa sees this. Nobody else does, not even the organisers.</p>
+      <div class="chips" id="wish-chips"></div>
+      <textarea id="wish-text" maxlength="600" rows="6" placeholder="Hints for your Santa: sizes, favourite chocolate, the football team you can&rsquo;t stand&hellip;"></textarea>
+      <div class="row between"><span class="small" id="wish-left"></span><button class="btn red" id="wish-save" type="button">Save my wishlist</button></div>
+      <p class="msg" id="wish-msg" aria-live="polite"></p>
+    </div>
+    <div class="paper">
+      <h2 class="xfont">Notes from my Santa</h2>
+      <div id="notes-in"><p class="small">Nothing yet. Your Santa can send you an anonymous note once the names are drawn.</p></div>
+    </div>
+  </section>
+
+  <section id="v-elves" hidden>
+    <div class="paper">
+      <h2 class="xfont">Elf HQ</h2>
+      <p class="small">Organisers only. You can set things up and run the draw, but you can&rsquo;t see who has who.</p>
+      <div class="grid2">
+        <label class="fld">Budget (&pound;)<input id="set-budget" type="number" min="0" max="500" step="1"></label>
+        <label class="fld">Gift exchange day<input id="set-date" type="date"></label>
+      </div>
+      <div class="row end"><button class="btn green sm" id="set-save" type="button">Save</button></div>
+    </div>
+    <div class="paper">
+      <div class="row between"><h2 class="xfont">The nice list <span class="badge" id="mem-count"></span></h2></div>
+      <p class="small" id="mem-locked" hidden>The names are drawn, so the list is locked. Cancel the draw to change it.</p>
+      <ul class="people" id="people"></ul>
+      <div id="mem-tools">
+        <button class="btn ghost sm" id="add-team" type="button">Add everyone on the Team list</button>
+        <h3>Add someone else</h3>
+        <p class="small">For people who aren&rsquo;t on the normal staff list. They sign in here with this email and their own PIN.</p>
+        <div class="grid2"><input id="add-name" placeholder="First name" maxlength="40"><input id="add-email" type="email" placeholder="Their email"></div>
+        <div class="row end"><button class="btn green sm" id="add-go" type="button">Add to the list</button></div>
+        <h3>Keep apart</h3>
+        <p class="small">Pairs who shouldn&rsquo;t draw each other, either way round.</p>
+        <div class="grid2"><select id="ex-a"></select><select id="ex-b"></select></div>
+        <div class="row end"><button class="btn ghost sm" id="ex-go" type="button">Keep these two apart</button></div>
+        <ul class="people" id="ex-list"></ul>
+      </div>
+      <p class="msg" id="mem-msg" aria-live="polite"></p>
+    </div>
+    <div class="paper sack">
+      <h2 class="xfont">The draw</h2>
+      <div id="draw-state"></div>
+    </div>
+    <div class="paper" id="uncover-box" hidden>
+      <h2 class="xfont">Uncover</h2>
+      <p class="small">Shows every pairing. Only Dan can do this, it&rsquo;s recorded for good, and everyone in the Secret Santa sees that the list was uncovered.</p>
+      <button class="btn ghost danger" id="uncover" type="button">Uncover who has who</button>
+      <div id="sealed-list"></div>
+    </div>
+    <div class="paper"><h2 class="xfont">Elf log</h2><ul class="log" id="audit"></ul></div>
+  </section>
+</main>
+
+<nav class="tabs" id="tabs" hidden>
+  <button data-v="home" class="on" type="button"><span>&#127873;</span>My gift</button>
+  <button data-v="wishes" type="button"><span>&#128220;</span>Wishlist</button>
+  <button data-v="elves" id="tab-elves" type="button" hidden><span>&#129501;</span>Elf HQ</button>
+</nav>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-h"><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="giftsvg" viewBox="0 0 120 120">
+    <rect x="14" y="48" width="92" height="64" rx="6" fill="#c8102e"/><rect x="8" y="34" width="104" height="22" rx="5" fill="#e0263f"/>
+    <rect x="52" y="34" width="16" height="78" fill="#f0ba6c"/><path d="M60 34c-6-16-30-22-30-8 0 9 18 9 30 8zM60 34c6-16 30-22 30-8 0 9-18 9-30 8z" fill="#f0ba6c" stroke="#b98336" stroke-width="2"/>
+    <circle cx="60" cy="33" r="6" fill="#ffd27e"/>
+  </symbol>
+</defs></svg>
+
+<script src="santa.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { makeBackend } from "../team-backend.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+Santa.start(makeBackend(initializeApp(firebaseConfig)));
+</script>
+</body>
+</html>

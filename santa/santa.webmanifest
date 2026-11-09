@@ -1,0 +1,16 @@
+{
+  "name": "Ruxley Secret Santa",
+  "short_name": "Secret Santa",
+  "description": "Hedin BMW Ruxley Secret Santa: unwrap who you're buying for, share your wishlist.",
+  "id": "/santa/",
+  "start_url": "/santa/?source=app",
+  "scope": "/santa/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#3a0610",
+  "theme_color": "#7a0f1a",
+  "icons": [
+    { "src": "/santa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/santa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

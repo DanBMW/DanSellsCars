@@ -182,8 +182,13 @@ async function scenarios(browser, base) {
     check('home: Tomi lands on the home page', await visible(p, '#v-home'));
     check('home: greeting uses his first name', (await txt(p, '#home-hello')) === 'Hello, Tomi', await txt(p, '#home-hello'));
     check('home: role is Team', (await txt(p, '#home-role')) === 'Team');
-    const cards = await p.locator('#cards a').allTextContents();
+    const cards = await p.locator('#cards a b').allTextContents();
     check('home: a team member sees the five systems', cards.length === 5 && ['Lockup', 'Forecourt', 'Showroom cover', 'Team board', 'Team calendar'].every(w => cards.some(c => c.indexOf(w) === 0)), cards.join(' | '));
+    check('home: every system tile has a status light', (await p.locator('#cards a .light').count()) === 5);
+    await p.locator('[data-light="lockup"]').click();
+    check('home: tapping a light explains it and stays on the home page', /Lockup: /.test(await txt(p, '#sheet h2')) && /team\.html/.test(p.url()), p.url());
+    await p.locator('#light-close').click();
+    check('home: the Secret Santa button is on the home page', /santa\/$/.test(await p.locator('#santa-btn').getAttribute('href')));
     check('home: no admin card for staff', !cards.some(c => c.indexOf('Team admin') === 0));
     check('home: the first sign in saves the link to his person', st.log.some(l => l[0] === 'set' && l[1] === 'shifts/links/tomi1'), JSON.stringify(st.log.slice(-4)));
     check('home: lockup tile says tonight is signed by Carl', (await txt(p, '#cards a[href="lockup.html"] .live')).indexOf('Signed by Carl') >= 0, await txt(p, '#cards a[href="lockup.html"] .live'));

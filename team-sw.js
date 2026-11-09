@@ -3,11 +3,12 @@
    Network first, so a new push shows up on the next open; the cache is only
    a fallback when there is no signal. Bump VERSION to clear old copies. */
 'use strict';
-const VERSION = 'team-v7';
-const PAGES = ['/team.html', '/shifts.html', '/team-admin.html', '/lockup.html', '/Forecourt.html'];
+const VERSION = 'team-v8';
+const PAGES = ['/team.html', '/shifts.html', '/team-admin.html', '/lockup.html', '/Forecourt.html', '/santa/'];
 const FILES = ['/team.css', '/favicon.svg', '/apple-touch-icon.png', '/team-icon-192.png', '/team-icon-512.png', '/team.webmanifest', '/team-pwa.js',
   '/lockup-rota.js', '/shifts-rota.js', '/shifts-app.js', '/team-home.js', '/team-identity.js', '/team-session.js', '/team-admin.js',
-  '/staff-gate.js', '/contact.js', '/disclaimer.js', '/forecourt-stock.js', '/scroll-hint.js'];
+  '/staff-gate.js', '/contact.js', '/disclaimer.js', '/forecourt-stock.js', '/scroll-hint.js', '/team-status.js', '/team-install.js', '/team-backend.js',
+  '/santa/santa.js', '/santa/santa.css', '/santa/santa.webmanifest', '/santa/icon-192.png', '/santa/icon-512.png', '/santa/img/splash-bokeh.jpg', '/santa/img/ornaments.jpg'];
 const MINE = new Set(PAGES.concat(FILES));
 
 self.addEventListener('install', e => {

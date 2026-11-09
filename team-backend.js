@@ -7,6 +7,10 @@ import { getAuth, onIdTokenChanged, signInWithPopup, GoogleAuthProvider, signOut
 
 export function makeBackend(app) {
   const db = getDatabase(app), auth = getAuth(app);
+  /* the link in the email brings them back to the team home, signed in; if this
+     domain is not on Firebase's authorised list it falls back to the plain email */
+  const verify = u => sendEmailVerification(u, { url: location.origin + '/team.html?verified=1' })
+    .catch(e => (e && /continue-uri|unauthorized|invalid-continue/.test(e.code || '')) ? sendEmailVerification(u) : Promise.reject(e));
   return {
     onAuth(cb) {
       /* token changes too, so a verified email shows up without a reload */
@@ -22,11 +26,11 @@ export function makeBackend(app) {
        email verification and password reset do the rest, so a PIN can only be
        set by someone who can open their work email. */
     signUpPin(email, pin) {
-      return createUserWithEmailAndPassword(auth, email, pin).then(c => sendEmailVerification(c.user).then(() => c.user));
+      return createUserWithEmailAndPassword(auth, email, pin).then(c => verify(c.user).then(() => c.user));
     },
     signInPin(email, pin) { return signInWithEmailAndPassword(auth, email, pin); },
     resetPin(email) { return sendPasswordResetEmail(auth, email); },
-    resendVerification() { return auth.currentUser ? sendEmailVerification(auth.currentUser) : Promise.reject(new Error('not signed in')); },
+    resendVerification() { return auth.currentUser ? verify(auth.currentUser) : Promise.reject(new Error('not signed in')); },
     reload() { return auth.currentUser ? reload(auth.currentUser).then(() => auth.currentUser.getIdToken(true)) : Promise.resolve(); },
     watch(path, cb) { return onValue(ref(db, path), s => cb(s.val()), err => console.warn('team: ' + path + ' ' + (err && err.code))); },
     set(path, v) { return set(ref(db, path), v); },

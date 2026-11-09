@@ -10,7 +10,8 @@
  * the page for absences, cover and holidays) on every run, marking each sent.
  * Each send is marked under lockup/mail/<date>/<kind>, so a repeat or late run
  * never sends twice. If this week's rota is missing it generates it with the
- * same lockup-rota.js the page uses.
+ * same lockup-rota.js the page uses. It also does any Secret Santa draw that
+ * an organiser asked for (scripts/santa-draw.js).
  *
  * Before the queue it runs scripts/forecourt-auto.js (the fortnightly forecourt
  * check, off by default), and after everything scripts/forecourt-mail.js (08:30
@@ -54,6 +55,9 @@ async function main() {
   const n = R.london(new Date(nowMs));
   console.log('UK now', n.date, n.dow, Math.floor(n.mins / 60) + ':' + String(n.mins % 60).padStart(2, '0'));
 
+  /* Secret Santa: any draw an organiser asked for in santa/ is done here, server side,
+     so no browser ever holds the whole list (scripts/santa-draw.js). Never stops lockup. */
+  if (!DRY) { try { await require('./santa-draw.js').run(db); } catch (e) { console.error('santa draw failed', e && e.message); } }
   TEST = (await db.ref('lockup/config/testMode').get()).val() !== false;
   ROOT = TEST ? 'lockupTest' : 'lockup';
   console.log(TEST ? 'TEST MODE: using lockupTest/, emails to ' + TEST_EXEC + ' and ' + TEST_MGR : 'Real mode');

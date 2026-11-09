@@ -12,6 +12,8 @@
 <script src="shifts-rota.js?v=2"></script>
 <script src="team-identity.js"></script>
 <script src="team-session.js"></script>
+<script src="team-status.js"></script>
+<script src="team-install.js"></script>
 <link rel="manifest" href="team.webmanifest"><link rel="apple-touch-icon" href="team-icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Team"><script src="team-pwa.js" defer></script>
 </head>
 <body>
@@ -45,9 +47,26 @@
     </div>
   </section>
 
+  <section id="v-signup" hidden>
+    <div class="hero signin">
+      <div class="kick">Hedin BMW Ruxley</div>
+      <h1>Create your Team login</h1>
+      <p class="muted">Type your work email and choose a six digit PIN. Then press <b>Verify email</b>.</p>
+      <form class="pinbox" id="su-form" autocomplete="on" style="margin-top:14px">
+        <input class="inp" id="su-email" type="email" inputmode="email" autocomplete="username" placeholder="name@hedinautomotive.co.uk">
+        <input class="inp" id="su-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" placeholder="Choose a 6 digit PIN">
+        <input class="inp" id="su-pin2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" placeholder="Type the PIN again">
+        <div class="row"><button class="big" id="su-go" type="submit" style="flex:1">Verify email</button></div>
+      </form>
+      <p class="muted small" style="margin-top:12px">We&rsquo;ll send you an email. Wait up to 60 seconds for it to arrive, then click the link in that email to finish signing in. Check Junk if you can&rsquo;t see it.</p>
+      <p class="msg" id="su-msg" style="margin-top:12px" aria-live="polite"></p>
+      <p class="small" style="margin-top:14px"><a href="team.html">I already have a PIN, sign in</a></p>
+    </div>
+  </section>
+
   <section id="v-unverified" hidden>
     <div class="card"><b>Check your work email</b>
-      <p class="muted small" style="margin:6px 0 12px">We need to know it is you. Open the verification link we sent to <span id="unv-email"></span>, then continue.</p>
+      <p class="muted small" style="margin:6px 0 12px">We need to know it is you. We&rsquo;ve emailed a link to <span id="unv-email"></span>. Wait up to 60 seconds for it to arrive, then click the link in that email to finish signing in. This page carries on by itself once you have.</p>
       <div class="row"><button class="big" id="unv-continue" type="button">I&rsquo;ve verified it, continue</button><button class="ghost" id="unv-resend" type="button">Send it again</button><button class="ghost" id="unv-out" type="button">Sign out</button></div>
       <p class="msg" id="unv-msg" style="margin-top:10px" aria-live="polite"></p>
     </div>
@@ -73,6 +92,22 @@
       <h1 id="home-hello"></h1>
       <p><span class="pill" id="home-role"></span></p>
     </div>
+    <div class="install" id="install-card" hidden>
+      <img src="team-icon-192.png" alt="" width="56" height="56">
+      <div class="install-txt">
+        <b>Get the Ruxley Team app</b>
+        <span class="muted small">Lockup, showroom cover, the calendar and Secret Santa, one tap from your home screen. It updates itself.</span>
+        <div class="install-ios small" id="install-ios" hidden>On iPhone: tap <span class="ios-share" aria-label="Share"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v8h14v-8"/></svg></span> Share at the bottom of Safari, scroll down, tap <b>Add to Home Screen</b>, then <b>Add</b>.</div>
+        <div class="small muted" id="install-other" hidden>Open <b>dan-sells.co.uk/team.html</b> on your phone. On Android Chrome tap the menu, then <b>Install app</b>. On iPhone use Safari, Share, then <b>Add to Home Screen</b>.</div>
+        <div class="row" style="margin-top:8px"><button class="big sm" id="install-go" type="button" hidden>Install the app</button><button class="ghost" id="install-later" type="button">Not now</button></div>
+      </div>
+    </div>
+    <a class="santa-btn" href="santa/" id="santa-btn">
+      <span class="santa-lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="santa-gift" aria-hidden="true">&#127873;</span>
+      <span class="santa-txt"><b>Secret Santa</b><small>Unwrap who you&rsquo;re buying for</small></span>
+      <span class="santa-go" aria-hidden="true">&#10148;</span>
+    </a>
     <div class="cards" id="cards"></div>
     <div class="grid2">
       <div class="card"><h3>Your next seven days</h3><ul class="sum" id="next-days"></ul></div>
@@ -129,6 +164,15 @@ $('pin-reset').onclick=()=>{ const em=emailVal();
 $('unv-continue').onclick=()=>{ say('unv-msg','Checking\u2026',true); TeamSession.reloadUser().then(()=>{ const s=TeamSession.state(); if(s&&s.status==='unverified') say('unv-msg','Not verified yet. Open the link in the email, then try again.',false); }).catch(x=>say('unv-msg',errText(x),false)); };
 $('unv-resend').onclick=()=>TeamSession.resendVerification().then(()=>say('unv-msg','Sent again.',true)).catch(x=>say('unv-msg',errText(x),false));
 $('unv-out').onclick=()=>TeamSession.signOut();
+/* sign up mode: team.html?signup=1 (&email=), the link in the "create your login" email */
+$('su-form').onsubmit=e=>{ e.preventDefault(); const em=$('su-email').value.trim().toLowerCase(), p=$('su-pin').value;
+  if(!DOMAIN.test(em)) return say('su-msg','Use your Hedin work address.',false);
+  if(!pinOk(p)) return say('su-msg','Your PIN is six digits.',false);
+  if(p!==$('su-pin2').value) return say('su-msg','The two PINs don\u2019t match.',false);
+  say('su-msg','Sending your email\u2026',true);
+  TeamSession.signUpPin(em,p).then(()=>say('su-msg','Sent. Wait up to 60 seconds for the email, then click the link in it.',true))
+    .catch(x=>{ if(x&&x.code==='auth/email-already-in-use') say('su-msg','You already have a login. Sign in with your PIN, or use Forgot my PIN.',false); else say('su-msg',errText(x),false); }); };
+{ const q=new URLSearchParams(location.search), em=q.get('email'); if(em){ $('su-email').value=em; $('pin-email').value=em; } }
 TeamHome.start();
 </script>
 </body>
