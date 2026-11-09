@@ -93,7 +93,7 @@ window.__backend = backend;
   var WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
   /* Fire-and-forget: ask the worker to dispatch lockup-emails now. Failures are ignored; the 15-minute cron is the backstop. */
   function kickCover() { try { fetch(WORKER + '?target=cover-kick').catch(function () {}); } catch (e) {} }
-  var WATCHING = '', DAY = {}, STATE = null, OPEN = '', DEEP = null, DEEP_DONE = '';
+  var WATCHING = '', DAY = {}, STATE = null, OPEN = '', DEEP = null, DEEP_DONE = '', MINE_HTML = null, LIST_HTML = null;
 
   function hm(mins) { return String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0'); }
   function minsOf(t) { return +t.slice(0, 2) * 60 + +t.slice(3, 5); }
@@ -194,7 +194,7 @@ window.__backend = backend;
     var clockMins = (date === now.date) ? now.mins : 24 * 60; /* a linked future day: treat shifts as still open */
     $('who').textContent = STATE.name || '';
     $('r-kick').textContent = R.DAY_NAMES ? (R.DAY_NAMES[view.dow] + ' ' + date) : date;
-    if (!shifts.length) { $('r-title').textContent = 'Closed today'; $('r-sub').textContent = 'No showroom cover on a Sunday.'; $('r-mine').innerHTML = ''; $('r-list').innerHTML = ''; return; }
+    if (!shifts.length) { $('r-title').textContent = 'Closed today'; $('r-sub').textContent = 'No showroom cover on a Sunday.'; $('r-mine').innerHTML = ''; $('r-list').innerHTML = ''; MINE_HTML = LIST_HTML = null; return; }
     $('r-title').textContent = 'Showroom cover today';
     $('r-sub').textContent = 'One person covers the showroom in each shift. Tell us here if you cannot, or take a shift if you want to sit in.';
 
@@ -221,14 +221,17 @@ window.__backend = backend;
     } else if (mineDone.length) {
       html += '<div class="card"><b>You said you cannot cover ' + esc(mineDone[0].from) + ' to ' + esc(mineDone[0].to) + '.</b><p class="muted small" style="margin:6px 0 0">The managers have been told and someone else has been put on.</p></div>';
     }
-    $('r-mine').innerHTML = html;
-    $('r-mine').querySelectorAll('[data-here]').forEach(function (b) { b.onclick = function () { replyAbsent(b.getAttribute('data-here'), 'here', '', date); }; });
-    $('r-mine').querySelectorAll('[data-away]').forEach(function (b) { b.onclick = function () { var t = ($('r-away').value || '').trim(); if (!t) { $('r-away-msg').textContent = 'Please give a reason.'; return; } replyAbsent(b.getAttribute('data-away'), 'reason', t, date); }; });
-    $('r-mine').querySelectorAll('[data-ack]').forEach(function (b) { b.onclick = function () { ack(b.getAttribute('data-ack'), date); }; });
-    $('r-mine').querySelectorAll('[data-why]').forEach(function (b) { b.onclick = function () { askWhy(b.getAttribute('data-why'), b.getAttribute('data-shift'), date); }; });
+    /* only rebuild the card when it changes: the page repaints every minute and on every update to the day,
+       and rebuilding wiped an open reason box, so a choice like 'I am not in today' was lost before it was sent */
+    var mineKey = date + '|' + html, mineChanged = mineKey !== MINE_HTML;
+    if (mineChanged) { MINE_HTML = mineKey; $('r-mine').innerHTML = html; }
+    if (mineChanged) $('r-mine').querySelectorAll('[data-here]').forEach(function (b) { b.onclick = function () { replyAbsent(b.getAttribute('data-here'), 'here', '', date); }; });
+    if (mineChanged) $('r-mine').querySelectorAll('[data-away]').forEach(function (b) { b.onclick = function () { var t = ($('r-away').value || '').trim(); if (!t) { $('r-away-msg').textContent = 'Please give a reason.'; return; } replyAbsent(b.getAttribute('data-away'), 'reason', t, date); }; });
+    if (mineChanged) $('r-mine').querySelectorAll('[data-ack]').forEach(function (b) { b.onclick = function () { ack(b.getAttribute('data-ack'), date); }; });
+    if (mineChanged) $('r-mine').querySelectorAll('[data-why]').forEach(function (b) { b.onclick = function () { askWhy(b.getAttribute('data-why'), b.getAttribute('data-shift'), date); }; });
     applyDeep(mine, missing, date);
 
-    $('r-list').innerHTML = shifts.map(function (s) {
+    var listHtml = shifts.map(function (s) {
       var r = DAY[s.id] || {}, who = r.personId ? nameOf(r.personId) : 'Nobody yet';
       var pill = r.status === 'short' ? '<span class="pill r">Not covered</span>' : r.status === 'covering' ? '<span class="pill g">Covering</span>' : r.status === 'declined' ? '<span class="pill r">Cannot cover</span>' : r.personId ? '<span class="pill">On</span>' : '<span class="pill r">Open</span>';
       var tag = (STATE.canManage && r.personId) ? '<div class="rc-actions"><button class="ghost" type="button" data-tag="' + esc(s.id) + '" data-who="' + esc(r.personId) + '">Nudge ' + esc(nameOf(r.personId)) + ', not in the showroom</button> ' +
@@ -253,11 +256,14 @@ window.__backend = backend;
       }
       return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + takeBtn + tag + '</div>';
     }).join('');
-    $('r-list').querySelectorAll('[data-assign]').forEach(function (b) { b.onclick = function () { var sid = b.getAttribute('data-assign'), pid = document.getElementById('as-' + sid).value; if (!pid) { alert('Choose someone first.'); return; } assign(sid, pid, date); }; });
-    $('r-list').querySelectorAll('[data-take]').forEach(function (b) { b.onclick = function () { takeShift(b.getAttribute('data-take'), date); }; });
-    $('r-list').querySelectorAll('[data-tag]').forEach(function (b) { b.onclick = function () { tagAbsent(b.getAttribute('data-tag'), b.getAttribute('data-who'), date); }; });
-    $('r-list').querySelectorAll('[data-unable]').forEach(function (b) { b.onclick = function () { var f = document.getElementById('u-' + b.getAttribute('data-unable')); f.hidden = !f.hidden; }; });
-    $('r-list').querySelectorAll('[data-unable-send]').forEach(function (b) { b.onclick = function () { var sid = b.getAttribute('data-unable-send'), t = document.querySelector('[data-unable-text="' + sid + '"]').value.trim(); if (!t) { alert('Say why they cannot do it.'); return; } unable(sid, b.getAttribute('data-who'), t, date); }; });
+    /* same for the list: a repaint must not reset a half chosen Assign or a half typed reason */
+    var listKey = date + '|' + listHtml, listChanged = listKey !== LIST_HTML;
+    if (listChanged) { LIST_HTML = listKey; $('r-list').innerHTML = listHtml; }
+    if (listChanged) $('r-list').querySelectorAll('[data-assign]').forEach(function (b) { b.onclick = function () { var sid = b.getAttribute('data-assign'), pid = document.getElementById('as-' + sid).value; if (!pid) { alert('Choose someone first.'); return; } assign(sid, pid, date); }; });
+    if (listChanged) $('r-list').querySelectorAll('[data-take]').forEach(function (b) { b.onclick = function () { takeShift(b.getAttribute('data-take'), date); }; });
+    if (listChanged) $('r-list').querySelectorAll('[data-tag]').forEach(function (b) { b.onclick = function () { tagAbsent(b.getAttribute('data-tag'), b.getAttribute('data-who'), date); }; });
+    if (listChanged) $('r-list').querySelectorAll('[data-unable]').forEach(function (b) { b.onclick = function () { var f = document.getElementById('u-' + b.getAttribute('data-unable')); f.hidden = !f.hidden; }; });
+    if (listChanged) $('r-list').querySelectorAll('[data-unable-send]').forEach(function (b) { b.onclick = function () { var sid = b.getAttribute('data-unable-send'), t = document.querySelector('[data-unable-text="' + sid + '"]').value.trim(); if (!t) { alert('Say why they cannot do it.'); return; } unable(sid, b.getAttribute('data-who'), t, date); }; });
     $('r-mgr').hidden = !STATE.canManage;
     if (STATE.canManage) { watchLog(); paintStats(); }
     watchDay(date);
