@@ -19,7 +19,7 @@ const POEM_LINES = [
   'The showroom is sparkling, the kettle is on,',
   'The elves have a sack and the fun has begun.',
   "Tap I'm in if you're joining this year,",
-  "The elves will reveal the names after the lists appear."
+  "When the elves shout go, your name will appear."
 ];
 
 /* The 12 people on the Ruxley Team list, plus the five extras Dan asked for.

@@ -40,7 +40,7 @@ const check = (name, c, d) => { if (c) pass++; else fail++; console.log((c ? 'ok
   check('mail: deadline is Saturday 14 November', /Saturday 14 November/.test(sample.text));
   check('mail: budget is twenty pounds', /Spend up to .20/.test(sample.text));
   check('mail: names revealed after the deadline, not automatically on the 14th', /Names will be revealed when the elves launch it, after the opt in deadline/.test(sample.text) && !/Names are announced on Saturday 14/.test(sample.text) && !/fourteenth of November they\'ll all be revealed/.test(Mail.poemText()));
-  check('mail: poem last line is after the lists appear', /elves will reveal the names after the lists appear/.test(Mail.poemText()));
+  check('mail: poem last line is when the elves shout go', /When the elves shout go, your name will appear/.test(Mail.poemText()));
   check('mail: team meal and the bag for anyone not coming', /team meal on Saturday 5 December/.test(sample.text) && /pop your gift in the bag/.test(sample.text) && /before you leave that day/.test(sample.text));
   check('mail: one tap links carry the token and in/out', /c=in/.test(sample.optInUrl) && /c=out/.test(sample.optOutUrl) && sample.optInUrl.includes(sample.token));
   check('mail: html has both buttons and the poem', /I&rsquo;m in/.test(sample.html) && /Not this year/.test(sample.html) && /Hedin Ruxley/.test(sample.html));
