@@ -378,6 +378,42 @@ async function scenarios(browser, base) {
     check('lockup cant: no page errors', p.__errors.length === 0, p.__errors.join(' | '));
     await p.close();
   }
+  /* sliding doors: an Are you sure pop up on tick only, reminding staff of both sets and the cascading doors */
+  {
+    const shotDir = process.env.SLIDING_SHOTS || path.join(OUT, 'sliding-doors');
+    fs.mkdirSync(shotDir, { recursive: true });
+    const p = await open(browser, base, null, '/lockup.html', null, { viewport: { width: 390, height: 844 } });
+    await p.waitForSelector('#btn-me button', { timeout: 8000 });
+    await p.locator('#btn-me button').first().click();
+    await p.waitForSelector('#view-check:not([hidden]) .item[data-id="sliding"]', { timeout: 8000 });
+    await p.locator('.item[data-id="doors"] [data-act="tick"]').click();
+    await p.waitForTimeout(200);
+    check('lockup doors: ticking the front door does not open the pop up', !(await visible(p, '#sure-modal.show')));
+    check('lockup doors: the front door is ticked', !!(await p.locator('.item[data-id="doors"].done').count()));
+    await p.locator('.item[data-id="sliding"] [data-act="tick"]').click();
+    await p.waitForSelector('#sure-modal.show', { timeout: 4000 });
+    const copy = (await txt(p, '#sure-modal')).replace(/\s+/g, ' ').trim();
+    check('lockup doors: the pop up asks Are you sure', /Are you sure\?/.test(copy), copy);
+    check('lockup doors: the pop up names both sliding sets and the cascading doors', /There are 2 sets of sliding doors and the cascading doors\. Have you locked all of them\?/.test(copy), copy);
+    check('lockup doors: the buttons are Yes, all locked and Not yet', /Yes, all locked/.test(copy) && /Not yet/.test(copy), copy);
+    check('lockup doors: visible copy has no dashes', !/-/.test(copy), copy);
+    await p.screenshot({ path: path.join(shotDir, 'popup.png'), fullPage: true });
+    await p.locator('#sure-modal .sheet').screenshot({ path: path.join(shotDir, 'popup-sheet.png') });
+    await p.click('#sure-no');
+    await p.waitForTimeout(200);
+    check('lockup doors: Not yet leaves the sliding doors unticked', !(await p.locator('.item[data-id="sliding"].done').count()) && !(await visible(p, '#sure-modal.show')));
+    await p.locator('.item[data-id="sliding"] [data-act="tick"]').click();
+    await p.waitForSelector('#sure-modal.show', { timeout: 4000 });
+    await p.click('#sure-yes');
+    await p.waitForTimeout(200);
+    check('lockup doors: Yes, all locked ticks the item', !!(await p.locator('.item[data-id="sliding"].done').count()) && !(await visible(p, '#sure-modal.show')));
+    await p.screenshot({ path: path.join(shotDir, 'ticked.png'), fullPage: true });
+    await p.locator('.item[data-id="sliding"] [data-act="tick"]').click();
+    await p.waitForTimeout(200);
+    check('lockup doors: unticking does not open the pop up', !(await visible(p, '#sure-modal.show')) && !(await p.locator('.item[data-id="sliding"].done').count()));
+    check('lockup doors: no page errors', p.__errors.length === 0, p.__errors.join(' | '));
+    await p.close();
+  }
   {
     const p = await open(browser, base, null, '/lockup.html', U.will);
     await p.waitForSelector('#btn-manager', { timeout: 8000 });

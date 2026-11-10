@@ -221,6 +221,14 @@ body.testmode .prog{top:97px}
 
 <div class="modal" id="pin-modal"><div class="sheet"><h2 style="margin-bottom:12px">Manager access</h2><input type="password" id="pin-input" inputmode="numeric" placeholder="Manager PIN" style="text-align:center;font-size:24px;letter-spacing:6px"><div class="row" style="margin-top:12px"><button class="big alt" id="pin-cancel" type="button" style="margin:0">Cancel</button><button class="big" id="pin-go" type="button" style="margin:0">Enter</button></div></div></div>
 <div class="modal" id="rec-modal"><div class="sheet" id="rec-body"></div></div>
+<div class="modal" id="sure-modal" role="dialog" aria-modal="true" aria-labelledby="sure-h" aria-describedby="sure-p">
+  <div class="sheet">
+    <h2 id="sure-h" style="margin-bottom:10px">Are you sure? &#128064;</h2>
+    <p id="sure-p" class="muted">There are 2 sets of sliding doors and the cascading doors. Have you locked all of them?</p>
+    <button class="big green" id="sure-yes" type="button" style="margin:16px 0 10px">Yes, all locked</button>
+    <button class="big alt" id="sure-no" type="button" style="margin:0">Not yet</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -247,6 +255,17 @@ function nameOf(id){const p=team()[id]||mgrs()[id];return p?p.name:(id||'Nobody'
 function items(){const c=(CFG&&CFG.checklist)||{};return Object.keys(c).filter(k=>c[k].active!==false).sort((a,b)=>(c[a].order||0)-(c[b].order||0)).map(k=>({id:k,label:c[k].label}))}
 function holidays(){return Object.assign({},BANK,(CFG&&CFG.holidays)||{})}
 function show(v){view=v;['tonight','check','sign','done','manager'].forEach(x=>$('view-'+x).hidden=x!==v);window.scrollTo(0,0);paintFoot()}
+/* sliding doors: confirm before a tick (not an untick). There is one checklist
+   item (id sliding); the pop up reminds staff of both sliding sets and the cascading doors. */
+function closeSure(){ $('sure-modal').classList.remove('show') }
+function askSliding(onYes){
+  const m=$('sure-modal');
+  m.classList.add('show');
+  $('sure-no').onclick=closeSure;
+  $('sure-yes').onclick=()=>{ closeSure(); onYes() };
+  m.onclick=e=>{ if(e.target.id==='sure-modal') closeSure() };
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('sure-modal').classList.contains('show')){ e.preventDefault(); closeSure() } });
 
 /* ---- data ---- */
 fetch('https://www.gov.uk/bank-holidays.json').then(r=>r.json()).then(j=>{(j['england-and-wales'].events||[]).forEach(e=>{BANK[e.date]={label:e.title}});paint()}).catch(()=>{});
@@ -362,7 +381,7 @@ function paintCheck(){
     '<div class="extra'+(d.cant||d.note||d._open?' show':'')+'"><textarea data-act="text" placeholder="'+(d.cant?'What stopped it? e.g. charger fault on iX':'Note, e.g. charger fault on iX')+'">'+esc(d.note)+'</textarea>'+
     '<div class="photo">'+(d.photo?'<img src="'+d.photo+'" alt="">':'')+'<label>&#128247; '+(d.photo?'Change photo':'Add a photo (optional)')+'<input type="file" accept="image/*" capture="environment" hidden data-act="photo"></label>'+(d.photo?'<button class="ghost" type="button" data-act="rmphoto">Remove</button>':'')+'</div></div></div>'}).join('');
   $('c-items').querySelectorAll('.item').forEach(el=>{const id=el.dataset.id,d=draft.items[id];
-    el.querySelector('[data-act=tick]').onclick=()=>{ if(d.cant){d.cant=false} d.done=!d.done; d.at=d.done?Date.now():0; if(d.done&&navigator.vibrate)navigator.vibrate(15); touch(id); paintCheck() };
+    el.querySelector('[data-act=tick]').onclick=()=>{ const turningOn=!d.done; const go=()=>{ if(d.cant){d.cant=false} d.done=!d.done; d.at=d.done?Date.now():0; if(d.done&&navigator.vibrate)navigator.vibrate(15); touch(id); paintCheck() }; if(turningOn&&id==='sliding') askSliding(go); else go() };
     el.querySelector('[data-act=note]').onclick=()=>{ d._open=!d._open; saveDraft(); paintCheck(); const t=$('c-items').querySelector('[data-id="'+id+'"] textarea'); if(t)t.focus() };
     el.querySelector('[data-act=cant]').onclick=()=>{ d.cant=!d.cant; if(d.cant){d.done=false;d.at=Date.now()} touch(id); paintCheck(); if(d.cant){const t=$('c-items').querySelector('[data-id="'+id+'"] textarea'); if(t)t.focus()} };
     el.querySelector('[data-act=text]').oninput=e=>{ d.note=e.target.value.slice(0,500); d.ts=Date.now(); saveDraft(); paintFoot(); clearTimeout(noteT[id]); noteT[id]=setTimeout(()=>touch(id),700) };
