@@ -43,11 +43,11 @@
   "payments": 47,
   "price": 31596,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-11-09T16:07:27.2586968+00:00",
+  "quoted_at": "2026-11-10T07:06:53.7182802+00:00",
   "reg": "NV25MXY",
   "term": 48,
   "total_payable": 40560.86,
-  "valid_to": "2026-12-31T23:59:59",
+  "valid_to": "2026-12-31T23:59:59+00:00",
   "representative_example": "47 monthly payments of £502.69. Cash price £31,596. Customer deposit £1,000.00. Total amount of credit £30,596.00. Optional final payment £15,934.43. Total amount payable £40,560.86. Duration 48 months. 8,000 miles a year, 9.8p per excess mile. 9.9% APR representative. Lender BMW Group Financial Services. Finance subject to status, 18+, UK residents."
  },
  "status": "in_stock",
