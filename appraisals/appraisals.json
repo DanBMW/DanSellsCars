@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-10T16:02:29.963Z",
+  "captured": "2026-11-10T18:02:09.703Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "RK73FZD",
+      "appraisedAt": "2026-11-10T16:06:02.427Z",
+      "make": "MASERATI",
+      "model": "Grecale",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--J1xZacqF--/c_fill,h_300,w_300/v1794326763/Live/Appraisals/9639178/f891e58f-b20b-4711-8bcc-214d897872f1.jpg"
+    },
+    {
+      "registration": "K40TEL",
+      "appraisedAt": "2026-11-10T16:00:46.323Z",
+      "make": "BMW",
+      "model": "X2",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "LV26FKW",
       "appraisedAt": "2026-11-10T11:37:59.664Z",
