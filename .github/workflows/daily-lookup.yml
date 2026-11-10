@@ -52,14 +52,31 @@ on:
 
 permissions:
   contents: write
+  pages: read
 
-concurrency:
-  group: daily-lookup
-  cancel-in-progress: false
-
+# Pages: every push to main redeploys the whole site, and the morning job used
+# to push three of these files minutes apart, so this ran (and pushed) three
+# times in a row, cancelling Pages builds as it went. Now a push waits ten
+# quiet minutes first: a newer push cancels the waiting run (debounce group
+# below), so a burst of stock commits gives one rebuild and one push. The
+# rebuild itself keeps the old group, which never cancels a run mid push.
 jobs:
-  rebuild:
+  debounce:
     runs-on: ubuntu-latest
+    concurrency:
+      group: daily-lookup-debounce
+      cancel-in-progress: true
+    steps:
+      - name: Wait for the stock pushes to settle
+        if: github.event_name == 'push'
+        run: sleep 600
+
+  rebuild:
+    needs: debounce
+    runs-on: ubuntu-latest
+    concurrency:
+      group: daily-lookup
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -113,6 +130,8 @@ jobs:
       # change, so an ordinary morning is often an empty diff. That is a
       # success, not a failure: commit only when something actually moved.
       - name: Commit and push
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -123,6 +142,9 @@ jobs:
           fi
           CARS=$(node -e "try{console.log(require('./lookup/stock.json').count)}catch(e){console.log('?')}")
           git commit -m "Daily lookup and arrivals refresh (${CARS} cars in stock)"
+          # Our slot in the hour, clear of the other automated pushes
+          # (see scripts/pages-slot.sh for the map).
+          bash scripts/pages-slot.sh 40 47
           for i in 1 2 3 4; do
             git push origin HEAD:main && exit 0
             git pull --rebase origin main || true

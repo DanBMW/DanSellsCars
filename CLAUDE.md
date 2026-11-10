@@ -1224,6 +1224,19 @@ Six Routines and one workflow run this site. Reviewed 11 October 2026:
   because a push made with `GITHUB_TOKEN` starts no workflow and the files this
   job writes are not among the four anyway. The cron stays as a backstop.
 
+**Pushes to main are rationed (10 November 2026).** Every push to main
+rebuilds and redeploys the whole Pages site, and a push that lands while a
+build is running cancels it: 27 October to 10 November saw 785 Pages builds,
+269 cancelled and 21 failed. So automated pushes keep to their own minutes of
+the hour (the map is at the top of `scripts/pages-slot.sh`):
+`daily-refresh.py` commits each part and pushes ONCE at the end;
+`daily-lookup.yml` waits ten quiet minutes after a stock push (a newer push
+cancels the waiting run) and pushes at :40 to :47; `new-car-quotes.yml`
+pushes at :18 to :26. Both workflows also wait for a running Pages build and
+for main to be at least eight minutes quiet. A new automated job that pushes
+to main should take a free slot the same way, commit only when something
+other than a timestamp changed, and never push on the hour.
+
 Two things found in that review that are Dan's call rather than this repo's:
 the 08:00 Instagram draft Routine still reads `offers.html` for its car list,
 and that page has been a 574 byte redirect stub since 8 October, so it has

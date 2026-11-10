@@ -46,6 +46,7 @@ on:
 
 permissions:
   contents: write
+  pages: read
 
 concurrency:
   group: new-car-quotes
@@ -54,7 +55,7 @@ concurrency:
 jobs:
   quote:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 150   # 60 for the quotes and cards, plus up to an hour waiting for a Pages slot
     steps:
       - uses: actions/checkout@v4
         with:
@@ -118,6 +119,8 @@ jobs:
           fi
 
       - name: Commit and push
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -128,6 +131,9 @@ jobs:
           fi
           N=$(node -e "try{console.log(require('./lookup/new-stock-quotes.json').count)}catch(e){console.log('?')}")
           git commit -m "New car lender quotes (${N}) and today's brand new cards"
+          # Our slot in the hour, clear of the other automated pushes, so the
+          # Pages build is not cancelled (see scripts/pages-slot.sh).
+          bash scripts/pages-slot.sh 18 26
           for i in 1 2 3 4; do
             git push origin HEAD:main && exit 0
             git pull --rebase origin main || true

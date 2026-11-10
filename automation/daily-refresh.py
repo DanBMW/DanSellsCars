@@ -7,14 +7,22 @@
 Same five parts, same order, same separate commits as the old scheduled task,
 so a problem in a later part never costs an earlier one:
 
-  1  stock-snapshot.py            (Ruxley list)           -> commit 1, push
-  2  group-stock.py, car-details.py, car-descriptions.py, stock-images.py -> commits, push
-  3  finance-post.py --count 3                            -> commit 3, push
-  4  stock-finance.py (about 40 min)                      -> commit 4, push
-  5  new-stock.py                                         -> commit 5, push
+  1  stock-snapshot.py            (Ruxley list)           -> commit 1
+  2  group-stock.py, car-details.py, car-descriptions.py, stock-images.py -> commits
+  3  finance-post.py --count 3                            -> commit 3
+  4  stock-finance.py (about 40 min)                      -> commit 4
+  5  new-stock.py                                         -> commit 5
+     then ONE push of everything above, at the end (or as soon as the run
+     stops early or crashes, so committed work is never left behind).
 
-A failed push in part 1 stops the run. Anything else is logged and the run
-carries on. A summary is written to logs/ and, if NTFY_TOPIC is set, pushed to
+Why one push: every push to main rebuilds and redeploys the whole GitHub
+Pages site, and this job used to push five or six times inside fifteen
+minutes, three times a day. Each push cancelled the Pages build the one
+before had started, and each one also set daily-lookup.yml off again
+(November 2026: 269 cancelled and 21 failed Pages builds in two weeks).
+One push gives one Pages build and one daily-lookup run.
+
+A failed commit is logged and the run carries on. A summary is written to logs/ and, if NTFY_TOPIC is set, pushed to
 your phone through ntfy.sh (free app, no account needed).
 
 Environment (optional):
@@ -78,8 +86,12 @@ def quiet_case_dupes():
         git('update-index', '--assume-unchanged', *dupes)
 
 
+COMMITTED = []       # messages committed locally and not pushed yet
+
+
 def commit_push(paths, message):
-    """Commit the given paths (only if they changed) and push to main."""
+    """Commit the given paths (only if they changed). The push happens once,
+    at the end of the run, in push_all()."""
     git('add', '--', *paths)
     rc, _ = git('diff', '--cached', '--quiet')
     if rc == 0:
@@ -89,21 +101,53 @@ def commit_push(paths, message):
     if rc != 0:
         REPORT.append('COMMIT FAILED: ' + message)
         return False
-    if NO_PUSH:
-        say('  --no-push: committed locally only')
+    COMMITTED.append(message)
+    return True
+
+
+def wait_for_quiet_main(max_wait=15 * 60):
+    """Let a push that has only just landed on main (the Sales Docs feed at
+    :30, the eVA appraisals at :02) finish its Pages build before ours starts
+    another one. Waits at most a quarter of an hour, then pushes anyway."""
+    start = time.time()
+    while time.time() - start < max_wait:
+        git('fetch', 'origin', 'main')
+        rc, out = git('log', '-1', '--format=%ct', 'origin/main')
+        try:
+            age = time.time() - int(out.strip().splitlines()[0])
+        except (ValueError, IndexError):
+            return
+        minute = datetime.datetime.utcnow().minute
+        if age >= 5 * 60 and minute not in (0, 1, 2, 3, 4, 28, 29, 30, 31, 32, 33):
+            return
+        say('  main was pushed %ds ago (minute %d), waiting for a quiet slot' % (age, minute))
+        time.sleep(60)
+
+
+def push_all():
+    """Push every commit this run made, in one go."""
+    if not COMMITTED:
+        say('nothing committed, nothing to push')
         return True
-    for attempt in (1, 2):
+    if NO_PUSH:
+        say('  --no-push: %d commit(s) kept locally only' % len(COMMITTED))
+        return True
+    wait_for_quiet_main()
+    last_push_out = ''
+    for attempt in (1, 2, 3):
         rc, out = git('push', 'origin', 'HEAD:main')
         last_push_out = out
         if rc == 0:
             git('fetch', 'origin', 'main')
             rc2, _ = git('merge-base', '--is-ancestor', 'HEAD', 'origin/main')
             if rc2 == 0:
+                say('pushed %d commit(s) in one push' % len(COMMITTED))
+                del COMMITTED[:]
                 return True
         # someone (you, from your phone) pushed in between: rebase and retry
         quiet_case_dupes()
         git('pull', '--rebase', '--autostash', '-X', 'theirs', 'origin', 'main')   # in a rebase, 'theirs' is our own replayed commit: this machine's data wins
-    REPORT.append('PUSH FAILED: %s -> %s' % (message, tail(last_push_out, 4)))
+    REPORT.append('PUSH FAILED (%s) -> %s' % ('; '.join(COMMITTED), tail(last_push_out, 4)))
     return False
 
 
@@ -251,7 +295,7 @@ def main():
         REPORT.append('Stock: ' + count)
         if not commit_push(['automation/hedin-stock-snapshot.json'],
                            'Daily stock snapshot %s' % datetime.date.today().isoformat()):
-            REPORT.append('Part 1 push failed, stopping.')
+            REPORT.append('Part 1 commit failed, stopping.')
             return finish()
         # stock-sold / stock-arrivals are produced by .github/workflows/daily-lookup.yml
     for n in new:
@@ -313,6 +357,10 @@ def main():
 
 
 def finish():
+    try:
+        push_all()
+    except Exception as e:                      # never lose the summary
+        REPORT.append('PUSH CRASH: %r' % e)
     failed = any('FAIL' in r or 'REFUSED' in r or 'CRASH' in r for r in REPORT)
     drop_lock()
     title = ('Stock refresh: ' if LITE else 'Morning stock job: ') + ('CHECK' if failed else 'done')
