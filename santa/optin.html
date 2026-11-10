@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#7a0f1a">
+<title>Secret Santa opt in | Hedin BMW Ruxley</title>
+<link rel="manifest" href="santa.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="santa.css">
+<script src="../team-pwa.js" defer></script>
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+<div class="bulbs" aria-hidden="true" id="bulbs"></div>
+
+<main class="optin-page">
+  <div class="optin-card" id="card">
+    <div class="kick">Hedin BMW Ruxley</div>
+    <h1 class="xfont">Secret Santa</h1>
+    <p id="status">Opening your envelope&hellip;</p>
+  </div>
+</main>
+
+<script src="optin.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+SantaOptin.start({
+  get: function (path) { return get(ref(db, path)).then(function (s) { return s.val(); }); },
+  update: function (path, v) { return update(ref(db, path), v); },
+  watch: function (path, cb, err) { return onValue(ref(db, path), function (s) { cb(s.val()); }, err || function () {}); },
+  serverTs: function () { return serverTimestamp(); }
+});
+</script>
+</body>
+</html>

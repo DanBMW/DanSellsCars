@@ -128,7 +128,7 @@
       <div id="mem-tools">
         <button class="btn ghost sm" id="add-team" type="button">Add everyone on the Team list</button>
         <h3>Add someone else</h3>
-        <p class="small">For people who aren&rsquo;t on the normal staff list. They sign in here with this email and their own PIN.</p>
+        <p class="small">For people who aren&rsquo;t on the normal staff list. They can use their opt in email link, or sign in here with this email and their own PIN.</p>
         <div class="grid2"><input id="add-name" placeholder="First name" maxlength="40"><input id="add-email" type="email" placeholder="Their email"></div>
         <div class="row end"><button class="btn green sm" id="add-go" type="button">Add to the list</button></div>
         <h3>Keep apart</h3>
@@ -138,6 +138,12 @@
         <ul class="people" id="ex-list"></ul>
       </div>
       <p class="msg" id="mem-msg" aria-live="polite"></p>
+    </div>
+    <div class="paper" id="optin-box">
+      <div class="row between"><h2 class="xfont">Who&rsquo;s in <span class="badge" id="optin-count"></span></h2></div>
+      <p class="small">From the opt in email. This list updates on the next server run, usually within 15 minutes of someone tapping a button. People who say they&rsquo;re in are added to the nice list. People who say not this year are taken off, until you launch or the names are announced.</p>
+      <div class="optin-sum" id="optin-sum"></div>
+      <ul class="people" id="optin-list"></ul>
     </div>
     <div class="paper sack">
       <h2 class="xfont">The draw</h2>

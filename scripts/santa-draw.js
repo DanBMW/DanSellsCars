@@ -187,12 +187,89 @@ async function queue(db, R, kind, notifyRoot, s, today, nowMs, log) {
 /* the last Monday to Saturday day strictly before the exchange */
 function eveDay(exchange) { let d = LR.addDays(exchange, -1); while (LR.london(new Date(d + 'T12:00:00Z')).dow === 'sun') d = LR.addDays(d, -1); return d; }
 
+
+function teamIdFor(email, team, managers) {
+  const e = String(email || '').trim().toLowerCase();
+  for (const g of [team, managers]) {
+    for (const id of Object.keys(g || {})) {
+      const p = g[id];
+      if (p && String(p.email || '').trim().toLowerCase() === e) return id;
+    }
+  }
+  return null;
+}
+
+/* Apply opt in / opt out answers. Tokens stay on the server: organisers only
+ * see santa/replies (name, email, choice), never the token or a pairing.
+ * People who say they are in are added to the nice list; people who say not
+ * this year are taken off, until the draw or launch locks the list. After the
+ * names are out, each opted in token gets its own guestGift (their pairing
+ * only). Logs never name anyone. */
+async function syncOptins(db, R, o) {
+  const log = o.log, nowMs = o.nowMs;
+  const s = (await val(db, R + '/settings')) || {};
+  const draw = await val(db, R + '/draw');
+  const locked = !!draw || s.live === true || !!(s.announceTs && nowMs >= s.announceTs) || !!(s.optInUntil && nowMs >= s.optInUntil);
+  const optins = (await val(db, R + '/optins')) || {};
+  const team = (await val(db, 'lockup/config/team')) || {};
+  const managers = (await val(db, 'lockup/config/managers')) || {};
+  const members = Object.assign({}, (await val(db, R + '/members')) || {});
+  const wishes = Object.assign({}, (await val(db, R + '/wish')) || {});
+  const assign = (await val(db, R + '/assign')) || {};
+  const namesOut = s.live === true && !!s.announceTs && nowMs >= s.announceTs;
+  const updates = {};
+  const replies = {};
+  let added = 0, removed = 0, gifts = 0;
+  for (const token of Object.keys(optins)) {
+    const rec = optins[token];
+    if (!rec || !rec.email) continue;
+    const email = String(rec.email).trim().toLowerCase();
+    const k = keyOf(email);
+    const choice = rec.choice === 'in' || rec.choice === 'out' ? rec.choice : 'pending';
+    replies[k] = { name: String(rec.name || '').slice(0, 40), email: email, choice: choice, ts: rec.choiceTs || rec.invitedTs || 0 };
+    if (!locked && choice === 'in' && !members[k]) {
+      const m = { name: String(rec.name || email.split('@')[0]).slice(0, 40), email: email, ts: nowMs };
+      const tid = teamIdFor(email, team, managers);
+      if (tid) m.team = tid; else m.extra = true;
+      updates['members/' + k] = m;
+      members[k] = m;
+      added++;
+    }
+    if (!locked && choice === 'out' && members[k]) {
+      updates['members/' + k] = null;
+      delete members[k];
+      removed++;
+    }
+    if (choice === 'in' && rec.wish && rec.wish.text != null) {
+      const incoming = { text: String(rec.wish.text).slice(0, 600), ts: rec.wish.ts || nowMs };
+      const existing = wishes[k];
+      if (!existing || (incoming.ts || 0) >= (existing.ts || 0)) {
+        updates['wish/' + k] = incoming;
+        wishes[k] = incoming;
+      }
+    }
+    if (namesOut && choice === 'in' && assign[k] && assign[k].to) {
+      const gift = { name: assign[k].name, to: assign[k].to, drawId: assign[k].drawId || '' };
+      const gw = wishes[assign[k].to];
+      if (gw && gw.text) gift.wish = String(gw.text).slice(0, 600);
+      updates['guestGift/' + token] = gift;
+      gifts++;
+    }
+  }
+  if (Object.keys(optins).length) updates['replies'] = Object.keys(replies).length ? replies : null;
+  if (!Object.keys(updates).length) return;
+  await db.ref(R).update(updates);
+  if (added || removed || gifts) log(R + ': opt in sync in +' + added + ' out -' + removed + (gifts ? ' gifts ' + gifts : ''));
+}
+
 async function runRoot(db, R, o) {
   const log = o.log, nowMs = o.nowMs, notifyRoot = o.notifyRoot;
   const L = LR.london(new Date(nowMs)), today = L.date;
   let s = (await val(db, R + '/settings')) || {};
   let launched = await val(db, R + '/launched');
   const draw0 = await val(db, R + '/draw');
+  await syncOptins(db, R, o);
+  s = (await val(db, R + '/settings')) || {};
 
   /* 1. draw or cancel asked for in Elf HQ */
   const req = await val(db, R + '/drawRequest');
@@ -224,6 +301,7 @@ async function runRoot(db, R, o) {
       } else await db.ref(R + '/launchRequest').remove();
     }
   }
+  await syncOptins(db, R, o);
   if (!launched) return;
   const mail = (await val(db, R + '/mail')) || {};
   const mark = k => db.ref(R + '/mail/' + k).set(nowMs);
@@ -249,7 +327,7 @@ async function run(db, o) {
   }
 }
 
-module.exports = { keyOf, derange, valid, explain, DrawError, run, runRoot, makeMail, eveDay, mailId, _setRand: f => { RAND = f; } };
+module.exports = { keyOf, derange, valid, explain, DrawError, run, runRoot, syncOptins, makeMail, eveDay, mailId, teamIdFor, _setRand: f => { RAND = f; } };
 
 if (require.main === module) {
   const admin = require('firebase-admin');

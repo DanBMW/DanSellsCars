@@ -222,5 +222,63 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     const m = S.makeMail('eve', { name: 'Holly' }, { exchange: '2026-12-21', budget: 20 }, '2026-12-19', T('2026-12-19T10:00:00Z'));
     ok(/on Monday 21 December/.test(m.subject), m.subject);
   }
+  /* opt in / opt out sync */
+  {
+    const db = fakeDb({
+      lockup: { config: { team: { dan: { name: 'Dan', email: 'daniel.cane@hedinautomotive.co.uk', active: true } }, managers: { will: { name: 'Will', email: 'will.potter@hedinautomotive.co.uk' } } } },
+      santa: { settings: { live: false }, optins: {
+        Tkaaaaaaaaaaaaaaaaaaaaaaaa12: { name: 'Tina', email: 'tina.graham@hedinautomotive.co.uk', invitedTs: 1, choice: 'in', choiceTs: 2 },
+        Tkbbbbbbbbbbbbbbbbbbbbbbbbb12: { name: 'Dan', email: 'daniel.cane@hedinautomotive.co.uk', invitedTs: 1, choice: 'in', choiceTs: 2 },
+        Tkcccccccccccccccccccccccc12: { name: 'Lisa', email: 'lisa.debono@hedinautomotive.co.uk', invitedTs: 1, choice: 'out', choiceTs: 2 },
+        Tkdddddddddddddddddddddddd12: { name: 'Faith', email: 'faith.marcus@hedinautomotive.co.uk', invitedTs: 1 }
+      }, members: { [K('lisa.debono@hedinautomotive.co.uk')]: { name: 'Lisa', email: 'lisa.debono@hedinautomotive.co.uk', extra: true, ts: 1 } } }
+    });
+    const logs = [];
+    await S.runRoot(db, 'santa', { log: m => logs.push(m), nowMs: Date.parse('2026-11-10T12:00:00Z'), notifyRoot: 'lockup/notify' });
+    const R = db.data.santa;
+    ok(R.members[K('tina.graham@hedinautomotive.co.uk')] && R.members[K('tina.graham@hedinautomotive.co.uk')].extra === true, 'opted in extras are added to the nice list');
+    ok(R.members[K('daniel.cane@hedinautomotive.co.uk')] && R.members[K('daniel.cane@hedinautomotive.co.uk')].team === 'dan', 'opted in team people keep their team id');
+    ok(!R.members[K('lisa.debono@hedinautomotive.co.uk')], 'opted out people are taken off the nice list');
+    ok(!R.members[K('faith.marcus@hedinautomotive.co.uk')], 'no reply yet means not on the list');
+    eq(R.replies[K('tina.graham@hedinautomotive.co.uk')].choice, 'in');
+    eq(R.replies[K('lisa.debono@hedinautomotive.co.uk')].choice, 'out');
+    eq(R.replies[K('faith.marcus@hedinautomotive.co.uk')].choice, 'pending');
+    ok(!Object.values(R.replies).some(x => x.token), 'replies never carry the token');
+    ok(logs.every(m => !/Tina|Lisa|Faith|Graham|Debono/.test(m)), 'the opt in log never names anyone');
+
+    /* change mind: Faith opts in, Tina opts out */
+    db.data.santa.optins.Tkdddddddddddddddddddddddd12.choice = 'in';
+    db.data.santa.optins.Tkdddddddddddddddddddddddd12.choiceTs = 3;
+    db.data.santa.optins.Tkaaaaaaaaaaaaaaaaaaaaaaaa12.choice = 'out';
+    db.data.santa.optins.Tkaaaaaaaaaaaaaaaaaaaaaaaa12.choiceTs = 3;
+    await S.syncOptins(db, 'santa', { log: () => {}, nowMs: Date.parse('2026-11-10T12:05:00Z') });
+    ok(db.data.santa.members[K('faith.marcus@hedinautomotive.co.uk')], 'changing your mind to in adds you');
+    ok(!db.data.santa.members[K('tina.graham@hedinautomotive.co.uk')], 'changing your mind to out takes you off');
+
+    /* after a draw the list is frozen */
+    db.data.santa.draw = { id: 'd1', ts: 1, count: 2 };
+    db.data.santa.optins.Tkcccccccccccccccccccccccc12.choice = 'in';
+    await S.syncOptins(db, 'santa', { log: () => {}, nowMs: Date.parse('2026-11-10T12:10:00Z') });
+    ok(!db.data.santa.members[K('lisa.debono@hedinautomotive.co.uk')], 'after the draw, a late opt in is not added');
+
+    /* names out: guestGift is the person's own pairing only */
+    const db2 = fakeDb({
+      santa: {
+        settings: { live: true, announceTs: Date.parse('2026-11-14T10:00:00Z') },
+        members: { a: { name: 'Ann', email: 'ann@x.com' }, b: { name: 'Bob', email: 'bob@x.com' } },
+        assign: { [K('ann@x.com')]: { to: K('bob@x.com'), name: 'Bob', drawId: 'd9' }, [K('bob@x.com')]: { to: K('ann@x.com'), name: 'Ann', drawId: 'd9' } },
+        wish: { [K('bob@x.com')]: { text: 'Fluffy socks', ts: 1 } },
+        optins: { TokAAAAAAAAAAAAAAAABBBBBBBB12: { name: 'Ann', email: 'ann@x.com', choice: 'in', choiceTs: 1 } },
+        draw: { id: 'd9', ts: 1, count: 2 }
+      }
+    });
+    await S.syncOptins(db2, 'santa', { log: () => {}, nowMs: Date.parse('2026-11-14T11:00:00Z') });
+    const g = db2.data.santa.guestGift.TokAAAAAAAAAAAAAAAABBBBBBBB12;
+    eq(g.name, 'Bob');
+    eq(g.to, K('bob@x.com'));
+    eq(g.wish, 'Fluffy socks');
+    ok(!db2.data.santa.guestGift[K('bob@x.com')], 'nobody else gets a gift record under a guessable key');
+  }
+
   console.log('santa: all ' + checks + ' checks passed');
 })().catch(e => { console.error(e); process.exit(1); });

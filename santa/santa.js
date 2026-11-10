@@ -20,7 +20,7 @@
   var R = PRACTICE ? 'santaTest' : 'santa';
   var SV = { '.sv': 'timestamp' };
   var B = null, user = null, me = null, view = 'home', unsub = [], orgUnsub = [];
-  var D = { settings: {}, launched: null, launchReq: null, member: undefined, members: null, draw: null, req: null, err: null, assign: null, giftWish: null, myWish: null, notes: {}, uncovered: {}, audit: {}, excl: {}, sealed: null, admin: false, link: null, managers: {}, team: {} };
+  var D = { settings: {}, launched: null, launchReq: null, member: undefined, members: null, draw: null, req: null, err: null, assign: null, giftWish: null, myWish: null, notes: {}, uncovered: {}, audit: {}, excl: {}, sealed: null, admin: false, link: null, managers: {}, team: {}, replies: {} };
   var giftWishUnsub = null, sealedUnsub = null, splashUntil = Date.now() + 1400;
 
   function $(id) { return document.getElementById(id); }
@@ -37,7 +37,7 @@
 
   /* ---------- data ---------- */
   function subscribe() {
-    clear(unsub); clear(orgUnsub);
+    clear(unsub); clear(orgUnsub); orgOn = false;
     D.member = undefined; D.members = null; D.assign = null; D.myWish = null; D.notes = {}; D.admin = false; D.link = null;
     if (!user || !user.emailVerified) return paint();
     me = K(user.email);
@@ -90,6 +90,7 @@
     watch(orgUnsub, R + '/audit', function (v) { D.audit = v || {}; });
     watch(orgUnsub, R + '/drawError', function (v) { D.err = v || null; });
     watch(orgUnsub, R + '/launchRequest', function (v) { D.launchReq = v || null; });
+    watch(orgUnsub, R + '/replies', function (v) { D.replies = v || {}; });
   }
   function gifteeSub() {
     if (giftWishUnsub) { giftWishUnsub(); giftWishUnsub = null; }
@@ -230,6 +231,7 @@
     $('set-who').hidden = adm;
     $('hq-count').innerHTML = countdown();
     paintLaunch(list, adm);
+    paintReplies();
     $('mem-count').textContent = list.length;
     $('mem-locked').hidden = !drawn; $('mem-tools').hidden = drawn;
     $('people').innerHTML = list.map(function (p) {
@@ -256,6 +258,32 @@
     if (unc) watchSealed(); else $('sealed-list').innerHTML = '';
     var au = Object.keys(D.audit || {}).map(function (k) { return D.audit[k]; }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
     $('audit').innerHTML = au.length ? au.slice(0, 30).map(function (a) { return '<li><b>' + esc(a.name) + '</b> ' + esc(a.what) + '<span>' + esc(when(a.ts)) + '</span></li>'; }).join('') : '<li class="small">Nothing yet.</li>';
+  }
+
+  function paintReplies() {
+    var box = $('optin-box'); if (!box) return;
+    var r = D.replies || {}, keys = Object.keys(r);
+    if (!keys.length) {
+      $('optin-count').textContent = '0';
+      $('optin-sum').innerHTML = '';
+      $('optin-list').innerHTML = '<li class="small">No opt in emails have been sent yet.</li>';
+      return;
+    }
+    var list = keys.map(function (k) { return Object.assign({ k: k }, r[k]); }).sort(function (a, b) {
+      var rank = function (c) { return c === 'in' ? 0 : c === 'out' ? 2 : 1; };
+      return rank(a.choice) - rank(b.choice) || String(a.name || a.email).localeCompare(String(b.name || b.email));
+    });
+    var nIn = list.filter(function (p) { return p.choice === 'in'; }).length;
+    var nOut = list.filter(function (p) { return p.choice === 'out'; }).length;
+    var nWait = list.length - nIn - nOut;
+    $('optin-count').textContent = nIn + ' in';
+    $('optin-sum').innerHTML = '<span class="tagp in">' + nIn + ' in</span><span class="tagp wait">' + nWait + ' waiting</span><span class="tagp out">' + nOut + ' out</span>';
+    var label = function (c) { return c === 'in' ? 'In' : c === 'out' ? 'Out' : 'Waiting'; };
+    var klass = function (c) { return c === 'in' ? 'in' : c === 'out' ? 'out' : 'wait'; };
+    $('optin-list').innerHTML = list.map(function (p) {
+      return '<li><span class="av">' + esc(String(p.name || p.email || '?').charAt(0)) + '</span><span class="pn"><b>' + esc(p.name || p.email) + '</b><small>' + esc(p.email || '') + '</small></span>' +
+        '<span class="tagp ' + klass(p.choice) + '">' + label(p.choice) + '</span></li>';
+    }).join('');
   }
   function paintLaunch(list, adm) {
     var s = D.settings, L = D.launched, h = '';

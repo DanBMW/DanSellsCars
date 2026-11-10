@@ -183,3 +183,23 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red)}
 .launch .big-ico{font-size:32px}
 .btn.launch-go{width:100%;padding:20px;font-size:22px;background:linear-gradient(180deg,#ffd34d,#f0ba6c);color:#4a0610;box-shadow:0 5px 0 #b98336;font-family:'Mountains of Christmas',cursive}
 @media (max-width:480px){.grid2{grid-template-columns:1fr}}
+
+/* opt in replies on Elf HQ, and the one tap opt in page */
+.tagp.in{background:#dff3e6;color:var(--green)}
+.tagp.out{background:#fde3e6;color:var(--red)}
+.tagp.wait{background:#fff3d1;color:#8a5a12}
+.optin-sum{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px}
+.optin-sum span{font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;background:#fff}
+.optin-page{max-width:520px;margin:0 auto;padding:16px 14px 40px}
+.optin-card{background:var(--paper,#fff8ec);border-radius:22px;padding:22px 18px 20px;box-shadow:0 10px 30px rgba(58,6,16,.25);border:3px solid #f0ba6c;text-align:center;color:#3b1d12}
+.optin-card h1{font-family:'Mountains of Christmas',Georgia,serif;font-size:38px;margin:8px 0 6px;color:#7a0f1a}
+.optin-card .kick{letter-spacing:.12em;text-transform:uppercase;font-size:12px;font-weight:700;color:#b88336}
+.optin-card p{margin:0 0 12px;line-height:1.5}
+.optin-card .hello-name{font-size:20px;font-weight:700;margin:4px 0 12px}
+.optin-actions{display:flex;flex-direction:column;gap:10px;margin:18px 0 8px}
+.optin-actions .btn{font-size:20px;padding:16px 18px;border-radius:14px;width:100%}
+.optin-ico{font-size:64px;line-height:1;margin:6px 0 8px}
+.optin-err{color:#7a0f1a}
+.optin-wish{text-align:left;margin-top:16px}
+.optin-wish textarea{width:100%;border:1.5px solid #ecd2a6;border-radius:12px;padding:10px;font:inherit;min-height:120px}
+.optin-gift .rname{font-family:'Mountains of Christmas',Georgia,serif;font-size:36px;color:#7a0f1a;margin:8px 0}

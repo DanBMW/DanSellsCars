@@ -115,6 +115,59 @@ for (const R of ['santa', 'santaTest']) {
   await no(assertFails(remove(ref(db('dan'), R + '/audit/' + ar.key))));
   await no(assertFails(get(ref(db('carl'), R + '/audit'))));
 }
+
+/* opt in tokens: one tap, no login; organisers see replies but never tokens or pairings */
+for (const R of ['santa', 'santaTest']) {
+  await env.clearDatabase();
+  await env.withSecurityRulesDisabled(async c => {
+    await set(ref(c.database(), 'lockup/config/managers/nathan'), { name: 'Nathan', email: H('nathan.jobson') });
+    await set(ref(c.database(), 'shifts/links/nat1'), 'nathan');
+    await set(ref(c.database(), R + '/settings'), { live: false });
+    await set(ref(c.database(), R + '/optins/TokAAAAAAAAAAAAAAAAAAAAAAAA12'), { name: 'Tina', email: 'tina.graham@hedinautomotive.co.uk', invitedTs: 1 });
+    await set(ref(c.database(), R + '/optins/TokBBBBBBBBBBBBBBBBBBBBBBBB12'), { name: 'Lisa', email: 'lisa.debono@hedinautomotive.co.uk', invitedTs: 1, choice: 'in', choiceTs: 1 });
+  });
+  const tokA = 'TokAAAAAAAAAAAAAAAAAAAAAAAA12', tokB = 'TokBBBBBBBBBBBBBBBBBBBBBBBB12';
+  await ok(assertSucceeds(get(ref(anon, R + '/optins/' + tokA))), 'anyone with the token can read it');
+  await no(assertFails(get(ref(anon, R + '/optins'))), 'nobody can list all tokens');
+  await no(assertFails(get(ref(db('dan'), R + '/optins'))), 'not even Dan can list tokens');
+  await no(assertFails(get(ref(anon, R + '/optins/short'))), 'a short token is rejected');
+  await ok(assertSucceeds(get(ref(anon, R + '/optins/nopeAAAAAAAAAAAAAAAAAAAAAA12'))), 'an unknown well formed token reads as empty');
+  await ok(assertSucceeds(update(ref(anon, R + '/optins/' + tokA), { choice: 'in', choiceTs: serverTimestamp() })), 'one tap opt in, no login');
+  await ok(assertSucceeds(update(ref(anon, R + '/optins/' + tokA), { choice: 'out', choiceTs: serverTimestamp() })), 'you can change your mind');
+  await ok(assertSucceeds(update(ref(anon, R + '/optins/' + tokA), { choice: 'in', choiceTs: serverTimestamp() })));
+  await no(assertFails(update(ref(anon, R + '/optins/' + tokA), { choice: 'maybe', choiceTs: serverTimestamp() })));
+  await no(assertFails(update(ref(anon, R + '/optins/' + tokA), { email: 'hacked@x.com' })), 'the token cannot be pointed at someone else');
+  await no(assertFails(set(ref(anon, R + '/optins/TokCCCCCCCCCCCCCCCCCCCCCCCC12'), { name: 'Eve', email: 'eve@x.com' })), 'clients cannot mint tokens');
+  await no(assertFails(update(ref(anon, R + '/optins/nopeAAAAAAAAAAAAAAAAAAAAAA12'), { choice: 'in', choiceTs: serverTimestamp() })), 'an invalid token cannot be written');
+  await no(assertFails(set(ref(db('dan'), R + '/replies/' + K('tina.graham@hedinautomotive.co.uk')), { name: 'Tina', email: 'tina.graham@hedinautomotive.co.uk', choice: 'in', ts: 1 })), 'replies are server only');
+  await env.withSecurityRulesDisabled(async c => {
+    await set(ref(c.database(), R + '/replies/' + K('tina.graham@hedinautomotive.co.uk')), { name: 'Tina', email: 'tina.graham@hedinautomotive.co.uk', choice: 'in', ts: 1 });
+  });
+  await ok(assertSucceeds(get(ref(db('dan'), R + '/replies'))), 'Dan can see who is in or out');
+  await ok(assertSucceeds(get(ref(db('nathan'), R + '/replies'))), 'managers can see who is in or out');
+  await no(assertFails(get(ref(db('carl'), R + '/replies'))), 'staff cannot read the replies list');
+  await no(assertFails(get(ref(anon, R + '/replies'))));
+  await ok(assertSucceeds(update(ref(anon, R + '/optins/' + tokA), { choice: 'out', choiceTs: serverTimestamp() })));
+  await ok(assertSucceeds(set(ref(anon, R + '/optins/' + tokB + '/wish'), { text: 'Socks', ts: serverTimestamp() })), 'an opted in guest can write a wishlist with the token');
+  await no(assertFails(set(ref(anon, R + '/optins/' + tokA + '/wish'), { text: 'Nope', ts: serverTimestamp() })), 'an opted out guest cannot write a wishlist');
+  await env.withSecurityRulesDisabled(async c => {
+    await update(ref(c.database(), R + '/settings'), { live: true, announceTs: Date.now() + 864e5 });
+    await set(ref(c.database(), R + '/draw'), { id: 'd1', ts: 1, count: 2 });
+    await set(ref(c.database(), R + '/guestGift/' + tokB), { name: 'Tina', to: K('tina.graham@hedinautomotive.co.uk'), drawId: 'd1' });
+  });
+  await no(assertFails(update(ref(anon, R + '/optins/' + tokA), { choice: 'in', choiceTs: serverTimestamp() })), 'no changing your mind after launch');
+  await no(assertFails(get(ref(anon, R + '/guestGift/' + tokB))), 'the pairing stays shut until the names time');
+  await no(assertFails(get(ref(db('dan'), R + '/guestGift'))), 'nobody can list guest pairings');
+  await env.withSecurityRulesDisabled(async c => {
+    await update(ref(c.database(), R + '/settings'), { announceTs: Date.now() - 1000 });
+  });
+  await ok(assertSucceeds(get(ref(anon, R + '/guestGift/' + tokB))), 'the token holder can read their pairing once names are out');
+  await ok(assertSucceeds(get(ref(anon, R + '/guestGift/' + tokA))), 'another token path is readable after names are out but is empty');
+  await no(assertFails(get(ref(anon, R + '/guestGift/short'))), 'a short gift token is still rejected');
+  await no(assertFails(set(ref(anon, R + '/guestGift/' + tokA), { name: 'Hack', to: 'x' })), 'clients cannot write a guest pairing');
+}
+
 console.log('santa rules: ' + n + ' checks passed');
+
 await env.cleanup();
 process.exit(0);

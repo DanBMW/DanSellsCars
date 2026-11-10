@@ -949,6 +949,9 @@
         "title": {
           ".validate": "newData.isString() && newData.val().length <= 60"
         },
+        "optInUntil": {
+          ".validate": "newData.isNumber()"
+        },
         "$other": {
           ".validate": false
         }
@@ -1119,6 +1122,98 @@
             }
           }
         }
+      },
+      "optins": {
+        ".read": false,
+        ".write": false,
+        "$token": {
+          ".read": "$token.matches(/^[A-Za-z0-9_-]{24,64}$/)",
+          ".write": false,
+          "email": {
+            ".validate": "newData.isString() && newData.val().length <= 80 && newData.val().matches(/^[^@ ]+@[^@ ]+$/)"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+          },
+          "team": {
+            ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,24}$/)"
+          },
+          "extra": {
+            ".validate": "newData.isBoolean()"
+          },
+          "invitedTs": {
+            ".validate": "newData.isNumber()"
+          },
+          "choice": {
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santa/draw').exists() && root.child('santa/settings/live').val() !== true && (!root.child('santa/settings/announceTs').exists() || now < root.child('santa/settings/announceTs').val()) && (!root.child('santa/settings/optInUntil').exists() || now < root.child('santa/settings/optInUntil').val())",
+            ".validate": "newData.val() === 'in' || newData.val() === 'out'"
+          },
+          "choiceTs": {
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santa/draw').exists() && root.child('santa/settings/live').val() !== true && (!root.child('santa/settings/announceTs').exists() || now < root.child('santa/settings/announceTs').val()) && (!root.child('santa/settings/optInUntil').exists() || now < root.child('santa/settings/optInUntil').val())",
+            ".validate": "newData.val() === now"
+          },
+          "wish": {
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && data.parent().child('choice').val() === 'in'",
+            ".validate": "newData.hasChildren(['text','ts'])",
+            "text": {
+              ".validate": "newData.isString() && newData.val().length <= 600"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "replies": {
+        ".read": "(auth != null && auth.token.email_verified === true && ((root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true)) || root.child('lockup/config/managers').child(root.child('shifts/links').child(auth.uid).val()).val() !== null))",
+        ".write": false,
+        "$k": {
+          ".validate": "newData.hasChildren(['name','email','choice'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "email": {
+            ".validate": "newData.isString() && newData.val().length <= 80"
+          },
+          "choice": {
+            ".validate": "newData.val() === 'in' || newData.val() === 'out' || newData.val() === 'pending'"
+          },
+          "ts": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "guestGift": {
+        ".read": false,
+        ".write": false,
+        "$token": {
+          ".read": "$token.matches(/^[A-Za-z0-9_-]{24,64}$/) && root.child('santa/settings/live').val() === true && root.child('santa/settings/announceTs').val() <= now",
+          ".validate": "newData.hasChildren(['name','to'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "to": {
+            ".validate": "newData.isString() && newData.val().length <= 80"
+          },
+          "drawId": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "wish": {
+            ".validate": "newData.isString() && newData.val().length <= 600"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
       }
     },
     "santaTest": {
@@ -1147,6 +1242,9 @@
         },
         "title": {
           ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "optInUntil": {
+          ".validate": "newData.isNumber()"
         },
         "$other": {
           ".validate": false
@@ -1316,6 +1414,98 @@
             "$other": {
               ".validate": false
             }
+          }
+        }
+      },
+      "optins": {
+        ".read": false,
+        ".write": false,
+        "$token": {
+          ".read": "$token.matches(/^[A-Za-z0-9_-]{24,64}$/)",
+          ".write": false,
+          "email": {
+            ".validate": "newData.isString() && newData.val().length <= 80 && newData.val().matches(/^[^@ ]+@[^@ ]+$/)"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+          },
+          "team": {
+            ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,24}$/)"
+          },
+          "extra": {
+            ".validate": "newData.isBoolean()"
+          },
+          "invitedTs": {
+            ".validate": "newData.isNumber()"
+          },
+          "choice": {
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santaTest/draw').exists() && root.child('santaTest/settings/live').val() !== true && (!root.child('santaTest/settings/announceTs').exists() || now < root.child('santaTest/settings/announceTs').val()) && (!root.child('santaTest/settings/optInUntil').exists() || now < root.child('santaTest/settings/optInUntil').val())",
+            ".validate": "newData.val() === 'in' || newData.val() === 'out'"
+          },
+          "choiceTs": {
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santaTest/draw').exists() && root.child('santaTest/settings/live').val() !== true && (!root.child('santaTest/settings/announceTs').exists() || now < root.child('santaTest/settings/announceTs').val()) && (!root.child('santaTest/settings/optInUntil').exists() || now < root.child('santaTest/settings/optInUntil').val())",
+            ".validate": "newData.val() === now"
+          },
+          "wish": {
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && data.parent().child('choice').val() === 'in'",
+            ".validate": "newData.hasChildren(['text','ts'])",
+            "text": {
+              ".validate": "newData.isString() && newData.val().length <= 600"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "replies": {
+        ".read": "(auth != null && auth.token.email_verified === true && ((root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true)) || root.child('lockup/config/managers').child(root.child('shifts/links').child(auth.uid).val()).val() !== null))",
+        ".write": false,
+        "$k": {
+          ".validate": "newData.hasChildren(['name','email','choice'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "email": {
+            ".validate": "newData.isString() && newData.val().length <= 80"
+          },
+          "choice": {
+            ".validate": "newData.val() === 'in' || newData.val() === 'out' || newData.val() === 'pending'"
+          },
+          "ts": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "guestGift": {
+        ".read": false,
+        ".write": false,
+        "$token": {
+          ".read": "$token.matches(/^[A-Za-z0-9_-]{24,64}$/) && root.child('santaTest/settings/live').val() === true && root.child('santaTest/settings/announceTs').val() <= now",
+          ".validate": "newData.hasChildren(['name','to'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "to": {
+            ".validate": "newData.isString() && newData.val().length <= 80"
+          },
+          "drawId": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "wish": {
+            ".validate": "newData.isString() && newData.val().length <= 600"
+          },
+          "$other": {
+            ".validate": false
           }
         }
       }

@@ -33,7 +33,13 @@ function fixture(o) {
   const exch = '2026-12-18', annMs = o.announceIn != null ? now + o.announceIn : Date.parse('2026-12-01T10:00:00Z');
   const ann = new Date(annMs).toISOString().slice(0, 16);
   const s = { settings: { budget: 20, exchange: exch, announce: ann, announceTs: annMs, live: !!o.live, reminders: true }, members,
-    audit: { a1: { by: 'dan1', name: 'Dan', what: 'Added the Team list (7)', ts: now - 864e5 }, a2: { by: 'dan1', name: 'Dan', what: 'Added Holly Berry', ts: now - 20 * H } }, uncovered: {} };
+    audit: { a1: { by: 'dan1', name: 'Dan', what: 'Added the Team list (7)', ts: now - 864e5 }, a2: { by: 'dan1', name: 'Dan', what: 'Added Holly Berry', ts: now - 20 * H } }, uncovered: {},
+    replies: {
+      [K(DAN.email)]: { name: 'Dan', email: DAN.email, choice: 'in', ts: now - 3 * H },
+      [K(HOLLY.email)]: { name: 'Holly Berry', email: HOLLY.email, choice: 'in', ts: now - 2 * H },
+      [K('tina.graham@hedinautomotive.co.uk')]: { name: 'Tina Graham', email: 'tina.graham@hedinautomotive.co.uk', choice: 'pending', ts: 0 },
+      [K('lisa.debono@hedinautomotive.co.uk')]: { name: 'Lisa Debono', email: 'lisa.debono@hedinautomotive.co.uk', choice: 'out', ts: now - H }
+    } };
   if (o.drawn) {
     const keys = Object.keys(members), pairs = SD.derange(keys, {});
     s.draw = { id: 'dSAMPLE', ts: now - 3 * H, count: keys.length, byName: 'Dan' };
@@ -101,6 +107,10 @@ async function shot(p, name, full) {
   check('elf hq: reveal countdown shown', /Names announced/.test(await txt(p, '#hq-count')));
   check('elf hq: names announced and exchange fields', await vis(p, '#set-announce') && await vis(p, '#set-date'));
   check('elf hq: Launch button for Dan', await vis(p, '#launch-go') && !(await p.locator('#launch-go').isDisabled()));
+  const optinTxt = await txt(p, '#optin-box');
+  check('elf hq: opt in list shows who is in, out and waiting', /Who/.test(optinTxt) && /Tina Graham/.test(optinTxt) && /Lisa Debono/.test(optinTxt) && /Waiting/i.test(optinTxt));
+  check('elf hq: opt in counts', /2 in/i.test(await txt(p, '#optin-sum')) && /1 waiting/i.test(await txt(p, '#optin-sum')) && /1 out/i.test(await txt(p, '#optin-sum')));
+  await shot(p, '30-elf-hq-optin-list.png', true);
   await shot(p, '19a-elf-hq-dates-countdown.png'); await p.evaluate(() => document.querySelector('.launch').scrollIntoView({ block: 'center' })); await shot(p, '19b-elf-hq-launch-button.png');
   await shot(p, '19-elf-hq-full.png', true);
   /* settings save: London time to ms */
