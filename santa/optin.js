@@ -13,11 +13,11 @@
   function qs(k) { return new URLSearchParams(location.search).get(k) || ''; }
   function token() { return qs('t').trim(); }
   function firstName(n) { return String(n || '').trim().split(' ')[0] || 'there'; }
-  function namesOut() { return settings.live === true && !!settings.announceTs && Date.now() >= settings.announceTs; }
+  function namesOut() { return settings.live === true; }
+  function optInUntilMs() { return settings.optInUntil || Date.parse('2026-11-14T23:59:59+00:00'); }
   function closed() {
     if (settings.live === true) return true;
-    if (settings.announceTs && Date.now() >= settings.announceTs) return true;
-    if (settings.optInUntil && Date.now() >= settings.optInUntil) return true;
+    if (optInUntilMs() && Date.now() >= optInUntilMs()) return true;
     return false;
   }
   function toast(t) {
@@ -48,7 +48,8 @@
     if (rec.choice === 'in') {
       card.innerHTML = head() + '<div class="optin-ico" aria-hidden="true">&#127877;</div><h1>You&rsquo;re in!</h1>' +
         '<p class="hello-name">Ho ho ho, ' + esc(name) + '.</p>' +
-        '<p>You&rsquo;re on the nice list. Names are announced on <b>Saturday 14 November</b>. Open this same link then to unwrap who you&rsquo;ve got. No sign in needed.</p>' +
+        '<p>You&rsquo;re on the nice list. ' + (closed() ? 'Opt in has now closed. Names will be revealed when the elves launch it. Open this same link then to unwrap who you&rsquo;ve got. No sign in needed.' : 'Opt in stays open until <b>Saturday 14 November</b>. Names will be revealed when the elves launch it after that. Open this same link then to unwrap who you&rsquo;ve got. No sign in needed.') + '</p>' +
+        '<p class="small">Spend up to &pound;20. Presents are exchanged at the team meal on Saturday 5 December. If you&rsquo;re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.</p>' +
         wishBox() +
         (closed() ? '' : '<p class="small"><button class="link" type="button" id="change">Changed your mind? Sit this year out</button></p>');
       wireWish();
@@ -68,7 +69,8 @@
       return;
     }
     card.innerHTML = head() + '<p class="hello-name">Ho ho ho, ' + esc(name) + '!</p>' +
-      '<p>This year&rsquo;s Secret Santa is back at the Ruxley showroom. You buy one present for one colleague, and somebody buys one for you. One tap, no sign in, and you can change your mind until <b>Saturday 14 November</b>.</p>' +
+      '<p>This year&rsquo;s Secret Santa is back at the Ruxley showroom. You buy one present for one colleague, and somebody buys one for you. One tap, no sign in, and you can change your mind until <b>Saturday 14 November</b>. Names will be revealed when the elves launch it after that.</p>' +
+      '<p class="small">Spend up to &pound;20. Presents are exchanged at the team meal on Saturday 5 December. If you&rsquo;re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.</p>' +
       '<div class="optin-actions">' +
       '<button class="btn red" type="button" id="btn-in">I&rsquo;m in &#127877;</button>' +
       '<button class="btn ghost" type="button" id="btn-out">Not this year</button>' +
@@ -112,6 +114,7 @@
     card.innerHTML = head() + '<div class="optin-gift"><div class="optin-ico">&#127873;</div><h1>You&rsquo;re buying for</h1>' +
       '<div class="rname">' + esc(gift.name) + '</div>' +
       '<p class="small">Shhh. Keep it to yourself until the exchange.</p>' +
+      '<p class="small">Presents are exchanged at the team meal on Saturday 5 December. If you&rsquo;re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.</p>' +
       (gift.wish ? '<div class="paper" style="text-align:left;margin-top:12px"><h2 class="xfont">Their wishlist</h2><p>' + esc(gift.wish) + '</p></div>' : '<p>They haven&rsquo;t written a wishlist yet. Check back here now and then.</p>') +
       wishBox() + '</div>';
     wireWish();

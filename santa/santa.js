@@ -64,7 +64,7 @@
     if (D.member && t && t > Date.now() && t - Date.now() < 864e5 * 20) annT = setTimeout(assignSub, t - Date.now() + 1500);
     if (D.member && !D.assign && namesOut()) assignSub();
   }
-  function namesOut() { return D.settings.live === true && !!D.settings.announceTs && Date.now() >= D.settings.announceTs; }
+  function namesOut() { return D.settings.live === true; }
   function memberSubs() {
     clear(memUnsub);
     if (!D.member) return;
@@ -134,36 +134,29 @@
     return '<div class="cd-label">' + label + '</div><div class="cd"><div><b>' + dd + '</b><span>days</span></div><div><b>' + hh + '</b><span>hours</span></div><div><b>' + mm + '</b><span>mins</span></div></div>';
   }
   /* before the names time: count down to it; after: to the exchange day */
+  function optInUntilMs() { return D.settings.optInUntil || Date.parse('2026-11-14T23:59:59+00:00'); }
   function countdown() {
-    var a = D.settings.announceTs, t = exchangeMs();
-    if (a && Date.now() < a) return cdHtml('Names announced ' + esc(longWhen(a)), a);
+    var until = optInUntilMs(), t = exchangeMs();
+    if (D.settings.live !== true && until && Date.now() < until) return cdHtml('Opt in closes ' + esc(longWhen(until)), until);
     if (t) return cdHtml('Present exchange ' + esc(new Date(t).toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' })), t);
-    return '<div class="cd-label">The dates are still to be set</div>';
+    return '<div class="cd-label">Names will be revealed when the elves launch it, after Saturday 14 November</div>';
   }
   function paintSoon() {
-    var a = D.settings.announceTs;
-    $('soon-count').innerHTML = a && Date.now() < a ? cdHtml('Names announced ' + esc(longWhen(a)), a) : '';
+    var until = optInUntilMs();
+    $('soon-count').innerHTML = D.settings.live !== true && until && Date.now() < until ? cdHtml('Opt in closes ' + esc(longWhen(until)), until) : '';
   }
   function paintHome() {
     $('hello').innerHTML = 'Merry Christmas, <b>' + esc(myName()) + '</b> &#127876;';
     var budget = D.settings.budget;
     var c = countdown();
     if (budget != null) c += '<div class="budget">&#128176; Spend up to <b>&pound;' + esc(budget) + '</b></div>';
+    c += '<p class="small center meal-note">Presents are exchanged at the team meal on Saturday 5 December. If you&rsquo;re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.</p>';
     $('count').innerHTML = c;
     var unc = D.draw && D.uncovered && D.uncovered[D.draw.id];
     $('uncovered-note').hidden = !unc;
     if (unc) $('uncovered-note').innerHTML = '&#128065; The organiser uncovered this year&rsquo;s list (' + esc(unc.name) + ', ' + esc(when(unc.ts)) + ').';
 
     var gz = $('gift-zone');
-    if (D.settings.announceTs && Date.now() < D.settings.announceTs) {
-      if (gz.getAttribute('data-k') !== 'locked') {
-        gz.setAttribute('data-k', 'locked');
-        gz.innerHTML = '<div class="giftbox locked"><div class="present" aria-label="Your present is locked until the names are announced"><span class="lid"><span class="bow"></span></span><span class="box"><span class="ribbon"></span></span><span class="tag">For you</span></div><div class="lock">&#128274;</div>' +
-          '<p class="tap">Your present unlocks when the names are announced</p><p class="small center">' + esc(longWhen(D.settings.announceTs)) + '. Write your wishlist while you wait &#128220;</p></div>';
-      }
-      $('giftee-zone').innerHTML = '';
-      return;
-    }
     if (!D.draw || !D.assign) {
       gz.removeAttribute('data-k');
       var n = D.members ? Object.keys(D.members).length : 0;
@@ -188,7 +181,8 @@
   }
   function openedCard() {
     return '<div class="reveal"><div class="rcard"><div class="rk">You&rsquo;re Secret Santa for</div><div class="rname xfont">' + esc(D.assign.name) + '</div>' +
-      '<div class="rsub">Shhh. Keep it to yourself until the exchange.</div></div>' +
+      '<div class="rsub">Shhh. Keep it to yourself until the exchange.</div>' +
+      '<p class="small center meal-note">Presents are exchanged at the team meal on Saturday 5 December. If you&rsquo;re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.</p></div>' +
       '<button class="link center" id="rewrap" type="button">Wrap it back up</button></div>';
   }
   function unwrap() {
@@ -224,10 +218,10 @@
     var drawn = !!D.draw, list = memberList();
     if (document.activeElement !== $('set-budget')) $('set-budget').value = D.settings.budget != null ? D.settings.budget : '';
     if (document.activeElement !== $('set-date')) $('set-date').value = D.settings.exchange || '';
-    if (document.activeElement !== $('set-announce')) $('set-announce').value = D.settings.announce || '';
+    if ($('set-announce') && document.activeElement !== $('set-announce')) $('set-announce').value = D.settings.announce || '';
     $('set-rem').checked = D.settings.reminders !== false;
     var adm = isAdmin();
-    ['set-budget', 'set-date', 'set-announce', 'set-rem', 'set-save'].forEach(function (id) { $(id).disabled = !adm; });
+    ['set-budget', 'set-date', 'set-rem', 'set-save'].forEach(function (id) { if ($(id)) $(id).disabled = !adm; });
     $('set-who').hidden = adm;
     $('hq-count').innerHTML = countdown();
     paintLaunch(list, adm);
@@ -288,32 +282,59 @@
   function paintLaunch(list, adm) {
     var s = D.settings, L = D.launched, h = '';
     if (L) {
-      h = '<div class="state live"><span class="big-ico">&#127881;</span><div><b>Live since ' + esc(when(L.ts)) + '</b><span class="small">Launched by ' + esc(L.byName) + '. Everyone got an email' + (s.announceTs && L.ts < s.announceTs ? ', and gets another when the names are out' : '') + '. ' + (s.reminders === false ? 'Weekly reminders are off.' : 'Weekly reminders go on Mondays from 10am until the exchange.') + '</span></div></div>';
+      h = '<div class="state live"><span class="big-ico">&#127881;</span><div><b>Live since ' + esc(when(L.ts)) + '</b><span class="small">Launched by ' + esc(L.byName) + '. Everyone got an email and can unwrap who they have. ' + (s.reminders === false ? 'Weekly reminders are off.' : 'Weekly reminders go on Mondays from 10am until the exchange.') + '</span></div></div>';
     } else if (D.launchReq) {
-      h = '<div class="state soon2"><span class="spin">&#10052;</span><div><b>Launching</b><span class="small">Asked by ' + esc(D.launchReq.byName) + ' ' + esc(when(D.launchReq.ts)) + '. Within 15 minutes (Monday to Saturday daytime) the elves draw the names if they aren&rsquo;t drawn yet, switch off Coming soon and email everyone.</span></div></div>';
+      h = '<div class="state soon2"><span class="spin">&#10052;</span><div><b>Launching</b><span class="small">Asked by ' + esc(D.launchReq.byName) + ' ' + esc(when(D.launchReq.ts)) + '. Within 15 minutes (Monday to Saturday daytime) the elves draw the names if they aren&rsquo;t drawn yet, switch off Coming soon, email everyone and reveal who they have.</span></div></div>';
     } else {
       var miss = [];
-      if (!s.announceTs) miss.push('the names announced time'); if (!s.exchange) miss.push('the present exchange day'); if (list.length < 3) miss.push('at least three people');
-      h = '<div class="state soon2"><span class="big-ico">&#128679;</span><div><b>Coming soon is on</b><span class="small">Everyone except the organisers sees the Coming soon screen.</span></div></div>' +
-        '<p class="small">Launch switches Secret Santa on and emails all ' + list.length + ' people. ' + (D.draw ? 'The names are already drawn.' : 'The names are drawn at the same moment, on the server.') + ' Nobody can see who they have until ' + (s.announceTs ? esc(longWhen(s.announceTs)) : 'the names announced time') + '.</p>' +
-        (miss.length ? '<p class="msg bad">Before launching, set ' + esc(miss.join(' and ')) + '.</p>' : '') +
-        (adm ? '<button class="btn launch-go" id="launch-go" type="button"' + (miss.length ? ' disabled' : '') + '>&#128640; Launch Secret Santa</button>' : '<p class="small">Only Dan can launch.</p>');
+      if (!s.exchange) miss.push('the present exchange day'); if (list.length < 3) miss.push('at least three people');
+      h = '<div class="state soon2"><span class="big-ico">&#128679;</span><div><b>Coming soon is on</b><span class="small">Everyone except the organisers sees the Coming soon screen. Names stay sealed until you press Go.</span></div></div>' +
+        '<p class="small">Check the entries first. Pressing Go draws the names (if they are not drawn already), emails everyone who opted in, and reveals who they have. There is no automatic reveal and no set launch day.</p>' +
+        (miss.length ? '<p class="msg bad">Before pressing Go, set ' + esc(miss.join(' and ')) + '.</p>' : '') +
+        (adm ? '<button class="btn launch-go" id="launch-go" type="button"' + (miss.length ? ' disabled' : '') + '>&#128640; Go: reveal the names</button>' : '<p class="small">Only Dan can press Go.</p>');
     }
     $('launch-state').innerHTML = h;
-    if ($('launch-go')) $('launch-go').onclick = launchConfirm;
+    if ($('launch-go')) $('launch-go').onclick = launchReview;
+  }
+  function entriesReviewHtml() {
+    var r = D.replies || {}, keys = Object.keys(r);
+    var groups = { in: [], out: [], pending: [] };
+    keys.forEach(function (k) {
+      var p = r[k] || {}, c = p.choice === 'in' ? 'in' : p.choice === 'out' ? 'out' : 'pending';
+      groups[c].push(p);
+    });
+    var bit = function (title, arr, klass) {
+      var body = arr.length ? arr.sort(function (a, b) { return String(a.name || a.email).localeCompare(String(b.name || b.email)); }).map(function (p) {
+        return '<li><span class="pn"><b>' + esc(p.name || p.email) + '</b><small>' + esc(p.email || '') + '</small></span></li>';
+      }).join('') : '<li class="small">Nobody in this group.</li>';
+      return '<h3 class="rev-h">' + title + ' <span class="tagp ' + klass + '">' + arr.length + '</span></h3><ul class="people rev-list">' + body + '</ul>';
+    };
+    if (!keys.length) return '<p class="small">No opt in replies have been recorded yet. The nice list currently has <b>' + memberList().length + '</b> people.</p>';
+    return bit("Who's in", groups.in, 'in') + bit('Waiting', groups.pending, 'wait') + bit("Who's out", groups.out, 'out');
+  }
+  function launchReview() {
+    var until = optInUntilMs(), early = until && Date.now() < until;
+    $('mbox').innerHTML = '<div class="mico">&#128203;</div><h2 id="modal-h">Check the entries</h2>' +
+      '<p>Have a look through who is in, who is out, and who has not replied. Names stay sealed until you press Go on the next screen.</p>' +
+      (early ? '<p class="msg bad">Opt in is still open until Saturday 14 November. Pressing Go now will lock the list early.</p>' : '') +
+      '<div class="entries-review" id="entries-review">' + entriesReviewHtml() + '</div>' +
+      '<div class="mrow"><button class="btn ghost" id="m-no" type="button">Not yet</button><button class="btn red" id="m-yes" type="button">Continue</button></div>';
+    $('modal').classList.add('show');
+    $('m-no').onclick = closeModal;
+    $('m-yes').onclick = function () { closeModal(); launchConfirm(); };
   }
   function launchConfirm() {
-    var n = memberList().length, s = D.settings, before = s.announceTs && Date.now() < s.announceTs;
-    $('mbox').innerHTML = '<div class="mico">&#128640;</div><h2 id="modal-h">Are you sure?</h2><p>This launches the Ruxley Secret Santa for real.</p><ul class="warn">' +
+    var n = memberList().length;
+    $('mbox').innerHTML = '<div class="mico">&#128640;</div><h2 id="modal-h">Are you sure?</h2><p>This launches the Ruxley Secret Santa for real, and reveals the names now.</p><ul class="warn">' +
       '<li>Coming soon switches off for everyone.</li>' + (D.draw ? '' : '<li>The names are drawn now (on the server) and the list locks.</li>') +
-      '<li>All <b>' + n + '</b> people get an email saying it&rsquo;s live' + (before ? ', and that names are out ' + esc(longWhen(s.announceTs)) : ', with a button to see who they&rsquo;ve got') + '.</li>' +
-      '<li>It only happens once and can&rsquo;t be undone.</li></ul>' +
-      '<div class="mrow"><button class="btn launch-go" id="m-yes" type="button">Yes, launch it!</button><button class="btn ghost" id="m-no" type="button">Not yet</button></div>';
+      '<li>All <b>' + n + '</b> people who are in get an email, with a button to see who they have.</li>' +
+      '<li>It only happens once and can&rsquo;t be undone. There is no later automatic reveal.</li></ul>' +
+      '<div class="mrow"><button class="btn ghost" id="m-no" type="button">Not yet</button><button class="btn launch-go" id="m-yes" type="button">Yes, reveal the names</button></div>';
     $('modal').classList.add('show');
     $('m-no').onclick = closeModal;
     $('m-yes').onclick = function () {
       $('m-yes').disabled = true;
-      B.set(R + '/launchRequest', { by: user.uid, byName: myName().slice(0, 40), ts: SV }).then(function () { audit('Pressed Launch'); closeModal(); toast('Launching! Emails go within 15 minutes'); })
+      B.set(R + '/launchRequest', { by: user.uid, byName: myName().slice(0, 40), ts: SV }).then(function () { audit('Pressed Go and revealed the names'); closeModal(); toast('Launching! Emails go within 15 minutes'); })
         .catch(function (e) { closeModal(); toast('Not allowed (' + (e && e.code || e) + ')'); });
     };
   }
@@ -421,11 +442,9 @@
       B.set(R + '/wish/' + me, { text: $('wish-text').value.trim().slice(0, 600), ts: SV }).then(function () { say('wish-msg', 'Saved. Your Santa can see it now.', true); }).catch(function () { say('wish-msg', 'That didn\u2019t save. Try again.', false); });
     };
     $('set-save').onclick = function () {
-      var b = +$('set-budget').value, d = $('set-date').value, a = $('set-announce').value.slice(0, 16), u = { reminders: $('set-rem').checked };
+      var b = +$('set-budget').value, d = $('set-date').value, u = { reminders: $('set-rem').checked };
       if ($('set-budget').value !== '') { if (!(b >= 0 && b <= 500)) return toast('Budget between \u00a30 and \u00a3500'); u.budget = Math.round(b); }
       if (d) u.exchange = d;
-      if (a) { u.announce = a; u.announceTs = londonMs(a); }
-      if (a && d && a.slice(0, 10) > d) return toast('The names need announcing before the exchange day');
       B.update(R + '/settings', u).then(function () { toast('Saved'); audit('Changed the settings'); }).catch(function () { toast('That didn\u2019t save'); });
     };
     $('add-go').onclick = function () {

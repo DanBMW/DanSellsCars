@@ -1042,7 +1042,7 @@
       },
       "assign": {
         "$k": {
-          ".read": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $k && (root.child('santa/settings/live').val() === true && root.child('santa/settings/announceTs').val() <= now)"
+          ".read": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $k && (root.child('santa/settings/live').val() === true)"
         }
       },
       "sealed": {
@@ -1091,7 +1091,7 @@
       },
       "wish": {
         "$k": {
-          ".read": "auth != null && auth.token.email_verified === true && (auth.token.email.toLowerCase().replace('.', ',') === $k || ((root.child('santa/settings/live').val() === true && root.child('santa/settings/announceTs').val() <= now) && root.child('santa/assign').child(auth.token.email.toLowerCase().replace('.', ',')).child('to').val() === $k))",
+          ".read": "auth != null && auth.token.email_verified === true && (auth.token.email.toLowerCase().replace('.', ',') === $k || ((root.child('santa/settings/live').val() === true) && root.child('santa/assign').child(auth.token.email.toLowerCase().replace('.', ',')).child('to').val() === $k))",
           ".write": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $k && root.child('santa/members').child($k).exists()",
           ".validate": "newData.hasChildren(['text','ts'])",
           "text": {
@@ -1109,7 +1109,7 @@
         "$to": {
           ".read": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $to",
           "$id": {
-            ".write": "auth != null && auth.token.email_verified === true && !data.exists() && newData.exists() && (root.child('santa/settings/live').val() === true && root.child('santa/settings/announceTs').val() <= now) && root.child('santa/assign').child(auth.token.email.toLowerCase().replace('.', ',')).child('to').val() === $to",
+            ".write": "auth != null && auth.token.email_verified === true && !data.exists() && newData.exists() && (root.child('santa/settings/live').val() === true) && root.child('santa/assign').child(auth.token.email.toLowerCase().replace('.', ',')).child('to').val() === $to",
             ".validate": "newData.hasChildren(['text','ts'])",
             "text": {
               ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 280"
@@ -1145,11 +1145,11 @@
             ".validate": "newData.isNumber()"
           },
           "choice": {
-            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santa/draw').exists() && root.child('santa/settings/live').val() !== true && (!root.child('santa/settings/announceTs').exists() || now < root.child('santa/settings/announceTs').val()) && (!root.child('santa/settings/optInUntil').exists() || now < root.child('santa/settings/optInUntil').val())",
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santa/draw').exists() && root.child('santa/settings/live').val() !== true && (!root.child('santa/settings/optInUntil').exists() || now < root.child('santa/settings/optInUntil').val())",
             ".validate": "newData.val() === 'in' || newData.val() === 'out'"
           },
           "choiceTs": {
-            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santa/draw').exists() && root.child('santa/settings/live').val() !== true && (!root.child('santa/settings/announceTs').exists() || now < root.child('santa/settings/announceTs').val()) && (!root.child('santa/settings/optInUntil').exists() || now < root.child('santa/settings/optInUntil').val())",
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santa/draw').exists() && root.child('santa/settings/live').val() !== true && (!root.child('santa/settings/optInUntil').exists() || now < root.child('santa/settings/optInUntil').val())",
             ".validate": "newData.val() === now"
           },
           "wish": {
@@ -1196,7 +1196,7 @@
         ".read": false,
         ".write": false,
         "$token": {
-          ".read": "$token.matches(/^[A-Za-z0-9_-]{24,64}$/) && root.child('santa/settings/live').val() === true && root.child('santa/settings/announceTs').val() <= now",
+          ".read": "$token.matches(/^[A-Za-z0-9_-]{24,64}$/) && root.child('santa/settings/live').val() === true",
           ".validate": "newData.hasChildren(['name','to'])",
           "name": {
             ".validate": "newData.isString() && newData.val().length <= 40"
@@ -1336,7 +1336,7 @@
       },
       "assign": {
         "$k": {
-          ".read": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $k && (root.child('santaTest/settings/live').val() === true && root.child('santaTest/settings/announceTs').val() <= now)"
+          ".read": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $k && (root.child('santaTest/settings/live').val() === true)"
         }
       },
       "sealed": {
@@ -1385,7 +1385,7 @@
       },
       "wish": {
         "$k": {
-          ".read": "auth != null && auth.token.email_verified === true && (auth.token.email.toLowerCase().replace('.', ',') === $k || ((root.child('santaTest/settings/live').val() === true && root.child('santaTest/settings/announceTs').val() <= now) && root.child('santaTest/assign').child(auth.token.email.toLowerCase().replace('.', ',')).child('to').val() === $k))",
+          ".read": "auth != null && auth.token.email_verified === true && (auth.token.email.toLowerCase().replace('.', ',') === $k || ((root.child('santaTest/settings/live').val() === true) && root.child('santaTest/assign').child(auth.token.email.toLowerCase().replace('.', ',')).child('to').val() === $k))",
           ".write": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $k && root.child('santaTest/members').child($k).exists()",
           ".validate": "newData.hasChildren(['text','ts'])",
           "text": {
@@ -1403,7 +1403,7 @@
         "$to": {
           ".read": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $to",
           "$id": {
-            ".write": "auth != null && auth.token.email_verified === true && !data.exists() && newData.exists() && (root.child('santaTest/settings/live').val() === true && root.child('santaTest/settings/announceTs').val() <= now) && root.child('santaTest/assign').child(auth.token.email.toLowerCase().replace('.', ',')).child('to').val() === $to",
+            ".write": "auth != null && auth.token.email_verified === true && !data.exists() && newData.exists() && (root.child('santaTest/settings/live').val() === true) && root.child('santaTest/assign').child(auth.token.email.toLowerCase().replace('.', ',')).child('to').val() === $to",
             ".validate": "newData.hasChildren(['text','ts'])",
             "text": {
               ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 280"
@@ -1439,11 +1439,11 @@
             ".validate": "newData.isNumber()"
           },
           "choice": {
-            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santaTest/draw').exists() && root.child('santaTest/settings/live').val() !== true && (!root.child('santaTest/settings/announceTs').exists() || now < root.child('santaTest/settings/announceTs').val()) && (!root.child('santaTest/settings/optInUntil').exists() || now < root.child('santaTest/settings/optInUntil').val())",
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santaTest/draw').exists() && root.child('santaTest/settings/live').val() !== true && (!root.child('santaTest/settings/optInUntil').exists() || now < root.child('santaTest/settings/optInUntil').val())",
             ".validate": "newData.val() === 'in' || newData.val() === 'out'"
           },
           "choiceTs": {
-            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santaTest/draw').exists() && root.child('santaTest/settings/live').val() !== true && (!root.child('santaTest/settings/announceTs').exists() || now < root.child('santaTest/settings/announceTs').val()) && (!root.child('santaTest/settings/optInUntil').exists() || now < root.child('santaTest/settings/optInUntil').val())",
+            ".write": "data.parent().child('email').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/) && !root.child('santaTest/draw').exists() && root.child('santaTest/settings/live').val() !== true && (!root.child('santaTest/settings/optInUntil').exists() || now < root.child('santaTest/settings/optInUntil').val())",
             ".validate": "newData.val() === now"
           },
           "wish": {
@@ -1490,7 +1490,7 @@
         ".read": false,
         ".write": false,
         "$token": {
-          ".read": "$token.matches(/^[A-Za-z0-9_-]{24,64}$/) && root.child('santaTest/settings/live').val() === true && root.child('santaTest/settings/announceTs').val() <= now",
+          ".read": "$token.matches(/^[A-Za-z0-9_-]{24,64}$/) && root.child('santaTest/settings/live').val() === true",
           ".validate": "newData.hasChildren(['name','to'])",
           "name": {
             ".validate": "newData.isString() && newData.val().length <= 40"

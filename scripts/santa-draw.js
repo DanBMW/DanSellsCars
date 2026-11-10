@@ -5,12 +5,11 @@
  *
  * Timing (Dan, 9 November 2026):
  *   - Coming soon until launched. settings/live is false until the launch.
- *   - Launch (Dan presses Launch in Elf HQ, santa/launchRequest): if the names
+ *   - Launch / Go (Dan presses Go in Elf HQ, santa/launchRequest): if the names
  *     are not drawn yet they are drawn now, then live = true and one launch
  *     email per person is queued. Once only (santa/launched, santa/mail/launch).
- *   - Names announced (settings/announceTs): the rules let nobody read their
- *     pairing before then, however early the draw was. If the launch was before
- *     that, a "names are out" email goes at the first run after it.
+ *     Names are revealed only then. announceTs never releases names or sends a
+ *     names out email. The rules let nobody read their pairing until live is true.
  *   - Weekly reminder: Mondays, first run from 10:00 London, while live and
  *     before the exchange day, unless settings/reminders is false. One a week
  *     (santa/mail/week_<isoWeek>), none in the launch's first two days.
@@ -108,16 +107,14 @@ function makeMail(kind, m, s, today, nowMs) {
   const budget = s.budget != null ? '\u00a3' + s.budget : null;
   const ex = s.exchange ? longDate(s.exchange) : null;
   const dx = s.exchange ? daysTo(s.exchange, today) : null;
-  const before = s.announceTs && nowMs < s.announceTs;
+  const namesOut = s.live === true;
   let subject, title, paras, text, button;
-  const line = { budget: budget ? 'Spend up to ' + budget + '.' : '', ex: ex ? 'Presents are exchanged on ' + ex + '.' : '' };
+  const line = { budget: budget ? 'Spend up to ' + budget + '.' : '', ex: ex ? 'Presents are exchanged at the team meal on ' + ex + '. If you\'re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.' : '' };
   if (kind === 'launch') {
-    subject = before ? '\uD83C\uDF85 Secret Santa is live! Names out ' + whenLondon(s.announceTs) : '\uD83C\uDF85 Secret Santa is live! Open the app to see who you\u2019ve got';
+    subject = '\uD83C\uDF85 Secret Santa is live! Open the app to see who you\u2019ve got';
     title = 'Secret Santa is live!';
-    paras = before
-      ? ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is open. The names have been drawn and sealed by the elves, and nobody (not even Dan) can see who has who.', 'Names are announced on <b>' + esc(whenLondon(s.announceTs)) + '</b>. Open the app then to unwrap who you\u2019re buying for.', 'In the meantime, write your wishlist so your Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)]
-      : ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn. <b>Open the app to unwrap who you\u2019ve got</b> &#128513;', 'Nobody else can see it, not even Dan, so keep it to yourself!', 'Then write your wishlist so your own Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)];
-    button = before ? 'Open Secret Santa and write my wishlist' : 'Open the app and unwrap my present';
+    paras = ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn. <b>Open the app to unwrap who you\u2019ve got</b> &#128513;', 'Nobody else can see it, not even Dan, so keep it to yourself!', 'Then write your wishlist so your own Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)];
+    button = 'Open the app and unwrap my present';
   } else if (kind === 'announce') {
     subject = '\uD83C\uDF81 The Secret Santa names are out! Open the app to see who you\u2019ve got';
     title = 'The names are out!';
@@ -128,7 +125,7 @@ function makeMail(kind, m, s, today, nowMs) {
     title = dx != null ? dx + ' day' + (dx === 1 ? '' : 's') + ' to go' : 'Secret Santa';
     paras = ['Hi ' + esc(first) + ',', 'Your weekly Secret Santa nudge from the elves. ' + esc(line.ex) + ' ' + esc(line.budget),
       '&#128220; <b>Is your wishlist up to date?</b> Your Santa reads it, so a few hints go a long way.',
-      before ? '&#128274; Names are announced on <b>' + esc(whenLondon(s.announceTs)) + '</b>.' : '&#127873; <b>Had a look at your giftee\u2019s wishlist?</b> They may have added to it. You can send them an anonymous note in the app too.'];
+      namesOut ? '&#127873; <b>Had a look at your giftee\u2019s wishlist?</b> They may have added to it. You can send them an anonymous note in the app too.' : 'The elves will email you when the names are revealed.'];
     button = 'Open Secret Santa';
   } else if (kind === 'eve') {
     const when = dx === 1 ? 'tomorrow' : 'on ' + ex;
@@ -209,14 +206,14 @@ async function syncOptins(db, R, o) {
   const log = o.log, nowMs = o.nowMs;
   const s = (await val(db, R + '/settings')) || {};
   const draw = await val(db, R + '/draw');
-  const locked = !!draw || s.live === true || !!(s.announceTs && nowMs >= s.announceTs) || !!(s.optInUntil && nowMs >= s.optInUntil);
+  const locked = !!draw || s.live === true || !!(s.optInUntil && nowMs >= s.optInUntil);
   const optins = (await val(db, R + '/optins')) || {};
   const team = (await val(db, 'lockup/config/team')) || {};
   const managers = (await val(db, 'lockup/config/managers')) || {};
   const members = Object.assign({}, (await val(db, R + '/members')) || {});
   const wishes = Object.assign({}, (await val(db, R + '/wish')) || {});
   const assign = (await val(db, R + '/assign')) || {};
-  const namesOut = s.live === true && !!s.announceTs && nowMs >= s.announceTs;
+  const namesOut = s.live === true;
   const updates = {};
   const replies = {};
   let added = 0, removed = 0, gifts = 0;
@@ -274,9 +271,8 @@ async function runRoot(db, R, o) {
   /* 1. draw or cancel asked for in Elf HQ */
   const req = await val(db, R + '/drawRequest');
   if (req) {
-    const announced = s.announceTs && nowMs >= s.announceTs;
-    if (launched && (req.mode === 'cancel' || announced)) {
-      await db.ref(R).update({ drawRequest: null, drawError: { msg: req.mode === 'cancel' ? 'Secret Santa is already launched, so the draw can\u2019t be cancelled.' : 'The names are already announced, so they can\u2019t be drawn again.', ts: nowMs } });
+    if (launched) {
+      await db.ref(R).update({ drawRequest: null, drawError: { msg: req.mode === 'cancel' ? 'Secret Santa is already launched, so the draw can\u2019t be cancelled.' : 'The names are already out, so they can\u2019t be drawn again.', ts: nowMs } });
       log(R + ': ' + req.mode + ' refused after launch');
     } else if (req.mode === 'cancel') {
       await db.ref(R).update({ assign: null, sealed: null, draw: null, notes: null, drawRequest: null, drawError: null });
@@ -288,8 +284,8 @@ async function runRoot(db, R, o) {
   const lr = await val(db, R + '/launchRequest');
   if (lr) {
     if (launched) await db.ref(R + '/launchRequest').remove();
-    else if (!s.announceTs || !s.exchange) {
-      await db.ref(R).update({ launchRequest: null, drawError: { msg: 'Set the names announced time and the exchange day before launching.', ts: nowMs } });
+    else if (!s.exchange) {
+      await db.ref(R).update({ launchRequest: null, drawError: { msg: 'Set the present exchange day before launching.', ts: nowMs } });
     } else {
       const drawn = (await val(db, R + '/draw')) || null;
       const id = drawn ? drawn.id : await doDraw(db, R, lr.byName, nowMs, log);
@@ -306,11 +302,8 @@ async function runRoot(db, R, o) {
   const mail = (await val(db, R + '/mail')) || {};
   const mark = k => db.ref(R + '/mail/' + k).set(nowMs);
 
-  /* 3. the launch emails, then "names are out" if the launch came before the announce time */
+  /* 3. the launch emails, once only. Names are already out at Go, so there is no later announce email. */
   if (!mail.launch) { await mark('launch'); await queue(db, R, 'launch', notifyRoot, s, today, nowMs, log); }
-  if (s.announceTs && nowMs >= s.announceTs && launched.ts < s.announceTs && !mail.announce) {
-    await mark('announce'); await queue(db, R, 'announce', notifyRoot, s, today, nowMs, log);
-  }
   /* 4. reminders, unless switched off; never on or after the exchange day */
   if (s.reminders === false || !s.exchange || today >= s.exchange) return;
   if (today === eveDay(s.exchange) && L.mins >= 600 && !mail.eve) { await mark('eve'); await queue(db, R, 'eve', notifyRoot, s, today, nowMs, log); return; }

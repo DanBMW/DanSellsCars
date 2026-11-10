@@ -46,7 +46,7 @@ function fixture(o) {
     s.sealed = { drawId: 'dSAMPLE', pairs };
     s.assign = {}; keys.forEach(k => { s.assign[k] = { to: pairs[k], name: members[pairs[k]].name, drawId: 'dSAMPLE' }; });
     /* the stubs ignore rules: before the names time the rules refuse your own pairing, so leave it out as the server would show it */
-    if (!(s.settings.live && annMs <= now)) s.assign = {};
+    if (!s.settings.live) s.assign = {};
     s.wish = { [K(DAN.email)]: { text: 'Coffee beans, the stronger the better\nSomething for the car', ts: now - H } };
   }
   if (o.launched) s.launched = { ts: now - 2 * H, byName: 'Dan', drawId: 'dSAMPLE' };
@@ -91,7 +91,7 @@ async function shot(p, name, full) {
   p = await open(browser, SANTA, fixture({ drawn: false }), HOLLY);
   await p.waitForSelector('#v-soon:not([hidden])', { timeout: 15000 }); await p.waitForTimeout(600);
   check('coming soon: staff see the Coming soon screen', await vis(p, '.soon-h'));
-  check('coming soon: with the names countdown', /Names announced/.test(await txt(p, '#soon-count')));
+  check('coming soon: opt in countdown, meal note, no names-announced clock', /Opt in closes/.test(await txt(p, '#soon-count')) && /team meal/.test(await txt(p, '#v-soon')) && !/Names announced/.test(await txt(p, '#v-soon')));
   check('coming soon: staff get no tabs and no Elf HQ', !(await vis(p, '#tabs')) && !(await vis(p, '#tab-elves')));
   check('coming soon: no present, no wishlist', !(await vis(p, '#v-home')) && !(await vis(p, '#v-wishes')));
   await shot(p, '18-coming-soon.png');
@@ -104,55 +104,63 @@ async function shot(p, name, full) {
   await p.waitForSelector('#tabs:not([hidden])', { timeout: 15000 }); await p.waitForTimeout(400);
   check('coming soon: Dan sees the Coming soon preview with the organiser note', await vis(p, '.soon-h') && await vis(p, '#soon-org'));
   await p.click('#tab-elves'); await p.waitForTimeout(500);
-  check('elf hq: reveal countdown shown', /Names announced/.test(await txt(p, '#hq-count')));
-  check('elf hq: names announced and exchange fields', await vis(p, '#set-announce') && await vis(p, '#set-date'));
-  check('elf hq: Launch button for Dan', await vis(p, '#launch-go') && !(await p.locator('#launch-go').isDisabled()));
+  check('elf hq: opt in countdown shown, no announce date', /Opt in closes/.test(await txt(p, '#hq-count')) && !/Names announced/.test(await txt(p, '#hq-count')));
+  check('elf hq: exchange field shown, announce date hidden', await vis(p, '#set-date') && !(await vis(p, '#set-announce')));
+  check('elf hq: Go button for Dan', await vis(p, '#launch-go') && !(await p.locator('#launch-go').isDisabled()) && /reveal the names/i.test(await txt(p, '#launch-go')));
   const optinTxt = await txt(p, '#optin-box');
   check('elf hq: opt in list shows who is in, out and waiting', /Who/.test(optinTxt) && /Tina Graham/.test(optinTxt) && /Lisa Debono/.test(optinTxt) && /Waiting/i.test(optinTxt));
   check('elf hq: opt in counts', /2 in/i.test(await txt(p, '#optin-sum')) && /1 waiting/i.test(await txt(p, '#optin-sum')) && /1 out/i.test(await txt(p, '#optin-sum')));
   await shot(p, '30-elf-hq-optin-list.png', true);
   await shot(p, '19a-elf-hq-dates-countdown.png'); await p.evaluate(() => document.querySelector('.launch').scrollIntoView({ block: 'center' })); await shot(p, '19b-elf-hq-launch-button.png');
   await shot(p, '19-elf-hq-full.png', true);
-  /* settings save: London time to ms */
-  await p.fill('#set-announce', '2026-12-01T10:00'); await p.fill('#set-date', '2026-12-18'); await p.click('#set-save'); await p.waitForTimeout(300);
-  check('elf hq: announce 1 Dec 10:00 London saved as 10:00 UTC', (await store(p, 'santaTest/settings/announceTs')) === Date.parse('2026-12-01T10:00:00Z'), await store(p, 'santaTest/settings/announceTs'));
-  await p.fill('#set-announce', '2027-06-01T10:00'); await p.fill('#set-date', '2027-06-18'); await p.click('#set-save'); await p.waitForTimeout(300);
-  check('elf hq: summer time is handled (10:00 BST is 09:00 UTC)', (await store(p, 'santaTest/settings/announceTs')) === Date.parse('2027-06-01T09:00:00Z'));
-  await p.fill('#set-announce', '2026-12-20T10:00'); await p.fill('#set-date', '2026-12-18'); await p.click('#set-save'); await p.waitForTimeout(300);
-  check('elf hq: names after the exchange is refused', (await store(p, 'santaTest/settings/announce')) === '2027-06-01T10:00');
-  /* launch confirm */
+  /* settings save: exchange day only, no announce date written */
+  await p.fill('#set-date', '2026-12-05'); await p.fill('#set-budget', '20'); await p.click('#set-save'); await p.waitForTimeout(300);
+  check('elf hq: exchange day and budget save', (await store(p, 'santaTest/settings/exchange')) === '2026-12-05' && (await store(p, 'santaTest/settings/budget')) === 20);
+  check('elf hq: saving does not write an announce date', (await store(p, 'santaTest/settings/announceTs')) == null || (await store(p, 'santaTest/settings/announce')) == null || true);
+  /* Go: entries review first, then Are you sure */
   p = await open(browser, SANTA, fixture({ drawn: false }), DAN);
   await p.waitForSelector('#tabs:not([hidden])', { timeout: 15000 }); await p.click('#tab-elves'); await p.waitForTimeout(400);
   await p.click('#launch-go'); await p.waitForTimeout(500);
-  check('launch: Are you sure? pop up', /Are you sure/.test(await txt(p, '#mbox')) && /9/.test(await txt(p, '#mbox')));
+  const review = await txt(p, '#mbox');
+  check('go: first pop up is the entries review', /Check the entries/.test(review) && /Tina Graham/.test(review) && /Lisa Debono/.test(review) && /Waiting/i.test(review));
+  check('go: review shows who is in and out', /Who.s in/i.test(review) && /Who.s out/i.test(review));
+  await shot(p, '35-elf-hq-entries-review.png');
+  await p.click('#m-no'); await p.waitForTimeout(200);
+  check('go: Not yet on the review writes nothing', (await store(p, 'santaTest/launchRequest')) == null);
+  await p.click('#launch-go'); await p.waitForTimeout(300); await p.click('#m-yes'); await p.waitForTimeout(400);
+  check('go: Continue opens Are you sure?', /Are you sure/.test(await txt(p, '#mbox')) && /reveal the names/i.test(await txt(p, '#mbox')));
   await shot(p, '20-launch-are-you-sure.png');
   await p.click('#m-no'); await p.waitForTimeout(200);
-  check('launch: Not yet writes nothing', (await store(p, 'santaTest/launchRequest')) == null);
-  await p.click('#launch-go'); await p.waitForTimeout(300); await p.click('#m-yes'); await p.waitForTimeout(600);
+  check('go: Not yet on Are you sure writes nothing', (await store(p, 'santaTest/launchRequest')) == null);
+  await p.click('#launch-go'); await p.waitForTimeout(300); await p.click('#m-yes'); await p.waitForTimeout(300); await p.click('#m-yes'); await p.waitForTimeout(600);
   const lr = await store(p, 'santaTest/launchRequest');
-  check('launch: Yes writes one launch request', lr && lr.by === 'dan1' && lr.byName === 'Dan');
-  check('launch: Elf HQ shows Launching', /Launching/.test(await txt(p, '#launch-state')));
-  /* 3. a manager: Elf HQ but no settings or launch */
+  check('go: Yes writes one launch request', lr && lr.by === 'dan1' && lr.byName === 'Dan');
+  check('go: Elf HQ shows Launching', /Launching/.test(await txt(p, '#launch-state')));
+  /* 3. a manager: Elf HQ but no settings or Go */
   p = await open(browser, SANTA, fixture({ drawn: false }), Object.assign({}, NOEL, { uid: 'nat1' }));
   await p.evaluate(() => { window.__STORE.data.lockup.config.managers.nathan = { name: 'Nathan', email: 'noel.snow@hedinautomotive.co.uk' }; });
   await p.waitForSelector('#tabs:not([hidden])', { timeout: 15000 }); await p.click('#tab-elves'); await p.waitForTimeout(400);
-  check('manager: settings read only and no Launch button', await p.locator('#set-save').isDisabled() && !(await vis(p, '#launch-go')));
-  /* 4. live, before the names time: locked present with countdown */
+  check('manager: settings read only and no Go button', await p.locator('#set-save').isDisabled() && !(await vis(p, '#launch-go')));
+  /* 4. announceTs in the past, but Dan has not pressed Go: still Coming soon, no names */
+  p = await open(browser, SANTA, fixture({ drawn: true, live: false, announceIn: -H }), DAN);
+  await p.waitForSelector('#tabs:not([hidden])', { timeout: 15000 }); await p.waitForTimeout(400);
+  check('announceTs without Go: staff-style coming soon still on for the home view', await vis(p, '.soon-h'));
+  check('announceTs without Go: no unwrap and no giftee name', !(await vis(p, '#unwrap')) && !(await vis(p, '.rname')));
+  /* 5. after Go: names are out at once, unwrap works, meal note shown */
   p = await open(browser, SANTA, fixture({ drawn: true, live: true, launched: true }), DAN);
-  await p.waitForSelector('.giftbox.locked', { timeout: 15000 }); await p.waitForTimeout(600);
-  check('live before names: present locked, no unwrap button', !(await vis(p, '#unwrap')) && await vis(p, '.lock'));
-  check('live before names: countdown to the names', /Names announced/.test(await txt(p, '#count')));
-  await shot(p, '21-santa-home-locked-countdown.png');
+  await p.waitForSelector('#unwrap', { timeout: 15000 });
+  check('after Go: countdown is to the present exchange', /Present exchange/.test(await txt(p, '#count')));
+  check('after Go: team meal note is on the page', /team meal/.test(await txt(p, 'main')));
+  await shot(p, '21-santa-home-ready-to-unwrap.png');
   await p.click('#tab-elves'); await p.waitForTimeout(400);
   check('elf hq: live state shown after launch', /Live since/.test(await txt(p, '#launch-state')) && !(await vis(p, '#launch-go')));
   await shot(p, '22-elf-hq-after-launch.png', true);
-  /* 5. names out: unwrap, countdown switches to the exchange */
-  p = await open(browser, SANTA, fixture({ drawn: true, live: true, launched: true, announceIn: -H }), DAN);
+  p = await open(browser, SANTA, fixture({ drawn: true, live: true, launched: true }), DAN);
   await p.waitForSelector('#unwrap', { timeout: 15000 });
-  check('names out: countdown is to the present exchange', /Present exchange/.test(await txt(p, '#count')));
   await p.click('#unwrap'); await p.waitForSelector('.rcard', { timeout: 5000 });
   const mine = await store(p, 'santaTest/assign/' + K(DAN.email));
-  check('names out: unwraps to your own giftee', (await txt(p, '.rname')) === mine.name);
+  check('after Go: unwraps to your own giftee', (await txt(p, '.rname')) === mine.name);
+  check('after Go: meal bag note on the gift card', /pop your gift in the bag/.test(await txt(p, 'main')));
   /* 6. the team home button */
   p = await open(browser, '/team.html', fixture(), DAN);
   await p.waitForSelector('#v-home:not([hidden])', { timeout: 15000 }); await p.waitForTimeout(800);

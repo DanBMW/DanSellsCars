@@ -203,3 +203,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red)}
 .optin-wish{text-align:left;margin-top:16px}
 .optin-wish textarea{width:100%;border:1.5px solid #ecd2a6;border-radius:12px;padding:10px;font:inherit;min-height:120px}
 .optin-gift .rname{font-family:'Mountains of Christmas',Georgia,serif;font-size:36px;color:#7a0f1a;margin:8px 0}
+
+.entries-review{text-align:left;max-height:50vh;overflow:auto;margin:10px 0;padding:8px 4px;background:#fff;border-radius:12px;border:1px solid #ecd2a6}
+.entries-review .rev-h{font-size:15px;margin:10px 0 4px;display:flex;align-items:center;gap:8px}
+.entries-review .rev-list{margin:0 0 8px}
+.mbox .entries-review .people li{padding:6px 4px}

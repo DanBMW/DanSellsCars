@@ -73,7 +73,7 @@
       <div class="soon-tree" aria-hidden="true"><span class="star">&#11088;</span><svg viewBox="0 0 200 240"><use href="#treesvg"/></svg></div>
       <div class="soon-kick">Hedin BMW Ruxley</div>
       <h2 class="xfont soon-h">Coming soon</h2>
-      <p class="soon-p">The elves are wrapping things up. Secret Santa opens here very soon, and you&rsquo;ll get an email the moment it does &#127877;</p>
+      <p class="soon-p">The elves are wrapping things up. Opt in stays open until Saturday 14 November. Names will be revealed when the elves launch it after that, and you&rsquo;ll get an email the moment they do &#127877; Presents are exchanged at the team meal on Saturday 5 December. If you&rsquo;re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.</p>
       <div id="soon-count"></div>
       <div class="soon-gifts" aria-hidden="true"><span>&#127873;</span><span>&#129478;</span><span>&#127850;</span><span>&#127873;</span><span>&#9731;&#65039;</span></div>
     </div>
@@ -109,7 +109,7 @@
       <p class="small">Organisers only. You can set things up and run the draw, but you can&rsquo;t see who has who.</p>
       <div class="hq-count" id="hq-count"></div>
       <div class="grid2">
-        <label class="fld">Names announced<input id="set-announce" type="datetime-local"></label>
+        <label class="fld" id="set-announce-wrap" hidden>Names announced<input id="set-announce" type="datetime-local"></label>
         <label class="fld">Present exchange day<input id="set-date" type="date"></label>
         <label class="fld">Budget (&pound;)<input id="set-budget" type="number" min="0" max="500" step="1"></label>
         <label class="check"><input id="set-rem" type="checkbox" checked> Weekly reminder emails</label>
@@ -141,7 +141,7 @@
     </div>
     <div class="paper" id="optin-box">
       <div class="row between"><h2 class="xfont">Who&rsquo;s in <span class="badge" id="optin-count"></span></h2></div>
-      <p class="small">From the opt in email. This list updates on the next server run, usually within 15 minutes of someone tapping a button. People who say they&rsquo;re in are added to the nice list. People who say not this year are taken off, until you launch or the names are announced.</p>
+      <p class="small">From the opt in email. This list updates on the next server run, usually within 15 minutes of someone tapping a button. People who say they&rsquo;re in are added to the nice list. People who say not this year are taken off, until you press Go.</p>
       <div class="optin-sum" id="optin-sum"></div>
       <ul class="people" id="optin-list"></ul>
     </div>

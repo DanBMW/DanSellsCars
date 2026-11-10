@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const APP = 'https://dan-sells.co.uk/santa/';
 const OPTIN = 'https://dan-sells.co.uk/santa/optin.html';
 const DEADLINE = 'Saturday 14 November';
+const MEAL = 'Presents are exchanged at the team meal on Saturday 5 December. If you\'re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.';
 const SUBJECT = '\uD83C\uDF85 Ruxley Secret Santa: are you in?';
 const FROM = 'The Ruxley elves';
 
@@ -18,13 +19,12 @@ const POEM_LINES = [
   'The showroom is sparkling, the kettle is on,',
   'The elves have a sack and the fun has begun.',
   "Tap I'm in if you're joining this year,",
-  "Names are announced when the fourteenth is here."
+  "The elves will reveal the names after the lists appear."
 ];
 
 /* The 12 people on the Ruxley Team list, plus the five extras Dan asked for.
- * Tina Graham and Lisa Debono were not in the repo or the live staff data, so
- * their addresses are firstname.lastname guesses and must be checked. Dan is
- * included so he can opt in like everyone else. */
+ * Tina Graham and Lisa Debono addresses were confirmed by Dan on 10 November 2026.
+ * Dan is included so he can opt in like everyone else. */
 const RECIPIENTS = [
   { name: 'Carl Hadwin', email: 'carl.hadwin@hedinautomotive.co.uk', group: 'team' },
   { name: 'Chloe Wust', email: 'chloe.wust@hedinautomotive.co.uk', group: 'team' },
@@ -38,8 +38,8 @@ const RECIPIENTS = [
   { name: 'Nathan Jobson', email: 'nathan.jobson@hedinautomotive.co.uk', group: 'team' },
   { name: 'Sergio Garaguso', email: 'sergio.garaguso@hedinautomotive.co.uk', group: 'team' },
   { name: 'Will Potter', email: 'will.potter@hedinautomotive.co.uk', group: 'team' },
-  { name: 'Tina Graham', email: 'tina.graham@hedinautomotive.co.uk', group: 'extra', guessed: true },
-  { name: 'Lisa Debono', email: 'lisa.debono@hedinautomotive.co.uk', group: 'extra', guessed: true },
+  { name: 'Tina Graham', email: 'tina.graham@hedinautomotive.co.uk', group: 'extra' },
+  { name: 'Lisa Debono', email: 'lisa.debono@hedinautomotive.co.uk', group: 'extra' },
   { name: 'Elvinas Urbonas', email: 'elvinas.urbonas@hedinautomotive.co.uk', group: 'extra' },
   { name: 'Faith Marcus', email: 'faith.marcus@hedinautomotive.co.uk', group: 'extra' },
   { name: 'Fleur Andrews', email: 'fleur.andrews@hedinautomotive.co.uk', group: 'extra' }
@@ -67,16 +67,16 @@ function makeMail(person, tok, extras) {
   const inUrl = link(tok, 'in');
   const outUrl = link(tok, 'out');
   const openUrl = OPTIN + '?t=' + encodeURIComponent(tok);
-  let budgetLine = '';
-  if (extras.budget != null) budgetLine = ' Spend up to \u00a3' + extras.budget + '.';
-  if (extras.exchange) budgetLine += ' Presents are exchanged on ' + extras.exchange + '.';
+  let budgetLine = extras.budget != null ? ' Spend up to \u00a3' + extras.budget + '.' : '';
+  const mealLine = extras.meal !== false ? MEAL : (extras.exchange ? 'Presents are exchanged on ' + extras.exchange + '.' : '');
 
   const paras = [
     'Ho ho ho, ' + firstName + '!',
     poemText(),
     "This year's Secret Santa is back at the Ruxley showroom. You buy one present for one colleague, and somebody buys one for you. Nobody sees who has who, not even Dan." + budgetLine,
+    mealLine,
     "If you're in, tap the green button. If you'd rather sit this one out, tap the red one. One tap is all it takes, no sign in, and you can change your mind until " + DEADLINE + '.',
-    'Names are announced on ' + DEADLINE + '. If you\u2019re in, open the same link in this email to see who you\u2019ve got and to write a wishlist. No PIN needed.',
+    'Names will be revealed when the elves launch it, after the opt in deadline. If you\u2019re in, open the same link in this email to see who you\u2019ve got and to write a wishlist. No PIN needed.',
     'This link is just for you, so please don\u2019t forward it.',
     'The Ruxley elves'
   ];
@@ -99,10 +99,11 @@ function makeMail(person, tok, extras) {
     '<p style="margin:0 0 14px;line-height:1.55;font-size:16px">Ho ho ho, ' + esc(firstName) + '!</p>' +
     poemHtml() +
     '<p style="margin:0 0 14px;line-height:1.55;font-size:16px">This year&rsquo;s Secret Santa is back at the Ruxley showroom. You buy one present for one colleague, and somebody buys one for you. Nobody sees who has who, not even Dan.' + (budgetLine ? ' ' + esc(budgetLine.trim()) : '') + '</p>' +
+    (mealLine ? '<p style="margin:0 0 14px;line-height:1.55;font-size:16px">' + esc(mealLine) + '</p>' : '') +
     '<p style="margin:0 0 18px;line-height:1.55;font-size:16px">If you&rsquo;re in, tap the green button. If you&rsquo;d rather sit this one out, tap the red one. One tap is all it takes, no sign in, and you can change your mind until <b>' + DEADLINE + '</b>.</p>' +
     btn(inUrl, 'I&rsquo;m in &#127877;', '#1f7a45', '#0f4a28') +
     btn(outUrl, 'Not this year', '#7a0f1a', '#3a0610') +
-    '<p style="margin:8px 0 14px;line-height:1.55;font-size:16px">Names are announced on <b>' + DEADLINE + '</b>. If you&rsquo;re in, open the same link in this email to see who you&rsquo;ve got and to write a wishlist. No PIN needed.</p>' +
+    '<p style="margin:8px 0 14px;line-height:1.55;font-size:16px">Names will be revealed when the elves launch it, after the opt in deadline. If you&rsquo;re in, open the same link in this email to see who you&rsquo;ve got and to write a wishlist. No PIN needed.</p>' +
     '<p style="margin:0 0 8px;line-height:1.55;font-size:15px;color:#5a2a1a">This link is just for you, so please don&rsquo;t forward it.</p>' +
     '<p style="margin:0 0 16px;line-height:1.55;font-size:16px">The Ruxley elves</p>' +
     '<p style="color:#7a5a48;font-size:12px;margin:0 0 16px;text-align:center">Or open your personal page: <a href="' + esc(openUrl) + '" style="color:#7a0f1a">Ruxley Secret Santa opt in</a></p>' +
@@ -143,7 +144,7 @@ function build(opts) {
     if (seen.has(e)) throw new Error('duplicate ' + e);
     seen.add(e);
     const tok = tokens[e] || fresh();
-    const mail = makeMail(person, tok, { budget: opts.budget, exchange: opts.exchange });
+    const mail = makeMail(person, tok, { budget: opts.budget != null ? opts.budget : 20, exchange: opts.exchange || 'Saturday 5 December' });
     if (visibleHasDash(mail.subject + '\n' + mail.text + '\n' + POEM_LINES.join('\n'))) {
       throw new Error('visible dash in mail for ' + e);
     }
@@ -160,14 +161,16 @@ function build(opts) {
       count: emails.length,
       guessed: emails.filter(m => m.guessed).map(m => ({ name: m.name, email: m.to[0] })),
       danIncluded: true,
+      budget: 20,
+      exchange: 'Saturday 5 December 2026',
       budgetOrExchangeInLiveSettings: false,
-      note: 'Not queued and not written to RTDB. Seed santa/optins from each token before sending. Tina Graham and Lisa Debono addresses are guesses.'
+      note: 'Not queued and not written to RTDB. Seed santa/optins from each token before sending. Tina and Lisa addresses are confirmed. Do not set an announce date. Names come out only when Dan presses Go.'
     },
     emails
   };
 }
 
-module.exports = { RECIPIENTS, POEM_LINES, SUBJECT, FROM, DEADLINE, makeMail, build, token, keyOf, visibleHasDash, poemText };
+module.exports = { RECIPIENTS, POEM_LINES, SUBJECT, FROM, DEADLINE, MEAL, makeMail, build, token, keyOf, visibleHasDash, poemText };
 
 if (require.main === module) {
   const fs = require('fs');

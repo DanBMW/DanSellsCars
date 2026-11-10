@@ -127,16 +127,17 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     R.drawRequest = { mode: 'cancel', byName: 'Dan' }; await runAt(db, '2026-11-10T11:45:00Z');
     ok(!R.assign && !R.sealed && !R.draw, 'cancel clears the draw');
   }
-  /* b. launch before the names are out: draws at launch, emails once, names out email, weekly, eve */
+  /* b. Go / launch reveals names at once, emails once, weekly, eve. No timed announce. */
   {
-    const db = fakeDb({ santa: { members: memberMap(ELVES), settings: { budget: 20, exchange: '2026-12-18', announceTs: T('2026-12-01T10:00:00Z'), live: false } } });
+    const db = fakeDb({ santa: { members: memberMap(ELVES), settings: { budget: 20, exchange: '2026-12-18', live: false } } });
     const R = db.data.santa;
     R.launchRequest = { by: 'dan1', byName: 'Dan', ts: 1 };
     await runAt(db, '2026-11-10T12:00:00Z');
     ok(R.settings.live === true && R.launched && R.draw && bijection(Object.keys(R.members), R.sealed.pairs), 'launch draws the names and goes live');
     eq(ids(db, /^santa_launch_/).length, 7, 'one launch email each');
     const launchMail = notify(db)['santa_launch_' + S.mailId(K('holly.berry@example.com'))];
-    ok(/Names out Tuesday 1 December at 10am/.test(launchMail.subject), 'launch subject says when names are out: ' + launchMail.subject);
+    ok(/Open the app to see who you/.test(launchMail.subject), 'launch subject says open the app: ' + launchMail.subject);
+    ok(/team meal/.test(launchMail.text), 'launch email mentions the team meal');
     eq(launchMail.to, ['holly.berry@example.com']); eq(launchMail.fromName, 'Hedin Used Cars');
     /* repeat runs, a second press of Launch, a late run: nothing sent twice */
     notify(db)['santa_launch_' + S.mailId(K('holly.berry@example.com'))].sent = 5;
@@ -144,13 +145,12 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     eq(ids(db, /^santa_launch_/).length, 7, 'launch emails still 7 after repeats');
     eq(notify(db)['santa_launch_' + S.mailId(K('holly.berry@example.com'))].sent, 5, 'a sent email is never re queued');
     ok(!R.launchRequest, 'a second launch request is just cleared');
-    /* cancel and redraw refused once launched */
+    /* cancel and redraw refused once launched, because names are already out */
     const id0 = R.draw.id;
     R.drawRequest = { mode: 'cancel', byName: 'Dan' }; await runAt(db, '2026-11-11T09:15:00Z');
     ok(R.draw.id === id0 && /already launched/.test(R.drawError.msg), 'no cancel after launch');
     R.drawRequest = { mode: 'draw', byName: 'Dan' }; await runAt(db, '2026-11-11T09:30:00Z');
-    ok(R.draw.id !== id0, 'a redraw before the names are out is allowed');
-    const id1 = R.draw.id;
+    ok(R.draw.id === id0 && /already out/.test(R.drawError.msg), 'no redraw after launch');
     /* Monday 16 Nov: before 10:00 nothing, from 10:00 one weekly each, repeats nothing */
     await runAt(db, '2026-11-16T09:45:00Z'); eq(ids(db, /^santa_weekly_/).length, 0, 'no weekly before 10am');
     await runAt(db, '2026-11-16T10:05:00Z'); eq(ids(db, /^santa_weekly_2026_W47_/).length, 7, 'weekly W47 one each');
@@ -161,16 +161,18 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     eq(ids(db, /^santa_weekly_2026_W48_/).length, 7, 'late Monday run sends W48 once');
     const wk = notify(db)['santa_weekly_2026_W48_' + S.mailId(K('ivy.green@example.com'))];
     ok(/25 days to go/.test(wk.subject), 'weekly counts down: ' + wk.subject);
-    ok(/Names are announced on/.test(wk.text), 'before the names are out the weekly says when');
-    /* names out: first run after 1 Dec 10:00 */
-    await runAt(db, '2026-12-01T09:50:00Z'); eq(ids(db, /^santa_announce_/).length, 0, 'no names out email early');
+    ok(/giftee|wishlist/i.test(wk.text), 'weekly after Go points at the giftee wishlist');
+    ok(!/Names are announced/.test(wk.text), 'weekly never names a scheduled announce day');
+    /* passing an announceTs later does not send a names out email or change the draw */
+    R.settings.announceTs = T('2026-12-01T10:00:00Z');
+    await runAt(db, '2026-12-01T09:50:00Z'); eq(ids(db, /^santa_announce_/).length, 0, 'no names out email before a leftover announceTs');
     R.drawRequest = { mode: 'draw', byName: 'Dan' }; await runAt(db, '2026-12-01T10:05:00Z');
-    eq(R.draw.id, id1, 'no redraw once the names are out');
-    eq(ids(db, /^santa_announce_/).length, 7, 'names out email each');
-    await runAt(db, '2026-12-01T10:20:00Z'); eq(ids(db, /^santa_announce_/).length, 7, 'names out not repeated');
+    eq(R.draw.id, id0, 'still no redraw, even after a leftover announceTs');
+    eq(ids(db, /^santa_announce_/).length, 0, 'announceTs alone never sends a names out email');
+    await runAt(db, '2026-12-01T10:20:00Z'); eq(ids(db, /^santa_announce_/).length, 0, 'still no announce email');
     await runAt(db, '2026-12-07T10:00:00Z'); await runAt(db, '2026-12-14T10:00:00Z');
     eq(ids(db, /^santa_weekly_/).length, 28, 'weekly W49 and W50 too');
-    ok(!/Names are announced/.test(notify(db)['santa_weekly_2026_W50_' + S.mailId(K('ivy.green@example.com'))].text), 'after the names are out the weekly points at the giftee wishlist');
+    ok(/wishlist/i.test(notify(db)['santa_weekly_2026_W50_' + S.mailId(K('ivy.green@example.com'))].text), 'later weeklies still point at the wishlist');
     /* eve: the 18th is a Friday, so Thursday 17th from 10:00 */
     await runAt(db, '2026-12-17T09:00:00Z'); eq(ids(db, /^santa_eve_/).length, 0, 'no eve email before 10am');
     await runAt(db, '2026-12-17T10:01:00Z'); await runAt(db, '2026-12-17T16:00:00Z');
@@ -186,24 +188,29 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
       names.filter(n => n !== mine).forEach(n => ok(!(q.subject + q.text + q.html).includes(n), 'email ' + id + ' does not mention ' + n)); });
     Object.values(notify(db)).forEach(q => ok(!/[\u2013\u2014]| - /.test(q.subject + q.text), 'no dashes: ' + q.subject));
   }
-  /* c. launch after the names time: one email, says open the app; no names out email; reminders off */
+  /* c. launch with reminders off: one email, says open the app; no weekly or eve */
   {
-    const db = fakeDb({ santa: { members: memberMap(ELVES.slice(0, 3)), settings: { exchange: '2026-12-21', announceTs: T('2026-11-01T10:00:00Z'), reminders: false } } });
+    const db = fakeDb({ santa: { members: memberMap(ELVES.slice(0, 3)), settings: { exchange: '2026-12-21', reminders: false } } });
     db.data.santa.drawRequest = { mode: 'draw', byName: 'Dan' }; await runAt(db, '2026-11-09T10:00:00Z');
     const drawId = db.data.santa.draw.id;
     db.data.santa.launchRequest = { byName: 'Dan' }; await runAt(db, '2026-11-09T10:15:00Z');
     eq(db.data.santa.launched.drawId, drawId, 'launch keeps an existing draw');
-    eq(ids(db, /^santa_launch_/).length, 3); ok(/Open the app to see who you/.test(notify(db)[ids(db, /^santa_launch_/)[0]].subject), 'launch after names time says open the app');
+    eq(ids(db, /^santa_launch_/).length, 3); ok(/Open the app to see who you/.test(notify(db)[ids(db, /^santa_launch_/)[0]].subject), 'launch says open the app');
     for (const t of ['2026-11-16T10:00:00Z', '2026-11-23T10:00:00Z', '2026-12-19T10:00:00Z']) await runAt(db, t);
-    eq(ids(db, /^santa_(announce|weekly|eve)_/).length, 0, 'reminders off: no weekly or eve; launch after names time: no names out email');
+    eq(ids(db, /^santa_(announce|weekly|eve)_/).length, 0, 'reminders off: no weekly or eve; no announce email either');
   }
-  /* d. launch refused without dates; launch with an impossible draw refused */
+  /* d. launch refused without the exchange day; leftover announceTs without Go reveals nothing; impossible draw refused */
   {
     const db = fakeDb({ santa: { members: memberMap(ELVES.slice(0, 3)), settings: {} } });
     db.data.santa.launchRequest = { byName: 'Dan' }; await runAt(db, '2026-11-09T10:00:00Z');
-    ok(!db.data.santa.launched && /before launching/.test(db.data.santa.drawError.msg), 'no launch without the dates');
+    ok(!db.data.santa.launched && /exchange day/.test(db.data.santa.drawError.msg), 'no launch without the exchange day');
+    /* announceTs in the past, live still false: no emails, still Coming soon */
+    db.data.santa.settings = { announceTs: T('2026-11-01T10:00:00Z') };
+    await runAt(db, '2026-11-09T10:10:00Z');
+    ok(!db.data.santa.launched && db.data.santa.settings.live !== true, 'announceTs alone does not go live');
+    eq(ids(db, /./).length, 0, 'announceTs alone sends no email');
     const k = Object.keys(db.data.santa.members);
-    Object.assign(db.data.santa, { settings: { exchange: '2026-12-18', announceTs: 1 }, exclusions: { [k[0]]: { [k[1]]: true, [k[2]]: true } }, launchRequest: { byName: 'Dan' } });
+    Object.assign(db.data.santa, { settings: { exchange: '2026-12-18' }, exclusions: { [k[0]]: { [k[1]]: true, [k[2]]: true } }, launchRequest: { byName: 'Dan' } });
     await runAt(db, '2026-11-09T10:15:00Z');
     ok(!db.data.santa.launched && !db.data.santa.settings.live && /kept apart/.test(db.data.santa.drawError.msg), 'an impossible draw stops the launch and stays Coming soon');
     eq(ids(db, /./).length, 0, 'and sends nothing');
@@ -278,6 +285,22 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     eq(g.to, K('bob@x.com'));
     eq(g.wish, 'Fluffy socks');
     ok(!db2.data.santa.guestGift[K('bob@x.com')], 'nobody else gets a gift record under a guessable key');
+  }
+
+  /* weekly reminders only go to people still on the nice list (opted in) */
+  {
+    const db = fakeDb({
+      santa: {
+        settings: { budget: 20, exchange: '2026-12-18', live: true, reminders: true },
+        launched: { ts: T('2026-11-10T12:00:00Z'), byName: 'Dan', drawId: 'd1' },
+        draw: { id: 'd1', ts: 1, count: 3 },
+        members: memberMap(['holly.berry@example.com', 'ivy.green@example.com']),
+        mail: { launch: T('2026-11-10T12:00:00Z') }
+      }
+    });
+    await runAt(db, '2026-11-16T10:05:00Z');
+    eq(ids(db, /^santa_weekly_/).length, 2, 'weekly only for the two who opted in');
+    ok(!ids(db, /noel|rudy|carol|nick|eve/).length, 'opted out or unlisted people get no weekly');
   }
 
   console.log('santa: all ' + checks + ' checks passed');

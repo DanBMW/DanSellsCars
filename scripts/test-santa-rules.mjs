@@ -66,16 +66,16 @@ for (const R of ['santa', 'santaTest']) {
     const a = {}; Object.keys(pairs).forEach(g => { a[g] = { to: pairs[g], name: 'n', drawId: 'D1' }; });
     await update(ref(x.database(), R), { assign: a, sealed: { drawId: 'D1', pairs }, draw: { id: 'D1', ts: 1, count: 4 }, drawRequest: null });
   });
-  /* before launch (Coming soon) and before the names time, nobody reads a pairing or probes for one */
+  /* before Go (Coming soon), nobody reads a pairing, even if announceTs has already passed */
   await env.withSecurityRulesDisabled(x => update(ref(x.database(), R + '/settings'), { live: false, announceTs: 1 }));
   await no(assertFails(get(ref(db('carl'), R + '/assign/' + c))), 'coming soon: not even your own');
-  await env.withSecurityRulesDisabled(x => update(ref(x.database(), R + '/settings'), { live: true, announceTs: Date.now() + 864e5 }));
-  await no(assertFails(get(ref(db('carl'), R + '/assign/' + c))), 'before the names time: not even your own');
+  await env.withSecurityRulesDisabled(x => update(ref(x.database(), R + '/settings'), { live: false, announceTs: Date.now() - 1000 }));
+  await no(assertFails(get(ref(db('carl'), R + '/assign/' + c))), 'announceTs alone reveals nothing');
   await env.withSecurityRulesDisabled(x => set(ref(x.database(), R + '/wish/' + m), { text: 'x', ts: 1 }));
-  await no(assertFails(get(ref(db('carl'), R + '/wish/' + m))), 'no probing wishlists to find your giftee early');
-  await no(assertFails(set(ref(db('carl'), R + '/notes/' + m + '/early'), { text: 'hi', ts: serverTimestamp() })), 'no probing notes to find your giftee early');
+  await no(assertFails(get(ref(db('carl'), R + '/wish/' + m))), 'no probing wishlists to find your giftee before Go');
+  await no(assertFails(set(ref(db('carl'), R + '/notes/' + m + '/early'), { text: 'hi', ts: serverTimestamp() })), 'no probing notes to find your giftee before Go');
   await ok(assertSucceeds(get(ref(db('molly'), R + '/wish/' + m))), 'your own wishlist is always yours');
-  await env.withSecurityRulesDisabled(x => update(ref(x.database(), R + '/settings'), { announceTs: Date.now() - 1000 }));
+  await env.withSecurityRulesDisabled(x => update(ref(x.database(), R + '/settings'), { live: true }));
   /* each person reads only their own */
   await ok(assertSucceeds(get(ref(db('carl'), R + '/assign/' + c))));
   await no(assertFails(get(ref(db('carl'), R + '/assign/' + m))));
@@ -151,17 +151,23 @@ for (const R of ['santa', 'santaTest']) {
   await ok(assertSucceeds(set(ref(anon, R + '/optins/' + tokB + '/wish'), { text: 'Socks', ts: serverTimestamp() })), 'an opted in guest can write a wishlist with the token');
   await no(assertFails(set(ref(anon, R + '/optins/' + tokA + '/wish'), { text: 'Nope', ts: serverTimestamp() })), 'an opted out guest cannot write a wishlist');
   await env.withSecurityRulesDisabled(async c => {
-    await update(ref(c.database(), R + '/settings'), { live: true, announceTs: Date.now() + 864e5 });
+    await update(ref(c.database(), R + '/settings'), { live: false, optInUntil: Date.now() - 1000 });
+    await set(ref(c.database(), R + '/draw'), null);
+  });
+  await no(assertFails(update(ref(anon, R + '/optins/' + tokB), { choice: 'out', choiceTs: serverTimestamp() })), 'no changing your mind after the opt in deadline');
+  await env.withSecurityRulesDisabled(async c => { await update(ref(c.database(), R + '/settings'), { optInUntil: Date.now() + 864e5 }); });
+  await env.withSecurityRulesDisabled(async c => {
+    await update(ref(c.database(), R + '/settings'), { live: false, announceTs: Date.now() - 1000 });
     await set(ref(c.database(), R + '/draw'), { id: 'd1', ts: 1, count: 2 });
     await set(ref(c.database(), R + '/guestGift/' + tokB), { name: 'Tina', to: K('tina.graham@hedinautomotive.co.uk'), drawId: 'd1' });
   });
-  await no(assertFails(update(ref(anon, R + '/optins/' + tokA), { choice: 'in', choiceTs: serverTimestamp() })), 'no changing your mind after launch');
-  await no(assertFails(get(ref(anon, R + '/guestGift/' + tokB))), 'the pairing stays shut until the names time');
-  await no(assertFails(get(ref(db('dan'), R + '/guestGift'))), 'nobody can list guest pairings');
+  await no(assertFails(get(ref(anon, R + '/guestGift/' + tokB))), 'announceTs alone does not open a guest pairing');
   await env.withSecurityRulesDisabled(async c => {
-    await update(ref(c.database(), R + '/settings'), { announceTs: Date.now() - 1000 });
+    await update(ref(c.database(), R + '/settings'), { live: true });
   });
-  await ok(assertSucceeds(get(ref(anon, R + '/guestGift/' + tokB))), 'the token holder can read their pairing once names are out');
+  await no(assertFails(update(ref(anon, R + '/optins/' + tokA), { choice: 'in', choiceTs: serverTimestamp() })), 'no changing your mind after launch');
+  await no(assertFails(get(ref(db('dan'), R + '/guestGift'))), 'nobody can list guest pairings');
+  await ok(assertSucceeds(get(ref(anon, R + '/guestGift/' + tokB))), 'the token holder can read their pairing once Dan has pressed Go');
   await ok(assertSucceeds(get(ref(anon, R + '/guestGift/' + tokA))), 'another token path is readable after names are out but is empty');
   await no(assertFails(get(ref(anon, R + '/guestGift/short'))), 'a short gift token is still rejected');
   await no(assertFails(set(ref(anon, R + '/guestGift/' + tokA), { name: 'Hack', to: 'x' })), 'clients cannot write a guest pairing');
