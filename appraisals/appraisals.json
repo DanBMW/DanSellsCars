@@ -1,9 +1,49 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-10T10:02:14.150Z",
+  "captured": "2026-11-10T12:02:43.448Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV26FKW",
+      "appraisedAt": "2026-11-10T11:37:59.664Z",
+      "make": "VOLVO",
+      "model": "XC60",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--WpjrjrKR--/c_fill,h_300,w_300/v1794310682/Live/Appraisals/9638121/dd8055c0-29cc-48db-9cd8-57d899f28b33.png"
+    },
+    {
+      "registration": "FD75VXR",
+      "appraisedAt": "2026-11-10T11:10:34.086Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--1lGoAtiC--/c_fill,h_300,w_300/v1794309044/Live/Appraisals/9638014/c343cbad-c3ad-46a2-83df-1bfda884a99c.jpg"
+    },
+    {
+      "registration": "LY71BXD",
+      "appraisedAt": "2026-11-10T10:26:51.994Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--a78lEYPZ--/c_fill,h_300,w_300/v1794306468/Live/Appraisals/9637846/c495b318-940e-4362-a216-ba86d1db76b6.jpg"
+    },
+    {
+      "registration": "Y69KGY",
+      "appraisedAt": "2026-11-10T10:25:56.677Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--VnvSymDI--/c_fill,h_300,w_300/v1794306388/Live/Appraisals/9637839/4cc22814-570e-4707-8639-93d931f90b8f.jpg"
+    },
     {
       "registration": "Y99RKE",
       "appraisedAt": "2026-11-09T15:48:34.024Z",
