@@ -21,14 +21,15 @@ function fakeDb(data) {
   });
   return { ref, data };
 }
-function fakeAuth(users) {
+function fakeAuth(users, opts) {
+  opts = opts || {};
   const calls = [];
   return {
     calls,
     getUser: async uid => { const u = users.find(x => x.uid === uid); if (!u) { const e = new Error('no user'); e.code = 'auth/user-not-found'; throw e; } return u; },
     listUsers: async () => ({ users }),
     updateUser: async (uid, ch) => { calls.push(['update', uid, ch]); Object.assign(users.find(x => x.uid === uid), ch); },
-    generateEmailVerificationLink: async (em, s) => { calls.push(['link', em, s.url]); if (em.indexOf('boom') === 0) throw Object.assign(new Error('x'), { code: 'auth/internal-error' }); return 'https://forecourt-1b6bc.firebaseapp.com/__/auth/action?mode=verifyEmail&oobCode=X&continueUrl=' + encodeURIComponent(s.url); }
+    generateEmailVerificationLink: async (em, s) => { calls.push(['link', em, s && s.url]); if (s && opts.noContinue) throw Object.assign(new Error('x'), { code: 'auth/unauthorized-continue-uri' }); s = s || { url: 'https://forecourt-1b6bc.firebaseapp.com' }; if (em.indexOf('boom') === 0) throw Object.assign(new Error('x'), { code: 'auth/internal-error' }); return 'https://forecourt-1b6bc.firebaseapp.com/__/auth/action?mode=verifyEmail&oobCode=X&continueUrl=' + encodeURIComponent(s.url); }
   };
 }
 const pw = [{ providerId: 'password' }];
@@ -91,6 +92,13 @@ const CFG = { team: { danny: { name: 'Danny', email: 'danny.willis@hedinautomoti
     const r = await AH.run(db, { auth, nowMs: NOW, from: 'bot@x', sendMail: async m => sent.push(m), log: () => {}, sweep: false });
     check('approve: marks the email verified and clears the request', users[0].emailVerified === true && !db.data.authHelp.approve.u5 && !db.data.authHelp.verifyReq.u5, JSON.stringify(r));
     check('approve: logged with who approved, and no email sent', Object.values(db.data.authHelp.log.u5)[0].by === 'dan1' && sent.length === 0);
+  }
+  /* the continue URL domain is not authorised (live, 11 Nov): falls back to the plain link */
+  {
+    const users = [user('serg', 'sergio.garaguso@hedinautomotive.co.uk', 60)];
+    const db = fakeDb({ lockup: { config: CFG } }), auth = fakeAuth(users, { noContinue: true }), sent = [];
+    const r = await AH.run(db, { auth, nowMs: NOW, from: 'bot@x', sendMail: async m => sent.push(m), log: () => {} });
+    check('unauthorised continue URL: still sends, with the plain Firebase link', r.mailed.length === 1 && sent.length === 1 && /mode=verifyEmail/.test(sent[0].text) && r.failed.length === 0, JSON.stringify(r));
   }
   /* dry run writes and sends nothing */
   {

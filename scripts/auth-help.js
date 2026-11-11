@@ -28,12 +28,14 @@ function mail(name, link) {
   const hi = 'Hi ' + (name || 'there') + ',';
   const subject = 'Your Ruxley Team login: confirm your email';
   const text = [hi, '', 'Tap the link below to confirm your work email and finish setting up your Ruxley Team login.', '', link, '',
+    'Then go back to the Ruxley Team app: https://dan-sells.co.uk/team.html', '',
     'If you did not ask for this, ignore this email.', '', 'Hedin BMW Ruxley'].join('\n');
   const html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
     '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">&#128273; ' + esc(subject) + '</div>' +
     '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px"><p style="margin:0 0 12px">' + esc(hi) + '</p>' +
     '<p style="margin:0 0 18px">Tap the button to confirm your work email and finish setting up your Ruxley Team login.</p>' +
     '<a href="' + esc(link) + '" style="display:block;text-align:center;background:#4d94d8;color:#fff;text-decoration:none;font-weight:800;padding:14px;border-radius:12px;font-size:17px">Confirm my email</a>' +
+    '<p style="margin:16px 0 0">Then go back to the <a href="https://dan-sells.co.uk/team.html" style="color:#4d94d8">Ruxley Team app</a>. It carries on by itself.</p>' +
     '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">If you did not ask for this, ignore this email. Hedin BMW Ruxley</p></div></div>';
   return { subject, text, html };
 }
@@ -97,7 +99,10 @@ async function run(db, opts) {
       const em = String(u.email || '').toLowerCase();
       if (u.emailVerified) { report.skipped.push(em); if (!dry) await db.ref('authHelp/verifyReq/' + uid).remove(); continue; }
       if (!DOMAIN.test(em)) { report.skipped.push(em); await log(uid, 'skipped, not a work address', { email: em }); continue; }
-      const link = await auth.generateEmailVerificationLink(em, { url: CONTINUE });
+      /* dan-sells.co.uk is not on Firebase's authorised domain list, so like the page
+         we fall back to Firebase's own confirm page (team.html carries on by itself) */
+      const link = await auth.generateEmailVerificationLink(em, { url: CONTINUE })
+        .catch(e => (e && /continue-uri|unauthorized|invalid-continue/.test(e.code || '')) ? auth.generateEmailVerificationLink(em) : Promise.reject(e));
       const m = mail(people[em] || '', link);
       say((dry ? '[dry] ' : '') + 'Send "' + m.subject + '" to ' + em + ' (' + t.why + (t.clientErr ? ', firebase said ' + t.clientErr : '') + ')');
       if (!dry) {
