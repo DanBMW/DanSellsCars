@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Showroom rota | Ruxley</title>
+<style>
+  :root { --bg:#f5f6f8; --card:#fff; --ink:#15191f; --muted:#5b6472; --line:#dfe3ea; --ok:#1d7a4b; --warn:#b26a00; --bad:#b3261e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0f1319; --card:#171d26; --ink:#e8ecf2; --muted:#9aa4b2; --line:#263040; --ok:#4cc38a; --warn:#f0a94a; --bad:#ff7b72; } }
+  :root[data-theme="dark"] { --bg:#0f1319; --card:#171d26; --ink:#e8ecf2; --muted:#9aa4b2; --line:#263040; --ok:#4cc38a; --warn:#f0a94a; --bad:#ff7b72; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
+  .day { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+  .day h2 { font-size: 16px; margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .day.today h2 { color: var(--ok); }
+  .shift { display: grid; grid-template-columns: 110px 1fr; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); align-items: center; }
+  .shift:last-child { border-bottom: 0; }
+  .time { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .who { font-weight: 700; font-size: 18px; letter-spacing: .04em; }
+  .who.none { color: var(--bad); font-weight: 600; font-size: 15px; letter-spacing: 0; }
+  .note { font-size: 13px; color: var(--warn); margin-top: 2px; }
+  .closed { padding: 10px 14px; color: var(--muted); }
+  .status { font-size: 13px; color: var(--muted); padding: 12px 0 0; }
+  .foot { color: var(--muted); font-size: 12px; margin: 16px 0 24px; }
+  @media (max-width: 380px) { .shift { grid-template-columns: 1fr; gap: 2px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Showroom rota</h1>
+  <p class="sub" id="status">Loading the rota…</p>
+  <div id="days"></div>
+  <p class="foot">Times are UK time. "Stepped off" shows the time the shift was handed back. Updates live.</p>
+</main>
+
+<script src="reception-rota.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",
+  authDomain: "forecourt-1b6bc.firebaseapp.com",
+  databaseURL: "https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "forecourt-1b6bc",
+  appId: "1:1073459223252:web:d65abed953fc641fc7b941"
+});
+const db = getDatabase(app);
+const RR = window.ReceptionRota;
+const ROOT = "lockup";
+const DAYS = 7;
+let RECEPTION = null, TEAM = null;
+
+// London calendar date and weekday for an offset from today
+function londonDate(offset) {
+  const now = new Date(Date.now() + offset * 86400000);
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit", weekday: "short" }).formatToParts(now);
+  const get = t => (parts.find(p => p.type === t) || {}).value || "";
+  const dowNames = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return { date: `${get("year")}-${get("month")}-${get("day")}`, dow: dowNames[get("weekday")], label: now };
+}
+function longLabel(d) {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", weekday: "long", day: "numeric", month: "long" }).format(d);
+}
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+function paint() {
+  const status = document.getElementById("status");
+  const out = [];
+  if (RECEPTION === null || TEAM === null) { status.textContent = "Loading the rota…"; return; }
+  for (let i = 0; i < DAYS; i++) {
+    const d = londonDate(i);
+    const rows = RR.publicRota(RECEPTION[d.date] || {}, d.date, d.dow, TEAM);
+    const title = (i === 0 ? "Today, " : "") + longLabel(d.label);
+    if (!rows.length) {
+      out.push(`<section class="day"><h2>${esc(title)}</h2><div class="closed">Closed</div></section>`);
+      continue;
+    }
+    const shifts = rows.map(r => {
+      let who;
+      if (r.initials) who = `<div class="who">${esc(r.initials)}</div>`;
+      else who = `<div class="who none">No one</div>`;
+      let note = "";
+      if (r.status === "stepped_off") note = `<div class="note">Stepped off at ${esc(r.endedAt || "")}</div>`;
+      return `<div class="shift"><div class="time">${esc(r.from)} to ${esc(r.to)}</div><div>${who}${note}</div></div>`;
+    }).join("");
+    out.push(`<section class="day${i === 0 ? " today" : ""}"><h2>${esc(title)}</h2>${shifts}</section>`);
+  }
+  document.getElementById("days").innerHTML = out.join("");
+  const t = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour: "2-digit", minute: "2-digit" });
+  status.textContent = "Updated " + t;
+}
+
+onValue(ref(db, ROOT + "/reception"), snap => { RECEPTION = snap.val() || {}; paint(); }, err => {
+  document.getElementById("status").textContent = "Could not load the rota. Try again in a moment.";
+});
+onValue(ref(db, ROOT + "/config/team"), snap => { TEAM = snap.val() || {}; paint(); }, err => {
+  TEAM = TEAM || {}; paint();
+});
+setInterval(paint, 60000);
+</script>
+</body>
+</html>
