@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-11T06:02:49.452Z",
+  "captured": "2026-11-11T12:02:16.797Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LM11DVU",
+      "appraisedAt": "2026-11-11T11:52:04.492Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--6UvaVF-5--/c_fill,h_300,w_300/v1794397959/Live/Appraisals/9640157/25c7d054-50f7-4467-9d64-2194d860109b.jpg"
+    },
+    {
+      "registration": "LX20HZZ",
+      "appraisedAt": "2026-11-11T10:09:31.878Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--uK9-864X--/c_fill,h_300,w_300/v1794063751/Live/Appraisals/9633596/b942a523-ad3e-40f0-a21e-d641b1c9065a.jpg"
+    },
     {
       "registration": "RK73FZD",
       "appraisedAt": "2026-11-10T16:06:02.427Z",
@@ -215,16 +235,6 @@
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--1a4WqK8U--/c_fill,h_300,w_300/v1794064971/Live/Appraisals/9633693/8eef975c-ff07-4b34-abe5-215b322b692d.jpg"
     },
     {
-      "registration": "LX20HZZ",
-      "appraisedAt": "2026-11-07T15:01:52.574Z",
-      "make": "BMW",
-      "model": "1 Series",
-      "status": "Valued",
-      "price": null,
-      "condition": "Average",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--uK9-864X--/c_fill,h_300,w_300/v1794063751/Live/Appraisals/9633596/b942a523-ad3e-40f0-a21e-d641b1c9065a.jpg"
-    },
-    {
       "registration": "B8NNW",
       "appraisedAt": "2026-11-07T13:32:27.718Z",
       "make": "BMW",
@@ -383,16 +393,6 @@
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--hKTlzJlP--/c_fill,h_300,w_300/v1793968220/Live/Appraisals/9630165/cd1c9d4a-e46f-4263-9f9a-846a37025eed.jpg"
-    },
-    {
-      "registration": "LM11DVU",
-      "appraisedAt": "2026-11-06T11:39:12.704Z",
-      "make": "BMW",
-      "model": "3 Series",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "LV73XNS",
