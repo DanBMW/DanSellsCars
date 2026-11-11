@@ -3631,6 +3631,98 @@ function paintCoverRota(shifts, day, team){
   }).join('');
   el.hidden=false;
 }
+/* ---- Remembrance: the two minute silence on 11 November --------------------
+   Every screen works the times from the London clock to the second, four times
+   a second, so the warning (10:55:00) and the silence (11:00:00) start from the
+   clock itself and not from a timer that can drift or be held up by whatever is
+   on the wall. The screen takes the floor from anything running, shows the
+   warning, speaks it, then holds the silence for two minutes with the radio
+   muted. Switch: boardsettings/remembrance (absent = on). Repeats every 11 Nov. */
+var REM = { day:'11-11', warnAt:'10:55:00', silenceAt:'11:00:00', silenceSecs:120 };
+var remState = null, remRadioVol = null;
+var REM_WARN_LINE = 'Attention please. In five minutes we will observe a two minute silence for Remembrance. Please stop what you are doing, and stand if you are able.';
+function remLondon(){
+  var p={};
+  new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'})
+    .formatToParts(new Date()).forEach(function(x){ p[x.type]=x.value; });
+  return { day: p.month+'-'+p.day, secs: (+p.hour)*3600 + (+p.minute)*60 + (+p.second) };
+}
+function remSecs(t){ var a=String(t).split(':'); return (+a[0])*3600 + (+a[1])*60 + (+a[2]||0); }
+function remEl(){
+  var el=document.getElementById('remOverlay');
+  if(!el){
+    el=document.createElement('div'); el.id='remOverlay';
+    el.setAttribute('role','alert'); el.setAttribute('aria-live','assertive');
+    el.style.cssText='position:fixed;inset:0;z-index:400;background:#000;color:#f4f4f4;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;box-sizing:border-box';
+    el.innerHTML='<div id="remTitle" style="font-size:min(9vw,96px);font-weight:800;letter-spacing:.02em"></div>'+
+      '<div id="remCount" style="font-size:min(22vw,280px);font-weight:800;font-variant-numeric:tabular-nums;margin:18px 0;display:none"></div>'+
+      '<div id="remSub" style="font-size:min(4.5vw,44px);color:#cfd6e4;max-width:1100px"></div>';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function remMuteRadio(on){
+  try{
+    if(!radioEl) return;
+    if(on){ if(remRadioVol===null) remRadioVol=radioEl.volume; radioEl.volume=0; }
+    else if(remRadioVol!==null){ radioEl.volume=remRadioVol; remRadioVol=null; }
+  }catch(e){}
+}
+function remBegin(phase, nowSecs){
+  if(!remState){
+    stopScenes();
+    remState={ phase:null, g: sceneStart(true) };
+  }
+  var el=remEl(); el.style.display='flex';
+  var sil=remSecs(REM.silenceAt);
+  if(phase==='warn'){
+    remState.phase='warn';
+    el.style.background='#000';
+    document.getElementById('remTitle').textContent='Two minute silence at 11:00';
+    document.getElementById('remSub').textContent='Please stop what you are doing, and stand if you are able.';
+    document.getElementById('remCount').style.display='none';
+    /* the bell and the spoken warning only if we are at the start of the warning; a page opened late stays quiet */
+    if(nowSecs - remSecs(REM.warnAt) < 60){
+      try{ walkinBell(); }catch(e){}
+      try{ walkinSpeakAudio(REM_WARN_LINE, function(){}); }catch(e){}
+    }
+  } else {
+    if(remState.phase!=='silence'){
+      remState.phase='silence';
+      remMuteRadio(true);
+      document.getElementById('remTitle').textContent='Silence';
+      document.getElementById('remSub').textContent='Two minutes of silence for Remembrance.';
+      document.getElementById('remCount').style.display='block';
+      if(nowSecs - sil < 5){ try{ walkinBell(); }catch(e){} }
+    }
+  }
+}
+function remDraw(secsLeft){
+  if(!remState || remState.phase!=='silence') return;
+  var s=Math.max(0, secsLeft), m=Math.floor(s/60), r=s%60;
+  document.getElementById('remCount').textContent=m+':'+String(r).padStart(2,'0');
+}
+function remEnd(){
+  if(!remState) return;
+  var wasSilence = remState.phase==='silence';
+  var g=remState.g;
+  remState=null;
+  var el=document.getElementById('remOverlay'); if(el) el.style.display='none';
+  remMuteRadio(false);
+  if(wasSilence){ try{ walkinBell(); }catch(e){} }
+  sceneEnd(g);
+}
+function remembranceTick(){
+  var L=remLondon();
+  var due = L.day===REM.day && sOn('remembrance');
+  if(!due){ if(remState) remEnd(); return; }
+  var warn=remSecs(REM.warnAt), sil=remSecs(REM.silenceAt), end=sil+REM.silenceSecs;
+  if(L.secs>=end){ if(remState) remEnd(); return; }
+  if(L.secs>=sil){ if(!remState || remState.phase!=='silence') remBegin('silence', L.secs); remDraw(end-L.secs); return; }
+  if(L.secs>=warn){ if(!remState) remBegin('warn', L.secs); return; }
+}
+setInterval(function(){ try{ remembranceTick(); }catch(e){} }, 250);
+
 function paintCover(){
   const b=document.getElementById('rcbadge'); if(!b)return;
   const RO=window.dsRoster, R=window.LockupRota, RR=window.ReceptionRota;
