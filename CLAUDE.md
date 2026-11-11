@@ -2939,3 +2939,18 @@ Rebuilt on the Elevate-style layout (branch home-elevate-draft, approved by Dan:
 - **Secret Santa reveal (10 November 2026).** Names come out only when Dan presses Go in Elf HQ, after checking the entries list and the Are you sure? pop up. `settings/live` is the reveal gate. `announceTs` is not used to release names, and Elf HQ no longer asks for a launch or announcement date. Opt in closes on Saturday 14 November. Exchange day and budget for the 2026 run: Saturday 5 December, £20.
 - **Secret Santa opt in (10 November 2026).** One tap email, no sign in: `santa/optin.html?t=<token>&c=in|out`. Tokens live at `santa/optins/<token>` (unguessable, not listable, even by Dan). The page writes only `choice` / `choiceTs` / a guest wishlist, and only until launch (Dan presses Go) or `settings/optInUntil` (14 November). Elf HQ reads `santa/replies` (name, email, in/out/pending, no tokens). `scripts/santa-draw.js` `syncOptins` adds opted in people to the nice list (extras if they are not on the Team list), takes opted out people off, copies a guest wishlist to `santa/wish/<k>`, and after Dan presses Go (settings/live) writes that person's pairing only to `santa/guestGift/<token>`. Names are never revealed by an announce clock. The same link is how extras (Tina, Lisa, Elvinas, Faith, Fleur and anyone else without a Team login) see who they have. Emails are built by `scripts/santa-optin-mail.js` and are not queued until Dan says. Tests: `scripts/test-santa-optin-ui.js`, plus additions in the draw, rules and santa UI suites. Service worker `team-v11`. Exchange is at the team meal on Saturday 5 December: if you are not coming, pop your gift in the bag and presents are given out before you leave that day.
 
+
+## BMW 1 Series configurator (`configurator/1-series/`)
+
+Added 11 November 2026 at Dan's request: an independent BMW 1 Series (F70)
+configurator (model, colour, wheels, upholstery, trim, packages, options,
+accessories, summary) with indicative BMW UK prices from November 2026.
+Static, self-contained, no backend: the build lives in the query string (share
+link), and "Send this build to Dan" opens WhatsApp or email on the visitor's
+device. All prices and rules are in `configurator/1-series/data.js`; items not
+confirmed on BMW UK carry `unverified` and show as TBC (list in its README).
+Car visuals are stylised SVG drawn in `car.js`, no BMW imagery. **Hidden for
+now** (Dan: "Host it but no index for now"): `noindex, nofollow` meta,
+`Disallow: /configurator/` in `robots.txt`, out of `sitemap.xml`, not linked
+from any nav or page. The monthly figure is an illustrative calculation, not
+a lender's representative example; `financeExample.show` in data.js turns it off.

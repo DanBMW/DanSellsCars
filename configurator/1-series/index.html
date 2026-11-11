@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Configure your BMW 1 Series with Dan | dan-sells</title>
+<meta name="description" content="Build your BMW 1 Series with Dan Cane at Hedin Ruxley BMW. Independent configurator with indicative prices.">
+<meta name="theme-color" content="#0b0d10">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="https://dan-sells.co.uk/" aria-label="dan-sells home">
+    <span class="brand-mark">DS</span>
+    <span class="brand-text"><strong>dan-sells</strong><small>1 Series configurator</small></span>
+  </a>
+  <div class="model-meta" id="modelMeta"></div>
+  <div class="top-price"><small>Total price (indicative)</small><strong id="topTotal">£0</strong></div>
+</header>
+
+<nav class="steps" aria-label="Configuration steps"><ol id="stepBar"></ol></nav>
+
+<main id="app">
+  <section class="stage" id="stage" aria-live="polite">
+    <div class="stage-art" id="stageArt"></div>
+    <div class="stage-caption" id="stageCaption"></div>
+  </section>
+  <section class="panel" id="panel"></section>
+  <section class="summary" id="summary" hidden></section>
+</main>
+
+<footer class="pricebar" id="pricebar">
+  <div class="pb-price">
+    <small>On the road price</small>
+    <strong id="barTotal">£0</strong>
+    <span class="pb-monthly" id="barMonthly"></span>
+  </div>
+  <div class="pb-actions">
+    <button class="btn ghost" id="backBtn" type="button">Back</button>
+    <button class="btn primary" id="nextBtn" type="button">Next</button>
+  </div>
+</footer>
+
+<p class="disclaimer" id="disclaimer">
+  Independent tool by Dan Cane, BMW Sales Executive at Hedin Ruxley BMW. Not an official BMW configurator and not affiliated with BMW AG or BMW UK.
+  Prices are indicative, taken from BMW UK's public configurator in November 2026, include VAT and on the road costs, and are subject to confirmation.
+  Items marked <em>TBC</em> were not confirmed on BMW UK and are estimates. Car drawings are stylised illustrations, not the actual vehicle.
+</p>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="car.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

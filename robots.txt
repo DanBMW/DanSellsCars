@@ -37,5 +37,6 @@ Disallow: /lookup/
 Disallow: /silk-house/
 Disallow: /car-tinder/
 Disallow: /swipe-drive/
+Disallow: /configurator/
 
 Sitemap: https://dan-sells.co.uk/sitemap.xml
