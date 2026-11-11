@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-11T14:02:10.679Z",
+  "captured": "2026-11-11T16:02:11.919Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LW19FUE",
+      "appraisedAt": "2026-11-11T14:05:22.589Z",
+      "make": "TOYOTA",
+      "model": "C-HR",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "MF68NKR",
       "appraisedAt": "2026-11-11T13:14:49.322Z",
