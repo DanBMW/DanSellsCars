@@ -270,7 +270,7 @@ async function scenarios(browser, base) {
   {
     /* login help: someone waiting to verify can be verified by Dan; managers never see it */
     const data = JSON.parse(JSON.stringify(FIX));
-    data.authHelp = { verifyReq: { newp1: { email: 'new.person@hedinautomotive.co.uk', ts: Date.now() - 600000, clientErr: 'auth/internal-error' } } };
+    data.authHelp = { verifyReq: { newp1: { email: 'new.person@hedinautomotive.co.uk', ts: Date.now() - 600000, clientErr: 'auth/internal-error' } }, sent: { serg: { failAt: Date.now() - 300000, hold: true, email: 'sergio.garaguso@hedinautomotive.co.uk' }, done1: { failAt: 1, verified: 2, email: 'done.person@hedinautomotive.co.uk' } } };
     const p = await open(browser, base, null, '/team-admin.html', U.dan, { data });
     await p.waitForSelector('#v-app:not([hidden])', { timeout: 8000 });
     await p.waitForTimeout(300);
@@ -279,6 +279,12 @@ async function scenarios(browser, base) {
     await p.waitForTimeout(300);
     const ap = at((await store(p)).data, 'authHelp/approve/newp1');
     check('admin: Verify writes an approval signed by Dan', ap && ap.by === U.dan.uid && typeof ap.ts === 'number', JSON.stringify(ap));
+    check('admin: someone whose backup email failed and is held is listed too', /sergio\.garaguso/.test(await txt(p, '#verify')) && /Held, no email/.test(await txt(p, '#verify')), await txt(p, '#verify'));
+    await p.locator('[data-approve="serg"]').click();
+    await p.waitForTimeout(300);
+    const ap2 = at((await store(p)).data, 'authHelp/approve/serg');
+    check('admin: Verify works for a held person with no request', ap2 && ap2.by === U.dan.uid, JSON.stringify(ap2));
+    check('admin: verified people are not listed', !/done\.person/.test(await txt(p, '#verify')));
     check('admin: no page errors on the verify card', p.__errors.length === 0, p.__errors.join(' | '));
     await p.close();
     const q = await open(browser, base, null, '/team-admin.html', U.will, { data });

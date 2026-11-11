@@ -104,6 +104,27 @@ const CFG = { team: { danny: { name: 'Danny', email: 'danny.willis@hedinautomoti
     const r = await AH.run(db, { auth, nowMs: NOW, from: 'bot@x', sendMail: async m => sent.push(m), log: () => {} });
     check('unauthorised continue URL: still sends, with the plain Firebase link', r.mailed.length === 1 && sent.length === 1 && /mode=verifyEmail/.test(sent[0].text) && r.failed.length === 0, JSON.stringify(r));
   }
+  /* Sergio, 11 Nov: backup email failed (Firebase throttled), held so Dan verifies by hand */
+  {
+    const users = [user('serg', 'sergio.garaguso@hedinautomotive.co.uk', 70)];
+    const db = fakeDb({ lockup: { config: CFG }, authHelp: { sent: { serg: { failAt: NOW - 40 * MIN, hold: true, email: 'sergio.garaguso@hedinautomotive.co.uk' } } } });
+    const auth = fakeAuth(users), sent = [];
+    const go = t => AH.run(db, { auth, nowMs: t, from: 'bot@x', sendMail: async m => sent.push(m), log: () => {} });
+    await go(NOW); await go(NOW + 60 * MIN);
+    check('hold: no email is sent and nothing retried while held', sent.length === 0 && !auth.calls.some(c => c[0] === 'link'), JSON.stringify(auth.calls));
+    db.data.authHelp.approve = { serg: { by: 'dan1', ts: NOW } };
+    await go(NOW + 61 * MIN);
+    check('hold: Verify marks him verified, clears the hold, sends nothing', users[0].emailVerified === true && db.data.authHelp.sent.serg.verified === NOW + 61 * MIN && !db.data.authHelp.sent.serg.hold && !(db.data.authHelp.approve || {}).serg && sent.length === 0, JSON.stringify(db.data.authHelp));
+    await go(NOW + 200 * MIN);
+    check('hold: once verified, later runs never email him', sent.length === 0 && !auth.calls.some(c => c[0] === 'link'));
+  }
+  /* a failure records the address, so the card can name them */
+  {
+    const users = [user('u9', 'boom.y@hedinautomotive.co.uk', 10)];
+    const db = fakeDb({ authHelp: { verifyReq: { u9: { email: 'boom.y@hedinautomotive.co.uk', ts: NOW - 5 * MIN } } } });
+    await AH.run(db, { auth: fakeAuth(users), nowMs: NOW, from: 'bot@x', sendMail: async () => {}, log: () => {}, sweep: false });
+    check('a failure keeps the address on the sent record', db.data.authHelp.sent.u9.email === 'boom.y@hedinautomotive.co.uk' && db.data.authHelp.sent.u9.failAt === NOW, JSON.stringify(db.data.authHelp.sent));
+  }
   /* dry run writes and sends nothing */
   {
     const users = [user('serg', 'sergio.garaguso@hedinautomotive.co.uk', 17)];

@@ -26,7 +26,7 @@
       },
       "approve": {
         "$uid": {
-          ".write": "auth != null && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true)) && root.child('authHelp/verifyReq').child($uid).exists()",
+          ".write": "auth != null && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true)) && (root.child('authHelp/verifyReq').child($uid).exists() || root.child('authHelp/sent').child($uid).exists())",
           ".validate": "!newData.exists() || (newData.hasChildren(['by', 'ts']) && newData.child('by').val() === auth.uid && newData.child('ts').val() === now)",
           "by": {},
           "ts": {},

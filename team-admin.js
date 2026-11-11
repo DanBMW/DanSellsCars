@@ -88,7 +88,7 @@
   /* an admin who has checked it is really them marks the work email verified;
      the next lockup-emails run applies it (scripts/auth-help.js) */
   function approve(uid) {
-    var r = ((D.auth || {}).verifyReq || {})[uid] || {};
+    var r = ((D.auth || {}).verifyReq || {})[uid] || ((D.auth || {}).sent || {})[uid] || {};
     return TS.backend().set('authHelp/approve/' + uid, { by: TS.uid(), ts: TS.backend().now ? TS.backend().now() : { '.sv': 'timestamp' } }).then(function () {
       log(whoName() + ' verified the login for ' + (r.email || uid));
       toast('Verified. They can sign in within about 15 minutes in working hours.');
@@ -158,12 +158,15 @@
   function paintVerify() {
     var card = $('verify-card'); if (!card) return;
     var admin = isAdmin(), A = D.auth || {}, req = A.verifyReq || {}, sent = A.sent || {}, appr = A.approve || {}, logs = A.log || {};
-    var uids = Object.keys(req).sort(function (a, b) { return (req[b].ts || 0) - (req[a].ts || 0); });
+    /* requests, plus anyone whose backup email failed or is held, until they are verified */
+    var uids = Object.keys(req).concat(Object.keys(sent).filter(function (u) { var x = sent[u] || {}; return !req[u] && !x.verified && !x.last && (x.failAt || x.hold); }));
+    var when = function (u) { return (req[u] || {}).ts || (sent[u] || {}).failAt || 0; };
+    uids.sort(function (a, b) { return when(b) - when(a); });
     card.hidden = !admin;
     if (!admin) return;
     var rows = uids.length ? uids.map(function (u) {
-      var r = req[u], sn = sent[u], lg = Object.keys(logs[u] || {}).map(function (k) { return logs[u][k]; }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); })[0];
-      var status = (r.clientErr ? 'Firebase email failed: ' + r.clientErr + '. ' : '') + (sn ? 'Our email sent ' + fmtTs(sn.last) + '. ' : 'Our email not sent yet. ') + (lg && /failed/.test(lg.what) ? 'Last error: ' + (lg.err || lg.what) : '');
+      var sn = sent[u], r = req[u] || { email: (sn || {}).email || '', ts: (sn || {}).failAt }, lg = Object.keys(logs[u] || {}).map(function (k) { return logs[u][k]; }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); })[0];
+      var status = (r.clientErr ? 'Firebase email failed: ' + r.clientErr + '. ' : '') + (sn && sn.last ? 'Our email sent ' + fmtTs(sn.last) + '. ' : sn && sn.hold ? 'Held, no email. Waiting for you to verify. ' : 'Our email not sent yet. ') + (lg && /failed/.test(lg.what) ? 'Last error: ' + (lg.err || lg.what) : '');
       return '<tr><td><b>' + esc(r.email || u) + '</b><div class="muted small">Asked ' + esc(fmtTs(r.ts)) + '</div><div class="muted small">' + esc(status) + '</div></td>' +
         '<td class="num">' + (appr[u] ? '<span class="pill g">Verifying</span>' : '<button class="ghost" type="button" data-approve="' + esc(u) + '">Verify</button>') + '</td></tr>';
     }).join('') : '<tr><td class="muted">Nobody is waiting.</td></tr>';

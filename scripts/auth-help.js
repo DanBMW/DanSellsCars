@@ -66,7 +66,7 @@ async function run(db, opts) {
       if (!u.emailVerified) { if (!dry) await auth.updateUser(uid, { emailVerified: true }); }
       await log(uid, 'approved', { by: a.by || '', email: u.email || '' });
       report.verified.push(u.email);
-      if (!dry) await db.ref().update({ ['authHelp/approve/' + uid]: null, ['authHelp/verifyReq/' + uid]: null });
+      if (!dry) await db.ref().update({ ['authHelp/approve/' + uid]: null, ['authHelp/verifyReq/' + uid]: null, ['authHelp/sent/' + uid + '/verified']: nowMs, ['authHelp/sent/' + uid + '/hold']: null, ['authHelp/sent/' + uid + '/email']: String(u.email || '').toLowerCase() });
     } catch (e) { report.failed.push(uid); await log(uid, 'approve failed', { err: String(e && (e.code || e.message)).slice(0, 190) }); }
   }
 
@@ -79,7 +79,7 @@ async function run(db, opts) {
       page = await auth.listUsers(1000, page && page.pageToken);
       page.users.forEach(u => {
         const em = String(u.email || '').toLowerCase(), made = Date.parse(u.metadata && u.metadata.creationTime) || 0;
-        if (u.emailVerified || u.disabled || todo[u.uid] || approvals[u.uid] || (sent[u.uid] && sent[u.uid].last)) return;
+        if (u.emailVerified || u.disabled || todo[u.uid] || approvals[u.uid] || (sent[u.uid] && (sent[u.uid].last || sent[u.uid].hold))) return;
         if (!DOMAIN.test(em) || !(em in people) || nowMs - made > SWEEP_DAYS * DAY) return;
         if (!(u.providerData || []).some(p => p.providerId === 'password')) return;
         todo[u.uid] = { ts: made, why: 'sweep' };
@@ -93,11 +93,13 @@ async function run(db, opts) {
     if (s.last && s.last >= t.ts) continue;                /* already answered this request */
     if (s.last && nowMs - s.last < GAP_MS) continue;
     if (s.failAt && nowMs - s.failAt < FAIL_WAIT_MS) continue;          /* a failure waits before the next try */
+    if (s.hold) continue;                                              /* held: Dan will verify them by hand, no email */
     const today = s.day === new Date(nowMs).toISOString().slice(0, 10) ? (s.count || 0) : 0;
     if (today >= MAX_PER_DAY) { report.skipped.push(uid); await log(uid, 'skipped, daily limit'); continue; }
     try {
       const u = await auth.getUser(uid);
       const em = String(u.email || '').toLowerCase();
+      t.email = em;
       if (u.emailVerified) { report.skipped.push(em); if (!dry) await db.ref('authHelp/verifyReq/' + uid).remove(); continue; }
       if (!DOMAIN.test(em)) { report.skipped.push(em); await log(uid, 'skipped, not a work address', { email: em }); continue; }
       /* dan-sells.co.uk is not on Firebase's authorised domain list, so like the page
@@ -118,7 +120,7 @@ async function run(db, opts) {
       report.failed.push(uid);
       /* keep Firebase's own words (the raw server response) and wait FAIL_WAIT_MS before trying again */
       await log(uid, 'send failed', { err: String(e && (e.code || e.message)).slice(0, 190), msg: String(e && e.message || '').slice(0, 400) });
-      if (!dry) await db.ref('authHelp/sent/' + uid + '/failAt').set(nowMs);
+      if (!dry) await db.ref('authHelp/sent/' + uid).update(Object.assign({ failAt: nowMs }, t.email ? { email: t.email } : {}));
     }
   }
   return report;
