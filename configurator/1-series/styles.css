@@ -125,6 +125,18 @@ body.is-summary main{display:block}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast div+div{margin-top:4px;padding-top:4px;border-top:1px solid #333}
 
+/* real renders */
+.stage.has-render::after{display:none}
+.stage.has-render{background:#ebe9e4}
+.stage.render-front{background:#161616}
+.stage-art .render{display:block;width:100%;height:auto;max-height:calc(100vh - var(--top) - var(--stepsH) - var(--barH) - 90px);object-fit:contain;border-radius:14px}
+.angle{position:absolute;top:12px;right:12px;display:flex;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:999px;padding:3px}
+.angle button{border:0;background:none;padding:6px 14px;border-radius:999px;font-size:13px;cursor:pointer;color:var(--ink2)}
+.angle button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.render-note{position:absolute;left:12px;top:12px;background:rgba(0,0,0,.62);color:#fff;font-size:12px;padding:5px 10px;border-radius:999px}
+.sum-art{position:relative}
+.sum-render{width:100%;height:auto;border-radius:14px;display:block}
+
 /* summary */
 .summary{max-width:1200px;margin:0 auto;padding:24px}
 .sum-hero{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center;background:radial-gradient(120% 80% at 30% 30%,#fff 0%,#efefec 60%,#e4e4e0 100%);border-radius:20px;padding:24px 32px}
@@ -172,6 +184,10 @@ body.is-summary main{display:block}
   .stage-art{max-width:560px}
   .stage-caption{left:10px;bottom:8px}
   .stage-caption span{font-size:11px;padding:4px 8px}
+  .stage-art .render{max-height:none}
+  .angle{top:8px;right:8px}
+  .angle button{padding:4px 10px;font-size:12px}
+  .render-note{left:8px;top:8px;font-size:11px}
   .panel{position:static;max-height:none;border-left:0;padding:18px 16px 24px}
   .pricebar{padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
   .pb-price strong{font-size:19px}

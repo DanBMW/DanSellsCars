@@ -46,6 +46,21 @@ window.CONFIG_DATA = {
     }
   },
 
+  // Renders saved from BMW UK's public configurator (11 Nov 2026), used with Dan's
+  // agreement. Files: img/<set>-<paint>-<front|rear>.webp and img/<set>-int-<upholstery>.webp.
+  // Each set was rendered on one wheel only (renderWheel); other wheels fall back to that
+  // image with a note. No wheel-specific renders were usable (see README).
+  renders: {
+    dir: "img/",
+    setFor: { "120s": "1F7A", "120m": "1F7B", "120mp": "1F7B", "123m": "1F7E", "123mp": "1F7E", "m135": "1F7C" },
+    renderWheel: { "1F7A": "971", "1F7B": "975", "1F7E": "976", "1F7C": "977" },
+    exterior: {"1F7A": ["alpine", "capeyork", "firered", "frozblue", "frozgrey", "jet", "sapphire", "skyscr", "stormbay", "tanzan", "thunder"], "1F7B": ["alpine", "brooklyn", "capeyork", "firered", "frozblue", "frozgrey", "portimao", "sapphire", "skyscr", "stormbay", "tanzan", "thunder"], "1F7E": ["alpine", "brooklyn", "capeyork", "firered", "frozblue", "frozgrey", "portimao", "sapphire", "skyscr", "stormbay", "tanzan", "thunder"], "1F7C": ["alpine", "brooklyn", "capeyork", "firered", "frozblue", "frozgrey", "portimao", "sapphire", "skyscr", "stormbay", "tanzan", "thunder"]},
+    // Interior sets. 1F7E (123 xDrive) uses the 1F7B M Sport interiors (same M Sport seat family).
+    // M135 (1F7C) has no interior renders, so it falls back to the drawing.
+    interiorSetFor: { "1F7A": "1F7A", "1F7B": "1F7B", "1F7E": "1F7B" },
+    interior: {"1F7A": ["cloth", "econeer", "vblack", "vcoral", "vmocha", "voyster"], "1F7B": ["malc", "vblack", "vcoral", "vmocha", "voyster"]}
+  },
+
   lines: {
     sport:  { name: "Sport" },
     msport: { name: "M Sport" },

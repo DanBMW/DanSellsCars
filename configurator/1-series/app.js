@@ -270,15 +270,71 @@
     };
   }
 
+  // ---------- real renders (with SVG fallback) ----------
+  const R = D.renders || null;
+  const badImg = new Set();
+  S.angle = 'rear';
+  function exteriorRender() {
+    if (!R) return null;
+    const set = R.setFor[S.v]; if (!set) return null;
+    const angles = (R.exterior[set] || []).includes(S.paint) ? ['rear', 'front'] : [];
+    const srcs = angles.map(a => R.dir + `${set}-${S.paint}-${a}.webp`).filter(u => !badImg.has(u));
+    if (!srcs.length) return null;
+    const rw = R.renderWheel[set];
+    let note = '';
+    if (S.wheel !== rw) {
+      note = rw === D.defaultWheel[line()] ? 'Image shows standard wheels' : `Image shows ${byId(D.wheels, rw).name.split(',')[0]} wheels`;
+    }
+    if (line() === 'mspro' && set === '1F7B') note = (note ? note + '. ' : '') + 'Image shows M Sport styling';
+    const want = R.dir + `${set}-${S.paint}-${S.angle}.webp`;
+    return { src: srcs.includes(want) ? want : srcs[0], srcs, note, angleOk: srcs.length > 1 };
+  }
+  function interiorRender() {
+    if (!R) return null;
+    const set = R.interiorSetFor[R.setFor[S.v]];
+    if (!set || !(R.interior[set] || []).includes(S.uph)) return null;
+    const src = R.dir + `${set}-int-${S.uph}.webp`;
+    if (badImg.has(src)) return null;
+    let note = S.trim !== D.defaultTrim[line()] ? 'Image shows standard trim' : '';
+    if (set !== R.setFor[S.v]) note = (note ? note + '. ' : '') + 'Image shows the M Sport interior';
+    return { src, note };
+  }
+  function imgTag(src, alt, cls) {
+    return `<img class="${cls || 'render'}" src="${esc(src)}" alt="${esc(alt)}" decoding="async" data-src="${esc(src)}">`;
+  }
+  document.addEventListener('error', e => {
+    const t = e.target;
+    if (t && t.tagName === 'IMG' && t.dataset.src) { badImg.add(t.dataset.src); render(); }
+  }, true);
+
   function renderStage(sid) {
     const interior = sid === 'uph' || sid === 'trim';
     const U = byId(D.upholstery, S.uph), T = byId(D.trims, S.trim), P = byId(D.paints, S.paint), W = byId(D.wheels, S.wheel);
-    $('#stage').classList.toggle('interior', interior);
-    $('#stageArt').innerHTML = interior ? CarArt.interior({ uph: U.hex, accent: U.accent, trim: T.hex, illum: /Illuminated/.test(T.name) }) : CarArt.exterior(artOpts());
+    const st = $('#stage');
+    const r = interior ? interiorRender() : exteriorRender();
+    st.classList.toggle('interior', interior && !r);
+    st.classList.toggle('has-render', !!r);
+    st.classList.toggle('render-front', !!r && !interior && S.angle === 'front');
+    if (r) {
+      const alt = interior ? `${variant().name} interior, ${U.name}` : `${variant().name} in ${P.name}`;
+      $('#stageArt').innerHTML = imgTag(r.src, alt) +
+        (r.angleOk ? `<div class="angle" role="group" aria-label="View"><button type="button" data-angle="rear" aria-pressed="${S.angle === 'rear'}">Rear</button><button type="button" data-angle="front" aria-pressed="${S.angle === 'front'}">Front</button></div>` : '') +
+        (r.note ? `<div class="render-note">${esc(r.note)}</div>` : '');
+      if (r.srcs) r.srcs.forEach(u => { if (u !== r.src) { const i = new Image(); i.src = u; } });
+    } else {
+      $('#stageArt').innerHTML = interior ? CarArt.interior({ uph: U.hex, accent: U.accent, trim: T.hex, illum: /Illuminated/.test(T.name) }) : CarArt.exterior(artOpts());
+    }
     $('#stageCaption').innerHTML = interior
       ? `<span>${esc(U.name)}</span><span>${esc(T.name)}</span>`
       : `<span>${esc(P.name)}</span><span>${esc(W.name)}</span>`;
   }
+  // swipe between front and rear
+  let tx = null;
+  document.addEventListener('touchstart', e => { if (e.target.closest('#stageArt')) tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 40 && $('#stageArt .angle')) { S.angle = S.angle === 'rear' ? 'front' : 'rear'; render(); }
+  }, { passive: true });
 
   const tbcTag = it => unverified(it) ? ' <span class="tbc" title="Price not confirmed on BMW UK">TBC</span>' : '';
 
@@ -309,7 +365,7 @@
       if (hidden.length) h += `<p class="hint">Also available on other models: ${hidden.map(p => esc(p.name)).join(', ')}.</p>`;
     } else if (sid === 'wheels') {
       const forced = S.packs.map(packObj).find(p => p.forcesWheel);
-      h += head('Wheels', forced ? `Set by the ${esc(forced.name)}.` : 'Bigger wheels show in the drawing with thinner tyre sidewalls.');
+      h += head('Wheels', forced ? `Set by the ${esc(forced.name)}.` : 'Car images show each model on its standard wheels.');
       h += `<div class="cards">${D.wheels.filter(avail).map(w => `
         <button type="button" class="card wheelcard ${w.id === S.wheel ? 'sel' : ''} ${forced && w.id !== forced.forcesWheel ? 'locked' : ''}" data-wheel="${w.id}" aria-pressed="${w.id === S.wheel}">
           <span class="wb">${CarArt.wheelBadge(w)}</span>
@@ -380,7 +436,7 @@
       `\n\nIndicative on the road price: ${gbp(t.otr)}\n\nMy build: ${url}\n\nCould you send me a quote?\n`;
     $('#summary').innerHTML = `
       <div class="sum-hero">
-        <div class="sum-art">${CarArt.exterior(artOpts())}</div>
+        <div class="sum-art">${(() => { const r = exteriorRender(); if (!r) return CarArt.exterior(artOpts()); const src = r.srcs.find(u => /-rear\./.test(u)) || r.src; return imgTag(src, v.name + ' in ' + P.name, 'render sum-render') + (r.note ? `<div class="render-note">${esc(r.note)}</div>` : ''); })()}</div>
         <div class="sum-intro">
           <p class="eyebrow">Your BMW 1 Series, built with Dan</p>
           <h1>${esc(v.name)}</h1>
@@ -427,7 +483,7 @@
           ${anyTbc ? '<p class="hint small"><span class="tbc">TBC</span> marks a price or rule not confirmed on BMW UK. Dan will confirm it.</p>' : ''}
         </section>
       </div>
-      <p class="sum-foot">Prices indicative, from BMW UK in ${esc(D.meta.pricesAsOf)}, and subject to confirmation. Independent tool, not affiliated with BMW. Built by ${esc(c.name)}, ${esc(c.role)}.</p>`;
+      <p class="sum-foot">Prices indicative, from BMW UK in ${esc(D.meta.pricesAsOf)}, and subject to confirmation. Car images are illustrative, courtesy of BMW UK's online configurator. Independent tool, not affiliated with BMW. Built by ${esc(c.name)}, ${esc(c.role)}.</p>`;
     $('#copyBtn').onclick = () => {
       const i = $('#shareUrl');
       (navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject()).then(() => notify('Link copied.'), () => { i.select(); document.execCommand('copy'); notify('Link copied.'); });
@@ -444,6 +500,7 @@
     const d = b.dataset;
     if (d.step !== undefined) { S.step = +d.step; render(); }
     else if (d.go) { S.step = STEPS.findIndex(s => s.id === d.go); render(); }
+    else if (d.angle) { S.angle = d.angle; render(); }
     else if (d.variant) setVariant(d.variant);
     else if (d.paint) { S.paint = d.paint; render(); }
     else if (d.ptab) { S.paintTab = d.ptab; render(); }
@@ -462,7 +519,7 @@
   };
 
   // test hook
-  window.cfg = { S, totals, render, normalize, togglePack, toggleOpt, toggleAcc, setVariant, selectWheel, shareUrl };
+  window.cfg = { S, exteriorRender, interiorRender, totals, render, normalize, togglePack, toggleOpt, toggleAcc, setVariant, selectWheel, shareUrl };
 
   fromQuery();
   render();
