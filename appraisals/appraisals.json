@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-11T16:02:11.919Z",
+  "captured": "2026-11-11T18:02:12.145Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "GJ74VXK",
+      "appraisedAt": "2026-11-11T16:46:40.851Z",
+      "make": "BMW",
+      "model": "2 Series Gran Coupe",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "LW19FUE",
       "appraisedAt": "2026-11-11T14:05:22.589Z",
