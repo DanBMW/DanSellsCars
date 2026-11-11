@@ -397,6 +397,39 @@
   /* one-off corrections to who is in on a day, on top of the shift calendar. Tomi has appointments on Friday 6
      November, his usual day off, so he is assumed in for that day. Remove the line once the rota itself is corrected. */
   var ONE_OFF_IN = { '2026-11-06': ['tomi'] };
-var api = { PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate };
+/* public rota: one row a shift, initials only, no names, emails, notes or reasons.
+   day = reception/<date> as stored; team = lockup config team by id.
+   A shift whose holder stepped off (status declined) carries endedAt, the London time
+   they handed it back, so the public copy shows when they finished. */
+function initialsOf(name) {
+  var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '';
+  var first = parts[0].charAt(0), last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+  return (first + last).toUpperCase();
+}
+function londonHm(ts) {
+  if (typeof ts !== 'number') return null;
+  var parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date(ts));
+  var h = '', m = '';
+  parts.forEach(function (p) { if (p.type === 'hour') h = p.value; if (p.type === 'minute') m = p.value; });
+  return h.padStart(2, '0') + ':' + m;
+}
+function publicRota(day, date, dow, team) {
+  return shiftsFor(dow).map(function (s) {
+    var rec = (day || {})[s.id] || {};
+    var t = (team || {})[rec.personId] || {};
+    var row = { date: date, shift: s.id, from: s.from, to: s.to, initials: null, status: 'short', endedAt: null };
+    if (rec.personId && (rec.status === 'assigned' || rec.status === 'covering')) {
+      row.initials = initialsOf(t.fullName || t.name || rec.personId);
+      row.status = rec.status === 'covering' ? 'covering' : 'assigned';
+    } else if (rec.status === 'declined') {
+      row.status = 'stepped_off';
+      row.endedAt = londonHm(rec.ts);
+    }
+    return row;
+  });
+}
+
+var api = { PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

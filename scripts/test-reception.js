@@ -223,3 +223,21 @@ assert.deepStrictEqual(R.shiftsFor('fri').map(x => x.to), ['12:00', '15:00', '18
 console.log('ok: days given as names get the right hours, Saturday included');
 
 console.log('all reception tests passed');
+
+// public rota: initials only, the stepped off time in London, no names or notes
+{
+  const team = { tomi: { fullName: 'Tomiwa Adelaja' }, carl: { fullName: 'Carl Smith' } };
+  const day = {
+    am: { personId: 'tomi', status: 'assigned', ts: 1, note: 'secret' },
+    mid: { personId: 'carl', status: 'declined', ts: Date.UTC(2026, 10, 12, 12, 40) },
+    pm: { status: 'short' }
+  };
+  const rows = R.publicRota(day, '2026-11-12', 4, team);
+  assert.deepStrictEqual(rows.map(r => r.initials), ['TA', null, null]);
+  assert.strictEqual(rows[1].status, 'stepped_off');
+  assert.strictEqual(rows[1].endedAt, '12:40');
+  assert.strictEqual(rows[2].status, 'short');
+  assert.ok(!JSON.stringify(rows).includes('Tomiwa') && !JSON.stringify(rows).includes('secret'));
+  assert.strictEqual(R.publicRota({}, '2026-11-15', 0, team).length, 0);
+  console.log('ok: public rota shows initials, the time a shift was stepped off, and nothing private');
+}
