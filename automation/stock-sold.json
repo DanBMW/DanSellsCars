@@ -238,23 +238,6 @@
    "price": "£47,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a115bc-a2f7-7045-9081-c56e2728f141-preview.jpg"
   },
-  "238261": {
-   "id": "238261",
-   "model": "BMW iX1 xDrive30 M Sport",
-   "series": "iX1",
-   "year": "2025",
-   "reg": "LV75FKU",
-   "mileage": "8,033 miles",
-   "colour": "White",
-   "fuel": "Electric",
-   "fuelGroup": "Electric",
-   "body": "SUV",
-   "power": "313 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£33,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019eca4d-864a-7893-acd8-2b272226cbd9-preview.jpg"
-  },
   "251470": {
    "id": "251470",
    "model": "BMW M135 xDrive",
@@ -578,23 +561,6 @@
    "price": "£64,750",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a14024-d902-7038-b383-8e9d2622587d-preview.jpg"
   },
-  "238266": {
-   "id": "238266",
-   "model": "BMW 220 M Sport Gran Coupe",
-   "series": "2 Series",
-   "year": "2026",
-   "reg": "LV26KKN",
-   "mileage": "5,151 miles",
-   "colour": "Grey",
-   "fuel": "Petrol (mild hybrid)",
-   "fuelGroup": "Petrol",
-   "body": "Coupe",
-   "power": "170 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£26,450",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019ebc24-5e27-7650-9ad0-478a09ff0901-preview.jpg"
-  },
   "237425": {
    "id": "237425",
    "model": "BMW X7 xDrive40d M Sport",
@@ -688,7 +654,7 @@
    "reg": "LV26MKM",
    "mileage": "3,664 miles",
    "colour": "Black",
-   "fuel": "Diesel",
+   "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "298 hp",
@@ -739,7 +705,7 @@
    "reg": "EK26UOT",
    "mileage": "4,824 miles",
    "colour": "Black",
-   "fuel": "Petrol",
+   "fuel": "Petrol (mild hybrid)",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "398 hp",
@@ -943,7 +909,7 @@
    "reg": "YF24JLX",
    "mileage": "15,839 miles",
    "colour": "Grey",
-   "fuel": "Petrol",
+   "fuel": "Petrol (mild hybrid)",
    "fuelGroup": "Petrol",
    "body": "SUV",
    "power": "170 hp",
@@ -988,7 +954,7 @@
    "price": "£34,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a042f8-fd83-763a-bcf9-561610cf6218-preview.jpg",
    "first_missing": "2026-11-04",
-   "runs_missing": 67
+   "runs_missing": 68
   },
   "241291": {
    "id": "241291",
@@ -1007,7 +973,7 @@
    "price": "£65,750",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f2849-6e65-71e2-893b-6e72c6af04c2-preview.jpg",
    "first_missing": "2026-11-05",
-   "runs_missing": 57
+   "runs_missing": 58
   },
   "250259": {
    "id": "250259",
@@ -1026,7 +992,7 @@
    "price": "£63,850",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18154-59ee-7a4a-a1e8-0dc79e11a6eb-preview.jpg",
    "first_missing": "2026-11-05",
-   "runs_missing": 54
+   "runs_missing": 55
   },
   "244227": {
    "id": "244227",
@@ -1045,7 +1011,7 @@
    "price": "£27,450",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0039b-16b9-731d-a203-d915a20d12a7-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 35
+   "runs_missing": 36
   },
   "259393": {
    "id": "259393",
@@ -1064,7 +1030,7 @@
    "price": "£18,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ac8b-c61c-78e8-8bc5-82cdbd35b356-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 35
+   "runs_missing": 36
   },
   "257458": {
    "id": "257458",
@@ -1083,7 +1049,7 @@
    "price": "£30,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18122-fd84-7aa3-9209-609b77b2f6e6-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 35
+   "runs_missing": 36
   },
   "259387": {
    "id": "259387",
@@ -1102,7 +1068,45 @@
    "price": "£23,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-472d-76e4-9d6e-609f5e500ebb-preview.jpg",
    "first_missing": "2026-11-08",
-   "runs_missing": 25
+   "runs_missing": 26
+  },
+  "238261": {
+   "id": "238261",
+   "model": "BMW iX1 xDrive30 M Sport",
+   "series": "iX1",
+   "year": "2025",
+   "reg": "LV75FKU",
+   "mileage": "8,033 miles",
+   "colour": "White",
+   "fuel": "Electric",
+   "fuelGroup": "Electric",
+   "body": "SUV",
+   "power": "313 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£33,000",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019eca4d-864a-7893-acd8-2b272226cbd9-preview.jpg",
+   "first_missing": "2026-11-11",
+   "runs_missing": 1
+  },
+  "238266": {
+   "id": "238266",
+   "model": "BMW 220 M Sport Gran Coupe",
+   "series": "2 Series",
+   "year": "2026",
+   "reg": "LV26KKN",
+   "mileage": "5,151 miles",
+   "colour": "Grey",
+   "fuel": "Petrol (mild hybrid)",
+   "fuelGroup": "Petrol",
+   "body": "Coupe",
+   "power": "170 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£26,450",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019ebc24-5e27-7650-9ad0-478a09ff0901-preview.jpg",
+   "first_missing": "2026-11-11",
+   "runs_missing": 1
   }
  },
  "updated": "2026-11-11",
