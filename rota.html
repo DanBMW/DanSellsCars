@@ -101,6 +101,26 @@ onValue(ref(db, ROOT + "/reception"), snap => { RECEPTION = snap.val() || {}; pa
 onValue(ref(db, ROOT + "/config/team"), snap => { TEAM = snap.val() || {}; paint(); }, err => {
   TEAM = TEAM || {}; paint();
 });
+
+/* Some networks block the live connection (WebSockets) without saying so, and the page would sit on
+   "Loading" for ever. After a few seconds, read the same two paths over plain HTTPS instead. */
+async function viaHttps() {
+  const base = "https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app/";
+  const get = async p => { const r = await fetch(base + p + ".json", { cache: "no-store" }); if (!r.ok) throw new Error(p); return r.json(); };
+  try {
+    if (RECEPTION === null) RECEPTION = (await get(ROOT + "/reception")) || {};
+    if (TEAM === null) TEAM = (await get(ROOT + "/config/team")) || {};
+    paint();
+  } catch (e) {
+    document.getElementById("status").textContent = "Could not reach the rota. Check your connection and try again.";
+  }
+}
+setTimeout(() => {
+  if (RECEPTION === null || TEAM === null) {
+    document.getElementById("status").textContent = "Still loading. Trying another way to reach the rota…";
+    viaHttps();
+  }
+}, 6000);
 setInterval(paint, 60000);
 </script>
 </body>
