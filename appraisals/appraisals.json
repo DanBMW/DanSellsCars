@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-11T12:02:16.797Z",
+  "captured": "2026-11-11T14:02:10.679Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "MF68NKR",
+      "appraisedAt": "2026-11-11T13:14:49.322Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--NIuEf7YU--/c_fill,h_300,w_300/v1794403078/Live/Appraisals/9640446/d3d7900e-73e3-4bc0-8db8-44e4108dece3.jpg"
+    },
     {
       "registration": "LM11DVU",
       "appraisedAt": "2026-11-11T11:52:04.492Z",
