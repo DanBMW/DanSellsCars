@@ -38,7 +38,7 @@ window.CONFIG_DATA = {
     // Illustrative monthly example ONLY. Not a quote, not an offer, not a
     // representative example from a lender. Set show:false to hide it.
     financeExample: {
-      show: true,
+      show: false,
       depositPct: 0.10,
       termMonths: 48,
       aprPct: 7.9,

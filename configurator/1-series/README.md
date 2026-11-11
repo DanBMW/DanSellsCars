@@ -18,4 +18,4 @@ Nothing is sent anywhere: the share link carries the build in its query string; 
 * Package contents (Technology, Technology Plus, M Sport Pro Pack M135, M Dynamic) were not itemised; lists are indicative.
 * Rules assumed: contrast roof not combinable with panoramic sunroof; Parking Assistant Professional needs a Technology pack; front sport seats standard on M Sport, M Sport Pro and M135; M Dynamic Pack fits 1085 wheels with sport tyres.
 * Combined mpg for 123 xDrive and 120 M Sport Pro not captured (shown as TBC).
-* Monthly figure is an illustrative calculation (10% deposit, 48 months, 7.9% APR, 45% final payment), not a lender quote. Set `financeExample.show` to false to hide it.
+* Monthly figure: hidden (Dan's choice, 11 Nov 2026, `financeExample.show: false`). If ever switched on it is an illustrative calculation, not a lender quote.

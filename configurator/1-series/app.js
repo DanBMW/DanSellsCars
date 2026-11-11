@@ -241,6 +241,7 @@
       <div class="mm-specs"><span><b>${v.hp} hp</b> Max. power</span><span><b>${v.accel} s</b> 0 to 62 mph</span><span><b>${v.mpg ? v.mpg + ' mpg' : 'TBC'}</b> Combined</span></div>`;
     $('#topTotal').textContent = gbp(t.otr);
     $('#barTotal').textContent = gbp(t.otr);
+    $('#barMonthly').hidden = !m;
     $('#barMonthly').innerHTML = m ? `Illustrative example ${gbp(Math.round(m.m))}/month <button type="button" class="linkish" data-go="summary">see assumptions</button>` : '';
     renderSteps();
     const sid = STEPS[S.step].id;
