@@ -83,6 +83,10 @@ const CFG = { team: { danny: { name: 'Danny', email: 'danny.willis@hedinautomoti
     check('client error: sent at once', r.mailed.indexOf('a.b@hedinautomotive.co.uk') >= 0);
     check('verified already: request cleared, nothing sent', !db.data.authHelp.verifyReq.u3 && !sent.some(m => m.to[0] === 'c.d@hedinautomotive.co.uk'));
     check('a failed link is logged with its error, never silent', r.failed.indexOf('u4') >= 0 && Object.values(db.data.authHelp.log.u4)[0].err === 'auth/internal-error');
+    const r2 = await AH.run(db, { auth, nowMs: NOW + 5 * MIN, from: 'bot@x', sendMail: async m => sent.push(m), log: () => {}, sweep: false });
+    check('a failure waits 30 minutes before the next try', r2.failed.length === 0 && Object.keys(db.data.authHelp.log.u4).length === 1, JSON.stringify(r2));
+    const r3 = await AH.run(db, { auth, nowMs: NOW + 31 * MIN, from: 'bot@x', sendMail: async m => sent.push(m), log: () => {}, sweep: false });
+    check('then it tries again', r3.failed.indexOf('u4') >= 0);
   }
   /* approval: an admin verified them in person */
   {

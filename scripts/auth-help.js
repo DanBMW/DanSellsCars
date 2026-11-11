@@ -18,7 +18,7 @@
  */
 'use strict';
 const DOMAIN = /^[a-z0-9._%+-]+@hedinautomotive\.co\.uk$/;
-const WAIT_MS = 2 * 60e3, GAP_MS = 10 * 60e3, MAX_PER_DAY = 4, SWEEP_DAYS = 14, DAY = 864e5;
+const WAIT_MS = 2 * 60e3, GAP_MS = 10 * 60e3, MAX_PER_DAY = 4, SWEEP_DAYS = 14, DAY = 864e5, FAIL_WAIT_MS = 30 * 60e3;
 const CONTINUE = 'https://dan-sells.co.uk/team.html?verified=1';
 const FROM_NAME = 'Ruxley Team';
 
@@ -79,7 +79,7 @@ async function run(db, opts) {
       page = await auth.listUsers(1000, page && page.pageToken);
       page.users.forEach(u => {
         const em = String(u.email || '').toLowerCase(), made = Date.parse(u.metadata && u.metadata.creationTime) || 0;
-        if (u.emailVerified || u.disabled || todo[u.uid] || approvals[u.uid] || sent[u.uid]) return;
+        if (u.emailVerified || u.disabled || todo[u.uid] || approvals[u.uid] || (sent[u.uid] && sent[u.uid].last)) return;
         if (!DOMAIN.test(em) || !(em in people) || nowMs - made > SWEEP_DAYS * DAY) return;
         if (!(u.providerData || []).some(p => p.providerId === 'password')) return;
         todo[u.uid] = { ts: made, why: 'sweep' };
@@ -92,6 +92,7 @@ async function run(db, opts) {
     if (nowMs - t.ts < WAIT_MS && !t.clientErr) continue; /* give Firebase's own email a moment */
     if (s.last && s.last >= t.ts) continue;                /* already answered this request */
     if (s.last && nowMs - s.last < GAP_MS) continue;
+    if (s.failAt && nowMs - s.failAt < FAIL_WAIT_MS) continue;          /* a failure waits before the next try */
     const today = s.day === new Date(nowMs).toISOString().slice(0, 10) ? (s.count || 0) : 0;
     if (today >= MAX_PER_DAY) { report.skipped.push(uid); await log(uid, 'skipped, daily limit'); continue; }
     try {
@@ -115,7 +116,9 @@ async function run(db, opts) {
       await log(uid, 'mailed', { email: em, why: t.why, clientErr: t.clientErr || null });
     } catch (e) {
       report.failed.push(uid);
-      await log(uid, 'send failed', { err: String(e && (e.code || e.message)).slice(0, 190) });
+      /* keep Firebase's own words (the raw server response) and wait FAIL_WAIT_MS before trying again */
+      await log(uid, 'send failed', { err: String(e && (e.code || e.message)).slice(0, 190), msg: String(e && e.message || '').slice(0, 400) });
+      if (!dry) await db.ref('authHelp/sent/' + uid + '/failAt').set(nowMs);
     }
   }
   return report;
