@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-10T20:02:04.824Z",
+  "captured": "2026-11-11T06:02:49.452Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -589,7 +589,7 @@
       "appraisedAt": "2026-11-03T15:32:56.549Z",
       "make": "BMW",
       "model": "X1",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Average",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--SbHp3T32--/c_fill,h_300,w_300/v1793720249/Live/Appraisals/9620469/21be8a42-5f9b-4b18-8208-c5c25801174f.jpg"
@@ -599,7 +599,7 @@
       "appraisedAt": "2026-11-03T14:40:51.370Z",
       "make": "BMW",
       "model": "1 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -609,7 +609,7 @@
       "appraisedAt": "2026-11-03T14:37:28.083Z",
       "make": "BMW",
       "model": "2 Series Active Tourer",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -619,7 +619,7 @@
       "appraisedAt": "2026-11-03T13:31:20.845Z",
       "make": "BMW",
       "model": "M4",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -5264,7 +5264,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Average",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--RqlZEJKw--/c_fill,h_300,w_300/v1786370484/Live/Appraisals/9411833/c461fa75-c4d6-4f22-ba14-50520a600c3b.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--RqlZEJKw--/c_fill,h_300,w_300/v1786370484/Live/Appraisals/9411833/c461fa75-c4d6-4f22-ba14-50520a600c3b.jpg",
+      "droppedAt": "2026-11-11T06:02:49.451Z"
     },
     {
       "registration": "YS23CZB",
@@ -5274,7 +5275,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-11T06:02:49.451Z"
     },
     {
       "registration": "C21THX",
@@ -5284,7 +5286,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-11T06:02:49.451Z"
     },
     {
       "registration": "SC69DXZ",
@@ -5294,7 +5297,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Good",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--3JSJTfKk--/c_fill,h_300,w_300/v1786358085/Live/Appraisals/9410819/9db50701-24ee-46da-a0a9-36ed5e2f07df.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--3JSJTfKk--/c_fill,h_300,w_300/v1786358085/Live/Appraisals/9410819/9db50701-24ee-46da-a0a9-36ed5e2f07df.jpg",
+      "droppedAt": "2026-11-11T06:02:49.451Z"
     },
     {
       "registration": "JA73GAR",
@@ -5304,7 +5308,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-11T06:02:49.451Z"
     },
     {
       "registration": "GF24HDN",
@@ -5314,7 +5319,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Average",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--AJb6XpoF--/c_fill,h_300,w_300/v1785586782/Live/Appraisals/9390759/e3171305-fda5-455a-ab78-a348ca5fca18.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--AJb6XpoF--/c_fill,h_300,w_300/v1785586782/Live/Appraisals/9390759/e3171305-fda5-455a-ab78-a348ca5fca18.jpg",
+      "droppedAt": "2026-11-11T06:02:49.451Z"
     },
     {
       "registration": "F17GLD",
