@@ -488,7 +488,7 @@ var STATIONS=[
   {id:4, name:'Country',      sub:'The default, Smooth Country'}
 ];
 function paintStations(){
-  var list=$('station-list'), now=sNum('station',4);   /* Country is the default (Dan, 27 Oct) */
+  var list=$('station-list'), now=sNum('station',1);   /* Kisstory R&B is the default (Dan, 11 Nov) */
   if(!list.childNodes.length){
     list.innerHTML=STATIONS.map(function(st){
       return '<button type="button" class="clipbtn" data-station="'+st.id+'">'+
