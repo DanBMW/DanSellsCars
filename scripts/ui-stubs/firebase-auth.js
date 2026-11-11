@@ -52,7 +52,7 @@ export function signInWithEmailAndPassword(auth, email, pw) {
   S().log.push(['signin-pin', e]); emit();
   return Promise.resolve({ user: userView() });
 }
-export function sendEmailVerification(user) { S().log.push(['verify-email', user && user.email]); return Promise.resolve(); }
+export function sendEmailVerification(user) { S().log.push(['verify-email', user && user.email]); if (S().failVerify) { const e = new Error('blocked'); e.code = S().failVerify; return Promise.reject(e); } return Promise.resolve(); }
 export function sendPasswordResetEmail(auth, email) { S().log.push(['reset-email', String(email).toLowerCase()]); return Promise.resolve(); }
 export function reload(user) { return Promise.resolve(); }
 export function signOut(auth) { S().user = null; S().log.push(['signout']); emit(); return Promise.resolve(); }

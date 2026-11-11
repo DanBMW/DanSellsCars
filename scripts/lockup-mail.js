@@ -61,6 +61,12 @@ async function main() {
      browser ever holds the whole list (scripts/santa-draw.js). Anything it queues goes
      out below in this same run. Never stops lockup. */
   if (!DRY) { try { await require('./santa-draw.js').run(db, { nowMs, notifyRoot: ROOT + '/notify' }); } catch (e) { console.error('santa failed', e && e.message); } }
+  /* Team login: our own backup verification email, admin approvals and the log
+     (scripts/auth-help.js). Logins are real in test mode too. Never stops lockup. */
+  try {
+    const r = await require('./auth-help.js').run(db, { auth: admin.auth(), nowMs, dry: DRY, from: process.env.GMAIL_USER, sendMail: m => transport().sendMail(m) });
+    if (r.mailed.length || r.verified.length || r.failed.length) console.log('auth-help', JSON.stringify(r));
+  } catch (e) { console.error('auth-help failed', e && e.message); }
   console.log(TEST ? 'TEST MODE: using lockupTest/, emails to ' + TEST_EXEC + ' and ' + TEST_MGR : 'Real mode');
   let cfg = (await db.ref(ROOT + '/config').get()).val();
   if (TEST && (!cfg || !cfg.seeded)) { cfg = Object.assign(R.defaults(), { seeded: Date.now() }); if (!DRY) await db.ref(ROOT + '/config').set(cfg); console.log('Seeded test config'); }

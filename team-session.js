@@ -108,6 +108,7 @@
     paths: function () { return { RL: RL, RS: RS, testMode: testMode }; },
     config: function () { return D.lcfg || {}; },
     email: function () { return user ? user.email : ''; },
+    uid: function () { return user ? user.uid : ''; },
     _settled: settled
   };
 })(this);

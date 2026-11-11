@@ -3,6 +3,40 @@
     ".read": false,
     ".write": false,
 
+    "authHelp": {
+      ".read": "auth != null && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true))",
+      "verifyReq": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && newData.exists() && auth.token.email_verified !== true && (!data.exists() || now - data.child('ts').val() > 60000)",
+          ".validate": "newData.hasChildren(['email', 'ts'])",
+          "email": {
+            ".validate": "newData.isString() && newData.val() === auth.token.email.toLowerCase() && newData.val().matches(/^[a-z0-9._%+-]+@hedinautomotive\\.co\\.uk$/)"
+          },
+          "ts": {
+            ".validate": "newData.val() === now"
+          },
+          "clientErr": {
+            ".validate": "newData.isString() && newData.val().length <= 190"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "approve": {
+        "$uid": {
+          ".write": "auth != null && (root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true)) && root.child('authHelp/verifyReq').child($uid).exists()",
+          ".validate": "!newData.exists() || (newData.hasChildren(['by', 'ts']) && newData.child('by').val() === auth.uid && newData.child('ts').val() === now)",
+          "by": {},
+          "ts": {},
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+
     "forecourt": {
       ".read": true,
       ".write": "auth != null",

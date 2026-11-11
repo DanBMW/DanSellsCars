@@ -7,7 +7,7 @@
 (function (root) {
   'use strict';
   var TI = root.TeamIdentity, TS = root.TeamSession, R = root.LockupRota;
-  var D = { managers: {}, links: {}, audit: {}, testMode: null }, subKey = '', unsub = [], started = false;
+  var D = { managers: {}, links: {}, audit: {}, testMode: null, auth: {} }, subKey = '', unsub = [], started = false;
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -33,6 +33,8 @@
     on(p.RS + '/links', function (v) { D.links = v || {}; });
     on(p.RS + '/audit', function (v) { D.audit = v || {}; });
     on('lockup/config/testMode', function (v) { D.testMode = v; });
+    /* login help (scripts/auth-help.js): admins only, the rules hide it from everyone else */
+    if (isAdmin()) on('authHelp', function (v) { D.auth = v || {}; });
   }
   function config() { return TS.config(); }
   function log(what) {
@@ -82,6 +84,15 @@
       log('Unlinked ' + who + '’s sign in, so they can link again');
       toast('Unlinked ' + who);
     });
+  }
+  /* an admin who has checked it is really them marks the work email verified;
+     the next lockup-emails run applies it (scripts/auth-help.js) */
+  function approve(uid) {
+    var r = ((D.auth || {}).verifyReq || {})[uid] || {};
+    return TS.backend().set('authHelp/approve/' + uid, { by: TS.uid(), ts: TS.backend().now ? TS.backend().now() : { '.sv': 'timestamp' } }).then(function () {
+      log(whoName() + ' verified the login for ' + (r.email || uid));
+      toast('Verified. They can sign in within about 15 minutes in working hours.');
+    }, function (e) { toast('That didn’t work (' + ((e && e.code) || e) + ')'); });
   }
   function setTestMode(on) {
     return TS.backend().set('lockup/config/testMode', on).then(function () {
@@ -144,6 +155,20 @@
     }).join('') : '';
     $('links').innerHTML = '<thead><tr><th>Person</th><th class="hide-s">Account</th><th></th></tr></thead><tbody>' + rows + '</tbody>';
   }
+  function paintVerify() {
+    var card = $('verify-card'); if (!card) return;
+    var admin = isAdmin(), A = D.auth || {}, req = A.verifyReq || {}, sent = A.sent || {}, appr = A.approve || {}, logs = A.log || {};
+    var uids = Object.keys(req).sort(function (a, b) { return (req[b].ts || 0) - (req[a].ts || 0); });
+    card.hidden = !admin;
+    if (!admin) return;
+    var rows = uids.length ? uids.map(function (u) {
+      var r = req[u], sn = sent[u], lg = Object.keys(logs[u] || {}).map(function (k) { return logs[u][k]; }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); })[0];
+      var status = (r.clientErr ? 'Firebase email failed: ' + r.clientErr + '. ' : '') + (sn ? 'Our email sent ' + fmtTs(sn.last) + '. ' : 'Our email not sent yet. ') + (lg && /failed/.test(lg.what) ? 'Last error: ' + (lg.err || lg.what) : '');
+      return '<tr><td><b>' + esc(r.email || u) + '</b><div class="muted small">Asked ' + esc(fmtTs(r.ts)) + '</div><div class="muted small">' + esc(status) + '</div></td>' +
+        '<td class="num">' + (appr[u] ? '<span class="pill g">Verifying</span>' : '<button class="ghost" type="button" data-approve="' + esc(u) + '">Verify</button>') + '</td></tr>';
+    }).join('') : '<tr><td class="muted">Nobody is waiting.</td></tr>';
+    $('verify').innerHTML = '<tbody>' + rows + '</tbody>';
+  }
   function paintTestMode() {
     var on = D.testMode !== false, admin = isAdmin();
     $('tm-text').textContent = on
@@ -176,7 +201,7 @@
     show('app');
     $('who').textContent = st.name + (st.admin ? ' (admin)' : ' (manager)');
     $('ro-note').hidden = st.admin;
-    paintPeople(); paintManagers(); paintLinks(); paintTestMode(); paintAudit();
+    paintPeople(); paintManagers(); paintLinks(); paintVerify(); paintTestMode(); paintAudit();
   }
 
   /* ---- sheets ---- */
@@ -247,6 +272,11 @@
     if ((d = t.getAttribute('data-unlink'))) {
       if (!isAdmin() || !window.confirm('Unlink this sign in? They can link again on their next sign in.')) return;
       unlink(d);
+      return;
+    }
+    if ((d = t.getAttribute('data-approve'))) {
+      if (!isAdmin() || !window.confirm('Only verify someone after checking with them in person that they made this login. Verify it now?')) return;
+      approve(d);
     }
   }
   function onChange(e) {

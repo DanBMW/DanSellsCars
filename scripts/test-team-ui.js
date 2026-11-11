@@ -163,6 +163,21 @@ async function scenarios(browser, base) {
     await p.click('#unv-resend');
     await p.waitForTimeout(200);
     check('home: send it again is logged to the mail', (await store(p)).log.some(l => l[0] === 'verify-email'));
+    {
+      const st = await store(p), req = at(st.data, 'authHelp/verifyReq/' + U.unverified.uid);
+      check('verify help: send it again also asks our own mailer for a backup email', req && req.email === U.unverified.email.toLowerCase() && typeof req.ts === 'number' && !req.clientErr, JSON.stringify(req));
+      check('verify help: the page names both senders and Junk and Quarantine', /firebaseapp\.com/.test(await txt(p, '#v-unverified')) && /Ruxley Team/.test(await txt(p, '#v-unverified')) && /Quarantine/.test(await txt(p, '#unv-msg')), await txt(p, '#unv-msg'));
+    }
+    /* Firebase refuses the send: the person is still told it is on its way (our mailer has it) and the error is kept */
+    await p.evaluate(() => { window.__STORE.failVerify = 'auth/internal-error'; });
+    await p.click('#unv-resend');
+    await p.waitForTimeout(250);
+    {
+      const st = await store(p), req = at(st.data, 'authHelp/verifyReq/' + U.unverified.uid);
+      check('verify help: a failed Firebase send is recorded, not silent', req && req.clientErr === 'auth/internal-error', JSON.stringify(req));
+      check('verify help: a failed Firebase send still says sent (backup on its way)', /Sent again/.test(await txt(p, '#unv-msg')), await txt(p, '#unv-msg'));
+    }
+    check('verify help: no page errors', p.__errors.length === 0, p.__errors.join(' | '));
     await p.close();
     await p.close();
   }
@@ -251,6 +266,26 @@ async function scenarios(browser, base) {
     check('admin: a manager cannot switch test mode', !(await visible(p, '#tm-btn')));
     check('admin: managers and access are listed', (await txt(p, '#people')).indexOf('Tomi') >= 0 && (await txt(p, '#links')).indexOf('Carl') >= 0);
     await p.close();
+  }
+  {
+    /* login help: someone waiting to verify can be verified by Dan; managers never see it */
+    const data = JSON.parse(JSON.stringify(FIX));
+    data.authHelp = { verifyReq: { newp1: { email: 'new.person@hedinautomotive.co.uk', ts: Date.now() - 600000, clientErr: 'auth/internal-error' } } };
+    const p = await open(browser, base, null, '/team-admin.html', U.dan, { data });
+    await p.waitForSelector('#v-app:not([hidden])', { timeout: 8000 });
+    await p.waitForTimeout(300);
+    check('admin: Dan sees who is waiting to verify, with the Firebase error', (await visible(p, '#verify-card')) && /new\.person/.test(await txt(p, '#verify')) && /internal-error/.test(await txt(p, '#verify')), await txt(p, '#verify'));
+    await p.locator('[data-approve="newp1"]').click();
+    await p.waitForTimeout(300);
+    const ap = at((await store(p)).data, 'authHelp/approve/newp1');
+    check('admin: Verify writes an approval signed by Dan', ap && ap.by === U.dan.uid && typeof ap.ts === 'number', JSON.stringify(ap));
+    check('admin: no page errors on the verify card', p.__errors.length === 0, p.__errors.join(' | '));
+    await p.close();
+    const q = await open(browser, base, null, '/team-admin.html', U.will, { data });
+    await q.waitForSelector('#v-app:not([hidden])', { timeout: 8000 });
+    await q.waitForTimeout(300);
+    check('admin: a manager does not see the verify card', !(await visible(q, '#verify-card')));
+    await q.close();
   }
   {
     const p = await open(browser, base, null, '/team-admin.html', U.dan);

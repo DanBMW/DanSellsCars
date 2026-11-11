@@ -58,7 +58,7 @@
         <input class="inp" id="su-pin2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" placeholder="Type the PIN again">
         <div class="row"><button class="big" id="su-go" type="submit" style="flex:1">Verify email</button></div>
       </form>
-      <p class="muted small" style="margin-top:12px">We&rsquo;ll send you an email. Wait up to 60 seconds for it to arrive, then click the link in that email to finish signing in. Check Junk if you can&rsquo;t see it.</p>
+      <p class="muted small" style="margin-top:12px">We&rsquo;ll send you an email. Click the link in that email to finish signing in. Not there in a few minutes? Check Junk and Outlook Quarantine. A copy from Ruxley Team follows within about 15 minutes in working hours.</p>
       <p class="msg" id="su-msg" style="margin-top:12px" aria-live="polite"></p>
       <p class="small" style="margin-top:14px"><a href="team.html">I already have a PIN, sign in</a></p>
     </div>
@@ -66,7 +66,12 @@
 
   <section id="v-unverified" hidden>
     <div class="card"><b>Check your work email</b>
-      <p class="muted small" style="margin:6px 0 12px">We need to know it is you. We&rsquo;ve emailed a link to <span id="unv-email"></span>. Wait up to 60 seconds for it to arrive, then click the link in that email to finish signing in. This page carries on by itself once you have.</p>
+      <p class="muted small" style="margin:6px 0 12px">We need to know it is you. We&rsquo;ve emailed a link to <span id="unv-email"></span>. Click the link in that email to finish signing in. This page carries on by itself once you have.</p>
+      <ul class="muted small" style="margin:0 0 12px;padding-left:18px">
+        <li>The first email comes from <b>noreply@forecourt-1b6bc.firebaseapp.com</b> within a minute or two.</li>
+        <li>If it doesn&rsquo;t come, a second one from <b>Ruxley Team</b> follows within about 15 minutes in working hours. Either link works.</li>
+        <li>Can&rsquo;t see either? Look in <b>Junk</b> and in Outlook <b>Quarantine</b>, or ask Dan to verify you from team admin.</li>
+      </ul>
       <div class="row"><button class="big" id="unv-continue" type="button">I&rsquo;ve verified it, continue</button><button class="ghost" id="unv-resend" type="button">Send it again</button><button class="ghost" id="unv-out" type="button">Sign out</button></div>
       <p class="msg" id="unv-msg" style="margin-top:10px" aria-live="polite"></p>
     </div>
@@ -156,13 +161,13 @@ $('pin-form').onsubmit=e=>{ e.preventDefault(); const em=emailVal(), p=$('pin-co
 $('pin-new').onclick=()=>{ const em=emailVal(), p=$('pin-code').value;
   if(!DOMAIN.test(em)) return say('signin-msg','Type your Hedin work address first.',false);
   if(!pinOk(p)) return say('signin-msg','Type the six digit PIN you want, then press Set my PIN.',false);
-  TeamSession.signUpPin(em,p).then(()=>{ $('pin-code').value=''; say('signin-msg','We\u2019ve sent a verification link to '+em+'. Open it, then come back and sign in.',true); })
+  TeamSession.signUpPin(em,p).then(()=>{ $('pin-code').value=''; say('signin-msg','We\u2019ve sent a verification link to '+em+'. Open it, then come back and sign in. Not there in a few minutes? Check Junk and Quarantine. A copy from Ruxley Team follows within about 15 minutes in working hours.',true); })
     .catch(x=>{ if(x&&x.code==='auth/email-already-in-use') say('signin-msg','You already have a PIN. Sign in with it, or use Forgot my PIN.',false); else say('signin-msg',errText(x),false); }); };
 $('pin-reset').onclick=()=>{ const em=emailVal();
   if(!DOMAIN.test(em)) return say('signin-msg','Type your Hedin work address first, then press Forgot my PIN.',false);
   TeamSession.resetPin(em).then(()=>say('signin-msg','If that work address has a PIN, a reset link is on its way.',true)).catch(x=>say('signin-msg',errText(x),false)); };
 $('unv-continue').onclick=()=>{ say('unv-msg','Checking\u2026',true); TeamSession.reloadUser().then(()=>{ const s=TeamSession.state(); if(s&&s.status==='unverified') say('unv-msg','Not verified yet. Open the link in the email, then try again.',false); }).catch(x=>say('unv-msg',errText(x),false)); };
-$('unv-resend').onclick=()=>TeamSession.resendVerification().then(()=>say('unv-msg','Sent again.',true)).catch(x=>say('unv-msg',errText(x),false));
+$('unv-resend').onclick=()=>{ say('unv-msg','Sending\u2026',true); TeamSession.resendVerification().then(()=>say('unv-msg','Sent again. Check Junk and Quarantine too. A copy from Ruxley Team follows within about 15 minutes in working hours.',true)).catch(x=>say('unv-msg',(x&&x.code==='auth/too-many-requests')?'You\u2019ve asked a few times. Wait 10 minutes, check Junk and Quarantine, or ask Dan to verify you.':errText(x)+' Ask Dan to verify you from team admin.',false)); };
 $('unv-out').onclick=()=>TeamSession.signOut();
 /* sign up mode: team.html?signup=1 (&email=), the link in the "create your login" email */
 $('su-form').onsubmit=e=>{ e.preventDefault(); const em=$('su-email').value.trim().toLowerCase(), p=$('su-pin').value;
@@ -170,7 +175,7 @@ $('su-form').onsubmit=e=>{ e.preventDefault(); const em=$('su-email').value.trim
   if(!pinOk(p)) return say('su-msg','Your PIN is six digits.',false);
   if(p!==$('su-pin2').value) return say('su-msg','The two PINs don\u2019t match.',false);
   say('su-msg','Sending your email\u2026',true);
-  TeamSession.signUpPin(em,p).then(()=>say('su-msg','Sent. Wait up to 60 seconds for the email, then click the link in it.',true))
+  TeamSession.signUpPin(em,p).then(()=>say('su-msg','Sent. Click the link in the email. Not there in a few minutes? Check Junk and Quarantine. A copy from Ruxley Team follows within about 15 minutes in working hours.',true))
     .catch(x=>{ if(x&&x.code==='auth/email-already-in-use') say('su-msg','You already have a login. Sign in with your PIN, or use Forgot my PIN.',false); else say('su-msg',errText(x),false); }); };
 { const q=new URLSearchParams(location.search), em=q.get('email'); if(em){ $('su-email').value=em; $('pin-email').value=em; } }
 TeamHome.start();
