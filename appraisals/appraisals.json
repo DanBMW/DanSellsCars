@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-11T18:02:12.145Z",
+  "captured": "2026-11-12T06:02:54.891Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -579,7 +579,7 @@
       "appraisedAt": "2026-11-04T12:09:50.780Z",
       "make": "LAND ROVER",
       "model": "Range Rover Evoque",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--KVZFR_h0--/c_fill,h_300,w_300/v1793794198/Live/Appraisals/9621945/fb3de46f-b1fd-4aa4-b825-8b5d33f9a963.jpg"
@@ -589,7 +589,7 @@
       "appraisedAt": "2026-11-04T11:19:23.969Z",
       "make": "BMW",
       "model": "3 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--Dbn8jufV--/c_fill,h_300,w_300/v1793791173/Live/Appraisals/9621760/0d5aa7e8-3682-4d02-99d5-73aef4008aac.jpg"
@@ -599,7 +599,7 @@
       "appraisedAt": "2026-11-04T09:24:13.713Z",
       "make": "BMW",
       "model": "3 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Poor",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--L39dpg_2--/c_fill,h_300,w_300/v1793784349/Live/Appraisals/9621312/044dc62c-b01d-4181-a696-0da6d37739c4.jpg"
@@ -5204,7 +5204,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Good",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "LL13XRY",
@@ -5214,7 +5215,8 @@
       "status": "Returned",
       "price": null,
       "condition": "Average",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--se23ZlGk--/c_fill,h_300,w_300/v1786453403/Live/Appraisals/9414047/3ce7b44d-c3bb-4a0d-8ddd-dcd492ec8dc1.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--se23ZlGk--/c_fill,h_300,w_300/v1786453403/Live/Appraisals/9414047/3ce7b44d-c3bb-4a0d-8ddd-dcd492ec8dc1.jpg",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "LD71TKO",
@@ -5224,7 +5226,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "LV17TKO",
@@ -5234,7 +5237,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--u8DKQkDj--/c_fill,h_300,w_300/v1786447253/Live/Appraisals/9413621/71d71846-d63e-4e42-b687-03eb6ad1d31f.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--u8DKQkDj--/c_fill,h_300,w_300/v1786447253/Live/Appraisals/9413621/71d71846-d63e-4e42-b687-03eb6ad1d31f.jpg",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "LV72DVN",
@@ -5244,7 +5248,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "LD64MHU",
@@ -5254,7 +5259,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "F1WXX",
@@ -5264,7 +5270,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--wEW_I3Io--/c_fill,h_300,w_300/v1786440474/Live/Appraisals/9413149/58b7ed5e-b3f1-414f-9dbb-b449234779c9.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--wEW_I3Io--/c_fill,h_300,w_300/v1786440474/Live/Appraisals/9413149/58b7ed5e-b3f1-414f-9dbb-b449234779c9.jpg",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "GY69VKS",
@@ -5274,7 +5281,8 @@
       "status": "SaleInProgress",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--u-aT4i8y--/c_fill,h_300,w_300/v1786435967/Live/Appraisals/9412922/59004ca3-3d83-4f09-a34d-a3c9d394fea4.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--u-aT4i8y--/c_fill,h_300,w_300/v1786435967/Live/Appraisals/9412922/59004ca3-3d83-4f09-a34d-a3c9d394fea4.jpg",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "M25JMP",
@@ -5284,7 +5292,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-12T06:02:54.890Z"
     },
     {
       "registration": "GU16EAF",
