@@ -27,8 +27,10 @@ for (const page of PAGES) {
   // ids the markup defines
   const ids = [...src.matchAll(/\bid="([^"]+)"/g)].map(m => m[1])
     .filter(id => !id.includes('{') && !id.includes("'"));   // skip templated ids
+  // ids the script gives to elements it builds itself: el.id='remOverlay'
+  const built = [...src.matchAll(/\.id\s*=\s*'([^']+)'/g)].map(m => m[1]);
   const seen = new Set(), dupes = new Set();
-  for (const id of ids) { if (seen.has(id)) dupes.add(id); seen.add(id); }
+  for (const id of ids.concat(built)) { if (seen.has(id)) dupes.add(id); seen.add(id); }
   for (const d of dupes) problem(page, 'duplicate id "' + d + '"');
 
   // ids the script reaches for
