@@ -9,7 +9,7 @@
  *   RULES=/path/to/repo/database.rules.json \
  *   npx firebase emulators:exec --only database --project demo-forecourt \
  *     "node test-firebase-rules.mjs"
- * Expect "104 passed, 0 failed" (October 2026).
+ * Expect "111 passed, 0 failed" (November 2026).
  */
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
 import { ref, get, set, push, remove } from 'firebase/database';
@@ -26,6 +26,10 @@ await env.withSecurityRulesDisabled(async (c) => {
   await set(ref(db, 'staff/staffUid'), true);
   await set(ref(db, 'disclosures/multi_1_old'), { id: 'multi_1_old', signedAt: 'x', customerName: 'Test' });
   await set(ref(db, 'rav_forms/r1'), { a: 1 });
+  await set(ref(db, 'lockup/config/managers/will'), { email: 'will.potter@hedinautomotive.co.uk', name: 'Will' });
+  await set(ref(db, 'lockup/config/team/kj'), { email: 'karis.johnson@hedinautomotive.co.uk', name: 'Karis' });
+  await set(ref(db, 'shifts/links/willUid'), 'will');
+  await set(ref(db, 'shifts/links/karisUid'), 'kj');
 });
 const anon = env.authenticatedContext('anonUid', { firebase: { sign_in_provider: 'anonymous' } }).database();
 const nobody = env.unauthenticatedContext().database();
@@ -64,6 +68,22 @@ for (const [p, v] of control) {
   await t('google non-staff write ' + p, set(ref(google, p), v), 'deny');
   await t('staff write ' + p, set(ref(staff, p), v), 'allow');
 }
+console.log('--- deals: a manager on their team login (Dan, 12 November 2026)');
+/* Will opened the board with his team PIN and every save was refused: the
+   deals rule only knew the staff list. A linked manager may now write deals,
+   and nothing else on the staff list. */
+const pin = { sign_in_provider: 'password' };
+const will = env.authenticatedContext('willUid', { email: 'will.potter@hedinautomotive.co.uk', email_verified: true, firebase: pin }).database();
+const karis = env.authenticatedContext('karisUid', { email: 'karis.johnson@hedinautomotive.co.uk', email_verified: true, firebase: pin }).database();
+const fakeWill = env.authenticatedContext('fakeWill', { email: 'will.potter@hedinautomotive.co.uk', email_verified: false, firebase: pin }).database();
+const D = 'profitchallenge/months/2026-11/deals';
+await t('manager (Will, PIN login) adds a deal', set(ref(will, D + '/w1'), { exec: 'ca', profit: 6229, reg: 'AB12CDE', ts: 1 }), 'allow');
+await t('manager edits a deal', set(ref(will, D + '/w1/profit'), 6300), 'allow');
+await t('manager deletes a deal', remove(ref(will, D + '/w1')), 'allow');
+await t('manager still bound by the deal shape', set(ref(will, D + '/w2'), { exec: 'zz', profit: 1 }), 'deny');
+await t('team member who is not a manager adds a deal', set(ref(karis, D + '/k1'), { exec: 'kj', profit: 1 }), 'deny');
+await t('unverified account with a manager email adds a deal', set(ref(fakeWill, D + '/f1'), { exec: 'ca', profit: 1 }), 'deny');
+await t('manager still cannot reload the TVs (staff only)', set(ref(will, 'boardcontrol/reload'), Date.now()), 'deny');
 console.log('--- colleague features (any sign-in, incl. anonymous)');
 const colleague = [
   ['mugshot/entries/e9', { img, ts: 1, by: 'A' }], ['mugshot/votes/e9/anonUid', 3],

@@ -20,8 +20,14 @@ PIN, token or key in it**.
      longer allow anyone to read or write `disclosures/` or `rav_forms/`.
    - **Staff writes**: board control and settings (reload, videos, play, held
      board), the banner, birthdays, the used-car manager's screenshot,
-     mug-shot blocking, event deals and profit-challenge deals need a Google
-     account listed under `/staff` in the database.
+     mug-shot blocking and event deals need a Google account listed under
+     `/staff` in the database.
+   - **Profit-challenge deals** take the staff list **or a manager's team
+     login** (12 November 2026): a verified @hedinautomotive.co.uk account
+     linked at `shifts/links/<uid>` to someone on `lockup/config/managers` or
+     `shifts/managers`, the same test the calendar uses. That is how Will
+     logs deals with his team PIN and no Google account. The link can only be
+     made by the verified owner of the email on the managers list, once.
    - **Colleague writes** (mug shot entries/votes/current, Nathan's newcar
      upload, the forecourt tools and games, the board's own stockwatch and
      screen-pairing writes) need any Firebase sign-in. The pages do a quiet

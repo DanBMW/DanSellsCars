@@ -2082,8 +2082,21 @@ said so.
   `manager` gate in `staff-gate.js`, a salted hash; change it with
   `node scripts/gate-hash.mjs manager`). Note this is a client-side gate; what
   actually protects `profitchallenge` (and every other manager action) is the
-  database rule requiring a staff Google sign-in, which `staff-auth.js` asks
-  for the first time a write is refused. The rules also validate shape — known `exec` id, numeric
+  database rule. **Deals take a manager's team login, not Google** (Dan,
+  12 November 2026): Will opened the panel with his team PIN, because
+  `managerCheck()` lets any manager in, and then every save was refused,
+  since the deals rule only knew the staff list, and the `STAFF` guard turned
+  the refusal into a "Sign in with Google" card he had no way through. The
+  deals rule now also accepts a linked manager (verified
+  @hedinautomotive.co.uk, `shifts/links/<uid>` pointing at someone on
+  `lockup/config/managers` or `shifts/managers`), the same expression the
+  calendar and Santa use, and add, edit and delete go through `MANAGER`
+  rather than `STAFF`: a refusal never asks for Google, it sends a signed out
+  person to `team.html?next=team-board.html` and tells a signed in manager the
+  rules may need publishing. Every other control in the panel (banner,
+  birthdays, screenshot, reload, sketches) is still staff only.
+  `scripts/test-firebase-rules.mjs` covers it both ways (the old rule fails
+  the three manager cases). The rules also validate shape — known `exec` id, numeric
   `profit` within ±100000, short `reg` — and are scoped so a bad write cannot
   touch any other path. Reads stay public so the wall display needs no
   sign-in; make them staff-only too if the figures ever need to be private.
