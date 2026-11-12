@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-12T06:02:54.891Z",
+  "captured": "2026-11-12T10:02:45.297Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV72GVG",
+      "appraisedAt": "2026-11-12T09:39:09.421Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--0HAIpM3n--/c_fill,h_300,w_300/v1794476393/Live/Appraisals/9641547/c1a90a44-ae2a-4653-93bc-241349ac105f.jpg"
+    },
+    {
+      "registration": "LV63VMG",
+      "appraisedAt": "2026-11-12T08:38:34.664Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Fair",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--L_HWFXIi--/c_fill,h_300,w_300/v1794472780/Live/Appraisals/9641465/61f50b8b-b7c1-484a-bd4b-01d5cbe5d878.jpg"
+    },
     {
       "registration": "GJ74VXK",
       "appraisedAt": "2026-11-11T16:46:40.851Z",
@@ -4615,16 +4635,6 @@
       "price": null,
       "condition": "Average",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s---q0FI0zo--/c_fill,h_300,w_300/v1787846131/Live/Appraisals/9451416/335cadb0-822d-4109-89aa-d267129dad0b.jpg"
-    },
-    {
-      "registration": "LV72GVG",
-      "appraisedAt": "2026-08-27T14:47:27.451Z",
-      "make": "BMW",
-      "model": "X1",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "RX24JPF",
