@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-12T16:02:11.509Z",
+  "captured": "2026-11-12T18:02:29.331Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV71MSX",
+      "appraisedAt": "2026-11-12T16:20:51.524Z",
+      "make": "BMW",
+      "model": "X3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--7oCWq8ga--/c_fill,h_300,w_300/v1794500459/Live/Appraisals/9642979/72904c56-d93e-40ed-bc52-60bef81a1cd1.jpg"
+    },
     {
       "registration": "LX73JUW",
       "appraisedAt": "2026-11-12T15:28:37.468Z",
@@ -4084,16 +4094,6 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "LV71MSX",
-      "appraisedAt": "2026-09-05T16:08:14.518Z",
-      "make": "BMW",
-      "model": "X3",
-      "status": "Expired",
-      "price": null,
-      "condition": "Good",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
