@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-12T12:02:27.935Z",
+  "captured": "2026-11-12T14:02:16.726Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV73VKO",
+      "appraisedAt": "2026-11-12T12:24:29.401Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--qlIfBiIS--/c_fill,h_300,w_300/v1794486275/Live/Appraisals/9642195/c41031e5-accd-4b9a-823e-381d2443f3d9.jpg"
+    },
+    {
+      "registration": "DS20EXF",
+      "appraisedAt": "2026-11-12T12:03:25.549Z",
+      "make": "VAUXHALL",
+      "model": "Crossland X",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "CE66FTK",
       "appraisedAt": "2026-11-12T11:57:26.204Z",
