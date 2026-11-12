@@ -3599,8 +3599,9 @@ function whosinWeek(){
     const base={date:date, dow:d, today:date===n.date};
     if(k==='closed')return Object.assign(base,{kind:'closed'});
     if(k==='bh')return Object.assign(base,{kind:'bh'});
-    const on=R.onFor(date,RO.weeks[wk],hol);
-    const lock=on.kind==='managers'?['Managers']:(on.ids||[]).map(nm);
+    /* pass the config so Saturday reads lockup/config/saturday, like the strip and the lockup page */
+    const on=R.onFor(date,RO.weeks[wk],hol,RO.cfg);
+    const lock=(on.ids&&on.ids.length)?on.ids.map(nm):(on.kind==='managers'?['Managers']:[]);
     const names=S.staffOn(ctx,date).map(nm);
     const away=S.whoIn(ctx,date,date)[0].away.map(a=>nm(a.id)+(a.kind==='holiday'?' (holiday)':' (away)'));
     return Object.assign(base,{kind:k, names:names, lock:lock, away:away});

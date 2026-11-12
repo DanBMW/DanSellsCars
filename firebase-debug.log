@@ -1,0 +1,35 @@
+[debug] [2026-11-12T08:29:28.124Z] ----------------------------------------------------------------------
+[debug] [2026-11-12T08:29:28.125Z] Command:       /usr/local/lib/nodejs/node /home/box/.local/bin/firebase database:get /lockup/config --project forecourt-1b6bc
+[debug] [2026-11-12T08:29:28.126Z] CLI Version:   15.34.2
+[debug] [2026-11-12T08:29:28.126Z] Platform:      linux
+[debug] [2026-11-12T08:29:28.126Z] Node Version:  v24.22.1
+[debug] [2026-11-12T08:29:28.126Z] Detected Agent: cursor
+[debug] [2026-11-12T08:29:28.126Z] Time:          Thu Nov 12 2026 08:29:28 GMT+0000 (Greenwich Mean Time)
+[debug] [2026-11-12T08:29:28.126Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-11-12T08:29:28.701Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-11-12T08:29:28.702Z] > authorizing via signed-in user (danielcane1992@googlemail.com)
+[debug] [2026-11-12T08:29:28.702Z] [iam] checking project forecourt-1b6bc for permissions ["firebase.projects.get","firebasedatabase.instances.get"]
+[debug] [2026-11-12T08:29:28.715Z] Checked if tokens are valid: true, expires at: 1794475747099
+[debug] [2026-11-12T08:29:28.715Z] Checked if tokens are valid: true, expires at: 1794475747099
+[debug] [2026-11-12T08:29:28.717Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/forecourt-1b6bc:testIamPermissions [none]
+[debug] [2026-11-12T08:29:28.717Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/forecourt-1b6bc:testIamPermissions  x-goog-user-project=forecourt-1b6bc
+[debug] [2026-11-12T08:29:28.717Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/forecourt-1b6bc:testIamPermissions {"permissions":["firebase.projects.get","firebasedatabase.instances.get"]}
+[debug] [2026-11-12T08:29:28.879Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/forecourt-1b6bc:testIamPermissions 200
+[debug] [2026-11-12T08:29:28.879Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/forecourt-1b6bc:testIamPermissions {"permissions":["firebase.projects.get","firebasedatabase.instances.get"]}
+[debug] [2026-11-12T08:29:28.880Z] Checked if tokens are valid: true, expires at: 1794475747099
+[debug] [2026-11-12T08:29:28.880Z] Checked if tokens are valid: true, expires at: 1794475747099
+[debug] [2026-11-12T08:29:28.880Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/forecourt-1b6bc [none]
+[debug] [2026-11-12T08:29:29.223Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/forecourt-1b6bc 200
+[debug] [2026-11-12T08:29:29.223Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/forecourt-1b6bc {"projectId":"forecourt-1b6bc","projectNumber":"1073459223252","displayName":"Forecourt","name":"projects/forecourt-1b6bc","resources":{"hostingSite":"forecourt-1b6bc","realtimeDatabaseInstance":"forecourt-1b6bc-default-rtdb"},"state":"ACTIVE","labels":{"firebase":"enabled"},"etag":"1_51bb0f18-797f-4751-9398-c682a1bf4b7f"}
+[debug] [2026-11-12T08:29:29.224Z] Checked if tokens are valid: true, expires at: 1794475747099
+[debug] [2026-11-12T08:29:29.224Z] Checked if tokens are valid: true, expires at: 1794475747099
+[debug] [2026-11-12T08:29:29.224Z] >>> [apiv2][query] GET https://firebasedatabase.googleapis.com/v1beta/projects/forecourt-1b6bc/locations/-/instances/forecourt-1b6bc-default-rtdb [none]
+[debug] [2026-11-12T08:29:29.386Z] <<< [apiv2][status] GET https://firebasedatabase.googleapis.com/v1beta/projects/forecourt-1b6bc/locations/-/instances/forecourt-1b6bc-default-rtdb 403
+[debug] [2026-11-12T08:29:29.386Z] <<< [apiv2][body] GET https://firebasedatabase.googleapis.com/v1beta/projects/forecourt-1b6bc/locations/-/instances/forecourt-1b6bc-default-rtdb "<!DOCTYPE html>\n<html lang=en>\n  <meta charset=utf-8>\n  <meta name=viewport content=\"initial-scale=1, minimum-scale=1, width=device-width\">\n  <title>Error 403 (Forbidden)!!1</title>\n  <style>\n    *{margin:0;padding:0}html,code{font:15px/22px arial,sans-serif}html{background:#fff;color:#222;padding:15px}body{margin:7% auto 0;max-width:390px;min-height:180px;padding:30px 0 15px}* > body{background:url(//www.google.com/images/errors/robot.png) 100% 5px no-repeat;padding-right:205px}p{margin:11px 0 22px;overflow:hidden}ins{color:#777;text-decoration:none}a img{border:0}@media screen and (max-width:772px){body{background:none;margin-top:0;max-width:none;padding-right:0}}#logo{background:url(//www.google.com/images/branding/googlelogo/1x/googlelogo_color_150x54dp.png) no-repeat;margin-left:-5px}@media only screen and (min-resolution:192dpi){#logo{background:url(//www.google.com/images/branding/googlelogo/2x/googlelogo_color_150x54dp.png) no-repeat 0% 0%/100% 100%;-moz-border-image:url(//www.google.com/images/branding/googlelogo/2x/googlelogo_color_150x54dp.png) 0}}@media only screen and (-webkit-min-device-pixel-ratio:2){#logo{background:url(//www.google.com/images/branding/googlelogo/2x/googlelogo_color_150x54dp.png) no-repeat;-webkit-background-size:100% 100%}}#logo{display:inline-block;height:54px;width:150px}\n  </style>\n  <a href=//www.google.com/><span id=logo aria-label=Google></span></a>\n  <p><b>403.</b> <ins>That’s an error.</ins>\n  <p>Your client does not have permission to get URL <code>/v1beta/projects/forecourt-1b6bc/locations/-/instances/forecourt-1b6bc-default-rtdb</code> from this server.  <ins>That’s all we know.</ins>\n"
+[debug] [2026-11-12T08:29:29.386Z] Unable to parse JSON: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+[debug] [2026-11-12T08:29:29.390Z] FirebaseError: Unable to parse JSON: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at RetryOperation._fn (/home/box/.local/lib/node_modules/firebase-tools/lib/apiv2.js:356:39)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[error] 
+[error] Error: Failed to get instance details for instance: forecourt-1b6bc-default-rtdb. See firebase-debug.log for more details.
