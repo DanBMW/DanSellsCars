@@ -1,9 +1,49 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-12T10:02:45.297Z",
+  "captured": "2026-11-12T12:02:27.935Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "CE66FTK",
+      "appraisedAt": "2026-11-12T11:57:26.204Z",
+      "make": "BMW",
+      "model": "X3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Fair",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--kpRRjNfn--/c_fill,h_300,w_300/v1794484685/Live/Appraisals/9642092/c010b9b7-bb59-4aaa-a4d5-3adeca6ada2d.jpg"
+    },
+    {
+      "registration": "FP62FHL",
+      "appraisedAt": "2026-11-12T11:38:04.075Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--hKdS3tm5--/c_fill,h_300,w_300/v1794483524/Live/Appraisals/9642014/202c6dbc-b969-4cc2-9efa-3890764f8805.jpg"
+    },
+    {
+      "registration": "Y99RKE",
+      "appraisedAt": "2026-11-12T11:01:18.659Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--6x_2Xu9Z--/c_fill,h_300,w_300/v1794481281/Live/Appraisals/9641856/4978b8af-9521-4c39-8f1f-47060f37df21.jpg"
+    },
+    {
+      "registration": "EX25GWP",
+      "appraisedAt": "2026-11-12T10:35:47.293Z",
+      "make": "VOLKSWAGEN",
+      "model": "Golf",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "LV72GVG",
       "appraisedAt": "2026-11-12T09:39:09.421Z",
@@ -133,16 +173,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--VnvSymDI--/c_fill,h_300,w_300/v1794306388/Live/Appraisals/9637839/4cc22814-570e-4707-8639-93d931f90b8f.jpg"
-    },
-    {
-      "registration": "Y99RKE",
-      "appraisedAt": "2026-11-09T15:48:34.024Z",
-      "make": "BMW",
-      "model": "3 Series",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "KS67HVL",
