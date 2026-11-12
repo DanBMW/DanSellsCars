@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-12T14:02:16.726Z",
+  "captured": "2026-11-12T16:02:11.509Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LX73JUW",
+      "appraisedAt": "2026-11-12T15:28:37.468Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "YH69JWX",
+      "appraisedAt": "2026-11-12T15:04:47.919Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LX11OBC",
+      "appraisedAt": "2026-11-12T14:05:05.859Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Returned",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--voUwB8vZ--/c_fill,h_300,w_300/v1794492114/Live/Appraisals/9642525/ff790a46-e6e9-43c4-b635-0ab9f1fe3e45.jpg"
+    },
     {
       "registration": "LV73VKO",
       "appraisedAt": "2026-11-12T12:24:29.401Z",
