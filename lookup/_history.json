@@ -379,6 +379,11 @@
   "last_seen": "2026-11-13",
   "removed_at": null
  },
+ "KT72ORW": {
+  "first_seen": "2026-11-13",
+  "last_seen": "2026-11-13",
+  "removed_at": null
+ },
  "LB73GZV": {
   "first_seen": "2026-11-02",
   "last_seen": "2026-11-07",
@@ -902,7 +907,7 @@
  "LV26HBH": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-13",
-  "removed_at": null
+  "removed_at": "2026-11-13"
  },
  "LV26HGE": {
   "first_seen": "2026-10-07",
