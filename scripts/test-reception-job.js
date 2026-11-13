@@ -496,5 +496,76 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.ok(heldMail.length > 0 && heldMail.every(e => typeof e.sendAfter === 'number'), 'planned cover emails are held: ' + JSON.stringify(heldMail.map(e => e.sendAfter)));
   console.log('ok: planned cover emails are held until 10 minutes before the shift');
 
+  // off on the team calendar after the day was planned: taken off a shift that has not ended,
+  // the shift refilled now, the managers told once, a shift that has ended left as it was,
+  // and a manager's own pick left alone (Dan, 13 November 2026: Danny marked away at 09:33
+  // stayed on the 09:00 shift because a fully staffed day is never re-planned)
+  {
+    const away = (pid, date) => ({ ['sh_x_' + pid]: { personId: pid, kind: 'absent', status: 'approved', from: date, to: date, note: 'Away' } });
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const d0 = db.data.lockupTest.reception[MON];
+    const amWas = d0.am.personId;
+    r = await runAt(db, MON, 9, 40, { absences: away(amWas, MON) });
+    const d1 = db.data.lockupTest.reception[MON];
+    assert.ok(d1.am.personId && d1.am.personId !== amWas, 'am refilled with someone else: ' + d1.am.personId);
+    assert.notStrictEqual(d1.am.personId, d1.mid.personId);
+    assert.notStrictEqual(d1.am.personId, d1.pm.personId);
+    assert.strictEqual(d1.am.offCalendar.personId, amWas);
+    assert.strictEqual(d1.am.declined[amWas], true);
+    const sentNow = r.added.map(id => db.data.lockupTest.notify[id]).filter(e => Array.isArray(e.to) && /Showroom cover/.test(e.subject || ''));
+    assert.ok(sentNow.length === 1 && sentNow[0].sendAfter == null, 'the refill is emailed now: ' + JSON.stringify(sentNow.map(e => e.sendAfter)));
+    assert.strictEqual(r.added.filter(id => /off/.test(id)).length, 1, 'managers told once: ' + r.added.join(','));
+    const offLog = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'absent' && e.personId === amWas);
+    assert.strictEqual(offLog.length, 1);
+    assert.strictEqual(offLog[0].reason, 'Off on the team calendar');
+    const after = d1.am.personId;
+    r = await runAt(db, MON, 9, 50, { absences: away(amWas, MON) });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, after, 'a second run changes nothing');
+    assert.strictEqual(r.added.length, 0, 'and sends nothing: ' + r.added.join(','));
+
+    // the shift has already ended: left exactly as it was
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const amPerson = db.data.lockupTest.reception[MON].am.personId;
+    r = await runAt(db, MON, 12, 30, { absences: away(amPerson, MON) });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, amPerson, 'an ended shift is history');
+    assert.ok(!r.added.some(id => /off/.test(id)));
+
+    // a later shift today, not started yet, is freed too
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const pmP = db.data.lockupTest.reception[MON].pm.personId;
+    r = await runAt(db, MON, 10, 0, { absences: away(pmP, MON) });
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].pm.personId, pmP, 'a later shift today is freed too');
+
+    // a manager chose them for the shift: their call stands
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const mid = db.data.lockupTest.reception[MON].mid;
+    const pick = mid.personId;
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, mid, { assign: { personId: pick, ts: 5, by: 'Will' }, assignHandledTs: 5 });
+    r = await runAt(db, MON, 9, 40, { absences: away(pick, MON) });
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid.personId, pick, "a manager's pick is not undone");
+
+    // only a real absence record frees anyone. A bank holiday whose rota did not load leaves
+    // the day's staff list empty; the first version of this read "not listed" as "off" and
+    // freed every shift, so one bad read would have stripped the whole day's cover.
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const before = JSON.stringify(['am', 'mid', 'pm'].map(k => db.data.lockupTest.reception[MON][k].personId));
+    r = await runAt(db, MON, 9, 40, { holidays: { [MON]: { label: 'test' } }, bh: {} });
+    assert.strictEqual(JSON.stringify(['am', 'mid', 'pm'].map(k => db.data.lockupTest.reception[MON][k].personId)), before, 'an empty staff list frees nobody');
+    assert.ok(!r.added.some(id => /off/.test(id)), 'and tells nobody');
+    // a cancelled absence, and "can't lock up but in today", leave cover alone
+    const amNow = db.data.lockupTest.reception[MON].am.personId;
+    r = await runAt(db, MON, 9, 45, { absences: {
+      c1: { personId: amNow, kind: 'absent', status: 'cancelled', from: MON, to: MON },
+      c2: { personId: amNow, kind: 'nolockup', nlType: 'in', status: 'approved', from: MON, to: MON }
+    } });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, amNow, 'cancelled or in-but-no-lockup keeps cover');
+    console.log('ok: off on the team calendar takes them off cover and refills the shift now, once');
+  }
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

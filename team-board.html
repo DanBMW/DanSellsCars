@@ -4811,6 +4811,7 @@ function radioAttach(url){
   a.setAttribute('playsinline','');
   a.setAttribute('autoplay','');
   a.src=url;
+  a._t0=Date.now();   /* when this address was asked for: see RADIO_CONNECT_MS */
   /* a live stream has no end; an error means this URL is no good, so move
      to the next candidate rather than sitting silent on a dead one */
   a.onerror=function(){ if(a===radioEl)radioNext() };
@@ -4890,12 +4891,26 @@ function radioPlay(){
   });
 }
 
-/* move to the next candidate, or give up and say so */
+/* move to the next candidate, or give up and say so.
+   The failed element is dropped FIRST (Dan, 13 November 2026: "is the jazz fm
+   stream broke on the board?"). radioPlay() resumes whatever element is
+   attached while the state reads connecting, which is right after a scene
+   and wrong here: it replayed the very address that had just failed, so the
+   board sat on it saying "connecting", silent, and never tried the next
+   address or the backup list. Reproduced in a browser by failing Jazz FM's
+   first address; the stream itself was healthy all along. Dropping also
+   stops one failure being counted twice: the error event and the refused
+   play() both call this, and once the element has gone the second one sees
+   it is stale and does nothing, where before it skipped the next address. */
 function radioNext(){
   radioIdx++;
-  if(radioIdx<RADIO_SOURCES.length){ radioPlay(); return }
-  radioIdx=0; radioDrop(); radioState='failed'; paintRadio();
+  radioDrop();
+  if(radioIdx<RADIO_SOURCES.length){ radioState='connecting'; radioPlay(); return }
+  radioIdx=0; radioState='failed'; paintRadio();
 }
+/* an address that neither plays nor errors (a television's player can sit on
+   a request like that) is given this long, then the next one is tried */
+var RADIO_CONNECT_MS = 25000;
 
 function radioStop(){
   if(!radioEl)return;
@@ -5042,7 +5057,12 @@ setInterval(function(){
     }catch(e){}
     return;
   }
-  if(radioState==='connecting')return;
+  if(radioState==='connecting'){
+    /* left alone while it is genuinely connecting, but not for ever: a hung
+       address used to leave the wall silent with nothing to move it on */
+    if(radioEl && radioEl._t0 && Date.now()-radioEl._t0 > RADIO_CONNECT_MS) radioNext();
+    return;
+  }
   if(radioState==='failed')radioIdx=0;
   radioPlay();
 },5000);

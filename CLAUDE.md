@@ -2550,6 +2550,20 @@ said so.
   counted twice, the good source underneath it was walked straight past, and
   the board sat reading "connecting" for ever while music was playing. The
   handlers compare `a===radioEl` and a stale element is discarded.
+  **`radioNext()` drops the failed element before playing the next one, and
+  that is load bearing** (13 November 2026, "is the jazz fm stream broke on
+  the board?"). `radioPlay()` resumes whatever element is attached while the
+  state reads connecting, which is right after a scene and wrong after a
+  failure: it replayed the address that had just failed, so one bad first
+  address left the wall silent on "connecting" for ever and no fallback was
+  ever tried. The Jazz FM stream was healthy throughout; it was reproduced in
+  a browser by failing Jazz FM's first address. Dropping first also stops the
+  error event and the refused `play()` counting one failure twice. A hung
+  address (no play, no error) gets `RADIO_CONNECT_MS` (25s) from the
+  keep-alive, which otherwise leaves connecting alone, before the next is
+  tried. Checked: healthy stays on the first address, a failed or hung first
+  address plays the second, both Jazz addresses down falls through to the
+  default list and keeps playing.
   **A refused `play()` is two different things.** `NotAllowedError` is the
   autoplay policy on a screen nobody has touched - the source is fine, so it
   waits for a tap and resets to the top of the list. Anything else means that
@@ -2968,3 +2982,4 @@ now** (Dan: "Host it but no index for now"): `noindex, nofollow` meta,
 from any nav or page. The monthly figure is an illustrative calculation, not
 a lender's representative example; `financeExample.show` in data.js turns it off.
 - **Team login verification backup (11 November 2026).** Firebase's own verification email (from noreply@forecourt-1b6bc.firebaseapp.com) can be quarantined by Hedin's Outlook, which left Sergio (and Danny and Molly) stuck on "Check your work email". Now `team-backend.js` also writes `authHelp/verifyReq/<uid>` (own email, server time, any Firebase error as `clientErr`) on every sign up and Send it again. `scripts/auth-help.js`, run from `lockup-mail.js` on every lockup-emails run, emails a fresh Firebase verify link (Admin SDK `generateEmailVerificationLink`) from our own mailer as "Ruxley Team" if still unverified 2 minutes later (at once if Firebase errored), at most every 10 minutes and 4 a day. It also sweeps unverified password accounts on the team or manager list made in the last 14 days, once each. Team admin has a "Waiting to verify" card (admins only): Verify writes `authHelp/approve/<uid>` and the next run sets emailVerified. Everything is logged at `authHelp/log/<uid>` and `authHelp/sent/<uid>`. Tests: `scripts/test-auth-help.js`, `scripts/test-authhelp-rules.mjs`, additions in `test-team-ui.js`. Service worker `team-v12`.
+- **Showroom cover follows the team calendar all day (13 November 2026).** `scripts/reception-mail.js` plans a day once and only re-planned when a shift was empty, so an absence recorded after the plan never reached the rota: Danny was put on the 09:00 shift at 09:28, marked away on the calendar at 09:33, and stayed on cover. Step 1c now frees, on every run, any shift that has not ended whose person has an **absence record** for the day (`LockupRota.awayOn`: a holiday or absence, not cancelled; not "can't lock up"). **Never key it off someone missing from `ShiftRota.staffOn`**: that list is also empty when a read fails or a bank holiday rota has not loaded, and the first version did exactly that, so one bad read would have stripped the whole day's cover, emailed the managers about every shift, and (since a freed person is marked declined) kept the right people off it afterwards. A failed absences read is `{}` and frees nobody. A freed shift is logged as `absent` with reason "Off on the team calendar", the person added to that shift's `declined` (so the refill counts as a reallocation and is emailed now, not held), `offCalendar: {personId, ts}` on the shift, and one note to the managers (`rc_*_off_<date>_<shift>_<person>`). A shift that has ended is history and is left alone, and so is a person a manager picked for the shift, who volunteered to take it, or who is a one-off booked in for the day. Tests: the last block of `scripts/test-reception-job.js`, which fails on the original code with the same result as the real morning, and on the first version of the fix with the empty staff list case.
