@@ -342,6 +342,40 @@ async function run(o) {
     }
     if (r.personId && r.status !== 'declined') existing[s.id] = r.personId;
   }
+
+  /* 1c. off on the team calendar: taken off the shift and the shift refilled
+     (Dan, 13 November 2026). The day is planned once and only re-planned when
+     a shift is empty, so an absence recorded after the plan never reached it:
+     Danny was put on the 09:00 shift at 09:28 and marked away on the calendar
+     at 09:33, and he stayed on cover. The calendar's own availability
+     (ShiftRota.staffOn, the same list the plan is made from) is read on every
+     run, and anyone on a shift that has not ended who is not in it any more is
+     freed. Marking them declined makes the refill a reallocation, so the new
+     person is emailed now rather than ten minutes before a shift that has
+     already started. Two choices made by a person are left alone: a manager
+     picking somebody for the shift, and somebody volunteering to take it. */
+  const inToday = new Set(SR.staffOn(ctx, date).concat((RR.ONE_OFF_IN || {})[date] || []));
+  for (const s of shifts) {
+    const r = today[s.id] || {}, pid = existing[s.id];
+    if (!pid || inToday.has(pid)) continue;
+    if (date === n.date && endMins(s) <= n.mins) continue;
+    const chosen = (r.assign && r.assign.personId === pid && r.assignHandledTs === r.assign.ts) ||
+      (r.take && r.take.personId === pid && r.takeHandledTs === r.take.ts);
+    if (chosen) continue;
+    const ts = Date.now(), who = firstName(team[pid], pid);
+    const banked = await bankHandBack(logWrite, s, r, n, date, { ts, by: 'calendar' });
+    await logWrite('absent_' + date + '_' + s.id + '_' + ts, { kind: 'absent', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts, reason: 'Off on the team calendar', by: 'calendar' });
+    const dm = Object.assign({}, r.declined || {});
+    dm[pid] = true;
+    const freed = { personId: null, status: 'open', declined: dm, offCalendar: { personId: pid, ts } };
+    today[s.id] = Object.assign({}, r, freed);
+    if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(freed);
+    delete existing[s.id];
+    const line = who + ' is off on the team calendar, so they have been taken off showroom cover ' + s.from + ' to ' + s.to +
+      (banked ? ' (they covered ' + banked.from + ' to ' + banked.to + ' first)' : '') + '. The shift goes to the next person free.';
+    qAdd(rcId('off', date, s.id, pid), { to: 'managers', subject: who + ' is off: showroom cover ' + s.from + ' to ' + s.to + ' reassigned', text: line, html: '<p>' + esc(line) + '</p>', ts: Date.now() }, dry);
+    say('Off on the calendar: ' + who + ' taken off ' + s.id);
+  }
   const declined = {};
   shifts.forEach(s => { declined[s.id] = Object.keys((today[s.id] || {}).declined || {}); });
 
