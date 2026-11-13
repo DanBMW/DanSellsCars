@@ -547,6 +547,23 @@ async function runAt(db, date, h, m, cfgExtra) {
     db.data.lockupTest.reception[MON].mid = Object.assign({}, mid, { assign: { personId: pick, ts: 5, by: 'Will' }, assignHandledTs: 5 });
     r = await runAt(db, MON, 9, 40, { absences: away(pick, MON) });
     assert.strictEqual(db.data.lockupTest.reception[MON].mid.personId, pick, "a manager's pick is not undone");
+
+    // only a real absence record frees anyone. A bank holiday whose rota did not load leaves
+    // the day's staff list empty; the first version of this read "not listed" as "off" and
+    // freed every shift, so one bad read would have stripped the whole day's cover.
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const before = JSON.stringify(['am', 'mid', 'pm'].map(k => db.data.lockupTest.reception[MON][k].personId));
+    r = await runAt(db, MON, 9, 40, { holidays: { [MON]: { label: 'test' } }, bh: {} });
+    assert.strictEqual(JSON.stringify(['am', 'mid', 'pm'].map(k => db.data.lockupTest.reception[MON][k].personId)), before, 'an empty staff list frees nobody');
+    assert.ok(!r.added.some(id => /off/.test(id)), 'and tells nobody');
+    // a cancelled absence, and "can't lock up but in today", leave cover alone
+    const amNow = db.data.lockupTest.reception[MON].am.personId;
+    r = await runAt(db, MON, 9, 45, { absences: {
+      c1: { personId: amNow, kind: 'absent', status: 'cancelled', from: MON, to: MON },
+      c2: { personId: amNow, kind: 'nolockup', nlType: 'in', status: 'approved', from: MON, to: MON }
+    } });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, amNow, 'cancelled or in-but-no-lockup keeps cover');
     console.log('ok: off on the team calendar takes them off cover and refills the shift now, once');
   }
 

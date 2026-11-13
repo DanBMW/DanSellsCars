@@ -347,17 +347,25 @@ async function run(o) {
      (Dan, 13 November 2026). The day is planned once and only re-planned when
      a shift is empty, so an absence recorded after the plan never reached it:
      Danny was put on the 09:00 shift at 09:28 and marked away on the calendar
-     at 09:33, and he stayed on cover. The calendar's own availability
-     (ShiftRota.staffOn, the same list the plan is made from) is read on every
-     run, and anyone on a shift that has not ended who is not in it any more is
-     freed. Marking them declined makes the refill a reallocation, so the new
-     person is emailed now rather than ten minutes before a shift that has
-     already started. Two choices made by a person are left alone: a manager
-     picking somebody for the shift, and somebody volunteering to take it. */
-  const inToday = new Set(SR.staffOn(ctx, date).concat((RR.ONE_OFF_IN || {})[date] || []));
+     at 09:33, and he stayed on cover. Every run now frees anyone on a shift
+     that has not ended who has an absence on the calendar for the day.
+     It acts on an absence RECORD (LockupRota.awayOn: a holiday or absence,
+     not cancelled), never on someone merely missing from the day's staff
+     list. That list is also empty when a read fails or a bank holiday rota
+     has not loaded, and treating "not listed" as "off" would strip the whole
+     day's cover on one bad read, email the managers about every shift, and,
+     because a freed person is marked declined, stop the right people being
+     put back once the read recovered. A failed absences read is just {} and
+     frees nobody.
+     Marking them declined makes the refill a reallocation, so the new person
+     is emailed now rather than ten minutes before a shift that has already
+     started. Left alone: a shift that has ended, a manager's own pick, someone
+     who volunteered to take the shift, and a one-off booked in for the day. */
+  const awayToday = LR.awayOn(absences, date);
+  const oneOff = (RR.ONE_OFF_IN || {})[date] || [];
   for (const s of shifts) {
     const r = today[s.id] || {}, pid = existing[s.id];
-    if (!pid || inToday.has(pid)) continue;
+    if (!pid || !awayToday[pid] || oneOff.indexOf(pid) >= 0) continue;
     if (date === n.date && endMins(s) <= n.mins) continue;
     const chosen = (r.assign && r.assign.personId === pid && r.assignHandledTs === r.assign.ts) ||
       (r.take && r.take.personId === pid && r.takeHandledTs === r.take.ts);
