@@ -200,18 +200,22 @@
       <!-- Shown only when Dan flags the customer has not seen the car in
            person (?seen=0). Wording taken from the ITC Compliance
            disclosure script; presented here as a written record only. -->
-      <div class="ty-itc-notice" id="seenInfo" style="display:none;">
-        <div class="ty-itc-notice-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+      <details class="ty-itc-notice ty-itc-fold" id="seenInfo" style="display:none;">
+        <summary class="ty-itc-fold-sum">
+          <span class="ty-itc-notice-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span>
+          <strong>Information for you</strong>
+        </summary>
+        <div class="ty-itc-fold-body">
+          <path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
         </div>
         <div class="ty-itc-notice-body">
           <strong>Information for you</strong>
           <p>Stephen James (Automotive) Limited t/a Hedin Automotive BMW Ruxley are an appointed representative of ITC Compliance Ltd for the sale of General Insurance and Consumer Credit, who are fully authorised by the Financial Conduct Authority. We will ask you specific questions to establish your personal circumstances and objectives as might be relevant in order to enable us to identify your requirements. Using the answers you provide, and during the course of advising you, we may make recommendations. These recommendations will be suitable for your demands and needs at the time the recommendation is made.</p>
-          <p style="margin-top:10px;">We can introduce you to a limited number of finance providers. We do not charge fees for our Consumer Credit services. We may receive a payment(s) or other benefits from finance providers should you decide to enter into an agreement with them, typically either a fixed fee or a fixed percentage of the amount you borrow. The payment we receive may vary between finance providers and product types. The payment received does not impact the finance rate offered.</p>
-          <p style="margin-top:10px;">All finance applications are subject to status, terms and conditions apply, UK residents only, 18's or over. Guarantees may be required.</p>
-          <p style="margin-top:10px;">Information passed to partners will only be used for the specified purpose. Information sent to ITC will only be used for the monitoring of compliance related to the provision of finance, and ITC will retain this data in line with its privacy policy, which can be found at <a href="https://www.itccompliance.co.uk/?page=legal#privacy" target="_blank" rel="noopener">itccompliance.co.uk</a>. For details of our full privacy policy, please visit our website or ask a member of staff.</p>
+          <p>We can introduce you to a limited number of finance providers. We do not charge fees for our Consumer Credit services. We may receive a payment(s) or other benefits from finance providers should you decide to enter into an agreement with them, typically either a fixed fee or a fixed percentage of the amount you borrow. The payment we receive may vary between finance providers and product types. The payment received does not impact the finance rate offered.</p>
+          <p>All finance applications are subject to status, terms and conditions apply, UK residents only, 18's or over. Guarantees may be required.</p>
+          <p>Information passed to partners will only be used for the specified purpose. Information sent to ITC will only be used for the monitoring of compliance related to the provision of finance, and ITC will retain this data in line with its privacy policy, which can be found at <a href="https://www.itccompliance.co.uk/?page=legal#privacy" target="_blank" rel="noopener">itccompliance.co.uk</a>. For details of our full privacy policy, please visit our website or ask a member of staff.</p>
         </div>
-      </div>
+      </details>
 
     </div>
   </div>
@@ -1255,7 +1259,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 document.addEventListener('DOMContentLoaded',function(){
   if(new URLSearchParams(window.location.search).get('seen')==='0'){
     var el=document.getElementById('seenInfo');
-    if(el)el.style.display='flex';
+    if(el)el.style.display='block';
   }
 });
 
@@ -1289,7 +1293,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!j||!j.ok)throw 0;
     window.tyLiveArrival={deposit:j.deposit,finance:j.finance,order:j.order};
     tyApplyCode((j.deposit==='yes'?'1':'0')+(j.finance==='yes'?'1':j.finance==='na'?'2':'0')+(j.order==='yes'?'1':'0'));
-    var si=document.getElementById('seenInfo'); if(si)si.style.display=j.seen==='no'?'flex':'none';
+    var si=document.getElementById('seenInfo'); if(si)si.style.display=j.seen==='no'?'block':'none';
     document.documentElement.setAttribute('data-ty-live','1');
   }).catch(function(){ tyApplyCode(code); });
 });
