@@ -203,17 +203,6 @@ a.ty-wa-btn:hover{background:#1ea355 !important;border-color:#1ea355 !important;
 .ty-check-btns .ty-check-btn.ty-check-btn-no:hover{background:#b45309 !important;color:#fff !important;}
 
 /* Purchase checklist: tracker, summary modal, sticky bar */
-.ty-tracker{background:rgba(168,133,59,.07) !important;border-color:rgba(168,133,59,.28) !important;}
-.ty-tracker.is-complete{background:rgba(22,163,74,.10) !important;border-color:rgba(22,163,74,.4) !important;}
-.ty-tracker-count{color:var(--text) !important;}
-.ty-tracker-meter{background:rgba(236,233,225,.12) !important;}
-.ty-tk{background:var(--card) !important;border-color:var(--line) !important;}
-.ty-tk-name{color:var(--text) !important;}
-.ty-tk-state{color:var(--muted) !important;}
-.ty-tk.is-yes{background:rgba(22,163,74,.12) !important;border-color:rgba(22,163,74,.42) !important;}
-.ty-tk.is-yes .ty-tk-state{color:#6ee7a0 !important;}
-.ty-tk.is-no{background:rgba(217,119,6,.14) !important;border-color:rgba(217,119,6,.45) !important;}
-.ty-tk.is-no .ty-tk-state{color:#f0b46b !important;}
 .ty-sum{background:#14181d !important;border:1px solid var(--line) !important;border-radius:0 !important;}
 .ty-sum h3{color:var(--text) !important;}
 .ty-sum-sub{color:var(--body) !important;}
