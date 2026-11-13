@@ -25,7 +25,7 @@
    "reg": "LX74HTE",
    "mileage": "19,948 miles",
    "colour": "Black",
-   "fuel": "Diesel (mild hybrid)",
+   "fuel": "Diesel",
    "fuelGroup": "Diesel",
    "body": "SUV",
    "power": "196 hp",
@@ -635,7 +635,7 @@
    "series": "X5",
    "year": "2026",
    "reg": "LV26MKM",
-   "mileage": "3,664 miles",
+   "mileage": "3,666 miles",
    "colour": "Black",
    "fuel": "Diesel (mild hybrid)",
    "fuelGroup": "Diesel",
@@ -729,7 +729,7 @@
    "gearbox": "Automatic",
    "seats": "4",
    "price": "£28,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-6013-76a4-a399-3315b99f4f75-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d381-1891-7f97-836d-f9cb0c6a4aee-preview.jpg"
   },
   "259388": {
    "id": "259388",
@@ -746,7 +746,7 @@
    "gearbox": "Automatic",
    "seats": "5",
    "price": "£42,000",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-6051-751f-98c8-fe56674624a3-preview.jpg"
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d292-99fb-7698-bddc-8931ec986d84-preview.jpg"
   },
   "259386": {
    "id": "259386",
@@ -850,23 +850,6 @@
    "price": "£18,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ce2c-2573-7c64-9175-b8bdea22d11d-preview.jpg"
   },
-  "260130": {
-   "id": "260130",
-   "model": "BMW 218i Sport Gran Coupe",
-   "series": "2 Series",
-   "year": "2022",
-   "reg": "EK72DZT",
-   "mileage": "34,380 miles",
-   "colour": "Black",
-   "fuel": "Petrol",
-   "fuelGroup": "Petrol",
-   "body": "Coupe",
-   "power": "135 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£17,500",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1b60c-819b-7f2e-84ca-d9a78e897210-preview.jpg"
-  },
   "260129": {
    "id": "260129",
    "model": "BMW iX xDrive40 M Sport Edition",
@@ -920,44 +903,6 @@
   }
  },
  "sold": {
-  "241291": {
-   "id": "241291",
-   "model": "BMW X5 xDrive50e M Sport",
-   "series": "X5",
-   "year": "2026",
-   "reg": "LX26FWP",
-   "mileage": "5,561 miles",
-   "colour": "Black",
-   "fuel": "Plug-in hybrid",
-   "fuelGroup": "Plug-in hybrid",
-   "body": "SUV",
-   "power": "488 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£65,750",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019f2849-6e65-71e2-893b-6e72c6af04c2-preview.jpg",
-   "first_missing": "2026-11-05",
-   "runs_missing": 62
-  },
-  "250259": {
-   "id": "250259",
-   "model": "BMW XM 50e",
-   "series": "XM",
-   "year": "2024",
-   "reg": "MC24VMY",
-   "mileage": "18,460 miles",
-   "colour": "Black",
-   "fuel": "Plug-in hybrid",
-   "fuelGroup": "Plug-in hybrid",
-   "body": "SUV",
-   "power": "475 hp",
-   "gearbox": "Automatic",
-   "seats": "5",
-   "price": "£63,850",
-   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18154-59ee-7a4a-a1e8-0dc79e11a6eb-preview.jpg",
-   "first_missing": "2026-11-05",
-   "runs_missing": 59
-  },
   "244227": {
    "id": "244227",
    "model": "BMW 220i M Sport Coupe",
@@ -975,7 +920,7 @@
    "price": "£27,450",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a0039b-16b9-731d-a203-d915a20d12a7-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 40
+   "runs_missing": 41
   },
   "259393": {
    "id": "259393",
@@ -994,7 +939,7 @@
    "price": "£18,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ac8b-c61c-78e8-8bc5-82cdbd35b356-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 40
+   "runs_missing": 41
   },
   "257458": {
    "id": "257458",
@@ -1013,7 +958,7 @@
    "price": "£30,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a18122-fd84-7aa3-9209-609b77b2f6e6-preview.jpg",
    "first_missing": "2026-11-07",
-   "runs_missing": 40
+   "runs_missing": 41
   },
   "259387": {
    "id": "259387",
@@ -1032,7 +977,7 @@
    "price": "£23,500",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1a234-472d-76e4-9d6e-609f5e500ebb-preview.jpg",
    "first_missing": "2026-11-08",
-   "runs_missing": 30
+   "runs_missing": 31
   },
   "238261": {
    "id": "238261",
@@ -1051,7 +996,7 @@
    "price": "£33,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019eca4d-864a-7893-acd8-2b272226cbd9-preview.jpg",
    "first_missing": "2026-11-11",
-   "runs_missing": 5
+   "runs_missing": 6
   },
   "238266": {
    "id": "238266",
@@ -1070,7 +1015,7 @@
    "price": "£26,450",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/019ebc24-5e27-7650-9ad0-478a09ff0901-preview.jpg",
    "first_missing": "2026-11-11",
-   "runs_missing": 5
+   "runs_missing": 6
   },
   "258088": {
    "id": "258088",
@@ -1089,10 +1034,29 @@
    "price": "£26,000",
    "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1b47a-ce6a-7e0d-8eeb-0e6c5a7129ec-preview.jpg",
    "first_missing": "2026-11-12",
-   "runs_missing": 2
+   "runs_missing": 3
+  },
+  "260130": {
+   "id": "260130",
+   "model": "BMW 218i Sport Gran Coupe",
+   "series": "2 Series",
+   "year": "2022",
+   "reg": "EK72DZT",
+   "mileage": "34,380 miles",
+   "colour": "Black",
+   "fuel": "Petrol",
+   "fuelGroup": "Petrol",
+   "body": "Coupe",
+   "power": "135 hp",
+   "gearbox": "Automatic",
+   "seats": "5",
+   "price": "£17,500",
+   "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1b60c-819b-7f2e-84ca-d9a78e897210-preview.jpg",
+   "first_missing": "2026-11-13",
+   "runs_missing": 1
   }
  },
- "updated": "2026-11-12",
+ "updated": "2026-11-13",
  "confirm_runs": 1,
  "keep_days": 7
 }
