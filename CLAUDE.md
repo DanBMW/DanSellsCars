@@ -2550,6 +2550,20 @@ said so.
   counted twice, the good source underneath it was walked straight past, and
   the board sat reading "connecting" for ever while music was playing. The
   handlers compare `a===radioEl` and a stale element is discarded.
+  **`radioNext()` drops the failed element before playing the next one, and
+  that is load bearing** (13 November 2026, "is the jazz fm stream broke on
+  the board?"). `radioPlay()` resumes whatever element is attached while the
+  state reads connecting, which is right after a scene and wrong after a
+  failure: it replayed the address that had just failed, so one bad first
+  address left the wall silent on "connecting" for ever and no fallback was
+  ever tried. The Jazz FM stream was healthy throughout; it was reproduced in
+  a browser by failing Jazz FM's first address. Dropping first also stops the
+  error event and the refused `play()` counting one failure twice. A hung
+  address (no play, no error) gets `RADIO_CONNECT_MS` (25s) from the
+  keep-alive, which otherwise leaves connecting alone, before the next is
+  tried. Checked: healthy stays on the first address, a failed or hung first
+  address plays the second, both Jazz addresses down falls through to the
+  default list and keeps playing.
   **A refused `play()` is two different things.** `NotAllowedError` is the
   autoplay policy on a screen nobody has touched - the source is fine, so it
   waits for a tap and resets to the top of the list. Anything else means that
