@@ -36,8 +36,6 @@
   .ty-welcome-frame video{display:block;width:100%;height:auto;aspect-ratio:768/432}
   .ty-welcome-note{font-size:.85rem;color:rgba(255,255,255,.6);line-height:1.6;margin:14px auto 0;max-width:768px}
   @media(max-width:700px){.ty-welcome{padding:92px 0 40px}}
-  /* Finance proposal already done: the finance prompts are not needed */
-  .ty-finance-done .ty-finance-band,.ty-finance-done .ty-finance-cta{display:none!important}
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
   <script>
@@ -232,17 +230,6 @@
         </div>
       </div>
 
-      <div class="ty-finance-cta">
-        <span class="ty-finance-cta-icon">📄</span>
-        <div class="ty-finance-cta-body">
-          <p>Using <strong>BMW finance</strong>? Complete the form that fits you and email it back to Dan.</p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <a class="btn" href="finance-proposal.html" rel="noopener">Personal proposal form &rarr;</a>
-            <a class="btn" href="business-proposal.html" rel="noopener" style="background:var(--blue-deep);">Business / company form &rarr;</a>
-            <span class="ty-finance-cta-email">Then email to: <strong>daniel.cane@hedinautomotive.co.uk</strong></span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -630,25 +617,6 @@
       <div class="page">
         <p class="cine-kicker">Hedin Ruxley &middot; South East</p>
         <h2 class="cine-headline">Your BMW.<br>In good hands.</h2>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ── FINANCE BAND ── -->
-  <section class="ty-finance-band">
-    <div class="page">
-      <div class="section-kicker">Finance</div>
-      <h2>Your finance proposal form</h2>
-      <p>Your proposal gives Dan what he needs to get a formal application moving. It takes around five minutes, and nothing is formally arranged until it is back with him.</p>
-      <button class="ty-email-block" onclick="copyEmail()" title="Click to copy email address">
-        daniel.cane@hedinautomotive.co.uk
-        <span class="ty-email-block-copy" id="emailCopyLabel">click to copy</span>
-      </button>
-      <div class="ty-finance-actions">
-        <a class="btn" href="finance-proposal.html" rel="noopener">Personal proposal form &rarr;</a>
-        <a class="btn" href="business-proposal.html" rel="noopener" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);">Business / company form &rarr;</a>
-        <a class="btn-ghost ty-ghost-white" href="mailto:daniel.cane@hedinautomotive.co.uk?subject=Finance%20proposal%20%5BYour%20name%5D&body=Hi%20Dan%2C%0A%0APlease%20find%20my%20completed%20finance%20proposal%20form%20attached.%0A%0AThanks">Email Dan directly</a>
       </div>
     </div>
   </section>
@@ -1152,7 +1120,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     // Render the help for this question directly beneath it
     var SLOTS={
       deposit:'<div class="ty-action-prompt-block"><div class="ty-order-wa-inner"><p>No problem. Let Dan know you\'re ready and he\'ll take it from there.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%2C%20I\'m%20available%20now%20to%20place%20my%20deposit" target="_blank" rel="noopener">'+WA_ICON+' Message Dan to place your deposit</a></div></div>',
-      finance:'<div class="ty-action-prompt-block"><div class="ty-finance-prompt-inner"><p>Complete the relevant form below, fill it in, and email it back to Dan. It takes around five minutes.</p><a class="ty-fp-link" href="finance-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Personal proposal form</a><a class="ty-fp-link" href="business-proposal.html" rel="noopener"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Business / company form</a></div></div>',
+      finance:'<div class="ty-action-prompt-block"><div class="ty-finance-prompt-inner"><p>Dan will send your finance proposal form. Complete it and email it back to him.</p></div></div>',
       order:'<div class="ty-action-prompt-block"><div class="ty-order-wa-inner"><p>No problem. Message Dan now and he\'ll send it straight over.</p><a class="ty-wa-btn" href="https://wa.me/447827138197?text=Hey%20Dan%20could%20you%20send%20me%20the%20order%20form%20across%20for%20signing%20please" target="_blank" rel="noopener">'+WA_ICON+' Message Dan for your order form</a></div></div>'
     };
     ['deposit','finance','order'].forEach(function(k){
