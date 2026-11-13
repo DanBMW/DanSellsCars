@@ -618,6 +618,10 @@ input[type="range"]{width:100%;accent-color:var(--blue);height:5px;cursor:pointe
 .ty-more[open]>summary::after{content:'\2212';}
 .ty-more-n{font-family:var(--font);font-size:.8rem;font-weight:600;color:var(--muted);margin-left:auto;margin-right:12px;}
 .ty-more>section{padding:0 20px 20px !important;}
+#faqSection{scroll-margin-top:90px;}
+.ty-jump{display:inline-flex;align-items:center;gap:6px;margin-top:18px;padding:11px 18px;border-radius:10px;border:1.5px solid var(--blue);color:var(--blue);font-weight:700;font-size:.9rem;text-decoration:none;}
+.ty-jump:hover{background:var(--blue-tint);}
+.ty-jump-inline{margin:18px 0 0;}
 .ty-next{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;background:#fff7ed;border:1px solid rgba(217,119,6,.3);border-radius:12px;padding:14px 16px;}
 .ty-next p{margin:0;flex:1 1 220px;font-size:.93rem;color:var(--text);line-height:1.5;}
 .ty-next strong{color:#b45309;}
