@@ -7,17 +7,18 @@ const assert = require('assert');
 const R = require('../lockup-rota.js'), S = require('../shifts-rota.js');
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; }, eq = (a, b, m) => { assert.deepStrictEqual(a, b, m); n++; };
 
-/* the picture, transcribed: I = in, O = off */
+/* the picture, transcribed: I = in, O = off. Dan and Tomi then swapped Christmas Eve
+   and New Year's Eve (Dan, 14 November): Dan in on the 24th, Tomi in on the 31st. */
 const DATES = ['2026-12-21', '2026-12-22', '2026-12-23', '2026-12-24', '2026-12-25', '2026-12-26', '2026-12-27', '2026-12-28', '2026-12-29', '2026-12-30', '2026-12-31', '2027-01-01'];
 const PIC = {
-  dan:    'O I I O O O O O I I I O',
+  dan:    'O I I I O O O O I I O O',
   carl:   'O O I I O O O I O I I O',
   clive:  'I O I I O O O I I O O O',
   danny:  'I I O O O O O I I O I O',
   karis:  'I I O I O O O I O I O O',
   mon:    'I I O O O O O I I I I O',
   patryk: 'I I I O O O O O I I I O',
-  tomi:   'I I I I O O O O I I O O',
+  tomi:   'I I I O O O O O I I I O',
   molly:  'I I I O O O O O O I O O',
   chloe:  'O O O I O O O I I I I O'
 };
@@ -65,7 +66,8 @@ DATES.forEach((d, i) => {
 });
 eq(S.personDay(c, 'chloe', '2026-12-29'), { on: true, why: 'rota-in' }, 'Chloe in on a weekday she normally never works');
 eq(S.personDay(c, 'clive', '2026-12-29').on, true, 'Clive in on his usual day off');
-eq(S.personDay(c, 'dan', '2026-12-24'), { on: false, why: 'rota' });
+eq(S.personDay(c, 'dan', '2026-12-24'), { on: true, why: 'rota-in' }); eq(S.personDay(c, 'tomi', '2026-12-24'), { on: false, why: 'rota' });
+eq(S.personDay(c, 'dan', '2026-12-31'), { on: false, why: 'rota' }); eq(S.personDay(c, 'tomi', '2026-12-31').on, true, 'Tomi in on New Year\u2019s Eve');
 eq(S.countDay(c, '2026-12-24').min, 4, 'Christmas Eve minimum is the rota itself');
 eq(S.countDay(c, '2026-12-28').count, 5, 'the 28th: Carl, Clive, Danny, Karis and Mon');
 eq(S.countDay(c, '2026-12-17').min, 5, 'an ordinary weekday keeps its minimum');
@@ -75,7 +77,7 @@ eq(S.bhDates(c, '2026-12-01', '2027-01-31'), [], 'no bank holiday left asking fo
 const hol = { h1: { personId: 'carl', from: '2026-12-24', to: '2026-12-24', kind: 'holiday', status: 'approved' } };
 eq(S.personDay(ctx(hol), 'carl', '2026-12-24'), { on: false, why: 'holiday' });
 ok(!S.countDay(ctx(hol), '2026-12-24').ok, 'Carl booking Christmas Eve off leaves it short');
-ok(!S.impact(ctx(), [{ personId: 'tomi', from: '2026-12-24', to: '2026-12-24', kind: 'holiday' }]).ok, 'a new request on a rota day needs a manager');
+ok(!S.impact(ctx(), [{ personId: 'dan', from: '2026-12-24', to: '2026-12-24', kind: 'holiday' }]).ok, 'a new request on a rota day needs a manager');
 
 /* 4. Patryk is away everywhere before 30 November, then normal */
 eq(S.personDay(c, 'patryk', '2026-11-27'), { on: false, why: 'notstarted' });
@@ -94,7 +96,7 @@ R.applyAbsences(weeks, team, {}, today, {});
 ['2026-12-25', '2026-12-26', '2027-01-01'].forEach(d => eq(R.onFor(d, null, holidays, {}, {}).kind, 'closed', 'lockup closed ' + d));
 
 /* 6. showroom cover draws from the calendar */
-eq(S.staffOn(c, '2026-12-24'), ['tomi', 'carl', 'karis', 'clive', 'chloe'], 'cover pool on Christmas Eve');
+eq(S.staffOn(c, '2026-12-24'), ['carl', 'karis', 'dan', 'clive', 'chloe'], 'cover pool on Christmas Eve');
 
 /* 7. the Monday email: the week ahead, nobody listed as away for a rota day off */
 const RM = require('./lockup-rota-mail.js');
