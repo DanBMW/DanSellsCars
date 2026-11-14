@@ -93,7 +93,7 @@ function whenLondon(ms) {
 function daysTo(date, today) { return Math.round((Date.parse(date + 'T12:00:00Z') - Date.parse(today + 'T12:00:00Z')) / 864e5); }
 const SIGNIN = 'Sign in with your work email and PIN, the same as the Team app. First time? Type your work email, pick a six digit PIN, press Set my PIN and click the link in the email we send.';
 function page(title, paras, button, foot, href) {
-  const p = paras.map(x => '<p style="margin:0 0 14px;line-height:1.55;font-size:16px">' + x + '</p>').join('');
+  const p = paras.filter(Boolean).map(x => '<p style="margin:0 0 14px;line-height:1.55;font-size:16px">' + x + '</p>').join('');
   return '<div style="background:#3a0610;padding:22px 10px;font-family:-apple-system,Segoe UI,Arial,sans-serif">' +
     '<div style="max-width:520px;margin:auto;background:#fff8ec;border-radius:18px;overflow:hidden;border:3px solid #f0ba6c">' +
     '<div style="background:#c8102e;background:linear-gradient(135deg,#d42a3a,#8e1020);color:#fff;text-align:center;padding:22px 16px 18px">' +
@@ -106,19 +106,26 @@ function page(title, paras, button, foot, href) {
 }
 /* kind: launch | announce | weekly | eve. m: member {name}. s: settings. today: London date */
 /* link: the person's own opt in link (no sign in), only ever queued on the private queue */
-function makeMail(kind, m, s, today, nowMs, link) {
+/* gift: {name, wish} of who they are buying for, only ever with a private link */
+function makeMail(kind, m, s, today, nowMs, link, gift) {
   const first = String(m.name || '').split(' ')[0] || 'there';
   const budget = s.budget != null ? '\u00a3' + s.budget : null;
   const ex = s.exchange ? longDate(s.exchange) : null;
   const dx = s.exchange ? daysTo(s.exchange, today) : null;
   const namesOut = s.live === true;
   let subject, title, paras, text, button;
+  const gName = gift && gift.name ? String(gift.name).split(' ')[0] : '';
+  const gLine = gName ? '&#127873; You\u2019re Secret Santa for <b style="font-size:22px;color:#c8102e">' + esc(gift.name) + '</b>' : '';
+  const gWish = gName ? (gift.wish ? esc(gName) + '\u2019s wishlist so far: <i>' + esc(String(gift.wish).slice(0, 300)) + '</i>' : esc(gName) + ' hasn\u2019t written a wishlist yet. Tap below to check back for it.') : '';
   const line = { budget: budget ? 'Spend up to ' + budget + '.' : '', ex: ex ? 'Presents are exchanged at the team meal on ' + ex + '. If you\'re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.' : '' };
   if (kind === 'launch') {
     subject = '\uD83C\uDF85 Secret Santa is live! Tap to see who you\u2019ve got';
     title = 'Secret Santa is live!';
-    paras = ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn. <b>Tap the button below to unwrap who you\u2019ve got</b> &#128513;', 'Nobody else can see it, not even Dan, so keep it to yourself!', 'Then write your wishlist so your own Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)];
-    button = 'Unwrap my present';
+    paras = gName
+      ? ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn &#128513;', gLine, gWish, 'Nobody else can see this, so keep it to yourself!', 'Then write your own wishlist so your Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)]
+      : ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn. <b>Tap the button below to unwrap who you\u2019ve got</b> &#128513;', 'Nobody else can see it, not even Dan, so keep it to yourself!', 'Then write your wishlist so your own Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)];
+    if (gName) subject = '\uD83C\uDF85 Secret Santa is live! Here\u2019s who you\u2019ve got';
+    button = gName ? 'See ' + gName + '\u2019s wishlist and write mine' : 'Unwrap my present';
   } else if (kind === 'announce') {
     subject = '\uD83C\uDF81 The Secret Santa names are out! Tap to see who you\u2019ve got';
     title = 'The names are out!';
@@ -129,13 +136,13 @@ function makeMail(kind, m, s, today, nowMs, link) {
     title = dx != null ? dx + ' day' + (dx === 1 ? '' : 's') + ' to go' : 'Secret Santa';
     paras = ['Hi ' + esc(first) + ',', 'Your weekly Secret Santa nudge from the elves. ' + esc(line.ex) + ' ' + esc(line.budget),
       '&#128220; <b>Is your wishlist up to date?</b> Your Santa reads it, so a few hints go a long way.',
-      namesOut ? '&#127873; <b>Had a look at your giftee\u2019s wishlist?</b> They may have added to it.' : 'The elves will email you when the names are revealed.'];
+      namesOut ? (gName ? '&#127873; <b>Had a look at ' + esc(gName) + '\u2019s wishlist?</b> They may have added to it.' : '&#127873; <b>Had a look at your giftee\u2019s wishlist?</b> They may have added to it.') : 'The elves will email you when the names are revealed.'];
     button = 'Open Secret Santa';
   } else if (kind === 'eve') {
     const when = dx === 1 ? 'tomorrow' : 'on ' + ex;
     subject = '\uD83C\uDF81 Secret Santa is ' + when + '! Have you got your present?';
     title = dx === 1 ? 'It\u2019s tomorrow!' : 'Nearly time!';
-    paras = ['Hi ' + esc(first) + ',', 'The Secret Santa exchange is <b>' + esc(when) + '</b>. ' + esc(line.budget), 'Wrapped and ready? If you need a last minute idea, your giftee\u2019s wishlist is on your Secret Santa page.'];
+    paras = ['Hi ' + esc(first) + ',', 'The Secret Santa exchange is <b>' + esc(when) + '</b>. ' + esc(line.budget), 'Wrapped and ready? If you need a last minute idea, ' + (gName ? esc(gName) + '\u2019s' : 'your giftee\u2019s') + ' wishlist is on your Secret Santa page.'];
     button = 'Open Secret Santa';
   } else throw new Error('unknown mail ' + kind);
   const href = link || APP;
@@ -179,6 +186,8 @@ async function queue(db, R, kind, notifyRoot, s, today, nowMs, log) {
      (lockup is world readable), so those go on lockupPrivate/notify, which only the
      Action reads, and only for the real list. */
   const tokens = {};
+  const assign = practice ? {} : ((await val(db, R + '/assign')) || {});
+  const wishes = practice ? {} : ((await val(db, R + '/wish')) || {});
   if (!practice) {
     const optins = (await val(db, R + '/optins')) || {};
     Object.keys(optins).forEach(t => {
@@ -194,7 +203,10 @@ async function queue(db, R, kind, notifyRoot, s, today, nowMs, log) {
     const ref = db.ref(notifyRoot + '/' + id), pref = db.ref(PRIVATE + '/' + id);
     if ((await ref.get()).val() || (await pref.get()).val()) continue;
     const tok = tokens[k] && notifyRoot === 'lockup/notify' ? tokens[k].t : null;
-    const mail = makeMail(kind, m, s, today, nowMs, tok ? OPTIN + '?t=' + encodeURIComponent(tok) : null);
+    /* the giftee goes in only on the private queue, and only once the names are out */
+    const a = tok && s.live === true && assign[k] && assign[k].to ? assign[k] : null;
+    const gift = a ? { name: (members[a.to] && members[a.to].name) || a.name, wish: wishes[a.to] && wishes[a.to].text } : null;
+    const mail = makeMail(kind, m, s, today, nowMs, tok ? OPTIN + '?t=' + encodeURIComponent(tok) : null, gift);
     if (practice) mail.subject = '[PRACTICE] ' + mail.subject;
     await (tok ? pref : ref).set(Object.assign({ to: [String(m.email).toLowerCase()] }, mail));
     n++;

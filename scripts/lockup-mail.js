@@ -44,6 +44,23 @@ function rcBccFor(id, nowMs) {
   return [RC_BCC_ADDR];
 }
 
+/* Secret Santa emails carry a personal link (and, at launch, a giftee). Once one
+   has gone out, nothing of it is kept but the marker that stops a resend: the
+   lockup tree is world readable, and the opt in emails of 10 November sat there
+   whole with every link in them. The first run after this scrubs those too. */
+const SANTA = /^santa/;
+async function scrubSanta(db, queue, paths, root, dry, log) {
+  let n = 0;
+  for (const id of Object.keys(queue)) {
+    const q = queue[id];
+    if (!SANTA.test(id) || !q || !q.sent || (q.html == null && q.text == null)) continue;
+    if (!dry) await db.ref(paths[id] || root + '/notify/' + id).update({ html: null, text: null, scrubbed: Date.now() });
+    n++;
+  }
+  if (n) log((dry ? '[dry] ' : '') + 'Scrubbed ' + n + ' sent Secret Santa email' + (n === 1 ? '' : 's'));
+  return n;
+}
+
 async function main() {
   const admin = require('firebase-admin');
   admin.initializeApp({
@@ -189,6 +206,11 @@ async function main() {
     const priv = (await db.ref('lockupPrivate/notify').get()).val() || {};
     Object.keys(priv).forEach(id => { queue[id] = priv[id]; paths[id] = 'lockupPrivate/notify/' + id; });
   }
+  /* Secret Santa emails carry a personal link (and, at launch, a giftee). Once one
+     has gone out, nothing of it is kept but the marker that stops a resend: the
+     lockup tree is world readable, and the opt in emails of 10 November sat there
+     whole with every link in them. This also scrubs those on the first run. */
+  await scrubSanta(db, queue, paths, ROOT, DRY, console.log);
   for (const id of Object.keys(queue).sort((a, b) => (queue[a].ts || 0) - (queue[b].ts || 0))) {
     const q = queue[id];
     if (!q || q.sent) continue;
@@ -206,7 +228,10 @@ async function main() {
       const lines = Array.isArray(q.lines) ? q.lines : Object.values(q.lines || {});
       await send(transport(), to, q.subject, 'Hi all,', lines.slice(0, 1), lines.slice(1), 'See the rota');
     }
-    if (!DRY) await db.ref((paths[id] || ROOT + '/notify/' + id) + '/sent').set(Date.now());
+    if (!DRY) {
+      if (SANTA.test(id)) await db.ref(paths[id] || ROOT + '/notify/' + id).update({ sent: Date.now(), html: null, text: null });
+      else await db.ref((paths[id] || ROOT + '/notify/' + id) + '/sent').set(Date.now());
+    }
   }
 
   /* Lockup completed: one email to the managers for each signed record, with
@@ -397,4 +422,4 @@ function done(admin) { return admin.app().delete(); }
 
 /* Forecourt 08:30 reminder rides on the same workflow run (scripts/forecourt-mail.js). */
 if (require.main === module) main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });
-module.exports = { completedMail, rcBccFor, RC_BCC_UNTIL, RC_BCC_ADDR };
+module.exports = { completedMail, rcBccFor, RC_BCC_UNTIL, RC_BCC_ADDR, scrubSanta };

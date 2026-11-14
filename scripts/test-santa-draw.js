@@ -136,7 +136,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     ok(R.settings.live === true && R.launched && R.draw && bijection(Object.keys(R.members), R.sealed.pairs), 'launch draws the names and goes live');
     eq(ids(db, /^santa_launch_/).length, 7, 'one launch email each');
     const launchMail = notify(db)['santa_launch_' + S.mailId(K('holly.berry@example.com'))];
-    ok(/Tap to see who you/.test(launchMail.subject), 'launch subject says open the app: ' + launchMail.subject);
+    ok(/Secret Santa is live/.test(launchMail.subject), 'launch subject: ' + launchMail.subject);
     ok(/team meal/.test(launchMail.text), 'launch email mentions the team meal');
     eq(launchMail.to, ['holly.berry@example.com']); eq(launchMail.fromName, 'Hedin Used Cars');
     /* repeat runs, a second press of Launch, a late run: nothing sent twice */
@@ -182,10 +182,14 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     const before = Object.keys(notify(db)).length;
     for (const t of ['2026-12-18T10:00:00Z', '2026-12-21T10:00:00Z', '2026-12-28T10:00:00Z']) await runAt(db, t);
     eq(Object.keys(notify(db)).length, before, 'no emails on or after the exchange day');
-    /* no email names a giftee or says who has who */
+    /* an email names its own reader's giftee and nobody else's; the public queue names nobody */
     const names = Object.values(R.members).map(m => m.name);
-    Object.keys(notify(db)).forEach(id => { const q = notify(db)[id]; const mine = R.members[Object.keys(R.members).find(k => q.to[0] === R.members[k].email)].name;
-      names.filter(n => n !== mine).forEach(n => ok(!(q.subject + q.text + q.html).includes(n), 'email ' + id + ' does not mention ' + n)); });
+    const pubQ = db.data.lockup && db.data.lockup.notify || {};
+    Object.keys(notify(db)).forEach(id => { const q = notify(db)[id]; const mk = Object.keys(R.members).find(k => q.to[0] === R.members[k].email); const mine = R.members[mk].name;
+      const theirs = pubQ[id] ? null : R.members[R.assign[mk].to].name;
+      names.filter(n => n !== mine && n !== theirs).forEach(n => ok(!(q.subject + q.text + q.html).includes(n), 'email ' + id + ' does not mention ' + n));
+      if (/^santa_launch_/.test(id)) ok(!pubQ[id] && (q.html + q.text).includes(theirs), 'the launch email names their own giftee'); });
+    ok(!Object.keys(pubQ).some(i => /^santa_/.test(i)), 'nothing of the real Santa on the public queue');
     Object.values(notify(db)).forEach(q => ok(!/[\u2013\u2014]| - /.test(q.subject + q.text), 'no dashes: ' + q.subject));
   }
   /* c. launch with reminders off: one email, says open the app; no weekly or eve */
@@ -195,7 +199,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     const drawId = db.data.santa.draw.id;
     db.data.santa.launchRequest = { byName: 'Dan' }; await runAt(db, '2026-11-09T10:15:00Z');
     eq(db.data.santa.launched.drawId, drawId, 'launch keeps an existing draw');
-    eq(ids(db, /^santa_launch_/).length, 3); ok(/Tap to see who you/.test(notify(db)[ids(db, /^santa_launch_/)[0]].subject), 'launch says open the app');
+    eq(ids(db, /^santa_launch_/).length, 3); ok(/Secret Santa is live/.test(notify(db)[ids(db, /^santa_launch_/)[0]].subject), 'launch subject');
     for (const t of ['2026-11-16T10:00:00Z', '2026-11-23T10:00:00Z', '2026-12-19T10:00:00Z']) await runAt(db, t);
     eq(ids(db, /^santa_(announce|weekly|eve)_/).length, 0, 'reminders off: no weekly or eve; no announce email either');
   }
@@ -360,7 +364,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     ok(!/Tok[A-Za-z]+[0-9]{2}/.test(JSON.stringify(db.data.lockup)), 'no token anywhere on the public lockup tree');
     Object.values(priv).forEach(m => ok(/no sign in needed/.test(m.text) && !/PIN/.test(m.text), 'no email asks anybody to sign in'));
     Object.values(priv).forEach(m => ok(!/\byoure\b|&#\d+;/.test(m.text) && !/the app/.test(m.text + m.subject), 'plain text reads properly and never mentions an app'));
-    Object.keys(all).forEach(i => { const k = keyOf2(all[i].to[0]), g = R.members[R.assign[k].to].name; if (g !== R.members[k].name) { const re = new RegExp('\\b' + g + '\\b', 'g'), strip = x => x.replace(/not even Dan/g, ''); ok(!re.test(strip(all[i].text)) && !re.test(strip(all[i].html)) && !re.test(all[i].subject), 'no email names the giftee (' + g + ')'); } });
+    Object.keys(all).forEach(i => { const k = keyOf2(all[i].to[0]), g = R.members[R.assign[k].to].name; ok(/^santa_launch_/.test(i) ? all[i].html.indexOf(g) >= 0 && all[i].text.indexOf(g) >= 0 : true, 'the launch email names their own giftee (' + g + ')'); Object.values(R.members).map(x => x.name).filter(n => n !== g && n !== R.members[k].name && n !== 'Dan').forEach(n => ok(!new RegExp('\\b' + n + '\\b').test(all[i].subject + all[i].text + all[i].html), 'and nobody else (' + n + ')')); });
     ok(R.guestGift && R.guestGift.TokTinaBBBBBBBBBBBBBBBBBBBB12 && R.guestGift.TokTinaBBBBBBBBBBBBBBBBBBBB12.to === R.assign[K(H('tina.graham'))].to, 'Tina sees her own pairing on her link');
     ok(!R.guestGift.TokFaithCCCCCCCCCCCCCCCCCCC12, 'no gift record for a link that is not in the draw');
     /* the next two runs send nothing new and change nothing */
