@@ -74,7 +74,7 @@
 
   /* weekday, Saturday, bank holiday, or closed */
   function dayKind(ctx, date) {
-    if (ctx.closed[date]) return 'closed';
+    if (ctx.closed[date] || LR.rotaClosed(date)) return 'closed';
     var dow = dowOf(date);
     if (dow === 'sun') return 'closed';
     if (ctx.holidays[date]) return 'bh';
@@ -89,7 +89,9 @@
   }
 
   /* one person on one date: { on, why }. why is working, swapped-in, off,
-     holiday, absent, bh, bh-off, bh-no-rota, inactive, closed or not-team */
+     holiday, absent, bh, bh-off, bh-no-rota, inactive, closed, not-team,
+     rota-in / rota (in or off on a fixed rota, see LockupRota.rotaDay) or
+     notstarted (before their start date) */
   function personDay(ctx, id, date) {
     var t = ctx.team[id];
     if (!t) return { on: false, why: 'not-team' };
@@ -97,6 +99,10 @@
     var kind = dayKind(ctx, date);
     if (kind === 'closed') return { on: false, why: 'closed' };
     var away = LR.awayOn(ctx.absences, date)[id] || null;
+    /* a fixed rota decides, bank holiday or not; a real absence still wins */
+    var rd = LR.rotaDay(date);
+    if (rd && rd['in'].indexOf(id) >= 0) return away ? { on: false, why: away } : { on: true, why: 'rota-in' };
+    if (rd && rd.off.indexOf(id) >= 0) return { on: false, why: away || 'rota' };
     if (kind === 'bh') {
       var rota = ctx.bh[date];
       if (!rota) return { on: false, why: 'bh-no-rota' };
@@ -125,6 +131,7 @@
   function countDay(ctx, date) {
     var kind = dayKind(ctx, date), min = minFor(ctx, kind);
     var ids = kind === 'closed' ? [] : staffOn(ctx, date);
+    var rd = kind === 'closed' ? null : LR.rotaDay(date);
     var hIds = ctx.config.handoverIds || [];
     var hCount = kind === 'closed' ? 0 : ids.filter(function (id) { return hIds.indexOf(id) >= 0; }).length;
     var hApplies = kind === 'weekday' || kind === 'sat';
@@ -132,7 +139,10 @@
     /* the minimum counts sales executives only: not the handover team, not
        Elvis, not managers (who are not on the team list) */
     var ex = ctx.config.countExclude || [];
-    var sales = ids.filter(function (id) { return ex.indexOf(id) < 0 && !(ctx.managers && ctx.managers[id]); });
+    var isSales = function (id) { return ex.indexOf(id) < 0 && !(ctx.managers && ctx.managers[id]); };
+    var sales = ids.filter(isSales);
+    /* a fixed rota is the plan for its day: short only when somebody on it is away */
+    if (rd) min = rd['in'].filter(function (id) { return ctx.team[id] && ctx.team[id].active !== false && isSales(id) && !(LR.STARTS[id] && date < LR.STARTS[id]); }).length;
     var staffOk = kind === 'closed' || sales.length >= min;
     var handoverOk = !hApplies || hCount >= hMin;
     var ok = staffOk && handoverOk;
@@ -141,7 +151,7 @@
     if (!handoverOk) reasons.push('handover');
     return {
       date: date, dow: dowOf(date), kind: kind, count: sales.length, min: min, ids: ids, salesIds: sales, ok: ok,
-      short: staffOk ? 0 : min - sales.length, noRota: kind === 'bh' && !ctx.bh[date],
+      short: staffOk ? 0 : min - sales.length, noRota: kind === 'bh' && !ctx.bh[date] && !rd, rota: rd,
       handover: { count: hCount, min: hMin, ok: handoverOk }, reasons: reasons
     };
   }
@@ -314,7 +324,8 @@
   function whoIn(ctx, from, to) {
     return rangeDates(from, to).map(function (d) {
       var c = countDay(ctx, d), away = LR.awayOn(ctx.absences, d);
-      var awayList = Object.keys(away).filter(function (id) { return ctx.team[id]; }).map(function (id) {
+      /* off on a fixed rota, or not started yet, is not "away" any more than a usual day off is */
+      var awayList = Object.keys(away).filter(function (id) { return ctx.team[id] && away[id] !== 'rota' && away[id] !== 'notstarted'; }).map(function (id) {
         var a = Object.keys(ctx.absences).map(function (k) { return ctx.absences[k]; })
           .filter(function (x) { return x && x.personId === id && x.kind !== 'works' && x.status !== 'cancelled' && x.from <= d && d <= x.to; })[0] || {};
         return { id: id, kind: away[id], note: a.note || '' };
@@ -325,7 +336,7 @@
 
   /* the bank holidays (from gov.uk) between two dates */
   function bhDates(ctx, from, to) {
-    return Object.keys(ctx.holidays).filter(function (d) { return d >= from && d <= to && !ctx.closed[d]; }).sort();
+    return Object.keys(ctx.holidays).filter(function (d) { return d >= from && d <= to && !ctx.closed[d] && !LR.rotaClosed(d) && !LR.rotaDay(d); }).sort();
   }
 
   /* what changes if a person's usual day off moves: days that fall short

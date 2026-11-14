@@ -243,10 +243,57 @@
   var SEED_ABSENCES = {
     seed_carl_20261016: { personId: 'carl', from: '2026-10-16', to: '2026-10-16', kind: 'absent', status: 'approved', by: 'Dan', note: 'Carl off Friday 16 Oct (Dan, 14 Oct)' }
   };
+  /* ---- fixed rotas: a run of days the managers have planned by hand ----
+     Dan, 14 November 2026: the Christmas rota. For each open date, who is in
+     and who is off; anyone on the team not listed follows their usual week.
+     Off on a fixed rota is away everywhere (kind 'rota'): the calendar, the
+     lockup pairs, showroom cover, the forecourt check and the Monday email all
+     read absentOn, so they all follow it. In on a fixed rota puts them on the
+     calendar and showroom cover even on their usual day off (rotaDay), but
+     does not make them a lockup candidate. A real absence still wins over the
+     rota. `closed` dates are shut (no staff, no lockup); Sundays already are.
+     `min` for a fixed day is the rota itself: the calendar only calls it short
+     when somebody on it is away. Lists are space separated team ids. */
+  var FIXED_ROTAS = [{
+    id: 'christmas-2026', label: 'Christmas rota',
+    closed: { '2026-12-25': 'Christmas Day', '2026-12-26': 'Boxing Day', '2027-01-01': 'New Year\u2019s Day' },
+    days: {
+      '2026-12-21': { 'in': 'clive danny karis mon patryk tomi molly', off: 'dan carl chloe', managers: 'nathan will' },
+      '2026-12-22': { 'in': 'dan danny karis mon patryk tomi molly', off: 'carl clive chloe', managers: 'nathan will' },
+      '2026-12-23': { 'in': 'dan carl clive patryk tomi molly', off: 'danny karis mon chloe', managers: 'will' },
+      '2026-12-24': { 'in': 'carl clive karis tomi chloe', off: 'dan danny mon patryk molly', managers: 'nathan', note: 'Christmas Eve' },
+      '2026-12-28': { 'in': 'carl clive danny karis mon chloe', off: 'dan patryk tomi molly', managers: 'sergio', note: 'Bank holiday hours, 10am to 4pm' },
+      '2026-12-29': { 'in': 'dan clive danny mon patryk tomi chloe', off: 'carl karis molly', managers: 'sergio' },
+      '2026-12-30': { 'in': 'dan carl karis mon patryk tomi molly chloe', off: 'clive danny', managers: 'sergio' },
+      '2026-12-31': { 'in': 'dan carl danny mon patryk chloe', off: 'clive karis tomi molly', managers: 'sergio', note: 'New Year\u2019s Eve' }
+    }
+  }];
+  function words(v) { return String(v || '').split(/\s+/).filter(Boolean); }
+  /* the fixed rota for a date: { label, in: [ids], off: [ids], managers: [ids], note } or null */
+  function rotaDay(date) {
+    for (var i = 0; i < FIXED_ROTAS.length; i++) {
+      var d = FIXED_ROTAS[i].days[date];
+      if (d) return { id: FIXED_ROTAS[i].id, label: FIXED_ROTAS[i].label, 'in': words(d['in']), off: words(d.off), managers: words(d.managers), note: d.note || '' };
+    }
+    return null;
+  }
+  /* the label a fixed rota gives a date it closes, or '' */
+  function rotaClosed(date) {
+    for (var i = 0; i < FIXED_ROTAS.length; i++) if (FIXED_ROTAS[i].closed[date]) return FIXED_ROTAS[i].closed[date];
+    return '';
+  }
+  /* people who join the team on a date: before it they are away everywhere
+     (kind 'notstarted'), so adding them to the team early is safe. Patryk
+     joins the sales team on Monday 30 November 2026 (Dan, 14 November). */
+  var STARTS = { patryk: '2026-11-30' };
+
   /* 'nolockup': in that day, but can't do lockup (a reason is required). Frees
      the lockup night like an absence; the calendar (awayOn) still shows them in. */
   function absentOn(absences, date, calendar) {
     var out = {};
+    Object.keys(STARTS).forEach(function (id) { if (date < STARTS[id]) out[id] = 'notstarted'; });
+    var rd = rotaDay(date);
+    if (rd) rd.off.forEach(function (id) { if (!out[id]) out[id] = 'rota'; });
     Object.keys(absences || {}).forEach(function (k) {
       var a = absences[k];
       if (a && a.kind !== 'works' && !(calendar && a.kind === 'nolockup') && a.status !== 'cancelled' && a.from <= date && date <= a.to) out[a.personId] = a.kind || 'absent';
@@ -423,14 +470,14 @@
   }
   function onFor(dateStr, weekRec, holidays, cfg, absences) {
     var dow = london(new Date(dateStr + 'T12:00:00Z')).dow;
-    if (dow === 'sun' || (holidays && holidays[dateStr])) return { kind: 'closed', dow: dow };
+    if (dow === 'sun' || (holidays && holidays[dateStr]) || rotaClosed(dateStr)) return { kind: 'closed', dow: dow };
     if (dow === 'sat') { var s = satIds(cfg, dateStr, absences); return { kind: 'managers', dow: dow, ids: s, id: s[0] || null }; }
     var list = ids(weekRec && weekRec.days && weekRec.days[dow]);
     return { kind: 'staff', dow: dow, ids: list, id: list[0] || null };
   }
 
   var api = { DAYS: DAYS, DAY_NAMES: DAY_NAMES, defaults: defaults, london: london, isoWeek: isoWeek, weekStart: weekStart,
-    addDays: addDays, awayOn: awayOn, cantLabel: cantLabel, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, satIds: satIds, SEED_ABSENCES: SEED_ABSENCES, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
+    addDays: addDays, awayOn: awayOn, cantLabel: cantLabel, shiftWeek: shiftWeek, dateFor: dateFor, counts: counts, pairCounts: pairCounts, ids: ids, isPaired: isPaired, needsWeek: needsWeek, applyFixed: applyFixed, canDo: canDo, normalOn: normalOn, isFixedOn: isFixedOn, fixedFor: fixedFor, arr: arr, shortLabel: shortLabel, generate: generate, onFor: onFor, satIds: satIds, SEED_ABSENCES: SEED_ABSENCES, FIXED_ROTAS: FIXED_ROTAS, rotaDay: rotaDay, rotaClosed: rotaClosed, STARTS: STARTS, absentOn: absentOn, worksOn: worksOn, pairOn: pairOn, replacement: replacement, applyAbsences: applyAbsences,
     REMIND_MINS: 17 * 60, NUDGE_MINS: 18 * 60 + 5, NUDGE_SAT_MINS: 17 * 60 + 5, ESCALATE_SAT_MINS: 17 * 60 + 30,
     /* Saturday closes at 5pm: reminder 4pm, nudge 5:05pm, managers 5:30pm */
     remindAt: function (dow) { return dow === 'sat' ? 16 * 60 : 17 * 60; },

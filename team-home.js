@@ -9,7 +9,8 @@
   var WHY = {
     working: 'In', 'swapped-in': 'In (swapped)', off: 'Usual day off', holiday: 'Holiday', absent: 'Away',
     bh: 'In (bank holiday)', 'bh-off': 'Not on the bank holiday rota', 'bh-no-rota': 'Bank holiday rota not set',
-    closed: 'Closed', inactive: 'Not active', 'not-team': 'Not on the team'
+    closed: 'Closed', inactive: 'Not active', 'not-team': 'Not on the team',
+    'rota-in': 'In (Christmas rota)', rota: 'Off (Christmas rota)', notstarted: 'Not started yet'
   };
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

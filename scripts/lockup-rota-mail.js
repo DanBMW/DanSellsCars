@@ -30,7 +30,7 @@ function rows(fromDate, weeks, team, absences, hol, nWeeks, cfg) {
     const wk = R.shiftWeek(wk0, w);
     R.DAYS.concat(['sat']).forEach(d => {
       const date = R.dateFor(wk, d), on = R.onFor(date, weeks[wk], hol, cfg, absences);
-      const away = R.absentOn(absences || {}, date), awayNames = Object.keys(away).filter(id => team[id]).map(id => team[id].name + (away[id] === 'holiday' ? ' (holiday)' : away[id] === 'nolockup' ? ' (' + R.cantLabel(absences, date, id) + ')' : ''));
+      const away = R.absentOn(absences || {}, date), awayNames = Object.keys(away).filter(id => team[id] && away[id] !== 'rota' && away[id] !== 'notstarted').map(id => team[id].name + (away[id] === 'holiday' ? ' (holiday)' : away[id] === 'nolockup' ? ' (' + R.cantLabel(absences, date, id) + ')' : ''));
       let who;
       if (on.kind === 'closed') who = 'Closed' + (hol[date] && hol[date].label ? ', ' + hol[date].label : '');
       else if (on.kind === 'managers') who = on.ids.length ? names(on.ids.map(id => ((team[id] || (cfg && cfg.managers || {})[id]) || {}).name || id)) : 'Managers';

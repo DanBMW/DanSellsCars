@@ -175,36 +175,37 @@ const count = (c, date) => S.countDay(c, date);
   console.log('ok: six bank holidays, four each, shared out within one: ' + JSON.stringify(counts));
 }
 {
+  // (a Friday clear of the Christmas 2026 rota, which closes 25 December)
   // someone on approved holiday is not picked, and a stored rota is never changed
-  const holidays = { '2026-12-25': { label: 'Christmas Day' } };
-  const c = ctx({ holidays, absences: { h: hol('tomi', '2026-12-25', '2026-12-25') } });
-  const pick = S.bhPick(c, '2026-12-25');
+  const holidays = { '2027-05-07': { label: 'Example bank holiday' } };
+  const c = ctx({ holidays, absences: { h: hol('tomi', '2027-05-07', '2027-05-07') } });
+  const pick = S.bhPick(c, '2027-05-07');
   assert.ok(!pick.staff.includes('tomi'), 'away on the bank holiday');
   assert.strictEqual(pick.staff.length, 4);
-  const kept = S.bhGenerate(ctx({ holidays, bh: { '2026-12-25': { staff: ['carl', 'danny', 'karis', 'clive'] } } }), ['2026-12-25']);
+  const kept = S.bhGenerate(ctx({ holidays, bh: { '2027-05-07': { staff: ['carl', 'danny', 'karis', 'clive'] } } }), ['2027-05-07']);
   assert.deepStrictEqual(kept, {}, 'a rota a manager has set stands');
   // no rota means nobody is on and the day is flagged
-  const none = count(ctx({ holidays }), '2026-12-25');
+  const none = count(ctx({ holidays }), '2027-05-07');
   assert.strictEqual(none.noRota, true);
   assert.strictEqual(none.ok, false);
   // with a rota, only those four are on
-  const set = count(ctx({ holidays, bh: { '2026-12-25': { staff: ['carl', 'danny', 'karis', 'clive'] } } }), '2026-12-25');
+  const set = count(ctx({ holidays, bh: { '2027-05-07': { staff: ['carl', 'danny', 'karis', 'clive'] } } }), '2027-05-07');
   assert.deepStrictEqual(set.ids, ['carl', 'danny', 'karis', 'clive'].sort((a, b) => (team[a].order - team[b].order)));
   assert.strictEqual(set.ok, true);
   console.log('ok: bank holiday rota skips anyone away, keeps a manager’s rota, and flags a day with none');
 }
 {
   // bank holiday does not count weekday minimum: the rota does
-  const holidays = { '2026-12-25': { label: 'Christmas Day' } };
-  const c = ctx({ holidays, bh: { '2026-12-25': { staff: ['carl', 'danny', 'karis'] } } });
-  assert.strictEqual(count(c, '2026-12-25').min, 4);
-  assert.strictEqual(count(c, '2026-12-25').ok, false, 'three on a bank holiday is short of four');
+  const holidays = { '2027-05-07': { label: 'Example bank holiday' } };
+  const c = ctx({ holidays, bh: { '2027-05-07': { staff: ['carl', 'danny', 'karis'] } } });
+  assert.strictEqual(count(c, '2027-05-07').min, 4);
+  assert.strictEqual(count(c, '2027-05-07').ok, false, 'three on a bank holiday is short of four');
 }
 
 /* ---- lockup: 'works' entries ---- */
 {
   const abs = { s: { personId: 'dan', from: '2026-11-02', to: '2026-11-02', kind: 'works', status: 'approved' } };
-  assert.deepStrictEqual(LR.absentOn(abs, '2026-11-02'), {}, 'works is never away');
+  assert.strictEqual(LR.absentOn(abs, '2026-11-02').dan, undefined, 'works is never away');
   assert.deepStrictEqual(LR.worksOn(abs, '2026-11-02'), { dan: true });
   assert.deepStrictEqual(LR.worksOn(abs, '2026-11-03'), {});
   // a person on the rota on their usual day off, with a works entry, is not replaced

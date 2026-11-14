@@ -18,12 +18,14 @@
   var WHY = {
     working: 'In', 'swapped-in': 'In (swapped)', off: 'Usual day off', holiday: 'Holiday', absent: 'Away',
     bh: 'Bank holiday', 'bh-off': 'Not on the bank holiday rota', 'bh-no-rota': 'No bank holiday rota yet',
-    closed: 'Closed', inactive: 'Not active', 'not-team': 'Not on the team'
+    closed: 'Closed', inactive: 'Not active', 'not-team': 'Not on the team',
+    'rota-in': 'In (Christmas rota)', rota: 'Off (Christmas rota)', notstarted: 'Not started yet'
   };
   var SYM = {
     working: ['●', 'w', 'In'], 'swapped-in': ['⇄', 's', 'In (swapped)'], off: ['·', 'o', 'Usual day off'],
     holiday: ['H', 'h', 'Holiday'], absent: ['A', 'a', 'Away'], bh: ['BH', 'bh', 'Bank holiday'],
-    'bh-off': ['·', 'o', 'Not on the bank holiday rota'], 'bh-no-rota': ['?', 'x', 'No bank holiday rota yet'], closed: ['', 'c', 'Closed']
+    'bh-off': ['·', 'o', 'Not on the bank holiday rota'], 'bh-no-rota': ['?', 'x', 'No bank holiday rota yet'], closed: ['', 'c', 'Closed'],
+    'rota-in': ['★', 'w', 'In (Christmas rota)'], rota: ['·', 'o', 'Off (Christmas rota)'], notstarted: ['', 'o', 'Not started yet']
   };
 
   var NOW = R.london(), FIXED = null;
@@ -322,10 +324,14 @@
       });
     }
     var head = fmt(date, true);
-    var status = k.kind === 'closed' ? 'Closed' : k.noRota ? 'No bank holiday rota yet' :
+    var rc = R.rotaClosed ? R.rotaClosed(date) : '';
+    var rotaLine = k.rota ? '<p class="small"><b>' + esc(k.rota.label) + '</b>' + (k.rota.note ? ' · ' + esc(k.rota.note) : '') +
+      (k.rota.managers.length ? ' · Manager' + (k.rota.managers.length > 1 ? 's' : '') + ' on: ' + esc(k.rota.managers.map(nameOf).join(' and ')) : '') + '</p>' : '';
+    var status = k.kind === 'closed' ? 'Closed' + (rc ? ', ' + esc(rc) : '') : k.noRota ? 'No bank holiday rota yet' :
       (k.ok ? k.count + ' on, minimum ' + k.min : '<span class="bad">' + k.count + ' on, minimum ' + k.min + ', short by ' + k.short + '</span>');
     var body = '<h2>' + esc(head) + '</h2>' +
       '<p class="sub">' + status + (HOL[date] ? ' · ' + esc(HOL[date].label) : '') + '</p>' +
+      rotaLine +
       (warns.length ? warns.map(function (w) { return '<p class="bad small">' + esc(w) + '</p>'; }).join('') : '') +
       (k.kind !== 'closed' ? '<ul class="sum">' + rows + '</ul>' : '<p class="muted">The office is closed.</p>') +
       (lock.length ? '<p class="small muted">Lockup tonight: ' + esc(lock.map(nameOf).join(' and ')) + '</p>' : '') +
