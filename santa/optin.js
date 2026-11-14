@@ -13,10 +13,13 @@
   function qs(k) { return new URLSearchParams(location.search).get(k) || ''; }
   function token() { return qs('t').trim(); }
   function firstName(n) { return String(n || '').trim().split(' ')[0] || 'there'; }
-  function namesOut() { return settings.live === true; }
+  /* A guest on this link is not signed in, and santa/settings is only readable
+     signed in, so settings.live never arrives here. The gift itself is the signal:
+     guestGift/<token> is readable only once the names are out. */
+  function namesOut() { return settings.live === true || !!(gift && gift.name); }
   function optInUntilMs() { return settings.optInUntil || Date.parse('2026-11-14T23:59:59+00:00'); }
   function closed() {
-    if (settings.live === true) return true;
+    if (namesOut()) return true;
     if (optInUntilMs() && Date.now() >= optInUntilMs()) return true;
     return false;
   }
@@ -44,24 +47,21 @@
       return;
     }
     var name = firstName(rec.name);
+    if (rec.choice === 'in' && !giftTried) { card.innerHTML = head() + '<p id="status">Opening your envelope&hellip;</p>'; return; }
     if (namesOut() && rec.choice === 'in') return paintGift(card, name);
     if (rec.choice === 'in') {
       card.innerHTML = head() + '<div class="optin-ico" aria-hidden="true">&#127877;</div><h1>You&rsquo;re in!</h1>' +
         '<p class="hello-name">Ho ho ho, ' + esc(name) + '.</p>' +
         '<p>You&rsquo;re on the nice list. ' + (closed() ? 'Opt in has now closed. Names will be revealed when the elves launch it. Open this same link then to unwrap who you&rsquo;ve got. No sign in needed.' : 'Opt in stays open until <b>Saturday 14 November</b>. Names will be revealed when the elves launch it after that. Open this same link then to unwrap who you&rsquo;ve got. No sign in needed.') + '</p>' +
         '<p class="small">Spend up to &pound;20. Presents are exchanged at the team meal on Saturday 5 December. If you&rsquo;re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.</p>' +
-        wishBox() +
-        (closed() ? '' : '<p class="small"><button class="link" type="button" id="change">Changed your mind? Sit this year out</button></p>');
+        wishBox();
       wireWish();
-      if ($('change')) $('change').onclick = function () { save('out'); };
       return;
     }
     if (rec.choice === 'out') {
       card.innerHTML = head() + '<div class="optin-ico" aria-hidden="true">&#10024;</div><h1>That&rsquo;s ok</h1>' +
         '<p class="hello-name">See you next year, ' + esc(name) + '.</p>' +
-        '<p>You&rsquo;re out of this year&rsquo;s Secret Santa. If you change your mind, you can hop back in until Saturday 14 November.</p>' +
-        (closed() ? '<p class="small">Opt in has now closed.</p>' : '<p class="small"><button class="link" type="button" id="change">Changed your mind? I&rsquo;m in after all</button></p>');
-      if ($('change')) $('change').onclick = function () { save('in'); };
+        '<p>You&rsquo;re not in this year&rsquo;s Secret Santa draw. If that&rsquo;s a mistake, talk to Dan.</p>';
       return;
     }
     if (closed()) {
@@ -69,14 +69,12 @@
       return;
     }
     card.innerHTML = head() + '<p class="hello-name">Ho ho ho, ' + esc(name) + '!</p>' +
-      '<p>This year&rsquo;s Secret Santa is back at the Ruxley showroom. You buy one present for one colleague, and somebody buys one for you. One tap, no sign in, and you can change your mind until <b>Saturday 14 November</b>. Names will be revealed when the elves launch it after that.</p>' +
+      '<p>This year&rsquo;s Secret Santa is back at the Ruxley showroom. You buy one present for one colleague, and somebody buys one for you. One tap, no sign in. Names will be revealed when the elves launch it after that.</p>' +
       '<p class="small">Spend up to &pound;20. Presents are exchanged at the team meal on Saturday 5 December. If you&rsquo;re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.</p>' +
       '<div class="optin-actions">' +
       '<button class="btn red" type="button" id="btn-in">I&rsquo;m in &#127877;</button>' +
-      '<button class="btn ghost" type="button" id="btn-out">Not this year</button>' +
       '</div>';
     $('btn-in').onclick = function () { save('in'); };
-    $('btn-out').onclick = function () { save('out'); };
   }
 
   function head() { return '<div class="kick">Hedin BMW Ruxley</div>'; }
@@ -121,7 +119,8 @@
   }
 
   function save(choice) {
-    if (choice !== 'in' && choice !== 'out') return;
+    /* no sitting out from 14 November (Dan): only an I'm in is ever saved */
+    if (choice !== 'in') return Promise.resolve();
     return B.update(path(), { choice: choice, choiceTs: B.serverTs() }).then(function () {
       rec = rec || {}; rec.choice = choice; rec.choiceTs = Date.now();
       paint();
@@ -133,11 +132,18 @@
     });
   }
 
+  /* ask for the gift whatever the settings say (see namesOut); before the names
+     are out the read is refused, so keep asking once a minute while the page is open */
+  var giftT = null;
   function loadGift() {
-    if (!(namesOut() && rec && rec.choice === 'in')) { giftTried = true; return; }
+    if (!(rec && rec.choice === 'in')) { giftTried = true; return; }
     B.get(R + '/guestGift/' + token()).then(function (v) {
-      gift = v || null; giftTried = true; paint();
-    }).catch(function () { gift = null; giftTried = true; paint(); });
+      gift = v || null; giftTried = true; paint(); retryGift();
+    }).catch(function () { gift = null; giftTried = true; paint(); retryGift(); });
+  }
+  function retryGift() {
+    clearTimeout(giftT);
+    if (!(gift && gift.name)) giftT = setTimeout(loadGift, 60000);
   }
 
   function snow() {
@@ -169,7 +175,7 @@
       B.watch(path(), function (v) {
         rec = v;
         var auto = qs('c');
-        if ((auto === 'in' || auto === 'out') && rec && rec.email && rec.choice !== auto && !closed()) {
+        if (auto === 'in' && rec && rec.email && rec.choice !== auto && !closed()) {
           /* one tap from the email: record the choice, then drop c from the URL so a refresh doesn't flip it back */
           save(auto).then(function () {
             try { var u = new URL(location.href); u.searchParams.delete('c'); history.replaceState({}, '', u); } catch (e) {}

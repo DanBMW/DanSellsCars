@@ -31,6 +31,7 @@ const LR = require('../lockup-rota.js');
 const APP = 'https://dan-sells.co.uk/santa/';
 const OPTIN = 'https://dan-sells.co.uk/santa/optin.html';
 const PRIVATE = 'lockupPrivate/notify';
+const RESTART_FOR_LAUNCH_BY = Date.parse('2026-11-14T10:00:00Z');
 const DAN = 'daniel.cane@hedinautomotive.co.uk';
 
 function keyOf(email) { return String(email || '').trim().toLowerCase().split('.').join(','); }
@@ -126,6 +127,12 @@ function makeMail(kind, m, s, today, nowMs, link, gift) {
       : ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn. <b>Tap the button below to unwrap who you\u2019ve got</b> &#128513;', 'Nobody else can see it, not even Dan, so keep it to yourself!', 'Then write your wishlist so your own Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)];
     if (gName) subject = '\uD83C\uDF85 Secret Santa is live! Here\u2019s who you\u2019ve got';
     button = gName ? 'See ' + gName + '\u2019s wishlist and write mine' : 'Unwrap my present';
+  } else if (kind === 'restart') {
+    subject = gName ? '\uD83C\uDF85 False start! Here\u2019s who you\u2019ve got for Secret Santa' : '\uD83C\uDF85 False start! Your Secret Santa link works now';
+    title = 'False start!';
+    paras = ['Ho ho ho, ' + esc(first) + '!', 'The elves had a false start this morning, sorry about that. The link in our first email didn\u2019t show who you\u2019ve got, so here they are.',
+      gLine, gWish, 'Nobody else can see this, so keep it to yourself! Your link below now opens on them too, no sign in needed.', esc(line.budget) + ' ' + esc(line.ex)];
+    button = gName ? 'See ' + gName + '\u2019s wishlist and write mine' : 'Open my Secret Santa page';
   } else if (kind === 'announce') {
     subject = '\uD83C\uDF81 The Secret Santa names are out! Tap to see who you\u2019ve got';
     title = 'The names are out!';
@@ -386,6 +393,10 @@ async function runRoot(db, R, o) {
 
   /* 3. the launch emails, once only. Names are already out at Go, so there is no later announce email. */
   if (!mail.launch) { await mark('launch'); await queue(db, R, 'launch', notifyRoot, s, today, nowMs, log); }
+  /* 3b. the 14 November launch went out with links that could not show the pairing
+     (the guest page could not read settings). One follow up each, naming the person.
+     Only for a launch at or before that morning, never in the launch's own run. */
+  if (R === 'santa' && mail.launch && !mail.restart && launched.ts <= RESTART_FOR_LAUNCH_BY) { await mark('restart'); await queue(db, R, 'restart', notifyRoot, s, today, nowMs, log); }
   /* 4. reminders, unless switched off; never on or after the exchange day */
   if (s.reminders === false || !s.exchange || today >= s.exchange) return;
   if (today === eveDay(s.exchange) && L.mins >= 600 && !mail.eve) { await mark('eve'); await queue(db, R, 'eve', notifyRoot, s, today, nowMs, log); return; }

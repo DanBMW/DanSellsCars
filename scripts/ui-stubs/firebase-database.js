@@ -21,7 +21,12 @@ function notify() {
 }
 export function getDatabase(app) { return { app: app }; }
 export function ref(db, path) { return { path: path || '' }; }
+/* data.__deny: regex strings for paths the real rules refuse to this visitor
+   (a page that needs it models them; everything else reads as before) */
+const denied = (p) => ((S().data && S().data.__deny) || []).some(re => new RegExp(re).test(String(p || '').replace(/^\//, '')));
+const refusal = () => Object.assign(new Error('PERMISSION_DENIED: Permission denied'), { code: 'PERMISSION_DENIED' });
 export function onValue(r, cb, err) {
+  if (denied(r.path)) { setTimeout(() => { if (err) err(refusal()); }, 0); return () => {}; }
   const l = { path: r.path, cb: cb };
   listeners.push(l);
   setTimeout(() => { if (listeners.indexOf(l) >= 0) cb(snap(getAt(l.path))); }, 0);
@@ -41,5 +46,5 @@ export function push(r, v) {
   if (v !== undefined) { setAt(child.path, v); S().log.push(['push', child.path]); notify(); return Promise.resolve(child); }
   return child;
 }
-export function get(r) { return Promise.resolve(snap(getAt(r.path))); }
+export function get(r) { return denied(r.path) ? Promise.reject(refusal()) : Promise.resolve(snap(getAt(r.path))); }
 export function serverTimestamp() { return Date.now(); }

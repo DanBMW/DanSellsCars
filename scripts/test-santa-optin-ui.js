@@ -24,7 +24,11 @@ const fixture = (o) => {
   const settings = Object.assign({ live: false, reminders: true }, o.settings || {});
   const santaTest = { settings, optins: { [TOK]: rec } };
   if (o.gift) santaTest.guestGift = { [TOK]: o.gift };
-  return { '.info': { connected: true }, santaTest };
+  /* as the real rules treat a guest on this link: settings need a verified sign in,
+     and a guestGift only opens once the names are out */
+  const deny = ['^santaTest/settings'];
+  if (settings.live !== true) deny.push('^santaTest/guestGift/');
+  return { '.info': { connected: true }, santaTest, __deny: o.allowAll ? [] : deny };
 };
 let pass = 0, fail = 0;
 const check = (name, c, d) => { if (c) pass++; else fail++; console.log((c ? 'ok   ' : 'FAIL ') + name + (!c && d ? ' :: ' + d : '')); };
@@ -78,7 +82,7 @@ const check = (name, c, d) => { if (c) pass++; else fail++; console.log((c ? 'ok
   p = await open('/santa/optin.html?practice=1&t=' + TOK, fixture());
   await p.waitForSelector('#btn-in', { timeout: 15000 });
   check('known token greets them by name', /Tina/.test(await txt(p, '#card')));
-  check('known token shows both buttons', await vis(p, '#btn-in') && await vis(p, '#btn-out'));
+  check('known token shows only I am in (no sitting out since 14 November)', (await vis(p, '#btn-in')) && !(await vis(p, '#btn-out')));
   await shot(p, '31-optin-choose.png');
 
   await p.click('#btn-in'); await p.waitForTimeout(500);
@@ -86,16 +90,12 @@ const check = (name, c, d) => { if (c) pass++; else fail++; console.log((c ? 'ok
   check('I am in: wrote choice on the token', (await store(p, 'santaTest/optins/' + TOK)).choice === 'in');
   await shot(p, '32-optin-im-in.png');
 
-  await p.click('#change'); await p.waitForTimeout(500);
-  check('change mind to out', /see you next year/i.test(await txt(p, '#card')) && (await store(p, 'santaTest/optins/' + TOK)).choice === 'out');
-  await shot(p, '33-optin-not-this-year.png');
-
-  await p.click('#change'); await p.waitForTimeout(400);
-  check('change mind back to in', /You.?re in|You\u2019re in/.test(await txt(p, '#card')) && (await store(p, 'santaTest/optins/' + TOK)).choice === 'in');
-
   p = await open('/santa/optin.html?practice=1&t=' + TOK + '&c=out', fixture());
   await p.waitForTimeout(800);
-  check('email Not this year is one tap', (await store(p, 'santaTest/optins/' + TOK)).choice === 'out' && /see you next year/i.test(await txt(p, '#card')));
+  check('an emailed Not this year link no longer sits anyone out', !(await store(p, 'santaTest/optins/' + TOK)).choice);
+  p = await open('/santa/optin.html?practice=1&t=' + TOK, fixture({ rec: { choice: 'out' } }));
+  await p.waitForTimeout(800);
+  check('someone already out is told to talk to Dan', /talk to Dan/i.test(await txt(p, '#card')));
 
   p = await open('/santa/optin.html?practice=1&t=' + TOK + '&c=in', fixture({ rec: { choice: 'out' } }));
   await p.waitForTimeout(800);
@@ -113,7 +113,7 @@ const check = (name, c, d) => { if (c) pass++; else fail++; console.log((c ? 'ok
   await shot(p, '36-optin-in-before-go.png');
 
   /* after the deadline, cannot change your mind (page shows closed; store stays as it was) */
-  p = await open('/santa/optin.html?practice=1&t=' + TOK, fixture({ rec: { choice: 'in' }, settings: { live: false, optInUntil: Date.now() - 1000 } }));
+  p = await open('/santa/optin.html?practice=1&t=' + TOK, fixture({ rec: { choice: 'in' }, settings: { live: false, optInUntil: Date.now() - 1000 }, allowAll: true }));
   await p.waitForTimeout(800);
   check('after deadline: the page says opt in has closed', /opt in has closed|too late|closed/i.test(await txt(p, '#card')));
   check('after deadline: no I am in / Not this year buttons', !(await vis(p, '#btn-in')) && !(await vis(p, '#btn-out')));
@@ -125,6 +125,20 @@ const check = (name, c, d) => { if (c) pass++; else fail++; console.log((c ? 'ok
   check('after Go: meal bag note on the gift page', /team meal/.test(await txt(p, '#card')) && /pop your gift in the bag/.test(await txt(p, '#card')));
   await shot(p, '34-optin-unwrapped.png');
 
+  /* the real launch: the guest cannot read settings at all, the gift is there */
+  p = await open('/santa/optin.html?practice=1&t=' + TOK, fixture({ rec: { choice: 'in' }, settings: { live: true }, gift: { name: 'Lisa Debono', to: 'lisa,debono@hedinautomotive,co,uk', wish: 'A nice mug' } }));
+  await p.waitForTimeout(800);
+  check('after Go, signed out (settings refused): the link still shows who they have', /Lisa Debono/.test(await txt(p, '#card')) && /buying for/i.test(await txt(p, '#card')));
+  /* no sitting out from 14 November */
+  p = await open('/santa/optin.html?practice=1&t=' + TOK, fixture({ rec: { choice: 'in' }, settings: { live: false } }));
+  await p.waitForTimeout(800);
+  check('opted in: no way to sit out', !/sit this year out/i.test(await txt(p, '#card')) && !(await vis(p, '#change')));
+  p = await open('/santa/optin.html?practice=1&t=' + TOK, fixture({ rec: {}, settings: { live: false } }));
+  await p.waitForTimeout(800);
+  check('not replied: only I am in, no Not this year', (await vis(p, '#btn-in')) && !(await vis(p, '#btn-out')));
+  p = await open('/santa/optin.html?practice=1&c=out&t=' + TOK, fixture({ rec: { choice: 'in' }, settings: { live: false } }));
+  await p.waitForTimeout(900);
+  check('an old Not this year link does nothing', (await store(p, 'santaTest/optins/' + TOK + '/choice')) === 'in');
   const errs = [];
   check('no page errors', true);
 

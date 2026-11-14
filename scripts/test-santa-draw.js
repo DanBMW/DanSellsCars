@@ -390,6 +390,26 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     await S.runRoot(dbT, 'santa', { log: () => {}, nowMs: T('2026-11-23T10:20:00Z'), notifyRoot: 'lockupTest/notify' });
     ok(!Object.keys(dbT.data.lockupPrivate.notify || {}).length && !/Tok[A-Za-z]+[0-9]{2}/.test(JSON.stringify(dbT.data.lockupTest)), 'test mode never sends a personal link');
   }
+  /* the false start: this morning's launch gets one follow up each, naming the person */
+  {
+    const db = fakeDb({ santa: { members: memberMap(ELVES.slice(0, 4)), settings: { budget: 20, exchange: '2026-12-05', live: false, reminders: true } } });
+    db.data.santa.launchRequest = { byName: 'Dan', ts: T('2026-11-14T09:58:00Z') };
+    await runAt(db, '2026-11-14T09:59:38Z');
+    eq(ids(db, /^santa_launch_/).length, 4); eq(ids(db, /^santa_restart_/).length, 0, 'no follow up in the launch run itself');
+    await runAt(db, '2026-11-14T10:30:00Z');
+    const R = db.data.santa, rs = ids(db, /^santa_restart_/);
+    eq(rs.length, 4, 'one false start email each');
+    rs.forEach(i => { const q = notify(db)[i], k = Object.keys(R.members).find(x => R.members[x].email === q.to[0]), g = R.members[R.assign[k].to].name;
+      ok(/False start/.test(q.subject) && q.html.includes(g) && q.text.includes(g) && /optin\.html\?t=/.test(q.html), 'false start names ' + g + ' with the link');
+      ok(db.data.lockupPrivate.notify[i], 'and it is on the private queue'); });
+    await runAt(db, '2026-11-14T10:45:00Z'); await runAt(db, '2026-11-16T10:05:00Z');
+    eq(ids(db, /^santa_restart_/).length, 4, 'never twice');
+    /* next year's launch never gets one */
+    const db2 = fakeDb({ santa: { members: memberMap(ELVES.slice(0, 3)), settings: { exchange: '2027-12-05', live: false } } });
+    db2.data.santa.launchRequest = { byName: 'Dan', ts: T('2027-11-14T09:58:00Z') };
+    await runAt(db2, '2027-11-14T09:59:00Z'); await runAt(db2, '2027-11-14T10:30:00Z');
+    eq(ids(db2, /^santa_restart_/).length, 0, 'a later launch gets no false start email');
+  }
   /* a change of mind after the organiser's change still counts */
   {
     const db = fakeDb({ santa: { settings: { live: false }, optins: { TokFaithCCCCCCCCCCCCCCCCCCC12: { name: 'Faith', email: 'f@x.com', invitedTs: 1, choice: 'in', choiceTs: T('2026-11-12T09:00:00Z') } }, members: {} } });

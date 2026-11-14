@@ -172,7 +172,7 @@ const check = (name, c, d) => { if (c) pass++; else { fail++; bugs.push(name + (
   check('ui: short token is rejected', /isn.?t right|isn\u2019t right|link isn/.test(await txt(p, '#card')));
   await p.context().close();
 
-  const optData = (extra) => Object.assign({ '.info': { connected: true }, santaTest: { settings: { live: false }, optins: { [TOK]: { name: 'Dan', email: 'dan@x.com', invitedTs: 1 } } } }, extra || {});
+  const optData = (extra) => Object.assign({ '.info': { connected: true }, __deny: ['^santaTest/settings', '^santaTest/guestGift/'], santaTest: { settings: { live: false }, optins: { [TOK]: { name: 'Dan', email: 'dan@x.com', invitedTs: 1 } } } }, extra || {});
 
   /* double tap I'm in */
   p = await open('/santa/optin.html?practice=1&t=' + TOK, optData());
@@ -205,6 +205,8 @@ const check = (name, c, d) => { if (c) pass++; else { fail++; bugs.push(name + (
   /* no names before Go, even with a gift record and a past announceTs */
   p = await open('/santa/optin.html?practice=1&t=' + TOK, {
     '.info': { connected: true },
+    /* as the real rules treat a guest: no settings, no gift until the names are out */
+    __deny: ['^santaTest/settings', '^santaTest/guestGift/'],
     santaTest: {
       settings: { live: false, announceTs: Date.now() - 999999 },
       optins: { [TOK]: { name: 'Dan', email: 'dan@x.com', choice: 'in', invitedTs: 1 } },
@@ -218,6 +220,7 @@ const check = (name, c, d) => { if (c) pass++; else { fail++; bugs.push(name + (
   /* after Go, only their pairing */
   p = await open('/santa/optin.html?practice=1&t=' + TOK, {
     '.info': { connected: true },
+    __deny: ['^santaTest/settings'],
     santaTest: {
       settings: { live: true },
       optins: { [TOK]: { name: 'Dan', email: 'dan@x.com', choice: 'in', invitedTs: 1 } },
@@ -232,7 +235,7 @@ const check = (name, c, d) => { if (c) pass++; else { fail++; bugs.push(name + (
   /* desktop size still works */
   p = await open('/santa/optin.html?practice=1&t=' + TOK, optData(), { viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false, deviceScaleFactor: 1 });
   await p.waitForSelector('#btn-in', { timeout: 8000 });
-  check('ui: desktop opt in page still has both buttons and the meal note', (await vis(p, '#btn-in')) && (await vis(p, '#btn-out')) && /team meal/.test(await txt(p, '#card')));
+  check('ui: desktop opt in page has I am in, no sit out, and the meal note', (await vis(p, '#btn-in')) && !(await vis(p, '#btn-out')) && /team meal/.test(await txt(p, '#card')));
   await p.context().close();
 
   /* lockup page still loads (existing team app unaffected) */
