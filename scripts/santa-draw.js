@@ -29,6 +29,8 @@
 const crypto = require('crypto');
 const LR = require('../lockup-rota.js');
 const APP = 'https://dan-sells.co.uk/santa/';
+const OPTIN = 'https://dan-sells.co.uk/santa/optin.html';
+const PRIVATE = 'lockupPrivate/notify';
 const DAN = 'daniel.cane@hedinautomotive.co.uk';
 
 function keyOf(email) { return String(email || '').trim().toLowerCase().split('.').join(','); }
@@ -89,7 +91,8 @@ function whenLondon(ms) {
     d.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '').replace(':00', '');
 }
 function daysTo(date, today) { return Math.round((Date.parse(date + 'T12:00:00Z') - Date.parse(today + 'T12:00:00Z')) / 864e5); }
-function page(title, paras, button, foot) {
+const SIGNIN = 'Sign in with your work email and PIN, the same as the Team app. First time? Type your work email, pick a six digit PIN, press Set my PIN and click the link in the email we send.';
+function page(title, paras, button, foot, href) {
   const p = paras.map(x => '<p style="margin:0 0 14px;line-height:1.55;font-size:16px">' + x + '</p>').join('');
   return '<div style="background:#3a0610;padding:22px 10px;font-family:-apple-system,Segoe UI,Arial,sans-serif">' +
     '<div style="max-width:520px;margin:auto;background:#fff8ec;border-radius:18px;overflow:hidden;border:3px solid #f0ba6c">' +
@@ -98,11 +101,12 @@ function page(title, paras, button, foot) {
     '<div style="font-family:Georgia,serif;font-size:30px;font-weight:bold;margin:8px 0 2px">' + title + '</div>' +
     '<div style="color:#ffe1b0;font-size:13px;font-weight:bold">Hedin BMW Ruxley Secret Santa</div></div>' +
     '<div style="padding:22px 20px 8px;color:#3b1d12">' + p +
-    '<a href="' + APP + '" style="display:block;margin:6px 0 16px;text-align:center;background:#1f7a45;color:#fff;text-decoration:none;font-weight:bold;padding:16px;border-radius:14px;font-size:18px;border-bottom:4px solid #0f4a28">' + button + '</a>' +
-    '<p style="color:#7a5a48;font-size:12px;margin:0 0 16px;text-align:center">' + (foot || 'Sign in with your work email and PIN, the same as the Team app.') + '</p></div></div></div>';
+    '<a href="' + (href || APP) + '" style="display:block;margin:6px 0 16px;text-align:center;background:#1f7a45;color:#fff;text-decoration:none;font-weight:bold;padding:16px;border-radius:14px;font-size:18px;border-bottom:4px solid #0f4a28">' + button + '</a>' +
+    '<p style="color:#7a5a48;font-size:12px;margin:0 0 16px;text-align:center">' + (foot || esc(SIGNIN)) + '</p></div></div></div>';
 }
 /* kind: launch | announce | weekly | eve. m: member {name}. s: settings. today: London date */
-function makeMail(kind, m, s, today, nowMs) {
+/* link: the person's own opt in link (no sign in), only ever queued on the private queue */
+function makeMail(kind, m, s, today, nowMs, link) {
   const first = String(m.name || '').split(' ')[0] || 'there';
   const budget = s.budget != null ? '\u00a3' + s.budget : null;
   const ex = s.exchange ? longDate(s.exchange) : null;
@@ -111,31 +115,33 @@ function makeMail(kind, m, s, today, nowMs) {
   let subject, title, paras, text, button;
   const line = { budget: budget ? 'Spend up to ' + budget + '.' : '', ex: ex ? 'Presents are exchanged at the team meal on ' + ex + '. If you\'re not coming to the meal, pop your gift in the bag and your presents will be given to you before you leave that day.' : '' };
   if (kind === 'launch') {
-    subject = '\uD83C\uDF85 Secret Santa is live! Open the app to see who you\u2019ve got';
+    subject = '\uD83C\uDF85 Secret Santa is live! Tap to see who you\u2019ve got';
     title = 'Secret Santa is live!';
-    paras = ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn. <b>Open the app to unwrap who you\u2019ve got</b> &#128513;', 'Nobody else can see it, not even Dan, so keep it to yourself!', 'Then write your wishlist so your own Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)];
-    button = 'Open the app and unwrap my present';
+    paras = ['Ho ho ho, ' + esc(first) + '!', 'The Ruxley Secret Santa is live and the names are drawn. <b>Tap the button below to unwrap who you\u2019ve got</b> &#128513;', 'Nobody else can see it, not even Dan, so keep it to yourself!', 'Then write your wishlist so your own Secret Santa knows what you\u2019d love. ' + esc(line.budget) + ' ' + esc(line.ex)];
+    button = 'Unwrap my present';
   } else if (kind === 'announce') {
-    subject = '\uD83C\uDF81 The Secret Santa names are out! Open the app to see who you\u2019ve got';
+    subject = '\uD83C\uDF81 The Secret Santa names are out! Tap to see who you\u2019ve got';
     title = 'The names are out!';
-    paras = ['Ho ho ho, ' + esc(first) + '!', 'Your present is ready to unwrap. <b>Open the app to see who you\u2019re Secret Santa for.</b>', 'Check nobody is looking over your shoulder first &#129323;', esc(line.budget) + ' ' + esc(line.ex)];
+    paras = ['Ho ho ho, ' + esc(first) + '!', 'Your present is ready to unwrap. <b>Tap the button below to see who you\u2019re Secret Santa for.</b>', 'Check nobody is looking over your shoulder first &#129323;', esc(line.budget) + ' ' + esc(line.ex)];
     button = 'Unwrap my present';
   } else if (kind === 'weekly') {
     subject = '\uD83C\uDF84 Secret Santa: ' + (dx != null ? dx + ' day' + (dx === 1 ? '' : 's') + ' to go' : 'your weekly reminder');
     title = dx != null ? dx + ' day' + (dx === 1 ? '' : 's') + ' to go' : 'Secret Santa';
     paras = ['Hi ' + esc(first) + ',', 'Your weekly Secret Santa nudge from the elves. ' + esc(line.ex) + ' ' + esc(line.budget),
       '&#128220; <b>Is your wishlist up to date?</b> Your Santa reads it, so a few hints go a long way.',
-      namesOut ? '&#127873; <b>Had a look at your giftee\u2019s wishlist?</b> They may have added to it. You can send them an anonymous note in the app too.' : 'The elves will email you when the names are revealed.'];
+      namesOut ? '&#127873; <b>Had a look at your giftee\u2019s wishlist?</b> They may have added to it.' : 'The elves will email you when the names are revealed.'];
     button = 'Open Secret Santa';
   } else if (kind === 'eve') {
     const when = dx === 1 ? 'tomorrow' : 'on ' + ex;
     subject = '\uD83C\uDF81 Secret Santa is ' + when + '! Have you got your present?';
     title = dx === 1 ? 'It\u2019s tomorrow!' : 'Nearly time!';
-    paras = ['Hi ' + esc(first) + ',', 'The Secret Santa exchange is <b>' + esc(when) + '</b>. ' + esc(line.budget), 'Wrapped and ready? If you need a last minute idea, your giftee\u2019s wishlist is in the app.'];
+    paras = ['Hi ' + esc(first) + ',', 'The Secret Santa exchange is <b>' + esc(when) + '</b>. ' + esc(line.budget), 'Wrapped and ready? If you need a last minute idea, your giftee\u2019s wishlist is on your Secret Santa page.'];
     button = 'Open Secret Santa';
   } else throw new Error('unknown mail ' + kind);
-  text = paras.map(x => x.replace(/<[^>]+>/g, '').replace(/&#\d+;/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, '\u2019').replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n\n') + '\n\n' + button + ': ' + APP + '\n\nSign in with your work email and PIN, the same as the Team app.\n\nThe Ruxley elves';
-  return { subject, text, html: page(esc(title), paras, esc(button)), fromName: 'Hedin Used Cars', ts: nowMs };
+  const href = link || APP;
+  const foot = link ? 'This is your own private link, no sign in needed. Please don\u2019t forward this email.' : SIGNIN;
+  text = paras.map(x => x.replace(/<[^>]+>/g, '').replace(/&#39;/g, '\u2019').replace(/&#\d+;/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n\n') + '\n\n' + button + ': ' + href + '\n\n' + foot + '\n\nThe Ruxley elves';
+  return { subject, text, html: page(esc(title), paras, esc(button), esc(foot), href), fromName: 'Hedin Used Cars', ts: nowMs };
 }
 
 /* ---------- the run ---------- */
@@ -168,14 +174,29 @@ async function queue(db, R, kind, notifyRoot, s, today, nowMs, log) {
   const practice = R !== 'santa';
   let list = Object.keys(members).filter(k => members[k] && members[k].email).map(k => ({ k, m: members[k] }));
   if (practice) list = list.length ? [{ k: 'practice', m: { name: 'Dan', email: DAN } }] : [];
+  /* someone who said I'm in on their opt in link gets that link back: it shows their
+     pairing with no sign in. A token must never sit on the public lockup queue
+     (lockup is world readable), so those go on lockupPrivate/notify, which only the
+     Action reads, and only for the real list. */
+  const tokens = {};
+  if (!practice) {
+    const optins = (await val(db, R + '/optins')) || {};
+    Object.keys(optins).forEach(t => {
+      const r = optins[t];
+      if (!r || r.choice !== 'in' || !r.email || !/^[A-Za-z0-9_-]{24,64}$/.test(t)) return;
+      const k = keyOf(r.email);
+      if (!tokens[k] || (r.choiceTs || 0) > tokens[k].ts) tokens[k] = { t, ts: r.choiceTs || 0 };
+    });
+  }
   let n = 0;
   for (const { k, m } of list) {
     const id = (practice ? 'santatest_' : 'santa_') + kind + '_' + (kind === 'weekly' ? LR.isoWeek(today).replace('-', '_') + '_' : '') + mailId(k);
-    const ref = db.ref(notifyRoot + '/' + id);
-    if ((await ref.get()).val()) continue;
-    const mail = makeMail(kind, m, s, today, nowMs);
+    const ref = db.ref(notifyRoot + '/' + id), pref = db.ref(PRIVATE + '/' + id);
+    if ((await ref.get()).val() || (await pref.get()).val()) continue;
+    const tok = tokens[k] && notifyRoot === 'lockup/notify' ? tokens[k].t : null;
+    const mail = makeMail(kind, m, s, today, nowMs, tok ? OPTIN + '?t=' + encodeURIComponent(tok) : null);
     if (practice) mail.subject = '[PRACTICE] ' + mail.subject;
-    await ref.set(Object.assign({ to: [String(m.email).toLowerCase()] }, mail));
+    await (tok ? pref : ref).set(Object.assign({ to: [String(m.email).toLowerCase()] }, mail));
     n++;
   }
   log(R + ': queued ' + n + ' ' + kind + ' email' + (n === 1 ? '' : 's'));
@@ -196,6 +217,42 @@ function teamIdFor(email, team, managers) {
   return null;
 }
 
+/* Every drawn person gets a personal link (santa/optins/<token>, choice in), so
+ * the launch email and every reminder open straight onto their own pairing with
+ * no sign in. Someone with a link keeps it (switched to in if they were kept in
+ * by Elf HQ or never replied); anyone else gets a new unguessable token. Only
+ * after the draw, so the list is final. Logs never name anyone or a token. */
+async function ensureLinks(db, R, nowMs, log) {
+  const members = (await val(db, R + '/members')) || {};
+  const assign = (await val(db, R + '/assign')) || {};
+  const optins = (await val(db, R + '/optins')) || {};
+  const byKey = {};
+  Object.keys(optins).forEach(t => {
+    const r = optins[t];
+    if (!r || !r.email || !/^[A-Za-z0-9_-]{24,64}$/.test(t)) return;
+    const k = keyOf(r.email), b = byKey[k];
+    /* prefer a link already in, then the newest */
+    if (!b || (r.choice === 'in') > (b.r.choice === 'in') || ((r.choice === 'in') === (b.r.choice === 'in') && (r.choiceTs || r.invitedTs || 0) > (b.r.choiceTs || b.r.invitedTs || 0))) byKey[k] = { t, r };
+  });
+  const updates = {};
+  let made = 0, flipped = 0;
+  for (const k of Object.keys(members)) {
+    const m = members[k];
+    if (!m || !m.email || keyOf(m.email) !== k || !assign[k]) continue;
+    const have = byKey[k];
+    if (have && have.r.choice === 'in') continue;
+    if (have) { updates['optins/' + have.t + '/choice'] = 'in'; updates['optins/' + have.t + '/choiceTs'] = nowMs; flipped++; continue; }
+    const t = crypto.randomBytes(24).toString('base64url');
+    const rec = { name: String(m.name || m.email.split('@')[0]).slice(0, 40), email: String(m.email).toLowerCase(), invitedTs: nowMs, choice: 'in', choiceTs: nowMs };
+    if (m.team) rec.team = m.team; else rec.extra = true;
+    updates['optins/' + t] = rec;
+    made++;
+  }
+  if (!Object.keys(updates).length) return;
+  await db.ref(R).update(updates);
+  log(R + ': personal links, ' + made + ' new, ' + flipped + ' switched to in');
+}
+
 /* Apply opt in / opt out answers. Tokens stay on the server: organisers only
  * see santa/replies (name, email, choice), never the token or a pairing.
  * People who say they are in are added to the nice list; people who say not
@@ -213,6 +270,9 @@ async function syncOptins(db, R, o) {
   const members = Object.assign({}, (await val(db, R + '/members')) || {});
   const wishes = Object.assign({}, (await val(db, R + '/wish')) || {});
   const assign = (await val(db, R + '/assign')) || {};
+  /* server only: when this sync last put each person on the list from their reply.
+     An organiser's change in Elf HQ made after the reply wins over the reply. */
+  const added_ = (await val(db, R + '/optinAdded')) || {};
   const namesOut = s.live === true;
   const updates = {};
   const replies = {};
@@ -223,16 +283,24 @@ async function syncOptins(db, R, o) {
     const email = String(rec.email).trim().toLowerCase();
     const k = keyOf(email);
     const choice = rec.choice === 'in' || rec.choice === 'out' ? rec.choice : 'pending';
-    replies[k] = { name: String(rec.name || '').slice(0, 40), email: email, choice: choice, ts: rec.choiceTs || rec.invitedTs || 0 };
-    if (!locked && choice === 'in' && !members[k]) {
+    const cts = rec.choiceTs || 0, mem = members[k];
+    /* an organiser added them after they said not this year: they stay in */
+    const keptIn = choice === 'out' && !!mem && (mem.ts || 0) > cts && (mem.ts || 0) > (added_[k] || 0);
+    /* an organiser took them off after this sync added them from an I'm in: they stay off */
+    const keptOut = choice === 'in' && !mem && !!added_[k] && added_[k] >= cts;
+    if (choice === 'in' && mem && !added_[k] && !locked) updates['optinAdded/' + k] = nowMs;
+    replies[k] = { name: String(rec.name || '').slice(0, 40), email: email, choice: keptIn ? 'in' : keptOut ? 'out' : choice, ts: rec.choiceTs || rec.invitedTs || 0 };
+    if (keptIn || keptOut) replies[k].elves = true;
+    if (!locked && choice === 'in' && !mem && !keptOut) {
       const m = { name: String(rec.name || email.split('@')[0]).slice(0, 40), email: email, ts: nowMs };
       const tid = teamIdFor(email, team, managers);
       if (tid) m.team = tid; else m.extra = true;
       updates['members/' + k] = m;
+      updates['optinAdded/' + k] = nowMs;
       members[k] = m;
       added++;
     }
-    if (!locked && choice === 'out' && members[k]) {
+    if (!locked && choice === 'out' && mem && !keptIn) {
       updates['members/' + k] = null;
       delete members[k];
       removed++;
@@ -297,6 +365,8 @@ async function runRoot(db, R, o) {
       } else await db.ref(R + '/launchRequest').remove();
     }
   }
+  /* once the names are out, everyone drawn has their own link: nobody has to sign in */
+  if (launched) await ensureLinks(db, R, nowMs, log);
   await syncOptins(db, R, o);
   if (!launched) return;
   const mail = (await val(db, R + '/mail')) || {};

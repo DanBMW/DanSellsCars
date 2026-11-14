@@ -276,7 +276,7 @@
     var klass = function (c) { return c === 'in' ? 'in' : c === 'out' ? 'out' : 'wait'; };
     $('optin-list').innerHTML = list.map(function (p) {
       return '<li><span class="av">' + esc(String(p.name || p.email || '?').charAt(0)) + '</span><span class="pn"><b>' + esc(p.name || p.email) + '</b><small>' + esc(p.email || '') + '</small></span>' +
-        '<span class="tagp ' + klass(p.choice) + '">' + label(p.choice) + '</span></li>';
+        '<span class="tagp ' + klass(p.choice) + '">' + label(p.choice) + (p.elves ? ' (Elf HQ)' : '') + '</span></li>';
     }).join('');
   }
   function paintLaunch(list, adm) {
@@ -309,8 +309,11 @@
       }).join('') : '<li class="small">Nobody in this group.</li>';
       return '<h3 class="rev-h">' + title + ' <span class="tagp ' + klass + '">' + arr.length + '</span></h3><ul class="people rev-list">' + body + '</ul>';
     };
-    if (!keys.length) return '<p class="small">No opt in replies have been recorded yet. The nice list currently has <b>' + memberList().length + '</b> people.</p>';
-    return bit("Who's in", groups.in, 'in') + bit('Waiting', groups.pending, 'wait') + bit("Who's out", groups.out, 'out');
+    /* the nice list is what gets drawn, so show it whole: people added in Elf HQ have no reply */
+    var nice = memberList().map(function (m) { return { name: m.name, email: m.email }; });
+    var niceHtml = bit('On the nice list, these are drawn', nice, 'in');
+    if (!keys.length) return niceHtml + '<p class="small">No opt in replies have been recorded yet.</p>';
+    return niceHtml + '<p class="small">Opt in replies:</p>' + bit("Who's in", groups.in, 'in') + bit('Waiting', groups.pending, 'wait') + bit("Who's out", groups.out, 'out');
   }
   function launchReview() {
     var until = optInUntilMs(), early = until && Date.now() < until;

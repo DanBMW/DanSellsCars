@@ -95,7 +95,7 @@ const K = S.keyOf;
 const T = iso => Date.parse(iso);
 const ELVES = ['holly.berry@example.com', 'noel.snow@example.com', 'ivy.green@example.com', 'rudy.deer@example.com', 'carol.singer@example.com', 'nick.frost@example.com', 'eve.winter@example.com'];
 function memberMap(list) { const m = {}; list.forEach(e => { m[K(e)] = { name: e.split('.')[0].replace(/^./, c => c.toUpperCase()), email: e, ts: 1 }; }); return m; }
-const notify = db => db.data.lockup && db.data.lockup.notify || {};
+const notify = db => Object.assign({}, db.data.lockup && db.data.lockup.notify || {}, db.data.lockupPrivate && db.data.lockupPrivate.notify || {});
 const ids = (db, re) => Object.keys(notify(db)).filter(k => re.test(k));
 const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/notify', log: x => (logs || []).push(x) });
 
@@ -136,7 +136,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     ok(R.settings.live === true && R.launched && R.draw && bijection(Object.keys(R.members), R.sealed.pairs), 'launch draws the names and goes live');
     eq(ids(db, /^santa_launch_/).length, 7, 'one launch email each');
     const launchMail = notify(db)['santa_launch_' + S.mailId(K('holly.berry@example.com'))];
-    ok(/Open the app to see who you/.test(launchMail.subject), 'launch subject says open the app: ' + launchMail.subject);
+    ok(/Tap to see who you/.test(launchMail.subject), 'launch subject says open the app: ' + launchMail.subject);
     ok(/team meal/.test(launchMail.text), 'launch email mentions the team meal');
     eq(launchMail.to, ['holly.berry@example.com']); eq(launchMail.fromName, 'Hedin Used Cars');
     /* repeat runs, a second press of Launch, a late run: nothing sent twice */
@@ -195,7 +195,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     const drawId = db.data.santa.draw.id;
     db.data.santa.launchRequest = { byName: 'Dan' }; await runAt(db, '2026-11-09T10:15:00Z');
     eq(db.data.santa.launched.drawId, drawId, 'launch keeps an existing draw');
-    eq(ids(db, /^santa_launch_/).length, 3); ok(/Open the app to see who you/.test(notify(db)[ids(db, /^santa_launch_/)[0]].subject), 'launch says open the app');
+    eq(ids(db, /^santa_launch_/).length, 3); ok(/Tap to see who you/.test(notify(db)[ids(db, /^santa_launch_/)[0]].subject), 'launch says open the app');
     for (const t of ['2026-11-16T10:00:00Z', '2026-11-23T10:00:00Z', '2026-12-19T10:00:00Z']) await runAt(db, t);
     eq(ids(db, /^santa_(announce|weekly|eve)_/).length, 0, 'reminders off: no weekly or eve; no announce email either');
   }
@@ -303,5 +303,99 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     ok(!ids(db, /noel|rudy|carol|nick|eve/).length, 'opted out or unlisted people get no weekly');
   }
 
+  /* launch day rehearsal, 14 November: organiser overrides, guests with and without a link, no token on the public queue */
+  {
+    const H = e => e + '@hedinautomotive.co.uk', keyOf2 = S.keyOf;
+    const reply = T('2026-11-12T09:00:00Z'), added = T('2026-11-14T08:30:00Z');
+    const db = fakeDb({
+      lockup: { config: { team: { danny: { name: 'Danny', email: H('danny.page'), active: true }, dan: { name: 'Dan', email: H('daniel.cane'), active: true } }, managers: { will: { name: 'Will', email: H('will.potter') } } } },
+      santa: {
+        settings: { budget: 20, exchange: '2026-12-05', live: false, reminders: true, optInUntil: T('2026-11-14T23:59:59Z') },
+        optins: {
+          TokDannyAAAAAAAAAAAAAAAAAA12: { name: 'Danny', email: H('danny.page'), invitedTs: 1, choice: 'out', choiceTs: reply },
+          TokTinaBBBBBBBBBBBBBBBBBBBB12: { name: 'Tina', email: H('tina.graham'), invitedTs: 1, choice: 'in', choiceTs: reply },
+          TokFaithCCCCCCCCCCCCCCCCCCC12: { name: 'Faith', email: H('faith.marcus'), invitedTs: 1, choice: 'in', choiceTs: reply },
+          TokWillDDDDDDDDDDDDDDDDDDDD12: { name: 'Will', email: H('will.potter'), invitedTs: 1, choice: 'in', choiceTs: reply }
+        },
+        members: { [K(H('daniel.cane'))]: { name: 'Dan', email: H('daniel.cane'), team: 'dan', ts: 1 } }
+      }
+    });
+    /* the morning's runs put the I'm ins on the list */
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T08:00:00Z'), notifyRoot: 'lockup/notify' });
+    const R = db.data.santa;
+    ok(R.members[K(H('tina.graham'))] && R.members[K(H('faith.marcus'))] && R.members[K(H('will.potter'))], 'I am in replies are on the list');
+    ok(!R.members[K(H('danny.page'))], 'Danny said not this year, so he is off for now');
+    /* Dan adds Danny and Ruby in Elf HQ, and takes Faith off */
+    R.members[K(H('danny.page'))] = { name: 'Danny', email: H('danny.page'), team: 'danny', ts: added };
+    R.members[K(H('ruby.kemp'))] = { name: 'Ruby', email: H('ruby.kemp'), extra: true, ts: added };
+    delete R.members[K(H('faith.marcus'))];
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T08:45:00Z'), notifyRoot: 'lockup/notify' });
+    ok(R.members[K(H('danny.page'))], 'an organiser adding someone after their not this year keeps them in');
+    eq(R.replies[K(H('danny.page'))].choice, 'in'); ok(R.replies[K(H('danny.page'))].elves, 'the reply says Elf HQ changed it');
+    ok(!R.members[K(H('faith.marcus'))], 'an organiser taking someone off after their I am in keeps them off');
+    eq(R.replies[K(H('faith.marcus'))].choice, 'out');
+    ok(R.members[K(H('ruby.kemp'))], 'an Elf HQ extra with no opt in link stays on the list');
+    /* Dan presses Go */
+    R.launchRequest = { byName: 'Dan', ts: T('2026-11-14T10:00:00Z') };
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:15:00Z'), notifyRoot: 'lockup/notify' });
+    const keys = Object.keys(R.members);
+    eq(keys.length, 5, 'Dan, Danny, Tina, Will and Ruby are drawn');
+    eq(R.draw.count, 5); ok(bijection(keys, R.sealed.pairs), 'the launch draw is a bijection');
+    keys.forEach(k => ok(R.assign[k] && R.assign[k].to !== k, 'nobody draws themselves'));
+    ok(R.settings.live === true && R.launched, 'live after Go');
+    const pub = db.data.lockup.notify || {}, priv = (db.data.lockupPrivate || {}).notify || {};
+    const all = Object.assign({}, pub, priv);
+    eq(Object.keys(all).filter(i => /^santa_launch_/.test(i)).length, 5, 'one launch email each');
+    const toOf = i => all[i].to[0];
+    const privTo = Object.keys(priv).map(i => priv[i].to[0]).sort();
+    eq(privTo.length, 5, 'every launch email carries a personal link, so all five are on the private queue');
+    eq(Object.keys(pub).filter(i => /^santa_/.test(i)).length, 0, 'nothing Santa on the public queue');
+    const linkOf = e => { const m = /optin\.html\?t=([A-Za-z0-9_-]+)/.exec(priv[Object.keys(priv).find(i => toOf(i) === e)].html); return m && m[1]; };
+    keys.forEach(k => { const t = linkOf(R.members[k].email); ok(t && R.optins[t] && R.optins[t].choice === 'in' && keyOf2(R.optins[t].email) === k, 'personal link for ' + R.members[k].name); ok(R.guestGift[t] && R.guestGift[t].to === R.assign[k].to, 'the link opens on their own pairing'); });
+    eq(linkOf(H('danny.page')), 'TokDannyAAAAAAAAAAAAAAAAAA12', 'Danny keeps his own link, now switched to in');
+    ok(linkOf(H('ruby.kemp')) && linkOf(H('daniel.cane')), 'Ruby and Dan, who had no link, get a new one');
+    eq(new Set(keys.map(k => linkOf(R.members[k].email))).size, 5, 'five different links');
+    ok(/optin\.html\?t=TokTinaBBBBBBBBBBBBBBBBBBBB12/.test(priv[Object.keys(priv).find(i => toOf(i) === H('tina.graham'))].html), 'Tina gets her own link');
+    ok(!/c=in|c=out/.test(JSON.stringify(priv)), 'the personal link carries no choice, so tapping it cannot flip anything');
+    ok(!/Tok[A-Za-z]+[0-9]{2}/.test(JSON.stringify(db.data.lockup)), 'no token anywhere on the public lockup tree');
+    Object.values(priv).forEach(m => ok(/no sign in needed/.test(m.text) && !/PIN/.test(m.text), 'no email asks anybody to sign in'));
+    Object.values(priv).forEach(m => ok(!/\byoure\b|&#\d+;/.test(m.text) && !/the app/.test(m.text + m.subject), 'plain text reads properly and never mentions an app'));
+    Object.keys(all).forEach(i => { const k = keyOf2(all[i].to[0]), g = R.members[R.assign[k].to].name; if (g !== R.members[k].name) { const re = new RegExp('\\b' + g + '\\b', 'g'), strip = x => x.replace(/not even Dan/g, ''); ok(!re.test(strip(all[i].text)) && !re.test(strip(all[i].html)) && !re.test(all[i].subject), 'no email names the giftee (' + g + ')'); } });
+    ok(R.guestGift && R.guestGift.TokTinaBBBBBBBBBBBBBBBBBBBB12 && R.guestGift.TokTinaBBBBBBBBBBBBBBBBBBBB12.to === R.assign[K(H('tina.graham'))].to, 'Tina sees her own pairing on her link');
+    ok(!R.guestGift.TokFaithCCCCCCCCCCCCCCCCCCC12, 'no gift record for a link that is not in the draw');
+    /* the next two runs send nothing new and change nothing */
+    const before = JSON.stringify(R.sealed) + Object.keys(all).length;
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:30:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:45:00Z'), notifyRoot: 'lockup/notify' });
+    const all2 = Object.assign({}, db.data.lockup.notify, db.data.lockupPrivate.notify);
+    eq(JSON.stringify(R.sealed) + Object.keys(all2).length, before, 'later runs neither redraw nor email again');
+    /* Faith taps I am in again after the launch: the list is locked */
+    R.optins.TokFaithCCCCCCCCCCCCCCCCCCC12.choiceTs = T('2026-11-14T11:00:00Z');
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T11:15:00Z'), notifyRoot: 'lockup/notify' });
+    ok(!R.members[K(H('faith.marcus'))], 'after Go nobody is added');
+    /* the Monday reminder: the link holders on the private queue again, nobody twice */
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-16T10:05:00Z'), notifyRoot: 'lockup/notify' });
+    eq(Object.keys(Object.assign({}, db.data.lockup.notify, db.data.lockupPrivate.notify)).filter(i => /^santa_weekly_/.test(i)).length, 0, 'no weekly inside the launch first two days');
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-23T10:05:00Z'), notifyRoot: 'lockup/notify' });
+    const wk = Object.assign({}, db.data.lockup.notify, db.data.lockupPrivate.notify);
+    eq(Object.keys(wk).filter(i => /^santa_weekly_/.test(i)).length, 5, 'one weekly each');
+    ok(!/Tok[A-Za-z]+[0-9]{2}/.test(JSON.stringify(db.data.lockup)), 'still no token on the public tree');
+    /* lockup in test mode: nothing private, nothing with a token */
+    const dbT = fakeDb(JSON.parse(JSON.stringify(db.data)));
+    dbT.data.lockupPrivate = {}; dbT.data.lockupTest = {}; dbT.data.santa.mail = {}; 
+    await S.runRoot(dbT, 'santa', { log: () => {}, nowMs: T('2026-11-23T10:20:00Z'), notifyRoot: 'lockupTest/notify' });
+    ok(!Object.keys(dbT.data.lockupPrivate.notify || {}).length && !/Tok[A-Za-z]+[0-9]{2}/.test(JSON.stringify(dbT.data.lockupTest)), 'test mode never sends a personal link');
+  }
+  /* a change of mind after the organiser's change still counts */
+  {
+    const db = fakeDb({ santa: { settings: { live: false }, optins: { TokFaithCCCCCCCCCCCCCCCCCCC12: { name: 'Faith', email: 'f@x.com', invitedTs: 1, choice: 'in', choiceTs: T('2026-11-12T09:00:00Z') } }, members: {} } });
+    await S.syncOptins(db, 'santa', { log: () => {}, nowMs: T('2026-11-13T09:00:00Z') });
+    delete db.data.santa.members[K('f@x.com')];
+    await S.syncOptins(db, 'santa', { log: () => {}, nowMs: T('2026-11-13T09:15:00Z') });
+    ok(!db.data.santa.members[K('f@x.com')], 'removed in Elf HQ, stays off');
+    db.data.santa.optins.TokFaithCCCCCCCCCCCCCCCCCCC12.choiceTs = T('2026-11-13T10:00:00Z');
+    await S.syncOptins(db, 'santa', { log: () => {}, nowMs: T('2026-11-13T10:15:00Z') });
+    ok(db.data.santa.members[K('f@x.com')], 'tapping I am in again afterwards puts them back');
+  }
   console.log('santa: all ' + checks + ' checks passed');
 })().catch(e => { console.error(e); process.exit(1); });

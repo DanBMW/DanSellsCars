@@ -32,7 +32,7 @@ function fakeDb(data) {
     set: async v => set(p, v), remove: async () => set(p, null),
     update: async v => Object.keys(v).forEach(k => set(p + '/' + k, v[k])) }) };
 }
-function notify(db) { return (db.data.lockup && db.data.lockup.notify) || {}; }
+function notify(db) { return Object.assign({}, (db.data.lockup && db.data.lockup.notify) || {}, (db.data.lockupPrivate && db.data.lockupPrivate.notify) || {}); }
 function ids(db, re) { return Object.keys(notify(db)).filter(k => re.test(k)); }
 function memberMap(emails) {
   const m = {};

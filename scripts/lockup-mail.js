@@ -200,7 +200,7 @@ async function main() {
       const subject = (TEST || q.rcTest ? '[TEST] ' : '') + q.subject;
       const bcc = rcBccFor(id, nowMs);
       console.log((DRY ? '[dry] ' : '') + 'Send "' + subject + '" to ' + to.join(', ') + (bcc.length ? ' (bcc Dan)' : ''));
-      if (DRY) console.log(q.text || '');
+      if (DRY) console.log(/^lockupPrivate\//.test(paths[id] || '') ? '(private: text not printed)' : (q.text || ''));
       else await transport().sendMail(Object.assign({ from: { name: q.fromName || process.env.MAIL_FROM_NAME || 'Hedin Used Cars', address: process.env.GMAIL_USER }, to, subject, text: q.text || '', html: q.html }, bcc.length ? { bcc } : {}, q.csv ? { attachments: [{ filename: q.csvName || 'forecourt.csv', content: q.csv, contentType: 'text/csv' }] } : {}));
     } else {
       const lines = Array.isArray(q.lines) ? q.lines : Object.values(q.lines || {});
