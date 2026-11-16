@@ -32,6 +32,9 @@ const APP = 'https://dan-sells.co.uk/santa/';
 const OPTIN = 'https://dan-sells.co.uk/santa/optin.html';
 const PRIVATE = 'lockupPrivate/notify';
 const RESTART_FOR_LAUNCH_BY = Date.parse('2026-11-14T10:00:00Z');
+/* People who dropped out after the names were out (Dan, 16 November 2026). Applied
+   once each by withdraw(): their Santa takes over who they had, nobody else moves. */
+const WITHDRAWN = ['ruby.kemp@hedinautomotive.co.uk'];
 const DAN = 'daniel.cane@hedinautomotive.co.uk';
 
 function keyOf(email) { return String(email || '').trim().toLowerCase().split('.').join(','); }
@@ -272,6 +275,61 @@ async function ensureLinks(db, R, nowMs, log) {
   log(R + ': personal links, ' + made + ' new, ' + flipped + ' switched to in');
 }
 
+/* Someone drops out after the names are out. The draw is not run again, because
+ * people have already seen who they have: the person who had them simply takes
+ * over who they had, and every other pairing stays exactly as it was. Their
+ * member, pairing, wishlist, notes and personal link go. Once each (marked at
+ * withdrawn/<k>), real list only, no email. Refuses, changing nothing, if the
+ * two of them had each other or the result would not be a valid draw. Logs
+ * never name anyone. */
+async function withdraw(db, R, list, nowMs, log) {
+  const draw = await val(db, R + '/draw');
+  if (!draw || !list || !list.length) return 0;
+  const done = (await val(db, R + '/withdrawn')) || {};
+  let n = 0;
+  for (const email of list) {
+    const k = keyOf(email);
+    if (done[k]) continue;
+    const members = (await val(db, R + '/members')) || {};
+    if (!members[k]) continue;
+    const assign = (await val(db, R + '/assign')) || {};
+    const sealed = (await val(db, R + '/sealed')) || {};
+    const excl = (await val(db, R + '/exclusions')) || {};
+    const pairs = Object.assign({}, sealed.pairs || {});
+    const giver = Object.keys(pairs).find(g => pairs[g] === k);
+    const recv = pairs[k];
+    const refuse = why => { log(R + ': withdrawal refused (' + why + '), nothing changed'); };
+    if (!giver || !recv || !assign[giver] || !assign[k] || !members[recv]) { refuse('pairing incomplete'); continue; }
+    if (giver === recv) { refuse('they had each other'); continue; }
+    pairs[giver] = recv; delete pairs[k];
+    const keys = Object.keys(members).filter(x => x !== k && members[x] && keyOf(members[x].email) === x);
+    if (!valid(keys, pairs, excl)) { refuse('result is not a valid draw'); continue; }
+    const optins = (await val(db, R + '/optins')) || {};
+    const u = {};
+    u['assign/' + giver] = { to: recv, name: members[recv].name, drawId: assign[giver].drawId || draw.id };
+    u['sealed/pairs/' + giver] = recv;
+    u['sealed/pairs/' + k] = null;
+    u['assign/' + k] = null;
+    u['members/' + k] = null;
+    u['wish/' + k] = null;
+    u['notes/' + k] = null;
+    u['draw/count'] = keys.length;
+    u['withdrawn/' + k] = nowMs;
+    Object.keys(optins).forEach(t => {
+      const r = optins[t];
+      if (!r || keyOf(r.email) !== k) return;
+      u['optins/' + t + '/choice'] = 'out';
+      u['optins/' + t + '/choiceTs'] = nowMs;
+      u['optins/' + t + '/wish'] = null;
+      u['guestGift/' + t] = null;
+    });
+    await db.ref(R).update(u);
+    log(R + ': one person withdrew, their Santa takes over who they had, nothing else moved');
+    n++;
+  }
+  return n;
+}
+
 /* Apply opt in / opt out answers. Tokens stay on the server: organisers only
  * see santa/replies (name, email, choice), never the token or a pairing.
  * People who say they are in are added to the nice list; people who say not
@@ -386,6 +444,7 @@ async function runRoot(db, R, o) {
   }
   /* once the names are out, everyone drawn has their own link: nobody has to sign in */
   if (launched) await ensureLinks(db, R, nowMs, log);
+  if (R === 'santa') await withdraw(db, R, o.withdrawn || WITHDRAWN, nowMs, log);
   await syncOptins(db, R, o);
   if (!launched) return;
   const mail = (await val(db, R + '/mail')) || {};
@@ -407,13 +466,13 @@ async function runRoot(db, R, o) {
 async function run(db, o) {
   o = o || {};
   if (typeof o === 'function') o = { log: o };
-  const opts = { log: o.log || (m => console.log('santa: ' + m)), nowMs: o.nowMs || Date.now(), notifyRoot: o.notifyRoot || 'lockup/notify' };
+  const opts = { log: o.log || (m => console.log('santa: ' + m)), nowMs: o.nowMs || Date.now(), notifyRoot: o.notifyRoot || 'lockup/notify', withdrawn: o.withdrawn };
   for (const R of ['santa', 'santaTest']) {
     try { await runRoot(db, R, opts); } catch (e) { opts.log(R + ' failed: ' + (e && e.message)); }
   }
 }
 
-module.exports = { keyOf, derange, valid, explain, DrawError, run, runRoot, syncOptins, makeMail, eveDay, mailId, teamIdFor, _setRand: f => { RAND = f; } };
+module.exports = { keyOf, withdraw, WITHDRAWN, derange, valid, explain, DrawError, run, runRoot, syncOptins, makeMail, eveDay, mailId, teamIdFor, _setRand: f => { RAND = f; } };
 
 if (require.main === module) {
   const admin = require('firebase-admin');

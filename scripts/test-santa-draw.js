@@ -97,7 +97,7 @@ const ELVES = ['holly.berry@example.com', 'noel.snow@example.com', 'ivy.green@ex
 function memberMap(list) { const m = {}; list.forEach(e => { m[K(e)] = { name: e.split('.')[0].replace(/^./, c => c.toUpperCase()), email: e, ts: 1 }; }); return m; }
 const notify = db => Object.assign({}, db.data.lockup && db.data.lockup.notify || {}, db.data.lockupPrivate && db.data.lockupPrivate.notify || {});
 const ids = (db, re) => Object.keys(notify(db)).filter(k => re.test(k));
-const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/notify', log: x => (logs || []).push(x) });
+const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/notify', log: x => (logs || []).push(x), withdrawn: [] });
 
 (async () => {
   /* a. draw, extras, redraw, cancel */
@@ -245,7 +245,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
       }, members: { [K('lisa.debono@hedinautomotive.co.uk')]: { name: 'Lisa', email: 'lisa.debono@hedinautomotive.co.uk', extra: true, ts: 1 } } }
     });
     const logs = [];
-    await S.runRoot(db, 'santa', { log: m => logs.push(m), nowMs: Date.parse('2026-11-10T12:00:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: m => logs.push(m), nowMs: Date.parse('2026-11-10T12:00:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
     const R = db.data.santa;
     ok(R.members[K('tina.graham@hedinautomotive.co.uk')] && R.members[K('tina.graham@hedinautomotive.co.uk')].extra === true, 'opted in extras are added to the nice list');
     ok(R.members[K('daniel.cane@hedinautomotive.co.uk')] && R.members[K('daniel.cane@hedinautomotive.co.uk')].team === 'dan', 'opted in team people keep their team id');
@@ -325,7 +325,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
       }
     });
     /* the morning's runs put the I'm ins on the list */
-    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T08:00:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T08:00:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
     const R = db.data.santa;
     ok(R.members[K(H('tina.graham'))] && R.members[K(H('faith.marcus'))] && R.members[K(H('will.potter'))], 'I am in replies are on the list');
     ok(!R.members[K(H('danny.page'))], 'Danny said not this year, so he is off for now');
@@ -333,7 +333,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     R.members[K(H('danny.page'))] = { name: 'Danny', email: H('danny.page'), team: 'danny', ts: added };
     R.members[K(H('ruby.kemp'))] = { name: 'Ruby', email: H('ruby.kemp'), extra: true, ts: added };
     delete R.members[K(H('faith.marcus'))];
-    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T08:45:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T08:45:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
     ok(R.members[K(H('danny.page'))], 'an organiser adding someone after their not this year keeps them in');
     eq(R.replies[K(H('danny.page'))].choice, 'in'); ok(R.replies[K(H('danny.page'))].elves, 'the reply says Elf HQ changed it');
     ok(!R.members[K(H('faith.marcus'))], 'an organiser taking someone off after their I am in keeps them off');
@@ -341,7 +341,7 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     ok(R.members[K(H('ruby.kemp'))], 'an Elf HQ extra with no opt in link stays on the list');
     /* Dan presses Go */
     R.launchRequest = { byName: 'Dan', ts: T('2026-11-14T10:00:00Z') };
-    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:15:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:15:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
     const keys = Object.keys(R.members);
     eq(keys.length, 5, 'Dan, Danny, Tina, Will and Ruby are drawn');
     eq(R.draw.count, 5); ok(bijection(keys, R.sealed.pairs), 'the launch draw is a bijection');
@@ -369,18 +369,18 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     ok(!R.guestGift.TokFaithCCCCCCCCCCCCCCCCCCC12, 'no gift record for a link that is not in the draw');
     /* the next two runs send nothing new and change nothing */
     const before = JSON.stringify(R.sealed) + Object.keys(all).length;
-    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:30:00Z'), notifyRoot: 'lockup/notify' });
-    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:45:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:30:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T10:45:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
     const all2 = Object.assign({}, db.data.lockup.notify, db.data.lockupPrivate.notify);
     eq(JSON.stringify(R.sealed) + Object.keys(all2).length, before, 'later runs neither redraw nor email again');
     /* Faith taps I am in again after the launch: the list is locked */
     R.optins.TokFaithCCCCCCCCCCCCCCCCCCC12.choiceTs = T('2026-11-14T11:00:00Z');
-    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T11:15:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-14T11:15:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
     ok(!R.members[K(H('faith.marcus'))], 'after Go nobody is added');
     /* the Monday reminder: the link holders on the private queue again, nobody twice */
-    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-16T10:05:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-16T10:05:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
     eq(Object.keys(Object.assign({}, db.data.lockup.notify, db.data.lockupPrivate.notify)).filter(i => /^santa_weekly_/.test(i)).length, 0, 'no weekly inside the launch first two days');
-    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-23T10:05:00Z'), notifyRoot: 'lockup/notify' });
+    await S.runRoot(db, 'santa', { log: () => {}, nowMs: T('2026-11-23T10:05:00Z'), notifyRoot: 'lockup/notify', withdrawn: [] });
     const wk = Object.assign({}, db.data.lockup.notify, db.data.lockupPrivate.notify);
     eq(Object.keys(wk).filter(i => /^santa_weekly_/.test(i)).length, 5, 'one weekly each');
     ok(!/Tok[A-Za-z]+[0-9]{2}/.test(JSON.stringify(db.data.lockup)), 'still no token on the public tree');
@@ -420,6 +420,58 @@ const runAt = (db, iso, logs) => S.run(db, { nowMs: T(iso), notifyRoot: 'lockup/
     db.data.santa.optins.TokFaithCCCCCCCCCCCCCCCCCCC12.choiceTs = T('2026-11-13T10:00:00Z');
     await S.syncOptins(db, 'santa', { log: () => {}, nowMs: T('2026-11-13T10:15:00Z') });
     ok(db.data.santa.members[K('f@x.com')], 'tapping I am in again afterwards puts them back');
+  }
+  /* someone drops out after the names are out (16 November): their Santa takes over who they had, nothing else moves, no extra email */
+  {
+    const db = fakeDb({ santa: { members: memberMap(ELVES), settings: { exchange: '2026-12-05', live: false } } });
+    db.data.santa.launchRequest = { byName: 'Dan', ts: T('2026-11-14T09:58:00Z') };
+    await runAt(db, '2026-11-14T09:59:00Z'); await runAt(db, '2026-11-14T10:30:00Z');
+    const before = JSON.parse(JSON.stringify(db.data.santa.sealed.pairs));
+    const w = Object.keys(before)[2], giver = Object.keys(before).find(g => before[g] === w), recv = before[w];
+    const wEmail = db.data.santa.members[w].email;
+    db.data.santa.wish = { [recv]: { text: 'Socks please', ts: 1 }, [w]: { text: 'gone', ts: 1 } };
+    db.data.santa.notes = { [w]: { n1: { text: 'hi', ts: 1 } } };
+    const wTok = Object.keys(db.data.santa.optins).filter(t => K(db.data.santa.optins[t].email) === w);
+    const gTok = Object.keys(db.data.santa.optins).find(t => K(db.data.santa.optins[t].email) === giver);
+    ok(wTok.length === 1 && gTok, 'both have personal links');
+    const nBefore = Object.keys(notify(db)).length;
+    const logs = [];
+    const o = { nowMs: T('2026-11-16T09:40:00Z'), notifyRoot: 'lockup/notify', log: x => logs.push(x), withdrawn: [wEmail] };
+    await S.runRoot(db, 'santa', o);
+    const after = db.data.santa.sealed.pairs;
+    eq(after[giver], recv, 'their Santa takes over who they had');
+    ok(!(w in after) && !db.data.santa.assign[w] && !db.data.santa.members[w], 'gone from the draw');
+    Object.keys(before).forEach(g => { if (g !== giver && g !== w) eq(after[g], before[g], 'nobody else moves'); });
+    ok(S.valid(Object.keys(db.data.santa.members), after, {}), 'still a valid draw');
+    eq(db.data.santa.assign[giver].to, recv, 'assign follows');
+    eq(db.data.santa.assign[giver].name, db.data.santa.members[recv].name, 'with the new name');
+    eq(db.data.santa.draw.count, ELVES.length - 1, 'count drops by one');
+    ok(!db.data.santa.wish[w] && !db.data.santa.notes[w], 'their wishlist and notes go');
+    ok(!(db.data.santa.guestGift || {})[wTok[0]] && db.data.santa.optins[wTok[0]].choice === 'out', 'their link shows nothing');
+    eq(db.data.santa.guestGift[gTok].name, db.data.santa.members[recv].name, 'the Santa’s link shows the new person');
+    eq(db.data.santa.guestGift[gTok].wish, 'Socks please', 'with their wishlist');
+    eq(Object.keys(notify(db)).length, nBefore, 'no email');
+    ok(logs.some(x => /withdrew/.test(x)) && !logs.some(x => x.includes(db.data.santa.members[giver].name) || x.includes(wEmail)), 'log names nobody');
+    const snap = JSON.stringify(db.data.santa);
+    await S.runRoot(db, 'santa', Object.assign({}, o, { nowMs: T('2026-11-16T09:55:00Z') }));
+    eq(JSON.stringify(db.data.santa), snap, 'once only');
+    /* the Monday reminder that follows names the new person and skips the one who left */
+    await S.runRoot(db, 'santa', Object.assign({}, o, { nowMs: T('2026-11-16T10:05:00Z') }));
+    const wk = ids(db, /^santa_weekly_/);
+    eq(wk.length, ELVES.length - 1, 'a reminder each for those still in');
+    ok(!wk.some(id => id.endsWith(S.mailId(w))), 'none for the one who left');
+    const gm = notify(db)[wk.find(id => id.endsWith(S.mailId(giver)))];
+    ok(gm && gm.text.includes(db.data.santa.members[recv].name), 'the Santa’s reminder names the new person');
+    /* they had each other: refused, nothing changes */
+    const ab = ['a@x.com', 'b@x.com', 'c@x.com', 'd@x.com'];
+    const db3 = fakeDb({ santa: { members: memberMap(ab), draw: { id: 'd1', count: 4 }, sealed: { drawId: 'd1', pairs: { [K('a@x.com')]: K('b@x.com'), [K('b@x.com')]: K('a@x.com'), [K('c@x.com')]: K('d@x.com'), [K('d@x.com')]: K('c@x.com') } } } });
+    db3.data.santa.assign = {}; Object.keys(db3.data.santa.sealed.pairs).forEach(g => { db3.data.santa.assign[g] = { to: db3.data.santa.sealed.pairs[g], name: 'x', drawId: 'd1' }; });
+    const s3 = JSON.stringify(db3.data.santa), l3 = [];
+    eq(await S.withdraw(db3, 'santa', ['a@x.com'], T('2026-11-16T09:40:00Z'), x => l3.push(x)), 0, 'refused');
+    eq(JSON.stringify(db3.data.santa), s3, 'nothing changed');
+    ok(l3.some(x => /refused/.test(x)), 'and says so');
+    /* the real list's practice copy is never touched */
+    ok(S.WITHDRAWN.every(e => /@/.test(e)), 'list is emails');
   }
   console.log('santa: all ' + checks + ' checks passed');
 })().catch(e => { console.error(e); process.exit(1); });
