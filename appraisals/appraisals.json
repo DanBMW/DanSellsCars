@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-16T16:02:27.447Z",
+  "captured": "2026-11-16T18:02:22.259Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "G24NDW",
+      "appraisedAt": "2026-11-16T16:03:57.622Z",
+      "make": "MERCEDES-BENZ",
+      "model": "V Class",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "YR67AKY",
       "appraisedAt": "2026-11-16T14:57:39.957Z",
@@ -49,7 +59,7 @@
       "appraisedAt": "2026-11-14T15:14:42.892Z",
       "make": "BMW",
       "model": "3 Series",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--M_ZVXCSN--/c_fill,h_300,w_300/v1794669292/Live/Appraisals/9647540/948aec64-6320-45af-84fb-c6f9839994d6.jpg"
