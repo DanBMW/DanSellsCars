@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Page not found | Dan Sells | Hedin Ruxley</title>
   <meta name="robots" content="noindex"/>
+  <script>
+    /* Paths that used to differ only by capital letters now live at the
+       lowercase URL. GitHub Pages is case-sensitive, so send those old
+       addresses there and keep the query and hash, without drawing this
+       404 first. */
+    (function(){
+      var path = location.pathname;
+      var lower = path.toLowerCase();
+      var dest = null;
+      if (path !== lower && lower === '/ev.html') dest = '/ev.html';
+      else if (path !== lower && (lower === '/bluemango' || lower.indexOf('/bluemango/') === 0)) dest = lower;
+      if (dest) location.replace(dest + location.search + location.hash);
+    })();
+  </script>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
@@ -54,7 +68,7 @@
     <p class="ph-drawer-label">Four ways in</p>
     <nav aria-label="Doorways">
       <a href="/find-my-bmw.html">Find my BMW</a>
-      <a href="/EV.html">Electric Daily</a>
+      <a href="/ev.html">Electric Daily</a>
       <a href="/appraisal.html">Value your car</a>
       <a href="/service.html">In for service</a>
     </nav>
@@ -108,7 +122,7 @@
       <div class="ph-footer-col">
         <h4>Find your way</h4>
         <a href="/find-my-bmw.html">Find my BMW</a>
-        <a href="/EV.html">Electric Daily</a>
+        <a href="/ev.html">Electric Daily</a>
         <a href="/appraisal.html">Value your car</a>
         <a href="/service.html">In for service</a>
         <a href="/current-opportunities.html">Current Opportunities</a>

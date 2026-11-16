@@ -40,7 +40,7 @@ the HTML/CSS/JS directly and push.
   Editing `worker.js` in this repo does **not** deploy it — it must be
   re-deployed to Cloudflare manually. Pages that call the worker include
   `tradevalue.html`, `step5.html`, `sq1.html`, `sq3.html`, `ap1.html`,
-  `ev-step4.html`, `EV.html`, `vip4.html`.
+  `ev-step4.html`, `ev.html`, `vip4.html`.
 
 ## Site structure: the funnels
 
@@ -83,7 +83,7 @@ The VIP flow follows the same rule: `vip7.html` sends exactly one email per
 completed pre-qualification (guarded by the `vipSent` session key so a
 refresh or a back-tap cannot re-fire it), and `vip.html`/`vip-done.html`
 send nothing at all.
-| `ev-step1.html`–`ev-step7.html` (+ `ev-thankyou`) | **BMW EV Finder** — EV-specific matching funnel (entry: `EV.html` / `ev.html`). Shared behaviour in `ev-funnel-ui.js`. Submits on `ev-step6.html`. |
+| `ev-step1.html`–`ev-step7.html` (+ `ev-thankyou`) | **BMW EV Finder** — EV-specific matching funnel (entry: `ev.html`). Shared behaviour in `ev-funnel-ui.js`. Submits on `ev-step6.html`. |
 | `ap1.html`–`ap6.html` | **Vehicle Appraisal** — customer self-appraisal of their current car (entry: `appraisal.html`). Submits on `ap5.html`, confirmation on `ap6.html`. |
 
 ### stock.html and its finance examples
@@ -2881,8 +2881,9 @@ said so.
   for the same reason. Keep both properties if you refactor — this page is
   meant to sit on a wall display unattended.
 
-Also retired: `ev.html` is a redirect stub to `EV.html` (the live EV landing
-page) kept only so old lowercase links still work — don't resurrect it.
+The EV landing page lives only at `ev.html`. The old uppercase path was
+removed so Windows servers can pull the repo. 404.html sends those old
+uppercase links to `ev.html`, keeping the query and hash.
 
 ### nurburgring-posts.html and the carousel generator
 

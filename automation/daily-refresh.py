@@ -75,8 +75,9 @@ def git(*args):
 
 
 def quiet_case_dupes():
-    """The repo tracks EV.html and ev.html. Windows treats them as one file, so git
-    always sees one as modified and refuses to rebase. Mark such files unchanged."""
+    """Windows treats two git paths that differ only by case as one file, so a
+    leftover pair always looks modified and the rebase refuses. Mark any such
+    paths unchanged."""
     rc, out = git('ls-files')
     seen = {}
     for f in out.splitlines():

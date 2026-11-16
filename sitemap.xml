@@ -25,7 +25,7 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://dan-sells.co.uk/EV.html</loc>
+    <loc>https://dan-sells.co.uk/ev.html</loc>
     <lastmod>2026-09-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
@@ -143,7 +143,7 @@
     <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>https://dan-sells.co.uk/BlueMango/</loc>
+    <loc>https://dan-sells.co.uk/bluemango/</loc>
     <changefreq>monthly</changefreq>
   </url>
 </urlset>
