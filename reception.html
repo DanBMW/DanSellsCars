@@ -268,7 +268,7 @@ window.__backend = backend;
         var takeLabel = r.personId ? 'Take this place' : 'Take the place';
         takeBtn = '<div class="rc-actions"><button class="big" type="button" data-take="' + esc(s.id) + '">' + takeLabel + '</button></div>';
       }
-      return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + takeBtn + tag + '</div>';
+      return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + (s.seat ? ' <span class="muted small">place ' + s.seat + ' of ' + RR.SEATS + '</span>' : '') + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + takeBtn + tag + '</div>';
     }).join('');
     /* same for the list: a repaint must not reset a half chosen Assign or a half typed reason */
     var listKey = date + '|' + listHtml, listChanged = listKey !== LIST_HTML;
