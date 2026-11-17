@@ -28,16 +28,35 @@
     if (/^BMW M\d{3}/.test(m)) return 'M Performance';
     return '';
   }
+  /* Series, falling back to one read from the model name when the feed leaves it empty (the i3 120Ah came with no
+     series, so it could not be picked). M cars keep their parent series, as the stock files file them. */
+  function seriesOf(car) {
+    var s = String((car && car.series) || '').trim(); if (s) return s;
+    var m = String((car && car.model) || '').replace(/^BMW\s+/i, '').trim(), a;
+    if ((a = /^(i\d)s?\b/i.exec(m))) return a[1].toLowerCase();
+    if ((a = /^(iX\d?)\b/i.exec(m))) return 'iX' + a[1].slice(2);
+    if ((a = /^(X\d|XM|Z4)\b/i.exec(m))) return a[1].toUpperCase();
+    if ((a = /^(\d) Series\b/i.exec(m))) return a[1] + ' Series';
+    if ((a = /^M(\d)/.exec(m))) return a[1] + ' Series';
+    if ((a = /^(\d)\d{2}[a-z]*\b/i.exec(m))) return a[1] + ' Series';
+    return '';
+  }
+  /* Year: a UK plate dates first registration (26 = March to August 2026, 76 = September 2026 to February 2027).
+     Where the feed gives an older year than the plate (it said 2025 for some 26 plates), the plate wins. */
+  function plateYear(reg) { var m = /^[A-Z]{2}(\d{2})[A-Z]{3}$/.exec(normReg(reg)); if (!m) return null; var n = +m[1]; return n >= 50 ? 2000 + n - 50 : n >= 2 ? 2000 + n : null; }
+  function carYear(car) { var y = parseInt(car && car.year, 10) || null, py = plateYear(car && car.reg); return py && (!y || py > y) ? py : y; }
   function modelOk(car, models) {
     if (!models || !models.length) return true;
-    var family = String(car.series || ''), v = variantOf(car);
+    var family = seriesOf(car), v = variantOf(car);
     return models.some(function (m) { return m === family || (v !== '' && m === v); });
   }
-  /* Newest model year, from a chosen year. A car with no known year is left out once a year is set. New stock is not dated. */
+  /* Newest model year, from a chosen year. A car with no known year is left out once a year is set. New stock is not dated.
+     The newest choice reads "2026 only", so it is exact: that year and no other. */
+  var YEAR_ONLY = 2026;
   function yearOk(car, from) {
     if (!from || car.kind === 'new' || car.kind === 'new_stock') return true;
-    var y = parseInt(car.year, 10);
-    return !!y && y >= +from;
+    var y = carYear(car);
+    return !!y && (+from >= YEAR_ONLY ? y === +from : y >= +from);
   }
   /* ---- Specification picks: ONE catalogue, read the same way for used and new cars ------------------------
      THE RULE: a pick can only take a car OUT when that car's own data says it does not have the thing.
@@ -174,13 +193,23 @@
   function modelFit(car, p) {
     var low = function (a) { return (a || []).map(function (m) { return String(m).toLowerCase(); }); };
     var must = low(p.models_must), all = low(p.models).concat(must); if (!all.length) return { sc: 0, ok: true };
-    var name = (String(car.series || '') + ' ' + String(car.model || '')).toLowerCase(),
+    var name = (seriesOf(car) + ' ' + String(car.model || '')).toLowerCase(),
       /* whole names only: an M2 alert must not match an M235 */
       has = function (m) { return new RegExp('(^|[^a-z0-9])' + m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])').test(name); };
     if (must.length && must.some(has)) return { sc: 26, ok: true, why: 'A must have model' };
     if (must.length) return { sc: -6, ok: false };
     if (all.some(has)) return { sc: 22, ok: true, why: 'A model you picked' };
     return { sc: -6, ok: true };
+  }
+  /* Body or size: tap once for would like (ranks first), twice for must have (a hard filter, like fuel). The must flag
+     lives in customers.body_must, mirrored in desk.body_must until that column exists. A car whose shape is not known
+     is never hidden for it. */
+  function bodyMust(p) { return !!(p && p.body && p.body !== 'any' && (p.body_must === true || (p.desk && p.desk.body_must === true))); }
+  function bodyFit(bk, p) {
+    if (!p || !p.body || p.body === 'any') return { sc: 0, ok: true };
+    bk = bk || []; var hit = bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; });
+    if (hit) return { sc: bodyMust(p) ? 18 : 15, ok: true, why: bodyMust(p) ? 'Your must have shape' : 'Your shape' };
+    return { sc: -12, ok: !(bodyMust(p) && bk.length) };
   }
   /* Returns {score 0..100, reasons[], ok}. ok false = outside a hard limit. */
   /* new cars only: show stock priced up to 5% over the customer's budget (cash price or quoted monthly). Used keeps its own rule. */
@@ -195,9 +224,7 @@
     var fk = isNew ? car.fuelKeys || [] : [s.fuelKey(car)];
     var ff = fuelFit(fk, p); sc += ff.sc; if (ff.why) why.push(ff.why); if (!ff.ok) ok = false; /* a must have fuel is a hard filter for new and used */
     var bk = isNew ? car.bodyKeys || [] : s.bodyKeys(car);
-    if (p.body && p.body !== 'any') {
-      if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12;
-    }
+    var bf = bodyFit(bk, p); sc += bf.sc; if (bf.why) why.push(bf.why); if (!bf.ok) ok = false;
     var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
     /* model placeholder cards (no real stock for that model): no price of their own, so the budget test is against
        the cheapest real new BMW in stock today (floor_cash / floor_monthly, set by the app). Below that, hide them. */
@@ -226,7 +253,7 @@
       var sp = specScore(car, p); sc += sp.sc; sp.why.forEach(function (w) { why.push(w); }); if (!sp.ok) ok = false; sp.notes.forEach(function (n) { notes.push(n); }); if (sp.unconf) unconf = true;
       var bands = (p.mileage_bands || []).filter(function (k) { return MILEAGE_BANDS[k]; }), mi = carMiles(car);
       if (bands.length && mi != null) { if (bands.some(function (k) { var b = MILEAGE_BANDS[k]; return mi >= b.min && mi < b.max; })) { sc += 8; why.push('Mileage you prefer'); } else sc -= 4; }
-      if (car.year) sc += Math.max(0, Math.min(6, car.year - 2019));
+      var cyr = carYear(car); if (cyr) sc += Math.max(0, Math.min(6, cyr - 2019));
       if (p.annual_mileage > 12000 && /diesel|phev/.test(fk[0] || '')) sc += 3;
       if (car.source === 'forecourt') sc += 2;
       if (justArrived(car)) { sc += 5; why.push('Just arrived'); }   /* a modest nudge, never enough to lift a car past the filters */
@@ -266,7 +293,7 @@
     var fk = [s.fuelKey(car)];
     var ff = fuelFit(fk, p); sc += ff.sc; if (ff.why) why.push(ff.why); if (!ff.ok) ok = false;
     var bk = s.bodyKeys(car) || [];
-    if (p.body && p.body !== 'any') { if (bk.some(function (k) { return (BODY_OK[p.body] || []).indexOf(k) !== -1; })) { sc += 15; why.push('Your shape'); } else sc -= 12; }
+    var bf = bodyFit(bk, p); sc += bf.sc; if (bf.why) why.push(bf.why); if (!bf.ok) ok = false;
     var mr = modelFit(car, p); sc += mr.sc; if (mr.why) why.push(mr.why); if (!mr.ok) ok = false;
     /* with a cash budget set, a new car with no real price is not shown unless they chose brand new (monthly: see below) */
     if (hasBudget(p) && p.new_used !== 'new' && p.budget_type === 'cash' && !car.price_gbp) ok = false;
@@ -407,7 +434,7 @@
      filter   stock exists, one other choice rules it out (fuel, new or used, must have colour, must have spec)
      narrow   stock exists, only the mix of choices together rules it out
      Counts are real counts from the stock passed in. No prices, dates or promises. */
-  function hasModel(car, m) { var n = (String(car.series || '') + ' ' + String(car.model || '') + ' ' + String(car.description || '')).toLowerCase();
+  function hasModel(car, m) { var n = (seriesOf(car) + ' ' + String(car.model || '') + ' ' + String(car.description || '')).toLowerCase();
     return new RegExp('(^|[^a-z0-9])' + String(m).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])').test(n); }
   function isMModel(m) { m = String(m).trim().toLowerCase(); return /^m\d/.test(m) || /^(x\d|i\w{1,2})\s?m(\d|$)/.test(m) || /^xm$/.test(m); }
   var LOOSEN = [
@@ -494,5 +521,5 @@
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, applyOffers: applyOffers, offerOk: offerOk, offerRep: offerRep, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, budgetGap: budgetGap, budgetGapText: budgetGapText, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
+  root.ctMatch = { seriesOf: seriesOf, plateYear: plateYear, carYear: carYear, bodyMust: bodyMust, bodyFit: bodyFit, BODY_OK: BODY_OK, variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, applyOffers: applyOffers, offerOk: offerOk, offerRep: offerRep, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, budgetGap: budgetGap, budgetGapText: budgetGapText, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
 })(typeof window !== 'undefined' ? window : globalThis);

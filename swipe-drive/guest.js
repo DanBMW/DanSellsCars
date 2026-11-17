@@ -2,6 +2,7 @@
    URL hash, so it never reaches a server log. This page talks to ONE server function (guest-deck), which only
    returns car cards and records swipes and requests to Dan. No customer details are loaded or shown here. */
 (function () {
+  var MAYBE = 'This may be in budget, ask Dan for figures';
   var CFG = window.CT_CONFIG || {}, $ = function (s) { return document.querySelector(s); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var tok = (location.hash.match(/[#&]t=([^&]+)/) || [])[1]; tok = tok ? decodeURIComponent(tok) : '';
@@ -18,7 +19,7 @@
   function spec(c) { return (c.kind === 'new_stock' ? ['Brand new', c.colour, c.fuel] : [c.year, c.mileage, c.fuel, c.gearbox]).filter(Boolean).join(' \u00b7 '); }
   function cardHtml(c, under) { return '<div class="g-card' + (under ? ' under' : '') + '" data-reg="' + esc(c.reg) + '"><div class="ph" style="--ph:url(\'' + esc(c.image || 'icons/icon-512.png') + '\')"><img src="' + esc(c.image || 'icons/icon-512.png') + '" alt="" draggable="false"></div>' +
       '<span class="tag l">LIKE</span><span class="tag p">PASS</span>' +
-      '<div class="bd">' + (c.kind === 'new_stock' ? '<span class="new">Brand new</span>' : '') + '<h2>' + esc(c.model) + '</h2><div class="sp">' + esc(spec(c)) + '</div><div class="pr">' + esc(c.price || 'Price on request') + '</div></div></div>'; }
+      '<div class="bd">' + (c.kind === 'new_stock' ? '<span class="new">Brand new</span>' : '') + '<h2>' + esc(c.model) + '</h2><div class="sp">' + esc(spec(c)) + '</div><div class="pr">' + esc(c.price || 'Price on request') + '</div>' + (!c.finance && c.maybe ? '<div class="g-maybe">' + MAYBE + '</div>' : '') + '</div></div>'; }
   function draw() {
     if (S.i >= S.cars.length) return end();
     $('#g-count').textContent = 'Car ' + (S.i + 1) + ' of ' + S.cars.length;
@@ -40,7 +41,7 @@
     var ph = (c.images && c.images.length ? c.images : [c.image]).filter(Boolean);
     $('#g-sheet-body').innerHTML = (ph.length ? '<div class="g-photos">' + ph.map(function (u) { return '<div class="g-pf" style="--ph:url(\'' + esc(u) + '\')"><img src="' + esc(u) + '" alt="" loading="lazy"></div>'; }).join('') + '</div>' : '') +
       '<div class="g-det"><h2>' + esc(c.model) + '</h2><div class="pr" style="font-size:22px;font-weight:800">' + esc(c.price || 'Price on request') + '</div>' +
-      (c.finance ? '<div class="g-fin"><b>' + esc(c.finance.headline) + '</b><strong>Representative example.</strong> ' + esc(c.finance.example) + (c.finance.legal ? ' ' + esc(c.finance.legal) : '') + '</div>' : '') +
+      (c.finance ? '<div class="g-fin"><b>' + esc(c.finance.headline) + '</b><strong>Representative example.</strong> ' + esc(c.finance.example) + (c.finance.legal ? ' ' + esc(c.finance.legal) : '') + '</div>' : c.maybe ? '<div class="g-maybe">' + MAYBE + '</div>' : '') +
       '<dl>' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' +
       '<button type="button" class="g-btn" id="g-buy">Buy this car</button><p class="g-ok" id="g-buy-msg" role="status"></p>' +
       '<a class="g-btn g-ghost g-wa3" target="_blank" rel="noopener" href="https://wa.me/' + esc(S.wa) + '?text=' + encodeURIComponent('Hi Dan, I like the ' + c.model + (c.reg && c.kind !== 'new_stock' ? ', reg ' + c.reg : '') + ' on SwipeToDrive. Is it still available?') + '">WhatsApp Dan about this car</a>' +

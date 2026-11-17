@@ -60,5 +60,8 @@ st.pp = null; r = await guestHandle({ t: good, action: 'prefs', annual_mileage: 
 ok(r.body.ok && st.pp.annual_mileage === 12000 && st.pp.desk.when === 'month' && st.pp.desk.fund.join() === 'pcp' && !('people' in st.pp.desk), 'prefs: miles a year and desk choices validated');
 ok(st.pp.desk.cur_car === 'Audi' && !('cur_monthly' in st.pp.desk) && /^Revvy: automatic bunder 3 years\/b$|^Revvy: automatic under 3 years$|Revvy: automatic/.test(st.pp.desk.spec_notes) && !/[<>]/.test(st.pp.desk.spec_notes), 'prefs: desk merged, other desk fields untouched, notes appended and cleaned');
 
+{ const { guestCard } = await import('../backend/supabase/functions/_shared/guest.js');
+  ok(guestCard(car('DD44DDD'), null, true).maybe === true && !('maybe' in guestCard(car('DD44DDD'), { headline: 'h', example: 'e' }, true)), 'maybe in budget flag only when there are no lender figures');
+  ok(/may be in budget, ask Dan for figures/.test(fs.readFileSync(new URL('../guest.js', import.meta.url), 'utf8')), 'guest page says: This may be in budget, ask Dan for figures'); }
 hits = RATE_PER_MIN; ok((await guestHandle({ t: good, action: 'deck' }, deps)).status === 429, 'rate limited after ' + RATE_PER_MIN + ' a minute');
 console.log(`\nRESULT guest ${pass}/${pass + fail}`); process.exit(fail ? 1 : 0);

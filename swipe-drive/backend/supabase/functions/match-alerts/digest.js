@@ -5,7 +5,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;
 function carBlock(it) {
   const c = it.car, f = it.finance;
   const specs = [c.year, c.mileage, c.fuel, c.gearbox, c.colour].filter(Boolean).map(esc).join(' &middot; ');
-  const where = c.kind === 'new_stock' ? 'Brand new, in retailer stock' : c.source === 'group' ? 'I can source this one' : 'On my forecourt';
+  const where = c.kind === 'new_stock' ? 'Brand new, in retailer stock' : c.source === 'group' ? 'Dan can source this' : 'On my forecourt';
   return `<tr><td style="padding:0 0 22px">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e3e7ee">
    ${c.image ? `<tr><td><img src="${esc(c.image)}" width="560" alt="${esc(c.model)}" style="display:block;width:100%;height:auto;border:0"></td></tr>` : ''}
@@ -16,7 +16,7 @@ function carBlock(it) {
    <tr><td style="padding:0 20px 8px;font:700 22px/1.3 Helvetica,Arial,sans-serif;color:#0b1220">${esc(c.price || 'Price on request')}</td></tr>
    ${f ? `<tr><td style="padding:0 20px 10px;font:600 15px/1.4 Helvetica,Arial,sans-serif;color:#0b1220">${esc(f.headline)}</td></tr>
    <tr><td style="padding:0 20px 12px;font:12px/1.5 Helvetica,Arial,sans-serif;color:#4a5568"><strong>Representative example.</strong> ${esc(f.example)}</td></tr>`
-     : `<tr><td style="padding:0 20px 12px;font:14px/1.4 Helvetica,Arial,sans-serif;color:#4a5568">Monthly: ask for a quote</td></tr>`}
+     : `<tr><td style="padding:0 20px 12px;font:14px/1.4 Helvetica,Arial,sans-serif;color:#4a5568">${it.maybe ? 'This may be in budget, ask Dan for figures' : 'Monthly: ask for a quote'}</td></tr>`}
    <tr><td style="padding:4px 20px 20px"><a href="${esc(it.wa)}" style="display:inline-block;background:#25d366;color:#ffffff;font:700 15px Helvetica,Arial,sans-serif;padding:12px 22px;border-radius:24px;text-decoration:none">${esc(it.waLabel || 'WhatsApp about this car')}</a></td></tr>
   </table></td></tr>`;
 }

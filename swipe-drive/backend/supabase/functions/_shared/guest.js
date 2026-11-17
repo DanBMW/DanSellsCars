@@ -6,9 +6,10 @@ export const RATE_PER_MIN = 120;
 /* the only car fields a guest can see (all public on the car's own listing anyway). No listing link: SwipeToDrive
    never sends anyone to the dealer group's site (Dan, 17 Nov 2026). */
 const CAR_KEYS = ['reg', 'kind', 'model', 'series', 'year', 'mileage', 'fuel', 'gearbox', 'colour', 'body', 'power', 'seats', 'price', 'image', 'images', 'source', 'description', 'order_number'];
-export function guestCard(c, finance) {
+export function guestCard(c, finance, maybe) {
   const o = {}; CAR_KEYS.forEach(k => { if (c[k] != null && c[k] !== '') o[k] = k === 'images' ? (c.images || []).slice(0, 8) : c[k]; });
   if (finance) o.finance = { headline: finance.headline, example: finance.example, legal: finance.legal || '' };   // only with the full representative example
+  else if (maybe) o.maybe = true;   // no lender figures yet, but the estimate says it could fit: the page says "This may be in budget, ask Dan for figures"
   return o;
 }
 /* deck order: the cars in the latest email first (still in stock), then other current matches */
@@ -17,7 +18,8 @@ export function guestDeck(M, cars, cust, emailedRegs, n) {
   const byReg = new Map(cars.map(c => [c.reg, c]));
   (emailedRegs || []).forEach(r => { const c = byReg.get(r); if (c && (!c.status || c.status === 'in_stock') && !seen.has(r)) { seen.add(r); out.push(c); } });
   ranked.forEach(x => { if (!seen.has(x.car.reg)) { seen.add(x.car.reg); out.push(x.car); } });
-  return out.map(c => guestCard(c, M.finance(c)));
+  const maybe = c => !!(M.budgetMaybe && M.budgetMaybe(c, cust));
+  return out.map(c => guestCard(c, M.finance(c), maybe(c)));
 }
 /* checks every request: token valid and not expired, link not revoked, customer not closed or unsubscribed, rate */
 export async function guestGate(secret, tok, db) {
