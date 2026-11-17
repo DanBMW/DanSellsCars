@@ -1,9 +1,49 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-17T12:02:51.051Z",
+  "captured": "2026-11-17T14:02:06.931Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "V8KPW",
+      "appraisedAt": "2026-11-17T13:17:49.604Z",
+      "make": "BMW",
+      "model": "5 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--oRl5WUa7--/c_fill,h_300,w_300/v1794921471/Live/Appraisals/9652487/d4b36a72-a51a-484b-baeb-0b9306233faa.png"
+    },
+    {
+      "registration": "JA59ALL",
+      "appraisedAt": "2026-11-17T13:01:55.283Z",
+      "make": "BMW",
+      "model": "i3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LX23ULW",
+      "appraisedAt": "2026-11-17T12:39:43.908Z",
+      "make": "AUDI",
+      "model": "Q5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "JE02NYE",
+      "appraisedAt": "2026-11-17T12:15:40.753Z",
+      "make": "BMW",
+      "model": "X6",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--xssN8Zts--/c_fill,h_300,w_300/v1794917778/Live/Appraisals/9652273/949f9a74-1ecb-4cca-9ca6-150fdaf710cf.jpg"
+    },
     {
       "registration": "MC17JMC",
       "appraisedAt": "2026-11-17T10:20:33.620Z",
