@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-17T10:02:11.716Z",
+  "captured": "2026-11-17T12:02:51.051Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "MC17JMC",
+      "appraisedAt": "2026-11-17T10:20:33.620Z",
+      "make": "BMW",
+      "model": "5 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "YK66JHH",
       "appraisedAt": "2026-11-17T09:34:52.803Z",
