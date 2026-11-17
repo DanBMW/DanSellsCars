@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-16T18:02:22.259Z",
+  "captured": "2026-11-17T06:02:20.117Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -199,7 +199,7 @@
       "appraisedAt": "2026-11-12T11:01:18.659Z",
       "make": "BMW",
       "model": "3 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--6x_2Xu9Z--/c_fill,h_300,w_300/v1794481281/Live/Appraisals/9641856/4978b8af-9521-4c39-8f1f-47060f37df21.jpg"
@@ -349,7 +349,7 @@
       "appraisedAt": "2026-11-09T15:25:13.058Z",
       "make": "VOLKSWAGEN",
       "model": "Passat",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -359,7 +359,7 @@
       "appraisedAt": "2026-11-09T15:23:10.074Z",
       "make": "NISSAN",
       "model": "NT400 Cabstar",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -369,7 +369,7 @@
       "appraisedAt": "2026-11-09T14:55:04.000Z",
       "make": "CUPRA",
       "model": "Terramar",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -379,7 +379,7 @@
       "appraisedAt": "2026-11-09T13:11:28.900Z",
       "make": "BMW",
       "model": "iX3",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -389,7 +389,7 @@
       "appraisedAt": "2026-11-09T12:20:00.980Z",
       "make": "TOYOTA",
       "model": "RAV4",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--rF6Ja9qK--/c_fill,h_300,w_300/v1794226872/Live/Appraisals/9636105/531f9ec7-7406-4d69-87f8-1a555d8198a7.jpg"
@@ -399,7 +399,7 @@
       "appraisedAt": "2026-11-09T12:12:28.717Z",
       "make": "BMW",
       "model": "2 Series Active Tourer",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Average",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--4oghWw_f--/c_fill,h_300,w_300/v1794226351/Live/Appraisals/9636074/58edcd80-39d3-4ecd-b1f9-74d649feaf1e.jpg"
