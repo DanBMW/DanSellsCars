@@ -49,7 +49,7 @@ const MON = '2026-11-02', SUN = '2026-11-08';
 const rcPfx = () => (RR.TEST_ONLY ? 'rc_test' : 'rc_live');
 
 async function runAt(db, date, h, m, cfgExtra) {
-  const queue = (await db.ref('lockupTest/notify').get()).val() || {};
+  const queue = Object.assign({}, (await db.ref('lockupTest/notify').get()).val() || {}, (await db.ref('lockupPrivate/notify').get()).val() || {});
   const q = J.makeQueue(db, 'lockupTest', queue);
   const reception = (await db.ref('lockupTest/reception').get()).val() || {};
   const res = await J.run(Object.assign({
@@ -542,7 +542,7 @@ async function runAt(db, date, h, m, cfgExtra) {
     const after = d1.am.personId;
     r = await runAt(db, MON, 9, 50, { absences: away(amWas, MON) });
     assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, after, 'a second run changes nothing');
-    assert.strictEqual(r.added.length, 0, 'and sends nothing: ' + r.added.join(','));
+    assert.strictEqual(r.added.filter(id => !/_nag_/.test(id)).length, 0, 'and sends nothing but the unconfirmed reminders: ' + r.added.join(','));
 
     // the shift has already ended: left exactly as it was
     db = fakeDb();
@@ -594,7 +594,7 @@ async function runAt(db, date, h, m, cfgExtra) {
       _day: { plannedAt: 1 },
       am: { personId: 'tomi', status: 'covering', ts: 1 },
       mid: { personId: 'carl', status: 'covering', ts: 1 },
-      pm: { personId: 'dan', status: 'assigned', ts: 1 }
+      pm: { personId: 'dan', status: 'covering', ts: 1 }
     } }, notify: {
       [rcPfx() + '_' + MON + '_am_tomi']: { sent: 1 }, [rcPfx() + '_' + MON + '_mid_carl']: { sent: 1 }, [rcPfx() + '_' + MON + '_pm_dan']: { sent: 1 }
     } } });
@@ -610,6 +610,108 @@ async function runAt(db, date, h, m, cfgExtra) {
     r = await runAt(db, MON, 16, 31);
     assert.strictEqual(r.added.length, 0, 'the next run sends nothing: ' + r.added.join(','));
     console.log('ok: a day planned with one person a shift gets its second seats, ended seats left alone');
+  }
+
+  // 17 November: personal no sign in links, and a reminder every 15 minutes until they answer
+  {
+    const L = { links: true };
+    const allMail = db => Object.assign({}, db.data.lockupTest.notify || {}, (db.data.lockupPrivate || {}).notify || {});
+    db = fakeDb();
+    r = await runAt(db, MON, 8, 0, L);
+    const covers = r.added.filter(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id));
+    assert.strictEqual(covers.length, 6);
+    assert.ok(covers.every(id => db.data.lockupPrivate.notify[id] && !(db.data.lockupTest.notify || {})[id]), 'cover emails with a link go on the private queue only');
+    assert.ok(!/cover\.html\?t=/.test(JSON.stringify(db.data.lockupTest)), 'no personal link anywhere under the world readable lockup tree');
+    const amWho = db.data.lockupTest.reception[MON].am.personId;
+    const amMail = db.data.lockupPrivate.notify[covers.find(id => id.indexOf('_am_' + amWho) > 0)];
+    const tok = (amMail.text.match(/cover\.html\?t=([A-Za-z0-9_-]+)&a=covering/) || [])[1];
+    assert.ok(tok && RR.TOKEN_RE.test(tok), 'the email carries a personal link: ' + amMail.text);
+    assert.ok(/cover\.html\?t=[A-Za-z0-9_-]+&a=cannot/.test(amMail.text) && /cover\.html\?t=/.test(amMail.html));
+    const link = db.data[J.LINK_ROOT][tok];
+    assert.deepStrictEqual([link.date, link.shift, link.personId, link.from, link.to], [MON, 'am', amWho, '09:00', '12:00']);
+    assert.strictEqual(Object.keys(db.data[J.LINK_ROOT]).length, 6, 'one link a person a seat');
+    assert.strictEqual(db.data[J.IDX_ROOT][MON]['am_' + amWho].t, tok);
+    r = await runAt(db, MON, 8, 15, L);
+    assert.strictEqual(Object.keys(db.data[J.LINK_ROOT]).length, 6, 'a later run reuses the links');
+    console.log('ok: cover emails carry a personal link, kept off the public queue');
+
+    // nobody has confirmed: a reminder every 15 minutes from the first email (08:50 for the 09:00 seats)
+    Object.keys(db.data.lockupTest.reception[MON]).forEach(k => { if (k !== '_day') db.data.lockupTest.reception[MON][k].ts = 1; });
+    r = await runAt(db, MON, 9, 0, L);
+    assert.strictEqual(r.added.filter(id => /_nag_/.test(id)).length, 0, 'nothing before 15 minutes: ' + r.added.join(','));
+    r = await runAt(db, MON, 9, 5, L);
+    let nags = r.added.filter(id => /_nag_/.test(id));
+    assert.deepStrictEqual(nags.map(id => id.replace(/^.*_nag_[0-9-]+_/, '')).sort(), ['am2_' + db.data.lockupTest.reception[MON].am2.personId + '_1', 'am_' + amWho + '_1'].sort(), 'reminder 1 for both morning seats: ' + nags.join(','));
+    const nag1 = db.data.lockupPrivate.notify[nags.find(id => id.indexOf('_am_') > 0)];
+    assert.ok(/Reminder: are you covering the showroom 09:00 to 12:00\?/.test(nag1.subject) && nag1.text.indexOf('t=' + tok + '&a=covering') > 0, nag1.subject);
+    r = await runAt(db, MON, 9, 12, L);
+    assert.strictEqual(r.added.filter(id => /_nag_/.test(id)).length, 0, 'not again inside the 15 minutes');
+    r = await runAt(db, MON, 9, 21, L);
+    assert.strictEqual(r.added.filter(id => /_nag_.*_2$/.test(id)).length, 2, 'reminder 2: ' + r.added.join(','));
+    r = await runAt(db, MON, 9, 36, L);
+    assert.strictEqual(r.added.filter(id => /_nag_.*_3$/.test(id)).length, 2);
+    const mgr = r.added.filter(id => /_nagMgr_/.test(id));
+    assert.strictEqual(mgr.length, 2, 'the managers hear at the third: ' + r.added.join(','));
+    assert.strictEqual(db.data.lockupTest.notify[mgr[0]].to, 'managers');
+    assert.ok(/Still waiting/.test(db.data.lockupPrivate.notify[r.added.find(id => /_nag_.*_am_.*_3$/.test(id))].subject));
+    r = await runAt(db, MON, 9, 51, L);
+    assert.strictEqual(r.added.filter(id => /_nagMgr_/.test(id)).length, 0, 'and only once');
+    assert.strictEqual(r.added.filter(id => /_nag_.*_4$/.test(id)).length, 2);
+    assert.ok(!r.added.some(id => /_nag_.*_(mid|pm)/.test(id)), 'later shifts are not chased before their time');
+    console.log('ok: a reminder every 15 minutes until they answer, the managers told once at the third');
+
+    // they tap I am covering on the link: the seat says covering and the reminders stop
+    db.data[J.LINK_ROOT][tok].answer = { kind: 'covering', ts: 5000 };
+    r = await runAt(db, MON, 10, 6, L);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.status, 'covering');
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, amWho);
+    assert.ok(!r.added.some(id => id.indexOf('_nag_' + MON + '_am_') > 0), 'no more reminders for them: ' + r.added.join(','));
+    assert.ok(r.added.some(id => id.indexOf('_nag_' + MON + '_am2_') > 0), 'their partner is still chased');
+    r = await runAt(db, MON, 10, 21, L);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.status, 'covering', 'the same answer is not applied twice');
+    console.log('ok: I am covering on the link confirms the seat and stops the reminders');
+
+    // the partner taps I cannot cover (with a customer): declined, managers told, the next person on with their own link
+    const am2Who = db.data.lockupTest.reception[MON].am2.personId;
+    const tok2 = db.data[J.IDX_ROOT][MON]['am2_' + am2Who].t;
+    db.data[J.LINK_ROOT][tok2].answer = { kind: 'customer', ts: 6000 };
+    r = await runAt(db, MON, 10, 25, L);
+    const am2 = db.data.lockupTest.reception[MON].am2;
+    assert.ok(am2.personId && am2.personId !== am2Who, 'someone else is put on: ' + JSON.stringify(am2));
+    assert.ok(am2.declined[am2Who]);
+    const skip = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip' && e.personId === am2Who);
+    assert.strictEqual(skip.length, 1);
+    assert.strictEqual(skip[0].reason, "I'm with a customer now, cannot cover");
+    assert.ok(r.added.some(id => /_decl_/.test(id)), 'managers told: ' + r.added.join(','));
+    const newMail = allMail(db)[r.added.find(id => id.indexOf(rcPfx() + '_' + MON + '_am2_' + am2.personId) === 0)];
+    assert.ok(newMail && /cover\.html\?t=/.test(newMail.text) && newMail.text.indexOf(tok2) < 0, 'the new person gets their own link');
+    console.log('ok: I cannot cover on the link hands the seat on, with the reason, and a fresh link');
+
+    // an answer on a link for a seat they no longer hold changes nothing
+    db.data[J.LINK_ROOT][tok2].answer = { kind: 'covering', ts: 7000 };
+    r = await runAt(db, MON, 10, 40, L);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am2.personId, am2.personId, 'the old link cannot take the seat back');
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].am2.status, 'covering');
+    // a made up token with no index entry is never read
+    db.data[J.LINK_ROOT]['x'.repeat(32)] = { date: MON, shift: 'am2', personId: 'tomi', answer: { kind: 'other', text: 'x', ts: 8000 } };
+    const before = JSON.stringify(db.data.lockupTest.reception[MON].am2);
+    await runAt(db, MON, 10, 55, L);
+    assert.strictEqual(JSON.stringify(db.data.lockupTest.reception[MON].am2), before, 'a forged link does nothing');
+    console.log('ok: an old or forged link changes nothing');
+
+    // without links (lockup test mode) the emails keep the signed in page and the public queue
+    db = fakeDb();
+    r = await runAt(db, MON, 8, 0);
+    assert.ok(!db.data.lockupPrivate && !db.data[J.LINK_ROOT], 'no links and nothing private');
+    // links are pruned with their day
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, L);
+    const later = '2026-11-20';
+    await runAt(db, later, 8, 0, Object.assign({ n: { date: later, dow: 5, mins: 480 } }, L));
+    assert.ok(Object.keys(db.data[J.LINK_ROOT]).length >= 6);
+    await runAt(db, '2026-11-18', 8, 0, Object.assign({ n: { date: '2026-11-18', dow: 3, mins: 480 } }, L));
+    assert.ok(!db.data[J.IDX_ROOT][MON] && Object.values(db.data[J.LINK_ROOT]).every(x => x.date !== MON), 'a day past keeping takes its links with it');
+    console.log('ok: no links in test mode; links go when their day is pruned');
   }
 
   console.log('all reception job tests passed');

@@ -159,13 +159,31 @@
     return '<a href="' + escHtml(href) + '" style="' + style + '">' + escHtml(label) + '</a>';
   }
 
+  /* a personal link (Dan, 17 November 2026): no sign in, one person, one seat, one day.
+     The token is minted by the job (scripts/reception-mail.js) and only ever travels on
+     the private email queue, never anywhere world readable. */
+  var LINK_SITE = 'https://dan-sells.co.uk/cover.html';
+  var TOKEN_RE = /^[A-Za-z0-9_-]{24,64}$/;
+  function linkUrl(token, action, test) {
+    return LINK_SITE + '?t=' + encodeURIComponent(token) + (action ? '&a=' + encodeURIComponent(action) : '') + (test ? '&test=1' : '');
+  }
+  /* the tap links for an email: the personal link when there is one, else the signed in page */
+  function tapLinks(shift, opts) {
+    opts = opts || {};
+    if (opts.token) return { covering: linkUrl(opts.token, 'covering', opts.test), cannot: linkUrl(opts.token, 'cannot', opts.test), open: linkUrl(opts.token, '', opts.test) };
+    return {
+      covering: coverPageUrl({ date: opts.date, shift: shift.id, action: 'covering' }),
+      cannot: coverPageUrl({ date: opts.date, shift: shift.id, action: 'cannot' }),
+      open: coverPageUrl({ date: opts.date, shift: shift.id })
+    };
+  }
+
   /* the wording of the cover email, as Dan asked: "you are on showroom cover,
      please cover showroom until ##:##". opts.date makes the tap links open that day. */
   function coverEmail(name, shift, opts) {
     opts = opts || {};
-    var covering = coverPageUrl({ date: opts.date, shift: shift.id, action: 'covering' });
-    var cannot = coverPageUrl({ date: opts.date, shift: shift.id, action: 'cannot' });
-    var open = coverPageUrl({ date: opts.date, shift: shift.id });
+    var L = tapLinks(shift, opts);
+    var covering = L.covering, cannot = L.cannot, open = L.open;
     var subject = 'Showroom cover ' + shift.from + ' to ' + shift.to;
     var text = 'Hi ' + name + ',\n\nYou are on showroom cover. Please cover showroom until ' + shift.to + '.\n\n' +
       'I am covering:\n' + covering + '\n\n' +
@@ -180,6 +198,32 @@
       mailBtn(cannot, 'I cannot cover', 'danger') +
       '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover</p></div></div>';
     return { subject: subject, text: text, html: html, coveringUrl: covering, cannotUrl: cannot };
+  }
+
+  /* every 15 minutes until they answer (Dan, 17 November 2026: "up the ante"). n is the
+     reminder number; from the third the managers are copied in on a separate note. */
+  function nagEmail(name, shift, opts) {
+    opts = opts || {};
+    var L = tapLinks(shift, opts), n = opts.n || 1;
+    var subject = (n >= 3 ? 'Still waiting: ' : 'Reminder: ') + 'are you covering the showroom ' + shift.from + ' to ' + shift.to + '?';
+    var line = n >= 3
+      ? 'Hi ' + name + ', this is reminder ' + n + '. You still have not said whether you are covering the showroom until ' + shift.to + ', and the managers have been told.'
+      : 'Hi ' + name + ', you are on showroom cover until ' + shift.to + ' and have not confirmed yet.';
+    var ask = 'Please tap one of these now. You will get this every 15 minutes until you do.';
+    var text = line + '\n\n' + ask + '\n\nI am covering:\n' + L.covering + '\n\nI cannot cover:\n' + L.cannot;
+    var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+      '<div style="background:' + (n >= 3 ? '#8a1c12' : '#0b1220') + ';color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">' + escHtml(subject) + '</div>' +
+      '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
+      '<p style="margin:0 0 12px">' + escHtml(line) + '</p>' +
+      '<p style="margin:0 0 16px">' + escHtml(ask) + '</p>' +
+      mailBtn(L.covering, 'I am covering', 'primary') +
+      mailBtn(L.cannot, 'I cannot cover', 'danger') +
+      '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover. No sign in needed: this link is yours alone.</p></div></div>';
+    return { subject: subject, text: text, html: html };
+  }
+  function unconfirmedNote(name, shift, mins) {
+    var line = name + ' has not confirmed showroom cover ' + shift.from + ' to ' + shift.to + ' after ' + mins + ' minutes of reminders. They are still being asked every 15 minutes.';
+    return { subject: name + ' has not confirmed showroom cover ' + shift.from + ' to ' + shift.to, text: line };
   }
 
   /* "where are you" nudge: tap I am here, or say you cannot be in */
@@ -457,6 +501,6 @@ function publicRota(day, date, dow, team) {
   });
 }
 
-var api = { SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
+var api = { linkUrl: linkUrl, tapLinks: tapLinks, nagEmail: nagEmail, unconfirmedNote: unconfirmedNote, TOKEN_RE: TOKEN_RE, LINK_SITE: LINK_SITE, SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

@@ -149,6 +149,8 @@ async function main() {
       await db.ref(RROOT + '/reception/' + n.date).remove();
       const allNotify = (await db.ref(ROOT + '/notify').get()).val() || {};
       for (const id of Object.keys(allNotify)) if (/^rc/.test(id) && id.indexOf(n.date) >= 0) await db.ref(ROOT + '/notify/' + id).remove();
+      const allPriv = (await db.ref('lockupPrivate/notify').get()).val() || {};
+      for (const id of Object.keys(allPriv)) if (/^rc/.test(id) && id.indexOf(n.date) >= 0) await db.ref('lockupPrivate/notify/' + id).remove();
       if (rc.reception) delete rc.reception[n.date];
       console.log('Cover reset for', n.date, '(plan and cover emails cleared)');
     }
@@ -158,10 +160,14 @@ async function main() {
     const needTomorrow = n.mins >= 17 * 60 + 30 && !tomMark.plannedAt;
     const feedToday = needToday ? await RC.readBusy(n.date) : null;
     const feedTomorrow = needTomorrow ? await RC.readBusy(tom) : null;
-    const notifySnap = (await db.ref(ROOT + '/notify').get()).val() || {};
+    /* cover emails with a personal link sit on the private queue (lockupPrivate/notify), so
+       both queues count when deciding whether an email has already been queued */
+    const notifySnap = Object.assign({}, (await db.ref(ROOT + '/notify').get()).val() || {}, TEST ? {} : ((await db.ref('lockupPrivate/notify').get()).val() || {}));
     const rq = RC.makeQueue(db, ROOT, notifySnap);
     const base = { db, root: RROOT, logRoot: RR.RECEPTION_LOG, n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg,
       testExec: TEST ? TEST_EXEC : null, queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log,
+      /* personal no sign in links (cover.html) only in live mode, where the private queue is sent */
+      links: !TEST, nowMs,
       reception: rc.reception, absences, shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {},
       notify: notifySnap };
     const rToday = await RC.run(Object.assign({}, base, { date: n.date, planAt: 7 * 60 + 30, recheck: !!feedToday,

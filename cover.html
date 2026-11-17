@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0b1220">
+<title>Showroom cover | Hedin BMW Ruxley</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="stylesheet" href="team.css">
+<script src="reception-rota.js?v=3"></script>
+<script src="cover.js?v=1"></script>
+<style>
+/* personal showroom cover link: one card, big buttons, phone first */
+.wrap{max-width:520px}
+.cv{margin-top:18px}
+.cv h1{font-size:26px;margin:4px 0 2px}
+.cv .when{font-size:17px;font-weight:700;margin:0 0 14px}
+.cv .lead{font-size:16px;margin:0 0 14px}
+.cv .note{font-size:16px;padding:14px;border-radius:12px;background:var(--card2);border:1px solid var(--line);margin:0 0 12px}
+.cv .note.ok{border-color:#2ea56a}
+.cv .btn{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;min-height:52px;font-size:17px;margin:0 0 10px;cursor:pointer;font-family:inherit}
+.cv .danger{background:#c0392b;border-color:#c0392b;color:#fff}
+.cv .why{margin-top:6px}
+.cv .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.cv .chip{flex:1 1 100%;min-height:46px;text-align:left;font-size:15px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-weight:700;cursor:pointer;font-family:inherit}
+.cv .chip.on{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue) inset}
+.cv textarea{font-family:inherit;font-size:16px;background:#0e1626;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;box-sizing:border-box;width:100%;margin:0 0 10px}
+.cv .msg{min-height:1.2em}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="key">&#9881;</div><div>Showroom cover<small>Hedin BMW Ruxley</small></div></div>
+</header>
+<main class="wrap">
+  <div class="card cv" id="c-body"><p class="muted">Opening your showroom cover&hellip;</p></div>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, set, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyB3OT3aCyLYlQ3STi94HrgSHUZzf6v8T3E",authDomain:"forecourt-1b6bc.firebaseapp.com",databaseURL:"https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"forecourt-1b6bc",storageBucket:"forecourt-1b6bc.firebasestorage.app",messagingSenderId:"1073459223252",appId:"1:1073459223252:web:d65abed953fc641fc7b941"};
+const db = getDatabase(initializeApp(firebaseConfig));
+CoverLink.start({ db, ref, get, set, onValue, serverTimestamp });
+</script>
+</body>
+</html>

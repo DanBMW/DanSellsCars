@@ -33,6 +33,7 @@ export function onValue(r, cb, err) {
   return () => { const i = listeners.indexOf(l); if (i >= 0) listeners.splice(i, 1); };
 }
 export function set(r, v) {
+  if (denied(r.path)) return Promise.reject(refusal()); /* a write the real rules refuse to this visitor */
   setAt(r.path, v); S().log.push(['set', r.path]); notify(); return Promise.resolve();
 }
 export function update(r, v) {
